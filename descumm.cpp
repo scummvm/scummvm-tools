@@ -261,7 +261,7 @@ char *get_var(char *buf)
 	if (scriptVersion <= 2)
 		i = get_byte();
 	else
-		i = get_word();
+		i = (uint16)get_word();
 		
 	assert(i >= 0);
 
