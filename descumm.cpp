@@ -143,7 +143,7 @@ const char *var_names2[] = {
 	"VAR_VIRT_MOUSE_X",
 	"VAR_VIRT_MOUSE_Y",
 	/* 32 */
-	NULL,
+	"VAR_CLICK_AREA",
 	NULL,
 	NULL,
 	NULL,
@@ -2972,7 +2972,6 @@ int skipVerbHeader_V3(byte *p)
 byte *skipVerbHeader_V5(byte *p)
 {
 	byte code;
-	int hdrlen;
 
 	printf("Events:\n");
 
