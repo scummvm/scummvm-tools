@@ -158,6 +158,8 @@ int main(int argc, char *argv[])
 	char *line;
 	int err;
 	int i;
+	time_t theTime;
+	const char *generationDate;
 
 	const int entrySize = 256;
 	int numEntries = 0, maxEntries = 1;
@@ -175,9 +177,8 @@ int main(int argc, char *argv[])
 		showhelp(argv[0]);
 	}
 	
-	time_t theTime;
 	time(&theTime);
-	const char *generationDate = strdup(asctime(gmtime(&theTime)));
+	generationDate = strdup(asctime(gmtime(&theTime)));
 
 	if (phpOutput)
 		fprintf(outFile, php_header, generationDate);
