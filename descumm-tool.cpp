@@ -89,20 +89,7 @@ int skipVerbHeader_V34(byte *p)
 	return minOffset;
 }
 
-byte *skipVerbHeader_V5(byte *p)
-{
-	byte code;
-
-	printf("Events:\n");
-
-	while ((code = *p++) != 0) {
-		printf("  %2X - %.4X\n", code, TO_LE_16(*(uint16 *)p));
-		p += 2;
-	}
-	return p;
-}
-
-int skipVerbHeader_V67(byte *p)
+int skipVerbHeader_V567(byte *p)
 {
 	byte code;
 	int offset = 8;
@@ -121,24 +108,21 @@ int skipVerbHeader_V67(byte *p)
 	return minOffset;
 }
 
-byte *skipVerbHeader_V8(byte *p)
+int skipVerbHeader_V8(byte *p)
 {
 	uint32 *ptr;
 	uint32 code;
-	int hdrlen;
-	
-	ptr = (uint32 *)p;
-	while (TO_LE_32(*ptr++) != 0) {
-		ptr++;
-	}
-	hdrlen = (byte *)ptr - p;
+	int offset;
+	int minOffset = 255;
 	
 	ptr = (uint32 *)p;
 	while ((code = TO_LE_32(*ptr++)) != 0) {
-		printf("  %2d - %.4X\n", code, TO_LE_32(*ptr++) - hdrlen);
+		offset = TO_LE_32(*ptr++);
+		printf("  %2d - %.4X\n", code, offset);
+		if (minOffset > offset)
+			minOffset = offset;
 	}
-
-	return (byte *)ptr;
+	return minOffset;
 }
 
 int main(int argc, char *argv[])
@@ -307,12 +291,11 @@ int main(int argc, char *argv[])
 			mem += 8;
 			break;											/* Exit code */
 		case 'VERB':
-			if (scriptVersion == 8)
-				mem = skipVerbHeader_V8(mem + 8);
-			else if (scriptVersion >= 6)
-				offs_of_line = skipVerbHeader_V67(mem);
-			else
-				offs_of_line = skipVerbHeader_V5(mem + 8) - mem;
+			if (scriptVersion == 8) {
+				mem += 8;
+				offs_of_line = skipVerbHeader_V8(mem);
+			} else
+				offs_of_line = skipVerbHeader_V567(mem);
 			break;											/* Verb */
 		default:
 			printf("Unknown script type!\n");
