@@ -31,6 +31,36 @@
 #include <process.h>
 #endif
 
+/*
+  Similar to the code that detects "head" while loops like this:
+  while(Condition) {
+  }
+  add code to detect tail while loops, i.e. something of the kind
+  do {
+  } while(Condition);
+  In V2-V5, those are the most frequent type of loops (and in V6-V8 they
+  sometimes occur, too).
+  In some cases it might be preferable to emit a
+  repeat {
+  } until(!Condition)
+  Namely then when the condition has to be negated.
+
+  However, implementing this might be quite tricky, and require us to refactor the
+  code, because unlike a "head if/while", we don't know we are inside a loop until its
+  end. This means a problem for indention, and when outputing the initial "do {".
+  To solve this, we could implement some sort of look ahead; but that would be very
+  complicated, because essentially we have to perform full parsing of the data anyway. 
+  Instead of doing multiple look aheads, one could also do a 2 pass descumming:
+  In pass 1, we find all jump statement, and identify all jump targets. From this data
+  we can work backwards to detect all loops (and also if/else/elsif).
+  Yet another approach would be to not emit any lines until we fully descummed the script.
+  Instead, we keep each line in a line buffer, with indention but with an associated
+  "indention" variable. When we discover a do/while loop, we can then insert a "do {"
+  line and increase the indention of all intermediate lines. However this approach 
+  needs a lot of memory, and won't output anything until the script is fully descummed,
+  which is annoying when debugging descumm.
+
+*/
 
 #define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
@@ -66,6 +96,8 @@ uint16 inline SWAP_16(uint16 a)
 #define TO_LE_32(x) (x)
 #endif
 
+#define MKID(a) (((a&0xff) << 8) | ((a >> 8)&0xff))
+
 
 #define A1B (1<<0)
 #define A1W (2<<0)
@@ -100,7 +132,6 @@ uint16 inline SWAP_16(uint16 a)
 #define ANOFIRSTPAREN (1<<29)
 #define ASTARTCOMMA (1<<28)
 #define AVARSTORE (1<<27)
-#define MKID(a) (((a&0xff) << 8) | ((a >> 8)&0xff))
 
 
 
@@ -115,6 +146,7 @@ int size_of_code;
 char *indentbuf;
 
 struct BlockStack {
+	bool isWhile;
 	unsigned short from;
 	unsigned short to;
 };
@@ -128,6 +160,8 @@ int pendingElseTo;
 int pendingElseOffs;
 int pendingElseOpcode;
 int pendingElseIndent;
+
+int offs_of_line;
 
 bool alwaysShowOffs = 0;
 bool dontOutputIfs = 0;
@@ -146,7 +180,7 @@ bool IndyFlag = 0;
 bool GF_UNBLOCKED = false;
 
 
-bool emit_if(char *before, char *after);
+void emit_if(char *buf, char *condition);
 
 int get_curoffs()
 {
@@ -165,10 +199,9 @@ int get_word()
 	return i;
 }
 
-int get_gotopos()
+int get_signed_word()
 {
-	int j = get_word();
-	return (short)(j + get_curoffs());
+	return (short)get_word();
 }
 
 char *strecpy(char *buf, const char *src)
@@ -379,12 +412,9 @@ char *do_tok(char *buf, const char *text, int args)
 	}
 
 	if (args & ATO) {
-		char before[256];
-		char after[256];
 		char tmp[256];
 		strcpy(tmp, buforg);
-		emit_if(before, after);
-		sprintf(buforg, "%s%s%s", before, tmp, after);
+		emit_if(buforg, tmp);
 	} else if (!(args & ANOLASTPAREN)) {
 		buf = strecpy(buf, ")");
 	}
@@ -414,7 +444,7 @@ char *GetIndentString(int i)
 
 
 
-BlockStack *PushBlockStackItem()
+BlockStack *pushBlockStackItem()
 {
 	if (!block_stack)
 		block_stack = (BlockStack *) malloc(256 * sizeof(BlockStack));
@@ -431,16 +461,23 @@ bool maybeAddIf(unsigned int cur, unsigned int to)
 {
 	int i;
 	BlockStack *p;
-
+	
 	if (((to | cur) >> 16) || (to <= cur))
-		return 0;										/* Invalid jump */
-
+		return false; // Invalid jump
+	
 	for (i = 0, p = block_stack; i < num_block_stack; i++, p++) {
 		if (to > p->to)
-			return 0;
+			return false;
 	}
+	
+	p = pushBlockStackItem();
 
-	p = PushBlockStackItem();
+	// Try to determine if this is a while loop. For this, first check if we 
+	// jump right behind a regular jump, then whether that jump is targeting us.
+	p->isWhile = (*(byte*)(org_pos+to-3) == g_jump_opcode);
+	i = TO_LE_16(*(int16*)(org_pos+to-2));
+	
+	p->isWhile = p->isWhile && (offs_of_line == (int)to + i);
 	p->from = cur;
 	p->to = to;
 	return 1;
@@ -462,7 +499,7 @@ int indentBlock(unsigned int cur)
 }
 
 /* Returns 0 or 1 depending if it's ok to add an else */
-int RequestElseAdd(int cur, int to)
+int maybeAddElse(int cur, int to)
 {
 	BlockStack *p;
 	int i;
@@ -498,6 +535,11 @@ bool maybeAddElseIf(int cur, int elseto, int to)
 	if (!num_block_stack)
 		return false;									/* There are no previous blocks, so an ifelse is not ok */
 
+	p = &block_stack[num_block_stack - 1];
+
+	if (p->isWhile)
+		return false;
+
 	k = to - 3;
 	if (k < 0 || k >= size_of_code)
 		return false;									/* Invalid jump */
@@ -510,7 +552,6 @@ bool maybeAddElseIf(int cur, int elseto, int to)
 	if (k != elseto)
 		return false;									/* Not an ifelse */
 
-	p = &block_stack[num_block_stack - 1];
 	p->from = cur;
 	p->to = to;
 
@@ -1518,40 +1559,68 @@ exit_proc:;
 
 }
 
-bool emit_if(char *before, char *after)
+void do_unconditional_jump(char *buf, byte opcode)
 {
-	int to = get_gotopos();
+	int offset = get_signed_word();
+	int cur = get_curoffs();
+	int to = cur + offset;
 
-	before[0] = 0;
-	after[0] = 0;
+	if (offset == 0) {
+		sprintf(buf, "/* goto %.4X; */", to);
+	} else if (!dontOutputElse && maybeAddElse(cur, to)) {
+		pendingElse = 1;
+		pendingElseTo = to;
+		pendingElseOffs = cur - 1;
+		pendingElseOpcode = opcode;
+		pendingElseIndent = num_block_stack;
+		buf[0] = 0;
+	} else {
+		if (num_block_stack && !dontOutputWhile) {
+			BlockStack *p = &block_stack[num_block_stack - 1];
+			if (p->isWhile && cur == p->to)
+				return;		// A 'while' ends here.
+		}
+		sprintf(buf, "goto %.4X;", to);
+	}
+}
+
+void emit_if(char *buf, char *condition)
+{
+	int offset = get_signed_word();
+	int cur = get_curoffs();
+	int to = cur + offset;
 
 	if (!dontOutputElseif && pendingElse) {
-		if (maybeAddElseIf(get_curoffs(), pendingElseTo, to)) {
+		if (maybeAddElseIf(cur, pendingElseTo, to)) {
 			pendingElse = false;
 			haveElse = true;
-			sprintf(after, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
-			strcpy(before, "} else ");
-			return true;
+			buf = strecpy(buf, "} else if (");
+			buf = strecpy(buf, condition);
+			sprintf(buf, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
+			return;
 		}
 	}
 
-	if (!dontOutputIfs && maybeAddIf(get_curoffs(), to)) {
-		sprintf(after, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
-		return true;
+	if (!dontOutputIfs && maybeAddIf(cur, to)) {
+		if (!dontOutputWhile && block_stack[num_block_stack - 1].isWhile) {
+			buf = strecpy(buf, "while (");
+		} else
+			buf = strecpy(buf, "if (");
+		buf = strecpy(buf, condition);
+		sprintf(buf, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
+		return;
 	}
 
-	sprintf(after, ") goto %.4X;", to);
-	return false;
+//	buf = strecpy(buf, negate ? "if (" : "unless (");
+	buf = strecpy(buf, "unless (");
+	buf = strecpy(buf, condition);
+	sprintf(buf, ") goto %.4X;", to);
 }
-
-
 
 void do_if_code(char *buf, byte opcode)
 {
-	char tmp2[256];
 	char var[256];
-	char before[256], after[256];
-	byte neg;
+	char tmp[256], tmp2[256];
 	int txt;
 
 	const char *cmp_texts[8] = {
@@ -1596,16 +1665,14 @@ void do_if_code(char *buf, byte opcode)
 		get_var_or_word(tmp2, opcode & 0x80);
 	}
 
-	neg = emit_if(before, after) ^ 1;
-
-	sprintf(buf, "%sif (%s%s%s%s", before, var, cmp_texts[txt ^ neg], tmp2, after);
+	sprintf(tmp, "%s%s%s", var, cmp_texts[txt], tmp2);
+	emit_if(buf, tmp);
 }
 
 void do_if_state_code(char *buf, byte opcode)
 {
-	char tmp2[256];
 	char var[256];
-	char before[256], after[256];
+	char tmp[256], tmp2[256];
 	byte neg;
 	int state = 0;
 
@@ -1677,33 +1744,12 @@ void do_if_state_code(char *buf, byte opcode)
 		}
 	}
 
-	neg = neg ^ emit_if(before, after) ^ 1;
-
 	if (scriptVersion > 2)
-		sprintf(buf, "%sif (getState(%s)%s%s%s", before, var, neg ? " != " : " == ", tmp2, after);
+		sprintf(tmp, "getState(%s)%s%s", var, neg ? " != " : " == ", tmp2);
 	else
-		sprintf(buf, "%sif (%sgetState%02d(%s)%s", before, neg ? "!" : "", state, var, after);
+		sprintf(tmp, "%sgetState%02d(%s)", neg ? "!" : "", state, var);
+	emit_if(buf, tmp);
 }
-
-void do_unconditional_jump(char *buf, byte opcode)
-{
-	int i = get_gotopos();
-	int j = get_curoffs();
-
-	if (i == j) {
-		sprintf(buf, "/* goto %.4X; */", i);
-	} else if (!dontOutputElse && RequestElseAdd(j, i)) {
-		pendingElse = 1;
-		pendingElseTo = i;
-		pendingElseOffs = j - 3;
-		pendingElseOpcode = opcode;
-		pendingElseIndent = num_block_stack;
-		buf[0] = 0;
-	} else {
-		sprintf(buf, "goto %.4X;", i);
-	}
-}
-
 
 void do_varset_code(char *buf, byte opcode)
 {
@@ -2587,7 +2633,7 @@ void get_tok(char *buf)
 
 	case 0x1D:
 	case 0x9D:
-		do_tok(buf, "if ClassOfIs", ((opcode & 0x80) ? A1V : A1W) | A2VARUNTIL0xFF | ATO);
+		do_tok(buf, "classOfIs", ((opcode & 0x80) ? A1V : A1W) | A2VARUNTIL0xFF | ATO);
 		break;											/* arg1=object; vararg=classes to test; arg3=jumpoffs */
 
 	case 0x1E:
@@ -3306,7 +3352,7 @@ int main(int argc, char *argv[])
 
 	len -= mem - memorg;
 
-	int offs_of_line = 0;
+	offs_of_line = 0;
 
 	do {
 		byte opcode = *cur_pos;

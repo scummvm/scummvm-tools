@@ -1207,27 +1207,27 @@ bool maybeAddIf(unsigned int cur, unsigned int to)
 {
 	int i;
 	BlockStack *p;
-
+	
 	if (((to | cur) >> 16) || (to <= cur))
-		return 0;										/* Invalid jump */
-
+		return false; // Invalid jump
+	
 	for (i = 0, p = block_stack; i < num_block_stack; i++, p++) {
 		if (to > p->to)
 			return false;
 	}
-
+	
 	p = pushBlockStackItem();
-
+	
 	// Try to determine if this is a while loop. For this, first check if we 
 	// jump right behind a regular jump, then whether that jump is targeting us.
 	if (scriptVersion == 8) {
-		p->isWhile = (*(byte*)(org_pos+to-5) == 0x66);
+		p->isWhile = (*(byte*)(org_pos+to-5) == g_jump_opcode);
 		i = TO_LE_32(*(int32*)(org_pos+to-4));
 	} else {
-		p->isWhile = (*(byte*)(org_pos+to-3) == 0x73);
+		p->isWhile = (*(byte*)(org_pos+to-3) == g_jump_opcode);
 		i = TO_LE_16(*(int16*)(org_pos+to-2));
 	}
-
+	
 	p->isWhile = p->isWhile && (offs_of_line == (int)to + i);
 	p->from = cur;
 	p->to = to;
@@ -1302,6 +1302,7 @@ void jump()
 	int offset = get_signed_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
+
 	if (!dontOutputElse && maybeAddElse(cur, to)) {
 		// In order to avoid stray lonely "} else {" from occuring, we check
 		// for offset = 1. These cases really constitute NOPs, obviously.
@@ -1322,7 +1323,7 @@ void jump()
 	}
 }
 
-void jumpif(StackEnt * se, bool when)
+void jumpif(StackEnt * se, bool negate)
 {
 	int offset = get_signed_word();
 	int cur = get_curoffs();
@@ -1334,7 +1335,7 @@ void jumpif(StackEnt * se, bool when)
 			pendingElse = false;
 			haveElse = true;
 			e = strecpy(e, "} else if (");
-			if (when)
+			if (negate)
 				se = se_neg(se);
 			e = se_astext(se, e, false);
 			sprintf(e, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
@@ -1347,14 +1348,14 @@ void jumpif(StackEnt * se, bool when)
 			e = strecpy(e, "while (");
 		} else
 			e = strecpy(e, "if (");
-		if (when)
+		if (negate)
 			se = se_neg(se);
 		e = se_astext(se, e, false);
 		sprintf(e, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 		return;
 	}
 
-	e = strecpy(e, when ? "if (" : "if (!");
+	e = strecpy(e, negate ? "if (" : "unless (");
 	e = se_astext(se, e);
 	sprintf(e, ") goto %x", to);
 }
