@@ -106,13 +106,12 @@ byte DontOutputElseif;
 byte DontShowOpcode;
 byte DontShowOffsets;
 byte HaltOnError;
-byte ScriptVersion = 2;
+byte ScriptVersion = 3;
 
 
 int get_curpos();
 int gameFlag;
 
-bool GF_AFTER_V3 = true;	// TODO - this should be controlled by a command line option
 bool GF_UNBLOCKED = false;
 
 
@@ -957,11 +956,17 @@ void do_resource_v2(char *buf, byte opcode)
 void do_resource(char *buf, byte opco)
 {
 	// FIXME:
-	// 1) This is out of date compared to script_v1.cp
+	// 1) This is out of date compared to script_v5.cp
 	// 2) the token's should all get a prefix, so that we don't mix up the
 	//    "real" loadRoom with the one here.
 	char opcode = get_byte();
-	switch (opcode & 0x3F) {
+	int sub_op;
+	if (ScriptVersion != 5)
+		sub_op = opcode & 0x3F;	// FIXME - actually this should only be done for Zak256
+	else
+		sub_op = opcode & 0x1F;
+
+	switch (sub_op) {
 	case 0x1:
 		do_tok(buf, "loadScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
@@ -1168,7 +1173,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 	char	a[256];
 	char	b[256];
 	
-	if (GF_AFTER_V3) {
+	if (ScriptVersion == 3) {
 		get_var_or_word(a, (master_opcode & 0x80));
 		get_var_or_word(b, (master_opcode & 0x40));
 	}
@@ -1179,7 +1184,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 
 	switch (opcode & 0x1F) {
 	case 0x01:
-		if (!GF_AFTER_V3) {
+		if (ScriptVersion != 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1190,7 +1195,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x02:
-		if (!GF_AFTER_V3) {
+		if (ScriptVersion != 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1201,7 +1206,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x03:
-		if (!GF_AFTER_V3) {
+		if (ScriptVersion != 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1212,7 +1217,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x04:
-		if (!GF_AFTER_V3) {
+		if (ScriptVersion != 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -3025,8 +3030,9 @@ void ShowHelpAndExit()
 				 "\tdescumm [-o] filename\n"
 				 "Flags:\n"
 				 "\t-2\tInput Script is v2\n"
-				 "\t-3\tUse Indy3-256 specific hacks\n"
-				 "\t-2\tInput Script is v5\n"
+				 "\t-3\tInput Script is v3\n"
+				 "\t-5\tInput Script is v5\n"
+				 "\t-n\tUse Indy3-256 specific hacks\n"
 				 "\t-u\tScript is Unblocked/has no header\n"
 				 "\t-o\tAlways Show offsets\n"
 				 "\t-i\tDon't output ifs\n"
@@ -3102,12 +3108,18 @@ int main(int argc, char *argv[])
 					GF_UNBLOCKED = true;
 					break;
 				case '3':
-					// FIXME - ugh this quite evil, why is this indy3 ?!
-					gameFlag = 1; // Indy3
+					ScriptVersion = 3;
 					break;
 				case '5':
 					ScriptVersion = 5;
 					break;
+				case 'n':
+					gameFlag = 1; // Indy3
+					break;
+				case 'u':
+					GF_UNBLOCKED = true;
+					break;
+
 				case 'o':
 					AlwaysShowOffs = 1;
 					break;
@@ -3128,9 +3140,6 @@ int main(int argc, char *argv[])
 					break;
 				case 'h':
 					HaltOnError = 1;
-					break;
-				case 'u':
-					GF_UNBLOCKED = true;
 					break;
 				default:
 					ShowHelpAndExit();
