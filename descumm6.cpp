@@ -174,7 +174,7 @@ const char *var_names6[] = {
 	/* 4 */
 	"VAR_ROOM",
 	"VAR_OVERRIDE",
-	NULL,
+	"VAR_MACHINE_SPEED",
 	NULL,
 	/* 8 */
 	"VAR_NUM_ACTOR",
