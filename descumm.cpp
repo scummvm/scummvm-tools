@@ -92,6 +92,8 @@ uint16 inline SWAP_16(uint16 a)
 #define A4ASCII (5<<12)
 #define A4ASC (6<<12)
 
+#define A5ASCII (5<<16)
+
 #define ATO (1<<31)
 #define ANOLASTPAREN (1<<30)
 #define ANOFIRSTPAREN (1<<29)
@@ -355,8 +357,11 @@ char *do_tok(char *buf, const char *text, int args)
 			buf = add_a_tok(strecpy(buf, ","), (args >> 4) & 0xF);
 			if (args & 0xF00) {
 				buf = add_a_tok(strecpy(buf, ","), (args >> 8) & 0xF);
-				if (args & 0xF000)
+				if (args & 0xF000) {
 					buf = add_a_tok(strecpy(buf, ","), (args >> 12) & 0xF);
+					if (args & 0xF0000)
+						buf = add_a_tok(strecpy(buf, ","), (args >> 16) & 0xF);
+				}
 			}
 		}
 	}
@@ -1180,7 +1185,10 @@ void do_room_ops_old(char *buf, byte master_opcode)
 	char	a[256];
 	char	b[256];
 	
-	if (ScriptVersion == 3) {
+	if (ScriptVersion == 2) {
+		get_var_or_byte(a, (master_opcode & 0x80));
+		get_var_or_byte(b, (master_opcode & 0x40));
+	} else if (ScriptVersion == 3) {
 		get_var_or_word(a, (master_opcode & 0x80));
 		get_var_or_word(b, (master_opcode & 0x40));
 	}
@@ -1191,7 +1199,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 
 	switch (opcode & 0x1F) {
 	case 0x01:
-		if (ScriptVersion != 3) {
+		if (ScriptVersion > 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1202,7 +1210,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x02:
-		if (ScriptVersion != 3) {
+		if (ScriptVersion > 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1213,7 +1221,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x03:
-		if (ScriptVersion != 3) {
+		if (ScriptVersion > 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1224,7 +1232,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x04:
-		if (ScriptVersion != 3) {
+		if (ScriptVersion > 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1381,7 +1389,7 @@ void do_verbops_v2(char *buf, byte opcode)
 			buf = do_tok(buf, "State", A1B | A2B);
 			break;
 		default:
-			buf = do_tok(buf, "New", A1B | A2B | ((opcode & 0x80) ? A3V : A3B) | A4B );
+			buf = do_tok(buf, "New", A1B | A2B | ((opcode & 0x80) ? A3V : A3B) | A4B | A5ASCII);
 	}
 	
 }
@@ -1925,11 +1933,11 @@ void get_tok_V2(char *buf)
 		sprintf(buf, "delay(%d)", d);
 		break;
 	}
-/*
+
 	case 0x2B:
-		//delayVariable
+		do_tok(buf, "delayVariable", A1V);
 		break;
-*/	
+
 	case 0x19:
 	case 0x39:
 	case 0x59:
@@ -2229,14 +2237,14 @@ void get_tok_V2(char *buf)
 	case 0x98:
 		do_tok(buf, "restart", 0);
 		break;
-/*		
+
 	case 0x33:
 	case 0x73:
 	case 0xB3:
 	case 0xF3:
-		//roomOps
+		do_room_ops_old(buf, opcode);
 		break;
-		
+/*		
 	case 0x22:
 	case 0xA2:
 		//saveLoadGame
