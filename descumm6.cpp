@@ -2096,6 +2096,7 @@ void next_line()
 		push(se_oper(se_b, (code - 0xE) + isEqual, se_a));
 		break;
 	case 0x1A:
+	case 0xA7:
 		kill(pop());
 		break;
 	case 0x42:
