@@ -47,19 +47,27 @@ typedef signed long int32;
 
 #define JUMP_OPCODE 0x73
 
-#if defined(SCUMM_BIG_ENDIAN)
-
-uint32 inline TO_LE_32(uint32 a)
+uint32 inline SWAP_32(uint32 a)
 {
 	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
 		((a << 24) & 0xFF000000);
 }
 
-uint16 inline TO_LE_16(uint16 a)
+uint16 inline SWAP_16(uint16 a)
 {
 	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
 }
 
+#if defined(SCUMM_BIG_ENDIAN)
+#define TO_BE_32(a) (a)
+#define TO_BE_16(a) (a)
+#define TO_LE_32(a) SWAP_32(a)
+#define TO_LE_16(a) SWAP_16(a)
+#else
+#define TO_BE_32(a) SWAP_32(a)
+#define TO_BE_16(a) SWAP_16(a)
+#define TO_LE_32(a) (a)
+#define TO_LE_16(a) (a)
 #endif
 
 struct StackEnt {
@@ -289,11 +297,7 @@ int get_byte()
 
 int get_word()
 {
-#if defined(SCUMM_BIG_ENDIAN)
 	int i = TO_LE_16(*((short *)cur_pos));
-#else
-	int i = *((short *)cur_pos);
-#endif
 	cur_pos += 2;
 	return i;
 }
@@ -1213,6 +1217,7 @@ void next_line()
 				"\x61|setActorAnimSpeed,"
 				"\x62|setActorShadowMode,"
 				"\x63pp|setActorTalkPos,"
+				"\xC6p|setActorAnimVar,"
 				"\xD7|setActorNew3On,"
 				"\xD8|setActorNew3Off,"
 				"\xD9|initActorLittle,"
@@ -1616,12 +1621,8 @@ int main(int argc, char *argv[])
 
 	output = buf = (char *)malloc(8192);
 
-#if defined(SCUMM_BIG_ENDIAN)
-	switch (TO_LE_32(*((long *)mem))) {
-#else
-	switch (*((long *)mem)) {
-#endif
-	case 'RCSL':
+	switch (TO_BE_32(*((long *)mem))) {
+	case 'LSCR':
 		if (scriptVersion == 7) {
 			printf("Script# %d\n", mem[8] + (mem[9] << 8));
 			mem += 10;
@@ -1630,16 +1631,16 @@ int main(int argc, char *argv[])
 			mem += 9;
 		}
 		break;											/* Local script */
-	case 'PRCS':
+	case 'SCRP':
 		mem += 8;
 		break;											/* Script */
-	case 'DCNE':
+	case 'ENCD':
 		mem += 8;
 		break;											/* Entry code */
-	case 'DCXE':
+	case 'EXDE':
 		mem += 8;
 		break;											/* Exit code */
-	case 'BREV':
+	case 'VERB':
 		mem = skipVerbHeader(mem + 8);
 		break;											/* Verb */
 	default:
