@@ -1,12 +1,17 @@
 This is a collection of various tools that may be useful to use in conjunction
-with ScummVM.
+with ScummVM. Please note that this module is not always in-sync with the latest
+STABLE version of ScummVM.
+
+This means that although a tool may support a feature, certain
+ScummVM versions may not. ScummVM 0.6.x does not support FLAC audio, for
+example.
 
 Extraction Tools:
-        rescumm: 
-                 Extracts Macintosh "single file" SCUMM games into their
-                 component parts, for use with ScummVM.
+        rescumm
+                Extracts Macintosh "single file" SCUMM games into their
+                component parts, for use with ScummVM.
 
-        loom_tg16_extract: 
+        loom_tg16_extract
                 Extracts data files from TG16 version of Loom
                 There is currently no support for this game in ScummVM!
 
@@ -57,6 +62,9 @@ Script Tools:
 
         desword2
                 Disassembles Broken Sword II scripts
+
+	dekyra
+		Basic script disassembler for Legend of Kyrandia games
 
 Other tools:
         simon1decr

@@ -20,6 +20,7 @@ TARGETS := \
 	convbdf$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
+	dekyra$(EXEEXT) \
 	extract$(EXEEXT) \
 	loom_tg16_extract$(EXEEXT) \
 	md5table$(EXEEXT) \
@@ -44,6 +45,9 @@ descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 desword2$(EXEEXT): desword2.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
+dekyra$(EXEEXT): dekyra.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract$(EXEEXT): extract.o extract-common.o util.o
