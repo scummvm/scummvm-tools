@@ -270,8 +270,6 @@ void get_wav(void) {
 		if (oggparms.silent) {
 			strcat(fbuf, "--quiet ");
 		}
-		sprintf(fbuf_temp, "-q %i --resample 22050 %s -o %s",
-			oggparms.quality, wavname, mp3name);
 		strcat(fbuf, fbuf_temp);
 		system(fbuf);
 	} else {
@@ -282,7 +280,7 @@ void get_wav(void) {
 		if (encparms.silent == 1)
 			strcat(fbuf_temp," --silent");
 		sprintf(fbuf,
-			"lame -t -q %i %s -V %i -B %i --resample 22.05 -m m %s %s",
+			"lame -t -q %i %s -V %i -B %i -m m %s %s",
 			encparms.algqual, fbuf_temp, encparms.vbrqual,
 			encparms.maxBitr, wavname, mp3name);
 		system(fbuf);
@@ -374,7 +372,7 @@ void get_voc(void)
 			if (oggparms.silent) {
 				strcat(fbuf, "--quiet ");
 			}
-			sprintf(fbuf_temp, "-q %i -r -C 1 --raw-endianness=1 -R %i --resample 22050 %s -o %s",
+			sprintf(fbuf_temp, "-q %i -r -C 1 --raw-endianness=1 -R %i %s -o %s",
 				oggparms.quality, real_samplerate,
 				rawname, mp3name);
 			strcat(fbuf, fbuf_temp);
@@ -388,7 +386,7 @@ void get_voc(void)
 			if (encparms.silent == 1)
 				strcat(fbuf_temp," --silent");
 			sprintf(fbuf,
-				"lame -t -q %i %s -V %i -B %i --resample 22.05 -m m -r -s %d %s %s",
+				"lame -t -q %i %s -V %i -B %i -m m -r -s %d %s %s",
 				encparms.algqual, fbuf_temp, encparms.vbrqual,
 				encparms.maxBitr, real_samplerate, rawname, mp3name);
 			system(fbuf);
