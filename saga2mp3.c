@@ -20,7 +20,9 @@
 #include <stdio.h>
 #include "extract.h"
 
+#ifndef _SYS_TYPES_H
 typedef unsigned int ulong;
+#endif
 
 typedef struct RECORD {
 	ulong offset;
