@@ -1681,10 +1681,10 @@ void next_line_V8()
 		ext("lppp|startObjectQuick");
 		break;
 	case 0xCA:
-		ext("lp|pickOneOf");
+		ext("rlp|pickOneOf");
 		break;
 	case 0xCB:
-		ext("plp|pickOneOfDefault");
+		ext("rplp|pickOneOfDefault");
 		break;
 
 	case 0xCD:
@@ -2438,10 +2438,10 @@ void next_line_V67()
 		ext("p|breakXTimes");
 		break;
 	case 0xCB:
-		ext("lp|pickOneOf");
+		ext("rlp|pickOneOf");
 		break;
 	case 0xCC:
-		ext("plp|pickOneOfDefault");
+		ext("rplp|pickOneOfDefault");
 		break;
 	case 0xCD:
 		ext("pppp|stampObject");
