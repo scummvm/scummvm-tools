@@ -1464,6 +1464,9 @@ void next_line_V8(char *output)
 	case 0x97:
 		PRINT_V8("blastText");
 		break;
+	case 0x98:
+		ext(output, "pppp|drawObject");
+		break;
 
 	case 0x9C:
 		ext(output, "x" "cursorCommand\0"
@@ -2358,11 +2361,23 @@ void next_line_V67(char *output)
 		ext(output, "rpp|getVerbEntrypoint");
 		break;
 	case 0xA4:
-		ext(output, "x" "arrayOps\0" 
-			"\xCDwps|arrayOps205,"
-			"\xD0wpl|arrayOps208,"
-			"\xD4wplp|arrayOps212"
-			);
+		switch (get_byte()) {
+		case 205:{
+			int array = get_word();
+			writeArray(output, array, NULL, pop(), se_get_string());
+			}
+			break;
+		case 208:
+			se_a = pop();
+			se_b = se_get_list();
+			writeArray(output, get_word(), NULL, se_a, se_b);
+			break;
+		case 212:
+			se_a = pop();
+			se_b = se_get_list();
+			writeArray(output, get_word(), pop(), se_a, se_b);
+			break;
+		}
 		break;
 	case 0xA5:
 		ext(output, "x" "saveRestoreVerbs\0"
