@@ -22,9 +22,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifdef UNIX
+//#ifdef UNIX
 #include <ctype.h>
-#endif
+//#endif
 
 #ifdef WIN32
 #include <io.h>
