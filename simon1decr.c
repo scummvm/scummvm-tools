@@ -1,5 +1,5 @@
 /* Simon1Decr - Decrunch Simon the Sorcerer 1 Amiga (AGA/ECS) main graphics files
- * Copyright (C) 2002  The ScummVM Team
+ * Copyright (C) 2003  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
