@@ -897,59 +897,63 @@ void do_load_code_to_string(char *buf, byte opcode)
 
 void do_resource_v2(char *buf, byte opcode)
 {
-	int resid = get_byte();
-	int subop = get_byte();
+	char resid[256];
+	int subop;
+
+	get_var_or_byte(resid, opcode & 0x80);
+	subop = get_byte();
 
 	if (((subop & 0x0F) == 0) || ((subop & 0x0F) == 1)) {
 		switch (subop & 0xF1) {
 			case 96:
-				do_tok(buf, "lockSound", ((resid & 0x80) ? A1V : A1B));
-				break;
-			case 97:
-				do_tok(buf, "unlockSound", ((resid & 0x80) ? A1V : A1B));
-				break;
 			case 80:
-				do_tok(buf, "lockScript", ((resid & 0x80) ? A1V : A1B));
-				break;
-			case 81:
-				do_tok(buf, "unlockScript", ((resid & 0x80) ? A1V : A1B));
-				break;
 			case 32:
-				do_tok(buf, "lockCostume", ((resid & 0x80) ? A1V : A1B));
+			case 48:
+				sprintf(buf, "nukeSomething%.2X(%s)", subop & 0xF1, resid);
 				break;
 			case 33:
-				do_tok(buf, "unlockCostume", ((resid & 0x80) ? A1V : A1B));
-				break;
-			case 48:
-				do_tok(buf, "lockRoom", ((resid & 0x80) ? A1V : A1B));
+				sprintf(buf, "loadCostumeRes(%s)", resid);
 				break;
 			case 49:
-				do_tok(buf, "unlockRoom", ((resid & 0x80) ? A1V : A1B));
+				sprintf(buf, "loadRoomRes(%s)", resid);
+				break;
+			case 81:
+				sprintf(buf, "loadScriptRes(%s)", resid);
+				break;
+			case 97:
+				sprintf(buf, "loadSoundRes(%s)", resid);
 				break;
 			default:
-				sprintf(buf, "UnknownResLockUnlockCommand%.2X", subop & 0xF1);
+				sprintf(buf, "UnknownResLoadNukeCommand%.2X(%s)", subop & 0xF1, resid);
 		}
 	} else {
 		switch (subop & 0xF1) {
 			case 96:
-			case 80:
-			case 32:
-			case 48:
+				sprintf(buf, "lockSound(%s)", resid);
 				break;
 			case 97:
-				do_tok(buf, "loadSoundRes", ((resid & 0x80) ? A1V : A1B));
+				sprintf(buf, "unlockSound(%s)", resid);
+				break;
+			case 80:
+				sprintf(buf, "lockScript(%s)", resid);
 				break;
 			case 81:
-				do_tok(buf, "loadScriptRes", ((resid & 0x80) ? A1V : A1B));
+				sprintf(buf, "unlockScript(%s)", resid);
+				break;
+			case 32:
+				sprintf(buf, "lockCostume(%s)", resid);
 				break;
 			case 33:
-				do_tok(buf, "loadCostumeRes", ((resid & 0x80) ? A1V : A1B));
+				sprintf(buf, "unlockCostume(%s)", resid);
+				break;
+			case 48:
+				sprintf(buf, "lockRoom(%s)", resid);
 				break;
 			case 49:
-				do_tok(buf, "loadRoomRes", ((resid & 0x80) ? A1V : A1B));
+				sprintf(buf, "unlockRoom(%s)", resid);
 				break;
 			default:
-				sprintf(buf, "UnknownResLoadNukeCommand%.2X", subop & 0xF1);
+				sprintf(buf, "UnknownResLockUnlockCommand%.2X(%s)", subop & 0xF1, resid);
 		}
 	}
 }
@@ -2177,7 +2181,7 @@ void get_tok_V2(char *buf)
 	case 0x12:
 	case 0x92:
 		//panCameraTo
-		do_tok(buf, "panCameraTo", ((opcode & 0x80) ? A1V : A1W));
+		do_tok(buf, "panCameraTo", ((opcode & 0x80) ? A1V : A1B));
 		break;
 	case 0x50:
 	case 0xD0:
