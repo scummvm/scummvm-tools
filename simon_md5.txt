@@ -15,6 +15,7 @@ Simon the Sorcerer 1
 
 Simon the Sorcerer 2
 	-	DOS	en	27c8e7feada80c75b70b9c2f6088d519	simon2dos
+	-	Windows	de	9e858b3bb189c134c3a5f34c3385a8d3	simon2talkie
 	-	Windows	en	bd85a8b5135592ada9cbeae49160f1d3	simon2talkie
 	-	DOS	de	3bdf85dc57c1abff8f05416b4571198f	simon2talkie
 	-	DOS	en	078b04da0974a40645b92baffdf2781e	simon2talkie
