@@ -896,7 +896,7 @@ void next_line() {
 		ext("lpp|startScriptEx");
 		break;
 	case 0x5F:
-		ext("lp|startScriptEx");
+                ext("lp|startScript");
 		break;
 	case 0x60:
 		ext("lppp|startObject");
