@@ -1642,7 +1642,7 @@ void next_line_V8()
 		break;
 	case 0x9E:
 		// FIXME - this is a pure guess
-		ext("ppzp|loadRoomWithEgo");
+		ext("ppz|loadRoomWithEgo");
 		break;
 
 	case 0x9F:
@@ -2234,7 +2234,7 @@ void next_line()
 		ext("z|pickupObject");
 		break;
 	case 0x85:
-		ext("ppzp|loadRoomWithEgo");
+		ext("ppz|loadRoomWithEgo");
 		break;
 	case 0x87:
 		ext("rp|getRandomNumber");
