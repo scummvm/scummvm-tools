@@ -80,6 +80,7 @@ void end(void)
 	unlink(tmp);
 	unlink("tempfile.raw");
 	unlink(oggmode ? "tempfile.ogg" : "tempfile.mp3");
+	unlink("tempfile.wav");
 	
 	exit(0);
 }
@@ -168,10 +169,8 @@ unsigned int get_sound(int sound)
 
 void get_wav(void) {
 	int length;
-	int i;
 	FILE *f;
 	char fbuf[2048];
-	char fbuf_o[4096];
 	int size;
 	char wavname[256];
 	char mp3name[256];
@@ -179,6 +178,7 @@ void get_wav(void) {
 	fseek(input, -4, SEEK_CUR);
 	length = get_int();
 	length += 8;
+	fseek(input, -8, SEEK_CUR);
 
 	sprintf(wavname, "tempfile.wav");
 	sprintf(mp3name, oggmode ? "tempfile.ogg" : "tempfile.mp3");
@@ -189,11 +189,7 @@ void get_wav(void) {
 		if (size <= 0)
 			break;
 		length -= size;
-		for (i = 0; i < size; i++) {
-			fbuf_o[2 * i] = fbuf[i] ^ 0x80;
-			fbuf_o[2 * i + 1] = 0;
-		}
-		fwrite(fbuf_o, 1, 2 * size, f);
+		fwrite(fbuf, 1, size, f);
 	}
 	fclose(f);
 
