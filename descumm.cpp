@@ -1968,11 +1968,10 @@ void get_tok_V2(char *buf)
 					 ((opcode & 0x40) ? A2V : A2B) |
 					 ((opcode & 0x20) ? A3V : A3B));
 		break;
-/*	
 	case 0xAC:
 		//drawSentence
+		do_tok(buf, "drawSentence", 0);
 		break;
-*/
 	case 0x5C:
 	case 0x6B:
 	case 0x6E:
@@ -2249,13 +2248,15 @@ void get_tok_V2(char *buf)
 		//saveLoadGame
 		break;
 	
+*/
 	case 0x3D:
 	case 0x7D:
 	case 0xBD:
 	case 0xFD:
 		//setActorElevation
+		do_tok(buf, "setActorElevation", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
-		
+/*		
 	case 0x1B:
 	case 0x5B:
 	case 0x9B:
