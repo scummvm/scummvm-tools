@@ -480,8 +480,6 @@ void compressSpeech(CompressMode compMode) {
 		if (!clu) {
 			printf("Unable to open \"SPEECH%d.CLU\".\n", i);
 			printf("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".\n", i, i);
-			printf("<Press Enter>\n");
-			getchar();
 		} else {
 			sprintf(outName, "SPEECH/SPEECH%d.%s", i, (compMode == kMP3Mode) ? ("CL3") : ("CLV"));
 
@@ -489,8 +487,6 @@ void compressSpeech(CompressMode compMode) {
 			if (!cl3) {
 				printf("Unable to create file \"%s\".\n", outName);
 				printf("Please make sure you've got write permission in this directory.\n");
-				printf("<Press Enter>\n");
-				getchar();
 			} else {
 				printf("Converting CD %d...\n", i);
 				convertClu(clu, cl3, compMode);
@@ -515,7 +511,6 @@ void compressMusic(CompressMode compMode) {
 		if (!inf) {
 			if (!musicNames[i].missing) {
 				printf("unable to open file \"%s\"\n", fNameIn);
-				getchar();
 			}
 		} else {
 			fclose(inf);
@@ -565,7 +560,7 @@ void checkFilesExist(bool checkSpeech, bool checkMusic) {
 			printf("Please copy the SPEECH.CLU files from Broken Sword CD1 and CD2\n");
 			printf("into the \"SPEECH\" subdirectory and rename them to\n");
 			printf("SPEECH1.CLU and SPEECH2.CLU\n\n");
-			printf("If your O/S is case-sensitive, make sure the filenames\n");
+			printf("If your OS is case-sensitive, make sure the filenames\n");
 			printf("and directorynames are all upper-case.\n\n");
 		}
 	}
@@ -582,14 +577,12 @@ void checkFilesExist(bool checkSpeech, bool checkMusic) {
 			printf("Unable to find music files.\n");
 			printf("Please copy the music files from Broken Sword CD1 and CD2\n");
 			printf("into the \"MUSIC\" subdirectory.\n");
-			printf("If your O/S is case-sensitive, make sure the filenames\n");
+			printf("If your OS is case-sensitive, make sure the filenames\n");
 			printf("and directorynames are all upper-case.\n");
 		}
 	}
 	if ((checkSpeech && (!speechFound)) || (checkMusic && (!musicFound))) {
-		printf("\nUse --help for more information\n\n");
-		printf("<PRESS ENTER>\n");
-		getchar();
+		printf("\nUse --help for more information\n");
 		exit(2);
 	}
 }
