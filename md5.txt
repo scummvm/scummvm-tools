@@ -218,7 +218,7 @@ Putt-Putt Goes To The Moon
 	-	Mac	en	9dc02577bf50d4cfaf3de3fbac06fbe2	puttmoon	khalek
 
 Putt-Putts Fun Pack
-	TODO
+	-	DOS	en	46b53fd430adcfbed791b48a0d4b079f	funpack
 
 Putt-Putt Travels Through Time
 	-	All?	en	2108d83dcf09f8adb4bc524669c8cf51	PuttTime
@@ -247,7 +247,7 @@ Fatty Bears Birthday Surprise
 	-	Mac	en	df6ead57930488bc61e6e41901d0e97	fbear	khalek
 
 Fatty Bears Fun Pack
-	TODO
+	-	DOS	hb	f06e66fd45b2f8b0f4a2833ff4476050	fbpack
 
 Backyard Baseball 2001 
 	Demo	Windows	en	a194f15f51ee62badab74b9e7da97693	bb2demo	khalek
@@ -267,14 +267,14 @@ Big Thinkers First Grade
 Blue's ABC Time Activities
 	Demo	Windows	en	7ddeaf52c8b9a50551ce0aa2ac811d07	bluesabctimedemo	khalek
 
-Freddi Fish 1: Missing Kelp Seeds
+Freddi Fish 1: The Case of the Missing Kelp Seeds
 	-	Mac	en	c8aac5e3e701874e2fa4117896f9e1b1	freddi	khalek
 	-	Mac	en	df047cc4792150f601290357566d36a6	freddi	khalek
 	-	Windows	en	df047cc4792150f601290357566d36a6	freddi	khalek
 	Demo	Windows	en	084ed0fa98a6d1e9368d67fe9cfbd417	freddemo	khalek
 	Demo	Windows	en	566165a7338fa11029e7c14d94fa70d0	freddemo	khalek
 
-Freddi Fish 2: Haunted Schoolbus
+Freddi Fish 2: The Case of the Haunted Schoolhouse
 	Demo	Windows	en	fc8d197a22146e74766e9cb0cfcaf1da	ff2-demo	khalek
 	Demo	Mac	en	fc8d197a22146e74766e9cb0cfcaf1da	ff2-demo	khalek
 	Demo	Windows	en	d37c55388294b66e53e7ced3af88fa68	ffhsdemo	khalek
@@ -307,19 +307,19 @@ Let's Explore the Airport with Buzzy
 Let's Explore the Jungle with Buzzy
 	-	Windows	en	8801fb4a1200b347f7a38523339526dd	jungle	Kirben
 
-Pajama Sam 1: No Need to Hide
+Pajama Sam 1: No Need to Hide When It's Dark Outside
 	-	Windows	en	672dec94b82f7f0877ebb5b5cf7f4bc1	pajama	khalek
 	-	Mac	en	672dec94b82f7f0877ebb5b5cf7f4bc1	pajama	khalek
 	Demo	Mac	en	f237bf8a5ef9af78b2a6a4f3901da341	Pajama Sam Demo	khalek
 	Demo	Windows	en	f237bf8a5ef9af78b2a6a4f3901da341	pjs-demo	khalek
 	Demo	Windows	en	d7ab7cd6105546016e6a0d46fb36b964	pjsamdemo	khalek
 
-Pajama Sam 2: Thunder and Lightning Aren't So Frightening
+Pajama Sam 2: Thunder and Lightning Aren't so Frightening
 	-	Windows	en	d4e79c3d8645b8266cd78c325bc35154	pajama2	Kirben
 	-	Windows	nl	4fa6870d9bc8c313b65d54b1da5a1891	TODO
 	Demo	Windows	en	36a6750e03fb505fc19fc2bf3e4dbe91	pj2demo
 
-Pajama Sam 3: You Are What You Eat
+Pajama Sam 3: You Are What You Eat From Your Head to Your Feet
 	-	Windows	en	f7711f9264d4d43c2a1518ec7c10a607	pajama3	Kirben
 	Demo	Windows	en	cf90b4db5486ef798db78fe6fbf897e5	pj3-demo	khalek
 
