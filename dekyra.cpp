@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
 		if (displayText) {
 			myscript.decodeTextArea();
 			printf("\n\n");
+			return true;
 		}
 		
 		if (!displayOnlyOneScript) {
@@ -226,6 +227,7 @@ bool Script::decodeSpecialScript(int32 script) {
 	};
 	
 	static OpcodeDesc opcodeDesc[] = {
+		{ 0x68, "0x68", "int" }
 	};
 	
 	if ((uint32)script >= _chunks[kEmc2Ordr]._size || script < 0) {
@@ -250,7 +252,7 @@ bool Script::decodeSpecialScript(int32 script) {
 	
 	uint8 _currentCommand = 0;
 	uint8 _argument = 0;	
-	_currentPos = (TO_BE_16(_chunks[kEmc2Ordr]._data[script]) << 1) + 2;	
+	_currentPos = (TO_BE_16(((uint16*)_chunks[kEmc2Ordr]._data)[script]) << 1) + 2;	
 	uint8* script_start = _chunks[kData]._data;
 	bool gotArgument = true;
 	
