@@ -57,6 +57,13 @@ uint16 readUint16BE(FILE *fp) {
 	return ret;
 }
 
+uint16 readUint16LE(FILE *fp) {
+	uint16 ret = 0;
+	ret |= fgetc(fp);
+	ret |= fgetc(fp) << 8;
+	return ret;
+}
+
 uint32 readUint32BE(FILE *fp) {
 	uint32 ret = 0;
 	ret |= fgetc(fp) << 24;
@@ -82,6 +89,11 @@ void writeByte(FILE *fp, uint8 b) {
 void writeUint16BE(FILE *fp, uint16 value) {
 	writeByte(fp, (uint8)(value >> 8));
 	writeByte(fp, (uint8)(value));
+}
+
+void writeUint16LE(FILE *fp, uint16 value) {
+	writeByte(fp, (uint8)(value));
+	writeByte(fp, (uint8)(value >> 8));
 }
 
 void writeUint32BE(FILE *fp, uint32 value) {
