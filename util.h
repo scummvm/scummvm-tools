@@ -62,12 +62,17 @@ typedef enum { false = 0, true = 1 } bool;
 
 #define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
-static uint32 SWAP_32(uint32 a) {
+/* If your C compiler doesn't support 'inline', please add a check for it. */
+#if defined(CHECK_FOR_OLD_C_COMPILER)
+#define inline
+#endif
+
+static inline uint32 SWAP_32(uint32 a) {
 	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
 		((a << 24) & 0xFF000000);
 }
 
-static uint16 SWAP_16(uint16 a) {
+static inline uint16 SWAP_16(uint16 a) {
 	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
 }
 
