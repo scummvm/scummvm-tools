@@ -28,8 +28,8 @@ typedef int BOOL;
 #define TRUE 1
 #define FALSE 0
 
-// if defined, generates a set of .LFL files
-// if not defined, dumps all resources to separate files
+/* if defined, generates a set of .LFL files */
+/* if not defined, dumps all resources to separate files */
 #define	MAKE_LFLS
 
 #ifdef WIN32
@@ -543,7 +543,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 
 	_assert(res != NULL,"extract_resource - no resource specified");
 	if ((r_offset(res) == 0) && (r_length(res) == 0))
-		return;	// there are 8 scripts that are zero bytes long, so we should skip them
+		return;	/* there are 8 scripts that are zero bytes long, so we should skip them */
 	fseek(input,16 + r_offset(res),SEEK_SET);
 
 	switch (res->type)
@@ -635,7 +635,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 }
 
 #ifdef	MAKE_LFLS
-// based on structure of Classic PC Maniac Mansion LFL files (roomgfx resources are arranged in order, one per file, after the room blocks)
+/* based on structure of Classic PC Maniac Mansion LFL files (roomgfx resources are arranged in order, one per file, after the room blocks) */
 p_resource lfl_01[] = { &res_rooms[1], &res_roomgfx[1], &res_scripts[57], &res_scripts[61], &res_scripts[76], &res_scripts[105], &res_scripts[111], &res_sounds[5], &res_scripts[132], &res_scripts[148], &res_scripts[155], &res_scripts[156], NULL };
 p_resource lfl_02[] = { &res_rooms[2], &res_roomgfx[2], NULL };
 p_resource lfl_03[] = { &res_rooms[3], &res_roomgfx[3], &res_scripts[21], &res_sounds[26], NULL };
@@ -688,9 +688,9 @@ p_resource lfl_49[] = { &res_rooms[49], NULL };
 p_resource lfl_50[] = { &res_rooms[50], &res_scripts[133], &res_scripts[162], &res_scripts[163], NULL };
 p_resource lfl_51[] = { &res_rooms[51], &res_scripts[118], &res_scripts[128], &res_scripts[134], &res_sounds[61], &res_sounds[62], &res_sounds[67], &res_sounds[66], &res_costumes[16], &res_costumes[20], NULL };
 p_resource lfl_52[] = { &res_rooms[52], NULL };
-//	remaining 'standard' resources (not used by any of the original LFL files)
+/*	remaining 'standard' resources (not used by any of the original LFL files) */
 p_resource lfl_53[] = { &res_rooms[53], &res_scripts[177], &res_scripts[178], &res_sounds[70], &res_sounds[71], &res_sounds[72], &res_sounds[73], &res_sounds[74], &res_sounds[75], &res_sounds[76], &res_sounds[77], &res_sounds[78], &res_sounds[79], &res_sounds[80], &res_sounds[81], NULL };
-//	all 'non-standard' resources (the costume-related stuff)
+/*	all 'non-standard' resources (the costume-related stuff) */
 p_resource lfl_54[] = { &res_rooms[54], &res_costumegfx[0], &res_costumegfx[1], &res_palettes[0], &res_palettes[1], &res_unk_DD75[0], &res_unk_DD75[1], &res_unk_DD7D[0], &res_unk_DD7D[1], &res_unk_DD95[0], &res_unk_DD95[1], &res_unk_DD9D[0], &res_unk_DD9D[1], NULL };
 
 typedef	struct	_lfl
@@ -780,7 +780,7 @@ struct	_lfl_index
 #if defined(_MSC_VER)
 #pragma	pack(pop)
 #endif
-#else	// !MAKE_LFLS
+#else	/* !MAKE_LFLS */
 void	dump_resource (FILE *input, char *fn_template, int num, p_resource res)
 {
 	char fname[256];
@@ -791,7 +791,7 @@ void	dump_resource (FILE *input, char *fn_template, int num, p_resource res)
 	extract_resource(input,output,res);
 	fclose(output);
 }
-#endif	// MAKE_LFLS
+#endif	/* MAKE_LFLS */
 
 unsigned long	CRCtable[256];
 void	InitCRC (void)
@@ -907,7 +907,7 @@ int main (int argc, char **argv)
 	for (i = 0; i < (int)sizeof(lfl_index); i++)
 		write_byte(output,((unsigned char *)&lfl_index)[i]);
 	fclose(output);
-#else	// !MAKE_LFLS
+#else	/* !MAKE_LFLS */
 	dump_resource(input,"globdata.dmp",0,&res_globdata);
 	for (i = 0; i < 40; i++)
 		dump_resource(input,"roomgfx-%i.dmp",i,&res_roomgfx[i]);
@@ -931,7 +931,7 @@ int main (int argc, char **argv)
 		dump_resource(input,"cost_DD95-%i.dmp",i,&res_unk_DD95[i]);
 	for (i = 0; i < 2; i++)
 		dump_resource(input,"cost_DD9D-%i.dmp",i,&res_unk_DD9D[i]);
-#endif	// MAKE_LFLS
+#endif	/* MAKE_LFLS */
 	debug("All done!");
 
 	return 0;

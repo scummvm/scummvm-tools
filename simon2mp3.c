@@ -72,7 +72,7 @@ int oggmode = 0;
 void end(void)
 {
 	int size;
-	char buf[2048];
+	char fbuf[2048];
 
 	fclose(output_snd);
 	fclose(output_idx);
@@ -84,13 +84,13 @@ void end(void)
 	sprintf(tmp, "%sidx", infile_base);
 	input = fopen(tmp, "rb");
 	while ((size = fread(buf, 1, 2048, input)) > 0) {
-		fwrite(buf, 1, size, output_idx);
+		fwrite(fbuf, 1, size, output_idx);
 	}
 	fclose(input);
 	sprintf(tmp, "%sdat", infile_base);
 	input = fopen(tmp, "rb");
-	while ((size = fread(buf, 1, 2048, input)) > 0) {
-		fwrite(buf, 1, size, output_idx);
+	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
+		fwrite(fbuf, 1, size, output_idx);
 	}
 	fclose(input);
 	fclose(output_idx);
@@ -178,16 +178,16 @@ int get_offsets(void)
 
 int get_offsets_mac(void)
 {
-	int i, end;
+	int i, size;
 	fseek(input, 0, SEEK_END);
-	end = ftell(input);
+	size = ftell(input);
 	fseek(input, 0, SEEK_SET);
 
-	for (i = 1; i <= end / 6; i++) {
+	for (i = 1; i <= size / 6; i++) {
 		filenums[i] = get_int16BE();
 		offsets[i] = get_int32BE();
 	}
-	return(end/6);
+	return(size/6);
 }
 
 void get_voc(void);
