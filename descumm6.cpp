@@ -2047,11 +2047,10 @@ void next_line_V67(char *output)
 		jump(output);
 		break;
 	case 0x74:
-		if (HumongousFlag) {
+		if (HumongousFlag)
 			ext(output, "pp|startSound");
-			break;
-		}
-		ext(output, "p|startSound");
+		else
+			ext(output, "p|startSound");
 		break;
 	case 0x75:
 		ext(output, "p|stopSound");
@@ -2516,13 +2515,22 @@ void next_line_V67(char *output)
 		ext(output, "rp|isRoomScriptRunning");
 		break;
 	case 0xD9:
-		ext(output, "p|closeFile");
+		if (HumongousFlag)
+			ext(output, "p|closeFile");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0xDA:
-		ext(output, "rsp|openFile");
+		if (HumongousFlag)
+			ext(output, "rsp|openFile");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0xDB:
-		ext(output, "rpp|readFile");
+		if (HumongousFlag)
+			ext(output, "rpp|readFile");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0xDC:
 		if (HumongousFlag)
@@ -2535,7 +2543,10 @@ void next_line_V67(char *output)
 		ext(output, "rp|findAllObjects");
 		break;
 	case 0xDE:
-		ext(output, "s|deleteFile");
+		if (HumongousFlag)
+			ext(output, "s|deleteFile");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0xDF:
 		if (HumongousFlag)
@@ -2555,20 +2566,41 @@ void next_line_V67(char *output)
 		ext(output, "rp|unknownE1");
 		break;
 	case 0xE2:
-		ext(output, "p|localizeArray");
+		if (HumongousFlag)
+			ext(output, "p|localizeArray");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0xEC:
-		ext(output, "rp|getActorLayer");
+		if (HumongousFlag)
+			invalidop(NULL, code);
+		else
+			ext(output, "rp|getActorLayer");
 		break;
 	case 0xED:
-		ext(output, "rp|getObjectNewDir");
+		if (HumongousFlag)
+			invalidop(NULL, code);
+		else
+			ext(output, "rp|getObjectNewDir");
+		break;
+	case 0xE9:
+		if (HumongousFlag)
+			ext(output, "ppp|seekFile");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0xF3:
-		ext(output, "rsp|readINI");
+		if (HumongousFlag)
+			ext(output, "rsp|readINI");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0xFA:
-		get_byte();
-		ext(output, "s|unknownFA");
+		if (HumongousFlag) {
+			get_byte();
+			ext(output, "s|unknownFA");
+		} else
+			invalidop(NULL, code);
 		break;
 	default:
 		invalidop(NULL, code);
