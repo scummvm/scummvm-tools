@@ -64,7 +64,7 @@
 #define ANOFIRSTPAREN (1<<29)
 #define ASTARTCOMMA (1<<28)
 #define AVARSTORE (1<<27)
-
+#define MKID(a) (((a&0xff) << 8) | ((a >> 8)&0xff))
 
 #define uchar unsigned char
 #define uint unsigned int
@@ -2119,11 +2119,7 @@ int main(int argc, char *argv[])
 
 	buf = (char *)malloc(4096);
 
-#if defined(SCUMM_BIG_ENDIAN)
 	switch (TO_LE_32(*((long *)mem))) {
-#else
-	switch (*((long *)mem)) {
-#endif
 	case 'RCSL':
 		printf("Script# %d\n", (unsigned char)mem[8]);
 		mem += 9;

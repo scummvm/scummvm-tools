@@ -1410,7 +1410,7 @@ void get_tok(char *buf)
 
 	case 0x03:
 	case 0x83:
-		do_tok(buf, "GetActorLocation", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "getActorRoom", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 
@@ -1746,7 +1746,9 @@ void get_tok(char *buf)
 	case 0x20:
 		do_tok(buf, "stopMusic", 0);
 		break;
+
 	case 0x70:
+	case 0xF0:
 		byte opcode2;
 		buf = do_tok(buf, "lights", ((opcode & 0x80) ? A1V : A1W) | ANOLASTPAREN);
 		opcode = get_byte();
@@ -1755,6 +1757,7 @@ void get_tok(char *buf)
 					 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B) |
 					 ((opcode2 & 0x80) ? A2V : A2B));
 		break;
+
 	case 0x3F:
 	case 0x7F:
 	case 0xBF:
@@ -1808,7 +1811,7 @@ void get_tok(char *buf)
 
 	case 0x52:
 	case 0xD2:
-		do_tok(buf, "CameraFollowActor", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "actorFollowCamera", ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x58:
@@ -1911,7 +1914,7 @@ void get_tok(char *buf)
 		break;
 
 	case 0x2B:
-		do_tok(buf, "DelayJiffies", A1V);
+		do_tok(buf, "delayVariable", A1V);
 		break;
 
 	case 0x0E:
@@ -1961,7 +1964,7 @@ void get_tok(char *buf)
 	case 0x7d:
 	case 0xBD:
 	case 0xFD:
-		do_tok(buf, "GetInventoryItem",
+		do_tok(buf, "findInventory",
 					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
@@ -1989,7 +1992,7 @@ void get_tok(char *buf)
 
 	case 0x60:
 	case 0xE0:
-		do_tok(buf, "FreezeScripts", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "freezeScripts", ((opcode & 0x80) ? A1V : A1B));
 		break;
 	case 0xFC:
 		do_tok(buf, "isSoundRunning", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
