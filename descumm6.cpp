@@ -553,7 +553,7 @@ const char *var_names8[] = {
 	/* 32 */
 	"VAR_NEW_ROOM",
 	"VAR_WALKTO_OBJ",
-	NULL,
+	"VAR_TIMER",
 	NULL,
 	/* 36 */
 	NULL,

@@ -66,7 +66,7 @@ void	CDECL	_assert (BOOL condition, const char *Text, ...)
 	vfprintf(stderr,Text,marker);
 	fprintf(stderr,"\n");
 	va_end(marker);
-	exit(1);
+	/* exit(1); */
 }
 
 unsigned char	read_byte (FILE *input)
