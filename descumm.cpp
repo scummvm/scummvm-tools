@@ -2800,10 +2800,10 @@ void get_tok_V345(char *buf)
 
 	case 0x30:
 	case 0xB0:
-		if (scriptVersion == 5)
-			do_matrix_ops(buf, opcode);
-		else
+		if (scriptVersion == 3)
 			do_tok(buf, "setBoxFlags", ((opcode & 0x80) ? A1V : A1B) | A2B);
+		else
+			do_matrix_ops(buf, opcode);
 		break;
 
 	case 0x7C:
@@ -2918,6 +2918,7 @@ void ShowHelpAndExit()
 			"Flags:\n"
 			"\t-2\tInput Script is v2\n"
 			"\t-3\tInput Script is v3\n"
+			"\t-4\tInput Script is v4\n"
 			"\t-5\tInput Script is v5\n"
 			"\t-n\tUse Indy3-256 specific hacks\n"
 			"\t-z\tUse Zak256 specific hacks\n"
@@ -3011,6 +3012,9 @@ int main(int argc, char *argv[])
 					break;
 				case '3':
 					scriptVersion = 3;
+					break;
+				case '4':
+					scriptVersion = 4;
 					break;
 				case '5':
 					scriptVersion = 5;
