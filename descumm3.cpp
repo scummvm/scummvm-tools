@@ -1699,7 +1699,7 @@ void get_tok(char *buf)
 	case 0x51:
 	case 0x91:
 	case 0xD1:
-		do_tok(buf, "actorAnimate", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "animateCostume", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x80:
