@@ -220,7 +220,7 @@ bool maybeAddElse(uint cur, uint to)
 	/* Don't jump out of previous blocks. This test is stronger than the one in
 	   maybeAddIf. ( >= vs > ) */
 	for (i = 0, p = block_stack; i < num_block_stack - 1; i++, p++) {
-		if (to >= p->to)
+		if (to > p->to || (to == p->to && p->isWhile))
 			return false;
 	}
 
