@@ -75,7 +75,7 @@ enum {
 	seComplex = 6,
 	seStackList = 7,
 	seDup = 8,
-	seNeg = 9,
+	seNeg = 9
 };
 
 enum {
@@ -693,7 +693,7 @@ StackEnt *se_oper(StackEnt * a, int op, StackEnt * b)
 	return se;
 }
 
-StackEnt *se_complex(char *s)
+StackEnt *se_complex(const char *s)
 {
 	StackEnt *se = se_new(seComplex);
 	se->str = strdup(s);

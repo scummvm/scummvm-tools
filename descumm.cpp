@@ -656,7 +656,7 @@ char *GetFromExprStack(char *buf)
 void do_expr_code(char *buf)
 {
 	int i;
-	char *s;
+	const char *s;
 	char *buf2;
 
 	char tmp[256];
@@ -1336,7 +1336,7 @@ void do_print_ego(char *buf, byte opcode)
 	}
 
 	do {
-		int opcode = get_byte();
+		opcode = get_byte();
 		if (opcode == 0xFF)
 			break;
 
@@ -1595,7 +1595,7 @@ void do_if_state_code(char *buf, byte opcode)
 
 void do_varset_code(char *buf, byte opcode)
 {
-	char *s;
+	const char *s;
 
 	if ((scriptVersion <= 2)
 		&& ((opcode & 0x7F) == 0x0A
@@ -2545,7 +2545,6 @@ void get_tok_V345(char *buf)
 		break;
 
 	case 0xAE:{
-			byte opcode;
 			if (IndyFlag)
 				opcode = 2;
 			else

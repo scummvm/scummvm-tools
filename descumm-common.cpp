@@ -117,7 +117,7 @@ char *getIndentString(int level)
 	return indentbuf;
 }
 
-void outputLine(char *buf, int curoffs, int opcode, int indent)
+void outputLine(const char *buf, int curoffs, int opcode, int indent)
 {
 	char *s;
 

@@ -131,7 +131,7 @@ extern uint size_of_code;
 // Common
 //
 
-extern void outputLine(char *buf, int curoffs, int opcode, int indent);
+extern void outputLine(const char *buf, int curoffs, int opcode, int indent);
 extern bool indentBlock(unsigned int cur);
 
 extern char *strecpy(char *buf, const char *src);
