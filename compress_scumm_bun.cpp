@@ -882,6 +882,7 @@ int main(int argc, char *argv[]) {
 
 		sprintf(tmp2Path, "%s/%s.wav", outputDir, bundleTable[h].filename);
 		writeToTempWave(tmp2Path, compFinal, size);
+		fclose(_waveTmpFile);
 
 		free(compFinal);
 	}
