@@ -101,7 +101,7 @@ static void parseEntry(Entry *entry, char *line) {
 	assert(line);
 	
 	/* Split at the tabs */
-	entry->desc = strtok(&line, "\t\n\r");
+	entry->desc = strtok(line, "\t\n\r");
 	entry->platform = strtok(NULL, "\t\n\r");
 	entry->language = strtok(NULL, "\t\n\r");
 	entry->md5 = strtok(NULL, "\t\n\r");
