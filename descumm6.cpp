@@ -1362,7 +1362,10 @@ void next_line_V8()
 		jump();
 		break;
 	case 0x67:
-		ext("|break");
+		ext("|breakHere");
+		break;
+	case 0x68:
+		ext("p|breakHereVar");
 		break;
 
 	case 0x6A:
@@ -1809,7 +1812,6 @@ void next_line_V8()
 				"\xDD|getMasterSFXVol,"
 				"\xDE|getMasterVoiceVol,"
 				"\xDF|getMasterMusicVol,"
-
 				"\xE0|readRegistryValue"
 				);
 		break;
