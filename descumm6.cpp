@@ -36,11 +36,11 @@
 typedef unsigned char byte;
 typedef unsigned char uint8;
 typedef unsigned short uint16;
-typedef unsigned long uint32;
+typedef unsigned int uint32;
 typedef unsigned int uint;
 typedef signed char int8;
 typedef signed short int16;
-typedef signed long int32;
+typedef signed int int32;
 
 int g_jump_opcode = 0x66;
 
@@ -1447,8 +1447,32 @@ void next_line_V8()
 		ext("lppp|startObject");
 		break;
 
+	case 0x81:
+		ext("l|beginCutscene");
+		break;
+	case 0x82:
+		ext("|endCutscene");
+		break;
+	case 0x83:
+		ext("p|freezeUnfreeze");
+		break;
+
+	case 0x86:
+		ext("|stopSentence");
+		break;
+
 	case 0x89:
 		ext("lp|setClassOf?");
+		break;
+	case 0x8A:
+		ext("pp|setState");
+		break;
+	case 0x8B:
+		ext("pp|setOwner");
+		break;
+
+	case 0x8D:
+		ext("p|actorFollowCamera");
 		break;
 
 	case 0x93:
@@ -1502,6 +1526,22 @@ void next_line_V8()
 	case 0x96:
 		ext("m" "printSystem_\0"
 				"x" "printSystem\0"
+				"\xC8|baseop,"
+				"\xC9|end,"
+				"\xCApp|XY,"
+				"\xCBp|color,"
+				"\xCC|center,"
+				"\xCD|charset,"	// ???
+				"\xCE|left,"
+				"\xCF|overhead,"
+				"\xD0|mumble,"
+				"\xD1s|msg,"
+				"\xD2|wrap"
+				);
+		break;
+	case 0x97:
+		ext("m" "blastText_\0"
+				"x" "blastText\0"
 				"\xC8|baseop,"
 				"\xC9|end,"
 				"\xCApp|XY,"
@@ -1673,6 +1713,9 @@ void next_line_V8()
 				"\xA7p|verbSetLineSpacing"
 				);
 		break;
+	case 0xAF:
+		ext("p|startSound");
+		break;
 
 	case 0xB1:
 		ext("p|stopSound");
@@ -1694,14 +1737,30 @@ void next_line_V8()
 				"\xE|remapCostumeInsert,"
 				"\xF|setVideoFrameRate,"
 
+				"\x14|setBoxSlot,"
+				"\x15|setScaleSlot,"
 				"\x16|setBannerColors,"
-
+				"\x17|setActorChoreLimbFrame,"
+				"\x18|clearTextQueue,"
+				"\x19|saveGameWrite,"
+				"\x1A|saveGameRead,"
+				"\x1B|saveGameReadName,"
+				"\x1C|saveGameStampScreenshot,"
 				"\x1D|setKeyScript,"
 				"\x1E|killAllScriptsButMe,"
 				"\x1F|stopAllVideo,"
 				"\x20|writeRegistryValue,"
+				"\x21|PpaletteSetIntensity,"
+				"\x22|queryQuit,"
 				
-				"\x6C|buildPaletteShadow"
+				"\x6C|buildPaletteShadow,"
+				"\x6D|setPaletteShadow,"
+
+				"\x73|getWalkBoxAt,"
+				"\x74|isPointInBox,"
+
+				"\x76|blastShadowObject,"
+				"\x77|superBlastObject"
 				);
 		break;
 
@@ -1748,6 +1807,12 @@ void next_line_V8()
 		ext("rpp|findObject");
 		break;
 
+	case 0xDF:
+		ext("rpp|findInventory");
+		break;
+	case 0xE0:
+		ext("rp|getInventoryCount");
+		break;
 	case 0xE1:
 		ext("rpp|getAnimateVariable");
 		break;
@@ -1783,6 +1848,28 @@ void next_line_V8()
 		break;
 	case 0xEC:
 		ext("rp|getObjectY");
+		break;
+
+	case 0xF0:
+		ext("rp|getObjectImageX");
+		break;
+	case 0xF1:
+		ext("rp|getObjectImageY");
+		break;
+	case 0xF2:
+		ext("rp|getObjectImageWidth");
+		break;
+	case 0xF3:
+		ext("rp|getObjectImageHeight");
+		break;
+	case 0xF4:
+		ext("rp|getVerbX");
+		break;
+	case 0xF5:
+		ext("rp|getVerbY");
+		break;
+	case 0xF6:
+		ext("rps|stringWidth");
 		break;
 
 	default:
@@ -2589,9 +2676,11 @@ int main(int argc, char *argv[])
 
 	switch (TO_BE_32(*((long *)mem))) {
 	case 'LSCR':
-		// TODO - what about v8 ?
-		if (scriptVersion == 7) {
-			printf("Script# %d\n", mem[8] + (mem[9] << 8));
+		if (scriptVersion == 8) {
+			printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
+			mem += 12;
+		} else if (scriptVersion == 7) {
+			printf("Script# %d\n", TO_LE_16(*((int16 *)(mem+8))));
 			mem += 10;
 		} else {
 			printf("Script# %d\n", (unsigned char)mem[8]);
