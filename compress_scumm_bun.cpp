@@ -820,14 +820,83 @@ byte *decompressBundleSound(int index, FILE *input, int32 &finalSize) {
 	return compFinal;
 }
 
-byte *convertTo16bitStereo(byte *ptr, int size, int bits, int freq, int channels) {
+byte *convertTo16bitStereo(byte *ptr, int inputSize, int &outputSize, int bits, int freq, int channels) {
+	outputSize = inputSize;
+	if (bits == 8)
+		outputSize *= 2;
+	if (bits == 12)
+		outputSize = (outputSize / 3) * 4;
+	if (channels == 1)
+		outputSize *= 2;
+	if (freq == 11025)
+		outputSize *= 2;
 
-//	char tmpPath[200];
-//	sprintf(tmpPath, "%s/%s.wav", outputDir, bundleTable[h].filename);
-//	writeToTempWave(tmpPath, outputData, size);
-//	fclose(_waveTmpFile);
+	byte *outputBuf = (byte *)malloc(outputSize);
+	if (bits == 8) {
+		byte *buf = outputBuf;
+		byte *src = ptr;
+		for (int i = 0; i < inputSize; i++) {
+			uint16 val = (*src++ - 0x80) << 8;
+			*buf++ = (byte)val;
+			*buf++ = (byte)(val >> 8);
+			if (freq == 11025) {
+				*buf++ = (byte)val;
+				*buf++ = (byte)(val >> 8);
+			}
+			if (channels == 1) {
+				*buf++ = (byte)val;
+				*buf++ = (byte)(val >> 8);
+				if (freq == 11025) {
+					*buf++ = (byte)val;
+					*buf++ = (byte)(val >> 8);
+				}
+			}
+		}
+	}
+	if (bits == 12) {
+		int loop_size = inputSize / 3;
+		byte *decoded = outputBuf;
+		byte *source = ptr;
+		uint32 value;
 
-	return NULL;
+		while (loop_size--) {
+			byte v1 = *source++;
+			byte v2 = *source++;
+			byte v3 = *source++;
+			value = ((((v2 & 0x0f) << 8) | v1) << 4) - 0x8000;
+			*decoded++ = (byte)(value & 0xff);
+			*decoded++ = (byte)((value >> 8) & 0xff);
+			if (freq == 11025) {
+				*decoded++ = (byte)(value & 0xff);
+				*decoded++ = (byte)((value >> 8) & 0xff);
+			}
+			if (channels == 1) {
+				*decoded++ = (byte)(value & 0xff);
+				*decoded++ = (byte)((value >> 8) & 0xff);
+				if (freq == 11025) {
+					*decoded++ = (byte)(value & 0xff);
+					*decoded++ = (byte)((value >> 8) & 0xff);
+				}
+			}
+			value = ((((v2 & 0xf0) << 4) | v3) << 4) - 0x8000;
+			*decoded++ = (byte)(value & 0xff);
+			*decoded++ = (byte)((value >> 8) & 0xff);
+			if (freq == 11025) {
+				*decoded++ = (byte)(value & 0xff);
+				*decoded++ = (byte)((value >> 8) & 0xff);
+			}
+			if (channels == 1) {
+				*decoded++ = (byte)(value & 0xff);
+				*decoded++ = (byte)((value >> 8) & 0xff);
+				if (freq == 11025) {
+					*decoded++ = (byte)(value & 0xff);
+					*decoded++ = (byte)((value >> 8) & 0xff);
+				}
+			}
+		}
+	}
+
+	return outputBuf;
 }
 
 void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs) {
@@ -1028,12 +1097,17 @@ int main(int argc, char *argv[]) {
 		bundleTable[i].size = readUint32BE(input);
 	}
 
-	int32 size = 0;
 	for (int h = 0; h < numFiles; h++) {
+		int offsetData = 0, bits = 0, freq = 0, channels = 0, size = 0, outputSize = 0;
 		byte *compFinal = decompressBundleSound(h, input, size);
-		int offsetData = 0, bits = 0, freq = 0, channels = 0;
 		writeToRMAPFile(compFinal, outputDir, bundleTable[h].filename, offsetData, bits, freq, channels);
-		byte *outputData = convertTo16bitStereo(compFinal + offsetData, size - offsetData, bits, freq, channels);
+		byte *outputData = convertTo16bitStereo(compFinal + offsetData, size - offsetData, outputSize, bits, freq, channels);
+
+		char tmp2Path[200];
+		sprintf(tmp2Path, "%s/%s.wav", outputDir, bundleTable[h].filename);
+		writeToTempWave(tmp2Path, outputData, outputSize);
+		fclose(_waveTmpFile);
+
 		free(compFinal);
 	}
 
