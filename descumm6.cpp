@@ -1112,7 +1112,7 @@ void next_line() {
 						"\xB5p|screenEffect,"
 						"\xB6ppppp|unkRoomFunc2,"
 						"\xB7ppppp|unkRoomFunc3,"
-						"\xBApppp|unkRoomFunc4,"
+						"\xBApppp|palManipulate,"
 						"\xBBpp|colorCycleDelay,"
 						"\xD5p|setPalette"
 				);
