@@ -38,7 +38,7 @@ typedef int BOOL;
 	#define CDECL 
 #endif
 
-void CDECL debug (char *Text, ...)
+void CDECL debug (const char *Text, ...)
 {
 	va_list marker;
 	va_start(marker,Text);
@@ -47,7 +47,7 @@ void CDECL debug (char *Text, ...)
 	va_end(marker);
 }
 
-void CDECL error (char *Text, ...)
+void CDECL error (const char *Text, ...)
 {
 	va_list marker;
 	va_start(marker,Text);
@@ -57,7 +57,7 @@ void CDECL error (char *Text, ...)
 	exit(1);
 }
 
-void CDECL _assert (BOOL condition, char *Text, ...)
+void CDECL _assert (BOOL condition, const char *Text, ...)
 {
 	va_list marker;
 	if (condition)

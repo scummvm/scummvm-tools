@@ -38,7 +38,8 @@ int main(int argc, char *argv[])
 	char data_file_name[0x100];
 	char file_name[0x20];
 	char *buf;
-	int i, j, le = 0x00ffffff;
+	unsigned long i;
+	int j, le = 0x00ffffff;
 
 	/* do a quick test to auto detect little endian machines */
 	le = (*(char *)(&le));
