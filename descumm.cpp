@@ -1530,8 +1530,6 @@ void do_verbops(char *buf, byte opcode)
 
 void do_print_ego(char *buf, byte opcode)
 {
-	int i;
-
 	char first = 1;
 
 	if (opcode == 0xD8) {
