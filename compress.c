@@ -76,12 +76,11 @@ int getSampleRateFromVOCRate(int vocSR) {
 		return 22050;
 	} else {
 		int sr = 1000000L / (256L - vocSR);
-		warning("inexact sample rate used: %i (0x%x)", sr, vocSR);
+		warning("inexact sample rate used: %d (0x%x)", sr, vocSR);
 		return sr;
 	}
 }
 
-/* TODO: Check rawAudioType for Flac encoding */
 void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode) {
 	char fbuf[2048];
 	char *tmp = fbuf;
@@ -92,20 +91,22 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 	case kVorbisMode:
 		tmp += sprintf(tmp, "oggenc ");
 		if (rawInput) {
-			tmp += sprintf(tmp, "--raw --raw-chan=%d --raw-bits=%d ", (rawAudioType.isStereo ? 2 : 1), rawAudioType.bitsPerSample);
-			tmp += sprintf(tmp, "--raw-rate=%i ", rawSamplerate);
+			tmp += sprintf(tmp, "--raw ");
+			tmp += sprintf(tmp, "--raw-chan=%d ", (rawAudioType.isStereo ? 2 : 1));
+			tmp += sprintf(tmp, "--raw-bits=%d ", rawAudioType.bitsPerSample);
+			tmp += sprintf(tmp, "--raw-rate=%d ", rawSamplerate);
 			tmp += sprintf(tmp, "--raw-endianness=%d ", (rawAudioType.isLittleEndian ? 0 : 1));
 		}
 
 		if (oggparms.nominalBitr != -1)
-			tmp += sprintf(tmp, "--bitrate=%i ", oggparms.nominalBitr);
+			tmp += sprintf(tmp, "--bitrate=%d ", oggparms.nominalBitr);
 		if (oggparms.minBitr != -1)
-			tmp += sprintf(tmp, "--min-bitrate=%i ", oggparms.minBitr);
+			tmp += sprintf(tmp, "--min-bitrate=%d ", oggparms.minBitr);
 		if (oggparms.maxBitr != -1)
-			tmp += sprintf(tmp, "--max-bitrate=%i ", oggparms.maxBitr);
+			tmp += sprintf(tmp, "--max-bitrate=%d ", oggparms.maxBitr);
 		if (oggparms.silent)
 			tmp += sprintf(tmp, "--quiet ");
-		tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
+		tmp += sprintf(tmp, "--quality=%d ", oggparms.quality);
 		tmp += sprintf(tmp, "--output=%s ", outname);
 		tmp += sprintf(tmp, "%s ", inname);
 		err = system(fbuf) != 0;
@@ -122,14 +123,14 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		}
 
 		if (encparms.abr)
-			tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
+			tmp += sprintf(tmp, "--abr %d ", encparms.minBitr);
 		else
-			tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
+			tmp += sprintf(tmp, "--vbr-new -b %d ", encparms.minBitr);
 		if (encparms.silent)
 			tmp += sprintf(tmp, " --silent ");
-		tmp += sprintf(tmp, "-q %i ", encparms.algqual);
-		tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
-		tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
+		tmp += sprintf(tmp, "-q %d ", encparms.algqual);
+		tmp += sprintf(tmp, "-V %d ", encparms.vbrqual);
+		tmp += sprintf(tmp, "-B %d ", encparms.maxBitr);
 		tmp += sprintf(tmp, "%s %s ", inname, outname);
 		err = system(fbuf) != 0;
 		break;
@@ -139,8 +140,11 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		tmp += sprintf(tmp, "flac --lax --no-padding --no-seektable --no-ogg " );
 
 		if (rawInput) {
-			tmp += sprintf(tmp, "--force-raw-format --endian=little --sign=unsigned ");
-			tmp += sprintf(tmp, "--bps=8 --channels=1 --sample-rate=%d ", rawSamplerate );
+			tmp += sprintf(tmp, "--force-raw-format --sign=unsigned ");
+			tmp += sprintf(tmp, "--channels=%d ", (rawAudioType.isStereo ? 2 : 1));
+			tmp += sprintf(tmp, "--bps=%d ", rawAudioType.bitsPerSample);
+			tmp += sprintf(tmp, "--sample-rate=%d ", rawSamplerate);
+			tmp += sprintf(tmp, "--endian=%s ", (rawAudioType.isLittleEndian ? "little" : "big"));
 		}
 
 		for (i = 0; i < flacparms.numArgs; i++) {
