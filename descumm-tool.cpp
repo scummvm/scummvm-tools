@@ -170,9 +170,13 @@ int main(int argc, char *argv[])
 					break;
 				case 'n':
 					IndyFlag = 1; // Indy3
+					scriptVersion = 3;
+					g_jump_opcode = 0x18;
 					break;
 				case 'z':
 					ZakFlag = 1; // Zak
+					scriptVersion = 3;
+					g_jump_opcode = 0x18;
 					break;
 				case 'u':
 					GF_UNBLOCKED = true;
