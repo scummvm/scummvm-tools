@@ -21,6 +21,10 @@
 
 #include "extract.h"
 
+static FILE *input, *output_idx, *output_snd;
+
+static CompressMode gCompMode = kMP3Mode;
+
 static char infile_base[256];
 
 static void end(void)
@@ -121,10 +125,10 @@ static uint32 get_sound(uint32 offset)
 	if (!memcmp(buf, "Creative", 8)) {
 		printf("VOC found (pos = %d) :\n", offset);
 		fseek(input, 18, SEEK_CUR);
-		get_voc();
+		get_voc(input, gCompMode);
 	} else if (!memcmp(buf, "RIFF", 4)) {
 		printf("WAV found (pos = %d) :\n", offset);
-		get_wav();
+		get_wav(input, gCompMode);
 	} else {
 		error("Unexpected data at offset: %i", offset);
 	}

@@ -22,28 +22,22 @@
 #include "extract.h"
 
 
-char f_hdr[] = {
+static const char f_hdr[] = {
 	'S', 'O', 'U', ' ', 0, 0, 0, 0, 0
-};
-
-byte v_hdr[] = {
-	'V', 'C', 'T', 'L', 0, 0, 0, 0xA, 0xF, 0xFF
-};
-
-char c_hdr[] = {
-	'C', 'r', 'e', 'a', 't', 'i', 'v', 'e', ' ', 'V', 'o', 'i', 'c', 'e',
-	' ', 'F', 'i', 'l', 'e', 0x1a, 0x1a, 0x00, 0x0A, 0x01, 0x29, 0x11
 };
 
 #define OUTPUT_MP3	"monster.so3"
 #define OUTPUT_OGG	"monster.sog"
 #define OUTPUT_FLAC	"monster.sof"
 
-const char *outputName = OUTPUT_MP3;
+static const char *outputName = OUTPUT_MP3;
 
 #define TEMP_DAT	"tempfile.dat"
 #define TEMP_IDX	"tempfile.idx"
 
+static FILE *input, *output_idx, *output_snd;
+
+static CompressMode gCompMode = kMP3Mode;
 
 
 void end_of_file(void)
@@ -135,7 +129,7 @@ void get_part(void)
 	printf("Voice file found (pos = %d) :", pos);
 
 	/* Conver the VOC data */
-	get_voc();
+	get_voc(input, gCompMode);
 	
 	/* Append the converted data to the master output file */
 	sprintf(outname, tempEncoded);

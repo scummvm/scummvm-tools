@@ -45,19 +45,15 @@ typedef enum { kMP3Mode, kVorbisMode, kFlacMode } CompressMode;
 /*
  * Stuff which is in extract-common.c
  */
-extern FILE *input, *output_idx, *output_snd;
 
 const extern char *tempEncoded;
-
-extern CompressMode gCompMode;
-
 
 extern void process_mp3_parms(int argc, char *argv[], int i);
 extern void process_ogg_parms(int argc, char *argv[], int i);
 extern void process_flac_parms(int argc, char *argv[], int i);
 
-extern void get_voc(void);
-extern void get_wav(void);
+extern void get_voc(FILE *input, CompressMode compMode);
+extern void get_wav(FILE *input, CompressMode compMode);
 
 
 /*

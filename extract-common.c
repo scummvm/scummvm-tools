@@ -51,13 +51,9 @@ typedef struct {
 	int numArgs;
 } flaccparams;
 
-FILE *input, *output_idx, *output_snd;
-
 lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0 };
 oggencparams oggparms = { -1, -1, -1, oggqualDef, 0 };
 flaccparams flacparms;
-
-CompressMode gCompMode = kMP3Mode;
 
 const char *tempEncoded = TEMP_MP3;
 
@@ -150,7 +146,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 	}
 } 
 
-void get_wav(void) {
+void get_wav(FILE *input, CompressMode compMode) {
 	int length;
 	FILE *f;
 	char fbuf[2048];
@@ -173,10 +169,10 @@ void get_wav(void) {
 	fclose(f);
 
 	/* Convert the WAV temp file to OGG/MP3 */
-	encodeAudio(TEMP_WAV, false, -1, tempEncoded, gCompMode);
+	encodeAudio(TEMP_WAV, false, -1, tempEncoded, compMode);
 }
 
-void get_voc(void) {
+void get_voc(FILE *input, CompressMode compMode) {
 	int blocktype;
 
 	blocktype = fgetc(input);
@@ -225,7 +221,7 @@ void get_voc(void) {
 		fclose(f);
 
 		/* Convert the raw temp file to OGG/MP3 */
-		encodeAudio(TEMP_RAW, true, real_samplerate, tempEncoded, gCompMode);
+		encodeAudio(TEMP_RAW, true, real_samplerate, tempEncoded, compMode);
 		break;
 	}
 
