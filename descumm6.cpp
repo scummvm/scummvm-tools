@@ -42,7 +42,7 @@ typedef signed char int8;
 typedef signed short int16;
 typedef signed long int32;
 
-#define JUMP_OPCODE 0x73
+int g_jump_opcode = 0x66;
 
 uint32 inline SWAP_32(uint32 a)
 {
@@ -1174,7 +1174,7 @@ int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 	if ((uint) k >= (uint) size_of_code)
 		return false;								/* Invalid jump */
 
-	if (org_pos[k] != JUMP_OPCODE)
+	if (org_pos[k] != g_jump_opcode)
 		return false;								/* Invalid jump */
 
 	k = to + *((short *)(org_pos + k + 1));
@@ -1192,14 +1192,15 @@ int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 
 void jump()
 {
-	int cur = get_curoffs() + ((scriptVersion == 8) ? 4 : 2);
-	int to = cur + get_signed_word();
+	int offset = get_signed_word();
+	int cur = get_curoffs();
+	int to = cur + offset;
 
 	if (!dontOutputElse && maybeAddElse(cur, to)) {
 		pendingElse = true;
 		pendingElseTo = to;
 		pendingElseOffs = cur - 1;
-		pendingElseOpcode = JUMP_OPCODE;
+		pendingElseOpcode = g_jump_opcode;
 		pendingElseIndent = num_block_stack;
 	} else {
 		sprintf(output, "jump %x", to);
@@ -1208,8 +1209,8 @@ void jump()
 
 void jumpif(StackEnt * se, bool when)
 {
-	int cur = get_curoffs() + ((scriptVersion == 8) ? 4 : 2);
 	int offset = get_signed_word();
+	int cur = get_curoffs();
 	int to = cur + offset;
 	char *e = output;
 
@@ -2226,11 +2227,17 @@ int main(int argc, char *argv[])
 				case 'h':
 					haltOnError = 1;
 					break;
+				case '6':
+					scriptVersion = 6;
+					g_jump_opcode = 0x73;
+					break;
 				case '7':
 					scriptVersion = 7;
+					g_jump_opcode = 0x73;
 					break;
 				case '8':
 					scriptVersion = 8;
+					g_jump_opcode = 0x66;
 					break;
 				default:
 					ShowHelpAndExit();
