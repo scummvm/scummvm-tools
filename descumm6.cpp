@@ -614,25 +614,24 @@ byte *skipVerbHeader_V8(byte *p)
 
 	return (byte *)ptr;
 }
-byte *skipVerbHeader_V67(byte *p)
+
+int skipVerbHeader_V67(byte *p)
 {
 	byte code;
-	byte *p2 = p;
-	int hdrlen;
-
-	while (*p2++ != 0) {
-		p2 += 2;
-	}
+	int offset = 8;
+	int minOffset = 255;
+	p += offset;
 
 	printf("Events:\n");
 
-	hdrlen = p2 - p + 8;
-
 	while ((code = *p++) != 0) {
-		printf("  %2X - %.4X\n", code, *(uint16 *)p - hdrlen);
+		offset = TO_LE_16(*(uint16 *)p);
 		p += 2;
+		printf("  %2X - %.4X\n", code, offset);
+		if (minOffset > offset)
+			minOffset = offset;
 	}
-	return p;
+	return minOffset;
 }
 
 StackEnt *se_new(int type)
@@ -2631,6 +2630,8 @@ int main(int argc, char *argv[])
 
 	output = buf = (char *)malloc(8192);
 
+	offs_of_line = 0;
+
 	switch (TO_BE_32(*((uint32 *)mem))) {
 	case 'LSCR':
 		if (scriptVersion == 8) {
@@ -2657,18 +2658,16 @@ int main(int argc, char *argv[])
 		if (scriptVersion == 8)
 			mem = skipVerbHeader_V8(mem + 8);
 		else
-			mem = skipVerbHeader_V67(mem + 8);
+			offs_of_line = skipVerbHeader_V67(mem);
 		break;											/* Verb */
 	default:
 		printf("Unknown script type!\n");
 		exit(0);
 	}
 
-	cur_pos = mem;
 	org_pos = mem;
+	cur_pos = org_pos + offs_of_line;
 	len -= mem - memorg;
-
-	offs_of_line = 0;
 
 	while (cur_pos < mem + len) {
 		byte opcode = *cur_pos;
