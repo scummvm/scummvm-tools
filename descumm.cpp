@@ -2213,7 +2213,9 @@ void next_line_V12(char *buf)
 	case 0x14:
 	case 0x94:
 		// print
-		buf += sprintf(buf, "print(\"");
+		buf += sprintf(buf, "print(");
+		buf = get_var_or_byte(buf, (opcode & 0x80));
+		buf += sprintf(buf, ",\"");
 		do_decodeparsestring_v2(buf, opcode);
 		strcat(buf, "\")");
 		break;
