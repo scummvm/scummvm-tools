@@ -14,6 +14,8 @@ Included tools:
 
         descumm - Decompiles SCUMM scripts
 
+	desword2 - Disassembles Broken Sword II scripts
+
         queenrebuild - Used to rebuild the datafile of Flight of the Amazon
                        Queen, allows for optional MP3/Ogg compression. 
 
@@ -22,3 +24,5 @@ Included tools:
 
         simon2mp3 - Used to MP3 compress .voc or .wav files to .mp3, for 
                         use with ScummVMs -DUSE_MAD support. Requires MAD
+
+        convbdf - Converts BDF (Bitmap Display Format) files to C++ source
