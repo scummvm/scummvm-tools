@@ -2527,19 +2527,19 @@ void next_line_V67(char *output)
 		if (HumongousFlag)
 			ext(output, "x" "dimArray\0"
 					"\x5pw|dimTypeUnk,"
-					"\xC7pw|dimType5,"
-					"\xC8pw|dimType1,"
-					"\xC9pw|dimType2,"
-					"\xCApw|dimType3,"
-					"\xCBpw|dimType4,"
+					"\xC7pw|int,"
+					"\xC8pw|bit,"
+					"\xC9pw|nibble,"
+					"\xCApw|byte,"
+					"\xCBpw|string,"
 					"\xCCw|nukeArray");
 		else
 			ext(output, "x" "dimArray\0"
-					"\xC7pw|dimType5,"
-					"\xC8pw|dimType1,"
-					"\xC9pw|dimType2,"
-					"\xCApw|dimType3,"
-					"\xCBpw|dimType4,"
+					"\xC7pw|int,"
+					"\xC8pw|bit,"
+					"\xC9pw|nibble,"
+					"\xCApw|byte,"
+					"\xCBpw|string,"
 					"\xCCw|nukeArray");
 
 		break;
@@ -2563,11 +2563,11 @@ void next_line_V67(char *output)
 		break;
 	case 0xC0:
 		ext(output, "x" "dim2dimArray\0"
-				"\xC7ppw|dim2Type5,"
-				"\xC8ppw|dim2Type1,"
-				"\xC9ppw|dim2Type2,"
-				"\xCAppw|dim2Type3,"
-				"\xCBppw|dim2Type4");
+				"\xC7ppw|int,"
+				"\xC8ppw|bit,"
+				"\xC9ppw|nibble,"
+				"\xCAppw|byte,"
+				"\xCBppw|string");
 		break;
 	case 0xC4:
 		ext(output, "rp|abs");
@@ -2738,8 +2738,8 @@ void next_line_V67(char *output)
 	case 0xEA:
 		if (HumongousFlag)
 			ext(output, "x" "redimArray\0"
-					"\xC7ppw|to3,"
-					"\xCAppw|to5");
+					"\xC7ppw|int,"
+					"\xCAppw|byte");
 		else
 			invalidop(NULL, code);
 		break;
