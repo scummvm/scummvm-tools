@@ -1,45 +1,34 @@
 This is a collection of various tools that may be useful to use in conjunction
-with ScummVM. 
+with ScummVM.
 
-Included tools:
+Extraction Tools:
+        rescumm: 
+                 Extracts Macintosh "single file" SCUMM games into their
+                 component parts, for use with ScummVM.
+
+        loom_tg16_extract: 
+                Extracts data files from TG16 version of Loom
+		There is currently no support for this game in ScummVM!
+
+        mm_nes_extract
+                Extracts data files from NES version of Maniac Mansion
+                There is currently no support for this game in ScummVM!
+
+Compression Tools:
 	extract 
 		Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
-		or .sof (FLAC, only in ScummVM >0.6.0)
+		or .sof (FLAC)
 	
-	rescumm
-		Extracts macintosh "single file" SCUMM games into their
-		component parts, for use with ScummVM
-	
-	loom_tg16_extract
-		Extracts data files from TG16 version of Loom
-		There is currently no support in ScummVM
+        queenrebuild
+                Used to rebuild the datafile of Flight of the Amazon Queen,
+                to allow optional MP3/Ogg/FLAC compression.
 
-	mm_nes_extract
-		Extracts data files from NES version of Maniac Mansion
-		There is currently no support in ScummVM
-	
-	descumm
-		Decompiles SCUMM scripts
-	
-	desword2
-		Disassembles Broken Sword II scripts
-	
-	queenrebuild
-		Used to rebuild the datafile of Flight of the Amazon
-		Queen, allows for optional MP3/Ogg/FLAC compression. FLAC
-		support only available in ScummVM >0.6.0
-	
-	simon1decr
-		Used to decrunch the graphics and music files in AGA/ECS 
-		 versions of Simon the Sorcerer 1 for Amiga 
-	
-	simon2mp3
-		Compresses Simon voc/wav files to MP3/Ogg/FLAC. FLAC support
-		only available in ScummVM >0.6.0
-	
-	compress_san <inputfile>.san <outputfile>.san [<file>.flu>]
-		Compresses '.san' smush animation files. It uses lossless
-		zlib for compressing FOBJ gfx chunks inside a san file.
+        simon2mp3
+                Compresses Simon voc/wav files to MP3/Ogg/FLAC.
+
+        compress_san <inputfile>.san <outputfile>.san [<file>.flu>]
+                Compresses '.san' smush animation files. It uses lossless zlib
+                for compressing FOBJ gfx chunks inside a san file.
 
 		Example of usage:
 		compress_san opening.san temp_opening.san 
@@ -60,5 +49,18 @@ Included tools:
 
 		ScummVM support requires a zlib enabled build.
 
-	convbdf
-		Converts BDF (Bitmap Display Format) files to C++ source
+Script Tools:	
+        descumm
+                Decompiles SCUMM scripts
+	
+        desword2
+                Disassembles Broken Sword II scripts
+	
+	
+Other tools:	
+       simon1decr
+                Used to decrunch the graphics and music files in AGA/ECS 
+                versions of Simon the Sorcerer 1 for Amiga 
+
+      convbdf
+                Converts BDF (Bitmap Display Format) files to C++ source
