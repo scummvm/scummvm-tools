@@ -318,12 +318,12 @@ Pajama Sam 3: You Are What You Eat
 	Demo	Windows	en	cf90b4db5486ef798db78fe6fbf897e5	pj3-demo	khalek
 
 Spy Fox 1: Dry Cereal
+	-	Windows	en	6bf70eee5de3d24d2403e0dd3d267e8a	spyfox	khalek
 	-	Windows	nl	9bda5fee51d2fda5253d02c642016bf4	TODO
-	Demo	Windows	en	fbdd947d21e8f5bac6d6f7a316af1c5a	spydemo
 	Demo	Windows	en	53e94115b55dd51d4b8ff0871aa1df1e	foxdemo	khalek
 	Demo	Mac	en	53e94115b55dd51d4b8ff0871aa1df1e	foxdemo	khalek
+	Demo	Windows	en	fbdd947d21e8f5bac6d6f7a316af1c5a	spydemo
 	Demo	Windows	en	9d4ab3e0e1d1ebc6ba8a6a4c470ed184	spydemo	khalek
-	-	Windows	en	6bf70eee5de3d24d2403e0dd3d267e8a	spyfox	khalek
 
 Spy Fox 2: Some Assembly Required
 	-	Windows	en	f79e60c17cca601e411f1f75e8ee9b5a	spyfox2 Kirben
