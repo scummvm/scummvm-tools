@@ -199,18 +199,18 @@ void convert_pc(char *infile)
 	}
 	size = num*4;
 
-	writeUint32BE(input, 0);
-	writeUint32BE(input, size);
+	writeUint32LE(output_idx, 0);
+	writeUint32LE(output_idx, size);
 
 	for (i = 1; i < num; i++) {
 		if (offsets[i] == offsets[i+1]) {
-			writeUint32BE(input, size);
+			writeUint32LE(output_idx, size);
 			continue;
 		}
 
 		size += get_sound(offsets[i]);
 		if (i < num - 1)
-			writeUint32BE(input, size);
+			writeUint32LE(output_idx, size);
 	}
 }
 
@@ -244,12 +244,12 @@ void convert_mac(void)
 	}
 	size = num*4;
 
-	writeUint32BE(input, 0);
-	writeUint32BE(input, size);
+	writeUint32LE(output_idx, 0);
+	writeUint32LE(output_idx, size);
 
 	for (i = 1; i < num; i++) {
 		if (filenums[i] == filenums[i+1] && offsets[i] == offsets[i+1]) {
-			writeUint32BE(input, size);
+			writeUint32LE(output_idx, size);
 			continue;
 		}
 
@@ -262,7 +262,7 @@ void convert_mac(void)
 
 		size += get_sound(offsets[i]);
 		if (i < num - 1)
-			writeUint32BE(input, size);
+			writeUint32LE(output_idx, size);
 	}
 }
 

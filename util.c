@@ -91,6 +91,13 @@ void writeUint32BE(FILE *fp, uint32 value) {
 	writeByte(fp, (uint8)(value));
 }
 
+void writeUint32LE(FILE *fp, uint32 value) {
+	writeByte(fp, (uint8)(value));
+	writeByte(fp, (uint8)(value >> 8));
+	writeByte(fp, (uint8)(value >> 16));
+	writeByte(fp, (uint8)(value >> 24));
+}
+
 uint32 fileSize(FILE *fp) {
 	uint32 sz;
 	uint32 pos = ftell(fp);
