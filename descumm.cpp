@@ -2685,7 +2685,10 @@ void get_tok_V345(char *buf)
 		break;
 
 	case 0x4C:
-		do_tok(buf, "soundKludge", A1VARUNTIL0xFF);
+		if (scriptVersion <= 3)
+			do_tok(buf, "waitForSentence", 0);
+		else
+			do_tok(buf, "soundKludge", A1VARUNTIL0xFF);
 		break;
 
 	case 0x3C:
