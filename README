@@ -1,14 +1,10 @@
 This is a collection of various tools that may be useful to use in conjunction
-with ScummVM.
+with ScummVM. 
 
 Included tools:
 	extract 
-		Used to MP3 compress .sou files to .so3, for use with
-		ScummVMs -DUSE_MAD support.
-		Used to Vorbis compress .sou files to .sog, for use with
-		ScummVMs -DUSE_VORBIS support.
-		Used to FLAC compress .sou files to .sof, for use with
-		ScummVMs -DUSE_FLAC support.
+		Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
+		or .sof (FLAC, only in ScummVM >0.6.0)
 	
 	rescumm
 		Extracts macintosh "single file" SCUMM games into their
@@ -25,15 +21,16 @@ Included tools:
 	
 	queenrebuild
 		Used to rebuild the datafile of Flight of the Amazon
-		Queen, allows for optional MP3/Ogg compression. 
+		Queen, allows for optional MP3/Ogg/FLAC compression. FLAC
+		support only available in ScummVM >0.6.0
 	
 	simon1decr
 		Used to decrunch the graphics and music files in AGA/ECS 
 		 versions of Simon the Sorcerer 1 for Amiga 
 	
 	simon2mp3
-		Used to MP3 compress .voc or .wav files to .mp3, for 
-		use with ScummVMs -DUSE_MAD support. Requires MAD
+		Compresses Simon voc/wav files to MP3/Ogg/FLAC. FLAC support
+		only available in ScummVM >0.6.0
 	
 	convbdf
 		Converts BDF (Bitmap Display Format) files to C++ source
