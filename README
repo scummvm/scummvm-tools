@@ -33,27 +33,27 @@ Included tools:
 		only available in ScummVM >0.6.0
 	
 	compress_san <inputfile>.san <outputfile>.san [<file>.flu>]
-		Compresses '.san' smush animation files. It use lossless
-		zlib for compress FOBJ gfx chunks inside san file.
+		Compresses '.san' smush animation files. It uses lossless
+		zlib for compressing FOBJ gfx chunks inside a san file.
 
 		Example of usage:
 		compress_san opening.san temp_opening.san 
 
-		'San' filenames which have equivalents to 'flu' files (which exist 
-		in Full Throttle 'data' dir) 'tovista2.san' and 'tovista2.flu'
+		'san' filenames which have equivalent 'flu' filenames (which exist 
+		in the Full Throttle 'data' dir, ie 'tovista2.san' and 'tovista2.flu')
 		must be compressed together, for example: 
 		compress_san tovista2.san temp_tovista2.san tovista2.flu
-		WARNING: Current status of 'flu' support is not good,
-		PLEASE NOT COMPRESS this pair of files yet, it will be fixed later.
+		WARNING: The current status of 'flu' support is not good,
+		PLEASE DO NOT COMPRESS this pair of files yet, it will be fixed later.
 
-		Original 'tovista2.san' file is not modified and created new
-		'temp_tovista2.san' file, but input file 'tovista2.flu' file
-		IS MODIFIED while compression.
+		The original 'tovista2.san' file is not modified and a new
+		'temp_tovista2.san' file is created, but the input file 'tovista2.flu'
+		IS MODIFIED while compressing.
 
-		After compress of course you must rename
+		After compression, you must rename
 		'temp_tovista2.san' to 'tovista2.san'.
 
-		ScummVM support only with zlib enabled build.
+		ScummVM support requires a zlib enabled build.
 
 	convbdf
 		Converts BDF (Bitmap Display Format) files to C++ source
