@@ -51,12 +51,23 @@ typedef struct {
 	int numArgs;
 } flaccparams;
 
+typedef struct {
+    bool isLittleEndian, isStereo;
+	uint8 bitsPerSample;
+} rawtype;
+
 lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0 };
 oggencparams oggparms = { -1, -1, -1, oggqualDef, 0 };
 flaccparams flacparms;
+rawtype	rawAudioType = { false, false, 8 };
 
 const char *tempEncoded = TEMP_MP3;
 
+void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample) {
+	rawAudioType.isLittleEndian = isLittleEndian;
+	rawAudioType.isStereo = isStereo;
+	rawAudioType.bitsPerSample = bitsPerSample;
+}
 
 int getSampleRateFromVOCRate(int vocSR) {
 	if (vocSR == 0xa5 || vocSR == 0xa6 || vocSR == 0x83) {
@@ -70,6 +81,7 @@ int getSampleRateFromVOCRate(int vocSR) {
 	}
 }
 
+// todo: check rawAudioType for Flac encoding
 void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode) {
 	char fbuf[2048];
 	char *tmp = fbuf;
@@ -80,8 +92,9 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 	case kVorbisMode:
 		tmp += sprintf(tmp, "oggenc ");
 		if (rawInput) {
-			tmp += sprintf(tmp, "--raw --raw-chan=1 --raw-bits=8 ");
+			tmp += sprintf(tmp, "--raw --raw-chan=%d --raw-bits=%d ", (rawAudioType.isStereo ? 2 : 1), rawAudioType.bitsPerSample);
 			tmp += sprintf(tmp, "--raw-rate=%i ", rawSamplerate);
+			tmp += sprintf(tmp, "--raw-endianness=%d ", (rawAudioType.isLittleEndian ? 0 : 1));
 		}
 
 		if (oggparms.nominalBitr != -1)
@@ -101,7 +114,10 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 	case kMP3Mode:
 		tmp += sprintf(tmp, "lame -t -m m ");
 		if (rawInput) {
-			tmp += sprintf(tmp, "-r --bitwidth 8 ");
+			tmp += sprintf(tmp, "-r ");
+			tmp += sprintf(tmp, "--bitwidth %d ", rawAudioType.bitsPerSample);
+			if (rawAudioType.isLittleEndian)
+				tmp += sprintf(tmp, "-x ");
 			tmp += sprintf(tmp, "-s %d ", rawSamplerate);
 		}
 
