@@ -2028,11 +2028,12 @@ void get_tok(char *buf)
 
 		// dodgy?
 	case 0x5C:{
+	case 0xDC:
 			int d = get_byte();
 			if ((d & 0x1F) == 3)
-				do_tok(buf, "oldRoomEffect", ((opcode & 0x80) ? A1V : A1B));
+				do_tok(buf, "oldRoomEffect-set", ((opcode & 0x80) ? A1V : A1B));
 			else
-				do_tok(buf, "oldRoomEffect?", ((opcode & 0x80) ? A1V : A1B));
+				do_tok(buf, "oldRoomEffect-fadein", ((opcode & 0x80) ? A1V : A1B));
 			break;
 		}
 
@@ -2042,15 +2043,7 @@ void get_tok(char *buf)
 		break;
 
 	case 0x45:
-//    case 0x5C:
 	case 0xC5:
-	case 0xDC:
-		if (HaltOnError) {
-			printf("Illegal opcode %.2X\n", opcode);
-			exit(1);
-		}
-		sprintf(buf, "Illegal opcode %.2X", opcode);
-		break;
 	default:
 		if (HaltOnError) {
 			printf("Unknown opcode %.2X\n", opcode);
