@@ -32,15 +32,14 @@ char c_hdr[] = {
 
 struct lameparams {
 	unsigned int minBitr;
-	unsigned int maxBitr;
+	unsigned int maxBitr; 
 	unsigned int abr;
 	unsigned int vbr;
 	unsigned int algqual;
 	unsigned int vbrqual;
 	unsigned int silent;
-} encparms = {
-minBitrDef, maxBitrDef, abrDef, vbrDef, algqualDef, vbrqualDef, 0};
-
+} encparms = { minBitrDef, maxBitrDef, abrDef, vbrDef, algqualDef, vbrqualDef, 0 };
+    
 void put_int(unsigned int val);
 
 void end_of_file(void)
@@ -74,7 +73,7 @@ void end_of_file(void)
 	unlink("monster.mp3");
 	unlink("tempfile.raw");
 	unlink("tempfile.mp3");
-
+	
 	exit(-1);
 }
 
@@ -162,75 +161,77 @@ void get_part(void)
 	id = fgetc(input);
 	switch (id) {
 	case 0x01:{
-			int length = 0;
-			int i;
-			int sample_rate;
-			int comp;
-			FILE *f;
-			char fbuf[2048];
-			char fbuf_o[4096];
-			int size;
-			int tot_size;
-			char rawname[256];
-			char mp3name[256];
-			int real_samplerate;
+		int length = 0;
+		int i;
+		int sample_rate;
+		int comp;
+		FILE *f;
+		char fbuf[2048];
+		char fbuf_o[4096];
+		int size;
+		int tot_size;
+		char rawname[256];
+		char mp3name[256];
+		int real_samplerate;
 
-			/* Sound Data */
-			printf(" Sound Data\n");
-			for (i = 0; i < 3; i++)
-				length = length | (fgetc(input) << (i * 8));
-			printf(" - length = %d\n", length);
-			sample_rate = fgetc(input);
-			comp = fgetc(input);
-			real_samplerate = 1000000 / (256 - sample_rate);
-			printf(" - sample rate = %d (%02x)\n", 1000000 / (256 - sample_rate), sample_rate);
-			printf(" - compression = %s (%02x)\n",
-						 (comp == 0 ? "8bits" :
-							(comp == 1 ? "4bits" : (comp == 2 ? "2.6bits" : (comp == 3 ? "2bits" : "Multi")))), comp);
+		/* Sound Data */
+		printf(" Sound Data\n");
+		for (i = 0; i < 3; i++)
+			length = length | (fgetc(input) << (i * 8));
+		printf(" - length = %d\n", length);
+		sample_rate = fgetc(input);
+		comp = fgetc(input);
+		real_samplerate = 1000000 / (256 - sample_rate);
+		printf(" - sample rate = %d (%02x)\n", 1000000 / (256 - sample_rate), sample_rate);
+		printf(" - compression = %s (%02x)\n",
+		       (comp ==	   0 ? "8bits"   :
+		        (comp ==   1 ? "4bits"   :
+		         (comp ==  2 ? "2.6bits" :
+		          (comp == 3 ? "2bits"   :
+		                        "Multi")))), comp);
 
-			if (comp != 0) {
-				exit(-1);
-			}
-			sprintf(rawname, "tempfile.raw");
-			sprintf(mp3name, "tempfile.mp3");
-
-			f = fopen(rawname, "wb");
-			length -= 2;
-			while (length > 0) {
-				size = fread(fbuf, 1, length > 2048 ? 2048 : length, input);
-				if (size <= 0)
-					break;
-				length -= size;
-				for (i = 0; i < size; i++) {
-					fbuf_o[2 * i] = fbuf[i] ^ 0x80;
-					fbuf_o[2 * i + 1] = 0;
-				}
-				fwrite(fbuf_o, 1, 2 * size, f);
-			}
-			fclose(f);
-
-			if (encparms.abr == 1)
-				sprintf(fbuf_temp, "--abr %i", encparms.minBitr);
-			else
-				sprintf(fbuf_temp, "--vbr-new -b %i", encparms.minBitr);
-			if (encparms.silent == 1)
-				strcat(fbuf_temp, " --silent");
-			sprintf(fbuf,
-							"lame -t -q %i %s -V %i -B %i --resample 22.05 -m m --bitwidth 16 -r -s %d %s %s",
-							encparms.algqual, fbuf_temp, encparms.vbrqual,
-							encparms.maxBitr, real_samplerate, rawname, mp3name);
-			system(fbuf);
-
-			f = fopen(mp3name, "rb");
-			tot_size = 0;
-			while ((size = fread(fbuf, 1, 2048, f)) > 0) {
-				tot_size += size;
-				fwrite(fbuf, 1, size, output_snd);
-			}
-			fclose(f);
-			put_int(tot_size);
+		if (comp != 0) {
+			exit(-1);
 		}
-		break;
+		sprintf(rawname, "tempfile.raw");
+		sprintf(mp3name, "tempfile.mp3");
+		
+		f = fopen(rawname, "wb");
+		length -= 2;
+		while (length > 0) {
+			size = fread(fbuf, 1, length > 2048 ? 2048 : length, input);
+			if (size <= 0)
+				break;
+			length -= size;
+			for (i = 0; i < size; i++) {
+				fbuf_o[2 * i] = fbuf[i] ^ 0x80;
+				fbuf_o[2 * i + 1] = 0;
+			}
+			fwrite(fbuf_o, 1, 2 * size, f);
+		}
+		fclose(f);
+		
+		if (encparms.abr == 1)
+			sprintf(fbuf_temp,"--abr %i",encparms.minBitr);
+		else
+                	sprintf(fbuf_temp,"--vbr-new -b %i",encparms.minBitr);
+		if (encparms.silent == 1)
+                	strcat(fbuf_temp," --silent");
+		sprintf(fbuf,
+		        "lame -t -q %i %s -V %i -B %i --resample 22.05 -m m --bitwidth 16 -r -s %d %s %s",
+		        encparms.algqual, fbuf_temp, encparms.vbrqual,
+		        encparms.maxBitr, real_samplerate, rawname, mp3name);
+		system(fbuf);
+
+		f = fopen(mp3name, "rb");
+		tot_size = 0;
+		while ((size = fread(fbuf, 1, 2048, f)) > 0) {
+			tot_size += size;
+			fwrite(fbuf, 1, size, output_snd);
+		}
+		fclose(f);
+		put_int(tot_size);
+	} break;
 
 	default:
 		printf("Unknown chunk : %02x\n", id);
@@ -243,8 +244,7 @@ void showhelp(char *exename)
 {
 	printf("\nUsage: %s <params> monster.sou\n", exename);
 	printf("\nParams:\n");
-	printf("-b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%i)\n",
-				 minBitrDef);
+	printf("-b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%i)\n", minBitrDef);
 	printf("-B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%i)\n", maxBitrDef);
 	printf("--vbr        LAME uses the VBR mode (default)\n");
 	printf("--abr        LAME uses the ABR mode\n");
@@ -262,42 +262,42 @@ int main(int argc, char *argv[])
 	int i;
 	if (argc < 2)
 		showhelp(argv[0]);
-	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "--vbr") == 0) {
-			encparms.vbr = 1;
-			encparms.abr = 0;
+	for(i = 1; i < argc; i++) {
+        	if (strcmp(argv[i], "--vbr") == 0) {
+			encparms.vbr=1;
+			encparms.abr=0;
 		} else if (strcmp(argv[i], "--abr") == 0) {
-			encparms.vbr = 0;
-			encparms.abr = 1;
+			encparms.vbr=0;
+			encparms.abr=1;
 		} else if (strcmp(argv[i], "-b") == 0) {
 			encparms.minBitr = atoi(argv[i + 1]);
 			if ((encparms.minBitr % 8) != 0)
 				encparms.minBitr -= encparms.minBitr % 8;
-			if (encparms.minBitr > 160)
-				encparms.minBitr = 160;
+			if (encparms.minBitr >160)
+                        	encparms.minBitr = 160;
 			if (encparms.minBitr < 8)
-				encparms.minBitr = 8;
+                        	encparms.minBitr=8;
 			i++;
 		} else if (strcmp(argv[i], "-B") == 0) {
 			encparms.maxBitr = atoi(argv[i + 1]);
 			if ((encparms.maxBitr % 8) != 0)
-				encparms.maxBitr -= encparms.minBitr % 8;
+                        	encparms.maxBitr -= encparms.minBitr % 8;
 			if (encparms.maxBitr > 160)
-				encparms.maxBitr = 160;
+                        	encparms.maxBitr = 160;
 			if (encparms.maxBitr < 8)
-				encparms.maxBitr = 8;
+                        	encparms.maxBitr = 8;
 			i++;
 		} else if (strcmp(argv[i], "-V") == 0) {
 			encparms.vbrqual = atoi(argv[i + 1]);
-			if (encparms.vbrqual < 0)
-				encparms.vbrqual = 0;
-			if (encparms.vbrqual > 9)
+			if(encparms.vbrqual < 0)
+                        	encparms.vbrqual = 0;
+			if(encparms.vbrqual > 9)
 				encparms.vbrqual = 9;
 			i++;
 		} else if (strcmp(argv[i], "-q") == 0) {
 			encparms.algqual = atoi(argv[i + 1]);
 			if (encparms.algqual < 0)
-				encparms.algqual = 0;
+                        	encparms.algqual = 0;
 			if (encparms.algqual > 9)
 				encparms.algqual = 9;
 			i++;
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 		} else {
 			break;
 		}
-	}
+        }
 	if (i != (argc - 1)) {
 		showhelp(argv[0]);
 	}
