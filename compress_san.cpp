@@ -417,6 +417,7 @@ skip:
 		printf("Fixing flu offsets...");
 		fseek(flu_in, 0, SEEK_END);
 		int fsize = ftell(flu_in);
+		fseek(flu_in, 0, SEEK_SET);
 		for (int k = 0; k < fsize; k++) {
 			writeByte(flu_out, readByte(flu_in));
 		}
