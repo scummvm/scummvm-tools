@@ -53,9 +53,36 @@ Anyway, the fixed key pattern here seems to be for each case:
   dup - push - eq - jumpFalse - kill
 And of course a push before the first of these. Note that there doesn't have
 to be a jump before each case: after all, "fall through" is possible with C(++)
-switch/case statements, too, so it's well possible they used that in Scumm, too.
+switch/case statements, too, so it's possible they used that in Scumm, too.
   
 */
+
+/*
+ FIXME: The current "while" and "else" detection code interfer. There simply are case
+ which they can't decode correctly, leading to completely wrong output. An example
+ can be seen by looking at script 52 of Sam&Max. It gets descummed to this:
+ 
+	[0037] (5D)   while (localvar1 <= 80) {
+	[0041] (5D)     if (array-178[localvar1] == 0) {
+	[004E] (47)       array-178[localvar0] = localvar1
+	[0057] (4F)       var179 += 1
+	[005A] (73)     } else {
+	[005D] (4F)       localvar1 += 1
+	[0060] (73)       jump 37
+	[0063] (**)     }
+	[0063] (**)   }
+ 
+ Using "-e" we get the correct result:
+	[0037] (5D)   while (localvar1 <= 80) {
+	[0041] (5D)     if (array-178[localvar1] == 0) {
+	[004E] (47)       array-178[localvar0] = localvar1
+	[0057] (4F)       var179 += 1
+	[005A] (73)       jump 63
+	[005D] (**)     }
+	[005D] (4F)     localvar1 += 1
+	[0063] (**)   }
+*/
+
 
 
 struct StackEnt {
@@ -125,77 +152,77 @@ char *output = 0;	// FIXME: it is evil to have a global output buffer like this
 const char *var_names6[] = {
 	/* 0 */
 	NULL,
-	"g_ego",
-	"g_camera_cur_pos",
-	"g_have_msg",
+	"VAR_EGO",
+	"VAR_CAMERA_POS_X",
+	"VAR_HAVE_MSG",
 	/* 4 */
-	"g_room",
-	"g_override",
+	"VAR_ROOM",
+	"VAR_OVERRIDE",
 	NULL,
 	NULL,
 	/* 8 */
-	"g_num_actor",
-	NULL,
-	"g_drive_number",
-	"g_timer_1",
+	"VAR_NUM_ACTOR",
+	"VAR_V6_SOUNDMODE",
+	"VAR_CURRENTDRIVE",
+	"VAR_TMR_1",
 	/* 12 */
-	"g_timer_2",
-	"g_timer_3",
+	"VAR_TMR_2",
+	"VAR_TMR_3",
 	NULL,
 	NULL,
 	/* 16 */
 	NULL,
-	"g_camera_min",
-	"g_camera_max",
-	"g_timer_next",
+	"VAR_CAMERA_MIN_X",
+	"VAR_CAMERA_MAX_X",
+	"VAR_TIMER_NEXT",
 	/* 20 */
-	"g_virtual_mouse_x",
-	"g_virtual_mouse_y",
-	"g_room_resource",
-	"g_last_sound",
+	"VAR_VIRT_MOUSE_X",
+	"VAR_VIRT_MOUSE_Y",
+	"VAR_ROOM_RESOURCE",
+	"VAR_LAST_SOUND",
 	/* 24 */
-	"g_cutsceneexit_key",
-	"g_talk_actor",
-	"g_camera_fast",
-	"g_scroll_script",
+	"VAR_CUTSCENEEXIT_KEY",
+	"VAR_TALK_ACTOR",
+	"VAR_CAMERA_FAST_X",
+	"VAR_SCROLL_SCRIPT",
 	/* 28 */
-	"g_entry_script",
-	"g_entry_script_2",
-	"g_exit_script",
-	"g_exit_script_2",
+	"VAR_ENTRY_SCRIPT",
+	"VAR_ENTRY_SCRIPT2",
+	"VAR_EXIT_SCRIPT",
+	"VAR_EXIT_SCRIPT2",
 	/* 32 */
-	"g_verb_script",
-	"g_sentence_script",
-	"g_hook_script",
-	"g_begin_cutscene_script",
+	"VAR_VERB_SCRIPT",
+	"VAR_SENTENCE_SCRIPT",
+	"VAR_INVENTORY_SCRIPT",
+	"VAR_CUTSCENE_START_SCRIPT",
 	/* 36 */
-	"g_end_cutscene_script",
-	"g_char_inc",
-	"g_walkto_obj",
-	"g_debug_mode",
+	"VAR_CUTSCENE_END_SCRIPT",
+	"VAR_CHARINC",
+	"VAR_WALKTO_OBJ",
+	"VAR_DEBUGMODE",
 	/* 40 */
-	"g_heap_space",
-	"g_scr_width",
-	"g_restart_key",
-	"g_pause_key",
+	"VAR_HEAPSPACE",
+	"VAR_V6_SCREEN_WIDTH",
+	"VAR_RESTART_KEY",
+	"VAR_PAUSE_KEY",
 	/* 44 */
-	"g_mouse_x",
-	"g_mouse_y",
-	"g_timer",
-	"g_timer_4",
+	"VAR_MOUSE_X",
+	"VAR_MOUSE_Y",
+	"VAR_TIMER",
+	"VAR_TMR_4",
 	/* 48 */
 	NULL,
-	"g_video_mode",
-	"g_save_load_key",
-	"g_fixed_disk",
+	"VAR_VIDEOMODE",
+	"VAR_MAINMENU_KEY",
+	"VAR_FIXEDDISK",
 	/* 52 */
-	"g_cursor_state",
-	"g_user_put",
-	"g_scr_height",
+	"VAR_CURSORSTATE",
+	"VAR_USERPUT",
+	"VAR_V6_SCREEN_HEIGHT",
 	NULL,
 	/* 56 */
-	"g_sound_thing",
-	"g_talkstop_key",
+	"VAR_SOUNDRESULT",
+	"VAR_TALKSTOP_KEY",
 	NULL,
 	NULL,
 	/* 60 */
@@ -204,22 +231,90 @@ const char *var_names6[] = {
 	NULL,
 	NULL,
 	/* 64 */
-	"g_sound_param",
-	"g_sound_param_2",
-	"g_sound_param_3",
-	"g_mouse_present",
+	"VAR_SOUNDPARAM",
+	"VAR_SOUNDPARAM2",
+	"VAR_SOUNDPARAM3",
+	"VAR_MOUSEPRESENT",
 	/* 68 */
-	"g_performance_1",
-	"g_performance_2",
+	"VAR_PERFORMANCE_1",
+	"VAR_PERFORMANCE_2",
 	NULL,
-	"g_save_load_thing",
+	"VAR_GAME_LOADED",
 	/* 72 */
-	"g_new_room",
+	"VAR_NEW_ROOM",
 	NULL,
 	NULL,
 	NULL,
 	/* 76 */
-	"g_ems_space"
+	"VAR_V6_EMSSPACE",
+	NULL,
+	NULL,
+	NULL,
+	/* 80 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 84 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 88 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 92 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 96 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 100 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 104 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 108 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 112 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 116 */
+	NULL,
+	NULL,
+	"VAR_V6_RANDOM_NR",
+	"VAR_TIMEDATE_YEAR",
+	/* 120 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 124 */
+	NULL,
+	"VAR_TIMEDATE_HOUR",
+	"VAR_TIMEDATE_MINUTE",
+	NULL,
+	/* 128 */
+	"VAR_TIMEDATE_DAY",
+	"VAR_TIMEDATE_MONTH",
+	NULL,
+	NULL,
 };
 
 const char *var_names7[] = {
@@ -530,25 +625,25 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	NULL,
-	NULL,
+	"VAR_CUSTOMSCALETABLE",
 	/* 112 */
 	"VAR_TIMER_NEXT",
 	"VAR_TMR_1",
 	"VAR_TMR_2",
 	"VAR_TMR_3",
 	/* 116 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"VAR_CAMERA_MIN_X",
+	"VAR_CAMERA_MAX_X",
+	"VAR_CAMERA_MIN_Y",
+	"VAR_CAMERA_MAX_Y",
 	/* 120 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"VAR_CAMERA_SPEED_X",
+	"VAR_CAMERA_SPEED_Y",
+	"VAR_CAMERA_ACCEL_X",
+	"VAR_CAMERA_ACCEL_Y",
 	/* 124 */
-	NULL,
-	NULL,
+	"VAR_CAMERA_THRESHOLD_X",
+	"VAR_CAMERA_THRESHOLD_Y",
 	"VAR_EGO",
 	NULL,
 	/* 128 */
@@ -559,7 +654,7 @@ const char *var_names8[] = {
 	/* 132 */
 	"VAR_KEYPRESS",
 	NULL,
-	NULL,
+	"VAR_SYNC",
 	NULL,
 };
 
