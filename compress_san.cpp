@@ -39,8 +39,7 @@ const char *tag2str(uint32 tag) {
 	str[1] = (char)(tag >> 16);
 	str[2] = (char)(tag >> 8);
 	str[3] = (char)tag;
-	str[4] = '\0';
-	return str;
+	str[4] = '\0';	return str;
 }
 
 void showhelp(char *exename) {
@@ -70,6 +69,8 @@ struct AudioTrackInfo {
 	int *pans;
 	int *sizes;
 	int nbframes;
+	int countFrames;
+	int32 sdatSize;
 };
 
 #define MAX_TRACKS 150
@@ -282,6 +283,7 @@ void prepareForMixing(char *outputDir, char *inputFilename) {
 	printf("Decompresing tracks files...\n");
 	for (int l = 0; l < MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
+			fclose(_audioTracks[l].file);
 			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, _audioTracks[l].animFrame, _audioTracks[l].trackId);
 			_audioTracks[l].file = fopen(filename, "rb");
 			assert(_audioTracks[l].file);
@@ -291,6 +293,7 @@ void prepareForMixing(char *outputDir, char *inputFilename) {
 			byte *audioBuf = (byte *)malloc(fileSize);
 			fread(audioBuf, fileSize, 1, _audioTracks[l].file);
 			fclose(_audioTracks[l].file);
+			_audioTracks[l].file = NULL;
 
 			int outputSize = fileSize;
 			if (_audioTracks[l].bits == 8)
@@ -434,17 +437,12 @@ void mixing(char *outputDir, char *inputFilename, int frames, int fps) {
 			fread(wavBuf, fileSize, 1, wavFile);
 
 			int offset = 0;
-			for (z = 0; z < _audioTracks[l].nbframes; z++) {
+			for (z = 0; z < _audioTracks[l].countFrames; z++) {
 				int length = _audioTracks[l].sizes[z];
-				if (length == 0) {
-					printf("warning: 0 length sound frame!\n");
-					break;
+				if (_audioTracks[l].sdatSize != 0 && (offset + length) > _audioTracks[l].sdatSize) {
+					length = _audioTracks[l].sdatSize - offset;
 				}
 				int volume = _audioTracks[l].volumes[z];
-				if (offset + length > fileSize) {
-					length = fileSize - offset;
-				}
-
 				for (r = 0; r < length; r += 4) {
 					int16 wavSampleL = (int16)READ_LE_UINT16(wavBuf + offset + r + 0);
 					int16 wavSampleR = (int16)READ_LE_UINT16(wavBuf + offset + r + 2);
@@ -523,7 +521,7 @@ void handleMapChunk(AudioTrackInfo *audioTrack, FILE *input) {
 	assert(tag == 'DATA');
 }
 
-void handleSaudChunk(AudioTrackInfo *audioTrack, FILE *input) {
+int32 handleSaudChunk(AudioTrackInfo *audioTrack, FILE *input) {
 	uint32 tag;
 	int32 size;
 	tag = readUint32BE(input);
@@ -536,6 +534,7 @@ void handleSaudChunk(AudioTrackInfo *audioTrack, FILE *input) {
 	tag = readUint32BE(input);
 	size = readUint32BE(input);
 	assert(tag == 'SDAT');
+	return size;
 }
 
 void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *input, char *outputDir,
@@ -561,7 +560,8 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 			audioTrack->stereo = false;
 			audioTrack->freq = 22050;
 			int pos = ftell(input);
-			handleSaudChunk(audioTrack, input);
+			audioTrack->sdatSize = handleSaudChunk(audioTrack, input);
+			audioTrack->sdatSize *= 4;
 			size -= (ftell(input) - pos) + 10;
 		}
 		sprintf(tmpPath, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, frame, trackId);
@@ -593,11 +593,7 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 		audioTrack->sizes[index] *= 2;
 	if (audioTrack->freq == 11025)
 		audioTrack->sizes[index] *= 2;
-
-	if ((index + 1) == nbframes) {
-		fclose(audioTrack->file);
-		audioTrack->file = NULL;
-	}
+	audioTrack->countFrames++;
 }
 
 void handleDigIACT(FILE *input, int size, char *outputDir, char *inputFilename, char *tmpPath, int flags, int track_flags, int frame) {
