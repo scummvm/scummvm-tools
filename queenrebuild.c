@@ -29,8 +29,12 @@ static const uint32 QTBL = 'QTBL';
 #define TEMP_DAT	"tempfile.dat"
 #define TEMP_TBL	"tempfile.tbl"
 #define TEMP_SB		"tempfile.sb"
+
 #define TEMP_MP3	"tempfile.mp3"
 #define TEMP_OGG	"tempfile.ogg"
+#define TEMP_FLAC	"tempfile.fla"
+
+const char *tempEncoded;
 
 #define CURRENT_TBL_VERSION	1
 #define EXTRA_TBL_HEADER 8
@@ -40,7 +44,8 @@ static const uint32 QTBL = 'QTBL';
 enum {
 	COMPRESSION_NONE = 0,
 	COMPRESSION_MP3 = 1,
-	COMPRESSION_OGG = 2	
+	COMPRESSION_OGG = 2,
+	COMPRESSION_FLAC = 3
 };
 
 enum {
@@ -104,10 +109,11 @@ const struct GameVersion *version;
 
 void showhelp(char *exename)
 {
-	printf("\nUsage: %s [--mp3/--ogg <args>] queen.1\n", exename);
+	printf("\nUsage: %s [--mp3/--ogg/--flac <args>] queen.1\n", exename);
 	printf("\nParams:\n");
 	printf(" --mp3 <args>         encode to MP3 format\n"); 
 	printf(" --ogg <args>         encode to Ogg Vorbis Format\n");
+	printf(" --flac <args>        encode to Flac Format\n");
 	printf("                      (Optional: <args> are passed on to the encoder)\n");
 	printf("\nExample: %s --mp3 -q 5 queen.1\n", exename);
 	exit(2);
@@ -205,23 +211,39 @@ int main(int argc, char *argv[])
 	
 	if (strcmp(argv[1], "--mp3") == 0) {
 		compressionType = COMPRESSION_MP3;
+		tempEncoded = TEMP_MP3;
 		i++;
 		ptr += sprintf(ptr, "lame -r -h -s 11 --bitwidth 8 -m m ");
 		for (; i < (argc - 1); i++) {
 			/* Append optional encoder arguments */
 			ptr += sprintf(ptr, "%s ", argv[i]);
 		}
-		ptr += sprintf(ptr, "%s %s", TEMP_SB, TEMP_MP3);
+		ptr += sprintf(ptr, "%s %s", TEMP_SB, tempEncoded);
 	}
 
 	if (strcmp(argv[1], "--ogg") == 0) {
 		compressionType = COMPRESSION_OGG;
+		tempEncoded = TEMP_OGG;
 		i++;
-		ptr += sprintf(ptr, "oggenc -r -B 8 -C 1 -R 11025 %s -o %s ", TEMP_SB, TEMP_OGG);
+		ptr += sprintf(ptr, "oggenc -r -B 8 -C 1 -R 11025 %s -o %s ", TEMP_SB, tempEncoded);
 		for (; i < (argc - 1); i++) {
 			/* Append optional encoder arguments */
 			ptr += sprintf(ptr, "%s ", argv[i]);
 		}
+	}
+
+	if (strcmp(argv[1], "--flac") == 0) {
+		compressionType = COMPRESSION_FLAC;
+		tempEncoded = TEMP_FLAC;
+		i++;
+		ptr += sprintf(ptr, "flac --force-raw-format --endian=little --sign=unsigned --bps=8 --channels=1 --sample-rate=11025 " );
+		ptr += sprintf(ptr, "--no-padding --lax --no-seektable --no-ogg " );
+		for (; i < (argc - 1); i++) {
+			/* Append optional encoder arguments */
+			ptr += sprintf(ptr, "%s ", argv[i]);
+		}
+
+		ptr += sprintf(ptr, "-o %s %s", tempEncoded, TEMP_SB );
 	}
 
 	/* Open input file (QUEEN.1) */
@@ -289,14 +311,14 @@ int main(int argc, char *argv[])
 			}
 
 			/* Append MP3/OGG to data file */
-			compFile = fopen((compressionType == COMPRESSION_MP3) ? TEMP_MP3 : TEMP_OGG, "rb");
+			compFile = fopen(tempEncoded, "rb");
 			entry.size = fileSize(compFile);
 			fromFileToFile(compFile, outputData, entry.size);
 			fclose(compFile);
 
 			/* Delete temporary files */
 			unlink(TEMP_SB);
-			unlink((compressionType == COMPRESSION_MP3) ? TEMP_MP3 : TEMP_OGG);
+			unlink(tempEncoded);
 		} else {
 			/* Non .SB file */
 			fromFileToFile(inputData, outputData, entry.size);

@@ -38,16 +38,23 @@
 #define TEMP_RAW	"tempfile.raw"
 #define TEMP_MP3	"tempfile.mp3"
 #define TEMP_OGG	"tempfile.ogg"
+#define TEMP_FLAC	"tempfile.fla"
+
+typedef enum { kMP3Mode, kVorbisMode, kFlacMode } CompressMode;
 
 /*
  * Stuff which is in extract-common.c
  */
 extern FILE *input, *output_idx, *output_snd;
 
-extern bool oggmode;
+const extern char *tempEncoded;
+
+extern CompressMode gCompMode;
+
 
 extern void process_mp3_parms(int argc, char *argv[], int i);
 extern void process_ogg_parms(int argc, char *argv[], int i);
+extern void process_flac_parms(int argc, char *argv[], int i);
 
 extern void get_voc(void);
 extern void get_wav(void);

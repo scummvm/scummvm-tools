@@ -28,12 +28,24 @@ void end(void)
 	int size;
 	char fbuf[2048];
 	char tmp[256];
+	const char *head;
+
+	switch (gCompMode) {
+	case kMP3Mode:
+		head = "mp3"; break;
+	case kVorbisMode:
+		head = "ogg"; break;
+	case kFlacMode:
+		head = "fla"; break;
+	default:
+		error("Unknown compression mode");
+	}
 
 	fclose(output_snd);
 	fclose(output_idx);
 	fclose(input);
 
-	sprintf(tmp, "%s%s", infile_base, oggmode ? "ogg" : "mp3");
+	sprintf(tmp, "%s%s", infile_base, head);
 	output_idx = fopen(tmp, "wb");
 
 	sprintf(tmp, "%sidx", infile_base);
@@ -56,8 +68,8 @@ void end(void)
 	sprintf(tmp, "%sdat", infile_base);
 	unlink(tmp);
 	unlink(TEMP_RAW);
-	unlink(oggmode ? TEMP_OGG : TEMP_MP3);
-	unlink("tempfile.wav");
+	unlink(tempEncoded);
+	unlink(TEMP_WAV);
 	
 	exit(0);
 }
@@ -118,7 +130,7 @@ uint32 get_sound(uint32 offset)
 	}
 
 	/* Append the converted data to the master output file */
-	sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
+	sprintf(outname, tempEncoded);
 	f = fopen(outname, "rb");
 	tot_size = 0;
 	while ((size = fread(fbuf, 1, 2048, f)) > 0) {
@@ -133,10 +145,14 @@ uint32 get_sound(uint32 offset)
 void showhelp(char *exename)
 {
 	printf("\nUsage: %s <params> [<file> | mac]\n", exename);
+
 	printf("\nParams:\n");
+
 	printf("--mp3        encode to MP3 format (default)\n");
 	printf("--vorbis     encode to Vorbis format\n");
+	printf("--flac       encode to Flac format\n");
 	printf("(If one of these is specified, it must be the first parameter.)\n");
+
 	printf("\nMP3 mode params:\n");
 	printf("-b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%i)\n", minBitrDef);
 	printf("-B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%i)\n", maxBitrDef);
@@ -145,13 +161,20 @@ void showhelp(char *exename)
 	printf("-V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%i)\n", vbrqualDef);
 	printf("-q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%i)\n", algqualDef);
 	printf("--silent     the output of LAME is hidden (default:disabled)\n");
+
 	printf("\nVorbis mode params:\n");
 	printf("-b <rate>    <rate> is the nominal bitrate (default:unset)\n");
 	printf("-m <rate>    <rate> is the minimum bitrate (default:unset)\n");
 	printf("-M <rate>    <rate> is the maximum bitrate (default:unset)\n");
 	printf("-q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%i)\n", oggqualDef);
 	printf("--silent     the output of oggenc is hidden (default:disabled)\n");
+
+	printf("\nFlac mode params:\n");
+	printf("[params]     optional Arguments passed to the Encoder\n");
+	printf("             recommended is: --best -b 1152\n");
+
 	printf("\n--help     this help message\n");
+
 	printf("\n\nIf a parameter is not given the default value is used\n");
 	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
 	printf("Use the `mac' option instead of a filename if converting simon2mac sounds\n");
@@ -272,20 +295,37 @@ int main(int argc, char *argv[])
 	
 	if (argc < 2)
 		showhelp(argv[0]);
+
+	/* compression mode */
+	gCompMode = kMP3Mode;
 	i = 1;
 	if (strcmp(argv[1], "--mp3") == 0) {
-		oggmode = 0;
+		gCompMode = kMP3Mode;
 		i++;
 	}
 	else if (strcmp(argv[1], "--vorbis") == 0) {
-		oggmode = 1;
+		gCompMode = kVorbisMode;
+		i++;
+	}
+	else if (strcmp(argv[1], "--flac") == 0) {
+		gCompMode = kFlacMode;
 		i++;
 	}
 
-	if (oggmode)
-		process_ogg_parms(argc, argv, i);
-	else
+	switch (gCompMode) {
+	case kMP3Mode:
+		tempEncoded = TEMP_MP3;
 		process_mp3_parms(argc, argv, i);
+		break;
+	case kVorbisMode:
+		tempEncoded = TEMP_OGG;
+		process_ogg_parms(argc, argv, i);
+		break;
+	case kFlacMode:
+		tempEncoded = TEMP_FLAC;
+		process_flac_parms(argc, argv, i);
+		break;
+	}
 
 	i = argc - 1;
 

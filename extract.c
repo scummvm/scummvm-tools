@@ -37,9 +37,13 @@ char c_hdr[] = {
 
 #define OUTPUT_MP3	"monster.so3"
 #define OUTPUT_OGG	"monster.sog"
+#define OUTPUT_FLAC	"monster.sof"
+
+const char *outputName = OUTPUT_MP3;
 
 #define TEMP_DAT	"tempfile.dat"
 #define TEMP_IDX	"tempfile.idx"
+
 
 
 void end_of_file(void)
@@ -52,7 +56,7 @@ void end_of_file(void)
 	fclose(output_snd);
 	fclose(output_idx);
 
-	output_idx = fopen(oggmode ? OUTPUT_OGG : OUTPUT_MP3, "wb");
+	output_idx = fopen(outputName , "wb");
 	writeUint32BE(output_idx, (uint32)idx_size);
 
 	in = fopen(TEMP_IDX, "rb");
@@ -72,7 +76,7 @@ void end_of_file(void)
 	unlink(TEMP_IDX);
 	unlink(TEMP_DAT);
 	unlink(TEMP_RAW);
-	unlink(oggmode ? TEMP_OGG : TEMP_MP3);
+	unlink(tempEncoded);
 	
 	exit(-1);
 }
@@ -134,7 +138,7 @@ void get_part(void)
 	get_voc();
 	
 	/* Append the converted data to the master output file */
-	sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
+	sprintf(outname, tempEncoded);
 	f = fopen(outname, "rb");
 	tot_size = 0;
 	while ((size = fread(fbuf, 1, 2048, f)) > 0) {
@@ -149,10 +153,13 @@ void get_part(void)
 void showhelp(char *exename)
 {
 	printf("\nUsage: %s <params> monster.sou\n", exename);
+
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
 	printf(" --vorbis     encode to Vorbis format\n");
+	printf(" --flac       encode to Flac format\n");
 	printf("(If one of these is specified, it must be the first parameter.)\n");
+
 	printf("\nMP3 mode params:\n");
 	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%i)\n", minBitrDef);
 	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%i)\n", maxBitrDef);
@@ -161,13 +168,20 @@ void showhelp(char *exename)
 	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%i)\n", vbrqualDef);
 	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%i)\n", algqualDef);
 	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
+
 	printf("\nVorbis mode params:\n");
 	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
 	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
 	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
 	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%i)\n", oggqualDef);
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
+
+	printf("\nFlac mode params:\n");
+	printf(" [params]     optional Arguments passed directly to the Encoder\n");
+	printf("              recommended is: --best -b 1152\n");
+
 	printf("\n --help     this help message\n");
+
 	printf("\n\nIf a parameter is not given the default value is used\n");
 	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
 	exit(2);
@@ -179,20 +193,40 @@ int main(int argc, char *argv[])
 	int i;
 	if (argc < 2)
 		showhelp(argv[0]);
+	/* Compression mode */
+	gCompMode = kMP3Mode;
 	i = 1;
 	if (strcmp(argv[1], "--mp3") == 0) {
-		oggmode = 0;
+		gCompMode = kMP3Mode;
 		i++;
 	}
 	else if (strcmp(argv[1], "--vorbis") == 0) {
-		oggmode = 1;
+		gCompMode = kVorbisMode;
+		i++;
+	}
+	else if (strcmp(argv[1], "--flac") == 0) {
+		gCompMode = kFlacMode;
 		i++;
 	}
 
-	if (oggmode)
-		process_ogg_parms(argc, argv, i);
-	else
+	switch (gCompMode) {
+	case kMP3Mode:
+		outputName = OUTPUT_MP3;
+		tempEncoded = TEMP_MP3;
 		process_mp3_parms(argc, argv, i);
+		break;
+	case kVorbisMode:
+		outputName = OUTPUT_OGG;
+		tempEncoded = TEMP_OGG;
+		process_ogg_parms(argc, argv, i);
+		break;
+	case kFlacMode:
+		outputName = OUTPUT_FLAC;
+		tempEncoded = TEMP_FLAC;
+		process_flac_parms(argc, argv, i);
+		break;
+	}
+
 
 	i = argc - 1;
 	input = fopen(argv[i], "rb");
@@ -203,7 +237,7 @@ int main(int argc, char *argv[])
 
 	output_idx = fopen(TEMP_IDX, "wb");
 	if (!output_idx) {
-		printf("Can't open file " TEMP_IDX " for write!\n");
+		printf("Can't open file " TEMP_IDX " for write!\n" );
 		exit(-1);
 	}
 	output_snd = fopen(TEMP_DAT, "wb");

@@ -27,7 +27,7 @@ typedef struct  {
 	bool abr;
 	uint32 algqual;
 	uint32 vbrqual;
-	uint32 silent;
+	bool silent;
 } lameparams;
 
 typedef struct {
@@ -35,16 +35,23 @@ typedef struct {
 	int minBitr;
 	int maxBitr;
 	int quality;
-	int silent;
+	bool silent;
 } oggencparams;
 
+typedef struct {
+	char * const* argv;
+	int numArgs;
+} flaccparams;
 
 FILE *input, *output_idx, *output_snd;
 
 lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0 };
 oggencparams oggparms = { -1, -1, -1, oggqualDef, 0 };
+flaccparams flacparms;
 
-bool oggmode = 0;
+CompressMode gCompMode = kMP3Mode;
+
+const char *tempEncoded = TEMP_MP3;
 
 
 int getSampleRateFromVOCRate(int vocSR) {
@@ -59,11 +66,14 @@ int getSampleRateFromVOCRate(int vocSR) {
 	}
 }
 
-void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, bool oggOutput) {
+void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode) {
 	char fbuf[2048];
 	char *tmp = fbuf;
+	int i;
+	bool err = false;
 
-	if (oggOutput) {
+	switch (compmode) {
+	case kVorbisMode:
 		tmp += sprintf(tmp, "oggenc ");
 		if (rawInput) {
 			tmp += sprintf(tmp, "--raw --raw-chan=1 --raw-bits=8 ");
@@ -81,25 +91,54 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
 		tmp += sprintf(tmp, "--output=%s ", outname);
 		tmp += sprintf(tmp, "%s ", inname);
-		system(fbuf);
-	} else {
+		err = system(fbuf) != 0;
+		break;
+
+	case kMP3Mode:
 		tmp += sprintf(tmp, "lame -t -m m ");
 		if (rawInput) {
 			tmp += sprintf(tmp, "-r --bitwidth 8 ");
 			tmp += sprintf(tmp, "-s %d ", rawSamplerate);
 		}
 
-		if (encparms.abr == 1)
+		if (encparms.abr)
 			tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
 		else
 			tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
-		if (encparms.silent == 1)
+		if (encparms.silent)
 			tmp += sprintf(tmp, " --silent ");
 		tmp += sprintf(tmp, "-q %i ", encparms.algqual);
 		tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
 		tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
 		tmp += sprintf(tmp, "%s %s ", inname, outname);
-		system(fbuf);
+		err = system(fbuf) != 0;
+		break;
+
+	case kFlacMode:
+		/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
+		tmp += sprintf(tmp, "flac --lax --no-padding --no-seektable --no-ogg " );
+
+		if (rawInput) {
+			tmp += sprintf(tmp, "--force-raw-format --endian=little --sign=unsigned ");
+			tmp += sprintf(tmp, "--bps=8 --channels=1 --sample-rate=%d ", rawSamplerate );
+		}
+
+		for (i = 0; i < flacparms.numArgs; i++) {
+			/* Append optional encoder arguments */
+			tmp += sprintf(tmp, "%s ", flacparms.argv[i]);
+		}
+
+		tmp += sprintf(tmp, "-o %s ", outname);
+		tmp += sprintf(tmp, "%s ", inname);
+
+		err = system(fbuf) != 0;
+		break;
+	}
+
+	if (err) {
+		printf("Got error from encoder. (check your parameters)\n");
+		printf("Encoder Commandline: %s\n", fbuf );
+		exit(-1);
 	}
 } 
 
@@ -126,11 +165,10 @@ void get_wav(void) {
 	fclose(f);
 
 	/* Convert the WAV temp file to OGG/MP3 */
-	encodeAudio(TEMP_WAV, false, -1, oggmode ? TEMP_OGG : TEMP_MP3, oggmode);
+	encodeAudio(TEMP_WAV, false, -1, tempEncoded, gCompMode);
 }
 
-void get_voc(void)
-{
+void get_voc(void) {
 	int blocktype;
 
 	blocktype = fgetc(input);
@@ -179,7 +217,7 @@ void get_voc(void)
 		fclose(f);
 
 		/* Convert the raw temp file to OGG/MP3 */
-		encodeAudio(TEMP_RAW, true, real_samplerate, oggmode ? TEMP_OGG : TEMP_MP3, oggmode);
+		encodeAudio(TEMP_RAW, true, real_samplerate, tempEncoded, gCompMode);
 		break;
 	}
 
@@ -190,7 +228,7 @@ void get_voc(void)
 }
 
 void process_mp3_parms(int argc, char *argv[], int i) {
-	for(; i < argc; i++) {
+	for (; i < argc; i++) {
 		if (strcmp(argv[i], "--vbr") == 0) {
 			encparms.abr=0;
 		} else if (strcmp(argv[i], "--abr") == 0) {
@@ -273,6 +311,14 @@ void process_ogg_parms(int argc, char *argv[], int i) {
 			break;
 	}
 	if (i != argc - 1)
+		showhelp(argv[0]);
+}
+
+void process_flac_parms(int argc, char *argv[], int i){
+	flacparms.argv = &argv[i];
+	flacparms.numArgs = argc - 1 - i;
+
+	if (i >= argc)
 		showhelp(argv[0]);
 }
 
