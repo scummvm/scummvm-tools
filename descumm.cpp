@@ -1680,6 +1680,7 @@ void get_tok_V2(char *buf)
 		// clearState04
 		do_tok(buf, "clearState04", ((opcode & 0x80) ? A1V : A1W));
 		break;
+	case 0x47:
 	case 0xC7:
 		// clearState08
 		do_tok(buf, "clearState08", ((opcode & 0x80) ? A1V : A1W));
@@ -2086,7 +2087,6 @@ void get_tok_V2(char *buf)
 		do_tok(buf, "setState04", A1W);
 		break;
 	case 0x07:
-	case 0x47:
 	case 0x87:
 		//setState08
 		do_tok(buf, "setState08", A1W);
@@ -2972,20 +2972,13 @@ int skipVerbHeader_V3(byte *p)
 byte *skipVerbHeader_V5(byte *p)
 {
 	byte code;
-	byte *p2 = p;
 	int hdrlen;
-
-	while ((code = *p2++) != 0) {
-		p2 += sizeof(unsigned short);
-	}
 
 	printf("Events:\n");
 
-	hdrlen = p2 - p + 8;
-
 	while ((code = *p++) != 0) {
-		printf("  %2X - %.4X\n", code, *(unsigned short *)p - hdrlen);
-		p += sizeof(unsigned short);
+		printf("  %2X - %.4X\n", code, TO_LE_16(*(uint16 *)p));
+		p += 2;
 	}
 	return p;
 }
@@ -3117,7 +3110,7 @@ int main(int argc, char *argv[])
 			mem += 8;
 			break;											/* Exit code */
 		case 'VERB':
-			offs_of_line = skipVerbHeader_V5(mem + 8);
+			offs_of_line = skipVerbHeader_V5(mem + 8) - mem;
 			break;											/* Verb */
 		default:
 			printf("Unknown script type!\n");
