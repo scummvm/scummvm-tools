@@ -107,7 +107,7 @@ byte HaltOnError;
 
 
 int get_curpos();
-
+int gameFlag;
 bool emit_if(char *before, char *after);
 
 #if defined(SCUMM_BIG_ENDIAN)
@@ -1638,7 +1638,13 @@ void get_tok(char *buf)
 		do_tok(buf, "WaitForActor", ((opcode & 0x80) ? A1V : A1B));
 		break;
 	case 0xAE:{
-			switch (opcode = get_byte()) {
+			byte opcode;
+			if (gameFlag == 1)
+				opcode = 2;
+			else
+				opcode = get_byte();
+
+			switch (opcode) {
 			case 0x01:
 			case 0x81:
 				do_tok(buf, "WaitForActor", ((opcode & 0x80) ? A1V : A1B));
@@ -2060,6 +2066,7 @@ void ShowHelpAndExit()
 				 "Syntax:\n"
 				 "\tdescumm [-o] filename\n"
 				 "Flags:\n"
+				 "\t-3\tUse Indy3-256 specific hacks\n"
 				 "\t-o\tAlways Show offsets\n"
 				 "\t-i\tDon't output ifs\n"
 				 "\t-e\tDon't output else\n"
@@ -2101,7 +2108,7 @@ int main(int argc, char *argv[])
 	char *s;
 
 	filename = NULL;
-
+	gameFlag = 0;
 	/* Parse the arguments */
 	for (i = 1; i < argc; i++) {
 		s = argv[i];
@@ -2110,6 +2117,9 @@ int main(int argc, char *argv[])
 			s++;
 			while (*s) {
 				switch (tolower(*s)) {
+				case '3':
+					gameFlag = 1;
+					break;
 				case 'o':
 					AlwaysShowOffs = 1;
 					break;
