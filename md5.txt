@@ -223,8 +223,7 @@ Putt-Putts Fun Pack
 
 Putt-Putt Travels Through Time
 	-	All?	en	2108d83dcf09f8adb4bc524669c8cf51	PuttTime
-	Demo	Mac	en	4e5867848ee61bc30d157e2c94eee9b4	TimeDemo	khalek
-	Demo	Windows	en	4e5867848ee61bc30d157e2c94eee9b4	timedemo
+	Demo	All	en	4e5867848ee61bc30d157e2c94eee9b4	timedemo	khalek, sev
 	Demo	Windows	en	0ab19be9e2a3f6938226638b2a3744fe	putttime-demo	khalek
 
 Putt-Putt Enters the Race
@@ -268,11 +267,11 @@ Blue's ABC Time Activities
 	Demo	Windows	en	7ddeaf52c8b9a50551ce0aa2ac811d07	bluesabctimedemo	khalek
 
 Freddi Fish 1: The Case of the Missing Kelp Seeds
-	-	Mac	en	c8aac5e3e701874e2fa4117896f9e1b1	freddi	khalek
 	-	Mac	en	df047cc4792150f601290357566d36a6	freddi	khalek
 	-	Windows	en	df047cc4792150f601290357566d36a6	freddi	khalek
 	Demo	Windows	en	084ed0fa98a6d1e9368d67fe9cfbd417	freddemo	khalek
 	Demo	Windows	en	566165a7338fa11029e7c14d94fa70d0	freddemo	khalek
+	Demo	Mac	en	c8aac5e3e701874e2fa4117896f9e1b1	freddemo	khalek, sev
 
 Freddi Fish 2: The Case of the Haunted Schoolhouse
 	Demo	All	en	fc8d197a22146e74766e9cb0cfcaf1da	ff2-demo	khalek, sev
