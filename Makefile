@@ -10,8 +10,6 @@ LDFLAGS :=
 
 TARGETS := \
 	descumm$(EXEEXT) \
-	descumm3$(EXEEXT) \
-	descumm5$(EXEEXT) \
 	descumm6$(EXEEXT) \
 	extract$(EXEEXT) \
 	rescumm$(EXEEXT) \
@@ -20,12 +18,6 @@ TARGETS := \
 all: $(TARGETS)
 
 descumm$(EXEEXT) : descumm.o
-	$(CXX) $(LFLAGS) -o $@ $+
-
-descumm3$(EXEEXT) : descumm3.o
-	$(CXX) $(LFLAGS) -o $@ $+
-
-descumm5$(EXEEXT) : descumm5.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
 descumm6$(EXEEXT) : descumm6.o
