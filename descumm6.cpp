@@ -1014,7 +1014,7 @@ void ext(const char *fmt)
 			/* extended thing */
 			se = args[numArgs - 1];
 			se->data--;
-			extcmd = se->list[se->data]->data;
+			extcmd = (byte) se->list[se->data]->data;
 
 			/* locate our extended item */
 			while ((cmd = *fmt++) != extcmd) {
