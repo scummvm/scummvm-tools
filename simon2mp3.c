@@ -135,7 +135,7 @@ void showhelp(char *exename)
 	printf("\nUsage: %s <params> [<file> | mac]\n", exename);
 	printf("\nParams:\n");
 	printf("--mp3        encode to MP3 format (default)\n");
-	printf("--vorbis     encode to Vorbis format (not yet implemented)\n");
+	printf("--vorbis     encode to Vorbis format\n");
 	printf("(If one of these is specified, it must be the first parameter.)\n");
 	printf("\nMP3 mode params:\n");
 	printf("-b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%i)\n", minBitrDef);
