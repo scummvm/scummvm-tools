@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 					outputSize++;
 				frameInfo[l].fobjDecompressedSize = size;
 				frameInfo[l].fobjCompressedSize = outputSize;
-				writeUint32BE(output, TO_LE_32('ZFOB'));
+				writeUint32BE(output, 'ZFOB');
 				writeUint32BE(output, outputSize + 4);
 				writeUint32BE(output, size);
 				for (int k = 0; k < outputSize; k++) {
