@@ -2051,7 +2051,7 @@ void get_tok_V2(char *buf)
 	case 0x31:
 	case 0xB1:
 		// FIXME - maybe this could be displayed a bit nicer?
-		do_tok(buf, "getBitVar", AVARSTORE | A1B | A2B | ((opcode & 0x80) ? A3V : A3B));
+		do_tok(buf, "getBitVar", AVARSTORE | A1W | ((opcode & 0x80) ? A2V : A2B));
 		break;
 
 	case 0x1B:
@@ -2059,7 +2059,7 @@ void get_tok_V2(char *buf)
 	case 0x9B:
 	case 0xDB:
 		// FIXME - maybe this could be displayed a bit nicer?
-		do_tok(buf, "setBitVar", AVARSTORE | A1B | A2B | ((opcode & 0x80) ? A3V : A3B) | ((opcode & 0x40) ? A4V : A4B));
+		do_tok(buf, "setBitVar", A1W | ((opcode & 0x80) ? A2V : A2B) | ((opcode & 0x40) ? A3V : A3B));
 		break;
 
 	case 0x66:
