@@ -19,6 +19,7 @@ TARGETS := \
 	descumm$(EXEEXT) \
 	extract$(EXEEXT) \
 	mm_nes_extract$(EXEEXT) \
+	queenrebuild$(EXEEXT) \
 	rescumm$(EXEEXT) \
 	simon1decr$(EXEEXT) \
 	simon2mp3$(EXEEXT)
@@ -32,6 +33,9 @@ extract$(EXEEXT): extract.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 mm_nes_extract$(EXEEXT): mm_nes_extract.o
+	$(CC) $(LFLAGS) -o $@ $+
+
+queenrebuild$(EXEEXT): queenrebuild.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 rescumm$(EXEEXT): rescumm.o
