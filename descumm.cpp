@@ -690,7 +690,7 @@ void do_actorset(char *buf, byte opcode)
 			break;
 		case 0x11:
 			// FIXME for GID_MONKEY_VGA / GID_MONKEY_EGA this is:
-#ifdef GID_MONKEY_VGA || GID_MONKEY_EGA
+#if GID_MONKEY_VGA || GID_MONKEY_EGA
 			buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B));
 #else
 			buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
