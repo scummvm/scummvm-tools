@@ -118,10 +118,10 @@ const struct GameVersion *version;
 
 void showhelp(char *exename)
 {
-	printf("\nUsage: %s [--mp3/--ogg/--flac <args>] queen.1\n", exename);
+	printf("\nUsage: %s [--mp3/--vorbis/--flac <args>] queen.1\n", exename);
 	printf("\nParams:\n");
 	printf(" --mp3 <args>         encode to MP3 format\n"); 
-	printf(" --ogg <args>         encode to Ogg Vorbis Format\n");
+	printf(" --vorbis <args>      encode to Ogg Vorbis Format\n");
 	printf(" --flac <args>        encode to Flac Format\n");
 	printf("                      (Optional: <args> are passed on to the encoder)\n");
 	printf("\nExample: %s --mp3 -q 5 queen.1\n", exename);
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 	int size, i = 1;
 	uint32 prevOffset;
 
-	if (argc < 2 || (strcmp(argv[1], "--mp3") != 0 && strcmp(argv[1], "--ogg") != 0 && strcmp(argv[1], "--flac") != 0))
+	if (argc < 2 || (strcmp(argv[1], "--mp3") != 0 && strcmp(argv[1], "--vorbis") != 0 && strcmp(argv[1], "--flac") != 0))
 		showhelp(argv[0]);
 	
 	if (strcmp(argv[1], "--mp3") == 0) {
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
 		ptr += sprintf(ptr, "%s %s", TEMP_SB, tempEncoded);
 	}
 
-	if (strcmp(argv[1], "--ogg") == 0) {
+	if (strcmp(argv[1], "--vorbis") == 0) {
 		compressionType = COMPRESSION_OGG;
 		tempEncoded = TEMP_OGG;
 		i++;
