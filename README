@@ -47,10 +47,6 @@ Compression Tools:
                 Example of usage:
                 compress_san opening.san uncomp comp
 
-                WARNING: The current status of 'flu' support is not good,
-                PLEASE DO NOT COMPRESS this pair of files yet, it will be fixed
-                later.
-
                 ScummVM support requires a zlib enabled build, and Ogg support
                 for ogg audio track playback.
 
