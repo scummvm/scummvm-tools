@@ -238,6 +238,9 @@ Putt-Putt Saves the Zoo
 	Demo	Windows	en	de4efb910210736813c9a1185384bace	zoodemo	khalek
 	Demo	Mac	en	3486ede0f904789267d4bcc5537a46d4	puttzoo	khalek
 
+Putt-Putt Joins the Circus
+	Demo	Mac	en	a7cacad9c40c4dc9e1812abf6c8af9d5	TODO	sev
+
 Fatty Bears Birthday Surprise
 	Demo	DOS	en	47e75b1bdcb44c78cb94883d1731ccf8	fbdemo	khalek
 	Demo	Windows	en	22c9eb04455440131ffc157aeb8d40a8	fbdemo	khalek
