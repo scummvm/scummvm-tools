@@ -2446,33 +2446,44 @@ void next_line_V67(char *output)
 		ext(output, "rpppp|getDistPtPt");
 		break;
 	case 0xC8:
-		// TODO - add more subopcodes
-		ext(output, "ry" "kernelGetFunctions\0"
-				"\x73|getWalkBoxAt,"
-				"\x74|isPointInBox,"
-				"\xCE|getRGBSlot"
-				);
+		if (scriptVersion == 7) 
+			// TODO - add more subopcodes
+			ext(output, "ry" "kernelGetFunctions\0"
+					"\x73|getWalkBoxAt,"
+					"\x74|isPointInBox,"
+					"\xCE|getRGBSlot"
+					);
+		else 
+			ext(output, "l|kernelGetFunctions");
 		break;
 	case 0xC9:
-		// TODO - add more subopcodes
-		ext(output, "y" "kernelSetFunctions\0"
-				"\x4|grabCursor,"
-				"\x5|fadeOut,"
-				"\x6|startVideo,"
-				"\xC|setCursorImg,"
-				"\xD|remapCostume,"
-				"\xE|remapCostumeInsert,"
-				"\xF|setVideoFrameRate,"
+		if (scriptVersion == 7) 
+			ext(output, "y" "kernelSetFunctions\0"
+					"\x4|grabCursor,"
+					"\x5|fadeOut,"
+					"\x6|startVideo,"
+					"\xC|setCursorImg,"
+					"\xD|remapCostume,"
+					"\xE|remapCostumeInsert,"
+					"\xF|setVideoFrameRate,"
 
-				"\x10|enqueueTextA,"
-				"\x11|enqueueTextB,"
+					"\x10|enqueueTextA,"
+					"\x11|enqueueTextB,"
+					"\x14|setRadioChatter,"
 
-				"\x6C|buildPaletteShadow,"
-				"\x6D|setPaletteShadow,"
+					"\x6B|setActorScale,"
+					"\x6C|buildPaletteShadow,"
+					"\x6D|setPaletteShadow,"
 
-				"\x76|blastShadowObject,"
-				"\x77|superBlastObject"
-				);
+					"\x75|freezeScripts,"
+					"\x76|blastShadowObject,"
+					"\x77|superBlastObject,"
+					"\x7C|setSaveSound,"
+					"\xD7|setSubtitles,"
+					);
+		else 
+			// TODO - add subopcodes
+			ext(output, "l|kernelSetFunctions");
 		break;
 	case 0xCA:
 		ext(output, "p|breakXTimes");
