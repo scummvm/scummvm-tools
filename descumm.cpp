@@ -2660,7 +2660,7 @@ void get_tok_V345(char *buf)
 			d = get_byte();
 			d |= get_byte() << 8;
 			d |= get_byte() << 16;
-			sprintf(buf, "Delay(%d);", d);
+			sprintf(buf, "delay(%d)", d);
 			break;
 		}
 
@@ -2676,12 +2676,15 @@ void get_tok_V345(char *buf)
 		do_tok(buf, "actorFollowCamera", ((opcode & 0x80) ? A1V : A1B));
 		break;
 
-	case 0x58:
-		if (!cur_pos)
-			do_tok(buf, "StopOverride", A1B | A2B | A3W);
-		else
-			do_tok(buf, "Override", A1B);
-		break;
+	case 0x58:{
+			int d;
+			d = get_byte();
+			if (d != 0)
+				sprintf(buf, "beginOverride");
+			else
+				sprintf(buf, "endOverride");
+			break;
+		}
 
 	case 0x1C:
 	case 0x9C:
