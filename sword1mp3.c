@@ -30,8 +30,8 @@ char tempOutName[16];
 
 typedef struct {
 	char fileName[8];
-	bool missing; // some of the music files seem to have been removed from the game.
-				  // try and look for them, but don't warn if they are missing.
+	bool missing; /* Some of the music files seem to have been removed from the game. */
+		      /* Try and look for them, but don't warn if they are missing. */
 } MusicFile;
 
 MusicFile musicNames[TOTAL_TUNES] = {
@@ -421,9 +421,9 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 		cowHeader[cnt] = readUint32LE(clu);
 	assert(!(cowHeader[0] & 3));
 	numRooms = cowHeader[0] / 4;
-	assert(cowHeader[numRooms] == 0);	// this dword should be unused.
-	// the samples are divided into rooms and samples. We don't care about the room indexes at all.
-	// we simply copy them and go to the sample-index data.
+	assert(cowHeader[numRooms] == 0);	/* This dword should be unused. */
+	/* The samples are divided into rooms and samples. We don't care about the room indexes at all. */
+	/* We simply copy them and go to the sample-index data. */
 	writeUint32LE(cl3, headerSize);
 	for (cnt = 0; cnt < numRooms; cnt++)
 		writeUint32LE(cl3, cowHeader[cnt]);
@@ -431,14 +431,14 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 
 	numSamples = (((headerSize / 4) - numRooms) / 2) - 1;
 	for (cnt = 0; cnt < numSamples * 2; cnt++) {
-		// this is where we'll put the sample index data later.
+		/* This is where we'll put the sample index data later. */
 		writeUint32BE(cl3, 0xdeadbeefL);
 	}
 	cl3Index = (uint32*)malloc(numSamples * 8);
 	memset(cl3Index, 0, numSamples * 8);
 	
 	sampleIndex = cowHeader + numRooms + 1;
-	// this points to the sample index table. 8 bytes each (4 bytes size and then 4 bytes file index)
+	/* This points to the sample index table. 8 bytes each (4 bytes size and then 4 bytes file index) */
 
 	printf("converting %d samples\n", numSamples);
 
@@ -461,7 +461,7 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 			printf("sample %5d: skipped\n", cnt);
 		}
 	}
-	fseek(cl3, (numRooms + 2) * 4, SEEK_SET);	// now write the sample index into the CL3 file
+	fseek(cl3, (numRooms + 2) * 4, SEEK_SET);	/* Now write the sample index into the CL3 file */
 	for (cnt = 0; cnt < numSamples * 2; cnt++)
 		writeUint32LE(cl3, cl3Index[cnt]);
 	free(cl3Index);
@@ -469,7 +469,7 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 }
 
 void compressSpeech(CompressMode compMode) {
-	FILE *clu, *cl3;
+	FILE *clu, *cl3 = NULL;
 	int i;
 	char cluName[256], outName[256];
 
@@ -496,7 +496,7 @@ void compressSpeech(CompressMode compMode) {
 				convertClu(clu, cl3, compMode);
 			}
 		}
-        if (clu)
+        	if (clu)
 			fclose(clu);
 		if (cl3)
 			fclose(cl3);
@@ -528,8 +528,8 @@ void compressMusic(CompressMode compMode) {
 }
 
 void processArgs(int argc, char *argv[], int i, CompressMode mode) {
-	// HACK: the functions in extract-common expect the last argument to be a filename.
-	//       As we don't expect one, we simply add a dummy argument to the list.
+	/* HACK: the functions in extract-common expect the last argument to be a filename. */
+	/*       As we don't expect one, we simply add a dummy argument to the list. */
 	char **args;
 	int cnt;
 	char dummyName[] = "dummy";
@@ -570,7 +570,7 @@ void checkFilesExist(bool checkSpeech, bool checkMusic) {
 		}
 	}
 	if (checkMusic) {
-		for (i = 0; i < 20; i++) { // check the first 20 music files
+		for (i = 0; i < 20; i++) { /* Check the first 20 music files */
 			sprintf(fileName, "MUSIC/%s.WAV", musicNames[i].fileName);
 			testFile = fopen(fileName, "rb");
 			if (testFile) {
@@ -620,7 +620,7 @@ int main(int argc, char *argv[]) {
 	
 	processArgs(argc, argv, i, compMode);
 
-	// do a quick check to see if we can open any files at all
+	/* Do a quick check to see if we can open any files at all */
 	checkFilesExist(compSpeech, compMusic);
 
 	if (compSpeech)

@@ -28,6 +28,7 @@ TARGETS := \
 	rescumm$(EXEEXT) \
 	simon1decr$(EXEEXT) \
 	simon2mp3$(EXEEXT) \
+	sword1mp3$(EXEEXT) \
 	sword2mp3$(EXEEXT) \
 	saga2mp3$(EXEEXT)
 
@@ -70,6 +71,9 @@ simon1decr$(EXEEXT): simon1decr.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 simon2mp3$(EXEEXT): simon2mp3.o extract-common.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
+sword1mp3$(EXEEXT): sword1mp3.o extract-common.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 sword2mp3$(EXEEXT): sword2mp3.o extract-common.o util.o
