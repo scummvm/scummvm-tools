@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 				writeUint32BE(output, 'ZFOB');
 				writeUint32BE(output, outputSize + 4);
 				writeUint32BE(output, size);
-				for (int k = 0; k < outputSize; k++) {
+				for (unsigned int k = 0; k < outputSize; k++) {
 					writeByte(output, *(zlibOutputBuffer + k)); // compressed FOBJ datas
 				}
 				free(zlibInputBuffer);
