@@ -134,12 +134,10 @@ void showhelp(char *exename)
 {
 	printf("\nUsage: %s <params> [<file> | mac]\n", exename);
 	printf("\nParams:\n");
-	/*
 	printf("--mp3        encode to MP3 format (default)\n");
 	printf("--vorbis     encode to Vorbis format (not yet implemented)\n");
 	printf("(If one of these is specified, it must be the first parameter.)\n");
 	printf("\nMP3 mode params:\n");
-	*/
 	printf("-b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%i)\n", minBitrDef);
 	printf("-B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%i)\n", maxBitrDef);
 	printf("--vbr        LAME uses the VBR mode (default)\n");
@@ -147,14 +145,12 @@ void showhelp(char *exename)
 	printf("-V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%i)\n", vbrqualDef);
 	printf("-q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%i)\n", algqualDef);
 	printf("--silent     the output of LAME is hidden (default:disabled)\n");
-	/*
 	printf("\nVorbis mode params:\n");
 	printf("-b <rate>    <rate> is the nominal bitrate (default:unset)\n");
 	printf("-m <rate>    <rate> is the minimum bitrate (default:unset)\n");
 	printf("-M <rate>    <rate> is the maximum bitrate (default:unset)\n");
 	printf("-q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%i)\n", oggqualDef);
 	printf("--silent     the output of oggenc is hidden (default:disabled)\n");
-	*/
 	printf("\n--help     this help message\n");
 	printf("\n\nIf a parameter is not given the default value is used\n");
 	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
@@ -282,8 +278,6 @@ int main(int argc, char *argv[])
 		i++;
 	}
 	else if (strcmp(argv[1], "--vorbis") == 0) {
-		printf("Vorbis not implemented\n");
-		exit(0);
 		oggmode = 1;
 		i++;
 	}
