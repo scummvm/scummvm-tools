@@ -20,13 +20,9 @@
 #include <stdio.h>
 #include "extract.h"
 
-#ifndef _SYS_TYPES_H
-typedef unsigned int ulong;
-#endif
-
 typedef struct RECORD {
-	ulong offset;
-	ulong size;
+	uint32 offset;
+	uint32 size;
 } RECORD;
 
 static CompressMode gCompMode = kMP3Mode;
@@ -38,12 +34,12 @@ void sagaEncode(char *infile) {
 	FILE *res_file;
 	FILE *outputfile;
 
-	ulong res_tbl_ct;
-	ulong res_tbl_offset;
-	ulong res_size;
-	ulong outtable_offset;
+	uint32 res_tbl_ct;
+	uint32 res_tbl_offset;
+	uint32 res_size;
+	uint32 outtable_offset;
 
-	ulong t;
+	uint32 t;
 
 	struct RECORD  *table;
 	struct RECORD  *outtable;
