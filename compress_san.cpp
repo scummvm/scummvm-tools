@@ -111,10 +111,12 @@ int main(int argc, char *argv[]) {
 				fseek(input, -4, SEEK_CUR);
 				break;
 			} else if ((tag == TO_LE_32('FOBJ')) && (first_fobj)) {
-				first_fobj = false;
 				size = readUint32BE(input); // FOBJ size
 				if ((size & 1) != 0)
 					size++;
+				if (size < 100)
+					goto normal_block;
+				first_fobj = false;
 				unsigned long outputSize = size + (size / 9);
 				byte *zlibInputBuffer = (byte *)malloc(size);
 				byte *zlibOutputBuffer = (byte *)malloc(outputSize);
@@ -140,6 +142,7 @@ int main(int argc, char *argv[]) {
 				continue;
 			} else {
 				size = readUint32BE(input); // chunk size
+normal_block:
 				writeUint32BE(output, tag);
 				writeUint32BE(output, size);
 				if ((size & 1) != 0)
