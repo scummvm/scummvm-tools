@@ -25,6 +25,10 @@ Extraction Tools:
                 Extracts data files from NES version of Maniac Mansion.
                 There is currently no support for this game in ScummVM!
 
+        extract_simon1_amiga
+                Extracts the graphics or music files in AGA/ECS
+                versions of Simon the Sorcerer 1 for Amiga
+
 Compression Tools:
         compress_scumm_sou 
                 Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
@@ -78,8 +82,3 @@ Script Tools:
 
         dekyra
                 Basic script disassembler for Legend of Kyrandia games
-
-Other tools:
-        simon1decr
-                Used to decrunch the graphics and music files in AGA/ECS 
-                versions of Simon the Sorcerer 1 for Amiga 

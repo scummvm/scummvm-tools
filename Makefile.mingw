@@ -22,7 +22,7 @@ install:   all
 	strip extract_loom_tg16.exe -o $(SCUMMVMPATH)/tools/extract_loom_tg16.exe
 	strip extract_mm_nes.exe -o $(SCUMMVMPATH)/tools/extract_mm_nes.exe
 	strip extract_scumm_mac.exe -o $(SCUMMVMPATH)/tools/extract_scumm_mac.exe
-	strip simon1decr.exe -o $(SCUMMVMPATH)/tools/simon1decr.exe
+	strip extract_simon1_amiga.exe -o $(SCUMMVMPATH)/tools/extract_simon1_amiga.exe
 	cp COPYING $(SCUMMVMPATH)/tools/copying.txt
 	cp README $(SCUMMVMPATH)/tools/readme.txt
 	u2d $(SCUMMVMPATH)/tools/*.txt

@@ -30,7 +30,7 @@ TARGETS := \
 	extract_loom_tg16$(EXEEXT) \
 	extract_mm_nes$(EXEEXT) \
 	extract_scumm_mac$(EXEEXT) \
-	simon1decr$(EXEEXT)
+	extract_simon1_amiga$(EXEEXT)
 
 all: $(TARGETS)
 
@@ -67,7 +67,7 @@ extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 compress_saga$(EXEEXT): compress_saga.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-simon1decr$(EXEEXT): simon1decr.o
+extract_simon1_amiga$(EXEEXT): extract_simon1_amiga.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_simon$(EXEEXT): compress_simon.o compress.o util.o
