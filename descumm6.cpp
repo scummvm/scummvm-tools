@@ -2600,15 +2600,23 @@ void next_line_V67(char *output)
 			ext(output, "rl|kernelGetFunctions");
 		else {
 			if (scriptVersion == 7) 
-				// TODO - add more subopcodes
 				ext(output, "ry" "kernelGetFunctions\0"
 					"\x73|getWalkBoxAt,"
 					"\x74|isPointInBox,"
-					"\xCE|getRGBSlot"
+					"\xCE|getRGBSlot,"
+					"\xCF|getObjectXPos,"
+					"\xD0|getObjectYPos,"
+					"\xD1|getObjectWidth,"
+					"\xD2|getObjectHeight,"
+					"\xD3|getKeyState,"
+					"\xD4|getActorFrame"
+					"\xD5|getVerbXPos,"
+					"\xD6|getVerbYPos,"
+					"\xD7|getBoxFlags"
 					);
 			else 
 				ext(output, "ry" "kernelGetFunctions\0"
-					"\x71|virtMouseCoordinates"
+					"\x71|virtMouseCoordinates?"
 					);
 		}
 		break;
