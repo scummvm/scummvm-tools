@@ -19,6 +19,7 @@
  *
  */
 
+#include <time.h>
 #include "util.h"
 
 typedef struct {
