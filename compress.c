@@ -134,12 +134,12 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 
 	case kMP3Mode:
 		tmp += sprintf(tmp, "lame -t ");
-		tmp += sprintf(tmp, "-m m ");	/* FIXME: Why do we always encode to mono? */
 		if (rawInput) {
 			tmp += sprintf(tmp, "-r ");
 			tmp += sprintf(tmp, "--bitwidth %d ", rawAudioType.bitsPerSample);
 			if (rawAudioType.isLittleEndian)
 				tmp += sprintf(tmp, "-x ");
+			tmp += sprintf(tmp, (rawAudioType.isStereo ? "-m j " : "-m m "));
 			tmp += sprintf(tmp, "-s %d ", rawSamplerate);
 		}
 
