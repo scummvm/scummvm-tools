@@ -173,51 +173,54 @@ void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode
 }
 
 void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode) {
+	FILE *f;
 	int blocktype;
+	int length;
+	int sample_rate;
+	int comp;
+	char fbuf[2048];
+	size_t size;
+	int real_samplerate = -1;
 
-/* FIXME HIGH PRIORITY: We aren't handling all types of blocks, and what is
-   worse, we aren't handling multiple blocks occuring in a single VOC file.
-   This is bad, because multiple type 1 blocks occur in Full Throttle.
-   As a result of this lacking feature, we generates compressed audio files
-   which are missing some data. Ouch! See also bug #885490
- */
+	f = fopen(outName, "wb");
 
-	blocktype = fgetc(input);
-	switch (blocktype) {
-	case 0x01:{
-		int length = 0;
-		int i;
-		int sample_rate;
-		int comp;
-		FILE *f;
-		char fbuf[2048];
-		size_t size;
-		int real_samplerate;
-
+	while ((blocktype = fgetc(input))) {
+		if (blocktype != 1) {
+			/*
+			   We only generate a warning, instead of erroring out, because
+			   at least the monster.sou file of Full Throttle contains VOCs
+			   with an invalid length field (value to small). So we encounter
+			   the "block types" 0x80, 0x82 etc.. Not sure if there is another
+			   (maybe even better) way to work around that... ?
+			 */
+			warning("Unsupported VOC block type: %02x", blocktype);
+			break;
+		}
+	
 		/* Sound Data */
 		printf(" Sound Data\n");
-		for (i = 0; i < 3; i++)
-			length = length | (fgetc(input) << (i * 8));
+		length = fgetc(input);
+		length |= fgetc(input) << 8;
+		length |= fgetc(input) << 16;
 		length -= 2;
-		printf(" - length = %d\n", length);
 		sample_rate = fgetc(input);
 		comp = fgetc(input);
 
 		real_samplerate = getSampleRateFromVOCRate(sample_rate);
 
+		printf(" - length = %d\n", length);
 		printf(" - sample rate = %d (%02x)\n", real_samplerate, sample_rate);
 		printf(" - compression = %s (%02x)\n",
-		       (comp ==	   0 ? "8bits"   :
-		        (comp ==   1 ? "4bits"   :
-		         (comp ==  2 ? "2.6bits" :
-		          (comp == 3 ? "2bits"   :
-		                        "Multi")))), comp);
+			   (comp ==	   0 ? "8bits"   :
+				(comp ==   1 ? "4bits"   :
+				 (comp ==  2 ? "2.6bits" :
+				  (comp == 3 ? "2bits"   :
+								"Multi")))), comp);
 
 		if (comp != 0)
 			error("Cannot handle compressed VOC data");
 
 		/* Copy the raw data to a temporary file */
-		f = fopen(outName, "wb");
 		while (length > 0) {
 			size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length, input);
 			if (size <= 0)
@@ -225,17 +228,14 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 			length -= size;
 			fwrite(fbuf, 1, size, f);
 		}
-		fclose(f);
-
-		/* Convert the raw temp file to OGG/MP3 */
-		encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
-		break;
 	}
 
-	default:
-		error("Unknown chunk: %02x", blocktype);
-		break;
-	}
+	fclose(f);
+	
+	assert(real_samplerate != -1);
+
+	/* Convert the raw temp file to OGG/MP3 */
+	encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
 }
 
 void process_mp3_parms(int argc, char *argv[], int i) {

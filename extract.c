@@ -78,13 +78,9 @@ void end_of_file(void)
 void append_byte(int size, char buf[])
 {
 	int i;
-	int c;
 	for (i = 0; i < (size - 1); i++)
 		buf[i] = buf[i + 1];
-	c = fgetc(input);
-	if (c == EOF)
-		end_of_file();
-	buf[i] = c;
+	buf[i] = fgetc(input);
 }
 
 void get_part(void)
@@ -99,11 +95,13 @@ void get_part(void)
 	int pos = ftell(input);
 	uint32 tags;
 
-	/* The VCTL header */
+	/* Scan for the VCTL header */
 	fread(buf, 1, 4, input);
 	while (memcmp(buf, "VCTL", 4)) {
 		pos++;
 		append_byte(4, buf);
+		if (feof(input))
+			end_of_file();
 	}
 	tags = readUint32BE(input);
 	if (tags < 8)
