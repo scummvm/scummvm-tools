@@ -74,10 +74,10 @@ uint get_word()
 	int i;
 
 	if (scriptVersion == 8) {
-		i = TO_LE_32(*((int32 *)cur_pos));
+		i = TO_LE_32(*((uint32 *)cur_pos));
 		cur_pos += 4;
 	} else {
-		i = TO_LE_16(*((int16 *)cur_pos));
+		i = TO_LE_16(*((uint16 *)cur_pos));
 		cur_pos += 2;
 	}
 	return i;
