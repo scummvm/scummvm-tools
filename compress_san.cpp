@@ -45,8 +45,6 @@ const char *tag2str(uint32 tag) {
 
 void showhelp(char *exename) {
 	printf("\nUsage: %s <inputfile> <inputdir> <outputdir>\n", exename);
-//	printf("\nParams:\n");
-//	printf("\n --help     this help message\n");
 	exit(2);
 }
 
@@ -173,7 +171,7 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 		printf("error write temp wave file");
 		exit(1);
 	}
-	_waveDataSize += 0x1000;
+	_waveDataSize += size;
 }
 
 void decompressComiIACT(char *fileName, byte *output_data, byte *d_src, int bsize) {
@@ -415,6 +413,7 @@ void mixing(char *outputDir, char *inputFilename, int frames, int fps) {
 			byte *tmpBuf = (byte *)malloc(fileSize);
 			fread(tmpBuf, fileSize, 1, _audioTracks[l].file);
 			fclose(_audioTracks[l].file);
+			unlink(filename);
 
 			byte *wavBuf = (byte *)malloc(fileSize);
 			fseek(wavFile, 44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
@@ -612,7 +611,7 @@ void handleDigIACT(FILE *input, int size, char *outputDir, char *inputFilename, 
 		trackId = track + 600;
 		volume = track_flags * 2 - 600;
 	} else {
-		printf("bad track_flags: %d\n", track_flags);
+		printf("handleDigIACT() Bad track_flags: %d\n", track_flags);
 		exit(1);
 	}
 
@@ -648,10 +647,7 @@ int main(int argc, char *argv[]) {
 		*index = 0;
 	}
 
-	strcpy(tmpPath, inputDir);
-	strcat(tmpPath, "/");
-	strcat(tmpPath, inputFilename);
-	strcat(tmpPath, ".san");
+	sprintf(tmpPath, "%s/%s.san", inputDir, inputFilename);
 
 	FILE *input = fopen(tmpPath, "rb");
 	if (!input) {
@@ -659,10 +655,7 @@ int main(int argc, char *argv[]) {
 		exit(-1);
 	}
 
-	strcpy(tmpPath, outputDir);
-	strcat(tmpPath, "/");
-	strcat(tmpPath, inputFilename);
-	strcat(tmpPath, ".san");
+	sprintf(tmpPath, "%s/%s.san", outputDir, inputFilename);
 
 	FILE *output = fopen(tmpPath, "wb");
 	if (!output) {
@@ -670,20 +663,14 @@ int main(int argc, char *argv[]) {
 		exit(-1);
 	}
 
-	strcpy(tmpPath, inputDir);
-	strcat(tmpPath, "/");
-	strcat(tmpPath, inputFilename);
-	strcat(tmpPath, ".flu");
+	sprintf(tmpPath, "%s/%s.flu", inputDir, inputFilename);
 
 	FILE *flu_in = NULL;
 	FILE *flu_out = NULL;
 	flu_in = fopen(tmpPath, "rb");
 
 	if (flu_in) {
-		strcpy(tmpPath, outputDir);
-		strcat(tmpPath, "/");
-		strcat(tmpPath, inputFilename);
-		strcat(tmpPath, ".flu");
+		sprintf(tmpPath, "%s/%s.flu", outputDir, inputFilename);
 		flu_out = fopen(tmpPath, "wb");
 		if (!flu_out) {
 			printf("Cannot open file: %s\n", tmpPath);
@@ -823,11 +810,9 @@ skip:
 
 	if (_waveTmpFile) {
 		writeWaveHeader(_waveDataSize);
-		strcpy(tmpPath, outputDir);
-		strcat(tmpPath, "/");
-		strcat(tmpPath, inputFilename);
-		strcat(tmpPath, ".wav");
+		sprintf(tmpPath, "%s/%s.wav", outputDir, inputFilename);
 		encodeWaveWithOgg(tmpPath);
+		unlink(tmpPath);
 	}
 
 	fclose(input);

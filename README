@@ -61,8 +61,6 @@ Compression Tools:
                 Compresses '.san' smush animation files. It uses lossless
                 zlib for compressing FOBJ gfx chunks inside a san file.
                 It also can create a separate Ogg file with the audio track.
-                There are also temporary files *.tmp and *.wav which could
-                be deleted after finished compression.
 
                 Example of usage:
                 compress_san opening.san uncomp comp
@@ -74,12 +72,7 @@ Compression Tools:
                 must have been built with Ogg support enabled.
 
         compress_scumm_bun <inputfile> <inputdir> <outputdir>
-                Compresses '.bun' music/voice files into ogg files and '.map'
-                information files. There are temporary files *.wav which
-                could be deleted after finished compression.
-                Files '.ogg' and '.map' are suggested placed in new 
-                handly created sub directory with name 'audio'.
-                That directory must be in game data dir.
+                Compresses '.bun' music/voice files.
 
                 Example of usage:
                 compress_scumm.bun digmusic.bun uncomp comp
