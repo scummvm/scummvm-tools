@@ -1,4 +1,4 @@
-/* Extract - monster.sou to MP3-compressed monster.so3 converter
+/* MM_NES_Extract - Extract data files from NES version of Maniac Mansion
  * Copyright (C) 2002  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
