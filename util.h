@@ -100,6 +100,7 @@ uint32 readUint32LE(FILE *fp);
 void writeByte(FILE *fp, uint8 b);
 void writeUint16BE(FILE *fp, uint16 value);
 void writeUint32BE(FILE *fp, uint32 value);
+void writeUint32LE(FILE *fp, uint32 value);
 uint32 fileSize(FILE *fp);
 
 /* Misc stuff */
