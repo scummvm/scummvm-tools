@@ -697,12 +697,10 @@ void encodeWaveWithLame(char *filename) {
 	}
 }
 
-void writeWaveHeader(int s_size) {
-	int rate = 22050;
+void writeWaveHeader(int s_size, int rate, int chan) {
 	int bits = 16;
-	int chan = 2;
 	byte wav[44];
-	memset (wav, 0,	44);
+	memset(wav, 0, 44);
 	wav[0] = 'R';
 	wav[1] = 'I';
 	wav[2] = 'F';
@@ -751,7 +749,7 @@ void writeWaveHeader(int s_size) {
 	_waveTmpFile = NULL;
 }
 
-void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
+void writeToTempWave(char *fileName, byte *output_data, unsigned int size, int bits) {
 	if (!_waveTmpFile) {
 		_waveTmpFile = fopen(fileName, "wb");
 		if (!_waveTmpFile) {
@@ -771,7 +769,6 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 		output_data[j + 0] = output_data[j + 1];
 		output_data[j + 1] = tmp;
 	}
-
 	if (fwrite(output_data, 1, size, _waveTmpFile) != size) {
 		printf("error write temp wave file");
 		exit(1);
@@ -826,16 +823,12 @@ byte *decompressBundleSound(int index, FILE *input, int32 &finalSize) {
 	return compFinal;
 }
 
-byte *convertTo16bitStereo(byte *ptr, int inputSize, int &outputSize, int bits, int freq, int channels) {
+byte *convertTo16bit(byte *ptr, int inputSize, int &outputSize, int bits, int freq, int channels) {
 	outputSize = inputSize;
 	if (bits == 8)
 		outputSize *= 2;
 	if (bits == 12)
 		outputSize = (outputSize / 3) * 4;
-	if (channels == 1)
-		outputSize *= 2;
-	if (freq == 11025)
-		outputSize *= 2;
 
 	byte *outputBuf = (byte *)malloc(outputSize);
 	if (bits == 8) {
@@ -845,18 +838,6 @@ byte *convertTo16bitStereo(byte *ptr, int inputSize, int &outputSize, int bits, 
 			uint16 val = (*src++ - 0x80) << 8;
 			*buf++ = (byte)(val >> 8);
 			*buf++ = (byte)val;
-			if (freq == 11025) {
-				*buf++ = (byte)(val >> 8);
-				*buf++ = (byte)val;
-			}
-			if (channels == 1) {
-				*buf++ = (byte)(val >> 8);
-				*buf++ = (byte)val;
-				if (freq == 11025) {
-					*buf++ = (byte)(val >> 8);
-					*buf++ = (byte)val;
-				}
-			}
 		}
 	}
 	if (bits == 12) {
@@ -872,33 +853,9 @@ byte *convertTo16bitStereo(byte *ptr, int inputSize, int &outputSize, int bits, 
 			value = ((((v2 & 0x0f) << 8) | v1) << 4) - 0x8000;
 			*decoded++ = (byte)((value >> 8) & 0xff);
 			*decoded++ = (byte)(value & 0xff);
-			if (freq == 11025) {
-				*decoded++ = (byte)((value >> 8) & 0xff);
-				*decoded++ = (byte)(value & 0xff);
-			}
-			if (channels == 1) {
-				*decoded++ = (byte)((value >> 8) & 0xff);
-				*decoded++ = (byte)(value & 0xff);
-				if (freq == 11025) {
-					*decoded++ = (byte)((value >> 8) & 0xff);
-					*decoded++ = (byte)(value & 0xff);
-				}
-			}
 			value = ((((v2 & 0xf0) << 4) | v3) << 4) - 0x8000;
 			*decoded++ = (byte)((value >> 8) & 0xff);
 			*decoded++ = (byte)(value & 0xff);
-			if (freq == 11025) {
-				*decoded++ = (byte)((value >> 8) & 0xff);
-				*decoded++ = (byte)(value & 0xff);
-			}
-			if (channels == 1) {
-				*decoded++ = (byte)((value >> 8) & 0xff);
-				*decoded++ = (byte)(value & 0xff);
-				if (freq == 11025) {
-					*decoded++ = (byte)((value >> 8) & 0xff);
-					*decoded++ = (byte)(value & 0xff);
-				}
-			}
 		}
 	}
 	if (bits == 16) {
@@ -908,10 +865,6 @@ byte *convertTo16bitStereo(byte *ptr, int inputSize, int &outputSize, int bits, 
 		while (loop_size--) {
 			*buf++ = *src++;
 			*buf++ = *src++;
-			if (channels == 1) {
-				*buf++ = *(src - 2);
-				*buf++ = *(src - 1);
-			}
 		}
 	}
 
@@ -976,11 +929,11 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *
 		int outputSize = 0;
 		int size = _region[l].length;
 		int offset = _region[l].offset;
-		byte *outputData = convertTo16bitStereo(ptr + offset, size, outputSize, bits, freq, channels);
-
+		byte *outputData = convertTo16bit(ptr + offset, size, outputSize, bits, freq, channels);
+		bits = 16;
 		sprintf(tmpPath, "%s/%s_reg%03d.wav", dir, filename, l);
-		writeToTempWave(tmpPath, outputData, outputSize);
-		writeWaveHeader(_waveDataSize);
+		writeToTempWave(tmpPath, outputData, outputSize, bits);
+		writeWaveHeader(_waveDataSize, freq, channels);
 
 		free(outputData);
 		sprintf(tmpPath, "%s/%s_reg%03d", dir, filename, l);
@@ -1024,10 +977,6 @@ void recalcRegions(int32 &value, int bits, int freq, int channels) {
 		size *= 2;
 	if (bits == 12)
 		size = (size / 3) * 4;
-	if (channels == 1)
-		size *= 2;
-	if (freq == 11025)
-		size *= 2;
 	value = size;
 }
 
@@ -1101,7 +1050,10 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 	cbundleTable[cbundleCurIndex].offset = startPos;
 
 	writeUint32BE(output, 'RMAP');
-	writeUint32BE(output, 1); // version
+	writeUint32BE(output, 2); // version
+	writeUint32BE(output, 16); // bits
+	writeUint32BE(output, freq);
+	writeUint32BE(output, channels);
 	writeUint32BE(output, numRegions);
 	writeUint32BE(output, numJumps);
 	writeUint32BE(output, numSyncs);
