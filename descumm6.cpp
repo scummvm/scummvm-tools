@@ -2501,7 +2501,12 @@ void next_line_V67(char *output)
 				"\x42p|color,"
 				"\x43p|right,"
 				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFEp|begin," "\xFF|end");
+				"\x47|left,"
+				"\x48|overhead,"
+				"\x4A|mumble,"
+				"\x4Bs|msg,"
+				"\xFEp|begin,"
+				"\xFF|end");
 		break;
 	case 0xB9:
 		// TODO: make it HEv7 specific
