@@ -380,18 +380,6 @@ char *do_tok(char *buf, const char *text, int args)
 	return strchr(buf, 0);
 }
 
-#if 0
-void output_expr_text(int offs, char *data)
-{
-	printf("[%.4X] (%.2X) EXPRESSION_MODE: %s\n", offs, *((byte *)(org_pos + offs)), data);
-}
-
-void output_ext_opcode(int offs, char *data)
-{
-	printf("[%.4X] (%.2X) ACTORSET: %s\n", offs, *(org_pos + offs), data);
-}
-#endif
-
 
 #define INDENT_SIZE 2
 
@@ -595,27 +583,28 @@ void do_decodeparsestring_v2(char *buf, byte opcode)
 
 void do_actorset_v2(char *buf, byte opcode)
 {
-	buf = do_tok(buf, "ActorSet", ((opcode & 0x80) ? A1V : A1B) | ANOLASTPAREN);
+	// FIXME: the A2 should be displayed as arg to the subops, not as arg to the
+	// ActorSet itself; but that'll require some more work.
+	buf = do_tok(buf, "ActorSet", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x80) ? A2V : A2B) | ANOLASTPAREN);
 	buf = strecpy(buf, ",[");
-	int arg = get_byte();
 
 	int subop = get_byte();
 
 	switch(subop) {
 		case 1:
-			buf = do_tok(buf, "Sound", ((arg & 0x40) ? A1V : A1B));
+			buf = do_tok(buf, "Sound", 0);
 			break;
 		case 2:
-			buf = do_tok(buf, "Colour", A1B | ((arg & 0x40) ? A2V : A2B));
+			buf = do_tok(buf, "Colour", A1B);
 			break;
 		case 3:
 			buf = do_tok(buf, "Name", A1ASCII);
 			break;
 		case 4:
-			buf = do_tok(buf, "Costume", ((arg & 0x40) ? A1V : A1B));
+			buf = do_tok(buf, "Costume", 0);
 			break;
 		case 5:
-			buf = do_tok(buf, "TalkColor", ((arg & 0x40) ? A1V : A1B));
+			buf = do_tok(buf, "TalkColor", 0);
 			break;
 		default:
 			buf += sprintf(buf, "Unknown%.2X()", opcode);
