@@ -671,23 +671,42 @@ int get_signed_word()
 
 byte *skipVerbHeader(byte *p)
 {
-	byte code;
-	byte *p2 = p;
-	int hdrlen;
+	if (scriptVersion == 8) {
+		uint32 *ptr;
+		uint32 code;
+		int hdrlen;
+		
+		ptr = (uint32 *)p;
+		while (TO_LE_32(*ptr++) != 0) {
+			ptr++;
+		}
+		hdrlen = (byte *)ptr - p;
+		
+		ptr = (uint32 *)p;
+		while ((code = TO_LE_32(*ptr++)) != 0) {
+			printf("  %2X - %.4X\n", code, TO_LE_32(*ptr++) - hdrlen);
+		}
 
-	while ((code = *p2++) != 0) {
-		p2 += sizeof(unsigned short);
+		return (byte *)ptr;
+	} else {
+		byte code;
+		byte *p2 = p;
+		int hdrlen;
+	
+		while (*p2++ != 0) {
+			p2 += 2;
+		}
+	
+		printf("Events:\n");
+	
+		hdrlen = p2 - p + 8;
+	
+		while ((code = *p++) != 0) {
+			printf("  %2X - %.4X\n", code, *(uint16 *)p - hdrlen);
+			p += 2;
+		}
+		return p;
 	}
-
-	printf("Events:\n");
-
-	hdrlen = p2 - p + 8;
-
-	while ((code = *p++) != 0) {
-		printf("  %2X - %.4X\n", code, *(unsigned short *)p - hdrlen);
-		p += sizeof(unsigned short);
-	}
-	return p;
 }
 
 StackEnt *se_new(int type)
