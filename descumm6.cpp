@@ -973,7 +973,7 @@ void ext(const char *fmt)
 	const char *prep = NULL;
 	StackEnt *args[10];
 	int numArgs = 0;
-	char *e;
+	char *e = (char *)output;
 
 	/* return the result? */
 	wantresult = false;
@@ -986,7 +986,9 @@ void ext(const char *fmt)
 		if (cmd == 'x' && !extstr) {
 			/* Sub-op: next byte specifies which one */
 			extstr = fmt;
-			fmt += strlen(fmt) + 1;
+			while (*fmt++)
+				;
+			e += sprintf(e, "%s.", extstr);
 
 			/* extended thing */
 			extcmd = get_byte();
@@ -1007,7 +1009,9 @@ void ext(const char *fmt)
 			/* Sub-op: parameters are in a list, first element of the list specified the command */
 			StackEnt *se;
 			extstr = fmt;
-			fmt += strlen(fmt) + 1;
+			while (*fmt++)
+				;
+			e += sprintf(e, "%s.", extstr);
 			
 			args[numArgs++] = se_get_list();
 			
@@ -1021,24 +1025,14 @@ void ext(const char *fmt)
 				/* scan until we find , or \0 */
 				while ((cmd = *fmt++) != ',') {
 					if (cmd == 0) {
-//						invalidop(extstr, extcmd);
-//						extstr = "foo";
-						goto use_default_command;
+						se->data++;
+						fmt = "Unknown";
+						goto output_command;
 					}
 				}
 			}
 
 			/* found a command, continue at the beginning */
-			continue;
-
-use_default_command:
-			se->data++;
-			fmt = extstr;
-			break;
-		}
-		if (cmd == 'm' && !prep) {
-			prep = fmt;
-			fmt += strlen(fmt) + 1;
 			continue;
 		}
 
@@ -1061,9 +1055,9 @@ use_default_command:
 		}
 	}
 
-	/* create a string from the arguments */
+output_command:
 
-	e = (char *)output;
+	/* create a string from the arguments */
 	if (prep)
 		e = strecpy(e, prep);
 	while (*fmt != 0 && *fmt != ',')
@@ -1150,6 +1144,24 @@ void jumpif(StackEnt * se, bool negate)
 	e = se_astext(se, e);
 	sprintf(e, ") jump %x", to);
 }
+
+
+#define PRINT_V8(name)            \
+	do {                          \
+		ext("x" name "\0"         \
+				"\xC8|baseop,"    \
+				"\xC9|end,"       \
+				"\xCApp|XY,"      \
+				"\xCBp|color,"    \
+				"\xCC|center,"    \
+				"\xCDp|charset,"  \
+				"\xCE|left,"      \
+				"\xCF|overhead,"  \
+				"\xD0|mumble,"    \
+				"\xD1s|msg,"      \
+				"\xD2|wrap"       \
+				);                \
+	} while(0)
 
 
 void next_line_V8()
@@ -1352,96 +1364,31 @@ void next_line_V8()
 		ext("pp|setCameraAt");
 		break;
 	case 0x8F:
-		ext("ps|talkActor");
+		ext("ps|printActor");
 		break;
 	case 0x90:
-		ext("s|talkEgo");
+		PRINT_V8("printEgo");
 		break;
 	case 0x91:
-		ext("ps|talkActorSimple");
+		ext("ps|talkActor");
 		break;
 	case 0x92:
-		ext("s|talkEgoSimple");
+		ext("s|talkEgo");
 		break;
 	case 0x93:
-		ext("m" "printLine_\0"
-				"x" "printLine\0"
-				"\xC8|baseop,"
-				"\xC9|end,"
-				"\xCApp|XY,"
-				"\xCBp|color,"
-				"\xCC|center,"
-				"\xCDp|charset,"	// ???
-				"\xCE|left,"
-				"\xCF|overhead,"
-				"\xD0|mumble,"
-				"\xD1s|msg,"
-				"\xD2|wrap"
-				);
+		PRINT_V8("printLine");
 		break;
 	case 0x94:
-		ext("m" "printCursor_\0"
-				"x" "printCursor\0"
-				"\xC8|baseop,"
-				"\xC9|end,"
-				"\xCApp|XY,"
-				"\xCBp|color,"
-				"\xCC|center,"
-				"\xCDp|charset,"	// ???
-				"\xCE|left,"
-				"\xCF|overhead,"
-				"\xD0|mumble,"
-				"\xD1s|msg,"
-				"\xD2|wrap"
-				);
+		PRINT_V8("printCursor");
 		break;
 	case 0x95:
-		ext("m" "printDebug_\0"
-				"x" "printDebug\0"
-				"\xC8|baseop,"
-				"\xC9|end,"
-				"\xCApp|XY,"
-				"\xCBp|color,"
-				"\xCC|center,"
-				"\xCDp|charset,"	// ???
-				"\xCE|left,"
-				"\xCF|overhead,"
-				"\xD0|mumble,"
-				"\xD1s|msg,"
-				"\xD2|wrap"
-				);
+		PRINT_V8("printDebug");
 		break;
 	case 0x96:
-		ext("m" "printSystem_\0"
-				"x" "printSystem\0"
-				"\xC8|baseop,"
-				"\xC9|end,"
-				"\xCApp|XY,"
-				"\xCBp|color,"
-				"\xCC|center,"
-				"\xCDp|charset,"	// ???
-				"\xCE|left,"
-				"\xCF|overhead,"
-				"\xD0|mumble,"
-				"\xD1s|msg,"
-				"\xD2|wrap"
-				);
+		PRINT_V8("printSystem");
 		break;
 	case 0x97:
-		ext("m" "blastText_\0"
-				"x" "blastText\0"
-				"\xC8|baseop,"
-				"\xC9|end,"
-				"\xCApp|XY,"
-				"\xCBp|color,"
-				"\xCC|center,"
-				"\xCDp|charset,"	// ???
-				"\xCE|left,"
-				"\xCF|overhead,"
-				"\xD0|mumble,"
-				"\xD1s|msg,"
-				"\xD2|wrap"
-				);
+		PRINT_V8("blastText");
 		break;
 
 	case 0x9C:
@@ -1465,10 +1412,8 @@ void next_line_V8()
 		ext("p|loadRoom");
 		break;
 	case 0x9E:
-		// FIXME - this is a pure guess
 		ext("ppz|loadRoomWithEgo");
 		break;
-
 	case 0x9F:
 		ext("ppp|walkActorToObj");
 		break;
@@ -1831,6 +1776,22 @@ void next_line_V8()
 		break;
 	}
 }
+
+#define PRINT_V67(name)           \
+	do {                          \
+		ext("x" name "\0"         \
+				"\x41pp|XY,"      \
+				"\x42p|color,"    \
+				"\x43p|right,"    \
+				"\x45|center,"    \
+				"\x47|left,"      \
+				"\x48|overhead,"  \
+				"\x4A|mumble,"    \
+				"\x4Bs|msg,"      \
+				"\xFE|begin,"     \
+				"\xFF|end"        \
+				);                \
+	} while(0)
 
 void next_line_V67()
 {
@@ -2305,54 +2266,20 @@ void next_line_V67()
 		ext("|stopSentence");
 		break;
 	case 0xB4:
-		ext("m" "print_0_\0"
-				"x" "print_0\0"
-				"\x41pp|XY,"
-				"\x42p|color,"
-				"\x43p|right,"
-				"\x45|center,"
-				"\x47|left,"
-				"\x48|overhead,"
-				"\x4A|new3,"
-				"\x4Bs|msg,"
-				"\xFE|begin,"
-				"\xFF|end");
+		PRINT_V67("printLine");
 		break;
 	case 0xB5:
-		ext("m" "print_1_\0"
-				"x" "print_1\0"
-				"\x41pp|XY,"
-				"\x42p|color,"
-				"\x43p|right,"
-				"\x45|center,"
-				"\x47|left,"
-				"\x48|overhead,"
-				"\x4A|new3,"
-				"\x4Bs|msg,"
-				"\xFE|begin,"
-				"\xFF|end");
+		PRINT_V67("printCursor");
 		break;
 	case 0xB6:
-		ext("m" "print_2_\0"
-				"x" "print_2\0"
-				"\x41pp|XY,"
-				"\x42p|color,"
-				"\x43p|right,"
-				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
+		PRINT_V67("printDebug");
 		break;
 	case 0xB7:
-		ext("m" "print_3_\0"
-				"x" "print_3\0"
-				"\x41pp|XY,"
-				"\x42p|color,"
-				"\x43p|right,"
-				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
+		PRINT_V67("printSystem");
 		break;
 	case 0xB8:
-		ext("m" "print_actor_\0"
-				"x" "print_actor\0"
+		// This is *almost* identical to the other print opcodes, only the 'begine' subop differs
+		ext("x" "printActor\0"
 				"\x41pp|XY,"
 				"\x42p|color,"
 				"\x43p|right,"
@@ -2360,13 +2287,7 @@ void next_line_V67()
 				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFEp|begin," "\xFF|end");
 		break;
 	case 0xB9:
-		ext("m" "print_ego_\0"
-				"x" "print_ego\0"
-				"\x41pp|XY,"
-				"\x42p|color,"
-				"\x43p|right,"
-				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
+		PRINT_V67("printEgo");
 		break;
 	case 0xBA:
 		ext("ps|talkActor");
