@@ -111,6 +111,7 @@ int get_curpos();
 int gameFlag;
 
 bool GF_OLD256 = true;	// TODO - this should be controlled by a command line option
+bool GF_UNBLOCKED = false;
 
 
 bool emit_if(char *before, char *after);
@@ -2106,11 +2107,14 @@ void ShowHelpAndExit()
 				 "\tdescumm [-o] filename\n"
 				 "Flags:\n"
 				 "\t-3\tUse Indy3-256 specific hacks\n"
+				 "\t-u\tScript is Unblocked/has no header\n"
 				 "\t-o\tAlways Show offsets\n"
 				 "\t-i\tDon't output ifs\n"
 				 "\t-e\tDon't output else\n"
 				 "\t-f\tDon't output else-if\n"
-				 "\t-c\tDon't show opcode\n" "\t-x\tDon't show offsets\n" "\t-h\tHalt on error\n");
+				 "\t-c\tDon't show opcode\n" 
+				 "\t-x\tDon't show offsets\n" 
+				 "\t-h\tHalt on error\n");
 	exit(0);
 }
 
@@ -2176,6 +2180,9 @@ int main(int argc, char *argv[])
 				case 'h':
 					HaltOnError = 1;
 					break;
+				case 'u':
+					GF_UNBLOCKED = true;
+					break;
 				default:
 					ShowHelpAndExit();
 				}
@@ -2199,30 +2206,34 @@ int main(int argc, char *argv[])
 
 	memorg = mem = (byte *)malloc(65536);
 	len = fread(mem, 1, 65536, in);
+	
 	fclose(in);
 	size_of_code = len;
 
 	buf = (char *)malloc(4096);
-	switch (TO_LE_16(*((unsigned short *)mem + 2))) {
-	case MKID('LS'):
-		printf("Script# %d\n", (unsigned char)mem[8]);
-		mem += 7;
-		break;											/* Local script */
-	case MKID('SC'):
-		mem += 6;
-		break;											/* Script */
-	case MKID('EN'):
-		mem += 6;
-		break;											/* Entry code */
-	case MKID('EX'):
-		mem += 6;
-		break;											/* Exit code */
-	case MKID('OC'):
-		mem += skipVerbHeader(mem + 19);
-		break;											/* Verb */
-	default:
-		printf("Unknown script type!\n");
-		exit(0);
+
+	if (!GF_UNBLOCKED) {
+		switch (TO_LE_16(*((unsigned short *)mem + 2))) {
+			case MKID('LS'):
+				printf("Script# %d\n", (unsigned char)mem[8]);
+				mem += 7;
+				break;			/* Local script */
+			case MKID('SC'):
+				mem += 6;
+				break;			/* Script */
+			case MKID('EN'):
+				mem += 6;
+				break;			/* Entry code */
+			case MKID('EX'):
+				mem += 6;
+				break;			/* Exit code */
+			case MKID('OC'):
+				mem += skipVerbHeader(mem + 19);
+				break;			/* Verb */
+			default:
+				printf("Unknown script type!\n");
+				exit(0);
+			}
 	}
 
 	cur_pos = mem;
