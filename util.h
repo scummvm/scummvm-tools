@@ -76,5 +76,15 @@ static uint16 inline SWAP_16(uint16 a) {
 
 #define MKID(a) (((a&0xff) << 8) | ((a >> 8)&0xff))
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+extern void error(const char *s, ...);
+extern void warning(const char *s, ...);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

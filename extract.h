@@ -68,6 +68,8 @@ extern int oggmode;
 extern void process_mp3_parms(int argc, char *argv[], int i);
 extern void process_ogg_parms(int argc, char *argv[], int i);
 
+extern int getSampleRateFromVOCRate(int vocSR);
+
 
 /*
  * Stuff which is in extract.c / simon2mp3.c

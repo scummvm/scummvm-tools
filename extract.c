@@ -187,12 +187,7 @@ void get_part(void)
 		sample_rate = fgetc(input);
 		comp = fgetc(input);
 
-		if (sample_rate == 0xa5 || sample_rate == 0xa6)
-			real_samplerate = 11025;
-		else if (sample_rate == 0xd2 || sample_rate == 0xd3)
-			real_samplerate = 22050;
-		else
-			real_samplerate = 1000000 / (256 - sample_rate);
+		real_samplerate = getSampleRateFromVOCRate(sample_rate);
 
 		printf(" - sample rate = %d (%02x)\n", real_samplerate, sample_rate);
 		printf(" - compression = %s (%02x)\n",
