@@ -1,4 +1,4 @@
-/* compress_san - compressor for bundle files
+/* compress_scumm_bun - compressor for bundle files
  * Copyright (C) 2004-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
