@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
 	for (l = 0; l < nbframes; l++) {
 		printf("frame: %d\n", l);
 		tag = readUint32BE(input); // chunk tag
-		assert(tag != TO_BE_32('FRME'));
+		assert(tag == TO_LE_32('FRME'));
 		writeUint32BE(output, tag); // FRME
 		int32 frameSize = readUint32BE(input); // FRME size
 		frameInfo[l].frameSize = frameSize;
@@ -99,10 +99,10 @@ int main(int argc, char *argv[]) {
 			tag = readUint32BE(input); // chunk tag
 			if (feof(input))
 				break;
-			if (tag == TO_BE_32('FRME')) {
+			if (tag == TO_LE_32('FRME')) {
 				fseek(input, -4, SEEK_CUR);
 				break;
-			} else if (tag != TO_BE_32('FOBJ')) {
+			} else if (tag != TO_LE_32('FOBJ')) {
 				size = readUint32BE(input); // chunk size
 				writeUint32BE(output, tag);
 				writeUint32BE(output, size);
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 				for (int k = 0; k < size; k++) {
 					writeByte(output, readByte(input)); // chunk datas
 				}
-			} else if (tag == TO_BE_32('FOBJ')) {
+			} else if (tag == TO_LE_32('FOBJ')) {
 				size = readUint32BE(input); // FOBJ size
 				if ((size & 1) != 0)
 					size++;
