@@ -3016,7 +3016,14 @@ int main(int argc, char *argv[])
 			printf("File too small to be a script\n");
 			exit(0);
 		}
+#if 1 || VERB_SCRIPT
+		if (scriptVersion == 2)
+			mem += skipVerbHeader_V23(mem + 15);
+		else
+			mem += skipVerbHeader_V23(mem + 17);
+#else
 		mem += 4;
+#endif
 	} else if (scriptVersion == 5) {
 		if (size_of_code < 8) {
 			printf("File too small to be a script\n");
