@@ -94,8 +94,6 @@
 void get_tok_V2(char *buf);	// For V2 (and V1?)
 void get_tok_V345(char *buf);	// For V3, V4, V5
 
-int get_curoffs();
-
 bool IndyFlag = false;
 bool GF_UNBLOCKED = false;
 
@@ -2882,19 +2880,36 @@ void ShowHelpAndExit()
 	exit(0);
 }
 
-int skipVerbHeader_V23(byte *p)
+int skipVerbHeader_V2(byte *p)
 {
 	byte code;
-	int offset = 19;
-
-// two bytes obj id
+	int offset = 15, minOffset;
+	minOffset = 255;
+	p += offset;
 
 	printf("Events:\n");
 
 	while ((code = *p++) != 0) {
-		offset = TO_LE_16(*(unsigned short *)p);
+		offset = *p++;
 		printf("  %2X - %.4X\n", code, offset);
-		p += sizeof(unsigned short);
+		if (minOffset > offset)
+			minOffset = offset;
+	}
+	return minOffset;
+}
+
+int skipVerbHeader_V3(byte *p)
+{
+	byte code;
+	int offset = GF_UNBLOCKED ? 17 : 19;
+	p += offset;
+	
+	printf("Events:\n");
+
+	while ((code = *p++) != 0) {
+		offset = TO_LE_16(*(uint16 *)p);
+		p += 2;
+		printf("  %2X - %.4X\n", code, offset);
 	}
 	return offset;
 }
@@ -3011,16 +3026,18 @@ int main(int argc, char *argv[])
 
 	buf = (char *)malloc(4096);
 
+	offs_of_line = 0;
+
 	if (GF_UNBLOCKED) {
 		if (size_of_code < 4) {
 			printf("File too small to be a script\n");
 			exit(0);
 		}
-#if 1 || VERB_SCRIPT
+#if VERB_SCRIPT
 		if (scriptVersion == 2)
-			mem += skipVerbHeader_V23(mem + 15);
+			offs_of_line = skipVerbHeader_V2(mem);
 		else
-			mem += skipVerbHeader_V23(mem + 17);
+			offs_of_line = skipVerbHeader_V3(mem );
 #else
 		mem += 4;
 #endif
@@ -3070,7 +3087,7 @@ int main(int argc, char *argv[])
 				mem += 6;
 				break;			/* Exit code */
 			case MKID('OC'):
-				mem += skipVerbHeader_V23(mem + 19);
+				mem += skipVerbHeader_V3(mem);
 				break;			/* Verb */
 			default:
 				printf("Unknown script type!\n");
@@ -3078,11 +3095,9 @@ int main(int argc, char *argv[])
 			}
 	}
 
-	cur_pos = mem;
 	org_pos = mem;
+	cur_pos = org_pos + offs_of_line;
 	len -= mem - memorg;
-
-	offs_of_line = 0;
 
 	while (cur_pos < mem + len) {
 		byte opcode = *cur_pos;
