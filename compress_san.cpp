@@ -439,6 +439,10 @@ void mixing(char *outputDir, char *inputFilename, int frames, int fps) {
 			int offset = 0;
 			for (z = 0; z < _audioTracks[l].countFrames; z++) {
 				int length = _audioTracks[l].sizes[z];
+				if (length == 0) {
+					warning("zero length audio frame");
+					break;
+				}
 				if (_audioTracks[l].sdatSize != 0 && (offset + length) > _audioTracks[l].sdatSize) {
 					length = _audioTracks[l].sdatSize - offset;
 				}
