@@ -211,7 +211,7 @@ int main(int argc, char *argv[]) {
 
 	char inputDir[200];
 	char outputDir[200];
-	char inputFilename[20];
+	char inputFilename[200];
 	char tmpPath[200];
 
 	strcpy(inputFilename, argv[1]);
