@@ -2652,6 +2652,15 @@ void next_line()
 	case 0xD8:
 		ext("rp|isRoomScriptRunning");
 		break;
+	case 0xD9:
+		ext("p|closeFile");
+		break;
+	case 0xDA:
+		ext("rsp|openFile");
+		break;
+	case 0xDE:
+		ext("s|deleteFile");
+		break;
 	case 0xEC:
 		ext("rp|getActorLayer");
 		break;
