@@ -1514,8 +1514,19 @@ void get_tok(char *buf)
 		break;											/* arg1=actor, arg2=actor */
 
 	case 0x0F:
+	case 0x4F:
 	case 0x8F:
-		do_tok(buf, "getObjectState", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
+	case 0xCF:
+		do_tok(buf, "if State",
+					 ATO | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+
+	case 0x2F:
+	case 0x6F:
+	case 0xAF:
+	case 0xEF:
+		do_tok(buf, "if not State",
+					 ATO | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 
@@ -1607,6 +1618,11 @@ void get_tok(char *buf)
 	case 0x63:
 	case 0xE3:
 		do_tok(buf, "getActorFacing", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x66:
+	case 0xE6:
+		do_tok(buf, "getClosestObjActor", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x6C:
@@ -2017,16 +2033,10 @@ void get_tok(char *buf)
 		do_tok(buf, "pickupObject", ((opcode & 0x80) ? A1V : A1W));
 		break;
 
-	case 0x2f:
 	case 0x45:
-	case 0x4F:
 //    case 0x5C:
-	case 0x6F:
-	case 0xAF:
 	case 0xC5:
-	case 0xCF:
 	case 0xDC:
-	case 0xEF:
 		if (HaltOnError) {
 			printf("Illegal opcode %.2X\n", opcode);
 			exit(1);

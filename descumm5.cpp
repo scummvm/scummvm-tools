@@ -1606,6 +1606,11 @@ void get_tok(char *buf)
 		do_tok(buf, "getActorFacing", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
+	case 0x66:
+	case 0xE6:
+		do_tok(buf, "getClosestObjActor", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
 	case 0x6C:
 	case 0xEC:
 		do_tok(buf, "getActorWidth", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
@@ -1987,7 +1992,7 @@ void get_tok(char *buf)
 		break;
 
 
-	case 0x2f:
+	case 0x2F:
 	case 0x45:
 	case 0x4F:
 	case 0x50:
