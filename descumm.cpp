@@ -2530,7 +2530,7 @@ void get_tok(char *buf)
 	case 0x49:
 	case 0x89:
 	case 0xC9:
-		do_tok(buf, "faceActor", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "faceActor", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 
 	case 0x0A:
@@ -2850,6 +2850,8 @@ void get_tok(char *buf)
 
 	case 0x02:
 	case 0x82:
+		// FIXME - seems Zak256 has an additional word here?
+		//do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B) | A2W);
 		do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B));
 		break;
 
