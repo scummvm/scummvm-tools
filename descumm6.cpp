@@ -2609,7 +2609,7 @@ void next_line_V67(char *output)
 					"\xD1|getObjectWidth,"
 					"\xD2|getObjectHeight,"
 					"\xD3|getKeyState,"
-					"\xD4|getActorFrame"
+					"\xD4|getActorFrame,"
 					"\xD5|getVerbXPos,"
 					"\xD6|getVerbYPos,"
 					"\xD7|getBoxFlags"
