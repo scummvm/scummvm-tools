@@ -266,22 +266,11 @@ Fatty Bears Birthday Surprise
 Fatty Bears Fun Pack
 	-	DOS	hb	f06e66fd45b2f8b0f4a2833ff4476050	fbpack
 
-Backyard Baseball 2001 
-	Demo	Windows	en	a194f15f51ee62badab74b9e7da97693	bb2demo	khalek
-	Demo	Windows	en	a194f15f51ee62badab74b9e7da97693	byb2001-demo	khalek
-
-Backyard Football 2002
-	Demo	Windows	en	2e85f7aa054930c692a5b1bed1dfc295	byf2002-demo	khalek
-	Demo	Windows	en	2e85f7aa054930c692a5b1bed1dfc295	football2002	khalek
-
 Big Thinkers: Kindergarten
 	Demo	All	en	695fe0b3963333b7e15b37514db3c745	kinddemo	khalek, sev
 
 Big Thinkers First Grade
 	Demo	Windows	en	0f5935bd5e88ba6f09e558d64459746d	1grademo	khalek
-
-Blue's ABC Time Activities
-	Demo	Windows	en	7ddeaf52c8b9a50551ce0aa2ac811d07	bluesabctimedemo	khalek
 
 Freddi Fish 1: The Case of the Missing Kelp Seeds
 	-	All	en	df047cc4792150f601290357566d36a6	freddi	khalek
