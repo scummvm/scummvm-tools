@@ -2008,14 +2008,14 @@ void next_line_V67(char *output)
 		addArray(output, get_word(), pop(), 1);
 		break;
 	case 0x54:
-		// TODO v7 opcode
+		// TODO: make it HEv7 specific
 		if (HumongousFlag)
 			ext(output, "rp|objectX");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0x55:
-		// TODO v7 opcode
+		// TODO: make it HEv7 specific
 		if (HumongousFlag)
 			ext(output, "rp|objectY");
 		else
@@ -2752,10 +2752,9 @@ void next_line_V67(char *output)
 		break;
 	case 0xE0:
 		if (HumongousFlag)
-			ext(output, "x" "setVolume\0" 
-				"\xDEp|musicVolume,"
-				"\xDFp|unkVolume,"
-				"\xE0p|sfxVolume,");
+			ext(output, "x" "soundOps\0" 
+				"\xDEp|setMusicVolume,"
+				"\xE0p|setSoundFrequency");
 		else
 			invalidop(NULL, code);
 		break;
@@ -2807,12 +2806,14 @@ void next_line_V67(char *output)
 			ext(output, "rp|getObjectNewDir");
 		break;
 	case 0xEE:
+		// TODO: make it HEv7 specific
 		if (HumongousFlag)
 			ext(output, "rp|stringLen");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xF3:
+		// TODO: make it HEv7 specific
 		if (HumongousFlag)
 			ext(output, "rsp|readINI");
 		else
@@ -2828,12 +2829,14 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xF9:
+		// TODO: make it HEv7 specific
 		if (HumongousFlag)
 			ext(output, "s|unknownF9");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xFA:
+		// TODO: make it HEv7 specific
 		if (HumongousFlag) {
 			get_byte();
 			ext(output, "s|unknownFA");
@@ -2841,12 +2844,13 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xFB:
+		// TODO: make it HEv7 specific
 		if (HumongousFlag)
-		ext(output, "x" "unknownFB\0"
-				"\xF6ppppppppp|caseF6,"
-				"\xF7pp|caseF7,"
-				"\xF8ppppppppp|caseF8,"
-				);
+			ext(output, "x" "unknownFB\0"
+					"\xF6ppppppppp|caseF6,"
+					"\xF7pp|caseF7,"
+					"\xF8ppppppppp|caseF8,"
+					);
 		else
 			invalidop(NULL, code);
 		break;
