@@ -449,7 +449,7 @@ const char *var_names8[] = {
 	"camera_dest_y",
 	NULL,
 	NULL,
-	NULL,
+	"message_stuff?",
 	/* 16 */
 	NULL,
 	NULL,
@@ -461,31 +461,31 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	/* 24 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"timedate_year?",
+	"timedate_month?",
+	"timedate_day?",
+	"timedate_hour?",
 	/* 28 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"timedate_minute?",
+	"timedate_second?",
+	"override_hit",
+	"current_room",
 	/* 32 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 36 */
 	NULL,
 	NULL,
 	NULL,
-	NULL,
-	/* XXX */
-	NULL,
-	NULL,
+	"voice_text_mode",
+	/* 40 */
 	NULL,
 	NULL,
-	/* XXX */
+	"current_disk_number",
+	NULL,
+	/* 44 */
 	NULL,
 	NULL,
 	NULL,
@@ -494,11 +494,11 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	NULL,
-	NULL,
+	"script_before_roomentry",
 	/* 52 */
-	NULL,
-	NULL,
-	NULL,
+	"script_after_roomentry",
+	"script_before_roomexit",
+	"script_after_roomexit",
 	NULL,
 	/* 56 */
 	"sentence_script",
@@ -771,13 +771,13 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 				if ((s = getVarName(var)) != NULL)
 					where = strecpy(where, s);
 				else
-					where += sprintf(where, "var-%ld", se->data & 0xFFFFFFF);
+					where += sprintf(where, "var%ld", se->data & 0xFFFFFFF);
 			} else if (se->data & 0x80000000) {
-				where += sprintf(where, "bitvar-%ld", se->data & 0x7FFFFFFF);
+				where += sprintf(where, "bitvar%ld", se->data & 0x7FFFFFFF);
 			} else if (se->data & 0x40000000) {
-				where += sprintf(where, "localvar-%ld", se->data & 0xFFFFFFF);
+				where += sprintf(where, "localvar%ld", se->data & 0xFFFFFFF);
 			} else {
-				where += sprintf(where, "?var?-%ld", se->data);
+				where += sprintf(where, "?var?%ld", se->data);
 			}
 		} else {
 			if (!(se->data & 0xF000)) {
@@ -785,13 +785,13 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 				if ((s = getVarName(var)) != NULL)
 					where = strecpy(where, s);
 				else
-					where += sprintf(where, "var-%ld", se->data & 0xFFF);
+					where += sprintf(where, "var%ld", se->data & 0xFFF);
 			} else if (se->data & 0x8000) {
-				where += sprintf(where, "bitvar-%ld", se->data & 0x7FFF);
+				where += sprintf(where, "bitvar%ld", se->data & 0x7FFF);
 			} else if (se->data & 0x4000) {
-				where += sprintf(where, "localvar-%ld", se->data & 0xFFF);
+				where += sprintf(where, "localvar%ld", se->data & 0xFFF);
 			} else {
-				where += sprintf(where, "?var?-%ld", se->data);
+				where += sprintf(where, "?var?%ld", se->data);
 			}
 		}
 		break;
@@ -1333,7 +1333,6 @@ void next_line_V8()
 	case 0x6F:
 		addVar(get_word(), -1);
 		break;
-
 	case 0x70:
 		// FIXME - is this correct?!?
 		ext("x" "dim\0"
@@ -1367,22 +1366,11 @@ void next_line_V8()
 		ext("lp|startScriptQuick");
 		break;
 
-	case 0x9C:
-		ext("x" "cursorCommand\0"
-				"\xDC|cursorOn,"
-				"\xDD|cursorOff,"
-				"\xDE|userPutOn,"
-				"\xDF|userPutOff,"
-				"\xE0|softCursorOn,"
-				"\xE1|softCursorOff,"
-				"\xE2|softUserputOn,"
-				"\xE3|softUserputOff,"
-				"\xE4pp|setCursorImg,"
-				"\xE5pp|setCursorHotspot,"
-				"\xE6p|makeCursorColorTransparent,"
-				"\xE7p|initCharset,"
-				"\xE8l|charsetColors");
+	case 0x89:
+		// FIXME - is this correct?!?
+		ext("lp|setClassOf?");
 		break;
+
 	case 0x95:
 		ext("m" "printDebug_\0"
 				"x" "printDebug\0"
@@ -1414,6 +1402,30 @@ void next_line_V8()
 				"\xD1s|msg,"
 				"\xD2|wrap"
 				);
+		break;
+
+	case 0x9C:
+		ext("x" "cursorCommand\0"
+				"\xDC|cursorOn,"
+				"\xDD|cursorOff,"
+				"\xDE|userPutOn,"
+				"\xDF|userPutOff,"
+				"\xE0|softCursorOn,"
+				"\xE1|softCursorOff,"
+				"\xE2|softUserputOn,"
+				"\xE3|softUserputOff,"
+				"\xE4pp|setCursorImg,"
+				"\xE5pp|setCursorHotspot,"
+				"\xE6p|makeCursorColorTransparent,"
+				"\xE7p|initCharset,"
+				"\xE8l|charsetColors");
+		break;
+
+	case 0xA1:
+		ext("pppp|putActorInRoom");
+		break;
+	case 0xA2:
+		ext("ppp|putActorAtObject");
 		break;
 
 	case 0xAA:
@@ -1452,6 +1464,48 @@ void next_line_V8()
 				"\x5D|saveGame,"
 				"\x5E|LoadGame,"
 				"\x5F|setRoomSaturation"
+				);
+		break;
+	case 0xAC:
+		// Note: these are guesses and may partially be wrong
+		ext("x" "actorOps\0"
+				"\x64p|setActorCostume,"
+				"\x65pp|setActorWalkSpeed,"
+				"\x67|setActorDefAnim,"
+				"\x68p|setActorInitFrame,"
+				"\x69pp|setActorTalkFrame,"
+				"\x6Ap|setActorWalkFrame,"
+				"\x6Bp|setActorStandFrame,"
+				"\x6C|setActorAnimSpeed,"
+				"\x6D|setActorDefault,"	// = initActorLittle ?
+				"\x6E|setActorElevation,"
+				"\x6Fpp|setActorPalette,"
+				"\x70p|setActorTalkColor,"
+				"\x71s|setActorName,"
+				"\x72p|setActorWidth,"
+				"\x73p|setActorScale,"
+				"\x74|setActorNeverZClip?,"
+				"\x75p|setActorAlwayZClip?,"
+				"\x76|setActorIgnoreBoxes,"
+				"\x77|setActorFollowBoxes,"
+				"\x78p|actorSpecialDraw,"
+				"\x79pp|setActorTalkPos,"
+				"\x7Ap|initActor,"			// = setCurActor ? 
+				"\x7Bp|setActorAnimVar,"
+				"\x7C|setActorIgnoreTurnsOn,"
+				"\x7D|setActorIgnoreTurnsOff,"
+				"\x7E|newActor,"
+				"\x7Fp|setActorLayer,"
+				"\x80|setActorStanding,"
+				"\x81p|setActorDirection,"
+				"\x82p|actorTurnToDirection,"
+				"\x83p|setActorWalkScript,"
+				"\x84p|setTalkScript,"
+				"\x85|freezeActor,"
+				"\x86|unfreezeActor,"
+				"\x87p|setActorVolume,"
+				"\x88p|setActorFrequency,"
+				"\x89p|setActorPan"
 				);
 		break;
 
@@ -1884,8 +1938,8 @@ void next_line()
 				"\x62|setActorShadowMode,"
 				"\x63pp|setActorTalkPos,"
 				"\xC6p|setActorAnimVar,"
-				"\xD7|setActorNew3On,"
-				"\xD8|setActorNew3Off,"
+				"\xD7|setActorIgnoreTurnsOn,"
+				"\xD8|setActorIgnoreTurnsOff,"
 				"\xD9|initActorLittle,"
 				"\xE3p|setActorLayer,"
 				"\xE4p|setActorWalkScript,"
