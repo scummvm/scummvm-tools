@@ -214,7 +214,7 @@ void get_part(void)
 		if (encparms.abr == 1)
 			sprintf(fbuf_temp,"--abr %i",encparms.minBitr);
 		else
-                	sprintf(fbuf_temp,"--vbr-new -b %i",encparms.minBitr);
+			sprintf(fbuf_temp,"--vbr-new -b %i",encparms.minBitr);
 		if (encparms.silent == 1)
                 	strcat(fbuf_temp," --silent");
 		sprintf(fbuf,
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 		showhelp(argv[0]);
 	for(i = 1; i < argc; i++) {
-        	if (strcmp(argv[i], "--vbr") == 0) {
+		if (strcmp(argv[i], "--vbr") == 0) {
 			encparms.vbr=1;
 			encparms.abr=0;
 		} else if (strcmp(argv[i], "--abr") == 0) {
@@ -274,30 +274,30 @@ int main(int argc, char *argv[])
 			if ((encparms.minBitr % 8) != 0)
 				encparms.minBitr -= encparms.minBitr % 8;
 			if (encparms.minBitr >160)
-                        	encparms.minBitr = 160;
+				encparms.minBitr = 160;
 			if (encparms.minBitr < 8)
-                        	encparms.minBitr=8;
+				encparms.minBitr=8;
 			i++;
 		} else if (strcmp(argv[i], "-B") == 0) {
 			encparms.maxBitr = atoi(argv[i + 1]);
 			if ((encparms.maxBitr % 8) != 0)
-                        	encparms.maxBitr -= encparms.minBitr % 8;
+				encparms.maxBitr -= encparms.minBitr % 8;
 			if (encparms.maxBitr > 160)
-                        	encparms.maxBitr = 160;
+				encparms.maxBitr = 160;
 			if (encparms.maxBitr < 8)
-                        	encparms.maxBitr = 8;
+				encparms.maxBitr = 8;
 			i++;
 		} else if (strcmp(argv[i], "-V") == 0) {
 			encparms.vbrqual = atoi(argv[i + 1]);
 			if(encparms.vbrqual < 0)
-                        	encparms.vbrqual = 0;
+				encparms.vbrqual = 0;
 			if(encparms.vbrqual > 9)
 				encparms.vbrqual = 9;
 			i++;
 		} else if (strcmp(argv[i], "-q") == 0) {
 			encparms.algqual = atoi(argv[i + 1]);
 			if (encparms.algqual < 0)
-                        	encparms.algqual = 0;
+				encparms.algqual = 0;
 			if (encparms.algqual > 9)
 				encparms.algqual = 9;
 			i++;
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 		} else {
 			break;
 		}
-        }
+	}
 	if (i != (argc - 1)) {
 		showhelp(argv[0]);
 	}
