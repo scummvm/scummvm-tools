@@ -7,6 +7,9 @@ ScummVM versions may not. ScummVM 0.6.x does not support FLAC audio, for
 example.
 
 Extraction Tools:
+        kyra_unpak
+                Unpacks .PAK files from Kyrandia games
+
         rescumm
                 Extracts Macintosh "single file" SCUMM games into their
                 component parts, for use with ScummVM.
@@ -63,8 +66,8 @@ Script Tools:
         desword2
                 Disassembles Broken Sword II scripts
 
-	dekyra
-		Basic script disassembler for Legend of Kyrandia games
+        dekyra
+                Basic script disassembler for Legend of Kyrandia games
 
 Other tools:
         simon1decr

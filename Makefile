@@ -21,6 +21,7 @@ TARGETS := \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	dekyra$(EXEEXT) \
+	kyra_unpak$(EXEEXT) \
 	extract$(EXEEXT) \
 	loom_tg16_extract$(EXEEXT) \
 	md5table$(EXEEXT) \
@@ -48,6 +49,9 @@ desword2$(EXEEXT): desword2.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 dekyra$(EXEEXT): dekyra.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
+kyra_unpak$(EXEEXT): kyra_unpak.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract$(EXEEXT): extract.o extract-common.o util.o
