@@ -1364,9 +1364,10 @@ void next_line_V8()
 		break;
 	case 0x76:
 		switch (get_byte()) {
-		case 0x14:
-			writeArray(get_word(), NULL, pop(), se_get_string());
-			break;
+		case 0x14:{
+			int array = get_word();
+			writeArray(array, NULL, pop(), se_get_string());
+			}break;
 		case 0x15:
 			writeArray(get_word(), NULL, pop(), se_get_list());
 			break;
