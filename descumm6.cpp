@@ -2630,6 +2630,9 @@ void next_line()
 	case 0xCD:
 		ext("pppp|o6_unknownCD");
 		break;
+	case 0xD1:
+		ext("|stopTalking");
+		break;
 	case 0xD2:
 		ext("rpp|getAnimateVariable");
 		break;
