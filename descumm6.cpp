@@ -1929,9 +1929,9 @@ void next_line_V67(char *output)
 		push(se_var(get_word()));
 		break;
 	case 0x4:
-		//FIXME
+		// TODO: make it HEv7 specific
 		if (HumongousFlag) {
-			ext(output, "ssss|unknown04");
+			ext(output, "s|unknown04");
 		} else
 			invalidop(NULL, code);
 		break;
@@ -2631,6 +2631,7 @@ void next_line_V67(char *output)
 					"\x6C|buildPaletteShadow,"
 					"\x6D|setPaletteShadow,"
 
+					"\x72|unk114,"
 					"\x75|freezeScripts,"
 					"\x76|blastShadowObject,"
 					"\x77|superBlastObject,"
