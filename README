@@ -23,7 +23,6 @@ Extraction Tools:
 
         extract_mm_nes
                 Extracts data files from NES version of Maniac Mansion.
-                There is currently no support for this game in ScummVM!
 
         extract_simon1_amiga
                 Extracts the graphics or music files in AGA/ECS
