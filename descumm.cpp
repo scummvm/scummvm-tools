@@ -91,7 +91,7 @@
 
 
 
-void get_tok_V2(char *buf);	// For V2 (and V1?)
+void get_tok_V12(char *buf);	// For V1 and V2
 void get_tok_V345(char *buf);	// For V3, V4, V5
 
 bool ZakFlag = false;
@@ -197,12 +197,12 @@ char *get_var(char *buf)
 {
 	int i;
 
-	if (scriptVersion == 2)
+	if (scriptVersion <= 2)
 		i = get_byte();
 	else
 		i = get_word();
 
-	if (scriptVersion == 2 && i < ARRAYSIZE(var_names2) && var_names2[i]) {
+	if (scriptVersion <= 2 && i < ARRAYSIZE(var_names2) && var_names2[i]) {
 		buf += sprintf(buf, var_names2[i]);
 		return buf;
 	} else if ((i & 0x8000) && (GF_UNBLOCKED || ZakFlag))
@@ -394,7 +394,7 @@ void do_decodeparsestring_v2(char *buf, byte opcode)
 	*buf = 0;
 }
 
-void do_actorset_v2(char *buf, byte opcode)
+void do_actorset_v12(char *buf, byte opcode)
 {
 	// FIXME: the A2 should be displayed as arg to the subops, not as arg to the
 	// ActorSet itself; but that'll require some more work.
@@ -408,7 +408,10 @@ void do_actorset_v2(char *buf, byte opcode)
 			buf = do_tok(buf, "Sound", 0);
 			break;
 		case 2:
-			buf = do_tok(buf, "Colour", A1B);
+			if (ZakFlag && scriptVersion == 1)
+				buf = do_tok(buf, "Color", A1B | A2B | A3B);
+			else
+				buf = do_tok(buf, "Color", A1B);
 			break;
 		case 3:
 			buf = do_tok(buf, "Name", A1ASCII);
@@ -632,8 +635,8 @@ void do_expr_code(char *buf)
 
 		case 0x6:
 			buf2 = strecpy(buf, "<");
-			if (scriptVersion == 2)
-				get_tok_V2(buf2);
+			if (scriptVersion <= 2)
+				get_tok_V12(buf2);
 			else
 				get_tok_V345(buf2);
 			strecpy(strchr(buf2, 0), ">");
@@ -680,8 +683,8 @@ void do_expr_code(char *buf)
 			break;
 		case 0x6:
 			sprintf(buf, "CALL (%.2X) ", *cur_pos);
-			if (scriptVersion == 2)
-				get_tok_V2(strchr(buf, 0));
+			if (scriptVersion <= 2)
+				get_tok_V12(strchr(buf, 0));
 			else
 				get_tok_V345(strchr(buf, 0));
 			break;
@@ -966,7 +969,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 	char	a[256];
 	char	b[256];
 	
-	if (scriptVersion == 2) {
+	if (scriptVersion <= 2) {
 		get_var_or_byte(a, (master_opcode & 0x80));
 		get_var_or_byte(b, (master_opcode & 0x40));
 	} else if (scriptVersion == 3) {
@@ -1523,7 +1526,7 @@ void do_varset_code(char *buf, byte opcode)
 {
 	char *s;
 
-	if ((scriptVersion == 2)
+	if ((scriptVersion <= 2)
 		&& ((opcode & 0x7F) == 0x0A
 		 || (opcode & 0x7F) == 0x2A
 		 || (opcode & 0x7F) == 0x6A)) {
@@ -1574,7 +1577,7 @@ void do_varset_code(char *buf, byte opcode)
 	buf = strecpy(buf, s);
 
 
-	if ((scriptVersion == 2) && (opcode & 0x7F) == 0x2C) { /* assignVarByte */
+	if ((scriptVersion <= 2) && (opcode & 0x7F) == 0x2C) { /* assignVarByte */
 		sprintf(buf, "%d", get_byte());
 		buf = strchr(buf, 0);
 	} else if ((opcode & 0x7F) != 0x46) {	/* increment or decrement */
@@ -1605,7 +1608,7 @@ void do_matrix_ops(char *buf, byte opcode)
 	}
 }
 
-void get_tok_V2(char *buf)
+void get_tok_V12(char *buf)
 {
 	byte opcode = get_byte();
 
@@ -1630,7 +1633,7 @@ void get_tok_V2(char *buf)
 	case 0x93:
 	case 0xD3:
 		// actorSet
-		do_actorset_v2(buf, opcode);
+		do_actorset_v12(buf, opcode);
 		break;
 
 	case 0x2A:
@@ -2919,6 +2922,7 @@ void ShowHelpAndExit()
 			"Syntax:\n"
 			"\tdescumm [-o] filename\n"
 			"Flags:\n"
+			"\t-1\tInput Script is v1\n"
 			"\t-2\tInput Script is v2\n"
 			"\t-3\tInput Script is v3\n"
 			"\t-4\tInput Script is v4\n"
@@ -2937,7 +2941,7 @@ void ShowHelpAndExit()
 	exit(0);
 }
 
-int skipVerbHeader_V2(byte *p)
+int skipVerbHeader_V12(byte *p)
 {
 	byte code;
 	int offset = 15;
@@ -2955,7 +2959,7 @@ int skipVerbHeader_V2(byte *p)
 	return minOffset;
 }
 
-int skipVerbHeader_V3(byte *p)
+int skipVerbHeader_V34(byte *p)
 {
 	byte code;
 	int offset = GF_UNBLOCKED ? 17 : 19;
@@ -3009,6 +3013,10 @@ int main(int argc, char *argv[])
 			s++;
 			while (*s) {
 				switch (tolower(*s)) {
+				case '1':
+					scriptVersion = 1;
+					GF_UNBLOCKED = true;
+					break;
 				case '2':
 					scriptVersion = 2;
 					GF_UNBLOCKED = true;
@@ -3093,10 +3101,10 @@ int main(int argc, char *argv[])
 		}
 		// Hack to detect verb script: first 4 bytes should be file length
 		if (TO_LE_32(*((uint32 *)mem)) == size_of_code) {
-			if (scriptVersion == 2)
-				offs_of_line = skipVerbHeader_V2(mem);
+			if (scriptVersion <= 2)
+				offs_of_line = skipVerbHeader_V12(mem);
 			else
-				offs_of_line = skipVerbHeader_V3(mem );
+				offs_of_line = skipVerbHeader_V34(mem );
 		} else {
 			mem += 4;
 		}
@@ -3146,7 +3154,7 @@ int main(int argc, char *argv[])
 			mem += 6;
 			break;			/* Exit code */
 		case MKID('OC'):
-			offs_of_line = skipVerbHeader_V3(mem);
+			offs_of_line = skipVerbHeader_V34(mem);
 			break;			/* Verb */
 		default:
 			printf("Unknown script type!\n");
@@ -3162,8 +3170,8 @@ int main(int argc, char *argv[])
 		byte opcode = *cur_pos;
 		int j = num_block_stack;
 		buf[0] = 0;
-		if (scriptVersion == 2)
-			get_tok_V2(buf);
+		if (scriptVersion <= 2)
+			get_tok_V12(buf);
 		else
 			get_tok_V345(buf);
 		if (buf[0]) {
