@@ -76,6 +76,7 @@ struct StackEnt {
 };
 
 struct BlockStack {
+	bool isWhile;
 	unsigned short from;
 	unsigned short to;
 };
@@ -133,7 +134,6 @@ static const char *oper_list[] = {
 StackEnt *stack[128];
 int num_stack;
 byte *cur_pos, *org_pos;
-int size_of_code;
 
 char *output;
 
@@ -149,12 +149,12 @@ int get_curoffs()
 	return cur_pos - org_pos;
 }
 
-byte alwaysShowOffs;
-byte dontOutputIfs;
-byte dontOutputElse;
-byte dontOutputElseif;
-byte dontShowOpcode;
-byte dontShowOffsets;
+byte alwaysShowOffs = 0;
+byte dontOutputIfs = 0;
+byte dontOutputElse = 0;
+byte dontOutputElseif = 0;
+byte dontShowOpcode = 0;
+byte dontShowOffsets = 0;
 byte haltOnError;
 byte scriptVersion = 6;
 
@@ -1155,6 +1155,23 @@ bool maybeAddIf(unsigned int cur, unsigned int to)
 	}
 
 	p = pushBlockStackItem();
+
+	// Try to determine if this is a while loop. For this, first check if we 
+	// jump right behind a regular jump, then whether that jump is targeting us.
+	// The "jump is targeting us" part is a bit tricky, though, as the back jump
+	// will not target this jump, but rather before it, on the first instruction
+	// making up the if-condition. For now, we do it lazy and simply check if
+	// the backjump is going *before* this jump. Better code would track where the
+	// opcodes making up the if-condition started.
+	if (scriptVersion == 8) {
+		p->isWhile = (*(byte*)(org_pos+to-5) == 0x66);
+		i = TO_LE_32(*(int32*)(org_pos+to-4));
+	} else {
+		p->isWhile = (*(byte*)(org_pos+to-3) == 0x73);
+		i = TO_LE_16(*(int16*)(org_pos+to-2));
+	}
+
+	p->isWhile = p->isWhile && (cur > to + i);
 	p->from = cur;
 	p->to = to;
 	return true;
@@ -1197,14 +1214,18 @@ int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 	if (!num_block_stack)
 		return false;								/* There are no previous blocks, so an ifelse is not ok */
 
-	k = to - 3;
-	if ((uint) k >= (uint) size_of_code)
-		return false;								/* Invalid jump */
+	if (scriptVersion == 8)
+		k = to - 5;
+	else
+		k = to - 3;
 
 	if (org_pos[k] != g_jump_opcode)
 		return false;								/* Invalid jump */
 
-	k = to + *((short *)(org_pos + k + 1));
+	if (scriptVersion == 8)
+		k = to + TO_LE_32(*(int32*)(org_pos + k + 1));
+	else
+		k = to + TO_LE_16(*(int16*)(org_pos + k + 1));
 
 	if (k != elseto)
 		return false;								/* Not an ifelse */
@@ -1230,6 +1251,11 @@ void jump()
 		pendingElseOpcode = g_jump_opcode;
 		pendingElseIndent = num_block_stack;
 	} else {
+		if (num_block_stack) {
+			BlockStack *p = &block_stack[num_block_stack - 1];
+			if (p->isWhile && cur == p->to)
+				return;		// A 'while' ends here.
+		}
 		sprintf(output, "jump %x", to);
 	}
 }
@@ -1255,7 +1281,10 @@ void jumpif(StackEnt * se, bool when)
 	}
 
 	if (!dontOutputIfs && maybeAddIf(cur, to)) {
-		e = strecpy(e, "if (");
+		if (block_stack[num_block_stack - 1].isWhile) {
+			e = strecpy(e, "while (");
+		} else
+			e = strecpy(e, "if (");
 		if (when)
 			se = se_neg(se);
 		e = se_astext(se, e, false);
