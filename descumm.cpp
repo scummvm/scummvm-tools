@@ -1667,26 +1667,7 @@ void get_tok_V2(char *buf)
 		// chainScript
 		do_tok(buf, "chainScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
-	case 0x77:
-	case 0xF7:
-		// clearState01
-		do_tok(buf, "clearState01", ((opcode & 0x80) ? A1V : A1W));
-		break;
-	case 0x57:
-	case 0xD7:
-		// clearState02
-		do_tok(buf, "clearState02", ((opcode & 0x80) ? A1V : A1W));
-		break;
-	case 0x67:
-	case 0xE7:
-		// clearState04
-		do_tok(buf, "clearState04", ((opcode & 0x80) ? A1V : A1W));
-		break;
-	case 0x47:
-	case 0xC7:
-		// clearState08
-		do_tok(buf, "clearState08", ((opcode & 0x80) ? A1V : A1W));
-		break;
+
 	case 0x60:
 	case 0xE0:
 		//cursorCommand
@@ -2058,26 +2039,48 @@ void get_tok_V2(char *buf)
 		do_tok(buf, "setOwnerOf", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 		
+	case 0x77:
+	case 0xF7:
+		// clearState01
+		do_tok(buf, "clearState01", ((opcode & 0x80) ? A1V : A1W));
+		break;
+	case 0x57:
+	case 0xD7:
+		// clearState02
+		do_tok(buf, "clearState02", ((opcode & 0x80) ? A1V : A1W));
+		break;
+	case 0x67:
+	case 0xE7:
+		// clearState04
+		do_tok(buf, "clearState04", ((opcode & 0x80) ? A1V : A1W));
+		break;
+	case 0x47:
+	case 0xC7:
+		// clearState08
+		do_tok(buf, "clearState08", ((opcode & 0x80) ? A1V : A1W));
+		break;
+
 	case 0x37:
 	case 0xB7:
 		//setState01
-		do_tok(buf, "setState01", A1W);
+		do_tok(buf, "setState01", ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x17:
 	case 0x97:
 		//setState02
-		do_tok(buf, "setState02", A1W);
+		do_tok(buf, "setState02", ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x27:
 	case 0xA7:
 		//setState04
-		do_tok(buf, "setState04", A1W);
+		do_tok(buf, "setState04", ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x07:
 	case 0x87:
 		//setState08
-		do_tok(buf, "setState08", A1W);
+		do_tok(buf, "setState08", ((opcode & 0x80) ? A1V : A1W));
 		break;
+
 	case 0x26:
 	case 0xA6: {
 			int i;
