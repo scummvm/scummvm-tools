@@ -22,17 +22,17 @@ TARGETS := \
 	desword2$(EXEEXT) \
 	dekyra$(EXEEXT) \
 	kyra_unpak$(EXEEXT) \
-	extract$(EXEEXT) \
+	compress_scumm_sou$(EXEEXT) \
 	loom_tg16_extract$(EXEEXT) \
 	md5table$(EXEEXT) \
 	mm_nes_extract$(EXEEXT) \
 	queenrebuild$(EXEEXT) \
 	rescumm$(EXEEXT) \
 	simon1decr$(EXEEXT) \
-	simon2mp3$(EXEEXT) \
-	sword1mp3$(EXEEXT) \
-	sword2mp3$(EXEEXT) \
-	saga2mp3$(EXEEXT)
+	compress_simon$(EXEEXT) \
+	compress_sword1$(EXEEXT) \
+	compress_sword2$(EXEEXT) \
+	compress_saga$(EXEEXT)
 
 all: $(TARGETS)
 
@@ -54,7 +54,7 @@ dekyra$(EXEEXT): dekyra.o util.o
 kyra_unpak$(EXEEXT): kyra_unpak.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract$(EXEEXT): extract.o extract-common.o util.o
+compress_scumm_sou$(EXEEXT): compress_scumm_sou.o extract-common.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 loom_tg16_extract$(EXEEXT): loom_tg16_extract.o
@@ -72,23 +72,23 @@ queenrebuild$(EXEEXT): queenrebuild.o util.o
 rescumm$(EXEEXT): rescumm.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-saga2mp3$(EXEEXT): saga2mp3.o extract-common.o util.o
+compress_saga$(EXEEXT): compress_saga.o extract-common.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 simon1decr$(EXEEXT): simon1decr.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-simon2mp3$(EXEEXT): simon2mp3.o extract-common.o util.o
+compress_simon$(EXEEXT): compress_simon.o extract-common.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-sword1mp3$(EXEEXT): sword1mp3.o extract-common.o util.o
+compress_sword1$(EXEEXT): compress_sword1.o extract-common.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-sword2mp3$(EXEEXT): sword2mp3.o extract-common.o util.o
+compress_sword2$(EXEEXT): compress_sword2.o extract-common.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
-extract.o simon2mp3.o sword2mp3.o extract-common.o: util.h extract.h
+compress_saga.o compress_scumm_sou.o compress_simon.o compress_sword1.o compress_sword2.o extract-common.o: util.h extract.h
 desword2.o md5table.o queenrebuild.o rescumm.o util.o: util.h
 
 clean:

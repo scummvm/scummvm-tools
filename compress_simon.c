@@ -1,4 +1,4 @@
-/* Simon2mp3 - Compress Simon the Sorcerer 1/2 digital sound files into MP3-format
+/* compress_simon - Compress Simon the Sorcerer 1/2 digital sound files into MP3-format
  * Copyright (C) 2002, 2003  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or

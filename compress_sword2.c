@@ -1,4 +1,4 @@
-/* sword2mp3 - Compress Broken Sword II sound clusters into MP3/Ogg Vorbis
+/* compress_sword2 - Compress Broken Sword II sound clusters into MP3/Ogg Vorbis
  * Copyright (C) 2002, 2003  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or

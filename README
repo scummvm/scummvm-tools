@@ -8,7 +8,7 @@ example.
 
 Extraction Tools:
         kyra_unpak
-                Unpacks .PAK files from Kyrandia games
+                Unpacks .PAK files from Kyrandia games.
 
         rescumm
                 Extracts Macintosh "single file" SCUMM games into their
@@ -18,30 +18,34 @@ Extraction Tools:
                 format.
 
         loom_tg16_extract
-                Extracts data files from TG16 version of Loom
+                Extracts data files from TG16 version of Loom.
                 There is currently no support for this game in ScummVM!
 
         mm_nes_extract
-                Extracts data files from NES version of Maniac Mansion
+                Extracts data files from NES version of Maniac Mansion.
                 There is currently no support for this game in ScummVM!
 
 Compression Tools:
-        extract 
+        compress_scumm_sou 
                 Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
-                or .sof (FLAC)
+                or .sof (FLAC).
 
         queenrebuild
                 Used to rebuild the datafile of Flight of the Amazon Queen,
                 to allow optional MP3/Ogg/FLAC compression.
 
-        simon2mp3
+        compress_saga
+                Compress SAGA engine digital sound files into MP3 and Ogg
+                Vorbis format.
+
+        compress_simon
                 Compresses Simon voc/wav files to MP3/Ogg/FLAC.
 
-        sword1mp3
+        compress_sword1
                 Used to compress Broken Sword 1's music and speech files
                 using mp3 or vorbis.
 
-        sword2mp3
+        compress_sword2
                 Used to compress Broken Sword 2's music and speech .clu
                 files to .cl3 (MP3), .clg (Vorbis) or .clf (FLAC).
 
@@ -50,11 +54,11 @@ Compression Tools:
                 use lossy compression.
 
         compress_san <inputfile> <inputdir> <outputdir>
-                Compresses '.san' smush animation files. It uses lossless zlib
-                for compressing FOBJ gfx chunks inside a san file.
+                Compresses '.san' smush animation files. It uses lossless
+                zlib for compressing FOBJ gfx chunks inside a san file.
                 It also can create a separate Ogg file with the audio track.
                 There are also temporary files *.tmp and *.wav which could
-                be deleteed after finished compression.
+                be deleted after finished compression.
 
                 Example of usage:
                 compress_san opening.san uncomp comp
