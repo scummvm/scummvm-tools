@@ -12,6 +12,7 @@ install:   all
 	strip compress_saga.exe -o $(SCUMMVMPATH)/tools/compress_saga.exe
 	strip compress_san.exe -o $(SCUMMVMPATH)/tools/compress_san.exe
 	strip compress_scumm_sou.exe -o $(SCUMMVMPATH)/tools/compress_scumm_sou.exe
+	strip compress_scumm_bun.exe -o $(SCUMMVMPATH)/tools/compress_scumm_sou.exe
 	strip compress_simon.exe -o $(SCUMMVMPATH)/tools/compress_simon.exe
 	strip compress_sword1.exe -o $(SCUMMVMPATH)/tools/compress_sword1.exe
 	strip compress_sword2.exe -o $(SCUMMVMPATH)/tools/compress_sword2.exe

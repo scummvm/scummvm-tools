@@ -73,6 +73,17 @@ Compression Tools:
                 For the Ogg compression feature, your ScummVM binary naturally
                 must have been built with Ogg support enabled.
 
+        compress_scumm_bun <inputfile> <inputdir> <outputdir>
+                Compresses '.bun' music/voice files into ogg files and '.map'
+                information files. There are temporary files *.wav which
+                could be deleted after finished compression.
+                Files '.ogg' and '.map' are suggested placed in new 
+                handly created sub directory with name 'audio'.
+                That directory must be in game data dir.
+
+                Example of usage:
+                compress_scumm.bun digmusic.bun uncomp comp
+
 Script Tools:
         descumm
                 Decompiles SCUMM scripts

@@ -20,6 +20,7 @@ TARGETS := \
 	compress_saga$(EXEEXT) \
 	compress_san$(EXEEXT) \
 	compress_scumm_sou$(EXEEXT) \
+	compress_scumm_bun$(EXEEXT) \
 	compress_simon$(EXEEXT) \
 	compress_sword1$(EXEEXT) \
 	compress_sword2$(EXEEXT) \
@@ -52,6 +53,9 @@ extract_kyra$(EXEEXT): extract_kyra.o util.o
 compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
+compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
@@ -80,7 +84,9 @@ compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
-compress_saga.o compress_scumm_sou.o compress_simon.o compress_sword1.o compress_sword2.o compress.o: util.h compress.h
+compress_saga.o compress_scumm_sou.o compress_scumm_bun.o
+compress_simon.o compress_sword1.o compress_sword2.o
+compress.o: util.h compress.h
 desword2.o compress_queen.o extract_scumm_mac.o util.o: util.h
 
 clean:
