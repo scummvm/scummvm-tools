@@ -101,12 +101,12 @@ static void parseEntry(Entry *entry, char *line) {
 	assert(line);
 	
 	/* Split at the tabs */
-	entry->desc = strsep(&line, "\t\n\r");
-	entry->platform = strsep(&line, "\t\n\r");
-	entry->language = strsep(&line, "\t\n\r");
-	entry->md5 = strsep(&line, "\t\n\r");
-	entry->target = strsep(&line, "\t\n\r");
-	entry->infoSource = strsep(&line, "\t\n\r");
+	entry->desc = strtok(&line, "\t\n\r");
+	entry->platform = strtok(NULL, "\t\n\r");
+	entry->language = strtok(NULL, "\t\n\r");
+	entry->md5 = strtok(NULL, "\t\n\r");
+	entry->target = strtok(NULL, "\t\n\r");
+	entry->infoSource = strtok(NULL, "\t\n\r");
 }
 
 static bool isEmptyLine(const char *line) {
