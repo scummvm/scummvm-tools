@@ -2768,6 +2768,7 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xE3:
+		//TODO add proper decoding
 		ext(output, "l|pickVarRandom");
 		break;
 	case 0xE4:
