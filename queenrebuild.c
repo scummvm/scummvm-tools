@@ -41,6 +41,7 @@ static const uint32 QTBL = 'QTBL';
 #define TEMP_TBL	"tempfile.tbl"
 #define TEMP_SB		"tempfile.sb"
 #define TEMP_MP3	"tempfile.mp3"
+#define TEMP_OGG	"tempfile.ogg"
 
 #define EXTRA_TBL_HEADER 8
 #define SB_HEADER_SIZE	110
@@ -103,9 +104,10 @@ const struct GameVersion *version;
 
 void showhelp(char *exename)
 {
-	printf("\nUsage: %s [--mp3 <args>] queen.1\n", exename);
+	printf("\nUsage: %s [--mp3/--ogg <args>] queen.1\n", exename);
 	printf("\nParams:\n");
 	printf(" --mp3 <args>         encode to MP3 format\n"); 
+	printf(" --ogg <args>         encode to Ogg Vorbis Format\n");
 	printf("                      (Optional: <args> are passed on to the encoder)\n");
 	printf("\nExample: %s --mp3 -q 5 queen.1\n", exename);
 	exit(2);
@@ -273,7 +275,7 @@ void createFinalFile(void) {
 
 int main(int argc, char *argv[])
 {
-	FILE *inputData, *inputTbl, *outputTbl, *outputData, *tmpFile, *mp3File;
+	FILE *inputData, *inputTbl, *outputTbl, *outputData, *tmpFile, *compFile;
 	uint8 compressionType = COMPRESSION_NONE;
 	char tmp[5];
 	char sysBuf[1024];
@@ -281,20 +283,29 @@ int main(int argc, char *argv[])
 	int size, i = 1;
 	uint32 prevOffset;
 
-	if (argc < 2 || !strcmp(argv[argc-1], "--mp3"))
+	if (argc < 2 || (!strcmp(argv[argc-1], "--mp3") && !strcmp(argv[argc-1], "--ogg")))
 		showhelp(argv[0]);
 	
 	if (strcmp(argv[1], "--mp3") == 0) {
 		compressionType = COMPRESSION_MP3;
 		i++;
+		ptr += sprintf(ptr, "lame -r -h -s 11 --bitwidth 8 -m m ");
+		for (; i < (argc - 1); i++) {
+			/* Append optional encoder arguments */
+			ptr += sprintf(ptr, "%s ", argv[i]);
+		}
+		ptr += sprintf(ptr, "%s %s", TEMP_SB, TEMP_MP3);
 	}
-	
-	ptr += sprintf(ptr, "lame -r -h -s 11 --bitwidth 8 -m m ");
-	for (; i < (argc - 1); i++) {
-		/* Append optional encoder arguments */
-		ptr += sprintf(ptr, "%s ", argv[i]);
+
+	if (strcmp(argv[1], "--ogg") == 0) {
+		compressionType = COMPRESSION_OGG;
+		i++;
+		ptr += sprintf(ptr, "oggenc -r -B 8 -C 1 -R 11025 %s -o %s ", TEMP_SB, TEMP_OGG);
+		for (; i < (argc - 1); i++) {
+			/* Append optional encoder arguments */
+			ptr += sprintf(ptr, "%s ", argv[i]);
+		}
 	}
-	ptr += sprintf(ptr, "%s %s", TEMP_SB, TEMP_MP3);
 
 	/* Open input file (QUEEN.1) */
 	inputData = fopen(argv[argc-1], "rb");
@@ -354,15 +365,15 @@ int main(int argc, char *argv[])
 				exit(-1);
 			}
 
-			/* Append MP3 to data file */
-			mp3File = fopen(TEMP_MP3, "rb");
-			entry.size = fileSize(mp3File);
-			fromFileToFile(mp3File, outputData, entry.size);
-			fclose(mp3File);
+			/* Append MP3/OGG to data file */
+			compFile = fopen((compressionType == COMPRESSION_MP3) ? TEMP_MP3 : TEMP_OGG, "rb");
+			entry.size = fileSize(compFile);
+			fromFileToFile(compFile, outputData, entry.size);
+			fclose(compFile);
 
 			/* Delete temporary files */
 			unlink(TEMP_SB);
-			unlink(TEMP_MP3);
+			unlink((compressionType == COMPRESSION_MP3) ? TEMP_MP3 : TEMP_OGG);
 		} else {
 			/* Non .SB file */
 			fromFileToFile(inputData, outputData, entry.size);
