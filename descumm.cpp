@@ -1658,7 +1658,7 @@ void do_if_state_code(char *buf, byte opcode)
 			exit(1);
 		}
 
-		get_var_or_word(tmp2, opcode & 0x40);
+		get_var_or_byte(tmp2, opcode & 0x40);
 	} else {
 		switch (opcode) {
 		case 0x3f:
