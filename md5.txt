@@ -312,7 +312,7 @@ Freddi Fish and Luther's Water Worries
 	-	Windows	ru	2012f854d83d9cc6f73b2b544cd8bbf8	water	sev
 
 Humongous Interactive Catalog
-	-	Windows	en	86c9902b7bec1a17926d4dae85beaa45	catalog	khalek
+	-	Windows	en	11e6e244078ff09b0f3832e35420e0a7	catalog	khalek
 
 Let's Explore the Farm with Buzzy
 	-	Windows	en	a85856675429fe88051744f755b72f93	farm	Kirben
