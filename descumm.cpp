@@ -2088,14 +2088,13 @@ void get_tok_V2(char *buf)
 		do_tok(buf, "getRandomNr", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
-/*
 	case 0x1D:
 	case 0x5D:
 	case 0x9D:
 	case 0xDD:
 		//ifClassOfIs
+		do_tok(buf, "classOfIs", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ATO);
 		break;
-*/
 		
 	case 0x3F:
 	case 0x7F:
