@@ -1199,6 +1199,7 @@ void next_line()
 				"\x60|setActorFollowBoxes,"
 				"\x61|setActorAnimSpeed,"
 				"\x62|setActorData8,"
+				"\xE6p|setActorDirection,"
 				"\x63pp|setActorTalkPos,"
 				"\xD7|setActorNew3On," "\xD8|setActorNew3Off," "\xD9|initActorLittle," "\xE3p|setActorLayer");
 		break;
