@@ -1385,6 +1385,9 @@ void next_line()
 	case 0xC7:
 		ext("rpppp|getDistPtPt");
 		break;
+	case 0xC8:
+		ext("rl|kernelFunction");
+		break;
 	case 0xC9:
 		ext("l|miscOps");
 		break;
