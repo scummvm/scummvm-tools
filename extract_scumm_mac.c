@@ -1,5 +1,6 @@
 /* ReScumm - Split one-big-file Macintosh game data into seperate .00x files for ScummVM
  * Copyright (C) 2001-2003  Casey Hutchinson
+ * Copyright (C) 2004-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

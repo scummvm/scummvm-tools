@@ -1,5 +1,5 @@
 /* QueenRebuild - Rebuild QUEEN.1 file to contain Resource Table (and optionally compress sound & speech)
- * Copyright (C) 2003  The ScummVM Team
+ * Copyright (C) 2003-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,6 +1,6 @@
 /* DeScumm - Scumm Script Disassembler (version 2-5 scripts)
  * Copyright (C) 2001  Ludvig Strigeus
- * Copyright (C) 2002-2004  The ScummVM Team
+ * Copyright (C) 2002-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

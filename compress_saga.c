@@ -1,6 +1,7 @@
 /* compress_saga - Compress SAGA engine digital sound files into
  * MP3 and Ogg Vorbis format
  * Copyright (C) 2004, Marcoen Hirschberg
+ * Copyright (C) 2004-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

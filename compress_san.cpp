@@ -1,5 +1,5 @@
-/* compress_san - zlib compressor for FOBJ chunks in smush san files
- * Copyright (C) 2004  The ScummVM Team
+/* compress_san - compressor for smush san files
+ * Copyright (C) 2004-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
