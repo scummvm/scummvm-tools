@@ -2600,7 +2600,7 @@ void next_line_V67(char *output)
 		break;
 	case 0xE9:
 		if (HumongousFlag)
-			ext(output, "ppp|seekFile");
+			ext(output, "ppp|seekFilePos");
 		else
 			invalidop(NULL, code);
 		break;
@@ -2614,7 +2614,7 @@ void next_line_V67(char *output)
 		break;
 	case 0xEB:
 		if (HumongousFlag)
-			ext(output, "rp|tellFile");
+			ext(output, "rp|readFilePos");
 		else
 			invalidop(NULL, code);
 		break;
