@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
 	if (flu) {
 		fseek(flu, 0x308, SEEK_SET);
 		for (l = 0; l < nbframes; l++) {
-			writeUint32BE(output, frameInfo[l].offsetOutput - 4);
+			writeUint32BE(flu, frameInfo[l].offsetOutput - 4);
 		}
 		fclose(flu);
 	}
