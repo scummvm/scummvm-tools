@@ -1348,8 +1348,6 @@ void next_line_V8()
 
 	case 0x74:
 		// FIXME - is this correct?!? Also, make the display nicer...
-//		ext("ppp|dim2");
-
 		ext("x" "dim2\0"
 				"\x0Appw|dim-scummvar,"
 				"\x0Bppw|dim-string,"
@@ -1369,17 +1367,15 @@ void next_line_V8()
 			writeArray(array, NULL, pop(), se_get_string());
 			}
 			break;
-		case 0x15:{
-			int array = get_word();
-			writeArray(array, NULL, pop(), se_get_list());
-			}
-			break;
-		case 0x16:{
-			int array = get_word();
+		case 0x15:
 			se_a = pop();
 			se_b = se_get_list();
-			writeArray(array, pop(), se_a, se_b);
-			}
+			writeArray(get_word(), NULL, se_a, se_b);
+			break;
+		case 0x16:
+			se_a = pop();
+			se_b = se_get_list();
+			writeArray(get_word(), pop(), se_a, se_b);
 			break;
 		}
 		break;
