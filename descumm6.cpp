@@ -1584,8 +1584,13 @@ void next_line_V8()
 				);
 		break;
 
+	case 0xB2:
+		ext("ppp|soundKludge");
+		break;
 	case 0xB3:
-		ext("x" "system\0" "\x28|restart," "\x29|quit");
+		ext("x" "system\0"
+				"\x28|restart,"
+				"\x29|quit");
 		break;
 
 	case 0xBA:
@@ -1599,6 +1604,8 @@ void next_line_V8()
 				"\x16|setBannerColors,"
 
 				"\x1D|setKeyScript,"
+				
+				"\x20|writeRegistryValue,"
 				
 				"\x6C|buildPaletteShadow"
 				);
@@ -1617,6 +1624,12 @@ void next_line_V8()
 		break;
 	case 0xD6:
 		ext("rp|abs");
+		break;
+
+	case 0xD8:
+		ext("ry" "f-kludge\0"
+				"\xE0|readRegistryValue"
+				);
 		break;
 
 	default:
