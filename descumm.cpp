@@ -2851,8 +2851,11 @@ void get_tok(char *buf)
 	case 0x02:
 	case 0x82:
 		// FIXME - seems Zak256 has an additional word here?
-		//do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B) | A2W);
+#if 1 || ZAK256
+		do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B) | A2B | A3B);
+#else
 		do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B));
+#endif
 		break;
 
 	case 0xCC:
@@ -3106,6 +3109,19 @@ void get_tok(char *buf)
 	case 0x50:
 	case 0xD0:
 		do_tok(buf, "pickupObject", ((opcode & 0x80) ? A1V : A1W));
+		break;
+
+	case 0xA7:
+		do_tok(buf, "saveLoadVars?", 0);
+		break;
+
+	case 0x67:
+	case 0xE7:
+		do_tok(buf, "getStringWidth?", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x6B:
+		do_tok(buf, "debug?", ((opcode & 0x80) ? A1V : A1W));
 		break;
 
 	default:
