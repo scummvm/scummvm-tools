@@ -512,8 +512,8 @@ const char *var_names7[] = {
 const char *var_names8[] = {
 	/* 0 */
 	NULL,
-	"room_width?",
-	"room_height?",
+	"VAR_SCREEN_WIDTH",
+	"VAR_SCREEN_HEIGHT",
 	"VAR_MOUSE_X",
 	/* 4 */
 	"VAR_MOUSE_Y",
