@@ -21,9 +21,9 @@ unsigned char c_hdr[] = {
   ' ', 'F', 'i', 'l', 'e', 0x1a, 0x1a, 0x00, 0x0A, 0x01, 0x29, 0x11
 };
 
-void put_int(unsigned int val) ;
+void put_int(unsigned int val);
 
-void end_of_file() {
+void end_of_file(void) {
   FILE *in;
   int idx_size = ftell(output_idx);
   int size;
@@ -88,7 +88,7 @@ void put_int(unsigned int val) {
   }
 }
 
-void get_part() {
+void get_part(void) {
   int id;
   int pos = ftell(input);
   int tags;
@@ -136,7 +136,9 @@ void get_part() {
     int real_samplerate;
     char rawname[256];
     char mp3name[256];
+#ifdef DEBUG
     static int sound_num = 0;
+#endif
     
     /* Sound Data */
     printf(" Sound Data\n");

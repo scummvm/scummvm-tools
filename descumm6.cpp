@@ -48,12 +48,15 @@ typedef signed long int32;
 
 #if defined(SCUMM_BIG_ENDIAN)
 
-uint32 inline TO_LE_32(uint32 a) {
-	return ((a>>24)&0xFF) + ((a>>8)&0xFF00) + ((a<<8)&0xFF0000) + ((a<<24)&0xFF000000);
+uint32 inline TO_LE_32(uint32 a)
+{
+	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
+		((a << 24) & 0xFF000000);
 }
 
-uint16 inline TO_LE_16(uint16 a) {
-	return ((a>>8)&0xFF) + ((a<<8)&0xFF00);
+uint16 inline TO_LE_16(uint16 a)
+{
+	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
 }
 
 #endif
@@ -122,14 +125,15 @@ int size_of_code;
 
 char *output;
 
-bool pendingElse,haveElse;
+bool pendingElse, haveElse;
 int pendingElseTo;
 int pendingElseOffs;
 int pendingElseOpcode;
 int pendingElseIndent;
 
 
-int get_curoffs() {
+int get_curoffs()
+{
 	return cur_pos - org_pos;
 }
 
@@ -244,102 +248,116 @@ const char *var_names[] = {
 	"g_ems_space"
 };
 
-const char *getVarName(uint var) {
-	if(var>=sizeof(var_names)/sizeof(var_names[0]))
+const char *getVarName(uint var)
+{
+	if (var >= sizeof(var_names) / sizeof(var_names[0]))
 		return NULL;
 	return var_names[var];
 }
 
-void push(StackEnt *se) {
+void push(StackEnt * se)
+{
 	assert(se);
 	stack[num_stack++] = se;
 }
 
-StackEnt *pop() {
-	if (num_stack==0) {
+StackEnt *pop()
+{
+	if (num_stack == 0) {
 		printf("No items on stack to pop!\n");
 		exit(1);
 	}
 	return stack[--num_stack];
 }
 
-void invalidop(const char *cmd, int op) {
+void invalidop(const char *cmd, int op)
+{
 	if (cmd)
-		printf("invalid opcode %s:%d\n", cmd,op);
+		printf("invalid opcode %s:%d\n", cmd, op);
 	else
 		printf("invalid opcode %d\n", op);
 	exit(1);
 }
 
-char *strecpy(char *buf, const char *src) {
+char *strecpy(char *buf, const char *src)
+{
 	strcpy(buf, src);
 	return strchr(buf, 0);
 }
 
-int get_byte() {
-	return (byte)(*cur_pos++);
+int get_byte()
+{
+	return (byte) (*cur_pos++);
 }
 
-int get_word() {
+int get_word()
+{
 #if defined(SCUMM_BIG_ENDIAN)
-  int i = TO_LE_16(*((short*)cur_pos));
+	int i = TO_LE_16(*((short *)cur_pos));
 #else
-  int i = *((short*)cur_pos);
+	int i = *((short *)cur_pos);
 #endif
-  cur_pos+=2;
-  return i;
+	cur_pos += 2;
+	return i;
 }
 
 
-byte *skipVerbHeader(byte *p) {
+byte *skipVerbHeader(byte * p)
+{
 	byte code;
 	byte *p2 = p;
 	int hdrlen;
 
 	while ((code = *p2++) != 0) {
-		p2+=sizeof(unsigned short);
+		p2 += sizeof(unsigned short);
 	}
-	
+
 	printf("Events:\n");
 
 	hdrlen = p2 - p + 8;
 
 	while ((code = *p++) != 0) {
-		printf("  %2X - %.4X\n", code, *(unsigned short*)p - hdrlen);
-		p+=sizeof(unsigned short);
+		printf("  %2X - %.4X\n", code, *(unsigned short *)p - hdrlen);
+		p += sizeof(unsigned short);
 	}
 	return p;
 }
 
-StackEnt *se_new(int type) {
-	StackEnt *se = (StackEnt*)malloc(sizeof(StackEnt));
+StackEnt *se_new(int type)
+{
+	StackEnt *se = (StackEnt *) malloc(sizeof(StackEnt));
 	se->type = type;
 	return se;
 }
 
-void se_free(StackEnt *se) {
+void se_free(StackEnt * se)
+{
 	free(se);
 }
 
-StackEnt *se_neg(StackEnt *se) {
+StackEnt *se_neg(StackEnt * se)
+{
 	StackEnt *s = se_new(seNeg);
 	s->left = se;
 	return s;
 }
 
-StackEnt *se_int(int i) {
+StackEnt *se_int(int i)
+{
 	StackEnt *se = se_new(seInt);
 	se->data = i;
 	return se;
 }
 
-StackEnt *se_var(int i) {
+StackEnt *se_var(int i)
+{
 	StackEnt *se = se_new(seVar);
 	se->data = i;
 	return se;
 }
 
-StackEnt *se_array(int i, StackEnt *dim2,StackEnt *dim1) {
+StackEnt *se_array(int i, StackEnt * dim2, StackEnt * dim1)
+{
 	StackEnt *se = se_new(seArray);
 	se->left = dim2;
 	se->right = dim1;
@@ -347,14 +365,16 @@ StackEnt *se_array(int i, StackEnt *dim2,StackEnt *dim1) {
 	return se;
 }
 
-StackEnt *se_oper(StackEnt *a, int op) {
+StackEnt *se_oper(StackEnt * a, int op)
+{
 	StackEnt *se = se_new(seUnary);
 	se->data = op;
 	se->left = a;
 	return se;
 }
 
-StackEnt *se_oper(StackEnt *a, int op, StackEnt *b) {
+StackEnt *se_oper(StackEnt * a, int op, StackEnt * b)
+{
 	StackEnt *se = se_new(seBinary);
 	se->data = op;
 	se->left = a;
@@ -362,46 +382,48 @@ StackEnt *se_oper(StackEnt *a, int op, StackEnt *b) {
 	return se;
 }
 
-StackEnt *se_complex(char *s) {
+StackEnt *se_complex(char *s)
+{
 	StackEnt *se = se_new(seComplex);
 	se->str = strdup(s);
 	return se;
 }
 
 
-char *se_astext(StackEnt *se, char *where, bool wantparens=true) {
+char *se_astext(StackEnt * se, char *where, bool wantparens = true)
+{
 	int i;
 	int var;
 	const char *s;
 
-	switch(se->type) {
+	switch (se->type) {
 	case seInt:
-		where += sprintf(where, "%d", se->data);
+		where += sprintf(where, "%ld", se->data);
 		break;
 	case seVar:
-		if (!(se->data&0xF000)) {
-			var = se->data&0xFFF;
-			if ((s=getVarName(var)) != NULL) 
+		if (!(se->data & 0xF000)) {
+			var = se->data & 0xFFF;
+			if ((s = getVarName(var)) != NULL)
 				where = strecpy(where, s);
 			else
-				where += sprintf(where, "var[%d]", se->data&0xFFF);
-		} else if (se->data&0x8000) {
-			where += sprintf(where, "bitvar[%d]", se->data&0x7FFF);
-		} else if (se->data&0x4000) {
-			where += sprintf(where, "localvar[%d]", se->data&0xFFF);
+				where += sprintf(where, "var[%ld]", se->data & 0xFFF);
+		} else if (se->data & 0x8000) {
+			where += sprintf(where, "bitvar[%ld]", se->data & 0x7FFF);
+		} else if (se->data & 0x4000) {
+			where += sprintf(where, "localvar[%ld]", se->data & 0xFFF);
 		} else {
-			where += sprintf(where, "??var??[%d]", se->data&0xFFFF);
+			where += sprintf(where, "??var??[%ld]", se->data & 0xFFFF);
 		}
 		break;
 	case seArray:
 		if (se->left) {
-			where += sprintf(where, "array[%d][", se->data);
+			where += sprintf(where, "array[%ld][", se->data);
 			where = se_astext(se->left, where);
 			where = strecpy(where, "][");
 			where = se_astext(se->right, where);
 			where = strecpy(where, "]");
 		} else {
-			where += sprintf(where, "array[%d][", se->data);
+			where += sprintf(where, "array[%ld][", se->data);
 			where = se_astext(se->right, where);
 			where = strecpy(where, "]");
 		}
@@ -425,7 +447,7 @@ char *se_astext(StackEnt *se, char *where, bool wantparens=true) {
 		break;
 	case seStackList:
 		*where++ = '[';
-		for (i=se->data; --i>=0; ) {
+		for (i = se->data; --i >= 0;) {
 			where = se_astext(se->list[i], where);
 			if (i)
 				*where++ = ',';
@@ -434,7 +456,7 @@ char *se_astext(StackEnt *se, char *where, bool wantparens=true) {
 		*where = 0;
 		break;
 	case seDup:
-		where += sprintf(where, "dup[%d]", se->data);
+		where += sprintf(where, "dup[%ld]", se->data);
 		break;
 	case seNeg:
 		*where++ = '!';
@@ -444,9 +466,10 @@ char *se_astext(StackEnt *se, char *where, bool wantparens=true) {
 	return where;
 }
 
-void kill(StackEnt *se) {
-	if (se->type!=seDup) {
-		char *e = strecpy(output,"kill(");
+void kill(StackEnt * se)
+{
+	if (se->type != seDup) {
+		char *e = strecpy(output, "kill(");
 		e = se_astext(se, e);
 		strcpy(e, ")");
 		se_free(se);
@@ -455,8 +478,9 @@ void kill(StackEnt *se) {
 	}
 }
 
-void doAssign(StackEnt *dst, StackEnt *src) {
-	if (src->type==seDup && dst->type==seDup) {
+void doAssign(StackEnt * dst, StackEnt * src)
+{
+	if (src->type == seDup && dst->type == seDup) {
 		dst->data = src->data;
 		return;
 	}
@@ -465,81 +489,113 @@ void doAssign(StackEnt *dst, StackEnt *src) {
 	se_astext(src, e);
 }
 
-void doAdd(StackEnt *se, int val) {
+void doAdd(StackEnt * se, int val)
+{
 	char *e = se_astext(se, output);
 	sprintf(e, " += %d", val);
 }
 
 int dupindex;
 
-StackEnt *dup(StackEnt *se) {
-	if (se->type==seInt)
+StackEnt *dup(StackEnt * se)
+{
+	if (se->type == seInt)
 		return se;
-	
+
 	StackEnt *dse = se_new(seDup);
 	dse->data = ++dupindex;
 	doAssign(dse, se);
 	return dse;
 }
 
-void writeArray(int i, StackEnt *dim2,StackEnt *dim1, StackEnt *value) {
+void writeArray(int i, StackEnt * dim2, StackEnt * dim1, StackEnt * value)
+{
 	StackEnt *array = se_array(i, dim2, dim1);
-	doAssign(array,value);
+	doAssign(array, value);
 	se_free(array);
 }
 
-void writeVar(int i, StackEnt *value) {
+void writeVar(int i, StackEnt * value)
+{
 	StackEnt *se = se_var(i);
-	doAssign(se,value);
+	doAssign(se, value);
 	se_free(se);
 }
 
-void addArray(int i, StackEnt *dim1, int val) {
+void addArray(int i, StackEnt * dim1, int val)
+{
 	StackEnt *array = se_array(i, NULL, dim1);
-	doAdd(array,val);
+	doAdd(array, val);
 	se_free(array);
 }
 
-void addVar(int i, int val) {
+void addVar(int i, int val)
+{
 	StackEnt *se = se_var(i);
-	doAdd(se,val);
+	doAdd(se, val);
 	se_free(se);
 }
 
-StackEnt *se_get_string() {
+StackEnt *se_get_string()
+{
 	byte cmd;
 	char buf[1024];
 	char *e = buf;
 	bool in = false;
-	int i	;
+	int i;
 
-	while ( (cmd = get_byte()) != 0) {
-		if (cmd==0xFF || cmd==0xFE) {
-			if (in) { *e++ = '"'; in=false; }
+	while ((cmd = get_byte()) != 0) {
+		if (cmd == 0xFF || cmd == 0xFE) {
+			if (in) {
+				*e++ = '"';
+				in = false;
+			}
 			i = get_byte();
-			switch(i) {
-			case 3: e += sprintf(e, ":wait:"); break;
-			case 1: e += sprintf(e, ":newline:"); break;
-			case 2: e += sprintf(e, ":keeptext:"); break;	
-			case 9: e += sprintf(e, ":startanim=%d:",get_word()); break;
-			case 10:e += sprintf(e, ":sound:"); cur_pos+=14; break;
-			case 14:e += sprintf(e, ":setfont=%d:",get_word()); break;
-			case 12:e += sprintf(e, ":setcolor=%d:",get_word()); break;
-			case 13:e += sprintf(e, ":unk2=%d:",get_word()); break;
+			switch (i) {
+			case 3:
+				e += sprintf(e, ":wait:");
+				break;
+			case 1:
+				e += sprintf(e, ":newline:");
+				break;
+			case 2:
+				e += sprintf(e, ":keeptext:");
+				break;
+			case 9:
+				e += sprintf(e, ":startanim=%d:", get_word());
+				break;
+			case 10:
+				e += sprintf(e, ":sound:");
+				cur_pos += 14;
+				break;
+			case 14:
+				e += sprintf(e, ":setfont=%d:", get_word());
+				break;
+			case 12:
+				e += sprintf(e, ":setcolor=%d:", get_word());
+				break;
+			case 13:
+				e += sprintf(e, ":unk2=%d:", get_word());
+				break;
 			default:
 				e += sprintf(e, ":unk%d=%d:", i, get_word());
 			}
 		} else {
-			if (!in) { *e++ = '"'; in=true; }
+			if (!in) {
+				*e++ = '"';
+				in = true;
+			}
 			*e++ = cmd;
 		}
 	}
-	if (in) *e++ = '"';
+	if (in)
+		*e++ = '"';
 	*e = 0;
 	return se_complex(buf);
 }
 
-StackEnt *se_get_list() {
+StackEnt *se_get_list()
+{
 	StackEnt *se = se_new(seStackList);
 	StackEnt *senum = pop();
 	int num;
@@ -549,15 +605,16 @@ StackEnt *se_get_list() {
 		exit(1);
 	}
 	se->data = num = senum->data;
-	se->list = (StackEnt**)calloc(num, sizeof(StackEnt*));
+	se->list = (StackEnt **) calloc(num, sizeof(StackEnt *));
 
-	while(--num>=0) {
+	while (--num >= 0) {
 		se->list[num] = pop();
 	}
 	return se;
 }
 
-void ext(const char *fmt) {
+void ext(const char *fmt)
+{
 	bool wantresult;
 	byte cmd, extcmd;
 	const char *extstr = NULL;
@@ -568,24 +625,24 @@ void ext(const char *fmt) {
 
 	/* return the result? */
 	wantresult = false;
-	if (*fmt=='r') {
+	if (*fmt == 'r') {
 		wantresult = true;
 		fmt++;
 	}
 
-	while ((cmd = *fmt++)!='|') {
-		if (cmd=='x' && !extstr) {
+	while ((cmd = *fmt++) != '|') {
+		if (cmd == 'x' && !extstr) {
 			extstr = fmt;
-			fmt += strlen(fmt)+1;
-						
+			fmt += strlen(fmt) + 1;
+
 			/* extended thing */
 			extcmd = get_byte();
 
 			/* locate our extended item */
 			while ((cmd = *fmt++) != extcmd) {
 				/* scan until we find , or \0 */
-				while ( (cmd = *fmt++) != ',') {
-					if (cmd==0) {
+				while ((cmd = *fmt++) != ',') {
+					if (cmd == 0) {
 						invalidop(extstr, extcmd);
 					}
 				}
@@ -593,36 +650,37 @@ void ext(const char *fmt) {
 			/* found a command, continue at the beginning */
 			continue;
 		}
-		if (cmd=='m' && !prep) {
+		if (cmd == 'm' && !prep) {
 			prep = fmt;
-			fmt += strlen(fmt)+1;
+			fmt += strlen(fmt) + 1;
 			continue;
 		}
 
-		if (cmd=='p') {
+		if (cmd == 'p') {
 			args[numArgs++] = pop();
-		} else if (cmd=='s') {
+		} else if (cmd == 's') {
 			args[numArgs++] = se_get_string();
-		} else if (cmd=='w') {
+		} else if (cmd == 'w') {
 			args[numArgs++] = se_int(get_word());
-		} else if (cmd=='l') {
+		} else if (cmd == 'l') {
 			args[numArgs++] = se_get_list();
-		} else if (cmd=='j') {
+		} else if (cmd == 'j') {
 			args[numArgs++] = se_int(get_word());
 		} else {
-			printf("error in argument string '%s', character '%c' unknown\n", fmt, cmd);
+			printf("error in argument string '%s', character '%c' unknown\n", fmt,
+						 cmd);
 		}
 	}
 
 	/* create a string from the arguments */
-	
-	e = (char*)output;
+
+	e = (char *)output;
 	if (prep)
 		e = strecpy(e, prep);
-	while ((cmd=*fmt++)!=0 && cmd!=',')
+	while ((cmd = *fmt++) != 0 && cmd != ',')
 		*e++ = cmd;
 	*e++ = '(';
-	while (--numArgs>=0) {
+	while (--numArgs >= 0) {
 		e = se_astext(args[numArgs], e);
 		if (numArgs)
 			*e++ = ',';
@@ -631,17 +689,18 @@ void ext(const char *fmt) {
 	*e = 0;
 
 	if (wantresult) {
-		push(se_complex((char*)output));
+		push(se_complex((char *)output));
 		output[0] = 0;
 		return;
 	}
 }
 
-BlockStack *pushBlockStackItem() {
+BlockStack *pushBlockStackItem()
+{
 	if (!block_stack)
-		block_stack = (BlockStack*)malloc(256*sizeof(BlockStack));
-	
-	if (num_block_stack>=256) {
+		block_stack = (BlockStack *) malloc(256 * sizeof(BlockStack));
+
+	if (num_block_stack >= 256) {
 		printf("BlockStack full!\n");
 		exit(0);
 	}
@@ -649,18 +708,19 @@ BlockStack *pushBlockStackItem() {
 }
 
 
-bool maybeAddIf(unsigned int cur, unsigned int to) {
+bool maybeAddIf(unsigned int cur, unsigned int to)
+{
 	int i;
 	BlockStack *p;
-	
-	if (((to|cur)>>16)||(to<=cur))
-		return 0;		/* Invalid jump */
-	
-	for(i=0,p=block_stack; i<num_block_stack; i++,p++) {
-		if(to > p->to)
+
+	if (((to | cur) >> 16) || (to <= cur))
+		return 0;										/* Invalid jump */
+
+	for (i = 0, p = block_stack; i < num_block_stack; i++, p++) {
+		if (to > p->to)
 			return false;
-	}	
-	
+	}
+
 	p = pushBlockStackItem();
 	p->from = cur;
 	p->to = to;
@@ -668,64 +728,67 @@ bool maybeAddIf(unsigned int cur, unsigned int to) {
 }
 
 /* Returns 0 or 1 depending if it's ok to add an else */
-bool maybeAddElse(unsigned int cur, unsigned int to) {
+bool maybeAddElse(unsigned int cur, unsigned int to)
+{
 	BlockStack *p;
 	bool i;
-  
-	if (((to|cur)>>16)||(to<=cur))
-		return false;		/* Invalid jump */
+
+	if (((to | cur) >> 16) || (to <= cur))
+		return false;								/* Invalid jump */
 
 	if (!num_block_stack)
-		return false;		/* There are no previous blocks, so an else is not ok */
+		return false;								/* There are no previous blocks, so an else is not ok */
 
-	p = &block_stack[num_block_stack-1];	
-	if (cur!=p->to)
-		return false;       /* We have no prevoius if that is exiting right at the end of this goto */
-	
+	p = &block_stack[num_block_stack - 1];
+	if (cur != p->to)
+		return false;								/* We have no prevoius if that is exiting right at the end of this goto */
+
 	num_block_stack--;
 	i = maybeAddIf(cur, to);
 	if (i)
-		return i;		/* We can add an else */
+		return i;										/* We can add an else */
 	num_block_stack++;
-	return false;			/* An else is not OK here :( */
+	return false;									/* An else is not OK here :( */
 }
 
 
 
-int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to) {
-  unsigned int k;
-	BlockStack *p;    
-    
-	if (((to|cur|elseto)>>16)||(elseto<to)||(to<=cur))
-		return false;		/* Invalid jump */
+int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
+{
+	unsigned int k;
+	BlockStack *p;
+
+	if (((to | cur | elseto) >> 16) || (elseto < to) || (to <= cur))
+		return false;								/* Invalid jump */
 
 	if (!num_block_stack)
-		return false;		/* There are no previous blocks, so an ifelse is not ok */
+		return false;								/* There are no previous blocks, so an ifelse is not ok */
 
 	k = to - 3;
-	if ((uint)k>=(uint)size_of_code)
-		return false;				/* Invalid jump */
-	
+	if ((uint) k >= (uint) size_of_code)
+		return false;								/* Invalid jump */
+
 	if (org_pos[k] != JUMP_OPCODE)
-		return false;               /* Invalid jump */
-	
-	k = to + *((short*)(org_pos + k + 1));
-    
-	if (k!=elseto)			
-		return false;             	/* Not an ifelse */
-    
-	p = &block_stack[num_block_stack-1];	
-  p->from = cur;
-  p->to = to;
-    
-  return true;
+		return false;								/* Invalid jump */
+
+	k = to + *((short *)(org_pos + k + 1));
+
+	if (k != elseto)
+		return false;								/* Not an ifelse */
+
+	p = &block_stack[num_block_stack - 1];
+	p->from = cur;
+	p->to = to;
+
+	return true;
 }
 
 
-void jump() {
+void jump()
+{
 	int cur = get_curoffs() + 2;
-	int to = cur + (int16)get_word();
-		
+	int to = cur + (int16) get_word();
+
 	if (!dontOutputElse && maybeAddElse(cur, to)) {
 		pendingElse = true;
 		pendingElseTo = to;
@@ -733,22 +796,24 @@ void jump() {
 		pendingElseOpcode = JUMP_OPCODE;
 		pendingElseIndent = num_block_stack;
 	} else {
-		sprintf(output,"jump %x", to);
+		sprintf(output, "jump %x", to);
 	}
 }
 
-void jumpif(StackEnt *se, bool when) {
+void jumpif(StackEnt * se, bool when)
+{
 	int cur = get_curoffs() + 2;
-	int to = cur + (int16)get_word();
+	int to = cur + (int16) get_word();
 	char *e = output;
-	
+
 	if (!dontOutputElseif && pendingElse) {
 		if (maybeAddElseIf(cur, pendingElseTo, to)) {
 			pendingElse = false;
 			haveElse = true;
 			e = strecpy(e, "} else if (");
-			if (when) se = se_neg(se);
-			e = se_astext(se, e,false);
+			if (when)
+				se = se_neg(se);
+			e = se_astext(se, e, false);
 			sprintf(e, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 			return;
 		}
@@ -756,23 +821,25 @@ void jumpif(StackEnt *se, bool when) {
 
 	if (!dontOutputIfs && maybeAddIf(cur, to)) {
 		e = strecpy(e, "if (");
-		if (when) se = se_neg(se);
-		e = se_astext(se, e,false);
+		if (when)
+			se = se_neg(se);
+		e = se_astext(se, e, false);
 		sprintf(e, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 		return;
 	}
 
 	e = strecpy(e, when ? "if (" : "if (!");
 	e = se_astext(se, e);
-	sprintf(e,") goto %x", to);
+	sprintf(e, ") goto %x", to);
 }
 
 
-void next_line() {
+void next_line()
+{
 	byte code = get_byte();
 	StackEnt *se_a;
 
-	switch(code) {
+	switch (code) {
 	case 0x0:
 		push(se_int(get_byte()));
 		break;
@@ -896,7 +963,7 @@ void next_line() {
 		ext("lpp|startScriptEx");
 		break;
 	case 0x5F:
-                ext("lp|startScript");
+		ext("lp|startScript");
 		break;
 	case 0x60:
 		ext("lppp|startObject");
@@ -907,7 +974,7 @@ void next_line() {
 	case 0x62:
 		ext("ppp|setObjectXY");
 		break;
-	/* *** */
+		/* *** */
 	case 0x65:
 		ext("|stopObjectCodeA");
 		break;
@@ -928,19 +995,17 @@ void next_line() {
 		break;
 	case 0x6B:
 		ext("x" "cursorCommand\0"
-			      "\x90|cursorOn,"
-			      "\x91|cursorOff,"
-						"\x92|userPutOn,"
-						"\x93|userPutOff,"
-						"\x94|softCursorOn,"
-						"\x95|softCursorOff,"
-						"\x96|softUserputOn,"
-						"\x97|softUserputOff,"
-						"\x99pp|setCursorImg,"
-						"\x9App|setCursorHotspot,"
-						"\x9Cp|initCharset,"
-						"\x9Dl|charsetColors,"
-						"\xD6p|new_unk_1" );
+				"\x90|cursorOn,"
+				"\x91|cursorOff,"
+				"\x92|userPutOn,"
+				"\x93|userPutOff,"
+				"\x94|softCursorOn,"
+				"\x95|softCursorOff,"
+				"\x96|softUserputOn,"
+				"\x97|softUserputOff,"
+				"\x99pp|setCursorImg,"
+				"\x9App|setCursorHotspot," "\x9Cp|initCharset," "\x9Dl|charsetColors,"
+				"\xD6p|new_unk_1");
 		break;
 	case 0x6C:
 		ext("|break");
@@ -1079,96 +1144,86 @@ void next_line() {
 		break;
 	case 0x9B:
 		ext("x" "resourceRoutines\0"
-			      "\x64p|loadScript,"
-						"\x65p|loadSound,"
-						"\x66p|loadCostume,"
-						"\x67p|loadRoom,"
-						"\x68p|nukeScript,"
-						"\x69p|nukeSound,"
-						"\x6Ap|nukeCostume,"
-						"\x6Bp|nukeRoom,"
-						"\x6Cp|lockScript,"
-						"\x6Dp|lockSound,"
-						"\x6Ep|lockCostume,"
-						"\x6Fp|lockRoom,"
-						"\x70p|unlockScript,"
-						"\x71p|unlockSound,"
-						"\x72p|unlockCostume,"
-						"\x73p|unlockRoom,"
-						"\x75p|loadCharset,"
-						"\x76p|nukeCharset,"
-						"\x77pp|unkResProc"
-				);
+				"\x64p|loadScript,"
+				"\x65p|loadSound,"
+				"\x66p|loadCostume,"
+				"\x67p|loadRoom,"
+				"\x68p|nukeScript,"
+				"\x69p|nukeSound,"
+				"\x6Ap|nukeCostume,"
+				"\x6Bp|nukeRoom,"
+				"\x6Cp|lockScript,"
+				"\x6Dp|lockSound,"
+				"\x6Ep|lockCostume,"
+				"\x6Fp|lockRoom,"
+				"\x70p|unlockScript,"
+				"\x71p|unlockSound,"
+				"\x72p|unlockCostume,"
+				"\x73p|unlockRoom," "\x75p|loadCharset," "\x76p|nukeCharset,"
+				"\x77pp|unkResProc");
 		break;
 	case 0x9C:
 		ext("x" "roomOps\0"
-			      "\xACpp|roomScroll,"
-				    "\xAEpp|setScreen,"
-						"\xAFpppp|setPalColor,"
-						"\xB0|shakeOn,"
-						"\xB1|shakeOff,"
-						"\xB3ppp|unkRoomFunc2,"
-						"\xB4pp|saveLoadThing,"
-						"\xB5p|screenEffect,"
-						"\xB6ppppp|unkRoomFunc2,"
-						"\xB7ppppp|unkRoomFunc3,"
-						"\xBApppp|palManipulate,"
-						"\xBBpp|colorCycleDelay,"
-						"\xD5p|setPalette"
-				);
+				"\xACpp|roomScroll,"
+				"\xAEpp|setScreen,"
+				"\xAFpppp|setPalColor,"
+				"\xB0|shakeOn,"
+				"\xB1|shakeOff,"
+				"\xB3ppp|unkRoomFunc2,"
+				"\xB4pp|saveLoadThing,"
+				"\xB5p|screenEffect,"
+				"\xB6ppppp|unkRoomFunc2,"
+				"\xB7ppppp|unkRoomFunc3,"
+				"\xBApppp|palManipulate," "\xBBpp|colorCycleDelay,"
+				"\xD5p|setPalette");
 		break;
 	case 0x9D:
 		ext("x" "actorSet\0"
-			      "\xC5p|setCurActor,"
-						"\x4Cp|setActorCostume,"
-						"\x4Dpp|setActorWalkSpeed,"
-						"\x4El|setActorSound,"
-						"\x4Fp|setActorWalkFrame,"
-						"\x50pp|setActorTalkFrame,"
-						"\x51p|setActorStandFrame,"
-						"\x52ppp|actorSet:82:??,"
-						"\x53|initActor,"
-						"\x54|setActorElevation,"
-						"\x55|setActorDefAnim,"
-						"\x56pp|setActorPalette,"
-						"\x57p|setActorTalkColor,"
-						"\x58s|setActorName,"
-						"\x59p|setActorInitFrame,"
-						"\x5Bp|setActorWidth,"
-						"\x5Cp|setActorScale,"
-						"\x5D|setActorNeverZClip,"
-						"\x5Ep|setActorNeverZClip,"
-						"\x5F|setActorIgnoreBoxes,"
-						"\x60|setActorFollowBoxes,"
-						"\x61|setActorAnimSpeed,"
-						"\x62|setActorData8,"
-						"\x63pp|setActorTalkPos,"
-						"\xD7|setActorNew3On,"
-						"\xD8|setActorNew3Off,"
-						"\xD9|initActorLittle"
-				);
+				"\xC5p|setCurActor,"
+				"\x4Cp|setActorCostume,"
+				"\x4Dpp|setActorWalkSpeed,"
+				"\x4El|setActorSound,"
+				"\x4Fp|setActorWalkFrame,"
+				"\x50pp|setActorTalkFrame,"
+				"\x51p|setActorStandFrame,"
+				"\x52ppp|actorSet:82:??,"
+				"\x53|initActor,"
+				"\x54|setActorElevation,"
+				"\x55|setActorDefAnim,"
+				"\x56pp|setActorPalette,"
+				"\x57p|setActorTalkColor,"
+				"\x58s|setActorName,"
+				"\x59p|setActorInitFrame,"
+				"\x5Bp|setActorWidth,"
+				"\x5Cp|setActorScale,"
+				"\x5D|setActorNeverZClip,"
+				"\x5Ep|setActorNeverZClip,"
+				"\x5F|setActorIgnoreBoxes,"
+				"\x60|setActorFollowBoxes,"
+				"\x61|setActorAnimSpeed,"
+				"\x62|setActorData8,"
+				"\x63pp|setActorTalkPos,"
+				"\xD7|setActorNew3On," "\xD8|setActorNew3Off,"
+				"\xD9|initActorLittle");
 		break;
 	case 0x9E:
 		ext("x" "verbOps\0"
-			      "\xC4p|setCurVerb,"
-						"\x7Cp|verbLoadImg,"
-						"\x7Ds|verbLoadString,"
-						"\x7Ep|verbSetColor,"
-						"\x7Fp|verbSetHiColor,"
-						"\x80pp|verbSetXY,"
-						"\x81|verbSetCurmode1,"
-						"\x82|verbSetCurmode0,"
-						"\x83|verbKill,"
-						"\x84|verbInit,"
-						"\x85p|verbSetDimColor,"
-						"\x86|verbSetCurmode2,"
-						"\x87p|verbSetKey,"
-						"\x88p|verbSetCenter,"
-						"\x89p|verbSetToString,"
-						"\x8Bpp|verbSetToObject,"
-						"\x8Cp|verbSetBkColor,"
-						"\xFF|verbRedraw"
-				);		
+				"\xC4p|setCurVerb,"
+				"\x7Cp|verbLoadImg,"
+				"\x7Ds|verbLoadString,"
+				"\x7Ep|verbSetColor,"
+				"\x7Fp|verbSetHiColor,"
+				"\x80pp|verbSetXY,"
+				"\x81|verbSetCurmode1,"
+				"\x82|verbSetCurmode0,"
+				"\x83|verbKill,"
+				"\x84|verbInit,"
+				"\x85p|verbSetDimColor,"
+				"\x86|verbSetCurmode2,"
+				"\x87p|verbSetKey,"
+				"\x88p|verbSetCenter,"
+				"\x89p|verbSetToString,"
+				"\x8Bpp|verbSetToObject," "\x8Cp|verbSetBkColor," "\xFF|verbRedraw");
 		break;
 	case 0x9F:
 		ext("rpp|getActorFromXY");
@@ -1186,18 +1241,13 @@ void next_line() {
 		ext("rpp|getVerbEntrypoint");
 		break;
 	case 0xA4:
-		ext("x" "arrayOps\0"
-			      "\xCDwps|arrayOps205,"
-				    "\xD0wpl|arrayOps208,"
-						"\xD4wplp|arrayOps212"
-			);
+		ext("x" "arrayOps\0" "\xCDwps|arrayOps205," "\xD0wpl|arrayOps208,"
+				"\xD4wplp|arrayOps212");
 		break;
 	case 0xA5:
 		ext("x" "saveRestoreVerbs\0"
-					  "\x8Dppp|saveRestoreA,"
-				    "\x8Eppp|saveRestoreB,"
-						"\x8Fppp|saveRestoreC"
-			);
+				"\x8Dppp|saveRestoreA," "\x8Eppp|saveRestoreB,"
+				"\x8Fppp|saveRestoreC");
 		break;
 	case 0xA6:
 		ext("ppppp|drawBox");
@@ -1207,11 +1257,8 @@ void next_line() {
 		break;
 	case 0xA9:
 		ext("x" "wait\0"
-					  "\xA8pj|waitForActor,"
-				    "\xA9|waitForMessage,"
-						"\xAA|waitForCamera,"
-						"\xAB|waitForSentence"
-			);
+				"\xA8pj|waitForActor," "\xA9|waitForMessage," "\xAA|waitForCamera,"
+				"\xAB|waitForSentence");
 		break;
 	case 0xAA:
 		ext("rp|getActorScaleX");
@@ -1226,10 +1273,7 @@ void next_line() {
 		ext("rlp|isAnyOf");
 		break;
 	case 0xAE:
-		ext("x" "quitPauseRestart\0"
-					  "\x9E|pauseGame,"
-				    "\xA0|shutDown"
-			);
+		ext("x" "quitPauseRestart\0" "\x9E|pauseGame," "\xA0|shutDown");
 		break;
 	case 0xAF:
 		ext("rp|isActorInBox");
@@ -1248,93 +1292,63 @@ void next_line() {
 		break;
 	case 0xB4:
 		ext("m" "print_0_\0"
-			  "x" "print_0\0"
-					  "\x41pp|XY,"
-				    "\x42p|color,"
-						"\x43p|right,"
-						"\x45|center,"
-						"\x47|left,"
-						"\x48|overhead,"
-						"\x4A|new3,"
-						"\x4Bs|msg,"
-						"\xFE|begin,"
-						"\xFF|end"
-					);
+				"x" "print_0\0"
+				"\x41pp|XY,"
+				"\x42p|color,"
+				"\x43p|right,"
+				"\x45|center,"
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
+				"\xFF|end");
 		break;
 	case 0xB5:
 		ext("m" "print_1_\0"
-			  "x" "print_1\0"
-					  "\x41pp|XY,"
-				    "\x42p|color,"
-						"\x43p|right,"
-						"\x45|center,"
-						"\x47|left,"
-						"\x48|overhead,"
-						"\x4A|new3,"
-						"\x4Bs|msg,"
-						"\xFE|begin,"
-						"\xFF|end"
-					);
+				"x" "print_1\0"
+				"\x41pp|XY,"
+				"\x42p|color,"
+				"\x43p|right,"
+				"\x45|center,"
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
+				"\xFF|end");
 		break;
 	case 0xB6:
 		ext("m" "print_2_\0"
-			  "x" "print_2\0"
-					  "\x41pp|XY,"
-				    "\x42p|color,"
-						"\x43p|right,"
-						"\x45|center,"
-						"\x47|left,"
-						"\x48|overhead,"
-						"\x4A|new3,"
-						"\x4Bs|msg,"
-						"\xFE|begin,"
-						"\xFF|end"
-					);
+				"x" "print_2\0"
+				"\x41pp|XY,"
+				"\x42p|color,"
+				"\x43p|right,"
+				"\x45|center,"
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
+				"\xFF|end");
 		break;
 	case 0xB7:
 		ext("m" "print_3_\0"
-			  "x" "print_3\0"
-					  "\x41pp|XY,"
-				    "\x42p|color,"
-						"\x43p|right,"
-						"\x45|center,"
-						"\x47|left,"
-						"\x48|overhead,"
-						"\x4A|new3,"
-						"\x4Bs|msg,"
-						"\xFE|begin,"
-						"\xFF|end"
-					);
+				"x" "print_3\0"
+				"\x41pp|XY,"
+				"\x42p|color,"
+				"\x43p|right,"
+				"\x45|center,"
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
+				"\xFF|end");
 		break;
 	case 0xB8:
 		ext("m" "print_actor_\0"
-			  "x" "print_actor\0"
-					  "\x41pp|XY,"
-				    "\x42p|color,"
-						"\x43p|right,"
-						"\x45|center,"
-						"\x47|left,"
-						"\x48|overhead,"
-						"\x4A|new3,"
-						"\x4Bs|msg,"
-						"\xFEp|begin,"
-						"\xFF|end"
-					);
+				"x" "print_actor\0"
+				"\x41pp|XY,"
+				"\x42p|color,"
+				"\x43p|right,"
+				"\x45|center,"
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFEp|begin,"
+				"\xFF|end");
 		break;
 	case 0xB9:
 		ext("m" "print_ego_\0"
-			  "x" "print_ego\0"
-					  "\x41pp|XY,"
-				    "\x42p|color,"
-						"\x43p|right,"
-						"\x45|center,"
-						"\x47|left,"
-						"\x48|overhead,"
-						"\x4A|new3,"
-						"\x4Bs|msg,"
-						"\xFE|begin,"
-						"\xFF|end"
-					);
+				"x" "print_ego\0"
+				"\x41pp|XY,"
+				"\x42p|color,"
+				"\x43p|right,"
+				"\x45|center,"
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
+				"\xFF|end");
 		break;
 	case 0xBA:
 		ext("ps|talkActor");
@@ -1344,13 +1358,10 @@ void next_line() {
 		break;
 	case 0xBC:
 		ext("x" "dim\0"
-					  "\xC7pw|dimType5,"
-						"\xC8pw|dimType1,"
-						"\xC9pw|dimType2,"
-						"\xCApw|dimType3,"
-						"\xCBpw|dimType4,"
-				    "\xCCpw|nukeArray"
-			);
+				"\xC7pw|dimType5,"
+				"\xC8pw|dimType1,"
+				"\xC9pw|dimType2," "\xCApw|dimType3," "\xCBpw|dimType4,"
+				"\xCCpw|nukeArray");
 		break;
 	case 0xBE:
 		ext("lpp|startObjectQuick");
@@ -1360,12 +1371,9 @@ void next_line() {
 		break;
 	case 0xC0:
 		ext("x" "dim2\0"
-					  "\xC7ppw|dim2Type5,"
-						"\xC8ppw|dim2Type1,"
-						"\xC9ppw|dim2Type2,"
-						"\xCAppw|dim2Type3,"
-						"\xCBppw|dim2Type4"
-			);
+				"\xC7ppw|dim2Type5,"
+				"\xC8ppw|dim2Type1," "\xC9ppw|dim2Type2," "\xCAppw|dim2Type3,"
+				"\xCBppw|dim2Type4");
 		break;
 	case 0xC4:
 		ext("rp|abs");
@@ -1392,7 +1400,7 @@ void next_line() {
 		ext("plp|pickOneOfDefault");
 		break;
 	default:
-		invalidop(NULL,code);
+		invalidop(NULL, code);
 		break;
 	}
 }
@@ -1402,30 +1410,34 @@ void next_line() {
 char *indentbuf;
 
 #define INDENT_SIZE 2
-char *getIndentString(int i) {
+char *getIndentString(int i)
+{
 	char *c = indentbuf;
-	i+=i;
-	if (!c) 
-		indentbuf = c = (char*)malloc(127*INDENT_SIZE+1);
-	if (i>=127*INDENT_SIZE) i=127*INDENT_SIZE;
-	if (i<0) i=0;
+	i += i;
+	if (!c)
+		indentbuf = c = (char *)malloc(127 * INDENT_SIZE + 1);
+	if (i >= 127 * INDENT_SIZE)
+		i = 127 * INDENT_SIZE;
+	if (i < 0)
+		i = 0;
 	memset(c, 32, i);
-	c[i]=0;
+	c[i] = 0;
 	return c;
 }
 
-void outputLine(char *buf, int curoffs, int opcode, int indent) {
-	
+void outputLine(char *buf, int curoffs, int opcode, int indent)
+{
+
 	char *s;
-	
+
 	if (buf[0]) {
-		if(indent==-1)
-			indent=num_block_stack;
-		if (curoffs==-1)
-			curoffs = get_curoffs();  
-		
+		if (indent == -1)
+			indent = num_block_stack;
+		if (curoffs == -1)
+			curoffs = get_curoffs();
+
 		s = getIndentString(indent);
-		
+
 		if (dontShowOpcode) {
 			if (dontShowOffsets)
 				printf("%s%s\n", s, buf);
@@ -1433,34 +1445,41 @@ void outputLine(char *buf, int curoffs, int opcode, int indent) {
 				printf("[%.4X] %s%s\n", curoffs, s, buf);
 		} else {
 			char buf2[4];
-			if (opcode!=-1) sprintf(buf2, "%.2X", opcode); else	strcpy(buf2, "**");
-			if (dontShowOffsets)
-				printf("(%s) %s%s\n", buf2, s, buf);	
+			if (opcode != -1)
+				sprintf(buf2, "%.2X", opcode);
 			else
-				printf("[%.4X] (%s) %s%s\n", curoffs, buf2, s, buf);	
+				strcpy(buf2, "**");
+			if (dontShowOffsets)
+				printf("(%s) %s%s\n", buf2, s, buf);
+			else
+				printf("[%.4X] (%s) %s%s\n", curoffs, buf2, s, buf);
 		}
 	}
 }
 
-void writePendingElse() {
+void writePendingElse()
+{
 	if (pendingElse) {
 		char buf[32];
-		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
-		outputLine(buf, pendingElseOffs, pendingElseOpcode, pendingElseIndent-1);
+		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {",
+						pendingElseTo);
+		outputLine(buf, pendingElseOffs, pendingElseOpcode,
+							 pendingElseIndent - 1);
 		pendingElse = false;
 	}
 }
 
-bool indentBlock(unsigned int cur) {
+bool indentBlock(unsigned int cur)
+{
 	BlockStack *p;
-	
+
 	if (!num_block_stack)
 		return false;
-	
-	p = &block_stack[num_block_stack-1];
-	if (cur<p->to)
+
+	p = &block_stack[num_block_stack - 1];
+	if (cur < p->to)
 		return false;
-	
+
 	num_block_stack--;
 	return true;
 }
@@ -1468,13 +1487,21 @@ bool indentBlock(unsigned int cur) {
 
 
 
-void ShowHelpAndExit() {
-	printf("DOTT Script discompiler\nSyntax:\n\tdottdis [-o] filename\nFlags:\n\to\tAlways Show offsets\n\ti\tDon't output ifs\n" \
-	       "\te\tDon't output else\n\tf\tDon't output else-if\n\tc\tDon't show opcode\n\tx\tDon't show offsets\n\th\tHalt on error\n");
-	exit(0);                                                            
+void ShowHelpAndExit()
+{
+	printf("DOTT Script discompiler\nSyntax:\n"
+				 "\tdottdis [-o] filename\nFlags:\n"
+				 "\t-o\tAlways Show offsets\n"
+				 "\t-i\tDon't output ifs\n"
+				 "\t-e\tDon't output else\n"
+				 "\t-f\tDon't output else-if\n"
+				 "\t-c\tDon't show opcode\n"
+				 "\t-x\tDon't show offsets\n" "\t-h\tHalt on error\n");
+	exit(0);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 	int i;
 	char *s;
 	char *filename, *buf;
@@ -1482,25 +1509,39 @@ int main(int argc, char* argv[]) {
 	byte *mem, *memorg;
 	int len;
 	int curoffs;
-	
+
 	/* Parse the arguments */
 	filename = NULL;
-	for (i=1; i < argc; i++) {
+	for (i = 1; i < argc; i++) {
 		s = argv[i];
-		
-		if (s && s[0]=='-') {
+
+		if (s && s[0] == '-') {
 			s++;
 			while (*s) {
-				switch(tolower(*s)) {
-				case 'o': alwaysShowOffs = 1; break;
-				case 'i': dontOutputIfs = 1; break;
-				case 'e': dontOutputElse = 1; break;
-				case 'f': dontOutputElseif = 1; break;
-				case 'c': dontShowOpcode = 1; break;
-				case 'x': dontShowOffsets = 1; break;
-				case 'h': haltOnError = 1; break;
+				switch (tolower(*s)) {
+				case 'o':
+					alwaysShowOffs = 1;
+					break;
+				case 'i':
+					dontOutputIfs = 1;
+					break;
+				case 'e':
+					dontOutputElse = 1;
+					break;
+				case 'f':
+					dontOutputElseif = 1;
+					break;
+				case 'c':
+					dontShowOpcode = 1;
+					break;
+				case 'x':
+					dontShowOffsets = 1;
+					break;
+				case 'h':
+					haltOnError = 1;
+					break;
 				default:
-				  ShowHelpAndExit();
+					ShowHelpAndExit();
 				}
 				s++;
 			}
@@ -1513,40 +1554,49 @@ int main(int argc, char* argv[]) {
 
 	if (!filename)
 		ShowHelpAndExit();
-	
+
 	in = fopen(filename, "rb");
 	if (!in) {
 		printf("Unable to open %s\n", filename);
 		return 1;
 	}
-	
-	memorg = mem = (byte*)malloc(65536);
+
+	memorg = mem = (byte *) malloc(65536);
 	len = fread(mem, 1, 65536, in);
 	fclose(in);
 
-	output = buf = (char*)malloc(8192);
-	
-	#if defined(SCUMM_BIG_ENDIAN)
-	switch(TO_LE_32(*((long*)mem))) {
-	#else
-	switch(*((long*)mem)) {
-	#endif
-	case 'RCSL': 
+	output = buf = (char *)malloc(8192);
+
+#if defined(SCUMM_BIG_ENDIAN)
+	switch (TO_LE_32(*((long *)mem))) {
+#else
+	switch (*((long *)mem)) {
+#endif
+	case 'RCSL':
 		printf("Script# %d\n", (unsigned char)mem[8]);
-		mem+=9; break;		/* Local script */
-	case 'PRCS': mem+=8; break;		/* Script */
-	case 'DCNE': mem+=8; break;		/* Entry code */
-	case 'DCXE': mem+=8; break;		/* Exit code */
-	case 'BREV': mem = skipVerbHeader(mem + 8); break;		/* Verb */
+		mem += 9;
+		break;											/* Local script */
+	case 'PRCS':
+		mem += 8;
+		break;											/* Script */
+	case 'DCNE':
+		mem += 8;
+		break;											/* Entry code */
+	case 'DCXE':
+		mem += 8;
+		break;											/* Exit code */
+	case 'BREV':
+		mem = skipVerbHeader(mem + 8);
+		break;											/* Verb */
 	default:
-	  printf("Unknown script type!\n");
-	  exit(0);
+		printf("Unknown script type!\n");
+		exit(0);
 	}
 
 	cur_pos = mem;
 	org_pos = mem;
 	len -= mem - memorg;
-	
+
 	curoffs = 0;
 
 	do {
@@ -1569,15 +1619,10 @@ int main(int argc, char* argv[]) {
 			fflush(stdout);
 		}
 	} while (cur_pos < mem + len);
-	
-	
-	printf("END\n");
-	 
-	free(memorg);
-	
-	return 0;
 
+	printf("END\n");
+
+	free(memorg);
 
 	return 0;
 }
-

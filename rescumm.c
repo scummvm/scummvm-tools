@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 		if (!file_name[0])
 		{
 			fprintf(stderr, "error: \'%s\'. file has no name.\n", data_file_name);
-			fclose(ofp);
+			fclose(ifp);
 			exit(0);
 		}
 		printf("extracting \'%s\'", file_name);
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 		if (j==0x20)
 		{
 			fprintf(stderr, "\nerror: \'%s\'. file name not null terminated.\n", data_file_name);
-			fclose(ofp);
+			fclose(ifp);
 			exit(0);
 		}
 		printf(", saving as \'%s\'\n", file_name);
