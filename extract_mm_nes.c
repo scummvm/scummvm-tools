@@ -96,7 +96,7 @@ void	write_word (FILE *output, unsigned short val)
 	fwrite(&val,2,1,output);
 }
 
-typedef enum _res_type { RES_UNKNOWN, RES_GLOBDATA, RES_ROOM, RES_SCRIPT, RES_SOUND, RES_COSTUME, RES_ROOMGFX, RES_COSTUMEGFX, RES_PALETTE, RES_UNK_DD75, RES_UNK_DD7D, RES_UNK_DD95, RES_UNK_DD9D } res_type;
+typedef enum _res_type { RES_UNKNOWN, RES_GLOBDATA, RES_ROOM, RES_SCRIPT, RES_SOUND, RES_COSTUME, RES_ROOMGFX, RES_COSTUMEGFX, RES_SPRPALS, RES_SPRDESC, RES_SPRLENS, RES_SPROFFS , RES_SPRDATA } res_type;
 
 typedef	enum _romset { ROMSET_USA, ROMSET_EUROPE, ROMSET_SWEDEN, ROMSET_FRANCE, NUM_ROMSETS } t_romset;
 
@@ -503,45 +503,45 @@ t_resource res_costumes[37] = {
 	{ {0x17F05,0x0BEFF,0x0FEF5,0x0BF17}, {0x0055,0x0055,0x0055,0x0055}, RES_COSTUME },
 	{ {0x13FAB,0x0FEA2,0x17E9A,0x13E77}, {0x004B,0x004B,0x004B,0x004B}, RES_COSTUME },
 	/* 25 */
-	{ {0x0FFB7,0x0BEC2,0x0BF1B,0x07EF8}, {0x0031,0x0031,0x0031,0x0031}, RES_UNK_DD95 },
-	{ {0x0BFE1,0x07F71,0x07F75,0x07F29}, {0x0009,0x0009,0x0009,0x0009}, RES_UNK_DD95 },
+	{ {0x0FFB7,0x0BEC2,0x0BF1B,0x07EF8}, {0x0031,0x0031,0x0031,0x0031}, RES_SPRDESC },
+	{ {0x0BFE1,0x07F71,0x07F75,0x07F29}, {0x0009,0x0009,0x0009,0x0009}, RES_SPRDESC },
 	/* 27 */
-	{ {0x0FEA2,0x1BE32,0x13E6A,0x0FE61}, {0x0115,0x0115,0x0115,0x0115}, RES_UNK_DD7D },
-	{ {0x07FF5,0x07F5B,0x07F4F,0x07ED2}, {0x0006,0x0006,0x0006,0x0006}, RES_UNK_DD7D },
+	{ {0x0FEA2,0x1BE32,0x13E6A,0x0FE61}, {0x0115,0x0115,0x0115,0x0115}, RES_SPRLENS },
+	{ {0x07FF5,0x07F5B,0x07F4F,0x07ED2}, {0x0006,0x0006,0x0006,0x0006}, RES_SPRLENS },
 	/* 29 */
-	{ {0x2BDC5,0x2FD42,0x2BCE0,0x2F959}, {0x022A,0x022A,0x022A,0x022A}, RES_UNK_DD9D },
-	{ {0x0BFEA,0x0BEF3,0x0BF4C,0x07F32}, {0x000C,0x000C,0x000C,0x000C}, RES_UNK_DD9D },
+	{ {0x2BDC5,0x2FD42,0x2BCE0,0x2F959}, {0x022A,0x022A,0x022A,0x022A}, RES_SPROFFS },
+	{ {0x0BFEA,0x0BEF3,0x0BF4C,0x07F32}, {0x000C,0x000C,0x000C,0x000C}, RES_SPROFFS },
 	/* 31 */
-	{ {0x2CE11,0x2CE11,0x2C401,0x2CA28}, {0x2BE0,0x2BE0,0x2BE0,0x2BE0}, RES_UNK_DD75 },
-	{ {0x07F6B,0x0BE28,0x0FE6B,0x07E48}, {0x008A,0x008A,0x008A,0x008A}, RES_UNK_DD75 },
+	{ {0x2CE11,0x2CE11,0x2C401,0x2CA28}, {0x2BE0,0x2BE0,0x2BE0,0x2BE0}, RES_SPRDATA },
+	{ {0x07F6B,0x0BE28,0x0FE6B,0x07E48}, {0x008A,0x008A,0x008A,0x008A}, RES_SPRDATA },
 	/* 33 */
 	{ {0x30001,0x30001,0x2EFE1,0x30001}, {0x0EC9,0x0EC9,0x0EC9,0x0EC9}, RES_COSTUMEGFX },
 	{ {0x2F9F1,0x2F9F1,0x30001,0x2F608}, {0x0351,0x0351,0x0351,0x0351}, RES_COSTUMEGFX },
 	/* 35 */
-	{ {0x0BFC1,0x07F61,0x07F55,0x07ED8}, {0x0010,0x0010,0x0010,0x0010}, RES_PALETTE },
-	{ {0x0BFD1,0x0BEB2,0x07F65,0x07EE8}, {0x0010,0x0010,0x0010,0x0010}, RES_PALETTE }
+	{ {0x0BFC1,0x07F61,0x07F55,0x07ED8}, {0x0010,0x0010,0x0010,0x0010}, RES_SPRPALS },
+	{ {0x0BFD1,0x0BEB2,0x07F65,0x07EE8}, {0x0010,0x0010,0x0010,0x0010}, RES_SPRPALS }
 };
 t_resource res_globdata =
 	{ {0x2CA11,0x2CA11,0x2C001,0x2C628}, {0x0307,0x0307,0x0307,0x0307}, RES_GLOBDATA };
-t_resource res_palettes[2] = {
-	{ {0x0BFC1,0x07F61,0x07F55,0x07ED8}, {0x0010,0x0010,0x0010,0x0010}, RES_PALETTE },
-	{ {0x0BFD1,0x0BEB2,0x07F65,0x07EE8}, {0x0010,0x0010,0x0010,0x0010}, RES_PALETTE }
+t_resource res_sprpals[2] = {	/* sprite palette data */
+	{ {0x0BFC1,0x07F61,0x07F55,0x07ED8}, {0x0010,0x0010,0x0010,0x0010}, RES_SPRPALS },
+	{ {0x0BFD1,0x0BEB2,0x07F65,0x07EE8}, {0x0010,0x0010,0x0010,0x0010}, RES_SPRPALS }
 };
-t_resource res_unk_DD75[2] = {
-	{ {0x2CE11,0x2CE11,0x2C401,0x2CA28}, {0x2BE0,0x2BE0,0x2BE0,0x2BE0}, RES_UNK_DD75 },
-	{ {0x07F6B,0x0BE28,0x0FE6B,0x07E48}, {0x008A,0x008A,0x008A,0x008A}, RES_UNK_DD75 }
+t_resource res_sprdesc[2] = {	/* associates costume IDs with sprite sets (indexes into SPRLENS/SPROFFS) */
+	{ {0x0FFB7,0x0BEC2,0x0BF1B,0x07EF8}, {0x0031,0x0031,0x0031,0x0031}, RES_SPRDESC },
+	{ {0x0BFE1,0x07F71,0x07F75,0x07F29}, {0x0009,0x0009,0x0009,0x0009}, RES_SPRDESC }
 };
-t_resource res_unk_DD7D[2] = {
-	{ {0x0FEA2,0x1BE32,0x13E6A,0x0FE61}, {0x0115,0x0115,0x0115,0x0115}, RES_UNK_DD7D },
-	{ {0x07FF5,0x07F5B,0x07F4F,0x07ED2}, {0x0006,0x0006,0x0006,0x0006}, RES_UNK_DD7D }
+t_resource res_sprlens[2] = {	/* number of sprites in each set (indicates length within SPRDATA) */
+	{ {0x0FEA2,0x1BE32,0x13E6A,0x0FE61}, {0x0115,0x0115,0x0115,0x0115}, RES_SPRLENS },
+	{ {0x07FF5,0x07F5B,0x07F4F,0x07ED2}, {0x0006,0x0006,0x0006,0x0006}, RES_SPRLENS }
 };
-t_resource res_unk_DD95[2] = {
-	{ {0x0FFB7,0x0BEC2,0x0BF1B,0x07EF8}, {0x0031,0x0031,0x0031,0x0031}, RES_UNK_DD95 },
-	{ {0x0BFE1,0x07F71,0x07F75,0x07F29}, {0x0009,0x0009,0x0009,0x0009}, RES_UNK_DD95 }
+t_resource res_sproffs[2] = {	/* offset of each sprite set (indexes into SPRDATA) */
+	{ {0x2BDC5,0x2FD42,0x2BCE0,0x2F959}, {0x022A,0x022A,0x022A,0x022A}, RES_SPROFFS },
+	{ {0x0BFEA,0x0BEF3,0x0BF4C,0x07F32}, {0x000C,0x000C,0x000C,0x000C}, RES_SPROFFS }
 };
-t_resource res_unk_DD9D[2] = {
-	{ {0x2BDC5,0x2FD42,0x2BCE0,0x2F959}, {0x022A,0x022A,0x022A,0x022A}, RES_UNK_DD9D },
-	{ {0x0BFEA,0x0BEF3,0x0BF4C,0x07F32}, {0x000C,0x000C,0x000C,0x000C}, RES_UNK_DD9D }
+t_resource res_sprdata[2] = {	/* sprite data sets (packed NES sprite data) */
+	{ {0x2CE11,0x2CE11,0x2C401,0x2CA28}, {0x2BE0,0x2BE0,0x2BE0,0x2BE0}, RES_SPRDATA },
+	{ {0x07F6B,0x0BE28,0x0FE6B,0x07E48}, {0x008A,0x008A,0x008A,0x008A}, RES_SPRDATA }
 };
 
 unsigned long r_offset (p_resource res)
@@ -637,11 +637,11 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 		_assert(ftell(input) - r_offset(res) - 16 == r_length(res),"extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)",ftell(input) - r_offset(res) - 16,r_length(res));
 		break;
 	case RES_COSTUME:
-	case RES_PALETTE:
-	case RES_UNK_DD75:
-	case RES_UNK_DD7D:
-	case RES_UNK_DD95:
-	case RES_UNK_DD9D:
+	case RES_SPRPALS:
+	case RES_SPRDESC:
+	case RES_SPRLENS:
+	case RES_SPROFFS:
+	case RES_SPRDATA:
 		len = r_length(res);
 		write_word(output,(unsigned short)(len + 2));
 		for (i = 0; i < len; i++)
@@ -902,12 +902,12 @@ int main (int argc, char **argv)
 				lfl_index.room_addr[entry - res_rooms] = (unsigned short)ftell(output);
 				break;
 			case RES_COSTUME:
-			case RES_UNK_DD95:
-			case RES_UNK_DD7D:
-			case RES_UNK_DD9D:
-			case RES_UNK_DD75:
+			case RES_SPRDESC:
+			case RES_SPRLENS:
+			case RES_SPROFFS:
+			case RES_SPRDATA:
 			case RES_COSTUMEGFX:
-			case RES_PALETTE:
+			case RES_SPRPALS:
 				lfl_index.costume_lfl[entry - res_costumes] = lfl->num;
 				lfl_index.costume_addr[entry - res_costumes] = (unsigned short)ftell(output);
 				break;
@@ -952,15 +952,15 @@ int main (int argc, char **argv)
 	for (i = 0; i < 25; i++)
 		dump_resource(input,"costume-%d.dmp",i,&res_costumes[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"costumepal-%d.dmp",i,&res_palettes[i]);
+		dump_resource(input,"sprpals-%d.dmp",i,&res_sprpals[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"cost_DD75-%d.dmp",i,&res_unk_DD75[i]);
+		dump_resource(input,"sprdata-%d.dmp",i,&res_sprdata[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"cost_DD7D-%d.dmp",i,&res_unk_DD7D[i]);
+		dump_resource(input,"sprlens-%d.dmp",i,&res_sprlens[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"cost_DD95-%d.dmp",i,&res_unk_DD95[i]);
+		dump_resource(input,"sprdesc-%d.dmp",i,&res_sprdesc[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"cost_DD9D-%d.dmp",i,&res_unk_DD9D[i]);
+		dump_resource(input,"sproffs-%d.dmp",i,&res_sproffs[i]);
 #endif	/* MAKE_LFLS */
 	debug("All done!");
 
