@@ -1639,7 +1639,7 @@ void next_line_V8()
 				"\x52|setRoomPalette,"
 				"\x55|setRoomIntensity,"
 				"\x57p|fade,"
-				"\x58|setRoomColor,"
+				"\x58ppppp|setRoomRBGIntensity,"
 				"\x59|transformRoom,"
 				"\x5A|colorCycleDelay,"
 				"\x5B|copyPalette,"
