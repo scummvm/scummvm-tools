@@ -24,7 +24,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#ifndef WIN32
+#if !defined(_MSC_VER)
 #include <unistd.h>
 #endif
 
