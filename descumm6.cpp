@@ -1334,16 +1334,28 @@ void next_line_V8()
 		addVar(get_word(), -1);
 		break;
 	case 0x70:
-		// FIXME - is this correct?!?
+		// FIXME - is this correct?!? Also, make the display nicer...
 		ext("x" "dim\0"
 				"\x0Apw|dim-scummvar,"
 				"\x0Bpw|dim-string,"
-				"\xCApw|undim"
+				"\xCAw|undim"
 				);
 		break;
 	case 0x71:
 		se_a = pop();
 		writeArray(get_word(), NULL, pop(), se_a);
+		break;
+
+	case 0x74:
+		// FIXME - is this correct?!? Also, make the display nicer...
+//		ext("ppp|dim2");
+
+		ext("x" "dim2\0"
+				"\x0Appw|dim-scummvar,"
+				"\x0Bppw|dim-string,"
+				"\xCAw|undim"
+				);
+
 		break;
 	case 0x75:
 		se_a = pop();
@@ -1351,12 +1363,19 @@ void next_line_V8()
 		writeArray(get_word(), se_b, pop(), se_a);
 		break;
 	case 0x76:
-		// FIXME - is this correct?!?
-		ext("x" "assign\0"
-				"\x14wps|assign-string,"
-				"\x15wpl|assign-scummvar-list,"
-				"\x16wplp|assign-2dim-list,"
-				);
+		switch (get_byte()) {
+		case 0x14:
+			writeArray(get_word(), NULL, pop(), se_get_string());
+			break;
+		case 0x15:
+			writeArray(get_word(), NULL, pop(), se_get_list());
+			break;
+		case 0x16:
+			se_a = pop();
+			se_b = se_get_list();
+			writeArray(get_word(), pop(), se_a, se_b);
+			break;
+		}
 		break;
 
 	case 0x79:
@@ -1365,9 +1384,16 @@ void next_line_V8()
 	case 0x7A:
 		ext("lp|startScriptQuick");
 		break;
+	case 0x7B:
+		ext("|stopObjectCode");
+		break;
+
+	case 0x7D:
+		// FIXME - is this right? "O_CHAIN_SCRIPT"
+		ext("lpp|jumpToScript");
+		break;
 
 	case 0x89:
-		// FIXME - is this correct?!?
 		ext("lp|setClassOf?");
 		break;
 
@@ -1420,7 +1446,16 @@ void next_line_V8()
 				"\xE7p|initCharset,"
 				"\xE8l|charsetColors");
 		break;
+	case 0x9D:
+		ext("p|loadRoom");
+		break;
 
+	case 0x9F:
+		ext("ppp|walkActorToObj");
+		break;
+	case 0xA0:
+		ext("ppp|walkActorTo");
+		break;
 	case 0xA1:
 		ext("pppp|putActorInRoom");
 		break;
@@ -1435,6 +1470,9 @@ void next_line_V8()
 		break;
 	case 0xA5:
 		ext("pppp|doSentence");
+		break;
+	case 0xA6:
+		ext("z|pickupObject");
 		break;
 
 	case 0xAA:
@@ -1553,6 +1591,8 @@ void next_line_V8()
 				"\xE|remapCostumeInsert,"
 				"\xF|setVideoFrameRate,"
 
+				"\x1D|setKeyScript,"
+				
 				"\x6C|buildPaletteShadow"
 				);
 		break;
@@ -2132,7 +2172,10 @@ void next_line()
 	case 0xC0:
 		ext("x" "dim2\0"
 				"\xC7ppw|dim2Type5,"
-				"\xC8ppw|dim2Type1," "\xC9ppw|dim2Type2," "\xCAppw|dim2Type3," "\xCBppw|dim2Type4");
+				"\xC8ppw|dim2Type1,"
+				"\xC9ppw|dim2Type2,"
+				"\xCAppw|dim2Type3,"
+				"\xCBppw|dim2Type4");
 		break;
 	case 0xC4:
 		ext("rp|abs");
