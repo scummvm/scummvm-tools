@@ -2189,8 +2189,9 @@ void get_tok_V2(char *buf)
 	case 0x76:
 	case 0xB6:
 	case 0xF6:
-		// walkActorToObject
+		do_tok(buf, "walkActorToObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
+
 	default:
 		printf("Unknown opcode %.2X\n", opcode);
 		exit(1);
