@@ -2639,6 +2639,9 @@ void next_line()
 	case 0xD2:
 		ext("rpp|getAnimateVariable");
 		break;
+	case 0xD4:
+		ext("wpp|shuffle");
+		break;
 	case 0xD5:
 		ext("lpp|jumpToScript");
 		break;
