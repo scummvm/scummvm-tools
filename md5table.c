@@ -48,7 +48,7 @@ static const StringMap platformMap[] = {
 	{ "FM-TOWNS",	"kPlatformFMTowns" },
 	{ "Mac",		"kPlatformMacintosh" },
 	{ "SEGA",		"kPlatformUnknown" },
-	{ "Windows",	"kPlatformPC" },
+	{ "Windows",	"kPlatformWindows" },
 
 	{ "All?",		"kPlatformUnknown" },
 	{ "All",		"kPlatformUnknown" },
