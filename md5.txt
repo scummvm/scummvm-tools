@@ -199,7 +199,7 @@ The Dig
 
 Curse of Monkey Island
 	-	All	All	fe60d6b5ff51b0553ac59963123b5777	comi
-	Demo	All	All	8fec68383202d38c0d25e9e3b757c5df	comi
+	Demo	All	All	8fec68383202d38c0d25e9e3b757c5df	comidemo
 
 Putt-Putt Joins The Parade
 	Demo	DOS	en	31aa57f460a3d12429f0552a46a90b39	puttdemo
