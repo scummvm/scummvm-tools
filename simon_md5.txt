@@ -5,9 +5,13 @@ Simon the Sorcerer 1
 	?	DOS	it	c8f5b860a20dcc63915d94cf2bdcfa49	simon1dos
 	?	DOS	hb	9d58f84988634d217c944cd4153a2a3b	simon1talkie
 	?	Windows	en	d22302abf44219f95d50f2faa807dd1a	simon1talkie
-	?	DOS	en	d545db8a0efae95a90b23da81aadb201	simon1talkie
+	?	All	en	d545db8a0efae95a90b23da81aadb201	simon1talkie
 	?	DOS	es	e3712b3ed4429e736123a40276f533d7	simon1talkie
+	?	Amiga	en	ec5358680c117f29b128cbbb322111a4	simon1cd32
+	AGA	Amiga	en	39e8f13ec29de1fcef98c81ca0a2ae57	simon1amiga
+	ECS	Amiga	en	fa5651a5e5da0f3c89473dd62af095d8	simon1amiga
 	Demo	DOS	en	486f026593f894f5b6b346ef3984a7a0	simon1dos
+	Demo	Acorn	en	c9e251cc3357e414ae168f5df9df3d09	simon1acorn
 
 Simon the Sorcerer 2
 	?	DOS	en	27c8e7feada80c75b70b9c2f6088d519	simon2dos
