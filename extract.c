@@ -28,6 +28,9 @@
 #include <unistd.h>
 #endif
 
+typedef unsigned int uint32;
+typedef unsigned char byte;
+
 /* These are the defaults parameters for the Lame invocation */
 #define minBitrDef 24
 #define maxBitrDef 64
@@ -41,14 +44,11 @@
 
 FILE *input, *output_idx, *output_snd;
 
-char fbuf_temp[1024];
-char buf[256];
-
 char f_hdr[] = {
 	'S', 'O', 'U', ' ', 0, 0, 0, 0, 0
 };
 
-char v_hdr[] = {
+byte v_hdr[] = {
 	'V', 'C', 'T', 'L', 0, 0, 0, 0xA, 0xF, 0xFF
 };
 
@@ -58,13 +58,13 @@ char c_hdr[] = {
 };
 
 struct lameparams {
-	unsigned int minBitr;
-	unsigned int maxBitr; 
-	unsigned int abr;
-	unsigned int vbr;
-	unsigned int algqual;
-	unsigned int vbrqual;
-	unsigned int silent;
+	uint32 minBitr;
+	uint32 maxBitr; 
+	uint32 abr;
+	uint32 vbr;
+	uint32 algqual;
+	uint32 vbrqual;
+	uint32 silent;
 } encparms = { minBitrDef, maxBitrDef, abrDef, vbrDef, algqualDef, vbrqualDef, 0 };
 
 struct oggencparams {
@@ -77,7 +77,7 @@ struct oggencparams {
 
 int oggmode = 0;
 
-void put_int(unsigned int val);
+void put_int(uint32 val);
 
 #define OUTPUT_MP3	"monster.so3"
 #define OUTPUT_OGG	"monster.sog"
@@ -92,14 +92,14 @@ void end_of_file(void)
 {
 	FILE *in;
 	int idx_size = ftell(output_idx);
-	int size;
+	size_t size;
 	char buf[2048];
 
 	fclose(output_snd);
 	fclose(output_idx);
 
 	output_idx = fopen(oggmode ? OUTPUT_OGG : OUTPUT_MP3, "wb");
-	put_int(idx_size);
+	put_int((uint32)idx_size);
 
 	in = fopen(TEMP_IDX, "rb");
 	while ((size = fread(buf, 1, 2048, in)) > 0) {
@@ -123,9 +123,9 @@ void end_of_file(void)
 	exit(-1);
 }
 
-void get_string(int size)
+void get_string(uint32 size, char buf[])
 {
-	int i = 0;
+	uint32 i = 0;
 	while (i < size) {
 		int c = fgetc(input);
 		if (c == EOF)
@@ -148,7 +148,7 @@ int get_int(int size)
 	}
 	return ret;
 }
-void append_byte(int size)
+void append_byte(int size, char buf[])
 {
 	int i;
 	int c;
@@ -160,45 +160,46 @@ void append_byte(int size)
 	buf[i] = c;
 }
 
-void put_int(unsigned int val)
+void put_int(uint32 val)
 {
-	int i;
-	for (i = 0; i < 4; i++) {
-		fputc(val >> 24, output_idx);
-		val <<= 8;
-	}
+	byte b;
+	b = (byte)(val >> 24);	fputc((char)b, output_idx);
+	b = (byte)(val >> 16);	fputc((char)b, output_idx);
+	b = (byte)(val >>  8);	fputc((char)b, output_idx);
+	b = (byte)(val >>  0);	fputc((char)b, output_idx);
 }
 
 void get_part(void)
 {
+	char buf[2048];
 	int id;
 	int pos = ftell(input);
-	int tags;
+	uint32 tags;
 
 	/* The VCTL header */
-	get_string(4);
+	get_string(4, buf);
 	while (strncmp(buf, "VCTL", 4)) {
 		pos++;
-		append_byte(4);
+		append_byte(4, buf);
 	}
 	tags = get_int(4);
+	if (tags < 8)
+		exit(-1);
 	tags -= 8;
 
-	put_int(pos);
-	put_int(ftell(output_snd));
-	if (tags < 0)
-		exit(-1);
+	put_int((uint32)pos);
+	put_int((uint32)ftell(output_snd));
 	put_int(tags);
 	while (tags > 0) {
 		fputc(fgetc(input), output_snd);
 		tags--;
 	}
 
-	get_string(8);
+	get_string(8, buf);
 	if (!strncmp(buf, "Creative", 8)) {
-		get_string(18);
+		get_string(18, buf);
 	} else if (!strncmp(buf, "VTLK", 4)) {
-		get_string(26);
+		get_string(26, buf);
 	} else {
 		exit(-1);
 	}
@@ -213,11 +214,11 @@ void get_part(void)
 		int comp;
 		FILE *f;
 		char fbuf[2048];
-		char fbuf_o[4096];
-		int size;
-		int tot_size;
+		char *tmp;
+		size_t size;
+		uint32 tot_size;
 		char rawname[256];
-		char mp3name[256];
+		char outname[256];
 		int real_samplerate;
 
 		/* Sound Data */
@@ -247,62 +248,57 @@ void get_part(void)
 			exit(-1);
 		}
 		sprintf(rawname, TEMP_RAW);
-		sprintf(mp3name, oggmode ? TEMP_OGG : TEMP_MP3);
+		sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
 		
 		f = fopen(rawname, "wb");
 		length -= 2;
 		while (length > 0) {
-			size = fread(fbuf, 1, length > 2048 ? 2048 : length, input);
+			size = fread(fbuf, 1, length > 2048 ? 2048 : (uint32)length, input);
 			if (size <= 0)
 				break;
 			length -= size;
-			for (i = 0; i < size; i++) {
-				fbuf_o[2 * i] = fbuf[i] ^ 0x80;
-				fbuf_o[2 * i + 1] = 0;
-			}
-			fwrite(fbuf_o, 1, 2 * size, f);
+			fwrite(fbuf, 1, size, f);
 		}
 		fclose(f);
 
+		tmp = fbuf;
 		if (oggmode) {
-			sprintf(fbuf, "oggenc ");
-			if (oggparms.nominalBitr != -1) {
-				sprintf(fbuf_temp, "-b %i ", oggparms.nominalBitr);
-				strcat(fbuf, fbuf_temp);
-			}
-			if (oggparms.minBitr != -1) {
-				sprintf(fbuf_temp, "-m %i ", oggparms.minBitr);
-				strcat(fbuf, fbuf_temp);
-			}
-			if (oggparms.maxBitr != -1) {
-				sprintf(fbuf_temp, "-M %i ", oggparms.maxBitr);
-				strcat(fbuf, fbuf_temp);
-			}
-			if (oggparms.silent) {
-				strcat(fbuf, "--quiet ");
-			}
+			tmp += sprintf(tmp, "oggenc --raw --raw-chan=1 --raw-bits=8 ");
+			if (oggparms.nominalBitr != -1)
+				tmp += sprintf(tmp, "--bitrate=%i ", oggparms.nominalBitr);
+			if (oggparms.minBitr != -1)
+				tmp += sprintf(tmp, "--min-bitrate=%i ", oggparms.minBitr);
+			if (oggparms.maxBitr != -1)
+				tmp += sprintf(tmp, "--max-bitrate=%i ", oggparms.maxBitr);
+			if (oggparms.silent)
+				tmp += sprintf(tmp, "--quiet ");
 
-			sprintf(fbuf_temp, "-q %i -r -C 1 --raw-endianness=1 -R %i %s -o %s",
-				oggparms.quality, real_samplerate,
-				rawname, mp3name);
-			strcat(fbuf, fbuf_temp);
+			tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
+			tmp += sprintf(tmp, "--raw-rate=%i ", real_samplerate);
+			tmp += sprintf(tmp, "--output=%s ", outname);
+			tmp += sprintf(tmp, "%s ", rawname);
+printf("Assembled command: '%s'\n", fbuf);
 			system(fbuf);
 		}
 		else {
+			tmp += sprintf(tmp, "lame -t -m m -r --bitwidth 8 ");
 			if (encparms.abr == 1)
-				sprintf(fbuf_temp,"--abr %i",encparms.minBitr);
+				tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
 			else
-				sprintf(fbuf_temp,"--vbr-new -b %i",encparms.minBitr);
+				tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
 			if (encparms.silent == 1)
-				strcat(fbuf_temp," --silent");
-			sprintf(fbuf,
-				"lame -t -q %i %s -V %i -B %i -m m -r -s %d %s %s",
-				encparms.algqual, fbuf_temp, encparms.vbrqual,
-				encparms.maxBitr, real_samplerate, rawname, mp3name);
+				tmp += sprintf(tmp, " --silent ");
+
+			tmp += sprintf(tmp, "-q %i ", encparms.algqual);
+			tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
+			tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
+			tmp += sprintf(tmp, "-s %d ", real_samplerate);
+			tmp += sprintf(tmp, "%s %s ", rawname, outname);
+printf("Assembled command: '%s'\n", fbuf);
 			system(fbuf);
 		}
 
-		f = fopen(mp3name, "rb");
+		f = fopen(outname, "rb");
 		tot_size = 0;
 		while ((size = fread(fbuf, 1, 2048, f)) > 0) {
 			tot_size += size;
@@ -323,24 +319,24 @@ void showhelp(char *exename)
 {
 	printf("\nUsage: %s <params> monster.sou\n", exename);
 	printf("\nParams:\n");
-	printf("--mp3        encode to MP3 format (default)\n");
-	printf("--vorbis     encode to Vorbis format\n");
+	printf(" --mp3        encode to MP3 format (default)\n");
+	printf(" --vorbis     encode to Vorbis format\n");
 	printf("(If one of these is specified, it must be the first parameter.)\n");
 	printf("\nMP3 mode params:\n");
-	printf("-b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%i)\n", minBitrDef);
-	printf("-B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%i)\n", maxBitrDef);
-	printf("--vbr        LAME uses the VBR mode (default)\n");
-	printf("--abr        LAME uses the ABR mode\n");
-	printf("-V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%i)\n", vbrqualDef);
-	printf("-q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%i)\n", algqualDef);
-	printf("--silent     the output of LAME is hidden (default:disabled)\n");
+	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%i)\n", minBitrDef);
+	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%i)\n", maxBitrDef);
+	printf(" --vbr        LAME uses the VBR mode (default)\n");
+	printf(" --abr        LAME uses the ABR mode\n");
+	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%i)\n", vbrqualDef);
+	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%i)\n", algqualDef);
+	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
 	printf("\nVorbis mode params:\n");
-	printf("-b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf("-m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf("-M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf("-q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%i)\n", oggqualDef);
-	printf("--silent     the output of oggenc is hidden (default:disabled)\n");
-	printf("\n--help     this help message\n");
+	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
+	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
+	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
+	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%i)\n", oggqualDef);
+	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
+	printf("\n --help     this help message\n");
 	printf("\n\nIf a parameter is not given the default value is used\n");
 	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
 	exit(2);
@@ -437,6 +433,7 @@ void process_ogg_parms(int argc, char *argv[], int i) {
 
 int main(int argc, char *argv[])
 {
+	char buf[2048];
 	int i;
 	if (argc < 2)
 		showhelp(argv[0]);
@@ -474,7 +471,7 @@ int main(int argc, char *argv[])
 	}
 	
 	/* Get the 'SOU ....' header */
-	get_string(8);
+	get_string(8, buf);
 	if (strncmp(buf, f_hdr, 8)) {
 		printf("Bad SOU\n");
 		exit(-1);
