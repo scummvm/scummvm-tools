@@ -53,6 +53,12 @@ typedef signed int int32;
 
 #if !defined(__cplusplus)
 typedef enum { false = 0, true = 1 } bool;
+
+/* If your C compiler doesn't support 'inline', please add a check for it. */
+#if defined(_MSC_VER) && _MSC_VER == 1310
+#define inline __inline
+#endif
+
 #endif
 
 
@@ -61,11 +67,6 @@ typedef enum { false = 0, true = 1 } bool;
  */
 
 #define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
-
-/* If your C compiler doesn't support 'inline', please add a check for it. */
-#if defined(CHECK_FOR_OLD_C_COMPILER)
-#define inline
-#endif
 
 static inline uint32 SWAP_32(uint32 a) {
 	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
