@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 2) {
 		fputs("error: you must specify the mac data file on the command line.\n", stderr);
-		fputs(" i.e. \% rescumm \"Sam & Max Demo Data\"\n", stderr);
+		fputs(" i.e. % rescumm \"Sam & Max Demo Data\"\n", stderr);
 		fputs("\nA note on usage. Some Lucas Arts CDs appear to contains only an application.\n", stderr);
 		fputs("They actually contain a seperate data file as an invisible file.\n", stderr);
 			 
