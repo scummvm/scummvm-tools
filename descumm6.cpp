@@ -436,24 +436,24 @@ const char *var_names8[] = {
 	NULL,
 	"room_width?",
 	"room_height?",
-	"cursor_screen_x",
+	"VAR_MOUSE_X",
 	/* 4 */
-	"cursor_screen_y",
-	"cursor_x",
-	"cursor_y",
-	"cursor_state?",
+	"VAR_MOUSE_Y",
+	"VAR_VIRT_MOUSE_X",
+	"VAR_VIRT_MOUSE_Y",
+	"VAR_CURSORSTATE",
 	/* 8 */
-	"userface_state?",
-	"camera_x",
-	"camera_y",
-	"camera_dest_x",
+	"VAR_USERPUT",
+	"VAR_CAMERA_POS_X",
+	"VAR_CAMERA_POS_Y",
+	"VAR_CAMERA_DEST_X",
 	/* 12 */
-	"camera_dest_y",
-	NULL,
-	NULL,
-	"message_stuff?",
+	"VAR_CAMERA_DEST_Y",
+	"VAR_CAMERA_FOLLOWED_ACTOR",
+	"VAR_TALK_ACTOR",
+	"VAR_HAVE_MSG",
 	/* 16 */
-	NULL,
+	"VAR_MOUSE_BUTTONS",
 	NULL,
 	NULL,
 	NULL,
@@ -471,7 +471,7 @@ const char *var_names8[] = {
 	"timedate_minute?",
 	"timedate_second?",
 	"override_hit",
-	"current_room",
+	"VAR_ROOM",
 	/* 32 */
 	NULL,
 	NULL,
@@ -485,7 +485,7 @@ const char *var_names8[] = {
 	/* 40 */
 	NULL,
 	NULL,
-	"current_disk_number",
+	"VAR_CURRENTDISK",
 	NULL,
 	/* 44 */
 	NULL,
@@ -496,38 +496,38 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	NULL,
-	"script_before_roomentry",
+	"VAR_ENTRY_SCRIPT",
 	/* 52 */
-	"script_after_roomentry",
-	"script_before_roomexit",
-	"script_after_roomexit",
-	NULL,
+	"VAR_ENTRY_SCRIPT2",
+	"VAR_EXIT_SCRIPT",
+	"VAR_EXIT_SCRIPT2",
+	"VAR_VERB_SCRIPT",
 	/* 56 */
-	"sentence_script",
-	"pickup_script",
-	"cutscene_script",
-	"endcutscene_script",
+	"VAR_SENTENCE_SCRIPT",
+	"VAR_HOOK_SCRIPT",
+	"VAR_CUTSCENE_START_SCRIPT",
+	"VAR_CUTSCENE_END_SCRIPT",
 	/* 60 */
 	NULL,
 	NULL,
-	NULL,
+	"VAR_CUTSCENEEXIT_KEY",
 	NULL,
 	/* 64 */
-	"pause_key?",
-	"saveload_key?",
+	"VAR_PAUSE_KEY",
+	"VAR_SAVELOADDIALOG_KEY",
 	NULL,
 	NULL,
-	/* XXX */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	/* XXX */
+	/* 68 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 72 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 76 */
 	NULL,
 	NULL,
 	NULL,
@@ -537,17 +537,17 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 84 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 88 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 92 */
 	NULL,
 	NULL,
 	NULL,
@@ -557,32 +557,32 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 100 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 104 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 108 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
 	/* 112 */
+	"VAR_TIMER_NEXT",
+	"VAR_TMR_1",
+	"VAR_TMR_2",
+	"VAR_TMR_3",
+	/* 116 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	/* XXX */
+	/* 120 */
 	NULL,
 	NULL,
 	NULL,
@@ -590,12 +590,17 @@ const char *var_names8[] = {
 	/* 124 */
 	NULL,
 	NULL,
-	"default_actor",
+	"VAR_EGO",
 	NULL,
 	/* 128 */
 	NULL,
 	"text_delay?",
-	"sputm_debug",
+	"VAR_DEBUGMODE",
+	NULL,
+	/* 132 */
+	"VAR_KEYPRESS",
+	NULL,
+	NULL,
 	NULL,
 };
 
@@ -975,7 +980,10 @@ StackEnt *se_get_string()
 			case 3:
 				e += sprintf(e, ":wait:");
 				break;
-			case 4:	// V8 - TODO
+			case 4:		// addIntToStack
+			case 5:		// addVerbToStack
+			case 6:		// addNameToStack
+			case 7:		// addStringToStack
 				{
 				StackEnt foo;
 				foo.type = seVar;
@@ -1464,7 +1472,7 @@ void next_line_V8()
 		ext("lpp|startScriptEx");
 		break;
 	case 0x7A:
-		ext("lp|startScriptQuick");
+		ext("lp|startScript");
 		break;
 	case 0x7B:
 		ext("|stopObjectCode");
@@ -1479,7 +1487,7 @@ void next_line_V8()
 		ext("p|return");
 		break;
 	case 0x7F:
-		ext("lppp|startObject");
+		ext("lppp|startObjectEx");
 		break;
 
 	case 0x81:
@@ -1826,19 +1834,22 @@ void next_line_V8()
 				"\x6C|buildPaletteShadow,"
 				"\x6D|setPaletteShadow,"
 
-				"\x73|getWalkBoxAt,"
-				"\x74|isPointInBox,"
-
 				"\x76|blastShadowObject,"
 				"\x77|superBlastObject"
 				);
 		break;
 
 	case 0xC8:
-		ext("rlp|startScript");
+		ext("rlp|startScriptQuick");
 		break;
 	case 0xC9:
-		ext("lppp|startObject");
+		ext("lppp|startObjectQuick");
+		break;
+	case 0xCA:
+		ext("lp|pickOneOf");
+		break;
+	case 0xCB:
+		ext("plp|pickOneOfDefault");
 		break;
 
 	case 0xCD:
@@ -1872,6 +1883,9 @@ void next_line_V8()
 
 	case 0xD8:
 		ext("ry" "f-kludge\0"
+				"\x73|getWalkBoxAt,"
+				"\x74|isPointInBox,"
+
 				"\xCE|getRGBSlot,"
 				"\xD3|getKeyState,"
 				"\xD7|getBox,"
