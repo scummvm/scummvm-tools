@@ -541,8 +541,6 @@ void convert_pc(char *infile)
 
 	num = get_offsets();
 
-	fclose(input);
-
 	if (!num) {
 		printf("This does not seem to be a valid file\n");
 		exit(-1);
