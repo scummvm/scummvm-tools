@@ -2040,9 +2040,9 @@ void get_tok(char *buf)
 	case 0xDC:
 			int d = get_byte();
 			if ((d & 0x1F) == 3)
-				do_tok(buf, "oldRoomEffect-set", ((opcode & 0x80) ? A1V : A1B));
+				do_tok(buf, "oldRoomEffect-set", ((opcode & 0x80) ? A1V : A1W));
 			else
-				do_tok(buf, "oldRoomEffect-fadein", ((opcode & 0x80) ? A1V : A1B));
+				do_tok(buf, "oldRoomEffect-fadein", ((opcode & 0x80) ? A1V : A1W));
 			break;
 		}
 
