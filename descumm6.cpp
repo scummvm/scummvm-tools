@@ -242,9 +242,9 @@ const char *var_names6[] = {
 	NULL,
 	NULL,
 	/* 60 */
-	NULL,
-	NULL,
-	NULL,
+	"VAR_NOSUBTITLES",
+	"VAR_SAVELOAD_SCRIPT",
+	"VAR_SAVELOAD_SCRIPT2",
 	NULL,
 	/* 64 */
 	"VAR_SOUNDPARAM",
@@ -259,8 +259,8 @@ const char *var_names6[] = {
 	/* 72 */
 	"VAR_NEW_ROOM",
 	NULL,
-	NULL,
-	NULL,
+	"VAR_LEFTBTN_DOWN",
+	"VAR_RIGHTBTN_DOWN",
 	/* 76 */
 	"VAR_V6_EMSSPACE",
 	NULL,
@@ -320,7 +320,7 @@ const char *var_names6[] = {
 	NULL,
 	NULL,
 	NULL,
-	NULL,
+	"VAR_CHARSET_MASK",
 	/* 124 */
 	NULL,
 	"VAR_TIMEDATE_HOUR",
@@ -381,7 +381,7 @@ const char *var_names7[] = {
 	"VAR_NEW_ROOM",
 	/* 36 */
 	"VAR_WALKTO_OBJ",
-	NULL,
+	"VAR_NUM_GLOBAL_OBJS",
 	"VAR_CAMERA_DEST_X",
 	"VAR_CAMERA_DEST_>",
 	/* 40 */
@@ -502,6 +502,11 @@ const char *var_names7[] = {
 	/* 132 */
 	NULL,
 	"VAR_BLAST_ABOVE_TEXT",
+	NULL,
+	"VAR_MUSIC_BUNDLE_LOADED",
+	/* 136 */
+	"VAR_VOICE_BUNDLE_LOADED",
+	NULL,
 };
 
 const char *var_names8[] = {
