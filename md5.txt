@@ -329,8 +329,7 @@ Let's Explore the Jungle with Buzzy
 	-	Windows	en	8801fb4a1200b347f7a38523339526dd	jungle	Kirben
 
 Pajama Sam 1: No Need to Hide When It's Dark Outside
-	-	Windows	en	672dec94b82f7f0877ebb5b5cf7f4bc1	pajama	khalek
-	-	Mac	en	672dec94b82f7f0877ebb5b5cf7f4bc1	pajama	khalek
+	-	All	en	672dec94b82f7f0877ebb5b5cf7f4bc1	pajama	khalek
 	Demo	All	en	f237bf8a5ef9af78b2a6a4f3901da341	pjs-demo	khalek, sev
 	Demo	Windows	en	d7ab7cd6105546016e6a0d46fb36b964	pjsamdemo	khalek
 
