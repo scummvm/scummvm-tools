@@ -14,5 +14,8 @@ install:   all
 	strip extract.exe -o $(SCUMMVMPATH)/tools/extract.exe
 	strip rescumm.exe -o $(SCUMMVMPATH)/tools/rescumm.exe
 	strip simon2mp3.exe -o $(SCUMMVMPATH)/tools/simon2mp3.exe
+	cp COPYING $(SCUMMVMPATH)/tools/copying.txt
+	cp README $(SCUMMVMPATH)/tools/readme.txt
+	u2d $(SCUMMVMPATH)/tools/*.txt
 
 dist:   install
