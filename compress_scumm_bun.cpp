@@ -675,7 +675,20 @@ void encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
 	bool err = false;
 
-	sprintf(fbuf, "oggenc -q 0 \"%s\"", filename);
+	sprintf(fbuf, "oggenc -q 0 %s.wav", filename);
+	err = system(fbuf) != 0;
+	if (err) {
+		printf("Got error from encoder. (check your parameters)\n");
+		printf("Encoder Commandline: %s\n", fbuf );
+		exit(-1);
+	}
+}
+
+void encodeWaveWithLame(char *filename) {
+	char fbuf[2048];
+	bool err = false;
+
+	sprintf(fbuf, "lame --vbr-new -V 9 -quiet -t \"%s\".wav \"%s\".mp3", filename, filename);
 	err = system(fbuf) != 0;
 	if (err) {
 		printf("Got error from encoder. (check your parameters)\n");
@@ -765,6 +778,8 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 	}
 	_waveDataSize += size;
 }
+
+static bool _oggMode = false; // mp3 default
 
 typedef struct { int offset, size, codec; } CompTable;
 
@@ -968,21 +983,32 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *
 		writeWaveHeader(_waveDataSize);
 
 		free(outputData);
-		encodeWaveWithOgg(tmpPath);
+		sprintf(tmpPath, "%s/%s_reg%03d", dir, filename, l);
+		if (_oggMode)
+			encodeWaveWithOgg(tmpPath);
+		else
+			encodeWaveWithLame(tmpPath);
+		sprintf(tmpPath, "%s/%s_reg%03d.wav", dir, filename, l);
 		unlink(tmpPath);
 
 		int32 startPos = ftell(output);
-		sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.ogg", filename, l);
+		if (_oggMode)
+			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.ogg", filename, l);
+		else
+			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.mp3", filename, l);
 		cbundleTable[cbundleCurIndex].offset = startPos;
 
-		sprintf(tmpPath, "%s/%s_reg%03d.ogg", dir, filename, l);
-		FILE *oggFile = fopen(tmpPath, "rb");
-		fseek(oggFile, 0, SEEK_END);
-		size = ftell(oggFile);
-		fseek(oggFile, 0, SEEK_SET);
+		if (_oggMode)
+			sprintf(tmpPath, "%s/%s_reg%03d.ogg", dir, filename, l);
+		else
+			sprintf(tmpPath, "%s/%s_reg%03d.mp3", dir, filename, l);
+		FILE *cmpFile = fopen(tmpPath, "rb");
+		fseek(cmpFile, 0, SEEK_END);
+		size = ftell(cmpFile);
+		fseek(cmpFile, 0, SEEK_SET);
 		byte *tmpBuf = (byte *)malloc(size);
-		fread(tmpBuf, size, 1, oggFile);
-		fclose(oggFile);
+		fread(tmpBuf, size, 1, cmpFile);
+		fclose(cmpFile);
 		unlink(tmpPath);
 		fwrite(tmpBuf, size, 1, output);
 		free(tmpBuf);
@@ -1126,6 +1152,10 @@ int main(int argc, char *argv[]) {
 	strcpy(inputFilename, argv[1]);
 	strcpy(inputDir, argv[2]);
 	strcpy(outputDir, argv[3]);
+
+	if ((argc == 5) && (strcmp(argv[4], "--ogg") == 0)) {
+		_oggMode = true;
+	}
 
 	char *index = strrchr(inputFilename, '.');
 	if (index != NULL) {

@@ -57,7 +57,7 @@ Compression Tools:
                 than the original! This is because the original files already
                 use lossy compression.
 
-        compress_san <inputfile> <inputdir> <outputdir>
+        compress_san <inputfile> <inputdir> <outputdir> [--ogg]
                 Compresses '.san' smush animation files. It uses lossless
                 zlib for compressing FOBJ gfx chunks inside a san file.
                 It also can create a separate Ogg file with the audio track.
@@ -68,14 +68,18 @@ Compression Tools:
                 In order to use such compressed files, your ScummVM binary 
                 must have been built with zlib support enabled (you can find
                 out whether that's the case by looking at the About dialog).
-                For the Ogg compression feature, your ScummVM binary naturally
-                must have been built with Ogg support enabled.
+                For the Ogg or Mad compression feature, your ScummVM binary
+                naturally must have been built with Ogg or Mad support enabled.
 
-        compress_scumm_bun <inputfile> <inputdir> <outputdir>
+        compress_scumm_bun <inputfile> <inputdir> <outputdir> [--ogg]
+
                 Compresses '.bun' music/voice files.
 
                 Example of usage:
                 compress_scumm.bun digmusic.bun uncomp comp
+
+                For the Ogg or Mad compression feature, your ScummVM binary
+                naturally must have been built with Ogg or Mad support enabled.
 
 Script Tools:
         descumm

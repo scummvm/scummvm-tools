@@ -79,12 +79,26 @@ static int _IACTpos = 0;
 static FILE *_waveTmpFile;
 static int32 _waveDataSize;
 static AudioTrackInfo _audioTracks[MAX_TRACKS];
+static bool _oggMode = false; // mp3 default
 
 void encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
 	bool err = false;
 
-	sprintf(fbuf, "oggenc -q 0 %s", filename);
+	sprintf(fbuf, "oggenc -q 0 %s.wav", filename);
+	err = system(fbuf) != 0;
+	if (err) {
+		printf("Got error from encoder. (check your parameters)\n");
+		printf("Encoder Commandline: %s\n", fbuf );
+		exit(-1);
+	}
+}
+
+void encodeWaveWithLame(char *filename) {
+	char fbuf[2048];
+	bool err = false;
+
+	sprintf(fbuf, "lame --vbr-new -V 9 -quiet -t \"%s\".wav \"%s\".mp3", filename, filename);
 	err = system(fbuf) != 0;
 	if (err) {
 		printf("Got error from encoder. (check your parameters)\n");
@@ -642,6 +656,10 @@ int main(int argc, char *argv[]) {
 	strcpy(inputDir, argv[2]);
 	strcpy(outputDir, argv[3]);
 
+	if ((argc == 5) && (strcmp(argv[4], "--ogg") == 0)) {
+		_oggMode = true;
+	}
+
 	char *index = strrchr(inputFilename, '.');
 	if (index != NULL) {
 		*index = 0;
@@ -810,8 +828,12 @@ skip:
 
 	if (_waveTmpFile) {
 		writeWaveHeader(_waveDataSize);
+		sprintf(tmpPath, "%s/%s", outputDir, inputFilename);
+		if (_oggMode)
+			encodeWaveWithOgg(tmpPath);
+		else
+			encodeWaveWithLame(tmpPath);
 		sprintf(tmpPath, "%s/%s.wav", outputDir, inputFilename);
-		encodeWaveWithOgg(tmpPath);
 		unlink(tmpPath);
 	}
 
