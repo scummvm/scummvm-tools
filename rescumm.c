@@ -1,5 +1,5 @@
 /* ReScumm - Split one-big-file Macintosh game data into seperate .00x files for ScummVM
- * Copyright (C) 2001  Casey Hutchinson
+ * Copyright (C) 2001-2003  Casey Hutchinson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -44,9 +44,12 @@ int main(int argc, char *argv[])
 	le = (*(char *)(&le));
 
 	if (argc < 2) {
-		fputs
-			("error: you must specify the mac data file on the command line.\n i.e. \% macextract \"Sam & Max Demo Data\"\n",
-			 stderr);
+		fputs("error: you must specify the mac data file on the command line.\n", stderr);
+		fputs(" i.e. \% rescumm \"Sam & Max Demo Data\"\n", stderr);
+		fputs("\nA note on usage. Some Lucas Arts CDs appear to contains only an application.\n", stderr);
+		fputs("They actually contain a seperate data file as an invisible file.\n", stderr);
+			 
+			
 		exit(0);
 	}
 
@@ -129,9 +132,9 @@ int main(int argc, char *argv[])
 #endif
 		}
 		if (j == 0x20) {
-			fprintf(stderr, "\nerror: \'%s\'. file name not null terminated.\n", data_file_name);
-			fclose(ifp);
-			exit(0);
+			file_name[0x1f] = 0;
+			fprintf(stderr, "\nwarning: \'%s\'. file name not null terminated.\n", file_name);
+			fprintf(stderr, "data file \'%s\' may be not a file rescumm can extract.\n", data_file_name);
 		}
 		printf(", saving as \'%s\'\n", file_name);
 
