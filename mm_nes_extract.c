@@ -32,7 +32,13 @@ typedef int BOOL;
 // if not defined, dumps all resources to separate files
 #define	MAKE_LFLS
 
-void	__cdecl	debug (char *Text, ...)
+#ifdef WIN32
+	#define CDECL __cdecl
+#else
+	#define CDECL 
+#endif
+
+void CDECL debug (char *Text, ...)
 {
 	va_list marker;
 	va_start(marker,Text);
@@ -41,7 +47,7 @@ void	__cdecl	debug (char *Text, ...)
 	va_end(marker);
 }
 
-void	__cdecl	error (char *Text, ...)
+void CDECL error (char *Text, ...)
 {
 	va_list marker;
 	va_start(marker,Text);
@@ -51,7 +57,7 @@ void	__cdecl	error (char *Text, ...)
 	exit(1);
 }
 
-void	__cdecl	_assert (BOOL condition, char *Text, ...)
+void CDECL _assert (BOOL condition, char *Text, ...)
 {
 	va_list marker;
 	if (condition)
@@ -748,7 +754,7 @@ t_lfl	lfls[] = {
 	{ 52, lfl_52 },
 	{ 53, lfl_53 },
 	{ 54, lfl_54 },
-	{ -1, { NULL } }
+	{ -1, NULL }
 };
 
 #pragma	pack(push,1)
@@ -917,4 +923,6 @@ int main (int argc, char **argv)
 		dump_resource(input,"cost_DD9D-%i.dmp",i,&res_unk_DD9D[i]);
 #endif	// MAKE_LFLS
 	debug("All done!");
+
+	return 0;
 }
