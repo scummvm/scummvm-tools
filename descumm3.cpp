@@ -1057,9 +1057,10 @@ void do_room_ops(char *buf, byte master_opcode)
 		do_tok(buf, "colorCycleDelay", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	default:
-		strcpy(buf, "Unknown??");
-		printf("UGH, unknown room op %d\n", opcode & 0x1F);
-		exit(1);
+		// strcpy(buf, "Unknown??");
+		// printf("UGH, unknown room op %d\n", opcode & 0x1F);
+		// exit(1);
+		sprintf(buf, "UnknownRoomCommand%.2X", opcode);
 	}
 }
 
@@ -1109,7 +1110,10 @@ void do_cursor_command(char *buf)
 		break;
 
 	case 0x0E:
-		do_tok(buf, "CursorCommand", A1VARUNTIL0xFF);
+		if (GF_UNBLOCKED || gameFlag == 1)
+			do_tok(buf, "LoadCharset", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		else
+			do_tok(buf, "CursorCommand", A1VARUNTIL0xFF);
 		break;
 	default:
 		sprintf(buf, "UnknownCursorCommand%.2X", opcode);
@@ -1498,6 +1502,7 @@ void get_tok(char *buf)
 
 	case 0x05:
 	case 0x25:
+	case 0x45:
 	case 0x65:
 	case 0x85:
 	case 0xA5:
@@ -2095,7 +2100,6 @@ void get_tok(char *buf)
 		do_tok(buf, "pickupObject", ((opcode & 0x80) ? A1V : A1W));
 		break;
 
-	case 0x45:
 	case 0xC5:
 	default:
 		if (HaltOnError) {
