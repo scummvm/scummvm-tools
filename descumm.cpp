@@ -110,37 +110,36 @@ void get_tok(char *buf);	// For V3, V4, V5
 const int g_jump_opcode = 0x18;
 
 byte *cur_pos, *org_pos;
-int curoffs;
 int size_of_code;
 
 char *indentbuf;
 
-typedef struct block_stack {
+struct BlockStack {
 	unsigned short from;
 	unsigned short to;
-} block_stack;
+};
 
 
-int NumBlockStack;
-block_stack *BlockStack;
-byte HaveElse;
-byte PendingElse;
-int PendingElseTo;
-int PendingElseOffs;
-int PendingElseOpcode;
-int PendingElseIndent;
+int num_block_stack;
+BlockStack *block_stack;
 
-byte AlwaysShowOffs;
-byte DontOutputIfs;
-byte DontOutputElse;
-byte DontOutputElseif;
-byte DontShowOpcode;
-byte DontShowOffsets;
-byte HaltOnError;
-byte ScriptVersion = 3;
+bool pendingElse, haveElse;
+int pendingElseTo;
+int pendingElseOffs;
+int pendingElseOpcode;
+int pendingElseIndent;
+
+bool alwaysShowOffs = 0;
+bool dontOutputIfs = 0;
+bool dontOutputElse = 0;
+bool dontOutputElseif = 0;
+bool dontShowOpcode = 0;
+bool dontShowOffsets = 0;
+bool haltOnError;
+byte scriptVersion = 3;
 
 
-int get_curpos();
+int get_curoffs();
 
 bool IndyFlag = 0;
 bool GF_UNBLOCKED = false;
@@ -189,7 +188,7 @@ const char *get_num_string(int i)
 			s = "Var";
 	}
 
-	if (HaltOnError && (s[0] == '?')) {
+	if (haltOnError && (s[0] == '?')) {
 		printf("%s out of range, was %d\n", s, i & 0xFFF);
 		exit(1);
 	}
@@ -203,7 +202,7 @@ char *get_var(char *buf)
 	char *buf2;
 	int i;
 
-	if (ScriptVersion == 2)
+	if (scriptVersion == 2)
 		i = get_byte();
 	else
 		i = get_word();
@@ -266,7 +265,7 @@ char *get_var_until_0xff(char *buf)
 		j++;
 		if (j > 16) {
 			printf("ERROR: too many variables in argument list!\n");
-			if (HaltOnError)
+			if (haltOnError)
 				exit(1);
 			break;
 		}
@@ -403,28 +402,28 @@ char *GetIndentString(int i)
 
 
 
-block_stack *PushBlockStackItem()
+BlockStack *PushBlockStackItem()
 {
-	if (!BlockStack)
-		BlockStack = (block_stack *) malloc(256 * sizeof(block_stack));
+	if (!block_stack)
+		block_stack = (BlockStack *) malloc(256 * sizeof(BlockStack));
 
-	if (NumBlockStack >= 256) {
-		printf("BlockStack full!\n");
+	if (num_block_stack >= 256) {
+		printf("block_stack full!\n");
 		exit(0);
 	}
-	return &BlockStack[NumBlockStack++];
+	return &block_stack[num_block_stack++];
 }
 
 /* Returns 0 or 1 depending if it's ok to add a block */
-int RequestIfAdd(unsigned int cur, unsigned int to)
+bool maybeAddIf(unsigned int cur, unsigned int to)
 {
 	int i;
-	block_stack *p;
+	BlockStack *p;
 
 	if (((to | cur) >> 16) || (to <= cur))
 		return 0;										/* Invalid jump */
 
-	for (i = 0, p = BlockStack; i < NumBlockStack; i++, p++) {
+	for (i = 0, p = block_stack; i < num_block_stack; i++, p++) {
 		if (to > p->to)
 			return 0;
 	}
@@ -435,94 +434,92 @@ int RequestIfAdd(unsigned int cur, unsigned int to)
 	return 1;
 }
 
-int IndentBlock(unsigned int cur)
+int indentBlock(unsigned int cur)
 {
-	block_stack *p;
+	BlockStack *p;
 
-	if (!NumBlockStack)
+	if (!num_block_stack)
 		return 0;
 
-	p = &BlockStack[NumBlockStack - 1];
+	p = &block_stack[num_block_stack - 1];
 	if (cur < p->to)
 		return 0;
 
-	NumBlockStack--;
+	num_block_stack--;
 	return 1;
 }
 
 /* Returns 0 or 1 depending if it's ok to add an else */
 int RequestElseAdd(int cur, int to)
 {
-	block_stack *p;
+	BlockStack *p;
 	int i;
 
 	if (((to | cur) >> 16) || (to <= cur))
 		return 0;										/* Invalid jump */
 
-	if (!NumBlockStack)
+	if (!num_block_stack)
 		return 0;										/* There are no previous blocks, so an else is not ok */
 
-	p = &BlockStack[NumBlockStack - 1];
+	p = &block_stack[num_block_stack - 1];
 	if (cur != p->to)
 		return 0;										/* We have no prevoius if that is exiting right at the end of this goto */
 
-	NumBlockStack--;
-	i = RequestIfAdd(cur, to);
+	num_block_stack--;
+	i = maybeAddIf(cur, to);
 	if (i)
 		return i;										/* We can add an else */
 
-	NumBlockStack++;
+	num_block_stack++;
 
 	return 0;											/* An else is not OK here :( */
 }
 
-int RequestElseIfAdd(int cur, int elseto, int to)
+bool maybeAddElseIf(int cur, int elseto, int to)
 {
 	int k;
-	block_stack *p;
+	BlockStack *p;
 
 	if (((to | cur | elseto) >> 16) || (elseto < to) || (to <= cur))
-		return 0;										/* Invalid jump */
+		return false;									/* Invalid jump */
 
-	if (!NumBlockStack)
-		return 0;										/* There are no previous blocks, so an ifelse is not ok */
+	if (!num_block_stack)
+		return false;									/* There are no previous blocks, so an ifelse is not ok */
 
 	k = to - 3;
 	if (k < 0 || k >= size_of_code)
-		return 0;										/* Invalid jump */
+		return false;									/* Invalid jump */
 
 	if (org_pos[k] != g_jump_opcode)
-		return 0;										/* Invalid jump */
+		return false;									/* Invalid jump */
 
 	k = to + TO_LE_16(*(int16*)(org_pos + k + 1));
 
 	if (k != elseto)
-		return 0;										/* Not an ifelse */
+		return false;									/* Not an ifelse */
 
-	p = &BlockStack[NumBlockStack - 1];
+	p = &block_stack[num_block_stack - 1];
 	p->from = cur;
 	p->to = to;
 
-	return 1;
+	return true;
 }
 
 
-
-void OutputLine(char *buf, int curoffs, int opcode, int indent)
+void outputLine(char *buf, int curoffs, int opcode, int indent)
 {
-
 	char *s;
 
 	if (buf[0]) {
 		if (indent == -1)
-			indent = NumBlockStack;
+			indent = num_block_stack;
 		if (curoffs == -1)
-			curoffs = get_curpos();
+			curoffs = get_curoffs();
 
 		s = GetIndentString(indent);
 
-		if (DontShowOpcode) {
-			if (DontShowOffsets)
+		if (dontShowOpcode) {
+			if (dontShowOffsets)
 				printf("%s%s\n", s, buf);
 			else
 				printf("[%.4X] %s%s\n", curoffs, s, buf);
@@ -532,7 +529,7 @@ void OutputLine(char *buf, int curoffs, int opcode, int indent)
 				sprintf(buf2, "%.2X", opcode);
 			else
 				strcpy(buf2, "**");
-			if (DontShowOffsets)
+			if (dontShowOffsets)
 				printf("(%s) %s%s\n", buf2, s, buf);
 			else
 				printf("[%.4X] (%s) %s%s\n", curoffs, buf2, s, buf);
@@ -541,19 +538,19 @@ void OutputLine(char *buf, int curoffs, int opcode, int indent)
 }
 
 
-void WritePendingElse()
+void writePendingElse()
 {
-	if (PendingElse) {
+	if (pendingElse) {
 		char buf[32];
-		sprintf(buf, AlwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", PendingElseTo);
-		OutputLine(buf, PendingElseOffs, PendingElseOpcode, PendingElseIndent - 1);
-		PendingElse = 0;
+		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
+		outputLine(buf, pendingElseOffs, pendingElseOpcode, pendingElseIndent - 1);
+		pendingElse = 0;
 	}
 }
 
-int HavePendingElse()
+int HavependingElse()
 {
-	return PendingElse;
+	return pendingElse;
 }
 
 void do_decodeparsestring_v2(char *buf, byte opcode)
@@ -633,7 +630,7 @@ void do_actorset(char *buf, byte opcode)
 		first = 0;
 
 		// FIXME - this really should be a check for GF_SMALL_HEADER instead!
-		if (ScriptVersion < 5)
+		if (scriptVersion < 5)
 			opcode = (opcode & 0xE0) | convertTable[(opcode & 0x1F) - 1];
 
 		switch (opcode & 0x1F) {
@@ -692,7 +689,7 @@ void do_actorset(char *buf, byte opcode)
 			break;
 		case 0x11:
 			// FIXME for GID_MONKEY_VGA / GID_MONKEY_EGA this is:
-			if (ScriptVersion == 5)
+			if (scriptVersion == 5)
 				buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 			else
 				buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B));
@@ -819,7 +816,7 @@ void do_expr_code(char *buf)
 
 		case 0x6:
 			buf2 = strecpy(buf, "<");
-			if (ScriptVersion == 2)
+			if (scriptVersion == 2)
 				get_tok_V2(buf2);
 			else
 				get_tok(buf2);
@@ -867,7 +864,7 @@ void do_expr_code(char *buf)
 			break;
 		case 0x6:
 			sprintf(buf, "CALL (%.2X) ", *cur_pos);
-			if (ScriptVersion == 2)
+			if (scriptVersion == 2)
 				get_tok_V2(strchr(buf, 0));
 			else
 				get_tok(strchr(buf, 0));
@@ -941,7 +938,7 @@ void do_resource(char *buf, byte opco)
 	//    "real" loadRoom with the one here.
 	char opcode = get_byte();
 	int sub_op;
-	if (ScriptVersion != 5)
+	if (scriptVersion != 5)
 		sub_op = opcode & 0x3F;	// FIXME - actually this should only be done for Zak256
 	else
 		sub_op = opcode & 0x1F;
@@ -1153,10 +1150,10 @@ void do_room_ops_old(char *buf, byte master_opcode)
 	char	a[256];
 	char	b[256];
 	
-	if (ScriptVersion == 2) {
+	if (scriptVersion == 2) {
 		get_var_or_byte(a, (master_opcode & 0x80));
 		get_var_or_byte(b, (master_opcode & 0x40));
-	} else if (ScriptVersion == 3) {
+	} else if (scriptVersion == 3) {
 		get_var_or_word(a, (master_opcode & 0x80));
 		get_var_or_word(b, (master_opcode & 0x40));
 	}
@@ -1167,7 +1164,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 
 	switch (opcode & 0x1F) {
 	case 0x01:
-		if (ScriptVersion > 3) {
+		if (scriptVersion > 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1178,7 +1175,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x02:
-		if (ScriptVersion > 3) {
+		if (scriptVersion > 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1189,7 +1186,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x03:
-		if (ScriptVersion > 3) {
+		if (scriptVersion > 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1200,7 +1197,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x04:
-		if (ScriptVersion > 3) {
+		if (scriptVersion > 3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1514,7 +1511,7 @@ exit_proc:;
 
 }
 
-int get_curpos()
+int get_curoffs()
 {
 	return cur_pos - org_pos;
 }
@@ -1522,7 +1519,7 @@ int get_curpos()
 int get_gotopos()
 {
 	int j = get_word();
-	return (short)(j + get_curpos());
+	return (short)(j + get_curoffs());
 }
 
 bool emit_if(char *before, char *after)
@@ -1532,18 +1529,18 @@ bool emit_if(char *before, char *after)
 	before[0] = 0;
 	after[0] = 0;
 
-	if (!DontOutputElseif && HavePendingElse()) {
-		if (RequestElseIfAdd(get_curpos(), PendingElseTo, i)) {
-			sprintf(after, AlwaysShowOffs ? ") /*%.4X*/ {" : ") {", i);
+	if (!dontOutputElseif && HavependingElse()) {
+		if (maybeAddElseIf(get_curoffs(), pendingElseTo, i)) {
+			sprintf(after, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", i);
 			strcpy(before, "} else ");
-			PendingElse = false;
-			HaveElse = true;
+			pendingElse = false;
+			haveElse = true;
 			return true;
 		}
 	}
 
-	if (!DontOutputIfs && RequestIfAdd(get_curpos(), i)) {
-		sprintf(after, AlwaysShowOffs ? ") /*%.4X*/ {" : ") {", i);
+	if (!dontOutputIfs && maybeAddIf(get_curoffs(), i)) {
+		sprintf(after, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", i);
 		return true;
 	}
 
@@ -1619,7 +1616,7 @@ void do_if_state_code(char *buf, byte opcode)
 	var[0] = 0;
 	get_var_or_word(var, opcode & 0x80);
 
-	if (ScriptVersion > 2) {
+	if (scriptVersion > 2) {
 		switch (opcode & 0x2F) {
 		case 0x0f:
 			neg = 0;
@@ -1686,7 +1683,7 @@ void do_if_state_code(char *buf, byte opcode)
 
 	neg = neg ^ emit_if(before, after) ^ 1;
 
-	if (ScriptVersion > 2)
+	if (scriptVersion > 2)
 		sprintf(buf, "%sif (getState(%s)%s%s%s", before, var, neg ? " != " : " == ", tmp2, after);
 	else
 		sprintf(buf, "%sif (%sgetState%02d(%s)%s", before, neg ? "!" : "", state, var, after);
@@ -1695,16 +1692,16 @@ void do_if_state_code(char *buf, byte opcode)
 void do_unconditional_jump(char *buf, byte opcode)
 {
 	int i = get_gotopos();
-	int j = get_curpos();
+	int j = get_curoffs();
 
 	if (i == j) {
 		sprintf(buf, "/* goto %.4X; */", i);
-	} else if (!DontOutputElse && RequestElseAdd(j, i)) {
-		PendingElse = 1;
-		PendingElseTo = i;
-		PendingElseOffs = j - 3;
-		PendingElseOpcode = opcode;
-		PendingElseIndent = NumBlockStack;
+	} else if (!dontOutputElse && RequestElseAdd(j, i)) {
+		pendingElse = 1;
+		pendingElseTo = i;
+		pendingElseOffs = j - 3;
+		pendingElseOpcode = opcode;
+		pendingElseIndent = num_block_stack;
 		buf[0] = 0;
 	} else {
 		sprintf(buf, "goto %.4X;", i);
@@ -1716,7 +1713,7 @@ void do_varset_code(char *buf, byte opcode)
 {
 	char *s;
 
-	if ((ScriptVersion == 2)
+	if ((scriptVersion == 2)
 		&& ((opcode & 0x7F) == 0x0A
 		 || (opcode & 0x7F) == 0x2A
 		 || (opcode & 0x7F) == 0x6A)) {
@@ -1767,7 +1764,7 @@ void do_varset_code(char *buf, byte opcode)
 	buf = strecpy(buf, s);
 
 
-	if ((ScriptVersion == 2) && (opcode & 0x7F) == 0x2C) { /* assignVarByte */
+	if ((scriptVersion == 2) && (opcode & 0x7F) == 0x2C) { /* assignVarByte */
 		sprintf(buf, "%d", get_byte());
 		buf = strchr(buf, 0);
 	} else if ((opcode & 0x7F) != 0x46) {	/* increment or decrement */
@@ -2453,7 +2450,7 @@ void get_tok(char *buf)
 	case 0x45:
 	case 0x85:
 	case 0xC5:
-		if (ScriptVersion == 5) {
+		if (scriptVersion == 5) {
 			buf = do_tok(buf, "drawObject", ((opcode & 0x80) ? A1V : A1W) | ANOLASTPAREN);
 			opcode = get_byte();
 			switch (opcode & 0x1F) {
@@ -2480,7 +2477,7 @@ void get_tok(char *buf)
 	case 0x65:
 	case 0xA5:
 	case 0xE5:
-		if (ScriptVersion == 5) {
+		if (scriptVersion == 5) {
 			do_tok(buf, "pickupObject", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
 		} else {
 			buf = do_tok(buf, "drawObject",
@@ -2544,7 +2541,7 @@ void get_tok(char *buf)
 
 	case 0x0F:
 	case 0x8F:
-		if (ScriptVersion == 5) {
+		if (scriptVersion == 5) {
 			do_tok(buf, "getObjectState", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 			break;
 		}
@@ -2842,7 +2839,7 @@ void get_tok(char *buf)
 	case 0x73:
 	case 0xB3:
 	case 0xF3:
-		if (ScriptVersion == 5)
+		if (scriptVersion == 5)
 			do_room_ops(buf);
 		else
 			do_room_ops_old(buf, opcode);
@@ -3002,7 +2999,7 @@ void get_tok(char *buf)
 
 	case 0x30:
 	case 0xB0:
-		if (ScriptVersion == 5)
+		if (scriptVersion == 5)
 			do_matrix_ops(buf, opcode);
 		else
 			do_tok(buf, "setBoxFlags", ((opcode & 0x80) ? A1V : A1B) | A2B);
@@ -3101,7 +3098,7 @@ void get_tok(char *buf)
 		break;
 
 	default:
-		if (HaltOnError) {
+		if (haltOnError) {
 			printf("Unknown opcode %.2X\n", opcode);
 			exit(1);
 		}
@@ -3190,14 +3187,14 @@ int main(int argc, char *argv[])
 			while (*s) {
 				switch (tolower(*s)) {
 				case '2':
-					ScriptVersion = 2;
+					scriptVersion = 2;
 					GF_UNBLOCKED = true;
 					break;
 				case '3':
-					ScriptVersion = 3;
+					scriptVersion = 3;
 					break;
 				case '5':
-					ScriptVersion = 5;
+					scriptVersion = 5;
 					break;
 				case 'n':
 					IndyFlag = 1; // Indy3
@@ -3207,25 +3204,25 @@ int main(int argc, char *argv[])
 					break;
 
 				case 'o':
-					AlwaysShowOffs = 1;
+					alwaysShowOffs = 1;
 					break;
 				case 'i':
-					DontOutputIfs = 1;
+					dontOutputIfs = 1;
 					break;
 				case 'e':
-					DontOutputElse = 1;
+					dontOutputElse = 1;
 					break;
 				case 'f':
-					DontOutputElseif = 1;
+					dontOutputElseif = 1;
 					break;
 				case 'c':
-					DontShowOpcode = 1;
+					dontShowOpcode = 1;
 					break;
 				case 'x':
-					DontShowOffsets = 1;
+					dontShowOffsets = 1;
 					break;
 				case 'h':
-					HaltOnError = 1;
+					haltOnError = 1;
 					break;
 				default:
 					ShowHelpAndExit();
@@ -3258,7 +3255,7 @@ int main(int argc, char *argv[])
 
 	if (GF_UNBLOCKED) {
 		mem += 4;
-	} else if (ScriptVersion == 5) {
+	} else if (scriptVersion == 5) {
 		switch (TO_BE_32(*((uint32 *)mem))) {
 		case 'LSCR':
 			printf("Script# %d\n", (byte)mem[8]);
@@ -3309,26 +3306,27 @@ int main(int argc, char *argv[])
 
 	len -= mem - memorg;
 
+	int offs_of_line = 0;
+
 	do {
-		int j = NumBlockStack;
 		byte opcode = *cur_pos;
-		curoffs = cur_pos - mem;
-		if (ScriptVersion == 2)
+		int j = num_block_stack;
+		if (scriptVersion == 2)
 			get_tok_V2(buf);
 		else
 			get_tok(buf);
 		if (buf[0]) {
-			WritePendingElse();
-			if (HaveElse) {
-				HaveElse = 0;
+			writePendingElse();
+			if (haveElse) {
+				haveElse = false;
 				j--;
 			}
-			OutputLine(buf, curoffs, opcode, j);
+			outputLine(buf, offs_of_line, opcode, j);
+			offs_of_line = get_curoffs();
 		}
-		while (IndentBlock(get_curpos())) {
-			OutputLine("}", -1, -1, -1);
+		while (indentBlock(get_curoffs())) {
+			outputLine("}", -1, -1, -1);
 		}
-
 		fflush(stdout);
 	} while (cur_pos < mem + len);
 

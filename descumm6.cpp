@@ -110,12 +110,6 @@ struct StackEnt {
 	StackEnt **list;
 };
 
-struct BlockStack {
-	bool isWhile;
-	unsigned short from;
-	unsigned short to;
-};
-
 enum {
 	seInt = 1,
 	seVar = 2,
@@ -185,15 +179,21 @@ int get_curoffs()
 	return cur_pos - org_pos;
 }
 
-byte alwaysShowOffs = 0;
-byte dontOutputIfs = 0;
-byte dontOutputElse = 0;
-byte dontOutputElseif = 0;
-byte dontOutputWhile = 0;
-byte dontShowOpcode = 0;
-byte dontShowOffsets = 0;
-byte haltOnError;
+bool alwaysShowOffs = 0;
+bool dontOutputIfs = 0;
+bool dontOutputElse = 0;
+bool dontOutputElseif = 0;
+bool dontOutputWhile = 0;
+bool dontShowOpcode = 0;
+bool dontShowOffsets = 0;
+bool haltOnError;
 byte scriptVersion = 6;
+
+struct BlockStack {
+	bool isWhile;
+	unsigned short from;
+	unsigned short to;
+};
 
 BlockStack *block_stack;
 int num_block_stack;
@@ -1258,9 +1258,7 @@ bool maybeAddElse(unsigned int cur, unsigned int to)
 	return false;									/* An else is not OK here :( */
 }
 
-
-
-int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
+bool maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 {
 	unsigned int k;
 	BlockStack *p;
@@ -2720,7 +2718,6 @@ char *getIndentString(int i)
 
 void outputLine(char *buf, int curoffs, int opcode, int indent)
 {
-
 	char *s;
 
 	if (buf[0]) {
