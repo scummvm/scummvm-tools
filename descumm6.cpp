@@ -1816,6 +1816,9 @@ void next_line_V8()
 	case 0xF6:
 		ext("rps|stringWidth");
 		break;
+	case 0xF7:
+		ext("rp|getActorZPlane");
+		break;
 
 	default:
 		invalidop(NULL, code);
