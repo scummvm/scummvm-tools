@@ -2213,8 +2213,8 @@ void get_tok_V2(char *buf)
 	case 0xC1:
 	case 0xE1:
 		do_tok(buf, "putActor",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W) |
-					 ((opcode & 0x20) ? A3V : A3W));
+					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) |
+					 ((opcode & 0x20) ? A3V : A3B));
 		break;
 	case 0x0E:
 	case 0x4E:
