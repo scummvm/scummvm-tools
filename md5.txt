@@ -215,14 +215,14 @@ Putt-Putts Fun Pack
 	TODO
 
 Putt-Putt Travels Through Time
-	-	All?	en	2108d83dcf09f8adb4bc524669c8cf51	TODO
-	Demo	Windows	en	4e5867848ee61bc30d157e2c94eee9b4	TODO
-	Demo	Windows	en	0ab19be9e2a3f6938226638b2a3744fe	putttime-demo	khalek
+	-	All?	en	2108d83dcf09f8adb4bc524669c8cf51	PuttTime
 	Demo	Mac	en	4e5867848ee61bc30d157e2c94eee9b4	TimeDemo	khalek
+	Demo	Windows	en	4e5867848ee61bc30d157e2c94eee9b4	timedemo
+	Demo	Windows	en	0ab19be9e2a3f6938226638b2a3744fe	putttime-demo	khalek
 
 Putt-Putt Enters the Race
-	-	Windows	en	981e1e1891f2be7e25a01f50ae55a5af	TODO
-	Demo	Windows	en	0ac41e2e3d2174e5a042a6b565328dba	TODO
+	-	Windows	en	981e1e1891f2be7e25a01f50ae55a5af	puttrace
+	Demo	Windows	en	0ac41e2e3d2174e5a042a6b565328dba	racedemo
 
 Putt-Putt Saves the Zoo
 	-	Windows	nl	c3b22fa4654bb580b20325ebf4174841	TODO
@@ -252,7 +252,7 @@ Backyard Football 2002
 	Demo	Windows	en	2e85f7aa054930c692a5b1bed1dfc295	football2002	khalek
 
 Big Thinkers: Kindergarten
-	Demo	Windows	en	695fe0b3963333b7e15b37514db3c745	TODO
+	Demo	Windows	en	695fe0b3963333b7e15b37514db3c745	kinddemo
 	Demo	Mac	en	695fe0b3963333b7e15b37514db3c745	kinddemo	khalek
 
 Big Thinkers First Grade
@@ -281,6 +281,9 @@ Freddie Fish 4: The Case of the Hogfish Rustlers of Briny Gulch
 	Demo	Windows	en	c25755b08a8d0d47695e05f1e2111bfc	TODO
 	Demo	Windows	en	7c2e76087027eeee9c8f8985f93a1cc5	f4-demo	khalek
 
+Freddi Fish 5: The Case of the Creature of Coral Cave
+	Demo	Windows	nl	6b257bb2827dd894b8109a50a1a18b5a	FF5Demo	Kirben
+
 Humongous Interactive Catalog
 	-	Windows	en	86c9902b7bec1a17926d4dae85beaa45	catalog	khalek
 
@@ -308,7 +311,7 @@ Pajama Sam 1: No Need to Hide
 Pajama Sam 2: Thunder and Lightning Aren't So Frightening
 	-	Windows	en	d4e79c3d8645b8266cd78c325bc35154	pajama2	Kirben
 	-	Windows	nl	4fa6870d9bc8c313b65d54b1da5a1891	TODO
-	Demo	Windows	en	36a6750e03fb505fc19fc2bf3e4dbe91	TODO
+	Demo	Windows	en	36a6750e03fb505fc19fc2bf3e4dbe91	pj2demo
 
 Pajama Sam 3: You Are What You Eat
 	-	Windows	en	f7711f9264d4d43c2a1518ec7c10a607	pajama3	Kirben
