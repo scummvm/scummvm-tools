@@ -2266,7 +2266,6 @@ void get_tok_V2(char *buf)
 */
 	case 0x32:
 	case 0xB2:
-		//setCameraAt
 		do_tok(buf, "setCameraAt", ((opcode & 0x80) ? A1V : A1B));
 		break;
 /*			
@@ -3016,6 +3015,7 @@ void get_tok(char *buf)
 		break;
 
 	case 0x32:
+	case 0xB2:
 		do_tok(buf, "setCameraAt", ((opcode & 0x80) ? A1V : A1W));
 		break;
 
