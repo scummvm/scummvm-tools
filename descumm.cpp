@@ -1555,14 +1555,14 @@ void do_print_ego(char *buf, byte opcode)
 			buf = do_tok(buf, "Clipped", ((opcode & 0x80) ? A1V : A1W));
 			break;
 		case 0x3:
-			buf = do_tok(buf, "Erase?", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+			buf = do_tok(buf, "RestoreBG", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 			break;
 		case 0x4:
 			buf = do_tok(buf, "Center", 0);
 			break;
 		case 0x6:
 			if (GF_UNBLOCKED)
-				buf = do_tok(buf, "Spacing?", ((opcode & 0x80) ? A1V: A1W));
+				buf = do_tok(buf, "Height", ((opcode & 0x80) ? A1V: A1W));
 			else
 				buf = do_tok(buf, "Left", 0);
 			break;
