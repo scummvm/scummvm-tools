@@ -2604,7 +2604,7 @@ int main(int argc, char *argv[])
 	case 'ENCD':
 		mem += 8;
 		break;											/* Entry code */
-	case 'EXDE':
+	case 'EXCD':
 		mem += 8;
 		break;											/* Exit code */
 	case 'VERB':
