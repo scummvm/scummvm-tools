@@ -357,7 +357,8 @@ skip:
 		}
 		fseek(output, frameInfo[l].offsetOutput, SEEK_SET);
 		sumDiff += diff;
-		writeUint32BE(output, frameInfo[l].frameSize - diff);
+		if (diff != 0)
+			writeUint32BE(output, frameInfo[l].frameSize - diff);
 	}
 	printf("done.\n");
 
