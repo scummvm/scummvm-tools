@@ -1293,51 +1293,25 @@ void next_line_V8()
 		push(se_oper(pop(), isZero));
 		break;
 	case 0x8:
-		push(se_oper(pop(), isEqual, pop()));
-		break;
 	case 0x9:
-		push(se_oper(pop(), isNotEqual, pop()));
-		break;
 	case 0xA:
-		push(se_oper(pop(), isGreater, pop()));
-		break;
 	case 0xB:
-		push(se_oper(pop(), isLess, pop()));
-		break;
 	case 0xC:
-		push(se_oper(pop(), isLessEqual, pop()));
-		break;
 	case 0xD:
-		push(se_oper(pop(), isGreaterEqual, pop()));
-		break;
 	case 0xE:
-		push(se_oper(pop(), operAdd, pop()));
-		break;
 	case 0xF:
-		push(se_oper(pop(), operSub, pop()));
-		break;
 	case 0x10:
-		push(se_oper(pop(), operMul, pop()));
-		break;
 	case 0x11:
-		push(se_oper(pop(), operDiv, pop()));
-		break;
 	case 0x12:
-		push(se_oper(pop(), operLand, pop()));
-		break;
 	case 0x13:
-		push(se_oper(pop(), operLor, pop()));
-		break;
 	case 0x14:
-		push(se_oper(pop(), operBand, pop()));
-		break;
 	case 0x15:
-		push(se_oper(pop(), operBor, pop()));
-		break;
 	case 0x16:
-		push(se_oper(pop(), operMod, pop()));
+		se_a = pop();
+		se_b = pop();
+		push(se_oper(se_b, (code - 0x8) + isEqual, se_a));
 		break;
-
+		
 	case 0x64:
 		jumpif(pop(), true);
 		break;
@@ -1481,6 +1455,29 @@ void next_line_V8()
 				);
 		break;
 
+	case 0xAE:
+		ext("x" "verbOps\0"
+				"\x96|verbInit,"
+				"\x97|verbNew,"
+				"\x98|verbDelete,"
+				"\x99|verbLoadString,"
+				"\x9App|verbSetXY,"
+				"\x9B|verbOn,"
+				"\x9C|verbOff,"
+				"\x9D|verbSetColor,"
+				"\x9E|verbSetHiColor,"
+
+				"\xA0|verbSetDimColor,"
+				"\xA1|verbSetDim,"
+				"\xA2|verbSetKey,"
+				"\xA3|verbLoadImg,"
+				"\xA4|verbSetToString,"
+				"\xA5|verbSetCenter,"
+				"\xA6|verbSetCharset,"
+				"\xA7|verbSetLineSpacing"
+				);
+		break;
+
 	case 0xB3:
 		ext("x" "system\0" "\x28|restart," "\x29|quit");
 		break;
@@ -1488,7 +1485,10 @@ void next_line_V8()
 	case 0xBA:
 		ext("y" "kludge\0"
 				"\xB|lockObject,"
-				"\xC|unlockObject"
+				"\xC|unlockObject,"
+				"\xD|remapCostume,"
+				"\xE|remapCostumeInsert,"
+				"\xF|setVideoFrameRate"
 				);
 		break;
 
@@ -1904,12 +1904,12 @@ void next_line()
 				"\x7Ep|verbSetColor,"
 				"\x7Fp|verbSetHiColor,"
 				"\x80pp|verbSetXY,"
-				"\x81|verbSetCurmode1,"
-				"\x82|verbSetCurmode0,"
+				"\x81|verbSetCurmode1,"	// = verbOn ?
+				"\x82|verbSetCurmode0,"	// = verbOff ?
 				"\x83|verbKill,"
 				"\x84|verbInit,"
 				"\x85p|verbSetDimColor,"
-				"\x86|verbSetCurmode2,"
+				"\x86|verbSetCurmode2,"	// = verbDim ?
 				"\x87p|verbSetKey,"
 				"\x88|verbSetCenter,"
 				"\x89p|verbSetToString,"
