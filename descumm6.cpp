@@ -1483,7 +1483,7 @@ void next_line_V8()
 				"\xCApp|XY,"
 				"\xCBp|color,"
 				"\xCC|center,"
-				"\xCD|charset,"	// ???
+				"\xCDp|charset,"	// ???
 				"\xCE|left,"
 				"\xCF|overhead,"
 				"\xD0|mumble,"
@@ -1499,7 +1499,7 @@ void next_line_V8()
 				"\xCApp|XY,"
 				"\xCBp|color,"
 				"\xCC|center,"
-				"\xCD|charset,"	// ???
+				"\xCDp|charset,"	// ???
 				"\xCE|left,"
 				"\xCF|overhead,"
 				"\xD0|mumble,"
@@ -1515,7 +1515,7 @@ void next_line_V8()
 				"\xCApp|XY,"
 				"\xCBp|color,"
 				"\xCC|center,"
-				"\xCD|charset,"	// ???
+				"\xCDp|charset,"	// ???
 				"\xCE|left,"
 				"\xCF|overhead,"
 				"\xD0|mumble,"
@@ -1531,7 +1531,7 @@ void next_line_V8()
 				"\xCApp|XY,"
 				"\xCBp|color,"
 				"\xCC|center,"
-				"\xCD|charset,"	// ???
+				"\xCDp|charset,"	// ???
 				"\xCE|left,"
 				"\xCF|overhead,"
 				"\xD0|mumble,"
@@ -1547,7 +1547,7 @@ void next_line_V8()
 				"\xCApp|XY,"
 				"\xCBp|color,"
 				"\xCC|center,"
-				"\xCD|charset,"	// ???
+				"\xCDp|charset,"	// ???
 				"\xCE|left,"
 				"\xCF|overhead,"
 				"\xD0|mumble,"
