@@ -814,29 +814,29 @@ int gen_c_source(struct font* pf, char *path)
 
 	/* output struct font struct*/
 	if (pf->offset)
-		sprintf(obuf, "_sysfont_offset;");
+		sprintf(obuf, "_sysfont_offset,");
 	else
-		sprintf(obuf, "0;  /* no encode table*/");
+		sprintf(obuf, "0,  /* no encode table*/");
 
 	if (pf->width)
-		sprintf(buf, "_sysfont_width;");
+		sprintf(buf, "_sysfont_width,");
 	else
-		sprintf(buf, "0;  /* fixed width*/");
+		sprintf(buf, "0,  /* fixed width*/");
 
 	fprintf(ofp,
 			"/* Exported structure definition. */\n"
-			"NewFont::NewFont() {\n"
-			"\t" "name = \"%s\";\n"
-			"\t" "maxwidth = %d;\n"
-			"\t" "height = %d;\n"
-			"\t" "ascent = %d;\n"
-			"\t" "firstchar = %d;\n"
-			"\t" "size = %d;\n"
-			"\t" "bits = _font_bits;\n"
-			"\t" "offset = %s\n"
-			"\t" "width = %s\n"
-			"\t" "defaultchar = %d;\n"
-			"\t" "bits_size = sizeof(_font_bits)/sizeof(bitmap_t);\n"
+			"static const FontDesc desc = {\n"
+			"\t" "\"%s\",\n"
+			"\t" "%d,\n"
+			"\t" "%d,\n"
+			"\t" "%d,\n"
+			"\t" "%d,\n"
+			"\t" "%d,\n"
+			"\t" "_font_bits,\n"
+			"\t" "%s\n"
+			"\t" "%s\n"
+			"\t" "%d,\n"
+			"\t" "sizeof(_font_bits)/sizeof(bitmap_t)\n"
 			"};\n",
 			pf->name,
 			pf->maxwidth, pf->height,
@@ -847,7 +847,7 @@ int gen_c_source(struct font* pf, char *path)
 			buf,
 			pf->defaultchar);
 
-	fprintf(ofp, "\n" "const NewFont g_sysfont;\n");
+	fprintf(ofp, "\n" "const NewFont g_sysfont(desc);\n");
 	fprintf(ofp, "\n} // End of namespace GUI\n");
  
 	return 0;
