@@ -206,6 +206,7 @@ Full Throttle
 	-	All?	es	e72bb4c2b613db2cf50f89ff6350e70a	ft
 	-	All?	ru	55e4cc866ff9046824e1c638ba2b8c7f	ft	sev
 	-	All?	it	55518cd73cf9c6d23ea29c51ee06bdfe	ft	delfino
+	-	All?	fr	4bedb49943df95a9c900a5a82ccbe9de	ft	cyx
 
 	Demo	DOS	en	32a433dea56b86a55b59e4ff7d755711	ftpcdemo
 	Demo	Mac	en	9d7b67be003fea60be4dcbd193611936	ftdemo
@@ -250,6 +251,7 @@ Putt-Putt Enters the Race
 	Demo	All	nl	aaa587701cde7e74692c68c1024b85eb	racedemo	joostp
 
 Putt-Putt Saves the Zoo
+	-	Windows	en	92e7727e67f5cd979d8a1070e4eb8cb3	puttzoo	cyx
 	-	Windows	nl	c3b22fa4654bb580b20325ebf4174841	puttzoo	joostp
 	-	Mac	en	58fdf4c7ad13540a734e18f8584cad89	TODO	khalek
 	Demo	Windows	en	1005456bfe351c1b679e1ff2dc2849e9	puttzoo	khalek
@@ -309,6 +311,7 @@ Freddie Fish 4: The Case of the Hogfish Rustlers of Briny Gulch
 	Demo	Windows	nl	16effd200aa6b8abe9c569c3e578814d	ff4demo	joostp
 
 Freddi Fish 5: The Case of the Creature of Coral Cave
+	-	Windows	en	590e6546aacd0d374b7f3a4f53013ab1	freddicove	cyx
 	-	Windows	ru	21abe302e1b1e2b66d6f5c12e241ebfd	freddicove	sev
 	Demo	Windows	nl	6b257bb2827dd894b8109a50a1a18b5a	FF5Demo	Kirben
 
