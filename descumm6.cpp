@@ -1422,7 +1422,9 @@ void next_line_V8(char *output)
 	case 0x86:
 		ext(output, "|stopSentence");
 		break;
-
+	case 0x87:
+		ext(output, "p|debug");
+		break;
 	case 0x89:
 		ext(output, "lp|setClassOf?");
 		break;
