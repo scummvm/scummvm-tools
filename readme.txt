@@ -10,3 +10,8 @@ Included tools:
 
         descumm3.cpp - Decompiles SCUMM V3 scripts (eg, loomcd, indy3-256
                        Zak256 (fmtowns).
+
+        descumm5.cpp - Decompiles SCUMM V4/V5 scripts (eg, monkey1/2, FOA)
+
+        descumm6.cpp - Decompiles SCUMM V6/V7/V8 scripts (eg, dott, FT, etc)
+
