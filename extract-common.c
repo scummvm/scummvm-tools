@@ -95,10 +95,14 @@ void get_voc(void)
 		fclose(f);
 
 		/* Convert the raw temp file to OGG/MP3 */
+		/* TODO: Unify this with the conversion code in get_wav() */
 		sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
 		tmp = fbuf;
 		if (oggmode) {
-			tmp += sprintf(tmp, "oggenc --raw --raw-chan=1 --raw-bits=8 ");
+			tmp += sprintf(tmp, "oggenc ");
+			tmp += sprintf(tmp, "--raw --raw-chan=1 --raw-bits=8 ");
+			tmp += sprintf(tmp, "--raw-rate=%i ", real_samplerate);
+
 			if (oggparms.nominalBitr != -1)
 				tmp += sprintf(tmp, "--bitrate=%i ", oggparms.nominalBitr);
 			if (oggparms.minBitr != -1)
@@ -107,25 +111,24 @@ void get_voc(void)
 				tmp += sprintf(tmp, "--max-bitrate=%i ", oggparms.maxBitr);
 			if (oggparms.silent)
 				tmp += sprintf(tmp, "--quiet ");
-
 			tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
-			tmp += sprintf(tmp, "--raw-rate=%i ", real_samplerate);
 			tmp += sprintf(tmp, "--output=%s ", outname);
 			tmp += sprintf(tmp, "%s ", rawname);
 			system(fbuf);
 		} else {
-			tmp += sprintf(tmp, "lame -t -m m -r --bitwidth 8 ");
+			tmp += sprintf(tmp, "lame -t -m m ");
+			tmp += sprintf(tmp, "-r --bitwidth 8 ");
+			tmp += sprintf(tmp, "-s %d ", real_samplerate);
+
 			if (encparms.abr == 1)
 				tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
 			else
 				tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
 			if (encparms.silent == 1)
 				tmp += sprintf(tmp, " --silent ");
-
 			tmp += sprintf(tmp, "-q %i ", encparms.algqual);
 			tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
 			tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
-			tmp += sprintf(tmp, "-s %d ", real_samplerate);
 			tmp += sprintf(tmp, "%s %s ", rawname, outname);
 			system(fbuf);
 		}

@@ -25,7 +25,6 @@ unsigned int filenums[32768];
 unsigned int offsets[32768];
 
 char infile_base[256];
-char fbuf_temp[1024];
 char buf[256];
 
 void end(void)
@@ -191,7 +190,8 @@ void get_wav(void) {
 	int length;
 	FILE *f;
 	char fbuf[2048];
-	int size;
+	char *tmp;
+	size_t size;
 	char wavname[256];
 	char outname[256];
 
@@ -200,9 +200,8 @@ void get_wav(void) {
 	length += 8;
 	fseek(input, -8, SEEK_CUR);
 
+	/* Copy the WAV data to a temporary file */
 	sprintf(wavname, "tempfile.wav");
-	sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
-
 	f = fopen(wavname, "wb");
 	while (length > 0) {
 		size = fread(fbuf, 1, length > 2048 ? 2048 : length, input);
@@ -213,36 +212,37 @@ void get_wav(void) {
 	}
 	fclose(f);
 
+	/* Convert the WAV temp file to OGG/MP3 */
+	/* TODO: Unify this with the conversion code in get_voc() */
+	sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
+	tmp = fbuf;
 	if (oggmode) {
-		sprintf(fbuf, "oggenc ");
-		if (oggparms.nominalBitr != -1) {
-			sprintf(fbuf_temp, "-b %i ", oggparms.nominalBitr);
-			strcat(fbuf, fbuf_temp);
-		}
-		if (oggparms.minBitr != -1) {
-			sprintf(fbuf_temp, "-m %i ", oggparms.minBitr);
-			strcat(fbuf, fbuf_temp);
-		}
-		if (oggparms.maxBitr != -1) {
-			sprintf(fbuf_temp, "-M %i ", oggparms.maxBitr);
-			strcat(fbuf, fbuf_temp);
-		}
-		if (oggparms.silent) {
-			strcat(fbuf, "--quiet ");
-		}
-		strcat(fbuf, fbuf_temp);
+		tmp += sprintf(tmp, "oggenc ");
+		if (oggparms.nominalBitr != -1)
+			tmp += sprintf(tmp, "--bitrate=%i ", oggparms.nominalBitr);
+		if (oggparms.minBitr != -1)
+			tmp += sprintf(tmp, "--min-bitrate=%i ", oggparms.minBitr);
+		if (oggparms.maxBitr != -1)
+			tmp += sprintf(tmp, "--max-bitrate=%i ", oggparms.maxBitr);
+		if (oggparms.silent)
+			tmp += sprintf(tmp, "--quiet ");
+		tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
+		tmp += sprintf(tmp, "--output=%s ", outname);
+		tmp += sprintf(tmp, "%s ", wavname);
 		system(fbuf);
 	} else {
+		tmp += sprintf(tmp, "lame -t -m m ");
 		if (encparms.abr == 1)
-			sprintf(fbuf_temp,"--abr %i",encparms.minBitr);
+			tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
 		else
-			sprintf(fbuf_temp,"--vbr-new -b %i",encparms.minBitr);
+			tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
 		if (encparms.silent == 1)
-			strcat(fbuf_temp," --silent");
-		sprintf(fbuf,
-			"lame -t -q %i %s -V %i -B %i -m m %s %s",
-			encparms.algqual, fbuf_temp, encparms.vbrqual,
-			encparms.maxBitr, wavname, outname);
+			tmp += sprintf(tmp, " --silent ");
+
+		tmp += sprintf(tmp, "-q %i ", encparms.algqual);
+		tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
+		tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
+		tmp += sprintf(tmp, "%s %s ", wavname, outname);
 		system(fbuf);
 	}
 }
