@@ -38,28 +38,21 @@ Compression Tools:
                 different compression for its speech .clu files. This program
                 will NOT work on them.
 
-        compress_san <inputfile>.san <outputfile>.san [<file>.flu>]
+        compress_san <inputfile> <inputdir> <outputdir>
                 Compresses '.san' smush animation files. It uses lossless zlib
                 for compressing FOBJ gfx chunks inside a san file.
+		It also can create ogg separate file with smush audio track (only
+		COMI currently supported).
 
                 Example of usage:
-                compress_san opening.san temp_opening.san 
+                compress_san opening.san uncomp comp
 
-                'san' filenames which have equivalent 'flu' filenames (which exist 
-                in the Full Throttle 'data' dir, ie 'tovista2.san' and 'tovista2.flu')
-                must be compressed together, for example: 
-                compress_san tovista2.san temp_tovista2.san tovista2.flu
                 WARNING: The current status of 'flu' support is not good,
                 PLEASE DO NOT COMPRESS this pair of files yet, it will be fixed later.
 
-                The original 'tovista2.san' file is not modified and a new
-                'temp_tovista2.san' file is created, but the input file 'tovista2.flu'
-                IS MODIFIED while compressing.
+                ScummVM support requires a zlib enabled build, and Ogg support
+		for ogg audio track playback.
 
-                After compression, you must rename
-                'temp_tovista2.san' to 'tovista2.san'.
-
-                ScummVM support requires a zlib enabled build.
 
 Script Tools:
         descumm
