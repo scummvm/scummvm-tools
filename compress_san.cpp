@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
 	FILE *flu = NULL;
 	if (argc == 4) {
-		flu = fopen(argv[3], "wb");
+		flu = fopen(argv[3], "rb+");
 		if (!flu) {
 			printf("Cannot open file: %s\n", argv[3]);
 			exit(-1);
@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
 
 	for (l = 0; l < nbframes; l++) {
 		printf("frame: %d\n", l);
+		bool first_fobj = true;
 		tag = readUint32BE(input); // chunk tag
 		assert(tag == TO_LE_32('FRME'));
 		writeUint32BE(output, tag); // FRME
@@ -109,16 +110,8 @@ int main(int argc, char *argv[]) {
 			if (tag == TO_LE_32('FRME')) {
 				fseek(input, -4, SEEK_CUR);
 				break;
-			} else if (tag != TO_LE_32('FOBJ')) {
-				size = readUint32BE(input); // chunk size
-				writeUint32BE(output, tag);
-				writeUint32BE(output, size);
-				if ((size & 1) != 0)
-					size++;
-				for (int k = 0; k < size; k++) {
-					writeByte(output, readByte(input)); // chunk datas
-				}
-			} else if (tag == TO_LE_32('FOBJ')) {
+			} else if ((tag == TO_LE_32('FOBJ')) && (first_fobj)) {
+				first_fobj = false;
 				size = readUint32BE(input); // FOBJ size
 				if ((size & 1) != 0)
 					size++;
@@ -144,6 +137,16 @@ int main(int argc, char *argv[]) {
 				}
 				free(zlibInputBuffer);
 				free(zlibOutputBuffer);
+				continue;
+			} else {
+				size = readUint32BE(input); // chunk size
+				writeUint32BE(output, tag);
+				writeUint32BE(output, size);
+				if ((size & 1) != 0)
+					size++;
+				for (int k = 0; k < size; k++) {
+					writeByte(output, readByte(input)); // chunk datas
+				}
 			}
 		}
 	}
@@ -164,9 +167,9 @@ int main(int argc, char *argv[]) {
 	writeUint32BE(output, animChunkSize - sumDiff);
 
 	if (flu) {
-		fseek(flu, 0x308, SEEK_SET);
+		fseek(flu, 0x310, SEEK_SET);
 		for (l = 0; l < nbframes; l++) {
-			writeUint32BE(flu, frameInfo[l].offsetOutput - 4);
+			writeUint32LE(flu, frameInfo[l].offsetOutput - 4);
 		}
 		fclose(flu);
 	}
