@@ -33,7 +33,7 @@ const char *tag2str(uint32 tag) {
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <inputfile>.san <outputfile>.san [<file>.flu>]\n", exename);
+	printf("\nUsage: %s <inputfile> <inputdir> <outputdir>\n", exename);
 //	printf("\nParams:\n");
 //	printf("\n --help     this help message\n");
 	exit(2);
