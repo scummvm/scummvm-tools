@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 		} else if (strcmp(argv[i], "-B") == 0) {
 			encparms.maxBitr = atoi(argv[i + 1]);
 			if ((encparms.maxBitr % 8) != 0)
-				encparms.maxBitr -= encparms.minBitr % 8;
+				encparms.maxBitr -= encparms.maxBitr % 8;
 			if (encparms.maxBitr > 160)
 				encparms.maxBitr = 160;
 			if (encparms.maxBitr < 8)
