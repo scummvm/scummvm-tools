@@ -1367,7 +1367,16 @@ void next_line_V8()
 	case 0x68:
 		ext("p|breakHereVar");
 		break;
-
+	case 0x69:
+		ext("x" "wait\0"
+				"\x1Epj|waitForActor,"
+				"\x1F|waitForMessage,"
+				"\x20|waitForCamera,"
+				"\x21|waitForSentence,"
+				"\x22pj|waitUntilActorDrawn,"
+				"\x23pj|waitUntilActorTurned,"
+				);
+		break;
 	case 0x6A:
 		ext("p|delay");
 		break;
@@ -1433,7 +1442,7 @@ void next_line_V8()
 		break;
 
 	case 0x79:
-		ext("lpp|startScript");
+		ext("lpp|startScriptEx");
 		break;
 	case 0x7A:
 		ext("lp|startScriptQuick");
@@ -1482,10 +1491,27 @@ void next_line_V8()
 		ext("pp|setOwner");
 		break;
 
+	case 0x8C:
+		ext("pp|panCameraTo");
+		break;
 	case 0x8D:
 		ext("p|actorFollowCamera");
 		break;
-
+	case 0x8E:
+		ext("pp|setCameraAt");
+		break;
+	case 0x8F:
+		ext("ps|talkActor");
+		break;
+	case 0x90:
+		ext("s|talkEgo");
+		break;
+	case 0x91:
+		ext("ps|talkActorSimple");
+		break;
+	case 0x92:
+		ext("s|talkEgoSimple");
+		break;
 	case 0x93:
 		ext("m" "printLine_\0"
 				"x" "printLine\0"
@@ -1615,6 +1641,9 @@ void next_line_V8()
 	case 0xA6:
 		ext("z|pickupObject");
 		break;
+	case 0xA7:
+		ext("pl|setBoxFlags");
+		break;
 
 	case 0xAA:
 		ext("x" "resourceRoutines\0"
@@ -1666,7 +1695,7 @@ void next_line_V8()
 				"\x6Bp|setActorStandFrame,"
 				"\x6C|setActorAnimSpeed,"
 				"\x6D|setActorDefault,"	// = initActorLittle ?
-				"\x6E|setActorElevation,"
+				"\x6Ep|setActorElevation,"
 				"\x6Fpp|setActorPalette,"
 				"\x70p|setActorTalkColor,"
 				"\x71s|setActorName,"
@@ -1740,6 +1769,10 @@ void next_line_V8()
 				"\x29|quit");
 		break;
 
+	case 0xB5:
+		ext("ps|setObjectName");
+		break;
+
 	case 0xB9:
 		ext("s|startVideo");
 		break;
@@ -1776,6 +1809,13 @@ void next_line_V8()
 				"\x76|blastShadowObject,"
 				"\x77|superBlastObject"
 				);
+		break;
+
+	case 0xC8:
+		ext("rlp|startScript");
+		break;
+	case 0xC9:
+		ext("lppp|startObject");
 		break;
 
 	case 0xCD:
@@ -1823,7 +1863,9 @@ void next_line_V8()
 				"\xE0|readRegistryValue"
 				);
 		break;
-
+	case 0xD9:
+		ext("rpp|isActorInBox");
+		break;
 	case 0xDA:
 		ext("rpp|getVerbEntrypoint");
 		break;
@@ -1879,7 +1921,12 @@ void next_line_V8()
 	case 0xED:
 		ext("rp|getActorAnimCounter1");
 		break;
-
+	case 0xEE:
+		ext("rpp|getDistObjObj");
+		break;
+	case 0xEF:
+		ext("rpppp|getDistPtPt");
+		break;
 	case 0xF0:
 		ext("rp|getObjectImageX");
 		break;
@@ -2255,7 +2302,7 @@ void next_line()
 				"\x51p|setActorStandFrame,"
 				"\x52ppp|actorSet:82:??,"
 				"\x53|initActor,"
-				"\x54|setActorElevation,"
+				"\x54p|setActorElevation,"
 				"\x55|setActorDefAnim,"
 				"\x56pp|setActorPalette,"
 				"\x57p|setActorTalkColor,"
