@@ -417,7 +417,7 @@ const char *var_names7[] = {
 	/* 64 */
 	"VAR_PAUSE_KEY",
 	"VAR_SAVELOADDIALOG_KEY",
-	"VAR_VERSION",
+	"VAR_VERSION_KEY",
 	"VAR_TALKSTOP_KEY",
 	/* 68 */
 	NULL,
@@ -593,7 +593,7 @@ const char *var_names8[] = {
 	/* 64 */
 	"VAR_PAUSE_KEY",
 	"VAR_SAVELOADDIALOG_KEY",
-	"VAR_VERSION",
+	"VAR_VERSION_KEY",
 	"VAR_TALKSTOP_KEY",
 	/* 68 */
 	NULL,
