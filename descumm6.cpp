@@ -2607,7 +2607,9 @@ void next_line_V67(char *output)
 					"\xCE|getRGBSlot"
 					);
 			else 
-				ext(output, "l|kernelGetFunctions");
+				ext(output, "ry" "kernelGetFunctions\0"
+					"\x71|virtMouseCoordinates"
+					);
 		}
 		break;
 	case 0xC9:
@@ -2636,8 +2638,28 @@ void next_line_V67(char *output)
 					"\xD7|setSubtitles,"
 					);
 		else 
-			// TODO - add subopcodes
-			ext(output, "l|kernelSetFunctions");
+			ext(output, "y" "kernelSetFunctions\0"
+					"\x3|dummy,"
+					"\x4|grabCursor,"
+					"\x5|fadeOut,"
+					"\x6|redrawScreen,"
+					"\x8|startManiac,"
+					"\x9|killAllScriptsExceptCurrent,"
+					"\x68|nukeFlObjects,"
+					"\x6B|setActorScale,"
+					"\x6C|setupShadowPalette,"
+					"\x6D|setupShadowPalette,"
+					"\x6E|clearCharsetMask,"
+					"\x6F|setActorShadowMode,"
+					"\x70|shiftShadowPalette,"
+					"\x72|noirMode,"
+					"\x75|freezeScripts,"
+					"\x77|superBlastObject,"
+					"\x78|swapPalColors,"
+					"\x7A|setSoundResult,"
+					"\x7B|copyPalColor,"
+					"\x7C|setSaveSound,"
+					);
 		break;
 	case 0xCA:
 		ext(output, "p|breakXTimes");
