@@ -18,6 +18,7 @@ install:   all
 	strip mm_nes_extract.exe -o $(SCUMMVMPATH)/tools/mm_nes_extract.exe
 	strip queenrebuild.exe -o $(SCUMMVMPATH)/tools/queenrebuild.exe
 	strip rescumm.exe -o $(SCUMMVMPATH)/tools/rescumm.exe
+	strip saga2mp3.exe -o $(SCUMMVMPATH)/tools/saga2mp3.exe
 	strip simon1decr.exe -o $(SCUMMVMPATH)/tools/simon1decr.exe
 	strip simon2mp3.exe -o $(SCUMMVMPATH)/tools/simon2mp3.exe
 	strip sword2mp3.exe -o $(SCUMMVMPATH)/tools/sword2mp3.exe
