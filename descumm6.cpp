@@ -1636,7 +1636,7 @@ void next_line_V8()
 		ext("pp|animateActor");
 		break;
 	case 0xA5:
-		ext("pppp|doSentence");
+		ext("ppp|doSentence");
 		break;
 	case 0xA6:
 		ext("z|pickupObject");
