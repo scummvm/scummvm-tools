@@ -2053,7 +2053,12 @@ void next_line_V67(char *output)
 	case 0x62:
 		ext(output, "ppp|drawObjectAt");
 		break;
-		/* *** */
+	case 0x63:
+		ext(output, "ppppp|drawBlastObject");
+		break;
+	case 0x64:
+		ext(output, "pppp|setBlastObjectWindow");
+		break;
 	case 0x65:
 		ext(output, "|stopObjectCodeA");
 		break;
