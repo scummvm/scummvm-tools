@@ -216,7 +216,7 @@ void get_part(void)
 		else
 			sprintf(fbuf_temp,"--vbr-new -b %i",encparms.minBitr);
 		if (encparms.silent == 1)
-                	strcat(fbuf_temp," --silent");
+			strcat(fbuf_temp," --silent");
 		sprintf(fbuf,
 		        "lame -t -q %i %s -V %i -B %i --resample 22.05 -m m --bitwidth 16 -r -s %d %s %s",
 		        encparms.algqual, fbuf_temp, encparms.vbrqual,
