@@ -1562,7 +1562,7 @@ void next_line_V8()
 				"\x77|setActorFollowBoxes,"
 				"\x78p|actorSpecialDraw,"
 				"\x79pp|setActorTalkPos,"
-				"\x7Ap|initActor,"			// = setCurActor ? 
+				"\x7Ap|setCurActor,"
 				"\x7Bpp|setActorAnimVar,"
 				"\x7C|setActorIgnoreTurnsOn,"
 				"\x7D|setActorIgnoreTurnsOff,"
