@@ -2624,7 +2624,6 @@ void next_line_V67(char *output)
 		if (scriptVersion == 7) 
 			ext(output, "y" "kernelSetFunctions\0"
 					"\x4|grabCursor,"
-					"\x5|fadeOut,"
 					"\x6|startVideo,"
 					"\xC|setCursorImg,"
 					"\xD|remapCostume,"
@@ -2633,6 +2632,7 @@ void next_line_V67(char *output)
 
 					"\x10|enqueueTextA,"
 					"\x11|enqueueTextB,"
+					"\x12|setMouseXY,"
 					"\x14|setRadioChatter,"
 
 					"\x6B|setActorScale,"
