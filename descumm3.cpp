@@ -2076,25 +2076,21 @@ void ShowHelpAndExit()
 	exit(0);
 }
 
-byte *skipVerbHeader(byte *p)
+int skipVerbHeader(byte *p)
 {
 	byte code;
-	byte *p2 = p;
-	int hdrlen;
+	int offset = 19;
 
-	while ((code = *p2++) != 0) {
-		p2 += sizeof(unsigned short);
-	}
+// two bytes obj id
 
 	printf("Events:\n");
 
-	hdrlen = p2 - p + 8;
-
 	while ((code = *p++) != 0) {
-		printf("  %2X - %.4X\n", code, *(unsigned short *)p - hdrlen);
+		offset = TO_LE_16(*(unsigned short *)p);
+		printf("  %2X - %.4X\n", code, offset);
 		p += sizeof(unsigned short);
 	}
-	return p;
+	return offset;
 }
 
 
@@ -2184,7 +2180,7 @@ int main(int argc, char *argv[])
 		mem += 6;
 		break;											/* Exit code */
 	case MKID('OC'):
-		mem = skipVerbHeader(mem + 6);
+		mem += skipVerbHeader(mem + 19);
 		break;											/* Verb */
 	default:
 		printf("Unknown script type!\n");
