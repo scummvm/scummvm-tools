@@ -589,9 +589,9 @@ void push(StackEnt * se)
 void invalidop(const char *cmd, int op)
 {
 	if (cmd)
-		printf("Unknown opcode %s:0x%x (stack count %d)\n", cmd, op, num_stack);
+		printf("ERROR: Unknown opcode %s:0x%x (stack count %d)\n", cmd, op, num_stack);
 	else
-		printf("Unknown opcode 0x%x (stack count %d)\n", op, num_stack);
+		printf("ERROR: Unknown opcode 0x%x (stack count %d)\n", op, num_stack);
 	exit(1);
 }
 
@@ -795,7 +795,7 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 StackEnt *pop()
 {
 	if (num_stack == 0) {
-		printf("No items on stack to pop!\n");
+		printf("ERROR: No items on stack to pop!\n");
 
 		if (!haltOnError)
 			return se_complex("**** INVALID DATA ****");
@@ -953,7 +953,7 @@ StackEnt *se_get_list()
 	int num, i;
 
 	if (senum->type != seInt) {
-		printf("stackList with variable number of arguments, cannot disassemble\n");
+		printf("ERROR: stackList with variable number of arguments, cannot disassemble\n");
 		exit(1);
 	}
 	se->data = num = senum->data;
@@ -1720,7 +1720,6 @@ void next_line_V8()
 		ext("ry" "kernelGetFunctions\0"
 				"\x73|getWalkBoxAt,"
 				"\x74|isPointInBox,"
-
 				"\xCE|getRGBSlot,"
 				"\xD3|getKeyState,"
 				"\xD7|getBox,"
@@ -2414,7 +2413,8 @@ void next_line_V67()
 		// TODO - add more subopcodes
 		ext("ry" "kernelGetFunctions\0"
 				"\x73|getWalkBoxAt,"
-				"\x74|isPointInBox"
+				"\x74|isPointInBox,"
+				"\xCE|getRGBSlot"
 				);
 		break;
 	case 0xC9:
@@ -2422,6 +2422,10 @@ void next_line_V67()
 		ext("y" "kernelSetFunctions\0"
 				"\x4|grabCursor,"
 				"\x5|fadeOut,"
+				"\xC|setCursorImg,"
+				"\xD|remapCostume,"
+				"\xE|remapCostumeInsert,"
+				"\xF|setVideoFrameRate,"
 
 				"\x6C|buildPaletteShadow,"
 				"\x6D|setPaletteShadow,"

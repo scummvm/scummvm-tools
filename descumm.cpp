@@ -185,7 +185,7 @@ const char *get_num_string(int i)
 	}
 
 	if (haltOnError && (s[0] == '?')) {
-		printf("%s out of range, was %d\n", s, i);
+		printf("ERROR: %s out of range, was %d\n", s, i);
 		exit(1);
 	}
 
@@ -549,7 +549,7 @@ void AddToExprStack(char *s)
 		ExprStack = (char **)malloc(sizeof(char *) * 256);
 
 	if (NumInExprStack >= 256) {
-		printf("Expression stack overflow!\n");
+		printf("ERROR: Expression stack overflow!\n");
 		exit(0);
 
 	}
@@ -1424,8 +1424,8 @@ void do_if_code(char *buf, byte opcode)
 		break;
 	default:
 		/* Exit, this should never happen, only if my code is buggy */
-		printf("Unknown IF code %x", opcode);
-		exit(0);
+		printf("ERROR: Unknown IF code %x", opcode);
+		exit(1);
 	}
 
 	if (opcode == 0x28 || opcode == 0xA8) {
@@ -1458,7 +1458,7 @@ void do_if_state_code(char *buf, byte opcode)
 			break;
 		default:
 			/* Exit, this should never happen, only if my code is buggy */
-			printf("Unknown IF code %x", opcode);
+			printf("ERROR: Unknown IF code %x", opcode);
 			exit(1);
 		}
 
@@ -1507,7 +1507,7 @@ void do_if_state_code(char *buf, byte opcode)
 			break;
 		default:
 			/* Exit, this should never happen, only if my code is buggy */
-			printf("Unknown IF code %x", opcode);
+			printf("ERROR: Unknown IF code %x", opcode);
 			exit(1);
 		}
 	}
@@ -1567,8 +1567,8 @@ void do_varset_code(char *buf, byte opcode)
 		break;											/* increment & decrement */
 	default:
 		/* Exit, this should never happen, only if my code is buggy */
-		printf("Unknown VARSET code %x", opcode);
-		exit(0);
+		printf("ERROR: Unknown VARSET code %x", opcode);
+		exit(1);
 	}
 
 	buf = strecpy(buf, s);
@@ -2188,7 +2188,7 @@ void get_tok_V2(char *buf)
 		break;
 
 	default:
-		printf("Unknown opcode %.2X\n", opcode);
+		printf("ERROR: Unknown opcode %.2X\n", opcode);
 		exit(1);
 	}
 }
@@ -2902,10 +2902,10 @@ void get_tok_V345(char *buf)
 
 	default:
 		if (haltOnError) {
-			printf("Unknown opcode %.2X\n", opcode);
+			printf("ERROR: Unknown opcode %.2X\n", opcode);
 			exit(1);
 		}
-		sprintf(buf, "Unknown opcode %.2X!", opcode);
+		sprintf(buf, "ERROR: Unknown opcode %.2X!", opcode);
 	}
 }
 
