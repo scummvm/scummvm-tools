@@ -23,56 +23,7 @@
 #ifndef DESCUMM_H
 #define DESCUMM_H
 
-#include <assert.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef WIN32
-#include <io.h>
-#include <process.h>
-#endif
-
-//
-// Various utility macros
-//
-
-#define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
-
-typedef unsigned char byte;
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-typedef unsigned int uint;
-typedef signed char int8;
-typedef signed short int16;
-typedef signed int int32;
-
-uint32 inline SWAP_32(uint32 a)
-{
-	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
-		((a << 24) & 0xFF000000);
-}
-
-uint16 inline SWAP_16(uint16 a)
-{
-	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
-}
-
-#if defined(SCUMM_BIG_ENDIAN)
-#define TO_BE_32(a) (a)
-#define TO_BE_16(a) (a)
-#define TO_LE_32(a) SWAP_32(a)
-#define TO_LE_16(a) SWAP_16(a)
-#else
-#define TO_BE_32(a) SWAP_32(a)
-#define TO_BE_16(a) SWAP_16(a)
-#define TO_LE_32(a) (a)
-#define TO_LE_16(a) (a)
-#endif
-
-#define MKID(a) (((a&0xff) << 8) | ((a >> 8)&0xff))
+#include "util.h"
 
 
 //

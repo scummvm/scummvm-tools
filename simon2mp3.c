@@ -1,5 +1,5 @@
 /* Simon2mp3 - Compress Simon the Sorcerer 1/2 digital sound files into MP3-format
- * Copyright (C) 2002  The ScummVM Team
+ * Copyright (C) 2002, 2003  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,25 +19,8 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-
-#if !defined(_MSC_VER)
-#include <unistd.h>
-#endif
-
-/* These are the defaults parameters for the Lame invocation */
-#define minBitrDef 24
-#define maxBitrDef 64
-#define abrDef 0
-#define vbrDef 1
-#define algqualDef 2
-#define vbrqualDef 4
-
-/* The default for oggenc invocation is to use the --quality option only */
-#define oggqualDef 3
+#include "util.h"
+#include "extract.h"
 
 FILE *input, *output_idx, *output_snd;
 
@@ -167,7 +150,7 @@ int get_offsets(void)
 
 	for (i = 0;; i++) {
 		get_string(8);
-		if (!strncmp(buf, "Creative", 8) || !strncmp(buf, "RIFF", 4)) {
+		if (!memcmp(buf, "Creative", 8) || !memcmp(buf, "RIFF", 4)) {
 			return(i);
 		}
 		fseek(input, -8, SEEK_CUR);
@@ -204,10 +187,10 @@ unsigned int get_sound(int sound)
 	fseek(input, offsets[sound], SEEK_SET);
 
 	get_string(8);
-	if (!strncmp(buf, "Creative", 8)) {
+	if (!memcmp(buf, "Creative", 8)) {
 		printf("VOC found (pos = %d) :\n", offsets[sound]);
 		get_voc();
-	} else if (!strncmp(buf, "RIFF", 4)) {
+	} else if (!memcmp(buf, "RIFF", 4)) {
 		printf("WAV found (pos = %d) :\n", offsets[sound]);
 		get_wav();
 	} else {

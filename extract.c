@@ -1,5 +1,5 @@
 /* Extract - monster.sou to MP3-compressed monster.so3 converter
- * Copyright (C) 2002  The ScummVM Team
+ * Copyright (C) 2002, 2003  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,28 +19,8 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-
-#if !defined(_MSC_VER)
-#include <unistd.h>
-#endif
-
-typedef unsigned int uint32;
-typedef unsigned char byte;
-
-/* These are the defaults parameters for the Lame invocation */
-#define minBitrDef 24
-#define maxBitrDef 64
-#define abrDef 0
-#define vbrDef 1
-#define algqualDef 2
-#define vbrqualDef 4
-
-/* The default for oggenc invocation is to use the --quality option only */
-#define oggqualDef 3
+#include "util.h"
+#include "extract.h"
 
 FILE *input, *output_idx, *output_snd;
 
