@@ -2294,8 +2294,8 @@ void next_line_V67(char *output)
 					"\xBApppp|palManipulate,"
 					"\xBBpp|colorCycleDelay,"
 					"\xD5p|setPalette,"
-					"\xDCpp|drawObjectAt,"
-					"\xDDsp|drawObjectImage");
+					"\xDCpp|roomFunc220,"
+					"\xDDsp|saveLoadThing2");
 		else
 			ext(output, "x" "roomOps\0"
 					"\xACpp|roomScroll,"
@@ -2310,7 +2310,8 @@ void next_line_V67(char *output)
 					"\xB7ppppp|setupShadowPalette,"
 					"\xBApppp|palManipulate,"
 					"\xBBpp|colorCycleDelay,"
-					"\xD5p|setPalette");
+					"\xD5p|setPalette,"
+					"\xDCpp|roomFunc220");
 		break;
 	case 0x9D:
 		ext(output, "x" "actorOps\0"
