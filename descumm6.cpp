@@ -2597,7 +2597,9 @@ void next_line_V67(char *output)
 		break;
 	case 0xEA:
 		if (HumongousFlag)
-			ext(output, "pp|redimArray");
+			ext(output, "x" "redimArray\0"
+					"\xC7ppw|to3,"
+					"\xCAppw|to5");
 		else
 			invalidop(NULL, code);
 		break;
