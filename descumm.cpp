@@ -101,11 +101,67 @@ bool GF_UNBLOCKED = false;
 void emit_if(char *buf, char *condition);
 
 
+const char *var_names2[] = {
+	/* 0 */
+	"VAR_EGO",
+	NULL,
+	"VAR_CAMERA_POS_X",
+	"VAR_HAVE_MSG",
+	/* 4 */
+	"VAR_ROOM",
+	"VAR_OVERRIDE",
+	"VAR_MACHINE_SPEED",
+	"VAR_CHARCOUNT",
+	/* 8 */
+	NULL,
+	NULL,
+	NULL,
+	"VAR_NUM_ACTOR",
+	/* 12 */
+	"VAR_CURRENT_LIGHTS",
+	"VAR_CURRENTDRIVE",
+	NULL,
+	NULL,
+	/* 16 */
+	NULL,
+	"VAR_MUSIC_TIMER",
+	NULL,
+	"VAR_ACTOR_RANGE_MIN",
+	/* 20 */
+	"VAR_ACTOR_RANGE_MAX",
+	NULL,
+	NULL,
+	"VAR_CAMERA_MIN_X",
+	/* 24 */
+	"VAR_CAMERA_MAX_X",
+	"VAR_TIMER_NEXT",
+	"VAR_SENTENCE_VERB",
+	"VAR_SENTENCE_OBJECT1",
+	/* 28 */
+	"VAR_SENTENCE_OBJECT2",
+	NULL,
+	"VAR_VIRT_MOUSE_X",
+	"VAR_VIRT_MOUSE_>",
+	/* 32 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 36 */
+	"VAR_ROOM_RESOURCE",
+	"VAR_LAST_SOUND",
+	NULL,
+	"VAR_KEYPRESS",
+	/* 40 */
+	"VAR_CUTSCENEEXIT_KEY",
+	"VAR_TALK_ACTOR",
+	NULL,
+	NULL
+};
 
 const char *get_num_string(int i)
 {
 	const char *s;
-
 
 	if (i & 0x8000) {							/* Bit var */
 		if ((i & 0xFFF) >= 0x800)
@@ -135,7 +191,6 @@ const char *get_num_string(int i)
 
 char *get_var(char *buf)
 {
-	char *buf2;
 	int i;
 
 	if (scriptVersion == 2)
@@ -143,25 +198,25 @@ char *get_var(char *buf)
 	else
 		i = get_word();
 
-	// FIXME this should be for zak256 as well
-	if ((i & 0x8000) && (GF_UNBLOCKED)) 
-		sprintf(buf, "Var[%d Bit %d", (i & 0x0FFF) >> 4, i & 0x000F);
+	if (scriptVersion == 2 && i < ARRAYSIZE(var_names2) && var_names2[i]) {
+		buf += sprintf(buf, var_names2[i]);
+		return buf;
+	} else if ((i & 0x8000) && (GF_UNBLOCKED)) 	// FIXME this should be for zak256 as well
+		buf += sprintf(buf, "Var[%d Bit %d", (i & 0x0FFF) >> 4, i & 0x000F);
 	else
-		sprintf(buf, "%s[%d", get_num_string(i), i & 0xFFF);
-
-	buf2 = strchr(buf, 0);
+		buf += sprintf(buf, "%s[%d", get_num_string(i), i & 0xFFF);
 
 	if (i & 0x2000) {
 		int j = get_word();
 		if (j & 0x2000) {
 			j ^= 0x2000;
-			sprintf(buf2, " + %s[%d]", get_num_string(j), j & 0xFFF);
+			sprintf(buf, " + %s[%d]", get_num_string(j), j & 0xFFF);
 		} else
-			sprintf(buf2, " + %d", j & 0xFFF);
+			sprintf(buf, " + %d", j & 0xFFF);
 	}
-	strcat(buf2, "]");
+	strcat(buf, "]");
 
-	return strchr(buf2, 0);
+	return strchr(buf, 0);
 
 }
 
