@@ -22,10 +22,7 @@
 
 #include <string.h>
 #include <stdio.h>
-
-//#ifdef UNIX
 #include <ctype.h>
-//#endif
 
 #ifdef WIN32
 #include <io.h>
@@ -432,9 +429,181 @@ const char *var_names7[] = {
 	"VAR_CUSTOMSCALETABLE",
 };
 
+const char *var_names8[] = {
+	/* 0 */
+	NULL,
+	"room_width?",
+	"room_height?",
+	"cursor_screen_x",
+	/* 4 */
+	"cursor_screen_y",
+	"cursor_x",
+	"cursor_y",
+	"cursor_state?",
+	/* 8 */
+	"userface_state?",
+	"camera_x",
+	"camera_y",
+	"camera_dest_x",
+	/* 12 */
+	"camera_dest_y",
+	NULL,
+	NULL,
+	NULL,
+	/* 16 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 20 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 24 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 28 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 32 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 48 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 64 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 80 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 96 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 112 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* XXX */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 128 */
+	NULL,
+	NULL,
+	"sputm_debug",
+	NULL,
+};
+
 const char *getVarName(uint var)
 {
-	if (scriptVersion == 7) {
+	if (scriptVersion == 8) {
+		if (var >= sizeof(var_names8) / sizeof(var_names8[0]))
+			return NULL;
+		return var_names8[var];
+	} else if (scriptVersion == 7) {
 		if (var >= sizeof(var_names7) / sizeof(var_names7[0]))
 			return NULL;
 		return var_names7[var];
@@ -471,7 +640,7 @@ int get_byte()
 	return (byte)(*cur_pos++);
 }
 
-int get_word()
+uint get_word()
 {
 	int i;
 
@@ -484,6 +653,18 @@ int get_word()
 	}
 	return i;
 }
+
+int get_signed_word()
+{
+	uint i = get_word();
+
+	if (scriptVersion == 8) {
+		return (int32)i;
+	} else {
+		return (int16)i;
+	}
+}
+
 
 
 byte *skipVerbHeader(byte *p)
@@ -573,7 +754,6 @@ StackEnt *se_complex(char *s)
 	return se;
 }
 
-
 char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 {
 	int i;
@@ -585,18 +765,34 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 		where += sprintf(where, "%ld", se->data);
 		break;
 	case seVar:
-		if (!(se->data & 0xF000)) {
-			var = se->data & 0xFFF;
-			if ((s = getVarName(var)) != NULL)
-				where = strecpy(where, s);
-			else
-				where += sprintf(where, "var[%ld]", se->data & 0xFFF);
-		} else if (se->data & 0x8000) {
-			where += sprintf(where, "bitvar[%ld]", se->data & 0x7FFF);
-		} else if (se->data & 0x4000) {
-			where += sprintf(where, "localvar[%ld]", se->data & 0xFFF);
+		if (scriptVersion == 8) {
+			if (!(se->data & 0xF0000000)) {
+				var = se->data & 0xFFFFFFF;
+				if ((s = getVarName(var)) != NULL)
+					where = strecpy(where, s);
+				else
+					where += sprintf(where, "var[%ld]", se->data & 0xFFFFFFF);
+			} else if (se->data & 0x80000000) {
+				where += sprintf(where, "bitvar[%ld]", se->data & 0x7FFFFFFF);
+			} else if (se->data & 0x40000000) {
+				where += sprintf(where, "localvar[%ld]", se->data & 0xFFFFFFF);
+			} else {
+				where += sprintf(where, "??var??[%ld]", se->data & 0xFFFFFFFF);
+			}
 		} else {
-			where += sprintf(where, "??var??[%ld]", se->data & 0xFFFF);
+			if (!(se->data & 0xF000)) {
+				var = se->data & 0xFFF;
+				if ((s = getVarName(var)) != NULL)
+					where = strecpy(where, s);
+				else
+					where += sprintf(where, "var[%ld]", se->data & 0xFFF);
+			} else if (se->data & 0x8000) {
+				where += sprintf(where, "bitvar[%ld]", se->data & 0x7FFF);
+			} else if (se->data & 0x4000) {
+				where += sprintf(where, "localvar[%ld]", se->data & 0xFFF);
+			} else {
+				where += sprintf(where, "??var??[%ld]", se->data & 0xFFFF);
+			}
 		}
 		break;
 	case seArray:
@@ -758,6 +954,16 @@ StackEnt *se_get_string()
 			case 2:
 				e += sprintf(e, ":keeptext:");
 				break;
+			case 4:	// V8 - TODO
+				{
+				StackEnt foo;
+				foo.type = seVar;
+				foo.data = get_word();
+				e += sprintf(e, ":");
+				e = se_astext(&foo, e);
+				e += sprintf(e, ":");
+				}
+				break;
 			case 9:
 				e += sprintf(e, ":startanim=%d:", get_word());
 				break;
@@ -798,7 +1004,7 @@ StackEnt *se_get_list()
 	int num, i;
 
 	if (senum->type != seInt) {
-		printf("stackList with variable number of arguments, cannot disassemble");
+		printf("stackList with variable number of arguments, cannot disassemble\n");
 		exit(1);
 	}
 	se->data = num = senum->data;
@@ -987,7 +1193,7 @@ int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 void jump()
 {
 	int cur = get_curoffs() + 2;
-	int to = cur + (int16)get_word();
+	int to = cur + get_signed_word();
 
 	if (!dontOutputElse && maybeAddElse(cur, to)) {
 		pendingElse = true;
@@ -1003,7 +1209,9 @@ void jump()
 void jumpif(StackEnt * se, bool when)
 {
 	int cur = get_curoffs() + 2;
-	int to = cur + (int16)get_word();
+	int offset = get_signed_word();
+	int to = cur + offset;
+	printf("jumpif: %d, %d, %d\n", cur, offset, to);
 	char *e = output;
 
 	if (!dontOutputElseif && pendingElse) {
@@ -1102,6 +1310,7 @@ void next_line_V8()
 	case 0x16:
 		push(se_oper(pop(), operMod, pop()));
 		break;
+
 	case 0x64:
 		jumpif(pop(), true);
 		break;
@@ -1111,14 +1320,19 @@ void next_line_V8()
 	case 0x66:
 		jump();
 		break;
+	case 0x67:
+		ext("|break");
+		break;
 	case 0x6D:
 		writeVar(get_word(), pop());
 		break;
 
 	case 0x79:
-		ext("lp|startScript");
+		ext("lpp|startScript");
+		break;
 	case 0x7A:
 		ext("lp|startScriptQuick");
+		break;
 
 	case 0x9C:
 		ext("x" "cursorCommand\0"
@@ -1138,7 +1352,7 @@ void next_line_V8()
 		break;
 	case 0x95:
 		ext("m" "printDebug_\0"
-				"x" "printDebug_\0"
+				"x" "printDebug\0"
 				"\xC8|baseop,"
 				"\xC9|end,"
 				"\xCApp|XY,"
