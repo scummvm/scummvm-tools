@@ -19,7 +19,7 @@
  *
  */
 
-#include "extract.h"
+#include "compress.h"
 
 #define READ_BE_UINT32(x) \
 	((((uint8*)(x))[0] << 24) | (((uint8*)(x))[1] << 16) | (((uint8*)(x))[2] << 8) | (((uint8*)(x))[3] << 0))
@@ -523,7 +523,7 @@ void compressMusic(CompressMode compMode) {
 }
 
 void processArgs(int argc, char *argv[], int i, CompressMode mode) {
-	/* HACK: the functions in extract-common expect the last argument to be a filename. */
+	/* HACK: the functions in compress.c expect the last argument to be a filename. */
 	/*       As we don't expect one, we simply add a dummy argument to the list. */
 	char **args;
 	int cnt;

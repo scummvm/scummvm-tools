@@ -19,7 +19,7 @@
  *
  */
 
-#include "extract.h"
+#include "compress.h"
 
 static FILE *input, *output_idx, *output_snd;
 

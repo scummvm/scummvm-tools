@@ -19,7 +19,7 @@
  *
  */
 
-#include "extract.h"
+#include "compress.h"
 
 #define TEMP_IDX	"tempfile.idx"
 #define TEMP_DAT	"tempfile.dat"

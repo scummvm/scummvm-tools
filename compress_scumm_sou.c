@@ -19,7 +19,7 @@
  *
  */
 
-#include "extract.h"
+#include "compress.h"
 
 
 static const char f_hdr[] = {

@@ -19,7 +19,7 @@
  *
  */
 
-#include "extract.h"
+#include "compress.h"
 
 typedef struct  {
 	uint32 minBitr;

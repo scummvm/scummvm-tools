@@ -21,7 +21,7 @@
  */
 
 #include <stdio.h>
-#include "extract.h"
+#include "compress.h"
 
 typedef struct RECORD {
 	uint32 offset;

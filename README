@@ -30,7 +30,7 @@ Compression Tools:
                 Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
                 or .sof (FLAC).
 
-        queenrebuild
+        compress_queen
                 Used to rebuild the datafile of Flight of the Amazon Queen,
                 to allow optional MP3/Ogg/FLAC compression.
 

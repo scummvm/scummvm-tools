@@ -16,21 +16,21 @@ CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
 # CFLAGS += -DSCUMM_BIG_ENDIAN
 
 TARGETS := \
+	compress_queen$(EXEEXT) \
+	compress_saga$(EXEEXT) \
 	compress_san$(EXEEXT) \
-	descumm$(EXEEXT) \
-	desword2$(EXEEXT) \
-	dekyra$(EXEEXT) \
-	kyra_unpak$(EXEEXT) \
 	compress_scumm_sou$(EXEEXT) \
-	loom_tg16_extract$(EXEEXT) \
-	mm_nes_extract$(EXEEXT) \
-	queenrebuild$(EXEEXT) \
-	rescumm$(EXEEXT) \
-	simon1decr$(EXEEXT) \
 	compress_simon$(EXEEXT) \
 	compress_sword1$(EXEEXT) \
 	compress_sword2$(EXEEXT) \
-	compress_saga$(EXEEXT)
+	dekyra$(EXEEXT) \
+	descumm$(EXEEXT) \
+	desword2$(EXEEXT) \
+	kyra_unpak$(EXEEXT) \
+	loom_tg16_extract$(EXEEXT) \
+	mm_nes_extract$(EXEEXT) \
+	rescumm$(EXEEXT) \
+	simon1decr$(EXEEXT)
 
 all: $(TARGETS)
 
@@ -49,7 +49,7 @@ dekyra$(EXEEXT): dekyra.o util.o
 kyra_unpak$(EXEEXT): kyra_unpak.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-compress_scumm_sou$(EXEEXT): compress_scumm_sou.o extract-common.o util.o
+compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 loom_tg16_extract$(EXEEXT): loom_tg16_extract.o
@@ -58,30 +58,30 @@ loom_tg16_extract$(EXEEXT): loom_tg16_extract.o
 mm_nes_extract$(EXEEXT): mm_nes_extract.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-queenrebuild$(EXEEXT): queenrebuild.o util.o
+compress_queen$(EXEEXT): compress_queen.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 rescumm$(EXEEXT): rescumm.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-compress_saga$(EXEEXT): compress_saga.o extract-common.o util.o
+compress_saga$(EXEEXT): compress_saga.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 simon1decr$(EXEEXT): simon1decr.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-compress_simon$(EXEEXT): compress_simon.o extract-common.o util.o
+compress_simon$(EXEEXT): compress_simon.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-compress_sword1$(EXEEXT): compress_sword1.o extract-common.o util.o
+compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-compress_sword2$(EXEEXT): compress_sword2.o extract-common.o util.o
+compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
-compress_saga.o compress_scumm_sou.o compress_simon.o compress_sword1.o compress_sword2.o extract-common.o: util.h extract.h
-desword2.o queenrebuild.o rescumm.o util.o: util.h
+compress_saga.o compress_scumm_sou.o compress_simon.o compress_sword1.o compress_sword2.o compress.o: util.h compress.h
+desword2.o compress_queen.o rescumm.o util.o: util.h
 
 clean:
 	rm -f *.o $(TARGETS)

@@ -43,7 +43,7 @@
 typedef enum { kMP3Mode, kVorbisMode, kFlacMode } CompressMode;
 
 /*
- * Stuff which is in extract-common.c
+ * Stuff which is in compress.c
  */
 
 const extern char *tempEncoded;
