@@ -7,6 +7,7 @@ Maniac Mansion
 	V2 (DOTT)	DOS	it	87f6e8037b7cc996e13474b491a7a98e	maniac	Andrea Petrucci
 	V2	DOS	fr	114acdc2659a273c220f86ee9edb24c1	maniac	Nicolas Sauz&egrave;de
 	V2 (DOTT)	DOS	fr	99a3699f80b8f776efae592b44b9b991	maniac	Nicolas Sauz&egrave;de, Andrea Petrucci
+	V2 (demo)	DOS	en	40564ec47da48a67787d1f9bd043902a	maniac
 	V2	Amiga	en	e781230da44a44e2f0770edb2b3b3633	maniac	dhewg, Andrea Petrucci
 	V2	Amiga	de	9bc548e179cdb0767009401c094d0895	maniac	Norbert Lange
 	V2	Atari	en	a570381b028972d891052ee1e51dc011	maniac	Andreas Bylund
