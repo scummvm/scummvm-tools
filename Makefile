@@ -18,6 +18,7 @@ CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
 TARGETS := \
 	convbdf$(EXEEXT) \
 	descumm$(EXEEXT) \
+	desword2$(EXEEXT) \
 	extract$(EXEEXT) \
 	mm_nes_extract$(EXEEXT) \
 	queenrebuild$(EXEEXT) \
@@ -31,6 +32,9 @@ convbdf$(EXEEXT): convbdf.o util.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
 descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
+	$(CXX) $(LFLAGS) -o $@ $+
+
+desword2$(EXEEXT): desword2.o util.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
 extract$(EXEEXT): extract.o extract-common.o util.o
