@@ -157,7 +157,75 @@ const char *var_names2[] = {
 	NULL
 };
 
-const char *var_names345[] = {
+const char *var_names3[] = {
+	/* 0 */
+	"VAR_RESULT",
+	"VAR_EGO",
+	"VAR_CAMERA_POS_X",
+	"VAR_HAVE_MSG",
+	/* 4 */
+	"VAR_ROOM",
+	"VAR_OVERRIDE",
+	"VAR_MACHINE_SPEED",
+	"VAR_ME",
+	/* 8 */
+	"VAR_NUM_ACTOR",
+	"VAR_CURRENT_LIGHTS",
+	"VAR_CURRENTDRIVE",
+	"VAR_TMR_1",
+	/* 12 */
+	"VAR_TMR_2",
+	"VAR_TMR_3",
+	"VAR_MUSIC_TIMER",
+	"VAR_ACTOR_RANGE_MIN",
+	/* 16 */
+	"VAR_ACTOR_RANGE_MAX",
+	"VAR_CAMERA_MIN_X",
+	"VAR_CAMERA_MAX_X",
+	"VAR_TIMER_NEXT",
+	/* 20 */
+	"VAR_VIRT_MOUSE_X",
+	"VAR_VIRT_MOUSE_Y",
+	"VAR_ROOM_RESOURCE",
+	"VAR_LAST_SOUND",
+	/* 24 */
+	"VAR_CUTSCENEEXIT_KEY",
+	"VAR_TALK_ACTOR",
+	"VAR_CAMERA_FAST_X",
+	NULL,
+	/* 28 */
+	"VAR_ENTRY_SCRIPT",
+	"VAR_ENTRY_SCRIPT2",
+	"VAR_EXIT_SCRIPT",
+	"VAR_EXIT_SCRIPT2",
+	/* 32 */
+	"VAR_VERB_SCRIPT",
+	"VAR_SENTENCE_SCRIPT",
+	"VAR_INVENTORY_SCRIPT",
+	"VAR_CUTSCENE_START_SCRIPT",
+	/* 36 */
+	"VAR_CUTSCENE_END_SCRIPT",
+	"VAR_CHARINC",
+	"VAR_WALKTO_OBJ",
+	NULL,
+	/* 40 */
+	NULL,
+	NULL,
+	"VAR_RESTART_KEY",
+	"VAR_PAUSE_KEY",
+	/* 44 */
+	"VAR_MOUSE_X",
+	"VAR_MOUSE_Y",
+	"VAR_TIMER",
+	"VAR_TMR_4",
+	/* 48 */
+	"VAR_SOUNDCARD",
+	"VAR_VIDEOMODE",
+	NULL,
+	NULL
+};
+
+const char *var_names4[] = {
 	/* 0 */
 	"VAR_RESULT",
 	"VAR_EGO",
@@ -207,9 +275,98 @@ const char *var_names345[] = {
 	"VAR_CUTSCENE_END_SCRIPT",
 	"VAR_CHARINC",
 	"VAR_WALKTO_OBJ",
-	NULL,
+	"VAR_DEBUGMODE",
 	/* 40 */
+	"VAR_HEAPSPACE",
 	NULL,
+	"VAR_RESTART_KEY",
+	"VAR_PAUSE_KEY",
+	/* 44 */
+	"VAR_MOUSE_X",
+	"VAR_MOUSE_Y",
+	"VAR_TIMER",
+	"VAR_TMR_4",
+	/* 48 */
+	"VAR_SOUNDCARD",
+	"VAR_VIDEOMODE",
+	"VAR_MAINMENU_KEY",
+	"VAR_FIXEDDISK",
+	/* 52 */
+	"VAR_CURSORSTATE",
+	"VAR_USERPUT",
+	"VAR_V5_TALK_STRING_Y",
+	/* Loom CD specific */
+	NULL,
+	/* 56 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 60 */
+	"VAR_NOSUBTITLES",
+	NULL,
+	NULL,
+	NULL,
+	/* 64 */
+	"VAR_SOUNDPARAM",
+	"VAR_SOUNDPARAM2",
+	"VAR_SOUNDPARAM3",
+	NULL
+};
+
+const char *var_names5[] = {
+	/* 0 */
+	"VAR_RESULT",
+	"VAR_EGO",
+	"VAR_CAMERA_POS_X",
+	"VAR_HAVE_MSG",
+	/* 4 */
+	"VAR_ROOM",
+	"VAR_OVERRIDE",
+	"VAR_MACHINE_SPEED",
+	"VAR_ME",
+	/* 8 */
+	"VAR_NUM_ACTOR",
+	"VAR_CURRENT_LIGHTS",
+	"VAR_CURRENTDRIVE",
+	"VAR_TMR_1",
+	/* 12 */
+	"VAR_TMR_2",
+	"VAR_TMR_3",
+	"VAR_MUSIC_TIMER",
+	"VAR_ACTOR_RANGE_MIN",
+	/* 16 */
+	"VAR_ACTOR_RANGE_MAX",
+	"VAR_CAMERA_MIN_X",
+	"VAR_CAMERA_MAX_X",
+	"VAR_TIMER_NEXT",
+	/* 20 */
+	"VAR_VIRT_MOUSE_X",
+	"VAR_VIRT_MOUSE_Y",
+	"VAR_ROOM_RESOURCE",
+	"VAR_LAST_SOUND",
+	/* 24 */
+	"VAR_CUTSCENEEXIT_KEY",
+	"VAR_TALK_ACTOR",
+	"VAR_CAMERA_FAST_X",
+	"VAR_SCROLL_SCRIPT",
+	/* 28 */
+	"VAR_ENTRY_SCRIPT",
+	"VAR_ENTRY_SCRIPT2",
+	"VAR_EXIT_SCRIPT",
+	"VAR_EXIT_SCRIPT2",
+	/* 32 */
+	"VAR_VERB_SCRIPT",
+	"VAR_SENTENCE_SCRIPT",
+	"VAR_INVENTORY_SCRIPT",
+	"VAR_CUTSCENE_START_SCRIPT",
+	/* 36 */
+	"VAR_CUTSCENE_END_SCRIPT",
+	"VAR_CHARINC",
+	"VAR_WALKTO_OBJ",
+	"VAR_DEBUGMODE",
+	/* 40 */
+	"VAR_HEAPSPACE",
 	NULL,
 	"VAR_RESTART_KEY",
 	"VAR_PAUSE_KEY",
@@ -234,18 +391,28 @@ const char *var_names345[] = {
 	NULL,
 	NULL,
 	/* 60 */
-	NULL,
+	"VAR_NOSUBTITLES",
 	NULL,
 	NULL,
 	NULL,
 	/* 64 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"VAR_SOUNDPARAM",
+	"VAR_SOUNDPARAM2",
+	"VAR_SOUNDPARAM3",
+	"VAR_MOUSEPRESENT",
 	/* 68 */
 	"VAR_PERFORMANCE_1",
 	"VAR_PERFORMANCE_2",
+	"VAR_ROOM_FLAG",
+	"VAR_GAME_LOADED",
+	/* 72 */
+	"VAR_NEW_ROOM",
+	NULL,
+	NULL,
+	NULL,
+	/* 76 */
+	NULL,
+	NULL,
 	NULL,
 	NULL
 };
@@ -299,8 +466,16 @@ char *get_var(char *buf)
 		buf += sprintf(buf, var_names2[i]);
 		return buf;
 	} else if (scriptVersion >= 3 && 
-			i < ARRAYSIZE(var_names345) && var_names345[i]) {
-		buf += sprintf(buf, var_names345[i]);
+			i < ARRAYSIZE(var_names3) && var_names3[i]) {
+		buf += sprintf(buf, var_names3[i]);
+		return buf;
+	} else if (scriptVersion >= 4 && 
+			i < ARRAYSIZE(var_names4) && var_names4[i]) {
+		buf += sprintf(buf, var_names4[i]);
+		return buf;
+	} else if (scriptVersion >= 5 && 
+			i < ARRAYSIZE(var_names5) && var_names5[i]) {
+		buf += sprintf(buf, var_names5[i]);
 		return buf;
 	} else if ((i & 0x8000) && (GF_UNBLOCKED || ZakFlag))
 		buf += sprintf(buf, "Var[%d Bit %d", (i & 0x0FFF) >> 4, i & 0x000F);
