@@ -2080,20 +2080,38 @@ void next_line_V67()
 				"\x77z|loadFlObject");
 		break;
 	case 0x9C:
-		ext("x" "roomOps\0"
-				"\xACpp|roomScroll,"
-				"\xAEpp|setScreen,"
-				"\xAFpppp|setPalColor,"
-				"\xB0|shakeOn,"
-				"\xB1|shakeOff,"
-				"\xB3ppp|darkenPalette,"
-				"\xB4pp|saveLoadThing,"
-				"\xB5p|screenEffect,"
-				"\xB6ppppp|darkenPalette,"
-				"\xB7ppppp|setupShadowPalette,"
-				"\xBApppp|palManipulate,"
-				"\xBBpp|colorCycleDelay,"
-				"\xD5p|setPalette");
+		if (HumongousFlag)
+			ext("x" "roomOps\0"
+					"\xACpp|roomScroll,"
+					"\xAEpp|setScreen,"
+					"\xAFpppp|setPalColor,"
+					"\xB0|shakeOn,"
+					"\xB1|shakeOff,"
+					"\xB3ppp|darkenPalette,"
+					"\xB4pp|saveLoadThing,"
+					"\xB5p|screenEffect,"
+					"\xB6ppppp|darkenPalette,"
+					"\xB7ppppp|setupShadowPalette,"
+					"\xBApppp|palManipulate,"
+					"\xBBpp|colorCycleDelay,"
+					"\xD5p|setPalette,"
+					"\xDCpp|drawObjectAt,"
+					"\xDDsp|drawObjectImage");
+		else
+			ext("x" "roomOps\0"
+					"\xACpp|roomScroll,"
+					"\xAEpp|setScreen,"
+					"\xAFpppp|setPalColor,"
+					"\xB0|shakeOn,"
+					"\xB1|shakeOff,"
+					"\xB3ppp|darkenPalette,"
+					"\xB4pp|saveLoadThing,"
+					"\xB5p|screenEffect,"
+					"\xB6ppppp|darkenPalette,"
+					"\xB7ppppp|setupShadowPalette,"
+					"\xBApppp|palManipulate,"
+					"\xBBpp|colorCycleDelay,"
+					"\xD5p|setPalette");
 		break;
 	case 0x9D:
 		ext("x" "actorOps\0"
@@ -2396,6 +2414,15 @@ void next_line_V67()
 	case 0xDD:
 		ext("rp|findAllObjects");
 		break;
+	case 0xDE:
+		ext("s|deleteFile");
+		break;
+	case 0xDF:
+		if (HumongousFlag)
+			ext("ss|renameFile");
+		else
+			invalidop(NULL, code);
+		break;
 	case 0xE0:
 		ext("x" "p|unknownEO\0" 
 			"\xDEp|unknownE0-DE,"
@@ -2406,9 +2433,6 @@ void next_line_V67()
 		break;
 	case 0xE2:
 		ext("p|localizeArray");
-		break;
-	case 0xDE:
-		ext("s|deleteFile");
 		break;
 	case 0xEC:
 		ext("rp|getActorLayer");
