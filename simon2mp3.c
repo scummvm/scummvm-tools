@@ -21,9 +21,9 @@
 
 #include "extract.h"
 
-char infile_base[256];
+static char infile_base[256];
 
-void end(void)
+static void end(void)
 {
 	int size;
 	char fbuf[2048];
@@ -75,7 +75,7 @@ void end(void)
 }
 
 	
-int get_offsets(uint32 filenums[], uint32 offsets[])
+static int get_offsets(uint32 filenums[], uint32 offsets[])
 {
 	int i;
 	char buf[8];
@@ -91,7 +91,7 @@ int get_offsets(uint32 filenums[], uint32 offsets[])
 	}
 }
 
-int get_offsets_mac(uint32 filenums[], uint32 offsets[])
+static int get_offsets_mac(uint32 filenums[], uint32 offsets[])
 {
 	int i, size;
 	fseek(input, 0, SEEK_END);
@@ -106,7 +106,7 @@ int get_offsets_mac(uint32 filenums[], uint32 offsets[])
 }
 
 
-uint32 get_sound(uint32 offset)
+static uint32 get_sound(uint32 offset)
 {
 	FILE *f;
 	uint32 tot_size;
@@ -142,7 +142,7 @@ uint32 get_sound(uint32 offset)
 	return(tot_size);
 }
 
-void showhelp(char *exename)
+static void showhelp(char *exename)
 {
 	printf("\nUsage: %s <params> [<file> | mac]\n", exename);
 
@@ -182,7 +182,7 @@ void showhelp(char *exename)
 }
 
 
-void convert_pc(char *infile)
+static void convert_pc(char *infile)
 {
 	int i, n, size, num;
 	char tmp[256];
@@ -233,7 +233,7 @@ void convert_pc(char *infile)
 	}
 }
 
-void convert_mac(void)
+static void convert_mac(void)
 {
 	int i, size, num;
 	char tmp[256];

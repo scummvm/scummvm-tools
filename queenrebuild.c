@@ -75,7 +75,7 @@ struct GameVersion {
 };
 
 struct {
-	char filename[12];
+	char filename[13];
 	uint8 bundle;
 	uint32 offset;
 	uint32 size;
