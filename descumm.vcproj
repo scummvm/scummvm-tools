@@ -115,26 +115,18 @@
 		</Configuration>
 	</Configurations>
 	<Files>
-		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
-			<File
-				RelativePath=".\descumm-common.cpp">
-			</File>
-			<File
-				RelativePath="descumm-tool.cpp">
-			</File>
-			<File
-				RelativePath=".\descumm.cpp">
-			</File>
-			<File
-				RelativePath="descumm6.cpp">
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
-		</Filter>
+		<File
+			RelativePath=".\descumm-common.cpp">
+		</File>
+		<File
+			RelativePath="descumm-tool.cpp">
+		</File>
+		<File
+			RelativePath=".\descumm.cpp">
+		</File>
+		<File
+			RelativePath="descumm6.cpp">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.00"
-	Name="mm_nes_extract"
-	ProjectGUID="{81BD47A8-586E-4469-9B24-E81C5BA40A4A}"
+	Name="queenrebuild"
+	ProjectGUID="{3DA13694-4F7A-43FA-A622-F073A57C6DC3}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="mm_nes_extract___Win32_Debug"
-			IntermediateDirectory="mm_nes_extract___Win32_Debug"
+			OutputDirectory="Debug"
+			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
@@ -31,10 +31,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/mm_nes_extract.exe"
+				OutputFile="$(OutDir)/queenrebuild.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/mm_nes_extract.pdb"
+				ProgramDatabaseFile="$(OutDir)/queenrebuild.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
@@ -54,8 +54,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="mm_nes_extract___Win32_Release"
-			IntermediateDirectory="mm_nes_extract___Win32_Release"
+			OutputDirectory="Release"
+			IntermediateDirectory="Release"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
@@ -75,7 +75,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/mm_nes_extract.exe"
+				OutputFile="$(OutDir)/queenrebuild.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
@@ -100,7 +100,7 @@
 	</Configurations>
 	<Files>
 		<File
-			RelativePath="mm_nes_extract.c">
+			RelativePath="queenrebuild.c">
 		</File>
 	</Files>
 	<Globals>

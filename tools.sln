@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mm_nes_extract", "mm_nes_ex
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simon1decr", "simon1decr.vcproj", "{D5F11268-1190-483F-BE77-2A26980879C3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "queenrebuild", "queenrebuild.vcproj", "{3DA13694-4F7A-43FA-A622-F073A57C6DC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		ConfigName.0 = Debug
@@ -43,6 +45,10 @@ Global
 		{D5F11268-1190-483F-BE77-2A26980879C3}.Debug.Build.0 = Debug|Win32
 		{D5F11268-1190-483F-BE77-2A26980879C3}.Release.ActiveCfg = Release|Win32
 		{D5F11268-1190-483F-BE77-2A26980879C3}.Release.Build.0 = Release|Win32
+		{3DA13694-4F7A-43FA-A622-F073A57C6DC3}.Debug.ActiveCfg = Debug|Win32
+		{3DA13694-4F7A-43FA-A622-F073A57C6DC3}.Debug.Build.0 = Debug|Win32
+		{3DA13694-4F7A-43FA-A622-F073A57C6DC3}.Release.ActiveCfg = Release|Win32
+		{3DA13694-4F7A-43FA-A622-F073A57C6DC3}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
