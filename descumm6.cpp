@@ -1,6 +1,6 @@
-/* DeScumm - Scumm Script Disassembler (version 6 scripts)
+/* DeScumm - Scumm Script Disassembler (version 6-8 scripts)
  * Copyright (C) 2001  Ludvig Strigeus
- * Copyright (C) 2002  The ScummVM Team
+ * Copyright (C) 2002, 2003  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,17 +20,16 @@
  *
  */
 
-#include <string.h>
-#include <stdio.h>
+#include <assert.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef WIN32
 #include <io.h>
 #include <process.h>
 #endif
-
-#include <stdlib.h>
-#include <assert.h>
 
 /*
 switch/case statements have a pattern that look as follows (they were probably
@@ -76,8 +75,6 @@ typedef signed char int8;
 typedef signed short int16;
 typedef signed int int32;
 
-int g_jump_opcode = 0x66;
-
 uint32 inline SWAP_32(uint32 a)
 {
 	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
@@ -100,6 +97,10 @@ uint16 inline SWAP_16(uint16 a)
 #define TO_LE_32(a) (a)
 #define TO_LE_16(a) (a)
 #endif
+
+
+
+int g_jump_opcode = 0x66;
 
 struct StackEnt {
 	byte type;
@@ -2873,7 +2874,7 @@ int main(int argc, char *argv[])
 
 	output = buf = (char *)malloc(8192);
 
-	switch (TO_BE_32(*((long *)mem))) {
+	switch (TO_BE_32(*((uint32 *)mem))) {
 	case 'LSCR':
 		if (scriptVersion == 8) {
 			printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
@@ -2882,7 +2883,7 @@ int main(int argc, char *argv[])
 			printf("Script# %d\n", TO_LE_16(*((int16 *)(mem+8))));
 			mem += 10;
 		} else {
-			printf("Script# %d\n", (unsigned char)mem[8]);
+			printf("Script# %d\n", (byte)mem[8]);
 			mem += 9;
 		}
 		break;											/* Local script */

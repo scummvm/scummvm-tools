@@ -20,19 +20,51 @@
  *
  */
 
-#include <string.h>
-#include <stdio.h>
-
-//#ifdef UNIX
+#include <assert.h>
 #include <ctype.h>
-//#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef WIN32
 #include <io.h>
 #include <process.h>
 #endif
 
-#include <stdlib.h>
+
+
+typedef unsigned char byte;
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+typedef unsigned int uint;
+typedef signed char int8;
+typedef signed short int16;
+typedef signed int int32;
+
+uint32 inline SWAP_32(uint32 a)
+{
+	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
+		((a << 24) & 0xFF000000);
+}
+
+uint16 inline SWAP_16(uint16 a)
+{
+	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
+}
+
+#if defined(SCUMM_BIG_ENDIAN)
+#define TO_BE_16(x) (x)
+#define TO_BE_32(x) (x)
+#define TO_LE_16(x) SWAP_16(x)
+#define TO_LE_32(x) SWAP_32(x)
+#else
+#define TO_BE_16(x) SWAP_16(x)
+#define TO_BE_32(x) SWAP_32(x)
+#define TO_LE_16(x) (x)
+#define TO_LE_32(x) (x)
+#endif
+
 
 #define A1B (1<<0)
 #define A1W (2<<0)
@@ -67,16 +99,12 @@
 #define AVARSTORE (1<<27)
 #define MKID(a) (((a&0xff) << 8) | ((a >> 8)&0xff))
 
-#define uchar unsigned char
-#define uint unsigned int
-#define ushort unsigned short
 
-typedef unsigned char byte;
 
 void get_tok_V2(char *buf);	// For V2 (and V1?)
 void get_tok(char *buf);	// For V3, V4, V5
 
-#define JUMP_OPCODE 0x18
+const int g_jump_opcode = 0x18;
 
 byte *cur_pos, *org_pos;
 int curoffs;
@@ -116,34 +144,6 @@ bool GF_UNBLOCKED = false;
 
 
 bool emit_if(char *before, char *after);
-
-unsigned long inline SWAP_32(unsigned long a)
-{
-	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
-		((a << 24) & 0xFF000000);
-}
-
-unsigned short inline SWAP_16(unsigned short a)
-{
-	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
-}
-
-#if defined(SCUMM_BIG_ENDIAN)
-
-#define TO_LE_16(x) SWAP_16(x)
-#define TO_LE_32(x) SWAP_32(x)
-#define TO_BE_16(x) (x)
-#define TO_BE_32(x) (x)
-
-#else
-
-#define TO_LE_16(x) (x)
-#define TO_LE_32(x) (x)
-#define TO_BE_16(x) SWAP_16(x)
-#define TO_BE_32(x) SWAP_32(x)
-
-
-#endif
 
 int get_byte()
 {
@@ -498,7 +498,7 @@ int RequestElseIfAdd(int cur, int elseto, int to)
 	if (k < 0 || k >= size_of_code)
 		return 0;										/* Invalid jump */
 
-	if (org_pos[k] != JUMP_OPCODE)
+	if (org_pos[k] != g_jump_opcode)
 		return 0;										/* Invalid jump */
 
 	k = to + *((short *)(org_pos + k + 1));
@@ -3181,9 +3181,9 @@ int main(int argc, char *argv[])
 	if (GF_UNBLOCKED) {
 		mem += 4;
 	} else if (ScriptVersion == 5) {
-		switch (TO_BE_32(*((unsigned long *)mem))) {
+		switch (TO_BE_32(*((uint32 *)mem))) {
 		case 'LSCR':
-			printf("Script# %d\n", (unsigned char)mem[8]);
+			printf("Script# %d\n", (byte)mem[8]);
 			mem += 9;
 			break;											/* Local script */
 		case 'SCRP':
@@ -3203,9 +3203,9 @@ int main(int argc, char *argv[])
 			exit(0);
 		}
 	} else {
-		switch (TO_LE_16(*((unsigned short *)mem + 2))) {
+		switch (TO_LE_16(*((uint16 *)mem + 2))) {
 			case MKID('LS'):
-				printf("Script# %d\n", (unsigned char)mem[8]);
+				printf("Script# %d\n", (byte)mem[8]);
 				mem += 7;
 				break;			/* Local script */
 			case MKID('SC'):
