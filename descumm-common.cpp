@@ -197,13 +197,13 @@ bool maybeAddIf(unsigned int cur, unsigned int to)
 	// jump right behind a regular jump, then whether that jump is targeting us.
 	if (scriptVersion == 8) {
 		p->isWhile = (*(byte*)(org_pos+to-5) == g_jump_opcode);
-		i = TO_LE_32(*(int32*)(org_pos+to-4));
+		i = (int32)TO_LE_32(*(int32*)(org_pos+to-4));
 	} else {
 		p->isWhile = (*(byte*)(org_pos+to-3) == g_jump_opcode);
-		i = TO_LE_16(*(int16*)(org_pos+to-2));
+		i = (int16)TO_LE_16(*(int16*)(org_pos+to-2));
 	}
 	
-	p->isWhile = p->isWhile && (offs_of_line == (int)to + i);
+	p->isWhile = p->isWhile && (offs_of_line == to + i);
 	p->from = cur;
 	p->to = to;
 	return true;
