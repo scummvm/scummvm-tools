@@ -110,6 +110,7 @@ The Secret of Monkey Island
 
 	-	DOS	fr	aa8a0cb65f3afbbe2c14c3f9f92775a3	monkey1	Nicolas Sauz&egrave;de
 	-	Mac	en	2ccd8891ce4d3f1a334d21bff6a88ca2	monkey
+	- (alt?)	Mac	en	2ccd8891ce4d3f1a334d21bff6a88ca2	monkey1	Lars N&aelig;sbye Christensen
 	-	SEGA	en	c13225cb1bbd3bc9fe578301696d8021	game
 	-	Mac	en	2ccd8891ce4d3f1a334d21bff6a88ca2	monkey
 
@@ -130,6 +131,7 @@ Monkey Island 2: LeChuck's revenge
 	-	Amiga	fr	c30ef068add4277104243c31ce46c12b	monkey2	Andreas Bylund
 	-	Amiga	it	11ddf1fde76e3156eb3a38da213f484e	monkey2	Andrea Petrucci
 	-	Mac	en	4cb9c3618f71668f8e4346c8f323fa82	monkey2
+	- (alt?)	Mac	en	e246e02db9630533a40d99c9f54a8e01	monkey2	Lars N&aelig;sbye Christensen
 	-	DOS	en	3686cf8f89e102ececf4366e1d2c8126	monkey2
 	-	DOS	de	6886e5d08cee329b1f2e743ae2e3ceed	monkey2
 	-	DOS	fr	8e4ee4db46954bfe2912e259a16fad82	monkey2	Nicolas Sauz&egrave;de, Andrea Petrucci
@@ -202,6 +204,7 @@ Full Throttle
 	-	All?	de	8bdb0bf87b5e303dd35693afb9351215	ft	dhewg
 	-	All?	es	e72bb4c2b613db2cf50f89ff6350e70a	ft
 	-	All?	ru	55e4cc866ff9046824e1c638ba2b8c7f	ft	sev
+	-	All?	it	55518cd73cf9c6d23ea29c51ee06bdfe	ft	delfino
 
 	Demo	DOS	en	32a433dea56b86a55b59e4ff7d755711	ftpcdemo
 	Demo	Mac	en	9d7b67be003fea60be4dcbd193611936	ftdemo
