@@ -3033,14 +3033,15 @@ int main(int argc, char *argv[])
 			printf("File too small to be a script\n");
 			exit(0);
 		}
-#if VERB_SCRIPT
-		if (scriptVersion == 2)
-			offs_of_line = skipVerbHeader_V2(mem);
-		else
-			offs_of_line = skipVerbHeader_V3(mem );
-#else
-		mem += 4;
-#endif
+		// Hack to detect verb script: first 4 bytes should be file length
+		if (TO_LE_32(*((uint32 *)mem)) == size_of_code) {
+			if (scriptVersion == 2)
+				offs_of_line = skipVerbHeader_V2(mem);
+			else
+				offs_of_line = skipVerbHeader_V3(mem );
+		} else {
+			mem += 4;
+		}
 	} else if (scriptVersion == 5) {
 		if (size_of_code < 8) {
 			printf("File too small to be a script\n");
