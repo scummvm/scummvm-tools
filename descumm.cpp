@@ -1811,7 +1811,7 @@ void get_tok_V2(char *buf)
 
 	case 0x66:
 	case 0xE6:
-		do_tok(buf, "getClosestObjActor", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "getClosestObjActor", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 		break;
 
 	case 0x34:
@@ -2444,7 +2444,7 @@ void get_tok_V345(char *buf)
 
 	case 0x66:
 	case 0xE6:
-		do_tok(buf, "getClosestObjActor", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "getClosestObjActor", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 		break;
 
 	case 0x6C:
