@@ -1634,7 +1634,9 @@ void get_tok(char *buf)
 	case 0xF1:
 		do_tok(buf, "getActorCostume", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
-
+	case 0x3B:
+		do_tok(buf, "WaitForActor", ((opcode & 0x80) ? A1V : A1B));
+		break;
 	case 0xAE:{
 			switch (opcode = get_byte()) {
 			case 0x01:
