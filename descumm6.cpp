@@ -2661,6 +2661,9 @@ void next_line()
 	case 0xDA:
 		ext("rsp|openFile");
 		break;
+	case 0xDB:
+		ext("rpp|readFile");
+		break;
 	case 0xDD:
 		ext("rp|findAllObjects");
 		break;
