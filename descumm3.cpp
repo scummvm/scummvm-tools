@@ -1407,7 +1407,7 @@ void get_tok(char *buf)
 	switch (opcode) {
 
 	case 0x00:
-		do_tok(buf, "stopObjectScript", 0);
+		do_tok(buf, "stopObjectCode", 0);
 		break;
 	case 0xA0:
 		do_tok(buf, "stopScript", 0);
@@ -1462,23 +1462,11 @@ void get_tok(char *buf)
 	case 0x65:
 	case 0x85:
 	case 0xA5:
-	case 0xE5:{
-
-			buf = do_tok(buf, "drawObject", ((opcode & 0x80) ? A1V : A1W) | ANOLASTPAREN);
-			opcode = get_byte();
-			switch (opcode & 0x1F) {
-			case 1:
-				do_tok(buf, ", setXY(",
-							 ANOLASTPAREN | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W) |
-							 ((opcode & 0x40) ? A2V : A2W));
-				break;
-			case 2:
-				do_tok(buf, ", setImage(", ANOLASTPAREN | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W));
-				break;
-			}
-			strcat(buf, "));");
-
-		}
+	case 0xE5:
+		buf = do_tok(buf, "drawObject",
+					 ((opcode & 0x80) ? A1V : A1W) |
+					 ((opcode & 0x40) ? A2V : A2W) |
+					 ((opcode & 0x20) ? A3V : A3W));
 		break;
 
 	case 0x06:
@@ -1799,13 +1787,7 @@ void get_tok(char *buf)
 
 	case 0x70:
 	case 0xF0:
-		byte opcode2;
-		buf = do_tok(buf, "lights", ((opcode & 0x80) ? A1V : A1W) | ANOLASTPAREN);
-		opcode = get_byte();
-		opcode2 = get_byte();
-		do_tok(buf, NULL,
-					 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B) |
-					 ((opcode2 & 0x80) ? A2V : A2B));
+		buf = do_tok(buf, "lights", ((opcode & 0x80) ? A1V : A1B) | A2B | A3B);
 		break;
 
 	case 0x3F:
