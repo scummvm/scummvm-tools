@@ -1226,9 +1226,11 @@ void next_line()
 				"\x85p|verbSetDimColor,"
 				"\x86|verbSetCurmode2,"
 				"\x87p|verbSetKey,"
-				"\x88p|verbSetCenter,"
+				"\x88|verbSetCenter,"
 				"\x89p|verbSetToString,"
-				"\x8Bpp|verbSetToObject," "\x8Cp|verbSetBkColor," "\xFF|verbRedraw");
+				"\x8Bpp|verbSetToObject,"
+				"\x8Cp|verbSetBkColor,"
+				"\xFF|verbRedraw");
 		break;
 	case 0x9F:
 		ext("rpp|getActorFromXY");
