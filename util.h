@@ -55,7 +55,7 @@ typedef signed int int32;
 typedef enum { false = 0, true = 1 } bool;
 
 /* If your C compiler doesn't support 'inline', please add a check for it. */
-#if defined(_MSC_VER) && _MSC_VER == 1310
+#if defined(_MSC_VER)
 #define inline __inline
 #endif
 
