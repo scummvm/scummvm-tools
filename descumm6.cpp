@@ -2688,9 +2688,30 @@ void next_line_V67(char *output)
 		else
 			ext(output, "rp|getObjectNewDir");
 		break;
+	case 0xEE:
+		if (HumongousFlag)
+			ext(output, "rp|stringLen");
+		else
+			invalidop(NULL, code);
+		break;
 	case 0xF3:
 		if (HumongousFlag)
 			ext(output, "rsp|readINI");
+		else
+			invalidop(NULL, code);
+		break;
+	case 0xF4:
+		// TODO: make it HEv7 specific
+		if (HumongousFlag)
+			ext(output, "x" "unknownF4\0"
+					"\x06ps|sub6,"
+					"\x07ss|sub7");
+		else
+			invalidop(NULL, code);
+		break;
+	case 0xF9:
+		if (HumongousFlag)
+			ext(output, "s|unknownF9");
 		else
 			invalidop(NULL, code);
 		break;
