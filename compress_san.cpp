@@ -119,9 +119,9 @@ void writeWaveHeader(int s_size) {
 	fclose(_waveTmpFile);
 	_waveTmpFile = NULL;
 }
-void writeToTempWave(byte *output_data, int size) {
+void writeToTempWave(char *fileName, byte *output_data, int size) {
 	if (!_waveTmpFile) {
-		_waveTmpFile = fopen("tmp.wav", "wb");
+		_waveTmpFile = fopen(fileName, "wb");
 		if (!_waveTmpFile) {
 			printf("error write temp wave file");
 			exit(1);
@@ -147,7 +147,7 @@ void writeToTempWave(byte *output_data, int size) {
 	_waveDataSize += 0x1000;
 }
 
-void decompressComiIACT(byte *output_data, byte *d_src, int bsize) {
+void decompressComiIACT(char *fileName, byte *output_data, byte *d_src, int bsize) {
 	byte value;
 
 	while (bsize > 0) {
@@ -188,7 +188,7 @@ void decompressComiIACT(byte *output_data, byte *d_src, int bsize) {
 						*dst++ = (byte)(val);
 					}
 				} while (--count);
-				writeToTempWave(output_data, 0x1000);
+				writeToTempWave(fileName, output_data, 0x1000);
 				bsize -= len;
 				d_src += len;
 				_IACTpos = 0;
@@ -207,26 +207,62 @@ void decompressComiIACT(byte *output_data, byte *d_src, int bsize) {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc < 3)
+	if (argc < 4)
 		showhelp(argv[0]);
 
-	FILE *input = fopen(argv[1], "rb");
+	char inputDir[200];
+	char outputDir[200];
+	char inputFilename[20];
+	char tmpPath[200];
+
+	strcpy(inputFilename, argv[1]);
+	strcpy(inputDir, argv[2]);
+	strcpy(outputDir, argv[3]);
+
+	char *index = strrchr(inputFilename, '.');
+	if (index != NULL) {
+		*index = 0;
+	}
+
+	strcpy(tmpPath, inputDir);
+	strcat(tmpPath, "/");
+	strcat(tmpPath, inputFilename);
+	strcat(tmpPath, ".san");
+
+	FILE *input = fopen(tmpPath, "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", argv[1]);
+		printf("Cannot open file: %s\n", tmpPath);
 		exit(-1);
 	}
 
-	FILE *output = fopen(argv[2], "wb");
+	strcpy(tmpPath, outputDir);
+	strcat(tmpPath, "/");
+	strcat(tmpPath, inputFilename);
+	strcat(tmpPath, ".san");
+
+	FILE *output = fopen(tmpPath, "wb");
 	if (!output) {
-		printf("Cannot open file: %s\n", argv[2]);
+		printf("Cannot open file: %s\n", tmpPath);
 		exit(-1);
 	}
 
-	FILE *flu = NULL;
-	if (argc == 4) {
-		flu = fopen(argv[3], "rb+");
-		if (!flu) {
-			printf("Cannot open file: %s\n", argv[3]);
+	strcpy(tmpPath, inputDir);
+	strcat(tmpPath, "/");
+	strcat(tmpPath, inputFilename);
+	strcat(tmpPath, ".flu");
+
+	FILE *flu_in = NULL;
+	FILE *flu_out = NULL;
+	flu_in = fopen(tmpPath, "rb");
+
+	if (flu_in) {
+		strcpy(tmpPath, outputDir);
+		strcat(tmpPath, "/");
+		strcat(tmpPath, inputFilename);
+		strcat(tmpPath, ".flu");
+		flu_out = fopen(tmpPath, "wb");
+		if (!flu_out) {
+			printf("Cannot open file: %s\n", tmpPath);
 			exit(-1);
 		}
 	}
@@ -315,7 +351,13 @@ int main(int argc, char *argv[]) {
 				byte output_data[0x1000];
 				byte *src = (byte *)malloc(bsize);
 				fread(src, bsize, 1, input);
-				decompressComiIACT(output_data, src, bsize);
+
+				strcpy(tmpPath, outputDir);
+				strcat(tmpPath, "/");
+				strcat(tmpPath, inputFilename);
+				strcat(tmpPath, ".wav");
+				decompressComiIACT(tmpPath, output_data, src, bsize);
+
 				free(src);
 
 				if ((size & 1) != 0) {
@@ -340,7 +382,11 @@ skip:
 
 	if (_waveTmpFile) {
 		writeWaveHeader(_waveDataSize);
-		encodeWaveWithOgg("tmp.wav");
+		strcpy(tmpPath, outputDir);
+		strcat(tmpPath, "/");
+		strcat(tmpPath, inputFilename);
+		strcat(tmpPath, ".wav");
+		encodeWaveWithOgg(tmpPath);
 	}
 
 	fclose(input);
@@ -367,13 +413,19 @@ skip:
 	writeUint32BE(output, animChunkSize - sumDiff);
 	printf("done.\n");
 
-	if (flu) {
+	if (flu_in) {
 		printf("Fixing flu offsets...");
-		fseek(flu, 0x324, SEEK_SET);
-		for (l = 0; l < nbframes; l++) {
-			writeUint32LE(flu, frameInfo[l].offsetOutput - 4);
+		fseek(flu_in, 0, SEEK_END);
+		int fsize = ftell(flu_in);
+		for (int k = 0; k < fsize; k++) {
+			writeByte(flu_out, readByte(flu_in));
 		}
-		fclose(flu);
+		fseek(flu_out, 0x324, SEEK_SET);
+		for (l = 0; l < nbframes; l++) {
+			writeUint32LE(flu_out, frameInfo[l].offsetOutput - 4);
+		}
+		fclose(flu_in);
+		fclose(flu_out);
 		printf("done.\n");
 	}
 
