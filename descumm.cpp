@@ -140,7 +140,7 @@ const char *var_names2[] = {
 	"VAR_SENTENCE_OBJECT1",
 	/* 28 */
 	"VAR_SENTENCE_OBJECT2",
-	NULL,
+	"VAR_SENTENCE_PREPOSITION",
 	"VAR_VIRT_MOUSE_X",
 	"VAR_VIRT_MOUSE_Y",
 	/* 32 */
@@ -151,7 +151,7 @@ const char *var_names2[] = {
 	/* 36 */
 	"VAR_ROOM_RESOURCE",
 	"VAR_LAST_SOUND",
-	NULL,
+	"VAR_BACKUP_VERB",
 	"VAR_KEYPRESS",
 	/* 40 */
 	"VAR_CUTSCENEEXIT_KEY",
