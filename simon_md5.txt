@@ -7,10 +7,13 @@ Simon the Sorcerer 1
 	?	Windows	en	d22302abf44219f95d50f2faa807dd1a	simon1talkie
 	?	DOS	en	d545db8a0efae95a90b23da81aadb201	simon1talkie
 	?	DOS	es	e3712b3ed4429e736123a40276f533d7	simon1talkie
+	Demo	DOS	en	486f026593f894f5b6b346ef3984a7a0	simon1dos
 
 Simon the Sorcerer 2
 	?	DOS	en	27c8e7feada80c75b70b9c2f6088d519	simon2dos
 	?	DOS	en	078b04da0974a40645b92baffdf2781e	simon2talkie
 	?	DOS	hb	a3cbdd3450f9fccb0a9d8d6dc28f66fe	simon2talkie
 	?	DOS	fr	c8ddd48919aa75423dd2d3e5864909df	simon2talkie
-	?	DOS	en	bd85a8b5135592ada9cbeae49160f1d3	simon2win
+	?	Windows	en	bd85a8b5135592ada9cbeae49160f1d3	simon2talkie
+	Demo	DOS	en	1e11ddbad80c408031ae44a0cbce46bb	simon2talkie
+	Demo	DOS	de	028c6240c9c8e190d86188238505c5e5	simon2talkie
