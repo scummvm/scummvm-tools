@@ -1367,14 +1367,19 @@ void next_line_V8()
 		case 0x14:{
 			int array = get_word();
 			writeArray(array, NULL, pop(), se_get_string());
-			}break;
-		case 0x15:
-			writeArray(get_word(), NULL, pop(), se_get_list());
+			}
 			break;
-		case 0x16:
+		case 0x15:{
+			int array = get_word();
+			writeArray(array, NULL, pop(), se_get_list());
+			}
+			break;
+		case 0x16:{
+			int array = get_word();
 			se_a = pop();
 			se_b = se_get_list();
-			writeArray(get_word(), pop(), se_a, se_b);
+			writeArray(array, pop(), se_a, se_b);
+			}
 			break;
 		}
 		break;
@@ -1626,7 +1631,7 @@ void next_line_V8()
 void next_line()
 {
 	byte code = get_byte();
-	StackEnt *se_a;
+	StackEnt *se_a, *se_b;
 
 	switch (code) {
 	case 0x0:
@@ -1662,40 +1667,20 @@ void next_line()
 		push(se_oper(pop(), isZero));
 		break;
 	case 0xE:
-		push(se_oper(pop(), isEqual, pop()));
-		break;
 	case 0xF:
-		push(se_oper(pop(), isNotEqual, pop()));
-		break;
 	case 0x10:
-		push(se_oper(pop(), isGreater, pop()));
-		break;
 	case 0x11:
-		push(se_oper(pop(), isLess, pop()));
-		break;
 	case 0x12:
-		push(se_oper(pop(), isLessEqual, pop()));
-		break;
 	case 0x13:
-		push(se_oper(pop(), isGreaterEqual, pop()));
-		break;
 	case 0x14:
-		push(se_oper(pop(), operAdd, pop()));
-		break;
 	case 0x15:
-		push(se_oper(pop(), operSub, pop()));
-		break;
 	case 0x16:
-		push(se_oper(pop(), operMul, pop()));
-		break;
 	case 0x17:
-		push(se_oper(pop(), operDiv, pop()));
-		break;
 	case 0x18:
-		push(se_oper(pop(), operLand, pop()));
-		break;
 	case 0x19:
-		push(se_oper(pop(), operLor, pop()));
+		se_a = pop();
+		se_b = pop();
+		push(se_oper(se_b, (code - 0xE) + isEqual, se_a));
 		break;
 	case 0x1A:
 		kill(pop());
@@ -2227,10 +2212,14 @@ void next_line()
 		ext("lpp|jumpToScript");
 		break;
 	case 0xD6:
-		push(se_oper(pop(), operBand, pop()));
+		se_a = pop();
+		se_b = pop();
+		push(se_oper(se_b, operBand, se_a));
 		break;
 	case 0xD7:
-		push(se_oper(pop(), operBor, pop()));
+		se_a = pop();
+		se_b = pop();
+		push(se_oper(se_b, operBor, se_a));
 		break;
 	case 0xD8:
 		ext("rp|isRoomScriptRunning");
