@@ -2624,7 +2624,7 @@ void get_tok_V345(char *buf)
 	case 0x02:
 	case 0x82:
 		if (ZakFlag)
-			do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B) | A2B | A3B);
+			do_tok(buf, "startMusic", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		else
 			do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B));
 		break;
