@@ -17,21 +17,23 @@ TARGETS := \
 
 all: $(TARGETS)
 
-descumm$(EXEEXT) : descumm.o descumm-common.o
+descumm$(EXEEXT): descumm.o descumm-common.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
-descumm6$(EXEEXT) : descumm6.o descumm-common.o
+descumm6$(EXEEXT): descumm6.o descumm-common.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
-extract$(EXEEXT) : extract.o
+extract$(EXEEXT): extract.o
 	$(CC) $(LFLAGS) -o $@ $+
 
-rescumm$(EXEEXT) : rescumm.o
+rescumm$(EXEEXT): rescumm.o
 	$(CC) $(LFLAGS) -o $@ $+
 
-simon2mp3$(EXEEXT) : simon2mp3.o
+simon2mp3$(EXEEXT): simon2mp3.o
 	$(CC) $(LFLAGS) -o $@ $+
 
+
+descumm.o descumm6.o descumm-common.o: descumm.h
 
 clean:
 	rm -f *.o $(TARGETS)
