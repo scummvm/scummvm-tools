@@ -660,14 +660,16 @@ void showhelp(char *exename) {
 }
 
 struct BundleAudioTable {
-	char filename[13];
+	char filename[24];
 	int size;
 	int offset;
 };
- 
+
 static FILE *_waveTmpFile;
 static int32 _waveDataSize;
 static BundleAudioTable *bundleTable;
+static BundleAudioTable cbundleTable[10000]; // difficult to calculate
+static int32 cbundleCurIndex = 0;
 
 void encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
@@ -952,7 +954,7 @@ struct Sync {
 static Region *_region;
 static int _numRegions;
 
-void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *filename) {
+void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *filename, FILE *output) {
 	char tmpPath[200];
 
 	for (int l = 0; l < _numRegions; l++) {
@@ -968,6 +970,24 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *
 		free(outputData);
 		encodeWaveWithOgg(tmpPath);
 		unlink(tmpPath);
+
+		int32 startPos = ftell(output);
+		sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.ogg", filename, l);
+		cbundleTable[cbundleCurIndex].offset = startPos;
+
+		sprintf(tmpPath, "%s/%s_reg%03d.ogg", dir, filename, l);
+		FILE *oggFile = fopen(tmpPath, "rb");
+		fseek(oggFile, 0, SEEK_END);
+		size = ftell(oggFile);
+		fseek(oggFile, 0, SEEK_SET);
+		byte *tmpBuf = (byte *)malloc(size);
+		fread(tmpBuf, size, 1, oggFile);
+		fclose(oggFile);
+		unlink(tmpPath);
+		fwrite(tmpBuf, size, 1, output);
+		free(tmpBuf);
+		cbundleTable[cbundleCurIndex].size = ftell(output) - startPos;
+		cbundleCurIndex++;
 	}
 	free(_region);
 }
@@ -985,7 +1005,7 @@ void recalcRegions(int32 &value, int bits, int freq, int channels) {
 	value = size;
 }
 
-void writeToRMAPFile(byte *ptr, char *dir, char *filename, int &offsetData, int &bits, int &freq, int &channels) {
+void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, int &bits, int &freq, int &channels) {
 	byte *s_ptr = ptr;
 	int32 size = 0;
 	int l;
@@ -1050,45 +1070,45 @@ void writeToRMAPFile(byte *ptr, char *dir, char *filename, int &offsetData, int 
 	} while (tag != 'DATA');
 	offsetData = (int32)(ptr - s_ptr);
 
-	char tmpPath[200];
-	sprintf(tmpPath, "%s/%s.map", dir, filename);
-	FILE *rmapFile = fopen(tmpPath, "wb");
-	if (!rmapFile)
-		error("writeToRMAPFile() Error writing RMAP file: %s", tmpPath);
+	int32 startPos = ftell(output);
+	sprintf(cbundleTable[cbundleCurIndex].filename, "%s.map", filename);
+	cbundleTable[cbundleCurIndex].offset = startPos;
 
-	writeUint32BE(rmapFile, 'RMAP');
-	writeUint32BE(rmapFile, 1); // version
-	writeUint32BE(rmapFile, numRegions);
-	writeUint32BE(rmapFile, numJumps);
-	writeUint32BE(rmapFile, numSyncs);
+	writeUint32BE(output, 'RMAP');
+	writeUint32BE(output, 1); // version
+	writeUint32BE(output, numRegions);
+	writeUint32BE(output, numJumps);
+	writeUint32BE(output, numSyncs);
 	memcpy(_region, region, sizeof(Region) * numRegions);
 	for (l = 0; l < numRegions; l++) {
 		_region[l].offset -= offsetData;
 		region[l].offset -= offsetData;
 		recalcRegions(region[l].offset, bits, freq, channels);
 		recalcRegions(region[l].length, bits, freq, channels);
-		writeUint32BE(rmapFile, region[l].offset);
-		writeUint32BE(rmapFile, region[l].length);
+		writeUint32BE(output, region[l].offset);
+		writeUint32BE(output, region[l].length);
 	}
 	for (l = 0; l < numJumps; l++) {
 		jump[l].offset -= offsetData;
 		jump[l].dest -= offsetData;
 		recalcRegions(jump[l].offset, bits, freq, channels);
 		recalcRegions(jump[l].dest, bits, freq, channels);
-		writeUint32BE(rmapFile, jump[l].offset);
-		writeUint32BE(rmapFile, jump[l].dest);
-		writeUint32BE(rmapFile, jump[l].hookId);
-		writeUint32BE(rmapFile, jump[l].fadeDelay);
+		writeUint32BE(output, jump[l].offset);
+		writeUint32BE(output, jump[l].dest);
+		writeUint32BE(output, jump[l].hookId);
+		writeUint32BE(output, jump[l].fadeDelay);
 	}
 	for (l = 0; l < numSyncs; l++) {
-		writeUint32BE(rmapFile, sync[l].size);
-		fwrite(sync[l].ptr, sync[l].size, 1, rmapFile);
+		writeUint32BE(output, sync[l].size);
+		fwrite(sync[l].ptr, sync[l].size, 1, output);
 		free(sync[l].ptr);
 	}
-	fclose(rmapFile);
 	free(region);
 	free(jump);
 	free(sync);
+
+	cbundleTable[cbundleCurIndex].size = ftell(output) - startPos;
+	cbundleCurIndex++;
 }
 
 int main(int argc, char *argv[]) {
@@ -1099,6 +1119,9 @@ int main(int argc, char *argv[]) {
 	char outputDir[200];
 	char inputFilename[200];
 	char tmpPath[200];
+
+	uint32 tag;
+	int32 numFiles, offset, i;
 
 	strcpy(inputFilename, argv[1]);
 	strcpy(inputDir, argv[2]);
@@ -1117,10 +1140,19 @@ int main(int argc, char *argv[]) {
 		exit(-1);
 	}
 
-	initializeImcTables();
+	sprintf(tmpPath, "%s/%s.bun", outputDir, inputFilename);
 
-	uint32 tag;
-	int32 numFiles, offset, i;
+	FILE *output = fopen(tmpPath, "wb");
+	if (!output) {
+		printf("Cannot open file: %s\n", tmpPath);
+		exit(-1);
+	}
+
+	writeUint32BE(output, 'LB23');
+	writeUint32BE(output, 0); // will be later
+	writeUint32BE(output, 0); // will be later
+
+	initializeImcTables();
 
 	tag = readUint32BE(input);
 	assert(tag == 'LB83');
@@ -1153,10 +1185,21 @@ int main(int argc, char *argv[]) {
 			continue;
 		int offsetData = 0, bits = 0, freq = 0, channels = 0, size = 0;
 		byte *compFinal = decompressBundleSound(i, input, size);
-		writeToRMAPFile(compFinal, outputDir, bundleTable[i].filename, offsetData, bits, freq, channels);
-		writeRegions(compFinal + offsetData, bits, freq, channels, outputDir, bundleTable[i].filename);
+		writeToRMAPFile(compFinal, output, bundleTable[i].filename, offsetData, bits, freq, channels);
+		writeRegions(compFinal + offsetData, bits, freq, channels, outputDir, bundleTable[i].filename, output);
 		free(compFinal);
 	}
+
+	int32 curPos = ftell(output);
+	for (i = 0; i < cbundleCurIndex; i++) {
+		fwrite(cbundleTable[i].filename, 24, 1, output);
+		writeUint32BE(output, cbundleTable[i].offset);
+		writeUint32BE(output, cbundleTable[i].size);
+	}
+
+	fseek(output, 4, SEEK_SET);
+	writeUint32BE(output, curPos);
+	writeUint32BE(output, cbundleCurIndex);
 
 	free(bundleTable);
 
