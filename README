@@ -16,7 +16,7 @@ Included tools:
 		       (When decompiling V7 'room-' scripts, you may need to 
                        use the -7 switch; likewise for V8 you need -8)
 
-        simon1decr - Used to decrunch the main graphics files in AGA/ECS 
+        simon1decr - Used to decrunch the graphics and music files in AGA/ECS 
                          versions of Simon the Sorcerer 1 for Amiga 
 
         simon2mp3 - Used to MP3 compress .voc or .wav files to .mp3, for 
