@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 	int size, i = 1;
 	uint32 prevOffset;
 
-	if (argc < 2 || (strcmp(argv[1], "--mp3") != 0 && strcmp(argv[1], "--vorbis") != 0 && strcmp(argv[1], "--flac") != 0))
+	if (argc < 2 || (0 == strcmp(argv[argc - 1], "--mp3") && 0 == strcmp(argv[argc - 1], "--vorbis") && 0 == strcmp(argv[argc - 1], "--flac") != 0))
 		showhelp(argv[0]);
 	
 	if (strcmp(argv[1], "--mp3") == 0) {
