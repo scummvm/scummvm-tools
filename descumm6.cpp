@@ -945,14 +945,14 @@ StackEnt *se_get_string()
 			}
 			i = get_byte();
 			switch (i) {
-			case 3:
-				e += sprintf(e, ":wait:");
-				break;
 			case 1:
 				e += sprintf(e, ":newline:");
 				break;
 			case 2:
 				e += sprintf(e, ":keeptext:");
+				break;
+			case 3:
+				e += sprintf(e, ":wait:");
 				break;
 			case 4:	// V8 - TODO
 				{
@@ -1349,16 +1349,15 @@ void next_line_V8()
 	case 0x74:
 		// FIXME - is this correct?!? Also, make the display nicer...
 		ext("x" "dim2\0"
-				"\x0Appw|dim-scummvar,"
-				"\x0Bppw|dim-string,"
-				"\xCAw|undim"
+				"\x0Appw|dim2-scummvar,"
+				"\x0Bppw|dim2-string,"
+				"\xCAw|undim2"
 				);
-
 		break;
 	case 0x75:
 		se_a = pop();
 		se_b = pop();
-		writeArray(get_word(), se_b, pop(), se_a);
+		writeArray(get_word(), pop(), se_b, se_a);
 		break;
 	case 0x76:
 		switch (get_byte()) {
@@ -1596,6 +1595,8 @@ void next_line_V8()
 				"\xD|remapCostume,"
 				"\xE|remapCostumeInsert,"
 				"\xF|setVideoFrameRate,"
+
+				"\x16|setBannerColors,"
 
 				"\x1D|setKeyScript,"
 				
@@ -2094,7 +2095,12 @@ void next_line()
 				"\x42p|color,"
 				"\x43p|right,"
 				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
+				"\x47|left,"
+				"\x48|overhead,"
+				"\x4A|new3,"
+				"\x4Bs|msg,"
+				"\xFE|begin,"
+				"\xFF|end");
 		break;
 	case 0xB5:
 		ext("m" "print_1_\0"
@@ -2103,7 +2109,12 @@ void next_line()
 				"\x42p|color,"
 				"\x43p|right,"
 				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
+				"\x47|left,"
+				"\x48|overhead,"
+				"\x4A|new3,"
+				"\x4Bs|msg,"
+				"\xFE|begin,"
+				"\xFF|end");
 		break;
 	case 0xB6:
 		ext("m" "print_2_\0"
