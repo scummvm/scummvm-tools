@@ -124,7 +124,7 @@ Monkey Island 2: LeChuck's revenge
 	-	DOS	es	7974365d3dc0f43a2748c975f91ff042	monkey2	Andrea Petrucci
 	FM-TOWNS	FM-TOWNS	en	da09e666fc8f5b78d7b0ac65d1a3b56e	monkey2	dhewg, Andrea Petrucci
 	FM-TOWNS	FM-TOWNS	jp	430bc518017b6fac046f58bab6baad5d	monkey2	Antti Leimi, Andrea Petrucci
-	Demo (non-interactive)	DOS	en	387a544b8b10b26912d8413bab63a853	monkey2	khalek
+	Demo (non-interactive)	DOS	en	387a544b8b10b26912d8413bab63a853	mi2demo	khalek
 
 Indiana Jones and the Fate of Atlantis
 	Talkie	DOS	en	182344899c2e2998fca0bebcd82aa81a	atlantis
