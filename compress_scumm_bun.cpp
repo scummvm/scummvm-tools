@@ -962,12 +962,36 @@ struct Sync {
 static Region *_region;
 static int _numRegions;
 
-void writeRegions(byte *ptr) {
+void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *filename) {
+	char tmpPath[200];
+
 	for (int l = 0; l < _numRegions; l++) {
-//		writeUint32BE(rmapFile, _region[l].offset);
-//		writeUint32BE(rmapFile, _region[l].length);
+		int outputSize = 0;
+		int size = _region[l].length;
+		int offset = _region[l].offset;
+		byte *outputData = convertTo16bitStereo(ptr + offset, size, outputSize, bits, freq, channels);
+
+		sprintf(tmpPath, "%s/%s_reg%03d.wav", dir, filename, l);
+		writeToTempWave(tmpPath, outputData, outputSize);
+		writeWaveHeader(_waveDataSize);
+
+		free(outputData);
+		encodeWaveWithOgg(tmpPath);
 	}
 	free(_region);
+}
+
+void recalcRegions(int32 &value, int bits, int freq, int channels) {
+	int size = value;
+	if (bits == 8)
+		size *= 2;
+	if (bits == 12)
+		size = (size / 3) * 4;
+	if (channels == 1)
+		size *= 2;
+	if (freq == 11025)
+		size *= 2;
+	value = size;
 }
 
 void writeToRMAPFile(byte *ptr, char *dir, char *filename, int &offsetData, int &bits, int &freq, int &channels) {
@@ -986,7 +1010,7 @@ void writeToRMAPFile(byte *ptr, char *dir, char *filename, int &offsetData, int 
 	int numRegions = 0, numJumps = 0, numSyncs = 0;
 	countMapElements(ptr, numRegions, numJumps, numSyncs);
 	Region *region = (Region *)malloc(sizeof(Region) * numRegions);
-	_region = region;
+	_region = (Region *)malloc(sizeof(Region) * numRegions);
 	_numRegions = numRegions;
 	Jump *jump = (Jump *)malloc(sizeof(Jump) * numJumps);
 	Sync *sync = (Sync *)malloc(sizeof(Sync) * numSyncs);
@@ -1046,11 +1070,22 @@ void writeToRMAPFile(byte *ptr, char *dir, char *filename, int &offsetData, int 
 	writeUint32BE(rmapFile, numRegions);
 	writeUint32BE(rmapFile, numJumps);
 	writeUint32BE(rmapFile, numSyncs);
+	memcpy(_region, region, sizeof(Region) * numRegions);
 	for (l = 0; l < numRegions; l++) {
+		_region[l].offset -= offsetData;
+		_region[l].length;
+		region[l].offset -= offsetData;
+		region[l].length;
+		recalcRegions(region[l].offset, bits, freq, channels);
+		recalcRegions(region[l].length, bits, freq, channels);
 		writeUint32BE(rmapFile, region[l].offset);
 		writeUint32BE(rmapFile, region[l].length);
 	}
 	for (l = 0; l < numJumps; l++) {
+		jump[l].offset -= offsetData;
+		jump[l].dest -= offsetData;
+		recalcRegions(jump[l].offset, bits, freq, channels);
+		recalcRegions(jump[l].dest, bits, freq, channels);
 		writeUint32BE(rmapFile, jump[l].offset);
 		writeUint32BE(rmapFile, jump[l].dest);
 		writeUint32BE(rmapFile, jump[l].hookId);
@@ -1062,6 +1097,7 @@ void writeToRMAPFile(byte *ptr, char *dir, char *filename, int &offsetData, int 
 		free(sync[l].ptr);
 	}
 	fclose(rmapFile);
+	free(region);
 	free(jump);
 	free(sync);
 }
@@ -1093,7 +1129,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	uint32 tag;
-	int32 numFiles, offset;
+	int32 numFiles, offset, i;
 
 	tag = readUint32BE(input);
 	assert(tag == 'LB83');
@@ -1103,7 +1139,7 @@ int main(int argc, char *argv[]) {
 	bundleTable = (BundleAudioTable *)malloc(numFiles * sizeof(BundleAudioTable));
 	fseek(input, offset, SEEK_SET);
 
-	for (int i = 0; i < numFiles; i++) {
+	for (i = 0; i < numFiles; i++) {
 		char filename[13], c;
 		int z = 0;
 		int z2;
@@ -1121,19 +1157,12 @@ int main(int argc, char *argv[]) {
 		bundleTable[i].size = readUint32BE(input);
 	}
 
-	for (int h = 0; h < numFiles; h++) {
-		int offsetData = 0, bits = 0, freq = 0, channels = 0, size = 0, outputSize = 0;
-		byte *compFinal = decompressBundleSound(h, input, size);
-		writeToRMAPFile(compFinal, outputDir, bundleTable[h].filename, offsetData, bits, freq, channels);
-		writeRegions(compFinal + offsetData);
-		byte *outputData = convertTo16bitStereo(compFinal + offsetData, size - offsetData, outputSize, bits, freq, channels);
-
+	for (i = 0; i < numFiles; i++) {
+		int offsetData = 0, bits = 0, freq = 0, channels = 0, size = 0;
+		byte *compFinal = decompressBundleSound(i, input, size);
+		writeToRMAPFile(compFinal, outputDir, bundleTable[i].filename, offsetData, bits, freq, channels);
+		writeRegions(compFinal + offsetData, bits, freq, channels, outputDir, bundleTable[i].filename);
 		free(compFinal);
-		char tmp2Path[200];
-		sprintf(tmp2Path, "%s/%s.wav", outputDir, bundleTable[h].filename);
-		writeToTempWave(tmp2Path, outputData, outputSize);
-		writeWaveHeader(_waveDataSize);
-		free(outputData);
 	}
 
 	free(bundleTable);
