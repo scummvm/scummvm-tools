@@ -262,8 +262,7 @@ printf("Assembled command: '%s'\n", fbuf);
 	} break;
 
 	default:
-		printf("Unknown chunk : %02x\n", id);
-		exit(-1);
+		error("Unknown chunk : %02x", id);
 		break;
 	}
 }

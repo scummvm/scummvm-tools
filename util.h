@@ -80,7 +80,13 @@ static uint16 inline SWAP_16(uint16 a) {
 extern "C" {
 #endif
 
+#if defined(__GNUC__)
+extern void error(const char *s, ...) __attribute__((__noreturn__));
+#elif defined(_MSC_VER)
+extern void _declspec(noreturn) error(const char *s, ...);
+#else
 extern void error(const char *s, ...);
+#endif
 extern void warning(const char *s, ...);
 
 #if defined(__cplusplus)
