@@ -1462,7 +1462,12 @@ void next_line_V8()
 	case 0x83:
 		ext("p|freezeUnfreeze");
 		break;
-
+	case 0x84:
+		ext("|beginOverride");
+		break;
+	case 0x85:
+		ext("|endOverride");
+		break;
 	case 0x86:
 		ext("|stopSentence");
 		break;
@@ -1735,6 +1740,9 @@ void next_line_V8()
 				"\x29|quit");
 		break;
 
+	case 0xB9:
+		ext("s|startVideo");
+		break;
 	case 0xBA:
 		ext("y" "kludge\0"
 				"\xB|lockObject,"
