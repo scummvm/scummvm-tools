@@ -90,7 +90,7 @@ PAKFile::PAKFile(const char* file) {
 void PAKFile::drawFilelist(void) {
 	const char* currentName = 0;
 	
-	uint32 startoffset = *(uint32*)_buffer;
+	uint32 startoffset = TO_LE_32(*(uint32 *)_buffer);
 	uint32 endoffset = 0;
 	uint8* position = _buffer + 4;
 	
@@ -103,7 +103,7 @@ void PAKFile::drawFilelist(void) {
 
 		position += strlgt + 1;
 		// scip offset
-		endoffset = *(uint32*)position;
+		endoffset = TO_LE_32(*(uint32 *)position);
 		if (endoffset > _filesize) {
 			endoffset = _filesize;
 		} else if (endoffset == 0) {
@@ -124,7 +124,7 @@ void PAKFile::drawFilelist(void) {
 void PAKFile::outputFile(const char* file) {
 	const char* currentName = 0;
 	
-	uint32 startoffset = *(uint32*)_buffer;
+	uint32 startoffset = TO_LE_32(*(uint32 *)_buffer);
 	uint32 endoffset = 0;
 	uint8* position = _buffer + 4;
 	
@@ -137,7 +137,7 @@ void PAKFile::outputFile(const char* file) {
 
 		position += strlgt + 1;
 		// scip offset
-		endoffset = *(uint32*)position;
+		endoffset = TO_LE_32(*(uint32 *)position);
 		if (endoffset > _filesize) {
 			endoffset = _filesize;
 		} else if (endoffset == 0) {
@@ -165,7 +165,7 @@ void PAKFile::outputFile(const char* file) {
 void PAKFile::outputAllFiles(void) {
 	const char* currentName = 0;
 	
-	uint32 startoffset = *(uint32*)_buffer;
+	uint32 startoffset = TO_LE_32(*(uint32 *)_buffer);
 	uint32 endoffset = 0;
 	uint8* position = _buffer + 4;
 	
@@ -178,7 +178,7 @@ void PAKFile::outputAllFiles(void) {
 
 		position += strlgt + 1;
 		// scip offset
-		endoffset = *(uint32*)position;
+		endoffset = TO_LE_32(*(uint32 *)position);
 		if (endoffset > _filesize) {
 			endoffset = _filesize;
 		} else if (endoffset == 0) {
