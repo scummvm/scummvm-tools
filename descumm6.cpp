@@ -2136,25 +2136,46 @@ void next_line_V67()
 				"\xEBp|setTalkScript");
 		break;
 	case 0x9E:
-		ext("x" "verbOps\0"
-				"\xC4p|setCurVerb,"
-				"\x7Cp|loadImg,"
-				"\x7Ds|loadString,"
-				"\x7Ep|setColor,"
-				"\x7Fp|setHiColor,"
-				"\x80pp|setXY,"
-				"\x81|setOn,"
-				"\x82|setOff,"
-				"\x83|kill,"
-				"\x84|init,"
-				"\x85p|setDimColor,"
-				"\x86|setDimmed,"
-				"\x87p|setKey,"
-				"\x88|setCenter,"
-				"\x89p|setToString,"
-				"\x8Bpp|setToObject,"
-				"\x8Cp|setBkColor,"
-				"\xFF|redraw");
+		if (HumongousFlag)
+			ext("x" "verbOps\0"
+					"\xC4p|setCurVerb,"
+					"\x7Cp|loadImg,"
+					"\x7Ds|loadString,"
+					"\x7Ep|setColor,"
+					"\x7Fp|setHiColor,"
+					"\x80pp|setXY,"
+					"\x81|setOn,"
+					"\x82|setOff,"
+					"\x83p|kill,"
+					"\x84|init,"
+					"\x85p|setDimColor,"
+					"\x86|setDimmed,"
+					"\x87p|setKey,"
+					"\x88|setCenter,"
+					"\x89p|setToString,"
+					"\x8Bpp|setToObject,"
+					"\x8Cp|setBkColor,"
+					"\xFF|redraw");
+		else
+			ext("x" "verbOps\0"
+					"\xC4p|setCurVerb,"
+					"\x7Cp|loadImg,"
+					"\x7Ds|loadString,"
+					"\x7Ep|setColor,"
+					"\x7Fp|setHiColor,"
+					"\x80pp|setXY,"
+					"\x81|setOn,"
+					"\x82|setOff,"
+					"\x83|kill,"
+					"\x84|init,"
+					"\x85p|setDimColor,"
+					"\x86|setDimmed,"
+					"\x87p|setKey,"
+					"\x88|setCenter,"
+					"\x89p|setToString,"
+					"\x8Bpp|setToObject,"
+					"\x8Cp|setBkColor,"
+					"\xFF|redraw");
 		break;
 	case 0x9F:
 		ext("rpp|getActorFromXY");
@@ -2264,6 +2285,12 @@ void next_line_V67()
 				"\xCApw|dimType3,"
 				"\xCBpw|dimType4,"
 				"\xCCw|nukeArray");
+		break;
+	case 0xBD:
+		if (HumongousFlag)
+			ext("|stopObjectCode");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0xBE:
 		ext("lpp|startObjectQuick");
