@@ -2664,6 +2664,11 @@ void next_line()
 	case 0xDD:
 		ext("rp|findAllObjects");
 		break;
+	case 0xE0:
+		ext("x" "p|unknownEO\0" 
+			"\xDEp|unknownE0-DE,"
+			"\xDC|unknownE0-DC");
+		break;
 	case 0xDE:
 		ext("s|deleteFile");
 		break;
