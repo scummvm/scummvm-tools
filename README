@@ -10,6 +10,10 @@ Included tools:
 		Extracts macintosh "single file" SCUMM games into their
 		component parts, for use with ScummVM
 	
+	loom_tg16_extract
+		Extracts data files from TG16 version of Loom
+		There is currently no support in ScummVM
+
 	mm_nes_extract
 		Extracts data files from NES version of Maniac Mansion
 		There is currently no support in ScummVM
