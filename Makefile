@@ -8,9 +8,19 @@ LDFLAGS :=
 # Uncomment this if you are on a big endian system
 # CFLAGS += -DSCUMM_BIG_ENDIAN
 
-TARGETS := descumm3$(EXEEXT) descumm5$(EXEEXT) descumm6$(EXEEXT) extract$(EXEEXT) rescumm$(EXEEXT) simon2mp3$(EXEEXT)
+TARGETS := \
+	descumm$(EXEEXT) \
+	descumm3$(EXEEXT) \
+	descumm5$(EXEEXT) \
+	descumm6$(EXEEXT) \
+	extract$(EXEEXT) \
+	rescumm$(EXEEXT) \
+	simon2mp3$(EXEEXT)
 
 all: $(TARGETS)
+
+descumm$(EXEEXT) : descumm.o
+	$(CXX) $(LFLAGS) -o $@ $+
 
 descumm3$(EXEEXT) : descumm3.o
 	$(CXX) $(LFLAGS) -o $@ $+

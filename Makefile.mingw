@@ -8,6 +8,7 @@ include Makefile
 install:   all
 	mkdir -p $(SCUMMVMPATH)
 	mkdir -p $(SCUMMVMPATH)/tools
+	strip descumm.exe -o $(SCUMMVMPATH)/tools/descumm.exe
 	strip descumm3.exe -o $(SCUMMVMPATH)/tools/descumm3.exe
 	strip descumm5.exe -o $(SCUMMVMPATH)/tools/descumm5.exe
 	strip descumm6.exe -o $(SCUMMVMPATH)/tools/descumm6.exe
