@@ -10,6 +10,7 @@ Maniac Mansion
 	V2 (demo)	DOS	en	40564ec47da48a67787d1f9bd043902a	maniac
 	V2	Amiga	en	e781230da44a44e2f0770edb2b3b3633	maniac	dhewg, Andrea Petrucci
 	V2	Amiga	de	9bc548e179cdb0767009401c094d0895	maniac	Norbert Lange
+	V2	Amiga	fr	ce7733f185b838e248927c7ba1a04204	maniac	Tobias Fleischer
 	V2	Atari	en	a570381b028972d891052ee1e51dc011	maniac	Andreas Bylund
 	V2	Atari	fr	dd30a53035393baa5a5e222e716559af	maniac	Andreas Bylund
 
@@ -26,6 +27,7 @@ Zak McKracken and the Alien Mindbenders
 	V2 (alt?)	DOS	it	1900e501a52fbf55bde6e4196f6d2aa6	zak	Andrea Petrucci
 	V2	Amiga	en	e94c7cc3686fce406d3c91b5eae5a72d	zak	dhweg
 	V2	Amiga	de	6027e9ca9c35746d95dee2068cec17e5	zak	Norbert Lange
+	V2	Amiga	fr	91469353f7be1b122fa88d23480a1320	zak	Tobias Fleischer
 	V2	Amiga	it	27b3a4224ad63d5b04627595c1c1a025	zak	Andrea Petrucci
 	V2	Atari	fr	613f64f78ea26c7353b2a5940eb61d6a	zak	Andreas Bylund
 	FM-TOWNS	FM-TOWNS	en	2d4536a56e01da4b02eb021e7770afa2	zakTowns
@@ -152,6 +154,7 @@ Indiana Jones and the Fate of Atlantis
 
 	Non-Talkie	Amiga	en	3a03dab514e4038df192d8a8de469788	atlantis	dhewg
 	Non-Talkie	Amiga	de	4f267a901719623de7dde83e47d5b474	atlantis	ghoostkilla
+	Non-Talkie	Amiga	de	e534d29afb3c6e0ee9dc3d53c5956714	atlantis	Tobias Fleischer
 	Non-Talkie	Amiga	it	5798972220cd458be2626d54c80f71d7	atlantis	Andrea Petrucci
 
 	Non-Talkie	Mac	en	d6dd0646404768a63e963891a96daadd	atlantis	Fingolfin
