@@ -16,6 +16,7 @@ CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
 # CFLAGS += -DSCUMM_BIG_ENDIAN
 
 TARGETS := \
+	convbdf$(EXEEXT) \
 	descumm$(EXEEXT) \
 	extract$(EXEEXT) \
 	mm_nes_extract$(EXEEXT) \
@@ -25,6 +26,9 @@ TARGETS := \
 	simon2mp3$(EXEEXT)
 
 all: $(TARGETS)
+
+convbdf$(EXEEXT): convbdf.o util.o
+	$(CXX) $(LFLAGS) -o $@ $+
 
 descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
 	$(CXX) $(LFLAGS) -o $@ $+
