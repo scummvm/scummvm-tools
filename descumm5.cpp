@@ -1782,7 +1782,7 @@ void get_tok(char *buf)
 
 	case 0x68:
 	case 0xE8:
-		do_tok(buf, "getScriptRunning", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "isScriptRunning", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x2E:{
