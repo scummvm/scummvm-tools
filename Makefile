@@ -1,6 +1,7 @@
 SRC=.
 
-CC      = g++
+CC      = gcc
+CXX     = g++
 CFLAGS  = -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar 
 LDFLAGS :=
 
@@ -9,13 +10,13 @@ TARGETS := descumm3$(EXEEXT) descumm5$(EXEEXT) descumm6$(EXEEXT) extract$(EXEEXT
 all: $(TARGETS)
 
 descumm3$(EXEEXT) : descumm3.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CXX) $(LFLAGS) -o $@ $+
 
 descumm5$(EXEEXT) : descumm5.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CXX) $(LFLAGS) -o $@ $+
 
 descumm6$(EXEEXT) : descumm6.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CXX) $(LFLAGS) -o $@ $+
 
 extract$(EXEEXT) : extract.o
 	$(CC) $(LFLAGS) -o $@ $+
