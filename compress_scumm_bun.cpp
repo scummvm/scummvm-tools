@@ -764,7 +764,7 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 		}
 		_waveDataSize = 0;
 	}
-	for (unsigned int j = 0; j < size; j += 2) {
+	for (unsigned int j = 0; j < size - 1; j += 2) {
 		byte tmp = output_data[j + 0];
 		output_data[j + 0] = output_data[j + 1];
 		output_data[j + 1] = tmp;
@@ -815,6 +815,7 @@ byte *decompressBundleSound(int index, FILE *input, int32 &finalSize) {
 		assert(outputSize <= 0x2000);
 		memcpy(compFinal + finalSize, compOutput, outputSize);
 		finalSize += outputSize;
+		assert(finalSize <= numCompItems * 0x2000);
 	}
 
 	free(compInput);
@@ -933,7 +934,6 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *
 		sprintf(tmpPath, "%s/%s_reg%03d.wav", dir, filename, l);
 		writeToTempWave(tmpPath, outputData, outputSize);
 		writeWaveHeader(_waveDataSize, freq, channels);
-
 		free(outputData);
 		sprintf(tmpPath, "%s/%s_reg%03d", dir, filename, l);
 		if (_oggMode)
