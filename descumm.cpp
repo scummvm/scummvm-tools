@@ -2044,8 +2044,8 @@ void get_tok_V2(char *buf)
 		// clearState01
 		do_tok(buf, "clearState01", ((opcode & 0x80) ? A1V : A1W));
 		break;
-	case 0x57:
-	case 0xD7:
+	case 0x17:
+	case 0x97:
 		// clearState02
 		do_tok(buf, "clearState02", ((opcode & 0x80) ? A1V : A1W));
 		break;
@@ -2065,8 +2065,8 @@ void get_tok_V2(char *buf)
 		//setState01
 		do_tok(buf, "setState01", ((opcode & 0x80) ? A1V : A1W));
 		break;
-	case 0x17:
-	case 0x97:
+	case 0x57:
+	case 0xD7:
 		//setState02
 		do_tok(buf, "setState02", ((opcode & 0x80) ? A1V : A1W));
 		break;
