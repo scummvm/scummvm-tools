@@ -556,6 +556,31 @@ int HavePendingElse()
 	return PendingElse;
 }
 
+void do_decodeparsestring_v2(char *buf, byte opcode)
+{
+	byte buffer[256];
+	byte *ptr = buffer;
+	byte c;
+
+	while (( c = get_byte())) {
+		if (c & 0x80) {
+			*ptr++ = c & 0x7F;
+			*ptr++ = ' ';
+		} else if (c < 8) {
+			*ptr++ = 0xFF;
+			*ptr++ = c;
+			if (c > 3) {
+				*ptr++ = 0;
+				*ptr++ = get_byte();
+			}
+		} else
+			*ptr++ = c;
+	}
+	*ptr = 0;
+
+	strcat(buf, (char *)buffer);
+}
+
 void do_actorset_v2(char *buf, byte opcode)
 {
 	buf = do_tok(buf, "ActorSet", ((opcode & 0x80) ? A1V : A1B) | ANOLASTPAREN);
@@ -1623,11 +1648,12 @@ void get_tok_V2(char *buf)
 	case 0x80:
 		do_tok(buf, "breakHere", 0);
 		break;
-/*
 	case 0x4A:
 	case 0xCA:
 		// chainScript
+		do_tok(buf, "chainScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
+/*
 	case 0x77:
 	case 0xF7:
 		// clearState01
@@ -1646,7 +1672,7 @@ void get_tok_V2(char *buf)
 		sprintf(buf, "UnknownCursorCommand%.2X", opcode);
 		break;
 	case 0x40:
-		do_tok(buf, "cutscene", ((opcode & 80) ? A1V : A1B));
+		sprintf(buf, "cutscene");
 		break;
 	case 0xC6:
 		//decrement
@@ -1672,10 +1698,10 @@ void get_tok_V2(char *buf)
 	case 0x99:
 	case 0xB9:
 	case 0xD9:
-	case 0xF9:
+	case 0xF9: 
 		//doSentence
 		break;
-*/
+*/	
 	case 0x05:
 	case 0x25:
 	case 0x45:
@@ -1694,6 +1720,7 @@ void get_tok_V2(char *buf)
 	case 0xAC:
 		//drawSentence
 		break;
+*/
 	case 0x5C:
 	case 0x6B:
 	case 0x6E:
@@ -1702,8 +1729,10 @@ void get_tok_V2(char *buf)
 	case 0xEB:
 	case 0xEE:
 		//dummy
-		break;
+		sprintf(buf, "dummy(%.2X)", opcode);
 		
+		break;
+/*		
 	case 0xC0:
 		//endCutscene
 		break;
@@ -1930,20 +1959,23 @@ void get_tok_V2(char *buf)
 		//panCameraTo
 		do_tok(buf, "panCameraTo", ((opcode & 0x80) ? A1V : A1W));
 		break;
-/*
 	case 0x50:
 	case 0xD0:
 		//pickupObject
+		do_tok(buf, "pickupObject", ((opcode & 0x80) ? A1V : A1W));
 		break;
-*/		
 	case 0x14:
 	case 0x94:
 		// print
-		do_tok(buf, "print", A1ASCII);
+		sprintf(buf, "print(\"");
+		do_decodeparsestring_v2(buf, opcode);
+		strcat(buf, "\")");
 		break;
 	case 0xD8:
 		//printEgo
-		do_tok(buf, "printEgo", A1ASCII);
+		sprintf(buf, "printEgo(\"");
+		do_decodeparsestring_v2(buf, opcode);
+		strcat(buf, "\")");
 		break;
 		
 	case 0xCC:
@@ -2009,11 +2041,13 @@ void get_tok_V2(char *buf)
 	case 0xDB:
 		//setBitVar
 		break;
+*/
 	case 0x32:
 	case 0xB2:
 		//setCameraAt
+		do_tok(buf, "setCameraAt", ((opcode & 0x80) ? A1V : A1B));
 		break;
-			
+/*			
 	case 0x54:
 	case 0xD4:
 		//setObjectName
@@ -2024,37 +2058,38 @@ void get_tok_V2(char *buf)
 	case 0x8B:
 	case 0xCB:
 		//setObjY
-		buf = do_tok(buf, "setObjY", ((opcode & 0x80) ? A1V : A1W) | A2B);
+		do_tok(buf, "setObjY", ((opcode & 0x80) ? A1V : A1W) | A2B);
 		break;
-/*
 	case 0x29:
 	case 0x69:
 	case 0xA9:
 	case 0xE9:
 		//setOwnerOf
+		do_tok(buf, "setOwnerOf", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 		
 	case 0x37:
 		//setState01
+		do_tok(buf, "setState01", A1W);
 		break;
-		
 	case 0x57:
 	case 0x97:
 	case 0xB7:
 	case 0xD7:
 		//setState02
+		do_tok(buf, "setState02", A1W);
 		break;
-		
 	case 0x17:
 	case 0xA7:
 		//setState04
+		do_tok(buf, "setState04", A1W);
 		break;
 	case 0x07:
 	case 0x47:
 	case 0x87:
 		//setState08
+		do_tok(buf, "setState08", A1W);
 		break;
-*/
 	case 0x26:
 	case 0xA6: {
 			int i;
