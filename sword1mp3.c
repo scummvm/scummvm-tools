@@ -344,13 +344,13 @@ void showhelp(char *exename) {
 	exit(2);
 }
 
-int16 *uncompressSpeech(FILE *clu, uint32 index, uint32 cSize, uint32 *returnSize) {
+int16 *uncompressSpeech(FILE *clu, uint32 idx, uint32 cSize, uint32 *returnSize) {
 	uint32 resSize, srcPos;
 	int16 *srcData, *dstData, *dstPos;
 	uint32 headerPos = 0;
 	int16 length, cnt;
 	uint8 *fBuf = (uint8*)malloc(cSize);
-	fseek(clu, index, SEEK_SET);
+	fseek(clu, idx, SEEK_SET);
 	assert(fread(fBuf, 1, cSize, clu) == cSize);
 	while ((READ_BE_UINT32(fBuf + headerPos) != 'data') && (headerPos < 100))
 		headerPos++;

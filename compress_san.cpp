@@ -21,7 +21,6 @@
 
 #include "util.h"
 #include "zlib.h"
-#include <malloc.h>
 
 const char *tag2str(uint32 tag) {
 	static char str[5];
@@ -388,6 +387,8 @@ void mixing(char *outputDir, char *inputFilename, int frames, int fps) {
 		frameAudioSize = 7352;
 	} else if (fps == 10) {
 		frameAudioSize = 8802;
+	} else {
+		error("Unsupported fps value %d", fps);
 	}
 
 	printf("Creating silent wav file...\n");
@@ -582,7 +583,7 @@ void handleDigIACT(FILE *input, int size, char *outputDir, char *inputFilename, 
 	int track = readUint16LE(input);
 	int index = readUint16LE(input);
 	int nbframes = readUint16LE(input);
-	int data_size = readUint32LE(input);
+	//int data_size = readUint32LE(input);
 	int volume = 127;
 	int trackId = track;
 	int pan = 0;
@@ -614,7 +615,7 @@ void handlePSAD(FILE *input, int size, char *outputDir, char *inputFilename, cha
 	int trackId = readUint16LE(input);
 	int index = readUint16LE(input);
 	int nbframes = readUint16LE(input);
-	int flags = readUint16LE(input);
+	//int flags = readUint16LE(input);
 	int volume = readByte(input);
 	int pan = readByte(input);
 
