@@ -495,24 +495,24 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 52 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	/* XXX */
+	/* 56 */
+	"sentence_script",
+	"pickup_script",
+	"cutscene_script",
+	"endcutscene_script",
+	/* 60 */
 	NULL,
 	NULL,
 	NULL,
 	NULL,
 	/* 64 */
-	NULL,
-	NULL,
+	"pause_key?",
+	"saveload_key?",
 	NULL,
 	NULL,
 	/* XXX */
@@ -585,14 +585,14 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	NULL,
-	/* XXX */
+	/* 124 */
 	NULL,
 	NULL,
-	NULL,
+	"default_actor",
 	NULL,
 	/* 128 */
 	NULL,
-	NULL,
+	"text_delay?",
 	"sputm_debug",
 	NULL,
 };
@@ -1192,7 +1192,7 @@ int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 
 void jump()
 {
-	int cur = get_curoffs() + 2;
+	int cur = get_curoffs() + ((scriptVersion == 8) ? 4 : 2);
 	int to = cur + get_signed_word();
 
 	if (!dontOutputElse && maybeAddElse(cur, to)) {
@@ -1208,7 +1208,7 @@ void jump()
 
 void jumpif(StackEnt * se, bool when)
 {
-	int cur = get_curoffs() + 2;
+	int cur = get_curoffs() + ((scriptVersion == 8) ? 4 : 2);
 	int offset = get_signed_word();
 	int to = cur + offset;
 	char *e = output;
@@ -1385,6 +1385,29 @@ void next_line_V8()
 				"\xD0|mumble,"
 				"\xD1s|msg,"
 				"\xD2|wrap"
+				);
+		break;
+
+	case 0xAA:
+		ext("x" "resourceRoutines\0"
+				"\x3Cp|loadCharset,"
+				"\x3Dp|loadCostume,"
+				"\x3Ep|loadObject,"
+				"\x3Fp|loadRoom,"
+				"\x40p|loadScript,"
+				"\x41p|loadSound,"
+				"\x42p|lockCostume,"
+				"\x43p|lockRoom,"
+				"\x44p|lockScript,"
+				"\x45p|lockSound,"
+				"\x46p|unlockCostume,"
+				"\x47p|unlockRoom,"
+				"\x48p|unlockScript,"
+				"\x49p|unlockSound,"
+				"\x4Ap|nukeCostume,"
+				"\x4Bp|nukeRoom,"
+				"\x4Cp|nukeScript,"
+				"\x4Dp|nukeSound"
 				);
 		break;
 
@@ -1719,11 +1742,26 @@ void next_line()
 		ext("|createBoxMatrix");
 		break;
 	case 0x9B:
-		ext("x" "resourceRoutines\0" "\x64p|loadScript," "\x65p|loadSound," "\x66p|loadCostume," 
-			"\x67p|loadRoom," "\x68p|nukeScript," "\x69p|nukeSound," "\x6Ap|nukeCostume,"
-			"\x6Bp|nukeRoom," "\x6Cp|lockScript," "\x6Dp|lockSound," "\x6Ep|lockCostume,"
-			"\x6Fp|lockRoom," "\x70p|unlockScript," "\x71p|unlockSound," "\x72p|unlockCostume,"
-			"\x73p|unlockRoom," "\x75p|loadCharset," "\x76p|nukeCharset," "\x77z|loadFlObject");
+		ext("x" "resourceRoutines\0"
+				"\x64p|loadScript,"
+				"\x65p|loadSound,"
+				"\x66p|loadCostume," 
+				"\x67p|loadRoom,"
+				"\x68p|nukeScript," 
+				"\x69p|nukeSound," 
+				"\x6Ap|nukeCostume,"
+				"\x6Bp|nukeRoom," 
+				"\x6Cp|lockScript," 
+				"\x6Dp|lockSound," 
+				"\x6Ep|lockCostume,"
+				"\x6Fp|lockRoom," 
+				"\x70p|unlockScript," 
+				"\x71p|unlockSound," 
+				"\x72p|unlockCostume,"
+				"\x73p|unlockRoom," 
+				"\x75p|loadCharset," 
+				"\x76p|nukeCharset," 
+				"\x77z|loadFlObject");
 		break;
 	case 0x9C:
 		ext("x" "roomOps\0"
