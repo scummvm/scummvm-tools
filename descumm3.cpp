@@ -192,7 +192,12 @@ char *get_var(char *buf)
 
 	int i = get_word();
 
-	sprintf(buf, "%s[%d", get_num_string(i), i & 0xFFF);
+	// fIXME this should be for zak256 as well
+	if ((i & 0x8000) && (GF_UNBLOCKED)) 
+		sprintf(buf, "Var[%d Bit %d", (i & 0x0FFF) >> 4, i & 0x000F);
+	else
+		sprintf(buf, "%s[%d", get_num_string(i), i & 0xFFF);
+
 	buf2 = strchr(buf, 0);
 
 	if (i & 0x2000) {
