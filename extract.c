@@ -226,7 +226,7 @@ void get_part(void)
 		else
 			real_samplerate = 1000000 / (256 - sample_rate);
 
-		printf(" - sample rate = %d (%02x)\n", 1000000 / (256 - sample_rate), sample_rate);
+		printf(" - sample rate = %d (%02x)\n", real_samplerate, sample_rate);
 		printf(" - compression = %s (%02x)\n",
 		       (comp ==	   0 ? "8bits"   :
 		        (comp ==   1 ? "4bits"   :
