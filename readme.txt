@@ -8,3 +8,5 @@ Included tools:
         rescumm.cpp - Extracts macintosh "single file" SCUMM games into their
                       component parts, for use with ScummVM
 
+        descumm3.cpp - Decompiles SCUMM V3 scripts (eg, loomcd, indy3-256
+                       Zak256 (fmtowns).
