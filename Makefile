@@ -13,6 +13,7 @@ TARGETS := \
 	descumm6$(EXEEXT) \
 	extract$(EXEEXT) \
 	rescumm$(EXEEXT) \
+	simon1decr$(EXEEXT) \
 	simon2mp3$(EXEEXT)
 
 all: $(TARGETS)
@@ -27,6 +28,9 @@ extract$(EXEEXT): extract.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 rescumm$(EXEEXT): rescumm.o
+	$(CC) $(LFLAGS) -o $@ $+
+
+simon1decr$(EXEEXT): simon1decr.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 simon2mp3$(EXEEXT): simon2mp3.o
