@@ -487,7 +487,6 @@ int RequestElseIfAdd(int cur, int elseto, int to)
 	if (!NumBlockStack)
 		return 0;										/* There are no previous blocks, so an ifelse is not ok */
 
-
 	k = to - 3;
 	if (k < 0 || k >= size_of_code)
 		return 0;										/* Invalid jump */
@@ -495,7 +494,7 @@ int RequestElseIfAdd(int cur, int elseto, int to)
 	if (org_pos[k] != g_jump_opcode)
 		return 0;										/* Invalid jump */
 
-	k = to + *((short *)(org_pos + k + 1));
+	k = to + TO_LE_16(*(int16*)(org_pos + k + 1));
 
 	if (k != elseto)
 		return 0;										/* Not an ifelse */
@@ -1537,8 +1536,8 @@ bool emit_if(char *before, char *after)
 		if (RequestElseIfAdd(get_curpos(), PendingElseTo, i)) {
 			sprintf(after, AlwaysShowOffs ? ") /*%.4X*/ {" : ") {", i);
 			strcpy(before, "} else ");
-			PendingElse = 0;
-			HaveElse = 1;
+			PendingElse = false;
+			HaveElse = true;
 			return true;
 		}
 	}
