@@ -1571,7 +1571,12 @@ void next_line_V8()
 				"\x89p|setActorPan"
 				);
 		break;
-
+	case 0xAD:
+		ext("x" "cameraOps\0"
+				"\x32|freezeCamera,"
+				"\x33|unfreezeCamera"
+				);
+		break;
 	case 0xAE:
 		ext("x" "verbOps\0"
 				"\x96p|verbInit,"
@@ -1658,6 +1663,40 @@ void next_line_V8()
 		break;
 	case 0xDC:
 		ext("rpp|findObject");
+		break;
+
+	case 0xE2:
+		ext("rp|getActorRoom");
+		break;
+	case 0xE3:
+		ext("rp|getActorWalkBox");
+		break;
+	case 0xE4:
+		ext("rp|getActorMoving");
+		break;
+	case 0xE5:
+		ext("rp|getActorCostume");
+		break;
+	case 0xE6:
+		ext("rp|getActorScaleX");
+		break;
+	case 0xE7:
+		ext("rp|getActorLayer");
+		break;
+	case 0xE8:
+		ext("rp|getActorElevation");
+		break;
+	case 0xE9:
+		ext("rp|getActorWidth");
+		break;
+	case 0xEA:
+		ext("rp|getObjectDir");
+		break;
+	case 0xEB:
+		ext("rp|getObjectX");
+		break;
+	case 0xEC:
+		ext("rp|getObjectY");
 		break;
 
 	default:
@@ -2275,7 +2314,7 @@ void next_line()
 		ext("rp|isRoomScriptRunning");
 		break;
 	case 0xEC:
-		ext("rp|getActorPriority");
+		ext("rp|getActorLayer");
 		break;
 	case 0xED:
 		ext("rp|getObjectNewDir");
