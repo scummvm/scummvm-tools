@@ -1593,7 +1593,7 @@ void do_if_code(char *buf, byte opcode)
 	if (opcode != 0x28 && opcode != 0xA8)
 		get_var(var);
 
-	switch (opcode & 127) {
+	switch (opcode & 0x7F) {
 	case 0x38:
 		txt = 0;
 		break;											/* lessOrEqual */
@@ -1632,6 +1632,93 @@ void do_if_code(char *buf, byte opcode)
 	sprintf(buf, "%sif (%s%s%s%s", before, var, cmp_texts[txt ^ neg], tmp2, after);
 }
 
+void do_if_state_code(char *buf, byte opcode)
+{
+	char tmp2[256];
+	char var[256];
+	char before[256], after[256];
+	byte neg;
+	int state;
+
+	const char *cmp_texts[2] = {
+		" == ", " != "
+	};
+
+	var[0] = 0;
+	get_var_or_word(var, opcode & 0x80);
+
+	if (ScriptVersion > 2) {
+		switch (opcode & 0x2F) {
+		case 0x0f:
+			neg = 0;
+			break;
+		case 0x2f:
+			neg = 1;
+			break;
+		default:
+			/* Exit, this should never happen, only if my code is buggy */
+			printf("Unknown IF code %x", opcode);
+			exit(1);
+		}
+
+		get_var_or_word(tmp2, opcode & 0x40);
+	} else {
+		switch (opcode) {
+		case 0x3f:
+		case 0x7f:
+		case 0xbf:
+			state = 1;
+			neg = 1;
+			break;
+		case 0x5f:
+		case 0xdf:
+			state = 2;
+			neg = 1;
+			break;
+		case 0x27:
+		case 0x2f:
+		case 0xaf:
+			state = 4;
+			neg = 1;
+			break;
+		case 0x0f:
+		case 0x8f:
+			state = 8;
+			neg = 1;
+			break;
+		case 0xff:
+			state = 1;
+			neg = 0;
+			break;
+		case 0x1f:
+		case 0x9f:
+			state = 2;
+			neg = 0;
+			break;
+		case 0x6f:
+		case 0xef:
+			state = 4;
+			neg = 0;
+			break;
+		case 0x4f:
+		case 0xcf:
+			state = 8;
+			neg = 0;
+			break;
+		default:
+			/* Exit, this should never happen, only if my code is buggy */
+			printf("Unknown IF code %x", opcode);
+			exit(1);
+		}
+		
+		sprintf(tmp2, "%d", state);
+	}
+
+	neg = neg ^ emit_if(before, after) ^ 1;
+
+	sprintf(buf, "%sif (getState(%s)%s%s%s", before, var, cmp_texts[neg], tmp2, after);
+}
+
 void do_unconditional_jump(char *buf, byte opcode)
 {
 	int i = get_gotopos();
@@ -1658,7 +1745,7 @@ void do_varset_code(char *buf, byte opcode)
 
 	buf = get_var(buf);
 
-	switch (opcode & 127) {
+	switch (opcode & 0x7F) {
 	case 0x1A:
 		s = " = ";
 		break;											/* move */
@@ -1751,7 +1838,9 @@ void get_tok_V2(char *buf)
 		do_actorset_v2(buf, opcode);
 		break;
 
+	case 0x1A:
 	case 0x5A:
+	case 0x9A:
 	case 0xDA:
 		do_varset_code(buf, opcode);
 		break;
@@ -1771,9 +1860,6 @@ void get_tok_V2(char *buf)
 /*
 	case 0x2C:
 		// assignVarByte
-		break;
-	case 0x9A:
-		// assignVarWord
 		break;
 	case 0x0A:
 	case 0x8A:
@@ -1809,10 +1895,13 @@ void get_tok_V2(char *buf)
 	case 0x40:
 		sprintf(buf, "cutscene");
 		break;
+
+	case 0x46:
 	case 0xC6:
-		//decrement
+		// increment / decrement
 		do_varset_code(buf, opcode);
 		break;
+
 	case 0x2E: {
 		//delay
 		int d = get_byte();
@@ -1954,6 +2043,7 @@ void get_tok_V2(char *buf)
 	case 0x96:
 		do_tok(buf, "getRandomNr", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
+
 /*
 	case 0x1D:
 	case 0x5D:
@@ -1961,52 +2051,36 @@ void get_tok_V2(char *buf)
 	case 0xDD:
 		//ifClassOfIs
 		break;
+*/
 		
 	case 0x3F:
 	case 0x7F:
 	case 0xBF:
 		//ifNotState01
-		break;
-		
 	case 0x5F:
 	case 0xDF:
 		//ifNotState02
-		break;
-		
 	case 0x27:
 	case 0x2F:
 	case 0xAF:
 		//ifNotState04
-		break;
-		
 	case 0x0F:
 	case 0x8F:
 		//ifNotState08
-		break;
 	case 0xFF:
 		//ifState01
-		break;
-		
 	case 0x1F:
 	case 0x9F:
 		//ifState02
-		break;
-		
 	case 0x6F:
 	case 0xEF:
 		//ifState04
-		break;
-		
 	case 0x4F:
 	case 0xCF:
 		//ifState08
+		do_if_state_code(buf, opcode);
 		break;
 		
-*/
-	case 0x46:
-		//increment
-		do_varset_code(buf, opcode);
-		break;
 	case 0x48:
 	case 0xC8:
 		//isEqual
@@ -2036,6 +2110,12 @@ void get_tok_V2(char *buf)
 		do_if_code(buf, opcode);
 		break;
 
+	case 0x38:
+	case 0xB8:
+		//lessOrEqual
+		do_if_code(buf, opcode);
+		break;
+
 	case 0x68:
 	case 0xE8:
 		do_tok(buf, "isScriptRunning", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
@@ -2049,12 +2129,7 @@ void get_tok_V2(char *buf)
 		// jumpRelative
 		do_unconditional_jump(buf, opcode);
 		break;
-/*
-	case 0x38:
-	case 0xB8:
-		//lessOrEqual
-		break;
-*/		
+
 	case 0x70:
 	case 0xF0:
 		buf = do_tok(buf, "lights", ((opcode & 0x80) ? A1V : A1B) | A2B | A3B);
@@ -2079,12 +2154,7 @@ void get_tok_V2(char *buf)
 	case 0xB0:
 		//matrixOps
 		break;
-*/	
-	case 0x1A:
-		//move
-		do_varset_code(buf, opcode);
-		break;
-/*
+
 	case 0xA8:
 		//notEqualZero
 		break;
@@ -2330,11 +2400,9 @@ void get_tok_V2(char *buf)
 		// walkActorToObject
 		break;
 	default:
-		printf("unimplemented case %x\n", opcode);
+		printf("Unknown opcode %.2X\n", opcode);
 		exit(1);
 	}
-
-		
 }
 
 void get_tok(char *buf)
@@ -2486,22 +2554,18 @@ void get_tok(char *buf)
 		break;											/* arg1=actor, arg2=actor */
 
 	case 0x0F:
-	case 0x4F:
 	case 0x8F:
-	case 0xCF:
-		if (ScriptVersion == 5)
+		if (ScriptVersion == 5) {
 			do_tok(buf, "getObjectState", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
-		else
-			do_tok(buf, "if State",
-					 ATO | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
-		break;
-
+			break;
+		}
 	case 0x2F:
+	case 0x4F:
 	case 0x6F:
 	case 0xAF:
+	case 0xCF:
 	case 0xEF:
-		do_tok(buf, "if not State",
-					 ATO | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_if_state_code(buf, opcode);
 		break;
 
 	case 0x10:
