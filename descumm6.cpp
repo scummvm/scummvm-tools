@@ -2524,6 +2524,13 @@ void next_line_V67(char *output)
 	case 0xDB:
 		ext(output, "rpp|readFile");
 		break;
+	case 0xDC:
+		if (HumongousFlag)
+			ext(output, "ppp|writeFile");
+		else
+			invalidop(NULL, code);
+		break;
+
 	case 0xDD:
 		ext(output, "rp|findAllObjects");
 		break;
