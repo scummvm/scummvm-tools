@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#ifndef WIN32
 #include <unistd.h>
+#endif
 
 /* These are the defaults parameters for the Lame invocation */
 #define minBitrDef 24

@@ -598,7 +598,7 @@ StackEnt *se_get_list()
 {
 	StackEnt *se = se_new(seStackList);
 	StackEnt *senum = pop();
-	int num;
+	int num, i;
 
 	if (senum->type != seInt) {
 		printf("stackList with variable number of arguments, cannot disassemble");
@@ -607,7 +607,7 @@ StackEnt *se_get_list()
 	se->data = num = senum->data;
 	se->list = (StackEnt **) calloc(num, sizeof(StackEnt *));
 
-	while (--num >= 0) {
+	for(i = 0; i < num; i++) {
 		se->list[num] = pop();
 	}
 	return se;
