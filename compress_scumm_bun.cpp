@@ -967,6 +967,7 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *
 
 		free(outputData);
 		encodeWaveWithOgg(tmpPath);
+		unlink(tmpPath);
 	}
 	free(_region);
 }
