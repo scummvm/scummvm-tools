@@ -454,9 +454,9 @@ void push(StackEnt * se)
 void invalidop(const char *cmd, int op)
 {
 	if (cmd)
-		printf("invalid opcode %s:%d\n", cmd, op);
+		printf("invalid opcode %s:0x%x\n", cmd, op);
 	else
-		printf("invalid opcode %d\n", op);
+		printf("invalid opcode 0x%x\n", op);
 	exit(1);
 }
 
@@ -1102,6 +1102,24 @@ void next_line_V8()
 	case 0x16:
 		push(se_oper(pop(), operMod, pop()));
 		break;
+	case 0x64:
+		jumpif(pop(), true);
+		break;
+	case 0x65:
+		jumpif(pop(), false);
+		break;
+	case 0x66:
+		jump();
+		break;
+	case 0x6D:
+		writeVar(get_word(), pop());
+		break;
+
+	case 0x79:
+		ext("lp|startScript");
+	case 0x7A:
+		ext("lp|startScriptQuick");
+
 	case 0x9C:
 		ext("x" "cursorCommand\0"
 				"\xDC|cursorOn,"
