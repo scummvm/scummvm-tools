@@ -21,6 +21,9 @@
 
 #include "compress.h"
 
+#define TEMP_DAT	"tempfile.dat"
+#define TEMP_IDX	"tempfile.idx"
+
 static FILE *input, *output_idx, *output_snd;
 
 static CompressMode gCompMode = kMP3Mode;
@@ -49,17 +52,15 @@ static void end(void)
 	fclose(output_idx);
 	fclose(input);
 
-	sprintf(tmp, "%s%s", infile_base, head);
+	sprintf(tmp, "%s.%s", infile_base, head);
 	output_idx = fopen(tmp, "wb");
 
-	sprintf(tmp, "%sidx", infile_base);
-	input = fopen(tmp, "rb");
+	input = fopen(TEMP_IDX, "rb");
 	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
 		fwrite(fbuf, 1, size, output_idx);
 	}
 	fclose(input);
-	sprintf(tmp, "%sdat", infile_base);
-	input = fopen(tmp, "rb");
+	input = fopen(TEMP_DAT, "rb");
 	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
 		fwrite(fbuf, 1, size, output_idx);
 	}
@@ -67,10 +68,8 @@ static void end(void)
 	fclose(output_idx);
 
 	/* And some clean-up :-) */
-	sprintf(tmp, "%sidx", infile_base);
-	unlink(tmp);
-	sprintf(tmp, "%sdat", infile_base);
-	unlink(tmp);
+	unlink(TEMP_IDX);
+	unlink(TEMP_DAT);
 	unlink(TEMP_RAW);
 	unlink(tempEncoded);
 	unlink(TEMP_WAV);
@@ -187,18 +186,22 @@ void showhelp(char *exename)
 
 static void convert_pc(char *infile)
 {
-	int i, n, size, num;
-	char tmp[256];
+	int i, size, num;
 	uint32 filenums[32768];
 	uint32 offsets[32768];
+	char *p;
 
-	memccpy(infile_base, infile, '.', strlen(infile));
-	n = strlen(infile_base);
-	if (infile_base[n-1] == '.')
-		infile_base[n] = '\0';
-	else {
-		infile_base[n] = '.';
-		infile_base[n + 1] = '\0';
+	p = strrchr(infile, '/');
+	if (!p) {
+		p = strrchr(infile, '\\');
+		if (!p) {
+			p = infile - 1;
+		}
+	}
+	strcpy(infile_base, p + 1);
+	p = strrchr(infile_base, '.');
+	if (p) {
+		*p = '\0';
 	}
 
 	input = fopen(infile, "rb");
@@ -207,11 +210,17 @@ static void convert_pc(char *infile)
 		exit(-1);
 	}
 
-	sprintf(tmp, "%sidx", infile_base);
-	output_idx = fopen(tmp, "wb");
+	output_idx = fopen(TEMP_IDX, "wb");
+	if (!output_idx) {
+		printf("Can't open file " TEMP_IDX " for write!\n" );
+		exit(-1);
+	}
 
-	sprintf(tmp, "%sdat", infile_base);
-	output_snd = fopen(tmp, "wb");
+	output_snd = fopen(TEMP_DAT, "wb");
+	if (!output_snd) {
+		printf("Can't open file " TEMP_DAT " for write!\n" );
+		exit(-1);
+	}
 
 	num = get_offsets(filenums, offsets);
 
@@ -243,8 +252,7 @@ static void convert_mac(void)
 	uint32 filenums[32768];
 	uint32 offsets[32768];
 	
-
-	sprintf(infile_base, "simon2.");
+	sprintf(infile_base, "simon2");
 
 	input = fopen("voices.idx", "rb");
 	if (!input) {
@@ -252,11 +260,17 @@ static void convert_mac(void)
 		exit(-1);
 	}
 
-	sprintf(tmp, "%sidx", infile_base);
-	output_idx = fopen(tmp, "wb");
+	output_idx = fopen(TEMP_IDX, "wb");
+	if (!output_idx) {
+		printf("Can't open file " TEMP_IDX " for write!\n" );
+		exit(-1);
+	}
 
-	sprintf(tmp, "%sdat", infile_base);
-	output_snd = fopen(tmp, "wb");
+	output_snd = fopen(TEMP_DAT, "wb");
+	if (!output_snd) {
+		printf("Can't open file " TEMP_DAT " for write!\n" );
+		exit(-1);
+	}
 
 	num = get_offsets_mac(filenums, offsets);
 
