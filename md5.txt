@@ -285,13 +285,18 @@ Humongous Interactive Catalog
 	-	Windows	en	86c9902b7bec1a17926d4dae85beaa45	catalog	khalek
 
 Let's Explore the Farm with Buzzy
+	-	Windows	en	a85856675429fe88051744f755b72f93	farm	Kirben
 	Demo	Windows	en	bf8b52fdd9a69c67f34e8e9fec72661c	farmdemo	khalek
 
 Let's Explore the Airport with Buzzy
+	-	Windows	en	07433205acdca3bc553d0e731588b35f	airport	Kirben
 	Demo	Windows	en	86c9902b7bec1a17926d4dae85beaa45	airdemo	khalek
 	Demo	Windows	en	e144f5f49d9241d2a9dee2576b3d09cb	airdemo	khalek
 	Demo	Windows	en	8ffd618a776a4c0d8922bb28b09f8ce8	airdemo	khalek
 	Demo	Mac	en	7ea2da67ebabea4ac20cee9f4f9d2934	Airport Demo	khalek
+
+Let's Explore the Jungle with Buzzy
+	-	Windows	en	8801fb4a1200b347f7a38523339526dd	jungle	Kirben
 
 Pajama Sam 1: No Need to Hide
 	-	Windows	en	672dec94b82f7f0877ebb5b5cf7f4bc1	pajama	khalek
@@ -309,10 +314,16 @@ Pajama Sam 3: You Are What You Eat
 	-	Windows	en	f7711f9264d4d43c2a1518ec7c10a607	pajama3	Kirben
 	Demo	Windows	en	cf90b4db5486ef798db78fe6fbf897e5	pj3-demo	khalek
 
-Spy Fox in Dry Cereal
+Spy Fox 1: Dry Cereal
 	-	Windows	nl	9bda5fee51d2fda5253d02c642016bf4	TODO
 	Demo	Windows	en	fbdd947d21e8f5bac6d6f7a316af1c5a	TODO
 	Demo	Windows	en	53e94115b55dd51d4b8ff0871aa1df1e	foxdemo	khalek
 	Demo	Mac	en	53e94115b55dd51d4b8ff0871aa1df1e	foxdemo	khalek
 	Demo	Windows	en	9d4ab3e0e1d1ebc6ba8a6a4c470ed184	spydemo	khalek
 	-	Windows	en	6bf70eee5de3d24d2403e0dd3d267e8a	spyfox	khalek
+
+Spy Fox 2: Some Assembly Required
+	-	Windows	en	f79e60c17cca601e411f1f75e8ee9b5a	spyfox2 Kirben
+
+Spy Fox 3: Operation Ozone
+	-	Windows	en	600abd3e9f47e63e670188b7e4e86ac7	spyozon	Kirben
