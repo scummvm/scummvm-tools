@@ -87,7 +87,7 @@ int get_offsets(void)
 		}
 		fseek(input, -8, SEEK_CUR);
 
-		offsets[i] = get_int32LE();
+		offsets[i] = readUint32LE(input);
 	}
 }
 
@@ -99,8 +99,8 @@ int get_offsets_mac(void)
 	fseek(input, 0, SEEK_SET);
 
 	for (i = 1; i <= size / 6; i++) {
-		filenums[i] = get_int16BE();
-		offsets[i] = get_int32BE();
+		filenums[i] = readUint16BE();
+		offsets[i] = readUint32BE(input);
 	}
 	return(size/6);
 }
@@ -208,18 +208,18 @@ void convert_pc(char *infile)
 	}
 	size = num*4;
 
-	put_int32BE(0);
-	put_int32BE(size);
+	writeUint32BE(input, 0);
+	writeUint32BE(input, size);
 
 	for (i = 1; i < num; i++) {
 		if (offsets[i] == offsets[i+1]) {
-			put_int32BE(size);
+			writeUint32BE(input, size);
 			continue;
 		}
 
 		size += get_sound(i);
 		if (i < num - 1)
-			put_int32BE(size);
+			writeUint32BE(input, size);
 	}
 }
 
@@ -250,12 +250,12 @@ void convert_mac(void)
 	}
 	size = num*4;
 
-	put_int32BE(0);
-	put_int32BE(size);
+	writeUint32BE(input, 0);
+	writeUint32BE(input, size);
 
 	for (i = 1; i < num; i++) {
 		if (filenums[i] == filenums[i+1] && offsets[i] == offsets[i+1]) {
-			put_int32BE(size);
+			writeUint32BE(input, size);
 			continue;
 		}
 
@@ -268,7 +268,7 @@ void convert_mac(void)
 
 		size += get_sound(i);
 		if (i < num - 1)
-			put_int32BE(size);
+			writeUint32BE(input, size);
 	}
 }
 

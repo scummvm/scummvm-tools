@@ -19,18 +19,7 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-
-#if !defined(_MSC_VER)
-#include <unistd.h>
-#endif
-
-typedef unsigned char   uint8;
-typedef unsigned short uint16;
-typedef unsigned int   uint32;
+#include "util.h"
 
 static const uint32 QTBL = 'QTBL';
 
@@ -70,10 +59,10 @@ enum {
 };
 
 struct GameVersion {
-        char versionString[6];
-        uint8 isFloppy;
-        uint8 isDemo;
-        uint32 tableOffset;
+	char versionString[6];
+	uint8 isFloppy;
+	uint8 isDemo;
+	uint32 tableOffset;
 	uint32 dataFileSize;
 };
 
@@ -91,17 +80,17 @@ struct {
 
 
 const struct GameVersion gameVersions[] = {
-        { "PEM10", 1, 0, 0x00000008,  22677657 },
-        { "CEM10", 0, 0, 0x0000584E, 190787021 },
-        { "PFM10", 1, 0, 0x0002CD93,  22157304 },
-        { "CFM10", 0, 0, 0x00032585, 186689095 },
-        { "PGM10", 1, 0, 0x00059ACA,  22240013 },
-        { "CGM10", 0, 0, 0x0005F2A7, 217648975 },
-        { "PIM10", 1, 0, 0x000866B1,  22461366 },
-        { "CIM10", 0, 0, 0x0008BEE2, 190795582 },
+	{ "PEM10", 1, 0, 0x00000008,  22677657 },
+	{ "CEM10", 0, 0, 0x0000584E, 190787021 },
+	{ "PFM10", 1, 0, 0x0002CD93,  22157304 },
+	{ "CFM10", 0, 0, 0x00032585, 186689095 },
+	{ "PGM10", 1, 0, 0x00059ACA,  22240013 },
+	{ "CGM10", 0, 0, 0x0005F2A7, 217648975 },
+	{ "PIM10", 1, 0, 0x000866B1,  22461366 },
+	{ "CIM10", 0, 0, 0x0008BEE2, 190795582 },
 	{ "CSM10", 0, 0, 0x000B343C, 190730602 },
-        { "PE100", 1, 1, 0x000DA981,   3724538 },
-        { "PE100", 1, 1, 0x000DB63A,   3732177 }
+	{ "PE100", 1, 1, 0x000DA981,   3724538 },
+	{ "PE100", 1, 1, 0x000DB63A,   3732177 }
 };
 
 
@@ -130,64 +119,6 @@ const struct GameVersion *detectGameVersion(uint32 size) {
 	printf("Unknown/unsupported FOTAQ version!\n");
 	exit(1);
 	return NULL;
-}
-
-uint8 readByte(FILE *fp) {
-	return fgetc(fp);
-}
-
-unsigned int readUint16BE(FILE *fp) {
-	int i;
-	unsigned int ret = 0;
-	unsigned int c;
-	for (i = 1; i >= 0; i--) {
-		c = fgetc(fp);
-		ret |= c << i*8;
-	}
-	return ret;
-}
-
-unsigned int readUint32BE(FILE *fp) {
-	int i;
-	unsigned int ret = 0;
-	unsigned int c;
-	for (i = 3; i >= 0; i--) {
-		c = fgetc(fp);
-		ret |= c << i*8;
-	}
-	return ret;
-}
-
-void readString(uint32 size, char *dest, FILE *fp) {
-	uint32 i = 0;
-	while (i < size) {
-		int c = fgetc(fp);
-		dest[i++] = c;
-	}
-	dest[i] = '\0';
-}
-
-void writeByte(FILE *fp, uint8 b) {
-	fwrite(&b, 1, 1, fp);
-}
-
-void writeUint16BE(FILE *fp, uint16 value) {
-	writeByte(fp, (uint8)(value >> 8));
-	writeByte(fp, (uint8)(value & 0xFF));
-}
-
-void writeUint32BE(FILE *fp, uint32 value) {
-	writeUint16BE(fp, (uint16)(value >> 16));
-	writeUint16BE(fp, (uint16)(value & 0xFFFF));
-}
-
-uint32 fileSize(FILE *fp) {
-	uint32 sz;
-	uint32 pos = ftell(fp);
-	fseek(fp, 0, SEEK_END);
-	sz = ftell(fp);
-	fseek(fp, pos, SEEK_SET);
-	return sz;
 }
 
 void checkOpen(FILE *fp, const char *filename) {

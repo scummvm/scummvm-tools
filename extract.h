@@ -52,11 +52,6 @@ extern FILE *input, *output_idx, *output_snd;
 
 extern bool oggmode;
 
-extern uint32 get_int32LE(void);
-extern uint32 get_int32BE(void);
-extern uint16 get_int16BE(void);
-extern void put_int32BE(uint32 val);
-
 extern void process_mp3_parms(int argc, char *argv[], int i);
 extern void process_ogg_parms(int argc, char *argv[], int i);
 

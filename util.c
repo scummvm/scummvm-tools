@@ -46,3 +46,66 @@ void warning(const char *s, ...) {
 	fprintf(stderr, "WARNING: %s!\n", buf);
 }
 
+uint8 readByte(FILE *fp) {
+	return fgetc(fp);
+}
+
+uint16 readUint16BE(FILE *fp) {
+	uint16 ret = 0;
+	ret |= fgetc(fp) << 8;
+	ret |= fgetc(fp);
+	return ret;
+}
+
+uint32 readUint32BE(FILE *fp) {
+	uint32 ret = 0;
+	ret |= fgetc(fp) << 24;
+	ret |= fgetc(fp) << 16;
+	ret |= fgetc(fp) << 8;
+	ret |= fgetc(fp);
+	return ret;
+}
+
+uint32 readUint32LE(FILE *fp) {
+	uint32 ret = 0;
+	ret |= fgetc(fp);
+	ret |= fgetc(fp) << 8;
+	ret |= fgetc(fp) << 16;
+	ret |= fgetc(fp) << 24;
+	return ret;
+}
+
+void readString(uint32 size, char *dest, FILE *fp) {
+	uint32 i = 0;
+	while (i < size) {
+		int c = fgetc(fp);
+		dest[i++] = c;
+	}
+	dest[i] = '\0';
+}
+
+void writeByte(FILE *fp, uint8 b) {
+	fwrite(&b, 1, 1, fp);
+}
+
+void writeUint16BE(FILE *fp, uint16 value) {
+	writeByte(fp, (uint8)(value >> 8));
+	writeByte(fp, (uint8)(value));
+}
+
+void writeUint32BE(FILE *fp, uint32 value) {
+	writeByte(fp, (uint8)(value >> 24));
+	writeByte(fp, (uint8)(value >> 16));
+	writeByte(fp, (uint8)(value >> 8));
+	writeByte(fp, (uint8)(value));
+}
+
+uint32 fileSize(FILE *fp) {
+	uint32 sz;
+	uint32 pos = ftell(fp);
+	fseek(fp, 0, SEEK_END);
+	sz = ftell(fp);
+	fseek(fp, pos, SEEK_SET);
+	return sz;
+}
+

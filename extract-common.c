@@ -47,43 +47,6 @@ oggencparams oggparms = { -1, -1, -1, oggqualDef, 0 };
 bool oggmode = 0;
 
 
-uint32 get_int32LE(void)
-{
-	uint32 ret = 0;
-	ret |= fgetc(input);
-	ret |= fgetc(input) << 8;
-	ret |= fgetc(input) << 16;
-	ret |= fgetc(input) << 24;
-	return ret;
-}
-
-uint32 get_int32BE(void)
-{
-	uint32 ret = 0;
-	ret |= fgetc(input) << 24;
-	ret |= fgetc(input) << 16;
-	ret |= fgetc(input) << 8;
-	ret |= fgetc(input);
-	return ret;
-}
-
-uint16 get_int16BE(void)
-{
-	uint16 ret = 0;
-	ret |= fgetc(input) << 8;
-	ret |= fgetc(input);
-	return ret;
-}
-
-void put_int32BE(uint32 val)
-{
-	byte b;
-	b = (byte)(val >> 24);	fputc((char)b, output_idx);
-	b = (byte)(val >> 16);	fputc((char)b, output_idx);
-	b = (byte)(val >>  8);	fputc((char)b, output_idx);
-	b = (byte)(val >>  0);	fputc((char)b, output_idx);
-}
-
 int getSampleRateFromVOCRate(int vocSR) {
 	if (vocSR == 0xa5 || vocSR == 0xa6 || vocSR == 0x83) {
 		return 11025;
@@ -147,7 +110,7 @@ void get_wav(void) {
 	size_t size;
 
 	fseek(input, -4, SEEK_CUR);
-	length = get_int32LE();
+	length = readUint32LE(input);
 	length += 8;
 	fseek(input, -8, SEEK_CUR);
 

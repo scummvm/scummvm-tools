@@ -35,8 +35,6 @@ char c_hdr[] = {
 	' ', 'F', 'i', 'l', 'e', 0x1a, 0x1a, 0x00, 0x0A, 0x01, 0x29, 0x11
 };
 
-void put_int32BE(uint32 val);
-
 #define OUTPUT_MP3	"monster.so3"
 #define OUTPUT_OGG	"monster.sog"
 
@@ -55,7 +53,7 @@ void end_of_file(void)
 	fclose(output_idx);
 
 	output_idx = fopen(oggmode ? OUTPUT_OGG : OUTPUT_MP3, "wb");
-	put_int32BE((uint32)idx_size);
+	writeUint32BE(input, (uint32)idx_size);
 
 	in = fopen(TEMP_IDX, "rb");
 	while ((size = fread(buf, 1, 2048, in)) > 0) {
@@ -121,14 +119,14 @@ void get_part(void)
 		pos++;
 		append_byte(4, buf);
 	}
-	tags = get_int32BE();
+	tags = readUint32BE(input);
 	if (tags < 8)
 		exit(-1);
 	tags -= 8;
 
-	put_int32BE((uint32)pos);
-	put_int32BE((uint32)ftell(output_snd));
-	put_int32BE(tags);
+	writeUint32BE(input, (uint32)pos);
+	writeUint32BE(input, (uint32)ftell(output_snd));
+	writeUint32BE(input, tags);
 	while (tags > 0) {
 		fputc(fgetc(input), output_snd);
 		tags--;
@@ -157,7 +155,7 @@ void get_part(void)
 	}
 	fclose(f);
 
-	put_int32BE(tot_size);
+	writeUint32BE(input, tot_size);
 }
 
 void showhelp(char *exename)

@@ -76,18 +76,36 @@ static uint16 inline SWAP_16(uint16 a) {
 
 #define MKID(a) (((a&0xff) << 8) | ((a >> 8)&0xff))
 
+#if defined(__GNUC__)
+#define NORETURN_PRE
+#define NORETURN_POST	__attribute__((__noreturn__))
+#elif defined(_MSC_VER)
+#define NORETURN_PRE	_declspec(noreturn)
+#define NORETURN_POST
+#else
+#define NORETURN_PRE
+#define NORETURN_POST
+#endif
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-#if defined(__GNUC__)
-extern void error(const char *s, ...) __attribute__((__noreturn__));
-#elif defined(_MSC_VER)
-extern void _declspec(noreturn) error(const char *s, ...);
-#else
-extern void error(const char *s, ...);
-#endif
-extern void warning(const char *s, ...);
+/* File I/O */
+uint8 readByte(FILE *fp);
+uint16 readUint16BE(FILE *fp);
+uint32 readUint32BE(FILE *fp);
+uint32 readUint32LE(FILE *fp);
+void readString(uint32 size, char *dest, FILE *fp);
+void writeByte(FILE *fp, uint8 b);
+void writeUint16BE(FILE *fp, uint16 value);
+void writeUint32BE(FILE *fp, uint32 value);
+uint32 fileSize(FILE *fp);
+
+/* Misc stuff */
+void NORETURN_PRE error(const char *s, ...) NORETURN_POST;
+void warning(const char *s, ...);
 
 #if defined(__cplusplus)
 }

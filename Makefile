@@ -35,7 +35,7 @@ extract$(EXEEXT): extract.o extract-common.o util.o
 mm_nes_extract$(EXEEXT): mm_nes_extract.o
 	$(CC) $(LFLAGS) -o $@ $+
 
-queenrebuild$(EXEEXT): queenrebuild.o
+queenrebuild$(EXEEXT): queenrebuild.o util.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 rescumm$(EXEEXT): rescumm.o
@@ -50,7 +50,7 @@ simon2mp3$(EXEEXT): simon2mp3.o extract-common.o util.o
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
 extract.o simon2mp3.o extract-common.o: util.h extract.h
-util.o: util.h
+queenrebuild.o util.o: util.h
 
 clean:
 	rm -f *.o $(TARGETS)
