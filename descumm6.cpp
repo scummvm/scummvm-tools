@@ -2544,9 +2544,12 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xE0:
-		ext(output, "x" "p|unknownEO\0" 
-			"\xDEp|unknownE0-DE,"
-			"\xDC|unknownE0-DC");
+		if (HumongousFlag)
+			ext(output, "x" "p|setVolume\0" 
+				"\xDEp|musicVolume"
+				"\xDCp|sfxVolume");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0xE1:
 		ext(output, "rp|unknownE1");
