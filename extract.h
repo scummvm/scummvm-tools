@@ -55,6 +55,10 @@ typedef struct {
 } oggencparams;
 
 
+#define TEMP_RAW	"tempfile.raw"
+#define TEMP_MP3	"tempfile.mp3"
+#define TEMP_OGG	"tempfile.ogg"
+
 /*
  * Stuff which is in extract-common.c
  */

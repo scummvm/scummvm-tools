@@ -42,9 +42,7 @@ void put_int(uint32 val);
 
 #define TEMP_DAT	"tempfile.dat"
 #define TEMP_IDX	"tempfile.idx"
-#define TEMP_RAW	"tempfile.raw"
-#define TEMP_MP3	"tempfile.mp3"
-#define TEMP_OGG	"tempfile.ogg"
+
 
 void end_of_file(void)
 {
@@ -203,8 +201,8 @@ void get_part(void)
 		sprintf(rawname, TEMP_RAW);
 		sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
 		
-		f = fopen(rawname, "wb");
 		length -= 2;
+		f = fopen(rawname, "wb");
 		while (length > 0) {
 			size = fread(fbuf, 1, length > 2048 ? 2048 : (uint32)length, input);
 			if (size <= 0)
@@ -230,7 +228,6 @@ void get_part(void)
 			tmp += sprintf(tmp, "--raw-rate=%i ", real_samplerate);
 			tmp += sprintf(tmp, "--output=%s ", outname);
 			tmp += sprintf(tmp, "%s ", rawname);
-printf("Assembled command: '%s'\n", fbuf);
 			system(fbuf);
 		}
 		else {
@@ -247,7 +244,6 @@ printf("Assembled command: '%s'\n", fbuf);
 			tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
 			tmp += sprintf(tmp, "-s %d ", real_samplerate);
 			tmp += sprintf(tmp, "%s %s ", rawname, outname);
-printf("Assembled command: '%s'\n", fbuf);
 			system(fbuf);
 		}
 

@@ -27,12 +27,12 @@ unsigned int offsets[32768];
 char infile_base[256];
 char fbuf_temp[1024];
 char buf[256];
-char tmp[256];
 
 void end(void)
 {
 	int size;
 	char fbuf[2048];
+	char tmp[256];
 
 	fclose(output_snd);
 	fclose(output_idx);
@@ -60,8 +60,8 @@ void end(void)
 	unlink(tmp);
 	sprintf(tmp, "%sdat", infile_base);
 	unlink(tmp);
-	unlink("tempfile.raw");
-	unlink(oggmode ? "tempfile.ogg" : "tempfile.mp3");
+	unlink(TEMP_RAW);
+	unlink(oggmode ? TEMP_OGG : TEMP_MP3);
 	unlink("tempfile.wav");
 	
 	exit(0);
@@ -157,7 +157,7 @@ unsigned int get_sound(int sound)
 {
 	FILE *f;
 	unsigned int tot_size;
-	char mp3name[256];
+	char outname[256];
 	int size;
 	char fbuf[2048];
 
@@ -175,8 +175,8 @@ unsigned int get_sound(int sound)
 		exit(-1);
 	}
 
-	sprintf(mp3name, oggmode ? "tempfile.ogg" : "tempfile.mp3");
-	f = fopen(mp3name, "rb");
+	sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
+	f = fopen(outname, "rb");
 	tot_size = 0;
 	while ((size = fread(fbuf, 1, 2048, f)) > 0) {
 		tot_size += size;
@@ -193,7 +193,7 @@ void get_wav(void) {
 	char fbuf[2048];
 	int size;
 	char wavname[256];
-	char mp3name[256];
+	char outname[256];
 
 	fseek(input, -4, SEEK_CUR);
 	length = get_int32LE();
@@ -201,7 +201,7 @@ void get_wav(void) {
 	fseek(input, -8, SEEK_CUR);
 
 	sprintf(wavname, "tempfile.wav");
-	sprintf(mp3name, oggmode ? "tempfile.ogg" : "tempfile.mp3");
+	sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
 
 	f = fopen(wavname, "wb");
 	while (length > 0) {
@@ -242,7 +242,7 @@ void get_wav(void) {
 		sprintf(fbuf,
 			"lame -t -q %i %s -V %i -B %i -m m %s %s",
 			encparms.algqual, fbuf_temp, encparms.vbrqual,
-			encparms.maxBitr, wavname, mp3name);
+			encparms.maxBitr, wavname, outname);
 		system(fbuf);
 	}
 }
@@ -262,10 +262,10 @@ void get_voc(void)
 		int comp;
 		FILE *f;
 		char fbuf[2048];
-		char fbuf_o[4096];
+		char *tmp;
 		int size;
 		char rawname[256];
-		char mp3name[256];
+		char outname[256];
 		int real_samplerate;
 
 		/* Sound Data */
@@ -291,8 +291,8 @@ void get_voc(void)
 			printf("Cannot handle compression\n");
 			exit(-1);
 		}
-		sprintf(rawname, "tempfile.raw");
-		sprintf(mp3name, oggmode ? "tempfile.ogg" : "tempfile.mp3");
+		sprintf(rawname, TEMP_RAW);
+		sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
 	
 		f = fopen(rawname, "wb");
 		while (length > 0) {
@@ -300,48 +300,42 @@ void get_voc(void)
 			if (size <= 0)
 				break;
 			length -= size;
-			for (i = 0; i < size; i++) {
-				fbuf_o[2 * i] = fbuf[i] ^ 0x80;
-				fbuf_o[2 * i + 1] = 0;
-			}
-			fwrite(fbuf_o, 1, 2 * size, f);
+			fwrite(fbuf, 1, size, f);
 		}
 		fclose(f);
-
+		
+		tmp = fbuf;
 		if (oggmode) {
-			sprintf(fbuf, "oggenc ");
-			if (oggparms.nominalBitr != -1) {
-				sprintf(fbuf_temp, "-b %i ", oggparms.nominalBitr);
-				strcat(fbuf, fbuf_temp);
-			}
-			if (oggparms.minBitr != -1) {
-				sprintf(fbuf_temp, "-m %i ", oggparms.minBitr);
-				strcat(fbuf, fbuf_temp);
-			}
-			if (oggparms.maxBitr != -1) {
-				sprintf(fbuf_temp, "-M %i ", oggparms.maxBitr);
-				strcat(fbuf, fbuf_temp);
-			}
-			if (oggparms.silent) {
-				strcat(fbuf, "--quiet ");
-			}
-			sprintf(fbuf_temp, "-q %i -r -C 1 --raw-endianness=1 -R %i %s -o %s",
-				oggparms.quality, real_samplerate,
-				rawname, mp3name);
-			strcat(fbuf, fbuf_temp);
+			tmp += sprintf(tmp, "oggenc --raw --raw-chan=1 --raw-bits=8 ");
+			if (oggparms.nominalBitr != -1)
+				tmp += sprintf(tmp, "--bitrate=%i ", oggparms.nominalBitr);
+			if (oggparms.minBitr != -1)
+				tmp += sprintf(tmp, "--min-bitrate=%i ", oggparms.minBitr);
+			if (oggparms.maxBitr != -1)
+				tmp += sprintf(tmp, "--max-bitrate=%i ", oggparms.maxBitr);
+			if (oggparms.silent)
+				tmp += sprintf(tmp, "--quiet ");
+
+			tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
+			tmp += sprintf(tmp, "--raw-rate=%i ", real_samplerate);
+			tmp += sprintf(tmp, "--output=%s ", outname);
+			tmp += sprintf(tmp, "%s ", rawname);
 			system(fbuf);
 		}
 		else {
+			tmp += sprintf(tmp, "lame -t -m m -r --bitwidth 8 ");
 			if (encparms.abr == 1)
-				sprintf(fbuf_temp,"--abr %i",encparms.minBitr);
+				tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
 			else
-				sprintf(fbuf_temp,"--vbr-new -b %i",encparms.minBitr);
+				tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
 			if (encparms.silent == 1)
-				strcat(fbuf_temp," --silent");
-			sprintf(fbuf,
-				"lame -t -q %i %s -V %i -B %i -m m -r -s %d %s %s",
-				encparms.algqual, fbuf_temp, encparms.vbrqual,
-				encparms.maxBitr, real_samplerate, rawname, mp3name);
+				tmp += sprintf(tmp, " --silent ");
+
+			tmp += sprintf(tmp, "-q %i ", encparms.algqual);
+			tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
+			tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
+			tmp += sprintf(tmp, "-s %d ", real_samplerate);
+			tmp += sprintf(tmp, "%s %s ", rawname, outname);
 			system(fbuf);
 		}
 		break;
@@ -390,6 +384,7 @@ void showhelp(char *exename)
 void convert_pc(char *infile)
 {
 	int i, n, size, num;
+	char tmp[256];
 
 	memccpy(infile_base, infile, '.', strlen(infile));
 	n = strlen(infile_base);
@@ -438,6 +433,7 @@ void convert_pc(char *infile)
 void convert_mac(void)
 {
 	int i, size, num;
+	char tmp[256];
 
 	sprintf(infile_base, "simon2.");
 
