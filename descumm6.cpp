@@ -117,7 +117,7 @@ static const char *oper_list[] = {
 };
 
 static StackEnt *stack[128];
-static int num_stack = -1;
+static int num_stack = 0;
 bool HumongousFlag = false;
 
 char *output = 0;	// FIXME: it is evil to have a global output buffer like this
