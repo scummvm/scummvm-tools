@@ -27,14 +27,10 @@
   while(Condition) {
   }
   add code to detect tail while loops, i.e. something of the kind
-  do {
+  do {
   } while(Condition);
   In V2-V5, those are the most frequent type of loops (and in V6-V8 they
   sometimes occur, too).
-  In some cases it might be preferable to emit a
-  repeat {
-  } until(!Condition)
-  Namely then when the condition has to be negated.
 
   However, implementing this might be quite tricky, and require us to refactor the
   code, because unlike a "head if/while", we don't know we are inside a loop until its
