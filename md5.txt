@@ -4,48 +4,64 @@ Maniac Mansion
 	V2 (alt?)	DOS	en	b250d0f9cc83f80ced56fe11a4fb057c	maniac	Gino Pilotino
 	V2	DOS	de	183d7464902d40d00800e8ee1f04117c	maniac
 	V2	DOS	es	0d1b69471605201ef2fa9cec1f5f02d2	maniac	abnog, Gino Pilotino
-	V2	DOS	it	87f6e8037b7cc996e13474b491a7a98e	maniac	Gino Pilotino
+	V2 (DOTT)	DOS	it	87f6e8037b7cc996e13474b491a7a98e	maniac	Gino Pilotino
 	V2	DOS	fr	114acdc2659a273c220f86ee9edb24c1	maniac	Nicolas Sauz&egrave;de
 	V2 (DOTT)	DOS	fr	99a3699f80b8f776efae592b44b9b991	maniac	Nicolas Sauz&egrave;de, Gino Pilotino
 	V2	Amiga	en	e781230da44a44e2f0770edb2b3b3633	maniac	dhewg, Gino Pilotino
 
 Zak McKracken and the Alien Mindbenders
 	V1	DOS	en	7020931d5a2be0a49d68e7a1882363e4	zak
+	V1 (alt?)	DOS	en	b23f7cd7c304d7dff08e92a96120d5b4	zak	Gino Pilotino
 	V2 Demo	Atari	en	8299d9b8a1b0e7b881bae7a9971dc5e2	zak
 	V2	DOS	en	675d71151e9b5a968c8ce46d9fbf4cbf	zak	Kirben
-	V2	DOS	en	debe337f73d660e951ece7c1f1c81add	zak
+	V2 (alt?)	DOS	en	debe337f73d660e951ece7c1f1c81add	zak	Gino Pilotino
 	V2 (w/o copy protection)	DOS	de	cdd760228cf1010c2903f37e788ea31c	zak	Max Horn
-	V2 (from 5\"25 floppies)	DOS	de	d06fbe28818fef7bfc45c2cdf0c0849d	zak	Nicolas Sauz&egrave;de
-	V2	DOS	it	75ba23fff4fd63fa446c02864f2a5a4b	zak	Antti Leimi
+	V2 (from 5\"25 floppies)	DOS	de	d06fbe28818fef7bfc45c2cdf0c0849d	zak	Nicolas Sauz&egrave;de, Gino Pilotino
+	V2	DOS	fr	52a4bae0746a11d7b1e8554e91a6645c	zak	Gino Pilotino
+	V2	DOS	it	75ba23fff4fd63fa446c02864f2a5a4b	zak	Antti Leimi, Gino Pilotino
+	V2 (alt?)	DOS	it	1900e501a52fbf55bde6e4196f6d2aa6	zak	Gino Pilotino
 	V2	Amiga	en	e94c7cc3686fce406d3c91b5eae5a72d	zak	dhweg
+	V2	Amiga	it	27b3a4224ad63d5b04627595c1c1a025	zak	Gino Pilotino
 	FmTowns	FmTowns	en	2d4536a56e01da4b02eb021e7770afa2	zak
 	FmTowns	FmTowns	jp	ce3edc99cd4f478c5b37104d70c68ca5	zak	khalek
+	FmTowns (alt?)	FmTowns	jp	1ca86e2cf9aaa2068738a1e5ba477e60	zak	Gino Pilotino
 
 Indiana Jones and the Last Crusade
 	EGA (1.0 7/09/89)	DOS	en	5fbe557049892eb4b709d90916ec97ca	indy3EGA
-	EGA (1.3 8/14/89)	DOS	en	6b3ec67da214f558dc5ceaa2acd47453	indy3EGA	tsuteiuQ
-	EGA	Mac	en	1dd7aa088e09f96d06818aa9a9deabe0	indy3EGA
+	EGA (1.3 8/14/89)	DOS	en	6b3ec67da214f558dc5ceaa2acd47453	indy3EGA	tsuteiuQ, Gino Pilotino
 	EGA	DOS	de	6f6ef668c608c7f534fea6e6d3878dde	indy3EGA	dhewg
+	EGA	DOS	fr	66236cd1aec24e1d4aff4c4cc93b7e18 	indy3EGA	Gino Pilotino
+	EGA	DOS	it	d62d248c3df6ec177405e2cb23d923b2 	indy3EGA	Gino Pilotino
+	EGA	DOS	es	ce7fd0c382389a6791fc3e199c117ef4 	indy3EGA	abnog
+	EGA (alt?)	DOS	es	86be8ada36371d4fdc35659d0e912a26 	indy3EGA	Gino Pilotino
+
+	EGA	Mac	en	1dd7aa088e09f96d06818aa9a9deabe0	indy3EGA
 	EGA	Amiga	en	9c0fee288ad564a7d25ec3e841810d79	indy3EGA	dhewg
 	EGA	Amiga	de	330f631502e381a4e199a3f7cb483c20	indy3EGA	dhewg
 	EGA	Amiga	fr	e689bdf67f98b1d760ce4487ec0e8d06	indy3EGA	Gerald Vincent
-	EGA	DOS	es	ce7fd0c382389a6791fc3e199c117ef4 	indy3EGA	abnog
+	EGA	Amiga	it	df03ee021aa9b81d90cab9c26da07614	indy3EGA	Gino Pilotino
 	EGA Demo	DOS	en	b597e0403cc0002f69170e6caba7edd9	indy3EGA
 
 	VGA	DOS	en	1875b90fade138c9253a8e967007031a	indy3
 	VGA	DOS	de	399b217b0c8d65d0398076da486363a9	indy3
+	VGA (same as ES?)	DOS	fr	1875b90fade138c9253a8e967007031a	indy3	Gino Pilotino
+	VGA	DOS	it	17b5d5e6af4ae89d62631641d66d5a05	indy3	Gino Pilotino
+	VGA (same as FR?)	DOS	es	1875b90fade138c9253a8e967007031a	indy3	Gino Pilotino
 
 	FmTowns	FmTowns	en	04687cdf7f975a89d2474929f7b80946	indy3towns
-	FmTowns	FmTowns	jp	3a0c35f3c147b98a2bdf8d400cfc4ab5	indy3towns	Paul Priest
+	FmTowns	FmTowns	jp	3a0c35f3c147b98a2bdf8d400cfc4ab5	indy3towns	Paul Priest, Gino Pilotino
 	FmTowns Demo	FmTowns	en	3938ee1aa4433fca9d9308c9891172b1	zaktowns
 
 Loom
 	Demo	DOS	en	5a35e36fd777e9c37a49c5b2faca52f9	loom
 	Floppy	Mac	en	6f0be328c64d689bb606d22a389e1b0f	loom
-	Floppy	DOS	en	28ef68ee3ed76d7e2ee8ee13c15fbd5b	loom
-	Floppy	DOS	en	37f56ceb13e401a7ac7d9e6b37fecaf7	loom	Kirben
+	Floppy v1.0	DOS	en	28ef68ee3ed76d7e2ee8ee13c15fbd5b	loom
+	Floppy v1.0 alternative	DOS	en	73e5ab7dbb9a8061cc6d25df02dbd1e7	loom	Gino Pilotino
+	Floppy v1.1	DOS	en	37f56ceb13e401a7ac7d9e6b37fecaf7	loom	Kirben, Gino Pilotino
 	Floppy	DOS	de	fa127d7c4bb47d05bb1c33ddcaa9f767	loom
-	Floppy	DOS	es	2a208ffbcd0e83e86f4356e6f64aa6e1	loom	abnog
+	Floppy	DOS	fr	b886b0a5d909c7158a914e1d7c1c6c65	loom	Gino Pilotino
+	Floppy	DOS	it	c3df37df9d3b481b45f75283a9907c47	loom	Gino Pilotino
+	Floppy	DOS	es	2a208ffbcd0e83e86f4356e6f64aa6e1	loom	abnog, Gino Pilotino
 	Floppy	Amiga	en	4dc780f1bc587a193ce8a97652791438	loom	Antti Leimi, Gino Pilotino
 	Floppy (same as IT?!?)	Amiga	fr	39cb9dec16fa16f38d79acd80effb059	loom	Gerald Vincent
 	Floppy (same as FR?!?)	Amiga	it	39cb9dec16fa16f38d79acd80effb059	loom	Gino Pilotino
@@ -102,8 +118,8 @@ Monkey Island 2: LeChuck's revenge
 	-	DOS	en	3686cf8f89e102ececf4366e1d2c8126	monkey2
 	-	DOS	de	6886e5d08cee329b1f2e743ae2e3ceed	monkey2
 	-	DOS	fr	8e4ee4db46954bfe2912e259a16fad82	monkey2	Nicolas Sauz&egrave;de, Gino Pilotino
-	-	DOS	it	69ea626f1f87eecb78ea0d6c6b983a1d	monkey2	Gino Pilotino
-	(alt?)	DOS	it	bd126753de619a495f9f22adc951c8d5	monkey2	Gino Pilotino
+	CD	DOS	it	69ea626f1f87eecb78ea0d6c6b983a1d	monkey2	Gino Pilotino
+	Floppy	DOS	it	bd126753de619a495f9f22adc951c8d5	monkey2	Gino Pilotino
 	-	DOS	es	7974365d3dc0f43a2748c975f91ff042	monkey2	Gino Pilotino
 	FmTowns	FmTowns	en	da09e666fc8f5b78d7b0ac65d1a3b56e	monkey2	dhewg, Gino Pilotino
 	FmTowns	FmTowns	jp	430bc518017b6fac046f58bab6baad5d	monkey2	Antti Leimi, Gino Pilotino
@@ -116,6 +132,7 @@ Indiana Jones and the Fate of Atlantis
 	Non-Talkie	DOS	de	1fbebd7b2b692df5297870447a80cfed	atlantis
 	Non-Talkie	DOS	fr	edfdb24a499d92c59f824c52987c0eec	atlantis	Nicolas Sauz&egrave;de, Gino Pilotino
 	Non-Talkie	DOS	es	9bd2a8f72613e715c199246dd511e10f	atlantis	abnog, Gino Pilotino
+	Non-Talkie	DOS	it	8f3758ff98c9c5d78e5d635222cad026	atlantis	Andrea Petrucci
 
 	Non-Talkie	Amiga	en	3a03dab514e4038df192d8a8de469788	atlantis	dhewg
 	Non-Talkie	Amiga	de	4f267a901719623de7dde83e47d5b474	atlantis	ghoostkilla
