@@ -32,6 +32,7 @@
 #endif
 
 
+#define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
 typedef unsigned char byte;
 typedef unsigned char uint8;
@@ -897,64 +898,39 @@ void do_load_code_to_string(char *buf, byte opcode)
 
 void do_resource_v2(char *buf, byte opcode)
 {
+	const char *resTypes[] = {
+			"UnkResType0",
+			"UnkResType1",
+			"Costume",
+			"Room",
+			"UnkResType4",
+			"Script",
+			"Sound"
+		};
 	char resid[256];
 	int subop;
 
 	get_var_or_byte(resid, opcode & 0x80);
 	subop = get_byte();
 
+	int type = subop >> 4;
+
 	if (((subop & 0x0F) == 0) || ((subop & 0x0F) == 1)) {
-		switch (subop & 0xF1) {
-			case 96:
-			case 80:
-			case 32:
-			case 48:
-				sprintf(buf, "nukeSomething%.2X(%s)", subop & 0xF1, resid);
-				break;
-			case 33:
-				sprintf(buf, "loadCostumeRes(%s)", resid);
-				break;
-			case 49:
-				sprintf(buf, "loadRoomRes(%s)", resid);
-				break;
-			case 81:
-				sprintf(buf, "loadScriptRes(%s)", resid);
-				break;
-			case 97:
-				sprintf(buf, "loadSoundRes(%s)", resid);
-				break;
-			default:
-				sprintf(buf, "UnknownResLoadNukeCommand%.2X(%s)", subop & 0xF1, resid);
-		}
+		if (subop & 1)
+			buf += sprintf(buf, "load");
+		else
+			buf += sprintf(buf, "nuke");
+		assert(0 <= type && type <= ARRAYSIZE(resTypes));
+		buf += sprintf(buf, resTypes[type]);
+		buf += sprintf(buf, "(%s)", resid);
 	} else {
-		switch (subop & 0xF1) {
-			case 96:
-				sprintf(buf, "lockSound(%s)", resid);
-				break;
-			case 97:
-				sprintf(buf, "unlockSound(%s)", resid);
-				break;
-			case 80:
-				sprintf(buf, "lockScript(%s)", resid);
-				break;
-			case 81:
-				sprintf(buf, "unlockScript(%s)", resid);
-				break;
-			case 32:
-				sprintf(buf, "lockCostume(%s)", resid);
-				break;
-			case 33:
-				sprintf(buf, "unlockCostume(%s)", resid);
-				break;
-			case 48:
-				sprintf(buf, "lockRoom(%s)", resid);
-				break;
-			case 49:
-				sprintf(buf, "unlockRoom(%s)", resid);
-				break;
-			default:
-				sprintf(buf, "UnknownResLockUnlockCommand%.2X(%s)", subop & 0xF1, resid);
-		}
+		if (subop & 1)
+			buf += sprintf(buf, "lock");
+		else
+			buf += sprintf(buf, "unlock");
+		assert(0 <= type && type <= ARRAYSIZE(resTypes));
+		buf += sprintf(buf, resTypes[type]);
+		buf += sprintf(buf, "(%s)", resid);
 	}
 }
 
