@@ -2630,6 +2630,9 @@ void next_line()
 	case 0xCD:
 		ext("pppp|o6_unknownCD");
 		break;
+	case 0xD0:
+		ext("|getDateTime");
+		break;
 	case 0xD1:
 		ext("|stopTalking");
 		break;
