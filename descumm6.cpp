@@ -1401,6 +1401,15 @@ void next_line()
 	case 0xD5:
 		ext("lpp|jumpToScript");
 		break;
+	case 0xD8:
+		ext("rp|isRoomScriptRunning");
+		break;
+	case 0xEC:
+		ext("rp|getActorPriority");
+		break;
+	case 0xED:
+		ext("rp|getObjectNewDir");
+		break;
 	default:
 		invalidop(NULL, code);
 		break;
