@@ -1350,7 +1350,10 @@ void next_line()
 		ext("x" "dim\0"
 				"\xC7pw|dimType5,"
 				"\xC8pw|dimType1,"
-				"\xC9pw|dimType2," "\xCApw|dimType3," "\xCBpw|dimType4," "\xCCpw|nukeArray");
+				"\xC9pw|dimType2,"
+				"\xCApw|dimType3,"
+				"\xCBpw|dimType4,"
+				"\xCCw|nukeArray");
 		break;
 	case 0xBE:
 		ext("lpp|startObjectQuick");
