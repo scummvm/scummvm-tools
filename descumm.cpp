@@ -389,7 +389,7 @@ const char *var_names5[] = {
 	"VAR_SOUNDRESULT",
 	"VAR_TALKSTOP_KEY",
 	NULL,
-	NULL,
+	"VAR_FADE_DELAY",
 	/* 60 */
 	"VAR_NOSUBTITLES",
 	NULL,

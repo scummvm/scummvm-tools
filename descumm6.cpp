@@ -240,7 +240,7 @@ const char *var_names6[] = {
 	"VAR_SOUNDRESULT",
 	"VAR_TALKSTOP_KEY",
 	NULL,
-	NULL,
+	"VAR_FADE_DELAY",
 	/* 60 */
 	"VAR_NOSUBTITLES",
 	"VAR_SAVELOAD_SCRIPT",
@@ -481,7 +481,7 @@ const char *var_names7[] = {
 	"VAR_CHARINC",
 	/* 116 */
 	"VAR_DEBUGMODE",
-	NULL,
+	"VAR_FADE_DELAY",
 	NULL,
 	"VAR_CHARSET_MASK",
 	/* 120 */
