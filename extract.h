@@ -55,9 +55,10 @@ extern void process_flac_parms(int argc, char *argv[], int i);
 extern void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode);
 extern void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode);
 
+extern void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, bool OggOutput);
 
 /*
- * Stuff which is in extract.c / simon2mp3.c
+ * Stuff which is in extract.c / simon2mp3.c / sword2mp3.c
  */
 extern void showhelp(char *exename);
 

@@ -27,7 +27,8 @@ TARGETS := \
 	queenrebuild$(EXEEXT) \
 	rescumm$(EXEEXT) \
 	simon1decr$(EXEEXT) \
-	simon2mp3$(EXEEXT)
+	simon2mp3$(EXEEXT) \
+	sword2mp3$(EXEEXT)
 
 all: $(TARGETS)
 
@@ -67,9 +68,11 @@ simon1decr$(EXEEXT): simon1decr.o
 simon2mp3$(EXEEXT): simon2mp3.o extract-common.o util.o
 	$(CC) $(LFLAGS) -o $@ $+
 
+sword2mp3$(EXEEXT): sword2mp3.o extract-common.o util.o
+	$(CC) $(LFLAGS) -o $@ $+
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
-extract.o simon2mp3.o extract-common.o: util.h extract.h
+extract.o simon2mp3.o sword2mp3.o extract-common.o: util.h extract.h
 desword2.o md5table.o queenrebuild.o rescumm.o util.o: util.h
 
 clean:

@@ -8,17 +8,17 @@ Extraction Tools:
 
         loom_tg16_extract: 
                 Extracts data files from TG16 version of Loom
-		There is currently no support for this game in ScummVM!
+                There is currently no support for this game in ScummVM!
 
         mm_nes_extract
                 Extracts data files from NES version of Maniac Mansion
                 There is currently no support for this game in ScummVM!
 
 Compression Tools:
-	extract 
-		Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
-		or .sof (FLAC)
-	
+        extract 
+                Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
+                or .sof (FLAC)
+
         queenrebuild
                 Used to rebuild the datafile of Flight of the Amazon Queen,
                 to allow optional MP3/Ogg/FLAC compression.
@@ -26,41 +26,54 @@ Compression Tools:
         simon2mp3
                 Compresses Simon voc/wav files to MP3/Ogg/FLAC.
 
+        sword2mp3
+                Used to compress Broken Sword 2's music and speech cluster
+                files to .cl3 (MP3), .clg (Vorbis) or .clf (FLAC).
+
+                Please note that FLAC is only supported for completeness and
+                consistency. The original sound files are already compressed
+                with a lossy method that achieves a 50% compression rate. FLAC
+                is lossless and generally has a worse compression rate than
+                that, which means that the compressed file is likely to be
+                larger than the original!
+
+                Also note that at the time of writing there is no playback
+                support for compressed music; only for compressed speech.
+
         compress_san <inputfile>.san <outputfile>.san [<file>.flu>]
                 Compresses '.san' smush animation files. It uses lossless zlib
                 for compressing FOBJ gfx chunks inside a san file.
 
-		Example of usage:
-		compress_san opening.san temp_opening.san 
+                Example of usage:
+                compress_san opening.san temp_opening.san 
 
-		'san' filenames which have equivalent 'flu' filenames (which exist 
-		in the Full Throttle 'data' dir, ie 'tovista2.san' and 'tovista2.flu')
-		must be compressed together, for example: 
-		compress_san tovista2.san temp_tovista2.san tovista2.flu
-		WARNING: The current status of 'flu' support is not good,
-		PLEASE DO NOT COMPRESS this pair of files yet, it will be fixed later.
+                'san' filenames which have equivalent 'flu' filenames (which exist 
+                in the Full Throttle 'data' dir, ie 'tovista2.san' and 'tovista2.flu')
+                must be compressed together, for example: 
+                compress_san tovista2.san temp_tovista2.san tovista2.flu
+                WARNING: The current status of 'flu' support is not good,
+                PLEASE DO NOT COMPRESS this pair of files yet, it will be fixed later.
 
-		The original 'tovista2.san' file is not modified and a new
-		'temp_tovista2.san' file is created, but the input file 'tovista2.flu'
-		IS MODIFIED while compressing.
+                The original 'tovista2.san' file is not modified and a new
+                'temp_tovista2.san' file is created, but the input file 'tovista2.flu'
+                IS MODIFIED while compressing.
 
-		After compression, you must rename
-		'temp_tovista2.san' to 'tovista2.san'.
+                After compression, you must rename
+                'temp_tovista2.san' to 'tovista2.san'.
 
-		ScummVM support requires a zlib enabled build.
+                ScummVM support requires a zlib enabled build.
 
-Script Tools:	
+Script Tools:
         descumm
                 Decompiles SCUMM scripts
-	
+
         desword2
                 Disassembles Broken Sword II scripts
-	
-	
-Other tools:	
-       simon1decr
+
+Other tools:
+        simon1decr
                 Used to decrunch the graphics and music files in AGA/ECS 
                 versions of Simon the Sorcerer 1 for Amiga 
 
-      convbdf
+        convbdf
                 Converts BDF (Bitmap Display Format) files to C++ source
