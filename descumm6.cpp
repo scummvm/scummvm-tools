@@ -1118,6 +1118,22 @@ void next_line_V8()
 				"\xE7p|initCharset,"
 				"\xE8l|charsetColors");
 		break;
+	case 0x95:
+		ext("m" "printDebug_\0"
+				"x" "printDebug_\0"
+				"\xC8|baseop,"
+				"\xC9|end,"
+				"\xCApp|XY,"
+				"\xCBp|color,"
+				"\xCC|center,"
+				"\xCD|charset,"	// ???
+				"\xCE|left,"
+				"\xCF|overhead,"
+				"\xD0|mumble,"
+				"\xD1s|msg,"
+				"\xD2|wrap"
+				);
+		break;
 	default:
 		invalidop(NULL, code);
 		break;
