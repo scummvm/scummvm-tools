@@ -1160,7 +1160,7 @@ void do_verbops_v2(char *buf, byte opcode)
 {
 	int subop = get_byte();
 
-	buf = do_tok(buf, "VerbOps[", ANOLASTPAREN);
+	buf = do_tok(buf, "VerbOps", ANOLASTPAREN);
 	switch (subop) {
 		case 0:
 			buf = do_tok(buf, "Delete", (opcode & 0x80) ? A1V : A1B);
@@ -1169,9 +1169,10 @@ void do_verbops_v2(char *buf, byte opcode)
 			buf = do_tok(buf, "State", A1B | A2B);
 			break;
 		default:
-			buf = do_tok(buf, "New", A1B | A2B | ((opcode & 0x80) ? A3V : A3B) | A4B | A5ASCII);
+			buf += sprintf(buf, "New-%d", subop);
+			buf = do_tok(buf, "", A1B | A2B | ((opcode & 0x80) ? A3V : A3B) | A4B | A5ASCII);
 	}
-	
+	strecpy(buf, ")");
 }
 
 void do_verbops(char *buf, byte opcode)
@@ -1243,7 +1244,7 @@ void do_verbops(char *buf, byte opcode)
 		}
 
 	} while (1);
-	strecpy(buf, "]);");
+	strecpy(buf, "])");
 }
 
 void do_print_ego(char *buf, byte opcode)
