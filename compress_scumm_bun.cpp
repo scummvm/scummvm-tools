@@ -1073,9 +1073,7 @@ void writeToRMAPFile(byte *ptr, char *dir, char *filename, int &offsetData, int 
 	memcpy(_region, region, sizeof(Region) * numRegions);
 	for (l = 0; l < numRegions; l++) {
 		_region[l].offset -= offsetData;
-		_region[l].length;
 		region[l].offset -= offsetData;
-		region[l].length;
 		recalcRegions(region[l].offset, bits, freq, channels);
 		recalcRegions(region[l].length, bits, freq, channels);
 		writeUint32BE(rmapFile, region[l].offset);
