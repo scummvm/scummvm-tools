@@ -432,10 +432,10 @@ void mixing(char *outputDir, char *inputFilename, int frames, int fps) {
 				}
 
 				for (r = 0; r < length; r += 4) {
-					int16 wavSampleL = READ_LE_UINT16(wavBuf + offset + r + 0);
-					int16 wavSampleR = READ_LE_UINT16(wavBuf + offset + r + 2);
-					int32 tmpSampleL = READ_LE_UINT16(tmpBuf + offset + r + 0);
-					int32 tmpSampleR = READ_LE_UINT16(tmpBuf + offset + r + 2);
+					int16 wavSampleL = (int16)READ_LE_UINT16(wavBuf + offset + r + 0);
+					int16 wavSampleR = (int16)READ_LE_UINT16(wavBuf + offset + r + 2);
+					int32 tmpSampleL = (int16)READ_LE_UINT16(tmpBuf + offset + r + 0);
+					int32 tmpSampleR = (int16)READ_LE_UINT16(tmpBuf + offset + r + 2);
 					tmpSampleL = (tmpSampleL * volume) / 255;
 					tmpSampleR = (tmpSampleR * volume) / 255;
 					clampedAdd(wavSampleL, tmpSampleL);
