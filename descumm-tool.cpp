@@ -264,10 +264,24 @@ int main(int argc, char *argv[])
 
 	offs_of_line = 0;
 
-	if (scriptVersion >= 6) {
-		if (size_of_code < 10) {
+	if (GF_UNBLOCKED) {
+		if (size_of_code < 4) {
 			printf("File too small to be a script\n");
-			exit(0);
+			return 1;
+		}
+		// Hack to detect verb script: first 4 bytes should be file length
+		if (TO_LE_32(*((uint32 *)mem)) == size_of_code) {
+			if (scriptVersion <= 2)
+				offs_of_line = skipVerbHeader_V12(mem);
+			else
+				offs_of_line = skipVerbHeader_V34(mem );
+		} else {
+			mem += 4;
+		}
+	} else if (scriptVersion >= 5) {
+		if (size_of_code < (scriptVersion == 5 ? 8 : 10)) {
+			printf("File too small to be a script\n");
+			return 1;
 		}
 	
 		switch (TO_BE_32(*((uint32 *)mem))) {
@@ -295,57 +309,19 @@ int main(int argc, char *argv[])
 		case 'VERB':
 			if (scriptVersion == 8)
 				mem = skipVerbHeader_V8(mem + 8);
-			else
+			else if (scriptVersion >= 6)
 				offs_of_line = skipVerbHeader_V67(mem);
-			break;											/* Verb */
-		default:
-			printf("Unknown script type!\n");
-			exit(0);
-		}
-	} else if (GF_UNBLOCKED) {
-		if (size_of_code < 4) {
-			printf("File too small to be a script\n");
-			exit(0);
-		}
-		// Hack to detect verb script: first 4 bytes should be file length
-		if (TO_LE_32(*((uint32 *)mem)) == size_of_code) {
-			if (scriptVersion <= 2)
-				offs_of_line = skipVerbHeader_V12(mem);
 			else
-				offs_of_line = skipVerbHeader_V34(mem );
-		} else {
-			mem += 4;
-		}
-	} else if (scriptVersion == 5) {
-		if (size_of_code < 8) {
-			printf("File too small to be a script\n");
-			exit(0);
-		}
-		switch (TO_BE_32(*((uint32 *)mem))) {
-		case 'LSCR':
-			printf("Script# %d\n", (byte)mem[8]);
-			mem += 9;
-			break;											/* Local script */
-		case 'SCRP':
-			mem += 8;
-			break;											/* Script */
-		case 'ENCD':
-			mem += 8;
-			break;											/* Entry code */
-		case 'EXCD':
-			mem += 8;
-			break;											/* Exit code */
-		case 'VERB':
-			offs_of_line = skipVerbHeader_V5(mem + 8) - mem;
+				offs_of_line = skipVerbHeader_V5(mem + 8) - mem;
 			break;											/* Verb */
 		default:
 			printf("Unknown script type!\n");
-			exit(0);
+			return 1;
 		}
 	} else {
 		if (size_of_code < 6) {
 			printf("File too small to be a script\n");
-			exit(0);
+			return 1;
 		}
 		switch (TO_LE_16(*((uint16 *)mem + 2))) {
 		case MKID('LS'):
@@ -366,7 +342,7 @@ int main(int argc, char *argv[])
 			break;			/* Verb */
 		default:
 			printf("Unknown script type!\n");
-			exit(0);
+			return 1;
 		}
 	}
 
