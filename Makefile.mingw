@@ -21,6 +21,7 @@ install:   all
 	strip saga2mp3.exe -o $(SCUMMVMPATH)/tools/saga2mp3.exe
 	strip simon1decr.exe -o $(SCUMMVMPATH)/tools/simon1decr.exe
 	strip simon2mp3.exe -o $(SCUMMVMPATH)/tools/simon2mp3.exe
+	strip sword1mp3.exe -o $(SCUMMVMPATH)/tools/sword1mp3.exe
 	strip sword2mp3.exe -o $(SCUMMVMPATH)/tools/sword2mp3.exe
 	cp COPYING $(SCUMMVMPATH)/tools/copying.txt
 	cp README $(SCUMMVMPATH)/tools/readme.txt

@@ -81,7 +81,7 @@ int getSampleRateFromVOCRate(int vocSR) {
 	}
 }
 
-// todo: check rawAudioType for Flac encoding
+/* TODO: Check rawAudioType for Flac encoding */
 void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode) {
 	char fbuf[2048];
 	char *tmp = fbuf;
