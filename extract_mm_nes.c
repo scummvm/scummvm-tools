@@ -937,7 +937,7 @@ int main (int argc, char **argv)
 	debug("Creating 00.LFL...");
 	write_word(output,0x4643);
 	extract_resource(input,output,&res_globdata);
-	for (i = res_globdata.length[ROMset]; i < 800; i++)
+	for (i = res_globdata.length[ROMset]; i < 775; i++)
 		write_byte(output,0);
 	for (i = 0; i < (int)sizeof(lfl_index); i++)
 		write_byte(output,((unsigned char *)&lfl_index)[i]);
