@@ -615,7 +615,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 				}
 			}
 		}
-		else	error("extract_resource - unknown sound type %i/%i detected",val,cnt);
+		else	error("extract_resource - unknown sound type %d/%d detected",val,cnt);
 		_assert(ftell(input) - r_offset(res) - 16 == r_length(res),"extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)",ftell(input) - r_offset(res) - 16,r_length(res));
 		break;
 	case RES_COSTUME:
@@ -630,7 +630,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 			write_byte(output,read_byte(input));
 		break;
 	default:
-		error("extract_resource - unknown resource type %i specified!",res->type);
+		error("extract_resource - unknown resource type %d specified!",res->type);
 	}
 }
 
@@ -916,27 +916,27 @@ int main (int argc, char **argv)
 #else	/* !MAKE_LFLS */
 	dump_resource(input,"globdata.dmp",0,&res_globdata);
 	for (i = 0; i < 40; i++)
-		dump_resource(input,"roomgfx-%i.dmp",i,&res_roomgfx[i]);
+		dump_resource(input,"roomgfx-%d.dmp",i,&res_roomgfx[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"costumegfx-%i.dmp",i,&res_costumegfx[i]);
+		dump_resource(input,"costumegfx-%d.dmp",i,&res_costumegfx[i]);
 	for (i = 0; i < 55; i++)
-		dump_resource(input,"room-%i.dmp",i,&res_rooms[i]);
+		dump_resource(input,"room-%d.dmp",i,&res_rooms[i]);
 	for (i = 0; i < 179; i++)
-		dump_resource(input,"script-%i.dmp",i,&res_scripts[i]);
+		dump_resource(input,"script-%d.dmp",i,&res_scripts[i]);
 	for (i = 0; i < 82; i++)
-		dump_resource(input,"sound-%i.dmp",i,&res_sounds[i]);
+		dump_resource(input,"sound-%d.dmp",i,&res_sounds[i]);
 	for (i = 0; i < 25; i++)
-		dump_resource(input,"costume-%i.dmp",i,&res_costumes[i]);
+		dump_resource(input,"costume-%d.dmp",i,&res_costumes[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"costumepal-%i.dmp",i,&res_palettes[i]);
+		dump_resource(input,"costumepal-%d.dmp",i,&res_palettes[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"cost_DD75-%i.dmp",i,&res_unk_DD75[i]);
+		dump_resource(input,"cost_DD75-%d.dmp",i,&res_unk_DD75[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"cost_DD7D-%i.dmp",i,&res_unk_DD7D[i]);
+		dump_resource(input,"cost_DD7D-%d.dmp",i,&res_unk_DD7D[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"cost_DD95-%i.dmp",i,&res_unk_DD95[i]);
+		dump_resource(input,"cost_DD95-%d.dmp",i,&res_unk_DD95[i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"cost_DD9D-%i.dmp",i,&res_unk_DD9D[i]);
+		dump_resource(input,"cost_DD9D-%d.dmp",i,&res_unk_DD9D[i]);
 #endif	/* MAKE_LFLS */
 	debug("All done!");
 

@@ -929,7 +929,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 		break;
 #endif
 	default:
-		debug("extract_resource - unknown resource type %i specified!",res->type);
+		debug("extract_resource - unknown resource type %d specified!",res->type);
 	}
 }
 
@@ -1217,7 +1217,7 @@ int main (int argc, char **argv)
 				lfl_index.sound_addr[entry - res_sounds] = (unsigned short)ftell(output);
 				break;
 			default:
-				debug("Unknown resource type %i detected in LFL index!",entry->type);
+				debug("Unknown resource type %d detected in LFL index!",entry->type);
 				break;
 			}
 			extract_resource(input,output,entry);
@@ -1297,15 +1297,15 @@ int main (int argc, char **argv)
 	dump_resource(input,"globdata.dmp",0,&res_globdata);
 	dump_resource(input,"charset.dmp",0,&res_charset);
 	for (i = 0; i < NUM_UNKNOWNS; i++)
-		dump_resource(input,"unk-%i.dmp",i,&res_unknowns[i]);
+		dump_resource(input,"unk-%d.dmp",i,&res_unknowns[i]);
 	for (i = 0; i < NUM_ROOMS; i++)
-		dump_resource(input,"room-%i.dmp",i,&res_rooms[i]);
+		dump_resource(input,"room-%d.dmp",i,&res_rooms[i]);
 	for (i = 0; i < NUM_COSTUMES; i++)
-		dump_resource(input,"costume-%i.dmp",i,&res_costumes[i]);
+		dump_resource(input,"costume-%d.dmp",i,&res_costumes[i]);
 	for (i = 0; i < NUM_SCRIPTS; i++)
-		dump_resource(input,"script-%i.dmp",i,&res_scripts[i]);
+		dump_resource(input,"script-%d.dmp",i,&res_scripts[i]);
 	for (i = 0; i < NUM_SOUNDS; i++)
-		dump_resource(input,"sound-%i.dmp",i,&res_sounds[i]);
+		dump_resource(input,"sound-%d.dmp",i,&res_sounds[i]);
 #endif	/* MAKE_LFLS */
 	debug("All done!");
 	return 0;
