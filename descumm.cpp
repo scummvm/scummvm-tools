@@ -1981,7 +1981,7 @@ void get_tok_V2(char *buf)
 	case 0x8E:
 	case 0xCE:
 		//putActorAtObject
-		do_tok(buf, "putActorAtObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) );
+		do_tok(buf, "putActorAtObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W) );
 		break;
 	case 0x2D:
 	case 0x6D:
