@@ -1462,7 +1462,6 @@ void do_if_state_code(char *buf, byte opcode)
 	} else {
 		switch (opcode) {
 		case 0x3f:
-		case 0x7f:
 		case 0xbf:
 			state = 1;
 			neg = 1;
@@ -1472,7 +1471,6 @@ void do_if_state_code(char *buf, byte opcode)
 			state = 2;
 			neg = 1;
 			break;
-		case 0x27:
 		case 0x2f:
 		case 0xaf:
 			state = 4;
@@ -1483,6 +1481,7 @@ void do_if_state_code(char *buf, byte opcode)
 			state = 8;
 			neg = 1;
 			break;
+		case 0x7f:
 		case 0xff:
 			state = 1;
 			neg = 0;
