@@ -93,7 +93,7 @@ static const char *c_header =
 	"static const MD5Table md5table[] = {\n";
 
 static const char *c_footer =
-	"	{ 0, 0, 0, 0 }\n"
+	"	{ 0, 0, Common::UNK_LANG, Common::kPlatformUnknown }\n"
 	"};\n";
 
 static void parseEntry(Entry *entry, char *line) {
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 					maxEntries *= 2;
 					entriesBuffer = realloc(entriesBuffer, maxEntries * entrySize);
 				}
-				snprintf(entriesBuffer + numEntries * entrySize, entrySize, "\t{ \"%s\", \"%s\", %s, %s },\n",
+				snprintf(entriesBuffer + numEntries * entrySize, entrySize, "\t{ \"%s\", \"%s\", Common::%s, Common::%s },\n",
 					entry.md5, entry.target, mapStr(entry.language, langMap), mapStr(entry.platform, platformMap));
 				numEntries++;
 			}
