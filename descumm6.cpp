@@ -355,13 +355,13 @@ const char *var_names7[] = {
 	"VAR_TIMER",
 	"VAR_TMR_4",
 	/* 16 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"VAR_TIMEDATE_YEAR",
+	"VAR_TIMEDATE_MONTH",
+	"VAR_TIMEDATE_DAY",
+	"VAR_TIMEDATE_HOUR",
 	/* 20 */
-	NULL,
-	NULL,
+	"VAR_TIMEDATE_MINUTE",
+	"VAR_TIMEDATE_SECOND",
 	"VAR_LEFTBTN_DOWN",
 	"VAR_RIGHTBTN_DOWN",
 	/* 24 */
@@ -371,7 +371,7 @@ const char *var_names7[] = {
 	"VAR_VIDEO_PERFORMANCE",
 	/* 28 */
 	NULL,
-	NULL,
+	"VAR_GAME_LOADED",
 	NULL,
 	NULL,
 	/* 32 */
