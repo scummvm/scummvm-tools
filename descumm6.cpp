@@ -381,8 +381,8 @@ const char *var_names7[] = {
 	/* 64 */
 	"VAR_PAUSE_KEY",
 	"VAR_SAVELOADDIALOG_KEY",	// ???
-	"VAR_TALKSTOP_KEY",			// ???
 	NULL,
+	"VAR_TALKSTOP_KEY",			// ???
 	/* 68 */
 	NULL,
 	NULL,
@@ -550,9 +550,9 @@ const char *var_names8[] = {
 	"VAR_PAUSE_KEY",
 	"VAR_SAVELOADDIALOG_KEY",
 	NULL,
-	NULL,
-	/* 68 */
 	"VAR_TALKSTOP_KEY",
+	/* 68 */
+	NULL,
 	NULL,
 	NULL,
 	NULL,
@@ -2002,7 +2002,7 @@ void next_line_V8()
 		ext("rp|getObjectY");
 		break;
 	case 0xED:
-		ext("rp|getActorAnimCounter1");
+		ext("rp|getActorChore");
 		break;
 	case 0xEE:
 		ext("rpp|getDistObjObj");
