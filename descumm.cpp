@@ -2004,18 +2004,16 @@ void get_tok_V2(char *buf)
 	case 0xF3:
 		do_room_ops_old(buf, opcode);
 		break;
-/*		
+
 	case 0x22:
 	case 0xA2:
-		//saveLoadGame
+		do_tok(buf, "saveLoadGame", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
-	
-*/
+
 	case 0x3D:
 	case 0x7D:
 	case 0xBD:
 	case 0xFD:
-		//setActorElevation
 		do_tok(buf, "setActorElevation", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
@@ -2828,7 +2826,10 @@ void get_tok_V345(char *buf)
 
 	case 0x22:
 	case 0xA2:
-		do_tok(buf, "getAnimCounter", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		if (scriptVersion == 5)
+			do_tok(buf, "getAnimCounter", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		else
+			do_tok(buf, "saveLoadGame", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x3d:
