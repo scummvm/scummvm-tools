@@ -5,6 +5,7 @@
  * seperate files for usage with ScummVM.
  */
 
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>

@@ -1,8 +1,6 @@
-# Where is scummvm will be installed
-SCUMMVMPATH=C:/scummvm
 SRC=.
 
-CC      = cc
+CC      = g++
 CFLAGS  = -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar 
 LDFLAGS :=
 

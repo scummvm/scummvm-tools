@@ -1,32 +1,9 @@
 # Where is scummvm will be installed
 SCUMMVMPATH=C:/scummvm
-SRC=.
 
-CC      = gcc
-CFLAGS  = -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar 
+EXEEXT	:=.exe
 
-.cpp.o:
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
-
-descumm3.exe : descumm3.o
-	$(CC) $(LFLAGS) -o $@ $+ -mconsole
-
-descumm5.exe : descumm5.o
-	$(CC) $(LFLAGS) -o $@ $+ -mconsole
-
-descumm6.exe : descumm6.o
-	$(CC) $(LFLAGS) -o $@ $+ -mconsole
-
-extract.exe : extract.o
-	$(CC) $(LFLAGS) -o $@ $+ -mconsole
-
-rescumm.exe : rescumm.o
-	$(CC) $(LFLAGS) -o $@ $+ -mconsole
-
-all: descumm3.exe descumm5.exe descumm6.exe extract.exe rescumm.exe
-
-clean:
-	rm -f *.o *.exe
+include Makefile
 
 install:   all
 	mkdir -p $(SCUMMVMPATH)
