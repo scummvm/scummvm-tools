@@ -149,8 +149,8 @@ const char *var_names72[] = {
 	/* 20 */
 	"VAR_USERPUT",
 	"VAR_ROOM",
-	"VAR_V6_SCREEN_WIDTH",
-	"VAR_V6_SCREEN_HEIGHT",
+	"VAR_ROOM_WIDTH",
+	"VAR_ROOM_HEIGHT",
 	/* 24 */
 	"VAR_CAMERA_POS_X",
 	"VAR_CAMERA_MIN_X",
@@ -301,7 +301,7 @@ const char *var_names6[] = {
 	"VAR_DEBUGMODE",
 	/* 40 */
 	"VAR_HEAPSPACE",
-	"VAR_V6_SCREEN_WIDTH",
+	"VAR_ROOM_WIDTH",
 	"VAR_RESTART_KEY",
 	"VAR_PAUSE_KEY",
 	/* 44 */
@@ -317,7 +317,7 @@ const char *var_names6[] = {
 	/* 52 */
 	"VAR_CURSORSTATE",
 	"VAR_USERPUT",
-	"VAR_V6_SCREEN_HEIGHT",
+	"VAR_ROOM_HEIGHT",
 	NULL,
 	/* 56 */
 	"VAR_SOUNDRESULT",
@@ -397,7 +397,7 @@ const char *var_names6[] = {
 	/* 116 */
 	NULL,
 	NULL,
-	"VAR_V6_RANDOM_NR",
+	"VAR_RANDOM_NR",
 	"VAR_TIMEDATE_YEAR",
 	/* 120 */
 	NULL,
@@ -424,8 +424,8 @@ const char *var_names7[] = {
 	"VAR_VIRT_MOUSE_X",
 	/* 4 */
 	"VAR_VIRT_MOUSE_Y",
-	"VAR_V6_SCREEN_WIDTH",
-	"VAR_V6_SCREEN_HEIGHT",
+	"VAR_ROOM_WIDTH",
+	"VAR_ROOM_HEIGHT",
 	"VAR_CAMERA_POS_X",
 	/* 8 */
 	"VAR_CAMERA_POS_Y",
@@ -460,7 +460,7 @@ const char *var_names7[] = {
 	/* 32 */
 	"VAR_V6_EMSSPACE",
 	"VAR_VOICE_MODE",
-	"VAR_V6_RANDOM_NR",
+	"VAR_RANDOM_NR",
 	"VAR_NEW_ROOM",
 	/* 36 */
 	"VAR_WALKTO_OBJ",
@@ -493,13 +493,13 @@ const char *var_names7[] = {
 	"VAR_CUTSCENE_START_SCRIPT",
 	"VAR_CUTSCENE_END_SCRIPT",
 	/* 60 */
-	"VAR_UNK_SCRIPT",
-	"VAR_UNK_SCRIPT2",
+	"VAR_SAVELOAD_SCRIPT",
+	"VAR_SAVELOAD_SCRIPT2",
 	"VAR_CUTSCENEEXIT_KEY",
 	"VAR_RESTART_KEY",
 	/* 64 */
 	"VAR_PAUSE_KEY",
-	"VAR_SAVELOADDIALOG_KEY",
+	"VAR_MAINMENU_KEY",
 	"VAR_VERSION_KEY",
 	"VAR_TALKSTOP_KEY",
 	/* 68 */
@@ -595,8 +595,8 @@ const char *var_names7[] = {
 const char *var_names8[] = {
 	/* 0 */
 	NULL,
-	"VAR_SCREEN_WIDTH",
-	"VAR_SCREEN_HEIGHT",
+	"VAR_ROOM_WIDTH",
+	"VAR_ROOM_HEIGHT",
 	"VAR_MOUSE_X",
 	/* 4 */
 	"VAR_MOUSE_Y",
@@ -656,7 +656,7 @@ const char *var_names8[] = {
 	/* 48 */
 	NULL,
 	NULL,
-	NULL,
+	"VAR_SCROLL_SCRIPT",
 	"VAR_ENTRY_SCRIPT",
 	/* 52 */
 	"VAR_ENTRY_SCRIPT2",
@@ -675,7 +675,7 @@ const char *var_names8[] = {
 	"VAR_RESTART_KEY",
 	/* 64 */
 	"VAR_PAUSE_KEY",
-	"VAR_SAVELOADDIALOG_KEY",
+	"VAR_MAINMENU_KEY",
 	"VAR_VERSION_KEY",
 	"VAR_TALKSTOP_KEY",
 	/* 68 */
