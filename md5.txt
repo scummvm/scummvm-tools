@@ -294,6 +294,7 @@ Freddi Fish 1: The Case of the Missing Kelp Seeds
 Freddi Fish 2: The Case of the Haunted Schoolhouse
 	-	Windows	en	51305e929e330e24a75a0351c8f9975e	freddi2	Kirben
 	-	Windows	ru	5057fb0e99e5aa29df1836329232f101	freddi2	sev
+	-	Windows	nl	ac62d50e39492ee3738b4e83a5ac780f	freddi2	joostp
 	Demo	All	en	fc8d197a22146e74766e9cb0cfcaf1da	ff2-demo	khalek, sev
 	Demo	Windows	en	d37c55388294b66e53e7ced3af88fa68	ffhsdemo	khalek
 
