@@ -56,7 +56,6 @@ Indiana Jones and the Last Crusade
 	
 	FM-TOWNS	FM-TOWNS	en	04687cdf7f975a89d2474929f7b80946	indy3towns
 	FM-TOWNS	FM-TOWNS	jp	3a0c35f3c147b98a2bdf8d400cfc4ab5	indy3towns	Paul Priest, Andrea Petrucci
-	FM-TOWNS Demo	FM-TOWNS	en	3938ee1aa4433fca9d9308c9891172b1	zaktowns
 
 Loom
 	Demo	DOS	en	5a35e36fd777e9c37a49c5b2faca52f9	loom
