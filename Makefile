@@ -17,14 +17,12 @@ CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
 
 TARGETS := \
 	compress_san$(EXEEXT) \
-	convbdf$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	dekyra$(EXEEXT) \
 	kyra_unpak$(EXEEXT) \
 	compress_scumm_sou$(EXEEXT) \
 	loom_tg16_extract$(EXEEXT) \
-	md5table$(EXEEXT) \
 	mm_nes_extract$(EXEEXT) \
 	queenrebuild$(EXEEXT) \
 	rescumm$(EXEEXT) \
@@ -38,9 +36,6 @@ all: $(TARGETS)
 
 compress_san$(EXEEXT): compress_san.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lz
-
-convbdf$(EXEEXT): convbdf.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
 
 descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
@@ -59,9 +54,6 @@ compress_scumm_sou$(EXEEXT): compress_scumm_sou.o extract-common.o util.o
 
 loom_tg16_extract$(EXEEXT): loom_tg16_extract.o
 	$(CC) $(LDFLAGS) -o $@ $+
-
-md5table$(EXEEXT): md5table.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
 
 mm_nes_extract$(EXEEXT): mm_nes_extract.o
 	$(CC) $(LDFLAGS) -o $@ $+
@@ -89,7 +81,7 @@ compress_sword2$(EXEEXT): compress_sword2.o extract-common.o util.o
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
 compress_saga.o compress_scumm_sou.o compress_simon.o compress_sword1.o compress_sword2.o extract-common.o: util.h extract.h
-desword2.o md5table.o queenrebuild.o rescumm.o util.o: util.h
+desword2.o queenrebuild.o rescumm.o util.o: util.h
 
 clean:
 	rm -f *.o $(TARGETS)

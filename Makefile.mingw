@@ -14,13 +14,11 @@ install:   all
 	strip compress_simon.exe -o $(SCUMMVMPATH)/tools/compress_simon.exe
 	strip compress_sword1.exe -o $(SCUMMVMPATH)/tools/compress_sword1.exe
 	strip compress_sword2.exe -o $(SCUMMVMPATH)/tools/compress_sword2.exe
-	strip convbdf.exe -o $(SCUMMVMPATH)/tools/convbdf.exe
 	strip dekyra.exe -o $(SCUMMVMPATH)/tools/dekyra.exe
 	strip descumm.exe -o $(SCUMMVMPATH)/tools/descumm.exe
 	strip desword2.exe -o $(SCUMMVMPATH)/tools/desword2.exe
 	strip kyra_unpak.exe -o $(SCUMMVMPATH)/tools/kyra_unpak.exe
 	strip loom_tg16_extract.exe -o $(SCUMMVMPATH)/tools/loom_tg16_extract.exe
-	strip md5table.exe -o $(SCUMMVMPATH)/tools/md5table.exe
 	strip mm_nes_extract.exe -o $(SCUMMVMPATH)/tools/mm_nes_extract.exe
 	strip queenrebuild.exe -o $(SCUMMVMPATH)/tools/queenrebuild.exe
 	strip rescumm.exe -o $(SCUMMVMPATH)/tools/rescumm.exe
