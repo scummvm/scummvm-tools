@@ -12,6 +12,7 @@ Included tools:
 	
 	mm_nes_extract
 		Extracts data files from NES version of Maniac Mansion
+		There is currently no support in ScummVM
 	
 	descumm
 		Decompiles SCUMM scripts
