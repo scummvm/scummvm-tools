@@ -31,7 +31,7 @@ TARGETS := \
 all: $(TARGETS)
 
 compress_san$(EXEEXT): compress_san.o util.o
-	$(CXX) $(LFLAGS) -o $@ $+
+	$(CXX) $(LFLAGS) -o $@ $+ -lz
 
 convbdf$(EXEEXT): convbdf.o util.o
 	$(CXX) $(LFLAGS) -o $@ $+
