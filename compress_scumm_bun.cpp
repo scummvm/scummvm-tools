@@ -48,16 +48,6 @@ inline void WRITE_BE_UINT16(void *ptr, uint16 value) {
 	b[1] = (byte)(value >> 0);
 }
 
-const char *tag2str(uint32 tag) {
-	static char str[5];
-	str[0] = (char)(tag >> 24);
-	str[1] = (char)(tag >> 16);
-	str[2] = (char)(tag >> 8);
-	str[3] = (char)tag;
-	str[4] = '\0';
-	return str;
-}
-
 
 static byte _destImcTable[89];
 static uint32 _destImcTable2[89 * 64];
@@ -937,7 +927,7 @@ void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs) 
 			size = READ_BE_UINT32(ptr); ptr += size + 4;
 			break;
 		default:
-			error("countMapElements() Unknown tag of Map: '%s'", tag2str(tag));
+			error("countMapElements() Unknown tag of Map");
 		}
 	} while (tag != 'DATA');
 }
