@@ -1929,6 +1929,7 @@ void get_tok_V2(char *buf)
 	case 0x2B:
 		//delayVariable
 		break;
+*/	
 	case 0x19:
 	case 0x39:
 	case 0x59:
@@ -1936,10 +1937,19 @@ void get_tok_V2(char *buf)
 	case 0x99:
 	case 0xB9:
 	case 0xD9:
-	case 0xF9: 
-		//doSentence
+	case 0xF9:{
+			buf = strecpy(buf, "doSentence(");
+			if (!(opcode & 0x80) && (*cur_pos == 0xFB) || *cur_pos == 0xFC) {
+				strcpy(buf, "STOP)");
+				cur_pos++;
+			} else {
+				do_tok(buf, "",
+							 ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B) |
+							 ((opcode & 0x40) ? A2V : A2W) | ((opcode & 0x20) ? A3V : A3W) | A4B);
+			}
+		}
 		break;
-*/	
+
 	case 0x05:
 	case 0x25:
 	case 0x45:
@@ -1975,10 +1985,7 @@ void get_tok_V2(char *buf)
 		//endCutscene
 		break;
 */
-	case 0x28:
-		//equalZero
-		do_if_code(buf, opcode);
-		break;
+
 	case 0x09:
 	case 0x49:
 	case 0x89:
@@ -2100,35 +2107,25 @@ void get_tok_V2(char *buf)
 	case 0x48:
 	case 0xC8:
 		//isEqual
-		do_if_code(buf, opcode);
-		break;
-			
 	case 0x78:
 	case 0xF8:
 		//isGreater
-		do_if_code(buf, opcode);
-		break;
-		
 	case 0x04:
 	case 0x84:
 		//isGreaterEqual
-		do_if_code(buf, opcode);
-		break;
 	case 0x44:
 	case 0xC4:
 		//isLess
-		do_if_code(buf, opcode);
-		break;
-		
 	case 0x08:
 	case 0x88:
 		//isNotEqual
-		do_if_code(buf, opcode);
-		break;
-
 	case 0x38:
 	case 0xB8:
 		//lessOrEqual
+	case 0x28:
+		//equalZero
+	case 0xA8:
+		//notEqualZero
 		do_if_code(buf, opcode);
 		break;
 
@@ -2169,10 +2166,6 @@ void get_tok_V2(char *buf)
 	case 0x30:
 	case 0xB0:
 		//matrixOps
-		break;
-
-	case 0xA8:
-		//notEqualZero
 		break;
 */			
 	case 0x12:
@@ -2755,7 +2748,8 @@ void get_tok(char *buf)
 	case 0xD9:
 	case 0xF9:{
 			buf = strecpy(buf, "doSentence(");
-			if (!(opcode & 0x80) && (*cur_pos == 254)) {
+			// FIXME: this is not exactly what ScummVM does...
+			if (!(opcode & 0x80) && (*cur_pos == 0xFE)) {
 				strcpy(buf, "STOP)");
 				cur_pos++;
 			} else {
