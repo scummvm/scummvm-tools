@@ -270,7 +270,7 @@ char *get_var(char *buf)
 			i < ARRAYSIZE(var_names2) && var_names2[i]) {
 		buf += sprintf(buf, var_names2[i]);
 		return buf;
-	} else if (scriptVersion >= 3 && scriptVersion <= 5 && 
+	} else if (scriptVersion >= 3 && 
 			i < ARRAYSIZE(var_names345) && var_names345[i]) {
 		buf += sprintf(buf, var_names345[i]);
 		return buf;
