@@ -113,7 +113,7 @@ Sam &amp; Max
 	Demo	DOS	en	d9d0dd93d16ab4dec55cabc2b86bbd17	samdemo
 	Demo	Mac	en	0425954a9db5c340861672892c3e678d	samdemo
 
-	interactive DEMO	DOS	en	c3196c5349e53e387aaff1533d95e53a	snmdemo
+	interactive Demo	DOS	en	c3196c5349e53e387aaff1533d95e53a	snmdemo
 	Interactive WIP Demo	DOS	en	0e4c5d54a0ad4b26132e78b5ea76642a	snmidemo
 
 Full Throttle
@@ -132,8 +132,8 @@ The Dig
 	Demo	All	en	362c1d281fb9899254cda66ad246c66a	digdemo
 
 Curse of Monkey Island
-	-	All?	All?	fe60d6b5ff51b0553ac59963123b5777	comi
-	Demo	All?	All?	8fec68383202d38c0d25e9e3b757c5df	comi
+	-	All	All	fe60d6b5ff51b0553ac59963123b5777	comi
+	Demo	All	All	8fec68383202d38c0d25e9e3b757c5df	comi
 
 Putt-Putt Joins The Parade
 	Demo	DOS	en	31aa57f460a3d12429f0552a46a90b39	puttdemo
