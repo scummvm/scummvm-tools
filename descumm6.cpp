@@ -1211,7 +1211,6 @@ void jumpif(StackEnt * se, bool when)
 	int cur = get_curoffs() + 2;
 	int offset = get_signed_word();
 	int to = cur + offset;
-	printf("jumpif: %d, %d, %d\n", cur, offset, to);
 	char *e = output;
 
 	if (!dontOutputElseif && pendingElse) {
@@ -1326,6 +1325,12 @@ void next_line_V8()
 	case 0x6D:
 		writeVar(get_word(), pop());
 		break;
+	case 0x6E:
+		addVar(get_word(), +1);
+		break;
+	case 0x6F:
+		addVar(get_word(), -1);
+		break;
 
 	case 0x79:
 		ext("lpp|startScript");
@@ -1366,6 +1371,31 @@ void next_line_V8()
 				"\xD2|wrap"
 				);
 		break;
+	case 0x96:
+		ext("m" "printSystem_\0"
+				"x" "printSystem\0"
+				"\xC8|baseop,"
+				"\xC9|end,"
+				"\xCApp|XY,"
+				"\xCBp|color,"
+				"\xCC|center,"
+				"\xCD|charset,"	// ???
+				"\xCE|left,"
+				"\xCF|overhead,"
+				"\xD0|mumble,"
+				"\xD1s|msg,"
+				"\xD2|wrap"
+				);
+		break;
+
+	case 0xB3:
+		ext("x" "system\0" "\x28|restart," "\x29|quit");
+		break;
+
+	case 0xD3:
+		ext("rp|isScriptRunning");
+		break;
+
 	default:
 		invalidop(NULL, code);
 		break;
@@ -1641,7 +1671,7 @@ void next_line()
 		ext("rp|getActorMoving");
 		break;
 	case 0x8B:
-		ext("rp|getScriptRunning");
+		ext("rp|isScriptRunning");
 		break;
 	case 0x8C:
 		ext("rp|getActorRoom");
