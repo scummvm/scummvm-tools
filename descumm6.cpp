@@ -254,7 +254,7 @@ const char *var_names6[] = {
 	/* 68 */
 	"VAR_MEMORY_PERFORMANCE",
 	"VAR_VIDEO_PERFORMANCE",
-	NULL,
+	"VAR_ROOM_FLAG",
 	"VAR_GAME_LOADED",
 	/* 72 */
 	"VAR_NEW_ROOM",
