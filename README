@@ -12,11 +12,7 @@ Included tools:
 
         mm_nes_extract - Extracts data files from NES version of Maniac Mansion
 
-        descumm - Decompiles SCUMM V2/V3/V4/V5 scripts
-
-        descumm6 - Decompiles SCUMM V6/V7/V8 scripts (Dott, FT, COMI, etc.)
-		       (When decompiling V7 'room-' scripts, you may need to 
-                       use the -7 switch; likewise for V8 you need -8)
+        descumm - Decompiles SCUMM scripts
 
         simon1decr - Used to decrunch the graphics and music files in AGA/ECS 
                          versions of Simon the Sorcerer 1 for Amiga 
