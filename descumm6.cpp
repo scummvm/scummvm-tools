@@ -890,10 +890,10 @@ void doAdd(StackEnt * se, int val)
 	sprintf(e, " += %d", val);
 }
 
-int dupindex;
-
 StackEnt *dup(StackEnt * se)
 {
+	static int dupindex = 0;
+
 	if (se->type == seInt)
 		return se;
 
@@ -1785,7 +1785,6 @@ void next_line_V8()
 	case 0xD2:
 		ext("rp|getOwner");
 		break;
-
 	case 0xD3:
 		ext("rp|isScriptRunning");
 		break;
@@ -1799,10 +1798,25 @@ void next_line_V8()
 
 	case 0xD8:
 		ext("ry" "f-kludge\0"
+				"\xCE|getRGBSlot,"
+				"\xD3|getKeyState,"
+				"\xD7|getBox,"
+				"\xD8|findBlastObject,"
+				"\xD9|actorHit,"
+				"\xDA|lipSyncWidth,"
+				"\xDB|lipSyncHeight,"
+				"\xDC|actorTalkAnimation,"
+				"\xDD|getMasterSFXVol,"
+				"\xDE|getMasterVoiceVol,"
+				"\xDF|getMasterMusicVol,"
+
 				"\xE0|readRegistryValue"
 				);
 		break;
 
+	case 0xDA:
+		ext("rpp|getVerbEntrypoint");
+		break;
 	case 0xDB:
 		ext("rpp|getActorFromXY");
 		break;
@@ -1851,6 +1865,9 @@ void next_line_V8()
 		break;
 	case 0xEC:
 		ext("rp|getObjectY");
+		break;
+	case 0xED:
+		ext("rp|getActorAnimCounter1");
 		break;
 
 	case 0xF0:
