@@ -441,8 +441,8 @@ const char *var_names8[] = {
 	NULL,
 	"voice_text_mode",
 	/* 40 */
-	NULL,
-	NULL,
+	"VAR_GAME_LOADED",
+	"VAR_LANGUAGE",
 	"VAR_CURRENTDISK",
 	NULL,
 	/* 44 */
