@@ -1445,7 +1445,20 @@ void next_line_V8(char *output)
 		ext(output, "pp|setCameraAt");
 		break;
 	case 0x8F:
-		ext(output, "ps|printActor");
+		ext(output,
+				"x" "printActor\0"
+				"\xC8p|baseop,"
+				"\xC9|end,"
+				"\xCApp|XY,"
+				"\xCBp|color,"
+				"\xCC|center,"
+				"\xCDp|charset,"
+				"\xCE|left,"
+				"\xCF|overhead,"
+				"\xD0|mumble,"
+				"\xD1s|msg,"
+				"\xD2|wrap"
+				);
 		break;
 	case 0x90:
 		PRINT_V8("printEgo");
