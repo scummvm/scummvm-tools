@@ -13,6 +13,9 @@ Extraction Tools:
         rescumm
                 Extracts Macintosh "single file" SCUMM games into their
                 component parts, for use with ScummVM.
+                This is required for ScummVM up to version 0.6.x; all
+                later versions directly support reading this file
+                format.
 
         loom_tg16_extract
                 Extracts data files from TG16 version of Loom
@@ -49,15 +52,17 @@ Compression Tools:
         compress_san <inputfile> <inputdir> <outputdir>
                 Compresses '.san' smush animation files. It uses lossless zlib
                 for compressing FOBJ gfx chunks inside a san file.
-                It also can create ogg separate file with smush audio track
+                It also can create a separate Ogg file with the audio track
                 (only COMI currently supported).
 
                 Example of usage:
                 compress_san opening.san uncomp comp
 
-                ScummVM support requires a zlib enabled build, and Ogg support
-                for ogg audio track playback.
-
+                In order to use such compressed files, your ScummVM binary 
+                must have been built with zlib support enabled (you can find
+                out whether that's the case by looking at the About dialog).
+                For the Ogg compression feature, your ScummVM binary naturally
+                must have been built with Ogg support enabled.
 
 Script Tools:
         descumm
