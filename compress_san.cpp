@@ -114,10 +114,8 @@ int main(int argc, char *argv[]) {
 				size = readUint32BE(input); // FOBJ size
 				if ((size & 1) != 0)
 					size++;
-				if (size < 100)
-					goto normal_block;
 				first_fobj = false;
-				unsigned long outputSize = size + (size / 9);
+				unsigned long outputSize = size + (size / 9) + 100;
 				byte *zlibInputBuffer = (byte *)malloc(size);
 				byte *zlibOutputBuffer = (byte *)malloc(outputSize);
 				for (int k = 0; k < size; k++) {
@@ -142,7 +140,6 @@ int main(int argc, char *argv[]) {
 				continue;
 			} else {
 				size = readUint32BE(input); // chunk size
-normal_block:
 				writeUint32BE(output, tag);
 				writeUint32BE(output, size);
 				if ((size & 1) != 0)
@@ -170,7 +167,7 @@ normal_block:
 	writeUint32BE(output, animChunkSize - sumDiff);
 
 	if (flu) {
-		fseek(flu, 0x310, SEEK_SET);
+		fseek(flu, 0x324, SEEK_SET);
 		for (l = 0; l < nbframes; l++) {
 			writeUint32LE(flu, frameInfo[l].offsetOutput - 4);
 		}
