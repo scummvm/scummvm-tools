@@ -1454,10 +1454,11 @@ void next_line_V8()
 		ext("p|stopScript");
 		break;
 	case 0x7D:
-		// FIXME - is this right? "O_CHAIN_SCRIPT"
 		ext("lpp|jumpToScript");
 		break;
-
+	case 0x7E:
+		ext("p|return");
+		break;
 	case 0x7F:
 		ext("lppp|startObject");
 		break;
@@ -1627,7 +1628,7 @@ void next_line_V8()
 		ext("pppp|putActorInRoom");
 		break;
 	case 0xA2:
-		ext("ppp|putActorAtObject");
+		ext("zp|putActorAtObject");
 		break;
 	case 0xA3:
 		ext("pp|faceActor");
