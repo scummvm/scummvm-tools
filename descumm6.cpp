@@ -118,6 +118,7 @@ static const char *oper_list[] = {
 
 StackEnt *stack[128];
 int num_stack;
+bool HumongousFlag = false;
 
 char *output;
 
@@ -2009,6 +2010,10 @@ void next_line_V67()
 		jump();
 		break;
 	case 0x74:
+		if (HumongousFlag) {
+			ext("pp|startSound");
+			break;
+		}
 		ext("p|startSound");
 		break;
 	case 0x75:
@@ -2478,6 +2483,10 @@ void next_line_V67()
 	case 0xED:
 		ext("rp|getObjectNewDir");
 		break;
+	case 0xFA:
+		get_byte();
+		ext("s|unknownFA");
+		break;
 	default:
 		invalidop(NULL, code);
 		break;
@@ -2495,6 +2504,7 @@ void ShowHelpAndExit()
 			"\t-7\tInput Script is v7\n"
 			"\t-8\tInput Script is v8\n"
 			"\t-o\tAlways Show offsets\n"
+			"\t-p\tInput Script is from Humongous Entertainment game\n"
 			"\t-i\tDon't output ifs\n"
 			"\t-e\tDon't output else\n"
 			"\t-f\tDon't output else-if\n"
@@ -2541,6 +2551,11 @@ int main(int argc, char *argv[])
 
 				case 'o':
 					alwaysShowOffs = true;
+					break;
+				case 'p':
+					scriptVersion = 6;
+					g_jump_opcode = 0x73;
+					HumongousFlag = true;
 					break;
 				case 'i':
 					dontOutputIfs = true;

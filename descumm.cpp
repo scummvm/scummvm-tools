@@ -1096,7 +1096,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		// strcpy(buf, "Unknown??");
 		// printf("UGH, unknown room op %d\n", opcode & 0x1F);
 		// exit(1);
-		sprintf(buf, "UnknownRoomCommand%.2X", opcode);
+		sprintf(buf, "UnknownRoomCommand%.2X", opcode & 0x1F);
 	}
 }
 
