@@ -776,7 +776,7 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 
 typedef struct { int offset, size, codec; } CompTable;
 
-byte *decompressBundleSound(int index, FILE *input) {
+byte *decompressBundleSound(int index, FILE *input, int32 &finalSize) {
 	byte compOutput[0x2000];
 	int i;
 
@@ -801,7 +801,7 @@ byte *decompressBundleSound(int index, FILE *input) {
 	byte *compInput = (byte *)malloc(maxSize + 1);
 	byte *compFinal = (byte *)malloc(1);
 
-	int32 finalSize = 0;
+	finalSize = 0;
 
 	for (i = 0; i < numCompItems; i++) {
 		compInput[compTable[i].size] = 0;
@@ -814,6 +814,9 @@ byte *decompressBundleSound(int index, FILE *input) {
 		finalSize += outputSize;
 	}
 
+	free(compInput);
+	free(compTable);
+
 	return compFinal;
 }
 
@@ -825,6 +828,7 @@ int main(int argc, char *argv[]) {
 	char outputDir[200];
 	char inputFilename[200];
 	char tmpPath[200];
+	char tmp2Path[200];
 
 	strcpy(inputFilename, argv[1]);
 	strcpy(inputDir, argv[2]);
@@ -872,11 +876,17 @@ int main(int argc, char *argv[]) {
 		bundleTable[i].size = readUint32BE(input);
 	}
 
+	int32 size = 0;
 	for (int h = 0; h < numFiles; h++) {
-		byte *compFinal = decompressBundleSound(h, input);
+		byte *compFinal = decompressBundleSound(h, input, size);
+
+		sprintf(tmp2Path, "%s/%s.wav", outputDir, bundleTable[h].filename);
+		writeToTempWave(tmp2Path, compFinal, size);
 
 		free(compFinal);
 	}
+
+	free(bundleTable);
 
 	fclose(input);
 
