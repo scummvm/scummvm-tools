@@ -159,7 +159,7 @@ const char *var_names2[] = {
 
 const char *var_names345[] = {
 	/* 0 */
-	"VAR_KEYPRESS",
+	"VAR_RESULT",
 	"VAR_EGO",
 	"VAR_CAMERA_POS_X",
 	"VAR_HAVE_MSG",
