@@ -251,7 +251,8 @@ char *get_var_until_0xff(char *buf)
 char *putascii(char *buf, int i)
 {
 	if (i > 31 && i < 128) {
-		buf[0] = i, buf[1] = 0;
+		buf[0] = i;
+		buf[1] = 0;
 		return buf + 1;
 	}
 	return buf + sprintf(buf, "^%d", i);
@@ -541,6 +542,9 @@ int HavePendingElse()
 
 void do_actorset(char *buf, byte opcode)
 {
+	static const byte convertTable[20] =
+		{ 1, 0, 0, 2, 0, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20 };
+
 	char first = 1;
 
 	buf = do_tok(buf, "ActorSet", ((opcode & 0x80) ? A1V : A1B) | ANOLASTPAREN);
@@ -554,6 +558,9 @@ void do_actorset(char *buf, byte opcode)
 		if (!first)
 			buf = strecpy(buf, ",");
 		first = 0;
+
+		opcode = (opcode & 0xE0) | convertTable[(opcode & 0x1F) - 1];
+
 		switch (opcode & 0x1F) {
 		case 0x01:
 			buf = do_tok(buf, "Costume", ((opcode & 0x80) ? A1V : A1B));
@@ -806,7 +813,7 @@ void do_resource(char *buf, byte opco)
 	// 2) the token's should all get a prefix, so that we don't mix up the
 	//    "real" loadRoom with the one here.
 	char opcode = get_byte();
-	switch (opcode & 31) {
+	switch (opcode & 0x3F) {
 	case 0x1:
 		do_tok(buf, "loadScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
@@ -864,6 +871,21 @@ void do_resource(char *buf, byte opco)
 	case 0x13:
 		do_tok(buf, "nukeCharset", ((opcode & 0x80) ? A1V : A1B));
 		break;
+	case 0x14:
+		do_tok(buf, "loadFlObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+
+	case 0x22 + 1:
+		do_tok(buf, "resUnk1", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+	case 0x23 + 1:
+		do_tok(buf, "resUnk2", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
+		break;
+	case 0x24 + 1:
+		do_tok(buf, "resUnk3", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+
+
 	default:
 		do_tok(buf, "resUnk", ((opcode & 0x80) ? A1V : A1B));
 		break;
