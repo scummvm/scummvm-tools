@@ -3012,8 +3012,16 @@ int main(int argc, char *argv[])
 	buf = (char *)malloc(4096);
 
 	if (GF_UNBLOCKED) {
+		if (size_of_code < 4) {
+			printf("File too small to be a script\n");
+			exit(0);
+		}
 		mem += 4;
 	} else if (scriptVersion == 5) {
+		if (size_of_code < 8) {
+			printf("File too small to be a script\n");
+			exit(0);
+		}
 		switch (TO_BE_32(*((uint32 *)mem))) {
 		case 'LSCR':
 			printf("Script# %d\n", (byte)mem[8]);
@@ -3036,6 +3044,10 @@ int main(int argc, char *argv[])
 			exit(0);
 		}
 	} else {
+		if (size_of_code < 6) {
+			printf("File too small to be a script\n");
+			exit(0);
+		}
 		switch (TO_LE_16(*((uint16 *)mem + 2))) {
 			case MKID('LS'):
 				printf("Script# %d\n", (byte)mem[8]);
@@ -3065,7 +3077,7 @@ int main(int argc, char *argv[])
 
 	offs_of_line = 0;
 
-	do {
+	while (cur_pos < mem + len) {
 		byte opcode = *cur_pos;
 		int j = num_block_stack;
 		buf[0] = 0;
@@ -3086,7 +3098,7 @@ int main(int argc, char *argv[])
 			outputLine("}", -1, -1, -1);
 		}
 		fflush(stdout);
-	} while (cur_pos < mem + len);
+	}
 
 	printf("END\n");
 

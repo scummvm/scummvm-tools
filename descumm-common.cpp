@@ -99,21 +99,22 @@ int get_signed_word()
 
 #define INDENT_SIZE 2
 
-static char *indentbuf;
+static char indentbuf[127 * INDENT_SIZE + 1];
 
-char *getIndentString(int i)
+// Generate a string with white spaces for the given indention level.
+// For each level, INDENT_SIZE spaces are inserted.
+char *getIndentString(int level)
 {
-	char *c = indentbuf;
-	i += i;
-	if (!c)
-		indentbuf = c = (char *)malloc(127 * INDENT_SIZE + 1);
-	if (i >= 127 * INDENT_SIZE)
-		i = 127 * INDENT_SIZE;
-	if (i < 0)
-		i = 0;
-	memset(c, 32, i);
-	c[i] = 0;
-	return c;
+	if (level >= 127)
+		level = 127;
+	if (level < 0)
+		level = 0;
+
+	level *= INDENT_SIZE;
+
+	memset(indentbuf, ' ', level);
+	indentbuf[level] = 0;
+	return indentbuf;
 }
 
 void outputLine(char *buf, int curoffs, int opcode, int indent)

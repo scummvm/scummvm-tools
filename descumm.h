@@ -131,7 +131,6 @@ extern uint size_of_code;
 // Common
 //
 
-extern char *getIndentString(int i);
 extern void outputLine(char *buf, int curoffs, int opcode, int indent);
 extern bool indentBlock(unsigned int cur);
 

@@ -2586,6 +2586,11 @@ int main(int argc, char *argv[])
 	fclose(in);
 	size_of_code = len;
 
+	if (size_of_code < 10) {
+		printf("File too small to be a script\n");
+		exit(0);
+	}
+
 	output = buf = (char *)malloc(8192);
 
 	switch (TO_BE_32(*((uint32 *)mem))) {
@@ -2627,7 +2632,7 @@ int main(int argc, char *argv[])
 
 	offs_of_line = 0;
 
-	do {
+	while (cur_pos < mem + len) {
 		byte opcode = *cur_pos;
 		int j = num_block_stack;
 		buf[0] = 0;
@@ -2648,7 +2653,7 @@ int main(int argc, char *argv[])
 			outputLine("}", -1, -1, -1);
 		}
 		fflush(stdout);
-	} while (cur_pos < mem + len);
+	}
 
 	printf("END\n");
 	
