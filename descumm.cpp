@@ -113,9 +113,9 @@ const char *var_names2[] = {
 	"VAR_MACHINE_SPEED",
 	"VAR_CHARCOUNT",
 	/* 8 */
-	NULL,
-	NULL,
-	NULL,
+	"VAR_ACTIVE_VERB",
+	"VAR_ACTIVE_OBJECT1",
+	"VAR_ACTIVE_OBJECT2",
 	"VAR_NUM_ACTOR",
 	/* 12 */
 	"VAR_CURRENT_LIGHTS",
@@ -125,7 +125,7 @@ const char *var_names2[] = {
 	/* 16 */
 	NULL,
 	"VAR_MUSIC_TIMER",
-	NULL,
+	"VAR_VERB_ALLOWED",
 	"VAR_ACTOR_RANGE_MIN",
 	/* 20 */
 	"VAR_ACTOR_RANGE_MAX",
@@ -3117,7 +3117,7 @@ int main(int argc, char *argv[])
 			mem += 8;
 			break;											/* Exit code */
 		case 'VERB':
-			mem = skipVerbHeader_V5(mem + 8);
+			offs_of_line = skipVerbHeader_V5(mem + 8);
 			break;											/* Verb */
 		default:
 			printf("Unknown script type!\n");
@@ -3129,26 +3129,26 @@ int main(int argc, char *argv[])
 			exit(0);
 		}
 		switch (TO_LE_16(*((uint16 *)mem + 2))) {
-			case MKID('LS'):
-				printf("Script# %d\n", (byte)mem[8]);
-				mem += 7;
-				break;			/* Local script */
-			case MKID('SC'):
-				mem += 6;
-				break;			/* Script */
-			case MKID('EN'):
-				mem += 6;
-				break;			/* Entry code */
-			case MKID('EX'):
-				mem += 6;
-				break;			/* Exit code */
-			case MKID('OC'):
-				mem += skipVerbHeader_V3(mem);
-				break;			/* Verb */
-			default:
-				printf("Unknown script type!\n");
-				exit(0);
-			}
+		case MKID('LS'):
+			printf("Script# %d\n", (byte)mem[8]);
+			mem += 7;
+			break;			/* Local script */
+		case MKID('SC'):
+			mem += 6;
+			break;			/* Script */
+		case MKID('EN'):
+			mem += 6;
+			break;			/* Entry code */
+		case MKID('EX'):
+			mem += 6;
+			break;			/* Exit code */
+		case MKID('OC'):
+			offs_of_line = skipVerbHeader_V3(mem);
+			break;			/* Verb */
+		default:
+			printf("Unknown script type!\n");
+			exit(0);
+		}
 	}
 
 	org_pos = mem;
