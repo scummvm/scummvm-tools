@@ -2253,6 +2253,7 @@ void next_line_V67(char *output)
 				"\xD7|setIgnoreTurnsOn,"
 				"\xD8|setIgnoreTurnsOff,"
 				"\xD9|initLittle,"
+				"\xDA|drawActor,"
 				"\xE3p|setLayer,"
 				"\xE4p|setWalkScript,"
 				"\xE5|setStanding,"
