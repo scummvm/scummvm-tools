@@ -368,11 +368,11 @@ void prepareForMixing(char *outputDir, char *inputFilename) {
 			}
 
 			free(audioBuf);
-			_audioTracks->file = fopen(filename, "wb");
-			assert(_audioTracks->file);
-			fwrite(outputBuf, outputSize, 1, _audioTracks->file);
-			fclose(_audioTracks->file);
-			_audioTracks->file = NULL;
+			_audioTracks[l].file = fopen(filename, "wb");
+			assert(_audioTracks[l].file);
+			fwrite(outputBuf, outputSize, 1, _audioTracks[l].file);
+			fclose(_audioTracks[l].file);
+			_audioTracks[l].file = NULL;
 			free(outputBuf);
 		}
 	}
