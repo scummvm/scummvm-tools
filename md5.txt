@@ -187,6 +187,14 @@ Fatty Bears Birthday Surprise
 Fatty Bears Fun Pack
 	TODO
 
+Backyard Baseball 2001 
+	Demo	PC	en	a194f15f51ee62badab74b9e7da97693	bb2demo	khalek
+	Demo	PC	en	a194f15f51ee62badab74b9e7da97693	byb2001-demo	khalek
+
+Backyard Football 2002
+	Demo	PC	en	2e85f7aa054930c692a5b1bed1dfc295	byf2002-demo	khalek
+	Demo	PC	en	2e85f7aa054930c692a5b1bed1dfc295	football2002	khalek
+
 Big Thinkers: Kindergarten
 	Demo	DOS	en	695fe0b3963333b7e15b37514db3c745	TODO
 	Demo	Mac	en	695fe0b3963333b7e15b37514db3c745	kinddemo	khalek
