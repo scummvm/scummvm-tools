@@ -113,7 +113,8 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		break;
 
 	case kMP3Mode:
-		tmp += sprintf(tmp, "lame -t -m m ");
+		tmp += sprintf(tmp, "lame -t ");
+		tmp += sprintf(tmp, "-m m ");	// FIXME: Why do we always encode to mono?
 		if (rawInput) {
 			tmp += sprintf(tmp, "-r ");
 			tmp += sprintf(tmp, "--bitwidth %d ", rawAudioType.bitsPerSample);
