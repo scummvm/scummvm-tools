@@ -267,7 +267,8 @@ void writePendingElse()
 	if (pendingElse) {
 		char buf[32];
 		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
-		outputLine(buf, pendingElseOffs, pendingElseOpcode, pendingElseIndent - 1);
+		outputLine(buf, offs_of_line, pendingElseOpcode, pendingElseIndent - 1);
+		offs_of_line = pendingElseOffs;
 		pendingElse = false;
 	}
 }

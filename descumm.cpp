@@ -655,7 +655,6 @@ void do_expr_code(char *buf)
 
 	char tmp[256];
 
-	//j = cur_pos - org_pos - 1;
 #define NEW_EXPR_MODE 1
 #if NEW_EXPR_MODE
 	buf = strecpy(buf, "Exprmode ");
@@ -723,7 +722,7 @@ void do_expr_code(char *buf)
 	output_expr_text(j, buf);
 
 	do {
-		j = cur_pos - org_pos;
+		j = get_curoffs();
 
 		i = get_byte();
 		if (i == 0xFF)
@@ -1407,7 +1406,7 @@ void do_unconditional_jump(char *buf)
 	} else if (!dontOutputElse && maybeAddElse(cur, to)) {
 		pendingElse = true;
 		pendingElseTo = to;
-		pendingElseOffs = cur - 1;
+		pendingElseOffs = cur;
 		pendingElseOpcode = g_jump_opcode;
 		pendingElseIndent = num_block_stack;
 		buf[0] = 0;

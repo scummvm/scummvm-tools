@@ -1049,14 +1049,14 @@ void jump()
 		// Sometimes, jumps with offset 1 occur. I used to suppress those.
 		// But it turns out that's not quite correct in some cases. With this
 		// code, it can sometimes happens that you get an empty 'else' branch;
-		// but in many other cases, an otherwis hidden instruction is revealed,
+		// but in many other cases, an otherwise hidden instruction is revealed,
 		// or an instruction is placed into an else branch instead of being
 		// (incorrectly) placed inside the body of the 'if' itself.
 		sprintf(output, "/* jump %x; */", to);
 	} else if (!dontOutputElse && maybeAddElse(cur, to)) {
 		pendingElse = true;
 		pendingElseTo = to;
-		pendingElseOffs = cur - 1;
+		pendingElseOffs = cur;
 		pendingElseOpcode = g_jump_opcode;
 		pendingElseIndent = num_block_stack;
 	} else {
