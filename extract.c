@@ -15,6 +15,9 @@
 #define algqualDef 2
 #define vbrqualDef 4
 
+/* The default for oggenc invocation is to use the --quality option only */
+#define oggqualDef 3
+
 FILE *input, *output_idx, *output_snd;
 
 char fbuf_temp[1024];
@@ -42,7 +45,17 @@ struct lameparams {
 	unsigned int vbrqual;
 	unsigned int silent;
 } encparms = { minBitrDef, maxBitrDef, abrDef, vbrDef, algqualDef, vbrqualDef, 0 };
-    
+
+struct oggencparams {
+	int nominalBitr;
+	int minBitr;
+	int maxBitr;
+	int quality;
+	int silent;
+} oggparms = { -1, -1, -1, oggqualDef, 0 };
+
+int oggmode = 0;
+
 void put_int(unsigned int val);
 
 void end_of_file(void)
@@ -55,7 +68,7 @@ void end_of_file(void)
 	fclose(output_snd);
 	fclose(output_idx);
 
-	output_idx = fopen("monster.so3", "wb");
+	output_idx = fopen(oggmode ? "monster.sog" : "monster.so3", "wb");
 	put_int(idx_size);
 
 	in = fopen("monster.idx", "rb");
@@ -63,7 +76,7 @@ void end_of_file(void)
 		fwrite(buf, 1, size, output_idx);
 	}
 	fclose(in);
-	in = fopen("monster.mp3", "rb");
+	in = fopen("monster.dat", "rb");
 	while ((size = fread(buf, 1, 2048, in)) > 0) {
 		fwrite(buf, 1, size, output_idx);
 	}
@@ -73,9 +86,9 @@ void end_of_file(void)
 
 	/* And some clean-up :-) */
 	unlink("monster.idx");
-	unlink("monster.mp3");
+	unlink("monster.dat");
 	unlink("tempfile.raw");
-	unlink("tempfile.mp3");
+	unlink(oggmode ? "tempfile.ogg" : "tempfile.mp3");
 	
 	exit(-1);
 }
@@ -197,7 +210,7 @@ void get_part(void)
 			exit(-1);
 		}
 		sprintf(rawname, "tempfile.raw");
-		sprintf(mp3name, "tempfile.mp3");
+		sprintf(mp3name, oggmode ? "tempfile.ogg" : "tempfile.mp3");
 		
 		f = fopen(rawname, "wb");
 		length -= 2;
@@ -213,18 +226,43 @@ void get_part(void)
 			fwrite(fbuf_o, 1, 2 * size, f);
 		}
 		fclose(f);
-		
-		if (encparms.abr == 1)
-			sprintf(fbuf_temp,"--abr %i",encparms.minBitr);
-		else
-			sprintf(fbuf_temp,"--vbr-new -b %i",encparms.minBitr);
-		if (encparms.silent == 1)
-			strcat(fbuf_temp," --silent");
-		sprintf(fbuf,
-		        "lame -t -q %i %s -V %i -B %i --resample 22.05 -m m -r -s %d %s %s",
-		        encparms.algqual, fbuf_temp, encparms.vbrqual,
-		        encparms.maxBitr, real_samplerate, rawname, mp3name);
-		system(fbuf);
+
+		if (oggmode) {
+			sprintf(fbuf, "oggenc ");
+			if (oggparms.nominalBitr != -1) {
+				sprintf(fbuf_temp, "-b %i ", oggparms.nominalBitr);
+				strcat(fbuf, fbuf_temp);
+			}
+			if (oggparms.minBitr != -1) {
+				sprintf(fbuf_temp, "-m %i ", oggparms.minBitr);
+				strcat(fbuf, fbuf_temp);
+			}
+			if (oggparms.maxBitr != -1) {
+				sprintf(fbuf_temp, "-M %i ", oggparms.maxBitr);
+				strcat(fbuf, fbuf_temp);
+			}
+			if (oggparms.silent) {
+				strcat(fbuf, "--quiet ");
+			}
+			sprintf(fbuf_temp, "-q %i -r -C 1 --raw-endianness=1 -R %i --resample 22050 %s -o %s",
+				oggparms.quality, real_samplerate,
+				rawname, mp3name);
+			strcat(fbuf, fbuf_temp);
+			system(fbuf);
+		}
+		else {
+			if (encparms.abr == 1)
+				sprintf(fbuf_temp,"--abr %i",encparms.minBitr);
+			else
+				sprintf(fbuf_temp,"--vbr-new -b %i",encparms.minBitr);
+			if (encparms.silent == 1)
+				strcat(fbuf_temp," --silent");
+			sprintf(fbuf,
+				"lame -t -q %i %s -V %i -B %i --resample 22.05 -m m -r -s %d %s %s",
+				encparms.algqual, fbuf_temp, encparms.vbrqual,
+				encparms.maxBitr, real_samplerate, rawname, mp3name);
+			system(fbuf);
+		}
 
 		f = fopen(mp3name, "rb");
 		tot_size = 0;
@@ -247,6 +285,10 @@ void showhelp(char *exename)
 {
 	printf("\nUsage: %s <params> monster.sou\n", exename);
 	printf("\nParams:\n");
+	printf("--mp3        encode to MP3 format (default)\n");
+	printf("--vorbis     encode to Vorbis format\n");
+	printf("(If one of these is specified, it must be the first parameter.)\n");
+	printf("\nMP3 mode params:\n");
 	printf("-b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%i)\n", minBitrDef);
 	printf("-B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%i)\n", maxBitrDef);
 	printf("--vbr        LAME uses the VBR mode (default)\n");
@@ -254,18 +296,20 @@ void showhelp(char *exename)
 	printf("-V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%i)\n", vbrqualDef);
 	printf("-q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%i)\n", algqualDef);
 	printf("--silent     the output of LAME is hidden (default:disabled)\n");
-	printf("--help       this help message\n");
+	printf("\nVorbis mode params:\n");
+	printf("-b <rate>    <rate> is the nominal bitrate (default:unset)\n");
+	printf("-m <rate>    <rate> is the minimum bitrate (default:unset)\n");
+	printf("-M <rate>    <rate> is the maximum bitrate (default:unset)\n");
+	printf("-q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%i)\n", oggqualDef);
+	printf("--silent     the output of oggenc is hidden (default:disabled)\n");
+	printf("\n--help     this help message\n");
 	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode -b and -B must be multiples of 8; the maximum is 160!\n");
+	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
 	exit(2);
 }
 
-int main(int argc, char *argv[])
-{
-	int i;
-	if (argc < 2)
-		showhelp(argv[0]);
-	for(i = 1; i < argc; i++) {
+void process_mp3_parms(int argc, char *argv[], int i) {
+	for(; i < argc; i++) {
 		if (strcmp(argv[i], "--vbr") == 0) {
 			encparms.vbr=1;
 			encparms.abr=0;
@@ -317,6 +361,63 @@ int main(int argc, char *argv[])
 	if (i != (argc - 1)) {
 		showhelp(argv[0]);
 	}
+}
+
+void process_ogg_parms(int argc, char *argv[], int i) {
+	for (; i < argc; i++) {
+		if (strcmp(argv[i], "-b") == 0) {
+			oggparms.nominalBitr = atoi(argv[i + 1]);
+			i++;
+		}
+		else if (strcmp(argv[i], "-m") == 0) {
+			oggparms.minBitr = atoi(argv[i + 1]);
+			i++;
+		}
+		else if (strcmp(argv[i], "-M") == 0) {
+			oggparms.maxBitr = atoi(argv[i + 1]);
+			i++;
+		}
+		else if (strcmp(argv[i], "-q") == 0) {
+			oggparms.quality = atoi(argv[i + 1]);
+			i++;
+		}
+		else if (strcmp(argv[i], "--silent") == 0) {
+			oggparms.silent = 1;
+		}
+		else if (strcmp(argv[i], "--help") == 0) {
+			showhelp(argv[0]);
+		}
+		else if (argv[i][0] == '-') {
+			showhelp(argv[0]);
+		}
+		else
+			break;
+	}
+	if (i != argc - 1)
+		showhelp(argv[0]);
+}
+
+int main(int argc, char *argv[])
+{
+	int i;
+	if (argc < 2)
+		showhelp(argv[0]);
+	i = 1;
+	if (strcmp(argv[1], "--mp3") == 0) {
+		oggmode = 0;
+		i++;
+	}
+	else if (strcmp(argv[1], "--vorbis") == 0) {
+		oggmode = 1;
+		i++;
+	}
+
+	if (oggmode)
+		process_ogg_parms(argc, argv, i);
+	else
+		process_mp3_parms(argc, argv, i);
+
+	i = argc - 1;
 	input = fopen(argv[i], "rb");
 	if (!input) {
 		printf("Cannot open file: %s\n", argv[i]);
@@ -324,7 +425,7 @@ int main(int argc, char *argv[])
 	}
 
 	output_idx = fopen("monster.idx", "wb");
-	output_snd = fopen("monster.mp3", "wb");
+	output_snd = fopen("monster.dat", "wb");
 
 	/* Get the 'SOU ....' header */
 	get_string(8);
