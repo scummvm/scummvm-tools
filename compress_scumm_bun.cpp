@@ -815,7 +815,6 @@ byte *decompressBundleSound(int index, FILE *input, int32 &finalSize) {
 		assert(outputSize <= 0x2000);
 		memcpy(compFinal + finalSize, compOutput, outputSize);
 		finalSize += outputSize;
-		assert(finalSize <= numCompItems * 0x2000);
 	}
 
 	free(compInput);
