@@ -127,6 +127,9 @@
 		<File
 			RelativePath="descumm6.cpp">
 		</File>
+		<File
+			RelativePath="util.c">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

@@ -118,6 +118,9 @@
 		<File
 			RelativePath=".\rescumm.c">
 		</File>
+		<File
+			RelativePath="util.c">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

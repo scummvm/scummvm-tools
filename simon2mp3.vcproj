@@ -116,7 +116,13 @@
 	</Configurations>
 	<Files>
 		<File
+			RelativePath="extract-common.c">
+		</File>
+		<File
 			RelativePath=".\simon2mp3.c">
+		</File>
+		<File
+			RelativePath="util.c">
 		</File>
 	</Files>
 	<Globals>

@@ -116,7 +116,13 @@
 	</Configurations>
 	<Files>
 		<File
+			RelativePath="extract-common.c">
+		</File>
+		<File
 			RelativePath=".\extract.c">
+		</File>
+		<File
+			RelativePath="util.c">
 		</File>
 	</Files>
 	<Globals>

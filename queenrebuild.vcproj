@@ -102,6 +102,9 @@
 		<File
 			RelativePath="queenrebuild.c">
 		</File>
+		<File
+			RelativePath="util.c">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
