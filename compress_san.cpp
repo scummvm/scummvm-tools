@@ -343,7 +343,7 @@ int main(int argc, char *argv[]) {
 				int track_flags = readUint16LE(input);
 				// to be sure that is comi chunk
 				if ((track_flags != 0) || (unk != 0) || (flags != 46)) {
-					fseek(input, -8, SEEK_CUR);
+					fseek(input, -12, SEEK_CUR);
 					goto skip;
 				}
 				fseek(input, 10, SEEK_CUR);
