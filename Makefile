@@ -58,7 +58,7 @@ simon2mp3$(EXEEXT): simon2mp3.o extract-common.o util.o
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
 extract.o simon2mp3.o extract-common.o: util.h extract.h
-queenrebuild.o rescumm.o util.o: util.h
+desword2.o queenrebuild.o rescumm.o util.o: util.h
 
 clean:
 	rm -f *.o $(TARGETS)
