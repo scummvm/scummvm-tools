@@ -100,6 +100,8 @@ int main(int argc, char *argv[]) {
 		int32 frameSize = readUint32BE(input); // FRME size
 		frameInfo[l].frameSize = frameSize;
 		frameInfo[l].offsetOutput = ftell(output);
+		frameInfo[l].fobjDecompressedSize = 0;
+		frameInfo[l].fobjCompressedSize = 0;
 		writeUint32BE(output, frameSize);
 		for (;;) {
 			tag = readUint32BE(input); // chunk tag
@@ -151,6 +153,8 @@ int main(int argc, char *argv[]) {
 
 	int32 sumDiff = 0;
 	for (l = 0; l < nbframes; l++) {
+		if (frameInfo[l].fobjCompressedSize == 0)
+			continue;
 		fseek(output, frameInfo[l].offsetOutput, SEEK_SET);
 		int32 diff = frameInfo[l].fobjDecompressedSize - (frameInfo[l].fobjCompressedSize + 4);
 		sumDiff += diff;
