@@ -563,9 +563,17 @@ char *get_ascii(char *buf)
 			break;
 		buf = putascii(buf, i);
 		if (i == 255) {
-			buf = putascii(buf, get_byte());
-			buf = putascii(buf, get_byte());
-			buf = putascii(buf, get_byte());
+			i = get_byte();
+			buf = putascii(buf, i);
+
+			// Workaround for a script bug in Indy3
+			if (i == 46 && scriptVersion == 3 && IndyFlag)
+				continue;
+
+			if (i != 1 && i != 2 && i != 3 && i != 8) {
+				buf = putascii(buf, get_byte());
+				buf = putascii(buf, get_byte());
+			}
 		}
 	} while (1);
 
@@ -1571,22 +1579,9 @@ void do_print_ego(char *buf, byte opcode)
 			buf = do_tok(buf, "PlayCDTrack", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 			break;
 		case 0xF:{
-				buf = strecpy(buf, "Text(\"");
-				while (1) {
-					i = get_byte();
-					if (!i)
-						break;
-					buf = putascii(buf, i);
-					if (i == 255) {
-						i = get_byte();
-						buf = putascii(buf, i);
-						if (i == 0 || i != 2 && i != 3 && i != 8) {
-							buf = putascii(buf, get_byte());
-							buf = putascii(buf, get_byte());
-						}
-					}
-				}
-				buf = strecpy(buf, "\")");
+				buf = strecpy(buf, "Text(");
+				buf = get_ascii(buf);
+				buf = strecpy(buf, ")");
 			}
 			goto exit_proc;
 		default:
