@@ -258,6 +258,10 @@ void convert_mac(void)
 			if (input)
 				fclose(input);
 			input = fopen(tmp, "rb"); 
+			if (!input) {
+				printf("Cannot open file: %s\n", tmp);
+				exit(-1);
+			}
 		}
 
 		size += get_sound(offsets[i]);
