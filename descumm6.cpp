@@ -2529,15 +2529,19 @@ void next_line_V67(char *output)
 		ext(output, "rpppp|getDistPtPt");
 		break;
 	case 0xC8:
-		if (scriptVersion == 7) 
-			// TODO - add more subopcodes
-			ext(output, "ry" "kernelGetFunctions\0"
+		if (HumongousFlag)
+			ext(output, "rl|kernelGetFunctions");
+		else {
+			if (scriptVersion == 7) 
+				// TODO - add more subopcodes
+				ext(output, "ry" "kernelGetFunctions\0"
 					"\x73|getWalkBoxAt,"
 					"\x74|isPointInBox,"
 					"\xCE|getRGBSlot"
 					);
-		else 
-			ext(output, "l|kernelGetFunctions");
+			else 
+				ext(output, "l|kernelGetFunctions");
+		}
 		break;
 	case 0xC9:
 		if (scriptVersion == 7) 
@@ -2652,6 +2656,7 @@ void next_line_V67(char *output)
 		if (HumongousFlag)
 			ext(output, "x" "setVolume\0" 
 				"\xDEp|musicVolume,"
+				"\xDFp|unkVolume,"
 				"\xE0p|sfxVolume,");
 		else
 			invalidop(NULL, code);
