@@ -53,7 +53,7 @@ void end_of_file(void)
 	fclose(output_idx);
 
 	output_idx = fopen(oggmode ? OUTPUT_OGG : OUTPUT_MP3, "wb");
-	writeUint32BE(input, (uint32)idx_size);
+	writeUint32BE(output_idx, (uint32)idx_size);
 
 	in = fopen(TEMP_IDX, "rb");
 	while ((size = fread(buf, 1, 2048, in)) > 0) {
@@ -112,9 +112,9 @@ void get_part(void)
 		exit(-1);
 	tags -= 8;
 
-	writeUint32BE(input, (uint32)pos);
-	writeUint32BE(input, (uint32)ftell(output_snd));
-	writeUint32BE(input, tags);
+	writeUint32BE(output_idx, (uint32)pos);
+	writeUint32BE(output_idx, (uint32)ftell(output_snd));
+	writeUint32BE(output_idx, tags);
 	while (tags > 0) {
 		fputc(fgetc(input), output_snd);
 		tags--;
@@ -143,7 +143,7 @@ void get_part(void)
 	}
 	fclose(f);
 
-	writeUint32BE(input, tot_size);
+	writeUint32BE(output_idx, tot_size);
 }
 
 void showhelp(char *exename)
