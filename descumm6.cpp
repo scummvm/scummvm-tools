@@ -2628,7 +2628,7 @@ void next_line()
 		ext("plp|pickOneOfDefault");
 		break;
 	case 0xCD:
-		ext("pppp|o6_unknownCD");
+		ext("pppp|stampObject");
 		break;
 	case 0xD0:
 		ext("|getDateTime");
