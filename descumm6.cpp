@@ -144,6 +144,7 @@ byte dontOutputElseif;
 byte dontShowOpcode;
 byte dontShowOffsets;
 byte haltOnError;
+byte scriptVersion = 6;
 
 BlockStack *block_stack;
 int num_block_stack;
@@ -1477,7 +1478,10 @@ void ShowHelpAndExit()
 				 "\t-i\tDon't output ifs\n"
 				 "\t-e\tDon't output else\n"
 				 "\t-f\tDon't output else-if\n"
-				 "\t-c\tDon't show opcode\n" "\t-x\tDon't show offsets\n" "\t-h\tHalt on error\n");
+				 "\t-c\tDon't show opcode\n"
+				 "\t-x\tDon't show offsets\n"
+				 "\t-h\tHalt on error\n"
+				 "\t-7\tAssume V7 scripts\n");
 	exit(0);
 }
 
@@ -1521,6 +1525,9 @@ int main(int argc, char *argv[])
 				case 'h':
 					haltOnError = 1;
 					break;
+				case '7':
+					scriptVersion = 7;
+					break;
 				default:
 					ShowHelpAndExit();
 				}
@@ -1554,8 +1561,13 @@ int main(int argc, char *argv[])
 	switch (*((long *)mem)) {
 #endif
 	case 'RCSL':
-		printf("Script# %d\n", (unsigned char)mem[8]);
-		mem += 9;
+		if (scriptVersion == 7) {
+			printf("Script# %d\n", mem[8] + (mem[9] << 8));
+			mem += 10;
+		} else {
+			printf("Script# %d\n", (unsigned char)mem[8]);
+			mem += 9;
+		}
 		break;											/* Local script */
 	case 'PRCS':
 		mem += 8;

@@ -14,4 +14,5 @@ Included tools:
         descumm5.cpp - Decompiles SCUMM V4/V5 scripts (eg, monkey1/2, FOA)
 
         descumm6.cpp - Decompiles SCUMM V6/V7/V8 scripts (eg, dott, FT, etc)
-
+		       (When decompiling V7 'room-' scripts, you may need to 
+                       use the -7 switch)
