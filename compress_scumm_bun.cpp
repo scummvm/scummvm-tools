@@ -673,7 +673,7 @@ void encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
 	bool err = false;
 
-	sprintf(fbuf, "oggenc -q 0 %s", filename);
+	sprintf(fbuf, "oggenc -q 0 \"%s\"", filename);
 	err = system(fbuf) != 0;
 	if (err) {
 		printf("Got error from encoder. (check your parameters)\n");
