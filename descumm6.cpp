@@ -623,9 +623,9 @@ void push(StackEnt * se)
 void invalidop(const char *cmd, int op)
 {
 	if (cmd)
-		printf("invalid opcode %s:0x%x\n", cmd, op);
+		printf("invalid opcode %s:0x%x (stack count %d)\n", cmd, op, num_stack);
 	else
-		printf("invalid opcode 0x%x\n", op);
+		printf("invalid opcode 0x%x (stack count %d)\n", op, num_stack);
 	exit(1);
 }
 
@@ -1035,11 +1035,38 @@ void ext(const char *fmt)
 
 	while ((cmd = *fmt++) != '|') {
 		if (cmd == 'x' && !extstr) {
+			/* Sub-op: next byte specifies which one */
 			extstr = fmt;
 			fmt += strlen(fmt) + 1;
 
 			/* extended thing */
 			extcmd = get_byte();
+
+			/* locate our extended item */
+			while ((cmd = *fmt++) != extcmd) {
+				/* scan until we find , or \0 */
+				while ((cmd = *fmt++) != ',') {
+					if (cmd == 0) {
+						invalidop(extstr, extcmd);
+					}
+				}
+			}
+			/* found a command, continue at the beginning */
+			continue;
+		}
+		if (cmd == 'y' && !extstr) {
+			/* Sub-op: parameters are in a list, first element of the list specified the command */
+			StackEnt *se;
+			extstr = fmt;
+			fmt += strlen(fmt) + 1;
+			
+			args[numArgs++] = se_get_list();
+			
+			/* extended thing */
+			se = args[numArgs - 1];
+			se->data--;
+			se = se->list[se->data];
+			extcmd = se->data;
 
 			/* locate our extended item */
 			while ((cmd = *fmt++) != extcmd) {
@@ -1459,7 +1486,10 @@ void next_line_V8()
 		break;
 
 	case 0xBA:
-		ext("|kludge");		// ???
+		ext("y" "kludge\0"
+				"\xB|lockObject,"
+				"\xC|unlockObject"
+				);
 		break;
 
 	case 0xD3:
@@ -2048,6 +2078,7 @@ void next_line()
 		ext("rpppp|getDistPtPt");
 		break;
 	case 0xC8:
+		// TODO - make use of new 'y' ext
 		ext("rl|kernelFunction");
 		break;
 	case 0xC9:
@@ -2325,6 +2356,7 @@ int main(int argc, char *argv[])
 	} while (cur_pos < mem + len);
 
 	printf("END\n");
+	printf("Stack count: %d\n", num_stack);
 
 	free(memorg);
 
