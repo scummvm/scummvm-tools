@@ -496,14 +496,14 @@ void do_actorset_v12(char *buf, byte opcode)
 
 }
 
-void do_actorset(char *buf, byte opcode)
+void do_actorops(char *buf, byte opcode)
 {
 	static const byte convertTable[20] =
 		{ 1, 0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20 };
 
 	char first = 1;
 
-	buf = do_tok(buf, "ActorSet", ((opcode & 0x80) ? A1V : A1B) | ANOLASTPAREN);
+	buf = do_tok(buf, "ActorOps", ((opcode & 0x80) ? A1V : A1B) | ANOLASTPAREN);
 
 	buf = strecpy(buf, ",[");
 
@@ -2660,7 +2660,7 @@ void next_line_V345(char *buf)
 	case 0x53:
 	case 0x93:
 	case 0xD3:
-		do_actorset(buf, opcode);
+		do_actorops(buf, opcode);
 		break;
 
 	case 0x20:

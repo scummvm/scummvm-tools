@@ -1220,7 +1220,7 @@ void next_line_V8()
 		break;
 	case 0x70:
 		// FIXME - is this correct?!? Also, make the display nicer...
-		ext("x" "dim\0"
+		ext("x" "dimArray\0"
 				"\x0Apw|dim-scummvar,"
 				"\x0Bpw|dim-string,"
 				"\xCAw|undim"
@@ -1233,7 +1233,7 @@ void next_line_V8()
 
 	case 0x74:
 		// FIXME - is this correct?!? Also, make the display nicer...
-		ext("x" "dim2\0"
+		ext("x" "dim2dimArray\0"
 				"\x0Appw|dim2-scummvar,"
 				"\x0Bppw|dim2-string,"
 				"\xCAw|undim2"
@@ -1265,10 +1265,10 @@ void next_line_V8()
 		break;
 
 	case 0x79:
-		ext("lpp|startScriptEx");
+		ext("lpp|startScript");
 		break;
 	case 0x7A:
-		ext("lp|startScript");
+		ext("lp|startScriptQuick");
 		break;
 	case 0x7B:
 		ext("|stopObjectCode");
@@ -1283,7 +1283,7 @@ void next_line_V8()
 		ext("p|return");
 		break;
 	case 0x7F:
-		ext("lppp|startObjectEx");
+		ext("lppp|startObject");
 		break;
 
 	case 0x81:
@@ -1382,7 +1382,7 @@ void next_line_V8()
 		ext("ppp|walkActorTo");
 		break;
 	case 0xA1:
-		ext("pppp|putActorInRoom");
+		ext("pppp|putActorAtXY");
 		break;
 	case 0xA2:
 		ext("zp|putActorAtObject");
@@ -1581,7 +1581,7 @@ void next_line_V8()
 		break;
 
 	case 0xC8:
-		ext("rlp|startScriptQuick");
+		ext("rlp|startScriptQuick2");
 		break;
 	case 0xC9:
 		ext("lppp|startObjectQuick");
@@ -1863,19 +1863,19 @@ void next_line_V67()
 		jumpif(pop(), false);
 		break;
 	case 0x5E:
-		ext("lpp|startScriptEx");
+		ext("lpp|startScript");
 		break;
 	case 0x5F:
-		ext("lp|startScript");
+		ext("lp|startScriptQuick");
 		break;
 	case 0x60:
 		ext("lppp|startObject");
 		break;
 	case 0x61:
-		ext("pp|setObjectState");
+		ext("pp|drawObject");
 		break;
 	case 0x62:
-		ext("ppp|setObjectXY");
+		ext("ppp|drawObjectAt");
 		break;
 		/* *** */
 	case 0x65:
@@ -1980,7 +1980,7 @@ void next_line_V67()
 		ext("ppp|walkActorTo");
 		break;
 	case 0x7F:
-		ext("pppp|putActorInRoom");
+		ext("pppp|putActorInXY");
 		break;
 	case 0x80:
 		ext("zp|putActorAtObject");
@@ -2257,7 +2257,7 @@ void next_line_V67()
 		ext("s|talkEgo");
 		break;
 	case 0xBC:
-		ext("x" "dim\0"
+		ext("x" "dimArray\0"
 				"\xC7pw|dimType5,"
 				"\xC8pw|dimType1,"
 				"\xC9pw|dimType2,"
@@ -2269,10 +2269,10 @@ void next_line_V67()
 		ext("lpp|startObjectQuick");
 		break;
 	case 0xBF:
-		ext("lp|startScriptQuick");
+		ext("lp|startScriptQuick2");
 		break;
 	case 0xC0:
-		ext("x" "dim2\0"
+		ext("x" "dim2dimArray\0"
 				"\xC7ppw|dim2Type5,"
 				"\xC8ppw|dim2Type1,"
 				"\xC9ppw|dim2Type2,"
