@@ -1041,7 +1041,7 @@ output_command:
 
 void jump()
 {
-	int offset = get_signed_word();
+	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
 
@@ -1071,7 +1071,7 @@ void jump()
 
 void jumpif(StackEnt * se, bool negate)
 {
-	int offset = get_signed_word();
+	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
 	char *e = output;

@@ -140,8 +140,7 @@ extern bool indentBlock(unsigned int cur);
 extern char *strecpy(char *buf, const char *src);
 extern int get_curoffs();
 extern int get_byte();
-extern uint get_word();
-extern int get_signed_word();
+extern int get_word();
 
 extern bool maybeAddIf(uint cur, uint to);
 extern bool maybeAddElse(uint cur, uint to);

@@ -69,29 +69,18 @@ int get_byte()
 	return (byte)(*cur_pos++);
 }
 
-uint get_word()
+int get_word()
 {
 	int i;
 
 	if (scriptVersion == 8) {
-		i = TO_LE_32(*((uint32 *)cur_pos));
+		i = (int32)TO_LE_32(*((uint32 *)cur_pos));
 		cur_pos += 4;
 	} else {
-		i = TO_LE_16(*((uint16 *)cur_pos));
+		i = (int16)TO_LE_16(*((uint16 *)cur_pos));
 		cur_pos += 2;
 	}
 	return i;
-}
-
-int get_signed_word()
-{
-	uint i = get_word();
-
-	if (scriptVersion == 8) {
-		return (int32)i;
-	} else {
-		return (int16)i;
-	}
 }
 
 

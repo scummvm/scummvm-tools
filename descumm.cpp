@@ -1401,7 +1401,7 @@ exit_proc:;
 
 void do_unconditional_jump(char *buf)
 {
-	int offset = get_signed_word();
+	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
 
@@ -1426,7 +1426,7 @@ void do_unconditional_jump(char *buf)
 
 void emit_if(char *buf, char *condition)
 {
-	int offset = get_signed_word();
+	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
 
