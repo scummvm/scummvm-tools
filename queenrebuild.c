@@ -253,8 +253,7 @@ void createFinalFile(void) {
 	writeUint16BE(outFinal, versionExtra.entries);
 
 	for (i = 0; i < versionExtra.entries; i++) {
-		readString(12, entry.filename, inTbl);
-		fwrite(entry.filename, 12, 1, outFinal);
+		fromFileToFile(inTbl, outFinal, 12);
 		writeByte(outFinal, readByte(inTbl));
 		writeUint32BE(outFinal, dataStartOffset + readUint32BE(inTbl));
 		writeUint32BE(outFinal, readUint32BE(inTbl));		
