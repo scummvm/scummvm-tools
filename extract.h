@@ -25,12 +25,6 @@
 #include "util.h"
 
 
-typedef enum {
-	false = 0,
-	true = 1
-} bool;
-
-
 /* These are the defaults parameters for the Lame invocation */
 #define minBitrDef 24
 #define maxBitrDef 64

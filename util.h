@@ -40,10 +40,8 @@
 
 
 /*
- * Various utility macros
+ * Some useful types
  */
-
-#define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
 typedef unsigned char byte;
 typedef unsigned char uint8;
@@ -52,6 +50,17 @@ typedef unsigned int uint32;
 typedef signed char int8;
 typedef signed short int16;
 typedef signed int int32;
+
+#if !defined(__cplusplus)
+typedef enum { false = 0, true = 1 } bool;
+#endif
+
+
+/*
+ * Various utility macros
+ */
+
+#define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
 static uint32 inline SWAP_32(uint32 a) {
 	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
