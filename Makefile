@@ -16,6 +16,7 @@ CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
 # CFLAGS += -DSCUMM_BIG_ENDIAN
 
 TARGETS := \
+	compress_san$(EXEEXT) \
 	convbdf$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
@@ -28,6 +29,9 @@ TARGETS := \
 	simon2mp3$(EXEEXT)
 
 all: $(TARGETS)
+
+compress_san$(EXEEXT): compress_san.o uti.o
+	$(CXX) $(LFLAGS) -o $@ $+
 
 convbdf$(EXEEXT): convbdf.o util.o
 	$(CXX) $(LFLAGS) -o $@ $+

@@ -8,6 +8,7 @@ include Makefile
 install:   all
 	mkdir -p $(SCUMMVMPATH)
 	mkdir -p $(SCUMMVMPATH)/tools
+	strip compress_san.exe -o $(SCUMMVMPATH)/tools/compress_san.exe
 	strip convbdf.exe -o $(SCUMMVMPATH)/tools/convbdf.exe
 	strip descumm.exe -o $(SCUMMVMPATH)/tools/descumm.exe
 	strip desword2.exe -o $(SCUMMVMPATH)/tools/desword2.exe
