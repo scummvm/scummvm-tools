@@ -1280,8 +1280,8 @@ void next_line()
 				"\xA9|waitForMessage,"
 				"\xAA|waitForCamera,"
 				"\xAB|waitForSentence,"
-				"\xE2pwj|waitUntilActorDrawn,"
-				"\xE8pwj|waitUntilActorTurned,"
+				"\xE2pj|waitUntilActorDrawn,"
+				"\xE8pj|waitUntilActorTurned,"
 				);
 		break;
 	case 0xAA:
