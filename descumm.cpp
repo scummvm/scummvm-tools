@@ -141,7 +141,7 @@ const char *var_names2[] = {
 	"VAR_SENTENCE_OBJECT2",
 	NULL,
 	"VAR_VIRT_MOUSE_X",
-	"VAR_VIRT_MOUSE_>",
+	"VAR_VIRT_MOUSE_Y",
 	/* 32 */
 	NULL,
 	NULL,
