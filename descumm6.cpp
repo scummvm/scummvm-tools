@@ -2422,6 +2422,7 @@ void next_line_V67()
 		ext("y" "kernelSetFunctions\0"
 				"\x4|grabCursor,"
 				"\x5|fadeOut,"
+				"\x6|startVideo,"
 				"\xC|setCursorImg,"
 				"\xD|remapCostume,"
 				"\xE|remapCostumeInsert,"
