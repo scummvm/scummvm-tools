@@ -546,8 +546,8 @@ const char *var_names8[] = {
 	"VAR_OVERRIDE",
 	"VAR_ROOM",
 	/* 32 */
-	NULL,
-	NULL,
+	"VAR_NEW_ROOM",
+	"VAR_WALKTO_OBJ",
 	NULL,
 	NULL,
 	/* 36 */
@@ -562,8 +562,8 @@ const char *var_names8[] = {
 	NULL,
 	/* 44 */
 	NULL,
-	NULL,
-	NULL,
+	"VAR_MUSIC_BUNDLE_LOADED",
+	"VAR_VOICE_BUNDLE_LOADED",
 	NULL,
 	/* 48 */
 	NULL,
