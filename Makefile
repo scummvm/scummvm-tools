@@ -1,9 +1,12 @@
 SRC=.
 
-CC      = cc
-CXX     = c++
-CFLAGS  = -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar -DSCUMM_BIG_ENDIAN
+CC      _= gcc
+CXX     := g++
+CFLAGS  := -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar
 LDFLAGS :=
+
+# Uncomment this if you are on a big endian system
+# CFLAGS += -DSCUMM_BIG_ENDIAN
 
 TARGETS := descumm3$(EXEEXT) descumm5$(EXEEXT) descumm6$(EXEEXT) extract$(EXEEXT) rescumm$(EXEEXT) simon2mp3$(EXEEXT)
 
@@ -32,4 +35,7 @@ clean:
 	rm -f *.o $(TARGETS)
 
 .cpp.o:
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+
+.c.o:
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
