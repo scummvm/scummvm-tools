@@ -123,6 +123,11 @@ unsigned short inline TO_LE_16(unsigned short a)
 	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
 }
 
+#else
+
+#define TO_LE_16(x) (x)
+#define TO_LE_32(x) (x)
+
 #endif
 
 int get_byte()
@@ -132,11 +137,7 @@ int get_byte()
 
 int get_word()
 {
-#if defined(SCUMM_BIG_ENDIAN)
 	int i = TO_LE_16(*((short *)cur_pos));
-#else
-	int i = *((short *)cur_pos);
-#endif
 	cur_pos += 2;
 	return i;
 }
@@ -886,7 +887,7 @@ void do_cc(char *buf)
 	strcpy(buf, ")");
 }
 
-void do_33(char *buf)
+void do_room_ops(char *buf)
 {
 	int opcode = get_byte();
 
@@ -1358,16 +1359,16 @@ void do_matrix_ops(char *buf, byte opcode)
 
 	switch (opcode & 0x1F) {
 	case 0x1:
-		do_tok(buf, "SetBoxTo", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "setBoxFlags", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x2:
-		do_tok(buf, "SetBoxScale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "setBoxScale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x3:
 		do_tok(buf, "SetBoxSlot", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x4:
-		do_tok(buf, "SetBoxPath", 0);
+		do_tok(buf, "createBoxMatrix", 0);
 		break;
 	default:
 		sprintf(buf, "SetBoxUnknown%.2X", opcode);
@@ -1767,7 +1768,10 @@ void get_tok(char *buf)
 		break;
 
 	case 0x33:
-		do_33(buf);
+	case 0x73:
+	case 0xB3:
+	case 0xF3:
+		do_room_ops(buf);
 		break;
 
 	case 0x68:
@@ -1916,6 +1920,7 @@ void get_tok(char *buf)
 		break;
 
 	case 0x30:
+	case 0xB0:
 		do_matrix_ops(buf, opcode);
 		break;
 
