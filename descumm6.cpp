@@ -2506,6 +2506,9 @@ void next_line_V67()
 	case 0xED:
 		ext("rp|getObjectNewDir");
 		break;
+	case 0xF3:
+		ext("rsp|readINI");
+		break;
 	case 0xFA:
 		get_byte();
 		ext("s|unknownFA");
