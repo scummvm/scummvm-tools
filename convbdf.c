@@ -848,7 +848,7 @@ int gen_c_source(struct font* pf, char *path)
 			pf->defaultchar);
 
 	fprintf(ofp, "\n" "const NewFont g_sysfont(desc);\n");
-	fprintf(ofp, "\n} // End of namespace GUI\n");
+	fprintf(ofp, "\n} // End of namespace Graphics\n");
  
 	return 0;
 }
