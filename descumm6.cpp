@@ -153,6 +153,7 @@ byte alwaysShowOffs = 0;
 byte dontOutputIfs = 0;
 byte dontOutputElse = 0;
 byte dontOutputElseif = 0;
+byte dontOutputWhile = 0;
 byte dontShowOpcode = 0;
 byte dontShowOffsets = 0;
 byte haltOnError;
@@ -1251,7 +1252,7 @@ void jump()
 		pendingElseOpcode = g_jump_opcode;
 		pendingElseIndent = num_block_stack;
 	} else {
-		if (num_block_stack) {
+		if (num_block_stack && !dontOutputWhile) {
 			BlockStack *p = &block_stack[num_block_stack - 1];
 			if (p->isWhile && cur == p->to)
 				return;		// A 'while' ends here.
@@ -1281,7 +1282,7 @@ void jumpif(StackEnt * se, bool when)
 	}
 
 	if (!dontOutputIfs && maybeAddIf(cur, to)) {
-		if (block_stack[num_block_stack - 1].isWhile) {
+		if (!dontOutputWhile && block_stack[num_block_stack - 1].isWhile) {
 			e = strecpy(e, "while (");
 		} else
 			e = strecpy(e, "if (");
@@ -1627,7 +1628,7 @@ void next_line_V8()
 				"\x78p|actorSpecialDraw,"
 				"\x79pp|setActorTalkPos,"
 				"\x7Ap|initActor,"			// = setCurActor ? 
-				"\x7Bp|setActorAnimVar,"
+				"\x7Bpp|setActorAnimVar,"
 				"\x7C|setActorIgnoreTurnsOn,"
 				"\x7D|setActorIgnoreTurnsOff,"
 				"\x7E|newActor,"
@@ -2535,6 +2536,9 @@ int main(int argc, char *argv[])
 					break;
 				case 'f':
 					dontOutputElseif = 1;
+					break;
+				case 'w':
+					dontOutputWhile = 1;
 					break;
 				case 'c':
 					dontShowOpcode = 1;
