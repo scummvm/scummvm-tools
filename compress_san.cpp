@@ -54,7 +54,6 @@ static int32 _waveDataSize;
 
 void encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
-	char *tmp = fbuf;
 	bool err = false;
 
 	sprintf(fbuf, "oggenc -q 0 %s", filename);
@@ -119,7 +118,7 @@ void writeWaveHeader(int s_size) {
 	fclose(_waveTmpFile);
 	_waveTmpFile = NULL;
 }
-void writeToTempWave(char *fileName, byte *output_data, int size) {
+void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile) {
 		_waveTmpFile = fopen(fileName, "wb");
 		if (!_waveTmpFile) {
@@ -134,7 +133,7 @@ void writeToTempWave(char *fileName, byte *output_data, int size) {
 		}
 		_waveDataSize = 0;
 	}
-	for (int j = 0; j < size; j += 2) {
+	for (unsigned int j = 0; j < size; j += 2) {
 		byte tmp = output_data[j + 0];
 		output_data[j + 0] = output_data[j + 1];
 		output_data[j + 1] = tmp;

@@ -2,8 +2,8 @@ SRC=.
 
 CC      := gcc
 CXX     := g++
-CFLAGS  := -g -O -Wall -Wuninitialized -Wno-long-long -Wno-multichar
-LDFLAGS :=
+CFLAGS  += -g -O -Wall -Wuninitialized -Wno-long-long -Wno-multichar
+# LDFLAGS +=
 
 # Additional warnings
 CFLAGS+= -Wshadow
@@ -34,46 +34,46 @@ TARGETS := \
 all: $(TARGETS)
 
 compress_san$(EXEEXT): compress_san.o util.o
-	$(CXX) $(LFLAGS) -o $@ $+ -lz
+	$(CXX) $(LDFLAGS) -o $@ $+ -lz
 
 convbdf$(EXEEXT): convbdf.o util.o
-	$(CXX) $(LFLAGS) -o $@ $+
+	$(CXX) $(LDFLAGS) -o $@ $+
 
 descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
-	$(CXX) $(LFLAGS) -o $@ $+
+	$(CXX) $(LDFLAGS) -o $@ $+
 
 desword2$(EXEEXT): desword2.o util.o
-	$(CXX) $(LFLAGS) -o $@ $+
+	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract$(EXEEXT): extract.o extract-common.o util.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+
 
 loom_tg16_extract$(EXEEXT): loom_tg16_extract.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+
 
 md5table$(EXEEXT): md5table.o util.o
-	$(CXX) $(LFLAGS) -o $@ $+
+	$(CXX) $(LDFLAGS) -o $@ $+
 
 mm_nes_extract$(EXEEXT): mm_nes_extract.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+
 
 queenrebuild$(EXEEXT): queenrebuild.o util.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+
 
 rescumm$(EXEEXT): rescumm.o util.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+
 
 saga2mp3$(EXEEXT): saga2mp3.o extract-common.o util.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+
 
 simon1decr$(EXEEXT): simon1decr.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+
 
 simon2mp3$(EXEEXT): simon2mp3.o extract-common.o util.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+
 
 sword2mp3$(EXEEXT): sword2mp3.o extract-common.o util.o
-	$(CC) $(LFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
 extract.o simon2mp3.o sword2mp3.o extract-common.o: util.h extract.h

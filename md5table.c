@@ -150,6 +150,12 @@ void showhelp(const char *exename)
 	exit(2);
 }
 
+/* needed to call from qsort */
+int strcmp_wrapper(const void *s1, const void *s2)
+{
+	return strcmp((const char *)s1, (const char *)s2);
+}
+
 int main(int argc, char *argv[])
 {
 	FILE *inFile = stdin;
@@ -229,7 +235,7 @@ int main(int argc, char *argv[])
 		/* Printf header */
 		fprintf(outFile, c_header, generationDate);
 		/* Now sort the MD5 table (this allows for binary searches) */
-		qsort(entriesBuffer, numEntries, entrySize, strcmp);
+		qsort(entriesBuffer, numEntries, entrySize, strcmp_wrapper);
 		/* Output the table */
 		for (i = 0; i < numEntries; ++i)
 			fprintf(outFile, entriesBuffer + i * entrySize);
