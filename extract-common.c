@@ -175,6 +175,12 @@ void get_wav(FILE *input, CompressMode compMode) {
 void get_voc(FILE *input, CompressMode compMode) {
 	int blocktype;
 
+// FIXME HIGH PRIORITY: We aren't handling all types of blocks, and what is
+// worse, we aren't handling multiple blocks occuring in a single VOC file.
+// This is bad, because multiple type 1 blocks occur in Full Throttle.
+// As a result of this lacking feature, we generates compressed audio files
+// which are missing some data. Ouch! See also bug #885490
+
 	blocktype = fgetc(input);
 	switch (blocktype) {
 	case 0x01:{
