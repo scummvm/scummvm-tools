@@ -1,5 +1,6 @@
 Maniac Mansion
 	V1	DOS	en	7f45ddd6dbfbf8f80c0c0efea4c295bc	maniac
+	V2	DOS	en	624cdb93654667c869d204a64af7e57f	maniac	Kirben
 	V2	DOS	en	b250d0f9cc83f80ced56fe11a4fb057c	maniac
 	V2	DOS	de	183d7464902d40d00800e8ee1f04117c	maniac
 
@@ -10,6 +11,7 @@ Maniac Mansion
 Zak McKracken and the Alien Mindbenders
 	V1	DOS	en	7020931d5a2be0a49d68e7a1882363e4	zak
 	V2 Demo	Atari	en	8299d9b8a1b0e7b881bae7a9971dc5e2	zak
+	V2	DOS	en	675d71151e9b5a968c8ce46d9fbf4cbf	zak	Kirben
 	V2	DOS	en	debe337f73d660e951ece7c1f1c81add	zak
 	V2 (w/o copy protection)	DOS	de	cdd760228cf1010c2903f37e788ea31c	zak	Max Horn
 	V2 (from 5\"25 floppies)	DOS	de	d06fbe28818fef7bfc45c2cdf0c0849d	zak	Nicolas Sauz&egrave;de
@@ -38,6 +40,7 @@ Loom
 	Demo	DOS	en	5a35e36fd777e9c37a49c5b2faca52f9	loom
 	Floppy	Mac	en	6f0be328c64d689bb606d22a389e1b0f	loom
 	Floppy	DOS	en	28ef68ee3ed76d7e2ee8ee13c15fbd5b	loom
+	Floppy	DOS	en	37f56ceb13e401a7ac7d9e6b37fecaf7	loom	Kirben
 	Floppy	DOS	de	fa127d7c4bb47d05bb1c33ddcaa9f767	loom
 	Talkie/CD	DOS	en	5d88b9d6a88e6f8e90cded9d01b7f082	loomcd
 	FmTowns	FmTowns	en	c5d10e190d4b4d59114b824f2fdbd00e	loomTowns	dhewg
