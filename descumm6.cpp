@@ -1985,7 +1985,7 @@ void next_line_V67()
 				"\x95|softCursorOff,"
 				"\x96|softUserputOn,"
 				"\x97|softUserputOff,"
-				"\x99pp|setCursorImg,"
+				"\x99z|setCursorImg,"
 				"\x9App|setCursorHotspot,"
 				"\x9Cp|initCharset,"
 				"\x9Dl|charsetColors,"
