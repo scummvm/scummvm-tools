@@ -117,23 +117,31 @@ bool GF_UNBLOCKED = false;
 
 bool emit_if(char *before, char *after);
 
-#if defined(SCUMM_BIG_ENDIAN)
-
-unsigned long inline TO_LE_32(unsigned long a)
+unsigned long inline SWAP_32(unsigned long a)
 {
 	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
 		((a << 24) & 0xFF000000);
 }
 
-unsigned short inline TO_LE_16(unsigned short a)
+unsigned short inline SWAP_16(unsigned short a)
 {
 	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
 }
+
+#if defined(SCUMM_BIG_ENDIAN)
+
+#define TO_LE_16(x) SWAP_16(x)
+#define TO_LE_32(x) SWAP_32(x)
+#define TO_BE_16(x) (x)
+#define TO_BE_32(x) (x)
 
 #else
 
 #define TO_LE_16(x) (x)
 #define TO_LE_32(x) (x)
+#define TO_BE_16(x) SWAP_16(x)
+#define TO_BE_32(x) SWAP_32(x)
+
 
 #endif
 
@@ -3173,21 +3181,21 @@ int main(int argc, char *argv[])
 	if (GF_UNBLOCKED) {
 		mem += 4;
 	} else if (ScriptVersion == 5) {
-		switch (TO_LE_32(*((long *)mem))) {
-		case 'RCSL':
+		switch (TO_BE_32(*((unsigned long *)mem))) {
+		case 'LSCR':
 			printf("Script# %d\n", (unsigned char)mem[8]);
 			mem += 9;
 			break;											/* Local script */
-		case 'PRCS':
+		case 'SCRP':
 			mem += 8;
 			break;											/* Script */
-		case 'DCNE':
+		case 'ENCD':
 			mem += 8;
 			break;											/* Entry code */
-		case 'DCXE':
+		case 'EXCD':
 			mem += 8;
 			break;											/* Exit code */
-		case 'BREV':
+		case 'VERB':
 			mem = skipVerbHeader_V5(mem + 8);
 			break;											/* Verb */
 		default:
