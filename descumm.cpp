@@ -1174,7 +1174,7 @@ void do_room_ops(char *buf)
 		break;
 	case 0x08:
 		buf =
-			do_tok(buf, "roomFunc2",
+			do_tok(buf, "setRoomIntensity",
 						 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) |
 						 ((opcode & 0x20) ? A3V : A3B));
 		break;
@@ -1186,7 +1186,7 @@ void do_room_ops(char *buf)
 		break;
 	case 0x0B:
 		buf =
-			do_tok(buf, "roomFunc2",
+			do_tok(buf, "setRGBRoomIntensity",
 						 ANOLASTPAREN | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ?
 																														 A2V : A2W) |
 						 ((opcode & 0x20) ? A3V : A3W));
@@ -1199,7 +1199,7 @@ void do_room_ops(char *buf)
 
 	case 0x0C:
 		buf =
-			do_tok(buf, "roomFunc3",
+			do_tok(buf, "setRoomShadow",
 						 ANOLASTPAREN | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ?
 																														 A2V : A2W) |
 						 ((opcode & 0x20) ? A3V : A3W));
@@ -1211,10 +1211,10 @@ void do_room_ops(char *buf)
 		break;
 
 	case 0x0D:
-		do_tok(buf, "roomops:13", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
+		do_tok(buf, "saveString", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
 		break;
 	case 0x0E:
-		do_tok(buf, "roomops:14", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
+		do_tok(buf, "loadString", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
 		break;
 
 	case 0x0F:
