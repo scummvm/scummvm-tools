@@ -248,16 +248,11 @@ void free_font(struct font* pf)
 {
 	if (!pf)
 		return;
-	if (pf->name)
-		free(pf->name);
-	if (pf->facename)
-		free(pf->facename);
-	if (pf->bits)
-		free(pf->bits);
-	if (pf->offset)
-		free(pf->offset);
-	if (pf->width)
-		free(pf->width);
+	free(pf->name);
+	free(pf->facename);
+	free(pf->bits);
+	free(pf->offset);
+	free(pf->width);
 	free(pf);
 }
 

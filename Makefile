@@ -20,6 +20,7 @@ TARGETS := \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	extract$(EXEEXT) \
+	md5table$(EXEEXT) \
 	mm_nes_extract$(EXEEXT) \
 	queenrebuild$(EXEEXT) \
 	rescumm$(EXEEXT) \
@@ -40,6 +41,9 @@ desword2$(EXEEXT): desword2.o util.o
 extract$(EXEEXT): extract.o extract-common.o util.o
 	$(CC) $(LFLAGS) -o $@ $+
 
+md5table$(EXEEXT): md5table.o util.o
+	$(CXX) $(LFLAGS) -o $@ $+
+
 mm_nes_extract$(EXEEXT): mm_nes_extract.o
 	$(CC) $(LFLAGS) -o $@ $+
 
@@ -58,7 +62,7 @@ simon2mp3$(EXEEXT): simon2mp3.o extract-common.o util.o
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
 extract.o simon2mp3.o extract-common.o: util.h extract.h
-desword2.o queenrebuild.o rescumm.o util.o: util.h
+desword2.o md5table.o queenrebuild.o rescumm.o util.o: util.h
 
 clean:
 	rm -f *.o $(TARGETS)
