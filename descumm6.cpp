@@ -1392,6 +1392,15 @@ void next_line()
 	case 0xCC:
 		ext("plp|pickOneOfDefault");
 		break;
+	case 0xCD:
+		ext("pppp|o6_unknownCD");
+		break;
+	case 0xD2:
+		ext("pp|getAnimateVariable");
+		break;
+	case 0xD5:
+		ext("lpp|jumpToScript");
+		break;
 	default:
 		invalidop(NULL, code);
 		break;
