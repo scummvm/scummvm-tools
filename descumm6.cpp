@@ -1449,6 +1449,10 @@ void next_line_V8()
 	case 0x9D:
 		ext("p|loadRoom");
 		break;
+	case 0x9E:
+		// FIXME - this is a pure guess
+		ext("ppzp|loadRoomWithEgo");
+		break;
 
 	case 0x9F:
 		ext("ppp|walkActorToObj");
@@ -1603,6 +1607,13 @@ void next_line_V8()
 
 	case 0xD3:
 		ext("rp|isScriptRunning");
+		break;
+
+	case 0xD5:
+		ext("rp|isSoundRunning");
+		break;
+	case 0xD6:
+		ext("rp|abs");
 		break;
 
 	default:
