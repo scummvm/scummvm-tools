@@ -26,6 +26,10 @@ Compression Tools:
         simon2mp3
                 Compresses Simon voc/wav files to MP3/Ogg/FLAC.
 
+        sword1mp3
+                Used to compress Broken Sword 1's music and speech files
+                using mp3 or vorbis.
+
         sword2mp3
                 Used to compress Broken Sword 2's music and speech .clu
                 files to .cl3 (MP3), .clg (Vorbis) or .clf (FLAC).
@@ -33,10 +37,6 @@ Compression Tools:
                 Please note that FLAC-compression will produce a larger file
                 than the original! This is because the original files already
                 use lossy compression.
-
-                Also note that Broken Sword 1 appears to use a completely
-                different compression for its speech .clu files. This program
-                will NOT work on them.
 
         compress_san <inputfile> <inputdir> <outputdir>
                 Compresses '.san' smush animation files. It uses lossless zlib
