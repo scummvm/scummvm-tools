@@ -1910,9 +1910,9 @@ void next_line_V67(char *output)
 		break;
 	case 0x4:
 		//FIXME
-		if (HumongousFlag)
+		if (HumongousFlag) {
 			ext(output, "ssss|unknown04");
-		else
+		} else
 			invalidop(NULL, code);
 		break;
 	case 0x6:
@@ -2214,26 +2214,49 @@ void next_line_V67(char *output)
 		ext(output, "|createBoxMatrix");
 		break;
 	case 0x9B:
-		ext(output, "x" "resourceRoutines\0"
-				"\x64p|loadScript,"
-				"\x65p|loadSound,"
-				"\x66p|loadCostume," 
-				"\x67p|loadRoom,"
-				"\x68p|nukeScript," 
-				"\x69p|nukeSound," 
-				"\x6Ap|nukeCostume,"
-				"\x6Bp|nukeRoom," 
-				"\x6Cp|lockScript," 
-				"\x6Dp|lockSound," 
-				"\x6Ep|lockCostume,"
-				"\x6Fp|lockRoom," 
-				"\x70p|unlockScript," 
-				"\x71p|unlockSound," 
-				"\x72p|unlockCostume,"
-				"\x73p|unlockRoom," 
-				"\x75p|loadCharset," 
-				"\x76p|nukeCharset," 
-				"\x77z|loadFlObject");
+		if (HumongousFlag)
+			ext(output, "x" "resourceRoutines\0"
+					"\x64p|loadScript,"
+					"\x65p|loadSound,"
+					"\x66p|loadCostume," 
+					"\x67p|loadRoom,"
+					"\x68p|nukeScript," 
+					"\x69p|nukeSound," 
+					"\x6Ap|nukeCostume,"
+					"\x6Bp|nukeRoom," 
+					"\x6Cp|lockScript," 
+					"\x6Dp|lockSound," 
+					"\x6Ep|lockCostume,"
+					"\x6Fp|lockRoom," 
+					"\x70p|unlockScript," 
+					"\x71p|unlockSound," 
+					"\x72p|unlockCostume,"
+					"\x73p|unlockRoom," 
+					"\x75p|loadCharset," 
+					"\x76p|nukeCharset," 
+					"\x77z|loadFlObject,"
+					"\x78p|queueload resource 2");
+		else
+			ext(output, "x" "resourceRoutines\0"
+					"\x64p|loadScript,"
+					"\x65p|loadSound,"
+					"\x66p|loadCostume," 
+					"\x67p|loadRoom,"
+					"\x68p|nukeScript," 
+					"\x69p|nukeSound," 
+					"\x6Ap|nukeCostume,"
+					"\x6Bp|nukeRoom," 
+					"\x6Cp|lockScript," 
+					"\x6Dp|lockSound," 
+					"\x6Ep|lockCostume,"
+					"\x6Fp|lockRoom," 
+					"\x70p|unlockScript," 
+					"\x71p|unlockSound," 
+					"\x72p|unlockCostume,"
+					"\x73p|unlockRoom," 
+					"\x75p|loadCharset," 
+					"\x76p|nukeCharset," 
+					"\x77z|loadFlObject");
 		break;
 	case 0x9C:
 		if (HumongousFlag)
@@ -2489,13 +2512,24 @@ void next_line_V67(char *output)
 		ext(output, "s|talkEgo");
 		break;
 	case 0xBC:
-		ext(output, "x" "dimArray\0"
-				"\xC7pw|dimType5,"
-				"\xC8pw|dimType1,"
-				"\xC9pw|dimType2,"
-				"\xCApw|dimType3,"
-				"\xCBpw|dimType4,"
-				"\xCCw|nukeArray");
+		if (HumongousFlag)
+			ext(output, "x" "dimArray\0"
+					"\x5pw|dimTypeUnk,"
+					"\xC7pw|dimType5,"
+					"\xC8pw|dimType1,"
+					"\xC9pw|dimType2,"
+					"\xCApw|dimType3,"
+					"\xCBpw|dimType4,"
+					"\xCCw|nukeArray");
+		else
+			ext(output, "x" "dimArray\0"
+					"\xC7pw|dimType5,"
+					"\xC8pw|dimType1,"
+					"\xC9pw|dimType2,"
+					"\xCApw|dimType3,"
+					"\xCBpw|dimType4,"
+					"\xCCw|nukeArray");
+
 		break;
 	case 0xBD:
 		if (HumongousFlag)
