@@ -1015,20 +1015,27 @@ void ext(const char *fmt)
 			/* extended thing */
 			se = args[numArgs - 1];
 			se->data--;
-			se = se->list[se->data];
-			extcmd = se->data;
+			extcmd = se->list[se->data]->data;
 
 			/* locate our extended item */
 			while ((cmd = *fmt++) != extcmd) {
 				/* scan until we find , or \0 */
 				while ((cmd = *fmt++) != ',') {
 					if (cmd == 0) {
-						invalidop(extstr, extcmd);
+//						invalidop(extstr, extcmd);
+//						extstr = "foo";
+						goto use_default_command;
 					}
 				}
 			}
+
 			/* found a command, continue at the beginning */
 			continue;
+
+use_default_command:
+			se->data++;
+			fmt = extstr;
+			break;
 		}
 		if (cmd == 'm' && !prep) {
 			prep = fmt;
@@ -1060,8 +1067,8 @@ void ext(const char *fmt)
 	e = (char *)output;
 	if (prep)
 		e = strecpy(e, prep);
-	while ((cmd = *fmt++) != 0 && cmd != ',')
-		*e++ = cmd;
+	while (*fmt != 0 && *fmt != ',')
+		*e++ = *fmt++;
 	*e++ = '(';
 	while (--numArgs >= 0) {
 		e = se_astext(args[numArgs], e);
@@ -1637,7 +1644,7 @@ void next_line_V8()
 		ext("s|startVideo");
 		break;
 	case 0xBA:
-		ext("y" "kludge\0"
+		ext("y" "kernelSetFunctions\0"
 				"\xB|lockObject,"
 				"\xC|unlockObject,"
 				"\xD|remapCostume,"
@@ -1657,7 +1664,7 @@ void next_line_V8()
 				"\x1E|killAllScriptsButMe,"
 				"\x1F|stopAllVideo,"
 				"\x20|writeRegistryValue,"
-				"\x21|PpaletteSetIntensity,"
+				"\x21|paletteSetIntensity,"
 				"\x22|queryQuit,"
 				
 				"\x6C|buildPaletteShadow,"
@@ -1711,7 +1718,7 @@ void next_line_V8()
 		break;
 
 	case 0xD8:
-		ext("ry" "f-kludge\0"
+		ext("ry" "kernelGetFunctions\0"
 				"\x73|getWalkBoxAt,"
 				"\x74|isPointInBox,"
 
@@ -2405,11 +2412,24 @@ void next_line_V67()
 		ext("rpppp|getDistPtPt");
 		break;
 	case 0xC8:
-		// TODO - make use of new 'y' ext
-		ext("rl|kernelFunction");
+		// TODO - add more subopcodes
+		ext("ry" "kernelGetFunctions\0"
+				"\x73|getWalkBoxAt,"
+				"\x74|isPointInBox"
+				);
 		break;
 	case 0xC9:
-		ext("l|miscOps");
+		// TODO - add more subopcodes
+		ext("y" "kernelSetFunctions\0"
+				"\x4|grabCursor,"
+				"\x5|fadeOut,"
+
+				"\x6C|buildPaletteShadow,"
+				"\x6D|setPaletteShadow,"
+
+				"\x76|blastShadowObject,"
+				"\x77|superBlastObject"
+				);
 		break;
 	case 0xCA:
 		ext("p|breakXTimes");
