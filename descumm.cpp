@@ -1846,7 +1846,7 @@ void get_tok_V2(char *buf)
 		break;
 	case 0x6C:
 	case 0xEC:
-		do_tok(buf, "getObjUnknown", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
+		do_tok(buf, "getObjPreposition", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x16:
 	case 0x96:
@@ -2056,7 +2056,7 @@ void get_tok_V2(char *buf)
 	case 0x4B:
 	case 0x8B:
 	case 0xCB:
-		do_tok(buf, "setObjUnknown", ((opcode & 0x80) ? A1V : A1W) | A2B);
+		do_tok(buf, "setObjPreposition", ((opcode & 0x80) ? A1V : A1W) | A2B);
 		break;
 	case 0x29:
 	case 0x69:
