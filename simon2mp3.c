@@ -526,8 +526,14 @@ void convert_pc(char *infile)
 {
 	int i, n, size, num;
 
-	n = strlen(infile);
-	strncpy(infile_base, infile, n - 3);
+	memccpy(infile_base, infile, '.', strlen(infile));
+	n = strlen(infile_base);
+	if (infile_base[n-1] == '.')
+		infile_base[n] = '\0';
+	else {
+		infile_base[n] = '.';
+		infile_base[n + 1] = '\0';
+	}
 
 	input = fopen(infile, "rb");
 	if (!input) {
