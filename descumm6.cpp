@@ -262,15 +262,6 @@ void push(StackEnt * se)
 	stack[num_stack++] = se;
 }
 
-StackEnt *pop()
-{
-	if (num_stack == 0) {
-		printf("No items on stack to pop!\n");
-		exit(1);
-	}
-	return stack[--num_stack];
-}
-
 void invalidop(const char *cmd, int op)
 {
 	if (cmd)
@@ -466,6 +457,19 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 	}
 	return where;
 }
+
+StackEnt *pop()
+{
+	if (num_stack == 0) {
+		printf("No items on stack to pop!\n");
+
+		if (!haltOnError)
+			return se_complex("**** INVALID DATA ****");
+ 		exit(1);
+	}
+	return stack[--num_stack];
+}
+
 
 void kill(StackEnt * se)
 {
@@ -1142,23 +1146,18 @@ void next_line()
 		ext("|createBoxMatrix");
 		break;
 	case 0x9B:
-		ext("x" "resourceRoutines\0"
-				"\x64p|loadScript,"
-				"\x65p|loadSound,"
-				"\x66p|loadCostume,"
-				"\x67p|loadRoom,"
-				"\x68p|nukeScript,"
-				"\x69p|nukeSound,"
-				"\x6Ap|nukeCostume,"
-				"\x6Bp|nukeRoom,"
-				"\x6Cp|lockScript,"
-				"\x6Dp|lockSound,"
-				"\x6Ep|lockCostume,"
-				"\x6Fp|lockRoom,"
-				"\x70p|unlockScript,"
-				"\x71p|unlockSound,"
-				"\x72p|unlockCostume,"
+		if (scriptVersion < 7)
+			ext("x" "resourceRoutines\0" "\x64p|loadScript," "\x65p|loadSound," "\x66p|loadCostume," 
+				"\x67p|loadRoom," "\x68p|nukeScript," "\x69p|nukeSound," "\x6Ap|nukeCostume,"
+				"\x6Bp|nukeRoom," "\x6Cp|lockScript," "\x6Dp|lockSound," "\x6Ep|lockCostume,"
+ 				"\x6Fp|lockRoom," "\x70p|unlockScript," "\x71p|unlockSound," "\x72p|unlockCostume,"
 				"\x73p|unlockRoom," "\x75p|loadCharset," "\x76p|nukeCharset," "\x77pp|unkResProc");
+		else
+			ext("x" "resourceRoutines\0" "\x64p|loadScript," "\x65p|loadSound," "\x66p|loadCostume," 
+				"\x67p|loadRoom," "\x68p|nukeScript," "\x69p|nukeSound," "\x6Ap|nukeCostume,"
+				"\x6Bp|nukeRoom," "\x6Cp|lockScript," "\x6Dp|lockSound," "\x6Ep|lockCostume,"
+ 				"\x6Fp|lockRoom," "\x70p|unlockScript," "\x71p|unlockSound," "\x72p|unlockCostume,"
+				"\x73p|unlockRoom," "\x75p|loadCharset," "\x76p|nukeCharset," "\x77p|unkResProc");
 		break;
 	case 0x9C:
 		ext("x" "roomOps\0"
