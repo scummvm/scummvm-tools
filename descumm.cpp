@@ -1716,8 +1716,11 @@ void get_tok_V12(char *buf)
 	case 0xD9:
 	case 0xF9:{
 			buf = strecpy(buf, "doSentence(");
-			if (!(opcode & 0x80) && (*cur_pos == 0xFB) || *cur_pos == 0xFC) {
+			if (!(opcode & 0x80) && *cur_pos == 0xFC) {
 				strcpy(buf, "STOP)");
+				cur_pos++;
+			} else if (!(opcode & 0x80) && *cur_pos == 0xFB) {
+				strcpy(buf, "RESET)");
 				cur_pos++;
 			} else {
 				do_tok(buf, "",
