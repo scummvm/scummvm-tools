@@ -122,7 +122,13 @@
 				RelativePath=".\descumm-common.cpp">
 			</File>
 			<File
+				RelativePath="descumm-tool.cpp">
+			</File>
+			<File
 				RelativePath=".\descumm.cpp">
+			</File>
+			<File
+				RelativePath="descumm6.cpp">
 			</File>
 		</Filter>
 		<Filter

@@ -1,8 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 7.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "descumm", "descumm.vcproj", "{3437517C-A7D1-4FCE-9837-B1B00AB9F6B6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "descumm6", "descumm6.vcproj", "{5A14E36E-8B6D-4217-873B-9C0D07BDD1C6}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract", "extract.vcproj", "{D283513D-2BC6-4E88-8C69-6ED4E767823F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rescumm", "rescumm.vcproj", "{24BF1B2D-69F4-4C6B-8D29-691E83D89653}"
@@ -25,10 +23,6 @@ Global
 		{3437517C-A7D1-4FCE-9837-B1B00AB9F6B6}.Debug.Build.0 = Debug|Win32
 		{3437517C-A7D1-4FCE-9837-B1B00AB9F6B6}.Release.ActiveCfg = Release|Win32
 		{3437517C-A7D1-4FCE-9837-B1B00AB9F6B6}.Release.Build.0 = Release|Win32
-		{5A14E36E-8B6D-4217-873B-9C0D07BDD1C6}.Debug.ActiveCfg = Debug|Win32
-		{5A14E36E-8B6D-4217-873B-9C0D07BDD1C6}.Debug.Build.0 = Debug|Win32
-		{5A14E36E-8B6D-4217-873B-9C0D07BDD1C6}.Release.ActiveCfg = Release|Win32
-		{5A14E36E-8B6D-4217-873B-9C0D07BDD1C6}.Release.Build.0 = Release|Win32
 		{D283513D-2BC6-4E88-8C69-6ED4E767823F}.Debug.ActiveCfg = Debug|Win32
 		{D283513D-2BC6-4E88-8C69-6ED4E767823F}.Debug.Build.0 = Debug|Win32
 		{D283513D-2BC6-4E88-8C69-6ED4E767823F}.Release.ActiveCfg = Release|Win32
