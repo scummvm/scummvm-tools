@@ -79,6 +79,15 @@ int oggmode = 0;
 
 void put_int(unsigned int val);
 
+#define OUTPUT_MP3	"monster.so3"
+#define OUTPUT_OGG	"monster.sog"
+
+#define TEMP_DAT	"monster.dat"
+#define TEMP_IDX	"monster.idx"
+#define TEMP_RAW	"tempfile.raw"
+#define TEMP_MP3	"tempfile.mp3"
+#define TEMP_OGG	"tempfile.ogg"
+
 void end_of_file(void)
 {
 	FILE *in;
@@ -89,15 +98,15 @@ void end_of_file(void)
 	fclose(output_snd);
 	fclose(output_idx);
 
-	output_idx = fopen(oggmode ? "monster.sog" : "monster.so3", "wb");
+	output_idx = fopen(oggmode ? OUTPUT_OGG : OUTPUT_MP3, "wb");
 	put_int(idx_size);
 
-	in = fopen("monster.idx", "rb");
+	in = fopen(TEMP_IDX, "rb");
 	while ((size = fread(buf, 1, 2048, in)) > 0) {
 		fwrite(buf, 1, size, output_idx);
 	}
 	fclose(in);
-	in = fopen("monster.dat", "rb");
+	in = fopen(TEMP_DAT, "rb");
 	while ((size = fread(buf, 1, 2048, in)) > 0) {
 		fwrite(buf, 1, size, output_idx);
 	}
@@ -106,10 +115,10 @@ void end_of_file(void)
 	fclose(input);
 
 	/* And some clean-up :-) */
-	unlink("monster.idx");
-	unlink("monster.dat");
-	unlink("tempfile.raw");
-	unlink(oggmode ? "tempfile.ogg" : "tempfile.mp3");
+	unlink(TEMP_IDX);
+	unlink(TEMP_DAT);
+	unlink(TEMP_RAW);
+	unlink(oggmode ? TEMP_OGG : TEMP_MP3);
 	
 	exit(-1);
 }
@@ -237,8 +246,8 @@ void get_part(void)
 		if (comp != 0) {
 			exit(-1);
 		}
-		sprintf(rawname, "tempfile.raw");
-		sprintf(mp3name, oggmode ? "tempfile.ogg" : "tempfile.mp3");
+		sprintf(rawname, TEMP_RAW);
+		sprintf(mp3name, oggmode ? TEMP_OGG : TEMP_MP3);
 		
 		f = fopen(rawname, "wb");
 		length -= 2;
@@ -453,14 +462,14 @@ int main(int argc, char *argv[])
 		exit(-1);
 	}
 
-	output_idx = fopen("monster.idx", "wb");
+	output_idx = fopen(TEMP_IDX, "wb");
 	if (!output_idx) {
-		printf("Can't open file monster.idx for write!\n");
+		printf("Can't open file " TEMP_IDX " for write!\n");
 		exit(-1);
 	}
-	output_snd = fopen("monster.dat", "wb");
+	output_snd = fopen(TEMP_DAT, "wb");
 	if (!output_snd) {
-		printf("Can't open file monster.dat for write!\n");
+		printf("Can't open file " TEMP_DAT " for write!\n");
 		exit(-1);
 	}
 	
