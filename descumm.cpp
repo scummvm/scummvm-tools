@@ -315,68 +315,6 @@ char *do_tok(char *buf, const char *text, int args)
 	return strchr(buf, 0);
 }
 
-
-/* Returns 0 or 1 depending if it's ok to add an else */
-int maybeAddElse(int cur, int to)
-{
-	BlockStack *p;
-	int i;
-
-	if (((to | cur) >> 16) || (to <= cur))
-		return 0;										/* Invalid jump */
-
-	if (!num_block_stack)
-		return 0;										/* There are no previous blocks, so an else is not ok */
-
-	p = &block_stack[num_block_stack - 1];
-	if (cur != p->to)
-		return 0;										/* We have no prevoius if that is exiting right at the end of this goto */
-
-	num_block_stack--;
-	i = maybeAddIf(cur, to);
-	if (i)
-		return i;										/* We can add an else */
-
-	num_block_stack++;
-
-	return 0;											/* An else is not OK here :( */
-}
-
-bool maybeAddElseIf(int cur, int elseto, int to)
-{
-	int k;
-	BlockStack *p;
-
-	if (((to | cur | elseto) >> 16) || (elseto < to) || (to <= cur))
-		return false;									/* Invalid jump */
-
-	if (!num_block_stack)
-		return false;									/* There are no previous blocks, so an ifelse is not ok */
-
-	p = &block_stack[num_block_stack - 1];
-
-	if (p->isWhile)
-		return false;
-
-	k = to - 3;
-	if (k < 0 || k >= size_of_code)
-		return false;									/* Invalid jump */
-
-	if (org_pos[k] != g_jump_opcode)
-		return false;									/* Invalid jump */
-
-	k = to + TO_LE_16(*(int16*)(org_pos + k + 1));
-
-	if (k != elseto)
-		return false;									/* Not an ifelse */
-
-	p->from = cur;
-	p->to = to;
-
-	return true;
-}
-
-
 void do_decodeparsestring_v2(char *buf, byte opcode)
 {
 	byte buffer[256];
@@ -847,7 +785,7 @@ void do_resource(char *buf, byte opco)
 
 }
 
-void do_cc(char *buf)
+void do_pseudoRoom(char *buf)
 {
 	int j, i = get_byte();
 
@@ -1335,7 +1273,7 @@ exit_proc:;
 
 }
 
-void do_unconditional_jump(char *buf, byte opcode)
+void do_unconditional_jump(char *buf)
 {
 	int offset = get_signed_word();
 	int cur = get_curoffs();
@@ -1347,7 +1285,7 @@ void do_unconditional_jump(char *buf, byte opcode)
 		pendingElse = 1;
 		pendingElseTo = to;
 		pendingElseOffs = cur - 1;
-		pendingElseOpcode = opcode;
+		pendingElseOpcode = g_jump_opcode;
 		pendingElseIndent = num_block_stack;
 		buf[0] = 0;
 	} else {
@@ -1935,8 +1873,7 @@ void get_tok_V2(char *buf)
 		break;
 
 	case 0x18:
-		// jumpRelative
-		do_unconditional_jump(buf, opcode);
+		do_unconditional_jump(buf);
 		break;
 
 	case 0x70:
@@ -1990,7 +1927,7 @@ void get_tok_V2(char *buf)
 		
 	case 0xCC:
 		// pseudoRoom
-		do_cc(buf);
+		do_pseudoRoom(buf);
 		break;
 	case 0x01:
 	case 0x21:
@@ -2403,7 +2340,7 @@ void get_tok_V345(char *buf)
 		break;
 
 	case 0x18:
-		do_unconditional_jump(buf, opcode);
+		do_unconditional_jump(buf);
 		break;
 
 	case 0x1D:
@@ -2649,7 +2586,7 @@ void get_tok_V345(char *buf)
 		break;
 
 	case 0xCC:
-		do_cc(buf);
+		do_pseudoRoom(buf);
 		break;
 
 	case 0x33:

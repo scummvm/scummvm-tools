@@ -48,7 +48,7 @@ byte scriptVersion;
 byte *cur_pos, *org_pos;
 int offs_of_line;
 
-int size_of_code;
+uint size_of_code;
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -178,7 +178,7 @@ BlockStack *pushBlockStackItem()
 }
 
 // Returns 0 or 1 depending if it's ok to add a block
-bool maybeAddIf(unsigned int cur, unsigned int to)
+bool maybeAddIf(uint cur, uint to)
 {
 	int i;
 	BlockStack *p;
@@ -203,9 +203,72 @@ bool maybeAddIf(unsigned int cur, unsigned int to)
 		i = (int16)TO_LE_16(*(int16*)(org_pos+to-2));
 	}
 	
-	p->isWhile = p->isWhile && (offs_of_line == to + i);
+	p->isWhile = p->isWhile && (offs_of_line == (int)to + i);
 	p->from = cur;
 	p->to = to;
+	return true;
+}
+
+// Returns 0 or 1 depending if it's ok to add an else
+bool maybeAddElse(uint cur, uint to)
+{
+	BlockStack *p;
+
+	if (((to | cur) >> 16) || (to <= cur))
+		return false;								/* Invalid jump */
+
+	if (!num_block_stack)
+		return false;								/* There are no previous blocks, so an else is not ok */
+
+	p = &block_stack[num_block_stack - 1];
+	if (cur != p->to)
+		return false;								/* We have no prevoius if that is exiting right at the end of this goto */
+
+	num_block_stack--;
+	if (maybeAddIf(cur, to))
+		return true;								/* We can add an else */
+	num_block_stack++;
+	return false;									/* An else is not OK here :( */
+}
+
+bool maybeAddElseIf(uint cur, uint elseto, uint to)
+{
+	uint k;
+	BlockStack *p;
+
+	if (((to | cur | elseto) >> 16) || (elseto < to) || (to <= cur))
+		return false;								/* Invalid jump */
+
+	if (!num_block_stack)
+		return false;								/* There are no previous blocks, so an ifelse is not ok */
+
+	p = &block_stack[num_block_stack - 1];
+
+	if (p->isWhile)
+		return false;
+
+	if (scriptVersion == 8)
+		k = to - 5;
+	else
+		k = to - 3;
+
+	if (k >= size_of_code)
+		return false;								/* Invalid jump */
+
+	if (org_pos[k] != g_jump_opcode)
+		return false;								/* Invalid jump */
+
+	if (scriptVersion == 8)
+		k = to + TO_LE_32(*(int32*)(org_pos + k + 1));
+	else
+		k = to + TO_LE_16(*(int16*)(org_pos + k + 1));
+
+	if (k != elseto)
+		return false;								/* Not an ifelse */
+
+	p->from = cur;
+	p->to = to;
+
 	return true;
 }
 

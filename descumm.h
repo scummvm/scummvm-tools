@@ -125,7 +125,7 @@ extern int offs_of_line;
 //
 // Total size of the currently loaded script
 //
-extern int size_of_code;
+extern uint size_of_code;
 
 //
 // Common
@@ -141,7 +141,9 @@ extern int get_byte();
 extern uint get_word();
 extern int get_signed_word();
 
-extern bool maybeAddIf(unsigned int cur, unsigned int to);
+extern bool maybeAddIf(uint cur, uint to);
+extern bool maybeAddElse(uint cur, uint to);
+extern bool maybeAddElseIf(uint cur, uint elseto, uint to);
 extern void writePendingElse();
 
 #endif
