@@ -698,11 +698,10 @@ void do_actorset(char *buf, byte opcode)
 			break;
 		case 0x11:
 			// FIXME for GID_MONKEY_VGA / GID_MONKEY_EGA this is:
-#if GID_MONKEY_VGA || GID_MONKEY_EGA
-			buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B));
-#else
-			buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
-#endif
+			if (ScriptVersion == 5)
+				buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+			else
+				buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B));
 			break;
 		case 0x12:
 			buf = do_tok(buf, "NeverZClip", 0);
