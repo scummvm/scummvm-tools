@@ -376,7 +376,7 @@ const char *var_names7[] = {
 	NULL,
 	/* 32 */
 	"VAR_V6_EMSSPACE",
-	NULL,
+	"VAR_VOICE_MODE",
 	"VAR_V6_RANDOM_NR",
 	"VAR_NEW_ROOM",
 	/* 36 */
@@ -413,12 +413,12 @@ const char *var_names7[] = {
 	"VAR_UNK_SCRIPT",
 	"VAR_UNK_SCRIPT2",
 	"VAR_CUTSCENEEXIT_KEY",
-	"VAR_RESTART_KEY",			// ???
+	"VAR_RESTART_KEY",
 	/* 64 */
 	"VAR_PAUSE_KEY",
-	"VAR_SAVELOADDIALOG_KEY",	// ???
-	NULL,
-	"VAR_TALKSTOP_KEY",			// ???
+	"VAR_SAVELOADDIALOG_KEY",
+	"VAR_VERSION",
+	"VAR_TALKSTOP_KEY",
 	/* 68 */
 	NULL,
 	NULL,
@@ -499,6 +499,9 @@ const char *var_names7[] = {
 	NULL,
 	"VAR_STRING2DRAW",
 	"VAR_CUSTOMSCALETABLE",
+	/* 132 */
+	NULL,
+	"VAR_BLAST_ABOVE_TEXT",
 };
 
 const char *var_names8[] = {
@@ -524,7 +527,7 @@ const char *var_names8[] = {
 	"VAR_HAVE_MSG",
 	/* 16 */
 	"VAR_MOUSE_BUTTONS",
-	NULL,
+	"VAR_RIGHTBTN_HOLD",
 	"VAR_MOUSE_HOLD",
 	NULL,
 	/* 20 */
@@ -551,7 +554,7 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	NULL,
-	"voice_text_mode",
+	"VAR_VOICE_MODE",
 	/* 40 */
 	"VAR_GAME_LOADED",
 	"VAR_LANGUAGE",
@@ -585,7 +588,7 @@ const char *var_names8[] = {
 	/* 64 */
 	"VAR_PAUSE_KEY",
 	"VAR_SAVELOADDIALOG_KEY",
-	NULL,
+	"VAR_VERSION",
 	"VAR_TALKSTOP_KEY",
 	/* 68 */
 	NULL,
@@ -663,13 +666,13 @@ const char *var_names8[] = {
 	"VAR_EGO",
 	NULL,
 	/* 128 */
-	NULL,
-	"text_delay?",
+	"VAR_DEFAULT_TALK_DELAY",
+	"VAR_CHARINC",
 	"VAR_DEBUGMODE",
 	NULL,
 	/* 132 */
 	"VAR_KEYPRESS",
-	NULL,
+	"VAR_BLAST_ABOVE_TEXT",
 	"VAR_SYNC",
 	NULL,
 };
