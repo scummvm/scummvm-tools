@@ -15,17 +15,17 @@
 FILE *input, *output_idx, *output_snd;
 
 char fbuf_temp[1024];
-unsigned char buf[256];
+char buf[256];
 
-unsigned char f_hdr[] = {
+char f_hdr[] = {
 	'S', 'O', 'U', ' ', 0, 0, 0, 0, 0
 };
 
-unsigned char v_hdr[] = {
+char v_hdr[] = {
 	'V', 'C', 'T', 'L', 0, 0, 0, 0xA, 0xF, 0xFF
 };
 
-unsigned char c_hdr[] = {
+char c_hdr[] = {
 	'C', 'r', 'e', 'a', 't', 'i', 'v', 'e', ' ', 'V', 'o', 'i', 'c', 'e',
 	' ', 'F', 'i', 'l', 'e', 0x1a, 0x1a, 0x00, 0x0A, 0x01, 0x29, 0x11
 };
