@@ -46,6 +46,165 @@ struct FrameInfo {
 	int32 fobjCompressedSize;
 };
 
+static byte _IACToutput[0x1000];
+static int _IACTpos = 0;
+static FILE *_waveTmpFile;
+static int32 _waveDataSize;
+
+void encodeWaveWithOgg(char *filename) {
+	char fbuf[2048];
+	char *tmp = fbuf;
+	bool err = false;
+
+	sprintf(fbuf, "oggenc -q 0 %s", filename);
+	err = system(fbuf) != 0;
+	if (err) {
+		printf("Got error from encoder. (check your parameters)\n");
+		printf("Encoder Commandline: %s\n", fbuf );
+		exit(-1);
+	}
+}
+
+void writeWaveHeader(int s_size) {
+	int rate = 22050;
+	int bits = 16;
+	int chan = 2;
+	byte wav[44];
+	memset (wav, 0,	44);
+	wav[0] = 'R';
+	wav[1] = 'I';
+	wav[2] = 'F';
+	wav[3] = 'F';
+	wav[4] = (s_size + 36) & 0xff;
+	wav[5] = ((s_size +	36)	>> 8) &	0xff;
+	wav[6] = ((s_size +	36)	>> 16) & 0xff;
+	wav[7] = ((s_size +	36)	>> 24) & 0xff;
+	wav[8] = 'W';
+	wav[9] = 'A';
+	wav[10]	= 'V';
+	wav[11]	= 'E';
+	wav[12]	= 'f';
+	wav[13]	= 'm';
+	wav[14]	= 't';
+	wav[15]	= 0x20;
+	wav[16]	= 16;
+	wav[20]	= 1;
+	wav[22]	= chan;
+	wav[24]	= rate & 0xff;
+	wav[25]	= (rate	>> 8) &	0xff;
+	wav[26]	= (rate	>> 16) & 0xff;
+	wav[27]	= (rate	>> 24) & 0xff;
+	wav[28]	= (rate	* chan * (bits / 8)) & 0xff;
+	wav[29]	= ((rate * chan	* (bits	/ 8))>>	8) & 0xff;
+	wav[30]	= ((rate * chan	* (bits	/ 8)) >> 16) & 0xff;
+	wav[31]	= ((rate * chan	* (bits	/ 8)) >> 24) & 0xff;
+	wav[32]	= (chan	* (bits	/ 8)) &	0xff;
+	wav[33]	= ((chan * (bits / 8)) >> 8) & 0xff;
+	wav[34]	= bits;
+	wav[36]	= 'd';
+	wav[37]	= 'a';
+	wav[38]	= 't';
+	wav[39]	= 'a';
+	wav[40]	= s_size & 0xff;
+	wav[41]	= (s_size >> 8)	& 0xff;
+	wav[42]	= (s_size >> 16) & 0xff;
+	wav[43]	= (s_size >> 24) & 0xff;
+
+	fseek(_waveTmpFile, 0, SEEK_SET);
+	if (fwrite(wav, 1, 44, _waveTmpFile) != 44) {
+		printf("error write temp wave file");
+		exit(1);
+	}
+	fclose(_waveTmpFile);
+	_waveTmpFile = NULL;
+}
+void writeToTempWave(byte *output_data, int size) {
+	if (!_waveTmpFile) {
+		_waveTmpFile = fopen("tmp.wav", "wb");
+		if (!_waveTmpFile) {
+			printf("error write temp wave file");
+			exit(1);
+		}
+		byte wav[44];
+		memset(wav, 0, 44);
+		if (fwrite(output_data, 1, 44, _waveTmpFile) != 44) {
+			printf("error write temp wave file");
+			exit(1);
+		}
+		_waveDataSize = 0;
+	}
+	for (int j = 0; j < size; j += 2) {
+		byte tmp = output_data[j + 0];
+		output_data[j + 0] = output_data[j + 1];
+		output_data[j + 1] = tmp;
+	}
+
+	if (fwrite(output_data, 1, size, _waveTmpFile) != size) {
+		printf("error write temp wave file");
+		exit(1);
+	}
+	_waveDataSize += 0x1000;
+}
+
+void decompressComiIACT(byte *output_data, byte *d_src, int bsize) {
+	byte value;
+
+	while (bsize > 0) {
+		if (_IACTpos >= 2) {
+			int32 len = *(uint16 *)(_IACToutput);
+			len = TO_BE_16(len) + 2;
+			len -= _IACTpos;
+			if (len > bsize) {
+				memcpy(_IACToutput + _IACTpos, d_src, bsize);
+				_IACTpos += bsize;
+				bsize = 0;
+			} else {
+				memcpy(_IACToutput + _IACTpos, d_src, len);
+				byte *dst = output_data;
+				byte *d_src2 = _IACToutput;
+				d_src2 += 2;
+				int32 count = 1024;
+				byte variable1 = *d_src2++;
+				byte variable2 = variable1 / 16;
+				variable1 &= 0x0f;
+				do {
+					value = *(d_src2++);
+					if (value == 0x80) {
+						*dst++ = *d_src2++;
+						*dst++ = *d_src2++;
+					} else {
+						int16 val = (int8)value << variable2;
+						*dst++ = val >> 8;
+						*dst++ = (byte)(val);
+					}
+					value = *(d_src2++);
+					if (value == 0x80) {
+						*dst++ = *d_src2++;
+						*dst++ = *d_src2++;
+					} else {
+						int16 val = (int8)value << variable1;
+						*dst++ = val >> 8;
+						*dst++ = (byte)(val);
+					}
+				} while (--count);
+				writeToTempWave(output_data, 0x1000);
+				bsize -= len;
+				d_src += len;
+				_IACTpos = 0;
+			}
+		} else {
+			if (bsize > 1 && _IACTpos == 0) {
+				*(_IACToutput + 0) = *d_src++;
+				_IACTpos = 1;
+				bsize--;
+			}
+			*(_IACToutput + _IACTpos) = *d_src++;
+			_IACTpos++;
+			bsize--;
+		}
+	}
+}
+
 int main(int argc, char *argv[]) {
 	if (argc < 3)
 		showhelp(argv[0]);
@@ -149,9 +308,18 @@ int main(int argc, char *argv[]) {
 					fseek(input, -8, SEEK_CUR);
 					goto skip;
 				}
-				if ((size & 1) != 0)
+				fseek(input, 10, SEEK_CUR);
+				int bsize = size - 18;
+				byte output_data[0x1000];
+				byte *src = (byte *)malloc(bsize);
+				fread(src, bsize, 1, input);
+				decompressComiIACT(output_data, src, bsize);
+				free(src);
+
+				if ((size & 1) != 0) {
+					fseek(input, 1, SEEK_CUR);
 					size++;
-				fseek(input, size - 8, SEEK_CUR);
+				}
 				frameInfo[l].frameSize -= size + 8;
 				continue;
 			} else {
@@ -168,8 +336,14 @@ skip:
 		}
 	}
 
+	if (_waveTmpFile) {
+		writeWaveHeader(_waveDataSize);
+		encodeWaveWithOgg("tmp.wav");
+	}
+
 	fclose(input);
 
+	printf("Fixing anim header...");
 	int32 sumDiff = 0;
 	for (l = 0; l < nbframes; l++) {
 		if (frameInfo[l].fobjCompressedSize == 0)
@@ -179,21 +353,28 @@ skip:
 		sumDiff += diff;
 		writeUint32BE(output, frameInfo[l].frameSize - diff);
 	}
+	printf("done.\n");
 
+	printf("Fixing frames header...");
 	fseek(output, 4, SEEK_SET);
 	writeUint32BE(output, animChunkSize - sumDiff);
+	printf("done.\n");
 
 	if (flu) {
+		printf("Fixing flu offsets...");
 		fseek(flu, 0x324, SEEK_SET);
 		for (l = 0; l < nbframes; l++) {
 			writeUint32LE(flu, frameInfo[l].offsetOutput - 4);
 		}
 		fclose(flu);
+		printf("done.\n");
 	}
 
 	free(frameInfo);
 	
 	fclose(output);
+
+	printf("compression done.\n");
 		
 	return 0;
 }
