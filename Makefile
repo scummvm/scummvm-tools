@@ -2,7 +2,7 @@ SRC=.
 
 CC      := gcc
 CXX     := g++
-CFLAGS  := -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar
+CFLAGS  := -g -O -Wall -Wuninitialized -Wno-long-long -Wno-multichar
 LDFLAGS :=
 
 # Additional warnings
