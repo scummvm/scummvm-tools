@@ -98,7 +98,7 @@ enum {
 };
 
 static const char *oper_list[] = {
-	"0==",
+	"!",
 	"==",
 	"!=",
 	">",
@@ -716,7 +716,7 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 		}
 		break;
 	case seUnary:
-		where += sprintf(where, "%s ", oper_list[se->data]);
+		where += sprintf(where, "%s", oper_list[se->data]);
 		where = se_astext(se->left, where);
 		break;
 	case seBinary:
@@ -2354,6 +2354,9 @@ void next_line_V67()
 				"\xD|remapCostume,"
 				"\xE|remapCostumeInsert,"
 				"\xF|setVideoFrameRate,"
+
+				"\x10|enqueueTextA,"
+				"\x11|enqueueTextB,"
 
 				"\x6C|buildPaletteShadow,"
 				"\x6D|setPaletteShadow,"
