@@ -127,7 +127,7 @@ unsigned short inline TO_LE_16(unsigned short a)
 
 int get_byte()
 {
-	return (byte) (*cur_pos++);
+	return (byte)(*cur_pos++);
 }
 
 int get_word()
@@ -352,8 +352,7 @@ char *do_tok(char *buf, const char *text, int args)
 #if 0
 void output_expr_text(int offs, char *data)
 {
-	printf("[%.4X] (%.2X) EXPRESSION_MODE: %s\n", offs,
-				 *((byte *) (org_pos + offs)), data);
+	printf("[%.4X] (%.2X) EXPRESSION_MODE: %s\n", offs, *((byte *)(org_pos + offs)), data);
 }
 
 void output_ext_opcode(int offs, char *data)
@@ -527,10 +526,8 @@ void WritePendingElse()
 {
 	if (PendingElse) {
 		char buf[32];
-		sprintf(buf, AlwaysShowOffs ? "} else /*%.4X*/ {" : "} else {",
-						PendingElseTo);
-		OutputLine(buf, PendingElseOffs, PendingElseOpcode,
-							 PendingElseIndent - 1);
+		sprintf(buf, AlwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", PendingElseTo);
+		OutputLine(buf, PendingElseOffs, PendingElseOpcode, PendingElseIndent - 1);
 		PendingElse = 0;
 	}
 }
@@ -561,9 +558,7 @@ void do_actorset(char *buf, byte opcode)
 			buf = do_tok(buf, "Costume", ((opcode & 0x80) ? A1V : A1B));
 			break;
 		case 0x02:
-			buf =
-				do_tok(buf, "WalkSpeed",
-							 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+			buf = do_tok(buf, "WalkSpeed", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 			break;
 		case 0x03:
 			buf = do_tok(buf, "Sound", ((opcode & 0x80) ? A1V : A1B));
@@ -573,8 +568,7 @@ void do_actorset(char *buf, byte opcode)
 			break;
 		case 0x05:
 			buf =
-				do_tok(buf, "TalkAnimNr",
-							 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+				do_tok(buf, "TalkAnimNr", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 			break;
 		case 0x06:
 			buf = do_tok(buf, "StandAnimNr", ((opcode & 0x80) ? A1V : A1B));
@@ -595,9 +589,7 @@ void do_actorset(char *buf, byte opcode)
 			buf = do_tok(buf, "DefaultAnims", 0);
 			break;
 		case 0x0B:
-			buf =
-				do_tok(buf, "Palette",
-							 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+			buf = do_tok(buf, "Palette", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 			break;
 		case 0x0C:
 			buf = do_tok(buf, "TalkColor", ((opcode & 0x80) ? A1V : A1B));
@@ -613,9 +605,7 @@ void do_actorset(char *buf, byte opcode)
 			buf = do_tok(buf, "Width", ((opcode & 0x80) ? A1V : A1B));
 			break;
 		case 0x11:
-			buf =
-				do_tok(buf, "Scale",
-							 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+			buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 			break;
 		case 0x12:
 			buf = do_tok(buf, "NeverZClip", 0);
@@ -904,15 +894,13 @@ void do_33(char *buf)
 
 	switch (opcode & 0x1F) {
 	case 0x01:
-		do_tok(buf, "RoomScroll",
-					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+		do_tok(buf, "RoomScroll", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 	case 0x02:
 		do_tok(buf, "RoomColor", 0);
 		break;
 	case 0x03:
-		do_tok(buf, "SetScreen",
-					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+		do_tok(buf, "SetScreen", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 	case 0x04:
 		buf =
@@ -920,9 +908,7 @@ void do_33(char *buf)
 						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) |
 						 ((opcode & 0x20) ? A3V : A3W) | ANOLASTPAREN);
 		opcode = get_byte();
-		buf =
-			do_tok(buf, NULL,
-						 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W));
+		buf = do_tok(buf, NULL, ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x05:
 		do_tok(buf, "ShakeOn", 0);
@@ -940,9 +926,7 @@ void do_33(char *buf)
 						 ((opcode & 0x20) ? A3V : A3B));
 		break;
 	case 0x09:
-		buf =
-			do_tok(buf, "saveLoad?",
-						 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		buf = do_tok(buf, "saveLoad?", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x0A:
 		buf = do_tok(buf, "screenEffect?", ((opcode & 0x80) ? A1V : A1W));
@@ -981,9 +965,7 @@ void do_33(char *buf)
 		break;
 
 	case 0x0F:
-		buf =
-			do_tok(buf, "palManipulate",
-						 ANOLASTPAREN | ((opcode & 0x80) ? A1V : A1B));
+		buf = do_tok(buf, "palManipulate", ANOLASTPAREN | ((opcode & 0x80) ? A1V : A1B));
 		opcode = get_byte();
 		buf =
 			do_tok(buf, NULL,
@@ -991,14 +973,11 @@ void do_33(char *buf)
 																													 A1V : A1B) |
 						 ((opcode & 0x40) ? A2V : A2B));
 		opcode = get_byte();
-		buf =
-			do_tok(buf, NULL,
-						 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B));
+		buf = do_tok(buf, NULL, ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x10:
-		do_tok(buf, "colorCycleDelay",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "colorCycleDelay", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	default:
@@ -1039,8 +1018,7 @@ void do_cursor_command(char *buf)
 		break;
 
 	case 0x0A:
-		do_tok(buf, "SetCursorImg",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "SetCursorImg", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x0B:
 		do_tok(buf, "SetCursorHotspot",
@@ -1091,9 +1069,7 @@ void do_verbops(char *buf, byte opcode)
 			buf = do_tok(buf, "HiColor", (opcode & 0x80) ? A1V : A1B);
 			break;
 		case 0x5:
-			buf =
-				do_tok(buf, "SetXY",
-							 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+			buf = do_tok(buf, "SetXY", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 			break;
 		case 0x6:
 			buf = do_tok(buf, "On", 0);
@@ -1124,8 +1100,7 @@ void do_verbops(char *buf, byte opcode)
 			break;
 		case 0x16:
 			buf =
-				do_tok(buf, "SetToObject",
-							 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
+				do_tok(buf, "SetToObject", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
 			break;
 		case 0x17:
 			buf = do_tok(buf, "BackColor", (opcode & 0x80) ? A1V : A1B);
@@ -1162,9 +1137,7 @@ void do_print_ego(char *buf, byte opcode)
 
 		switch (opcode & 0x1f) {
 		case 0x0:
-			buf =
-				do_tok(buf, "Pos",
-							 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+			buf = do_tok(buf, "Pos", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 			break;
 		case 0x1:
 			buf = do_tok(buf, "Color", ((opcode & 0x80) ? A1V : A1B));
@@ -1182,9 +1155,7 @@ void do_print_ego(char *buf, byte opcode)
 			buf = do_tok(buf, "Overhead", 0);
 			break;
 		case 0x8:
-			buf =
-				do_tok(buf, "Unk8",
-							 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+			buf = do_tok(buf, "Unk8", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 			break;
 		case 0xF:{
 				buf = strecpy(buf, "Text(\"");
@@ -1307,8 +1278,7 @@ void do_if_code(char *buf, byte opcode)
 
 	neg = emit_if(before, after) ^ 1;
 
-	sprintf(buf, "%sif (%s%s%s%s", before, var, cmp_texts[txt ^ neg], tmp2,
-					after);
+	sprintf(buf, "%sif (%s%s%s%s", before, var, cmp_texts[txt ^ neg], tmp2, after);
 }
 
 void do_unconditional_jump(char *buf, byte opcode)
@@ -1388,16 +1358,13 @@ void do_matrix_ops(char *buf, byte opcode)
 
 	switch (opcode & 0x1F) {
 	case 0x1:
-		do_tok(buf, "SetBoxTo",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "SetBoxTo", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x2:
-		do_tok(buf, "SetBoxScale",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "SetBoxScale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x3:
-		do_tok(buf, "SetBoxSlot",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "SetBoxSlot", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x4:
 		do_tok(buf, "SetBoxPath", 0);
@@ -1439,14 +1406,12 @@ void get_tok(char *buf)
 	case 0x95:
 	case 0xD5:
 		do_tok(buf, "GetActorFromPos",
-					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) |
-					 AVARSTORE);
+					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) | AVARSTORE);
 		break;
 
 	case 0x03:
 	case 0x83:
-		do_tok(buf, "GetActorLocation",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "GetActorLocation", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 
@@ -1470,9 +1435,7 @@ void get_tok(char *buf)
 	case 0x05:
 	case 0x85:{
 
-			buf =
-				do_tok(buf, "DrawObject",
-							 ((opcode & 0x80) ? A1V : A1W) | ANOLASTPAREN);
+			buf = do_tok(buf, "DrawObject", ((opcode & 0x80) ? A1V : A1W) | ANOLASTPAREN);
 			opcode = get_byte();
 			switch (opcode & 0x1F) {
 			case 1:
@@ -1481,8 +1444,7 @@ void get_tok(char *buf)
 							 ((opcode & 0x40) ? A2V : A2W));
 				break;
 			case 2:
-				do_tok(buf, ", setImage(",
-							 ANOLASTPAREN | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W));
+				do_tok(buf, ", setImage(", ANOLASTPAREN | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W));
 				break;
 			}
 			strcat(buf, "));");
@@ -1492,45 +1454,38 @@ void get_tok(char *buf)
 
 	case 0x06:
 	case 0x86:
-		do_tok(buf, "GetActorElevation",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "GetActorElevation", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x07:
 	case 0x47:
 	case 0x87:
 	case 0xC7:
-		do_tok(buf, "SetState",
-					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "SetState", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x09:
 	case 0x49:
 	case 0x89:
 	case 0xC9:
-		do_tok(buf, "FaceActor",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "FaceActor", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x0A:
 	case 0x8A:
-		do_tok(buf, "startScriptAA",
-					 ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
+		do_tok(buf, "startScriptAA", ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
 		break;
 	case 0x2A:
 	case 0xAA:
-		do_tok(buf, "startScriptAB",
-					 ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
+		do_tok(buf, "startScriptAB", ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
 		break;
 	case 0x4A:
 	case 0xCA:
-		do_tok(buf, "startScriptBA",
-					 ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
+		do_tok(buf, "startScriptBA", ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
 		break;
 	case 0x6A:
 	case 0xEA:
-		do_tok(buf, "startScriptBB",
-					 ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
+		do_tok(buf, "startScriptBB", ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
 		break;
 
 
@@ -1539,8 +1494,7 @@ void get_tok(char *buf)
 	case 0x8B:
 	case 0xCB:
 		do_tok(buf, "getVerbEntryPoint",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V
-																												: A2W));
+					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 
 	case 0x0c:
@@ -1553,8 +1507,7 @@ void get_tok(char *buf)
 	case 0x8D:
 	case 0xCD:
 		do_tok(buf, "WalkActorToActor",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) |
-					 A3B);
+					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
 		break;											/* arg1=actor, arg2=actor */
 
 	case 0x0F:
@@ -1600,8 +1553,7 @@ void get_tok(char *buf)
 
 	case 0x1D:
 	case 0x9D:
-		do_tok(buf, "if ClassOfIs",
-					 ((opcode & 0x80) ? A1V : A1W) | A2VARUNTIL0xFF | ATO);
+		do_tok(buf, "if ClassOfIs", ((opcode & 0x80) ? A1V : A1W) | A2VARUNTIL0xFF | ATO);
 		break;											/* arg1=object; vararg=classes to test; arg3=jumpoffs */
 
 	case 0x1E:
@@ -1623,8 +1575,7 @@ void get_tok(char *buf)
 	case 0xE4:
 		buf =
 			do_tok(buf, "loadRoomWithEgo",
-						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) |
-						 ANOLASTPAREN);
+						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ANOLASTPAREN);
 		do_tok(buf, NULL, A1W | A2W | ANOFIRSTPAREN | ASTARTCOMMA);
 		break;
 
@@ -1632,8 +1583,7 @@ void get_tok(char *buf)
 	case 0x65:
 	case 0xA5:
 	case 0xE5:
-		do_tok(buf, "PickUp",
-					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "PickUp", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x2C:
@@ -1646,8 +1596,7 @@ void get_tok(char *buf)
 
 	case 0x42:
 	case 0xC2:
-		do_tok(buf, "chainScript",
-					 ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
+		do_tok(buf, "chainScript", ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
 		break;
 
 	case 0x56:
@@ -1701,8 +1650,7 @@ void get_tok(char *buf)
 	case 0xB4:
 	case 0xF4:
 		do_tok(buf, "GetDistActorToObject",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V
-																												: A2W));
+					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 
 
@@ -1710,8 +1658,7 @@ void get_tok(char *buf)
 	case 0x76:
 	case 0xB6:
 	case 0xF6:
-		do_tok(buf, "WalkActorToObject",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W));
+		do_tok(buf, "WalkActorToObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 
 	case 0x37:
@@ -1719,8 +1666,7 @@ void get_tok(char *buf)
 	case 0xB7:
 	case 0xF7:
 		do_tok(buf, "StartObject",
-					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) |
-					 A3VARUNTIL0xFF);
+					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | A3VARUNTIL0xFF);
 		break;
 
 	case 0x19:
@@ -1757,8 +1703,7 @@ void get_tok(char *buf)
 	case 0x51:
 	case 0x91:
 	case 0xD1:
-		do_tok(buf, "ActorAnimate",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "ActorAnimate", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x80:
@@ -1775,8 +1720,7 @@ void get_tok(char *buf)
 				do_load_code_to_string(buf, opcode);
 				break;
 			case 0x02:
-				do_tok(buf, "CopyString",
-							 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+				do_tok(buf, "CopyString", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 				break;
 			case 0x03:
 				do_tok(buf, "SetStringChar",
@@ -1785,12 +1729,10 @@ void get_tok(char *buf)
 				break;									/* string(arg1)[arg2] = arg3 */
 			case 0x04:
 				do_tok(buf, "GetStringChar",
-							 AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ?
-																														A2V : A2B));
+							 AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 				break;									/* arg1 = string(arg2)[arg3] */
 			case 0x05:
-				do_tok(buf, "CreateString",
-							 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+				do_tok(buf, "CreateString", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 				break;									/* arg1=index, arg2=size */
 			default:
 				do_tok(buf, "StringFuncUnknown", 0);
@@ -1823,8 +1765,7 @@ void get_tok(char *buf)
 	case 0xFF:
 		buf =
 			do_tok(buf, "DrawBox",
-						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) |
-						 ANOLASTPAREN);
+						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) | ANOLASTPAREN);
 		opcode = get_byte();
 		do_tok(buf, NULL,
 					 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W) |
@@ -1847,8 +1788,7 @@ void get_tok(char *buf)
 
 	case 0x68:
 	case 0xE8:
-		do_tok(buf, "GetScriptRunning",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "GetScriptRunning", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x2E:{
@@ -1864,8 +1804,7 @@ void get_tok(char *buf)
 	case 0x69:
 	case 0xA9:
 	case 0xE9:
-		do_tok(buf, "SetOwnerOf",
-					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "SetOwnerOf", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x52:
@@ -1922,8 +1861,7 @@ void get_tok(char *buf)
 	case 0x6D:
 	case 0xAD:
 	case 0xED:
-		do_tok(buf, "PutActorInRoom",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "PutActorInRoom", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x54:
@@ -1941,8 +1879,7 @@ void get_tok(char *buf)
 	case 0xB5:
 	case 0xF5:
 		do_tok(buf, "FindObject",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V
-																												: A2W));
+					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 
 	case 0x26:
@@ -1982,8 +1919,7 @@ void get_tok(char *buf)
 	case 0x4E:
 	case 0x8E:
 	case 0xCE:
-		do_tok(buf, "PutActorAtObject",
-					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W));
+		do_tok(buf, "PutActorAtObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 
 	case 0x12:
@@ -2005,8 +1941,7 @@ void get_tok(char *buf)
 
 	case 0x31:
 	case 0xB1:
-		do_tok(buf, "getInventoryCount",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "getInventoryCount", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x1f:
@@ -2014,8 +1949,7 @@ void get_tok(char *buf)
 	case 0x9f:
 	case 0xdf:
 		do_tok(buf, "IsActorInBox",
-					 ATO | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V :
-																									A2B));
+					 ATO | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x22:
@@ -2028,8 +1962,7 @@ void get_tok(char *buf)
 	case 0xBD:
 	case 0xFD:
 		do_tok(buf, "GetInventoryItem",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V
-																												: A2B));
+					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0xAB:{
@@ -2112,12 +2045,11 @@ void ShowHelpAndExit()
 				 "\t-i\tDon't output ifs\n"
 				 "\t-e\tDon't output else\n"
 				 "\t-f\tDon't output else-if\n"
-				 "\t-c\tDon't show opcode\n"
-				 "\t-x\tDon't show offsets\n" "\t-h\tHalt on error\n");
+				 "\t-c\tDon't show opcode\n" "\t-x\tDon't show offsets\n" "\t-h\tHalt on error\n");
 	exit(0);
 }
 
-byte *skipVerbHeader(byte * p)
+byte *skipVerbHeader(byte *p)
 {
 	byte code;
 	byte *p2 = p;
@@ -2201,7 +2133,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	memorg = mem = (byte *) malloc(65536);
+	memorg = mem = (byte *)malloc(65536);
 	len = fread(mem, 1, 65536, in);
 	fclose(in);
 	size_of_code = len;

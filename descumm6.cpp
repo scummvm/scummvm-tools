@@ -287,7 +287,7 @@ char *strecpy(char *buf, const char *src)
 
 int get_byte()
 {
-	return (byte) (*cur_pos++);
+	return (byte)(*cur_pos++);
 }
 
 int get_word()
@@ -302,7 +302,7 @@ int get_word()
 }
 
 
-byte *skipVerbHeader(byte * p)
+byte *skipVerbHeader(byte *p)
 {
 	byte code;
 	byte *p2 = p;
@@ -667,8 +667,7 @@ void ext(const char *fmt)
 		} else if (cmd == 'j') {
 			args[numArgs++] = se_int(get_word());
 		} else {
-			printf("error in argument string '%s', character '%c' unknown\n", fmt,
-						 cmd);
+			printf("error in argument string '%s', character '%c' unknown\n", fmt, cmd);
 		}
 	}
 
@@ -787,7 +786,7 @@ int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 void jump()
 {
 	int cur = get_curoffs() + 2;
-	int to = cur + (int16) get_word();
+	int to = cur + (int16)get_word();
 
 	if (!dontOutputElse && maybeAddElse(cur, to)) {
 		pendingElse = true;
@@ -803,7 +802,7 @@ void jump()
 void jumpif(StackEnt * se, bool when)
 {
 	int cur = get_curoffs() + 2;
-	int to = cur + (int16) get_word();
+	int to = cur + (int16)get_word();
 	char *e = output;
 
 	if (!dontOutputElseif && pendingElse) {
@@ -1004,8 +1003,7 @@ void next_line()
 				"\x96|softUserputOn,"
 				"\x97|softUserputOff,"
 				"\x99pp|setCursorImg,"
-				"\x9App|setCursorHotspot," "\x9Cp|initCharset," "\x9Dl|charsetColors,"
-				"\xD6p|new_unk_1");
+				"\x9App|setCursorHotspot," "\x9Cp|initCharset," "\x9Dl|charsetColors," "\xD6p|new_unk_1");
 		break;
 	case 0x6C:
 		ext("|break");
@@ -1159,8 +1157,7 @@ void next_line()
 				"\x70p|unlockScript,"
 				"\x71p|unlockSound,"
 				"\x72p|unlockCostume,"
-				"\x73p|unlockRoom," "\x75p|loadCharset," "\x76p|nukeCharset,"
-				"\x77pp|unkResProc");
+				"\x73p|unlockRoom," "\x75p|loadCharset," "\x76p|nukeCharset," "\x77pp|unkResProc");
 		break;
 	case 0x9C:
 		ext("x" "roomOps\0"
@@ -1174,8 +1171,7 @@ void next_line()
 				"\xB5p|screenEffect,"
 				"\xB6ppppp|unkRoomFunc2,"
 				"\xB7ppppp|unkRoomFunc3,"
-				"\xBApppp|palManipulate," "\xBBpp|colorCycleDelay,"
-				"\xD5p|setPalette");
+				"\xBApppp|palManipulate," "\xBBpp|colorCycleDelay," "\xD5p|setPalette");
 		break;
 	case 0x9D:
 		ext("x" "actorSet\0"
@@ -1203,8 +1199,7 @@ void next_line()
 				"\x61|setActorAnimSpeed,"
 				"\x62|setActorData8,"
 				"\x63pp|setActorTalkPos,"
-				"\xD7|setActorNew3On," "\xD8|setActorNew3Off,"
-				"\xD9|initActorLittle");
+				"\xD7|setActorNew3On," "\xD8|setActorNew3Off," "\xD9|initActorLittle");
 		break;
 	case 0x9E:
 		ext("x" "verbOps\0"
@@ -1241,13 +1236,11 @@ void next_line()
 		ext("rpp|getVerbEntrypoint");
 		break;
 	case 0xA4:
-		ext("x" "arrayOps\0" "\xCDwps|arrayOps205," "\xD0wpl|arrayOps208,"
-				"\xD4wplp|arrayOps212");
+		ext("x" "arrayOps\0" "\xCDwps|arrayOps205," "\xD0wpl|arrayOps208," "\xD4wplp|arrayOps212");
 		break;
 	case 0xA5:
 		ext("x" "saveRestoreVerbs\0"
-				"\x8Dppp|saveRestoreA," "\x8Eppp|saveRestoreB,"
-				"\x8Fppp|saveRestoreC");
+				"\x8Dppp|saveRestoreA," "\x8Eppp|saveRestoreB," "\x8Fppp|saveRestoreC");
 		break;
 	case 0xA6:
 		ext("ppppp|drawBox");
@@ -1257,8 +1250,7 @@ void next_line()
 		break;
 	case 0xA9:
 		ext("x" "wait\0"
-				"\xA8pj|waitForActor," "\xA9|waitForMessage," "\xAA|waitForCamera,"
-				"\xAB|waitForSentence");
+				"\xA8pj|waitForActor," "\xA9|waitForMessage," "\xAA|waitForCamera," "\xAB|waitForSentence");
 		break;
 	case 0xAA:
 		ext("rp|getActorScaleX");
@@ -1297,8 +1289,7 @@ void next_line()
 				"\x42p|color,"
 				"\x43p|right,"
 				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
-				"\xFF|end");
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
 		break;
 	case 0xB5:
 		ext("m" "print_1_\0"
@@ -1307,8 +1298,7 @@ void next_line()
 				"\x42p|color,"
 				"\x43p|right,"
 				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
-				"\xFF|end");
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
 		break;
 	case 0xB6:
 		ext("m" "print_2_\0"
@@ -1317,8 +1307,7 @@ void next_line()
 				"\x42p|color,"
 				"\x43p|right,"
 				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
-				"\xFF|end");
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
 		break;
 	case 0xB7:
 		ext("m" "print_3_\0"
@@ -1327,8 +1316,7 @@ void next_line()
 				"\x42p|color,"
 				"\x43p|right,"
 				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
-				"\xFF|end");
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
 		break;
 	case 0xB8:
 		ext("m" "print_actor_\0"
@@ -1337,8 +1325,7 @@ void next_line()
 				"\x42p|color,"
 				"\x43p|right,"
 				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFEp|begin,"
-				"\xFF|end");
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFEp|begin," "\xFF|end");
 		break;
 	case 0xB9:
 		ext("m" "print_ego_\0"
@@ -1347,8 +1334,7 @@ void next_line()
 				"\x42p|color,"
 				"\x43p|right,"
 				"\x45|center,"
-				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin,"
-				"\xFF|end");
+				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFE|begin," "\xFF|end");
 		break;
 	case 0xBA:
 		ext("ps|talkActor");
@@ -1360,8 +1346,7 @@ void next_line()
 		ext("x" "dim\0"
 				"\xC7pw|dimType5,"
 				"\xC8pw|dimType1,"
-				"\xC9pw|dimType2," "\xCApw|dimType3," "\xCBpw|dimType4,"
-				"\xCCpw|nukeArray");
+				"\xC9pw|dimType2," "\xCApw|dimType3," "\xCBpw|dimType4," "\xCCpw|nukeArray");
 		break;
 	case 0xBE:
 		ext("lpp|startObjectQuick");
@@ -1372,8 +1357,7 @@ void next_line()
 	case 0xC0:
 		ext("x" "dim2\0"
 				"\xC7ppw|dim2Type5,"
-				"\xC8ppw|dim2Type1," "\xC9ppw|dim2Type2," "\xCAppw|dim2Type3,"
-				"\xCBppw|dim2Type4");
+				"\xC8ppw|dim2Type1," "\xC9ppw|dim2Type2," "\xCAppw|dim2Type3," "\xCBppw|dim2Type4");
 		break;
 	case 0xC4:
 		ext("rp|abs");
@@ -1461,10 +1445,8 @@ void writePendingElse()
 {
 	if (pendingElse) {
 		char buf[32];
-		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {",
-						pendingElseTo);
-		outputLine(buf, pendingElseOffs, pendingElseOpcode,
-							 pendingElseIndent - 1);
+		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
+		outputLine(buf, pendingElseOffs, pendingElseOpcode, pendingElseIndent - 1);
 		pendingElse = false;
 	}
 }
@@ -1495,8 +1477,7 @@ void ShowHelpAndExit()
 				 "\t-i\tDon't output ifs\n"
 				 "\t-e\tDon't output else\n"
 				 "\t-f\tDon't output else-if\n"
-				 "\t-c\tDon't show opcode\n"
-				 "\t-x\tDon't show offsets\n" "\t-h\tHalt on error\n");
+				 "\t-c\tDon't show opcode\n" "\t-x\tDon't show offsets\n" "\t-h\tHalt on error\n");
 	exit(0);
 }
 
@@ -1561,7 +1542,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	memorg = mem = (byte *) malloc(65536);
+	memorg = mem = (byte *)malloc(65536);
 	len = fread(mem, 1, 65536, in);
 	fclose(in);
 
