@@ -1396,7 +1396,7 @@ void next_line()
 		ext("pppp|o6_unknownCD");
 		break;
 	case 0xD2:
-		ext("pp|getAnimateVariable");
+		ext("rpp|getAnimateVariable");
 		break;
 	case 0xD5:
 		ext("lpp|jumpToScript");
