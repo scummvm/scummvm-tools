@@ -38,6 +38,14 @@ typedef struct {
 	bool silent;
 } oggencparams;
 
+/* FIXME: This is an evil way to pass on the params to FLAC.
+ It makes it near impossible to reliably pass default params to the
+ encoder, which is why the ScummVM README has to tell the user to
+ use this command:
+   extract --best -b 1152 monster.sou
+ If those are the best default options, then they should be *default*
+ and the user shouldn't have to specify them.
+*/
 typedef struct {
 	char * const* argv;
 	int numArgs;
