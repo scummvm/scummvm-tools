@@ -2589,6 +2589,18 @@ void next_line_V67(char *output)
 	case 0xE4:
 		ext(output, "p|setBotSet");
 		break;
+	case 0xE9:
+		if (HumongousFlag)
+			ext(output, "ppp|seekFile");
+		else
+			invalidop(NULL, code);
+		break;
+	case 0xEA:
+		if (HumongousFlag)
+			ext(output, "pp|redimArray");
+		else
+			invalidop(NULL, code);
+		break;
 	case 0xEC:
 		if (HumongousFlag)
 			invalidop(NULL, code);
@@ -2600,12 +2612,6 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		else
 			ext(output, "rp|getObjectNewDir");
-		break;
-	case 0xE9:
-		if (HumongousFlag)
-			ext(output, "ppp|seekFile");
-		else
-			invalidop(NULL, code);
 		break;
 	case 0xF3:
 		if (HumongousFlag)
