@@ -1332,6 +1332,29 @@ void next_line_V8()
 		addVar(get_word(), -1);
 		break;
 
+	case 0x70:
+		// FIXME - is this correct?!?
+		ext("x" "dim\0"
+				"\x0Apw|dim-scummvar,"
+				"\x0Bpw|dim-string,"
+				"\xCApw|undim"
+				);
+		break;
+	case 0x71:
+		writeArray(get_word(), NULL, pop(), pop());
+		break;
+	case 0x75:
+		writeArray(get_word(), pop(), pop(), pop());
+		break;
+	case 0x76:
+		// FIXME - is this correct?!?
+		ext("x" "assign\0"
+				"\x14wps|assign-string,"
+				"\x15wpl|assign-scummvar-list,"
+				"\x16wplp|assign-2dim-list,"
+				);
+		break;
+
 	case 0x79:
 		ext("lpp|startScript");
 		break;
@@ -1413,6 +1436,10 @@ void next_line_V8()
 
 	case 0xB3:
 		ext("x" "system\0" "\x28|restart," "\x29|quit");
+		break;
+
+	case 0xBA:
+		ext("|kludge");		// ???
 		break;
 
 	case 0xD3:
