@@ -19,10 +19,7 @@
  *
  */
 
-#include "util.h"
 #include "extract.h"
-
-FILE *input, *output_idx, *output_snd;
 
 unsigned int filenums[32768];
 unsigned int offsets[32768];
@@ -31,26 +28,6 @@ char infile_base[256];
 char fbuf_temp[1024];
 char buf[256];
 char tmp[256];
-
-struct lameparams {
-	unsigned int minBitr;
-	unsigned int maxBitr; 
-	unsigned int abr;
-	unsigned int vbr;
-	unsigned int algqual;
-	unsigned int vbrqual;
-	unsigned int silent;
-} encparms = { minBitrDef, maxBitrDef, abrDef, vbrDef, algqualDef, vbrqualDef, 0 };
-
-struct oggencparams {
-	int nominalBitr;
-	int minBitr;
-	int maxBitr;
-	int quality;
-	int silent;
-} oggparms = { -1, -1, -1, oggqualDef, 0 };
-
-int oggmode = 0;
 
 void end(void)
 {
@@ -416,94 +393,6 @@ void showhelp(char *exename)
 	exit(2);
 }
 
-void process_mp3_parms(int argc, char *argv[], int i) {
-	for(; i < argc; i++) {
-		if (strcmp(argv[i], "--vbr") == 0) {
-			encparms.vbr=1;
-			encparms.abr=0;
-		} else if (strcmp(argv[i], "--abr") == 0) {
-			encparms.vbr=0;
-			encparms.abr=1;
-		} else if (strcmp(argv[i], "-b") == 0) {
-			encparms.minBitr = atoi(argv[i + 1]);
-			if ((encparms.minBitr % 8) != 0)
-				encparms.minBitr -= encparms.minBitr % 8;
-			if (encparms.minBitr >160)
-				encparms.minBitr = 160;
-			if (encparms.minBitr < 8)
-				encparms.minBitr=8;
-			i++;
-		} else if (strcmp(argv[i], "-B") == 0) {
-			encparms.maxBitr = atoi(argv[i + 1]);
-			if ((encparms.maxBitr % 8) != 0)
-				encparms.maxBitr -= encparms.maxBitr % 8;
-			if (encparms.maxBitr > 160)
-				encparms.maxBitr = 160;
-			if (encparms.maxBitr < 8)
-				encparms.maxBitr = 8;
-			i++;
-		} else if (strcmp(argv[i], "-V") == 0) {
-			encparms.vbrqual = atoi(argv[i + 1]);
-			if(encparms.vbrqual < 0)
-				encparms.vbrqual = 0;
-			if(encparms.vbrqual > 9)
-				encparms.vbrqual = 9;
-			i++;
-		} else if (strcmp(argv[i], "-q") == 0) {
-			encparms.algqual = atoi(argv[i + 1]);
-			if (encparms.algqual < 0)
-				encparms.algqual = 0;
-			if (encparms.algqual > 9)
-				encparms.algqual = 9;
-			i++;
-		} else if (strcmp(argv[i], "--silent") == 0) {
-			encparms.silent = 1;
-		} else if (strcmp(argv[i], "--help") == 0) {
-			showhelp(argv[0]);
-		} else if (argv[i][0] == '-') {
-			showhelp(argv[0]);
-		} else {
-			break;
-		}
-	}
-	if (i != (argc - 1)) {
-		showhelp(argv[0]);
-	}
-}
-
-void process_ogg_parms(int argc, char *argv[], int i) {
-	for (; i < argc; i++) {
-		if (strcmp(argv[i], "-b") == 0) {
-			oggparms.nominalBitr = atoi(argv[i + 1]);
-			i++;
-		}
-		else if (strcmp(argv[i], "-m") == 0) {
-			oggparms.minBitr = atoi(argv[i + 1]);
-			i++;
-		}
-		else if (strcmp(argv[i], "-M") == 0) {
-			oggparms.maxBitr = atoi(argv[i + 1]);
-			i++;
-		}
-		else if (strcmp(argv[i], "-q") == 0) {
-			oggparms.quality = atoi(argv[i + 1]);
-			i++;
-		}
-		else if (strcmp(argv[i], "--silent") == 0) {
-			oggparms.silent = 1;
-		}
-		else if (strcmp(argv[i], "--help") == 0) {
-			showhelp(argv[0]);
-		}
-		else if (argv[i][0] == '-') {
-			showhelp(argv[0]);
-		}
-		else
-			break;
-	}
-	if (i != argc - 1)
-		showhelp(argv[0]);
-}
 
 void convert_pc(char *infile)
 {

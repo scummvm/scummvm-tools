@@ -1,5 +1,5 @@
 /* Scumm Tools
- * Copyright (C) 2002, 2003  The ScummVM Team
+ * Copyright (C) 2003  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +22,9 @@
 #ifndef EXTRACT_H
 #define EXTRACT_H
 
+#include "util.h"
+
+
 /* These are the defaults parameters for the Lame invocation */
 #define minBitrDef 24
 #define maxBitrDef 64
@@ -33,7 +36,43 @@
 /* The default for oggenc invocation is to use the --quality option only */
 #define oggqualDef 3
 
+typedef struct  {
+	uint32 minBitr;
+	uint32 maxBitr; 
+	uint32 abr;
+	uint32 vbr;
+	uint32 algqual;
+	uint32 vbrqual;
+	uint32 silent;
+} lameparams;
 
+typedef struct {
+	int nominalBitr;
+	int minBitr;
+	int maxBitr;
+	int quality;
+	int silent;
+} oggencparams;
+
+
+/*
+ * Stuff which is in extract-common.c
+ */
+extern FILE *input, *output_idx, *output_snd;
+
+extern lameparams encparms;
+extern oggencparams oggparms;
+
+extern int oggmode;
+
+extern void process_mp3_parms(int argc, char *argv[], int i);
+extern void process_ogg_parms(int argc, char *argv[], int i);
+
+
+/*
+ * Stuff which is in extract.c / simon2mp3.c
+ */
+extern void showhelp(char *exename);
 
 
 #endif

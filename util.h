@@ -49,19 +49,16 @@ typedef unsigned char byte;
 typedef unsigned char uint8;
 typedef unsigned short uint16;
 typedef unsigned int uint32;
-typedef unsigned int uint;
 typedef signed char int8;
 typedef signed short int16;
 typedef signed int int32;
 
-uint32 inline SWAP_32(uint32 a)
-{
+static uint32 inline SWAP_32(uint32 a) {
 	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
 		((a << 24) & 0xFF000000);
 }
 
-uint16 inline SWAP_16(uint16 a)
-{
+static uint16 inline SWAP_16(uint16 a) {
 	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
 }
 

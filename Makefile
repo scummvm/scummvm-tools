@@ -29,7 +29,7 @@ all: $(TARGETS)
 descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
-extract$(EXEEXT): extract.o
+extract$(EXEEXT): extract.o extract-common.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 mm_nes_extract$(EXEEXT): mm_nes_extract.o
@@ -44,12 +44,12 @@ rescumm$(EXEEXT): rescumm.o
 simon1decr$(EXEEXT): simon1decr.o
 	$(CC) $(LFLAGS) -o $@ $+
 
-simon2mp3$(EXEEXT): simon2mp3.o
+simon2mp3$(EXEEXT): simon2mp3.o extract-common.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
-extract.o simon2mp3.o: util.h extract.h
+extract.o simon2mp3.o extract-common.o: util.h extract.h
 
 clean:
 	rm -f *.o $(TARGETS)

@@ -25,6 +25,7 @@
 
 #include "util.h"
 
+typedef unsigned int uint;
 
 //
 // The block stack records jump instructions
