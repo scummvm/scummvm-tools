@@ -217,7 +217,22 @@ const char *var_names345[] = {
 	"VAR_MOUSE_X",
 	"VAR_MOUSE_Y",
 	"VAR_TIMER",
-	"VAR_TMR_4"
+	"VAR_TMR_4",
+	/* 48 */
+	"VAR_SOUNDCARD",
+	"VAR_VIDEOMODE",
+	"VAR_MAINMENU_KEY",
+	"VAR_FIXEDDISK",
+	/* 52 */
+	"VAR_CURSORSTATE",
+	"VAR_USERPUT",
+	NULL,
+	NULL,
+	/* 56 */
+	"VAR_SOUNDRESULT",
+	"VAR_TALKSTOP_KEY",
+	NULL,
+	NULL
 };
 
 
