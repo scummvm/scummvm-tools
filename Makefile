@@ -30,7 +30,7 @@ TARGETS := \
 
 all: $(TARGETS)
 
-compress_san$(EXEEXT): compress_san.o uti.o
+compress_san$(EXEEXT): compress_san.o util.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
 convbdf$(EXEEXT): convbdf.o util.o
