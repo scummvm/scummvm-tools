@@ -1601,7 +1601,7 @@ void next_line_V8(char *output)
 				"\x75p|setActorAlwayZClip?,"
 				"\x76|setActorIgnoreBoxes,"
 				"\x77|setActorFollowBoxes,"
-				"\x78p|actorSpecialDraw,"
+				"\x78p|setShadowMode,"
 				"\x79pp|setActorTalkPos,"
 				"\x7Ap|setCurActor,"
 				"\x7Bpp|setActorAnimVar,"
