@@ -73,7 +73,8 @@
 
 typedef unsigned char byte;
 
-void get_tok(char *buf);
+void get_tok_V2(char *buf);
+void get_tok_V3(char *buf);
 
 #define JUMP_OPCODE 0x18
 
@@ -105,6 +106,7 @@ byte DontOutputElseif;
 byte DontShowOpcode;
 byte DontShowOffsets;
 byte HaltOnError;
+byte ScriptVersion = 2;
 
 
 int get_curpos();
@@ -189,8 +191,12 @@ const char *get_num_string(int i)
 char *get_var(char *buf)
 {
 	char *buf2;
+	int i;
 
-	int i = get_word();
+	if (ScriptVersion == 2)
+		i = get_byte();
+	else
+		i = get_word();
 
 	// fIXME this should be for zak256 as well
 	if ((i & 0x8000) && (GF_UNBLOCKED)) 
@@ -550,6 +556,35 @@ int HavePendingElse()
 	return PendingElse;
 }
 
+void do_actorset_v2(char *buf, byte opcode)
+{
+	buf = do_tok(buf, "ActorSet", ((opcode & 0x80) ? A1V : A1B) | ANOLASTPAREN);
+	buf = strecpy(buf, ",[");
+
+	opcode = get_byte();
+
+	switch(opcode) {
+		case 1:
+			buf = do_tok(buf, "Sound", ((opcode & 0x40) ? A1V : A1B));
+			break;
+		case 2:
+			buf = do_tok(buf, "Colour", ((opcode & 0x40) ? A1V : A1B) | A2B);
+			break;
+		case 3:
+			buf = do_tok(buf, "Name", A1ASCII);
+			break;
+		case 4:
+			buf = do_tok(buf, "Costume", ((opcode & 0x40) ? A1V : A1B));
+			break;
+		case 5:
+			buf = do_tok(buf, "TalkColor", ((opcode & 0x40) ? A1V : A1B));
+			break;
+		default:
+			buf += sprintf(buf, "Unknown%.2X()", opcode);
+	}
+	strecpy(buf, "]);");
+
+}
 
 void do_actorset(char *buf, byte opcode)
 {
@@ -753,7 +788,10 @@ void do_expr_code(char *buf)
 
 		case 0x6:
 			buf2 = strecpy(buf, "<");
-			get_tok(buf2);
+			if (ScriptVersion == 2)
+				get_tok_V2(buf2);
+			else
+				get_tok_V3(buf2);
 			strecpy(strchr(buf2, 0), ">");
 			AddToExprStack(buf);
 			break;
@@ -798,7 +836,10 @@ void do_expr_code(char *buf)
 			break;
 		case 0x6:
 			sprintf(buf, "CALL (%.2X) ", *cur_pos);
-			get_tok(strchr(buf, 0));
+			if (ScriptVersion == 2)
+				get_tok_V2(strchr(buf, 0));
+			else
+				get_tok_V3(strchr(buf, 0));
 			break;
 		default:
 			sprintf(buf, "UNKNOWN %d", i);
@@ -1392,8 +1433,6 @@ void do_unconditional_jump(char *buf, byte opcode)
 }
 
 
-
-
 void do_varset_code(char *buf, byte opcode)
 {
 	char *s;
@@ -1448,7 +1487,605 @@ void do_matrix_ops(char *buf, byte opcode)
 	do_tok(buf, "setBoxFlags", ((opcode & 0x80) ? A1V : A1B) | A2B);
 }
 
-void get_tok(char *buf)
+void get_tok_V2(char *buf)
+{
+	byte opcode = get_byte();
+
+	switch (opcode) {
+	
+	case 0x58:
+		do_tok(buf, "beginOverride", 0);
+		break;
+	case 0x52:
+	case 0xD2:
+		do_tok(buf, "actorFollowCamera", ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x15:
+	case 0x55:
+	case 0x95:
+	case 0xD5:
+		do_tok(buf, "actorFromPos",
+					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | AVARSTORE);
+		break;
+	case 0x13:
+	case 0x53:
+	case 0x93:
+	case 0xD3:
+		// actorSet
+		do_actorset_v2(buf, opcode);
+		break;
+
+	case 0x5A:
+	case 0xDA:
+		do_varset_code(buf, opcode);
+		break;
+/*		
+	case 0x2A:
+	case 0xAA:
+		// addDirect
+		break;
+*/
+	case 0x11:
+	case 0x51:
+	case 0x91:
+	case 0xD1:
+		// animateActor
+		do_tok(buf, "animateActor", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+/*
+	case 0x2C:
+		// assignVarByte
+		break;
+	case 0x9A:
+		// assignVarWord
+		break;
+	case 0x0A:
+	case 0x8A:
+		// assignVarWordDirect
+		break;
+*/
+	case 0x80:
+		do_tok(buf, "breakHere", 0);
+		break;
+/*
+	case 0x4A:
+	case 0xCA:
+		// chainScript
+		break;
+	case 0x77:
+	case 0xF7:
+		// clearState01
+		break;
+	case 0x67:
+	case 0xE7:
+		// clearState04
+		break;
+	case 0xC7:
+		// clearState08
+		break;
+	case 0x60:
+	case 0xE0:
+		//cursorCommand
+		break;
+	case 0x40:
+		//cutscene
+		break;
+*/
+	case 0xC6:
+		//decrement
+		do_varset_code(buf, opcode);
+		break;
+/*			
+	case 0x2E:
+		//delay
+		break;
+	case 0x2B:
+		//delayVariable
+		break;
+	case 0x19:
+	case 0x39:
+	case 0x59:
+	case 0x79:
+	case 0x99:
+	case 0xB9:
+	case 0xD9:
+	case 0xF9:
+		//doSentence
+		break;
+*/
+	case 0x05:
+	case 0x25:
+	case 0x45:
+	case 0x65:
+	case 0x85:
+	case 0xA5:
+	case 0xC5:
+	case 0xE5:
+		//drawObject
+		buf = do_tok(buf, "drawObject",
+					 ((opcode & 0x80) ? A1V : A1B) |
+					 ((opcode & 0x40) ? A2V : A2B) |
+					 ((opcode & 0x20) ? A3V : A3B));
+		break;
+/*	
+	case 0xAC:
+		//drawSentence
+		break;
+	case 0x5C:
+	case 0x6B:
+	case 0x6E:
+	case 0xAB:
+	case 0xDC:
+	case 0xEB:
+	case 0xEE:
+		//dummy
+		break;
+		
+	case 0xC0:
+		//endCutscene
+		break;
+*/
+	case 0x28:
+		//equalZero
+		do_if_code(buf, opcode);
+		break;
+	case 0x09:
+	case 0x49:
+	case 0x89:
+	case 0xC9:
+		do_tok(buf, "faceActor", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+	case 0x35:
+	case 0x75:
+	case 0xB5:
+	case 0xF5:
+		do_tok(buf, "findObject",
+					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+		break;
+	case 0x71:
+	case 0xF1:
+		do_tok(buf, "getActorCostume", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x06:
+	case 0x86:
+		do_tok(buf, "getActorElevation", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x63:
+	case 0xE3:
+		do_tok(buf, "getActorFacing", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x56:
+	case 0xD6:
+		do_tok(buf, "getActorMoving", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x03:
+	case 0x83:
+		do_tok(buf, "getActorRoom", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+/*
+	case 0x7B:
+	case 0xFB:
+		//getActorWalkBox
+		break;
+		
+	case 0x43:
+	case 0xC3:
+		//getActorX
+		break;
+	case 0x23:
+	case 0xA3:
+		//getActorY
+		break;
+	case 0x31:
+	case 0xB1:
+		//getBitVar
+		break;
+
+*/		
+	case 0x66:
+	case 0xE6:
+		do_tok(buf, "getClosestObjActor", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x34:
+	case 0x74:
+	case 0xB4:
+	case 0xF4:
+		do_tok(buf, "getDist",
+					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+		break;
+	case 0x10:
+	case 0x90:
+		do_tok(buf, "getObjectOwner", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
+		break;
+/*
+	case 0x6C:
+	case 0xEC:
+		//getObjY
+		break;
+*/		
+	case 0x16:
+	case 0x96:
+		do_tok(buf, "getRandomNr", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+/*
+	case 0x1D:
+	case 0x5D:
+	case 0x9D:
+	case 0xDD:
+		//ifClassOfIs
+		break;
+		
+	case 0x3F:
+	case 0x7F:
+	case 0xBF:
+		//ifNotState01
+		break;
+		
+	case 0x5F:
+	case 0xDF:
+		//ifNotState02
+		break;
+		
+	case 0x27:
+	case 0x2F:
+	case 0xAF:
+		//ifNotState04
+		break;
+		
+	case 0x0F:
+	case 0x8F:
+		//ifNotState08
+		break;
+	case 0xFF:
+		//ifState01
+		break;
+		
+	case 0x1F:
+	case 0x9F:
+		//ifState02
+		break;
+		
+	case 0x6F:
+	case 0xEF:
+		//ifState04
+		break;
+		
+	case 0x4F:
+	case 0xCF:
+		//ifState08
+		break;
+		
+	case 0x46:
+		//increment
+		break;
+*/
+	case 0x48:
+	case 0xC8:
+		//isEqual
+		do_if_code(buf, opcode);
+		break;
+			
+	case 0x78:
+	case 0xF8:
+		//isGreater
+		do_if_code(buf, opcode);
+		break;
+		
+	case 0x04:
+	case 0x84:
+		//isGreaterEqual
+		do_if_code(buf, opcode);
+		break;
+	case 0x44:
+	case 0xC4:
+		//isLess
+		do_if_code(buf, opcode);
+		break;
+		
+	case 0x08:
+	case 0x88:
+		//isNotEqual
+		do_if_code(buf, opcode);
+		break;
+
+	case 0x68:
+	case 0xE8:
+		do_tok(buf, "isScriptRunning", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x7C:
+	case 0xFC:
+		do_tok(buf, "isSoundRunning", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x18:
+		// jumpRelative
+		do_unconditional_jump(buf, opcode);
+		break;
+/*
+	case 0x38:
+	case 0xB8:
+		//lessOrEqual
+		break;
+*/		
+	case 0x70:
+	case 0xF0:
+		buf = do_tok(buf, "lights", ((opcode & 0x80) ? A1V : A1B) | A2B | A3B);
+		break;
+	case 0x72:
+	case 0xF2:
+		do_tok(buf, "loadRoom", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x24:
+	case 0x64:
+	case 0xA4:
+	case 0xE4:
+		//loadRoomWithEgo
+		buf =
+			do_tok(buf, "loadRoomWithEgo",
+						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ANOLASTPAREN);
+		do_tok(buf, NULL, A1B | A2B | ANOFIRSTPAREN | ASTARTCOMMA);
+		break;
+/*			
+	case 0x30:
+	case 0xB0:
+		//matrixOps
+		break;
+*/	
+	case 0x1A:
+		//move
+		do_varset_code(buf, opcode);
+		break;
+/*
+	case 0xA8:
+		//notEqualZero
+		break;
+*/			
+	case 0x12:
+	case 0x92:
+		//panCameraTo
+		do_tok(buf, "panCameraTo", ((opcode & 0x80) ? A1V : A1W));
+		break;
+/*
+	case 0x50:
+	case 0xD0:
+		//pickupObject
+		break;
+*/		
+	case 0x14:
+	case 0x94:
+		// print
+		do_print_ego(buf, opcode);
+		break;
+	case 0xD8:
+		//printEgo
+		do_print_ego(buf, opcode);
+		break;
+		
+	case 0xCC:
+		// pseudoRoom
+		do_cc(buf);
+		break;
+	case 0x01:
+	case 0x21:
+	case 0x41:
+	case 0x61:
+	case 0x81:
+	case 0xA1:
+	case 0xC1:
+	case 0xE1:
+		do_tok(buf, "putActor",
+					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W) |
+					 ((opcode & 0x20) ? A3V : A3W));
+		break;
+/*
+	case 0x0E:
+	case 0x4E:
+	case 0x8E:
+	case 0xCE:
+		//putActorAtObject
+		break;
+*/
+	case 0x2D:
+	case 0x6D:
+	case 0xAD:
+	case 0xED:
+		do_tok(buf, "putActorInRoom", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+/*
+	case 0x0C:
+	case 0x8C:
+		//resourceRoutines
+		break;
+*/
+	case 0x98:
+		do_tok(buf, "restart", 0);
+		break;
+/*		
+	case 0x33:
+	case 0x73:
+	case 0xB3:
+	case 0xF3:
+		//roomOps
+		break;
+		
+	case 0x22:
+	case 0xA2:
+		//saveLoadGame
+		break;
+	
+	case 0x3D:
+	case 0x7D:
+	case 0xBD:
+	case 0xFD:
+		//setActorElevation
+		break;
+		
+	case 0x1B:
+	case 0x5B:
+	case 0x9B:
+	case 0xDB:
+		//setBitVar
+		break;
+	case 0x32:
+	case 0xB2:
+		//setCameraAt
+		break;
+			
+	case 0x54:
+	case 0xD4:
+		//setObjectName
+		break;
+*/		
+	case 0x0B:
+	case 0x4B:
+	case 0x8B:
+	case 0xCB:
+		//setObjY
+		buf = do_tok(buf, "setObjY", ((opcode & 0x80) ? A1V : A1W) | A2B);
+		break;
+/*
+	case 0x29:
+	case 0x69:
+	case 0xA9:
+	case 0xE9:
+		//setOwnerOf
+		break;
+		
+	case 0x37:
+		//setState01
+		break;
+		
+	case 0x57:
+	case 0x97:
+	case 0xB7:
+	case 0xD7:
+		//setState02
+		break;
+		
+	case 0x17:
+	case 0xA7:
+		//setState04
+		break;
+	case 0x07:
+	case 0x47:
+	case 0x87:
+		//setState08
+		break;
+*/
+	case 0x26:
+	case 0xA6: {
+			int i;
+			char first = 1;
+
+			buf = do_tok(buf, "setVarRange", A1V | ANOLASTPAREN);
+			i = get_byte();
+
+			buf += sprintf(buf, ",%d,[", i);
+
+			while (i > 0) {
+				if (!first)
+					buf = strecpy(buf, ",");
+				first = 0;
+
+				buf += sprintf(buf, "%d", (opcode & 0x80) ? get_word() : get_byte());
+				i--;
+			}
+
+			strcpy(buf, "];");
+
+		}
+		break;
+
+	case 0x02:
+	case 0x82:
+		do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x42:
+	case 0xC2:
+		//startScript
+		do_tok(buf, "startScriptAA", ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
+		break;
+		
+	case 0x1C:
+	case 0x9C:
+		do_tok(buf, "startSound", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x20:
+		do_tok(buf, "stopMusic", 0);
+		break;
+	case 0x00:
+	case 0xA0:
+		do_tok(buf, "stopObjectCode", 0);
+		break;
+	case 0x62:
+	case 0xE2:
+		do_tok(buf, "stopScript", ((opcode & 0x80) ? A1V : A1B));
+		break;
+		
+	case 0x3C:
+	case 0xBC:
+		do_tok(buf, "stopSound", ((opcode & 0x80) ? A1V : A1B));
+		break;
+/*
+	case 0x3A:
+	case 0xBA:
+		//subtract
+		break;
+	case 0x6A:
+	case 0xEA:
+		//subDirect
+		break;
+				
+	case 0x7A:
+	case 0xFA:
+		// verbOps
+		break;
+			
+	case 0x3B:
+	case 0xBB:
+		// waitForActor
+		break;
+			
+	case 0x4C:
+	case 0xAE:
+		// waitForSentence
+		break;
+			
+	case 0x3E:
+	case 0x5E:
+	case 0x7E:
+	case 0x9E:
+	case 0xBE:
+	case 0xDE:
+	case 0xFE:
+		// walkActorTo
+		break;
+*/		
+	case 0x0D:
+	case 0x4D:
+	case 0x8D:
+	case 0xCD:
+		do_tok(buf, "walkActorToActor",
+					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
+		break;			
+	case 0x36:
+	case 0x76:
+	case 0xB6:
+	case 0xF6:
+		// walkActorToObject
+		break;
+	default:
+		printf("unimplemented case %x\n", opcode);
+		exit(1);
+	}
+
+		
+}
+
+void get_tok_V3(char *buf)
 {
 	byte opcode = get_byte();
 
@@ -2121,6 +2758,7 @@ void ShowHelpAndExit()
 				 "Syntax:\n"
 				 "\tdescumm [-o] filename\n"
 				 "Flags:\n"
+				 "\t-2\tInput Script is v2\n"
 				 "\t-3\tUse Indy3-256 specific hacks\n"
 				 "\t-u\tScript is Unblocked/has no header\n"
 				 "\t-o\tAlways Show offsets\n"
@@ -2171,6 +2809,10 @@ int main(int argc, char *argv[])
 			s++;
 			while (*s) {
 				switch (tolower(*s)) {
+				case '2':
+					ScriptVersion = 2;
+					GF_UNBLOCKED = true;
+					break;
 				case '3':
 					gameFlag = 1; // Indy3
 					break;
@@ -2262,7 +2904,10 @@ int main(int argc, char *argv[])
 		int j = NumBlockStack;
 		byte opcode = *cur_pos;
 		curoffs = cur_pos - mem;
-		get_tok(buf);
+		if (ScriptVersion == 2)
+			get_tok_V2(buf);
+		else
+			get_tok_V3(buf);
 		if (buf[0]) {
 			WritePendingElse();
 			if (HaveElse) {
