@@ -881,7 +881,7 @@ void do_room_ops(char *buf)
 						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) |
 						 ((opcode & 0x20) ? A3V : A3W) | ANOLASTPAREN);
 		opcode = get_byte();
-		buf = do_tok(buf, NULL, ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W));
+		buf = do_tok(buf, NULL, ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B));
 		break;
 	case 0x05:
 		do_tok(buf, "ShakeOn", 0);
@@ -3130,7 +3130,7 @@ int main(int argc, char *argv[])
 		}
 		switch (TO_LE_16(*((uint16 *)mem + 2))) {
 		case MKID('LS'):
-			printf("Script# %d\n", (byte)mem[8]);
+			printf("Script# %d\n", (byte)mem[6]);
 			mem += 7;
 			break;			/* Local script */
 		case MKID('SC'):
