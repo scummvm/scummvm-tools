@@ -6,7 +6,7 @@ CFLAGS  := -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-m
 LDFLAGS :=
 
 # Uncomment this if you are on a big endian system
-# CFLAGS += -DSCUMM_BIG_ENDIAN
+CFLAGS += -DSCUMM_BIG_ENDIAN
 
 TARGETS := descumm3$(EXEEXT) descumm5$(EXEEXT) descumm6$(EXEEXT) extract$(EXEEXT) rescumm$(EXEEXT) simon2mp3$(EXEEXT)
 
