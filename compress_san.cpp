@@ -22,6 +22,17 @@
 #include "util.h"
 #include "zlib.h"
 
+inline uint16 READ_LE_UINT16(const void *ptr) {
+	const byte *b = (const byte *)ptr;
+	return (b[1] << 8) + b[0];
+}
+
+inline void WRITE_LE_UINT16(void *ptr, uint16 value) {
+	byte *b = (byte *)ptr;
+	b[0] = (byte)(value >> 0);
+	b[1] = (byte)(value >> 8);
+}
+
 const char *tag2str(uint32 tag) {
 	static char str[5];
 	str[0] = (char)(tag >> 24);
@@ -422,16 +433,16 @@ void mixing(char *outputDir, char *inputFilename, int frames, int fps) {
 				}
 
 				for (r = 0; r < length; r += 4) {
-					int16 wavSampleL = *(int16 *)(wavBuf + offset + r + 0);
-					int16 wavSampleR = *(int16 *)(wavBuf + offset + r + 2);
-					int32 tmpSampleL = *(int16 *)(tmpBuf + offset + r + 0);
-					int32 tmpSampleR = *(int16 *)(tmpBuf + offset + r + 2);
+					int16 wavSampleL = READ_LE_UINT16((int16 *)(wavBuf + offset + r + 0));
+					int16 wavSampleR = READ_LE_UINT16((int16 *)(wavBuf + offset + r + 2));
+					int32 tmpSampleL = READ_LE_UINT16((int16 *)(tmpBuf + offset + r + 0));
+					int32 tmpSampleR = READ_LE_UINT16((int16 *)(tmpBuf + offset + r + 2));
 					tmpSampleL = (tmpSampleL * volume) / 255;
 					tmpSampleR = (tmpSampleR * volume) / 255;
 					clampedAdd(wavSampleL, tmpSampleL);
 					clampedAdd(wavSampleR, tmpSampleR);
-					*(int16 *)(wavBuf + offset + r + 0) = wavSampleL;
-					*(int16 *)(wavBuf + offset + r + 2) = wavSampleR;
+					WRITE_LE_UINT16((wavBuf + offset + r + 0), wavSampleL);
+					WRITE_LE_UINT16((wavBuf + offset + r + 2), wavSampleR);
 				}
 				offset += length;
 			}
