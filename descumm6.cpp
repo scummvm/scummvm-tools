@@ -668,6 +668,10 @@ void ext(const char *fmt)
 
 		if (cmd == 'p') {
 			args[numArgs++] = pop();
+		} else if (cmd == 'z') {	// = popRoomAndObj()
+			args[numArgs++] = pop();
+			if (scriptVersion < 7)
+				args[numArgs++] = pop();
 		} else if (cmd == 's') {
 			args[numArgs++] = se_get_string();
 		} else if (cmd == 'w') {
@@ -1013,7 +1017,10 @@ void next_line()
 				"\x96|softUserputOn,"
 				"\x97|softUserputOff,"
 				"\x99pp|setCursorImg,"
-				"\x9App|setCursorHotspot," "\x9Cp|initCharset," "\x9Dl|charsetColors," "\xD6p|new_unk_1");
+				"\x9App|setCursorHotspot,"
+				"\x9Cp|initCharset,"
+				"\x9Dl|charsetColors,"
+				"\xD6p|makeCursorColorTransparent");
 		break;
 	case 0x6C:
 		ext("|break");
@@ -1052,13 +1059,19 @@ void next_line()
 		ext("p|stopObjectScript");
 		break;
 	case 0x78:
-		ext("p|panCameraTo");
+		if (scriptVersion < 7)
+			ext("p|panCameraTo");
+		else
+			ext("pp|panCameraTo");
 		break;
 	case 0x79:
 		ext("p|actorFollowCamera");
 		break;
 	case 0x7A:
-		ext("p|setCameraAt");
+		if (scriptVersion < 7)
+			ext("p|setCameraAt");
+		else
+			ext("pp|setCameraAt");
 		break;
 	case 0x7B:
 		ext("p|loadRoom");
@@ -1076,7 +1089,7 @@ void next_line()
 		ext("pppp|putActorInRoom");
 		break;
 	case 0x80:
-		ext("ppp|putActorAtObject");
+		ext("zp|putActorAtObject");
 		break;
 	case 0x81:
 		ext("pp|faceActor");
@@ -1088,13 +1101,10 @@ void next_line()
 		ext("pppp|doSentence");
 		break;
 	case 0x84:
-		if (scriptVersion < 7)
-			ext("pp|pickupObject");
-		else
-			ext("p|pickupObject");
+		ext("z|pickupObject");
 		break;
 	case 0x85:
-		ext("pppp|loadRoomWithEgo");
+		ext("ppzp|loadRoomWithEgo");
 		break;
 	case 0x87:
 		ext("rp|getRandomNumber");
@@ -1154,18 +1164,11 @@ void next_line()
 		ext("|createBoxMatrix");
 		break;
 	case 0x9B:
-		if (scriptVersion < 7)
-			ext("x" "resourceRoutines\0" "\x64p|loadScript," "\x65p|loadSound," "\x66p|loadCostume," 
-				"\x67p|loadRoom," "\x68p|nukeScript," "\x69p|nukeSound," "\x6Ap|nukeCostume,"
-				"\x6Bp|nukeRoom," "\x6Cp|lockScript," "\x6Dp|lockSound," "\x6Ep|lockCostume,"
- 				"\x6Fp|lockRoom," "\x70p|unlockScript," "\x71p|unlockSound," "\x72p|unlockCostume,"
-				"\x73p|unlockRoom," "\x75p|loadCharset," "\x76p|nukeCharset," "\x77pp|unkResProc");
-		else
-			ext("x" "resourceRoutines\0" "\x64p|loadScript," "\x65p|loadSound," "\x66p|loadCostume," 
-				"\x67p|loadRoom," "\x68p|nukeScript," "\x69p|nukeSound," "\x6Ap|nukeCostume,"
-				"\x6Bp|nukeRoom," "\x6Cp|lockScript," "\x6Dp|lockSound," "\x6Ep|lockCostume,"
- 				"\x6Fp|lockRoom," "\x70p|unlockScript," "\x71p|unlockSound," "\x72p|unlockCostume,"
-				"\x73p|unlockRoom," "\x75p|loadCharset," "\x76p|nukeCharset," "\x77p|unkResProc");
+		ext("x" "resourceRoutines\0" "\x64p|loadScript," "\x65p|loadSound," "\x66p|loadCostume," 
+			"\x67p|loadRoom," "\x68p|nukeScript," "\x69p|nukeSound," "\x6Ap|nukeCostume,"
+			"\x6Bp|nukeRoom," "\x6Cp|lockScript," "\x6Dp|lockSound," "\x6Ep|lockCostume,"
+			"\x6Fp|lockRoom," "\x70p|unlockScript," "\x71p|unlockSound," "\x72p|unlockCostume,"
+			"\x73p|unlockRoom," "\x75p|loadCharset," "\x76p|nukeCharset," "\x77z|loadFlObject");
 		break;
 	case 0x9C:
 		ext("x" "roomOps\0"
@@ -1179,7 +1182,9 @@ void next_line()
 				"\xB5p|screenEffect,"
 				"\xB6ppppp|unkRoomFunc2,"
 				"\xB7ppppp|unkRoomFunc3,"
-				"\xBApppp|palManipulate," "\xBBpp|colorCycleDelay," "\xD5p|setPalette");
+				"\xBApppp|palManipulate,"
+				"\xBBpp|colorCycleDelay,"
+				"\xD5p|setPalette");
 		break;
 	case 0x9D:
 		ext("x" "actorSet\0"
