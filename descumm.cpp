@@ -1901,10 +1901,13 @@ void get_tok_V2(char *buf)
 	case 0x60:
 	case 0xE0:
 		//cursorCommand
-		sprintf(buf, "UnknownCursorCommand%.2X", opcode);
+		do_tok(buf, "cursorCommand", ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x40:
 		sprintf(buf, "cutscene");
+		break;
+	case 0xC0:
+		sprintf(buf, "endCutscene");
 		break;
 
 	case 0x46:
@@ -1977,11 +1980,6 @@ void get_tok_V2(char *buf)
 		sprintf(buf, "dummy(%.2X)", opcode);
 		
 		break;
-/*		
-	case 0xC0:
-		//endCutscene
-		break;
-*/
 
 	case 0x09:
 	case 0x49:
@@ -2034,8 +2032,16 @@ void get_tok_V2(char *buf)
 
 	case 0x31:
 	case 0xB1:
-		// FIXME
+		// FIXME - maybe this could be displayed a bit nicer?
 		do_tok(buf, "getBitVar", AVARSTORE | A1B | A2B | ((opcode & 0x80) ? A3V : A3B));
+		break;
+
+	case 0x1B:
+	case 0x5B:
+	case 0x9B:
+	case 0xDB:
+		// FIXME - maybe this could be displayed a bit nicer?
+		do_tok(buf, "setBitVar", AVARSTORE | A1B | A2B | ((opcode & 0x80) ? A3V : A3B) | ((opcode & 0x40) ? A4V : A4B));
 		break;
 
 	case 0x66:
