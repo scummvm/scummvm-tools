@@ -62,6 +62,7 @@ switch/case statements, too, so it's possible they used that in Scumm, too.
  which they can't decode correctly, leading to completely wrong output. An example
  can be seen by looking at script 52 of Sam&Max. It gets descummed to this:
  
+	[002E] (43)   localvar1 = 6
 	[0037] (5D)   while (localvar1 <= 80) {
 	[0041] (5D)     if (array-178[localvar1] == 0) {
 	[004E] (47)       array-178[localvar0] = localvar1
@@ -71,8 +72,11 @@ switch/case statements, too, so it's possible they used that in Scumm, too.
 	[0060] (73)       jump 37
 	[0063] (**)     }
 	[0063] (**)   }
+	[0063] (**) }
+	[0063] (66) stopObjectCodeB()
  
  Using "-e" we get the correct result:
+	[002E] (43)   localvar1 = 6
 	[0037] (5D)   while (localvar1 <= 80) {
 	[0041] (5D)     if (array-178[localvar1] == 0) {
 	[004E] (47)       array-178[localvar0] = localvar1
@@ -81,8 +85,22 @@ switch/case statements, too, so it's possible they used that in Scumm, too.
 	[005D] (**)     }
 	[005D] (4F)     localvar1 += 1
 	[0063] (**)   }
-*/
+	[0063] (**) }
+	[0060] (66) stopObjectCodeB()
+(but note the wrong offset in the last line!)
 
+When doing raw output, we get this:
+	[0031] (43) localvar1 = 6
+	[0037] (5D) unless ((localvar1 <= 80)) jump 63
+	[0041] (5D) unless ((array-178[localvar1] == 0)) jump 5d
+	[004E] (47) array-178[localvar0] = localvar1
+	[0057] (4F) var179 += 1
+	[005A] (73) jump 63
+	[005D] (4F) localvar1 += 1
+	[0060] (73) jump 37
+	[0063] (66) stopObjectCodeB()
+
+*/
 
 
 struct StackEnt {
@@ -146,8 +164,6 @@ static const char *oper_list[] = {
 static StackEnt *stack[128];
 static int num_stack = 0;
 bool HumongousFlag = false;
-
-char *output = 0;	// FIXME: it is evil to have a global output buffer like this
 
 const char *var_names6[] = {
 	/* 0 */
@@ -684,10 +700,9 @@ void push(StackEnt * se)
 void invalidop(const char *cmd, int op)
 {
 	if (cmd)
-		printf("ERROR: Unknown opcode %s:0x%x (stack count %d)\n", cmd, op, num_stack);
+		error("Unknown opcode %s:0x%x (stack count %d)", cmd, op, num_stack);
 	else
-		printf("ERROR: Unknown opcode 0x%x (stack count %d)\n", op, num_stack);
-	exit(1);
+		error("Unknown opcode 0x%x (stack count %d)", op, num_stack);
 }
 
 StackEnt *se_new(int type)
@@ -861,7 +876,7 @@ StackEnt *pop()
 }
 
 
-void kill(StackEnt * se)
+void kill(char *output, StackEnt * se)
 {
 	if (se->type != seDup) {
 		char *e = strecpy(output, "pop(");
@@ -873,7 +888,7 @@ void kill(StackEnt * se)
 	}
 }
 
-void doAssign(StackEnt * dst, StackEnt * src)
+void doAssign(char *output, StackEnt * dst, StackEnt * src)
 {
 	if (src->type == seDup && dst->type == seDup) {
 		dst->data = src->data;
@@ -884,13 +899,13 @@ void doAssign(StackEnt * dst, StackEnt * src)
 	se_astext(src, e);
 }
 
-void doAdd(StackEnt * se, int val)
+void doAdd(char *output, StackEnt * se, int val)
 {
 	char *e = se_astext(se, output);
 	sprintf(e, " += %d", val);
 }
 
-StackEnt *dup(StackEnt * se)
+StackEnt *dup(char *output, StackEnt * se)
 {
 	static int dupindex = 0;
 
@@ -899,35 +914,35 @@ StackEnt *dup(StackEnt * se)
 
 	StackEnt *dse = se_new(seDup);
 	dse->data = ++dupindex;
-	doAssign(dse, se);
+	doAssign(output, dse, se);
 	return dse;
 }
 
-void writeArray(int i, StackEnt * dim2, StackEnt * dim1, StackEnt * value)
+void writeArray(char *output, int i, StackEnt * dim2, StackEnt * dim1, StackEnt * value)
 {
 	StackEnt *array = se_array(i, dim2, dim1);
-	doAssign(array, value);
+	doAssign(output, array, value);
 	se_free(array);
 }
 
-void writeVar(int i, StackEnt * value)
+void writeVar(char *output, int i, StackEnt * value)
 {
 	StackEnt *se = se_var(i);
-	doAssign(se, value);
+	doAssign(output, se, value);
 	se_free(se);
 }
 
-void addArray(int i, StackEnt * dim1, int val)
+void addArray(char *output, int i, StackEnt * dim1, int val)
 {
 	StackEnt *array = se_array(i, NULL, dim1);
-	doAdd(array, val);
+	doAdd(output, array, val);
 	se_free(array);
 }
 
-void addVar(int i, int val)
+void addVar(char *output, int i, int val)
 {
 	StackEnt *se = se_var(i);
-	doAdd(se, val);
+	doAdd(output, se, val);
 	se_free(se);
 }
 
@@ -1009,8 +1024,7 @@ StackEnt *se_get_list()
 	int num, i;
 
 	if (senum->type != seInt) {
-		printf("ERROR: stackList with variable number of arguments, cannot disassemble\n");
-		exit(1);
+		error("stackList with variable number of arguments, cannot disassemble");
 	}
 	se->data = num = senum->data;
 	se->list = (StackEnt **) calloc(num, sizeof(StackEnt *));
@@ -1021,7 +1035,7 @@ StackEnt *se_get_list()
 	return se;
 }
 
-void ext(const char *fmt)
+void ext(char *output, const char *fmt)
 {
 	bool wantresult;
 	byte cmd, extcmd;
@@ -1107,7 +1121,7 @@ void ext(const char *fmt)
 		} else if (cmd == 'j') {
 			args[numArgs++] = se_int(get_word());
 		} else {
-			printf("error in argument string '%s', character '%c' unknown\n", fmt, cmd);
+			error("Character '%c' unknown in argument string '%s', \n", fmt, cmd);
 		}
 	}
 
@@ -1134,7 +1148,7 @@ output_command:
 	}
 }
 
-void jump()
+void jump(char *output)
 {
 	int offset = get_word();
 	int cur = get_curoffs();
@@ -1164,7 +1178,7 @@ void jump()
 	}
 }
 
-void jumpif(StackEnt * se, bool negate)
+void jumpif(char *output, StackEnt * se, bool negate)
 {
 	int offset = get_word();
 	int cur = get_curoffs();
@@ -1204,7 +1218,8 @@ void jumpif(StackEnt * se, bool negate)
 
 #define PRINT_V8(name)            \
 	do {                          \
-		ext("x" name "\0"         \
+		ext(output,               \
+				"x" name "\0"     \
 				"\xC8|baseop,"    \
 				"\xC9|end,"       \
 				"\xCApp|XY,"      \
@@ -1220,7 +1235,7 @@ void jumpif(StackEnt * se, bool negate)
 	} while(0)
 
 
-void next_line_V8()
+void next_line_V8(char *output)
 {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
@@ -1240,12 +1255,12 @@ void next_line_V8()
 		push(se_array(get_word(), pop(), se_a));
 		break;
 	case 0x5:
-		se_a = dup(pop());
+		se_a = dup(output, pop());
 		push(se_a);
 		push(se_a);
 		break;
 	case 0x6:
-		kill(pop());
+		kill(output, pop());
 		break;
 	case 0x7:
 		push(se_oper(pop(), isZero));
@@ -1271,22 +1286,22 @@ void next_line_V8()
 		break;
 		
 	case 0x64:
-		jumpif(pop(), true);
+		jumpif(output, pop(), true);
 		break;
 	case 0x65:
-		jumpif(pop(), false);
+		jumpif(output, pop(), false);
 		break;
 	case 0x66:
-		jump();
+		jump(output);
 		break;
 	case 0x67:
-		ext("|breakHere");
+		ext(output, "|breakHere");
 		break;
 	case 0x68:
-		ext("p|breakHereVar");
+		ext(output, "p|breakHereVar");
 		break;
 	case 0x69:
-		ext("x" "wait\0"
+		ext(output, "x" "wait\0"
 				"\x1Epj|waitForActor,"
 				"\x1F|waitForMessage,"
 				"\x20|waitForCamera,"
@@ -1296,26 +1311,26 @@ void next_line_V8()
 				);
 		break;
 	case 0x6A:
-		ext("p|delay");
+		ext(output, "p|delay");
 		break;
 	case 0x6B:
-		ext("p|delaySeconds");
+		ext(output, "p|delaySeconds");
 		break;
 	case 0x6C:
-		ext("p|delayMinutes");
+		ext(output, "p|delayMinutes");
 		break;
 	case 0x6D:
-		writeVar(get_word(), pop());
+		writeVar(output, get_word(), pop());
 		break;
 	case 0x6E:
-		addVar(get_word(), +1);
+		addVar(output, get_word(), +1);
 		break;
 	case 0x6F:
-		addVar(get_word(), -1);
+		addVar(output, get_word(), -1);
 		break;
 	case 0x70:
 		// FIXME - is this correct?!? Also, make the display nicer...
-		ext("x" "dimArray\0"
+		ext(output, "x" "dimArray\0"
 				"\x0Apw|dim-scummvar,"
 				"\x0Bpw|dim-string,"
 				"\xCAw|undim"
@@ -1323,12 +1338,12 @@ void next_line_V8()
 		break;
 	case 0x71:
 		se_a = pop();
-		writeArray(get_word(), NULL, pop(), se_a);
+		writeArray(output, get_word(), NULL, pop(), se_a);
 		break;
 
 	case 0x74:
 		// FIXME - is this correct?!? Also, make the display nicer...
-		ext("x" "dim2dimArray\0"
+		ext(output, "x" "dim2dimArray\0"
 				"\x0Appw|dim2-scummvar,"
 				"\x0Bppw|dim2-string,"
 				"\xCAw|undim2"
@@ -1337,99 +1352,99 @@ void next_line_V8()
 	case 0x75:
 		se_a = pop();
 		se_b = pop();
-		writeArray(get_word(), pop(), se_b, se_a);
+		writeArray(output, get_word(), pop(), se_b, se_a);
 		break;
 	case 0x76:
 		switch (get_byte()) {
 		case 0x14:{
 			int array = get_word();
-			writeArray(array, NULL, pop(), se_get_string());
+			writeArray(output, array, NULL, pop(), se_get_string());
 			}
 			break;
 		case 0x15:
 			se_a = pop();
 			se_b = se_get_list();
-			writeArray(get_word(), NULL, se_a, se_b);
+			writeArray(output, get_word(), NULL, se_a, se_b);
 			break;
 		case 0x16:
 			se_a = pop();
 			se_b = se_get_list();
-			writeArray(get_word(), pop(), se_a, se_b);
+			writeArray(output, get_word(), pop(), se_a, se_b);
 			break;
 		}
 		break;
 
 	case 0x79:
-		ext("lpp|startScript");
+		ext(output, "lpp|startScript");
 		break;
 	case 0x7A:
-		ext("lp|startScriptQuick");
+		ext(output, "lp|startScriptQuick");
 		break;
 	case 0x7B:
-		ext("|stopObjectCode");
+		ext(output, "|stopObjectCode");
 		break;
 	case 0x7C:
-		ext("p|stopScript");
+		ext(output, "p|stopScript");
 		break;
 	case 0x7D:
-		ext("lpp|jumpToScript");
+		ext(output, "lpp|jumpToScript");
 		break;
 	case 0x7E:
-		ext("p|return");
+		ext(output, "p|return");
 		break;
 	case 0x7F:
-		ext("lppp|startObject");
+		ext(output, "lppp|startObject");
 		break;
 
 	case 0x81:
-		ext("l|beginCutscene");
+		ext(output, "l|beginCutscene");
 		break;
 	case 0x82:
-		ext("|endCutscene");
+		ext(output, "|endCutscene");
 		break;
 	case 0x83:
-		ext("p|freezeUnfreeze");
+		ext(output, "p|freezeUnfreeze");
 		break;
 	case 0x84:
-		ext("|beginOverride");
+		ext(output, "|beginOverride");
 		break;
 	case 0x85:
-		ext("|endOverride");
+		ext(output, "|endOverride");
 		break;
 	case 0x86:
-		ext("|stopSentence");
+		ext(output, "|stopSentence");
 		break;
 
 	case 0x89:
-		ext("lp|setClassOf?");
+		ext(output, "lp|setClassOf?");
 		break;
 	case 0x8A:
-		ext("pp|setState");
+		ext(output, "pp|setState");
 		break;
 	case 0x8B:
-		ext("pp|setOwner");
+		ext(output, "pp|setOwner");
 		break;
 
 	case 0x8C:
-		ext("pp|panCameraTo");
+		ext(output, "pp|panCameraTo");
 		break;
 	case 0x8D:
-		ext("p|actorFollowCamera");
+		ext(output, "p|actorFollowCamera");
 		break;
 	case 0x8E:
-		ext("pp|setCameraAt");
+		ext(output, "pp|setCameraAt");
 		break;
 	case 0x8F:
-		ext("ps|printActor");
+		ext(output, "ps|printActor");
 		break;
 	case 0x90:
 		PRINT_V8("printEgo");
 		break;
 	case 0x91:
-		ext("ps|talkActor");
+		ext(output, "ps|talkActor");
 		break;
 	case 0x92:
-		ext("s|talkEgo");
+		ext(output, "s|talkEgo");
 		break;
 	case 0x93:
 		PRINT_V8("printLine");
@@ -1448,7 +1463,7 @@ void next_line_V8()
 		break;
 
 	case 0x9C:
-		ext("x" "cursorCommand\0"
+		ext(output, "x" "cursorCommand\0"
 				"\xDC|cursorOn,"
 				"\xDD|cursorOff,"
 				"\xDE|userPutOn,"
@@ -1465,44 +1480,44 @@ void next_line_V8()
 		    		"\xE9pp|setCursorPosition");
 		break;
 	case 0x9D:
-		ext("p|loadRoom");
+		ext(output, "p|loadRoom");
 		break;
 	case 0x9E:
-		ext("ppz|loadRoomWithEgo");
+		ext(output, "ppz|loadRoomWithEgo");
 		break;
 	case 0x9F:
-		ext("ppp|walkActorToObj");
+		ext(output, "ppp|walkActorToObj");
 		break;
 	case 0xA0:
-		ext("ppp|walkActorTo");
+		ext(output, "ppp|walkActorTo");
 		break;
 	case 0xA1:
-		ext("pppp|putActorAtXY");
+		ext(output, "pppp|putActorAtXY");
 		break;
 	case 0xA2:
-		ext("zp|putActorAtObject");
+		ext(output, "zp|putActorAtObject");
 		break;
 	case 0xA3:
-		ext("pp|faceActor");
+		ext(output, "pp|faceActor");
 		break;
 	case 0xA4:
-		ext("pp|animateActor");
+		ext(output, "pp|animateActor");
 		break;
 	case 0xA5:
-		ext("ppp|doSentence");
+		ext(output, "ppp|doSentence");
 		break;
 	case 0xA6:
-		ext("z|pickupObject");
+		ext(output, "z|pickupObject");
 		break;
 	case 0xA7:
-		ext("pl|setBoxFlags");
+		ext(output, "pl|setBoxFlags");
 		break;
 	case 0xA8:
-		ext("|createBoxMatrix");
+		ext(output, "|createBoxMatrix");
 		break;
 
 	case 0xAA:
-		ext("x" "resourceRoutines\0"
+		ext(output, "x" "resourceRoutines\0"
 				"\x3Cp|loadCharset,"
 				"\x3Dp|loadCostume,"
 				"\x3Ep|loadObject,"
@@ -1525,7 +1540,7 @@ void next_line_V8()
 		break;
 	case 0xAB:
 		// FIXME - not sure how much stuff each subopcode pops
-		ext("x" "roomOps\0"
+		ext(output, "x" "roomOps\0"
 				"\x52|setRoomPalette,"
 				"\x55|setRoomIntensity,"
 				"\x57p|fade,"
@@ -1541,7 +1556,7 @@ void next_line_V8()
 		break;
 	case 0xAC:
 		// Note: these are guesses and may partially be wrong
-		ext("x" "actorOps\0"
+		ext(output, "x" "actorOps\0"
 				"\x64p|setActorCostume,"
 				"\x65pp|setActorWalkSpeed,"
 				"\x67|setActorDefAnim,"
@@ -1582,13 +1597,13 @@ void next_line_V8()
 				);
 		break;
 	case 0xAD:
-		ext("x" "cameraOps\0"
+		ext(output, "x" "cameraOps\0"
 				"\x32|freezeCamera,"
 				"\x33|unfreezeCamera"
 				);
 		break;
 	case 0xAE:
-		ext("x" "verbOps\0"
+		ext(output, "x" "verbOps\0"
 				"\x96p|verbInit,"
 				"\x97|verbNew,"
 				"\x98|verbDelete,"
@@ -1610,41 +1625,41 @@ void next_line_V8()
 				);
 		break;
 	case 0xAF:
-		ext("p|startSound");
+		ext(output, "p|startSound");
 		break;
 
 	case 0xB1:
-		ext("p|stopSound");
+		ext(output, "p|stopSound");
 		break;
 	case 0xB2:
-		ext("l|soundKludge");
+		ext(output, "l|soundKludge");
 		break;
 	case 0xB3:
-		ext("x" "system\0"
+		ext(output, "x" "system\0"
 				"\x28|restart,"
 				"\x29|quit");
 		break;
 	case 0xB4:
-		ext("x" "saveRestoreVerbs\0"
+		ext(output, "x" "saveRestoreVerbs\0"
 				"\xB4ppp|saveVerbs,"
 				"\xB5ppp|restoreVerbs,"
 				"\xB6ppp|deleteVerbs");
 		break;
 	case 0xB5:
-		ext("ps|setObjectName");
+		ext(output, "ps|setObjectName");
 		break;
 	case 0xB6:
-		ext("|getDateTime");
+		ext(output, "|getDateTime");
 		break;
 	case 0xB7:
-		ext("ppppp|drawBox");
+		ext(output, "ppppp|drawBox");
 		break;
 
 	case 0xB9:
-		ext("s|startVideo");
+		ext(output, "s|startVideo");
 		break;
 	case 0xBA:
-		ext("y" "kernelSetFunctions\0"
+		ext(output, "y" "kernelSetFunctions\0"
 				"\xB|lockObject,"
 				"\xC|unlockObject,"
 				"\xD|remapCostume,"
@@ -1676,49 +1691,49 @@ void next_line_V8()
 		break;
 
 	case 0xC8:
-		ext("rlp|startScriptQuick2");
+		ext(output, "rlp|startScriptQuick2");
 		break;
 	case 0xC9:
-		ext("lppp|startObjectQuick");
+		ext(output, "lppp|startObjectQuick");
 		break;
 	case 0xCA:
-		ext("rlp|pickOneOf");
+		ext(output, "rlp|pickOneOf");
 		break;
 	case 0xCB:
-		ext("rplp|pickOneOfDefault");
+		ext(output, "rplp|pickOneOfDefault");
 		break;
 
 	case 0xCD:
-		ext("rlp|isAnyOf");
+		ext(output, "rlp|isAnyOf");
 		break;
 	case 0xCE:
-		ext("rp|getRandomNumber");
+		ext(output, "rp|getRandomNumber");
 		break;
 	case 0xCF:
-		ext("rpp|getRandomNumberRange");
+		ext(output, "rpp|getRandomNumberRange");
 		break;
 	case 0xD0:
-		ext("rlp|ifClassOfIs");
+		ext(output, "rlp|ifClassOfIs");
 		break;
 	case 0xD1:
-		ext("rp|getState");
+		ext(output, "rp|getState");
 		break;
 	case 0xD2:
-		ext("rp|getOwner");
+		ext(output, "rp|getOwner");
 		break;
 	case 0xD3:
-		ext("rp|isScriptRunning");
+		ext(output, "rp|isScriptRunning");
 		break;
 
 	case 0xD5:
-		ext("rp|isSoundRunning");
+		ext(output, "rp|isSoundRunning");
 		break;
 	case 0xD6:
-		ext("rp|abs");
+		ext(output, "rp|abs");
 		break;
 
 	case 0xD8:
-		ext("ry" "kernelGetFunctions\0"
+		ext(output, "ry" "kernelGetFunctions\0"
 				"\x73|getWalkBoxAt,"
 				"\x74|isPointInBox,"
 				"\xCE|getRGBSlot,"
@@ -1736,95 +1751,95 @@ void next_line_V8()
 				);
 		break;
 	case 0xD9:
-		ext("rpp|isActorInBox");
+		ext(output, "rpp|isActorInBox");
 		break;
 	case 0xDA:
-		ext("rpp|getVerbEntrypoint");
+		ext(output, "rpp|getVerbEntrypoint");
 		break;
 	case 0xDB:
-		ext("rpp|getActorFromXY");
+		ext(output, "rpp|getActorFromXY");
 		break;
 	case 0xDC:
-		ext("rpp|findObject");
+		ext(output, "rpp|findObject");
 		break;
 	case 0xDD:
-		ext("rpp|getVerbFromXY");
+		ext(output, "rpp|getVerbFromXY");
 		break;
 
 	case 0xDF:
-		ext("rpp|findInventory");
+		ext(output, "rpp|findInventory");
 		break;
 	case 0xE0:
-		ext("rp|getInventoryCount");
+		ext(output, "rp|getInventoryCount");
 		break;
 	case 0xE1:
-		ext("rpp|getAnimateVariable");
+		ext(output, "rpp|getAnimateVariable");
 		break;
 	case 0xE2:
-		ext("rp|getActorRoom");
+		ext(output, "rp|getActorRoom");
 		break;
 	case 0xE3:
-		ext("rp|getActorWalkBox");
+		ext(output, "rp|getActorWalkBox");
 		break;
 	case 0xE4:
-		ext("rp|getActorMoving");
+		ext(output, "rp|getActorMoving");
 		break;
 	case 0xE5:
-		ext("rp|getActorCostume");
+		ext(output, "rp|getActorCostume");
 		break;
 	case 0xE6:
-		ext("rp|getActorScaleX");
+		ext(output, "rp|getActorScaleX");
 		break;
 	case 0xE7:
-		ext("rp|getActorLayer");
+		ext(output, "rp|getActorLayer");
 		break;
 	case 0xE8:
-		ext("rp|getActorElevation");
+		ext(output, "rp|getActorElevation");
 		break;
 	case 0xE9:
-		ext("rp|getActorWidth");
+		ext(output, "rp|getActorWidth");
 		break;
 	case 0xEA:
-		ext("rp|getObjectDir");
+		ext(output, "rp|getObjectDir");
 		break;
 	case 0xEB:
-		ext("rp|getObjectX");
+		ext(output, "rp|getObjectX");
 		break;
 	case 0xEC:
-		ext("rp|getObjectY");
+		ext(output, "rp|getObjectY");
 		break;
 	case 0xED:
-		ext("rp|getActorChore");
+		ext(output, "rp|getActorChore");
 		break;
 	case 0xEE:
-		ext("rpp|getDistObjObj");
+		ext(output, "rpp|getDistObjObj");
 		break;
 	case 0xEF:
-		ext("rpppp|getDistPtPt");
+		ext(output, "rpppp|getDistPtPt");
 		break;
 	case 0xF0:
-		ext("rp|getObjectImageX");
+		ext(output, "rp|getObjectImageX");
 		break;
 	case 0xF1:
-		ext("rp|getObjectImageY");
+		ext(output, "rp|getObjectImageY");
 		break;
 	case 0xF2:
-		ext("rp|getObjectImageWidth");
+		ext(output, "rp|getObjectImageWidth");
 		break;
 	case 0xF3:
-		ext("rp|getObjectImageHeight");
+		ext(output, "rp|getObjectImageHeight");
 		break;
 	case 0xF4:
-		ext("rp|getVerbX");
+		ext(output, "rp|getVerbX");
 		break;
 	case 0xF5:
-		ext("rp|getVerbY");
+		ext(output, "rp|getVerbY");
 		break;
 	case 0xF6:
-		ext("rps|stringWidth");
+		ext(output, "rps|stringWidth");
 		break;
 	case 0xF7:
-		ext("rp|getActorZPlane");
+		ext(output, "rp|getActorZPlane");
 		break;
 
 	default:
@@ -1835,7 +1850,7 @@ void next_line_V8()
 
 #define PRINT_V67(name)           \
 	do {                          \
-		ext("x" name "\0"         \
+		ext(output, "x" name "\0"         \
 				"\x41pp|XY,"      \
 				"\x42p|color,"    \
 				"\x43p|right,"    \
@@ -1849,7 +1864,7 @@ void next_line_V8()
 				);                \
 	} while(0)
 
-void next_line_V67()
+void next_line_V67(char *output)
 {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
@@ -1882,7 +1897,7 @@ void next_line_V67()
 		push(se_array(get_word(), pop(), se_a));
 		break;
 	case 0xC:
-		se_a = dup(pop());
+		se_a = dup(output, pop());
 		push(se_a);
 		push(se_a);
 		break;
@@ -1907,92 +1922,92 @@ void next_line_V67()
 		break;
 	case 0x1A:
 	case 0xA7:
-		kill(pop());
+		kill(output, pop());
 		break;
 	case 0x42:
-		writeVar(get_byte(), pop());
+		writeVar(output, get_byte(), pop());
 		break;
 	case 0x43:
-		writeVar(get_word(), pop());
+		writeVar(output, get_word(), pop());
 		break;
 	case 0x46:
-		writeArray(get_byte(), NULL, pop(), pop());
+		writeArray(output, get_byte(), NULL, pop(), pop());
 		break;
 	case 0x47:
-		writeArray(get_word(), NULL, pop(), pop());
+		writeArray(output, get_word(), NULL, pop(), pop());
 		break;
 	case 0x4A:
-		writeArray(get_byte(), pop(), pop(), pop());
+		writeArray(output, get_byte(), pop(), pop(), pop());
 		break;
 	case 0x4B:
-		writeArray(get_word(), pop(), pop(), pop());
+		writeArray(output, get_word(), pop(), pop(), pop());
 		break;
 	case 0x4E:
-		addVar(get_byte(), 1);
+		addVar(output, get_byte(), 1);
 		break;
 	case 0x4F:
-		addVar(get_word(), 1);
+		addVar(output, get_word(), 1);
 		break;
 	case 0x52:
-		addArray(get_byte(), pop(), 1);
+		addArray(output, get_byte(), pop(), 1);
 		break;
 	case 0x53:
-		addArray(get_word(), pop(), 1);
+		addArray(output, get_word(), pop(), 1);
 		break;
 	case 0x56:
-		addVar(get_byte(), -1);
+		addVar(output, get_byte(), -1);
 		break;
 	case 0x57:
-		addVar(get_word(), -1);
+		addVar(output, get_word(), -1);
 		break;
 	case 0x5A:
-		addArray(get_byte(), pop(), -1);
+		addArray(output, get_byte(), pop(), -1);
 		break;
 	case 0x5B:
-		addArray(get_word(), pop(), -1);
+		addArray(output, get_word(), pop(), -1);
 		break;
 	case 0x5C:
-		jumpif(pop(), true);
+		jumpif(output, pop(), true);
 		break;
 	case 0x5D:
-		jumpif(pop(), false);
+		jumpif(output, pop(), false);
 		break;
 	case 0x5E:
-		ext("lpp|startScript");
+		ext(output, "lpp|startScript");
 		break;
 	case 0x5F:
-		ext("lp|startScriptQuick");
+		ext(output, "lp|startScriptQuick");
 		break;
 	case 0x60:
-		ext("lppp|startObject");
+		ext(output, "lppp|startObject");
 		break;
 	case 0x61:
-		ext("pp|drawObject");
+		ext(output, "pp|drawObject");
 		break;
 	case 0x62:
-		ext("ppp|drawObjectAt");
+		ext(output, "ppp|drawObjectAt");
 		break;
 		/* *** */
 	case 0x65:
-		ext("|stopObjectCodeA");
+		ext(output, "|stopObjectCodeA");
 		break;
 	case 0x66:
-		ext("|stopObjectCodeB");
+		ext(output, "|stopObjectCodeB");
 		break;
 	case 0x67:
-		ext("|endCutscene");
+		ext(output, "|endCutscene");
 		break;
 	case 0x68:
-		ext("l|beginCutscene");
+		ext(output, "l|beginCutscene");
 		break;
 	case 0x69:
-		ext("|stopMusic");
+		ext(output, "|stopMusic");
 		break;
 	case 0x6A:
-		ext("p|freezeUnfreeze");
+		ext(output, "p|freezeUnfreeze");
 		break;
 	case 0x6B:
-		ext("x" "cursorCommand\0"
+		ext(output, "x" "cursorCommand\0"
 				"\x90|cursorOn,"
 				"\x91|cursorOff,"
 				"\x92|userPutOn,"
@@ -2008,152 +2023,152 @@ void next_line_V67()
 				"\xD6p|makeCursorColorTransparent");
 		break;
 	case 0x6C:
-		ext("|break");
+		ext(output, "|break");
 		break;
 	case 0x6D:
-		ext("rlp|ifClassOfIs");
+		ext(output, "rlp|ifClassOfIs");
 		break;
 	case 0x6E:
-		ext("lp|setClass");
+		ext(output, "lp|setClass");
 		break;
 	case 0x6F:
-		ext("rp|getState");
+		ext(output, "rp|getState");
 		break;
 	case 0x70:
-		ext("pp|setState");
+		ext(output, "pp|setState");
 		break;
 	case 0x71:
-		ext("pp|setOwner");
+		ext(output, "pp|setOwner");
 		break;
 	case 0x72:
-		ext("rp|getOwner");
+		ext(output, "rp|getOwner");
 		break;
 	case 0x73:
-		jump();
+		jump(output);
 		break;
 	case 0x74:
 		if (HumongousFlag) {
-			ext("pp|startSound");
+			ext(output, "pp|startSound");
 			break;
 		}
-		ext("p|startSound");
+		ext(output, "p|startSound");
 		break;
 	case 0x75:
-		ext("p|stopSound");
+		ext(output, "p|stopSound");
 		break;
 	case 0x76:
-		ext("p|startMusic");
+		ext(output, "p|startMusic");
 		break;
 	case 0x77:
-		ext("p|stopObjectScript");
+		ext(output, "p|stopObjectScript");
 		break;
 	case 0x78:
 		if (scriptVersion < 7)
-			ext("p|panCameraTo");
+			ext(output, "p|panCameraTo");
 		else
-			ext("pp|panCameraTo");
+			ext(output, "pp|panCameraTo");
 		break;
 	case 0x79:
-		ext("p|actorFollowCamera");
+		ext(output, "p|actorFollowCamera");
 		break;
 	case 0x7A:
 		if (scriptVersion < 7)
-			ext("p|setCameraAt");
+			ext(output, "p|setCameraAt");
 		else
-			ext("pp|setCameraAt");
+			ext(output, "pp|setCameraAt");
 		break;
 	case 0x7B:
-		ext("p|loadRoom");
+		ext(output, "p|loadRoom");
 		break;
 	case 0x7C:
-		ext("p|stopScript");
+		ext(output, "p|stopScript");
 		break;
 	case 0x7D:
-		ext("ppp|walkActorToObj");
+		ext(output, "ppp|walkActorToObj");
 		break;
 	case 0x7E:
-		ext("ppp|walkActorTo");
+		ext(output, "ppp|walkActorTo");
 		break;
 	case 0x7F:
-		ext("pppp|putActorInXY");
+		ext(output, "pppp|putActorInXY");
 		break;
 	case 0x80:
-		ext("zp|putActorAtObject");
+		ext(output, "zp|putActorAtObject");
 		break;
 	case 0x81:
-		ext("pp|faceActor");
+		ext(output, "pp|faceActor");
 		break;
 	case 0x82:
-		ext("pp|animateActor");
+		ext(output, "pp|animateActor");
 		break;
 	case 0x83:
-		ext("pppp|doSentence");
+		ext(output, "pppp|doSentence");
 		break;
 	case 0x84:
-		ext("z|pickupObject");
+		ext(output, "z|pickupObject");
 		break;
 	case 0x85:
-		ext("ppz|loadRoomWithEgo");
+		ext(output, "ppz|loadRoomWithEgo");
 		break;
 	case 0x87:
-		ext("rp|getRandomNumber");
+		ext(output, "rp|getRandomNumber");
 		break;
 	case 0x88:
-		ext("rpp|getRandomNumberRange");
+		ext(output, "rpp|getRandomNumberRange");
 		break;
 	case 0x8A:
-		ext("rp|getActorMoving");
+		ext(output, "rp|getActorMoving");
 		break;
 	case 0x8B:
-		ext("rp|isScriptRunning");
+		ext(output, "rp|isScriptRunning");
 		break;
 	case 0x8C:
-		ext("rp|getActorRoom");
+		ext(output, "rp|getActorRoom");
 		break;
 	case 0x8D:
-		ext("rp|getObjectX");
+		ext(output, "rp|getObjectX");
 		break;
 	case 0x8E:
-		ext("rp|getObjectY");
+		ext(output, "rp|getObjectY");
 		break;
 	case 0x8F:
-		ext("rp|getObjectDir");
+		ext(output, "rp|getObjectDir");
 		break;
 	case 0x90:
-		ext("rp|getActorWalkBox");
+		ext(output, "rp|getActorWalkBox");
 		break;
 	case 0x91:
-		ext("rp|getActorCostume");
+		ext(output, "rp|getActorCostume");
 		break;
 	case 0x92:
-		ext("rpp|findInventory");
+		ext(output, "rpp|findInventory");
 		break;
 	case 0x93:
-		ext("rp|getInventoryCount");
+		ext(output, "rp|getInventoryCount");
 		break;
 	case 0x94:
-		ext("rpp|getVerbFromXY");
+		ext(output, "rpp|getVerbFromXY");
 		break;
 	case 0x95:
-		ext("|beginOverride");
+		ext(output, "|beginOverride");
 		break;
 	case 0x96:
-		ext("|endOverride");
+		ext(output, "|endOverride");
 		break;
 	case 0x97:
-		ext("ps|setObjectName");
+		ext(output, "ps|setObjectName");
 		break;
 	case 0x98:
-		ext("rp|isSoundRunning");
+		ext(output, "rp|isSoundRunning");
 		break;
 	case 0x99:
-		ext("pl|setBoxFlags");
+		ext(output, "pl|setBoxFlags");
 		break;
 	case 0x9A:
-		ext("|createBoxMatrix");
+		ext(output, "|createBoxMatrix");
 		break;
 	case 0x9B:
-		ext("x" "resourceOps\0"
+		ext(output, "x" "resourceOps\0"
 				"\x64p|loadScript,"
 				"\x65p|loadSound,"
 				"\x66p|loadCostume," 
@@ -2176,7 +2191,7 @@ void next_line_V67()
 		break;
 	case 0x9C:
 		if (HumongousFlag)
-			ext("x" "roomOps\0"
+			ext(output, "x" "roomOps\0"
 					"\xACpp|roomScroll,"
 					"\xAEpp|setScreen,"
 					"\xAFpppp|setPalColor,"
@@ -2193,7 +2208,7 @@ void next_line_V67()
 					"\xDCpp|drawObjectAt,"
 					"\xDDsp|drawObjectImage");
 		else
-			ext("x" "roomOps\0"
+			ext(output, "x" "roomOps\0"
 					"\xACpp|roomScroll,"
 					"\xAEpp|setScreen,"
 					"\xAFpppp|setPalColor,"
@@ -2209,7 +2224,7 @@ void next_line_V67()
 					"\xD5p|setPalette");
 		break;
 	case 0x9D:
-		ext("x" "actorOps\0"
+		ext(output, "x" "actorOps\0"
 				"\xC5p|setCurActor,"
 				"\x4Cp|setCostume,"
 				"\x4Dpp|setWalkSpeed,"
@@ -2250,7 +2265,7 @@ void next_line_V67()
 		break;
 	case 0x9E:
 		if (HumongousFlag)
-			ext("x" "verbOps\0"
+			ext(output, "x" "verbOps\0"
 					"\xC4p|setCurVerb,"
 					"\x7Cp|loadImg,"
 					"\x7Ds|loadString,"
@@ -2270,7 +2285,7 @@ void next_line_V67()
 					"\x8Cp|setBkColor,"
 					"\xFF|redraw");
 		else
-			ext("x" "verbOps\0"
+			ext(output, "x" "verbOps\0"
 					"\xC4p|setCurVerb,"
 					"\x7Cp|loadImg,"
 					"\x7Ds|loadString,"
@@ -2291,37 +2306,37 @@ void next_line_V67()
 					"\xFF|redraw");
 		break;
 	case 0x9F:
-		ext("rpp|getActorFromXY");
+		ext(output, "rpp|getActorFromXY");
 		break;
 	case 0xA0:
-		ext("rpp|findObject");
+		ext(output, "rpp|findObject");
 		break;
 	case 0xA1:
-		ext("lp|pseudoRoom");
+		ext(output, "lp|pseudoRoom");
 		break;
 	case 0xA2:
-		ext("rp|getActorElevation");
+		ext(output, "rp|getActorElevation");
 		break;
 	case 0xA3:
-		ext("rpp|getVerbEntrypoint");
+		ext(output, "rpp|getVerbEntrypoint");
 		break;
 	case 0xA4:
-		ext("x" "arrayOps\0" "\xCDwps|arrayOps205," "\xD0wpl|arrayOps208," "\xD4wplp|arrayOps212");
+		ext(output, "x" "arrayOps\0" "\xCDwps|arrayOps205," "\xD0wpl|arrayOps208," "\xD4wplp|arrayOps212");
 		break;
 	case 0xA5:
-		ext("x" "saveRestoreVerbs\0"
+		ext(output, "x" "saveRestoreVerbs\0"
 				"\x8Dppp|saveVerbs,"
 				"\x8Eppp|restoreVerbs,"
 				"\x8Fppp|deleteVerbs");
 		break;
 	case 0xA6:
-		ext("ppppp|drawBox");
+		ext(output, "ppppp|drawBox");
 		break;
 	case 0xA8:
-		ext("rp|getActorWidth");
+		ext(output, "rp|getActorWidth");
 		break;
 	case 0xA9:
-		ext("x" "wait\0"
+		ext(output, "x" "wait\0"
 				"\xA8pj|waitForActor,"
 				"\xA9|waitForMessage,"
 				"\xAA|waitForCamera,"
@@ -2331,34 +2346,34 @@ void next_line_V67()
 				);
 		break;
 	case 0xAA:
-		ext("rp|getActorScaleX");
+		ext(output, "rp|getActorScaleX");
 		break;
 	case 0xAB:
-		ext("rp|getActorAnimCounter1");
+		ext(output, "rp|getActorAnimCounter1");
 		break;
 	case 0xAC:
-		ext("l|soundKludge");
+		ext(output, "l|soundKludge");
 		break;
 	case 0xAD:
-		ext("rlp|isAnyOf");
+		ext(output, "rlp|isAnyOf");
 		break;
 	case 0xAE:
-		ext("x" "quitPauseRestart\0" "\x9E|pauseGame," "\xA0|shutDown");
+		ext(output, "x" "quitPauseRestart\0" "\x9E|pauseGame," "\xA0|shutDown");
 		break;
 	case 0xAF:
-		ext("rp|isActorInBox");
+		ext(output, "rp|isActorInBox");
 		break;
 	case 0xB0:
-		ext("p|delay");
+		ext(output, "p|delay");
 		break;
 	case 0xB1:
-		ext("p|delaySeconds");
+		ext(output, "p|delaySeconds");
 		break;
 	case 0xB2:
-		ext("p|delayMinutes");
+		ext(output, "p|delayMinutes");
 		break;
 	case 0xB3:
-		ext("|stopSentence");
+		ext(output, "|stopSentence");
 		break;
 	case 0xB4:
 		PRINT_V67("printLine");
@@ -2374,7 +2389,7 @@ void next_line_V67()
 		break;
 	case 0xB8:
 		// This is *almost* identical to the other print opcodes, only the 'begine' subop differs
-		ext("x" "printActor\0"
+		ext(output, "x" "printActor\0"
 				"\x41pp|XY,"
 				"\x42p|color,"
 				"\x43p|right,"
@@ -2385,13 +2400,13 @@ void next_line_V67()
 		PRINT_V67("printEgo");
 		break;
 	case 0xBA:
-		ext("ps|talkActor");
+		ext(output, "ps|talkActor");
 		break;
 	case 0xBB:
-		ext("s|talkEgo");
+		ext(output, "s|talkEgo");
 		break;
 	case 0xBC:
-		ext("x" "dimArray\0"
+		ext(output, "x" "dimArray\0"
 				"\xC7pw|dimType5,"
 				"\xC8pw|dimType1,"
 				"\xC9pw|dimType2,"
@@ -2401,18 +2416,18 @@ void next_line_V67()
 		break;
 	case 0xBD:
 		if (HumongousFlag)
-			ext("|stopObjectCode");
+			ext(output, "|stopObjectCode");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xBE:
-		ext("lpp|startObjectQuick");
+		ext(output, "lpp|startObjectQuick");
 		break;
 	case 0xBF:
-		ext("lp|startScriptQuick2");
+		ext(output, "lp|startScriptQuick2");
 		break;
 	case 0xC0:
-		ext("x" "dim2dimArray\0"
+		ext(output, "x" "dim2dimArray\0"
 				"\xC7ppw|dim2Type5,"
 				"\xC8ppw|dim2Type1,"
 				"\xC9ppw|dim2Type2,"
@@ -2420,20 +2435,20 @@ void next_line_V67()
 				"\xCBppw|dim2Type4");
 		break;
 	case 0xC4:
-		ext("rp|abs");
+		ext(output, "rp|abs");
 		break;
 	case 0xC5:
-		ext("rpp|getDistObjObj");
+		ext(output, "rpp|getDistObjObj");
 		break;
 	case 0xC6:
-		ext("rppp|getDistObjPt");
+		ext(output, "rppp|getDistObjPt");
 		break;
 	case 0xC7:
-		ext("rpppp|getDistPtPt");
+		ext(output, "rpppp|getDistPtPt");
 		break;
 	case 0xC8:
 		// TODO - add more subopcodes
-		ext("ry" "kernelGetFunctions\0"
+		ext(output, "ry" "kernelGetFunctions\0"
 				"\x73|getWalkBoxAt,"
 				"\x74|isPointInBox,"
 				"\xCE|getRGBSlot"
@@ -2441,7 +2456,7 @@ void next_line_V67()
 		break;
 	case 0xC9:
 		// TODO - add more subopcodes
-		ext("y" "kernelSetFunctions\0"
+		ext(output, "y" "kernelSetFunctions\0"
 				"\x4|grabCursor,"
 				"\x5|fadeOut,"
 				"\x6|startVideo,"
@@ -2461,31 +2476,31 @@ void next_line_V67()
 				);
 		break;
 	case 0xCA:
-		ext("p|breakXTimes");
+		ext(output, "p|breakXTimes");
 		break;
 	case 0xCB:
-		ext("rlp|pickOneOf");
+		ext(output, "rlp|pickOneOf");
 		break;
 	case 0xCC:
-		ext("rplp|pickOneOfDefault");
+		ext(output, "rplp|pickOneOfDefault");
 		break;
 	case 0xCD:
-		ext("pppp|stampObject");
+		ext(output, "pppp|stampObject");
 		break;
 	case 0xD0:
-		ext("|getDateTime");
+		ext(output, "|getDateTime");
 		break;
 	case 0xD1:
-		ext("|stopTalking");
+		ext(output, "|stopTalking");
 		break;
 	case 0xD2:
-		ext("rpp|getAnimateVariable");
+		ext(output, "rpp|getAnimateVariable");
 		break;
 	case 0xD4:
-		ext("wpp|shuffle");
+		ext(output, "wpp|shuffle");
 		break;
 	case 0xD5:
-		ext("lpp|jumpToScript");
+		ext(output, "lpp|jumpToScript");
 		break;
 	case 0xD6:
 		se_a = pop();
@@ -2498,52 +2513,52 @@ void next_line_V67()
 		push(se_oper(se_b, operBor, se_a));
 		break;
 	case 0xD8:
-		ext("rp|isRoomScriptRunning");
+		ext(output, "rp|isRoomScriptRunning");
 		break;
 	case 0xD9:
-		ext("p|closeFile");
+		ext(output, "p|closeFile");
 		break;
 	case 0xDA:
-		ext("rsp|openFile");
+		ext(output, "rsp|openFile");
 		break;
 	case 0xDB:
-		ext("rpp|readFile");
+		ext(output, "rpp|readFile");
 		break;
 	case 0xDD:
-		ext("rp|findAllObjects");
+		ext(output, "rp|findAllObjects");
 		break;
 	case 0xDE:
-		ext("s|deleteFile");
+		ext(output, "s|deleteFile");
 		break;
 	case 0xDF:
 		if (HumongousFlag)
-			ext("ss|renameFile");
+			ext(output, "ss|renameFile");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xE0:
-		ext("x" "p|unknownEO\0" 
+		ext(output, "x" "p|unknownEO\0" 
 			"\xDEp|unknownE0-DE,"
 			"\xDC|unknownE0-DC");
 		break;
 	case 0xE1:
-		ext("rp|unknownE1");
+		ext(output, "rp|unknownE1");
 		break;
 	case 0xE2:
-		ext("p|localizeArray");
+		ext(output, "p|localizeArray");
 		break;
 	case 0xEC:
-		ext("rp|getActorLayer");
+		ext(output, "rp|getActorLayer");
 		break;
 	case 0xED:
-		ext("rp|getObjectNewDir");
+		ext(output, "rp|getObjectNewDir");
 		break;
 	case 0xF3:
-		ext("rsp|readINI");
+		ext(output, "rsp|readINI");
 		break;
 	case 0xFA:
 		get_byte();
-		ext("s|unknownFA");
+		ext(output, "s|unknownFA");
 		break;
 	default:
 		invalidop(NULL, code);

@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
 	fclose(in);
 	size_of_code = len;
 
-	output = buf = (char *)malloc(8192);
+	buf = (char *)malloc(8192);
 
 	offs_of_line = 0;
 
@@ -349,10 +349,10 @@ int main(int argc, char *argv[])
 			break;
 		case 6:
 		case 7:
-			next_line_V67();
+			next_line_V67(buf);
 			break;
 		case 8:
-			next_line_V8();
+			next_line_V8(buf);
 			break;
 		}
 		if (buf[0]) {
