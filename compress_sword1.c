@@ -517,7 +517,7 @@ void compressMusic(CompressMode compMode) {
 			sprintf(fNameOut, "MUSIC/%s.%s", musicNames[i].fileName, (compMode == kMP3Mode) ? "MP3" : "OGG");
 			
 			printf("encoding file (%3d/%d) %s -> %s.%s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, musicNames[i].fileName, (compMode == kMP3Mode) ? "MP3" : "OGG");
-			encodeAudio(fNameIn, false, 0, fNameOut, compMode);
+			encodeAudio(fNameIn, false, -1, fNameOut, compMode);
 		}
 	}
 }

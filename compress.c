@@ -155,7 +155,8 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		 * version 3.93.1): we round the input sample rate up to the next
 		 * higher valid MP3 sample rate, with a margin of 3%.
 		 */
-		tmp += sprintf(tmp, "--resample %d ", map2MP3Frequency(97 * rawSamplerate / 100));
+		if (rawSamplerate != -1)
+			tmp += sprintf(tmp, "--resample %d ", map2MP3Frequency(97 * rawSamplerate / 100));
 
 		if (encparms.silent)
 			tmp += sprintf(tmp, " --silent ");
