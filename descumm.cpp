@@ -92,9 +92,7 @@
 
 
 void get_tok_V2(char *buf);	// For V2 (and V1?)
-void get_tok(char *buf);	// For V3, V4, V5
-
-char *indentbuf;
+void get_tok_V345(char *buf);	// For V3, V4, V5
 
 int get_curoffs();
 
@@ -104,33 +102,6 @@ bool GF_UNBLOCKED = false;
 
 void emit_if(char *buf, char *condition);
 
-char *strecpy(char *buf, const char *src)
-{
-	strcpy(buf, src);
-	return strchr(buf, 0);
-}
-
-int get_curoffs()
-{
-	return cur_pos - org_pos;
-}
-
-int get_byte()
-{
-	return (byte)(*cur_pos++);
-}
-
-int get_word()
-{
-	int i = TO_LE_16(*((short *)cur_pos));
-	cur_pos += 2;
-	return i;
-}
-
-int get_signed_word()
-{
-	return (short)get_word();
-}
 
 
 const char *get_num_string(int i)
@@ -345,81 +316,6 @@ char *do_tok(char *buf, const char *text, int args)
 }
 
 
-#define INDENT_SIZE 2
-
-
-
-char *GetIndentString(int i)
-{
-	char *c = indentbuf;
-	i += i;
-	if (!c)
-		indentbuf = c = (char *)malloc(127 * INDENT_SIZE + 1);
-	if (i >= 127 * INDENT_SIZE)
-		i = 127 * INDENT_SIZE;
-	if (i < 0)
-		i = 0;
-	memset(c, 32, i);
-	c[i] = 0;
-	return c;
-}
-
-
-
-BlockStack *pushBlockStackItem()
-{
-	if (!block_stack)
-		block_stack = (BlockStack *) malloc(256 * sizeof(BlockStack));
-
-	if (num_block_stack >= 256) {
-		printf("block_stack full!\n");
-		exit(0);
-	}
-	return &block_stack[num_block_stack++];
-}
-
-/* Returns 0 or 1 depending if it's ok to add a block */
-bool maybeAddIf(unsigned int cur, unsigned int to)
-{
-	int i;
-	BlockStack *p;
-	
-	if (((to | cur) >> 16) || (to <= cur))
-		return false; // Invalid jump
-	
-	for (i = 0, p = block_stack; i < num_block_stack; i++, p++) {
-		if (to > p->to)
-			return false;
-	}
-	
-	p = pushBlockStackItem();
-
-	// Try to determine if this is a while loop. For this, first check if we 
-	// jump right behind a regular jump, then whether that jump is targeting us.
-	p->isWhile = (*(byte*)(org_pos+to-3) == g_jump_opcode);
-	i = TO_LE_16(*(int16*)(org_pos+to-2));
-	
-	p->isWhile = p->isWhile && (offs_of_line == (int)to + i);
-	p->from = cur;
-	p->to = to;
-	return 1;
-}
-
-int indentBlock(unsigned int cur)
-{
-	BlockStack *p;
-
-	if (!num_block_stack)
-		return 0;
-
-	p = &block_stack[num_block_stack - 1];
-	if (cur < p->to)
-		return 0;
-
-	num_block_stack--;
-	return 1;
-}
-
 /* Returns 0 or 1 depending if it's ok to add an else */
 int maybeAddElse(int cur, int to)
 {
@@ -480,48 +376,6 @@ bool maybeAddElseIf(int cur, int elseto, int to)
 	return true;
 }
 
-
-void outputLine(char *buf, int curoffs, int opcode, int indent)
-{
-	char *s;
-
-	if (buf[0]) {
-		if (indent == -1)
-			indent = num_block_stack;
-		if (curoffs == -1)
-			curoffs = get_curoffs();
-
-		s = GetIndentString(indent);
-
-		if (dontShowOpcode) {
-			if (dontShowOffsets)
-				printf("%s%s\n", s, buf);
-			else
-				printf("[%.4X] %s%s\n", curoffs, s, buf);
-		} else {
-			char buf2[4];
-			if (opcode != -1)
-				sprintf(buf2, "%.2X", opcode);
-			else
-				strcpy(buf2, "**");
-			if (dontShowOffsets)
-				printf("(%s) %s%s\n", buf2, s, buf);
-			else
-				printf("[%.4X] (%s) %s%s\n", curoffs, buf2, s, buf);
-		}
-	}
-}
-
-
-void writePendingElse()
-{
-	if (pendingElse) {
-		char buf[32];
-		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
-		outputLine(buf, pendingElseOffs, pendingElseOpcode, pendingElseIndent - 1);
-		pendingElse = 0;
-	}
-}
 
 void do_decodeparsestring_v2(char *buf, byte opcode)
 {
@@ -789,7 +643,7 @@ void do_expr_code(char *buf)
 			if (scriptVersion == 2)
 				get_tok_V2(buf2);
 			else
-				get_tok(buf2);
+				get_tok_V345(buf2);
 			strecpy(strchr(buf2, 0), ">");
 			AddToExprStack(buf);
 			break;
@@ -837,7 +691,7 @@ void do_expr_code(char *buf)
 			if (scriptVersion == 2)
 				get_tok_V2(strchr(buf, 0));
 			else
-				get_tok(strchr(buf, 0));
+				get_tok_V345(strchr(buf, 0));
 			break;
 		default:
 			sprintf(buf, "UNKNOWN %d", i);
@@ -2354,7 +2208,7 @@ void get_tok_V2(char *buf)
 	}
 }
 
-void get_tok(char *buf)
+void get_tok_V345(char *buf)
 {
 	byte opcode = get_byte();
 
@@ -3091,7 +2945,7 @@ void ShowHelpAndExit()
 	exit(0);
 }
 
-int skipVerbHeader(byte *p)
+int skipVerbHeader_V23(byte *p)
 {
 	byte code;
 	int offset = 19;
@@ -3260,7 +3114,7 @@ int main(int argc, char *argv[])
 				mem += 6;
 				break;			/* Exit code */
 			case MKID('OC'):
-				mem += skipVerbHeader(mem + 19);
+				mem += skipVerbHeader_V23(mem + 19);
 				break;			/* Verb */
 			default:
 				printf("Unknown script type!\n");
@@ -3270,7 +3124,6 @@ int main(int argc, char *argv[])
 
 	cur_pos = mem;
 	org_pos = mem;
-
 	len -= mem - memorg;
 
 	offs_of_line = 0;
@@ -3278,10 +3131,11 @@ int main(int argc, char *argv[])
 	do {
 		byte opcode = *cur_pos;
 		int j = num_block_stack;
+		buf[0] = 0;
 		if (scriptVersion == 2)
 			get_tok_V2(buf);
 		else
-			get_tok(buf);
+			get_tok_V345(buf);
 		if (buf[0]) {
 			writePendingElse();
 			if (haveElse) {
@@ -3296,7 +3150,6 @@ int main(int argc, char *argv[])
 		}
 		fflush(stdout);
 	} while (cur_pos < mem + len);
-
 
 	printf("END\n");
 

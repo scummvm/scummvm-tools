@@ -594,85 +594,44 @@ void invalidop(const char *cmd, int op)
 	exit(1);
 }
 
-char *strecpy(char *buf, const char *src)
+byte *skipVerbHeader_V8(byte *p)
 {
-	strcpy(buf, src);
-	return strchr(buf, 0);
-}
-
-int get_curoffs()
-{
-	return cur_pos - org_pos;
-}
-
-int get_byte()
-{
-	return (byte)(*cur_pos++);
-}
-
-uint get_word()
-{
-	int i;
-
-	if (scriptVersion == 8) {
-		i = TO_LE_32(*((int32 *)cur_pos));
-		cur_pos += 4;
-	} else {
-		i = TO_LE_16(*((int16 *)cur_pos));
-		cur_pos += 2;
+	uint32 *ptr;
+	uint32 code;
+	int hdrlen;
+	
+	ptr = (uint32 *)p;
+	while (TO_LE_32(*ptr++) != 0) {
+		ptr++;
 	}
-	return i;
-}
-
-int get_signed_word()
-{
-	uint i = get_word();
-
-	if (scriptVersion == 8) {
-		return (int32)i;
-	} else {
-		return (int16)i;
+	hdrlen = (byte *)ptr - p;
+	
+	ptr = (uint32 *)p;
+	while ((code = TO_LE_32(*ptr++)) != 0) {
+		printf("  %2d - %.4X\n", code, TO_LE_32(*ptr++) - hdrlen);
 	}
+
+	return (byte *)ptr;
 }
-
-byte *skipVerbHeader(byte *p)
+byte *skipVerbHeader_V67(byte *p)
 {
-	if (scriptVersion == 8) {
-		uint32 *ptr;
-		uint32 code;
-		int hdrlen;
-		
-		ptr = (uint32 *)p;
-		while (TO_LE_32(*ptr++) != 0) {
-			ptr++;
-		}
-		hdrlen = (byte *)ptr - p;
-		
-		ptr = (uint32 *)p;
-		while ((code = TO_LE_32(*ptr++)) != 0) {
-			printf("  %2d - %.4X\n", code, TO_LE_32(*ptr++) - hdrlen);
-		}
+	byte code;
+	byte *p2 = p;
+	int hdrlen;
 
-		return (byte *)ptr;
-	} else {
-		byte code;
-		byte *p2 = p;
-		int hdrlen;
-	
-		while (*p2++ != 0) {
-			p2 += 2;
-		}
-	
-		printf("Events:\n");
-	
-		hdrlen = p2 - p + 8;
-	
-		while ((code = *p++) != 0) {
-			printf("  %2X - %.4X\n", code, *(uint16 *)p - hdrlen);
-			p += 2;
-		}
-		return p;
+	while (*p2++ != 0) {
+		p2 += 2;
 	}
+
+	printf("Events:\n");
+
+	hdrlen = p2 - p + 8;
+
+	while ((code = *p++) != 0) {
+		printf("  %2X - %.4X\n", code, *(uint16 *)p - hdrlen);
+		p += 2;
+	}
+	return p;
 }
 
 StackEnt *se_new(int type)
@@ -1116,50 +1075,6 @@ void ext(const char *fmt)
 		output[0] = 0;
 		return;
 	}
-}
-
-BlockStack *pushBlockStackItem()
-{
-	if (!block_stack)
-		block_stack = (BlockStack *) malloc(256 * sizeof(BlockStack));
-
-	if (num_block_stack >= 256) {
-		printf("block_stack full!\n");
-		exit(0);
-	}
-	return &block_stack[num_block_stack++];
-}
-
-
-bool maybeAddIf(unsigned int cur, unsigned int to)
-{
-	int i;
-	BlockStack *p;
-	
-	if (((to | cur) >> 16) || (to <= cur))
-		return false; // Invalid jump
-	
-	for (i = 0, p = block_stack; i < num_block_stack; i++, p++) {
-		if (to > p->to)
-			return false;
-	}
-	
-	p = pushBlockStackItem();
-	
-	// Try to determine if this is a while loop. For this, first check if we 
-	// jump right behind a regular jump, then whether that jump is targeting us.
-	if (scriptVersion == 8) {
-		p->isWhile = (*(byte*)(org_pos+to-5) == g_jump_opcode);
-		i = TO_LE_32(*(int32*)(org_pos+to-4));
-	} else {
-		p->isWhile = (*(byte*)(org_pos+to-3) == g_jump_opcode);
-		i = TO_LE_16(*(int16*)(org_pos+to-2));
-	}
-	
-	p->isWhile = p->isWhile && (offs_of_line == (int)to + i);
-	p->from = cur;
-	p->to = to;
-	return true;
 }
 
 /* Returns 0 or 1 depending if it's ok to add an else */
@@ -1970,7 +1885,7 @@ void next_line_V8()
 	}
 }
 
-void next_line()
+void next_line_V67()
 {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
@@ -2629,84 +2544,6 @@ void next_line()
 }
 
 
-
-char *indentbuf;
-
-#define INDENT_SIZE 2
-char *getIndentString(int i)
-{
-	char *c = indentbuf;
-	i += i;
-	if (!c)
-		indentbuf = c = (char *)malloc(127 * INDENT_SIZE + 1);
-	if (i >= 127 * INDENT_SIZE)
-		i = 127 * INDENT_SIZE;
-	if (i < 0)
-		i = 0;
-	memset(c, 32, i);
-	c[i] = 0;
-	return c;
-}
-
-void outputLine(char *buf, int curoffs, int opcode, int indent)
-{
-	char *s;
-
-	if (buf[0]) {
-		if (indent == -1)
-			indent = num_block_stack;
-		if (curoffs == -1)
-			curoffs = get_curoffs();
-
-		s = getIndentString(indent);
-
-		if (dontShowOpcode) {
-			if (dontShowOffsets)
-				printf("%s%s\n", s, buf);
-			else
-				printf("[%.4X] %s%s\n", curoffs, s, buf);
-		} else {
-			char buf2[4];
-			if (opcode != -1)
-				sprintf(buf2, "%.2X", opcode);
-			else
-				strcpy(buf2, "**");
-			if (dontShowOffsets)
-				printf("(%s) %s%s\n", buf2, s, buf);
-			else
-				printf("[%.4X] (%s) %s%s\n", curoffs, buf2, s, buf);
-		}
-	}
-}
-
-void writePendingElse()
-{
-	if (pendingElse) {
-		char buf[32];
-		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
-		outputLine(buf, pendingElseOffs, pendingElseOpcode, pendingElseIndent - 1);
-		pendingElse = false;
-	}
-}
-
-bool indentBlock(unsigned int cur)
-{
-	BlockStack *p;
-
-	if (!num_block_stack)
-		return false;
-
-	p = &block_stack[num_block_stack - 1];
-	if (cur < p->to)
-		return false;
-
-	num_block_stack--;
-	return true;
-}
-
-
-
-
 void ShowHelpAndExit()
 {
 	printf("SCUMM Script decompiler\n"
@@ -2836,7 +2673,10 @@ int main(int argc, char *argv[])
 		mem += 8;
 		break;											/* Exit code */
 	case 'VERB':
-		mem = skipVerbHeader(mem + 8);
+		if (scriptVersion == 8)
+			mem = skipVerbHeader_V8(mem + 8);
+		else
+			mem = skipVerbHeader_V67(mem + 8);
 		break;											/* Verb */
 	default:
 		printf("Unknown script type!\n");
@@ -2856,7 +2696,7 @@ int main(int argc, char *argv[])
 		if (scriptVersion == 8)
 			next_line_V8();
 		else
-			next_line();
+			next_line_V67();
 		if (buf[0]) {
 			writePendingElse();
 			if (haveElse) {
@@ -2873,13 +2713,16 @@ int main(int argc, char *argv[])
 	} while (cur_pos < mem + len);
 
 	printf("END\n");
-	printf("Stack count: %d\n", num_stack);
-	if (num_stack > 0) {
-		printf("Stack contents:\n");
-		while (num_stack) {
-			buf[0] = 0;
-			se_astext(pop(), buf);
-			printf("%s\n", buf);
+	
+	if (scriptVersion >= 6 && num_stack != 0) {
+		printf("Stack count: %d\n", num_stack);
+		if (num_stack > 0) {
+			printf("Stack contents:\n");
+			while (num_stack) {
+				buf[0] = 0;
+				se_astext(pop(), buf);
+				printf("%s\n", buf);
+			}
 		}
 	}
 

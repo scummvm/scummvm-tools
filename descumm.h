@@ -81,55 +81,67 @@ struct BlockStack {
 	bool isWhile;			// Set to true if we think this jump is part of a while loop
 };
 
-BlockStack *block_stack;
-int num_block_stack;
+extern BlockStack *block_stack;
+extern int num_block_stack;
 
 //
 // Jump decoding auxillaries (used by the code which tries to translate jumps
 // back into if / else / while / etc. constructs).
 //
-bool pendingElse, haveElse;
-int pendingElseTo;
-int pendingElseOffs;
-int pendingElseOpcode;
-int pendingElseIndent;
+extern bool pendingElse, haveElse;
+extern int pendingElseTo;
+extern int pendingElseOffs;
+extern int pendingElseOpcode;
+extern int pendingElseIndent;
 
 //
 // The opcode of an unconditional jump instruction.
 //
-int g_jump_opcode;
-
+extern int g_jump_opcode;
 
 //
 // Command line options
 //
-bool alwaysShowOffs = false;
-bool dontOutputIfs = false;
-bool dontOutputElse = false;
-bool dontOutputElseif = false;
-bool dontOutputWhile = false;
-bool dontShowOpcode = false;
-bool dontShowOffsets = false;
-bool haltOnError;
-
+extern bool alwaysShowOffs;
+extern bool dontOutputIfs;
+extern bool dontOutputElse;
+extern bool dontOutputElseif;
+extern bool dontOutputWhile;
+extern bool dontShowOpcode;
+extern bool dontShowOffsets;
+extern bool haltOnError;
 
 //
 // The SCUMM version used for the script we are descumming.
 //
-byte scriptVersion;
-
+extern byte scriptVersion;
 
 //
 // Various positions / offsets
 //
-byte *cur_pos, *org_pos;
-int offs_of_line;
+extern byte *cur_pos, *org_pos;
+extern int offs_of_line;
 
 //
 // Total size of the currently loaded script
 //
-int size_of_code;
+extern int size_of_code;
 
+//
+// Common
+//
 
+extern char *getIndentString(int i);
+extern void outputLine(char *buf, int curoffs, int opcode, int indent);
+extern bool indentBlock(unsigned int cur);
+
+extern char *strecpy(char *buf, const char *src);
+extern int get_curoffs();
+extern int get_byte();
+extern uint get_word();
+extern int get_signed_word();
+
+extern bool maybeAddIf(unsigned int cur, unsigned int to);
+extern void writePendingElse();
 
 #endif
