@@ -22,9 +22,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifdef UNIX
+//#ifdef UNIX
 #include <ctype.h>
-#endif
+//#endif
 
 #ifdef WIN32
 #include <io.h>
@@ -110,13 +110,28 @@ int get_curpos();
 
 bool emit_if(char *before, char *after);
 
+#if defined(SCUMM_BIG_ENDIAN)
+
+unsigned long inline TO_LE_32(unsigned long a) {
+	return ((a>>24)&0xFF) + ((a>>8)&0xFF00) + ((a<<8)&0xFF0000) + ((a<<24)&0xFF000000);
+}
+
+unsigned short inline TO_LE_16(unsigned short a) {
+	return ((a>>8)&0xFF) + ((a<<8)&0xFF00);
+}
+
+#endif
  
 int get_byte() {
    return (byte)(*cur_pos++);
 }
 
 int get_word() {
+#if defined(SCUMM_BIG_ENDIAN)
+  int i = TO_LE_16(*((short*)cur_pos));
+#else
   int i = *((short*)cur_pos);
+#endif
   cur_pos+=2;
   return i;
 }
@@ -1517,8 +1532,11 @@ int main(int argc, char *argv[]) {
 	size_of_code = len;
 	
 	buf = (char*)malloc(4096);
-	
+	#if defined(SCUMM_BIG_ENDIAN)
+	switch( TO_LE_16(*((long*)mem + 1) & 0xFFFF)) {
+	#else
 	switch( *((long*)mem + 1) & 0xFFFF) {
+	#endif
 	case MKID('LS'): 
 		printf("Script# %d\n", (unsigned char)mem[8]);
 		mem+=7; break;		/* Local script */
