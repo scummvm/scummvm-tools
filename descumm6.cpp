@@ -1427,6 +1427,15 @@ void next_line_V8()
 	case 0xA2:
 		ext("ppp|putActorAtObject");
 		break;
+	case 0xA3:
+		ext("pp|faceActor");
+		break;
+	case 0xA4:
+		ext("pp|animateActor");
+		break;
+	case 0xA5:
+		ext("pppp|doSentence");
+		break;
 
 	case 0xAA:
 		ext("x" "resourceRoutines\0"
@@ -1542,8 +1551,14 @@ void next_line_V8()
 				"\xC|unlockObject,"
 				"\xD|remapCostume,"
 				"\xE|remapCostumeInsert,"
-				"\xF|setVideoFrameRate"
+				"\xF|setVideoFrameRate,"
+
+				"\x6C|buildPaletteShadow"
 				);
+		break;
+
+	case 0xCD:
+		ext("rlp|isAnyOf");
 		break;
 
 	case 0xD3:
