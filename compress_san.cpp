@@ -138,7 +138,24 @@ int main(int argc, char *argv[]) {
 				free(zlibInputBuffer);
 				free(zlibOutputBuffer);
 				continue;
+			} else if (tag == 'IACT') {
+				size = readUint32BE(input); // chunk size
+				fseek(input, 2, SEEK_CUR);
+				int flags = readUint16LE(input);
+				int unk = readUint16BE(input);
+				int track_flags = readUint16LE(input);
+				// to be sure that is comi chunk
+				if ((track_flags != 0) || (unk != 0) || (flags != 46)) {
+					fseek(input, -8, SEEK_CUR);
+					goto skip;
+				}
+				if ((size & 1) != 0)
+					size++;
+				fseek(input, size - 8, SEEK_CUR);
+				frameInfo[l].frameSize -= size + 8;
+				continue;
 			} else {
+skip:
 				size = readUint32BE(input); // chunk size
 				writeUint32BE(output, tag);
 				writeUint32BE(output, size);
