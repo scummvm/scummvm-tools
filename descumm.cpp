@@ -1,6 +1,6 @@
 /* DeScumm - Scumm Script Disassembler (version 2-5 scripts)
  * Copyright (C) 2001  Ludvig Strigeus
- * Copyright (C) 2002-2003  The ScummVM Team
+ * Copyright (C) 2002-2004  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -231,6 +231,21 @@ const char *var_names345[] = {
 	/* 56 */
 	"VAR_SOUNDRESULT",
 	"VAR_TALKSTOP_KEY",
+	NULL,
+	NULL,
+	/* 60 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 64 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 68 */
+	"VAR_PERFORMANCE_1",
+	"VAR_PERFORMANCE_2",
 	NULL,
 	NULL
 };
