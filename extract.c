@@ -102,7 +102,7 @@ void get_part(void)
 	uint32 tags;
 
 	/* The VCTL header */
-	readString(4, buf, input);
+	fread(buf, 1, 4, input);
 	while (memcmp(buf, "VCTL", 4)) {
 		pos++;
 		append_byte(4, buf);
@@ -120,11 +120,11 @@ void get_part(void)
 		tags--;
 	}
 
-	readString(8, buf, input);
+	fread(buf, 1, 8, input);
 	if (!memcmp(buf, "Creative", 8)) {
-		readString(18, buf, input);
+		fseek(input, 18, SEEK_CUR);
 	} else if (!memcmp(buf, "VTLK", 4)) {
-		readString(26, buf, input);
+		fseek(input, 26, SEEK_CUR);
 	} else {
 		error("Unexpected data encountered");
 	}
@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
 	}
 	
 	/* Get the 'SOU ....' header */
-	readString(8, buf, input);
+	fread(buf, 1, 8, input);
 	if (strncmp(buf, f_hdr, 8)) {
 		printf("Bad SOU\n");
 		exit(-1);

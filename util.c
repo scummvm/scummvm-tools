@@ -75,11 +75,6 @@ uint32 readUint32LE(FILE *fp) {
 	return ret;
 }
 
-void readString(uint32 size, char *dest, FILE *fp) {
-	fread(dest, 1, size, fp);
-	dest[size+1] = '\0';
-}
-
 void writeByte(FILE *fp, uint8 b) {
 	fwrite(&b, 1, 1, fp);
 }

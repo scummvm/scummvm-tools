@@ -21,11 +21,7 @@
 
 #include "extract.h"
 
-unsigned int filenums[32768];
-unsigned int offsets[32768];
-
 char infile_base[256];
-char buf[256];
 
 void end(void)
 {
@@ -42,7 +38,7 @@ void end(void)
 
 	sprintf(tmp, "%sidx", infile_base);
 	input = fopen(tmp, "rb");
-	while ((size = fread(buf, 1, 2048, input)) > 0) {
+	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
 		fwrite(fbuf, 1, size, output_idx);
 	}
 	fclose(input);
@@ -66,14 +62,16 @@ void end(void)
 	exit(0);
 }
 
-int get_offsets(void)
+	
+int get_offsets(uint32 filenums[], uint32 offsets[])
 {
 	int i;
+	char buf[8];
 
 	for (i = 0;; i++) {
-		readString(8, buf, input);
+		fread(buf, 1, 8, input);
 		if (!memcmp(buf, "Creative", 8) || !memcmp(buf, "RIFF", 4)) {
-			return(i);
+			return i;
 		}
 		fseek(input, -8, SEEK_CUR);
 
@@ -81,7 +79,7 @@ int get_offsets(void)
 	}
 }
 
-int get_offsets_mac(void)
+int get_offsets_mac(uint32 filenums[], uint32 offsets[])
 {
 	int i, size;
 	fseek(input, 0, SEEK_END);
@@ -96,26 +94,27 @@ int get_offsets_mac(void)
 }
 
 
-unsigned int get_sound(int sound)
+uint32 get_sound(uint32 offset)
 {
 	FILE *f;
 	uint32 tot_size;
 	char outname[256];
 	int size;
 	char fbuf[2048];
+	char buf[8];
 
-	fseek(input, offsets[sound], SEEK_SET);
+	fseek(input, offset, SEEK_SET);
 
-	readString(8, buf, input);
+	fread(buf, 1, 8, input);
 	if (!memcmp(buf, "Creative", 8)) {
-		printf("VOC found (pos = %d) :\n", offsets[sound]);
-		readString(18, buf, input);
+		printf("VOC found (pos = %d) :\n", offset);
+		fseek(input, 18, SEEK_CUR);
 		get_voc();
 	} else if (!memcmp(buf, "RIFF", 4)) {
-		printf("WAV found (pos = %d) :\n", offsets[sound]);
+		printf("WAV found (pos = %d) :\n", offset);
 		get_wav();
 	} else {
-		error("Unexpected data at offset: %i", offsets[sound]);
+		error("Unexpected data at offset: %i", offset);
 	}
 
 	/* Append the converted data to the master output file */
@@ -168,6 +167,8 @@ void convert_pc(char *infile)
 {
 	int i, n, size, num;
 	char tmp[256];
+	uint32 filenums[32768];
+	uint32 offsets[32768];
 
 	memccpy(infile_base, infile, '.', strlen(infile));
 	n = strlen(infile_base);
@@ -190,7 +191,7 @@ void convert_pc(char *infile)
 	sprintf(tmp, "%sdat", infile_base);
 	output_snd = fopen(tmp, "wb");
 
-	num = get_offsets();
+	num = get_offsets(filenums, offsets);
 
 	if (!num) {
 		printf("This does not seem to be a valid file\n");
@@ -207,7 +208,7 @@ void convert_pc(char *infile)
 			continue;
 		}
 
-		size += get_sound(i);
+		size += get_sound(offsets[i]);
 		if (i < num - 1)
 			writeUint32BE(input, size);
 	}
@@ -217,6 +218,9 @@ void convert_mac(void)
 {
 	int i, size, num;
 	char tmp[256];
+	uint32 filenums[32768];
+	uint32 offsets[32768];
+	
 
 	sprintf(infile_base, "simon2.");
 
@@ -232,7 +236,7 @@ void convert_mac(void)
 	sprintf(tmp, "%sdat", infile_base);
 	output_snd = fopen(tmp, "wb");
 
-	num = get_offsets_mac();
+	num = get_offsets_mac(filenums, offsets);
 
 	if (!num) {
 		printf("This does not seem to be a valid file\n");
@@ -256,7 +260,7 @@ void convert_mac(void)
 			input = fopen(tmp, "rb"); 
 		}
 
-		size += get_sound(i);
+		size += get_sound(offsets[i]);
 		if (i < num - 1)
 			writeUint32BE(input, size);
 	}

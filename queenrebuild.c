@@ -228,9 +228,9 @@ int main(int argc, char *argv[])
 	checkOpen(inputTbl, INPUT_TBL);
 
 	size = fileSize(inputData);
-	readString(4, tmp, inputTbl);
+	fread(tmp, 1, 4, inputTbl);
 	tmp[4] = '\0';
-	if (strcmp(tmp, "QTBL")) {
+	if (memcmp(tmp, "QTBL", 4)) {
 		printf("Invalid TBL file!\n");
 		exit(-1);
 	} 
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
 		prevOffset = ftell(outputData);
 		
 		/* Read entry */
-		readString(12, entry.filename, inputTbl);
+		fread(entry.filename, 1, 12, inputTbl);
 		entry.filename[12] = '\0';
 		entry.bundle = readByte(inputTbl);
 		entry.offset = readUint32BE(inputTbl);

@@ -97,7 +97,6 @@ uint8 readByte(FILE *fp);
 uint16 readUint16BE(FILE *fp);
 uint32 readUint32BE(FILE *fp);
 uint32 readUint32LE(FILE *fp);
-void readString(uint32 size, char *dest, FILE *fp);
 void writeByte(FILE *fp, uint8 b);
 void writeUint16BE(FILE *fp, uint16 value);
 void writeUint32BE(FILE *fp, uint32 value);
