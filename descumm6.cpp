@@ -1664,6 +1664,9 @@ void next_line_V8()
 	case 0xA7:
 		ext("pl|setBoxFlags");
 		break;
+	case 0xA8:
+		ext("|createBoxMatrix");
+		break;
 
 	case 0xAA:
 		ext("x" "resourceRoutines\0"
