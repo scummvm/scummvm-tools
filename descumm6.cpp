@@ -1908,6 +1908,13 @@ void next_line_V67(char *output)
 	case 0x3:
 		push(se_var(get_word()));
 		break;
+	case 0x4:
+		//FIXME
+		if (HumongousFlag)
+			ext(output, "ssss|unknown04");
+		else
+			invalidop(NULL, code);
+		break;
 	case 0x6:
 		push(se_array(get_byte(), NULL, pop()));
 		break;
@@ -2740,6 +2747,16 @@ void next_line_V67(char *output)
 			get_byte();
 			ext(output, "s|unknownFA");
 		} else
+			invalidop(NULL, code);
+		break;
+	case 0xFB:
+		if (HumongousFlag)
+		ext(output, "x" "unknownFB\0"
+				"\xF6ppppppppp|caseF6,"
+				"\xF7pp|caseF7,"
+				"\xF8ppppppppp|caseF8,"
+				);
+		else
 			invalidop(NULL, code);
 		break;
 	default:
