@@ -1667,7 +1667,8 @@ void next_line_V8()
 				"\xE5pp|setCursorHotspot,"
 				"\xE6p|makeCursorColorTransparent,"
 				"\xE7p|initCharset,"
-				"\xE8l|charsetColors");
+				"\xE8l|charsetColors,"
+		    		"\xE9pp|setCursorPosition");
 		break;
 	case 0x9D:
 		ext("p|loadRoom");
