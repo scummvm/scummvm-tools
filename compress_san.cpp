@@ -33,7 +33,7 @@ const char *tag2str(uint32 tag) {
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <inputfile>.san <outputfile>.san\n", exename);
+	printf("\nUsage: %s <inputfile>.san <outputfile>.san [<file>.flu>]\n", exename);
 //	printf("\nParams:\n");
 //	printf("\n --help     this help message\n");
 	exit(2);
@@ -51,19 +51,25 @@ int main(int argc, char *argv[]) {
 	if (argc < 3)
 		showhelp(argv[0]);
 
-	i = argc - 2;
-	FILE *input = fopen(argv[i], "rb");
+	FILE *input = fopen(argv[1], "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", argv[i]);
+		printf("Cannot open file: %s\n", argv[1]);
 		exit(-1);
 	}
 
-	i = argc - 1;
-
-	FILE *output = fopen(argv[i], "wb");
+	FILE *output = fopen(argv[2], "wb");
 	if (!output) {
-		printf("Cannot open file: %s\n", argv[i]);
+		printf("Cannot open file: %s\n", argv[2]);
 		exit(-1);
+	}
+
+	FILE *flu = NULL;
+	if (argc == 4) {
+		flu = fopen(argv[3], "wb");
+		if (!flu) {
+			printf("Cannot open file: %s\n", argv[3]);
+			exit(-1);
+		}
 	}
 
 	uint32 tag;
@@ -153,6 +159,14 @@ int main(int argc, char *argv[]) {
 
 	fseek(output, 4, SEEK_SET);
 	writeUint32BE(output, animChunkSize - sumDiff);
+
+	if (flu) {
+		fseek(flu, 0x308, SEEK_SET);
+		for (l = 0; l < nbframes; l++) {
+			writeUint32BE(output, frameInfo[l].offsetOutput - 4);
+		}
+		fclose(flu);
+	}
 
 	free(frameInfo);
 	
