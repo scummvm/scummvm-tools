@@ -32,5 +32,28 @@ Included tools:
 		Compresses Simon voc/wav files to MP3/Ogg/FLAC. FLAC support
 		only available in ScummVM >0.6.0
 	
+	compress_san <inputfile>.san <outputfile>.san [<file>.flu>]
+		Compresses '.san' smush animation files. It use lossless
+		zlib for compress FOBJ gfx chunks inside san file.
+
+		Example of usage:
+		compress_san opening.san temp_opening.san 
+
+		'San' filenames which have equivalents to 'flu' files (which exist 
+		in Full Throttle 'data' dir) 'tovista2.san' and 'tovista2.flu'
+		must be compressed together, for example: 
+		compress_san tovista2.san temp_tovista2.san tovista2.flu
+		WARNING: Current status of 'flu' support is not good,
+		PLEASE NOT COMPRESS this pair of files yet, it will be fixed later.
+
+		Original 'tovista2.san' file is not modified and created new
+		'temp_tovista2.san' file, but input file 'tovista2.flu' file
+		IS MODIFIED while compression.
+
+		After compress of course you must rename
+		'temp_tovista2.san' to 'tovista2.san'.
+
+		ScummVM support only with zlib enabled build.
+
 	convbdf
 		Converts BDF (Bitmap Display Format) files to C++ source
