@@ -1128,6 +1128,8 @@ int main(int argc, char *argv[]) {
 		exit(-1);
 	}
 
+	initializeImcTables();
+
 	uint32 tag;
 	int32 numFiles, offset, i;
 
