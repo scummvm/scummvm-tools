@@ -1252,6 +1252,7 @@ void next_line()
 		break;
 	case 0xA9:
 		ext("x" "wait\0"
+			"\xE2pwj|waitForActorDrawn,"
 				"\xA8pj|waitForActor," "\xA9|waitForMessage," "\xAA|waitForCamera," "\xAB|waitForSentence");
 		break;
 	case 0xAA:
