@@ -44,6 +44,7 @@ struct FrameInfo {
 	int32 offsetOutput;
 	int32 fobjDecompressedSize;
 	int32 fobjCompressedSize;
+	int32 lessIACTSize;
 };
 
 static byte _IACToutput[0x1000];
@@ -261,6 +262,7 @@ int main(int argc, char *argv[]) {
 		frameInfo[l].offsetOutput = ftell(output);
 		frameInfo[l].fobjDecompressedSize = 0;
 		frameInfo[l].fobjCompressedSize = 0;
+		frameInfo[l].lessIACTSize = 0;
 		writeUint32BE(output, frameSize);
 		for (;;) {
 			tag = readUint32BE(input); // chunk tag
@@ -320,7 +322,7 @@ int main(int argc, char *argv[]) {
 					fseek(input, 1, SEEK_CUR);
 					size++;
 				}
-				frameInfo[l].frameSize -= size + 8;
+				frameInfo[l].lessIACTSize = size + 8;
 				continue;
 			} else {
 skip:
@@ -343,19 +345,23 @@ skip:
 
 	fclose(input);
 
-	printf("Fixing anim header...");
+	printf("Fixing frames header...");
 	int32 sumDiff = 0;
 	for (l = 0; l < nbframes; l++) {
-		if (frameInfo[l].fobjCompressedSize == 0)
-			continue;
+		int32 diff = 0;
+		if (frameInfo[l].fobjCompressedSize != 0) {
+			diff += frameInfo[l].fobjDecompressedSize - (frameInfo[l].fobjCompressedSize + 4);
+		}
+		if (frameInfo[l].lessIACTSize != 0) {
+			diff += frameInfo[l].lessIACTSize;
+		}
 		fseek(output, frameInfo[l].offsetOutput, SEEK_SET);
-		int32 diff = frameInfo[l].fobjDecompressedSize - (frameInfo[l].fobjCompressedSize + 4);
 		sumDiff += diff;
 		writeUint32BE(output, frameInfo[l].frameSize - diff);
 	}
 	printf("done.\n");
 
-	printf("Fixing frames header...");
+	printf("Fixing anim header...");
 	fseek(output, 4, SEEK_SET);
 	writeUint32BE(output, animChunkSize - sumDiff);
 	printf("done.\n");
