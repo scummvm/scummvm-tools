@@ -2571,6 +2571,9 @@ void next_line_V67(char *output)
 		else
 			invalidop(NULL, code);
 		break;
+	case 0xE3:
+		ext(output, "l|pickVarRandom");
+		break;
 	case 0xEC:
 		if (HumongousFlag)
 			invalidop(NULL, code);
