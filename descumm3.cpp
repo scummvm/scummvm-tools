@@ -1244,7 +1244,7 @@ int get_curpos()
 int get_gotopos()
 {
 	int j = get_word();
-	return j + get_curpos();
+	return (short)(j + get_curpos());
 }
 
 bool emit_if(char *before, char *after)
