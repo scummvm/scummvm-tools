@@ -684,7 +684,7 @@ byte *skipVerbHeader(byte *p)
 		
 		ptr = (uint32 *)p;
 		while ((code = TO_LE_32(*ptr++)) != 0) {
-			printf("  %2X - %.4X\n", code, TO_LE_32(*ptr++) - hdrlen);
+			printf("  %2d - %.4X\n", code, TO_LE_32(*ptr++) - hdrlen);
 		}
 
 		return (byte *)ptr;
@@ -1894,6 +1894,9 @@ void next_line_V8()
 		break;
 	case 0xDC:
 		ext("rpp|findObject");
+		break;
+	case 0xDD:
+		ext("rpp|getVerbFromXY");
 		break;
 
 	case 0xDF:
