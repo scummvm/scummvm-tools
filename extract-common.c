@@ -21,13 +21,68 @@
 
 #include "extract.h"
 
+typedef struct  {
+	uint32 minBitr;
+	uint32 maxBitr; 
+	bool abr;
+	uint32 algqual;
+	uint32 vbrqual;
+	uint32 silent;
+} lameparams;
+
+typedef struct {
+	int nominalBitr;
+	int minBitr;
+	int maxBitr;
+	int quality;
+	int silent;
+} oggencparams;
+
+
 FILE *input, *output_idx, *output_snd;
 
-lameparams encparms = { minBitrDef, maxBitrDef, abrDef, vbrDef, algqualDef, vbrqualDef, 0 };
+lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0 };
 oggencparams oggparms = { -1, -1, -1, oggqualDef, 0 };
 
-int oggmode = 0;
+bool oggmode = 0;
 
+
+uint32 get_int32LE(void)
+{
+	uint32 ret = 0;
+	ret |= fgetc(input);
+	ret |= fgetc(input) << 8;
+	ret |= fgetc(input) << 16;
+	ret |= fgetc(input) << 24;
+	return ret;
+}
+
+uint32 get_int32BE(void)
+{
+	uint32 ret = 0;
+	ret |= fgetc(input) << 24;
+	ret |= fgetc(input) << 16;
+	ret |= fgetc(input) << 8;
+	ret |= fgetc(input);
+	return ret;
+}
+
+uint16 get_int16BE(void)
+{
+	uint16 ret = 0;
+	ret |= fgetc(input) << 8;
+	ret |= fgetc(input);
+	return ret;
+}
+
+void put_int32BE(uint32 val)
+{
+	byte b;
+	b = (byte)(val >> 24);	fputc((char)b, output_idx);
+	b = (byte)(val >> 16);	fputc((char)b, output_idx);
+	b = (byte)(val >>  8);	fputc((char)b, output_idx);
+	b = (byte)(val >>  0);	fputc((char)b, output_idx);
+}
 
 int getSampleRateFromVOCRate(int vocSR) {
 	if (vocSR == 0xa5 || vocSR == 0xa6 || vocSR == 0x83) {
@@ -39,6 +94,76 @@ int getSampleRateFromVOCRate(int vocSR) {
 		warning("inexact sample rate used: %i (0x%x)", sr, vocSR);
 		return sr;
 	}
+}
+
+void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, bool oggOutput) {
+	char fbuf[2048];
+	char *tmp = fbuf;
+
+	if (oggOutput) {
+		tmp += sprintf(tmp, "oggenc ");
+		if (rawInput) {
+			tmp += sprintf(tmp, "--raw --raw-chan=1 --raw-bits=8 ");
+			tmp += sprintf(tmp, "--raw-rate=%i ", rawSamplerate);
+		}
+
+		if (oggparms.nominalBitr != -1)
+			tmp += sprintf(tmp, "--bitrate=%i ", oggparms.nominalBitr);
+		if (oggparms.minBitr != -1)
+			tmp += sprintf(tmp, "--min-bitrate=%i ", oggparms.minBitr);
+		if (oggparms.maxBitr != -1)
+			tmp += sprintf(tmp, "--max-bitrate=%i ", oggparms.maxBitr);
+		if (oggparms.silent)
+			tmp += sprintf(tmp, "--quiet ");
+		tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
+		tmp += sprintf(tmp, "--output=%s ", outname);
+		tmp += sprintf(tmp, "%s ", inname);
+		system(fbuf);
+	} else {
+		tmp += sprintf(tmp, "lame -t -m m ");
+		if (rawInput) {
+			tmp += sprintf(tmp, "-r --bitwidth 8 ");
+			tmp += sprintf(tmp, "-s %d ", rawSamplerate);
+		}
+
+		if (encparms.abr == 1)
+			tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
+		else
+			tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
+		if (encparms.silent == 1)
+			tmp += sprintf(tmp, " --silent ");
+		tmp += sprintf(tmp, "-q %i ", encparms.algqual);
+		tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
+		tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
+		tmp += sprintf(tmp, "%s %s ", inname, outname);
+		system(fbuf);
+	}
+} 
+
+void get_wav(void) {
+	int length;
+	FILE *f;
+	char fbuf[2048];
+	size_t size;
+
+	fseek(input, -4, SEEK_CUR);
+	length = get_int32LE();
+	length += 8;
+	fseek(input, -8, SEEK_CUR);
+
+	/* Copy the WAV data to a temporary file */
+	f = fopen(TEMP_WAV, "wb");
+	while (length > 0) {
+		size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length, input);
+		if (size <= 0)
+			break;
+		length -= size;
+		fwrite(fbuf, 1, size, f);
+	}
+	fclose(f);
+
+	/* Convert the WAV temp file to OGG/MP3 */
+	encodeAudio(TEMP_WAV, false, -1, oggmode ? TEMP_OGG : TEMP_MP3, oggmode);
 }
 
 void get_voc(void)
@@ -54,10 +179,7 @@ void get_voc(void)
 		int comp;
 		FILE *f;
 		char fbuf[2048];
-		char *tmp;
 		size_t size;
-		char rawname[256];
-		char outname[256];
 		int real_samplerate;
 
 		/* Sound Data */
@@ -83,10 +205,9 @@ void get_voc(void)
 			error("Cannot handle compressed VOC data");
 
 		/* Copy the raw data to a temporary file */
-		sprintf(rawname, TEMP_RAW);
-		f = fopen(rawname, "wb");
+		f = fopen(TEMP_RAW, "wb");
 		while (length > 0) {
-			size = fread(fbuf, 1, length > 2048 ? 2048 : (uint32)length, input);
+			size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length, input);
 			if (size <= 0)
 				break;
 			length -= size;
@@ -95,43 +216,7 @@ void get_voc(void)
 		fclose(f);
 
 		/* Convert the raw temp file to OGG/MP3 */
-		/* TODO: Unify this with the conversion code in get_wav() */
-		sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
-		tmp = fbuf;
-		if (oggmode) {
-			tmp += sprintf(tmp, "oggenc ");
-			tmp += sprintf(tmp, "--raw --raw-chan=1 --raw-bits=8 ");
-			tmp += sprintf(tmp, "--raw-rate=%i ", real_samplerate);
-
-			if (oggparms.nominalBitr != -1)
-				tmp += sprintf(tmp, "--bitrate=%i ", oggparms.nominalBitr);
-			if (oggparms.minBitr != -1)
-				tmp += sprintf(tmp, "--min-bitrate=%i ", oggparms.minBitr);
-			if (oggparms.maxBitr != -1)
-				tmp += sprintf(tmp, "--max-bitrate=%i ", oggparms.maxBitr);
-			if (oggparms.silent)
-				tmp += sprintf(tmp, "--quiet ");
-			tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
-			tmp += sprintf(tmp, "--output=%s ", outname);
-			tmp += sprintf(tmp, "%s ", rawname);
-			system(fbuf);
-		} else {
-			tmp += sprintf(tmp, "lame -t -m m ");
-			tmp += sprintf(tmp, "-r --bitwidth 8 ");
-			tmp += sprintf(tmp, "-s %d ", real_samplerate);
-
-			if (encparms.abr == 1)
-				tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
-			else
-				tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
-			if (encparms.silent == 1)
-				tmp += sprintf(tmp, " --silent ");
-			tmp += sprintf(tmp, "-q %i ", encparms.algqual);
-			tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
-			tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
-			tmp += sprintf(tmp, "%s %s ", rawname, outname);
-			system(fbuf);
-		}
+		encodeAudio(TEMP_RAW, true, real_samplerate, oggmode ? TEMP_OGG : TEMP_MP3, oggmode);
 		break;
 	}
 
@@ -144,10 +229,8 @@ void get_voc(void)
 void process_mp3_parms(int argc, char *argv[], int i) {
 	for(; i < argc; i++) {
 		if (strcmp(argv[i], "--vbr") == 0) {
-			encparms.vbr=1;
 			encparms.abr=0;
 		} else if (strcmp(argv[i], "--abr") == 0) {
-			encparms.vbr=0;
 			encparms.abr=1;
 		} else if (strcmp(argv[i], "-b") == 0) {
 			encparms.minBitr = atoi(argv[i + 1]);

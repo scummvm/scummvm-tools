@@ -76,50 +76,6 @@ void get_string(int size)
 	buf[i] = '\0';
 }
 
-unsigned int get_int32LE(void)
-{
-	int i;
-	unsigned int ret = 0;
-	unsigned int c;
-	for (i = 0; i < 4; i++) {
-		c = fgetc(input);
-		ret |= c << i*8;
-	}
-	return ret;
-}
-
-unsigned int get_int32BE(void)
-{
-	int i;
-	unsigned int ret = 0;
-	unsigned int c;
-	for (i = 3; i >= 0; i--) {
-		c = fgetc(input);
-		ret |= c << i*8;
-	}
-	return ret;
-}
-
-unsigned int get_int16BE(void)
-{
-	int i;
-	unsigned int ret = 0;
-	unsigned int c;
-	for (i = 1; i >= 0; i--) {
-		c = fgetc(input);
-		ret |= c << i*8;
-	}
-	return ret;
-}
-
-void put_int(unsigned int val)
-{
-	int i;
-	for (i = 3; i >= 0; i--) {
-		fputc((val << i*8) >> 24, output_idx);
-	}
-}
-
 int get_offsets(void)
 {
 	int i;
@@ -149,7 +105,6 @@ int get_offsets_mac(void)
 	return(size/6);
 }
 
-void get_wav(void);
 
 unsigned int get_sound(int sound)
 {
@@ -184,67 +139,6 @@ unsigned int get_sound(int sound)
 	fclose(f);
 
 	return(tot_size);
-}
-
-void get_wav(void) {
-	int length;
-	FILE *f;
-	char fbuf[2048];
-	char *tmp;
-	size_t size;
-	char wavname[256];
-	char outname[256];
-
-	fseek(input, -4, SEEK_CUR);
-	length = get_int32LE();
-	length += 8;
-	fseek(input, -8, SEEK_CUR);
-
-	/* Copy the WAV data to a temporary file */
-	sprintf(wavname, "tempfile.wav");
-	f = fopen(wavname, "wb");
-	while (length > 0) {
-		size = fread(fbuf, 1, length > 2048 ? 2048 : length, input);
-		if (size <= 0)
-			break;
-		length -= size;
-		fwrite(fbuf, 1, size, f);
-	}
-	fclose(f);
-
-	/* Convert the WAV temp file to OGG/MP3 */
-	/* TODO: Unify this with the conversion code in get_voc() */
-	sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
-	tmp = fbuf;
-	if (oggmode) {
-		tmp += sprintf(tmp, "oggenc ");
-		if (oggparms.nominalBitr != -1)
-			tmp += sprintf(tmp, "--bitrate=%i ", oggparms.nominalBitr);
-		if (oggparms.minBitr != -1)
-			tmp += sprintf(tmp, "--min-bitrate=%i ", oggparms.minBitr);
-		if (oggparms.maxBitr != -1)
-			tmp += sprintf(tmp, "--max-bitrate=%i ", oggparms.maxBitr);
-		if (oggparms.silent)
-			tmp += sprintf(tmp, "--quiet ");
-		tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
-		tmp += sprintf(tmp, "--output=%s ", outname);
-		tmp += sprintf(tmp, "%s ", wavname);
-		system(fbuf);
-	} else {
-		tmp += sprintf(tmp, "lame -t -m m ");
-		if (encparms.abr == 1)
-			tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
-		else
-			tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
-		if (encparms.silent == 1)
-			tmp += sprintf(tmp, " --silent ");
-
-		tmp += sprintf(tmp, "-q %i ", encparms.algqual);
-		tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
-		tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
-		tmp += sprintf(tmp, "%s %s ", wavname, outname);
-		system(fbuf);
-	}
 }
 
 void showhelp(char *exename)
@@ -314,18 +208,18 @@ void convert_pc(char *infile)
 	}
 	size = num*4;
 
-	put_int(0);
-	put_int(size);
+	put_int32BE(0);
+	put_int32BE(size);
 
 	for (i = 1; i < num; i++) {
 		if (offsets[i] == offsets[i+1]) {
-			put_int(size);
+			put_int32BE(size);
 			continue;
 		}
 
 		size += get_sound(i);
 		if (i < num - 1)
-			put_int(size);
+			put_int32BE(size);
 	}
 }
 
@@ -356,12 +250,12 @@ void convert_mac(void)
 	}
 	size = num*4;
 
-	put_int(0);
-	put_int(size);
+	put_int32BE(0);
+	put_int32BE(size);
 
 	for (i = 1; i < num; i++) {
 		if (filenums[i] == filenums[i+1] && offsets[i] == offsets[i+1]) {
-			put_int(size);
+			put_int32BE(size);
 			continue;
 		}
 
@@ -374,7 +268,7 @@ void convert_mac(void)
 
 		size += get_sound(i);
 		if (i < num - 1)
-			put_int(size);
+			put_int32BE(size);
 	}
 }
 

@@ -25,36 +25,22 @@
 #include "util.h"
 
 
+typedef enum {
+	false = 0,
+	true = 1
+} bool;
+
+
 /* These are the defaults parameters for the Lame invocation */
 #define minBitrDef 24
 #define maxBitrDef 64
-#define abrDef 0
-#define vbrDef 1
 #define algqualDef 2
 #define vbrqualDef 4
 
 /* The default for oggenc invocation is to use the --quality option only */
 #define oggqualDef 3
 
-typedef struct  {
-	uint32 minBitr;
-	uint32 maxBitr; 
-	uint32 abr;
-	uint32 vbr;
-	uint32 algqual;
-	uint32 vbrqual;
-	uint32 silent;
-} lameparams;
-
-typedef struct {
-	int nominalBitr;
-	int minBitr;
-	int maxBitr;
-	int quality;
-	int silent;
-} oggencparams;
-
-
+#define TEMP_WAV	"tempfile.wav"
 #define TEMP_RAW	"tempfile.raw"
 #define TEMP_MP3	"tempfile.mp3"
 #define TEMP_OGG	"tempfile.ogg"
@@ -64,15 +50,18 @@ typedef struct {
  */
 extern FILE *input, *output_idx, *output_snd;
 
-extern lameparams encparms;
-extern oggencparams oggparms;
+extern bool oggmode;
 
-extern int oggmode;
+extern uint32 get_int32LE(void);
+extern uint32 get_int32BE(void);
+extern uint16 get_int16BE(void);
+extern void put_int32BE(uint32 val);
 
 extern void process_mp3_parms(int argc, char *argv[], int i);
 extern void process_ogg_parms(int argc, char *argv[], int i);
 
-void get_voc(void);
+extern void get_voc(void);
+extern void get_wav(void);
 
 
 /*
