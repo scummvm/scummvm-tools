@@ -57,51 +57,6 @@ switch/case statements, too, so it's possible they used that in Scumm, too.
   
 */
 
-/*
- FIXME: The current "while" and "else" detection code interfer. There simply are case
- which they can't decode correctly, leading to completely wrong output. An example
- can be seen by looking at script 52 of Sam&Max. It gets descummed to this:
- 
-	[002E] (43)   localvar1 = 6
-	[0037] (5D)   while (localvar1 <= 80) {
-	[0041] (5D)     if (array-178[localvar1] == 0) {
-	[004E] (47)       array-178[localvar0] = localvar1
-	[0057] (4F)       var179 += 1
-	[005A] (73)     } else {
-	[005D] (4F)       localvar1 += 1
-	[0060] (73)       jump 37
-	[0063] (**)     }
-	[0063] (**)   }
-	[0063] (**) }
-	[0063] (66) stopObjectCodeB()
- 
- Using "-e" we get the correct result:
-	[002E] (43)   localvar1 = 6
-	[0037] (5D)   while (localvar1 <= 80) {
-	[0041] (5D)     if (array-178[localvar1] == 0) {
-	[004E] (47)       array-178[localvar0] = localvar1
-	[0057] (4F)       var179 += 1
-	[005A] (73)       jump 63
-	[005D] (**)     }
-	[005D] (4F)     localvar1 += 1
-	[0063] (**)   }
-	[0063] (**) }
-	[0060] (66) stopObjectCodeB()
-(but note the wrong offset in the last line!)
-
-When doing raw output, we get this:
-	[0031] (43) localvar1 = 6
-	[0037] (5D) unless ((localvar1 <= 80)) jump 63
-	[0041] (5D) unless ((array-178[localvar1] == 0)) jump 5d
-	[004E] (47) array-178[localvar0] = localvar1
-	[0057] (4F) var179 += 1
-	[005A] (73) jump 63
-	[005D] (4F) localvar1 += 1
-	[0060] (73) jump 37
-	[0063] (66) stopObjectCodeB()
-
-*/
-
 
 struct StackEnt {
 	byte type;
@@ -954,13 +909,13 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 		break;
 	case seArray:
 		if (se->left) {
-			where += sprintf(where, "array-%ld[", se->data);
+			where += sprintf(where, "array%ld[", se->data);
 			where = se_astext(se->left, where);
 			where = strecpy(where, "][");
 			where = se_astext(se->right, where);
 			where = strecpy(where, "]");
 		} else {
-			where += sprintf(where, "array-%ld[", se->data);
+			where += sprintf(where, "array%ld[", se->data);
 			where = se_astext(se->right, where);
 			where = strecpy(where, "]");
 		}
@@ -1042,7 +997,14 @@ void doAssign(char *output, StackEnt * dst, StackEnt * src)
 void doAdd(char *output, StackEnt * se, int val)
 {
 	char *e = se_astext(se, output);
-	sprintf(e, " += %d", val);
+	if (val == 1) {
+		sprintf(e, "++");
+	} else if (val == -1) {
+		sprintf(e, "--");
+	} else {
+		/* SCUMM doesn't support this */
+		sprintf(e, " += %d", val);
+	}
 }
 
 StackEnt *dup(char *output, StackEnt * se)
@@ -1319,6 +1281,10 @@ void jump(char *output)
 			BlockStack *p = &block_stack[num_block_stack - 1];
 			if (p->isWhile && cur == p->to)
 				return;		// A 'while' ends here.
+			if (!dontOutputBreaks && maybeAddBreak(cur, to)) {
+				sprintf(output, "break");
+				return;
+		  }
 		}
 		sprintf(output, "jump %x", to);
 	}
@@ -1336,8 +1302,6 @@ void jumpif(char *output, StackEnt * se, bool negate)
 			pendingElse = false;
 			haveElse = true;
 			e = strecpy(e, "} else if (");
-			if (negate)
-				se = se_neg(se);
 			e = se_astext(se, e, false);
 			sprintf(e, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 			return;
@@ -1345,12 +1309,10 @@ void jumpif(char *output, StackEnt * se, bool negate)
 	}
 
 	if (!dontOutputIfs && maybeAddIf(cur, to)) {
-		if (!dontOutputWhile && block_stack[num_block_stack - 1].isWhile) {
-			e = strecpy(e, "while (");
-		} else
-			e = strecpy(e, "if (");
-		if (negate)
-			se = se_neg(se);
+		if (!dontOutputWhile && block_stack[num_block_stack - 1].isWhile)
+			e = strecpy(e, negate ? "until (" : "while (");
+		else
+			e = strecpy(e, negate ? "unless (" : "if (");
 		e = se_astext(se, e, false);
 		sprintf(e, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 		return;
@@ -1523,7 +1485,7 @@ void next_line_HE_V72(char *output)
 				"\xD6p|makeCursorColorTransparent");
 		break;
 	case 0x6C:
-		ext(output, "|break");
+		ext(output, "|breakHere");
 		break;
 	case 0x6D:
 		ext(output, "rlp|ifClassOfIs");
@@ -2915,7 +2877,7 @@ void next_line_V67(char *output)
 				"\xD6p|makeCursorColorTransparent");
 		break;
 	case 0x6C:
-		ext(output, "|break");
+		ext(output, "|breakHere");
 		break;
 	case 0x6D:
 		ext(output, "rlp|ifClassOfIs");

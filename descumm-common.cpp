@@ -39,6 +39,7 @@ bool dontOutputIfs = false;
 bool dontOutputElse = false;
 bool dontOutputElseif = false;
 bool dontOutputWhile = false;
+bool dontOutputBreaks = false;
 bool dontShowOpcode = false;
 bool dontShowOffsets = false;
 bool haltOnError;
@@ -203,6 +204,7 @@ bool maybeAddIf(uint cur, uint to)
 // Returns 0 or 1 depending if it's ok to add an else
 bool maybeAddElse(uint cur, uint to)
 {
+	int i;
 	BlockStack *p;
 
 	if (((to | cur) >> 16) || (to <= cur))
@@ -214,6 +216,13 @@ bool maybeAddElse(uint cur, uint to)
 	p = &block_stack[num_block_stack - 1];
 	if (cur != p->to)
 		return false;								/* We have no prevoius if that is exiting right at the end of this goto */
+
+	/* Don't jump out of previous blocks. This test is stronger than the one in
+	   maybeAddIf. ( >= vs > ) */
+	for (i = 0, p = block_stack; i < num_block_stack - 1; i++, p++) {
+		if (to >= p->to)
+			return false;
+	}
 
 	num_block_stack--;
 	if (maybeAddIf(cur, to))
@@ -246,21 +255,46 @@ bool maybeAddElseIf(uint cur, uint elseto, uint to)
 	if (k >= size_of_code)
 		return false;								/* Invalid jump */
 
-	if (org_pos[k] != g_jump_opcode)
-		return false;								/* Invalid jump */
-
-	if (scriptVersion == 8)
-		k = to + TO_LE_32(*(int32*)(org_pos + k + 1));
-	else
-		k = to + TO_LE_16(*(int16*)(org_pos + k + 1));
-
-	if (k != elseto)
-		return false;								/* Not an ifelse */
-
+	if (elseto != to) {
+		if (org_pos[k] != g_jump_opcode)
+			return false;							/* Invalid jump */
+	
+		if (scriptVersion == 8)
+			k = to + TO_LE_32(*(int32*)(org_pos + k + 1));
+		else
+			k = to + TO_LE_16(*(int16*)(org_pos + k + 1));
+	
+		if (k != elseto)
+			return false;							/* Not an ifelse */
+	}
 	p->from = cur;
 	p->to = to;
 
 	return true;
+}
+
+bool maybeAddBreak(uint cur, uint to)
+{
+	BlockStack *p;
+
+	if (((to | cur) >> 16) || (to <= cur))
+		return false;								/* Invalid jump */
+
+	if (!num_block_stack)
+		return false;								/* There are no previous blocks, so a break is not ok */
+
+	/* Find the first parent block that is a while and if we're jumping to the end of that, we use a break */
+	for (int i = num_block_stack - 1; i >= 0; i--) {
+		p = &block_stack[i];
+		if (p->isWhile) {
+			if (to == p->to)
+				return true;
+			else
+				return false;
+		}
+	}
+
+	return false;
 }
 
 void writePendingElse()

@@ -62,6 +62,7 @@ extern bool dontOutputIfs;
 extern bool dontOutputElse;
 extern bool dontOutputElseif;
 extern bool dontOutputWhile;
+extern bool dontOutputBreaks;
 extern bool dontShowOpcode;
 extern bool dontShowOffsets;
 extern bool haltOnError;
@@ -98,6 +99,7 @@ extern int get_word();
 extern bool maybeAddIf(uint cur, uint to);
 extern bool maybeAddElse(uint cur, uint to);
 extern bool maybeAddElseIf(uint cur, uint elseto, uint to);
+extern bool maybeAddBreak(uint cur, uint to);
 extern void writePendingElse();
 
 //

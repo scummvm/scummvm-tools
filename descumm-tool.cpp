@@ -46,6 +46,7 @@ void ShowHelpAndExit()
 			"\t-e\tDon't output else\n"
 			"\t-f\tDon't output else-if\n"
 			"\t-w\tDon't output while\n"
+			"\t-b\tDon't output breaks\n"
 			"\t-c\tDon't show opcode\n"
 			"\t-x\tDon't show offsets\n"
 			"\t-h\tHalt on error\n");
@@ -220,6 +221,9 @@ int main(int argc, char *argv[])
 				case 'w':
 					dontOutputWhile = true;
 					break;
+				case 'b':
+					dontOutputBreaks = true;
+					break;
 				case 'c':
 					dontShowOpcode = true;
 					break;
@@ -385,7 +389,8 @@ int main(int argc, char *argv[])
 			offs_of_line = get_curoffs();
 		}
 		while (indentBlock(get_curoffs())) {
-			outputLine("}", -1, -1, -1);
+			outputLine("}", offs_of_line, -1, -1);
+			offs_of_line = get_curoffs();
 		}
 		fflush(stdout);
 	}
