@@ -19,15 +19,10 @@
  *
  */
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include "util.h"
 
 /* this makes rescumm convert extracted file names to lower case */
 #define CHANGECASE
-
-#define MAKELE(a)	(a=(a>>24)|((a>>8)&0xff00)|((a<<8)&0xff0000)|(a<<24))
 
 int main(int argc, char *argv[])
 {
@@ -35,86 +30,67 @@ int main(int argc, char *argv[])
 	unsigned long file_record_off, file_record_len;
 	unsigned long file_off, file_len;
 	unsigned long data_file_len;
-	char data_file_name[0x100];
+	const char *data_file_name;
 	char file_name[0x20];
 	char *buf;
 	unsigned long i;
-	int j, le = 0x00ffffff;
+	int j;
 
-	/* do a quick test to auto detect little endian machines */
-	le = (*(char *)(&le));
-
-	if (argc < 2) {
+	if (argc != 2) {
 		fputs("error: you must specify the mac data file on the command line.\n", stderr);
 		fputs(" i.e. % rescumm \"Sam & Max Demo Data\"\n", stderr);
 		fputs("\nA note on usage. Some Lucas Arts CDs appear to contains only an application.\n", stderr);
 		fputs("They actually contain a seperate data file as an invisible file.\n", stderr);
-			 
-			
-		exit(0);
+
+		exit(1);
 	}
 
-	strcpy(data_file_name, argv[1]);
+	data_file_name = argv[1];
 	if ((ifp = fopen(data_file_name, "rb")) == NULL) {
-		fprintf(stderr, "error: could not open \'%s\'.\n", argv[1]);
-		exit(0);
+		error("Could not open \'%s\'.", data_file_name);
 	}
 
 	/* get the length of the data file to use for consistency checks */
 	if (fseek(ifp, 0, SEEK_END)) {
-		fputs("error: seek error.", stderr);
 		fclose(ifp);
-		exit(0);
+		error("Seek error.");
 	}
 	data_file_len = ftell(ifp);
 	if (fseek(ifp, 0, SEEK_SET)) {
-		fputs("error: seek error.", stderr);
 		fclose(ifp);
-		exit(0);
+		error("Seek error.");
 	}
 
 	/* read offset and length to the file records */
-	fread(&file_record_off, 4, 1, ifp);
-	fread(&file_record_len, 4, 1, ifp);
-	if (le)
-		MAKELE(file_record_off);
-	if (le)
-		MAKELE(file_record_len);
+	file_record_off = readUint32BE(ifp);
+	file_record_len = readUint32BE(ifp);
 
 	/* do a quick check to make sure the offset and length are good */
 	if (file_record_off + file_record_len > data_file_len) {
-		fprintf(stderr, "error: \'%s\'. file records out of bounds.\n", data_file_name);
 		fclose(ifp);
-		exit(0);
+		error("\'%s\'. file records out of bounds.", data_file_name);
 	}
 
 	/* do a little consistancy check on file_record_length */
 	if (file_record_len % 0x28) {
-		fprintf(stderr, "error: \'%s\'. file record length not multiple of 40.\n", data_file_name);
 		fclose(ifp);
-		exit(0);
+		error("\'%s\'. file record length not multiple of 40.", data_file_name);
 	}
 
 	/* extract the files */
 	for (i = 0; i < file_record_len; i += 0x28) {
 		/* read a file record */
 		if (fseek(ifp, file_record_off + i, SEEK_SET)) {
-			fputs("error: seek error.", stderr);
 			fclose(ifp);
-			exit(0);
+			error("Seek error.");
 		}
-		fread(&file_off, 4, 1, ifp);
-		fread(&file_len, 4, 1, ifp);
-		if (le)
-			MAKELE(file_off);
-		if (le)
-			MAKELE(file_len);
+		file_off = readUint32BE(ifp);
+		file_len = readUint32BE(ifp);
 		fread(file_name, 0x20, 1, ifp);
 
 		if (!file_name[0]) {
-			fprintf(stderr, "error: \'%s\'. file has no name.\n", data_file_name);
 			fclose(ifp);
-			exit(0);
+			error("\'%s\'. file has no name.", data_file_name);
 		}
 		printf("extracting \'%s\'", file_name);
 
@@ -141,21 +117,19 @@ int main(int argc, char *argv[])
 
 		/* consistency check. make sure the file data is in the file */
 		if (file_off + file_len > data_file_len) {
-			fprintf(stderr, "error: \'%s\'. file out of bounds.\n", data_file_name);
 			fclose(ifp);
-			exit(0);
+			error("\'%s\'. file out of bounds.", data_file_name);
 		}
 
 		/* write a file */
 		if (fseek(ifp, file_off, SEEK_SET)) {
-			fputs("error: seek error.", stderr);
 			fclose(ifp);
-			exit(0);
+			error("Seek error.");
 		}
 		ofp = fopen(file_name, "wb");
 		if (!(buf = malloc(file_len))) {
-			fprintf(stderr, "error: could not allocate %ld bytes of memory.\n", file_len);
-			exit(0);
+			fclose(ifp);
+			error("Could not allocate %ld bytes of memory.", file_len);
 		}
 		fread(buf, 1, file_len, ifp);
 		fwrite(buf, 1, file_len, ofp);
@@ -164,5 +138,5 @@ int main(int argc, char *argv[])
 	}
 
 	fclose(ifp);
-	return (0);
+	return 0;
 }
