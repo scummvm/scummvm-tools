@@ -801,6 +801,10 @@ void do_load_code_to_string(char *buf, byte opcode)
 
 void do_resource(char *buf, byte opco)
 {
+	// FIXME:
+	// 1) This is out of date compared to script_v1.cp
+	// 2) the token's should all get a prefix, so that we don't mix up the
+	//    "real" loadRoom with the one here.
 	char opcode = get_byte();
 	switch (opcode & 31) {
 	case 0x1:
