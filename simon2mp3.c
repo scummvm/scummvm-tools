@@ -41,6 +41,7 @@
 
 FILE *input, *output_idx, *output_snd;
 
+unsigned int filenums[32768];
 unsigned int offsets[32768];
 
 char infile_base[256];
@@ -116,12 +117,36 @@ void get_string(int size)
 	buf[i] = '\0';
 }
 
-unsigned int get_int(void)
+unsigned int get_int32LE(void)
 {
 	int i;
 	unsigned int ret = 0;
 	unsigned int c;
 	for (i = 0; i < 4; i++) {
+		c = fgetc(input);
+		ret |= c << i*8;
+	}
+	return ret;
+}
+
+unsigned int get_int32BE(void)
+{
+	int i;
+	unsigned int ret = 0;
+	unsigned int c;
+	for (i = 3; i >= 0; i--) {
+		c = fgetc(input);
+		ret |= c << i*8;
+	}
+	return ret;
+}
+
+unsigned int get_int16BE(void)
+{
+	int i;
+	unsigned int ret = 0;
+	unsigned int c;
+	for (i = 1; i >= 0; i--) {
 		c = fgetc(input);
 		ret |= c << i*8;
 	}
@@ -147,8 +172,22 @@ int get_offsets(void)
 		}
 		fseek(input, -8, SEEK_CUR);
 
-		offsets[i] = get_int();
+		offsets[i] = get_int32LE();
 	}
+}
+
+int get_offsets_mac(void)
+{
+	int i, end;
+	fseek(input, 0, SEEK_END);
+	end = ftell(input);
+	fseek(input, 0, SEEK_SET);
+
+	for (i = 1; i <= end / 6; i++) {
+		filenums[i] = get_int16BE();
+		offsets[i] = get_int32BE();
+	}
+	return(end/6);
 }
 
 void get_voc(void);
@@ -197,7 +236,7 @@ void get_wav(void) {
 	char mp3name[256];
 
 	fseek(input, -4, SEEK_CUR);
-	length = get_int();
+	length = get_int32LE();
 	length += 8;
 	fseek(input, -8, SEEK_CUR);
 
@@ -366,7 +405,7 @@ void get_voc(void)
 
 void showhelp(char *exename)
 {
-	printf("\nUsage: %s <params> file\n", exename);
+	printf("\nUsage: %s <params> [<file> | mac]\n", exename);
 	printf("\nParams:\n");
 	printf("--mp3        encode to MP3 format (default)\n");
 	printf("--vorbis     encode to Vorbis format (not yet implemented)\n");
@@ -388,6 +427,7 @@ void showhelp(char *exename)
 	printf("\n--help     this help message\n");
 	printf("\n\nIf a parameter is not given the default value is used\n");
 	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
+	printf("Use the `mac' option instead of a filename if converting simon2mac sounds\n");
 	exit(2);
 }
 
@@ -480,35 +520,16 @@ void process_ogg_parms(int argc, char *argv[], int i) {
 		showhelp(argv[0]);
 }
 
-int main(int argc, char *argv[])
+void convert_pc(char *infile)
 {
 	int i, n, size, num;
-	
-	if (argc < 2)
-		showhelp(argv[0]);
-	i = 1;
-	if (strcmp(argv[1], "--mp3") == 0) {
-		oggmode = 0;
-		i++;
-	}
-	else if (strcmp(argv[1], "--vorbis") == 0) {
-		oggmode = 1;
-		i++;
-	}
 
-	if (oggmode)
-		process_ogg_parms(argc, argv, i);
-	else
-		process_mp3_parms(argc, argv, i);
+	n = strlen(infile);
+	strncpy(infile_base, infile, n - 3);
 
-	i = argc - 1;
-
-	n = strlen(argv[i]);
-	strncpy(infile_base, argv[i], n - 3);
-
-	input = fopen(argv[i], "rb");
+	input = fopen(infile, "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", argv[i]);
+		printf("Cannot open file: %s\n", infile);
 		exit(-1);
 	}
 
@@ -519,6 +540,8 @@ int main(int argc, char *argv[])
 	output_snd = fopen(tmp, "wb");
 
 	num = get_offsets();
+
+	fclose(input);
 
 	if (!num) {
 		printf("This does not seem to be a valid file\n");
@@ -539,8 +562,87 @@ int main(int argc, char *argv[])
 		if (i < num - 1)
 			put_int(size);
 	}
+}
+
+void convert_mac(void)
+{
+	int i, size, num;
+
+	sprintf(infile_base, "simon2.");
+
+	input = fopen("voices.idx", "rb");
+	if (!input) {
+		printf("Cannot open file: %s\n", "voices.idx");
+		exit(-1);
+	}
+
+	sprintf(tmp, "%sidx", infile_base);
+	output_idx = fopen(tmp, "wb");
+
+	sprintf(tmp, "%sdat", infile_base);
+	output_snd = fopen(tmp, "wb");
+
+	num = get_offsets_mac();
+
+	if (!num) {
+		printf("This does not seem to be a valid file\n");
+		exit(-1);
+	}
+	size = num*4;
+
+	put_int(0);
+	put_int(size);
+
+	for (i = 1; i < num; i++) {
+		if (filenums[i] == filenums[i+1] && offsets[i] == offsets[i+1]) {
+			put_int(size);
+			continue;
+		}
+
+		if (filenums[i] != filenums[i-1]) {
+			sprintf(tmp, "voices%d.dat", filenums[i]);
+			if (input)
+				fclose(input);
+			input = fopen(tmp, "rb"); 
+		}
+
+		size += get_sound(i);
+		if (i < num - 1)
+			put_int(size);
+	}
+}
+
+int main(int argc, char *argv[])
+{
+	int i;
+	
+	if (argc < 2)
+		showhelp(argv[0]);
+	i = 1;
+	if (strcmp(argv[1], "--mp3") == 0) {
+		oggmode = 0;
+		i++;
+	}
+	else if (strcmp(argv[1], "--vorbis") == 0) {
+		oggmode = 1;
+		i++;
+	}
+
+	if (oggmode)
+		process_ogg_parms(argc, argv, i);
+	else
+		process_mp3_parms(argc, argv, i);
+
+	i = argc - 1;
+
+	if (strcmp(argv[i], "mac") == 0) {
+		convert_mac();
+	} else {
+		convert_pc(argv[i]);
+	}
 
 	end();
 
 	return(0);
 }
+
