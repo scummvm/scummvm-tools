@@ -1282,7 +1282,7 @@ void do_unconditional_jump(char *buf)
 	if (offset == 0) {
 		sprintf(buf, "/* goto %.4X; */", to);
 	} else if (!dontOutputElse && maybeAddElse(cur, to)) {
-		pendingElse = 1;
+		pendingElse = true;
 		pendingElseTo = to;
 		pendingElseOffs = cur - 1;
 		pendingElseOpcode = g_jump_opcode;
