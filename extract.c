@@ -454,8 +454,16 @@ int main(int argc, char *argv[])
 	}
 
 	output_idx = fopen("monster.idx", "wb");
+	if (!output_idx) {
+		printf("Can't open file monster.idx for write!\n");
+		exit(-1);
+	}
 	output_snd = fopen("monster.dat", "wb");
-
+	if (!output_snd) {
+		printf("Can't open file monster.dat for write!\n");
+		exit(-1);
+	}
+	
 	/* Get the 'SOU ....' header */
 	get_string(8);
 	if (strncmp(buf, f_hdr, 8)) {
