@@ -2676,6 +2676,9 @@ void next_line()
 			"\xDEp|unknownE0-DE,"
 			"\xDC|unknownE0-DC");
 		break;
+	case 0xE1:
+		ext("rp|unknownE1");
+		break;
 	case 0xE2:
 		ext("p|localizeArray");
 		break;
