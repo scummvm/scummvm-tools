@@ -1,6 +1,6 @@
 SRC=.
 
-CC      _= gcc
+CC      := gcc
 CXX     := g++
 CFLAGS  := -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar
 LDFLAGS :=
