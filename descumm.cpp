@@ -1848,8 +1848,7 @@ void get_tok_V2(char *buf)
 		break;
 	case 0x6C:
 	case 0xEC:
-		//getObjY
-		do_tok(buf, "getObjY", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
+		do_tok(buf, "getObjUnknown", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x16:
 	case 0x96:
@@ -1949,12 +1948,12 @@ void get_tok_V2(char *buf)
 						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ANOLASTPAREN);
 		do_tok(buf, NULL, A1B | A2B | ANOFIRSTPAREN | ASTARTCOMMA);
 		break;
-/*			
+
 	case 0x30:
 	case 0xB0:
-		//matrixOps
+		do_tok(buf, "setBoxFlags", ((opcode & 0x80) ? A1V : A1B) | A2B);
 		break;
-*/			
+
 	case 0x12:
 	case 0x92:
 		//panCameraTo
@@ -2059,8 +2058,7 @@ void get_tok_V2(char *buf)
 	case 0x4B:
 	case 0x8B:
 	case 0xCB:
-		//setObjY
-		do_tok(buf, "setObjY", ((opcode & 0x80) ? A1V : A1W) | A2B);
+		do_tok(buf, "setObjUnknown", ((opcode & 0x80) ? A1V : A1W) | A2B);
 		break;
 	case 0x29:
 	case 0x69:
