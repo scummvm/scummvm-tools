@@ -54,7 +54,7 @@ compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_scumm_bun$(EXEEXT): compress_scumm_bun.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
+	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o
 	$(CC) $(LDFLAGS) -o $@ $+
