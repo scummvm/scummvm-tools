@@ -86,6 +86,10 @@ struct {
 	uint16	entries;
 } versionExtra;
 
+struct PatchFile {
+	const char *filename;
+	char lang;
+};
 
 const struct GameVersion gameVersions[] = {
 	{ "PEM10", 1, 0, 0x00000008,  22677657 },
@@ -103,6 +107,11 @@ const struct GameVersion gameVersions[] = {
 	{ "PEint", 1, 1, 0x00103838,   1915913 }
 };
 
+const struct PatchFile patchFiles[] = {
+	{ "CHIEF1.DOG", 'F' },
+	{ "CHIEF2.DOG", 'F' },
+	{ "BUD1.DOG",   'I' }
+};
 
 const struct GameVersion *version;
 
@@ -206,7 +215,7 @@ int main(int argc, char *argv[])
 	int size, i = 1;
 	uint32 prevOffset;
 
-	if (argc < 2 || (!strcmp(argv[argc-1], "--mp3") && !strcmp(argv[argc-1], "--ogg")))
+	if (argc < 2 || (strcmp(argv[1], "--mp3") != 0 && strcmp(argv[1], "--ogg") != 0 && strcmp(argv[1], "--flac") != 0))
 		showhelp(argv[0]);
 	
 	if (strcmp(argv[1], "--mp3") == 0) {
@@ -320,8 +329,28 @@ int main(int argc, char *argv[])
 			unlink(TEMP_SB);
 			unlink(tempEncoded);
 		} else {
-			/* Non .SB file */
-			fromFileToFile(inputData, outputData, entry.size);
+			/* Non .SB file */	
+			bool patched = false;
+			/* Check for external files */
+			uint8 j;
+			for (j = 0; j < ARRAYSIZE(patchFiles); ++j) {
+				const struct PatchFile *pf = &patchFiles[j];
+				if (version->versionString[1] == pf->lang && strcmp(pf->filename, entry.filename) == 0) {
+					/* XXX patched data files are supposed to be in cwd */
+					FILE *fpPatch = fopen(pf->filename, "rb");
+					if (fpPatch) {
+						entry.size = fileSize(fpPatch);
+						printf("Patching entry, new size = %d bytes\n", entry.size);
+						fromFileToFile(fpPatch, outputData, entry.size);
+						fclose(fpPatch);
+						patched = true;
+					}
+					break;
+				}
+			}
+			if (!patched) {
+				fromFileToFile(inputData, outputData, entry.size);
+			}
 		}
 
 		/* Write entry to table */
