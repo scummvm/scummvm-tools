@@ -48,7 +48,8 @@ simon2mp3$(EXEEXT): simon2mp3.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 
-descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
+descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
+extract.o simon2mp3.o: util.h extract.h
 
 clean:
 	rm -f *.o $(TARGETS)
