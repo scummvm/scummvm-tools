@@ -17,10 +17,10 @@ TARGETS := \
 
 all: $(TARGETS)
 
-descumm$(EXEEXT) : descumm.o
+descumm$(EXEEXT) : descumm.o descumm-common.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
-descumm6$(EXEEXT) : descumm6.o
+descumm6$(EXEEXT) : descumm6.o descumm-common.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
 extract$(EXEEXT) : extract.o
