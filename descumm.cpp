@@ -265,6 +265,8 @@ char *get_var(char *buf)
 		i = get_byte();
 	else
 		i = get_word();
+		
+	assert(i >= 0);
 
 	if (scriptVersion <= 2 &&
 			i < ARRAYSIZE(var_names2) && var_names2[i]) {
