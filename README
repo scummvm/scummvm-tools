@@ -4,7 +4,7 @@ with ScummVM.
 Included tools:
         extract - Used to MP3 compress .sou files to .so3, for use with
                       ScummVMs -DUSE_MAD support. Requires MAD
-                      Used to MP3 compress .sou files to .ogg, for use with
+                      Used to Vorbis compress .sou files to .sog, for use with
                       ScummVMs -DUSE_VORBIS support. Requires VORBIS
 
         rescumm - Extracts macintosh "single file" SCUMM games into their
