@@ -1565,19 +1565,18 @@ void next_line_V8(char *output)
 				);
 		break;
 	case 0xAB:
-		// FIXME - not sure how much stuff each subopcode pops
 		ext(output, "x" "roomOps\0"
-				"\x52|setRoomPalette,"
-				"\x55|setRoomIntensity,"
+				"\x52pppp|setRoomPalette,"
+				"\x55ppp|setRoomIntensity,"
 				"\x57p|fade,"
 				"\x58ppppp|setRoomRBGIntensity,"
-				"\x59|transformRoom,"
-				"\x5A|colorCycleDelay,"
-				"\x5B|copyPalette,"
-				"\x5C|newPalette,"
+				"\x59pppp|transformRoom,"
+				"\x5App|colorCycleDelay,"
+				"\x5Bpp|copyPalette,"
+				"\x5Cp|newPalette,"
 				"\x5D|saveGame,"
 				"\x5E|LoadGame,"
-				"\x5F|setRoomSaturation"
+				"\x5Fppppp|setRoomSaturation"
 				);
 		break;
 	case 0xAC:
