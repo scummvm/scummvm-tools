@@ -771,13 +771,13 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 				if ((s = getVarName(var)) != NULL)
 					where = strecpy(where, s);
 				else
-					where += sprintf(where, "var[%ld]", se->data & 0xFFFFFFF);
+					where += sprintf(where, "var-%ld", se->data & 0xFFFFFFF);
 			} else if (se->data & 0x80000000) {
-				where += sprintf(where, "bitvar[%ld]", se->data & 0x7FFFFFFF);
+				where += sprintf(where, "bitvar-%ld", se->data & 0x7FFFFFFF);
 			} else if (se->data & 0x40000000) {
-				where += sprintf(where, "localvar[%ld]", se->data & 0xFFFFFFF);
+				where += sprintf(where, "localvar-%ld", se->data & 0xFFFFFFF);
 			} else {
-				where += sprintf(where, "??var??[%ld]", se->data & 0xFFFFFFFF);
+				where += sprintf(where, "?var?-%ld", se->data);
 			}
 		} else {
 			if (!(se->data & 0xF000)) {
@@ -785,25 +785,25 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 				if ((s = getVarName(var)) != NULL)
 					where = strecpy(where, s);
 				else
-					where += sprintf(where, "var[%ld]", se->data & 0xFFF);
+					where += sprintf(where, "var-%ld", se->data & 0xFFF);
 			} else if (se->data & 0x8000) {
-				where += sprintf(where, "bitvar[%ld]", se->data & 0x7FFF);
+				where += sprintf(where, "bitvar-%ld", se->data & 0x7FFF);
 			} else if (se->data & 0x4000) {
-				where += sprintf(where, "localvar[%ld]", se->data & 0xFFF);
+				where += sprintf(where, "localvar-%ld", se->data & 0xFFF);
 			} else {
-				where += sprintf(where, "??var??[%ld]", se->data & 0xFFFF);
+				where += sprintf(where, "?var?-%ld", se->data);
 			}
 		}
 		break;
 	case seArray:
 		if (se->left) {
-			where += sprintf(where, "array[%ld][", se->data);
+			where += sprintf(where, "array-%ld[", se->data);
 			where = se_astext(se->left, where);
 			where = strecpy(where, "][");
 			where = se_astext(se->right, where);
 			where = strecpy(where, "]");
 		} else {
-			where += sprintf(where, "array[%ld][", se->data);
+			where += sprintf(where, "array-%ld[", se->data);
 			where = se_astext(se->right, where);
 			where = strecpy(where, "]");
 		}
@@ -1244,7 +1244,7 @@ void jumpif(StackEnt * se, bool when)
 void next_line_V8()
 {
 	byte code = get_byte();
-	StackEnt *se_a;
+	StackEnt *se_a, *se_b;
 
 	switch (code) {
 	case 0x1:
@@ -1341,10 +1341,13 @@ void next_line_V8()
 				);
 		break;
 	case 0x71:
-		writeArray(get_word(), NULL, pop(), pop());
+		se_a = pop();
+		writeArray(get_word(), NULL, pop(), se_a);
 		break;
 	case 0x75:
-		writeArray(get_word(), pop(), pop(), pop());
+		se_a = pop();
+		se_b = pop();
+		writeArray(get_word(), se_b, pop(), se_a);
 		break;
 	case 0x76:
 		// FIXME - is this correct?!?
