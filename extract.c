@@ -218,7 +218,7 @@ void get_part(void)
 		if (encparms.silent == 1)
 			strcat(fbuf_temp," --silent");
 		sprintf(fbuf,
-		        "lame -t -q %i %s -V %i -B %i --resample 22.05 -m m --bitwidth 16 -r -s %d %s %s",
+		        "lame -t -q %i %s -V %i -B %i --resample 22.05 -m m -r -s %d %s %s",
 		        encparms.algqual, fbuf_temp, encparms.vbrqual,
 		        encparms.maxBitr, real_samplerate, rawname, mp3name);
 		system(fbuf);
