@@ -138,8 +138,8 @@ byte ScriptVersion = 3;
 
 
 int get_curpos();
-int gameFlag;
 
+bool IndyFlag = 0;
 bool GF_UNBLOCKED = false;
 
 
@@ -1358,7 +1358,7 @@ void do_cursor_command(char *buf)
 		break;
 
 	case 0x0E:
-		if (GF_UNBLOCKED || gameFlag == 1)
+		if (GF_UNBLOCKED || IndyFlag)
 			do_tok(buf, "LoadCharset", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		else
 			do_tok(buf, "CursorCommand", A1VARUNTIL0xFF);
@@ -2016,22 +2016,24 @@ void get_tok_V2(char *buf)
 	case 0x7B:
 	case 0xFB:
 		//getActorWalkBox
-		break;
-		
+		break;	
+*/
 	case 0x43:
 	case 0xC3:
-		//getActorX
-		break;
-	case 0x23:
-	case 0xA3:
-		//getActorY
-		break;
-	case 0x31:
-	case 0xB1:
-		//getBitVar
+		do_tok(buf, "getActorX", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
-*/		
+	case 0x23:
+	case 0xA3:
+		do_tok(buf, "getActorY", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x31:
+	case 0xB1:
+		// FIXME
+		do_tok(buf, "getBitVar", AVARSTORE | A1B | A2B | ((opcode & 0x80) ? A3V : A3B));
+		break;
+
 	case 0x66:
 	case 0xE6:
 		do_tok(buf, "getClosestObjActor", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
@@ -2370,17 +2372,20 @@ void get_tok_V2(char *buf)
 		// verbOps
 		do_verbops_v2(buf, opcode);
 		break;
-/*			
+
 	case 0x3B:
 	case 0xBB:
-		// waitForActor
+		do_tok(buf, "waitForActor", ((opcode & 0x80) ? A1V : A1B));
 		break;
 			
 	case 0x4C:
-	case 0xAE:
-		// waitForSentence
+		do_tok(buf, "waitForSentence", 0);
 		break;
-			
+
+	case 0xAE:
+		do_tok(buf, "waitForMessage", 0);
+		break;
+
 	case 0x3E:
 	case 0x5E:
 	case 0x7E:
@@ -2388,9 +2393,12 @@ void get_tok_V2(char *buf)
 	case 0xBE:
 	case 0xDE:
 	case 0xFE:
-		// walkActorTo
+		do_tok(buf, "walkActorTo",
+					 ((opcode & 0x80) ? A1V : A1B) |
+					 ((opcode & 0x40) ? A2V : A2B) | 
+					 ((opcode & 0x20) ? A3V : A3B));
 		break;
-*/		
+
 	case 0x0D:
 	case 0x4D:
 	case 0x8D:
@@ -2680,15 +2688,15 @@ void get_tok(char *buf)
 
 	case 0x3B:
 	case 0xBB:
-		if (gameFlag == 1)
-			do_tok(buf, "WaitForActor", ((opcode & 0x80) ? A1V : A1B));
+		if (IndyFlag)
+			do_tok(buf, "waitForActor", ((opcode & 0x80) ? A1V : A1B));
 		else
 			do_tok(buf, "getActorScale", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0xAE:{
 			byte opcode;
-			if (gameFlag == 1)
+			if (IndyFlag)
 				opcode = 2;
 			else
 				opcode = get_byte();
@@ -2915,13 +2923,19 @@ void get_tok(char *buf)
 		break;
 
 	case 0x43:
-	case 0xc3:
-		do_tok(buf, "getActorX", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+	case 0xC3:
+		if (IndyFlag)
+			do_tok(buf, "getActorX", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		else
+			do_tok(buf, "getActorX", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 		break;
 
 	case 0x23:
 	case 0xA3:
-		do_tok(buf, "getActorY", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		if (IndyFlag)
+			do_tok(buf, "getActorY", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		else
+			do_tok(buf, "getActorY", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 		break;
 
 	case 0x7A:
@@ -3170,7 +3184,7 @@ int main(int argc, char *argv[])
 	char *s;
 
 	filename = NULL;
-	gameFlag = 0;
+	IndyFlag = 0;
 	/* Parse the arguments */
 	for (i = 1; i < argc; i++) {
 		s = argv[i];
@@ -3190,7 +3204,7 @@ int main(int argc, char *argv[])
 					ScriptVersion = 5;
 					break;
 				case 'n':
-					gameFlag = 1; // Indy3
+					IndyFlag = 1; // Indy3
 					break;
 				case 'u':
 					GF_UNBLOCKED = true;
