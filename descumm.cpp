@@ -2381,7 +2381,7 @@ void get_tok_V2(char *buf)
 	case 0xAE:
 		do_tok(buf, "waitForMessage", 0);
 		break;
-
+	case 0x1E:
 	case 0x3E:
 	case 0x5E:
 	case 0x7E:
