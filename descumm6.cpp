@@ -2610,6 +2610,12 @@ void next_line_V67(char *output)
 		else
 			invalidop(NULL, code);
 		break;
+	case 0xEB:
+		if (HumongousFlag)
+			ext(output, "rp|tellFile");
+		else
+			invalidop(NULL, code);
+		break;
 	case 0xEC:
 		if (HumongousFlag)
 			invalidop(NULL, code);
