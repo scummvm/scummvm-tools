@@ -489,7 +489,7 @@ const char *var_names8[] = {
 	/* 16 */
 	"VAR_MOUSE_BUTTONS",
 	NULL,
-	NULL,
+	"VAR_MOUSE_HOLD",
 	NULL,
 	/* 20 */
 	NULL,
@@ -504,7 +504,7 @@ const char *var_names8[] = {
 	/* 28 */
 	"VAR_TIMEDATE_MINUTE",
 	"VAR_TIMEDATE_SECOND",
-	"override_hit",
+	"VAR_OVERRIDE",
 	"VAR_ROOM",
 	/* 32 */
 	NULL,
@@ -545,14 +545,14 @@ const char *var_names8[] = {
 	NULL,
 	NULL,
 	"VAR_CUTSCENEEXIT_KEY",
-	NULL,
+	"VAR_RESTART_KEY",
 	/* 64 */
 	"VAR_PAUSE_KEY",
 	"VAR_SAVELOADDIALOG_KEY",
 	NULL,
 	NULL,
 	/* 68 */
-	NULL,
+	"VAR_TALKSTOP_KEY",
 	NULL,
 	NULL,
 	NULL,
@@ -1858,7 +1858,7 @@ void next_line_V8()
 				"\xE|remapCostumeInsert,"
 				"\xF|setVideoFrameRate,"
 
-				"\x14|setBoxSlot,"
+				"\x14|setBoxScale,"
 				"\x15|setScaleSlot,"
 				"\x16|setBannerColors,"
 				"\x17|setActorChoreLimbFrame,"
