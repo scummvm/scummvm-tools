@@ -1802,12 +1802,10 @@ void get_tok_V2(char *buf)
 	case 0x83:
 		do_tok(buf, "getActorRoom", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
-/*
 	case 0x7B:
 	case 0xFB:
-		//getActorWalkBox
+		do_tok(buf, "getActorWalkBox", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;	
-*/
 	case 0x43:
 	case 0xC3:
 		do_tok(buf, "getActorX", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
