@@ -94,6 +94,7 @@
 void get_tok_V2(char *buf);	// For V2 (and V1?)
 void get_tok_V345(char *buf);	// For V3, V4, V5
 
+bool ZakFlag = false;
 bool IndyFlag = false;
 bool GF_UNBLOCKED = false;
 
@@ -164,24 +165,27 @@ const char *get_num_string(int i)
 	const char *s;
 
 	if (i & 0x8000) {							/* Bit var */
-		if ((i & 0xFFF) >= 0x800)
+		i &= 0xFFF;
+		if (i >= 0x800)
 			s = "??Bit??";
 		else
 			s = "Bit";
 	} else if (i & 0x4000) {
-		if ((i & 0xFFF) > 0x10)
+		i &= IndyFlag ? 0xF : 0xFFF;
+		if (i > 0x10)
 			s = "??Local??";
 		else
 			s = "Local";
 	} else {
-		if ((i & 0xFFF) >= 0x320)
+		i &= 0xFFF;
+		if (i >= 0x320)
 			s = "??Var??";
 		else
 			s = "Var";
 	}
 
 	if (haltOnError && (s[0] == '?')) {
-		printf("%s out of range, was %d\n", s, i & 0xFFF);
+		printf("%s out of range, was %d\n", s, i);
 		exit(1);
 	}
 
@@ -201,7 +205,7 @@ char *get_var(char *buf)
 	if (scriptVersion == 2 && i < ARRAYSIZE(var_names2) && var_names2[i]) {
 		buf += sprintf(buf, var_names2[i]);
 		return buf;
-	} else if ((i & 0x8000) && (GF_UNBLOCKED)) 	// FIXME this should be for zak256 as well
+	} else if ((i & 0x8000) && (GF_UNBLOCKED || ZakFlag))
 		buf += sprintf(buf, "Var[%d Bit %d", (i & 0x0FFF) >> 4, i & 0x000F);
 	else
 		buf += sprintf(buf, "%s[%d", get_num_string(i), i & 0xFFF);
@@ -2621,12 +2625,10 @@ void get_tok_V345(char *buf)
 
 	case 0x02:
 	case 0x82:
-		// FIXME - seems Zak256 has an additional word here?
-#if 1 || ZAK256
-		do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B) | A2B | A3B);
-#else
-		do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B));
-#endif
+		if (ZakFlag)
+			do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B) | A2B | A3B);
+		else
+			do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0xCC:
@@ -2917,6 +2919,7 @@ void ShowHelpAndExit()
 			"\t-3\tInput Script is v3\n"
 			"\t-5\tInput Script is v5\n"
 			"\t-n\tUse Indy3-256 specific hacks\n"
+			"\t-z\tUse Zak256 specific hacks\n"
 			"\t-u\tScript is Unblocked/has no header\n"
 			"\t-o\tAlways Show offsets\n"
 			"\t-i\tDon't output ifs\n"
@@ -2932,8 +2935,8 @@ void ShowHelpAndExit()
 int skipVerbHeader_V2(byte *p)
 {
 	byte code;
-	int offset = 15, minOffset;
-	minOffset = 255;
+	int offset = 15;
+	int minOffset = 255;
 	p += offset;
 
 	printf("Events:\n");
@@ -2951,6 +2954,7 @@ int skipVerbHeader_V3(byte *p)
 {
 	byte code;
 	int offset = GF_UNBLOCKED ? 17 : 19;
+	int minOffset = 255;
 	p += offset;
 	
 	printf("Events:\n");
@@ -2959,8 +2963,10 @@ int skipVerbHeader_V3(byte *p)
 		offset = TO_LE_16(*(uint16 *)p);
 		p += 2;
 		printf("  %2X - %.4X\n", code, offset);
+		if (minOffset > offset)
+			minOffset = offset;
 	}
-	return offset;
+	return minOffset;
 }
 
 byte *skipVerbHeader_V5(byte *p)
@@ -3010,6 +3016,9 @@ int main(int argc, char *argv[])
 					break;
 				case 'n':
 					IndyFlag = 1; // Indy3
+					break;
+				case 'z':
+					ZakFlag = 1; // Zak
 					break;
 				case 'u':
 					GF_UNBLOCKED = true;
