@@ -2574,6 +2574,9 @@ void next_line_V67(char *output)
 	case 0xE3:
 		ext(output, "l|pickVarRandom");
 		break;
+	case 0xE4:
+		ext(output, "p|setBotSet");
+		break;
 	case 0xEC:
 		if (HumongousFlag)
 			invalidop(NULL, code);
