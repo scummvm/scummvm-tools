@@ -81,6 +81,26 @@ int getSampleRateFromVOCRate(int vocSR) {
 	}
 }
 
+/* map frequency to a valid MP3 sample frequency
+ *
+ * Robert Hegemann 2000-07-01
+ *
+ * Copied from lame 3.96.1
+ */
+static int map2MP3Frequency(int freq)
+{
+    if (freq <=  8000) return  8000;
+    if (freq <= 11025) return 11025;
+    if (freq <= 12000) return 12000;
+    if (freq <= 16000) return 16000;
+    if (freq <= 22050) return 22050;
+    if (freq <= 24000) return 24000;
+    if (freq <= 32000) return 32000;
+    if (freq <= 44100) return 44100;
+    
+    return 48000;
+}
+
 void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode) {
 	char fbuf[2048];
 	char *tmp = fbuf;
@@ -114,7 +134,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 
 	case kMP3Mode:
 		tmp += sprintf(tmp, "lame -t ");
-		tmp += sprintf(tmp, "-m m ");	// FIXME: Why do we always encode to mono?
+		tmp += sprintf(tmp, "-m m ");	/* FIXME: Why do we always encode to mono? */
 		if (rawInput) {
 			tmp += sprintf(tmp, "-r ");
 			tmp += sprintf(tmp, "--bitwidth %d ", rawAudioType.bitsPerSample);
@@ -127,6 +147,16 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 			tmp += sprintf(tmp, "--abr %d ", encparms.minBitr);
 		else
 			tmp += sprintf(tmp, "--vbr-new -b %d ", encparms.minBitr);
+
+		/* Explicitly specify a target sample rate, to work around a bug (?)
+		 * in newer lame versions (>= 3.95) which causes it to malfunction
+		 * for odd sample rates when in VBR mode. See also bug #934026.
+		 * We essentially duplicate the old behaviour of lame (found in e.g.
+		 * version 3.93.1): we round the input sample rate up to the next
+		 * higher valid MP3 sample rate, with a margin of 3%.
+		 */
+		tmp += sprintf(tmp, "--resample %d ", map2MP3Frequency(97 * rawSamplerate / 100));
+
 		if (encparms.silent)
 			tmp += sprintf(tmp, " --silent ");
 		tmp += sprintf(tmp, "-q %d ", encparms.algqual);
