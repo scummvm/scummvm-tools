@@ -273,9 +273,6 @@ void get_part(void)
 				strcat(fbuf, "--quiet ");
 			}
 
-			if (real_samplerate != 22050)
-				strcat(fbuf, "--resample 22050 ");
-
 			sprintf(fbuf_temp, "-q %i -r -C 1 --raw-endianness=1 -R %i %s -o %s",
 				oggparms.quality, real_samplerate,
 				rawname, mp3name);
@@ -290,7 +287,7 @@ void get_part(void)
 			if (encparms.silent == 1)
 				strcat(fbuf_temp," --silent");
 			sprintf(fbuf,
-				"lame -t -q %i %s -V %i -B %i --resample 22.05 -m m -r -s %d %s %s",
+				"lame -t -q %i %s -V %i -B %i -m m -r -s %d %s %s",
 				encparms.algqual, fbuf_temp, encparms.vbrqual,
 				encparms.maxBitr, real_samplerate, rawname, mp3name);
 			system(fbuf);
