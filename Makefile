@@ -21,6 +21,7 @@ TARGETS := \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	extract$(EXEEXT) \
+	loom_tg16_extract$(EXEEXT) \
 	md5table$(EXEEXT) \
 	mm_nes_extract$(EXEEXT) \
 	queenrebuild$(EXEEXT) \
@@ -43,6 +44,9 @@ desword2$(EXEEXT): desword2.o util.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
 extract$(EXEEXT): extract.o extract-common.o util.o
+	$(CC) $(LFLAGS) -o $@ $+
+
+loom_tg16_extract$(EXEEXT): loom_tg16_extract.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 md5table$(EXEEXT): md5table.o util.o

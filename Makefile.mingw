@@ -14,6 +14,7 @@ install:   all
 	strip desword2.exe -o $(SCUMMVMPATH)/tools/desword2.exe
 	strip extract.exe -o $(SCUMMVMPATH)/tools/extract.exe
 	strip md5table.exe -o $(SCUMMVMPATH)/tools/md5table.exe
+	strip loom_tg16_extract.exe -o $(SCUMMVMPATH)/tools/loom_tg16_extract.exe
 	strip mm_nes_extract.exe -o $(SCUMMVMPATH)/tools/mm_nes_extract.exe
 	strip queenrebuild.exe -o $(SCUMMVMPATH)/tools/queenrebuild.exe
 	strip rescumm.exe -o $(SCUMMVMPATH)/tools/rescumm.exe
