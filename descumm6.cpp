@@ -1558,24 +1558,24 @@ void next_line_V8()
 
 	case 0xAE:
 		ext("x" "verbOps\0"
-				"\x96|verbInit,"
+				"\x96p|verbInit,"
 				"\x97|verbNew,"
 				"\x98|verbDelete,"
-				"\x99|verbLoadString,"
+				"\x99s|verbLoadString,"
 				"\x9App|verbSetXY,"
 				"\x9B|verbOn,"
 				"\x9C|verbOff,"
-				"\x9D|verbSetColor,"
-				"\x9E|verbSetHiColor,"
+				"\x9Dp|verbSetColor,"
+				"\x9Ep|verbSetHiColor,"
 
-				"\xA0|verbSetDimColor,"
+				"\xA0p|verbSetDimColor,"
 				"\xA1|verbSetDim,"
-				"\xA2|verbSetKey,"
-				"\xA3|verbLoadImg,"
-				"\xA4|verbSetToString,"
+				"\xA2p|verbSetKey,"
+				"\xA3p|verbLoadImg,"
+				"\xA4p|verbSetToString,"
 				"\xA5|verbSetCenter,"
-				"\xA6|verbSetCharset,"
-				"\xA7|verbSetLineSpacing"
+				"\xA6p|verbSetCharset,"
+				"\xA7p|verbSetLineSpacing"
 				);
 		break;
 
@@ -2469,6 +2469,14 @@ int main(int argc, char *argv[])
 
 	printf("END\n");
 	printf("Stack count: %d\n", num_stack);
+	if (num_stack > 0) {
+		printf("Stack contents:\n");
+		while (num_stack) {
+			buf[0] = 0;
+			se_astext(pop(), buf);
+			printf("%s\n", buf);
+		}
+	}
 
 	free(memorg);
 
