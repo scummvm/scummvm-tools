@@ -129,7 +129,7 @@ void get_part(void)
 	printf("Voice file found (pos = %d) :", pos);
 
 	/* Conver the VOC data */
-	get_voc(input, gCompMode);
+	extractAndEncodeVOC(TEMP_RAW, input, gCompMode);
 	
 	/* Append the converted data to the master output file */
 	sprintf(outname, tempEncoded);

@@ -146,7 +146,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 	}
 } 
 
-void get_wav(FILE *input, CompressMode compMode) {
+void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode) {
 	int length;
 	FILE *f;
 	char fbuf[2048];
@@ -158,7 +158,7 @@ void get_wav(FILE *input, CompressMode compMode) {
 	fseek(input, -8, SEEK_CUR);
 
 	/* Copy the WAV data to a temporary file */
-	f = fopen(TEMP_WAV, "wb");
+	f = fopen(outName, "wb");
 	while (length > 0) {
 		size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length, input);
 		if (size <= 0)
@@ -169,17 +169,18 @@ void get_wav(FILE *input, CompressMode compMode) {
 	fclose(f);
 
 	/* Convert the WAV temp file to OGG/MP3 */
-	encodeAudio(TEMP_WAV, false, -1, tempEncoded, compMode);
+	encodeAudio(outName, false, -1, tempEncoded, compMode);
 }
 
-void get_voc(FILE *input, CompressMode compMode) {
+void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode) {
 	int blocktype;
 
-// FIXME HIGH PRIORITY: We aren't handling all types of blocks, and what is
-// worse, we aren't handling multiple blocks occuring in a single VOC file.
-// This is bad, because multiple type 1 blocks occur in Full Throttle.
-// As a result of this lacking feature, we generates compressed audio files
-// which are missing some data. Ouch! See also bug #885490
+/* FIXME HIGH PRIORITY: We aren't handling all types of blocks, and what is
+   worse, we aren't handling multiple blocks occuring in a single VOC file.
+   This is bad, because multiple type 1 blocks occur in Full Throttle.
+   As a result of this lacking feature, we generates compressed audio files
+   which are missing some data. Ouch! See also bug #885490
+ */
 
 	blocktype = fgetc(input);
 	switch (blocktype) {
@@ -216,7 +217,7 @@ void get_voc(FILE *input, CompressMode compMode) {
 			error("Cannot handle compressed VOC data");
 
 		/* Copy the raw data to a temporary file */
-		f = fopen(TEMP_RAW, "wb");
+		f = fopen(outName, "wb");
 		while (length > 0) {
 			size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length, input);
 			if (size <= 0)
@@ -227,7 +228,7 @@ void get_voc(FILE *input, CompressMode compMode) {
 		fclose(f);
 
 		/* Convert the raw temp file to OGG/MP3 */
-		encodeAudio(TEMP_RAW, true, real_samplerate, tempEncoded, compMode);
+		encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
 		break;
 	}
 

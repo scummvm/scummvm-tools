@@ -52,8 +52,8 @@ extern void process_mp3_parms(int argc, char *argv[], int i);
 extern void process_ogg_parms(int argc, char *argv[], int i);
 extern void process_flac_parms(int argc, char *argv[], int i);
 
-extern void get_voc(FILE *input, CompressMode compMode);
-extern void get_wav(FILE *input, CompressMode compMode);
+extern void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode);
+extern void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode);
 
 
 /*

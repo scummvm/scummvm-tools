@@ -125,10 +125,10 @@ static uint32 get_sound(uint32 offset)
 	if (!memcmp(buf, "Creative", 8)) {
 		printf("VOC found (pos = %d) :\n", offset);
 		fseek(input, 18, SEEK_CUR);
-		get_voc(input, gCompMode);
+		extractAndEncodeVOC(TEMP_RAW, input, gCompMode);
 	} else if (!memcmp(buf, "RIFF", 4)) {
 		printf("WAV found (pos = %d) :\n", offset);
-		get_wav(input, gCompMode);
+		extractAndEncodeWAV(TEMP_WAV, input, gCompMode);
 	} else {
 		error("Unexpected data at offset: %i", offset);
 	}
