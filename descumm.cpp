@@ -1673,6 +1673,11 @@ void get_tok_V2(char *buf)
 		// clearState01
 		do_tok(buf, "clearState01", ((opcode & 0x80) ? A1V : A1W));
 		break;
+	case 0x57:
+	case 0xD7:
+		// clearState02
+		do_tok(buf, "clearState02", ((opcode & 0x80) ? A1V : A1W));
+		break;
 	case 0x67:
 	case 0xE7:
 		// clearState04
@@ -1865,7 +1870,6 @@ void get_tok_V2(char *buf)
 	case 0x5F:
 	case 0xDF:
 		//ifNotState02
-	case 0x27:
 	case 0x2F:
 	case 0xAF:
 		//ifNotState04
@@ -2058,17 +2062,16 @@ void get_tok_V2(char *buf)
 		break;
 		
 	case 0x37:
+	case 0xB7:
 		//setState01
 		do_tok(buf, "setState01", A1W);
 		break;
-	case 0x57:
+	case 0x17:
 	case 0x97:
-	case 0xB7:
-	case 0xD7:
 		//setState02
 		do_tok(buf, "setState02", A1W);
 		break;
-	case 0x17:
+	case 0x27:
 	case 0xA7:
 		//setState04
 		do_tok(buf, "setState04", A1W);
