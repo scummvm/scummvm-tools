@@ -1,8 +1,8 @@
 SRC=.
 
-CC      = gcc
-CXX     = g++
-CFLAGS  = -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar 
+CC      = cc
+CXX     = c++
+CFLAGS  = -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar -DSCUMM_BIG_ENDIAN
 LDFLAGS :=
 
 TARGETS := descumm3$(EXEEXT) descumm5$(EXEEXT) descumm6$(EXEEXT) extract$(EXEEXT) rescumm$(EXEEXT) simon2mp3$(EXEEXT)
