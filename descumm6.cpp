@@ -2752,7 +2752,7 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xE1:
-		ext(output, "rp|unknownE1");
+		ext(output, "rpp|getPixel");
 		break;
 	case 0xE2:
 		if (HumongousFlag)
