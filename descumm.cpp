@@ -1615,11 +1615,7 @@ void do_if_state_code(char *buf, byte opcode)
 	char var[256];
 	char before[256], after[256];
 	byte neg;
-	int state;
-
-	const char *cmp_texts[2] = {
-		" == ", " != "
-	};
+	int state = 0;
 
 	var[0] = 0;
 	get_var_or_word(var, opcode & 0x80);
@@ -1687,13 +1683,14 @@ void do_if_state_code(char *buf, byte opcode)
 			printf("Unknown IF code %x", opcode);
 			exit(1);
 		}
-		
-		sprintf(tmp2, "%d", state);
 	}
 
 	neg = neg ^ emit_if(before, after) ^ 1;
 
-	sprintf(buf, "%sif (getState(%s)%s%s%s", before, var, cmp_texts[neg], tmp2, after);
+	if (ScriptVersion > 2)
+		sprintf(buf, "%sif (getState(%s)%s%s%s", before, var, neg ? " != " : " == ", tmp2, after);
+	else
+		sprintf(buf, "%sif (%sgetState%02d(%s)%s", before, neg ? "!" : "", state, var, after);
 }
 
 void do_unconditional_jump(char *buf, byte opcode)
