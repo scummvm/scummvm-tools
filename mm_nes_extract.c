@@ -757,7 +757,11 @@ t_lfl	lfls[] = {
 	{ -1, NULL }
 };
 
+#define GCC_PACK __attribute__((packed))
+
+#if defined(_MSC_VER)
 #pragma	pack(push,1)
+#endif
 struct	_lfl_index
 {
 	unsigned char	room_lfl[55];
@@ -768,8 +772,14 @@ struct	_lfl_index
 	unsigned short	script_addr[200];
 	unsigned char	sound_lfl[100];
 	unsigned short	sound_addr[100];
+  #if defined(__GNUC__)
+} __attribute__((packed))	lfl_index;
+  #else
 }	lfl_index;
+  #endif
+#if defined(_MSC_VER)
 #pragma	pack(pop)
+#endif
 #else	// !MAKE_LFLS
 void	dump_resource (FILE *input, char *fn_template, int num, p_resource res)
 {
@@ -894,7 +904,7 @@ int main (int argc, char **argv)
 	extract_resource(input,output,&res_globdata);
 	for (i = res_globdata.length[ROMset]; i < 800; i++)
 		write_byte(output,0);
-	for (i = 0; i < sizeof(lfl_index); i++)
+	for (i = 0; i < (int)sizeof(lfl_index); i++)
 		write_byte(output,((unsigned char *)&lfl_index)[i]);
 	fclose(output);
 #else	// !MAKE_LFLS
