@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
 			break;
 		case 6:
 			if (heVersion)
-				next_line_V72(buf);
+				next_line_HE_V72(buf);
 			else
 				next_line_V67(buf);
 			break;

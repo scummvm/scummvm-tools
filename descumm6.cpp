@@ -1379,7 +1379,7 @@ void jumpif(char *output, StackEnt * se, bool negate)
 				);                \
 	} while(0)
 
-void next_line_V72(char *output)
+void next_line_HE_V72(char *output)
 {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;

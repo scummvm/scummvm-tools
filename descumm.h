@@ -107,7 +107,7 @@ extern void next_line_V12(char *buf);	// For V1 and V2
 extern void next_line_V345(char *buf);	// For V3, V4, V5
 extern void next_line_V67(char *buf);
 extern void next_line_V8(char *buf);
-extern void next_line_V72(char *buf);
+extern void next_line_HE_V72(char *buf);
 extern bool HumongousFlag;
 extern bool ZakFlag;
 extern bool IndyFlag;
