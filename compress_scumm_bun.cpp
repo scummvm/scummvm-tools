@@ -902,8 +902,8 @@ byte *convertTo16bitStereo(byte *ptr, int inputSize, int &outputSize, int bits, 
 			*buf++ = *src++;
 			*buf++ = *src++;
 			if (channels == 1) {
-				*buf++ = *src++;
-				*buf++ = *src++;
+				*buf++ = *(src - 2);
+				*buf++ = *(src - 1);
 			}
 		}
 	}
