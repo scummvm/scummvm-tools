@@ -39,7 +39,8 @@ const char *tag2str(uint32 tag) {
 	str[1] = (char)(tag >> 16);
 	str[2] = (char)(tag >> 8);
 	str[3] = (char)tag;
-	str[4] = '\0';	return str;
+	str[4] = '\0';
+	return str;
 }
 
 void showhelp(char *exename) {
@@ -283,7 +284,8 @@ void prepareForMixing(char *outputDir, char *inputFilename) {
 	printf("Decompresing tracks files...\n");
 	for (int l = 0; l < MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
-			fclose(_audioTracks[l].file);
+			if (_audioTracks[l].file)
+				fclose(_audioTracks[l].file);
 			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, _audioTracks[l].animFrame, _audioTracks[l].trackId);
 			_audioTracks[l].file = fopen(filename, "rb");
 			assert(_audioTracks[l].file);
@@ -598,6 +600,10 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 	if (audioTrack->freq == 11025)
 		audioTrack->sizes[index] *= 2;
 	audioTrack->countFrames++;
+	if ((index + 1) == nbframes) {
+		fclose(audioTrack->file);
+		audioTrack->file = NULL;
+	}
 }
 
 void handleDigIACT(FILE *input, int size, char *outputDir, char *inputFilename, char *tmpPath, int flags, int track_flags, int frame) {
