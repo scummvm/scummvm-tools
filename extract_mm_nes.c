@@ -476,7 +476,7 @@ t_resource res_sounds[82] = {
 	{ {0x3A5D4,0x3A7BA,0x39964,0x39D93}, {0x0AC5,0x0AC5,0x0AC5,0x0AC5}, RES_SOUND },
 	{ {0x3B099,0x3B27F,0x3A429,0x3A858}, {0x0BE4,0x0BE4,0x0BE4,0x0BE4}, RES_SOUND }
 };
-t_resource res_costumes[25] = {
+t_resource res_costumes[37] = {
 	{ {0x17F05,0x0BEFF,0x0FEF5,0x0BF17}, {0x0055,0x0055,0x0055,0x0055}, RES_COSTUME },
 	{ {0x17F05,0x0BEFF,0x0FEF5,0x0BF17}, {0x0055,0x0055,0x0055,0x0055}, RES_COSTUME },
 	{ {0x17F05,0x0BEFF,0x0FEF5,0x0BF17}, {0x0055,0x0055,0x0055,0x0055}, RES_COSTUME },
@@ -501,7 +501,25 @@ t_resource res_costumes[25] = {
 	{ {0x17F90,0x0FF23,0x17EE5,0x13EC2}, {0x003A,0x003A,0x003A,0x003A}, RES_COSTUME },
 	{ {0x17F90,0x0FF23,0x17EE5,0x13EC2}, {0x003A,0x003A,0x003A,0x003A}, RES_COSTUME },
 	{ {0x17F05,0x0BEFF,0x0FEF5,0x0BF17}, {0x0055,0x0055,0x0055,0x0055}, RES_COSTUME },
-	{ {0x13FAB,0x0FEA2,0x17E9A,0x13E77}, {0x004B,0x004B,0x004B,0x004B}, RES_COSTUME }
+	{ {0x13FAB,0x0FEA2,0x17E9A,0x13E77}, {0x004B,0x004B,0x004B,0x004B}, RES_COSTUME },
+	/* 25 */
+	{ {0x0FFB7,0x0BEC2,0x0BF1B,0x07EF8}, {0x0031,0x0031,0x0031,0x0031}, RES_UNK_DD95 },
+	{ {0x0BFE1,0x07F71,0x07F75,0x07F29}, {0x0009,0x0009,0x0009,0x0009}, RES_UNK_DD95 },
+	/* 27 */
+	{ {0x0FEA2,0x1BE32,0x13E6A,0x0FE61}, {0x0115,0x0115,0x0115,0x0115}, RES_UNK_DD7D },
+	{ {0x07FF5,0x07F5B,0x07F4F,0x07ED2}, {0x0006,0x0006,0x0006,0x0006}, RES_UNK_DD7D },
+	/* 29 */
+	{ {0x2BDC5,0x2FD42,0x2BCE0,0x2F959}, {0x022A,0x022A,0x022A,0x022A}, RES_UNK_DD9D },
+	{ {0x0BFEA,0x0BEF3,0x0BF4C,0x07F32}, {0x000C,0x000C,0x000C,0x000C}, RES_UNK_DD9D },
+	/* 31 */
+	{ {0x2CE11,0x2CE11,0x2C401,0x2CA28}, {0x2BE0,0x2BE0,0x2BE0,0x2BE0}, RES_UNK_DD75 },
+	{ {0x07F6B,0x0BE28,0x0FE6B,0x07E48}, {0x008A,0x008A,0x008A,0x008A}, RES_UNK_DD75 },
+	/* 33 */
+	{ {0x30001,0x30001,0x2EFE1,0x30001}, {0x0EC9,0x0EC9,0x0EC9,0x0EC9}, RES_COSTUMEGFX },
+	{ {0x2F9F1,0x2F9F1,0x30001,0x2F608}, {0x0351,0x0351,0x0351,0x0351}, RES_COSTUMEGFX },
+	/* 35 */
+	{ {0x0BFC1,0x07F61,0x07F55,0x07ED8}, {0x0010,0x0010,0x0010,0x0010}, RES_PALETTE },
+	{ {0x0BFD1,0x0BEB2,0x07F65,0x07EE8}, {0x0010,0x0010,0x0010,0x0010}, RES_PALETTE }
 };
 t_resource res_globdata =
 	{ {0x2CA11,0x2CA11,0x2C001,0x2C628}, {0x0307,0x0307,0x0307,0x0307}, RES_GLOBDATA };
@@ -691,7 +709,7 @@ p_resource lfl_52[] = { &res_rooms[52], NULL };
 /*	remaining 'standard' resources (not used by any of the original LFL files) */
 p_resource lfl_53[] = { &res_rooms[53], &res_scripts[177], &res_scripts[178], &res_sounds[70], &res_sounds[71], &res_sounds[72], &res_sounds[73], &res_sounds[74], &res_sounds[75], &res_sounds[76], &res_sounds[77], &res_sounds[78], &res_sounds[79], &res_sounds[80], &res_sounds[81], NULL };
 /*	all 'non-standard' resources (the costume-related stuff) */
-p_resource lfl_54[] = { &res_rooms[54], &res_costumegfx[0], &res_costumegfx[1], &res_palettes[0], &res_palettes[1], &res_unk_DD75[0], &res_unk_DD75[1], &res_unk_DD7D[0], &res_unk_DD7D[1], &res_unk_DD95[0], &res_unk_DD95[1], &res_unk_DD9D[0], &res_unk_DD9D[1], NULL };
+p_resource lfl_54[] = { &res_rooms[54], &res_costumes[25], &res_costumes[26], &res_costumes[27], &res_costumes[28], &res_costumes[29], &res_costumes[30], &res_costumes[31], &res_costumes[32], &res_costumes[33], &res_costumes[34], &res_costumes[35], &res_costumes[36], NULL };
 
 typedef	struct	_lfl
 {
@@ -769,8 +787,8 @@ struct	_lfl_index
 {
 	unsigned char	room_lfl[55];
 	unsigned short	room_addr[55];
-	unsigned char	costume_lfl[35];
-	unsigned short	costume_addr[35];
+	unsigned char	costume_lfl[37];
+	unsigned short	costume_addr[37];
 	unsigned char	script_lfl[200];
 	unsigned short	script_addr[200];
 	unsigned char	sound_lfl[100];
@@ -884,6 +902,12 @@ int main (int argc, char **argv)
 				lfl_index.room_addr[entry - res_rooms] = (unsigned short)ftell(output);
 				break;
 			case RES_COSTUME:
+			case RES_UNK_DD95:
+			case RES_UNK_DD7D:
+			case RES_UNK_DD9D:
+			case RES_UNK_DD75:
+			case RES_COSTUMEGFX:
+			case RES_PALETTE:
 				lfl_index.costume_lfl[entry - res_costumes] = lfl->num;
 				lfl_index.costume_addr[entry - res_costumes] = (unsigned short)ftell(output);
 				break;
@@ -914,7 +938,7 @@ int main (int argc, char **argv)
 		write_byte(output,((unsigned char *)&lfl_index)[i]);
 	fclose(output);
 #else	/* !MAKE_LFLS */
-	dump_resource(input,"globdata.dmp",0,&res_globdata);
+	dump_resource(input,"globdtaa.dmp",0,&res_globdata);
 	for (i = 0; i < 40; i++)
 		dump_resource(input,"roomgfx-%d.dmp",i,&res_roomgfx[i]);
 	for (i = 0; i < 2; i++)
