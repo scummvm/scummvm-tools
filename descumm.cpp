@@ -1743,9 +1743,18 @@ void do_varset_code(char *buf, byte opcode)
 {
 	char *s;
 
-	buf = get_var(buf);
+	if ((ScriptVersion == 2)
+		&& ((opcode & 0x7F) == 0x0A
+		 || (opcode & 0x7F) == 0x2A
+		 || (opcode & 0x7F) == 0x6A)) {
+		 
+		int i = get_byte();
+		buf += sprintf(buf, "Var[Var[%d]]", i);
+	} else
+		buf = get_var(buf);
 
 	switch (opcode & 0x7F) {
+	case 0x0A:
 	case 0x1A:
 		s = " = ";
 		break;											/* move */
@@ -1753,11 +1762,13 @@ void do_varset_code(char *buf, byte opcode)
 		s = " *= ";
 		break;											/* mul */
 	case 0x3A:
+	case 0x6A:
 		s = " -= ";
 		break;											/* sub */
 	case 0x57:
 		s = " |= ";
 		break;											/* or */
+	case 0x2A:
 	case 0x5A:
 		s = " += ";
 		break;											/* add */
@@ -1838,18 +1849,25 @@ void get_tok_V2(char *buf)
 		do_actorset_v2(buf, opcode);
 		break;
 
+	case 0x2A:
+	case 0xAA:
+		// addDirect
+	case 0x3A:
+	case 0xBA:
+		//subtract
+	case 0x6A:
+	case 0xEA:
+		//subDirect
+	case 0x0A:
+	case 0x8A:
+		// assignVarWordDirect
 	case 0x1A:
 	case 0x5A:
 	case 0x9A:
 	case 0xDA:
 		do_varset_code(buf, opcode);
 		break;
-/*		
-	case 0x2A:
-	case 0xAA:
-		// addDirect
-		break;
-*/
+
 	case 0x11:
 	case 0x51:
 	case 0x91:
@@ -1860,10 +1878,6 @@ void get_tok_V2(char *buf)
 /*
 	case 0x2C:
 		// assignVarByte
-		break;
-	case 0x0A:
-	case 0x8A:
-		// assignVarWordDirect
 		break;
 */
 	case 0x80:
@@ -2350,16 +2364,7 @@ void get_tok_V2(char *buf)
 	case 0xBC:
 		do_tok(buf, "stopSound", ((opcode & 0x80) ? A1V : A1B));
 		break;
-/*
-	case 0x3A:
-	case 0xBA:
-		//subtract
-		break;
-	case 0x6A:
-	case 0xEA:
-		//subDirect
-		break;
-*/			
+
 	case 0x7A:
 	case 0xFA:
 		// verbOps
