@@ -675,7 +675,7 @@ void encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
 	bool err = false;
 
-	sprintf(fbuf, "oggenc -q 0 \"%s\".wav", filename);
+	sprintf(fbuf, "oggenc -q 0 %s.wav", filename);
 	err = system(fbuf) != 0;
 	if (err) {
 		printf("Got error from encoder. (check your parameters)\n");
@@ -749,7 +749,7 @@ void writeWaveHeader(int s_size, int rate, int chan) {
 	_waveTmpFile = NULL;
 }
 
-void writeToTempWave(char *fileName, byte *output_data, unsigned int size, int bits) {
+void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile) {
 		_waveTmpFile = fopen(fileName, "wb");
 		if (!_waveTmpFile) {
@@ -930,9 +930,8 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *
 		int size = _region[l].length;
 		int offset = _region[l].offset;
 		byte *outputData = convertTo16bit(ptr + offset, size, outputSize, bits, freq, channels);
-		bits = 16;
 		sprintf(tmpPath, "%s/%s_reg%03d.wav", dir, filename, l);
-		writeToTempWave(tmpPath, outputData, outputSize, bits);
+		writeToTempWave(tmpPath, outputData, outputSize);
 		writeWaveHeader(_waveDataSize, freq, channels);
 
 		free(outputData);
