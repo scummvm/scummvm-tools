@@ -1200,7 +1200,7 @@ void next_line()
 				"\x61|setActorAnimSpeed,"
 				"\x62|setActorData8,"
 				"\x63pp|setActorTalkPos,"
-				"\xD7|setActorNew3On," "\xD8|setActorNew3Off," "\xD9|initActorLittle");
+				"\xD7|setActorNew3On," "\xD8|setActorNew3Off," "\xD9|initActorLittle," "\xE3p|setActorLayer");
 		break;
 	case 0x9E:
 		ext("x" "verbOps\0"
