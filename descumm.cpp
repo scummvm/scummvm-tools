@@ -1995,12 +1995,12 @@ void get_tok_V2(char *buf)
 	case 0xB2:
 		do_tok(buf, "setCameraAt", ((opcode & 0x80) ? A1V : A1B));
 		break;
-/*			
+
 	case 0x54:
 	case 0xD4:
-		//setObjectName
+		do_tok(buf, "setObjectName", ((opcode & 0x80) ? A1V : A1W) | A2ASCII);
 		break;
-*/		
+
 	case 0x0B:
 	case 0x4B:
 	case 0x8B:
