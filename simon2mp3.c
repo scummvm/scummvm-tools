@@ -66,22 +66,12 @@ void end(void)
 	exit(0);
 }
 
-void get_string(int size)
-{
-	int i = 0;
-	while (i < size) {
-		int c = fgetc(input);
-		buf[i++] = c;
-	}
-	buf[i] = '\0';
-}
-
 int get_offsets(void)
 {
 	int i;
 
 	for (i = 0;; i++) {
-		get_string(8);
+		readString(8, buf, input);
 		if (!memcmp(buf, "Creative", 8) || !memcmp(buf, "RIFF", 4)) {
 			return(i);
 		}
@@ -116,10 +106,10 @@ unsigned int get_sound(int sound)
 
 	fseek(input, offsets[sound], SEEK_SET);
 
-	get_string(8);
+	readString(8, buf, input);
 	if (!memcmp(buf, "Creative", 8)) {
 		printf("VOC found (pos = %d) :\n", offsets[sound]);
-		get_string(18);
+		readString(18, buf, input);
 		get_voc();
 	} else if (!memcmp(buf, "RIFF", 4)) {
 		printf("WAV found (pos = %d) :\n", offsets[sound]);
