@@ -110,7 +110,7 @@ byte HaltOnError;
 int get_curpos();
 int gameFlag;
 
-bool GF_OLD256 = true;	// TODO - this should be controlled by a command line option
+bool GF_AFTER_V3 = true;	// TODO - this should be controlled by a command line option
 bool GF_UNBLOCKED = false;
 
 
@@ -932,7 +932,7 @@ void do_room_ops(char *buf, byte master_opcode)
 	char	a[256];
 	char	b[256];
 	
-	if (GF_OLD256) {
+	if (GF_AFTER_V3) {
 		get_var_or_word(a, (master_opcode & 0x80));
 		get_var_or_word(b, (master_opcode & 0x40));
 	}
@@ -943,7 +943,7 @@ void do_room_ops(char *buf, byte master_opcode)
 
 	switch (opcode & 0x1F) {
 	case 0x01:
-		if (!GF_OLD256) {
+		if (!GF_AFTER_V3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -954,7 +954,7 @@ void do_room_ops(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x02:
-		if (!GF_OLD256) {
+		if (!GF_AFTER_V3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -965,7 +965,7 @@ void do_room_ops(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x03:
-		if (!GF_OLD256) {
+		if (!GF_AFTER_V3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -976,7 +976,7 @@ void do_room_ops(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x04:
-		if (!GF_OLD256) {
+		if (!GF_AFTER_V3) {
 			get_var_or_word(a, (master_opcode & 0x80));
 			get_var_or_word(b, (master_opcode & 0x40));
 		}
@@ -1221,17 +1221,23 @@ void do_print_ego(char *buf, byte opcode)
 		case 0x2:
 			buf = do_tok(buf, "Clipped", ((opcode & 0x80) ? A1V : A1W));
 			break;
+		case 0x3:
+			buf = do_tok(buf, "Erase?", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+			break;
 		case 0x4:
 			buf = do_tok(buf, "Center", 0);
 			break;
 		case 0x6:
-			buf = do_tok(buf, "Left", 0);
+			if (GF_UNBLOCKED)
+				buf = do_tok(buf, "Spacing?", ((opcode & 0x80) ? A1V: A1W));
+			else
+				buf = do_tok(buf, "Left", 0);
 			break;
 		case 0x7:
 			buf = do_tok(buf, "Overhead", 0);
 			break;
 		case 0x8:
-			buf = do_tok(buf, "Unk8", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+			buf = do_tok(buf, "PlayCDTrack", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 			break;
 		case 0xF:{
 				buf = strecpy(buf, "Text(\"");
@@ -2212,7 +2218,9 @@ int main(int argc, char *argv[])
 
 	buf = (char *)malloc(4096);
 
-	if (!GF_UNBLOCKED) {
+	if (GF_UNBLOCKED) {
+		mem += 4;
+	} else {
 		switch (TO_LE_16(*((unsigned short *)mem + 2))) {
 			case MKID('LS'):
 				printf("Script# %d\n", (unsigned char)mem[8]);
