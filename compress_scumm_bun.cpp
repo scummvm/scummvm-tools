@@ -820,6 +820,159 @@ byte *decompressBundleSound(int index, FILE *input, int32 &finalSize) {
 	return compFinal;
 }
 
+byte *convertTo16bitStereo(byte *ptr, int size, int bits, int freq, int channels) {
+
+//	char tmpPath[200];
+//	sprintf(tmpPath, "%s/%s.wav", outputDir, bundleTable[h].filename);
+//	writeToTempWave(tmpPath, outputData, size);
+//	fclose(_waveTmpFile);
+
+	return NULL;
+}
+
+void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs) {
+	uint32 tag;
+	int32 size = 0;
+
+	do {
+		tag = READ_BE_UINT32(ptr); ptr += 4;
+		switch(tag) {
+		case 'TEXT':
+		case 'STOP':
+		case 'FRMT':
+		case 'DATA':
+			size = READ_BE_UINT32(ptr); ptr += size + 4;
+			break;
+		case 'REGN':
+			numRegions++;
+			size = READ_BE_UINT32(ptr); ptr += size + 4;
+			break;
+		case 'JUMP':
+			numJumps++;
+			size = READ_BE_UINT32(ptr); ptr += size + 4;
+			break;
+		case 'SYNC':
+			numSyncs++;
+			size = READ_BE_UINT32(ptr); ptr += size + 4;
+			break;
+		default:
+			error("countMapElements() Unknown tag of Map: '%s'", tag2str(tag));
+		}
+	} while (tag != 'DATA');
+}
+
+struct Region {
+	int32 offset;
+	int32 length;
+};
+
+struct Jump {
+	int32 offset;
+	int32 dest;
+	byte hookId;
+	int16 fadeDelay;
+};
+
+struct Sync {
+	int32 size;
+	byte *ptr;
+};
+
+void writeToRMAPFile(byte *ptr, char *dir, char *filename, int &offsetData, int &bits, int &freq, int &channels) {
+	byte *s_ptr = ptr;
+	int32 size = 0;
+	int l;
+
+	uint32 tag = READ_BE_UINT32(ptr);
+	assert(tag == 'iMUS');
+	ptr += 16;
+
+	int curIndexRegion = 0;
+	int curIndexJump = 0;
+	int curIndexSync = 0;
+
+	int numRegions = 0, numJumps = 0, numSyncs = 0;
+	countMapElements(ptr, numRegions, numJumps, numSyncs);
+	Region *region = (Region *)malloc(sizeof(Region) * numRegions);
+	Jump *jump = (Jump *)malloc(sizeof(Jump) * numJumps);
+	Sync *sync = (Sync *)malloc(sizeof(Sync) * numSyncs);
+
+	do {
+		tag = READ_BE_UINT32(ptr); ptr += 4;
+		switch (tag) {
+		case 'FRMT':
+			ptr += 12;
+			bits = READ_BE_UINT32(ptr); ptr += 4;
+			freq = READ_BE_UINT32(ptr); ptr += 4;
+			channels = READ_BE_UINT32(ptr); ptr += 4;
+			break;
+		case 'TEXT':
+		case 'STOP':
+			size = READ_BE_UINT32(ptr); ptr += size + 4;
+			break;
+		case 'REGN':
+			ptr += 4;
+			region[curIndexRegion].offset = READ_BE_UINT32(ptr); ptr += 4;
+			region[curIndexRegion].length = READ_BE_UINT32(ptr); ptr += 4;
+			curIndexRegion++;
+			break;
+		case 'JUMP':
+			ptr += 4;
+			jump[curIndexJump].offset = READ_BE_UINT32(ptr); ptr += 4;
+			jump[curIndexJump].dest = READ_BE_UINT32(ptr); ptr += 4;
+			jump[curIndexJump].hookId = READ_BE_UINT32(ptr); ptr += 4;
+			jump[curIndexJump].fadeDelay = READ_BE_UINT32(ptr); ptr += 4;
+			curIndexJump++;
+			break;
+		case 'SYNC':
+			size = READ_BE_UINT32(ptr); ptr += 4;
+			sync[curIndexSync].size = size;
+			sync[curIndexSync].ptr = (byte *)malloc(size);
+			memcpy(sync[curIndexSync].ptr, ptr, size);
+			curIndexSync++;
+			ptr += size;
+			break;
+		case 'DATA':
+			ptr += 4;
+			break;
+		default:
+			error("writeToRMAPFile() Unknown tag of Map for sound '%s'", filename);
+		}
+	} while (tag != 'DATA');
+	offsetData = (int32)(ptr - s_ptr);
+
+	char tmpPath[200];
+	sprintf(tmpPath, "%s/%s.map", dir, filename);
+	FILE *rmapFile = fopen(tmpPath, "wb");
+	if (!rmapFile)
+		error("writeToRMAPFile() Error writing RMAP file: %s", tmpPath);
+
+	writeUint32BE(rmapFile, 'RMAP');
+	writeUint32BE(rmapFile, 1); // version
+	writeUint32BE(rmapFile, numRegions);
+	writeUint32BE(rmapFile, numJumps);
+	writeUint32BE(rmapFile, numSyncs);
+	for (l = 0; l < numRegions; l++) {
+		writeUint32BE(rmapFile, region[l].offset);
+		writeUint32BE(rmapFile, region[l].length);
+	}
+	for (l = 0; l < numJumps; l++) {
+		writeUint32BE(rmapFile, jump[l].offset);
+		writeUint32BE(rmapFile, jump[l].dest);
+		writeUint32BE(rmapFile, jump[l].hookId);
+		writeUint32BE(rmapFile, jump[l].fadeDelay);
+	}
+	for (l = 0; l < numRegions; l++) {
+		writeUint32BE(rmapFile, sync[l].size);
+		fwrite(sync[l].ptr, sync[l].size, 1, rmapFile);
+		free(sync[l].ptr);
+	}
+	fclose(rmapFile);
+	free(region);
+	free(jump);
+	free(sync);
+}
+
 int main(int argc, char *argv[]) {
 	if (argc < 4)
 		showhelp(argv[0]);
@@ -828,7 +981,6 @@ int main(int argc, char *argv[]) {
 	char outputDir[200];
 	char inputFilename[200];
 	char tmpPath[200];
-	char tmp2Path[200];
 
 	strcpy(inputFilename, argv[1]);
 	strcpy(inputDir, argv[2]);
@@ -879,11 +1031,9 @@ int main(int argc, char *argv[]) {
 	int32 size = 0;
 	for (int h = 0; h < numFiles; h++) {
 		byte *compFinal = decompressBundleSound(h, input, size);
-
-		sprintf(tmp2Path, "%s/%s.wav", outputDir, bundleTable[h].filename);
-		writeToTempWave(tmp2Path, compFinal, size);
-		fclose(_waveTmpFile);
-
+		int offsetData = 0, bits = 0, freq = 0, channels = 0;
+		writeToRMAPFile(compFinal, outputDir, bundleTable[h].filename, offsetData, bits, freq, channels);
+		byte *outputData = convertTo16bitStereo(compFinal + offsetData, size - offsetData, bits, freq, channels);
 		free(compFinal);
 	}
 
