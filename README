@@ -10,6 +10,8 @@ Included tools:
         rescumm - Extracts macintosh "single file" SCUMM games into their
                       component parts, for use with ScummVM
 
+        mm_nes_extract - Extracts data files from NES version of Maniac Mansion
+
         descumm - Decompiles SCUMM V2/V3/V4/V5 scripts
 
         descumm6 - Decompiles SCUMM V6/V7/V8 scripts (Dott, FT, COMI, etc.)
