@@ -162,7 +162,7 @@ byte scriptVersion = 6;
 BlockStack *block_stack;
 int num_block_stack;
 
-const char *var_names[] = {
+const char *var_names6[] = {
 	/* 0 */
 	NULL,
 	"g_ego",
@@ -262,11 +262,185 @@ const char *var_names[] = {
 	"g_ems_space"
 };
 
+const char *var_names7[] = {
+	/* 0 */
+	NULL,
+	"VAR_MOUSE_X",
+	"VAR_MOUSE_Y",
+	"VAR_VIRT_MOUSE_X",
+	/* 4 */
+	"VAR_VIRT_MOUSE_Y",
+	"VAR_V6_SCREEN_WIDTH",
+	"VAR_V6_SCREEN_HEIGHT",
+	"VAR_CAMERA_POS_X",
+	/* 8 */
+	"VAR_CAMERA_POS_Y",
+	"VAR_OVERRIDE",
+	"VAR_ROOM",
+	"VAR_ROOM_RESOURCE",
+	/* 12 */
+	"VAR_TALK_ACTOR",
+	"VAR_HAVE_MSG",
+	"VAR_TIMER",
+	"VAR_TMR_4",
+	/* 16 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 20 */
+	NULL,
+	NULL,
+	"VAR_LEFTBTN_DOWN",
+	"VAR_RIGHTBTN_DOWN",
+	/* 24 */
+	"VAR_LEFTBTN_HOLD",
+	"VAR_RIGHTBTN_HOLD",
+	"VAR_PERFORMANCE_1",
+	"VAR_PERFORMANCE_2",
+	/* 28 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 32 */
+	"VAR_V6_EMSSPACE",
+	NULL,
+	"VAR_V6_RANDOM_NR",
+	"VAR_NEW_ROOM",
+	/* 36 */
+	"VAR_WALKTO_OBJ",
+	NULL,
+	"VAR_CAMERA_DEST_X",
+	"VAR_CAMERA_DEST_>",
+	/* 40 */
+	"VAR_CAMERA_FOLLOWED_ACTOR",
+	NULL,
+	NULL,
+	NULL,
+	/* 44 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 48 */
+	NULL,
+	NULL,
+	"VAR_SCROLL_SCRIPT",
+	"VAR_ENTRY_SCRIPT",
+	/* 52 */
+	"VAR_ENTRY_SCRIPT2",
+	"VAR_EXIT_SCRIPT",
+	"VAR_EXIT_SCRIPT2",
+	"VAR_VERB_SCRIPT",
+	/* 56 */
+	"VAR_SENTENCE_SCRIPT",
+	"VAR_HOOK_SCRIPT",
+	"VAR_CUTSCENE_START_SCRIPT",
+	"VAR_CUTSCENE_END_SCRIPT",
+	/* 60 */
+	"VAR_UNK_SCRIPT",
+	"VAR_UNK_SCRIPT2",
+	"VAR_CUTSCENEEXIT_KEY",
+	"VAR_RESTART_KEY",			// ???
+	/* 64 */
+	"VAR_PAUSE_KEY",
+	"VAR_SAVELOADDIALOG_KEY",	// ???
+	"VAR_TALKSTOP_KEY",			// ???
+	NULL,
+	/* 68 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 72 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 76 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 80 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 84 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 88 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 92 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 96 */
+	NULL,
+	"VAR_TIMER_NEXT",
+	"VAR_TMR_1",
+	"VAR_TMR_2",
+	/* 100 */
+	"VAR_TMR_3",
+	"VAR_CAMERA_MIN_X",
+	"VAR_CAMERA_MAX_X",
+	"VAR_CAMERA_MIN_Y",
+	/* 104 */
+	"VAR_CAMERA_MAX_Y",
+	"VAR_CAMERA_THRESHOLD_X",
+	"VAR_CAMERA_THRESHOLD_Y",
+	"VAR_CAMERA_SPEED_X",
+	/* 108 */
+	"VAR_CAMERA_SPEED_Y",
+	"VAR_CAMERA_ACCEL_X",
+	"VAR_CAMERA_ACCEL_Y",
+	"VAR_EGO",
+	/* 112 */
+	"VAR_CURSORSTATE",
+	"VAR_USERPUT",
+	"VAR_DEFAULT_TALK_DELAY",
+	"VAR_CHARINC",
+	/* 116 */
+	"VAR_DEBUGMODE",
+	NULL,
+	NULL,
+	"VAR_CHARSET_MASK",
+	/* 120 */
+	NULL,
+	NULL,
+	NULL,
+	"VAR_VIDEONAME",
+	/* 124 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 128 */
+	NULL,
+	NULL,
+	"VAR_STRING2DRAW",
+	"VAR_CUSTOMSCALETABLE",
+};
+
 const char *getVarName(uint var)
 {
-	if (var >= sizeof(var_names) / sizeof(var_names[0]))
-		return NULL;
-	return var_names[var];
+	if (scriptVersion == 7) {
+		if (var >= sizeof(var_names7) / sizeof(var_names7[0]))
+			return NULL;
+		return var_names7[var];
+	} else {
+		if (var >= sizeof(var_names6) / sizeof(var_names6[0]))
+			return NULL;
+		return var_names6[var];
+	}
 }
 
 void push(StackEnt * se)
