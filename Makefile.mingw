@@ -9,7 +9,6 @@ install:   all
 	mkdir -p $(SCUMMVMPATH)
 	mkdir -p $(SCUMMVMPATH)/tools
 	strip descumm.exe -o $(SCUMMVMPATH)/tools/descumm.exe
-	strip descumm6.exe -o $(SCUMMVMPATH)/tools/descumm6.exe
 	strip extract.exe -o $(SCUMMVMPATH)/tools/extract.exe
 	strip mm_nes_extract.exe -o $(SCUMMVMPATH)/tools/mm_nes_extract.exe
 	strip rescumm.exe -o $(SCUMMVMPATH)/tools/rescumm.exe

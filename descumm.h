@@ -34,6 +34,9 @@
 #include <process.h>
 #endif
 
+//
+// Various utility macros
+//
 
 #define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
@@ -144,5 +147,20 @@ extern bool maybeAddIf(uint cur, uint to);
 extern bool maybeAddElse(uint cur, uint to);
 extern bool maybeAddElseIf(uint cur, uint elseto, uint to);
 extern void writePendingElse();
+
+//
+// Entry points for the descumming
+//
+extern void next_line_V12(char *buf);	// For V1 and V2
+extern void next_line_V345(char *buf);	// For V3, V4, V5
+extern void next_line_V67();
+extern void next_line_V8();
+extern char *output;
+extern bool HumongousFlag;
+extern bool ZakFlag;
+extern bool IndyFlag;
+extern bool GF_UNBLOCKED;
+
+
 
 #endif

@@ -5,12 +5,18 @@ CXX     := g++
 CFLAGS  := -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar
 LDFLAGS :=
 
+# Additional warnings
+CFLAGS+= -Wshadow
+CFLAGS+= -pedantic
+CFLAGS+= -Wpointer-arith -Wcast-qual -Wcast-align
+# -Wconversion
+CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings 
+
 # Uncomment this if you are on a big endian system
 # CFLAGS += -DSCUMM_BIG_ENDIAN
 
 TARGETS := \
 	descumm$(EXEEXT) \
-	descumm6$(EXEEXT) \
 	extract$(EXEEXT) \
 	mm_nes_extract$(EXEEXT) \
 	rescumm$(EXEEXT) \
@@ -19,10 +25,7 @@ TARGETS := \
 
 all: $(TARGETS)
 
-descumm$(EXEEXT): descumm.o descumm-common.o
-	$(CXX) $(LFLAGS) -o $@ $+
-
-descumm6$(EXEEXT): descumm6.o descumm-common.o
+descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o
 	$(CXX) $(LFLAGS) -o $@ $+
 
 extract$(EXEEXT): extract.o
@@ -41,7 +44,7 @@ simon2mp3$(EXEEXT): simon2mp3.o
 	$(CC) $(LFLAGS) -o $@ $+
 
 
-descumm.o descumm6.o descumm-common.o: descumm.h
+descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
 
 clean:
 	rm -f *.o $(TARGETS)

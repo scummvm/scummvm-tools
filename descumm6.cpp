@@ -116,11 +116,11 @@ static const char *oper_list[] = {
 	"%"
 };
 
-StackEnt *stack[128];
-int num_stack;
+static StackEnt *stack[128];
+static int num_stack = -1;
 bool HumongousFlag = false;
 
-char *output;
+char *output = 0;	// FIXME: it is evil to have a global output buffer like this
 
 const char *var_names6[] = {
 	/* 0 */
@@ -593,45 +593,6 @@ void invalidop(const char *cmd, int op)
 	else
 		printf("ERROR: Unknown opcode 0x%x (stack count %d)\n", op, num_stack);
 	exit(1);
-}
-
-byte *skipVerbHeader_V8(byte *p)
-{
-	uint32 *ptr;
-	uint32 code;
-	int hdrlen;
-	
-	ptr = (uint32 *)p;
-	while (TO_LE_32(*ptr++) != 0) {
-		ptr++;
-	}
-	hdrlen = (byte *)ptr - p;
-	
-	ptr = (uint32 *)p;
-	while ((code = TO_LE_32(*ptr++)) != 0) {
-		printf("  %2d - %.4X\n", code, TO_LE_32(*ptr++) - hdrlen);
-	}
-
-	return (byte *)ptr;
-}
-
-int skipVerbHeader_V67(byte *p)
-{
-	byte code;
-	int offset = 8;
-	int minOffset = 255;
-	p += offset;
-
-	printf("Events:\n");
-
-	while ((code = *p++) != 0) {
-		offset = TO_LE_16(*(uint16 *)p);
-		p += 2;
-		printf("  %2X - %.4X\n", code, offset);
-		if (minOffset > offset)
-			minOffset = offset;
-	}
-	return minOffset;
 }
 
 StackEnt *se_new(int type)
@@ -2097,7 +2058,7 @@ void next_line_V67()
 		ext("|createBoxMatrix");
 		break;
 	case 0x9B:
-		ext("x" "resourceRoutines\0"
+		ext("x" "resourceOps\0"
 				"\x64p|loadScript,"
 				"\x65p|loadSound,"
 				"\x66p|loadCostume," 
@@ -2135,65 +2096,65 @@ void next_line_V67()
 				"\xD5p|setPalette");
 		break;
 	case 0x9D:
-		ext("x" "actorSet\0"
+		ext("x" "actorOps\0"
 				"\xC5p|setCurActor,"
-				"\x4Cp|setActorCostume,"
-				"\x4Dpp|setActorWalkSpeed,"
-				"\x4El|setActorSound,"
-				"\x4Fp|setActorWalkFrame,"
-				"\x50pp|setActorTalkFrame,"
-				"\x51p|setActorStandFrame,"
+				"\x4Cp|setCostume,"
+				"\x4Dpp|setWalkSpeed,"
+				"\x4El|setSound,"
+				"\x4Fp|setWalkFrame,"
+				"\x50pp|setTalkFrame,"
+				"\x51p|setStandFrame,"
 				"\x52ppp|actorSet:82:??,"
-				"\x53|initActor,"
-				"\x54p|setActorElevation,"
-				"\x55|setActorDefAnim,"
-				"\x56pp|setActorPalette,"
-				"\x57p|setActorTalkColor,"
-				"\x58s|setActorName,"
-				"\x59p|setActorInitFrame,"
-				"\x5Bp|setActorWidth,"
-				"\x5Cp|setActorScale,"
-				"\x5D|setActorNeverZClip,"
-				"\x5Ep|setActorAlwayZClip?,"
-				"\xE1p|setActorAlwayZClip?,"
-				"\x5F|setActorIgnoreBoxes,"
-				"\x60|setActorFollowBoxes,"
-				"\x61|setActorAnimSpeed,"
-				"\x62|setActorShadowMode,"
-				"\x63pp|setActorTalkPos,"
-				"\xC6p|setActorAnimVar,"
-				"\xD7|setActorIgnoreTurnsOn,"
-				"\xD8|setActorIgnoreTurnsOff,"
-				"\xD9|initActorLittle,"
-				"\xE3p|setActorLayer,"
-				"\xE4p|setActorWalkScript,"
-				"\xE5|setActorStanding,"
-				"\xE6p|setActorDirection,"
-				"\xE7p|actorTurnToDirection,"
-				"\xE9|freezeActor,"
-				"\xEA|unfreezeActor,"
+				"\x53|init,"
+				"\x54p|setElevation,"
+				"\x55|setDefAnim,"
+				"\x56pp|setPalette,"
+				"\x57p|setTalkColor,"
+				"\x58s|setName,"
+				"\x59p|setInitFrame,"
+				"\x5Bp|setWidth,"
+				"\x5Cp|setScale,"
+				"\x5D|setNeverZClip,"
+				"\x5Ep|setAlwayZClip?,"
+				"\xE1p|setAlwayZClip?,"
+				"\x5F|setIgnoreBoxes,"
+				"\x60|setFollowBoxes,"
+				"\x61|setAnimSpeed,"
+				"\x62|setShadowMode,"
+				"\x63pp|setTalkPos,"
+				"\xC6p|setAnimVar,"
+				"\xD7|setIgnoreTurnsOn,"
+				"\xD8|setIgnoreTurnsOff,"
+				"\xD9|initLittle,"
+				"\xE3p|setLayer,"
+				"\xE4p|setWalkScript,"
+				"\xE5|setStanding,"
+				"\xE6p|setDirection,"
+				"\xE7p|turnToDirection,"
+				"\xE9|freeze,"
+				"\xEA|unfreeze,"
 				"\xEBp|setTalkScript");
 		break;
 	case 0x9E:
 		ext("x" "verbOps\0"
 				"\xC4p|setCurVerb,"
-				"\x7Cp|verbLoadImg,"
-				"\x7Ds|verbLoadString,"
-				"\x7Ep|verbSetColor,"
-				"\x7Fp|verbSetHiColor,"
-				"\x80pp|verbSetXY,"
-				"\x81|verbSetCurmode1,"	// = verbOn ?
-				"\x82|verbSetCurmode0,"	// = verbOff ?
-				"\x83|verbKill,"
-				"\x84|verbInit,"
-				"\x85p|verbSetDimColor,"
-				"\x86|verbSetCurmode2,"	// = verbDim ?
-				"\x87p|verbSetKey,"
-				"\x88|verbSetCenter,"
-				"\x89p|verbSetToString,"
-				"\x8Bpp|verbSetToObject,"
-				"\x8Cp|verbSetBkColor,"
-				"\xFF|verbRedraw");
+				"\x7Cp|loadImg,"
+				"\x7Ds|loadString,"
+				"\x7Ep|setColor,"
+				"\x7Fp|setHiColor,"
+				"\x80pp|setXY,"
+				"\x81|setOn,"
+				"\x82|setOff,"
+				"\x83|kill,"
+				"\x84|init,"
+				"\x85p|setDimColor,"
+				"\x86|setDimmed,"
+				"\x87p|setKey,"
+				"\x88|setCenter,"
+				"\x89p|setToString,"
+				"\x8Bpp|setToObject,"
+				"\x8Cp|setBkColor,"
+				"\xFF|redraw");
 		break;
 	case 0x9F:
 		ext("rpp|getActorFromXY");
@@ -2439,203 +2400,4 @@ void next_line_V67()
 		invalidop(NULL, code);
 		break;
 	}
-}
-
-
-void ShowHelpAndExit()
-{
-	printf("SCUMM Script decompiler\n"
-			"Syntax:\n"
-			"\tdescumm6 [-o] filename\n"
-			"Flags:\n"
-			"\t-6\tInput Script is v6\n"
-			"\t-7\tInput Script is v7\n"
-			"\t-8\tInput Script is v8\n"
-			"\t-o\tAlways Show offsets\n"
-			"\t-p\tInput Script is from Humongous Entertainment game\n"
-			"\t-i\tDon't output ifs\n"
-			"\t-e\tDon't output else\n"
-			"\t-f\tDon't output else-if\n"
-			"\t-w\tDon't output while\n"
-			"\t-c\tDon't show opcode\n"
-			"\t-x\tDon't show offsets\n"
-			"\t-h\tHalt on error\n");
-	exit(0);
-}
-
-int main(int argc, char *argv[])
-{
-	FILE *in;
-	byte *mem, *memorg;
-	int len;
-	char *filename, *buf;
-	int i;
-	char *s;
-
-	scriptVersion = 6;
-	g_jump_opcode = 0x73;
-	
-	// Parse the arguments
-	filename = NULL;
-	for (i = 1; i < argc; i++) {
-		s = argv[i];
-
-		if (s && s[0] == '-') {
-			s++;
-			while (*s) {
-				switch (tolower(*s)) {
-				case '6':
-					scriptVersion = 6;
-					g_jump_opcode = 0x73;
-					break;
-				case '7':
-					scriptVersion = 7;
-					g_jump_opcode = 0x73;
-					break;
-				case '8':
-					scriptVersion = 8;
-					g_jump_opcode = 0x66;
-					break;
-
-				case 'o':
-					alwaysShowOffs = true;
-					break;
-				case 'p':
-					scriptVersion = 6;
-					g_jump_opcode = 0x73;
-					HumongousFlag = true;
-					break;
-				case 'i':
-					dontOutputIfs = true;
-					break;
-				case 'e':
-					dontOutputElse = true;
-					break;
-				case 'f':
-					dontOutputElseif = true;
-					break;
-				case 'w':
-					dontOutputWhile = true;
-					break;
-				case 'c':
-					dontShowOpcode = true;
-					break;
-				case 'x':
-					dontShowOffsets = true;
-					break;
-				case 'h':
-					haltOnError = true;
-					break;
-				default:
-					ShowHelpAndExit();
-				}
-				s++;
-			}
-		} else {
-			if (filename)
-				ShowHelpAndExit();
-			filename = s;
-		}
-	}
-
-	if (!filename)
-		ShowHelpAndExit();
-
-	in = fopen(filename, "rb");
-	if (!in) {
-		printf("Unable to open %s\n", filename);
-		return 1;
-	}
-
-	memorg = mem = (byte *)malloc(65536);
-	len = fread(mem, 1, 65536, in);
-	fclose(in);
-	size_of_code = len;
-
-	if (size_of_code < 10) {
-		printf("File too small to be a script\n");
-		exit(0);
-	}
-
-	output = buf = (char *)malloc(8192);
-
-	offs_of_line = 0;
-
-	switch (TO_BE_32(*((uint32 *)mem))) {
-	case 'LSCR':
-		if (scriptVersion == 8) {
-			printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
-			mem += 12;
-		} else if (scriptVersion == 7) {
-			printf("Script# %d\n", TO_LE_16(*((int16 *)(mem+8))));
-			mem += 10;
-		} else {
-			printf("Script# %d\n", (byte)mem[8]);
-			mem += 9;
-		}
-		break;											/* Local script */
-	case 'SCRP':
-		mem += 8;
-		break;											/* Script */
-	case 'ENCD':
-		mem += 8;
-		break;											/* Entry code */
-	case 'EXCD':
-		mem += 8;
-		break;											/* Exit code */
-	case 'VERB':
-		if (scriptVersion == 8)
-			mem = skipVerbHeader_V8(mem + 8);
-		else
-			offs_of_line = skipVerbHeader_V67(mem);
-		break;											/* Verb */
-	default:
-		printf("Unknown script type!\n");
-		exit(0);
-	}
-
-	org_pos = mem;
-	cur_pos = org_pos + offs_of_line;
-	len -= mem - memorg;
-
-	while (cur_pos < mem + len) {
-		byte opcode = *cur_pos;
-		int j = num_block_stack;
-		buf[0] = 0;
-		if (scriptVersion == 8)
-			next_line_V8();
-		else
-			next_line_V67();
-		if (buf[0]) {
-			writePendingElse();
-			if (haveElse) {
-				haveElse = false;
-				j--;
-			}
-			outputLine(buf, offs_of_line, opcode, j);
-			offs_of_line = get_curoffs();
-		}
-		while (indentBlock(get_curoffs())) {
-			outputLine("}", -1, -1, -1);
-		}
-		fflush(stdout);
-	}
-
-	printf("END\n");
-	
-	if (scriptVersion >= 6 && num_stack != 0) {
-		printf("Stack count: %d\n", num_stack);
-		if (num_stack > 0) {
-			printf("Stack contents:\n");
-			while (num_stack) {
-				buf[0] = 0;
-				se_astext(pop(), buf);
-				printf("%s\n", buf);
-			}
-		}
-	}
-
-	free(memorg);
-
-	return 0;
 }

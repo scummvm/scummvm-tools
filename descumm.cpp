@@ -91,9 +91,6 @@
 
 
 
-void get_tok_V12(char *buf);	// For V1 and V2
-void get_tok_V345(char *buf);	// For V3, V4, V5
-
 bool ZakFlag = false;
 bool IndyFlag = false;
 bool GF_UNBLOCKED = false;
@@ -707,9 +704,9 @@ void do_expr_code(char *buf)
 		case 0x6:
 			buf2 = strecpy(buf, "<");
 			if (scriptVersion <= 2)
-				get_tok_V12(buf2);
+				next_line_V12(buf2);
 			else
-				get_tok_V345(buf2);
+				next_line_V345(buf2);
 			strecpy(strchr(buf2, 0), ">");
 			AddToExprStack(buf);
 			break;
@@ -755,9 +752,9 @@ void do_expr_code(char *buf)
 		case 0x6:
 			sprintf(buf, "CALL (%.2X) ", *cur_pos);
 			if (scriptVersion <= 2)
-				get_tok_V12(strchr(buf, 0));
+				next_line_V12(strchr(buf, 0));
 			else
-				get_tok_V345(strchr(buf, 0));
+				next_line_V345(strchr(buf, 0));
 			break;
 		default:
 			sprintf(buf, "UNKNOWN %d", i);
@@ -1679,7 +1676,7 @@ void do_matrix_ops(char *buf, byte opcode)
 	}
 }
 
-void get_tok_V12(char *buf)
+void next_line_V12(char *buf)
 {
 	byte opcode = get_byte();
 
@@ -2268,7 +2265,7 @@ void get_tok_V12(char *buf)
 	}
 }
 
-void get_tok_V345(char *buf)
+void next_line_V345(char *buf)
 {
 	byte opcode = get_byte();
 
@@ -2987,284 +2984,4 @@ void get_tok_V345(char *buf)
 		}
 		sprintf(buf, "ERROR: Unknown opcode %.2X!", opcode);
 	}
-}
-
-void ShowHelpAndExit()
-{
-	printf("SCUMM Script decompiler\n"
-			"Syntax:\n"
-			"\tdescumm [-o] filename\n"
-			"Flags:\n"
-			"\t-1\tInput Script is v1\n"
-			"\t-2\tInput Script is v2\n"
-			"\t-3\tInput Script is v3\n"
-			"\t-4\tInput Script is v4\n"
-			"\t-5\tInput Script is v5\n"
-			"\t-n\tUse Indy3-256 specific hacks\n"
-			"\t-z\tUse Zak256 specific hacks\n"
-			"\t-u\tScript is Unblocked/has no header\n"
-			"\t-o\tAlways Show offsets\n"
-			"\t-i\tDon't output ifs\n"
-			"\t-e\tDon't output else\n"
-			"\t-f\tDon't output else-if\n"
-			"\t-w\tDon't output while\n"
-			"\t-c\tDon't show opcode\n" 
-			"\t-x\tDon't show offsets\n" 
-			"\t-h\tHalt on error\n");
-	exit(0);
-}
-
-int skipVerbHeader_V12(byte *p)
-{
-	byte code;
-	int offset = 15;
-	int minOffset = 255;
-	p += offset;
-
-	printf("Events:\n");
-
-	while ((code = *p++) != 0) {
-		offset = *p++;
-		printf("  %2X - %.4X\n", code, offset);
-		if (minOffset > offset)
-			minOffset = offset;
-	}
-	return minOffset;
-}
-
-int skipVerbHeader_V34(byte *p)
-{
-	byte code;
-	int offset = GF_UNBLOCKED ? 17 : 19;
-	int minOffset = 255;
-	p += offset;
-	
-	printf("Events:\n");
-
-	while ((code = *p++) != 0) {
-		offset = TO_LE_16(*(uint16 *)p);
-		p += 2;
-		printf("  %2X - %.4X\n", code, offset);
-		if (minOffset > offset)
-			minOffset = offset;
-	}
-	return minOffset;
-}
-
-byte *skipVerbHeader_V5(byte *p)
-{
-	byte code;
-
-	printf("Events:\n");
-
-	while ((code = *p++) != 0) {
-		printf("  %2X - %.4X\n", code, TO_LE_16(*(uint16 *)p));
-		p += 2;
-	}
-	return p;
-}
-
-
-int main(int argc, char *argv[])
-{
-	FILE *in;
-	byte *mem, *memorg;
-	int len;
-	char *filename, *buf;
-	int i;
-	char *s;
-
-	scriptVersion = 3;
-	g_jump_opcode = 0x18;
-	
-	// Parse the arguments
-	filename = NULL;
-	for (i = 1; i < argc; i++) {
-		s = argv[i];
-
-		if (s && s[0] == '-') {
-			s++;
-			while (*s) {
-				switch (tolower(*s)) {
-				case '1':
-					scriptVersion = 1;
-					GF_UNBLOCKED = true;
-					break;
-				case '2':
-					scriptVersion = 2;
-					GF_UNBLOCKED = true;
-					break;
-				case '3':
-					scriptVersion = 3;
-					break;
-				case '4':
-					scriptVersion = 4;
-					break;
-				case '5':
-					scriptVersion = 5;
-					break;
-				case 'n':
-					IndyFlag = 1; // Indy3
-					break;
-				case 'z':
-					ZakFlag = 1; // Zak
-					break;
-				case 'u':
-					GF_UNBLOCKED = true;
-					break;
-
-				case 'o':
-					alwaysShowOffs = true;
-					break;
-				case 'i':
-					dontOutputIfs = true;
-					break;
-				case 'e':
-					dontOutputElse = true;
-					break;
-				case 'f':
-					dontOutputElseif = true;
-					break;
-				case 'w':
-					dontOutputWhile = true;
-					break;
-				case 'c':
-					dontShowOpcode = true;
-					break;
-				case 'x':
-					dontShowOffsets = true;
-					break;
-				case 'h':
-					haltOnError = true;
-					break;
-				default:
-					ShowHelpAndExit();
-				}
-				s++;
-			}
-		} else {
-			if (filename)
-				ShowHelpAndExit();
-			filename = s;
-		}
-	}
-
-	if (!filename)
-		ShowHelpAndExit();
-
-	in = fopen(filename, "rb");
-	if (!in) {
-		printf("Unable to open %s\n", filename);
-		return 1;
-	}
-
-	memorg = mem = (byte *)malloc(65536);
-	len = fread(mem, 1, 65536, in);
-	fclose(in);
-	size_of_code = len;
-
-	buf = (char *)malloc(4096);
-
-	offs_of_line = 0;
-
-	if (GF_UNBLOCKED) {
-		if (size_of_code < 4) {
-			printf("File too small to be a script\n");
-			exit(0);
-		}
-		// Hack to detect verb script: first 4 bytes should be file length
-		if (TO_LE_32(*((uint32 *)mem)) == size_of_code) {
-			if (scriptVersion <= 2)
-				offs_of_line = skipVerbHeader_V12(mem);
-			else
-				offs_of_line = skipVerbHeader_V34(mem );
-		} else {
-			mem += 4;
-		}
-	} else if (scriptVersion == 5) {
-		if (size_of_code < 8) {
-			printf("File too small to be a script\n");
-			exit(0);
-		}
-		switch (TO_BE_32(*((uint32 *)mem))) {
-		case 'LSCR':
-			printf("Script# %d\n", (byte)mem[8]);
-			mem += 9;
-			break;											/* Local script */
-		case 'SCRP':
-			mem += 8;
-			break;											/* Script */
-		case 'ENCD':
-			mem += 8;
-			break;											/* Entry code */
-		case 'EXCD':
-			mem += 8;
-			break;											/* Exit code */
-		case 'VERB':
-			offs_of_line = skipVerbHeader_V5(mem + 8) - mem;
-			break;											/* Verb */
-		default:
-			printf("Unknown script type!\n");
-			exit(0);
-		}
-	} else {
-		if (size_of_code < 6) {
-			printf("File too small to be a script\n");
-			exit(0);
-		}
-		switch (TO_LE_16(*((uint16 *)mem + 2))) {
-		case MKID('LS'):
-			printf("Script# %d\n", (byte)mem[6]);
-			mem += 7;
-			break;			/* Local script */
-		case MKID('SC'):
-			mem += 6;
-			break;			/* Script */
-		case MKID('EN'):
-			mem += 6;
-			break;			/* Entry code */
-		case MKID('EX'):
-			mem += 6;
-			break;			/* Exit code */
-		case MKID('OC'):
-			offs_of_line = skipVerbHeader_V34(mem);
-			break;			/* Verb */
-		default:
-			printf("Unknown script type!\n");
-			exit(0);
-		}
-	}
-
-	org_pos = mem;
-	cur_pos = org_pos + offs_of_line;
-	len -= mem - memorg;
-
-	while (cur_pos < mem + len) {
-		byte opcode = *cur_pos;
-		int j = num_block_stack;
-		buf[0] = 0;
-		if (scriptVersion <= 2)
-			get_tok_V12(buf);
-		else
-			get_tok_V345(buf);
-		if (buf[0]) {
-			writePendingElse();
-			if (haveElse) {
-				haveElse = false;
-				j--;
-			}
-			outputLine(buf, offs_of_line, opcode, j);
-			offs_of_line = get_curoffs();
-		}
-		while (indentBlock(get_curoffs())) {
-			outputLine("}", -1, -1, -1);
-		}
-		fflush(stdout);
-	}
-
-	printf("END\n");
-
-	free(memorg);
-
-	return 0;
 }
