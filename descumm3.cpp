@@ -889,32 +889,45 @@ void do_cc(char *buf)
 
 void do_room_ops(char *buf, byte master_opcode)
 {
-/*
-	FIXME - this is not correct - but how do we pass this data on to do_tok? hm
-	int a = ((master_opcode & 0x80) ? get_var(buf) : get_word());
-	int b = ((master_opcode & 0x80) ? get_var(buf) : get_word());
-*/
+	/* FIXME - this function is not complete yet! */
+	char	a[256];
+	char	b[256];
+	
+	get_var_or_word(a, (master_opcode & 0x80));
+	get_var_or_word(b, (master_opcode & 0x40));
+
 	int opcode = get_byte();
 
 	//buf+=sprintf(buf, "SubCode33%.2X", opcode);
 
 	switch (opcode & 0x1F) {
 	case 0x01:
-		do_tok(buf, "RoomScroll", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+		buf = strecpy(buf, "RoomScroll(");
+		buf = strecpy(buf, a);
+		buf = strecpy(buf, ",");
+		buf = strecpy(buf, b);
+		buf = strecpy(buf, ")");
 		break;
 	case 0x02:
-		do_tok(buf, "RoomColor", 0);
+		buf = strecpy(buf, "RoomColor(");
+		buf = strecpy(buf, a);
+		buf = strecpy(buf, ",");
+		buf = strecpy(buf, b);
+		buf = strecpy(buf, ")");
 		break;
 	case 0x03:
-		do_tok(buf, "SetScreen", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+		buf = strecpy(buf, "SetScreen(");
+		buf = strecpy(buf, a);
+		buf = strecpy(buf, ",");
+		buf = strecpy(buf, b);
+		buf = strecpy(buf, ")");
 		break;
 	case 0x04:
-		buf =
-			do_tok(buf, "SetPalColor",
-						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) |
-						 ((opcode & 0x20) ? A3V : A3W) | ANOLASTPAREN);
-		opcode = get_byte();
-		buf = do_tok(buf, NULL, ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W));
+		buf = strecpy(buf, "SetPalColor(");
+		buf = strecpy(buf, a);
+		buf = strecpy(buf, ",");
+		buf = strecpy(buf, b);
+		buf = strecpy(buf, ")");
 		break;
 	case 0x05:
 		do_tok(buf, "ShakeOn", 0);
@@ -989,8 +1002,6 @@ void do_room_ops(char *buf, byte master_opcode)
 	default:
 		strcpy(buf, "Unknown??");
 	}
-
-	strcat(buf, ")");
 }
 
 void do_cursor_command(char *buf)
