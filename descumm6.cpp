@@ -1281,6 +1281,13 @@ void next_line_V8()
 	case 0x2:
 		push(se_var(get_word()));
 		break;
+	case 0x3:
+		push(se_array(get_word(), NULL, pop()));
+		break;
+	case 0x4:
+		se_a = pop();
+		push(se_array(get_word(), pop(), se_a));
+		break;
 	case 0x5:
 		se_a = dup(pop());
 		push(se_a);
@@ -1392,6 +1399,10 @@ void next_line_V8()
 	case 0x7D:
 		// FIXME - is this right? "O_CHAIN_SCRIPT"
 		ext("lpp|jumpToScript");
+		break;
+
+	case 0x7F:
+		ext("lppp|startObject");
 		break;
 
 	case 0x89:
@@ -1615,6 +1626,16 @@ void next_line_V8()
 		ext("rlp|isAnyOf");
 		break;
 
+	case 0xD0:
+		ext("rlp|ifClassOfIs");
+		break;
+	case 0xD1:
+		ext("rp|getState");
+		break;
+	case 0xD2:
+		ext("rp|getOwner");
+		break;
+
 	case 0xD3:
 		ext("rp|isScriptRunning");
 		break;
@@ -1630,6 +1651,13 @@ void next_line_V8()
 		ext("ry" "f-kludge\0"
 				"\xE0|readRegistryValue"
 				);
+		break;
+
+	case 0xDB:
+		ext("rpp|getActorFromXY");
+		break;
+	case 0xDC:
+		ext("rpp|findObject");
 		break;
 
 	default:
@@ -1663,10 +1691,12 @@ void next_line()
 		push(se_array(get_word(), NULL, pop()));
 		break;
 	case 0xA:
-		push(se_array(get_byte(), pop(), pop()));
+		se_a = pop();
+		push(se_array(get_byte(), pop(), se_a));
 		break;
 	case 0xB:
-		push(se_array(get_word(), pop(), pop()));
+		se_a = pop();
+		push(se_array(get_word(), pop(), se_a));
 		break;
 	case 0xC:
 		se_a = dup(pop());
