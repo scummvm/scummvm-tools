@@ -110,7 +110,8 @@ enum {
 	operLand,
 	operLor,
 	operBand,
-	operBor
+	operBor,
+	operMod
 };
 
 static const char *oper_list[] = {
@@ -128,7 +129,8 @@ static const char *oper_list[] = {
 	"&&",
 	"||",
 	"&",
-	"|"
+	"|",
+	"%"
 };
 
 StackEnt *stack[128];
@@ -471,8 +473,15 @@ int get_byte()
 
 int get_word()
 {
-	int i = TO_LE_16(*((short *)cur_pos));
-	cur_pos += 2;
+	int i;
+
+	if (scriptVersion == 8) {
+		i = TO_LE_32(*((int32 *)cur_pos));
+		cur_pos += 4;
+	} else {
+		i = TO_LE_16(*((int16 *)cur_pos));
+		cur_pos += 2;
+	}
 	return i;
 }
 
@@ -657,7 +666,7 @@ StackEnt *pop()
 void kill(StackEnt * se)
 {
 	if (se->type != seDup) {
-		char *e = strecpy(output, "kill(");
+		char *e = strecpy(output, "pop(");
 		e = se_astext(se, e);
 		strcpy(e, ")");
 		se_free(se);
@@ -1024,6 +1033,96 @@ void jumpif(StackEnt * se, bool when)
 	sprintf(e, ") goto %x", to);
 }
 
+
+void next_line_V8()
+{
+	byte code = get_byte();
+	StackEnt *se_a;
+
+	switch (code) {
+	case 0x1:
+		push(se_int(get_word()));
+		break;
+	case 0x2:
+		push(se_var(get_word()));
+		break;
+	case 0x5:
+		se_a = dup(pop());
+		push(se_a);
+		push(se_a);
+		break;
+	case 0x6:
+		kill(pop());
+		break;
+	case 0x7:
+		push(se_oper(pop(), isZero));
+		break;
+	case 0x8:
+		push(se_oper(pop(), isEqual, pop()));
+		break;
+	case 0x9:
+		push(se_oper(pop(), isNotEqual, pop()));
+		break;
+	case 0xA:
+		push(se_oper(pop(), isGreater, pop()));
+		break;
+	case 0xB:
+		push(se_oper(pop(), isLess, pop()));
+		break;
+	case 0xC:
+		push(se_oper(pop(), isLessEqual, pop()));
+		break;
+	case 0xD:
+		push(se_oper(pop(), isGreaterEqual, pop()));
+		break;
+	case 0xE:
+		push(se_oper(pop(), operAdd, pop()));
+		break;
+	case 0xF:
+		push(se_oper(pop(), operSub, pop()));
+		break;
+	case 0x10:
+		push(se_oper(pop(), operMul, pop()));
+		break;
+	case 0x11:
+		push(se_oper(pop(), operDiv, pop()));
+		break;
+	case 0x12:
+		push(se_oper(pop(), operLand, pop()));
+		break;
+	case 0x13:
+		push(se_oper(pop(), operLor, pop()));
+		break;
+	case 0x14:
+		push(se_oper(pop(), operBand, pop()));
+		break;
+	case 0x15:
+		push(se_oper(pop(), operBor, pop()));
+		break;
+	case 0x16:
+		push(se_oper(pop(), operMod, pop()));
+		break;
+	case 0x9C:
+		ext("x" "cursorCommand\0"
+				"\xDC|cursorOn,"
+				"\xDD|cursorOff,"
+				"\xDE|userPutOn,"
+				"\xDF|userPutOff,"
+				"\xE0|softCursorOn,"
+				"\xE1|softCursorOff,"
+				"\xE2|softUserputOn,"
+				"\xE3|softUserputOff,"
+				"\xE4pp|setCursorImg,"
+				"\xE5pp|setCursorHotspot,"
+				"\xE6p|makeCursorColorTransparent,"
+				"\xE7p|initCharset,"
+				"\xE8l|charsetColors");
+		break;
+	default:
+		invalidop(NULL, code);
+		break;
+	}
+}
 
 void next_line()
 {
@@ -1768,6 +1867,9 @@ int main(int argc, char *argv[])
 				case '7':
 					scriptVersion = 7;
 					break;
+				case '8':
+					scriptVersion = 8;
+					break;
 				default:
 					ShowHelpAndExit();
 				}
@@ -1797,6 +1899,7 @@ int main(int argc, char *argv[])
 
 	switch (TO_BE_32(*((long *)mem))) {
 	case 'LSCR':
+		// TODO - what about v8 ?
 		if (scriptVersion == 7) {
 			printf("Script# %d\n", mem[8] + (mem[9] << 8));
 			mem += 10;
@@ -1832,7 +1935,10 @@ int main(int argc, char *argv[])
 		byte opcode = *cur_pos;
 		int j = num_block_stack;
 		buf[0] = 0;
-		next_line();
+		if (scriptVersion == 8)
+			next_line_V8();
+		else
+			next_line();
 		if (buf[0]) {
 			writePendingElse();
 			if (haveElse) {
