@@ -1870,7 +1870,7 @@ void next_line_V8(char *output)
 				);                \
 	} while(0)
 
-#define PRINT_V6HE(name)           \
+#define PRINT_V7HE(name)           \
 	do {                          \
 		ext(output, "x" name "\0"         \
 				"\x41pp|XY,"      \
@@ -2417,20 +2417,30 @@ void next_line_V67(char *output)
 		ext(output, "|stopSentence");
 		break;
 	case 0xB4:
+		// TODO: make it HEv7 specific
 		if (HumongousFlag)
-			PRINT_V6HE("printLine");
+			PRINT_V7HE("printLine");
 		else
 			PRINT_V67("printLine");
 		break;
 	case 0xB5:
-		PRINT_V67("printCursor");
+		// TODO: make it HEv7 specific
+		if (HumongousFlag)
+			PRINT_V7HE("printCursor");
+		else
+			PRINT_V67("printCursor");
 		break;
 	case 0xB6:
-		PRINT_V67("printDebug");
+		// TODO: make it HEv7 specific
+		if (HumongousFlag)
+			PRINT_V7HE("printDebug");
+		else
+			PRINT_V67("printDebug");
 		break;
 	case 0xB7:
+		// TODO: make it HEv7 specific
 		if (HumongousFlag)
-			PRINT_V6HE("printSystem");
+			PRINT_V7HE("printSystem");
 		else
 			PRINT_V67("printSystem");
 		break;
@@ -2444,7 +2454,11 @@ void next_line_V67(char *output)
 				"\x47|left," "\x48|overhead," "\x4A|new3," "\x4Bs|msg," "\xFEp|begin," "\xFF|end");
 		break;
 	case 0xB9:
-		PRINT_V67("printEgo");
+		// TODO: make it HEv7 specific
+		if (HumongousFlag)
+			PRINT_V7HE("printEgo");
+		else
+			PRINT_V67("printEgo");
 		break;
 	case 0xBA:
 		ext(output, "ps|talkActor");
