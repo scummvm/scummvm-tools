@@ -9,7 +9,7 @@ Simon the Sorcerer 1
 	-	DOS	en	d545db8a0efae95a90b23da81aadb201	simon1talkie	Kirben
 	-	DOS	fr	08bd7abefe9c44e43df396748640e531	simon1talkie	jellby
 	-	DOS	hb	9d58f84988634d217c944cd4153a2a3b	simon1talkie	jellby
-	-	DOS	it	an: 057eac98fc4d14dc7fd04341781b26b3	simon1talkie	jellby
+	-	DOS	it	057eac98fc4d14dc7fd04341781b26b3	simon1talkie	jellby
 	-	DOS	es	e3712b3ed4429e736123a40276f533d7	simon1talkie	jellby
 	-	Amiga	en	ec5358680c117f29b128cbbb322111a4	simon1cd32	Kirben
 	AGA	Amiga	en	39e8f13ec29de1fcef98c81ca0a2ae57	simon1amiga
