@@ -1221,7 +1221,7 @@ void do_cursor_command(char *buf)
 		break;
 
 	case 0x0E:
-		if (GF_UNBLOCKED || IndyFlag)
+		if (scriptVersion == 3)
 			do_tok(buf, "LoadCharset", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		else
 			do_tok(buf, "CursorCommand", A1VARUNTIL0xFF);
