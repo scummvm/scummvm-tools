@@ -560,24 +560,25 @@ void do_actorset_v2(char *buf, byte opcode)
 {
 	buf = do_tok(buf, "ActorSet", ((opcode & 0x80) ? A1V : A1B) | ANOLASTPAREN);
 	buf = strecpy(buf, ",[");
+	int arg = get_byte();
 
-	opcode = get_byte();
+	int subop = get_byte();
 
-	switch(opcode) {
+	switch(subop) {
 		case 1:
-			buf = do_tok(buf, "Sound", ((opcode & 0x40) ? A1V : A1B));
+			buf = do_tok(buf, "Sound", ((arg & 0x40) ? A1V : A1B));
 			break;
 		case 2:
-			buf = do_tok(buf, "Colour", ((opcode & 0x40) ? A1V : A1B) | A2B);
+			buf = do_tok(buf, "Colour", A1B | ((arg & 0x40) ? A2V : A2B));
 			break;
 		case 3:
 			buf = do_tok(buf, "Name", A1ASCII);
 			break;
 		case 4:
-			buf = do_tok(buf, "Costume", ((opcode & 0x40) ? A1V : A1B));
+			buf = do_tok(buf, "Costume", ((arg & 0x40) ? A1V : A1B));
 			break;
 		case 5:
-			buf = do_tok(buf, "TalkColor", ((opcode & 0x40) ? A1V : A1B));
+			buf = do_tok(buf, "TalkColor", ((arg & 0x40) ? A1V : A1B));
 			break;
 		default:
 			buf += sprintf(buf, "Unknown%.2X()", opcode);
@@ -1166,6 +1167,23 @@ void do_cursor_command(char *buf)
 	}
 }
 
+void do_verbops_v2(char *buf, byte opcode)
+{
+	int subop = get_byte();
+
+	buf = do_tok(buf, "VerbOps[", ANOLASTPAREN);
+	switch (subop) {
+		case 0:
+			buf = do_tok(buf, "Delete", (opcode & 0x80) ? A1V : A1B);
+			break;
+		case 0xFF:
+			buf = do_tok(buf, "State", A1B | A2B);
+			break;
+		default:
+			buf = do_tok(buf, "New", A1B | A2B | ((opcode & 0x80) ? A3V : A3B) | A4B );
+	}
+	
+}
 
 void do_verbops(char *buf, byte opcode)
 {
@@ -1567,10 +1585,10 @@ void get_tok_V2(char *buf)
 	case 0xE0:
 		//cursorCommand
 		break;
-	case 0x40:
-		//cutscene
-		break;
 */
+	case 0x40:
+		do_tok(buf, "cutscene", A1VARUNTIL0xFF);
+		break;
 	case 0xC6:
 		//decrement
 		do_varset_code(buf, opcode);
@@ -1698,12 +1716,11 @@ void get_tok_V2(char *buf)
 	case 0x90:
 		do_tok(buf, "getObjectOwner", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 		break;
-/*
 	case 0x6C:
 	case 0xEC:
 		//getObjY
+		do_tok(buf, "getObjY", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 		break;
-*/		
 	case 0x16:
 	case 0x96:
 		do_tok(buf, "getRandomNr", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
@@ -2038,12 +2055,13 @@ void get_tok_V2(char *buf)
 	case 0xEA:
 		//subDirect
 		break;
-				
+*/			
 	case 0x7A:
 	case 0xFA:
 		// verbOps
+		do_verbops_v2(buf, opcode);
 		break;
-			
+/*			
 	case 0x3B:
 	case 0xBB:
 		// waitForActor
