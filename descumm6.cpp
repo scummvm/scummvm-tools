@@ -2424,6 +2424,10 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xBE:
+		// TODO: this loads another script which does something like
+		// stack altering and then finishes (usually with opcode 0xBD).
+		// When stack is changed, further disassembly is wrong.
+		// This is widely used in HE games
 		ext(output, "lpp|startObjectQuick");
 		break;
 	case 0xBF:
