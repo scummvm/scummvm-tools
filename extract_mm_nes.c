@@ -938,7 +938,7 @@ int main (int argc, char **argv)
 		write_byte(output,((unsigned char *)&lfl_index)[i]);
 	fclose(output);
 #else	/* !MAKE_LFLS */
-	dump_resource(input,"globdtaa.dmp",0,&res_globdata);
+	dump_resource(input,"globdata.dmp",0,&res_globdata);
 	for (i = 0; i < 40; i++)
 		dump_resource(input,"roomgfx-%d.dmp",i,&res_roomgfx[i]);
 	for (i = 0; i < 2; i++)
