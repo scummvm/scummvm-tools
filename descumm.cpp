@@ -370,27 +370,24 @@ char *do_tok(char *buf, const char *text, int args)
 
 void do_decodeparsestring_v2(char *buf, byte opcode)
 {
-	byte buffer[256];
-	byte *ptr = buffer;
 	byte c;
+	bool flag;
 
-	while (( c = get_byte())) {
-		if (c & 0x80) {
-			*ptr++ = c & 0x7F;
-			*ptr++ = ' ';
-		} else if (c < 8) {
-			*ptr++ = 0xFF;
-			*ptr++ = c;
+	while ((c = get_byte())) {
+		flag = (c & 0x80) != 0;
+		c &= 0x7f;
+
+		if (c < 8) {
+			buf += sprintf(buf, "^%d", c);
 			if (c > 3) {
-				*ptr++ = 0;
-				*ptr++ = get_byte();
+				buf += sprintf(buf, "^%d", get_byte());
 			}
 		} else
-			*ptr++ = c;
+			*buf++ = c;
+		if (flag)
+			*buf++ = ' ';
 	}
-	*ptr = 0;
-
-	strcat(buf, (char *)buffer);
+	*buf = 0;
 }
 
 void do_actorset_v2(char *buf, byte opcode)
@@ -1968,13 +1965,13 @@ void get_tok_V2(char *buf)
 	case 0x14:
 	case 0x94:
 		// print
-		sprintf(buf, "print(\"");
+		buf += sprintf(buf, "print(\"");
 		do_decodeparsestring_v2(buf, opcode);
 		strcat(buf, "\")");
 		break;
 	case 0xD8:
 		//printEgo
-		sprintf(buf, "printEgo(\"");
+		buf += sprintf(buf, "printEgo(\"");
 		do_decodeparsestring_v2(buf, opcode);
 		strcat(buf, "\")");
 		break;
