@@ -84,8 +84,8 @@ compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
-compress_saga.o compress_scumm_sou.o compress_scumm_bun.o
-compress_simon.o compress_sword1.o compress_sword2.o
+compress_saga.o compress_scumm_sou.o compress_scumm_bun.o \
+compress_simon.o compress_sword1.o compress_sword2.o \
 compress.o: util.h compress.h
 desword2.o compress_queen.o extract_scumm_mac.o util.o: util.h
 
