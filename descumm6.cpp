@@ -2669,6 +2669,9 @@ void next_line()
 			"\xDEp|unknownE0-DE,"
 			"\xDC|unknownE0-DC");
 		break;
+	case 0xE2:
+		ext("p|localizeArray");
+		break;
 	case 0xDE:
 		ext("s|deleteFile");
 		break;
