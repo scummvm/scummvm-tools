@@ -1870,6 +1870,23 @@ void next_line_V8(char *output)
 				);                \
 	} while(0)
 
+#define PRINT_V6HE(name)           \
+	do {                          \
+		ext(output, "x" name "\0"         \
+				"\x41pp|XY,"      \
+				"\x42p|color,"    \
+				"\x43p|right,"    \
+				"\x45|center,"    \
+				"\x47|left,"      \
+				"\x48|overhead,"  \
+				"\x4A|mumble,"    \
+				"\x4Bs|msg,"      \
+				"\xF9l|colors,"	  \
+				"\xFE|begin,"     \
+				"\xFF|end"        \
+				);                \
+	} while(0)
+
 void next_line_V67(char *output)
 {
 	byte code = get_byte();
@@ -1959,6 +1976,20 @@ void next_line_V67(char *output)
 		break;
 	case 0x53:
 		addArray(output, get_word(), pop(), 1);
+		break;
+	case 0x54:
+		// TODO v7 opcode
+		if (HumongousFlag)
+			ext(output, "rp|objectX");
+		else
+			invalidop(NULL, code);
+		break;
+	case 0x55:
+		// TODO v7 opcode
+		if (HumongousFlag)
+			ext(output, "rp|objectY");
+		else
+			invalidop(NULL, code);
 		break;
 	case 0x56:
 		addVar(output, get_byte(), -1);
@@ -2173,7 +2204,7 @@ void next_line_V67(char *output)
 		ext(output, "|createBoxMatrix");
 		break;
 	case 0x9B:
-		ext(output, "x" "resourceOps\0"
+		ext(output, "x" "resourceRoutines\0"
 				"\x64p|loadScript,"
 				"\x65p|loadSound,"
 				"\x66p|loadCostume," 
@@ -2327,7 +2358,11 @@ void next_line_V67(char *output)
 		ext(output, "rpp|getVerbEntrypoint");
 		break;
 	case 0xA4:
-		ext(output, "x" "arrayOps\0" "\xCDwps|arrayOps205," "\xD0wpl|arrayOps208," "\xD4wplp|arrayOps212");
+		ext(output, "x" "arrayOps\0" 
+			"\xCDwps|arrayOps205,"
+			"\xD0wpl|arrayOps208,"
+			"\xD4wplp|arrayOps212"
+			);
 		break;
 	case 0xA5:
 		ext(output, "x" "saveRestoreVerbs\0"
@@ -2382,7 +2417,10 @@ void next_line_V67(char *output)
 		ext(output, "|stopSentence");
 		break;
 	case 0xB4:
-		PRINT_V67("printLine");
+		if (HumongousFlag)
+			PRINT_V6HE("printLine");
+		else
+			PRINT_V67("printLine");
 		break;
 	case 0xB5:
 		PRINT_V67("printCursor");
@@ -2391,7 +2429,10 @@ void next_line_V67(char *output)
 		PRINT_V67("printDebug");
 		break;
 	case 0xB7:
-		PRINT_V67("printSystem");
+		if (HumongousFlag)
+			PRINT_V6HE("printSystem");
+		else
+			PRINT_V67("printSystem");
 		break;
 	case 0xB8:
 		// This is *almost* identical to the other print opcodes, only the 'begine' subop differs
