@@ -608,7 +608,7 @@ StackEnt *se_get_list()
 	se->list = (StackEnt **) calloc(num, sizeof(StackEnt *));
 
 	for(i = 0; i < num; i++) {
-		se->list[num] = pop();
+		se->list[i] = pop();
 	}
 	return se;
 }
