@@ -1360,6 +1360,16 @@ void next_line_V8()
 	case 0x67:
 		ext("|break");
 		break;
+
+	case 0x6A:
+		ext("p|delay");
+		break;
+	case 0x6B:
+		ext("p|delayLonger");
+		break;
+	case 0x6C:
+		ext("p|delayVeryLong");
+		break;
 	case 0x6D:
 		writeVar(get_word(), pop());
 		break;
@@ -1424,7 +1434,9 @@ void next_line_V8()
 	case 0x7B:
 		ext("|stopObjectCode");
 		break;
-
+	case 0x7C:
+		ext("p|stopScript");
+		break;
 	case 0x7D:
 		// FIXME - is this right? "O_CHAIN_SCRIPT"
 		ext("lpp|jumpToScript");
@@ -1438,6 +1450,38 @@ void next_line_V8()
 		ext("lp|setClassOf?");
 		break;
 
+	case 0x93:
+		ext("m" "printLine_\0"
+				"x" "printLine\0"
+				"\xC8|baseop,"
+				"\xC9|end,"
+				"\xCApp|XY,"
+				"\xCBp|color,"
+				"\xCC|center,"
+				"\xCD|charset,"	// ???
+				"\xCE|left,"
+				"\xCF|overhead,"
+				"\xD0|mumble,"
+				"\xD1s|msg,"
+				"\xD2|wrap"
+				);
+		break;
+	case 0x94:
+		ext("m" "printCursor_\0"
+				"x" "printCursor\0"
+				"\xC8|baseop,"
+				"\xC9|end,"
+				"\xCApp|XY,"
+				"\xCBp|color,"
+				"\xCC|center,"
+				"\xCD|charset,"	// ???
+				"\xCE|left,"
+				"\xCF|overhead,"
+				"\xD0|mumble,"
+				"\xD1s|msg,"
+				"\xD2|wrap"
+				);
+		break;
 	case 0x95:
 		ext("m" "printDebug_\0"
 				"x" "printDebug\0"
@@ -1629,8 +1673,11 @@ void next_line_V8()
 				);
 		break;
 
+	case 0xB1:
+		ext("p|stopSound");
+		break;
 	case 0xB2:
-		ext("ppp|soundKludge");
+		ext("l|soundKludge");
 		break;
 	case 0xB3:
 		ext("x" "system\0"
@@ -1649,7 +1696,8 @@ void next_line_V8()
 				"\x16|setBannerColors,"
 
 				"\x1D|setKeyScript,"
-				
+				"\x1E|killAllScriptsButMe,"
+				"\x1F|stopAllVideo,"
 				"\x20|writeRegistryValue,"
 				
 				"\x6C|buildPaletteShadow"
@@ -1659,7 +1707,12 @@ void next_line_V8()
 	case 0xCD:
 		ext("rlp|isAnyOf");
 		break;
-
+	case 0xCE:
+		ext("rp|getRandomNumber");
+		break;
+	case 0xCF:
+		ext("rpp|getRandomNumberRange");
+		break;
 	case 0xD0:
 		ext("rlp|ifClassOfIs");
 		break;
@@ -1694,6 +1747,9 @@ void next_line_V8()
 		ext("rpp|findObject");
 		break;
 
+	case 0xE1:
+		ext("rpp|getAnimateVariable");
+		break;
 	case 0xE2:
 		ext("rp|getActorRoom");
 		break;
@@ -1979,7 +2035,7 @@ void next_line()
 		ext("rp|getRandomNumber");
 		break;
 	case 0x88:
-		ext("rpp|getRandomNumberRng");
+		ext("rpp|getRandomNumberRange");
 		break;
 	case 0x8A:
 		ext("rp|getActorMoving");
