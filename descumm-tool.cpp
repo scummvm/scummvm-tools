@@ -135,6 +135,7 @@ int main(int argc, char *argv[])
 	char *s;
 
 	scriptVersion = 0;
+	heVersion = 0;
 	
 	// Parse the arguments
 	filename = NULL;
@@ -196,6 +197,12 @@ int main(int argc, char *argv[])
 				case '8':
 					scriptVersion = 8;
 					g_jump_opcode = 0x66;
+					break;
+
+				case '9':
+					heVersion = 72;
+					scriptVersion = 6;
+					g_jump_opcode = 0x73;
 					break;
 
 				case 'o':
@@ -273,6 +280,10 @@ int main(int argc, char *argv[])
 		}
 	
 		switch (TO_BE_32(*((uint32 *)mem))) {
+		case 'LSC2':
+			printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
+			mem += 12;
+			break;											/* Local script */
 		case 'LSCR':
 			if (scriptVersion == 8) {
 				printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
@@ -352,6 +363,11 @@ int main(int argc, char *argv[])
 			next_line_V345(buf);
 			break;
 		case 6:
+			if (heVersion)
+				next_line_V72(buf);
+			else
+				next_line_V67(buf);
+			break;
 		case 7:
 			next_line_V67(buf);
 			break;

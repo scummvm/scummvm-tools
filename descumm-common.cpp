@@ -44,6 +44,7 @@ bool dontShowOffsets = false;
 bool haltOnError;
 
 byte scriptVersion;
+byte heVersion;
 
 byte *cur_pos, *org_pos;
 int offs_of_line;
