@@ -52,8 +52,9 @@ Compression Tools:
         compress_san <inputfile> <inputdir> <outputdir>
                 Compresses '.san' smush animation files. It uses lossless zlib
                 for compressing FOBJ gfx chunks inside a san file.
-                It also can create a separate Ogg file with the audio track
-                (only COMI currently supported).
+                It also can create a separate Ogg file with the audio track.
+                There are also temporary files *.tmp and *.wav which could
+                be deleteed after finished compression.
 
                 Example of usage:
                 compress_san opening.san uncomp comp
