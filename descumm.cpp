@@ -1816,7 +1816,6 @@ void get_tok_V2(char *buf)
 
 	case 0x31:
 	case 0xB1:
-		// FIXME - maybe this could be displayed a bit nicer?
 		do_tok(buf, "getBitVar", AVARSTORE | A1W | ((opcode & 0x80) ? A2V : A2B));
 		break;
 
@@ -1824,7 +1823,6 @@ void get_tok_V2(char *buf)
 	case 0x5B:
 	case 0x9B:
 	case 0xDB:
-		// FIXME - maybe this could be displayed a bit nicer?
 		do_tok(buf, "setBitVar", A1W | ((opcode & 0x80) ? A2V : A2B) | ((opcode & 0x40) ? A3V : A3B));
 		break;
 
@@ -1862,7 +1860,6 @@ void get_tok_V2(char *buf)
 		break;
 		
 	case 0x3F:
-	case 0x7F:
 	case 0xBF:
 		//ifNotState01
 	case 0x5F:
@@ -1875,6 +1872,7 @@ void get_tok_V2(char *buf)
 	case 0x0F:
 	case 0x8F:
 		//ifNotState08
+	case 0x7F:
 	case 0xFF:
 		//ifState01
 	case 0x1F:
@@ -2034,14 +2032,7 @@ void get_tok_V2(char *buf)
 		//setActorElevation
 		do_tok(buf, "setActorElevation", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
-/*		
-	case 0x1B:
-	case 0x5B:
-	case 0x9B:
-	case 0xDB:
-		//setBitVar
-		break;
-*/
+
 	case 0x32:
 	case 0xB2:
 		do_tok(buf, "setCameraAt", ((opcode & 0x80) ? A1V : A1B));
