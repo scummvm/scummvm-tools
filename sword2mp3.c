@@ -30,7 +30,7 @@ static CompressMode gCompMode = kMP3Mode;
 
 void showhelp(char *exename)
 {
-	printf("\nUsage: %s <params> monster.sou\n", exename);
+	printf("\nUsage: %s <params> file.clu\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
