@@ -99,7 +99,7 @@ int get_offsets_mac(void)
 	fseek(input, 0, SEEK_SET);
 
 	for (i = 1; i <= size / 6; i++) {
-		filenums[i] = readUint16BE();
+		filenums[i] = readUint16BE(input);
 		offsets[i] = readUint32BE(input);
 	}
 	return(size/6);
