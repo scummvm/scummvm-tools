@@ -3404,8 +3404,8 @@ void next_line_V67(char *output)
 					"\xE|remapCostumeInsert,"
 					"\xF|setVideoFrameRate,"
 
-					"\x10|enqueueTextA,"
-					"\x11|enqueueTextB,"
+					"\x10|enqueueTextCentered,"
+					"\x11|enqueueTextNormal,"
 					"\x12|setMouseXY,"
 					"\x14|setRadioChatter,"
 
