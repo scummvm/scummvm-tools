@@ -218,7 +218,14 @@ void get_part(void)
 		printf(" - length = %d\n", length);
 		sample_rate = fgetc(input);
 		comp = fgetc(input);
-		real_samplerate = 1000000 / (256 - sample_rate);
+
+		if (sample_rate == 0xa5 || sample_rate == 0xa6)
+			real_samplerate = 11025;
+		if (sample_rate == 0xd2 || sample_rate == 0xd3)
+			real_samplerate = 22050;
+		else
+			real_samplerate = 1000000 / (256 - sample_rate);
+
 		printf(" - sample rate = %d (%02x)\n", 1000000 / (256 - sample_rate), sample_rate);
 		printf(" - compression = %s (%02x)\n",
 		       (comp ==	   0 ? "8bits"   :
