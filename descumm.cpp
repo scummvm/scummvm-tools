@@ -409,7 +409,7 @@ void do_actorset_v12(char *buf, byte opcode)
 			break;
 		case 2:
 			if (ZakFlag && scriptVersion == 1)
-				buf = do_tok(buf, "Color", A1B | A2B | A3B);
+				buf = do_tok(buf, "Color", 0);
 			else
 				buf = do_tok(buf, "Color", A1B);
 			break;
