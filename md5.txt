@@ -62,6 +62,7 @@ Loom
 	Floppy	DOS	fr	b886b0a5d909c7158a914e1d7c1c6c65	loom	Andrea Petrucci
 	Floppy	DOS	it	c3df37df9d3b481b45f75283a9907c47	loom	Andrea Petrucci
 	Floppy	DOS	es	2a208ffbcd0e83e86f4356e6f64aa6e1	loom	abnog, Andrea Petrucci
+	Floppy	DOS	hb	187d315f6b5168f68680dfe8c3d76a3e	loom
 	Floppy	Amiga	en	4dc780f1bc587a193ce8a97652791438	loom	Antti Leimi, Andrea Petrucci
 	Floppy (same as IT?!?)	Amiga	fr	39cb9dec16fa16f38d79acd80effb059	loom	Gerald Vincent
 	Floppy (same as FR?!?)	Amiga	it	39cb9dec16fa16f38d79acd80effb059	loom	Andrea Petrucci
