@@ -221,7 +221,7 @@ void get_part(void)
 
 		if (sample_rate == 0xa5 || sample_rate == 0xa6)
 			real_samplerate = 11025;
-		if (sample_rate == 0xd2 || sample_rate == 0xd3)
+		else if (sample_rate == 0xd2 || sample_rate == 0xd3)
 			real_samplerate = 22050;
 		else
 			real_samplerate = 1000000 / (256 - sample_rate);
@@ -272,7 +272,11 @@ void get_part(void)
 			if (oggparms.silent) {
 				strcat(fbuf, "--quiet ");
 			}
-			sprintf(fbuf_temp, "-q %i -r -C 1 --raw-endianness=1 -R %i --resample 22050 %s -o %s",
+
+			if (real_samplerate != 22050)
+				strcat(fbuf, "--resample 22050 ");
+
+			sprintf(fbuf_temp, "-q %i -r -C 1 --raw-endianness=1 -R %i %s -o %s",
 				oggparms.quality, real_samplerate,
 				rawname, mp3name);
 			strcat(fbuf, fbuf_temp);
