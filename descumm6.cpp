@@ -2545,9 +2545,9 @@ void next_line_V67(char *output)
 		break;
 	case 0xE0:
 		if (HumongousFlag)
-			ext(output, "x" "p|setVolume\0" 
-				"\xDEp|musicVolume"
-				"\xDCp|sfxVolume");
+			ext(output, "x" "setVolume\0" 
+				"\xDEp|musicVolume,"
+				"\xE0p|sfxVolume,");
 		else
 			invalidop(NULL, code);
 		break;
