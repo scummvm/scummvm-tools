@@ -588,9 +588,9 @@ void push(StackEnt * se)
 void invalidop(const char *cmd, int op)
 {
 	if (cmd)
-		printf("invalid opcode %s:0x%x (stack count %d)\n", cmd, op, num_stack);
+		printf("Unknown opcode %s:0x%x (stack count %d)\n", cmd, op, num_stack);
 	else
-		printf("invalid opcode 0x%x (stack count %d)\n", op, num_stack);
+		printf("Unknown opcode 0x%x (stack count %d)\n", op, num_stack);
 	exit(1);
 }
 
