@@ -920,7 +920,7 @@ void do_resource_v2(char *buf, byte opcode)
 			buf += sprintf(buf, "load");
 		else
 			buf += sprintf(buf, "nuke");
-		assert(0 <= type && type <= ARRAYSIZE(resTypes));
+		assert(0 <= type && type < ARRAYSIZE(resTypes));
 		buf += sprintf(buf, resTypes[type]);
 		buf += sprintf(buf, "(%s)", resid);
 	} else {
@@ -928,7 +928,7 @@ void do_resource_v2(char *buf, byte opcode)
 			buf += sprintf(buf, "lock");
 		else
 			buf += sprintf(buf, "unlock");
-		assert(0 <= type && type <= ARRAYSIZE(resTypes));
+		assert(0 <= type && type < ARRAYSIZE(resTypes));
 		buf += sprintf(buf, resTypes[type]);
 		buf += sprintf(buf, "(%s)", resid);
 	}
