@@ -1440,10 +1440,10 @@ void next_line_V8()
 		ext("p|delay");
 		break;
 	case 0x6B:
-		ext("p|delayLonger");
+		ext("p|delaySeconds");
 		break;
 	case 0x6C:
-		ext("p|delayVeryLong");
+		ext("p|delayMinutes");
 		break;
 	case 0x6D:
 		writeVar(get_word(), pop());
@@ -2498,10 +2498,10 @@ void next_line()
 		ext("p|delay");
 		break;
 	case 0xB1:
-		ext("p|delayLonger");
+		ext("p|delaySeconds");
 		break;
 	case 0xB2:
-		ext("p|delayVeryLong");
+		ext("p|delayMinutes");
 		break;
 	case 0xB3:
 		ext("|stopSentence");
