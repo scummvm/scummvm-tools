@@ -1753,6 +1753,7 @@ void do_varset_code(char *buf, byte opcode)
 	switch (opcode & 0x7F) {
 	case 0x0A:
 	case 0x1A:
+	case 0x2C:
 		s = " = ";
 		break;											/* move */
 	case 0x1B:
@@ -1790,7 +1791,10 @@ void do_varset_code(char *buf, byte opcode)
 	buf = strecpy(buf, s);
 
 
-	if ((opcode & 127) != 0x46) {	/* increment or decrement */
+	if ((ScriptVersion == 2) && (opcode & 0x7F) == 0x2C) { /* assignVarByte */
+		sprintf(buf, "%d", get_byte());
+		buf = strchr(buf, 0);
+	} else if ((opcode & 0x7F) != 0x46) {	/* increment or decrement */
 		buf = get_var_or_word(buf, opcode & 0x80);
 	}
 	strecpy(buf, ";");
@@ -1872,11 +1876,10 @@ void get_tok_V2(char *buf)
 		// animateActor
 		do_tok(buf, "animateActor", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
-/*
 	case 0x2C:
 		// assignVarByte
+		do_varset_code(buf, opcode);
 		break;
-*/
 	case 0x80:
 		do_tok(buf, "breakHere", 0);
 		break;
@@ -1885,19 +1888,20 @@ void get_tok_V2(char *buf)
 		// chainScript
 		do_tok(buf, "chainScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
-/*
 	case 0x77:
 	case 0xF7:
 		// clearState01
+		do_tok(buf, "clearState01", ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x67:
 	case 0xE7:
 		// clearState04
+		do_tok(buf, "clearState04", ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0xC7:
 		// clearState08
+		do_tok(buf, "clearState08", ((opcode & 0x80) ? A1V : A1W));
 		break;
-*/
 	case 0x60:
 	case 0xE0:
 		//cursorCommand
