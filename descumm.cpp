@@ -20,16 +20,7 @@
  *
  */
 
-#include <assert.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef WIN32
-#include <io.h>
-#include <process.h>
-#endif
+#include "descumm.h"
 
 /*
   Similar to the code that detects "head" while loops like this:
@@ -62,41 +53,6 @@
 
 */
 
-#define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
-
-typedef unsigned char byte;
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-typedef unsigned int uint;
-typedef signed char int8;
-typedef signed short int16;
-typedef signed int int32;
-
-uint32 inline SWAP_32(uint32 a)
-{
-	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
-		((a << 24) & 0xFF000000);
-}
-
-uint16 inline SWAP_16(uint16 a)
-{
-	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
-}
-
-#if defined(SCUMM_BIG_ENDIAN)
-#define TO_BE_16(x) (x)
-#define TO_BE_32(x) (x)
-#define TO_LE_16(x) SWAP_16(x)
-#define TO_LE_32(x) SWAP_32(x)
-#else
-#define TO_BE_16(x) SWAP_16(x)
-#define TO_BE_32(x) SWAP_32(x)
-#define TO_LE_16(x) (x)
-#define TO_LE_32(x) (x)
-#endif
-
-#define MKID(a) (((a&0xff) << 8) | ((a >> 8)&0xff))
 
 
 #define A1B (1<<0)
@@ -138,49 +94,21 @@ uint16 inline SWAP_16(uint16 a)
 void get_tok_V2(char *buf);	// For V2 (and V1?)
 void get_tok(char *buf);	// For V3, V4, V5
 
-const int g_jump_opcode = 0x18;
-
-byte *cur_pos, *org_pos;
-int size_of_code;
-
 char *indentbuf;
-
-struct BlockStack {
-	bool isWhile;
-	unsigned short from;
-	unsigned short to;
-};
-
-
-int num_block_stack;
-BlockStack *block_stack;
-
-bool pendingElse, haveElse;
-int pendingElseTo;
-int pendingElseOffs;
-int pendingElseOpcode;
-int pendingElseIndent;
-
-int offs_of_line;
-
-bool alwaysShowOffs = 0;
-bool dontOutputIfs = 0;
-bool dontOutputWhile = 0;
-bool dontOutputElse = 0;
-bool dontOutputElseif = 0;
-bool dontShowOpcode = 0;
-bool dontShowOffsets = 0;
-bool haltOnError;
-byte scriptVersion = 3;
-
 
 int get_curoffs();
 
-bool IndyFlag = 0;
+bool IndyFlag = false;
 bool GF_UNBLOCKED = false;
 
 
 void emit_if(char *buf, char *condition);
+
+char *strecpy(char *buf, const char *src)
+{
+	strcpy(buf, src);
+	return strchr(buf, 0);
+}
 
 int get_curoffs()
 {
@@ -202,12 +130,6 @@ int get_word()
 int get_signed_word()
 {
 	return (short)get_word();
-}
-
-char *strecpy(char *buf, const char *src)
-{
-	strcpy(buf, src);
-	return strchr(buf, 0);
 }
 
 
@@ -3213,14 +3135,15 @@ int main(int argc, char *argv[])
 	FILE *in;
 	byte *mem, *memorg;
 	int len;
-	char *buf;										/* token buffer */
-	char *filename;
+	char *filename, *buf;
 	int i;
 	char *s;
 
+	scriptVersion = 3;
+	g_jump_opcode = 0x18;
+	
+	// Parse the arguments
 	filename = NULL;
-	IndyFlag = 0;
-	/* Parse the arguments */
 	for (i = 1; i < argc; i++) {
 		s = argv[i];
 
@@ -3292,7 +3215,6 @@ int main(int argc, char *argv[])
 
 	memorg = mem = (byte *)malloc(65536);
 	len = fread(mem, 1, 65536, in);
-	
 	fclose(in);
 	size_of_code = len;
 

@@ -20,16 +20,7 @@
  *
  */
 
-#include <assert.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef WIN32
-#include <io.h>
-#include <process.h>
-#endif
+#include "descumm.h"
 
 /*
 switch/case statements have a pattern that look as follows (they were probably
@@ -66,41 +57,6 @@ switch/case statements, too, so it's well possible they used that in Scumm, too.
   
 */
 
-typedef unsigned char byte;
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-typedef unsigned int uint;
-typedef signed char int8;
-typedef signed short int16;
-typedef signed int int32;
-
-uint32 inline SWAP_32(uint32 a)
-{
-	return ((a >> 24) & 0xFF) + ((a >> 8) & 0xFF00) + ((a << 8) & 0xFF0000) +
-		((a << 24) & 0xFF000000);
-}
-
-uint16 inline SWAP_16(uint16 a)
-{
-	return ((a >> 8) & 0xFF) + ((a << 8) & 0xFF00);
-}
-
-#if defined(SCUMM_BIG_ENDIAN)
-#define TO_BE_32(a) (a)
-#define TO_BE_16(a) (a)
-#define TO_LE_32(a) SWAP_32(a)
-#define TO_LE_16(a) SWAP_16(a)
-#else
-#define TO_BE_32(a) SWAP_32(a)
-#define TO_BE_16(a) SWAP_16(a)
-#define TO_LE_32(a) (a)
-#define TO_LE_16(a) (a)
-#endif
-
-
-
-int g_jump_opcode = 0x66;
 
 struct StackEnt {
 	byte type;
@@ -162,36 +118,8 @@ static const char *oper_list[] = {
 
 StackEnt *stack[128];
 int num_stack;
-byte *cur_pos, *org_pos;
 
 char *output;
-
-bool pendingElse, haveElse;
-int pendingElseTo;
-int pendingElseOffs;
-int pendingElseOpcode;
-int pendingElseIndent;
-
-int offs_of_line;
-
-bool alwaysShowOffs = 0;
-bool dontOutputIfs = 0;
-bool dontOutputElse = 0;
-bool dontOutputElseif = 0;
-bool dontOutputWhile = 0;
-bool dontShowOpcode = 0;
-bool dontShowOffsets = 0;
-bool haltOnError;
-byte scriptVersion = 6;
-
-struct BlockStack {
-	bool isWhile;
-	unsigned short from;
-	unsigned short to;
-};
-
-BlockStack *block_stack;
-int num_block_stack;
 
 const char *var_names6[] = {
 	/* 0 */
@@ -1196,7 +1124,7 @@ BlockStack *pushBlockStackItem()
 		block_stack = (BlockStack *) malloc(256 * sizeof(BlockStack));
 
 	if (num_block_stack >= 256) {
-		printf("BlockStack full!\n");
+		printf("block_stack full!\n");
 		exit(0);
 	}
 	return &block_stack[num_block_stack++];
@@ -1278,6 +1206,9 @@ bool maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 		k = to - 5;
 	else
 		k = to - 3;
+
+	if (k < 0 || k >= size_of_code)
+		return false;								/* Invalid jump */
 
 	if (org_pos[k] != g_jump_opcode)
 		return false;								/* Invalid jump */
@@ -2798,14 +2729,17 @@ void ShowHelpAndExit()
 
 int main(int argc, char *argv[])
 {
-	int i;
-	char *s;
-	char *filename, *buf;
 	FILE *in;
 	byte *mem, *memorg;
 	int len;
+	char *filename, *buf;
+	int i;
+	char *s;
 
-	/* Parse the arguments */
+	scriptVersion = 6;
+	g_jump_opcode = 0x66;
+	
+	// Parse the arguments
 	filename = NULL;
 	for (i = 1; i < argc; i++) {
 		s = argv[i];
@@ -2875,6 +2809,7 @@ int main(int argc, char *argv[])
 	memorg = mem = (byte *)malloc(65536);
 	len = fread(mem, 1, 65536, in);
 	fclose(in);
+	size_of_code = len;
 
 	output = buf = (char *)malloc(8192);
 
