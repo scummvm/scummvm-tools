@@ -76,12 +76,8 @@ uint32 readUint32LE(FILE *fp) {
 }
 
 void readString(uint32 size, char *dest, FILE *fp) {
-	uint32 i = 0;
-	while (i < size) {
-		int c = fgetc(fp);
-		dest[i++] = c;
-	}
-	dest[i] = '\0';
+	fread(dest, 1, size, fp);
+	dest[size+1] = '\0';
 }
 
 void writeByte(FILE *fp, uint8 b) {

@@ -50,34 +50,26 @@ int main(int argc, char *argv[])
 		error("Could not open \'%s\'.", data_file_name);
 	}
 
-	/* get the length of the data file to use for consistency checks */
-	if (fseek(ifp, 0, SEEK_END)) {
-		fclose(ifp);
-		error("Seek error.");
-	}
-	data_file_len = ftell(ifp);
-	if (fseek(ifp, 0, SEEK_SET)) {
-		fclose(ifp);
-		error("Seek error.");
-	}
+	/* Get the length of the data file to use for consistency checks */
+	data_file_len = fileSize(ifp);
 
-	/* read offset and length to the file records */
+	/* Read offset and length to the file records */
 	file_record_off = readUint32BE(ifp);
 	file_record_len = readUint32BE(ifp);
 
-	/* do a quick check to make sure the offset and length are good */
+	/* Do a quick check to make sure the offset and length are good */
 	if (file_record_off + file_record_len > data_file_len) {
 		fclose(ifp);
 		error("\'%s\'. file records out of bounds.", data_file_name);
 	}
 
-	/* do a little consistancy check on file_record_length */
+	/* Do a little consistancy check on file_record_length */
 	if (file_record_len % 0x28) {
 		fclose(ifp);
 		error("\'%s\'. file record length not multiple of 40.", data_file_name);
 	}
 
-	/* extract the files */
+	/* Extract the files */
 	for (i = 0; i < file_record_len; i += 0x28) {
 		/* read a file record */
 		if (fseek(ifp, file_record_off + i, SEEK_SET)) {
@@ -94,10 +86,10 @@ int main(int argc, char *argv[])
 		}
 		printf("extracting \'%s\'", file_name);
 
-		/* for convience compatability with scummvm (and case sensitive
+		/* For convenience compatibility with scummvm (and case sensitive
 		 * file systems) change the file name to lowercase.
 		 *
-		 * if i ever add the abbility to pass flags on the command
+		 * if i ever add the ability to pass flags on the command
 		 * line, i will make this optional, but i really don't 
 		 * see the point to bothering
 		 */
@@ -115,13 +107,13 @@ int main(int argc, char *argv[])
 		}
 		printf(", saving as \'%s\'\n", file_name);
 
-		/* consistency check. make sure the file data is in the file */
+		/* Consistency check. make sure the file data is in the file */
 		if (file_off + file_len > data_file_len) {
 			fclose(ifp);
 			error("\'%s\'. file out of bounds.", data_file_name);
 		}
 
-		/* write a file */
+		/* Write a file */
 		if (fseek(ifp, file_off, SEEK_SET)) {
 			fclose(ifp);
 			error("Seek error.");
