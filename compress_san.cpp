@@ -287,14 +287,14 @@ void prepareForMixing(char *outputDir, char *inputFilename) {
 					uint16 val = (*src++ - 0x80) << 8;
 					*buf++ = (byte)val;
 					*buf++ = (byte)(val >> 8);
-					if (!_audioTracks[l].stereo) {
-						*buf++ = (byte)val;
-						*buf++ = (byte)(val >> 8);
-					}
 					if (_audioTracks[l].freq == 11025) {
 						*buf++ = (byte)val;
 						*buf++ = (byte)(val >> 8);
-						if (!_audioTracks[l].stereo) {
+					}
+					if (!_audioTracks[l].stereo) {
+						*buf++ = (byte)val;
+						*buf++ = (byte)(val >> 8);
+						if (_audioTracks[l].freq == 11025) {
 							*buf++ = (byte)val;
 							*buf++ = (byte)(val >> 8);
 						}
@@ -314,35 +314,31 @@ void prepareForMixing(char *outputDir, char *inputFilename) {
 					value = ((((v2 & 0x0f) << 8) | v1) << 4) - 0x8000;
 					*decoded++ = (byte)(value & 0xff);
 					*decoded++ = (byte)((value >> 8) & 0xff);
+					if (_audioTracks[l].freq == 11025) {
+						*decoded++ = (byte)(value & 0xff);
+						*decoded++ = (byte)((value >> 8) & 0xff);
+					}
 					if (!_audioTracks[l].stereo) {
-						decoded[0] = decoded[-2];
-						decoded[1] = decoded[-1];
-						decoded += 2;
+						*decoded++ = (byte)(value & 0xff);
+						*decoded++ = (byte)((value >> 8) & 0xff);
+						if (_audioTracks[l].freq == 11025) {
+							*decoded++ = (byte)(value & 0xff);
+							*decoded++ = (byte)((value >> 8) & 0xff);
+						}
 					}
 					value = ((((v2 & 0xf0) << 4) | v3) << 4) - 0x8000;
 					*decoded++ = (byte)(value & 0xff);
 					*decoded++ = (byte)((value >> 8) & 0xff);
-					if (!_audioTracks[l].stereo) {
-						decoded[0] = decoded[-2];
-						decoded[1] = decoded[-1];
-						decoded += 2;
-					}
 					if (_audioTracks[l].freq == 11025) {
-						value = ((((v2 & 0x0f) << 8) | v1) << 4) - 0x8000;
 						*decoded++ = (byte)(value & 0xff);
 						*decoded++ = (byte)((value >> 8) & 0xff);
-						if (!_audioTracks[l].stereo) {
-							decoded[0] = decoded[-2];
-							decoded[1] = decoded[-1];
-							decoded += 2;
-						}
-						value = ((((v2 & 0xf0) << 4) | v3) << 4) - 0x8000;
+					}
+					if (!_audioTracks[l].stereo) {
 						*decoded++ = (byte)(value & 0xff);
 						*decoded++ = (byte)((value >> 8) & 0xff);
-						if (!_audioTracks[l].stereo) {
-							decoded[0] = decoded[-2];
-							decoded[1] = decoded[-1];
-							decoded += 2;
+						if (_audioTracks[l].freq == 11025) {
+							*decoded++ = (byte)(value & 0xff);
+							*decoded++ = (byte)((value >> 8) & 0xff);
 						}
 					}
 				}
@@ -431,6 +427,7 @@ void mixing(char *outputDir, char *inputFilename, int frames, int fps) {
 					int32 tmpSampleL = *(int16 *)(tmpBuf + offset + r + 0);
 					int32 tmpSampleR = *(int16 *)(tmpBuf + offset + r + 2);
 					tmpSampleL = (tmpSampleL * volume) / 255;
+					tmpSampleR = (tmpSampleR * volume) / 255;
 					clampedAdd(wavSampleL, tmpSampleL);
 					clampedAdd(wavSampleR, tmpSampleR);
 					*(int16 *)(wavBuf + offset + r + 0) = wavSampleL;
