@@ -82,8 +82,8 @@ void put_int(unsigned int val);
 #define OUTPUT_MP3	"monster.so3"
 #define OUTPUT_OGG	"monster.sog"
 
-#define TEMP_DAT	"monster.dat"
-#define TEMP_IDX	"monster.idx"
+#define TEMP_DAT	"tempfile.dat"
+#define TEMP_IDX	"tempfile.idx"
 #define TEMP_RAW	"tempfile.raw"
 #define TEMP_MP3	"tempfile.mp3"
 #define TEMP_OGG	"tempfile.ogg"
