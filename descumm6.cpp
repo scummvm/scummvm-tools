@@ -174,11 +174,6 @@ int pendingElseIndent;
 
 int offs_of_line;
 
-int get_curoffs()
-{
-	return cur_pos - org_pos;
-}
-
 bool alwaysShowOffs = 0;
 bool dontOutputIfs = 0;
 bool dontOutputElse = 0;
@@ -675,6 +670,11 @@ char *strecpy(char *buf, const char *src)
 {
 	strcpy(buf, src);
 	return strchr(buf, 0);
+}
+
+int get_curoffs()
+{
+	return cur_pos - org_pos;
 }
 
 int get_byte()
@@ -2777,16 +2777,21 @@ bool indentBlock(unsigned int cur)
 
 void ShowHelpAndExit()
 {
-	printf("DOTT Script discompiler\nSyntax:\n"
-				 "\tdottdis [-o] filename\nFlags:\n"
-				 "\t-o\tAlways Show offsets\n"
-				 "\t-i\tDon't output ifs\n"
-				 "\t-e\tDon't output else\n"
-				 "\t-f\tDon't output else-if\n"
-				 "\t-c\tDon't show opcode\n"
-				 "\t-x\tDon't show offsets\n"
-				 "\t-h\tHalt on error\n"
-				 "\t-7\tAssume V7 scripts\n");
+	printf("SCUMM Script decompiler\n"
+			"Syntax:\n"
+			"\tdescumm6 [-o] filename\n"
+			"Flags:\n"
+			"\t-6\tInput Script is v6\n"
+			"\t-7\tInput Script is v7\n"
+			"\t-8\tInput Script is v8\n"
+			"\t-o\tAlways Show offsets\n"
+			"\t-i\tDon't output ifs\n"
+			"\t-e\tDon't output else\n"
+			"\t-f\tDon't output else-if\n"
+			"\t-w\tDon't output while\n"
+			"\t-c\tDon't show opcode\n"
+			"\t-x\tDon't show offsets\n"
+			"\t-h\tHalt on error\n");
 	exit(0);
 }
 
@@ -2808,30 +2813,6 @@ int main(int argc, char *argv[])
 			s++;
 			while (*s) {
 				switch (tolower(*s)) {
-				case 'o':
-					alwaysShowOffs = 1;
-					break;
-				case 'i':
-					dontOutputIfs = 1;
-					break;
-				case 'e':
-					dontOutputElse = 1;
-					break;
-				case 'f':
-					dontOutputElseif = 1;
-					break;
-				case 'w':
-					dontOutputWhile = 1;
-					break;
-				case 'c':
-					dontShowOpcode = 1;
-					break;
-				case 'x':
-					dontShowOffsets = 1;
-					break;
-				case 'h':
-					haltOnError = 1;
-					break;
 				case '6':
 					scriptVersion = 6;
 					g_jump_opcode = 0x73;
@@ -2843,6 +2824,31 @@ int main(int argc, char *argv[])
 				case '8':
 					scriptVersion = 8;
 					g_jump_opcode = 0x66;
+					break;
+
+				case 'o':
+					alwaysShowOffs = true;
+					break;
+				case 'i':
+					dontOutputIfs = true;
+					break;
+				case 'e':
+					dontOutputElse = true;
+					break;
+				case 'f':
+					dontOutputElseif = true;
+					break;
+				case 'w':
+					dontOutputWhile = true;
+					break;
+				case 'c':
+					dontShowOpcode = true;
+					break;
+				case 'x':
+					dontShowOffsets = true;
+					break;
+				case 'h':
+					haltOnError = true;
 					break;
 				default:
 					ShowHelpAndExit();

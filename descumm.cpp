@@ -131,6 +131,7 @@ int pendingElseIndent;
 
 bool alwaysShowOffs = 0;
 bool dontOutputIfs = 0;
+bool dontOutputWhile = 0;
 bool dontOutputElse = 0;
 bool dontOutputElseif = 0;
 bool dontShowOpcode = 0;
@@ -147,6 +148,11 @@ bool GF_UNBLOCKED = false;
 
 bool emit_if(char *before, char *after);
 
+int get_curoffs()
+{
+	return cur_pos - org_pos;
+}
+
 int get_byte()
 {
 	return (byte)(*cur_pos++);
@@ -157,6 +163,12 @@ int get_word()
 	int i = TO_LE_16(*((short *)cur_pos));
 	cur_pos += 2;
 	return i;
+}
+
+int get_gotopos()
+{
+	int j = get_word();
+	return (short)(j + get_curoffs());
 }
 
 char *strecpy(char *buf, const char *src)
@@ -546,11 +558,6 @@ void writePendingElse()
 		outputLine(buf, pendingElseOffs, pendingElseOpcode, pendingElseIndent - 1);
 		pendingElse = 0;
 	}
-}
-
-int HavependingElse()
-{
-	return pendingElse;
 }
 
 void do_decodeparsestring_v2(char *buf, byte opcode)
@@ -1511,40 +1518,29 @@ exit_proc:;
 
 }
 
-int get_curoffs()
-{
-	return cur_pos - org_pos;
-}
-
-int get_gotopos()
-{
-	int j = get_word();
-	return (short)(j + get_curoffs());
-}
-
 bool emit_if(char *before, char *after)
 {
-	int i = get_gotopos();
+	int to = get_gotopos();
 
 	before[0] = 0;
 	after[0] = 0;
 
-	if (!dontOutputElseif && HavependingElse()) {
-		if (maybeAddElseIf(get_curoffs(), pendingElseTo, i)) {
-			sprintf(after, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", i);
-			strcpy(before, "} else ");
+	if (!dontOutputElseif && pendingElse) {
+		if (maybeAddElseIf(get_curoffs(), pendingElseTo, to)) {
 			pendingElse = false;
 			haveElse = true;
+			sprintf(after, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
+			strcpy(before, "} else ");
 			return true;
 		}
 	}
 
-	if (!dontOutputIfs && maybeAddIf(get_curoffs(), i)) {
-		sprintf(after, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", i);
+	if (!dontOutputIfs && maybeAddIf(get_curoffs(), to)) {
+		sprintf(after, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 		return true;
 	}
 
-	sprintf(after, ") goto %.4X;", i);
+	sprintf(after, ") goto %.4X;", to);
 	return false;
 }
 
@@ -3108,22 +3104,23 @@ void get_tok(char *buf)
 
 void ShowHelpAndExit()
 {
-	printf("SCUMM Script discompiler\n"
-				 "Syntax:\n"
-				 "\tdescumm [-o] filename\n"
-				 "Flags:\n"
-				 "\t-2\tInput Script is v2\n"
-				 "\t-3\tInput Script is v3\n"
-				 "\t-5\tInput Script is v5\n"
-				 "\t-n\tUse Indy3-256 specific hacks\n"
-				 "\t-u\tScript is Unblocked/has no header\n"
-				 "\t-o\tAlways Show offsets\n"
-				 "\t-i\tDon't output ifs\n"
-				 "\t-e\tDon't output else\n"
-				 "\t-f\tDon't output else-if\n"
-				 "\t-c\tDon't show opcode\n" 
-				 "\t-x\tDon't show offsets\n" 
-				 "\t-h\tHalt on error\n");
+	printf("SCUMM Script decompiler\n"
+			"Syntax:\n"
+			"\tdescumm [-o] filename\n"
+			"Flags:\n"
+			"\t-2\tInput Script is v2\n"
+			"\t-3\tInput Script is v3\n"
+			"\t-5\tInput Script is v5\n"
+			"\t-n\tUse Indy3-256 specific hacks\n"
+			"\t-u\tScript is Unblocked/has no header\n"
+			"\t-o\tAlways Show offsets\n"
+			"\t-i\tDon't output ifs\n"
+			"\t-e\tDon't output else\n"
+			"\t-f\tDon't output else-if\n"
+			"\t-w\tDon't output while\n"
+			"\t-c\tDon't show opcode\n" 
+			"\t-x\tDon't show offsets\n" 
+			"\t-h\tHalt on error\n");
 	exit(0);
 }
 
@@ -3204,25 +3201,28 @@ int main(int argc, char *argv[])
 					break;
 
 				case 'o':
-					alwaysShowOffs = 1;
+					alwaysShowOffs = true;
 					break;
 				case 'i':
-					dontOutputIfs = 1;
+					dontOutputIfs = true;
 					break;
 				case 'e':
-					dontOutputElse = 1;
+					dontOutputElse = true;
 					break;
 				case 'f':
-					dontOutputElseif = 1;
+					dontOutputElseif = true;
+					break;
+				case 'w':
+					dontOutputWhile = true;
 					break;
 				case 'c':
-					dontShowOpcode = 1;
+					dontShowOpcode = true;
 					break;
 				case 'x':
-					dontShowOffsets = 1;
+					dontShowOffsets = true;
 					break;
 				case 'h':
-					haltOnError = 1;
+					haltOnError = true;
 					break;
 				default:
 					ShowHelpAndExit();
