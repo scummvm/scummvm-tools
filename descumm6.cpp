@@ -143,6 +143,7 @@ int pendingElseOffs;
 int pendingElseOpcode;
 int pendingElseIndent;
 
+int offs_of_line;
 
 int get_curoffs()
 {
@@ -1159,11 +1160,6 @@ bool maybeAddIf(unsigned int cur, unsigned int to)
 
 	// Try to determine if this is a while loop. For this, first check if we 
 	// jump right behind a regular jump, then whether that jump is targeting us.
-	// The "jump is targeting us" part is a bit tricky, though, as the back jump
-	// will not target this jump, but rather before it, on the first instruction
-	// making up the if-condition. For now, we do it lazy and simply check if
-	// the backjump is going *before* this jump. Better code would track where the
-	// opcodes making up the if-condition started.
 	if (scriptVersion == 8) {
 		p->isWhile = (*(byte*)(org_pos+to-5) == 0x66);
 		i = TO_LE_32(*(int32*)(org_pos+to-4));
@@ -1172,7 +1168,7 @@ bool maybeAddIf(unsigned int cur, unsigned int to)
 		i = TO_LE_16(*(int16*)(org_pos+to-2));
 	}
 
-	p->isWhile = p->isWhile && (cur > to + i);
+	p->isWhile = p->isWhile && (offs_of_line == (int)to + i);
 	p->from = cur;
 	p->to = to;
 	return true;
@@ -1215,6 +1211,11 @@ int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 	if (!num_block_stack)
 		return false;								/* There are no previous blocks, so an ifelse is not ok */
 
+	p = &block_stack[num_block_stack - 1];
+
+	if (p->isWhile)
+		return false;
+
 	if (scriptVersion == 8)
 		k = to - 5;
 	else
@@ -1231,7 +1232,6 @@ int maybeAddElseIf(unsigned int cur, unsigned int elseto, unsigned int to)
 	if (k != elseto)
 		return false;								/* Not an ifelse */
 
-	p = &block_stack[num_block_stack - 1];
 	p->from = cur;
 	p->to = to;
 
@@ -2514,7 +2514,6 @@ int main(int argc, char *argv[])
 	FILE *in;
 	byte *mem, *memorg;
 	int len;
-	int curoffs;
 
 	/* Parse the arguments */
 	filename = NULL;
@@ -2620,7 +2619,7 @@ int main(int argc, char *argv[])
 	org_pos = mem;
 	len -= mem - memorg;
 
-	curoffs = 0;
+	offs_of_line = 0;
 
 	do {
 		byte opcode = *cur_pos;
@@ -2636,14 +2635,13 @@ int main(int argc, char *argv[])
 				haveElse = false;
 				j--;
 			}
-			outputLine(buf, curoffs, opcode, j);
-			curoffs = get_curoffs();
-			while (indentBlock(get_curoffs())) {
-				outputLine("}", -1, -1, -1);
-			}
-
-			fflush(stdout);
+			outputLine(buf, offs_of_line, opcode, j);
+			offs_of_line = get_curoffs();
 		}
+		while (indentBlock(get_curoffs())) {
+			outputLine("}", -1, -1, -1);
+		}
+		fflush(stdout);
 	} while (cur_pos < mem + len);
 
 	printf("END\n");
