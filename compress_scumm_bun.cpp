@@ -836,18 +836,18 @@ byte *convertTo16bitStereo(byte *ptr, int inputSize, int &outputSize, int bits, 
 		byte *src = ptr;
 		for (int i = 0; i < inputSize; i++) {
 			uint16 val = (*src++ - 0x80) << 8;
-			*buf++ = (byte)val;
 			*buf++ = (byte)(val >> 8);
+			*buf++ = (byte)val;
 			if (freq == 11025) {
-				*buf++ = (byte)val;
 				*buf++ = (byte)(val >> 8);
+				*buf++ = (byte)val;
 			}
 			if (channels == 1) {
-				*buf++ = (byte)val;
 				*buf++ = (byte)(val >> 8);
+				*buf++ = (byte)val;
 				if (freq == 11025) {
-					*buf++ = (byte)val;
 					*buf++ = (byte)(val >> 8);
+					*buf++ = (byte)val;
 				}
 			}
 		}
@@ -863,34 +863,47 @@ byte *convertTo16bitStereo(byte *ptr, int inputSize, int &outputSize, int bits, 
 			byte v2 = *source++;
 			byte v3 = *source++;
 			value = ((((v2 & 0x0f) << 8) | v1) << 4) - 0x8000;
-			*decoded++ = (byte)(value & 0xff);
 			*decoded++ = (byte)((value >> 8) & 0xff);
+			*decoded++ = (byte)(value & 0xff);
 			if (freq == 11025) {
-				*decoded++ = (byte)(value & 0xff);
 				*decoded++ = (byte)((value >> 8) & 0xff);
+				*decoded++ = (byte)(value & 0xff);
 			}
 			if (channels == 1) {
-				*decoded++ = (byte)(value & 0xff);
 				*decoded++ = (byte)((value >> 8) & 0xff);
+				*decoded++ = (byte)(value & 0xff);
 				if (freq == 11025) {
-					*decoded++ = (byte)(value & 0xff);
 					*decoded++ = (byte)((value >> 8) & 0xff);
+					*decoded++ = (byte)(value & 0xff);
 				}
 			}
 			value = ((((v2 & 0xf0) << 4) | v3) << 4) - 0x8000;
-			*decoded++ = (byte)(value & 0xff);
 			*decoded++ = (byte)((value >> 8) & 0xff);
+			*decoded++ = (byte)(value & 0xff);
 			if (freq == 11025) {
-				*decoded++ = (byte)(value & 0xff);
 				*decoded++ = (byte)((value >> 8) & 0xff);
+				*decoded++ = (byte)(value & 0xff);
 			}
 			if (channels == 1) {
-				*decoded++ = (byte)(value & 0xff);
 				*decoded++ = (byte)((value >> 8) & 0xff);
+				*decoded++ = (byte)(value & 0xff);
 				if (freq == 11025) {
-					*decoded++ = (byte)(value & 0xff);
 					*decoded++ = (byte)((value >> 8) & 0xff);
+					*decoded++ = (byte)(value & 0xff);
 				}
+			}
+		}
+	}
+	if (bits == 16) {
+		int loop_size = inputSize / 2;
+		byte *buf = outputBuf;
+		byte *src = ptr;
+		while (loop_size--) {
+			*buf++ = *src++;
+			*buf++ = *src++;
+			if (channels == 1) {
+				*buf++ = *src++;
+				*buf++ = *src++;
 			}
 		}
 	}
@@ -1115,13 +1128,12 @@ int main(int argc, char *argv[]) {
 		writeRegions(compFinal + offsetData);
 		byte *outputData = convertTo16bitStereo(compFinal + offsetData, size - offsetData, outputSize, bits, freq, channels);
 
+		free(compFinal);
 		char tmp2Path[200];
 		sprintf(tmp2Path, "%s/%s.wav", outputDir, bundleTable[h].filename);
-		_waveTmpFile = NULL;
 		writeToTempWave(tmp2Path, outputData, outputSize);
 		writeWaveHeader(_waveDataSize);
-		fclose(_waveTmpFile);
-		free(compFinal);
+		free(outputData);
 	}
 
 	free(bundleTable);
