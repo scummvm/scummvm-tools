@@ -1436,6 +1436,22 @@ void next_line_V8()
 				"\x4Dp|nukeSound"
 				);
 		break;
+	case 0xAB:
+		// FIXME - not sure how much stuff each subopcode pops
+		ext("x" "roomOps\0"
+				"\x52|setRoomPalette,"
+				"\x55|setRoomIntensity,"
+				"\x57p|fade,"
+				"\x58|setRoomColor,"
+				"\x59|transformRoom,"
+				"\x5A|colorCycleDelay,"
+				"\x5B|copyPalette,"
+				"\x5C|newPalette,"
+				"\x5D|saveGame,"
+				"\x5E|LoadGame,"
+				"\x5F|setRoomSaturation"
+				);
+		break;
 
 	case 0xB3:
 		ext("x" "system\0" "\x28|restart," "\x29|quit");
