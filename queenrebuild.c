@@ -54,8 +54,9 @@ enum {
 	VER_SPA_TALKIE   = 8,
 	VER_DEMO_PCGAMES = 9,
 	VER_DEMO         = 10,
+	VER_INTERVIEW    = 11,
 
-	VER_NUMBER       = 11
+	VER_NUMBER       = 12
 };
 
 struct GameVersion {
@@ -90,7 +91,8 @@ const struct GameVersion gameVersions[] = {
 	{ "CIM10", 0, 0, 0x0008BEE2, 190795582 },
 	{ "CSM10", 0, 0, 0x000B343C, 190730602 },
 	{ "PE100", 1, 1, 0x000DA981,   3724538 },
-	{ "PE100", 1, 1, 0x000DB63A,   3732177 }
+	{ "PE100", 1, 1, 0x000DB63A,   3732177 },
+	{ "PEint", 1, 1, 0x000DC2F3,   1915913 }
 };
 
 
