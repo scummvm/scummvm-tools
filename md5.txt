@@ -182,18 +182,18 @@ Sam &amp; Max
 
 Full Throttle
 	Version A	All?	en	09820417db26687bb7fe0c83cc4c553b	ft
-	Version B	All?	en	60ba818dc3bede86d40357e3913f8505	ft
+	Version B	All?	en	60ba818dc3bede86d40357e3913f8505	ft	sev
 
 	-	All?	de	8bdb0bf87b5e303dd35693afb9351215	ft	dhewg
 	-	All?	es	e72bb4c2b613db2cf50f89ff6350e70a	ft
-	-	All?	ru	55e4cc866ff9046824e1c638ba2b8c7f	ft
+	-	All?	ru	55e4cc866ff9046824e1c638ba2b8c7f	ft	sev
 
 	Demo	DOS	en	32a433dea56b86a55b59e4ff7d755711	ftpcdemo
 	Demo	Mac	en	9d7b67be003fea60be4dcbd193611936	ftdemo
 
 The Dig
 	-	All	en	d8323015ecb8b10bf53474f6e6b0ae33	dig
-	-	All	ru	d62047a6729349ab36f7ee065bf26509	dig	
+	-	All	ru	d62047a6729349ab36f7ee065bf26509	dig	sev
 	Demo	All	en	362c1d281fb9899254cda66ad246c66a	digdemo
 
 Curse of Monkey Island
