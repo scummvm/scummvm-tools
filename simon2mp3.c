@@ -142,7 +142,7 @@ static uint32 get_sound(uint32 offset)
 	return(tot_size);
 }
 
-static void showhelp(char *exename)
+void showhelp(char *exename)
 {
 	printf("\nUsage: %s <params> [<file> | mac]\n", exename);
 
