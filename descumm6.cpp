@@ -1083,7 +1083,10 @@ void next_line()
 		ext("pppp|doSentence");
 		break;
 	case 0x84:
-		ext("pp|pickupObject");
+		if (scriptVersion < 7)
+			ext("pp|pickupObject");
+		else
+			ext("p|pickupObject");
 		break;
 	case 0x85:
 		ext("pppp|loadRoomWithEgo");
