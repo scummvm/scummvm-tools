@@ -1750,7 +1750,10 @@ void next_line_V8(char *output)
 				"\xDD|getMasterSFXVol,"
 				"\xDE|getMasterVoiceVol,"
 				"\xDF|getMasterMusicVol,"
-				"\xE0|readRegistryValue"
+				"\xE0|readRegistryValue,"
+				"\xE1|imGetMusicPosition,"
+				"\xE2|musicLipSyncWidth,"
+				"\xE3|musicLipSyncHeight"
 				);
 		break;
 	case 0xD9:
