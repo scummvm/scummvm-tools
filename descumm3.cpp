@@ -865,6 +865,64 @@ void do_load_code_to_string(char *buf, byte opcode)
 	strcpy(buf, ");");
 }
 
+void do_resource_v2(char *buf, byte opcode)
+{
+	int resid = get_byte();
+	int subop = get_byte();
+
+	if (((subop & 0x0F) == 0) || ((subop & 0x0F) == 1)) {
+		switch (subop & 0xF1) {
+			case 96:
+				do_tok(buf, "lockSound", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 97:
+				do_tok(buf, "unlockSound", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 80:
+				do_tok(buf, "lockScript", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 81:
+				do_tok(buf, "unlockScript", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 32:
+				do_tok(buf, "lockCostume", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 33:
+				do_tok(buf, "unlockCostume", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 48:
+				do_tok(buf, "lockRoom", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 49:
+				do_tok(buf, "unlockRoom", ((resid & 0x80) ? A1V : A1B));
+				break;
+			default:
+				sprintf(buf, "UnknownResLockUnlockCommand%.2X", subop & 0xF1);
+		}
+	} else {
+		switch (subop & 0xF1) {
+			case 96:
+			case 80:
+			case 32:
+			case 48:
+				break;
+			case 97:
+				do_tok(buf, "loadSoundRes", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 81:
+				do_tok(buf, "loadScriptRes", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 33:
+				do_tok(buf, "loadCostumeRes", ((resid & 0x80) ? A1V : A1B));
+				break;
+			case 49:
+				do_tok(buf, "loadRoomRes", ((resid & 0x80) ? A1V : A1B));
+				break;
+			default:
+				sprintf(buf, "UnknownResLoadNukeCommand%.2X", subop & 0xF1);
+		}
+	}
+}
 
 void do_resource(char *buf, byte opco)
 {
@@ -1581,22 +1639,29 @@ void get_tok_V2(char *buf)
 	case 0xC7:
 		// clearState08
 		break;
+*/
 	case 0x60:
 	case 0xE0:
 		//cursorCommand
+		sprintf(buf, "UnknownCursorCommand%.2X", opcode);
 		break;
-*/
 	case 0x40:
-		do_tok(buf, "cutscene", A1VARUNTIL0xFF);
+		do_tok(buf, "cutscene", ((opcode & 80) ? A1V : A1B));
 		break;
 	case 0xC6:
 		//decrement
 		do_varset_code(buf, opcode);
 		break;
-/*			
-	case 0x2E:
+	case 0x2E: {
 		//delay
+		int d = get_byte();
+		d |= get_byte() << 8;
+		d |= get_byte() << 16;
+		d = 0xFFFFFF - d;
+		sprintf(buf, "delay(%d)", d);
 		break;
+	}
+/*
 	case 0x2B:
 		//delayVariable
 		break;
@@ -1773,10 +1838,11 @@ void get_tok_V2(char *buf)
 		//ifState08
 		break;
 		
+*/
 	case 0x46:
 		//increment
+		do_varset_code(buf, opcode);
 		break;
-*/
 	case 0x48:
 	case 0xC8:
 		//isEqual
@@ -1896,26 +1962,24 @@ void get_tok_V2(char *buf)
 					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W) |
 					 ((opcode & 0x20) ? A3V : A3W));
 		break;
-/*
 	case 0x0E:
 	case 0x4E:
 	case 0x8E:
 	case 0xCE:
 		//putActorAtObject
+		do_tok(buf, "putActorAtObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) );
 		break;
-*/
 	case 0x2D:
 	case 0x6D:
 	case 0xAD:
 	case 0xED:
 		do_tok(buf, "putActorInRoom", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
-/*
 	case 0x0C:
 	case 0x8C:
 		//resourceRoutines
+		do_resource_v2(buf, opcode);
 		break;
-*/
 	case 0x98:
 		do_tok(buf, "restart", 0);
 		break;
@@ -2022,7 +2086,7 @@ void get_tok_V2(char *buf)
 	case 0x42:
 	case 0xC2:
 		//startScript
-		do_tok(buf, "startScriptAA", ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
+		do_tok(buf, "startScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
 		
 	case 0x1C:
