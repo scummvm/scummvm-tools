@@ -109,6 +109,10 @@ byte HaltOnError;
 
 int get_curpos();
 int gameFlag;
+
+bool GF_OLD256 = true;	// TODO - this should be controlled by a command line option
+
+
 bool emit_if(char *before, char *after);
 
 #if defined(SCUMM_BIG_ENDIAN)
@@ -617,7 +621,9 @@ void do_actorset(char *buf, byte opcode)
 			buf = do_tok(buf, "Width", ((opcode & 0x80) ? A1V : A1B));
 			break;
 		case 0x11:
-			buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+			// AGH, for GID_MONKEY_VGA this is:
+			buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B));
+//			buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 			break;
 		case 0x12:
 			buf = do_tok(buf, "NeverZClip", 0);
@@ -925,8 +931,10 @@ void do_room_ops(char *buf, byte master_opcode)
 	char	a[256];
 	char	b[256];
 	
-	get_var_or_word(a, (master_opcode & 0x80));
-	get_var_or_word(b, (master_opcode & 0x40));
+	if (GF_OLD256) {
+		get_var_or_word(a, (master_opcode & 0x80));
+		get_var_or_word(b, (master_opcode & 0x40));
+	}
 
 	int opcode = get_byte();
 
@@ -934,6 +942,10 @@ void do_room_ops(char *buf, byte master_opcode)
 
 	switch (opcode & 0x1F) {
 	case 0x01:
+		if (!GF_OLD256) {
+			get_var_or_word(a, (master_opcode & 0x80));
+			get_var_or_word(b, (master_opcode & 0x40));
+		}
 		buf = strecpy(buf, "RoomScroll(");
 		buf = strecpy(buf, a);
 		buf = strecpy(buf, ",");
@@ -941,6 +953,10 @@ void do_room_ops(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x02:
+		if (!GF_OLD256) {
+			get_var_or_word(a, (master_opcode & 0x80));
+			get_var_or_word(b, (master_opcode & 0x40));
+		}
 		buf = strecpy(buf, "RoomColor(");
 		buf = strecpy(buf, a);
 		buf = strecpy(buf, ",");
@@ -948,6 +964,10 @@ void do_room_ops(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x03:
+		if (!GF_OLD256) {
+			get_var_or_word(a, (master_opcode & 0x80));
+			get_var_or_word(b, (master_opcode & 0x40));
+		}
 		buf = strecpy(buf, "SetScreen(");
 		buf = strecpy(buf, a);
 		buf = strecpy(buf, ",");
@@ -955,6 +975,10 @@ void do_room_ops(char *buf, byte master_opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x04:
+		if (!GF_OLD256) {
+			get_var_or_word(a, (master_opcode & 0x80));
+			get_var_or_word(b, (master_opcode & 0x40));
+		}
 		buf = strecpy(buf, "SetPalColor(");
 		buf = strecpy(buf, a);
 		buf = strecpy(buf, ",");
@@ -967,6 +991,7 @@ void do_room_ops(char *buf, byte master_opcode)
 	case 0x06:
 		do_tok(buf, "ShakeOff", 0);
 		break;
+/*
 	case 0x07:
 		do_tok(buf, "Unused", 0);
 		break;
@@ -1026,13 +1051,14 @@ void do_room_ops(char *buf, byte master_opcode)
 		opcode = get_byte();
 		buf = do_tok(buf, NULL, ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B));
 		break;
-
+*/
 	case 0x10:
 		do_tok(buf, "colorCycleDelay", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
-
 	default:
 		strcpy(buf, "Unknown??");
+		printf("UGH, unknown room op %d\n", opcode & 0x1F);
+		exit(1);
 	}
 }
 
