@@ -583,7 +583,7 @@ void handleDigIACT(FILE *input, int size, char *outputDir, char *inputFilename, 
 	int track = readUint16LE(input);
 	int index = readUint16LE(input);
 	int nbframes = readUint16LE(input);
-	//int data_size = readUint32LE(input);
+	/*int data_size = */ readUint32LE(input);
 	int volume = 127;
 	int trackId = track;
 	int pan = 0;
@@ -615,7 +615,7 @@ void handlePSAD(FILE *input, int size, char *outputDir, char *inputFilename, cha
 	int trackId = readUint16LE(input);
 	int index = readUint16LE(input);
 	int nbframes = readUint16LE(input);
-	//int flags = readUint16LE(input);
+	/*int flags = */ readUint16LE(input);
 	int volume = readByte(input);
 	int pan = readByte(input);
 
