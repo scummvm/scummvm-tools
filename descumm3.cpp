@@ -1873,11 +1873,11 @@ void get_tok_V2(char *buf)
 	case 0x14:
 	case 0x94:
 		// print
-		do_print_ego(buf, opcode);
+		do_tok(buf, "print", A1ASCII);
 		break;
 	case 0xD8:
 		//printEgo
-		do_print_ego(buf, opcode);
+		do_tok(buf, "printEgo", A1ASCII);
 		break;
 		
 	case 0xCC:
