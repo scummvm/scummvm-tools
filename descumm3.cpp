@@ -563,6 +563,9 @@ void do_actorset(char *buf, byte opcode)
 		opcode = (opcode & 0xE0) | convertTable[(opcode & 0x1F) - 1];
 
 		switch (opcode & 0x1F) {
+		case 0x00:
+			buf = do_tok(buf, "Unknown", ((opcode & 0x80) ? A1V : A1B));
+			break;
 		case 0x01:
 			buf = do_tok(buf, "Costume", ((opcode & 0x80) ? A1V : A1B));
 			break;
@@ -631,7 +634,9 @@ void do_actorset(char *buf, byte opcode)
 		case 0x16:
 			buf = do_tok(buf, "AnimSpeed", ((opcode & 0x80) ? A1V : A1B));
 			break;
-//    case 0x17: buf=do_tok(buf, "SetAD8", ((opcode&0x80)?A1V:A1B)); break;
+		case 0x17:
+			buf=do_tok(buf, "ShadowMode", ((opcode & 0x80) ? A1V : A1B));
+			break;
 		default:
 			buf += sprintf(buf, "Unknown%.2X()", opcode);
 		}
@@ -1649,9 +1654,15 @@ void get_tok(char *buf)
 	case 0xF1:
 		do_tok(buf, "getActorCostume", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
+
 	case 0x3B:
-		do_tok(buf, "WaitForActor", ((opcode & 0x80) ? A1V : A1B));
+	case 0xBB:
+		if (gameFlag == 1)
+			do_tok(buf, "WaitForActor", ((opcode & 0x80) ? A1V : A1B));
+		else
+			do_tok(buf, "getActorScale", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
+
 	case 0xAE:{
 			byte opcode;
 			if (gameFlag == 1)
@@ -2116,7 +2127,7 @@ int main(int argc, char *argv[])
 			while (*s) {
 				switch (tolower(*s)) {
 				case '3':
-					gameFlag = 1;
+					gameFlag = 1; // Indy3
 					break;
 				case 'o':
 					AlwaysShowOffs = 1;
