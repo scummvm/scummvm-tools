@@ -97,7 +97,8 @@ void get_part(void)
 
 	/* Scan for the VCTL header */
 	fread(buf, 1, 4, input);
-	while (memcmp(buf, "VCTL", 4)) {
+	/* The demo (snmdemo) and floppy version of Sam & Max use VTTL */
+	while (memcmp(buf, "VCTL", 4)&&memcmp(buf, "VTTL", 4)) {
 		pos++;
 		append_byte(4, buf);
 		if (feof(input))
