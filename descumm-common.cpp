@@ -217,8 +217,9 @@ bool maybeAddElse(uint cur, uint to)
 	if (cur != p->to)
 		return false;								/* We have no prevoius if that is exiting right at the end of this goto */
 
-	/* Don't jump out of previous blocks. This test is stronger than the one in
-	   maybeAddIf. ( >= vs > ) */
+	// Don't jump out of previous blocks. In addition, don't jump "onto"
+	// the end of a while loop, as that would lead to incorrect output.
+	// This test is stronger than the one in maybeAddIf.
 	for (i = 0, p = block_stack; i < num_block_stack - 1; i++, p++) {
 		if (to > p->to || (to == p->to && p->isWhile))
 			return false;
