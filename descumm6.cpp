@@ -100,6 +100,8 @@ enum {
 	operDiv,
 	operLand,
 	operLor,
+	operBand,
+	operBor
 };
 
 static const char *oper_list[] = {
@@ -115,7 +117,9 @@ static const char *oper_list[] = {
 	"*",
 	"/",
 	"&&",
-	"||"
+	"||",
+	"&",
+	"|"
 };
 
 StackEnt *stack[128];
@@ -1401,6 +1405,12 @@ void next_line()
 		break;
 	case 0xD5:
 		ext("lpp|jumpToScript");
+		break;
+	case 0xD6:
+		push(se_oper(pop(), operBand, pop()));
+		break;
+	case 0xD7:
+		push(se_oper(pop(), operBor, pop()));
 		break;
 	case 0xD8:
 		ext("rp|isRoomScriptRunning");
