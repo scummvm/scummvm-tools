@@ -55,7 +55,7 @@ void showhelp(char *exename)
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf(" [params]     optional Arguments passed directly to the Encoder\n");
+	printf(" [params]     optional arguments passed directly to the encoder\n");
 	printf("              recommended is: --best -b 1152\n");
 
 	printf("\n --help     this help message\n");
