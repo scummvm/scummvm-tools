@@ -109,10 +109,8 @@ The Secret of Monkey Island
 	CD	DOS	fr	aa8a0cb65f3afbbe2c14c3f9f92775a3	monkey	Andrej Sinicyn, Andrea Petrucci
 
 	-	DOS	fr	aa8a0cb65f3afbbe2c14c3f9f92775a3	monkey1	Nicolas Sauz&egrave;de
-	-	Mac	en	2ccd8891ce4d3f1a334d21bff6a88ca2	monkey
-	- (alt?)	Mac	en	2ccd8891ce4d3f1a334d21bff6a88ca2	monkey1	Lars N&aelig;sbye Christensen
+	-	Mac	en	2ccd8891ce4d3f1a334d21bff6a88ca2	monkey1	Lars N&aelig;sbye Christensen
 	-	SEGA	en	c13225cb1bbd3bc9fe578301696d8021	game
-	-	Mac	en	2ccd8891ce4d3f1a334d21bff6a88ca2	monkey
 
 	FM-TOWNS	FM-TOWNS	en	8eb84cee9b429314c7f0bdcf560723eb	monkey	Paul Priest, Andrea Petrucci
 	FM-TOWNS	FM-TOWNS	jp	e17db1ddf91b39ca6bbc8ad3ed19e883	monkey	Paul Priest, Andrea Petrucci
