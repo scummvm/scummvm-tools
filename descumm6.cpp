@@ -2574,7 +2574,7 @@ int main(int argc, char *argv[])
 	char *s;
 
 	scriptVersion = 6;
-	g_jump_opcode = 0x66;
+	g_jump_opcode = 0x73;
 	
 	// Parse the arguments
 	filename = NULL;
