@@ -7,21 +7,21 @@ ScummVM versions may not. ScummVM 0.6.x does not support FLAC audio, for
 example.
 
 Extraction Tools:
-        kyra_unpak
+        extract_kyra
                 Unpacks .PAK files from Kyrandia games.
 
-        rescumm
+        extract_scumm_mac
                 Extracts Macintosh "single file" SCUMM games into their
                 component parts, for use with ScummVM.
                 This is required for ScummVM up to version 0.6.x; all
                 later versions directly support reading this file
                 format.
 
-        loom_tg16_extract
+        extract_loom_tg16
                 Extracts data files from TG16 version of Loom.
                 There is currently no support for this game in ScummVM!
 
-        mm_nes_extract
+        extract_mm_nes
                 Extracts data files from NES version of Maniac Mansion.
                 There is currently no support for this game in ScummVM!
 

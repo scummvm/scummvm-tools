@@ -20,7 +20,7 @@
  *
  */
 
-#include "kyra_unpak.h"
+#include "extract_kyra.h"
 
 int main(int argc, char **argv) {
 	if (argc < 2) {

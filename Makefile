@@ -26,10 +26,10 @@ TARGETS := \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
-	kyra_unpak$(EXEEXT) \
-	loom_tg16_extract$(EXEEXT) \
-	mm_nes_extract$(EXEEXT) \
-	rescumm$(EXEEXT) \
+	extract_kyra$(EXEEXT) \
+	extract_loom_tg16$(EXEEXT) \
+	extract_mm_nes$(EXEEXT) \
+	extract_scumm_mac$(EXEEXT) \
 	simon1decr$(EXEEXT)
 
 all: $(TARGETS)
@@ -46,22 +46,22 @@ desword2$(EXEEXT): desword2.o util.o
 dekyra$(EXEEXT): dekyra.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-kyra_unpak$(EXEEXT): kyra_unpak.o util.o
+extract_kyra$(EXEEXT): extract_kyra.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-loom_tg16_extract$(EXEEXT): loom_tg16_extract.o
+extract_loom_tg16$(EXEEXT): extract_loom_tg16.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-mm_nes_extract$(EXEEXT): mm_nes_extract.o
+extract_mm_nes$(EXEEXT): extract_mm_nes.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_queen$(EXEEXT): compress_queen.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-rescumm$(EXEEXT): rescumm.o util.o
+extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_saga$(EXEEXT): compress_saga.o compress.o util.o
@@ -81,7 +81,7 @@ compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
 compress_saga.o compress_scumm_sou.o compress_simon.o compress_sword1.o compress_sword2.o compress.o: util.h compress.h
-desword2.o compress_queen.o rescumm.o util.o: util.h
+desword2.o compress_queen.o extract_scumm_mac.o util.o: util.h
 
 clean:
 	rm -f *.o $(TARGETS)
