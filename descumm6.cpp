@@ -1195,6 +1195,7 @@ void next_line()
 				"\x5Cp|setActorScale,"
 				"\x5D|setActorNeverZClip,"
 				"\x5Ep|setActorNeverZClip,"
+				"\xE1p|setActorNeverZClip,"
 				"\x5F|setActorIgnoreBoxes,"
 				"\x60|setActorFollowBoxes,"
 				"\x61|setActorAnimSpeed,"
