@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
+//#include <unistd.h>
 
 FILE *input, *output_idx, *output_snd;
 
@@ -210,6 +210,11 @@ void get_part() {
 
 int main(int argc, char *argv[]) {
   input = fopen(argv[1], "rb");
+  if (!input) {
+   printf("Cannot open file: %s\n", argv[1]);
+   exit(-1);
+  }
+
   output_idx = fopen("monster.idx", "wb");
   output_snd = fopen("monster.mp3", "wb");
   
