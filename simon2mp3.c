@@ -150,13 +150,12 @@ int get_offsets_mac(void)
 	return(size/6);
 }
 
-void get_voc(void);
 void get_wav(void);
 
 unsigned int get_sound(int sound)
 {
 	FILE *f;
-	unsigned int tot_size;
+	uint32 tot_size;
 	char outname[256];
 	int size;
 	char fbuf[2048];
@@ -166,15 +165,16 @@ unsigned int get_sound(int sound)
 	get_string(8);
 	if (!memcmp(buf, "Creative", 8)) {
 		printf("VOC found (pos = %d) :\n", offsets[sound]);
+		get_string(18);
 		get_voc();
 	} else if (!memcmp(buf, "RIFF", 4)) {
 		printf("WAV found (pos = %d) :\n", offsets[sound]);
 		get_wav();
 	} else {
-		printf("Unexpected data at offset: %i\n", offsets[sound]);
-		exit(-1);
+		error("Unexpected data at offset: %i", offsets[sound]);
 	}
 
+	/* Append the converted data to the master output file */
 	sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
 	f = fopen(outname, "rb");
 	tot_size = 0;
@@ -244,107 +244,6 @@ void get_wav(void) {
 			encparms.algqual, fbuf_temp, encparms.vbrqual,
 			encparms.maxBitr, wavname, outname);
 		system(fbuf);
-	}
-}
-
-void get_voc(void)
-{
-	int blocktype;
-
-	get_string(18);
-
-	blocktype = fgetc(input);
-	switch (blocktype) {
-	case 0x01:{
-		int length = 0;
-		int i;
-		int sample_rate;
-		int comp;
-		FILE *f;
-		char fbuf[2048];
-		char *tmp;
-		int size;
-		char rawname[256];
-		char outname[256];
-		int real_samplerate;
-
-		/* Sound Data */
-		printf(" Sound Data\n");
-		for (i = 0; i < 3; i++)
-			length = length | (fgetc(input) << (i * 8));
-		length -= 2;
-		printf(" - length = %d\n", length);
-		sample_rate = fgetc(input);
-		comp = fgetc(input);
-		
-		real_samplerate = getSampleRateFromVOCRate(sample_rate);
-	
-		printf(" - sample rate = %d (%02x)\n", real_samplerate, sample_rate);
-		printf(" - compression = %s (%02x)\n",
-		       (comp ==	   0 ? "8bits"   :
-		        (comp ==   1 ? "4bits"   :
-		         (comp ==  2 ? "2.6bits" :
-		          (comp == 3 ? "2bits"   :
-		                        "Multi")))), comp);
-
-		if (comp != 0) {
-			printf("Cannot handle compression\n");
-			exit(-1);
-		}
-		sprintf(rawname, TEMP_RAW);
-		sprintf(outname, oggmode ? TEMP_OGG : TEMP_MP3);
-	
-		f = fopen(rawname, "wb");
-		while (length > 0) {
-			size = fread(fbuf, 1, length > 2048 ? 2048 : length, input);
-			if (size <= 0)
-				break;
-			length -= size;
-			fwrite(fbuf, 1, size, f);
-		}
-		fclose(f);
-		
-		tmp = fbuf;
-		if (oggmode) {
-			tmp += sprintf(tmp, "oggenc --raw --raw-chan=1 --raw-bits=8 ");
-			if (oggparms.nominalBitr != -1)
-				tmp += sprintf(tmp, "--bitrate=%i ", oggparms.nominalBitr);
-			if (oggparms.minBitr != -1)
-				tmp += sprintf(tmp, "--min-bitrate=%i ", oggparms.minBitr);
-			if (oggparms.maxBitr != -1)
-				tmp += sprintf(tmp, "--max-bitrate=%i ", oggparms.maxBitr);
-			if (oggparms.silent)
-				tmp += sprintf(tmp, "--quiet ");
-
-			tmp += sprintf(tmp, "--quality=%i ", oggparms.quality);
-			tmp += sprintf(tmp, "--raw-rate=%i ", real_samplerate);
-			tmp += sprintf(tmp, "--output=%s ", outname);
-			tmp += sprintf(tmp, "%s ", rawname);
-			system(fbuf);
-		}
-		else {
-			tmp += sprintf(tmp, "lame -t -m m -r --bitwidth 8 ");
-			if (encparms.abr == 1)
-				tmp += sprintf(tmp, "--abr %i ", encparms.minBitr);
-			else
-				tmp += sprintf(tmp, "--vbr-new -b %i ", encparms.minBitr);
-			if (encparms.silent == 1)
-				tmp += sprintf(tmp, " --silent ");
-
-			tmp += sprintf(tmp, "-q %i ", encparms.algqual);
-			tmp += sprintf(tmp, "-V %i ", encparms.vbrqual);
-			tmp += sprintf(tmp, "-B %i ", encparms.maxBitr);
-			tmp += sprintf(tmp, "-s %d ", real_samplerate);
-			tmp += sprintf(tmp, "%s %s ", rawname, outname);
-			system(fbuf);
-		}
-		break;
-	}
-
-	default:
-		printf("Unknown chunk : %02x\n", blocktype);
-		exit(-1);
-		break;
 	}
 }
 
