@@ -1,12 +1,13 @@
 Maniac Mansion
 	V1	DOS	en	7f45ddd6dbfbf8f80c0c0efea4c295bc	maniac
-	V2	DOS	en	624cdb93654667c869d204a64af7e57f	maniac	Kirben
-	V2	DOS	en	b250d0f9cc83f80ced56fe11a4fb057c	maniac
+	V2	DOS	en	624cdb93654667c869d204a64af7e57f	maniac	Kirben, Gino Pilotino
+	V2 (alt?)	DOS	en	b250d0f9cc83f80ced56fe11a4fb057c	maniac	Gino Pilotino
 	V2	DOS	de	183d7464902d40d00800e8ee1f04117c	maniac
-	V2	DOS	es	0d1b69471605201ef2fa9cec1f5f02d2	maniac	abnog
+	V2	DOS	es	0d1b69471605201ef2fa9cec1f5f02d2	maniac	abnog, Gino Pilotino
+	V2	DOS	it	87f6e8037b7cc996e13474b491a7a98e	maniac	Gino Pilotino
 	V2	DOS	fr	114acdc2659a273c220f86ee9edb24c1	maniac	Nicolas Sauz&egrave;de
-	V2 (DOTT)	DOS	fr	99a3699f80b8f776efae592b44b9b991	maniac	Nicolas Sauz&egrave;de
-	V2	Amiga	en	e781230da44a44e2f0770edb2b3b3633	maniac	dhewg
+	V2 (DOTT)	DOS	fr	99a3699f80b8f776efae592b44b9b991	maniac	Nicolas Sauz&egrave;de, Gino Pilotino
+	V2	Amiga	en	e781230da44a44e2f0770edb2b3b3633	maniac	dhewg, Gino Pilotino
 
 Zak McKracken and the Alien Mindbenders
 	V1	DOS	en	7020931d5a2be0a49d68e7a1882363e4	zak
@@ -45,39 +46,47 @@ Loom
 	Floppy	DOS	en	37f56ceb13e401a7ac7d9e6b37fecaf7	loom	Kirben
 	Floppy	DOS	de	fa127d7c4bb47d05bb1c33ddcaa9f767	loom
 	Floppy	DOS	es	2a208ffbcd0e83e86f4356e6f64aa6e1	loom	abnog
-	Floppy	Amiga	en	4dc780f1bc587a193ce8a97652791438	loom	Antti Leimi
-	Floppy	Amiga	fr	39cb9dec16fa16f38d79acd80effb059	loom	Gerald Vincent
+	Floppy	Amiga	en	4dc780f1bc587a193ce8a97652791438	loom	Antti Leimi, Gino Pilotino
+	Floppy (same as IT?!?)	Amiga	fr	39cb9dec16fa16f38d79acd80effb059	loom	Gerald Vincent
+	Floppy (same as FR?!?)	Amiga	it	39cb9dec16fa16f38d79acd80effb059	loom	Gino Pilotino
 	Talkie/CD	DOS	en	5d88b9d6a88e6f8e90cded9d01b7f082	loomcd
-	FmTowns	FmTowns	en	c5d10e190d4b4d59114b824f2fdbd00e	loomTowns	dhewg
-	FmTowns	FmTowns	jp	31b8fda4c8c7413fa6b39997e776eba4	loomTowns	khalek
+	FmTowns	FmTowns	en	c5d10e190d4b4d59114b824f2fdbd00e	loomTowns	dhewg, Gino Pilotino
+	FmTowns	FmTowns	jp	31b8fda4c8c7413fa6b39997e776eba4	loomTowns	khalek, Gino Pilotino
 
 The Secret of Monkey Island
-	EGA	DOS	en	49210e124e4c2b30f1290a9ef6306301	monkeyega
+	EGA (4 disk)	DOS	en	1d05cd189e4908f79b57e78a4402f292	monkeyega	Gino Pilotino
+	EGA (8 disk)	DOS	en	49210e124e4c2b30f1290a9ef6306301	monkeyega
+	EGA (8 disk)	DOS	fr	1dd3c11ea4439adfe681e4e405b624e1	monkeyega	Gino Pilotino
+	EGA (4 disk)	DOS	it	477dbafbd66a53c98416dc01aef019ad	monkeyega	Gino Pilotino
+	EGA (8 disk)	DOS	es	910e31cffb28226bd68c569668a0d6b4	monkeyega	Gino Pilotino
 	EGA Demo	DOS	en	71523b539491527d9860f4407faf0411	monkeyega
 	EGA Demo	DOS	de	771bc18ec6f93837b839c992b211904b	monkeyega	khalek
 	EGA	Amiga	de	fc6b6148e80d67939d9a18697c0f626a	monkeyega	ghoostkilla
 
-	VGA	DOS	en	15e03ffbfeddb9c2aebc13dcb2a4a8f4	monkeyvga
-	VGA	DOS	de	d0b531227a27c6662018d2bd05aac52a	monkeyvga
-	VGA	DOS	es	45152f7cf2ba8f43cf8a8ea2e740ae09	monkeyvga
+	VGA (4 disk)	DOS	en	15e03ffbfeddb9c2aebc13dcb2a4a8f4	monkeyvga
+	VGA (8 disk)	DOS	en	c7890e038806df2bb5c0c8c6f1986ea2	monkeyvga	Gino Pilotino
+	VGA (4 disk)	DOS	de	d0b531227a27c6662018d2bd05aac52a	monkeyvga
+	VGA (4 disk)	DOS	es	45152f7cf2ba8f43cf8a8ea2e740ae09	monkeyvga
+	VGA (4 disk)	DOS	it	66fd5ff9a810dfeb6d6bdada18221140	monkeyvga	Gino Pilotino
 	VGA	Amiga	en	6c2bff0e327f2962e809c2e1a82d7309	monkeyvga	dhweg
 	VGA	Amiga	de	319a4dde52c7960b5aae8a1ec348d918	monkeyvga	ghoostkilla
 	VGA	Amiga	fr	3433be9866ca4261b2d5d25374e3f243	monkeyvga	Gerald Vincent
+	VGA	Amiga	it	fb66aa42de21675116346213f176a366	monkeyvga	Gino Pilotino
 	VGA Demo	Amiga	en	54a936ad06161ff7bfefcb96200f7bff	monkeyvga	khalek
 
 	CD	DOS	en	2d1e891fe52df707c30185e52c50cd92	monkey
 	CD	DOS	de	305d3dd57c96c65b017bc70c8c7cfb5e	monkey
-	CD	DOS	es	f049e38c1f8302b5db6170f1872af89a	monkey	Andrej Sinicyn
-	CD	DOS	it	da6269b18fcb08189c0aa9c95533cce2	monkey	Andrej Sinicyn
-	CD	DOS	fr	aa8a0cb65f3afbbe2c14c3f9f92775a3	monkey	Andrej Sinicyn
+	CD	DOS	es	f049e38c1f8302b5db6170f1872af89a	monkey	Andrej Sinicyn, Gino Pilotino
+	CD	DOS	it	da6269b18fcb08189c0aa9c95533cce2	monkey	Andrej Sinicyn, Gino Pilotino
+	CD	DOS	fr	aa8a0cb65f3afbbe2c14c3f9f92775a3	monkey	Andrej Sinicyn, Gino Pilotino
 
 	-	DOS	fr	aa8a0cb65f3afbbe2c14c3f9f92775a3	monkey1	Nicolas Sauz&egrave;de
 	-	Mac	en	2ccd8891ce4d3f1a334d21bff6a88ca2	monkey
 	-	SEGA	en	c13225cb1bbd3bc9fe578301696d8021	game
 	-	Mac	en	2ccd8891ce4d3f1a334d21bff6a88ca2	monkey
 
-	FmTowns	FmTowns	en	8eb84cee9b429314c7f0bdcf560723eb	monkey	Paul Priest
-	FmTowns	FmTowns	jp	e17db1ddf91b39ca6bbc8ad3ed19e883	monkey	Paul Priest
+	FmTowns	FmTowns	en	8eb84cee9b429314c7f0bdcf560723eb	monkey	Paul Priest, Gino Pilotino
+	FmTowns	FmTowns	jp	e17db1ddf91b39ca6bbc8ad3ed19e883	monkey	Paul Priest, Gino Pilotino
 
 Misc demos
 	Passport to Adventure	DOS	en	e6cd81b25ab1453a8a6d3482118c391e	pass
@@ -88,42 +97,61 @@ Misc demos
 
 Monkey Island 2: LeChuck's revenge
 	-	Amiga	en	132bff65e6367c09cc69318ce1b59333	monkey2
+	-	Amiga	it	11ddf1fde76e3156eb3a38da213f484e	monkey2	Gino Pilotino
 	-	Mac	en	4cb9c3618f71668f8e4346c8f323fa82	monkey2
 	-	DOS	en	3686cf8f89e102ececf4366e1d2c8126	monkey2
 	-	DOS	de	6886e5d08cee329b1f2e743ae2e3ceed	monkey2
-	-	DOS	fr	8e4ee4db46954bfe2912e259a16fad82	monkey2	Nicolas Sauz&egrave;de
-	FmTowns	FmTowns	en	da09e666fc8f5b78d7b0ac65d1a3b56e	monkey2	dhewg
-	FmTowns	FmTowns	jp	430bc518017b6fac046f58bab6baad5d	monkey2	Antti Leimi
+	-	DOS	fr	8e4ee4db46954bfe2912e259a16fad82	monkey2	Nicolas Sauz&egrave;de, Gino Pilotino
+	-	DOS	it	69ea626f1f87eecb78ea0d6c6b983a1d	monkey2	Gino Pilotino
+	(alt?)	DOS	it	bd126753de619a495f9f22adc951c8d5	monkey2	Gino Pilotino
+	-	DOS	es	7974365d3dc0f43a2748c975f91ff042	monkey2	Gino Pilotino
+	FmTowns	FmTowns	en	da09e666fc8f5b78d7b0ac65d1a3b56e	monkey2	dhewg, Gino Pilotino
+	FmTowns	FmTowns	jp	430bc518017b6fac046f58bab6baad5d	monkey2	Antti Leimi, Gino Pilotino
 	Demo (non-interactive)	DOS	en	387a544b8b10b26912d8413bab63a853	monkey2	khalek
 
-Indiana Jones 4 and the Fate of Atlantis
+Indiana Jones and the Fate of Atlantis
 	Talkie	DOS	en	182344899c2e2998fca0bebcd82aa81a	atlantis
-	Non-Talkie	DOS	es	9bd2a8f72613e715c199246dd511e10f	atlantis	abnog
 	Non-Talkie	Mac	en	d6dd0646404768a63e963891a96daadd	atlantis
+	Non-Talkie	DOS	en	c63ee46143ba65f9ce14cf539ca51bd7	atlantis	Gino Pilotino
 	Non-Talkie	DOS	de	1fbebd7b2b692df5297870447a80cfed	atlantis
-	Non-Talkie	DOS	fr	edfdb24a499d92c59f824c52987c0eec	atlantis	Nicolas Sauz&egrave;de
+	Non-Talkie	DOS	fr	edfdb24a499d92c59f824c52987c0eec	atlantis	Nicolas Sauz&egrave;de, Gino Pilotino
+	Non-Talkie	DOS	es	9bd2a8f72613e715c199246dd511e10f	atlantis	abnog, Gino Pilotino
+
 	Non-Talkie	Amiga	en	3a03dab514e4038df192d8a8de469788	atlantis	dhewg
 	Non-Talkie	Amiga	de	4f267a901719623de7dde83e47d5b474	atlantis	ghoostkilla
-	FmTowns	FmTowns	en	c7be10f775404fd9785a8b92a06d240c	indy4	dhewg
+	Non-Talkie	Amiga	it	5798972220cd458be2626d54c80f71d7	atlantis	Gino Pilotino
+	FmTowns	FmTowns	en	c7be10f775404fd9785a8b92a06d240c	indy4	dhewg, Gino Pilotino
+	FmTowns	FmTowns	jp	4d34042713958b971cb139fba4658586	indy4	Gino Pilotino
 	FmTowns Demo	FmTowns	jp	28d24a33448fab6795850bc9f159a4a2	indydemo	khalek
 	Demo	DOS	en	035deab53b47bc43abc763560d0f8d4b	playfate
 	Demo (non-interactive)	DOS	en	99b6f822b0b2612415407865438697d6	fate
 
 Day Of The Tentacle
 	Floppy Version A ?	All?	en	acad97ab1c6fc2a5b2d98abf6db4a190	tentacle
-	Floppy Version B ?	DOS	en	2723fea3dae0cb47768c424b145ae0e7	tentacle	Andrej Sinicyn
-	Floppy	DOS	de	57b0d89af79befe1cabce3bece869e7f	tentacle	Andrej Sinicyn
-	Floppy	DOS	es	ae94f110a14ce71fc515d5b648827a8f	tentacle	abnog
+	Floppy Version B ?	DOS	en	2723fea3dae0cb47768c424b145ae0e7	tentacle	Andrej Sinicyn, Gino Pilotino
+	Floppy	DOS	de	57b0d89af79befe1cabce3bece869e7f	tentacle	Andrej Sinicyn, Gino Pilotino
+	Floppy	DOS	fr	92b078d9d6d9d751da9c26b8b3075779	tentacle	Nicolas Sauz&egrave;de, Gino Pilotino
+	Floppy	DOS	it	50fcdc982a25063b78ad46bf389b8e8d	tentacle	Gino Pilotino
+	Floppy	DOS	es	ae94f110a14ce71fc515d5b648827a8f	tentacle	abnog, Gino Pilotino
 	Talkie	All?	en	4167a92a1d46baa4f4127d918d561f88	tentacle
 	Talkie	All?	de	6e959d65358eedf9b68b81e304b97fa4	tentacle
-	Talkie	All?	fr	92b078d9d6d9d751da9c26b8b3075779	tentacle	Nicolas Sauz&egrave;de
+	Talkie ?	All?	fr	8aa05d3cdb0e795436043f0546af2da2	tentacle	Gino Pilotino
+	Talkie	All?	it	4fbbe9f64b8bc547503a379a301183ce	tentacle	Gino Pilotino
+	Talkie	All?	es	883af4b0af4f77a92f1dcf1d0a283140	tentacle	Gino Pilotino
 	Demo	DOS	en	c83079157ec765a28de445aec9768d60	dottdemo
 
 Sam &amp; Max
-	Non-Talkie	DOS	de	f27b1ba0eadaf2a6617b2b58192d1dbf	samnmax	dhewg
-	Non-Talkie	DOS	fr	ef347474f3c7be3b29584eaa133cca05	samnmax	Nicolas Sauz&egrave;de
+	Non-Talkie	DOS	en	a3036878840720fbefa41e6965fa4a0a	samnmax	Gino Pilotino
+	Non-Talkie (alt?)	DOS	en	3b301b7892f883ce42ab4be6a274fea6	samnmax	Gino Pilotino
+	Non-Talkie	DOS	de	f27b1ba0eadaf2a6617b2b58192d1dbf	samnmax	dhewg, Gino Pilotino
+	Non-Talkie	DOS	fr	ef347474f3c7be3b29584eaa133cca05	samnmax	Nicolas Sauz&egrave;de, Gino Pilotino
+	Non-Talkie	DOS	it	b289a2a8cbedbf45786e0b4ad2f510f1	samnmax	Gino Pilotino
+	Non-Talkie	DOS	es	fc53ce0e5f6562b1c1e1b4b8203acafb	samnmax	Gino Pilotino
 	Talkie	All?	en	d917f311a448e3cc7239c31bddb00dd2	samnmax
 	Talkie	All?	de	0fb73eddfcf584c02ba097984df131ba	samnmax
+	Talkie	All?	fr	7edd665bbede7ea8b7233f8e650be6f8	samnmax	Gino Pilotino
+	Talkie	All?	it	0f6f2e716ba896a44e5059bba1de7ca9	samnmax	Gino Pilotino
+	Talkie	All?	es	4ba7fb331296c283e73d8f5b2096e551	samnmax	Gino Pilotino
 	Demo	DOS	en	d9d0dd93d16ab4dec55cabc2b86bbd17	samdemo
 	Demo	Mac	en	0425954a9db5c340861672892c3e678d	samdemo
 
