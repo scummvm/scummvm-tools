@@ -13,5 +13,6 @@ install:   all
 	strip descumm6.exe -o $(SCUMMVMPATH)/tools/descumm6.exe
 	strip extract.exe -o $(SCUMMVMPATH)/tools/extract.exe
 	strip rescumm.exe -o $(SCUMMVMPATH)/tools/rescumm.exe
+	strip simon2mp3.exe -o $(SCUMMVMPATH)/tools/simon2mp3.exe
 
 dist:   install

@@ -3,7 +3,9 @@ with ScummVM.
 
 Included tools:
         extract.cpp - Used to MP3 compress .sou files to .so3, for use with
-                      ScummVMs -DUSE_COMPRESSED_SOUND support. Requires MAD
+                      ScummVMs -DUSE_MAD support. Requires MAD
+                      Used to MP3 compress .sou files to .ogg, for use with
+                      ScummVMs -DUSE_VORBIS support. Requires VORBIS
 
         rescumm.cpp - Extracts macintosh "single file" SCUMM games into their
                       component parts, for use with ScummVM
@@ -16,3 +18,6 @@ Included tools:
         descumm6.cpp - Decompiles SCUMM V6/V7/V8 scripts (eg, dott, FT, etc)
 		       (When decompiling V7 'room-' scripts, you may need to 
                        use the -7 switch)
+
+        simon2mp3.cpp - Used to MP3 compress .voc or .wav files to .mp3, for 
+                        use with ScummVMs -DUSE_MAD support. Requires MAD

@@ -5,7 +5,7 @@ CXX     = g++
 CFLAGS  = -g -O -Wall -Wstrict-prototypes -Wuninitialized -Wno-long-long -Wno-multichar 
 LDFLAGS :=
 
-TARGETS := descumm3$(EXEEXT) descumm5$(EXEEXT) descumm6$(EXEEXT) extract$(EXEEXT) rescumm$(EXEEXT)
+TARGETS := descumm3$(EXEEXT) descumm5$(EXEEXT) descumm6$(EXEEXT) extract$(EXEEXT) rescumm$(EXEEXT) simon2mp3$(EXEEXT)
 
 all: $(TARGETS)
 
@@ -23,6 +23,10 @@ extract$(EXEEXT) : extract.o
 
 rescumm$(EXEEXT) : rescumm.o
 	$(CC) $(LFLAGS) -o $@ $+
+
+simon2mp3$(EXEEXT) : simon2mp3.o
+	$(CC) $(LFLAGS) -o $@ $+
+
 
 clean:
 	rm -f *.o $(TARGETS)
