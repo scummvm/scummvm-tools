@@ -57,7 +57,7 @@ void sagaEncode(char *infile) {
 
 	res_file = fopen(infile, "rb");
 	res_size = fileSize(res_file);
-	printf("filesize: %lu\n", res_size);
+	printf("filesize: %ul\n", res_size);
 	/*
 	 * At the end of the resource file there are 2 values: one points to the
 	 * beginning of the resource table the other gives the number of
@@ -68,7 +68,7 @@ void sagaEncode(char *infile) {
 	res_tbl_offset = readUint32LE(res_file);
 	res_tbl_ct = readUint32LE(res_file);
 
-	printf("tabel offset: %lu\nnumber of records: %lu\n", res_tbl_offset, res_tbl_ct);
+	printf("tabel offset: %ul\nnumber of records: %ul\n", res_tbl_offset, res_tbl_ct);
 
 	if (res_tbl_offset != res_size - RSC_TABLEINFO_SIZE - RSC_TABLEENTRY_SIZE * res_tbl_ct) {
 		printf("Something's wrong with your resource file..\n");
@@ -87,7 +87,7 @@ void sagaEncode(char *infile) {
 		table[t].offset = readUint32LE(res_file);
 		table[t].size = readUint32LE(res_file);
 
-		printf("record: %lu, offset: %lu, size: %lu\n", t, table[t].offset, table[t].size);
+		printf("record: %ul, offset: %ul, size: %ul\n", t, table[t].offset, table[t].size);
 
 		if ((table[t].offset > res_size) ||
 		    (table[t].size > res_size)) {
@@ -137,12 +137,12 @@ void sagaEncode(char *infile) {
 		}
 		tempf = fopen(output, "rb");
 		outtable[t].offset = ftell(outputfile);
-		printf("Offset: %lu, ", outtable[t].offset);
+		printf("Offset: %ul, ", outtable[t].offset);
 		while ((size = fread(fbuf, 1, 2048, tempf)) > 0) {
 			fwrite(fbuf, 1, size, outputfile);
 		}
 		outtable[t].size = ftell(tempf);
-		printf("Size: %lu\n", outtable[t].size);
+		printf("Size: %ul\n", outtable[t].size);
 		fclose(tempf);
 
 	}
