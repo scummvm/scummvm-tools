@@ -96,7 +96,7 @@ void	write_word (FILE *output, unsigned short val)
 	fwrite(&val,2,1,output);
 }
 
-typedef enum _res_type { RES_UNKNOWN, RES_GLOBDATA, RES_ROOM, RES_SCRIPT, RES_SOUND, RES_COSTUME, RES_ROOMGFX, RES_COSTUMEGFX, RES_SPRPALS, RES_SPRDESC, RES_SPRLENS, RES_SPROFFS , RES_SPRDATA } res_type;
+typedef enum _res_type { RES_UNKNOWN, RES_GLOBDATA, RES_ROOM, RES_SCRIPT, RES_SOUND, RES_COSTUME, RES_ROOMGFX, RES_COSTUMEGFX, RES_SPRPALS, RES_SPRDESC, RES_SPRLENS, RES_SPROFFS , RES_SPRDATA, RES_CHARSET, RES_PREPLIST } res_type;
 
 typedef	enum _romset { ROMSET_USA, ROMSET_EUROPE, ROMSET_SWEDEN, ROMSET_FRANCE, NUM_ROMSETS } t_romset;
 
@@ -525,6 +525,11 @@ t_resource res_sprdata[2] = {	/* sprite data sets (packed NES sprite data) */
 	{ {0x2CE11,0x2CE11,0x2C401,0x2CA28}, {0x2BE0,0x2BE0,0x2BE0,0x2BE0}, RES_SPRDATA },
 	{ {0x07F6B,0x0BE28,0x0FE6B,0x07E48}, {0x008A,0x008A,0x008A,0x008A}, RES_SPRDATA }
 };
+t_resource res_charset =
+	{ {0x3F6EE,0x3F724,0x3F739,0x3F739}, {0x0090,0x0090,0x0090,0x0090}, RES_CHARSET };
+t_resource res_preplist =
+	{ {0x3FB5A,0x3FB90,0x3FBA9,0x3FBAF}, {0x000E,0x000E,0x000E,0x0010}, RES_PREPLIST };
+
 
 unsigned long r_offset (p_resource res)
 {
@@ -587,6 +592,12 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 			write_word(output,len);
 			write_byte(output,val);
 			write_byte(output,cnt);
+			cnt = read_byte(input);
+			write_byte(output,cnt);
+			for (i = 0; i < cnt; i++)
+				write_byte(output,read_byte(input));
+			for (i = 0; i < cnt; i++)
+				write_byte(output,read_byte(input));
 			while (1)
 			{
 				write_byte(output,val = read_byte(input));
@@ -624,10 +635,26 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 	case RES_SPRLENS:
 	case RES_SPROFFS:
 	case RES_SPRDATA:
+	case RES_CHARSET:
 		len = r_length(res);
 		write_word(output,(unsigned short)(len + 2));
 		for (i = 0; i < len; i++)
 			write_byte(output,read_byte(input));
+		break;
+	case RES_PREPLIST:
+		len = r_length(res);
+		write_word(output,0x002A);
+		write_byte(output,' ');
+		for (i = 1; i < 8; i++)
+			write_byte(output,0);
+		for (j = 0; j < 4; j++)
+		{
+			write_byte(output,' ');
+			for (i = 1; val = read_byte(input); i++)
+				write_byte(output,val);
+			for (; i < 8; i++)
+				write_byte(output,0);
+		}
 		break;
 	default:
 		error("extract_resource - unknown resource type %d specified!",res->type);
@@ -691,7 +718,7 @@ p_resource lfl_52[] = { &res_rooms[52], NULL };
 /*	remaining 'standard' resources (not used by any of the original LFL files) */
 p_resource lfl_53[] = { &res_rooms[53], &res_scripts[177], &res_scripts[178], &res_sounds[70], &res_sounds[71], &res_sounds[72], &res_sounds[73], &res_sounds[74], &res_sounds[75], &res_sounds[76], &res_sounds[77], &res_sounds[78], &res_sounds[79], &res_sounds[80], &res_sounds[81], NULL };
 /*	all 'non-standard' resources (the costume-related stuff) */
-p_resource lfl_54[] = { &res_rooms[54], &res_sprdesc[0], &res_sprdesc[1], &res_sprlens[0], &res_sprlens[1], &res_sproffs[0], &res_sproffs[1], &res_sprdata[0], &res_sprdata[1], &res_costumegfx[0], &res_costumegfx[1], &res_sprpals[0], &res_sprpals[1], NULL };
+p_resource lfl_54[] = { &res_rooms[54], &res_sprdesc[0], &res_sprdesc[1], &res_sprlens[0], &res_sprlens[1], &res_sproffs[0], &res_sproffs[1], &res_sprdata[0], &res_sprdata[1], &res_costumegfx[0], &res_costumegfx[1], &res_sprpals[0], &res_sprpals[1], &res_charset, &res_preplist, NULL };
 
 typedef	struct	_lfl
 {
@@ -769,8 +796,8 @@ struct	_lfl_index
 {
 	unsigned char	room_lfl[55];
 	unsigned short	room_addr[55];
-	unsigned char	costume_lfl[77];
-	unsigned short	costume_addr[77];
+	unsigned char	costume_lfl[80];
+	unsigned short	costume_addr[80];
 	unsigned char	script_lfl[200];
 	unsigned short	script_addr[200];
 	unsigned char	sound_lfl[100];
@@ -923,6 +950,14 @@ int main (int argc, char **argv)
 				lfl_index.sound_lfl[entry - res_sounds] = lfl->num;
 				lfl_index.sound_addr[entry - res_sounds] = (unsigned short)ftell(output);
 				break;
+			case RES_CHARSET:
+				lfl_index.costume_lfl[77] = lfl->num;
+				lfl_index.costume_addr[77] = (unsigned short)ftell(output);
+				break;
+			case RES_PREPLIST:
+				lfl_index.costume_lfl[78] = lfl->num;
+				lfl_index.costume_addr[78] = (unsigned short)ftell(output);
+				break;
 			default:
 				error("Unindexed entry found!");
 				break;
@@ -937,8 +972,6 @@ int main (int argc, char **argv)
 	debug("Creating 00.LFL...");
 	write_word(output,0x4643);
 	extract_resource(input,output,&res_globdata);
-	for (i = res_globdata.length[ROMset]; i < 775; i++)
-		write_byte(output,0);
 	for (i = 0; i < (int)sizeof(lfl_index); i++)
 		write_byte(output,((unsigned char *)&lfl_index)[i]);
 	fclose(output);
