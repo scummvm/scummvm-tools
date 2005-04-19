@@ -650,7 +650,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 		for (j = 0; j < 4; j++)
 		{
 			write_byte(output,' ');
-			for (i = 1; val = read_byte(input); i++)
+			for (i = 1; (val = read_byte(input)); i++)
 				write_byte(output,val);
 			for (; i < 8; i++)
 				write_byte(output,0);
