@@ -3390,7 +3390,7 @@ void next_line_V67(char *output)
 					);
 			else 
 				ext(output, "ry" "kernelGetFunctions\0"
-					"\x71|virtMouseCoordinates?"
+					"\x71|getPixel"
 					);
 		}
 		break;
@@ -3537,7 +3537,7 @@ void next_line_V67(char *output)
 		break;
 	case 0xE2:
 		if (HumongousFlag)
-			ext(output, "p|localizeArray");
+			ext(output, "p|localizeArrayToScript");
 		else
 			invalidop(NULL, code);
 		break;
@@ -3606,7 +3606,7 @@ void next_line_V67(char *output)
 		break;
 	case 0xFA:
 		if (HumongousFlag) {
-			ext(output, "fs|unknownFA");
+			ext(output, "fs|setWindowCaption");
 		} else
 			invalidop(NULL, code);
 		break;
