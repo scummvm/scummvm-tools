@@ -29,9 +29,11 @@ TARGETS := \
 	desword2$(EXEEXT) \
 	extract_kyra$(EXEEXT) \
 	extract_loom_tg16$(EXEEXT) \
+	extract_mm_c64$(EXEEXT) \
 	extract_mm_nes$(EXEEXT) \
 	extract_scumm_mac$(EXEEXT) \
-	extract_simon1_amiga$(EXEEXT)
+	extract_simon1_amiga$(EXEEXT) \
+	extract_zak_c64$(EXEEXT)
 
 all: $(TARGETS)
 
@@ -59,6 +61,9 @@ compress_scumm_bun$(EXEEXT): compress_scumm_bun.o util.o
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
+extract_mm_c64$(EXEEXT): extract_mm_c64.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
 extract_mm_nes$(EXEEXT): extract_mm_nes.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
@@ -72,6 +77,9 @@ compress_saga$(EXEEXT): compress_saga.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 extract_simon1_amiga$(EXEEXT): extract_simon1_amiga.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
+extract_zak_c64$(EXEEXT): extract_zak_c64.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_simon$(EXEEXT): compress_simon.o compress.o util.o
