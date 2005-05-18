@@ -21,9 +21,11 @@ install:   all
 	strip desword2.exe -o $(SCUMMVMPATH)/tools/desword2.exe
 	strip extract_kyra.exe -o $(SCUMMVMPATH)/tools/extract_kyra.exe
 	strip extract_loom_tg16.exe -o $(SCUMMVMPATH)/tools/extract_loom_tg16.exe
+	strip extract_mm_c64.exe -o $(SCUMMVMPATH)/tools/extract_mm_c64.exe
 	strip extract_mm_nes.exe -o $(SCUMMVMPATH)/tools/extract_mm_nes.exe
 	strip extract_scumm_mac.exe -o $(SCUMMVMPATH)/tools/extract_scumm_mac.exe
 	strip extract_simon1_amiga.exe -o $(SCUMMVMPATH)/tools/extract_simon1_amiga.exe
+	strip extract_zak_c64.exe -o $(SCUMMVMPATH)/tools/extract_zak_c64.exe
 	cp COPYING $(SCUMMVMPATH)/tools/COPYING.txt
 	cp README $(SCUMMVMPATH)/tools/README.txt
 	u2d $(SCUMMVMPATH)/tools/*.txt

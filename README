@@ -21,12 +21,18 @@ Extraction Tools:
                 Extracts data files from TG16 version of Loom.
                 There is currently no support for this game in ScummVM!
 
+        extract_mm_c64
+                Extracts data files from Commodore 64 version of Maniac Mansion.
+
         extract_mm_nes
                 Extracts data files from NES version of Maniac Mansion.
 
         extract_simon1_amiga
                 Extracts the graphics or music files in AGA/ECS
                 versions of Simon the Sorcerer 1 for Amiga
+
+        extract_zak_c64
+                Extracts data files from Commodore 64 version of Zak McKracken
 
 Compression Tools:
         compress_scumm_sou 
