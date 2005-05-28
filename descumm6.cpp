@@ -3048,7 +3048,17 @@ void next_line_V67(char *output)
 					"\x75p|loadCharset," 
 					"\x76p|nukeCharset," 
 					"\x77z|loadFlObject,"
-					"\x78p|queueload resource 2");
+					"\x78p|queueloadScript,"
+					"\x79p|queueloadSound,"
+					"\x7Ap|queueloadCostume,"
+					"\x7Bp|queueloadRoomImage,"
+					"\x9fp|unlockImage,"
+					"\xc0p|nukeImage,"
+					"\xc9p|loadImage,"
+					"\xcap|lockImage,"
+					"\xcbp|queueloadImage,"
+					"\xe9p|lockFlObject,"
+					"\xebp|unlockFlObject");
 		else
 			ext(output, "x" "resourceRoutines\0"
 					"\x64p|loadScript,"
@@ -3087,7 +3097,7 @@ void next_line_V67(char *output)
 					"\xBApppp|palManipulate,"
 					"\xBBpp|colorCycleDelay,"
 					"\xD5p|setPalette,"
-					"\xDCpp|roomFunc220,"
+					"\xDCpp|copyPalColor,"
 					"\xDDsp|saveLoadThing2");
 		else
 			ext(output, "x" "roomOps\0"
@@ -3104,7 +3114,7 @@ void next_line_V67(char *output)
 					"\xBApppp|palManipulate,"
 					"\xBBpp|colorCycleDelay,"
 					"\xD5p|setPalette,"
-					"\xDCpp|roomFunc220");
+					"\xDCpp|copyPalColor");
 		break;
 	case 0x9D:
 		ext(output, "x" "actorOps\0"
