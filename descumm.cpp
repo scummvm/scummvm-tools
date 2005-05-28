@@ -2957,7 +2957,7 @@ void next_line_V345(char *buf)
 		break;
 
 	case 0x98:
-		do_tok(buf, "quitPauseRestart", A1B);
+		do_tok(buf, "systemOps", A1B);
 		break;
 
 	case 0x7B:

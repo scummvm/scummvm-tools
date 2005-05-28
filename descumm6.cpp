@@ -1643,14 +1643,17 @@ void next_line_HE_V72(char *output)
 				"\x75p|loadCharset," 
 				"\x76p|nukeCharset," 
 				"\x77z|loadFlObject,"
-				"\xc9p|queueload Image,"
-				"\xcap|loadImage,"
-				"\xcbp|lockImage,"
-				"\x78p|queueload resource 2,"
-				"\x79p|queueload resource 3,"
-				"\x7Ap|queueload resource 4,"
-				"\x7Bp|queueload resource 5,"
-				"\xe9p|queueload resource 6");
+				"\x78p|queueloadScript,"
+				"\x79p|queueloadSound,"
+				"\x7Ap|queueloadCostume,"
+				"\x7Bp|queueloadRoomImage,"
+				"\x9fp|unlockImage,"
+				"\xc0p|nukeImage,"
+				"\xc9p|loadImage,"
+				"\xcap|lockImage,"
+				"\xcbp|queueloadImage,"
+				"\xe9p|lockFlObject,"
+				"\xebp|unlockFlObject");
 		break;
 	case 0x9C:
 		ext(output, "x" "roomOps\0"
@@ -1798,7 +1801,7 @@ void next_line_HE_V72(char *output)
 		ext(output, "rlp|isAnyOf");
 		break;
 	case 0xAE:
-		ext(output, "x" "quitPauseRestart\0"
+		ext(output, "x" "systemOps\0"
 				 "\x9E|pauseGame,"
 				 "\xA0|shutDown");
 		break;
@@ -2020,7 +2023,7 @@ void next_line_HE_V72(char *output)
 		ext(output, "h|setFilePath");
 		break;
 	case 0xFA:
-		ext(output, "hf|unknownFA");
+		ext(output, "hf|setWindowCaption");
 		break;
 	case 0xFB:
 		ext(output, "x" "polygonOps\0"
@@ -2475,7 +2478,7 @@ void next_line_V8(char *output)
 		ext(output, "l|soundKludge");
 		break;
 	case 0xB3:
-		ext(output, "x" "system\0"
+		ext(output, "x" "systemOps\0"
 				"\x28|restart,"
 				"\x29|quit");
 		break;
@@ -3255,7 +3258,7 @@ void next_line_V67(char *output)
 		ext(output, "rlp|isAnyOf");
 		break;
 	case 0xAE:
-		ext(output, "x" "quitPauseRestart\0" "\x9E|pauseGame," "\xA0|shutDown");
+		ext(output, "x" "systemOps\0" "\x9E|pauseGame," "\xA0|shutDown");
 		break;
 	case 0xAF:
 		ext(output, "rp|isActorInBox");
