@@ -22,6 +22,10 @@
 
 #include "descumm.h"
 
+// 200kb limit on the input file (we just read it all at once into memory).
+// Should be no problem, the biggest scripts I have seen were in COMI and
+// went up to 180kb (script-457).
+#define MAX_FILE_SIZE (200 * 1024)
 
 void ShowHelpAndExit()
 {
@@ -254,8 +258,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	memorg = mem = (byte *)malloc(65536);
-	len = fread(mem, 1, 65536, in);
+	memorg = mem = (byte *)malloc(MAX_FILE_SIZE);
+	len = fread(mem, 1, MAX_FILE_SIZE, in);
 	fclose(in);
 	size_of_code = len;
 

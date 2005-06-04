@@ -116,7 +116,8 @@ static const char *oper_list[] = {
 	"%"
 };
 
-static StackEnt *stack[128];
+#define MAX_STACK_SIZE	256
+static StackEnt *stack[MAX_STACK_SIZE];
 static int num_stack = 0;
 bool HumongousFlag = false;
 
@@ -789,6 +790,7 @@ const char *getVarName(uint var)
 void push(StackEnt * se)
 {
 	assert(se);
+	assert(num_stack < MAX_STACK_SIZE);
 	stack[num_stack++] = se;
 }
 
