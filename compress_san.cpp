@@ -44,7 +44,7 @@ const char *tag2str(uint32 tag) {
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <inputfile> <inputdir> <outputdir>\n", exename);
+	printf("\nUsage: %s <inputfile> <inputdir> <outputdir> [--ogg]\n", exename);
 	exit(2);
 }
 

@@ -655,7 +655,7 @@ int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 in
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <inputfile> <inputdir> <outputdir>\n", exename);
+	printf("\nUsage: %s <inputfile> <inputdir> <outputdir> [--ogg]\n", exename);
 	exit(2);
 }
 
