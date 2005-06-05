@@ -70,19 +70,18 @@ int main(int argc, char **argv) {
 }
 
 PAKFile::PAKFile(const char* file) {
-	FILE* pakfile = fopen(file, "r");
-	
+	FILE *pakfile = fopen(file, "rb");
 	if (!pakfile) {
 		error("couldn't open file '%s'", file);
 	}
 	
 	_open = true;
-	
-	_buffer = new uint8[fileSize(pakfile)];
+	_filesize = fileSize(pakfile);
+
+	_buffer = new uint8[_filesize];
 	assert(_buffer);
 	
-	_filesize = fileSize(pakfile);
-	fread(_buffer, fileSize(pakfile), 1, pakfile);
+	fread(_buffer, _filesize, 1, pakfile);
 	
 	fclose(pakfile);
 }
@@ -146,9 +145,11 @@ void PAKFile::outputFile(const char* file) {
 		position += 4;
 		
 		if (!strcmp(currentName, file)) {
-			FILE* output = fopen(file, "wb+");
-			fwrite(_buffer + startoffset, endoffset - startoffset, 1,output);
-			fclose(output);
+			FILE *output = fopen(file, "wb");
+			if (output) {
+				fwrite(_buffer + startoffset, endoffset - startoffset, 1, output);
+				fclose(output);
+			}
 			return;
 		}
 		
@@ -186,9 +187,11 @@ void PAKFile::outputAllFiles(void) {
 		}
 		position += 4;
 		
-		FILE* output = fopen(currentName, "wb+");
-		fwrite(_buffer + startoffset, endoffset - startoffset, 1,output);
-		fclose(output);
+		FILE *output = fopen(currentName, "wb");
+		if (output) {
+			fwrite(_buffer + startoffset, endoffset - startoffset, 1, output);
+			fclose(output);
+		}
 		
 		if (endoffset == _filesize) {
 			break;
