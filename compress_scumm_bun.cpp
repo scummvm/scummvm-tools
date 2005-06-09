@@ -19,7 +19,7 @@
  *
  */
 
-#include "util.h"
+#include "compress.h"
 
 inline uint16 READ_LE_UINT16(const void *ptr) {
 	const byte *b = (const byte *)ptr;
@@ -655,7 +655,7 @@ int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 in
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <inputfile> <inputdir> <outputdir> [--ogg]\n", exename);
+	printf("\nUsage: %s <inputfile> <inputdir> <outputdir> [--ogg] [encoder params]\n", exename);
 	exit(2);
 }
 
@@ -673,28 +673,19 @@ static int32 cbundleCurIndex = 0;
 
 void encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
-	bool err = false;
-
-	sprintf(fbuf, "oggenc -q 0 \"%s\".wav", filename);
-	err = system(fbuf) != 0;
-	if (err) {
-		printf("Got error from encoder. (check your parameters)\n");
-		printf("Encoder Commandline: %s\n", fbuf );
-		exit(-1);
-	}
+	char fbuf2[2048];
+	sprintf(fbuf, "\"%s\".wav", filename);
+	sprintf(fbuf2, "\"%s\".ogg", filename);
+	encodeAudio(fbuf, false, -1, fbuf2, kVorbisMode);
 }
 
 void encodeWaveWithLame(char *filename) {
 	char fbuf[2048];
-	bool err = false;
+	char fbuf2[2048];
 
-	sprintf(fbuf, "lame --vbr-new -V 9 -quiet -t \"%s\".wav \"%s\".mp3", filename, filename);
-	err = system(fbuf) != 0;
-	if (err) {
-		printf("Got error from encoder. (check your parameters)\n");
-		printf("Encoder Commandline: %s\n", fbuf );
-		exit(-1);
-	}
+	sprintf(fbuf, "\"%s\".wav", filename);
+	sprintf(fbuf2, "\"%s\".wav", filename);
+	encodeAudio(fbuf, false, -1, fbuf2, kMP3Mode);
 }
 
 void writeWaveHeader(int s_size, int rate, int chan) {
@@ -1103,8 +1094,38 @@ int main(int argc, char *argv[]) {
 	strcpy(inputDir, argv[2]);
 	strcpy(outputDir, argv[3]);
 
-	if ((argc == 5) && (strcmp(argv[4], "--ogg") == 0)) {
-		_oggMode = true;
+	if (argc > 4) {
+		i = 4;
+
+		if (strcmp(argv[i], "--ogg") == 0) {
+			_oggMode = true;
+			i++;
+		}
+
+		if (argc > i) {
+			// HACK: The functions in compress.c expect the last
+			// argument to be a filename. As we don't expect one,
+			// we simply add a dummy argument to the list.
+			char **args = (char **)malloc((argc + 1) * sizeof(char *));
+			char dummyName[] = "dummy";
+			int j;
+
+			for (j = 0; j < argc; j++)
+				args[j] = argv[j];
+			args[j] = dummyName;
+		
+			int result;
+
+			if (_oggMode)
+				result = process_ogg_parms(argc + 1, args, i);
+			else
+				result = process_mp3_parms(argc + 1, args, i);
+
+			if (!result)
+				showhelp(argv[0]);
+
+			free(args);
+		}
 	}
 
 	char *index = strrchr(inputFilename, '.');

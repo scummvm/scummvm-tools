@@ -37,7 +37,7 @@ TARGETS := \
 
 all: $(TARGETS)
 
-compress_san$(EXEEXT): compress_san.o util.o
+compress_san$(EXEEXT): compress_san.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lz
 
 descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
@@ -55,7 +55,7 @@ extract_kyra$(EXEEXT): extract_kyra.o util.o
 compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-compress_scumm_bun$(EXEEXT): compress_scumm_bun.o util.o
+compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o

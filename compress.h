@@ -24,6 +24,9 @@
 
 #include "util.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /* These are the defaults parameters for the Lame invocation */
 #define minBitrDef 24
@@ -48,19 +51,18 @@ typedef enum { kMP3Mode, kVorbisMode, kFlacMode } CompressMode;
 
 const extern char *tempEncoded;
 
-extern void process_mp3_parms(int argc, char *argv[], int i);
-extern void process_ogg_parms(int argc, char *argv[], int i);
-extern void process_flac_parms(int argc, char *argv[], int i);
+extern int process_mp3_parms(int argc, char *argv[], int i);
+extern int process_ogg_parms(int argc, char *argv[], int i);
+extern int process_flac_parms(int argc, char *argv[], int i);
 
 extern void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode);
 extern void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode);
 
 extern void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode);
 extern void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample);
-/*
- * Stuff which is in compress_scumm_sou.c / compress_simon.c / compress_sword2.c
- */
-extern void showhelp(char *exename);
 
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

@@ -206,17 +206,20 @@ int main(int argc, char *argv[])
 	case kMP3Mode:
 		outputName = OUTPUT_MP3;
 		tempEncoded = TEMP_MP3;
-		process_mp3_parms(argc, argv, i);
+		if (!process_mp3_parms(argc, argv, i))
+			showhelp(argv[0]);
 		break;
 	case kVorbisMode:
 		outputName = OUTPUT_OGG;
 		tempEncoded = TEMP_OGG;
-		process_ogg_parms(argc, argv, i);
+		if (!process_ogg_parms(argc, argv, i))
+			showhelp(argv[0]);
 		break;
 	case kFlacMode:
 		outputName = OUTPUT_FLAC;
 		tempEncoded = TEMP_FLAC;
-		process_flac_parms(argc, argv, i);
+		if (!process_flac_parms(argc, argv, i))
+			showhelp(argv[0]);
 		break;
 	}
 

@@ -221,15 +221,18 @@ int main(int argc, char *argv[]) {
 	switch (gCompMode) {
 	case kMP3Mode:
 		tempEncoded = TEMP_MP3;
-		process_mp3_parms(argc, argv, i);
+		if (!process_mp3_parms(argc, argv, i))
+			showhelp(argv[0]);
 		break;
 	case kVorbisMode:
 		tempEncoded = TEMP_OGG;
-		process_ogg_parms(argc, argv, i);
+		if (!process_ogg_parms(argc, argv, i))
+			showhelp(argv[0]);
 		break;
 	case kFlacMode:
 		tempEncoded = TEMP_FLAC;
-		process_flac_parms(argc, argv, i);
+		if (!process_flac_parms(argc, argv, i))
+			showhelp(argv[0]);
 		break;
 	}
 

@@ -290,7 +290,7 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 	encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
 }
 
-void process_mp3_parms(int argc, char *argv[], int i) {
+int process_mp3_parms(int argc, char *argv[], int i) {
 	for (; i < argc; i++) {
 		if (strcmp(argv[i], "--vbr") == 0) {
 			encparms.abr=0;
@@ -331,19 +331,20 @@ void process_mp3_parms(int argc, char *argv[], int i) {
 		} else if (strcmp(argv[i], "--silent") == 0) {
 			encparms.silent = 1;
 		} else if (strcmp(argv[i], "--help") == 0) {
-			showhelp(argv[0]);
+			return 0;
 		} else if (argv[i][0] == '-') {
-			showhelp(argv[0]);
+			return 0;
 		} else {
 			break;
 		}
 	}
 	if (i != (argc - 1)) {
-		showhelp(argv[0]);
+		return 0;
 	}
+	return 1;
 }
 
-void process_ogg_parms(int argc, char *argv[], int i) {
+int process_ogg_parms(int argc, char *argv[], int i) {
 	for (; i < argc; i++) {
 		if (strcmp(argv[i], "-b") == 0) {
 			oggparms.nominalBitr = atoi(argv[i + 1]);
@@ -365,23 +366,24 @@ void process_ogg_parms(int argc, char *argv[], int i) {
 			oggparms.silent = 1;
 		}
 		else if (strcmp(argv[i], "--help") == 0) {
-			showhelp(argv[0]);
+			return 0;
 		}
 		else if (argv[i][0] == '-') {
-			showhelp(argv[0]);
+			return 0;
 		}
 		else
 			break;
 	}
 	if (i != argc - 1)
-		showhelp(argv[0]);
+		return 0;
+	return 1;
 }
 
-void process_flac_parms(int argc, char *argv[], int i){
+int process_flac_parms(int argc, char *argv[], int i){
 	flacparms.argv = &argv[i];
 	flacparms.numArgs = argc - 1 - i;
 
 	if (i >= argc)
-		showhelp(argv[0]);
+		return 0;
+	return 1;
 }
-

@@ -527,17 +527,20 @@ void processArgs(int argc, char *argv[], int i, CompressMode mode) {
 	/*       As we don't expect one, we simply add a dummy argument to the list. */
 	char **args;
 	int cnt;
+	int result;
 	char dummyName[] = "dummy";
 	args = (char **)malloc((argc + 1) * sizeof(char *));
 	for (cnt = 0; cnt < argc; cnt++)
 		args[cnt] = argv[cnt];
 	args[argc] = dummyName;
-    if (mode == kMP3Mode)
-		process_mp3_parms(argc + 1, args, i);
+	if (mode == kMP3Mode)
+		result = process_mp3_parms(argc + 1, args, i);
 	else if (mode == kVorbisMode)
-		process_ogg_parms(argc + 1, args, i);
+		result = process_ogg_parms(argc + 1, args, i);
 	else
 		error("Unknown encoding method");
+	if (!result)
+		showhelp(argv[0]);
 	free(args);
 }
 
