@@ -45,6 +45,21 @@ const char *tag2str(uint32 tag) {
 
 void showhelp(char *exename) {
 	printf("\nUsage: %s <inputfile> <inputdir> <outputdir> [--ogg] [encoder params]\n", exename);
+	printf("\nMP3 mode params:\n");
+	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
+	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
+	printf(" --vbr        LAME uses the VBR mode (default)\n");
+	printf(" --abr        LAME uses the ABR mode\n");
+	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
+	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
+	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
+
+	printf("\nVorbis mode params:\n");
+	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
+	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
+	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
+	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
+	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 	exit(2);
 }
 
