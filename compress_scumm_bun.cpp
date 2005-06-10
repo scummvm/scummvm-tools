@@ -699,7 +699,7 @@ void encodeWaveWithLame(char *filename) {
 	char fbuf2[2048];
 
 	sprintf(fbuf, "\"%s\".wav", filename);
-	sprintf(fbuf2, "\"%s\".wav", filename);
+	sprintf(fbuf2, "\"%s\".mp3", filename);
 	encodeAudio(fbuf, false, -1, fbuf2, kMP3Mode);
 }
 
