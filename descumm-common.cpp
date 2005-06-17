@@ -160,11 +160,10 @@ bool indentBlock(unsigned int cur)
 BlockStack *pushBlockStackItem()
 {
 	if (!block_stack)
-		block_stack = (BlockStack *) malloc(256 * sizeof(BlockStack));
+		block_stack = (BlockStack *) malloc(BLOCK_STACK_SIZE * sizeof(BlockStack));
 
-	if (num_block_stack >= 256) {
-		printf("block_stack full!\n");
-		exit(0);
+	if (num_block_stack >= BLOCK_STACK_SIZE) {
+		error("block_stack full");
 	}
 	return &block_stack[num_block_stack++];
 }
@@ -175,7 +174,7 @@ bool maybeAddIf(uint cur, uint to)
 	int i;
 	BlockStack *p;
 	
-	if (((to | cur) >> 16) || (to <= cur))
+	if (((to | cur) >> 24) || (to <= cur))
 		return false; // Invalid jump
 	
 	for (i = 0, p = block_stack; i < num_block_stack; i++, p++) {

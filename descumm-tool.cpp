@@ -22,11 +22,6 @@
 
 #include "descumm.h"
 
-// 200kb limit on the input file (we just read it all at once into memory).
-// Should be no problem, the biggest scripts I have seen were in COMI and
-// went up to 180kb (script-457).
-#define MAX_FILE_SIZE (200 * 1024)
-
 void ShowHelpAndExit()
 {
 	printf("SCUMM Script decompiler\n"
