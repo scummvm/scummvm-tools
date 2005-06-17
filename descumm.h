@@ -31,8 +31,8 @@ typedef unsigned int uint;
 // The block stack records jump instructions
 //
 struct BlockStack {
-	unsigned short from;	// From which offset...
-	unsigned short to;		// ...to which offset
+	uint from;	// From which offset...
+	uint to;		// ...to which offset
 	bool isWhile;			// Set to true if we think this jump is part of a while loop
 };
 
