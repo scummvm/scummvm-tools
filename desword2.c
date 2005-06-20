@@ -230,7 +230,7 @@ const char *globalVar(int num) {
 	case 4:		return "MOUSE_X";
 	case 5:		return "MOUSE_Y";
 	case 109:	return "LEFT_BUTTON";
-	case 110:	return "RIGHT_BUTON";
+	case 110:	return "RIGHT_BUTTON";
 	case 178:	return "CLICKED_ID";
 	case 6:		return "IN_SUBJECT";
 	case 7:		return "COMBINE_BASE";
