@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
 Script::Script(const char* filename) {
 	_scriptFile = 0;
 	_stackPos = 0;
-	FILE* script = fopen(filename, "r");
+	FILE* script = fopen(filename, "rb");
 	
 	if (!script)
 		return;
