@@ -36,8 +36,20 @@ class Script {
 		bool isOpen(void) { return (_scriptFile != 0); }
 		
 		uint32 getNextScriptPos(uint32 current_start);
-		
+
 	protected:
+		const char* getParamsOnStack(void);
+		const char* stringAtIndex(int32 index);
+
+		void pushStack(int32 value) { _stack[_stackPos++] = value; }
+		void registerValue(int16 reg, int16 value) { _registers[reg] = value; }
+		int32 checkReg(int16 reg) { return _registers[reg]; }
+
+		int32 popStack(void) { return _stack[--_stackPos]; }
+		int32& topStack(void) { return _stack[_stackPos]; }
+
+		int32 param(int32 index);
+		const char* paramString(int32 index) { return stringAtIndex(param(index)); }
 		
 		enum ScriptChunkTypes {
 			kForm = 0,
@@ -56,8 +68,40 @@ class Script {
 		ScriptChunk _chunks[kCountChunkTypes];
 		
 		uint32 _scriptSize;
-		uint32 _currentPos;	// current instruction pos
 		uint8* _scriptFile;
+
+		int32 _nextScriptPos;
+		int32 _instructionPos;
+		int32 _stackPos;
+		int32 _tempPos;
+
+		uint32 _returnValue;
+		uint16 _argument;
+		uint8 _currentCommand;
+		uint32 _currentOpcode;
+
+		int32 _stack[128];	// the stack
+		int32 _registers[32];   // registers of the interpreter
+
+		void execCommand(uint32 command);
+
+		void goToLine(void);		// 0x00
+		void setReturn(void);		// 0x01
+		void pushRetRec(void);		// 0x02
+		void push(void);		// 0x03 & 0x04
+		void pushVar(void);		// 0x05
+		void pushFrameNeg(void);	// 0x06
+		void pushFramePos(void);	// 0x07
+		void popRetRec(void);		// 0x08
+		void popVar(void);		// 0x09
+		void popFrameNeg(void);		// 0x0A
+		void popFramePos(void);		// 0x0B
+		void addToSP(void);		// 0x0C
+		void subFromSP(void);		// 0x0D
+		void execOpcode(void);		// 0x0E
+		void ifNotGoTo(void);		// 0x0F
+		void negate(void);		// 0x10
+		void evaluate(void);		// 0x11
 };
 
 #endif
