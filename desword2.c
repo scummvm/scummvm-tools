@@ -519,8 +519,11 @@ int main(int argc, char *argv[]) {
 				break;
 			case CP_PUSH_STRING:
 				parameter = (int8) readByte(in);
-				pc++;
-				printf("PUSH str(%d)\n", parameter);
+				printf("PUSH \"");
+				for (j = 0; j < parameter; j++)
+					fputc(readByte(in), stdout);
+				printf("\"\n");
+				pc += (parameter + 1);
 				break;
 			case CP_PUSH_DEREFERENCED_STRUCTURE:
 				parameter = (int32) readUint32LE(in);
