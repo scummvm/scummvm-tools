@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
 			mem += 4;
 		}
 	} else if (scriptVersion >= 5) {
-		if (size_of_code < (scriptVersion == 5 ? 8 : 10)) {
+		if (size_of_code < (scriptVersion == 5 ? 8 : 9)) {
 			printf("File too small to be a script\n");
 			return 1;
 		}
