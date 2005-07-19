@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include "util.h"
 
 typedef int BOOL;
 #define TRUE 1
@@ -32,97 +33,46 @@ typedef int BOOL;
 /* if not defined, dumps all resources to separate files */
 #define	MAKE_LFLS
 
-#ifdef WIN32
-	#define CDECL __cdecl
-#else
-	#define CDECL 
+
+#ifdef _MSC_VER
+	#define	vsnprintf _vsnprintf
 #endif
 
-void	CDECL	debug (const char *Text, ...)
-{
-	va_list marker;
-	va_start(marker,Text);
-	vfprintf(stdout,Text,marker);
-	fprintf(stdout,"\n");
-	va_end(marker);
-}
+void notice(const char *s, ...) {
+	char buf[1024];
+	va_list va;
 
-void	CDECL	error (const char *Text, ...)
-{
-	va_list marker;
-	va_start(marker,Text);
-	vfprintf(stderr,Text,marker);
-	fprintf(stderr,"\n");
-	va_end(marker);
-	exit(1);
-}
+	va_start(va, s);
+	vsnprintf(buf, 1024, s, va);
+	va_end(va);
 
-void	CDECL	_assert (BOOL condition, const char *Text, ...)
-{
-	va_list marker;
-	if (condition)
-		return;
-	va_start(marker,Text);
-	vfprintf(stderr,Text,marker);
-	fprintf(stderr,"\n");
-	va_end(marker);
-	/* exit(1); */
+	fprintf(stdout, "%s\n", buf);
 }
-
-unsigned char	read_byte (FILE *input)
-{
-	unsigned char val;
-	_assert(fread(&val,1,1,input) == 1,"read_byte - unexpected EOF");
-	return val;
-}
-unsigned short	read_word (FILE *input)
-{
-	unsigned short val;
-	_assert(fread(&val,2,1,input) == 1,"read_word - unexpected EOF");
-	return val;
-}
-void	write_byte (FILE *output, unsigned char val)
-{
-	fwrite(&val,1,1,output);
-}
-void	write_word (FILE *output, unsigned short val)
-{
-	fwrite(&val,2,1,output);
-}
-void	write_long (FILE *output, unsigned long val)
-{
-	fwrite(&val,4,1,output);
-}
-
 
 unsigned char	read_cbyte (FILE *input, short *ctr)
 {
-	unsigned char val;
-	_assert(fread(&val,1,1,input) == 1,"read_cbyte - unexpected EOF");
 	(*ctr) += 1;
-	return val;
+	return readByte(input);
 }
 unsigned short	read_cword (FILE *input, short *ctr)
 {
-	unsigned short val;
-	_assert(fread(&val,2,1,input) == 1,"read_cword - unexpected EOF");
 	(*ctr) += 2;
-	return val;
+	return readUint16LE(input);
 }
 
-void	write_cbyte (FILE *output, unsigned char val, short *ctr)
+void	write_cbyte (FILE *output, uint8 val, short *ctr)
 {
-	fwrite(&val,1,1,output);
+	writeByte(output, val);
 	(*ctr) += 1;
 }
-void	write_cword (FILE *output, unsigned short val, short *ctr)
+void	write_cword (FILE *output, uint16 val, short *ctr)
 {
-	fwrite(&val,2,1,output);
+	writeUint16LE(output, val);
 	(*ctr) += 2;
 }
-void	write_clong (FILE *output, unsigned long val, short *ctr)
+void	write_clong (FILE *output, uint32 val, short *ctr)
 {
-	fwrite(&val,4,1,output);
+	writeUint32LE(output, val);
 	(*ctr) += 4;
 }
 
@@ -761,7 +711,8 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 	signed short i, rlen;
 	unsigned char junk, rtype, rid;
 
-	_assert(res != NULL,"extract_resource - no resource specified");
+	if (res == NULL)
+		error("extract_resource - no resource specified");
 	if ((r_offset(res) == 0) && (r_length(res) == 0))
 		return;	/* if offset/length are both 0, skip it */
 	fseek(input,r_offset(res),SEEK_SET);
@@ -770,22 +721,24 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 	{
 	case RES_CHARSET:
 		rlen = r_length(res);
-		write_word(output,(unsigned short)(rlen+4));
-		write_word(output,0);
+		writeUint16LE(output,(unsigned short)(rlen+4));
+		writeUint16LE(output,0);
 		for (i = 0; i < rlen; i++)
-			write_byte(output,read_byte(input));
+			writeByte(output,readByte(input));
 		break;
 	case RES_GLOBDATA:
 		rlen = read_cword(input,&i);
 		junk = read_cbyte(input,&i);
 		rtype = read_cbyte(input,&i);
 		rid = read_cbyte(input,&i);
-		_assert(rlen == r_length(res),"extract_resource(globdata) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
-		_assert(rtype == 0x11,"extract_resource(globdata) - resource tag is incorrect!");
-		write_long(output,(unsigned short)(rlen + 1));
-		write_word(output,'O0');	/* 0O - Object Index */
+		if (rlen != r_length(res))
+			error("extract_resource(globdata) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
+		if (rtype != 0x11)
+			error("extract_resource(globdata) - resource tag is incorrect!");
+		writeUint32LE(output,(unsigned short)(rlen + 1));
+		writeUint16LE(output,'O0');	/* 0O - Object Index */
 		for (i = 5; i < rlen; i++)
-			write_byte(output,read_byte(input));
+			writeByte(output,readByte(input));
 		break;
 #ifdef MAKE_LFLS
 	case RES_ROOM:
@@ -796,10 +749,12 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 			rtype = read_cbyte(input,&i);
 			rid = read_cbyte(input,&i);
 /*
-			debug("room res len %04X, junk %02X, type %02X, id %02X",rlen,junk,rtype,rid);
+			notice("room res len %04X, junk %02X, type %02X, id %02X",rlen,junk,rtype,rid);
 */
-			_assert(rlen == r_length(res),"extract_resource(room) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
-			_assert(rtype == 0x01,"extract_resource(room) - resource tag is incorrect!");
+			if (rlen != r_length(res))
+				error("extract_resource(room) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
+			if (rtype != 0x01)
+				error("extract_resource(room) - resource tag is incorrect!");
 			off = ftell(output);
 			rlen = 0;
 			write_clong(output,0,&rlen);
@@ -809,7 +764,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 				unsigned short slen;
 				unsigned char stype;
 /* BM, HD, SL, NL, PA - current unknowns
-				debug("reading local resource at offset %04X of %04X",i,len);
+				notice("reading local resource at offset %04X of %04X",i,len);
 */
 				slen = read_cword(input,&i);
 				if (slen == 0xFFFF)
@@ -878,40 +833,44 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 					break;
 				default:
 					fseek(input,slen,SEEK_CUR);
-					debug("extract_resource(room) - unknown resource tag encountered: len %04X type %02X",slen,stype);
+					warning("extract_resource(room) - unknown resource tag encountered: len %04X type %02X",slen,stype);
 				}
 			}
 			fseek(output,off,SEEK_SET);
-			write_long(output,rlen);
+			writeUint32LE(output,rlen);
 			fseek(output,0,SEEK_END);
 		}
 		break;
 	case RES_SOUND:
-		_assert(FALSE,"extract_resource(sound) - sound resources are not supported!");
+		error("extract_resource(sound) - sound resources are not supported!");
 		break;
 	case RES_COSTUME:
 		rlen = read_cword(input,&i);
 		junk = read_cbyte(input,&i);
 		rtype = read_cbyte(input,&i);
 		rid = read_cbyte(input,&i);
-		_assert(rlen == r_length(res),"extract_resource(costume) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
-		_assert(rtype == 0x03,"extract_resource(costume) - resource tag is incorrect!");
-		write_long(output,(unsigned short)(rlen + 1));
-		write_word(output,'OC');	/* CO - Costume */
+		if (rlen != r_length(res))
+			error("extract_resource(costume) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
+		if (rtype != 0x03)
+			error("extract_resource(costume) - resource tag is incorrect!");
+		writeUint32LE(output,(unsigned short)(rlen + 1));
+		writeUint16LE(output,'OC');	/* CO - Costume */
 		for (i = 5; i < rlen; i++)
-			write_byte(output,read_byte(input));
+			writeByte(output,readByte(input));
 		break;
 	case RES_SCRIPT:
 		rlen = read_cword(input,&i);
 		junk = read_cbyte(input,&i);
 		rtype = read_cbyte(input,&i);
 		rid = read_cbyte(input,&i);
-		_assert(rlen == r_length(res),"extract_resource(script) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
-		_assert(rtype == 0x02,"extract_resource(script) - resource tag is incorrect!");
-		write_long(output,(unsigned short)(rlen + 1));
-		write_word(output,'CS');	/* SC - Script */
+		if (rlen != r_length(res))
+			error("extract_resource(script) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
+		if (rtype != 0x02)
+			error("extract_resource(script) - resource tag is incorrect!");
+		writeUint32LE(output,(unsigned short)(rlen + 1));
+		writeUint16LE(output,'CS');	/* SC - Script */
 		for (i = 5; i < rlen; i++)
-			write_byte(output,read_byte(input));
+			writeByte(output,readByte(input));
 		break;
 	case RES_UNKNOWN:
 #else
@@ -921,15 +880,16 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 	case RES_SCRIPT:
 	case RES_UNKNOWN:
 		rlen = read_word(input);
-		_assert(rlen == r_length(res),"extract_resource - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
-		write_word(output,rlen);
+		if (rlen != r_length(res))
+			error("extract_resource - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
+		writeUint16LE(output,rlen);
 		for (i = 2; i < rlen; i++)
-			write_byte(output,read_byte(input));
+			writeByte(output,readByte(input));
 		break;
 		break;
 #endif
 	default:
-		debug("extract_resource - unknown resource type %d specified!",res->type);
+		warning("extract_resource - unknown resource type %d specified!",res->type);
 	}
 }
 
@@ -1154,7 +1114,7 @@ unsigned long	ISO_CRC (FILE *file)
 	len = ftell(file);
 	fseek(file,0,SEEK_SET);
 	for (i = 0; i < len; i++)
-		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ read_byte(file)) & 0xFF];
+		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ readByte(file)) & 0xFF];
 	return CRC ^ 0xFFFFFFFF;
 }
 
@@ -1179,7 +1139,7 @@ int main (int argc, char **argv)
 	{
 	case 0x29EED3C5:
 		ISO = ISO_USA;
-		debug("ISO contents verified as Loom USA (track 2)");
+		notice("ISO contents verified as Loom USA (track 2)");
 		break;
 	default:
 		error("ISO contents not recognized!");
@@ -1194,7 +1154,7 @@ int main (int argc, char **argv)
 		sprintf(fname,"%02i.LFL",lfl->num);
 		if (!(output = fopen(fname,"wb")))
 			error("Error: unable to create %s!",fname);
-		debug("Creating %s...",fname);
+		notice("Creating %s...",fname);
 		for (j = 0; lfl->entries[j] != NULL; j++)
 		{
 			p_resource entry = lfl->entries[j];
@@ -1217,7 +1177,7 @@ int main (int argc, char **argv)
 				lfl_index.sound_addr[entry - res_sounds] = (unsigned short)ftell(output);
 				break;
 			default:
-				debug("Unknown resource type %d detected in LFL index!",entry->type);
+				notice("Unknown resource type %d detected in LFL index!",entry->type);
 				break;
 			}
 			extract_resource(input,output,entry);
@@ -1226,48 +1186,48 @@ int main (int argc, char **argv)
 	}
 	if (!(output = fopen("00.LFL","wb")))
 		error("Error: unable to create index file!");
-	debug("Creating 00.LFL...");
+	notice("Creating 00.LFL...");
 
 	lfl_index.num_rooms = NUM_ROOMS;
 	lfl_index.num_costumes = NUM_COSTUMES;
 	lfl_index.num_scripts = NUM_SCRIPTS;
 	lfl_index.num_sounds = NUM_SOUNDS;
 
-	write_long(output,8+5*lfl_index.num_rooms);
-	write_word(output,'R0');	/* 0R - room index */
-	write_word(output,lfl_index.num_rooms);
+	writeUint32LE(output,8+5*lfl_index.num_rooms);
+	writeUint16LE(output,'R0');	/* 0R - room index */
+	writeUint16LE(output,lfl_index.num_rooms);
 	for (i = 0; i < lfl_index.num_rooms; i++)
 	{
-		write_byte(output,lfl_index.room_lfl[i]);
-		write_long(output,lfl_index.room_addr[i]);
+		writeByte(output,lfl_index.room_lfl[i]);
+		writeUint32LE(output,lfl_index.room_addr[i]);
 	}
 
-	write_long(output,8+5*lfl_index.num_scripts);
-	write_word(output,'S0');	/* 0S - script index */
-	write_word(output,lfl_index.num_scripts);
+	writeUint32LE(output,8+5*lfl_index.num_scripts);
+	writeUint16LE(output,'S0');	/* 0S - script index */
+	writeUint16LE(output,lfl_index.num_scripts);
 	for (i = 0; i < lfl_index.num_scripts; i++)
 	{
-		write_byte(output,lfl_index.script_lfl[i]);
-		write_long(output,lfl_index.script_addr[i]);
+		writeByte(output,lfl_index.script_lfl[i]);
+		writeUint32LE(output,lfl_index.script_addr[i]);
 	}
 
-	write_long(output,8+5*lfl_index.num_costumes);
-	write_word(output,'C0');	/* 0C - costume index */
-	write_word(output,lfl_index.num_costumes);
+	writeUint32LE(output,8+5*lfl_index.num_costumes);
+	writeUint16LE(output,'C0');	/* 0C - costume index */
+	writeUint16LE(output,lfl_index.num_costumes);
 	for (i = 0; i < lfl_index.num_costumes; i++)
 	{
-		write_byte(output,lfl_index.costume_lfl[i]);
-		write_long(output,lfl_index.costume_addr[i]);
+		writeByte(output,lfl_index.costume_lfl[i]);
+		writeUint32LE(output,lfl_index.costume_addr[i]);
 	}
 
 /*
-	write_long(output,8+5*lfl_index.num_sounds);
-	write_word(output,'N0');	0N - sounds index
-	write_word(output,lfl_index.num_sounds);
+	writeUint32LE(output,8+5*lfl_index.num_sounds);
+	writeUint16LE(output,'N0');	0N - sounds index
+	writeUint16LE(output,lfl_index.num_sounds);
 	for (i = 0; i < lfl_index.num_sounds; i++)
 	{
-		write_byte(output,lfl_index.sound_lfl[i]);
-		write_long(output,lfl_index.sound_addr[i]);
+		writeByte(output,lfl_index.sound_lfl[i]);
+		writeUint32LE(output,lfl_index.sound_addr[i]);
 	}
 */
 
@@ -1277,19 +1237,19 @@ int main (int argc, char **argv)
 
 	if (!(output = fopen("97.LFL","wb")))
 		error("Error: unable to create charset file!");
-	debug("Creating 97.LFL...");
+	notice("Creating 97.LFL...");
 	extract_resource(input,output,&res_charset);
 	fclose(output);
 
 	if (!(output = fopen("98.LFL","wb")))
 		error("Error: unable to create charset file!");
-	debug("Creating 98.LFL...");
+	notice("Creating 98.LFL...");
 	extract_resource(input,output,&res_charset);
 	fclose(output);
 
 	if (!(output = fopen("99.LFL","wb")))
 		error("Error: unable to create charset file!");
-	debug("Creating 99.LFL...");
+	notice("Creating 99.LFL...");
 	extract_resource(input,output,&res_charset);
 	fclose(output);
 
@@ -1307,6 +1267,6 @@ int main (int argc, char **argv)
 	for (i = 0; i < NUM_SOUNDS; i++)
 		dump_resource(input,"sound-%d.dmp",i,&res_sounds[i]);
 #endif	/* MAKE_LFLS */
-	debug("All done!");
+	notice("All done!");
 	return 0;
 }

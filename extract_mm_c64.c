@@ -28,64 +28,32 @@ typedef int BOOL;
 #define TRUE 1
 #define FALSE 0
 
-#ifdef WIN32
-	#define CDECL __cdecl
-#else
-	#define CDECL 
+#ifdef _MSC_VER
+	#define	vsnprintf _vsnprintf
 #endif
 
-void CDECL debug (const char *Text, ...)
+#ifdef MAKE_LFLS
+#define writeByte writeByteAlt
+#define writeUint16LE writeUint16LEAlt
+void writeByte(FILE *fp, uint8 b)
 {
-	va_list marker;
-	va_start(marker,Text);
-	vfprintf(stdout,Text,marker);
-	fprintf(stdout,"\n");
-	va_end(marker);
+	writeByteAlt(fp, (uint8)(b ^ 0xFF));
 }
+void writeUint16LE(FILE *fp, uint16 value)
+{
+	writeUint16LEAlt(fp, (uint16)(value ^ 0xFFFF));
+}
+#endif
 
-void CDECL error (const char *Text, ...)
-{
-	va_list marker;
-	va_start(marker,Text);
-	vfprintf(stderr,Text,marker);
-	fprintf(stderr,"\n");
-	va_end(marker);
-	exit(1);
-}
+void notice(const char *s, ...) {
+	char buf[1024];
+	va_list va;
 
-void CDECL _assert (BOOL condition, const char *Text, ...)
-{
-	va_list marker;
-	if (condition)
-		return;
-	va_start(marker,Text);
-	vfprintf(stderr,Text,marker);
-	fprintf(stderr,"\n");
-	va_end(marker);
-	exit(1);
-}
+	va_start(va, s);
+	vsnprintf(buf, 1024, s, va);
+	va_end(va);
 
-unsigned char	read_byte (FILE *input)
-{
-	unsigned char val;
-	_assert(fread(&val,1,1,input) == 1,"read_byte - unexpected EOF");
-	return val;
-}
-unsigned short	read_word (FILE *input)
-{
-	unsigned short val;
-	_assert(fread(&val,2,1,input) == 1,"read_word - unexpected EOF");
-	return val;
-}
-void	write_byte (FILE *output, unsigned char val)
-{
-	val ^= 0xFF;
-	fwrite(&val,1,1,output);
-}
-void	write_word (FILE *output, unsigned short val)
-{
-	val ^= 0xFFFF;
-	fwrite(&val,2,1,output);
+	fprintf(stdout, "%s\n", buf);
 }
 
 unsigned char room_disks[55], room_tracks[55], room_sectors[55];
@@ -109,51 +77,51 @@ int main (int argc, char **argv)
 
 
 	/* check signature */
-	signature = read_word(input1);
+	signature = readUint16LE(input1);
 	if (signature != 0x0A31)
-		error("Error: signature not found in disk 1!\n");
-	signature = read_word(input2);
+		error("Signature not found in disk 1!");
+	signature = readUint16LE(input2);
 	if (signature != 0x0132)
-		error("Error: signature not found in disk 2!\n");
+		error("Signature not found in disk 2!");
 
 	if (!(output = fopen("00.LFL","wb")))
-		error("Error: unable to create index file!");
-	debug("Creating 00.LFL...");
+		error("Unable to create index file!");
+	notice("Creating 00.LFL...");
 
 	/* write signature */
-	write_word(output, signature);
+	writeUint16LE(output, signature);
 
 	/* copy object flags */
 	for (i = 0; i < 256; i++)
-		write_byte(output, read_byte(input1));
+		writeByte(output, readByte(input1));
 
 	/* copy room offsets */
 	for (i = 0; i < 55; i++)
 	{
-		room_disks[i] = read_byte(input1);
-		write_byte(output, room_disks[i]);
+		room_disks[i] = readByte(input1);
+		writeByte(output, room_disks[i]);
 	}
 	for (i = 0; i < 55; i++)
 	{
-		room_sectors[i] = read_byte(input1);
-		write_byte(output, room_sectors[i]);
-		room_tracks[i] = read_byte(input1);
-		write_byte(output, room_tracks[i]);
+		room_sectors[i] = readByte(input1);
+		writeByte(output, room_sectors[i]);
+		room_tracks[i] = readByte(input1);
+		writeByte(output, room_tracks[i]);
 	}
 	for (i = 0; i < 25; i++)
-		write_byte(output, read_byte(input1));
+		writeByte(output, readByte(input1));
 	for (i = 0; i < 25; i++)
-		write_word(output, read_word(input1));
+		writeUint16LE(output, readUint16LE(input1));
 
 	for (i = 0; i < 160; i++)
-		write_byte(output, read_byte(input1));
+		writeByte(output, readByte(input1));
 	for (i = 0; i < 160; i++)
-		write_word(output, read_word(input1));
+		writeUint16LE(output, readUint16LE(input1));
 
 	for (i = 0; i < 70; i++)
-		write_byte(output, read_byte(input1));
+		writeByte(output, readByte(input1));
 	for (i = 0; i < 70; i++)
-		write_word(output, read_word(input1));
+		writeUint16LE(output, readUint16LE(input1));
 	fclose(output);
 
 	for (i = 0; i < 55; i++)
@@ -183,19 +151,21 @@ int main (int argc, char **argv)
 		else	continue;
 
 		sprintf(fname,"%02i.LFL", i);
-		printf("Creating %s...\n",fname);
 		output = fopen(fname, "wb");
+		if (output == NULL)
+			error("Unable to create %s!",fname);
+		notice("Creating %s...",fname);
 		fseek(input, (SectorOffset[room_tracks[i]] + room_sectors[i]) * 256, SEEK_SET);
 		for (j = 0; j < ResourcesPerFile[i]; j++)
 		{
-			unsigned short len = read_word(input);
-			write_word(output, len);
+			unsigned short len = readUint16LE(input);
+			writeUint16LE(output, len);
 			for (len -= 2; len > 0; len--)
-				write_byte(output, read_byte(input));
+				writeByte(output, readByte(input));
 		}
 		rewind(input);
 	}
 
-	debug("All done!");
+	notice("All done!");
 	return 0;
 }

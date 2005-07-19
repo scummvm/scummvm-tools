@@ -58,13 +58,13 @@ compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
 compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_loom_tg16$(EXEEXT): extract_loom_tg16.o
+extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-extract_mm_c64$(EXEEXT): extract_mm_c64.o
+extract_mm_c64$(EXEEXT): extract_mm_c64.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-extract_mm_nes$(EXEEXT): extract_mm_nes.o
+extract_mm_nes$(EXEEXT): extract_mm_nes.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_queen$(EXEEXT): compress_queen.o util.o
@@ -79,7 +79,7 @@ compress_saga$(EXEEXT): compress_saga.o compress.o util.o
 extract_simon1_amiga$(EXEEXT): extract_simon1_amiga.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-extract_zak_c64$(EXEEXT): extract_zak_c64.o
+extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_simon$(EXEEXT): compress_simon.o compress.o util.o
