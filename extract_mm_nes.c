@@ -35,16 +35,16 @@ typedef int BOOL;
 #endif
 
 #ifdef MAKE_LFLS
+void writeByteAlt(FILE *fp, uint8 b)
+{
+	writeByte(fp, (uint8)(b ^ 0xFF));
+}
+void writeUint16LEAlt(FILE *fp, uint16 value)
+{
+	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
+}
 #define writeByte writeByteAlt
 #define writeUint16LE writeUint16LEAlt
-void writeByte(FILE *fp, uint8 b)
-{
-	writeByteAlt(fp, (uint8)(b ^ 0xFF));
-}
-void writeUint16LE(FILE *fp, uint16 value)
-{
-	writeUint16LEAlt(fp, (uint16)(value ^ 0xFFFF));
-}
 #endif
 
 void notice(const char *s, ...) {
