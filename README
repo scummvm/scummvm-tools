@@ -19,6 +19,8 @@ Extraction Tools:
 
         extract_loom_tg16
                 Extracts data files from TG16 version of Loom.
+                Use the dumpcd utility at http://www.zeograd.com/misc_download.php
+                to dump the code tracks on the CD.
                 There is currently no support for this game in ScummVM!
 
         extract_mm_c64
