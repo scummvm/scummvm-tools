@@ -31,7 +31,7 @@ typedef int BOOL;
 
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
-#define	MAKE_LFLS
+/* #define	MAKE_LFLS */
 
 
 #ifdef _MSC_VER
@@ -879,7 +879,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 	case RES_COSTUME:
 	case RES_SCRIPT:
 	case RES_UNKNOWN:
-		rlen = read_word(input);
+		rlen = read_cword(input,&i);
 		if (rlen != r_length(res))
 			error("extract_resource - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		writeUint16LE(output,rlen);
