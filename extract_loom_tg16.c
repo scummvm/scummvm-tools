@@ -31,7 +31,7 @@ typedef int BOOL;
 
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
-/* #define	MAKE_LFLS */
+#define	MAKE_LFLS
 
 
 #ifdef _MSC_VER
