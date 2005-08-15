@@ -215,6 +215,13 @@ int main(int argc, char *argv[]) {
 			}
 
 			/*
+			 * The number of decodeable 16-bit samples is one less
+			 * than the length of the resource.
+			 */
+
+			length--;
+
+			/*
 			 * Our encoding function assumes that raw data means
 			 * 8-bit data. Rather than going through the trouble of
 			 * adding support for 16-bit data at various byte
