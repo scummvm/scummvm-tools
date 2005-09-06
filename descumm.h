@@ -115,6 +115,7 @@ extern void writePendingElse();
 //
 // Entry points for the descumming
 //
+extern void next_line_V0(char *buf);	// For V0
 extern void next_line_V12(char *buf);	// For V1 and V2
 extern void next_line_V345(char *buf);	// For V3, V4, V5
 extern void next_line_V67(char *buf);

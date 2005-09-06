@@ -28,6 +28,7 @@ void ShowHelpAndExit()
 			"Syntax:\n"
 			"\tdescumm [-o] filename\n"
 			"Flags:\n"
+		    "\t-0\tInput Script is C64\n"
 			"\t-1\tInput Script is v1\n"
 			"\t-2\tInput Script is v2\n"
 			"\t-3\tInput Script is v3\n"
@@ -134,7 +135,7 @@ int main(int argc, char *argv[])
 	int i;
 	char *s;
 
-	scriptVersion = 0;
+	scriptVersion = 0xff;
 	heVersion = 0;
 	
 	// Parse the arguments
@@ -147,6 +148,11 @@ int main(int argc, char *argv[])
 			while (*s) {
 				switch (tolower(*s)) {
 
+				case '0':
+					scriptVersion = 0;
+					g_jump_opcode = 0x18;
+					GF_UNBLOCKED = true;
+					break;
 				case '1':
 					scriptVersion = 1;
 					g_jump_opcode = 0x18;
@@ -244,7 +250,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (!filename || scriptVersion == 0)
+	if (!filename || scriptVersion == 0xff)
 		ShowHelpAndExit();
 
 	in = fopen(filename, "rb");
@@ -356,6 +362,9 @@ int main(int argc, char *argv[])
 		int j = num_block_stack;
 		buf[0] = 0;
 		switch (scriptVersion) {
+		case 0:
+			next_line_V0(buf);
+			break;
 		case 1:
 		case 2:
 			next_line_V12(buf);

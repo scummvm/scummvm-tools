@@ -1691,7 +1691,10 @@ void do_if_code(char *buf, byte opcode)
 	if (opcode == 0x28 || opcode == 0xA8) {
 		get_var(tmp2);
 	} else {
-		get_var_or_word(tmp2, opcode & 0x80);
+		if (scriptVersion == 0)
+			get_var_or_byte(tmp2, opcode & 0x80);
+		else
+			get_var_or_word(tmp2, opcode & 0x80);
 	}
 
 	sprintf(tmp, "%s%s%s", var, cmp_texts[txt], tmp2);
@@ -1723,50 +1726,88 @@ void do_if_state_code(char *buf, byte opcode)
 
 		get_var_or_byte(tmp2, opcode & 0x40);
 	} else {
-		switch (opcode) {
-		case 0x3f:
-		case 0xbf:
-			state = 1;
-			neg = 1;
-			break;
-		case 0x5f:
-		case 0xdf:
-			state = 2;
-			neg = 1;
-			break;
-		case 0x2f:
-		case 0xaf:
-			state = 4;
-			neg = 1;
-			break;
-		case 0x0f:
-		case 0x8f:
-			state = 8;
-			neg = 1;
-			break;
-		case 0x7f:
-		case 0xff:
-			state = 1;
-			neg = 0;
-			break;
-		case 0x1f:
-		case 0x9f:
-			state = 2;
-			neg = 0;
-			break;
-		case 0x6f:
-		case 0xef:
-			state = 4;
-			neg = 0;
-			break;
-		case 0x4f:
-		case 0xcf:
-			state = 8;
-			neg = 0;
-			break;
-		default:
-			/* Exit, this should never happen, only if my code is buggy */
-			error("Unknown IF code %x", opcode);
+		if (scriptVersion == 0) {
+			switch (opcode) {
+			case 0x7f:
+			case 0xbf:
+				state = 2;
+				neg = 1;
+				break;
+			case 0x9f:
+			case 0xdf:
+				state = 4;
+				neg = 1;
+				break;
+			case 0xaf:
+			case 0xef:
+				state = 8;
+				neg = 1;
+				break;
+			case 0x3f:
+			case 0xff:
+				state = 2;
+				neg = 0;
+				break;
+			case 0x1f:
+			case 0x5f:
+				state = 4;
+				neg = 0;
+				break;
+			case 0x2f:
+			case 0x6f:
+				state = 8;
+				neg = 0;
+				break;
+			default:
+				/* Exit, this should never happen, only if my code is buggy */
+				error("Unknown IF code %x", opcode);
+			}
+		} else {
+			switch (opcode) {
+			case 0x3f:
+			case 0xbf:
+				state = 1;
+				neg = 1;
+				break;
+			case 0x5f:
+			case 0xdf:
+				state = 2;
+				neg = 1;
+				break;
+			case 0x2f:
+			case 0xaf:
+				state = 4;
+				neg = 1;
+				break;
+			case 0x0f:
+			case 0x8f:
+				state = 8;
+				neg = 1;
+				break;
+			case 0x7f:
+			case 0xff:
+				state = 1;
+				neg = 0;
+				break;
+			case 0x1f:
+			case 0x9f:
+				state = 2;
+				neg = 0;
+				break;
+			case 0x6f:
+			case 0xef:
+				state = 4;
+				neg = 0;
+				break;
+			case 0x4f:
+			case 0xcf:
+				state = 8;
+				neg = 0;
+				break;
+			default:
+				/* Exit, this should never happen, only if my code is buggy */
+				error("Unknown IF code %x", opcode);
+			}
 		}
 	}
 
@@ -2445,6 +2486,528 @@ void next_line_V12(char *buf)
 	case 0xB6:
 	case 0xF6:
 		do_tok(buf, "walkActorToObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W));
+		break;
+
+	default:
+		error("Unknown opcode %.2X", opcode);
+	}
+}
+
+void next_line_V0(char *buf)
+{
+	byte opcode = get_byte();
+
+	switch (opcode) {
+	case 0x05:
+	case 0x09:
+	case 0x0A:
+	case 0x19:
+	case 0x23:
+	case 0x2C:
+	case 0x35:
+	case 0x39:
+	case 0x3B:
+	case 0x45:
+	case 0x49:
+	case 0x59:
+	case 0x63:
+	case 0x65:
+	case 0x6A:
+	case 0x6C:
+	case 0x79:
+	case 0x7A:
+	case 0x7B:
+	case 0x80:
+	case 0x82:
+	case 0x85:
+	case 0x89:
+	case 0x8A:
+	case 0x8D:
+	case 0x96:
+	case 0x99:
+	case 0xA3:
+	case 0xA6:
+	case 0xAA:
+	case 0xAC:
+	case 0xB5:
+	case 0xB9:
+	case 0xBB:
+	case 0xC5:
+	case 0xC9:
+	case 0xD8:
+	case 0xD9:
+	case 0xE3:
+	case 0xE6:
+	case 0xEA:
+	case 0xEC:
+	case 0xF5:
+	case 0xF9:
+	case 0xFA:
+	case 0xFB:
+		do_tok(buf, "stopCurrentScript", 0);
+		break;
+
+	case 0x67:
+	case 0xE7:
+		do_tok(buf, "getActorFacing", AVARSTORE | A1B | ((opcode & 0x80) ? A2V : A2B));
+		break;
+
+	case 0x31:
+	case 0x71:
+	case 0xB1:
+	case 0xF1:
+		do_tok(buf, "getBitVar", AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+
+	case 0x1D:
+	case 0x3D:
+	case 0x5D:
+	case 0x7D:
+	case 0x9D:
+	case 0xBD:
+	case 0xDD:
+	case 0xFD:
+		do_tok(buf, "setBitVar", A1B | ((opcode & 0x80) ? A2V : A2B) | ((opcode & 0x40) ? A3V : A3B));
+		break;
+
+	case 0x1B:
+	case 0x5B:
+	case 0x9B:
+	case 0xDB:
+		do_tok(buf, "getActorBitVar", AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+
+	case 0x0B:
+	case 0x2B:
+	case 0x4B:
+	case 0x6B:
+	case 0x8B:
+	case 0xAB:
+	case 0xCB:
+	case 0xEB:
+		do_tok(buf, "setActorBitVar", A1B | ((opcode & 0x80) ? A2V : A2B) | ((opcode & 0x40) ? A3V : A3B));
+		break;
+
+	case 0x58:
+		do_tok(buf, "beginOverride", 0);
+		break;
+	case 0x52:
+	case 0xD2:
+		do_tok(buf, "actorFollowCamera", ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x15:
+	case 0x55:
+	case 0x95:
+	case 0xD5:
+		do_tok(buf, "actorFromPos",
+					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | AVARSTORE);
+		break;
+	case 0x13:
+	case 0x93:
+	case 0x4D:
+	case 0xCD: {
+		char str[100];
+		int subop = get_byte();
+		sprintf(str, "unknown%02x.%02x", opcode, subop);
+		do_tok(buf, str, 0);
+		break;
+	}
+
+	case 0x1A:
+	case 0x9a:
+		//move
+	case 0x5A:
+	case 0xDA:
+		//add;
+	case 0x3A:
+	case 0xBA:
+		//subtract
+		do_varset_code(buf, opcode);
+
+	case 0x11:
+	case 0x51:
+	case 0x91:
+	case 0xD1:
+		buf = do_tok(buf, "animateActor", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
+		break;
+	case 0x10:
+		do_tok(buf, "breakHere", 0);
+		break;
+	case 0x4A:
+	case 0xCA:
+		do_tok(buf, "loadRoom_c64", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x60:
+	case 0xE0:
+		//cursorCommand
+		do_tok(buf, "cursorCommand", ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x40:
+		do_tok(buf, "cutscene", 0);
+		break;
+	case 0xC0:
+		do_tok(buf, "endCutscene", 0);
+		break;
+
+	case 0x46:
+	case 0xC6:
+		// increment / decrement
+		do_varset_code(buf, opcode);
+		break;
+
+	case 0x2A: {
+		//delay
+		int d = get_byte();
+		d |= get_byte() << 8;
+		d |= get_byte() << 16;
+		d = 0xFFFFFF - d;
+		sprintf(buf, "delay(%d)", d);
+		break;
+	}
+
+	case 0x50:
+	case 0x72:
+	case 0xD0:
+	case 0xF2:
+		do_tok(buf, "nop", 0);
+		break;
+	case 0x14:
+	case 0x94:
+		// print
+		buf += sprintf(buf, "print(");
+		buf = get_var_or_byte(buf, (opcode & 0x80));
+		buf += sprintf(buf, ",\"");
+		do_decodeparsestring_v2(buf, opcode);
+		strcat(buf, "\")");
+		break;
+	case 0x75:
+		//printEgo
+		buf += sprintf(buf, "printEgo(\"");
+		do_decodeparsestring_v2(buf, opcode);
+		strcat(buf, "\")");
+		break;
+	case 0x2E:
+	case 0xAE:
+		// print_c64
+		buf += sprintf(buf, "print_c64(");
+		buf = get_var_or_byte(buf, (opcode & 0x80));
+		buf += sprintf(buf, ",\"");
+		do_decodeparsestring_v2(buf, opcode);
+		strcat(buf, "\")");
+		break;
+	case 0x0D:
+		//printEgo_c64
+		buf += sprintf(buf, "printEgo_c64(\"");
+		do_decodeparsestring_v2(buf, opcode);
+		strcat(buf, "\")");
+		break;
+
+	case 0x2D:
+	case 0x6D:
+	case 0xAD:
+	case 0xED:
+		do_tok(buf, "putActorInRoom", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+	case 0xE5:
+		buf =
+			do_tok(buf, "loadRoomWithEgo",
+						 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | ANOLASTPAREN);
+		do_tok(buf, NULL, A1B | A2B | ANOFIRSTPAREN | ASTARTCOMMA);
+		break;
+	case 0x6E:
+	case 0xEE:
+		//dummy
+		sprintf(buf, "dummy%.2X()", opcode);
+		break;
+
+	case 0x86:
+		do_tok(buf, "bad", 0);
+		break;
+	case 0x56:
+	case 0xD6:
+		do_tok(buf, "getActorMoving", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x03:
+	case 0x43:
+	case 0x83:
+	case 0xC3:
+		do_tok(buf, "unknown1", A1B | A2B | A3B);
+		break;
+	case 0x07:
+	case 0x87:
+		do_tok(buf, "getActorRoom", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x47:
+	case 0xC7:
+		do_tok(buf, "getActorX", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x27:
+	case 0xA7:
+		do_tok(buf, "getActorY", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x26:
+		do_tok(buf, "getClosestObjActor7", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x66:
+		do_tok(buf, "getClosestObjActor25", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x06:
+	case 0x34:
+	case 0x74:
+	case 0xB4:
+	case 0xF4:
+		do_tok(buf, "getDist",
+					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+	case 0x90:
+		do_tok(buf, "pickupObject", A1B);
+		break;
+	case 0x16:
+		do_tok(buf, "getRandomNr", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+    case 0x0f:
+    case 0x4f:
+		do_tok(buf, "clearState02", ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x37:
+	case 0x77:
+		do_tok(buf, "clearState04", ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x17:
+	case 0x57:
+		do_tok(buf, "clearState08", ((opcode & 0x80) ? A1V : A1B));
+		break;
+    case 0x8f:
+    case 0xcf:
+		do_tok(buf, "setState02", ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0xb7:
+	case 0xf7:
+		do_tok(buf, "setState04", ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x97:
+	case 0xd7:
+		do_tok(buf, "setState08", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+    case 0x3f:
+    case 0xff:
+		//ifState02;
+    case 0x1f:
+    case 0x5f:
+		//ifState04;
+    case 0x2f:
+    case 0x6f:
+		//ifState08;
+    case 0x7f:
+    case 0xbf:
+		//ifNotState02;
+    case 0x9f:
+    case 0xdf:
+		//ifNotState04;
+    case 0xaf:
+    case 0xef:
+		//ifNotState08;
+		do_if_state_code(buf, opcode);
+		break;
+		
+	case 0x48:
+	case 0xC8:
+		//isEqual
+	case 0x78:
+	case 0xF8:
+		//isGreater
+	case 0x04:
+	case 0x84:
+		//isGreaterEqual
+	case 0x44:
+	case 0xC4:
+		//isLess
+	case 0x08:
+	case 0x88:
+		//isNotEqual
+	case 0x38:
+	case 0xB8:
+		//lessOrEqual
+	case 0x28:
+		//equalZero
+	case 0xA8:
+		//notEqualZero
+		do_if_code(buf, opcode);
+		break;
+
+	case 0x68:
+	case 0xE8:
+		do_tok(buf, "isScriptRunning", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+	case 0x7C:
+	case 0xFC:
+		do_tok(buf, "isSoundRunning", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x53:
+		do_tok(buf, "startSound", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0xD3:
+		do_tok(buf, "stopSound", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x18:
+		do_unconditional_jump(buf);
+		break;
+
+	case 0x70:
+	case 0xF0:
+		buf = do_tok(buf, "lights", ((opcode & 0x80) ? A1V : A1B) | A2B | A3B);
+		break;
+	case 0x25:
+	case 0xA5:
+		do_tok(buf, "loadRoom", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x24:
+	case 0xA4:
+		do_tok(buf, "unknown2", A1B);
+		break;
+	case 0x64:
+	case 0xE4:
+		do_tok(buf, "unknown3", A1B);
+		break;
+
+	case 0x30:
+	case 0xB0:
+		do_tok(buf, "loadActor", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x12:
+	case 0x92:
+		//panCameraTo
+		do_tok(buf, "panCameraTo", ((opcode & 0x80) ? A1V : A1B));
+		break;
+		
+	case 0x01:
+	case 0x21:
+	case 0x41:
+	case 0x61:
+	case 0x81:
+	case 0xA1:
+	case 0xC1:
+	case 0xE1:
+		do_tok(buf, "putActor",
+					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) |
+					 ((opcode & 0x20) ? A3V : A3B));
+		break;
+	case 0x4E:
+	case 0xCE:
+	case 0x0E:
+	case 0x8E:
+		do_tok(buf, "putActorAtObject", ((opcode & 0x80) ? A1V : A1B) | A2B);
+		break;
+	case 0x0C:
+	case 0x8C:
+		do_tok(buf, "loadSound", A1B);
+		break;
+	case 0x98:
+		do_tok(buf, "restart", 0);
+		break;
+
+	case 0x33:
+		do_tok(buf, "freezeScript", A1B);
+		break;
+	case 0xB3:
+		do_tok(buf, "unfreezeScript", A1B);
+		break;
+	case 0x73:
+	case 0xF3:
+		do_tok(buf, "getObjectOwner", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x22:
+	case 0xA2:
+		do_tok(buf, "saveLoadGame", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x32:
+	case 0xB2:
+		do_tok(buf, "setCameraAt", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x54:
+	case 0xD4:
+		do_tok(buf, "setObjectName", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
+		break;
+
+	case 0x29:
+	case 0x69:
+	case 0xA9:
+	case 0xE9:
+		//setOwnerOf
+		do_tok(buf, "setOwnerOf", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		break;
+		
+	case 0x02:
+		do_tok(buf, "askDisk", 0);
+		break;
+	case 0x42:
+	case 0xC2:
+		//startScript
+		do_tok(buf, "startScript", ((opcode & 0x80) ? A1V : A1B));
+		break;
+		
+	case 0x1C:
+	case 0x5C:
+	case 0x9C:
+	case 0xDC:
+		do_tok(buf, "startSound", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x20:
+		do_tok(buf, "stopMusic", 0);
+		break;
+	case 0x00:
+	case 0xA0:
+		do_tok(buf, "stopObjectCode", 0);
+		break;
+	case 0x62:
+	case 0xE2:
+		do_tok(buf, "stopScript", ((opcode & 0x80) ? A1V : A1B));
+		break;
+		
+	case 0x3C:
+	case 0xBC:
+		do_tok(buf, "stopSound", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x4C:
+	case 0xCC:
+		do_tok(buf, "loadScript", ((opcode & 0x80) ? A1V : A1B));
+		break;
+
+	case 0x1E:
+	case 0x3E:
+	case 0x5E:
+	case 0x7E:
+	case 0x9E:
+	case 0xBE:
+	case 0xDE:
+	case 0xFE:
+		do_tok(buf, "walkActorTo",
+					 ((opcode & 0x80) ? A1V : A1B) |
+					 ((opcode & 0x40) ? A2V : A2B) | 
+					 ((opcode & 0x20) ? A3V : A3B));
+		break;
+
+	case 0x36:
+	case 0xB6:
+	case 0x76:
+	case 0xF6:
+		do_tok(buf, "walkActorToObject", ((opcode & 0x80) ? A1V : A1B) | A2B);
 		break;
 
 	default:
