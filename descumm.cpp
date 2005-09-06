@@ -2593,6 +2593,9 @@ void next_line_V0(char *buf)
 
 	case 0x58:
 		do_tok(buf, "beginOverride", 0);
+		get_byte();
+		get_byte();
+		get_byte();
 		break;
 	case 0x52:
 	case 0xD2:
