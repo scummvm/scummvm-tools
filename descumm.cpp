@@ -1876,7 +1876,10 @@ void do_varset_code(char *buf, byte opcode)
 		sprintf(buf, "%d", get_byte());
 		buf = strchr(buf, 0);
 	} else if ((opcode & 0x7F) != 0x46) {	/* increment or decrement */
-		buf = get_var_or_word(buf, opcode & 0x80);
+		if (scriptVersion == 0)
+			buf = get_var_or_byte(buf, opcode & 0x80);
+		else
+			buf = get_var_or_word(buf, opcode & 0x80);
 	}
 	strecpy(buf, ";");
 }
@@ -2623,6 +2626,7 @@ void next_line_V0(char *buf)
 	case 0xBA:
 		//subtract
 		do_varset_code(buf, opcode);
+		break;
 
 	case 0x11:
 	case 0x51:
