@@ -363,33 +363,33 @@ const char *var_names6[] = {
 	/* 88 */
 	NULL,
 	NULL,
-	NULL,
-	NULL,
+	"VAR_GAME_DISK_MSG",
+	"VAR_OPEN_FAILED_MSG",
 	/* 92 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"VAR_READ_ERROR_MSG",
+	"VAR_PAUSE_MSG",
+	"VAR_RESTART_MSG",
+	"VAR_QUIT_MSG",
 	/* 96 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"VAR_SAVE_BTN",
+	"VAR_LOAD_BTN",
+	"VAR_PLAY_BTN",
+	"VAR_CANCEL_BTN",
 	/* 100 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"VAR_QUIT_BTN",
+	"VAR_OK_BTN",
+	"VAR_SAVE_DISK_MSG",
+	"VAR_ENTER_NAME_MSG",
 	/* 104 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"VAR_NOT_SAVED_MSG",
+	"VAR_NOT_LOADED_MSG",
+	"VAR_SAVE_MSG",
+	"VAR_LOAD_MSG",
 	/* 108 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
+	"VAR_SAVE_MENU_TITLE",
+	"VAR_LOAD_MENU_TITLE",
+	"VAR_GUI_COLORS",
+	"VAR_DEBUG_PASSWORD",
 	/* 112 */
 	NULL,
 	NULL,
@@ -397,13 +397,13 @@ const char *var_names6[] = {
 	NULL,
 	/* 116 */
 	NULL,
-	NULL,
+	"VAR_MAIN_MENU_TITLE",
 	"VAR_RANDOM_NR",
 	"VAR_TIMEDATE_YEAR",
 	/* 120 */
 	NULL,
 	NULL,
-	NULL,
+	"VAR_GAME_VERSION",
 	"VAR_CHARSET_MASK",
 	/* 124 */
 	NULL,
@@ -911,13 +911,27 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 		break;
 	case seArray:
 		if (se->left) {
-			where += sprintf(where, "array%ld[", se->data);
+			if(scriptVersion == 8 && !(se->data & 0xF0000000) &&
+			   (s = getVarName(se->data & 0xFFFFFFF)) != NULL)
+				where += sprintf(where, "%s[",s);
+			else if(scriptVersion < 8 && !(se->data & 0xF000) &&
+				(s = getVarName(se->data & 0xFFF)) != NULL)
+				where += sprintf(where, "%s[",s);
+			else
+				where += sprintf(where, "array%ld[", se->data);
 			where = se_astext(se->left, where);
 			where = strecpy(where, "][");
 			where = se_astext(se->right, where);
 			where = strecpy(where, "]");
 		} else {
-			where += sprintf(where, "array%ld[", se->data);
+			if(scriptVersion == 8 && !(se->data & 0xF0000000) &&
+			   (s = getVarName(se->data & 0xFFFFFFF)) != NULL)
+				where += sprintf(where, "%s[",s);
+			else if(scriptVersion < 8 && !(se->data & 0xF000) &&
+				(s = getVarName(se->data & 0xFFF)) != NULL)
+				where += sprintf(where, "%s[",s);
+			else
+				where += sprintf(where, "array%ld[", se->data);
 			where = se_astext(se->right, where);
 			where = strecpy(where, "]");
 		}
@@ -1230,6 +1244,8 @@ void ext(char *output, const char *fmt)
 			args[numArgs++] = se_get_list();
 		} else if (cmd == 'j') {
 			args[numArgs++] = se_int(get_word());
+		} else if (cmd == 'v') {
+			args[numArgs++] = se_var(get_word());
 		} else {
 			error("Character '%c' unknown in argument string '%s', \n", fmt, cmd);
 		}
@@ -3342,12 +3358,12 @@ void next_line_V67(char *output)
 		break;
 	case 0xBC:
 		ext(output, "x" "dimArray\0"
-				"\xC7pw|int,"
-				"\xC8pw|bit,"
-				"\xC9pw|nibble,"
-				"\xCApw|byte,"
-				"\xCBpw|string,"
-				"\xCCw|nukeArray");
+				"\xC7pv|int,"
+				"\xC8pv|bit,"
+				"\xC9pv|nibble,"
+				"\xCApv|byte,"
+				"\xCBpv|string,"
+				"\xCCv|nukeArray");
 		break;
 	case 0xBD:
 		if (HumongousFlag)
@@ -3369,11 +3385,14 @@ void next_line_V67(char *output)
 		break;
 	case 0xC0:
 		ext(output, "x" "dim2dimArray\0"
-				"\xC7ppw|int,"
-				"\xC8ppw|bit,"
-				"\xC9ppw|nibble,"
-				"\xCAppw|byte,"
-				"\xCBppw|string");
+				"\xC7ppv|int,"
+				"\xC8ppv|bit,"
+				"\xC9ppv|nibble,"
+				"\xCAppv|byte,"
+				"\xCBppv|string");
+		break;
+	case 0xC1:
+		ext(output, "ps|unknownOp");
 		break;
 	case 0xC4:
 		ext(output, "rp|abs");
@@ -3484,7 +3503,7 @@ void next_line_V67(char *output)
 		ext(output, "rpp|getAnimateVariable");
 		break;
 	case 0xD4:
-		ext(output, "wpp|shuffle");
+		ext(output, "vpp|shuffle");
 		break;
 	case 0xD5:
 		ext(output, "lpp|jumpToScript");
