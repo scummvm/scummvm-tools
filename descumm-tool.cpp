@@ -294,13 +294,30 @@ int main(int argc, char *argv[])
 			mem += 12;
 			break;											/* Local script */
 		case 'LSCR':
+		case 'LSC2':
+			if (size_of_code < 13) {
+				printf("File too small to be a local script\n");
+			}
+			printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
+			mem += 12;
+			break;											/* Local script */
+		case 'LSCR':
 			if (scriptVersion == 8) {
+				if (size_of_code < 13) {
+					printf("File too small to be a local script\n");
+				}
 				printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
 				mem += 12;
 			} else if (scriptVersion == 7) {
+				if (size_of_code < 11) {
+					printf("File too small to be a local script\n");
+				}
 				printf("Script# %d\n", TO_LE_16(*((int16 *)(mem+8))));
 				mem += 10;
 			} else {
+				if (size_of_code < 10) {
+					printf("File too small to be a local script\n");
+ 				}
 				printf("Script# %d\n", (byte)mem[8]);
 				mem += 9;
 			}
