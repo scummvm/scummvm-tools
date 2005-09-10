@@ -28,7 +28,7 @@ void ShowHelpAndExit()
 			"Syntax:\n"
 			"\tdescumm [-o] filename\n"
 			"Flags:\n"
-		    "\t-0\tInput Script is C64\n"
+			"\t-0\tInput Script is C64\n"
 			"\t-1\tInput Script is v1\n"
 			"\t-2\tInput Script is v2\n"
 			"\t-3\tInput Script is v3\n"
@@ -289,11 +289,6 @@ int main(int argc, char *argv[])
 		}
 	
 		switch (TO_BE_32(*((uint32 *)mem))) {
-		case 'LSC2':
-			printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
-			mem += 12;
-			break;											/* Local script */
-		case 'LSCR':
 		case 'LSC2':
 			if (size_of_code < 13) {
 				printf("File too small to be a local script\n");
