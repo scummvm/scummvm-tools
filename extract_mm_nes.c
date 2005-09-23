@@ -807,6 +807,14 @@ uint32	CheckROM (FILE *file)
 
 	for (i = 0; i < 262144; i++)
 		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ readByte(file)) & 0xFF];
+
+	readByte(file);
+	if (!feof(file)) {
+		printf("Apparently you're feeding me with full ROM and not just PRG section.\n"
+			   "See ScummVM README section 3.8.\n");
+		exit(1);
+	}
+
 	return CRC ^ 0xFFFFFFFF;
 }
 
