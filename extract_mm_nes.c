@@ -512,7 +512,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 		error("extract_resource - no resource specified");
 	if ((r_offset(res) == 0) && (r_length(res) == 0))
 		return;	/* there are 8 scripts that are zero bytes long, so we should skip them */
-	fseek(input,16 + r_offset(res),SEEK_SET);
+	fseek(input, r_offset(res),SEEK_SET);
 
 	switch (res->type)
 	{
@@ -536,8 +536,8 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 				if ((cnt & 0x80) || (j == 0))
 					writeByte(output,readByte(input));
 		}
-		if (ftell(input) - r_offset(res) - 16 != r_length(res))
-			error("extract_resource - length mismatch while extracting graphics resource (was %04X, should be %04X)",ftell(input) - r_offset(res) - 16,r_length(res));
+		if (ftell(input) - r_offset(res) != r_length(res))
+			error("extract_resource - length mismatch while extracting graphics resource (was %04X, should be %04X)",ftell(input) - r_offset(res), r_length(res));
 		break;
 	case RES_ROOM:
 	case RES_SCRIPT:
@@ -592,8 +592,8 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 			}
 		}
 		else	error("extract_resource - unknown sound type %d/%d detected",val,cnt);
-		if (ftell(input) - r_offset(res) - 16 != r_length(res))
-			error("extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)",ftell(input) - r_offset(res) - 16,r_length(res));
+		if (ftell(input) - r_offset(res) != r_length(res))
+			error("extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)",ftell(input) - r_offset(res), r_length(res));
 		break;
 	case RES_COSTUME:
 	case RES_SPRPALS:
@@ -804,11 +804,8 @@ uint32	CheckROM (FILE *file)
 {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i;
-	uint8 header[16];
-	fread(header,16,1,file);
-	if (memcmp("NES\x1A",header,4))
-		error("Selected file is not a valid NES ROM image!");
-	for (i = 0; i < header[4] << 14; i++)
+
+	for (i = 0; i < 262144; i++)
 		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ readByte(file)) & 0xFF];
 	return CRC ^ 0xFFFFFFFF;
 }
