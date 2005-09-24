@@ -2764,7 +2764,7 @@ void next_line_V0(char *buf)
 	case 0x43:
 	case 0x83:
 	case 0xC3:
-		do_tok(buf, "unknown1", A1B | A2B | A3B);
+		do_tok(buf, "doSentence", A1B | A2B | A3B);
 		break;
 	case 0x07:
 	case 0x87:
@@ -2984,7 +2984,7 @@ void next_line_V0(char *buf)
 		break;
 		
 	case 0x02:
-		do_tok(buf, "askForDisk", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B));
 		break;
 	case 0x42:
 	case 0xC2:
