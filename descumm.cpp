@@ -2859,11 +2859,11 @@ void next_line_V0(char *buf)
 		break;
 
 	case 0x53:
-		do_tok(buf, "startSound", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "lockSound", A1B);
 		break;
 
 	case 0xD3:
-		do_tok(buf, "stopSound", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "unlockSound", A1B);
 		break;
 
 	case 0x18:
