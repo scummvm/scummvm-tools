@@ -2609,16 +2609,17 @@ void next_line_V0(char *buf)
 					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | AVARSTORE);
 		break;
 	case 0x13:
-	case 0x93:
-	case 0x4D:
-	case 0xCD: {
-		char str[100];
-		int subop = get_byte();
-		sprintf(str, "unknown%02x.%02x", opcode, subop);
-		do_tok(buf, str, 0);
+		do_tok(buf, "lockActor", A1B);
 		break;
-	}
-
+	case 0x4D:
+		do_tok(buf, "lockRoom", A1B);
+		break;
+	case 0xCD:
+		do_tok(buf, "unlockRoom", A1B);
+		break;
+	case 0x93:
+		do_tok(buf, "unlockActor", A1B);
+		break;
 	case 0x1A:
 	case 0x9a:
 		//move
@@ -2925,10 +2926,10 @@ void next_line_V0(char *buf)
 		break;
 
 	case 0x33:
-		do_tok(buf, "freezeScript", A1B);
+		do_tok(buf, "lockScript", A1B);
 		break;
 	case 0xB3:
-		do_tok(buf, "unfreezeScript", A1B);
+		do_tok(buf, "unlockScript", A1B);
 		break;
 	case 0x73:
 	case 0xF3:
@@ -2959,7 +2960,7 @@ void next_line_V0(char *buf)
 		break;
 		
 	case 0x02:
-		do_tok(buf, "askDisk", 0);
+		do_tok(buf, "askForDisk", ((opcode & 0x80) ? A1V : A1B));
 		break;
 	case 0x42:
 	case 0xC2:
