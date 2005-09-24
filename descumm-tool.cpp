@@ -58,6 +58,9 @@ int skipVerbHeader_V12(byte *p)
 	byte code;
 	int offset = 15;
 	int minOffset = 255;
+
+	if (scriptVersion == 0)
+		offset = 14;
 	p += offset;
 
 	printf("Events:\n");
