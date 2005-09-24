@@ -2803,27 +2803,27 @@ void next_line_V0(char *buf)
 
     case 0x0f:
     case 0x4f:
-		do_tok(buf, "clearState02", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "clearState02", 0);
 		break;
 	case 0x37:
 	case 0x77:
-		do_tok(buf, "clearState04", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "clearState04", 0);
 		break;
 	case 0x17:
 	case 0x57:
-		do_tok(buf, "clearState08", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "clearState08", 0);
 		break;
     case 0x8f:
     case 0xcf:
-		do_tok(buf, "setState02", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "setState02", 0);
 		break;
 	case 0xb7:
 	case 0xf7:
-		do_tok(buf, "setState04", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "setState04", 0);
 		break;
 	case 0x97:
 	case 0xd7:
-		do_tok(buf, "setState08", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "setState08", 0);
 		break;
 
     case 0x3f:
