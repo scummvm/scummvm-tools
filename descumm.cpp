@@ -95,6 +95,24 @@ bool GF_UNBLOCKED = false;
 void emit_if(char *buf, char *condition);
 
 
+const char *var_names0[] = {
+	/* 0 */
+	"VAR_EGO",
+	NULL,
+	"VAR_CAMERA_POS_X",
+	"VAR_HAVE_MSG",
+	/* 4 */
+	"VAR_ROOM",
+	"VAR_5",
+	"VAR_OVERRIDE",
+	"",
+	/* 8 */
+	"VAR_8",
+	"VAR_9",
+	"VAR_CHARCOUNT",
+	NULL
+};
+
 const char *var_names2[] = {
 	/* 0 */
 	"VAR_EGO",
@@ -457,7 +475,11 @@ char *get_var(char *buf)
 		
 	assert(i >= 0);
 
-	if (scriptVersion <= 2 &&
+	if (scriptVersion == 0 &&
+			i < ARRAYSIZE(var_names0) && var_names0[i]) {
+		buf += sprintf(buf, var_names0[i]);
+		return buf;
+	} else if (scriptVersion <= 2 &&
 			i < ARRAYSIZE(var_names2) && var_names2[i]) {
 		buf += sprintf(buf, var_names2[i]);
 		return buf;
@@ -1709,7 +1731,8 @@ void do_if_state_code(char *buf, byte opcode)
 	int state = 0;
 
 	var[0] = 0;
-	get_var_or_word(var, opcode & 0x80);
+	if (scriptVersion > 0)
+		get_var_or_word(var, opcode & 0x80);
 
 	if (scriptVersion > 2) {
 		switch (opcode & 0x2F) {
