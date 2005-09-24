@@ -1731,8 +1731,9 @@ void do_if_state_code(char *buf, byte opcode)
 	int state = 0;
 
 	var[0] = 0;
-	if (scriptVersion > 0)
+	if (scriptVersion > 0) {
 		get_var_or_word(var, opcode & 0x80);
+	}
 
 	if (scriptVersion > 2) {
 		switch (opcode & 0x2F) {
@@ -2803,27 +2804,27 @@ void next_line_V0(char *buf)
 
     case 0x0f:
     case 0x4f:
-		do_tok(buf, "clearState02", 0);
+		do_tok(buf, "clearState02", ((opcode & 0x40) ? 0 : A1B));
 		break;
 	case 0x37:
 	case 0x77:
-		do_tok(buf, "clearState04", 0);
+		do_tok(buf, "clearState04", ((opcode & 0x40) ? 0 : A1B));
 		break;
 	case 0x17:
 	case 0x57:
-		do_tok(buf, "clearState08", 0);
+		do_tok(buf, "clearState08", ((opcode & 0x40) ? 0 : A1B));
 		break;
     case 0x8f:
     case 0xcf:
-		do_tok(buf, "setState02", 0);
+		do_tok(buf, "setState02", ((opcode & 0x40) ? 0 : A1B));
 		break;
 	case 0xb7:
 	case 0xf7:
-		do_tok(buf, "setState04", 0);
+		do_tok(buf, "setState04", ((opcode & 0x40) ? 0 : A1B));
 		break;
 	case 0x97:
 	case 0xd7:
-		do_tok(buf, "setState08", 0);
+		do_tok(buf, "setState08", ((opcode & 0x40) ? 0 : A1B));
 		break;
 
     case 0x3f:
