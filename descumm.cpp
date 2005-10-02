@@ -2742,10 +2742,7 @@ void next_line_V0(char *buf)
 		do_tok(buf, "putActorInRoom", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0xE5:
-		buf =
-			do_tok(buf, "loadRoomWithEgo",
-						 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | ANOLASTPAREN);
-		do_tok(buf, NULL, A1B | A2B | ANOFIRSTPAREN | ASTARTCOMMA);
+		do_tok(buf, "loadRoomWithEgo", A1B | A2B);
 		break;
 	case 0x6E:
 	case 0xEE:
