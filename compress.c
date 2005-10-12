@@ -169,7 +169,8 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 
 	case kFlacMode:
 		/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
-		tmp += sprintf(tmp, "flac --lax --no-padding --no-seektable --no-ogg " );
+		/* -f is reqired to force override of unremoved temp file. See bug #1294648 */
+		tmp += sprintf(tmp, "flac -f --lax --no-padding --no-seektable --no-ogg " );
 
 		if (rawInput) {
 			tmp += sprintf(tmp, "--force-raw-format --sign=unsigned ");
