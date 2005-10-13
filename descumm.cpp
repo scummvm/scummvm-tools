@@ -1116,7 +1116,7 @@ void do_resource(char *buf, byte opco)
 		do_tok(buf, "nukeCharset", ((opcode & 0x80) ? A1V : A1B));
 		break;
 	case 0x14:
-		do_tok(buf, "loadFlObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "loadFlObject", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 
 	case 0x22 + 1:
