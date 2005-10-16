@@ -520,10 +520,14 @@ int main(int argc, char *argv[]) {
 			case CP_PUSH_STRING:
 				parameter = (int8) readByte(in);
 				printf("PUSH \"");
-				for (j = 0; j < parameter; j++)
-					fputc(readByte(in), stdout);
+				for (j = 0; j < parameter; j++) {
+					byte c = readByte(in);
+					fputc(c, stdout);
+					pc++;
+				}
 				printf("\"\n");
-				pc += (parameter + 1);
+				readByte(in);
+				pc += 2;
 				break;
 			case CP_PUSH_DEREFERENCED_STRUCTURE:
 				parameter = (int32) readUint32LE(in);
