@@ -1378,7 +1378,7 @@ void next_line_HE_V72(char *output)
 		push(se_var(get_word()));
 		break;
 	case 0x4:
-		ext(output, "s|addMessageToStack");
+		ext(output, "s|getScriptString");
 		break;
 	case 0x7:
 		push(se_array(get_word(), NULL, pop()));
@@ -1464,7 +1464,7 @@ void next_line_HE_V72(char *output)
 				"\x41ppp|unk3,");
 		break;
 	case 0x62:
-		ext(output, "ppp|drawObjectAt");
+		ext(output, "ppp|printWizImage");
 		break;
 	case 0x65:
 		ext(output, "|stopObjectCodeA");
@@ -1936,7 +1936,7 @@ void next_line_HE_V72(char *output)
 				);
 		break;
 	case 0xCA:
-		ext(output, "p|breakXTimes");
+		ext(output, "p|delayFrames");
 		break;
 	case 0xCB:
 		ext(output, "rlp|pickOneOf");
@@ -2142,7 +2142,7 @@ void next_line_V8(char *output)
 		ext(output, "|breakHere");
 		break;
 	case 0x68:
-		ext(output, "p|breakHereVar");
+		ext(output, "p|delayFrames");
 		break;
 	case 0x69:
 		ext(output, "x" "wait\0"
@@ -2262,7 +2262,7 @@ void next_line_V8(char *output)
 		ext(output, "p|debug");
 		break;
 	case 0x89:
-		ext(output, "lp|setClassOf?");
+		ext(output, "lp|setClass");
 		break;
 	case 0x8A:
 		ext(output, "pp|setState");
@@ -2270,7 +2270,6 @@ void next_line_V8(char *output)
 	case 0x8B:
 		ext(output, "pp|setOwner");
 		break;
-
 	case 0x8C:
 		ext(output, "pp|panCameraTo");
 		break;
@@ -3331,7 +3330,7 @@ void next_line_V67(char *output)
 			PRINT_V67("printSystem");
 		break;
 	case 0xB8:
-		// This is *almost* identical to the other print opcodes, only the 'begine' subop differs
+		// This is *almost* identical to the other print opcodes, only the 'begin' subop differs
 		ext(output, "x" "printActor\0"
 				"\x41pp|XY,"
 				"\x42p|color,"
@@ -3392,7 +3391,7 @@ void next_line_V67(char *output)
 				"\xCBppv|string");
 		break;
 	case 0xC1:
-		ext(output, "ps|unknownOp");
+		ext(output, "ps|trace");
 		break;
 	case 0xC4:
 		ext(output, "rp|abs");
@@ -3482,7 +3481,7 @@ void next_line_V67(char *output)
 					);
 		break;
 	case 0xCA:
-		ext(output, "p|breakXTimes");
+		ext(output, "p|delayFrames");
 		break;
 	case 0xCB:
 		ext(output, "rlp|pickOneOf");
