@@ -48,6 +48,8 @@ Compression Tools:
         compress_saga
                 Compress SAGA engine digital sound files into MP3 and Ogg
                 Vorbis format.
+                There is currently no support for compressed sound files in
+                ScummVM!
 
         compress_simon
                 Compresses Simon voc/wav files to MP3/Ogg/FLAC.
