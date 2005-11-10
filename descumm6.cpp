@@ -615,10 +615,10 @@ const char *var_names8[] = {
 	"VAR_TALK_ACTOR",
 	"VAR_HAVE_MSG",
 	/* 16 */
-	"VAR_MOUSE_BUTTONS",
+	"VAR_LEFTBTN_DOWN",
+	"VAR_RIGHTBTN_DOWN",
+	"VAR_LEFTBTN_HOLD",
 	"VAR_RIGHTBTN_HOLD",
-	"VAR_MOUSE_HOLD",
-	NULL,
 	/* 20 */
 	NULL,
 	NULL,
