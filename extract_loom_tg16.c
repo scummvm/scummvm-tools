@@ -1,4 +1,4 @@
-/* Loom_TG16_Extract - Extract data files from TG16 version of Loom
+/* extract_loom_tg16 - Extract data files from TG16 version of Loom
  * Copyright (C) 2004-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or

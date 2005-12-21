@@ -1,4 +1,4 @@
-/* Extract - monster.sou to MP3-compressed monster.so3 converter
+/* compress_scumm_sou - monster.sou to MP3-compressed monster.so3 converter
  * Copyright (C) 2002-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or

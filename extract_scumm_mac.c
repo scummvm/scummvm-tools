@@ -1,4 +1,4 @@
-/* ReScumm - Split one-big-file Macintosh game data into seperate .00x files for ScummVM
+/* extract_scumm_mac - Split one-big-file Macintosh game data into seperate .00x files for ScummVM
  * Copyright (C) 2001-2003  Casey Hutchinson
  * Copyright (C) 2004-2005  The ScummVM Team
  *

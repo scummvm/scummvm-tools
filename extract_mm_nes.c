@@ -1,4 +1,4 @@
-/* MM_NES_Extract - Extract data files from NES version of Maniac Mansion
+/* extract_mm_nes - Extract data files from NES version of Maniac Mansion
  * Copyright (C) 2004-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or

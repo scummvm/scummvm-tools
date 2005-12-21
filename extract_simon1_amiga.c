@@ -1,4 +1,4 @@
-/* Simon1Decr - Extracts Simon the Sorcerer 1 Amiga (AGA/ECS) graphics or music files
+/* extract_simon1_amiga - Extracts Simon the Sorcerer 1 Amiga (AGA/ECS) graphics or music files
  * Copyright (C) 2004-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or

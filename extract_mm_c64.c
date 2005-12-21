@@ -1,4 +1,4 @@
-/* MM_C64_Extract - Extract data files from C64 version of Maniac Mansion
+/* extract_mm_c64 - Extract data files from C64 version of Maniac Mansion
  * Copyright (C) 2004-2005  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or

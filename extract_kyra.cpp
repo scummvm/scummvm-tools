@@ -1,4 +1,4 @@
-/* UnPak - Extractor for Kyrandia .pak archives
+/* extract_kyra - Extractor for Kyrandia .pak archives
  * Copyright (C) 2004  Johannes Schickel
  * Copyright (C) 2004-2005  The ScummVM Team
  *
