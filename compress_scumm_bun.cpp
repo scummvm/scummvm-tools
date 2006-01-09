@@ -49,120 +49,93 @@ inline void WRITE_BE_UINT16(void *ptr, uint16 value) {
 }
 
 
-static byte _destImcTable[89];
-static uint32 _destImcTable2[89 * 64];
+/*
+ * The "IMC" codec below (see cases 13 & 15 in decompressCodec) is actually a
+ * variant of the IMA codec, see also
+ *   <http://www.multimedia.cx/simpleaudio.html>
+ *
+ * It is somewhat different, though: the standard ADPCM codecs use a fixed
+ * size for their data packets (4 bits), while the codec implemented here
+ * varies the size of each "packet" between 2 and 7 bits.
+ */
 
-static const int16 imcTable[] = {
-	0x0007, 0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x0010, 0x0011,
-	0x0013, 0x0015, 0x0017, 0x0019, 0x001C, 0x001F, 0x0022, 0x0025, 0x0029, 0x002D,
-	0x0032, 0x0037, 0x003C, 0x0042, 0x0049, 0x0050, 0x0058, 0x0061, 0x006B, 0x0076,
-	0x0082, 0x008F, 0x009D, 0x00AD, 0x00BE, 0x00D1, 0x00E6, 0x00FD, 0x0117, 0x0133,
-	0x0151, 0x0173, 0x0198, 0x01C1, 0x01EE, 0x0220, 0x0256, 0x0292, 0x02D4, 0x031C,
-	0x036C, 0x03C3, 0x0424, 0x048E, 0x0502, 0x0583, 0x0610, 0x06AB, 0x0756, 0x0812,
-	0x08E0, 0x09C3, 0x0ABD, 0x0BD0, 0x0CFF, 0x0E4C, 0x0FBA, 0x114C, 0x1307, 0x14EE,
-	0x1706, 0x1954, 0x1BDC, 0x1EA5, 0x21B6, 0x2515, 0x28CA, 0x2CDF, 0x315B, 0x364B,
-	0x3BB9, 0x41B2, 0x4844, 0x4F7E, 0x5771, 0x602F, 0x69CE, 0x7462, 0x7FFF
+static byte _imcTableEntryBitCount[89];
+
+static const int16 imcTable[89] = {
+		7,	  8,	9,	 10,   11,	 12,   13,	 14,
+	   16,	 17,   19,	 21,   23,	 25,   28,	 31,
+	   34,	 37,   41,	 45,   50,	 55,   60,	 66,
+	   73,	 80,   88,	 97,  107,	118,  130,	143,
+	  157,	173,  190,	209,  230,	253,  279,	307,
+	  337,	371,  408,	449,  494,	544,  598,	658,
+	  724,	796,  876,	963, 1060, 1166, 1282, 1411,
+	 1552, 1707, 1878, 2066, 2272, 2499, 2749, 3024,
+	 3327, 3660, 4026, 4428, 4871, 5358, 5894, 6484,
+	 7132, 7845, 8630, 9493,10442,11487,12635,13899,
+	15289,16818,18500,20350,22385,24623,27086,29794,
+	32767
 };
 
-static const byte imxOtherTable[6][128] = {
+static const byte imxOtherTable[6][64] = {
 	{
-		0xFF, 0x04, 0xFF, 0x04
+		0xFF,
+		4
 	},
-	
+
 	{
-		0xFF, 0xFF, 0x02, 0x08, 0xFF, 0xFF, 0x02, 0x08
+		0xFF, 0xFF,
+		   2,    8
 	},
-	
+
 	{
-		0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x02, 0x04, 0x06,
-		0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x02, 0x04, 0x06
+		0xFF, 0xFF, 0xFF, 0xFF,
+		   1,    2,    4,    6
 	},
-	
+
 	{
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0x01, 0x02, 0x04, 0x06, 0x08, 0x0C, 0x10, 0x20,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0x01, 0x02, 0x04, 0x06, 0x08, 0x0C, 0x10, 0x20
+		   1,    2,    4,    6,    8,   12,   16,   32
 	},
-	
+
 	{
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0x01, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E,
-		0x10, 0x12, 0x14, 0x16, 0x18, 0x1A, 0x1C, 0x20,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0x01, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E,
-		0x10, 0x12, 0x14, 0x16, 0x18, 0x1A, 0x1C, 0x20
+		   1,    2,    4,    6,    8,   10,   12,   14,
+		  16,   18,   20,   22,   24,   26,   28,   32
 	},
-	
+
 	{
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-		0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
-		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
-		0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-		0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
-		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
-		0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
+		   1,    2,    3,    4,    5,    6,    7,    8,
+		   9,   10,   11,   12,   13,   14,   15,   16,
+		  17,   18,   19,   20,   21,   22,   23,   24,
+		  25,   26,   27,   28,   29,   30,   31,   32
 	}
 };
 
-static const byte imxShortTable[] = {
-	0, 0, 1, 3, 7, 15, 31, 63
-};
-
 void initializeImcTables() {
-	int32 destTablePos = 0;
-	int32 pos = 0;
-	
-	do {
-		byte put = 1;
+	int pos;
+
+	for (pos = 0; pos < ARRAYSIZE(imcTable); ++pos) {
+		byte put = 0;
 		int32 tableValue = ((imcTable[pos] * 4) / 7) / 2;
 		while (tableValue != 0) {
 			tableValue /= 2;
 			put++;
 		}
-		if (put < 3) {
-			put = 3;
+		if (put < 2) {
+			put = 2;
 		}
-		if (put > 8) {
-			put = 8;
+		if (put > 7) {
+			put = 7;
 		}
-		put--;
-		assert(pos < 89);
-		_destImcTable[pos] = put;
-	} while (++pos <= 88);
-	_destImcTable[89] = 0;
-
-	for (int n = 0; n < 64; n++) {
-		pos = 0;
-		destTablePos = n;
-		do {
-			int32 count = 32;
-			int32 put = 0;
-			int32 tableValue = imcTable[pos];
-	 		do {
-				if ((count & n) != 0) {
-					put += tableValue;
-				}
-				count /= 2;
-				tableValue /= 2;
-			} while (count != 0);
-			assert(destTablePos < 89 * 64);
-			_destImcTable2[destTablePos] = put;
-			destTablePos += 64;
-		} while (++pos <= 88);
+		_imcTableEntryBitCount[pos] = put;
 	}
 }
+
 #define NextBit                            \
 	do {                                   \
 		bit = mask & 1;                    \
@@ -537,91 +510,107 @@ int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 in
 		}
 
 		{
+			// Decoder for the the IMA ADPCM variants used in COMI.
+			// Contrary to regular IMA ADPCM, this codec uses a variable
+			// bitsize for the encoded data.
+
 			const int MAX_CHANNELS = 2;
-			int32 left, startPos, origLeft, curTableEntry, destPos, esiReg;
+			int32 outputSamplesLeft;
+			int32 destPos;
 			int16 firstWord;
-			byte sByte[MAX_CHANNELS] = {0, 0};
-			int32 sDWord1[MAX_CHANNELS] = {0, 0};
-			int32 sDWord2[MAX_CHANNELS] = {0, 0};
-			int32 tableEntrySum, imcTableEntry, curTablePos, outputWord, adder;
-			byte decompTable, otherTablePos, bitMask;
-			byte *readPos, *dst;
-			uint16 readWord;
-			
-			assert(0 <= channels && channels <= MAX_CHANNELS);
+			byte initialTablePos[MAX_CHANNELS] = {0, 0};
+			int32 initialimcTableEntry[MAX_CHANNELS] = {7, 7};
+			int32 initialOutputWord[MAX_CHANNELS] = {0, 0};
+			int32 totalBitOffset, curTablePos, outputWord;
+			byte *dst;
+			int i;
+
+			// We only support mono and stereo
+			assert(channels == 1 || channels == 2);
 
 			src = comp_input;
 			dst = comp_output;
-			if (channels == 2) {
-				output_size = left = 0x2000;
-			} else {
-				left = 0x1000;
-				output_size = 0x2000;
-			}
+			output_size = 0x2000;
+			outputSamplesLeft = 0x1000;
+
+			// Every data packet contains 0x2000 bytes of audio data
+			// when extracted. In order to encode bigger data sets,
+			// one has to split the data into multiple blocks.
+			//
+			// Every block starts with a 2 byte word. If that word is
+			// non-zero, it indicates the size of a block of raw audio
+			// data (not encoded) following it. That data we simply copy
+			// to the output buffer and the proceed by decoding the
+			// remaining data.
+			//
+			// If on the other hand the word is zero, then what follows
+			// are 7*channels bytes containing seed data for the decoder.
 			firstWord = READ_BE_UINT16(src);
 			src += 2;
 			if (firstWord != 0) {
+				// Copy raw data
 				memcpy(dst, src, firstWord);
 				dst += firstWord;
 				src += firstWord;
-				startPos = 0;
-				if (channels == 2) {
-					left = 0x2000 - firstWord;
-					output_size = left;
-				} else {
-					left = 0x1000 - (firstWord >> 1);
-					output_size = left << 1;
-				}
-				output_size += firstWord;
+				assert((firstWord & 1) == 0);
+				outputSamplesLeft -= firstWord / 2;
 			} else {
-				startPos = 1;
-				for (int i = 0; i < channels; i++) {
-					sByte[i] = *(src++);
-					sDWord1[i] = READ_BE_UINT32(src);
+				// Read the seed values for the decoder.
+				for (i = 0; i < channels; i++) {
+					initialTablePos[i] = *src;
+					src += 1;
+					initialimcTableEntry[i] = READ_BE_UINT32(src);
 					src += 4;
-					sDWord2[i] = READ_BE_UINT32(src);
+					initialOutputWord[i] = READ_BE_UINT32(src);
 					src += 4;
 				}
 			}
 
-			origLeft = left >> (channels - 1);
-			tableEntrySum = 0;
-			for (int l = 0; l < channels; l++) {
-				if (startPos != 0) {
-					curTablePos = sByte[l];
-					imcTableEntry = sDWord1[l];
-					outputWord = sDWord2[l];
-				} else {
-					curTablePos = 0;
-					imcTableEntry = 7;
-					outputWord = 0;
-				}
+			totalBitOffset = 0;
+			// The channels are encoded separately.
+			for (int chan = 0; chan < channels; chan++) {
+				// Read initial state (this makes it possible for the data stream
+				// to be split & spread across multiple data chunks.
+				curTablePos = initialTablePos[chan];
+				//imcTableEntry = initialimcTableEntry[chan];
+				outputWord = initialOutputWord[chan];
 
-				left = origLeft;
-				destPos = l << 1;
+				// We need to interleave the channels in the output; we achieve
+				// that by using a variables dest offset:
+				destPos = chan * 2;
 
-				if (channels == 2) {
-					if (l == 0)
-						left++;
-					left >>= 1;
-				}
+				const int bound = (channels == 1)
+									? outputSamplesLeft
+									: ((chan == 0)
+										? (outputSamplesLeft+1) / 2
+										: outputSamplesLeft / 2);
+				for (i = 0; i < bound; ++i) {
+					// Determine the size (in bits) of the next data packet
+					const int32 curTableEntryBitCount = _imcTableEntryBitCount[curTablePos];
+					assert(2 <= curTableEntryBitCount && curTableEntryBitCount <= 7);
 
-				while (left--) {
-					curTableEntry = _destImcTable[curTablePos];
-					decompTable = (byte)(curTableEntry - 2);
-					bitMask = 2 << decompTable;
-					readPos = src + (tableEntrySum >> 3);
-					readWord = (uint16)(READ_BE_UINT16(readPos) << (tableEntrySum & 7));
-					otherTablePos = (byte)(readWord >> (16 - curTableEntry));
-					tableEntrySum += curTableEntry;
-					esiReg = ((imxShortTable[curTableEntry] & otherTablePos)
-						<< (7 - curTableEntry)) + (curTablePos * 64);
-					imcTableEntry >>= (curTableEntry - 1);
-					adder = imcTableEntry + _destImcTable2[esiReg];
-					if ((otherTablePos & bitMask) != 0) {
-						adder = -adder;
+					// Read the next data packet
+					const byte *readPos = src + (totalBitOffset >> 3);
+					const uint16 readWord = (uint16)(READ_BE_UINT16(readPos) << (totalBitOffset & 7));
+					const byte packet = (byte)(readWord >> (16 - curTableEntryBitCount));
+
+					// Advance read position to the next data packet
+					totalBitOffset += curTableEntryBitCount;
+
+					// Decode the data packet into a delta value for the output signal.
+					const byte signBitMask = (1 << (curTableEntryBitCount - 1));
+					const byte dataBitMask = (signBitMask - 1);
+					const byte data = (packet & dataBitMask);
+
+					int32 delta = imcTable[curTablePos] * (2 * data + 1) >> (curTableEntryBitCount - 1);
+
+					// The topmost bit in the data packet tells is a sign bit
+					if ((packet & signBitMask) != 0) {
+						delta = -delta;
 					}
-					outputWord += adder;
+
+					// Accumulate the delta onto the output data
+					outputWord += delta;
 
 					// Clip outputWord to 16 bit signed, and write it into the destination stream
 					if (outputWord > 0x7fff)
@@ -629,17 +618,14 @@ int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 in
 					if (outputWord < -0x8000)
 						outputWord = -0x8000;
 					WRITE_BE_UINT16(dst + destPos, outputWord);
+					destPos += channels << 1;
 
-					// Adjust the curTablePos / imcTableEntry
-					assert(decompTable < 6);
-					curTablePos += (signed char)imxOtherTable[decompTable][otherTablePos];
-					if (curTablePos > 88)
-						curTablePos = 88;
+					// Adjust the curTablePos
+					curTablePos += (int8)imxOtherTable[curTableEntryBitCount - 2][data];
 					if (curTablePos < 0)
 						curTablePos = 0;
-					imcTableEntry = imcTable[curTablePos];
-
-					destPos += channels << 1;
+					else if (curTablePos >= ARRAYSIZE(imcTable))
+						curTablePos = ARRAYSIZE(imcTable) - 1;
 				}
 			}
 		}
