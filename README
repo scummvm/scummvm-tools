@@ -62,7 +62,7 @@ Compression Tools:
                 Used to compress Broken Sword 2's music and speech .clu
                 files to .cl3 (MP3), .clg (Vorbis) or .clf (FLAC).
 
-                Please note that FLAC-compression will produce a larger file
+                Please note that FLAC compression will produce a larger file
                 than the original! This is because the original files already
                 use lossy compression.
 
@@ -79,6 +79,14 @@ Compression Tools:
                 out whether that's the case by looking at the About dialog).
                 For the Ogg or Mad compression feature, your ScummVM binary
                 naturally must have been built with Ogg or Mad support enabled.
+                
+                NOTE: For some '.san' files there is a corresponding '.flu'
+                file, which contains offsets into the '.san' file. Hence, the
+                compress_san has to modify the '.flu' file. This happens
+                automatically, if the '.san' and '.flu' files are in the
+                same directory (which is normally the case). If you want to
+                move the '.san' files before compressing them, make sure to 
+                move the '.flu' files, too!
 
         compress_scumm_bun <inputfile> <inputdir> <outputdir> [--ogg]
 
