@@ -1025,7 +1025,7 @@ int main (int argc, char **argv)
 
 	if ((readByte(input) == 'N') && (readByte(input) == 'E') && (readByte(input) == 'S') && (readByte(input) == 0x1A)) {
 		printf("You have specified an iNES formatted ROM image, which is not supported.\n"
-			"You must input the PRG section only - see ScummVM README section 3.8.");
+			"You must input the PRG section only - see ScummVM README section 3.9.");
 		return 1;
 	}
 	rewind(input);
