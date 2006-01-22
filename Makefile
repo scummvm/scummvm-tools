@@ -91,11 +91,29 @@ compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
 compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h util.h
+
+descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
+
+# Most compress_* tools (except for compress_queen) use compress.h
 compress_saga.o compress_scumm_sou.o compress_scumm_bun.o \
 compress_simon.o compress_sword1.o compress_sword2.o \
-compress.o: util.h compress.h
-desword2.o compress_queen.o extract_scumm_mac.o util.o: util.h
+compress.o: compress.h
+
+# Virtually everything depends on util.h
+compress_saga.o compress_scumm_sou.o compress_scumm_bun.o \
+compress_simon.o compress_sword1.o compress_sword2.o \
+compress.o \
+compress_queen.o \
+descumm.o descumm6.o descumm-common.o descumm-tool.o \
+dekyra.o \
+desword2.o \
+extract_kyra.o \
+extract_loom_tg16.o \
+extract_mm_c64.o \
+extract_mm_nes.o \
+extract_scumm_mac.o \
+extract_zak_c64.o \
+util.o: util.h
 
 clean:
 	rm -f *.o $(TARGETS)
