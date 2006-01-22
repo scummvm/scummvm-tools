@@ -215,9 +215,10 @@ int main(int argc, char *argv[])
 	int size, i = 1;
 	uint32 prevOffset;
 
-	if (argc < 2 || (0 == strcmp(argv[argc - 1], "--mp3") && 0 == strcmp(argv[argc - 1], "--vorbis") && 0 == strcmp(argv[argc - 1], "--flac") != 0))
-		showhelp(argv[0]);
 	
+	if (argc < 2)
+		showhelp(argv[0]);
+
 	if (strcmp(argv[1], "--mp3") == 0) {
 		compressionType = COMPRESSION_MP3;
 		tempEncoded = TEMP_MP3;
@@ -228,9 +229,7 @@ int main(int argc, char *argv[])
 			ptr += sprintf(ptr, "%s ", argv[i]);
 		}
 		ptr += sprintf(ptr, "%s %s", TEMP_SB, tempEncoded);
-	}
-
-	if (strcmp(argv[1], "--vorbis") == 0) {
+	} else if (strcmp(argv[1], "--vorbis") == 0) {
 		compressionType = COMPRESSION_OGG;
 		tempEncoded = TEMP_OGG;
 		i++;
@@ -239,9 +238,7 @@ int main(int argc, char *argv[])
 			/* Append optional encoder arguments */
 			ptr += sprintf(ptr, "%s ", argv[i]);
 		}
-	}
-
-	if (strcmp(argv[1], "--flac") == 0) {
+	} else if (strcmp(argv[1], "--flac") == 0) {
 		compressionType = COMPRESSION_FLAC;
 		tempEncoded = TEMP_FLAC;
 		i++;
@@ -253,6 +250,8 @@ int main(int argc, char *argv[])
 		}
 
 		ptr += sprintf(ptr, "-o %s %s", tempEncoded, TEMP_SB );
+	} else {
+		showhelp(argv[0]);
 	}
 
 	/* Open input file (QUEEN.1) */
