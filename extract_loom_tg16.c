@@ -700,7 +700,7 @@ unsigned long r_offset (p_resource res)
 {
 	return res->offset[ISO];
 }
-unsigned short r_length (p_resource res)
+signed short r_length (p_resource res)
 {
 	return res->length[ISO];
 }
