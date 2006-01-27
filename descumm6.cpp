@@ -1824,7 +1824,7 @@ void next_line_HE_V72(char *output)
 				 "\xA0|shutDown");
 		break;
 	case 0xAF:
-		ext(output, "rp|isActorInBox");
+		ext(output, "rpp|isActorInBox");
 		break;
 	case 0xB0:
 		ext(output, "p|delay");
@@ -3291,7 +3291,7 @@ void next_line_V67(char *output)
 				"\xA0|shutDown");
 		break;
 	case 0xAF:
-		ext(output, "rp|isActorInBox");
+		ext(output, "rpp|isActorInBox");
 		break;
 	case 0xB0:
 		ext(output, "p|delay");
