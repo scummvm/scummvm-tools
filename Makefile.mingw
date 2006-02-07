@@ -1,3 +1,6 @@
+# $URL$
+# $Id$
+
 # Where is scummvm will be installed
 SCUMMVMPATH=C:/scummvm
 

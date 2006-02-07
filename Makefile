@@ -1,3 +1,6 @@
+# $URL$
+# $Id$
+
 SRC=.
 
 CC      := gcc
