@@ -19,6 +19,7 @@ CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
 # CFLAGS += -DSCUMM_BIG_ENDIAN
 
 TARGETS := \
+	compress_kyra$(EXEEXT) \
 	compress_queen$(EXEEXT) \
 	compress_saga$(EXEEXT) \
 	compress_san$(EXEEXT) \
@@ -94,19 +95,23 @@ compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
 compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
+compress_kyra$(EXEEXT): compress_kyra.o compress.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
 
 # Most compress_* tools (except for compress_queen) use compress.h
 compress_saga.o compress_scumm_sou.o compress_scumm_bun.o \
 compress_simon.o compress_sword1.o compress_sword2.o \
-compress.o: compress.h
+compress_kyra.o compress.o: compress.h
 
 # Virtually everything depends on util.h
 compress_saga.o compress_scumm_sou.o compress_scumm_bun.o \
 compress_simon.o compress_sword1.o compress_sword2.o \
 compress.o \
 compress_queen.o \
+compress_kyra.o \
 descumm.o descumm6.o descumm-common.o descumm-tool.o \
 dekyra.o \
 desword2.o \
