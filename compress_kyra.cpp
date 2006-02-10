@@ -237,7 +237,6 @@ static void process(FILE *file, const char *output) {
 			continue;
 		writeUint32LE(outputFile, curAddr);
 		fwrite(pakEntries[i].filename, sizeof(uint8), strlen(pakEntries[i].filename) + 1, outputFile);
-		printf("'%s' (size: %d)\n", pakEntries[i].filename, strlen(pakEntries[i].filename) + 1);
 		curAddr += pakEntries[i].size;
 	}
 	
