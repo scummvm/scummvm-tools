@@ -1017,7 +1017,7 @@ int main (int argc, char **argv)
 	if (argc < 2)
 	{
 		printf("Syntax: %s <infile.PRG>\n",argv[0]);
-		printf("\tSupported versions: USA, Europe, Sweden, France, Spain, Germany, USA Prototype\n");
+		printf("\tSupported versions: Europe, France, Germany, Sweden and USA\n");
 		printf("\tJapanese version is NOT supported!\n");
 		return 1;
 	}
@@ -1026,7 +1026,7 @@ int main (int argc, char **argv)
 
 	if ((readByte(input) == 'N') && (readByte(input) == 'E') && (readByte(input) == 'S') && (readByte(input) == 0x1A)) {
 		printf("You have specified an iNES formatted ROM image, which is not supported.\n"
-			"You must input the PRG section only - see ScummVM README section 3.9.");
+			"You must input the PRG section only - see Maniac Mansion NES notes section of README.");
 		return 1;
 	}
 	rewind(input);
