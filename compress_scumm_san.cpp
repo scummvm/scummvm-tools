@@ -1,4 +1,4 @@
-/* compress_san - compressor for smush san files
+/* compress_scumm_san - compressor for smush san files
  * Copyright (C) 2004-2006  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or

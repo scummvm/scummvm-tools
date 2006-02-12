@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="compress_san"
+	Name="compress_scumm_san"
 	ProjectGUID="{1712DDB9-8BB1-4108-9A06-F86F28409B20}"
 	Keyword="Win32Proj"
 	>
@@ -61,11 +61,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zlibstat.lib"
-				OutputFile="$(OutDir)/compress_san.exe"
+				OutputFile="$(OutDir)/compress_scumm_san.exe"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="libc.lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/compress_san.pdb"
+				ProgramDatabaseFile="$(OutDir)/compress_scumm_san.pdb"
 				SubSystem="1"
 				TargetMachine="1"
 			/>
@@ -135,7 +135,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zlibstat.lib"
-				OutputFile="$(OutDir)/compress_san.exe"
+				OutputFile="$(OutDir)/compress_scumm_san.exe"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="libc.lib"
 				GenerateDebugInformation="TRUE"
@@ -171,7 +171,7 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\..\..\compress_san.cpp"
+			RelativePath="..\..\..\compress_scumm_san.cpp"
 			>
 		</File>
 		<File
