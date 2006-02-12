@@ -66,13 +66,13 @@ Compression Tools:
                 than the original! This is because the original files already
                 use lossy compression.
 
-        compress_san <inputfile> <inputdir> <outputdir> [--ogg]
+        compress_scumm_san <inputfile> <inputdir> <outputdir> [--ogg]
                 Compresses '.san' smush animation files. It uses lossless
                 zlib for compressing FOBJ gfx chunks inside a san file.
                 It also can create a separate Ogg file with the audio track.
 
                 Example of usage:
-                compress_san opening.san uncomp comp
+                compress_Scumm_san opening.san uncomp comp
 
                 In order to use such compressed files, your ScummVM binary 
                 must have been built with zlib support enabled (you can find
