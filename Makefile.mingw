@@ -14,7 +14,7 @@ install:   all
 	strip compress_kyra.exe -o $(SCUMMVMPATH)/tools/compress_kyra.exe
 	strip compress_queen.exe -o $(SCUMMVMPATH)/tools/compress_queen.exe
 	strip compress_saga.exe -o $(SCUMMVMPATH)/tools/compress_saga.exe
-	strip compress_san.exe -o $(SCUMMVMPATH)/tools/compress_san.exe
+	strip compress_scumm_san.exe -o $(SCUMMVMPATH)/tools/compress_scumm_san.exe
 	strip compress_scumm_sou.exe -o $(SCUMMVMPATH)/tools/compress_scumm_sou.exe
 	strip compress_scumm_bun.exe -o $(SCUMMVMPATH)/tools/compress_scumm_bun.exe
 	strip compress_simon.exe -o $(SCUMMVMPATH)/tools/compress_simon.exe

@@ -22,7 +22,7 @@ TARGETS := \
 	compress_kyra$(EXEEXT) \
 	compress_queen$(EXEEXT) \
 	compress_saga$(EXEEXT) \
-	compress_san$(EXEEXT) \
+	compress_scumm_san$(EXEEXT) \
 	compress_scumm_sou$(EXEEXT) \
 	compress_scumm_bun$(EXEEXT) \
 	compress_simon$(EXEEXT) \
@@ -41,7 +41,7 @@ TARGETS := \
 
 all: $(TARGETS)
 
-compress_san$(EXEEXT): compress_san.o compress.o util.o
+compress_scumm_san$(EXEEXT): compress_scumm_san.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lz
 
 descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o

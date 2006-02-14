@@ -82,7 +82,7 @@ Compression Tools:
                 
                 NOTE: For some '.san' files there is a corresponding '.flu'
                 file, which contains offsets into the '.san' file. Hence, the
-                compress_san has to modify the '.flu' file. This happens
+                compress_scumm_san has to modify the '.flu' file. This happens
                 automatically, if the '.san' and '.flu' files are in the
                 same directory (which is normally the case). If you want to
                 move the '.san' files before compressing them, make sure to 
