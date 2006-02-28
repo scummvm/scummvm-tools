@@ -693,11 +693,11 @@ void do_decodeparsestring_v2(char *buf, byte opcode)
 	*buf = 0;
 }
 
-void do_actorset_v12(char *buf, byte opcode)
+void do_actorops_v12(char *buf, byte opcode)
 {
 	// FIXME: the A2 should be displayed as arg to the subops, not as arg to the
-	// ActorSet itself; but that'll require some more work.
-	buf = do_tok(buf, "ActorSet", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x80) ? A2V : A2B) | ANOLASTPAREN);
+	// ActorOps itself; but that'll require some more work.
+	buf = do_tok(buf, "ActorOps", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x80) ? A2V : A2B) | ANOLASTPAREN);
 	buf = strecpy(buf, ",[");
 
 	int subop = get_byte();
@@ -1956,7 +1956,7 @@ void next_line_V12(char *buf)
 	case 0x93:
 	case 0xD3:
 		// actorSet
-		do_actorset_v12(buf, opcode);
+		do_actorops_v12(buf, opcode);
 		break;
 
 	case 0x2A:
