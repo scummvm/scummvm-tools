@@ -1261,7 +1261,6 @@ void do_room_ops(char *buf)
 
 void do_room_ops_old(char *buf, byte master_opcode)
 {
-	/* FIXME - this function is not complete yet! */
 	char	a[256];
 	char	b[256];
 	
@@ -1328,69 +1327,8 @@ void do_room_ops_old(char *buf, byte master_opcode)
 	case 0x06:
 		do_tok(buf, "ShakeOff", 0);
 		break;
-/*
 	case 0x07:
 		do_tok(buf, "Unused", 0);
-		break;
-	case 0x08:
-		buf =
-			do_tok(buf, "roomFunc2",
-						 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) |
-						 ((opcode & 0x20) ? A3V : A3B));
-		break;
-	case 0x09:
-		buf = do_tok(buf, "saveLoad?", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
-		break;
-	case 0x0A:
-		buf = do_tok(buf, "screenEffect?", ((opcode & 0x80) ? A1V : A1W));
-		break;
-	case 0x0B:
-		buf =
-			do_tok(buf, "roomFunc2",
-						 ANOLASTPAREN | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ?
-																														 A2V : A2W) |
-						 ((opcode & 0x20) ? A3V : A3W));
-		opcode = get_byte();
-		buf =
-			do_tok(buf, NULL,
-						 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B) |
-						 ((opcode & 0x40) ? A2V : A2B));
-		break;
-
-	case 0x0C:
-		buf =
-			do_tok(buf, "roomFunc3",
-						 ANOLASTPAREN | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ?
-																														 A2V : A2W) |
-						 ((opcode & 0x20) ? A3V : A3W));
-		opcode = get_byte();
-		buf =
-			do_tok(buf, NULL,
-						 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B) |
-						 ((opcode & 0x40) ? A2V : A2B));
-		break;
-
-	case 0x0D:
-		do_tok(buf, "save-string", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
-		break;
-	case 0x0E:
-		do_tok(buf, "load-string", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
-		break;
-
-	case 0x0F:
-		buf = do_tok(buf, "palManipulate", ANOLASTPAREN | ((opcode & 0x80) ? A1V : A1B));
-		opcode = get_byte();
-		buf =
-			do_tok(buf, NULL,
-						 ASTARTCOMMA | ANOFIRSTPAREN | ANOLASTPAREN | ((opcode & 0x80) ?
-																													 A1V : A1B) |
-						 ((opcode & 0x40) ? A2V : A2B));
-		opcode = get_byte();
-		buf = do_tok(buf, NULL, ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B));
-		break;
-*/
-	case 0x10:
-		do_tok(buf, "colorCycleDelay", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	default:
 		// strcpy(buf, "Unknown??");
