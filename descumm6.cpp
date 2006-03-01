@@ -1689,7 +1689,7 @@ void next_line_HE_V72(char *output)
 				"\xBApppp|palManipulate,"
 				"\xBBpp|colorCycleDelay,"
 				"\xD5p|setPalette,"
-				"\xDCpp|roomFunc220,"
+				"\xDCpp|copyPalColor,"
 				"\xDDsp|saveLoadThing2");
 		break;
 	case 0x9D:
@@ -1932,8 +1932,8 @@ void next_line_HE_V72(char *output)
 				"\x18|pauseActors,"
 				"\x19|resumActors,"
 				"\x1E|actorBottomClipOverride,"
-				"\x2A|drawWizUnk1,"
-				"\x2B|drawWizUnk2,"
+				"\x2A|setWizImageClip,"
+				"\x2B|setWizImageClipOff,"
 				);
 		break;
 	case 0xCA:
@@ -2042,7 +2042,11 @@ void next_line_HE_V72(char *output)
 		ext(output, "h|setFilePath");
 		break;
 	case 0xFA:
-		ext(output, "hf|setWindowCaption");
+		ext(output, "x" "setSystemMessage\0"
+				"\xF0s|unk1,"
+				"\xF1s|versionMsg,"
+				"\xF2s|unk3,"
+				"\xF3s|titleMsg");
 		break;
 	case 0xFB:
 		ext(output, "x" "polygonOps\0"
@@ -3643,7 +3647,11 @@ void next_line_V67(char *output)
 		break;
 	case 0xFA:
 		if (HumongousFlag) {
-			ext(output, "fs|setWindowCaption");
+			ext(output, "x" "setSystemMessage\0"
+					"\xF0s|unk1,"
+					"\xF1s|versionMsg,"
+					"\xF2s|unk3,"
+					"\xF3s|titleMsg");
 		} else
 			invalidop(NULL, code);
 		break;
