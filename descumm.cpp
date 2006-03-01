@@ -157,9 +157,9 @@ const char *var_names2[] = {
 	"VAR_VIRT_MOUSE_Y",
 	/* 32 */
 	"VAR_CLICK_AREA",
+	"VAR_CLICK_VERB",
 	NULL,
-	NULL,
-	NULL,
+	"VAR_CLICK_OBJECT",
 	/* 36 */
 	"VAR_ROOM_RESOURCE",
 	"VAR_LAST_SOUND",
