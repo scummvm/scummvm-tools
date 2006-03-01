@@ -403,8 +403,8 @@ const char *var_names6[] = {
 	"VAR_TIMEDATE_YEAR",
 	/* 120 */
 	NULL,
-	NULL,
 	"VAR_GAME_VERSION",
+	NULL,
 	"VAR_CHARSET_MASK",
 	/* 124 */
 	NULL,
