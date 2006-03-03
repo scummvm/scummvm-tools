@@ -2564,12 +2564,12 @@ void next_line_V0(char *buf)
 	case 0xD2:
 		do_tok(buf, "actorFollowCamera", ((opcode & 0x80) ? A1V : A1B));
 		break;
-	case 0x15:
 	case 0x95:
 	case 0xD5:
 		do_tok(buf, "actorFromPos",
 					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | AVARSTORE);
 		break;
+	case 0x15:
 	case 0x55:
 		do_tok(buf, "walkActorToActor",
 					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
