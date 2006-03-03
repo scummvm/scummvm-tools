@@ -23,17 +23,6 @@
 #include "compress.h"
 #include "zlib.h"
 
-inline uint16 READ_LE_UINT16(const void *ptr) {
-	const byte *b = (const byte *)ptr;
-	return (b[1] << 8) + b[0];
-}
-
-inline void WRITE_LE_UINT16(void *ptr, uint16 value) {
-	byte *b = (byte *)ptr;
-	b[0] = (byte)(value >> 0);
-	b[1] = (byte)(value >> 8);
-}
-
 const char *tag2str(uint32 tag) {
 	static char str[5];
 	str[0] = (char)(tag >> 24);
