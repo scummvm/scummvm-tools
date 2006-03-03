@@ -1273,7 +1273,7 @@ void jump(char *output)
 	} else {
 		if (num_block_stack && !dontOutputWhile) {
 			BlockStack *p = &block_stack[num_block_stack - 1];
-			if (p->isWhile && cur == p->to)
+			if (p->isWhile && cur == (int)p->to)
 				return;		// A 'while' ends here.
 			if (!dontOutputBreaks && maybeAddBreak(cur, to)) {
 				sprintf(output, "break");

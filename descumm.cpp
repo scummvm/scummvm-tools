@@ -1568,7 +1568,7 @@ void do_unconditional_jump(char *buf)
 	} else {
 		if (num_block_stack && !dontOutputWhile) {
 			BlockStack *p = &block_stack[num_block_stack - 1];
-			if (p->isWhile && cur == p->to)
+			if (p->isWhile && cur == (int)p->to)
 				return;		// A 'while' ends here.
 		}
 		sprintf(buf, "goto %.4X;", to);
