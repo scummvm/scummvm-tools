@@ -476,25 +476,25 @@ char *get_var(char *buf)
 		
 	assert(i >= 0);
 
-	if (scriptVersion == 0 &&
-			i < ARRAYSIZE(var_names0) && var_names0[i]) {
-		buf += sprintf(buf, var_names0[i]);
-		return buf;
-	} else if (scriptVersion <= 2 &&
-			i < ARRAYSIZE(var_names2) && var_names2[i]) {
-		buf += sprintf(buf, var_names2[i]);
-		return buf;
-	} else if (scriptVersion >= 3 && 
-			i < ARRAYSIZE(var_names3) && var_names3[i]) {
-		buf += sprintf(buf, var_names3[i]);
+	if (scriptVersion >= 5 && 
+			i < ARRAYSIZE(var_names5) && var_names5[i]) {
+		buf += sprintf(buf, var_names5[i]);
 		return buf;
 	} else if (scriptVersion >= 4 && 
 			i < ARRAYSIZE(var_names4) && var_names4[i]) {
 		buf += sprintf(buf, var_names4[i]);
 		return buf;
-	} else if (scriptVersion >= 5 && 
-			i < ARRAYSIZE(var_names5) && var_names5[i]) {
-		buf += sprintf(buf, var_names5[i]);
+	} else if (scriptVersion >= 3 && 
+			i < ARRAYSIZE(var_names3) && var_names3[i]) {
+		buf += sprintf(buf, var_names3[i]);
+		return buf;
+	} else if (scriptVersion >= 1 &&
+			i < ARRAYSIZE(var_names2) && var_names2[i]) {
+		buf += sprintf(buf, var_names2[i]);
+		return buf;
+	} else if (scriptVersion == 0 &&
+			i < ARRAYSIZE(var_names0) && var_names0[i]) {
+		buf += sprintf(buf, var_names0[i]);
 		return buf;
 	} else if ((i & 0x8000) && (GF_UNBLOCKED || ZakFlag))
 		buf += sprintf(buf, "Var[%d Bit %d", (i & 0x0FFF) >> 4, i & 0x000F);
