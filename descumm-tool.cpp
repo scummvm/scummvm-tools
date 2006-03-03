@@ -346,21 +346,21 @@ int main(int argc, char *argv[])
 			printf("File too small to be a script\n");
 			return 1;
 		}
-		switch (TO_LE_16(*((uint16 *)mem + 2))) {
-		case MKID('LS'):
+		switch (TO_BE_16(*((uint16 *)mem + 2))) {
+		case 'LS':
 			printf("Script# %d\n", (byte)mem[6]);
 			mem += 7;
 			break;			/* Local script */
-		case MKID('SC'):
+		case 'SC':
 			mem += 6;
 			break;			/* Script */
-		case MKID('EN'):
+		case 'EN':
 			mem += 6;
 			break;			/* Entry code */
-		case MKID('EX'):
+		case 'EX':
 			mem += 6;
 			break;			/* Exit code */
-		case MKID('OC'):
+		case 'OC':
 			offs_of_line = skipVerbHeader_V34(mem);
 			break;			/* Verb */
 		default:

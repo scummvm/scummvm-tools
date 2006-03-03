@@ -90,8 +90,6 @@ static inline uint16 SWAP_16(uint16 a) {
 #define TO_LE_16(a) (a)
 #endif
 
-#define MKID(a) (((a&0xff) << 8) | ((a >> 8)&0xff))
-
 #if defined(__GNUC__)
 #define NORETURN_PRE
 #define NORETURN_POST	__attribute__((__noreturn__))
