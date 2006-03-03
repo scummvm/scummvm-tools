@@ -85,7 +85,7 @@ int skipVerbHeader_V34(byte *p)
 	printf("Events:\n");
 
 	while ((code = *p++) != 0) {
-		offset = TO_LE_16(*(uint16 *)p);
+		offset = READ_LE_UINT16(p);
 		p += 2;
 		printf("  %2X - %.4X\n", code, offset);
 		if (minOffset > offset)
@@ -104,7 +104,7 @@ int skipVerbHeader_V567(byte *p)
 	printf("Events:\n");
 
 	while ((code = *p++) != 0) {
-		offset = TO_LE_16(*(uint16 *)p);
+		offset = READ_LE_UINT16(p);
 		p += 2;
 		printf("  %2X - %.4X\n", code, offset);
 		if (minOffset > offset)
@@ -121,8 +121,8 @@ int skipVerbHeader_V8(byte *p)
 	int minOffset = 255;
 	
 	ptr = (uint32 *)p;
-	while ((code = TO_LE_32(*ptr++)) != 0) {
-		offset = TO_LE_32(*ptr++);
+	while ((code = READ_LE_UINT32(ptr++)) != 0) {
+		offset = READ_LE_UINT16(ptr++);
 		printf("  %2d - %.4X\n", code, offset);
 		if (minOffset > offset)
 			minOffset = offset;
@@ -278,7 +278,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 		// Hack to detect verb script: first 4 bytes should be file length
-		if (TO_LE_32(*((uint32 *)mem)) == size_of_code) {
+		if (READ_LE_UINT32(mem) == size_of_code) {
 			if (scriptVersion <= 2)
 				offs_of_line = skipVerbHeader_V12(mem);
 			else
@@ -292,12 +292,12 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	
-		switch (TO_BE_32(*((uint32 *)mem))) {
+		switch (READ_BE_UINT32(mem)) {
 		case 'LSC2':
 			if (size_of_code < 13) {
 				printf("File too small to be a local script\n");
 			}
-			printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
+			printf("Script# %d\n", READ_LE_UINT32(mem+8));
 			mem += 12;
 			break;											/* Local script */
 		case 'LSCR':
@@ -305,13 +305,13 @@ int main(int argc, char *argv[])
 				if (size_of_code < 13) {
 					printf("File too small to be a local script\n");
 				}
-				printf("Script# %d\n", TO_LE_32(*((int32 *)(mem+8))));
+				printf("Script# %d\n", READ_LE_UINT32(mem+8));
 				mem += 12;
 			} else if (scriptVersion == 7) {
 				if (size_of_code < 11) {
 					printf("File too small to be a local script\n");
 				}
-				printf("Script# %d\n", TO_LE_16(*((int16 *)(mem+8))));
+				printf("Script# %d\n", READ_LE_UINT16(mem+8));
 				mem += 10;
 			} else {
 				if (size_of_code < 10) {
@@ -346,7 +346,7 @@ int main(int argc, char *argv[])
 			printf("File too small to be a script\n");
 			return 1;
 		}
-		switch (TO_BE_16(*((uint16 *)mem + 2))) {
+		switch (READ_BE_UINT16(mem + 2)) {
 		case 'LS':
 			printf("Script# %d\n", (byte)mem[6]);
 			mem += 7;

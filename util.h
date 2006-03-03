@@ -78,18 +78,6 @@ static inline uint16 SWAP_16(uint16 a) {
 	return ((a >> 8) & 0xFF) | ((a << 8) & 0xFF00);
 }
 
-#if defined(SCUMM_BIG_ENDIAN)
-#define TO_BE_32(a) (a)
-#define TO_BE_16(a) (a)
-#define TO_LE_32(a) SWAP_32(a)
-#define TO_LE_16(a) SWAP_16(a)
-#else
-#define TO_BE_32(a) SWAP_32(a)
-#define TO_BE_16(a) SWAP_16(a)
-#define TO_LE_32(a) (a)
-#define TO_LE_16(a) (a)
-#endif
-
 #define FORCEINLINE static inline
 
 FORCEINLINE uint16 READ_LE_UINT16(const void *ptr) {

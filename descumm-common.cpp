@@ -77,10 +77,10 @@ int get_word()
 	int i;
 
 	if (scriptVersion == 8) {
-		i = (int32)TO_LE_32(*((uint32 *)cur_pos));
+		i = (int32)READ_LE_UINT32(cur_pos);
 		cur_pos += 4;
 	} else {
-		i = (int16)TO_LE_16(*((uint16 *)cur_pos));
+		i = (int16)READ_LE_UINT16(cur_pos);
 		cur_pos += 2;
 	}
 	return i;
@@ -189,10 +189,10 @@ bool maybeAddIf(uint cur, uint to)
 	// jump right behind a regular jump, then whether that jump is targeting us.
 	if (scriptVersion == 8) {
 		p->isWhile = (*(byte*)(org_pos+to-5) == g_jump_opcode);
-		i = (int32)TO_LE_32(*(int32*)(org_pos+to-4));
+		i = (int32)READ_LE_UINT32(org_pos+to-4);
 	} else {
 		p->isWhile = (*(byte*)(org_pos+to-3) == g_jump_opcode);
-		i = (int16)TO_LE_16(*(int16*)(org_pos+to-2));
+		i = (int16)READ_LE_UINT16(org_pos+to-2);
 	}
 	
 	p->isWhile = p->isWhile && (offs_of_line == (int)to + i);
@@ -261,9 +261,9 @@ bool maybeAddElseIf(uint cur, uint elseto, uint to)
 			return false;							/* Invalid jump */
 	
 		if (scriptVersion == 8)
-			k = to + TO_LE_32(*(int32*)(org_pos + k + 1));
+			k = to + READ_LE_UINT32(org_pos + k + 1);
 		else
-			k = to + TO_LE_16(*(int16*)(org_pos + k + 1));
+			k = to + READ_LE_UINT16(org_pos + k + 1);
 	
 		if (k != elseto)
 			return false;							/* Not an ifelse */

@@ -15,9 +15,6 @@ CFLAGS+= -Wpointer-arith -Wcast-qual -Wcast-align
 # -Wconversion
 CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings 
 
-# Uncomment this if you are on a big endian system
-# CFLAGS += -DSCUMM_BIG_ENDIAN
-
 TARGETS := \
 	compress_kyra$(EXEEXT) \
 	compress_queen$(EXEEXT) \

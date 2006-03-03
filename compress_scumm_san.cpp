@@ -191,8 +191,7 @@ void decompressComiIACT(char *fileName, byte *output_data, byte *d_src, int bsiz
 
 	while (bsize > 0) {
 		if (_IACTpos >= 2) {
-			int32 len = *(uint16 *)(_IACToutput);
-			len = TO_BE_16(len) + 2;
+			int32 len = READ_BE_UINT16(_IACToutput) + 2;
 			len -= _IACTpos;
 			if (len > bsize) {
 				memcpy(_IACToutput + _IACTpos, d_src, bsize);

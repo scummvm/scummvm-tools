@@ -350,20 +350,20 @@ int16 *uncompressSpeech(FILE *clu, uint32 idx, uint32 cSize, uint32 *returnSize)
 	int16 *srcData, *dstData, *dstPos;
 	uint32 headerPos = 0;
 	int16 length, cnt;
-	uint8 *fBuf = (uint8*)malloc(cSize);
+	uint8 *fBuf = (uint8 *)malloc(cSize);
 	fseek(clu, idx, SEEK_SET);
 	assert(fread(fBuf, 1, cSize, clu) == cSize);
 	while ((READ_BE_UINT32(fBuf + headerPos) != 'data') && (headerPos < 100))
 		headerPos++;
 	if (headerPos < 100) {
-		resSize = TO_LE_32(*(uint32*)(fBuf + headerPos + 4)) >> 1;
-		srcData = (int16*)(fBuf + headerPos + 8);
-		dstData = (int16*)malloc(resSize * 2);
+		resSize = READ_LE_UINT32(fBuf + headerPos + 4) >> 1;
+		srcData = (int16 *)(fBuf + headerPos + 8);
+		dstData = (int16 *)malloc(resSize * 2);
 		srcPos = 0;
 		dstPos = dstData;
 		cSize = (cSize - (headerPos + 8)) / 2;
 		while (srcPos < cSize) {
-			length = (int16)TO_LE_16(*(int16*)(srcData + srcPos));
+			length = (int16)READ_LE_UINT16(srcData + srcPos);
 			srcPos++;
 			if (length < 0) {
 				length = -length;

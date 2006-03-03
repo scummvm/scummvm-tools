@@ -123,7 +123,7 @@ Script::Script(const char* filename) {
 			text_size += text_size % 2 != 0 ? 1 : 0;
 			
 			_chunks[kText]._data = _scriptFile + ftell(script);
-			_chunks[kText]._size = TO_BE_16(*((uint16*)_chunks[kText]._data)) >> 1;
+			_chunks[kText]._size = READ_BE_UINT16(_chunks[kText]._data) >> 1;
 			_chunks[kText]._additional = _chunks[kText]._data + (_chunks[kText]._size << 1);				
 			fseek(script, text_size, SEEK_CUR);
 		} else if (!strcmp((char*)chunkName, "DATA")) {
@@ -153,10 +153,10 @@ void Script::decodeTextArea(void) {
 	printf("TEXT chunk:\n");
 	// first is size
 	for (uint32 pos = 1; pos < (_chunks[kText]._size << 1); ++pos) {
-		if (TO_BE_16(((uint16*)_chunks[kText]._data)[pos]) >= _scriptSize) {
+		if (READ_BE_UINT16(_chunks[kText]._data + 2*pos) >= _scriptSize) {
 			break;
 		}
-		uint32 startoffset = TO_BE_16(((uint16*)_chunks[kText]._data)[pos]);
+		uint32 startoffset = READ_BE_UINT16(_chunks[kText]._data + 2*pos);
 		printf("%d(at %d) : %s\n", pos, startoffset, (char*)(_chunks[kText]._data + startoffset));
 	}
 }
@@ -406,7 +406,7 @@ bool Script::decodeSpecialScript(int32 script) {
 	memset(_registers, 0, sizeof(_registers));
 	
 	_stackPos = 0;
-	_instructionPos = (TO_BE_16(((uint16*)_chunks[kEmc2Ordr]._data)[script]) << 1);	
+	_instructionPos = (READ_BE_UINT16(_chunks[kEmc2Ordr]._data + 2*script) << 1);	
 	uint8* script_start = _chunks[kData]._data;
 	bool gotArgument = true;
 	
@@ -431,11 +431,13 @@ bool Script::decodeSpecialScript(int32 script) {
 			_argument = *(script_start + _instructionPos++);
 		} else if (_currentCommand & 0x20) {
 			_instructionPos++;
-				
-			uint16 tmp = *(uint16*)(script_start + _instructionPos);
+			
+			// FIXME: I am not 100% sure if this code is correct (after my
+			// 'endian macro' changes), somebody please double check.
+			uint16 tmp = READ_BE_UINT16(script_start + _instructionPos);
 			tmp &= 0xFF7F;
 			
-			_argument = TO_BE_16(tmp);
+			_argument = tmp;
 			_instructionPos += 2;
 		} else {
 			gotArgument = false;
@@ -496,9 +498,10 @@ uint32 Script::getNextScriptPos(uint32 current_start) {
 	uint32 pos = 0xFFFFFFFE;
 	
 	for (uint32 tmp = 0; tmp < _chunks[kEmc2Ordr]._size; ++tmp) {
-		if ((uint32)((TO_BE_16(_chunks[kEmc2Ordr]._data[tmp]) << 1) + 2) > current_start &&
-			(uint32)((TO_BE_16(_chunks[kEmc2Ordr]._data[tmp]) << 1) + 2) < pos) {
-			pos = ((TO_BE_16(_chunks[kEmc2Ordr]._data[tmp]) << 1) + 2);
+		uint32 tmp2 = READ_BE_UINT16(_chunks[kEmc2Ordr]._data + tmp);
+		tmp2 = (tmp2 << 1) + 2;
+		if (tmp2 > current_start && tmp2 < pos) {
+			pos = tmp2;
 		}
 	}
 	
@@ -519,7 +522,7 @@ const char* Script::stringAtIndex(int32 index) {
 	if (index < 0 || (uint32)index >= _chunks[kText]._size)
 		return 0;
 	
-	uint16 offset = TO_BE_16(((uint16*)_chunks[kText]._data)[index]);
+	uint16 offset = READ_BE_UINT16(_chunks[kText]._data + 2*index);
 	return (const char *)(_chunks[kText]._data + offset);
 }
 
