@@ -187,9 +187,9 @@ const char *var_names72[] = {
 	"VAR_CHARINC",
 	"VAR_TALK_ACTOR",
 	"VAR_LAST_SOUND",
-	"VAR_SOUND_CHANNEL",
+	"VAR_TALK_CHANNEL",
 	/* 52 */
-	"VAR_MUSIC_CHANNEL",
+	"VAR_SOUND_CHANNEL",
 	NULL,
 	NULL,
 	NULL,
@@ -220,31 +220,6 @@ const char *var_names72[] = {
 	NULL,
 	/* 76 */
 	"VAR_POLYGONS_ONLY",
-	NULL,
-	NULL,
-	"VAR_WINDOWS_VERSION",
-	/* 80 */
-	NULL,
-	"VAR_NO_SUBTITLES",
-	"VAR_NO_SPEECH",
-	"VAR_MOUSE_OVERRIDE",
-	/* 84 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	/* 88 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	/* 92 */
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	/* 96 */
-	NULL,
 	NULL,
 	NULL,
 	NULL,
