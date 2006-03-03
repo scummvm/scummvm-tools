@@ -1670,7 +1670,9 @@ void do_if_state_code(char *buf, byte opcode)
 	int state = 0;
 
 	var[0] = 0;
-	if (scriptVersion > 0) {
+	if (scriptVersion == 0) {
+		sprintf(var, "%d", get_byte());
+	} else {
 		get_var_or_word(var, opcode & 0x80);
 	}
 
@@ -2575,7 +2577,7 @@ void next_line_V0(char *buf)
 					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
 		break;											/* arg1=actor, arg2=actor */
 	case 0x13:
-		do_tok(buf, "lockActor", A1B);
+		do_tok(buf, "lockCostume", A1B);
 		break;
 	case 0x4D:
 		do_tok(buf, "lockRoom", A1B);
@@ -2584,7 +2586,7 @@ void next_line_V0(char *buf)
 		do_tok(buf, "unlockRoom", A1B);
 		break;
 	case 0x93:
-		do_tok(buf, "unlockActor", A1B);
+		do_tok(buf, "unlockCostume", A1B);
 		break;
 	case 0x1A:
 	case 0x9a:
@@ -2835,7 +2837,7 @@ void next_line_V0(char *buf)
 
 	case 0x70:
 	case 0xF0:
-		buf = do_tok(buf, "lights", ((opcode & 0x80) ? A1V : A1B) | A2B | A3B);
+		buf = do_tok(buf, "lights", ((opcode & 0x80) ? A1V : A1B));
 		break;
 	case 0x25:
 	case 0xA5:
@@ -2853,7 +2855,7 @@ void next_line_V0(char *buf)
 
 	case 0x30:
 	case 0xB0:
-		do_tok(buf, "loadActor", ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "loadCostume", ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x12:
