@@ -1662,6 +1662,16 @@ void do_if_code(char *buf, byte opcode)
 	emit_if(buf, tmp);
 }
 
+void do_if_active_object(char *buf, byte opcode)
+{
+	char tmp[256];
+
+	int obj = get_byte();
+	sprintf(tmp, "activeObject2 == %d", obj);
+
+	emit_if(buf, tmp);
+}
+
 void do_if_state_code(char *buf, byte opcode)
 {
 	char var[256];
@@ -1671,7 +1681,10 @@ void do_if_state_code(char *buf, byte opcode)
 
 	var[0] = 0;
 	if (scriptVersion == 0) {
-		sprintf(var, "%d", get_byte());
+		if (opcode & 0x40)
+			sprintf(var, "activeObject");
+		else
+			sprintf(var, "%d", get_byte());
 	} else {
 		get_var_or_word(var, opcode & 0x80);
 	}
@@ -2850,7 +2863,7 @@ void next_line_V0(char *buf)
 		break;
 	case 0x64:
 	case 0xE4:
-		do_tok(buf, "unknown3", A1B);
+		do_if_active_object(buf, opcode);
 		break;
 
 	case 0x30:
