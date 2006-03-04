@@ -104,12 +104,12 @@ const char *var_names0[] = {
 	"VAR_HAVE_MSG",
 	/* 4 */
 	"VAR_ROOM",
-	"VAR_5",
+	"VAR_ACTIVE_ACTOR",
 	"VAR_OVERRIDE",
 	"",
 	/* 8 */
-	"VAR_8",
-	"VAR_9",
+	"VAR_IS_SOUND_RUNNING",
+	"VAR_ACTIVE_VERB",
 	"VAR_CHARCOUNT",
 	NULL
 };
