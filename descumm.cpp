@@ -106,7 +106,7 @@ const char *var_names0[] = {
 	"VAR_ROOM",
 	"VAR_ACTIVE_ACTOR",
 	"VAR_OVERRIDE",
-	"",
+	NULL,
 	/* 8 */
 	"VAR_IS_SOUND_RUNNING",
 	"VAR_ACTIVE_VERB",
