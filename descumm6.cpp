@@ -3387,9 +3387,10 @@ void next_line_V67(char *output)
 		break;
 	case 0xC8:
 		if (HumongousFlag)
-			ext(output, "rl|kernelGetFunctions");
-		else {
-			if (scriptVersion == 7) 
+				ext(output, "ry" "kernelGetFunctions\0"
+					"\x1|virtScreenSave"
+					);
+		else if (scriptVersion == 7) 
 				ext(output, "ry" "kernelGetFunctions\0"
 					"\x73|getWalkBoxAt,"
 					"\x74|isPointInBox,"
@@ -3404,14 +3405,17 @@ void next_line_V67(char *output)
 					"\xD6|getVerbYPos,"
 					"\xD7|getBoxFlags"
 					);
-			else 
+		else 
 				ext(output, "ry" "kernelGetFunctions\0"
 					"\x71|getPixel"
 					);
-		}
 		break;
 	case 0xC9:
-		if (scriptVersion == 7) 
+		if (HumongousFlag)
+				ext(output, "ry" "kernelSetFunctions\0"
+					"\x1|virtScreenLoad"
+					);
+		else if (scriptVersion == 7) 
 			ext(output, "y" "kernelSetFunctions\0"
 					"\x4|grabCursor,"
 					"\x6|startVideo,"

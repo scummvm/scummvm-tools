@@ -801,12 +801,11 @@ void do_actorops(char *buf, byte opcode)
 		case 0x0E:
 			buf = do_tok(buf, "InitAnimNr", ((opcode & 0x80) ? A1V : A1B));
 			break;
-//    case 0x0F: buf=do_tok(buf, "Unk3_Set21_22to1", A1VARUNTIL0xFF); break;
+//    		case 0x0F: buf=do_tok(buf, "PaletteList", A1VARUNTIL0xFF); break;
 		case 0x10:
 			buf = do_tok(buf, "Width", ((opcode & 0x80) ? A1V : A1B));
 			break;
 		case 0x11:
-			// FIXME for GID_MONKEY_VGA / GID_MONKEY_EGA this is:
 			if (scriptVersion == 5)
 				buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 			else
