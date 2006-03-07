@@ -106,6 +106,7 @@ extern char *strecpy(char *buf, const char *src);
 extern int get_curoffs();
 extern int get_byte();
 extern int get_word();
+extern int get_dword();
 
 extern bool maybeAddIf(uint cur, uint to);
 extern bool maybeAddElse(uint cur, uint to);

@@ -86,6 +86,15 @@ int get_word()
 	return i;
 }
 
+int get_dword()
+{
+	int i;
+
+	i = (int32)READ_LE_UINT32(cur_pos);
+	cur_pos += 4;
+	return i;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 

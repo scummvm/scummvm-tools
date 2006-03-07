@@ -1408,7 +1408,7 @@ void next_line_HE_V72(char *output)
 		push(se_int(get_word()));
 		break;
 	case 0x2:
-		push(se_var(get_byte()));
+		push(se_var(get_dword()));
 		break;
 	case 0x3:
 		push(se_var(get_word()));
@@ -1451,6 +1451,9 @@ void next_line_HE_V72(char *output)
 	case 0xA7:
 		kill(output, pop());
 		break;
+	case 0x1B:
+		ext(output, "rlp|isAnyOf2");
+		break;
 	case 0x43:
 		writeVar(output, get_word(), pop());
 		break;
@@ -1466,6 +1469,11 @@ void next_line_HE_V72(char *output)
 	case 0x50:
 		ext(output, "|resetCutScene");
 		break;
+	case 0x51:
+		ext(output, "rx" "getHeap\0"
+				"\xb|freeSpace,"
+				"\xc|largestBlockSize");
+		break;
 	case 0x53:
 		addArray(output, get_word(), pop(), 1);
 		break;
@@ -1477,6 +1485,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0x57:
 		addVar(output, get_word(), -1);
+		break;
+	case 0x5A:
+		ext(output, "rp|getSoundPosition");
 		break;
 	case 0x5B:
 		addArray(output, get_word(), pop(), -1);
@@ -1566,13 +1577,14 @@ void next_line_HE_V72(char *output)
 		jump(output);
 		break;
 	case 0x74:
-		ext(output, "x" "startSound\0"
-				"\xE0|soundFrequency,"
-				"\xE6|soundTimer,"
-				"\xE7|soundOffset,"
-				"\xE8|soundID,"
-				"\xF5|soundLoopToggle,"
-				"\xFF|start");
+		ext(output, "x" "soundOps\0"
+				"\x9|setSoundFlag4,"
+				"\xE0p|setFrequency,"
+				"\xE6p|setChannel,"
+				"\xE7p|setOffset,"
+				"\xE8p|setId,"
+				"\xF5|setLoop,"
+				"\xFF|startSound");
 		break;
 	case 0x75:
 		ext(output, "p|stopSound");
@@ -1697,6 +1709,7 @@ void next_line_HE_V72(char *output)
 				"\x71p|unlockSound," 
 				"\x72p|unlockCostume,"
 				"\x73p|unlockRoom," 
+				"\x74|clearHeap," 
 				"\x75p|loadCharset," 
 				"\x76p|nukeCharset," 
 				"\x77z|loadFlObject,"
@@ -1710,7 +1723,8 @@ void next_line_HE_V72(char *output)
 				"\xcap|lockImage,"
 				"\xcbp|queueloadImage,"
 				"\xe9p|lockFlObject,"
-				"\xebp|unlockFlObject");
+				"\xebp|unlockFlObject,"
+				"\xef|dummy");
 		break;
 	case 0x9C:
 		ext(output, "x" "roomOps\0"
@@ -1728,7 +1742,9 @@ void next_line_HE_V72(char *output)
 				"\xBBpp|colorCycleDelay,"
 				"\xD5p|setPalette,"
 				"\xDCpp|copyPalColor,"
-				"\xDDsp|saveLoadThing2");
+				"\xDDsp|saveLoadRoom,"
+				"\xEApp|swapObjects,"
+				"\xECpp|setRoomPalette");
 		break;
 	case 0x9D:
 		ext(output, "x" "actorOps\0"
@@ -1752,7 +1768,6 @@ void next_line_HE_V72(char *output)
 				"\x5Cp|setScale,"
 				"\x5D|setNeverZClip,"
 				"\x5Ep|setAlwayZClip?,"
-				"\xE1ps|setTalkieSlot,"
 				"\x5F|setIgnoreBoxes,"
 				"\x60|setFollowBoxes,"
 				"\x61p|setAnimSpeed,"
@@ -1763,15 +1778,8 @@ void next_line_HE_V72(char *output)
 				"\xD7|setIgnoreTurnsOn,"
 				"\xD8|setIgnoreTurnsOff,"
 				"\xD9|initLittle,"
-				"\xDA|drawVirScr,"
-				"\xE3p|setLayer,"
-				"\xE4p|setWalkScript,"
-				"\xE5|setStanding,"
-				"\xE6p|setDirection,"
-				"\xE7p|turnToDirection,"
-				"\xE9|freeze,"
-				"\xEA|unfreeze,"
-				"\xEBp|setTalkScript");
+				"\xDA|drawToBackBuf,"
+				"\xE1hp|setTalkieSlot");
 		break;
 	case 0x9E:
 		ext(output, "x" "verbOps\0"
@@ -1815,15 +1823,21 @@ void next_line_HE_V72(char *output)
 			se_a = se_get_string_he();
 			writeArray(output, get_word(), NULL, se_a, se_a);
 			break;
+		case 194:
+			se_get_list();
+			pop();
+			se_a = se_get_string_he();
+			writeArray(output, get_word(), NULL, se_a, se_a);
+			break;
 		case 208:
 			se_a = pop();
 			se_b = se_get_list();
 			writeArray(output, get_word(), NULL, se_a, se_b);
 			break;
 		case 212:
-			se_a = pop();
 			se_b = se_get_list();
-			writeArray(output, get_word(), pop(), se_a, se_b);
+			se_a = pop();
+			writeArray(output, get_word(), NULL, se_a, se_b);
 			break;
 		}
 		break;
@@ -2022,7 +2036,7 @@ void next_line_HE_V72(char *output)
 		ext(output, "p|closeFile");
 		break;
 	case 0xDA:
-		ext(output, "rsp|openFile");
+		ext(output, "rhp|openFile");
 		break;
 	case 0xDB:
 		ext(output, "rpp|readFile");
@@ -2067,8 +2081,19 @@ void next_line_HE_V72(char *output)
 	case 0xEB:
 		ext(output, "rp|readFilePos");
 		break;
+	case 0xED:
+		ext(output, "rppp|getStringWidth");
+		break;
 	case 0xEE:
 		ext(output, "rp|stringLen");
+		break;
+	case 0xF2:
+		ext(output, "rx" "isResourceLoaded\0"
+				"\x12p|image,"
+				"\xE2p|room,"
+				"\xE3p|costume,"
+				"\xE4p|sound,"
+				"\xE5p|script");
 		break;
 	case 0xF3:
 		ext(output, "rx" "readINI\0"
@@ -2079,6 +2104,15 @@ void next_line_HE_V72(char *output)
 		ext(output, "x" "writeINI\0"
 				"\x06ph|number,"
 				"\x07hh|string");
+		break;
+	case 0xF8:
+		// FIXME: HE72 games only check sound resource
+		ext(output, "rx" "getResourceSize\0"
+				"\xDp|sound,"
+				"\xEp|roomImage,"
+				"\xFp|image,"
+				"\x10p|costume,"
+				"\x11p|script");
 		break;
 	case 0xF9:
 		ext(output, "h|setFilePath");
@@ -3629,7 +3663,6 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xE3:
-		//TODO add proper decoding
 		ext(output, "rlw|pickVarRandom");
 		break;
 	case 0xE4:
