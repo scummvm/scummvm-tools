@@ -1273,7 +1273,7 @@ void ext(char *output, const char *fmt)
 			args[numArgs++] = se_get_string();
 		} else if (cmd == 'w') {
 			args[numArgs++] = se_int(get_word());
-		} else if (cmd == 'f') {
+		} else if (cmd == 'i') {
 			args[numArgs++] = se_int(get_byte());
 		} else if (cmd == 'l') {
 			args[numArgs++] = se_get_list();
@@ -1454,6 +1454,15 @@ void next_line_HE_V72(char *output)
 	case 0x1B:
 		ext(output, "rlp|isAnyOf2");
 		break;
+	case 0x1C: // HE90+
+		ext(output, "x" "wizImageOps\0"
+				"\x30|processMode1,"
+				"\x36p|setFlags,"
+				"\x38ppppp|drawWizImage,"
+				"\x39p|setImage,"
+				"\x41pp|setPosition,"
+				"\xFF|processWizImage");
+		break;
 	case 0x43:
 		writeVar(output, get_word(), pop());
 		break;
@@ -1486,6 +1495,12 @@ void next_line_HE_V72(char *output)
 	case 0x57:
 		addVar(output, get_word(), -1);
 		break;
+	case 0x58:
+		ext(output, "ri|getTimer");
+		break;
+	case 0x59:
+		ext(output, "pi|setTimer");
+		break;
 	case 0x5A:
 		ext(output, "rp|getSoundPosition");
 		break;
@@ -1499,19 +1514,19 @@ void next_line_HE_V72(char *output)
 		jumpif(output, pop(), false);
 		break;
 	case 0x5E:
-		ext(output, "lpf|startScript");
+		ext(output, "lpi|startScript");
 		break;
 	case 0x5F:
 		ext(output, "lp|startScriptQuick");
 		break;
 	case 0x60:
-		ext(output, "lppf|startObject");
+		ext(output, "lppi|startObject");
 		break;
 	case 0x61:
 		ext(output, "x" "drawObject\0"
-				"\x3Epppp|unk1,"
-				"\x3Fpp|unk2,"
-				"\x41ppp|unk3,");
+				"\x3Epppp|setup,"
+				"\x3Fpp|setState,"
+				"\x41ppp|setPosition,");
 		break;
 	case 0x62:
 		ext(output, "ppp|printWizImage");
@@ -1734,7 +1749,7 @@ void next_line_HE_V72(char *output)
 				"\xB0|shakeOn,"
 				"\xB1|shakeOff,"
 				"\xB3ppp|darkenPalette,"
-				"\xB4pp|saveLoadThing,"
+				"\xB4pp|saveLoadRoom,"
 				"\xB5p|screenEffect,"
 				"\xB6ppppp|darkenPalette,"
 				"\xB7ppppp|setupShadowPalette,"
@@ -1742,7 +1757,7 @@ void next_line_HE_V72(char *output)
 				"\xBBpp|colorCycleDelay,"
 				"\xD5p|setPalette,"
 				"\xDCpp|copyPalColor,"
-				"\xDDsp|saveLoadRoom,"
+				"\xDDhp|saveOrLoad,"
 				"\xEApp|swapObjects,"
 				"\xECpp|setRoomPalette");
 		break;
@@ -1874,8 +1889,12 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xAE:
 		ext(output, "x" "systemOps\0"
-				 "\x9E|pauseGame,"
-				 "\xA0|shutDown");
+				 "\x1A|copyVirtBuf," // HE80+
+				 "\x9E|restart,"
+				 "\xA0|confirmShutDown,"
+				 "\xF4|shutDown,"
+				 "\xFB|startExec,"
+				 "\xFC|startGame");
 		break;
 	case 0xAF:
 		ext(output, "rpp|isActorInBox");
@@ -1915,6 +1934,7 @@ void next_line_HE_V72(char *output)
 				"\x48|overhead,"
 				"\x4A|mumble,"
 				"\x4Bs|msg,"
+				"\xF9l|colors,"
 				"\xFEp|begin,"
 				"\xFF|end");
 		break;
@@ -1929,10 +1949,11 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xBC:
 		ext(output, "x" "dimArray\0"
-				"\x5pw|int,"
 				"\x2pw|bit,"
 				"\x3pw|nibble,"
 				"\x4pw|byte,"
+				"\x5pw|int,"
+				"\x7pw|dword,"
 				"\x7pw|string,"
 				"\xCCw|nukeArray");
 		break;
@@ -1959,6 +1980,9 @@ void next_line_HE_V72(char *output)
 				"\x5ppw|int,"
 				"\x6ppw|dword,"
 				"\x7ppw|string");
+		break;
+	case 0xC1:
+		ext(output, "hp|traceStatus");
 		break;
 	case 0xC4:
 		ext(output, "rp|abs");
@@ -2004,6 +2028,9 @@ void next_line_HE_V72(char *output)
 	case 0xCE:
 		ext(output, "pppp|drawWizImage");
 		break;
+	case 0xCF:
+		ext(output, "rh|debugInput");
+		break;
 	case 0xD0:
 		ext(output, "|getDateTime");
 		break;
@@ -2017,7 +2044,7 @@ void next_line_HE_V72(char *output)
 		ext(output, "wpp|shuffle");
 		break;
 	case 0xD5:
-		ext(output, "lpf|jumpToScript");
+		ext(output, "lpi|jumpToScript");
 		break;
 	case 0xD6:
 		se_a = pop();
@@ -2039,12 +2066,19 @@ void next_line_HE_V72(char *output)
 		ext(output, "rhp|openFile");
 		break;
 	case 0xDB:
-		ext(output, "rpp|readFile");
+		ext(output, "x" "readFile\0" 
+				"\x4p|readByte,"
+				"\x5p|readWord,"
+				"\x6p|readDWord,"
+				"\x8ipp|readArrayFromFile");
 		break;
 	case 0xDC:
-		ext(output, "ppp|writeFile");
+		ext(output, "x" "writeFile\0" 
+				"\x4|writeByte,"
+				"\x5|writeWord,"
+				"\x6|writeDWord,"
+				"\x8i|writeArrayToFile");
 		break;
-
 	case 0xDD:
 		ext(output, "rp|findAllObjects");
 		break;
@@ -2075,8 +2109,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xEA:
 		ext(output, "x" "redimArray\0"
-				"\xC7ppw|int,"
-				"\xCAppw|byte");
+				"\x4ppw|byte,"
+				"\x5ppw|int,"
+				"\x6ppw|dword");
 		break;
 	case 0xEB:
 		ext(output, "rp|readFilePos");
@@ -2086,6 +2121,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xEE:
 		ext(output, "rp|stringLen");
+		break;
+	case 0xEF:
+		ext(output, "rppp|appendString");
 		break;
 	case 0xF2:
 		ext(output, "rx" "isResourceLoaded\0"
@@ -2104,6 +2142,9 @@ void next_line_HE_V72(char *output)
 		ext(output, "x" "writeINI\0"
 				"\x06ph|number,"
 				"\x07hh|string");
+		break;
+	case 0xF5:
+		ext(output, "rppp|getStringLenForWidth");
 		break;
 	case 0xF8:
 		// FIXME: HE72 games only check sound resource
