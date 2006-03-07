@@ -174,8 +174,8 @@ const char *var_names72[] = {
 	NULL,
 	NULL,
 	/* 40 */
-	NULL,
-	NULL,
+	"VAR_SCRIPT_UNK1",
+	"VAR_OPTIONS_SCRIPT",
 	"VAR_RESTART_KEY",
 	"VAR_PAUSE_KEY",
 	/* 44 */
@@ -1111,6 +1111,66 @@ StackEnt *se_get_string()
 	return se_complex(buf);
 }
 
+int _stringLength;
+byte _stringBuffer[4096];
+
+void getScriptString()
+{
+	byte chr;
+
+	while ((chr = get_byte()) != 0) {
+		_stringBuffer[_stringLength] = chr;
+		_stringLength++;
+
+		if (_stringLength >= 4096)
+			error("String stack overflow");
+	}
+
+	_stringBuffer[_stringLength] = 0;
+	_stringLength++;
+}
+
+StackEnt *se_get_string_he() {
+	char buf[1024];
+	char *e = buf;
+
+	byte string[1024];
+	byte chr;
+	int len = 1;
+	StackEnt *array;
+
+	array = pop();
+	*e++ = '"';
+	if (array->data == -1) {
+		if (_stringLength == 1)
+			error("String stack underflow");
+
+		_stringLength -= 2;
+		 while ((chr = _stringBuffer[_stringLength]) != 0) {
+			string[len++] = chr;
+			_stringLength--;
+		}
+
+		string[len] = 0;
+		_stringLength++;
+
+		// Reverse string
+		while (--len)
+			*e++ = string[len];
+	} else {
+		StackEnt foo;
+		foo.type = seVar;
+		foo.data = array->data;
+		e += sprintf(e, ":");
+		e = se_astext(&foo, e);
+		e += sprintf(e, ":");
+	}
+	*e++ = '"';
+
+	*e++ = 0;
+	return se_complex(buf);
+}
+
 StackEnt *se_get_list()
 {
 	StackEnt *se = se_new(seStackList);
@@ -1204,12 +1264,11 @@ void ext(char *output, const char *fmt)
 			args[numArgs++] = pop();
 		} else if (cmd == 'z') {	// = popRoomAndObj()
 			args[numArgs++] = pop();
-			if (scriptVersion < 7 && !heVersion)
+			if (scriptVersion < 7 && heVersion == 0)
 				args[numArgs++] = pop();
 		} else if (cmd == 'h') {
-			//TODO Add proper support for HE72+ string system
 			if (heVersion == 72)
-				args[numArgs++] = pop();
+				args[numArgs++] = se_get_string_he();
 		} else if (cmd == 's') {
 			args[numArgs++] = se_get_string();
 		} else if (cmd == 'w') {
@@ -1330,6 +1389,7 @@ void jumpif(char *output, StackEnt * se, bool negate)
 				"\x4A|mumble,"    \
 				"\x4Bs|msg,"      \
 				"\xF9l|colors,"	  \
+				"\xC2slp|debug,"  \
 				"\xFE|begin,"     \
 				"\xFF|end"        \
 				);                \
@@ -1354,7 +1414,7 @@ void next_line_HE_V72(char *output)
 		push(se_var(get_word()));
 		break;
 	case 0x4:
-		ext(output, "s|getScriptString");
+		getScriptString();
 		break;
 	case 0x7:
 		push(se_array(get_word(), NULL, pop()));
@@ -1402,6 +1462,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0x4F:
 		addVar(output, get_word(), 1);
+		break;
+	case 0x50:
+		ext(output, "|resetCutScene");
 		break;
 	case 0x53:
 		addArray(output, get_word(), pop(), 1);
@@ -1670,6 +1733,7 @@ void next_line_HE_V72(char *output)
 	case 0x9D:
 		ext(output, "x" "actorOps\0"
 				"\xC5p|setCurActor,"
+				"\x40pppp|setClipRect,"
 				"\x4Cp|setCostume,"
 				"\x4Dpp|setWalkSpeed,"
 				"\x4El|setSound,"
@@ -1694,6 +1758,7 @@ void next_line_HE_V72(char *output)
 				"\x61p|setAnimSpeed,"
 				"\x62p|setShadowMode,"
 				"\x63pp|setTalkPos,"
+				"\x9Cp|charset,"
 				"\xC6pp|setAnimVar,"
 				"\xD7|setIgnoreTurnsOn,"
 				"\xD8|setIgnoreTurnsOff,"
@@ -1746,10 +1811,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xA4:
 		switch (get_byte()) {
-		case 5:{
-			int array = get_word();
-			writeArray(output, array, NULL, pop(), se_get_string());
-			}
+		case 7:
+			se_a = se_get_string_he();
+			writeArray(output, get_word(), NULL, se_a, se_a);
 			break;
 		case 208:
 			se_a = pop();
@@ -1923,6 +1987,9 @@ void next_line_HE_V72(char *output)
 	case 0xCD:
 		ext(output, "pppp|stampObject");
 		break;
+	case 0xCE:
+		ext(output, "pppp|drawWizImage");
+		break;
 	case 0xD0:
 		ext(output, "|getDateTime");
 		break;
@@ -1984,7 +2051,7 @@ void next_line_HE_V72(char *output)
 		ext(output, "p|localizeArray");
 		break;
 	case 0xE3:
-		ext(output, "rl|pickVarRandom");
+		ext(output, "rlw|pickVarRandom");
 		break;
 	case 0xE4:
 		ext(output, "p|setBotSet");
@@ -2018,10 +2085,10 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xFA:
 		ext(output, "x" "setSystemMessage\0"
-				"\xF0s|unk1,"
-				"\xF1s|versionMsg,"
-				"\xF2s|unk3,"
-				"\xF3s|titleMsg");
+				"\xF0h|unk1,"
+				"\xF1h|versionMsg,"
+				"\xF2h|unk3,"
+				"\xF3h|titleMsg");
 		break;
 	case 0xFB:
 		ext(output, "x" "polygonOps\0"
@@ -3563,7 +3630,7 @@ void next_line_V67(char *output)
 		break;
 	case 0xE3:
 		//TODO add proper decoding
-		ext(output, "rl|pickVarRandom");
+		ext(output, "rlw|pickVarRandom");
 		break;
 	case 0xE4:
 		ext(output, "p|setBotSet");
