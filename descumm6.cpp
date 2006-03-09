@@ -1142,8 +1142,11 @@ StackEnt *se_get_string_he() {
 	array = pop();
 	*e++ = '"';
 	if (array->data == -1) {
-		if (_stringLength == 1)
-			error("String stack underflow");
+		if (_stringLength == 1) {
+			*e++ = '"';
+			*e++ = 0;
+			return se_complex(buf);
+		}
 
 		_stringLength -= 2;
 		 while ((chr = _stringBuffer[_stringLength]) != 0) {
@@ -1390,6 +1393,7 @@ void jumpif(char *output, StackEnt * se, bool negate)
 				"\x4Bs|msg,"      \
 				"\xF9l|colors,"	  \
 				"\xC2slp|debug,"  \
+				"\xE1p|getText,"  \
 				"\xFE|begin,"     \
 				"\xFF|end"        \
 				);                \
@@ -1457,20 +1461,43 @@ void next_line_HE_V72(char *output)
 	case 0x1C: // HE90+
 		ext(output, "x" "wizImageOps\0"
 				"\x30|processMode1,"
+				"\x33ppppp|setClipRect,"
 				"\x36p|setFlags,"
 				"\x38ppppp|drawWizImage,"
 				"\x39p|setImage,"
 				"\x41pp|setPosition,"
+				"\xF6p|setupPolygon,"
 				"\xFF|processWizImage");
 		break;
 	case 0x43:
 		writeVar(output, get_word(), pop());
 		break;
+	case 0x45: // HE80+
+		ext(output, "rx" "createSound\0"
+				"\x1Bp|create,"
+				"\xD9|reset,"
+				"\xE8p|setId,"
+				"\xFF|dummy");
+		break;
 	case 0x47:
 		writeArray(output, get_word(), NULL, pop(), pop());
 		break;
+	case 0x48: // HE80+
+		ext(output, "p|stringToInt");
+		break;
+	case 0x49: // HE80+
+		ext(output, "rpp|getSoundVar");
+		break;
+	case 0x4A: // HE80+
+		ext(output, "p|localizeArrayToRoom");
+		break;
 	case 0x4B:
 		writeArray(output, get_word(), pop(), pop(), pop());
+		break;
+	case 0x4D: // HE80+
+		ext(output, "rx" "readConfigFile\0"
+				"\x6hhh|number,"
+				"\x7hhh|string");
 		break;
 	case 0x4F:
 		addVar(output, get_word(), 1);
@@ -1483,6 +1510,9 @@ void next_line_HE_V72(char *output)
 				"\xb|freeSpace,"
 				"\xc|largestBlockSize");
 		break;
+	case 0x52:
+		ext(output, "rlpp|findObjectWithClassOf");
+		break;
 	case 0x53:
 		addArray(output, get_word(), pop(), 1);
 		break;
@@ -1491,6 +1521,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0x55:
 		ext(output, "rp|objectY");
+		break;
+	case 0x56:
+		ext(output, "ppppp|captureWizImage");
 		break;
 	case 0x57:
 		addVar(output, get_word(), -1);
@@ -1530,6 +1563,19 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0x62:
 		ext(output, "ppp|printWizImage");
+		break;
+	case 0x63:
+		ext(output, "rx" "getArrayDimSize\0"
+				"\x1w|dim1size,"
+				"\x2w|dim2size,"
+				"\x3w|dim1size,"
+				"\x4w|dim1start,"
+				"\x5w|dim1end,"
+				"\x6w|dim2start,"
+				"\x7w|dim2end,");
+		break;
+	case 0x64:
+		ext(output, "r|getNumFreeArrays");
 		break;
 	case 0x65:
 		ext(output, "|stopObjectCodeA");
@@ -1592,14 +1638,17 @@ void next_line_HE_V72(char *output)
 		jump(output);
 		break;
 	case 0x74:
-		ext(output, "x" "soundOps\0"
+		ext(output, "x" "startSound\0"
 				"\x9|setSoundFlag4,"
+				"\x17ppp|setSoundVar,"
+				"\x19pp|startWithFlag8,"
+				"\x38|setQuickStartFlag,"
 				"\xE0p|setFrequency,"
 				"\xE6p|setChannel,"
 				"\xE7p|setOffset,"
 				"\xE8p|setId,"
 				"\xF5|setLoop,"
-				"\xFF|startSound");
+				"\xFF|start");
 		break;
 	case 0x75:
 		ext(output, "p|stopSound");
@@ -1763,6 +1812,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0x9D:
 		ext(output, "x" "actorOps\0"
+				"\x15l|setUserConditions,"
+				"\x18p|setTalkCondition,"
+				"\x2Bp|layer,"
 				"\xC5p|setCurActor,"
 				"\x40pppp|setClipRect,"
 				"\x4Cp|setCostume,"
@@ -1873,10 +1925,7 @@ void next_line_HE_V72(char *output)
 				"\xA8pj|waitForActor,"
 				"\xA9|waitForMessage,"
 				"\xAA|waitForCamera,"
-				"\xAB|waitForSentence,"
-				"\xE2pj|waitUntilActorDrawn,"
-				"\xE8pj|waitUntilActorTurned,"
-				);
+				"\xAB|waitForSentence");
 		break;
 	case 0xAA:
 		ext(output, "rp|getActorScaleX");
@@ -1889,7 +1938,8 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xAE:
 		ext(output, "x" "systemOps\0"
-				 "\x1A|copyVirtBuf," // HE80+
+				 "\x16|clearDrawQueue,"
+				 "\x1A|copyVirtBuf,"
 				 "\x9E|restart,"
 				 "\xA0|confirmShutDown,"
 				 "\xF4|shutDown,"
@@ -1934,6 +1984,7 @@ void next_line_HE_V72(char *output)
 				"\x48|overhead,"
 				"\x4A|mumble,"
 				"\x4Bs|msg,"
+				"\xE1p|getText,"
 				"\xF9l|colors,"
 				"\xFEp|begin,"
 				"\xFF|end");
@@ -1953,7 +2004,7 @@ void next_line_HE_V72(char *output)
 				"\x3pw|nibble,"
 				"\x4pw|byte,"
 				"\x5pw|int,"
-				"\x7pw|dword,"
+				"\x6pw|dword,"
 				"\x7pw|string,"
 				"\xCCw|nukeArray");
 		break;
@@ -2089,14 +2140,16 @@ void next_line_HE_V72(char *output)
 		ext(output, "hh|renameFile");
 		break;
 	case 0xE0:
-		ext(output, "x" "soundOps\0" 
-				"\xE0p|setSoundFrequency");
+		ext(output, "x" "drawLine\0" 
+				"\x37pppppp|pixel,"
+				"\x3Fpppppp|actor,"
+				"\x42pppppp|wizImage");
 		break;
 	case 0xE1:
-		ext(output, "rpp|getPixel");
+		ext(output, "ripp|getPixel");
 		break;
 	case 0xE2:
-		ext(output, "p|localizeArray");
+		ext(output, "p|localizeArrayToScript");
 		break;
 	case 0xE3:
 		ext(output, "rlw|pickVarRandom");
@@ -2116,6 +2169,9 @@ void next_line_HE_V72(char *output)
 	case 0xEB:
 		ext(output, "rp|readFilePos");
 		break;
+	case 0xEC:
+		ext(output, "rp|copyString");
+		break;
 	case 0xED:
 		ext(output, "rppp|getStringWidth");
 		break;
@@ -2124,6 +2180,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xEF:
 		ext(output, "rppp|appendString");
+		break;
+	case 0xF0:
+		ext(output, "rpp|concatString");
 		break;
 	case 0xF2:
 		ext(output, "rx" "isResourceLoaded\0"
@@ -2145,6 +2204,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xF5:
 		ext(output, "rppp|getStringLenForWidth");
+		break;
+	case 0xF6:
+		ext(output, "rpppp|getCharIndexInString");
 		break;
 	case 0xF8:
 		// FIXME: HE72 games only check sound resource
