@@ -1499,6 +1499,11 @@ void next_line_HE_V72(char *output)
 				"\x6hhh|number,"
 				"\x7hhh|string");
 		break;
+	case 0x4E: // HE80+
+		ext(output, "x" "writeConfigFile\0"
+				"\x6hhh|number,"
+				"\x7hhhh|string");
+		break;
 	case 0x4F:
 		addVar(output, get_word(), 1);
 		break;
@@ -1643,6 +1648,8 @@ void next_line_HE_V72(char *output)
 				"\x17ppp|setSoundVar,"
 				"\x19pp|startWithFlag8,"
 				"\x38|setQuickStartFlag,"
+				"\xA4|setForceQueueFlag,"
+				"\xDE|dummy,"
 				"\xE0p|setFrequency,"
 				"\xE6p|setChannel,"
 				"\xE7p|setOffset,"
@@ -1932,6 +1939,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xAB:
 		ext(output, "rp|getActorAnimCounter1");
+		break;
+	case 0xAC: // HE80+
+		ext(output, "pp|drawWizPolygon");
 		break;
 	case 0xAD:
 		ext(output, "rlp|isAnyOf");
