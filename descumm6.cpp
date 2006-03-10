@@ -2127,7 +2127,7 @@ void next_line_HE_V72(char *output)
 		ext(output, "rhp|openFile");
 		break;
 	case 0xDB:
-		ext(output, "x" "readFile\0" 
+		ext(output, "rx" "readFile\0" 
 				"\x4p|readByte,"
 				"\x5p|readWord,"
 				"\x6p|readDWord,"
@@ -3812,13 +3812,19 @@ void next_line_V67(char *output)
 		break;
 	case 0xED:
 		if (HumongousFlag)
-			invalidop(NULL, code);
+			ext(output, "rppp|getStringWidth");
 		else
 			ext(output, "rp|getObjectNewDir");
 		break;
 	case 0xEE:
 		if (HumongousFlag)
 			ext(output, "rp|stringLen");
+		else
+			invalidop(NULL, code);
+		break;
+	case 0xEF:
+		if (HumongousFlag)
+			ext(output, "rppp|appendString");
 		else
 			invalidop(NULL, code);
 		break;
@@ -3831,6 +3837,12 @@ void next_line_V67(char *output)
 	case 0xF4:
 		if (HumongousFlag)
 			ext(output, "rsp|writeINI");
+		else
+			invalidop(NULL, code);
+		break;
+	case 0xF6:
+		if (HumongousFlag)
+			ext(output, "rpppp|getCharIndexInString");
 		else
 			invalidop(NULL, code);
 		break;
