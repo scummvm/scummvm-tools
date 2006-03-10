@@ -1392,7 +1392,7 @@ void jumpif(char *output, StackEnt * se, bool negate)
 				"\x4A|mumble,"    \
 				"\x4Bs|msg,"      \
 				"\xF9l|colors,"	  \
-				"\xC2slp|debug,"  \
+				"\xC2lps|debug,"  \
 				"\xE1p|getText,"  \
 				"\xFE|begin,"     \
 				"\xFF|end"        \
@@ -1829,7 +1829,7 @@ void next_line_HE_V72(char *output)
 				"\x55|setDefAnim,"
 				"\x56pp|setPalette,"
 				"\x57p|setTalkColor,"
-				"\x58s|setName,"
+				"\x58h|setName,"
 				"\x59p|setInitFrame,"
 				"\x5Bp|setWidth,"
 				"\x5Cp|setScale,"
@@ -1852,7 +1852,7 @@ void next_line_HE_V72(char *output)
 		ext(output, "x" "verbOps\0"
 				"\xC4p|setCurVerb,"
 				"\x7Cp|loadImg,"
-				"\x7Ds|loadString,"
+				"\x7Dh|loadString,"
 				"\x7Ep|setColor,"
 				"\x7Fp|setHiColor,"
 				"\x80pp|setXY,"
@@ -2183,6 +2183,9 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xF0:
 		ext(output, "rpp|concatString");
+		break;
+	case 0xF1:
+		ext(output, "rpp|compareString");
 		break;
 	case 0xF2:
 		ext(output, "rx" "isResourceLoaded\0"
