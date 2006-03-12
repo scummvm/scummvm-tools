@@ -1473,7 +1473,7 @@ void next_line_HE_V72(char *output)
 		writeVar(output, get_word(), pop());
 		break;
 	case 0x45: // HE80+
-		ext(output, "rx" "createSound\0"
+		ext(output, "x" "createSound\0"
 				"\x1Bp|create,"
 				"\xD9|reset,"
 				"\xE8p|setId,"
