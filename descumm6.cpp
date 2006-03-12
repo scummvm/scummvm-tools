@@ -3770,6 +3770,7 @@ void next_line_V67(char *output)
 		if (HumongousFlag)
 			ext(output, "x" "soundOps\0" 
 				"\xDEp|setMusicVolume,"
+				"\xDF|dummy,"
 				"\xE0p|setSoundFrequency");
 		else
 			invalidop(NULL, code);
