@@ -174,7 +174,7 @@ const char *var_names72[] = {
 	NULL,
 	NULL,
 	/* 40 */
-	"VAR_SCRIPT_UNK1",
+	"VAR_SAVELOAD_SCRIPT",
 	"VAR_OPTIONS_SCRIPT",
 	"VAR_RESTART_KEY",
 	"VAR_PAUSE_KEY",
@@ -2058,12 +2058,14 @@ void next_line_HE_V72(char *output)
 		ext(output, "rpppp|getDistPtPt");
 		break;
 	case 0xC8:
-		ext(output, "rl|kernelGetFunctions");
+		ext(output, "ry" "kernelGetFunctions\0"
+				"\x1|virtScreenSave"
+				);
 		break;
 	case 0xC9:
 		ext(output, "y" "kernelSetFunctions\0"
 				"\x1|virtScreenLoad,"
-				"\x14|eraseAuxActor,"
+				"\x14|queueAuxBlock,"
 				"\x15|pauseDrawObjects,"
 				"\x16|resumeDrawObjects,"
 				"\x17|clearCharsetMask,"
@@ -2124,7 +2126,7 @@ void next_line_HE_V72(char *output)
 		ext(output, "p|closeFile");
 		break;
 	case 0xDA:
-		ext(output, "rhp|openFile");
+		ext(output, "rph|openFile");
 		break;
 	case 0xDB:
 		ext(output, "rx" "readFile\0" 
@@ -2135,10 +2137,10 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0xDC:
 		ext(output, "x" "writeFile\0" 
-				"\x4|writeByte,"
-				"\x5|writeWord,"
-				"\x6|writeDWord,"
-				"\x8i|writeArrayToFile");
+				"\x4pp|writeByte,"
+				"\x5pp|writeWord,"
+				"\x6pp|writeDWord,"
+				"\x8ppi|writeArrayToFile");
 		break;
 	case 0xDD:
 		ext(output, "rp|findAllObjects");
@@ -2156,7 +2158,9 @@ void next_line_HE_V72(char *output)
 				"\x42pppppp|wizImage");
 		break;
 	case 0xE1:
-		ext(output, "ripp|getPixel");
+		ext(output, "rx" "getPixel\0" 
+				"\xDApp|background,"
+				"\xDBpp|foreground");
 		break;
 	case 0xE2:
 		ext(output, "p|localizeArrayToScript");
@@ -3741,6 +3745,7 @@ void next_line_V67(char *output)
 		break;
 	case 0xDC:
 		if (HumongousFlag)
+
 			ext(output, "ppp|writeFile");
 		else
 			invalidop(NULL, code);
