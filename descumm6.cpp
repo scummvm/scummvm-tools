@@ -3486,10 +3486,18 @@ void next_line_V67(char *output)
 		ext(output, "rlp|isAnyOf");
 		break;
 	case 0xAE:
-		ext(output, "x" "systemOps\0"
-				"\x9E|restartGame,"
-				"\x9F|pauseGame,"
-				"\xA0|shutDown");
+		if (HumongousFlag)
+			ext(output, "x" "systemOps\0"
+					 "\x9E|restart,"
+					 "\xA0|confirmShutDown,"
+					 "\xF4|shutDown,"
+					 "\xFB|startExec,"
+					 "\xFC|startGame");
+		else
+			ext(output, "x" "systemOps\0"
+					"\x9E|restartGame,"
+					"\x9F|pauseGame,"
+					"\xA0|shutDown");
 		break;
 	case 0xAF:
 		ext(output, "rpp|isActorInBox");
