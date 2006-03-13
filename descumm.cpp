@@ -2755,8 +2755,8 @@ void next_line_V0(char *buf)
 		do_tok(buf, "getRandomNr", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
-    case 0x0f:
-    case 0x4f:
+	case 0x0f:
+	case 0x4f:
 		do_tok(buf, "clearState02", ((opcode & 0x40) ? 0 : A1B));
 		break;
 	case 0x37:
@@ -2767,8 +2767,8 @@ void next_line_V0(char *buf)
 	case 0x57:
 		do_tok(buf, "clearState08", ((opcode & 0x40) ? 0 : A1B));
 		break;
-    case 0x8f:
-    case 0xcf:
+	case 0x8f:
+	case 0xcf:
 		do_tok(buf, "setState02", ((opcode & 0x40) ? 0 : A1B));
 		break;
 	case 0xb7:
@@ -2780,23 +2780,23 @@ void next_line_V0(char *buf)
 		do_tok(buf, "setState08", ((opcode & 0x40) ? 0 : A1B));
 		break;
 
-    case 0x3f:
-    case 0xff:
+	case 0x3f:
+	case 0xff:
 		//ifState02;
-    case 0x1f:
-    case 0x5f:
+	case 0x1f:
+	case 0x5f:
 		//ifState04;
-    case 0x2f:
-    case 0x6f:
+	case 0x2f:
+	case 0x6f:
 		//ifState08;
-    case 0x7f:
-    case 0xbf:
+	case 0x7f:
+	case 0xbf:
 		//ifNotState02;
-    case 0x9f:
-    case 0xdf:
+	case 0x9f:
+	case 0xdf:
 		//ifNotState04;
-    case 0xaf:
-    case 0xef:
+	case 0xaf:
+	case 0xef:
 		//ifNotState08;
 		do_if_state_code(buf, opcode);
 		break;
@@ -2925,7 +2925,7 @@ void next_line_V0(char *buf)
 
 	case 0x54:
 	case 0xD4:
-		do_tok(buf, "setObjectName", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
+		do_tok(buf, "setObjectName", A1B | A2ASCII);
 		break;
 
 	case 0x29:
