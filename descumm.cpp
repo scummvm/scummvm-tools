@@ -707,7 +707,7 @@ void do_actorops_v12(char *buf, byte opcode)
 			buf = do_tok(buf, "Sound", 0);
 			break;
 		case 2:
-			if (ZakFlag && scriptVersion == 1)
+			if (scriptVersion == 1)
 				buf = do_tok(buf, "Color", 0);
 			else
 				buf = do_tok(buf, "Color", A1B);
