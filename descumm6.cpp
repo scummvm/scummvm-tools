@@ -1412,7 +1412,7 @@ void next_line_HE_V72(char *output)
 		push(se_int(get_word()));
 		break;
 	case 0x2:
-		push(se_var(get_dword()));
+		push(se_int(get_dword()));
 		break;
 	case 0x3:
 		push(se_var(get_word()));
@@ -1461,13 +1461,26 @@ void next_line_HE_V72(char *output)
 	case 0x1C: // HE90+
 		ext(output, "x" "wizImageOps\0"
 				"\x30|processMode1,"
-				"\x33ppppp|setClipRect,"
+				"\x33ppppp|setCaptureRect,"
+				"\x34p|setImageState,"
 				"\x36p|setFlags,"
 				"\x38ppppp|drawWizImage,"
 				"\x39p|setImage,"
 				"\x41pp|setPosition,"
+				"\x42pp|remapPalette,"
+				"\x43pppp|setClipRect,"
 				"\xF6p|setupPolygon,"
 				"\xFF|processWizImage");
+		break;
+	case 0x29: // HE90+
+		ext(output, "rx" "getWizData\0"
+				"\x1Epp|imageSpotX,"
+				"\x1Fpp|imageSpotY,"
+				"\x20pp|width,"
+				"\x21pp|height,"
+				"\x24pp|imageCount,"
+				"\x2Dpppp|isPixelNonTransparentnumber,"
+				"\x42pppp|pixelColor");
 		break;
 	case 0x43:
 		writeVar(output, get_word(), pop());
@@ -1567,7 +1580,7 @@ void next_line_HE_V72(char *output)
 				"\x41ppp|setPosition,");
 		break;
 	case 0x62:
-		ext(output, "ppp|printWizImage");
+		ext(output, "p|printWizImage");
 		break;
 	case 0x63:
 		ext(output, "rx" "getArrayDimSize\0"
