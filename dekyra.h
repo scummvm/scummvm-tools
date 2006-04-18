@@ -32,8 +32,8 @@ class Script {
 		~Script() { delete _scriptFile; }
 		
 		void decodeTextArea(void);
-		void decodeScript(void);		
-		bool decodeSpecialScript(int32 script);
+		void decodeScript(int8 engine);		
+		bool decodeSpecialScript(int32 script, int8 engine);
 		bool isOpen(void) { return (_scriptFile != 0); }
 		
 		uint32 getNextScriptPos(uint32 current_start);
@@ -80,7 +80,7 @@ class Script {
 		uint16 _argument;
 		uint8 _currentCommand;
 		uint32 _currentOpcode;
-
+		
 		int32 _stack[128];	// the stack
 		int32 _registers[32];   // registers of the interpreter
 
