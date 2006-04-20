@@ -240,7 +240,8 @@ static void convert_pc(char *infile)
 			continue;
 		}
 
-		size += get_sound(offsets[i]);
+		if (offsets[i] != 0)
+			size += get_sound(offsets[i]);
 		if (i < num - 1)
 			writeUint32LE(output_idx, size);
 	}
