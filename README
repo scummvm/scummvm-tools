@@ -132,5 +132,8 @@ Encoder Tools:
 
                 5. You will get intro.dxa file in result.
 
-
-                
+                Additionally you may use batch processing of SMK files in
+                RAD Game Tools. Just select more than one file and push
+                'Convert' button. It will ask you either you want them
+                processed in batch and will do this for you. All buttons
+                and conversion options work the same.
