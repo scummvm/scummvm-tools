@@ -118,7 +118,7 @@ Encoder Tools:
 
                 1. Extract video to PNG, 256 colors (chose PNG format
                 and tick the checkbox). It will create bunch of files named
-                'introXXX.png' where XXX is frame number. Maje sure you
+                'introXXX.png' where XXX is frame number. Make sure you
                 extracted 256 colors PNGs, otherwise encode_dxa will complain.
 
                 2. Extract audio to WAV format. You will get file 'intro.wav'.
