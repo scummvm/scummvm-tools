@@ -107,3 +107,30 @@ Script Tools:
 
         dekyra
                 Basic script disassembler for Legend of Kyrandia games
+
+Encoder Tools:
+        encode_dxa <prefix> <directory>
+
+                Creates DXA file out of extracted Smacker video.
+
+                To extract a video use RAD Game Tools and perform 2 passes
+                on it. Let's say, your video is called 'intro.smk'.
+
+                1. Extract video to PNG, 256 colors (chose PNG format
+                and tick the checkbox). It will create bunch of files named
+                'introXXX.png' where XXX is frame number. Maje sure you
+                extracted 256 colors PNGs, otherwise encode_dxa will complain.
+
+                2. Extract audio to WAV format. You will get file 'intro.wav'.
+
+                3. Put files 'intro.smk', 'intro.wav' and 'intro*.png' to a
+                single directory, say, video/
+
+                4. Run `encode_dxa intro /path/to/directory/video/`
+                or for simplicity cd to that directory and run
+                `encode_data intro ./`
+
+                5. You will get intro.dxa file in result.
+
+
+                
