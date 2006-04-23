@@ -28,6 +28,7 @@ TARGETS := \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
+	encode_dxa$(EXEEXT) \
 	extract_kyra$(EXEEXT) \
 	extract_loom_tg16$(EXEEXT) \
 	extract_mm_c64$(EXEEXT) \
@@ -58,6 +59,9 @@ compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
 
 compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
+
+encode_dxa$(EXEEXT): encode_dxa.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lsndfile -lz
 
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
@@ -112,6 +116,7 @@ compress_kyra.o \
 descumm.o descumm6.o descumm-common.o descumm-tool.o \
 dekyra.o \
 desword2.o \
+encode_dxa.o \
 extract_kyra.o \
 extract_loom_tg16.o \
 extract_mm_c64.o \
