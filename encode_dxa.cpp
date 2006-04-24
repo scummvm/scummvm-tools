@@ -37,12 +37,11 @@ const uint32 typeNULL = 0x4C4C554E;
 
 class DxaEncoder {
 private:
+	FILE *_dxa;
 	int _width, _height, _framerate, _framecount;
 	uint8 *_prevframe, *_prevpalette;
 
 public:
-	FILE *_dxa;
-
 	DxaEncoder(char *filename, int width, int height, int fps);
 	~DxaEncoder();
 	void writeHeader();
