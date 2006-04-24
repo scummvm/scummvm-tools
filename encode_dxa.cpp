@@ -37,14 +37,16 @@ const uint32 typeNULL = 0x4C4C554E;
 
 class DxaEncoder {
 private:
-	FILE *_dxa;
 	int _width, _height, _framerate, _framecount;
 	uint8 *_prevframe, *_prevpalette;
 
 public:
+	FILE *_dxa;
+
 	DxaEncoder(char *filename, int width, int height, int fps);
 	~DxaEncoder();
 	void writeHeader();
+	void writeNULL();
 	void addAudio(char *wavfilename);
 	void writeFrame(uint8 *frame, uint8 *palette);
 };
@@ -83,6 +85,11 @@ void DxaEncoder::writeHeader() {
 	writeUint32BE(_dxa, _framerate);
 	writeUint16BE(_dxa, _width);
 	writeUint16BE(_dxa, _height);
+}
+
+void DxaEncoder::writeNULL() {
+	//NULL
+	fwrite(&typeNULL, 4, 1, _dxa);
 }
 
 void DxaEncoder::addAudio(char* wavfilename) {
@@ -130,8 +137,7 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 
 		memcpy(_prevpalette, palette, 768);
 	} else {
-		//NULL
-		fwrite(&typeNULL, 4, 1, _dxa);
+		writeNULL();
 	}
 
 	if (_framecount == 0 || memcmp(_prevframe, frame, _width * _height)) {
@@ -188,8 +194,7 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 		memcpy(_prevframe, frame, _width * _height);
 
 	} else {
-		//NULL
-		fwrite(&typeNULL, 4, 1, _dxa);
+		writeNULL();
 	}
 
 	_framecount++;
@@ -365,21 +370,34 @@ void readSmackerInfo(char *filename, int &width, int &height, int &framerate, in
 	fclose(smk);
 }
 
+void showhelp(char *exename) {
+	printf("\nUsage: %s <params> <inputfile> <inputdir>\n", exename);
+	printf("\nParams:\n");
+	printf(" --adpcm      encode audio to Microsoft ADPCM format\n");
+	printf("(If one of these is specified, it must be the first parameter.)\n");
+	exit(2);
+}
+
 int main(int argc, char *argv[]) {
 	printf("Dxa encoder (c) 2006 Benjamin Haisch\n");
         
-	if (argc < 3) {
-		printf("syntax: encodedxa prefix datapath\n");
-		return 1;
+	if (argc < 3)
+		showhelp(argv[0]);
+
+	char strbuf[512];
+	int width, height, framerate, frames;
+	bool useMsAdpcm = false;
+        
+	int i = 1;
+	if (strcmp(argv[1], "--adpcm") == 0) {
+		useMsAdpcm = true;
+		i++;
 	}
 
-	int width, height, framerate, frames, useMsAdpcm = 0;
-	char strbuf[512];
-        
-	char *prefix = argv[1], *datapath = argv[2];
+	char *prefix = argv[i++];
+	char *datapath = argv[i++];
 
 	// read some data from the Smacker file.
-	// TODO: make the values cmdline parameters and this optional.
 	sprintf(strbuf, "%s%s.smk", datapath, prefix);
 	readSmackerInfo(strbuf, width, height, framerate, frames);
 
@@ -403,6 +421,8 @@ int main(int argc, char *argv[]) {
 			strcpy(strbuf, "dxatemp.wav");
 		}
 		dxe.addAudio(strbuf);
+	} else {
+		dxe.writeNULL();
 	}
 
 	uint8 *image, *palette;
