@@ -431,11 +431,11 @@ int main(int argc, char *argv[]) {
 	fflush(stdout);
 
 	for (int f = 0; f < frames; f++) {
-		if (frames > 1000)
+		if (frames > 999)
 			sprintf(strbuf, "%s%s%04d.png", datapath, prefix, framenum);
-		else if (frames > 100)
+		else if (frames > 99)
 			sprintf(strbuf, "%s%s%03d.png", datapath, prefix, framenum);
-		else if (frames > 10)
+		else if (frames > 9)
 			sprintf(strbuf, "%s%s%02d.png", datapath, prefix, framenum);
 		else
 			sprintf(strbuf, "%s%s%d.png", datapath, prefix, framenum);
