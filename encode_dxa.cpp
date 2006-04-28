@@ -358,13 +358,24 @@ void readSmackerInfo(char *filename, int &width, int &height, int &framerate, in
 		exit(-1);
 	}
 
-	uint32 sig;
+	uint32 flags;
 
-	fread(&sig, 4, 1, smk);
-	fread(&width, 4, 1, smk);
-	fread(&height, 4, 1, smk);
-	fread(&frames, 4, 1, smk);
-	fread(&framerate, 4, 1, smk);
+	// Skip the signature. We could use it to verify that it's a SMK file,
+	// but if it wasn't, how did we ever extract the PNG frames from it?
+
+	readUint32LE(smk);
+
+	width = readUint32LE(smk);
+	height = readUint32LE(smk);
+	frames = readUint32LE(smk);
+	framerate = readUint32LE(smk);
+	flags = readUint32LE(smk);
+
+	// If the Y-doubled flag is set, the RAD Video Tools will have scaled
+	// the frames to twice their original height.
+
+	if (flags & 0x04)
+		height *= 2;
 
 	fclose(smk);
 }
