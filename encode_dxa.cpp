@@ -96,10 +96,10 @@ DxaEncoder::~DxaEncoder() {
 
 void DxaEncoder::writeHeader() {
 	//DEXA
-	uint8 unk = 0;
+	uint8 version = 0;
 
-	fwrite(&typeDEXA, 4, 1, _dxa);
-	fwrite(&unk, 1, 1, _dxa);
+	writeUint32LE(_dxa, typeDEXA);
+	writeByte(_dxa, version);
 
 	writeUint16BE(_dxa, _framecount);
 	writeUint32BE(_dxa, _framerate);
@@ -109,7 +109,7 @@ void DxaEncoder::writeHeader() {
 
 void DxaEncoder::writeNULL() {
 	//NULL
-	fwrite(&typeNULL, 4, 1, _dxa);
+	writeUint32LE(_dxa, typeNULL);
 }
 
 void DxaEncoder::addAudio(char* wavfilename) {
@@ -125,7 +125,7 @@ void DxaEncoder::addAudio(char* wavfilename) {
 
 	fseek(wav, 0, SEEK_SET);
 
-	fwrite(&typeWAVE, 4, 1, _dxa);
+	writeUint32LE(_dxa, typeWAVE);
 
 	writeUint32BE(_dxa, wavsize);
 
@@ -153,7 +153,7 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 	uint8 cpalette[1024];
 
 	if (_framecount == 0 || memcmp(_prevpalette, palette, 768)) {
-		fwrite(&typeCMAP, 4, 1, _dxa);
+		writeUint32LE(_dxa, typeCMAP);
 		fwrite(palette, 768, 1, _dxa);
 
 		memcpy(_prevpalette, palette, 768);
@@ -176,7 +176,7 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 		//FRAM
 		uint8 compType;
 
-		fwrite(&typeFRAM, 4, 1, _dxa);
+		writeUint32LE(_dxa, typeFRAM);
 
 		if (_framecount == 0)
 			compType = 2;
@@ -187,7 +187,7 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 		compType = 10;
 #endif
 
-		fwrite(&compType, 1, 1, _dxa);
+		writeByte(_dxa, compType);
 
 		switch (compType) {
 		case 2:
