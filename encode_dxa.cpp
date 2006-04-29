@@ -150,8 +150,6 @@ void DxaEncoder::addAudio(char* wavfilename) {
 }
 
 void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
-	uint8 cpalette[1024];
-
 	if (_framecount == 0 || memcmp(_prevpalette, palette, 768)) {
 		writeUint32LE(_dxa, typeCMAP);
 		fwrite(palette, 768, 1, _dxa);
@@ -162,6 +160,8 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 	}
 
 #ifdef USE_ZMBV
+	uint8 cpalette[1024];
+
 	for (int i = 0; i < 256; i++) {
 		cpalette[i * 4 + 0] = palette[i * 3 + 0];
 		cpalette[i * 4 + 1] = palette[i * 3 + 1];
