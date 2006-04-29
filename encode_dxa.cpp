@@ -35,11 +35,25 @@ const uint32 typeNULL = 0x4C4C554E;
 
 #define	 BUFFER_LEN	1024
 
+//#define USE_ZMBV
+
+#ifdef USE_ZMBV
+#include "zmbv.h"
+#endif
+
+
 class DxaEncoder {
 private:
 	FILE *_dxa;
 	int _width, _height, _framerate, _framecount;
 	uint8 *_prevframe, *_prevpalette;
+
+#ifdef USE_ZMBV
+	VideoCodec *_codec;
+
+	byte *_codecBuf;
+	int _codecBufSize;
+#endif
 
 public:
 	DxaEncoder(char *filename, int width, int height, int fps);
@@ -60,6 +74,13 @@ DxaEncoder::DxaEncoder(char *filename, int width, int height, int framerate) {
 	_prevpalette = new uint8[768];
 
 	writeHeader();
+
+#ifdef USE_ZMBV
+	_codec = new VideoCodec();
+	_codec->SetupCompress(width, height);
+	_codecBufSize = _codec->NeededSize(width, height, ZMBV_FORMAT_8BPP);
+	_codecBuf = (byte *)malloc(_codecBufSize);
+#endif
 }
 
 DxaEncoder::~DxaEncoder() {
@@ -129,6 +150,7 @@ void DxaEncoder::addAudio(char* wavfilename) {
 }
 
 void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
+	uint8 cpalette[1024];
 
 	if (_framecount == 0 || memcmp(_prevpalette, palette, 768)) {
 		fwrite(&typeCMAP, 4, 1, _dxa);
@@ -138,6 +160,17 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 	} else {
 		writeNULL();
 	}
+
+#ifdef USE_ZMBV
+	for (int i = 0; i < 256; i++) {
+		cpalette[i * 4 + 0] = palette[i * 3 + 0];
+		cpalette[i * 4 + 1] = palette[i * 3 + 1];
+		cpalette[i * 4 + 2] = palette[i * 3 + 2];
+		cpalette[i * 4 + 3] = 0;
+	}
+
+	_codec->PrepareCompressFrame(0, ZMBV_FORMAT_8BPP, (char *)cpalette, _codecBuf, _codecBufSize);
+#endif
 
 	if (_framecount == 0 || memcmp(_prevframe, frame, _width * _height)) {
 		//FRAM
@@ -150,6 +183,10 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 		else
 			compType = 3;
 
+#ifdef USE_ZMBV
+		compType = 10;
+#endif
+
 		fwrite(&compType, 1, 1, _dxa);
 
 		switch (compType) {
@@ -158,7 +195,7 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 				uLong outsize = _width * _height;
 				uint8 *outbuf = new uint8[outsize];
 
-				compress(outbuf, &outsize, frame, _width * _height);
+				compress2(outbuf, &outsize, frame, _width * _height, 9);
 
 				writeUint32BE(_dxa, outsize);
 
@@ -177,7 +214,7 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 				for (int i = 0; i < _width * _height; i++)
 					xorbuf[i] = _prevframe[i] ^ frame[i];
 
-				compress(outbuf, &outsize, xorbuf, _width * _height);
+				compress2(outbuf, &outsize, xorbuf, _width * _height, 9);
 
 				writeUint32BE(_dxa, outsize);
 
@@ -188,6 +225,22 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 
 				break;
 			}
+#ifdef USE_ZMBV
+		case 10:
+			{
+				int outsize;
+				void *ptr;
+
+				for (int i = 0; i < _height; i++) {
+					ptr = frame + i * _width;
+					_codec->CompressLines(1, &ptr);
+				}
+				outsize = _codec->FinishCompressFrame();
+				writeUint32BE(_dxa, outsize);
+				fwrite(_codecBuf, outsize, 1, _dxa);
+				break;
+			}
+#endif
 		}
 
 		memcpy(_prevframe, frame, _width * _height);
@@ -453,8 +506,10 @@ int main(int argc, char *argv[]) {
 
 		int r = read_png_file(strbuf, image, palette, width, height);
 
-		if (!palette)
+		if (!palette) {
 			printf("Error: 8-bit 256-color image expected!\n");
+			exit(0);
+		}
 
 		if (!r) {
 			dxe.writeFrame(image, palette);
