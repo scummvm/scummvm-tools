@@ -186,9 +186,6 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 #ifdef USE_ZMBV
 		compType = 10;
 #endif
-
-		writeByte(_dxa, compType);
-
 		switch (compType) {
 		case 2:
 			{
@@ -196,6 +193,8 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 				uint8 *outbuf = new uint8[outsize];
 
 				compress2(outbuf, &outsize, frame, _width * _height, 9);
+
+				writeByte(_dxa, compType);
 
 				writeUint32BE(_dxa, outsize);
 
@@ -207,20 +206,38 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 			}
 		case 3:
 			{
-				uLong outsize = _width * _height;
-				uint8 *outbuf = new uint8[outsize];
+				uLong outsize1 = _width * _height;
+				uLong outsize2 = outsize1;
+				uLong outsize;
+				uint8 *outbuf;
+				uint8 *outbuf1 = new uint8[outsize1];
+				uint8 *outbuf2 = new uint8[outsize2];
 				uint8 *xorbuf = new uint8[_width * _height];
 
 				for (int i = 0; i < _width * _height; i++)
 					xorbuf[i] = _prevframe[i] ^ frame[i];
 
-				compress2(outbuf, &outsize, xorbuf, _width * _height, 9);
+				compress2(outbuf1, &outsize1, xorbuf, _width * _height, 9);
+				compress2(outbuf2, &outsize2, frame, _width * _height, 9);
+
+				if (outsize1 < outsize2) {
+					compType = 3;
+					outsize = outsize1;
+					outbuf = outbuf1;
+				} else {
+					compType = 2;
+					outsize = outsize2;
+					outbuf = outbuf2;
+				}
+
+				writeByte(_dxa, compType);
 
 				writeUint32BE(_dxa, outsize);
 
 				fwrite(outbuf, outsize, 1, _dxa);
 
-				delete[] outbuf;
+				delete[] outbuf1;
+				delete[] outbuf2;
 				delete[] xorbuf;
 
 				break;
@@ -236,6 +253,8 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 					_codec->CompressLines(1, &ptr);
 				}
 				outsize = _codec->FinishCompressFrame();
+
+				writeByte(_dxa, compType);
 				writeUint32BE(_dxa, outsize);
 				fwrite(_codecBuf, outsize, 1, _dxa);
 				break;
