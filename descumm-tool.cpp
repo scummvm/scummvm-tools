@@ -346,8 +346,7 @@ int main(int argc, char *argv[])
 			printf("File too small to be a script\n");
 			return 1;
 		}
-		uint offs = (scriptVersion == 4) ? 4 : 2;
-		switch (READ_BE_UINT16(mem + offs)) {
+		switch (READ_BE_UINT16(mem + 4)) {
 		case 'LS':
 			printf("Script# %d\n", (byte)mem[6]);
 			mem += 7;
