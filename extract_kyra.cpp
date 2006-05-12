@@ -102,7 +102,7 @@ void PAKFile::drawFilelist(void) {
 			break;
 
 		position += strlgt + 1;
-		// scip offset
+		// skip offset
 		endoffset = READ_LE_UINT32(position);
 		if (endoffset > _filesize) {
 			endoffset = _filesize;
@@ -136,7 +136,7 @@ void PAKFile::outputFile(const char* file) {
 			break;
 
 		position += strlgt + 1;
-		// scip offset
+		// skip offset
 		endoffset = READ_LE_UINT32(position);
 		if (endoffset > _filesize) {
 			endoffset = _filesize;
@@ -179,7 +179,7 @@ void PAKFile::outputAllFiles(void) {
 			break;
 
 		position += strlgt + 1;
-		// scip offset
+		// skip offset
 		endoffset = READ_LE_UINT32(position);
 		if (endoffset > _filesize) {
 			endoffset = _filesize;
