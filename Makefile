@@ -79,7 +79,7 @@ extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_saga$(EXEEXT): compress_saga.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
+	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_simon1_amiga$(EXEEXT): extract_simon1_amiga.o
 	$(CC) $(LDFLAGS) -o $@ $+

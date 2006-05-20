@@ -77,7 +77,9 @@ int getSampleRateFromVOCRate(int vocSR) {
 		return 22050;
 	} else {
 		int sr = 1000000L / (256L - vocSR);
-		warning("inexact sample rate used: %d (0x%x)", sr, vocSR);
+		// inexact sampling rates occur e.g. in the kitchen in Monkey Island,
+		// very easy to reach right from the start of the game.
+		//warning("inexact sample rate used: %i (0x%x)", sr, vocSR);
 		return sr;
 	}
 }
@@ -217,10 +219,12 @@ void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode
 		size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length, input);
 		if (size <= 0)
 			break;
-		length -= size;
+		length -= (int)size;
 		fwrite(fbuf, 1, size, f);
 	}
 	fclose(f);
+
+	//TODO: setRawAudioType(false, false, 8);
 
 	/* Convert the WAV temp file to OGG/MP3 */
 	encodeAudio(outName, false, -1, tempEncoded, compMode);
@@ -279,7 +283,7 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 			size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length, input);
 			if (size <= 0)
 				break;
-			length -= size;
+			length -= (int)size; 
 			fwrite(fbuf, 1, size, f);
 		}
 	}
@@ -287,6 +291,8 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 	fclose(f);
 	
 	assert(real_samplerate != -1);
+
+	setRawAudioType(false, false, 8);
 
 	/* Convert the raw temp file to OGG/MP3 */
 	encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
