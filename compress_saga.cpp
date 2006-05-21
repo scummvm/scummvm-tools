@@ -330,9 +330,9 @@ bool md5_file(const char *name, uint8 digest[16], uint32 length) {
 }
 // taken from common/md5.c -->
 
-#include "SagaGame.h"
-#include "SagaResNames.h"
-#include "SagaGame.cpp"
+#include "sagagame.h"
+#include "sagaresnames.h"
+#include "sagagame.cpp"
 
 typedef struct  {
 	uint32 offset;
