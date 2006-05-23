@@ -77,9 +77,10 @@ int getSampleRateFromVOCRate(int vocSR) {
 		return 22050;
 	} else {
 		int sr = 1000000L / (256L - vocSR);
-		// inexact sampling rates occur e.g. in the kitchen in Monkey Island,
-		// very easy to reach right from the start of the game.
-		//warning("inexact sample rate used: %i (0x%x)", sr, vocSR);
+		/* inexact sampling rates occur e.g. in the kitchen in Monkey
+		 * Island, very easy to reach right from the start of the game.
+		 * warning("inexact sample rate used: %i (0x%x)", sr, vocSR);
+		 */
 		return sr;
 	}
 }
@@ -224,7 +225,7 @@ void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode
 	}
 	fclose(f);
 
-	//TODO: setRawAudioType(false, false, 8);
+	/* TODO: setRawAudioType(false, false, 8); */
 
 	/* Convert the WAV temp file to OGG/MP3 */
 	encodeAudio(outName, false, -1, tempEncoded, compMode);
