@@ -493,7 +493,7 @@ void compressSpeech(CompressMode compMode) {
 				convertClu(clu, cl3, compMode);
 			}
 		}
-        	if (clu)
+		if (clu)
 			fclose(clu);
 		if (cl3)
 			fclose(cl3);
@@ -560,7 +560,7 @@ void checkFilesExist(bool checkSpeech, bool checkMusic) {
 			}
 		}
 		if (!speechFound) {
-            printf("Unable to find speech files.\n");
+			printf("Unable to find speech files.\n");
 			printf("Please copy the SPEECH.CLU files from Broken Sword CD1 and CD2\n");
 			printf("into the \"SPEECH\" subdirectory and rename them to\n");
 			printf("SPEECH1.CLU and SPEECH2.CLU\n\n");
