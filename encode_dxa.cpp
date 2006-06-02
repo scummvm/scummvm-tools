@@ -24,7 +24,6 @@
 #include "util.h"
 
 #include <png.h>
-#include <sndfile.h>
 #include <zlib.h>
 
 const uint32 typeDEXA = 0x41584544;
@@ -60,7 +59,6 @@ public:
 	~DxaEncoder();
 	void writeHeader();
 	void writeNULL();
-	void addAudio(char *wavfilename);
 	void writeFrame(uint8 *frame, uint8 *palette);
 };
 
@@ -110,43 +108,6 @@ void DxaEncoder::writeHeader() {
 void DxaEncoder::writeNULL() {
 	//NULL
 	writeUint32LE(_dxa, typeNULL);
-}
-
-void DxaEncoder::addAudio(char* wavfilename) {
-	//WAVE
-	const int BUFSIZE = 8192;
-
-	FILE *wav = fopen(wavfilename, "rb");
-
-	fseek(wav, 0, SEEK_END);
-
-	int wavsize = ftell(wav);
-	int bytesleft = wavsize;
-
-	fseek(wav, 0, SEEK_SET);
-
-	writeUint32LE(_dxa, typeWAVE);
-
-	writeUint32BE(_dxa, wavsize);
-
-	printf("Adding WAVE audio track...");
-	fflush(stdout);
-
-	while (bytesleft > 0) {
-		uint8 buffer[BUFSIZE];
-		int readsize = BUFSIZE;
-
-		if (bytesleft - readsize < 0)
-			readsize = bytesleft;
-
-		fread(buffer, readsize, 1, wav);
-		fwrite(buffer, readsize, 1, _dxa);
-
-		bytesleft -= readsize;
-	}
-	printf("done\n");
-
-	fclose(wav);
 }
 
 void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
@@ -271,70 +232,6 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 	_framecount++;
 }
 
-void copy_data_int(SNDFILE *outfile, SNDFILE *infile, int channels) {
-	static int	data [BUFFER_LEN];
-	int		frames, readcount;
-
-	frames = BUFFER_LEN / channels;
-	readcount = frames;
-
-	while (readcount > 0) {
-		readcount = sf_readf_int(infile, data, frames);
-		sf_writef_int(outfile, data, readcount);
-	}
-
-	return;
-}
-
-int convertAudio(const char* infilename, const char* outfilename, int useMsAdpcm) {
-
-	SNDFILE	 *infile = NULL, *outfile = NULL;
-	SF_INFO	 sfinfo;
-	int	     outfilemajor, outfileminor = 0, infileminor;
-
-	if ((infile = sf_open(infilename, SFM_READ, &sfinfo)) == NULL) {
-		return 1;
-	}
-
-	printf("Converting Wave file to MS ADPCM compressed file...");
-	fflush(stdout);
-
-	infileminor = sfinfo.format & SF_FORMAT_SUBMASK;
-
-	if (useMsAdpcm && sfinfo.format & SF_FORMAT_PCM_16)
-		outfileminor = outfileminor | SF_FORMAT_MS_ADPCM;
-
-	outfilemajor = sfinfo.format & (SF_FORMAT_TYPEMASK | SF_FORMAT_ENDMASK) | SF_FORMAT_WAV;
-
-	if (outfileminor == 0)
-		outfileminor = sfinfo.format & SF_FORMAT_SUBMASK;
-
-	if (outfileminor != 0)
-		sfinfo.format = outfilemajor | outfileminor;
-	else
-		sfinfo.format = outfilemajor | (sfinfo.format & SF_FORMAT_SUBMASK);
-
-	if (sf_format_check(&sfinfo) == 0) {
-		printf("Error : output file format is invalid (0x%08X).\n", sfinfo.format);
-		return 1;
-	};
-
-	// Open the output file.
-	if ((outfile = sf_open(outfilename, SFM_WRITE, &sfinfo)) == NULL) {
-		printf("Not able to open output file %s : %s\n", outfilename, sf_strerror(NULL));
-		return 1;
-	}
-
-	copy_data_int(outfile, infile, sfinfo.channels);
-
-	sf_close(infile);
-	sf_close(outfile);
-
-	printf("done\n");
-
-	return 0;
-}
-
 int read_png_file(char* filename, unsigned char *&image, unsigned char *&palette, int &width, int &height) {
 	png_byte header[8];
 
@@ -453,10 +350,7 @@ void readSmackerInfo(char *filename, int &width, int &height, int &framerate, in
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <params> <inputfile> <inputdir>\n", exename);
-	printf("\nParams:\n");
-	printf(" --adpcm      encode audio to Microsoft ADPCM format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
+	printf("\nUsage: %s <inputfile> <inputdir>\n", exename);
 	exit(2);
 }
 
@@ -468,16 +362,9 @@ int main(int argc, char *argv[]) {
 
 	char strbuf[512];
 	int width, height, framerate, frames;
-	bool useMsAdpcm = false;
-        
-	int i = 1;
-	if (strcmp(argv[1], "--adpcm") == 0) {
-		useMsAdpcm = true;
-		i++;
-	}
-
-	char *prefix = argv[i++];
-	char *datapath = argv[i++];
+       
+	char *prefix = argv[1];
+	char *datapath = argv[2];
 
 	// read some data from the Smacker file.
 	sprintf(strbuf, "%s%s.smk", datapath, prefix);
@@ -490,22 +377,8 @@ int main(int argc, char *argv[]) {
 	sprintf(strbuf, "%s.dxa", prefix);
 	DxaEncoder dxe(strbuf, width, height, framerate);
 
-	// check if the wav file exists.
-	// if it does, convert it to MS ADPCM-format if wanted.
-	// then add it to the dxa animation.
-	sprintf(strbuf, "%s%s.wav", datapath, prefix);
-	struct stat statinfo;
-
-	if (!stat(strbuf, &statinfo)) {
-		if (useMsAdpcm) {
-			convertAudio(strbuf, (const char *)"dxatemp.wav", useMsAdpcm);
-
-			strcpy(strbuf, "dxatemp.wav");
-		}
-		dxe.addAudio(strbuf);
-	} else {
-		dxe.writeNULL();
-	}
+	// No sound block
+	dxe.writeNULL();
 
 	uint8 *image, *palette;
 	int framenum = 0;

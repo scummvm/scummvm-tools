@@ -61,7 +61,7 @@ compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 encode_dxa$(EXEEXT): encode_dxa.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lsndfile -lz
+	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz
 
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
