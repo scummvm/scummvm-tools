@@ -124,11 +124,11 @@ Encoder Tools:
                 2. Put files 'intro.smk', and 'intro*.png' to a single 
                 directory, say, video/
 
-                4. Run `encode_dxa intro /path/to/directory/video/`
+                3. Run `encode_dxa intro /path/to/directory/video/`
                 or for simplicity cd to that directory and run
                 `encode_data intro ./`
 
-                5. You will get intro.dxa file in result.
+                4. You will get intro.dxa file in result.
 
                 Additionally you may use batch processing of SMK files in
                 RAD Game Tools. Just select more than one file and push
