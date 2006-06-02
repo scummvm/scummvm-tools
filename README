@@ -121,10 +121,8 @@ Encoder Tools:
                 'introXXX.png' where XXX is frame number. Make sure you
                 extracted 256 colors PNGs, otherwise encode_dxa will complain.
 
-                2. Extract audio to WAV format. You will get file 'intro.wav'.
-
-                3. Put files 'intro.smk', 'intro.wav' and 'intro*.png' to a
-                single directory, say, video/
+                2. Put files 'intro.smk', and 'intro*.png' to a single 
+                directory, say, video/
 
                 4. Run `encode_dxa intro /path/to/directory/video/`
                 or for simplicity cd to that directory and run

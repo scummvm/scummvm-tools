@@ -340,10 +340,10 @@ void readSmackerInfo(char *filename, int &width, int &height, int &framerate, in
 	framerate = readUint32LE(smk);
 	flags = readUint32LE(smk);
 
-	// If the Y-doubled flag is set, the RAD Video Tools will have scaled
-	// the frames to twice their original height.
+	// If the Y-interlaced or Y-doubled flag is set, the RAD Video Tools
+	// will have scaled the frames to twice their original height.
 
-	if (flags & 0x04)
+	if ((flags & 0x02) || (flags & 0x04))
 		height *= 2;
 
 	fclose(smk);
