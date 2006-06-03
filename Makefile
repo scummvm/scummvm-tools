@@ -60,7 +60,7 @@ compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
 compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-encode_dxa$(EXEEXT): encode_dxa.o util.o
+encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz
 
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
@@ -105,7 +105,7 @@ descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
 # Most compress_* tools (except for compress_queen) use compress.h
 compress_saga.o compress_scumm_sou.o compress_scumm_bun.o \
 compress_simon.o compress_sword1.o compress_sword2.o \
-compress_kyra.o compress.o: compress.h
+compress_kyra.o compress.o encode_dxa.o: compress.h
 
 # Virtually everything depends on util.h
 compress_saga.o compress_scumm_sou.o compress_scumm_bun.o \

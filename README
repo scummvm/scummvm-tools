@@ -24,17 +24,19 @@ Extraction Tools:
                 There is currently no support for this game in ScummVM!
 
         extract_mm_c64
-                Extracts data files from Commodore 64 version of Maniac Mansion.
+                Extracts data files from the Commodore 64 version of Maniac
+                Mansion.
 
         extract_mm_nes
-                Extracts data files from NES version of Maniac Mansion.
+                Extracts data files from the NES version of Maniac Mansion.
 
         extract_simon1_amiga
-                Extracts the graphics or music files in AGA/ECS
-                versions of Simon the Sorcerer 1 for Amiga
+                Extracts the graphics or music files in AGA and ECS
+                versions of Simon the Sorcerer 1 for Amiga.
 
         extract_zak_c64
-                Extracts data files from Commodore 64 version of Zak McKracken
+                Extracts data files from the Commodore 64 version of Zak
+                McKracken.
 
 Compression Tools:
         compress_scumm_sou 
@@ -43,20 +45,21 @@ Compression Tools:
 
         compress_queen
                 Used to rebuild the datafile of Flight of the Amazon Queen,
-                to allow optional MP3/Ogg/FLAC compression.
+                and allow optional MP3, Vorbis or FLAC compression.
 
         compress_saga
-                Compress SAGA engine digital sound files into MP3 and Ogg
-                Vorbis format.
+                Used to compress SAGA engine digital sound files to MP3 or
+                Vorbis.
                 There is currently no support for compressed sound files in
                 ScummVM!
 
         compress_simon
-                Compresses Simon voc/wav files to MP3/Ogg/FLAC.
+                Used to compress the Feeble Files or Simon 1/2 voc/wav files
+		to MP3, Vorbis or FLAC.
 
         compress_sword1
-                Used to compress Broken Sword 1's music and speech files
-                using mp3 or vorbis.
+                Used to compress Broken Sword 1's music and speech files to
+                MP3 or Vorbis.
 
         compress_sword2
                 Used to compress Broken Sword 2's music and speech .clu
@@ -114,24 +117,26 @@ Encoder Tools:
                 Creates DXA file out of extracted Smacker video.
 
                 To extract a video use RAD Game Tools and perform 2 passes
-                on it. Let's say, your video is called 'intro.smk'.
+                on it. For example, if your video is called 'intro.smk'.
 
-                1. Extract video to PNG, 256 colors (chose PNG format
+                1. Extract the video to PNG, 256 colors (choose PNG format
                 and tick the checkbox). It will create bunch of files named
-                'introXXX.png' where XXX is frame number. Make sure you
+                'introXXX.png', where XXX is frame number. Make sure you have
                 extracted 256 colors PNGs, otherwise encode_dxa will complain.
 
-                2. Put files 'intro.smk', and 'intro*.png' to a single 
-                directory, say, video/
+                2. Extract the audio to WAV format, you will get an
+                'intro.wav' file.
 
-                3. Run `encode_dxa intro /path/to/directory/video/`
-                or for simplicity cd to that directory and run
-                `encode_data intro ./`
+                3. Put files 'intro.smk', 'intro.wav' and 'intro*.png' into a
+                single directory.
 
-                4. You will get intro.dxa file in result.
+                4. Run `encode_dxa intro` in that directory
 
-                Additionally you may use batch processing of SMK files in
-                RAD Game Tools. Just select more than one file and push
+                5. You will get an intro.dxa file and intro.flac/mp3/ogg file
+                in result.
+
+                Additionally you may use batch processing mode of SMK files in
+                RAD Game Tools. Just select more than one file and push the
                 'Convert' button. It will ask you either you want them
-                processed in batch and will do this for you. All buttons
+                processed in batch mode and will do this for you. All buttons
                 and conversion options work the same.

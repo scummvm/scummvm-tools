@@ -21,6 +21,7 @@
  *
  */
 
+#include "compress.h"
 #include "util.h"
 
 #include <png.h>
@@ -40,6 +41,7 @@ const uint32 typeNULL = 0x4C4C554E;
 #include "zmbv.h"
 #endif
 
+static CompressMode gCompMode = kMP3Mode;
 
 class DxaEncoder {
 private:
@@ -349,25 +351,113 @@ void readSmackerInfo(char *filename, int &width, int &height, int &framerate, in
 	fclose(smk);
 }
 
+void convertWAV(char *wavName, char *prefix) {
+	const char *ext;
+	char outName[256];
+
+	switch (gCompMode) {
+	case kMP3Mode:
+		ext = "mp3"; break;
+	case kVorbisMode:
+		ext = "ogg"; break;
+	case kFlacMode:
+		ext = "fla"; break;
+	default:
+		error("Unknown compression mode");
+	}
+
+	printf("Encoding audio...");
+	fflush(stdout);
+
+	sprintf(outName, "%s.%s", prefix, ext);
+	encodeAudio(wavName, false, -1, outName, gCompMode);
+}
+
 void showhelp(char *exename) {
-	printf("\nUsage: %s <inputfile> <inputdir>\n", exename);
+	printf("\nUsage: %s <inputfile> \n", exename);
+
+	printf("\nParams:\n");
+	printf(" --mp3        encode to MP3 format (default)\n");
+	printf(" --vorbis     encode to Vorbis format\n");
+	printf(" --flac       encode to Flac format\n");
+	printf("(If one of these is specified, it must be the first parameter.)\n");
+
+	printf("\nMP3 mode params:\n");
+	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
+	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
+	printf(" --vbr        LAME uses the VBR mode (default)\n");
+	printf(" --abr        LAME uses the ABR mode\n");
+	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
+	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
+	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
+
+	printf("\nVorbis mode params:\n");
+	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
+	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
+	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
+	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
+	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
+
+	printf("\nFlac mode params:\n");
+	printf(" [params]     optional arguments passed directly to the encoder\n");
+	printf("              recommended is: --best -b 1152\n");
+
+	printf("\n --help     this help message\n");
+
+	printf("\n\nIf a parameter is not given the default value is used\n");
+	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
+	printf("Use the `mac' option instead of a filename if converting simon2mac sounds\n");
 	exit(2);
 }
 
 int main(int argc, char *argv[]) {
-	printf("Dxa encoder (c) 2006 Benjamin Haisch\n");
-        
-	if (argc < 3)
+	if (argc < 2)
 		showhelp(argv[0]);
 
 	char strbuf[512];
 	int width, height, framerate, frames;
        
-	char *prefix = argv[1];
-	char *datapath = argv[2];
+	/* compression mode */
+	gCompMode = kMP3Mode;
+	int i = 1;
+	if (!strcmp(argv[1], "--mp3")) {
+		gCompMode = kMP3Mode;
+		i++;
+	} else if (!strcmp(argv[1], "--vorbis")) {
+		gCompMode = kVorbisMode;
+		i++;
+	} else if (!strcmp(argv[1], "--flac")) {
+		gCompMode = kFlacMode;
+		i++;
+	}
+
+	switch (gCompMode) {
+	case kMP3Mode:
+		if (!process_mp3_parms(argc, argv, i))
+			showhelp(argv[0]);
+		break;
+	case kVorbisMode:
+		if (!process_ogg_parms(argc, argv, i))
+			showhelp(argv[0]);
+		break;
+	case kFlacMode:
+		if (!process_flac_parms(argc, argv, i))
+			showhelp(argv[0]);
+		break;
+	}
+
+	i = argc - 1;
+	char *prefix = argv[i++];
+
+	// check if the wav file exists.
+	sprintf(strbuf, "%s.wav", prefix);
+	struct stat statinfo;
+	if (!stat(strbuf, &statinfo)) {
+		convertWAV(strbuf, prefix);
+	}
 
 	// read some data from the Smacker file.
-	sprintf(strbuf, "%s%s.smk", datapath, prefix);
+	sprintf(strbuf, "%s.smk", prefix);
 	readSmackerInfo(strbuf, width, height, framerate, frames);
 
 	printf("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
@@ -383,18 +473,18 @@ int main(int argc, char *argv[]) {
 	uint8 *image, *palette;
 	int framenum = 0;
 
-	printf("Encoding...");
+	printf("Encoding video...");
 	fflush(stdout);
 
 	for (int f = 0; f < frames; f++) {
 		if (frames > 999)
-			sprintf(strbuf, "%s%s%04d.png", datapath, prefix, framenum);
+			sprintf(strbuf, "%s%04d.png", prefix, framenum);
 		else if (frames > 99)
-			sprintf(strbuf, "%s%s%03d.png", datapath, prefix, framenum);
+			sprintf(strbuf, "%s%03d.png", prefix, framenum);
 		else if (frames > 9)
-			sprintf(strbuf, "%s%s%02d.png", datapath, prefix, framenum);
+			sprintf(strbuf, "%s%02d.png", prefix, framenum);
 		else
-			sprintf(strbuf, "%s%s%d.png", datapath, prefix, framenum);
+			sprintf(strbuf, "%s%d.png", prefix, framenum);
 
 		int r = read_png_file(strbuf, image, palette, width, height);
 
@@ -421,7 +511,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
         
-	printf("\rEncoding...100%% (%d of %d)\n", frames, frames);
+	printf("\rEncoding video...100%% (%d of %d)\n", frames, frames);
         
 	return 0;
 }
