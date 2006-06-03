@@ -506,7 +506,7 @@ int main(int argc, char *argv[]) {
 		framenum++;
 
 		if (framenum % 20 == 0) {
-			printf("\rEncoding...%d%% (%d of %d)", 100 * framenum / frames, framenum, frames);
+			printf("\rEncoding video...%d%% (%d of %d)", 100 * framenum / frames, framenum, frames);
 			fflush(stdout);
 		}
 	}
