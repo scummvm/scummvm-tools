@@ -131,8 +131,8 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		if (oggparms.silent)
 			tmp += sprintf(tmp, "--quiet ");
 		tmp += sprintf(tmp, "--quality=%d ", oggparms.quality);
-		tmp += sprintf(tmp, "--output=%s ", outname);
-		tmp += sprintf(tmp, "%s ", inname);
+		tmp += sprintf(tmp, "--output=\"%s\" ", outname);
+		tmp += sprintf(tmp, "\"%s\" ", inname);
 		err = system(fbuf) != 0;
 		break;
 
@@ -167,7 +167,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		tmp += sprintf(tmp, "-q %d ", encparms.algqual);
 		tmp += sprintf(tmp, "-V %d ", encparms.vbrqual);
 		tmp += sprintf(tmp, "-B %d ", encparms.maxBitr);
-		tmp += sprintf(tmp, "%s %s ", inname, outname);
+		tmp += sprintf(tmp, "\"%s\" \"%s\" ", inname, outname);
 		err = system(fbuf) != 0;
 		break;
 
@@ -189,8 +189,8 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 			tmp += sprintf(tmp, "%s ", flacparms.argv[i]);
 		}
 
-		tmp += sprintf(tmp, "-o %s ", outname);
-		tmp += sprintf(tmp, "%s ", inname);
+		tmp += sprintf(tmp, "-o \"%s\" ", outname);
+		tmp += sprintf(tmp, "\"%s\" ", inname);
 
 		err = system(fbuf) != 0;
 		break;
