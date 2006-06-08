@@ -101,6 +101,17 @@ Compression Tools:
                 For the Ogg or Mad compression feature, your ScummVM binary
                 naturally must have been built with Ogg or Mad support enabled.
 
+        compress_kyra
+                Used to compress The Legend of Kyrandia's speech files with 
+                MP3, Vorbis or FLAC.
+
+                Example of usage:
+                compress_kyra <flags here> input/GEMCUT.VRM output/GEMCUT.VRM
+
+                Note: You have to keep the VRM extension, else it will NOT work.
+                Use it like shown above, copy all *.VRM files to a directory
+                and let the tool put the output file in another directory.
+
 Script Tools:
         descumm
                 Decompiles SCUMM scripts
