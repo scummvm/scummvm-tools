@@ -186,6 +186,7 @@ static void process(FILE *file, const char *output) {
 		if (strstr(tempPak.filename, ".VOC") == NULL) {
 			if (endOffset == file_size)
 				break;
+			startOffset = endOffset;
 			continue;
 		}
 		
