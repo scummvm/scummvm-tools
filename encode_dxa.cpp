@@ -35,12 +35,6 @@ const uint32 typeNULL = 0x4C4C554E;
 
 #define	 BUFFER_LEN	1024
 
-//#define USE_ZMBV
-
-#ifdef USE_ZMBV
-#include "zmbv.h"
-#endif
-
 static CompressMode gCompMode = kMP3Mode;
 
 class DxaEncoder {
@@ -48,13 +42,6 @@ private:
 	FILE *_dxa;
 	int _width, _height, _framerate, _framecount;
 	uint8 *_prevframe, *_prevpalette;
-
-#ifdef USE_ZMBV
-	VideoCodec *_codec;
-
-	byte *_codecBuf;
-	int _codecBufSize;
-#endif
 
 public:
 	DxaEncoder(char *filename, int width, int height, int fps);
@@ -74,13 +61,6 @@ DxaEncoder::DxaEncoder(char *filename, int width, int height, int framerate) {
 	_prevpalette = new uint8[768];
 
 	writeHeader();
-
-#ifdef USE_ZMBV
-	_codec = new VideoCodec();
-	_codec->SetupCompress(width, height);
-	_codecBufSize = _codec->NeededSize(width, height, ZMBV_FORMAT_8BPP);
-	_codecBuf = (byte *)malloc(_codecBufSize);
-#endif
 }
 
 DxaEncoder::~DxaEncoder() {
@@ -122,19 +102,6 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 		writeNULL();
 	}
 
-#ifdef USE_ZMBV
-	uint8 cpalette[1024];
-
-	for (int i = 0; i < 256; i++) {
-		cpalette[i * 4 + 0] = palette[i * 3 + 0];
-		cpalette[i * 4 + 1] = palette[i * 3 + 1];
-		cpalette[i * 4 + 2] = palette[i * 3 + 2];
-		cpalette[i * 4 + 3] = 0;
-	}
-
-	_codec->PrepareCompressFrame(0, ZMBV_FORMAT_8BPP, (char *)cpalette, _codecBuf, _codecBufSize);
-#endif
-
 	if (_framecount == 0 || memcmp(_prevframe, frame, _width * _height)) {
 		//FRAM
 		uint8 compType;
@@ -146,9 +113,6 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 		else
 			compType = 3;
 
-#ifdef USE_ZMBV
-		compType = 10;
-#endif
 		switch (compType) {
 		case 2:
 			{
@@ -205,24 +169,6 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 
 				break;
 			}
-#ifdef USE_ZMBV
-		case 10:
-			{
-				int outsize;
-				void *ptr;
-
-				for (int i = 0; i < _height; i++) {
-					ptr = frame + i * _width;
-					_codec->CompressLines(1, &ptr);
-				}
-				outsize = _codec->FinishCompressFrame();
-
-				writeByte(_dxa, compType);
-				writeUint32BE(_dxa, outsize);
-				fwrite(_codecBuf, outsize, 1, _dxa);
-				break;
-			}
-#endif
 		}
 
 		memcpy(_prevframe, frame, _width * _height);
