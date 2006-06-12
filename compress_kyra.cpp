@@ -161,7 +161,7 @@ static void process(FILE *file, const char *output) {
 		printf("ERROR: Empty or unknown PAK file format\n");
 		exit(-1);
 	}
-	printf("Found %d files in package", filesInPak);
+	printf("Found %d files in package\n", filesInPak);
 	
 	PakFileEntry *pakEntries = new PakFileEntry[filesInPak];
 	assert(pakEntries);
