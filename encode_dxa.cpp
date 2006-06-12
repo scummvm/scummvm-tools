@@ -240,28 +240,22 @@ int read_png_file(char* filename, unsigned char *&image, unsigned char *&palette
 
 	png_read_image(png_ptr, row_pointers);
 
-	if (image) {
-		image = new unsigned char[width * height];
-		for (int y=0; y<height; y++)
-			memcpy(&image[y*width], row_pointers[y], info_ptr->rowbytes);
-	}
+	image = new unsigned char[width * height];
+	for (int y=0; y<height; y++)
+		memcpy(&image[y*width], row_pointers[y], info_ptr->rowbytes);
 
 	for (int y=0; y<height; y++)
 		free(row_pointers[y]);
 	free(row_pointers);
 
-	if (palette) {
-		png_colorp pngpalette;
-		int num_palette;
+	png_colorp pngpalette;
+	int num_palette;
 
-		png_get_PLTE(png_ptr, info_ptr, &pngpalette, &num_palette);
+	png_get_PLTE(png_ptr, info_ptr, &pngpalette, &num_palette);
 
-		palette = new unsigned char[768];
-
-		memcpy(palette, pngpalette, 768);
-
-		free(pngpalette);
-	}
+	palette = new unsigned char[768];
+	memcpy(palette, pngpalette, 768);
+	free(pngpalette);
 
 	fclose(fp);
 
@@ -416,7 +410,8 @@ int main(int argc, char *argv[]) {
 	// No sound block
 	dxe.writeNULL();
 
-	uint8 *image, *palette;
+	uint8 *image = NULL;
+	uint8 *palette = NULL;
 	int framenum = 0;
 
 	printf("Encoding video...");
