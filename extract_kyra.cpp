@@ -161,7 +161,7 @@ void PAKFile::outputFile(const char* file) {
 		startoffset = endoffset;
 	}
 	
-	printf("File '%s' not found in this pakfile", file);
+	printf("File '%s' not found in this pakfile\n", file);
 }
 
 void PAKFile::outputAllFiles(void) {
