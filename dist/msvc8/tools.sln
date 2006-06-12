@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_scumm_san", "compr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_scumm_bun", "compress_scumm_bun\compress_scumm_bun.vcproj", "{C423ACAC-C398-4419-BA32-B77F6A8AC1F9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_kyra", "compress_kyra\compress_kyra.vcproj", "{B4D19F72-1F7B-48B2-8067-C6395B94DF05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,10 @@ Global
 		{C423ACAC-C398-4419-BA32-B77F6A8AC1F9}.Debug|Win32.Build.0 = Debug|Win32
 		{C423ACAC-C398-4419-BA32-B77F6A8AC1F9}.Release|Win32.ActiveCfg = Release|Win32
 		{C423ACAC-C398-4419-BA32-B77F6A8AC1F9}.Release|Win32.Build.0 = Release|Win32
+		{B4D19F72-1F7B-48B2-8067-C6395B94DF05}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B4D19F72-1F7B-48B2-8067-C6395B94DF05}.Debug|Win32.Build.0 = Debug|Win32
+		{B4D19F72-1F7B-48B2-8067-C6395B94DF05}.Release|Win32.ActiveCfg = Release|Win32
+		{B4D19F72-1F7B-48B2-8067-C6395B94DF05}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
