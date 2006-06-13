@@ -91,8 +91,8 @@ static bool _oggMode = false; // mp3 default
 void encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
 	char fbuf2[2048];
-	sprintf(fbuf, "\"%s\".wav", filename);
-	sprintf(fbuf2, "\"%s\".ogg", filename);
+	sprintf(fbuf, "%s.wav", filename);
+	sprintf(fbuf2, "%s.ogg", filename);
 	encodeAudio(fbuf, false, -1, fbuf2, kVorbisMode);
 }
 
@@ -100,8 +100,8 @@ void encodeWaveWithLame(char *filename) {
 	char fbuf[2048];
 	char fbuf2[2048];
 
-	sprintf(fbuf, "\"%s\".wav", filename);
-	sprintf(fbuf2, "\"%s\".mp3", filename);
+	sprintf(fbuf, "%s.wav", filename);
+	sprintf(fbuf2, "%s.mp3", filename);
 	encodeAudio(fbuf, false, -1, fbuf2, kMP3Mode);
 }
 
