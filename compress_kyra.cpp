@@ -197,6 +197,15 @@ static void process(FILE *file, const char *output) {
 		
 		fseek(file, startOffset, SEEK_SET);
 		fseek(file, 26, SEEK_CUR);
+
+		if (fgetc(file) != 1) {
+			warning("broken VOC file '%s' skipping it...", tempPak.filename);
+			startOffset = endOffset;
+			fseek(file, position, SEEK_SET);
+			continue;
+		}
+
+		fseek(file, -1, SEEK_CUR);
 		
 		uint8 *temp = new uint8[endOffset - startOffset];
 		assert(temp);
