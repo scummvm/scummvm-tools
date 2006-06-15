@@ -101,7 +101,7 @@ typedef uint8 bool;
 	#define scumm_stricmp strcasecmp
 	#define scumm_strnicmp strncasecmp
 
-	#if defined(__DECCXX) // Assume alpha architecture
+	#if defined(__DECCXX) /* Assume alpha architecture */
 	#define INVERSE_MKID
 	#define SCUMM_NEED_ALIGNMENT
 	#endif
@@ -118,9 +118,9 @@ typedef uint8 bool;
 #endif
 
 
-//
-// GCC specific stuff
-//
+/*
+ * GCC specific stuff
+ */
 #if defined(__GNUC__)
         #define GCC_PACK __attribute__((packed))
         #define NORETURN __attribute__((__noreturn__))
