@@ -5,7 +5,7 @@ SRC=.
 
 CC      := gcc
 CXX     := g++
-CFLAGS  += -g -O -Wall -Wuninitialized -Wno-long-long -Wno-multichar
+CFLAGS  += -g -O -Wall -Wuninitialized -Wno-long-long -Wno-multichar -DUNIX
 # LDFLAGS +=
 
 # Additional warnings
@@ -36,6 +36,14 @@ TARGETS := \
 	extract_scumm_mac$(EXEEXT) \
 	extract_simon1_amiga$(EXEEXT) \
 	extract_zak_c64$(EXEEXT)
+
+UTILS := \
+	utils/adpcm.o \
+	utils/audiostream.o \
+	utils/file.o \
+	utils/md5.o \
+	utils/voc.o \
+	utils/wave.o
 
 all: $(TARGETS)
 
@@ -78,7 +86,7 @@ compress_queen$(EXEEXT): compress_queen.o util.o
 extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-compress_saga$(EXEEXT): compress_saga.o compress.o util.o
+compress_saga$(EXEEXT): compress_saga.o compress.o util.o $(UTILS)
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_simon1_amiga$(EXEEXT): extract_simon1_amiga.o

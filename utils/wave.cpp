@@ -1,5 +1,5 @@
 #include "stream.h"
-#include "AudioStream.h"
+#include "audiostream.h"
 #include "adpcm.h"
 
 namespace Audio {
