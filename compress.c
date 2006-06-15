@@ -225,8 +225,6 @@ void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode
 	}
 	fclose(f);
 
-	/* TODO: setRawAudioType(false, false, 8); */
-
 	/* Convert the WAV temp file to OGG/MP3 */
 	encodeAudio(outName, false, -1, tempEncoded, compMode);
 }

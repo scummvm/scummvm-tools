@@ -53,7 +53,9 @@ typedef signed short int16;
 typedef signed int int32;
 
 #if !defined(__cplusplus)
-typedef enum { false = 0, true = 1 } bool;
+typedef uint8 bool;
+#define false 0
+#define true 1
 
 /* If your C compiler doesn't support 'inline', please add a check for it. */
 #if defined(_MSC_VER)
@@ -66,6 +68,82 @@ typedef enum { false = 0, true = 1 } bool;
 /*
  * Various utility macros
  */
+
+#if defined(_MSC_VER)
+
+	#define scumm_stricmp stricmp
+	#define scumm_strnicmp _strnicmp
+	#define snprintf _snprintf
+
+	#define SCUMM_LITTLE_ENDIAN
+
+	#define START_PACK_STRUCTS pack(push, 1)
+	#define END_PACK_STRUCTS   pack(pop)
+
+	
+#elif defined(__MINGW32__)
+
+	#define scumm_stricmp stricmp
+	#define scumm_strnicmp strnicmp
+
+	#define SCUMM_LITTLE_ENDIAN
+
+	#define START_PACK_STRUCTS pack(push, 1)
+	#define END_PACK_STRUCTS   pack(pop)
+
+
+	#ifndef _HEAPOK
+	#define _HEAPOK	(-2)
+	#endif
+
+#elif defined(UNIX)
+
+	#define scumm_stricmp strcasecmp
+	#define scumm_strnicmp strncasecmp
+
+	#if defined(__DECCXX) // Assume alpha architecture
+	#define INVERSE_MKID
+	#define SCUMM_NEED_ALIGNMENT
+	#endif
+
+	#if !defined(__GNUC__)
+	#define START_PACK_STRUCTS pack (1)
+	#define END_PACK_STRUCTS   pack ()
+	#endif
+
+#else
+
+	#error No system type defined
+
+#endif
+
+
+//
+// GCC specific stuff
+//
+#if defined(__GNUC__)
+        #define GCC_PACK __attribute__((packed))
+        #define NORETURN __attribute__((__noreturn__))
+        #define GCC_PRINTF(x,y) __attribute__((format(printf, x, y)))
+#else
+        #define GCC_PACK
+        #define GCC_PRINTF(x,y)
+#endif
+
+#define READ_UINT16(a) READ_LE_UINT16(a)
+#define READ_UINT32(a) READ_LE_UINT32(a)
+
+#define WRITE_UINT16(a, v) WRITE_LE_UINT16(a, v)
+#define WRITE_UINT32(a, v) WRITE_LE_UINT32(a, v)
+
+#define FROM_LE_32(a) ((uint32)(a))
+#define FROM_LE_16(a) ((uint16)(a))
+
+#define TO_LE_32(a) ((uint32)(a))
+#define TO_LE_16(a) ((uint16)(a))
+
+#define TO_BE_32(a) SWAP_BYTES_32(a)
+#define TO_BE_16(a) SWAP_BYTES_16(a)
 
 #define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
@@ -154,6 +232,7 @@ uint32 fileSize(FILE *fp);
 /* Misc stuff */
 void NORETURN_PRE error(const char *s, ...) NORETURN_POST;
 void warning(const char *s, ...);
+void debug(int level, const char *s, ...);
 
 #if defined(__cplusplus)
 }

@@ -51,6 +51,17 @@ void warning(const char *s, ...) {
 	fprintf(stderr, "WARNING: %s!\n", buf);
 }
 
+void debug(int level, const char *s, ...) {
+	char buf[1024];
+	va_list va;
+
+	va_start(va, s);
+	vsnprintf(buf, 1024, s, va);
+	va_end(va);
+
+	fprintf(stderr, "DEBUG: %s!\n", buf);
+}
+
 uint8 readByte(FILE *fp) {
 	return fgetc(fp);
 }
