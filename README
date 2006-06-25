@@ -123,7 +123,7 @@ Script Tools:
                 Basic script disassembler for Legend of Kyrandia games
 
 Encoder Tools:
-        encode_dxa <prefix> <directory>
+        encode_dxa <prefix>
 
                 Creates DXA file out of extracted Smacker video.
 
