@@ -223,10 +223,9 @@ int main(int argc, char *argv[]) {
 			length--;
 
 			/*
-			 * Our encoding function assumes that raw data means
-			 * 8-bit data. Rather than going through the trouble of
-			 * adding support for 16-bit data at various byte
-			 * orders, let's just prepend a simple WAV header.
+			 * Back when this tool was written, encodeAudio() had
+			 * no way of encoding 16-bit data, so it was simpler to
+			 * output a WAV file.
 			 */
 
 			writeUint32BE(f, 0x52494646);	/* "RIFF" */
