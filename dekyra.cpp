@@ -309,7 +309,7 @@ bool Script::decodeSpecialScript(int32 script, int8 engineVersion) {
 		{ 0x4e, "o2_dummy" },
 		{ 0x4f, "o2_dummy" },
 		{ 0x50, "o2_unk0x50" },
-		{ 0x51, "o2_unk0x51" },
+		{ 0x51, "o2_enterNewScene" },
 		{ 0x52, "o2_isBlockedOutRegion" },
 		{ 0x53, "o2_setScaleMode" },
 		{ 0x54, "o2_getRoomExit" },
