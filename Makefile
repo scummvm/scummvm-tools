@@ -56,7 +56,7 @@ descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
 desword2$(EXEEXT): desword2.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-dekyra$(EXEEXT): dekyra.o util.o
+dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_kyra$(EXEEXT): extract_kyra.o util.o
@@ -123,6 +123,7 @@ compress_queen.o \
 compress_kyra.o \
 descumm.o descumm6.o descumm-common.o descumm-tool.o \
 dekyra.o \
+dekyra_v1.o \
 desword2.o \
 encode_dxa.o \
 extract_kyra.o \

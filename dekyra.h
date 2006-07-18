@@ -26,83 +26,88 @@
 
 #include "util.h"
 
+typedef unsigned int uint;
+
+struct OpcodeEntry {
+	uint16 opcode;	
+	const char *name;
+};
+
+#define MAX_REFS 30
+struct Function {
+	int id;
+	uint16 startOffset;
+
+	int refs;
+	uint16 refOffs[MAX_REFS];
+};
+
+#define MAX_FUNCTIONS 400
+
+struct ScriptData {
+	int fileSize;
+
+	byte *text;
+	int numStrings;
+	int textChunkSize;
+	
+	byte *data;
+	int dataChunkSize;
+	
+	byte *ordr;
+	int validORDRFunctions;
+	int ordrChunkSize;
+	
+	OpcodeEntry *opcodes;
+	int opcodeSize;
+	
+	// trace information
+	uint16 curOffset;
+
+	int numFunctions;
+	Function functions[MAX_FUNCTIONS];
+	
+	Function *getFunction(uint16 startOff) {
+		for (int i = 0; i < numFunctions; ++i) {
+			if (functions[i].startOffset == startOff)
+				return &functions[i];
+		}
+		return 0;
+	}
+};
+
+#define FORM_CHUNK 0x4D524F46
+#define TEXT_CHUNK 0x54584554
+#define DATA_CHUNK 0x41544144
+#define ORDR_CHUNK 0x5244524F
+
+typedef void (*CommandProc)(ScriptData *script, int argument);
+
 class Script {
-	public:
-		Script(const char* filename);
-		~Script() { delete _scriptFile; }
-		
-		void decodeTextArea(void);
-		void decodeScript(int8 engine);		
-		bool decodeSpecialScript(int32 script, int8 engine);
-		bool isOpen(void) { return (_scriptFile != 0); }
-		
-		uint32 getNextScriptPos(uint32 current_start);
+public:
+	Script();
+	~Script();
 
-	protected:
-		const char* getParamsOnStack(void);
-		const char* stringAtIndex(int32 index);
+	bool setCommands(CommandProc *commands, int commandsSize);
+	void setEngineVersion(int ver) { _engine = ver; }
 
-		void pushStack(int32 value) { _stack[_stackPos++] = value; }
-		void registerValue(int16 reg, int16 value) { _registers[reg] = value; }
-		int32 checkReg(int16 reg) { return _registers[reg]; }
+	bool loadScript(const char *filename, ScriptData *data, OpcodeEntry *opcodes, int opcodeSize);
+	void unloadScript(ScriptData *data);
+	
+	void printTextArea(ScriptData *dataPtr, const char *filename);
+	void processScriptTrace(ScriptData *dataPtr);
+	void decodeScript(ScriptData *dataPtr);
+private:
+	int findFunction(ScriptData *dataPtr, uint16 offset);
+	void outputFunctionInfo(ScriptData *dataPtr, uint16 curOffset, bool list = false);
 
-		int32 popStack(void) { return _stack[--_stackPos]; }
-		int32& topStack(void) { return _stack[_stackPos]; }
+	static uint32 getFORMBlockSize(byte *&data);
+	static uint32 getIFFBlockSize(byte *start, byte *&data, uint32 maxSize, const uint32 chunk);
+	static bool loadIFFBlock(byte *start, byte *&data, uint32 maxSize, const uint32 chunk, byte *loadTo, uint32 ptrSize);
 
-		int32 param(int32 index);
-		const char* paramString(int32 index) { return stringAtIndex(param(index)); }
-		
-		enum ScriptChunkTypes {
-			kForm = 0,
-			kEmc2Ordr = 1,
-			kText = 2,
-			kData = 3,
-			kCountChunkTypes
-		};
-		
-		struct ScriptChunk {
-			uint32 _size;
-			uint8* _data; // by TEXT used for count of texts, by EMC2ODRD it is used for a count of somewhat
-			uint8* _additional; // currently only used for TEXT
-		};
-		
-		ScriptChunk _chunks[kCountChunkTypes];
-		
-		uint32 _scriptSize;
-		uint8* _scriptFile;
-
-		int32 _nextScriptPos;
-		int32 _instructionPos;
-		int32 _stackPos;
-		int32 _tempPos;
-
-		uint32 _returnValue;
-		uint16 _argument;
-		uint8 _currentCommand;
-		uint32 _currentOpcode;
-		
-		int32 _stack[128];	// the stack
-		int32 _registers[32];   // registers of the interpreter
-
-		void execCommand(uint32 command);
-
-		void goToLine(void);		// 0x00
-		void setReturn(void);		// 0x01
-		void pushRetRec(void);		// 0x02
-		void push(void);		// 0x03 & 0x04
-		void pushVar(void);		// 0x05
-		void pushFrameNeg(void);	// 0x06
-		void pushFramePos(void);	// 0x07
-		void popRetRec(void);		// 0x08
-		void popVar(void);		// 0x09
-		void popFrameNeg(void);		// 0x0A
-		void popFramePos(void);		// 0x0B
-		void addToSP(void);		// 0x0C
-		void subFromSP(void);		// 0x0D
-		void execOpcode(void);		// 0x0E
-		void ifNotGoTo(void);		// 0x0F
-		void negate(void);		// 0x10
-		void evaluate(void);		// 0x11
+	int _engine;
+	CommandProc *_commands;
+	int _commandsSize;
 };
 
 #endif
