@@ -246,7 +246,7 @@ void c1_eval(ScriptData *script, int argument) {
 }
 
 void c1_setRetAndJmp(ScriptData *script, int argument) {
-	fprintf(outputFile, "c1_setRetAndJmp %d\n", argument);
+	fprintf(outputFile, "c1_setRetAndJmp\n");
 }
 
 void setupCommandsV1(Script *myScript) {
@@ -328,32 +328,6 @@ void c1_traceIfNotJmp(ScriptData *script, int argument) {
 	}
 }
 
-void c1_traceSetRetAndJmp(ScriptData *script, int argument) {
-	Function *call = script->getFunction(((uint)argument) << 1);
-	if (call) {
-		for (int i = 0; i < call->refs; ++i) {
-			if (call->refOffs[i] == script->curOffset)
-				return;
-		}
-		
-		if (call->refs < MAX_REFS) {
-			call->refOffs[call->refs++] = script->curOffset;
-		} else {
-			warning("losing ref");
-		}
-	} else {
-		if (script->numFunctions < MAX_FUNCTIONS) {
-			call = &script->functions[script->numFunctions];
-			call->id = -1;
-			call->startOffset = ((uint)argument) << 1;
-			call->refOffs[call->refs++] = script->curOffset;
-			++script->numFunctions;
-		} else {
-			warning("losing function");
-		}
-	}
-}
-
 void setupTraceCommandsV1(Script *myScript) {
 	static CommandProc commands[] = {
 		&c1_traceJumpTo,
@@ -374,7 +348,7 @@ void setupTraceCommandsV1(Script *myScript) {
 		&c1_traceIfNotJmp,
 		0,
 		0,
-		&c1_traceSetRetAndJmp
+		0
 	};
 	
 	myScript->setCommands(commands, ARRAYSIZE(commands));
