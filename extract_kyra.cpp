@@ -29,12 +29,14 @@ int main(int argc, char **argv) {
 				"%s filename [OPTIONS]\n"
 				"Here are the options, default is listing files to stdout\n"
 				"-o xxx   Extract only file 'xxx'\n"
-				"-x       Extract all files\n",
+				"-x       Extract all files\n"
+				"-a       Use this if you want to extract files from the Amiga .PAK files\n",
 				argv[0]);
 		return false;
 	}
 	
 	bool extractAll = false, extractOne = false;
+	bool isAmiga = false;
 	uint8 param = 0;
 	
 	// looking for the parameters
@@ -53,11 +55,13 @@ int main(int argc, char **argv) {
 				++pos;
 			} else if (argv[pos][1] == 'x') {
 				extractAll = true;
+			} else if (argv[pos][1] == 'a') {
+				isAmiga = true;
 			}
 		}
 	}
 
-	PAKFile myfile(argv[1]);
+	PAKFile myfile(argv[1], isAmiga);
 	
 	if(extractAll) {
 		myfile.outputAllFiles();
@@ -70,13 +74,14 @@ int main(int argc, char **argv) {
 	return true;
 }
 
-PAKFile::PAKFile(const char* file) {
+PAKFile::PAKFile(const char* file, bool isAmiga) {
 	FILE *pakfile = fopen(file, "rb");
 	if (!pakfile) {
 		error("couldn't open file '%s'", file);
 	}
 	
 	_open = true;
+	_isAmiga = isAmiga;
 	_filesize = fileSize(pakfile);
 
 	_buffer = new uint8[_filesize];
@@ -90,7 +95,7 @@ PAKFile::PAKFile(const char* file) {
 void PAKFile::drawFilelist(void) {
 	const char* currentName = 0;
 	
-	uint32 startoffset = READ_LE_UINT32(_buffer);
+	uint32 startoffset = _isAmiga ? READ_BE_UINT32(_buffer) : READ_LE_UINT32(_buffer);
 	uint32 endoffset = 0;
 	uint8* position = _buffer + 4;
 	
@@ -103,7 +108,7 @@ void PAKFile::drawFilelist(void) {
 
 		position += strlgt + 1;
 		// skip offset
-		endoffset = READ_LE_UINT32(position);
+		endoffset = _isAmiga ? READ_BE_UINT32(position) : READ_LE_UINT32(position);
 		if (endoffset > _filesize) {
 			endoffset = _filesize;
 		} else if (endoffset == 0) {
@@ -124,7 +129,7 @@ void PAKFile::drawFilelist(void) {
 void PAKFile::outputFile(const char* file) {
 	const char* currentName = 0;
 	
-	uint32 startoffset = READ_LE_UINT32(_buffer);
+	uint32 startoffset = _isAmiga ? READ_BE_UINT32(_buffer) : READ_LE_UINT32(_buffer);
 	uint32 endoffset = 0;
 	uint8* position = _buffer + 4;
 	
@@ -135,9 +140,10 @@ void PAKFile::outputFile(const char* file) {
 		if (!(*currentName))
 			break;
 
+
 		position += strlgt + 1;
 		// skip offset
-		endoffset = READ_LE_UINT32(position);
+		endoffset = _isAmiga ? READ_BE_UINT32(position) : READ_LE_UINT32(position);
 		if (endoffset > _filesize) {
 			endoffset = _filesize;
 		} else if (endoffset == 0) {
@@ -167,7 +173,7 @@ void PAKFile::outputFile(const char* file) {
 void PAKFile::outputAllFiles(void) {
 	const char* currentName = 0;
 	
-	uint32 startoffset = READ_LE_UINT32(_buffer);
+	uint32 startoffset = _isAmiga ? READ_BE_UINT32(_buffer) : READ_LE_UINT32(_buffer);
 	uint32 endoffset = 0;
 	uint8* position = _buffer + 4;
 	
@@ -180,7 +186,7 @@ void PAKFile::outputAllFiles(void) {
 
 		position += strlgt + 1;
 		// skip offset
-		endoffset = READ_LE_UINT32(position);
+		endoffset = _isAmiga ? READ_BE_UINT32(position) : READ_LE_UINT32(position);
 		if (endoffset > _filesize) {
 			endoffset = _filesize;
 		} else if (endoffset == 0) {

@@ -29,7 +29,7 @@
 // standard Package format for Kyrandia games
 class PAKFile {
 	public:
-		PAKFile(const char* file);
+		PAKFile(const char* file, bool isAmiga);
 		~PAKFile() { delete [] _buffer; }
 		
 		void drawFilelist(void);
@@ -41,6 +41,7 @@ class PAKFile {
 
 	private:
 		bool _open;
+		bool _isAmiga;
 		uint8* _buffer; // the whole file	
 		uint32 _filesize;	
 };
