@@ -19,9 +19,9 @@ TARGETS := \
 	compress_kyra$(EXEEXT) \
 	compress_queen$(EXEEXT) \
 	compress_saga$(EXEEXT) \
+	compress_scumm_bun$(EXEEXT) \
 	compress_scumm_san$(EXEEXT) \
 	compress_scumm_sou$(EXEEXT) \
-	compress_scumm_bun$(EXEEXT) \
 	compress_simon$(EXEEXT) \
 	compress_sword1$(EXEEXT) \
 	compress_sword2$(EXEEXT) \
@@ -29,12 +29,12 @@ TARGETS := \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	encode_dxa$(EXEEXT) \
+	extract_agos$(EXEEXT) \
 	extract_kyra$(EXEEXT) \
 	extract_loom_tg16$(EXEEXT) \
 	extract_mm_c64$(EXEEXT) \
 	extract_mm_nes$(EXEEXT) \
 	extract_scumm_mac$(EXEEXT) \
-	extract_simon1_amiga$(EXEEXT) \
 	extract_zak_c64$(EXEEXT)
 
 UTILS := \
@@ -47,52 +47,22 @@ UTILS := \
 
 all: $(TARGETS)
 
-compress_scumm_san$(EXEEXT): compress_scumm_san.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lz
-
-descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
+compress_kyra$(EXEEXT): compress_kyra.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
-
-desword2$(EXEEXT): desword2.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
-
-dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
-
-extract_kyra$(EXEEXT): extract_kyra.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
-
-compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
-
-encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz
-
-extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-extract_mm_c64$(EXEEXT): extract_mm_c64.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-extract_mm_nes$(EXEEXT): extract_mm_nes.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_queen$(EXEEXT): compress_queen.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_saga$(EXEEXT): compress_saga.o compress.o util.o $(UTILS)
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_simon1_amiga$(EXEEXT): extract_simon1_amiga.o
-	$(CC) $(LDFLAGS) -o $@ $+
+compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
+compress_scumm_san$(EXEEXT): compress_scumm_san.o compress.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+ -lz
+
+compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_simon$(EXEEXT): compress_simon.o compress.o util.o
@@ -104,8 +74,38 @@ compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
 compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-compress_kyra$(EXEEXT): compress_kyra.o compress.o util.o
+dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
+
+descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
+desword2$(EXEEXT): desword2.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
+encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz
+
+extract_agos$(EXEEXT): extract_agos.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
+extract_kyra$(EXEEXT): extract_kyra.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
+extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
+extract_mm_c64$(EXEEXT): extract_mm_c64.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
+extract_mm_nes$(EXEEXT): extract_mm_nes.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
+extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
+extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
 
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h

@@ -14,9 +14,9 @@ install:   all
 	strip compress_kyra.exe -o $(SCUMMVMPATH)/tools/compress_kyra.exe
 	strip compress_queen.exe -o $(SCUMMVMPATH)/tools/compress_queen.exe
 	strip compress_saga.exe -o $(SCUMMVMPATH)/tools/compress_saga.exe
+	strip compress_scumm_bun.exe -o $(SCUMMVMPATH)/tools/compress_scumm_bun.exe
 	strip compress_scumm_san.exe -o $(SCUMMVMPATH)/tools/compress_scumm_san.exe
 	strip compress_scumm_sou.exe -o $(SCUMMVMPATH)/tools/compress_scumm_sou.exe
-	strip compress_scumm_bun.exe -o $(SCUMMVMPATH)/tools/compress_scumm_bun.exe
 	strip compress_simon.exe -o $(SCUMMVMPATH)/tools/compress_simon.exe
 	strip compress_sword1.exe -o $(SCUMMVMPATH)/tools/compress_sword1.exe
 	strip compress_sword2.exe -o $(SCUMMVMPATH)/tools/compress_sword2.exe
@@ -24,12 +24,12 @@ install:   all
 	strip descumm.exe -o $(SCUMMVMPATH)/tools/descumm.exe
 	strip desword2.exe -o $(SCUMMVMPATH)/tools/desword2.exe
 	strip encode_dxa.exe -o $(SCUMMVMPATH)/tools/encode_dxa.exe
+	strip extract_agos.exe -o $(SCUMMVMPATH)/tools/extract_agos.exe
 	strip extract_kyra.exe -o $(SCUMMVMPATH)/tools/extract_kyra.exe
 	strip extract_loom_tg16.exe -o $(SCUMMVMPATH)/tools/extract_loom_tg16.exe
 	strip extract_mm_c64.exe -o $(SCUMMVMPATH)/tools/extract_mm_c64.exe
 	strip extract_mm_nes.exe -o $(SCUMMVMPATH)/tools/extract_mm_nes.exe
 	strip extract_scumm_mac.exe -o $(SCUMMVMPATH)/tools/extract_scumm_mac.exe
-	strip extract_simon1_amiga.exe -o $(SCUMMVMPATH)/tools/extract_simon1_amiga.exe
 	strip extract_zak_c64.exe -o $(SCUMMVMPATH)/tools/extract_zak_c64.exe
 	cp COPYING $(SCUMMVMPATH)/tools/COPYING.txt
 	cp README $(SCUMMVMPATH)/tools/README.txt

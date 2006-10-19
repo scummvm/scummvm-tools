@@ -7,6 +7,10 @@ ScummVM versions may not. ScummVM 0.6.x does not support FLAC audio, for
 example.
 
 Extraction Tools:
+        extract_agos
+                Extracts the packed files used in the Amiga and AtariST
+                versions of Elvira 1/2, Waxworks and Simon the Sorcerer 1.
+
         extract_kyra
                 Unpacks .PAK files from Kyrandia games.
 
@@ -29,10 +33,6 @@ Extraction Tools:
 
         extract_mm_nes
                 Extracts data files from the NES version of Maniac Mansion.
-
-        extract_simon1_amiga
-                Extracts the graphics or music files in AGA and ECS
-                versions of Simon the Sorcerer 1 for Amiga.
 
         extract_zak_c64
                 Extracts data files from the Commodore 64 version of Zak
