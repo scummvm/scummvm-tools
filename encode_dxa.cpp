@@ -469,31 +469,45 @@ int read_png_file(char* filename, unsigned char *&image, unsigned char *&palette
 	return 0;
 }
 
-void readSmackerInfo(char *filename, int &width, int &height, int &framerate, int &frames) {
+void readVideoInfo(char *filename, int &width, int &height, int &framerate, int &frames) {
 	FILE *smk = fopen(filename, "rb");
 	if (!smk) {
-		printf("readSmackerInfo: Can't open file: %s\n", filename);
+		printf("readVideoInfo: Can't open file: %s\n", filename);
 		exit(-1);
 	}
 
-	uint32 flags;
+	char buf[4];
+	fread(buf, 1, 4, smk);
+	if (!memcmp(buf, "BIK", 3)) {
+		// Skip file size
+		readUint32LE(smk);
 
-	// Skip the signature. We could use it to verify that it's a SMK file,
-	// but if it wasn't, how did we ever extract the PNG frames from it?
+		frames = readUint32LE(smk);
 
-	readUint32LE(smk);
+		// Skip unknown
+		readUint32LE(smk);
+		readUint32LE(smk);
 
-	width = readUint32LE(smk);
-	height = readUint32LE(smk);
-	frames = readUint32LE(smk);
-	framerate = readUint32LE(smk);
-	flags = readUint32LE(smk);
+		width = readUint32LE(smk);
+		height = readUint32LE(smk);
+		framerate = readUint32LE(smk);
+	} else if (!memcmp(buf, "SMK2", 4)) {
+		uint32 flags;
 
-	// If the Y-interlaced or Y-doubled flag is set, the RAD Video Tools
-	// will have scaled the frames to twice their original height.
+		width = readUint32LE(smk);
+		height = readUint32LE(smk);
+		frames = readUint32LE(smk);
+		framerate = readUint32LE(smk);
+		flags = readUint32LE(smk);
 
-	if ((flags & 0x02) || (flags & 0x04))
-		height *= 2;
+		// If the Y-interlaced or Y-doubled flag is set, the RAD Video Tools
+		// will have scaled the frames to twice their original height.
+
+		if ((flags & 0x02) || (flags & 0x04))
+			height *= 2;
+	} else {
+		error("readVideoInfo: Unknown type");
+	}
 
 	fclose(smk);
 }
@@ -594,7 +608,23 @@ int main(int argc, char *argv[]) {
 	}
 
 	i = argc - 1;
-	char *prefix = argv[i++];
+
+	// get filename prefix
+	char prefix[256];
+	char *filename = argv[i++];
+
+	char *p = strrchr(filename, '/');
+	if (!p) {
+		p = strrchr(filename, '\\');
+		if (!p) {
+			p = filename - 1;
+		}
+	}
+	strcpy(prefix, p + 1);
+	p = strrchr(prefix, '.');
+	if (p) {
+		*p = '\0';
+	}
 
 	// check if the wav file exists.
 	sprintf(strbuf, "%s.wav", prefix);
@@ -603,9 +633,8 @@ int main(int argc, char *argv[]) {
 		convertWAV(strbuf, prefix);
 	}
 
-	// read some data from the Smacker file.
-	sprintf(strbuf, "%s.smk", prefix);
-	readSmackerInfo(strbuf, width, height, framerate, frames);
+	// read some data from the Bink or Smacker file.
+	readVideoInfo(filename, width, height, framerate, frames);
 
 	printf("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
 		   width, height, framerate, frames);
