@@ -24,7 +24,7 @@
 
 typedef struct  {
 	uint32 minBitr;
-	uint32 maxBitr; 
+	uint32 maxBitr;
 	bool abr;
 	uint32 algqual;
 	uint32 vbrqual;
@@ -101,7 +101,7 @@ static int map2MP3Frequency(int freq)
     if (freq <= 24000) return 24000;
     if (freq <= 32000) return 32000;
     if (freq <= 44100) return 44100;
-    
+
     return 48000;
 }
 
@@ -201,7 +201,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		printf("Encoder Commandline: %s\n", fbuf );
 		exit(-1);
 	}
-} 
+}
 
 void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode) {
 	int length;
@@ -231,7 +231,9 @@ void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode
 
 void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode) {
 	FILE *f;
+	int bits;
 	int blocktype;
+	int channels;
 	int length;
 	int sample_rate;
 	int comp;
@@ -242,7 +244,7 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 	f = fopen(outName, "wb");
 
 	while ((blocktype = fgetc(input))) {
-		if (blocktype != 1) {
+		if (blocktype != 1 && blocktype != 9) {
 			/*
 			   We only generate a warning, instead of erroring out, because
 			   at least the monster.sou file of Full Throttle contains VOCs
@@ -253,17 +255,28 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 			warning("Unsupported VOC block type: %02x", blocktype);
 			break;
 		}
-	
+
 		/* Sound Data */
 		printf(" Sound Data\n");
 		length = fgetc(input);
 		length |= fgetc(input) << 8;
 		length |= fgetc(input) << 16;
-		length -= 2;
-		sample_rate = fgetc(input);
-		comp = fgetc(input);
-
-		real_samplerate = getSampleRateFromVOCRate(sample_rate);
+		if (blocktype == 1) {
+			length -= 2;
+			sample_rate = fgetc(input);
+			comp = fgetc(input);
+			real_samplerate = getSampleRateFromVOCRate(sample_rate);
+		} else { /* (blocktype == 9) */
+			length -= 12;
+			real_samplerate = sample_rate = readUint32LE(input);
+			bits = fgetc(input);
+			channels = fgetc(input);
+			if (bits != 8 || channels != 1) {
+				error("Unsupported VOC file format (%d bits per sample, %d channels)", bits, channels);
+			}
+			comp = readUint16LE(input);
+			readUint32LE(input);
+		}
 
 		printf(" - length = %d\n", length);
 		printf(" - sample rate = %d (%02x)\n", real_samplerate, sample_rate);
@@ -282,13 +295,13 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 			size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length, input);
 			if (size <= 0)
 				break;
-			length -= (int)size; 
+			length -= (int)size;
 			fwrite(fbuf, 1, size, f);
 		}
 	}
 
 	fclose(f);
-	
+
 	assert(real_samplerate != -1);
 
 	setRawAudioType(false, false, 8);

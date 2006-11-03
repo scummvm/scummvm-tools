@@ -39,7 +39,7 @@ Extraction Tools:
                 McKracken.
 
 Compression Tools:
-        compress_scumm_sou 
+        compress_scumm_sou
                 Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
                 or .sof (FLAC).
 
@@ -69,6 +69,9 @@ Compression Tools:
                 than the original! This is because the original files already
                 use lossy compression.
 
+        compress_touche
+                Used to compress Touche speech files to MP3, Vorbis or FLAC.
+
         compress_scumm_san <inputfile> <inputdir> <outputdir> [--ogg]
                 Compresses '.san' smush animation files. It uses lossless
                 zlib for compressing FOBJ gfx chunks inside a san file.
@@ -77,18 +80,18 @@ Compression Tools:
                 Example of usage:
                 compress_Scumm_san opening.san uncomp comp
 
-                In order to use such compressed files, your ScummVM binary 
+                In order to use such compressed files, your ScummVM binary
                 must have been built with zlib support enabled (you can find
                 out whether that's the case by looking at the About dialog).
                 For the Ogg or Mad compression feature, your ScummVM binary
                 naturally must have been built with Ogg or Mad support enabled.
-                
+
                 NOTE: For some '.san' files there is a corresponding '.flu'
                 file, which contains offsets into the '.san' file. Hence, the
                 compress_scumm_san has to modify the '.flu' file. This happens
                 automatically, if the '.san' and '.flu' files are in the
                 same directory (which is normally the case). If you want to
-                move the '.san' files before compressing them, make sure to 
+                move the '.san' files before compressing them, make sure to
                 move the '.flu' files, too!
 
         compress_scumm_bun <inputfile> <inputdir> <outputdir> [--ogg]
@@ -102,7 +105,7 @@ Compression Tools:
                 naturally must have been built with Ogg or Mad support enabled.
 
         compress_kyra
-                Used to compress The Legend of Kyrandia's speech files with 
+                Used to compress The Legend of Kyrandia's speech files with
                 MP3, Vorbis or FLAC.
 
                 Example of usage:

@@ -13,7 +13,7 @@ CFLAGS+= -Wshadow
 CFLAGS+= -pedantic
 CFLAGS+= -Wpointer-arith -Wcast-qual -Wcast-align
 # -Wconversion
-CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings 
+CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
 
 TARGETS := \
 	compress_kyra$(EXEEXT) \
@@ -25,6 +25,7 @@ TARGETS := \
 	compress_simon$(EXEEXT) \
 	compress_sword1$(EXEEXT) \
 	compress_sword2$(EXEEXT) \
+	compress_touche$(EXEEXT) \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
@@ -72,6 +73,9 @@ compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
+compress_touche$(EXEEXT): compress_touche.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
