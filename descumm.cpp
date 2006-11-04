@@ -50,35 +50,43 @@
 
 */
 
+enum TokenType {
+	TOK_BYTE = 1,
+	TOK_WORD = 2,
+	TOK_VAR = 3,
+	TOK_LIST = 4,
+	TOK_ASCII = 5,
+	TOK_CHAR = 6
+};
 
 
-#define A1B (1<<0)
-#define A1W (2<<0)
-#define A1V (3<<0)
-#define A1VARUNTIL0xFF (4<<0)
-#define A1ASCII (5<<0)
+#define A1B (TOK_BYTE<<0)
+#define A1W (TOK_WORD<<0)
+#define A1V (TOK_VAR<<0)
+#define A1LIST (TOK_LIST<<0)
+#define A1ASCII (TOK_ASCII<<0)
 
-#define A2B (1<<4)
-#define A2W (2<<4)
-#define A2V (3<<4)
-#define A2VARUNTIL0xFF (4<<4)
-#define A2ASCII (5<<4)
+#define A2B (TOK_BYTE<<4)
+#define A2W (TOK_WORD<<4)
+#define A2V (TOK_VAR<<4)
+#define A2LIST (TOK_LIST<<4)
+#define A2ASCII (TOK_ASCII<<4)
 
-#define A3B (1<<8)
-#define A3W (2<<8)
-#define A3V (3<<8)
-#define A3VARUNTIL0xFF (4<<8)
-#define A3ASCII (5<<8)
-#define A3ASC (6<<8)
+#define A3B (TOK_BYTE<<8)
+#define A3W (TOK_WORD<<8)
+#define A3V (TOK_VAR<<8)
+#define A3LIST (TOK_LIST<<8)
+#define A3ASCII (TOK_ASCII<<8)
+#define A3CHAR (TOK_CHAR<<8)
 
-#define A4B (1<<12)
-#define A4W (2<<12)
-#define A4V (3<<12)
-#define A4VARUNTIL0xFF (4<<12)
-#define A4ASCII (5<<12)
-#define A4ASC (6<<12)
+#define A4B (TOK_BYTE<<12)
+#define A4W (TOK_WORD<<12)
+#define A4V (TOK_VAR<<12)
+#define A4LIST (TOK_LIST<<12)
+#define A4ASCII (TOK_ASCII<<12)
+#define A4CHAR (TOK_CHAR<<12)
 
-#define A5ASCII (5<<16)
+#define A5ASCII (TOK_ASCII<<16)
 
 #define ATO (1<<31)
 #define ANOLASTPAREN (1<<30)
@@ -536,7 +544,7 @@ char *get_var_or_byte(char *buf, char condition)
 	return strchr(buf, 0);
 }
 
-char *get_var_until_0xff(char *buf)
+char *get_list(char *buf)
 {
 	int i;
 	int j = 0;
@@ -607,22 +615,23 @@ char *get_ascii(char *buf)
 char *add_a_tok(char *buf, int type)
 {
 	switch (type) {
-	case 1:
+	case TOK_BYTE:
 		buf += sprintf(buf, "%d", get_byte());
 		break;
-	case 2:
+	case TOK_WORD:
 		buf += sprintf(buf, "%d", get_word());
 		break;
-	case 3:
+	case TOK_VAR:
 		buf = get_var(buf);
 		break;
-	case 4:
-		buf = get_var_until_0xff(buf);
+	case TOK_LIST:
+		buf = get_list(buf);
 		break;
-	case 5:
+	case TOK_ASCII:
 		buf = get_ascii(buf);
 		break;
-	case 6:
+	case TOK_CHAR:
+		error("this code seems to be dead");
 		buf = putascii(buf, get_byte());
 		break;
 	}
@@ -698,37 +707,37 @@ void do_decodeparsestring_v2(char *buf, byte opcode)
 
 void do_actorops_v12(char *buf, byte opcode)
 {
-	// FIXME: the A2 should be displayed as arg to the subops, not as arg to the
-	// ActorOps itself; but that'll require some more work.
-	buf = do_tok(buf, "ActorOps", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x80) ? A2V : A2B) | ANOLASTPAREN);
+	buf = strecpy(buf, "ActorOps(");
+	buf = get_var_or_byte(buf, opcode & 0x80);
 	buf = strecpy(buf, ",[");
 
-	int subop = get_byte();
+	char arg[256];
+	get_var_or_byte(arg, opcode & 0x40);
 
+	int subop = get_byte();
 	switch(subop) {
 		case 1:
-			buf = do_tok(buf, "Sound", 0);
+			buf += sprintf(buf, "Sound(%s)", arg);
 			break;
 		case 2:
 			if (scriptVersion == 1)
-				buf = do_tok(buf, "Color", 0);
+				buf += sprintf(buf, "Color(%s)", arg);
 			else
-				buf = do_tok(buf, "Color", A1B);
+				buf += sprintf(buf, "Color(%d, %s)", get_byte(), arg);
 			break;
 		case 3:
 			buf = do_tok(buf, "Name", A1ASCII);
 			break;
 		case 4:
-			buf = do_tok(buf, "Costume", 0);
+			buf += sprintf(buf, "Costume(%s)", arg);
 			break;
 		case 5:
-			buf = do_tok(buf, "TalkColor", 0);
+			buf += sprintf(buf, "TalkColor(%s)", arg);
 			break;
 		default:
-			buf += sprintf(buf, "Unknown%.2X()", opcode);
+			error("do_actorops_v12: unknown subop %d", subop);
 	}
 	strecpy(buf, "]);");
-
 }
 
 void do_actorops(char *buf, byte opcode)
@@ -804,7 +813,7 @@ void do_actorops(char *buf, byte opcode)
 		case 0x0E:
 			buf = do_tok(buf, "InitAnimNr", ((opcode & 0x80) ? A1V : A1B));
 			break;
-//    		case 0x0F: buf=do_tok(buf, "PaletteList", A1VARUNTIL0xFF); break;
+//    		case 0x0F: buf=do_tok(buf, "PaletteList", A1LIST); break;
 		case 0x10:
 			buf = do_tok(buf, "Width", ((opcode & 0x80) ? A1V : A1B));
 			break;
@@ -1049,17 +1058,16 @@ void do_resource_v2(char *buf, byte opcode)
 
 void do_resource(char *buf, byte opco)
 {
-	// FIXME:  This is out of date compared to script_v5.cp
 	char opcode = get_byte();
-	int sub_op;
+	int subop;
 	if (scriptVersion != 5)
-		sub_op = opcode & 0x3F;	// FIXME - actually this should only be done for Zak256
+		subop = opcode & 0x3F;	// FIXME - actually this should only be done for Zak256
 	else
-		sub_op = opcode & 0x1F;
+		subop = opcode & 0x1F;
 
 	buf += sprintf(buf, "Resource.");
 
-	switch (sub_op) {
+	switch (subop) {
 	case 0x1:
 		do_tok(buf, "loadScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
@@ -1133,7 +1141,7 @@ void do_resource(char *buf, byte opco)
 
 
 	default:
-		do_tok(buf, "resUnk", ((opcode & 0x80) ? A1V : A1B));
+		error("do_resource: unhandled subop %d\n", subop);
 		break;
 	}
 
@@ -1260,28 +1268,25 @@ void do_room_ops(char *buf)
 	strcat(buf, ")");
 }
 
-void do_room_ops_old(char *buf, byte master_opcode)
+void do_room_ops_old(char *buf, byte opcode)
 {
 	char	a[256];
 	char	b[256];
 	
 	if (scriptVersion <= 2) {
-		get_var_or_byte(a, (master_opcode & 0x80));
-		get_var_or_byte(b, (master_opcode & 0x40));
+		get_var_or_byte(a, (opcode & 0x80));
+		get_var_or_byte(b, (opcode & 0x40));
 	} else if (scriptVersion == 3) {
-		get_var_or_word(a, (master_opcode & 0x80));
-		get_var_or_word(b, (master_opcode & 0x40));
+		get_var_or_word(a, (opcode & 0x80));
+		get_var_or_word(b, (opcode & 0x40));
 	}
 
-	int opcode = get_byte();
-
-	//buf+=sprintf(buf, "SubCode33%.2X", opcode);
-
+	opcode = get_byte();
 	switch (opcode & 0x1F) {
 	case 0x01:
 		if (scriptVersion > 3) {
-			get_var_or_word(a, (master_opcode & 0x80));
-			get_var_or_word(b, (master_opcode & 0x40));
+			get_var_or_word(a, (opcode & 0x80));
+			get_var_or_word(b, (opcode & 0x40));
 		}
 		buf = strecpy(buf, "RoomScroll(");
 		buf = strecpy(buf, a);
@@ -1291,8 +1296,8 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		break;
 	case 0x02:
 		if (scriptVersion > 3) {
-			get_var_or_word(a, (master_opcode & 0x80));
-			get_var_or_word(b, (master_opcode & 0x40));
+			get_var_or_word(a, (opcode & 0x80));
+			get_var_or_word(b, (opcode & 0x40));
 		}
 		buf = strecpy(buf, "RoomColor(");
 		buf = strecpy(buf, a);
@@ -1302,8 +1307,8 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		break;
 	case 0x03:
 		if (scriptVersion > 3) {
-			get_var_or_word(a, (master_opcode & 0x80));
-			get_var_or_word(b, (master_opcode & 0x40));
+			get_var_or_word(a, (opcode & 0x80));
+			get_var_or_word(b, (opcode & 0x40));
 		}
 		buf = strecpy(buf, "SetScreen(");
 		buf = strecpy(buf, a);
@@ -1313,8 +1318,8 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		break;
 	case 0x04:
 		if (scriptVersion > 3) {
-			get_var_or_word(a, (master_opcode & 0x80));
-			get_var_or_word(b, (master_opcode & 0x40));
+			get_var_or_word(a, (opcode & 0x80));
+			get_var_or_word(b, (opcode & 0x40));
 		}
 		buf = strecpy(buf, "SetPalColor(");
 		buf = strecpy(buf, a);
@@ -1332,10 +1337,7 @@ void do_room_ops_old(char *buf, byte master_opcode)
 		do_tok(buf, "Unused", 0);
 		break;
 	default:
-		// strcpy(buf, "Unknown??");
-		// printf("UGH, unknown room op %d\n", opcode & 0x1F);
-		// exit(1);
-		sprintf(buf, "UnknownRoomCommand%.2X", opcode & 0x1F);
+		error("do_room_ops_old: unknown subop %d", opcode & 0x1F);
 	}
 }
 
@@ -1388,7 +1390,7 @@ void do_cursor_command(char *buf)
 		if (scriptVersion == 3)
 			do_tok(buf, "LoadCharset", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		else
-			do_tok(buf, "CursorCommand", A1VARUNTIL0xFF);
+			do_tok(buf, "CursorCommand", A1LIST);
 		break;
 	default:
 		sprintf(buf, "UnknownCursorCommand%.2X", opcode);
@@ -3132,7 +3134,7 @@ void next_line_V345(char *buf)
 	case 0xCA:
 	case 0x6A:
 	case 0xEA:
-		do_tok(buf, "startScript", ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
+		do_tok(buf, "startScript", ((opcode & 0x80) ? A1V : A1B) | A2LIST);
 		break;
 
 
@@ -3209,7 +3211,7 @@ void next_line_V345(char *buf)
 
 	case 0x1D:
 	case 0x9D:
-		do_tok(buf, "classOfIs", ((opcode & 0x80) ? A1V : A1W) | A2VARUNTIL0xFF | ATO);
+		do_tok(buf, "classOfIs", ((opcode & 0x80) ? A1V : A1W) | A2LIST | ATO);
 		break;											/* arg1=object; vararg=classes to test; arg3=jumpoffs */
 
 	case 0x1E:
@@ -3240,12 +3242,12 @@ void next_line_V345(char *buf)
 		break;
 
 	case 0x40:
-		do_tok(buf, "cutscene", A1VARUNTIL0xFF);
+		do_tok(buf, "cutscene", A1LIST);
 		break;
 
 	case 0x42:
 	case 0xC2:
-		do_tok(buf, "chainScript", ((opcode & 0x80) ? A1V : A1B) | A2VARUNTIL0xFF);
+		do_tok(buf, "chainScript", ((opcode & 0x80) ? A1V : A1B) | A2LIST);
 		break;
 
 	case 0x56:
@@ -3333,7 +3335,7 @@ void next_line_V345(char *buf)
 	case 0xB7:
 	case 0xF7:
 		do_tok(buf, "startObject",
-					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | A3VARUNTIL0xFF);
+					 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | A3LIST);
 		break;
 
 	case 0x19:
@@ -3505,7 +3507,7 @@ void next_line_V345(char *buf)
 		if (scriptVersion <= 3)
 			do_tok(buf, "waitForSentence", 0);
 		else
-			do_tok(buf, "soundKludge", A1VARUNTIL0xFF);
+			do_tok(buf, "soundKludge", A1LIST);
 		break;
 
 	case 0x3C:
@@ -3557,7 +3559,7 @@ void next_line_V345(char *buf)
 
 	case 0x5D:
 	case 0xDD:
-		do_tok(buf, "setClass", ((opcode & 0x80) ? A1V : A1W) | A2VARUNTIL0xFF);
+		do_tok(buf, "setClass", ((opcode & 0x80) ? A1V : A1W) | A2LIST);
 		break;
 
 	case 0x35:
