@@ -1202,7 +1202,7 @@ void do_room_ops(char *buf)
 		break;
 	case 0x08:
 		buf =
-			do_tok(buf, "setRoomIntensity",
+			do_tok(buf, "RoomIntensity",
 						 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) |
 						 ((opcode & 0x20) ? A3V : A3B));
 		break;
@@ -1333,8 +1333,18 @@ void do_room_ops_old(char *buf, byte opcode)
 	case 0x06:
 		do_tok(buf, "ShakeOff", 0);
 		break;
-	case 0x07:
-		do_tok(buf, "Unused", 0);
+	case 0x08:
+		if (scriptVersion > 3) {
+			get_var_or_word(a, (opcode & 0x80));
+			get_var_or_word(b, (opcode & 0x40));
+		}
+		buf = strecpy(buf, "RoomIntensity(");
+		buf = strecpy(buf, a);
+		buf = strecpy(buf, ",");
+		buf = strecpy(buf, b);
+		buf = strecpy(buf, ",");
+		buf = get_var_or_word(buf, (opcode & 0x20));
+		buf = strecpy(buf, ")");
 		break;
 	default:
 		error("do_room_ops_old: unknown subop %d", opcode & 0x1F);
@@ -3670,16 +3680,16 @@ void next_line_V345(char *buf)
 				((opcode & 0x20) ? A3V : A3B);
 			switch (opcode & 0x1F) {
 			case 0x01:
-				do_tok(buf, "SaveRestoreVerbsA", code);
+				do_tok(buf, "SaveVerbs", code);
 				break;
 			case 0x02:
-				do_tok(buf, "SaveRestoreVerbsB", code);
+				do_tok(buf, "RestoreVerbs", code);
 				break;
 			case 0x03:
-				do_tok(buf, "SaveRestoreVerbsC", code);
+				do_tok(buf, "DeleteVerbs", code);
 				break;
 			default:
-				do_tok(buf, "SaveRestoreVerbsUnknown", 0);
+				error("opcode 0xAB: Unhandled subop %d", opcode & 0x1F);
 			}
 		}
 		break;
