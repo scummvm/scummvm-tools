@@ -33,9 +33,6 @@
 #define MAX_FILE_SIZE (200 * 1024)
 
 
-#define BLOCK_STACK_SIZE	256
-
-
 typedef unsigned int uint;
 
 //
@@ -77,6 +74,11 @@ extern bool dontOutputBreaks;
 extern bool dontShowOpcode;
 extern bool dontShowOffsets;
 extern bool haltOnError;
+
+extern bool HumongousFlag;
+extern bool ZakFlag;
+extern bool IndyFlag;
+extern bool GF_UNBLOCKED;
 
 //
 // The SCUMM version used for the script we are descumming.
@@ -123,10 +125,6 @@ extern void next_line_V345(char *buf);	// For V3, V4, V5
 extern void next_line_V67(char *buf);
 extern void next_line_V8(char *buf);
 extern void next_line_HE_V72(char *buf);
-extern bool HumongousFlag;
-extern bool ZakFlag;
-extern bool IndyFlag;
-extern bool GF_UNBLOCKED;
 
 
 

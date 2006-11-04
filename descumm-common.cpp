@@ -24,6 +24,9 @@
 #include "descumm.h"
 
 
+#define BLOCK_STACK_SIZE	256
+
+
 BlockStack *block_stack;
 int num_block_stack;
 
