@@ -99,7 +99,7 @@ void emit_if(char *buf, char *condition);
 const char *var_names0[] = {
 	/* 0 */
 	"VAR_EGO",
-	NULL,
+	"VAR_RESULT",
 	"VAR_CAMERA_POS_X",
 	"VAR_HAVE_MSG",
 	/* 4 */
@@ -117,7 +117,7 @@ const char *var_names0[] = {
 const char *var_names2[] = {
 	/* 0 */
 	"VAR_EGO",
-	NULL,
+	"VAR_RESULT",
 	"VAR_CAMERA_POS_X",
 	"VAR_HAVE_MSG",
 	/* 4 */
@@ -1046,16 +1046,15 @@ void do_resource_v2(char *buf, byte opcode)
 
 void do_resource(char *buf, byte opco)
 {
-	// FIXME:
-	// 1) This is out of date compared to script_v5.cp
-	// 2) the token's should all get a prefix, so that we don't mix up the
-	//    "real" loadRoom with the one here.
+	// FIXME:  This is out of date compared to script_v5.cp
 	char opcode = get_byte();
 	int sub_op;
 	if (scriptVersion != 5)
 		sub_op = opcode & 0x3F;	// FIXME - actually this should only be done for Zak256
 	else
 		sub_op = opcode & 0x1F;
+
+	buf += sprintf(buf, "Resource.");
 
 	switch (sub_op) {
 	case 0x1:
@@ -1946,14 +1945,21 @@ void next_line_V12(char *buf)
 		break;
 	case 0x4A:
 	case 0xCA:
-		// chainScript
 		do_tok(buf, "chainScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x60:
 	case 0xE0:
-		//cursorCommand
-		do_tok(buf, "cursorCommand", ((opcode & 0x80) ? A1V : A1W));
+		//do_tok(buf, "cursorCommand", ((opcode & 0x80) ? A1V : A1W));
+		if (opcode & 0x80) {
+			char tmp[256];
+			get_var(tmp);
+			buf += sprintf(buf, "cursorCommand(Hi(%s), Lo(%s))", tmp, tmp);
+		} else {
+			int val = get_word();
+			buf += sprintf(buf, "cursorCommand(%d, %d)", (val >> 8) & 0xFF, val & 0xFF);
+		}
+
 		break;
 	case 0x40:
 		sprintf(buf, "cutscene");
@@ -2385,7 +2391,7 @@ void next_line_V12(char *buf)
 				i--;
 			}
 
-			strcpy(buf, "];");
+			strcpy(buf, "]);");
 
 		}
 		break;
@@ -3578,7 +3584,7 @@ void next_line_V345(char *buf)
 				i--;
 			}
 
-			strcpy(buf, "];");
+			strcpy(buf, "]);");
 
 		}
 		break;
