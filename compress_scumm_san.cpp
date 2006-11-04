@@ -23,16 +23,6 @@
 #include "compress.h"
 #include "zlib.h"
 
-const char *tag2str(uint32 tag) {
-	static char str[5];
-	str[0] = (char)(tag >> 24);
-	str[1] = (char)(tag >> 16);
-	str[2] = (char)(tag >> 8);
-	str[3] = (char)tag;
-	str[4] = '\0';
-	return str;
-}
-
 void showhelp(char *exename) {
 	printf("\nUsage: %s <inputfile> <inputdir> <outputdir> [--ogg] [encoder params]\n", exename);
 	printf("\nMP3 mode params:\n");
