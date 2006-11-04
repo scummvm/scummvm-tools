@@ -55,7 +55,7 @@ Compression Tools:
 
         compress_simon
                 Used to compress the Feeble Files or Simon 1/2 voc/wav files
-		to MP3, Vorbis or FLAC.
+                to MP3, Vorbis or FLAC.
 
         compress_sword1
                 Used to compress Broken Sword 1's music and speech files to
