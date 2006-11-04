@@ -496,6 +496,9 @@ char *get_var(char *buf)
 			i < ARRAYSIZE(var_names0) && var_names0[i]) {
 		buf += sprintf(buf, var_names0[i]);
 		return buf;
+	} else if (scriptVersion <= 2 && ZakFlag && (i == 234 || i == 235)) {
+		buf += sprintf(buf, (i == 234) ? "ZERO" : "ONE");
+		return buf;
 	} else if ((i & 0x8000) && (GF_UNBLOCKED || ZakFlag))
 		buf += sprintf(buf, "Var[%d Bit %d", (i & 0x0FFF) >> 4, i & 0x000F);
 	else
