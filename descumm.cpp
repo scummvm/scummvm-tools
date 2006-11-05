@@ -1333,19 +1333,6 @@ void do_room_ops_old(char *buf, byte opcode)
 	case 0x06:
 		do_tok(buf, "ShakeOff", 0);
 		break;
-	case 0x08:
-		if (scriptVersion > 3) {
-			get_var_or_word(a, (opcode & 0x80));
-			get_var_or_word(b, (opcode & 0x40));
-		}
-		buf = strecpy(buf, "RoomIntensity(");
-		buf = strecpy(buf, a);
-		buf = strecpy(buf, ",");
-		buf = strecpy(buf, b);
-		buf = strecpy(buf, ",");
-		buf = get_var_or_word(buf, (opcode & 0x20));
-		buf = strecpy(buf, ")");
-		break;
 	default:
 		error("do_room_ops_old: unknown subop %d", opcode & 0x1F);
 	}
