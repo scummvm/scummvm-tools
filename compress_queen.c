@@ -39,7 +39,8 @@ const char *tempEncoded;
 
 #define CURRENT_TBL_VERSION	1
 #define EXTRA_TBL_HEADER 8
-#define SB_HEADER_SIZE	110
+#define SB_HEADER_SIZE_V104 110
+#define SB_HEADER_SIZE_V110 122
 
 
 enum {
@@ -121,7 +122,7 @@ void showhelp(char *exename)
 {
 	printf("\nUsage: %s [--mp3/--vorbis/--flac <args>] queen.1\n", exename);
 	printf("\nParams:\n");
-	printf(" --mp3 <args>         encode to MP3 format\n"); 
+	printf(" --mp3 <args>         encode to MP3 format\n");
 	printf(" --vorbis <args>      encode to Ogg Vorbis Format\n");
 	printf(" --flac <args>        encode to Flac Format\n");
 	printf("                      (Optional: <args> are passed on to the encoder)\n");
@@ -173,7 +174,7 @@ void createFinalFile(void) {
 	checkOpen(inData, TEMP_DAT);
 	outFinal = fopen(FINAL_OUT, "wb");
 	checkOpen(outFinal, FINAL_OUT);
-	
+
 	dataStartOffset = fileSize(inTbl) + EXTRA_TBL_HEADER;
 	dataSize = fileSize(inData);
 
@@ -183,7 +184,7 @@ void createFinalFile(void) {
 	writeUint32BE(outFinal, QTBL);
 	fwrite(version->versionString, 6, 1, outFinal);
 	writeByte(outFinal, version->isFloppy);
-	writeByte(outFinal, version->isDemo);	
+	writeByte(outFinal, version->isDemo);
 	writeByte(outFinal, versionExtra.compression);
 	writeUint16BE(outFinal, versionExtra.entries);
 
@@ -191,7 +192,7 @@ void createFinalFile(void) {
 		fromFileToFile(inTbl, outFinal, 12);
 		writeByte(outFinal, readByte(inTbl));
 		writeUint32BE(outFinal, dataStartOffset + readUint32BE(inTbl));
-		writeUint32BE(outFinal, readUint32BE(inTbl));		
+		writeUint32BE(outFinal, readUint32BE(inTbl));
 	}
 
 	/* Append contents of temporary datafile to final datafile */
@@ -216,7 +217,7 @@ int main(int argc, char *argv[])
 	int size, i = 1;
 	uint32 prevOffset;
 
-	
+
 	if (argc < 2)
 		showhelp(argv[0]);
 
@@ -269,24 +270,24 @@ int main(int argc, char *argv[])
 	if (memcmp(tmp, "QTBL", 4)) {
 		printf("Invalid TBL file!\n");
 		exit(-1);
-	} 
+	}
 
 	if (readUint32BE(inputTbl) != CURRENT_TBL_VERSION) {
 		printf("Error: You are using an incorrect (outdated?) version of the queen.tbl file\n");
 		exit(1);
 	}
 	version = detectGameVersion(size);
-	fseek(inputTbl, version->tableOffset, SEEK_SET); 
+	fseek(inputTbl, version->tableOffset, SEEK_SET);
 
 	versionExtra.compression = compressionType;
 	versionExtra.entries = readUint16BE(inputTbl);
-		
+
 	outputTbl = fopen(TEMP_TBL, "wb");
-	checkOpen(outputTbl, TEMP_TBL);	
+	checkOpen(outputTbl, TEMP_TBL);
 
 	outputData = fopen(TEMP_DAT, "wb");
 	checkOpen(outputData, TEMP_DAT);
-	
+
 	/* Write tablefile header */
 	writeUint32BE(outputTbl, QTBL);
 	writeByte(outputTbl, versionExtra.compression);
@@ -294,7 +295,7 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < versionExtra.entries; i++) {
 		prevOffset = ftell(outputData);
-		
+
 		/* Read entry */
 		fread(entry.filename, 1, 12, inputTbl);
 		entry.filename[12] = '\0';
@@ -306,10 +307,31 @@ int main(int argc, char *argv[])
 		fseek(inputData, entry.offset, SEEK_SET);
 
 		if (versionExtra.compression && strstr(entry.filename, ".SB")) { /* Do we want to compress? */
+			uint16 sbVersion;
+			int headerSize;
+
 			/* Read in .SB */
 			tmpFile = fopen(TEMP_SB, "wb");
-			fseek(inputData, entry.offset + SB_HEADER_SIZE, SEEK_SET);
-			fromFileToFile(inputData, tmpFile, entry.size - SB_HEADER_SIZE);
+			fseek(inputData, entry.offset, SEEK_SET);
+
+			fseek(inputData, 2, SEEK_CUR);
+			sbVersion = readUint16LE(inputData);
+			switch (sbVersion) {
+			case 104:
+				headerSize = SB_HEADER_SIZE_V104;
+				break;
+			case 110:
+				headerSize = SB_HEADER_SIZE_V110;
+				break;
+			default:
+				warning("Unhandled SB file version %d, defaulting to 104\n", sbVersion);
+				headerSize = SB_HEADER_SIZE_V104;
+				break;
+			}
+			fseek(inputData, headerSize - 4, SEEK_CUR);
+			entry.size -= headerSize;
+
+			fromFileToFile(inputData, tmpFile, entry.size);
 			fclose(tmpFile);
 
 			/* Invoke encoder */
@@ -329,7 +351,7 @@ int main(int argc, char *argv[])
 			unlink(TEMP_SB);
 			unlink(tempEncoded);
 		} else {
-			/* Non .SB file */	
+			/* Non .SB file */
 			bool patched = false;
 			/* Check for external files */
 			uint8 j;
@@ -357,8 +379,8 @@ int main(int argc, char *argv[])
 		fwrite(entry.filename, 12, 1, outputTbl);
 		writeByte(outputTbl, entry.bundle);
 		writeUint32BE(outputTbl, prevOffset);
-		writeUint32BE(outputTbl, entry.size);	
-	}	
+		writeUint32BE(outputTbl, entry.size);
+	}
 
 	/* Close files */
 	fclose(outputTbl);
@@ -368,6 +390,6 @@ int main(int argc, char *argv[])
 
 	/* Merge the temporary table and temporary datafile to create final file */
 	createFinalFile();
-	
+
 	return 0;
 }
