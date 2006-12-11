@@ -487,13 +487,17 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 					*codeB++ = 30 + count;
 					memcpy(dataB, pixels, count);
 					dataB += count;
-					memcpy(maskB, &code, codeSize);
+					if (codeSize == 2) {
+						WRITE_BE_UINT16(maskB, code);
+					} else {
+						WRITE_BE_UINT32(maskB, code);
+					}
 					maskB += codeSize;
 				} else {
 					if (diff.count <= 12) {
 						/* difference map */
 						*codeB++ = 1;
-						*(uint16*)maskB = diff.map;
+						WRITE_BE_UINT16(maskB, diff.map);
 						maskB += 2;
 						memcpy(dataB, diff.pixels, diff.count);
 						dataB += diff.count;
@@ -513,13 +517,13 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 	int size;
 
 	size = dataB - _dataBuf;
-	memcpy(outb, &size, 4);
+	WRITE_BE_UINT32(outb, size);
 	outb += 4;
 	size = motB - _motBuf;
-	memcpy(outb, &size, 4);
+	WRITE_BE_UINT32(outb, size);
 	outb += 4;
 	size = maskB - _maskBuf;
-	memcpy(outb, &size, 4);
+	WRITE_BE_UINT32(outb, size);
 	outb += 4;
 
 	/* this size is always constant throughout a DXA */
@@ -738,7 +742,7 @@ int main(int argc, char *argv[]) {
 	char strbuf[512];
 	int width, height, framerate, frames;
 	ScaleMode scaleMode;
-  
+
 	/* compression mode */
 	gCompMode = kMP3Mode;
 	int i = 1;
