@@ -36,32 +36,44 @@ const uint32 typeNULL = 0x4C4C554E;
 #define	 BUFFER_LEN	1024
 
 // other block dimensions than 4x4 are not really supported yet
-#define  BLOCKW         4
-#define  BLOCKH         4
+#define  BLOCKW	4
+#define  BLOCKH	4
 
 static CompressMode gCompMode = kMP3Mode;
+
+enum ScaleMode { S_NONE, S_INTERLACED, S_DOUBLE };
+
+struct DiffStruct {
+	uint16 map;
+	int count;
+	byte pixels[BLOCKW*BLOCKH];
+};
 
 class DxaEncoder {
 private:
 	FILE *_dxa;
-	int _width, _height, _framerate, _framecount;
+	int _width, _height, _framerate, _framecount, _workheight;
 	uint8 *_prevframe, *_prevpalette;
+	ScaleMode _scaleMode;
 
-        bool m12blocksAreEqual(byte *frame, int x, int y, int x2, int y2);
-        bool m12blockIsSolidColor(byte *frame, int x, int y, byte &color);
-        void m12blockDelta(byte *frame, int x, int y, unsigned short &diffMap, int &diffCount, byte diffPix[]);
-        bool m12motionVector(byte *frame, int x, int y, int &mx, int &my);
-        uLong m12encode(byte *frame, byte *outbuf);
+	byte *_codeBuf, *_dataBuf, *_motBuf, *_maskBuf;
+	void grabBlock(byte *frame, int x, int y, int blockw, int blockh, byte *block);
+	bool m13blocksAreEqual(byte *frame, int x, int y, int x2, int y2, int w, int h);
+	bool m13blockIsSolidColor(byte *frame, int x, int y, int w, int h, byte &color);
+	void m13blockDelta(byte *frame, int x, int y, int x2, int y2, DiffStruct &diff);
+	bool m13motionVector(byte *frame, int x, int y, int w, int h, int &mx, int &my);
+	int m13countColors(byte *block, byte *pixels, unsigned long &code, int &codeSize);
+	uLong m13encode(byte *frame, byte *outbuf);
 
 public:
-	DxaEncoder(char *filename, int width, int height, int fps);
+	DxaEncoder(char *filename, int width, int height, int framerate, ScaleMode scaleMode);
 	~DxaEncoder();
 	void writeHeader();
 	void writeNULL();
 	void writeFrame(uint8 *frame, uint8 *palette);
 };
 
-DxaEncoder::DxaEncoder(char *filename, int width, int height, int framerate) {
+DxaEncoder::DxaEncoder(char *filename, int width, int height, int framerate, ScaleMode scaleMode) {
 	_dxa = fopen(filename, "wb");
 	_width = width;
 	_height = height;
@@ -69,6 +81,13 @@ DxaEncoder::DxaEncoder(char *filename, int width, int height, int framerate) {
 	_framecount = 0;
 	_prevframe = new uint8[_width * _height];
 	_prevpalette = new uint8[768];
+	_scaleMode = scaleMode;
+	_workheight = _scaleMode == S_NONE ? _height : _height / 2;
+
+	_codeBuf = new byte[_width * _height / 16];
+	_dataBuf = new byte[_width * _height];
+	_motBuf = new byte[_width * _height];
+	_maskBuf = new byte[_width * _height];
 
 	writeHeader();
 }
@@ -80,6 +99,11 @@ DxaEncoder::~DxaEncoder() {
 
 	fclose(_dxa);
 
+	delete[] _codeBuf;
+	delete[] _dataBuf;
+	delete[] _motBuf;
+	delete[] _maskBuf;
+
 	delete[] _prevframe;
 	delete[] _prevpalette;
 }
@@ -87,6 +111,12 @@ DxaEncoder::~DxaEncoder() {
 void DxaEncoder::writeHeader() {
 	//DEXA
 	uint8 version = 0;
+
+	/* remember the scaling mode */
+	if (_scaleMode == S_INTERLACED)
+		version |= 0x80;
+	else if (_scaleMode == S_DOUBLE)
+		version |= 0x40;
 
 	writeUint32LE(_dxa, typeDEXA);
 	writeByte(_dxa, version);
@@ -102,140 +132,110 @@ void DxaEncoder::writeNULL() {
 	writeUint32LE(_dxa, typeNULL);
 }
 
-void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
+void DxaEncoder::writeFrame(byte *frame, byte *palette) {
+
 	if (_framecount == 0 || memcmp(_prevpalette, palette, 768)) {
 		writeUint32LE(_dxa, typeCMAP);
 		fwrite(palette, 768, 1, _dxa);
-
 		memcpy(_prevpalette, palette, 768);
 	} else {
 		writeNULL();
 	}
 
-	if (_framecount == 0 || memcmp(_prevframe, frame, _width * _height)) {
+	if (_framecount == 0 || memcmp(_prevframe, frame, _width * _workheight)) {
 		//FRAM
-		uint8 compType;
+		byte compType;
 
 		writeUint32LE(_dxa, typeFRAM);
 
 		if (_framecount == 0)
 			compType = 2;
 		else
-			//compType = 3;
-			compType = 12;
+			compType = 13;
 
 		switch (compType) {
+
 		case 2:
 			{
-				uLong outsize = _width * _height;
-				uint8 *outbuf = new uint8[outsize];
-
-				compress2(outbuf, &outsize, frame, _width * _height, 9);
-
+				uLong outsize = _width * _workheight;
+				byte *outbuf = new byte[outsize];
+				compress2(outbuf, &outsize, frame, _width * _workheight, 9);
 				writeByte(_dxa, compType);
-
 				writeUint32BE(_dxa, outsize);
-
 				fwrite(outbuf, outsize, 1, _dxa);
-
 				delete[] outbuf;
-
 				break;
 			}
-		case 3:
+
+		case 13:
 			{
-				uLong outsize1 = _width * _height;
-				uLong outsize2 = outsize1;
-				uLong outsize;
-				uint8 *outbuf;
-				uint8 *outbuf1 = new uint8[outsize1];
-				uint8 *outbuf2 = new uint8[outsize2];
-				uint8 *xorbuf = new uint8[_width * _height];
+				int r;
+				uLong frameoutsize;
+				byte *frameoutbuf;
 
-				for (int i = 0; i < _width * _height; i++)
+				byte *xorbuf = new byte[_width * _workheight];
+				uLong xorsize_z = _width * _workheight;
+				byte *xorbuf_z = new byte[xorsize_z];
+
+				uLong rawsize_z = _width * _workheight;
+				byte *rawbuf_z = new byte[rawsize_z];
+
+				uLong m13size = _width * _workheight * 2;
+				byte *m13buf = new byte[m13size];
+				uLong m13size_z = _width * _workheight;
+				byte *m13buf_z = new byte[m13size_z];
+
+				/* encode the delta frame with mode 12 */
+				m13size = m13encode(frame, m13buf);
+
+				/* create the xor buffer */
+				for (int i = 0; i < _width * _workheight; i++)
 					xorbuf[i] = _prevframe[i] ^ frame[i];
 
-				compress2(outbuf1, &outsize1, xorbuf, _width * _height, 9);
-				compress2(outbuf2, &outsize2, frame, _width * _height, 9);
+				/* compress the m13 buffer */
+				compress2(m13buf_z, &m13size_z, m13buf, m13size, 9);
 
-				if (outsize1 < outsize2) {
-					compType = 3;
-					outsize = outsize1;
-					outbuf = outbuf1;
+				/* compress the xor buffer */
+				xorsize_z = m13size_z;
+				r = compress2(xorbuf_z, &xorsize_z, xorbuf, _width * _workheight, 9);
+				if (r != Z_OK) xorsize_z = 0xFFFFFFF;
+
+				if (m13size_z < xorsize_z) {
+					compType = 13;
+					frameoutsize = m13size_z;
+					frameoutbuf = m13buf_z;
 				} else {
+					compType = 3;
+					frameoutsize = xorsize_z;
+					frameoutbuf = xorbuf_z;
+				}
+
+				/* compress the raw frame */
+				rawsize_z = frameoutsize;
+				r = compress2(rawbuf_z, &rawsize_z, frame, _width * _workheight, 9);
+				if (r != Z_OK) rawsize_z = 0xFFFFFFF;
+
+				if (rawsize_z < frameoutsize) {
 					compType = 2;
-					outsize = outsize2;
-					outbuf = outbuf2;
+					frameoutsize = rawsize_z;
+					frameoutbuf = rawbuf_z;
 				}
 
 				writeByte(_dxa, compType);
+				writeUint32BE(_dxa, frameoutsize);
+				fwrite(frameoutbuf, frameoutsize, 1, _dxa);
 
-				writeUint32BE(_dxa, outsize);
-
-				fwrite(outbuf, outsize, 1, _dxa);
-
-				delete[] outbuf1;
-				delete[] outbuf2;
-				delete[] xorbuf;
-
-				break;
-			}
-                case 12:
-
-                        {
-
-				uLong outsize1 = _width * _height;
-				uLong outsize2 = outsize1;
-				uLong outsize3 = outsize1*2;
-				uLong outsize4 = outsize1;
-				uLong outsize;
-				uint8 *outbuf;
-				uint8 *outbuf1 = new uint8[outsize1];
-				uint8 *outbuf2 = new uint8[outsize2];
-				uint8 *outbuf3 = new uint8[outsize3];
-				uint8 *outbuf4 = new uint8[outsize4];
-				uint8 *xorbuf = new uint8[_width * _height];
-
-				for (int i = 0; i < _width * _height; i++)
-					xorbuf[i] = _prevframe[i] ^ frame[i];
-
-				compress2(outbuf1, &outsize1, xorbuf, _width * _height, 9);
-				compress2(outbuf2, &outsize2, frame, _width * _height, 9);
-				if (outsize1 < outsize2) {
-					compType = 3;
-					outsize = outsize1;
-					outbuf = outbuf1;
-				} else {
-					compType = 2;
-					outsize = outsize2;
-					outbuf = outbuf2;
-				}
-
-				outsize3 = m12encode(frame, outbuf3);
-
-				compress2(outbuf4, &outsize4, outbuf3, outsize3, 9);
-
-				if (outsize4 < outsize) {
-					compType = 12;
-					outsize = outsize4;
-					outbuf = outbuf4;
-        	       		}
-
-				writeByte(_dxa, compType);
-				writeUint32BE(_dxa, outsize);
-				fwrite(outbuf, outsize, 1, _dxa);
-
-				delete[] outbuf1;
-				delete[] outbuf2;
-				delete[] outbuf3;
-				delete[] outbuf4;
+				delete[] xorbuf_z;
+				delete[] rawbuf_z;
+				delete[] m13buf_z;
+				delete[] m13buf;
 				delete[] xorbuf;
 
 				break;
 			}
 		}
 
-		memcpy(_prevframe, frame, _width * _height);
+		memcpy(_prevframe, frame, _width * _workheight);
 
 	} else {
 		writeNULL();
@@ -244,11 +244,11 @@ void DxaEncoder::writeFrame(uint8 *frame, uint8 *palette) {
 	_framecount++;
 }
 
-bool DxaEncoder::m12blocksAreEqual(byte *frame, int x, int y, int x2, int y2) {
+bool DxaEncoder::m13blocksAreEqual(byte *frame, int x, int y, int x2, int y2, int w, int h) {
 	byte *b1 = _prevframe + x + y * _width;
 	byte *b2 = frame + x2 + y2 * _width;
-	for (int yc = 0; yc < BLOCKH; yc++) {
-		if (memcmp(b1, b2, BLOCKW))
+	for (int yc = 0; yc < h; yc++) {
+		if (memcmp(b1, b2, w))
 			return false;
 		b1 += _width;
 		b2 += _width;
@@ -256,11 +256,11 @@ bool DxaEncoder::m12blocksAreEqual(byte *frame, int x, int y, int x2, int y2) {
 	return true;
 }
 
-bool DxaEncoder::m12blockIsSolidColor(byte *frame, int x, int y, byte &color) {
+bool DxaEncoder::m13blockIsSolidColor(byte *frame, int x, int y, int w, int h, byte &color) {
 	byte *b2 = frame + x + y * _width;
 	color = *b2;
-	for (int yc = 0; yc < BLOCKH; yc++) {
-		for (int xc = 0; xc < BLOCKW; xc++) {
+	for (int yc = 0; yc < h; yc++) {
+		for (int xc = 0; xc < w; xc++) {
 			if (b2[xc] != color)
 				return false;
 		}
@@ -269,18 +269,18 @@ bool DxaEncoder::m12blockIsSolidColor(byte *frame, int x, int y, byte &color) {
 	return true;
 }
 
-void DxaEncoder::m12blockDelta(byte *frame, int x, int y, unsigned short &diffMap, int &diffCount, byte diffPix[]) {
+void DxaEncoder::m13blockDelta(byte *frame, int x, int y, int x2, int y2, DiffStruct &diff) {
 	byte *b1 = _prevframe + x + y * _width;
-	byte *b2 = frame + x + y * _width;
-	diffCount = 0;
-	diffMap = 0;
+	byte *b2 = frame + x2 + y2 * _width;
+	diff.count = 0;
+	diff.map = 0;
 	for (int yc = 0; yc < BLOCKH; yc++) {
 		for (int xc = 0; xc < BLOCKW; xc++) {
 			if (b1[xc] != b2[xc]) {
-				diffMap = (diffMap << 1) | 1;
-				diffPix[diffCount++] = b2[xc];
+				diff.map = (diff.map << 1) | 1;
+				diff.pixels[diff.count++] = b2[xc];
 			} else {
-				diffMap = (diffMap << 1) | 0;
+				diff.map = (diff.map << 1) | 0;
 			}
 		}
 		b1 += _width;
@@ -288,14 +288,14 @@ void DxaEncoder::m12blockDelta(byte *frame, int x, int y, unsigned short &diffMa
 	}
 }
 
-bool DxaEncoder::m12motionVector(byte *frame, int x, int y, int &mx, int &my) {
+bool DxaEncoder::m13motionVector(byte *frame, int x, int y, int w, int h, int &mx, int &my) {
 	int xmin = (0 > x-7) ? 0 : x-7;
 	int ymin = (0 > y-7) ? 0 : y-7;
 	int xmax = (_width < x+8) ? _width : x+8;
-	int ymax = (_height < y+8) ? _height : y+8;
+	int ymax = (_workheight < y+8) ? _height : y+8;
 	for (int yc = ymin; yc < ymax; yc++) {
 		for (int xc = xmin; xc < xmax; xc++) {
-			if (m12blocksAreEqual(frame, xc, yc, x, y)) {
+			if (m13blocksAreEqual(frame, xc, yc, x, y, w, h)) {
 				mx = xc - x;
 				my = yc - y;
 				return true;
@@ -305,84 +305,235 @@ bool DxaEncoder::m12motionVector(byte *frame, int x, int y, int &mx, int &my) {
 	return false;
 }
 
-uLong DxaEncoder::m12encode(byte *frame, byte *outbuf) {
+int DxaEncoder::m13countColors(byte *block, byte *pixels, unsigned long &code, int &codeSize) {
+
+	code = 0;
+	codeSize = 0;
+
+	/* count the number of colors used in this block */
+	int count = 0;
+	int colTab[256];
+	for (int i = 0; i < 256; i++)
+		colTab[i] = -1;
+
+	for (int i = 0; i < BLOCKW * BLOCKH; i++) {
+		if (colTab[block[i]] == -1) {
+			colTab[block[i]] = count;
+			pixels[count] = block[i];
+			count++;
+		}
+	}
+
+	if (count <= 4) {
+		/* set the bitmask */
+		if (count == 2) {
+			for (int i = 15; i >= 0; i--) {
+				code = (code << 1) | colTab[block[i]];
+			}
+			codeSize = 2;
+		} else if (count == 4 || count == 3) {
+			for (int i = 15; i >= 0; i--) {
+				code = (code << 2) | colTab[block[i]];
+			}
+			codeSize = 4;
+		}
+	}
+
+	return count;
+}
+
+/* grab the block */
+void DxaEncoder::grabBlock(byte *frame, int x, int y, int blockw, int blockh, byte *block) {
+	byte *b2 = (byte*)frame + x + y * _width;
+	for (int yc = 0; yc < blockh; yc++) {
+		memcpy(&block[yc*blockw], b2, blockw);
+		b2 += _width;
+	}
+}
+
+uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
+
+	byte *codeB = _codeBuf;
+	byte *dataB = _dataBuf;
+	byte *motB = _motBuf;
+	byte *maskB = _maskBuf;
+
 	byte *outb = outbuf;
 	byte color;
 	int mx, my;
-	unsigned short diffMap;
-	int diffCount;
-	byte diffPix[BLOCKW*BLOCKH];
+	DiffStruct diff;
 
-	for (int by = 0; by < _height; by += BLOCKH) {
+	memset(_codeBuf, 0, _width * _height / 16);
+	memset(_dataBuf, 0, _width * _height);
+	memset(_motBuf, 0, _width * _height);
+	memset(_maskBuf, 0, _width * _height);
+
+	for (int by = 0; by < _workheight; by += BLOCKH) {
 		for (int bx = 0; bx < _width; bx += BLOCKW) {
-			if (m12blocksAreEqual(frame, bx, by, bx, by)) {
-				*outb++ = 0;
+			if (m13blocksAreEqual(frame, bx, by, bx, by, BLOCKW, BLOCKH)) {
+				*codeB++ = 0;
 				continue;
 			}
 
-			if (m12blockIsSolidColor(frame, bx, by, color)) {
-				*outb++ = 2;
-				*outb++ = color;
+			if (m13blockIsSolidColor(frame, bx, by, BLOCKW, BLOCKH, color)) {
+				*codeB++ = 2;
+				*dataB++ = color;
 				continue;
 			}
 
-			if (m12motionVector(frame, bx, by, mx, my)) {
-				byte mbyte = 0;
-				if (mx < 0) mbyte |= 0x80;
-				mbyte |= (abs(mx) & 7) << 4;
-				if (my < 0) mbyte |= 0x08;
-				mbyte |= abs(my) & 7;
-				*outb++ = 4;
-				*outb++ = mbyte;
+			if (m13motionVector(frame, bx, by, BLOCKW, BLOCKH, mx, my)) {
+				/* motion vector */
+				byte motionByte = 0;
+				if (mx < 0) motionByte |= 0x80;
+				motionByte |= (abs(mx) & 7) << 4;
+				if (my < 0) motionByte |= 0x08;
+				motionByte |= abs(my) & 7;
+				*codeB++ = 4;
+				*motB++ = motionByte;
 				continue;
 			}
 
-			m12blockDelta(frame, bx, by, diffMap, diffCount, diffPix);
+			byte subMask = 0;
+			byte subMot[4], subData[16];
+			int subMotSize = 0, subDataSize = 0;
 
-			if (diffCount >= 14) {
-				// in this case we store all 16 pixels
-				*outb++ = 3;
-				byte *b2 = (byte*)frame + bx + by * _width;
-				for (int yc = 0; yc < BLOCKH; yc++) {
-					memcpy(outb, b2, BLOCKW);
-					b2 += _width;
-					outb += BLOCKW;
+ 			static const int subX[4] = {0, 2, 0, 2};
+			static const int subY[4] = {0, 0, 2, 2};
+
+			/* 0: skip
+			   1: solid color (+ data byte)
+			   2: motion vector (+ mot byte)
+			   3: raw block (+ 4 data bytes)
+			*/
+
+			for (int subBlock = 0; subBlock < 4; subBlock++) {
+
+				int sx = bx + subX[subBlock], sy = by + subY[subBlock];
+				byte scolor;
+				int smx, smy;
+
+				if (m13blocksAreEqual(frame, sx, sy, sx, sy, BLOCKW/2, BLOCKH/2)) {
+					subMask = (subMask << 2) | 0;
+					continue;
 				}
-				continue;
+
+				if (m13blockIsSolidColor(frame, sx, sy, BLOCKW/2, BLOCKH/2, scolor)) {
+					subData[subDataSize++] = scolor;
+					subMask = (subMask << 2) | 1;
+					continue;
+				}
+
+				if (m13motionVector(frame, sx, sy, BLOCKW/2, BLOCKH/2, smx, smy)) {
+					byte motionByte = 0;
+					if (smx < 0) motionByte |= 0x80;
+					motionByte |= (abs(smx) & 7) << 4;
+					if (smy < 0) motionByte |= 0x08;
+					motionByte |= abs(smy) & 7;
+					subMot[subMotSize++] = motionByte;
+					subMask = (subMask << 2) | 2;
+					continue;
+				}
+
+				byte *b2 = (byte*)frame + sx + sy * _width;
+				for (int yc = 0; yc < BLOCKH/2; yc++) {
+					memcpy(&subData[subDataSize], b2, BLOCKW/2);
+					subDataSize += BLOCKW/2;
+					b2 += _width;
+				}
+
+				subMask = (subMask << 2) | 3;
+			}
+
+			int blockSize = 0;
+
+			m13blockDelta(frame, bx, by, bx, by, diff);
+
+			byte block[16];
+			grabBlock(frame, bx, by, BLOCKW, BLOCKW, block);
+
+			unsigned long code;
+			int codeSize;
+			byte pixels[16];
+			int count = m13countColors(block, pixels, code, codeSize);
+
+			int countColorsSize = 1000;
+			if (count == 2)
+				countColorsSize = 4; // 2 bytes mask, 2 pixels
+			else if (count <= 4)
+				countColorsSize = 4 + count; // 4 bytes mask, count pixels
+
+			if (countColorsSize < diff.count + 2) {
+				blockSize = countColorsSize;
 			} else {
-				static const struct { uint16 mask; uint8 sh1, sh2; } maskTbl[6] = {
-					{0xFF00, 0, 0},
-					{0x0FF0, 8, 0},
-					{0x00FF, 8, 8},
-					{0x0F0F, 8, 4},
-					{0xF0F0, 4, 0},
-					{0xF00F, 4, 4}
-				};
+				if (diff.count <= 12) {
+					blockSize = 2 + diff.count;
+				} else {
+					blockSize = 16;
+				}
+			}
 
-				bool smallMask = false;
-
-				// here we check if the difference bitmap can be stored in only one byte
-				for (int m = 0; m < 6; m++) {
-					if ((diffMap & maskTbl[m].mask) == 0) {
-						smallMask = true;
-						*outb++ = 10 + m;
-						*outb++ = ((diffMap >> maskTbl[m].sh1) & 0xF0) | ((diffMap >> maskTbl[m].sh2) & 0x0F);
-						break;
+			if (1 + subMotSize + subDataSize < blockSize) {
+				/* store subblocks */
+				*codeB++ = 8;
+				*maskB++ = subMask;
+				memcpy(dataB, subData, subDataSize);
+				dataB += subDataSize;
+				memcpy(motB, subMot, subMotSize);
+				motB += subMotSize;
+			} else {
+				/* store full block */
+				if (countColorsSize < diff.count + 2) {
+					/* write the pixel values */
+					*codeB++ = 30 + count;
+					memcpy(dataB, pixels, count);
+					dataB += count;
+					memcpy(maskB, &code, codeSize);
+					maskB += codeSize;
+				} else {
+					if (diff.count <= 12) {
+						/* difference map */
+						*codeB++ = 1;
+						*(uint16*)maskB = diff.map;
+						maskB += 2;
+						memcpy(dataB, diff.pixels, diff.count);
+						dataB += diff.count;
+					} else {
+						/* write the whole block */
+						*codeB++ = 3;
+						memcpy(dataB, block, 16);
+						dataB += 16;
 					}
 				}
-
-				if (!smallMask) {
-					*outb++ = 1;
-					*(unsigned short*)outb = diffMap;
-					outb += 2;
-				}
-
-				memcpy(outb, diffPix, diffCount);
-				outb += diffCount;
-				continue;
 			}
 		}
 	}
+
+	outb = outbuf;
+
+	int size;
+
+	size = dataB - _dataBuf;
+	memcpy(outb, &size, 4);
+	outb += 4;
+	size = motB - _motBuf;
+	memcpy(outb, &size, 4);
+	outb += 4;
+	size = maskB - _maskBuf;
+	memcpy(outb, &size, 4);
+	outb += 4;
+
+	/* this size is always constant throughout a DXA */
+	memcpy(outb, _codeBuf, codeB - _codeBuf);
+	outb += codeB - _codeBuf;
+
+	memcpy(outb, _dataBuf, dataB - _dataBuf);
+	outb += dataB - _dataBuf;
+
+	memcpy(outb, _motBuf, motB - _motBuf);
+	outb += motB - _motBuf;
+
+	memcpy(outb, _maskBuf, maskB - _maskBuf);
+	outb += maskB - _maskBuf;
 
 	return outb - outbuf;
 }
@@ -469,12 +620,16 @@ int read_png_file(char* filename, unsigned char *&image, unsigned char *&palette
 	return 0;
 }
 
-void readVideoInfo(char *filename, int &width, int &height, int &framerate, int &frames) {
+void readVideoInfo(char *filename, int &width, int &height, int &framerate, int &frames,
+	ScaleMode &scaleMode) {
+
 	FILE *smk = fopen(filename, "rb");
 	if (!smk) {
 		printf("readVideoInfo: Can't open file: %s\n", filename);
 		exit(-1);
 	}
+
+	scaleMode = S_NONE;
 
 	char buf[4];
 	fread(buf, 1, 4, smk);
@@ -503,7 +658,12 @@ void readVideoInfo(char *filename, int &width, int &height, int &framerate, int 
 		// If the Y-interlaced or Y-doubled flag is set, the RAD Video Tools
 		// will have scaled the frames to twice their original height.
 
-		if ((flags & 0x02) || (flags & 0x04))
+		if (flags & 0x02)
+			scaleMode = S_INTERLACED;
+		else if (flags & 0x04)
+			scaleMode = S_DOUBLE;
+
+		if (scaleMode != S_NONE)
 			height *= 2;
 	} else {
 		error("readVideoInfo: Unknown type");
@@ -577,7 +737,8 @@ int main(int argc, char *argv[]) {
 
 	char strbuf[512];
 	int width, height, framerate, frames;
-       
+	ScaleMode scaleMode;
+  
 	/* compression mode */
 	gCompMode = kMP3Mode;
 	int i = 1;
@@ -634,14 +795,14 @@ int main(int argc, char *argv[]) {
 	}
 
 	// read some data from the Bink or Smacker file.
-	readVideoInfo(filename, width, height, framerate, frames);
+	readVideoInfo(filename, width, height, framerate, frames, scaleMode);
 
 	printf("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
 		   width, height, framerate, frames);
 
 	// create the encoder object
 	sprintf(strbuf, "%s.dxa", prefix);
-	DxaEncoder dxe(strbuf, width, height, framerate);
+	DxaEncoder dxe(strbuf, width, height, framerate, scaleMode);
 
 	// No sound block
 	dxe.writeNULL();
@@ -671,7 +832,17 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (!r) {
-			dxe.writeFrame(image, palette);
+			if (scaleMode != S_NONE) {
+				byte *unscaledImage = new byte[width * height / 2];
+
+				for (int y = 0; y < height; y += 2)
+					memcpy(&unscaledImage[(width*y)/2], &image[width*y], width);
+
+				dxe.writeFrame(unscaledImage, palette);
+				delete[] unscaledImage;
+			} else {
+				dxe.writeFrame(image, palette);
+			}
 		}
 
 		if (image) delete[] image;
@@ -679,7 +850,7 @@ int main(int argc, char *argv[]) {
 
 		if (r)
 			break;
-                
+
 		framenum++;
 
 		if (framenum % 20 == 0) {
@@ -687,10 +858,8 @@ int main(int argc, char *argv[]) {
 			fflush(stdout);
 		}
 	}
-        
+
 	printf("\rEncoding video...100%% (%d of %d)\n", frames, frames);
-        
+
 	return 0;
 }
-
-
