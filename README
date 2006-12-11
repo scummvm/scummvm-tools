@@ -144,7 +144,7 @@ Encoder Tools:
                 3. Put files 'intro.smk', 'intro.wav' and 'intro*.png' into a
                 single directory.
 
-                4. Run `encode_dxa intro` in that directory
+                4. Run `encode_dxa intro.smk` in that directory
 
                 5. You will get an intro.dxa file and intro.flac/mp3/ogg file
                 in result.
