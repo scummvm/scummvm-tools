@@ -2624,7 +2624,7 @@ void next_line_V8(char *output)
 				"\x5Bpp|copyPalette,"
 				"\x5Cp|newPalette,"
 				"\x5D|saveGame,"
-				"\x5E|LoadGame,"
+				"\x5Ep|LoadGame,"
 				"\x5Fppppp|setRoomSaturation"
 				);
 		break;
