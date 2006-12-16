@@ -154,3 +154,23 @@ Encoder Tools:
                 'Convert' button. It will ask you either you want them
                 processed in batch mode and will do this for you. All buttons
                 and conversion options work the same.
+
+        convert_dxa.bat
+        convert_dxa_one.bat
+
+                To ease your life we also provide batch files to autoconvert
+                all files. It should work with any game version.
+
+                1. Copy *.smk files from all CDs to some directory
+
+                2. Edit paths in convert_dxa.bat file.
+
+                3. Run the batch. If you set everything correct, it will be
+                almost unattended conversion, just for several files there
+                are no audio, and RAD Game Tools converter will ask you to
+                press OK
+
+        convert_dxa.sh
+
+                Same as above convert_dxa.bat, just for *nix-based systems.
+                It uses Wine to run RAD Game Tools.
