@@ -130,20 +130,10 @@ int skipVerbHeader_V8(byte *p)
 	return minOffset;
 }
 
-int main(int argc, char *argv[])
-{
-	FILE *in;
-	byte *mem, *memorg;
-	int len;
-	char *filename, *buf;
+char *parseCommandLine(int argc, char *argv[]) {
+	char *filename = NULL;
 	int i;
 	char *s;
-
-	scriptVersion = 0xff;
-	heVersion = 0;
-	
-	// Parse the arguments
-	filename = NULL;
 	for (i = 1; i < argc; i++) {
 		s = argv[i];
 
@@ -253,7 +243,21 @@ int main(int argc, char *argv[])
 			filename = s;
 		}
 	}
+	
+	return filename;
+}
 
+int main(int argc, char *argv[]) {
+	FILE *in;
+	byte *mem, *memorg;
+	int len;
+	char *filename;
+
+	scriptVersion = 0xff;
+	heVersion = 0;
+	
+	// Parse the arguments
+	filename = parseCommandLine(argc, argv);
 	if (!filename || scriptVersion == 0xff)
 		ShowHelpAndExit();
 
@@ -263,19 +267,17 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	// Read the file into memory
 	memorg = mem = (byte *)malloc(MAX_FILE_SIZE);
 	len = fread(mem, 1, MAX_FILE_SIZE, in);
 	fclose(in);
 	size_of_code = len;
 
-	buf = (char *)malloc(8192);
-
 	offs_of_line = 0;
 
 	if (GF_UNBLOCKED) {
 		if (size_of_code < 4) {
-			printf("File too small to be a script\n");
-			return 1;
+			error("File too small to be a script");
 		}
 		// Hack to detect verb script: first 4 bytes should be file length
 		if (READ_LE_UINT32(mem) == size_of_code) {
@@ -288,13 +290,12 @@ int main(int argc, char *argv[])
 		}
 	} else if (scriptVersion >= 5) {
 		if (size_of_code < (scriptVersion == 5 ? 8 : 9)) {
-			printf("File too small to be a script\n");
-			return 1;
+			error("File too small to be a script");
 		}
 	
 		switch (READ_BE_UINT32(mem)) {
 		case 'LSC2':
-			if (size_of_code < 13) {
+			if (size_of_code <= 12) {
 				printf("File too small to be a local script\n");
 			}
 			printf("Script# %d\n", READ_LE_UINT32(mem+8));
@@ -302,19 +303,19 @@ int main(int argc, char *argv[])
 			break;											/* Local script */
 		case 'LSCR':
 			if (scriptVersion == 8) {
-				if (size_of_code < 13) {
+				if (size_of_code <= 12) {
 					printf("File too small to be a local script\n");
 				}
 				printf("Script# %d\n", READ_LE_UINT32(mem+8));
 				mem += 12;
 			} else if (scriptVersion == 7) {
-				if (size_of_code < 11) {
+				if (size_of_code <= 10) {
 					printf("File too small to be a local script\n");
 				}
 				printf("Script# %d\n", READ_LE_UINT16(mem+8));
 				mem += 10;
 			} else {
-				if (size_of_code < 10) {
+				if (size_of_code <= 9) {
 					printf("File too small to be a local script\n");
  				}
 				printf("Script# %d\n", (byte)mem[8]);
@@ -338,13 +339,11 @@ int main(int argc, char *argv[])
 				offs_of_line = skipVerbHeader_V567(mem);
 			break;											/* Verb */
 		default:
-			printf("Unknown script type!\n");
-			return 1;
+			error("Unknown script type");
 		}
 	} else {
 		if (size_of_code < 6) {
-			printf("File too small to be a script\n");
-			return 1;
+			error("File too small to be a script");
 		}
 		switch (READ_BE_UINT16(mem + 4)) {
 		case 'LS':
@@ -364,8 +363,7 @@ int main(int argc, char *argv[])
 			offs_of_line = skipVerbHeader_V34(mem);
 			break;			/* Verb */
 		default:
-			printf("Unknown script type!\n");
-			return 1;
+			error("Unknown script type");
 		}
 	}
 
@@ -375,45 +373,47 @@ int main(int argc, char *argv[])
 
 	while (cur_pos < mem + len) {
 		byte opcode = *cur_pos;
-		int j = num_block_stack;
-		buf[0] = 0;
+		int j = g_blockStack.size();
+		char outputLineBuffer[8192] = "";
+
 		switch (scriptVersion) {
 		case 0:
-			next_line_V0(buf);
+			next_line_V0(outputLineBuffer);
 			break;
 		case 1:
 		case 2:
-			next_line_V12(buf);
+			next_line_V12(outputLineBuffer);
 			break;
 		case 3:
 		case 4:
 		case 5:
-			next_line_V345(buf);
+			next_line_V345(outputLineBuffer);
 			break;
 		case 6:
 			if (heVersion)
-				next_line_HE_V72(buf);
+				next_line_HE_V72(outputLineBuffer);
 			else
-				next_line_V67(buf);
+				next_line_V67(outputLineBuffer);
 			break;
 		case 7:
-			next_line_V67(buf);
+			next_line_V67(outputLineBuffer);
 			break;
 		case 8:
-			next_line_V8(buf);
+			next_line_V8(outputLineBuffer);
 			break;
 		}
-		if (buf[0]) {
+		if (outputLineBuffer[0]) {
 			writePendingElse();
 			if (haveElse) {
 				haveElse = false;
 				j--;
 			}
-			outputLine(buf, offs_of_line, opcode, j);
+			outputLine(outputLineBuffer, offs_of_line, opcode, j);
 			offs_of_line = get_curoffs();
 		}
-		while (indentBlock(get_curoffs())) {
-			outputLine("}", offs_of_line, -1, -1);
+		while (!g_blockStack.empty() && get_curoffs() >= (int)g_blockStack.top().to) {
+			g_blockStack.pop();
+			outputLine("}", offs_of_line, -1, g_blockStack.size());
 			offs_of_line = get_curoffs();
 		}
 		fflush(stdout);
@@ -427,9 +427,9 @@ int main(int argc, char *argv[])
 		if (num_stack > 0) {
 			printf("Stack contents:\n");
 			while (num_stack) {
-				buf[0] = 0;
-				se_astext(pop(), buf);
-				printf("%s\n", buf);
+				outputLineBuffer[0] = 0;
+				se_astext(pop(), outputLineBuffer);
+				printf("%s\n", outputLineBuffer);
 			}
 		}
 	}

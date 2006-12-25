@@ -1563,12 +1563,12 @@ void do_unconditional_jump(char *buf)
 		pendingElseTo = to;
 		pendingElseOffs = cur;
 		pendingElseOpcode = g_jump_opcode;
-		pendingElseIndent = num_block_stack;
+		pendingElseIndent = g_blockStack.size();
 		buf[0] = 0;
 	} else {
-		if (num_block_stack && !dontOutputWhile) {
-			BlockStack *p = &block_stack[num_block_stack - 1];
-			if (p->isWhile && cur == (int)p->to)
+		if (!g_blockStack.empty() && !dontOutputWhile) {
+			Block p = g_blockStack.top();
+			if (p.isWhile && cur == (int)p.to)
 				return;		// A 'while' ends here.
 		}
 		sprintf(buf, "goto %.4X;", to);
@@ -1593,7 +1593,7 @@ void emit_if(char *buf, char *condition)
 	}
 
 	if (!dontOutputIfs && maybeAddIf(cur, to)) {
-		if (!dontOutputWhile && block_stack[num_block_stack - 1].isWhile) {
+		if (!dontOutputWhile && g_blockStack.top().isWhile) {
 			buf = strecpy(buf, "while (");
 		} else
 			buf = strecpy(buf, "if (");

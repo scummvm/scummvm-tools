@@ -35,17 +35,66 @@
 
 typedef unsigned int uint;
 
+/**
+ * Extremly simple fixed size stack class.
+ */
+template <class T, int MAX_SIZE = 10>
+class FixedStack {
+protected:
+	T	_stack[MAX_SIZE];
+	int	_size;
+public:
+	FixedStack<T, MAX_SIZE>() : _size(0) {}
+
+	bool empty() const {
+		return _size <= 0;
+	}
+	void clear() {
+		_size = 0;
+	}
+	void push(const T& x) {
+		assert(_size < MAX_SIZE);
+		_stack[_size++] = x;
+	}
+	const T& top() const {
+		assert(_size > 0);
+		return _stack[_size - 1];
+	}
+	T& top() {
+		assert(_size > 0);
+		return _stack[_size - 1];
+	}
+	T pop() {
+		T tmp = top();
+		--_size;
+		return tmp;
+	}
+	int size() const {
+		return _size;
+	}
+	T& operator [](int i) {
+		assert(0 <= i && i < MAX_SIZE);
+		return _stack[i];
+	}
+	const T& operator [](int i) const {
+		assert(0 <= i && i < MAX_SIZE);
+		return _stack[i];
+	}
+};
+
 //
 // The block stack records jump instructions
 //
-struct BlockStack {
+struct Block {
 	uint from;	// From which offset...
 	uint to;		// ...to which offset
 	bool isWhile;			// Set to true if we think this jump is part of a while loop
 };
 
-extern BlockStack *block_stack;
-extern int num_block_stack;
+typedef FixedStack<Block, 256> BlockStack;
+
+extern BlockStack g_blockStack;
+
 
 //
 // Jump decoding auxillaries (used by the code which tries to translate jumps
@@ -102,7 +151,6 @@ extern uint size_of_code;
 //
 
 extern void outputLine(const char *buf, int curoffs, int opcode, int indent);
-extern bool indentBlock(unsigned int cur);
 
 extern char *strecpy(char *buf, const char *src);
 extern int get_curoffs();

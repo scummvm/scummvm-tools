@@ -1331,11 +1331,11 @@ void jump(char *output)
 		pendingElseTo = to;
 		pendingElseOffs = cur;
 		pendingElseOpcode = g_jump_opcode;
-		pendingElseIndent = num_block_stack;
+		pendingElseIndent = g_blockStack.size();
 	} else {
-		if (num_block_stack && !dontOutputWhile) {
-			BlockStack *p = &block_stack[num_block_stack - 1];
-			if (p->isWhile && cur == (int)p->to)
+		if (!g_blockStack.empty() && !dontOutputWhile) {
+			Block p = g_blockStack.top();
+			if (p.isWhile && cur == (int)p.to)
 				return;		// A 'while' ends here.
 			if (!dontOutputBreaks && maybeAddBreak(cur, to)) {
 				sprintf(output, "break");
@@ -1365,7 +1365,7 @@ void jumpif(char *output, StackEnt * se, bool negate)
 	}
 
 	if (!dontOutputIfs && maybeAddIf(cur, to)) {
-		if (!dontOutputWhile && block_stack[num_block_stack - 1].isWhile)
+		if (!dontOutputWhile && g_blockStack.top().isWhile)
 			e = strecpy(e, negate ? "until (" : "while (");
 		else
 			e = strecpy(e, negate ? "unless (" : "if (");

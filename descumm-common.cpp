@@ -24,11 +24,7 @@
 #include "descumm.h"
 
 
-#define BLOCK_STACK_SIZE	256
-
-
-BlockStack *block_stack;
-int num_block_stack;
+BlockStack g_blockStack;
 
 bool pendingElse, haveElse;
 int pendingElseTo;
@@ -101,163 +97,107 @@ int get_dword()
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define INDENT_SIZE 2
-
-static char indentbuf[127 * INDENT_SIZE + 1];
-
-// Generate a string with white spaces for the given indention level.
-// For each level, INDENT_SIZE spaces are inserted.
-char *getIndentString(int level)
-{
-	if (level >= 127)
-		level = 127;
-	if (level < 0)
-		level = 0;
-
-	level *= INDENT_SIZE;
-
-	memset(indentbuf, ' ', level);
-	indentbuf[level] = 0;
-	return indentbuf;
-}
-
-void outputLine(const char *buf, int curoffs, int opcode, int indent)
-{
-	char *s;
+void outputLine(const char *buf, int curoffs, int opcode, int indent) {
 
 	if (buf[0]) {
-		if (indent == -1)
-			indent = num_block_stack;
-		if (curoffs == -1)
-			curoffs = get_curoffs();
+		assert(curoffs >= 0);
+		assert(indent >= 0);
 
-		s = getIndentString(indent);
-
-		if (dontShowOpcode) {
-			if (dontShowOffsets)
-				printf("%s%s\n", s, buf);
-			else
-				printf("[%.4X] %s%s\n", curoffs, s, buf);
-		} else {
-			char buf2[4];
-			if (opcode != -1)
-				sprintf(buf2, "%.2X", opcode);
-			else
-				strcpy(buf2, "**");
-			if (dontShowOffsets)
-				printf("(%s) %s%s\n", buf2, s, buf);
-			else
-				printf("[%.4X] (%s) %s%s\n", curoffs, buf2, s, buf);
+		// Show the offset
+		if (!dontShowOffsets) {
+			printf("[%.4X] ", curoffs);
 		}
+		
+		// Show the opcode value
+		if (!dontShowOpcode) {
+			if (opcode != -1)
+				printf("(%.2X) ", opcode);
+			else
+				printf("(**) ");
+		}
+
+		// Indent the line as requested ...
+		for (int i = 0; i < indent; ++i)
+			printf("  ");
+
+		// ... and finally print the actual code
+		puts(buf);
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-bool indentBlock(unsigned int cur)
-{
-	BlockStack *p;
-
-	if (!num_block_stack)
-		return false;
-
-	p = &block_stack[num_block_stack - 1];
-	if (cur < p->to)
-		return false;
-
-	num_block_stack--;
-	return true;
-}
-
-
-BlockStack *pushBlockStackItem()
-{
-	if (!block_stack)
-		block_stack = (BlockStack *) malloc(BLOCK_STACK_SIZE * sizeof(BlockStack));
-
-	if (num_block_stack >= BLOCK_STACK_SIZE) {
-		error("block_stack full");
-	}
-	return &block_stack[num_block_stack++];
-}
-
 // Returns 0 or 1 depending if it's ok to add a block
 bool maybeAddIf(uint cur, uint to)
 {
+	Block p;
 	int i;
-	BlockStack *p;
 	
 	if (((to | cur) >> 24) || (to <= cur))
 		return false; // Invalid jump
 	
-	for (i = 0, p = block_stack; i < num_block_stack; i++, p++) {
-		if (to > p->to)
+	for (i = 0; i < g_blockStack.size(); ++i) {
+		if (to > g_blockStack[i].to)
 			return false;
 	}
 	
-	p = pushBlockStackItem();
-
 	// Try to determine if this is a while loop. For this, first check if we 
 	// jump right behind a regular jump, then whether that jump is targeting us.
 	if (scriptVersion == 8) {
-		p->isWhile = (*(byte*)(org_pos+to-5) == g_jump_opcode);
+		p.isWhile = (*(byte*)(org_pos+to-5) == g_jump_opcode);
 		i = (int32)READ_LE_UINT32(org_pos+to-4);
 	} else {
-		p->isWhile = (*(byte*)(org_pos+to-3) == g_jump_opcode);
+		p.isWhile = (*(byte*)(org_pos+to-3) == g_jump_opcode);
 		i = (int16)READ_LE_UINT16(org_pos+to-2);
 	}
 	
-	p->isWhile = p->isWhile && (offs_of_line == (int)to + i);
-	p->from = cur;
-	p->to = to;
+	p.isWhile = p.isWhile && (offs_of_line == (int)to + i);
+	p.from = cur;
+	p.to = to;
+	
+	g_blockStack.push(p);
+	
 	return true;
 }
 
 // Returns 0 or 1 depending if it's ok to add an else
-bool maybeAddElse(uint cur, uint to)
-{
+bool maybeAddElse(uint cur, uint to) {
 	int i;
-	BlockStack *p;
 
 	if (((to | cur) >> 16) || (to <= cur))
 		return false;								/* Invalid jump */
 
-	if (!num_block_stack)
+	if (g_blockStack.empty())
 		return false;								/* There are no previous blocks, so an else is not ok */
 
-	p = &block_stack[num_block_stack - 1];
-	if (cur != p->to)
+	if (cur != g_blockStack.top().to)
 		return false;								/* We have no prevoius if that is exiting right at the end of this goto */
 
 	// Don't jump out of previous blocks. In addition, don't jump "onto"
 	// the end of a while loop, as that would lead to incorrect output.
 	// This test is stronger than the one in maybeAddIf.
-	for (i = 0, p = block_stack; i < num_block_stack - 1; i++, p++) {
-		if (to > p->to || (to == p->to && p->isWhile))
+	for (i = 0; i < g_blockStack.size() - 1; ++i) {
+		if (to > g_blockStack[i].to || (to == g_blockStack[i].to && g_blockStack[i].isWhile))
 			return false;
 	}
 
-	num_block_stack--;
+	Block tmp = g_blockStack.pop();
 	if (maybeAddIf(cur, to))
 		return true;								/* We can add an else */
-	num_block_stack++;
+	g_blockStack.push(tmp);
 	return false;									/* An else is not OK here :( */
 }
 
-bool maybeAddElseIf(uint cur, uint elseto, uint to)
-{
+bool maybeAddElseIf(uint cur, uint elseto, uint to) {
 	uint k;
-	BlockStack *p;
 
 	if (((to | cur | elseto) >> 16) || (elseto < to) || (to <= cur))
 		return false;								/* Invalid jump */
 
-	if (!num_block_stack)
+	if (g_blockStack.empty())
 		return false;								/* There are no previous blocks, so an ifelse is not ok */
 
-	p = &block_stack[num_block_stack - 1];
-
-	if (p->isWhile)
+	if (g_blockStack.top().isWhile)
 		return false;
 
 	if (scriptVersion == 8)
@@ -280,27 +220,23 @@ bool maybeAddElseIf(uint cur, uint elseto, uint to)
 		if (k != elseto)
 			return false;							/* Not an ifelse */
 	}
-	p->from = cur;
-	p->to = to;
+	g_blockStack.top().from = cur;
+	g_blockStack.top().to = to;
 
 	return true;
 }
 
-bool maybeAddBreak(uint cur, uint to)
-{
-	BlockStack *p;
-
+bool maybeAddBreak(uint cur, uint to) {
 	if (((to | cur) >> 16) || (to <= cur))
 		return false;								/* Invalid jump */
 
-	if (!num_block_stack)
+	if (g_blockStack.empty())
 		return false;								/* There are no previous blocks, so a break is not ok */
 
 	/* Find the first parent block that is a while and if we're jumping to the end of that, we use a break */
-	for (int i = num_block_stack - 1; i >= 0; i--) {
-		p = &block_stack[i];
-		if (p->isWhile) {
-			if (to == p->to)
+	for (int i = g_blockStack.size() - 1; i >= 0; --i) {
+		if (g_blockStack[i].isWhile) {
+			if (to == g_blockStack[i].to)
 				return true;
 			else
 				return false;
@@ -310,8 +246,7 @@ bool maybeAddBreak(uint cur, uint to)
 	return false;
 }
 
-void writePendingElse()
-{
+void writePendingElse() {
 	if (pendingElse) {
 		char buf[32];
 		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
