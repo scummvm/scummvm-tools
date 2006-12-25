@@ -23,8 +23,12 @@
 
 #include "descumm.h"
 
-void ShowHelpAndExit()
-{
+// 200kb limit on the input file (we just read it all at once into memory).
+// Should be no problem, the biggest scripts I have seen were in COMI and
+// went up to 180kb (script-457).
+#define MAX_FILE_SIZE (200 * 1024)
+
+void ShowHelpAndExit() {
 	printf("SCUMM Script decompiler\n"
 			"Syntax:\n"
 			"\tdescumm [-o] filename\n"
@@ -249,8 +253,7 @@ char *parseCommandLine(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
 	FILE *in;
-	byte *mem, *memorg;
-	int len;
+	byte *memorg;
 	char *filename;
 
 	scriptVersion = 0xff;
@@ -268,75 +271,75 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Read the file into memory
-	memorg = mem = (byte *)malloc(MAX_FILE_SIZE);
-	len = fread(mem, 1, MAX_FILE_SIZE, in);
+	memorg = (byte *)malloc(MAX_FILE_SIZE);
+	size_of_code = fread(memorg, 1, MAX_FILE_SIZE, in);
 	fclose(in);
-	size_of_code = len;
 
 	offs_of_line = 0;
+	org_pos = memorg;
 
 	if (GF_UNBLOCKED) {
 		if (size_of_code < 4) {
 			error("File too small to be a script");
 		}
 		// Hack to detect verb script: first 4 bytes should be file length
-		if (READ_LE_UINT32(mem) == size_of_code) {
+		if (READ_LE_UINT32(org_pos) == size_of_code) {
 			if (scriptVersion <= 2)
-				offs_of_line = skipVerbHeader_V12(mem);
+				offs_of_line = skipVerbHeader_V12(org_pos);
 			else
-				offs_of_line = skipVerbHeader_V34(mem );
+				offs_of_line = skipVerbHeader_V34(org_pos);
 		} else {
-			mem += 4;
+			org_pos += 4;
 		}
 	} else if (scriptVersion >= 5) {
 		if (size_of_code < (scriptVersion == 5 ? 8 : 9)) {
 			error("File too small to be a script");
 		}
 	
-		switch (READ_BE_UINT32(mem)) {
+		switch (READ_BE_UINT32(org_pos)) {
 		case 'LSC2':
 			if (size_of_code <= 12) {
 				printf("File too small to be a local script\n");
 			}
-			printf("Script# %d\n", READ_LE_UINT32(mem+8));
-			mem += 12;
+			printf("Script# %d\n", READ_LE_UINT32(org_pos+8));
+			org_pos += 12;
 			break;											/* Local script */
 		case 'LSCR':
 			if (scriptVersion == 8) {
 				if (size_of_code <= 12) {
 					printf("File too small to be a local script\n");
 				}
-				printf("Script# %d\n", READ_LE_UINT32(mem+8));
-				mem += 12;
+				printf("Script# %d\n", READ_LE_UINT32(org_pos+8));
+				org_pos += 12;
 			} else if (scriptVersion == 7) {
 				if (size_of_code <= 10) {
 					printf("File too small to be a local script\n");
 				}
-				printf("Script# %d\n", READ_LE_UINT16(mem+8));
-				mem += 10;
+				printf("Script# %d\n", READ_LE_UINT16(org_pos+8));
+				org_pos += 10;
 			} else {
 				if (size_of_code <= 9) {
 					printf("File too small to be a local script\n");
  				}
-				printf("Script# %d\n", (byte)mem[8]);
-				mem += 9;
+				printf("Script# %d\n", (byte)org_pos[8]);
+				org_pos += 9;
 			}
 			break;											/* Local script */
 		case 'SCRP':
-			mem += 8;
+			org_pos += 8;
 			break;											/* Script */
 		case 'ENCD':
-			mem += 8;
+			org_pos += 8;
 			break;											/* Entry code */
 		case 'EXCD':
-			mem += 8;
+			org_pos += 8;
 			break;											/* Exit code */
 		case 'VERB':
 			if (scriptVersion == 8) {
-				mem += 8;
-				offs_of_line = skipVerbHeader_V8(mem);
+				org_pos += 8;
+				offs_of_line = skipVerbHeader_V8(org_pos);
 			} else
-				offs_of_line = skipVerbHeader_V567(mem);
+				offs_of_line = skipVerbHeader_V567(org_pos);
 			break;											/* Verb */
 		default:
 			error("Unknown script type");
@@ -345,33 +348,32 @@ int main(int argc, char *argv[]) {
 		if (size_of_code < 6) {
 			error("File too small to be a script");
 		}
-		switch (READ_BE_UINT16(mem + 4)) {
+		switch (READ_BE_UINT16(org_pos + 4)) {
 		case 'LS':
-			printf("Script# %d\n", (byte)mem[6]);
-			mem += 7;
+			printf("Script# %d\n", (byte)org_pos[6]);
+			org_pos += 7;
 			break;			/* Local script */
 		case 'SC':
-			mem += 6;
+			org_pos += 6;
 			break;			/* Script */
 		case 'EN':
-			mem += 6;
+			org_pos += 6;
 			break;			/* Entry code */
 		case 'EX':
-			mem += 6;
+			org_pos += 6;
 			break;			/* Exit code */
 		case 'OC':
-			offs_of_line = skipVerbHeader_V34(mem);
+			offs_of_line = skipVerbHeader_V34(org_pos);
 			break;			/* Verb */
 		default:
 			error("Unknown script type");
 		}
 	}
 
-	org_pos = mem;
 	cur_pos = org_pos + offs_of_line;
-	len -= mem - memorg;
 
-	while (cur_pos < mem + len) {
+	offs_of_line = get_curoffs();
+	while (cur_pos < size_of_code + memorg) {
 		byte opcode = *cur_pos;
 		int j = g_blockStack.size();
 		char outputLineBuffer[8192] = "";
