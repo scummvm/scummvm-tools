@@ -126,7 +126,7 @@ int skipVerbHeader_V8(byte *p)
 	
 	ptr = (uint32 *)p;
 	while ((code = READ_LE_UINT32(ptr++)) != 0) {
-		offset = READ_LE_UINT16(ptr++);
+		offset = READ_LE_UINT32(ptr++);
 		printf("  %2d - %.4X\n", code, offset);
 		if (minOffset > offset)
 			minOffset = offset;
