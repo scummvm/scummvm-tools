@@ -885,31 +885,22 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 		}
 		break;
 	case seArray:
+		if(g_options.scriptVersion == 8 && !(se->data & 0xF0000000) &&
+		   (s = getVarName(se->data & 0xFFFFFFF)) != NULL)
+			where += sprintf(where, "%s[",s);
+		else if(g_options.scriptVersion < 8 && !(se->data & 0xF000) &&
+			(s = getVarName(se->data & 0xFFF)) != NULL)
+			where += sprintf(where, "%s[",s);
+		else
+			where += sprintf(where, "array%ld[", se->data);
+
 		if (se->left) {
-			if(g_options.scriptVersion == 8 && !(se->data & 0xF0000000) &&
-			   (s = getVarName(se->data & 0xFFFFFFF)) != NULL)
-				where += sprintf(where, "%s[",s);
-			else if(g_options.scriptVersion < 8 && !(se->data & 0xF000) &&
-				(s = getVarName(se->data & 0xFFF)) != NULL)
-				where += sprintf(where, "%s[",s);
-			else
-				where += sprintf(where, "array%ld[", se->data);
 			where = se_astext(se->left, where);
 			where = strecpy(where, "][");
-			where = se_astext(se->right, where);
-			where = strecpy(where, "]");
-		} else {
-			if(g_options.scriptVersion == 8 && !(se->data & 0xF0000000) &&
-			   (s = getVarName(se->data & 0xFFFFFFF)) != NULL)
-				where += sprintf(where, "%s[",s);
-			else if(g_options.scriptVersion < 8 && !(se->data & 0xF000) &&
-				(s = getVarName(se->data & 0xFFF)) != NULL)
-				where += sprintf(where, "%s[",s);
-			else
-				where += sprintf(where, "array%ld[", se->data);
-			where = se_astext(se->right, where);
-			where = strecpy(where, "]");
 		}
+
+		where = se_astext(se->right, where);
+		where = strecpy(where, "]");
 		break;
 	case seUnary:
 		where += sprintf(where, "%s", oper_list[se->data]);
@@ -970,6 +961,10 @@ void kill(char *output, StackEnt * se)
 		strcpy(e, ")");
 		se_free(se);
 	} else {
+		// FIXME: Evil hack: We re-push DUPs, instead of killing
+		// them. We do this to support switch-case constructs
+		// (see comment at the start of this file) w/o applying a full
+		// flow analysis (which would normally be required).
 		push(se);
 	}
 }
