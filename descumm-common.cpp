@@ -37,7 +37,7 @@ int g_jump_opcode;
 Options g_options;
 
 byte *g_scriptCurPos, *g_scriptStart;
-int offs_of_line;
+int currentOpcodeBlockStart;
 
 uint g_scriptSize;
 
@@ -140,7 +140,7 @@ bool maybeAddIf(uint cur, uint to)
 		i = (int16)READ_LE_UINT16(g_scriptStart+to-2);
 	}
 	
-	p.isWhile = p.isWhile && (offs_of_line == (int)to + i);
+	p.isWhile = p.isWhile && (currentOpcodeBlockStart == (int)to + i);
 	p.from = cur;
 	p.to = to;
 	
@@ -239,8 +239,8 @@ void writePendingElse() {
 	if (pendingElse) {
 		char buf[32];
 		sprintf(buf, g_options.alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
-		outputLine(buf, offs_of_line, pendingElseOpcode, pendingElseIndent - 1);
-		offs_of_line = pendingElseOffs;
+		outputLine(buf, currentOpcodeBlockStart, pendingElseOpcode, pendingElseIndent - 1);
+		currentOpcodeBlockStart = pendingElseOffs;
 		pendingElse = false;
 	}
 }

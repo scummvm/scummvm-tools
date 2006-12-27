@@ -251,34 +251,7 @@ char *parseCommandLine(int argc, char *argv[]) {
 	return filename;
 }
 
-int main(int argc, char *argv[]) {
-	FILE *in;
-	byte *memorg;
-	char *filename;
-
-	memset(&g_options, 0, sizeof(g_options));
-	g_options.scriptVersion = 0xff;
-	
-	// Parse the arguments
-	filename = parseCommandLine(argc, argv);
-	if (!filename || g_options.scriptVersion == 0xff)
-		ShowHelpAndExit();
-
-	in = fopen(filename, "rb");
-	if (!in) {
-		printf("Unable to open %s\n", filename);
-		return 1;
-	}
-
-	// Read the file into memory
-	memorg = (byte *)malloc(MAX_FILE_SIZE);
-	g_scriptSize = fread(memorg, 1, MAX_FILE_SIZE, in);
-	fclose(in);
-
-	offs_of_line = 0;
-	g_scriptStart = memorg;
-	g_scriptCurPos = g_scriptStart;
-
+void parseHeader() {
 	if (g_options.GF_UNBLOCKED) {
 		if (g_scriptSize < 4) {
 			error("File too small to be a script");
@@ -286,9 +259,9 @@ int main(int argc, char *argv[]) {
 		// Hack to detect verb script: first 4 bytes should be file length
 		if (READ_LE_UINT32(g_scriptStart) == g_scriptSize) {
 			if (g_options.scriptVersion <= 2)
-				offs_of_line = skipVerbHeader_V12(g_scriptStart);
+				currentOpcodeBlockStart = skipVerbHeader_V12(g_scriptStart);
 			else
-				offs_of_line = skipVerbHeader_V34(g_scriptStart);
+				currentOpcodeBlockStart = skipVerbHeader_V34(g_scriptStart);
 		} else {
 			g_scriptStart += 4;
 		}
@@ -338,9 +311,9 @@ int main(int argc, char *argv[]) {
 		case 'VERB':
 			if (g_options.scriptVersion == 8) {
 				g_scriptStart += 8;
-				offs_of_line = skipVerbHeader_V8(g_scriptStart);
+				currentOpcodeBlockStart = skipVerbHeader_V8(g_scriptStart);
 			} else
-				offs_of_line = skipVerbHeader_V567(g_scriptStart);
+				currentOpcodeBlockStart = skipVerbHeader_V567(g_scriptStart);
 			break;											/* Verb */
 		default:
 			error("Unknown script type");
@@ -364,17 +337,47 @@ int main(int argc, char *argv[]) {
 			g_scriptStart += 6;
 			break;			/* Exit code */
 		case 'OC':
-			offs_of_line = skipVerbHeader_V34(g_scriptStart);
+			currentOpcodeBlockStart = skipVerbHeader_V34(g_scriptStart);
 			break;			/* Verb */
 		default:
 			error("Unknown script type");
 		}
 	}
+}
 
-	g_scriptCurPos = g_scriptStart + offs_of_line;
+int main(int argc, char *argv[]) {
+	FILE *in;
+	byte *fileBuffer;
+	char *filename;
 
-	offs_of_line = get_curoffs();
-	while (g_scriptCurPos < g_scriptSize + memorg) {
+	memset(&g_options, 0, sizeof(g_options));
+	g_options.scriptVersion = 0xff;
+	
+	// Parse the arguments
+	filename = parseCommandLine(argc, argv);
+	if (!filename || g_options.scriptVersion == 0xff)
+		ShowHelpAndExit();
+
+	in = fopen(filename, "rb");
+	if (!in) {
+		printf("Unable to open %s\n", filename);
+		return 1;
+	}
+
+	// Read the file into memory
+	fileBuffer = (byte *)malloc(MAX_FILE_SIZE);
+	g_scriptSize = fread(fileBuffer, 1, MAX_FILE_SIZE, in);
+	fclose(in);
+
+	g_scriptStart = fileBuffer;
+	g_scriptCurPos = g_scriptStart;
+	currentOpcodeBlockStart = 0;
+
+	// Read (and skip over) the file header
+	parseHeader();
+	g_scriptCurPos = g_scriptStart + currentOpcodeBlockStart;
+
+	while (g_scriptCurPos < g_scriptSize + fileBuffer) {
 		byte opcode = *g_scriptCurPos;
 		int j = g_blockStack.size();
 		char outputLineBuffer[8192] = "";
@@ -411,13 +414,13 @@ int main(int argc, char *argv[]) {
 				haveElse = false;
 				j--;
 			}
-			outputLine(outputLineBuffer, offs_of_line, opcode, j);
-			offs_of_line = get_curoffs();
+			outputLine(outputLineBuffer, currentOpcodeBlockStart, opcode, j);
+			currentOpcodeBlockStart = get_curoffs();
 		}
 		while (!g_blockStack.empty() && get_curoffs() >= (int)g_blockStack.top().to) {
 			g_blockStack.pop();
-			outputLine("}", offs_of_line, -1, g_blockStack.size());
-			offs_of_line = get_curoffs();
+			outputLine("}", currentOpcodeBlockStart, -1, g_blockStack.size());
+			currentOpcodeBlockStart = get_curoffs();
 		}
 		fflush(stdout);
 	}
@@ -437,7 +440,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 */
-	free(memorg);
+	free(fileBuffer);
 
 	return 0;
 }

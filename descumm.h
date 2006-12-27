@@ -147,12 +147,12 @@ extern uint g_scriptSize;
 extern byte *g_scriptCurPos;
 
 
-// The variable offs_of_line indicates the offset associated to
+// The variable currentOpcodeBlockStart indicates the offset associated to
 // the next line to be printed; in other words, it is the offset of
 // the first bytecode op which is part of the current line (recall
 // that a single line can correspond to multiple ops, e.g. several
 // push-ops plus one op using all those pushed values).
-extern int offs_of_line;
+extern int currentOpcodeBlockStart;
 
 //
 // Common
