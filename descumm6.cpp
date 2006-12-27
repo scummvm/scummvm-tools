@@ -58,16 +58,17 @@ switch/case statements, too, so it's possible they used that in Scumm, too.
   
 */
 
+class StackEnt;
 
-struct StackEnt {
-	byte type;
-	long data;
-	StackEnt *left, *right;
-	char *str;
-	StackEnt **list;
-};
+const char *getVarName(uint var);
+StackEnt *pop();
 
-enum {
+
+static int dupindex = 0;
+
+
+
+enum StackEntType {
 	seInt = 1,
 	seVar = 2,
 	seArray = 3,
@@ -117,6 +118,196 @@ static const char *oper_list[] = {
 	"%"
 };
 
+
+
+class StackEnt {
+public:
+	StackEntType type;
+
+public:
+	virtual ~StackEnt() {}
+	virtual char *asText(char *where, bool wantparens = true) const = 0;
+	virtual StackEnt* dup(char *output);
+	
+	virtual int getIntVal() const { error("getIntVal call on StackEnt type %d", type); }
+};
+
+class IntStackEnt : public StackEnt {
+	int _val;
+public:
+	IntStackEnt(int val) : _val(val) { type = seInt; }
+	virtual char *asText(char *where, bool wantparens) const {
+		where += sprintf(where, "%d", _val);
+		return where;
+	}
+	virtual StackEnt* dup(char *output) {
+		return new IntStackEnt(_val);
+	}
+	virtual int getIntVal() const { return _val; }
+};
+
+class VarStackEnt : public StackEnt {
+	int _var;
+public:
+	VarStackEnt(int var) : _var(var) { type = seVar; }
+	virtual char *asText(char *where, bool wantparens = true) const {
+		int var;
+		const char *s;
+		if (g_options.scriptVersion == 8) {
+			if (!(_var & 0xF0000000)) {
+				var = _var & 0xFFFFFFF;
+				if ((s = getVarName(var)) != NULL)
+					where = strecpy(where, s);
+				else
+					where += sprintf(where, "var%d", _var & 0xFFFFFFF);
+			} else if (_var & 0x80000000) {
+				where += sprintf(where, "bitvar%d", _var & 0x7FFFFFFF);
+			} else if (_var & 0x40000000) {
+				where += sprintf(where, "localvar%d", _var & 0xFFFFFFF);
+			} else {
+				where += sprintf(where, "?var?%d", _var);
+			}
+		} else {
+			if (!(_var & 0xF000)) {
+				var = _var & 0xFFF;
+				if ((s = getVarName(var)) != NULL)
+					where = strecpy(where, s);
+				else
+					where += sprintf(where, "var%d", _var & 0xFFF);
+			} else if (_var & 0x8000) {
+				where += sprintf(where, "bitvar%d", _var & 0x7FFF);
+			} else if (_var & 0x4000) {
+				where += sprintf(where, "localvar%d", _var & 0xFFF);
+			} else {
+				where += sprintf(where, "?var?%d", _var);
+			}
+		}
+		return where;
+	}
+};
+
+class ArrayStackEnt : public StackEnt {
+	int _idx;
+	StackEnt *_dim1;
+	StackEnt *_dim2;
+public:
+	ArrayStackEnt(int idx, StackEnt *dim2, StackEnt *dim1) : _idx(idx), _dim1(dim1), _dim2(dim2) { type = seArray; }
+	virtual char *asText(char *where, bool wantparens) const {
+		const char *s;
+
+		if(g_options.scriptVersion == 8 && !(_idx & 0xF0000000) &&
+		   (s = getVarName(_idx & 0xFFFFFFF)) != NULL)
+			where += sprintf(where, "%s[",s);
+		else if(g_options.scriptVersion < 8 && !(_idx & 0xF000) &&
+			(s = getVarName(_idx & 0xFFF)) != NULL)
+			where += sprintf(where, "%s[",s);
+		else
+			where += sprintf(where, "array%d[", _idx);
+
+		if (_dim2) {
+			where = _dim2->asText(where);
+			where = strecpy(where, "][");
+		}
+
+		where = _dim1->asText(where);
+		where = strecpy(where, "]");
+
+		return where;
+	}
+};
+
+class UnaryOpStackEnt : public StackEnt {
+	int _op;
+	StackEnt *_valA;
+public:
+	UnaryOpStackEnt(int op, StackEnt *valA) : _op(op), _valA(valA) { type = seUnary; }
+	virtual char *asText(char *where, bool wantparens) const {
+		where += sprintf(where, "%s", oper_list[_op]);
+		where = _valA->asText(where);
+		return where;
+	}
+};
+
+class BinaryOpStackEnt : public StackEnt {
+	int _op;
+	StackEnt *_valA;
+	StackEnt *_valB;
+public:
+	BinaryOpStackEnt(int op, StackEnt *valA, StackEnt *valB) : _op(op), _valA(valA), _valB(valB) { type = seBinary; }
+	virtual char *asText(char *where, bool wantparens) const {
+		if (wantparens)
+			*where++ = '(';
+		where = _valA->asText(where);
+		where += sprintf(where, " %s ", oper_list[_op]);
+		where = _valB->asText(where);
+		if (wantparens)
+			*where++ = ')';
+		*where = 0;
+		return where;
+	}
+};
+
+class ComplexStackEnt : public StackEnt {
+	char *_str;
+public:
+	ComplexStackEnt(const char *s) { _str = strdup(s); type = seComplex; }
+	~ComplexStackEnt() { free(_str); }
+	virtual char *asText(char *where, bool wantparens) const {
+		where = strecpy(where, _str);
+		return where;
+	}
+};
+
+class ListStackEnt : public StackEnt {
+public:
+	int _size;
+	StackEnt **_list;
+public:
+	ListStackEnt(StackEnt *senum) {
+		type = seStackList;
+
+		_size = senum->getIntVal();
+		_list = new StackEnt* [_size];
+
+		for (int i = 0; i < _size; ++i) {
+			_list[i] = pop();
+		}
+	}
+	~ListStackEnt() { delete [] _list; }
+	virtual char *asText(char *where, bool wantparens) const {
+		*where++ = '[';
+		for (int i = _size - 1; i >= 0; --i) {
+			where = _list[i]->asText(where);
+			if (i)
+				*where++ = ',';
+		}
+		*where++ = ']';
+		*where = 0;
+		return where;
+	}
+};
+
+class DupStackEnt : public StackEnt {
+public:
+	int _idx;
+public:
+	DupStackEnt(int idx) : _idx(idx) { type = seDup; }
+	virtual char *asText(char *where, bool wantparens) const {
+		where += sprintf(where, "dup[%d]", _idx);
+		return where;
+	}
+};
+
+class NegStackEnt : public StackEnt {
+	StackEnt *_op;
+public:
+	NegStackEnt(StackEnt *op) : _op(op) { type = seNeg; }
+	virtual char *asText(char *where, bool wantparens) const {
+		*where++ = '!';
+		where = _op->asText(where);
+		return where;
+	}
+};
 #define MAX_STACK_SIZE	256
 static StackEnt *stack[MAX_STACK_SIZE];
 static int num_stack = 0;
@@ -741,8 +932,7 @@ const char *var_names8[] = {
 	NULL,
 };
 
-const char *getVarName(uint var)
-{
+const char *getVarName(uint var) {
 	if (g_options.heVersion == 72) {
 		if (var >= sizeof(var_names72) / sizeof(var_names72[0]))
 			return NULL;
@@ -762,186 +952,56 @@ const char *getVarName(uint var)
 	}
 }
 
-void push(StackEnt * se)
-{
-	assert(se);
-	assert(num_stack < MAX_STACK_SIZE);
-	stack[num_stack++] = se;
+StackEnt *se_neg(StackEnt *se) {
+	return new NegStackEnt(se);
 }
 
-void invalidop(const char *cmd, int op)
-{
+StackEnt *se_int(int i) {
+	return new IntStackEnt(i);
+}
+
+StackEnt *se_var(int i) {
+	return new VarStackEnt(i);
+}
+
+StackEnt *se_array(int i, StackEnt * dim2, StackEnt * dim1) {
+	return new ArrayStackEnt(i, dim2, dim1);
+}
+
+StackEnt *se_oper(StackEnt * a, int op) {
+	return new UnaryOpStackEnt(op, a);
+}
+
+StackEnt *se_oper(StackEnt * a, int op, StackEnt * b) {
+	return new BinaryOpStackEnt(op, a, b);
+}
+
+StackEnt *se_complex(const char *s) {
+	return new ComplexStackEnt(s);
+}
+
+char *se_astext(StackEnt * se, char *where, bool wantparens = true) {
+	return se->asText(where, wantparens);
+}
+
+StackEnt *se_get_list() {
+	return new ListStackEnt(pop());
+}
+
+void invalidop(const char *cmd, int op) {
 	if (cmd)
 		error("Unknown opcode %s:0x%x (stack count %d)", cmd, op, num_stack);
 	else
 		error("Unknown opcode 0x%x (stack count %d)", op, num_stack);
 }
 
-StackEnt *se_new(int type)
-{
-	StackEnt *se = (StackEnt *) malloc(sizeof(StackEnt));
-	se->type = type;
-	return se;
+void push(StackEnt *se) {
+	assert(se);
+	assert(num_stack < MAX_STACK_SIZE);
+	stack[num_stack++] = se;
 }
 
-void se_free(StackEnt * se)
-{
-	free(se);
-}
-
-StackEnt *se_neg(StackEnt * se)
-{
-	StackEnt *s = se_new(seNeg);
-	s->left = se;
-	return s;
-}
-
-StackEnt *se_int(int i)
-{
-	StackEnt *se = se_new(seInt);
-	se->data = i;
-	return se;
-}
-
-StackEnt *se_var(int i)
-{
-	StackEnt *se = se_new(seVar);
-	se->data = i;
-	return se;
-}
-
-StackEnt *se_array(int i, StackEnt * dim2, StackEnt * dim1)
-{
-	StackEnt *se = se_new(seArray);
-	se->left = dim2;
-	se->right = dim1;
-	se->data = i;
-	return se;
-}
-
-StackEnt *se_oper(StackEnt * a, int op)
-{
-	StackEnt *se = se_new(seUnary);
-	se->data = op;
-	se->left = a;
-	return se;
-}
-
-StackEnt *se_oper(StackEnt * a, int op, StackEnt * b)
-{
-	StackEnt *se = se_new(seBinary);
-	se->data = op;
-	se->left = a;
-	se->right = b;
-	return se;
-}
-
-StackEnt *se_complex(const char *s)
-{
-	StackEnt *se = se_new(seComplex);
-	se->str = strdup(s);
-	return se;
-}
-
-char *se_astext(StackEnt * se, char *where, bool wantparens = true)
-{
-	int i;
-	int var;
-	const char *s;
-
-	switch (se->type) {
-	case seInt:
-		where += sprintf(where, "%ld", se->data);
-		break;
-	case seVar:
-		if (g_options.scriptVersion == 8) {
-			if (!(se->data & 0xF0000000)) {
-				var = se->data & 0xFFFFFFF;
-				if ((s = getVarName(var)) != NULL)
-					where = strecpy(where, s);
-				else
-					where += sprintf(where, "var%ld", se->data & 0xFFFFFFF);
-			} else if (se->data & 0x80000000) {
-				where += sprintf(where, "bitvar%ld", se->data & 0x7FFFFFFF);
-			} else if (se->data & 0x40000000) {
-				where += sprintf(where, "localvar%ld", se->data & 0xFFFFFFF);
-			} else {
-				where += sprintf(where, "?var?%ld", se->data);
-			}
-		} else {
-			if (!(se->data & 0xF000)) {
-				var = se->data & 0xFFF;
-				if ((s = getVarName(var)) != NULL)
-					where = strecpy(where, s);
-				else
-					where += sprintf(where, "var%ld", se->data & 0xFFF);
-			} else if (se->data & 0x8000) {
-				where += sprintf(where, "bitvar%ld", se->data & 0x7FFF);
-			} else if (se->data & 0x4000) {
-				where += sprintf(where, "localvar%ld", se->data & 0xFFF);
-			} else {
-				where += sprintf(where, "?var?%ld", se->data);
-			}
-		}
-		break;
-	case seArray:
-		if(g_options.scriptVersion == 8 && !(se->data & 0xF0000000) &&
-		   (s = getVarName(se->data & 0xFFFFFFF)) != NULL)
-			where += sprintf(where, "%s[",s);
-		else if(g_options.scriptVersion < 8 && !(se->data & 0xF000) &&
-			(s = getVarName(se->data & 0xFFF)) != NULL)
-			where += sprintf(where, "%s[",s);
-		else
-			where += sprintf(where, "array%ld[", se->data);
-
-		if (se->left) {
-			where = se_astext(se->left, where);
-			where = strecpy(where, "][");
-		}
-
-		where = se_astext(se->right, where);
-		where = strecpy(where, "]");
-		break;
-	case seUnary:
-		where += sprintf(where, "%s", oper_list[se->data]);
-		where = se_astext(se->left, where);
-		break;
-	case seBinary:
-		if (wantparens)
-			*where++ = '(';
-		where = se_astext(se->left, where);
-		where += sprintf(where, " %s ", oper_list[se->data]);
-		where = se_astext(se->right, where);
-		if (wantparens)
-			*where++ = ')';
-		*where = 0;
-		break;
-	case seComplex:
-		where = strecpy(where, se->str);
-		break;
-	case seStackList:
-		*where++ = '[';
-		for (i = se->data; --i >= 0;) {
-			where = se_astext(se->list[i], where);
-			if (i)
-				*where++ = ',';
-		}
-		*where++ = ']';
-		*where = 0;
-		break;
-	case seDup:
-		where += sprintf(where, "dup[%ld]", se->data);
-		break;
-	case seNeg:
-		*where++ = '!';
-		where = se_astext(se->left, where);
-		break;
-	}
-	return where;
-}
-
-StackEnt *pop()
-{
+StackEnt *pop() {
 	if (num_stack == 0) {
 		printf("ERROR: No items on stack to pop!\n");
 
@@ -953,13 +1013,12 @@ StackEnt *pop()
 }
 
 
-void kill(char *output, StackEnt * se)
-{
+void kill(char *output, StackEnt * se) {
 	if (se->type != seDup) {
 		char *e = strecpy(output, "pop(");
 		e = se_astext(se, e);
 		strcpy(e, ")");
-		se_free(se);
+		delete se;
 	} else {
 		// FIXME: Evil hack: We re-push DUPs, instead of killing
 		// them. We do this to support switch-case constructs
@@ -972,12 +1031,18 @@ void kill(char *output, StackEnt * se)
 void doAssign(char *output, StackEnt * dst, StackEnt * src)
 {
 	if (src->type == seDup && dst->type == seDup) {
-		dst->data = src->data;
+		((DupStackEnt *)dst)->_idx = ((DupStackEnt *)src)->_idx;
 		return;
 	}
 	char *e = se_astext(dst, output);
 	e = strecpy(e, " = ");
 	se_astext(src, e);
+}
+
+StackEnt* StackEnt::dup(char *output) {
+	StackEnt *dse = new DupStackEnt(++dupindex);
+	doAssign(output, dse, this);
+	return dse;
 }
 
 void doAdd(char *output, StackEnt * se, int val)
@@ -993,45 +1058,36 @@ void doAdd(char *output, StackEnt * se, int val)
 	}
 }
 
-StackEnt *dup(char *output, StackEnt * se)
-{
-	static int dupindex = 0;
-
-	if (se->type == seInt)
-		return se;
-
-	StackEnt *dse = se_new(seDup);
-	dse->data = ++dupindex;
-	doAssign(output, dse, se);
-	return dse;
+StackEnt *dup(char *output, StackEnt * se) {
+	return se->dup(output);
 }
 
 void writeArray(char *output, int i, StackEnt * dim2, StackEnt * dim1, StackEnt * value)
 {
 	StackEnt *array = se_array(i, dim2, dim1);
 	doAssign(output, array, value);
-	se_free(array);
+	delete array;
 }
 
 void writeVar(char *output, int i, StackEnt * value)
 {
 	StackEnt *se = se_var(i);
 	doAssign(output, se, value);
-	se_free(se);
+	delete se;
 }
 
 void addArray(char *output, int i, StackEnt * dim1, int val)
 {
 	StackEnt *array = se_array(i, NULL, dim1);
 	doAdd(output, array, val);
-	se_free(array);
+	delete array;
 }
 
 void addVar(char *output, int i, int val)
 {
 	StackEnt *se = se_var(i);
 	doAdd(output, se, val);
-	se_free(se);
+	delete se;
 }
 
 StackEnt *se_get_string()
@@ -1064,11 +1120,9 @@ StackEnt *se_get_string()
 			case 6:		// addNameToStack
 			case 7:		// addStringToStack
 				{
-				StackEnt foo;
-				foo.type = seVar;
-				foo.data = get_word();
+				VarStackEnt tmp(get_word());
 				e += sprintf(e, ":");
-				e = se_astext(&foo, e);
+				e = tmp.asText(e);
 				e += sprintf(e, ":");
 				}
 				break;
@@ -1131,11 +1185,12 @@ StackEnt *se_get_string_he() {
 	byte string[1024];
 	byte chr;
 	int len = 1;
-	StackEnt *array;
+	StackEnt *value;
 
-	array = pop();
+	value = pop();
+	
 	*e++ = '"';
-	if (array->data == -1) {
+	if (value->getIntVal() == -1) {
 		if (_stringLength == 1) {
 			*e++ = '"';
 			*e++ = 0;
@@ -1155,35 +1210,15 @@ StackEnt *se_get_string_he() {
 		while (--len)
 			*e++ = string[len];
 	} else {
-		StackEnt foo;
-		foo.type = seVar;
-		foo.data = array->data;
+		VarStackEnt tmp(value->getIntVal());
 		e += sprintf(e, ":");
-		e = se_astext(&foo, e);
+		e = tmp.asText(e);
 		e += sprintf(e, ":");
 	}
 	*e++ = '"';
 
 	*e++ = 0;
 	return se_complex(buf);
-}
-
-StackEnt *se_get_list()
-{
-	StackEnt *se = se_new(seStackList);
-	StackEnt *senum = pop();
-	int num, i;
-
-	if (senum->type != seInt) {
-		error("stackList with variable number of arguments, cannot disassemble");
-	}
-	se->data = num = senum->data;
-	se->list = (StackEnt **) calloc(num, sizeof(StackEnt *));
-
-	for(i = 0; i < num; i++) {
-		se->list[i] = pop();
-	}
-	return se;
 }
 
 void ext(char *output, const char *fmt)
@@ -1228,25 +1263,28 @@ void ext(char *output, const char *fmt)
 		}
 		if (cmd == 'y' && !extstr) {
 			/* Sub-op: parameters are in a list, first element of the list specified the command */
-			StackEnt *se;
+			ListStackEnt *se;
 			extstr = fmt;
 			while (*fmt++)
 				;
 			e += sprintf(e, "%s.", extstr);
 			
-			args[numArgs++] = se_get_list();
+			se = new ListStackEnt(pop());
+			args[numArgs++] = se;
 			
 			/* extended thing */
-			se = args[numArgs - 1];
-			se->data--;
-			extcmd = (byte) se->list[se->data]->data;
+			se->_size--;
+			extcmd = (byte) se->_list[se->_size]->getIntVal();
 
 			/* locate our extended item */
 			while ((cmd = *fmt++) != extcmd) {
 				/* scan until we find , or \0 */
 				while ((cmd = *fmt++) != ',') {
 					if (cmd == 0) {
-						se->data++;
+						/* End reached and command was not found: re-add the extcmd to
+						   the list and output the whole thing as "unknown".
+						 */
+						se->_size++;
 						fmt = "Unknown";
 						goto output_command;
 					}
