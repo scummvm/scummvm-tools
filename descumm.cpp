@@ -845,40 +845,23 @@ void do_actorops(char *buf, byte opcode)
 
 }
 
-int NumInExprStack;
-char **ExprStack;
+static int g_numInExprStack;
+static char *g_exprStack[256];
 
-void AddToExprStack(char *s)
-{
-	int l;
-	char *m;
-
-	if (!ExprStack)
-		ExprStack = (char **)malloc(sizeof(char *) * 256);
-
-	if (NumInExprStack >= 256) {
-		error("Expression stack overflow!");
-	}
-	m = NULL;
-	l = strlen(s);
-	if (l) {
-		l++;
-		m = (char *)malloc(l);
-		memcpy(m, s, l);
-	}
-	ExprStack[NumInExprStack++] = m;
+void pushExprStack(char *s) {
+	assert(g_numInExprStack < 256);
+	g_exprStack[g_numInExprStack++] = strdup(s);
 }
 
-char *GetFromExprStack(char *buf)
-{
+char *popExprStack(char *buf) {
 	char *s;
 
-	if (NumInExprStack <= 0) {
+	if (g_numInExprStack <= 0) {
 		printf("Expression stack is empty!\n");
 		exit(0);
 	}
 
-	s = ExprStack[--NumInExprStack];
+	s = g_exprStack[--g_numInExprStack];
 	buf = strecpy(buf, s);
 	free(s);
 	return buf;
@@ -893,13 +876,11 @@ void do_expr_code(char *buf)
 
 	char tmp[256];
 
-#define NEW_EXPR_MODE 1
-#if NEW_EXPR_MODE
 	buf = strecpy(buf, "Exprmode ");
 	buf = get_var(buf);
 	buf = strecpy(buf, " = ");
 
-	NumInExprStack = 0;
+	g_numInExprStack = 0;
 
 	do {
 		i = get_byte();
@@ -908,7 +889,7 @@ void do_expr_code(char *buf)
 		switch (i & 0x1F) {
 		case 0x1:
 			get_var_or_word(buf, i & 0x80);
-			AddToExprStack(buf);
+			pushExprStack(buf);
 			break;
 
 		case 0x2:
@@ -927,12 +908,12 @@ void do_expr_code(char *buf)
 			s = " / ";
 		do_oper:;
 			buf2 = strecpy(buf, "(");
-			GetFromExprStack(tmp);
-			buf2 = GetFromExprStack(buf2);
+			popExprStack(tmp);
+			buf2 = popExprStack(buf2);
 			buf2 = strecpy(buf2, s);
 			buf2 = strecpy(buf2, tmp);
 			strecpy(buf2, ")");
-			AddToExprStack(buf);
+			pushExprStack(buf);
 			break;
 
 		case 0x6:
@@ -942,7 +923,7 @@ void do_expr_code(char *buf)
 			else
 				next_line_V345(buf2);
 			strecpy(strchr(buf2, 0), ">");
-			AddToExprStack(buf);
+			pushExprStack(buf);
 			break;
 
 		default:
@@ -951,55 +932,7 @@ void do_expr_code(char *buf)
 
 	} while (1);
 
-	strcpy(GetFromExprStack(buf), ";");
-#else
-
-
-	strcpy(buf, "START, DEST=");
-	get_var(strchr(buf, 0));
-	output_expr_text(j, buf);
-
-	do {
-		j = get_curoffs();
-
-		i = get_byte();
-		if (i == 0xFF)
-			break;
-		switch (i) {
-		case 0x1:
-		case 0x81:
-			strcpy(buf, "PUSH ");
-			get_var_or_word(strchr(buf, 0), i & 0x80);
-			break;
-		case 0x2:
-			strcpy(buf, "ADD");
-			break;
-		case 0x3:
-			strcpy(buf, "SUB");
-			break;
-		case 0x4:
-			strcpy(buf, "MUL");
-			break;
-		case 0x5:
-			strcpy(buf, "DIV");
-			break;
-		case 0x6:
-			sprintf(buf, "CALL (%.2X) ", *g_scriptCurPos);
-			if (g_options.scriptVersion <= 2)
-				next_line_V12(strchr(buf, 0));
-			else
-				next_line_V345(strchr(buf, 0));
-			break;
-		default:
-			sprintf(buf, "UNKNOWN %d", i);
-		}
-
-		output_expr_text(j, buf);
-
-	} while (1);
-
-	output_expr_text(j, "END");
-#endif
+	strcpy(popExprStack(buf), ";");
 }
 
 
@@ -3357,7 +3290,7 @@ void next_line_V345(char *buf)
 		do_tok(buf, "stopScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
 
-	case 0xAc:
+	case 0xAC:
 		do_expr_code(buf);
 		break;
 
