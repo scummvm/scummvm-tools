@@ -120,7 +120,6 @@ static const char *oper_list[] = {
 #define MAX_STACK_SIZE	256
 static StackEnt *stack[MAX_STACK_SIZE];
 static int num_stack = 0;
-bool HumongousFlag = false;
 
 const char *var_names72[] = {
 	/* 0 */
@@ -744,15 +743,15 @@ const char *var_names8[] = {
 
 const char *getVarName(uint var)
 {
-	if (heVersion == 72) {
+	if (g_options.heVersion == 72) {
 		if (var >= sizeof(var_names72) / sizeof(var_names72[0]))
 			return NULL;
 		return var_names72[var];
-	} else if (scriptVersion == 8) {
+	} else if (g_options.scriptVersion == 8) {
 		if (var >= sizeof(var_names8) / sizeof(var_names8[0]))
 			return NULL;
 		return var_names8[var];
-	} else if (scriptVersion == 7) {
+	} else if (g_options.scriptVersion == 7) {
 		if (var >= sizeof(var_names7) / sizeof(var_names7[0]))
 			return NULL;
 		return var_names7[var];
@@ -855,7 +854,7 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 		where += sprintf(where, "%ld", se->data);
 		break;
 	case seVar:
-		if (scriptVersion == 8) {
+		if (g_options.scriptVersion == 8) {
 			if (!(se->data & 0xF0000000)) {
 				var = se->data & 0xFFFFFFF;
 				if ((s = getVarName(var)) != NULL)
@@ -887,10 +886,10 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 		break;
 	case seArray:
 		if (se->left) {
-			if(scriptVersion == 8 && !(se->data & 0xF0000000) &&
+			if(g_options.scriptVersion == 8 && !(se->data & 0xF0000000) &&
 			   (s = getVarName(se->data & 0xFFFFFFF)) != NULL)
 				where += sprintf(where, "%s[",s);
-			else if(scriptVersion < 8 && !(se->data & 0xF000) &&
+			else if(g_options.scriptVersion < 8 && !(se->data & 0xF000) &&
 				(s = getVarName(se->data & 0xFFF)) != NULL)
 				where += sprintf(where, "%s[",s);
 			else
@@ -900,10 +899,10 @@ char *se_astext(StackEnt * se, char *where, bool wantparens = true)
 			where = se_astext(se->right, where);
 			where = strecpy(where, "]");
 		} else {
-			if(scriptVersion == 8 && !(se->data & 0xF0000000) &&
+			if(g_options.scriptVersion == 8 && !(se->data & 0xF0000000) &&
 			   (s = getVarName(se->data & 0xFFFFFFF)) != NULL)
 				where += sprintf(where, "%s[",s);
-			else if(scriptVersion < 8 && !(se->data & 0xF000) &&
+			else if(g_options.scriptVersion < 8 && !(se->data & 0xF000) &&
 				(s = getVarName(se->data & 0xFFF)) != NULL)
 				where += sprintf(where, "%s[",s);
 			else
@@ -955,7 +954,7 @@ StackEnt *pop()
 	if (num_stack == 0) {
 		printf("ERROR: No items on stack to pop!\n");
 
-		if (!haltOnError)
+		if (!g_options.haltOnError)
 			return se_complex("**** INVALID DATA ****");
  		exit(1);
 	}
@@ -1083,7 +1082,7 @@ StackEnt *se_get_string()
 				break;
 			case 10:
 				e += sprintf(e, ":sound:");
-				cur_pos += 14;
+				g_scriptCurPos += 14;
 				break;
 			case 14:
 				e += sprintf(e, ":setfont=%d:", get_word());
@@ -1267,10 +1266,10 @@ void ext(char *output, const char *fmt)
 			args[numArgs++] = pop();
 		} else if (cmd == 'z') {	// = popRoomAndObj()
 			args[numArgs++] = pop();
-			if (scriptVersion < 7 && heVersion == 0)
+			if (g_options.scriptVersion < 7 && g_options.heVersion == 0)
 				args[numArgs++] = pop();
 		} else if (cmd == 'h') {
-			if (heVersion == 72)
+			if (g_options.heVersion == 72)
 				args[numArgs++] = se_get_string_he();
 		} else if (cmd == 's') {
 			args[numArgs++] = se_get_string();
@@ -1326,18 +1325,18 @@ void jump(char *output)
 		// or an instruction is placed into an else branch instead of being
 		// (incorrectly) placed inside the body of the 'if' itself.
 		sprintf(output, "/* jump %x; */", to);
-	} else if (!dontOutputElse && maybeAddElse(cur, to)) {
+	} else if (!g_options.dontOutputElse && maybeAddElse(cur, to)) {
 		pendingElse = true;
 		pendingElseTo = to;
 		pendingElseOffs = cur;
 		pendingElseOpcode = g_jump_opcode;
 		pendingElseIndent = g_blockStack.size();
 	} else {
-		if (!g_blockStack.empty() && !dontOutputWhile) {
+		if (!g_blockStack.empty() && !g_options.dontOutputWhile) {
 			Block p = g_blockStack.top();
 			if (p.isWhile && cur == (int)p.to)
 				return;		// A 'while' ends here.
-			if (!dontOutputBreaks && maybeAddBreak(cur, to)) {
+			if (!g_options.dontOutputBreaks && maybeAddBreak(cur, to)) {
 				sprintf(output, "break");
 				return;
 		  }
@@ -1353,24 +1352,24 @@ void jumpif(char *output, StackEnt * se, bool negate)
 	int to = cur + offset;
 	char *e = output;
 
-	if (!dontOutputElseif && pendingElse) {
+	if (!g_options.dontOutputElseif && pendingElse) {
 		if (maybeAddElseIf(cur, pendingElseTo, to)) {
 			pendingElse = false;
 			haveElse = true;
 			e = strecpy(e, "} else if (");
 			e = se_astext(se, e, false);
-			sprintf(e, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
+			sprintf(e, g_options.alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 			return;
 		}
 	}
 
-	if (!dontOutputIfs && maybeAddIf(cur, to)) {
-		if (!dontOutputWhile && g_blockStack.top().isWhile)
+	if (!g_options.dontOutputIfs && maybeAddIf(cur, to)) {
+		if (!g_options.dontOutputWhile && g_blockStack.top().isWhile)
 			e = strecpy(e, negate ? "until (" : "while (");
 		else
 			e = strecpy(e, negate ? "unless (" : "if (");
 		e = se_astext(se, e, false);
-		sprintf(e, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
+		sprintf(e, g_options.alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 		return;
 	}
 
@@ -3065,13 +3064,13 @@ void next_line_V67(char *output)
 		ext(output, "ppp|drawObjectAt");
 		break;
 	case 0x63:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			invalidop(NULL, code);
 		else
 			ext(output, "ppppp|drawBlastObject");
 		break;
 	case 0x64:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			invalidop(NULL, code);
 		else
 			ext(output, "pppp|setBlastObjectWindow");
@@ -3135,7 +3134,7 @@ void next_line_V67(char *output)
 		jump(output);
 		break;
 	case 0x74:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "pp|startSound");
 		else
 			ext(output, "p|startSound");
@@ -3150,7 +3149,7 @@ void next_line_V67(char *output)
 		ext(output, "p|stopObjectScript");
 		break;
 	case 0x78:
-		if (scriptVersion < 7)
+		if (g_options.scriptVersion < 7)
 			ext(output, "p|panCameraTo");
 		else
 			ext(output, "pp|panCameraTo");
@@ -3159,7 +3158,7 @@ void next_line_V67(char *output)
 		ext(output, "p|actorFollowCamera");
 		break;
 	case 0x7A:
-		if (scriptVersion < 7)
+		if (g_options.scriptVersion < 7)
 			ext(output, "p|setCameraAt");
 		else
 			ext(output, "pp|setCameraAt");
@@ -3252,13 +3251,13 @@ void next_line_V67(char *output)
 		ext(output, "pl|setBoxFlags");
 		break;
 	case 0x9A:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			invalidop(NULL, code);
 		else
 			ext(output, "|createBoxMatrix");
 		break;
 	case 0x9B:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "x" "resourceRoutines\0"
 					"\x64p|loadScript,"
 					"\x65p|loadSound,"
@@ -3313,7 +3312,7 @@ void next_line_V67(char *output)
 					"\x77z|loadFlObject");
 		break;
 	case 0x9C:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "x" "roomOps\0"
 					"\xACpp|roomScroll,"
 					"\xAEpp|setScreen,"
@@ -3350,7 +3349,7 @@ void next_line_V67(char *output)
 					"\xDCpp|copyPalColor");
 		break;
 	case 0x9D:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "x" "actorOps\0"
 					"\xC5p|setCurActor,"
 					"\x4Cp|setCostume,"
@@ -3423,7 +3422,7 @@ void next_line_V67(char *output)
 					"\xEBp|setTalkScript");
 		break;
 	case 0x9E:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "x" "verbOps\0"
 					"\xC4p|setCurVerb,"
 					"\x7Cp|loadImg,"
@@ -3533,7 +3532,7 @@ void next_line_V67(char *output)
 		ext(output, "rlp|isAnyOf");
 		break;
 	case 0xAE:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "x" "systemOps\0"
 					 "\x9E|restart,"
 					 "\xA0|confirmShutDown,"
@@ -3562,25 +3561,25 @@ void next_line_V67(char *output)
 		ext(output, "|stopSentence");
 		break;
 	case 0xB4:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			PRINT_V7HE("printLine");
 		else
 			PRINT_V67("printLine");
 		break;
 	case 0xB5:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			PRINT_V7HE("printCursor");
 		else
 			PRINT_V67("printCursor");
 		break;
 	case 0xB6:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			PRINT_V7HE("printDebug");
 		else
 			PRINT_V67("printDebug");
 		break;
 	case 0xB7:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			PRINT_V7HE("printSystem");
 		else
 			PRINT_V67("printSystem");
@@ -3600,7 +3599,7 @@ void next_line_V67(char *output)
 				"\xFF|end");
 		break;
 	case 0xB9:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			PRINT_V7HE("printEgo");
 		else
 			PRINT_V67("printEgo");
@@ -3621,7 +3620,7 @@ void next_line_V67(char *output)
 				"\xCCv|nukeArray");
 		break;
 	case 0xBD:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "|stopObjectCode");
 		else
 			invalidop(NULL, code);
@@ -3662,11 +3661,11 @@ void next_line_V67(char *output)
 		ext(output, "rpppp|getDistPtPt");
 		break;
 	case 0xC8:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 				ext(output, "ry" "kernelGetFunctions\0"
 					"\x1|virtScreenSave"
 					);
-		else if (scriptVersion == 7) 
+		else if (g_options.scriptVersion == 7) 
 				ext(output, "ry" "kernelGetFunctions\0"
 					"\x73|getWalkBoxAt,"
 					"\x74|isPointInBox,"
@@ -3687,11 +3686,11 @@ void next_line_V67(char *output)
 					);
 		break;
 	case 0xC9:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 				ext(output, "ry" "kernelSetFunctions\0"
 					"\x1|virtScreenLoad"
 					);
-		else if (scriptVersion == 7) 
+		else if (g_options.scriptVersion == 7) 
 			ext(output, "y" "kernelSetFunctions\0"
 					"\x4|grabCursor,"
 					"\x6|startVideo,"
@@ -3781,25 +3780,25 @@ void next_line_V67(char *output)
 		ext(output, "rp|isRoomScriptRunning");
 		break;
 	case 0xD9:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "p|closeFile");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xDA:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rsp|openFile");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xDB:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rpp|readFile");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xDC:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 
 			ext(output, "ppp|writeFile");
 		else
@@ -3810,19 +3809,19 @@ void next_line_V67(char *output)
 		ext(output, "rp|findAllObjects");
 		break;
 	case 0xDE:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "s|deleteFile");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xDF:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "ss|renameFile");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xE0:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "x" "soundOps\0" 
 				"\xDEp|setMusicVolume,"
 				"\xDF|dummy,"
@@ -3834,7 +3833,7 @@ void next_line_V67(char *output)
 		ext(output, "rpp|getPixel");
 		break;
 	case 0xE2:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "p|localizeArrayToScript");
 		else
 			invalidop(NULL, code);
@@ -3846,13 +3845,13 @@ void next_line_V67(char *output)
 		ext(output, "p|setBotSet");
 		break;
 	case 0xE9:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "ppp|seekFilePos");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xEA:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "x" "redimArray\0"
 					"\xC7ppw|int,"
 					"\xCAppw|byte");
@@ -3860,67 +3859,67 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xEB:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rp|readFilePos");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xEC:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			invalidop(NULL, code);
 		else
 			ext(output, "rp|getActorLayer");
 		break;
 	case 0xED:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rppp|getStringWidth");
 		else
 			ext(output, "rp|getObjectNewDir");
 		break;
 	case 0xEE:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rp|stringLen");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xEF:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rppp|appendString");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xF3:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rsp|readINI");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xF4:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rsp|writeINI");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xF5:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rppp|getStringLenForWidth");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xF6:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rpppp|getCharIndexInString");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xF9:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "s|setFilePath");
 		else
 			invalidop(NULL, code);
 		break;
 	case 0xFA:
-		if (HumongousFlag) {
+		if (g_options.HumongousFlag) {
 			ext(output, "x" "setSystemMessage\0"
 					"\xF0s|unk1,"
 					"\xF1s|versionMsg,"
@@ -3930,7 +3929,7 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xFB:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "x" "polygonOps\0"
 					"\xF6ppppppppp|polygonStore,"
 					"\xF7pp|polygonErase,"
@@ -3940,7 +3939,7 @@ void next_line_V67(char *output)
 			invalidop(NULL, code);
 		break;
 	case 0xFC:
-		if (HumongousFlag)
+		if (g_options.HumongousFlag)
 			ext(output, "rpp|polygonHit");
 		else
 			invalidop(NULL, code);

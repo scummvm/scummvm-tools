@@ -34,23 +34,12 @@ int pendingElseIndent;
 
 int g_jump_opcode;
 
-bool alwaysShowOffs = false;
-bool dontOutputIfs = false;
-bool dontOutputElse = false;
-bool dontOutputElseif = false;
-bool dontOutputWhile = false;
-bool dontOutputBreaks = false;
-bool dontShowOpcode = false;
-bool dontShowOffsets = false;
-bool haltOnError;
+Options g_options;
 
-byte scriptVersion;
-byte heVersion;
-
-byte *cur_pos, *org_pos;
+byte *g_scriptCurPos, *g_scriptStart;
 int offs_of_line;
 
-uint size_of_code;
+uint g_scriptSize;
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -63,24 +52,24 @@ char *strecpy(char *buf, const char *src)
 
 int get_curoffs()
 {
-	return cur_pos - org_pos;
+	return g_scriptCurPos - g_scriptStart;
 }
 
 int get_byte()
 {
-	return (byte)(*cur_pos++);
+	return (byte)(*g_scriptCurPos++);
 }
 
 int get_word()
 {
 	int i;
 
-	if (scriptVersion == 8) {
-		i = (int32)READ_LE_UINT32(cur_pos);
-		cur_pos += 4;
+	if (g_options.scriptVersion == 8) {
+		i = (int32)READ_LE_UINT32(g_scriptCurPos);
+		g_scriptCurPos += 4;
 	} else {
-		i = (int16)READ_LE_UINT16(cur_pos);
-		cur_pos += 2;
+		i = (int16)READ_LE_UINT16(g_scriptCurPos);
+		g_scriptCurPos += 2;
 	}
 	return i;
 }
@@ -89,8 +78,8 @@ int get_dword()
 {
 	int i;
 
-	i = (int32)READ_LE_UINT32(cur_pos);
-	cur_pos += 4;
+	i = (int32)READ_LE_UINT32(g_scriptCurPos);
+	g_scriptCurPos += 4;
 	return i;
 }
 
@@ -104,12 +93,12 @@ void outputLine(const char *buf, int curoffs, int opcode, int indent) {
 		assert(indent >= 0);
 
 		// Show the offset
-		if (!dontShowOffsets) {
+		if (!g_options.dontShowOffsets) {
 			printf("[%.4X] ", curoffs);
 		}
 		
 		// Show the opcode value
-		if (!dontShowOpcode) {
+		if (!g_options.dontShowOpcode) {
 			if (opcode != -1)
 				printf("(%.2X) ", opcode);
 			else
@@ -143,12 +132,12 @@ bool maybeAddIf(uint cur, uint to)
 	
 	// Try to determine if this is a while loop. For this, first check if we 
 	// jump right behind a regular jump, then whether that jump is targeting us.
-	if (scriptVersion == 8) {
-		p.isWhile = (*(byte*)(org_pos+to-5) == g_jump_opcode);
-		i = (int32)READ_LE_UINT32(org_pos+to-4);
+	if (g_options.scriptVersion == 8) {
+		p.isWhile = (*(byte*)(g_scriptStart+to-5) == g_jump_opcode);
+		i = (int32)READ_LE_UINT32(g_scriptStart+to-4);
 	} else {
-		p.isWhile = (*(byte*)(org_pos+to-3) == g_jump_opcode);
-		i = (int16)READ_LE_UINT16(org_pos+to-2);
+		p.isWhile = (*(byte*)(g_scriptStart+to-3) == g_jump_opcode);
+		i = (int16)READ_LE_UINT16(g_scriptStart+to-2);
 	}
 	
 	p.isWhile = p.isWhile && (offs_of_line == (int)to + i);
@@ -200,22 +189,22 @@ bool maybeAddElseIf(uint cur, uint elseto, uint to) {
 	if (g_blockStack.top().isWhile)
 		return false;
 
-	if (scriptVersion == 8)
+	if (g_options.scriptVersion == 8)
 		k = to - 5;
 	else
 		k = to - 3;
 
-	if (k >= size_of_code)
+	if (k >= g_scriptSize)
 		return false;								/* Invalid jump */
 
 	if (elseto != to) {
-		if (org_pos[k] != g_jump_opcode)
+		if (g_scriptStart[k] != g_jump_opcode)
 			return false;							/* Invalid jump */
 	
-		if (scriptVersion == 8)
-			k = to + READ_LE_UINT32(org_pos + k + 1);
+		if (g_options.scriptVersion == 8)
+			k = to + READ_LE_UINT32(g_scriptStart + k + 1);
 		else
-			k = to + READ_LE_UINT16(org_pos + k + 1);
+			k = to + READ_LE_UINT16(g_scriptStart + k + 1);
 	
 		if (k != elseto)
 			return false;							/* Not an ifelse */
@@ -249,7 +238,7 @@ bool maybeAddBreak(uint cur, uint to) {
 void writePendingElse() {
 	if (pendingElse) {
 		char buf[32];
-		sprintf(buf, alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
+		sprintf(buf, g_options.alwaysShowOffs ? "} else /*%.4X*/ {" : "} else {", pendingElseTo);
 		outputLine(buf, offs_of_line, pendingElseOpcode, pendingElseIndent - 1);
 		offs_of_line = pendingElseOffs;
 		pendingElse = false;

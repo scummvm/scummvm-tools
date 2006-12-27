@@ -96,11 +96,6 @@ enum TokenType {
 
 
 
-bool ZakFlag = false;
-bool IndyFlag = false;
-bool GF_UNBLOCKED = false;
-
-
 void emit_if(char *buf, char *condition);
 
 
@@ -452,7 +447,7 @@ const char *get_num_string(int i)
 		else
 			s = "Bit";
 	} else if (i & 0x4000) {
-		i &= IndyFlag ? 0xF : 0xFFF;
+		i &= g_options.IndyFlag ? 0xF : 0xFFF;
 		if (i > 0x10)
 			s = "??Local??";
 		else
@@ -465,7 +460,7 @@ const char *get_num_string(int i)
 			s = "Var";
 	}
 
-	if (haltOnError && (s[0] == '?')) {
+	if (g_options.haltOnError && (s[0] == '?')) {
 		error("%s out of range, was %d", s, i);
 	}
 
@@ -477,37 +472,37 @@ char *get_var(char *buf)
 {
 	int i;
 
-	if (scriptVersion <= 2)
+	if (g_options.scriptVersion <= 2)
 		i = get_byte();
 	else
 		i = (uint16)get_word();
 		
 	assert(i >= 0);
 
-	if (scriptVersion >= 5 && 
+	if (g_options.scriptVersion >= 5 && 
 			i < ARRAYSIZE(var_names5) && var_names5[i]) {
 		buf += sprintf(buf, var_names5[i]);
 		return buf;
-	} else if (scriptVersion >= 4 && 
+	} else if (g_options.scriptVersion >= 4 && 
 			i < ARRAYSIZE(var_names4) && var_names4[i]) {
 		buf += sprintf(buf, var_names4[i]);
 		return buf;
-	} else if (scriptVersion >= 3 && 
+	} else if (g_options.scriptVersion >= 3 && 
 			i < ARRAYSIZE(var_names3) && var_names3[i]) {
 		buf += sprintf(buf, var_names3[i]);
 		return buf;
-	} else if (scriptVersion >= 1 &&
+	} else if (g_options.scriptVersion >= 1 &&
 			i < ARRAYSIZE(var_names2) && var_names2[i]) {
 		buf += sprintf(buf, var_names2[i]);
 		return buf;
-	} else if (scriptVersion == 0 &&
+	} else if (g_options.scriptVersion == 0 &&
 			i < ARRAYSIZE(var_names0) && var_names0[i]) {
 		buf += sprintf(buf, var_names0[i]);
 		return buf;
-	} else if (scriptVersion <= 2 && ZakFlag && (i == 234 || i == 235)) {
+	} else if (g_options.scriptVersion <= 2 && g_options.ZakFlag && (i == 234 || i == 235)) {
 		buf += sprintf(buf, (i == 234) ? "ZERO" : "ONE");
 		return buf;
-	} else if ((i & 0x8000) && (GF_UNBLOCKED || ZakFlag))
+	} else if ((i & 0x8000) && (g_options.GF_UNBLOCKED || g_options.ZakFlag))
 		buf += sprintf(buf, "Var[%d Bit %d", (i & 0x0FFF) >> 4, i & 0x000F);
 	else
 		buf += sprintf(buf, "%s[%d", get_num_string(i), i & 0xFFF);
@@ -562,7 +557,7 @@ char *get_list(char *buf)
 		j++;
 		if (j > 16) {
 			printf("ERROR: too many variables in argument list!\n");
-			if (haltOnError)
+			if (g_options.haltOnError)
 				exit(1);
 			break;
 		}
@@ -597,7 +592,7 @@ char *get_ascii(char *buf)
 			buf = putascii(buf, i);
 
 			// Workaround for a script bug in Indy3
-			if (i == 46 && scriptVersion == 3 && IndyFlag)
+			if (i == 46 && g_options.scriptVersion == 3 && g_options.IndyFlag)
 				continue;
 
 			if (i != 1 && i != 2 && i != 3 && i != 8) {
@@ -720,7 +715,7 @@ void do_actorops_v12(char *buf, byte opcode)
 			buf += sprintf(buf, "Sound(%s)", arg);
 			break;
 		case 2:
-			if (scriptVersion == 1)
+			if (g_options.scriptVersion == 1)
 				buf += sprintf(buf, "Color(%s)", arg);
 			else
 				buf += sprintf(buf, "Color(%d, %s)", get_byte(), arg);
@@ -760,7 +755,7 @@ void do_actorops(char *buf, byte opcode)
 		first = 0;
 
 		// FIXME - this really should be a check for GF_SMALL_HEADER instead!
-		if (scriptVersion < 5)
+		if (g_options.scriptVersion < 5)
 			opcode = (opcode & 0xE0) | convertTable[(opcode & 0x1F) - 1];
 
 		switch (opcode & 0x1F) {
@@ -818,7 +813,7 @@ void do_actorops(char *buf, byte opcode)
 			buf = do_tok(buf, "Width", ((opcode & 0x80) ? A1V : A1B));
 			break;
 		case 0x11:
-			if (scriptVersion == 5)
+			if (g_options.scriptVersion == 5)
 				buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 			else
 				buf = do_tok(buf, "Scale", ((opcode & 0x80) ? A1V : A1B));
@@ -942,7 +937,7 @@ void do_expr_code(char *buf)
 
 		case 0x6:
 			buf2 = strecpy(buf, "<");
-			if (scriptVersion <= 2)
+			if (g_options.scriptVersion <= 2)
 				next_line_V12(buf2);
 			else
 				next_line_V345(buf2);
@@ -989,8 +984,8 @@ void do_expr_code(char *buf)
 			strcpy(buf, "DIV");
 			break;
 		case 0x6:
-			sprintf(buf, "CALL (%.2X) ", *cur_pos);
-			if (scriptVersion <= 2)
+			sprintf(buf, "CALL (%.2X) ", *g_scriptCurPos);
+			if (g_options.scriptVersion <= 2)
 				next_line_V12(strchr(buf, 0));
 			else
 				next_line_V345(strchr(buf, 0));
@@ -1060,7 +1055,7 @@ void do_resource(char *buf, byte opco)
 {
 	char opcode = get_byte();
 	int subop;
-	if (scriptVersion != 5)
+	if (g_options.scriptVersion != 5)
 		subop = opcode & 0x3F;	// FIXME - actually this should only be done for Zak256
 	else
 		subop = opcode & 0x1F;
@@ -1273,10 +1268,10 @@ void do_room_ops_old(char *buf, byte opcode)
 	char	a[256];
 	char	b[256];
 	
-	if (scriptVersion <= 2) {
+	if (g_options.scriptVersion <= 2) {
 		get_var_or_byte(a, (opcode & 0x80));
 		get_var_or_byte(b, (opcode & 0x40));
-	} else if (scriptVersion == 3) {
+	} else if (g_options.scriptVersion == 3) {
 		get_var_or_word(a, (opcode & 0x80));
 		get_var_or_word(b, (opcode & 0x40));
 	}
@@ -1284,7 +1279,7 @@ void do_room_ops_old(char *buf, byte opcode)
 	opcode = get_byte();
 	switch (opcode & 0x1F) {
 	case 0x01:
-		if (scriptVersion > 3) {
+		if (g_options.scriptVersion > 3) {
 			get_var_or_word(a, (opcode & 0x80));
 			get_var_or_word(b, (opcode & 0x40));
 		}
@@ -1295,7 +1290,7 @@ void do_room_ops_old(char *buf, byte opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x02:
-		if (scriptVersion > 3) {
+		if (g_options.scriptVersion > 3) {
 			get_var_or_word(a, (opcode & 0x80));
 			get_var_or_word(b, (opcode & 0x40));
 		}
@@ -1306,7 +1301,7 @@ void do_room_ops_old(char *buf, byte opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x03:
-		if (scriptVersion > 3) {
+		if (g_options.scriptVersion > 3) {
 			get_var_or_word(a, (opcode & 0x80));
 			get_var_or_word(b, (opcode & 0x40));
 		}
@@ -1317,7 +1312,7 @@ void do_room_ops_old(char *buf, byte opcode)
 		buf = strecpy(buf, ")");
 		break;
 	case 0x04:
-		if (scriptVersion > 3) {
+		if (g_options.scriptVersion > 3) {
 			get_var_or_word(a, (opcode & 0x80));
 			get_var_or_word(b, (opcode & 0x40));
 		}
@@ -1384,7 +1379,7 @@ void do_cursor_command(char *buf)
 		break;
 
 	case 0x0E:
-		if (scriptVersion == 3)
+		if (g_options.scriptVersion == 3)
 			do_tok(buf, "LoadCharset", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		else
 			do_tok(buf, "CursorCommand", A1LIST);
@@ -1522,7 +1517,7 @@ void do_print_ego(char *buf, byte opcode)
 			buf = do_tok(buf, "Center", 0);
 			break;
 		case 0x6:
-			if (GF_UNBLOCKED)
+			if (g_options.GF_UNBLOCKED)
 				buf = do_tok(buf, "Height", ((opcode & 0x80) ? A1V: A1W));
 			else
 				buf = do_tok(buf, "Left", 0);
@@ -1558,7 +1553,7 @@ void do_unconditional_jump(char *buf)
 
 	if (offset == 0) {
 		sprintf(buf, "/* goto %.4X; */", to);
-	} else if (!dontOutputElse && maybeAddElse(cur, to)) {
+	} else if (!g_options.dontOutputElse && maybeAddElse(cur, to)) {
 		pendingElse = true;
 		pendingElseTo = to;
 		pendingElseOffs = cur;
@@ -1566,7 +1561,7 @@ void do_unconditional_jump(char *buf)
 		pendingElseIndent = g_blockStack.size();
 		buf[0] = 0;
 	} else {
-		if (!g_blockStack.empty() && !dontOutputWhile) {
+		if (!g_blockStack.empty() && !g_options.dontOutputWhile) {
 			Block p = g_blockStack.top();
 			if (p.isWhile && cur == (int)p.to)
 				return;		// A 'while' ends here.
@@ -1581,24 +1576,24 @@ void emit_if(char *buf, char *condition)
 	int cur = get_curoffs();
 	int to = cur + offset;
 
-	if (!dontOutputElseif && pendingElse) {
+	if (!g_options.dontOutputElseif && pendingElse) {
 		if (maybeAddElseIf(cur, pendingElseTo, to)) {
 			pendingElse = false;
 			haveElse = true;
 			buf = strecpy(buf, "} else if (");
 			buf = strecpy(buf, condition);
-			sprintf(buf, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
+			sprintf(buf, g_options.alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 			return;
 		}
 	}
 
-	if (!dontOutputIfs && maybeAddIf(cur, to)) {
-		if (!dontOutputWhile && g_blockStack.top().isWhile) {
+	if (!g_options.dontOutputIfs && maybeAddIf(cur, to)) {
+		if (!g_options.dontOutputWhile && g_blockStack.top().isWhile) {
 			buf = strecpy(buf, "while (");
 		} else
 			buf = strecpy(buf, "if (");
 		buf = strecpy(buf, condition);
-		sprintf(buf, alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
+		sprintf(buf, g_options.alwaysShowOffs ? ") /*%.4X*/ {" : ") {", to);
 		return;
 	}
 
@@ -1652,7 +1647,7 @@ void do_if_code(char *buf, byte opcode)
 	if (opcode == 0x28 || opcode == 0xA8) {
 		get_var(tmp2);
 	} else {
-		if (scriptVersion == 0)
+		if (g_options.scriptVersion == 0)
 			get_var_or_byte(tmp2, opcode & 0x80);
 		else
 			get_var_or_word(tmp2, opcode & 0x80);
@@ -1680,7 +1675,7 @@ void do_if_state_code(char *buf, byte opcode)
 	int state = 0;
 
 	var[0] = 0;
-	if (scriptVersion == 0) {
+	if (g_options.scriptVersion == 0) {
 		if (opcode & 0x40)
 			sprintf(var, "activeObject");
 		else
@@ -1689,7 +1684,7 @@ void do_if_state_code(char *buf, byte opcode)
 		get_var_or_word(var, opcode & 0x80);
 	}
 
-	if (scriptVersion > 2) {
+	if (g_options.scriptVersion > 2) {
 		switch (opcode & 0x2F) {
 		case 0x0f:
 			neg = 0;
@@ -1704,7 +1699,7 @@ void do_if_state_code(char *buf, byte opcode)
 
 		get_var_or_byte(tmp2, opcode & 0x40);
 	} else {
-		if (scriptVersion == 0) {
+		if (g_options.scriptVersion == 0) {
 			switch (opcode) {
 			case 0x7f:
 			case 0xbf:
@@ -1789,7 +1784,7 @@ void do_if_state_code(char *buf, byte opcode)
 		}
 	}
 
-	if (scriptVersion > 2)
+	if (g_options.scriptVersion > 2)
 		sprintf(tmp, "getState(%s)%s%s", var, neg ? " != " : " == ", tmp2);
 	else
 		sprintf(tmp, "%sgetState%02d(%s)", neg ? "!" : "", state, var);
@@ -1800,7 +1795,7 @@ void do_varset_code(char *buf, byte opcode)
 {
 	const char *s;
 
-	if ((scriptVersion <= 2)
+	if ((g_options.scriptVersion <= 2)
 		&& ((opcode & 0x7F) == 0x0A
 		 || (opcode & 0x7F) == 0x2A
 		 || (opcode & 0x7F) == 0x6A)) {
@@ -1850,11 +1845,11 @@ void do_varset_code(char *buf, byte opcode)
 	buf = strecpy(buf, s);
 
 
-	if ((scriptVersion <= 2) && (opcode & 0x7F) == 0x2C) { /* assignVarByte */
+	if ((g_options.scriptVersion <= 2) && (opcode & 0x7F) == 0x2C) { /* assignVarByte */
 		sprintf(buf, "%d", get_byte());
 		buf = strchr(buf, 0);
 	} else if ((opcode & 0x7F) != 0x46) {	/* increment or decrement */
-		if (scriptVersion == 0)
+		if (g_options.scriptVersion == 0)
 			buf = get_var_or_byte(buf, opcode & 0x80);
 		else
 			buf = get_var_or_word(buf, opcode & 0x80);
@@ -1999,12 +1994,12 @@ void next_line_V12(char *buf)
 	case 0xD9:
 	case 0xF9:{
 			buf = strecpy(buf, "doSentence(");
-			if (!(opcode & 0x80) && *cur_pos == 0xFC) {
+			if (!(opcode & 0x80) && *g_scriptCurPos == 0xFC) {
 				strcpy(buf, "STOP)");
-				cur_pos++;
-			} else if (!(opcode & 0x80) && *cur_pos == 0xFB) {
+				g_scriptCurPos++;
+			} else if (!(opcode & 0x80) && *g_scriptCurPos == 0xFB) {
 				strcpy(buf, "RESET)");
-				cur_pos++;
+				g_scriptCurPos++;
 			} else {
 				do_tok(buf, "",
 							 ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B) |
@@ -3067,7 +3062,7 @@ void next_line_V345(char *buf)
 	case 0x45:
 	case 0x85:
 	case 0xC5:
-		if (scriptVersion == 5) {
+		if (g_options.scriptVersion == 5) {
 			buf = do_tok(buf, "drawObject", ((opcode & 0x80) ? A1V : A1W) | ANOLASTPAREN);
 			opcode = get_byte();
 			switch (opcode & 0x1F) {
@@ -3094,7 +3089,7 @@ void next_line_V345(char *buf)
 	case 0x65:
 	case 0xA5:
 	case 0xE5:
-		if (scriptVersion == 5) {
+		if (g_options.scriptVersion == 5) {
 			do_tok(buf, "pickupObject", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
 		} else {
 			buf = do_tok(buf, "drawObject",
@@ -3158,7 +3153,7 @@ void next_line_V345(char *buf)
 
 	case 0x0F:
 	case 0x8F:
-		if (scriptVersion == 5) {
+		if (g_options.scriptVersion == 5) {
 			do_tok(buf, "getObjectState", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 			break;
 		}
@@ -3278,14 +3273,14 @@ void next_line_V345(char *buf)
 
 	case 0x3B:
 	case 0xBB:
-		if (IndyFlag)
+		if (g_options.IndyFlag)
 			do_tok(buf, "waitForActor", ((opcode & 0x80) ? A1V : A1B));
 		else
 			do_tok(buf, "getActorScale", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0xAE:{
-			if (IndyFlag)
+			if (g_options.IndyFlag)
 				opcode = 2;
 			else
 				opcode = get_byte();
@@ -3345,9 +3340,9 @@ void next_line_V345(char *buf)
 	case 0xF9:{
 			buf = strecpy(buf, "doSentence(");
 			// FIXME: this is not exactly what ScummVM does...
-			if (!(opcode & 0x80) && (*cur_pos == 0xFE)) {
+			if (!(opcode & 0x80) && (*g_scriptCurPos == 0xFE)) {
 				strcpy(buf, "STOP)");
-				cur_pos++;
+				g_scriptCurPos++;
 			} else {
 				do_tok(buf, "",
 							 ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B) |
@@ -3439,7 +3434,7 @@ void next_line_V345(char *buf)
 
 	case 0x02:
 	case 0x82:
-		if (ZakFlag)
+		if (g_options.ZakFlag)
 			do_tok(buf, "startMusic", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		else
 			do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B));
@@ -3453,7 +3448,7 @@ void next_line_V345(char *buf)
 	case 0x73:
 	case 0xB3:
 	case 0xF3:
-		if (scriptVersion == 5)
+		if (g_options.scriptVersion == 5)
 			do_room_ops(buf);
 		else
 			do_room_ops_old(buf, opcode);
@@ -3501,7 +3496,7 @@ void next_line_V345(char *buf)
 		break;
 
 	case 0x4C:
-		if (scriptVersion <= 3)
+		if (g_options.scriptVersion <= 3)
 			do_tok(buf, "waitForSentence", 0);
 		else
 			do_tok(buf, "soundKludge", A1LIST);
@@ -3523,7 +3518,7 @@ void next_line_V345(char *buf)
 
 	case 0x43:
 	case 0xC3:
-		if (IndyFlag)
+		if (g_options.IndyFlag)
 			do_tok(buf, "getActorX", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		else
 			do_tok(buf, "getActorX", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
@@ -3531,7 +3526,7 @@ void next_line_V345(char *buf)
 
 	case 0x23:
 	case 0xA3:
-		if (IndyFlag)
+		if (g_options.IndyFlag)
 			do_tok(buf, "getActorY", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		else
 			do_tok(buf, "getActorY", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
@@ -3619,7 +3614,7 @@ void next_line_V345(char *buf)
 
 	case 0x30:
 	case 0xB0:
-		if (scriptVersion == 3)
+		if (g_options.scriptVersion == 3)
 			do_tok(buf, "setBoxFlags", ((opcode & 0x80) ? A1V : A1B) | A2B);
 		else
 			do_matrix_ops(buf, opcode);
@@ -3645,7 +3640,7 @@ void next_line_V345(char *buf)
 
 	case 0x22:
 	case 0xA2:
-		if (scriptVersion == 5)
+		if (g_options.scriptVersion == 5)
 			do_tok(buf, "getAnimCounter", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		else
 			do_tok(buf, "saveLoadGame", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
@@ -3721,7 +3716,7 @@ void next_line_V345(char *buf)
 		break;
 
 	default:
-		if (haltOnError) {
+		if (g_options.haltOnError) {
 			error("Unknown opcode %.2X", opcode);
 		}
 		sprintf(buf, "ERROR: Unknown opcode %.2X!", opcode);

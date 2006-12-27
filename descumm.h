@@ -91,7 +91,7 @@ extern BlockStack g_blockStack;
 
 
 //
-// Jump decoding auxillaries (used by the code which tries to translate jumps
+// Jump decoding auxiliaries (used by the code which tries to translate jumps
 // back into if / else / while / etc. constructs).
 //
 extern bool pendingElse, haveElse;
@@ -106,39 +106,53 @@ extern int pendingElseIndent;
 extern int g_jump_opcode;
 
 //
-// Command line options
+// Command line gptions
 //
-extern bool alwaysShowOffs;
-extern bool dontOutputIfs;
-extern bool dontOutputElse;
-extern bool dontOutputElseif;
-extern bool dontOutputWhile;
-extern bool dontOutputBreaks;
-extern bool dontShowOpcode;
-extern bool dontShowOffsets;
-extern bool haltOnError;
+struct Options {
+	bool alwaysShowOffs;
+	bool dontOutputIfs;
+	bool dontOutputElse;
+	bool dontOutputElseif;
+	bool dontOutputWhile;
+	bool dontOutputBreaks;
+	bool dontShowOpcode;
+	bool dontShowOffsets;
+	bool haltOnError;
+	
+	bool HumongousFlag;
+	bool ZakFlag;
+	bool IndyFlag;
+	bool GF_UNBLOCKED;
+		
+	//
+	// The SCUMM version used for the script we are descumming.
+	//
+	byte scriptVersion;
+	byte heVersion;
+};
 
-extern bool HumongousFlag;
-extern bool ZakFlag;
-extern bool IndyFlag;
-extern bool GF_UNBLOCKED;
+
+extern Options g_options;
 
 //
-// The SCUMM version used for the script we are descumming.
+// Start and length of the script code (w/o header)
 //
-extern byte scriptVersion;
-extern byte heVersion;
+extern byte *g_scriptStart;
+extern uint g_scriptSize;
 
 //
-// Various positions / offsets
+// Pointer to the current byte, i.e. the byte to be
+// read next.
 //
-extern byte *cur_pos, *org_pos;
+extern byte *g_scriptCurPos;
+
+
+// The variable offs_of_line indicates the offset associated to
+// the next line to be printed; in other words, it is the offset of
+// the first bytecode op which is part of the current line (recall
+// that a single line can correspond to multiple ops, e.g. several
+// push-ops plus one op using all those pushed values).
 extern int offs_of_line;
-
-//
-// Total size of the currently loaded script
-//
-extern uint size_of_code;
 
 //
 // Common

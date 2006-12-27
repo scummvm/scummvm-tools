@@ -64,7 +64,7 @@ int skipVerbHeader_V12(byte *p)
 	int offset = 15;
 	int minOffset = 255;
 
-	if (scriptVersion == 0)
+	if (g_options.scriptVersion == 0)
 		offset = 14;
 	p += offset;
 
@@ -82,7 +82,7 @@ int skipVerbHeader_V12(byte *p)
 int skipVerbHeader_V34(byte *p)
 {
 	byte code;
-	int offset = GF_UNBLOCKED ? 17 : 19;
+	int offset = g_options.GF_UNBLOCKED ? 17 : 19;
 	int minOffset = 255;
 	p += offset;
 	
@@ -147,94 +147,94 @@ char *parseCommandLine(int argc, char *argv[]) {
 				switch (tolower(*s)) {
 
 				case '0':
-					scriptVersion = 0;
+					g_options.scriptVersion = 0;
 					g_jump_opcode = 0x18;
-					GF_UNBLOCKED = true;
+					g_options.GF_UNBLOCKED = true;
 					break;
 				case '1':
-					scriptVersion = 1;
+					g_options.scriptVersion = 1;
 					g_jump_opcode = 0x18;
-					GF_UNBLOCKED = true;
+					g_options.GF_UNBLOCKED = true;
 					break;
 				case '2':
-					scriptVersion = 2;
+					g_options.scriptVersion = 2;
 					g_jump_opcode = 0x18;
-					GF_UNBLOCKED = true;
+					g_options.GF_UNBLOCKED = true;
 					break;
 				case '3':
-					scriptVersion = 3;
+					g_options.scriptVersion = 3;
 					g_jump_opcode = 0x18;
 					break;
 				case '4':
-					scriptVersion = 4;
+					g_options.scriptVersion = 4;
 					g_jump_opcode = 0x18;
 					break;
 				case '5':
-					scriptVersion = 5;
+					g_options.scriptVersion = 5;
 					g_jump_opcode = 0x18;
 					break;
 				case 'n':
-					IndyFlag = 1; // Indy3
-					scriptVersion = 3;
+					g_options.IndyFlag = 1; // Indy3
+					g_options.scriptVersion = 3;
 					g_jump_opcode = 0x18;
 					break;
 				case 'z':
-					ZakFlag = 1; // Zak
-					scriptVersion = 3;
+					g_options.ZakFlag = 1; // Zak
+					g_options.scriptVersion = 3;
 					g_jump_opcode = 0x18;
 					break;
 				case 'u':
-					GF_UNBLOCKED = true;
+					g_options.GF_UNBLOCKED = true;
 					break;
 
 				case 'p':
-					HumongousFlag = true;
+					g_options.HumongousFlag = true;
 					// Fall through
 				case '6':
-					scriptVersion = 6;
+					g_options.scriptVersion = 6;
 					g_jump_opcode = 0x73;
 					break;
 				case '7':
-					scriptVersion = 7;
+					g_options.scriptVersion = 7;
 					g_jump_opcode = 0x73;
 					break;
 				case '8':
-					scriptVersion = 8;
+					g_options.scriptVersion = 8;
 					g_jump_opcode = 0x66;
 					break;
 
 				case '9':
-					heVersion = 72;
-					scriptVersion = 6;
+					g_options.heVersion = 72;
+					g_options.scriptVersion = 6;
 					g_jump_opcode = 0x73;
 					break;
 
 				case 'o':
-					alwaysShowOffs = true;
+					g_options.alwaysShowOffs = true;
 					break;
 				case 'i':
-					dontOutputIfs = true;
+					g_options.dontOutputIfs = true;
 					break;
 				case 'e':
-					dontOutputElse = true;
+					g_options.dontOutputElse = true;
 					break;
 				case 'f':
-					dontOutputElseif = true;
+					g_options.dontOutputElseif = true;
 					break;
 				case 'w':
-					dontOutputWhile = true;
+					g_options.dontOutputWhile = true;
 					break;
 				case 'b':
-					dontOutputBreaks = true;
+					g_options.dontOutputBreaks = true;
 					break;
 				case 'c':
-					dontShowOpcode = true;
+					g_options.dontShowOpcode = true;
 					break;
 				case 'x':
-					dontShowOffsets = true;
+					g_options.dontShowOffsets = true;
 					break;
 				case 'h':
-					haltOnError = true;
+					g_options.haltOnError = true;
 					break;
 				default:
 					ShowHelpAndExit();
@@ -256,12 +256,12 @@ int main(int argc, char *argv[]) {
 	byte *memorg;
 	char *filename;
 
-	scriptVersion = 0xff;
-	heVersion = 0;
+	memset(&g_options, 0, sizeof(g_options));
+	g_options.scriptVersion = 0xff;
 	
 	// Parse the arguments
 	filename = parseCommandLine(argc, argv);
-	if (!filename || scriptVersion == 0xff)
+	if (!filename || g_options.scriptVersion == 0xff)
 		ShowHelpAndExit();
 
 	in = fopen(filename, "rb");
@@ -272,113 +272,114 @@ int main(int argc, char *argv[]) {
 
 	// Read the file into memory
 	memorg = (byte *)malloc(MAX_FILE_SIZE);
-	size_of_code = fread(memorg, 1, MAX_FILE_SIZE, in);
+	g_scriptSize = fread(memorg, 1, MAX_FILE_SIZE, in);
 	fclose(in);
 
 	offs_of_line = 0;
-	org_pos = memorg;
+	g_scriptStart = memorg;
+	g_scriptCurPos = g_scriptStart;
 
-	if (GF_UNBLOCKED) {
-		if (size_of_code < 4) {
+	if (g_options.GF_UNBLOCKED) {
+		if (g_scriptSize < 4) {
 			error("File too small to be a script");
 		}
 		// Hack to detect verb script: first 4 bytes should be file length
-		if (READ_LE_UINT32(org_pos) == size_of_code) {
-			if (scriptVersion <= 2)
-				offs_of_line = skipVerbHeader_V12(org_pos);
+		if (READ_LE_UINT32(g_scriptStart) == g_scriptSize) {
+			if (g_options.scriptVersion <= 2)
+				offs_of_line = skipVerbHeader_V12(g_scriptStart);
 			else
-				offs_of_line = skipVerbHeader_V34(org_pos);
+				offs_of_line = skipVerbHeader_V34(g_scriptStart);
 		} else {
-			org_pos += 4;
+			g_scriptStart += 4;
 		}
-	} else if (scriptVersion >= 5) {
-		if (size_of_code < (scriptVersion == 5 ? 8 : 9)) {
+	} else if (g_options.scriptVersion >= 5) {
+		if (g_scriptSize < (g_options.scriptVersion == 5 ? 8 : 9)) {
 			error("File too small to be a script");
 		}
 	
-		switch (READ_BE_UINT32(org_pos)) {
+		switch (READ_BE_UINT32(g_scriptStart)) {
 		case 'LSC2':
-			if (size_of_code <= 12) {
+			if (g_scriptSize <= 12) {
 				printf("File too small to be a local script\n");
 			}
-			printf("Script# %d\n", READ_LE_UINT32(org_pos+8));
-			org_pos += 12;
+			printf("Script# %d\n", READ_LE_UINT32(g_scriptStart+8));
+			g_scriptStart += 12;
 			break;											/* Local script */
 		case 'LSCR':
-			if (scriptVersion == 8) {
-				if (size_of_code <= 12) {
+			if (g_options.scriptVersion == 8) {
+				if (g_scriptSize <= 12) {
 					printf("File too small to be a local script\n");
 				}
-				printf("Script# %d\n", READ_LE_UINT32(org_pos+8));
-				org_pos += 12;
-			} else if (scriptVersion == 7) {
-				if (size_of_code <= 10) {
+				printf("Script# %d\n", READ_LE_UINT32(g_scriptStart+8));
+				g_scriptStart += 12;
+			} else if (g_options.scriptVersion == 7) {
+				if (g_scriptSize <= 10) {
 					printf("File too small to be a local script\n");
 				}
-				printf("Script# %d\n", READ_LE_UINT16(org_pos+8));
-				org_pos += 10;
+				printf("Script# %d\n", READ_LE_UINT16(g_scriptStart+8));
+				g_scriptStart += 10;
 			} else {
-				if (size_of_code <= 9) {
+				if (g_scriptSize <= 9) {
 					printf("File too small to be a local script\n");
  				}
-				printf("Script# %d\n", (byte)org_pos[8]);
-				org_pos += 9;
+				printf("Script# %d\n", (byte)g_scriptStart[8]);
+				g_scriptStart += 9;
 			}
 			break;											/* Local script */
 		case 'SCRP':
-			org_pos += 8;
+			g_scriptStart += 8;
 			break;											/* Script */
 		case 'ENCD':
-			org_pos += 8;
+			g_scriptStart += 8;
 			break;											/* Entry code */
 		case 'EXCD':
-			org_pos += 8;
+			g_scriptStart += 8;
 			break;											/* Exit code */
 		case 'VERB':
-			if (scriptVersion == 8) {
-				org_pos += 8;
-				offs_of_line = skipVerbHeader_V8(org_pos);
+			if (g_options.scriptVersion == 8) {
+				g_scriptStart += 8;
+				offs_of_line = skipVerbHeader_V8(g_scriptStart);
 			} else
-				offs_of_line = skipVerbHeader_V567(org_pos);
+				offs_of_line = skipVerbHeader_V567(g_scriptStart);
 			break;											/* Verb */
 		default:
 			error("Unknown script type");
 		}
 	} else {
-		if (size_of_code < 6) {
+		if (g_scriptSize < 6) {
 			error("File too small to be a script");
 		}
-		switch (READ_BE_UINT16(org_pos + 4)) {
+		switch (READ_BE_UINT16(g_scriptStart + 4)) {
 		case 'LS':
-			printf("Script# %d\n", (byte)org_pos[6]);
-			org_pos += 7;
+			printf("Script# %d\n", (byte)g_scriptStart[6]);
+			g_scriptStart += 7;
 			break;			/* Local script */
 		case 'SC':
-			org_pos += 6;
+			g_scriptStart += 6;
 			break;			/* Script */
 		case 'EN':
-			org_pos += 6;
+			g_scriptStart += 6;
 			break;			/* Entry code */
 		case 'EX':
-			org_pos += 6;
+			g_scriptStart += 6;
 			break;			/* Exit code */
 		case 'OC':
-			offs_of_line = skipVerbHeader_V34(org_pos);
+			offs_of_line = skipVerbHeader_V34(g_scriptStart);
 			break;			/* Verb */
 		default:
 			error("Unknown script type");
 		}
 	}
 
-	cur_pos = org_pos + offs_of_line;
+	g_scriptCurPos = g_scriptStart + offs_of_line;
 
 	offs_of_line = get_curoffs();
-	while (cur_pos < size_of_code + memorg) {
-		byte opcode = *cur_pos;
+	while (g_scriptCurPos < g_scriptSize + memorg) {
+		byte opcode = *g_scriptCurPos;
 		int j = g_blockStack.size();
 		char outputLineBuffer[8192] = "";
 
-		switch (scriptVersion) {
+		switch (g_options.scriptVersion) {
 		case 0:
 			next_line_V0(outputLineBuffer);
 			break;
@@ -392,7 +393,7 @@ int main(int argc, char *argv[]) {
 			next_line_V345(outputLineBuffer);
 			break;
 		case 6:
-			if (heVersion)
+			if (g_options.heVersion)
 				next_line_HE_V72(outputLineBuffer);
 			else
 				next_line_V67(outputLineBuffer);
@@ -424,7 +425,7 @@ int main(int argc, char *argv[]) {
 	printf("END\n");
 	
 /*
-	if (scriptVersion >= 6 && num_stack != 0) {
+	if (g_options.scriptVersion >= 6 && num_stack != 0) {
 		printf("Stack count: %d\n", num_stack);
 		if (num_stack > 0) {
 			printf("Stack contents:\n");
