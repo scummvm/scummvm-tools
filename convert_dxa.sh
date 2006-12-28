@@ -31,7 +31,7 @@ do
     then
 	$WINE "$BINK" "$i" "$in.png" /n-1 /z1 /#;
 	$WINE "$BINK" "$i" "$in.wav" /v /#;
-	$ENCODE_DXA --$FORMAT "$in";
+	$ENCODE_DXA --$FORMAT "$in.smk";
 	rm *.png *.wav;
     fi
 done
