@@ -21,17 +21,10 @@
  */
 
 #include "compress.h"
-
-struct PakFileEntry {
-	char filename[25];
-	uint8 *fileData;
-	uint32 size;
-};
+#include "kyra_pak.h"
 
 static void showhelp(const char *exename);
-static void process(FILE *file, const char *output);
-static void decompress(uint8 *data, uint32 size, PakFileEntry &output);
-static void processFile(const char *file, PakFileEntry &output);
+static void process(const char *infile, const char *output);
 
 #define OUTPUT_MP3 ".VO3"
 #define OUTPUT_OGG ".VOG"
@@ -39,7 +32,7 @@ static void processFile(const char *file, PakFileEntry &output);
 
 #define TEMPFILE "TEMP.VOC"
 
-const char *outputName = 0;
+const char *outputExt = 0;
 static CompressMode gCompMode = kMP3Mode;
 
 int main(int argc, char *argv[]) {
@@ -65,35 +58,29 @@ int main(int argc, char *argv[]) {
 
 	switch (gCompMode) {
 	case kMP3Mode:
-		outputName = OUTPUT_MP3;
+		outputExt = OUTPUT_MP3;
 		tempEncoded = TEMP_MP3;
 		if (!process_mp3_parms(argc - 1, argv, i))
 			showhelp(argv[0]);
 		break;
 	case kVorbisMode:
-		outputName = OUTPUT_OGG;
+		outputExt = OUTPUT_OGG;
 		tempEncoded = TEMP_OGG;
 		if (!process_ogg_parms(argc - 1, argv, i))
 			showhelp(argv[0]);
 		break;
 	case kFlacMode:
-		outputName = OUTPUT_FLAC;
+		outputExt = OUTPUT_FLAC;
 		tempEncoded = TEMP_FLAC;
 		if (!process_flac_parms(argc - 1, argv, i))
 			showhelp(argv[0]);
 		break;
 	}
 	
-	i = argc - 2;
-	
-	FILE *input = fopen(argv[i], "rb");
-	if (!input) {
-		printf("Cannot open file: %s\n", argv[i]);
-		exit(-1);
-	}
-	
-	process(input, argv[argc - 1]);
-	fclose(input);
+	if (scumm_stricmp(argv[argc - 2], argv[argc - 1]) == 0)
+		error("infile and outfile are the same file");
+	process(argv[argc - 2], argv[argc - 1]);
+	return 0;
 }
 
 static void showhelp(const char *exename) {
@@ -133,178 +120,54 @@ static void showhelp(const char *exename) {
 	exit(2);
 }
 
-static void process(FILE *file, const char *output) {
-	FILE *outputFile = fopen(output, "wb");
-	if (!outputFile) {
-		printf("Cannot open file: %s\n", output);
-		exit(-1);
-	}
-
-	uint32 file_size = fileSize(file);
-	fseek(file, 0, SEEK_SET);
-	int filesInPak = 0;
-	readUint32LE(file);
-	while (1) {
-		++filesInPak;
-		PakFileEntry tempPak;
-		int namePos = 0;
-		while (1) {
-			tempPak.filename[namePos++] = readByte(file);
-			if (!tempPak.filename[namePos-1])
-				break;
-		}
-		uint32 temp = readUint32LE(file);
-		if (temp == file_size)
-			break;
-	}
-	if (filesInPak == 0) {
-		printf("ERROR: Empty or unknown PAK file format\n");
-		exit(-1);
-	}
-	printf("Found %d files in package\n", filesInPak);
-	
-	PakFileEntry *pakEntries = new PakFileEntry[filesInPak];
-	assert(pakEntries);
-	memset(pakEntries, 0, sizeof(PakFileEntry)*filesInPak);
-	
-	fseek(file, 0, SEEK_SET);
-	
-	uint32 startOffset = readUint32LE(file);
-	uint32 endOffset = 0;
-	int pakPos = 0;
-	while (!feof(file)) {
-		PakFileEntry tempPak;
-		
-		int namePos = 0;
-		while (1) {
-			tempPak.filename[namePos++] = readByte(file);
-			if (!tempPak.filename[namePos-1])
-				break;
-		}		
-		endOffset = readUint32LE(file);
-		
-		if (strstr(tempPak.filename, ".VOC") == NULL) {
-			if (endOffset == file_size)
-				break;
-			startOffset = endOffset;
-			continue;
-		}
-		
-		if (!endOffset)
-			endOffset = file_size;
-		
-		long position = ftell(file);
-		
-		fseek(file, startOffset, SEEK_SET);
-		fseek(file, 26, SEEK_CUR);
-
-		if (fgetc(file) != 1) {
-			warning("broken VOC file '%s' skipping it...", tempPak.filename);
-			startOffset = endOffset;
-			fseek(file, position, SEEK_SET);
-			continue;
-		}
-
-		fseek(file, -1, SEEK_CUR);
-		
-		uint8 *temp = new uint8[endOffset - startOffset];
-		assert(temp);
-		fread(temp, sizeof(uint8), endOffset - startOffset, file);
-
-		char *vocStart = strstr(tempPak.filename, ".VOC");
-		for (unsigned int i = 0; i < strlen(outputName); ++i) {
-			vocStart[i] = outputName[i];
-		}
-		strcpy(pakEntries[pakPos].filename, tempPak.filename);
-		
-		decompress(temp, endOffset - startOffset, pakEntries[pakPos++]);
-		
-		delete [] temp;
-		temp = 0;
-		
-		fseek(file, position, SEEK_SET);
-		
-		if (endOffset == file_size)
-			break;
-		startOffset = endOffset;
-	}
-	
-	// writes the new pack file
-	uint32 startAddr = 0x0;
-	static const char *zeroName = "\0\0\0\0\0";
-	
-	for (int i = 0; i < filesInPak; ++i) {
-		if (strcmp(pakEntries[i].filename, "") == 0)
-			continue;
-		startAddr += strlen(pakEntries[i].filename) + 1 + 4;
-	}
-	startAddr += 5 + 4;
-	
-	// writes the filenames
-	uint32 curAddr = startAddr;
-	for (int i = 0; i < filesInPak; ++i) {
-		if (strcmp(pakEntries[i].filename, "") == 0)
-			continue;
-		writeUint32LE(outputFile, curAddr);
-		fwrite(pakEntries[i].filename, sizeof(uint8), strlen(pakEntries[i].filename) + 1, outputFile);
-		curAddr += pakEntries[i].size;
-	}
-	
-	writeUint32LE(outputFile, curAddr);
-	fwrite(zeroName, sizeof(uint8), 5, outputFile);
-	
-	for (int i = 0; i < filesInPak; ++i) {
-		if (strcmp(pakEntries[i].filename, "") == 0)
-			continue;
-		fwrite(pakEntries[i].fileData, sizeof(uint8), pakEntries[i].size, outputFile);
-		delete [] pakEntries[i].fileData;
-		pakEntries[i].fileData = 0;
-	}
-	
-	fclose(outputFile);
-	unlink(TEMPFILE);
+static bool hasSuffix(const char *str, const char *suf) {
+	const int sufSize = strlen(suf);
+	int off = strlen(str);
+	if (off < sufSize)
+		return false;
+	off -= sufSize;
+	printf("'%s'\n", &str[off]);
+	return (scumm_stricmp(&str[off], suf) == 0);
 }
 
-static void decompress(uint8 *data, uint32 size, PakFileEntry &output) {
-	FILE *tempFile = fopen(TEMPFILE, "wb");
-	if (!tempFile) {
-		printf("Cannot open file: %s\n", TEMPFILE);
-		exit(-1);
-	}
-	fwrite(data, sizeof(uint8), size, tempFile);
-	fclose(tempFile);
-	
-	tempFile = fopen(TEMPFILE, "rb");
-	if (!tempFile) {
-		printf("Cannot open file: %s\n", TEMPFILE);
-		exit(-1);
-	}
-	
-	extractAndEncodeVOC(TEMP_RAW, tempFile, gCompMode);
-	processFile(tempEncoded, output);
-	fclose(tempFile);
+static void process(const char *infile, const char *outfile) {
+	PAKFile input, output;
+	if (!input.loadFile(infile, false))
+		return;
+	if (!output.loadFile(0, false))
+		return;
+		
+	PAKFile::cFileList *list = input.getFileList();
+	char outputName[32];
+	for (; list; list = list->next) {
+		if (!hasSuffix(list->filename, ".VOC"))
+			continue;
 
-	unlink(TEMPFILE);
-	unlink(TEMP_RAW);
-	unlink(tempEncoded);
-}
+		if (list->data[26] != 1) {
+			warning("broken VOC file '%s' skipping it...", list->filename);
+			continue;
+		}
 
-static void processFile(const char *file, PakFileEntry &output) {
-	FILE *tempFile = fopen(file, "rb");
-	if (!tempFile) {
-		printf("Cannot open file: %s\n", file);
-		exit(-1);
+		input.outputFileAs(list->filename, TEMPFILE);
+		strncpy(outputName, list->filename, 32);
+		
+		FILE *tempFile = fopen(TEMPFILE, "rb");
+		extractAndEncodeVOC(TEMP_RAW, tempFile, gCompMode);
+		fclose(tempFile);
+		
+		char *vocStart = strstr(outputName, ".VOC");
+		for (unsigned int i = 0; i < strlen(outputExt); ++i)
+			vocStart[i] = outputExt[i];
+		output.addFile(outputName, tempEncoded);
+		
+		unlink(TEMPFILE);
+		unlink(TEMP_RAW);
+		unlink(tempEncoded);
 	}
 	
-	fseek(tempFile, 0, SEEK_END);
-	output.size = ftell(tempFile);
-	
-	fseek(tempFile, 0, SEEK_SET);
-	
-	output.fileData = new uint8[output.size];
-	assert(output.fileData);
-	
-	fread(output.fileData, sizeof(uint8), output.size, tempFile); 
-	
-	fclose(tempFile);
+	if (output.getFileList()) {
+		output.saveFile(outfile);
+	} else {
+		printf("file '%s' doesn't contain any .voc files\n", infile);
+	}
 }

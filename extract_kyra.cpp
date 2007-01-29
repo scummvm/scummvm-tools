@@ -21,7 +21,7 @@
  *
  */
 
-#include "extract_kyra.h"
+#include "kyra_pak.h"
 
 int main(int argc, char **argv) {
 	if (argc < 2) {
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 				"-x       Extract all files\n"
 				"-a       Use this if you want to extract files from the Amiga .PAK files\n",
 				argv[0]);
-		return false;
+		return -1;
 	}
 	
 	bool extractAll = false, extractOne = false;
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 				if (param >= argc) {
 					printf("you have to add a filename to option -o\n"
 							"like: unpackkyra A_E.PAK -o ALGAE.CPS\n");
-					return false;
+					return -1;
 				}
 				
 				++pos;
@@ -61,149 +61,19 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	PAKFile myfile(argv[1], isAmiga);
-	
+	PAKFile myfile;
+	if (!myfile.loadFile(argv[1], isAmiga)) {
+		error("couldn't load file '%s'", argv[1]);
+		return -1;
+	}
+
 	if(extractAll) {
 		myfile.outputAllFiles();
 	} else if(extractOne) {
 		myfile.outputFile(argv[param]);
 	} else {
-		myfile.drawFilelist();
+		myfile.drawFileList();
 	}
 
-	return true;
-}
-
-PAKFile::PAKFile(const char* file, bool isAmiga) {
-	FILE *pakfile = fopen(file, "rb");
-	if (!pakfile) {
-		error("couldn't open file '%s'", file);
-	}
-	
-	_open = true;
-	_isAmiga = isAmiga;
-	_filesize = fileSize(pakfile);
-
-	_buffer = new uint8[_filesize];
-	assert(_buffer);
-	
-	fread(_buffer, _filesize, 1, pakfile);
-	
-	fclose(pakfile);
-}
-
-void PAKFile::drawFilelist(void) {
-	const char* currentName = 0;
-	
-	uint32 startoffset = _isAmiga ? READ_BE_UINT32(_buffer) : READ_LE_UINT32(_buffer);
-	uint32 endoffset = 0;
-	uint8* position = _buffer + 4;
-	
-	for (;;) {
-		uint32 strlgt = strlen((const char*)position);
-		currentName = (const char*)position;
-		
-		if (!(*currentName))
-			break;
-
-		position += strlgt + 1;
-		// skip offset
-		endoffset = _isAmiga ? READ_BE_UINT32(position) : READ_LE_UINT32(position);
-		if (endoffset > _filesize) {
-			endoffset = _filesize;
-		} else if (endoffset == 0) {
-			endoffset = _filesize;
-		}
-		position += 4;
-		
-		printf("Filename: %s size: %d\n", currentName, endoffset - startoffset);
-		
-		if (endoffset == _filesize) {
-			break;
-		}
-		
-		startoffset = endoffset;
-	}
-}
-
-void PAKFile::outputFile(const char* file) {
-	const char* currentName = 0;
-	
-	uint32 startoffset = _isAmiga ? READ_BE_UINT32(_buffer) : READ_LE_UINT32(_buffer);
-	uint32 endoffset = 0;
-	uint8* position = _buffer + 4;
-	
-	for (;;) {
-		uint32 strlgt = strlen((const char*)position);
-		currentName = (const char*)position;
-		
-		if (!(*currentName))
-			break;
-
-
-		position += strlgt + 1;
-		// skip offset
-		endoffset = _isAmiga ? READ_BE_UINT32(position) : READ_LE_UINT32(position);
-		if (endoffset > _filesize) {
-			endoffset = _filesize;
-		} else if (endoffset == 0) {
-			endoffset = _filesize;
-		}
-		position += 4;
-		
-		if (!strcmp(currentName, file)) {
-			FILE *output = fopen(file, "wb");
-			if (output) {
-				fwrite(_buffer + startoffset, endoffset - startoffset, 1, output);
-				fclose(output);
-			}
-			return;
-		}
-		
-		if (endoffset == _filesize) {
-			break;
-		}
-		
-		startoffset = endoffset;
-	}
-	
-	printf("File '%s' not found in this pakfile\n", file);
-}
-
-void PAKFile::outputAllFiles(void) {
-	const char* currentName = 0;
-	
-	uint32 startoffset = _isAmiga ? READ_BE_UINT32(_buffer) : READ_LE_UINT32(_buffer);
-	uint32 endoffset = 0;
-	uint8* position = _buffer + 4;
-	
-	for (;;) {
-		uint32 strlgt = strlen((const char*)position);
-		currentName = (const char*)position;
-		
-		if (!(*currentName))
-			break;
-
-		position += strlgt + 1;
-		// skip offset
-		endoffset = _isAmiga ? READ_BE_UINT32(position) : READ_LE_UINT32(position);
-		if (endoffset > _filesize) {
-			endoffset = _filesize;
-		} else if (endoffset == 0) {
-			endoffset = _filesize;
-		}
-		position += 4;
-		
-		FILE *output = fopen(currentName, "wb");
-		if (output) {
-			fwrite(_buffer + startoffset, endoffset - startoffset, 1, output);
-			fclose(output);
-		}
-		
-		if (endoffset == _filesize) {
-			break;
-		}
-		
-		startoffset = endoffset;
-	}
+	return 0;
 }

@@ -48,7 +48,7 @@ UTILS := \
 
 all: $(TARGETS)
 
-compress_kyra$(EXEEXT): compress_kyra.o compress.o util.o
+compress_kyra$(EXEEXT): compress_kyra.o kyra_pak.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 compress_queen$(EXEEXT): compress_queen.o util.o
@@ -93,7 +93,7 @@ encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
 extract_agos$(EXEEXT): extract_agos.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-extract_kyra$(EXEEXT): extract_kyra.o util.o
+extract_kyra$(EXEEXT): extract_kyra.o kyra_pak.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
@@ -136,6 +136,7 @@ extract_mm_c64.o \
 extract_mm_nes.o \
 extract_scumm_mac.o \
 extract_zak_c64.o \
+kyra_pak.o \
 util.o: util.h
 
 clean:
