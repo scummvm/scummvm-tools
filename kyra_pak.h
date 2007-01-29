@@ -44,6 +44,8 @@ public:
 
 	bool addFile(const char *name, const char *file);
 	bool addFile(const char *name, uint8 *data, uint32 size);
+	
+	bool removeFile(const char *name);
 public:
 	struct FileList {
 		FileList() : filename(0), size(0), data(0), next(0) {}

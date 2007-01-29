@@ -68,22 +68,11 @@ bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 		}
 		position += 4;
 		
-		FileList *newEntry = new FileList;
-		assert(newEntry);
-		
-		newEntry->filename = new char[strlgt+1];
-		assert(newEntry->filename);
-		memcpy(newEntry->filename, currentName, strlgt+1);
-		newEntry->size = endoffset - startoffset;
-		newEntry->data = new uint8[newEntry->size];
-		assert(newEntry->data);
-		memcpy(newEntry->data, buffer + startoffset, newEntry->size);
-		
-		if (_fileList) {
-			_fileList->addEntry(newEntry);
-		} else {
-			_fileList = newEntry;
-		}
+		uint8 *data = new uint8[endoffset - startoffset];
+		assert(data);
+		memcpy(data, buffer + startoffset, endoffset - startoffset);
+		addFile(currentName, data, endoffset - startoffset);
+		data = 0;
 		
 		if (endoffset == filesize)
 			break;
@@ -173,7 +162,7 @@ bool PAKFile::outputFileAs(const char *f, const char *fn) {
 		error("couldn't open file '%s' in write mode", fn);
 		return false;
 	}
-	printf("Exracting file '%s'...", cur->filename);
+	printf("Exracting file '%s' to file '%s'...", cur->filename, fn);
 	if (fwrite(cur->data, 1, cur->size, file) == cur->size) {
 		printf("OK\n");
 	} else {
@@ -230,7 +219,7 @@ bool PAKFile::addFile(const char *name, uint8 *data, uint32 size) {
 	assert(newEntry);
 	newEntry->filename = new char[strlen(name)+1];
 	assert(newEntry->filename);
-	strcpy(newEntry->filename, name);
+	strncpy(newEntry->filename, name, strlen(name)+1);
 	newEntry->size = size;
 	newEntry->data = data;
 
@@ -239,6 +228,21 @@ bool PAKFile::addFile(const char *name, uint8 *data, uint32 size) {
 	} else {
 		_fileList = newEntry;
 	}
-
 	return true;
+}
+
+bool PAKFile::removeFile(const char *name) {
+	for (FileList *cur = _fileList, *last = 0; cur; last = cur, cur = cur->next) {
+		if (scumm_stricmp(cur->filename, name) == 0) {
+			FileList *next = cur->next;
+			cur->next = 0;
+			delete cur;
+			if (last)
+				last->next = next;
+			else
+				_fileList = next;
+			return true;
+		}
+	}
+	return false;
 }
