@@ -26,7 +26,6 @@ TARGETS := \
 	compress_sword1$(EXEEXT) \
 	compress_sword2$(EXEEXT) \
 	compress_touche$(EXEEXT) \
-	create_kyradat$(EXEEXT) \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
@@ -78,9 +77,6 @@ compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 
 compress_touche$(EXEEXT): compress_touche.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
-
-create_kyradat$(EXEEXT): create_kyradat.o kyra_pak.o util.o utils/md5.o
-	$(CXX) $(LDFLAGS) -o $@ $+
 
 dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
