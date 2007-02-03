@@ -31,10 +31,8 @@ bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 	_fileList = 0;
 
 	FILE *pakfile = fopen(file, "rb");
-	if (!pakfile) {
-		error("couldn't open file '%s'", file);
+	if (!pakfile)
 		return false;
-	}
 
 	uint32 filesize = fileSize(pakfile);
 
@@ -176,10 +174,8 @@ bool PAKFile::outputFileAs(const char *f, const char *fn) {
 const uint8 *PAKFile::getFileData(const char *file, uint32 *size) {
 	FileList *cur = (_fileList != 0) ? _fileList->findEntry(file) : 0;
 
-	if (!cur) {
-		error("file '%s' not found");
+	if (!cur)
 		return 0;
-	}
 	
 	if (size)
 		*size = cur->size;

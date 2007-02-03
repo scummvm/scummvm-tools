@@ -21,6 +21,7 @@ install:   all
 	strip compress_sword1.exe -o $(SCUMMVMPATH)/tools/compress_sword1.exe
 	strip compress_sword2.exe -o $(SCUMMVMPATH)/tools/compress_sword2.exe
 	strip compress_touche.exe -o $(SCUMMVMPATH)/tools/compress_touche.exe
+	strip create_kyradat.exe -o $(SCUMMVMPATH)/tools/create_kyradat.exe
 	strip dekyra.exe -o $(SCUMMVMPATH)/tools/dekyra.exe
 	strip descumm.exe -o $(SCUMMVMPATH)/tools/descumm.exe
 	strip desword2.exe -o $(SCUMMVMPATH)/tools/desword2.exe
