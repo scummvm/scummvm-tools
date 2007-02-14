@@ -92,8 +92,6 @@ static uint32 compress_sound_data_file(uint32 current_offset, FILE *output, FILE
 	}
 	fseek(output, 0, SEEK_END);
 
-	fclose(input);
-
 	return current_offset;
 }
 
