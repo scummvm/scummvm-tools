@@ -70,7 +70,11 @@ Compression Tools:
                 use lossy compression.
 
         compress_touche
-                Used to compress Touche speech files to MP3, Vorbis or FLAC.
+                Used to compress and pack Touche speech files ('Vxxx' and
+                'OBJ') to MP3, Vorbis or FLAC to a single file named
+                TOUCHE.SO3/.SOG/.SOF depending on the sound compression. Once
+                compressed, only TOUCHE.DAT and TOUCHE.SOx files are required
+                to play the game under ScummVM.
 
         compress_scumm_san <inputfile> <inputdir> <outputdir> [--ogg]
                 Compresses '.san' smush animation files. It uses lossless
