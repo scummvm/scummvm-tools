@@ -37,7 +37,7 @@ static const uint32 QTBL = 'QTBL';
 
 const char *tempEncoded;
 
-#define CURRENT_TBL_VERSION	1
+#define CURRENT_TBL_VERSION	2
 #define EXTRA_TBL_HEADER 8
 #define SB_HEADER_SIZE_V104 110
 #define SB_HEADER_SIZE_V110 122
@@ -51,21 +51,24 @@ enum {
 };
 
 enum {
-	VER_ENG_FLOPPY   = 0,
-	VER_ENG_TALKIE   = 1,
-	VER_FRE_FLOPPY   = 2,
-	VER_FRE_TALKIE   = 3,
-	VER_GER_FLOPPY   = 4,
-	VER_GER_TALKIE   = 5,
-	VER_ITA_FLOPPY   = 6,
-	VER_ITA_TALKIE   = 7,
-	VER_SPA_TALKIE   = 8,
-	VER_HEB_TALKIE   = 9,
-	VER_DEMO_PCGAMES = 10,
-	VER_DEMO         = 11,
-	VER_INTERVIEW    = 12,
+	VER_ENG_FLOPPY     = 0,
+	VER_ENG_TALKIE     = 1,
+	VER_FRE_FLOPPY     = 2,
+	VER_FRE_TALKIE     = 3,
+	VER_GER_FLOPPY     = 4,
+	VER_GER_TALKIE     = 5,
+	VER_ITA_FLOPPY     = 6,
+	VER_ITA_TALKIE     = 7,
+	VER_SPA_TALKIE     = 8,
+	VER_HEB_TALKIE     = 9,
+	VER_DEMO_PCGAMES   = 10,
+	VER_DEMO           = 11,
+	VER_INTERVIEW      = 12,
+	VER_AMI_ENG_FLOPPY = 13,
+	VER_AMI_DEMO       = 14,
+	VER_AMI_INTERVIEW  = 15,
 
-	VER_NUMBER       = 13
+	VER_PC_COUNT       = 13 /* PC versions */
 };
 
 struct GameVersion {
@@ -106,7 +109,10 @@ const struct GameVersion gameVersions[] = {
 	{ "CHM10", 0, 0, 0x000DA981, 190705558 },
 	{ "PE100", 1, 1, 0x00101EC6,   3724538 },
 	{ "PE100", 1, 1, 0x00102B7F,   3732177 },
-	{ "PEint", 1, 1, 0x00103838,   1915913 }
+	{ "PEint", 1, 1, 0x00103838,   1915913 },
+	{ "aEM10", 1, 0, 0x00103F1E,    351775 },
+	{ "CE101", 1, 1, 0x00107D8D,    563335 },
+	{ "PE100", 1, 1, 0x001086D4,    597032 }
 };
 
 const struct PatchFile patchFiles[] = {
@@ -133,7 +139,8 @@ void showhelp(char *exename)
 const struct GameVersion *detectGameVersion(uint32 size) {
 	const struct GameVersion *pgv = gameVersions;
 	int i;
-	for (i = 0; i < VER_NUMBER; ++i, ++pgv) {
+	/* Compressing/rebuiling an Amiga version is not supported */
+	for (i = 0; i < VER_PC_COUNT; ++i, ++pgv) {
 		if (pgv->dataFileSize == size) {
 			return pgv;
 		}
