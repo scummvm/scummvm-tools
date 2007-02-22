@@ -82,13 +82,13 @@ Compression Tools:
                 It also can create a separate Ogg file with the audio track.
 
                 Example of usage:
-                compress_Scumm_san opening.san uncomp comp
+                compress_scumm_san opening.san uncomp comp
 
                 In order to use such compressed files, your ScummVM binary
                 must have been built with zlib support enabled (you can find
                 out whether that's the case by looking at the About dialog).
-                For the Ogg or Mad compression feature, your ScummVM binary
-                naturally must have been built with Ogg or Mad support enabled.
+                For the Ogg or MP3 compression feature, your ScummVM binary
+                naturally must have been built with Ogg or MP3 support enabled.
 
                 NOTE: For some '.san' files there is a corresponding '.flu'
                 file, which contains offsets into the '.san' file. Hence, the
@@ -105,8 +105,8 @@ Compression Tools:
                 Example of usage:
                 compress_scumm.bun digmusic.bun uncomp comp
 
-                For the Ogg or Mad compression feature, your ScummVM binary
-                naturally must have been built with Ogg or Mad support enabled.
+                For the Ogg or MP3 compression feature, your ScummVM binary
+                naturally must have been built with Ogg or MP3 support enabled.
 
         compress_kyra
                 Used to compress The Legend of Kyrandia's speech files with
