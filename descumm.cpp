@@ -688,9 +688,9 @@ void do_decodeparsestring_v2(char *buf, byte opcode)
 		c &= 0x7f;
 
 		if (c < 8) {
-			buf += sprintf(buf, "^%d", c);
+			buf += sprintf(buf, "^%d", (int)c);
 			if (c > 3) {
-				buf += sprintf(buf, "^%d", get_byte());
+				buf += sprintf(buf, "^%d", (int)get_byte());
 			}
 		} else
 			*buf++ = c;
@@ -3595,13 +3595,13 @@ void next_line_V345(char *buf)
 				((opcode & 0x20) ? A3V : A3B);
 			switch (opcode & 0x1F) {
 			case 0x01:
-				do_tok(buf, "SaveVerbs", code);
+				do_tok(buf, "saveVerbs", code);
 				break;
 			case 0x02:
-				do_tok(buf, "RestoreVerbs", code);
+				do_tok(buf, "restoreVerbs", code);
 				break;
 			case 0x03:
-				do_tok(buf, "DeleteVerbs", code);
+				do_tok(buf, "deleteVerbs", code);
 				break;
 			default:
 				error("opcode 0xAB: Unhandled subop %d", opcode & 0x1F);
@@ -3635,9 +3635,46 @@ void next_line_V345(char *buf)
 		do_tok(buf, "pickupObject", ((opcode & 0x80) ? A1V : A1W));
 		break;
 
-	case 0xA7:
-		do_tok(buf, "saveLoadVars?", 0);
-		break;
+	case 0xA7:{
+			int d = get_byte();
+			buf += sprintf(buf, "saveLoadVars(");
+			if (d == 1) {
+				buf += sprintf(buf, "Load");
+			} else {
+				buf += sprintf(buf, "Save");
+			}
+			while ((d = get_byte()) != 0) {
+				switch (d & 0x1F) {
+				case 0x01:
+					buf += sprintf(buf, ", VarRange(");
+					buf = get_var(buf);
+					buf += sprintf(buf, ",");
+					buf = get_var(buf);
+					buf += sprintf(buf, ")");
+					break;
+				case 0x02:
+					buf += sprintf(buf, ", StringRange(");
+					buf = get_var_or_byte(buf, (d & 0x80));
+					buf += sprintf(buf, ",");
+					buf = get_var_or_byte(buf, (d & 0x40));
+					buf += sprintf(buf, ")");
+					break;
+				case 0x03:
+					buf += sprintf(buf, ", Open(");
+					buf = get_ascii(buf);
+					buf += sprintf(buf, ")");
+					break;
+				case 0x04:
+					buf += sprintf(buf, ", Append)");
+					return;
+				case 0x1F:
+					buf += sprintf(buf, ", Close)");
+					return;
+				}
+			}
+			buf += sprintf(buf, ")");
+			break;
+		}
 
 	case 0x67:
 	case 0xE7:
