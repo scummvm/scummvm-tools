@@ -3639,9 +3639,9 @@ void next_line_V345(char *buf)
 			int d = get_byte();
 			buf += sprintf(buf, "saveLoadVars(");
 			if (d == 1) {
-				buf += sprintf(buf, "Load");
-			} else {
 				buf += sprintf(buf, "Save");
+			} else {
+				buf += sprintf(buf, "Load");
 			}
 			while ((d = get_byte()) != 0) {
 				switch (d & 0x1F) {
