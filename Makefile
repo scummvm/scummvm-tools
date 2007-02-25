@@ -33,6 +33,7 @@ TARGETS := \
 	extract_agos$(EXEEXT) \
 	extract_kyra$(EXEEXT) \
 	extract_loom_tg16$(EXEEXT) \
+	extract_mm_apple$(EXEEXT) \
 	extract_mm_c64$(EXEEXT) \
 	extract_mm_nes$(EXEEXT) \
 	extract_scumm_mac$(EXEEXT) \
@@ -99,6 +100,9 @@ extract_kyra$(EXEEXT): extract_kyra.o kyra_pak.o util.o
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
+extract_mm_apple$(EXEEXT): extract_mm_apple.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
 extract_mm_c64$(EXEEXT): extract_mm_c64.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
@@ -132,6 +136,7 @@ desword2.o \
 encode_dxa.o \
 extract_kyra.o \
 extract_loom_tg16.o \
+extract_mm_apple.o \
 extract_mm_c64.o \
 extract_mm_nes.o \
 extract_scumm_mac.o \

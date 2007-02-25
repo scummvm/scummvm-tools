@@ -27,6 +27,10 @@ Extraction Tools:
                 to dump the code tracks on the CD.
                 There is currently no support for this game in ScummVM!
 
+        extract_mm_apple
+                Extracts data files from the Apple II version of Maniac
+                Mansion.
+
         extract_mm_c64
                 Extracts data files from the Commodore 64 version of Maniac
                 Mansion.
