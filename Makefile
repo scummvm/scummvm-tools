@@ -16,13 +16,13 @@ CFLAGS+= -Wpointer-arith -Wcast-qual -Wcast-align
 CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
 
 TARGETS := \
+	compress_agos$(EXEEXT) \
 	compress_kyra$(EXEEXT) \
 	compress_queen$(EXEEXT) \
 	compress_saga$(EXEEXT) \
 	compress_scumm_bun$(EXEEXT) \
 	compress_scumm_san$(EXEEXT) \
 	compress_scumm_sou$(EXEEXT) \
-	compress_simon$(EXEEXT) \
 	compress_sword1$(EXEEXT) \
 	compress_sword2$(EXEEXT) \
 	compress_touche$(EXEEXT) \
@@ -49,6 +49,9 @@ UTILS := \
 
 all: $(TARGETS)
 
+compress_agos$(EXEEXT): compress_agos.o compress.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+
+
 compress_kyra$(EXEEXT): compress_kyra.o kyra_pak.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
@@ -65,9 +68,6 @@ compress_scumm_san$(EXEEXT): compress_scumm_san.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lz
 
 compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-compress_simon$(EXEEXT): compress_simon.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
 compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
@@ -119,13 +119,13 @@ extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
 
 # Most compress_* tools (except for compress_queen) use compress.h
-compress_saga.o compress_scumm_sou.o compress_scumm_bun.o \
-compress_simon.o compress_sword1.o compress_sword2.o \
+compress_agos.o compress_saga.o compress_scumm_sou.o \
+compress_scumm_bun.o compress_sword1.o compress_sword2.o \
 compress_kyra.o compress.o encode_dxa.o: compress.h
 
 # Virtually everything depends on util.h
-compress_saga.o compress_scumm_sou.o compress_scumm_bun.o \
-compress_simon.o compress_sword1.o compress_sword2.o \
+compress_agos.o  compress_saga.o compress_scumm_sou.o \
+compress_scumm_bun.o compress_sword1.o compress_sword2.o \
 compress.o \
 compress_queen.o \
 compress_kyra.o \

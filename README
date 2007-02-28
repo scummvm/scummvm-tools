@@ -47,6 +47,10 @@ Compression Tools:
                 Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
                 or .sof (FLAC).
 
+        compress_agos
+                Used to compress the Feeble Files or Simon 1/2 voc/wav files
+                to MP3, Vorbis or FLAC.
+
         compress_queen
                 Used to rebuild the datafile of Flight of the Amazon Queen,
                 and allow optional MP3, Vorbis or FLAC compression.
@@ -56,10 +60,6 @@ Compression Tools:
                 Vorbis.
                 There is currently no support for compressed sound files in
                 ScummVM!
-
-        compress_simon
-                Used to compress the Feeble Files or Simon 1/2 voc/wav files
-                to MP3, Vorbis or FLAC.
 
         compress_sword1
                 Used to compress Broken Sword 1's music and speech files to
