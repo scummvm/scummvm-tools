@@ -145,7 +145,7 @@ kyra_pak.o \
 util.o: util.h
 
 clean:
-	rm -f *.o $(TARGETS)
+	rm -f *.o utils/*.o $(TARGETS)
 
 .cpp.o:
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
