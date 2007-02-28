@@ -31,12 +31,10 @@ typedef int BOOL;
 	#define	vsnprintf _vsnprintf
 #endif
 
-void writeByteAlt(FILE *fp, uint8 b)
-{
+void writeByteAlt(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
-void writeUint16LEAlt(FILE *fp, uint16 value)
-{
+void writeUint16LEAlt(FILE *fp, uint16 value) {
 	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
 }
 #define writeByte writeByteAlt
@@ -55,15 +53,13 @@ void notice(const char *s, ...) {
 
 unsigned char room_disks[55], room_tracks[55], room_sectors[55];
 
-int main (int argc, char **argv)
-{
+int main (int argc, char **argv) {
 	FILE *input1, *input2, *output;
 	char fname[256];
 	int i, j;
 	unsigned short signature;
 
-	if (argc < 3)
-	{
+	if (argc < 3) {
 		printf("Syntax: %s <disk1.dsk> <disk2.dsk>\n",argv[0]);
 		return 1;
 	}
@@ -106,22 +102,26 @@ int main (int argc, char **argv)
 		writeByte(output, room_tracks[i]);
 	}
 
-	/* TODO: Double check values, as index is slightly longer */
-
+	/* copy costume offsets */
 	for (i = 0; i < 25; i++)
 		writeByte(output, readByte(input1));
 	for (i = 0; i < 25; i++)
 		writeUint16LE(output, readUint16LE(input1));
 
+	/* copy script offsets */
 	for (i = 0; i < 160; i++)
 		writeByte(output, readByte(input1));
 	for (i = 0; i < 160; i++)
 		writeUint16LE(output, readUint16LE(input1));
 
+	/* copy sound offsets */
 	for (i = 0; i < 70; i++)
 		writeByte(output, readByte(input1));
 	for (i = 0; i < 70; i++)
 		writeUint16LE(output, readUint16LE(input1));
+
+	/* NOTE: Extra 92 bytes of unknown data */
+
 	fclose(output);
 
 	for (i = 0; i < 55; i++) {

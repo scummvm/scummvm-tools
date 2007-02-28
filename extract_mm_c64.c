@@ -31,12 +31,10 @@ typedef int BOOL;
 	#define	vsnprintf _vsnprintf
 #endif
 
-void writeByteAlt(FILE *fp, uint8 b)
-{
+void writeByteAlt(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
-void writeUint16LEAlt(FILE *fp, uint16 value)
-{
+void writeUint16LEAlt(FILE *fp, uint16 value) {
 	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
 }
 #define writeByte writeByteAlt
@@ -55,15 +53,13 @@ void notice(const char *s, ...) {
 
 unsigned char room_disks[55], room_tracks[55], room_sectors[55];
 
-int main (int argc, char **argv)
-{
+int main (int argc, char **argv) {
 	FILE *input1, *input2, *output;
 	char fname[256];
 	int i, j;
 	unsigned short signature;
 
-	if (argc < 3)
-	{
+	if (argc < 3) {
 		printf("Syntax: %s <disk1.d64> <disk2.d64>\n",argv[0]);
 		return 1;
 	}
@@ -93,46 +89,46 @@ int main (int argc, char **argv)
 		writeByte(output, readByte(input1));
 
 	/* copy room offsets */
-	for (i = 0; i < 55; i++)
-	{
+	for (i = 0; i < 55; i++) {
 		room_disks[i] = readByte(input1);
 		writeByte(output, room_disks[i]);
 	}
-	for (i = 0; i < 55; i++)
-	{
+	for (i = 0; i < 55; i++) {
 		room_sectors[i] = readByte(input1);
 		writeByte(output, room_sectors[i]);
 		room_tracks[i] = readByte(input1);
 		writeByte(output, room_tracks[i]);
 	}
+
+	/* copy costume offsets */
 	for (i = 0; i < 25; i++)
 		writeByte(output, readByte(input1));
 	for (i = 0; i < 25; i++)
 		writeUint16LE(output, readUint16LE(input1));
 
+	/* copy script offsets */
 	for (i = 0; i < 160; i++)
 		writeByte(output, readByte(input1));
 	for (i = 0; i < 160; i++)
 		writeUint16LE(output, readUint16LE(input1));
 
+	/* copy sound offsets */
 	for (i = 0; i < 70; i++)
 		writeByte(output, readByte(input1));
 	for (i = 0; i < 70; i++)
 		writeUint16LE(output, readUint16LE(input1));
+
 	fclose(output);
 
-	for (i = 0; i < 55; i++)
-	{
-		const int SectorOffset[36] =
-		{
+	for (i = 0; i < 55; i++) {
+		const int SectorOffset[36] = {
 			0,
 			0, 21, 42, 63, 84, 105, 126, 147, 168, 189, 210, 231, 252, 273, 294, 315, 336,
 			357, 376, 395, 414, 433, 452, 471,
 			490, 508, 526, 544, 562, 580,
 			598, 615, 632, 649, 666
 		};
-		const int ResourcesPerFile[55] =
-		{
+		const int ResourcesPerFile[55] = {
 			 0, 11,  1,  3,  9, 12,  1, 13, 10,  6,
 			 4,  1,  7,  1,  1,  2,  7,  8, 19,  9,
 			 6,  9,  2,  6,  8,  4, 16,  8,  3,  3,
@@ -153,8 +149,7 @@ int main (int argc, char **argv)
 			error("Unable to create %s!",fname);
 		notice("Creating %s...",fname);
 		fseek(input, (SectorOffset[room_tracks[i]] + room_sectors[i]) * 256, SEEK_SET);
-		for (j = 0; j < ResourcesPerFile[i]; j++)
-		{
+		for (j = 0; j < ResourcesPerFile[i]; j++) {
 			unsigned short len = readUint16LE(input);
 			writeUint16LE(output, len);
 			for (len -= 2; len > 0; len--)
