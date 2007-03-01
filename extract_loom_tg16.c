@@ -50,29 +50,24 @@ void notice(const char *s, ...) {
 	fprintf(stdout, "%s\n", buf);
 }
 
-unsigned char	read_cbyte (FILE *input, short *ctr)
-{
+uint8	read_cbyte (FILE *input, short *ctr) {
 	(*ctr) += 1;
 	return readByte(input);
 }
-unsigned short	read_cword (FILE *input, short *ctr)
-{
+uint16	read_cword (FILE *input, short *ctr) {
 	(*ctr) += 2;
 	return readUint16LE(input);
 }
 
-void	write_cbyte (FILE *output, uint8 val, short *ctr)
-{
+void	write_cbyte (FILE *output, uint8 val, short *ctr) {
 	writeByte(output, val);
 	(*ctr) += 1;
 }
-void	write_cword (FILE *output, uint16 val, short *ctr)
-{
+void	write_cword (FILE *output, uint16 val, short *ctr) {
 	writeUint16LE(output, val);
 	(*ctr) += 2;
 }
-void	write_clong (FILE *output, uint32 val, short *ctr)
-{
+void	write_clong (FILE *output, uint32 val, short *ctr) {
 	writeUint32LE(output, val);
 	(*ctr) += 4;
 }
@@ -83,10 +78,9 @@ typedef	enum _iso { ISO_USA, NUM_ISOS } t_iso;
 
 t_iso ISO = NUM_ISOS;
 
-typedef	struct	_resource
-{
-	unsigned long offset[NUM_ISOS];
-	unsigned short length[NUM_ISOS];
+typedef	struct	_resource {
+	uint32 offset[NUM_ISOS];
+	uint16 length[NUM_ISOS];
 	res_type type;
 }	t_resource, *p_resource;
 
@@ -697,20 +691,19 @@ t_resource res_unknowns[NUM_UNKNOWNS] = {
 	{ {0x2B4000}, {0x0155}, RES_COSTUME }	/* Duplicate of Costume 155 */
 };
 
-unsigned long r_offset (p_resource res)
-{
+uint32 r_offset (p_resource res) {
 	return res->offset[ISO];
 }
-signed short r_length (p_resource res)
-{
+signed short r_length (p_resource res) {
 	return res->length[ISO];
 }
 
-void	extract_resource (FILE *input, FILE *output, p_resource res)
-{
-	unsigned short j, off;
+void	extract_resource (FILE *input, FILE *output, p_resource res) {
+#ifdef MAKE_LFLS
+	uint16 j, off;
+#endif
 	signed short i, rlen;
-	unsigned char junk, rtype, rid;
+	uint8 junk, rtype, rid;
 
 	if (res == NULL)
 		error("extract_resource - no resource specified");
@@ -718,11 +711,10 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 		return;	/* if offset/length are both 0, skip it */
 	fseek(input,r_offset(res),SEEK_SET);
 
-	switch (res->type)
-	{
+	switch (res->type) {
 	case RES_CHARSET:
 		rlen = r_length(res);
-		writeUint16LE(output,(unsigned short)(rlen+4));
+		writeUint16LE(output,(uint16)(rlen+4));
 		writeUint16LE(output,0);
 		for (i = 0; i < rlen; i++)
 			writeByte(output,readByte(input));
@@ -736,7 +728,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 			error("extract_resource(globdata) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x11)
 			error("extract_resource(globdata) - resource tag is incorrect!");
-		writeUint32LE(output,(unsigned short)(rlen + 1));
+		writeUint32LE(output,(uint16)(rlen + 1));
 		writeUint16LE(output,'O0');	/* 0O - Object Index */
 		for (i = 5; i < rlen; i++)
 			writeByte(output,readByte(input));
@@ -760,10 +752,9 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 			rlen = 0;
 			write_clong(output,0,&rlen);
 			write_cword(output,'OR',&rlen);	/* RO - Room */
-			while (1)
-			{
-				unsigned short slen;
-				unsigned char stype;
+			while (1) {
+				uint16 slen;
+				uint8 stype;
 /* BM, HD, SL, NL, PA - current unknowns
 				notice("reading local resource at offset %04X of %04X",i,len);
 */
@@ -854,7 +845,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 			error("extract_resource(costume) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x03)
 			error("extract_resource(costume) - resource tag is incorrect!");
-		writeUint32LE(output,(unsigned short)(rlen + 1));
+		writeUint32LE(output,(uint16)(rlen + 1));
 		writeUint16LE(output,'OC');	/* CO - Costume */
 		for (i = 5; i < rlen; i++)
 			writeByte(output,readByte(input));
@@ -868,7 +859,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 			error("extract_resource(script) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x02)
 			error("extract_resource(script) - resource tag is incorrect!");
-		writeUint32LE(output,(unsigned short)(rlen + 1));
+		writeUint32LE(output,(uint16)(rlen + 1));
 		writeUint16LE(output,'CS');	/* SC - Script */
 		for (i = 5; i < rlen; i++)
 			writeByte(output,readByte(input));
@@ -975,8 +966,7 @@ p_resource lfl_85[] = { &res_rooms[85], &res_sounds[64], NULL };
 p_resource lfl_86[] = { &res_rooms[86], &res_scripts[111], &res_costumes[155], NULL };
 p_resource lfl_87[] = { &res_rooms[87], NULL };
 
-typedef	struct	_lfl
-{
+typedef	struct	_lfl {
 	int num;
 	p_resource *entries;
 }	t_lfl, *p_lfl;
@@ -1063,26 +1053,24 @@ t_lfl	lfls[] = {
 	{ -1, NULL }
 };
 
-struct	_index
-{
-	unsigned short	num_rooms;
-	unsigned char	room_lfl[NUM_ROOMS];
-	unsigned long	room_addr[NUM_ROOMS];
+struct	_index {
+	uint16	num_rooms;
+	uint8	room_lfl[NUM_ROOMS];
+	uint32	room_addr[NUM_ROOMS];
 
-	unsigned short	num_costumes;
-	unsigned char	costume_lfl[NUM_COSTUMES];
-	unsigned long	costume_addr[NUM_COSTUMES];
+	uint16	num_costumes;
+	uint8	costume_lfl[NUM_COSTUMES];
+	uint32	costume_addr[NUM_COSTUMES];
 
-	unsigned short	num_scripts;
-	unsigned char	script_lfl[NUM_SCRIPTS];
-	unsigned long	script_addr[NUM_SCRIPTS];
-	unsigned short	num_sounds;
-	unsigned char	sound_lfl[NUM_SOUNDS];
-	unsigned long	sound_addr[NUM_SOUNDS];
+	uint16	num_scripts;
+	uint8	script_lfl[NUM_SCRIPTS];
+	uint32	script_addr[NUM_SCRIPTS];
+	uint16	num_sounds;
+	uint8	sound_lfl[NUM_SOUNDS];
+	uint32	sound_addr[NUM_SOUNDS];
 }	lfl_index;
 #else	/* !MAKE_LFLS */
-void	dump_resource (FILE *input, char *fn_template, int num, p_resource res)
-{
+void	dump_resource (FILE *input, const char *fn_template, int num, p_resource res) {
 	char fname[256];
 	FILE *output;
 	sprintf(fname,fn_template,num);
@@ -1093,24 +1081,21 @@ void	dump_resource (FILE *input, char *fn_template, int num, p_resource res)
 }
 #endif	/* MAKE_LFLS */
 
-unsigned long	CRCtable[256];
-void	InitCRC (void)
-{
-	const unsigned long poly = 0xEDB88320;
+uint32	CRCtable[256];
+void	InitCRC (void) {
+	const uint32 poly = 0xEDB88320;
 	int i, j;
-	unsigned long n;
-	for (i = 0; i < 256; i++)
-	{
+	uint32 n;
+	for (i = 0; i < 256; i++) {
 		n = i;
 		for (j = 0; j < 8; j++)
 			n = (n & 1) ? ((n >> 1) ^ poly) : (n >> 1);
 		CRCtable[i] = n;
 	}
 }
-unsigned long	ISO_CRC (FILE *file)
-{
-	unsigned long CRC = 0xFFFFFFFF;
-	unsigned long i, len;
+uint32	ISO_CRC (FILE *file) {
+	uint32 CRC = 0xFFFFFFFF;
+	uint32 i, len;
 	fseek(file,0,SEEK_END);
 	len = ftell(file);
 	fseek(file,0,SEEK_SET);
@@ -1119,15 +1104,18 @@ unsigned long	ISO_CRC (FILE *file)
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int main (int argc, char **argv)
-{
+int main (int argc, char **argv) {
+#ifdef	MAKE_LFLS
 	FILE *input, *output;
 	char fname[256];
 	int i, j;
-	unsigned long CRC;
+#else
+	FILE *input;
+	int i;
+#endif
+	uint32 CRC;
 
-	if (argc < 2)
-	{
+	if (argc < 2) {
 		printf("Syntax: %s <code_##.ISO>\n",argv[0]);
 		return 1;
 	}
@@ -1149,33 +1137,30 @@ int main (int argc, char **argv)
 #ifdef	MAKE_LFLS
 	memset(&lfl_index,0xFF,sizeof(lfl_index));
 
-	for (i = 0; lfls[i].num != -1; i++)
-	{
+	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
 		sprintf(fname,"%02i.LFL",lfl->num);
 		if (!(output = fopen(fname,"wb")))
 			error("Error: unable to create %s!",fname);
 		notice("Creating %s...",fname);
-		for (j = 0; lfl->entries[j] != NULL; j++)
-		{
+		for (j = 0; lfl->entries[j] != NULL; j++) {
 			p_resource entry = lfl->entries[j];
-			switch (entry->type)
-			{
+			switch (entry->type) {
 			case RES_ROOM:
 				lfl_index.room_lfl[entry - res_rooms] = lfl->num;
-				lfl_index.room_addr[entry - res_rooms] = (unsigned short)ftell(output);
+				lfl_index.room_addr[entry - res_rooms] = (uint16)ftell(output);
 				break;
 			case RES_COSTUME:
 				lfl_index.costume_lfl[entry - res_costumes] = lfl->num;
-				lfl_index.costume_addr[entry - res_costumes] = (unsigned short)ftell(output);
+				lfl_index.costume_addr[entry - res_costumes] = (uint16)ftell(output);
 				break;
 			case RES_SCRIPT:
 				lfl_index.script_lfl[entry - res_scripts] = lfl->num;
-				lfl_index.script_addr[entry - res_scripts] = (unsigned short)ftell(output);
+				lfl_index.script_addr[entry - res_scripts] = (uint16)ftell(output);
 				break;
 			case RES_SOUND:
 				lfl_index.sound_lfl[entry - res_sounds] = lfl->num;
-				lfl_index.sound_addr[entry - res_sounds] = (unsigned short)ftell(output);
+				lfl_index.sound_addr[entry - res_sounds] = (uint16)ftell(output);
 				break;
 			default:
 				notice("Unknown resource type %d detected in LFL index!",entry->type);
@@ -1197,8 +1182,7 @@ int main (int argc, char **argv)
 	writeUint32LE(output,8+5*lfl_index.num_rooms);
 	writeUint16LE(output,'R0');	/* 0R - room index */
 	writeUint16LE(output,lfl_index.num_rooms);
-	for (i = 0; i < lfl_index.num_rooms; i++)
-	{
+	for (i = 0; i < lfl_index.num_rooms; i++) {
 		writeByte(output,lfl_index.room_lfl[i]);
 		writeUint32LE(output,lfl_index.room_addr[i]);
 	}
@@ -1206,8 +1190,7 @@ int main (int argc, char **argv)
 	writeUint32LE(output,8+5*lfl_index.num_scripts);
 	writeUint16LE(output,'S0');	/* 0S - script index */
 	writeUint16LE(output,lfl_index.num_scripts);
-	for (i = 0; i < lfl_index.num_scripts; i++)
-	{
+	for (i = 0; i < lfl_index.num_scripts; i++) {
 		writeByte(output,lfl_index.script_lfl[i]);
 		writeUint32LE(output,lfl_index.script_addr[i]);
 	}
@@ -1215,8 +1198,7 @@ int main (int argc, char **argv)
 	writeUint32LE(output,8+5*lfl_index.num_costumes);
 	writeUint16LE(output,'C0');	/* 0C - costume index */
 	writeUint16LE(output,lfl_index.num_costumes);
-	for (i = 0; i < lfl_index.num_costumes; i++)
-	{
+	for (i = 0; i < lfl_index.num_costumes; i++) {
 		writeByte(output,lfl_index.costume_lfl[i]);
 		writeUint32LE(output,lfl_index.costume_addr[i]);
 	}
@@ -1225,8 +1207,7 @@ int main (int argc, char **argv)
 	writeUint32LE(output,8+5*lfl_index.num_sounds);
 	writeUint16LE(output,'N0');	0N - sounds index
 	writeUint16LE(output,lfl_index.num_sounds);
-	for (i = 0; i < lfl_index.num_sounds; i++)
-	{
+	for (i = 0; i < lfl_index.num_sounds; i++) {
 		writeByte(output,lfl_index.sound_lfl[i]);
 		writeUint32LE(output,lfl_index.sound_addr[i]);
 	}
