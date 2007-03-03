@@ -691,6 +691,97 @@ t_resource res_unknowns[NUM_UNKNOWNS] = {
 	{ {0x2B4000}, {0x0155}, RES_COSTUME }	/* Duplicate of Costume 155 */
 };
 
+static const uint16 roomHeader[88 * 4] = {
+	 0,   0,   0,  0,
+	 1, 320, 144, 61, /* Difference */
+	 2, 960, 144,  7,
+	 3, 320, 144,  7,
+	 4, 640, 144, 32,
+	 5, 704, 144,  5,
+	 6, 320, 144, 47,
+	 7, 448, 144,  2,
+	 8, 912, 144, 14,
+	 9, 320, 144, 17,
+	10, 320, 144, 27,
+	11, 456, 144,  9,
+	12, 320, 144,  3,
+	13, 320, 144, 15,
+	14, 320, 144,  0,
+	15, 424, 144,  6,
+	16, 624, 144,  8,
+	17, 320, 144, 15,
+	18, 320, 144, 12,
+	19, 320, 144,  7,
+	20, 320, 144, 14,
+	21,   0,   0,  0,
+	22, 320, 144, 18,
+	23, 480, 144, 11,
+	24, 768, 144, 17,
+	25, 320, 144,  3,
+	26, 320, 144, 16,
+	27, 320, 144,  0,
+	28, 640, 144, 35,
+	29, 320, 144,  3,
+	30, 960, 144, 18,
+	31, 448, 144, 16,
+	32, 464, 144,  5,
+	33, 320, 144, 15,
+	34, 624, 144, 30,
+	35, 320, 144, 11,
+	36, 480, 144,  3,
+	37, 320, 144,  8,
+	38, 320, 144, 15,
+	39, 320, 144,  0,
+	40, 320, 144,  6,
+	41, 336, 144,  7,
+	42, 320, 144,  2,
+	43, 320, 144, 13,
+	44, 320, 144, 3,
+	45, 320, 144, 26,
+	46, 960, 144, 14,
+	47, 640, 144,  9,
+	48,   0,   0,  0,
+	49, 320, 144, 17,
+	50, 320, 144, 20,
+	51, 320, 144, 23,
+	52, 320, 144,  0,
+	53, 320, 144,  6,
+	54, 320, 144,  3,
+	55, 320, 144,  6,
+	56, 320, 144,  6,
+	57, 320, 144,  5,
+	58, 320, 144,  6,
+	59, 320, 144,  6,
+	60, 320, 144,  5,
+	61, 320, 144,  0,
+	62, 320, 144, 12,
+	63, 320, 144,  6,
+	64, 320, 144,  2,
+	65, 320, 144,  6,
+	66, 320, 144, 33,
+	67, 320, 144,  4,
+	68, 320, 144,  6,
+	69, 320, 144, 23,
+	70, 320, 144,  0, /* Difference */
+	71,   0,   0,  0,
+	72,   0,   0,  0,
+	73,   0,   0,  0,
+	74,   0,   0,  0,
+	75,   0,   0,  0,
+	76,   0,   0,  0,
+	77,   0,   0,  0,
+	78,   0,   0,  0,
+	79, 320, 144,  6,
+	80,   0,   0,  0,
+	81, 320, 144,  0,
+	82,   0,   0,  0,
+	83,   0,   0,  0,
+	84,   0,   0,  0,
+	85,   0,   0,  0,
+	86, 320, 144, 11,
+	87, 320, 144,  3,
+};
+
 uint32 r_offset (p_resource res) {
 	return res->offset[ISO];
 }
@@ -716,7 +807,18 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 		rlen = r_length(res);
 		writeUint16LE(output,(uint16)(rlen+4));
 		writeUint16LE(output,0);
-		for (i = 0; i < rlen; i++)
+
+		/* Skip 4 bytes */
+		read_cword(input,&i);
+		read_cword(input,&i);
+
+		/* Write expected charset header */
+		writeByte(output, 0x63);
+		writeByte(output, 0x01);
+		writeByte(output, 0x80);
+		writeByte(output, 0x08);
+
+		for (i = 0; i < rlen - 4; i++)
 			writeByte(output,readByte(input));
 		break;
 	case RES_GLOBDATA:
@@ -741,9 +843,6 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 			junk = read_cbyte(input,&i);
 			rtype = read_cbyte(input,&i);
 			rid = read_cbyte(input,&i);
-/*
-			notice("room res len %04X, junk %02X, type %02X, id %02X",rlen,junk,rtype,rid);
-*/
 			if (rlen != r_length(res))
 				error("extract_resource(room) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 			if (rtype != 0x01)
@@ -752,30 +851,62 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 			rlen = 0;
 			write_clong(output,0,&rlen);
 			write_cword(output,'OR',&rlen);	/* RO - Room */
+
+			/* Hard code room header for now */
+			write_clong(output, 0xC,&rlen);
+			write_cword(output,'DH',&rlen);
+			write_cword(output, roomHeader[rid * 4 + 1], &rlen);
+			write_cword(output, roomHeader[rid * 4 + 2], &rlen);
+			write_cword(output, roomHeader[rid * 4 + 3], &rlen);
+
 			while (1) {
 				uint16 slen;
 				uint8 stype;
-/* BM, HD, SL, NL, PA - current unknowns
-				notice("reading local resource at offset %04X of %04X",i,len);
-*/
+
 				slen = read_cword(input,&i);
 				if (slen == 0xFFFF)
 					break;
 				stype = read_cbyte(input,&i);
 				slen -= 3;
-				switch (stype)
-				{
-/*
-				case 0x00:	break;
-				case 0x01:	break;
-				case 0x02:	break;
-				case 0x03:	break;
-				case 0x04:	break;
-				case 0x05:	break;
-				case 0x06:	break;
-				case 0x07:	break;
-				case 0x08:	break;	BM?
-*/
+				switch (stype) {
+				/* HD, SL, NL, PA - are current unknowns */
+				case 0x05:
+					/* 61 resources, specific to room 1 */
+					write_clong(output,slen+6,&rlen);
+					write_cword(output,'5U',&rlen);	/* Unknown */
+					for (j = 0; j < slen; j++)
+						write_cbyte(output,read_cbyte(input,&i),&rlen);
+					break;
+				case 0x06:
+					/* Resource type exists in all rooms */
+					write_clong(output,slen+6,&rlen);
+					write_cword(output,'6U',&rlen);	/* Unknown */
+					for (j = 0; j < slen; j++)
+						write_cbyte(output,read_cbyte(input,&i),&rlen);
+					break;
+				case 0x07:
+					/* Resource type exists in all rooms */
+					write_clong(output,slen+6,&rlen);
+					write_cword(output,'7U',&rlen);	/* Unknown */
+					for (j = 0; j < slen; j++)
+						write_cbyte(output,read_cbyte(input,&i),&rlen);
+					break;
+				case 0x0A:
+					/* Resource type doesn't exists in all rooms */
+					write_clong(output,slen+6,&rlen);
+					write_cword(output,'AU',&rlen);	/* Unknown */
+					for (j = 0; j < slen; j++)
+						write_cbyte(output,read_cbyte(input,&i),&rlen);
+					break;
+
+
+
+				case 0x08:
+					write_clong(output,slen+6,&rlen);
+					write_cword(output,'MB',&rlen);	/* BM - bitmap */
+					for (j = 0; j < slen; j++)
+						write_cbyte(output,read_cbyte(input,&i),&rlen);
+					break;
 				case 0x09:
 					read_cword(input,&i);	slen -= 2;	/* skip first 2 bytes */
 					write_clong(output,slen+6,&rlen);
@@ -783,10 +914,6 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 					for (j = 0; j < slen; j++)
 						write_cbyte(output,read_cbyte(input,&i),&rlen);
 					break;
-/*
-				case 0x0A:
-					break;
-*/
 				case 0x0B:
 					write_clong(output,slen+6,&rlen);
 					write_cword(output,'NE',&rlen);	/* EN - entrance script */
@@ -825,7 +952,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 					break;
 				default:
 					fseek(input,slen,SEEK_CUR);
-					warning("extract_resource(room) - unknown resource tag encountered: len %04X type %02X",slen,stype);
+					error("extract_resource(room) - unknown resource tag encountered: len %04X type %02X",slen,stype);
 				}
 			}
 			fseek(output,off,SEEK_SET);
