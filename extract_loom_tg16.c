@@ -870,13 +870,6 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 				slen -= 3;
 				switch (stype) {
 				/* HD, SL, NL, PA - are current unknowns */
-				case 0x05:
-					/* 61 resources, specific to room 1 */
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'5U',&rlen);	/* Unknown */
-					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
-					break;
 				case 0x06:
 					/* Resource type exists in all rooms */
 					write_clong(output,slen+6,&rlen);
@@ -901,6 +894,13 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 
 
 
+				case 0x05:
+					/* Verb images for the diststaff */
+					write_clong(output,slen+6,&rlen);
+					write_cword(output,'IO',&rlen);	/* OI - object image */
+					for (j = 0; j < slen; j++)
+						write_cbyte(output,read_cbyte(input,&i),&rlen);
+					break;
 				case 0x08:
 					write_clong(output,slen+6,&rlen);
 					write_cword(output,'MB',&rlen);	/* BM - bitmap */
