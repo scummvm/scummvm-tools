@@ -3635,7 +3635,10 @@ void next_line_V345(char *buf)
 		do_tok(buf, "pickupObject", ((opcode & 0x80) ? A1V : A1W));
 		break;
 
-	case 0xA7:{
+	case 0xA7:
+		if (g_options.scriptVersion == 5) {
+			sprintf(buf, "dummy(%.2X)", opcode);
+		} else {
 			int d = get_byte();
 			buf += sprintf(buf, "saveLoadVars(");
 			if (d == 1) {
@@ -3673,12 +3676,12 @@ void next_line_V345(char *buf)
 				}
 			}
 			buf += sprintf(buf, ")");
-			break;
 		}
+		break;
 
 	case 0x67:
 	case 0xE7:
-		do_tok(buf, "getStringWidth?", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
+		do_tok(buf, "getStringWidth", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
 		break;
 
 	case 0x6B:
