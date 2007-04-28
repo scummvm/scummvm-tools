@@ -152,6 +152,7 @@ static void process(const char *infile, const char *outfile) {
 		strncpy(outputName, list->filename, 32);
 		
 		FILE *tempFile = fopen(TEMPFILE, "rb");
+		fseek(tempFile, 26, SEEK_CUR);
 		extractAndEncodeVOC(TEMP_RAW, tempFile, gCompMode);
 		fclose(tempFile);
 		
