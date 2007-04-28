@@ -1200,6 +1200,7 @@ void do_room_ops_old(char *buf, byte opcode)
 {
 	char	a[256];
 	char	b[256];
+	char	c[256];
 	
 	if (g_options.scriptVersion <= 2) {
 		get_var_or_byte(a, (opcode & 0x80));
@@ -1260,6 +1261,18 @@ void do_room_ops_old(char *buf, byte opcode)
 		break;
 	case 0x06:
 		do_tok(buf, "ShakeOff", 0);
+		break;
+	case 0x08:
+		get_var_or_byte(a, (opcode & 0x80));
+		get_var_or_byte(b, (opcode & 0x40));
+		get_var_or_byte(c, (opcode & 0x20));
+		buf = strecpy(buf, "SetIntensity(");
+		buf = strecpy(buf, a);
+		buf = strecpy(buf, ",");
+		buf = strecpy(buf, b);
+		buf = strecpy(buf, ",");
+		buf = strecpy(buf, c);
+		buf = strecpy(buf, ")");
 		break;
 	default:
 		error("do_room_ops_old: unknown subop %d", opcode & 0x1F);
