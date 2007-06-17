@@ -31,6 +31,7 @@ install:   all
 	strip extract_mm_apple.exe -o $(SCUMMVMPATH)/tools/extract_mm_apple.exe
 	strip extract_mm_c64.exe -o $(SCUMMVMPATH)/tools/extract_mm_c64.exe
 	strip extract_mm_nes.exe -o $(SCUMMVMPATH)/tools/extract_mm_nes.exe
+	strip extract_parallaction.exe -o $(SCUMMVMPATH)/tools/extract_parallaction.exe
 	strip extract_scumm_mac.exe -o $(SCUMMVMPATH)/tools/extract_scumm_mac.exe
 	strip extract_zak_c64.exe -o $(SCUMMVMPATH)/tools/extract_zak_c64.exe
 	cp *.bat $(SCUMMVMPATH)/tools

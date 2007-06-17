@@ -36,6 +36,7 @@ TARGETS := \
 	extract_mm_apple$(EXEEXT) \
 	extract_mm_c64$(EXEEXT) \
 	extract_mm_nes$(EXEEXT) \
+	extract_parallaction$(EXEEXT) \
 	extract_scumm_mac$(EXEEXT) \
 	extract_zak_c64$(EXEEXT)
 
@@ -109,6 +110,9 @@ extract_mm_c64$(EXEEXT): extract_mm_c64.o util.o
 extract_mm_nes$(EXEEXT): extract_mm_nes.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
+extract_parallaction$(EXEEXT): extract_parallaction.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
 extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
@@ -122,6 +126,9 @@ descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
 compress_agos.o compress_saga.o compress_scumm_sou.o \
 compress_scumm_bun.o compress_sword1.o compress_sword2.o \
 compress_kyra.o compress.o encode_dxa.o: compress.h
+
+# extract_parallaction.h
+extract_parallaction.o: extract_parallaction.h
 
 # Virtually everything depends on util.h
 compress_agos.o  compress_saga.o compress_scumm_sou.o \
@@ -139,6 +146,7 @@ extract_loom_tg16.o \
 extract_mm_apple.o \
 extract_mm_c64.o \
 extract_mm_nes.o \
+extract_parallaction.o \
 extract_scumm_mac.o \
 extract_zak_c64.o \
 kyra_pak.o \

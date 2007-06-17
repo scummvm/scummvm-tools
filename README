@@ -37,6 +37,9 @@ Extraction Tools:
         extract_mm_nes
                 Extracts data files from the NES version of Maniac Mansion.
 
+        extract_parallaction
+                Extracts the contents of archives used by Nippon Safes
+
         extract_zak_c64
                 Extracts data files from the Commodore 64 version of Zak
                 McKracken.
