@@ -1,4 +1,4 @@
-/* extract_simon1_amiga - Extracts Simon the Sorcerer 1 Amiga (AGA/ECS) graphics or music files
+/* extract_agos - Extracts the packed files used in the Amiga and AtariST versions
  * Copyright (C) 2004-2006  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
