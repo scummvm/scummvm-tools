@@ -650,7 +650,7 @@ void readVideoInfo(char *filename, int &width, int &height, int &framerate, int 
 		width = readUint32LE(smk);
 		height = readUint32LE(smk);
 		framerate = readUint32LE(smk);
-	} else if (!memcmp(buf, "SMK2", 4)) {
+	} else if (!memcmp(buf, "SMK2", 4) || !memcmp(buf, "SMK4", 4)) {
 		uint32 flags;
 
 		width = readUint32LE(smk);
