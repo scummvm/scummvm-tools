@@ -55,7 +55,7 @@ uint32 Archive::getSizeOfPackedSubfile(byte* packedData, uint32 packedSize) {
 
 int32 Archive::findSubfile(const char* filename) {
 	for (uint32 i = 0; i < _numFiles; i++) {
-		if (!stricmp(filename, _names[i])) return i;
+		if (!scumm_stricmp(filename, _names[i])) return i;
 	}
 
 	return -1;
@@ -133,7 +133,8 @@ void Archive::open(const char* filename, bool smallArchive) {
 
 	uint32 i;
 	for (i = 0; i < maxEntries; i++) {
-		if (_names[i][0] == '\0') break;
+		if (_names[i][0] == '\0')
+			break;
 	}
 
 	_numFiles = i;
@@ -141,13 +142,15 @@ void Archive::open(const char* filename, bool smallArchive) {
 	if (_numFiles < maxEntries) {
 		uint32* t = (uint32*)_names[i];
 
-		for (; i < maxEntries + 1; i++) {
-			if (*t != 0) break;
+		for (; i < (uint32)maxEntries + 1; i++) {
+			if (*t != 0)
+				break;
 			t += 8;
 		}
 	} 
 
-	if ( i > maxEntries ) exit(9);
+	if (i > (uint32)maxEntries)
+		exit(9);
 
 	_numSlots = i;
 
@@ -187,7 +190,7 @@ void Archive::dumpStructs(FILE* dump) {
 	*d = '\0';
 
 	for (uint32 i = 0; i < _numFiles; i++) {
-		fprintf(dump, "{ \"%s\",%*s%5i, kArchive%s, %7i },\n", _names[i], 32-strlen(_names[i]), " ", _sizes[i], arcName+1, _offsets[i]);
+		fprintf(dump, "{ \"%s\",%*s%5i, kArchive%s, %7i },\n", _names[i], 32-(int)strlen(_names[i]), " ", _sizes[i], arcName+1, _offsets[i]);
 	}
 }
 
