@@ -58,10 +58,21 @@ Compression Tools:
                 and allow optional MP3, Vorbis or FLAC compression.
 
         compress_saga
-                Used to compress SAGA engine digital sound files to MP3 or
-                Vorbis.
-                There is currently no support for compressed sound files in
-                ScummVM!
+                Used to compress SAGA engine digital sound files to MP3, Vorbis
+                or FLAC. 
+
+                Example of usage:
+                compress_saga <flags here> <file>
+
+                Where <file> is the sound file you with to compress, without the
+                extension (the .rsc extension is assumed for all sound files).
+
+                For Inherit the Earth, the digital music, speech and sound effects
+                files can be compressed. These usually differ depending on the 
+                version of the game, but generally they're named "music.rsc", 
+                "voices.rsc" and "sfx.rsc" respectfully. The compressed files
+                have the ".cmp" extension. Once compressed, you only need the
+                respective .cmp files.
 
         compress_sword1
                 Used to compress Broken Sword 1's music and speech files to
