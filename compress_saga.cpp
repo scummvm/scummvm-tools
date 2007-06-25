@@ -235,6 +235,8 @@ uint32 encodeEntry(GameSoundInfo *soundInfo, FILE* inputFile, uint32 inputSize, 
 #define RSC_TABLEENTRY_SIZE 8
 
 void sagaEncode(const char *inputFileName) {
+	char inputFileNameWithExt[256];
+	char outputFileNameWithExt[256];
 	FILE *inputFile;
 	FILE *outputFile;
 	uint32 inputFileSize;
@@ -245,7 +247,7 @@ void sagaEncode(const char *inputFileName) {
 	Record *inputTable;
 	Record *outputTable;
 	GameFileDescription *currentFileDescription;
-	GameSoundInfo *soundInfo;
+	GameSoundInfo *soundInfo = NULL;
 
 	currentFileDescription = &currentGameDescription->filesDescriptions[currentFileIndex];
 	
@@ -255,7 +257,8 @@ void sagaEncode(const char *inputFileName) {
 		isBigEndian = !isBigEndian;
 	///isBigEndian = false;
 
-	inputFile = fopen(inputFileName, "rb");
+	sprintf(inputFileNameWithExt, "%s.rsc", inputFileName);
+	inputFile = fopen(inputFileNameWithExt, "rb");
 	inputFileSize = fileSize(inputFile);
 	printf("filesize: %ul\n", inputFileSize);
 	/*
@@ -303,8 +306,9 @@ void sagaEncode(const char *inputFileName) {
 
 	}
 	outputTable = (Record*)malloc(resTableCount * sizeof(Record));
-	
-	outputFile = fopen("out.res", "wb");
+
+	sprintf(outputFileNameWithExt, "%s.cmp", inputFileName);	
+	outputFile = fopen(outputFileNameWithExt, "wb");
 
 	for (i = 0; i < resTableCount; i++) {
 		fseek(inputFile, inputTable[i].offset, SEEK_SET);
@@ -339,6 +343,9 @@ void sagaEncode(const char *inputFileName) {
 	free(inputTable);
 	free(outputTable);
 	
+	// Cleanup
+	unlink(TEMP_RAW);
+	unlink(tempEncoded);
 
 	printf("Done!\n");
 }
@@ -383,6 +390,7 @@ void showhelp(char *exename) {
 int main(int argc, char *argv[]) {
 	int		i;
 	char *inputFileName;
+	char inputFileNameWithExt[256];
 
 	if (argc < 2)
 		showhelp(argv[0]);
@@ -420,7 +428,9 @@ int main(int argc, char *argv[]) {
 
 	i = argc - 1;
 	inputFileName = argv[i];
-	if (detectFile(inputFileName))
+
+	sprintf(inputFileNameWithExt, "%s.rsc", inputFileName);
+	if (detectFile(inputFileNameWithExt))
 		sagaEncode(inputFileName);
 
 	return (0);
