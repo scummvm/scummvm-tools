@@ -60,7 +60,7 @@ extern void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode c
 extern void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode);
 
 extern void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode);
-extern void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample);
+extern void setRawAudioType(bool isLittleEndian, bool isStereo, bool isUnSigned, uint8 bitsPerSample);
 
 #if defined(__cplusplus)
 }

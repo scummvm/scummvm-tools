@@ -175,13 +175,13 @@ uint32 encodeEntry(GameSoundInfo *soundInfo, FILE* inputFile, uint32 inputSize, 
 		writeHeader(outputFile);
 
 		inStream = Audio::makeADPCMStream(&inputFileStream, inputSize, Audio::kADPCMOki);
-        inputData = (byte *)malloc(sampleSize);
+		inputData = (byte *)malloc(sampleSize);
 		inStream->readBuffer((int16*)inputData, inputSize * 2);
 		delete inStream;
 		writeBufferToFile(inputData, sampleSize, TEMP_RAW);
 		free(inputData);
 
-		setRawAudioType( true, sampleStereo != 0, sampleBits);
+		setRawAudioType( true, sampleStereo != 0, !soundInfo->isSigned, sampleBits);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
@@ -195,7 +195,7 @@ uint32 encodeEntry(GameSoundInfo *soundInfo, FILE* inputFile, uint32 inputSize, 
 		free(inputData);
 		writeHeader(outputFile);
 
-		setRawAudioType( true, false, 8);
+		setRawAudioType( true, false, !soundInfo->isSigned, 8);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
@@ -207,7 +207,7 @@ uint32 encodeEntry(GameSoundInfo *soundInfo, FILE* inputFile, uint32 inputSize, 
 		sampleStereo = soundInfo->stereo;
 		writeHeader(outputFile);
 
-		setRawAudioType( !soundInfo->isBigEndian, soundInfo->stereo, soundInfo->sampleBits);
+		setRawAudioType( !soundInfo->isBigEndian, soundInfo->stereo, !soundInfo->isSigned, soundInfo->sampleBits);
 		encodeAudio(TEMP_RAW, true, soundInfo->frequency, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
@@ -223,7 +223,7 @@ uint32 encodeEntry(GameSoundInfo *soundInfo, FILE* inputFile, uint32 inputSize, 
 
 		copyFile(inputFile, size, TEMP_RAW);
 
-		setRawAudioType( true, sampleStereo != 0, sampleBits);
+		setRawAudioType( true, sampleStereo != 0, !soundInfo->isSigned, sampleBits);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}

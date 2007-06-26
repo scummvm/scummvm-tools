@@ -475,7 +475,7 @@ void compressSpeech(CompressMode compMode) {
 	int i;
 	char cluName[256], outName[256];
 
-	setRawAudioType(true, false, 16);
+	setRawAudioType(true, false, false, 16);
 	for (i = 1; i <= 2; i++) {
 		sprintf(cluName, "SPEECH/SPEECH%d.CLU", i);
 		clu = fopen(cluName, "rb");

@@ -49,20 +49,23 @@ typedef struct {
 } flaccparams;
 
 typedef struct {
-    bool isLittleEndian, isStereo;
+	bool isLittleEndian;
+	bool isStereo;
+	bool isUnsigned;
 	uint8 bitsPerSample;
 } rawtype;
 
 lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0 };
 oggencparams oggparms = { -1, -1, -1, oggqualDef, 0 };
 flaccparams flacparms;
-rawtype	rawAudioType = { false, false, 8 };
+rawtype	rawAudioType = { false, false, false, 8 };
 
 const char *tempEncoded = TEMP_MP3;
 
-void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample) {
+void setRawAudioType(bool isLittleEndian, bool isStereo, bool isUnsigned, uint8 bitsPerSample) {
 	rawAudioType.isLittleEndian = isLittleEndian;
 	rawAudioType.isStereo = isStereo;
+	rawAudioType.isUnsigned = isUnsigned;
 	rawAudioType.bitsPerSample = bitsPerSample;
 }
 
@@ -173,7 +176,8 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		tmp += sprintf(tmp, "flac --best -b 1152 -f --lax --no-padding --no-seektable --no-ogg ");
 
 		if (rawInput) {
-			tmp += sprintf(tmp, "--force-raw-format --sign=unsigned ");
+			tmp += sprintf(tmp, "--force-raw-format ");
+			tmp += sprintf(tmp, "--sign=%s ", (rawAudioType.isUnsigned ? "unsigned" : "signed"));
 			tmp += sprintf(tmp, "--channels=%d ", (rawAudioType.isStereo ? 2 : 1));
 			tmp += sprintf(tmp, "--bps=%d ", rawAudioType.bitsPerSample);
 			tmp += sprintf(tmp, "--sample-rate=%d ", rawSamplerate);
@@ -300,7 +304,7 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 
 	assert(real_samplerate != -1);
 
-	setRawAudioType(false, false, 8);
+	setRawAudioType(false, false, true, 8);
 
 	/* Convert the raw temp file to OGG/MP3 */
 	encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
