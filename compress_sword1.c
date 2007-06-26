@@ -313,6 +313,7 @@ void showhelp(char *exename) {
 	printf("\nParams:\n");
 	printf(" --mp3          encode to MP3 format (default)\n");
 	printf(" --vorbis       encode to Vorbis format\n");
+	printf(" --flac         encode to Flac format\n");
 	printf(" --speech-only  only encode speech clusters\n");
 	printf(" --music-only   only encode music files\n");
 	printf("                (default: encode both)\n");
@@ -482,7 +483,19 @@ void compressSpeech(CompressMode compMode) {
 			printf("Unable to open \"SPEECH%d.CLU\".\n", i);
 			printf("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".\n", i, i);
 		} else {
-			sprintf(outName, "SPEECH/SPEECH%d.%s", i, (compMode == kMP3Mode) ? ("CL3") : ("CLV"));
+			switch (compMode) {
+			case kMP3Mode:
+				sprintf(outName, "SPEECH/SPEECH%d.%s", i, "CL3");
+				break;
+			case kVorbisMode:
+				sprintf(outName, "SPEECH/SPEECH%d.%s", i, "CLV");
+				break;
+			case kFlacMode:
+				sprintf(outName, "SPEECH/SPEECH%d.%s", i, "CLF");
+				break;
+			default:
+				error("Unknown encoding method");
+			}
 
 			cl3 = fopen(outName, "wb");
 			if (!cl3) {
@@ -515,15 +528,28 @@ void compressMusic(CompressMode compMode) {
 			}
 		} else {
 			fclose(inf);
-			sprintf(fNameOut, "MUSIC/%s.%s", musicNames[i].fileName, (compMode == kMP3Mode) ? "MP3" : "OGG");
-			
-			printf("encoding file (%3d/%d) %s -> %s.%s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, musicNames[i].fileName, (compMode == kMP3Mode) ? "MP3" : "OGG");
+
+			switch (compMode) {
+			case kMP3Mode:
+				sprintf(fNameOut, "MUSIC/%s.%s", musicNames[i].fileName, "MP3");
+				break;
+			case kVorbisMode:
+				sprintf(fNameOut, "MUSIC/%s.%s", musicNames[i].fileName, "OGG");
+				break;
+			case kFlacMode:
+				sprintf(fNameOut, "MUSIC/%s.%s", musicNames[i].fileName, "FLA");
+				break;
+			default:
+				error("Unknown encoding method");
+			}
+
+			printf("encoding file (%3d/%d) %s -> %s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, fNameOut);
 			encodeAudio(fNameIn, false, -1, fNameOut, compMode);
 		}
 	}
 }
 
-void processArgs(int argc, char *argv[], int i, CompressMode mode) {
+void processArgs(int argc, char *argv[], int i, CompressMode compMode) {
 	/* HACK: the functions in compress.c expect the last argument to be a filename. */
 	/*       As we don't expect one, we simply add a dummy argument to the list. */
 	char **args;
@@ -534,12 +560,21 @@ void processArgs(int argc, char *argv[], int i, CompressMode mode) {
 	for (cnt = 0; cnt < argc; cnt++)
 		args[cnt] = argv[cnt];
 	args[argc] = dummyName;
-	if (mode == kMP3Mode)
+
+	switch (compMode) {
+	case kMP3Mode:
 		result = process_mp3_parms(argc + 1, args, i);
-	else if (mode == kVorbisMode)
+		break;
+	case kVorbisMode:
 		result = process_ogg_parms(argc + 1, args, i);
-	else
+		break;
+	case kFlacMode:
+		result = process_flac_parms(argc + 1, args, i);
+		break;
+	default:
 		error("Unknown encoding method");
+	}
+
 	if (!result)
 		showhelp(argv[0]);
 	free(args);
@@ -601,6 +636,8 @@ int main(int argc, char *argv[]) {
 			compMode = kMP3Mode;
 		else if (!strcmp(argv[i], "--vorbis"))
 			compMode = kVorbisMode;
+		else if (!strcmp(argv[i], "--flac"))
+			compMode = kFlacMode;
 		else if (!strcmp(argv[i], "--speech-only"))
 			compMusic = false;
 		else if (!strcmp(argv[i], "--music-only"))
@@ -610,11 +647,20 @@ int main(int argc, char *argv[]) {
 		i++;
 	}
 
-	if (compMode == kMP3Mode)
+	switch (compMode) {
+	case kMP3Mode:
 		strcpy(tempOutName, TEMP_MP3);
-	else
+		break;
+	case kVorbisMode:
 		strcpy(tempOutName, TEMP_OGG);
-	
+		break;
+	case kFlacMode:
+		strcpy(tempOutName, TEMP_FLAC);
+		break;
+	default:
+		error("Unknown encoding method");
+	}
+
 	processArgs(argc, argv, i, compMode);
 
 	/* Do a quick check to see if we can open any files at all */

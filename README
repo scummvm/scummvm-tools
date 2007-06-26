@@ -76,7 +76,7 @@ Compression Tools:
 
         compress_sword1
                 Used to compress Broken Sword 1's music and speech files to
-                MP3 or Vorbis.
+                MP3 or Vorbis or FLAC.
 
         compress_sword2
                 Used to compress Broken Sword 2's music and speech .clu
