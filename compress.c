@@ -41,11 +41,7 @@ typedef struct {
 
 /* FIXME: This is an evil way to pass on the params to FLAC.
  It makes it near impossible to reliably pass default params to the
- encoder, which is why the ScummVM README has to tell the user to
- use this command:
-   extract --best -b 1152 monster.sou
- If those are the best default options, then they should be *default*
- and the user shouldn't have to specify them.
+ encoder.
 */
 typedef struct {
 	char * const* argv;
@@ -174,7 +170,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 	case kFlacMode:
 		/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
 		/* -f is reqired to force override of unremoved temp file. See bug #1294648 */
-		tmp += sprintf(tmp, "flac -f --lax --no-padding --no-seektable --no-ogg " );
+		tmp += sprintf(tmp, "flac --best -b 1152 -f --lax --no-padding --no-seektable --no-ogg ");
 
 		if (rawInput) {
 			tmp += sprintf(tmp, "--force-raw-format --sign=unsigned ");
