@@ -91,11 +91,6 @@ typedef uint8 bool;
 	#define START_PACK_STRUCTS pack(push, 1)
 	#define END_PACK_STRUCTS   pack(pop)
 
-
-	#ifndef _HEAPOK
-	#define _HEAPOK	(-2)
-	#endif
-
 #elif defined(UNIX)
 
 	#define scumm_stricmp strcasecmp
