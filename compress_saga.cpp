@@ -22,7 +22,6 @@
  * 
  */
 
-#include <stdio.h>
 #include "compress.h"
 #include "utils/md5.h"
 #include "utils/util.h"
@@ -30,12 +29,114 @@
 #include "utils/file.h"
 #include "utils/voc.h"
 #include "utils/wave.h"
-#include "utils/adpcm.h"
 
+#define FILE_MD5_BYTES 5000
+#define RSC_TABLEINFO_SIZE 8
+#define RSC_TABLEENTRY_SIZE 8
+#define HEADER_SIZE 9
 
-#include "sagagame.h"
-#include "sagaresnames.h"
-#include "sagagame.cpp"
+enum GameSoundTypes {
+	kSoundPCM = 0,
+	kSoundVOC = 1,
+	kSoundWAV = 2
+};
+
+struct GameFileDescription {
+	const char *fileName;
+	bool swapEndian;
+	const char *md5;
+	GameSoundTypes resourceType;
+	long frequency;
+	bool stereo;
+};
+
+// Known ITE files
+static GameFileDescription ITE_GameFiles[] = {
+	//	Filename					swapEndian	md5									resourceType	frequency	stereo
+	{"sounds.rsc",					false,		"e2ccb61c325d6d1ead3be0e731fe29fe", kSoundPCM,		22050,		false},
+	{"sounds.rsc",					true,		"95863b89a0916941f6c5e1789843ba14", kSoundPCM,		22050,		false},	// Mac
+	{"music.rsc",					false,		"d6454756517f042f01210458abe8edd4", kSoundPCM,		11025,		true},
+	{"music.rsc",					true,		"1a91cd60169f367ecb6c6e058d899b2f", kSoundPCM,		11025,		true},	// Mac
+	{"inherit the earth voices",	true,		"c14c4c995e7a0d3828e3812a494301b7", kSoundPCM,		22050,		false},	// Mac
+	{"voices.rsc",					false,		"41bb6b95d792dde5196bdb78740895a6", kSoundPCM,		22050,		false},	// CD
+	{"voices.rsc",					false,		"2fbad5d10b9b60a3415dc4aebbb11718", kSoundPCM,		22050,		false},	// German CD
+	{"voices.rsc",					false,		"c46e4392fcd2e89bc91e5567db33b62d", kSoundVOC,		-1,			false},	// Disk
+	{"voices.rsc",					false,		"0c9113e630f97ef0996b8c3114badb08", kSoundVOC,		-1,			false}	// German disk
+};
+
+// Known IHNM files
+static GameFileDescription IHNM_GameFiles[] = {
+	//	Filename					swapEndian	md5									resourceType	frequency	stereo
+	// Common
+	{"sfx.res",						false,		"1c610d543f32ec8b525e3f652536f269", kSoundWAV,		-1,			false},
+	// English
+	{"voicess.res",					false,		"54b1f2013a075338ceb0e258d97808bd", kSoundWAV,		-1,			false},
+	{"voices1.res",					false,		"fc6440b38025f4b2cc3ff55c3da5c3eb", kSoundWAV,		-1,			false},
+	{"voices2.res",					false,		"b37f10fd1696ade7d58704ccaaebceeb", kSoundWAV,		-1,			false},
+	{"voices3.res",					false,		"3bbc16a8f741dbb511da506c660a0b54", kSoundWAV,		-1,			false},
+	{"voices4.res",					false,		"ebfa160122d2247a676ca39920e5d481", kSoundWAV,		-1,			false},
+	{"voices5.res",					false,		"1f501ce4b72392bdd1d9ec38f6eec6da", kSoundWAV,		-1,			false},
+	{"voices6.res",					false,		"f580ed7568c7d6ef34e934ba20adf834", kSoundWAV,		-1,			false},
+	// Spanish
+	{"voicess.res",					false,		"d869de9883c8faea7f687217a9ec7057", kSoundWAV,		-1,			false},
+	{"voices1.res",					false,		"dc6a34e3d1668730ea46815a92c7847f", kSoundWAV,		-1,			false},
+	{"voices2.res",					false,		"dc6a5fa7a4cdc2ca5a6fd924e969986c", kSoundWAV,		-1,			false},
+	{"voices3.res",					false,		"dc6a5fa7a4cdc2ca5a6fd924e969986c", kSoundWAV,		-1,			false},
+	{"voices4.res",					false,		"0f87400b804232a58dd22e404420cc45", kSoundWAV,		-1,			false},
+	{"voices5.res",					false,		"172668cfc5d8c305cb5b1a9b4d995fc0", kSoundWAV,		-1,			false},
+	{"voices6.res",					false,		"96c9bda9a5f41d6bc232ed7bf6d371d9", kSoundWAV,		-1,			false},
+	// Russian
+	{"voicess.res",					false,		"9df7cd3b18ddaa16b5291b3432567036", kSoundWAV,		-1,			false},
+	{"voices1.res",					false,		"d6100d2dc3b2b9f2e1ad247f613dce9b", kSoundWAV,		-1,			false},
+	{"voices2.res",					false,		"84f6f48ecc2832841ea6417a9a379430", kSoundWAV,		-1,			false},
+	{"voices3.res",					false,		"ebb9501283047f27a0f54e27b3c8ba1e", kSoundWAV,		-1,			false},
+	{"voices4.res",					false,		"4c145da5fa6d1306162a7ca8ce5a4f2e", kSoundWAV,		-1,			false},
+	{"voices5.res",					false,		"871a559644281917677eca4af1b05620", kSoundWAV,		-1,			false},
+	{"voices6.res",					false,		"211be5c24f066d69a2f6cfa953acfba6", kSoundWAV,		-1,			false},
+	// German
+	{"voicess.res",					false,		"8b09a196a52627cacb4eab13bfe0b2c3", kSoundWAV,		-1,			false},
+	{"voices1.res",					false,		"424971e1e2373187c3f5734fe36071a2", kSoundWAV,		-1,			false},
+	{"voices2.res",					false,		"c270e0980782af43641a86e4a14e2a32", kSoundWAV,		-1,			false},
+	{"voices3.res",					false,		"49e42befea883fd101ec3d0f5d0647b9", kSoundWAV,		-1,			false},
+	{"voices5.res",					false,		"c477443c52a0aa56e686ebd8d051e4ab", kSoundWAV,		-1,			false},
+	{"voices6.res",					false,		"2b9aea838f74b4eecfb29a8f205a2bd4", kSoundWAV,		-1,			false},
+	// French
+	{"voicess.res",					false,		"b8642e943bbebf89cef2f48b31cb4305", kSoundWAV,		-1,			false},
+	{"voices1.res",					false,		"424971e1e2373187c3f5734fe36071a2", kSoundWAV,		-1,			false},
+	{"voices2.res",					false,		"c2d93a35d2c2def9c3d6d242576c794b", kSoundWAV,		-1,			false},
+	{"voices3.res",					false,		"49e42befea883fd101ec3d0f5d0647b9", kSoundWAV,		-1,			false},
+	{"voices5.res",					false,		"f4c415de7c03de86b73f9a12b8bd632f", kSoundWAV,		-1,			false},
+	{"voices6.res",					false,		"3fc5358a5d8eee43bdfab2740276572e", kSoundWAV,		-1,			false}
+};
+
+// --------------------------------------------------------------------------------
+
+enum SAGAGameType {
+	GType_ITE = 0,
+	GType_IHNM = 1
+};
+
+struct GameDescription {
+	SAGAGameType gameType;
+	int filesCount;
+	GameFileDescription *filesDescriptions;
+};
+
+static GameDescription gameDescriptions[] = {
+	// Inherit the earth
+	{
+		GType_ITE,
+		ARRAYSIZE(ITE_GameFiles),
+		ITE_GameFiles,
+	},
+
+	// I Have No Mouth And I Must Scream
+	{
+		GType_IHNM,
+		ARRAYSIZE(IHNM_GameFiles),
+		IHNM_GameFiles,
+	},
+};
 
 typedef struct  {
 	uint32 offset;
@@ -45,8 +146,14 @@ typedef struct  {
 static CompressMode gCompMode = kMP3Mode;
 
 GameDescription *currentGameDescription = NULL;
-int currentFileIndex = -1;
-bool isBigEndian = false;
+GameFileDescription *currentFileDescription = NULL;
+
+uint16 sampleRate;
+uint32 sampleSize;
+uint8 sampleBits;
+uint8 sampleStereo;
+
+// --------------------------------------------------------------------------------
 
 bool detectFile(const char *inFileName) {
 	int gamesCount = ARRAYSIZE(gameDescriptions);
@@ -64,13 +171,14 @@ bool detectFile(const char *inFileName) {
 	for (i = 0; i < gamesCount; i++) {
 		for (j = 0; j < gameDescriptions[i].filesCount; j++) {
 			if (strcmp(gameDescriptions[i].filesDescriptions[j].md5, md5str) == 0) {
-				if ((gameDescriptions[i].filesDescriptions[j].fileType & (GAME_VOICEFILE | GAME_SOUNDFILE | GAME_MUSICFILE)) != 0)
-				{
-					currentGameDescription = &gameDescriptions[i];
-					currentFileIndex = j;
-					printf("Matched game: %s %s\n", currentGameDescription->name, currentGameDescription->extra);
-					return true;
-				}
+				currentGameDescription = &gameDescriptions[i];
+				currentFileDescription = &currentGameDescription->filesDescriptions[j];
+
+				if (currentGameDescription->gameType == GType_ITE)
+					printf("Matched game: Inherit the Earth: Quest for the Orb\n");
+				else
+					printf("Matched game: I have no mouth, and I must scream\n");
+				return true;
 			}
 		}
 	}
@@ -124,13 +232,6 @@ void writeBufferToFile(uint8* data, uint32 inputSize, const char* toFileName) {
 	fclose(tempf);
 }
 
-#define HEADER_SIZE 9
-
-uint16 sampleRate;
-uint32 sampleSize;
-uint8 sampleBits;
-uint8 sampleStereo;
-
 void writeHeader(FILE* outputFile) {
 	writeByte(outputFile, gCompMode);
 	writeUint16LE(outputFile, sampleRate);
@@ -138,54 +239,13 @@ void writeHeader(FILE* outputFile) {
 	writeByte(outputFile, sampleBits);
 	writeByte(outputFile, sampleStereo);
 }
-/*
-case kSoundVOX:
-        buffer.frequency = soundInfo->frequency;
-        buffer.isSigned = soundInfo->isSigned;
-        buffer.sampleBits = soundInfo->sampleBits;
-        buffer.stereo = soundInfo->stereo;
-        buffer.size = soundResourceLength * 4;
-        if (onlyHeader) {
-                buffer.buffer = NULL;
-                free(soundResource);
-        } else {
-                voxStream = Audio::makeADPCMStream(&readS, soundResourceLength, Audio::kADPCMOki);
-                buffer.buffer = (byte *)malloc(buffer.size);
-                voxSize = voxStream->readBuffer((int16*)buffer.buffer, soundResourceLength * 2);
-                if (voxSize != soundResourceLength * 2) {
-                        error("SndRes::load() wrong VOX output size");
-                }
-                delete voxStream;
-        }
-        result = true;
-        break;
-*/
-uint32 encodeEntry(GameSoundInfo *soundInfo, FILE* inputFile, uint32 inputSize, FILE* outputFile) {
-	Audio::AudioStream *inStream;
+uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 	uint8 *inputData;
 	Common::File inputFileStream(inputFile);
 	int rate, size;
 	byte flags;
 	
-	if (soundInfo->resourceType == kSoundVOX) {
-		sampleSize = inputSize * 4;
-		sampleRate = (uint16)soundInfo->frequency;
-		sampleBits = soundInfo->sampleBits;
-		sampleStereo = soundInfo->stereo;
-		writeHeader(outputFile);
-
-		inStream = Audio::makeADPCMStream(&inputFileStream, inputSize, Audio::kADPCMOki);
-		inputData = (byte *)malloc(sampleSize);
-		inStream->readBuffer((int16*)inputData, inputSize * 2);
-		delete inStream;
-		writeBufferToFile(inputData, sampleSize, TEMP_RAW);
-		free(inputData);
-
-		setRawAudioType( true, sampleStereo != 0, !soundInfo->isSigned, sampleBits);
-		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
-		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
-	}
-	if (soundInfo->resourceType == kSoundVOC) {
+	if (currentFileDescription->resourceType == kSoundVOC) {
 		inputData = Audio::loadVOCFromStream(inputFileStream, size, rate);
 		sampleSize = size;
 		sampleRate = rate;
@@ -195,23 +255,23 @@ uint32 encodeEntry(GameSoundInfo *soundInfo, FILE* inputFile, uint32 inputSize, 
 		free(inputData);
 		writeHeader(outputFile);
 
-		setRawAudioType( true, false, !soundInfo->isSigned, 8);
+		setRawAudioType( true, false, false, 8);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
-	if (soundInfo->resourceType == kSoundPCM) {
+	if (currentFileDescription->resourceType == kSoundPCM) {
 		copyFile(inputFile, inputSize, TEMP_RAW);
 		sampleSize = inputSize;
-		sampleRate = (uint16)soundInfo->frequency;
-		sampleBits = soundInfo->sampleBits;
-		sampleStereo = soundInfo->stereo;
+		sampleRate = (uint16)currentFileDescription->frequency;
+		sampleBits = 16;
+		sampleStereo = currentFileDescription->stereo;
 		writeHeader(outputFile);
 
-		setRawAudioType( !soundInfo->isBigEndian, soundInfo->stereo, !soundInfo->isSigned, soundInfo->sampleBits);
-		encodeAudio(TEMP_RAW, true, soundInfo->frequency, tempEncoded, gCompMode);
+		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, false, sampleBits);
+		encodeAudio(TEMP_RAW, true, currentFileDescription->frequency, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
-	if (soundInfo->resourceType == kSoundWAV) {
+	if (currentFileDescription->resourceType == kSoundWAV) {
 		if (!Audio::loadWAVFromStream(inputFileStream, size, rate, flags))
 			error("Unable to read WAV");
 
@@ -223,16 +283,13 @@ uint32 encodeEntry(GameSoundInfo *soundInfo, FILE* inputFile, uint32 inputSize, 
 
 		copyFile(inputFile, size, TEMP_RAW);
 
-		setRawAudioType( true, sampleStereo != 0, !soundInfo->isSigned, sampleBits);
+		setRawAudioType( true, sampleStereo != 0, false, sampleBits);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
 
-	error("sorry - unsupported resourceType %ul\n", soundInfo->resourceType);
+	error("sorry - unsupported resourceType %ul\n", currentFileDescription->resourceType);
 }
-
-#define RSC_TABLEINFO_SIZE 8
-#define RSC_TABLEENTRY_SIZE 8
 
 void sagaEncode(const char *inputFileName) {
 	char inputFileNameWithExt[256];
@@ -246,16 +303,6 @@ void sagaEncode(const char *inputFileName) {
 
 	Record *inputTable;
 	Record *outputTable;
-	GameFileDescription *currentFileDescription;
-	GameSoundInfo *soundInfo = NULL;
-
-	currentFileDescription = &currentGameDescription->filesDescriptions[currentFileIndex];
-	
-	isBigEndian = ((currentGameDescription->features & GF_BIG_ENDIAN_DATA) != 0);
-
-	if (currentFileDescription->fileType & GAME_SWAPENDIAN)
-		isBigEndian = !isBigEndian;
-	///isBigEndian = false;
 
 	sprintf(inputFileNameWithExt, "%s.rsc", inputFileName);
 	inputFile = fopen(inputFileNameWithExt, "rb");
@@ -268,7 +315,7 @@ void sagaEncode(const char *inputFileName) {
 	 */
 	fseek(inputFile, inputFileSize - RSC_TABLEINFO_SIZE, SEEK_SET);
 
-	if (!isBigEndian) {
+	if (!currentFileDescription->swapEndian) {
 		resTableOffset = readUint32LE(inputFile);
 		resTableCount = readUint32LE(inputFile);
 	} else {
@@ -289,7 +336,7 @@ void sagaEncode(const char *inputFileName) {
 	// Put offsets of all the records in a table 
 	for (i = 0; i < resTableCount; i++) {
 
-	if (!isBigEndian) {
+	if (!currentFileDescription->swapEndian) {
 		inputTable[i].offset = readUint32LE(inputFile);
 		inputTable[i].size = readUint32LE(inputFile);
 	} else {
@@ -314,19 +361,7 @@ void sagaEncode(const char *inputFileName) {
 		fseek(inputFile, inputTable[i].offset, SEEK_SET);
 		outputTable[i].offset = ftell(outputFile);
 		
-		if ((currentFileDescription->fileType & GAME_VOICEFILE) != 0) {
-			soundInfo = currentGameDescription->voiceInfo;
-		} else {
-			if ((currentFileDescription->fileType & GAME_SOUNDFILE) != 0) {
-				soundInfo = currentGameDescription->sfxInfo;
-			} else {
-				if ((currentFileDescription->fileType & GAME_MUSICFILE) != 0) {
-					soundInfo = currentGameDescription->musicInfo;
-				}
-			}
-		}
-
-		outputTable[i].size = encodeEntry(soundInfo, inputFile, inputTable[i].size, outputFile);
+		outputTable[i].size = encodeEntry(inputFile, inputTable[i].size, outputFile);
 	}
 	fclose(inputFile);
 
@@ -429,9 +464,16 @@ int main(int argc, char *argv[]) {
 	i = argc - 1;
 	inputFileName = argv[i];
 
+	// ITE
 	sprintf(inputFileNameWithExt, "%s.rsc", inputFileName);
-	if (detectFile(inputFileNameWithExt))
+	if (detectFile(inputFileNameWithExt)) {
 		sagaEncode(inputFileName);
+	} else {
+		// IHNM
+		sprintf(inputFileNameWithExt, "%s.res", inputFileName);
+		if (detectFile(inputFileNameWithExt))
+			sagaEncode(inputFileName);
+	}
 
 	return (0);
 }
