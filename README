@@ -65,14 +65,25 @@ Compression Tools:
                 compress_saga <flags here> <file>
 
                 Where <file> is the sound file you with to compress, without the
-                extension (the .rsc extension is assumed for all sound files).
+                extension. If you have the file "inherit the earth voices", you'll
+                need to rename it temporarily to "inherit the earth voices.rsc" to
+                compress it.
 
-                For Inherit the Earth, the digital music, speech and sound effects
-                files can be compressed. These usually differ depending on the 
-                version of the game, but generally they're named "music.rsc", 
-                "voices.rsc" and "sfx.rsc" respectfully. The compressed files
-                have the ".cmp" extension. Once compressed, you only need the
-                respective .cmp files.
+                For Inherit the Earth, the digital music (music.rsc), speech 
+                (voices.rsc or "inherit the earth voices") and sound effects
+                (sounds.rsc) files can be compressed. For I have no mouth, the 
+                speech (voices*.res) and sound effects (sfx.res) files can be 
+                compressed.
+		
+                The compressed files have the ".cmp" extension. Once compressed, 
+                you only need the respective .cmp files. 
+		
+                Only the files of the full game versions can be compressed, the
+                demo versions are not supported. 
+		
+                The MacBinary files (*.bin) of the MAC CD Guild version of Inherit 
+                the Earth are not currently supported. Finally, there is no support 
+                for compressed sounds in I have no mouth yet.
 
         compress_sword1
                 Used to compress Broken Sword 1's music and speech files to
