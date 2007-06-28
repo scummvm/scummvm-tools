@@ -471,8 +471,13 @@ int main(int argc, char *argv[]) {
 	} else {
 		// IHNM
 		sprintf(inputFileNameWithExt, "%s.res", inputFileName);
-		if (detectFile(inputFileNameWithExt))
+		if (detectFile(inputFileNameWithExt)) {
 			sagaEncode(inputFileName);
+		} else {
+			// Check for "inherit the earth voices"
+			if (detectFile("inherit the earth voices"))
+				sagaEncode("inherit the earth voices");
+		}
 	}
 
 	return (0);

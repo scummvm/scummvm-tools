@@ -65,9 +65,7 @@ Compression Tools:
                 compress_saga <flags here> <file>
 
                 Where <file> is the sound file you with to compress, without the
-                extension. If you have the file "inherit the earth voices", you'll
-                need to rename it temporarily to "inherit the earth voices.rsc" to
-                compress it.
+                extension.
 
                 For Inherit the Earth, the digital music (music.rsc), speech 
                 (voices.rsc or "inherit the earth voices") and sound effects
