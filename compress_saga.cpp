@@ -38,7 +38,8 @@
 enum GameSoundTypes {
 	kSoundPCM = 0,
 	kSoundVOC = 1,
-	kSoundWAV = 2
+	kSoundWAV = 2,
+	kSoundMacPCM = 3
 };
 
 struct GameFileDescription {
@@ -53,15 +54,17 @@ struct GameFileDescription {
 // Known ITE files
 static GameFileDescription ITE_GameFiles[] = {
 	//	Filename					swapEndian	md5									resourceType	frequency	stereo
-	{"sounds.rsc",					false,		"e2ccb61c325d6d1ead3be0e731fe29fe", kSoundPCM,		22050,		false},
+	{"sounds.rsc",					false,		"e2ccb61c325d6d1ead3be0e731fe29fe", kSoundPCM,		22050,		false},	// PC CD/disk
 	{"sounds.rsc",					true,		"95863b89a0916941f6c5e1789843ba14", kSoundPCM,		22050,		false},	// Mac
-	{"music.rsc",					false,		"d6454756517f042f01210458abe8edd4", kSoundPCM,		11025,		true},
+	{"ite sounds.bin",				true,		"441426c6bb2a517f65c7e49b57f7a345", kSoundMacPCM,	22050,		false}, // MacBinary
+	{"music.rsc",					false,		"d6454756517f042f01210458abe8edd4", kSoundPCM,		11025,		true},	// PC CD/disk with digital music
 	{"music.rsc",					true,		"1a91cd60169f367ecb6c6e058d899b2f", kSoundPCM,		11025,		true},	// Mac
 	{"inherit the earth voices",	true,		"c14c4c995e7a0d3828e3812a494301b7", kSoundPCM,		22050,		false},	// Mac
 	{"voices.rsc",					false,		"41bb6b95d792dde5196bdb78740895a6", kSoundPCM,		22050,		false},	// CD
 	{"voices.rsc",					false,		"2fbad5d10b9b60a3415dc4aebbb11718", kSoundPCM,		22050,		false},	// German CD
 	{"voices.rsc",					false,		"c46e4392fcd2e89bc91e5567db33b62d", kSoundVOC,		-1,			false},	// Disk
-	{"voices.rsc",					false,		"0c9113e630f97ef0996b8c3114badb08", kSoundVOC,		-1,			false}	// German disk
+	{"voices.rsc",					false,		"0c9113e630f97ef0996b8c3114badb08", kSoundVOC,		-1,			false},	// German disk
+	{"ite voices.bin",				true,		"dba92ae7d57e942250fe135609708369", kSoundMacPCM,	22050,		false}	// MacBinary
 };
 
 // Known IHNM files
@@ -147,6 +150,7 @@ static CompressMode gCompMode = kMP3Mode;
 
 GameDescription *currentGameDescription = NULL;
 GameFileDescription *currentFileDescription = NULL;
+bool isSigned = true;
 
 uint16 sampleRate;
 uint32 sampleSize;
@@ -182,7 +186,7 @@ bool detectFile(const char *inFileName) {
 			}
 		}
 	}
-	printf("unsupported file\n");
+	printf("Unsupported file\n");
 	return false;
 }
 
@@ -193,7 +197,7 @@ uint32 copyFile(const char *fromFileName, FILE* outputFile) {
 	
 	tempf = fopen(fromFileName, "rb");
 	if (tempf == NULL)
-		error("unable to open %s\n", fromFileName);
+		error("Unable to open %s", fromFileName);
 
 	while ((size = (uint32)fread(fbuf, 1, sizeof(fbuf), tempf)) > 0) {
 		fwrite(fbuf, 1, size, outputFile);
@@ -210,11 +214,11 @@ void copyFile(FILE* inputFile, uint32 inputSize, const char* toFileName) {
 	
 	tempf = fopen(toFileName, "wb");
 	if (tempf == NULL)
-		error("unable to open %s\n", toFileName);
+		error("Unable to open %s", toFileName);
 	while (inputSize > 0) {
 		size = (uint32)fread(fbuf, 1, inputSize > sizeof(fbuf) ? sizeof(fbuf) : inputSize, inputFile);
 		if (size == 0) {
-			error("unable to copy file");
+			error("Unable to copy file");
 		}
 		fwrite(fbuf, 1, size, tempf);
 		inputSize -= size;
@@ -227,7 +231,7 @@ void writeBufferToFile(uint8* data, uint32 inputSize, const char* toFileName) {
 	
 	tempf = fopen(toFileName, "wb");
 	if (tempf == NULL)
-		error("unable to open %s\n", toFileName);
+		error("Unable to open %s", toFileName);
 	fwrite(data, 1, inputSize, tempf);
 	fclose(tempf);
 }
@@ -255,7 +259,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		free(inputData);
 		writeHeader(outputFile);
 
-		setRawAudioType( true, false, false, 8);
+		setRawAudioType( true, false, !isSigned, 8);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
@@ -267,7 +271,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		sampleStereo = currentFileDescription->stereo;
 		writeHeader(outputFile);
 
-		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, false, sampleBits);
+		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, !isSigned, sampleBits);
 		encodeAudio(TEMP_RAW, true, currentFileDescription->frequency, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
@@ -283,12 +287,15 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 
 		copyFile(inputFile, size, TEMP_RAW);
 
-		setRawAudioType( true, sampleStereo != 0, false, sampleBits);
+		setRawAudioType( true, sampleStereo != 0, !isSigned, sampleBits);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
+	if (currentFileDescription->resourceType == kSoundMacPCM) {
+		error("MacBinary files are not supported yet");
+	}
 
-	error("sorry - unsupported resourceType %ul\n", currentFileDescription->resourceType);
+	error("Unsupported resourceType %ul\n", currentFileDescription->resourceType);
 }
 
 void sagaEncode(const char *inputFileName) {
@@ -307,7 +314,7 @@ void sagaEncode(const char *inputFileName) {
 	sprintf(inputFileNameWithExt, "%s.rsc", inputFileName);
 	inputFile = fopen(inputFileNameWithExt, "rb");
 	inputFileSize = fileSize(inputFile);
-	printf("filesize: %ul\n", inputFileSize);
+	printf("Filesize: %ul\n", inputFileSize);
 	/*
 	 * At the end of the resource file there are 2 values: one points to the
 	 * beginning of the resource table the other gives the number of
@@ -323,9 +330,9 @@ void sagaEncode(const char *inputFileName) {
 		resTableCount = readUint32BE(inputFile);
 	}
 
-	printf("table offset: %ul\nnumber of records: %ul\n", resTableOffset, resTableCount);
+	printf("Table offset: %ul\nnumber of records: %ul\n", resTableOffset, resTableCount);
 	if (resTableOffset != inputFileSize - RSC_TABLEINFO_SIZE - RSC_TABLEENTRY_SIZE * resTableCount) {
-		error("Something's wrong with your resource file..\n");
+		error("Something's wrong with your resource file");
 	}
 
 	// Go to beginning of the table 
@@ -344,11 +351,11 @@ void sagaEncode(const char *inputFileName) {
 		inputTable[i].size = readUint32BE(inputFile);
 	}
 
-		 printf("record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
+		 printf("Record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
 	
 		if ((inputTable[i].offset > inputFileSize) ||
 		    (inputTable[i].offset + inputTable[i].size > inputFileSize)) {
-			error("The offset points outside the file!");
+			error("The offset points outside the file");
 		}
 
 	}
@@ -475,8 +482,16 @@ int main(int argc, char *argv[]) {
 			sagaEncode(inputFileName);
 		} else {
 			// Check for "inherit the earth voices"
-			if (detectFile("inherit the earth voices"))
+			if (detectFile("inherit the earth voices")) {
 				sagaEncode("inherit the earth voices");
+			} else {
+				// Check for MacBinary
+				sprintf(inputFileNameWithExt, "%s.bin", inputFileName);
+				if (detectFile(inputFileNameWithExt)) {
+					isSigned = false;
+					sagaEncode(inputFileName);
+				}
+			}
 		}
 	}
 
