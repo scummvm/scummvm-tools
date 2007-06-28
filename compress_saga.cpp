@@ -293,6 +293,19 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 	}
 	if (currentFileDescription->resourceType == kSoundMacPCM) {
 		error("MacBinary files are not supported yet");
+		// TODO
+		/*
+		copyFile(inputFile, inputSize, TEMP_RAW);
+		sampleSize = inputSize - 36;
+		sampleRate = (uint16)currentFileDescription->frequency;
+		sampleBits = 8;
+		sampleStereo = currentFileDescription->stereo;
+		writeHeader(outputFile);
+
+		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, !isSigned, sampleBits);
+		encodeAudio(TEMP_RAW, true, currentFileDescription->frequency, tempEncoded, gCompMode);
+		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
+		*/
 	}
 
 	error("Unsupported resourceType %ul\n", currentFileDescription->resourceType);
