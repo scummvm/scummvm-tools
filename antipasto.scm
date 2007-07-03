@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-06-25 05:05:15 brx>
+;;; Time-stamp: <2007-06-27 12:42:00 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -69,84 +69,69 @@
       (fetch-word)
       (get-var)))
 
+(define (process-bytes-from-script finished? mp
+                                   #!optional (acc cons)
+                                              (finally reverse)
+                                              (nil '()))
+  (let fetch-bytes ((byte (fetch-byte))
+                    (accum nil))
+    (if (finished? byte)
+        (finally accum)
+        (condition-case
+            (let ((val (mp byte)))
+              (fetch-bytes (fetch-byte) (acc val accum)))
+          (e (exn) (signal e))
+          (var () (fetch-bytes (car var)
+                               (cons (cdr var) accum)))))))
+
 (define (get-arg-list)
-  (let read-arg-list ((arg-list '())
-                      (byte (fetch-byte)))
-    (cond
-      ((= byte #xff)
-       (reverse arg-list))
-      (else
-       (read-arg-list (cons (get-var/word byte param-1)
-                            arg-list)
-                      (fetch-byte))))))
+  (process-bytes-from-script
+   (cut = #xff <>)
+   (cut get-var/word <> param-1)))
 
 (define (get-ascii)
-  (let read-ascii ((byte (fetch-byte))
-                   (byte-list '()))
-    (cond ((zero? byte)
-           (list->string (map integer->char (reverse byte-list))))
-          ((= byte #xff)
-           (let ((a (fetch-byte)))
-             (if (and (/= a 1)
-                      (/= a 2)
-                      (/= a 3)
-                      (/= a 8))
-                 (let ((b (fetch-byte))
-                       (c (fetch-byte)))
-                   (read-ascii (fetch-byte)
-                               (cons c
-                                     (cons b
-                                           (cons a
-                                                 (cons byte byte-list))))))
-                 (read-ascii (fetch-byte)
-                             (cons a (cons byte byte-list))))))
-          (else
-           (read-ascii (fetch-byte)
-                       (cons byte byte-list))))))
+  (process-bytes-from-script
+   zero?
+   (lambda (byte)
+     (if (= byte #xff)
+         (let ((a (fetch-byte)))
+           (if (and (/= a 1) (/= a 2)
+                    (/= a 3) (/= a 8))
+               (list byte a (fetch-byte) (fetch-byte))
+               (list byte a)))
+         (list byte)))
+   (lambda (x z) (append z x))
+   (compose list->string (cut map integer->char <>))))
 
 (define (decode-parse-string)
-  (let read-string ((string-infos '())
-                    (byte (fetch-byte)))
-    (cond
-      ((= byte #xff)
-       (reverse string-infos))
-      ((= 0 (band byte #xf))
-       (read-string (cons (list "Pos"
-                                (get-var/word byte param-1)
-                                (get-var/word byte param-2))
-                          string-infos)
-                    (fetch-byte)))
-      ((= 1 (band byte #xf))
-       (read-string (cons (list "Color" (get-var/byte byte param-1))
-                          string-infos)
-                    (fetch-byte)))
-      ((= 2 (band byte #xf))
-       (read-string (cons (list "Clipped" (get-var/word byte param-1))
-                          string-infos)
-                    (fetch-byte)))
-      ((= 3 (band byte #xf))
-       (read-string (cons (list "RestoreBG"
-                                (get-var/word byte param-1)
-                                (get-var/word byte param-2))
-                          string-infos)
-                    (fetch-byte)))
-      ((= 4 (band byte #xf))
-       (read-string (cons "Center" string-infos) (fetch-byte)))
-      ((= 6 (band byte #xf))
-       (read-string (cons "Left" string-infos) (fetch-byte)))
-      ((= 7 (band byte #xf))
-       (read-string (cons "Overhead" string-infos) (fetch-byte)))
-      ((= 8 (band byte #xf))
-       (read-string (cons (list "PlayCDTrack"
-                                             (get-var/word byte param-1)
-                                             (get-var/word byte param-2))
-                                       string-infos)
-                    (fetch-byte)))
-      ((= 15 (band byte #xf))
-       (read-string (cons (list "Text" (get-ascii)) string-infos)
-                    #xff))
-      (else
-       (error "printEgo fucked up" string-infos)))))
+  (let ((hack-nil '()))
+    (process-bytes-from-script
+     (cut = #xff <>)
+     (lambda (byte)
+       (cond
+         ((= 0 (band byte #xf))
+          (list "Pos"
+                (get-var/word byte param-1)
+                (get-var/word byte param-2)))
+         ((= 1 (band byte #xf))
+          (list "Color" (get-var/byte byte param-1)))
+         ((= 2 (band byte #xf))
+          (list "Clipped" (get-var/word byte param-1)))
+         ((= 3 (band byte #xf))
+          (list "RestoreBG"
+                (get-var/word byte param-1)
+                (get-var/word byte param-2)))
+         ((= 4 (band byte #xf)) "Center")
+         ((= 6 (band byte #xf)) "Left")
+         ((= 7 (band byte #xf)) "Overhead")
+         ((= 8 (band byte #xf))
+          (list "PlayCDTrack"
+                (get-var/word byte param-1)
+                (get-var/word byte param-2)))
+         ((= 15 (band byte #xf))
+          (signal (cons #xff (list "Text" (get-ascii)))))
+         (else
+          (error "printEgo fucked up")))))))
 
 (make-123-op "actorFollowCamera"
              #x52
@@ -172,15 +157,15 @@
                    (let ((byte (fetch-byte)))
                      (cond ((or (= byte 1)
                                 (= byte 81))
-                            (list "for actor" (get-var/byte byte param-1)))
+                            (list 'for-actor (get-var/byte byte param-1)))
                            ((= byte 2)
-                            (list "for message"))
+                            (list 'for-message))
                            ((= byte 3)
-                            (list "for camera"))
+                            (list 'for-camera))
                            ((= byte 4)
-                            (list "for sentence"))
+                            (list 'for-sentence))
                            (else
-                            (list "for something unknown"))))))
+                            (list 'for-weekend))))))
 
 (register-opcode "delay"
                  #x2e
