@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-06-27 12:42:00 brx>
+;;; Time-stamp: <2007-07-03 02:28:00 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -104,34 +104,27 @@
    (compose list->string (cut map integer->char <>))))
 
 (define (decode-parse-string)
-  (let ((hack-nil '()))
-    (process-bytes-from-script
-     (cut = #xff <>)
-     (lambda (byte)
-       (cond
-         ((= 0 (band byte #xf))
-          (list "Pos"
-                (get-var/word byte param-1)
-                (get-var/word byte param-2)))
-         ((= 1 (band byte #xf))
-          (list "Color" (get-var/byte byte param-1)))
-         ((= 2 (band byte #xf))
-          (list "Clipped" (get-var/word byte param-1)))
-         ((= 3 (band byte #xf))
-          (list "RestoreBG"
-                (get-var/word byte param-1)
-                (get-var/word byte param-2)))
-         ((= 4 (band byte #xf)) "Center")
-         ((= 6 (band byte #xf)) "Left")
-         ((= 7 (band byte #xf)) "Overhead")
-         ((= 8 (band byte #xf))
-          (list "PlayCDTrack"
-                (get-var/word byte param-1)
-                (get-var/word byte param-2)))
-         ((= 15 (band byte #xf))
-          (signal (cons #xff (list "Text" (get-ascii)))))
-         (else
-          (error "printEgo fucked up")))))))
+  (process-bytes-from-script
+   (cut = #xff <>)
+   (lambda (byte)
+     (let ((b (band byte #xf)))
+       (case b
+         ((0) (list "Pos"
+                    (get-var/word byte param-1)
+                    (get-var/word byte param-2)))
+         ((1) (list "Color" (get-var/byte byte param-1)))
+         ((2) (list "Clipped" (get-var/word byte param-1)))
+         ((3) (list "RestoreBG"
+                    (get-var/word byte param-1)
+                    (get-var/word byte param-2)))
+         ((4) "Center")
+         ((6) "Left")
+         ((7) "Overhead")
+         ((8) (list "PlayCDTrack"
+                    (get-var/word byte param-1)
+                    (get-var/word byte param-2)))
+         ((15) (signal (cons #xff (list "Text" (get-ascii)))))
+         (else (error "printEgo fucked up")))))))
 
 (make-123-op "actorFollowCamera"
              #x52
@@ -143,29 +136,87 @@
 (make-123-op "animateActor"
              #x11
              (lambda (op)
-               (list (get-var/byte param-1 op)
-                     (get-var/byte param-2 op)))
+               (list (get-var/byte op param-1)
+                     (get-var/byte op param-2)))
              2)
+
+;; misses convertTable hack
+(define (handle-actor-ops op)
+  (cons (get-var/byte param-1 op)
+        (process-bytes-from-script
+         (cut = #xff <>)
+         (lambda (byte)
+           (let ((b (band byte #x1f)))
+             (case b
+               ((0) (list "Unknown" (get-var/byte byte param-1)))
+               ((1) (list "Costume" (get-var/byte byte param-1)))
+               ((2) (list "WalkSpeed"
+                          (get-var/byte byte param-1)
+                          (get-var/byte byte param-2)))
+               ((3) (list "Sound" (get-var/byte byte param-1)))
+               ((4) (list "WalkAnimNr" (get-var/byte byte param-1)))
+               ((5) (list "TalkAnimNr"
+                          (get-var/byte byte param-1)
+                          (get-var/byte byte param-2)))
+               ((6) (list "StandAnimNr"
+                          (get-var/byte byte param-1)))
+               ((7) (list "Nothing"
+                          (get-var/byte byte param-1)
+                          (get-var/byte byte param-2)
+                          (get-var/byte byte param-3)))
+               ((8) (list "Init" 0))
+               ((9) (list "Elevation" (get-var/word byte param-1)))
+               ((10) (list "DefaultAnims" 0))
+               ((11) (list "Palette"
+                           (get-var/byte byte param-1)
+                           (get-var/byte byte param-2)))
+               ((12) (list "TalkColor" (get-var/byte byte param-1)))
+               ((13) (list "Name" "uuuuh..."))
+               ((14) (list "InitAnimNr" (get-var/byte byte param-1)))
+               ((16) (list "Width" (get-var/byte byte param-1)))
+               ((17) (list "Scale"
+                           (get-var/byte byte param-1)
+                           (get-var/byte byte param-2)))
+               ((18) (list "NeverZClip" 0))
+               ((19) (list "AlwaysZClip" (get-var/byte byte param-1)))
+               ((20) (list "IgnoreBoxes" 0))
+               ((21) (list "FollowBoxes" 0))
+               ((22) (list "AnimSpeed" (get-var/byte byte param-1)))
+               (else (error "actorOps fucked up"))))))))
+
+(register-opcode "actorOps" #x13 handle-actor-ops)
+(register-opcode "actorOps" #x53 handle-actor-ops)
+(register-opcode "actorOps" #x93 handle-actor-ops)
+(register-opcode "actorOps" #xd3 handle-actor-ops)
 
 (register-opcode "breakHere" #x80 (constantly '()))
 
 (register-opcode "printEgo" #xd8 (compose list (hole decode-parse-string)))
 
+(define (handle-start-script op)
+  (list (get-var/byte op param-1)
+        (get-arg-list)))
+
+(register-opcode "startScript" #x0a handle-start-script)
+(register-opcode "startScript" #x2a handle-start-script)
+(register-opcode "startScript" #x4a handle-start-script)
+(register-opcode "startScript" #x6a handle-start-script)
+(register-opcode "startScript" #x8a handle-start-script)
+(register-opcode "startScript" #xaa handle-start-script)
+(register-opcode "startScript" #xca handle-start-script)
+(register-opcode "startScript" #xea handle-start-script)
+
 (register-opcode "wait"
                  #xae
                  (lambda (_)
                    (let ((byte (fetch-byte)))
-                     (cond ((or (= byte 1)
-                                (= byte 81))
-                            (list 'for-actor (get-var/byte byte param-1)))
-                           ((= byte 2)
-                            (list 'for-message))
-                           ((= byte 3)
-                            (list 'for-camera))
-                           ((= byte 4)
-                            (list 'for-sentence))
-                           (else
-                            (list 'for-weekend))))))
+                     (case byte
+                       ((1 81) (list 'for-actor
+                                     (get-var/byte byte param-1)))
+                       ((2) (list 'for-message))
+                       ((3) (list 'for-camera))
+                       ((4) (list 'for-sentence))
+                       (else (list 'for-weekend))))))
 
 (register-opcode "delay"
                  #x2e
@@ -173,6 +224,21 @@
                    (list (bior (fetch-byte)
                                (ash (fetch-byte) 8)
                                (ash (fetch-byte) 16)))))
+
+(register-opcode "goto"
+                 #x18
+                 (lambda (_) (list (fetch-word))))
+
+(define (register-simple-cond-jump op condition)
+  (register-opcode "goto-if"
+                   op
+                   (lambda (_)
+                     (let ((var (get-var)))
+                       (list (fetch-word)
+                             (append condition (list var)))))))
+
+(register-simple-cond-jump #xa8 '(not zero?))
+(register-simple-cond-jump #x28 '(zero? ))
 
 (define lscr (string->u32 "LSCR")) ; 9
 (define scrp (string->u32 "SCRP")) ; 8
