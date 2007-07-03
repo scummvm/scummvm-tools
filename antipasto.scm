@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-03 02:28:00 brx>
+;;; Time-stamp: <2007-07-03 03:56:49 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -133,7 +133,7 @@
 
 (register-opcode "cutscene" #x40 (compose list (hole get-arg-list)))
 
-(make-123-op "animateActor"
+(make-123-op "animateCostume"
              #x11
              (lambda (op)
                (list (get-var/byte op param-1)
@@ -190,6 +190,10 @@
 (register-opcode "actorOps" #xd3 handle-actor-ops)
 
 (register-opcode "breakHere" #x80 (constantly '()))
+(register-opcode "endCutscene" #xc0 (constantly '()))
+
+(register-opcode "stopObjectCode" #x00 (constantly '()))
+(register-opcode "stopObjectCode" #xa0 (constantly '()))
 
 (register-opcode "printEgo" #xd8 (compose list (hole decode-parse-string)))
 
@@ -211,12 +215,12 @@
                  (lambda (_)
                    (let ((byte (fetch-byte)))
                      (case byte
-                       ((1 81) (list 'for-actor
+                       ((1 81) (cons 'actor
                                      (get-var/byte byte param-1)))
-                       ((2) (list 'for-message))
-                       ((3) (list 'for-camera))
-                       ((4) (list 'for-sentence))
-                       (else (list 'for-weekend))))))
+                       ((2) (list 'message))
+                       ((3) (list 'camera))
+                       ((4) (list 'sentence))
+                       (else (list 'weekend))))))
 
 (register-opcode "delay"
                  #x2e
@@ -225,20 +229,49 @@
                                (ash (fetch-byte) 8)
                                (ash (fetch-byte) 16)))))
 
+(define (register-simple-set op set)
+  (make-123-op "set"
+               op
+               (lambda (op)
+                 (list (get-var)
+                       (list set
+                             (get-var/byte op param-1))))
+               1))
+
+(register-simple-set #x68 "isScriptRunning")
+(register-simple-set #x71 "getActorCostume")
+
 (register-opcode "goto"
                  #x18
                  (lambda (_) (list (fetch-word))))
 
-(define (register-simple-cond-jump op condition)
+(define (register-simple-cond-jump op pred)
   (register-opcode "goto-if"
                    op
                    (lambda (_)
                      (let ((var (get-var)))
                        (list (fetch-word)
-                             (append condition (list var)))))))
+                             (list pred var))))))
 
-(register-simple-cond-jump #xa8 '(not zero?))
-(register-simple-cond-jump #x28 '(zero? ))
+(register-simple-cond-jump #xa8 'not-zero?)
+(register-simple-cond-jump #x28 'zero?)
+
+(define (register-binary-cond-jump op bpred)
+  (make-123-op "goto-if"
+               op
+               (lambda (op)
+                 (let ((a (get-var))
+                       (b (get-var/word op param-1)))
+                   (list (fetch-word)
+                         (list bpred a b))))
+               1))
+
+(register-binary-cond-jump #x38 '<=)
+(register-binary-cond-jump #x44 '<)
+(register-binary-cond-jump #x4 '>=)
+(register-binary-cond-jump #x78 '>)
+(register-binary-cond-jump #x8 '!=)
+(register-binary-cond-jump #x48 '==)
 
 (define lscr (string->u32 "LSCR")) ; 9
 (define scrp (string->u32 "SCRP")) ; 8
