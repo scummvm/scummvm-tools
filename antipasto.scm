@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-03 03:56:49 brx>
+;;; Time-stamp: <2007-07-03 06:35:55 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@
 
 (define current-script-file #f)
 (define current-script-port #f)
+(define current-script-offset #f)
 
 (define opcode-register (make-hash-table))
 
@@ -35,8 +36,11 @@
                                                 op
                                                 #f)))
     (if opcode-handler
-        (cons (car opcode-handler) ((cdr opcode-handler) op))
-        '(unknown shit))))
+        (cons* (sub1 current-script-offset)
+               op
+               (car opcode-handler)
+               ((cdr opcode-handler) op))
+        #f)))
 
 (define param-1 #x80)
 (define param-2 #x40)
@@ -54,8 +58,13 @@
               (make-opcodes base-code
                             (take (list param-1 param-2 param-3) n)))))
 
-(define (fetch-byte) (read-u8 current-script-port))
-(define (fetch-word) (read-le-u16 current-script-port))
+(define (fetch-byte)
+  (set! current-script-offset (+ current-script-offset 1))
+  (read-u8 current-script-port))
+
+(define (fetch-word)
+  (set! current-script-offset (+ current-script-offset 2))
+  (read-le-u16 current-script-port))
 
 (define (get-var) (cons 'var (fetch-word)))
 
@@ -234,44 +243,48 @@
                op
                (lambda (op)
                  (list (get-var)
-                       (list set
-                             (get-var/byte op param-1))))
+                       (list set (get-var/byte op param-1))))
                1))
 
 (register-simple-set #x68 "isScriptRunning")
 (register-simple-set #x71 "getActorCostume")
 
+(define (calc-abs-jump relative)
+  (sprintf "~X" ;only for testing purposes with intermediary format
+           (band #x7fff (+ relative current-script-offset))))
+
 (register-opcode "goto"
                  #x18
-                 (lambda (_) (list (fetch-word))))
+                 (lambda (_)
+                   (list (calc-abs-jump (fetch-word)))))
 
 (define (register-simple-cond-jump op pred)
-  (register-opcode "goto-if"
+  (register-opcode "goto-unless"
                    op
                    (lambda (_)
                      (let ((var (get-var)))
-                       (list (fetch-word)
+                       (list (calc-abs-jump (fetch-word))
                              (list pred var))))))
 
 (register-simple-cond-jump #xa8 'not-zero?)
 (register-simple-cond-jump #x28 'zero?)
 
 (define (register-binary-cond-jump op bpred)
-  (make-123-op "goto-if"
+  (make-123-op "goto-unless"
                op
                (lambda (op)
                  (let ((a (get-var))
                        (b (get-var/word op param-1)))
-                   (list (fetch-word)
-                         (list bpred a b))))
+                   (list (calc-abs-jump (fetch-word))
+                         (list bpred b a))))
                1))
 
 (register-binary-cond-jump #x38 '<=)
 (register-binary-cond-jump #x44 '<)
 (register-binary-cond-jump #x4 '>=)
 (register-binary-cond-jump #x78 '>)
-(register-binary-cond-jump #x8 '!=)
-(register-binary-cond-jump #x48 '==)
+(register-binary-cond-jump #x8 '/=)
+(register-binary-cond-jump #x48 '=)
 
 (define lscr (string->u32 "LSCR")) ; 9
 (define scrp (string->u32 "SCRP")) ; 8
@@ -304,29 +317,28 @@
       (else (error "unknown script type")))))
 
 (define (decode-ops decoded)
-  (handle-exceptions exn
-                     (cond ((eq? 'eof exn)
-                            (reverse decoded))
-                           (else
-                            (display
-                             ((condition-property-accessor 'exn
-                                                           'message)
-                              exn))
-                            (newline)))
-    (decode-ops (cons (decode-op (read-u8 current-script-port))
-                      decoded))))
+  (handle-exceptions exn (and (eq? 'eof exn) (reverse decoded))
+    (let ((decoded-op (decode-op (fetch-byte))))
+      (if decoded-op
+          (decode-ops (cons decoded-op decoded))
+          (reverse decoded)))))
 
 (define (test-run)
   (set! current-script-file
-        "/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201")
+        "/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201") ;01.beach.0201
   (set! current-script-port (open-input-file current-script-file))
+  (set! current-script-offset 0)
   (parse-header)
   (let print-decoded ((decoded (decode-ops '())))
     (unless (or (null? decoded)
-                (equal? '(unknown shit) (car decoded)))
-      (write (car decoded))
+                (not (car decoded)))
+      (printf "[~X] (~X) "
+              (caar decoded)
+              (cadar decoded))
+      (write (cddar decoded))
       (newline)
       (print-decoded (cdr decoded))))
   (close-input-port current-script-port)
   (set! current-script-port #f)
-  (set! current-script-file #f))
+  (set! current-script-file #f)
+  (set! current-script-offset #f))

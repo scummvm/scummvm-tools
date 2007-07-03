@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-03 03:00:46 brx>
+;;; Time-stamp: <2007-07-03 06:39:09 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -46,7 +46,7 @@
 (define (read-u8 port)
   (let ((char (read-char port)))
     (if (eof-object? char)
-        (signal 'eof)
+        (abort 'eof)
         (char->integer char))))
 
 (define (read-le-u16 port)
