@@ -116,7 +116,7 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "2M26", false },
 	{ "3M7", false },
 	{ "3M8", false },
-	{ "3M9", true }, 
+	{ "3M9", true },
 	{ "3M10", false },
 	{ "2M13", false },
 	{ "3M12", false },
@@ -163,7 +163,7 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "4M31", false },
 	{ "4M32", false },
 	{ "5M1", false },
-	{ "5M2", true }, 
+	{ "5M2", true },
 	{ "5M3", false },
 	{ "5M4", false },
 	{ "5M5", false },
@@ -275,7 +275,7 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "11M4", false },
 	{ "11M7", false },
 	{ "11M8", false },
-	{ "11M9", true }, 
+	{ "11M9", true },
 	{ "12M1", false },
 	{ "11M2", false },
 	{ "SPM2", false },
@@ -308,7 +308,7 @@ MusicFile musicNames[TOTAL_TUNES] = {
 };
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <params>\n", exename);
+	printf("\nUsage: %s [params]\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3          encode to MP3 format (default)\n");
@@ -336,6 +336,14 @@ void showhelp(char *exename) {
 	printf(" -q <value>     specifies the value (0 - 10) of VBR quality (10=best)\n");
 	printf("                (default:%d)\n", oggqualDef);
 	printf(" --silent       the output of oggenc is hidden (default:disabled)\n");
+
+	printf("\nFlac mode params:\n");
+ 	printf(" --fast       FLAC uses compresion level 0\n");
+ 	printf(" --best       FLAC uses compresion level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+ 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n --help         this help message\n");
 
@@ -438,7 +446,7 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 	}
 	cl3Index = (uint32*)malloc(numSamples * 8);
 	memset(cl3Index, 0, numSamples * 8);
-	
+
 	sampleIndex = cowHeader + numRooms + 1;
 	/* This points to the sample index table. 8 bytes each (4 bytes size and then 4 bytes file index) */
 
@@ -446,7 +454,7 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 
 	for (cnt = 0; cnt < numSamples; cnt++) {
 		if (sampleIndex[cnt << 1] | sampleIndex[(cnt << 1) | 1]) {
-			printf("sample %5d: ", cnt);
+			printf("sample %5d: \n", cnt);
 			smpData = (uint8*)uncompressSpeech(clu, sampleIndex[cnt << 1] + headerSize, sampleIndex[(cnt << 1) | 1], &smpSize);
 			if ((!smpData) || (!smpSize))
 				error("unable to handle speech sample %d!\n", cnt);
@@ -475,7 +483,7 @@ void compressSpeech(CompressMode compMode) {
 	int i;
 	char cluName[256], outName[256];
 
-	setRawAudioType(true, false, false, 16);
+	setRawAudioType(true, false, 16);
 	for (i = 1; i <= 2; i++) {
 		sprintf(cluName, "SPEECH/SPEECH%d.CLU", i);
 		clu = fopen(cluName, "rb");
@@ -670,7 +678,7 @@ int main(int argc, char *argv[]) {
 		compressSpeech(compMode);
 	if (compMusic)
 		compressMusic(compMode);
-	
+
 	return EXIT_SUCCESS;
 }
 

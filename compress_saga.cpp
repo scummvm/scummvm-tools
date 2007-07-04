@@ -19,7 +19,7 @@
  *
  * $URL$
  * $Id$
- * 
+ *
  */
 
 #include "compress.h"
@@ -194,7 +194,7 @@ uint32 copyFile(const char *fromFileName, FILE* outputFile) {
 	uint32 size;
 	char fbuf[2048];
 	FILE * tempf;
-	
+
 	tempf = fopen(fromFileName, "rb");
 	if (tempf == NULL)
 		error("Unable to open %s", fromFileName);
@@ -211,7 +211,7 @@ void copyFile(FILE* inputFile, uint32 inputSize, const char* toFileName) {
 	uint32 size;
 	char fbuf[2048];
 	FILE * tempf;
-	
+
 	tempf = fopen(toFileName, "wb");
 	if (tempf == NULL)
 		error("Unable to open %s", toFileName);
@@ -228,7 +228,7 @@ void copyFile(FILE* inputFile, uint32 inputSize, const char* toFileName) {
 
 void writeBufferToFile(uint8* data, uint32 inputSize, const char* toFileName) {
 	FILE * tempf;
-	
+
 	tempf = fopen(toFileName, "wb");
 	if (tempf == NULL)
 		error("Unable to open %s", toFileName);
@@ -248,7 +248,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 	Common::File inputFileStream(inputFile);
 	int rate, size;
 	byte flags;
-	
+
 	if (currentFileDescription->resourceType == kSoundVOC) {
 		inputData = Audio::loadVOCFromStream(inputFileStream, size, rate);
 		sampleSize = size;
@@ -259,7 +259,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		free(inputData);
 		writeHeader(outputFile);
 
-		setRawAudioType( true, false, !isSigned, 8);
+		setRawAudioType( true, false, 8);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
@@ -271,7 +271,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		sampleStereo = currentFileDescription->stereo;
 		writeHeader(outputFile);
 
-		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, !isSigned, sampleBits);
+		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, sampleBits);
 		encodeAudio(TEMP_RAW, true, currentFileDescription->frequency, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
@@ -287,7 +287,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 
 		copyFile(inputFile, size, TEMP_RAW);
 
-		setRawAudioType( true, sampleStereo != 0, !isSigned, sampleBits);
+		setRawAudioType( true, sampleStereo != 0, sampleBits);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
@@ -302,7 +302,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		sampleStereo = currentFileDescription->stereo;
 		writeHeader(outputFile);
 
-		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, !isSigned, sampleBits);
+		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, sampleBits);
 		encodeAudio(TEMP_RAW, true, currentFileDescription->frequency, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 		*/
@@ -348,12 +348,12 @@ void sagaEncode(const char *inputFileName) {
 		error("Something's wrong with your resource file");
 	}
 
-	// Go to beginning of the table 
+	// Go to beginning of the table
 	fseek(inputFile, resTableOffset, SEEK_SET);
 
 	inputTable = (Record*)malloc(resTableCount * sizeof(Record));
 
-	// Put offsets of all the records in a table 
+	// Put offsets of all the records in a table
 	for (i = 0; i < resTableCount; i++) {
 
 	if (!currentFileDescription->swapEndian) {
@@ -365,7 +365,7 @@ void sagaEncode(const char *inputFileName) {
 	}
 
 		 printf("Record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
-	
+
 		if ((inputTable[i].offset > inputFileSize) ||
 		    (inputTable[i].offset + inputTable[i].size > inputFileSize)) {
 			error("The offset points outside the file");
@@ -374,13 +374,13 @@ void sagaEncode(const char *inputFileName) {
 	}
 	outputTable = (Record*)malloc(resTableCount * sizeof(Record));
 
-	sprintf(outputFileNameWithExt, "%s.cmp", inputFileName);	
+	sprintf(outputFileNameWithExt, "%s.cmp", inputFileName);
 	outputFile = fopen(outputFileNameWithExt, "wb");
 
 	for (i = 0; i < resTableCount; i++) {
 		fseek(inputFile, inputTable[i].offset, SEEK_SET);
 		outputTable[i].offset = ftell(outputFile);
-		
+
 		outputTable[i].size = encodeEntry(inputFile, inputTable[i].size, outputFile);
 	}
 	fclose(inputFile);
@@ -391,13 +391,13 @@ void sagaEncode(const char *inputFileName) {
 		writeUint32LE(outputFile, outputTable[i].size);
 	}
 	writeUint32LE(outputFile, resTableOffset);
-	writeUint32LE(outputFile, resTableCount);	// Should be the same number of entries 
+	writeUint32LE(outputFile, resTableCount);	// Should be the same number of entries
 
 	fclose(outputFile);
 
 	free(inputTable);
 	free(outputTable);
-	
+
 	// Cleanup
 	unlink(TEMP_RAW);
 	unlink(tempEncoded);
@@ -406,7 +406,7 @@ void sagaEncode(const char *inputFileName) {
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <params> [<file> | mac]\n", exename);
+	printf("\nUsage: %s [params] <file>\n", exename);
 
 	printf("\nParams:\n");
 
@@ -432,8 +432,12 @@ void showhelp(char *exename) {
 	printf("--silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf("[params]     optional Arguments passed to the Encoder\n");
-	printf("             recommended is: --best -b 1152\n");
+ 	printf(" --fast       FLAC uses compresion level 0\n");
+ 	printf(" --best       FLAC uses compresion level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+ 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n--help     this help message\n");
 

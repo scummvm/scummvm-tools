@@ -158,9 +158,10 @@ static void compress_sound_data() {
 }
 
 static void showhelp(const char *exename) {
-	printf("\nUsage: %s <params> input_directory\n", exename);
+	printf("\nUsage: %s [params] <inputdir>\n", exename);
 
 	printf("\nParams:\n");
+
 	printf(" --mp3        encode to MP3 format (default)\n");
 	printf(" --vorbis     encode to Vorbis format\n");
 	printf(" --flac       encode to Flac format\n");
@@ -183,8 +184,12 @@ static void showhelp(const char *exename) {
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf(" [params]     optional arguments passed directly to the encoder\n");
-	printf("              recommended is: --best -b 1152\n");
+	printf(" --fast       FLAC uses compresion level 0\n");
+	printf(" --best       FLAC uses compresion level 8\n");
+	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n --help     this help message\n");
 

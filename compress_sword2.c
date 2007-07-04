@@ -31,7 +31,7 @@ static CompressMode gCompMode = kMP3Mode;
 
 void showhelp(char *exename)
 {
-	printf("\nUsage: %s <params> file.clu\n", exename);
+	printf("\nUsage: %s [params] <file>\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
@@ -56,8 +56,12 @@ void showhelp(char *exename)
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf(" [params]     optional arguments passed directly to the encoder\n");
-	printf("              recommended is: --best -b 1152\n");
+	printf(" --fast       FLAC uses compresion level 0\n");
+	printf(" --best       FLAC uses compresion level 8\n");
+	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n --help     this help message\n");
 
@@ -104,7 +108,7 @@ int main(int argc, char *argv[]) {
 	uint32 indexSize;
 	uint32 totalSize;
 	uint32 length;
-	
+
 	if (argc < 2)
 		showhelp(argv[0]);
 	i = 1;

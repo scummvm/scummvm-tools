@@ -74,11 +74,11 @@ static void end(void)
 	unlink(TEMP_RAW);
 	unlink(tempEncoded);
 	unlink(TEMP_WAV);
-	
+
 	exit(0);
 }
 
-	
+
 static int get_offsets(uint32 filenums[], uint32 offsets[])
 {
 	int i;
@@ -148,7 +148,7 @@ static uint32 get_sound(uint32 offset)
 
 void showhelp(char *exename)
 {
-	printf("\nUsage: %s <params> [<file> | mac]\n", exename);
+	printf("\nUsage: %s [params] (<file> | mac)\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
@@ -173,8 +173,12 @@ void showhelp(char *exename)
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf(" [params]     optional arguments passed directly to the encoder\n");
-	printf("              recommended is: --best -b 1152\n");
+ 	printf(" --fast       FLAC uses compresion level 0\n");
+ 	printf(" --best       FLAC uses compresion level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+ 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n --help     this help message\n");
 
@@ -253,7 +257,7 @@ static void convert_mac(void)
 	char tmp[256];
 	uint32 filenums[32768];
 	uint32 offsets[32768];
-	
+
 	sprintf(infile_base, "simon2");
 
 	input = fopen("voices.idx", "rb");
@@ -295,7 +299,7 @@ static void convert_mac(void)
 			sprintf(tmp, "voices%d.dat", filenums[i]);
 			if (input)
 				fclose(input);
-			input = fopen(tmp, "rb"); 
+			input = fopen(tmp, "rb");
 			if (!input) {
 				printf("Cannot open file: %s\n", tmp);
 				exit(-1);
@@ -311,7 +315,7 @@ static void convert_mac(void)
 int main(int argc, char *argv[])
 {
 	int i;
-	
+
 	if (argc < 2)
 		showhelp(argv[0]);
 
