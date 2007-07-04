@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-04 03:29:22 brx>
+;;; Time-stamp: <2007-07-04 04:21:52 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -69,7 +69,31 @@
   (set! current-script-offset (+ current-script-offset 2))
   (read-le-u16 current-script-port))
 
-(define (get-var) (cons 'var (fetch-word)))
+(define (get-var)
+  (define (get-num-sym i)
+    (cond ((not (zero? (band i #x8000)))
+           (if (>= (band i #xfff) #x800)
+               '??bit??
+               'bit))
+          ((not (zero? (band i #x4000)))
+           (if (>= (band i #xfff) #x10)
+               '??local??
+               'local))
+          (else
+           (if (>= (band i #xfff) #x320)
+               '??var??
+               'var))))
+  (let ((i (fetch-word)))
+    (list (get-num-sym i)
+          (if (zero? (band i #x2000))
+              (band i #xfff)
+              (list '+
+                    (band i #xfff)
+                    (let ((j (fetch-word)))
+                      (if (zero? (band j #x2000))
+                          (band j #xfff)
+                          (list (get-num-sym (bxor j #x2000))
+                                (band j #xfff)))))))))
 
 (define (get-var/byte op mask)
   (if (zero? (band op mask))
@@ -100,6 +124,11 @@
   (list (get-var/byte op param-1)
         (get-var/byte op param-2)
         (get-var/byte op param-3)))
+
+(define (suck-vb-vb-vw op)
+  (list (get-var/byte op param-1)
+        (get-var/byte op param-2)
+        (get-var/word op param-3)))
 
 (define (suck-vw-vw-vw op)
   (list (get-var/word op param-1)
@@ -171,7 +200,7 @@
 
 (register-complex-opcode "putActor"
                          '(#x01 #x21 #x41 #x61 #x81 #xa1 #xc1 #xe1)
-                         suck-vb-vb-vb)
+                         suck-vb-vb-vw)
 
 (register-complex-opcode "putActorInRoom" '(#x2d #x6d #xad #xed) suck-vb-vb)
 
@@ -289,6 +318,27 @@
 
 (make-123-op "verbOps" #x7a handle-verb-ops 1)
 
+(define (handle-cursor-command)
+  (list (let* ((byte (fetch-byte))
+               (b (band byte #x1f)))
+          (case b
+            ((#x01) '("CursorShow"))
+            ((#x02) '("CursorHide"))
+            ((#x03) '("UserputOn"))
+            ((#x04) '("UserputOff"))
+            ((#x05) '("CursorSoftOn"))
+            ((#x06) '("CursorSoftOff"))
+            ((#x07) '("UserputSoftOn"))
+            ((#x08) '("UserputSoftOff"))
+            ((#x0a) (cons "SetCursorImg" (suck-vb-vb byte)))
+            ((#x0b) (cons "SetCursorHotspot" (suck-vb-vb-vb byte)))
+            ((#x0c) (cons "InitCursor" (suck-vb byte)))
+            ((#x0d) (cons "InitCharset" (suck-vb byte)))
+            ((#x0e) (list "CursorCommand" (get-arg-list)))
+            (else (error "Unknown cursor command"))))))
+
+(register-opcode "cursorCmd" #x2c (hole handle-cursor-command))
+
 (register-opcode "breakHere" #x80 (constantly '()))
 (register-opcode "endCutscene" #xc0 (constantly '()))
 
@@ -355,10 +405,8 @@
                                       (cons "setImage" (suck-vw byte)))
                                      (else '()))))))
 
-(make-123-op "startSound"
-             #x1c
-             (compose list (cut get-var/byte <> param-1))
-             1)
+(make-123-op "startSound" #x1c suck-vb 1)
+(make-123-op "stopSound" #x3c suck-vb 1)
 
 (register-complex-opcode "setState"
                          '(#x7 #x47 #x87 #xc7)
@@ -518,6 +566,7 @@
   (parse-header)
   (let print-decoded ((decoded (decode-ops '())))
     (unless (or (null? decoded)
+                (not decoded)
                 (not (car decoded)))
       (printf "[~X] (~X) "
               (caar decoded)

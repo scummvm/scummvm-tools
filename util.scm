@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-04 01:57:56 brx>
+;;; Time-stamp: <2007-07-04 03:54:34 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -22,6 +22,7 @@
 
 (define ash arithmetic-shift)
 
+(define bxor bitwise-xor)
 (define bior bitwise-ior)
 (define band bitwise-and)
 (define bnot bitwise-not)
