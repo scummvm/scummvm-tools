@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-03 06:35:55 brx>
+;;; Time-stamp: <2007-07-04 01:53:37 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -30,6 +30,9 @@
 
 (define (register-opcode name code handler)
   (hash-table-set! opcode-register code (cons name handler)))
+
+(define (register-complex-opcode name codes handler)
+  (for-each (cut register-opcode name <> handler) codes))
 
 (define (decode-op op)
   (let ((opcode-handler (hash-table-ref/default opcode-register
@@ -180,7 +183,7 @@
                            (get-var/byte byte param-1)
                            (get-var/byte byte param-2)))
                ((12) (list "TalkColor" (get-var/byte byte param-1)))
-               ((13) (list "Name" "uuuuh..."))
+               ((13) (list "Name" (get-ascii)))
                ((14) (list "InitAnimNr" (get-var/byte byte param-1)))
                ((16) (list "Width" (get-var/byte byte param-1)))
                ((17) (list "Scale"
@@ -193,16 +196,14 @@
                ((22) (list "AnimSpeed" (get-var/byte byte param-1)))
                (else (error "actorOps fucked up"))))))))
 
-(register-opcode "actorOps" #x13 handle-actor-ops)
-(register-opcode "actorOps" #x53 handle-actor-ops)
-(register-opcode "actorOps" #x93 handle-actor-ops)
-(register-opcode "actorOps" #xd3 handle-actor-ops)
+(register-complex-opcode "actorOps"
+                         '(#x13 #x53 #x93 #xd3)
+                         handle-actor-ops)
 
 (register-opcode "breakHere" #x80 (constantly '()))
 (register-opcode "endCutscene" #xc0 (constantly '()))
 
-(register-opcode "stopObjectCode" #x00 (constantly '()))
-(register-opcode "stopObjectCode" #xa0 (constantly '()))
+(register-complex-opcode "stopObjectCode" '(#x00 #xa0) (constantly '()))
 
 (register-opcode "printEgo" #xd8 (compose list (hole decode-parse-string)))
 
@@ -210,14 +211,9 @@
   (list (get-var/byte op param-1)
         (get-arg-list)))
 
-(register-opcode "startScript" #x0a handle-start-script)
-(register-opcode "startScript" #x2a handle-start-script)
-(register-opcode "startScript" #x4a handle-start-script)
-(register-opcode "startScript" #x6a handle-start-script)
-(register-opcode "startScript" #x8a handle-start-script)
-(register-opcode "startScript" #xaa handle-start-script)
-(register-opcode "startScript" #xca handle-start-script)
-(register-opcode "startScript" #xea handle-start-script)
+(register-complex-opcode "startScript"
+                         '(#x0a #x2a #x4a #x6a #x8a #xaa #xca #xea)
+                         handle-start-script)
 
 (register-opcode "wait"
                  #xae
@@ -238,28 +234,80 @@
                                (ash (fetch-byte) 8)
                                (ash (fetch-byte) 16)))))
 
-(define (register-simple-set op set)
-  (make-123-op "set"
-               op
-               (lambda (op)
-                 (list (get-var)
-                       (list set (get-var/byte op param-1))))
-               1))
+(make-123-op "setClass"
+             #x5d
+             (lambda (op)
+               (list (get-var/word op param-1)
+                     (get-arg-list)))
+             1)
 
+(make-123-op "setObjectName"
+             #x54
+             (lambda (op)
+               (list (get-var/word op param-1)
+                     (get-ascii)))
+             1)
+
+(make-123-op "startSound"
+             #x1c
+             (compose list (cut get-var/byte <> param-1))
+             1)
+
+(register-complex-opcode "setState"
+                         '(#x7 #x47 #x87 #xc7)
+                         (lambda (op)
+                           (list (get-var/word op param-1)
+                                 (get-var/byte op param-2))))
+
+(register-opcode "soundKludge" #x4c (compose list (hole get-arg-list)))
+
+(define suck-vb (compose list (cut get-var/byte <> param-1)))
+(define suck-vw (compose list (cut get-var/word <> param-1)))
+(define suck-vw-vw
+  (lambda (op)
+    (list (get-var/word op param-1)
+          (get-var/word op param-2))))
+
+(define (register-complex-set ops set suck-set-params)
+  (for-each (lambda (op)
+              (register-opcode 'set!
+                               op
+                               (lambda (op)
+                                 (list (get-var)
+                                       (cons set (suck-set-params op))))))
+            ops))
+
+(register-complex-set '(#x15 #x55 #x95 #xd5)
+                      "actorFromPos"
+                      suck-vw-vw)
+
+(define (register-simple-set op set
+                             #!optional (suck-set-params suck-vb))
+  (register-complex-set (make-opcodes op (list param-1))
+                        set
+                        suck-set-params))
+
+(register-simple-set #x16 "getRandomNr")
 (register-simple-set #x68 "isScriptRunning")
 (register-simple-set #x71 "getActorCostume")
+
+;; o5_move
+(register-simple-set #x1a 'identity suck-vw)
+
+(register-opcode 'inc! #x46 (compose list (hole get-var)))
+(register-opcode 'dec! #xc6 (compose list (hole get-var)))
 
 (define (calc-abs-jump relative)
   (sprintf "~X" ;only for testing purposes with intermediary format
            (band #x7fff (+ relative current-script-offset))))
 
-(register-opcode "goto"
+(register-opcode 'goto
                  #x18
                  (lambda (_)
                    (list (calc-abs-jump (fetch-word)))))
 
 (define (register-simple-cond-jump op pred)
-  (register-opcode "goto-unless"
+  (register-opcode 'goto-unless
                    op
                    (lambda (_)
                      (let ((var (get-var)))
@@ -270,7 +318,7 @@
 (register-simple-cond-jump #x28 'zero?)
 
 (define (register-binary-cond-jump op bpred)
-  (make-123-op "goto-unless"
+  (make-123-op 'goto-unless
                op
                (lambda (op)
                  (let ((a (get-var))
@@ -285,6 +333,31 @@
 (register-binary-cond-jump #x78 '>)
 (register-binary-cond-jump #x8 '/=)
 (register-binary-cond-jump #x48 '=)
+
+(register-complex-opcode 'goto-unless
+                         '(#x1d #x9d)
+                         (lambda (op)
+                           (let ((a (get-var/word op param-1))
+                                 (bl (get-arg-list)))
+                             (list (calc-abs-jump (fetch-word))
+                                   (list "classOfIs" a bl)))))
+
+(define (handle-expression)
+  (list
+   (get-var)
+   (process-bytes-from-script
+    (cut = #xff <>)
+    (lambda (byte)
+      (let ((b (band byte #x1f)))
+        (case b
+          ((1) (get-var/word byte param-1))
+          ((2) '+)
+          ((3) '-)
+          ((4) '*)
+          ((5) '/)
+          ((6) (cddr (decode-op (fetch-byte))))))))))
+
+(register-opcode 'set! #xac (hole handle-expression))
 
 (define lscr (string->u32 "LSCR")) ; 9
 (define scrp (string->u32 "SCRP")) ; 8
@@ -309,11 +382,13 @@
       ((= lscr script-type)
        (parse-local-script-header))
       ((= scrp script-type)
-       'global-script)
+       (set-file-position! current-script-port 8))
       ((= encd script-type)
-       'room-entry-script)
+       (set-file-position! current-script-port 8))
       ((= excd script-type)
-       'room-exit-script)
+       (set-file-position! current-script-port 8))
+      ((= verb script-type)
+       (error "VERB script header skipping not yet implemented"))
       (else (error "unknown script type")))))
 
 (define (decode-ops decoded)
@@ -325,7 +400,10 @@
 
 (define (test-run)
   (set! current-script-file
-        "/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201") ;01.beach.0201
+        "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp"
+        ;"/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp";
+        ;"/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201"
+        )
   (set! current-script-port (open-input-file current-script-file))
   (set! current-script-offset 0)
   (parse-header)
