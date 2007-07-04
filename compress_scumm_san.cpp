@@ -24,7 +24,7 @@
 #include "zlib.h"
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <inputfile> <inputdir> <outputdir> [--ogg] [encoder params]\n", exename);
+	printf("\nUsage: %s [--vorbis] [encoder params] <inputfile> <inputdir> <outputdir>\n", exename);
 	printf("\nMP3 mode params:\n");
 	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
 	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
@@ -643,42 +643,27 @@ int main(int argc, char *argv[]) {
 	char inputFilename[200];
 	char tmpPath[200];
 
-	strcpy(inputFilename, argv[1]);
-	strcpy(inputDir, argv[2]);
-	strcpy(outputDir, argv[3]);
+	strcpy(inputFilename, argv[argc - 3]);
+	strcpy(inputDir, argv[argc - 2]);
+	strcpy(outputDir, argv[argc - 1]);
 
 	if (argc > 4) {
-		int i = 4;
+		int result;
+		int i = 1;
 
-		if (strcmp(argv[i], "--ogg") == 0) {
+		if (strcmp(argv[1], "--vorbis") == 0) {
 			_oggMode = true;
 			i++;
 		}
 
-		if (argc > i) {
-			// HACK: The functions in compress.c expect the last
-			// argument to be a filename. As we don't expect one,
-			// we simply add a dummy argument to the list.
-			char **args = (char **)malloc((argc + 1) * sizeof(char *));
-			char dummyName[] = "dummy";
-			int j;
 
-			for (j = 0; j < argc; j++)
-				args[j] = argv[j];
-			args[j] = dummyName;
-		
-			int result;
+		if (_oggMode)
+			result = process_ogg_parms(argc - 2, argv, i);
+		else
+			result = process_mp3_parms(argc - 2, argv, i);
 
-			if (_oggMode)
-				result = process_ogg_parms(argc + 1, args, i);
-			else
-				result = process_mp3_parms(argc + 1, args, i);
-
-			if (!result)
-				showhelp(argv[0]);
-
-			free(args);
-		}
+		if (!result)
+			showhelp(argv[0]);
 	}
 
 	char *index = strrchr(inputFilename, '.');
@@ -903,10 +888,10 @@ skip:
 	}
 
 	free(frameInfo);
-	
+
 	fclose(output);
 
 	printf("compression done.\n");
-		
+
 	return 0;
 }
