@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-04 01:53:37 brx>
+;;; Time-stamp: <2007-07-04 03:29:22 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -81,6 +81,31 @@
       (fetch-word)
       (get-var)))
 
+(define suck-vb (compose list (cut get-var/byte <> param-1)))
+(define suck-vw (compose list (cut get-var/word <> param-1)))
+
+(define (suck-vb-vb op)
+  (list (get-var/byte op param-1)
+        (get-var/byte op param-2)))
+
+(define (suck-vw-vb op)
+  (list (get-var/word op param-1)
+        (get-var/byte op param-2)))
+
+(define (suck-vw-vw op)
+  (list (get-var/word op param-1)
+        (get-var/word op param-2)))
+
+(define (suck-vb-vb-vb op)
+  (list (get-var/byte op param-1)
+        (get-var/byte op param-2)
+        (get-var/byte op param-3)))
+
+(define (suck-vw-vw-vw op)
+  (list (get-var/word op param-1)
+        (get-var/word op param-2)
+        (get-var/word op param-3)))
+
 (define (process-bytes-from-script finished? mp
                                    #!optional (acc cons)
                                               (finally reverse)
@@ -121,20 +146,14 @@
    (lambda (byte)
      (let ((b (band byte #xf)))
        (case b
-         ((0) (list "Pos"
-                    (get-var/word byte param-1)
-                    (get-var/word byte param-2)))
-         ((1) (list "Color" (get-var/byte byte param-1)))
-         ((2) (list "Clipped" (get-var/word byte param-1)))
-         ((3) (list "RestoreBG"
-                    (get-var/word byte param-1)
-                    (get-var/word byte param-2)))
-         ((4) "Center")
-         ((6) "Left")
-         ((7) "Overhead")
-         ((8) (list "PlayCDTrack"
-                    (get-var/word byte param-1)
-                    (get-var/word byte param-2)))
+         ((0) (cons "Pos" (suck-vw-vw byte)))
+         ((1) (cons "Color" (suck-vb byte)))
+         ((2) (cons "Clipped" (suck-vw byte)))
+         ((3) (cons "RestoreBG" (suck-vw-vw byte)))
+         ((4) '("Center"))
+         ((6) '("Left"))
+         ((7) '("Overhead"))
+         ((8) (cons "PlayCDTrack" (suck-vw-vw byte)))
          ((15) (signal (cons #xff (list "Text" (get-ascii)))))
          (else (error "printEgo fucked up")))))))
 
@@ -143,8 +162,6 @@
              (compose list (cut get-var/byte <> param-1))
              1)
 
-(register-opcode "cutscene" #x40 (compose list (hole get-arg-list)))
-
 (make-123-op "animateCostume"
              #x11
              (lambda (op)
@@ -152,58 +169,136 @@
                      (get-var/byte op param-2)))
              2)
 
+(register-complex-opcode "putActor"
+                         '(#x01 #x21 #x41 #x61 #x81 #xa1 #xc1 #xe1)
+                         suck-vb-vb-vb)
+
+(register-complex-opcode "putActorInRoom" '(#x2d #x6d #xad #xed) suck-vb-vb)
+
+(register-opcode "cutscene" #x40 (compose list (hole get-arg-list)))
+
+(register-opcode "override" #x58
+                 (lambda (_)
+                   (list (if (zero? (fetch-byte))
+                             'end
+                             'begin))))
+
 ;; misses convertTable hack
 (define (handle-actor-ops op)
-  (cons (get-var/byte param-1 op)
+  (list (get-var/byte param-1 op)
         (process-bytes-from-script
          (cut = #xff <>)
          (lambda (byte)
            (let ((b (band byte #x1f)))
              (case b
-               ((0) (list "Unknown" (get-var/byte byte param-1)))
-               ((1) (list "Costume" (get-var/byte byte param-1)))
-               ((2) (list "WalkSpeed"
-                          (get-var/byte byte param-1)
-                          (get-var/byte byte param-2)))
-               ((3) (list "Sound" (get-var/byte byte param-1)))
-               ((4) (list "WalkAnimNr" (get-var/byte byte param-1)))
-               ((5) (list "TalkAnimNr"
-                          (get-var/byte byte param-1)
-                          (get-var/byte byte param-2)))
-               ((6) (list "StandAnimNr"
-                          (get-var/byte byte param-1)))
-               ((7) (list "Nothing"
-                          (get-var/byte byte param-1)
-                          (get-var/byte byte param-2)
-                          (get-var/byte byte param-3)))
-               ((8) (list "Init" 0))
-               ((9) (list "Elevation" (get-var/word byte param-1)))
+               ((0) (cons "Unknown" (suck-vb byte)))
+               ((1) (cons "Costume" (suck-vb byte)))
+               ((2) (cons "WalkSpeed" (suck-vb-vb byte)))
+               ((3) (cons "Sound" (suck-vb byte)))
+               ((4) (cons "WalkAnimNr" (suck-vb byte)))
+               ((5) (cons "TalkAnimNr" (suck-vb byte)))
+               ((6) (cons "StandAnimNr" (suck-vb byte)))
+               ((7) (cons "Nothing" (suck-vb-vb-vb byte)))
+               ((8) '("Init"))
+               ((9) (cons "Elevation" (suck-vw byte)))
                ((10) (list "DefaultAnims" 0))
-               ((11) (list "Palette"
-                           (get-var/byte byte param-1)
-                           (get-var/byte byte param-2)))
-               ((12) (list "TalkColor" (get-var/byte byte param-1)))
+               ((11) (cons "Palette" (suck-vb-vb byte)))
+               ((12) (cons "TalkColor" (suck-vb byte)))
                ((13) (list "Name" (get-ascii)))
-               ((14) (list "InitAnimNr" (get-var/byte byte param-1)))
-               ((16) (list "Width" (get-var/byte byte param-1)))
-               ((17) (list "Scale"
-                           (get-var/byte byte param-1)
-                           (get-var/byte byte param-2)))
-               ((18) (list "NeverZClip" 0))
-               ((19) (list "AlwaysZClip" (get-var/byte byte param-1)))
-               ((20) (list "IgnoreBoxes" 0))
-               ((21) (list "FollowBoxes" 0))
-               ((22) (list "AnimSpeed" (get-var/byte byte param-1)))
+               ((14) (cons "InitAnimNr" (suck-vb byte)))
+               ((16) (cons "Width" (suck-vb byte)))
+               ((17) (cons "Scale" (suck-vb-vb byte)))
+               ((18) '("NeverZClip"))
+               ((19) (cons "AlwaysZClip" (suck-vb byte)))
+               ((20) '("IgnoreBoxes"))
+               ((21) '("FollowBoxes"))
+               ((22) (cons "AnimSpeed" (suck-vb byte)))
                (else (error "actorOps fucked up"))))))))
 
 (register-complex-opcode "actorOps"
                          '(#x13 #x53 #x93 #xd3)
                          handle-actor-ops)
 
+(make-123-op "loadRoom" #x72 suck-vb 1)
+
+(define (handle-room-ops)
+  (let* ((byte (fetch-byte))
+         (b (band byte #x1f)))
+    (case b
+      ((#x01) (cons "RoomScroll" (suck-vw-vw byte)))
+      ((#x02) '("RoomColor"))
+      ((#x03) (cons "SetScreen" (suck-vw-vw byte)))
+      ((#x04) (cons "SetPalColor"
+                    (append (suck-vw-vw-vw byte)
+                            (suck-vb (fetch-byte)))))
+      ((#x05) '("ShakeOn"))
+      ((#x06) '("ShakeOff"))
+      ((#x07) '("Unused"))
+      ((#x08) (cons "RoomIntensity"
+                    (suck-vb-vb-vb byte)))
+      ((#x09) (cons "saveLoad?" (suck-vb-vb byte)))
+      ((#x0a) (cons "screenEffect?" (suck-vw byte)))
+      ((#x0b) (cons "setRGBRoomIntensity"
+                    (append (suck-vw-vw-vw byte)
+                            (suck-vb-vb (fetch-byte)))))
+      ((#x0c) (cons "setRoomShadow"
+                    (append (suck-vw-vw-vw byte)
+                            (suck-vb-vb (fetch-byte)))))
+      ((#x0d) (list "saveString"
+                    (get-var/byte byte param-1)
+                    (get-ascii)))
+      ((#x0e) (list "loadString"
+                    (get-var/byte byte param-1)
+                    (get-ascii)))
+      ((#x0f) (cons "palManipulate"
+                    (append (suck-vb byte)
+                            (suck-vb-vb (fetch-byte))
+                            (suck-vb (fetch-byte)))))
+      ((#x10) (cons "colorCycleDelay"
+                    (suck-vb-vb byte)))
+      (else (error "Unknown roomOp")))))
+
+(register-complex-opcode "roomOps"
+                         '(#x33 #x73 #xb3 #xf3)
+                         (hole handle-room-ops))
+
+(define (handle-verb-ops op)
+  (list (get-var/byte op param-1)
+        (process-bytes-from-script
+         (cut = #xff <>)
+         (lambda (byte)
+           (let ((b (band byte #x1f)))
+             (case b
+               ((#x01) (cons "Image" (suck-vw byte)))
+               ((#x02) (list "Text" (get-ascii)))
+               ((#x03) (cons "Color" (suck-vb byte)))
+               ((#x04) (cons "HiColor" (suck-vb byte)))
+               ((#x05) (cons "SetXY" (suck-vw-vw byte)))
+               ((#x06) '("On"))
+               ((#x07) '("Off"))
+               ((#x08) '("Delete"))
+               ((#x09) '("New"))
+               ((#x10) (cons "DimColor" (suck-vb byte)))
+               ((#x11) '("Dim"))
+               ((#x12) (cons "Key" (suck-vb byte)))
+               ((#x13) '("Center"))
+               ((#x14) (cons "SetToString" (suck-vw byte)))
+               ((#x16) (cons "SetToObject" (suck-vw-vb byte)))
+               ((#x17) (cons "BackColor" (suck-vb byte)))
+               (else (error "Unknown verbOp"))))))))
+
+(make-123-op "verbOps" #x7a handle-verb-ops 1)
+
 (register-opcode "breakHere" #x80 (constantly '()))
 (register-opcode "endCutscene" #xc0 (constantly '()))
 
 (register-complex-opcode "stopObjectCode" '(#x00 #xa0) (constantly '()))
+
+(make-123-op "print" #x14
+             (lambda (op)
+               (list (get-var/byte op param-1)
+                     (decode-parse-string)))
+             1)
 
 (register-opcode "printEgo" #xd8 (compose list (hole decode-parse-string)))
 
@@ -248,6 +343,18 @@
                      (get-ascii)))
              1)
 
+(register-complex-opcode "drawObject"
+                         '(#x05 #x45 #x85 #xc5)
+                         (lambda (op)
+                           (cons (get-var/word op param-1)
+                                 (let ((byte (fetch-byte)))
+                                   (cond
+                                     ((= (band byte #x1f) 1)
+                                      (cons "setXY" (suck-vw-vw byte)))
+                                     ((= (band byte #x1f) 2)
+                                      (cons "setImage" (suck-vw byte)))
+                                     (else '()))))))
+
 (make-123-op "startSound"
              #x1c
              (compose list (cut get-var/byte <> param-1))
@@ -260,13 +367,6 @@
                                  (get-var/byte op param-2))))
 
 (register-opcode "soundKludge" #x4c (compose list (hole get-arg-list)))
-
-(define suck-vb (compose list (cut get-var/byte <> param-1)))
-(define suck-vw (compose list (cut get-var/word <> param-1)))
-(define suck-vw-vw
-  (lambda (op)
-    (list (get-var/word op param-1)
-          (get-var/word op param-2))))
 
 (define (register-complex-set ops set suck-set-params)
   (for-each (lambda (op)
@@ -296,6 +396,14 @@
 
 (register-opcode 'inc! #x46 (compose list (hole get-var)))
 (register-opcode 'dec! #xc6 (compose list (hole get-var)))
+
+(define (handle-sarith op)
+  (cons (get-var) (suck-vw op)))
+
+(make-123-op 'inc! #x5a handle-sarith 1)
+(make-123-op 'dec! #x3a handle-sarith 1)
+(make-123-op 'mul! #x1b handle-sarith 1)
+(make-123-op 'div! #x5b handle-sarith 1)
 
 (define (calc-abs-jump relative)
   (sprintf "~X" ;only for testing purposes with intermediary format
@@ -400,7 +508,8 @@
 
 (define (test-run)
   (set! current-script-file
-        "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp"
+        "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092"
+        ;"/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp"
         ;"/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp";
         ;"/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201"
         )
