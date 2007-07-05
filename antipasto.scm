@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-04 04:21:52 brx>
+;;; Time-stamp: <2007-07-05 03:55:19 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -49,17 +49,20 @@
 (define param-2 #x40)
 (define param-3 #x20)
 
-(define (make-opcodes base-code flags)
-  (if (null? flags)
-      (list base-code)
-      (cons (bior base-code (car flags))
-            (make-opcodes base-code (cdr flags)))))
+(define (generate-opcodes base-code flags)
+  (let gen-opcodes ((flag-combos (generate-subsets flags))
+                    (accum '()))
+    (if (null? flag-combos)
+        accum
+        (gen-opcodes (cdr flag-combos)
+                     (cons (fold bior base-code (car flag-combos))
+                           accum)))))
 
-(define (make-123-op name base-code handler n)
+(define (register-123-op name base-code handler n)
   (when (between? n 0 3)
     (for-each (cut register-opcode name <> handler)
-              (make-opcodes base-code
-                            (take (list param-1 param-2 param-3) n)))))
+              (generate-opcodes base-code
+                                (take (list param-1 param-2 param-3) n)))))
 
 (define (fetch-byte)
   (set! current-script-offset (+ current-script-offset 1))
@@ -105,12 +108,26 @@
       (fetch-word)
       (get-var)))
 
+(define suck-v (compose list (hole get-var)))
+
 (define suck-vb (compose list (cut get-var/byte <> param-1)))
 (define suck-vw (compose list (cut get-var/word <> param-1)))
+
+(define (suck-vb-alist op)
+  (list (get-var/byte op param-1)
+        (get-arg-list)))
+
+(define (suck-vw-alist op)
+  (list (get-var/word op param-1)
+        (get-arg-list)))
 
 (define (suck-vb-vb op)
   (list (get-var/byte op param-1)
         (get-var/byte op param-2)))
+
+(define (suck-vb-vw op)
+  (list (get-var/byte op param-1)
+        (get-var/word op param-2)))
 
 (define (suck-vw-vb op)
   (list (get-var/word op param-1)
@@ -119,6 +136,11 @@
 (define (suck-vw-vw op)
   (list (get-var/word op param-1)
         (get-var/word op param-2)))
+
+(define (suck-vw-vb-alist op)
+  (list (get-var/word op param-1)
+        (get-var/byte op param-2)
+        (get-arg-list)))
 
 (define (suck-vb-vb-vb op)
   (list (get-var/byte op param-1)
@@ -130,15 +152,25 @@
         (get-var/byte op param-2)
         (get-var/word op param-3)))
 
+(define (suck-vb-vw-vw op)
+  (list (get-var/byte op param-1)
+        (get-var/word op param-2)
+        (get-var/word op param-3)))
+
 (define (suck-vw-vw-vw op)
   (list (get-var/word op param-1)
         (get-var/word op param-2)
         (get-var/word op param-3)))
 
+(define (suck-vw-vw-vb op)
+  (list (get-var/word op param-1)
+        (get-var/word op param-2)
+        (get-var/byte op param-3)))
+
 (define (process-bytes-from-script finished? mp
                                    #!optional (acc cons)
-                                              (finally reverse)
-                                              (nil '()))
+                                   (finally reverse)
+                                   (nil '()))
   (let fetch-bytes ((byte (fetch-byte))
                     (accum nil))
     (if (finished? byte)
@@ -186,23 +218,15 @@
          ((15) (signal (cons #xff (list "Text" (get-ascii)))))
          (else (error "printEgo fucked up")))))))
 
-(make-123-op "actorFollowCamera"
-             #x52
-             (compose list (cut get-var/byte <> param-1))
-             1)
+(register-123-op "actorFollowCamera" #x52 suck-vb 1)
+(register-123-op "animateCostume" #x11 suck-vb-vb 2)
+(register-123-op "putActor" #x01 suck-vb-vb-vw 3)
+(register-123-op "putActorInRoom" #x2d suck-vb-vb 2)
+(register-123-op "faceActor" #x09 suck-vb-vw 2)
 
-(make-123-op "animateCostume"
-             #x11
-             (lambda (op)
-               (list (get-var/byte op param-1)
-                     (get-var/byte op param-2)))
-             2)
-
-(register-complex-opcode "putActor"
-                         '(#x01 #x21 #x41 #x61 #x81 #xa1 #xc1 #xe1)
-                         suck-vb-vb-vw)
-
-(register-complex-opcode "putActorInRoom" '(#x2d #x6d #xad #xed) suck-vb-vb)
+(register-123-op "findInventory" #x3d suck-vb-vb 2)
+(register-123-op "findObject" #x35 suck-vb-vb 2)
+(register-123-op "freezeScripts" #x60 suck-vb 1)
 
 (register-opcode "cutscene" #x40 (compose list (hole get-arg-list)))
 
@@ -244,11 +268,9 @@
                ((22) (cons "AnimSpeed" (suck-vb byte)))
                (else (error "actorOps fucked up"))))))))
 
-(register-complex-opcode "actorOps"
-                         '(#x13 #x53 #x93 #xd3)
-                         handle-actor-ops)
+(register-123-op "actorOps" #x13 handle-actor-ops 2)
 
-(make-123-op "loadRoom" #x72 suck-vb 1)
+(register-123-op "loadRoom" #x72 suck-vb 1)
 
 (define (handle-room-ops)
   (let* ((byte (fetch-byte))
@@ -287,9 +309,7 @@
                     (suck-vb-vb byte)))
       (else (error "Unknown roomOp")))))
 
-(register-complex-opcode "roomOps"
-                         '(#x33 #x73 #xb3 #xf3)
-                         (hole handle-room-ops))
+(register-123-op "roomOps" #x33 (hole handle-room-ops) 2)
 
 (define (handle-verb-ops op)
   (list (get-var/byte op param-1)
@@ -316,7 +336,7 @@
                ((#x17) (cons "BackColor" (suck-vb byte)))
                (else (error "Unknown verbOp"))))))))
 
-(make-123-op "verbOps" #x7a handle-verb-ops 1)
+(register-123-op "verbOps" #x7a handle-verb-ops 1)
 
 (define (handle-cursor-command)
   (list (let* ((byte (fetch-byte))
@@ -339,16 +359,26 @@
 
 (register-opcode "cursorCmd" #x2c (hole handle-cursor-command))
 
+(register-complex-opcode "doSentence"
+                         '(#x19 #x39 #x59 #x79 #x99 #xb9 #xd9 #xf9)
+                         (lambda (op)
+                           (let ((verb (get-var/byte op param-1)))
+                             (if (= #xfe verb)
+                                 (list 'stop)
+                                 (list verb
+                                       (get-var/word op param-2)
+                                       (get-var/word op param-3))))))
+
 (register-opcode "breakHere" #x80 (constantly '()))
 (register-opcode "endCutscene" #xc0 (constantly '()))
 
 (register-complex-opcode "stopObjectCode" '(#x00 #xa0) (constantly '()))
 
-(make-123-op "print" #x14
-             (lambda (op)
-               (list (get-var/byte op param-1)
-                     (decode-parse-string)))
-             1)
+(register-123-op "print" #x14
+                 (lambda (op)
+                   (list (get-var/byte op param-1)
+                         (decode-parse-string)))
+                 1)
 
 (register-opcode "printEgo" #xd8 (compose list (hole decode-parse-string)))
 
@@ -359,6 +389,12 @@
 (register-complex-opcode "startScript"
                          '(#x0a #x2a #x4a #x6a #x8a #xaa #xca #xea)
                          handle-start-script)
+
+(register-123-op "chainScript" #x42 suck-vb 1)
+
+(register-123-op "debug" #x6b suck-vw 1)
+
+(register-opcode "delayVariable" #x2b suck-v)
 
 (register-opcode "wait"
                  #xae
@@ -379,68 +415,264 @@
                                (ash (fetch-byte) 8)
                                (ash (fetch-byte) 16)))))
 
-(make-123-op "setClass"
-             #x5d
-             (lambda (op)
-               (list (get-var/word op param-1)
-                     (get-arg-list)))
-             1)
+(register-123-op "setClass"
+                 #x5d
+                 (lambda (op)
+                   (list (get-var/word op param-1)
+                         (get-arg-list)))
+                 1)
 
-(make-123-op "setObjectName"
-             #x54
-             (lambda (op)
-               (list (get-var/word op param-1)
-                     (get-ascii)))
-             1)
+(register-123-op "setObjectName"
+                 #x54
+                 (lambda (op)
+                   (list (get-var/word op param-1)
+                         (get-ascii)))
+                 1)
 
-(register-complex-opcode "drawObject"
-                         '(#x05 #x45 #x85 #xc5)
-                         (lambda (op)
-                           (cons (get-var/word op param-1)
-                                 (let ((byte (fetch-byte)))
-                                   (cond
-                                     ((= (band byte #x1f) 1)
-                                      (cons "setXY" (suck-vw-vw byte)))
-                                     ((= (band byte #x1f) 2)
-                                      (cons "setImage" (suck-vw byte)))
-                                     (else '()))))))
+(register-123-op "drawObject"
+                 #x05
+                 (lambda (op)
+                   (cons (get-var/word op param-1)
+                         (let ((byte (fetch-byte)))
+                           (cond
+                             ((= (band byte #x1f) 1)
+                              (cons "setXY" (suck-vw-vw byte)))
+                             ((= (band byte #x1f) 2)
+                              (cons "setImage" (suck-vw byte)))
+                             (else '())))))
+                 2)
 
-(make-123-op "startSound" #x1c suck-vb 1)
-(make-123-op "stopSound" #x3c suck-vb 1)
+(register-123-op "drawBox"
+                 #x3f
+                 (lambda (op)
+                   (append (suck-vw-vw op)
+                           (suck-vw-vw-vb (fetch-byte))))
+                 2)
 
-(register-complex-opcode "setState"
-                         '(#x7 #x47 #x87 #xc7)
-                         (lambda (op)
-                           (list (get-var/word op param-1)
-                                 (get-var/byte op param-2))))
+(register-123-op "startSound" #x1c suck-vb 1)
+(register-123-op "stopSound" #x3c suck-vb 1)
+
+(register-123-op "setState" #x7 suck-vw-vb 2)
 
 (register-opcode "soundKludge" #x4c (compose list (hole get-arg-list)))
 
-(define (register-complex-set ops set suck-set-params)
-  (for-each (lambda (op)
-              (register-opcode 'set!
-                               op
-                               (lambda (op)
-                                 (list (get-var)
-                                       (cons set (suck-set-params op))))))
-            ops))
+(register-123-op "lights"
+                 #x70
+                 (lambda (op)
+                   (list (get-var/byte op param-1)
+                         (fetch-byte)
+                         (fetch-byte)))
+                 1)
 
-(register-complex-set '(#x15 #x55 #x95 #xd5)
-                      "actorFromPos"
-                      suck-vw-vw)
+(register-123-op "loadRoomWithEgo"
+                 #x24
+                 (lambda (op)
+                   (append (suck-vw-vb op)
+                           (list (fetch-word)
+                                 (fetch-word))))
+                 2)
 
-(define (register-simple-set op set
-                             #!optional (suck-set-params suck-vb))
-  (register-complex-set (make-opcodes op (list param-1))
-                        set
-                        suck-set-params))
+;; game version check missing
+(define (handle-matrix-ops op)
+  (let* ((byte (fetch-byte))
+         (b (band #x1f byte)))
+    (case b
+      ((1) (cons "setBoxFlags" (suck-vb-vb byte)))
+      ((2) (cons "setBoxScale" (suck-vb-vb byte)))
+      ((3) (cons "setBoxSlot" (suck-vb-vb byte)))
+      ((4) '("createBoxMatrix"))
+      (else (error "Unknown matrix op")))))
 
-(register-simple-set #x16 "getRandomNr")
-(register-simple-set #x68 "isScriptRunning")
-(register-simple-set #x71 "getActorCostume")
+(register-123-op "matrixOps" #x30 handle-matrix-ops 1)
+
+(register-123-op "oldRoomEffect"
+                 #x5c
+                 (lambda (op)
+                   (if (= 3 (band #x1f (fetch-byte)))
+                       (cons 'set (suck-vw op))
+                       (cons 'fadein (suck-vw op))))
+                 1)
+
+(register-123-op "panCameraTo" #x12 suck-vb 1)
+(register-123-op "pickupObject" #x25 suck-vw-vb 2)
+(register-123-op "pickupObjectOld" #x50 suck-vw 1)
+
+(register-123-op "putActorAtObject" #x0e suck-vb-vw 2)
+
+;; script version missing
+(define (handle-resource-routines)
+  (let* ((op (fetch-byte))
+         (subop (band op #x1f)))
+    (case subop
+      ((#x1) (cons "loadScript" (suck-vb op)))
+      ((#x2) (cons "loadSound" (suck-vb op)))
+      ((#x3) (cons "loadCostume" (suck-vb op)))
+      ((#x4) (cons "loadRoom" (suck-vb op)))
+      ((#x5) (cons "nukeScript" (suck-vb op)))
+      ((#x6) (cons "nukeSound" (suck-vb op)))
+      ((#x7) (cons "nukeCostume" (suck-vb op)))
+      ((#x8) (cons "nukeRoom" (suck-vb op)))
+      ((#x9) (cons "lockScript" (suck-vb op)))
+      ((#xa) (cons "lockSound" (suck-vb op)))
+      ((#xb) (cons "lockCostume" (suck-vb op)))
+      ((#xc) (cons "lockRoom" (suck-vb op)))
+      ((#xd) (cons "unlockScript" (suck-vb op)))
+      ((#xe) (cons "unlockSound" (suck-vb op)))
+      ((#xf) (cons "unlockCostume" (suck-vb op)))
+      ((#x10) (cons "unlockRoom" (suck-vb op)))
+      ((#x11) '("clearHeap"))
+      ((#x12) (cons "loadCharset" (suck-vb op)))
+      ((#x13) (cons "nukeCharset" (suck-vb op)))
+      ((#x14) (cons "loadFlObject" (suck-vb-vw op)))
+      ((#x23) (cons "resUnk1" (suck-vb-vb op)))
+      ((#x24) (cons "resUnk2" (append (suck-vb-vb op)
+                                      (fetch-byte))))
+      ((#x25) (cons "resUnk3" (suck-vb-vb op)))
+      (else (error "Unknown resource routine")))))
+
+(register-123-op "resourceRoutines" #x0c (hole handle-resource-routines) 1)
+
+(define (handle-save-load-vars)
+  (let ((byte (fetch-byte)))
+    (cons (if (= byte 1)
+              "Save"
+              "Load")
+          (process-bytes-from-script
+           zero?
+           (lambda (byte)
+             (let ((b (band byte #x1f)))
+               (case b
+                 ((#x01) (list "VarRange" (get-var) (get-var)))
+                 ((#x02) (cons "StringRange" (suck-vb-vb byte)))
+                 ((#x03) (list "Open" (get-ascii)))
+                 ((#x04) "Append")
+                 ((#x1f) "Close"))))))))
+
+(register-opcode "saveLoadVars" #xa7 (hole handle-save-load-vars))
+
+(define (handle-save-restore-verbs)
+  (let ((byte (fetch-byte)))
+    (cons (case byte
+            ((1) "saveVerbs")
+            ((2) "restoreVerbs")
+            ((3) "deleteVerbs")
+            (else (error "Unknown saveRestoreVerbs subop")))
+          (suck-vb-vb-vb byte))))
+
+(register-opcode "saveRestoreVerbs" #xab (hole handle-save-restore-verbs))
+
+(define (handle-pseudoroom)
+  (let ((i (fetch-byte)))
+    (cons i
+          (process-bytes-from-script
+           zero?
+           (lambda (j)
+             (if (zero? (band j #x80))
+                 'ignored
+                 (band j #x7f)))))))
+
+(register-opcode "pseudoRoom" #xcc (hole handle-pseudoroom))
+
+(register-123-op "setCameraAt" #x32 suck-vw 1)
+(register-123-op "setOwnerOf" #x29 suck-vw-vb 2)
+
+(register-123-op "setVarRange"
+                 #x26
+                 (lambda (op)
+                   (cons (get-var)
+                         (let ((i (fetch-byte))
+                               (fetch (if (band op #x80)
+                                          fetch-word
+                                          fetch-byte)))
+                           (list i
+                                 (let accumulate ((i i)
+                                                  (acc '()))
+                                   (if (zero? i)
+                                       (reverse acc)
+                                       (accumulate (sub1 i)
+                                                   (cons (fetch)
+                                                         acc))))))))
+                 1)
+
+(register-123-op "startMusic" #x02 suck-vb 1)
+(register-123-op "startObject" #x37 suck-vw-vb-alist 2)
+
+(register-opcode "stopMusic" #x20 (constantly '()))
+
+(register-123-op "stopObjectScript" #x6e suck-vw 1)
+(register-123-op "stopScript" #x62 suck-vb 1)
+
+(define (handle-string-ops)
+  (let* ((byte (fetch-byte))
+         (b (band byte #x1f)))
+    (case b
+      ((1) (cons "PutCodeInString" (append (suck-vb byte) (get-ascii))))
+      ((2) (cons "CopyToString" (suck-vb-vb byte)))
+      ((3) (cons "SetStringChar" (suck-vb-vb-vb byte)))
+      ((4) (cons* "GetStringChar" (get-var) (suck-vb-vb byte)))
+      ((5) (cons "CreateString" (suck-vb-vb byte)))
+      (else (error "Unknown string op")))))
+
+(register-opcode "stringOps" #x27 (hole handle-string-ops))
+
+(register-opcode "systemOps"
+                 #x98
+                 (lambda (_)
+                   (list (let ((b (fetch-byte)))
+                           (case b
+                             ((1) 'restart)
+                             ((2) 'pause)
+                             ((3) 'quit)
+                             (else (error "Unknown system op")))))))
+
+(register-123-op "walkActorTo" #x1e suck-vb-vw-vw 3)
+(register-123-op "walkActorToObject" #x36 suck-vb-vw 2)
+(register-123-op "walkActorToActor"
+                 #x0d
+                 (compose (cut append <> (list (fetch-byte)))
+                          suck-vb-vb)
+                 2)
+
+(define (register-complex-set set op fetch-set-params n)
+  (register-123-op 'set!
+                   op
+                   (lambda (op)
+                     (list (get-var)
+                           (cons set (fetch-set-params op))))
+                   n))
+
+(register-complex-set "actorFromPos" #x15 suck-vw-vw 2)
+(register-complex-set "getDist" #x34 suck-vw-vw 2)
+(register-complex-set "getVerbEntrypoint" #x0b suck-vw-vw 2)
+
+(define (register-simple-set set op
+                             #!optional (fetch-set-param suck-vb))
+  (register-complex-set set op fetch-set-param 1))
+
+(register-simple-set "getRandomNr" #x16)
+(register-simple-set "isScriptRunning" #x68)
+(register-simple-set "isSoundRunning" #x7c)
+(register-simple-set "getActorCostume" #x71)
+(register-simple-set "getActorElevation" #x06)
+(register-simple-set "getActorFacing" #x63)
+(register-simple-set "getActorMoving" #x56)
+(register-simple-set "getActorRoom" #x03)
+(register-simple-set "getActorScale" #x3b)
+(register-simple-set "getActorWalkBox" #x7b)
+(register-simple-set "getActorWidth" #x6c)
+
+(register-simple-set "getActorX" #x43 suck-vw)  ;indy3 hack missing
+(register-simple-set "getActorY" #x23 suck-vw)  ;indy3 hack missing
+
+(register-simple-set "getAnimCounter" #x22)
+(register-simple-set "getClosestObjActor" #x66 suck-vw)
+(register-simple-set "getInventoryCount" #x31)
+(register-simple-set "getObjectOwner" #x10)
+(register-simple-set "getObjectState" #x0f suck-vw)     ;small header missing
+(register-simple-set "getStringWidth" #x67)
 
 ;; o5_move
-(register-simple-set #x1a 'identity suck-vw)
+(register-simple-set 'identity #x1a suck-vw)
 
 (register-opcode 'inc! #x46 (compose list (hole get-var)))
 (register-opcode 'dec! #xc6 (compose list (hole get-var)))
@@ -448,10 +680,13 @@
 (define (handle-sarith op)
   (cons (get-var) (suck-vw op)))
 
-(make-123-op 'inc! #x5a handle-sarith 1)
-(make-123-op 'dec! #x3a handle-sarith 1)
-(make-123-op 'mul! #x1b handle-sarith 1)
-(make-123-op 'div! #x5b handle-sarith 1)
+(register-123-op 'inc! #x5a handle-sarith 1)
+(register-123-op 'dec! #x3a handle-sarith 1)
+(register-123-op 'mul! #x1b handle-sarith 1)
+(register-123-op 'div! #x5b handle-sarith 1)
+
+(register-123-op 'bor! #x57 handle-sarith 1)
+(register-123-op 'band! #x17 handle-sarith 1)
 
 (define (calc-abs-jump relative)
   (sprintf "~X" ;only for testing purposes with intermediary format
@@ -462,7 +697,7 @@
                  (lambda (_)
                    (list (calc-abs-jump (fetch-word)))))
 
-(define (register-simple-cond-jump op pred)
+(define (register-simple-cond-jump pred op)
   (register-opcode 'goto-unless
                    op
                    (lambda (_)
@@ -470,33 +705,51 @@
                        (list (calc-abs-jump (fetch-word))
                              (list pred var))))))
 
-(register-simple-cond-jump #xa8 'not-zero?)
-(register-simple-cond-jump #x28 'zero?)
+(register-simple-cond-jump 'not-zero? #xa8)
+(register-simple-cond-jump 'zero? #x28)
 
-(define (register-binary-cond-jump op bpred)
-  (make-123-op 'goto-unless
-               op
-               (lambda (op)
-                 (let ((a (get-var))
-                       (b (get-var/word op param-1)))
-                   (list (calc-abs-jump (fetch-word))
-                         (list bpred b a))))
-               1))
+(define (register-binary-cond-jump bpred op)
+  (register-123-op 'goto-unless
+                   op
+                   (lambda (op)
+                     (let ((a (get-var))
+                           (b (get-var/word op param-1)))
+                       (list (calc-abs-jump (fetch-word))
+                             (list bpred b a))))
+                   1))
 
-(register-binary-cond-jump #x38 '<=)
-(register-binary-cond-jump #x44 '<)
-(register-binary-cond-jump #x4 '>=)
-(register-binary-cond-jump #x78 '>)
-(register-binary-cond-jump #x8 '/=)
-(register-binary-cond-jump #x48 '=)
+(register-binary-cond-jump '<= #x38)
+(register-binary-cond-jump '< #x44)
+(register-binary-cond-jump '>= #x4)
+(register-binary-cond-jump '> #x78)
+(register-binary-cond-jump '/= #x8)
+(register-binary-cond-jump '= #x48)
 
-(register-complex-opcode 'goto-unless
-                         '(#x1d #x9d)
-                         (lambda (op)
-                           (let ((a (get-var/word op param-1))
-                                 (bl (get-arg-list)))
-                             (list (calc-abs-jump (fetch-word))
-                                   (list "classOfIs" a bl)))))
+(define (make-if-handler name fetcher)
+  (lambda (op)
+    (let ((args (fetcher op)))
+      (list (calc-abs-jump (fetch-word))
+            (cons name args)))))
+
+(register-123-op 'goto-unless
+                 #x1d
+                 (make-if-handler "classOfIs" suck-vw-alist)
+                 1)
+
+(register-123-op 'goto-unless
+                 #x2f
+                 (make-if-handler "ifNotState" suck-vw-vb)
+                 2)
+
+(register-123-op 'goto-unless
+                 #x4f
+                 (make-if-handler "ifState" suck-vw-vb)
+                 2)
+
+(register-123-op 'goto-unless
+                 #x1f
+                 (make-if-handler "isActorInBox" suck-vb-vb)
+                 2)
 
 (define (handle-expression)
   (list
@@ -549,17 +802,17 @@
 
 (define (decode-ops decoded)
   (handle-exceptions exn (and (eq? 'eof exn) (reverse decoded))
-    (let ((decoded-op (decode-op (fetch-byte))))
-      (if decoded-op
-          (decode-ops (cons decoded-op decoded))
-          (reverse decoded)))))
+                     (let ((decoded-op (decode-op (fetch-byte))))
+                       (if decoded-op
+                           (decode-ops (cons decoded-op decoded))
+                           (reverse decoded)))))
 
 (define (test-run)
   (set! current-script-file
-        "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092"
-        ;"/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp"
-        ;"/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp";
-        ;"/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201"
+;; "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092"
+;; "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp"
+"/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp";
+;; "/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201"
         )
   (set! current-script-port (open-input-file current-script-file))
   (set! current-script-offset 0)

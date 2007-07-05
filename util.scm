@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-04 03:54:34 brx>
+;;; Time-stamp: <2007-07-05 01:03:01 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -27,7 +27,7 @@
 (define band bitwise-and)
 (define bnot bitwise-not)
 
-;;;; fp functions
+;;;; fp procedures
 
 (define (compose f g)
   (lambda (x) (f (g x))))
@@ -35,14 +35,26 @@
 (define (hole f)
   (lambda x (f)))
 
-;;;; numeric functions
+;;;; num procedures
 
 (define (between? x a b)
   (and (>= x a) (<= x b)))
 
 (define /= (complement =))
 
-;;;; port reader functions
+;;;; list procedures
+
+(define (generate-subsets lis)
+  (let accum-subsets ((lis lis)
+                      (accum '(())))
+    (if (null? lis)
+        accum
+        (accum-subsets (cdr lis)
+                       (append (map (cut cons (car lis) <>)
+                                    accum)
+                               accum)))))
+
+;;;; port reader procedures
 
 (define (read-u8 port)
   (let ((char (read-char port)))
@@ -60,7 +72,7 @@
         (ash (read-u8 port) 8)
         (read-u8 port)))
 
-;;;; data conversion functions
+;;;; data conversion procedures
 
 (define (string->u32 string)
   (fold (lambda (h t)
