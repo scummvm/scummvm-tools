@@ -1,17 +1,42 @@
-This is a collection of various tools that may be useful to use in conjunction
-with ScummVM. Please note that this module is not always in-sync with the latest
-STABLE version of ScummVM.
+                              Antipasto
+                              =========
 
-This means that although a tool may support a feature, certain
-ScummVM versions may not. ScummVM 0.6.x does not support FLAC audio, for
-example.
+Antipasto is the SoC game script decompiler prototype family.
 
-Script Tools:
-        descumm
-                Decompiles SCUMM scripts
+Antipasto "Dirty D" (current) is the first prototype. It supports
+a "large subset" of version 5 of SCUMM (all opcodes are implemented,
+game specific hacks might be missing) and its goal is the
+implementation of suitable control flow graph generation and
+analyzation algorithms.
 
-        desword2
-                Disassembles Broken Sword II scripts
+Requirements:
 
-        dekyra
-                Basic script disassembler for Legend of Kyrandia games
+  - CHICKEN Scheme 2.6 (stable)
+    http://call-with-current-continuation.org
+  - gcc (for scheme->c compilation)
+
+Build procedure:
+
+Two CHICKEN libraries ("eggs") are needed to compile Antipasto:
+
+  - syntax-case.egg
+  - numbers.egg
+
+To obtain these execute
+
+  $ chicken-setup syntax-case
+  $ chicken-setup numbers
+
+in your favorite shell. Afterwards a simple
+
+  $ make                # builds other decompilers as well
+
+or
+
+  $ make antipasto      # ...
+
+should compile her. To decompile a script it currently suffices to
+specify the path to the script on the command line, since the current
+prototype ("Dirty D") only supports SCUMM v5 at this point.
+
+  $ antipasto path/to/script
