@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-05 19:06:17 brx>
+;;; Time-stamp: <2007-07-06 19:46:51 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -807,13 +807,8 @@
                            (decode-ops (cons decoded-op decoded))
                            (reverse decoded)))))
 
-(define (test-run)
-  (set! current-script-file
-;; "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092"
-"/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp"
-;; "/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp";
-;; "/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201"
-        )
+(define (test-run file)
+  (set! current-script-file file)
   (set! current-script-port (open-input-file current-script-file))
   (set! current-script-offset 0)
   (parse-header)
@@ -831,3 +826,14 @@
   (set! current-script-port #f)
   (set! current-script-file #f)
   (set! current-script-offset #f))
+
+;; (test-run "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092")
+;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp")
+;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp");
+;; (test-run "/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201")
+
+(define (main)
+  (if (= (length (argv)) 2)
+      (test-run (cadr (argv)))
+      (printf "Usage: ~A <scummV5 script>~%"
+              (car (argv)))))

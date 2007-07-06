@@ -19,6 +19,7 @@ TARGETS := \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
+	antipasto$(EXEEXT)
 
 all: $(TARGETS)
 
@@ -31,32 +32,8 @@ descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
 desword2$(EXEEXT): desword2.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz
-
-extract_agos$(EXEEXT): extract_agos.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-extract_kyra$(EXEEXT): extract_kyra.o kyra_pak.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
-
-extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-extract_mm_apple$(EXEEXT): extract_mm_apple.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-extract_mm_c64$(EXEEXT): extract_mm_c64.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-extract_mm_nes$(EXEEXT): extract_mm_nes.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
+antipasto$(EXEEXT): antipasto.scm util.scm
+	csc $< -o $@ -postlude [main]
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
 
