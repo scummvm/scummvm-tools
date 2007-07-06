@@ -16,68 +16,11 @@ CFLAGS+= -Wpointer-arith -Wcast-qual -Wcast-align
 CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
 
 TARGETS := \
-	compress_agos$(EXEEXT) \
-	compress_kyra$(EXEEXT) \
-	compress_queen$(EXEEXT) \
-	compress_saga$(EXEEXT) \
-	compress_scumm_bun$(EXEEXT) \
-	compress_scumm_san$(EXEEXT) \
-	compress_scumm_sou$(EXEEXT) \
-	compress_sword1$(EXEEXT) \
-	compress_sword2$(EXEEXT) \
-	compress_touche$(EXEEXT) \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
-	encode_dxa$(EXEEXT) \
-	extract_agos$(EXEEXT) \
-	extract_kyra$(EXEEXT) \
-	extract_loom_tg16$(EXEEXT) \
-	extract_mm_apple$(EXEEXT) \
-	extract_mm_c64$(EXEEXT) \
-	extract_mm_nes$(EXEEXT) \
-	extract_scumm_mac$(EXEEXT) \
-	extract_zak_c64$(EXEEXT)
-
-UTILS := \
-	utils/adpcm.o \
-	utils/audiostream.o \
-	utils/file.o \
-	utils/md5.o \
-	utils/voc.o \
-	utils/wave.o
 
 all: $(TARGETS)
-
-compress_agos$(EXEEXT): compress_agos.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-compress_kyra$(EXEEXT): compress_kyra.o kyra_pak.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
-
-compress_queen$(EXEEXT): compress_queen.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-compress_saga$(EXEEXT): compress_saga.o compress.o util.o $(UTILS)
-	$(CXX) $(LDFLAGS) -o $@ $+
-
-compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
-
-compress_scumm_san$(EXEEXT): compress_scumm_san.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lz
-
-compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
-
-compress_touche$(EXEEXT): compress_touche.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
 
 dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
@@ -115,37 +58,16 @@ extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
-
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
 
-# Most compress_* tools (except for compress_queen) use compress.h
-compress_agos.o compress_saga.o compress_scumm_sou.o \
-compress_scumm_bun.o compress_sword1.o compress_sword2.o \
-compress_kyra.o compress.o encode_dxa.o: compress.h
-
-# Virtually everything depends on util.h
-compress_agos.o  compress_saga.o compress_scumm_sou.o \
-compress_scumm_bun.o compress_sword1.o compress_sword2.o \
-compress.o \
-compress_queen.o \
-compress_kyra.o \
 descumm.o descumm6.o descumm-common.o descumm-tool.o \
 dekyra.o \
 dekyra_v1.o \
 desword2.o \
-encode_dxa.o \
-extract_kyra.o \
-extract_loom_tg16.o \
-extract_mm_apple.o \
-extract_mm_c64.o \
-extract_mm_nes.o \
-extract_scumm_mac.o \
-extract_zak_c64.o \
-kyra_pak.o \
 util.o: util.h
 
 clean:
-	rm -f *.o utils/*.o $(TARGETS)
+	rm -f *.o $(TARGETS)
 
 .cpp.o:
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c $(<) -o $*.o

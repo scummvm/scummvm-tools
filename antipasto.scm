@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-05 03:55:19 brx>
+;;; Time-stamp: <2007-07-05 19:06:17 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -810,8 +810,8 @@
 (define (test-run)
   (set! current-script-file
 ;; "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092"
-;; "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp"
-"/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp";
+"/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp"
+;; "/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp";
 ;; "/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201"
         )
   (set! current-script-port (open-input-file current-script-file))
