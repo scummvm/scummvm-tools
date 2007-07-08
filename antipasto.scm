@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-06 19:46:51 brx>
+;;; Time-stamp: <2007-07-07 01:11:26 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -59,7 +59,7 @@
                            accum)))))
 
 (define (register-123-op name base-code handler n)
-  (when (between? n 0 3)
+  (when (<= 0 n 3)
     (for-each (cut register-opcode name <> handler)
               (generate-opcodes base-code
                                 (take (list param-1 param-2 param-3) n)))))

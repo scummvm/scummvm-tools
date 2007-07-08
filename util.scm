@@ -1,8 +1,8 @@
 ;;;; util.scm
 
-;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
+;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-05 01:03:01 brx>
+;;; Time-stamp: <2007-07-07 01:11:13 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -37,22 +37,15 @@
 
 ;;;; num procedures
 
-(define (between? x a b)
-  (and (>= x a) (<= x b)))
-
 (define /= (complement =))
 
 ;;;; list procedures
 
 (define (generate-subsets lis)
-  (let accum-subsets ((lis lis)
-                      (accum '(())))
-    (if (null? lis)
-        accum
-        (accum-subsets (cdr lis)
-                       (append (map (cut cons (car lis) <>)
-                                    accum)
-                               accum)))))
+  (if (null? lis)
+      '(())
+      (let ((ps (generate-subsets (cdr lis))))
+        (append ps (map (cut cons (car lis) <>) ps)))))
 
 ;;;; port reader procedures
 
