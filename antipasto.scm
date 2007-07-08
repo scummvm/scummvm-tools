@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-07 01:11:26 brx>
+;;; Time-stamp: <2007-07-08 20:34:50 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -21,6 +21,7 @@
 (require-extension posix numbers srfi-1)
 
 (include "util.scm")
+(include "cfgg.scm")
 
 (define current-script-file #f)
 (define current-script-port #f)
@@ -689,8 +690,7 @@
 (register-123-op 'band! #x17 handle-sarith 1)
 
 (define (calc-abs-jump relative)
-  (sprintf "~X" ;only for testing purposes with intermediary format
-           (band #x7fff (+ relative current-script-offset))))
+  (band #x7fff (+ relative current-script-offset)))
 
 (register-opcode 'goto
                  #x18
@@ -812,16 +812,19 @@
   (set! current-script-port (open-input-file current-script-file))
   (set! current-script-offset 0)
   (parse-header)
-  (let print-decoded ((decoded (decode-ops '())))
-    (unless (or (null? decoded)
-                (not decoded)
-                (not (car decoded)))
-      (printf "[~X] (~X) "
-              (caar decoded)
-              (cadar decoded))
-      (write (cddar decoded))
-      (newline)
-      (print-decoded (cdr decoded))))
+  (let ((decoded (decode-ops '())))
+    (let print-decoded ((decoded decoded))
+      (unless (or (null? decoded)
+                  (not decoded)
+                  (not (car decoded)))
+        (printf "[~A] (~X) "
+                (caar decoded)
+                (cadar decoded))
+        (write (cddar decoded))
+        (newline)
+        (print-decoded (cdr decoded))))
+    (for-each (cut printf "~S\n" <>)
+              (generate-control-flow-graph decoded)))
   (close-input-port current-script-port)
   (set! current-script-port #f)
   (set! current-script-file #f)
@@ -829,7 +832,7 @@
 
 ;; (test-run "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092")
 ;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp")
-;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp");
+;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp")
 ;; (test-run "/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201")
 
 (define (main)
