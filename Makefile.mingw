@@ -34,6 +34,8 @@ install:   all
 	strip extract_parallaction.exe -o $(SCUMMVMPATH)/tools/extract_parallaction.exe
 	strip extract_scumm_mac.exe -o $(SCUMMVMPATH)/tools/extract_scumm_mac.exe
 	strip extract_zak_c64.exe -o $(SCUMMVMPATH)/tools/extract_zak_c64.exe
+	strip tools_gui.exe -o $(SCUMMVMPATH)/tools/tools_gui.exe
+
 	cp *.bat $(SCUMMVMPATH)/tools
 	cp COPYING $(SCUMMVMPATH)/tools/COPYING.txt
 	cp README $(SCUMMVMPATH)/tools/README.txt

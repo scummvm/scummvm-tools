@@ -38,7 +38,8 @@ TARGETS := \
 	extract_mm_nes$(EXEEXT) \
 	extract_parallaction$(EXEEXT) \
 	extract_scumm_mac$(EXEEXT) \
-	extract_zak_c64$(EXEEXT)
+	extract_zak_c64$(EXEEXT) \
+	tools_gui$(EXEEXT)
 
 UTILS := \
 	utils/adpcm.o \
@@ -118,6 +119,9 @@ extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
+	
+tools_gui$(EXEEXT): tools_gui.o
+	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs`
 
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
@@ -154,6 +158,10 @@ util.o: util.h
 
 clean:
 	rm -f *.o utils/*.o $(TARGETS)
+
+
+tools_gui.o: tools_gui.cpp tools_gui.h
+	$(CXX) $(CFLAGS) $(CPPFLAGS) `wx-config --cppflags` -c tools_gui.cpp -o tools_gui.o
 
 .cpp.o:
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
