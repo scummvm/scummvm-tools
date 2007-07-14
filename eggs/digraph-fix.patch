@@ -1,0 +1,59 @@
+--- digraph.scm	2007-05-30 05:12:18.000000000 +0200
++++ digraph-fixed.scm	2007-07-14 17:48:36.296839726 +0200
+@@ -108,13 +108,13 @@
+     (define (remove-pred elst j ax)
+       (match elst 
+ 	     (() (dynvector-set! pred j ax))
+-	     (((i1 . _) . es)  (let ((e (car elst)))
+-				 (remove-pred es j (if (fx= i1 i) es (cons e es)))))
++	     (((i1 _ _) . es)  (let ((e (car elst)))
++				 (remove-pred es j (if (fx= i1 i) ax (cons e ax)))))
+ 	     (else   (digraph:error 'remove-pred ": invalid edge list " elst))))
+ 
+     (define (remove-edge e)
+       (match e 
+-	     ((i1 j . _)  (begin
++	     ((i1 j _)  (begin
+ 			    (if (not (fx= i i1)) (digraph:error 'set-out-edges))
+ 			    (remove-pred (dynvector-ref pred j) j (list))))
+ 	     (else (digraph:error 'remove-edge ": invalid edge " e))))
+@@ -134,16 +134,16 @@
+   (define (set-in-edges! j edges)
+     (define (remove-succ elst i ax)
+       (match elst 
+-	     (() (dynvector-set! pred j ax))
++	     (() (dynvector-set! succ i ax))
+ 	     (((_ j1 _) . es)  (let ((e (car elst)))
+-				 (remove-succ es i (if (fx= j1 j) es (cons e es)))))
++				 (remove-succ es i (if (fx= j1 j) ax (cons e ax)))))
+ 	     (else   (digraph:error 'remove-succ ": invalid edge list " elst))))
+ 
+     (define (remove-edge e)
+       (match e 
+-	     ((i j1 . _)  (begin
++	     ((i j1 _)  (begin
+ 			    (if (not (fx= j j1)) (digraph:error 'set-in-edges))
+-			    (remove-succ (dynvector-ref pred i) i (list))))
++			    (remove-succ (dynvector-ref succ i) i (list))))
+ 	     (else (digraph:error 'remove-edge ": invalid edge " e))))
+ 
+     (define (add-succ e)
+@@ -230,11 +230,16 @@
+ 	((foreach-node)      foreach-node)
+         ((foreach-edge)      foreach-edge)
+ 	((roots)             (lambda ()
+-			       (filter-map (lambda (n) (if (null? (in-edges (car n))) (car n) #f)) 
++			       (filter-map (lambda (n)
++                                             (if (null?
++                                                  ;; check only edges from other nodes
++                                                  (remove (o (cut fx= <> (car n)) car)
++                                                          (in-edges (car n))))
++                                                 (car n)
++                                                 #f))
+ 					   (get-nodes))))
+ 	((debug)             (list (cons nodes (dynvector->list nodes))
+ 				   (cons succ (dynvector->list succ))
+ 				   (cons pred (dynvector->list pred))))
+         (else
+           (digraph:error 'selector ": unknown message " selector " sent to a graph"))))))
+-

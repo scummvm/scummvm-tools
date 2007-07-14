@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-14 02:17:58 brx>
+;;; Time-stamp: <2007-07-14 19:15:00 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -25,7 +25,7 @@
   (range bb-range set-bb-range!))
 
 (define-record-printer (basic-block x out)
-  (fprintf out "#,(basic-block ~S ~S)" (bb-type x) (bb-range x)))
+  (fprintf out "(basic-block ~A ~A)" (bb-type x) (bb-range x)))
 
 (define (bb-update! bb #!key type range)
   (when type (set-bb-type! bb type))
@@ -94,10 +94,7 @@
                 blocks))
   (let ((g (make-digraph 'cfg "control flow graph"))
         (ii (list-tabulate (length blocks) identity)))
-    (for-each (lambda (i b)
-                ((g 'add-node!) i b))
-              ii
-              blocks)
+    (for-each (cut (g 'add-node!) <> <>) ii blocks)
     (for-each (lambda (i b)
                 (let ((outs (match (bb-type b)
                               (('goto-unless jump-addr _)
@@ -110,24 +107,24 @@
                               (else
                                #f))))
                   (when outs
-                    (for-each (g 'add-edge!)
-                              (map (lambda (out)
-                                     (list i
-                                           out
-                                           (cons b (list-ref blocks out))))
-                                   outs)))))
+                    (for-each (lambda (out)
+                                (unless ((g 'has-edge) i out)
+                                  ((g 'add-edge!)
+                                   (list i out #f))))
+                              outs))))
               ii
               blocks)
     g))
 
 (define (generate-control-flow-graph disassembly)
   (let ((cfg
-         (blocks->cfg
-          (correct-blocks!
-           (generate-trivial-blocks
-            (map (lambda (instruction)
-                   (cons (car instruction) (cddr instruction)))
-                 disassembly))))))
+         (remove-isolated!
+          (blocks->cfg
+           (correct-blocks!
+            (generate-trivial-blocks
+             (map (lambda (instruction)
+                    (cons (car instruction) (cddr instruction)))
+                  disassembly)))))))
     (values ((cfg 'nodes))
             (generate-intervals cfg (list 0)))))
 

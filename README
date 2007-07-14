@@ -17,18 +17,19 @@ Requirements:
 
 Build procedure:
 
-Two CHICKEN libraries ("eggs") are needed to compile Antipasto:
+These CHICKEN libraries ("eggs") are needed to compile Antipasto:
 
-  - syntax-case.egg
-  - numbers.egg
-  - digraph.egg
-    (has own dependencies which should be resolved by
-     chicken-setup automatically)
+  - syntax-case
+  - numbers
+  - vector-lib
+  - dyn-vector
+  - digraph (use the fixed egg from eggs/)
 
 To obtain these execute
 
   $ chicken-setup syntax-case
   $ chicken-setup numbers
+  ...
 
 in your favorite shell. Afterwards a simple
 

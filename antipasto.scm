@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-13 22:16:52 brx>
+;;; Time-stamp: <2007-07-14 19:09:42 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
