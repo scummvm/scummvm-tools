@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-10 20:27:13 brx>
+;;; Time-stamp: <2007-07-13 22:16:52 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -18,9 +18,10 @@
 ;;; along with this program; if not, write to the Free Software
 ;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-(require-extension posix numbers srfi-1)
+(require-extension srfi-1 posix numbers digraph)
 
 (include "util.scm")
+(include "graph.scm")
 (include "cfgg.scm")
 
 (define current-script-file #f)

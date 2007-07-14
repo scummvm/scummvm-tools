@@ -21,6 +21,9 @@ Two CHICKEN libraries ("eggs") are needed to compile Antipasto:
 
   - syntax-case.egg
   - numbers.egg
+  - digraph.egg
+    (has own dependencies which should be resolved by
+     chicken-setup automatically)
 
 To obtain these execute
 
