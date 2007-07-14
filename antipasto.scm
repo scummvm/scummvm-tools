@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-08 20:34:50 brx>
+;;; Time-stamp: <2007-07-10 20:27:13 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -820,11 +820,17 @@
         (printf "[~A] (~X) "
                 (caar decoded)
                 (cadar decoded))
-        (write (cddar decoded))
-        (newline)
+        (pretty-print (cddar decoded))
         (print-decoded (cdr decoded))))
-    (for-each (cut printf "~S\n" <>)
-              (generate-control-flow-graph decoded)))
+    (receive (basic-blocks intervals)
+        (generate-control-flow-graph decoded)
+      (printf "Basic Blocks:\n")
+      (pretty-print basic-blocks)
+      (newline)
+      (printf "Intervals:\n")
+      (for-each (compose (hole newline)
+                         (cut pretty-print <>))
+                intervals)))
   (close-input-port current-script-port)
   (set! current-script-port #f)
   (set! current-script-file #f)

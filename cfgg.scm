@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-09 01:31:43 brx>
+;;; Time-stamp: <2007-07-10 20:25:19 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -143,11 +143,46 @@
             (correct-trivial-blocks! (cdr trivial-blocks)
                                      fixed-blocks)))))
 
+(define (find-interval interval basic-blocks)
+  (let ((new-interval-nodes (partition (lambda (block)
+                                         (and (not (memq block interval))
+                                              (every (cut memq <> interval)
+                                                     (basic-block-preds block))))
+                                       basic-blocks)))
+    (if (null? new-interval-nodes)
+        interval
+        (find-interval (append interval
+                               new-interval-nodes)
+                       basic-blocks))))
+
+(define (generate-intervals unprocessed-headers headers basic-blocks)
+  (if (null? unprocessed-headers)
+      '()
+      (let* ((new-interval (find-interval (list (car unprocessed-headers))
+                                          basic-blocks))
+             (new-headers (partition (lambda (block)
+                                       (and (not (memq block headers))
+                                            (not (memq block new-interval))
+                                            (any (cut memq <> new-interval)
+                                                 (basic-block-preds block))))
+                                     basic-blocks)))
+        (cons new-interval
+              (generate-intervals (append (cdr unprocessed-headers)
+                                          new-headers)
+                                  (append headers
+                                          new-headers)
+                                  basic-blocks)))))
+
 (define (generate-control-flow-graph disassembly)
-  (let ((trivial-blocks
-         (generate-trivial-blocks
-          (remove-opcodes-from-disassembly disassembly) '() #f)))
-    (correct-trivial-blocks! trivial-blocks trivial-blocks)))
+  (let* ((trivial-blocks
+          (generate-trivial-blocks
+           (remove-opcodes-from-disassembly disassembly) '() #f))
+         (basic-blocks (correct-trivial-blocks! trivial-blocks
+                                                trivial-blocks)))
+    (values basic-blocks
+            (generate-intervals (list (car basic-blocks))
+                                (list (car basic-blocks))
+                                basic-blocks))))
 
 ;; (test-run "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092")
 ;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp")
