@@ -23,48 +23,49 @@
 
 #include "kyra_pak.h"
 
+void showhelp(char* exename)
+{
+		printf("\nUsage: %s <file> [params]\n", exename);
+
+		printf("\nParams:\n");
+		printf("-o <filename>     Extract only <filename>\n");
+		printf("-x                Extract all files\n");
+		printf("-a                Extract files from the Amiga .PAK files\n");
+
+		exit(2);
+}
+
 int main(int argc, char **argv) {
 	if (argc < 2) {
-		printf("Use:\n"
-				"%s filename [OPTIONS]\n"
-				"Here are the options, default is listing files to stdout\n"
-				"-o xxx   Extract only file 'xxx'\n"
-				"-x       Extract all files\n"
-				"-a       Use this if you want to extract files from the Amiga .PAK files\n",
-				argv[0]);
-		return -1;
+		showhelp(argv[0]);
 	}
-	
-	bool extractAll = false, extractOne = false;
-	bool isAmiga = false;
-	uint8 param = 0;
-	
-	// looking for the parameters
-	for (int32 pos = 1; pos < argc; ++pos) {
-		if (*argv[pos] == '-') {
-			if (argv[pos][1] == 'o') {
-				extractOne = true;
-				param = pos + 1;
-				
-				if (param >= argc) {
-					printf("you have to add a filename to option -o\n"
-							"like: unpackkyra A_E.PAK -o ALGAE.CPS\n");
-					return -1;
-				}
-				
-				++pos;
-			} else if (argv[pos][1] == 'x') {
-				extractAll = true;
-			} else if (argv[pos][1] == 'a') {
-				isAmiga = true;
+
+	bool extractAll = false, extractOne = false, isAmiga = false;
+	int param;
+
+	for (param = 1; param < argc; param++) {
+		if (strcmp(argv[param], "-o") == 0) {
+			extractOne = true;
+			param++;
+
+			if (param >= argc) {
+				printf("You supply a filename with -o\n");
+				printf("Example: %s A_E.PAK -o ALGAE.CPS\n", argv[0]);
+
+				exit(-1);
 			}
+		} else if (strcmp(argv[param], "-x") == 0) {
+			extractAll = true;
+		} else if (strcmp(argv[param], "-a") == 0) {
+			isAmiga = true;
+		} else {
+			showhelp(argv[0]);
 		}
 	}
 
 	PAKFile myfile;
 	if (!myfile.loadFile(argv[1], isAmiga)) {
-		error("couldn't load file '%s'", argv[1]);
-		return -1;
+		error("Couldn't load file '%s'", argv[1]);
 	}
 
 	if(extractAll) {

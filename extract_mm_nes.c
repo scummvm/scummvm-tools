@@ -29,21 +29,21 @@ typedef int BOOL;
 
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
-#define	MAKE_LFLS
+#define MAKE_LFLS
 
 #ifdef _MSC_VER
-	#define	vsnprintf _vsnprintf
+	#define vsnprintf _vsnprintf
 #endif
 
 #ifdef MAKE_LFLS
-void writeByteAlt(FILE *fp, uint8 b)
-{
+void writeByteAlt(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
-void writeUint16LEAlt(FILE *fp, uint16 value)
-{
+
+void writeUint16LEAlt(FILE *fp, uint16 value) {
 	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
 }
+
 #define writeByte writeByteAlt
 #define writeUint16LE writeUint16LEAlt
 #endif
@@ -77,7 +77,7 @@ typedef enum _res_type {
 	NES_PREPLIST
 } res_type;
 
-typedef	enum _romset {
+typedef enum _romset {
 	ROMSET_USA,
 	ROMSET_EUROPE,
 	ROMSET_SWEDEN,
@@ -88,8 +88,7 @@ typedef	enum _romset {
 
 t_romset ROMset = NUM_ROMSETS;
 
-typedef	struct	_resource
-{
+typedef struct _resource {
 	uint32 offset;
 	uint16 length;
 	res_type type;
@@ -105,6 +104,7 @@ t_resource res_roomgfx_usa[40] = {
 	{ 0x10001, 0x02D6, NES_ROOMGFX }, { 0x102D7, 0x06A3, NES_ROOMGFX }, { 0x1097A, 0x099F, NES_ROOMGFX }, { 0x11319, 0x0361, NES_ROOMGFX }, { 0x1167A, 0x0489, NES_ROOMGFX },
 	{ 0x11B03, 0x0437, NES_ROOMGFX }, { 0x11F3A, 0x084D, NES_ROOMGFX }, { 0x0BE28, 0x0199, NES_ROOMGFX }, { 0x12787, 0x09A7, NES_ROOMGFX }, { 0x1312E, 0x037A, NES_ROOMGFX }
 };
+
 t_resource res_roomgfx_eur[40] = {
 	{ 0x04001, 0x03B9, NES_ROOMGFX }, { 0x043BA, 0x069E, NES_ROOMGFX }, { 0x04A58, 0x0327, NES_ROOMGFX }, { 0x04D7F, 0x053B, NES_ROOMGFX }, { 0x052BA, 0x06BE, NES_ROOMGFX },
 	{ 0x05978, 0x0682, NES_ROOMGFX }, { 0x05FFA, 0x0778, NES_ROOMGFX }, { 0x06772, 0x0517, NES_ROOMGFX }, { 0x06C89, 0x07FB, NES_ROOMGFX }, { 0x07484, 0x07BE, NES_ROOMGFX },
@@ -115,6 +115,7 @@ t_resource res_roomgfx_eur[40] = {
 	{ 0x10001, 0x02D6, NES_ROOMGFX }, { 0x102D7, 0x06A3, NES_ROOMGFX }, { 0x1097A, 0x099F, NES_ROOMGFX }, { 0x11319, 0x0361, NES_ROOMGFX }, { 0x1167A, 0x0489, NES_ROOMGFX },
 	{ 0x11B03, 0x0437, NES_ROOMGFX }, { 0x11F3A, 0x084D, NES_ROOMGFX }, { 0x12787, 0x0199, NES_ROOMGFX }, { 0x12920, 0x09A7, NES_ROOMGFX }, { 0x132C7, 0x037A, NES_ROOMGFX }
 };
+
 t_resource res_roomgfx_swe[40] = {
 	{ 0x04001, 0x03F0, NES_ROOMGFX }, { 0x043F1, 0x069E, NES_ROOMGFX }, { 0x04A8F, 0x0327, NES_ROOMGFX }, { 0x04DB6, 0x053B, NES_ROOMGFX }, { 0x052F1, 0x06BE, NES_ROOMGFX },
 	{ 0x059AF, 0x0682, NES_ROOMGFX }, { 0x06031, 0x0778, NES_ROOMGFX }, { 0x067A9, 0x0517, NES_ROOMGFX }, { 0x06CC0, 0x07FB, NES_ROOMGFX }, { 0x074BB, 0x07BE, NES_ROOMGFX },
@@ -125,6 +126,7 @@ t_resource res_roomgfx_swe[40] = {
 	{ 0x07C79, 0x02D6, NES_ROOMGFX }, { 0x10001, 0x06A3, NES_ROOMGFX }, { 0x106A4, 0x0921, NES_ROOMGFX }, { 0x10FC5, 0x0361, NES_ROOMGFX }, { 0x11326, 0x0489, NES_ROOMGFX },
 	{ 0x117AF, 0x0437, NES_ROOMGFX }, { 0x11BE6, 0x084F, NES_ROOMGFX }, { 0x12435, 0x0199, NES_ROOMGFX }, { 0x125CE, 0x0947, NES_ROOMGFX }, { 0x12F15, 0x037A, NES_ROOMGFX }
 };
+
 t_resource res_roomgfx_fra[40] = {
 	{ 0x04001, 0x0426, NES_ROOMGFX }, { 0x04427, 0x069E, NES_ROOMGFX }, { 0x04AC5, 0x0327, NES_ROOMGFX }, { 0x04DEC, 0x053B, NES_ROOMGFX }, { 0x05327, 0x06BE, NES_ROOMGFX },
 	{ 0x059E5, 0x0682, NES_ROOMGFX }, { 0x06067, 0x0778, NES_ROOMGFX }, { 0x067DF, 0x0517, NES_ROOMGFX }, { 0x06CF6, 0x07FB, NES_ROOMGFX }, { 0x074F1, 0x07BE, NES_ROOMGFX },
@@ -135,6 +137,7 @@ t_resource res_roomgfx_fra[40] = {
 	{ 0x10001, 0x02D6, NES_ROOMGFX }, { 0x102D7, 0x06A3, NES_ROOMGFX }, { 0x1097A, 0x0921, NES_ROOMGFX }, { 0x1129B, 0x0361, NES_ROOMGFX }, { 0x115FC, 0x0489, NES_ROOMGFX },
 	{ 0x11A85, 0x0437, NES_ROOMGFX }, { 0x11EBC, 0x070D, NES_ROOMGFX }, { 0x07CAF, 0x0199, NES_ROOMGFX }, { 0x125C9, 0x0947, NES_ROOMGFX }, { 0x12F10, 0x037A, NES_ROOMGFX }
 };
+
 t_resource res_roomgfx_ger[40] = {
 	{ 0x04001, 0x0406, NES_ROOMGFX }, { 0x04407, 0x069E, NES_ROOMGFX }, { 0x04AA5, 0x0327, NES_ROOMGFX }, { 0x04DCC, 0x053B, NES_ROOMGFX }, { 0x05307, 0x06BE, NES_ROOMGFX },
 	{ 0x059C5, 0x0682, NES_ROOMGFX }, { 0x06047, 0x0778, NES_ROOMGFX }, { 0x067BF, 0x0517, NES_ROOMGFX }, { 0x06CD6, 0x07FB, NES_ROOMGFX }, { 0x074D1, 0x07BE, NES_ROOMGFX },
@@ -145,6 +148,7 @@ t_resource res_roomgfx_ger[40] = {
 	{ 0x07C8F, 0x02D6, NES_ROOMGFX }, { 0x10001, 0x06A3, NES_ROOMGFX }, { 0x106A4, 0x0921, NES_ROOMGFX }, { 0x10FC5, 0x0361, NES_ROOMGFX }, { 0x11326, 0x0489, NES_ROOMGFX },
 	{ 0x117AF, 0x0437, NES_ROOMGFX }, { 0x11BE6, 0x07A0, NES_ROOMGFX }, { 0x12386, 0x0199, NES_ROOMGFX }, { 0x1251F, 0x0947, NES_ROOMGFX }, { 0x12E66, 0x037A, NES_ROOMGFX }
 };
+
 p_resource res_roomgfx[NUM_ROMSETS] = {
 	res_roomgfx_usa,
 	res_roomgfx_eur,
@@ -158,6 +162,7 @@ t_resource res_costumegfx_eur[2] = { { 0x30001, 0x0EB8, NES_COSTUMEGFX }, { 0x2F
 t_resource res_costumegfx_swe[2] = { { 0x2EFE1, 0x0EB8, NES_COSTUMEGFX }, { 0x30001, 0x0340, NES_COSTUMEGFX } };
 t_resource res_costumegfx_fra[2] = { { 0x30001, 0x0EB8, NES_COSTUMEGFX }, { 0x2F608, 0x0340, NES_COSTUMEGFX } };
 t_resource res_costumegfx_ger[2] = { { 0x30001, 0x0EB8, NES_COSTUMEGFX }, { 0x2F4CE, 0x0340, NES_COSTUMEGFX } };
+
 p_resource res_costumegfx[NUM_ROMSETS] = {
 	res_costumegfx_usa,
 	res_costumegfx_eur,
@@ -179,6 +184,7 @@ t_resource res_rooms_usa[55] = {
 	{ 0x293C6, 0x05A0, NES_ROOM }, { 0x27B65, 0x0201, NES_ROOM }, { 0x2ADD1, 0x0325, NES_ROOM }, { 0x2B339, 0x01FC, NES_ROOM }, { 0x2B535, 0x02A9, NES_ROOM },
 	{ 0x2B7DE, 0x02DE, NES_ROOM }, { 0x2C001, 0x03CE, NES_ROOM }, { 0x2BBC0, 0x0205, NES_ROOM }, { 0x2C53A, 0x0170, NES_ROOM }, { 0x13E42, 0x0169, NES_ROOM }
 };
+
 t_resource res_rooms_eur[55] = {
 	{ 0x00000, 0x0000, NES_ROOM }, { 0x14001, 0x0D0C, NES_ROOM }, { 0x13641, 0x04B3, NES_ROOM }, { 0x15397, 0x0849, NES_ROOM }, { 0x15C68, 0x0685, NES_ROOM },
 	{ 0x16381, 0x0715, NES_ROOM }, { 0x16CE8, 0x04E7, NES_ROOM }, { 0x18001, 0x0ABF, NES_ROOM }, { 0x171CF, 0x06BA, NES_ROOM }, { 0x13AF4, 0x03D2, NES_ROOM },
@@ -192,6 +198,7 @@ t_resource res_rooms_eur[55] = {
 	{ 0x293C6, 0x05A0, NES_ROOM }, { 0x27BE9, 0x0201, NES_ROOM }, { 0x2ADE3, 0x0325, NES_ROOM }, { 0x2B34B, 0x01FC, NES_ROOM }, { 0x2B547, 0x02A9, NES_ROOM },
 	{ 0x2B7F0, 0x02DE, NES_ROOM }, { 0x2C001, 0x03CE, NES_ROOM }, { 0x2BBD2, 0x0205, NES_ROOM }, { 0x2C53A, 0x0170, NES_ROOM }, { 0x2BDD7, 0x0169, NES_ROOM }
 };
+
 t_resource res_rooms_swe[55] = {
 	{ 0x00000, 0x0000, NES_ROOM }, { 0x14001, 0x0D12, NES_ROOM }, { 0x1328F, 0x04B3, NES_ROOM }, { 0x15367, 0x0859, NES_ROOM }, { 0x13742, 0x0694, NES_ROOM },
 	{ 0x15C45, 0x0707, NES_ROOM }, { 0x1658F, 0x04E0, NES_ROOM }, { 0x16A6F, 0x0AC8, NES_ROOM }, { 0x18001, 0x06C7, NES_ROOM }, { 0x1789C, 0x03EA, NES_ROOM },
@@ -205,6 +212,7 @@ t_resource res_rooms_swe[55] = {
 	{ 0x289DF, 0x05A1, NES_ROOM }, { 0x2A442, 0x0201, NES_ROOM }, { 0x2A6E9, 0x0325, NES_ROOM }, { 0x1FD75, 0x01FC, NES_ROOM }, { 0x2AC64, 0x02A9, NES_ROOM },
 	{ 0x2AF0D, 0x02D1, NES_ROOM }, { 0x2B2E6, 0x03CC, NES_ROOM }, { 0x23D61, 0x0205, NES_ROOM }, { 0x2B818, 0x0168, NES_ROOM }, { 0x27CF6, 0x0169, NES_ROOM }
 };
+
 t_resource res_rooms_fra[55] = {
 	{ 0x00000, 0x0000, NES_ROOM }, { 0x14001, 0x0D76, NES_ROOM }, { 0x1328A, 0x04C6, NES_ROOM }, { 0x15451, 0x0885, NES_ROOM }, { 0x13750, 0x0693, NES_ROOM },
 	{ 0x15D68, 0x0709, NES_ROOM }, { 0x166D4, 0x0528, NES_ROOM }, { 0x16BFC, 0x0ACC, NES_ROOM }, { 0x18001, 0x06E2, NES_ROOM }, { 0x17A63, 0x03E5, NES_ROOM },
@@ -218,6 +226,7 @@ t_resource res_rooms_fra[55] = {
 	{ 0x28E97, 0x05E6, NES_ROOM }, { 0x27C3A, 0x0201, NES_ROOM }, { 0x2A9D6, 0x0325, NES_ROOM }, { 0x2AF88, 0x01FC, NES_ROOM }, { 0x2B184, 0x02A9, NES_ROOM },
 	{ 0x2B42D, 0x02DF, NES_ROOM }, { 0x2B818, 0x03EC, NES_ROOM }, { 0x2BD67, 0x0209, NES_ROOM }, { 0x2C001, 0x0168, NES_ROOM }, { 0x2C4BF, 0x0169, NES_ROOM }
 };
+
 t_resource res_rooms_ger[55] = {
 	{ 0x00000, 0x0000, NES_ROOM }, { 0x14001, 0x0D63, NES_ROOM }, { 0x131E0, 0x04A9, NES_ROOM }, { 0x13689, 0x086B, NES_ROOM }, { 0x15421, 0x06A8, NES_ROOM },
 	{ 0x15B5D, 0x0731, NES_ROOM }, { 0x16507, 0x0501, NES_ROOM }, { 0x16A08, 0x0AE9, NES_ROOM }, { 0x18001, 0x06DA, NES_ROOM }, { 0x17880, 0x03D0, NES_ROOM },
@@ -231,6 +240,7 @@ t_resource res_rooms_ger[55] = {
 	{ 0x28FB1, 0x05FF, NES_ROOM }, { 0x27B69, 0x0201, NES_ROOM }, { 0x2AAA9, 0x0325, NES_ROOM }, { 0x1BD7C, 0x01FC, NES_ROOM }, { 0x2B031, 0x02A9, NES_ROOM },
 	{ 0x2B2DA, 0x02D8, NES_ROOM }, { 0x2B6D2, 0x03D2, NES_ROOM }, { 0x2BC0D, 0x020D, NES_ROOM }, { 0x2C001, 0x0168, NES_ROOM }, { 0x27E11, 0x0169, NES_ROOM }
 };
+
 p_resource res_rooms[NUM_ROMSETS] = {
 	res_rooms_usa,
 	res_rooms_eur,
@@ -277,6 +287,7 @@ t_resource res_scripts_usa[179] = {
 	{ 0x2AC80, 0x0005, NES_SCRIPT }, { 0x2AC85, 0x0005, NES_SCRIPT }, { 0x2AC8A, 0x0005, NES_SCRIPT }, { 0x2AC8F, 0x0005, NES_SCRIPT }, { 0x21633, 0x0033, NES_SCRIPT },
 	{ 0x2AC94, 0x0005, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2AC99, 0x009C, NES_SCRIPT }, { 0x2AD35, 0x009C, NES_SCRIPT }
 };
+
 t_resource res_scripts_eur[179] = {
 	{ 0x00000, 0x0000, NES_SCRIPT }, { 0x29966, 0x044D, NES_SCRIPT }, { 0x29DB3, 0x0207, NES_SCRIPT }, { 0x29FBA, 0x009F, NES_SCRIPT }, { 0x2A059, 0x03F4, NES_SCRIPT },
 	{ 0x2A44D, 0x01A1, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A5EE, 0x005C, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A64A, 0x0005, NES_SCRIPT },
@@ -315,6 +326,7 @@ t_resource res_scripts_eur[179] = {
 	{ 0x2AC92, 0x0005, NES_SCRIPT }, { 0x2AC97, 0x0005, NES_SCRIPT }, { 0x2AC9C, 0x0005, NES_SCRIPT }, { 0x2ACA1, 0x0005, NES_SCRIPT }, { 0x21633, 0x0033, NES_SCRIPT },
 	{ 0x2ACA6, 0x0005, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2ACAB, 0x009C, NES_SCRIPT }, { 0x2AD47, 0x009C, NES_SCRIPT }
 };
+
 t_resource res_scripts_swe[179] = {
 	{ 0x00000, 0x0000, NES_SCRIPT }, { 0x28F80, 0x043B, NES_SCRIPT }, { 0x293BB, 0x0209, NES_SCRIPT }, { 0x295C4, 0x00AB, NES_SCRIPT }, { 0x2966F, 0x03FD, NES_SCRIPT },
 	{ 0x29A6C, 0x01A1, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x29C0D, 0x005C, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x29C69, 0x0005, NES_SCRIPT },
@@ -353,6 +365,7 @@ t_resource res_scripts_swe[179] = {
 	{ 0x2A2F1, 0x0005, NES_SCRIPT }, { 0x2A2F6, 0x0005, NES_SCRIPT }, { 0x2A2FB, 0x0005, NES_SCRIPT }, { 0x2A300, 0x0005, NES_SCRIPT }, { 0x216F2, 0x0033, NES_SCRIPT },
 	{ 0x2A305, 0x0005, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A30A, 0x009C, NES_SCRIPT }, { 0x2A3A6, 0x009C, NES_SCRIPT }
 };
+
 t_resource res_scripts_fra[179] = {
 	{ 0x00000, 0x0000, NES_SCRIPT }, { 0x2947D, 0x0480, NES_SCRIPT }, { 0x298FD, 0x0226, NES_SCRIPT }, { 0x29B23, 0x0092, NES_SCRIPT }, { 0x29BB5, 0x040C, NES_SCRIPT },
 	{ 0x29FC1, 0x01A1, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A162, 0x005C, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A1BE, 0x0005, NES_SCRIPT },
@@ -391,6 +404,7 @@ t_resource res_scripts_fra[179] = {
 	{ 0x2A885, 0x0005, NES_SCRIPT }, { 0x2A88A, 0x0005, NES_SCRIPT }, { 0x2A88F, 0x0005, NES_SCRIPT }, { 0x2A894, 0x0005, NES_SCRIPT }, { 0x216FB, 0x0033, NES_SCRIPT },
 	{ 0x2A899, 0x0005, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A89E, 0x009C, NES_SCRIPT }, { 0x2A93A, 0x009C, NES_SCRIPT }
 };
+
 t_resource res_scripts_ger[179] = {
 	{ 0x00000, 0x0000, NES_SCRIPT }, { 0x295B0, 0x045A, NES_SCRIPT }, { 0x29A0A, 0x0218, NES_SCRIPT }, { 0x29C22, 0x00B1, NES_SCRIPT }, { 0x29CD3, 0x0408, NES_SCRIPT },
 	{ 0x2A0DB, 0x01A1, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A27C, 0x005C, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A2D8, 0x0005, NES_SCRIPT },
@@ -429,6 +443,7 @@ t_resource res_scripts_ger[179] = {
 	{ 0x2A958, 0x0005, NES_SCRIPT }, { 0x2A95D, 0x0005, NES_SCRIPT }, { 0x2A962, 0x0005, NES_SCRIPT }, { 0x2A967, 0x0005, NES_SCRIPT }, { 0x21749, 0x0033, NES_SCRIPT },
 	{ 0x2A96C, 0x0005, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A971, 0x009C, NES_SCRIPT }, { 0x2AA0D, 0x009C, NES_SCRIPT }
 };
+
 p_resource res_scripts[NUM_ROMSETS] = {
 	res_scripts_usa,
 	res_scripts_eur,
@@ -456,6 +471,7 @@ t_resource res_sounds_usa[82] = {
 	{ 0x366B0, 0x0E56, NES_SOUND }, { 0x38001, 0x0C70, NES_SOUND }, { 0x38C71, 0x0DEC, NES_SOUND }, { 0x39A5D, 0x0B77, NES_SOUND }, { 0x37506, 0x042F, NES_SOUND },
 	{ 0x3A5D4, 0x0AC5, NES_SOUND }, { 0x3B099, 0x0BE4, NES_SOUND }
 };
+
 t_resource res_sounds_eur[82] = {
 	{ 0x0BF54, 0x000A, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND },
 	{ 0x30ECA, 0x0832, NES_SOUND }, { 0x0BF5E, 0x0011, NES_SOUND }, { 0x27ECB, 0x0073, NES_SOUND }, { 0x0BF6F, 0x0011, NES_SOUND }, { 0x0FF5D, 0x0011, NES_SOUND },
@@ -475,6 +491,7 @@ t_resource res_sounds_eur[82] = {
 	{ 0x38001, 0x0E56, NES_SOUND }, { 0x371C8, 0x0C70, NES_SOUND }, { 0x38E57, 0x0DEC, NES_SOUND }, { 0x39C43, 0x0B77, NES_SOUND }, { 0x33653, 0x042F, NES_SOUND },
 	{ 0x3A7BA, 0x0AC5, NES_SOUND }, { 0x3B27F, 0x0BE4, NES_SOUND }
 };
+
 t_resource res_sounds_swe[82] = {
 	{ 0x0BF58, 0x000A, NES_SOUND }, { 0x30352, 0x0832, NES_SOUND }, { 0x30352, 0x0832, NES_SOUND }, { 0x30352, 0x0832, NES_SOUND }, { 0x30352, 0x0832, NES_SOUND },
 	{ 0x30352, 0x0832, NES_SOUND }, { 0x0BF62, 0x0011, NES_SOUND }, { 0x27E5F, 0x0073, NES_SOUND }, { 0x17F5A, 0x0011, NES_SOUND }, { 0x17F6B, 0x0011, NES_SOUND },
@@ -494,6 +511,7 @@ t_resource res_sounds_swe[82] = {
 	{ 0x36320, 0x0E56, NES_SOUND }, { 0x37176, 0x0C70, NES_SOUND }, { 0x38001, 0x0DEC, NES_SOUND }, { 0x38DED, 0x0B77, NES_SOUND }, { 0x33836, 0x042F, NES_SOUND },
 	{ 0x39964, 0x0AC5, NES_SOUND }, { 0x3A429, 0x0BE4, NES_SOUND }
 };
+
 t_resource res_sounds_fra[82] = {
 	{ 0x07F74, 0x000A, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND },
 	{ 0x30ECA, 0x0832, NES_SOUND }, { 0x0BF6C, 0x0011, NES_SOUND }, { 0x1BEFA, 0x0073, NES_SOUND }, { 0x17F10, 0x0011, NES_SOUND }, { 0x17F21, 0x0011, NES_SOUND },
@@ -513,6 +531,7 @@ t_resource res_sounds_fra[82] = {
 	{ 0x36320, 0x0E56, NES_SOUND }, { 0x37176, 0x0C70, NES_SOUND }, { 0x38001, 0x0DEC, NES_SOUND }, { 0x38DED, 0x0B77, NES_SOUND }, { 0x39964, 0x042F, NES_SOUND },
 	{ 0x39D93, 0x0AC5, NES_SOUND }, { 0x3A858, 0x0BE4, NES_SOUND }
 };
+
 t_resource res_sounds_ger[82] = {
 	{ 0x0BF6D, 0x000A, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND }, { 0x30ECA, 0x0832, NES_SOUND },
 	{ 0x30ECA, 0x0832, NES_SOUND }, { 0x23F05, 0x0011, NES_SOUND }, { 0x2FA49, 0x0073, NES_SOUND }, { 0x23F16, 0x0011, NES_SOUND }, { 0x23F27, 0x0011, NES_SOUND },
@@ -532,6 +551,7 @@ t_resource res_sounds_ger[82] = {
 	{ 0x366B0, 0x0E56, NES_SOUND }, { 0x38001, 0x0C70, NES_SOUND }, { 0x38C71, 0x0DEC, NES_SOUND }, { 0x39A5D, 0x0B77, NES_SOUND }, { 0x37506, 0x042F, NES_SOUND },
 	{ 0x3A5D4, 0x0AC5, NES_SOUND }, { 0x3B099, 0x0BE4, NES_SOUND }
 };
+
 p_resource res_sounds[NUM_ROMSETS] = {
 	res_sounds_usa,
 	res_sounds_eur,
@@ -547,6 +567,7 @@ t_resource res_costumes_usa[25] = {
 	{ 0x17F05, 0x0055, NES_COSTUME }, { 0x1BF87, 0x003B, NES_COSTUME }, { 0x17F05, 0x0055, NES_COSTUME }, { 0x23FA9, 0x0045, NES_COSTUME }, { 0x1FFBD, 0x0040, NES_COSTUME },
 	{ 0x1BFC2, 0x003C, NES_COSTUME }, { 0x17F90, 0x003A, NES_COSTUME }, { 0x17F90, 0x003A, NES_COSTUME }, { 0x17F05, 0x0055, NES_COSTUME }, { 0x13FAB, 0x004B, NES_COSTUME }
 };
+
 t_resource res_costumes_eur[25] = {
 	{ 0x0BEFF, 0x0055, NES_COSTUME }, { 0x0BEFF, 0x0055, NES_COSTUME }, { 0x0BEFF, 0x0055, NES_COSTUME }, { 0x0BEFF, 0x0055, NES_COSTUME }, { 0x0BEFF, 0x0055, NES_COSTUME },
 	{ 0x0BEFF, 0x0055, NES_COSTUME }, { 0x0BEFF, 0x0055, NES_COSTUME }, { 0x0BEFF, 0x0055, NES_COSTUME }, { 0x0FEA2, 0x004B, NES_COSTUME }, { 0x0BEFF, 0x0055, NES_COSTUME },
@@ -554,6 +575,7 @@ t_resource res_costumes_eur[25] = {
 	{ 0x0BEFF, 0x0055, NES_COSTUME }, { 0x13F13, 0x003B, NES_COSTUME }, { 0x0BEFF, 0x0055, NES_COSTUME }, { 0x23F2F, 0x0045, NES_COSTUME }, { 0x1FF3E, 0x0040, NES_COSTUME },
 	{ 0x27E8F, 0x003C, NES_COSTUME }, { 0x0FF23, 0x003A, NES_COSTUME }, { 0x0FF23, 0x003A, NES_COSTUME }, { 0x0BEFF, 0x0055, NES_COSTUME }, { 0x0FEA2, 0x004B, NES_COSTUME }
 };
+
 t_resource res_costumes_swe[25] = {
 	{ 0x0FEF5, 0x0055, NES_COSTUME }, { 0x0FEF5, 0x0055, NES_COSTUME }, { 0x0FEF5, 0x0055, NES_COSTUME }, { 0x0FEF5, 0x0055, NES_COSTUME }, { 0x0FEF5, 0x0055, NES_COSTUME },
 	{ 0x0FEF5, 0x0055, NES_COSTUME }, { 0x0FEF5, 0x0055, NES_COSTUME }, { 0x0FEF5, 0x0055, NES_COSTUME }, { 0x17E9A, 0x004B, NES_COSTUME }, { 0x0FEF5, 0x0055, NES_COSTUME },
@@ -561,6 +583,7 @@ t_resource res_costumes_swe[25] = {
 	{ 0x0FEF5, 0x0055, NES_COSTUME }, { 0x17F1F, 0x003B, NES_COSTUME }, { 0x0FEF5, 0x0055, NES_COSTUME }, { 0x1BE94, 0x0045, NES_COSTUME }, { 0x1BED9, 0x0040, NES_COSTUME },
 	{ 0x1BF19, 0x003C, NES_COSTUME }, { 0x17EE5, 0x003A, NES_COSTUME }, { 0x17EE5, 0x003A, NES_COSTUME }, { 0x0FEF5, 0x0055, NES_COSTUME }, { 0x17E9A, 0x004B, NES_COSTUME }
 };
+
 t_resource res_costumes_fra[25] = {
 	{ 0x0BF17, 0x0055, NES_COSTUME }, { 0x0BF17, 0x0055, NES_COSTUME }, { 0x0BF17, 0x0055, NES_COSTUME }, { 0x0BF17, 0x0055, NES_COSTUME }, { 0x0BF17, 0x0055, NES_COSTUME },
 	{ 0x0BF17, 0x0055, NES_COSTUME }, { 0x0BF17, 0x0055, NES_COSTUME }, { 0x0BF17, 0x0055, NES_COSTUME }, { 0x13E77, 0x004B, NES_COSTUME }, { 0x0BF17, 0x0055, NES_COSTUME },
@@ -568,6 +591,7 @@ t_resource res_costumes_fra[25] = {
 	{ 0x0BF17, 0x0055, NES_COSTUME }, { 0x13EFC, 0x003B, NES_COSTUME }, { 0x0BF17, 0x0055, NES_COSTUME }, { 0x13F37, 0x0045, NES_COSTUME }, { 0x17E94, 0x0040, NES_COSTUME },
 	{ 0x17ED4, 0x003C, NES_COSTUME }, { 0x13EC2, 0x003A, NES_COSTUME }, { 0x13EC2, 0x003A, NES_COSTUME }, { 0x0BF17, 0x0055, NES_COSTUME }, { 0x13E77, 0x004B, NES_COSTUME }
 };
+
 t_resource res_costumes_ger[25] = {
 	{ 0x0FEEB, 0x0055, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME },
 	{ 0x0FEEB, 0x0055, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME }, { 0x17E6C, 0x004B, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME },
@@ -575,6 +599,7 @@ t_resource res_costumes_ger[25] = {
 	{ 0x0FEEB, 0x0055, NES_COSTUME }, { 0x17EF1, 0x003B, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME }, { 0x17F2C, 0x0045, NES_COSTUME }, { 0x1FEFD, 0x0040, NES_COSTUME },
 	{ 0x1FF3D, 0x003C, NES_COSTUME }, { 0x17EB7, 0x003A, NES_COSTUME }, { 0x17EB7, 0x003A, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME }, { 0x17E6C, 0x004B, NES_COSTUME }
 };
+
 p_resource res_costumes[NUM_ROMSETS] = {
 	res_costumes_usa,
 	res_costumes_eur,
@@ -588,6 +613,7 @@ t_resource res_globdata_eur[1] = { { 0x2CA11, 0x0307, NES_GLOBDATA } };
 t_resource res_globdata_swe[1] = { { 0x2C001, 0x0307, NES_GLOBDATA } };
 t_resource res_globdata_fra[1] = { { 0x2C628, 0x0307, NES_GLOBDATA } };
 t_resource res_globdata_ger[1] = { { 0x2C4EE, 0x0307, NES_GLOBDATA } };
+
 p_resource res_globdata[NUM_ROMSETS] = {
 	res_globdata_usa,
 	res_globdata_eur,
@@ -602,6 +628,7 @@ t_resource res_sprpals_eur[2] = { { 0x07F61, 0x0010, NES_SPRPALS }, { 0x0BEB2, 0
 t_resource res_sprpals_swe[2] = { { 0x07F55, 0x0010, NES_SPRPALS }, { 0x07F65, 0x0010, NES_SPRPALS } };
 t_resource res_sprpals_fra[2] = { { 0x07ED8, 0x0010, NES_SPRPALS }, { 0x07EE8, 0x0010, NES_SPRPALS } };
 t_resource res_sprpals_ger[2] = { { 0x07F6B, 0x0010, NES_SPRPALS }, { 0x0BF17, 0x0010, NES_SPRPALS } };
+
 p_resource res_sprpals[NUM_ROMSETS] = {
 	res_sprpals_usa,
 	res_sprpals_eur,
@@ -616,6 +643,7 @@ t_resource res_sprdesc_eur[2] = { { 0x0BEC2, 0x0031, NES_SPRDESC }, { 0x07F71, 0
 t_resource res_sprdesc_swe[2] = { { 0x0BF1B, 0x0031, NES_SPRDESC }, { 0x07F75, 0x0009, NES_SPRDESC } };
 t_resource res_sprdesc_fra[2] = { { 0x07EF8, 0x0031, NES_SPRDESC }, { 0x07F29, 0x0009, NES_SPRDESC } };
 t_resource res_sprdesc_ger[2] = { { 0x0BF27, 0x0031, NES_SPRDESC }, { 0x0BF58, 0x0009, NES_SPRDESC } };
+
 p_resource res_sprdesc[NUM_ROMSETS] = {
 	res_sprdesc_usa,
 	res_sprdesc_eur,
@@ -630,6 +658,7 @@ t_resource res_sprlens_eur[2] = { { 0x1BE32, 0x0115, NES_SPRLENS }, { 0x07F5B, 0
 t_resource res_sprlens_swe[2] = { { 0x13E6A, 0x0115, NES_SPRLENS }, { 0x07F4F, 0x0006, NES_SPRLENS } };
 t_resource res_sprlens_fra[2] = { { 0x0FE61, 0x0115, NES_SPRLENS }, { 0x07ED2, 0x0006, NES_SPRLENS } };
 t_resource res_sprlens_ger[2] = { { 0x2BE1A, 0x0115, NES_SPRLENS }, { 0x07F65, 0x0006, NES_SPRLENS } };
+
 p_resource res_sprlens[NUM_ROMSETS] = {
 	res_sprlens_usa,
 	res_sprlens_eur,
@@ -644,6 +673,7 @@ t_resource res_sproffs_eur[2] = { { 0x2FD42, 0x022A, NES_SPROFFS }, { 0x0BEF3, 0
 t_resource res_sproffs_swe[2] = { { 0x2BCE0, 0x022A, NES_SPROFFS }, { 0x0BF4C, 0x000C, NES_SPROFFS } };
 t_resource res_sproffs_fra[2] = { { 0x2F959, 0x022A, NES_SPROFFS }, { 0x07F32, 0x000C, NES_SPROFFS } };
 t_resource res_sproffs_ger[2] = { { 0x2F81F, 0x022A, NES_SPROFFS }, { 0x0BF61, 0x000C, NES_SPROFFS } };
+
 p_resource res_sproffs[NUM_ROMSETS] = {
 	res_sproffs_usa,
 	res_sproffs_eur,
@@ -658,6 +688,7 @@ t_resource res_sprdata_eur[2] = { { 0x2CE11, 0x2BE0, NES_SPRDATA }, { 0x0BE28, 0
 t_resource res_sprdata_swe[2] = { { 0x2C401, 0x2BE0, NES_SPRDATA }, { 0x0FE6B, 0x008A, NES_SPRDATA } };
 t_resource res_sprdata_fra[2] = { { 0x2CA28, 0x2BE0, NES_SPRDATA }, { 0x07E48, 0x008A, NES_SPRDATA } };
 t_resource res_sprdata_ger[2] = { { 0x2C8EE, 0x2BE0, NES_SPRDATA }, { 0x0FE61, 0x008A, NES_SPRDATA } };
+
 p_resource res_sprdata[NUM_ROMSETS] = {
 	res_sprdata_usa,
 	res_sprdata_eur,
@@ -671,6 +702,7 @@ t_resource res_charset_eur[1] = { { 0x3F724, 0x0090, NES_CHARSET } };
 t_resource res_charset_swe[1] = { { 0x3F739, 0x0090, NES_CHARSET } };
 t_resource res_charset_fra[1] = { { 0x3F739, 0x0090, NES_CHARSET } };
 t_resource res_charset_ger[1] = { { 0x3F739, 0x0090, NES_CHARSET } };
+
 p_resource res_charset[NUM_ROMSETS] = {
 	res_charset_usa,
 	res_charset_eur,
@@ -684,6 +716,7 @@ t_resource res_preplist_eur[1] = { { 0x3FB90, 0x000E, NES_PREPLIST } };
 t_resource res_preplist_swe[1] = { { 0x3FBA9, 0x000E, NES_PREPLIST } };
 t_resource res_preplist_fra[1] = { { 0x3FBAF, 0x0010, NES_PREPLIST } };
 t_resource res_preplist_ger[1] = { { 0x3FBAB, 0x000F, NES_PREPLIST } };
+
 p_resource res_preplist[NUM_ROMSETS] = {
 	res_preplist_usa,
 	res_preplist_eur,
@@ -692,98 +725,129 @@ p_resource res_preplist[NUM_ROMSETS] = {
 	res_preplist_ger,
 };
 
-void	extract_resource (FILE *input, FILE *output, p_resource res)
-{
+void extract_resource (FILE *input, FILE *output, p_resource res) {
 	uint16 len, i, j;
 	uint8 val;
 	uint8 cnt;
 
-	if (res == NULL)
+	if (res == NULL) {
 		error("extract_resource - no resource specified");
-	if ((res->offset == 0) && (res->length == 0))
-		return;	/* there are 8 scripts that are zero bytes long, so we should skip them */
+	}
+
+	if ((res->offset == 0) && (res->length == 0)) {
+		/* there are 8 scripts that are zero bytes long, so we should skip them */
+		return;
+	}
+
 	fseek(input, res->offset, SEEK_SET);
 
-	switch (res->type)
-	{
+	switch (res->type) {
 	case NES_GLOBDATA:
 		len = res->length;
-		for (i = 0; i < len; i++)
-			writeByte(output,readByte(input));
+
+		for (i = 0; i < len; i++) {
+			writeByte(output, readByte(input));
+		}
+
 		break;
 	case NES_ROOMGFX:
 	case NES_COSTUMEGFX:
-		writeUint16LE(output,(uint16)(res->length + 2));
+		writeUint16LE(output, (uint16)(res->length + 2));
 		len = readByte(input);
-		writeByte(output,(uint8)len);
-		if (!len)
+		writeByte(output, (uint8)len);
+
+		if (!len) {
 			len = 256;
-		len = len << 4;
-		for (i = 0; i < len;)
-		{
-			writeByte(output,cnt = readByte(input));
-			for (j = 0; j < (cnt & 0x7F); j++, i++)
-				if ((cnt & 0x80) || (j == 0))
-					writeByte(output,readByte(input));
 		}
-		if (ftell(input) - res->offset != res->length)
-			error("extract_resource - length mismatch while extracting graphics resource (was %04X, should be %04X)",ftell(input) - res->offset, res->length);
+
+		len = len << 4;
+
+		for (i = 0; i < len;) {
+			writeByte(output, cnt = readByte(input));
+
+			for (j = 0; j < (cnt & 0x7F); j++, i++) {
+				if ((cnt & 0x80) || (j == 0)) {
+					writeByte(output, readByte(input));
+				}
+			}
+		}
+
+		if (ftell(input) - res->offset != res->length) {
+			error("extract_resource - length mismatch while extracting graphics resource (was %04X, should be %04X)", ftell(input) - res->offset, res->length);
+		}
+
 		break;
 	case NES_ROOM:
 	case NES_SCRIPT:
 		len = readUint16LE(input);
-		if (len != res->length)
-			error("extract_resource - length mismatch while extracting room/script resource (was %04X, should be %04X)",len,res->length);
-		fseek(input,-2,SEEK_CUR);
-		for (i = 0; i < len; i++)
-			writeByte(output,readByte(input));
+
+		if (len != res->length) {
+			error("extract_resource - length mismatch while extracting room/script resource (was %04X, should be %04X)", len, res->length);
+		}
+
+		fseek(input, -2, SEEK_CUR);
+
+		for (i = 0; i < len; i++) {
+			writeByte(output, readByte(input));
+		}
+
 		break;
 	case NES_SOUND:
 		len = res->length + 2;
 		val = readByte(input);
 		cnt = readByte(input);
-		if ((val == 2) && (cnt == 100))
-		{
-			writeUint16LE(output,len);
-			writeByte(output,val);
-			writeByte(output,cnt);
+
+		if ((val == 2) && (cnt == 100)) {
+			writeUint16LE(output, len);
+			writeByte(output, val);
+			writeByte(output, cnt);
 			cnt = readByte(input);
-			writeByte(output,cnt);
-			for (i = 0; i < cnt; i++)
-				writeByte(output,readByte(input));
-			for (i = 0; i < cnt; i++)
-				writeByte(output,readByte(input));
-			while (1)
-			{
-				writeByte(output,val = readByte(input));
-				if (val >= 0xFE)
-					break;
+			writeByte(output, cnt);
+
+			for (i = 0; i < cnt; i++) {
+				writeByte(output, readByte(input));
 			}
-		}
-		else if (((val == 0) || (val == 1) || (val == 4)) && (cnt == 10))
-		{
-			writeUint16LE(output,len);
-			writeByte(output,val);
-			writeByte(output,cnt);
-			while (1)
-			{
-				writeByte(output,val = readByte(input));
-				if (val >= 0xFE)
+
+			for (i = 0; i < cnt; i++) {
+				writeByte(output, readByte(input));
+			}
+
+			while (1) {
+				writeByte(output, val = readByte(input));
+
+				if (val >= 0xFE) {
 					break;
-				if (val >= 0x10)
-					writeByte(output,readByte(input));
-				else
-				{
-					writeByte(output,readByte(input));
-					writeByte(output,readByte(input));
-					writeByte(output,readByte(input));
-					writeByte(output,readByte(input));
 				}
 			}
+		} else if (((val == 0) || (val == 1) || (val == 4)) && (cnt == 10)) {
+			writeUint16LE(output, len);
+			writeByte(output, val);
+			writeByte(output, cnt);
+
+			while (1) {
+				writeByte(output, val = readByte(input));
+
+				if (val >= 0xFE) {
+					break;
+				}
+
+				if (val >= 0x10) {
+					writeByte(output, readByte(input));
+				} else {
+					writeByte(output, readByte(input));
+					writeByte(output, readByte(input));
+					writeByte(output, readByte(input));
+					writeByte(output, readByte(input));
+				}
+			}
+		} else {
+			error("extract_resource - unknown sound type %d/%d detected", val, cnt);
 		}
-		else	error("extract_resource - unknown sound type %d/%d detected",val,cnt);
-		if (ftell(input) - res->offset != res->length)
-			error("extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)",ftell(input) - res->offset, res->length);
+
+		if (ftell(input) - res->offset != res->length) {
+			error("extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)", ftell(input) - res->offset, res->length);
+		}
+
 		break;
 	case NES_COSTUME:
 	case NES_SPRPALS:
@@ -793,36 +857,44 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 	case NES_SPRDATA:
 	case NES_CHARSET:
 		len = res->length;
-		writeUint16LE(output,(uint16)(len + 2));
-		for (i = 0; i < len; i++)
-			writeByte(output,readByte(input));
+		writeUint16LE(output, (uint16)(len + 2));
+
+		for (i = 0; i < len; i++) {
+			writeByte(output, readByte(input));
+		}
+
 		break;
 	case NES_PREPLIST:
 		len = res->length;
-		writeUint16LE(output,0x002A);
-		writeByte(output,' ');
-		for (i = 1; i < 8; i++)
-			writeByte(output,0);
-		for (j = 0; j < 4; j++)
-		{
-			writeByte(output,' ');
-			for (i = 1; (val = readByte(input)); i++)
-				writeByte(output,val);
-			for (; i < 8; i++)
-				writeByte(output,0);
+		writeUint16LE(output, 0x002A);
+		writeByte(output, ' ');
+
+		for (i = 1; i < 8; i++) {
+			writeByte(output, 0);
+		}
+
+		for (j = 0; j < 4; j++) {
+			writeByte(output, ' ');
+
+			for (i = 1; (val = readByte(input)); i++) {
+				writeByte(output, val);
+			}
+
+			for (; i < 8; i++) {
+				writeByte(output, 0);
+			}
 		}
 		break;
 	default:
-		error("extract_resource - unknown resource type %d specified!",res->type);
+		error("extract_resource - unknown resource type %d specified!", res->type);
 	}
 }
 
-#ifdef	MAKE_LFLS
-typedef	struct	_lflentry
-{
+#ifdef MAKE_LFLS
+typedef struct _lflentry {
 	p_resource *type;
 	int index;
-}	t_lflentry, *p_lflentry;
+} t_lflentry, *p_lflentry;
 
 /* based on structure of Classic PC Maniac Mansion LFL files (roomgfx resources are arranged in order, one per file, after the room blocks) */
 t_lflentry lfl_01[] = { {res_rooms, 1}, {res_roomgfx, 1}, {res_scripts, 57}, {res_scripts, 61}, {res_scripts, 76}, {res_scripts, 105}, {res_scripts, 111}, {res_sounds, 5}, {res_scripts, 132}, {res_scripts, 148}, {res_scripts, 155}, {res_scripts, 156}, {res_sounds, 39}, {NULL, 0} };
@@ -877,18 +949,17 @@ t_lflentry lfl_49[] = { {res_rooms, 49}, {NULL, 0} };
 t_lflentry lfl_50[] = { {res_rooms, 50}, {res_scripts, 133}, {res_scripts, 163}, {NULL, 0} };
 t_lflentry lfl_51[] = { {res_rooms, 51}, {res_scripts, 118}, {res_scripts, 128}, {res_sounds, 61}, {res_sounds, 62}, {res_sounds, 67}, {res_sounds, 66}, {res_costumes, 16}, {res_costumes, 20}, {NULL, 0} };
 t_lflentry lfl_52[] = { {res_rooms, 52}, {NULL, 0} };
-/*	remaining 'standard' resources (not used by any of the original LFL files) */
+/* remaining 'standard' resources (not used by any of the original LFL files) */
 t_lflentry lfl_53[] = { {res_rooms, 53}, {res_scripts, 177}, {res_scripts, 178}, {res_sounds, 70}, {res_sounds, 71}, {res_sounds, 72}, {res_sounds, 73}, {res_sounds, 74}, {res_sounds, 75}, {res_sounds, 76}, {res_sounds, 77}, {res_sounds, 78}, {res_sounds, 79}, {res_sounds, 80}, {res_sounds, 81}, {NULL, 0} };
-/*	all 'non-standard' resources (the costume-related stuff) */
+/* all 'non-standard' resources (the costume-related stuff) */
 t_lflentry lfl_54[] = { {res_rooms, 54}, {res_sprdesc, 0}, {res_sprdesc, 1}, {res_sprlens, 0}, {res_sprlens, 1}, {res_sproffs, 0}, {res_sproffs, 1}, {res_sprdata, 0}, {res_sprdata, 1}, {res_costumegfx, 0}, {res_costumegfx, 1}, {res_sprpals, 0}, {res_sprpals, 1}, {res_charset, 0}, {res_preplist, 0}, {NULL, 0} };
 
-typedef	struct	_lfl
-{
+typedef struct _lfl {
 	int num;
 	p_lflentry entries;
-}	t_lfl, *p_lfl;
+} t_lfl, *p_lfl;
 
-t_lfl	lfls[] = {
+t_lfl lfls[] = {
 	{  1, lfl_01 },
 	{  2, lfl_02 },
 	{  3, lfl_03 },
@@ -952,89 +1023,93 @@ t_lfl	lfls[] = {
 #define GCC_PACK
 #endif
 #if defined(_MSC_VER)
-#pragma	pack(push,1)
+#pragma pack(push, 1)
 #endif
-struct	_lfl_index
-{
-	uint8	room_lfl[55];
-	uint16	room_addr[55];
-	uint8	costume_lfl[80];
-	uint16	costume_addr[80];
-	uint8	script_lfl[200];
-	uint16	script_addr[200];
-	uint8	sound_lfl[100];
-	uint16	sound_addr[100];
+
+struct _lfl_index {
+	uint8 room_lfl[55];
+	uint16 room_addr[55];
+	uint8 costume_lfl[80];
+	uint16 costume_addr[80];
+	uint8 script_lfl[200];
+	uint16 script_addr[200];
+	uint8 sound_lfl[100];
+	uint16 sound_addr[100];
 } GCC_PACK lfl_index;
+
 #if defined(_MSC_VER)
-#pragma	pack(pop)
+#pragma pack(pop)
 #endif
-#else	/* !MAKE_LFLS */
-void	dump_resource (FILE *input, char *fn_template, int num, p_resource res)
-{
+#else /* !MAKE_LFLS */
+void dump_resource (FILE *input, char *fn_template, int num, p_resource res) {
 	char fname[256];
 	FILE *output;
-	sprintf(fname,fn_template,num);
-	if (!(output = fopen(fname,"wb")))
-		error("Error: unable to create %s!",fname);
-	notice("Extracting resource to %s",fname);
-	extract_resource(input,output,res);
+	sprintf(fname, fn_template, num);
+
+	if (!(output = fopen(fname, "wb"))) {
+		error("Error: unable to create %s!", fname);
+	}
+
+	notice("Extracting resource to %s", fname);
+	extract_resource(input, output, res);
 	fclose(output);
 }
-#endif	/* MAKE_LFLS */
+#endif /* MAKE_LFLS */
 
-uint32	CRCtable[256];
-void	InitCRC (void)
-{
+uint32 CRCtable[256];
+void InitCRC (void) {
 	const uint32 poly = 0xEDB88320;
 	int i, j;
 	uint32 n;
-	for (i = 0; i < 256; i++)
-	{
+	for (i = 0; i < 256; i++) {
 		n = i;
-		for (j = 0; j < 8; j++)
+
+		for (j = 0; j < 8; j++) {
 			n = (n & 1) ? ((n >> 1) ^ poly) : (n >> 1);
+		}
+
 		CRCtable[i] = n;
 	}
 }
-uint32	CheckROM (FILE *file)
-{
+uint32 CheckROM (FILE *file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i;
 
-	for (i = 0; i < 262144; i++)
+	for (i = 0; i < 262144; i++) {
 		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ readByte(file)) & 0xFF];
+	}
 
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int main (int argc, char **argv)
-{
+int main (int argc, char **argv) {
 	FILE *input, *output;
 	char fname[256];
 	int i, j;
 	uint32 CRC;
 
-	if (argc < 2)
-	{
-		printf("Syntax: %s <infile.PRG>\n",argv[0]);
+	if (argc < 2) {
+		printf("Usage: %s <file.PRG>\n", argv[0]);
 		printf("\tSupported versions: Europe, France, Germany, Sweden and USA\n");
 		printf("\tJapanese version is NOT supported!\n");
 		return 1;
 	}
-	if (!(input = fopen(argv[1],"rb")))
-		error("Error: unable to open file %s for input!",argv[1]);
+
+	if (!(input = fopen(argv[1], "rb"))) {
+		error("Error: unable to open file %s for input!", argv[1]);
+	}
 
 	if ((readByte(input) == 'N') && (readByte(input) == 'E') && (readByte(input) == 'S') && (readByte(input) == 0x1A)) {
 		printf("You have specified an iNES formatted ROM image, which is not supported.\n"
 			"You must input the PRG section only - see Maniac Mansion NES notes section of README.");
 		return 1;
 	}
+
 	rewind(input);
 
 	InitCRC();
 	CRC = CheckROM(input);
-	switch (CRC)
-	{
+	switch (CRC) {
 	case 0x0D9F5BD1:
 		ROMset = ROMSET_USA;
 		notice("ROM contents verified as Maniac Mansion (USA)");
@@ -1059,24 +1134,27 @@ int main (int argc, char **argv)
 		error("Maniac Mansion (Japan) is not supported!");
 		break;
 	default:
-		error("ROM contents not recognized! (%08X)",CRC);
+		error("ROM contents not recognized! (%08X)", CRC);
 		break;
 	}
-#ifdef	MAKE_LFLS
-	memset(&lfl_index,0,sizeof(lfl_index));
 
-	for (i = 0; lfls[i].num != -1; i++)
-	{
+#ifdef MAKE_LFLS
+	memset(&lfl_index, 0, sizeof(lfl_index));
+
+	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
-		sprintf(fname,"%02i.LFL",lfl->num);
-		if (!(output = fopen(fname,"wb")))
-			error("Error: unable to create %s!",fname);
-		notice("Creating %s...",fname);
-		for (j = 0; lfl->entries[j].type != NULL; j++)
-		{
+		sprintf(fname, "%02i.LFL", lfl->num);
+
+		if (!(output = fopen(fname, "wb"))) {
+			error("Error: unable to create %s!", fname);
+		}
+
+		notice("Creating %s...", fname);
+
+		for (j = 0; lfl->entries[j].type != NULL; j++) {
 			p_lflentry entry = &lfl->entries[j];
-			switch (entry->type[ROMset][entry->index].type)
-			{
+
+			switch (entry->type[ROMset][entry->index].type) {
 			case NES_ROOM:
 				lfl_index.room_lfl[entry->index] = lfl->num;
 				lfl_index.room_addr[entry->index] = (uint16)ftell(output);
@@ -1133,44 +1211,76 @@ int main (int argc, char **argv)
 				error("Unindexed entry found!");
 				break;
 			}
-			extract_resource(input,output,&entry->type[ROMset][entry->index]);
+
+			extract_resource(input, output, &entry->type[ROMset][entry->index]);
 		}
-		writeUint16LE(output,0xF5D1);
+
+		writeUint16LE(output, 0xF5D1);
 		fclose(output);
 	}
-	if (!(output = fopen("00.LFL","wb")))
+
+	if (!(output = fopen("00.LFL", "wb"))) {
 		error("Error: unable to create index file!");
+	}
+
 	notice("Creating 00.LFL...");
-	writeUint16LE(output,0x4643);
-	extract_resource(input,output,&res_globdata[ROMset][0]);
-	for (i = 0; i < (int)sizeof(lfl_index); i++)
-		writeByte(output,((uint8 *)&lfl_index)[i]);
+	writeUint16LE(output, 0x4643);
+	extract_resource(input, output, &res_globdata[ROMset][0]);
+
+	for (i = 0; i < (int)sizeof(lfl_index); i++) {
+		writeByte(output, ((uint8 *)&lfl_index)[i]);
+	}
+
 	fclose(output);
-#else	/* !MAKE_LFLS */
-	dump_resource(input,"globdata.dmp",0,&res_globdata[ROMset][0]);
-	for (i = 0; i < 40; i++)
-		dump_resource(input,"roomgfx-%d.dmp",i,&res_roomgfx[ROMset][i]);
-	for (i = 0; i < 2; i++)
-		dump_resource(input,"costumegfx-%d.dmp",i,&res_costumegfx[ROMset][i]);
-	for (i = 0; i < 55; i++)
-		dump_resource(input,"room-%d.dmp",i,&res_rooms[ROMset][i]);
-	for (i = 0; i < 179; i++)
-		dump_resource(input,"script-%d.dmp",i,&res_scripts[ROMset][i]);
-	for (i = 0; i < 82; i++)
-		dump_resource(input,"sound-%d.dmp",i,&res_sounds[ROMset][i]);
-	for (i = 0; i < 25; i++)
-		dump_resource(input,"costume-%d.dmp",i,&res_costumes[ROMset][i]);
-	for (i = 0; i < 2; i++)
-		dump_resource(input,"sprpals-%d.dmp",i,&res_sprpals[ROMset][i]);
-	for (i = 0; i < 2; i++)
-		dump_resource(input,"sprdata-%d.dmp",i,&res_sprdata[ROMset][i]);
-	for (i = 0; i < 2; i++)
-		dump_resource(input,"sprlens-%d.dmp",i,&res_sprlens[ROMset][i]);
-	for (i = 0; i < 2; i++)
-		dump_resource(input,"sprdesc-%d.dmp",i,&res_sprdesc[ROMset][i]);
-	for (i = 0; i < 2; i++)
-		dump_resource(input,"sproffs-%d.dmp",i,&res_sproffs[ROMset][i]);
-#endif	/* MAKE_LFLS */
+#else /* !MAKE_LFLS */
+	dump_resource(input, "globdata.dmp", 0, &res_globdata[ROMset][0]);
+
+	for (i = 0; i < 40; i++) {
+		dump_resource(input, "roomgfx-%d.dmp", i, &res_roomgfx[ROMset][i]);
+	}
+
+	for (i = 0; i < 2; i++) {
+		dump_resource(input, "costumegfx-%d.dmp", i, &res_costumegfx[ROMset][i]);
+	}
+
+	for (i = 0; i < 55; i++) {
+		dump_resource(input, "room-%d.dmp", i, &res_rooms[ROMset][i]);
+	}
+
+	for (i = 0; i < 179; i++) {
+		dump_resource(input, "script-%d.dmp", i, &res_scripts[ROMset][i]);
+	}
+
+	for (i = 0; i < 82; i++) {
+		dump_resource(input, "sound-%d.dmp", i, &res_sounds[ROMset][i]);
+	}
+
+	for (i = 0; i < 25; i++) {
+		dump_resource(input, "costume-%d.dmp", i, &res_costumes[ROMset][i]);
+	}
+
+	for (i = 0; i < 2; i++) {
+		dump_resource(input, "sprpals-%d.dmp", i, &res_sprpals[ROMset][i]);
+	}
+
+	for (i = 0; i < 2; i++) {
+		dump_resource(input, "sprdata-%d.dmp", i, &res_sprdata[ROMset][i]);
+	}
+
+	for (i = 0; i < 2; i++) {
+		dump_resource(input, "sprlens-%d.dmp", i, &res_sprlens[ROMset][i]);
+	}
+
+	for (i = 0; i < 2; i++) {
+		dump_resource(input, "sprdesc-%d.dmp", i, &res_sprdesc[ROMset][i]);
+	}
+
+	for (i = 0; i < 2; i++) {
+		dump_resource(input, "sproffs-%d.dmp", i, &res_sproffs[ROMset][i]);
+	}
+
+#endif /* MAKE_LFLS */
+
 	notice("All done!");
 
 	return 0;

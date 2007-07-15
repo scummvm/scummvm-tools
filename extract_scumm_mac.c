@@ -26,8 +26,7 @@
 /* this makes extract_scumm_mac convert extracted file names to lower case */
 #define CHANGECASE
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	FILE *ifp, *ofp;
 	unsigned long file_record_off, file_record_len;
 	unsigned long file_off, file_len;
@@ -39,15 +38,15 @@ int main(int argc, char *argv[])
 	int j;
 
 	if (argc != 2) {
-		fputs("error: you must specify the mac data file on the command line.\n", stderr);
-		fputs(" i.e. % extract_scumm_mac \"Sam & Max Demo Data\"\n", stderr);
-		fputs("\nA note on usage. Some Lucas Arts CDs appear to contains only an application.\n", stderr);
-		fputs("They actually contain a seperate data file as an invisible file.\n", stderr);
+		printf("nUsage: %s <file>\n", argv[0]);
+		printf("\nNote: Some Lucas Arts CDs appear to contains only an application.\n");
+		printf("They actually contain a seperate data file as an invisible file.\n");
 
-		exit(1);
+		exit(2);
 	}
 
 	data_file_name = argv[1];
+
 	if ((ifp = fopen(data_file_name, "rb")) == NULL) {
 		error("Could not open \'%s\'.", data_file_name);
 	}
@@ -78,6 +77,7 @@ int main(int argc, char *argv[])
 			fclose(ifp);
 			error("Seek error.");
 		}
+
 		file_off = readUint32BE(ifp);
 		file_len = readUint32BE(ifp);
 		fread(file_name, 0x20, 1, ifp);
@@ -92,21 +92,25 @@ int main(int argc, char *argv[])
 		 * file systems) change the file name to lowercase.
 		 *
 		 * if i ever add the ability to pass flags on the command
-		 * line, i will make this optional, but i really don't 
+		 * line, i will make this optional, but i really don't
 		 * see the point to bothering
 		 */
 		for (j = 0; j < 0x20; j++) {
-			if (!file_name[j])
+			if (!file_name[j]) {
 				break;
+			}
+
 #ifdef CHANGECASE
 			file_name[j] = tolower(file_name[j]);
 #endif
 		}
+
 		if (j == 0x20) {
 			file_name[0x1f] = 0;
 			fprintf(stderr, "\nwarning: \'%s\'. file name not null terminated.\n", file_name);
 			fprintf(stderr, "data file \'%s\' may be not a file extract_scumm_mac can extract.\n", data_file_name);
 		}
+
 		printf(", saving as \'%s\'\n", file_name);
 
 		/* Consistency check. make sure the file data is in the file */
@@ -120,11 +124,14 @@ int main(int argc, char *argv[])
 			fclose(ifp);
 			error("Seek error.");
 		}
+
 		ofp = fopen(file_name, "wb");
+
 		if (!(buf = malloc(file_len))) {
 			fclose(ifp);
 			error("Could not allocate %ld bytes of memory.", file_len);
 		}
+
 		fread(buf, 1, file_len, ifp);
 		fwrite(buf, 1, file_len, ofp);
 		fclose(ofp);
