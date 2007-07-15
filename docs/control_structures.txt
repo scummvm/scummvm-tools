@@ -1,0 +1,135 @@
+                    High Level Control Structures
+                    =============================
+
+Control structures have been classified according to their
+complexity and based on an initial classification by Kosaraju it was
+determined which classes were reducible to which other classes. An
+expansion on this work by Ledgard and Marcotty was used to create a
+hierarchical ordering of classes based on their semantical
+reducibility.
+
+
+                           Basic structures
+                           ----------------
+
+1. Action:                      single basic block
+
+2. Composition:                 sequence of two structures
+
+3. Conditional:                 if p then s1 else s2;
+                                s1, s2 structures, p predicate
+
+4. Pre-tested loop:             while p do s, s structure, p predicate
+
+5. Single branch conditional:   if p then s, s structure, p predicate
+
+6. N-way conditional:           case p of
+                                 1 : s1
+                                 2 : s2
+                                 ...
+                                 n : sn
+                                end case
+
+                                s1, ..., sn structures, p predicate
+
+7. Post-tested loop:            repeat s until _, s structure
+
+8. Multiexit loop:              while p1 do
+                                      s1
+                                      if p2 then exit
+                                      s2
+                                      if p3 then exit
+                                      ...
+                                      if pn then exit
+                                      sn
+                                end while
+
+                                s1, ..., sn structures
+                                p1, ..., pn predicates
+
+9. Endless loop:                loop s end, s structure
+
+10. Multilevel exit:            exit(i)
+                                terminates i enclosing endless loops
+
+11: Multilevel cycle:           cycle(i)
+                                re-executes i-th enclosing endless
+                                loop
+
+12: Goto:                       unconditional control transfer
+
+
+                               Classes
+                               -------
+
+D (Dijkstra)                                    D = {1,2,3,4}
+
+D' (extension of D structures)                  D' = {1,2,3,4,5,6,7}
+
+BJn (Böhm and Jacopini,
+     n := maximal number of predicates in a
+          multiexit loop)                       BJn = {1,2,3,8}
+
+REn (Repeat-End,
+     n := maximum number of exit levels)        REn = {1,2,3,9,10}
+
+RECn (RE with cycle(i) structures,
+      n := number of levels)                    RECn = {1,2,3,9,10,11}
+
+DREn (RE and Do-While loops,
+      n := maximum number of enclosing levels
+           to exit)                             DREn = {1,2,3,4,9,10}
+
+DRECn (DRE and cycle(i) structures,
+       n := maximum number of enclosing endless
+            loops)                              DRECn = {1,2,3,4,9,
+                                                         10,11}
+
+GPn (any structure with one-in, one-out
+     substructures with at most n different
+     predicates)                                GPn = {1..7,9}
+
+L (any well-formed structure, no restructions
+   on number of predicates, actions, transfer
+   of control -> goto statements allowed)       L = {1..12}
+
+
+Definition:
+
+ Let s1 and s2 be two structures,
+ s1 is a semantical conversion of s2 iff
+
+  - for every input, s2 computes the same function as s1
+  - the primitive actions and predicates of s2 are
+    precsicely those of s1
+
+
+               Hierarchy based on semantical conversion
+               ----------------------------------------
+
+(classes higher up in the hierarchy are a semantic conversion of the
+ lower classes) 
+
+        REinf = RECinf = DREinf = DRECinf = GPinf = L
+              |                 |
+              |           .DREn = DRECn
+              |     .....       .
+          REn = RECn            .
+              .                 .
+              .           .DRE1 = DREC1
+              .     .....
+          RE1 = REC1
+              |
+            BJinf
+              .
+             BJ2
+              |
+       D = D' = BJ1 = GP1
+
+
+                  Generic Set of Control Structures
+                  ---------------------------------
+
+Antipasto structures control flow graphs using the set of generic
+control structures D' + goto = {1,2,3,4,5,6,7,12}.
+REn, RECn, DREn and DRECn can be simulated via the use of goto.
