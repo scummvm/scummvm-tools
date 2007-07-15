@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-15 05:27:08 brx>
+;;; Time-stamp: <2007-07-15 05:39:43 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -29,13 +29,16 @@
                   (print* "    n"
                           n
                           " [label = \""
-                          (quote-string (format "~S"
-                                                (cdr (assq (car (bb-range block))
-                                                       disassembly)))))
+                          (quote-string (format "[~S] ~S"
+                                                (car (bb-range block))
+                                                (cddr (assq (car (bb-range block))
+                                                            disassembly)))))
                   (for-each
                    (lambda (in)
                      (print* "\\l"
-                             (quote-string (format "~S" (cdr (assq in disassembly))))))
+                             (quote-string (format "[~S] ~S"
+                                                   in
+                                                   (cddr (assq in disassembly))))))
                    (cdr (bb-range block)))
                   (print "\""
                          (cond ((zero? (car (bb-range block)))
