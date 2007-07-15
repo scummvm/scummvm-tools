@@ -699,7 +699,7 @@ void convertWAV(char *wavName, char *prefix) {
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <params> <file>\n", exename);
+	printf("\nUsage: %s [params] <file>\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");

@@ -118,7 +118,6 @@ const struct PatchFile patchFiles[] = {
 
 const struct GameVersion *version;
 
-
 void showhelp(char *exename)
 {
 	printf("\nUsage: %s [params] queen.1\n", exename);
@@ -164,13 +163,16 @@ void showhelp(char *exename)
 const struct GameVersion *detectGameVersion(uint32 size) {
 	const struct GameVersion *pgv = gameVersions;
 	int i;
+
 	/* Compressing/rebuiling an Amiga version is not supported */
 	for (i = 0; i < VER_PC_COUNT; ++i, ++pgv) {
 		if (pgv->dataFileSize == size) {
 			return pgv;
 		}
  	}
+
 	printf("Unknown/unsupported FOTAQ version!\n");
+
 	exit(1);
 	return NULL;
 }
@@ -185,17 +187,21 @@ void checkOpen(FILE *fp, const char *filename) {
 void fromFileToFile(FILE *in, FILE *out, uint32 amount) {
 	char fBuf[2048];
 	uint32 numRead;
+
 	while (amount > 0) {
 		numRead = fread(fBuf, 1, amount > 2048 ? 2048 : amount, in);
-		if (numRead <= 0)
+		if (numRead <= 0) {
 			break;
+		}
+
 		amount -= numRead;
 		fwrite(fBuf, 1, numRead, out);
 	}
 }
 
-void createFinalFile(void) {
+void createFinalFile(char *inputPath) {
 	FILE *inTbl, *inData, *outFinal;
+	char tmp[1024];
 	int i;
 	uint32 dataStartOffset;
 	uint32 dataSize;
@@ -204,7 +210,8 @@ void createFinalFile(void) {
 	checkOpen(inTbl, TEMP_TBL);
 	inData = fopen(TEMP_DAT, "rb");
 	checkOpen(inData, TEMP_DAT);
-	outFinal = fopen(FINAL_OUT, "wb");
+	sprintf(tmp, "%s/%s", inputPath, FINAL_OUT);
+	outFinal = fopen(tmp, "wb");
 	checkOpen(outFinal, FINAL_OUT);
 
 	dataStartOffset = fileSize(inTbl) + EXTRA_TBL_HEADER;
@@ -243,13 +250,16 @@ int main(int argc, char *argv[])
 {
 	FILE *inputData, *inputTbl, *outputTbl, *outputData, *tmpFile, *compFile;
 	uint8 compressionType = COMPRESSION_NONE;
+	char *p;
+	char inputPath[768];
+	char tblPath[1024];
 	char tmp[5];
 	int size, i = 1;
 	uint32 prevOffset;
 
-
-	if (argc < 2)
+	if (argc < 2) {
 		showhelp(argv[0]);
+	}
 
 	/* compression mode */
 	compressionType = COMPRESSION_MP3;
@@ -272,19 +282,47 @@ int main(int argc, char *argv[])
 	switch (gCompMode) {
 	case kMP3Mode:
 		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i))
+		if (!process_mp3_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kVorbisMode:
 		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i))
+		if (!process_ogg_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kFlacMode:
 		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i))
+		if (!process_flac_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
+	}
+
+	/* Find the last occurence of '/' or '\'
+	 * Everything before this point is the path
+	 * Everything after this point is the filename
+	 */
+	p = strrchr(argv[argc - 1], '/');
+	if (!p) {
+		p = strrchr(argv[argc - 1], '\\');
+
+		if (!p) {
+			p = argv[argc - 1] - 1;
+		}
+	}
+
+	/* The path is everything before p, unless the file is in the current directory,
+	 * in which case the path is '.'
+	 */
+	if (p < argv[argc - 1]) {
+		strcpy(inputPath, ".");
+	} else {
+		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
 	}
 
 	/* Open input file (QUEEN.1) */
@@ -292,12 +330,14 @@ int main(int argc, char *argv[])
 	checkOpen(inputData, argv[argc-1]);
 
 	/* Open TBL file (QUEEN.TBL) */
-	inputTbl = fopen(INPUT_TBL, "rb");
+	sprintf(tblPath, "%s/%s", inputPath, INPUT_TBL);
+	inputTbl = fopen(tblPath, "rb");
 	checkOpen(inputTbl, INPUT_TBL);
 
 	size = fileSize(inputData);
 	fread(tmp, 1, 4, inputTbl);
 	tmp[4] = '\0';
+
 	if (memcmp(tmp, "QTBL", 4)) {
 		printf("Invalid TBL file!\n");
 		exit(-1);
@@ -307,6 +347,7 @@ int main(int argc, char *argv[])
 		printf("Error: You are using an incorrect (outdated?) version of the queen.tbl file\n");
 		exit(1);
 	}
+
 	version = detectGameVersion(size);
 	fseek(inputTbl, version->tableOffset, SEEK_SET);
 
@@ -347,6 +388,7 @@ int main(int argc, char *argv[])
 
 			fseek(inputData, 2, SEEK_CUR);
 			sbVersion = readUint16LE(inputData);
+
 			switch (sbVersion) {
 			case 104:
 				headerSize = SB_HEADER_SIZE_V104;
@@ -359,6 +401,7 @@ int main(int argc, char *argv[])
 				headerSize = SB_HEADER_SIZE_V104;
 				break;
 			}
+
 			fseek(inputData, headerSize - 4, SEEK_CUR);
 			entry.size -= headerSize;
 
@@ -382,12 +425,15 @@ int main(int argc, char *argv[])
 			/* Non .SB file */
 			bool patched = false;
 			/* Check for external files */
+
 			uint8 j;
 			for (j = 0; j < ARRAYSIZE(patchFiles); ++j) {
 				const struct PatchFile *pf = &patchFiles[j];
+
 				if (version->versionString[1] == pf->lang && strcmp(pf->filename, entry.filename) == 0) {
 					/* XXX patched data files are supposed to be in cwd */
 					FILE *fpPatch = fopen(pf->filename, "rb");
+
 					if (fpPatch) {
 						entry.size = fileSize(fpPatch);
 						printf("Patching entry, new size = %d bytes\n", entry.size);
@@ -395,9 +441,11 @@ int main(int argc, char *argv[])
 						fclose(fpPatch);
 						patched = true;
 					}
+
 					break;
 				}
 			}
+
 			if (!patched) {
 				fromFileToFile(inputData, outputData, entry.size);
 			}
@@ -417,7 +465,7 @@ int main(int argc, char *argv[])
 	fclose(inputData);
 
 	/* Merge the temporary table and temporary datafile to create final file */
-	createFinalFile();
+	createFinalFile(inputPath);
 
 	return 0;
 }

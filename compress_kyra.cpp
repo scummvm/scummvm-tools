@@ -36,11 +36,12 @@ const char *outputExt = 0;
 static CompressMode gCompMode = kMP3Mode;
 
 int main(int argc, char *argv[]) {
-	if (argc < 3)
+	if (argc < 3) {
 		showhelp(argv[0]);
+	}
 
-	char inputFile[256];
-	char outputFile[256];
+	char inputFile[1024];
+	char outputFile[1024];
 	int i = 0;
 
 	/* Compression mode */
@@ -64,34 +65,43 @@ int main(int argc, char *argv[]) {
 	case kMP3Mode:
 		outputExt = OUTPUT_MP3;
 		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc - 2, argv, i))
+		if (!process_mp3_parms(argc - 2, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kVorbisMode:
 		outputExt = OUTPUT_OGG;
 		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc - 2, argv, i))
+		if (!process_ogg_parms(argc - 2, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kFlacMode:
 		outputExt = OUTPUT_FLAC;
 		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc - 2, argv, i))
+		if (!process_flac_parms(argc - 2, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	}
 
 	sprintf(inputFile, "%s/%s", argv[argc - 2], argv[argc - 3]);
 	sprintf(outputFile, "%s/%s", argv[argc - 1], argv[argc - 3]);
 
-	if (scumm_stricmp(inputFile, outputFile) == 0)
+	if (scumm_stricmp(inputFile, outputFile) == 0) {
 		error("infile and outfile are the same file");
+	}
+
 	process(inputFile, outputFile);
+
 	return 0;
 }
 
 static void showhelp(const char *exename) {
-	printf("\nUsage: %s [params] <inputfile> <inputdir> <outputdir>\n", exename);
+	printf("\nUsage: %s [params] <file> <inputdir> <outputdir>\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
@@ -133,26 +143,36 @@ static void showhelp(const char *exename) {
 
 static bool hasSuffix(const char *str, const char *suf) {
 	const int sufSize = strlen(suf);
+
 	int off = strlen(str);
-	if (off < sufSize)
+	if (off < sufSize) {
 		return false;
+	}
+
 	off -= sufSize;
 	printf("'%s'\n", &str[off]);
+
 	return (scumm_stricmp(&str[off], suf) == 0);
 }
 
 static void process(const char *infile, const char *outfile) {
 	PAKFile input, output;
-	if (!input.loadFile(infile, false))
+
+	if (!input.loadFile(infile, false)) {
 		return;
-	if (!output.loadFile(0, false))
+	}
+
+	if (!output.loadFile(0, false)) {
 		return;
+	}
 
 	PAKFile::cFileList *list = input.getFileList();
 	char outputName[32];
+
 	for (; list; list = list->next) {
-		if (!hasSuffix(list->filename, ".VOC"))
+		if (!hasSuffix(list->filename, ".VOC")) {
 			continue;
+		}
 
 		if (list->data[26] != 1) {
 			warning("broken VOC file '%s' skipping it...", list->filename);
@@ -168,8 +188,10 @@ static void process(const char *infile, const char *outfile) {
 		fclose(tempFile);
 
 		char *vocStart = strstr(outputName, ".VOC");
-		for (unsigned int i = 0; i < strlen(outputExt); ++i)
+		for (unsigned int i = 0; i < strlen(outputExt); ++i) {
 			vocStart[i] = outputExt[i];
+		}
+
 		output.addFile(outputName, tempEncoded);
 
 		unlink(TEMPFILE);

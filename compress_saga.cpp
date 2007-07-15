@@ -243,6 +243,7 @@ void writeHeader(FILE* outputFile) {
 	writeByte(outputFile, sampleBits);
 	writeByte(outputFile, sampleStereo);
 }
+
 uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 	uint8 *inputData;
 	Common::File inputFileStream(inputFile);
@@ -311,7 +312,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 	error("Unsupported resourceType %ul\n", currentFileDescription->resourceType);
 }
 
-void sagaEncode(const char *inputFileName) {
+void sagaEncode(const char *inputPath, const char *inputFileName) {
 	char inputFileNameWithExt[256];
 	char outputFileNameWithExt[256];
 	FILE *inputFile;
@@ -324,7 +325,7 @@ void sagaEncode(const char *inputFileName) {
 	Record *inputTable;
 	Record *outputTable;
 
-	sprintf(inputFileNameWithExt, "%s.rsc", inputFileName);
+	sprintf(inputFileNameWithExt, "%s/%s.rsc", inputPath, inputFileName);
 	inputFile = fopen(inputFileNameWithExt, "rb");
 	inputFileSize = fileSize(inputFile);
 	printf("Filesize: %ul\n", inputFileSize);
@@ -356,15 +357,15 @@ void sagaEncode(const char *inputFileName) {
 	// Put offsets of all the records in a table
 	for (i = 0; i < resTableCount; i++) {
 
-	if (!currentFileDescription->swapEndian) {
-		inputTable[i].offset = readUint32LE(inputFile);
-		inputTable[i].size = readUint32LE(inputFile);
-	} else {
-		inputTable[i].offset = readUint32BE(inputFile);
-		inputTable[i].size = readUint32BE(inputFile);
-	}
+		if (!currentFileDescription->swapEndian) {
+			inputTable[i].offset = readUint32LE(inputFile);
+			inputTable[i].size = readUint32LE(inputFile);
+		} else {
+			inputTable[i].offset = readUint32BE(inputFile);
+			inputTable[i].size = readUint32BE(inputFile);
+		}
 
-		 printf("Record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
+		printf("Record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
 
 		if ((inputTable[i].offset > inputFileSize) ||
 		    (inputTable[i].offset + inputTable[i].size > inputFileSize)) {
@@ -374,7 +375,7 @@ void sagaEncode(const char *inputFileName) {
 	}
 	outputTable = (Record*)malloc(resTableCount * sizeof(Record));
 
-	sprintf(outputFileNameWithExt, "%s.cmp", inputFileName);
+	sprintf(outputFileNameWithExt, "%s/%s.cmp", inputPath, inputFileName);
 	outputFile = fopen(outputFileNameWithExt, "wb");
 
 	for (i = 0; i < resTableCount; i++) {
@@ -447,16 +448,20 @@ void showhelp(char *exename) {
 }
 
 int main(int argc, char *argv[]) {
-	int		i;
+	int	i;
+	char *p;
+	char inputPath[768];
 	char *inputFileName;
 	char inputFileNameWithExt[256];
 
-	if (argc < 2)
+	if (argc < 2) {
 		showhelp(argv[0]);
+	}
 
 	/* compression mode */
 	gCompMode = kMP3Mode;
 	i = 1;
+
 	if (strcmp(argv[1], "--mp3") == 0) {
 		gCompMode = kMP3Mode;
 		i++;
@@ -467,46 +472,79 @@ int main(int argc, char *argv[]) {
 		gCompMode = kFlacMode;
 		i++;
 	}
+
 	switch (gCompMode) {
 	case kMP3Mode:
 		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i))
+		if (!process_mp3_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kVorbisMode:
 		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i))
+		if (!process_ogg_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kFlacMode:
 		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i))
+		if (!process_flac_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	}
 
-	i = argc - 1;
-	inputFileName = argv[i];
+	/* Find the last occurence of '/' or '\'
+	 * Everything before this point is the path
+	 * Everything after this point is the filename
+	 */
+	p = strrchr(argv[argc - 1], '/');
+	if (!p) {
+		p = strrchr(argv[argc - 1], '\\');
+
+		if (!p) {
+			p = argv[argc - 1] - 1;
+		}
+	}
+
+	/* The path is everything before p, unless the file is in the current directory,
+	 * in which case the path is '.'
+	 */
+	if (p < argv[argc - 1]) {
+		strcpy(inputPath, ".");
+	} else {
+		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
+	}
+
+	strcpy(inputFileName, p + 1);
+
+	if (strrchr(inputFileName, '.') != NULL) {
+		error("Please specifiy the filename without an extension");
+	}
 
 	// ITE
-	sprintf(inputFileNameWithExt, "%s.rsc", inputFileName);
+	sprintf(inputFileNameWithExt, "%s/%s.rsc", inputPath, inputFileName);
+
 	if (detectFile(inputFileNameWithExt)) {
-		sagaEncode(inputFileName);
+		sagaEncode(inputPath, inputFileName);
 	} else {
 		// IHNM
-		sprintf(inputFileNameWithExt, "%s.res", inputFileName);
+		sprintf(inputFileNameWithExt, "%s/%s.res", inputPath, inputFileName);
 		if (detectFile(inputFileNameWithExt)) {
-			sagaEncode(inputFileName);
+			sagaEncode(inputPath, inputFileName);
 		} else {
 			// Check for "inherit the earth voices"
 			if (detectFile("inherit the earth voices")) {
-				sagaEncode("inherit the earth voices");
+				sagaEncode(inputPath, "inherit the earth voices");
 			} else {
 				// Check for MacBinary
-				sprintf(inputFileNameWithExt, "%s.bin", inputFileName);
+				sprintf(inputFileNameWithExt, "%s/%s.bin", inputPath, inputFileName);
 				if (detectFile(inputFileNameWithExt)) {
 					isSigned = false;
-					sagaEncode(inputFileName);
+					sagaEncode(inputPath, inputFileName);
 				}
 			}
 		}

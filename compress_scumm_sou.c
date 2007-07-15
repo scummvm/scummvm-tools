@@ -41,17 +41,19 @@ static FILE *input, *output_idx, *output_snd;
 static CompressMode gCompMode = kMP3Mode;
 
 
-void end_of_file(void)
+void end_of_file(char *inputPath)
 {
 	FILE *in;
 	int idx_size = ftell(output_idx);
 	size_t size;
+	char tmp[1024];
 	char buf[2048];
 
 	fclose(output_snd);
 	fclose(output_idx);
 
-	output_idx = fopen(outputName , "wb");
+	sprintf(tmp, "%s/%s", inputPath, outputName);
+	output_idx = fopen(tmp , "wb");
 	writeUint32BE(output_idx, (uint32)idx_size);
 
 	in = fopen(TEMP_IDX, "rb");
@@ -84,7 +86,7 @@ void append_byte(int size, char buf[])
 	buf[i] = fgetc(input);
 }
 
-void get_part(void)
+void get_part(char *inputPath)
 {
 	FILE *f;
 	uint32 tot_size;
@@ -102,12 +104,16 @@ void get_part(void)
 	while (memcmp(buf, "VCTL", 4)&&memcmp(buf, "VTTL", 4)) {
 		pos++;
 		append_byte(4, buf);
-		if (feof(input))
-			end_of_file();
+
+		if (feof(input)) {
+			end_of_file(inputPath);
+		}
 	}
+
 	tags = readUint32BE(input);
-	if (tags < 8)
+	if (tags < 8) {
 		exit(-1);
+	}
 	tags -= 8;
 
 	writeUint32BE(output_idx, (uint32)pos);
@@ -187,22 +193,27 @@ void showhelp(char *exename)
 
 int main(int argc, char *argv[])
 {
+	char *p;
+	char inputPath[768];
+	char tmp[1024];
 	char buf[2048];
 	int i;
-	if (argc < 2)
+
+	if (argc < 2) {
 		showhelp(argv[0]);
+	}
+
 	/* Compression mode */
 	gCompMode = kMP3Mode;
 	i = 1;
+
 	if (strcmp(argv[1], "--mp3") == 0) {
 		gCompMode = kMP3Mode;
 		i++;
-	}
-	else if (strcmp(argv[1], "--vorbis") == 0) {
+	} else if (strcmp(argv[1], "--vorbis") == 0) {
 		gCompMode = kVorbisMode;
 		i++;
-	}
-	else if (strcmp(argv[1], "--flac") == 0) {
+	} else if (strcmp(argv[1], "--flac") == 0) {
 		gCompMode = kFlacMode;
 		i++;
 	}
@@ -211,26 +222,52 @@ int main(int argc, char *argv[])
 	case kMP3Mode:
 		outputName = OUTPUT_MP3;
 		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i))
+		if (!process_mp3_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kVorbisMode:
 		outputName = OUTPUT_OGG;
 		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i))
+		if (!process_ogg_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kFlacMode:
 		outputName = OUTPUT_FLAC;
 		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i))
+		if (!process_flac_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	}
 
+	/* Find the last occurence of '/' or '\'
+	 * Everything before this point is the path
+	 * Everything after this point is the filename
+	 */
+	p = strrchr(argv[argc - 1], '/');
+	if (!p) {
+		p = strrchr(argv[argc - 1], '\\');
 
-	i = argc - 1;
-	input = fopen(argv[i], "rb");
+		if (!p) {
+			p = argv[argc - 1] - 1;
+		}
+	}
+
+	/* The path is everything before p, unless the file is in the current directory,
+	 * in which case the path is '.'
+	 */
+	if (p < argv[argc - 1]) {
+		strcpy(inputPath, ".");
+	} else {
+		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
+	}
+
+	input = fopen(argv[argc - 1], "rb");
 	if (!input) {
 		printf("Cannot open file: %s\n", argv[i]);
 		exit(-1);
@@ -253,7 +290,10 @@ int main(int argc, char *argv[])
 		printf("Bad SOU\n");
 		exit(-1);
 	}
-	while (1)
-		get_part();
+
+	while (1) {
+		get_part(inputPath);
+	}
+
 	return 0;
 }

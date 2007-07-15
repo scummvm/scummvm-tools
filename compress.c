@@ -687,9 +687,9 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 int process_mp3_parms(int argc, char *argv[], int i) {
 	for (; i < argc; i++) {
 		if (strcmp(argv[i], "--vbr") == 0) {
-			encparms.abr=0;
+			encparms.abr = 0;
 		} else if (strcmp(argv[i], "--abr") == 0) {
-			encparms.abr=1;
+			encparms.abr = 1;
 		} else if (strcmp(argv[i], "-b") == 0) {
 			encparms.minBitr = atoi(argv[i + 1]);
 
@@ -697,7 +697,7 @@ int process_mp3_parms(int argc, char *argv[], int i) {
 				encparms.minBitr -= encparms.minBitr % 8;
 			}
 
-			if (encparms.minBitr >160) {
+			if (encparms.minBitr > 160) {
 				encparms.minBitr = 160;
 			}
 

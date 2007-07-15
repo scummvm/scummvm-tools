@@ -24,7 +24,7 @@
 #include "zlib.h"
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s [--vorbis] [encoder params] <inputfile> <inputdir> <outputdir>\n", exename);
+	printf("\nUsage: %s [--vorbis] [params] <file> <inputdir> <outputdir>\n", exename);
 	printf("\nMP3 mode params:\n");
 	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
 	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);

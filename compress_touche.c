@@ -34,6 +34,7 @@
 
 static CompressMode g_mode = kMP3Mode;
 static const char *g_output_filename = OUTPUT_MP3;
+static const char *g_output_directory = NULL;
 static const char *g_input_directory = NULL;
 
 static uint32 input_OBJ_offs[OBJ_HDR_LEN];
@@ -61,9 +62,11 @@ static uint32 compress_sound_data_file(uint32 current_offset, FILE *output, FILE
 		} else {
 			fseek(input, offs_table[i], SEEK_SET);
 			fread(buf, 1, 8, input);
+
 			if (memcmp(buf, "Creative", 8) != 0) {
 				error("Invalid VOC data found");
 			}
+
 			printf("VOC found (pos = %d) :\n", offs_table[i]);
 			fseek(input, 18, SEEK_CUR);
 			extractAndEncodeVOC(TEMP_RAW, input, g_mode);
@@ -73,11 +76,14 @@ static uint32 compress_sound_data_file(uint32 current_offset, FILE *output, FILE
 			if (!temp) {
 				error("Cannot open file '%s' for reading", tempEncoded);
 			}
+
 			size_table[i] = 0;
+
 			while ((size = fread(buf, 1, 2048, temp)) > 0) {
 				fwrite(buf, 1, size, output);
 				size_table[i] += size;
 			}
+
 			fclose(temp);
 			offs_table[i] = current_offset;
 			current_offset += size_table[i];
@@ -97,14 +103,15 @@ static uint32 compress_sound_data_file(uint32 current_offset, FILE *output, FILE
 
 static void compress_sound_data() {
 	int i;
-	char filepath[512];
+	char filepath[1024];
 	FILE *output, *input;
 	uint32 current_offset;
 	uint32 offsets_table[MAX_OFFSETS];
 
-	output = fopen(g_output_filename, "wb");
+	sprintf(filepath, "%s/%s", g_output_directory, g_output_filename);
+	output = fopen(filepath, "wb");
 	if (!output) {
-		error("Cannot open file '%s' for writing", g_output_filename);
+		error("Cannot open file '%s' for writing", filepath);
 	}
 
 	writeUint16LE(output, 1); /* current version */
@@ -125,6 +132,7 @@ static void compress_sound_data() {
 	if (!input) {
 		error("Cannot open file 'OBJ' for reading");
 	}
+
 	offsets_table[0] = current_offset;
 	current_offset = compress_sound_data_file(current_offset, output, input, input_OBJ_offs, input_OBJ_size, OBJ_HDR_LEN);
 	fclose(input);
@@ -133,6 +141,7 @@ static void compress_sound_data() {
 	/* process Vxx files */
 	for (i = 1; i < MAX_OFFSETS; ++i) {
 		sprintf(filepath, "%s/V%d", g_input_directory, i);
+
 		input = fopen(filepath, "rb");
 		if (input) {
 			offsets_table[i] = current_offset;
@@ -158,7 +167,7 @@ static void compress_sound_data() {
 }
 
 static void showhelp(const char *exename) {
-	printf("\nUsage: %s [params] <inputdir>\n", exename);
+	printf("\nUsage: %s [params] <inputdir> <outputdir>\n", exename);
 
 	printf("\nParams:\n");
 
@@ -220,28 +229,34 @@ int main(int argc, char *argv[]) {
 		++i;
 	}
 
-	g_input_directory = argv[argc - 1];
+	g_input_directory = argv[argc - 2];
+	g_output_directory = argv[argc - 1];
 
 	switch (g_mode) {
 	case kMP3Mode:
 		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i)) {
+		if (!process_mp3_parms(argc - 1, argv, i)) {
 			showhelp(argv[0]);
 		}
+
 		break;
 	case kVorbisMode:
 		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i)) {
+		if (!process_ogg_parms(argc - 1, argv, i)) {
 			showhelp(argv[0]);
 		}
+
 		break;
 	case kFlacMode:
 		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i)) {
+		if (!process_flac_parms(argc - 1, argv, i)) {
 			showhelp(argv[0]);
 		}
+
 		break;
 	}
+
+
 
 	compress_sound_data();
 	return 0;
