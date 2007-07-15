@@ -174,6 +174,7 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	bottomPanel->SetSizer(bottomPanelSizer);
 
 	_compressionOptionsPanel = new CompressionOptions(bottomPanel);
+	_startButton = new wxButton(bottomPanel, kStartButton, "START");
 	_toolOutput = new wxTextCtrl(bottomPanel, -1, "", wxDefaultPosition, wxSize(-1, 300), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
 
 	topPanelSizer->Add(_toolChooserPanel, 1, wxEXPAND);
@@ -181,6 +182,7 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	topPanelSizer->Add(_compressionTypePanel, 1, wxEXPAND);
 	topPanelSizer->Add(_outputPanel, 4, wxEXPAND);
 	bottomPanelSizer->Add(_compressionOptionsPanel, 0, wxALIGN_CENTER | wxBOTTOM, 5);
+	bottomPanelSizer->Add(_startButton, 0, wxEXPAND | wxBOTTOM, 5);
 	bottomPanelSizer->Add(_toolOutput, 1, wxEXPAND);
 
 	sizer->Add(topPanel, 0, wxEXPAND);

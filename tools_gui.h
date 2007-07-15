@@ -97,11 +97,13 @@ public:
 	IOChooser *_inputPanel;
 	IOChooser *_outputPanel;
 	CompressionOptions *_compressionOptionsPanel;
+	wxButton *_startButton;
 	wxTextCtrl *_toolOutput;
 
 	enum {
 		kToolChoice,
-		kCompressionChoice
+		kCompressionChoice,
+		kStartButton
 	} kEventID;
 
 	void OnToolChange(wxCommandEvent &event);
