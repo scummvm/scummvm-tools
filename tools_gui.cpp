@@ -25,6 +25,7 @@
 IMPLEMENT_APP(ToolsGui)
 
 BEGIN_EVENT_TABLE( CompressionPanel, wxPanel )
+	EVT_CHOICE(kToolChoice, CompressionPanel::OnToolChange)
 	EVT_CHOICE(kCompressionChoice, CompressionPanel::OnCompressionChange)
 END_EVENT_TABLE()
 
@@ -34,7 +35,7 @@ bool ToolsGui::OnInit() {
 	frame->Show();
 	SetTopWindow(frame);
 
-	return true;	
+	return true;
 }
 
 MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, -1, title) {
@@ -42,13 +43,12 @@ MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, -1, title
 	this->SetSizer(mainSizer);
 
 	wxNotebook *mainNotebook = new wxNotebook(this, -1);
-	wxPanel *extractionTools = new wxPanel(mainNotebook);
+
 	CompressionPanel *compressionTools = new CompressionPanel(mainNotebook);
+	wxPanel *extractionTools = new wxPanel(mainNotebook);
 	wxPanel *scriptTools = new wxPanel(mainNotebook);
-	wxPanel *encoderTools = new wxPanel(mainNotebook);
 
 	mainNotebook->AddPage(compressionTools, "Compression", false, -1);
-	mainNotebook->AddPage(encoderTools, "Encoder", false, -1);
 	mainNotebook->AddPage(extractionTools, "Extraction", false, -1);
 	mainNotebook->AddPage(scriptTools, "Script", false, -1);
 
@@ -67,13 +67,14 @@ DropDownBox::DropDownBox(wxWindow *parent, wxWindowID id, wxString title, int nu
 	sizer->Add(box, 1, wxEXPAND);
 }
 
-IOChooser::IOChooser(wxWindow *parent, wxString title, wxString defaultPath) : wxPanel(parent) {
+IOChooser::IOChooser(wxWindow *parent, wxString title, wxString defaultPath, bool isFileChooser) : wxPanel(parent) {
 	wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
 	this->SetSizer(sizer);
 
 	wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, this, title);
 	_text = new wxTextCtrl(this, -1, defaultPath);
 	_browse = new wxButton(this, -1, "Browse");
+	_isFileChooser = isFileChooser;
 
 	/* The button looks like it is shifted 2 pixels down from the text control
 	 * so we simply pad the top by -2
@@ -87,7 +88,7 @@ IOChooser::IOChooser(wxWindow *parent, wxString title, wxString defaultPath) : w
 CompressionOptions::CompressionOptions(wxWindow *parent) : wxPanel(parent) {
 	wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
 	this->SetSizer(sizer);
-	
+
 	wxPanel *grid = new wxPanel(this);
 	wxGridSizer *gridSizer = new wxGridSizer(5, 0, 10);
 	grid->SetSizer(gridSizer);
@@ -148,7 +149,7 @@ CompressionOptions::CompressionOptions(wxWindow *parent) : wxPanel(parent) {
 
 	wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, this, "Compression Options");
 	box->Add(grid, 0, wxEXPAND);
-	
+
 	sizer->Add(box);
 }
 
@@ -162,10 +163,10 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	topPanelSizer->AddGrowableCol(1);
 	topPanel->SetSizer(topPanelSizer);
 
-	_toolChooserPanel = new DropDownBox((wxWindow *)topPanel, -1, "Choose Tool", kNumCompressionTools, kCompressionToolNames);
-	_inputPanel = new IOChooser(topPanel, "File Input", "");
+	_toolChooserPanel = new DropDownBox((wxWindow *)topPanel, kToolChoice, "Choose Tool", kNumCompressionTools, kCompressionToolNames);
+	_inputPanel = new IOChooser(topPanel, "Input", "", true);
 	_compressionTypePanel = new DropDownBox(topPanel, kCompressionChoice, "Choose Compression", kNumCompressionTypes, kCompressionTypeNames);
-	_outputPanel = new IOChooser(topPanel, "File Output", "");
+	_outputPanel = new IOChooser(topPanel, "Output", "", true);
 
 	/* Bottom Panel */
 	wxPanel *bottomPanel = new wxPanel(this);
@@ -185,14 +186,79 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	sizer->Add(topPanel, 0, wxEXPAND);
 	sizer->Add(bottomPanel, 1, wxEXPAND);
 
-	/* Select the first tool then simulate selecting MP3 to set up
-	 * the compression options
-	 */
+	/* Simulate selecting the first tool and MP3 to set up the compression options */
 	_toolChooserPanel->_choice->SetSelection(0);
-	_compressionTypePanel->_choice->SetSelection(0);
+	wxCommandEvent toolEvent = wxCommandEvent(wxEVT_COMMAND_CHOICE_SELECTED, kToolChoice);
+	this->OnToolChange(toolEvent);
 
-	wxCommandEvent temp = wxCommandEvent(wxEVT_COMMAND_CHOICE_SELECTED, kCompressionChoice);
-	this->OnCompressionChange(temp);
+	_compressionTypePanel->_choice->SetSelection(0);
+	wxCommandEvent compressionEvent = wxCommandEvent(wxEVT_COMMAND_CHOICE_SELECTED, kCompressionChoice);
+	this->OnCompressionChange(compressionEvent);
+}
+
+void CompressionPanel::OnToolChange(wxCommandEvent &event) {
+	wxString selectedTool = this->_toolChooserPanel->_choice->GetStringSelection();
+
+	this->_inputPanel->_browse->Enable(true);
+	this->_inputPanel->_text->Enable(true);
+	this->_outputPanel->_isFileChooser = false;
+
+	if (selectedTool == "compress_agos") {
+		this->_inputPanel->_isFileChooser = true;
+		this->_outputPanel->_browse->Enable(false);
+		this->_outputPanel->_text->Enable(false);
+	} else if (selectedTool == "compress_agos (MAC)") {
+		this->_inputPanel->_isFileChooser = false;
+		this->_outputPanel->_browse->Enable(false);
+		this->_outputPanel->_text->Enable(false);
+	} else if (selectedTool == "compress_kyra") {
+		this->_inputPanel->_isFileChooser = true;
+		this->_outputPanel->_browse->Enable(true);
+		this->_outputPanel->_text->Enable(true);
+	} else if (selectedTool == "compress_queen") {
+		this->_inputPanel->_isFileChooser = true;
+		this->_outputPanel->_browse->Enable(false);
+		this->_outputPanel->_text->Enable(false);
+	} else if (selectedTool == "compress_saga") {
+		this->_inputPanel->_isFileChooser = true;
+		this->_outputPanel->_browse->Enable(false);
+		this->_outputPanel->_text->Enable(false);
+	} else if (selectedTool == "compress_scumm_bun") {
+		this->_inputPanel->_isFileChooser = true;
+		this->_outputPanel->_browse->Enable(true);
+		this->_outputPanel->_text->Enable(true);
+	} else if (selectedTool == "compress_scumm_san") {
+		this->_inputPanel->_isFileChooser = true;
+		this->_outputPanel->_browse->Enable(true);
+		this->_outputPanel->_text->Enable(true);
+	} else if (selectedTool == "compress_scumm_sou") {
+		this->_inputPanel->_isFileChooser = true;
+		this->_outputPanel->_browse->Enable(false);
+		this->_outputPanel->_text->Enable(false);
+	} else if (selectedTool == "compress_sword1") {
+		this->_inputPanel->_isFileChooser = false;
+		this->_outputPanel->_browse->Enable(false);
+		this->_outputPanel->_text->Enable(false);
+	} else if (selectedTool == "compress_sword2") {
+		this->_inputPanel->_isFileChooser = true;
+		this->_outputPanel->_browse->Enable(false);
+		this->_outputPanel->_text->Enable(false);
+	} else if (selectedTool == "compress_touche") {
+		this->_inputPanel->_isFileChooser = false;
+		this->_outputPanel->_browse->Enable(true);
+		this->_outputPanel->_text->Enable(true);
+	} else if (selectedTool == "encode_dxa") {
+		this->_inputPanel->_isFileChooser = true;
+		this->_outputPanel->_browse->Enable(false);
+		this->_outputPanel->_text->Enable(false);
+	} else {
+		this->_inputPanel->_browse->Enable(false);
+		this->_inputPanel->_text->Enable(false);
+		this->_inputPanel->_isFileChooser = false;
+		this->_outputPanel->_browse->Enable(false);
+		this->_outputPanel->_text->Enable(false);
+		this->_outputPanel->_isFileChooser = false;
+	}
 }
 
 void CompressionPanel::OnCompressionChange(wxCommandEvent &event) {

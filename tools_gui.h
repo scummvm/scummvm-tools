@@ -25,8 +25,8 @@
 #include <wx/statbox.h>
 #include <wx/textctrl.h>
 
-#define kNumCompressionTools 10
-wxString kCompressionToolNames[10] = {"compress_agos", "compress_kyra", "compress_queen",  "compress_saga",  "compress_scumm_bun",  "compress_scumm_san",  "compress_scumm_sou",  "compress_sword1",  "compress_sword2",  "compress_touche"};
+#define kNumCompressionTools 12
+wxString kCompressionToolNames[12] = {"compress_agos", "compress_agos (MAC)", "compress_kyra", "compress_queen",  "compress_saga",  "compress_scumm_bun",  "compress_scumm_san",  "compress_scumm_sou",  "compress_sword1",  "compress_sword2",  "compress_touche", "encode_dxa"};
 
 #define kNumCompressionTypes 3
 wxString kCompressionTypeNames[3] = {"MP3", "Vorbis", "FLAC"};
@@ -65,10 +65,11 @@ public:
 
 class IOChooser : public wxPanel {
 public:
-	IOChooser(wxWindow *parent, wxString title, wxString defaultPath);
+	IOChooser(wxWindow *parent, wxString title, wxString defaultPath, bool isFileChooser);
 
 	wxTextCtrl *_text;
 	wxButton *_browse;
+	bool _isFileChooser;
 };
 
 class CompressionOptions : public wxPanel {
@@ -99,9 +100,11 @@ public:
 	wxTextCtrl *_toolOutput;
 
 	enum {
+		kToolChoice,
 		kCompressionChoice
 	} kEventID;
 
+	void OnToolChange(wxCommandEvent &event);
 	void OnCompressionChange(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
