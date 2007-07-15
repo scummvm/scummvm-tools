@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-15 05:39:43 brx>
+;;; Time-stamp: <2007-07-15 06:16:24 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -48,32 +48,30 @@
                                (else "]")))))
               nodes)
     (newline)
-    (if intervals
-        (for-each
-         (lambda (interval iter)
-           (let ((extern '()))
-             (print "subgraph cluster" (car interval) " {")
-             (print "    label = \"I(" iter ")\"")
-             (for-each
-              (lambda (i)
-                (receive (intern ext)
-                    (partition (cut member <> interval)
-                               (map second ((g 'out-edges) i)))
-                  (for-each (lambda (ij)
-                              (print "    n" i " -> n" ij))
-                            intern)
-                  (set! extern (append extern (map (cut cons i <>) ext)))))
-              interval)
-             (print "}")
-             (for-each (lambda (e)
-                         (print "    n" (car e) " -> n" (cdr e)))
-                       extern)))
+    (when intervals
+      (for-each
+       (lambda (interval iter)
+         (print "subgraph cluster" (car interval) " {")
+         (print "    label = \"I(" iter ")\"")
+         (for-each
+          (lambda (i)
+            (print "    n" i)
+            #;
+            (receive (intern ext)
+            (partition (cut member <> interval)
+            (map second ((g 'out-edges) i)))
+            (for-each (lambda (ij)
+            (print "    n" i " -> n" ij))
+            intern)
+            (set! extern (append extern (map (cut cons i <>) ext)))))
+            interval)
+          (print "}"))
          intervals
-         (list-tabulate (length intervals) identity))
-        (for-each (lambda (e)
-                    (match-let (((i j _) e))
-                      (print "    n" i " -> n" j)))
-                  ((g 'edges)))))
+         (list-tabulate (length intervals) identity))))
+  (for-each (lambda (e)
+              (match-let (((i j _) e))
+                (print "    n" i " -> n" j)))
+            ((g 'edges)))
   (print "}"))
 
 (define (remove-isolated! g)
