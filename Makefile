@@ -32,7 +32,7 @@ descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
 desword2$(EXEEXT): desword2.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-antipasto$(EXEEXT): antipasto.scm util.scm cfgg.scm
+antipasto$(EXEEXT): antipasto.scm util.scm cfgg.scm graph.scm
 	csc $< -o $@ -postlude [main]
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
