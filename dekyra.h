@@ -29,7 +29,7 @@
 typedef unsigned int uint;
 
 struct OpcodeEntry {
-	uint16 opcode;	
+	uint16 opcode;
 	const char *name;
 };
 
@@ -50,23 +50,23 @@ struct ScriptData {
 	byte *text;
 	int numStrings;
 	int textChunkSize;
-	
+
 	byte *data;
 	int dataChunkSize;
-	
+
 	byte *ordr;
 	int validORDRFunctions;
 	int ordrChunkSize;
-	
+
 	OpcodeEntry *opcodes;
 	int opcodeSize;
-	
+
 	// trace information
 	uint16 curOffset;
 
 	int numFunctions;
 	Function functions[MAX_FUNCTIONS];
-	
+
 	Function *getFunction(uint16 startOff) {
 		for (int i = 0; i < numFunctions; ++i) {
 			if (functions[i].startOffset == startOff)
@@ -93,7 +93,7 @@ public:
 
 	bool loadScript(const char *filename, ScriptData *data, OpcodeEntry *opcodes, int opcodeSize);
 	void unloadScript(ScriptData *data);
-	
+
 	void printTextArea(ScriptData *dataPtr, const char *filename);
 	void processScriptTrace(ScriptData *dataPtr);
 	void decodeScript(ScriptData *dataPtr);

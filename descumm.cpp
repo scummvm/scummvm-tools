@@ -37,14 +37,14 @@
   code, because unlike a "head if/while", we don't know we are inside a loop until its
   end. This means a problem for indention, and when outputing the initial "do {".
   To solve this, we could implement some sort of look ahead; but that would be very
-  complicated, because essentially we have to perform full parsing of the data anyway. 
+  complicated, because essentially we have to perform full parsing of the data anyway.
   Instead of doing multiple look aheads, one could also do a 2 pass descumming:
   In pass 1, we find all jump statement, and identify all jump targets. From this data
   we can work backwards to detect all loops (and also if/else/elsif).
   Yet another approach would be to not emit any lines until we fully descummed the script.
   Instead, we keep each line in a line buffer, with indention but with an associated
   "indention" variable. When we discover a do/while loop, we can then insert a "do {"
-  line and increase the indention of all intermediate lines. However this approach 
+  line and increase the indention of all intermediate lines. However this approach
   needs a lot of memory, and won't output anything until the script is fully descummed,
   which is annoying when debugging descumm.
 
@@ -476,18 +476,18 @@ char *get_var(char *buf)
 		i = get_byte();
 	else
 		i = (uint16)get_word();
-		
+
 	assert(i >= 0);
 
-	if (g_options.scriptVersion >= 5 && 
+	if (g_options.scriptVersion >= 5 &&
 			i < ARRAYSIZE(var_names5) && var_names5[i]) {
 		buf += sprintf(buf, var_names5[i]);
 		return buf;
-	} else if (g_options.scriptVersion >= 4 && 
+	} else if (g_options.scriptVersion >= 4 &&
 			i < ARRAYSIZE(var_names4) && var_names4[i]) {
 		buf += sprintf(buf, var_names4[i]);
 		return buf;
-	} else if (g_options.scriptVersion >= 3 && 
+	} else if (g_options.scriptVersion >= 3 &&
 			i < ARRAYSIZE(var_names3) && var_names3[i]) {
 		buf += sprintf(buf, var_names3[i]);
 		return buf;
@@ -1200,7 +1200,7 @@ void do_room_ops_old(char *buf, byte opcode)
 {
 	char	a[256];
 	char	b[256];
-	
+
 	if (g_options.scriptVersion <= 2) {
 		get_var_or_byte(a, (opcode & 0x80));
 		get_var_or_byte(b, (opcode & 0x40));
@@ -1732,7 +1732,7 @@ void do_varset_code(char *buf, byte opcode)
 		&& ((opcode & 0x7F) == 0x0A
 		 || (opcode & 0x7F) == 0x2A
 		 || (opcode & 0x7F) == 0x6A)) {
-		 
+
 		int i = get_byte();
 		buf += sprintf(buf, "Var[Var[%d]]", i);
 	} else
@@ -1817,7 +1817,7 @@ void next_line_V12(char *buf)
 	byte opcode = get_byte();
 
 	switch (opcode) {
-	
+
 	case 0x58:
 		do_tok(buf, "beginOverride", 0);
 		break;
@@ -1968,7 +1968,7 @@ void next_line_V12(char *buf)
 	case 0xEE:
 		//dummy
 		sprintf(buf, "dummy(%.2X)", opcode);
-		
+
 		break;
 
 	case 0x09:
@@ -2007,7 +2007,7 @@ void next_line_V12(char *buf)
 	case 0x7B:
 	case 0xFB:
 		do_tok(buf, "getActorWalkBox", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
-		break;	
+		break;
 	case 0x43:
 	case 0xC3:
 		do_tok(buf, "getActorX", AVARSTORE | ((opcode & 0x80) ? A1V : A1B));
@@ -2062,7 +2062,7 @@ void next_line_V12(char *buf)
 		//ifClassOfIs
 		do_tok(buf, "classOfIs", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ATO);
 		break;
-		
+
 	case 0x3F:
 	case 0xBF:
 		//ifNotState01
@@ -2089,7 +2089,7 @@ void next_line_V12(char *buf)
 		//ifState08
 		do_if_state_code(buf, opcode);
 		break;
-		
+
 	case 0x48:
 	case 0xC8:
 		//isEqual
@@ -2178,7 +2178,7 @@ void next_line_V12(char *buf)
 		do_decodeparsestring_v2(buf, opcode);
 		strcat(buf, "\")");
 		break;
-		
+
 	case 0xCC:
 		// pseudoRoom
 		do_pseudoRoom(buf);
@@ -2259,7 +2259,7 @@ void next_line_V12(char *buf)
 		//setOwnerOf
 		do_tok(buf, "setOwnerOf", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B));
 		break;
-		
+
 	case 0x77:
 	case 0xF7:
 		// clearState01
@@ -2335,7 +2335,7 @@ void next_line_V12(char *buf)
 		//startScript
 		do_tok(buf, "startScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
-		
+
 	case 0x1C:
 	case 0x9C:
 		do_tok(buf, "startSound", ((opcode & 0x80) ? A1V : A1B));
@@ -2352,7 +2352,7 @@ void next_line_V12(char *buf)
 	case 0xE2:
 		do_tok(buf, "stopScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
-		
+
 	case 0x3C:
 	case 0xBC:
 		do_tok(buf, "stopSound", ((opcode & 0x80) ? A1V : A1B));
@@ -2368,7 +2368,7 @@ void next_line_V12(char *buf)
 	case 0xBB:
 		do_tok(buf, "waitForActor", ((opcode & 0x80) ? A1V : A1B));
 		break;
-			
+
 	case 0x4C:
 		do_tok(buf, "waitForSentence", 0);
 		break;
@@ -2386,7 +2386,7 @@ void next_line_V12(char *buf)
 	case 0xFE:
 		do_tok(buf, "walkActorTo",
 					 ((opcode & 0x80) ? A1V : A1B) |
-					 ((opcode & 0x40) ? A2V : A2B) | 
+					 ((opcode & 0x40) ? A2V : A2B) |
 					 ((opcode & 0x20) ? A3V : A3B));
 		break;
 
@@ -2396,7 +2396,7 @@ void next_line_V12(char *buf)
 	case 0xCD:
 		do_tok(buf, "walkActorToActor",
 					 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
-		break;			
+		break;
 	case 0x36:
 	case 0x76:
 	case 0xB6:
@@ -2736,7 +2736,7 @@ void next_line_V0(char *buf)
 		//ifNotState08;
 		do_if_state_code(buf, opcode);
 		break;
-		
+
 	case 0x48:
 	case 0xC8:
 		//isEqual
@@ -2811,7 +2811,7 @@ void next_line_V0(char *buf)
 		//panCameraTo
 		do_tok(buf, "panCameraTo", ((opcode & 0x80) ? A1V : A1B));
 		break;
-		
+
 	case 0x01:
 	case 0x21:
 	case 0x41:
@@ -2871,7 +2871,7 @@ void next_line_V0(char *buf)
 		//setOwnerOf
 		do_tok(buf, "setOwnerOf", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
-		
+
 	case 0x02:
 		do_tok(buf, "startMusic", ((opcode & 0x80) ? A1V : A1B));
 		break;
@@ -2880,7 +2880,7 @@ void next_line_V0(char *buf)
 		//startScript
 		do_tok(buf, "startScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
-		
+
 	case 0x1C:
 	case 0x5C:
 	case 0x9C:
@@ -2899,7 +2899,7 @@ void next_line_V0(char *buf)
 	case 0xE2:
 		do_tok(buf, "stopScript", ((opcode & 0x80) ? A1V : A1B));
 		break;
-		
+
 	case 0x3C:
 	case 0xBC:
 		do_tok(buf, "stopSound", ((opcode & 0x80) ? A1V : A1B));
@@ -2920,7 +2920,7 @@ void next_line_V0(char *buf)
 	case 0xFE:
 		do_tok(buf, "walkActorTo",
 					 ((opcode & 0x80) ? A1V : A1B) |
-					 ((opcode & 0x40) ? A2V : A2B) | 
+					 ((opcode & 0x40) ? A2V : A2B) |
 					 ((opcode & 0x20) ? A3V : A3B));
 		break;
 
