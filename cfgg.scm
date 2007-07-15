@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-14 19:15:00 brx>
+;;; Time-stamp: <2007-07-15 05:25:28 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -125,8 +125,7 @@
              (map (lambda (instruction)
                     (cons (car instruction) (cddr instruction)))
                   disassembly)))))))
-    (values ((cfg 'nodes))
-            (generate-intervals cfg (list 0)))))
+    (values cfg (generate-intervals cfg (list 0)))))
 
 ;; (test-run "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092")
 ;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp")

@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-14 18:02:02 brx>
+;;; Time-stamp: <2007-07-15 05:27:08 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -17,6 +17,61 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program; if not, write to the Free Software
 ;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+;; ugly graphviz output stuff
+(define (print-dot g disassembly intervals)
+  (define (quote-string str)
+    (string-translate* str '(("\"" . "\\\""))))
+  (print "digraph G { node [shape = box, fontsize = 10, fontname = Courier]")
+  (let ((nodes ((g 'nodes))))
+    (for-each (lambda (n)
+                (match-let (((n block) n))
+                  (print* "    n"
+                          n
+                          " [label = \""
+                          (quote-string (format "~S"
+                                                (cdr (assq (car (bb-range block))
+                                                       disassembly)))))
+                  (for-each
+                   (lambda (in)
+                     (print* "\\l"
+                             (quote-string (format "~S" (cdr (assq in disassembly))))))
+                   (cdr (bb-range block)))
+                  (print "\""
+                         (cond ((zero? (car (bb-range block)))
+                                ", shape=ellipse, style=bold]")
+                               ((eq? 'return (bb-type block))
+                                ", shape=ellipse, style=filled]")
+                               (else "]")))))
+              nodes)
+    (newline)
+    (if intervals
+        (for-each
+         (lambda (interval iter)
+           (let ((extern '()))
+             (print "subgraph cluster" (car interval) " {")
+             (print "    label = \"I(" iter ")\"")
+             (for-each
+              (lambda (i)
+                (receive (intern ext)
+                    (partition (cut member <> interval)
+                               (map second ((g 'out-edges) i)))
+                  (for-each (lambda (ij)
+                              (print "    n" i " -> n" ij))
+                            intern)
+                  (set! extern (append extern (map (cut cons i <>) ext)))))
+              interval)
+             (print "}")
+             (for-each (lambda (e)
+                         (print "    n" (car e) " -> n" (cdr e)))
+                       extern)))
+         intervals
+         (list-tabulate (length intervals) identity))
+        (for-each (lambda (e)
+                    (match-let (((i j _) e))
+                      (print "    n" i " -> n" j)))
+                  ((g 'edges)))))
+  (print "}"))
 
 (define (remove-isolated! g)
   (let loop ()
@@ -65,10 +120,12 @@
 (define (get-neighbour-intervals interval intervals neighbours selector)
   (delete-duplicates
    (map (lambda (n)
-          (let ((ind (list-index (cut member n <>) intervals)))
-            ;; assert that n IS part of an interval ...
-            (assert ind)
-            ind))
+          ;; note that for outgoing neighbours should always be
+          ;; interval headers (or else their containing subgraph
+          ;; would not be single-entry, aka an interval)
+          (let ((index (list-index (cut member n <>) intervals)))
+            ;; assert that N is member of an interval ...
+            (assert index) index))
         (lset-difference eq?
                          (delete-duplicates
                           (append-map (o (cut map selector <>) neighbours)

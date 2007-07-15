@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-14 19:09:42 brx>
+;;; Time-stamp: <2007-07-15 05:30:44 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -813,25 +813,10 @@
   (set! current-script-port (open-input-file current-script-file))
   (set! current-script-offset 0)
   (parse-header)
-  (let ((decoded (decode-ops '())))
-    (let print-decoded ((decoded decoded))
-      (unless (or (null? decoded)
-                  (not decoded)
-                  (not (car decoded)))
-        (printf "[~A] (~X) "
-                (caar decoded)
-                (cadar decoded))
-        (pretty-print (cddar decoded))
-        (print-decoded (cdr decoded))))
-    (receive (basic-blocks intervals)
-        (generate-control-flow-graph decoded)
-      (printf "Basic Blocks:\n")
-      (pretty-print basic-blocks)
-      (newline)
-      (printf "Intervals:\n")
-      (for-each (compose (hole newline)
-                         (cut pretty-print <>))
-                intervals)))
+  (let ((disassembly (decode-ops '())))
+    (receive (cfg intervals)
+        (generate-control-flow-graph disassembly)
+      (print-dot cfg disassembly intervals)))
   (close-input-port current-script-port)
   (set! current-script-port #f)
   (set! current-script-file #f)
@@ -845,5 +830,5 @@
 (define (main)
   (if (= (length (argv)) 2)
       (test-run (cadr (argv)))
-      (printf "Usage: ~A <scummV5 script>~%"
-              (car (argv)))))
+      (let ((script-file (car (argv))))
+        (printf "Usage: ~A <scummV5 script>~%" script-file))))
