@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-15 05:30:44 brx>
+;;; Time-stamp: <2007-07-15 05:50:37 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -780,8 +780,8 @@
     (error (string-append current-script-file
                           " is too small to be a local script")))
   (set-file-position! current-script-port 8)
-  (print (string-append "Local Script #"
-                        (number->string (read-u8 current-script-port)))))
+  (string-append "Local Script #"
+                 (number->string (read-u8 current-script-port))))
 
 (define (parse-header)
   (when (< (file-size current-script-file) 8)

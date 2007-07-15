@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-15 05:25:28 brx>
+;;; Time-stamp: <2007-07-15 05:51:48 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -104,8 +104,7 @@
                                (list (target-block-index jump-addr)))
                               ('fall
                                (list (add1 i)))
-                              (else
-                               #f))))
+                              (else #f))))
                   (when outs
                     (for-each (lambda (out)
                                 (unless ((g 'has-edge) i out)
