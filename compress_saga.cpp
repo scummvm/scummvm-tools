@@ -67,6 +67,8 @@ static GameFileDescription ITE_GameFiles[] = {
 	{"ite voices.bin",				true,		"dba92ae7d57e942250fe135609708369", kSoundMacPCM,	22050,		false}	// MacBinary
 };
 
+#if 0
+// Disabled for now
 // Known IHNM files
 static GameFileDescription IHNM_GameFiles[] = {
 	//	Filename					swapEndian	md5									resourceType	frequency	stereo
@@ -111,6 +113,7 @@ static GameFileDescription IHNM_GameFiles[] = {
 	{"voices5.res",					false,		"f4c415de7c03de86b73f9a12b8bd632f", kSoundWAV,		-1,			false},
 	{"voices6.res",					false,		"3fc5358a5d8eee43bdfab2740276572e", kSoundWAV,		-1,			false}
 };
+#endif
 
 // --------------------------------------------------------------------------------
 
@@ -133,12 +136,16 @@ static GameDescription gameDescriptions[] = {
 		ITE_GameFiles,
 	},
 
+#if 0
+	// Disabled for now
 	// I Have No Mouth And I Must Scream
 	{
 		GType_IHNM,
 		ARRAYSIZE(IHNM_GameFiles),
 		IHNM_GameFiles,
 	},
+#endif
+
 };
 
 typedef struct  {
