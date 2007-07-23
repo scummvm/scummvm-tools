@@ -119,7 +119,7 @@ extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
-	
+
 tools_gui$(EXEEXT): tools_gui.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs`
 
