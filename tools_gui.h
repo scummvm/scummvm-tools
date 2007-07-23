@@ -28,6 +28,9 @@
 #define kNumCompressionTools 12
 wxString kCompressionToolNames[12] = {"compress_agos", "compress_agos (MAC)", "compress_kyra", "compress_queen",  "compress_saga",  "compress_scumm_bun",  "compress_scumm_san",  "compress_scumm_sou",  "compress_sword1",  "compress_sword2",  "compress_touche", "encode_dxa"};
 
+#define kNumExtractionTools 9
+wxString kExtractionToolNames[9] = {"extract_agos", "extract_kyra", "extract_loom_tg16", "extract_mm_apple", "extract_mm_c64", "extract_mm_nes", "extract_parallaction", "extract_scumm_mac", "extract_zak_c64"};
+
 #define kNumCompressionTypes 3
 wxString kCompressionTypeNames[3] = {"MP3", "Vorbis", "FLAC"};
 
@@ -72,6 +75,8 @@ public:
 	bool _isFileChooser;
 };
 
+/* ----- Compression ----- */
+
 class CompressionOptions : public wxPanel {
 public:
 	CompressionOptions(wxWindow *parent);
@@ -92,7 +97,7 @@ class CompressionPanel : public wxPanel {
 public:
 	CompressionPanel(wxWindow *parent);
 
-	DropDownBox *_toolChooserPanel;
+	DropDownBox *_compressionToolChooserPanel;
 	DropDownBox *_compressionTypePanel;
 	IOChooser *_inputPanel;
 	IOChooser *_outputPanel;
@@ -101,13 +106,54 @@ public:
 	wxTextCtrl *_toolOutput;
 
 	enum {
-		kToolChoice,
-		kCompressionChoice,
-		kStartButton
+		kCompressionToolChoice,
+		kCompressionTypeChoice,
+		kCompressionInputBrowse,
+		kCompressionStartButton
 	} kEventID;
 
-	void OnToolChange(wxCommandEvent &event);
-	void OnCompressionChange(wxCommandEvent &event);
+	void OnCompressionToolChange(wxCommandEvent &event);
+	void OnCompressionTypeChange(wxCommandEvent &event);
+	void OnCompressionStart(wxCommandEvent &event);
+
+	DECLARE_EVENT_TABLE()
+};
+
+/* ----- Extraction ----- */
+
+class ExtractionOptions : public wxPanel {
+public:
+	ExtractionOptions(wxWindow *parent);
+
+	wxCheckBox *_kyraAmiga;
+	wxCheckBox *_kyraAllFiles;
+	wxCheckBox *_kyraSingleFile;
+	wxTextCtrl *_kyraFilename;
+	wxCheckBox *_parallactionSmall;
+};
+
+class ExtractionPanel : public wxPanel {
+public:
+	ExtractionPanel(wxWindow *parent);
+
+	DropDownBox *_extractionToolChooserPanel;
+	IOChooser *_input1Panel;
+	IOChooser *_input2Panel;
+	IOChooser *_outputPanel;
+	ExtractionOptions *_extractionOptionsPanel;
+	wxButton *_startButton;
+	wxTextCtrl *_toolOutput;
+
+	enum {
+		kExtractionToolChoice,
+		kExtractionInput1Browse,
+		kExtractionInput2Browse,
+		kExtractionOutputBrowse,
+		kExtractionStartButton
+	} kEventID;
+
+	void OnExtractionToolChange(wxCommandEvent &event);
+	void OnExtractionStart(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
 };
