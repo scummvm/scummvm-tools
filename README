@@ -124,15 +124,12 @@ Compression Tools:
                 move the '.san' files before compressing them, make sure to
                 move the '.flu' files, too!
 
-        compress_scumm_bun <inputfile> <inputdir> <outputdir> [--ogg]
-
-                Compresses '.bun' music/voice files.
+        compress_scumm_bun <inputfile> <inputdir> <outputdir> [params]
+                Used to the compress '.bun' music/voice files with MP3, Vorbis
+                or FLAC.
 
                 Example of usage:
-                compress_scumm.bun digmusic.bun uncomp comp
-
-                For the Ogg or MP3 compression feature, your ScummVM binary
-                naturally must have been built with Ogg or MP3 support enabled.
+                compress_scumm.bun digmusic.bun uncomp comp --flac
 
         compress_kyra
                 Used to compress The Legend of Kyrandia's speech files with
