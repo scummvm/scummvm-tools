@@ -36,7 +36,7 @@ BEGIN_EVENT_TABLE( ExtractionPanel, wxPanel )
 END_EVENT_TABLE()
 
 bool ToolsGui::OnInit() {
-	MainFrame *frame = new MainFrame("ScummVM Tools");
+	MainFrame *frame = new MainFrame(wxT("ScummVM Tools"));
 
 	frame->Show();
 	SetTopWindow(frame);
@@ -44,17 +44,17 @@ bool ToolsGui::OnInit() {
 	return true;
 }
 
-MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, -1, title) {
+MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY, title) {
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
 	this->SetSizer(mainSizer);
 
-	wxNotebook *mainNotebook = new wxNotebook(this, -1);
+	wxNotebook *mainNotebook = new wxNotebook(this, wxID_ANY);
 
 	CompressionPanel *compressionTools = new CompressionPanel(mainNotebook);
 	wxPanel *extractionTools = new ExtractionPanel(mainNotebook);
 
-	mainNotebook->AddPage(compressionTools, "Compression", false, -1);
-	mainNotebook->AddPage(extractionTools, "Extraction", false, -1);
+	mainNotebook->AddPage(compressionTools, wxT("Compression"), false, wxID_ANY);
+	mainNotebook->AddPage(extractionTools, wxT("Extraction"), false, wxID_ANY);
 
 	mainSizer->Add(mainNotebook, 1, wxEXPAND);
 	mainSizer->SetSizeHints(this);
@@ -76,8 +76,8 @@ IOChooser::IOChooser(wxWindow *parent, wxString title, wxString defaultPath, boo
 	this->SetSizer(sizer);
 
 	wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, this, title);
-	_text = new wxTextCtrl(this, -1, defaultPath);
-	_browse = new wxButton(this, -1, "Browse");
+	_text = new wxTextCtrl(this, wxID_ANY, defaultPath);
+	_browse = new wxButton(this, wxID_ANY, wxT("Browse"));
 	_isFileChooser = isFileChooser;
 
 	/* The button looks like it is shifted 2 pixels down from the text control
@@ -99,35 +99,35 @@ CompressionOptions::CompressionOptions(wxWindow *parent) : wxPanel(parent) {
 	wxGridSizer *gridSizer = new wxGridSizer(2, 5, 0, 10);
 	grid->SetSizer(gridSizer);
 
-	wxStaticText *minBitrateLabel = new wxStaticText(grid, wxID_ANY, "Minimum Bitrate");
+	wxStaticText *minBitrateLabel = new wxStaticText(grid, wxID_ANY, wxT("Minimum Bitrate"));
 	_minBitrateChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumValidBitrates, kValidBitrateNames);
 
-	wxStaticText *avgBitrateLabel = new wxStaticText(grid, wxID_ANY, "Average Bitrate");
+	wxStaticText *avgBitrateLabel = new wxStaticText(grid, wxID_ANY, wxT("Average Bitrate"));
 	_avgBitrateChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumValidBitrates, kValidBitrateNames);
 
-	wxStaticText *maxBitrateLabel = new wxStaticText(grid, wxID_ANY, "Maximum Bitrate");
+	wxStaticText *maxBitrateLabel = new wxStaticText(grid, wxID_ANY, wxT("Maximum Bitrate"));
 	_maxBitrateChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumValidBitrates, kValidBitrateNames);
 
-	wxStaticText *vbrQualityLabel = new wxStaticText(grid, wxID_ANY, "VBR Quality");
+	wxStaticText *vbrQualityLabel = new wxStaticText(grid, wxID_ANY, wxT("VBR Quality"));
 	_vbrQualityChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumValidQuality, kVaildQualityNames);
 
-	wxStaticText *mpegQualityLabel = new wxStaticText(grid, wxID_ANY, "MPEG Quality");
+	wxStaticText *mpegQualityLabel = new wxStaticText(grid, wxID_ANY, wxT("MPEG Quality"));
 	_mpegQualityChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumValidQuality, kVaildQualityNames);
 
-	wxStaticText *compressionLevelLabel = new wxStaticText(grid, wxID_ANY, "Compression Level");
+	wxStaticText *compressionLevelLabel = new wxStaticText(grid, wxID_ANY, wxT("Compression Level"));
 	_compressionLevelChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumValidCompressionLevels, kVaildCompressionLevels);
 
-	wxStaticText *modeLabel = new wxStaticText(grid, wxID_ANY, "Compression Mode");
+	wxStaticText *modeLabel = new wxStaticText(grid, wxID_ANY, wxT("Compression Mode"));
 	_modeChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumMP3Modes, kMP3ModeNames);
 
-	wxStaticText *blockSizeLabel = new wxStaticText(grid, wxID_ANY, "Block Size");
+	wxStaticText *blockSizeLabel = new wxStaticText(grid, wxID_ANY, wxT("Block Size"));
 	_blockSize = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumFLACBlocksize, kFLACBlocksize);
 
-	wxStaticText *verifyLabel = new wxStaticText(grid, wxID_ANY, "Verify");
-	_verifyChooser = new wxCheckBox(grid, wxID_ANY, "");
+	wxStaticText *verifyLabel = new wxStaticText(grid, wxID_ANY, wxT("Verify"));
+	_verifyChooser = new wxCheckBox(grid, wxID_ANY, wxT(""));
 
-	wxStaticText *silentLabel = new wxStaticText(grid, wxID_ANY, "Silent");
-	_silentChooser = new wxCheckBox(grid, wxID_ANY, "");
+	wxStaticText *silentLabel = new wxStaticText(grid, wxID_ANY, wxT("Silent"));
+	_silentChooser = new wxCheckBox(grid, wxID_ANY, wxT(""));
 
 	gridSizer->Add(minBitrateLabel, 0, wxALIGN_CENTER);
 	gridSizer->Add(avgBitrateLabel, 0, wxALIGN_CENTER);
@@ -153,7 +153,7 @@ CompressionOptions::CompressionOptions(wxWindow *parent) : wxPanel(parent) {
 	gridSizer->Add(_verifyChooser, 0, wxALIGN_CENTER);
 	gridSizer->Add(_silentChooser, 0, wxALIGN_CENTER);
 
-	wxStaticBoxSizer *box = new wxStaticBoxSizer(wxVERTICAL, this, "Compression Options");
+	wxStaticBoxSizer *box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Compression Options"));
 	box->Add(grid, 0, wxALIGN_CENTER);
 
 	sizer->Add(box, 0, wxEXPAND);
@@ -169,10 +169,10 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	topPanelSizer->AddGrowableCol(1);
 	topPanel->SetSizer(topPanelSizer);
 
-	_compressionToolChooserPanel = new DropDownBox((wxWindow *)topPanel, kCompressionToolChoice, "Choose Tool", kNumCompressionTools, kCompressionToolNames);
-	_inputPanel = new IOChooser(topPanel, "Input", "", true);
-	_compressionTypePanel = new DropDownBox(topPanel, kCompressionTypeChoice, "Choose Compression", kNumCompressionTypes, kCompressionTypeNames);
-	_outputPanel = new IOChooser(topPanel, "Output", "", true);
+	_compressionToolChooserPanel = new DropDownBox((wxWindow *)topPanel, kCompressionToolChoice, wxT("Choose Tool"), kNumCompressionTools, kCompressionToolNames);
+	_inputPanel = new IOChooser(topPanel, wxT("Input"), wxT(""), true);
+	_compressionTypePanel = new DropDownBox(topPanel, kCompressionTypeChoice, wxT("Choose Compression"), kNumCompressionTypes, kCompressionTypeNames);
+	_outputPanel = new IOChooser(topPanel, wxT("Output"), wxT(""), true);
 
 	/* Bottom Panel */
 	wxPanel *bottomPanel = new wxPanel(this);
@@ -180,8 +180,8 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	bottomPanel->SetSizer(bottomPanelSizer);
 
 	_compressionOptionsPanel = new CompressionOptions(bottomPanel);
-	_startButton = new wxButton(bottomPanel, kCompressionStartButton, "START");
-	_toolOutput = new wxTextCtrl(bottomPanel, -1, "", wxDefaultPosition, wxSize(-1, 300), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
+	_startButton = new wxButton(bottomPanel, kCompressionStartButton, wxT("START"));
+	_toolOutput = new wxTextCtrl(bottomPanel, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1, 300), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
 
 	topPanelSizer->Add(_compressionToolChooserPanel, 1, wxEXPAND);
 	topPanelSizer->Add(_inputPanel, 4, wxEXPAND);
@@ -214,20 +214,20 @@ ExtractionOptions::ExtractionOptions(wxWindow *parent) : wxPanel(parent) {
 	wxFlexGridSizer *gridSizer = new wxFlexGridSizer(2, 5, 0, 20);
 	grid->SetSizer(gridSizer);
 
-	wxStaticText *parallactionSmallLabel = new wxStaticText(grid, -1, "Small Archive");
-	_parallactionSmall = new wxCheckBox(grid, -1, "");
+	wxStaticText *parallactionSmallLabel = new wxStaticText(grid, wxID_ANY, wxT("Small Archive"));
+	_parallactionSmall = new wxCheckBox(grid, wxID_ANY, wxT(""));
 
-	wxStaticText *kyraAmigaLabel = new wxStaticText(grid, -1, "Amiga .PAK File");
-	_kyraAmiga = new wxCheckBox(grid, -1, "");
+	wxStaticText *kyraAmigaLabel = new wxStaticText(grid, wxID_ANY, wxT("Amiga .PAK File"));
+	_kyraAmiga = new wxCheckBox(grid, wxID_ANY, wxT(""));
 
-	wxStaticText *kyraAllFilesLabel = new wxStaticText(grid, -1, "Extract All Files");
-	_kyraAllFiles = new wxCheckBox(grid, -1, "");
+	wxStaticText *kyraAllFilesLabel = new wxStaticText(grid, wxID_ANY, wxT("Extract All Files"));
+	_kyraAllFiles = new wxCheckBox(grid, wxID_ANY, wxT(""));
 
-	wxStaticText *kyraSingleFileLabel = new wxStaticText(grid, -1, "Extract Single File");
-	_kyraSingleFile = new wxCheckBox(grid, -1, "");
+	wxStaticText *kyraSingleFileLabel = new wxStaticText(grid, wxID_ANY, wxT("Extract Single File"));
+	_kyraSingleFile = new wxCheckBox(grid, wxID_ANY, wxT(""));
 
-	wxStaticText *kyraFilenameLabel = new wxStaticText(grid, -1, "Filename");
-	_kyraFilename = new wxTextCtrl(grid, -1, "");
+	wxStaticText *kyraFilenameLabel = new wxStaticText(grid, wxID_ANY, wxT("Filename"));
+	_kyraFilename = new wxTextCtrl(grid, wxID_ANY, wxT(""));
 
 	gridSizer->Add(parallactionSmallLabel, 0, wxALIGN_CENTER);
 	gridSizer->Add(kyraAmigaLabel, 0, wxALIGN_CENTER);
@@ -241,7 +241,7 @@ ExtractionOptions::ExtractionOptions(wxWindow *parent) : wxPanel(parent) {
 	gridSizer->Add(_kyraSingleFile, 0, wxALIGN_CENTER);
 	gridSizer->Add(_kyraFilename, 0, wxALIGN_CENTER);
 
-	wxStaticBoxSizer *box = new wxStaticBoxSizer(wxVERTICAL, this, "Extraction Options");
+	wxStaticBoxSizer *box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Extraction Options"));
 	box->Add(grid, 0, wxALIGN_CENTER);
 
 	sizer->Add(box, 0, wxEXPAND);
@@ -257,10 +257,10 @@ ExtractionPanel::ExtractionPanel(wxWindow *parent) : wxPanel(parent) {
 	topPanelSizer->AddGrowableCol(1);
 	topPanel->SetSizer(topPanelSizer);
 
-	_extractionToolChooserPanel = new DropDownBox((wxWindow *)topPanel, kExtractionToolChoice, "Choose Tool", kNumExtractionTools, kExtractionToolNames);
-	_input1Panel = new IOChooser(topPanel, "Input 1", "", true);
-	_input2Panel = new IOChooser(topPanel, "Input 2", "", true);
-	_outputPanel = new IOChooser(topPanel, "Output", "", true);
+	_extractionToolChooserPanel = new DropDownBox((wxWindow *)topPanel, kExtractionToolChoice, wxT("Choose Tool"), kNumExtractionTools, kExtractionToolNames);
+	_input1Panel = new IOChooser(topPanel, wxT("Input 1"), wxT(""), true);
+	_input2Panel = new IOChooser(topPanel, wxT("Input 2"), wxT(""), true);
+	_outputPanel = new IOChooser(topPanel, wxT("Output"), wxT(""), true);
 
 	/* Bottom Panel */
 	wxPanel *bottomPanel = new wxPanel(this);
@@ -268,8 +268,8 @@ ExtractionPanel::ExtractionPanel(wxWindow *parent) : wxPanel(parent) {
 	bottomPanel->SetSizer(bottomPanelSizer);
 
 	_extractionOptionsPanel = new ExtractionOptions(bottomPanel);
-	_startButton = new wxButton(bottomPanel, kExtractionStartButton, "START");
-	_toolOutput = new wxTextCtrl(bottomPanel, -1, "", wxDefaultPosition, wxSize(-1, 300), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
+	_startButton = new wxButton(bottomPanel, kExtractionStartButton, wxT("START"));
+	_toolOutput = new wxTextCtrl(bottomPanel, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1, 300), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
 
 	topPanelSizer->Add(_extractionToolChooserPanel, 1, wxEXPAND);
 	topPanelSizer->Add(_input1Panel, 4, wxEXPAND);
@@ -299,51 +299,51 @@ void CompressionPanel::OnCompressionToolChange(wxCommandEvent &event) {
 	this->_inputPanel->_text->Enable(true);
 	this->_outputPanel->_isFileChooser = false;
 
-	if (selectedTool == "compress_agos") {
+	if (selectedTool == wxT("compress_agos")) {
 		this->_inputPanel->_isFileChooser = true;
 		this->_outputPanel->_browse->Enable(false);
 		this->_outputPanel->_text->Enable(false);
-	} else if (selectedTool == "compress_agos (MAC)") {
+	} else if (selectedTool == wxT("compress_agos (MAC)")) {
 		this->_inputPanel->_isFileChooser = false;
 		this->_outputPanel->_browse->Enable(false);
 		this->_outputPanel->_text->Enable(false);
-	} else if (selectedTool == "compress_kyra") {
+	} else if (selectedTool == wxT("compress_kyra")) {
 		this->_inputPanel->_isFileChooser = true;
 		this->_outputPanel->_browse->Enable(true);
 		this->_outputPanel->_text->Enable(true);
-	} else if (selectedTool == "compress_queen") {
+	} else if (selectedTool == wxT("compress_queen")) {
 		this->_inputPanel->_isFileChooser = true;
 		this->_outputPanel->_browse->Enable(false);
 		this->_outputPanel->_text->Enable(false);
-	} else if (selectedTool == "compress_saga") {
+	} else if (selectedTool == wxT("compress_saga")) {
 		this->_inputPanel->_isFileChooser = true;
 		this->_outputPanel->_browse->Enable(false);
 		this->_outputPanel->_text->Enable(false);
-	} else if (selectedTool == "compress_scumm_bun") {
+	} else if (selectedTool == wxT("compress_scumm_bun")) {
 		this->_inputPanel->_isFileChooser = true;
 		this->_outputPanel->_browse->Enable(true);
 		this->_outputPanel->_text->Enable(true);
-	} else if (selectedTool == "compress_scumm_san") {
+	} else if (selectedTool == wxT("compress_scumm_san")) {
 		this->_inputPanel->_isFileChooser = true;
 		this->_outputPanel->_browse->Enable(true);
 		this->_outputPanel->_text->Enable(true);
-	} else if (selectedTool == "compress_scumm_sou") {
+	} else if (selectedTool == wxT("compress_scumm_sou")) {
 		this->_inputPanel->_isFileChooser = true;
 		this->_outputPanel->_browse->Enable(false);
 		this->_outputPanel->_text->Enable(false);
-	} else if (selectedTool == "compress_sword1") {
+	} else if (selectedTool == wxT("compress_sword1")) {
 		this->_inputPanel->_isFileChooser = false;
 		this->_outputPanel->_browse->Enable(false);
 		this->_outputPanel->_text->Enable(false);
-	} else if (selectedTool == "compress_sword2") {
+	} else if (selectedTool == wxT("compress_sword2")) {
 		this->_inputPanel->_isFileChooser = true;
 		this->_outputPanel->_browse->Enable(false);
 		this->_outputPanel->_text->Enable(false);
-	} else if (selectedTool == "compress_touche") {
+	} else if (selectedTool == wxT("compress_touche")) {
 		this->_inputPanel->_isFileChooser = false;
 		this->_outputPanel->_browse->Enable(true);
 		this->_outputPanel->_text->Enable(true);
-	} else if (selectedTool == "encode_dxa") {
+	} else if (selectedTool == wxT("encode_dxa")) {
 		this->_inputPanel->_isFileChooser = true;
 		this->_outputPanel->_browse->Enable(false);
 		this->_outputPanel->_text->Enable(false);
@@ -360,7 +360,7 @@ void CompressionPanel::OnCompressionToolChange(wxCommandEvent &event) {
 void CompressionPanel::OnCompressionTypeChange(wxCommandEvent &event) {
 	wxString selectedCompression = this->_compressionTypePanel->_choice->GetStringSelection();
 
-	if (selectedCompression == "MP3") {
+	if (selectedCompression == wxT("MP3")) {
 		this->_compressionOptionsPanel->_minBitrateChooser->Enable(false);
 		this->_compressionOptionsPanel->_avgBitrateChooser->Enable(true);
 		this->_compressionOptionsPanel->_maxBitrateChooser->Enable(true);
@@ -371,7 +371,7 @@ void CompressionPanel::OnCompressionTypeChange(wxCommandEvent &event) {
 		this->_compressionOptionsPanel->_blockSize->Enable(false);
 		this->_compressionOptionsPanel->_verifyChooser->Enable(false);
 		this->_compressionOptionsPanel->_silentChooser->Enable(true);
-	} else if (selectedCompression == "Vorbis") {
+	} else if (selectedCompression == wxT("Vorbis")) {
 		this->_compressionOptionsPanel->_minBitrateChooser->Enable(true);
 		this->_compressionOptionsPanel->_avgBitrateChooser->Enable(true);
 		this->_compressionOptionsPanel->_maxBitrateChooser->Enable(true);
@@ -382,7 +382,7 @@ void CompressionPanel::OnCompressionTypeChange(wxCommandEvent &event) {
 		this->_compressionOptionsPanel->_blockSize->Enable(false);
 		this->_compressionOptionsPanel->_verifyChooser->Enable(false);
 		this->_compressionOptionsPanel->_silentChooser->Enable(true);
-	} else if (selectedCompression == "FLAC") {
+	} else if (selectedCompression == wxT("FLAC")) {
 		this->_compressionOptionsPanel->_minBitrateChooser->Enable(false);
 		this->_compressionOptionsPanel->_avgBitrateChooser->Enable(false);
 		this->_compressionOptionsPanel->_maxBitrateChooser->Enable(false);
@@ -421,7 +421,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 	this->_input2Panel->_isFileChooser = true;
 	this->_outputPanel->_isFileChooser = false;
 
-	if (selectedTool == "extract_agos") {
+	if (selectedTool == wxT("extract_agos")) {
 		this->_input2Panel->_browse->Enable(false);
 		this->_input2Panel->_text->Enable(false);
 		this->_outputPanel->_browse->Enable(false);
@@ -431,7 +431,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
 		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
 		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
-	} else if (selectedTool == "extract_kyra") {
+	} else if (selectedTool == wxT("extract_kyra")) {
 		this->_input2Panel->_browse->Enable(false);
 		this->_input2Panel->_text->Enable(false);
 		this->_outputPanel->_browse->Enable(false);
@@ -441,7 +441,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 		this->_extractionOptionsPanel->_kyraFilename->Enable(true);
 		this->_extractionOptionsPanel->_kyraSingleFile->Enable(true);
 		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
-	} else if (selectedTool == "extract_loom_tg16") {
+	} else if (selectedTool == wxT("extract_loom_tg16")) {
 		this->_input2Panel->_browse->Enable(false);
 		this->_input2Panel->_text->Enable(false);
 		this->_outputPanel->_browse->Enable(false);
@@ -451,7 +451,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
 		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
 		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
-	} else if (selectedTool == "extract_mm_apple") {
+	} else if (selectedTool == wxT("extract_mm_apple")) {
 		this->_input2Panel->_browse->Enable(true);
 		this->_input2Panel->_text->Enable(true);
 		this->_outputPanel->_browse->Enable(false);
@@ -461,7 +461,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
 		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
 		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
-	} else if (selectedTool == "extract_mm_c64") {
+	} else if (selectedTool == wxT("extract_mm_c64")) {
 		this->_input2Panel->_browse->Enable(true);
 		this->_input2Panel->_text->Enable(true);
 		this->_outputPanel->_browse->Enable(false);
@@ -471,7 +471,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
 		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
 		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
-	} else if (selectedTool == "extract_mm_nes") {
+	} else if (selectedTool == wxT("extract_mm_nes")) {
 		this->_input2Panel->_browse->Enable(false);
 		this->_input2Panel->_text->Enable(false);
 		this->_outputPanel->_browse->Enable(false);
@@ -481,7 +481,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
 		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
 		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
-	} else if (selectedTool == "extract_parallaction") {
+	} else if (selectedTool == wxT("extract_parallaction")) {
 		this->_input2Panel->_browse->Enable(false);
 		this->_input2Panel->_text->Enable(false);
 		this->_outputPanel->_browse->Enable(true);
@@ -491,7 +491,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
 		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
 		this->_extractionOptionsPanel->_parallactionSmall->Enable(true);
-	} else if (selectedTool == "extract_scumm_mac") {
+	} else if (selectedTool == wxT("extract_scumm_mac")) {
 		this->_input2Panel->_browse->Enable(false);
 		this->_input2Panel->_text->Enable(false);
 		this->_outputPanel->_browse->Enable(false);
@@ -501,7 +501,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
 		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
 		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
-	} else if (selectedTool == "extract_zak_c64") {
+	} else if (selectedTool == wxT("extract_zak_c64")) {
 		this->_input2Panel->_browse->Enable(true);
 		this->_input2Panel->_text->Enable(true);
 		this->_outputPanel->_browse->Enable(false);
