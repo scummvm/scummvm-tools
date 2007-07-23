@@ -440,7 +440,6 @@ void showhelp(char *exename) {
 
 	printf("\nFlac mode params:\n");
 	printf("[params]     optional Arguments passed to the Encoder\n");
-	printf("             recommended is: --best -b 1152\n");
 
 	printf("\n--help     this help message\n");
 
