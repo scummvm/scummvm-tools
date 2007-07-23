@@ -25,7 +25,7 @@
 
 void showhelp(char* exename)
 {
-		printf("\nUsage: %s <file> [params]\n", exename);
+		printf("\nUsage: %s [params] <file>\n", exename);
 
 		printf("\nParams:\n");
 		printf("-o <filename>     Extract only <filename>\n");
@@ -41,6 +41,7 @@ int main(int argc, char **argv) {
 	}
 
 	bool extractAll = false, extractOne = false, isAmiga = false;
+	char singleFilename[256] = "";
 	int param;
 
 	for (param = 1; param < argc; param++) {
@@ -48,30 +49,34 @@ int main(int argc, char **argv) {
 			extractOne = true;
 			param++;
 
-			if (param >= argc) {
-				printf("You supply a filename with -o\n");
-				printf("Example: %s A_E.PAK -o ALGAE.CPS\n", argv[0]);
+			if (param >= (argc - 1)) {
+				printf("You must supply a filename with -o\n");
+				printf("Example: %s -o ALGAE.CPS A_E.PAK\n", argv[0]);
 
 				exit(-1);
+			} else {
+				strcpy(singleFilename, argv[param]);
 			}
 		} else if (strcmp(argv[param], "-x") == 0) {
 			extractAll = true;
 		} else if (strcmp(argv[param], "-a") == 0) {
 			isAmiga = true;
-		} else {
-			showhelp(argv[0]);
 		}
 	}
 
+	if (param > argc) {
+		showhelp(argv[0]);
+	}
+
 	PAKFile myfile;
-	if (!myfile.loadFile(argv[1], isAmiga)) {
-		error("Couldn't load file '%s'", argv[1]);
+	if (!myfile.loadFile(argv[argc - 1], isAmiga)) {
+		error("Couldn't load file '%s'", argv[argc - 1]);
 	}
 
 	if(extractAll) {
 		myfile.outputAllFiles();
 	} else if(extractOne) {
-		myfile.outputFile(argv[param]);
+		myfile.outputFile(singleFilename);
 	} else {
 		myfile.drawFileList();
 	}
