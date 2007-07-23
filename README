@@ -131,6 +131,9 @@ Compression Tools:
                 Example of usage:
                 compress_scumm.bun digmusic.bun uncomp comp --flac
 
+                Please note that FLAC compression will produce larger files
+                than the original, for The Curse of Monkey Island!
+
         compress_kyra
                 Used to compress The Legend of Kyrandia's speech files with
                 MP3, Vorbis or FLAC.
