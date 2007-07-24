@@ -1133,19 +1133,19 @@ int main(int argc, char *argv[]) {
 		
 			switch (gCompMode) {
 			case kMP3Mode:
-				if (!process_mp3_parms(argc, argv, i)) {
+				if (!process_mp3_parms(argc + 1, args, i)) {
 					showhelp(argv[0]);
 				}
 
 				break;
 			case kVorbisMode:
-				if (!process_ogg_parms(argc, argv, i)) {
+				if (!process_ogg_parms(argc + 1, args, i)) {
 					showhelp(argv[0]);
 				}
 
 				break;
 			case kFlacMode:
-				if (!process_flac_parms(argc, argv, i)){
+				if (!process_flac_parms(argc + 1, args, i)){
 					showhelp(argv[0]);
 				}
 
