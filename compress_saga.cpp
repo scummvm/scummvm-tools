@@ -458,7 +458,7 @@ int main(int argc, char *argv[]) {
 	int	i;
 	char *p;
 	char inputPath[768];
-	char *inputFileName;
+	char *inputFileName = NULL;
 	char inputFileNameWithExt[256];
 
 	if (argc < 2) {

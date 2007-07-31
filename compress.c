@@ -248,7 +248,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 			rawData = (char *)malloc(length);
 			fread(rawData, 1, length, inputRaw);
 
-			printf(" - length = %d\n", length);
+			printf(" - length = %ld\n", length);
 			printf(" - channels = %d\n", (rawAudioType.isStereo ? 2 : 1));
 			printf(" - sample rate = %d\n", rawSamplerate);
 			printf(" - compression = %dbits\n", rawAudioType.bitsPerSample);

@@ -195,7 +195,6 @@ int main(int argc, char *argv[])
 {
 	char *p;
 	char inputPath[768];
-	char tmp[1024];
 	char buf[2048];
 	int i;
 
