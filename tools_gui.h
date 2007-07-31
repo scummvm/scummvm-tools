@@ -25,11 +25,27 @@
 #include <wx/statbox.h>
 #include <wx/textctrl.h>
 
+/* Default MP3 parameters */
+wxString kDefaultMP3ABRAvgBitrate = wxT("24");
+wxString kDefaultMP3CompressionType = wxT("VBR");
+wxString kDefaultMP3MpegQuality = wxT("2");
+wxString kDefaultMP3VBRMaxBitrate = wxT("64");
+wxString kDefaultMP3VBRMinBitrate = wxT("24");
+wxString kDefaultMP3VBRQuality = wxT("4");
+
+/* Default Vorbis parameters */
+wxString kDefaultOggQuality = wxT("3");
+
+/* Default FLAC parameters */
+wxString kDefaultFlacCompress = wxT("8");
+wxString kDefaultFlacBlocksize = wxT("1152");
+
+
 #define kNumCompressionTools 12
-wxString kCompressionToolNames[12] = {wxT("compress_agos"), wxT("compress_agos (MAC)"), wxT("compress_kyra"), wxT("compress_queen"),  wxT("compress_saga"),  wxT("compress_scumm_bun"),  wxT("compress_scumm_san"),  wxT("compress_scumm_sou"),  wxT("compress_sword1"),  wxT("compress_sword2"),  wxT("compress_touche"), wxT("encode_dxa")};
+wxString kCompressionToolNames[12] = {wxT("AGOS"), wxT("Broken Sword 1"), wxT("Broken Sword 2"), wxT("Encode DXA"), wxT("Flight of the Amazon Queen"), wxT("Kyra"), wxT("SAGA"), wxT("SCUMM BUN"), wxT("SCUMM SAN"), wxT("SCUMM SOU"), wxT("Simon 2 (MAC)"), wxT("Touche")};
 
 #define kNumExtractionTools 9
-wxString kExtractionToolNames[9] = {wxT("extract_agos"), wxT("extract_kyra"), wxT("extract_loom_tg16"), wxT("extract_mm_apple"), wxT("extract_mm_c64"), wxT("extract_mm_nes"), wxT("extract_parallaction"), wxT("extract_scumm_mac"), wxT("extract_zak_c64")};
+wxString kExtractionToolNames[9] = {wxT("AGOS"), wxT("Kyra"), wxT("Loom (TG16)"), wxT("Maniac Mansion (Apple)"), wxT("Maniac Mansion (C64)"), wxT("Maniac Mansion (NES)"), wxT("Parallaction"), wxT("SCUMM (MAC)"), wxT("Zak McKracken (C64)")};
 
 #define kNumCompressionTypes 3
 wxString kCompressionTypeNames[3] = {wxT("MP3"), wxT("Vorbis"), wxT("FLAC")};
@@ -43,20 +59,30 @@ wxString kVaildQualityNames[11] = {wxT(""), wxT("0"), wxT("1"), wxT("2"), wxT("3
 #define kNumValidCompressionLevels 10
 wxString kVaildCompressionLevels[10] = {wxT(""), wxT("0"), wxT("1"), wxT("2"), wxT("3"), wxT("4"), wxT("5"), wxT("6"), wxT("7"), wxT("8")};
 
-#define kNumFLACBlocksize 5
-wxString kFLACBlocksize[5] = {wxT(""), wxT("576"), wxT("1152"), wxT("2304"), wxT("4608")};
+#define kNumValidFlacBlocksize 5
+wxString kValidFlacBlocksize[5] = {wxT(""), wxT("576"), wxT("1152"), wxT("2304"), wxT("4608")};
 
 #define kNumMP3Modes 2
 wxString kMP3ModeNames[2] = {wxT("VBR"), wxT("ABR")};
 
+enum {
+	kCompressionToolChoice,
+	kCompressionTypeChoice,
+	kCompressionModeChoice,
+	kCompressionInputBrowse,
+	kCompressionOptionsToggle,
+	kCompressionStartButton,
+	kExtractionToolChoice,
+	kExtractionInput1Browse,
+	kExtractionInput2Browse,
+	kExtractionOutputBrowse,
+	kExtractionStartButton
+};
+
+
 class ToolsGui : public wxApp {
 public:
 	virtual bool OnInit();
-};
-
-class MainFrame : public wxFrame {
-public:
-	MainFrame(const wxString& title);
 };
 
 class DropDownBox : public wxPanel {
@@ -91,26 +117,24 @@ public:
 	wxChoice *_blockSize;
 	wxCheckBox *_verifyChooser;
 	wxCheckBox *_silentChooser;
+
+	void OnCompressionModeChange(wxCommandEvent &event);
+
+	DECLARE_EVENT_TABLE()
 };
 
 class CompressionPanel : public wxPanel {
 public:
 	CompressionPanel(wxWindow *parent);
 
-	DropDownBox *_compressionToolChooserPanel;
-	DropDownBox *_compressionTypePanel;
+	DropDownBox *_compressionToolChooserBox;
+	DropDownBox *_compressionTypeBox;
+	wxCheckBox *_compressionOptionsChooser;
 	IOChooser *_inputPanel;
 	IOChooser *_outputPanel;
 	CompressionOptions *_compressionOptionsPanel;
 	wxButton *_startButton;
 	wxTextCtrl *_toolOutput;
-
-	enum {
-		kCompressionToolChoice,
-		kCompressionTypeChoice,
-		kCompressionInputBrowse,
-		kCompressionStartButton
-	} kEventID;
 
 	void OnCompressionToolChange(wxCommandEvent &event);
 	void OnCompressionTypeChange(wxCommandEvent &event);
@@ -144,16 +168,23 @@ public:
 	wxButton *_startButton;
 	wxTextCtrl *_toolOutput;
 
-	enum {
-		kExtractionToolChoice,
-		kExtractionInput1Browse,
-		kExtractionInput2Browse,
-		kExtractionOutputBrowse,
-		kExtractionStartButton
-	} kEventID;
-
 	void OnExtractionToolChange(wxCommandEvent &event);
 	void OnExtractionStart(wxCommandEvent &event);
+
+	DECLARE_EVENT_TABLE()
+};
+
+/* ----- Main Panel ----- */
+
+class MainFrame : public wxFrame {
+public:
+	MainFrame(const wxString& title);
+
+	wxNotebook *_mainNotebook;
+	CompressionPanel *_compressionTools;
+	ExtractionPanel *_extractionTools;
+
+	void OnCompressionOptionsToggle(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
 };
