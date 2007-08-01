@@ -70,18 +70,16 @@ Compression Tools:
                 For Inherit the Earth, the digital music (music.rsc), speech 
                 (voices.rsc or "inherit the earth voices") and sound effects
                 (sounds.rsc) files can be compressed. For I have no mouth, the 
-                speech (voices*.res) and sound effects (sfx.res) files can be 
-                compressed.
+                speech (voices*.res) files can be compressed.
 		
                 The compressed files have the ".cmp" extension. Once compressed, 
                 you only need the respective .cmp files. 
 		
-                Only the files of the full game versions can be compressed, the
-                demo versions are not supported. 
-		
-                The MacBinary files (*.bin) of the Mac CD Guild version of Inherit 
-                the Earth are not currently supported. Finally, there is no support 
-                for compressed sounds in I have no mouth yet.
+                There is no compression support yet for the following versions:
+                - The Mac CD Guild version of Inherit the Earth (uses MacBinary
+                  *.bin files)
+                - The demo versions of Inherit the Earth
+                - The unsupported early DOS demo of Inherit the Earth
 
         compress_sword1
                 Used to compress Broken Sword 1's music and speech files to
