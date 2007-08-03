@@ -78,6 +78,35 @@ DropDownBox::DropDownBox(wxWindow *parent, wxWindowID id, wxString title, int nu
 	sizer->Add(_choice, 1, wxEXPAND | wxLEFT | wxRIGHT, 5);
 }
 
+FileDrop::FileDrop(wxTextCtrl *target, bool isFileChooser) : wxFileDropTarget() {
+	_target = target;
+	_isFileChooser = isFileChooser;
+}
+
+bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames) {
+	if (_isFileChooser) {
+		if (_target->GetValue().Last() != wxChar(" ")) {
+			_target->AppendText(" ");
+		}
+
+		for (size_t i = 0; i < filenames.GetCount(); i++) {
+			_target->AppendText("\"");
+			_target->AppendText(filenames[i]);
+			_target->AppendText("\"");
+			
+			if (i != filenames.GetCount() - 1) {
+				_target->AppendText(" ");
+			}
+		}
+	} else {
+		_target->SetValue("\"");
+		_target->AppendText(filenames[0]);
+		_target->AppendText("\"");
+	}
+
+	return true;
+};
+
 IOChooser::IOChooser(wxWindow *parent, wxString title, wxString defaultPath, bool isFileChooser) : wxPanel(parent) {
 	wxStaticBox *box = new wxStaticBox(this, wxID_ANY, title);
 	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(box, wxHORIZONTAL);
@@ -86,6 +115,9 @@ IOChooser::IOChooser(wxWindow *parent, wxString title, wxString defaultPath, boo
 	_text = new wxTextCtrl(this, wxID_ANY, defaultPath);
 	_browse = new wxButton(this, wxID_ANY, wxT("Browse"));
 	_isFileChooser = isFileChooser;
+
+	_dropTarget = new FileDrop(_text, _isFileChooser);
+	this->SetDropTarget(_dropTarget);
 
 	/* The button looks like it is shifted 2 pixels down 
 	 * from the text control (probably because of the wxStaticBox label)
@@ -180,7 +212,7 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	_compressionTypeBox->GetSizer()->Add(_compressionOptionsChooser, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
 
 	_inputPanel = new IOChooser(topPanel, wxT("Input"), wxT(""), true);
-	_outputPanel = new IOChooser(topPanel, wxT("Output"), wxT(""), true);
+	_outputPanel = new IOChooser(topPanel, wxT("Output"), wxT(""), false);
 
 	/* Bottom Panel */
 	wxPanel *bottomPanel = new wxPanel(this);
@@ -272,7 +304,7 @@ ExtractionPanel::ExtractionPanel(wxWindow *parent) : wxPanel(parent) {
 	_extractionToolChooserPanel = new DropDownBox((wxWindow *)topPanel, kExtractionToolChoice, wxT("Game Engine"), kNumExtractionTools, kExtractionToolNames);
 	_input1Panel = new IOChooser(topPanel, wxT("Input 1"), wxT(""), true);
 	_input2Panel = new IOChooser(topPanel, wxT("Input 2"), wxT(""), true);
-	_outputPanel = new IOChooser(topPanel, wxT("Output"), wxT(""), true);
+	_outputPanel = new IOChooser(topPanel, wxT("Output"), wxT(""), false);
 
 	/* Bottom Panel */
 	wxPanel *bottomPanel = new wxPanel(this);
@@ -309,7 +341,9 @@ void CompressionPanel::OnCompressionToolChange(wxCommandEvent &event) {
 
 	this->_inputPanel->_browse->Enable(true);
 	this->_inputPanel->_text->Enable(true);
+	this->_inputPanel->_text->Clear();
 	this->_outputPanel->_isFileChooser = false;
+	this->_outputPanel->_text->Clear();
 
 	if (selectedTool == wxT("AGOS")) {
 		this->_inputPanel->_isFileChooser = true;
@@ -510,8 +544,11 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 	this->_input1Panel->_browse->Enable(true);
 	this->_input1Panel->_text->Enable(true);
 	this->_input1Panel->_isFileChooser = true;
+	this->_input1Panel->_text->Clear();
 	this->_input2Panel->_isFileChooser = true;
+	this->_input2Panel->_text->Clear();
 	this->_outputPanel->_isFileChooser = false;
+	this->_outputPanel->_text->Clear();
 
 	if (selectedTool == wxT("AGOS")) {
 		this->_input2Panel->_browse->Enable(false);

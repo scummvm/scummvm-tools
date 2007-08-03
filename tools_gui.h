@@ -21,6 +21,7 @@
  */
 
 #include <wx/wx.h>
+#include <wx/dnd.h>
 #include <wx/notebook.h>
 #include <wx/statbox.h>
 #include <wx/textctrl.h>
@@ -92,6 +93,16 @@ public:
 	wxChoice *_choice;
 };
 
+class FileDrop : public wxFileDropTarget {
+public:
+	FileDrop(wxTextCtrl *target, bool isFileChooser);
+
+	wxTextCtrl *_target;
+	bool _isFileChooser;
+
+	virtual bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames);
+};
+
 class IOChooser : public wxPanel {
 public:
 	IOChooser(wxWindow *parent, wxString title, wxString defaultPath, bool isFileChooser);
@@ -99,6 +110,7 @@ public:
 	wxTextCtrl *_text;
 	wxButton *_browse;
 	bool _isFileChooser;
+	FileDrop *_dropTarget;
 };
 
 /* ----- Compression ----- */
