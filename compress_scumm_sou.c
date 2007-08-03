@@ -41,8 +41,7 @@ static FILE *input, *output_idx, *output_snd;
 static CompressMode gCompMode = kMP3Mode;
 
 
-void end_of_file(char *inputPath)
-{
+void end_of_file(char *inputPath) {
 	FILE *in;
 	int idx_size = ftell(output_idx);
 	size_t size;
@@ -78,16 +77,14 @@ void end_of_file(char *inputPath)
 	exit(-1);
 }
 
-void append_byte(int size, char buf[])
-{
+void append_byte(int size, char buf[]) {
 	int i;
 	for (i = 0; i < (size - 1); i++)
 		buf[i] = buf[i + 1];
 	buf[i] = fgetc(input);
 }
 
-void get_part(char *inputPath)
-{
+void get_part(char *inputPath) {
 	FILE *f;
 	uint32 tot_size;
 	char outname[256];
@@ -150,9 +147,8 @@ void get_part(char *inputPath)
 	writeUint32BE(output_idx, tot_size);
 }
 
-void showhelp(char *exename)
-{
-	printf("\nUsage: %s <params> monster.sou\n", exename);
+void showhelp(char *exename) {
+	printf("\nUsage: %s [params] monster.sou\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
@@ -191,8 +187,7 @@ void showhelp(char *exename)
 	exit(2);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	char *p;
 	char inputPath[768];
 	char buf[2048];
