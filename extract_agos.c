@@ -185,16 +185,19 @@ int savefile(char *name, void *mem, size_t length) {
 	return 1;
 }
 
-char filename[256];
+char filename[1024];
 
 int main(int argc, char *argv[]) {
+	int i;
+
 	if (argc < 2) {
 		printf("\nUsage: %s <file 1> ... <file n>\n", argv[0]);
 		exit(2);
 	}
 
-	for (argv++; *argv; argv++) {
-		UBYTE *x = (UBYTE *) loadfile(*argv);
+	for (i = 1; i < argc; i++) {
+		UBYTE *x = (UBYTE *) loadfile(argv[i]);
+		strcpy(filename, argv[i]);
 
 		if (x) {
 			ULONG decrlen = simon_decr_length(x, (ULONG) filelen);
@@ -202,7 +205,6 @@ int main(int argc, char *argv[]) {
 
 			if (out) {
 				if (simon_decr(x, out, filelen)) {
-					strcpy(filename, *argv);
 					strcat(filename, ".out");
 					savefile(filename, out, decrlen);
 				}

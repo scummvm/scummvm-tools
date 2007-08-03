@@ -1084,7 +1084,9 @@ uint32 CheckROM (FILE *file) {
 
 int main (int argc, char **argv) {
 	FILE *input, *output;
-	char fname[256];
+	char fname[1024];
+	char *p;
+	char inputPath[768];
 	int i, j;
 	uint32 CRC;
 
@@ -1092,7 +1094,29 @@ int main (int argc, char **argv) {
 		printf("Usage: %s <file.PRG>\n", argv[0]);
 		printf("\tSupported versions: Europe, France, Germany, Sweden and USA\n");
 		printf("\tJapanese version is NOT supported!\n");
-		return 1;
+		exit(2);
+	}
+
+	/* Find the last occurence of '/' or '\'
+	 * Everything before this point is the path
+	 * Everything after this point is the filename
+	 */
+	p = strrchr(argv[argc - 1], '/');
+	if (!p) {
+		p = strrchr(argv[argc - 1], '\\');
+
+		if (!p) {
+			p = argv[argc - 1] - 1;
+		}
+	}
+
+	/* The path is everything before p, unless the file is in the current directory,
+	 * in which case the path is '.'
+	 */
+	if (p < argv[argc - 1]) {
+		strcpy(inputPath, ".");
+	} else {
+		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
 	}
 
 	if (!(input = fopen(argv[1], "rb"))) {
@@ -1143,8 +1167,8 @@ int main (int argc, char **argv) {
 
 	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
-		sprintf(fname, "%02i.LFL", lfl->num);
 
+		sprintf(fname, "%s/%02i.LFL", inputPath, lfl->num);
 		if (!(output = fopen(fname, "wb"))) {
 			error("Error: unable to create %s!", fname);
 		}
@@ -1219,11 +1243,12 @@ int main (int argc, char **argv) {
 		fclose(output);
 	}
 
-	if (!(output = fopen("00.LFL", "wb"))) {
+	sprintf(fname, "%s/00.LFL", inputPath);
+	if (!(output = fopen(fname, "wb"))) {
 		error("Error: unable to create index file!");
 	}
 
-	notice("Creating 00.LFL...");
+	notice("Creating %s...", fname);
 	writeUint16LE(output, 0x4643);
 	extract_resource(input, output, &res_globdata[ROMset][0]);
 

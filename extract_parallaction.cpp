@@ -363,11 +363,11 @@ void optDump(const char* file, const char* dir, bool smallArchive) {
 int main(int argc, char *argv[]) {
 
 	if (argc < 3) {
-		printf("Usage: %s [small] <file> <outputdir>", argv[0]);
+		printf("Usage: %s [--small] <file> <outputdir>", argv[0]);
 		exit(1);
 	}
 
-	if (!strcmp(argv[1], "small")) {
+	if (!strcmp(argv[1], "--small")) {
 		optDump(argv[2], argv[3], true);
 	} else {
 		optDump(argv[1], argv[2], false);

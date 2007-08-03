@@ -39,6 +39,7 @@ public:
 	void drawFileList();
 
 	bool outputAllFiles();
+	bool outputAllFiles(char* outputPath);
 
 	bool outputFile(const char *file) { return outputFileAs(file, file); }
 	bool outputFileAs(const char *file, const char *outputName);

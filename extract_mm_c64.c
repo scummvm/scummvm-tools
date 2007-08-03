@@ -57,13 +57,37 @@ unsigned char room_disks[55], room_tracks[55], room_sectors[55];
 
 int main (int argc, char **argv) {
 	FILE *input1, *input2, *output;
-	char fname[256];
+	char fname[1024];
+	char *p;
+	char inputPath[768];
 	int i, j;
 	unsigned short signature;
 
 	if (argc < 3) {
 		printf("Syntax: %s <disk1.d64> <disk2.d64>\n", argv[0]);
-		return 1;
+		exit(2);
+	}
+
+	/* Find the last occurence of '/' or '\'
+	 * Everything before this point is the path
+	 * Everything after this point is the filename
+	 */
+	p = strrchr(argv[argc - 1], '/');
+	if (!p) {
+		p = strrchr(argv[argc - 1], '\\');
+
+		if (!p) {
+			p = argv[argc - 1] - 1;
+		}
+	}
+
+	/* The path is everything before p, unless the file is in the current directory,
+	 * in which case the path is '.'
+	 */
+	if (p < argv[argc - 1]) {
+		strcpy(inputPath, ".");
+	} else {
+		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
 	}
 
 	if (!(input1 = fopen(argv[1], "rb"))) {
@@ -87,7 +111,8 @@ int main (int argc, char **argv) {
 		error("Signature not found in disk 2!");
 	}
 
-	if (!(output = fopen("00.LFL", "wb"))) {
+	sprintf(fname, "%s/00.LFL", inputPath);
+	if (!(output = fopen(fname, "wb"))) {
 		error("Unable to create index file!");
 	}
 
@@ -171,7 +196,7 @@ int main (int argc, char **argv) {
 			continue;
 		}
 
-		sprintf(fname, "%02i.LFL", i);
+		sprintf(fname, "%s/%02i.LFL", inputPath, i);
 		output = fopen(fname, "wb");
 
 		if (output == NULL) {

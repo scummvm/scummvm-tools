@@ -1333,8 +1333,10 @@ uint32 ISO_CRC (FILE *file) {
 int main (int argc, char **argv) {
 #ifdef MAKE_LFLS
 	FILE *input, *output;
-	char fname[256];
+	char fname[1024];
 	int i, j;
+	char *p;
+	char inputPath[768];
 #else
 	FILE *input;
 	int i;
@@ -1342,8 +1344,30 @@ int main (int argc, char **argv) {
 	uint32 CRC;
 
 	if (argc < 2) {
-		printf("nUsage: %s <code_##.ISO>\n", argv[0]);
+		printf("Usage: %s <code_##.ISO>\n", argv[0]);
 		return 1;
+	}
+
+	/* Find the last occurence of '/' or '\'
+	 * Everything before this point is the path
+	 * Everything after this point is the filename
+	 */
+	p = strrchr(argv[argc - 1], '/');
+	if (!p) {
+		p = strrchr(argv[argc - 1], '\\');
+
+		if (!p) {
+			p = argv[argc - 1] - 1;
+		}
+	}
+
+	/* The path is everything before p, unless the file is in the current directory,
+	 * in which case the path is '.'
+	 */
+	if (p < argv[argc - 1]) {
+		strcpy(inputPath, ".");
+	} else {
+		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
 	}
 
 	if (!(input = fopen(argv[1], "rb"))) {
@@ -1368,8 +1392,8 @@ int main (int argc, char **argv) {
 
 	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
-		sprintf(fname, "%02i.LFL", lfl->num);
 
+		sprintf(fname, "%s/%02i.LFL", inputPath, lfl->num);
 		if (!(output = fopen(fname, "wb"))) {
 			error("Error: unable to create %s!", fname);
 		}
@@ -1406,11 +1430,12 @@ int main (int argc, char **argv) {
 		fclose(output);
 	}
 
-	if (!(output = fopen("00.LFL", "wb"))) {
+	sprintf(fname, "%s/00.LFL", inputPath);
+	if (!(output = fopen(fname, "wb"))) {
 		error("Error: unable to create index file!");
 	}
 
-	notice("Creating 00.LFL...");
+	notice("Creating %s...", fname);
 
 	lfl_index.num_rooms = NUM_ROOMS;
 	lfl_index.num_costumes = NUM_COSTUMES;
@@ -1459,27 +1484,30 @@ int main (int argc, char **argv) {
 
 	fclose(output);
 
-	if (!(output = fopen("97.LFL", "wb"))) {
+	sprintf(fname, "%s/97.LFL", inputPath);
+	if (!(output = fopen(fname, "wb"))) {
 		error("Error: unable to create charset file!");
 	}
 
-	notice("Creating 97.LFL...");
+	notice("Creating %s...", fname);
 	extract_resource(input, output, &res_charset);
 	fclose(output);
 
-	if (!(output = fopen("98.LFL", "wb"))) {
+	sprintf(fname, "%s/98.LFL", inputPath);
+	if (!(output = fopen(fname, "wb"))) {
 		error("Error: unable to create charset file!");
 	}
 
-	notice("Creating 98.LFL...");
+	notice("Creating %s...", fname);
 	extract_resource(input, output, &res_charset);
 	fclose(output);
 
-	if (!(output = fopen("99.LFL", "wb"))) {
+	sprintf(fname, "%s/99.LFL", inputPath);
+	if (!(output = fopen(fname, "wb"))) {
 		error("Error: unable to create charset file!");
 	}
 
-	notice("Creating 99.LFL...");
+	notice("Creating %s...", fname);
 	extract_resource(input, output, &res_charset);
 	fclose(output);
 

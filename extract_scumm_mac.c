@@ -31,7 +31,9 @@ int main(int argc, char *argv[]) {
 	unsigned long file_record_off, file_record_len;
 	unsigned long file_off, file_len;
 	unsigned long data_file_len;
-	const char *data_file_name;
+	char fname[1024];
+	char* p;
+	char inputPath[768];
 	char file_name[0x20];
 	char *buf;
 	unsigned long i;
@@ -45,10 +47,30 @@ int main(int argc, char *argv[]) {
 		exit(2);
 	}
 
-	data_file_name = argv[1];
+	/* Find the last occurence of '/' or '\'
+	 * Everything before this point is the path
+	 * Everything after this point is the filename
+	 */
+	p = strrchr(argv[argc - 1], '/');
+	if (!p) {
+		p = strrchr(argv[argc - 1], '\\');
 
-	if ((ifp = fopen(data_file_name, "rb")) == NULL) {
-		error("Could not open \'%s\'.", data_file_name);
+		if (!p) {
+			p = argv[argc - 1] - 1;
+		}
+	}
+
+	/* The path is everything before p, unless the file is in the current directory,
+	 * in which case the path is '.'
+	 */
+	if (p < argv[argc - 1]) {
+		strcpy(inputPath, ".");
+	} else {
+		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
+	}
+
+	if ((ifp = fopen(argv[1], "rb")) == NULL) {
+		error("Could not open \'%s\'.", argv[1]);
 	}
 
 	/* Get the length of the data file to use for consistency checks */
@@ -61,13 +83,13 @@ int main(int argc, char *argv[]) {
 	/* Do a quick check to make sure the offset and length are good */
 	if (file_record_off + file_record_len > data_file_len) {
 		fclose(ifp);
-		error("\'%s\'. file records out of bounds.", data_file_name);
+		error("\'%s\'. file records out of bounds.", argv[1]);
 	}
 
 	/* Do a little consistancy check on file_record_length */
 	if (file_record_len % 0x28) {
 		fclose(ifp);
-		error("\'%s\'. file record length not multiple of 40.", data_file_name);
+		error("\'%s\'. file record length not multiple of 40.", argv[1]);
 	}
 
 	/* Extract the files */
@@ -84,7 +106,7 @@ int main(int argc, char *argv[]) {
 
 		if (!file_name[0]) {
 			fclose(ifp);
-			error("\'%s\'. file has no name.", data_file_name);
+			error("\'%s\'. file has no name.", argv[1]);
 		}
 		printf("extracting \'%s\'", file_name);
 
@@ -108,7 +130,7 @@ int main(int argc, char *argv[]) {
 		if (j == 0x20) {
 			file_name[0x1f] = 0;
 			fprintf(stderr, "\nwarning: \'%s\'. file name not null terminated.\n", file_name);
-			fprintf(stderr, "data file \'%s\' may be not a file extract_scumm_mac can extract.\n", data_file_name);
+			fprintf(stderr, "data file \'%s\' may be not a file extract_scumm_mac can extract.\n", argv[1]);
 		}
 
 		printf(", saving as \'%s\'\n", file_name);
@@ -116,7 +138,7 @@ int main(int argc, char *argv[]) {
 		/* Consistency check. make sure the file data is in the file */
 		if (file_off + file_len > data_file_len) {
 			fclose(ifp);
-			error("\'%s\'. file out of bounds.", data_file_name);
+			error("\'%s\'. file out of bounds.", argv[1]);
 		}
 
 		/* Write a file */
@@ -125,7 +147,8 @@ int main(int argc, char *argv[]) {
 			error("Seek error.");
 		}
 
-		ofp = fopen(file_name, "wb");
+		sprintf(fname, "%s/%s", inputPath, file_name);
+		ofp = fopen(fname, "wb");
 
 		if (!(buf = malloc(file_len))) {
 			fclose(ifp);
