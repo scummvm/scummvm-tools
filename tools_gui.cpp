@@ -85,7 +85,7 @@ FileDrop::FileDrop(wxTextCtrl *target, bool isFileChooser) : wxFileDropTarget() 
 
 bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames) {
 	if (_isFileChooser) {
-		if (_target->GetValue().Last() != wxChar(" ")) {
+		if (_target->GetValue().Last() != wxChar(' ')) {
 			_target->AppendText(" ");
 		}
 
