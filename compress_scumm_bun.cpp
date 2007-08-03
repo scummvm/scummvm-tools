@@ -614,7 +614,13 @@ int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 in
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s [--vorbis] [params] <file> <inputdir> <outputdir>\n", exename);
+	printf("\nUsage: %s [params] <file> <inputdir> <outputdir>\n", exename);
+	printf("\nParams:\n");
+	printf(" --mp3        encode to MP3 format (default)\n");
+	printf(" --vorbis     encode to Vorbis format\n");
+	printf(" --flac       encode to Flac format\n");
+	printf("(If one of these is specified, it must be the first parameter.)\n");
+
 	printf("\nMP3 mode params:\n");
 	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
 	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
@@ -630,6 +636,19 @@ void showhelp(char *exename) {
 	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
 	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
+
+	printf("\nFlac mode params:\n");
+ 	printf(" --fast       FLAC uses compresion level 0\n");
+ 	printf(" --best       FLAC uses compresion level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+ 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
+
+	printf("\n --help     this help message\n");
+
+	printf("\n\nIf a parameter is not given the default value is used\n");
+	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
 	exit(2);
 }
 
@@ -644,6 +663,14 @@ static int32 _waveDataSize;
 static BundleAudioTable *bundleTable;
 static BundleAudioTable cbundleTable[10000]; // difficult to calculate
 static int32 cbundleCurIndex = 0;
+
+void encodeWaveWithFlac(char *filename) {
+	char fbuf[2048];
+	char fbuf2[2048];
+	sprintf(fbuf, "%s.wav", filename);
+	sprintf(fbuf2, "%s.fla", filename);
+	encodeAudio(fbuf, false, -1, fbuf2, kFlacMode);
+}
 
 void encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
@@ -741,7 +768,7 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 	_waveDataSize += size;
 }
 
-static bool _oggMode = false; // mp3 default
+static CompressMode gCompMode = kMP3Mode;
 
 typedef struct { int offset, size, codec; } CompTable;
 
@@ -900,24 +927,43 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *
 		writeWaveHeader(_waveDataSize, freq, channels);
 		free(outputData);
 		sprintf(tmpPath, "%s/%s_reg%03d", dir, filename, l);
-		if (_oggMode)
-			encodeWaveWithOgg(tmpPath);
-		else
+
+		switch (gCompMode) {
+		case kMP3Mode:
 			encodeWaveWithLame(tmpPath);
+			break;
+		case kVorbisMode:
+			encodeWaveWithOgg(tmpPath);
+			break;
+		case kFlacMode:
+			encodeWaveWithFlac(tmpPath);
+			break;
+		default:
+			error("Unknown encoding method");
+		}
+
 		sprintf(tmpPath, "%s/%s_reg%03d.wav", dir, filename, l);
 		unlink(tmpPath);
 
 		int32 startPos = ftell(output);
-		if (_oggMode)
-			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.ogg", filename, l);
-		else
+		switch (gCompMode) {
+		case kMP3Mode:
 			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.mp3", filename, l);
+			sprintf(tmpPath, "%s/%s_reg%03d.mp3", dir, filename, l);
+			break;
+		case kVorbisMode:
+			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.ogg", filename, l);
+			sprintf(tmpPath, "%s/%s_reg%03d.ogg", dir, filename, l);
+			break;
+		case kFlacMode:
+			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.fla", filename, l);
+			sprintf(tmpPath, "%s/%s_reg%03d.fla", dir, filename, l);
+			break;
+		default:
+			error("Unknown encoding method");
+		}
 		cbundleTable[cbundleCurIndex].offset = startPos;
 
-		if (_oggMode)
-			sprintf(tmpPath, "%s/%s_reg%03d.ogg", dir, filename, l);
-		else
-			sprintf(tmpPath, "%s/%s_reg%03d.mp3", dir, filename, l);
 		FILE *cmpFile = fopen(tmpPath, "rb");
 		fseek(cmpFile, 0, SEEK_END);
 		size = ftell(cmpFile);
@@ -1053,8 +1099,9 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 }
 
 int main(int argc, char *argv[]) {
-	if (argc < 4)
+	if (argc < 4) {
 		showhelp(argv[0]);
+	}
 
 	char inputDir[200];
 	char outputDir[200];
@@ -1071,19 +1118,40 @@ int main(int argc, char *argv[]) {
 	if (argc > 4) {
 		int result;
 		i = 1;
+	}
 
-		if (strcmp(argv[i], "--vorbis") == 0) {
-			_oggMode = true;
-			i++;
+	if (!strcmp(argv[i], "--mp3")) {
+		gCompMode = kMP3Mode;
+		i++;
+	} else if (!strcmp(argv[i], "--vorbis")) {
+		gCompMode = kVorbisMode;
+		i++;
+	} else if (!strcmp(argv[i], "--flac")) {
+		gCompMode = kFlacMode;
+		i++;
+	}
+
+	switch (gCompMode) {
+	case kMP3Mode:
+		if (!process_mp3_parms(argc - 2, argv, i)) {
+			showhelp(argv[0]);
 		}
 
-		if (_oggMode)
-			result = process_ogg_parms(argc - 2, argv, i);
-		else
-			result = process_mp3_parms(argc - 2, argv, i);
-
-		if (!result)
+		break;
+	case kVorbisMode:
+		if (!process_ogg_parms(argc - 2, argv, i)) {
 			showhelp(argv[0]);
+		}
+
+		break;
+	case kFlacMode:
+		if (!process_flac_parms(argc - 2, argv, i)){
+			showhelp(argv[0]);
+		}
+
+		break;
+	default:
+		error("Unknown encoding method");
 	}
 
 	char *index = strrchr(inputFilename, '.');
