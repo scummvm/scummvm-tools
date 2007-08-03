@@ -37,9 +37,10 @@
 
 enum GameSoundTypes {
 	kSoundPCM = 0,
-	kSoundVOC = 1,
-	kSoundWAV = 2,
-	kSoundMacPCM = 3
+	kSoundVOX = 1,
+	kSoundVOC = 2,
+	kSoundWAV = 3,
+	kSoundMacPCM = 4
 };
 
 struct GameFileDescription {
@@ -56,24 +57,45 @@ static GameFileDescription ITE_GameFiles[] = {
 	//	Filename					swapEndian	md5									resourceType	frequency	stereo
 	{"sounds.rsc",					false,		"e2ccb61c325d6d1ead3be0e731fe29fe", kSoundPCM,		22050,		false},	// PC CD/disk
 	{"sounds.rsc",					true,		"95863b89a0916941f6c5e1789843ba14", kSoundPCM,		22050,		false},	// Mac
+	// TODO: uncomment these once VOX files are supported
+	/*
+	{"soundsd.rsc",					false,		"95a6c148e22e99a8c243f2978223583c",	kSoundPCM,		22050,		false},	// New PC demos
+	{"soundsd.rsc",					true,		"b3a831fbed337d1f1300fee1dd474f6c",	kSoundPCM,		22050,		false},	// Mac demos
+	*/
+	// Unsupported (8 bit unsigned sound) - used in the early ITE Win32 demo
+	//{"soundsd.rsc",				false,		"a741139dd7365a13f463cd896ff9969a",	kSoundPCM,		22050,		false},	// Old Win32 demo
 	{"ite sounds.bin",				true,		"441426c6bb2a517f65c7e49b57f7a345", kSoundMacPCM,	22050,		false}, // MacBinary
+
 	{"music.rsc",					false,		"d6454756517f042f01210458abe8edd4", kSoundPCM,		11025,		true},	// PC CD/disk with digital music
 	{"music.rsc",					true,		"1a91cd60169f367ecb6c6e058d899b2f", kSoundPCM,		11025,		true},	// Mac
+	// TODO: uncomment these once VOX files are supported
+	/*
+	{"musicd.rsc",					true,		"d6454756517f042f01210458abe8edd4",	kSoundPCM,		11025,		true},	// New PC demos
+	{"musicd.rsc",					true,		"495bdde51fd9f4bea2b9c911091b1ab2",	kSoundPCM,		11025,		false},	// New Mac demo
+	{"musicd.rsc",					true,		"1a91cd60169f367ecb6c6e058d899b2f",	kSoundPCM,		11025,		true},	// Old Mac demo
+	*/
+	{"ite music.bin",				true,		"441426c6bb2a517f65c7e49b57f7a345",	kSoundMacPCM,	22050,		false},	// MacBinary
+
 	{"inherit the earth voices",	true,		"c14c4c995e7a0d3828e3812a494301b7", kSoundPCM,		22050,		false},	// Mac
 	{"voices.rsc",					false,		"41bb6b95d792dde5196bdb78740895a6", kSoundPCM,		22050,		false},	// CD
 	{"voices.rsc",					false,		"2fbad5d10b9b60a3415dc4aebbb11718", kSoundPCM,		22050,		false},	// German CD
 	{"voices.rsc",					false,		"c46e4392fcd2e89bc91e5567db33b62d", kSoundVOC,		-1,			false},	// Disk
 	{"voices.rsc",					false,		"0c9113e630f97ef0996b8c3114badb08", kSoundVOC,		-1,			false},	// German disk
+	{"voices.rsc",					false,		"c58e67c506af4ffa03fd0aac2079deb0", kSoundVOC,		-1,			false},	// Early DOS demo
+	// TODO: uncomment this once VOX files are supported
+	//{"voicesd.rsc",				false,		"e139d86bab2ee8ba3157337f894a92d4", kSoundVOX,		22050,		false},	// New PC demos and all Mac demos
+	// Unsupported (8 bit unsigned sound) - used in the early ITE Win32 demo
+	//{"voicesd.rsc",				false,		"0759eaf5b64ae19fd429920a70151ad3", kSoundPCM,		22050,			false},	// Old Win32 demo
 	{"ite voices.bin",				true,		"dba92ae7d57e942250fe135609708369", kSoundMacPCM,	22050,		false}	// MacBinary
+	// TODO: Add known Amiga files
 };
 
-#if 0
-// Disabled for now
 // Known IHNM files
 static GameFileDescription IHNM_GameFiles[] = {
 	//	Filename					swapEndian	md5									resourceType	frequency	stereo
 	// Common
-	{"sfx.res",						false,		"1c610d543f32ec8b525e3f652536f269", kSoundWAV,		-1,			false},
+	// FIXME: sfx.res is disabled for now, as there are issues when trying to encode it
+	//{"sfx.res",					false,		"1c610d543f32ec8b525e3f652536f269",	kSoundWAV,		-1,			false},
 	// English
 	{"voicess.res",					false,		"54b1f2013a075338ceb0e258d97808bd", kSoundWAV,		-1,			false},
 	{"voices1.res",					false,		"fc6440b38025f4b2cc3ff55c3da5c3eb", kSoundWAV,		-1,			false},
@@ -111,9 +133,10 @@ static GameFileDescription IHNM_GameFiles[] = {
 	{"voices2.res",					false,		"c2d93a35d2c2def9c3d6d242576c794b", kSoundWAV,		-1,			false},
 	{"voices3.res",					false,		"49e42befea883fd101ec3d0f5d0647b9", kSoundWAV,		-1,			false},
 	{"voices5.res",					false,		"f4c415de7c03de86b73f9a12b8bd632f", kSoundWAV,		-1,			false},
-	{"voices6.res",					false,		"3fc5358a5d8eee43bdfab2740276572e", kSoundWAV,		-1,			false}
+	{"voices6.res",					false,		"3fc5358a5d8eee43bdfab2740276572e", kSoundWAV,		-1,			false},
+	// Demo
+	{"voicesd.res",					false,		"3bbc16a8f741dbb511da506c660a0b54", kSoundWAV,		-1,			false},
 };
-#endif
 
 // --------------------------------------------------------------------------------
 
@@ -136,15 +159,12 @@ static GameDescription gameDescriptions[] = {
 		ITE_GameFiles,
 	},
 
-#if 0
-	// Disabled for now
 	// I Have No Mouth And I Must Scream
 	{
 		GType_IHNM,
 		ARRAYSIZE(IHNM_GameFiles),
 		IHNM_GameFiles,
 	},
-#endif
 
 };
 
@@ -299,13 +319,32 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
-	if (currentFileDescription->resourceType == kSoundMacPCM) {
+	if (currentFileDescription->resourceType == kSoundVOX) {
+		error("VOX encoded files are not supported yet");
+		// TODO
+		/*
+		  buffer.frequency = soundInfo->frequency;
+		  buffer.isSigned = soundInfo->isSigned;
+		  buffer.sampleBits = soundInfo->sampleBits;
+		  buffer.stereo = soundInfo->stereo;
+		  buffer.size = soundResourceLength * 4;
+
+		  voxStream = Audio::makeADPCMStream(&readS, soundResourceLength, Audio::kADPCMOki);
+		  buffer.buffer = (byte *)malloc(buffer.size);
+		  voxSize = voxStream->readBuffer((int16*)buffer.buffer, soundResourceLength * 2);
+		  if (voxSize != soundResourceLength * 2) {
+			error("SndRes::load() wrong VOX output size");
+		  }
+		*/
+	}
+  if (currentFileDescription->resourceType == kSoundMacPCM) {
 		error("MacBinary files are not supported yet");
 		// TODO
 		/*
 		copyFile(inputFile, inputSize, TEMP_RAW);
 		sampleSize = inputSize - 36;
 		sampleRate = (uint16)currentFileDescription->frequency;
+		// The MAC CD Guild version has 8 bit sound, whereas the other versions have 16 bit sound
 		sampleBits = 8;
 		sampleStereo = currentFileDescription->stereo;
 		writeHeader(outputFile);
@@ -319,7 +358,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 	error("Unsupported resourceType %ul\n", currentFileDescription->resourceType);
 }
 
-void sagaEncode(const char *inputPath, const char *inputFileName) {
+void sagaEncode(const char *inputPath, const char *inputFileName, const char *inputFileNameExt) {
 	char inputFileNameWithExt[256];
 	char outputFileNameWithExt[256];
 	FILE *inputFile;
@@ -332,7 +371,7 @@ void sagaEncode(const char *inputPath, const char *inputFileName) {
 	Record *inputTable;
 	Record *outputTable;
 
-	sprintf(inputFileNameWithExt, "%s/%s.rsc", inputPath, inputFileName);
+	sprintf(inputFileNameWithExt, "%s/%s%s", inputPath, inputFileName, inputFileNameExt);
 	inputFile = fopen(inputFileNameWithExt, "rb");
 	inputFileSize = fileSize(inputFile);
 	printf("Filesize: %ul\n", inputFileSize);
@@ -536,22 +575,22 @@ int main(int argc, char *argv[]) {
 	sprintf(inputFileNameWithExt, "%s/%s.rsc", inputPath, inputFileName);
 
 	if (detectFile(inputFileNameWithExt)) {
-		sagaEncode(inputPath, inputFileName);
+		sagaEncode(inputPath, inputFileName, ".rsc");
 	} else {
 		// IHNM
 		sprintf(inputFileNameWithExt, "%s/%s.res", inputPath, inputFileName);
 		if (detectFile(inputFileNameWithExt)) {
-			sagaEncode(inputPath, inputFileName);
+			sagaEncode(inputPath, inputFileName, ".res");
 		} else {
 			// Check for "inherit the earth voices"
 			if (detectFile("inherit the earth voices")) {
-				sagaEncode(inputPath, "inherit the earth voices");
+				sagaEncode(inputPath, "inherit the earth voices", "");
 			} else {
 				// Check for MacBinary
 				sprintf(inputFileNameWithExt, "%s/%s.bin", inputPath, inputFileName);
 				if (detectFile(inputFileNameWithExt)) {
 					isSigned = false;
-					sagaEncode(inputPath, inputFileName);
+					sagaEncode(inputPath, inputFileName, ".bin");
 				}
 			}
 		}
