@@ -18,7 +18,7 @@ Extraction Tools:
 		Unpacks .PAK files from Kyrandia games.
 		
 		Example of usage:
-		extract_kyra <file> [params]
+		extract_kyra [params] <file>
 		
 	extract_loom_tg16
 		Extracts data files from the PC-Engine version of Loom.
@@ -52,7 +52,7 @@ Extraction Tools:
 		Extracts the contents of archives used by Nippon Safes
 
 		Example of usage:
-		extract_parallaction [small] <file> <outputdir>
+		extract_parallaction [--small] <file> <outputdir>
 		
 	extract_scumm_mac
 		Extracts Macintosh "single file" SCUMM games into their
@@ -100,18 +100,16 @@ Compression Tools:
 		For Inherit the Earth, the digital music (music.rsc), speech 
 		(voices.rsc or "inherit the earth voices") and sound effects
 		(sounds.rsc) files can be compressed. For I have no mouth, the 
-		speech (voices*.res) and sound effects (sfx.res) files can be 
-		compressed.
+		speech (voices*.res) files can be compressed.
 
 		The compressed files have the ".cmp" extension. Once compressed, 
 		you only need the respective .cmp files. 
 
-		Only the files of the full game versions can be compressed, the
-		demo versions are not supported. 
-
-		The MacBinary files (*.bin) of the Mac CD Guild version of Inherit 
-		the Earth are not currently supported. Finally, there is no support 
-		for compressed sounds in I have no mouth yet.
+		There is no compression support yet for the following versions:
+		- The Mac CD Guild version of Inherit the Earth (uses MacBinary
+		*.bin files)
+		- The demo versions of Inherit the Earth
+		- The unsupported early DOS demo of Inherit the Earth
 
 		Example of usage:
 		compress_saga [params] <file>
@@ -120,10 +118,14 @@ Compression Tools:
 		extension.
 
 	compress_scumm_bun
-		Compresses '.bun' music/voice files.
+		Used to the compress '.bun' music/voice files with MP3, Vorbis,
+		or FLAC.
+
+		Please note that FLAC compression will produce larger files
+		than the original for The Curse of Monkey Island!
 
 		Example of usage:
-		compress_scumm_bun [--vorbis] [params] <file> <inputdir> <outputdir>
+		compress_scumm_bun [params] <file> <inputdir> <outputdir>
 
 	compress_scumm_san
 		Compresses '.san' smush animation files. It uses lossless
