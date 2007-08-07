@@ -31,11 +31,16 @@ END_EVENT_TABLE()
 BEGIN_EVENT_TABLE( CompressionPanel, wxPanel )
 	EVT_CHOICE(kCompressionToolChoice, CompressionPanel::OnCompressionToolChange)
 	EVT_CHOICE(kCompressionTypeChoice, CompressionPanel::OnCompressionTypeChange)
+	EVT_BUTTON(kCompressionInputBrowse, CompressionPanel::OnCompressionInputBrowse)
+	EVT_BUTTON(kCompressionOutputBrowse, CompressionPanel::OnCompressionOutputBrowse)
 	EVT_BUTTON(kCompressionStartButton, CompressionPanel::OnCompressionStart)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE( ExtractionPanel, wxPanel )
 	EVT_CHOICE(kExtractionToolChoice, ExtractionPanel::OnExtractionToolChange)
+	EVT_BUTTON(kExtractionInput1Browse, ExtractionPanel::OnExtractionInput1Browse)
+	EVT_BUTTON(kExtractionInput2Browse, ExtractionPanel::OnExtractionInput2Browse)
+	EVT_BUTTON(kExtractionOutputBrowse, ExtractionPanel::OnExtractionOutputBrowse)
 	EVT_BUTTON(kExtractionStartButton, ExtractionPanel::OnExtractionStart)
 END_EVENT_TABLE()
 
@@ -53,29 +58,76 @@ bool ToolsGui::OnInit() {
 }
 
 MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY, title) {
-	wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 	this->SetSizer(mainSizer);
 
 	_mainNotebook = new wxNotebook(this, wxID_ANY);
 
-	_compressionTools = new CompressionPanel(_mainNotebook);
-	_extractionTools = new ExtractionPanel(_mainNotebook);
+	wxPanel *compressionPage = new wxPanel(_mainNotebook);
+	wxBoxSizer *compressionPageSizer = new wxBoxSizer(wxVERTICAL);
+	compressionPage->SetSizer(compressionPageSizer);
 
-	_mainNotebook->AddPage(_compressionTools, wxT("Compression"), false, wxID_ANY);
-	_mainNotebook->AddPage(_extractionTools, wxT("Extraction"), false, wxID_ANY);
+	_compressionTools = new CompressionPanel(compressionPage);
+	compressionPageSizer->Add(_compressionTools, 1, wxEXPAND);
+
+	wxPanel *extractionPage = new wxPanel(_mainNotebook);
+	wxBoxSizer *extractionPageSizer = new wxBoxSizer(wxVERTICAL);
+	extractionPage->SetSizer(extractionPageSizer);
+
+	_extractionTools = new ExtractionPanel(extractionPage);
+	extractionPageSizer->Add(_extractionTools, 1, wxEXPAND);
+
+	_mainNotebook->AddPage(compressionPage, wxT("Compression"), false, wxID_ANY);
+	_mainNotebook->AddPage(extractionPage, wxT("Extraction"), false, wxID_ANY);
 
 	mainSizer->Add(_mainNotebook, 1, wxEXPAND);
 	mainSizer->SetSizeHints(this);
 }
 
-DropDownBox::DropDownBox(wxWindow *parent, wxWindowID id, wxString title, int numItems, wxString items[]) : wxPanel(parent) {
-	wxStaticBox *box = new wxStaticBox(this, wxID_ANY, title);
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(box, wxHORIZONTAL);
-	this->SetSizer(sizer);
+LocationDialog::LocationDialog(wxWindow *parent, wxTextCtrl *target, bool isFileChooser, wxString wildcard) {
+	_isFileChooser = isFileChooser;
+	_target = target;
 
-	_choice = new wxChoice(this, id, wxDefaultPosition, wxDefaultSize, numItems, items);
+	if (_isFileChooser) {
+		_fileDialog = new wxFileDialog(parent, wxFileSelectorPromptStr, wxT(""), wxT(""), wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+		_dirDialog = NULL;
+	} else {
+		_fileDialog = NULL;
+		_dirDialog = new wxDirDialog(parent);
+	}
+}
 
-	sizer->Add(_choice, 1, wxEXPAND | wxLEFT | wxRIGHT, 5);
+void LocationDialog::prompt() {
+	if (this->_isFileChooser) {
+		if (this->_fileDialog->ShowModal() == wxID_OK) {
+			wxArrayString filenames;
+			this->_fileDialog->GetFilenames(filenames);
+
+			if (this->_target->GetValue().Last() != wxChar(" ")) {
+				this->_target->AppendText(wxT(" "));
+			}
+
+			for (size_t i = 0; i < filenames.GetCount(); i++) {
+				this->_target->AppendText(wxT("\""));
+				this->_target->AppendText(filenames[i]);
+				this->_target->AppendText(wxT("\""));
+
+				if (i != filenames.GetCount() - 1) {
+					this->_target->AppendText(wxT(" "));
+				}
+			}
+
+			this->_target->SetInsertionPoint(0);
+		}
+	} else {
+		if (this->_dirDialog->ShowModal() == wxID_OK) {
+			this->_target->SetValue("\"");
+			this->_target->AppendText(this->_dirDialog->GetPath());
+			this->_target->AppendText("\"");
+		}
+
+		this->_target->SetInsertionPoint(0);
+	}
 }
 
 FileDrop::FileDrop(wxTextCtrl *target, bool isFileChooser) : wxFileDropTarget() {
@@ -86,45 +138,55 @@ FileDrop::FileDrop(wxTextCtrl *target, bool isFileChooser) : wxFileDropTarget() 
 bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames) {
 	if (_isFileChooser) {
 		if (_target->GetValue().Last() != wxChar(' ')) {
-			_target->AppendText(" ");
+			_target->AppendText(wxT(" "));
 		}
 
 		for (size_t i = 0; i < filenames.GetCount(); i++) {
-			_target->AppendText("\"");
+			_target->AppendText(wxT("\""));
 			_target->AppendText(filenames[i]);
-			_target->AppendText("\"");
-			
+			_target->AppendText(wxT("\""));
+
 			if (i != filenames.GetCount() - 1) {
-				_target->AppendText(" ");
+				_target->AppendText(wxT(" "));
 			}
 		}
 	} else {
-		_target->SetValue("\"");
+		_target->SetValue(wxT("\""));
 		_target->AppendText(filenames[0]);
-		_target->AppendText("\"");
+		_target->AppendText(wxT("\""));
 	}
 
 	return true;
 };
 
-IOChooser::IOChooser(wxWindow *parent, wxString title, wxString defaultPath, bool isFileChooser) : wxPanel(parent) {
+IOChooser::IOChooser(wxWindow *parent, kEventId buttonId, wxString title, bool isFileChooser) : wxPanel(parent) {
 	wxStaticBox *box = new wxStaticBox(this, wxID_ANY, title);
 	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(box, wxHORIZONTAL);
 	this->SetSizer(sizer);
 
-	_text = new wxTextCtrl(this, wxID_ANY, defaultPath);
-	_browse = new wxButton(this, wxID_ANY, wxT("Browse"));
+	_text = new wxTextCtrl(this, wxID_ANY, wxT(""));
+	_browse = new wxButton(this, buttonId, wxT("Browse"));
 	_isFileChooser = isFileChooser;
 
 	_dropTarget = new FileDrop(_text, _isFileChooser);
 	this->SetDropTarget(_dropTarget);
 
-	/* The button looks like it is shifted 2 pixels down 
+	/* The button looks like it is shifted 2 pixels down
 	 * from the text control (probably because of the wxStaticBox label)
 	 * so we simply pad the top by -2
 	 */
 	sizer->Add(_text, 3, wxBOTTOM | wxLEFT | wxRIGHT, 5);
 	sizer->Add(_browse, 1, wxTOP, -2);
+}
+
+DropDownBox::DropDownBox(wxWindow *parent, kEventId boxId, wxString title, int numItems, wxString items[]) : wxPanel(parent) {
+	wxStaticBox *box = new wxStaticBox(this, wxID_ANY, title);
+	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(box, wxHORIZONTAL);
+	this->SetSizer(sizer);
+
+	_choice = new wxChoice(this, boxId, wxDefaultPosition, wxDefaultSize, numItems, items);
+
+	sizer->Add(_choice, 1, wxEXPAND | wxLEFT | wxRIGHT, 5);
 }
 
 /* ----- Compression ----- */
@@ -211,15 +273,15 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	_compressionOptionsChooser = new wxCheckBox(_compressionTypeBox, kCompressionOptionsToggle, wxT("Advanced"));
 	_compressionTypeBox->GetSizer()->Add(_compressionOptionsChooser, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
 
-	_inputPanel = new IOChooser(topPanel, wxT("Input"), wxT(""), true);
-	_outputPanel = new IOChooser(topPanel, wxT("Output"), wxT(""), false);
+	_inputPanel = new IOChooser(topPanel, kCompressionInputBrowse, wxT("Input"), true);
+	_outputPanel = new IOChooser(topPanel, kCompressionOutputBrowse, wxT("Output"), false);
 
 	/* Bottom Panel */
 	wxPanel *bottomPanel = new wxPanel(this);
 	wxBoxSizer *bottomPanelSizer = new wxBoxSizer(wxVERTICAL);
 	bottomPanel->SetSizer(bottomPanelSizer);
 
-	/* Initially hide the advanced compression options 
+	/* Initially hide the advanced compression options
 	 * They can be shown by toggling _compressionOptionsChooser
 	 */
 	_compressionOptionsPanel = new CompressionOptions(bottomPanel);
@@ -302,9 +364,9 @@ ExtractionPanel::ExtractionPanel(wxWindow *parent) : wxPanel(parent) {
 	topPanel->SetSizer(topPanelSizer);
 
 	_extractionToolChooserPanel = new DropDownBox((wxWindow *)topPanel, kExtractionToolChoice, wxT("Game Engine"), kNumExtractionTools, kExtractionToolNames);
-	_input1Panel = new IOChooser(topPanel, wxT("Input 1"), wxT(""), true);
-	_input2Panel = new IOChooser(topPanel, wxT("Input 2"), wxT(""), true);
-	_outputPanel = new IOChooser(topPanel, wxT("Output"), wxT(""), false);
+	_input1Panel = new IOChooser(topPanel, kExtractionInput1Browse, wxT("Input 1"), true);
+	_input2Panel = new IOChooser(topPanel, kExtractionInput2Browse, wxT("Input 2"), true);
+	_outputPanel = new IOChooser(topPanel, kExtractionOutputBrowse, wxT("Output"), false);
 
 	/* Bottom Panel */
 	wxPanel *bottomPanel = new wxPanel(this);
@@ -514,7 +576,7 @@ void CompressionOptions::OnCompressionModeChange(wxCommandEvent &event) {
 		this->_maxBitrateChooser->SetSelection(0);
 		this->_minBitrateChooser->SetSelection(0);
 		this->_vbrQualityChooser->SetSelection(0);
-	
+
 		this->_avgBitrateChooser->Enable(true);
 		this->_minBitrateChooser->Enable(false);
 		this->_maxBitrateChooser->Enable(false);
@@ -530,6 +592,16 @@ void CompressionOptions::OnCompressionModeChange(wxCommandEvent &event) {
 		this->_maxBitrateChooser->Enable(false);
 		this->_vbrQualityChooser->Enable(false);
 	}
+}
+
+void CompressionPanel::OnCompressionInputBrowse(wxCommandEvent &event) {
+	LocationDialog *dialog = new LocationDialog(this, this->_inputPanel->_text, this->_inputPanel->_isFileChooser, wxT(""));
+	dialog->prompt();
+}
+
+void CompressionPanel::OnCompressionOutputBrowse(wxCommandEvent &event) {
+	LocationDialog *dialog = new LocationDialog(this, this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT(""));
+	dialog->prompt();
 }
 
 void CompressionPanel::OnCompressionStart(wxCommandEvent &event) {
@@ -658,34 +730,31 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 	}
 }
 
+void ExtractionPanel::OnExtractionInput1Browse(wxCommandEvent &event) {
+	LocationDialog *dialog = new LocationDialog(this, this->_input1Panel->_text, this->_input1Panel->_isFileChooser, wxT(""));
+	dialog->prompt();
+}
+
+void ExtractionPanel::OnExtractionInput2Browse(wxCommandEvent &event) {
+	LocationDialog *dialog = new LocationDialog(this, this->_input2Panel->_text, this->_input2Panel->_isFileChooser, wxT(""));
+	dialog->prompt();
+}
+
+void ExtractionPanel::OnExtractionOutputBrowse(wxCommandEvent &event) {
+	LocationDialog *dialog = new LocationDialog(this, this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT(""));
+	dialog->prompt();
+}
+
 void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 
 }
 
 void MainFrame::OnCompressionOptionsToggle(wxCommandEvent &event) {
-	int height, width;
-
 	this->_compressionTools->_compressionOptionsPanel->Show(!this->_compressionTools->_compressionOptionsPanel->IsShown());
+
 	this->_compressionTools->Fit();
-	this->_compressionTools->SetSize(this->_compressionTools->GetSize().GetWidth() + 10, this->_compressionTools->GetSize().GetHeight());
+	this->_compressionTools->SetSize(this->_mainNotebook->GetPage(0)->GetSize());
 
 	this->_extractionTools->Fit();
-
-	if (this->_compressionTools->GetSize().GetWidth() >= this->_extractionTools->GetSize().GetWidth()) {
-		width = this->_compressionTools->GetSize().GetWidth();
-	} else {
-		width = this->_extractionTools->GetSize().GetWidth();
-	}
-
-	if (this->_compressionTools->GetSize().GetHeight() >= this->_extractionTools->GetSize().GetHeight()) {
-		height = this->_compressionTools->GetSize().GetHeight();
-	} else {
-		height = this->_extractionTools->GetSize().GetHeight();
-	}
-
-	this->_mainNotebook->SetMinSize(wxSize(width, height));
-	this->_mainNotebook->Fit();
-
-	this->SetMinSize(wxSize(width, height));
-	this->Fit();
+	this->_extractionTools->SetSize(this->_mainNotebook->GetPage(1)->GetSize());
 }

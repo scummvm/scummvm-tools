@@ -22,6 +22,7 @@
 
 #include <wx/wx.h>
 #include <wx/dnd.h>
+#include <wx/filedlg.h>
 #include <wx/notebook.h>
 #include <wx/statbox.h>
 #include <wx/textctrl.h>
@@ -66,11 +67,12 @@ wxString kValidFlacBlocksize[5] = {wxT(""), wxT("576"), wxT("1152"), wxT("2304")
 #define kNumMP3Modes 2
 wxString kMP3ModeNames[2] = {wxT("VBR"), wxT("ABR")};
 
-enum {
+enum kEventId {
 	kCompressionToolChoice,
 	kCompressionTypeChoice,
 	kCompressionModeChoice,
 	kCompressionInputBrowse,
+	kCompressionOutputBrowse,
 	kCompressionOptionsToggle,
 	kCompressionStartButton,
 	kExtractionToolChoice,
@@ -86,11 +88,16 @@ public:
 	virtual bool OnInit();
 };
 
-class DropDownBox : public wxPanel {
+class LocationDialog {
 public:
-	DropDownBox(wxWindow *parent, wxWindowID id, wxString title, int numItems, wxString items[]);
+	LocationDialog(wxWindow *parent, wxTextCtrl *target, bool isFileChooser, wxString wildcard);
 
-	wxChoice *_choice;
+	wxFileDialog *_fileDialog;
+	wxDirDialog *_dirDialog;
+	wxTextCtrl *_target;
+	bool _isFileChooser;
+
+	void prompt();
 };
 
 class FileDrop : public wxFileDropTarget {
@@ -105,12 +112,19 @@ public:
 
 class IOChooser : public wxPanel {
 public:
-	IOChooser(wxWindow *parent, wxString title, wxString defaultPath, bool isFileChooser);
+	IOChooser(wxWindow *parent, kEventId buttonId, wxString title, bool isFileChooser);
 
 	wxTextCtrl *_text;
 	wxButton *_browse;
 	bool _isFileChooser;
 	FileDrop *_dropTarget;
+};
+
+class DropDownBox : public wxPanel {
+public:
+	DropDownBox(wxWindow *parent, kEventId boxId, wxString title, int numItems, wxString items[]);
+
+	wxChoice *_choice;
 };
 
 /* ----- Compression ----- */
@@ -150,6 +164,8 @@ public:
 
 	void OnCompressionToolChange(wxCommandEvent &event);
 	void OnCompressionTypeChange(wxCommandEvent &event);
+	void OnCompressionInputBrowse(wxCommandEvent &event);
+	void OnCompressionOutputBrowse(wxCommandEvent &event);
 	void OnCompressionStart(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
@@ -181,6 +197,9 @@ public:
 	wxTextCtrl *_toolOutput;
 
 	void OnExtractionToolChange(wxCommandEvent &event);
+	void OnExtractionInput1Browse(wxCommandEvent &event);
+	void OnExtractionInput2Browse(wxCommandEvent &event);
+	void OnExtractionOutputBrowse(wxCommandEvent &event);
 	void OnExtractionStart(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
