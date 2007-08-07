@@ -1,0 +1,37 @@
+-------------
+Current Goals
+-------------
+
+* Create command line strings for all extraction tools
+* Create command line strings for all compression tools
+* Implement simple batch processing
+* Modify Makefile to create a Mac OSX bundle
+* Final testing on all platforms
+
+------------
+Future Goals
+------------
+
+* Default Options
+    - Things like default games path, default LAME path, default compression 
+      type, etc. could be added to a menu and saved to an *.ini file.
+* Enhanced Batch Processing
+    - Batch processing now consists of compressing/extracting multiple files
+      from the same game.  It can be enhanced holding a list of jobs to done
+      from multiple games.  This would involve adding a 'Start Batch' and a 
+      'Add to Batch' button and holding a copy of the compressionPanel and
+      compressionOptions classes associated with a job.  This would allow for
+      the user to modify waiting jobs since we would just replace the current
+      compressionPanel and compressionOptions panels with the saved copies.
+      The 'Start Batch' button would just iterate through each job, build
+      the command line string, and perform the resulting operation.
+* Encode DXA Improvements
+    - The current implementation of 'Encode DXA' compression only performs the
+      final step of the process.  There are already Windows and Unix scripts to
+      perform all of the steps in the process.  Another tab could be added to
+      the GUI which simply implements the steps found in the DXA scripts.
+* Automatic Compression
+    - Another tab could be added that would automatically compress an original
+      CD.  This would involve identifying the game, either by using filenames
+      or md5 hashes, copying all of the files needed to play the game to a
+      specified directory, and compressing any applicable files.
