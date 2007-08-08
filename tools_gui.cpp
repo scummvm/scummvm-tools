@@ -121,9 +121,9 @@ void LocationDialog::prompt() {
 		}
 	} else {
 		if (this->_dirDialog->ShowModal() == wxID_OK) {
-			this->_target->SetValue("\"");
+			this->_target->SetValue(wxT("\""));
 			this->_target->AppendText(this->_dirDialog->GetPath());
-			this->_target->AppendText("\"");
+			this->_target->AppendText(wxT("\""));
 		}
 
 		this->_target->SetInsertionPoint(0);
@@ -157,7 +157,7 @@ bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames)
 	}
 
 	return true;
-};
+}
 
 IOChooser::IOChooser(wxWindow *parent, kEventId buttonId, wxString title, bool isFileChooser) : wxPanel(parent) {
 	wxStaticBox *box = new wxStaticBox(this, wxID_ANY, title);
