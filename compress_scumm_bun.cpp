@@ -1109,16 +1109,12 @@ int main(int argc, char *argv[]) {
 	char tmpPath[200];
 
 	uint32 tag;
-	int32 numFiles, offset, i;
+	int32 numFiles, offset;
+	int i = 1;
 
 	strcpy(inputFilename, argv[argc - 3]);
 	strcpy(inputDir, argv[argc - 2]);
 	strcpy(outputDir, argv[argc - 1]);
-
-	if (argc > 4) {
-		int result;
-		i = 1;
-	}
 
 	if (!strcmp(argv[i], "--mp3")) {
 		gCompMode = kMP3Mode;
