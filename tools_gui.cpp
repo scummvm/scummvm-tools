@@ -103,7 +103,7 @@ void LocationDialog::prompt() {
 			wxArrayString filenames;
 			this->_fileDialog->GetFilenames(filenames);
 
-			if (this->_target->GetValue().Last() != wxChar(" ")) {
+			if (this->_target->GetValue().Last() != wxChar(' ')) {
 				this->_target->AppendText(wxT(" "));
 			}
 
