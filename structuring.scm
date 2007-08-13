@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-31 21:21:37 brx>
+;;; Time-stamp: <2007-08-01 22:50:20 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -58,8 +58,9 @@
                     (match (cons (bb-type latching) (bb-type header))
                       ((('goto-unless . _) . ('goto-unless . _))
                        (let ((oe (map second (oedges hnum))))
-                         (if (and (memq (second (ninfo (first oe))) nodes-in-loop)
-                                  (memq (second (ninfo (second oe))) nodes-in-loop))
+                         (if (or (eq? latching header)
+                                 (and (memq (second (ninfo (first oe))) nodes-in-loop)
+                                      (memq (second (ninfo (second oe))) nodes-in-loop)))
                              'post-tested
                              'pre-tested)))
                       ((('goto-unless . _) . (or ('goto . _) 'fall 'return))
@@ -150,9 +151,13 @@
       (if (null? nodes)
           (void)
           (let ((node (car nodes)))
-            (if (not (head-or-latch? (ninfo node)))
+            (if (and (match (bb-type (ninfo node))
+                       (('goto-unless . _) #t)
+                       (else #f))
+                     (not (head-or-latch? (ninfo node))))
                 (let ((ns (unzip1 (partition (lambda (idom)
-                                               (eq? node (cdr idom)))
+                                               (and (eq? node (cdr idom))
+                                                    (<= 2 (length ((top-graph 'in-edges) (car idom))))))
                                              idoms))))
                   (if (null? ns)
                       (loop (cdr nodes)

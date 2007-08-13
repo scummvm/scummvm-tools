@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-08 20:45:42 brx>
+;;; Time-stamp: <2007-08-01 17:52:47 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -38,6 +38,9 @@
 ;;;; num procedures
 
 (define /= (complement =))
+
+(define (->hex-string n)
+  (string-upcase (format "~X" n)))
 
 ;;;; list procedures
 

@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-31 21:19:30 brx>
+;;; Time-stamp: <2007-08-01 18:09:19 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -32,16 +32,17 @@
   (follow loop-follow set-loop-follow!))
 
 (define-record-type basic-block
-  (make-basic-block type range post-order loop-info follow)
+  (make-basic-block type range post-order loop-info follow traversed?)
   basic-block?
   (type bb-type set-bb-type!)
   (range bb-range set-bb-range!)
   (post-order post-order set-post-order!)
   (loop-info loop-info set-loop-info!)
-  (follow bb-follow set-bb-follow!))
+  (follow bb-follow set-bb-follow!)
+  (traversed? traversed? set-traversed!))
 
 (define basic-block
-  (cut make-basic-block <> <> #f (make-loop-info #f #f #f #f) #f))
+  (cut make-basic-block <> <> #f (make-loop-info #f #f #f #f) #f #f))
 
 (define-record-printer (basic-block x out)
   (fprintf out "(basic-block ~A ~A ~A)" (post-order x) (bb-type x) (bb-range x)))

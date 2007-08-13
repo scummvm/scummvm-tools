@@ -25,6 +25,7 @@ These CHICKEN libraries ("eggs") are needed to compile Antipasto:
   - dyn-vector
   - digraph
   - graph-dfs
+  - fmt
 
 To obtain these execute
 
