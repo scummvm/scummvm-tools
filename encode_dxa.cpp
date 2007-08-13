@@ -778,17 +778,12 @@ int main(int argc, char *argv[]) {
 	i = argc - 1;
 
 	// get filename prefix
-	char prefix[256];
 	char *filename = argv[i++];
+	char prefix[256];
+	char *p;
 
-	char *p = strrchr(filename, '/');
-	if (!p) {
-		p = strrchr(filename, '\\');
-		if (!p) {
-			p = filename - 1;
-		}
-	}
-	strcpy(prefix, p + 1);
+	getFilename(filename, prefix);
+
 	p = strrchr(prefix, '.');
 	if (p) {
 		*p = '\0';

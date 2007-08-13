@@ -32,7 +32,6 @@ int main(int argc, char *argv[]) {
 	unsigned long file_off, file_len;
 	unsigned long data_file_len;
 	char fname[1024];
-	char* p;
 	char inputPath[768];
 	char file_name[0x20];
 	char *buf;
@@ -47,27 +46,7 @@ int main(int argc, char *argv[]) {
 		exit(2);
 	}
 
-	/* Find the last occurence of '/' or '\'
-	 * Everything before this point is the path
-	 * Everything after this point is the filename
-	 */
-	p = strrchr(argv[argc - 1], '/');
-	if (!p) {
-		p = strrchr(argv[argc - 1], '\\');
-
-		if (!p) {
-			p = argv[argc - 1] - 1;
-		}
-	}
-
-	/* The path is everything before p, unless the file is in the current directory,
-	 * in which case the path is '.'
-	 */
-	if (p < argv[argc - 1]) {
-		strcpy(inputPath, ".");
-	} else {
-		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
-	}
+	getPath(argv[argc - 1], inputPath);
 
 	if ((ifp = fopen(argv[1], "rb")) == NULL) {
 		error("Could not open \'%s\'.", argv[1]);

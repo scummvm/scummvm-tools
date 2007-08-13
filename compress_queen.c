@@ -37,7 +37,6 @@ static CompressMode gCompMode = kMP3Mode;
 #define SB_HEADER_SIZE_V104 110
 #define SB_HEADER_SIZE_V110 122
 
-
 enum {
 	COMPRESSION_NONE = 0,
 	COMPRESSION_MP3 = 1,
@@ -118,8 +117,7 @@ const struct PatchFile patchFiles[] = {
 
 const struct GameVersion *version;
 
-void showhelp(char *exename)
-{
+void showhelp(char *exename) {
 	printf("\nUsage: %s [params] queen.1\n", exename);
 
 	printf("\nParams:\n");
@@ -246,11 +244,9 @@ void createFinalFile(char *inputPath) {
 	unlink(TEMP_DAT);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	FILE *inputData, *inputTbl, *outputTbl, *outputData, *tmpFile, *compFile;
 	uint8 compressionType = COMPRESSION_NONE;
-	char *p;
 	char inputPath[768];
 	char tblPath[1024];
 	char tmp[5];
@@ -303,27 +299,7 @@ int main(int argc, char *argv[])
 		break;
 	}
 
-	/* Find the last occurence of '/' or '\'
-	 * Everything before this point is the path
-	 * Everything after this point is the filename
-	 */
-	p = strrchr(argv[argc - 1], '/');
-	if (!p) {
-		p = strrchr(argv[argc - 1], '\\');
-
-		if (!p) {
-			p = argv[argc - 1] - 1;
-		}
-	}
-
-	/* The path is everything before p, unless the file is in the current directory,
-	 * in which case the path is '.'
-	 */
-	if (p < argv[argc - 1]) {
-		strcpy(inputPath, ".");
-	} else {
-		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
-	}
+	getPath(argv[argc - 1], inputPath);
 
 	/* Open input file (QUEEN.1) */
 	inputData = fopen(argv[argc-1], "rb");

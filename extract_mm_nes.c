@@ -1085,7 +1085,6 @@ uint32 CheckROM (FILE *file) {
 int main (int argc, char **argv) {
 	FILE *input, *output;
 	char fname[1024];
-	char *p;
 	char inputPath[768];
 	int i, j;
 	uint32 CRC;
@@ -1097,27 +1096,7 @@ int main (int argc, char **argv) {
 		exit(2);
 	}
 
-	/* Find the last occurence of '/' or '\'
-	 * Everything before this point is the path
-	 * Everything after this point is the filename
-	 */
-	p = strrchr(argv[argc - 1], '/');
-	if (!p) {
-		p = strrchr(argv[argc - 1], '\\');
-
-		if (!p) {
-			p = argv[argc - 1] - 1;
-		}
-	}
-
-	/* The path is everything before p, unless the file is in the current directory,
-	 * in which case the path is '.'
-	 */
-	if (p < argv[argc - 1]) {
-		strcpy(inputPath, ".");
-	} else {
-		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
-	}
+	getPath(argv[argc - 1], inputPath);
 
 	if (!(input = fopen(argv[1], "rb"))) {
 		error("Error: unable to open file %s for input!", argv[1]);

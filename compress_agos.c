@@ -312,7 +312,6 @@ static void convert_mac(char *inputPath) {
 
 int main(int argc, char *argv[]) {
 	int i;
-	char *p;
 	char inputFile[256];
 	char inputPath[768];
 	bool convertMac = false;
@@ -325,18 +324,18 @@ int main(int argc, char *argv[]) {
 	gCompMode = kMP3Mode;
 	i = 1;
 
-	if (strcmp(argv[1], "--mp3") == 0) {
+	if (strcmp(argv[i], "--mp3") == 0) {
 		gCompMode = kMP3Mode;
 		i++;
-	} else if (strcmp(argv[1], "--vorbis") == 0) {
+	} else if (strcmp(argv[i], "--vorbis") == 0) {
 		gCompMode = kVorbisMode;
 		i++;
-	} else if (strcmp(argv[1], "--flac") == 0) {
+	} else if (strcmp(argv[i], "--flac") == 0) {
 		gCompMode = kFlacMode;
 		i++;
 	}
 
-	if (strcmp(argv[2], "--mac") == 0) {
+	if (strcmp(argv[i], "--mac") == 0) {
 		convertMac = true;
 		i++;
 	}
@@ -365,37 +364,13 @@ int main(int argc, char *argv[]) {
 		break;
 	}
 
-	/* Find the last occurence of '/' or '\'
-	 * Everything before this point is the path
-	 * Everything after this point is the filename
-	 */
-	p = strrchr(argv[argc - 1], '/');
-	if (!p) {
-		p = strrchr(argv[argc - 1], '\\');
-
-		if (!p) {
-			p = argv[argc - 1] - 1;
-		}
-	}
-
-	/* For simon2mac the filename defaults to "simon2" and the path is the whole arguement
-	 * Otherwise, the filename is everything after p and the path is everything before p,
-	 * unless the file is in the current directory, in which case the path is '.'
-	 */
 	if (convertMac) {
 		strcpy(inputFile, "simon2");
 		strcpy(inputPath, argv[argc - 1]);
-	} else if (p < argv[argc - 1]) {
-		strcpy(inputFile, p + 1);
-		strcpy(inputPath, ".");
-	} else {
-		strcpy(inputFile, p + 1);
-		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
-	}
-
-	if (convertMac) {
 		convert_mac(inputPath);
 	} else {
+		getPath(argv[argc - 1], inputPath);
+		getFilename(argv[argc - 1], inputFile);
 		convert_pc(inputPath, inputFile);
 	}
 

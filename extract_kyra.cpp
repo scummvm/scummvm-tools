@@ -36,7 +36,6 @@ void showhelp(char* exename)
 }
 
 int main(int argc, char **argv) {
-	char *p;
 	char inputPath[768];
 
 	if (argc < 2) {
@@ -76,27 +75,7 @@ int main(int argc, char **argv) {
 		error("Couldn't load file '%s'", argv[argc - 1]);
 	}
 
-	/* Find the last occurence of '/' or '\'
-	 * Everything before this point is the path
-	 * Everything after this point is the filename
-	 */
-	p = strrchr(argv[argc - 1], '/');
-	if (!p) {
-		p = strrchr(argv[argc - 1], '\\');
-
-		if (!p) {
-			p = argv[argc - 1] - 1;
-		}
-	}
-
-	/* The path is everything before p, unless the file is in the current directory,
-	 * in which case the path is '.'
-	 */
-	if (p < argv[argc - 1]) {
-		strcpy(inputPath, ".");
-	} else {
-		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
-	}
+	getPath(argc[argv - 1], inputPath);
 
 	if(extractAll) {
 		myfile.outputAllFiles(inputPath);

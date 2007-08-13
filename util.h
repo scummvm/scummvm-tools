@@ -228,6 +228,8 @@ uint32 fileSize(FILE *fp);
 void NORETURN_PRE error(const char *s, ...) NORETURN_POST;
 void warning(const char *s, ...);
 void debug(int level, const char *s, ...);
+void getPath(const char *fullpath, char *path);
+void getFilename(const char *fullpath, char *filename);
 
 #if defined(__cplusplus)
 }

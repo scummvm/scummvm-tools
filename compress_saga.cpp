@@ -495,7 +495,6 @@ void showhelp(char *exename) {
 
 int main(int argc, char *argv[]) {
 	int	i;
-	char *p;
 	char inputPath[768];
 	char *inputFileName = NULL;
 	char inputFileNameWithExt[256];
@@ -543,29 +542,8 @@ int main(int argc, char *argv[]) {
 		break;
 	}
 
-	/* Find the last occurence of '/' or '\'
-	 * Everything before this point is the path
-	 * Everything after this point is the filename
-	 */
-	p = strrchr(argv[argc - 1], '/');
-	if (!p) {
-		p = strrchr(argv[argc - 1], '\\');
-
-		if (!p) {
-			p = argv[argc - 1] - 1;
-		}
-	}
-
-	/* The path is everything before p, unless the file is in the current directory,
-	 * in which case the path is '.'
-	 */
-	if (p < argv[argc - 1]) {
-		strcpy(inputPath, ".");
-	} else {
-		strncpy(inputPath, argv[argc - 1], p - argv[argc - 1]);
-	}
-
-	strcpy(inputFileName, p + 1);
+	getPath(argv[argc - 1], inputPath);
+	getFilename(argv[argc - 1], inputFileName);
 
 	if (strrchr(inputFileName, '.') != NULL) {
 		error("Please specifiy the filename without an extension");
