@@ -127,9 +127,36 @@ Definition:
        D = D' = BJ1 = GP1
 
 
-                  Generic Set of Control Structures
-                  ---------------------------------
+                          Graph Structuring
+                          -----------------
 
 Antipasto structures control flow graphs using the set of generic
 control structures D' + goto = {1,2,3,4,5,6,7,12}.
 REn, RECn, DREn and DRECn can be simulated via the use of goto.
+
+Structuring Loops:
+
+ Given an interval I(h_j) with header h_j, there is a loop rooted at
+ h_j if there is a back-edge to the header node h_j from a latching
+ node n_k \in I(h_j).
+
+ Once a loop has been found, the type of loop (e.g. pre-tested,
+ post-tested, endless) is determined according to the type of header
+ and latching nodes. Nodes belonging to the loop are flagged in order
+ to prevent nodes from belonging to two different loops as would be
+ the case in overlapping or multientry loops.
+
+ Given a control flow graph G = G1 with interval information, the
+ derived sequence of graphs G1, ..., Gn of G, and the set of intervals
+ of these Graphs, I1 ... In, an algorithm to find loops is as follows:
+ each header node of an interval in G1 is checked for having a
+ back-edge from a latching node that belongs to the same interval. If
+ so, a loop has been found, its type is determined and the nodes that
+ belong to it are marked. next the intervals of G2, I2 are checked for
+ loops and the process is repeated until intervals in In have been
+ checked. Whenever there is a potential loop that has its header or
+ latching node marked as belonging to another loop, the loop is
+ disregarded as it belongs to an unstructured loop. These loops always
+ generate goto jumps during code generation.
+ This algorithm finds the loops in the appropriate nesting level, from
+ innermost to outermost loop.

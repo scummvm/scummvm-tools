@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype (version 5 scripts)
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-15 05:50:37 brx>
+;;; Time-stamp: <2007-07-31 18:30:48 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -18,11 +18,13 @@
 ;;; along with this program; if not, write to the Free Software
 ;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-(require-extension srfi-1 posix numbers digraph)
+(require-extension srfi-1 posix numbers digraph graph-dfs)
 
 (include "util.scm")
 (include "graph.scm")
 (include "cfgg.scm")
+(include "structuring.scm")
+(include "pseudo.scm")
 
 (define current-script-file #f)
 (define current-script-port #f)
@@ -816,7 +818,19 @@
   (let ((disassembly (decode-ops '())))
     (receive (cfg intervals)
         (generate-control-flow-graph disassembly)
-      (print-dot cfg disassembly intervals)))
+;;       (print-dot cfg disassembly intervals)
+;;       (newline)
+      ;; (for-each (lambda (dgs)
+;;                   (let ((dg (car dgs))
+;;                         (ivs (cdr dgs)))
+;;                     (print "==")
+;;                     (for-each pretty-print
+;;                               (map (lambda (iv)
+;;                                      (append-map (dg 'node-info) iv))
+;;                                    ivs))))
+;;                 (generate-derived-graph-sequence cfg intervals))
+      (structure-loops! cfg (generate-derived-graph-sequence cfg intervals))
+      (structure-2-way! cfg)))
   (close-input-port current-script-port)
   (set! current-script-port #f)
   (set! current-script-file #f)

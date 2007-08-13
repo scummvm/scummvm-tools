@@ -23,7 +23,8 @@ These CHICKEN libraries ("eggs") are needed to compile Antipasto:
   - numbers
   - vector-lib
   - dyn-vector
-  - digraph (use the fixed egg from eggs/)
+  - digraph
+  - graph-dfs
 
 To obtain these execute
 

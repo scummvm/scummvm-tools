@@ -2,7 +2,7 @@
 
 ;;; Antipasto - Scumm Script Disassembler Prototype
 ;;; Copyright (C) 2007 Andreas Scholta
-;;; Time-stamp: <2007-07-15 05:51:48 brx>
+;;; Time-stamp: <2007-07-31 21:19:30 brx>
 
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -18,14 +18,33 @@
 ;;; along with this program; if not, write to the Free Software
 ;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
+;; (test-run "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092")
+;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp")
+;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/room-15-203.dmp")
+;; (test-run "/home/brx/code/gsoc2007-decompiler/M1.scummV5/01.beach.0201")
+
+(define-record-type loop-info
+  (make-loop-info head latch type follow)
+  loop-info?
+  (head loop-head set-loop-head!)
+  (latch loop-latch set-loop-latch!)
+  (type loop-type set-loop-type!)
+  (follow loop-follow set-loop-follow!))
+
 (define-record-type basic-block
-  (basic-block type range)
+  (make-basic-block type range post-order loop-info follow)
   basic-block?
   (type bb-type set-bb-type!)
-  (range bb-range set-bb-range!))
+  (range bb-range set-bb-range!)
+  (post-order post-order set-post-order!)
+  (loop-info loop-info set-loop-info!)
+  (follow bb-follow set-bb-follow!))
+
+(define basic-block
+  (cut make-basic-block <> <> #f (make-loop-info #f #f #f #f) #f))
 
 (define-record-printer (basic-block x out)
-  (fprintf out "(basic-block ~A ~A)" (bb-type x) (bb-range x)))
+  (fprintf out "(basic-block ~A ~A ~A)" (post-order x) (bb-type x) (bb-range x)))
 
 (define (bb-update! bb #!key type range)
   (when type (set-bb-type! bb type))
@@ -94,7 +113,10 @@
                 blocks))
   (let ((g (make-digraph 'cfg "control flow graph"))
         (ii (list-tabulate (length blocks) identity)))
-    (for-each (cut (g 'add-node!) <> <>) ii blocks)
+    (for-each (lambda (i block)
+                ((g 'add-node!) i (list i block)))
+              ii
+              blocks)
     (for-each (lambda (i b)
                 (let ((outs (match (bb-type b)
                               (('goto-unless jump-addr _)
@@ -115,6 +137,16 @@
               blocks)
     g))
 
+(define (inject-post-order! cfg)
+  (let ((ninfo (cfg 'node-info))
+        (po 0))
+    (define (get-po!) (set! po (add1 po)) po)
+    (for-each (lambda (npo)
+                (let ((node (second (ninfo (first npo)))))
+                  (set-post-order! node (get-po!))))
+              (graph-postorder cfg 0))
+    cfg))
+
 (define (generate-control-flow-graph disassembly)
   (let ((cfg
          (remove-isolated!
@@ -124,7 +156,8 @@
              (map (lambda (instruction)
                     (cons (car instruction) (cddr instruction)))
                   disassembly)))))))
-    (values cfg (generate-intervals cfg (list 0)))))
+    (values (inject-post-order! cfg)
+            (generate-intervals cfg (list 0)))))
 
 ;; (test-run "/home/brx/code/gsoc2007-decompiler/M1.scummV5/81.cu_bar_2.0092")
 ;; (test-run "/home/brx/code/gsoc2007-decompiler/M2.scummV5/entry-4.dmp")
