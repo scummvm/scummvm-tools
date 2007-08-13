@@ -57,7 +57,7 @@ bool ToolsGui::OnInit() {
 	return true;
 }
 
-MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY, title) {
+MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY, title, wxDefaultPosition, wxSize(600, 450)) {
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 	this->SetSizer(mainSizer);
 
@@ -81,29 +81,29 @@ MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY,
 	_mainNotebook->AddPage(extractionPage, wxT("Extraction"), false, wxID_ANY);
 
 	mainSizer->Add(_mainNotebook, 1, wxEXPAND);
-	mainSizer->SetSizeHints(this);
+	this->SetMinSize(wxSize(600, 450));
 }
 
-LocationDialog::LocationDialog(wxWindow *parent, wxTextCtrl *target, bool isFileChooser, wxString wildcard) {
+LocationDialog::LocationDialog(wxTextCtrl *target, bool isFileChooser, wxString wildcard) {
 	_isFileChooser = isFileChooser;
 	_target = target;
 
 	if (_isFileChooser) {
-		_fileDialog = new wxFileDialog(parent, wxFileSelectorPromptStr, wxT(""), wxT(""), wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
-		_dirDialog = NULL;
+		_dialog = new wxFileDialog(NULL, wxFileSelectorPromptStr, wxT(""), wxT(""), wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
 	} else {
-		_fileDialog = NULL;
-		_dirDialog = new wxDirDialog(parent);
+		_dialog = new wxDirDialog(NULL);
 	}
 }
 
 void LocationDialog::prompt() {
 	if (this->_isFileChooser) {
-		if (this->_fileDialog->ShowModal() == wxID_OK) {
+		wxFileDialog *dialog = dynamic_cast<wxFileDialog*>(_dialog);
+	
+		if (dialog->ShowModal() == wxID_OK) {
 			wxArrayString filenames;
-			this->_fileDialog->GetFilenames(filenames);
+			dialog->GetPaths(filenames);
 
-			if (this->_target->GetValue().Last() != wxChar(' ')) {
+			if (!this->_target->IsEmpty()) {
 				this->_target->AppendText(wxT(" "));
 			}
 
@@ -116,13 +116,15 @@ void LocationDialog::prompt() {
 					this->_target->AppendText(wxT(" "));
 				}
 			}
-
-			this->_target->SetInsertionPoint(0);
 		}
+
+		this->_target->SetInsertionPoint(0);
 	} else {
-		if (this->_dirDialog->ShowModal() == wxID_OK) {
+		wxDirDialog *dialog = dynamic_cast<wxDirDialog*>(_dialog);
+
+		if (dialog->ShowModal() == wxID_OK) {
 			this->_target->SetValue(wxT("\""));
-			this->_target->AppendText(this->_dirDialog->GetPath());
+			this->_target->AppendText(dialog->GetPath());
 			this->_target->AppendText(wxT("\""));
 		}
 
@@ -132,51 +134,57 @@ void LocationDialog::prompt() {
 
 FileDrop::FileDrop(wxTextCtrl *target, bool isFileChooser) : wxFileDropTarget() {
 	_target = target;
+	_target->SetDropTarget(this);
 	_isFileChooser = isFileChooser;
 }
 
 bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames) {
-	if (_isFileChooser) {
-		if (_target->GetValue().Last() != wxChar(' ')) {
-			_target->AppendText(wxT(" "));
-		}
-
-		for (size_t i = 0; i < filenames.GetCount(); i++) {
-			_target->AppendText(wxT("\""));
-			_target->AppendText(filenames[i]);
-			_target->AppendText(wxT("\""));
-
-			if (i != filenames.GetCount() - 1) {
+	if (_target->IsEnabled()) {
+		if (_isFileChooser) {
+			if (!_target->IsEmpty()) {
 				_target->AppendText(wxT(" "));
 			}
+
+			for (size_t i = 0; i < filenames.GetCount(); i++) {
+				_target->AppendText(wxT("\""));
+				_target->AppendText(filenames[i]);
+				_target->AppendText(wxT("\""));
+
+				if (i != filenames.GetCount() - 1) {
+					_target->AppendText(wxT(" "));
+				}
+			}
+		} else {
+			_target->SetValue(wxT("\""));
+			_target->AppendText(filenames[0]);
+			_target->AppendText(wxT("\""));
 		}
-	} else {
-		_target->SetValue(wxT("\""));
-		_target->AppendText(filenames[0]);
-		_target->AppendText(wxT("\""));
+
+		_target->SetInsertionPoint(0);
 	}
 
 	return true;
 }
 
 IOChooser::IOChooser(wxWindow *parent, kEventId buttonId, wxString title, bool isFileChooser) : wxPanel(parent) {
-	wxStaticBox *box = new wxStaticBox(this, wxID_ANY, title);
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(box, wxHORIZONTAL);
-	this->SetSizer(sizer);
+	wxStaticBox *staticBox = new wxStaticBox(this, wxID_ANY, title);
+	wxStaticBoxSizer *staticBoxSizer = new wxStaticBoxSizer(staticBox, wxHORIZONTAL);
+	this->SetSizer(staticBoxSizer);
 
-	_text = new wxTextCtrl(this, wxID_ANY, wxT(""));
-	_browse = new wxButton(this, buttonId, wxT("Browse"));
+	wxPanel *panel = new wxPanel(this);
+	wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+	panel->SetSizer(sizer);
+
+	_text = new wxTextCtrl(panel, wxID_ANY, wxT(""));
+	_browse = new wxButton(panel, buttonId, wxT("Browse"));
 	_isFileChooser = isFileChooser;
 
 	_dropTarget = new FileDrop(_text, _isFileChooser);
-	this->SetDropTarget(_dropTarget);
 
-	/* The button looks like it is shifted 2 pixels down
-	 * from the text control (probably because of the wxStaticBox label)
-	 * so we simply pad the top by -2
-	 */
-	sizer->Add(_text, 3, wxBOTTOM | wxLEFT | wxRIGHT, 5);
-	sizer->Add(_browse, 1, wxTOP, -2);
+	sizer->Add(_text, 1, wxEXPAND | wxRIGHT, 5);
+	sizer->Add(_browse, 0);
+
+	staticBoxSizer->Add(panel, 1);
 }
 
 DropDownBox::DropDownBox(wxWindow *parent, kEventId boxId, wxString title, int numItems, wxString items[]) : wxPanel(parent) {
@@ -186,7 +194,7 @@ DropDownBox::DropDownBox(wxWindow *parent, kEventId boxId, wxString title, int n
 
 	_choice = new wxChoice(this, boxId, wxDefaultPosition, wxDefaultSize, numItems, items);
 
-	sizer->Add(_choice, 1, wxEXPAND | wxLEFT | wxRIGHT, 5);
+	sizer->Add(_choice, 1, wxEXPAND);
 }
 
 /* ----- Compression ----- */
@@ -254,7 +262,7 @@ CompressionOptions::CompressionOptions(wxWindow *parent) : wxPanel(parent) {
 	gridSizer->Add(_verifyChooser, 0, wxALIGN_CENTER);
 	gridSizer->Add(_silentChooser, 0, wxALIGN_CENTER);
 
-	sizer->Add(grid, 0, wxALIGN_CENTER);
+	sizer->Add(grid, 0, wxEXPAND);
 }
 
 CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
@@ -267,7 +275,7 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	topPanelSizer->AddGrowableCol(1);
 	topPanel->SetSizer(topPanelSizer);
 
-	_compressionToolChooserBox = new DropDownBox((wxWindow *)topPanel, kCompressionToolChoice, wxT("Game Engine"), kNumCompressionTools, kCompressionToolNames);
+	_compressionToolChooserBox = new DropDownBox(topPanel, kCompressionToolChoice, wxT("Game Engine"), kNumCompressionTools, kCompressionToolNames);
 
 	_compressionTypeBox = new DropDownBox(topPanel, kCompressionTypeChoice, wxT("Compression Type"), kNumCompressionTypes, kCompressionTypeNames);
 	_compressionOptionsChooser = new wxCheckBox(_compressionTypeBox, kCompressionOptionsToggle, wxT("Advanced"));
@@ -288,12 +296,12 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	_compressionOptionsPanel->Show(false);
 
 	_startButton = new wxButton(bottomPanel, kCompressionStartButton, wxT("START"));
-	_toolOutput = new wxTextCtrl(bottomPanel, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1, 300), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
+	_toolOutput = new wxTextCtrl(bottomPanel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
 
-	topPanelSizer->Add(_compressionToolChooserBox, 1, wxEXPAND);
-	topPanelSizer->Add(_inputPanel, 4, wxEXPAND);
-	topPanelSizer->Add(_compressionTypeBox, 1, wxEXPAND);
-	topPanelSizer->Add(_outputPanel, 4, wxEXPAND);
+	topPanelSizer->Add(_compressionToolChooserBox, 0, wxEXPAND);
+	topPanelSizer->Add(_inputPanel, 1, wxEXPAND);
+	topPanelSizer->Add(_compressionTypeBox, 0, wxEXPAND);
+	topPanelSizer->Add(_outputPanel, 1, wxEXPAND);
 	bottomPanelSizer->Add(_startButton, 0, wxEXPAND | wxTOP, 5);
 	bottomPanelSizer->Add(_compressionOptionsPanel, 0, wxEXPAND);
 	bottomPanelSizer->Add(_toolOutput, 1, wxEXPAND | wxTOP, 5);
@@ -321,6 +329,7 @@ ExtractionOptions::ExtractionOptions(wxWindow *parent) : wxPanel(parent) {
 
 	wxPanel *grid = new wxPanel(this);
 	wxFlexGridSizer *gridSizer = new wxFlexGridSizer(2, 5, 0, 20);
+	gridSizer->AddGrowableCol(4);
 	grid->SetSizer(gridSizer);
 
 	wxStaticText *parallactionSmallLabel = new wxStaticText(grid, wxID_ANY, wxT("Small Archive"));
@@ -348,9 +357,9 @@ ExtractionOptions::ExtractionOptions(wxWindow *parent) : wxPanel(parent) {
 	gridSizer->Add(_kyraAmiga, 0, wxALIGN_CENTER);
 	gridSizer->Add(_kyraAllFiles, 0, wxALIGN_CENTER);
 	gridSizer->Add(_kyraSingleFile, 0, wxALIGN_CENTER);
-	gridSizer->Add(_kyraFilename, 0, wxALIGN_CENTER);
+	gridSizer->Add(_kyraFilename, 0, wxEXPAND);
 
-	sizer->Add(grid, 0, wxALIGN_CENTER);
+	sizer->Add(grid, 0, wxEXPAND);
 }
 
 ExtractionPanel::ExtractionPanel(wxWindow *parent) : wxPanel(parent) {
@@ -375,7 +384,7 @@ ExtractionPanel::ExtractionPanel(wxWindow *parent) : wxPanel(parent) {
 
 	_extractionOptionsPanel = new ExtractionOptions(bottomPanel);
 	_startButton = new wxButton(bottomPanel, kExtractionStartButton, wxT("START"));
-	_toolOutput = new wxTextCtrl(bottomPanel, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1, 300), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
+	_toolOutput = new wxTextCtrl(bottomPanel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
 
 	topPanelSizer->Add(_extractionToolChooserPanel, 1, wxEXPAND);
 	topPanelSizer->Add(_input1Panel, 5, wxEXPAND);
@@ -476,7 +485,7 @@ void CompressionPanel::OnCompressionTypeChange(wxCommandEvent &event) {
 		this->_compressionOptionsPanel->_minBitrateChooser->SetStringSelection(kDefaultMP3VBRMinBitrate);
 		this->_compressionOptionsPanel->_modeChooser->SetStringSelection(kDefaultMP3CompressionType);
 		this->_compressionOptionsPanel->_mpegQualityChooser->SetStringSelection(kDefaultMP3MpegQuality);
-		this->_compressionOptionsPanel->_silentChooser->SetValue(false);
+		this->_compressionOptionsPanel->_silentChooser->SetValue(true);
 		this->_compressionOptionsPanel->_verifyChooser->SetValue(false);
 		this->_compressionOptionsPanel->_vbrQualityChooser->SetStringSelection(kDefaultMP3VBRQuality);
 
@@ -489,7 +498,7 @@ void CompressionPanel::OnCompressionTypeChange(wxCommandEvent &event) {
 		this->_compressionOptionsPanel->_modeChooser->Enable(true);
 		this->_compressionOptionsPanel->_blockSize->Enable(false);
 		this->_compressionOptionsPanel->_verifyChooser->Enable(false);
-		this->_compressionOptionsPanel->_silentChooser->Enable(true);
+		this->_compressionOptionsPanel->_silentChooser->Enable(false);
 	} else if (selectedCompression == wxT("Vorbis")) {
 		this->_compressionOptionsPanel->_avgBitrateChooser->SetSelection(0);
 		this->_compressionOptionsPanel->_blockSize->SetSelection(0);
@@ -578,8 +587,8 @@ void CompressionOptions::OnCompressionModeChange(wxCommandEvent &event) {
 		this->_vbrQualityChooser->SetSelection(0);
 
 		this->_avgBitrateChooser->Enable(true);
-		this->_minBitrateChooser->Enable(false);
-		this->_maxBitrateChooser->Enable(false);
+		this->_minBitrateChooser->Enable(true);
+		this->_maxBitrateChooser->Enable(true);
 		this->_vbrQualityChooser->Enable(false);
 	} else {
 		this->_avgBitrateChooser->SetSelection(0);
@@ -595,17 +604,187 @@ void CompressionOptions::OnCompressionModeChange(wxCommandEvent &event) {
 }
 
 void CompressionPanel::OnCompressionInputBrowse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this, this->_inputPanel->_text, this->_inputPanel->_isFileChooser, wxT(""));
+	LocationDialog *dialog = new LocationDialog(this->_inputPanel->_text, this->_inputPanel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
+	
+	dialog->_dialog->Destroy();
+	delete dialog;
 }
 
 void CompressionPanel::OnCompressionOutputBrowse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this, this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT(""));
+	LocationDialog *dialog = new LocationDialog(this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
+	
+	dialog->_dialog->Destroy();
+	delete dialog;
 }
 
 void CompressionPanel::OnCompressionStart(wxCommandEvent &event) {
+	this->_startButton->Enable(false);
+	this->_toolOutput->Clear();
 
+	bool done = false;
+	size_t start = 1;
+	size_t end;
+
+	wxString selectedTool = kCompressionToolFilenames[this->_compressionToolChooserBox->_choice->GetSelection()];
+	wxString compressionType = kCompressionTypeArguments[this->_compressionTypeBox->_choice->GetSelection()];
+	wxString inputPath = this->_inputPanel->_text->GetValue();
+	wxString outputPath = this->_outputPanel->_text->GetValue();
+	wxArrayString inputFiles;
+
+	wxString avgBitrate = this->_compressionOptionsPanel->_avgBitrateChooser->GetStringSelection();
+	wxString blocksize = this->_compressionOptionsPanel->_blockSize->GetStringSelection();
+	wxString compressionLevel = this->_compressionOptionsPanel->_compressionLevelChooser->GetStringSelection();
+	wxString maxBitrate = this->_compressionOptionsPanel->_maxBitrateChooser->GetStringSelection();
+	wxString minBitrate = this->_compressionOptionsPanel->_minBitrateChooser->GetStringSelection();
+	wxString mode = this->_compressionOptionsPanel->_modeChooser->GetStringSelection();
+	wxString mpegQuality = this->_compressionOptionsPanel->_mpegQualityChooser->GetStringSelection();
+	bool isSilent = this->_compressionOptionsPanel->_silentChooser->IsChecked();
+	wxString vbrQuality = this->_compressionOptionsPanel->_vbrQualityChooser->GetStringSelection();
+	bool isVerify = this->_compressionOptionsPanel->_verifyChooser->IsChecked();
+
+	if (!inputPath.IsEmpty()) {
+		while (!done) {
+			end = inputPath.find(wxT('"'), start);
+			inputFiles.Add(inputPath.Mid(start - 1, end - start + 2));
+			start = end + 3;
+
+			if ((end + 1) == inputPath.Len()) {
+				done = true;
+			}
+		}
+
+		for (size_t x = 0; x < inputFiles.Count(); x++) {
+			wxString commandString = wxT("");
+
+			commandString += selectedTool;
+			commandString += wxT(" ");
+			commandString += compressionType;
+			commandString += wxT(" ");
+
+			if (compressionType.IsSameAs(kCompressionTypeArguments[0])) { /* MP3 */
+				if (mode.IsSameAs(kMP3ModeNames[0])) { /* VBR */
+					commandString += wxT("--vbr ");
+					commandString += wxT("-V ");
+					commandString += vbrQuality;
+					commandString += wxT(" ");
+					commandString += wxT("-q ");
+					commandString += mpegQuality;
+					commandString += wxT(" ");
+
+					if (!minBitrate.IsSameAs(kValidBitrateNames[0])) {
+						commandString += wxT("-b ");
+						commandString += minBitrate;
+						commandString += wxT(" ");
+					}
+
+					if (!maxBitrate.IsSameAs(kValidBitrateNames[0])) {
+						commandString += wxT("-B ");
+						commandString += maxBitrate;
+						commandString += wxT(" ");
+					}
+				} else { /* ABR */
+					commandString += wxT("--abr ");
+					
+					if (avgBitrate.IsSameAs(kValidBitrateNames[0])) {
+						commandString += kDefaultMP3ABRAvgBitrate;
+					} else {
+						commandString += avgBitrate;
+					}
+
+					commandString += wxT(" ");
+					commandString += wxT("-q ");
+					commandString += mpegQuality;
+					commandString += wxT(" ");
+
+					if (!minBitrate.IsSameAs(kValidBitrateNames[0])) {
+						commandString += wxT("-b ");
+						commandString += minBitrate;
+						commandString += wxT(" ");
+					}
+
+					if (!maxBitrate.IsSameAs(kValidBitrateNames[0])) {
+						commandString += wxT("-B ");
+						commandString += maxBitrate;
+						commandString += wxT(" ");
+					}
+				}
+
+				commandString += wxT("--silent ");
+			} else if (compressionType.IsSameAs(kCompressionTypeArguments[1])) { /* Vorbis */
+				commandString += wxT("-q ");
+				commandString += vbrQuality;
+				commandString += wxT(" ");
+
+				if (!avgBitrate.IsSameAs(kValidBitrateNames[0])) {
+					commandString += wxT("-b ");
+					commandString += avgBitrate;
+					commandString += wxT(" ");
+				}
+
+				if (!minBitrate.IsSameAs(kValidBitrateNames[0])) {
+					commandString += wxT("-m ");
+					commandString += minBitrate;
+					commandString += wxT(" ");
+				}
+
+				if (!maxBitrate.IsSameAs(kValidBitrateNames[0])) {
+					commandString += wxT("-M ");
+					commandString += maxBitrate;
+					commandString += wxT(" ");
+				}
+
+				if (isSilent) {
+					commandString += wxT("--silent ");
+				}
+			} else { /* FLAC */
+				commandString += wxT("-");
+				commandString += compressionLevel;
+				commandString += wxT(" ");
+				commandString += wxT("-b ");
+				commandString += blocksize;
+				commandString += wxT(" ");
+				
+				if (isVerify) {
+					commandString += wxT("--verify ");
+				}
+
+				if (isSilent) {
+					commandString += wxT("--silent ");
+				}
+			}
+
+			commandString += inputFiles.Item(x);
+			if (!outputPath.IsEmpty()) {
+				commandString += wxT(" ");
+				commandString += outputPath;
+			}
+
+			this->_toolOutput->AppendText(commandString);
+			this->_toolOutput->AppendText(wxT("\n\n"));
+
+			wxProcess *command = new wxProcess(wxPROCESS_REDIRECT);
+			wxChar *buffer = new wxChar[1024];
+
+			wxExecute(commandString, wxEXEC_ASYNC, command);
+
+			while (!command->GetInputStream()->Eof()) {
+				command->GetInputStream()->Read(buffer, 1023);
+				buffer[command->GetInputStream()->LastRead()] = wxT('\0');
+				this->_toolOutput->AppendText(buffer);
+			}
+
+			delete [] buffer;
+
+			this->_toolOutput->AppendText(wxT("\n------------------------------\n"));
+			this->_toolOutput->AppendText(wxT("Operation Finished\n"));
+			this->_toolOutput->AppendText(wxT("------------------------------\n"));
+			this->_toolOutput->AppendText(wxT("\n"));
+		}
+	}
+
+	this->_startButton->Enable(true);
 }
 
 /* ----- Extraction Events ----- */
@@ -731,22 +910,119 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 }
 
 void ExtractionPanel::OnExtractionInput1Browse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this, this->_input1Panel->_text, this->_input1Panel->_isFileChooser, wxT(""));
+	LocationDialog *dialog = new LocationDialog(this->_input1Panel->_text, this->_input1Panel->_isFileChooser, wxT(""));
 	dialog->prompt();
+
+	dialog->_dialog->Destroy();
+	delete dialog;
 }
 
 void ExtractionPanel::OnExtractionInput2Browse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this, this->_input2Panel->_text, this->_input2Panel->_isFileChooser, wxT(""));
+	LocationDialog *dialog = new LocationDialog(this->_input2Panel->_text, this->_input2Panel->_isFileChooser, wxT(""));
 	dialog->prompt();
+
+	dialog->_dialog->Destroy();
+	delete dialog;
 }
 
 void ExtractionPanel::OnExtractionOutputBrowse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this, this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT(""));
+	LocationDialog *dialog = new LocationDialog(this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT(""));
 	dialog->prompt();
+	
+	dialog->_dialog->Destroy();
+	delete dialog;
 }
 
 void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
+	this->_startButton->Enable(false);
+	this->_toolOutput->Clear();
 
+	bool done = false;
+	size_t start = 1;
+	size_t end;
+	
+	wxString selectedTool = kExtractionToolFilenames[this->_extractionToolChooserPanel->_choice->GetSelection()];
+	wxString input1Path = this->_input1Panel->_text->GetValue();
+	wxString input2Path = this->_input2Panel->_text->GetValue();
+	wxString outputPath = this->_outputPanel->_text->GetValue();
+	wxArrayString inputFiles;
+
+	bool kyraAllFiles = this->_extractionOptionsPanel->_kyraAllFiles->IsChecked();
+	bool kyraAmiga = this->_extractionOptionsPanel->_kyraAmiga->IsChecked();
+	wxString kyraFilename = this->_extractionOptionsPanel->_kyraFilename->GetValue();
+	bool kyraSingleFile = this->_extractionOptionsPanel->_kyraSingleFile->IsChecked();
+	bool parallactionSmall = this->_extractionOptionsPanel->_parallactionSmall->IsChecked();
+	
+	if (!input1Path.IsEmpty()) {
+		while (!done) {
+			end = input1Path.find(wxT('"'), start);
+			inputFiles.Add(input1Path.Mid(start - 1, end - start + 2));
+			start = end + 3;
+
+			if ((end + 1) == input1Path.Len()) {
+				done = true;
+			}
+		}
+
+		for (size_t x = 0; x < inputFiles.Count(); x++) {
+			wxString commandString = wxT("");
+
+			commandString += selectedTool;
+			commandString += wxT(" ");
+
+			if (kyraAllFiles) {
+				commandString += wxT("-x ");
+			}
+			
+			if (kyraAmiga) {
+				commandString += wxT("-a ");
+			}
+			
+			if (kyraSingleFile) {
+				commandString += wxT("-o ");
+				commandString += kyraFilename;
+				commandString += wxT(" ");
+			}
+
+			if (parallactionSmall) {
+				commandString += wxT("--small");
+			}
+
+			commandString += inputFiles.Item(x);
+			
+			if (!input2Path.IsEmpty()) {
+				commandString += wxT(" ");
+				commandString += input2Path;
+			}
+			if (!outputPath.IsEmpty()) {
+				commandString += wxT(" ");
+				commandString += outputPath;
+			}
+
+			this->_toolOutput->AppendText(commandString);
+			this->_toolOutput->AppendText(wxT("\n\n"));
+
+			wxProcess *command = new wxProcess(wxPROCESS_REDIRECT);
+			wxChar *buffer = new wxChar[1024];
+
+			wxExecute(commandString, wxEXEC_ASYNC, command);
+
+			while (!command->GetInputStream()->Eof()) {
+				command->GetInputStream()->Read(buffer, 1023);
+				buffer[command->GetInputStream()->LastRead()] = wxT('\0');
+				this->_toolOutput->AppendText(buffer);
+			}
+
+			delete [] buffer;
+
+			this->_toolOutput->AppendText(wxT("\n------------------------------\n"));
+			this->_toolOutput->AppendText(wxT("Operation Finished\n"));
+			this->_toolOutput->AppendText(wxT("------------------------------\n"));
+			this->_toolOutput->AppendText(wxT("\n"));
+		}
+	}
+	
+	this->_startButton->Enable(true);
 }
 
 void MainFrame::OnCompressionOptionsToggle(wxCommandEvent &event) {

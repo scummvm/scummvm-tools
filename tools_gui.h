@@ -24,6 +24,7 @@
 #include <wx/dnd.h>
 #include <wx/filedlg.h>
 #include <wx/notebook.h>
+#include <wx/process.h>
 #include <wx/statbox.h>
 #include <wx/textctrl.h>
 
@@ -45,24 +46,27 @@ wxString kDefaultFlacBlocksize = wxT("1152");
 
 #define kNumCompressionTools 12
 wxString kCompressionToolNames[12] = {wxT("AGOS"), wxT("Broken Sword 1"), wxT("Broken Sword 2"), wxT("Encode DXA"), wxT("Flight of the Amazon Queen"), wxT("Kyra"), wxT("SAGA"), wxT("SCUMM BUN"), wxT("SCUMM SAN"), wxT("SCUMM SOU"), wxT("Simon 2 (MAC)"), wxT("Touche")};
+wxString kCompressionToolFilenames[12] = {wxT("compress_agos"), wxT("compress_sword1"), wxT("compress_sword2"), wxT("encode_dxa"), wxT("compress_queen"), wxT("compress_kyra"), wxT("compress_saga"), wxT("compress_scumm_bun"), wxT("compress_scumm_san"), wxT("compress_scumm_sou"), wxT("compress_agos --mac"), wxT("compress_touche")};
 
 #define kNumExtractionTools 9
 wxString kExtractionToolNames[9] = {wxT("AGOS"), wxT("Kyra"), wxT("Loom (TG16)"), wxT("Maniac Mansion (Apple)"), wxT("Maniac Mansion (C64)"), wxT("Maniac Mansion (NES)"), wxT("Parallaction"), wxT("SCUMM (MAC)"), wxT("Zak McKracken (C64)")};
+wxString kExtractionToolFilenames[9] = {wxT("extract_agos"), wxT("extract_kyra"), wxT("extract_loom_tg16"), wxT("extract_mm_apple"), wxT("extract_mm_c64"), wxT("extract_mm_nes"), wxT("extract_parallaction"), wxT("extract_scumm_mac"), wxT("extract_zak_c64")};
 
 #define kNumCompressionTypes 3
 wxString kCompressionTypeNames[3] = {wxT("MP3"), wxT("Vorbis"), wxT("FLAC")};
+wxString kCompressionTypeArguments[3] = {wxT("--mp3"), wxT("--vorbis"), wxT("--flac")};
 
 #define kNumValidBitrates 21
 wxString kValidBitrateNames[21] = {wxT(""), wxT("8"), wxT("16"), wxT("24"), wxT("32"), wxT("40"), wxT("48"), wxT("56"), wxT("64"), wxT("72"), wxT("80"), wxT("88"), wxT("96"), wxT("104"), wxT("112"), wxT("120"), wxT("128"), wxT("136"), wxT("144"), wxT("152"), wxT("160")};
 
-#define kNumValidQuality 11
-wxString kVaildQualityNames[11] = {wxT(""), wxT("0"), wxT("1"), wxT("2"), wxT("3"), wxT("4"), wxT("5"), wxT("6"), wxT("7"), wxT("8"), wxT("9")};
+#define kNumValidQuality 10
+wxString kVaildQualityNames[10] = {wxT("0"), wxT("1"), wxT("2"), wxT("3"), wxT("4"), wxT("5"), wxT("6"), wxT("7"), wxT("8"), wxT("9")};
 
-#define kNumValidCompressionLevels 10
-wxString kVaildCompressionLevels[10] = {wxT(""), wxT("0"), wxT("1"), wxT("2"), wxT("3"), wxT("4"), wxT("5"), wxT("6"), wxT("7"), wxT("8")};
+#define kNumValidCompressionLevels 9
+wxString kVaildCompressionLevels[9] = {wxT("0"), wxT("1"), wxT("2"), wxT("3"), wxT("4"), wxT("5"), wxT("6"), wxT("7"), wxT("8")};
 
-#define kNumValidFlacBlocksize 5
-wxString kValidFlacBlocksize[5] = {wxT(""), wxT("576"), wxT("1152"), wxT("2304"), wxT("4608")};
+#define kNumValidFlacBlocksize 4
+wxString kValidFlacBlocksize[4] = {wxT("576"), wxT("1152"), wxT("2304"), wxT("4608")};
 
 #define kNumMP3Modes 2
 wxString kMP3ModeNames[2] = {wxT("VBR"), wxT("ABR")};
@@ -90,10 +94,9 @@ public:
 
 class LocationDialog {
 public:
-	LocationDialog(wxWindow *parent, wxTextCtrl *target, bool isFileChooser, wxString wildcard);
+	LocationDialog(wxTextCtrl *target, bool isFileChooser, wxString wildcard);
 
-	wxFileDialog *_fileDialog;
-	wxDirDialog *_dirDialog;
+	wxDialog *_dialog;
 	wxTextCtrl *_target;
 	bool _isFileChooser;
 
