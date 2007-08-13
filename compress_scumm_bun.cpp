@@ -1103,10 +1103,10 @@ int main(int argc, char *argv[]) {
 		showhelp(argv[0]);
 	}
 
-	char inputDir[200];
-	char outputDir[200];
-	char inputFilename[200];
-	char tmpPath[200];
+	char inputDir[768];
+	char outputDir[768];
+	char inputFilename[256];
+	char tmpPath[768];
 
 	uint32 tag;
 	int32 numFiles, offset;
