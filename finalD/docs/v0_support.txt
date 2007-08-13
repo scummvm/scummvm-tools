@@ -1,0 +1,320 @@
+/* 00 */
+OPCODE(o5_stopObjectCode), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o5_startMusic), CHECK
+OPCODE(o_doSentence), CHECK
+/* 04 */
+OPCODE(o_isGreaterEqual), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o5_getDist), CHECK
+OPCODE(o5_getActorRoom), CHECK
+/* 08 */
+OPCODE(o_isNotEqual), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_setActorBitVar), CHECK
+/* 0C */
+OPCODE(o_loadSound), CHECK
+OPCODE(o_printEgo_c64), CHECK
+OPCODE(o_putActorAtObject), CHECK
+OPCODE(o2_clearState02), CHECK
+/* 10 */
+OPCODE(o5_breakHere), CHECK
+OPCODE(o_animateActor), CHECK
+OPCODE(o2_panCameraTo), CHECK
+OPCODE(o_lockCostume), CHECK
+/* 14 */
+OPCODE(o_print_c64), CHECK
+OPCODE(o5_walkActorToActor), CHECK
+OPCODE(o5_getRandomNr), CHECK
+OPCODE(o_clearState08), CHECK
+/* 18 */
+OPCODE(o_jumpRelative), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o5_move), CHECK
+OPCODE(o_getActorBitVar), CHECK
+/* 1C */
+OPCODE(o5_startSound), CHECK
+OPCODE(o_setBitVar), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifState04), CHECK
+/* 20 */
+OPCODE(o5_stopMusic), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o5_saveLoadGame), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+/* 24 */
+OPCODE(o_unknown2), CHECK
+OPCODE(o5_loadRoom), CHECK
+OPCODE(o_getClosestObjActor), CHECK
+OPCODE(o2_getActorY), CHECK
+/* 28 */
+OPCODE(o_equalZero), CHECK
+OPCODE(o_setOwnerOf), CHECK
+OPCODE(o2_delay), CHECK
+OPCODE(o_setActorBitVar), CHECK
+/* 2C */
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_putActorInRoom), CHECK
+OPCODE(o_print_c64), CHECK
+OPCODE(o2_ifState08), CHECK
+/* 30 */
+OPCODE(o_loadCostume), CHECK
+OPCODE(o_getBitVar), CHECK
+OPCODE(o2_setCameraAt), CHECK
+OPCODE(o_lockScript), CHECK
+/* 34 */
+OPCODE(o5_getDist), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_walkActorToObject), CHECK
+OPCODE(o2_clearState04), CHECK
+/* 38 */
+OPCODE(o_isLessEqual), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_subtract), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+/* 3C */
+OPCODE(o5_stopSound), CHECK
+OPCODE(o_setBitVar), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifState02), CHECK
+/* 40 */
+OPCODE(o_cutscene), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o2_startScript), CHECK
+OPCODE(o_doSentence), CHECK
+/* 44 */
+OPCODE(o_isLess), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o5_increment), CHECK
+OPCODE(o2_getActorX), CHECK
+/* 48 */
+OPCODE(o_isEqual), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_loadRoom), CHECK
+OPCODE(o_setActorBitVar), CHECK
+/* 4C */
+OPCODE(o_loadScript), CHECK
+OPCODE(o_lockRoom), CHECK
+OPCODE(o_putActorAtObject), CHECK
+OPCODE(o2_clearState02), CHECK
+/* 50 */
+OPCODE(o_nop), CHECK
+OPCODE(o_animateActor), CHECK
+OPCODE(o5_actorFollowCamera), CHECK
+OPCODE(o_lockSound), CHECK
+/* 54 */
+OPCODE(o_setObjectName), CHECK
+OPCODE(o5_walkActorToActor), CHECK
+OPCODE(o_getActorMoving), CHECK
+OPCODE(o_clearState08), CHECK
+/* 58 */
+OPCODE(o_beginOverride), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_add), CHECK
+OPCODE(o_getActorBitVar), CHECK
+/* 5C */
+OPCODE(o5_startSound), CHECK
+OPCODE(o_setBitVar), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifState04), CHECK
+/* 60 */
+OPCODE(o_cursorCommand), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o2_stopScript), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+/* 64 */
+OPCODE(o_ifActiveObject), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_getClosestObjActor), CHECK
+OPCODE(o5_getActorFacing), CHECK
+/* 68 */
+OPCODE(o5_isScriptRunning), CHECK
+OPCODE(o_setOwnerOf), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_setActorBitVar), CHECK
+/* 6C */
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_putActorInRoom), CHECK
+OPCODE(o2_dummy), CHECK
+OPCODE(o2_ifState08), CHECK
+/* 70 */
+OPCODE(o_lights), CHECK
+OPCODE(o_getBitVar), CHECK
+OPCODE(o_nop), CHECK
+OPCODE(o5_getObjectOwner), CHECK
+/* 74 */
+OPCODE(o5_getDist), CHECK
+OPCODE(o_printEgo_c64), CHECK
+OPCODE(o2_walkActorToObject), CHECK
+OPCODE(o2_clearState04), CHECK
+/* 78 */
+OPCODE(o_isGreater), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+/* 7C */
+OPCODE(o5_isSoundRunning), CHECK
+OPCODE(o_setBitVar), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifNotState02), CHECK
+/* 80 */
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_doSentence), CHECK
+/* 84 */
+OPCODE(o_isGreaterEqual), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_nop), CHECK
+OPCODE(o5_getActorRoom), CHECK
+/* 88 */
+OPCODE(o_isNotEqual), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_setActorBitVar), CHECK
+/* 8C */
+OPCODE(o_loadSound), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_putActorAtObject), CHECK
+OPCODE(o2_setState02), CHECK
+/* 90 */
+OPCODE(o_pickupObject), CHECK
+OPCODE(o_animateActor), CHECK
+OPCODE(o2_panCameraTo), CHECK
+OPCODE(o_unlockCostume), CHECK
+/* 94 */
+OPCODE(o5_print), CHECK
+OPCODE(o2_actorFromPos), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_setState08), CHECK
+/* 98 */
+OPCODE(o2_restart), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o5_move), CHECK
+OPCODE(o_getActorBitVar), CHECK
+/* 9C */
+OPCODE(o5_startSound), CHECK
+OPCODE(o_setBitVar), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifNotState04), CHECK
+/* A0 */
+OPCODE(o5_stopObjectCode), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o5_saveLoadGame), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+/* A4 */
+OPCODE(o_unknown2), CHECK
+OPCODE(o5_loadRoom), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_getActorY), CHECK
+/* A8 */
+OPCODE(o_notEqualZero), CHECK
+OPCODE(o_setOwnerOf), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_setActorBitVar), CHECK
+/* AC */
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_putActorInRoom), CHECK
+OPCODE(o_print_c64), CHECK
+OPCODE(o2_ifNotState08), CHECK
+/* B0 */
+OPCODE(o_loadCostume), CHECK
+OPCODE(o_getBitVar), CHECK
+OPCODE(o2_setCameraAt), CHECK
+OPCODE(o_unlockScript), CHECK
+/* B4 */
+OPCODE(o5_getDist), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_walkActorToObject), CHECK
+OPCODE(o2_setState04), CHECK
+/* B8 */
+OPCODE(o_isLessEqual), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_subtract), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+/* BC */
+OPCODE(o5_stopSound), CHECK
+OPCODE(o_setBitVar), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifNotState02), CHECK
+/* C0 */
+OPCODE(o_endCutscene), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o2_startScript), CHECK
+OPCODE(o_doSentence), CHECK
+/* C4 */
+OPCODE(o_isLess), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o5_decrement), CHECK
+OPCODE(o2_getActorX), CHECK
+/* C8 */
+OPCODE(o_isEqual), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_loadRoom), CHECK
+OPCODE(o_setActorBitVar), CHECK
+/* CC */
+OPCODE(o_loadScript), CHECK
+OPCODE(o_unlockRoom), CHECK
+OPCODE(o_putActorAtObject), CHECK
+OPCODE(o2_setState02), CHECK
+/* D0 */
+OPCODE(o_nop), CHECK
+OPCODE(o_animateActor), CHECK
+OPCODE(o5_actorFollowCamera), CHECK
+OPCODE(o_unlockSound), CHECK
+/* D4 */
+OPCODE(o_setObjectName), CHECK
+OPCODE(o2_actorFromPos), CHECK
+OPCODE(o_getActorMoving), CHECK
+OPCODE(o_setState08), CHECK
+/* D8 */
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_add), CHECK
+OPCODE(o_getActorBitVar), CHECK
+/* DC */
+OPCODE(o5_startSound), CHECK
+OPCODE(o_setBitVar), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifNotState04), CHECK
+/* E0 */
+OPCODE(o_cursorCommand), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o2_stopScript), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+/* E4 */
+OPCODE(o_ifActiveObject), CHECK
+OPCODE(o_loadRoomWithEgo), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o5_getActorFacing), CHECK
+/* E8 */
+OPCODE(o5_isScriptRunning), CHECK
+OPCODE(o_setOwnerOf), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_setActorBitVar), CHECK
+/* EC */
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_putActorInRoom), CHECK
+OPCODE(o2_dummy), CHECK
+OPCODE(o2_ifNotState08), CHECK
+/* F0 */
+OPCODE(o_lights), CHECK
+OPCODE(o_getBitVar), CHECK
+OPCODE(o_nop), CHECK
+OPCODE(o5_getObjectOwner), CHECK
+/* F4 */
+OPCODE(o5_getDist), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o2_walkActorToObject), CHECK
+OPCODE(o2_setState04), CHECK
+/* F8 */
+OPCODE(o_isGreater), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+OPCODE(o_stopCurrentScript), CHECK
+/* FC */
+OPCODE(o5_isSoundRunning), CHECK
+OPCODE(o_setBitVar), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifState02) CHECK

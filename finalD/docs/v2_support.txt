@@ -1,0 +1,320 @@
+/* 00 */
+OPCODE(o5_stopObjectCode), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o5_startMusic), CHECK
+OPCODE(o5_getActorRoom), CHECK
+/* 04 */
+OPCODE(o2_isGreaterEqual), CHECK
+OPCODE(o2_drawObject), CHECK
+OPCODE(o2_getActorElevation), CHECK
+OPCODE(o2_setState08), CHECK
+/* 08 */
+OPCODE(o5_isNotEqual), CHECK
+OPCODE(o5_faceActor), CHECK
+OPCODE(o2_assignVarWordIndirect), CHECK
+OPCODE(o2_setObjPreposition), CHECK
+/* 0C */
+OPCODE(o2_resourceRoutines), CHECK
+OPCODE(o5_walkActorToActor), CHECK
+OPCODE(o2_putActorAtObject), CHECK
+OPCODE(o2_ifNotState08), CHECK
+/* 10 */
+OPCODE(o5_getObjectOwner), CHECK
+OPCODE(o5_animateActor), CHECK
+OPCODE(o2_panCameraTo), CHECK
+OPCODE(o2_actorOps), CHECK
+/* 14 */
+OPCODE(o5_print), CHECK
+OPCODE(o2_actorFromPos), CHECK
+OPCODE(o5_getRandomNr), CHECK
+OPCODE(o2_clearState02), CHECK
+/* 18 */
+OPCODE(o5_jumpRelative), CHECK
+OPCODE(o2_doSentence), CHECK
+OPCODE(o5_move), CHECK
+OPCODE(o2_setBitVar), CHECK
+/* 1C */
+OPCODE(o5_startSound), CHECK
+OPCODE(o2_ifClassOfIs), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifState02), CHECK
+/* 20 */
+OPCODE(o5_stopMusic), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o5_saveLoadGame), CHECK
+OPCODE(o2_getActorY), CHECK
+/* 24 */
+OPCODE(o2_loadRoomWithEgo), CHECK
+OPCODE(o2_drawObject), CHECK
+OPCODE(o5_setVarRange), CHECK
+OPCODE(o2_setState04), CHECK
+/* 28 */
+OPCODE(o5_equalZero), CHECK
+OPCODE(o2_setOwnerOf), CHECK
+OPCODE(o2_addIndirect), CHECK
+OPCODE(o5_delayVariable), CHECK
+/* 2C */
+OPCODE(o2_assignVarByte), CHECK
+OPCODE(o2_putActorInRoom), CHECK
+OPCODE(o2_delay), CHECK
+OPCODE(o2_ifNotState04), CHECK
+/* 30 */
+OPCODE(o2_setBoxFlags), CHECK
+OPCODE(o2_getBitVar), CHECK
+OPCODE(o2_setCameraAt), CHECK
+OPCODE(o2_roomOps), CHECK
+/* 34 */
+OPCODE(o5_getDist), CHECK
+OPCODE(o2_findObject), CHECK
+OPCODE(o2_walkActorToObject), CHECK
+OPCODE(o2_setState01), CHECK
+/* 38 */
+OPCODE(o2_isLessEqual), CHECK
+OPCODE(o2_doSentence), CHECK
+OPCODE(o2_subtract), CHECK
+OPCODE(o2_waitForActor), CHECK
+/* 3C */
+OPCODE(o5_stopSound), CHECK
+OPCODE(o2_setActorElevation), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifNotState01), CHECK
+/* 40 */
+OPCODE(o2_cutscene), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o2_startScript), CHECK
+OPCODE(o2_getActorX), CHECK
+/* 44 */
+OPCODE(o2_isLess), CHECK
+OPCODE(o2_drawObject), CHECK
+OPCODE(o5_increment), CHECK
+OPCODE(o2_clearState08), CHECK
+/* 48 */
+OPCODE(o5_isEqual), CHECK
+OPCODE(o5_faceActor), CHECK
+OPCODE(o2_chainScript), CHECK
+OPCODE(o2_setObjPreposition), CHECK
+/* 4C */
+OPCODE(o2_waitForSentence), CHECK
+OPCODE(o5_walkActorToActor), CHECK
+OPCODE(o2_putActorAtObject), CHECK
+OPCODE(o2_ifState08), CHECK
+/* 50 */
+OPCODE(o2_pickupObject), CHECK
+OPCODE(o5_animateActor), CHECK
+OPCODE(o5_actorFollowCamera), CHECK
+OPCODE(o2_actorOps), CHECK
+/* 54 */
+OPCODE(o5_setObjectName), CHECK
+OPCODE(o2_actorFromPos), CHECK
+OPCODE(o5_getActorMoving), CHECK
+OPCODE(o2_setState02), CHECK
+/* 58 */
+OPCODE(o2_beginOverride), CHECK
+OPCODE(o2_doSentence), CHECK
+OPCODE(o2_add), CHECK
+OPCODE(o2_setBitVar), CHECK
+/* 5C */
+OPCODE(o2_dummy), CHECK
+OPCODE(o2_ifClassOfIs), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifNotState02), CHECK
+/* 60 */
+OPCODE(o2_cursorCommand), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o2_stopScript), CHECK
+OPCODE(o5_getActorFacing), CHECK
+/* 64 */
+OPCODE(o2_loadRoomWithEgo), CHECK
+OPCODE(o2_drawObject), CHECK
+OPCODE(o5_getClosestObjActor), CHECK
+OPCODE(o2_clearState04), CHECK
+/* 68 */
+OPCODE(o5_isScriptRunning), CHECK
+OPCODE(o2_setOwnerOf), CHECK
+OPCODE(o2_subIndirect), CHECK
+OPCODE(o2_dummy), CHECK
+/* 6C */
+OPCODE(o2_getObjPreposition), CHECK
+OPCODE(o2_putActorInRoom), CHECK
+OPCODE(o2_dummy), CHECK
+OPCODE(o2_ifState04), CHECK
+/* 70 */
+OPCODE(o2_lights), CHECK
+OPCODE(o5_getActorCostume), CHECK
+OPCODE(o5_loadRoom), CHECK
+OPCODE(o2_roomOps), CHECK
+/* 74 */
+OPCODE(o5_getDist), CHECK
+OPCODE(o2_findObject), CHECK
+OPCODE(o2_walkActorToObject), CHECK
+OPCODE(o2_clearState01), CHECK
+/* 78 */
+OPCODE(o2_isGreater), CHECK
+OPCODE(o2_doSentence), CHECK
+OPCODE(o2_verbOps), CHECK
+OPCODE(o2_getActorWalkBox), CHECK
+/* 7C */
+OPCODE(o5_isSoundRunning), CHECK
+OPCODE(o2_setActorElevation), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifState01), CHECK
+/* 80 */
+OPCODE(o5_breakHere), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o5_startMusic), CHECK
+OPCODE(o5_getActorRoom), CHECK
+/* 84 */
+OPCODE(o2_isGreaterEqual), CHECK
+OPCODE(o2_drawObject), CHECK
+OPCODE(o2_getActorElevation), CHECK
+OPCODE(o2_setState08), CHECK
+/* 88 */
+OPCODE(o5_isNotEqual), CHECK
+OPCODE(o5_faceActor), CHECK
+OPCODE(o2_assignVarWordIndirect), CHECK
+OPCODE(o2_setObjPreposition), CHECK
+/* 8C */
+OPCODE(o2_resourceRoutines), CHECK
+OPCODE(o5_walkActorToActor), CHECK
+OPCODE(o2_putActorAtObject), CHECK
+OPCODE(o2_ifNotState08), CHECK
+/* 90 */
+OPCODE(o5_getObjectOwner), CHECK
+OPCODE(o5_animateActor), CHECK
+OPCODE(o2_panCameraTo), CHECK
+OPCODE(o2_actorOps), CHECK
+/* 94 */
+OPCODE(o5_print), CHECK
+OPCODE(o2_actorFromPos), CHECK
+OPCODE(o5_getRandomNr), CHECK
+OPCODE(o2_clearState02), CHECK
+/* 98 */
+OPCODE(o2_restart), CHECK
+OPCODE(o2_doSentence), CHECK
+OPCODE(o5_move), CHECK
+OPCODE(o2_setBitVar), CHECK
+/* 9C */
+OPCODE(o5_startSound), CHECK
+OPCODE(o2_ifClassOfIs), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifState02), CHECK
+/* A0 */
+OPCODE(o5_stopObjectCode), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o5_saveLoadGame), CHECK
+OPCODE(o2_getActorY), CHECK
+/* A4 */
+OPCODE(o2_loadRoomWithEgo), CHECK
+OPCODE(o2_drawObject), CHECK
+OPCODE(o5_setVarRange), CHECK
+OPCODE(o2_setState04), CHECK
+/* A8 */
+OPCODE(o5_notEqualZero), CHECK
+OPCODE(o2_setOwnerOf), CHECK
+OPCODE(o2_addIndirect), CHECK
+OPCODE(o2_switchCostumeSet),
+/* AC */
+OPCODE(o2_drawSentence), CHECK
+OPCODE(o2_putActorInRoom), CHECK
+OPCODE(o2_waitForMessage), CHECK
+OPCODE(o2_ifNotState04), CHECK
+/* B0 */
+OPCODE(o2_setBoxFlags), CHECK
+OPCODE(o2_getBitVar), CHECK
+OPCODE(o2_setCameraAt), CHECK
+OPCODE(o2_roomOps), CHECK
+/* B4 */
+OPCODE(o5_getDist), CHECK
+OPCODE(o2_findObject), CHECK
+OPCODE(o2_walkActorToObject), CHECK
+OPCODE(o2_setState01), CHECK
+/* B8 */
+OPCODE(o2_isLessEqual), CHECK
+OPCODE(o2_doSentence), CHECK
+OPCODE(o2_subtract), CHECK
+OPCODE(o2_waitForActor), CHECK
+/* BC */
+OPCODE(o5_stopSound), CHECK
+OPCODE(o2_setActorElevation), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifNotState01), CHECK
+/* C0 */
+OPCODE(o2_endCutscene), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o2_startScript), CHECK
+OPCODE(o2_getActorX), CHECK
+/* C4 */
+OPCODE(o2_isLess), CHECK
+OPCODE(o2_drawObject), CHECK
+OPCODE(o5_decrement), CHECK
+OPCODE(o2_clearState08), CHECK
+/* C8 */
+OPCODE(o5_isEqual), CHECK
+OPCODE(o5_faceActor), CHECK
+OPCODE(o2_chainScript), CHECK
+OPCODE(o2_setObjPreposition), CHECK
+/* CC */
+OPCODE(o5_pseudoRoom), CHECK
+OPCODE(o5_walkActorToActor), CHECK
+OPCODE(o2_putActorAtObject), CHECK
+OPCODE(o2_ifState08), CHECK
+/* D0 */
+OPCODE(o2_pickupObject), CHECK
+OPCODE(o5_animateActor), CHECK
+OPCODE(o5_actorFollowCamera), CHECK
+OPCODE(o2_actorOps), CHECK
+/* D4 */
+OPCODE(o5_setObjectName), CHECK
+OPCODE(o2_actorFromPos), CHECK
+OPCODE(o5_getActorMoving), CHECK
+OPCODE(o2_setState02), CHECK
+/* D8 */
+OPCODE(o5_printEgo), CHECK
+OPCODE(o2_doSentence), CHECK
+OPCODE(o2_add), CHECK
+OPCODE(o2_setBitVar), CHECK
+/* DC */
+OPCODE(o2_dummy), CHECK
+OPCODE(o2_ifClassOfIs), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifNotState02), CHECK
+/* E0 */
+OPCODE(o2_cursorCommand), CHECK
+OPCODE(o2_putActor), CHECK
+OPCODE(o2_stopScript), CHECK
+OPCODE(o5_getActorFacing), CHECK
+/* E4 */
+OPCODE(o2_loadRoomWithEgo), CHECK
+OPCODE(o2_drawObject), CHECK
+OPCODE(o5_getClosestObjActor), CHECK
+OPCODE(o2_clearState04), CHECK
+/* E8 */
+OPCODE(o5_isScriptRunning), CHECK
+OPCODE(o2_setOwnerOf), CHECK
+OPCODE(o2_subIndirect), CHECK
+OPCODE(o2_dummy), CHECK
+/* EC */
+OPCODE(o2_getObjPreposition), CHECK
+OPCODE(o2_putActorInRoom), CHECK
+OPCODE(o2_dummy), CHECK
+OPCODE(o2_ifState04), CHECK
+/* F0 */
+OPCODE(o2_lights), CHECK
+OPCODE(o5_getActorCostume), CHECK
+OPCODE(o5_loadRoom), CHECK
+OPCODE(o2_roomOps), CHECK
+/* F4 */
+OPCODE(o5_getDist), CHECK
+OPCODE(o2_findObject), CHECK
+OPCODE(o2_walkActorToObject), CHECK
+OPCODE(o2_clearState01), CHECK
+/* F8 */
+OPCODE(o2_isGreater), CHECK
+OPCODE(o2_doSentence), CHECK
+OPCODE(o2_verbOps), CHECK
+OPCODE(o2_getActorWalkBox), CHECK
+/* FC */
+OPCODE(o5_isSoundRunning), CHECK
+OPCODE(o2_setActorElevation), CHECK
+OPCODE(o2_walkActorTo), CHECK
+OPCODE(o2_ifState01) CHECK
