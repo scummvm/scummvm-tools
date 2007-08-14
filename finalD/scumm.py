@@ -395,6 +395,10 @@ class SCUMM(bytecode.ByteCode):
 
         bytecode.ByteCode.__init__(self, init, SCUMM.get_byte)
 
+    def get_pos(self):
+        """Return self._pos - self.script_start."""
+        return self._pos - self.script_start
+
     def skip_verb_header(self, off, ofetch, cfetch=0):
         min_offset = 255
         offset = off
@@ -709,7 +713,7 @@ class SCUMM(bytecode.ByteCode):
         self.register_opcodes(opcodes, handler)
 
     def calc_abs_jump(self, relative):
-        return 0x7fff & (relative + (self.get_pos() - self.script_start))
+        return 0x7fff & (relative + self.get_pos())
 
     def make_jump(self, condition=0):
         offset = self.get_word()
@@ -1112,8 +1116,8 @@ class SCUMM0(SCUMM12):
         def mak_state_handler(name):
             def handler(opcode):
                 if opcode & 0x40:
-                    return Instr(name, 0)
-                return Instr(name, self.get_byte())
+                    return Instr(name, [])
+                return Instr(name, [self.get_byte()])
             return handler
         self.register_opcodes([0x0f, 0x4f], mak_state_handler("clearState02"))
         self.register_opcodes([0x37, 0x77], mak_state_handler("clearState04"))
@@ -1201,6 +1205,7 @@ class SCUMM345(SCUMM12):
         if self.version == 5:
             self.register_complex_set("getObjectState", 0x0f, self.vow)
         self.register_complex("panCameraTo", 0x12, self.vow)
+        self.register_opcodes([0x14, 0x94, 0xd8], self.do_print_ego)
         self.register_opcodes([0x13, 0x53, 0x93, 0xd3], self.do_actor_ops)
         self.register_complex_set("actorFromPos", 0x15, self.vow, self.vow)
         self.register_opcodes([0x17, 0x97,
@@ -1349,9 +1354,9 @@ class SCUMM345(SCUMM12):
         d = self.get_byte()
         if (d & 0x1f) == 3:
             return Instr("oldRoomEffect-set",
-                         self.get_var_or_word(opcode, pmasks[0]))
+                         [self.get_var_or_word(opcode, pmasks[0])])
         return Instr("oldRoomEffect-fadein",
-                     self.get_var_or_word(opcode, pmasks[0]))
+                     [self.get_var_or_word(opcode, pmasks[0])])
 
     def do_begin_override(self, _):
         d = self.get_byte()
@@ -1679,7 +1684,7 @@ class SCUMM345(SCUMM12):
                 instr = self.produce_instr("LoadCharset", opc,
                                            self.vob, self.vob)
             else:
-                instr = self.produce_instr("CursorCommand", self.lst)
+                instr = self.produce_instr("CursorCommand", opc, self.lst)
         else:
             raise UnknownSubOpError, \
                 "SCUMM345.do_cursor_command: unknown subop %d" % opcm
@@ -1744,27 +1749,28 @@ class SCUMM345(SCUMM12):
                 break
             opcm = opc & 0x1f
             if opcm == 0x0:
-                args.append(self.produce_instr("Pos", self.vow, self.vow))
+                args.append(self.produce_instr("Pos", opc, self.vow, self.vow))
             elif opcm == 0x1:
-                args.append(self.produce_instr("Color", self.vob))
+                args.append(self.produce_instr("Color", opc, self.vob))
             elif opcm == 0x2:
-                args.append(self.produce_instr("Clipped", self.vow))
+                args.append(self.produce_instr("Clipped", opc, self.vow))
             elif opcm == 0x3:
-                args.append(self.produce_instr("RestoreBG", self.vow, self.vow))
+                args.append(self.produce_instr("RestoreBG", opc, self.vow, self.vow))
             elif opcm == 0x4:
                 args.append(Instr("Center", []))
             elif opcm == 0x6:
                 if self.unblocked:
-                    args.append(self.produce_instr("Height", self.vow))
+                    args.append(self.produce_instr("Height", opc, self.vow))
                 else:
                     args.append(Instr("Left", []))
             elif opcm == 0x7:
                 args.append(Instr("Overhead", []))
             elif opcm == 0x8:
                 args.append(self.produce_instr("PlayCDTrack",
+                                               opc,
                                                self.vow, self.vow))
             elif opcm == 0xf:
-                args.append(self.produce_instr("Text", self.asc))
+                args.append(self.produce_instr("Text", opc, self.asc))
                 break
             else:
                 raise UnknownSubOpError, \
@@ -1775,11 +1781,11 @@ class SCUMM345(SCUMM12):
         opc = self.get_byte()
         opcm = opc & 0x1f
         if opcm == 0x1:
-            instr = self.produce_instr("setBoxFlags", self.vob, self.vob)
+            instr = self.produce_instr("setBoxFlags", opc, self.vob, self.vob)
         elif opcm == 0x2:
-            instr = self.produce_instr("setBoxScale", self.vob, self.vob)
+            instr = self.produce_instr("setBoxScale", opc, self.vob, self.vob)
         elif opcm == 0x3:
-            instr = self.produce_instr("setBoxSlot", self.vob, self.vob)
+            instr = self.produce_instr("setBoxSlot", opc, self.vob, self.vob)
         elif opcm == 0x4:
             instr = Instr("createBoxMatrix", [])
         else:

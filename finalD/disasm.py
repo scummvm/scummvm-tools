@@ -22,8 +22,8 @@ class Disasm:
         Arguments:
         bc -- instance of bytecode.ByteCode class
         """
-        self.decoded = []
-        """Hold decoded instructions."""
+        self.decoded = {}
+        """Hold decoded instructions indexed by script offset."""
         self._bc = bc
         """Hold bytecode.ByteCode instance."""
 
@@ -33,7 +33,8 @@ class Disasm:
             # Append results of self.decode_next() to self.decoded until
             # an exception is raised.
             while 1:
-                self.decoded.append(self._bc.decode_next())
+                pos = self._bc.get_pos()
+                self.decoded[pos] = self._bc.decode_next()
         except bytecode.IncompleteFetchError:
             # If an bytecode.IncompleteFetchError was raised, we are done.
             return self.decoded

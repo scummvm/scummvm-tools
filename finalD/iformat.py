@@ -26,7 +26,7 @@ class Instr:
 class AssgnInstr(Instr):
     """Assignment Instruction in intermediate format."""
 
-    def __init__(self, op, dst, val):
+    def __init__(self, op,  dst, val):
         Instr.__init__(self, op, (dst, val))
 
     def __str__(self):
@@ -38,6 +38,9 @@ class Jump(Instr):
 
     def __init__(self, to):
         Instr.__init__(self, "goto", (to,))
+
+    def get_to(self):
+        return self.args[0]
 
     def __str__(self):
         return "goto %.4X" % self.args[0]
@@ -51,3 +54,8 @@ class CondJump(Jump):
 
     def __str__(self):
         return "unless(%s) goto %.4X" % (self.condition, self.args[0])
+
+
+def is_jump(instr):
+    """Return true if instr is a Jump."""
+    return instr.__class__ == Jump or instr.__class__ == CondJump
