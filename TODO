@@ -2,10 +2,6 @@
 Current Goals
 -------------
 
-* Create command line strings for all extraction tools
-* Create command line strings for all compression tools
-* Implement simple batch processing
-* Modify Makefile to create a Mac OSX bundle
 * Final testing on all platforms
 
 ------------
