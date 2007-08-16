@@ -51,6 +51,17 @@ UTILS := \
 
 all: $(TARGETS)
 
+bundle_name = ScummVM\ Tools GUI.app
+bundle: $(TARGETS)
+	mkdir -p $(bundle_name)
+	mkdir -p $(bundle_name)/Contents
+	mkdir -p $(bundle_name)/Contents/MacOS
+	mkdir -p $(bundle_name)/Contents/Resources
+	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
+	cp $(SRC)/dists/macosx/Info.plist $(bundle_name)/Contents/
+	cp $(TARGETS) $(bundle_name)/Contents/Resources/
+	mv $(bundle_name)/Contents/Resources/tools_gui $(bundle_name)/Contents/MacOS/
+
 compress_agos$(EXEEXT): compress_agos.o compress.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
@@ -161,7 +172,7 @@ clean:
 
 
 tools_gui.o: tools_gui.cpp tools_gui.h
-	$(CXX) $(CFLAGS) $(CPPFLAGS) `wx-config --cppflags` -c tools_gui.cpp -o tools_gui.o
+	$(CXX) $(CFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c tools_gui.cpp -o tools_gui.o
 
 .cpp.o:
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
