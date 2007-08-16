@@ -98,7 +98,7 @@ LocationDialog::LocationDialog(wxTextCtrl *target, bool isFileChooser, wxString 
 void LocationDialog::prompt() {
 	if (this->_isFileChooser) {
 		wxFileDialog *dialog = dynamic_cast<wxFileDialog*>(_dialog);
-	
+
 		if (dialog->ShowModal() == wxID_OK) {
 			wxArrayString filenames;
 			dialog->GetPaths(filenames);
@@ -606,7 +606,7 @@ void CompressionOptions::OnCompressionModeChange(wxCommandEvent &event) {
 void CompressionPanel::OnCompressionInputBrowse(wxCommandEvent &event) {
 	LocationDialog *dialog = new LocationDialog(this->_inputPanel->_text, this->_inputPanel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
-	
+
 	dialog->_dialog->Destroy();
 	delete dialog;
 }
@@ -614,7 +614,7 @@ void CompressionPanel::OnCompressionInputBrowse(wxCommandEvent &event) {
 void CompressionPanel::OnCompressionOutputBrowse(wxCommandEvent &event) {
 	LocationDialog *dialog = new LocationDialog(this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
-	
+
 	dialog->_dialog->Destroy();
 	delete dialog;
 }
@@ -689,7 +689,7 @@ void CompressionPanel::OnCompressionStart(wxCommandEvent &event) {
 					}
 				} else { /* ABR */
 					commandString += wxT("--abr ");
-					
+
 					if (avgBitrate.IsSameAs(kValidBitrateNames[0])) {
 						commandString += kDefaultMP3ABRAvgBitrate;
 					} else {
@@ -748,7 +748,7 @@ void CompressionPanel::OnCompressionStart(wxCommandEvent &event) {
 				commandString += wxT("-b ");
 				commandString += blocksize;
 				commandString += wxT(" ");
-				
+
 				if (isVerify) {
 					commandString += wxT("--verify ");
 				}
@@ -773,7 +773,9 @@ void CompressionPanel::OnCompressionStart(wxCommandEvent &event) {
 
 			while (!command->GetInputStream()->Eof()) {
 				wxChar outputChar = command->GetInputStream()->GetC();
-				this->_toolOutput->AppendText(outputChar);
+				if (command->GetInputStream()->LastRead() != 0) {
+					this->_toolOutput->AppendText(outputChar);
+				}
 			}
 
 			this->_toolOutput->AppendText(wxT("\n------------------------------\n"));
@@ -927,7 +929,7 @@ void ExtractionPanel::OnExtractionInput2Browse(wxCommandEvent &event) {
 void ExtractionPanel::OnExtractionOutputBrowse(wxCommandEvent &event) {
 	LocationDialog *dialog = new LocationDialog(this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
-	
+
 	dialog->_dialog->Destroy();
 	delete dialog;
 }
@@ -939,7 +941,7 @@ void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 	bool done = false;
 	size_t start = 1;
 	size_t end;
-	
+
 	wxString selectedTool = kExtractionToolFilenames[this->_extractionToolChooserPanel->_choice->GetSelection()];
 	wxString input1Path = this->_input1Panel->_text->GetValue();
 	wxString input2Path = this->_input2Panel->_text->GetValue();
@@ -951,7 +953,7 @@ void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 	wxString kyraFilename = this->_extractionOptionsPanel->_kyraFilename->GetValue();
 	bool kyraSingleFile = this->_extractionOptionsPanel->_kyraSingleFile->IsChecked();
 	bool parallactionSmall = this->_extractionOptionsPanel->_parallactionSmall->IsChecked();
-	
+
 	if (!input1Path.IsEmpty()) {
 		while (!done) {
 			end = input1Path.find(wxT('"'), start);
@@ -975,11 +977,11 @@ void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 			if (kyraAllFiles) {
 				commandString += wxT("-x ");
 			}
-			
+
 			if (kyraAmiga) {
 				commandString += wxT("-a ");
 			}
-			
+
 			if (kyraSingleFile) {
 				commandString += wxT("-o ");
 				commandString += kyraFilename;
@@ -991,7 +993,7 @@ void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 			}
 
 			commandString += inputFiles.Item(x);
-			
+
 			if (!input2Path.IsEmpty()) {
 				commandString += wxT(" ");
 				commandString += input2Path;
@@ -1009,7 +1011,9 @@ void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 
 			while (!command->GetInputStream()->Eof()) {
 				wxChar outputChar = command->GetInputStream()->GetC();
-				this->_toolOutput->AppendText(outputChar);
+				if (command->GetInputStream()->LastRead() != 0) {
+					this->_toolOutput->AppendText(outputChar);
+				}
 			}
 
 			this->_toolOutput->AppendText(wxT("\n------------------------------\n"));
@@ -1018,7 +1022,7 @@ void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 			this->_toolOutput->AppendText(wxT("\n"));
 		}
 	}
-	
+
 	this->_startButton->Enable(true);
 }
 
