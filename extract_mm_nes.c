@@ -83,6 +83,7 @@ typedef enum _romset {
 	ROMSET_SWEDEN,
 	ROMSET_FRANCE,
 	ROMSET_GERMANY,
+	ROMSET_SPAIN,
 	NUM_ROMSETS
 } t_romset;
 
@@ -149,12 +150,24 @@ t_resource res_roomgfx_ger[40] = {
 	{ 0x117AF, 0x0437, NES_ROOMGFX }, { 0x11BE6, 0x07A0, NES_ROOMGFX }, { 0x12386, 0x0199, NES_ROOMGFX }, { 0x1251F, 0x0947, NES_ROOMGFX }, { 0x12E66, 0x037A, NES_ROOMGFX }
 };
 
+t_resource res_roomgfx_esp[40] = {
+        { 0x04001, 0x041B, NES_ROOMGFX }, { 0x0441C, 0x069E, NES_ROOMGFX }, { 0x04ABA, 0x0327, NES_ROOMGFX }, { 0x04DE1, 0x053B, NES_ROOMGFX }, { 0x0531C, 0x06BE, NES_ROOMGFX },
+        { 0x059DA, 0x0682, NES_ROOMGFX }, { 0x0605C, 0x0778, NES_ROOMGFX }, { 0x067D4, 0x0517, NES_ROOMGFX }, { 0x06CEB, 0x07FB, NES_ROOMGFX }, { 0x074E6, 0x07BE, NES_ROOMGFX },
+        { 0x08001, 0x07A5, NES_ROOMGFX }, { 0x087A6, 0x06DD, NES_ROOMGFX }, { 0x08E83, 0x04EA, NES_ROOMGFX }, { 0x0936D, 0x07E2, NES_ROOMGFX }, { 0x09B4F, 0x0791, NES_ROOMGFX },
+        { 0x0A2E0, 0x07B5, NES_ROOMGFX }, { 0x0AA95, 0x0515, NES_ROOMGFX }, { 0x0AFAA, 0x0799, NES_ROOMGFX }, { 0x0B743, 0x04B9, NES_ROOMGFX }, { 0x0BBFC, 0x0319, NES_ROOMGFX },
+        { 0x0C001, 0x0464, NES_ROOMGFX }, { 0x0C465, 0x072C, NES_ROOMGFX }, { 0x0CB91, 0x0827, NES_ROOMGFX }, { 0x0D3B8, 0x0515, NES_ROOMGFX }, { 0x0D8CD, 0x064E, NES_ROOMGFX },
+        { 0x0DF1B, 0x0775, NES_ROOMGFX }, { 0x0E690, 0x06DD, NES_ROOMGFX }, { 0x0ED6D, 0x0376, NES_ROOMGFX }, { 0x0F0E3, 0x05F7, NES_ROOMGFX }, { 0x0F6DA, 0x078D, NES_ROOMGFX },
+        { 0x07CA4, 0x02D6, NES_ROOMGFX }, { 0x10001, 0x06A3, NES_ROOMGFX }, { 0x106A4, 0x091F, NES_ROOMGFX }, { 0x10FC3, 0x0361, NES_ROOMGFX }, { 0x11324, 0x0489, NES_ROOMGFX },
+        { 0x117AD, 0x0437, NES_ROOMGFX }, { 0x11BE4, 0x086E, NES_ROOMGFX }, { 0x12452, 0x0199, NES_ROOMGFX }, { 0x125EB, 0x0947, NES_ROOMGFX }, { 0x12F32, 0x037A, NES_ROOMGFX }
+};
+
 p_resource res_roomgfx[NUM_ROMSETS] = {
 	res_roomgfx_usa,
 	res_roomgfx_eur,
 	res_roomgfx_swe,
 	res_roomgfx_fra,
 	res_roomgfx_ger,
+	res_roomgfx_esp,
 };
 
 t_resource res_costumegfx_usa[2] = { { 0x30001, 0x0EB8, NES_COSTUMEGFX }, { 0x2F9F1, 0x0340, NES_COSTUMEGFX } };
@@ -162,6 +175,7 @@ t_resource res_costumegfx_eur[2] = { { 0x30001, 0x0EB8, NES_COSTUMEGFX }, { 0x2F
 t_resource res_costumegfx_swe[2] = { { 0x2EFE1, 0x0EB8, NES_COSTUMEGFX }, { 0x30001, 0x0340, NES_COSTUMEGFX } };
 t_resource res_costumegfx_fra[2] = { { 0x30001, 0x0EB8, NES_COSTUMEGFX }, { 0x2F608, 0x0340, NES_COSTUMEGFX } };
 t_resource res_costumegfx_ger[2] = { { 0x30001, 0x0EB8, NES_COSTUMEGFX }, { 0x2F4CE, 0x0340, NES_COSTUMEGFX } };
+t_resource res_costumegfx_esp[2] = { { 0x30001, 0x0EB8, NES_COSTUMEGFX }, { 0x2F0F6, 0x0340, NES_COSTUMEGFX } };
 
 p_resource res_costumegfx[NUM_ROMSETS] = {
 	res_costumegfx_usa,
@@ -169,6 +183,7 @@ p_resource res_costumegfx[NUM_ROMSETS] = {
 	res_costumegfx_swe,
 	res_costumegfx_fra,
 	res_costumegfx_ger,
+	res_costumegfx_esp,
 };
 
 t_resource res_rooms_usa[55] = {
@@ -241,12 +256,27 @@ t_resource res_rooms_ger[55] = {
 	{ 0x2B2DA, 0x02D8, NES_ROOM }, { 0x2B6D2, 0x03D2, NES_ROOM }, { 0x2BC0D, 0x020D, NES_ROOM }, { 0x2C001, 0x0168, NES_ROOM }, { 0x27E11, 0x0169, NES_ROOM }
 };
 
+t_resource res_rooms_esp[55] = {
+        { 0x00000, 0x0000, NES_ROOM }, { 0x14001, 0x0D05, NES_ROOM }, { 0x132AC, 0x04B0, NES_ROOM }, { 0x153AB, 0x087B, NES_ROOM }, { 0x1375C, 0x06B3, NES_ROOM },
+        { 0x15CB1, 0x0729, NES_ROOM }, { 0x16625, 0x04F0, NES_ROOM }, { 0x16B15, 0x0AD4, NES_ROOM }, { 0x18001, 0x06ED, NES_ROOM }, { 0x17936, 0x03DE, NES_ROOM },
+        { 0x18C3E, 0x0671, NES_ROOM }, { 0x1930B, 0x04C4, NES_ROOM }, { 0x199EC, 0x0452, NES_ROOM }, { 0x1A0DA, 0x048F, NES_ROOM }, { 0x1A569, 0x0449, NES_ROOM },
+        { 0x1A9B2, 0x03A8, NES_ROOM }, { 0x1AD5A, 0x0846, NES_ROOM }, { 0x1B600, 0x0686, NES_ROOM }, { 0x1C001, 0x0B58, NES_ROOM }, { 0x1CD42, 0x049C, NES_ROOM },
+        { 0x1D4ED, 0x0586, NES_ROOM }, { 0x1DFE9, 0x0526, NES_ROOM }, { 0x1E9C9, 0x05CE, NES_ROOM }, { 0x1F04B, 0x0390, NES_ROOM }, { 0x1F6CA, 0x073C, NES_ROOM },
+        { 0x20001, 0x04CB, NES_ROOM }, { 0x20543, 0x0530, NES_ROOM }, { 0x2171B, 0x05FC, NES_ROOM }, { 0x21EBE, 0x0470, NES_ROOM }, { 0x223DC, 0x045C, NES_ROOM },
+        { 0x2289E, 0x0928, NES_ROOM }, { 0x24001, 0x036C, NES_ROOM }, { 0x247EC, 0x03CA, NES_ROOM }, { 0x24BB6, 0x050D, NES_ROOM }, { 0x25283, 0x0346, NES_ROOM },
+        { 0x17D60, 0x01CA, NES_ROOM }, { 0x255C9, 0x0462, NES_ROOM }, { 0x25A2B, 0x055C, NES_ROOM }, { 0x25F87, 0x0659, NES_ROOM }, { 0x1BD19, 0x024B, NES_ROOM },
+        { 0x26B8A, 0x01F7, NES_ROOM }, { 0x26E5D, 0x0217, NES_ROOM }, { 0x2736A, 0x02F4, NES_ROOM }, { 0x27845, 0x045C, NES_ROOM }, { 0x28001, 0x0969, NES_ROOM },
+        { 0x289BE, 0x058E, NES_ROOM }, { 0x2A418, 0x0201, NES_ROOM }, { 0x2A6BE, 0x0325, NES_ROOM }, { 0x23D84, 0x01FC, NES_ROOM }, { 0x2AC46, 0x02A9, NES_ROOM },
+        { 0x2AEEF, 0x02C9, NES_ROOM }, { 0x2B2C0, 0x03D2, NES_ROOM }, { 0x27D12, 0x0207, NES_ROOM }, { 0x2B7FC, 0x0168, NES_ROOM }, { 0x2BD06, 0x0169, NES_ROOM }
+};
+
 p_resource res_rooms[NUM_ROMSETS] = {
 	res_rooms_usa,
 	res_rooms_eur,
 	res_rooms_swe,
 	res_rooms_fra,
 	res_rooms_ger,
+	res_rooms_esp,
 };
 
 t_resource res_scripts_usa[179] = {
@@ -444,12 +474,52 @@ t_resource res_scripts_ger[179] = {
 	{ 0x2A96C, 0x0005, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A971, 0x009C, NES_SCRIPT }, { 0x2AA0D, 0x009C, NES_SCRIPT }
 };
 
+t_resource res_scripts_esp[179] = {
+        { 0x00000, 0x0000, NES_SCRIPT }, { 0x28F4C, 0x0457, NES_SCRIPT }, { 0x293A3, 0x0213, NES_SCRIPT }, { 0x295B6, 0x009C, NES_SCRIPT }, { 0x29652, 0x03FE, NES_SCRIPT },
+        { 0x29A50, 0x01A1, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x29BF1, 0x005C, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x29C4D, 0x0005, NES_SCRIPT },
+        { 0x2B964, 0x000D, NES_SCRIPT }, { 0x2B971, 0x000D, NES_SCRIPT }, { 0x186EE, 0x0040, NES_SCRIPT }, { 0x1872E, 0x0016, NES_SCRIPT }, { 0x1B5A0, 0x0046, NES_SCRIPT },
+        { 0x1EF97, 0x00B4, NES_SCRIPT }, { 0x21D17, 0x0056, NES_SCRIPT }, { 0x175E9, 0x0027, NES_SCRIPT }, { 0x1FE06, 0x0027, NES_SCRIPT }, { 0x1FE2D, 0x0027, NES_SCRIPT },
+        { 0x1BC86, 0x0022, NES_SCRIPT }, { 0x15C26, 0x008B, NES_SCRIPT }, { 0x2232E, 0x001F, NES_SCRIPT }, { 0x2234D, 0x008F, NES_SCRIPT }, { 0x192AF, 0x002B, NES_SCRIPT },
+        { 0x1CB59, 0x006B, NES_SCRIPT }, { 0x1CBC4, 0x0045, NES_SCRIPT }, { 0x1CC09, 0x0046, NES_SCRIPT }, { 0x1CC4F, 0x005D, NES_SCRIPT }, { 0x204CC, 0x0077, NES_SCRIPT },
+        { 0x163DA, 0x0035, NES_SCRIPT }, { 0x1640F, 0x001C, NES_SCRIPT }, { 0x1642B, 0x0014, NES_SCRIPT }, { 0x1643F, 0x001C, NES_SCRIPT }, { 0x1645B, 0x0027, NES_SCRIPT },
+        { 0x16482, 0x01A3, NES_SCRIPT }, { 0x1D1DE, 0x009E, NES_SCRIPT }, { 0x1D27C, 0x011A, NES_SCRIPT }, { 0x1D396, 0x001C, NES_SCRIPT }, { 0x1D3B2, 0x0056, NES_SCRIPT },
+        { 0x1D408, 0x0072, NES_SCRIPT }, { 0x1E50F, 0x0028, NES_SCRIPT }, { 0x1E537, 0x0199, NES_SCRIPT }, { 0x1E6D0, 0x0240, NES_SCRIPT }, { 0x27CA1, 0x0071, NES_SCRIPT },
+        { 0x17D14, 0x004C, NES_SCRIPT }, { 0x13E0F, 0x0039, NES_SCRIPT }, { 0x18744, 0x02B9, NES_SCRIPT }, { 0x189FD, 0x00B9, NES_SCRIPT }, { 0x18AB6, 0x0183, NES_SCRIPT },
+        { 0x00000, 0x0000, NES_SCRIPT }, { 0x19E3E, 0x00F0, NES_SCRIPT }, { 0x21D6D, 0x00F7, NES_SCRIPT }, { 0x1E910, 0x00A8, NES_SCRIPT }, { 0x21E64, 0x0047, NES_SCRIPT },
+        { 0x2B97E, 0x004D, NES_SCRIPT }, { 0x13E48, 0x0024, NES_SCRIPT }, { 0x14D06, 0x0014, NES_SCRIPT }, { 0x17610, 0x005B, NES_SCRIPT }, { 0x1766B, 0x0111, NES_SCRIPT },
+        { 0x1777C, 0x0009, NES_SCRIPT }, { 0x14D1A, 0x01C9, NES_SCRIPT }, { 0x2A9E3, 0x0263, NES_SCRIPT }, { 0x231C6, 0x06D6, NES_SCRIPT }, { 0x2B9CB, 0x001C, NES_SCRIPT },
+        { 0x2B9E7, 0x001C, NES_SCRIPT }, { 0x2BA03, 0x0025, NES_SCRIPT }, { 0x2BA28, 0x0023, NES_SCRIPT }, { 0x2BA4B, 0x002A, NES_SCRIPT }, { 0x2BA75, 0x0033, NES_SCRIPT },
+        { 0x2BAA8, 0x0016, NES_SCRIPT }, { 0x2BABE, 0x0024, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2BAE2, 0x0011, NES_SCRIPT }, { 0x17785, 0x00A2, NES_SCRIPT },
+        { 0x22838, 0x0066, NES_SCRIPT }, { 0x14EE3, 0x0079, NES_SCRIPT }, { 0x1F3DB, 0x010F, NES_SCRIPT }, { 0x1FE54, 0x001D, NES_SCRIPT }, { 0x1F4EA, 0x00A2, NES_SCRIPT },
+        { 0x1F58C, 0x0097, NES_SCRIPT }, { 0x17827, 0x0061, NES_SCRIPT }, { 0x17888, 0x0032, NES_SCRIPT }, { 0x1F623, 0x00A7, NES_SCRIPT }, { 0x2BAF3, 0x00CD, NES_SCRIPT },
+        { 0x2BBC0, 0x00BD, NES_SCRIPT }, { 0x2BC7D, 0x0089, NES_SCRIPT }, { 0x20A73, 0x01C2, NES_SCRIPT }, { 0x20C35, 0x016E, NES_SCRIPT }, { 0x20DA3, 0x006F, NES_SCRIPT },
+        { 0x20E12, 0x0037, NES_SCRIPT }, { 0x20E49, 0x00EC, NES_SCRIPT }, { 0x20F35, 0x0047, NES_SCRIPT }, { 0x20F7C, 0x00F8, NES_SCRIPT }, { 0x21074, 0x0102, NES_SCRIPT },
+        { 0x21176, 0x0133, NES_SCRIPT }, { 0x212A9, 0x0197, NES_SCRIPT }, { 0x21440, 0x002D, NES_SCRIPT }, { 0x2146D, 0x00A9, NES_SCRIPT }, { 0x2436D, 0x0125, NES_SCRIPT },
+        { 0x1BCA8, 0x0071, NES_SCRIPT }, { 0x1CCAC, 0x0096, NES_SCRIPT }, { 0x2896A, 0x0054, NES_SCRIPT }, { 0x19F2E, 0x00DF, NES_SCRIPT }, { 0x1A00D, 0x007F, NES_SCRIPT },
+        { 0x14F5C, 0x0057, NES_SCRIPT }, { 0x27074, 0x02F6, NES_SCRIPT }, { 0x1DA73, 0x023A, NES_SCRIPT }, { 0x1DCAD, 0x00E8, NES_SCRIPT }, { 0x1DD95, 0x0059, NES_SCRIPT },
+        { 0x1DDEE, 0x01E3, NES_SCRIPT }, { 0x14FB3, 0x004D, NES_SCRIPT }, { 0x26D81, 0x00DC, NES_SCRIPT }, { 0x21EAB, 0x0013, NES_SCRIPT }, { 0x29C52, 0x00F0, NES_SCRIPT },
+        { 0x24492, 0x00E4, NES_SCRIPT }, { 0x21516, 0x00EE, NES_SCRIPT }, { 0x24576, 0x002D, NES_SCRIPT }, { 0x2B692, 0x010D, NES_SCRIPT }, { 0x245A3, 0x00AC, NES_SCRIPT },
+        { 0x250C3, 0x0184, NES_SCRIPT }, { 0x1B5E6, 0x000D, NES_SCRIPT }, { 0x1B5F3, 0x000D, NES_SCRIPT }, { 0x2389C, 0x0182, NES_SCRIPT }, { 0x2765E, 0x01E7, NES_SCRIPT },
+        { 0x23A1E, 0x017A, NES_SCRIPT }, { 0x23B98, 0x01B6, NES_SCRIPT }, { 0x23D4E, 0x0016, NES_SCRIPT }, { 0x2B79F, 0x005D, NES_SCRIPT }, { 0x23D64, 0x0020, NES_SCRIPT },
+        { 0x2A619, 0x00A5, NES_SCRIPT }, { 0x29D42, 0x038F, NES_SCRIPT }, { 0x15000, 0x00ED, NES_SCRIPT }, { 0x2B1B8, 0x0063, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT },
+        { 0x25247, 0x003C, NES_SCRIPT }, { 0x1E9B8, 0x0011, NES_SCRIPT }, { 0x13E6C, 0x0018, NES_SCRIPT }, { 0x265E0, 0x001F, NES_SCRIPT }, { 0x265FF, 0x0054, NES_SCRIPT },
+        { 0x26653, 0x0147, NES_SCRIPT }, { 0x2679A, 0x004B, NES_SCRIPT }, { 0x267E5, 0x0184, NES_SCRIPT }, { 0x26969, 0x0027, NES_SCRIPT }, { 0x26990, 0x0041, NES_SCRIPT },
+        { 0x269D1, 0x01B9, NES_SCRIPT }, { 0x13E84, 0x001F, NES_SCRIPT }, { 0x2464F, 0x002A, NES_SCRIPT }, { 0x150ED, 0x01A4, NES_SCRIPT }, { 0x192DA, 0x0031, NES_SCRIPT },
+        { 0x178BA, 0x007C, NES_SCRIPT }, { 0x21604, 0x00E4, NES_SCRIPT }, { 0x1D47A, 0x0018, NES_SCRIPT }, { 0x1D492, 0x005B, NES_SCRIPT }, { 0x18C39, 0x0005, NES_SCRIPT },
+        { 0x15291, 0x010F, NES_SCRIPT }, { 0x153A0, 0x000B, NES_SCRIPT }, { 0x24679, 0x0138, NES_SCRIPT }, { 0x247B1, 0x0014, NES_SCRIPT }, { 0x1DFD1, 0x0018, NES_SCRIPT },
+        { 0x247C5, 0x0027, NES_SCRIPT }, { 0x1A08C, 0x004E, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2B21B, 0x00A5, NES_SCRIPT }, { 0x2A0D1, 0x00B1, NES_SCRIPT },
+        { 0x2A182, 0x0140, NES_SCRIPT }, { 0x197CF, 0x00BE, NES_SCRIPT }, { 0x1988D, 0x014D, NES_SCRIPT }, { 0x199DA, 0x0012, NES_SCRIPT }, { 0x2A2C2, 0x0005, NES_SCRIPT },
+        { 0x2A2C7, 0x0005, NES_SCRIPT }, { 0x2A2CC, 0x0005, NES_SCRIPT }, { 0x2A2D1, 0x0005, NES_SCRIPT }, { 0x2A2D6, 0x0005, NES_SCRIPT }, { 0x216E8, 0x0033, NES_SCRIPT },
+        { 0x2A2DB, 0x0005, NES_SCRIPT }, { 0x00000, 0x0000, NES_SCRIPT }, { 0x2A2E0, 0x009C, NES_SCRIPT }, { 0x2A37C, 0x009C, NES_SCRIPT }
+};
+
 p_resource res_scripts[NUM_ROMSETS] = {
 	res_scripts_usa,
 	res_scripts_eur,
 	res_scripts_swe,
 	res_scripts_fra,
 	res_scripts_ger,
+	res_scripts_esp,
 };
 
 t_resource res_sounds_usa[82] = {
@@ -552,12 +622,33 @@ t_resource res_sounds_ger[82] = {
 	{ 0x3A5D4, 0x0AC5, NES_SOUND }, { 0x3B099, 0x0BE4, NES_SOUND }
 };
 
+t_resource res_sounds_esp[82] = {
+        { 0x13F63, 0x000A, NES_SOUND }, { 0x2F671, 0x0832, NES_SOUND }, { 0x2F671, 0x0832, NES_SOUND }, { 0x2F671, 0x0832, NES_SOUND }, { 0x2F671, 0x0832, NES_SOUND },
+        { 0x2F671, 0x0832, NES_SOUND }, { 0x13F6D, 0x0011, NES_SOUND }, { 0x1FEED, 0x0073, NES_SOUND }, { 0x17F6F, 0x0011, NES_SOUND }, { 0x1BF64, 0x0011, NES_SOUND },
+        { 0x27F19, 0x0056, NES_SOUND }, { 0x1FF60, 0x001F, NES_SOUND }, { 0x27F6F, 0x0011, NES_SOUND }, { 0x1BF75, 0x000A, NES_SOUND }, { 0x2BE6F, 0x000A, NES_SOUND },
+        { 0x2BE79, 0x0019, NES_SOUND }, { 0x2BE92, 0x004B, NES_SOUND }, { 0x2BEDD, 0x000A, NES_SOUND }, { 0x2BEE7, 0x000F, NES_SOUND }, { 0x2BEF6, 0x001D, NES_SOUND },
+        { 0x2BF13, 0x0045, NES_SOUND }, { 0x2BF58, 0x000F, NES_SOUND }, { 0x2FEA3, 0x001B, NES_SOUND }, { 0x2FEBE, 0x0033, NES_SOUND }, { 0x2BF67, 0x0011, NES_SOUND },
+        { 0x2FEF1, 0x000F, NES_SOUND }, { 0x2FF00, 0x0075, NES_SOUND }, { 0x30ECA, 0x0014, NES_SOUND }, { 0x13F63, 0x000A, NES_SOUND }, { 0x30EDE, 0x00FF, NES_SOUND },
+        { 0x30FDD, 0x000F, NES_SOUND }, { 0x30FEC, 0x000F, NES_SOUND }, { 0x30FFB, 0x0092, NES_SOUND }, { 0x30FFB, 0x0092, NES_SOUND }, { 0x3108D, 0x002D, NES_SOUND },
+        { 0x310BA, 0x00F8, NES_SOUND }, { 0x311B2, 0x0016, NES_SOUND }, { 0x311C8, 0x0011, NES_SOUND }, { 0x311D9, 0x004B, NES_SOUND }, { 0x31224, 0x0011, NES_SOUND },
+        { 0x31235, 0x003B, NES_SOUND }, { 0x31270, 0x008A, NES_SOUND }, { 0x312FA, 0x0011, NES_SOUND }, { 0x3130B, 0x000F, NES_SOUND }, { 0x3131A, 0x00A2, NES_SOUND },
+        { 0x313BC, 0x00D3, NES_SOUND }, { 0x3148F, 0x0097, NES_SOUND }, { 0x2FEF1, 0x000F, NES_SOUND }, { 0x3131A, 0x00A2, NES_SOUND }, { 0x31526, 0x05D1, NES_SOUND },
+        { 0x31526, 0x05D1, NES_SOUND }, { 0x31AF7, 0x0011, NES_SOUND }, { 0x13F63, 0x000A, NES_SOUND }, { 0x2FF00, 0x0075, NES_SOUND }, { 0x1FF60, 0x001F, NES_SOUND },
+        { 0x31B08, 0x098E, NES_SOUND }, { 0x311D9, 0x004B, NES_SOUND }, { 0x32496, 0x0011, NES_SOUND }, { 0x2F671, 0x0832, NES_SOUND }, { 0x324A7, 0x000F, NES_SOUND },
+        { 0x324B6, 0x002F, NES_SOUND }, { 0x324E5, 0x001D, NES_SOUND }, { 0x32502, 0x0018, NES_SOUND }, { 0x3251A, 0x0016, NES_SOUND }, { 0x32530, 0x001B, NES_SOUND },
+        { 0x3254B, 0x0088, NES_SOUND }, { 0x325D3, 0x0065, NES_SOUND }, { 0x32638, 0x0065, NES_SOUND }, { 0x3269D, 0x0073, NES_SOUND }, { 0x32710, 0x00F9, NES_SOUND },
+        { 0x32809, 0x049E, NES_SOUND }, { 0x32CA7, 0x0EA8, NES_SOUND }, { 0x34001, 0x0B18, NES_SOUND }, { 0x34B19, 0x0B9C, NES_SOUND }, { 0x356B5, 0x0C6B, NES_SOUND },
+        { 0x36320, 0x0E56, NES_SOUND }, { 0x37176, 0x0C70, NES_SOUND }, { 0x38001, 0x0DEC, NES_SOUND }, { 0x38DED, 0x0B77, NES_SOUND }, { 0x33B4F, 0x042F, NES_SOUND },
+        { 0x39964, 0x0AC5, NES_SOUND }, { 0x3A429, 0x0BE4, NES_SOUND }
+};
+
 p_resource res_sounds[NUM_ROMSETS] = {
 	res_sounds_usa,
 	res_sounds_eur,
 	res_sounds_swe,
 	res_sounds_fra,
 	res_sounds_ger,
+	res_sounds_esp,
 };
 
 t_resource res_costumes_usa[25] = {
@@ -600,12 +691,21 @@ t_resource res_costumes_ger[25] = {
 	{ 0x1FF3D, 0x003C, NES_COSTUME }, { 0x17EB7, 0x003A, NES_COSTUME }, { 0x17EB7, 0x003A, NES_COSTUME }, { 0x0FEEB, 0x0055, NES_COSTUME }, { 0x17E6C, 0x004B, NES_COSTUME }
 };
 
+t_resource res_costumes_esp[25] = {
+        { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME },
+        { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x13EA3, 0x004B, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME },
+        { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x0FF46, 0x0036, NES_COSTUME }, { 0x13EEE, 0x003A, NES_COSTUME }, { 0x13EEE, 0x003A, NES_COSTUME },
+        { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x13F28, 0x003B, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x17F2A, 0x0045, NES_COSTUME }, { 0x1FE71, 0x0040, NES_COSTUME },
+        { 0x1FEB1, 0x003C, NES_COSTUME }, { 0x13EEE, 0x003A, NES_COSTUME }, { 0x13EEE, 0x003A, NES_COSTUME }, { 0x0FEF1, 0x0055, NES_COSTUME }, { 0x13EA3, 0x004B, NES_COSTUME }
+};
+
 p_resource res_costumes[NUM_ROMSETS] = {
 	res_costumes_usa,
 	res_costumes_eur,
 	res_costumes_swe,
 	res_costumes_fra,
 	res_costumes_ger,
+	res_costumes_esp,
 };
 
 t_resource res_globdata_usa[1] = { { 0x2CA11, 0x0307, NES_GLOBDATA } };
@@ -613,6 +713,7 @@ t_resource res_globdata_eur[1] = { { 0x2CA11, 0x0307, NES_GLOBDATA } };
 t_resource res_globdata_swe[1] = { { 0x2C001, 0x0307, NES_GLOBDATA } };
 t_resource res_globdata_fra[1] = { { 0x2C628, 0x0307, NES_GLOBDATA } };
 t_resource res_globdata_ger[1] = { { 0x2C4EE, 0x0307, NES_GLOBDATA } };
+t_resource res_globdata_esp[1] = { { 0x2C001, 0x0307, NES_GLOBDATA } };
 
 p_resource res_globdata[NUM_ROMSETS] = {
 	res_globdata_usa,
@@ -620,6 +721,7 @@ p_resource res_globdata[NUM_ROMSETS] = {
 	res_globdata_swe,
 	res_globdata_fra,
 	res_globdata_ger,
+	res_globdata_esp,
 };
 
 /* sprite palette data */
@@ -628,6 +730,7 @@ t_resource res_sprpals_eur[2] = { { 0x07F61, 0x0010, NES_SPRPALS }, { 0x0BEB2, 0
 t_resource res_sprpals_swe[2] = { { 0x07F55, 0x0010, NES_SPRPALS }, { 0x07F65, 0x0010, NES_SPRPALS } };
 t_resource res_sprpals_fra[2] = { { 0x07ED8, 0x0010, NES_SPRPALS }, { 0x07EE8, 0x0010, NES_SPRPALS } };
 t_resource res_sprpals_ger[2] = { { 0x07F6B, 0x0010, NES_SPRPALS }, { 0x0BF17, 0x0010, NES_SPRPALS } };
+t_resource res_sprpals_esp[2] = { { 0x0BF15, 0x0010, NES_SPRPALS }, { 0x0BF25, 0x0010, NES_SPRPALS } };
 
 p_resource res_sprpals[NUM_ROMSETS] = {
 	res_sprpals_usa,
@@ -635,6 +738,7 @@ p_resource res_sprpals[NUM_ROMSETS] = {
 	res_sprpals_swe,
 	res_sprpals_fra,
 	res_sprpals_ger,
+	res_sprpals_esp,
 };
 
 /* associates costume IDs with sprite sets (indexes into SPRLENS/SPROFFS) */
@@ -643,6 +747,7 @@ t_resource res_sprdesc_eur[2] = { { 0x0BEC2, 0x0031, NES_SPRDESC }, { 0x07F71, 0
 t_resource res_sprdesc_swe[2] = { { 0x0BF1B, 0x0031, NES_SPRDESC }, { 0x07F75, 0x0009, NES_SPRDESC } };
 t_resource res_sprdesc_fra[2] = { { 0x07EF8, 0x0031, NES_SPRDESC }, { 0x07F29, 0x0009, NES_SPRDESC } };
 t_resource res_sprdesc_ger[2] = { { 0x0BF27, 0x0031, NES_SPRDESC }, { 0x0BF58, 0x0009, NES_SPRDESC } };
+t_resource res_sprdesc_esp[2] = { { 0x0BF35, 0x0031, NES_SPRDESC }, { 0x0BF66, 0x0009, NES_SPRDESC } };
 
 p_resource res_sprdesc[NUM_ROMSETS] = {
 	res_sprdesc_usa,
@@ -650,6 +755,7 @@ p_resource res_sprdesc[NUM_ROMSETS] = {
 	res_sprdesc_swe,
 	res_sprdesc_fra,
 	res_sprdesc_ger,
+	res_sprdesc_esp,
 };
 
 /* number of sprites in each set (indicates length within SPRDATA) */
@@ -658,6 +764,7 @@ t_resource res_sprlens_eur[2] = { { 0x1BE32, 0x0115, NES_SPRLENS }, { 0x07F5B, 0
 t_resource res_sprlens_swe[2] = { { 0x13E6A, 0x0115, NES_SPRLENS }, { 0x07F4F, 0x0006, NES_SPRLENS } };
 t_resource res_sprlens_fra[2] = { { 0x0FE61, 0x0115, NES_SPRLENS }, { 0x07ED2, 0x0006, NES_SPRLENS } };
 t_resource res_sprlens_ger[2] = { { 0x2BE1A, 0x0115, NES_SPRLENS }, { 0x07F65, 0x0006, NES_SPRLENS } };
+t_resource res_sprlens_esp[2] = { { 0x2EFE1, 0x0115, NES_SPRLENS }, { 0x07F7A, 0x0006, NES_SPRLENS } };
 
 p_resource res_sprlens[NUM_ROMSETS] = {
 	res_sprlens_usa,
@@ -665,6 +772,7 @@ p_resource res_sprlens[NUM_ROMSETS] = {
 	res_sprlens_swe,
 	res_sprlens_fra,
 	res_sprlens_ger,
+	res_sprlens_esp,
 };
 
 /* offset of each sprite set (indexes into SPRDATA) */
@@ -673,6 +781,7 @@ t_resource res_sproffs_eur[2] = { { 0x2FD42, 0x022A, NES_SPROFFS }, { 0x0BEF3, 0
 t_resource res_sproffs_swe[2] = { { 0x2BCE0, 0x022A, NES_SPROFFS }, { 0x0BF4C, 0x000C, NES_SPROFFS } };
 t_resource res_sproffs_fra[2] = { { 0x2F959, 0x022A, NES_SPROFFS }, { 0x07F32, 0x000C, NES_SPROFFS } };
 t_resource res_sproffs_ger[2] = { { 0x2F81F, 0x022A, NES_SPROFFS }, { 0x0BF61, 0x000C, NES_SPROFFS } };
+t_resource res_sproffs_esp[2] = { { 0x2F447, 0x022A, NES_SPROFFS }, { 0x0BF6F, 0x000C, NES_SPROFFS } };
 
 p_resource res_sproffs[NUM_ROMSETS] = {
 	res_sproffs_usa,
@@ -680,6 +789,7 @@ p_resource res_sproffs[NUM_ROMSETS] = {
 	res_sproffs_swe,
 	res_sproffs_fra,
 	res_sproffs_ger,
+	res_sproffs_esp,
 };
 
 /* sprite data sets (packed NES sprite data) */
@@ -688,6 +798,7 @@ t_resource res_sprdata_eur[2] = { { 0x2CE11, 0x2BE0, NES_SPRDATA }, { 0x0BE28, 0
 t_resource res_sprdata_swe[2] = { { 0x2C401, 0x2BE0, NES_SPRDATA }, { 0x0FE6B, 0x008A, NES_SPRDATA } };
 t_resource res_sprdata_fra[2] = { { 0x2CA28, 0x2BE0, NES_SPRDATA }, { 0x07E48, 0x008A, NES_SPRDATA } };
 t_resource res_sprdata_ger[2] = { { 0x2C8EE, 0x2BE0, NES_SPRDATA }, { 0x0FE61, 0x008A, NES_SPRDATA } };
+t_resource res_sprdata_esp[2] = { { 0x2C401, 0x2BE0, NES_SPRDATA }, { 0x0FE67, 0x008A, NES_SPRDATA } };
 
 p_resource res_sprdata[NUM_ROMSETS] = {
 	res_sprdata_usa,
@@ -695,6 +806,7 @@ p_resource res_sprdata[NUM_ROMSETS] = {
 	res_sprdata_swe,
 	res_sprdata_fra,
 	res_sprdata_ger,
+	res_sprdata_esp,
 };
 
 t_resource res_charset_usa[1] = { { 0x3F6EE, 0x0090, NES_CHARSET } };
@@ -702,6 +814,7 @@ t_resource res_charset_eur[1] = { { 0x3F724, 0x0090, NES_CHARSET } };
 t_resource res_charset_swe[1] = { { 0x3F739, 0x0090, NES_CHARSET } };
 t_resource res_charset_fra[1] = { { 0x3F739, 0x0090, NES_CHARSET } };
 t_resource res_charset_ger[1] = { { 0x3F739, 0x0090, NES_CHARSET } };
+t_resource res_charset_esp[1] = { { 0x3F739, 0x0090, NES_CHARSET } };
 
 p_resource res_charset[NUM_ROMSETS] = {
 	res_charset_usa,
@@ -709,6 +822,7 @@ p_resource res_charset[NUM_ROMSETS] = {
 	res_charset_swe,
 	res_charset_fra,
 	res_charset_ger,
+	res_charset_esp,
 };
 
 t_resource res_preplist_usa[1] = { { 0x3FB5A, 0x000E, NES_PREPLIST } };
@@ -716,6 +830,7 @@ t_resource res_preplist_eur[1] = { { 0x3FB90, 0x000E, NES_PREPLIST } };
 t_resource res_preplist_swe[1] = { { 0x3FBA9, 0x000E, NES_PREPLIST } };
 t_resource res_preplist_fra[1] = { { 0x3FBAF, 0x0010, NES_PREPLIST } };
 t_resource res_preplist_ger[1] = { { 0x3FBAB, 0x000F, NES_PREPLIST } };
+t_resource res_preplist_esp[1] = { { 0x3FBAE, 0x000F, NES_PREPLIST } };
 
 p_resource res_preplist[NUM_ROMSETS] = {
 	res_preplist_usa,
@@ -723,6 +838,7 @@ p_resource res_preplist[NUM_ROMSETS] = {
 	res_preplist_swe,
 	res_preplist_fra,
 	res_preplist_ger,
+	res_preplist_esp,
 };
 
 void extract_resource (FILE *input, FILE *output, p_resource res) {
@@ -1133,6 +1249,10 @@ int main (int argc, char **argv) {
 		ROMset = ROMSET_GERMANY;
 		notice("ROM contents verified as Maniac Mansion (Germany)");
 		break;
+	case 0xF5B2AFCA:
+        ROMset = ROMSET_SPAIN;
+        notice("ROM contents verified as Maniac Mansion (Spain)");
+        break;
 	case 0x3DA2085E:
 		error("Maniac Mansion (Japan) is not supported!");
 		break;
