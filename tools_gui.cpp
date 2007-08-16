@@ -658,6 +658,9 @@ void CompressionPanel::OnCompressionStart(wxCommandEvent &event) {
 		for (size_t x = 0; x < inputFiles.Count(); x++) {
 			wxString commandString = wxT("");
 
+#ifndef __WXMSW__
+			commandString += wxT("./");
+#endif
 			commandString += selectedTool;
 			commandString += wxT(" ");
 			commandString += compressionType;
@@ -765,17 +768,13 @@ void CompressionPanel::OnCompressionStart(wxCommandEvent &event) {
 			this->_toolOutput->AppendText(wxT("\n\n"));
 
 			wxProcess *command = new wxProcess(wxPROCESS_REDIRECT);
-			wxChar *buffer = new wxChar[1024];
 
 			wxExecute(commandString, wxEXEC_ASYNC, command);
 
 			while (!command->GetInputStream()->Eof()) {
-				command->GetInputStream()->Read(buffer, 1023);
-				buffer[command->GetInputStream()->LastRead()] = wxT('\0');
-				this->_toolOutput->AppendText(buffer);
+				wxChar outputChar = command->GetInputStream()->GetC();
+				this->_toolOutput->AppendText(outputChar);
 			}
-
-			delete [] buffer;
 
 			this->_toolOutput->AppendText(wxT("\n------------------------------\n"));
 			this->_toolOutput->AppendText(wxT("Operation Finished\n"));
@@ -910,7 +909,7 @@ void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
 }
 
 void ExtractionPanel::OnExtractionInput1Browse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this->_input1Panel->_text, this->_input1Panel->_isFileChooser, wxT(""));
+	LocationDialog *dialog = new LocationDialog(this->_input1Panel->_text, this->_input1Panel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
 
 	dialog->_dialog->Destroy();
@@ -918,7 +917,7 @@ void ExtractionPanel::OnExtractionInput1Browse(wxCommandEvent &event) {
 }
 
 void ExtractionPanel::OnExtractionInput2Browse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this->_input2Panel->_text, this->_input2Panel->_isFileChooser, wxT(""));
+	LocationDialog *dialog = new LocationDialog(this->_input2Panel->_text, this->_input2Panel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
 
 	dialog->_dialog->Destroy();
@@ -926,7 +925,7 @@ void ExtractionPanel::OnExtractionInput2Browse(wxCommandEvent &event) {
 }
 
 void ExtractionPanel::OnExtractionOutputBrowse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT(""));
+	LocationDialog *dialog = new LocationDialog(this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
 	
 	dialog->_dialog->Destroy();
@@ -967,6 +966,9 @@ void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 		for (size_t x = 0; x < inputFiles.Count(); x++) {
 			wxString commandString = wxT("");
 
+#ifndef __WXMSW__
+			commandString += wxT("./");
+#endif
 			commandString += selectedTool;
 			commandString += wxT(" ");
 
@@ -1003,17 +1005,12 @@ void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 			this->_toolOutput->AppendText(wxT("\n\n"));
 
 			wxProcess *command = new wxProcess(wxPROCESS_REDIRECT);
-			wxChar *buffer = new wxChar[1024];
-
 			wxExecute(commandString, wxEXEC_ASYNC, command);
 
 			while (!command->GetInputStream()->Eof()) {
-				command->GetInputStream()->Read(buffer, 1023);
-				buffer[command->GetInputStream()->LastRead()] = wxT('\0');
-				this->_toolOutput->AppendText(buffer);
+				wxChar outputChar = command->GetInputStream()->GetC();
+				this->_toolOutput->AppendText(outputChar);
 			}
-
-			delete [] buffer;
 
 			this->_toolOutput->AppendText(wxT("\n------------------------------\n"));
 			this->_toolOutput->AppendText(wxT("Operation Finished\n"));
