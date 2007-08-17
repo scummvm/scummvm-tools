@@ -27,7 +27,7 @@ class AssgnInstr(Instr):
     """Assignment Instruction in intermediate format."""
 
     def __init__(self, op,  dst, val):
-        Instr.__init__(self, op, (dst, val))
+        Instr.__init__(self, op, [dst, val])
 
     def __str__(self):
         dst, val = self.args
@@ -37,10 +37,13 @@ class Jump(Instr):
     """Unconditional jump instruction in intermediate format."""
 
     def __init__(self, to):
-        Instr.__init__(self, "goto", (to,))
+        Instr.__init__(self, "goto", [to,])
 
     def get_to(self):
         return self.args[0]
+
+    def set_to(self, to):
+        self.args[0] = to
 
     def __str__(self):
         return "goto %.4X" % self.args[0]
@@ -57,5 +60,9 @@ class CondJump(Jump):
 
 
 def is_jump(instr):
-    """Return true if instr is a Jump."""
+    """Return True if instr is a Jump."""
     return instr.__class__ == Jump or instr.__class__ == CondJump
+
+def is_cond_jump(instr):
+    """Return True if instr is a conditional Jump."""
+    return instr.__class__ == CondJump

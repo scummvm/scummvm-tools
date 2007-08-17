@@ -393,6 +393,7 @@ class SCUMM(bytecode.ByteCode):
         self.halt_on_error = halt_on_error
         self.script_start = 0
 
+        # called last because ByteCode.__init__() calls self.populate()
         bytecode.ByteCode.__init__(self, init, SCUMM.get_byte)
 
     def get_pos(self):
