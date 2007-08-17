@@ -10,7 +10,7 @@ CFLAGS  += -g -O -Wall -Wuninitialized -Wno-long-long -Wno-multichar -DUNIX
 
 # Additional warnings
 CFLAGS+= -Wshadow
-CFLAGS+= -pedantic
+#CFLAGS+= -pedantic
 CFLAGS+= -Wpointer-arith -Wcast-qual -Wcast-align
 # -Wconversion
 CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
@@ -51,14 +51,14 @@ UTILS := \
 
 all: $(TARGETS)
 
-bundle_name = ScummVM\ Tools GUI.app
+bundle_name = ScummVM\ Tools\ GUI.app
 bundle: $(TARGETS)
 	mkdir -p $(bundle_name)
 	mkdir -p $(bundle_name)/Contents
 	mkdir -p $(bundle_name)/Contents/MacOS
 	mkdir -p $(bundle_name)/Contents/Resources
 	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
-	cp $(SRC)/dists/macosx/Info.plist $(bundle_name)/Contents/
+	cp $(SRC)/dist/macosx/Info.plist $(bundle_name)/Contents/
 	cp $(TARGETS) $(bundle_name)/Contents/Resources/
 	mv $(bundle_name)/Contents/Resources/tools_gui $(bundle_name)/Contents/MacOS/
 
