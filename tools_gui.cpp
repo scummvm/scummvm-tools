@@ -1012,7 +1012,13 @@ void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
 			while (!command->GetInputStream()->Eof()) {
 				wxChar outputChar = command->GetInputStream()->GetC();
 				if (command->GetInputStream()->LastRead() != 0) {
+#ifdef __WXMSW__
+					if (outputChar != 10) {
+						this->_toolOutput->AppendText(outputChar);
+					}
+#else
 					this->_toolOutput->AppendText(outputChar);
+#endif
 				}
 			}
 
