@@ -103,7 +103,7 @@ void LocationDialog::prompt() {
 			wxArrayString filenames;
 			dialog->GetPaths(filenames);
 
-			if (!this->_target->IsEmpty()) {
+			if (!this->_target->GetValue().empty()) {
 				this->_target->AppendText(wxT(" "));
 			}
 
@@ -141,7 +141,7 @@ FileDrop::FileDrop(wxTextCtrl *target, bool isFileChooser) : wxFileDropTarget() 
 bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames) {
 	if (_target->IsEnabled()) {
 		if (_isFileChooser) {
-			if (!_target->IsEmpty()) {
+			if (!_target->GetValue().empty()) {
 				_target->AppendText(wxT(" "));
 			}
 

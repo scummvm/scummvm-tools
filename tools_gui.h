@@ -43,6 +43,12 @@ wxString kDefaultOggQuality = wxT("3");
 wxString kDefaultFlacCompress = wxT("8");
 wxString kDefaultFlacBlocksize = wxT("1152");
 
+/* Compatibility with wx 2.6 */
+#if wxMAJOR_VERSION == 2 && wxMINOR_VERSION <= 6
+#  define wxFD_OPEN wxOPEN
+#  define wxFD_FILE_MUST_EXIST wxFILE_MUST_EXIST
+#  define wxFD_MULTIPLE wxMULTIPLE
+#endif
 
 #define kNumCompressionTools 12
 wxString kCompressionToolNames[12] = {wxT("AGOS"), wxT("Broken Sword 1"), wxT("Broken Sword 2"), wxT("Encode DXA"), wxT("Flight of the Amazon Queen"), wxT("Kyra"), wxT("SAGA"), wxT("SCUMM BUN"), wxT("SCUMM SAN"), wxT("SCUMM SOU"), wxT("Simon 2 (MAC)"), wxT("Touche")};
