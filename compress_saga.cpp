@@ -496,7 +496,7 @@ void showhelp(char *exename) {
 int main(int argc, char *argv[]) {
 	int	i;
 	char inputPath[768];
-	char *inputFileName = NULL;
+	char inputFileName[256];
 	char inputFileNameWithExt[256];
 
 	if (argc < 2) {
@@ -546,7 +546,7 @@ int main(int argc, char *argv[]) {
 	getFilename(argv[argc - 1], inputFileName);
 
 	if (strrchr(inputFileName, '.') != NULL) {
-		error("Please specifiy the filename without an extension");
+		error("Please specify the filename without an extension");
 	}
 
 	// ITE
