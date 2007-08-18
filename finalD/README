@@ -22,6 +22,9 @@ Requirements:
 ------------------------------------------------------------------------
 Usage:
 
+The SCUMM version is currently hardcoded in decompiler.py.
+(set to version 3)
+
 $ <> [options] <script>
 
 Current options are:
