@@ -45,6 +45,9 @@ class Jump(Instr):
     def set_to(self, to):
         self.args[0] = to
 
+    def info(self):
+        return self.get_to()
+
     def __str__(self):
         return "goto %.4X" % self.args[0]
 
@@ -55,14 +58,28 @@ class CondJump(Jump):
         Jump.__init__(self, to)
         self.condition = condition
 
-    def __str__(self):
-        return "unless(%s) goto %.4X" % (self.condition, self.args[0])
+    def info(self):
+        return (True, self.get_to(), self.condition)
 
+    def __str__(self):
+        return "when (%s) goto %.4X" % (self.condition, self.args[0])
+
+class NegCondJump(CondJump):
+    """Negative conditional jump instruction in intermediate format."""
+
+    def info(self):
+        return (False, self.get_to(), self.condition)
+
+    def __str__(self):
+        return "unless (%s) goto %.4X" % (self.condition, self.args[0])
 
 def is_jump(instr):
     """Return True if instr is a Jump."""
-    return instr.__class__ == Jump or instr.__class__ == CondJump
+    return instr.__class__ == Jump \
+        or instr.__class__ == CondJump \
+        or instr.__class__ == NegCondJump
 
 def is_cond_jump(instr):
     """Return True if instr is a conditional Jump."""
-    return instr.__class__ == CondJump
+    return instr.__class__ == CondJump \
+        or instr.__class__ == NegCondJump

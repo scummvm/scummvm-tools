@@ -720,7 +720,7 @@ class SCUMM(bytecode.ByteCode):
         offset = self.get_word()
         to = self.calc_abs_jump(offset)
         if condition:
-            return CondJump(to, condition)
+            return NegCondJump(to, condition)
         else:
             return Jump(to)
 
