@@ -14,11 +14,16 @@ class BT:
     two_way = 2
     """two way block"""
 
+class LT:
+    """Loop type enumeration."""
+    post_tested = 0
+    pre_tested = 1
+    endless = 2
 
 class BasicBlock:
     """BasicBlock class."""
 
-    def __init__(self, instrs, btype):
+    def __init__(self, instrs, btype, type_info=None):
         """
         Initialize BasicBlock object.
 
@@ -28,11 +33,51 @@ class BasicBlock:
         """
         self.instrs = instrs
         self.btype = btype
+        self.type_info = type_info
+
         self.rev_postorder = None
+        self.idom = None
+
+        self.loop_head = None
+        self.loop_latch = None
+        self.loop_type = None
+        self.loop_follow = None
+
+        self.if_follow = None
 
     def __str__(self):
         """BasicBlock string representation."""
-        return str(self.instrs)
+        return """<BasicBlock
+        reverse post-order: %s
+        immediate dominator: %s
+        btype: %s
+        type-info: %s
+        loop_head: %s
+        loop_latch: %s
+        loop_type: %s
+        loop_follow: %s
+        if_follow: %s
+        instrs: %s>""" % \
+            (self.rev_postorder,
+             self.idom,
+             {BT.two_way : "two-way",
+              BT.one_way : "one-way",
+              BT.fall : "fall-through",
+              None: None}[self.btype],
+             self.type_info,
+             self.loop_head,
+             self.loop_latch,
+             {LT.post_tested: "post-tested",
+              LT.pre_tested: "pre-tested",
+              LT.endless: "endless",
+              None: None}[self.loop_type],
+             self.loop_follow,
+             self.if_follow,
+             self.instrs)
+
+    def __len__(self):
+        """Return len(self.instrs)."""
+        return len(self.instrs)
 
     def get_first(self):
         """Return first instruction offset in block."""
@@ -46,6 +91,7 @@ class BasicBlock:
 def get_bt(last_instr):
     """Return block type of block with last instruction last_instr."""
     return {CondJump : BT.two_way,
+            NegCondJump : BT.two_way,
             Jump : BT.one_way}.get(last_instr.__class__, BT.fall)
 
 def gen_basic_blocks(decoded):
@@ -63,11 +109,32 @@ def gen_basic_blocks(decoded):
                 block_instrs = []
         block_instrs.append(off)
         if is_jump(instr):
-            blocks.append(BasicBlock(block_instrs, get_bt(instr)))
+            blocks.append(BasicBlock(block_instrs,
+                                     get_bt(instr),
+                                     instr.info()))
             block_instrs = []
     if block_instrs:
         blocks.append(BasicBlock(block_instrs, BT.fall))
     return blocks
+
+def get_then_else(g, n):
+    """Return (t, e) of two-way node n in graph g."""
+    block = g.node_data(n)
+    assert(block.btype == BT.two_way)
+    positive, target, _ = block.type_info
+    s0 = g.out_nbrs(n)[0]
+    s1 = g.out_nbrs(n)[1]
+
+    if positive:
+        if target == g.node_data(s0).get_first():
+            return (s0, s1)
+        else:
+            return (s1, s0)
+    else:
+        if target == g.node_data(s0).get_first():
+            return (s1, s0)
+        else:
+            return (s0, s1)
 
 def postorder(graph):
     """
@@ -105,6 +172,7 @@ def hide_dead_nodes(graph):
                     graph.hide_node(node)
                     change = True
 
+# TODO: doesn't theoretically depend on decoded anymore
 def rewire_jumps(graph, decoded):
     """
     Rewire jumps in graph for simpler control flow where possible.
@@ -137,7 +205,7 @@ def rewire_jumps(graph, decoded):
                         tedge = graph.out_edges(node)[1]
                 tnode = graph.tail(tedge)
                 tblock = graph.node_data(tnode)
-                if tblock.btype == BT.one_way and len(tblock.instrs) == 1:
+                if tblock.btype == BT.one_way and len(tblock) == 1:
                     graph.hide_edge(tedge)
                     graph.add_edge(node, graph.out_nbrs(tnode)[0])
                     # let's also change the underlying Jump
@@ -214,19 +282,29 @@ def gen_derived_sequence(graph, intervals):
     graph -- a graph
     intervals -- the list of graph intervals of graph
     """
-    def derive_graph(g, ints):
+    def derive_graph(g, intvs, first=False):
         ng = Graph.Graph()
-        for n in range(len(ints)):
-            ng.add_node(n)
-        for i, int_i in enumerate(ints):
-            for j, int_j in enumerate(ints):
+        if first:
+            for n, intv in enumerate(intvs):
+                node_data = []
+                for nid in intv:
+                    node_data.append(nid)
+                ng.add_node(n, node_data)
+        else:
+            for n, intv in enumerate(intvs):
+                node_data = []
+                for pn in intv:
+                    node_data += g.node_data(pn)
+                ng.add_node(n, node_data)
+        for i, int_i in enumerate(intvs):
+            for j, int_j in enumerate(intvs):
                 h_j = int_j[0]
                 if i != j and any(n in g.inc_nbrs(h_j) for n in int_i):
                     ng.add_edge(i, j, create_nodes=False)
         return ng
     dsequence = [(graph, intervals)]
     prev_graph = graph
-    next_graph = derive_graph(prev_graph, intervals)
+    next_graph = derive_graph(prev_graph, intervals, True)
     while next_graph.number_of_nodes() != prev_graph.number_of_nodes():
         intervals = gen_intervals(next_graph)
         dsequence.append((next_graph, intervals))
@@ -234,7 +312,81 @@ def gen_derived_sequence(graph, intervals):
         next_graph = derive_graph(prev_graph, intervals)
     return dsequence
 
-def loop_struct(dseq, decoded):
+def mark_nodes_in_loop(g, latch, head, interval):
+    """
+    Mark all nodes belonging to loop (latch, head).
+
+    Return the list of loop nodes.
+    """
+    nodes_in_loop = [head]
+
+    hblock = g.node_data(head)
+    hblock.loop_head = head
+    hblock.loop_latch = latch
+
+    lblock = g.node_data(latch)
+
+    for n in interval:
+        block = g.node_data(n)
+        if block.rev_postorder \
+                in range(hblock.rev_postorder+1, lblock.rev_postorder+1):
+            nodes_in_loop.append(n)
+            if not block.loop_head:
+                block.loop_head = head
+                block.loop_latch = latch
+    return nodes_in_loop
+
+def set_loop_type(g, latch, head, nodes_in_loop):
+    """Find loop type."""
+    lblock = g.node_data(latch)
+    hblock = g.node_data(head)
+    if lblock.btype == BT.two_way:
+        if hblock.btype == BT.two_way:
+            if all(hsucc in nodes_in_loop for hsucc in g.out_nbrs(head)):
+                lt = LT.post_tested
+            else:
+                lt = LT.pre_tested
+        else:
+            lt = LT.post_tested
+    else:
+        if hblock.btype == BT.two_way:
+            # I guess that is... "important"
+            if all(hsucc in nodes_in_loop for hsucc in g.out_nbrs(head)):
+                lt = LT.endless
+            else:
+                lt = LT.pre_tested
+        else:
+            lt = LT.endless
+    hblock.loop_type = lt
+
+def set_loop_follow(g, latch, head, nodes_in_loop):
+    """Find loop follow node."""
+    hblock = g.node_data(head)
+    if hblock.loop_type == LT.pre_tested:
+        if g.out_nbrs(head)[0] in nodes_in_loop:
+            lf = g.out_nbrs(head)[1]
+        else:
+            lf = g.out_nbrs(head)[0]
+    elif hblock.loop_type == LT.post_tested:
+        if g.out_nbrs(latch)[0] in nodes_in_loop:
+            lf = g.out_nbrs(latch)[1]
+        else:
+            lf = g.out_nbrs(latch)[0]
+    else:
+        lf = None
+        for twn in [twn for twn in nodes_in_loop
+                    if g.node_data(twn).btype == BT.two_way]:
+            n0 = g.out_nbrs(twn)[0]
+            n1 = g.out_nbrs(twn)[1]
+            if (n0 not in nodes_in_loop) and \
+                    (not lf or g.node_data(n0).rev_postorder < lf):
+                lf = n0
+            elif (n1 not in nodes_in_loop) and \
+                    (not lf or g.node_data(n1).rev_postorder < lf):
+                lf = n1
+    hblock.loop_follow = lf
+
+def loop_struct(dseq):
     """
     Structure loops.
 
@@ -243,18 +395,173 @@ def loop_struct(dseq, decoded):
 
     Arguments:
     dseq -- derived sequence of control flow graphs [(g, intvs), ...]
-    decoded -- dictionary of instr offset -> decoded instruction
     """
+    top_graph, intvs = dseq.pop(0)
+    for intv in intvs:
+        head = intv[0]
+        latch = None
+        for head_pred in top_graph.inc_nbrs(head):
+            if head_pred in intv:
+                # found a loop (head_pred, head)
+                latch = head_pred
+                nodes_in_loop = \
+                    mark_nodes_in_loop(top_graph, latch, head, intv)
+                set_loop_type(top_graph, latch, head, nodes_in_loop)
+                set_loop_follow(top_graph, latch, head, nodes_in_loop)
+                break
     for g, intvs in dseq:
         for intv in intvs:
-            header_node = intv[0]
-            # a latching node is the node where the back-edge to a loop
-            # header originates
-            latching_node = None
-            for header_pred in g.inc_nbrs(header_node):
-                if header_pred in intv:
-                    # found a loop (header_pred, header_node)
-                    latching_node = header_pred
-                    # mark_nodes_in_loop(latching_node, header_node, intv)
-                    # find loop type here
-                    # find loop follow here
+            head = g.node_data(intv[0])[0]
+            latch = None
+            for head_pred in top_graph.inc_nbrs(head):
+                top_intv = []
+                top_intv.extend(g.node_data(n) for n in intv)
+                print top_intv
+                if head_pred in top_intv:
+                    latch = head_pred
+                    nodes_in_loop = \
+                        mark_nodes_in_loop(top_graph, latch, head, top_intv)
+                    set_loop_type(top_graph, latch, head, nodes_in_loop)
+                    set_loop_follow(top_graph, latch, head, nodes_in_loop)
+
+# def back_dfs(g, start):
+#     """Fixed version of altgraph.Graph.Graph.back_dfs()."""
+#     visited, stack = set([start]), [start]
+#     while stack:
+#         curr_node = stack.pop()
+#         yield curr_node
+#         if curr_node == None:
+#             break
+#         for edge in g.inc_edges(curr_node):
+#             head = g.head(edge)
+#             if head not in visited:
+#                 visited.add(head)
+#                 stack.append(head)
+
+def get_dominators(g):
+    """Find and return the dominators for every node in g."""
+    dominators = {0 : set([0])}
+    for n in g.node_list():
+        if n != 0:
+            dominators[n] = set(g.node_list())
+    change = True
+    while change:
+        change = False
+        for n in g.node_list():
+            if n != 0:
+                all_preds = g.inc_nbrs(n)
+                new_doms = set(dominators[all_preds.pop()])
+                for doms_p in [dominators[p] for p in all_preds]:
+                    doms_p = doms_p.difference([0])
+                    new_doms.intersection_update(doms_p)
+                new_doms.add(n)
+                if len(new_doms) != len(dominators[n]):
+                    dominators[n] = new_doms
+                    change = True
+    return dominators
+
+def set_immediate_dominators(g):
+    """Find and store the immediate dominator for every node in g."""
+    dominators = get_dominators(g)
+    for n in g.node_list():
+        block = g.node_data(n)
+        doms_n = dominators[n].difference([n])
+        for dom in doms_n:
+            if not any(dom in dominators[d] for d in doms_n.difference([dom])):
+                block.idom = dom
+                break
+        if not block.idom:
+            block.idom = 0
+
+def two_way_struct(g):
+    """Structure two-way conditionals."""
+    def node_to_revpo(n):
+        """Node ID -> reverse post-order number."""
+        return g.node_data(n).rev_postorder
+    def in_head_latch(block):
+        """Return True if block is a loop header or latching node."""
+        return block.loop_latch == block or block.loop_head == block
+    nodes = g.node_list()[:]
+    nodes.sort(key=node_to_revpo, reverse=True)
+    unresolved = []
+    for m in nodes:
+        block = g.node_data(m)
+        if block.btype == BT.two_way and not in_head_latch(block):
+            dominated_nways = [i for i in g.node_list()
+                               if g.node_data(i).idom == m
+                               and g.inc_degree(i) >= 2]
+            if dominated_nways:
+                n = max(dominated_nways, key=node_to_revpo)
+                block.if_follow = n
+                for unres in unresolved:
+                    g.node_data(unres).if_follow = n
+                unresolved = []
+            else:
+                unresolved.append(m)
+
+def merge_conditionals(g, n0, n1, type):
+    """
+    Merge the two conditional jump blocks n0 and n1 into n0.
+
+    Arguments:
+    g -- a control flow graph
+    n0 -- a node in g (becomes the merge of n0 and n1)
+    n1 -- a node in g
+    cond -- the new condition for n0
+    """
+    # does NOT change underlying CondJump instruction yet
+    # it should not matter for output generated by the decompiler
+    block = g.node_data(n0)
+    pos0, targ0, cond0 = block.type_info
+    pos1, targ1, cond1 = g.node_data(n1).type_info
+    t1, e1 = get_then_else(g, n1)
+    if type == 0:
+        g.add_edge(n0, e1)
+        nt = g.node_data(e1).get_first()
+        nc = "(%s) && !(%s)" % (cond0, cond1)
+    elif type == 1:
+        g.add_edge(n0, t1)
+        nt = g.node_data(t1).get_first()
+        nc = "(%s) && (%s)" % (cond0, cond1)
+    elif type == 2:
+        g.add_edge(n0, e1)
+        nt = g.node_data(e1).get_first()
+        nc = "(%s) || (%s)" % (cond0, cond1)
+    elif type == 3:
+        g.add_edge(n0, t1)
+        nt = g.node_data(t1).get_first()
+        nc = "(%s) || !(%s)" % (cond0, cond1)
+    block.type_info = (True, nt, nc)
+    g.hide_node(n1)
+
+def comp_conds_struct(g):
+    """Structure compound conditions in g."""
+    change = True
+    while change:
+        change = False
+        for n in postorder(g):
+            block = g.node_data(n)
+            if block.btype == BT.two_way:
+                t, e = get_then_else(g, n)
+                tblock = g.node_data(t)
+                eblock = g.node_data(e)
+                if tblock.btype == BT.two_way \
+                        and len(tblock) == 1 \
+                        and g.inc_degree(t) == 1:
+                    tt, te = get_then_else(g, t)
+                    if tt == e:
+                        merge_conditionals(g, n, t, 0)
+                        change = True
+                    elif te == e:
+                        merge_conditionals(g, n, t, 1)
+                        change = True
+                elif eblock.btype == BT.two_way \
+                        and len(eblock) == 1 \
+                        and g.inc_degree(e) == 1:
+                    et, ee = get_then_else(g, e)
+                    if et == t:
+                        merge_conditionals(g, n, e, 2)
+                        change = True
+                    elif ee == t:
+                        merge_conditionals(g, n, e, 3)
+                        change = True
