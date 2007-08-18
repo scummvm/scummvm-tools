@@ -1,0 +1,40 @@
+                              <>
+                              ==
+
+<> is a bytecode decompiler written in Python. Its code
+structuring algorithms work on an intermediary representation
+of a script's instructions and hence are bytecode variant independent.
+Thus, adding support for a new bytecode variant only involves
+writing a new frontend containing code to translate bytecode
+instructions to the intermediary format.
+
+<> does not yet analyze data flow and hence there is no true
+(as in viable/sensible) support for stack-based bytecode variants
+as of now.
+
+------------------------------------------------------------------------
+Requirements:
+
+  - Python >=2.3 (I _think_)
+  - altgraph (http://cheeseshop.python.org/pypi/altgraph/)
+  - [optional] graphviz
+
+------------------------------------------------------------------------
+Usage:
+
+$ <> [options] <script>
+
+Current options are:
+
+  -d: Generate a simple disassembly of the program.
+  -g: Display a control flow graph using 'dotty'
+      from the graphviz package.
+
+------------------------------------------------------------------------
+Todo:
+
+  - Implement basic data flow analysis for the parameter stack of
+    stack-based bytecode variants.
+  - Implement support for SCUMM versions >=6
+
+------------------------------------------------------------------------
