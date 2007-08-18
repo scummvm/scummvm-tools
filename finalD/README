@@ -15,7 +15,7 @@ as of now.
 ------------------------------------------------------------------------
 Requirements:
 
-  - Python >=2.3 (I _think_)
+  - Python >=2.5 (might add a compat.py for older python versions)
   - altgraph (http://cheeseshop.python.org/pypi/altgraph/)
   - [optional] graphviz
 
