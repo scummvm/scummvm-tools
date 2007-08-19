@@ -474,7 +474,7 @@ def set_immediate_dominators(g):
             block.idom = 0
 
 def two_way_struct(g):
-    """Structure two-way conditionals."""
+    """Structure two-way conditionals in g."""
     def node_to_revpo(n):
         """Node ID -> reverse post-order number."""
         return g.node_data(n).rev_postorder

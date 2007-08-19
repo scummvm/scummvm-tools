@@ -2,8 +2,10 @@
 
 import disasm
 import scumm
-import bytecode
+#import bytecode
 import cfg
+from PseudoCode import PseudoCode
+
 
 import array
 from optparse import OptionParser
@@ -50,11 +52,13 @@ if __name__ == '__main__':
                 cfg.loop_struct(dseq)
                 cfg.two_way_struct(graph)
                 cfg.comp_conds_struct(graph)
-                for nid in graph.node_list():
-                    block = graph.node_data(nid)
-                    print block
-                    for instr in block.instrs:
-                        print decoded[instr]
+#                 for nid in graph.node_list():
+#                     block = graph.node_data(nid)
+#                     print block
+#                     for instr in block.instrs:
+#                         print decoded[instr]
+                pc = PseudoCode(graph, decoded)
+                pc.generate_code()
             else:
                 decoded_tuples = decoded.items()
                 decoded_tuples.sort(key=lambda t: t[0])
