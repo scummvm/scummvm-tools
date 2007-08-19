@@ -100,7 +100,6 @@ class PseudoCode:
             # loop follow already traversed
             self._emit_goto(bb.loop_follow, i)
 
-    # TODO: buggy deluxe
     def _write_two_way(self, bbn, i, latch, ifollow):
         """
         Write code for tree rooted at bbn.
@@ -180,7 +179,7 @@ class PseudoCode:
         if bbn == None:
             return
         bb = self.cfg.node_data(bbn)
-        if bb == ifollow or bbn in self.traversed:
+        if bbn == ifollow or bbn in self.traversed:
             return
         self.traversed.append(bbn)
         if bb.loop_head == bbn:

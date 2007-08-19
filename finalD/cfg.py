@@ -350,11 +350,7 @@ def set_loop_type(g, latch, head, nodes_in_loop):
             lt = LT.post_tested
     else:
         if hblock.btype == BT.two_way:
-            # I guess that is... "important"
-            if all(hsucc in nodes_in_loop for hsucc in g.out_nbrs(head)):
-                lt = LT.endless
-            else:
-                lt = LT.pre_tested
+            lt = LT.pre_tested
         else:
             lt = LT.endless
     hblock.loop_type = lt
@@ -481,23 +477,29 @@ def two_way_struct(g):
     def in_head_latch(block):
         """Return True if block is a loop header or latching node."""
         return block.loop_latch == block or block.loop_head == block
-    nodes = g.node_list()[:]
-    nodes.sort(key=node_to_revpo, reverse=True)
+    nodes_desc = g.node_list()[:]
+    nodes_desc.sort(key=node_to_revpo, reverse=True)
     unresolved = []
-    for m in nodes:
+    for m in nodes_desc:
         block = g.node_data(m)
         if block.btype == BT.two_way and not in_head_latch(block):
+            # nodes_desc already sorted, no need for max() below
             dominated_nways = [i for i in g.node_list()
                                if g.node_data(i).idom == m
                                and g.inc_degree(i) >= 2]
             if dominated_nways:
                 n = max(dominated_nways, key=node_to_revpo)
                 block.if_follow = n
-                for unres in unresolved:
-                    g.node_data(unres).if_follow = n
-                unresolved = []
+                for unres in unresolved[:]:
+                    if n > unres:
+                        print "%d resolved to %d through %d" % (unres, n, m)
+                        g.node_data(unres).if_follow = n
+                        unresolved.remove(unres)
+                        print unresolved
             else:
                 unresolved.append(m)
+    if unresolved:
+        print "STILL UNRESOLVED: %s" % unresolved
 
 def merge_conditionals(g, n0, n1, type):
     """
