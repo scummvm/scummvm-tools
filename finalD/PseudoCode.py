@@ -1,6 +1,6 @@
 """Pseudo code formatting from control flow graphs."""
 
-from cfg import BT, LT, get_then_else
+from cfg import BT, LT, get_then_else, node_to_revpo
 from iformat import is_jump
 
 
@@ -61,17 +61,23 @@ class PseudoCode:
         """
         self.traversed.append(bbn)
         bb = self.cfg.node_data(bbn)
+        head_is_if = False
         # write loop header
         if bb.loop_type == LT.pre_tested:
             self._write_bb(bbn, i)
             t, e = get_then_else(self.cfg, bbn)
             if e == bb.loop_follow:
-                self._write("while (%s) {" % bb.type_info[2], i)
+                fmt = "while (%s) {"
             else:
-                self._write("while (!(%s)) {" % bb.type_info[2], i)
+                fmt = "while (!(%s)) {"
+            self._write(fmt % bb.type_info[2], i, "[%.4X]" % bb.get_last())
         elif bb.loop_type == LT.post_tested:
             self._write("do {", i)
-            self._write_bb(bbn, i+1)
+            if bbn != bb.loop_latch and bb.btype == BT.two_way:
+                self._write_two_way(bbn, i+1, latch, ifollow, True)
+                head_is_if = True
+            else:
+                self._write_bb(bbn, i+1)
         else:
             self._write("for (;;) {", i)
             self._write_bb(bbn, i+1)
@@ -79,19 +85,34 @@ class PseudoCode:
             return
         if bb.loop_latch != bbn:
             # loop is several basic blocks
-            for s in self.cfg.out_nbrs(bbn):
-                if bb.loop_type != LT.pre_tested or s != bb.loop_follow:
-                    if s not in self.traversed:
+            if not head_is_if:
+                succs_asc = self.cfg.out_nbrs(bbn)
+                succs_asc.sort(key=node_to_revpo(self.cfg))
+                for s in succs_asc:
+                    if bb.loop_type != LT.pre_tested or s != bb.loop_follow:
+                        if s not in self.traversed:
+                            self._write_code(s, i+1, bb.loop_latch, ifollow)
+                        else:
+                            # s already traversed
+                            self._emit_goto(s, i+1)
+            else:
+                succs_asc = self.cfg.out_nbrs(bb.if_follow)
+                succs_asc.sort(key=node_to_revpo(self.cfg))
+                for s in succs_asc:
+                    if s != bb.loop_follow:
                         self._write_code(s, i+1, bb.loop_latch, ifollow)
-                    else:
-                        # s already traversed
-                        self._emit_goto(s, i+1)
         # write loop trailer
         if bb.loop_type == LT.pre_tested:
             self._write_bb(bbn, i+1)
             self._write("}", i)
         elif bb.loop_type == LT.post_tested:
-            self._write("} while (%s);" % bb.type_info[2], i)
+            lbb = self.cfg.node_data(bb.loop_latch)
+            positive, _, condition = lbb.type_info
+            if positive:
+                fmt = "} while (%s);"
+            else:
+                fmt = "} while (!(%s));"
+            self._write(fmt % condition, i, "[%.4X]" % lbb.get_last())
         else:
             self._write("}", i)
         if bb.loop_follow not in self.traversed:
@@ -100,7 +121,7 @@ class PseudoCode:
             # loop follow already traversed
             self._emit_goto(bb.loop_follow, i)
 
-    def _write_two_way(self, bbn, i, latch, ifollow):
+    def _write_two_way(self, bbn, i, latch, ifollow, nofollow=False):
         """
         Write code for tree rooted at bbn.
 
@@ -118,11 +139,15 @@ class PseudoCode:
             if t not in self.traversed:
                 # process then clause
                 if t != bb.if_follow:
-                    self._write("if (%s) {" % bb.type_info[2], i)
+                    self._write("if (%s) {" % bb.type_info[2],
+                                i,
+                                "[%.4X]" % bb.get_last())
                     self._write_code(t, i+1, latch, bb.if_follow)
                 else:
                     # then clause empty, negate condition
-                    self._write("if (!(%s)) {" % bb.type_info[2], i)
+                    self._write("if (!(%s)) {" % bb.type_info[2],
+                                i,
+                                "[%.4X]" % bb.get_last())
                     self._write_code(e, i+1, latch, bb.if_follow)
                     empty_then = True
             else:
@@ -136,11 +161,13 @@ class PseudoCode:
                 self._write("} else {", i)
                 self._emit_goto(e, i+1)
             self._write("}", i)
-            if bb.if_follow not in self.traversed:
+            if not nofollow and bb.if_follow not in self.traversed:
                 self._write_code(bb.if_follow, i, latch, ifollow)
         else:
             # no follow..
-            self._write("if (%s) {" % bb.type_info[2], i)
+            self._write("if (%s) {" % bb.type_info[2],
+                        i,
+                        "[%.4X]" % bb.get_last())
             self._write_code(t, i+1, latch, ifollow)
             self._write("} else {", i)
             self._write_code(e, i+1, latch, ifollow)

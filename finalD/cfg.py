@@ -117,6 +117,10 @@ def gen_basic_blocks(decoded):
         blocks.append(BasicBlock(block_instrs, BT.fall))
     return blocks
 
+def node_to_revpo(g):
+    """Return lambda for Node ID -> reverse post-order number."""
+    return lambda n: g.node_data(n).rev_postorder
+
 def get_then_else(g, n):
     """Return (t, e) of two-way node n in graph g."""
     block = g.node_data(n)
@@ -341,7 +345,9 @@ def set_loop_type(g, latch, head, nodes_in_loop):
     lblock = g.node_data(latch)
     hblock = g.node_data(head)
     if lblock.btype == BT.two_way:
-        if hblock.btype == BT.two_way:
+        if head == latch:
+            lt = LT.post_tested
+        elif hblock.btype == BT.two_way:
             if all(hsucc in nodes_in_loop for hsucc in g.out_nbrs(head)):
                 lt = LT.post_tested
             else:
@@ -359,7 +365,8 @@ def set_loop_follow(g, latch, head, nodes_in_loop):
     """Find loop follow node."""
     hblock = g.node_data(head)
     if hblock.loop_type == LT.pre_tested:
-        if g.out_nbrs(head)[0] in nodes_in_loop:
+        if g.out_nbrs(head)[0] in nodes_in_loop: #\
+#                and g.out_nbrs(head)[1] >= latch:
             lf = g.out_nbrs(head)[1]
         else:
             lf = g.out_nbrs(head)[0]
@@ -471,18 +478,16 @@ def set_immediate_dominators(g):
 
 def two_way_struct(g):
     """Structure two-way conditionals in g."""
-    def node_to_revpo(n):
-        """Node ID -> reverse post-order number."""
-        return g.node_data(n).rev_postorder
-    def in_head_latch(block):
-        """Return True if block is a loop header or latching node."""
-        return block.loop_latch == block or block.loop_head == block
+    def in_head_latch(n):
+        """Return True if n is a loop header or latching node."""
+        block = g.node_data(n)
+        return block.loop_latch == n or block.loop_head == n
     nodes_desc = g.node_list()[:]
-    nodes_desc.sort(key=node_to_revpo, reverse=True)
+    nodes_desc.sort(key=node_to_revpo(g), reverse=True)
     unresolved = []
     for m in nodes_desc:
         block = g.node_data(m)
-        if block.btype == BT.two_way and not in_head_latch(block):
+        if block.btype == BT.two_way: # and not in_head_latch(m):
             # nodes_desc already sorted, no need for max() below
             dominated_nways = [i for i in g.node_list()
                                if g.node_data(i).idom == m
