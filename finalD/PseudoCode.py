@@ -98,9 +98,22 @@ class PseudoCode:
             else:
                 succs_asc = self.cfg.out_nbrs(bb.if_follow)
                 succs_asc.sort(key=node_to_revpo(self.cfg))
-                for s in succs_asc:
-                    if s != bb.loop_follow:
-                        self._write_code(s, i+1, bb.loop_latch, ifollow)
+                if bb.loop_latch == bb.if_follow:
+                    if bb.loop_latch not in self.traversed:
+                        self._write_bb(bb.if_follow, i+1)
+                    else:
+                        self._emit_goto(bb.if_follow, i+1)
+                else:
+                    for s in [bb.if_follow, succs_asc]:
+                        if s != bb.loop_follow:
+                            if s not in self.traversed:
+                                self._write_code(s,
+                                                 i+1,
+                                                 bb.loop_latch,
+                                                 ifollow)
+                            else:
+                                self._emit_goto(s, i+1)
+                            
         # write loop trailer
         if bb.loop_type == LT.pre_tested:
             self._write_bb(bbn, i+1)
