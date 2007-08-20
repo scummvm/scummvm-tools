@@ -22,11 +22,22 @@
 
 #include <wx/wx.h>
 #include <wx/dnd.h>
-#include <wx/filedlg.h>
 #include <wx/notebook.h>
 #include <wx/process.h>
-#include <wx/statbox.h>
-#include <wx/textctrl.h>
+#include <wx/txtstrm.h>
+
+class Process;
+class LocationDialog;
+class FileDrop;
+class IOChooser;
+class DropDownBox;
+class CompressionOptions;
+class CompressionPanel;
+class ExtractionOptions;
+class ExtractionPanel;
+class MainFrame;
+
+WX_DEFINE_ARRAY_PTR(Process *, ProcessArray);
 
 /* Default MP3 parameters */
 wxString kDefaultMP3ABRAvgBitrate = wxT("24");
@@ -96,6 +107,39 @@ enum kEventId {
 class ToolsGui : public wxApp {
 public:
 	virtual bool OnInit();
+};
+
+/* ----- Main Frame ----- */
+
+class MainFrame : public wxFrame {
+public:
+	MainFrame(const wxString& title);
+
+	wxNotebook *_mainNotebook;
+	CompressionPanel *_compressionTools;
+	ExtractionPanel *_extractionTools;
+	ProcessArray _processList;
+
+	void OnCompressionOptionsToggle(wxCommandEvent &event);
+	void OnCompressionStart(wxCommandEvent &event);
+	void OnExtractionStart(wxCommandEvent &event);
+	void OnIdle(wxIdleEvent& event);
+    void OnProcessTerminated(Process *process);
+
+	DECLARE_EVENT_TABLE()
+};
+
+/* ----- Common ----- */
+
+class Process : public wxProcess {
+public:
+    Process(MainFrame *parent, wxTextCtrl *target);
+
+    MainFrame *_parent;
+	wxTextCtrl *_target;
+
+	virtual void OnTerminate(int pid, int status);
+    virtual bool HasInput();
 };
 
 class LocationDialog {
@@ -175,7 +219,6 @@ public:
 	void OnCompressionTypeChange(wxCommandEvent &event);
 	void OnCompressionInputBrowse(wxCommandEvent &event);
 	void OnCompressionOutputBrowse(wxCommandEvent &event);
-	void OnCompressionStart(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
 };
@@ -209,22 +252,7 @@ public:
 	void OnExtractionInput1Browse(wxCommandEvent &event);
 	void OnExtractionInput2Browse(wxCommandEvent &event);
 	void OnExtractionOutputBrowse(wxCommandEvent &event);
-	void OnExtractionStart(wxCommandEvent &event);
 
 	DECLARE_EVENT_TABLE()
 };
 
-/* ----- Main Panel ----- */
-
-class MainFrame : public wxFrame {
-public:
-	MainFrame(const wxString& title);
-
-	wxNotebook *_mainNotebook;
-	CompressionPanel *_compressionTools;
-	ExtractionPanel *_extractionTools;
-
-	void OnCompressionOptionsToggle(wxCommandEvent &event);
-
-	DECLARE_EVENT_TABLE()
-};

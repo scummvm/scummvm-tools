@@ -33,7 +33,6 @@ BEGIN_EVENT_TABLE( CompressionPanel, wxPanel )
 	EVT_CHOICE(kCompressionTypeChoice, CompressionPanel::OnCompressionTypeChange)
 	EVT_BUTTON(kCompressionInputBrowse, CompressionPanel::OnCompressionInputBrowse)
 	EVT_BUTTON(kCompressionOutputBrowse, CompressionPanel::OnCompressionOutputBrowse)
-	EVT_BUTTON(kCompressionStartButton, CompressionPanel::OnCompressionStart)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE( ExtractionPanel, wxPanel )
@@ -41,11 +40,13 @@ BEGIN_EVENT_TABLE( ExtractionPanel, wxPanel )
 	EVT_BUTTON(kExtractionInput1Browse, ExtractionPanel::OnExtractionInput1Browse)
 	EVT_BUTTON(kExtractionInput2Browse, ExtractionPanel::OnExtractionInput2Browse)
 	EVT_BUTTON(kExtractionOutputBrowse, ExtractionPanel::OnExtractionOutputBrowse)
-	EVT_BUTTON(kExtractionStartButton, ExtractionPanel::OnExtractionStart)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE( MainFrame, wxFrame)
 	EVT_CHECKBOX(kCompressionOptionsToggle, MainFrame::OnCompressionOptionsToggle)
+	EVT_BUTTON(kCompressionStartButton, MainFrame::OnCompressionStart)
+	EVT_BUTTON(kExtractionStartButton, MainFrame::OnExtractionStart)
+    EVT_IDLE(MainFrame::OnIdle)
 END_EVENT_TABLE()
 
 bool ToolsGui::OnInit() {
@@ -56,6 +57,8 @@ bool ToolsGui::OnInit() {
 
 	return true;
 }
+
+/* ----- Main Frame ----- */
 
 MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY, title, wxDefaultPosition, wxSize(600, 450)) {
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -84,6 +87,38 @@ MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY,
 	this->SetMinSize(wxSize(600, 450));
 }
 
+/* ----- Common ----- */
+
+Process::Process(MainFrame *parent, wxTextCtrl *target) : wxProcess(parent) {
+	_parent = parent;
+	_target = target;
+	this->Redirect();
+}
+
+bool Process::HasInput() {
+	if (this->IsInputAvailable()) {
+		wxTextInputStream stream(*this->GetInputStream());
+
+		wxString output;
+		output << stream.ReadLine() << wxT("\n");
+
+		this->_target->AppendText(output);
+
+		return true;
+	}
+
+	return false;
+}
+
+void Process::OnTerminate(int pid, int status) {
+	while (this->HasInput());
+	this->_target->AppendText(wxT("\n\n-------------------------"));
+	this->_target->AppendText(wxT("\nOperation Finished."));
+	this->_target->AppendText(wxT("\n-------------------------"));
+	_parent->OnProcessTerminated(this);
+	delete this;
+}
+
 LocationDialog::LocationDialog(wxTextCtrl *target, bool isFileChooser, wxString wildcard) {
 	_isFileChooser = isFileChooser;
 	_target = target;
@@ -103,22 +138,12 @@ void LocationDialog::prompt() {
 			wxArrayString filenames;
 			dialog->GetPaths(filenames);
 
-			if (!this->_target->GetValue().empty()) {
-				this->_target->AppendText(wxT(" "));
-			}
-
-			for (size_t i = 0; i < filenames.GetCount(); i++) {
-				this->_target->AppendText(wxT("\""));
-				this->_target->AppendText(filenames[i]);
-				this->_target->AppendText(wxT("\""));
-
-				if (i != filenames.GetCount() - 1) {
-					this->_target->AppendText(wxT(" "));
-				}
-			}
+			this->_target->SetValue(wxT("\""));
+			this->_target->AppendText(filenames.Item(0));
+			this->_target->AppendText(wxT("\""));
+	
+			this->_target->SetInsertionPoint(0);
 		}
-
-		this->_target->SetInsertionPoint(0);
 	} else {
 		wxDirDialog *dialog = dynamic_cast<wxDirDialog*>(_dialog);
 
@@ -126,9 +151,9 @@ void LocationDialog::prompt() {
 			this->_target->SetValue(wxT("\""));
 			this->_target->AppendText(dialog->GetPath());
 			this->_target->AppendText(wxT("\""));
+	
+			this->_target->SetInsertionPoint(0);
 		}
-
-		this->_target->SetInsertionPoint(0);
 	}
 }
 
@@ -140,26 +165,10 @@ FileDrop::FileDrop(wxTextCtrl *target, bool isFileChooser) : wxFileDropTarget() 
 
 bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames) {
 	if (_target->IsEnabled()) {
-		if (_isFileChooser) {
-			if (!_target->GetValue().empty()) {
-				_target->AppendText(wxT(" "));
-			}
-
-			for (size_t i = 0; i < filenames.GetCount(); i++) {
-				_target->AppendText(wxT("\""));
-				_target->AppendText(filenames[i]);
-				_target->AppendText(wxT("\""));
-
-				if (i != filenames.GetCount() - 1) {
-					_target->AppendText(wxT(" "));
-				}
-			}
-		} else {
-			_target->SetValue(wxT("\""));
-			_target->AppendText(filenames[0]);
-			_target->AppendText(wxT("\""));
-		}
-
+		_target->SetValue(wxT("\""));
+		_target->AppendText(filenames[0]);
+		_target->AppendText(wxT("\""));
+	
 		_target->SetInsertionPoint(0);
 	}
 
@@ -619,175 +628,6 @@ void CompressionPanel::OnCompressionOutputBrowse(wxCommandEvent &event) {
 	delete dialog;
 }
 
-void CompressionPanel::OnCompressionStart(wxCommandEvent &event) {
-	this->_startButton->Enable(false);
-	this->_toolOutput->Clear();
-
-	bool done = false;
-	size_t start = 1;
-	size_t end;
-
-	wxString selectedTool = kCompressionToolFilenames[this->_compressionToolChooserBox->_choice->GetSelection()];
-	wxString compressionType = kCompressionTypeArguments[this->_compressionTypeBox->_choice->GetSelection()];
-	wxString inputPath = this->_inputPanel->_text->GetValue();
-	wxString outputPath = this->_outputPanel->_text->GetValue();
-	wxArrayString inputFiles;
-
-	wxString avgBitrate = this->_compressionOptionsPanel->_avgBitrateChooser->GetStringSelection();
-	wxString blocksize = this->_compressionOptionsPanel->_blockSize->GetStringSelection();
-	wxString compressionLevel = this->_compressionOptionsPanel->_compressionLevelChooser->GetStringSelection();
-	wxString maxBitrate = this->_compressionOptionsPanel->_maxBitrateChooser->GetStringSelection();
-	wxString minBitrate = this->_compressionOptionsPanel->_minBitrateChooser->GetStringSelection();
-	wxString mode = this->_compressionOptionsPanel->_modeChooser->GetStringSelection();
-	wxString mpegQuality = this->_compressionOptionsPanel->_mpegQualityChooser->GetStringSelection();
-	bool isSilent = this->_compressionOptionsPanel->_silentChooser->IsChecked();
-	wxString vbrQuality = this->_compressionOptionsPanel->_vbrQualityChooser->GetStringSelection();
-	bool isVerify = this->_compressionOptionsPanel->_verifyChooser->IsChecked();
-
-	if (!inputPath.IsEmpty()) {
-		while (!done) {
-			end = inputPath.find(wxT('"'), start);
-			inputFiles.Add(inputPath.Mid(start - 1, end - start + 2));
-			start = end + 3;
-
-			if ((end + 1) == inputPath.Len()) {
-				done = true;
-			}
-		}
-
-		for (size_t x = 0; x < inputFiles.Count(); x++) {
-			wxString commandString = wxT("");
-
-#ifndef __WXMSW__
-			commandString += wxT("./");
-#endif
-			commandString += selectedTool;
-			commandString += wxT(" ");
-			commandString += compressionType;
-			commandString += wxT(" ");
-
-			if (compressionType.IsSameAs(kCompressionTypeArguments[0])) { /* MP3 */
-				if (mode.IsSameAs(kMP3ModeNames[0])) { /* VBR */
-					commandString += wxT("--vbr ");
-					commandString += wxT("-V ");
-					commandString += vbrQuality;
-					commandString += wxT(" ");
-					commandString += wxT("-q ");
-					commandString += mpegQuality;
-					commandString += wxT(" ");
-
-					if (!minBitrate.IsSameAs(kValidBitrateNames[0])) {
-						commandString += wxT("-b ");
-						commandString += minBitrate;
-						commandString += wxT(" ");
-					}
-
-					if (!maxBitrate.IsSameAs(kValidBitrateNames[0])) {
-						commandString += wxT("-B ");
-						commandString += maxBitrate;
-						commandString += wxT(" ");
-					}
-				} else { /* ABR */
-					commandString += wxT("--abr ");
-
-					if (avgBitrate.IsSameAs(kValidBitrateNames[0])) {
-						commandString += kDefaultMP3ABRAvgBitrate;
-					} else {
-						commandString += avgBitrate;
-					}
-
-					commandString += wxT(" ");
-					commandString += wxT("-q ");
-					commandString += mpegQuality;
-					commandString += wxT(" ");
-
-					if (!minBitrate.IsSameAs(kValidBitrateNames[0])) {
-						commandString += wxT("-b ");
-						commandString += minBitrate;
-						commandString += wxT(" ");
-					}
-
-					if (!maxBitrate.IsSameAs(kValidBitrateNames[0])) {
-						commandString += wxT("-B ");
-						commandString += maxBitrate;
-						commandString += wxT(" ");
-					}
-				}
-
-				commandString += wxT("--silent ");
-			} else if (compressionType.IsSameAs(kCompressionTypeArguments[1])) { /* Vorbis */
-				commandString += wxT("-q ");
-				commandString += vbrQuality;
-				commandString += wxT(" ");
-
-				if (!avgBitrate.IsSameAs(kValidBitrateNames[0])) {
-					commandString += wxT("-b ");
-					commandString += avgBitrate;
-					commandString += wxT(" ");
-				}
-
-				if (!minBitrate.IsSameAs(kValidBitrateNames[0])) {
-					commandString += wxT("-m ");
-					commandString += minBitrate;
-					commandString += wxT(" ");
-				}
-
-				if (!maxBitrate.IsSameAs(kValidBitrateNames[0])) {
-					commandString += wxT("-M ");
-					commandString += maxBitrate;
-					commandString += wxT(" ");
-				}
-
-				if (isSilent) {
-					commandString += wxT("--silent ");
-				}
-			} else { /* FLAC */
-				commandString += wxT("-");
-				commandString += compressionLevel;
-				commandString += wxT(" ");
-				commandString += wxT("-b ");
-				commandString += blocksize;
-				commandString += wxT(" ");
-
-				if (isVerify) {
-					commandString += wxT("--verify ");
-				}
-
-				if (isSilent) {
-					commandString += wxT("--silent ");
-				}
-			}
-
-			commandString += inputFiles.Item(x);
-			if (!outputPath.IsEmpty()) {
-				commandString += wxT(" ");
-				commandString += outputPath;
-			}
-
-			this->_toolOutput->AppendText(commandString);
-			this->_toolOutput->AppendText(wxT("\n\n"));
-
-			wxProcess *command = new wxProcess(wxPROCESS_REDIRECT);
-
-			wxExecute(commandString, wxEXEC_ASYNC, command);
-
-			while (!command->GetInputStream()->Eof()) {
-				wxChar outputChar = command->GetInputStream()->GetC();
-				if (command->GetInputStream()->LastRead() != 0) {
-					this->_toolOutput->AppendText(outputChar);
-				}
-			}
-
-			this->_toolOutput->AppendText(wxT("\n------------------------------\n"));
-			this->_toolOutput->AppendText(wxT("Operation Finished\n"));
-			this->_toolOutput->AppendText(wxT("------------------------------\n"));
-			this->_toolOutput->AppendText(wxT("\n"));
-		}
-	}
-
-	this->_startButton->Enable(true);
-}
-
 /* ----- Extraction Events ----- */
 
 void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
@@ -934,103 +774,7 @@ void ExtractionPanel::OnExtractionOutputBrowse(wxCommandEvent &event) {
 	delete dialog;
 }
 
-void ExtractionPanel::OnExtractionStart(wxCommandEvent &event) {
-	this->_startButton->Enable(false);
-	this->_toolOutput->Clear();
-
-	bool done = false;
-	size_t start = 1;
-	size_t end;
-
-	wxString selectedTool = kExtractionToolFilenames[this->_extractionToolChooserPanel->_choice->GetSelection()];
-	wxString input1Path = this->_input1Panel->_text->GetValue();
-	wxString input2Path = this->_input2Panel->_text->GetValue();
-	wxString outputPath = this->_outputPanel->_text->GetValue();
-	wxArrayString inputFiles;
-
-	bool kyraAllFiles = this->_extractionOptionsPanel->_kyraAllFiles->IsChecked();
-	bool kyraAmiga = this->_extractionOptionsPanel->_kyraAmiga->IsChecked();
-	wxString kyraFilename = this->_extractionOptionsPanel->_kyraFilename->GetValue();
-	bool kyraSingleFile = this->_extractionOptionsPanel->_kyraSingleFile->IsChecked();
-	bool parallactionSmall = this->_extractionOptionsPanel->_parallactionSmall->IsChecked();
-
-	if (!input1Path.IsEmpty()) {
-		while (!done) {
-			end = input1Path.find(wxT('"'), start);
-			inputFiles.Add(input1Path.Mid(start - 1, end - start + 2));
-			start = end + 3;
-
-			if ((end + 1) == input1Path.Len()) {
-				done = true;
-			}
-		}
-
-		for (size_t x = 0; x < inputFiles.Count(); x++) {
-			wxString commandString = wxT("");
-
-#ifndef __WXMSW__
-			commandString += wxT("./");
-#endif
-			commandString += selectedTool;
-			commandString += wxT(" ");
-
-			if (kyraAllFiles) {
-				commandString += wxT("-x ");
-			}
-
-			if (kyraAmiga) {
-				commandString += wxT("-a ");
-			}
-
-			if (kyraSingleFile) {
-				commandString += wxT("-o ");
-				commandString += kyraFilename;
-				commandString += wxT(" ");
-			}
-
-			if (parallactionSmall) {
-				commandString += wxT("--small");
-			}
-
-			commandString += inputFiles.Item(x);
-
-			if (!input2Path.IsEmpty()) {
-				commandString += wxT(" ");
-				commandString += input2Path;
-			}
-			if (!outputPath.IsEmpty()) {
-				commandString += wxT(" ");
-				commandString += outputPath;
-			}
-
-			this->_toolOutput->AppendText(commandString);
-			this->_toolOutput->AppendText(wxT("\n\n"));
-
-			wxProcess *command = new wxProcess(wxPROCESS_REDIRECT);
-			wxExecute(commandString, wxEXEC_ASYNC, command);
-
-			while (!command->GetInputStream()->Eof()) {
-				wxChar outputChar = command->GetInputStream()->GetC();
-				if (command->GetInputStream()->LastRead() != 0) {
-#ifdef __WXMSW__
-					if (outputChar != 10) {
-						this->_toolOutput->AppendText(outputChar);
-					}
-#else
-					this->_toolOutput->AppendText(outputChar);
-#endif
-				}
-			}
-
-			this->_toolOutput->AppendText(wxT("\n------------------------------\n"));
-			this->_toolOutput->AppendText(wxT("Operation Finished\n"));
-			this->_toolOutput->AppendText(wxT("------------------------------\n"));
-			this->_toolOutput->AppendText(wxT("\n"));
-		}
-	}
-
-	this->_startButton->Enable(true);
-}
+/* ----- MainFrame Events ----- */
 
 void MainFrame::OnCompressionOptionsToggle(wxCommandEvent &event) {
 	this->_compressionTools->_compressionOptionsPanel->Show(!this->_compressionTools->_compressionOptionsPanel->IsShown());
@@ -1040,4 +784,218 @@ void MainFrame::OnCompressionOptionsToggle(wxCommandEvent &event) {
 
 	this->_extractionTools->Fit();
 	this->_extractionTools->SetSize(this->_mainNotebook->GetPage(1)->GetSize());
+}
+
+void MainFrame::OnCompressionStart(wxCommandEvent &event) {
+	this->_compressionTools->_toolOutput->Clear();
+
+	wxString selectedTool = kCompressionToolFilenames[this->_compressionTools->_compressionToolChooserBox->_choice->GetSelection()];
+	wxString compressionType = kCompressionTypeArguments[this->_compressionTools->_compressionTypeBox->_choice->GetSelection()];
+	wxString inputPath = this->_compressionTools->_inputPanel->_text->GetValue();
+	wxString outputPath = this->_compressionTools->_outputPanel->_text->GetValue();
+
+	wxString avgBitrate = this->_compressionTools->_compressionOptionsPanel->_avgBitrateChooser->GetStringSelection();
+	wxString blocksize = this->_compressionTools->_compressionOptionsPanel->_blockSize->GetStringSelection();
+	wxString compressionLevel = this->_compressionTools->_compressionOptionsPanel->_compressionLevelChooser->GetStringSelection();
+	wxString maxBitrate = this->_compressionTools->_compressionOptionsPanel->_maxBitrateChooser->GetStringSelection();
+	wxString minBitrate = this->_compressionTools->_compressionOptionsPanel->_minBitrateChooser->GetStringSelection();
+	wxString mode = this->_compressionTools->_compressionOptionsPanel->_modeChooser->GetStringSelection();
+	wxString mpegQuality = this->_compressionTools->_compressionOptionsPanel->_mpegQualityChooser->GetStringSelection();
+	bool isSilent = this->_compressionTools->_compressionOptionsPanel->_silentChooser->IsChecked();
+	wxString vbrQuality = this->_compressionTools->_compressionOptionsPanel->_vbrQualityChooser->GetStringSelection();
+	bool isVerify = this->_compressionTools->_compressionOptionsPanel->_verifyChooser->IsChecked();
+
+	if (!inputPath.IsEmpty()) {
+		wxString commandString = wxT("");
+
+#ifndef __WXMSW__
+		commandString += wxT("./");
+#endif
+		commandString += selectedTool;
+		commandString += wxT(" ");
+		commandString += compressionType;
+		commandString += wxT(" ");
+
+		if (compressionType.IsSameAs(kCompressionTypeArguments[0])) { /* MP3 */
+			if (mode.IsSameAs(kMP3ModeNames[0])) { /* VBR */
+				commandString += wxT("--vbr ");
+				commandString += wxT("-V ");
+				commandString += vbrQuality;
+				commandString += wxT(" ");
+				commandString += wxT("-q ");
+				commandString += mpegQuality;
+				commandString += wxT(" ");
+
+				if (!minBitrate.IsSameAs(kValidBitrateNames[0])) {
+					commandString += wxT("-b ");
+					commandString += minBitrate;
+					commandString += wxT(" ");
+				}
+
+				if (!maxBitrate.IsSameAs(kValidBitrateNames[0])) {
+					commandString += wxT("-B ");
+					commandString += maxBitrate;
+					commandString += wxT(" ");
+				}
+			} else { /* ABR */
+				commandString += wxT("--abr ");
+
+				if (avgBitrate.IsSameAs(kValidBitrateNames[0])) {
+					commandString += kDefaultMP3ABRAvgBitrate;
+				} else {
+					commandString += avgBitrate;
+				}
+
+				commandString += wxT(" ");
+				commandString += wxT("-q ");
+				commandString += mpegQuality;
+				commandString += wxT(" ");
+
+				if (!minBitrate.IsSameAs(kValidBitrateNames[0])) {
+					commandString += wxT("-b ");
+					commandString += minBitrate;
+					commandString += wxT(" ");
+				}
+
+				if (!maxBitrate.IsSameAs(kValidBitrateNames[0])) {
+					commandString += wxT("-B ");
+					commandString += maxBitrate;
+					commandString += wxT(" ");
+				}
+			}
+
+			commandString += wxT("--silent ");
+		} else if (compressionType.IsSameAs(kCompressionTypeArguments[1])) { /* Vorbis */
+			commandString += wxT("-q ");
+			commandString += vbrQuality;
+			commandString += wxT(" ");
+
+			if (!avgBitrate.IsSameAs(kValidBitrateNames[0])) {
+				commandString += wxT("-b ");
+				commandString += avgBitrate;
+				commandString += wxT(" ");
+			}
+
+			if (!minBitrate.IsSameAs(kValidBitrateNames[0])) {
+				commandString += wxT("-m ");
+				commandString += minBitrate;
+				commandString += wxT(" ");
+			}
+
+			if (!maxBitrate.IsSameAs(kValidBitrateNames[0])) {
+				commandString += wxT("-M ");
+				commandString += maxBitrate;
+				commandString += wxT(" ");
+			}
+
+			if (isSilent) {
+				commandString += wxT("--silent ");
+			}
+		} else { /* FLAC */
+			commandString += wxT("-");
+			commandString += compressionLevel;
+			commandString += wxT(" ");
+			commandString += wxT("-b ");
+			commandString += blocksize;
+			commandString += wxT(" ");
+
+			if (isVerify) {
+				commandString += wxT("--verify ");
+			}
+
+			if (isSilent) {
+				commandString += wxT("--silent ");
+			}
+		}
+
+		commandString += inputPath;
+		if (!outputPath.IsEmpty()) {
+			commandString += wxT(" ");
+			commandString += outputPath;
+		}
+
+		this->_compressionTools->_toolOutput->AppendText(commandString);
+		this->_compressionTools->_toolOutput->AppendText(wxT("\n\n"));
+
+		Process *command = new Process(this, this->_compressionTools->_toolOutput);
+		this->_processList.Add(command);
+		wxExecute(commandString, wxEXEC_ASYNC, command);
+	}
+}
+
+void MainFrame::OnExtractionStart(wxCommandEvent &event) {
+	this->_extractionTools->_toolOutput->Clear();
+
+	wxString selectedTool = kExtractionToolFilenames[this->_extractionTools->_extractionToolChooserPanel->_choice->GetSelection()];
+	wxString input1Path = this->_extractionTools->_input1Panel->_text->GetValue();
+	wxString input2Path = this->_extractionTools->_input2Panel->_text->GetValue();
+	wxString outputPath = this->_extractionTools->_outputPanel->_text->GetValue();
+
+	bool kyraAllFiles = this->_extractionTools->_extractionOptionsPanel->_kyraAllFiles->IsChecked();
+	bool kyraAmiga = this->_extractionTools->_extractionOptionsPanel->_kyraAmiga->IsChecked();
+	wxString kyraFilename = this->_extractionTools->_extractionOptionsPanel->_kyraFilename->GetValue();
+	bool kyraSingleFile = this->_extractionTools->_extractionOptionsPanel->_kyraSingleFile->IsChecked();
+	bool parallactionSmall = this->_extractionTools->_extractionOptionsPanel->_parallactionSmall->IsChecked();
+
+	if (!input1Path.IsEmpty()) {
+		wxString commandString = wxT("");
+
+#ifndef __WXMSW__
+		commandString += wxT("./");
+#endif
+		commandString += selectedTool;
+		commandString += wxT(" ");
+
+		if (kyraAllFiles) {
+			commandString += wxT("-x ");
+		}
+
+		if (kyraAmiga) {
+			commandString += wxT("-a ");
+		}
+
+		if (kyraSingleFile) {
+			commandString += wxT("-o ");
+			commandString += kyraFilename;
+			commandString += wxT(" ");
+		}
+
+		if (parallactionSmall) {
+			commandString += wxT("--small");
+		}
+
+		commandString += input1Path;
+
+		if (!input2Path.IsEmpty()) {
+			commandString += wxT(" ");
+			commandString += input2Path;
+		}
+		if (!outputPath.IsEmpty()) {
+			commandString += wxT(" ");
+			commandString += outputPath;
+		}
+
+		this->_extractionTools->_toolOutput->AppendText(commandString);
+		this->_extractionTools->_toolOutput->AppendText(wxT("\n\n"));
+
+		Process *command = new Process(this, this->_extractionTools->_toolOutput);
+		this->_processList.Add(command);
+		wxExecute(commandString, wxEXEC_ASYNC, command);
+	}
+}
+
+void MainFrame::OnIdle(wxIdleEvent& event) {
+	for (size_t x = 0; x < this->_processList.GetCount(); x++) {
+		if (this->_processList[x]->HasInput()) {
+			event.RequestMore();
+		}
+
+		if (this->_processList[x]->HasInput()) {
+			event.RequestMore();
+		}
+	}
+}
+
+void MainFrame::OnProcessTerminated(Process* process) {
+	this->_processList.Remove(process);
 }

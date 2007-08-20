@@ -11,16 +11,14 @@ Future Goals
 * Default Options
     - Things like default games path, default LAME path, default compression 
       type, etc. could be added to a menu and saved to an *.ini file.
-* Enhanced Batch Processing
-    - Batch processing now consists of compressing/extracting multiple files
-      from the same game.  It can be enhanced holding a list of jobs to done
-      from multiple games.  This would involve adding a 'Start Batch' and a 
-      'Add to Batch' button and holding a copy of the compressionPanel and
-      compressionOptions classes associated with a job.  This would allow for
-      the user to modify waiting jobs since we would just replace the current
-      compressionPanel and compressionOptions panels with the saved copies.
-      The 'Start Batch' button would just iterate through each job, build
-      the command line string, and perform the resulting operation.
+* Batch Processing
+    - Batch processing can be performed by holding a list of jobs to done in
+      the ProcessArray already used in MainFrame.  To accomplish this we would
+      need to modify the Process class to add a wxString class member to hold
+      the command line string, add wxButtons and a wxListBox to facilitate
+      adding, removing, and starting batch jobs, and adding a function which
+      would iterate through the ProcessArray and perform each job, starting
+      subsequent jobs in the OnTerminate function of the previous job.
 * Encode DXA Improvements
     - The current implementation of 'Encode DXA' compression only performs the
       final step of the process.  There are already Windows and Unix scripts to
