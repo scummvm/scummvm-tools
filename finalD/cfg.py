@@ -217,6 +217,18 @@ def rewire_jumps(graph, decoded):
                     node_jump.set_to(tnode_jump.get_to())
                     change = True
 
+# merit?
+def eliminate_single_unconditional_jumps(g):
+    """Eliminates single unconditional jumps in g."""
+    for n in postorder(g):
+        block = g.node_data(n)
+        if block.btype == BT.one_way and len(block) == 1:
+            out = g.out_nbrs(n)[0]
+            # change nodes that flow to n to flow directly to out
+            for inc in g.inc_edges(n):
+                g.add_edge(g.head(inc), out)
+                g.hide_edge(inc)
+
 def gen_control_flow_graph(blocks, decoded):
     """
     Generate a control flow graph.
@@ -246,6 +258,7 @@ def gen_control_flow_graph(blocks, decoded):
             if i+1 != len(blocks):
                 graph.add_edge(i, i+1, create_nodes=False)
     rewire_jumps(graph, decoded)  # simplify "redundant" jumps
+    eliminate_single_unconditional_jumps(graph) # eliminate redundant jumps
     hide_dead_nodes(graph)  # hide all unreachable nodes
     # graph edges have been added, now tag basic blocks with their
     # reverse postorder in the control flow graph
@@ -365,8 +378,7 @@ def set_loop_follow(g, latch, head, nodes_in_loop):
     """Find loop follow node."""
     hblock = g.node_data(head)
     if hblock.loop_type == LT.pre_tested:
-        if g.out_nbrs(head)[0] in nodes_in_loop: #\
-#                and g.out_nbrs(head)[1] >= latch:
+        if g.out_nbrs(head)[0] in nodes_in_loop:
             lf = g.out_nbrs(head)[1]
         else:
             lf = g.out_nbrs(head)[0]
@@ -427,20 +439,6 @@ def loop_struct(dseq):
                     set_loop_type(top_graph, latch, head, nodes_in_loop)
                     set_loop_follow(top_graph, latch, head, nodes_in_loop)
 
-# def back_dfs(g, start):
-#     """Fixed version of altgraph.Graph.Graph.back_dfs()."""
-#     visited, stack = set([start]), [start]
-#     while stack:
-#         curr_node = stack.pop()
-#         yield curr_node
-#         if curr_node == None:
-#             break
-#         for edge in g.inc_edges(curr_node):
-#             head = g.head(edge)
-#             if head not in visited:
-#                 visited.add(head)
-#                 stack.append(head)
-
 def get_dominators(g):
     """Find and return the dominators for every node in g."""
     dominators = {0 : set([0])}
@@ -478,16 +476,14 @@ def set_immediate_dominators(g):
 
 def two_way_struct(g):
     """Structure two-way conditionals in g."""
-    def in_head_latch(n):
-        """Return True if n is a loop header or latching node."""
-        block = g.node_data(n)
-        return block.loop_latch == n or block.loop_head == n
-    nodes_desc = g.node_list()[:]
-    nodes_desc.sort(key=node_to_revpo(g), reverse=True)
+#     def in_head_latch(n):
+#         """Return True if n is a loop header or latching node."""
+#         block = g.node_data(n)
+#         return block.loop_latch == n or block.loop_head == n
     unresolved = []
-    for m in nodes_desc:
+    for m in postorder(g):
         block = g.node_data(m)
-        if block.btype == BT.two_way: # and not in_head_latch(m):
+        if block.btype == BT.two_way:
             # nodes_desc already sorted, no need for max() below
             dominated_nways = [i for i in g.node_list()
                                if g.node_data(i).idom == m
@@ -496,16 +492,14 @@ def two_way_struct(g):
                 n = max(dominated_nways, key=node_to_revpo)
                 block.if_follow = n
                 for unres in unresolved[:]:
+                    unres_block = g.node_data(unres)
                     if n > unres:
-                        print "%d resolved to %d through %d" % (unres, n, m)
-                        g.node_data(unres).if_follow = n
+                        unres_block.if_follow = n
                         unresolved.remove(unres)
-                        print unresolved
             else:
                 unresolved.append(m)
-    if unresolved:
-        print "STILL UNRESOLVED: %s" % unresolved
 
+# TODO: FIX CONDITIONS
 def merge_conditionals(g, n0, n1, type):
     """
     Merge the two conditional jump blocks n0 and n1 into n0.
@@ -525,19 +519,19 @@ def merge_conditionals(g, n0, n1, type):
     if type == 0:
         g.add_edge(n0, e1)
         nt = g.node_data(e1).get_first()
-        nc = "(%s) && !(%s)" % (cond0, cond1)
+        nc = "!(%s) && (%s)" % (cond0, cond1)
     elif type == 1:
         g.add_edge(n0, t1)
         nt = g.node_data(t1).get_first()
-        nc = "(%s) && (%s)" % (cond0, cond1)
+        nc = "(%s) || (%s)" % (cond0, cond1)
     elif type == 2:
         g.add_edge(n0, e1)
         nt = g.node_data(e1).get_first()
-        nc = "(%s) || (%s)" % (cond0, cond1)
-    elif type == 3:
+        nc = "(%s) && (%s)" % (cond0, cond1)
+    else: #elif type == 3:
         g.add_edge(n0, t1)
         nt = g.node_data(t1).get_first()
-        nc = "(%s) || !(%s)" % (cond0, cond1)
+        nc = "!(%s) || (%s)" % (cond0, cond1)
     block.type_info = (True, nt, nc)
     g.hide_node(n1)
 

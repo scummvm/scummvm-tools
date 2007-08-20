@@ -1,6 +1,6 @@
 """Pseudo code formatting from control flow graphs."""
 
-from cfg import BT, LT, get_then_else, node_to_revpo
+from cfg import BT, LT, get_then_else, node_to_revpo, postorder
 from iformat import is_jump
 
 
@@ -104,7 +104,7 @@ class PseudoCode:
                     else:
                         self._emit_goto(bb.if_follow, i+1)
                 else:
-                    for s in [bb.if_follow, succs_asc]:
+                    for s in [bb.if_follow] + succs_asc:
                         if s != bb.loop_follow:
                             if s not in self.traversed:
                                 self._write_code(s,
@@ -113,7 +113,7 @@ class PseudoCode:
                                                  ifollow)
                             else:
                                 self._emit_goto(s, i+1)
-                            
+
         # write loop trailer
         if bb.loop_type == LT.pre_tested:
             self._write_bb(bbn, i+1)
@@ -134,6 +134,7 @@ class PseudoCode:
             # loop follow already traversed
             self._emit_goto(bb.loop_follow, i)
 
+    # TODO: fix inverting of conditions
     def _write_two_way(self, bbn, i, latch, ifollow, nofollow=False):
         """
         Write code for tree rooted at bbn.
@@ -143,6 +144,7 @@ class PseudoCode:
         i -- current indentation level
         latch -- latching node of enclosing loop structure (or None)
         ifollow -- follow node of the enclosing if structure (or None)
+        nofollow -- do not continue with follow node (default: False)
         """
         bb = self.cfg.node_data(bbn)
         t, e = get_then_else(self.cfg, bbn)
@@ -174,7 +176,9 @@ class PseudoCode:
                 self._write("} else {", i)
                 self._emit_goto(e, i+1)
             self._write("}", i)
-            if not nofollow and bb.if_follow not in self.traversed:
+            if not nofollow and \
+                    ifollow != bb.if_follow and \
+                    bb.if_follow not in self.traversed:
                 self._write_code(bb.if_follow, i, latch, ifollow)
         else:
             # no follow..
