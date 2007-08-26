@@ -29,6 +29,7 @@
 #include "utils/file.h"
 #include "utils/voc.h"
 #include "utils/wave.h"
+#include "utils/adpcm.h"
 
 #define FILE_MD5_BYTES 5000
 #define RSC_TABLEINFO_SIZE 8
@@ -57,23 +58,17 @@ static GameFileDescription ITE_GameFiles[] = {
 	//	Filename					swapEndian	md5									resourceType	frequency	stereo
 	{"sounds.rsc",					false,		"e2ccb61c325d6d1ead3be0e731fe29fe", kSoundPCM,		22050,		false},	// PC CD/disk
 	{"sounds.rsc",					true,		"95863b89a0916941f6c5e1789843ba14", kSoundPCM,		22050,		false},	// Mac
-	// TODO: uncomment these once VOX files are supported
-	/*
 	{"soundsd.rsc",					false,		"95a6c148e22e99a8c243f2978223583c", kSoundPCM,		22050,		false},	// New PC demos
 	{"soundsd.rsc",					true,		"b3a831fbed337d1f1300fee1dd474f6c", kSoundPCM,		22050,		false},	// Mac demos
-	*/
 	// Unsupported (8 bit unsigned sound) - used in the early ITE Win32 demo
 	//{"soundsd.rsc",				false,		"a741139dd7365a13f463cd896ff9969a", kSoundPCM,		22050,		false},	// Old Win32 demo
 	{"ite sounds.bin",				true,		"441426c6bb2a517f65c7e49b57f7a345", kSoundMacPCM,	22050,		false}, // MacBinary
 
 	{"music.rsc",					false,		"d6454756517f042f01210458abe8edd4", kSoundPCM,		11025,		true},	// PC CD/disk with digital music
 	{"music.rsc",					true,		"1a91cd60169f367ecb6c6e058d899b2f", kSoundPCM,		11025,		true},	// Mac
-	// TODO: uncomment these once VOX files are supported
-	/*
 	{"musicd.rsc",					true,		"d6454756517f042f01210458abe8edd4", kSoundPCM,		11025,		true},	// New PC demos
 	{"musicd.rsc",					true,		"495bdde51fd9f4bea2b9c911091b1ab2", kSoundPCM,		11025,		false},	// New Mac demo
 	{"musicd.rsc",					true,		"1a91cd60169f367ecb6c6e058d899b2f", kSoundPCM,		11025,		true},	// Old Mac demo
-	*/
 	{"ite music.bin",				true,		"441426c6bb2a517f65c7e49b57f7a345", kSoundMacPCM,	22050,		false}, // MacBinary
 
 	{"inherit the earth voices",	true,		"c14c4c995e7a0d3828e3812a494301b7", kSoundPCM,		22050,		false},	// Mac
@@ -82,8 +77,7 @@ static GameFileDescription ITE_GameFiles[] = {
 	{"voices.rsc",					false,		"c46e4392fcd2e89bc91e5567db33b62d", kSoundVOC,		-1,			false},	// Disk
 	{"voices.rsc",					false,		"0c9113e630f97ef0996b8c3114badb08", kSoundVOC,		-1,			false},	// German disk
 	{"voices.rsc",					false,		"c58e67c506af4ffa03fd0aac2079deb0", kSoundVOC,		-1,			false},	// Early DOS demo
-	// TODO: uncomment this once VOX files are supported
-	//{"voicesd.rsc",				false,		"e139d86bab2ee8ba3157337f894a92d4", kSoundVOX,		22050,		false},	// New PC demos and all Mac demos
+	{"voicesd.rsc",					false,		"e139d86bab2ee8ba3157337f894a92d4", kSoundVOX,		22050,		false},	// New PC demos and all Mac demos
 	// Unsupported (8 bit unsigned sound) - used in the early ITE Win32 demo
 	//{"voicesd.rsc",				false,		"0759eaf5b64ae19fd429920a70151ad3", kSoundPCM,		22050,			false},	// Old Win32 demo
 	{"ite voices.bin",				true,		"dba92ae7d57e942250fe135609708369", kSoundMacPCM,	22050,		false}	// MacBinary
@@ -271,7 +265,8 @@ void writeHeader(FILE* outputFile) {
 }
 
 uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
-	uint8 *inputData;
+	uint8 *inputData = 0;
+	byte *buffer = 0;
 	Common::File inputFileStream(inputFile);
 	int rate, size;
 	byte flags;
@@ -322,9 +317,6 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
 	if (currentFileDescription->resourceType == kSoundVOX) {
-		error("VOX encoded files are not supported yet");
-		// TODO
-		/*
 		sampleSize = inputSize * 4;
 		sampleRate = (uint16)currentFileDescription->frequency;
 		sampleBits = 16;
@@ -332,16 +324,18 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		writeHeader(outputFile);
 
 		Audio::AudioStream *voxStream = Audio::makeADPCMStream(&inputFileStream, inputSize, Audio::kADPCMOki);
-        //int voxSize = voxStream->readBuffer((int16*)inputData, soundResourceLength * 2);
-        //if (voxSize != soundResourceLength * 2)
-		//	error("Wrong VOX output size");
-		//writeBufferToFile(inputData, sampleSize, TEMP_RAW);
-		free(inputData);
+		buffer = (byte *)malloc(sampleSize);
+        uint32 voxSize = voxStream->readBuffer((int16*)buffer, inputSize * 2);
+        if (voxSize != inputSize * 2)
+			error("Wrong VOX output size");
+		for (uint32 i = 0; i < sampleSize; i++)
+			buffer[i] = TO_LE_16(buffer[i]);
+		writeBufferToFile((uint8 *)buffer, sampleSize, TEMP_RAW);
+		free(buffer);
 
 		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo, false, sampleBits);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
-		*/
 	}
 	if (currentFileDescription->resourceType == kSoundMacPCM) {
 		error("MacBinary files are not supported yet");
@@ -436,7 +430,11 @@ void sagaEncode(const char *inputFileName, const char *inputFileNameExt) {
 		fseek(inputFile, inputTable[i].offset, SEEK_SET);
 		outputTable[i].offset = ftell(outputFile);
 		
-		outputTable[i].size = encodeEntry(inputFile, inputTable[i].size, outputFile);
+		if (inputTable[i].size >= 8) {
+			outputTable[i].size = encodeEntry(inputFile, inputTable[i].size, outputFile);
+		} else {
+			outputTable[i].size = inputTable[i].size;	// Empty sound resource
+		}
 	}
 	fclose(inputFile);
 
