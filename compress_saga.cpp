@@ -177,7 +177,6 @@ static CompressMode gCompMode = kMP3Mode;
 
 GameDescription *currentGameDescription = NULL;
 GameFileDescription *currentFileDescription = NULL;
-bool isSigned = true;
 
 uint16 sampleRate;
 uint32 sampleSize;
@@ -279,28 +278,31 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 
 	if (currentFileDescription->resourceType == kSoundVOC) {
 		inputData = Audio::loadVOCFromStream(inputFileStream, size, rate);
+
 		sampleSize = size;
 		sampleRate = rate;
 		sampleBits = 8;
 		sampleStereo = 0;
+		writeHeader(outputFile);
+
 		writeBufferToFile(inputData, sampleSize, TEMP_RAW);
 		free(inputData);
-		writeHeader(outputFile);
 
 		setRawAudioType( true, false, 8);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
 	if (currentFileDescription->resourceType == kSoundPCM) {
-		copyFile(inputFile, inputSize, TEMP_RAW);
 		sampleSize = inputSize;
 		sampleRate = (uint16)currentFileDescription->frequency;
 		sampleBits = 16;
 		sampleStereo = currentFileDescription->stereo;
 		writeHeader(outputFile);
 
-		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, sampleBits);
-		encodeAudio(TEMP_RAW, true, currentFileDescription->frequency, tempEncoded, gCompMode);
+		copyFile(inputFile, inputSize, TEMP_RAW);
+
+		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo, sampleBits);
+		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
 	if (currentFileDescription->resourceType == kSoundWAV) {
@@ -323,23 +325,29 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		error("VOX encoded files are not supported yet");
 		// TODO
 		/*
-		  buffer.frequency = soundInfo->frequency;
-		  buffer.isSigned = soundInfo->isSigned;
-		  buffer.sampleBits = soundInfo->sampleBits;
-		  buffer.stereo = soundInfo->stereo;
-		  buffer.size = soundResourceLength * 4;
+		sampleSize = inputSize * 4;
+		sampleRate = (uint16)currentFileDescription->frequency;
+		sampleBits = 16;
+		sampleStereo = currentFileDescription->stereo;
+		writeHeader(outputFile);
 
-		  voxStream = Audio::makeADPCMStream(&readS, soundResourceLength, Audio::kADPCMOki);
-		  buffer.buffer = (byte *)malloc(buffer.size);
-		  voxSize = voxStream->readBuffer((int16*)buffer.buffer, soundResourceLength * 2);
-		  if (voxSize != soundResourceLength * 2) {
-			error("SndRes::load() wrong VOX output size");
-		  }
+		Audio::AudioStream *voxStream = Audio::makeADPCMStream(&inputFileStream, inputSize, Audio::kADPCMOki);
+        //int voxSize = voxStream->readBuffer((int16*)inputData, soundResourceLength * 2);
+        //if (voxSize != soundResourceLength * 2)
+		//	error("Wrong VOX output size");
+		//writeBufferToFile(inputData, sampleSize, TEMP_RAW);
+		free(inputData);
+
+		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo, false, sampleBits);
+		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
+		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 		*/
 	}
   if (currentFileDescription->resourceType == kSoundMacPCM) {
 		error("MacBinary files are not supported yet");
 		// TODO
+		// Note: MacBinary files are unsigned. With the pending changes to setRawAudioType, there will need
+		// to be some changes here
 		/*
 		copyFile(inputFile, inputSize, TEMP_RAW);
 		sampleSize = inputSize - 36;
@@ -524,21 +532,18 @@ int main(int argc, char *argv[]) {
 		if (!process_mp3_parms(argc, argv, i)) {
 			showhelp(argv[0]);
 		}
-
 		break;
 	case kVorbisMode:
 		tempEncoded = TEMP_OGG;
 		if (!process_ogg_parms(argc, argv, i)) {
 			showhelp(argv[0]);
 		}
-
 		break;
 	case kFlacMode:
 		tempEncoded = TEMP_FLAC;
 		if (!process_flac_parms(argc, argv, i)) {
 			showhelp(argv[0]);
 		}
-
 		break;
 	}
 
@@ -551,7 +556,6 @@ int main(int argc, char *argv[]) {
 
 	// ITE
 	sprintf(inputFileNameWithExt, "%s/%s.rsc", inputPath, inputFileName);
-
 	if (detectFile(inputFileNameWithExt)) {
 		sagaEncode(inputPath, inputFileName, ".rsc");
 	} else {
@@ -567,7 +571,6 @@ int main(int argc, char *argv[]) {
 				// Check for MacBinary
 				sprintf(inputFileNameWithExt, "%s/%s.bin", inputPath, inputFileName);
 				if (detectFile(inputFileNameWithExt)) {
-					isSigned = false;
 					sagaEncode(inputPath, inputFileName, ".bin");
 				}
 			}
