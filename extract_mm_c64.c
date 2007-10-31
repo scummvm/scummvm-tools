@@ -23,10 +23,6 @@
 #include "util.h"
 #include <stdarg.h>
 
-typedef int BOOL;
-#define TRUE 1
-#define FALSE 0
-
 #ifdef _MSC_VER
 	#define	vsnprintf _vsnprintf
 #endif

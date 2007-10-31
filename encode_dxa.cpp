@@ -25,7 +25,6 @@
 #include "util.h"
 
 #include <png.h>
-#include <zlib.h>
 
 const uint32 typeDEXA = 0x41584544;
 const uint32 typeFRAM = 0x4d415246;

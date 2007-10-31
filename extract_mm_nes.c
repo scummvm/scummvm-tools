@@ -23,10 +23,6 @@
 #include "util.h"
 #include <stdarg.h>
 
-typedef int BOOL;
-#define TRUE 1
-#define FALSE 0
-
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
 #define	MAKE_LFLS
