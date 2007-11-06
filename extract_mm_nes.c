@@ -782,8 +782,7 @@ p_resource res_preplist[NUM_ROMSETS] = {
 	res_preplist_esp,
 };
 
-void	extract_resource (FILE *input, FILE *output, p_resource res)
-{
+void	extract_resource (FILE *input, FILE *output, p_resource res) {
 	uint16 len, i, j;
 	uint8 val;
 	uint8 cnt;
@@ -794,27 +793,26 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 		return;	/* there are 8 scripts that are zero bytes long, so we should skip them */
 	fseek(input, res->offset, SEEK_SET);
 
-	switch (res->type)
-	{
+	switch (res->type) {
 	case NES_GLOBDATA:
 		len = res->length;
 		for (i = 0; i < len; i++)
-			writeByte(output,readByte(input));
+			writeByte(output, readByte(input));
 		break;
 	case NES_ROOMGFX:
 	case NES_COSTUMEGFX:
-		writeUint16LE(output,(uint16)(res->length + 2));
+		writeUint16LE(output, (uint16)(res->length + 2));
 		len = readByte(input);
-		writeByte(output,(uint8)len);
+		writeByte(output, (uint8)len);
 		if (!len)
 			len = 256;
 		len = len << 4;
-		for (i = 0; i < len;)
-		{
-			writeByte(output,cnt = readByte(input));
+		for (i = 0; i < len;) {
+			cnt = readByte(input);
+			writeByte(output, cnt);
 			for (j = 0; j < (cnt & 0x7F); j++, i++)
 				if ((cnt & 0x80) || (j == 0))
-					writeByte(output,readByte(input));
+					writeByte(output, readByte(input));
 		}
 		if (ftell(input) - res->offset != res->length)
 			error("extract_resource - length mismatch while extracting graphics resource (was %04X, should be %04X)",ftell(input) - res->offset, res->length);
@@ -823,7 +821,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 	case NES_SCRIPT:
 		len = readUint16LE(input);
 		if (len != res->length)
-			error("extract_resource - length mismatch while extracting room/script resource (was %04X, should be %04X)",len,res->length);
+			error("extract_resource - length mismatch while extracting room/script resource (was %04X, should be %04X)", len, res->length);
 		fseek(input,-2,SEEK_CUR);
 		for (i = 0; i < len; i++)
 			writeByte(output,readByte(input));
@@ -832,48 +830,45 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 		len = res->length + 2;
 		val = readByte(input);
 		cnt = readByte(input);
-		if ((val == 2) && (cnt == 100))
-		{
+		if ((val == 2) && (cnt == 100)) {
 			writeUint16LE(output,len);
 			writeByte(output,val);
 			writeByte(output,cnt);
 			cnt = readByte(input);
 			writeByte(output,cnt);
 			for (i = 0; i < cnt; i++)
-				writeByte(output,readByte(input));
+				writeByte(output, readByte(input));
 			for (i = 0; i < cnt; i++)
-				writeByte(output,readByte(input));
-			while (1)
-			{
-				writeByte(output,val = readByte(input));
+				writeByte(output, readByte(input));
+			while (1) {
+				val = readByte(input);
+				writeByte(output, val);
 				if (val >= 0xFE)
 					break;
 			}
-		}
-		else if (((val == 0) || (val == 1) || (val == 4)) && (cnt == 10))
-		{
-			writeUint16LE(output,len);
-			writeByte(output,val);
-			writeByte(output,cnt);
-			while (1)
-			{
-				writeByte(output,val = readByte(input));
+		} else if (((val == 0) || (val == 1) || (val == 4)) && (cnt == 10)) {
+			writeUint16LE(output, len);
+			writeByte(output, val);
+			writeByte(output, cnt);
+			while (1) {
+				val = readByte(input);
+				writeByte(output, val);
 				if (val >= 0xFE)
 					break;
 				if (val >= 0x10)
-					writeByte(output,readByte(input));
-				else
-				{
-					writeByte(output,readByte(input));
-					writeByte(output,readByte(input));
-					writeByte(output,readByte(input));
-					writeByte(output,readByte(input));
+					writeByte(output, readByte(input));
+				else {
+					writeByte(output, readByte(input));
+					writeByte(output, readByte(input));
+					writeByte(output, readByte(input));
+					writeByte(output, readByte(input));
 				}
 			}
+		} else {
+			error("extract_resource - unknown sound type %d/%d detected", val, cnt);
 		}
-		else	error("extract_resource - unknown sound type %d/%d detected",val,cnt);
 		if (ftell(input) - res->offset != res->length)
-			error("extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)",ftell(input) - res->offset, res->length);
+			error("extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)", ftell(input) - res->offset, res->length);
 		break;
 	case NES_COSTUME:
 	case NES_SPRPALS:
@@ -883,27 +878,26 @@ void	extract_resource (FILE *input, FILE *output, p_resource res)
 	case NES_SPRDATA:
 	case NES_CHARSET:
 		len = res->length;
-		writeUint16LE(output,(uint16)(len + 2));
+		writeUint16LE(output, (uint16)(len + 2));
 		for (i = 0; i < len; i++)
-			writeByte(output,readByte(input));
+			writeByte(output, readByte(input));
 		break;
 	case NES_PREPLIST:
 		len = res->length;
 		writeUint16LE(output,0x002A);
-		writeByte(output,' ');
+		writeByte(output, ' ');
 		for (i = 1; i < 8; i++)
-			writeByte(output,0);
-		for (j = 0; j < 4; j++)
-		{
+			writeByte(output, 0);
+		for (j = 0; j < 4; j++) {
 			writeByte(output,' ');
 			for (i = 1; (val = readByte(input)); i++)
-				writeByte(output,val);
+				writeByte(output, val);
 			for (; i < 8; i++)
-				writeByte(output,0);
+				writeByte(output, 0);
 		}
 		break;
 	default:
-		error("extract_resource - unknown resource type %d specified!",res->type);
+		error("extract_resource - unknown resource type %d specified", res->type);
 	}
 }
 
@@ -1054,11 +1048,12 @@ struct	_lfl_index {
 void	dump_resource (FILE *input, char *fn_template, int num, p_resource res) {
 	char fname[256];
 	FILE *output;
-	sprintf(fname,fn_template,num);
-	if (!(output = fopen(fname,"wb")))
-		error("Error: unable to create %s!",fname);
-	notice("Extracting resource to %s",fname);
-	extract_resource(input,output,res);
+	sprintf(fname, fn_template,num);
+	output = fopen(fname, "wb");
+	if (!output)
+		error("unable to create %s", fname);
+	notice("Extracting resource to %s", fname);
+	extract_resource(input, output,res);
 	fclose(output);
 }
 #endif	/* MAKE_LFLS */
@@ -1092,13 +1087,13 @@ int main (int argc, char **argv) {
 	uint32 CRC;
 
 	if (argc < 2) {
-		printf("Syntax: %s <infile.PRG>\n",argv[0]);
+		printf("Syntax: %s <infile.PRG>\n", argv[0]);
 		printf("\tSupported versions: Europe, France, Germany, Sweden and USA\n");
 		printf("\tJapanese version is NOT supported!\n");
 		return 1;
 	}
 	if (!(input = fopen(argv[1],"rb")))
-		error("Error: unable to open file %s for input!",argv[1]);
+		error("Unable to open file %s for input", argv[1]);
 
 	if ((readByte(input) == 'N') && (readByte(input) == 'E') && (readByte(input) == 'S') && (readByte(input) == 0x1A)) {
 		printf("You have specified an iNES formatted ROM image, which is not supported.\n"
@@ -1135,21 +1130,22 @@ int main (int argc, char **argv) {
 		notice("ROM contents verified as Maniac Mansion (Spain)");
 		break;
 	case 0x3DA2085E:
-		error("Maniac Mansion (Japan) is not supported!");
+		error("Maniac Mansion (Japan) is not supported");
 		break;
 	default:
-		error("ROM contents not recognized! (%08X)",CRC);
+		error("ROM contents not recognized (%08X)",CRC);
 		break;
 	}
 #ifdef	MAKE_LFLS
-	memset(&lfl_index,0,sizeof(lfl_index));
+	memset(&lfl_index, 0, sizeof(lfl_index));
 
 	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
-		sprintf(fname,"%02i.LFL",lfl->num);
-		if (!(output = fopen(fname,"wb")))
-			error("Error: unable to create %s!",fname);
-		notice("Creating %s...",fname);
+		sprintf(fname,"%02i.LFL", lfl->num);
+		output = fopen(fname, "wb");
+		if (!output)
+			error("Unable to create %s", fname);
+		notice("Creating %s...", fname);
 		for (j = 0; lfl->entries[j].type != NULL; j++) {
 			p_lflentry entry = &lfl->entries[j];
 			switch (entry->type[ROMset][entry->index].type) {
@@ -1206,7 +1202,7 @@ int main (int argc, char **argv) {
 				lfl_index.costume_addr[78] = (uint16)ftell(output);
 				break;
 			default:
-				error("Unindexed entry found!");
+				error("Unindexed entry found");
 				break;
 			}
 			extract_resource(input,output,&entry->type[ROMset][entry->index]);
@@ -1214,38 +1210,39 @@ int main (int argc, char **argv) {
 		writeUint16LE(output,0xF5D1);
 		fclose(output);
 	}
-	if (!(output = fopen("00.LFL","wb")))
-		error("Error: unable to create index file!");
+	output = fopen("00.LFL", "wb");
+	if (!output)
+		error("Unable to create index file");
 	notice("Creating 00.LFL...");
-	writeUint16LE(output,0x4643);
-	extract_resource(input,output,&res_globdata[ROMset][0]);
+	writeUint16LE(output, 0x4643);
+	extract_resource(input, output, &res_globdata[ROMset][0]);
 	for (i = 0; i < (int)sizeof(lfl_index); i++)
-		writeByte(output,((uint8 *)&lfl_index)[i]);
+		writeByte(output, ((uint8 *)&lfl_index)[i]);
 	fclose(output);
 #else	/* !MAKE_LFLS */
-	dump_resource(input,"globdata.dmp",0,&res_globdata[ROMset][0]);
+	dump_resource(input,"globdata.dmp", 0, &res_globdata[ROMset][0]);
 	for (i = 0; i < 40; i++)
-		dump_resource(input,"roomgfx-%d.dmp",i,&res_roomgfx[ROMset][i]);
+		dump_resource(input,"roomgfx-%d.dmp", i, &res_roomgfx[ROMset][i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"costumegfx-%d.dmp",i,&res_costumegfx[ROMset][i]);
+		dump_resource(input,"costumegfx-%d.dmp", i, &res_costumegfx[ROMset][i]);
 	for (i = 0; i < 55; i++)
-		dump_resource(input,"room-%d.dmp",i,&res_rooms[ROMset][i]);
+		dump_resource(input,"room-%d.dmp", i, &res_rooms[ROMset][i]);
 	for (i = 0; i < 179; i++)
-		dump_resource(input,"script-%d.dmp",i,&res_scripts[ROMset][i]);
+		dump_resource(input,"script-%d.dmp", i, &res_scripts[ROMset][i]);
 	for (i = 0; i < 82; i++)
-		dump_resource(input,"sound-%d.dmp",i,&res_sounds[ROMset][i]);
+		dump_resource(input,"sound-%d.dmp", i, &res_sounds[ROMset][i]);
 	for (i = 0; i < 25; i++)
-		dump_resource(input,"costume-%d.dmp",i,&res_costumes[ROMset][i]);
+		dump_resource(input,"costume-%d.dmp", i, &res_costumes[ROMset][i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"sprpals-%d.dmp",i,&res_sprpals[ROMset][i]);
+		dump_resource(input,"sprpals-%d.dmp", i, &res_sprpals[ROMset][i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"sprdata-%d.dmp",i,&res_sprdata[ROMset][i]);
+		dump_resource(input,"sprdata-%d.dmp", i, &res_sprdata[ROMset][i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"sprlens-%d.dmp",i,&res_sprlens[ROMset][i]);
+		dump_resource(input,"sprlens-%d.dmp", i, &res_sprlens[ROMset][i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"sprdesc-%d.dmp",i,&res_sprdesc[ROMset][i]);
+		dump_resource(input,"sprdesc-%d.dmp", i, &res_sprdesc[ROMset][i]);
 	for (i = 0; i < 2; i++)
-		dump_resource(input,"sproffs-%d.dmp",i,&res_sproffs[ROMset][i]);
+		dump_resource(input,"sproffs-%d.dmp", i, &res_sproffs[ROMset][i]);
 #endif	/* MAKE_LFLS */
 	notice("All done!");
 

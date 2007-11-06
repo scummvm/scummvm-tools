@@ -809,7 +809,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 		if (rlen != r_length(res))
 			error("extract_resource(globdata) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x11)
-			error("extract_resource(globdata) - resource tag is incorrect!");
+			error("extract_resource(globdata) - resource tag is incorrect");
 		writeUint32LE(output,(uint16)(rlen + 1));
 		writeUint16LE(output,'O0');	/* 0O - Object Index */
 		for (i = 5; i < rlen; i++)
@@ -826,7 +826,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 			if (rlen != r_length(res))
 				error("extract_resource(room) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 			if (rtype != 0x01)
-				error("extract_resource(room) - resource tag is incorrect!");
+				error("extract_resource(room) - resource tag is incorrect");
 			off = ftell(output);
 			rlen = 0;
 			write_clong(output,0,&rlen);
@@ -941,7 +941,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 		}
 		break;
 	case RES_SOUND:
-		error("extract_resource(sound) - sound resources are not supported!");
+		error("extract_resource(sound) - sound resources are not supported");
 		break;
 	case RES_COSTUME:
 		rlen = read_cword(input,&i);
@@ -951,7 +951,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 		if (rlen != r_length(res))
 			error("extract_resource(costume) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x03)
-			error("extract_resource(costume) - resource tag is incorrect!");
+			error("extract_resource(costume) - resource tag is incorrect");
 		writeUint32LE(output,(uint16)(rlen + 1));
 		writeUint16LE(output,'OC');	/* CO - Costume */
 		for (i = 5; i < rlen; i++)
@@ -963,9 +963,9 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 		rtype = read_cbyte(input,&i);
 		rid = read_cbyte(input,&i);
 		if (rlen != r_length(res))
-			error("extract_resource(script) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
+			error("extract_resource(script) - length mismatch while extracting resource (was %04X, expected %04X)", rlen, r_length(res));
 		if (rtype != 0x02)
-			error("extract_resource(script) - resource tag is incorrect!");
+			error("extract_resource(script) - resource tag is incorrect");
 		writeUint32LE(output,(uint16)(rlen + 1));
 		writeUint16LE(output,'CS');	/* SC - Script */
 		for (i = 5; i < rlen; i++)
@@ -980,7 +980,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 	case RES_UNKNOWN:
 		rlen = read_cword(input,&i);
 		if (rlen != r_length(res))
-			error("extract_resource - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
+			error("extract_resource - length mismatch while extracting resource (was %04X, expected %04X)", rlen, r_length(res));
 		writeUint16LE(output,rlen);
 		for (i = 2; i < rlen; i++)
 			writeByte(output,readByte(input));
@@ -988,7 +988,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 		break;
 #endif
 	default:
-		warning("extract_resource - unknown resource type %d specified!",res->type);
+		warning("extract_resource - unknown resource type %d specified", res->type);
 	}
 }
 
@@ -1177,13 +1177,14 @@ struct	_index {
 	uint32	sound_addr[NUM_SOUNDS];
 }	lfl_index;
 #else	/* !MAKE_LFLS */
-void	dump_resource (FILE *input, const char *fn_template, int num, p_resource res) {
+void	dump_resource(FILE *input, const char *fn_template, int num, p_resource res) {
 	char fname[256];
 	FILE *output;
-	sprintf(fname,fn_template,num);
-	if (!(output = fopen(fname,"wb")))
-		error("Error: unable to create %s!",fname);
-	extract_resource(input,output,res);
+	sprintf(fname, fn_template, num);
+	output = fopen(fname, "wb");
+	if (!output)
+		error("Unable to create %s", fname);
+	extract_resource(input, output, res);
 	fclose(output);
 }
 #endif	/* MAKE_LFLS */
@@ -1223,16 +1224,15 @@ int main (int argc, char **argv) {
 	uint32 CRC;
 
 	if (argc < 2) {
-		printf("Syntax: %s <code_##.ISO>\n",argv[0]);
+		printf("Syntax: %s <code_##.ISO>\n", argv[0]);
 		return 1;
 	}
 	if (!(input = fopen(argv[1],"rb")))
-		error("Error: unable to open file %s for input!",argv[1]);
+		error("Unable to open file %s for input", argv[1]);
 
 	InitCRC();
 	CRC = ISO_CRC(input);
-	switch (CRC)
-	{
+	switch (CRC) {
 	case 0x29EED3C5:
 		ISO = ISO_USA;
 		notice("ISO contents verified as Loom USA (track 2)");
@@ -1242,18 +1242,19 @@ int main (int argc, char **argv) {
 		notice("ISO contents verified as Loom Japan (track 2)");
 		break;
 	default:
-		error("ISO contents not recognized!");
+		error("ISO contents not recognized");
 		break;
 	}
 #ifdef	MAKE_LFLS
-	memset(&lfl_index,0xFF,sizeof(lfl_index));
+	memset(&lfl_index, 0xFF, sizeof(lfl_index));
 
 	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
-		sprintf(fname,"%02i.LFL",lfl->num);
-		if (!(output = fopen(fname,"wb")))
-			error("Error: unable to create %s!",fname);
-		notice("Creating %s...",fname);
+		sprintf(fname,"%02i.LFL", lfl->num);
+		output = fopen(fname, "wb");
+		if (!output)
+			error("Uunable to create %s", fname);
+		notice("Creating %s...", fname);
 		for (j = 0; lfl->entries[j] != NULL; j++) {
 			p_resource entry = lfl->entries[j];
 			switch (entry->type) {
@@ -1281,8 +1282,9 @@ int main (int argc, char **argv) {
 		}
 		fclose(output);
 	}
-	if (!(output = fopen("00.LFL","wb")))
-		error("Error: unable to create index file!");
+	output = fopen("00.LFL", "wb");
+	if (!output)
+		error("Unable to create index file");
 	notice("Creating 00.LFL...");
 
 	lfl_index.num_rooms = NUM_ROOMS;
@@ -1328,22 +1330,25 @@ int main (int argc, char **argv) {
 	
 	fclose(output);
 
-	if (!(output = fopen("97.LFL","wb")))
-		error("Error: unable to create charset file!");
+	output = fopen("97.LFL", "wb");
+	if (!output)
+		error("Unable to create charset file 97.LFL");
 	notice("Creating 97.LFL...");
-	extract_resource(input,output,&res_charset);
+	extract_resource(input, output, &res_charset);
 	fclose(output);
 
-	if (!(output = fopen("98.LFL","wb")))
-		error("Error: unable to create charset file!");
+	output = fopen("98.LFL", "wb");
+	if (!output)
+		error("Unable to create charset file 98.LFL");
 	notice("Creating 98.LFL...");
-	extract_resource(input,output,&res_charset);
+	extract_resource(input, output, &res_charset);
 	fclose(output);
 
-	if (!(output = fopen("99.LFL","wb")))
-		error("Error: unable to create charset file!");
+	output = fopen("99.LFL", "wb");
+	if (!output)
+		error("Unable to create charset file 99.LFL");
 	notice("Creating 99.LFL...");
-	extract_resource(input,output,&res_charset);
+	extract_resource(input, output, &res_charset);
 	fclose(output);
 
 #else	/* !MAKE_LFLS */
