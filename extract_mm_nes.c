@@ -32,12 +32,10 @@
 #endif
 
 #ifdef MAKE_LFLS
-void writeByteAlt(FILE *fp, uint8 b)
-{
+void writeByteAlt(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
-void writeUint16LEAlt(FILE *fp, uint16 value)
-{
+void writeUint16LEAlt(FILE *fp, uint16 value) {
 	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
 }
 #define writeByte writeByteAlt
@@ -989,8 +987,7 @@ t_lflentry lfl_53[] = { {res_rooms, 53}, {res_scripts, 177}, {res_scripts, 178},
 /*	all 'non-standard' resources (the costume-related stuff) */
 t_lflentry lfl_54[] = { {res_rooms, 54}, {res_sprdesc, 0}, {res_sprdesc, 1}, {res_sprlens, 0}, {res_sprlens, 1}, {res_sproffs, 0}, {res_sproffs, 1}, {res_sprdata, 0}, {res_sprdata, 1}, {res_costumegfx, 0}, {res_costumegfx, 1}, {res_sprpals, 0}, {res_sprpals, 1}, {res_charset, 0}, {res_preplist, 0}, {NULL, 0} };
 
-typedef	struct	_lfl
-{
+typedef	struct	_lfl {
 	int num;
 	p_lflentry entries;
 }	t_lfl, *p_lfl;
@@ -1076,8 +1073,7 @@ struct	_lfl_index
 #pragma	pack(pop)
 #endif
 #else	/* !MAKE_LFLS */
-void	dump_resource (FILE *input, char *fn_template, int num, p_resource res)
-{
+void	dump_resource (FILE *input, char *fn_template, int num, p_resource res) {
 	char fname[256];
 	FILE *output;
 	sprintf(fname,fn_template,num);
@@ -1090,21 +1086,18 @@ void	dump_resource (FILE *input, char *fn_template, int num, p_resource res)
 #endif	/* MAKE_LFLS */
 
 uint32	CRCtable[256];
-void	InitCRC (void)
-{
+void	InitCRC(void) {
 	const uint32 poly = 0xEDB88320;
 	int i, j;
 	uint32 n;
-	for (i = 0; i < 256; i++)
-	{
+	for (i = 0; i < 256; i++) {
 		n = i;
 		for (j = 0; j < 8; j++)
 			n = (n & 1) ? ((n >> 1) ^ poly) : (n >> 1);
 		CRCtable[i] = n;
 	}
 }
-uint32	CheckROM (FILE *file)
-{
+uint32	CheckROM(FILE *file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i;
 
@@ -1114,15 +1107,13 @@ uint32	CheckROM (FILE *file)
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int main (int argc, char **argv)
-{
+int main (int argc, char **argv) {
 	FILE *input, *output;
 	char fname[256];
 	int i, j;
 	uint32 CRC;
 
-	if (argc < 2)
-	{
+	if (argc < 2) {
 		printf("Syntax: %s <infile.PRG>\n",argv[0]);
 		printf("\tSupported versions: Europe, France, Germany, Sweden and USA\n");
 		printf("\tJapanese version is NOT supported!\n");
@@ -1140,8 +1131,7 @@ int main (int argc, char **argv)
 
 	InitCRC();
 	CRC = CheckROM(input);
-	switch (CRC)
-	{
+	switch (CRC) {
 	case 0x0D9F5BD1:
 		ROMset = ROMSET_USA;
 		notice("ROM contents verified as Maniac Mansion (USA)");
@@ -1176,18 +1166,15 @@ int main (int argc, char **argv)
 #ifdef	MAKE_LFLS
 	memset(&lfl_index,0,sizeof(lfl_index));
 
-	for (i = 0; lfls[i].num != -1; i++)
-	{
+	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
 		sprintf(fname,"%02i.LFL",lfl->num);
 		if (!(output = fopen(fname,"wb")))
 			error("Error: unable to create %s!",fname);
 		notice("Creating %s...",fname);
-		for (j = 0; lfl->entries[j].type != NULL; j++)
-		{
+		for (j = 0; lfl->entries[j].type != NULL; j++) {
 			p_lflentry entry = &lfl->entries[j];
-			switch (entry->type[ROMset][entry->index].type)
-			{
+			switch (entry->type[ROMset][entry->index].type) {
 			case NES_ROOM:
 				lfl_index.room_lfl[entry->index] = lfl->num;
 				lfl_index.room_addr[entry->index] = (uint16)ftell(output);
