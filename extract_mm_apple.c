@@ -23,10 +23,6 @@
 #include "util.h"
 #include <stdarg.h>
 
-#ifdef _MSC_VER
-	#define	vsnprintf _vsnprintf
-#endif
-
 void writeByteAlt(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
@@ -36,18 +32,24 @@ void writeUint16LEAlt(FILE *fp, uint16 value) {
 #define writeByte writeByteAlt
 #define writeUint16LE writeUint16LEAlt
 
-void notice(const char *s, ...) {
-	char buf[1024];
-	va_list va;
+#define NUM_ROOMS	55
 
-	va_start(va, s);
-	vsnprintf(buf, 1024, s, va);
-	va_end(va);
+unsigned char room_disks[NUM_ROOMS], room_tracks[NUM_ROOMS], room_sectors[NUM_ROOMS];
 
-	fprintf(stdout, "%s\n", buf);
-}
-
-unsigned char room_disks[55], room_tracks[55], room_sectors[55];
+static const int SectorOffset[36] = {
+	0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256,
+	272, 288, 304, 320, 336, 352, 368,
+	384, 400, 416, 432, 448, 464,
+	480, 496, 512, 528, 544, 560
+};
+static const int ResourcesPerFile[NUM_ROOMS] = {
+	 0, 11,  1,  3,  9, 12,  1, 13, 10,  6,
+	 4,  1,  7,  1,  1,  2,  7,  8, 19,  9,
+	 6,  9,  2,  6,  8,  4, 16,  8,  3,  3,
+	12, 12,  2,  8,  1,  1,  2,  1,  9,  1,
+	 3,  7,  3,  3, 13,  5,  4,  3,  1,  1,
+	 3, 10,  1,  0,  0
+};
 
 int main (int argc, char **argv) {
 	FILE *input1, *input2, *output;
@@ -60,9 +62,9 @@ int main (int argc, char **argv) {
 		return 1;
 	}
 	if (!(input1 = fopen(argv[1],"rb")))
-		error("Error: unable to open file %s for input!",argv[1]);
+		error("Unable to open file %s for input!",argv[1]);
 	if (!(input2 = fopen(argv[2],"rb")))
-		error("Error: unable to open file %s for input!",argv[2]);
+		error("Unable to open file %s for input!",argv[2]);
 
 	fseek(input1, 142080, SEEK_SET);
 	fseek(input2, 143104, SEEK_SET);
@@ -87,11 +89,11 @@ int main (int argc, char **argv) {
 		writeByte(output, readByte(input1));
 
 	/* copy room offsets */
-	for (i = 0; i < 55; i++) {
+	for (i = 0; i < NUM_ROOMS; i++) {
 		room_disks[i] = readByte(input1);
 		writeByte(output, room_disks[i]);
 	}
-	for (i = 0; i < 55; i++) {
+	for (i = 0; i < NUM_ROOMS; i++) {
 		room_sectors[i] = readByte(input1);
 		writeByte(output, room_sectors[i]);
 		room_tracks[i] = readByte(input1);
@@ -120,27 +122,14 @@ int main (int argc, char **argv) {
 
 	fclose(output);
 
-	for (i = 0; i < 55; i++) {
-		const int SectorOffset[36] = {
-			0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256,
-			272, 288, 304, 320, 336, 352, 368,
-			384, 400, 416, 432, 448, 464,
-			480, 496, 512, 528, 544, 560
-		};
-		const int ResourcesPerFile[55] = {
-			 0, 11,  1,  3,  9, 12,  1, 13, 10,  6,
-			 4,  1,  7,  1,  1,  2,  7,  8, 19,  9,
-			 6,  9,  2,  6,  8,  4, 16,  8,  3,  3,
-			12, 12,  2,  8,  1,  1,  2,  1,  9,  1,
-			 3,  7,  3,  3, 13,  5,  4,  3,  1,  1,
-			 3, 10,  1,  0,  0
-		};
+	for (i = 0; i < NUM_ROOMS; i++) {
 		FILE *input;
 		if (room_disks[i] == '1')
 			input = input1;
 		else if (room_disks[i] == '2')
 			input = input2;
-		else	continue;
+		else
+			continue;
 
 		sprintf(fname,"%02i.LFL", i);
 		output = fopen(fname, "wb");

@@ -27,10 +27,6 @@
 /* if not defined, dumps all resources to separate files */
 #define	MAKE_LFLS
 
-#ifdef _MSC_VER
-	#define	vsnprintf _vsnprintf
-#endif
-
 #ifdef MAKE_LFLS
 void writeByteAlt(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
@@ -41,17 +37,6 @@ void writeUint16LEAlt(FILE *fp, uint16 value) {
 #define writeByte writeByteAlt
 #define writeUint16LE writeUint16LEAlt
 #endif
-
-void notice(const char *s, ...) {
-	char buf[1024];
-	va_list va;
-
-	va_start(va, s);
-	vsnprintf(buf, 1024, s, va);
-	va_end(va);
-
-	fprintf(stdout, "%s\n", buf);
-}
 
 typedef enum _res_type {
 	NES_UNKNOWN,
