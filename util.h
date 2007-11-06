@@ -76,10 +76,6 @@ typedef uint8 bool;
 	#define snprintf _snprintf
 
 	#define SCUMM_LITTLE_ENDIAN
-
-	#define START_PACK_STRUCTS pack(push, 1)
-	#define END_PACK_STRUCTS   pack(pop)
-
 	
 #elif defined(__MINGW32__)
 
@@ -87,9 +83,6 @@ typedef uint8 bool;
 	#define scumm_strnicmp strnicmp
 
 	#define SCUMM_LITTLE_ENDIAN
-
-	#define START_PACK_STRUCTS pack(push, 1)
-	#define END_PACK_STRUCTS   pack(pop)
 
 #elif defined(UNIX)
 
@@ -99,11 +92,6 @@ typedef uint8 bool;
 	#if defined(__DECCXX) /* Assume alpha architecture */
 	#define INVERSE_MKID
 	#define SCUMM_NEED_ALIGNMENT
-	#endif
-
-	#if !defined(__GNUC__)
-	#define START_PACK_STRUCTS pack (1)
-	#define END_PACK_STRUCTS   pack ()
 	#endif
 
 #else

@@ -1035,16 +1035,9 @@ t_lfl	lfls[] = {
 	{ -1, NULL }
 };
 
-#if defined(__GNUC__)
-#define GCC_PACK __attribute__((packed))
-#else
-#define GCC_PACK
-#endif
-#if defined(_MSC_VER)
-#pragma	pack(push,1)
-#endif
-struct	_lfl_index
-{
+#include "utils/pack-start.h"	/* START STRUCT PACKING */
+
+struct	_lfl_index {
 	uint8	room_lfl[55];
 	uint16	room_addr[55];
 	uint8	costume_lfl[80];
@@ -1054,9 +1047,9 @@ struct	_lfl_index
 	uint8	sound_lfl[100];
 	uint16	sound_addr[100];
 } GCC_PACK lfl_index;
-#if defined(_MSC_VER)
-#pragma	pack(pop)
-#endif
+
+#include "utils/pack-end.h"	/* END STRUCT PACKING */
+
 #else	/* !MAKE_LFLS */
 void	dump_resource (FILE *input, char *fn_template, int num, p_resource res) {
 	char fname[256];
