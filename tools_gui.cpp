@@ -157,6 +157,7 @@ void LocationDialog::prompt() {
 	}
 }
 
+#if wxUSE_DRAG_AND_DROP
 FileDrop::FileDrop(wxTextCtrl *target, bool isFileChooser) : wxFileDropTarget() {
 	_target = target;
 	_target->SetDropTarget(this);
@@ -174,6 +175,7 @@ bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames)
 
 	return true;
 }
+#endif
 
 IOChooser::IOChooser(wxWindow *parent, kEventId buttonId, wxString title, bool isFileChooser) : wxPanel(parent) {
 	wxStaticBox *staticBox = new wxStaticBox(this, wxID_ANY, title);
@@ -188,7 +190,9 @@ IOChooser::IOChooser(wxWindow *parent, kEventId buttonId, wxString title, bool i
 	_browse = new wxButton(panel, buttonId, wxT("Browse"));
 	_isFileChooser = isFileChooser;
 
+#if wxUSE_DRAG_AND_DROP
 	_dropTarget = new FileDrop(_text, _isFileChooser);
+#endif
 
 	sizer->Add(_text, 1, wxEXPAND | wxRIGHT, 5);
 	sizer->Add(_browse, 0);

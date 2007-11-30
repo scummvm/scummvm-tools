@@ -28,7 +28,9 @@
 
 class Process;
 class LocationDialog;
+#if wxUSE_DRAG_AND_DROP
 class FileDrop;
+#endif
 class IOChooser;
 class DropDownBox;
 class CompressionOptions;
@@ -153,6 +155,7 @@ public:
 	void prompt();
 };
 
+#if wxUSE_DRAG_AND_DROP
 class FileDrop : public wxFileDropTarget {
 public:
 	FileDrop(wxTextCtrl *target, bool isFileChooser);
@@ -162,6 +165,7 @@ public:
 
 	virtual bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames);
 };
+#endif
 
 class IOChooser : public wxPanel {
 public:
@@ -170,7 +174,9 @@ public:
 	wxTextCtrl *_text;
 	wxButton *_browse;
 	bool _isFileChooser;
+#if wxUSE_DRAG_AND_DROP
 	FileDrop *_dropTarget;
+#endif
 };
 
 class DropDownBox : public wxPanel {
