@@ -7,239 +7,239 @@ ScummVM versions may not. ScummVM 0.6.x does not support FLAC audio, for
 example.
 
 Extraction Tools:
-	extract_agos
-		Extracts the packed files used in the Amiga and AtariST
-		versions of Elvira 1/2, Waxworks and Simon the Sorcerer 1.
+        extract_agos
+                Extracts the packed files used in the Amiga and AtariST
+                versions of Elvira 1/2, Waxworks and Simon the Sorcerer 1.
 
-		Example of usage:
-		extract_agos <file 1> ... <file n>
+                Example of usage:
+                extract_agos <file 1> ... <file n>
 
-	extract_kyra
-		Unpacks .PAK files from Kyrandia games.
-		
-		Example of usage:
-		extract_kyra [params] <file>
-		
-	extract_loom_tg16
-		Extracts data files from the PC-Engine version of Loom.
-		Use the dumpcd utility at http://www.zeograd.com/misc_download.php
-		to dump the code tracks on the CD.
-		
-		Example of usage:
-		extract_loom_tg16 <code_##.ISO>
+        extract_kyra
+                Unpacks .PAK files from Kyrandia games.
+                
+                Example of usage:
+                extract_kyra [params] <file>
+                
+        extract_loom_tg16
+                Extracts data files from the PC-Engine version of Loom.
+                Use the dumpcd utility at http://www.zeograd.com/misc_download.php
+                to dump the code tracks on the CD.
+                
+                Example of usage:
+                extract_loom_tg16 <code_##.ISO>
 
-	extract_mm_apple
-		Extracts data files from the Apple II version of Maniac
-		Mansion.
-		
-		Example of usage:
-		extract_mm_apple <disk1.dsk> <disk2.dsk>
+        extract_mm_apple
+                Extracts data files from the Apple II version of Maniac
+                Mansion.
+                
+                Example of usage:
+                extract_mm_apple <disk1.dsk> <disk2.dsk>
 
-	extract_mm_c64
-		Extracts data files from the Commodore 64 version of Maniac
-		Mansion.
+        extract_mm_c64
+                Extracts data files from the Commodore 64 version of Maniac
+                Mansion.
 
-		Example of usage:
-		extract_mm_apple <disk1.d64> <disk2.d64>
+                Example of usage:
+                extract_mm_apple <disk1.d64> <disk2.d64>
 
-	extract_mm_nes
-		Extracts data files from the NES version of Maniac Mansion.
+        extract_mm_nes
+                Extracts data files from the NES version of Maniac Mansion.
 
-		Example of usage:
-		extract_mm_nes <file.PRG>
+                Example of usage:
+                extract_mm_nes <file.PRG>
 
-	extract_parallaction
-		Extracts the contents of archives used by Nippon Safes
+        extract_parallaction
+                Extracts the contents of archives used by Nippon Safes
 
-		Example of usage:
-		extract_parallaction [--small] <file> <outputdir>
-		
-	extract_scumm_mac
-		Extracts Macintosh "single file" SCUMM games into their
-		component parts, for use with ScummVM.
-		This is required for ScummVM up to version 0.6.x; all
-		later versions directly support reading this file
-		format.
+                Example of usage:
+                extract_parallaction [--small] <file> <outputdir>
+                
+        extract_scumm_mac
+                Extracts Macintosh "single file" SCUMM games into their
+                component parts, for use with ScummVM.
+                This is required for ScummVM up to version 0.6.x; all
+                later versions directly support reading this file
+                format.
 
-		Example of usage:
-		extract_scumm_mac <file>
+                Example of usage:
+                extract_scumm_mac <file>
 
-	extract_zak_c64
-		Extracts data files from the Commodore 64 version of Zak
-		McKracken.
+        extract_zak_c64
+                Extracts data files from the Commodore 64 version of Zak
+                McKracken.
 
-		Example of usage:
-		extract_zak_c64 <disk1.d64> <disk2.d64>
+                Example of usage:
+                extract_zak_c64 <disk1.d64> <disk2.d64>
 
 Compression Tools:
-	compress_agos
-		Used to compress the Feeble Files or Simon 1/2 voc/wav files
-		to MP3, Vorbis or FLAC.
+        compress_agos
+                Used to compress the Feeble Files or Simon 1/2 voc/wav files
+                to MP3, Vorbis or FLAC.
 
-		Example of usage:
-		compress_agos [params] <file | mac> 
+                Example of usage:
+                compress_agos [params] <file | mac> 
 
-	compress_kyra
-		Used to compress The Legend of Kyrandia's speech files with
-		MP3, Vorbis or FLAC.
+        compress_kyra
+                Used to compress The Legend of Kyrandia's speech files with
+                MP3, Vorbis or FLAC.
 
-		Example of usage:
-		compress_kyra [params] <file> <inputdir> <outputdir>
+                Example of usage:
+                compress_kyra [params] <file> <inputdir> <outputdir>
 
-	compress_queen
-		Used to rebuild the datafile of Flight of the Amazon Queen,
-		and allow optional MP3, Vorbis or FLAC compression.
+        compress_queen
+                Used to rebuild the datafile of Flight of the Amazon Queen,
+                and allow optional MP3, Vorbis or FLAC compression.
 
-		Example of usage:
-		compress_queen [params] queen.1
+                Example of usage:
+                compress_queen [params] queen.1
 
-	compress_saga
-		Used to compress SAGA engine digital sound files to MP3, Vorbis
-		or FLAC. 
+        compress_saga
+                Used to compress SAGA engine digital sound files to MP3, Vorbis
+                or FLAC. 
 
-		For Inherit the Earth, the digital music (music.rsc), speech 
-		(voices.rsc or "inherit the earth voices") and sound effects
-		(sounds.rsc) files can be compressed. For I have no mouth, the 
-		speech (voices*.res) files can be compressed.
+                For Inherit the Earth, the digital music (music.rsc), speech 
+                (voices.rsc or "inherit the earth voices") and sound effects
+                (sounds.rsc) files can be compressed. For I have no mouth, the 
+                speech (voices*.res) files can be compressed.
 
-		The compressed files have the ".cmp" extension. Once compressed, 
-		you only need the respective .cmp files. 
+                The compressed files have the ".cmp" extension. Once compressed, 
+                you only need the respective .cmp files. 
 
-		There is no compression support yet for the following versions:
-		- The Mac CD Guild version of Inherit the Earth (uses MacBinary
-		*.bin files)
-		- The demo versions of Inherit the Earth
-		- The unsupported early DOS demo of Inherit the Earth
+                There is no compression support yet for the following versions:
+                - The Mac CD Guild version of Inherit the Earth (uses MacBinary
+                *.bin files)
+                - The demo versions of Inherit the Earth
+                - The unsupported early DOS demo of Inherit the Earth
 
-		Example of usage:
-		compress_saga [params] <file>
+                Example of usage:
+                compress_saga [params] <file>
 
-		Where <file> is the sound file you with to compress, without the
-		extension.
+                Where <file> is the sound file you with to compress, without the
+                extension.
 
-	compress_scumm_bun
-		Used to the compress '.bun' music/voice files with MP3, Vorbis,
-		or FLAC.
+        compress_scumm_bun
+                Used to the compress '.bun' music/voice files with MP3, Vorbis,
+                or FLAC.
 
-		Please note that FLAC compression will produce larger files
-		than the original for The Curse of Monkey Island!
+                Please note that FLAC compression will produce larger files
+                than the original for The Curse of Monkey Island!
 
-		Example of usage:
-		compress_scumm_bun [params] <file> <inputdir> <outputdir>
+                Example of usage:
+                compress_scumm_bun [params] <file> <inputdir> <outputdir>
 
-	compress_scumm_san
-		Compresses '.san' smush animation files. It uses lossless
-		zlib for compressing FOBJ gfx chunks inside a san file.
-		It also can create a separate Ogg file with the audio track.
+        compress_scumm_san
+                Compresses '.san' smush animation files. It uses lossless
+                zlib for compressing FOBJ gfx chunks inside a san file.
+                It also can create a separate Ogg file with the audio track.
 
-		In order to use such compressed files, your ScummVM binary
-		must have been built with zlib support enabled (you can find
-		out whether that's the case by looking at the About dialog).
-		For the Ogg or MP3 compression feature, your ScummVM binary
-		naturally must have been built with Ogg or MP3 support enabled.
+                In order to use such compressed files, your ScummVM binary
+                must have been built with zlib support enabled (you can find
+                out whether that's the case by looking at the About dialog).
+                For the Ogg or MP3 compression feature, your ScummVM binary
+                naturally must have been built with Ogg or MP3 support enabled.
 
-		NOTE: For some '.san' files there is a corresponding '.flu'
-		file, which contains offsets into the '.san' file. Hence, the
-		compress_scumm_san has to modify the '.flu' file. This happens
-		automatically, if the '.san' and '.flu' files are in the
-		same directory (which is normally the case). If you want to
-		move the '.san' files before compressing them, make sure to
-		move the '.flu' files, too!
+                NOTE: For some '.san' files there is a corresponding '.flu'
+                file, which contains offsets into the '.san' file. Hence, the
+                compress_scumm_san has to modify the '.flu' file. This happens
+                automatically, if the '.san' and '.flu' files are in the
+                same directory (which is normally the case). If you want to
+                move the '.san' files before compressing them, make sure to
+                move the '.flu' files, too!
 
-		Example of usage:
-		compress_scumm_bun [--vorbis] [params] <file> <inputdir> <outputdir>
+                Example of usage:
+                compress_scumm_bun [--vorbis] [params] <file> <inputdir> <outputdir>
 
-	compress_scumm_sou
-		Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
-		or .sof (FLAC).
+        compress_scumm_sou
+                Used to compress .sou files to .so3 (MP3), .sog (Vorbis),
+                or .sof (FLAC).
 
-		Example of usage:
-		compress_scumm_sou [params] monster.sou
+                Example of usage:
+                compress_scumm_sou [params] monster.sou
 
-	compress_sword1
-		Used to compress Broken Sword 1's music and speech .clu
-		files to .cl3 (MP3), .clg (Vorbis) or .clf (FLAC).
+        compress_sword1
+                Used to compress Broken Sword 1's music and speech .clu
+                files to .cl3 (MP3), .clg (Vorbis) or .clf (FLAC).
 
-		Example of usage:
-		compress_sword1 [params] <inputdir>
+                Example of usage:
+                compress_sword1 [params] <inputdir>
 
        compress_sword2
-		Used to compress Broken Sword 2's music and speech .clu
-		files to .cl3 (MP3), .clg (Vorbis) or .clf (FLAC).
+                Used to compress Broken Sword 2's music and speech .clu
+                files to .cl3 (MP3), .clg (Vorbis) or .clf (FLAC).
 
-		Please note that FLAC compression will produce a larger file
-		than the original! This is because the original files already
-		use lossy compression.
+                Please note that FLAC compression will produce a larger file
+                than the original! This is because the original files already
+                use lossy compression.
 
-		Example of usage:
-		compress_sword2 [params] <file>
+                Example of usage:
+                compress_sword2 [params] <file>
 
-	compress_touche
-		Used to compress and pack Touche speech files ('Vxxx' and
-		'OBJ') to MP3, Vorbis or FLAC to a single file named
-		TOUCHE.SO3 (MP3), TOUCHE.SOG (Vorbis), or TOUCHE.SOF (FLAC).
+        compress_touche
+                Used to compress and pack Touche speech files ('Vxxx' and
+                'OBJ') to MP3, Vorbis or FLAC to a single file named
+                TOUCHE.SO3 (MP3), TOUCHE.SOG (Vorbis), or TOUCHE.SOF (FLAC).
 
-		Once compressed, only TOUCHE.DAT and TOUCHE.SOx files are
+                Once compressed, only TOUCHE.DAT and TOUCHE.SOx files are
 
-		Example of usage:
-		comrpess_touche [params] <inputdir> <outputdir>
+                Example of usage:
+                comrpess_touche [params] <inputdir> <outputdir>
 
 Script Tools:
-	descumm
-		Decompiles SCUMM scripts
+        descumm
+                Decompiles SCUMM scripts
 
-	desword2
-		Disassembles Broken Sword II scripts
+        desword2
+                Disassembles Broken Sword II scripts
 
-	dekyra
-		Basic script disassembler for Legend of Kyrandia games
+        dekyra
+                Basic script disassembler for Legend of Kyrandia games
 
 Encoder Tools:
-	encode_dxa [params] <file>
+        encode_dxa [params] <file>
 
-		Creates DXA file out of extracted Smacker video.
+                Creates DXA file out of extracted Smacker video.
 
-		To extract a video use RAD Game Tools and perform 2 passes
-		on it. For example, if your video is called 'intro.smk'.
+                To extract a video use RAD Game Tools and perform 2 passes
+                on it. For example, if your video is called 'intro.smk'.
 
-		1. Extract the video to PNG, 256 colors (choose PNG format
-		and tick the checkbox). It will create bunch of files named
-		'introXXX.png', where XXX is frame number. Make sure you have
-		extracted 256 colors PNGs, otherwise encode_dxa will complain.
+                1. Extract the video to PNG, 256 colors (choose PNG format
+                and tick the checkbox). It will create bunch of files named
+                'introXXX.png', where XXX is frame number. Make sure you have
+                extracted 256 colors PNGs, otherwise encode_dxa will complain.
 
-		2. Extract the audio to WAV format, you will get an
-		'intro.wav' file.
+                2. Extract the audio to WAV format, you will get an
+                'intro.wav' file.
 
-		3. Put files 'intro.smk', 'intro.wav' and 'intro*.png' into a
-		single directory.
+                3. Put files 'intro.smk', 'intro.wav' and 'intro*.png' into a
+                single directory.
 
-		4. Run `encode_dxa intro.smk` in that directory
+                4. Run `encode_dxa intro.smk` in that directory
 
-		5. You will get an intro.dxa file and intro.flac/mp3/ogg file
-		in result.
+                5. You will get an intro.dxa file and intro.flac/mp3/ogg file
+                in result.
 
-		Additionally you may use batch processing mode of SMK files in
-		RAD Game Tools. Just select more than one file and push the
-		'Convert' button. It will ask you either you want them
-		processed in batch mode and will do this for you. All buttons
-		and conversion options work the same.
+                Additionally you may use batch processing mode of SMK files in
+                RAD Game Tools. Just select more than one file and push the
+                'Convert' button. It will ask you either you want them
+                processed in batch mode and will do this for you. All buttons
+                and conversion options work the same.
 
-	convert_dxa.bat
-	convert_dxa_one.bat
+        convert_dxa.bat
+        convert_dxa_one.bat
 
-		To ease your life we also provide batch files to autoconvert
-		all files. It should work with any game version.
+                To ease your life we also provide batch files to autoconvert
+                all files. It should work with any game version.
 
-		1. Copy *.smk files from all CDs to some directory
+                1. Copy *.smk files from all CDs to some directory
 
-		2. Edit paths in convert_dxa.bat file.
+                2. Edit paths in convert_dxa.bat file.
 
-		3. Run the batch. If you set everything correct, it will be
-		almost unattended conversion, just for several files there
-		are no audio, and RAD Game Tools converter will ask you to
-		press OK
+                3. Run the batch. If you set everything correct, it will be
+                almost unattended conversion, just for several files there
+                are no audio, and RAD Game Tools converter will ask you to
+                press OK
 
-	convert_dxa.sh
+        convert_dxa.sh
 
-		Same as above convert_dxa.bat, just for *nix-based systems.
-		It uses Wine to run RAD Game Tools.
+                Same as above convert_dxa.bat, just for *nix-based systems.
+                It uses Wine to run RAD Game Tools.
