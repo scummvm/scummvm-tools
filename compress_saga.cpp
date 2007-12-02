@@ -29,6 +29,7 @@
 #include "utils/file.h"
 #include "utils/voc.h"
 #include "utils/wave.h"
+#include "utils/adpcm.h"
 
 #define FILE_MD5_BYTES 5000
 #define RSC_TABLEINFO_SIZE 8
@@ -76,7 +77,7 @@ static GameFileDescription ITE_GameFiles[] = {
 	{"voices.rsc",					false,		"c46e4392fcd2e89bc91e5567db33b62d", kSoundVOC,		-1,			false},	// Disk
 	{"voices.rsc",					false,		"0c9113e630f97ef0996b8c3114badb08", kSoundVOC,		-1,			false},	// German disk
 	{"voices.rsc",					false,		"c58e67c506af4ffa03fd0aac2079deb0", kSoundVOC,		-1,			false},	// Early DOS demo
-	{"voicesd.rsc",				false,		"e139d86bab2ee8ba3157337f894a92d4", kSoundVOX,		22050,		false},	// New PC demos and all Mac demos
+	{"voicesd.rsc",					false,		"e139d86bab2ee8ba3157337f894a92d4", kSoundVOX,		22050,		false},	// New PC demos and all Mac demos
 	// Unsupported (8 bit unsigned sound) - used in the early ITE Win32 demo
 	//{"voicesd.rsc",				false,		"0759eaf5b64ae19fd429920a70151ad3", kSoundPCM,		22050,			false},	// Old Win32 demo
 	{"ite voices.bin",				true,		"dba92ae7d57e942250fe135609708369", kSoundMacPCM,	22050,		false}	// MacBinary
@@ -264,7 +265,8 @@ void writeHeader(FILE* outputFile) {
 }
 
 uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
-	uint8 *inputData;
+	uint8 *inputData = 0;
+	byte *buffer = 0;
 	Common::File inputFileStream(inputFile);
 	int rate, size;
 	byte flags;
@@ -331,11 +333,11 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		writeBufferToFile((uint8 *)buffer, sampleSize, TEMP_RAW);
 		free(buffer);
 
-		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo, false, sampleBits);
+		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo, sampleBits);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
-  if (currentFileDescription->resourceType == kSoundMacPCM) {
+	if (currentFileDescription->resourceType == kSoundMacPCM) {
 		error("MacBinary files are not supported yet");
 		// TODO
 		// Note: MacBinary files are unsigned. With the pending changes to setRawAudioType, there will need
