@@ -107,8 +107,7 @@ Compression Tools:
 
                 There is no compression support yet for the following versions:
                 - The Mac CD Guild version of Inherit the Earth (uses MacBinary
-                *.bin files)
-                - The demo versions of Inherit the Earth
+                  *.bin files)
                 - The unsupported early DOS demo of Inherit the Earth
 
                 Example of usage:
@@ -180,9 +179,10 @@ Compression Tools:
                 TOUCHE.SO3 (MP3), TOUCHE.SOG (Vorbis), or TOUCHE.SOF (FLAC).
 
                 Once compressed, only TOUCHE.DAT and TOUCHE.SOx files are
+                required to play the game under ScummVM.
 
                 Example of usage:
-                comrpess_touche [params] <inputdir> <outputdir>
+                compress_touche [params] <inputdir> <outputdir>
 
 Script Tools:
         descumm

@@ -23,17 +23,9 @@
 #include "util.h"
 #include <stdarg.h>
 
-typedef int BOOL;
-#define TRUE 1
-#define FALSE 0
-
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
 #define MAKE_LFLS
-
-#ifdef _MSC_VER
-	#define vsnprintf _vsnprintf
-#endif
 
 #ifdef MAKE_LFLS
 void writeByteAlt(FILE *fp, uint8 b) {
@@ -47,17 +39,6 @@ void writeUint16LEAlt(FILE *fp, uint16 value) {
 #define writeByte writeByteAlt
 #define writeUint16LE writeUint16LEAlt
 #endif
-
-void notice(const char *s, ...) {
-	char buf[1024];
-	va_list va;
-
-	va_start(va, s);
-	vsnprintf(buf, 1024, s, va);
-	va_end(va);
-
-	fprintf(stdout, "%s\n", buf);
-}
 
 typedef enum _res_type {
 	NES_UNKNOWN,
@@ -1002,7 +983,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 		}
 		break;
 	default:
-		error("extract_resource - unknown resource type %d specified!", res->type);
+		error("extract_resource - unknown resource type %d specified", res->type);
 	}
 }
 
@@ -1133,15 +1114,7 @@ t_lfl lfls[] = {
 	{ -1, NULL }
 };
 
-#if defined(__GNUC__)
-#define GCC_PACK __attribute__((packed))
-#else
-#define GCC_PACK
-#endif
-#if defined(_MSC_VER)
-#pragma pack(push, 1)
-#endif
-
+#include "utils/pack-start.h"   /* START STRUCT PACKING */
 struct _lfl_index {
 	uint8 room_lfl[55];
 	uint16 room_addr[55];
@@ -1153,16 +1126,15 @@ struct _lfl_index {
 	uint16 sound_addr[100];
 } GCC_PACK lfl_index;
 
-#if defined(_MSC_VER)
-#pragma pack(pop)
-#endif
+#include "utils/pack-end.h"     /* END STRUCT PACKING */
 #else /* !MAKE_LFLS */
 void dump_resource (FILE *input, char *fn_template, int num, p_resource res) {
 	char fname[256];
 	FILE *output;
 	sprintf(fname, fn_template, num);
 
-	if (!(output = fopen(fname, "wb"))) {
+	output = fopen(fname, "wb");
+	if (!output) {
 		error("Error: unable to create %s!", fname);
 	}
 
@@ -1215,7 +1187,7 @@ int main (int argc, char **argv) {
 	getPath(argv[argc - 1], inputPath);
 
 	if (!(input = fopen(argv[1], "rb"))) {
-		error("Error: unable to open file %s for input!", argv[1]);
+		error("Error: unable to open file %s for input", argv[1]);
 	}
 
 	if ((readByte(input) == 'N') && (readByte(input) == 'E') && (readByte(input) == 'S') && (readByte(input) == 0x1A)) {
@@ -1254,10 +1226,10 @@ int main (int argc, char **argv) {
         notice("ROM contents verified as Maniac Mansion (Spain)");
         break;
 	case 0x3DA2085E:
-		error("Maniac Mansion (Japan) is not supported!");
+		error("Maniac Mansion (Japan) is not supported");
 		break;
 	default:
-		error("ROM contents not recognized! (%08X)", CRC);
+		error("ROM contents not recognized (%08X)", CRC);
 		break;
 	}
 
@@ -1268,8 +1240,9 @@ int main (int argc, char **argv) {
 		p_lfl lfl = &lfls[i];
 
 		sprintf(fname, "%s/%02i.LFL", inputPath, lfl->num);
-		if (!(output = fopen(fname, "wb"))) {
-			error("Error: unable to create %s!", fname);
+		output = fopen(fname, "wb");
+		if (!output) {
+			error("Error: unable to create %s", fname);
 		}
 
 		notice("Creating %s...", fname);
@@ -1331,7 +1304,7 @@ int main (int argc, char **argv) {
 				lfl_index.costume_addr[78] = (uint16)ftell(output);
 				break;
 			default:
-				error("Unindexed entry found!");
+				error("Unindexed entry found");
 				break;
 			}
 
@@ -1343,8 +1316,9 @@ int main (int argc, char **argv) {
 	}
 
 	sprintf(fname, "%s/00.LFL", inputPath);
-	if (!(output = fopen(fname, "wb"))) {
-		error("Error: unable to create index file!");
+	output = fopen(fname, "wb");
+	if (!output) {
+		error("Error: unable to create index file");
 	}
 
 	notice("Creating %s...", fname);

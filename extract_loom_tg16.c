@@ -23,28 +23,9 @@
 #include "util.h"
 #include <stdarg.h>
 
-typedef int BOOL;
-#define TRUE 1
-#define FALSE 0
-
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
 #define MAKE_LFLS
-
-#ifdef _MSC_VER
-	#define vsnprintf _vsnprintf
-#endif
-
-void notice(const char *s, ...) {
-	char buf[1024];
-	va_list va;
-
-	va_start(va, s);
-	vsnprintf(buf, 1024, s, va);
-	va_end(va);
-
-	fprintf(stdout, "%s\n", buf);
-}
 
 uint8 read_cbyte (FILE *input, short *ctr) {
 	(*ctr) += 1;
@@ -845,7 +826,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 		}
 
 		if (rtype != 0x11) {
-			error("extract_resource(globdata) - resource tag is incorrect!");
+			error("extract_resource(globdata) - resource tag is incorrect");
 		}
 
 		writeUint32LE(output, (uint16)(rlen + 1));
@@ -870,7 +851,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 			}
 
 			if (rtype != 0x01) {
-				error("extract_resource(room) - resource tag is incorrect!");
+				error("extract_resource(room) - resource tag is incorrect");
 			}
 
 			off = ftell(output);
@@ -1027,7 +1008,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 
 		break;
 	case RES_SOUND:
-		error("extract_resource(sound) - sound resources are not supported!");
+		error("extract_resource(sound) - sound resources are not supported");
 		break;
 	case RES_COSTUME:
 		rlen = read_cword(input, &i);
@@ -1040,7 +1021,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 		}
 
 		if (rtype != 0x03) {
-			error("extract_resource(costume) - resource tag is incorrect!");
+			error("extract_resource(costume) - resource tag is incorrect");
 		}
 
 		writeUint32LE(output, (uint16)(rlen + 1));
@@ -1062,7 +1043,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 		}
 
 		if (rtype != 0x02) {
-			error("extract_resource(script) - resource tag is incorrect!");
+			error("extract_resource(script) - resource tag is incorrect");
 		}
 
 		writeUint32LE(output, (uint16)(rlen + 1));
@@ -1096,7 +1077,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 		break;
 #endif
 	default:
-		warning("extract_resource - unknown resource type %d specified!", res->type);
+		warning("extract_resource - unknown resource type %d specified", res->type);
 	}
 }
 
@@ -1291,8 +1272,9 @@ void dump_resource (FILE *input, const char *fn_template, int num, p_resource re
 	FILE *output;
 	sprintf(fname, fn_template, num);
 
-	if (!(output = fopen(fname, "wb"))) {
-		error("Error: unable to create %s!", fname);
+	output = fopen(fname, "wb");
+	if (!output) {
+		error("Error: unable to create %s", fname);
 	}
 
 	extract_resource(input, output, res);
@@ -1350,8 +1332,9 @@ int main (int argc, char **argv) {
 
 	getPath(argv[argc - 1], inputPath);
 
-	if (!(input = fopen(argv[1], "rb"))) {
-		error("Error: unable to open file %s for input!", argv[1]);
+	input = fopen(argv[1], "rb");
+	if (!input) {
+		error("Error: unable to open file %s for input", argv[1]);
 	}
 
 	InitCRC();
@@ -1367,7 +1350,7 @@ int main (int argc, char **argv) {
 		notice("ISO contents verified as Loom Japan (track 2)");
 		break;
 	default:
-		error("ISO contents not recognized!");
+		error("ISO contents not recognized");
 		break;
 	}
 
@@ -1378,8 +1361,9 @@ int main (int argc, char **argv) {
 		p_lfl lfl = &lfls[i];
 
 		sprintf(fname, "%s/%02i.LFL", inputPath, lfl->num);
-		if (!(output = fopen(fname, "wb"))) {
-			error("Error: unable to create %s!", fname);
+		output = fopen(fname, "wb");
+		if (!output) {
+			error("Error: unable to create %s", fname);
 		}
 
 		notice("Creating %s...", fname);
@@ -1415,7 +1399,8 @@ int main (int argc, char **argv) {
 	}
 
 	sprintf(fname, "%s/00.LFL", inputPath);
-	if (!(output = fopen(fname, "wb"))) {
+	output = fopen(fname, "wb");
+	if (!output) {
 		error("Error: unable to create index file!");
 	}
 
@@ -1469,8 +1454,9 @@ int main (int argc, char **argv) {
 	fclose(output);
 
 	sprintf(fname, "%s/97.LFL", inputPath);
-	if (!(output = fopen(fname, "wb"))) {
-		error("Error: unable to create charset file!");
+	output = fopen(fname, "wb");
+	if (!output) {
+		error("Error: unable to create charset file 97.LFL");
 	}
 
 	notice("Creating %s...", fname);
@@ -1478,8 +1464,9 @@ int main (int argc, char **argv) {
 	fclose(output);
 
 	sprintf(fname, "%s/98.LFL", inputPath);
-	if (!(output = fopen(fname, "wb"))) {
-		error("Error: unable to create charset file!");
+	output = fopen(fname, "wb");
+	if (!output) {
+		error("Error: unable to create charset file 98.LFL");
 	}
 
 	notice("Creating %s...", fname);
@@ -1487,8 +1474,9 @@ int main (int argc, char **argv) {
 	fclose(output);
 
 	sprintf(fname, "%s/99.LFL", inputPath);
-	if (!(output = fopen(fname, "wb"))) {
-		error("Error: unable to create charset file!");
+	output = fopen(fname, "wb");
+	if (!output) {
+		error("Error: unable to create charset file 99.LFL");
 	}
 
 	notice("Creating %s...", fname);

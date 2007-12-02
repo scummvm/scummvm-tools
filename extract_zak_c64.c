@@ -23,14 +23,6 @@
 #include "util.h"
 #include <stdarg.h>
 
-typedef int BOOL;
-#define TRUE 1
-#define FALSE 0
-
-#ifdef _MSC_VER
-	#define	vsnprintf _vsnprintf
-#endif
-
 void writeByteAlt(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
@@ -42,18 +34,24 @@ void writeUint16LEAlt(FILE *fp, uint16 value) {
 #define writeByte writeByteAlt
 #define writeUint16LE writeUint16LEAlt
 
-void notice(const char *s, ...) {
-	char buf[1024];
-	va_list va;
+#define NUM_ROOMS 59
+unsigned char room_disks[NUM_ROOMS], room_tracks[NUM_ROOMS], room_sectors[NUM_ROOMS];
+const int SectorOffset[36] = {
+	0,
+	0, 21, 42, 63, 84, 105, 126, 147, 168, 189, 210, 231, 252, 273, 294, 315, 336,
+	357, 376, 395, 414, 433, 452, 471,
+	490, 508, 526, 544, 562, 580,
+	598, 615, 632, 649, 666
+};
 
-	va_start(va, s);
-	vsnprintf(buf, 1024, s, va);
-	va_end(va);
-
-	fprintf(stdout, "%s\n", buf);
-}
-
-unsigned char room_disks[59], room_tracks[59], room_sectors[59];
+const int ResourcesPerFile[59] = {
+	 0, 29, 12, 14, 13,  4,  4, 10,  7,  4,
+	14, 19,  5,  4,  7,  6, 11,  9,  4,  4,
+	 1,  3,  3,  5,  1,  9,  4, 10, 13,  6,
+	 7, 10,  2,  6,  1, 11,  2,  5,  7,  1,
+	 7,  1,  4,  2,  8,  6,  6,  6,  4, 13,
+	 3,  1,  2,  1,  2,  1, 10,  1,  1
+};
 
 int main (int argc, char **argv) {
 	FILE *input1, *input2, *output;
@@ -106,15 +104,15 @@ int main (int argc, char **argv) {
 	}
 
 	/* copy room offsets */
-	for (i = 0; i < 59; i++) {
+	for (i = 0; i < NUM_ROOMS; i++) {
 		room_disks[i] = readByte(input1);
 		writeByte(output, room_disks[i]);
 	}
 
-	for (i = 0; i < 59; i++) {
+	for (i = 0; i < NUM_ROOMS; i++) {
 		room_sectors[i] = readByte(input1);
-		room_tracks[i] = readByte(input1);
 		writeByte(output, room_sectors[i]);
+		room_tracks[i] = readByte(input1);
 		writeByte(output, room_tracks[i]);
 	}
 
@@ -147,24 +145,7 @@ int main (int argc, char **argv) {
 
 	fclose(output);
 
-	for (i = 0; i < 59; i++) {
-		const int SectorOffset[36] = {
-			0,
-			0, 21, 42, 63, 84, 105, 126, 147, 168, 189, 210, 231, 252, 273, 294, 315, 336,
-			357, 376, 395, 414, 433, 452, 471,
-			490, 508, 526, 544, 562, 580,
-			598, 615, 632, 649, 666
-		};
-
-		const int ResourcesPerFile[59] = {
-			 0, 29, 12, 14, 13,  4,  4, 10,  7,  4,
-			14, 19,  5,  4,  7,  6, 11,  9,  4,  4,
-			 1,  3,  3,  5,  1,  9,  4, 10, 13,  6,
-			 7, 10,  2,  6,  1, 11,  2,  5,  7,  1,
-			 7,  1,  4,  2,  8,  6,  6,  6,  4, 13,
-			 3,  1,  2,  1,  2,  1, 10,  1,  1
-		};
-
+	for (i = 0; i < NUM_ROOMS; i++) {
 		FILE *input;
 
 		if (room_disks[i] == '1') {

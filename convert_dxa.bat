@@ -19,7 +19,7 @@ SET SMK_PATH=C:\games\feeble\smk
 SET DXA_PATH=C:\games\feeble\dxa
 SET DXA_CONVERT=CORRECT
 
-cd "%TOOLS_PATH%"
+cd /d "%TOOLS_PATH%"
 
 for %%i in (%SMK_PATH%\*.smk) do call convert_dxa_one "%%i"
 

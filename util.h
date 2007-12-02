@@ -77,19 +77,12 @@ typedef uint8 bool;
 
 	#define SCUMM_LITTLE_ENDIAN
 
-	#define START_PACK_STRUCTS pack(push, 1)
-	#define END_PACK_STRUCTS   pack(pop)
-
-
 #elif defined(__MINGW32__)
 
 	#define scumm_stricmp stricmp
 	#define scumm_strnicmp strnicmp
 
 	#define SCUMM_LITTLE_ENDIAN
-
-	#define START_PACK_STRUCTS pack(push, 1)
-	#define END_PACK_STRUCTS   pack(pop)
 
 #elif defined(UNIX)
 
@@ -99,11 +92,6 @@ typedef uint8 bool;
 	#if defined(__DECCXX) /* Assume alpha architecture */
 	#define INVERSE_MKID
 	#define SCUMM_NEED_ALIGNMENT
-	#endif
-
-	#if !defined(__GNUC__)
-	#define START_PACK_STRUCTS pack (1)
-	#define END_PACK_STRUCTS   pack ()
 	#endif
 
 #else
@@ -228,6 +216,7 @@ uint32 fileSize(FILE *fp);
 void NORETURN_PRE error(const char *s, ...) NORETURN_POST;
 void warning(const char *s, ...);
 void debug(int level, const char *s, ...);
+void notice(const char *s, ...);
 void getPath(const char *fullpath, char *path);
 void getFilename(const char *fullpath, char *filename);
 
