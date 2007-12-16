@@ -828,8 +828,7 @@ int main(int argc, char *argv[]) {
 		int r = read_png_file(strbuf, image, palette, width, height);
 
 		if (!palette) {
-			printf("Error: 8-bit 256-color image expected!\n");
-			exit(0);
+			error("8-bit 256-color image expected");
 		}
 
 		if (!r) {

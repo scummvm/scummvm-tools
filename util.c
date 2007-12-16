@@ -63,14 +63,14 @@ void debug(int level, const char *s, ...) {
 }
 
 void notice(const char *s, ...) {
-        char buf[1024];
-        va_list va;
+	char buf[1024];
+	va_list va;
 
-        va_start(va, s);
-        vsnprintf(buf, 1024, s, va);
-        va_end(va);
+	va_start(va, s);
+	vsnprintf(buf, 1024, s, va);
+	va_end(va);
 
-        fprintf(stdout, "%s\n", buf);
+	fprintf(stdout, "%s\n", buf);
 }
 
 uint8 readByte(FILE *fp) {

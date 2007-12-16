@@ -132,14 +132,14 @@ t_resource res_roomgfx_ger[40] = {
 };
 
 t_resource res_roomgfx_esp[40] = {
-        { 0x04001, 0x041B, NES_ROOMGFX }, { 0x0441C, 0x069E, NES_ROOMGFX }, { 0x04ABA, 0x0327, NES_ROOMGFX }, { 0x04DE1, 0x053B, NES_ROOMGFX }, { 0x0531C, 0x06BE, NES_ROOMGFX },
-        { 0x059DA, 0x0682, NES_ROOMGFX }, { 0x0605C, 0x0778, NES_ROOMGFX }, { 0x067D4, 0x0517, NES_ROOMGFX }, { 0x06CEB, 0x07FB, NES_ROOMGFX }, { 0x074E6, 0x07BE, NES_ROOMGFX },
-        { 0x08001, 0x07A5, NES_ROOMGFX }, { 0x087A6, 0x06DD, NES_ROOMGFX }, { 0x08E83, 0x04EA, NES_ROOMGFX }, { 0x0936D, 0x07E2, NES_ROOMGFX }, { 0x09B4F, 0x0791, NES_ROOMGFX },
-        { 0x0A2E0, 0x07B5, NES_ROOMGFX }, { 0x0AA95, 0x0515, NES_ROOMGFX }, { 0x0AFAA, 0x0799, NES_ROOMGFX }, { 0x0B743, 0x04B9, NES_ROOMGFX }, { 0x0BBFC, 0x0319, NES_ROOMGFX },
-        { 0x0C001, 0x0464, NES_ROOMGFX }, { 0x0C465, 0x072C, NES_ROOMGFX }, { 0x0CB91, 0x0827, NES_ROOMGFX }, { 0x0D3B8, 0x0515, NES_ROOMGFX }, { 0x0D8CD, 0x064E, NES_ROOMGFX },
-        { 0x0DF1B, 0x0775, NES_ROOMGFX }, { 0x0E690, 0x06DD, NES_ROOMGFX }, { 0x0ED6D, 0x0376, NES_ROOMGFX }, { 0x0F0E3, 0x05F7, NES_ROOMGFX }, { 0x0F6DA, 0x078D, NES_ROOMGFX },
-        { 0x07CA4, 0x02D6, NES_ROOMGFX }, { 0x10001, 0x06A3, NES_ROOMGFX }, { 0x106A4, 0x091F, NES_ROOMGFX }, { 0x10FC3, 0x0361, NES_ROOMGFX }, { 0x11324, 0x0489, NES_ROOMGFX },
-        { 0x117AD, 0x0437, NES_ROOMGFX }, { 0x11BE4, 0x086E, NES_ROOMGFX }, { 0x12452, 0x0199, NES_ROOMGFX }, { 0x125EB, 0x0947, NES_ROOMGFX }, { 0x12F32, 0x037A, NES_ROOMGFX }
+	{ 0x04001, 0x041B, NES_ROOMGFX }, { 0x0441C, 0x069E, NES_ROOMGFX }, { 0x04ABA, 0x0327, NES_ROOMGFX }, { 0x04DE1, 0x053B, NES_ROOMGFX }, { 0x0531C, 0x06BE, NES_ROOMGFX },
+	{ 0x059DA, 0x0682, NES_ROOMGFX }, { 0x0605C, 0x0778, NES_ROOMGFX }, { 0x067D4, 0x0517, NES_ROOMGFX }, { 0x06CEB, 0x07FB, NES_ROOMGFX }, { 0x074E6, 0x07BE, NES_ROOMGFX },
+	{ 0x08001, 0x07A5, NES_ROOMGFX }, { 0x087A6, 0x06DD, NES_ROOMGFX }, { 0x08E83, 0x04EA, NES_ROOMGFX }, { 0x0936D, 0x07E2, NES_ROOMGFX }, { 0x09B4F, 0x0791, NES_ROOMGFX },
+	{ 0x0A2E0, 0x07B5, NES_ROOMGFX }, { 0x0AA95, 0x0515, NES_ROOMGFX }, { 0x0AFAA, 0x0799, NES_ROOMGFX }, { 0x0B743, 0x04B9, NES_ROOMGFX }, { 0x0BBFC, 0x0319, NES_ROOMGFX },
+	{ 0x0C001, 0x0464, NES_ROOMGFX }, { 0x0C465, 0x072C, NES_ROOMGFX }, { 0x0CB91, 0x0827, NES_ROOMGFX }, { 0x0D3B8, 0x0515, NES_ROOMGFX }, { 0x0D8CD, 0x064E, NES_ROOMGFX },
+	{ 0x0DF1B, 0x0775, NES_ROOMGFX }, { 0x0E690, 0x06DD, NES_ROOMGFX }, { 0x0ED6D, 0x0376, NES_ROOMGFX }, { 0x0F0E3, 0x05F7, NES_ROOMGFX }, { 0x0F6DA, 0x078D, NES_ROOMGFX },
+	{ 0x07CA4, 0x02D6, NES_ROOMGFX }, { 0x10001, 0x06A3, NES_ROOMGFX }, { 0x106A4, 0x091F, NES_ROOMGFX }, { 0x10FC3, 0x0361, NES_ROOMGFX }, { 0x11324, 0x0489, NES_ROOMGFX },
+	{ 0x117AD, 0x0437, NES_ROOMGFX }, { 0x11BE4, 0x086E, NES_ROOMGFX }, { 0x12452, 0x0199, NES_ROOMGFX }, { 0x125EB, 0x0947, NES_ROOMGFX }, { 0x12F32, 0x037A, NES_ROOMGFX }
 };
 
 p_resource res_roomgfx[NUM_ROMSETS] = {
@@ -1135,7 +1135,7 @@ void dump_resource (FILE *input, char *fn_template, int num, p_resource res) {
 
 	output = fopen(fname, "wb");
 	if (!output) {
-		error("Error: unable to create %s!", fname);
+		error("Unable to create %s!", fname);
 	}
 
 	notice("Extracting resource to %s", fname);
@@ -1144,8 +1144,8 @@ void dump_resource (FILE *input, char *fn_template, int num, p_resource res) {
 }
 #endif /* MAKE_LFLS */
 
-uint32 CRCtable[256];
-void InitCRC (void) {
+static uint32 CRCtable[256];
+static void InitCRC(void) {
 	const uint32 poly = 0xEDB88320;
 	int i, j;
 	uint32 n;
@@ -1159,7 +1159,7 @@ void InitCRC (void) {
 		CRCtable[i] = n;
 	}
 }
-uint32 CheckROM (FILE *file) {
+static uint32 CheckROM(FILE *file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i;
 
@@ -1170,7 +1170,7 @@ uint32 CheckROM (FILE *file) {
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
 	FILE *input, *output;
 	char fname[1024];
 	char inputPath[768];
@@ -1187,7 +1187,7 @@ int main (int argc, char **argv) {
 	getPath(argv[argc - 1], inputPath);
 
 	if (!(input = fopen(argv[1], "rb"))) {
-		error("Error: unable to open file %s for input", argv[1]);
+		error("Unable to open file %s for input", argv[1]);
 	}
 
 	if ((readByte(input) == 'N') && (readByte(input) == 'E') && (readByte(input) == 'S') && (readByte(input) == 0x1A)) {
@@ -1222,9 +1222,9 @@ int main (int argc, char **argv) {
 		notice("ROM contents verified as Maniac Mansion (Germany)");
 		break;
 	case 0xF5B2AFCA:
-        ROMset = ROMSET_SPAIN;
-        notice("ROM contents verified as Maniac Mansion (Spain)");
-        break;
+		ROMset = ROMSET_SPAIN;
+		notice("ROM contents verified as Maniac Mansion (Spain)");
+		break;
 	case 0x3DA2085E:
 		error("Maniac Mansion (Japan) is not supported");
 		break;
@@ -1242,7 +1242,7 @@ int main (int argc, char **argv) {
 		sprintf(fname, "%s/%02i.LFL", inputPath, lfl->num);
 		output = fopen(fname, "wb");
 		if (!output) {
-			error("Error: unable to create %s", fname);
+			error("Unable to create %s", fname);
 		}
 
 		notice("Creating %s...", fname);
@@ -1318,7 +1318,7 @@ int main (int argc, char **argv) {
 	sprintf(fname, "%s/00.LFL", inputPath);
 	output = fopen(fname, "wb");
 	if (!output) {
-		error("Error: unable to create index file");
+		error("Unable to create index file");
 	}
 
 	notice("Creating %s...", fname);

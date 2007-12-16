@@ -315,13 +315,11 @@ int main(int argc, char *argv[]) {
 	tmp[4] = '\0';
 
 	if (memcmp(tmp, "QTBL", 4)) {
-		printf("Invalid TBL file!\n");
-		exit(-1);
+		error("Invalid TBL file");
 	}
 
 	if (readUint32BE(inputTbl) != CURRENT_TBL_VERSION) {
-		printf("Error: You are using an incorrect (outdated?) version of the queen.tbl file\n");
-		exit(1);
+		error("You are using an incorrect (outdated?) version of the queen.tbl file");
 	}
 
 	version = detectGameVersion(size);

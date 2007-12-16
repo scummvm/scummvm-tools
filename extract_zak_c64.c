@@ -36,15 +36,15 @@ void writeUint16LEAlt(FILE *fp, uint16 value) {
 
 #define NUM_ROOMS 59
 unsigned char room_disks[NUM_ROOMS], room_tracks[NUM_ROOMS], room_sectors[NUM_ROOMS];
-const int SectorOffset[36] = {
+
+static const int SectorOffset[36] = {
 	0,
 	0, 21, 42, 63, 84, 105, 126, 147, 168, 189, 210, 231, 252, 273, 294, 315, 336,
 	357, 376, 395, 414, 433, 452, 471,
 	490, 508, 526, 544, 562, 580,
 	598, 615, 632, 649, 666
 };
-
-const int ResourcesPerFile[59] = {
+static const int ResourcesPerFile[NUM_ROOMS] = {
 	 0, 29, 12, 14, 13,  4,  4, 10,  7,  4,
 	14, 19,  5,  4,  7,  6, 11,  9,  4,  4,
 	 1,  3,  3,  5,  1,  9,  4, 10, 13,  6,

@@ -1274,7 +1274,7 @@ void dump_resource (FILE *input, const char *fn_template, int num, p_resource re
 
 	output = fopen(fname, "wb");
 	if (!output) {
-		error("Error: unable to create %s", fname);
+		error("Unable to create %s", fname);
 	}
 
 	extract_resource(input, output, res);
@@ -1334,7 +1334,7 @@ int main (int argc, char **argv) {
 
 	input = fopen(argv[1], "rb");
 	if (!input) {
-		error("Error: unable to open file %s for input", argv[1]);
+		error("unable to open file %s for input", argv[1]);
 	}
 
 	InitCRC();
@@ -1363,7 +1363,7 @@ int main (int argc, char **argv) {
 		sprintf(fname, "%s/%02i.LFL", inputPath, lfl->num);
 		output = fopen(fname, "wb");
 		if (!output) {
-			error("Error: unable to create %s", fname);
+			error("unable to create %s", fname);
 		}
 
 		notice("Creating %s...", fname);
@@ -1401,7 +1401,7 @@ int main (int argc, char **argv) {
 	sprintf(fname, "%s/00.LFL", inputPath);
 	output = fopen(fname, "wb");
 	if (!output) {
-		error("Error: unable to create index file!");
+		error("Unable to create index file!");
 	}
 
 	notice("Creating %s...", fname);
@@ -1456,7 +1456,7 @@ int main (int argc, char **argv) {
 	sprintf(fname, "%s/97.LFL", inputPath);
 	output = fopen(fname, "wb");
 	if (!output) {
-		error("Error: unable to create charset file 97.LFL");
+		error("Unable to create charset file 97.LFL");
 	}
 
 	notice("Creating %s...", fname);
@@ -1466,7 +1466,7 @@ int main (int argc, char **argv) {
 	sprintf(fname, "%s/98.LFL", inputPath);
 	output = fopen(fname, "wb");
 	if (!output) {
-		error("Error: unable to create charset file 98.LFL");
+		error("Unable to create charset file 98.LFL");
 	}
 
 	notice("Creating %s...", fname);
@@ -1476,7 +1476,7 @@ int main (int argc, char **argv) {
 	sprintf(fname, "%s/99.LFL", inputPath);
 	output = fopen(fname, "wb");
 	if (!output) {
-		error("Error: unable to create charset file 99.LFL");
+		error("Unable to create charset file 99.LFL");
 	}
 
 	notice("Creating %s...", fname);

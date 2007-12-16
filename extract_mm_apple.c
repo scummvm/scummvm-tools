@@ -66,11 +66,11 @@ int main (int argc, char **argv) {
 	getPath(argv[argc - 1], inputPath);
 
 	if (!(input1 = fopen(argv[1], "rb"))) {
-		error("Error: unable to open file %s for input", argv[1]);
+		error("Unable to open file %s for input", argv[1]);
 	}
 
 	if (!(input2 = fopen(argv[2], "rb"))) {
-		error("Error: unable to open file %s for input", argv[2]);
+		error("Unable to open file %s for input", argv[2]);
 	}
 
 	fseek(input1, 142080, SEEK_SET);
