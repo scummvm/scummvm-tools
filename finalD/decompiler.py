@@ -95,7 +95,7 @@ if __name__ == '__main__':
         exit(2)
 
     try:
-        f = open(args[1], 'r')
+        f = open(args[1], 'rb')
         data_arr = array.array('B', f.read())
         if version in (3,4,5):
             sc = scumm.SCUMM345(data_arr, version,
