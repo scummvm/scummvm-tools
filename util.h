@@ -76,7 +76,7 @@ typedef uint8 bool;
 	#define snprintf _snprintf
 
 	#define SCUMM_LITTLE_ENDIAN
-	
+
 #elif defined(__MINGW32__)
 
 	#define scumm_stricmp stricmp
