@@ -25,7 +25,7 @@
 
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
-#define	MAKE_LFLS
+#define MAKE_LFLS
 
 #ifdef MAKE_LFLS
 void writeByteAlt(FILE *fp, uint8 b) {
@@ -1058,8 +1058,8 @@ void	dump_resource (FILE *input, char *fn_template, int num, p_resource res) {
 }
 #endif	/* MAKE_LFLS */
 
-uint32	CRCtable[256];
-void	InitCRC(void) {
+static uint32	CRCtable[256];
+static void InitCRC(void) {
 	const uint32 poly = 0xEDB88320;
 	int i, j;
 	uint32 n;
@@ -1070,7 +1070,7 @@ void	InitCRC(void) {
 		CRCtable[i] = n;
 	}
 }
-uint32	CheckROM(FILE *file) {
+static uint32 CheckROM(FILE *file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i;
 
@@ -1080,7 +1080,7 @@ uint32	CheckROM(FILE *file) {
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
 	FILE *input, *output;
 	char fname[256];
 	int i, j;
@@ -1133,10 +1133,11 @@ int main (int argc, char **argv) {
 		error("Maniac Mansion (Japan) is not supported");
 		break;
 	default:
-		error("ROM contents not recognized (%08X)",CRC);
+		error("ROM contents not recognized (%08X)", CRC);
 		break;
 	}
-#ifdef	MAKE_LFLS
+
+#ifdef MAKE_LFLS
 	memset(&lfl_index, 0, sizeof(lfl_index));
 
 	for (i = 0; lfls[i].num != -1; i++) {
