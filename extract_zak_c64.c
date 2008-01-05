@@ -26,14 +26,15 @@
 void writeByteAlt(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
+
 void writeUint16LEAlt(FILE *fp, uint16 value) {
 	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
 }
+
 #define writeByte writeByteAlt
 #define writeUint16LE writeUint16LEAlt
 
-#define NUM_ROOMS	59
-
+#define NUM_ROOMS 59
 unsigned char room_disks[NUM_ROOMS], room_tracks[NUM_ROOMS], room_sectors[NUM_ROOMS];
 
 static const int SectorOffset[36] = {
