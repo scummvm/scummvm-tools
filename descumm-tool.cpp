@@ -266,7 +266,7 @@ void parseHeader() {
 			g_scriptStart += 4;
 		}
 	} else if (g_options.scriptVersion >= 5) {
-		if (g_scriptSize < (g_options.scriptVersion == 5 ? 8 : 9)) {
+		if (g_scriptSize < (uint)(g_options.scriptVersion == 5 ? 8 : 9)) {
 			error("File too small to be a script");
 		}
 	

@@ -76,7 +76,10 @@ typedef uint8 bool;
 	#define snprintf _snprintf
 
 	#define SCUMM_LITTLE_ENDIAN
-	
+	#pragma once
+	#pragma warning( disable : 4068 ) // turn off "unknown pragma" warning
+	#pragma warning( disable : 4996 ) // turn off warnings about unsafe functions
+
 #elif defined(__MINGW32__)
 
 	#define scumm_stricmp stricmp
