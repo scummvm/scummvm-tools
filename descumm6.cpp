@@ -415,8 +415,73 @@ const char *var_names72[] = {
 	/* 76 */
 	"VAR_POLYGONS_ONLY",
 	NULL,
+	"VAR_PLATFORM",
+	"VAR_PLATFORM_VERSION",
+	/* 80 */
+	"VAR_CURRENT_CHARSET",
 	NULL,
 	NULL,
+	NULL,
+	/* 84 */
+	"VAR_SOUNDCODE_TMR",
+	NULL,
+	"VAR_KEY_STATE",
+	NULL,
+	/* 88 */
+	"VAR_NUM_SOUND_CHANNELS",
+	"VAR_COLOR_DEPTH",
+	NULL,
+	NULL,
+	/* 92 */
+	NULL,
+	NULL,
+	NULL,
+	"VAR_REDRAW_ALL_ACTORS",
+	/* 96 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 100 */
+	NULL,
+	NULL,
+	NULL,
+	"VAR_SCRIPT_CYCLE",
+	/* 104 */
+	"VAR_NUM_SCRIPT_CYCLES",
+	"VAR_NUM_SPRITE_GROUPS",
+	"VAR_NUM_SPRITES",
+	"VAR_U32_VERSION",
+	/* 108 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 112 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 116 */
+	"VAR_U32_ARRAY_UNK",
+	"VAR_WIZ_TCOLOR",
+	NULL,
+	NULL,
+	/* 120 */
+	"VAR_RESERVED_SOUND_CHANNELS",
+	NULL,
+	NULL,
+	NULL,
+	/* 124 */
+	NULL,
+	"VAR_SKIP_RESET_TALK_ACTOR",
+	NULL,
+	"VAR_MAIN_SCRIPT",
+	/* 128 */
+	NULL,
+	NULL,
+	"VAR_NUM_PALETTES",
+	"VAR_NUM_UNK",
 };
 
 const char *var_names6[] = {
@@ -937,7 +1002,7 @@ const char *var_names8[] = {
 };
 
 const char *getVarName(uint var) {
-	if (g_options.heVersion == 72) {
+	if (g_options.heVersion >= 72) {
 		if (var >= sizeof(var_names72) / sizeof(var_names72[0]))
 			return NULL;
 		return var_names72[var];
@@ -1306,7 +1371,7 @@ void ext(char *output, const char *fmt)
 			if (g_options.scriptVersion < 7 && g_options.heVersion == 0)
 				args[numArgs++] = pop();
 		} else if (cmd == 'h') {
-			if (g_options.heVersion == 72)
+			if (g_options.heVersion >= 72)
 				args[numArgs++] = se_get_string_he();
 		} else if (cmd == 's') {
 			args[numArgs++] = se_get_string();
