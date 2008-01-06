@@ -1033,15 +1033,15 @@ StackEnt *se_var(int i) {
 	return new VarStackEnt(i);
 }
 
-StackEnt *se_array(int i, StackEnt * dim2, StackEnt * dim1) {
+StackEnt *se_array(int i, StackEnt *dim2, StackEnt *dim1) {
 	return new ArrayStackEnt(i, dim2, dim1);
 }
 
-StackEnt *se_oper(StackEnt * a, int op) {
+StackEnt *se_oper(StackEnt *a, int op) {
 	return new UnaryOpStackEnt(op, a);
 }
 
-StackEnt *se_oper(StackEnt * a, int op, StackEnt * b) {
+StackEnt *se_oper(StackEnt *a, int op, StackEnt *b) {
 	return new BinaryOpStackEnt(op, a, b);
 }
 
@@ -1049,7 +1049,7 @@ StackEnt *se_complex(const char *s) {
 	return new ComplexStackEnt(s);
 }
 
-char *se_astext(StackEnt * se, char *where, bool wantparens = true) {
+char *se_astext(StackEnt *se, char *where, bool wantparens = true) {
 	return se->asText(where, wantparens);
 }
 
@@ -1082,7 +1082,7 @@ StackEnt *pop() {
 }
 
 
-void kill(char *output, StackEnt * se) {
+void kill(char *output, StackEnt *se) {
 	if (se->type != seDup) {
 		char *e = strecpy(output, "pop(");
 		e = se_astext(se, e);
@@ -1097,7 +1097,7 @@ void kill(char *output, StackEnt * se) {
 	}
 }
 
-void doAssign(char *output, StackEnt * dst, StackEnt * src) {
+void doAssign(char *output, StackEnt *dst, StackEnt *src) {
 	if (src->type == seDup && dst->type == seDup) {
 		((DupStackEnt *)dst)->_idx = ((DupStackEnt *)src)->_idx;
 		return;
@@ -1113,7 +1113,7 @@ StackEnt* StackEnt::dup(char *output) {
 	return dse;
 }
 
-void doAdd(char *output, StackEnt * se, int val) {
+void doAdd(char *output, StackEnt *se, int val) {
 	char *e = se_astext(se, output);
 	if (val == 1) {
 		sprintf(e, "++");
@@ -1125,23 +1125,23 @@ void doAdd(char *output, StackEnt * se, int val) {
 	}
 }
 
-StackEnt *dup(char *output, StackEnt * se) {
+StackEnt *dup(char *output, StackEnt *se) {
 	return se->dup(output);
 }
 
-void writeArray(char *output, int i, StackEnt * dim2, StackEnt * dim1, StackEnt * value) {
+void writeArray(char *output, int i, StackEnt *dim2, StackEnt *dim1, StackEnt *value) {
 	StackEnt *array = se_array(i, dim2, dim1);
 	doAssign(output, array, value);
 	delete array;
 }
 
-void writeVar(char *output, int i, StackEnt * value) {
+void writeVar(char *output, int i, StackEnt *value) {
 	StackEnt *se = se_var(i);
 	doAssign(output, se, value);
 	delete se;
 }
 
-void addArray(char *output, int i, StackEnt * dim1, int val) {
+void addArray(char *output, int i, StackEnt *dim1, int val) {
 	StackEnt *array = se_array(i, NULL, dim1);
 	doAdd(output, array, val);
 	delete array;
@@ -1251,7 +1251,7 @@ StackEnt *se_get_string_he() {
 	value = pop();
 	
 	*e++ = '"';
-	if (value->getIntVal() == -1) {
+	if (value->type == seInt && value->getIntVal() == -1) {
 		if (_stringLength == 1) {
 			*e++ = '"';
 			*e++ = 0;
@@ -1271,9 +1271,8 @@ StackEnt *se_get_string_he() {
 		while (--len)
 			*e++ = string[len];
 	} else {
-		VarStackEnt tmp(value->getIntVal());
 		e += sprintf(e, ":");
-		e = tmp.asText(e);
+		e = value->asText(e);
 		e += sprintf(e, ":");
 	}
 	*e++ = '"';
@@ -1437,7 +1436,7 @@ void jump(char *output) {
 	}
 }
 
-void jumpif(char *output, StackEnt * se, bool negate) {
+void jumpif(char *output, StackEnt *se, bool negate) {
 	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
