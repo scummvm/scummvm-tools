@@ -77,8 +77,8 @@ typedef uint8 bool;
 
 	#define SCUMM_LITTLE_ENDIAN
 	#pragma once
-	#pragma warning( disable : 4068 ) // turn off "unknown pragma" warning
-	#pragma warning( disable : 4996 ) // turn off warnings about unsafe functions
+	#pragma warning( disable : 4068 ) /* turn off "unknown pragma" warning */
+	#pragma warning( disable : 4996 ) /* turn off warnings about unsafe functions */
 
 #elif defined(__MINGW32__)
 
