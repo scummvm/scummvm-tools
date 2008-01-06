@@ -175,10 +175,11 @@ public:
 				else
 					where += sprintf(where, "var%d", _var & 0xFFF);
 			} else if (_var & 0x8000) {
-				// HE80+
-				// where += sprintf(where, "roomvar%ld", se->data & 0xFFF);
-				// else
-				where += sprintf(where, "bitvar%d", _var & 0x7FFF);
+				if (g_options.heVersion >= 80) {
+					where += sprintf(where, "roomvar%d", _var & 0xFFF);
+				} else {
+					where += sprintf(where, "bitvar%d", _var & 0x7FFF);
+				}
 			} else if (_var & 0x4000) {
 				where += sprintf(where, "localvar%d", _var & 0xFFF);
 			} else {
@@ -1547,66 +1548,153 @@ void next_line_HE_V72(char *output)
 				"\x1Dpppppp|case29");
 		break;
 	case 0x25: // HE90+
-		ext(output, "rx" "getSpriteInfo\0"
-				"\x1Ep|getPosX,"
-				"\x1Fp|getPosY,"
-				"\x20p|getImageX,"
-				"\x21p|getImageY,"
-				"\x22p|getDistX,"
-				"\x23p|getDistY,"
-				"\x24p|getImageStateCount,"
-				"\x25p|getGroup,"
-				"\x26p|getDisplayX,"
-				"\x27p|getDisplayY,"
-				"\x2App|getFlags,"
-				"\x2Bp|getPriority,"
-//				"\x2Dppp|findSprite,"   // HE90
-				"\x2Dpppp|findSprite,"  // HE98
-//				"\x2Dlpppp|findSprite," // HE99+
-				"\x34p|getImageState,"
-				"\x3Ep|getSourceImage,"
-				"\x3Fp|getImage,"
-				"\x44p|getEraseType,"
-				"\x52p|getFlagAutoAnim,"
-				"\x56p|getPalette,"
-				"\x5Cp|getScale,"
-				"\x61p|getAnimSpeed,"
-				"\x62p|getShadow,"
-				"\x7Cp|getUpdateType,"
-				"\x7Dlp|getClass,"
-				"\x8Bpp|getGeneralProperty,"
-				"\x8Cp|getMaskImage,"
-				"\xC6pp|getUserValue");
+		if (g_options.heVersion >= 99) {
+			ext(output, "rx" "getSpriteInfo\0"
+					"\x1Ep|getPosX,"
+					"\x1Fp|getPosY,"
+					"\x20p|getImageX,"
+					"\x21p|getImageY,"
+					"\x22p|getDistX,"
+					"\x23p|getDistY,"
+					"\x24p|getImageStateCount,"
+					"\x25p|getGroup,"
+					"\x26p|getDisplayX,"
+					"\x27p|getDisplayY,"
+					"\x2App|getFlags,"
+					"\x2Bp|getPriority,"
+					"\x2Dlpppp|findSprite,"
+					"\x34p|getImageState,"
+					"\x3Ep|getSourceImage,"
+					"\x3Fp|getImage,"
+					"\x44p|getEraseType,"
+					"\x52p|getFlagAutoAnim,"
+					"\x56p|getPalette,"
+					"\x5Cp|getScale,"
+					"\x61p|getAnimSpeed,"
+					"\x62p|getShadow,"
+					"\x7Cp|getUpdateType,"
+					"\x7Dlp|getClass,"
+					"\x8Bpp|getGeneralProperty,"
+					"\x8Cp|getMaskImage,"
+					"\xC6pp|getUserValue");
+		} else if (g_options.heVersion >= 98) {
+			ext(output, "rx" "getSpriteInfo\0"
+					"\x1Ep|getPosX,"
+					"\x1Fp|getPosY,"
+					"\x20p|getImageX,"
+					"\x21p|getImageY,"
+					"\x22p|getDistX,"
+					"\x23p|getDistY,"
+					"\x24p|getImageStateCount,"
+					"\x25p|getGroup,"
+					"\x26p|getDisplayX,"
+					"\x27p|getDisplayY,"
+					"\x2App|getFlags,"
+					"\x2Bp|getPriority,"
+					"\x2Dpppp|findSprite,"
+					"\x34p|getImageState,"
+					"\x3Ep|getSourceImage,"
+					"\x3Fp|getImage,"
+					"\x44p|getEraseType,"
+					"\x52p|getFlagAutoAnim,"
+					"\x56p|getPalette,"
+					"\x5Cp|getScale,"
+					"\x61p|getAnimSpeed,"
+					"\x62p|getShadow,"
+					"\x7Cp|getUpdateType,"
+					"\x7Dlp|getClass,"
+					"\x8Bpp|getGeneralProperty,"
+					"\x8Cp|getMaskImage,"
+					"\xC6pp|getUserValue");
+		} else {
+			ext(output, "rx" "getSpriteInfo\0"
+					"\x1Ep|getPosX,"
+					"\x1Fp|getPosY,"
+					"\x20p|getImageX,"
+					"\x21p|getImageY,"
+					"\x22p|getDistX,"
+					"\x23p|getDistY,"
+					"\x24p|getImageStateCount,"
+					"\x25p|getGroup,"
+					"\x26p|getDisplayX,"
+					"\x27p|getDisplayY,"
+					"\x2App|getFlags,"
+					"\x2Bp|getPriority,"
+					"\x2Dppp|findSprite,"
+					"\x34p|getImageState,"
+					"\x3Ep|getSourceImage,"
+					"\x3Fp|getImage,"
+					"\x44p|getEraseType,"
+					"\x52p|getFlagAutoAnim,"
+					"\x56p|getPalette,"
+					"\x5Cp|getScale,"
+					"\x61p|getAnimSpeed,"
+					"\x62p|getShadow,"
+					"\x7Cp|getUpdateType,"
+					"\x7Dlp|getClass,"
+					"\x8Bpp|getGeneralProperty,"
+					"\x8Cp|getMaskImage,"
+					"\xC6pp|getUserValue");
+		}
 		break;
 	case 0x26: // HE90+
-		ext(output, "x" "setSpriteInfo\0"
-				"\x22p|setDistX,"
-				"\x23p|setDistY,"
-				"\x25p|setGroup,"
-				"\x2App|setFlags,"
-				"\x2Bp|setPriority,"
-				"\x2Cpp|move,"
-				"\x34p|setImageState,"
-				"\x35p|setAngle,"
-				"\x39p|setRange,"  // HE90-98
-//				"\x39pp|setRange," // HE 98.5+
-				"\x3Ep|setSourceImage,"
-				"\x3Fp|setImage,"
-				"\x41pp|setPosition,"
-				"\x44p|setEraseType,"
-				"\x4Dpp|setDist,"
-				"\x52p|setAutoAnimFlag,"
-				"\x56p|setPalette,"
-				"\x5Cp|setScale,"
-				"\x61p|setAnimSpeed,"
-				"\x62p|setAutoShadow,"
-				"\x7Cp|setUpdateType,"
-				"\x7Dl|setClass,"
-				"\x8Bpp|setGeneralProperty,"
-				"\x8Cp|setMaskImage,"
-				"\x9E|resetTables,"
-				"\xC6pp|setUserValue,"
-				"\xD9|resetSprite");
+		if (g_options.heVersion >= 98) {
+			ext(output, "x" "setSpriteInfo\0"
+					"\x22p|setDistX,"
+					"\x23p|setDistY,"
+					"\x25p|setGroup,"
+					"\x2App|setFlags,"
+					"\x2Bp|setPriority,"
+					"\x2Cpp|move,"
+					"\x34p|setImageState,"
+					"\x35p|setAngle,"
+					"\x39pp|setRange,"
+					"\x3Ep|setSourceImage,"
+					"\x3Fp|setImage,"
+					"\x41pp|setPosition,"
+					"\x44p|setEraseType,"
+					"\x4Dpp|setDist,"
+					"\x52p|setAutoAnimFlag,"
+					"\x56p|setPalette,"
+					"\x5Cp|setScale,"
+					"\x61p|setAnimSpeed,"
+					"\x62p|setAutoShadow,"
+					"\x7Cp|setUpdateType,"
+					"\x7Dl|setClass,"
+					"\x8Bpp|setGeneralProperty,"
+					"\x8Cp|setMaskImage,"
+					"\x9E|resetTables,"
+					"\xC6pp|setUserValue,"
+					"\xD9|resetSprite");
+		} else {
+			ext(output, "x" "setSpriteInfo\0"
+					"\x22p|setDistX,"
+					"\x23p|setDistY,"
+					"\x25p|setGroup,"
+					"\x2App|setFlags,"
+					"\x2Bp|setPriority,"
+					"\x2Cpp|move,"
+					"\x34p|setImageState,"
+					"\x35p|setAngle,"
+					"\x39p|setRange,"
+					"\x3Ep|setSourceImage,"
+					"\x3Fp|setImage,"
+					"\x41pp|setPosition,"
+					"\x44p|setEraseType,"
+					"\x4Dpp|setDist,"
+					"\x52p|setAutoAnimFlag,"
+					"\x56p|setPalette,"
+					"\x5Cp|setScale,"
+					"\x61p|setAnimSpeed,"
+					"\x62p|setAutoShadow,"
+					"\x7Cp|setUpdateType,"
+					"\x7Dl|setClass,"
+					"\x8Bpp|setGeneralProperty,"
+					"\x8Cp|setMaskImage,"
+					"\x9E|resetTables,"
+					"\xC6pp|setUserValue,"
+					"\xD9|resetSprite");
+		}
 		break;
 	case 0x27: // HE90+
 		ext(output, "rx" "getSpriteGroupInfo\0"
@@ -1851,16 +1939,17 @@ void next_line_HE_V72(char *output)
 		ext(output, "l|beginCutscene");
 		break;
 	case 0x69:
-		// HE80+
-		ext(output, "x" "windowOps\0"
-				"\x39p|case25,"
-				"\x3Ap|case26,"
-				"\x3Fp|case31,"
-				"\xD9|case185,"
-				"\xF3h|case211,"
-				"\xFF|case223");
-		// else
-		// ext(output, "|stopMusic");
+		if (g_options.heVersion >= 80) {
+			ext(output, "x" "windowOps\0"
+					"\x39p|case25,"
+					"\x3Ap|case26,"
+					"\x3Fp|case31,"
+					"\xD9|case185,"
+					"\xF3h|case211,"
+					"\xFF|case223");
+		} else {
+			ext(output, "|stopMusic");
+		}
 		break;
 	case 0x6A:
 		ext(output, "p|freezeUnfreeze");
@@ -2011,15 +2100,16 @@ void next_line_HE_V72(char *output)
 		ext(output, "rp|getInventoryCount");
 		break;
 	case 0x94:
-		// HE90+
-		ext(output, "rx" "getPaletteData\0"
-				"\x2Dpppppp|,"
-				"\x34ppp|getColorCompontent,"
-				"\x42pp|getColor,"
-				"\x84pp|getColorCompontent2,"
-				"\xD9ppp|getSimilarColor2");
-		// else
-		// ext(output, "rpp|getVerbFromXY");
+		if (g_options.heVersion >= 90) {
+			ext(output, "rx" "getPaletteData\0"
+					"\x2Dpppppp|,"
+					"\x34ppp|getColorCompontent,"
+					"\x42pp|getColor,"
+					"\x84pp|getColorCompontent2,"
+					"\xD9ppp|getSimilarColor2");
+		} else {
+			ext(output, "rpp|getVerbFromXY");
+		}
 		break;
 	case 0x95:
 		ext(output, "|beginOverride");
@@ -2134,38 +2224,38 @@ void next_line_HE_V72(char *output)
 				"\xE1hp|setTalkieSlot");
 		break;
 	case 0x9E:
-		// HE90+
-		ext(output, "x" "paletteOps\0"
-				"\x39p|setPaletteNum,"
-				"\x3Fpp|setPaletteFromImage,"
-				"\x42ppppp|setPaletteColor,"
-				"\x46ppp|copyPaletteColor,"
-				"\x4Cp|setPaletteFromCostume,"
-				"\x56p|copyPalette,"
-				"\xAFpp|setPaletteFromRoom,"
-				"\xD9|restorePalette,"
-				"\xFF|resetPaletteNum");
-		/* else
-		ext(output, "x" "verbOps\0"
-				"\xC4p|setCurVerb,"
-				"\x7Cp|loadImg,"
-				"\x7Dh|loadString,"
-				"\x7Ep|setColor,"
-				"\x7Fp|setHiColor,"
-				"\x80pp|setXY,"
-				"\x81|setOn,"
-				"\x82|setOff,"
-				"\x83p|kill,"
-				"\x84|init,"
-				"\x85p|setDimColor,"
-				"\x86|setDimmed,"
-				"\x87p|setKey,"
-				"\x88|setCenter,"
-				"\x89p|setToString,"
-				"\x8Bpp|setToObject,"
-				"\x8Cp|setBkColor,"
-				"\xFF|redraw");
-		*/
+		if (g_options.heVersion >= 90) {
+			ext(output, "x" "paletteOps\0"
+					"\x39p|setPaletteNum,"
+					"\x3Fpp|setPaletteFromImage,"
+					"\x42ppppp|setPaletteColor,"
+					"\x46ppp|copyPaletteColor,"
+					"\x4Cp|setPaletteFromCostume,"
+					"\x56p|copyPalette,"
+					"\xAFpp|setPaletteFromRoom,"
+					"\xD9|restorePalette,"
+					"\xFF|resetPaletteNum");
+		} else {
+			ext(output, "x" "verbOps\0"
+					"\xC4p|setCurVerb,"
+					"\x7Cp|loadImg,"
+					"\x7Dh|loadString,"
+					"\x7Ep|setColor,"
+					"\x7Fp|setHiColor,"
+					"\x80pp|setXY,"
+					"\x81|setOn,"
+					"\x82|setOff,"
+					"\x83p|kill,"
+					"\x84|init,"
+					"\x85p|setDimColor,"
+					"\x86|setDimmed,"
+					"\x87p|setKey,"
+					"\x88|setCenter,"
+					"\x89p|setToString,"
+					"\x8Bpp|setToObject,"
+					"\x8Cp|setBkColor,"
+					"\xFF|redraw");
+		}
 		break;
 	case 0x9F:
 		ext(output, "rpp|getActorFromXY");

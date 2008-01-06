@@ -203,10 +203,13 @@ char *parseCommandLine(int argc, char *argv[]) {
 					g_jump_opcode = 0x66;
 					break;
 
-				case '9':
-					g_options.heVersion = 72;
+				case 'g':
+					g_options.heVersion = atoi(s + 1);
 					g_options.scriptVersion = 6;
 					g_jump_opcode = 0x73;
+
+					// Skip two digits for HE version
+					s += 2;
 					break;
 
 				case 'o':
