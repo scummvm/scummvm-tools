@@ -1690,7 +1690,7 @@ void next_line_HE_V72(char *output) {
 		}
 		break;
 	case 0x26: // HE90+
-		if (g_options.heVersion >= 98) {
+		if (g_options.heVersion >= 99) {
 			ext(output, "x" "setSpriteInfo\0"
 					"\x22p|setDistX,"
 					"\x23p|setDistY,"
@@ -1800,13 +1800,13 @@ void next_line_HE_V72(char *output) {
 				"\xFF|playOrStopVideo,");
 		break;
 	case 0x2F: // HE90+
-		ext(output, "x" "floodfill\0"
+		ext(output, "x" "floodFill\0"
 				"\x36|dummy,"
 				"\x39|reset,"
 				"\x41|setXY,"
 				"\x42|setFlags,"
 				"\x43|setBoxRect,"
-				"\xFF|floodfill");
+				"\xFF|floodFill");
 		break;
 	case 0x30: // HE90+
 		ext(output, "rpp|mod");
@@ -1879,7 +1879,7 @@ void next_line_HE_V72(char *output) {
 		writeArray(output, get_word(), NULL, pop(), pop());
 		break;
 	case 0x48: // HE80+
-		ext(output, "p|stringToInt");
+		ext(output, "rp|stringToInt");
 		break;
 	case 0x49: // HE80+
 		ext(output, "rpp|getSoundVar");
@@ -1897,7 +1897,7 @@ void next_line_HE_V72(char *output) {
 		break;
 	case 0x4E: // HE80+
 		ext(output, "x" "writeConfigFile\0"
-				"\x6hhh|number,"
+				"\x6phhh|number,"
 				"\x7hhhh|string");
 		break;
 	case 0x4F:
@@ -2403,7 +2403,11 @@ void next_line_HE_V72(char *output) {
 		ext(output, "rp|getActorScaleX");
 		break;
 	case 0xAB:
-		ext(output, "rp|getActorAnimCounter1");
+		if (g_options.heVersion >= 90) {
+			ext(output, "rp|getActorAnimProgress");
+		} else {
+			ext(output, "rp|getActorAnimCounter1");
+		}
 		break;
 	case 0xAC: // HE80+
 		ext(output, "pp|drawWizPolygon");
@@ -2598,7 +2602,7 @@ void next_line_HE_V72(char *output) {
 				"\x4p|readByte,"
 				"\x5p|readWord,"
 				"\x6p|readDWord,"
-				"\x8ipp|readArrayFromFile");
+				"\x8ppi|readArrayFromFile");
 		break;
 	case 0xDC:
 		ext(output, "x" "writeFile\0" 
@@ -2691,22 +2695,25 @@ void next_line_HE_V72(char *output) {
 		ext(output, "rpppp|getCharIndexInString");
 		break;
 	case 0xF8:
-		// FIXME: HE72 games only check sound resource
-		ext(output, "rx" "getResourceSize\0"
-				"\xDp|sound,"
-				"\xEp|roomImage,"
-				"\xFp|image,"
-				"\x10p|costume,"
-				"\x11p|script");
+		if (g_options.heVersion >= 73) {
+			ext(output, "rx" "getResourceSize\0"
+					"\xDp|sound,"
+					"\xEp|roomImage,"
+					"\xFp|image,"
+					"\x10p|costume,"
+					"\x11p|script");
+		} else {
+			ext(output, "rp|getSoundResourceSize");
+		}
 		break;
 	case 0xF9:
 		ext(output, "h|setFilePath");
 		break;
 	case 0xFA:
 		ext(output, "x" "setSystemMessage\0"
-				"\xF0h|unk1,"
+				"\xF0h|case240,"
 				"\xF1h|versionMsg,"
-				"\xF2h|unk3,"
+				"\xF2h|case242,"
 				"\xF3h|titleMsg");
 		break;
 	case 0xFB:
