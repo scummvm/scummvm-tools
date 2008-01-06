@@ -1097,8 +1097,7 @@ void kill(char *output, StackEnt * se) {
 	}
 }
 
-void doAssign(char *output, StackEnt * dst, StackEnt * src)
-{
+void doAssign(char *output, StackEnt * dst, StackEnt * src) {
 	if (src->type == seDup && dst->type == seDup) {
 		((DupStackEnt *)dst)->_idx = ((DupStackEnt *)src)->_idx;
 		return;
@@ -1114,8 +1113,7 @@ StackEnt* StackEnt::dup(char *output) {
 	return dse;
 }
 
-void doAdd(char *output, StackEnt * se, int val)
-{
+void doAdd(char *output, StackEnt * se, int val) {
 	char *e = se_astext(se, output);
 	if (val == 1) {
 		sprintf(e, "++");
@@ -1131,36 +1129,31 @@ StackEnt *dup(char *output, StackEnt * se) {
 	return se->dup(output);
 }
 
-void writeArray(char *output, int i, StackEnt * dim2, StackEnt * dim1, StackEnt * value)
-{
+void writeArray(char *output, int i, StackEnt * dim2, StackEnt * dim1, StackEnt * value) {
 	StackEnt *array = se_array(i, dim2, dim1);
 	doAssign(output, array, value);
 	delete array;
 }
 
-void writeVar(char *output, int i, StackEnt * value)
-{
+void writeVar(char *output, int i, StackEnt * value) {
 	StackEnt *se = se_var(i);
 	doAssign(output, se, value);
 	delete se;
 }
 
-void addArray(char *output, int i, StackEnt * dim1, int val)
-{
+void addArray(char *output, int i, StackEnt * dim1, int val) {
 	StackEnt *array = se_array(i, NULL, dim1);
 	doAdd(output, array, val);
 	delete array;
 }
 
-void addVar(char *output, int i, int val)
-{
+void addVar(char *output, int i, int val) {
 	StackEnt *se = se_var(i);
 	doAdd(output, se, val);
 	delete se;
 }
 
-StackEnt *se_get_string()
-{
+StackEnt *se_get_string() {
 	byte cmd;
 	char buf[1024];
 	char *e = buf;
@@ -1231,8 +1224,7 @@ StackEnt *se_get_string()
 int _stringLength;
 byte _stringBuffer[4096];
 
-void getScriptString()
-{
+void getScriptString() {
 	byte chr;
 
 	while ((chr = get_byte()) != 0) {
@@ -1290,8 +1282,7 @@ StackEnt *se_get_string_he() {
 	return se_complex(buf);
 }
 
-void ext(char *output, const char *fmt)
-{
+void ext(char *output, const char *fmt) {
 	bool wantresult;
 	byte cmd, extcmd;
 	const char *extstr = NULL;
@@ -1413,8 +1404,7 @@ output_command:
 	}
 }
 
-void jump(char *output)
-{
+void jump(char *output) {
 	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
@@ -1447,8 +1437,7 @@ void jump(char *output)
 	}
 }
 
-void jumpif(char *output, StackEnt * se, bool negate)
-{
+void jumpif(char *output, StackEnt * se, bool negate) {
 	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
@@ -1500,8 +1489,7 @@ void jumpif(char *output, StackEnt * se, bool negate)
 				);                \
 	} while(0)
 
-void next_line_HE_V72(char *output)
-{
+void next_line_HE_V72(char *output) {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
 
@@ -2758,8 +2746,7 @@ void next_line_HE_V72(char *output)
 	} while(0)
 
 
-void next_line_V8(char *output)
-{
+void next_line_V8(char *output) {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
 
@@ -3406,8 +3393,7 @@ void next_line_V8(char *output)
 				);                \
 	} while(0)
 
-void next_line_V67(char *output)
-{
+void next_line_V67(char *output) {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
 

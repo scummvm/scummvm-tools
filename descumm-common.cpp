@@ -44,24 +44,20 @@ uint g_scriptSize;
 
 ///////////////////////////////////////////////////////////////////////////
 
-char *strecpy(char *buf, const char *src)
-{
+char *strecpy(char *buf, const char *src) {
 	strcpy(buf, src);
 	return strchr(buf, 0);
 }
 
-int get_curoffs()
-{
+int get_curoffs() {
 	return g_scriptCurPos - g_scriptStart;
 }
 
-int get_byte()
-{
+int get_byte() {
 	return (byte)(*g_scriptCurPos++);
 }
 
-int get_word()
-{
+int get_word() {
 	int i;
 
 	if (g_options.scriptVersion == 8) {
@@ -74,8 +70,7 @@ int get_word()
 	return i;
 }
 
-int get_dword()
-{
+int get_dword() {
 	int i;
 
 	i = (int32)READ_LE_UINT32(g_scriptCurPos);
@@ -117,8 +112,7 @@ void outputLine(const char *buf, int curoffs, int opcode, int indent) {
 ///////////////////////////////////////////////////////////////////////////
 
 // Returns 0 or 1 depending if it's ok to add a block
-bool maybeAddIf(uint cur, uint to)
-{
+bool maybeAddIf(uint cur, uint to) {
 	Block p;
 	int i;
 	

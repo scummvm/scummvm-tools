@@ -58,8 +58,7 @@ void ShowHelpAndExit() {
 	exit(0);
 }
 
-int skipVerbHeader_V12(byte *p)
-{
+int skipVerbHeader_V12(byte *p) {
 	byte code;
 	int offset = 15;
 	int minOffset = 255;
@@ -79,8 +78,7 @@ int skipVerbHeader_V12(byte *p)
 	return minOffset;
 }
 
-int skipVerbHeader_V34(byte *p)
-{
+int skipVerbHeader_V34(byte *p) {
 	byte code;
 	int offset = g_options.GF_UNBLOCKED ? 17 : 19;
 	int minOffset = 255;
@@ -98,8 +96,7 @@ int skipVerbHeader_V34(byte *p)
 	return minOffset;
 }
 
-int skipVerbHeader_V567(byte *p)
-{
+int skipVerbHeader_V567(byte *p) {
 	byte code;
 	int offset = 8;
 	int minOffset = 255;
@@ -117,8 +114,7 @@ int skipVerbHeader_V567(byte *p)
 	return minOffset;
 }
 
-int skipVerbHeader_V8(byte *p)
-{
+int skipVerbHeader_V8(byte *p) {
 	uint32 *ptr;
 	uint32 code;
 	int offset;
