@@ -1023,10 +1023,10 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 			break;
 		case 'TEXT':
 			if (!scumm_stricmp((const char *)(ptr + 8), "exit")) {
-				marker[curIndexRegion].pos = READ_BE_UINT32(ptr + 4);
-				marker[curIndexRegion].length = strlen((const char *)(ptr + 8)) + 1;
-				marker[curIndexRegion].ptr = new char[marker[curIndexRegion].length];
-				strcpy(marker[curIndexRegion].ptr, (const char *)(ptr + 8));
+				marker[curIndexMarker].pos = READ_BE_UINT32(ptr + 4);
+				marker[curIndexMarker].length = strlen((const char *)(ptr + 8)) + 1;
+				marker[curIndexMarker].ptr = new char[marker[curIndexMarker].length];
+				strcpy(marker[curIndexMarker].ptr, (const char *)(ptr + 8));
 				curIndexMarker++;
 			}
 			size = READ_BE_UINT32(ptr); ptr += size + 4;
