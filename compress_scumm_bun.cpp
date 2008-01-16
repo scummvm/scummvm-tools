@@ -862,7 +862,8 @@ void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs, 
 		tag = READ_BE_UINT32(ptr); ptr += 4;
 		switch(tag) {
 		case 'TEXT':
-			numMarkers++;
+			if (!scumm_stricmp((const char *)(ptr + 8), "exit"))
+				numMarkers++;
 			size = READ_BE_UINT32(ptr); ptr += size + 4;
 			break;
 		case 'STOP':
