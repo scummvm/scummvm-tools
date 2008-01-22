@@ -175,7 +175,11 @@ public:
 				else
 					where += sprintf(where, "var%d", _var & 0xFFF);
 			} else if (_var & 0x8000) {
-				where += sprintf(where, "bitvar%d", _var & 0x7FFF);
+				if (g_options.heVersion >= 80) {
+					where += sprintf(where, "roomvar%d", _var & 0xFFF);
+				} else {
+					where += sprintf(where, "bitvar%d", _var & 0x7FFF);
+				}
 			} else if (_var & 0x4000) {
 				where += sprintf(where, "localvar%d", _var & 0xFFF);
 			} else {
@@ -411,8 +415,73 @@ const char *var_names72[] = {
 	/* 76 */
 	"VAR_POLYGONS_ONLY",
 	NULL,
+	"VAR_PLATFORM",
+	"VAR_PLATFORM_VERSION",
+	/* 80 */
+	"VAR_CURRENT_CHARSET",
 	NULL,
 	NULL,
+	NULL,
+	/* 84 */
+	"VAR_SOUNDCODE_TMR",
+	NULL,
+	"VAR_KEY_STATE",
+	NULL,
+	/* 88 */
+	"VAR_NUM_SOUND_CHANNELS",
+	"VAR_COLOR_DEPTH",
+	NULL,
+	NULL,
+	/* 92 */
+	NULL,
+	NULL,
+	NULL,
+	"VAR_REDRAW_ALL_ACTORS",
+	/* 96 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 100 */
+	NULL,
+	NULL,
+	NULL,
+	"VAR_SCRIPT_CYCLE",
+	/* 104 */
+	"VAR_NUM_SCRIPT_CYCLES",
+	"VAR_NUM_SPRITE_GROUPS",
+	"VAR_NUM_SPRITES",
+	"VAR_U32_VERSION",
+	/* 108 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 112 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 116 */
+	"VAR_U32_ARRAY_UNK",
+	"VAR_WIZ_TCOLOR",
+	NULL,
+	NULL,
+	/* 120 */
+	"VAR_RESERVED_SOUND_CHANNELS",
+	NULL,
+	NULL,
+	NULL,
+	/* 124 */
+	NULL,
+	"VAR_SKIP_RESET_TALK_ACTOR",
+	NULL,
+	"VAR_MAIN_SCRIPT",
+	/* 128 */
+	NULL,
+	NULL,
+	"VAR_NUM_PALETTES",
+	"VAR_NUM_UNK",
 };
 
 const char *var_names6[] = {
@@ -933,7 +1002,7 @@ const char *var_names8[] = {
 };
 
 const char *getVarName(uint var) {
-	if (g_options.heVersion == 72) {
+	if (g_options.heVersion >= 72) {
 		if (var >= sizeof(var_names72) / sizeof(var_names72[0]))
 			return NULL;
 		return var_names72[var];
@@ -964,15 +1033,15 @@ StackEnt *se_var(int i) {
 	return new VarStackEnt(i);
 }
 
-StackEnt *se_array(int i, StackEnt * dim2, StackEnt * dim1) {
+StackEnt *se_array(int i, StackEnt *dim2, StackEnt *dim1) {
 	return new ArrayStackEnt(i, dim2, dim1);
 }
 
-StackEnt *se_oper(StackEnt * a, int op) {
+StackEnt *se_oper(StackEnt *a, int op) {
 	return new UnaryOpStackEnt(op, a);
 }
 
-StackEnt *se_oper(StackEnt * a, int op, StackEnt * b) {
+StackEnt *se_oper(StackEnt *a, int op, StackEnt *b) {
 	return new BinaryOpStackEnt(op, a, b);
 }
 
@@ -980,7 +1049,7 @@ StackEnt *se_complex(const char *s) {
 	return new ComplexStackEnt(s);
 }
 
-char *se_astext(StackEnt * se, char *where, bool wantparens = true) {
+char *se_astext(StackEnt *se, char *where, bool wantparens = true) {
 	return se->asText(where, wantparens);
 }
 
@@ -1013,7 +1082,7 @@ StackEnt *pop() {
 }
 
 
-void kill(char *output, StackEnt * se) {
+void kill(char *output, StackEnt *se) {
 	if (se->type != seDup) {
 		char *e = strecpy(output, "pop(");
 		e = se_astext(se, e);
@@ -1028,8 +1097,7 @@ void kill(char *output, StackEnt * se) {
 	}
 }
 
-void doAssign(char *output, StackEnt * dst, StackEnt * src)
-{
+void doAssign(char *output, StackEnt *dst, StackEnt *src) {
 	if (src->type == seDup && dst->type == seDup) {
 		((DupStackEnt *)dst)->_idx = ((DupStackEnt *)src)->_idx;
 		return;
@@ -1045,8 +1113,7 @@ StackEnt* StackEnt::dup(char *output) {
 	return dse;
 }
 
-void doAdd(char *output, StackEnt * se, int val)
-{
+void doAdd(char *output, StackEnt *se, int val) {
 	char *e = se_astext(se, output);
 	if (val == 1) {
 		sprintf(e, "++");
@@ -1058,40 +1125,35 @@ void doAdd(char *output, StackEnt * se, int val)
 	}
 }
 
-StackEnt *dup(char *output, StackEnt * se) {
+StackEnt *dup(char *output, StackEnt *se) {
 	return se->dup(output);
 }
 
-void writeArray(char *output, int i, StackEnt * dim2, StackEnt * dim1, StackEnt * value)
-{
+void writeArray(char *output, int i, StackEnt *dim2, StackEnt *dim1, StackEnt *value) {
 	StackEnt *array = se_array(i, dim2, dim1);
 	doAssign(output, array, value);
 	delete array;
 }
 
-void writeVar(char *output, int i, StackEnt * value)
-{
+void writeVar(char *output, int i, StackEnt *value) {
 	StackEnt *se = se_var(i);
 	doAssign(output, se, value);
 	delete se;
 }
 
-void addArray(char *output, int i, StackEnt * dim1, int val)
-{
+void addArray(char *output, int i, StackEnt *dim1, int val) {
 	StackEnt *array = se_array(i, NULL, dim1);
 	doAdd(output, array, val);
 	delete array;
 }
 
-void addVar(char *output, int i, int val)
-{
+void addVar(char *output, int i, int val) {
 	StackEnt *se = se_var(i);
 	doAdd(output, se, val);
 	delete se;
 }
 
-StackEnt *se_get_string()
-{
+StackEnt *se_get_string() {
 	byte cmd;
 	char buf[1024];
 	char *e = buf;
@@ -1162,8 +1224,7 @@ StackEnt *se_get_string()
 int _stringLength;
 byte _stringBuffer[4096];
 
-void getScriptString()
-{
+void getScriptString() {
 	byte chr;
 
 	while ((chr = get_byte()) != 0) {
@@ -1190,7 +1251,7 @@ StackEnt *se_get_string_he() {
 	value = pop();
 
 	*e++ = '"';
-	if (value->getIntVal() == -1) {
+	if (value->type == seInt && value->getIntVal() == -1) {
 		if (_stringLength == 1) {
 			*e++ = '"';
 			*e++ = 0;
@@ -1210,9 +1271,8 @@ StackEnt *se_get_string_he() {
 		while (--len)
 			*e++ = string[len];
 	} else {
-		VarStackEnt tmp(value->getIntVal());
 		e += sprintf(e, ":");
-		e = tmp.asText(e);
+		e = value->asText(e);
 		e += sprintf(e, ":");
 	}
 	*e++ = '"';
@@ -1221,8 +1281,7 @@ StackEnt *se_get_string_he() {
 	return se_complex(buf);
 }
 
-void ext(char *output, const char *fmt)
-{
+void ext(char *output, const char *fmt) {
 	bool wantresult;
 	byte cmd, extcmd;
 	const char *extstr = NULL;
@@ -1302,7 +1361,7 @@ void ext(char *output, const char *fmt)
 			if (g_options.scriptVersion < 7 && g_options.heVersion == 0)
 				args[numArgs++] = pop();
 		} else if (cmd == 'h') {
-			if (g_options.heVersion == 72)
+			if (g_options.heVersion >= 72)
 				args[numArgs++] = se_get_string_he();
 		} else if (cmd == 's') {
 			args[numArgs++] = se_get_string();
@@ -1344,8 +1403,7 @@ output_command:
 	}
 }
 
-void jump(char *output)
-{
+void jump(char *output) {
 	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
@@ -1378,8 +1436,7 @@ void jump(char *output)
 	}
 }
 
-void jumpif(char *output, StackEnt * se, bool negate)
-{
+void jumpif(char *output, StackEnt *se, bool negate) {
 	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
@@ -1431,8 +1488,7 @@ void jumpif(char *output, StackEnt * se, bool negate)
 				);                \
 	} while(0)
 
-void next_line_HE_V72(char *output)
-{
+void next_line_HE_V72(char *output) {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
 
@@ -1492,17 +1548,228 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0x1C: // HE90+
 		ext(output, "x" "wizImageOps\0"
+				"\x20p|setResDefImageWidth,"
+				"\x21p|setResDefImageHeight,"
 				"\x30|processMode1,"
+				"\x31h|processMode3,"
+				"\x32hp|processMode4,"
 				"\x33ppppp|setCaptureRect,"
 				"\x34p|setImageState,"
 				"\x36p|setFlags,"
 				"\x38ppppp|drawWizImage,"
 				"\x39p|setImage,"
+				"\x3Ep|setSourceImage,"
 				"\x41pp|setPosition,"
 				"\x42pp|remapPalette,"
 				"\x43pppp|setClipRect,"
+				"\x56p|setPalette,"
+				"\x5Cp|setScale,"
+				"\x83ppp|processMode7,"
+				"\x85ppppp|proxessMode9,"
+				"\x89p|setDstResNum,"
+				"\x9App|setPosition,"
+				"\xD9|processMode8,"
 				"\xF6p|setupPolygon,"
+				"\xF9pp|remapPalette,"
 				"\xFF|processWizImage");
+		break;
+	case 0x1D: // HE90+
+		ext(output, "rpp|min");
+		break;
+	case 0x1E: // HE90+
+		ext(output, "rpp|max");
+		break;
+	case 0x1F: // HE90+
+		ext(output, "rp|sin");
+		break;
+	case 0x20: // HE90+
+		ext(output, "rp|cos");
+		break;
+	case 0x21: // HE90+
+		ext(output, "rp|sqrt");
+		break;
+	case 0x22: // HE90+
+		ext(output, "rpp|atan2");
+		break;
+	case 0x23: // HE90+
+		ext(output, "rpppp|getSegmentAngle");
+		break;
+	case 0x24: // HE90+
+		ext(output, "rx" "getDistanceBetweenPoints\0"
+				"\x1Cpppp|case28,"
+				"\x1Dpppppp|case29");
+		break;
+	case 0x25: // HE90+
+		if (g_options.heVersion >= 99) {
+			ext(output, "rx" "getSpriteInfo\0"
+					"\x1Ep|getPosX,"
+					"\x1Fp|getPosY,"
+					"\x20p|getImageX,"
+					"\x21p|getImageY,"
+					"\x22p|getDistX,"
+					"\x23p|getDistY,"
+					"\x24p|getImageStateCount,"
+					"\x25p|getGroup,"
+					"\x26p|getDisplayX,"
+					"\x27p|getDisplayY,"
+					"\x2App|getFlags,"
+					"\x2Bp|getPriority,"
+					"\x2Dlpppp|findSprite,"
+					"\x34p|getImageState,"
+					"\x3Ep|getSourceImage,"
+					"\x3Fp|getImage,"
+					"\x44p|getEraseType,"
+					"\x52p|getFlagAutoAnim,"
+					"\x56p|getPalette,"
+					"\x5Cp|getScale,"
+					"\x61p|getAnimSpeed,"
+					"\x62p|getShadow,"
+					"\x7Cp|getUpdateType,"
+					"\x7Dlp|getClass,"
+					"\x8Bpp|getGeneralProperty,"
+					"\x8Cp|getMaskImage,"
+					"\xC6pp|getUserValue");
+		} else if (g_options.heVersion >= 98) {
+			ext(output, "rx" "getSpriteInfo\0"
+					"\x1Ep|getPosX,"
+					"\x1Fp|getPosY,"
+					"\x20p|getImageX,"
+					"\x21p|getImageY,"
+					"\x22p|getDistX,"
+					"\x23p|getDistY,"
+					"\x24p|getImageStateCount,"
+					"\x25p|getGroup,"
+					"\x26p|getDisplayX,"
+					"\x27p|getDisplayY,"
+					"\x2App|getFlags,"
+					"\x2Bp|getPriority,"
+					"\x2Dpppp|findSprite,"
+					"\x34p|getImageState,"
+					"\x3Ep|getSourceImage,"
+					"\x3Fp|getImage,"
+					"\x44p|getEraseType,"
+					"\x52p|getFlagAutoAnim,"
+					"\x56p|getPalette,"
+					"\x5Cp|getScale,"
+					"\x61p|getAnimSpeed,"
+					"\x62p|getShadow,"
+					"\x7Cp|getUpdateType,"
+					"\x7Dlp|getClass,"
+					"\x8Bpp|getGeneralProperty,"
+					"\x8Cp|getMaskImage,"
+					"\xC6pp|getUserValue");
+		} else {
+			ext(output, "rx" "getSpriteInfo\0"
+					"\x1Ep|getPosX,"
+					"\x1Fp|getPosY,"
+					"\x20p|getImageX,"
+					"\x21p|getImageY,"
+					"\x22p|getDistX,"
+					"\x23p|getDistY,"
+					"\x24p|getImageStateCount,"
+					"\x25p|getGroup,"
+					"\x26p|getDisplayX,"
+					"\x27p|getDisplayY,"
+					"\x2App|getFlags,"
+					"\x2Bp|getPriority,"
+					"\x2Dppp|findSprite,"
+					"\x34p|getImageState,"
+					"\x3Ep|getSourceImage,"
+					"\x3Fp|getImage,"
+					"\x44p|getEraseType,"
+					"\x52p|getFlagAutoAnim,"
+					"\x56p|getPalette,"
+					"\x5Cp|getScale,"
+					"\x61p|getAnimSpeed,"
+					"\x62p|getShadow,"
+					"\x7Cp|getUpdateType,"
+					"\x7Dlp|getClass,"
+					"\x8Bpp|getGeneralProperty,"
+					"\x8Cp|getMaskImage,"
+					"\xC6pp|getUserValue");
+		}
+		break;
+	case 0x26: // HE90+
+		if (g_options.heVersion >= 99) {
+			ext(output, "x" "setSpriteInfo\0"
+					"\x22p|setDistX,"
+					"\x23p|setDistY,"
+					"\x25p|setGroup,"
+					"\x2App|setFlags,"
+					"\x2Bp|setPriority,"
+					"\x2Cpp|move,"
+					"\x34p|setImageState,"
+					"\x35p|setAngle,"
+					"\x39pp|setRange,"
+					"\x3Ep|setSourceImage,"
+					"\x3Fp|setImage,"
+					"\x41pp|setPosition,"
+					"\x44p|setEraseType,"
+					"\x4Dpp|setDist,"
+					"\x52p|setAutoAnimFlag,"
+					"\x56p|setPalette,"
+					"\x5Cp|setScale,"
+					"\x61p|setAnimSpeed,"
+					"\x62p|setAutoShadow,"
+					"\x7Cp|setUpdateType,"
+					"\x7Dl|setClass,"
+					"\x8Bpp|setGeneralProperty,"
+					"\x8Cp|setMaskImage,"
+					"\x9E|resetTables,"
+					"\xC6pp|setUserValue,"
+					"\xD9|resetSprite");
+		} else {
+			ext(output, "x" "setSpriteInfo\0"
+					"\x22p|setDistX,"
+					"\x23p|setDistY,"
+					"\x25p|setGroup,"
+					"\x2App|setFlags,"
+					"\x2Bp|setPriority,"
+					"\x2Cpp|move,"
+					"\x34p|setImageState,"
+					"\x35p|setAngle,"
+					"\x39p|setRange,"
+					"\x3Ep|setSourceImage,"
+					"\x3Fp|setImage,"
+					"\x41pp|setPosition,"
+					"\x44p|setEraseType,"
+					"\x4Dpp|setDist,"
+					"\x52p|setAutoAnimFlag,"
+					"\x56p|setPalette,"
+					"\x5Cp|setScale,"
+					"\x61p|setAnimSpeed,"
+					"\x62p|setAutoShadow,"
+					"\x7Cp|setUpdateType,"
+					"\x7Dl|setClass,"
+					"\x8Bpp|setGeneralProperty,"
+					"\x8Cp|setMaskImage,"
+					"\x9E|resetTables,"
+					"\xC6pp|setUserValue,"
+					"\xD9|resetSprite");
+		}
+		break;
+	case 0x27: // HE90+
+		ext(output, "rx" "getSpriteGroupInfo\0"
+				"\x8p|getSpriteArray,"
+				"\x1Ep|getPositionX,"
+				"\x1Fp|getPositionY,"
+				"\x2App|getXYScale?,"
+				"\x2Bp|getPriority,"
+				"\x3Fp|getDstResNum,"
+				"\x8Bpp|dummy");
+		break;
+	case 0x28: // HE90+
+		ext(output, "x" "setSpriteGroupInfo\0"
+				"\x25pp|misc,"
+				"\x2App|setXYScale?,"
+				"\x2Bp|setPriority,"
+				"\x2Cpp|move,"
+				"\x39p|setId,"
+				"\x3Fp|setImage,"
+				"\x41pp|setPosition,"
+				"\x43pppp|setBounds,"
+				"\x5D|resetBounds,"
+				"\xD9|reset");
 		break;
 	case 0x29: // HE90+
 		ext(output, "rx" "getWizData\0"
@@ -1514,8 +1781,89 @@ void next_line_HE_V72(char *output)
 				"\x2Dpppp|isPixelNonTransparentnumber,"
 				"\x42pppp|pixelColor");
 		break;
+	case 0x2A: // HE90+
+		ext(output, "rppp|getActorData");
+		break;
+	case 0x2B: // HE90+
+		ext(output, "lppi|startScriptUnk");
+		break;
+	case 0x2C: // HE90+
+		ext(output, "lppi|jumpToScriptUnk");
+		break;
+	case 0x2D: // HE90+
+		ext(output, "x" "videoOps\0"
+				"\x31h|setFilename,"
+				"\x36|setFlags,"
+				"\x39|setUnk2,"
+				"\x3F|setWizResNumX,"
+				"\xA5|setStatus,"
+				"\xFF|playOrStopVideo,");
+		break;
+	case 0x2F: // HE90+
+		ext(output, "x" "floodFill\0"
+				"\x36|dummy,"
+				"\x39|reset,"
+				"\x41|setXY,"
+				"\x42|setFlags,"
+				"\x43|setBoxRect,"
+				"\xFF|floodFill");
+		break;
+	case 0x30: // HE90+
+		ext(output, "rpp|mod");
+		break;
+	case 0x31: // HE90+
+		ext(output, "rpp|shl");
+		break;
+	case 0x32: // HE90+
+		ext(output, "rpp|shr");
+		break;
+	case 0x33: // HE90+
+		ext(output, "rpp|xor");
+		break;
+	case 0x34:
+		ext(output, "rlp|findAllObjectsWithClassOf");
+		break;
+	case 0x35: // HE90+
+		ext(output, "rllp|getPolygonOverlap");
+		break;
+	case 0x36: // HE90+
+		ext(output, "rppp|cond");
+		break;
+	case 0x37: // HE90+
+		ext(output, "x" "dim2dim2Array\0"
+				"\x2pppppw|bit,"
+				"\x3pppppw|nibble,"
+				"\x4pppppw|byte,"
+				"\x5pppppw|int,"
+				"\x6pppppw|dword,"
+				"\x7pppppw|string");
+		break;
+	case 0x38: // HE90+
+		ext(output, "x" "redim2dimArray\0"
+				"\x4ppppw|byte,"
+				"\x5ppppw|int,"
+				"\x6ppppw|dword");
+		break;
+	case 0x39: // HE90+
+		ext(output, "rwwpppppppp|getLinesIntersectionPoint");
+		break;
+	case 0x3A: // HE90+
+		ext(output, "x" "sortArray\0"
+				"\x81pppppw|sort,");
+		break;
 	case 0x43:
 		writeVar(output, get_word(), pop());
+		break;
+	case 0x44: // HE90+
+		ext(output, "rx" "getObjectData\0"
+				"\x20|getWidth,"
+				"\x21|getHeight,"
+				"\x25|getImageCount,"
+				"\x27|getX,"
+				"\x28|getY,"
+				"\x34|getState,"
+				"\x39p|setId,"
+				"\x8Bp|dummy");
 		break;
 	case 0x45: // HE80+
 		ext(output, "x" "createSound\0"
@@ -1524,11 +1872,14 @@ void next_line_HE_V72(char *output)
 				"\xE8p|setId,"
 				"\xFF|dummy");
 		break;
+	case 0x46: // HE80+
+		ext(output, "rh|getFileSize");
+		break;
 	case 0x47:
 		writeArray(output, get_word(), NULL, pop(), pop());
 		break;
 	case 0x48: // HE80+
-		ext(output, "p|stringToInt");
+		ext(output, "rp|stringToInt");
 		break;
 	case 0x49: // HE80+
 		ext(output, "rpp|getSoundVar");
@@ -1546,7 +1897,7 @@ void next_line_HE_V72(char *output)
 		break;
 	case 0x4E: // HE80+
 		ext(output, "x" "writeConfigFile\0"
-				"\x6hhh|number,"
+				"\x6phhh|number,"
 				"\x7hhhh|string");
 		break;
 	case 0x4F:
@@ -1640,7 +1991,17 @@ void next_line_HE_V72(char *output)
 		ext(output, "l|beginCutscene");
 		break;
 	case 0x69:
-		ext(output, "|stopMusic");
+		if (g_options.heVersion >= 80) {
+			ext(output, "x" "windowOps\0"
+					"\x39p|case25,"
+					"\x3Ap|case26,"
+					"\x3Fp|case31,"
+					"\xD9|case185,"
+					"\xF3h|case211,"
+					"\xFF|case223");
+		} else {
+			ext(output, "|stopMusic");
+		}
 		break;
 	case 0x6A:
 		ext(output, "p|freezeUnfreeze");
@@ -1649,6 +2010,7 @@ void next_line_HE_V72(char *output)
 		ext(output, "x" "cursorCommand\0"
 				"\x13z|setCursorImg,"
 				"\x14z|setCursorImg,"
+				"\x3Czp|setCursorImg,"
 				"\x90|cursorOn,"
 				"\x91|cursorOff,"
 				"\x92|userPutOn,"
@@ -1790,7 +2152,16 @@ void next_line_HE_V72(char *output)
 		ext(output, "rp|getInventoryCount");
 		break;
 	case 0x94:
-		ext(output, "rpp|getVerbFromXY");
+		if (g_options.heVersion >= 90) {
+			ext(output, "rx" "getPaletteData\0"
+					"\x2Dpppppp|,"
+					"\x34ppp|getColorCompontent,"
+					"\x42pp|getColor,"
+					"\x84pp|getColorCompontent2,"
+					"\xD9ppp|getSimilarColor2");
+		} else {
+			ext(output, "rpp|getVerbFromXY");
+		}
 		break;
 	case 0x95:
 		ext(output, "|beginOverride");
@@ -1869,6 +2240,9 @@ void next_line_HE_V72(char *output)
 				"\x2Bp|layer,"
 				"\xC5p|setCurActor,"
 				"\x40pppp|setClipRect,"
+				"\x41pp|putActor,"
+				"\x43pppp|setActorClipRect,"
+				"\x44p|setHEFlag,"
 				"\x4Cp|setCostume,"
 				"\x4Dpp|setWalkSpeed,"
 				"\x4El|setSound,"
@@ -1893,6 +2267,7 @@ void next_line_HE_V72(char *output)
 				"\x62p|setShadowMode,"
 				"\x63pp|setTalkPos,"
 				"\x9Cp|charset,"
+				"\xAFp|setPaletteNum,"
 				"\xC6pp|setAnimVar,"
 				"\xD7|setIgnoreTurnsOn,"
 				"\xD8|setIgnoreTurnsOff,"
@@ -1901,25 +2276,38 @@ void next_line_HE_V72(char *output)
 				"\xE1hp|setTalkieSlot");
 		break;
 	case 0x9E:
-		ext(output, "x" "verbOps\0"
-				"\xC4p|setCurVerb,"
-				"\x7Cp|loadImg,"
-				"\x7Dh|loadString,"
-				"\x7Ep|setColor,"
-				"\x7Fp|setHiColor,"
-				"\x80pp|setXY,"
-				"\x81|setOn,"
-				"\x82|setOff,"
-				"\x83p|kill,"
-				"\x84|init,"
-				"\x85p|setDimColor,"
-				"\x86|setDimmed,"
-				"\x87p|setKey,"
-				"\x88|setCenter,"
-				"\x89p|setToString,"
-				"\x8Bpp|setToObject,"
-				"\x8Cp|setBkColor,"
-				"\xFF|redraw");
+		if (g_options.heVersion >= 90) {
+			ext(output, "x" "paletteOps\0"
+					"\x39p|setPaletteNum,"
+					"\x3Fpp|setPaletteFromImage,"
+					"\x42ppppp|setPaletteColor,"
+					"\x46ppp|copyPaletteColor,"
+					"\x4Cp|setPaletteFromCostume,"
+					"\x56p|copyPalette,"
+					"\xAFpp|setPaletteFromRoom,"
+					"\xD9|restorePalette,"
+					"\xFF|resetPaletteNum");
+		} else {
+			ext(output, "x" "verbOps\0"
+					"\xC4p|setCurVerb,"
+					"\x7Cp|loadImg,"
+					"\x7Dh|loadString,"
+					"\x7Ep|setColor,"
+					"\x7Fp|setHiColor,"
+					"\x80pp|setXY,"
+					"\x81|setOn,"
+					"\x82|setOff,"
+					"\x83p|kill,"
+					"\x84|init,"
+					"\x85p|setDimColor,"
+					"\x86|setDimmed,"
+					"\x87p|setKey,"
+					"\x88|setCenter,"
+					"\x89p|setToString,"
+					"\x8Bpp|setToObject,"
+					"\x8Cp|setBkColor,"
+					"\xFF|redraw");
+		}
 		break;
 	case 0x9F:
 		ext(output, "rpp|getActorFromXY");
@@ -1941,6 +2329,38 @@ void next_line_HE_V72(char *output)
 		case 7:
 			se_a = se_get_string_he();
 			writeArray(output, get_word(), NULL, se_a, se_a);
+			break;
+		case 126:
+			// TODO
+			se_get_list();
+			pop();
+			pop();
+			pop();
+			pop();
+			get_word();
+			break;
+		case 127:
+			// TODO
+			pop();
+			pop();
+			pop();
+			pop();
+			get_word();
+			pop();
+			pop();
+			pop();
+			pop();
+			get_word();
+			break;
+		case 128:
+			// TODO
+			pop();
+			pop();
+			pop();
+			pop();
+			pop();
+			pop();
+			get_word();
 			break;
 		case 194:
 			se_get_list();
@@ -1983,7 +2403,11 @@ void next_line_HE_V72(char *output)
 		ext(output, "rp|getActorScaleX");
 		break;
 	case 0xAB:
-		ext(output, "rp|getActorAnimCounter1");
+		if (g_options.heVersion >= 90) {
+			ext(output, "rp|getActorAnimProgress");
+		} else {
+			ext(output, "rp|getActorAnimCounter1");
+		}
 		break;
 	case 0xAC: // HE80+
 		ext(output, "pp|drawWizPolygon");
@@ -2178,7 +2602,7 @@ void next_line_HE_V72(char *output)
 				"\x4p|readByte,"
 				"\x5p|readWord,"
 				"\x6p|readDWord,"
-				"\x8ipp|readArrayFromFile");
+				"\x8ppi|readArrayFromFile");
 		break;
 	case 0xDC:
 		ext(output, "x" "writeFile\0"
@@ -2271,22 +2695,25 @@ void next_line_HE_V72(char *output)
 		ext(output, "rpppp|getCharIndexInString");
 		break;
 	case 0xF8:
-		// FIXME: HE72 games only check sound resource
-		ext(output, "rx" "getResourceSize\0"
-				"\xDp|sound,"
-				"\xEp|roomImage,"
-				"\xFp|image,"
-				"\x10p|costume,"
-				"\x11p|script");
+		if (g_options.heVersion >= 73) {
+			ext(output, "rx" "getResourceSize\0"
+					"\xDp|sound,"
+					"\xEp|roomImage,"
+					"\xFp|image,"
+					"\x10p|costume,"
+					"\x11p|script");
+		} else {
+			ext(output, "rp|getSoundResourceSize");
+		}
 		break;
 	case 0xF9:
 		ext(output, "h|setFilePath");
 		break;
 	case 0xFA:
 		ext(output, "x" "setSystemMessage\0"
-				"\xF0h|unk1,"
+				"\xF0h|case240,"
 				"\xF1h|versionMsg,"
-				"\xF2h|unk3,"
+				"\xF2h|case242,"
 				"\xF3h|titleMsg");
 		break;
 	case 0xFB:
@@ -2325,8 +2752,7 @@ void next_line_HE_V72(char *output)
 	} while(0)
 
 
-void next_line_V8(char *output)
-{
+void next_line_V8(char *output) {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
 
@@ -2973,8 +3399,7 @@ void next_line_V8(char *output)
 				);                \
 	} while(0)
 
-void next_line_V67(char *output)
-{
+void next_line_V67(char *output) {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
 

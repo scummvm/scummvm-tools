@@ -58,8 +58,7 @@ void ShowHelpAndExit() {
 	exit(0);
 }
 
-int skipVerbHeader_V12(byte *p)
-{
+int skipVerbHeader_V12(byte *p) {
 	byte code;
 	int offset = 15;
 	int minOffset = 255;
@@ -79,8 +78,7 @@ int skipVerbHeader_V12(byte *p)
 	return minOffset;
 }
 
-int skipVerbHeader_V34(byte *p)
-{
+int skipVerbHeader_V34(byte *p) {
 	byte code;
 	int offset = g_options.GF_UNBLOCKED ? 17 : 19;
 	int minOffset = 255;
@@ -98,8 +96,7 @@ int skipVerbHeader_V34(byte *p)
 	return minOffset;
 }
 
-int skipVerbHeader_V567(byte *p)
-{
+int skipVerbHeader_V567(byte *p) {
 	byte code;
 	int offset = 8;
 	int minOffset = 255;
@@ -117,8 +114,7 @@ int skipVerbHeader_V567(byte *p)
 	return minOffset;
 }
 
-int skipVerbHeader_V8(byte *p)
-{
+int skipVerbHeader_V8(byte *p) {
 	uint32 *ptr;
 	uint32 code;
 	int offset;
@@ -203,10 +199,13 @@ char *parseCommandLine(int argc, char *argv[]) {
 					g_jump_opcode = 0x66;
 					break;
 
-				case '9':
-					g_options.heVersion = 72;
+				case 'g':
+					g_options.heVersion = atoi(s + 1);
 					g_options.scriptVersion = 6;
 					g_jump_opcode = 0x73;
+
+					// Skip two digits for HE version
+					s += 2;
 					break;
 
 				case 'o':
@@ -266,7 +265,7 @@ void parseHeader() {
 			g_scriptStart += 4;
 		}
 	} else if (g_options.scriptVersion >= 5) {
-		if (g_scriptSize < (g_options.scriptVersion == 5 ? 8 : 9)) {
+		if (g_scriptSize < (uint)(g_options.scriptVersion == 5 ? 8 : 9)) {
 			error("File too small to be a script");
 		}
 

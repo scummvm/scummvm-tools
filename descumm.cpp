@@ -436,8 +436,7 @@ const char *var_names5[] = {
 };
 
 
-const char *get_num_string(int i)
-{
+const char *get_num_string(int i) {
 	const char *s;
 
 	if (i & 0x8000) {							/* Bit var */
@@ -468,8 +467,7 @@ const char *get_num_string(int i)
 }
 
 
-char *get_var(char *buf)
-{
+char *get_var(char *buf) {
 	int i;
 
 	if (g_options.scriptVersion <= 2)
@@ -521,8 +519,7 @@ char *get_var(char *buf)
 
 }
 
-char *get_var_or_word(char *buf, char condition)
-{
+char *get_var_or_word(char *buf, char condition) {
 	if (condition)
 		get_var(buf);
 	else
@@ -530,8 +527,7 @@ char *get_var_or_word(char *buf, char condition)
 	return strchr(buf, 0);
 }
 
-char *get_var_or_byte(char *buf, char condition)
-{
+char *get_var_or_byte(char *buf, char condition) {
 	if (condition)
 		get_var(buf);
 	else
@@ -539,8 +535,7 @@ char *get_var_or_byte(char *buf, char condition)
 	return strchr(buf, 0);
 }
 
-char *get_list(char *buf)
-{
+char *get_list(char *buf) {
 	int i;
 	int j = 0;
 	bool first = true;
@@ -566,8 +561,7 @@ char *get_list(char *buf)
 	return strecpy(buf, "]");
 }
 
-char *putascii(char *buf, int i)
-{
+char *putascii(char *buf, int i) {
 	if (i > 31 && i < 128) {
 		buf[0] = i;
 		buf[1] = 0;
@@ -576,8 +570,7 @@ char *putascii(char *buf, int i)
 	return buf + sprintf(buf, "^%d", i);
 }
 
-char *get_ascii(char *buf)
-{
+char *get_ascii(char *buf) {
 	int i;
 
 	buf = strecpy(buf, "\"");
@@ -607,8 +600,7 @@ char *get_ascii(char *buf)
 
 
 
-char *add_a_tok(char *buf, int type)
-{
+char *add_a_tok(char *buf, int type) {
 	switch (type) {
 	case TOK_BYTE:
 		buf += sprintf(buf, "%d", get_byte());
@@ -633,8 +625,7 @@ char *add_a_tok(char *buf, int type)
 	return buf;
 }
 
-char *do_tok(char *buf, const char *text, int args)
-{
+char *do_tok(char *buf, const char *text, int args) {
 	char *buforg = buf;
 
 
@@ -678,8 +669,7 @@ char *do_tok(char *buf, const char *text, int args)
 	return strchr(buf, 0);
 }
 
-void do_decodeparsestring_v2(char *buf, byte opcode)
-{
+void do_decodeparsestring_v2(char *buf, byte opcode) {
 	byte c;
 	bool flag;
 
@@ -700,8 +690,7 @@ void do_decodeparsestring_v2(char *buf, byte opcode)
 	*buf = 0;
 }
 
-void do_actorops_v12(char *buf, byte opcode)
-{
+void do_actorops_v12(char *buf, byte opcode) {
 	buf = strecpy(buf, "ActorOps(");
 	buf = get_var_or_byte(buf, opcode & 0x80);
 	buf = strecpy(buf, ",[");
@@ -735,8 +724,7 @@ void do_actorops_v12(char *buf, byte opcode)
 	strecpy(buf, "]);");
 }
 
-void do_actorops(char *buf, byte opcode)
-{
+void do_actorops(char *buf, byte opcode) {
 	static const byte convertTable[20] =
 		{ 1, 0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20 };
 
@@ -868,8 +856,7 @@ char *popExprStack(char *buf) {
 }
 
 
-void do_expr_code(char *buf)
-{
+void do_expr_code(char *buf) {
 	int i;
 	const char *s;
 	char *buf2;
@@ -936,8 +923,7 @@ void do_expr_code(char *buf)
 }
 
 
-void do_load_code_to_string(char *buf, byte opcode)
-{
+void do_load_code_to_string(char *buf, byte opcode) {
 
 	buf = strchr(strcpy(buf, "PutCodeInString("), 0);
 	buf = get_var_or_byte(buf, opcode & 0x80);
@@ -946,8 +932,7 @@ void do_load_code_to_string(char *buf, byte opcode)
 	strcpy(buf, ");");
 }
 
-void do_resource_v2(char *buf, byte opcode)
-{
+void do_resource_v2(char *buf, byte opcode) {
 	const char *resTypes[] = {
 			"UnkResType0",
 			"UnkResType1",
@@ -984,8 +969,7 @@ void do_resource_v2(char *buf, byte opcode)
 	}
 }
 
-void do_resource(char *buf, byte opco)
-{
+void do_resource(char *buf, byte opco) {
 	char opcode = get_byte();
 	int subop;
 	if (g_options.scriptVersion != 5)
@@ -1075,8 +1059,7 @@ void do_resource(char *buf, byte opco)
 
 }
 
-void do_pseudoRoom(char *buf)
-{
+void do_pseudoRoom(char *buf) {
 	int j, i = get_byte();
 
 	buf += sprintf(buf, "PseudoRoom(%d", i);
@@ -1095,8 +1078,7 @@ void do_pseudoRoom(char *buf)
 	strcpy(buf, ")");
 }
 
-void do_room_ops(char *buf)
-{
+void do_room_ops(char *buf) {
 	int opcode = get_byte();
 
 	//buf+=sprintf(buf, "SubCode33%.2X", opcode);
@@ -1196,8 +1178,7 @@ void do_room_ops(char *buf)
 	strcat(buf, ")");
 }
 
-void do_room_ops_old(char *buf, byte opcode)
-{
+void do_room_ops_old(char *buf, byte opcode) {
 	char	a[256];
 	char	b[256];
 
@@ -1266,8 +1247,7 @@ void do_room_ops_old(char *buf, byte opcode)
 	}
 }
 
-void do_cursor_command(char *buf)
-{
+void do_cursor_command(char *buf) {
 	int opcode = get_byte();
 
 	switch (opcode & 0x1f) {
@@ -1322,8 +1302,7 @@ void do_cursor_command(char *buf)
 	}
 }
 
-void do_verbops_v2(char *buf, byte opcode)
-{
+void do_verbops_v2(char *buf, byte opcode) {
 	int subop = get_byte();
 
 	buf = do_tok(buf, "VerbOps", ANOLASTPAREN);
@@ -1341,8 +1320,7 @@ void do_verbops_v2(char *buf, byte opcode)
 	strecpy(buf, ")");
 }
 
-void do_verbops(char *buf, byte opcode)
-{
+void do_verbops(char *buf, byte opcode) {
 	char first = 1;
 
 	buf = do_tok(buf, "VerbOps", ((opcode & 0x80) ? A1V : A1B) | ANOLASTPAREN);
@@ -1413,8 +1391,7 @@ void do_verbops(char *buf, byte opcode)
 	strecpy(buf, "])");
 }
 
-void do_print_ego(char *buf, byte opcode)
-{
+void do_print_ego(char *buf, byte opcode) {
 	char first = 1;
 
 	if (opcode == 0xD8) {
@@ -1478,8 +1455,7 @@ exit_proc:;
 
 }
 
-void do_unconditional_jump(char *buf)
-{
+void do_unconditional_jump(char *buf) {
 	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
@@ -1503,8 +1479,7 @@ void do_unconditional_jump(char *buf)
 	}
 }
 
-void emit_if(char *buf, char *condition)
-{
+void emit_if(char *buf, char *condition) {
 	int offset = get_word();
 	int cur = get_curoffs();
 	int to = cur + offset;
@@ -1536,8 +1511,7 @@ void emit_if(char *buf, char *condition)
 	sprintf(buf, ") goto %.4X;", to);
 }
 
-void do_if_code(char *buf, byte opcode)
-{
+void do_if_code(char *buf, byte opcode) {
 	char var[256];
 	char tmp[256], tmp2[256];
 	int txt;
@@ -1590,8 +1564,7 @@ void do_if_code(char *buf, byte opcode)
 	emit_if(buf, tmp);
 }
 
-void do_if_active_object(char *buf, byte opcode)
-{
+void do_if_active_object(char *buf, byte opcode) {
 	char tmp[256];
 
 	int obj = get_byte();
@@ -1600,8 +1573,7 @@ void do_if_active_object(char *buf, byte opcode)
 	emit_if(buf, tmp);
 }
 
-void do_if_state_code(char *buf, byte opcode)
-{
+void do_if_state_code(char *buf, byte opcode) {
 	char var[256];
 	char tmp[256], tmp2[256];
 	byte neg;
@@ -1724,8 +1696,7 @@ void do_if_state_code(char *buf, byte opcode)
 	emit_if(buf, tmp);
 }
 
-void do_varset_code(char *buf, byte opcode)
-{
+void do_varset_code(char *buf, byte opcode) {
 	const char *s;
 
 	if ((g_options.scriptVersion <= 2)
@@ -1790,8 +1761,7 @@ void do_varset_code(char *buf, byte opcode)
 	strecpy(buf, ";");
 }
 
-void do_matrix_ops(char *buf, byte opcode)
-{
+void do_matrix_ops(char *buf, byte opcode) {
 	opcode = get_byte();
 
 	switch (opcode & 0x1F) {
@@ -1812,8 +1782,7 @@ void do_matrix_ops(char *buf, byte opcode)
 	}
 }
 
-void next_line_V12(char *buf)
-{
+void next_line_V12(char *buf) {
 	byte opcode = get_byte();
 
 	switch (opcode) {
@@ -2409,8 +2378,7 @@ void next_line_V12(char *buf)
 	}
 }
 
-void next_line_V0(char *buf)
-{
+void next_line_V0(char *buf) {
 	byte opcode = get_byte();
 
 	switch (opcode) {
@@ -2936,8 +2904,7 @@ void next_line_V0(char *buf)
 	}
 }
 
-void next_line_V345(char *buf)
-{
+void next_line_V345(char *buf) {
 	byte opcode = get_byte();
 
 	switch (opcode) {

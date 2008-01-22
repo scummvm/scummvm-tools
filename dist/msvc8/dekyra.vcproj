@@ -2,8 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="compress_scumm_san"
-	ProjectGUID="{1712DDB9-8BB1-4108-9A06-F86F28409B20}"
+	Name="dekyra"
+	ProjectGUID="{0B9A669F-83C2-4AE4-841F-3B015713605C}"
+	RootNamespace="dekyra"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -40,13 +41,12 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/wd4996"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;ZLIB_WINAPI"
-				MinimalRebuild="TRUE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -60,13 +60,14 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstat.lib"
-				OutputFile="$(OutDir)/compress_scumm_san.exe"
+				OutputFile="$(OutDir)/dekyra.exe"
 				LinkIncremental="2"
-				IgnoreDefaultLibraryNames="libc.lib"
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/compress_scumm_san.pdb"
+				IgnoreDefaultLibraryNames="libc.lib;libcmt.lib"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/dekyra.pdb"
 				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -82,10 +83,10 @@
 				Name="VCBscMakeTool"
 			/>
 			<Tool
-				Name="VCAppVerifierTool"
+				Name="VCFxCopTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -117,10 +118,9 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/wd4996"
 				Optimization="3"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;ZLIB_WINAPI"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -134,14 +134,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstat.lib"
-				OutputFile="$(OutDir)/compress_scumm_san.exe"
+				OutputFile="$(OutDir)/dekyra.exe"
 				LinkIncremental="1"
-				IgnoreDefaultLibraryNames="libc.lib"
-				GenerateDebugInformation="TRUE"
+				IgnoreDefaultLibraryNames="libc.lib;libcmt.lib"
+				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -157,10 +158,10 @@
 				Name="VCBscMakeTool"
 			/>
 			<Tool
-				Name="VCAppVerifierTool"
+				Name="VCFxCopTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -171,15 +172,23 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\..\..\compress_scumm_san.cpp"
+			RelativePath="..\..\dekyra.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\..\util.c"
+			RelativePath="..\..\dekyra.h"
 			>
 		</File>
 		<File
-			RelativePath="..\..\..\util.h"
+			RelativePath="..\..\dekyra_v1.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\util.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\util.h"
 			>
 		</File>
 	</Files>

@@ -863,7 +863,7 @@ byte *convertTo16bit(byte *ptr, int inputSize, int &outputSize, int bits, int fr
 	return outputBuf;
 }
 
-void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs) {
+void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs, int &numMarkers) {
 	uint32 tag;
 	int32 size = 0;
 
@@ -871,6 +871,10 @@ void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs) 
 		tag = READ_BE_UINT32(ptr); ptr += 4;
 		switch(tag) {
 		case 'TEXT':
+			if (!scumm_stricmp((const char *)(ptr + 8), "exit"))
+				numMarkers++;
+			size = READ_BE_UINT32(ptr); ptr += size + 4;
+			break;
 		case 'STOP':
 		case 'FRMT':
 		case 'DATA':
@@ -909,6 +913,12 @@ struct Jump {
 struct Sync {
 	int32 size;
 	byte *ptr;
+};
+
+struct Marker {
+	int32 pos;
+	int32 length;
+	char *ptr;
 };
 
 static Region *_region;
@@ -1001,14 +1011,16 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 	int curIndexRegion = 0;
 	int curIndexJump = 0;
 	int curIndexSync = 0;
+	int curIndexMarker = 0;
 
-	int numRegions = 0, numJumps = 0, numSyncs = 0;
-	countMapElements(ptr, numRegions, numJumps, numSyncs);
+	int numRegions = 0, numJumps = 0, numSyncs = 0, numMarkers = 0;
+	countMapElements(ptr, numRegions, numJumps, numSyncs, numMarkers);
 	Region *region = (Region *)malloc(sizeof(Region) * numRegions);
 	_region = (Region *)malloc(sizeof(Region) * numRegions);
 	_numRegions = numRegions;
 	Jump *jump = (Jump *)malloc(sizeof(Jump) * numJumps);
 	Sync *sync = (Sync *)malloc(sizeof(Sync) * numSyncs);
+	Marker *marker = (Marker *)malloc(sizeof(Marker) * numMarkers);
 
 	do {
 		tag = READ_BE_UINT32(ptr); ptr += 4;
@@ -1020,6 +1032,15 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 			channels = READ_BE_UINT32(ptr); ptr += 4;
 			break;
 		case 'TEXT':
+			if (!scumm_stricmp((const char *)(ptr + 8), "exit")) {
+				marker[curIndexMarker].pos = READ_BE_UINT32(ptr + 4);
+				marker[curIndexMarker].length = strlen((const char *)(ptr + 8)) + 1;
+				marker[curIndexMarker].ptr = new char[marker[curIndexMarker].length];
+				strcpy(marker[curIndexMarker].ptr, (const char *)(ptr + 8));
+				curIndexMarker++;
+			}
+			size = READ_BE_UINT32(ptr); ptr += size + 4;
+			break;
 		case 'STOP':
 			size = READ_BE_UINT32(ptr); ptr += size + 4;
 			break;
@@ -1059,13 +1080,14 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 	cbundleTable[cbundleCurIndex].offset = startPos;
 
 	writeUint32BE(output, 'RMAP');
-	writeUint32BE(output, 2); // version
+	writeUint32BE(output, 3); // version
 	writeUint32BE(output, 16); // bits
 	writeUint32BE(output, freq);
 	writeUint32BE(output, channels);
 	writeUint32BE(output, numRegions);
 	writeUint32BE(output, numJumps);
 	writeUint32BE(output, numSyncs);
+	writeUint32BE(output, numMarkers);
 	memcpy(_region, region, sizeof(Region) * numRegions);
 	for (l = 0; l < numRegions; l++) {
 		_region[l].offset -= offsetData;
@@ -1090,9 +1112,16 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 		fwrite(sync[l].ptr, sync[l].size, 1, output);
 		free(sync[l].ptr);
 	}
+	for (l = 0; l < numMarkers; l++) {
+		writeUint32BE(output, marker[l].pos);
+		writeUint32BE(output, marker[l].length);
+		fwrite(marker[l].ptr, marker[l].length, 1, output);
+		delete[] marker[l].ptr;
+	}
 	free(region);
 	free(jump);
 	free(sync);
+	free(marker);
 
 	cbundleTable[cbundleCurIndex].size = ftell(output) - startPos;
 	cbundleCurIndex++;

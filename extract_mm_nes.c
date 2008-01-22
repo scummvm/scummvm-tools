@@ -1144,7 +1144,7 @@ void dump_resource (FILE *input, char *fn_template, int num, p_resource res) {
 }
 #endif /* MAKE_LFLS */
 
-static uint32 CRCtable[256];
+static uint32	CRCtable[256];
 static void InitCRC(void) {
 	const uint32 poly = 0xEDB88320;
 	int i, j;

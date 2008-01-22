@@ -296,7 +296,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 
 		copyFile(inputFile, inputSize, TEMP_RAW);
 
-		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo, sampleBits);
+		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo != 0, sampleBits);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
@@ -333,7 +333,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 		writeBufferToFile((uint8 *)buffer, sampleSize, TEMP_RAW);
 		free(buffer);
 
-		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo, sampleBits);
+		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo != 0, sampleBits);
 		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
