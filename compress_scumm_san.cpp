@@ -66,6 +66,7 @@ struct AudioTrackInfo {
 	int *sizes;
 	int nbframes;
 	int countFrames;
+	int lastFrame;
 	int32 sdatSize;
 };
 
@@ -257,10 +258,19 @@ AudioTrackInfo *allocAudioTrack(int trackId, int frame) {
 
 AudioTrackInfo *findAudioTrack(int trackId) {
 	for (int l = 0; l < MAX_TRACKS; l++) {
-		if ((_audioTracks[l].trackId == trackId) && (_audioTracks[l].used) && (_audioTracks[l].file))
+		if (_audioTracks[l].trackId == trackId && _audioTracks[l].used && _audioTracks[l].file)
 			return &_audioTracks[l];
 	}
 	return NULL;
+}
+
+void flushTracks(int frame) {
+	for (int l = 0; l < MAX_TRACKS; l++) {
+		if (_audioTracks[l].used && _audioTracks[l].file && (frame - _audioTracks[l].lastFrame) > 1) {
+			fclose(_audioTracks[l].file);
+			_audioTracks[l].file = NULL;
+		}
+	}
 }
 
 void prepareForMixing(char *outputDir, char *inputFilename) {
@@ -554,6 +564,7 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 			audioTrack->sdatSize = handleSaudChunk(audioTrack, input);
 			audioTrack->sdatSize *= 4;
 			size -= (ftell(input) - pos) + 10;
+			audioTrack->lastFrame = frame;
 		}
 		sprintf(tmpPath, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, frame, trackId);
 		audioTrack->file = fopen(tmpPath, "wb");
@@ -562,12 +573,16 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 			exit(1);
 		}
 	} else {
+		if (!iact)
+			flushTracks(frame);
 		audioTrack = findAudioTrack(trackId);
 		assert(audioTrack);
 		if (iact)
 			size -= 18;
-		else
+		else {
 			size -= 10;
+			audioTrack->lastFrame = frame;
+		}
 	}
 	byte *buffer = (byte *)malloc(size);
 	fread(buffer, size, 1, input);
@@ -586,7 +601,8 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 		audioTrack->sizes[index] *= 2;
 	audioTrack->countFrames++;
 	if ((index + 1) == nbframes) {
-		fclose(audioTrack->file);
+		if (audioTrack->file)
+			fclose(audioTrack->file);
 		audioTrack->file = NULL;
 	}
 }
