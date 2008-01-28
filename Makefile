@@ -10,7 +10,7 @@ CFLAGS  += -g -O -Wall -Wuninitialized -Wno-long-long -Wno-multichar -DUNIX
 
 # Additional warnings
 CFLAGS+= -Wshadow
-CFLAGS+= -pedantic
+#CFLAGS+= -pedantic
 CFLAGS+= -Wpointer-arith -Wcast-qual -Wcast-align
 # -Wconversion
 CFLAGS+= -Wshadow -Wimplicit -Wundef -Wwrite-strings
@@ -38,7 +38,8 @@ TARGETS := \
 	extract_mm_nes$(EXEEXT) \
 	extract_parallaction$(EXEEXT) \
 	extract_scumm_mac$(EXEEXT) \
-	extract_zak_c64$(EXEEXT)
+	extract_zak_c64$(EXEEXT) \
+	tools_gui$(EXEEXT)
 
 UTILS := \
 	utils/adpcm.o \
@@ -50,35 +51,46 @@ UTILS := \
 
 all: $(TARGETS)
 
+bundle_name = ScummVM\ Tools\ GUI.app
+bundle: $(TARGETS)
+	mkdir -p $(bundle_name)
+	mkdir -p $(bundle_name)/Contents
+	mkdir -p $(bundle_name)/Contents/MacOS
+	mkdir -p $(bundle_name)/Contents/Resources
+	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
+	cp $(SRC)/dist/macosx/Info.plist $(bundle_name)/Contents/
+	cp $(TARGETS) $(bundle_name)/Contents/Resources/
+	mv $(bundle_name)/Contents/Resources/tools_gui $(bundle_name)/Contents/MacOS/
+
 compress_agos$(EXEEXT): compress_agos.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_kyra$(EXEEXT): compress_kyra.o kyra_pak.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_queen$(EXEEXT): compress_queen.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
+compress_queen$(EXEEXT): compress_queen.o compress.o util.o
+	$(CC) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_saga$(EXEEXT): compress_saga.o compress.o util.o $(UTILS)
-	$(CXX) $(LDFLAGS) -o $@ $+
+	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_scumm_san$(EXEEXT): compress_scumm_san.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lz
+	$(CXX) $(LDFLAGS) -o $@ $+ -lz -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_touche$(EXEEXT): compress_touche.o compress.o util.o
-	$(CC) $(LDFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
@@ -90,7 +102,7 @@ desword2$(EXEEXT): desword2.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz
+	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz -lvorbis -logg -lvorbisenc -lFLAC
 
 extract_agos$(EXEEXT): extract_agos.o
 	$(CC) $(LDFLAGS) -o $@ $+
@@ -119,13 +131,16 @@ extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 	$(CC) $(LDFLAGS) -o $@ $+
 
+tools_gui$(EXEEXT): tools_gui.o
+	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs`
+
 
 descumm.o descumm6.o descumm-common.o descumm-tool.o: descumm.h
 
-# Most compress_* tools (except for compress_queen) use compress.h
+# All compress_* tools use compress.h
 compress_agos.o compress_saga.o compress_scumm_sou.o \
 compress_scumm_bun.o compress_sword1.o compress_sword2.o \
-compress_kyra.o compress.o encode_dxa.o: compress.h
+compress_kyra.o compress_queen.o compress.o encode_dxa.o: compress.h
 
 # extract_parallaction.h
 extract_parallaction.o: extract_parallaction.h
@@ -154,6 +169,10 @@ util.o: util.h
 
 clean:
 	rm -f *.o utils/*.o $(TARGETS)
+
+
+tools_gui.o: tools_gui.cpp tools_gui.h
+	$(CXX) $(CFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c tools_gui.cpp -o tools_gui.o
 
 .cpp.o:
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c $(<) -o $*.o

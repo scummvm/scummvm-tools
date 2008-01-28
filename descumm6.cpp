@@ -55,7 +55,7 @@ Anyway, the fixed key pattern here seems to be for each case:
 And of course a push before the first of these. Note that there doesn't have
 to be a jump before each case: after all, "fall through" is possible with C(++)
 switch/case statements, too, so it's possible they used that in Scumm, too.
-  
+
 */
 
 class StackEnt;
@@ -128,7 +128,7 @@ public:
 	virtual ~StackEnt() {}
 	virtual char *asText(char *where, bool wantparens = true) const = 0;
 	virtual StackEnt* dup(char *output);
-	
+
 	virtual int getIntVal() const { error("getIntVal call on StackEnt type %d", type); }
 };
 
@@ -1249,7 +1249,7 @@ StackEnt *se_get_string_he() {
 	StackEnt *value;
 
 	value = pop();
-	
+
 	*e++ = '"';
 	if (value->type == seInt && value->getIntVal() == -1) {
 		if (_stringLength == 1) {
@@ -1327,10 +1327,10 @@ void ext(char *output, const char *fmt) {
 			while (*fmt++)
 				;
 			e += sprintf(e, "%s.", extstr);
-			
+
 			se = new ListStackEnt(pop());
 			args[numArgs++] = se;
-			
+
 			/* extended thing */
 			se->_size--;
 			extcmd = (byte) se->_list[se->_size]->getIntVal();
@@ -2182,23 +2182,23 @@ void next_line_HE_V72(char *output) {
 		ext(output, "x" "resourceRoutines\0"
 				"\x64p|loadScript,"
 				"\x65p|loadSound,"
-				"\x66p|loadCostume," 
+				"\x66p|loadCostume,"
 				"\x67p|loadRoom,"
-				"\x68p|nukeScript," 
-				"\x69p|nukeSound," 
+				"\x68p|nukeScript,"
+				"\x69p|nukeSound,"
 				"\x6Ap|nukeCostume,"
-				"\x6Bp|nukeRoom," 
-				"\x6Cp|lockScript," 
-				"\x6Dp|lockSound," 
+				"\x6Bp|nukeRoom,"
+				"\x6Cp|lockScript,"
+				"\x6Dp|lockSound,"
 				"\x6Ep|lockCostume,"
-				"\x6Fp|lockRoom," 
-				"\x70p|unlockScript," 
-				"\x71p|unlockSound," 
+				"\x6Fp|lockRoom,"
+				"\x70p|unlockScript,"
+				"\x71p|unlockSound,"
 				"\x72p|unlockCostume,"
-				"\x73p|unlockRoom," 
-				"\x74|clearHeap," 
-				"\x75p|loadCharset," 
-				"\x76p|nukeCharset," 
+				"\x73p|unlockRoom,"
+				"\x74|clearHeap,"
+				"\x75p|loadCharset,"
+				"\x76p|nukeCharset,"
 				"\x77z|loadFlObject,"
 				"\x78p|queueloadScript,"
 				"\x79p|queueloadSound,"
@@ -2598,14 +2598,14 @@ void next_line_HE_V72(char *output) {
 		ext(output, "rph|openFile");
 		break;
 	case 0xDB:
-		ext(output, "rx" "readFile\0" 
+		ext(output, "rx" "readFile\0"
 				"\x4p|readByte,"
 				"\x5p|readWord,"
 				"\x6p|readDWord,"
 				"\x8ppi|readArrayFromFile");
 		break;
 	case 0xDC:
-		ext(output, "x" "writeFile\0" 
+		ext(output, "x" "writeFile\0"
 				"\x4pp|writeByte,"
 				"\x5pp|writeWord,"
 				"\x6pp|writeDWord,"
@@ -2621,13 +2621,13 @@ void next_line_HE_V72(char *output) {
 		ext(output, "hh|renameFile");
 		break;
 	case 0xE0:
-		ext(output, "x" "drawLine\0" 
+		ext(output, "x" "drawLine\0"
 				"\x37pppppp|pixel,"
 				"\x3Fpppppp|actor,"
 				"\x42pppppp|wizImage");
 		break;
 	case 0xE1:
-		ext(output, "rx" "getPixel\0" 
+		ext(output, "rx" "getPixel\0"
 				"\xDApp|background,"
 				"\xDBpp|foreground");
 		break;
@@ -2800,7 +2800,7 @@ void next_line_V8(char *output) {
 		se_b = pop();
 		push(se_oper(se_b, (code - 0x8) + isEqual, se_a));
 		break;
-		
+
 	case 0x64:
 		jumpif(output, pop(), true);
 		break;
@@ -3213,7 +3213,7 @@ void next_line_V8(char *output) {
 				"\x20|writeRegistryValue,"
 				"\x21|paletteSetIntensity,"
 				"\x22|queryQuit,"
-				
+
 				"\x6C|buildPaletteShadow,"
 				"\x6D|setPaletteShadow,"
 
@@ -3719,22 +3719,22 @@ void next_line_V67(char *output) {
 			ext(output, "x" "resourceRoutines\0"
 					"\x64p|loadScript,"
 					"\x65p|loadSound,"
-					"\x66p|loadCostume," 
+					"\x66p|loadCostume,"
 					"\x67p|loadRoom,"
-					"\x68p|nukeScript," 
-					"\x69p|nukeSound," 
+					"\x68p|nukeScript,"
+					"\x69p|nukeSound,"
 					"\x6Ap|nukeCostume,"
-					"\x6Bp|nukeRoom," 
-					"\x6Cp|lockScript," 
-					"\x6Dp|lockSound," 
+					"\x6Bp|nukeRoom,"
+					"\x6Cp|lockScript,"
+					"\x6Dp|lockSound,"
 					"\x6Ep|lockCostume,"
-					"\x6Fp|lockRoom," 
-					"\x70p|unlockScript," 
-					"\x71p|unlockSound," 
+					"\x6Fp|lockRoom,"
+					"\x70p|unlockScript,"
+					"\x71p|unlockSound,"
 					"\x72p|unlockCostume,"
-					"\x73p|unlockRoom," 
-					"\x75p|loadCharset," 
-					"\x76p|nukeCharset," 
+					"\x73p|unlockRoom,"
+					"\x75p|loadCharset,"
+					"\x76p|nukeCharset,"
 					"\x77z|loadFlObject,"
 					"\x78p|queueloadScript,"
 					"\x79p|queueloadSound,"
@@ -3751,22 +3751,22 @@ void next_line_V67(char *output) {
 			ext(output, "x" "resourceRoutines\0"
 					"\x64p|loadScript,"
 					"\x65p|loadSound,"
-					"\x66p|loadCostume," 
+					"\x66p|loadCostume,"
 					"\x67p|loadRoom,"
-					"\x68p|nukeScript," 
-					"\x69p|nukeSound," 
+					"\x68p|nukeScript,"
+					"\x69p|nukeSound,"
 					"\x6Ap|nukeCostume,"
-					"\x6Bp|nukeRoom," 
-					"\x6Cp|lockScript," 
-					"\x6Dp|lockSound," 
+					"\x6Bp|nukeRoom,"
+					"\x6Cp|lockScript,"
+					"\x6Dp|lockSound,"
 					"\x6Ep|lockCostume,"
-					"\x6Fp|lockRoom," 
-					"\x70p|unlockScript," 
-					"\x71p|unlockSound," 
+					"\x6Fp|lockRoom,"
+					"\x70p|unlockScript,"
+					"\x71p|unlockSound,"
 					"\x72p|unlockCostume,"
-					"\x73p|unlockRoom," 
-					"\x75p|loadCharset," 
-					"\x76p|nukeCharset," 
+					"\x73p|unlockRoom,"
+					"\x75p|loadCharset,"
+					"\x76p|nukeCharset,"
 					"\x77z|loadFlObject");
 		break;
 	case 0x9C:
@@ -4123,7 +4123,7 @@ void next_line_V67(char *output) {
 				ext(output, "ry" "kernelGetFunctions\0"
 					"\x1|virtScreenSave"
 					);
-		else if (g_options.scriptVersion == 7) 
+		else if (g_options.scriptVersion == 7)
 				ext(output, "ry" "kernelGetFunctions\0"
 					"\x73|getWalkBoxAt,"
 					"\x74|isPointInBox,"
@@ -4138,7 +4138,7 @@ void next_line_V67(char *output) {
 					"\xD6|getVerbYPos,"
 					"\xD7|getBoxFlags"
 					);
-		else 
+		else
 				ext(output, "ry" "kernelGetFunctions\0"
 					"\x71|getPixel"
 					);
@@ -4148,7 +4148,7 @@ void next_line_V67(char *output) {
 				ext(output, "ry" "kernelSetFunctions\0"
 					"\x1|virtScreenLoad"
 					);
-		else if (g_options.scriptVersion == 7) 
+		else if (g_options.scriptVersion == 7)
 			ext(output, "y" "kernelSetFunctions\0"
 					"\x4|grabCursor,"
 					"\x6|startVideo,"
@@ -4173,7 +4173,7 @@ void next_line_V67(char *output) {
 					"\x7C|setSaveSound,"
 					"\xD7|setSubtitles,"
 					);
-		else 
+		else
 			ext(output, "y" "kernelSetFunctions\0"
 					"\x3|dummy,"
 					"\x4|grabCursor,"
@@ -4280,7 +4280,7 @@ void next_line_V67(char *output) {
 		break;
 	case 0xE0:
 		if (g_options.HumongousFlag)
-			ext(output, "x" "soundOps\0" 
+			ext(output, "x" "soundOps\0"
 				"\xDEp|setMusicVolume,"
 				"\xDF|dummy,"
 				"\xE0p|setSoundFrequency");

@@ -1,0 +1,31 @@
+-------------
+Current Goals
+-------------
+
+* Final testing on all platforms
+
+------------
+Future Goals
+------------
+
+* Default Options
+    - Things like default games path, default LAME path, default compression 
+      type, etc. could be added to a menu and saved to an *.ini file.
+* Batch Processing
+    - Batch processing can be performed by holding a list of jobs to done in
+      the ProcessArray already used in MainFrame.  To accomplish this we would
+      need to modify the Process class to add a wxString class member to hold
+      the command line string, add wxButtons and a wxListBox to facilitate
+      adding, removing, and starting batch jobs, and adding a function which
+      would iterate through the ProcessArray and perform each job, starting
+      subsequent jobs in the OnTerminate function of the previous job.
+* Encode DXA Improvements
+    - The current implementation of 'Encode DXA' compression only performs the
+      final step of the process.  There are already Windows and Unix scripts to
+      perform all of the steps in the process.  Another tab could be added to
+      the GUI which simply implements the steps found in the DXA scripts.
+* Automatic Compression
+    - Another tab could be added that would automatically compress an original
+      CD.  This would involve identifying the game, either by using filenames
+      or md5 hashes, copying all of the files needed to play the game to a
+      specified directory, and compressing any applicable files.

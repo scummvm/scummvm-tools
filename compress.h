@@ -24,6 +24,8 @@
 #define EXTRACT_H
 
 #include "util.h"
+#include <vorbis/vorbisenc.h>
+#include <FLAC/stream_encoder.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -37,6 +39,10 @@ extern "C" {
 
 /* The default for oggenc invocation is to use the --quality option only */
 #define oggqualDef 3
+
+/* These are the default parameters for the FLAC invocation */
+#define flacCompressDef 8
+#define flacBlocksizeDef 1152
 
 #define TEMP_WAV	"tempfile.wav"
 #define TEMP_RAW	"tempfile.raw"
@@ -60,7 +66,8 @@ extern void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode c
 extern void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode);
 
 extern void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode);
-extern void setRawAudioType(bool isLittleEndian, bool isStereo, bool isUnSigned, uint8 bitsPerSample);
+extern void encodeRaw(char *rawData, int length, int samplerate, const char *outname, CompressMode compmode);
+extern void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample);
 
 #if defined(__cplusplus)
 }

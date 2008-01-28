@@ -28,6 +28,7 @@
 #define TOTAL_TUNES 269
 
 char tempOutName[16];
+char inputDir[256];
 
 typedef struct {
 	char fileName[8];
@@ -116,7 +117,7 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "2M26", false },
 	{ "3M7", false },
 	{ "3M8", false },
-	{ "3M9", true }, 
+	{ "3M9", true },
 	{ "3M10", false },
 	{ "2M13", false },
 	{ "3M12", false },
@@ -163,7 +164,7 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "4M31", false },
 	{ "4M32", false },
 	{ "5M1", false },
-	{ "5M2", true }, 
+	{ "5M2", true },
 	{ "5M3", false },
 	{ "5M4", false },
 	{ "5M5", false },
@@ -275,7 +276,7 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "11M4", false },
 	{ "11M7", false },
 	{ "11M8", false },
-	{ "11M9", true }, 
+	{ "11M9", true },
 	{ "12M1", false },
 	{ "11M2", false },
 	{ "SPM2", false },
@@ -308,7 +309,7 @@ MusicFile musicNames[TOTAL_TUNES] = {
 };
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <params>\n", exename);
+	printf("\nUsage: %s [params] <inputdir>\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3          encode to MP3 format (default)\n");
@@ -337,12 +338,20 @@ void showhelp(char *exename) {
 	printf("                (default:%d)\n", oggqualDef);
 	printf(" --silent       the output of oggenc is hidden (default:disabled)\n");
 
+	printf("\nFlac mode params:\n");
+ 	printf(" --fast       FLAC uses compresion level 0\n");
+ 	printf(" --best       FLAC uses compresion level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+ 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
+
 	printf("\n --help         this help message\n");
 
 	printf("\nIf a parameter is not given the default value is used\n");
 	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	printf("\nPlease run this tool from your BS1 main directory.\n");
-	printf("(The one with the subdirectories \"MUSIC\" and \"SPEECH\")\n");
+	printf("\nMake sure the input directory contains the \"MUSIC\" and \"SPEECH\" subdirectories.\n");
+	printf("If the input directory is the same as the current directory use '.'\n");
 	exit(2);
 }
 
@@ -391,6 +400,7 @@ int16 *uncompressSpeech(FILE *clu, uint32 idx, uint32 cSize, uint32 *returnSize)
 uint8 *convertData(uint8 *rawData, uint32 rawSize, CompressMode compMode, uint32 *resSize) {
 	FILE *temp;
 	uint8 *resBuf;
+
 	uint32 size;
 	temp = fopen(TEMP_RAW, "wb");
 	assert(fwrite(rawData, 1, rawSize, temp) == rawSize);
@@ -419,11 +429,13 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 
 	assert(!(headerSize & 3));
 	cowHeader = (uint32*)malloc(headerSize);
+
 	for (cnt = 0; cnt < (headerSize / 4) - 1; cnt++)
 		cowHeader[cnt] = readUint32LE(clu);
 	assert(!(cowHeader[0] & 3));
 	numRooms = cowHeader[0] / 4;
 	assert(cowHeader[numRooms] == 0);	/* This dword should be unused. */
+
 	/* The samples are divided into rooms and samples. We don't care about the room indexes at all. */
 	/* We simply copy them and go to the sample-index data. */
 	writeUint32LE(cl3, headerSize);
@@ -438,7 +450,7 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 	}
 	cl3Index = (uint32*)malloc(numSamples * 8);
 	memset(cl3Index, 0, numSamples * 8);
-	
+
 	sampleIndex = cowHeader + numRooms + 1;
 	/* This points to the sample index table. 8 bytes each (4 bytes size and then 4 bytes file index) */
 
@@ -446,7 +458,7 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 
 	for (cnt = 0; cnt < numSamples; cnt++) {
 		if (sampleIndex[cnt << 1] | sampleIndex[(cnt << 1) | 1]) {
-			printf("sample %5d: ", cnt);
+			printf("sample %5d: \n", cnt);
 			smpData = (uint8*)uncompressSpeech(clu, sampleIndex[cnt << 1] + headerSize, sampleIndex[(cnt << 1) | 1], &smpSize);
 			if ((!smpData) || (!smpSize))
 				error("unable to handle speech sample %d!\n", cnt);
@@ -475,9 +487,10 @@ void compressSpeech(CompressMode compMode) {
 	int i;
 	char cluName[256], outName[256];
 
-	setRawAudioType(true, false, false, 16);
+	setRawAudioType(true, false, 16);
+
 	for (i = 1; i <= 2; i++) {
-		sprintf(cluName, "SPEECH/SPEECH%d.CLU", i);
+		sprintf(cluName, "%s/SPEECH/SPEECH%d.CLU", inputDir, i);
 		clu = fopen(cluName, "rb");
 		if (!clu) {
 			printf("Unable to open \"SPEECH%d.CLU\".\n", i);
@@ -485,13 +498,13 @@ void compressSpeech(CompressMode compMode) {
 		} else {
 			switch (compMode) {
 			case kMP3Mode:
-				sprintf(outName, "SPEECH/SPEECH%d.%s", i, "CL3");
+				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", inputDir, i, "CL3");
 				break;
 			case kVorbisMode:
-				sprintf(outName, "SPEECH/SPEECH%d.%s", i, "CLV");
+				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", inputDir, i, "CLV");
 				break;
 			case kFlacMode:
-				sprintf(outName, "SPEECH/SPEECH%d.%s", i, "CLF");
+				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", inputDir, i, "CLF");
 				break;
 			default:
 				error("Unknown encoding method");
@@ -519,9 +532,11 @@ void compressMusic(CompressMode compMode) {
 	int i;
 	FILE *inf;
 	char fNameIn[256], fNameOut[256];
+
 	for (i = 0; i < TOTAL_TUNES; i++) {
-		sprintf(fNameIn, "MUSIC/%s.WAV", musicNames[i].fileName);
+		sprintf(fNameIn, "%s/MUSIC/%s.WAV", inputDir, musicNames[i].fileName);
 		inf = fopen(fNameIn, "rb");
+
 		if (!inf) {
 			if (!musicNames[i].missing) {
 				printf("unable to open file \"%s\"\n", fNameIn);
@@ -531,13 +546,13 @@ void compressMusic(CompressMode compMode) {
 
 			switch (compMode) {
 			case kMP3Mode:
-				sprintf(fNameOut, "MUSIC/%s.%s", musicNames[i].fileName, "MP3");
+				sprintf(fNameOut, "%s/MUSIC/%s.%s", inputDir, musicNames[i].fileName, "MP3");
 				break;
 			case kVorbisMode:
-				sprintf(fNameOut, "MUSIC/%s.%s", musicNames[i].fileName, "OGG");
+				sprintf(fNameOut, "%s/MUSIC/%s.%s", inputDir, musicNames[i].fileName, "OGG");
 				break;
 			case kFlacMode:
-				sprintf(fNameOut, "MUSIC/%s.%s", musicNames[i].fileName, "FLA");
+				sprintf(fNameOut, "%s/MUSIC/%s.%s", inputDir, musicNames[i].fileName, "FLA");
 				break;
 			default:
 				error("Unknown encoding method");
@@ -549,51 +564,23 @@ void compressMusic(CompressMode compMode) {
 	}
 }
 
-void processArgs(int argc, char *argv[], int i, CompressMode compMode) {
-	/* HACK: the functions in compress.c expect the last argument to be a filename. */
-	/*       As we don't expect one, we simply add a dummy argument to the list. */
-	char **args;
-	int cnt;
-	int result;
-	char dummyName[] = "dummy";
-	args = (char **)malloc((argc + 1) * sizeof(char *));
-	for (cnt = 0; cnt < argc; cnt++)
-		args[cnt] = argv[cnt];
-	args[argc] = dummyName;
-
-	switch (compMode) {
-	case kMP3Mode:
-		result = process_mp3_parms(argc + 1, args, i);
-		break;
-	case kVorbisMode:
-		result = process_ogg_parms(argc + 1, args, i);
-		break;
-	case kFlacMode:
-		result = process_flac_parms(argc + 1, args, i);
-		break;
-	default:
-		error("Unknown encoding method");
-	}
-
-	if (!result)
-		showhelp(argv[0]);
-	free(args);
-}
-
 void checkFilesExist(bool checkSpeech, bool checkMusic) {
 	int i;
 	FILE *testFile;
 	char fileName[256];
 	bool speechFound = false, musicFound = false;
+
 	if (checkSpeech) {
 		for (i = 1; i <= 2; i++) {
-			sprintf(fileName, "SPEECH/SPEECH%d.CLU", i);
+			sprintf(fileName, "%s/SPEECH/SPEECH%d.CLU", inputDir, i);
 			testFile = fopen(fileName, "rb");
+
 			if (testFile){
 				speechFound = true;
 				fclose(testFile);
 			}
 		}
+
 		if (!speechFound) {
 			printf("Unable to find speech files.\n");
 			printf("Please copy the SPEECH.CLU files from Broken Sword CD1 and CD2\n");
@@ -603,15 +590,18 @@ void checkFilesExist(bool checkSpeech, bool checkMusic) {
 			printf("and directorynames are all upper-case.\n\n");
 		}
 	}
+
 	if (checkMusic) {
 		for (i = 0; i < 20; i++) { /* Check the first 20 music files */
-			sprintf(fileName, "MUSIC/%s.WAV", musicNames[i].fileName);
+			sprintf(fileName, "%s/MUSIC/%s.WAV", inputDir, musicNames[i].fileName);
 			testFile = fopen(fileName, "rb");
+
 			if (testFile) {
 				musicFound = true;
 				fclose(testFile);
 			}
 		}
+
 		if (!musicFound) {
 			printf("Unable to find music files.\n");
 			printf("Please copy the music files from Broken Sword CD1 and CD2\n");
@@ -620,6 +610,7 @@ void checkFilesExist(bool checkSpeech, bool checkMusic) {
 			printf("and directorynames are all upper-case.\n");
 		}
 	}
+
 	if ((checkSpeech && (!speechFound)) || (checkMusic && (!musicFound))) {
 		printf("\nUse --help for more information\n");
 		exit(2);
@@ -650,27 +641,42 @@ int main(int argc, char *argv[]) {
 	switch (compMode) {
 	case kMP3Mode:
 		strcpy(tempOutName, TEMP_MP3);
+		if (!process_mp3_parms(argc, argv, i)) {
+			showhelp(argv[0]);
+		}
+
 		break;
 	case kVorbisMode:
 		strcpy(tempOutName, TEMP_OGG);
+		if (!process_ogg_parms(argc, argv, i)) {
+			showhelp(argv[0]);
+		}
+
 		break;
 	case kFlacMode:
 		strcpy(tempOutName, TEMP_FLAC);
+		if (!process_flac_parms(argc, argv, i)){
+			showhelp(argv[0]);
+		}
+
 		break;
 	default:
 		error("Unknown encoding method");
 	}
 
-	processArgs(argc, argv, i, compMode);
+	sprintf(inputDir, argv[argc - 1]);
 
 	/* Do a quick check to see if we can open any files at all */
 	checkFilesExist(compSpeech, compMusic);
 
-	if (compSpeech)
+	if (compSpeech) {
 		compressSpeech(compMode);
-	if (compMusic)
+	}
+
+	if (compMusic) {
 		compressMusic(compMode);
-	
+	}
+
 	return EXIT_SUCCESS;
 }
 

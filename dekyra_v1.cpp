@@ -70,7 +70,7 @@ void c1_pushRetOrPos(ScriptData *script, int argument) {
 	case 0:
 	case 1:
 		break;
-	
+
 	default:
 		fprintf(outputFile, "; called with illegal param! breaks execution!");
 		break;
@@ -106,7 +106,7 @@ void c1_popRetOrPos(ScriptData *script, int argument) {
 	case 0:
 	case 1:
 		break;
-	
+
 	default:
 		fprintf(outputFile, "; called with illegal param! breaks execution!");
 		break;
@@ -153,7 +153,7 @@ void c1_negate(ScriptData *script, int argument) {
 	case 1:
 	case 2:
 		break;
-	
+
 	default:
 		fprintf(outputFile, "; called with illegal param! breaks execution");
 		break;
@@ -163,85 +163,85 @@ void c1_negate(ScriptData *script, int argument) {
 
 void c1_eval(ScriptData *script, int argument) {
 	fprintf(outputFile, "c1_eval %d ; (C syntax): '", argument);
-	
+
 	switch (argument) {
 	case 0:
 		fprintf(outputFile, "(val2 && val1)");
 		break;
-	
+
 	case 1:
 		fprintf(outputFile, "(val2 || val1)");
 		break;
-	
+
 	case 2:
 		fprintf(outputFile, "(val1 == val2)");
 		break;
-	
+
 	case 3:
 		fprintf(outputFile, "(val1 != val2)");
 		break;
-	
+
 	case 4:
 		fprintf(outputFile, "(val1 > val2)");
 		break;
-	
+
 	case 5:
 		fprintf(outputFile, "(val1 >= val2)");
 		break;
-	
+
 	case 6:
 		fprintf(outputFile, "(val1 < val2)");
 		break;
-	
+
 	case 7:
 		fprintf(outputFile, "(val1 <= val2)");
 		break;
-	
+
 	case 8:
 		fprintf(outputFile, "val1 + val2");
 		break;
-	
+
 	case 9:
 		fprintf(outputFile, "val2 - val1");
 		break;
-	
+
 	case 10:
 		fprintf(outputFile, "val1 * val2");
 		break;
-	
+
 	case 11:
 		fprintf(outputFile, "val2 / val1");
 		break;
-	
+
 	case 12:
 		fprintf(outputFile, "val2 >> val1");
 		break;
-	
+
 	case 13:
 		fprintf(outputFile, "val2 << val1");
 		break;
-	
+
 	case 14:
 		fprintf(outputFile, "val1 & val2");
 		break;
-	
+
 	case 15:
 		fprintf(outputFile, "val1 | val2");
 		break;
-	
+
 	case 16:
 		fprintf(outputFile, "val2 %% val1");
 		break;
-	
+
 	case 17:
 		fprintf(outputFile, "val1 ^ val2");
 		break;
-	
+
 	default:
 		fprintf(outputFile, "!error breaking exectution!");
 		break;
 	}
-	
+
 	fprintf(outputFile, "'\n");
 }
 
@@ -271,7 +271,7 @@ void setupCommandsV1(Script *myScript) {
 		&c1_eval,
 		&c1_setRetAndJmp
 	};
-	
+
 	myScript->setCommands(commands, ARRAYSIZE(commands));
 }
 
@@ -283,7 +283,7 @@ void c1_traceJumpTo(ScriptData *script, int argument) {
 			if (call->refOffs[i] == script->curOffset)
 				return;
 		}
-		
+
 		if (call->refs < MAX_REFS) {
 			call->refOffs[call->refs++] = script->curOffset;
 		} else {
@@ -309,7 +309,7 @@ void c1_traceIfNotJmp(ScriptData *script, int argument) {
 			if (call->refOffs[i] == script->curOffset)
 				return;
 		}
-		
+
 		if (call->refs < MAX_REFS) {
 			call->refOffs[call->refs++] = script->curOffset;
 		} else {
@@ -350,7 +350,7 @@ void setupTraceCommandsV1(Script *myScript) {
 		0,
 		0
 	};
-	
+
 	myScript->setCommands(commands, ARRAYSIZE(commands));
 }
 
@@ -408,7 +408,7 @@ void getOpcodesV1(OpcodeEntry *&opcodes, int &opcodesSize) {
 		{ 0x30 ,"o1_popBrandonIntoScene" },
 		{ 0x31 ,"o1_restoreAllObjectBackgrounds" },
 		{ 0x32 ,"o1_setCustomPaletteRange" },
-		{ 0x33 ,"o1_loadPageFromDisk" },		
+		{ 0x33 ,"o1_loadPageFromDisk" },
 		{ 0x34 ,"o1_customPrintTalkString" },
 		{ 0x35 ,"o1_restoreCustomPrintBackground" },
 		{ 0x36 ,"o1_hideMouse" },
@@ -515,7 +515,7 @@ void getOpcodesV1(OpcodeEntry *&opcodes, int &opcodesSize) {
 		{ 0x9b ,"o1_vocLoad" },
 		{ 0x9c ,"o1_dummy" }
 	};
-	
+
 	opcodes = kyra1OpcodeDesc;
 	opcodesSize = ARRAYSIZE(kyra1OpcodeDesc);
 }

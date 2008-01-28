@@ -39,10 +39,14 @@ int main(int argc, char *argv[]) {
 	if (argc < 3)
 		showhelp(argv[0]);
 
+	char inputFile[1024];
+	char outputFile[1024];
 	int i = 0;
+
 	/* Compression mode */
 	gCompMode = kMP3Mode;
 	i = 1;
+
 	if (strcmp(argv[1], "--mp3") == 0) {
 		gCompMode = kMP3Mode;
 		i++;
@@ -60,31 +64,37 @@ int main(int argc, char *argv[]) {
 	case kMP3Mode:
 		outputExt = OUTPUT_MP3;
 		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc - 1, argv, i))
+		if (!process_mp3_parms(argc - 2, argv, i))
 			showhelp(argv[0]);
 		break;
 	case kVorbisMode:
 		outputExt = OUTPUT_OGG;
 		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc - 1, argv, i))
+		if (!process_ogg_parms(argc - 2, argv, i))
 			showhelp(argv[0]);
 		break;
 	case kFlacMode:
 		outputExt = OUTPUT_FLAC;
 		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc - 1, argv, i))
+		if (!process_flac_parms(argc - 2, argv, i))
 			showhelp(argv[0]);
 		break;
 	}
-	
-	if (scumm_stricmp(argv[argc - 2], argv[argc - 1]) == 0)
+
+	sprintf(inputFile, "%s/%s", argv[argc - 2], argv[argc - 3]);
+	sprintf(outputFile, "%s/%s", argv[argc - 1], argv[argc - 3]);
+
+	if (scumm_stricmp(inputFile, outputFile) == 0) {
 		error("infile and outfile are the same file");
-	process(argv[argc - 2], argv[argc - 1]);
+	}
+
+	process(inputFile, outputFile);
+
 	return 0;
 }
 
 static void showhelp(const char *exename) {
-	printf("\nUsage: %s <params> infile outfile\n", exename);
+	printf("\nUsage: %s [params] <file> <inputdir> <outputdir>\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
@@ -109,7 +119,12 @@ static void showhelp(const char *exename) {
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf(" [params]     optional arguments passed directly to the encoder\n");
+ 	printf(" --fast       FLAC uses compresion level 0\n");
+ 	printf(" --best       FLAC uses compresion level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n --help     this help message\n");
 
@@ -121,26 +136,35 @@ static void showhelp(const char *exename) {
 
 static bool hasSuffix(const char *str, const char *suf) {
 	const int sufSize = strlen(suf);
+
 	int off = strlen(str);
 	if (off < sufSize)
 		return false;
+
 	off -= sufSize;
 	printf("'%s'\n", &str[off]);
+
 	return (scumm_stricmp(&str[off], suf) == 0);
 }
 
 static void process(const char *infile, const char *outfile) {
 	PAKFile input, output;
-	if (!input.loadFile(infile, false))
+
+	if (!input.loadFile(infile, false)) {
 		return;
-	if (!output.loadFile(0, false))
+	}
+
+	if (!output.loadFile(0, false)) {
 		return;
-		
+	}
+
 	PAKFile::cFileList *list = input.getFileList();
 	char outputName[32];
+
 	for (; list; list = list->next) {
-		if (!hasSuffix(list->filename, ".VOC"))
+		if (!hasSuffix(list->filename, ".VOC")) {
 			continue;
+		}
 
 		if (list->data[26] != 1) {
 			warning("broken VOC file '%s' skipping it...", list->filename);
@@ -149,22 +173,24 @@ static void process(const char *infile, const char *outfile) {
 
 		input.outputFileAs(list->filename, TEMPFILE);
 		strncpy(outputName, list->filename, 32);
-		
+
 		FILE *tempFile = fopen(TEMPFILE, "rb");
 		fseek(tempFile, 26, SEEK_CUR);
 		extractAndEncodeVOC(TEMP_RAW, tempFile, gCompMode);
 		fclose(tempFile);
-		
+
 		char *vocStart = strstr(outputName, ".VOC");
-		for (unsigned int i = 0; i < strlen(outputExt); ++i)
+		for (unsigned int i = 0; i < strlen(outputExt); ++i) {
 			vocStart[i] = outputExt[i];
+		}
+
 		output.addFile(outputName, tempEncoded);
-		
+
 		unlink(TEMPFILE);
 		unlink(TEMP_RAW);
 		unlink(tempEncoded);
 	}
-	
+
 	if (output.getFileList()) {
 		output.saveFile(outfile);
 	} else {

@@ -55,15 +55,18 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 
 int main (int argc, char **argv) {
 	FILE *input1, *input2, *output;
-	char fname[256];
+	char fname[1024];
+	char inputPath[768];
 	int i, j;
 	unsigned short signature;
 
 	if (argc < 3) {
 		printf("Syntax: %s <disk1.d64> <disk2.d64>\n",argv[0]);
-		return 1;
+		exit(2);
 	}
-	if (!(input1 = fopen(argv[1],"rb")))
+
+	getPath(argv[argc - 1], inputPath);
+	if (!(input1 = fopen(argv[1],"rb"))) 
 		error("Unable to open file %s for input!",argv[1]);
 	if (!(input2 = fopen(argv[2],"rb")))
 		error("Unable to open file %s for input!",argv[2]);
@@ -75,10 +78,10 @@ int main (int argc, char **argv) {
 	signature = readUint16LE(input2);
 	if (signature != 0x0132)
 		error("Signature not found in disk 2!");
-
-	if (!(output = fopen("00.LFL","wb")))
+	sprintf(fname, "%s/00.LFL", inputPath);
+	if (!(output = fopen(fname, "wb")))
 		error("Unable to create index file!");
-	notice("Creating 00.LFL...");
+	notice("Creating %s...", fname);
 
 	/* write signature */
 	writeUint16LE(output, signature);
@@ -121,6 +124,7 @@ int main (int argc, char **argv) {
 
 	for (i = 0; i < NUM_ROOMS; i++) {
 		FILE *input;
+
 		if (room_disks[i] == '1')
 			input = input1;
 		else if (room_disks[i] == '2')
@@ -128,21 +132,29 @@ int main (int argc, char **argv) {
 		else
 			continue;
 
-		sprintf(fname,"%02i.LFL", i);
+		sprintf(fname,"%s/%02i.LFL", inputPath, i);
 		output = fopen(fname, "wb");
-		if (output == NULL)
+
+		if (output == NULL) {
 			error("Unable to create %s!",fname);
+		}
+
 		notice("Creating %s...",fname);
 		fseek(input, (SectorOffset[room_tracks[i]] + room_sectors[i]) * 256, SEEK_SET);
+
 		for (j = 0; j < ResourcesPerFile[i]; j++) {
 			unsigned short len = readUint16LE(input);
 			writeUint16LE(output, len);
-			for (len -= 2; len > 0; len--)
+
+			for (len -= 2; len > 0; len--) {
 				writeByte(output, readByte(input));
+			}
 		}
+
 		rewind(input);
 	}
 
 	notice("All done!");
+
 	return 0;
 }

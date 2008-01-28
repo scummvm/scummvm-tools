@@ -102,7 +102,7 @@ Compression Tools:
                 or FLAC. 
 
                 Example of usage:
-                compress_saga <flags here> <file>
+                compress_saga [params] <file>
 
                 Where <file> is the sound file you with to compress, without the
                 extension.
@@ -125,18 +125,15 @@ Compression Tools:
                 or FLAC.
 
                 Example of usage:
-                compress_scumm.bun digmusic.bun uncomp comp --flac
+                compress_scumm_bun [params] <file> <inputdir> <outputdir>
 
                 Please note that FLAC compression will produce larger files
                 than the original, for The Curse of Monkey Island!
 
-        compress_scumm_san <inputfile> <inputdir> <outputdir> [--ogg]
+        compress_scumm_san
                 Compresses '.san' smush animation files. It uses lossless
                 zlib for compressing FOBJ gfx chunks inside a san file.
                 It also can create a separate Ogg file with the audio track.
-
-                Example of usage:
-                compress_scumm_san opening.san uncomp comp
 
                 In order to use such compressed files, your ScummVM binary
                 must have been built with zlib support enabled (you can find
@@ -199,7 +196,7 @@ Script Tools:
                 Basic script disassembler for Legend of Kyrandia games
 
 Encoder Tools:
-        encode_dxa <filename>
+        encode_dxa [params] <file>
 
                 Creates DXA file out of extracted Smacker video.
 

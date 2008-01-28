@@ -42,15 +42,15 @@ int main(int argc, char** argv) {
 			   "-e   set engine version (1 for kyra1 (default), 2 for kyra2)\n"
 			   "-o   set optional outputfilename (default: stdout)\n",
 			   argv[0]);
-			   
+
 		return -1;
 	}
-	
+
 	int file = -1;
 	int outputfile = -1;
 	bool displayText = false;
 	int32 engine = 1;
-	
+
 	// search for some parameters
 	for (int param = 1; param < argc; ++param) {
 		if (*argv[param] != '-' && file == -1)
@@ -60,13 +60,13 @@ int main(int argc, char** argv) {
 				displayText = true;
 			} else if (argv[param][1] == 'e') {
 				engine = atoi(argv[param+1]);
-				++param;				
+				++param;
 			} else if (argv[param][1] == 'o' && outputfile == -1) {
 				outputfile = ++param;
 			}
 		}
 	}
-	
+
 	if (file == -1) {
 		printf("Use:\n"
 			   "%s filename\n"
@@ -74,27 +74,27 @@ int main(int argc, char** argv) {
 			   "-e   set engine version (1 for kyra1 (default), 2 for kyra2)\n"
 			   "-o   set optional outputfilename (default: stdout)\n",
 			   argv[0]);
-			   
+
 		return -1;
 	} else if (engine != 1 && engine != 2) {
 		printf("-e (engine version) must be set to 1 or 2!\n");
 		return -1;
 	}
-	
+
 	// currently output goes to stdout
 	if (outputfile == -1 || outputfile >= argc) {
 		outputFile = stdout;
 	} else {
 		outputFile = fopen(argv[outputfile], "w");
 	}
-	
+
 	Script myScript;
 	ScriptData scriptData;
 	memset(&scriptData, 0, sizeof(ScriptData));
-	
+
 	OpcodeEntry *opcodes;
 	int opcodesSize;
-	
+
 	if (engine == 1) {
 		getOpcodesV1(opcodes, opcodesSize);
 	} else if (engine == 2) {
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 		printf("ERROR: script loading failed!\n");
 		return -1;
 	}
-	
+
 	myScript.setEngineVersion(engine);
 	if (!displayText) {
 		if (engine == 1) {
@@ -114,10 +114,10 @@ int main(int argc, char** argv) {
 			// TODO: maybe kyra2 has other commands?
 			setupTraceCommandsV1(&myScript);
 		}
-		
+
 		myScript.processScriptTrace(&scriptData);
 	}
-	
+
 	fprintf(outputFile, "/-----------------------------------\\\n");
 	fprintf(outputFile, "|                                   |\n");
 	fprintf(outputFile, "|  Dekyra output for file:          |\n");
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
 	}
 	fprintf(outputFile, "|                                   |\n");
 	fprintf(outputFile, "\\-----------------------------------/\n\n");
-	
+
 	myScript.setEngineVersion(engine);
 	myScript.printTextArea(&scriptData, argv[file]);
 	if (!displayText) {
@@ -160,12 +160,12 @@ int main(int argc, char** argv) {
 
 		myScript.decodeScript(&scriptData);
 	}
-	
+
 	myScript.unloadScript(&scriptData);
-	
+
 	if (outputFile != stdout)
 		fclose(outputFile);
-	
+
 	return 0;
 }
 
@@ -202,14 +202,14 @@ bool Script::loadScript(const char *filename, ScriptData *scriptData, OpcodeEntr
 	scriptFile = NULL;
 
 	byte *curData = data;
-	
+
 	uint32 formBlockSize = Script::getFORMBlockSize(curData);
 	if (formBlockSize == (uint32)-1) {
 		delete [] data;
 		error("No FORM chunk found in file: '%s'", filename);
 		return false;
 	}
-	
+
 	uint32 chunkSize = Script::getIFFBlockSize(data, curData, size, TEXT_CHUNK);
 	if (chunkSize != (uint32)-1) {
 		scriptData->text = new byte[chunkSize];
@@ -222,7 +222,7 @@ bool Script::loadScript(const char *filename, ScriptData *scriptData, OpcodeEntr
 			error("Couldn't load TEXT chunk from file: '%s'", filename);
 			return false;
 		}
-		
+
 		uint16 minTextOffset = 0xFFFF;
 		for (int i = 0; i < scriptData->textChunkSize / 2; ++i, ++scriptData->numStrings) {
 			if (minTextOffset > READ_BE_UINT16(&((uint16 *)scriptData->text)[i])) {
@@ -232,7 +232,7 @@ bool Script::loadScript(const char *filename, ScriptData *scriptData, OpcodeEntr
 				break;
 		}
 	}
-	
+
 	chunkSize = Script::getIFFBlockSize(data, curData, size, ORDR_CHUNK);
 	if (chunkSize == (uint32)-1) {
 		delete [] data;
@@ -255,7 +255,7 @@ bool Script::loadScript(const char *filename, ScriptData *scriptData, OpcodeEntr
 	while (chunkSize--) {
 		((uint16*)scriptData->ordr)[chunkSize] = READ_BE_UINT16(&((uint16*)scriptData->ordr)[chunkSize]);
 	}
-	
+
 	chunkSize = Script::getIFFBlockSize(data, curData, size, DATA_CHUNK);
 	if (chunkSize == (uint32)-1) {
 		delete [] data;
@@ -273,11 +273,11 @@ bool Script::loadScript(const char *filename, ScriptData *scriptData, OpcodeEntr
 		error("Couldn't load DATA chunk from file: '%s'", filename);
 		return false;
 	}
-	
+
 	scriptData->dataChunkSize = chunkSize;
 	scriptData->opcodes = opcodes;
 	scriptData->opcodeSize = opcodeSize;
-	
+
 	delete [] data;
 	return true;
 }
@@ -339,13 +339,13 @@ void Script::processScriptTrace(ScriptData *dataPtr) {
 		} else {
 			parameter = 0;
 		}
-		
+
 		if (opcode < _commandsSize) {
 			if (_commands[(uint)opcode])
 				_commands[(uint)opcode](dataPtr, parameter);
 		}
 	}
-	
+
 	// TODO: sort the 'function' list (except for the functions with id != -1) after start address
 }
 
@@ -360,11 +360,11 @@ int Script::findFunction(ScriptData *dataPtr, uint16 offset) {
 		int temp = (dataPtr->functions[i].startOffset < offset) ? dataPtr->functions[i].startOffset : offset;
 		if (temp == offset)
 			continue;
-		
+
 		int temp2 = (bestStartOffset > temp) ? bestStartOffset : temp;
 		if (temp2 == bestStartOffset)
 			continue;
-		
+
 		bestStartOffset = temp2;
 		functionFittingBest = i;
 	}
@@ -409,7 +409,7 @@ void Script::outputFunctionInfo(ScriptData *dataPtr, uint16 curOffset, bool list
 
 void Script::decodeScript(ScriptData *dataPtr) {
 	uint8 *ip = dataPtr->data;
-	
+
 	fprintf(outputFile, "\n");
 	fprintf(outputFile, "---------- scriptfunction list ----------------\n\n");
 	for (int i = 0; i < dataPtr->ordrChunkSize / 2; ++i) {
@@ -418,7 +418,7 @@ void Script::decodeScript(ScriptData *dataPtr) {
 			fprintf(outputFile, "Scriptfunction %d starts at 0x%.04X\n", i, offset << 1);
 	}
 	fprintf(outputFile, "\n");
-	
+
 	fprintf(outputFile, "--------- detected functionchunk list ----------\n\n");
 	outputFunctionInfo(dataPtr, 0, true);
 
@@ -427,7 +427,7 @@ void Script::decodeScript(ScriptData *dataPtr) {
 		uint16 curOffset = (uint16)(ip - dataPtr->data);
 
 		outputFunctionInfo(dataPtr, curOffset);
-		
+
 		fprintf(outputFile, "0x%.04X: ", curOffset);
 
 		int16 parameter = 0;
@@ -444,7 +444,7 @@ void Script::decodeScript(ScriptData *dataPtr) {
 		} else {
 			parameter = 0;
 		}
-		
+
 		fprintf(outputFile, "0x%.02X ", opcode);
 		if (opcode >= _commandsSize) {
 			fprintf(outputFile, "unknown command\n");
@@ -472,7 +472,7 @@ uint32 Script::getFORMBlockSize(byte *&data) {
 uint32 Script::getIFFBlockSize(byte *start, byte *&data, uint32 maxSize, const uint32 chunkName) {
 	uint32 size = (uint32)-1;
 	bool special = false;
-	
+
 	if (data == (start + maxSize)) {
 		data = start + 0x0C;
 	}
@@ -498,7 +498,7 @@ uint32 Script::getIFFBlockSize(byte *start, byte *&data, uint32 maxSize, const u
 
 bool Script::loadIFFBlock(byte *start, byte *&data, uint32 maxSize, const uint32 chunkName, byte *loadTo, uint32 ptrSize) {
 	bool special = false;
-	
+
 	if (data == (start + maxSize)) {
 		data = start + 0x0C;
 	}

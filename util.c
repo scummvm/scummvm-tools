@@ -146,3 +146,48 @@ uint32 fileSize(FILE *fp) {
 	return sz;
 }
 
+void getPath(const char *fullpath, char *path) {
+	const char *p;
+
+	/* Find the last occurence of '/' or '\'
+	 * Everything before this point is the path
+	 * Everything after this point is the filename
+	 */
+	p = strrchr(fullpath, '/');
+	if (!p) {
+		p = strrchr(fullpath, '\\');
+
+		if (!p) {
+			p = fullpath - 1;
+		}
+	}
+
+	/* The path is everything before p, unless the file is in the current
+	 * directory, in which case the path is '.'
+	 */
+	if (p < fullpath) {
+		strcpy(path, ".");
+	} else {
+		strncpy(path, fullpath, p - fullpath);
+		path[strlen(fullpath) - strlen(p)] = '\0';
+	}
+}
+
+void getFilename(const char *fullpath, char *filename) {
+	const char *p;
+
+	/* Find the last occurence of '/' or '\'
+	 * Everything before this point is the path
+	 * Everything after this point is the filename
+	 */
+	p = strrchr(fullpath, '/');
+	if (!p) {
+		p = strrchr(fullpath, '\\');
+
+		if (!p) {
+			p = fullpath - 1;
+		}
+	}
+
+	strcpy(filename, p + 1);
+}

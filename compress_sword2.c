@@ -31,7 +31,7 @@ static CompressMode gCompMode = kMP3Mode;
 
 void showhelp(char *exename)
 {
-	printf("\nUsage: %s <params> file.clu\n", exename);
+	printf("\nUsage: %s [params] <file>\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
@@ -56,8 +56,12 @@ void showhelp(char *exename)
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf(" [params]     optional arguments passed directly to the encoder\n");
-	printf("              recommended is: --best -b 1152\n");
+	printf(" --fast       FLAC uses compresion level 0\n");
+	printf(" --best       FLAC uses compresion level 8\n");
+	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n --help     this help message\n");
 
@@ -82,8 +86,10 @@ uint32 append_to_file(FILE *f1, const char *filename) {
 
 	while (length > 0) {
 		size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length, f2);
-		if (size <= 0)
+		if (size <= 0) {
 			break;
+		}
+
 		length -= size;
 		fwrite(fbuf, 1, size, f1);
 	}
@@ -97,17 +103,19 @@ uint32 append_to_file(FILE *f1, const char *filename) {
 #define GetCompressedAmplitude(n)  ((n) & 7)
 
 int main(int argc, char *argv[]) {
-	char output_filename[40];
+	char output_filename[1024];
 	FILE *output, *f;
 	char *ptr;
 	int i, j;
 	uint32 indexSize;
 	uint32 totalSize;
 	uint32 length;
-	
+
 	if (argc < 2)
 		showhelp(argv[0]);
+
 	i = 1;
+
 	if (strcmp(argv[1], "--mp3") == 0) {
 		gCompMode = kMP3Mode;
 		i++;
@@ -123,18 +131,24 @@ int main(int argc, char *argv[]) {
 	switch (gCompMode) {
 	case kMP3Mode:
 		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i))
+		if (!process_mp3_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kVorbisMode:
 		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i))
+		if (!process_ogg_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kFlacMode:
 		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i))
+		if (!process_flac_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	}
 
@@ -169,33 +183,6 @@ int main(int argc, char *argv[]) {
 	writeUint32LE(output_idx, indexSize);
 	writeUint32BE(output_idx, 0xfff0fff0);
 	writeUint32BE(output_idx, 0xfff0fff0);
-
-	for (j = strlen(argv[i]) - 1; j >= 0; j--) {
-		if (argv[i][j] == '/' || argv[i][j] == '\\' || argv[i][j] == ':') {
-			j++;
-			break;
-		}
-	}
-
-	if (j < 0)
-		j = 0;
-
-	strncpy(output_filename, argv[i] + j, sizeof(output_filename) - 1);
-	output_filename[sizeof(output_filename) - 1] = 0;
-
-	ptr = output_filename + strlen(output_filename) - 1;
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		*ptr = '3';
-		break;
-	case kVorbisMode:
-		*ptr = 'g';
-		break;
-	case kFlacMode:
-		*ptr = 'f';
-		break;
-	}
 
 	for (i = 0; i < indexSize; i++) {
 		uint32 pos;
@@ -284,6 +271,22 @@ int main(int argc, char *argv[]) {
 
 	fclose(output_idx);
 	fclose(output_snd);
+
+	strcpy(output_filename, argv[argc - 1]);
+	ptr = output_filename + strlen(output_filename) - 1;
+
+	switch (gCompMode) {
+	case kMP3Mode:
+		*ptr = '3';
+		break;
+	case kVorbisMode:
+		*ptr = 'g';
+		break;
+	case kFlacMode:
+		*ptr = 'f';
+		break;
+	}
+
 
 	output = fopen(output_filename, "wb");
 	if (!output) {

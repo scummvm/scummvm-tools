@@ -41,17 +41,18 @@ static FILE *input, *output_idx, *output_snd;
 static CompressMode gCompMode = kMP3Mode;
 
 
-void end_of_file(void)
-{
+void end_of_file(char *inputPath) {
 	FILE *in;
 	int idx_size = ftell(output_idx);
 	size_t size;
+	char tmp[1024];
 	char buf[2048];
 
 	fclose(output_snd);
 	fclose(output_idx);
 
-	output_idx = fopen(outputName , "wb");
+	sprintf(tmp, "%s/%s", inputPath, outputName);
+	output_idx = fopen(tmp , "wb");
 	writeUint32BE(output_idx, (uint32)idx_size);
 
 	in = fopen(TEMP_IDX, "rb");
@@ -72,20 +73,18 @@ void end_of_file(void)
 	unlink(TEMP_DAT);
 	unlink(TEMP_RAW);
 	unlink(tempEncoded);
-	
+
 	exit(-1);
 }
 
-void append_byte(int size, char buf[])
-{
+void append_byte(int size, char buf[]) {
 	int i;
 	for (i = 0; i < (size - 1); i++)
 		buf[i] = buf[i + 1];
 	buf[i] = fgetc(input);
 }
 
-void get_part(void)
-{
+void get_part(char *inputPath) {
 	FILE *f;
 	uint32 tot_size;
 	char outname[256];
@@ -103,8 +102,9 @@ void get_part(void)
 		pos++;
 		append_byte(4, buf);
 		if (feof(input))
-			end_of_file();
+			end_of_file(inputPath);
 	}
+
 	tags = readUint32BE(input);
 	if (tags < 8)
 		exit(-1);
@@ -119,18 +119,17 @@ void get_part(void)
 	}
 
 	fread(buf, 1, 8, input);
-	if (!memcmp(buf, "Creative", 8)) {
+	if (!memcmp(buf, "Creative", 8))
 		fseek(input, 18, SEEK_CUR);
-	} else if (!memcmp(buf, "VTLK", 4)) {
+	else if (!memcmp(buf, "VTLK", 4))
 		fseek(input, 26, SEEK_CUR);
-	} else {
+	else
 		error("Unexpected data encountered");
-	}
 	printf("Voice file found (pos = %d) :", pos);
 
-	/* Conver the VOC data */
+	/* Convert the VOC data */
 	extractAndEncodeVOC(TEMP_RAW, input, gCompMode);
-	
+
 	/* Append the converted data to the master output file */
 	sprintf(outname, tempEncoded);
 	f = fopen(outname, "rb");
@@ -144,9 +143,8 @@ void get_part(void)
 	writeUint32BE(output_idx, tot_size);
 }
 
-void showhelp(char *exename)
-{
-	printf("\nUsage: %s <params> monster.sou\n", exename);
+void showhelp(char *exename) {
+	printf("\nUsage: %s [params] monster.sou\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
@@ -171,8 +169,12 @@ void showhelp(char *exename)
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf(" [params]     optional arguments passed directly to the encoder\n");
-	printf("              recommended is: --best -b 1152\n");
+ 	printf(" --fast       FLAC uses compresion level 0\n");
+ 	printf(" --best       FLAC uses compresion level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+ 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n --help     this help message\n");
 
@@ -181,24 +183,26 @@ void showhelp(char *exename)
 	exit(2);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+	char inputPath[768];
 	char buf[2048];
 	int i;
-	if (argc < 2)
+
+	if (argc < 2) {
 		showhelp(argv[0]);
+	}
+
 	/* Compression mode */
 	gCompMode = kMP3Mode;
 	i = 1;
+
 	if (strcmp(argv[1], "--mp3") == 0) {
 		gCompMode = kMP3Mode;
 		i++;
-	}
-	else if (strcmp(argv[1], "--vorbis") == 0) {
+	} else if (strcmp(argv[1], "--vorbis") == 0) {
 		gCompMode = kVorbisMode;
 		i++;
-	}
-	else if (strcmp(argv[1], "--flac") == 0) {
+	} else if (strcmp(argv[1], "--flac") == 0) {
 		gCompMode = kFlacMode;
 		i++;
 	}
@@ -224,9 +228,9 @@ int main(int argc, char *argv[])
 		break;
 	}
 
+	getPath(argv[argc - 1], inputPath);
 
-	i = argc - 1;
-	input = fopen(argv[i], "rb");
+	input = fopen(argv[argc - 1], "rb");
 	if (!input) {
 		printf("Cannot open file: %s\n", argv[i]);
 		exit(-1);
@@ -242,14 +246,16 @@ int main(int argc, char *argv[])
 		printf("Can't open file " TEMP_DAT " for write!\n");
 		exit(-1);
 	}
-	
+
 	/* Get the 'SOU ....' header */
 	fread(buf, 1, 8, input);
 	if (strncmp(buf, f_hdr, 8)) {
 		printf("Bad SOU\n");
 		exit(-1);
 	}
+
 	while (1)
-		get_part();
+		get_part(inputPath);
+
 	return 0;
 }

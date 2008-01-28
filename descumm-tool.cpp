@@ -83,7 +83,7 @@ int skipVerbHeader_V34(byte *p) {
 	int offset = g_options.GF_UNBLOCKED ? 17 : 19;
 	int minOffset = 255;
 	p += offset;
-	
+
 	printf("Events:\n");
 
 	while ((code = *p++) != 0) {
@@ -119,7 +119,7 @@ int skipVerbHeader_V8(byte *p) {
 	uint32 code;
 	int offset;
 	int minOffset = 255;
-	
+
 	ptr = (uint32 *)p;
 	while ((code = READ_LE_UINT32(ptr++)) != 0) {
 		offset = READ_LE_UINT32(ptr++);
@@ -246,7 +246,7 @@ char *parseCommandLine(int argc, char *argv[]) {
 			filename = s;
 		}
 	}
-	
+
 	return filename;
 }
 
@@ -268,7 +268,7 @@ void parseHeader() {
 		if (g_scriptSize < (uint)(g_options.scriptVersion == 5 ? 8 : 9)) {
 			error("File too small to be a script");
 		}
-	
+
 		switch (READ_BE_UINT32(g_scriptStart)) {
 		case 'LSC2':
 			if (g_scriptSize <= 12) {
@@ -351,7 +351,7 @@ int main(int argc, char *argv[]) {
 
 	memset(&g_options, 0, sizeof(g_options));
 	g_options.scriptVersion = 0xff;
-	
+
 	// Parse the arguments
 	filename = parseCommandLine(argc, argv);
 	if (!filename || g_options.scriptVersion == 0xff)
@@ -425,7 +425,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	printf("END\n");
-	
+
 /*
 	if (g_options.scriptVersion >= 6 && num_stack != 0) {
 		printf("Stack count: %d\n", num_stack);

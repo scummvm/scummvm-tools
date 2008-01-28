@@ -118,12 +118,12 @@ struct Options {
 	bool dontShowOpcode;
 	bool dontShowOffsets;
 	bool haltOnError;
-	
+
 	bool HumongousFlag;
 	bool ZakFlag;
 	bool IndyFlag;
 	bool GF_UNBLOCKED;
-		
+
 	//
 	// The SCUMM version used for the script we are descumming.
 	//

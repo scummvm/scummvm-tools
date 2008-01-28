@@ -20,9 +20,10 @@
  *
  */
 
-#include "util.h"
+#include "compress.h"
 
 static const uint32 QTBL = 'QTBL';
+static CompressMode gCompMode = kMP3Mode;
 
 #define INPUT_TBL	"queen.tbl"
 #define FINAL_OUT	"queen.1c"
@@ -31,17 +32,10 @@ static const uint32 QTBL = 'QTBL';
 #define TEMP_TBL	"tempfile.tbl"
 #define TEMP_SB		"tempfile.sb"
 
-#define TEMP_MP3	"tempfile.mp3"
-#define TEMP_OGG	"tempfile.ogg"
-#define TEMP_FLAC	"tempfile.fla"
-
-const char *tempEncoded;
-
 #define CURRENT_TBL_VERSION	2
 #define EXTRA_TBL_HEADER 8
 #define SB_HEADER_SIZE_V104 110
 #define SB_HEADER_SIZE_V110 122
-
 
 enum {
 	COMPRESSION_NONE = 0,
@@ -123,29 +117,60 @@ const struct PatchFile patchFiles[] = {
 
 const struct GameVersion *version;
 
+void showhelp(char *exename) {
+	printf("\nUsage: %s [params] queen.1\n", exename);
 
-void showhelp(char *exename)
-{
-	printf("\nUsage: %s [--mp3/--vorbis/--flac <args>] queen.1\n", exename);
 	printf("\nParams:\n");
-	printf(" --mp3 <args>         encode to MP3 format\n");
-	printf(" --vorbis <args>      encode to Ogg Vorbis Format\n");
-	printf(" --flac <args>        encode to Flac Format\n");
-	printf("                      (Optional: <args> are passed on to the encoder)\n");
-	printf("\nExample: %s --mp3 -q 5 queen.1\n", exename);
+
+	printf(" --mp3        encode to MP3 format (default)\n");
+	printf(" --vorbis     encode to Ogg Vorbis format\n");
+	printf(" --flac       encode to Flac format\n");
+	printf("(If one of these is specified, it must be the first parameter.)\n");
+
+	printf("\nMP3 mode params:\n");
+	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
+	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
+	printf(" --vbr        LAME uses the VBR mode (default)\n");
+	printf(" --abr        LAME uses the ABR mode\n");
+	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
+	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
+	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
+
+	printf("\nVorbis mode params:\n");
+	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
+	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
+	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
+	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
+	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
+
+	printf("\nFlac mode params:\n");
+	printf(" --fast       FLAC uses compresion level 0\n");
+	printf(" --best       FLAC uses compresion level 8\n");
+	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
+
+	printf("\n --help     this help message\n");
+
+	printf("\n\nIf a parameter is not given the default value is used\n");
+	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
 	exit(2);
 }
 
 const struct GameVersion *detectGameVersion(uint32 size) {
 	const struct GameVersion *pgv = gameVersions;
 	int i;
+
 	/* Compressing/rebuiling an Amiga version is not supported */
 	for (i = 0; i < VER_PC_COUNT; ++i, ++pgv) {
 		if (pgv->dataFileSize == size) {
 			return pgv;
 		}
  	}
+
 	printf("Unknown/unsupported FOTAQ version!\n");
+
 	exit(1);
 	return NULL;
 }
@@ -160,17 +185,21 @@ void checkOpen(FILE *fp, const char *filename) {
 void fromFileToFile(FILE *in, FILE *out, uint32 amount) {
 	char fBuf[2048];
 	uint32 numRead;
+
 	while (amount > 0) {
 		numRead = fread(fBuf, 1, amount > 2048 ? 2048 : amount, in);
-		if (numRead <= 0)
+		if (numRead <= 0) {
 			break;
+		}
+
 		amount -= numRead;
 		fwrite(fBuf, 1, numRead, out);
 	}
 }
 
-void createFinalFile(void) {
+void createFinalFile(char *inputPath) {
 	FILE *inTbl, *inData, *outFinal;
+	char tmp[1024];
 	int i;
 	uint32 dataStartOffset;
 	uint32 dataSize;
@@ -179,7 +208,8 @@ void createFinalFile(void) {
 	checkOpen(inTbl, TEMP_TBL);
 	inData = fopen(TEMP_DAT, "rb");
 	checkOpen(inData, TEMP_DAT);
-	outFinal = fopen(FINAL_OUT, "wb");
+	sprintf(tmp, "%s/%s", inputPath, FINAL_OUT);
+	outFinal = fopen(tmp, "wb");
 	checkOpen(outFinal, FINAL_OUT);
 
 	dataStartOffset = fileSize(inTbl) + EXTRA_TBL_HEADER;
@@ -214,75 +244,84 @@ void createFinalFile(void) {
 	unlink(TEMP_DAT);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	FILE *inputData, *inputTbl, *outputTbl, *outputData, *tmpFile, *compFile;
 	uint8 compressionType = COMPRESSION_NONE;
+	char inputPath[768];
+	char tblPath[1024];
 	char tmp[5];
-	char sysBuf[1024];
-	char *ptr = sysBuf;
 	int size, i = 1;
 	uint32 prevOffset;
 
-
-	if (argc < 2)
+	if (argc < 2) {
 		showhelp(argv[0]);
+	}
+
+	/* compression mode */
+	compressionType = COMPRESSION_MP3;
+	gCompMode = kMP3Mode;
 
 	if (strcmp(argv[1], "--mp3") == 0) {
 		compressionType = COMPRESSION_MP3;
-		tempEncoded = TEMP_MP3;
+		gCompMode = kMP3Mode;
 		i++;
-		ptr += sprintf(ptr, "lame -r -h -s 11 --bitwidth 8 -m m ");
-		for (; i < (argc - 1); i++) {
-			/* Append optional encoder arguments */
-			ptr += sprintf(ptr, "%s ", argv[i]);
-		}
-		ptr += sprintf(ptr, "%s %s", TEMP_SB, tempEncoded);
 	} else if (strcmp(argv[1], "--vorbis") == 0) {
 		compressionType = COMPRESSION_OGG;
-		tempEncoded = TEMP_OGG;
+		gCompMode = kVorbisMode;
 		i++;
-		ptr += sprintf(ptr, "oggenc -r -B 8 -C 1 -R 11025 %s -o %s ", TEMP_SB, tempEncoded);
-		for (; i < (argc - 1); i++) {
-			/* Append optional encoder arguments */
-			ptr += sprintf(ptr, "%s ", argv[i]);
-		}
 	} else if (strcmp(argv[1], "--flac") == 0) {
 		compressionType = COMPRESSION_FLAC;
-		tempEncoded = TEMP_FLAC;
+		gCompMode = kFlacMode;
 		i++;
-		ptr += sprintf(ptr, "flac --force-raw-format --endian=little --sign=unsigned --bps=8 --channels=1 --sample-rate=11025 " );
-		ptr += sprintf(ptr, "--no-padding --lax --no-seektable --no-ogg " );
-		for (; i < (argc - 1); i++) {
-			/* Append optional encoder arguments */
-			ptr += sprintf(ptr, "%s ", argv[i]);
+	}
+
+	switch (gCompMode) {
+	case kMP3Mode:
+		tempEncoded = TEMP_MP3;
+		if (!process_mp3_parms(argc, argv, i)) {
+			showhelp(argv[0]);
 		}
 
-		ptr += sprintf(ptr, "-o %s %s", tempEncoded, TEMP_SB );
-	} else {
-		showhelp(argv[0]);
+		break;
+	case kVorbisMode:
+		tempEncoded = TEMP_OGG;
+		if (!process_ogg_parms(argc, argv, i)) {
+			showhelp(argv[0]);
+		}
+
+		break;
+	case kFlacMode:
+		tempEncoded = TEMP_FLAC;
+		if (!process_flac_parms(argc, argv, i)) {
+			showhelp(argv[0]);
+		}
+
+		break;
 	}
+
+	getPath(argv[argc - 1], inputPath);
 
 	/* Open input file (QUEEN.1) */
 	inputData = fopen(argv[argc-1], "rb");
 	checkOpen(inputData, argv[argc-1]);
 
 	/* Open TBL file (QUEEN.TBL) */
-	inputTbl = fopen(INPUT_TBL, "rb");
+	sprintf(tblPath, "%s/%s", inputPath, INPUT_TBL);
+	inputTbl = fopen(tblPath, "rb");
 	checkOpen(inputTbl, INPUT_TBL);
 
 	size = fileSize(inputData);
 	fread(tmp, 1, 4, inputTbl);
 	tmp[4] = '\0';
+
 	if (memcmp(tmp, "QTBL", 4)) {
-		printf("Invalid TBL file!\n");
-		exit(-1);
+		error("Invalid TBL file");
 	}
 
 	if (readUint32BE(inputTbl) != CURRENT_TBL_VERSION) {
-		printf("Error: You are using an incorrect (outdated?) version of the queen.tbl file\n");
-		exit(1);
+		error("You are using an incorrect (outdated?) version of the queen.tbl file");
 	}
+
 	version = detectGameVersion(size);
 	fseek(inputTbl, version->tableOffset, SEEK_SET);
 
@@ -323,6 +362,7 @@ int main(int argc, char *argv[])
 
 			fseek(inputData, 2, SEEK_CUR);
 			sbVersion = readUint16LE(inputData);
+
 			switch (sbVersion) {
 			case 104:
 				headerSize = SB_HEADER_SIZE_V104;
@@ -335,6 +375,7 @@ int main(int argc, char *argv[])
 				headerSize = SB_HEADER_SIZE_V104;
 				break;
 			}
+
 			fseek(inputData, headerSize - 4, SEEK_CUR);
 			entry.size -= headerSize;
 
@@ -342,11 +383,8 @@ int main(int argc, char *argv[])
 			fclose(tmpFile);
 
 			/* Invoke encoder */
-			if (system(sysBuf)) {
-				printf("Got error from encoder. (check your parameters)\n");
-				unlink(TEMP_SB);
-				exit(-1);
-			}
+			setRawAudioType(false, false, 8);
+			encodeAudio(TEMP_SB, true, 11025, tempEncoded, gCompMode);
 
 			/* Append MP3/OGG to data file */
 			compFile = fopen(tempEncoded, "rb");
@@ -361,12 +399,15 @@ int main(int argc, char *argv[])
 			/* Non .SB file */
 			bool patched = false;
 			/* Check for external files */
+
 			uint8 j;
 			for (j = 0; j < ARRAYSIZE(patchFiles); ++j) {
 				const struct PatchFile *pf = &patchFiles[j];
+
 				if (version->versionString[1] == pf->lang && strcmp(pf->filename, entry.filename) == 0) {
 					/* XXX patched data files are supposed to be in cwd */
 					FILE *fpPatch = fopen(pf->filename, "rb");
+
 					if (fpPatch) {
 						entry.size = fileSize(fpPatch);
 						printf("Patching entry, new size = %d bytes\n", entry.size);
@@ -374,9 +415,11 @@ int main(int argc, char *argv[])
 						fclose(fpPatch);
 						patched = true;
 					}
+
 					break;
 				}
 			}
+
 			if (!patched) {
 				fromFileToFile(inputData, outputData, entry.size);
 			}
@@ -396,7 +439,7 @@ int main(int argc, char *argv[])
 	fclose(inputData);
 
 	/* Merge the temporary table and temporary datafile to create final file */
-	createFinalFile();
+	createFinalFile(inputPath);
 
 	return 0;
 }

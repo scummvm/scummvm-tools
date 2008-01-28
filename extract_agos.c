@@ -27,62 +27,113 @@
 typedef unsigned int ULONG;
 typedef unsigned char UBYTE;
 
-#define EndGetM32(a)  ((((a)[0])<<24)|(((a)[1])<<16)|(((a)[2])<<8)|((a)[3]))
+size_t filelen;
+#define EndGetM32(a)	((((a)[0])<<24)|(((a)[1])<<16)|(((a)[2])<<8)|((a)[3]))
 
 #define SD_GETBIT(var) do { \
-  if (!bits--) { s -= 4; if (s < src) return 0; bb=EndGetM32(s); bits=31; } \
-  (var) = bb & 1; bb >>= 1; \
+	if (!bits--) { s -= 4; if (s < src) return 0; bb=EndGetM32(s); bits=31; } \
+	(var) = bb & 1; bb >>= 1; \
 } while (0)
 
 #define SD_GETBITS(var, nbits) do { \
-  bc=(nbits); (var)=0; while (bc--) {(var)<<=1; SD_GETBIT(bit); (var)|=bit; } \
+	bc=(nbits); (var)=0; while (bc--) {(var)<<=1; SD_GETBIT(bit); (var)|=bit; } \
 } while (0)
 
 #define SD_TYPE_LITERAL (0)
 #define SD_TYPE_MATCH   (1)
 
 int simon_decr(UBYTE *src, UBYTE *dest, ULONG srclen) {
-  UBYTE *s = &src[srclen - 4];
-  ULONG destlen = EndGetM32(s), bb, x, y;
-  UBYTE *d = &dest[destlen], bc, bit, bits, type;
+	UBYTE *s = &src[srclen - 4];
+	ULONG destlen = EndGetM32(s);
+	ULONG bb, x, y;
+	UBYTE *d = &dest[destlen];
+	UBYTE bc, bit, bits, type;
 
-  /* initialise bit buffer */
-  s -= 4; x = EndGetM32(s); bb = x;
-  bits = 0; do { x >>= 1; bits++; } while (x); bits--;
+	/* initialise bit buffer */
+	s -= 4;
+	x = EndGetM32(s);
+	bb = x;
+	bits = 0;
 
-  while (d > dest) {
-    SD_GETBIT(x);
-    if (x) {
-      SD_GETBITS(x, 2);
-           if (x == 0) { type = SD_TYPE_MATCH;   x = 9;  y = 2;            }
-      else if (x == 1) { type = SD_TYPE_MATCH;   x = 10; y = 3;            }
-      else if (x == 2) { type = SD_TYPE_MATCH;   x = 12; SD_GETBITS(y, 8); }
-      else             { type = SD_TYPE_LITERAL; x = 8;  y = 8;            }
-    }
-    else {
-      SD_GETBIT(x);
-      if (x)           { type = SD_TYPE_MATCH;   x = 8;  y = 1;            }
-      else             { type = SD_TYPE_LITERAL; x = 3;  y = 0;            }
-    }
+	do {
+		x >>= 1;
+		bits++;
+	} while (x);
 
-    if (type == SD_TYPE_LITERAL) {
-      SD_GETBITS(x, x); y += x;
-      if ((y + 1) > (d - dest)) return 0; /* overflow? */
-      do { SD_GETBITS(x, 8); *--d = x; } while (y-- > 0);
-    }
-    else {
-      if ((y + 1) > (d - dest)) return 0; /* overflow? */
-      SD_GETBITS(x, x);
-      if ((d + x) > (dest + destlen)) return 0; /* offset overflow? */
-      do { d--; *d = d[x]; } while (y-- > 0);
-    }
-  }
-  /* successful decrunch */
-  return 1;
+	bits--;
+
+	while (d > dest) {
+		SD_GETBIT(x);
+
+		if (x) {
+			SD_GETBITS(x, 2);
+
+			if (x == 0) {
+				type = SD_TYPE_MATCH;
+				x = 9;
+				y = 2;
+			} else if (x == 1) {
+				type = SD_TYPE_MATCH;
+				x = 10;
+				y = 3;
+			} else if (x == 2) {
+				type = SD_TYPE_MATCH;
+				x = 12;
+				SD_GETBITS(y, 8);
+			} else {
+				type = SD_TYPE_LITERAL;
+				x = 8;
+				y = 8;
+			}
+		} else {
+			SD_GETBIT(x);
+
+			if (x) {
+				type = SD_TYPE_MATCH;
+				x = 8;
+				y = 1;
+			} else {
+				type = SD_TYPE_LITERAL;
+				x = 3;
+				y = 0;
+			}
+		}
+
+		if (type == SD_TYPE_LITERAL) {
+			SD_GETBITS(x, x); y += x;
+
+			if ((y + 1) > (d - dest)) {
+				return 0; /* overflow? */
+			}
+
+			do {
+				SD_GETBITS(x, 8);
+				*--d = x;
+			} while (y-- > 0);
+		} else {
+			if ((y + 1) > (d - dest)) {
+				return 0; /* overflow? */
+			}
+
+			SD_GETBITS(x, x);
+
+			if ((d + x) > (dest + destlen)) {
+				return 0; /* offset overflow? */
+			}
+
+			do {
+				d--;
+				*d = d[x];
+			} while (y-- > 0);
+		}
+	}
+
+	/* successful decrunch */
+	return 1;
 }
 
 ULONG simon_decr_length(UBYTE *src, ULONG srclen) {
-  return EndGetM32(&src[srclen - 4]);
+	return EndGetM32(&src[srclen - 4]);
 }
 
 
@@ -91,17 +142,24 @@ ULONG simon_decr_length(UBYTE *src, ULONG srclen) {
  * - call free() on ptr to free memory
  * - size of loaded file is available in global var 'filelen'
  */
-size_t filelen;
 void *loadfile(char *name) {
-  void *mem = NULL; FILE *fd;
-  if ((fd = fopen(name, "rb"))) {
-    if ((fseek(fd, 0, SEEK_END) == 0) && (filelen = ftell(fd))
-    &&  (fseek(fd, 0, SEEK_SET) == 0) && (mem = malloc(filelen))) {
-      if (fread(mem, 1, filelen, fd) < filelen) { free(mem); mem = NULL; }
-    }
-    fclose(fd);
-  }
-  return mem;
+	void *mem = NULL;
+	FILE *fd;
+
+	fd = fopen(name, "rb");
+	if (fd != NULL) {
+		if ((fseek(fd, 0, SEEK_END) == 0) && (filelen = ftell(fd))
+		&&	(fseek(fd, 0, SEEK_SET) == 0) && (mem = malloc(filelen))) {
+
+			if (fread(mem, 1, filelen, fd) < filelen) {
+				free(mem); mem = NULL;
+			}
+		}
+
+		fclose(fd);
+	}
+
+	return mem;
 }
 
 /* - savefile(filename, mem, length) saves [length] bytes from [mem] into
@@ -109,32 +167,54 @@ void *loadfile(char *name) {
  * - returns zero if failed, or non-zero if successful
  */
 int savefile(char *name, void *mem, size_t length) {
-  FILE *fd = fopen(name, "wb");
-  int ok = fd && (fwrite(mem, 1, length, fd) == length);
-  if (fd) fclose(fd);
-  return ok;
+	int bytesWritten;
+
+	FILE *fd = fopen(name, "wb");
+	if (fd == NULL) {
+		return 0;
+	}
+
+	bytesWritten = fwrite(mem, 1, length, fd);
+	if (bytesWritten != length) {
+		return 0;
+	}
+
+	fclose(fd);
+
+	return 1;
 }
 
-char filename[256];
+char filename[1024];
 
 int main(int argc, char *argv[]) {
-  for (argv++; *argv; argv++) {
-    UBYTE *x = (UBYTE *) loadfile(*argv);
-    if (x) {
-      ULONG decrlen = simon_decr_length(x, (ULONG) filelen);
-      UBYTE *out = (UBYTE *) malloc(decrlen);
-      if (out) {
-        if (simon_decr(x, out, filelen)) {
-          strcpy(filename, *argv);
-          strcat(filename, ".out");
-          savefile(filename, out, decrlen);
-        }
-        else {
-          printf("%s: decrunch error\n", filename);
-        }
-        free((void *) x);
-      }
-    }
-  }
-  return 0;
+	int i;
+
+	if (argc < 2) {
+		printf("\nUsage: %s <file 1> ... <file n>\n", argv[0]);
+		exit(2);
+	}
+
+	for (i = 1; i < argc; i++) {
+		UBYTE *x = (UBYTE *) loadfile(argv[i]);
+		strcpy(filename, argv[i]);
+
+		if (x) {
+			ULONG decrlen = simon_decr_length(x, (ULONG) filelen);
+			UBYTE *out = (UBYTE *) malloc(decrlen);
+
+			if (out) {
+				if (simon_decr(x, out, filelen)) {
+					strcat(filename, ".out");
+					savefile(filename, out, decrlen);
+				}
+				else {
+					printf("%s: decrunch error\n", filename);
+				}
+
+				free((void *) x);
+			}
+		}
+	}
+
+	return 0;
 }

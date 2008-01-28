@@ -21,7 +21,6 @@
  */
 
 #include "extract_parallaction.h"
-#include "util.h"
 
 Archive::Archive() {
 	_file = NULL;
@@ -49,8 +48,7 @@ bool Archive::isPackedSubfile(byte* data) {
 uint32 Archive::getSizeOfPackedSubfile(byte* packedData, uint32 packedSize) {
 	uint32 size = *(uint32*)(packedData + packedSize - 4);
 
-	return ((size & 0xFF00)) |
-		((size & 0xFF0000) >> 16);
+	return ((size & 0xFF00)) | ((size & 0xFF0000) >> 16);
 }
 
 int32 Archive::findSubfile(const char* filename) {
@@ -62,9 +60,7 @@ int32 Archive::findSubfile(const char* filename) {
 }
 
 void Archive::unpackSubfile(byte* packedData, uint32 packedSize) {
-
 	ppdepack(packedData, _fileData, packedSize, _fileSize);
-
 }
 
 void Archive::closeSubfile() {
@@ -106,6 +102,7 @@ void Archive::openSubfile(uint32 index) {
 void Archive::openSubfile(const char* filename) {
 
 	int32 index = findSubfile(filename);
+
 	if (index == -1) exit(-2);
 
 	openSubfile(index);
@@ -147,7 +144,7 @@ void Archive::open(const char* filename, bool smallArchive) {
 				break;
 			t += 8;
 		}
-	} 
+	}
 
 	if (i > (uint32)maxEntries)
 		exit(9);
@@ -186,6 +183,7 @@ void Archive::dumpStructs(FILE* dump) {
 	}
 
 	char* d = arcName;
+
 	for (; *s; ) *d++ = toupper(*s++);
 	*d = '\0';
 
@@ -261,11 +259,14 @@ void ppdepack(byte* packed, byte* depacked, uint32 plen, uint32 unplen) {
 				to_add = get_bits(2);
 				bytes += to_add;
 			} while (to_add == 3);
+
 			for (i = 0; i <= bytes; i++)
 				*--dest = get_bits(8);
+
 			if (dest <= depacked)
 				return;
 		}
+
 		/* decode what to copy from the destination file */
 		idx = get_bits(2);
 		n_bits = offset_sizes[idx];
@@ -275,7 +276,7 @@ void ppdepack(byte* packed, byte* depacked, uint32 plen, uint32 unplen) {
 			/* and maybe a bigger offset */
 			if (get_bits(1) == 0)
 				offset = get_bits(7);
-			else
+			else 
 				offset = get_bits(n_bits);
 
 			do {
@@ -285,10 +286,12 @@ void ppdepack(byte* packed, byte* depacked, uint32 plen, uint32 unplen) {
 		} else {
 			offset = get_bits(n_bits);
 		}
+
 		for (i = 0; i <= bytes; i++) {
 			dest[-1] = dest[offset];
 			dest--;
 		}
+
 		if (dest <= depacked)
 			return;
 	}
@@ -312,7 +315,6 @@ void optDump(const char* file, const char* dir, bool smallArchive) {
 		else {
 			if (*d != '\\')
 				d++;
-
 			*d++ = '/';
 			*d = '\0';
 		}
@@ -331,11 +333,11 @@ void optDump(const char* file, const char* dir, bool smallArchive) {
 int main(int argc, char *argv[]) {
 
 	if (argc < 3) {
-		printf("Usage: extract_parallaction archivefile directory");
+		printf("Usage: %s [--small] <file> <outputdir>", argv[0]);
 		exit(1);
 	}
 
-	if (!strcmp(argv[1], "small")) {
+	if (!strcmp(argv[1], "--small")) {
 		optDump(argv[2], argv[3], true);
 	} else {
 		optDump(argv[1], argv[2], false);

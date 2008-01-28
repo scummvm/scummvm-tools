@@ -614,12 +614,12 @@ int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 in
 }
 
 void showhelp(char *exename) {
-	printf("\nUsage: %s <inputfile> <inputdir> <outputdir> [params] [encoder params]\n", exename);
-
+	printf("\nUsage: %s [params] <file> <inputdir> <outputdir>\n", exename);
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
 	printf(" --vorbis     encode to Vorbis format\n");
 	printf(" --flac       encode to Flac format\n");
+	printf("(If one of these is specified, it must be the first parameter.)\n");
 
 	printf("\nMP3 mode params:\n");
 	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
@@ -638,8 +638,17 @@ void showhelp(char *exename) {
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf(" [params]     optional arguments passed directly to the encoder\n");
+ 	printf(" --fast       FLAC uses compresion level 0\n");
+ 	printf(" --best       FLAC uses compresion level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+ 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
+	printf("\n --help     this help message\n");
+
+	printf("\n\nIf a parameter is not given the default value is used\n");
+	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
 	exit(2);
 }
 
@@ -1122,75 +1131,50 @@ int main(int argc, char *argv[]) {
 	if (argc < 4)
 		showhelp(argv[0]);
 
-	char inputDir[200];
-	char outputDir[200];
-	char inputFilename[200];
-	char tmpPath[200];
+	char inputDir[768];
+	char outputDir[768];
+	char inputFilename[256];
+	char tmpPath[768];
 
 	uint32 tag;
-	int32 numFiles, offset, i;
+	int32 numFiles, offset;
+	int i = 1;
 
-	strcpy(inputFilename, argv[1]);
-	strcpy(inputDir, argv[2]);
-	strcpy(outputDir, argv[3]);
+	strcpy(inputFilename, argv[argc - 3]);
+	strcpy(inputDir, argv[argc - 2]);
+	strcpy(outputDir, argv[argc - 1]);
 
-	if (argc > 4) {
-		i = 4;
+	if (!strcmp(argv[i], "--mp3")) {
+		gCompMode = kMP3Mode;
+		i++;
+	} else if (!strcmp(argv[i], "--vorbis")) {
+		gCompMode = kVorbisMode;
+		i++;
+	} else if (!strcmp(argv[i], "--flac")) {
+		gCompMode = kFlacMode;
+		i++;
+	}
 
-		if (!strcmp(argv[i], "--mp3")) {
-			gCompMode = kMP3Mode;
-			i++;
-		} else if (!strcmp(argv[i], "--vorbis")) {
-			gCompMode = kVorbisMode;
-			i++;
-		} else if (!strcmp(argv[i], "--flac")) {
-			gCompMode = kFlacMode;
-			i++;
-		}
-
-		if (argc > i) {
-			// HACK: The functions in compress.c expect the last
-			// argument to be a filename. As we don't expect one,
-			// we simply add a dummy argument to the list.
-			char **args = (char **)malloc((argc + 1) * sizeof(char *));
-			char dummyName[] = "dummy";
-			int j;
-
-			for (j = 0; j < argc; j++)
-				args[j] = argv[j];
-			args[j] = dummyName;
-		
-			switch (gCompMode) {
-			case kMP3Mode:
-				if (!process_mp3_parms(argc + 1, args, i)) {
-					showhelp(argv[0]);
-				}
-
-				break;
-			case kVorbisMode:
-				if (!process_ogg_parms(argc + 1, args, i)) {
-					showhelp(argv[0]);
-				}
-
-				break;
-			case kFlacMode:
-				if (!process_flac_parms(argc + 1, args, i)){
-					showhelp(argv[0]);
-				}
-
-				break;
-			default:
-				error("Unknown encoding method");
-			}
-
-			free(args);
-		}
+	switch (gCompMode) {
+	case kMP3Mode:
+		if (!process_mp3_parms(argc - 2, argv, i))
+			showhelp(argv[0]);
+		break;
+	case kVorbisMode:
+		if (!process_ogg_parms(argc - 2, argv, i))
+			showhelp(argv[0]);
+		break;
+	case kFlacMode:
+		if (!process_flac_parms(argc - 2, argv, i))
+			showhelp(argv[0]);
+		break;
+	default:
+		error("Unknown encoding method");
 	}
 
 	char *index = strrchr(inputFilename, '.');
-	if (index != NULL) {
+	if (index != NULL)
 		*index = 0;
-	}
 
 	sprintf(tmpPath, "%s/%s.bun", inputDir, inputFilename);
 
@@ -1226,7 +1210,7 @@ int main(int argc, char *argv[]) {
 		char filename[13], c;
 		int z = 0;
 		int z2;
-			
+
 		for (z2 = 0; z2 < 8; z2++)
 			if ((c = readByte(input)) != 0)
 				filename[z++] = c;
@@ -1266,6 +1250,6 @@ int main(int argc, char *argv[]) {
 	fclose(input);
 
 	printf("compression done.\n");
-		
+
 	return 0;
 }

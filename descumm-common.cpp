@@ -91,7 +91,7 @@ void outputLine(const char *buf, int curoffs, int opcode, int indent) {
 		if (!g_options.dontShowOffsets) {
 			printf("[%.4X] ", curoffs);
 		}
-		
+
 		// Show the opcode value
 		if (!g_options.dontShowOpcode) {
 			if (opcode != -1)
@@ -115,16 +115,16 @@ void outputLine(const char *buf, int curoffs, int opcode, int indent) {
 bool maybeAddIf(uint cur, uint to) {
 	Block p;
 	int i;
-	
+
 	if (((to | cur) >> 24) || (to <= cur))
 		return false; // Invalid jump
-	
+
 	for (i = 0; i < g_blockStack.size(); ++i) {
 		if (to > g_blockStack[i].to)
 			return false;
 	}
-	
-	// Try to determine if this is a while loop. For this, first check if we 
+
+	// Try to determine if this is a while loop. For this, first check if we
 	// jump right behind a regular jump, then whether that jump is targeting us.
 	if (g_options.scriptVersion == 8) {
 		p.isWhile = (*(byte*)(g_scriptStart+to-5) == g_jump_opcode);
@@ -133,13 +133,13 @@ bool maybeAddIf(uint cur, uint to) {
 		p.isWhile = (*(byte*)(g_scriptStart+to-3) == g_jump_opcode);
 		i = (int16)READ_LE_UINT16(g_scriptStart+to-2);
 	}
-	
+
 	p.isWhile = p.isWhile && (currentOpcodeBlockStart == (int)to + i);
 	p.from = cur;
 	p.to = to;
-	
+
 	g_blockStack.push(p);
-	
+
 	return true;
 }
 
@@ -194,12 +194,12 @@ bool maybeAddElseIf(uint cur, uint elseto, uint to) {
 	if (elseto != to) {
 		if (g_scriptStart[k] != g_jump_opcode)
 			return false;							/* Invalid jump */
-	
+
 		if (g_options.scriptVersion == 8)
 			k = to + READ_LE_UINT32(g_scriptStart + k + 1);
 		else
 			k = to + READ_LE_UINT16(g_scriptStart + k + 1);
-	
+
 		if (k != elseto)
 			return false;							/* Not an ifelse */
 	}

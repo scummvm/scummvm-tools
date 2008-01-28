@@ -26,14 +26,15 @@
 void writeByteAlt(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
+
 void writeUint16LEAlt(FILE *fp, uint16 value) {
 	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
 }
+
 #define writeByte writeByteAlt
 #define writeUint16LE writeUint16LEAlt
 
 #define NUM_ROOMS	55
-
 unsigned char room_disks[NUM_ROOMS], room_tracks[NUM_ROOMS], room_sectors[NUM_ROOMS];
 
 static const int SectorOffset[36] = {
@@ -53,14 +54,18 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 
 int main (int argc, char **argv) {
 	FILE *input1, *input2, *output;
-	char fname[256];
+	char fname[1024];
+	char inputPath[768];
 	int i, j;
 	unsigned short signature;
 
 	if (argc < 3) {
-		printf("Syntax: %s <disk1.dsk> <disk2.dsk>\n",argv[0]);
-		return 1;
+		printf("Usage: %s <disk1.dsk> <disk2.dsk>\n", argv[0]);
+		exit(2);
 	}
+
+	getPath(argv[argc - 1], inputPath);
+
 	if (!(input1 = fopen(argv[1],"rb")))
 		error("Unable to open file %s for input!",argv[1]);
 	if (!(input2 = fopen(argv[2],"rb")))
@@ -73,11 +78,13 @@ int main (int argc, char **argv) {
 	signature = readUint16LE(input1);
 	if (signature != 0x0A31)
 		error("Signature not found in disk 1!");
+
 	signature = readUint16LE(input2);
 	if (signature != 0x0032)
 		error("Signature not found in disk 2!");
 
-	if (!(output = fopen("00.LFL","wb")))
+	sprintf(fname, "%s/00.LFL", inputPath);
+	if (!(output = fopen(fname, "wb")))
 		error("Unable to create index file!");
 	notice("Creating 00.LFL...");
 
@@ -124,6 +131,7 @@ int main (int argc, char **argv) {
 
 	for (i = 0; i < NUM_ROOMS; i++) {
 		FILE *input;
+
 		if (room_disks[i] == '1')
 			input = input1;
 		else if (room_disks[i] == '2')
@@ -131,21 +139,23 @@ int main (int argc, char **argv) {
 		else
 			continue;
 
-		sprintf(fname,"%02i.LFL", i);
+		sprintf(fname, "%s/%02i.LFL", inputPath, i);
 		output = fopen(fname, "wb");
 		if (output == NULL)
-			error("Unable to create %s!",fname);
-		notice("Creating %s...",fname);
+			error("Unable to create %s!", fname);
+
+		notice("Creating %s...", fname);
 		fseek(input, (SectorOffset[room_tracks[i]] + room_sectors[i]) * 256, SEEK_SET);
+
 		for (j = 0; j < ResourcesPerFile[i]; j++) {
 			unsigned short len = readUint16LE(input);
 			writeUint16LE(output, len);
+
 			for (len -= 2; len > 0; len--)
 				writeByte(output, readByte(input));
 		}
 		rewind(input);
 	}
-
 	notice("All done!");
 	return 0;
 }

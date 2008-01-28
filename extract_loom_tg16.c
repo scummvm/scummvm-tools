@@ -20,51 +20,60 @@
  *
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
 #include "util.h"
+#include <stdarg.h>
 
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
-#define	MAKE_LFLS
+#define MAKE_LFLS
 
-uint8	read_cbyte (FILE *input, short *ctr) {
+uint8 read_cbyte (FILE *input, short *ctr) {
 	(*ctr) += 1;
 	return readByte(input);
 }
-uint16	read_cword (FILE *input, short *ctr) {
+uint16 read_cword (FILE *input, short *ctr) {
 	(*ctr) += 2;
 	return readUint16LE(input);
 }
 
-void	write_cbyte (FILE *output, uint8 val, short *ctr) {
+void write_cbyte (FILE *output, uint8 val, short *ctr) {
 	writeByte(output, val);
 	(*ctr) += 1;
 }
-void	write_cword (FILE *output, uint16 val, short *ctr) {
+void write_cword (FILE *output, uint16 val, short *ctr) {
 	writeUint16LE(output, val);
 	(*ctr) += 2;
 }
-void	write_clong (FILE *output, uint32 val, short *ctr) {
+void write_clong (FILE *output, uint32 val, short *ctr) {
 	writeUint32LE(output, val);
 	(*ctr) += 4;
 }
 
-typedef enum _res_type { RES_GLOBDATA = 0, RES_ROOM = 1, RES_SCRIPT = 2, RES_COSTUME = 3, RES_CHARSET = 4, RES_SOUND = 5, RES_UNKNOWN = 6} res_type;
+typedef enum _res_type {
+	RES_GLOBDATA = 0,
+	RES_ROOM = 1,
+	RES_SCRIPT = 2,
+	RES_COSTUME = 3,
+	RES_CHARSET = 4,
+	RES_SOUND = 5,
+	RES_UNKNOWN = 6
+} res_type;
 
-typedef        enum _iso { ISO_USA, ISO_JPN, NUM_ISOS } t_iso;
+typedef enum _iso {
+	ISO_USA,
+	ISO_JPN,
+	NUM_ISOS
+} t_iso;
 
 t_iso ISO = NUM_ISOS;
 
-typedef	struct	_resource {
+typedef struct _resource {
 	uint32 offset[NUM_ISOS];
 	uint16 length[NUM_ISOS];
 	res_type type;
 }	t_resource, *p_resource;
 
-#define	NUM_ROOMS 100
+#define NUM_ROOMS 100
 t_resource res_rooms[NUM_ROOMS] = {
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 0 */
 	{ {0x015000, 0x015000}, {0x3DC8, 0x3DC8}, RES_ROOM }, /* 1 */
@@ -168,7 +177,7 @@ t_resource res_rooms[NUM_ROOMS] = {
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 0 */
 };
 
-#define	NUM_SCRIPTS	200
+#define NUM_SCRIPTS 200
 t_resource res_scripts[NUM_SCRIPTS] = {
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_SCRIPT }, /* 0 */
 	{ {0x019000, 0x019000}, {0x01F8, 0x01C0}, RES_SCRIPT }, /* 1 */
@@ -372,7 +381,7 @@ t_resource res_scripts[NUM_SCRIPTS] = {
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_SCRIPT }  /* 0 */
 };
 
-#define	NUM_COSTUMES	200
+#define NUM_COSTUMES 200
 t_resource res_costumes[NUM_COSTUMES] = {
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_COSTUME }, /* 0 */
 	{ {0x02E000, 0x02E000}, {0x53A5, 0x53A5}, RES_COSTUME }, /* 1 */
@@ -576,7 +585,7 @@ t_resource res_costumes[NUM_COSTUMES] = {
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_COSTUME } /* 0 */
 };
 
-#define	NUM_SOUNDS	80
+#define NUM_SOUNDS 80
 t_resource res_sounds[NUM_SOUNDS] = {
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_SOUND }, /* 0 */
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_SOUND }, /* 0 */
@@ -665,7 +674,7 @@ t_resource res_globdata =
 t_resource res_charset =
 	{ {0x00659D, 0x00659D}, {0x0484, 0x0484}, RES_CHARSET };
 
-#define	NUM_UNKNOWNS	2
+#define NUM_UNKNOWNS 2
 t_resource res_unknowns[NUM_UNKNOWNS] = {
 	{ {0x013000, 0x013000}, {0x1A7F, 0x1A7F}, RES_UNKNOWN }, /* Unknown resource type, looks like a small Room resource */
 	{ {0x2B4000, 0x2B4000}, {0x0155, 0x0155}, RES_COSTUME }  /* Duplicate of Costume 155 */
@@ -769,7 +778,7 @@ signed short r_length (p_resource res) {
 	return res->length[ISO];
 }
 
-void	extract_resource (FILE *input, FILE *output, p_resource res) {
+void extract_resource (FILE *input, FILE *output, p_resource res) {
 #ifdef MAKE_LFLS
 	uint16 j, off;
 #endif
@@ -778,19 +787,20 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 
 	if (res == NULL)
 		error("extract_resource - no resource specified");
+
 	if ((r_offset(res) == 0) && (r_length(res) == 0))
-		return;	/* if offset/length are both 0, skip it */
-	fseek(input,r_offset(res),SEEK_SET);
+		return; /* if offset/length are both 0, skip it */
+	fseek(input, r_offset(res), SEEK_SET);
 
 	switch (res->type) {
 	case RES_CHARSET:
 		rlen = r_length(res);
-		writeUint16LE(output,(uint16)(rlen+4));
-		writeUint16LE(output,0);
+		writeUint16LE(output, (uint16)(rlen + 4));
+		writeUint16LE(output, 0);
 
 		/* Skip 4 bytes */
-		read_cword(input,&i);
-		read_cword(input,&i);
+		read_cword(input, &i);
+		read_cword(input, &i);
 
 		/* Write expected charset header */
 		writeByte(output, 0x63);
@@ -799,7 +809,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 		writeByte(output, 0x08);
 
 		for (i = 0; i < rlen - 4; i++)
-			writeByte(output,readByte(input));
+			writeByte(output, readByte(input));
 		break;
 	case RES_GLOBDATA:
 		rlen = read_cword(input,&i);
@@ -829,12 +839,12 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 				error("extract_resource(room) - resource tag is incorrect");
 			off = ftell(output);
 			rlen = 0;
-			write_clong(output,0,&rlen);
-			write_cword(output,'OR',&rlen);	/* RO - Room */
+			write_clong(output, 0, &rlen);
+			write_cword(output, 'OR', &rlen); /* RO - Room */
 
 			/* Hard code room header for now */
-			write_clong(output, 0xC,&rlen);
-			write_cword(output,'DH',&rlen);
+			write_clong(output, 0xC, &rlen);
+			write_cword(output, 'DH', &rlen);
 			write_cword(output, roomHeader[rid * 4 + 1], &rlen);
 			write_cword(output, roomHeader[rid * 4 + 2], &rlen);
 			write_cword(output, roomHeader[rid * 4 + 3], &rlen);
@@ -843,102 +853,102 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 				uint16 slen;
 				uint8 stype;
 
-				slen = read_cword(input,&i);
+				slen = read_cword(input, &i);
 				if (slen == 0xFFFF)
 					break;
-				stype = read_cbyte(input,&i);
+				stype = read_cbyte(input, &i);
 				slen -= 3;
 				switch (stype) {
 				/* HD, SL, NL, PA - are current unknowns */
 				case 0x06:
 					/* Resource type exists in all rooms */
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'6U',&rlen);	/* Unknown */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, '6U', &rlen); /* Unknown */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x07:
 					/* Resource type exists in all rooms */
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'7U',&rlen);	/* Unknown */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, '7U', &rlen); /* Unknown */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x0A:
 					/* Resource type doesn't exists in all rooms */
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'AU',&rlen);	/* Unknown */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'AU', &rlen); /* Unknown */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
-
-
-
 				case 0x05:
 					/* Verb images for the diststaff */
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'IO',&rlen);	/* OI - object image */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'IO', &rlen); /* OI - object image */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x08:
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'MB',&rlen);	/* BM - bitmap */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'MB', &rlen); /* BM - bitmap */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x09:
-					read_cword(input,&i);	slen -= 2;	/* skip first 2 bytes */
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'XB',&rlen);	/* BX - boxes */
+					read_cword(input, &i);
+					/* skip first 2 bytes */
+					slen -= 2;
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'XB', &rlen); /* BX - boxes */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x0B:
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'NE',&rlen);	/* EN - entrance script */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'NE', &rlen); /* EN - entrance script */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x0C:
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'XE',&rlen);	/* EX - exit script */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'XE', &rlen); /* EX - exit script */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x0D:
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'IO',&rlen);	/* OI - object image */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'IO', &rlen); /* OI - object image */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x0E:
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'CO',&rlen);	/* OC - object code */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'CO', &rlen); /* OC - object code */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x0F:
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'CL',&rlen);	/* LC - local script count */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'CL', &rlen); /* LC - local script count */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x10:
-					write_clong(output,slen+6,&rlen);
-					write_cword(output,'SL',&rlen);	/* LS - local script */
+					write_clong(output, slen + 6, &rlen);
+					write_cword(output, 'SL', &rlen); /* LS - local script */
 					for (j = 0; j < slen; j++)
-						write_cbyte(output,read_cbyte(input,&i),&rlen);
+						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				default:
-					fseek(input,slen,SEEK_CUR);
-					error("extract_resource(room) - unknown resource tag encountered: len %04X type %02X",slen,stype);
+					fseek(input, slen, SEEK_CUR);
+					error("extract_resource(room) - unknown resource tag encountered: len %04X type %02X", slen, stype);
 				}
 			}
-			fseek(output,off,SEEK_SET);
-			writeUint32LE(output,rlen);
-			fseek(output,0,SEEK_END);
+			fseek(output, off, SEEK_SET);
+			writeUint32LE(output, rlen);
+			fseek(output, 0, SEEK_END);
 		}
+
 		break;
 	case RES_SOUND:
 		error("extract_resource(sound) - sound resources are not supported");
@@ -992,7 +1002,7 @@ void	extract_resource (FILE *input, FILE *output, p_resource res) {
 	}
 }
 
-#ifdef	MAKE_LFLS
+#ifdef MAKE_LFLS
 /* based on structure of Loom EGA LFL files */
 p_resource lfl_01[] = { &res_rooms[1], &res_scripts[1], &res_scripts[2], &res_scripts[3], &res_scripts[5], &res_scripts[6], &res_scripts[7], &res_scripts[8], &res_scripts[9], &res_scripts[10], &res_scripts[11], &res_scripts[12], &res_scripts[13], &res_scripts[14], &res_scripts[15], &res_scripts[16], &res_scripts[17], &res_scripts[18], &res_scripts[19], &res_scripts[20], &res_scripts[21], &res_scripts[22], &res_scripts[23], &res_scripts[24], &res_scripts[25], &res_scripts[26], &res_scripts[27], &res_scripts[28], &res_scripts[29], &res_scripts[30], &res_scripts[31], &res_scripts[32], &res_scripts[33], &res_scripts[34], &res_scripts[35], &res_scripts[36], &res_scripts[37], &res_scripts[38], &res_scripts[39], &res_scripts[40], &res_scripts[41], &res_scripts[42], &res_scripts[43], &res_sounds[1], &res_sounds[2], &res_sounds[3], &res_sounds[4], &res_sounds[5], &res_sounds[6], &res_sounds[7], &res_sounds[8], &res_costumes[1], &res_costumes[2], &res_costumes[3], &res_costumes[164], NULL };
 p_resource lfl_02[] = { &res_rooms[2], &res_scripts[44], &res_scripts[45], &res_scripts[113], &res_scripts[114], &res_costumes[141], &res_costumes[8], &res_costumes[87], &res_costumes[140], &res_costumes[139], &res_costumes[150], NULL };
@@ -1073,12 +1083,12 @@ p_resource lfl_85[] = { &res_rooms[85], &res_sounds[64], NULL };
 p_resource lfl_86[] = { &res_rooms[86], &res_scripts[111], &res_costumes[155], NULL };
 p_resource lfl_87[] = { &res_rooms[87], NULL };
 
-typedef	struct	_lfl {
+typedef struct _lfl {
 	int num;
 	p_resource *entries;
 }	t_lfl, *p_lfl;
 
-t_lfl	lfls[] = {
+t_lfl lfls[] = {
 	{  1, lfl_01 },
 	{  2, lfl_02 },
 	{  3, lfl_03 },
@@ -1160,24 +1170,24 @@ t_lfl	lfls[] = {
 	{ -1, NULL }
 };
 
-struct	_index {
-	uint16	num_rooms;
-	uint8	room_lfl[NUM_ROOMS];
-	uint32	room_addr[NUM_ROOMS];
+struct _index {
+	uint16 num_rooms;
+	uint8 room_lfl[NUM_ROOMS];
+	uint32 room_addr[NUM_ROOMS];
 
-	uint16	num_costumes;
-	uint8	costume_lfl[NUM_COSTUMES];
-	uint32	costume_addr[NUM_COSTUMES];
+	uint16 num_costumes;
+	uint8 costume_lfl[NUM_COSTUMES];
+	uint32 costume_addr[NUM_COSTUMES];
 
-	uint16	num_scripts;
-	uint8	script_lfl[NUM_SCRIPTS];
-	uint32	script_addr[NUM_SCRIPTS];
-	uint16	num_sounds;
-	uint8	sound_lfl[NUM_SOUNDS];
-	uint32	sound_addr[NUM_SOUNDS];
+	uint16 num_scripts;
+	uint8 script_lfl[NUM_SCRIPTS];
+	uint32 script_addr[NUM_SCRIPTS];
+	uint16 num_sounds;
+	uint8 sound_lfl[NUM_SOUNDS];
+	uint32 sound_addr[NUM_SOUNDS];
 }	lfl_index;
-#else	/* !MAKE_LFLS */
-void	dump_resource(FILE *input, const char *fn_template, int num, p_resource res) {
+#else /* !MAKE_LFLS */
+void dump_resource (FILE *input, const char *fn_template, int num, p_resource res) {
 	char fname[256];
 	FILE *output;
 	sprintf(fname, fn_template, num);
@@ -1187,10 +1197,10 @@ void	dump_resource(FILE *input, const char *fn_template, int num, p_resource res
 	extract_resource(input, output, res);
 	fclose(output);
 }
-#endif	/* MAKE_LFLS */
+#endif /* MAKE_LFLS */
 
-uint32	CRCtable[256];
-void	InitCRC (void) {
+uint32 CRCtable[256];
+void InitCRC (void) {
 	const uint32 poly = 0xEDB88320;
 	int i, j;
 	uint32 n;
@@ -1201,22 +1211,24 @@ void	InitCRC (void) {
 		CRCtable[i] = n;
 	}
 }
-uint32	ISO_CRC (FILE *file) {
+
+uint32 ISO_CRC (FILE *file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i, len;
-	fseek(file,0,SEEK_END);
+	fseek(file, 0, SEEK_END);
 	len = ftell(file);
-	fseek(file,0,SEEK_SET);
+	fseek(file, 0, SEEK_SET);
 	for (i = 0; i < len; i++)
 		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ readByte(file)) & 0xFF];
 	return CRC ^ 0xFFFFFFFF;
 }
 
 int main (int argc, char **argv) {
-#ifdef	MAKE_LFLS
+#ifdef MAKE_LFLS
 	FILE *input, *output;
-	char fname[256];
+	char fname[1024];
 	int i, j;
+	char inputPath[768];
 #else
 	FILE *input;
 	int i;
@@ -1227,8 +1239,11 @@ int main (int argc, char **argv) {
 		printf("Syntax: %s <code_##.ISO>\n", argv[0]);
 		return 1;
 	}
-	if (!(input = fopen(argv[1],"rb")))
-		error("Unable to open file %s for input", argv[1]);
+
+	getPath(argv[argc - 1], inputPath);
+	input = fopen(argv[1], "rb");
+	if (!input)
+		error("unable to open file %s for input", argv[1]);
 
 	InitCRC();
 	CRC = ISO_CRC(input);
@@ -1250,10 +1265,10 @@ int main (int argc, char **argv) {
 
 	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
-		sprintf(fname,"%02i.LFL", lfl->num);
+		sprintf(fname, "%s/%02i.LFL", inputPath, lfl->num);
 		output = fopen(fname, "wb");
 		if (!output)
-			error("Uunable to create %s", fname);
+			error("unable to create %s", fname);
 		notice("Creating %s...", fname);
 		for (j = 0; lfl->entries[j] != NULL; j++) {
 			p_resource entry = lfl->entries[j];
@@ -1275,96 +1290,107 @@ int main (int argc, char **argv) {
 				lfl_index.sound_addr[entry - res_sounds] = (uint16)ftell(output);
 				break;
 			default:
-				notice("Unknown resource type %d detected in LFL index!",entry->type);
+				notice("Unknown resource type %d detected in LFL index!", entry->type);
 				break;
 			}
-			extract_resource(input,output,entry);
+
+			extract_resource(input, output, entry);
 		}
+
 		fclose(output);
 	}
-	output = fopen("00.LFL", "wb");
+	sprintf(fname, "%s/00.LFL", inputPath);
+	output = fopen(fname, "wb");
 	if (!output)
-		error("Unable to create index file");
-	notice("Creating 00.LFL...");
+		error("Unable to create index file!");
+	notice("Creating %s...", fname);
 
 	lfl_index.num_rooms = NUM_ROOMS;
 	lfl_index.num_costumes = NUM_COSTUMES;
 	lfl_index.num_scripts = NUM_SCRIPTS;
 	lfl_index.num_sounds = NUM_SOUNDS;
 
-	writeUint32LE(output,8+5*lfl_index.num_rooms);
-	writeUint16LE(output,'R0');	/* 0R - room index */
-	writeUint16LE(output,lfl_index.num_rooms);
+	writeUint32LE(output, 8 + 5 * lfl_index.num_rooms);
+	writeUint16LE(output, 'R0'); /* 0R - room index */
+	writeUint16LE(output, lfl_index.num_rooms);
+
 	for (i = 0; i < lfl_index.num_rooms; i++) {
-		writeByte(output,lfl_index.room_lfl[i]);
-		writeUint32LE(output,lfl_index.room_addr[i]);
+		writeByte(output, lfl_index.room_lfl[i]);
+		writeUint32LE(output, lfl_index.room_addr[i]);
 	}
 
-	writeUint32LE(output,8+5*lfl_index.num_scripts);
-	writeUint16LE(output,'S0');	/* 0S - script index */
-	writeUint16LE(output,lfl_index.num_scripts);
+	writeUint32LE(output, 8 + 5 * lfl_index.num_scripts);
+	writeUint16LE(output, 'S0'); /* 0S - script index */
+	writeUint16LE(output, lfl_index.num_scripts);
+
 	for (i = 0; i < lfl_index.num_scripts; i++) {
-		writeByte(output,lfl_index.script_lfl[i]);
-		writeUint32LE(output,lfl_index.script_addr[i]);
+		writeByte(output, lfl_index.script_lfl[i]);
+		writeUint32LE(output, lfl_index.script_addr[i]);
 	}
 
-	writeUint32LE(output,8+5*lfl_index.num_costumes);
-	writeUint16LE(output,'C0');	/* 0C - costume index */
-	writeUint16LE(output,lfl_index.num_costumes);
+	writeUint32LE(output, 8 + 5 * lfl_index.num_costumes);
+	writeUint16LE(output, 'C0'); /* 0C - costume index */
+	writeUint16LE(output, lfl_index.num_costumes);
+
 	for (i = 0; i < lfl_index.num_costumes; i++) {
-		writeByte(output,lfl_index.costume_lfl[i]);
-		writeUint32LE(output,lfl_index.costume_addr[i]);
+		writeByte(output, lfl_index.costume_lfl[i]);
+		writeUint32LE(output, lfl_index.costume_addr[i]);
 	}
 
 /*
-	writeUint32LE(output,8+5*lfl_index.num_sounds);
-	writeUint16LE(output,'N0');	0N - sounds index
-	writeUint16LE(output,lfl_index.num_sounds);
+	writeUint32LE(output, 8 + 5 * lfl_index.num_sounds);
+	writeUint16LE(output, 'N0'); 0N - sounds index
+	writeUint16LE(output, lfl_index.num_sounds);
+
 	for (i = 0; i < lfl_index.num_sounds; i++) {
-		writeByte(output,lfl_index.sound_lfl[i]);
-		writeUint32LE(output,lfl_index.sound_addr[i]);
+		writeByte(output, lfl_index.sound_lfl[i]);
+		writeUint32LE(output, lfl_index.sound_addr[i]);
 	}
 */
 
-	extract_resource(input,output,&res_globdata);
-	
+	extract_resource(input, output, &res_globdata);
+
 	fclose(output);
 
-	output = fopen("97.LFL", "wb");
+	sprintf(fname, "%s/97.LFL", inputPath);
+	output = fopen(fname, "wb");
 	if (!output)
 		error("Unable to create charset file 97.LFL");
-	notice("Creating 97.LFL...");
+	notice("Creating %s...", fname);
 	extract_resource(input, output, &res_charset);
 	fclose(output);
 
-	output = fopen("98.LFL", "wb");
+	sprintf(fname, "%s/98.LFL", inputPath);
+	output = fopen(fname, "wb");
 	if (!output)
 		error("Unable to create charset file 98.LFL");
-	notice("Creating 98.LFL...");
+	notice("Creating %s...", fname);
 	extract_resource(input, output, &res_charset);
 	fclose(output);
 
-	output = fopen("99.LFL", "wb");
+	sprintf(fname, "%s/99.LFL", inputPath);
+	output = fopen(fname, "wb");
 	if (!output)
 		error("Unable to create charset file 99.LFL");
-	notice("Creating 99.LFL...");
+	notice("Creating %s...", fname);
 	extract_resource(input, output, &res_charset);
 	fclose(output);
 
-#else	/* !MAKE_LFLS */
-	dump_resource(input,"globdata.dmp",0,&res_globdata);
-	dump_resource(input,"charset.dmp",0,&res_charset);
+#else /* !MAKE_LFLS */
+	dump_resource(input, "globdata.dmp", 0, &res_globdata);
+	dump_resource(input, "charset.dmp", 0, &res_charset);
+
 	for (i = 0; i < NUM_UNKNOWNS; i++)
-		dump_resource(input,"unk-%d.dmp",i,&res_unknowns[i]);
+		dump_resource(input, "unk-%d.dmp", i, &res_unknowns[i]);
 	for (i = 0; i < NUM_ROOMS; i++)
-		dump_resource(input,"room-%d.dmp",i,&res_rooms[i]);
+		dump_resource(input, "room-%d.dmp", i, &res_rooms[i]);
 	for (i = 0; i < NUM_COSTUMES; i++)
-		dump_resource(input,"costume-%d.dmp",i,&res_costumes[i]);
+		dump_resource(input, "costume-%d.dmp", i, &res_costumes[i]);
 	for (i = 0; i < NUM_SCRIPTS; i++)
-		dump_resource(input,"script-%d.dmp",i,&res_scripts[i]);
+		dump_resource(input, "script-%d.dmp", i, &res_scripts[i]);
 	for (i = 0; i < NUM_SOUNDS; i++)
-		dump_resource(input,"sound-%d.dmp",i,&res_sounds[i]);
-#endif	/* MAKE_LFLS */
+		dump_resource(input, "sound-%d.dmp", i, &res_sounds[i]);
+#endif /* MAKE_LFLS */
 	notice("All done!");
 	return 0;
 }

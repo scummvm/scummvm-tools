@@ -147,6 +147,30 @@ bool PAKFile::outputAllFiles() {
 	return true;
 }
 
+bool PAKFile::outputAllFiles(char* outputPath) {
+	FileList *cur = _fileList;
+	char outputFilename[1024];
+
+	while (cur) {
+		sprintf(outputFilename, "%s/%s", outputPath, cur->filename);
+		FILE *file = fopen(outputFilename, "wb");
+		if (!file) {
+			error("couldn't open file '%s' for writing", outputFilename);
+			return false;
+		}
+		printf("Exracting file '%s'...", cur->filename);
+		if (fwrite(cur->data, 1, cur->size, file) == cur->size) {
+			printf("OK\n");
+		} else {
+			printf("FAILED\n");
+			return false;
+		}
+		fclose(file);
+		cur = cur->next;
+	}
+	return true;
+}
+
 bool PAKFile::outputFileAs(const char *f, const char *fn) {
 	FileList *cur = (_fileList != 0) ? _fileList->findEntry(f) : 0;
 

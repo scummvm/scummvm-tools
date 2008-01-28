@@ -29,22 +29,23 @@ static FILE *input, *output_idx, *output_snd;
 
 static CompressMode gCompMode = kMP3Mode;
 
-static char infile_base[256];
-
-static void end(void)
-{
+static void end(char *inputPath, char* inputFile) {
 	int size;
 	char fbuf[2048];
-	char tmp[256];
+	char tmp[1024];
+	char *p;
 	const char *head;
 
 	switch (gCompMode) {
 	case kMP3Mode:
-		head = "mp3"; break;
+		head = "mp3";
+		break;
 	case kVorbisMode:
-		head = "ogg"; break;
+		head = "ogg";
+		break;
 	case kFlacMode:
-		head = "fla"; break;
+		head = "fla";
+		break;
 	default:
 		error("Unknown compression mode");
 	}
@@ -53,18 +54,29 @@ static void end(void)
 	fclose(output_idx);
 	fclose(input);
 
-	sprintf(tmp, "%s.%s", infile_base, head);
+	/* Remove the extension from the filename if it exists
+	 * so that we can append the new extension
+	*/
+	p = strrchr(inputFile, '.');
+	if (p) {
+		*p = '\0';
+	}
+
+	sprintf(tmp, "%s/%s.%s", inputPath, inputFile, head);
 	output_idx = fopen(tmp, "wb");
 
 	input = fopen(TEMP_IDX, "rb");
 	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
 		fwrite(fbuf, 1, size, output_idx);
 	}
+
 	fclose(input);
+
 	input = fopen(TEMP_DAT, "rb");
 	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
 		fwrite(fbuf, 1, size, output_idx);
 	}
+
 	fclose(input);
 	fclose(output_idx);
 
@@ -74,13 +86,12 @@ static void end(void)
 	unlink(TEMP_RAW);
 	unlink(tempEncoded);
 	unlink(TEMP_WAV);
-	
+
 	exit(0);
 }
 
-	
-static int get_offsets(uint32 filenums[], uint32 offsets[])
-{
+
+static int get_offsets(uint32 filenums[], uint32 offsets[]) {
 	int i;
 	char buf[8];
 
@@ -95,23 +106,20 @@ static int get_offsets(uint32 filenums[], uint32 offsets[])
 	}
 }
 
-static int get_offsets_mac(uint32 filenums[], uint32 offsets[])
-{
+static int get_offsets_mac(uint32 filenums[], uint32 offsets[]) {
 	int i, size;
-	fseek(input, 0, SEEK_END);
-	size = ftell(input);
-	fseek(input, 0, SEEK_SET);
+	size = fileSize(input);
 
 	for (i = 1; i <= size / 6; i++) {
 		filenums[i] = readUint16BE(input);
 		offsets[i] = readUint32BE(input);
 	}
+
 	return(size/6);
 }
 
 
-static uint32 get_sound(uint32 offset)
-{
+static uint32 get_sound(uint32 offset) {
 	FILE *f;
 	uint32 tot_size;
 	char outname[256];
@@ -146,14 +154,14 @@ static uint32 get_sound(uint32 offset)
 	return(tot_size);
 }
 
-void showhelp(char *exename)
-{
-	printf("\nUsage: %s <params> [<file> | mac]\n", exename);
+void showhelp(char *exename) {
+	printf("\nUsage: %s [params] [--mac] <file>\n", exename);
 
 	printf("\nParams:\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
 	printf(" --vorbis     encode to Vorbis format\n");
 	printf(" --flac       encode to Flac format\n");
+	printf(" --mac        encode simon2mac sounds\n");
 	printf("(If one of these is specified, it must be the first parameter.)\n");
 
 	printf("\nMP3 mode params:\n");
@@ -173,41 +181,34 @@ void showhelp(char *exename)
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
-	printf(" [params]     optional arguments passed directly to the encoder\n");
-	printf("              recommended is: --best -b 1152\n");
+ 	printf(" --fast       FLAC uses compresion level 0\n");
+ 	printf(" --best       FLAC uses compresion level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --verify     files are encoded and then decoded to check accuracy\n");
+ 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n --help     this help message\n");
 
 	printf("\n\nIf a parameter is not given the default value is used\n");
 	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	printf("Use the `mac' option instead of a filename if converting simon2mac sounds\n");
+	printf("\nIf converting simon2mac sounds, use the --mac option\n");
+	printf("and replace <file> with the path to the 'voices' folder\n");
+	printf("If the input directory is the same as the current directory use '.'\n");
 	exit(2);
 }
 
 
-static void convert_pc(char *infile)
-{
+static void convert_pc(char *inputPath, char *inputFile) {
 	int i, size, num;
+	char tmp[1024];
 	uint32 filenums[32768];
 	uint32 offsets[32768];
-	char *p;
 
-	p = strrchr(infile, '/');
-	if (!p) {
-		p = strrchr(infile, '\\');
-		if (!p) {
-			p = infile - 1;
-		}
-	}
-	strcpy(infile_base, p + 1);
-	p = strrchr(infile_base, '.');
-	if (p) {
-		*p = '\0';
-	}
-
-	input = fopen(infile, "rb");
+	sprintf(tmp, "%s/%s", inputPath, inputFile);
+	input = fopen(tmp, "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", infile);
+		printf("Cannot open file: %s\n", tmp);
 		exit(-1);
 	}
 
@@ -224,18 +225,17 @@ static void convert_pc(char *infile)
 	}
 
 	num = get_offsets(filenums, offsets);
-
 	if (!num) {
 		printf("This does not seem to be a valid file\n");
 		exit(-1);
 	}
-	size = num*4;
+	size = num * 4;
 
 	writeUint32LE(output_idx, 0);
 	writeUint32LE(output_idx, size);
 
 	for (i = 1; i < num; i++) {
-		if (offsets[i] == offsets[i+1]) {
+		if (offsets[i] == offsets[i + 1]) {
 			writeUint32LE(output_idx, size);
 			continue;
 		}
@@ -247,16 +247,14 @@ static void convert_pc(char *infile)
 	}
 }
 
-static void convert_mac(void)
-{
+static void convert_mac(char *inputPath) {
 	int i, size, num;
-	char tmp[256];
+	char tmp[1024];
 	uint32 filenums[32768];
 	uint32 offsets[32768];
-	
-	sprintf(infile_base, "simon2");
 
-	input = fopen("voices.idx", "rb");
+	sprintf(tmp, "%s/voices.idx", inputPath);
+	input = fopen(tmp, "rb");
 	if (!input) {
 		printf("Cannot open file: %s\n", "voices.idx");
 		exit(-1);
@@ -275,27 +273,29 @@ static void convert_mac(void)
 	}
 
 	num = get_offsets_mac(filenums, offsets);
-
 	if (!num) {
 		printf("This does not seem to be a valid file\n");
 		exit(-1);
 	}
-	size = num*4;
+	size = num * 4;
 
 	writeUint32LE(output_idx, 0);
 	writeUint32LE(output_idx, size);
 
 	for (i = 1; i < num; i++) {
-		if (filenums[i] == filenums[i+1] && offsets[i] == offsets[i+1]) {
+		if (filenums[i] == filenums[i + 1] && offsets[i] == offsets[i + 1]) {
 			writeUint32LE(output_idx, size);
 			continue;
 		}
 
-		if (filenums[i] != filenums[i-1]) {
-			sprintf(tmp, "voices%d.dat", filenums[i]);
-			if (input)
+		if (filenums[i] != filenums[i - 1]) {
+			sprintf(tmp, "%s/voices%d.dat", inputPath, filenums[i]);
+
+			if (input) {
 				fclose(input);
-			input = fopen(tmp, "rb"); 
+			}
+
+			input = fopen(tmp, "rb");
 			if (!input) {
 				printf("Cannot open file: %s\n", tmp);
 				exit(-1);
@@ -303,61 +303,78 @@ static void convert_mac(void)
 		}
 
 		size += get_sound(offsets[i]);
-		if (i < num - 1)
+
+		if (i < num - 1) {
 			writeUint32LE(output_idx, size);
+		}
 	}
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	int i;
-	
-	if (argc < 2)
+	char inputFile[256];
+	char inputPath[768];
+	bool convertMac = false;
+
+	if (argc < 2) {
 		showhelp(argv[0]);
+	}
 
 	/* compression mode */
 	gCompMode = kMP3Mode;
 	i = 1;
-	if (strcmp(argv[1], "--mp3") == 0) {
+
+	if (strcmp(argv[i], "--mp3") == 0) {
 		gCompMode = kMP3Mode;
 		i++;
-	}
-	else if (strcmp(argv[1], "--vorbis") == 0) {
+	} else if (strcmp(argv[i], "--vorbis") == 0) {
 		gCompMode = kVorbisMode;
 		i++;
-	}
-	else if (strcmp(argv[1], "--flac") == 0) {
+	} else if (strcmp(argv[i], "--flac") == 0) {
 		gCompMode = kFlacMode;
+		i++;
+	}
+
+	if (strcmp(argv[i], "--mac") == 0) {
+		convertMac = true;
 		i++;
 	}
 
 	switch (gCompMode) {
 	case kMP3Mode:
 		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i))
+		if (!process_mp3_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kVorbisMode:
 		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i))
+		if (!process_ogg_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	case kFlacMode:
 		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i))
+		if (!process_flac_parms(argc, argv, i)) {
 			showhelp(argv[0]);
+		}
+
 		break;
 	}
 
-	i = argc - 1;
-
-	if (strcmp(argv[i], "mac") == 0) {
-		convert_mac();
+	if (convertMac) {
+		strcpy(inputFile, "simon2");
+		strcpy(inputPath, argv[argc - 1]);
+		convert_mac(inputPath);
 	} else {
-		convert_pc(argv[i]);
+		getPath(argv[argc - 1], inputPath);
+		getFilename(argv[argc - 1], inputFile);
+		convert_pc(inputPath, inputFile);
 	}
 
-	end();
+	end(inputPath, inputFile);
 
 	return(0);
 }
