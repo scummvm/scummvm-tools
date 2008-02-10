@@ -87,49 +87,17 @@ static GameFileDescription ITE_GameFiles[] = {
 // Known IHNM files
 static GameFileDescription IHNM_GameFiles[] = {
 	//	Filename					swapEndian	md5									resourceType	frequency	stereo
-	// Common
 	// FIXME: sfx.res is disabled for now, as there are issues when trying to encode it
 	//{"sfx.res",					false,		"1c610d543f32ec8b525e3f652536f269", kSoundWAV,		-1,			false},
-	// English
-	{"voicess.res",					false,		"54b1f2013a075338ceb0e258d97808bd", kSoundWAV,		-1,			false},
-	{"voices1.res",					false,		"fc6440b38025f4b2cc3ff55c3da5c3eb", kSoundWAV,		-1,			false},
-	{"voices2.res",					false,		"b37f10fd1696ade7d58704ccaaebceeb", kSoundWAV,		-1,			false},
-	{"voices3.res",					false,		"3bbc16a8f741dbb511da506c660a0b54", kSoundWAV,		-1,			false},
-	{"voices4.res",					false,		"ebfa160122d2247a676ca39920e5d481", kSoundWAV,		-1,			false},
-	{"voices5.res",					false,		"1f501ce4b72392bdd1d9ec38f6eec6da", kSoundWAV,		-1,			false},
-	{"voices6.res",					false,		"f580ed7568c7d6ef34e934ba20adf834", kSoundWAV,		-1,			false},
-	// Spanish
-	{"voicess.res",					false,		"d869de9883c8faea7f687217a9ec7057", kSoundWAV,		-1,			false},
-	{"voices1.res",					false,		"dc6a34e3d1668730ea46815a92c7847f", kSoundWAV,		-1,			false},
-	{"voices2.res",					false,		"dc6a5fa7a4cdc2ca5a6fd924e969986c", kSoundWAV,		-1,			false},
-	{"voices3.res",					false,		"dc6a5fa7a4cdc2ca5a6fd924e969986c", kSoundWAV,		-1,			false},
-	{"voices4.res",					false,		"0f87400b804232a58dd22e404420cc45", kSoundWAV,		-1,			false},
-	{"voices5.res",					false,		"172668cfc5d8c305cb5b1a9b4d995fc0", kSoundWAV,		-1,			false},
-	{"voices6.res",					false,		"96c9bda9a5f41d6bc232ed7bf6d371d9", kSoundWAV,		-1,			false},
-	// Russian
-	{"voicess.res",					false,		"9df7cd3b18ddaa16b5291b3432567036", kSoundWAV,		-1,			false},
-	{"voices1.res",					false,		"d6100d2dc3b2b9f2e1ad247f613dce9b", kSoundWAV,		-1,			false},
-	{"voices2.res",					false,		"84f6f48ecc2832841ea6417a9a379430", kSoundWAV,		-1,			false},
-	{"voices3.res",					false,		"ebb9501283047f27a0f54e27b3c8ba1e", kSoundWAV,		-1,			false},
-	{"voices4.res",					false,		"4c145da5fa6d1306162a7ca8ce5a4f2e", kSoundWAV,		-1,			false},
-	{"voices5.res",					false,		"871a559644281917677eca4af1b05620", kSoundWAV,		-1,			false},
-	{"voices6.res",					false,		"211be5c24f066d69a2f6cfa953acfba6", kSoundWAV,		-1,			false},
-	// German
-	{"voicess.res",					false,		"8b09a196a52627cacb4eab13bfe0b2c3", kSoundWAV,		-1,			false},
-	{"voices1.res",					false,		"424971e1e2373187c3f5734fe36071a2", kSoundWAV,		-1,			false},
-	{"voices2.res",					false,		"c270e0980782af43641a86e4a14e2a32", kSoundWAV,		-1,			false},
-	{"voices3.res",					false,		"49e42befea883fd101ec3d0f5d0647b9", kSoundWAV,		-1,			false},
-	{"voices5.res",					false,		"c477443c52a0aa56e686ebd8d051e4ab", kSoundWAV,		-1,			false},
-	{"voices6.res",					false,		"2b9aea838f74b4eecfb29a8f205a2bd4", kSoundWAV,		-1,			false},
-	// French
-	{"voicess.res",					false,		"b8642e943bbebf89cef2f48b31cb4305", kSoundWAV,		-1,			false},
-	{"voices1.res",					false,		"424971e1e2373187c3f5734fe36071a2", kSoundWAV,		-1,			false},
-	{"voices2.res",					false,		"c2d93a35d2c2def9c3d6d242576c794b", kSoundWAV,		-1,			false},
-	{"voices3.res",					false,		"49e42befea883fd101ec3d0f5d0647b9", kSoundWAV,		-1,			false},
-	{"voices5.res",					false,		"f4c415de7c03de86b73f9a12b8bd632f", kSoundWAV,		-1,			false},
-	{"voices6.res",					false,		"3fc5358a5d8eee43bdfab2740276572e", kSoundWAV,		-1,			false},
+	{"voicess.res",					false,		"-1", 								kSoundWAV,		-1,			false},
+	{"voices1.res",					false,		"-1", 								kSoundWAV,		-1,			false},
+	{"voices2.res",					false,		"-1", 								kSoundWAV,		-1,			false},
+	{"voices3.res",					false,		"-1", 								kSoundWAV,		-1,			false},
+	{"voices4.res",					false,		"-1", 								kSoundWAV,		-1,			false},
+	{"voices5.res",					false,		"-1", 								kSoundWAV,		-1,			false},
+	{"voices6.res",					false,		"-1", 								kSoundWAV,		-1,			false},
 	// Demo
-	{"voicesd.res",					false,		"3bbc16a8f741dbb511da506c660a0b54", kSoundWAV,		-1,			false},
+	{"voicesd.res",					false,		"-1",								kSoundWAV,		-1,			false},
 };
 
 // --------------------------------------------------------------------------------
@@ -181,9 +149,10 @@ uint8 sampleStereo;
 
 bool detectFile(const char *inFileName) {
 	int gamesCount = ARRAYSIZE(gameDescriptions);
-	int j,i;
+	int i, j, k;
 	uint8 md5sum[16];
 	char md5str[32+1];
+	char currentFile[256];
 
 	Common::md5_file(inFileName, md5sum, FILE_MD5_BYTES);
 	printf("Input file name: %s\n", inFileName);
@@ -194,15 +163,31 @@ bool detectFile(const char *inFileName) {
 
 	for (i = 0; i < gamesCount; i++) {
 		for (j = 0; j < gameDescriptions[i].filesCount; j++) {
-			if (strcmp(gameDescriptions[i].filesDescriptions[j].md5, md5str) == 0) {
-				currentGameDescription = &gameDescriptions[i];
-				currentFileDescription = &currentGameDescription->filesDescriptions[j];
+			if (i == 0) {		// ITE
+				// MD5 based detection, needed to distinguish the different file encodings
+				// of the ITE sound files
+				if (strcmp(gameDescriptions[i].filesDescriptions[j].md5, md5str) == 0) {
+					currentGameDescription = &gameDescriptions[i];
+					currentFileDescription = &currentGameDescription->filesDescriptions[j];
 
-				if (currentGameDescription->gameType == GType_ITE)
 					printf("Matched game: Inherit the Earth: Quest for the Orb\n");
-				else
+					return true;
+				}
+			} else {			// IHNM			
+				// Filename based detection, used in IHNM, as all its sound files have the
+				// same encoding
+
+				getFilename(inFileName, currentFile);
+				for (k = 0; k < strlen(currentFile); k++)
+					currentFile[k] = tolower(currentFile[k]);
+
+				if (strcmp(gameDescriptions[i].filesDescriptions[j].fileName, currentFile) == 0) {
+					currentGameDescription = &gameDescriptions[i];
+					currentFileDescription = &currentGameDescription->filesDescriptions[j];
+
 					printf("Matched game: I have no mouth, and I must scream\n");
-				return true;
+					return true;
+				}
 			}
 		}
 	}
