@@ -27,10 +27,6 @@
 #include <vorbis/vorbisenc.h>
 #include <FLAC/stream_encoder.h>
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 /* These are the defaults parameters for the Lame invocation */
 #define minBitrDef 24
 #define maxBitrDef 64
@@ -68,9 +64,5 @@ extern void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode c
 extern void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode);
 extern void encodeRaw(char *rawData, int length, int samplerate, const char *outname, CompressMode compmode);
 extern void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif

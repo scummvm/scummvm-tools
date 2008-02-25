@@ -52,18 +52,6 @@ typedef signed char int8;
 typedef signed short int16;
 typedef signed int int32;
 
-#if !defined(__cplusplus)
-typedef uint8 bool;
-#define false 0
-#define true 1
-
-/* If your C compiler doesn't support 'inline', please add a check for it. */
-#if defined(_MSC_VER)
-#define inline __inline
-#endif
-
-#endif
-
 
 /*
  * Various utility macros
@@ -198,10 +186,6 @@ FORCEINLINE void WRITE_BE_UINT32(void *ptr, uint32 value) {
 #endif
 
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 /* File I/O */
 uint8 readByte(FILE *fp);
 uint16 readUint16BE(FILE *fp);
@@ -222,9 +206,5 @@ void debug(int level, const char *s, ...);
 void notice(const char *s, ...);
 void getPath(const char *fullpath, char *path);
 void getFilename(const char *fullpath, char *filename);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif
