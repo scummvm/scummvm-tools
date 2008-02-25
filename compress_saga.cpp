@@ -149,7 +149,7 @@ uint8 sampleStereo;
 
 bool detectFile(const char *inFileName) {
 	int gamesCount = ARRAYSIZE(gameDescriptions);
-	int i, j, k;
+	int i, j;
 	uint8 md5sum[16];
 	char md5str[32+1];
 	char currentFile[256];
@@ -178,7 +178,7 @@ bool detectFile(const char *inFileName) {
 				// same encoding
 
 				getFilename(inFileName, currentFile);
-				for (k = 0; k < strlen(currentFile); k++)
+				for (unsigned int k = 0; k < strlen(currentFile); k++)
 					currentFile[k] = tolower(currentFile[k]);
 
 				if (strcmp(gameDescriptions[i].filesDescriptions[j].fileName, currentFile) == 0) {

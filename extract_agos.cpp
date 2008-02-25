@@ -102,7 +102,7 @@ int simon_decr(UBYTE *src, UBYTE *dest, ULONG srclen) {
 		if (type == SD_TYPE_LITERAL) {
 			SD_GETBITS(x, x); y += x;
 
-			if ((y + 1) > (d - dest)) {
+			if ((int)(y + 1) > (d - dest)) {
 				return 0; /* overflow? */
 			}
 
@@ -111,7 +111,7 @@ int simon_decr(UBYTE *src, UBYTE *dest, ULONG srclen) {
 				*--d = x;
 			} while (y-- > 0);
 		} else {
-			if ((y + 1) > (d - dest)) {
+			if ((int)(y + 1) > (d - dest)) {
 				return 0; /* overflow? */
 			}
 
@@ -167,7 +167,7 @@ void *loadfile(char *name) {
  * - returns zero if failed, or non-zero if successful
  */
 int savefile(char *name, void *mem, size_t length) {
-	int bytesWritten;
+	unsigned int bytesWritten;
 
 	FILE *fd = fopen(name, "wb");
 	if (fd == NULL) {

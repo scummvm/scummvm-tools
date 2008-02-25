@@ -73,17 +73,21 @@ struct GameVersion {
 	uint32 dataFileSize;
 };
 
-struct {
+struct Entry {
 	char filename[13];
 	uint8 bundle;
 	uint32 offset;
 	uint32 size;
-} entry;
+};
 
-struct {
+Entry entry;
+
+struct VersionExtra {
 	uint8	compression;
 	uint16	entries;
-} versionExtra;
+};
+
+VersionExtra versionExtra;
 
 struct PatchFile {
 	const char *filename;
