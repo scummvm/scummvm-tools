@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 		sprintf(fname, "%s/%s", inputPath, file_name);
 		ofp = fopen(fname, "wb");
 
-		if (!(buf = malloc(file_len))) {
+		if (!(buf = (char *)malloc(file_len))) {
 			fclose(ifp);
 			error("Could not allocate %ld bytes of memory.", file_len);
 		}

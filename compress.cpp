@@ -572,7 +572,7 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 }
 
 void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode) {
-	int length;
+	unsigned int length;
 	FILE *f;
 	char fbuf[2048];
 	size_t size;
@@ -602,7 +602,7 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 	int bits;
 	int blocktype;
 	int channels;
-	int length;
+	unsigned int length;
 	int sample_rate;
 	int comp;
 	char fbuf[2048];

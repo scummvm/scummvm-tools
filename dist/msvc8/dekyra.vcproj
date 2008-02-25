@@ -184,7 +184,7 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\util.c"
+			RelativePath="..\..\util.cpp"
 			>
 		</File>
 		<File

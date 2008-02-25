@@ -172,7 +172,7 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\..\extract_agos.c"
+			RelativePath="..\..\extract_agos.cpp"
 			>
 		</File>
 	</Files>

@@ -242,7 +242,7 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\..\compress.c"
+			RelativePath="..\..\compress.cpp"
 			>
 		</File>
 		<File
@@ -254,7 +254,7 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\util.c"
+			RelativePath="..\..\util.cpp"
 			>
 		</File>
 		<File

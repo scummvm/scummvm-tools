@@ -173,11 +173,11 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\..\extract_mm_apple.c"
+			RelativePath="..\..\extract_mm_apple.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\util.c"
+			RelativePath="..\..\util.cpp"
 			>
 		</File>
 		<File

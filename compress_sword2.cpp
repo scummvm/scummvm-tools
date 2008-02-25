@@ -29,8 +29,7 @@ static FILE *input, *output_idx, *output_snd;
 
 static CompressMode gCompMode = kMP3Mode;
 
-void showhelp(char *exename)
-{
+void showhelp(char *exename) {
 	printf("\nUsage: %s [params] <file>\n", exename);
 
 	printf("\nParams:\n");
@@ -184,7 +183,7 @@ int main(int argc, char *argv[]) {
 	writeUint32BE(output_idx, 0xfff0fff0);
 	writeUint32BE(output_idx, 0xfff0fff0);
 
-	for (i = 0; i < indexSize; i++) {
+	for (i = 0; i < (int)indexSize; i++) {
 		uint32 pos;
 		uint32 enc_length;
 
@@ -240,7 +239,7 @@ int main(int argc, char *argv[]) {
 
 			writeUint16LE(f, prev);
 
-			for (j = 1; j < length; j++) {
+			for (j = 1; j < (int)length; j++) {
 				byte data;
 				uint16 out;
 

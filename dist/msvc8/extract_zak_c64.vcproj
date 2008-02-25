@@ -172,11 +172,11 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\..\extract_zak_c64.c"
+			RelativePath="..\..\extract_zak_c64.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\util.c"
+			RelativePath="..\..\util.cpp"
 			>
 		</File>
 		<File
