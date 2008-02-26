@@ -128,8 +128,8 @@ int ADPCMInputStream::readBufferOKI(int16 *buffer, const int numSamples) {
 
 	for (samples = 0; samples < numSamples && !_stream->eos() && _stream->pos() < _endpos; samples += 2) {
 		data = _stream->readByte();
-		buffer[samples] = TO_LE_16(decodeOKI((data >> 4) & 0x0f));
-		buffer[samples + 1] = TO_LE_16(decodeOKI(data & 0x0f));
+		WRITE_LE_UINT16(buffer + samples,     decodeOKI((data >> 4) & 0x0f));
+		WRITE_LE_UINT16(buffer + samples + 1, decodeOKI(data & 0x0f));
 	}
 	return samples;
 }
@@ -154,8 +154,8 @@ int ADPCMInputStream::readBufferMSIMA1(int16 *buffer, const int numSamples) {
 		for (; samples < numSamples && _blockPos < _blockAlign && !_stream->eos() && _stream->pos() < _endpos; samples += 2) {
 			data = _stream->readByte();
 			_blockPos++;
-			buffer[samples] = TO_LE_16(decodeMSIMA(data & 0x0f));
-			buffer[samples + 1] = TO_LE_16(decodeMSIMA((data >> 4) & 0x0f));
+			WRITE_LE_UINT16(buffer + samples,     decodeMSIMA(data & 0x0f));
+			WRITE_LE_UINT16(buffer + samples + 1, decodeMSIMA((data >> 4) & 0x0f));
 		}
 	}
 	return samples;
@@ -175,7 +175,7 @@ int ADPCMInputStream::readBufferMSIMA2(int16 *buffer, const int numSamples) {
 			
 			for (nibble = 0; nibble < 8; nibble++) {
 				byte k = ((data & 0xf0000000) >> 28);
-				buffer[samples + channel + nibble * 2] = TO_LE_16(decodeMSIMA(k));
+				WRITE_LE_UINT16(buffer + samples + channel + nibble * 2, decodeMSIMA(k));
 				data <<= 4;
 			}
 		}
@@ -230,8 +230,8 @@ int ADPCMInputStream::readBufferMS(int channels, int16 *buffer, const int numSam
 		for (; samples < numSamples && _blockPos < _blockAlign && !_stream->eos() && _stream->pos() < _endpos; samples += 2) {
 			data = _stream->readByte();
 			_blockPos++;
-			buffer[samples] = TO_LE_16(decodeMS(&_status.ch[0], (data >> 4) & 0x0f));
-			buffer[samples + 1] = TO_LE_16(decodeMS(&_status.ch[stereo], data & 0x0f));
+			WRITE_LE_UINT16(buffer + samples,     decodeMS(&_status.ch[0], (data >> 4) & 0x0f));
+			WRITE_LE_UINT16(buffer + samples + 1, decodeMS(&_status.ch[stereo], data & 0x0f));
 		}
 	}
 

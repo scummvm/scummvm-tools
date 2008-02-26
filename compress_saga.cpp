@@ -313,8 +313,6 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
         uint32 voxSize = voxStream->readBuffer((int16*)buffer, inputSize * 2);
         if (voxSize != inputSize * 2)
 			error("Wrong VOX output size");
-		for (uint32 i = 0; i < sampleSize; i++)
-			buffer[i] = TO_LE_16(buffer[i]);
 		writeBufferToFile((uint8 *)buffer, sampleSize, TEMP_RAW);
 		free(buffer);
 

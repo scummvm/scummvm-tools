@@ -64,9 +64,9 @@ byte *loadVOCFromStream(Common::ReadStream &stream, int &size, int &rate, int &l
 	if (fileHeader.desc[19] != 0x1A)
 		debug(3, "loadVOCFromStream: Partially invalid header");
 
-	int32 offset = FROM_LE_16(fileHeader.datablock_offset);
-	int16 version = FROM_LE_16(fileHeader.version);
-	int16 code = FROM_LE_16(fileHeader.id);
+	int32 offset = READ_LE_UINT16(&fileHeader.datablock_offset);
+	int16 version = READ_LE_UINT16(&fileHeader.version);
+	int16 code = READ_LE_UINT16(&fileHeader.id);
 	assert(offset == sizeof(VocFileHeader));
 	// 0x100 is an invalid VOC version used by German version of DOTT (Disk) and
 	// French version of Simon the Sorcerer 2 (CD)
