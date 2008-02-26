@@ -26,7 +26,8 @@ CXXFLAGS:= -Wall $(CXXFLAGS)
 # Turn off some annoying and not-so-useful warnings
 CXXFLAGS+= -Wno-long-long -Wno-multichar -Wno-unknown-pragmas -Wno-reorder
 # Enable even more warnings...
-CXXFLAGS+= -pedantic -Wpointer-arith -Wcast-qual -Wconversion
+#CXXFLAGS+= -pedantic	# -pedantic is too pedantic, at least on Mac OS X
+CXXFLAGS+= -Wpointer-arith -Wcast-qual -Wconversion
 CXXFLAGS+= -Wshadow -Wimplicit -Wundef -Wnon-virtual-dtor -Wwrite-strings
 
 # Disable RTTI and exceptions, and enabled checking of pointers returned by "new"
