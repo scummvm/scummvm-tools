@@ -61,7 +61,7 @@ int main (int argc, char **argv) {
 	unsigned short signature;
 
 	if (argc < 3) {
-		printf("Syntax: %s <disk1.d64> <disk2.d64>\n", argv[0]);
+		printf("\nUsage: %s <disk1.d64> <disk2.d64>\n", argv[0]);
 		exit(2);
 	}
 	getPath(argv[argc - 1], inputPath);

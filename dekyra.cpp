@@ -36,12 +36,12 @@ FILE *outputFile = NULL;
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
-		printf("Use:\n"
-			   "%s filename\n"
-			   "-t   displays only the text segment\n"
-			   "-e   set engine version (1 for kyra1 (default), 2 for kyra2)\n"
-			   "-o   set optional outputfilename (default: stdout)\n",
-			   argv[0]);
+		printf("\nUsage: %s <filename>\n", argv[0]);
+
+		printf("\nParams:\n");
+		printf("-t   displays only the text segment\n");
+		printf("-e   set engine version (1 for kyra1 (default), 2 for kyra2)\n");
+		printf("-o   set optional outputfilename (default: stdout)\n");
 
 		return -1;
 	}

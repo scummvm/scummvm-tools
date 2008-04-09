@@ -1125,7 +1125,7 @@ int main(int argc, char **argv) {
 	uint32 CRC;
 
 	if (argc < 2) {
-		printf("Syntax: %s <infile.PRG>\n", argv[0]);
+		printf("\nUsage: %s <infile.PRG>\n", argv[0]);
 		printf("\tSupported versions: Europe, France, Germany, Sweden and USA\n");
 		printf("\tJapanese version is NOT supported!\n");
 		exit(2);

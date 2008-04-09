@@ -1236,7 +1236,7 @@ int main (int argc, char **argv) {
 	uint32 CRC;
 
 	if (argc < 2) {
-		printf("Syntax: %s <code_##.ISO>\n", argv[0]);
+		printf("\nUsage: %s <code_##.ISO>\n", argv[0]);
 		return 1;
 	}
 

@@ -60,7 +60,7 @@ int main (int argc, char **argv) {
 	unsigned short signature;
 
 	if (argc < 3) {
-		printf("Usage: %s <disk1.dsk> <disk2.dsk>\n", argv[0]);
+		printf("\nUsage: %s <disk1.dsk> <disk2.dsk>\n", argv[0]);
 		exit(2);
 	}
 
