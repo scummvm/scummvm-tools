@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 	int j;
 
 	if (argc != 2) {
-		printf("nUsage: %s <file>\n", argv[0]);
+		printf("\nUsage: %s <file>\n", argv[0]);
 		printf("\nNote: Some Lucas Arts CDs appear to contains only an application.\n");
 		printf("They actually contain a seperate data file as an invisible file.\n");
 
