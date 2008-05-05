@@ -142,7 +142,6 @@ static bool hasSuffix(const char *str, const char *suf) {
 		return false;
 
 	off -= sufSize;
-	printf("'%s'\n", &str[off]);
 
 	return (scumm_stricmp(&str[off], suf) == 0);
 }
