@@ -1248,11 +1248,13 @@ int main (int argc, char **argv) {
 	InitCRC();
 	CRC = ISO_CRC(input);
 	switch (CRC) {
-	case 0x29EED3C5:
+	case 0x29EED3C5: // dumpcd
+	case 0xE70FA498: // turborip
 		ISO = ISO_USA;
 		notice("ISO contents verified as Loom USA (track 2)");
 		break;
-	case 0xD7B5F808:
+	case 0xD7B5F808: // dumpcd
+	case 0xCA757D06: // turborip
 		ISO = ISO_JPN;
 		notice("ISO contents verified as Loom Japan (track 2)");
 		break;
