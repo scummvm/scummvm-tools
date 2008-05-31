@@ -96,6 +96,7 @@ int main(int argc, char **argv) {
 		extract->drawFileList();
 	}
 
+	delete extract;
 	return 0;
 }
 
