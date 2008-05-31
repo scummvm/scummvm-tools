@@ -442,7 +442,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0) {
 	strncpy(_baseFilename, baseFilename, sizeof(_baseFilename));
 	char *str = strstr(_baseFilename, ".");
 	if (str) {
-		if ((uint)((str - _baseFilename) + 1) < strlen(_baseFilename))
+		if ((uint32)((str - _baseFilename) + 1) < strlen(_baseFilename))
 			str[1] = 0;
 	} else {
 		error("filename too long '%s'", baseFilename);
