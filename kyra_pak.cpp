@@ -78,7 +78,7 @@ bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 		startoffset = endoffset;
 	}
 
-	delete [] buffer;
+	delete[] buffer;
 	return true;
 }
 
@@ -115,83 +115,6 @@ bool PAKFile::saveFile(const char *file) {
 		fwrite(cur->data, 1, cur->size, f);
 
 	fclose(f);
-	return true;
-}
-
-void PAKFile::drawFileList() {
-	FileList *cur = _fileList;
-	while (cur) {
-		printf("Filename: '%s' size: %d\n", cur->filename, cur->size);
-		cur = cur->next;
-	}
-}
-
-bool PAKFile::outputAllFiles() {
-	FileList *cur = _fileList;
-	while (cur) {
-		FILE *file = fopen(cur->filename, "wb");
-		if (!file) {
-			error("couldn't open file '%s' for writing", cur->filename);
-			return false;
-		}
-		printf("Exracting file '%s'...", cur->filename);
-		if (fwrite(cur->data, 1, cur->size, file) == cur->size) {
-			printf("OK\n");
-		} else {
-			printf("FAILED\n");
-			return false;
-		}
-		fclose(file);
-		cur = cur->next;
-	}
-	return true;
-}
-
-bool PAKFile::outputAllFiles(char* outputPath) {
-	FileList *cur = _fileList;
-	char outputFilename[1024];
-
-	while (cur) {
-		sprintf(outputFilename, "%s/%s", outputPath, cur->filename);
-		FILE *file = fopen(outputFilename, "wb");
-		if (!file) {
-			error("couldn't open file '%s' for writing", outputFilename);
-			return false;
-		}
-		printf("Exracting file '%s'...", cur->filename);
-		if (fwrite(cur->data, 1, cur->size, file) == cur->size) {
-			printf("OK\n");
-		} else {
-			printf("FAILED\n");
-			return false;
-		}
-		fclose(file);
-		cur = cur->next;
-	}
-	return true;
-}
-
-bool PAKFile::outputFileAs(const char *f, const char *fn) {
-	FileList *cur = (_fileList != 0) ? _fileList->findEntry(f) : 0;
-
-	if (!cur) {
-		error("file '%s' not found");
-		return false;
-	}
-
-	FILE *file = fopen(fn, "wb");
-	if (!file) {
-		error("couldn't open file '%s' in write mode", fn);
-		return false;
-	}
-	printf("Exracting file '%s' to file '%s'...", cur->filename, fn);
-	if (fwrite(cur->data, 1, cur->size, file) == cur->size) {
-		printf("OK\n");
-	} else {
-		printf("FAILED\n");
-		return false;
-	}
-	fclose(file);
 	return true;
 }
 
@@ -243,11 +166,10 @@ bool PAKFile::addFile(const char *name, uint8 *data, uint32 size) {
 	newEntry->size = size;
 	newEntry->data = data;
 
-	if (_fileList) {
+	if (_fileList)
 		_fileList->addEntry(newEntry);
-	} else {
+	else
 		_fileList = newEntry;
-	}
 	return true;
 }
 
@@ -266,3 +188,63 @@ bool PAKFile::removeFile(const char *name) {
 	}
 	return false;
 }
+
+//HACK: move this to another file
+
+void Extractor::drawFileList() {
+	cFileList *cur = getFileList();
+	while (cur) {
+		printf("Filename: '%s' size: %d\n", cur->filename, cur->size);
+		cur = cur->next;
+	}
+}
+
+bool Extractor::outputAllFiles(const char *outputPath) {
+	cFileList *cur = getFileList();
+	char outputFilename[1024];
+
+	while (cur) {
+		sprintf(outputFilename, "%s/%s", outputPath, cur->filename);
+		FILE *file = fopen(outputFilename, "wb");
+		if (!file) {
+			error("couldn't open file '%s' for writing", outputFilename);
+			return false;
+		}
+		printf("Exracting file '%s'...", cur->filename);
+		if (fwrite(cur->data, 1, cur->size, file) == cur->size) {
+			printf("OK\n");
+		} else {
+			printf("FAILED\n");
+			return false;
+		}
+		fclose(file);
+		cur = cur->next;
+	}
+	return true;
+}
+
+bool Extractor::outputFileAs(const char *f, const char *fn) {
+	cFileList *cur = getFileList();
+	cur = (cur != 0) ? cur->findEntry(f) : 0;
+
+	if (!cur) {
+		error("file '%s' not found");
+		return false;
+	}
+
+	FILE *file = fopen(fn, "wb");
+	if (!file) {
+		error("couldn't open file '%s' in write mode", fn);
+		return false;
+	}
+	printf("Exracting file '%s' to file '%s'...", cur->filename, fn);
+	if (fwrite(cur->data, 1, cur->size, file) == cur->size) {
+		printf("OK\n");
+	} else {
+		printf("FAILED\n");
+		return false;
+	}
+	fclose(file);
+	return true;
+}
+

@@ -16,6 +16,11 @@ Extraction Tools:
 
         extract_kyra
                 Unpacks .PAK files from Kyrandia games.
+				It is also able to extract the installer package files from
+				Hand of Fate DOS floppy version. You should be sure you got
+				all WESTWOOD.### files for that, since they are one big package
+				file splitted into several, so with -x you will extract *all*
+				files from the installer files.
                 
                 Example of usage:
                 extract_kyra [params] <file>

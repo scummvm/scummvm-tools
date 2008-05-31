@@ -149,7 +149,7 @@ encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
 extract_agos$(EXEEXT): extract_agos.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_kyra$(EXEEXT): extract_kyra.o kyra_pak.o util.o
+extract_kyra$(EXEEXT): extract_kyra.o kyra_pak.o kyra_ins.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o

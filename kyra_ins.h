@@ -1,5 +1,5 @@
 /* Scumm Tools
- * Copyright (C) 2007 The ScummVM project
+ * Copyright (C) 2008 The ScummVM project
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,34 +20,37 @@
  *
  */
 
-#ifndef KYRA_PAK_H
-#define KYRA_PAK_H
+#ifndef KYRA_INS_H
+#define KYRA_INS_H
 
 #include "extract_kyra.h"
 #include "util.h"
 
-class PAKFile : public Extractor {
+class HoFInstaller : public Extractor {
 public:
-	PAKFile() : _fileList(0), _isAmiga(false) {}
-	~PAKFile() { delete _fileList; }
+	HoFInstaller(const char *baseFilename);
+	~HoFInstaller() { delete _list; delete _files; }
 
-	bool loadFile(const char *file, const bool isAmiga);
-	bool saveFile(const char *file);
-	void clearFile() { delete _fileList; _fileList = 0; }
-
-	const uint32 getFileSize() const { return _fileList->getTableSize()+5+4+_fileList->getFileSize(); }
-
-	const uint8 *getFileData(const char *file, uint32 *size);
-
-	bool addFile(const char *name, const char *file);
-	bool addFile(const char *name, uint8 *data, uint32 size);
-
-	bool removeFile(const char *name);
-
-	cFileList *getFileList() const { return _fileList; }
+	cFileList *getFileList() const { return _files; }
 private:
-	FileList *_fileList;
-	bool _isAmiga;
+	char _baseFilename[1024];
+
+	struct Archive {
+		Archive() : next(0) {}
+		~Archive() { delete next; next = 0; }
+
+		char filename[1024];
+		uint32 firstFile;
+		uint32 startOffset;
+		uint32 lastFile;
+		uint32 endOffset;
+		uint32 totalSize;
+
+		Archive *next;
+	};
+
+	Archive *_list;
+	FileList *_files;
 };
 
 #endif

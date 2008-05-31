@@ -1,6 +1,6 @@
 /* extract_kyra - Extractor for Kyrandia .pak archives
  * Copyright (C) 2004  Johannes Schickel
- * Copyright (C) 2004-2006  The ScummVM Team
+ * Copyright (C) 2004-2008  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,27 +22,27 @@
  */
 
 #include "kyra_pak.h"
+#include "kyra_ins.h"
 
-void showhelp(char* exename)
-{
-		printf("\nUsage: %s [params] <file>\n", exename);
+void showhelp(char *exename) {
+	printf("\nUsage: %s [params] <file>\n", exename);
 
-		printf("\nParams:\n");
-		printf("-o <filename>     Extract only <filename>\n");
-		printf("-x                Extract all files\n");
-		printf("-a                Extract files from the Amiga .PAK files\n");
+	printf("\nParams:\n");
+	printf( "-o <filename>     Extract only <filename>\n"
+			"-x                Extract all files\n"
+			"-a                Extract files from the Amiga .PAK files\n"
+			"-2                Extract files from HoF installer files\n");
 
-		exit(2);
+	exit(2);
 }
 
 int main(int argc, char **argv) {
 	char inputPath[768];
 
-	if (argc < 2) {
+	if (argc < 2)
 		showhelp(argv[0]);
-	}
 
-	bool extractAll = false, extractOne = false, isAmiga = false;
+	bool extractAll = false, extractOne = false, isAmiga = false, isHoFInstaller = false;
 	char singleFilename[256] = "";
 	int param;
 
@@ -63,29 +63,39 @@ int main(int argc, char **argv) {
 			extractAll = true;
 		} else if (strcmp(argv[param], "-a") == 0) {
 			isAmiga = true;
+		} else if (strcmp(argv[param], "-2") == 0) {
+			isHoFInstaller = true;
 		}
 	}
 
-	if (param > argc) {
+	if (param > argc)
 		showhelp(argv[0]);
-	}
 
-	PAKFile myfile;
-	if (!myfile.loadFile(argv[argc - 1], isAmiga)) {
-		error("Couldn't load file '%s'", argv[argc - 1]);
+	Extractor *extract = 0;
+	if (isHoFInstaller) {
+		extract = new HoFInstaller(argv[argc - 1]);
+	} else {
+		PAKFile *myfile = new PAKFile;
+		if (!myfile->loadFile(argv[argc - 1], isAmiga)) {
+			delete myfile;
+			error("Couldn't load file '%s'", argv[argc - 1]);
+		}
+
+		extract = myfile;
 	}
 
 	getPath(argc[argv - 1], inputPath);
 
-	if(extractAll) {
-		myfile.outputAllFiles(inputPath);
-	} else if(extractOne) {
+	if (extractAll) {
+		extract->outputAllFiles(inputPath);
+	} else if (extractOne) {
 		char outputFilename[1024];
-		sprintf(outputFilename, "%s/%s", inputPath, singleFilename);
-		myfile.outputFileAs(singleFilename, outputFilename);
+		snprintf(outputFilename, 1024, "%s/%s", inputPath, singleFilename);
+		extract->outputFileAs(singleFilename, outputFilename);
 	} else {
-		myfile.drawFileList();
+		extract->drawFileList();
 	}
 
 	return 0;
 }
+
