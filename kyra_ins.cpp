@@ -107,7 +107,8 @@ uint16 FileExpanderSource::keyMaskedAlign(uint16 val) {
 	int16 b = ((_bitsLeft << 8) | _index) - 1;
 	_bitsLeft = b >> 8;
 	_index = b & 0xff;
-	return (((val & 3) + 4) << _index) + 0x101 + getKeyMasked(_index);
+	uint16 res = (((val & 3) + 4) << _index) + 0x101;
+	return res + getKeyMasked(_index);
 }
 
 void FileExpanderSource::advSrcRefresh() {
@@ -273,9 +274,11 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 				cmd -= 0xfe;
 				int16 offset = ((int16*) _tables[4])[_src->getKeyLower()];
 				_src->advSrcBitsByIndex(offset < 0 ? calcCmdAndIndex(_tables[5], offset) : _tables[1][offset]);
+
 				if ((offset & 0xff) >= 4) {
 					uint8 newIndex = ((offset & 0xff) >> 1) - 1;
-					offset = (((offset & 1) + 2) << newIndex) + _src->getKeyMasked(newIndex);
+					offset = (((offset & 1) + 2) << newIndex);
+					offset += _src->getKeyMasked(newIndex);
 				}
 
 				uint8 *s2 = d - 1 - offset;
