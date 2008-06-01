@@ -24,7 +24,7 @@
 
 class FileExpanderSource {
 public:
-	FileExpanderSource(const uint8 *data) : _dataPtr(data), _bitsLeft(8), _key(0), _index(0) {}
+	FileExpanderSource(const uint8 *data, int dataSize) : _dataPtr(data), _endofBuffer(data + dataSize), _bitsLeft(8), _key(0), _index(0) {}
 	~FileExpanderSource() {}
 
 	void advSrcRefresh();
@@ -40,6 +40,7 @@ public:
 
 private:
 	const uint8 *_dataPtr;
+	const uint8 *_endofBuffer;
 	uint16 _key;
 	int8 _bitsLeft;
 	uint8 _index;
@@ -48,7 +49,8 @@ private:
 void FileExpanderSource::advSrcBitsBy1() {
 	_key >>= 1;		
 	if (!--_bitsLeft) {
-		_key = ((*_dataPtr++) << 8 ) | (_key & 0xff);
+		if (_dataPtr < _endofBuffer)
+			_key = ((*_dataPtr++) << 8 ) | (_key & 0xff);
 		_bitsLeft = 8;
 	}
 }
@@ -60,7 +62,8 @@ void FileExpanderSource::advSrcBitsByIndex(uint8 newIndex) {
 		_key >>= (_index + _bitsLeft);
 		_index = -_bitsLeft;
 		_bitsLeft = 8 - _index;
-		_key = (*_dataPtr++ << 8) | (_key & 0xff);
+		if (_dataPtr < _endofBuffer)
+			_key = (*_dataPtr++ << 8) | (_key & 0xff);
 	}
 	_key >>= _index;
 }
@@ -109,7 +112,8 @@ uint16 FileExpanderSource::keyMaskedAlign(uint16 val) {
 
 void FileExpanderSource::advSrcRefresh() {
 	_key = READ_LE_UINT16(_dataPtr);
-	_dataPtr += 2;		
+	if (_dataPtr < _endofBuffer - 1)
+		_dataPtr += 2;
 	_bitsLeft = 8;
 }
 
@@ -166,7 +170,7 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 	bool needrefresh = true;
 	bool postprocess = false;
 
-	_src = new FileExpanderSource(src);
+	_src = new FileExpanderSource(src, compressedSize);
 
 	while (d < dst + outsize) {
 
