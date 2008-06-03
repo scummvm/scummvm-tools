@@ -85,16 +85,22 @@ Compression Tools:
                 compress_agos [params] <file | mac> 
 
         compress_kyra
-                Used to compress The Legend of Kyrandia or The Legend of
-                Kyrandia: Hand of Fate speech files with MP3, Vorbis or FLAC.
+                Used to compress The Legend of Kyrandia, The Legend of
+                Kyrandia: Hand of Fate and The Legend of Kyrandia: Malcolm's
+				Revenge audio files with MP3, Vorbis or FLAC.
 
                 Examples of usage:
-                compress_kyra [params] input/GEMCUT.VRM output/GEMCUT.VRM
-                compress_kyra [params] input/ANYTALK.TLK output/ANYTALK.TLK
+                compress_kyra [params] GEMCUT.VRM inputdir/ outputdir/
+                compress_kyra [params] ANYTALK.TLK inputdir/ outputdir/
 
-                Note: You have to keep the file extension, or else it will NOT
-                work. Use it as shown above, copy all speech files to a directory
-                and let the tool put the output file in another directory.
+                For The Legend of Kyrandia: Malcolm's Revenge use: 
+                compress_kyra --kyra3 [params] BATH1.AUD inputdir/ outputdir/
+                compress_kyra --kyra3 [params] ANYTALK.TLK inputdir/ outputdir/
+
+                Note: You have to keep the file extension the tool will append
+                else it will NOT work. Use it as shown above, copy all speech
+                files to a directory and let the tool put the output file in
+                another directory.
 
         compress_queen
                 Used to rebuild the datafile of Flight of the Amazon Queen,
