@@ -25,6 +25,7 @@
 
 static void showhelp(const char *exename);
 static void process(const char *infile, const char *output);
+static void processKyra3(const char *infile, const char *output);
 
 #define OUTPUT_MP3 ".VO3"
 #define OUTPUT_OGG ".VOG"
@@ -44,20 +45,21 @@ int main(int argc, char *argv[]) {
 	int i = 0;
 
 	/* Compression mode */
+	bool isKyra3 = false;
 	gCompMode = kMP3Mode;
 	i = 1;
 
-	if (strcmp(argv[1], "--mp3") == 0) {
-		gCompMode = kMP3Mode;
-		i++;
-	}
-	else if (strcmp(argv[1], "--vorbis") == 0) {
-		gCompMode = kVorbisMode;
-		i++;
-	}
-	else if (strcmp(argv[1], "--flac") == 0) {
-		gCompMode = kFlacMode;
-		i++;
+	for (; i < argc - 2; ++i) {
+		if (strcmp(argv[i], "--mp3") == 0)
+			gCompMode = kMP3Mode;
+		else if (strcmp(argv[i], "--vorbis") == 0)
+			gCompMode = kVorbisMode;
+		else if (strcmp(argv[i], "--flac") == 0)
+			gCompMode = kFlacMode;
+		else if (strcmp(argv[i], "--kyra3") == 0)
+			isKyra3 = true;
+		else
+			break;
 	}
 
 	switch (gCompMode) {
@@ -84,19 +86,23 @@ int main(int argc, char *argv[]) {
 	sprintf(inputFile, "%s/%s", argv[argc - 2], argv[argc - 3]);
 	sprintf(outputFile, "%s/%s", argv[argc - 1], argv[argc - 3]);
 
-	if (scumm_stricmp(inputFile, outputFile) == 0) {
+	if (scumm_stricmp(inputFile, outputFile) == 0)
 		error("infile and outfile are the same file");
-	}
 
-	process(inputFile, outputFile);
+	if (!isKyra3)
+		process(inputFile, outputFile);
+	else
+		processKyra3(inputFile, outputFile);
 
 	return 0;
 }
 
 static void showhelp(const char *exename) {
-	printf("\nUsage: %s [params] <file> <inputdir> <outputdir>\n", exename);
+	printf("\nUsage: %s [params] [mode params] <file> <inputdir> <outputdir>\n", exename);
 
 	printf("\nParams:\n");
+	printf(" --kyra3      compress files from The Legend of Kyrandia: Book Three: Malcolm's Revenge\n");
+	printf("\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
 	printf(" --vorbis     encode to Vorbis format\n");
 	printf(" --flac       encode to Flac format\n");
@@ -149,21 +155,18 @@ static bool hasSuffix(const char *str, const char *suf) {
 static void process(const char *infile, const char *outfile) {
 	PAKFile input, output;
 
-	if (!input.loadFile(infile, false)) {
+	if (!input.loadFile(infile, false))
 		return;
-	}
 
-	if (!output.loadFile(0, false)) {
+	if (!output.loadFile(0, false))
 		return;
-	}
 
 	PAKFile::cFileList *list = input.getFileList();
 	char outputName[32];
 
 	for (; list; list = list->next) {
-		if (!hasSuffix(list->filename, ".VOC")) {
+		if (!hasSuffix(list->filename, ".VOC"))
 			continue;
-		}
 
 		if (list->data[26] != 1) {
 			warning("broken VOC file '%s' skipping it...", list->filename);
@@ -179,9 +182,8 @@ static void process(const char *infile, const char *outfile) {
 		fclose(tempFile);
 
 		char *vocStart = strstr(outputName, ".VOC");
-		for (unsigned int i = 0; i < strlen(outputExt); ++i) {
+		for (unsigned int i = 0; i < strlen(outputExt); ++i)
 			vocStart[i] = outputExt[i];
-		}
 
 		output.addFile(outputName, tempEncoded);
 
@@ -190,9 +192,312 @@ static void process(const char *infile, const char *outfile) {
 		unlink(tempEncoded);
 	}
 
-	if (output.getFileList()) {
+	if (output.getFileList())
 		output.saveFile(outfile);
-	} else {
+	else
 		printf("file '%s' doesn't contain any .voc files\n", infile);
+}
+
+// Kyra3 specifc code
+
+static uint16 clip8BitSample(int16 sample) {
+	if (sample > 255)
+		return 255;
+	if (sample < 0)
+		return 0;
+	return sample;
+}
+
+static int decodeChunk(FILE *in, FILE *out) {
+	uint16 size = readUint16LE(in);
+	uint16 outSize = readUint16LE(in);
+	uint32 id = readUint32LE(in);
+	byte *inputBuffer, *outputBuffer;
+	int bytesRead = 0;
+
+	int16 curSample;
+	uint8 code;
+	int8 count;
+	uint16 input;
+	int i, j;
+
+	uint16 remaining;
+
+	const int8 WSTable2Bit[] = { -2, -1, 0, 1 };
+	const int8 WSTable4Bit[] = {
+		-9, -8, -6, -5, -4, -3, -2, -1,
+		 0,  1,  2,  3,  4,  5,  6,  8
+	};
+
+	assert(id == 0x0000DEAF);
+
+	bytesRead += (8 + size);
+
+	outputBuffer = (byte *)malloc(outSize);
+	assert(outputBuffer);
+
+	if (size == outSize) {
+		int readSize = size;
+		while (readSize > 0) {
+			int read = fread(outputBuffer, 1, readSize, in);
+			if (read <= 0)
+				error("[1] Couldn't read data");
+			readSize -= read;
+		}
+		while (size > 0)  {
+			int written = fwrite(outputBuffer, 1, size, out);
+			if (written <= 0)
+				error("[1] Couldn't write data");
+			size -= written;
+		}
+		free(outputBuffer);
+		return bytesRead;
+	}
+
+	inputBuffer = (byte *)malloc(size);
+	assert(inputBuffer);
+
+	int readSize = size;
+	while (readSize > 0) {
+		int read = fread(inputBuffer, 1, readSize, in);
+		if (read <= 0)
+			error("[2] Couldn't read data");
+		readSize -= read;
+	}
+
+	curSample = 0x80;
+	i = 0;
+	j = 0;
+
+	remaining = outSize;
+
+	while (remaining > 0) {
+		input = inputBuffer[i++] << 2;
+		code = (input >> 8) & 0xff;
+		count = (input & 0xff) >> 2;
+
+		switch (code) {
+		case 2:
+			if (count & 0x20) {
+				/* NOTE: count is signed! */
+				count <<= 3;
+				curSample += (count >> 3);
+				outputBuffer[j++] = curSample;
+				remaining--;
+			} else {
+				for (; count >= 0; count--) {
+					outputBuffer[j++] = inputBuffer[i++];
+					remaining--;
+				}
+				curSample = inputBuffer[i - 1];
+			}
+			break;
+		case 1:
+			for (; count >= 0; count--) {
+				code = inputBuffer[i++];
+
+				curSample += WSTable4Bit[code & 0x0f];
+				curSample = clip8BitSample(curSample);
+				outputBuffer[j++] = curSample;
+
+				curSample += WSTable4Bit[code >> 4];
+				curSample = clip8BitSample(curSample);
+				outputBuffer[j++] = curSample;
+
+				remaining -= 2;
+			}
+			break;
+		case 0:
+			for (; count >= 0; count--) {
+				code = inputBuffer[i++];
+
+				curSample += WSTable2Bit[code & 0x03];
+				curSample = clip8BitSample(curSample);
+				outputBuffer[j++] = curSample;
+
+				curSample += WSTable2Bit[(code >> 2) & 0x03];
+				curSample = clip8BitSample(curSample);
+				outputBuffer[j++] = curSample;
+
+				curSample += WSTable2Bit[(code >> 4) & 0x03];
+				curSample = clip8BitSample(curSample);
+				outputBuffer[j++] = curSample;
+
+				curSample += WSTable2Bit[(code >> 6) & 0x03];
+				curSample = clip8BitSample(curSample);
+				outputBuffer[j++] = curSample;
+
+				remaining -= 4;
+			}
+			break;
+		default:
+			for (; count >= 0; count--) {
+				outputBuffer[j++] = curSample;
+				remaining--;
+			}
+		}
+	}
+
+	while (outSize > 0)  {
+		int written = fwrite(outputBuffer, 1, outSize, out);
+		if (written <= 0)
+			error("[2] Couldn't write data");
+		outSize -= written;
+	}
+
+	free(inputBuffer);
+	free(outputBuffer);
+
+	return bytesRead;
+}
+
+typedef struct {
+	uint16 freq;
+	uint32 size;
+	byte flags;
+	byte type;
+} AUDHeader;
+
+static void compressAUDFile(FILE *input, const char *outfile) {
+	AUDHeader header;
+
+	header.freq = readUint16LE(input);
+	header.size = readUint32LE(input);
+	header.flags = readByte(input);
+	header.type = readByte(input);
+	//printf("%d Hz, %d bytes, type %d (%08X)\n", header.freq, header.size, header.type, header.flags);
+
+	FILE *output = fopen(TEMP_RAW, "wb");
+
+	if (!output)
+		error("Couldn't create temporary file '%s'", TEMP_RAW);
+
+	uint32 remaining = header.size;
+	while (remaining > 0)
+		remaining -= decodeChunk(input, output);
+
+	fclose(output);
+
+	encodeAudio(TEMP_RAW, true, header.freq, outfile, gCompMode);
+
+	unlink(TEMP_RAW);
+}
+
+static void changeFileExt(char *filename) {
+	char *str = filename + strlen(filename) - 4;
+
+	if (*str != '.')
+		error("Invalid filename '%s'", filename);
+
+	++str;
+
+	switch (gCompMode) {
+	case kMP3Mode:
+		*str++ = 'm';
+		*str++ = 'p';
+		*str++ = '3';
+		break;
+
+	case kVorbisMode:
+		*str++ = 'o';
+		*str++ = 'g';
+		*str++ = 'g';
+		break;
+
+	case kFlacMode:
+		*str++ = 'f';
+		*str++ = 'l';
+		*str++ = 'a';
+		break;
+
+	default:
+		error("Unknown compression mode");
+	}
+
+	*str = 0;
+}
+
+struct DuplicatedFile {
+	uint32 resFilename;
+	uint32 resOffset;
+};
+
+static const DuplicatedFile *findDuplicatedFile(uint32 resOffset, const DuplicatedFile *list, const uint maxEntries) {
+	for (uint i = 0; i < maxEntries; ++i) {
+		if (list[i].resOffset == resOffset && list[i].resOffset != 0)
+			return &list[i];
+	}
+
+	return 0;
+}
+
+static void processKyra3(const char *infile, const char *outfile) {
+	if (hasSuffix(infile, ".AUD")) {
+		char outname[1024];
+
+		strncpy(outname, outfile, sizeof(outname));
+		changeFileExt(outname);
+
+		FILE *input = fopen(infile, "rb");
+		if (!input)
+			error("Couldn't open file '%s'", infile);
+
+		compressAUDFile(input, outname);
+
+		fclose(input);
+	} else if (hasSuffix(infile, ".TLK")) {
+		PAKFile output;
+
+		FILE *input = fopen(infile, "rb");
+		if (!input)
+			error("Couldn't open file '%s'", infile);
+
+		if (!output.loadFile(0, false))
+			return;
+
+		uint16 files = readUint16LE(input);
+		DuplicatedFile *red = new DuplicatedFile[files];
+		memset(red, 0, sizeof(DuplicatedFile)*files);
+
+		for (uint i = 0; i < files; ++i) {
+			uint32 resFilename = readUint32LE(input);
+			uint32 resOffset = readUint32LE(input);
+
+			char outname[16];
+			snprintf(outname, 16, "%.08u.AUD", resFilename);
+			changeFileExt(outname);
+
+			const DuplicatedFile *file = findDuplicatedFile(resOffset, red, files);
+			if (file) {
+				char linkname[16];
+				snprintf(linkname, 16, "%.08u.AUD", file->resFilename);
+				changeFileExt(linkname);
+
+				output.linkFiles(outname, linkname);
+			} else {
+				red[i].resFilename = resFilename;
+				red[i].resOffset = resOffset;
+
+				uint32 pos = (uint32)ftell(input);
+				fseek(input, resOffset + 4, SEEK_SET);
+
+				compressAUDFile(input, outname);
+
+				output.addFile(outname, outname);
+
+				unlink(outname);
+
+				fseek(input, pos, SEEK_SET);
+			}
+		}
+
+		delete[] red;
+		fclose(input);
+
+		if (output.getFileList())
+			output.saveFile(outfile);
+	} else {
+		error("Unsupported file '%s'", infile);
 	}
 }
+

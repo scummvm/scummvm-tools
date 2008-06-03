@@ -47,18 +47,16 @@ public:
 
 		FileList *findEntry(const char *f) {
 			for (FileList *cur = this; cur; cur = cur->next) {
-				if (scumm_stricmp(cur->filename, f) != 0)
-					continue;
-				return cur;
+				if (scumm_stricmp(cur->filename, f) == 0)
+					return cur;
 			}
 			return 0;
 		}
 
 		const FileList *findEntry(const char *f) const {
 			for (const FileList *cur = this; cur; cur = cur->next) {
-				if (scumm_stricmp(cur->filename, f) != 0)
-					continue;
-				return cur;
+				if (scumm_stricmp(cur->filename, f) == 0)
+					return cur;
 			}
 			return 0;
 		}

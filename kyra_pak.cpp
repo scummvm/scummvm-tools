@@ -79,12 +79,14 @@ bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 	}
 
 	delete[] buffer;
+	loadLinkEntry();
 	return true;
 }
 
 bool PAKFile::saveFile(const char *file) {
 	if (!_fileList)
 		return true;
+	generateLinkEntry();
 
 	FILE *f = fopen(file, "wb");
 	if (!f) {
@@ -119,6 +121,12 @@ bool PAKFile::saveFile(const char *file) {
 }
 
 const uint8 *PAKFile::getFileData(const char *file, uint32 *size) {
+	if (_links) {
+		LinkList *entry = _links->findSrcEntry(file);
+		if (entry)
+			file = entry->linksTo;
+	}
+
 	FileList *cur = (_fileList != 0) ? _fileList->findEntry(file) : 0;
 
 	if (!cur)
@@ -130,7 +138,7 @@ const uint8 *PAKFile::getFileData(const char *file, uint32 *size) {
 }
 
 bool PAKFile::addFile(const char *name, const char *file) {
-	if (_fileList && _fileList->findEntry(name)) {
+	if ((_fileList && _fileList->findEntry(name)) || (_links && _links->findSrcEntry(name))) {
 		error("entry '%s' already exists");
 		return false;
 	}
@@ -153,7 +161,7 @@ bool PAKFile::addFile(const char *name, const char *file) {
 }
 
 bool PAKFile::addFile(const char *name, uint8 *data, uint32 size) {
-	if (_fileList && _fileList->findEntry(name)) {
+	if (_fileList && _fileList->findEntry(name) || (_links && _links->findSrcEntry(name))) {
 		error("entry '%s' already exists");
 		return false;
 	}
@@ -173,7 +181,165 @@ bool PAKFile::addFile(const char *name, uint8 *data, uint32 size) {
 	return true;
 }
 
+bool PAKFile::linkFiles(const char *name, const char *linkTo) {
+	if (!_fileList)
+		error("Can't find file '%s' in file list", linkTo);
+	if (!_fileList->findEntry(linkTo))
+		error("Can't find file '%s' in file list", linkTo);
+	if ((_fileList && _fileList->findEntry(name)) || (_links && _links->findSrcEntry(name)))
+		error("entry '%s' already exists");
+
+	LinkList *entry = new LinkList;
+	assert(entry);
+
+	entry->filename = new char[strlen(name)+1];
+	assert(entry->filename);
+	strncpy(entry->filename, name, strlen(name)+1);
+	entry->linksTo = _fileList->findEntry(linkTo)->filename;
+
+	if (!_links)
+		_links = entry;
+	else
+		_links->addEntry(entry);
+	
+	return true;	
+}
+
+static bool isInList(const char * const *linkList, const char *linkTo, const int maxSize) {
+	for (int i = 0; i < maxSize; ++i) {
+		if (scumm_stricmp(linkList[i], linkTo) == 0)
+			return true;
+	}
+
+	return false;
+}
+
+void PAKFile::generateLinkEntry() {
+	removeFile("LINKLIST");
+	if (!_links)
+		return;
+
+	const int countLinks = _links->size();
+	FILE *output = fopen("LINKLIST.TMP", "wb");
+	if (!output)
+		error("Couldn't open file 'LINKLIST.TMP'");
+	
+	const char **linkList = new const char *[countLinks];
+	int usedLinks = 0;
+
+	const LinkList *entry = _links;
+	for (int i = 0; i < countLinks && entry; ++i, entry = entry->next) {
+		if (isInList(linkList, entry->linksTo, usedLinks))
+			continue;
+		
+		linkList[usedLinks++] = entry->linksTo;
+	}
+
+	writeUint32BE(output, usedLinks);
+	for (int i = 0; i < usedLinks; ++i) {
+		int count = 0;
+		entry = _links;		
+		while (entry) {
+			if (scumm_stricmp(entry->linksTo, linkList[i]) == 0)
+				++count;
+			entry = entry->next;
+		}
+
+		const char *p = linkList[i];
+		while (*p)
+			writeByte(output, *p++);
+		writeByte(output, 0);
+
+		writeUint32BE(output, count);
+		for (entry = _links; entry; entry = entry->next) {
+			if (scumm_stricmp(entry->linksTo, linkList[i]) != 0)
+				continue;
+
+			p = entry->filename;
+			while (*p)
+				writeByte(output, *p++);
+			writeByte(output, 0);
+		}
+	}
+
+	fclose(output);
+
+	addFile("LINKLIST", "LINKLIST.TMP");
+
+	unlink("LINKLIST.TMP");
+	delete[] linkList;
+}
+
+void PAKFile::loadLinkEntry() {
+	delete _links; _links = 0;
+
+	if (_fileList && _fileList->findEntry("LINKLIST")) {
+		const FileList *entry = _fileList->findEntry("LINKLIST");
+		const uint8 *src = entry->data;
+
+		uint32 links = READ_BE_UINT32(src); src += 4;
+		for (uint i = 0; i < links; ++i) {
+			const char *linksTo = (const char *)src;
+
+			if (!_fileList->findEntry(linksTo))
+				error("Couldn't find link destination '%s'", linksTo);
+			src += strlen(linksTo) + 1;
+
+			uint32 sources = READ_BE_UINT32(src); src += 4;
+			for (uint j = 0; j < sources; ++j) {
+				LinkList *newEntry = new LinkList;
+				assert(newEntry);
+
+				newEntry->linksTo = _fileList->findEntry(linksTo)->filename;
+				newEntry->filename = new char[strlen((const char *)src) + 1];
+				assert(newEntry->filename);
+				strcpy(newEntry->filename, (const char *)src);
+				src += strlen((const char *)src) + 1;
+
+				if (_links)
+					_links->addEntry(newEntry);
+				else
+					_links = newEntry;
+			}
+		}
+	}
+}
+
 bool PAKFile::removeFile(const char *name) {
+	if (_links) {
+		LinkList *link = _links->findEntry(name);
+		while (link) {
+			warning("Implicitly removing link '%s' to file '%s'", link->filename, name);
+
+			LinkList *last = _links;
+			while (last != link)
+				last = last->next;
+
+			if (last == _links)
+				_links = link->next;
+			else
+				last->next = link->next;
+
+			link->next = 0;
+			delete link;
+		}
+
+		if ((link = _links->findSrcEntry(name)) != 0) {
+			LinkList *last = _links;
+			while (last != link)
+				last = last->next;
+
+			if (last == _links)
+				_links = link->next;
+			else
+				last->next = link->next;
+
+			link->next = 0;
+			delete link;
+			return true;
+		}
+	}
+
 	for (FileList *cur = _fileList, *last = 0; cur; last = cur, cur = cur->next) {
 		if (scumm_stricmp(cur->filename, name) == 0) {
 			FileList *next = cur->next;
@@ -187,6 +353,41 @@ bool PAKFile::removeFile(const char *name) {
 		}
 	}
 	return false;
+}
+
+void PAKFile::drawFileList() {
+	Extractor::drawFileList();
+
+	if (_links) {
+		printf("Linked files (count: %d):\n", _links->size());
+		for (const LinkList *i = _links; i; i = i->next)
+			printf("Filename: '%s' -> '%s'\n", i->filename, i->linksTo);
+	}
+}
+
+bool PAKFile::outputAllFiles(const char *outputPath) {
+	if (!Extractor::outputAllFiles(outputPath))
+		return false;
+
+	char outputFilename[1024];
+	for (const LinkList *entry = _links; entry; entry = entry->next) {
+		sprintf(outputFilename, "%s/%s", outputPath, entry->filename);
+		if (!outputFileAs(entry->linksTo, outputPath))
+			return false;
+	}
+
+	return true;
+}
+
+bool PAKFile::outputFileAs(const char *file, const char *outputName) {
+	for (const LinkList *entry = _links; entry; entry = entry->next) {
+		if (scumm_stricmp(entry->filename, file) == 0) {
+			file = entry->linksTo;
+			break;
+		}
+	}
+
+	return Extractor::outputFileAs(file, outputName);
 }
 
 //HACK: move this to another file

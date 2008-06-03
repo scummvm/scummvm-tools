@@ -28,7 +28,7 @@
 
 class PAKFile : public Extractor {
 public:
-	PAKFile() : _fileList(0), _isAmiga(false) {}
+	PAKFile() : _fileList(0), _isAmiga(false), _links(0) {}
 	~PAKFile() { delete _fileList; }
 
 	bool loadFile(const char *file, const bool isAmiga);
@@ -42,12 +42,59 @@ public:
 	bool addFile(const char *name, const char *file);
 	bool addFile(const char *name, uint8 *data, uint32 size);
 
+	bool linkFiles(const char *name, const char *linkTo);
+
 	bool removeFile(const char *name);
 
 	cFileList *getFileList() const { return _fileList; }
+
+	void drawFileList();
+	bool outputAllFiles(const char *outputPath);
+	bool outputFileAs(const char *file, const char *outputName);
 private:
 	FileList *_fileList;
 	bool _isAmiga;
+
+	struct LinkList {
+		LinkList() : filename(0), linksTo(0), next(0) {}
+		~LinkList() { delete[] filename; delete next; }
+
+		char *filename;
+		const char *linksTo;
+
+		LinkList *next;
+
+		LinkList *findEntry(const char *linkDest) {
+			for (LinkList *cur = this; cur; cur = cur->next) {
+				if (scumm_stricmp(cur->linksTo, linkDest) == 0)
+					return cur;
+			}
+			return 0;
+		}
+
+		LinkList *findSrcEntry(const char *f) {
+			for (LinkList *cur = this; cur; cur = cur->next) {
+				if (scumm_stricmp(cur->filename, f) == 0)
+					return cur;
+			}
+			return 0;
+		}
+
+		void addEntry(LinkList *e) {
+			if (next)
+				next->addEntry(e);
+			else
+				next = e;
+		}
+
+		int size() const {
+			return 1 + (next ? next->size() : 0);
+		}
+	};
+
+	LinkList *_links;
+	void generateLinkEntry();
+	void loadLinkEntry();
 };
 
 #endif
