@@ -235,6 +235,7 @@ void PAKFile::generateLinkEntry() {
 		linkList[usedLinks++] = entry->linksTo;
 	}
 
+	writeUint32BE(output, MKID_BE('SCVM'));
 	writeUint32BE(output, usedLinks);
 	for (int i = 0; i < usedLinks; ++i) {
 		int count = 0;
@@ -277,6 +278,9 @@ void PAKFile::loadLinkEntry() {
 		const FileList *entry = _fileList->findEntry("LINKLIST");
 		const uint8 *src = entry->data;
 
+		uint32 magic = READ_BE_UINT32(src); src += 4;
+		if (magic != MKID_BE('SCVM'))
+			error("LINKLIST file does not contain 'SCVM' header");
 		uint32 links = READ_BE_UINT32(src); src += 4;
 		for (uint i = 0; i < links; ++i) {
 			const char *linksTo = (const char *)src;

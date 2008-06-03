@@ -106,6 +106,17 @@ typedef signed int int32;
 
 #define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
+#if defined(INVERSE_MKID)
+#define MKID_BE(a) ((uint32) \
+		(((a) >> 24) & 0x000000FF) | \
+		(((a) >>  8) & 0x0000FF00) | \
+		(((a) <<  8) & 0x00FF0000) | \
+		(((a) << 24) & 0xFF000000))
+
+#else
+#  define MKID_BE(a) ((uint32)(a))
+#endif
+
 static inline uint32 SWAP_32(uint32 a) {
 	return ((a >> 24) & 0xFF) | ((a >> 8) & 0xFF00) | ((a << 8) & 0xFF0000) |
 		((a << 24) & 0xFF000000);
