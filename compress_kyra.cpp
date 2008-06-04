@@ -422,8 +422,8 @@ struct DuplicatedFile {
 	uint32 resOffset;
 };
 
-static const DuplicatedFile *findDuplicatedFile(uint32 resOffset, const DuplicatedFile *list, const uint maxEntries) {
-	for (uint i = 0; i < maxEntries; ++i) {
+static const DuplicatedFile *findDuplicatedFile(uint32 resOffset, const DuplicatedFile *list, const uint32 maxEntries) {
+	for (uint32 i = 0; i < maxEntries; ++i) {
 		if (list[i].resOffset == resOffset && list[i].resOffset != 0)
 			return &list[i];
 	}
@@ -459,7 +459,7 @@ static void processKyra3(const char *infile, const char *outfile) {
 		DuplicatedFile *red = new DuplicatedFile[files];
 		memset(red, 0, sizeof(DuplicatedFile)*files);
 
-		for (uint i = 0; i < files; ++i) {
+		for (uint16 i = 0; i < files; ++i) {
 			uint32 resFilename = readUint32LE(input);
 			uint32 resOffset = readUint32LE(input);
 
