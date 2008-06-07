@@ -169,9 +169,9 @@ void showhelp(char *exename) {
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
- 	printf(" --fast       FLAC uses compresion level 0\n");
- 	printf(" --best       FLAC uses compresion level 8\n");
- 	printf(" -<value>     specifies the value (0 - 8) of compresion (8=best)(default:%d)\n", flacCompressDef);
+ 	printf(" --fast       FLAC uses compression level 0\n");
+ 	printf(" --best       FLAC uses compression level 8\n");
+ 	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
  	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
 	printf(" --verify     files are encoded and then decoded to check accuracy\n");
  	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
