@@ -27,8 +27,8 @@ bool PAKFile::isPakFile(const char *filename) {
 	if (!f)
 		error("Couldn't open file '%s'", filename);
 
-	uint32 filesize = fileSize(f);
-	uint32 offset = 0;
+	int32 filesize = fileSize(f);
+	int32 offset = 0;
 	bool switchEndian = false;
 	bool firstFile = true;
 

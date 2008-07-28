@@ -523,7 +523,7 @@ bool detectKyra3File(const char *infile) {
 		}
 
 		uint32 offset = 0;
-		for (uint i = 0; i < entries; ++i) {
+		for (uint16 i = 0; i < entries; ++i) {
 			readUint32LE(f);
 			offset = readUint32LE(f);
 
