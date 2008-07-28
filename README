@@ -91,11 +91,8 @@ Compression Tools:
 
                 Examples of usage:
                 compress_kyra [params] GEMCUT.VRM inputdir/ outputdir/
+                compress_kyra [params] BATH1.AUD inputdir/ outputdir/
                 compress_kyra [params] ANYTALK.TLK inputdir/ outputdir/
-
-                For The Legend of Kyrandia: Malcolm's Revenge use: 
-                compress_kyra --kyra3 [params] BATH1.AUD inputdir/ outputdir/
-                compress_kyra --kyra3 [params] ANYTALK.TLK inputdir/ outputdir/
 
                 Note: You have to keep the file extension the tool will append
                 else it will NOT work. Use it as shown above, copy all speech

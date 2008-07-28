@@ -26,6 +26,7 @@
 static void showhelp(const char *exename);
 static void process(const char *infile, const char *output);
 static void processKyra3(const char *infile, const char *output);
+static bool detectKyra3File(const char *infile);
 
 #define OUTPUT_MP3 ".VO3"
 #define OUTPUT_OGG ".VOG"
@@ -45,7 +46,6 @@ int main(int argc, char *argv[]) {
 	int i = 0;
 
 	/* Compression mode */
-	bool isKyra3 = false;
 	gCompMode = kMP3Mode;
 	i = 1;
 
@@ -56,8 +56,6 @@ int main(int argc, char *argv[]) {
 			gCompMode = kVorbisMode;
 		else if (strcmp(argv[i], "--flac") == 0)
 			gCompMode = kFlacMode;
-		else if (strcmp(argv[i], "--kyra3") == 0)
-			isKyra3 = true;
 		else
 			break;
 	}
@@ -89,6 +87,7 @@ int main(int argc, char *argv[]) {
 	if (scumm_stricmp(inputFile, outputFile) == 0)
 		error("infile and outfile are the same file");
 
+	bool isKyra3 = detectKyra3File(inputFile); 
 	if (!isKyra3)
 		process(inputFile, outputFile);
 	else
@@ -101,8 +100,6 @@ static void showhelp(const char *exename) {
 	printf("\nUsage: %s [params] [mode params] <file> <inputdir> <outputdir>\n", exename);
 
 	printf("\nParams:\n");
-	printf(" --kyra3      compress files from The Legend of Kyrandia: Book Three: Malcolm's Revenge\n");
-	printf("\n");
 	printf(" --mp3        encode to MP3 format (default)\n");
 	printf(" --vorbis     encode to Vorbis format\n");
 	printf(" --flac       encode to Flac format\n");
@@ -499,5 +496,44 @@ static void processKyra3(const char *infile, const char *outfile) {
 	} else {
 		error("Unsupported file '%s'", infile);
 	}
+}
+
+bool detectKyra3File(const char *infile) {
+	if (hasSuffix(infile, ".AUD")) {
+		return true;
+	} else if (hasSuffix(infile, ".VRM")) {
+		if (!PAKFile::isPakFile(infile))
+			error("Unknown filetype of file: '%s'", infile);
+		return false;
+	} else if (hasSuffix(infile, ".TLK")) {
+		if (PAKFile::isPakFile(infile))
+			return false;
+
+		FILE *f = fopen(infile, "rb");
+		if (!f)
+			error("Couldn't open file '%s'", infile);
+
+		uint16 entries = readUint16LE(f);
+		uint32 entryTableSize = (entries * 8);
+		const uint32 filesize = fileSize(f);
+
+		if (entryTableSize + 2 > filesize) {
+			fclose(f);
+			error("Unknown filetype of file: '%s'", infile);
+		}
+
+		uint32 offset = 0;
+		for (uint i = 0; i < entries; ++i) {
+			readUint32LE(f);
+			offset = readUint32LE(f);
+
+			if (offset > filesize)
+				error("Unknown filetype of file: '%s'", infile);
+		}
+
+		return true;
+	}
+
+	error("Unknown filetype of file: '%s'", infile);
 }
 

@@ -22,6 +22,62 @@
 
 #include "kyra_pak.h"
 
+bool PAKFile::isPakFile(const char *filename) {
+	FILE *f = fopen(filename, "rb");
+	if (!f)
+		error("Couldn't open file '%s'", filename);
+
+	uint32 filesize = fileSize(f);
+	uint32 offset = 0;
+	bool switchEndian = false;
+	bool firstFile = true;
+
+	offset = readUint32LE(f);
+	if (offset > filesize) {
+		switchEndian = true;
+		offset = SWAP_32(offset);
+	}
+
+	char lastFilenameByte = 0;
+	while (!feof(f)) {
+		// The start offset of a file should never be in the filelist
+		if (offset < ftell(f) || offset > filesize) {
+			fclose(f);
+			return false;
+		}
+
+		byte c = 0;
+
+		lastFilenameByte = 0;
+		while (!feof(f) && (c = readByte(f)) != 0)
+			lastFilenameByte = c;
+
+		if (feof(f)) {
+			fclose(f);
+			return false;
+		}
+
+		// Quit now if we encounter an empty string
+		if (!lastFilenameByte) {
+			if (firstFile) {
+				fclose(f);
+				return false;
+			} else {
+				break;
+			}
+		}
+
+		firstFile = false;
+		offset = switchEndian ? readUint32BE(f) : readUint32LE(f);
+
+		if (!offset || offset == filesize)
+			break;
+	}
+
+	fclose(f);
+	return true;
+}
+
 bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 	_isAmiga = isAmiga;
 	if (!file)
@@ -51,7 +107,7 @@ bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 	uint8* position = buffer + 4;
 
 	while (true) {
-		uint32 strlgt = strlen((const char*)position);
+		uint32 strlgt = (uint32)strlen((const char*)position);
 		currentName = (const char*)position;
 
 		if (!(*currentName))
@@ -161,7 +217,7 @@ bool PAKFile::addFile(const char *name, const char *file) {
 }
 
 bool PAKFile::addFile(const char *name, uint8 *data, uint32 size) {
-	if (_fileList && _fileList->findEntry(name) || (_links && _links->findSrcEntry(name))) {
+	if ((_fileList && _fileList->findEntry(name)) || (_links && _links->findSrcEntry(name))) {
 		error("entry '%s' already exists");
 		return false;
 	}

@@ -31,6 +31,8 @@ public:
 	PAKFile() : _fileList(0), _isAmiga(false), _links(0) {}
 	~PAKFile() { delete _fileList; }
 
+	static bool isPakFile(const char *file);
+
 	bool loadFile(const char *file, const bool isAmiga);
 	bool saveFile(const char *file);
 	void clearFile() { delete _fileList; _fileList = 0; }
