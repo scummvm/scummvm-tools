@@ -501,7 +501,7 @@ static void processKyra3(const char *infile, const char *outfile) {
 bool detectKyra3File(const char *infile) {
 	if (hasSuffix(infile, ".AUD")) {
 		return true;
-	} else if (hasSuffix(infile, ".VRM")) {
+	} else if (hasSuffix(infile, ".VRM") || hasSuffix(infile, ".PAK")) {
 		if (!PAKFile::isPakFile(infile))
 			error("Unknown filetype of file: '%s'", infile);
 		return false;
