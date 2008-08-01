@@ -166,7 +166,7 @@ static void process(const char *infile, const char *outfile) {
 			continue;
 
 		if (list->data[26] != 1) {
-			warning("broken VOC file '%s' skipping it...", list->filename);
+			warning("'%s' contains broken VOC file '%s' skipping it...", infile, list->filename);
 			continue;
 		}
 

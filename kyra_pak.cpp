@@ -218,6 +218,17 @@ bool PAKFile::addFile(const char *name, const char *file) {
 
 bool PAKFile::addFile(const char *name, uint8 *data, uint32 size) {
 	if ((_fileList && _fileList->findEntry(name)) || (_links && _links->findSrcEntry(name))) {
+		uint32 origSize = 0;
+		const uint8 *fileData = getFileData(name, &origSize);
+
+		if (size != origSize) {
+			error("entry '%s' already exists");
+			return false;
+		}
+		
+		if (memcmp(fileData, data, size) == 0)
+			return true;
+
 		error("entry '%s' already exists");
 		return false;
 	}
