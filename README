@@ -76,6 +76,13 @@ Extraction Tools:
                 Example of usage:
                 extract_zak_c64 <disk1.d64> <disk2.d64>
 
+        extract_gob_stk
+                Extracts data files from STK/ITK files of Coktel Vision
+                games.
+
+                Example of usage:
+                extract_gob_stk <file>
+
 Compression Tools:
         compress_agos
                 Used to compress the Feeble Files or Simon the Sorcerer 1/2
@@ -203,6 +210,22 @@ Script Tools:
 
         dekyra
                 Basic script disassembler for Legend of Kyrandia games
+
+        degob
+                Decompiles TOT scripts used in Coktel Vision games
+
+                Example of usage:
+                degob <version> <file.tot> [<file.ext>] [<commun.ext>]
+
+                "<version>" describes from which game the script file
+                was taken and is one of "Gob1", "Gob2", "Gob3", "Ween",
+                "Bargon", "Lost" and "Woodruff".
+
+                If the script file calls loadMult(), the script file's
+								EXT file must be supplied on the command line as well;
+								some script files also require a commun.ext. degob throws
+								an error to let you know if any of the two should be the
+								case.
 
 Encoder Tools:
         encode_dxa [params] <file>
