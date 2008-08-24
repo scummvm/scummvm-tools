@@ -71,6 +71,7 @@ TARGETS := \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
+	degob$(EXEEXT) \
 	encode_dxa$(EXEEXT) \
 	extract_agos$(EXEEXT) \
 	extract_kyra$(EXEEXT) \
@@ -81,6 +82,7 @@ TARGETS := \
 	extract_parallaction$(EXEEXT) \
 	extract_scumm_mac$(EXEEXT) \
 	extract_zak_c64$(EXEEXT) \
+	extract_gob_stk$(EXEEXT) \
 	tools_gui$(EXEEXT)
 
 UTILS := \
@@ -143,6 +145,9 @@ descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
 desword2$(EXEEXT): desword2.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
+degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob_script_v3.o degob_script_v4.o degob_script_bargon.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
 encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz -lvorbis -logg -lvorbisenc -lFLAC
 
@@ -171,6 +176,9 @@ extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
+extract_gob_stk$(EXEEXT): extract_gob_stk.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 tools_gui$(EXEEXT): tools_gui.o
