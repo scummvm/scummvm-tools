@@ -388,7 +388,7 @@ int main(int argc, char *argv[]) {
 
 			/* Invoke encoder */
 			setRawAudioType(false, false, 8);
-			encodeAudio(TEMP_SB, true, 11025, tempEncoded, gCompMode);
+			encodeAudio(TEMP_SB, true, 11840, tempEncoded, gCompMode);
 
 			/* Append MP3/OGG to data file */
 			compFile = fopen(tempEncoded, "rb");
