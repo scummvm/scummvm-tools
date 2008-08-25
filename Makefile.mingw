@@ -26,6 +26,7 @@ install:   all
 	strip desword2.exe -o $(SCUMMVMPATH)/tools/desword2.exe
 	strip encode_dxa.exe -o $(SCUMMVMPATH)/tools/encode_dxa.exe
 	strip extract_agos.exe -o $(SCUMMVMPATH)/tools/extract_agos.exe
+	strip extract_gob_stk.exe -o $(SCUMMVMPATH)/tools/extract_gob_stk.exe
 	strip extract_kyra.exe -o $(SCUMMVMPATH)/tools/extract_kyra.exe
 	strip extract_loom_tg16.exe -o $(SCUMMVMPATH)/tools/extract_loom_tg16.exe
 	strip extract_mm_apple.exe -o $(SCUMMVMPATH)/tools/extract_mm_apple.exe
