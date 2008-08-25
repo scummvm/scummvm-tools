@@ -29,6 +29,8 @@
  * Note that this isn't polished code so caveat emptor.
  *
  * FIXME: Make this code endian safe.
+ * FIXME: Recognize "vol.cnf" also when given something else than simply "vol.cnf"
+ *        as the input file (e.g. "./vol.cnf" or "/games/os/vol.cnf").
  */
 
 #include "extract_cine.h"
