@@ -68,12 +68,14 @@ TARGETS := \
 	compress_sword1$(EXEEXT) \
 	compress_sword2$(EXEEXT) \
 	compress_touche$(EXEEXT) \
+	decine$(EXEEXT) \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	degob$(EXEEXT) \
 	encode_dxa$(EXEEXT) \
 	extract_agos$(EXEEXT) \
+	extract_cine$(EXEEXT) \
 	extract_kyra$(EXEEXT) \
 	extract_loom_tg16$(EXEEXT) \
 	extract_mm_apple$(EXEEXT) \
@@ -136,6 +138,9 @@ compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 compress_touche$(EXEEXT): compress_touche.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
+decine$(EXEEXT): decine.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
 dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
@@ -150,6 +155,9 @@ degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob
 
 encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz -lvorbis -logg -lvorbisenc -lFLAC
+
+extract_cine$(EXEEXT): extract_cine.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_agos$(EXEEXT): extract_agos.o
 	$(CXX) $(LDFLAGS) -o $@ $+

@@ -14,6 +14,16 @@ Extraction Tools:
                 Example of usage:
                 extract_agos <file 1> ... <file n>
 
+        extract_cine
+                Unpacks Delphine's Cinematique engine's archive files.
+                Should work at least with Future Wars and Operation Stealth.
+                Supports using Operation Stealth's 'vol.cnf' file as input
+                in which case it will try to unpack all the archive files
+                listed in 'vol.cnf'.
+
+                Example of usage:
+                extract_cine [input file] [output directory]
+
         extract_kyra
                 Unpacks .PAK files from Kyrandia games.
 				It is also able to extract the installer package files from
@@ -202,6 +212,16 @@ Compression Tools:
                 compress_touche [params] <inputdir> <outputdir>
 
 Script Tools:
+        decine
+                Decompiles Delphine's Cinematique engine's scripts.
+                Should work at least with Future Wars and Operation Stealth.
+
+                Example of usage:
+                decine [type] [version] [filename]                
+                type: -prc or -rel (Use -prc for *.prc-files, -rel for *.rel-files)
+                version: -v1 or -v2 (Use -v1 for Future Wars, -v2 for Operation Stealth)
+                filename: The name of the script file to decode
+
         descumm
                 Decompiles SCUMM scripts
 

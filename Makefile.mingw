@@ -21,10 +21,12 @@ install:   all
 	strip compress_sword1.exe -o $(SCUMMVMPATH)/tools/compress_sword1.exe
 	strip compress_sword2.exe -o $(SCUMMVMPATH)/tools/compress_sword2.exe
 	strip compress_touche.exe -o $(SCUMMVMPATH)/tools/compress_touche.exe
+	strip decine.exe -o $(SCUMMVMPATH)/tools/decine.exe
 	strip dekyra.exe -o $(SCUMMVMPATH)/tools/dekyra.exe
 	strip descumm.exe -o $(SCUMMVMPATH)/tools/descumm.exe
 	strip desword2.exe -o $(SCUMMVMPATH)/tools/desword2.exe
 	strip encode_dxa.exe -o $(SCUMMVMPATH)/tools/encode_dxa.exe
+	strip extract_cine.exe -o $(SCUMMVMPATH)/tools/extract_cine.exe
 	strip extract_agos.exe -o $(SCUMMVMPATH)/tools/extract_agos.exe
 	strip extract_gob_stk.exe -o $(SCUMMVMPATH)/tools/extract_gob_stk.exe
 	strip extract_kyra.exe -o $(SCUMMVMPATH)/tools/extract_kyra.exe
