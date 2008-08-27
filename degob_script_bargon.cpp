@@ -536,7 +536,7 @@ void Script_Bargon::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryBargon opcodesGoblin[73] = {
+	static const OpcodeGoblinEntryBargon opcodesGoblin[72] = {
 		/* 00 */
 		{OPCODET(oBargon_intro0), {PARAM_NONE}},
 		{OPCODET(oBargon_intro1), {PARAM_NONE}},

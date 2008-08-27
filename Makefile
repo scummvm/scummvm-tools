@@ -150,7 +150,7 @@ descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
 desword2$(EXEEXT): desword2.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob_script_v3.o degob_script_v4.o degob_script_bargon.o util.o
+degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob_script_v3.o degob_script_v4.o degob_script_bargon.o degob_script_urban.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o

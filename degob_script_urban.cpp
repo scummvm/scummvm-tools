@@ -22,11 +22,11 @@
 
 #include "degob_script.h"
 
-#define OPCODET(x) _OPCODET(Script_v3, x)
-#define OPCODEF(x) _OPCODEF(Script_v3, x)
-#define OPCODEB(x) _OPCODEB(Script_v3, x)
+#define OPCODET(x) _OPCODET(Script_Urban, x)
+#define OPCODEF(x) _OPCODEF(Script_Urban, x)
+#define OPCODEB(x) _OPCODEB(Script_Urban, x)
 
-const int Script_v3::_goblinFuncLookUp[][2] = {
+const int Script_Urban::_goblinFuncLookUp[][2] = {
 	{0, 0},
 	{1, 1},
 	{2, 2},
@@ -101,17 +101,17 @@ const int Script_v3::_goblinFuncLookUp[][2] = {
 	{3, 71}
 };
 
-Script_v3::Script_v3(byte *totData, uint32 totSize, ExtTable *extTable) :
-	Script_v2(totData, totSize, extTable) {
+Script_Urban::Script_Urban(byte *totData, uint32 totSize, ExtTable *extTable) :
+	Script_v4(totData, totSize, extTable) {
 
 	setupOpcodes();
 }
 
-Script_v3::~Script_v3() {
+Script_Urban::~Script_Urban() {
 }
 
-void Script_v3::setupOpcodes() {
-	static const OpcodeDrawEntryV3 opcodesDraw[256] = {
+void Script_Urban::setupOpcodes() {
+	static const OpcodeDrawEntryUrban opcodesDraw[256] = {
 		/* 00 */
 		{OPCODEF(o2_loadMult), {PARAM_NONE}},
 		{OPCODEF(o2_playMult), {PARAM_NONE}},
@@ -128,8 +128,8 @@ void Script_v3::setupOpcodes() {
 		{OPCODET(o2_setRenderFlags), {PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 0C */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o2_draw0x0C), {PARAM_NONE}},
+		{OPCODET(o2_draw0x0D), {PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 10 */
@@ -198,8 +198,8 @@ void Script_v3::setupOpcodes() {
 		{OPCODEF(o2_copyVars), {PARAM_NONE}},
 		{OPCODEF(o2_pasteVars), {PARAM_NONE}},
 		/* 44 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o4_draw0x44), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o4_draw0x45), {PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 48 */
@@ -221,7 +221,7 @@ void Script_v3::setupOpcodes() {
 		{OPCODET(o2_stopGoblin), {PARAM_EXPR}},
 		{OPCODET(o2_setGoblinState), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o2_placeGoblin), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o4_draw0x57), {PARAM_VARINDEX, PARAM_VARINDEX}},
 		/* 58 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -233,8 +233,8 @@ void Script_v3::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 60 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o4_draw0x60), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o4_draw0x61), {PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 64 */
@@ -276,7 +276,7 @@ void Script_v3::setupOpcodes() {
 		{OPCODET(o2_initScreen), {PARAM_UINT8, PARAM_UINT8, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o2_scroll), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o2_setScrollOffset), {PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o2_playImd), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o4_playVmdOrMusic), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		/* 84 */
 		{OPCODET(o2_getImdInfo), {PARAM_EXPR, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX}},
 		{OPCODET(o2_openItk), {PARAM_EXPR}},
@@ -285,15 +285,15 @@ void Script_v3::setupOpcodes() {
 		/* 88 */
 		{OPCODET(o2_resetImdFrontSurf), {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o4_draw0x8A), {PARAM_EXPR, PARAM_VARINDEX, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 8C */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o4_draw0x8C), {PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 90 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o4_draw0x90), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -314,11 +314,11 @@ void Script_v3::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* A0 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o4_draw0xA1), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
+		{OPCODET(o4_draw0xA2), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* A4 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o4_draw0xA4), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -434,12 +434,12 @@ void Script_v3::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 	};
 
-	static const OpcodeFuncEntryV3 opcodesFunc[80] = {
+	static const OpcodeFuncEntryUrban opcodesFunc[80] = {
 		/* 00 */
 		{OPCODEF(o1_callSub), {PARAM_NONE}},
 		{OPCODEF(o1_callSub), {PARAM_NONE}},
 		{OPCODET(o1_printTotText), {PARAM_INT16}},
-		{OPCODET(o1_loadCursor), {PARAM_INT16, PARAM_INT8}},
+		{OPCODEF(oUrban_loadCursor), {PARAM_NONE}},
 		/* 04 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{OPCODEF(o1_switch), {PARAM_NONE}},
@@ -482,8 +482,8 @@ void Script_v3::setupOpcodes() {
 		{OPCODET(o1_speakerOff), {PARAM_NONE}},
 		/* 24 */
 		{OPCODET(o1_putPixel), {PARAM_INT16, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o2_goblinFunc), {PARAM_UINT16, PARAM_UINT16, PARAM_UINT16, PARAM_UINT16, PARAM_UINT16}},
-		{OPCODET(o2_createSprite), {PARAM_INT16, PARAM_INT16, PARAM_INT16, PARAM_INT16}},
+		{OPCODEF(o2_goblinFunc), {PARAM_NONE}},
+		{OPCODEF(oUrban_createSprite), {PARAM_NONE}},
 		{OPCODET(o1_freeSprite), {PARAM_INT16}},
 		/* 28 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -522,7 +522,8 @@ void Script_v3::setupOpcodes() {
 		{OPCODET(o1_cutStr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_EXPR}},
 		/* 44 */
 		{OPCODET(o1_strstr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_VARINDEX}},
-		{OPCODET(o1_istrlen), {PARAM_VARINDEX, PARAM_VARINDEX}},
+//		{OPCODET(o1_istrlen), {PARAM_VARINDEX, PARAM_VARINDEX}},
+		{OPCODEF(oUrban_istrlen), {PARAM_NONE}},
 		{OPCODET(o1_setMousePos), {PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o1_setFrameRate), {PARAM_EXPR}},
 		/* 48 */
@@ -537,9 +538,9 @@ void Script_v3::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryV3 opcodesGoblin[72] = {
+	static const OpcodeGoblinEntryUrban opcodesGoblin[72] = {
 		/* 00 */
-		{OPCODEF(o2_loadInfogramesIns), {PARAM_NONE}},
+		{OPCODEF(o1_dummy), {PARAM_NONE}},
 		{OPCODET(o2_startInfogrames), {PARAM_UINT16}},
 		{OPCODET(o2_stopInfogrames), {PARAM_UINT16}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -630,44 +631,44 @@ void Script_v3::setupOpcodes() {
 		{OPCODEF(o1_dummy), {PARAM_NONE}}
 	};
 
-	_opcodesDrawV3 = opcodesDraw;
-	_opcodesFuncV3 = opcodesFunc;
-	_opcodesGoblinV3 = opcodesGoblin;
+	_opcodesDrawUrban = opcodesDraw;
+	_opcodesFuncUrban = opcodesFunc;
+	_opcodesGoblinUrban = opcodesGoblin;
 }
 
-void Script_v3::drawOpcode(byte i, FuncParams &params) {
-	FuncType type = _opcodesDrawV3[i].type;
-	params.desc = _opcodesDrawV3[i].desc;
-	OpcodeDrawProcV3 op = _opcodesDrawV3[i].proc;
+void Script_Urban::drawOpcode(byte i, FuncParams &params) {
+	FuncType type = _opcodesDrawUrban[i].type;
+	params.desc = _opcodesDrawUrban[i].desc;
+	OpcodeDrawProcUrban op = _opcodesDrawUrban[i].proc;
 
 	if (type == TYPE_NONE)
-		error("No such opcodeDraw: %d", i);
+		warning("No such opcodeDraw: %d", i);
 	if ((type == TYPE_TEXTDESC) || (type == TYPE_BOTHDESC))
-		printFuncDesc(params, _opcodesDrawV3[i].params);
+		printFuncDesc(params, _opcodesDrawUrban[i].params);
 	if ((type == TYPE_FUNCDESC) || (type == TYPE_BOTHDESC))
 		(this->*op)(params);
 }
 
-void Script_v3::funcOpcode(byte i, byte j, FuncParams &params) {
+void Script_Urban::funcOpcode(byte i, byte j, FuncParams &params) {
 	int n = i*16 + j;
 	FuncType type = TYPE_NONE;
-	OpcodeFuncProcV3 op = 0;
+	OpcodeFuncProcUrban op = 0;
 
 	if ((i <= 4) && (j <= 15)) {
-		op = _opcodesFuncV3[n].proc;
-		params.desc = _opcodesFuncV3[n].desc;
-		type = _opcodesFuncV3[n].type;
+		op = _opcodesFuncUrban[n].proc;
+		params.desc = _opcodesFuncUrban[n].desc;
+		type = _opcodesFuncUrban[n].type;
 	}
 
 	if (type == TYPE_NONE)
 		error("No such opcodeFunc: %d.%d", i, j);
 	if ((type == TYPE_TEXTDESC) || (type == TYPE_BOTHDESC))
-		printFuncDesc(params, _opcodesFuncV3[n].params);
+		printFuncDesc(params, _opcodesFuncUrban[n].params);
 	if ((type == TYPE_FUNCDESC) || (type == TYPE_BOTHDESC))
 		(this->*op)(params);
 }
 
-void Script_v3::goblinOpcode(int i, FuncParams &params) {
+void Script_Urban::goblinOpcode(int i, FuncParams &params) {
 	int n = -1;
 	for (int j = 0; j < ARRAYSIZE(_goblinFuncLookUp); j++)
 		if (_goblinFuncLookUp[j][0] == i) {
@@ -676,18 +677,20 @@ void Script_v3::goblinOpcode(int i, FuncParams &params) {
 		}
 
 	FuncType type = TYPE_NONE;
-	OpcodeGoblinProcV3 op = 0;
+	OpcodeGoblinProcUrban op = 0;
 
 	if (n >= 0) {
-		op = _opcodesGoblinV3[n].proc;
-		params.desc = _opcodesGoblinV3[n].desc;
-		type = _opcodesGoblinV3[n].type;
+		op = _opcodesGoblinUrban[n].proc;
+		params.desc = _opcodesGoblinUrban[n].desc;
+		type = _opcodesGoblinUrban[n].type;
 	}
 
-	if (type == TYPE_NONE)
-		error("No such opcodeGoblin: %d (%d)", i, n);
+	if (type == TYPE_NONE) {
+		warning("No such opcodeGoblin: %d (%d)", i, n);
+		o1_dummy(params);
+	}
 	if ((type == TYPE_TEXTDESC) || (type == TYPE_BOTHDESC)) {
-		const Param *param = _opcodesGoblinV3[n].params;
+		const Param *param = _opcodesGoblinUrban[n].params;
 		if (*param == PARAM_GOB)
 			printFuncDesc(params);
 		else
@@ -695,4 +698,58 @@ void Script_v3::goblinOpcode(int i, FuncParams &params) {
 	}
 	if ((type == TYPE_FUNCDESC) || (type == TYPE_BOTHDESC))
 		(this->*op)(params);
+}
+
+void Script_Urban::oUrban_istrlen(FuncParams &params) {
+	int16 sSize1, sSize2;
+
+	if (peekUint8() == 0x80)
+		skip(1);
+
+	startFunc(params);
+	print("%s, ", readVarIndex().c_str());
+	print("%s", readVarIndex().c_str());
+	endFunc();
+}
+
+void Script_Urban::oUrban_createSprite(FuncParams &params) {
+	uint32 pos;
+
+	pos = getPos();
+	skip(1);
+
+	startFunc(params);
+	if (peekUint8() == 0) {
+		seek(pos);
+		print("%d, ", readUint16());
+		print("%d, ", readUint16());
+		print("%d, ", readUint16());
+	} else {
+		seek(pos);
+		print("%s, ", readExpr().c_str());
+		print("%s, ", readExpr().c_str());
+		print("%s, ", readExpr().c_str());
+	}
+	print("%d", readUint16());
+	endFunc();
+}
+
+void Script_Urban::oUrban_loadCursor(FuncParams &params) {
+	int16 id = (int16) readUint16();
+
+	startFunc(params);
+	print("%d, ", id);
+	if (id == -1) {
+		print("%s, ", peekString());
+		skip(9);
+		print("%d, ", readUint16());
+		print("%d", (int8) readUint8());
+	} else if (id == -2) {
+		print("%d, ", readUint16());
+		print("%d, ", readUint16());
+		print("%d", (int8) readUint8());
+	} else {
+		print("%d", (int8) readUint8());
+	}
+	endFunc();
 }

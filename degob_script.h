@@ -418,4 +418,46 @@ protected:
 	virtual void goblinOpcode(int i, FuncParams &params);
 };
 
+class Script_Urban : public Script_v4 {
+public:
+	Script_Urban(byte *totData, uint32 totSize, ExtTable *extTable = 0);
+	virtual ~Script_Urban();
+
+protected:
+	typedef void (Script_Urban::*OpcodeDrawProcUrban)(FuncParams &);
+	typedef void (Script_Urban::*OpcodeFuncProcUrban)(FuncParams &);
+	typedef void (Script_Urban::*OpcodeGoblinProcUrban)(FuncParams &);
+	struct OpcodeDrawEntryUrban {
+		FuncType type;
+		OpcodeDrawProcUrban proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeFuncEntryUrban {
+		FuncType type;
+		OpcodeFuncProcUrban proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeGoblinEntryUrban {
+		FuncType type;
+		OpcodeGoblinProcUrban proc;
+		const char *desc;
+		const Param params[16];
+	};
+	const OpcodeDrawEntryUrban *_opcodesDrawUrban;
+	const OpcodeFuncEntryUrban *_opcodesFuncUrban;
+	const OpcodeGoblinEntryUrban *_opcodesGoblinUrban;
+	static const int _goblinFuncLookUp[][2];
+
+	virtual void setupOpcodes();
+	virtual void drawOpcode(byte i, FuncParams &params);
+	virtual void funcOpcode(byte i, byte j, FuncParams &params);
+	virtual void goblinOpcode(int i, FuncParams &params);
+
+	void oUrban_loadCursor(FuncParams &params);
+	void oUrban_createSprite(FuncParams &params);
+	void oUrban_istrlen(FuncParams &params);
+};
+
 #endif // DEGOB_SCRIPT_H

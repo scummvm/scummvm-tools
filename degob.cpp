@@ -98,6 +98,7 @@ void printHelp(const char *bin) {
 	printf("	Bargon   - Bargon Attack\n");
 	printf("	Lost     - Lost in Time\n");
 	printf("	Woodruff - The Bizarre Adventures of Woodruff and the Schnibble\n");
+	printf("	Urban    - Urban Runner\n");
 }
 
 int getVersion(const char *verStr) {
@@ -115,6 +116,8 @@ int getVersion(const char *verStr) {
 		return 5;
 	else if (!scumm_stricmp(verStr, "Woodruff"))
 		return 6;
+	else if (!scumm_stricmp(verStr, "Urban"))
+		return 7;
 
 	return -1;
 }
@@ -149,6 +152,9 @@ Script *initScript(byte *totData, uint32 totSize, ExtTable *extTable, int versio
 			break;
 		case 6:
 			return new Script_v4(totData, totSize, extTable);
+			break;
+		case 7:
+			return new Script_Urban(totData, totSize, extTable);
 			break;
 	}
 	return 0;

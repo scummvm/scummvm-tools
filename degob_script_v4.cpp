@@ -537,9 +537,8 @@ void Script_v4::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryV4 opcodesGoblin[73] = {
+	static const OpcodeGoblinEntryV4 opcodesGoblin[72] = {
 		/* 00 */
-//		{OPCODET(o4_gob0x01), {PARAM_UINT8, PARAM_UINT8, PARAM_UINT8, PARAM_UINT8, PARAM_UINT8, PARAM_UINT8, PARAM_UINT8, PARAM_UINT8}},
 		{OPCODEF(o1_dummy), {PARAM_NONE}},
 		{OPCODET(o2_startInfogrames), {PARAM_UINT16}},
 		{OPCODET(o2_stopInfogrames), {PARAM_UINT16}},

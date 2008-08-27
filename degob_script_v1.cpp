@@ -537,7 +537,7 @@ void Script_v1::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryV1 opcodesGoblin[73] = {
+	static const OpcodeGoblinEntryV1 opcodesGoblin[72] = {
 		/* 00 */
 		{OPCODET(o1_setState), {PARAM_GOB}},
 		{OPCODET(o1_setCurFrame), {PARAM_GOB}},
