@@ -418,36 +418,36 @@ protected:
 	virtual void goblinOpcode(int i, FuncParams &params);
 };
 
-class Script_Urban : public Script_v4 {
+class Script_v5 : public Script_v4 {
 public:
-	Script_Urban(byte *totData, uint32 totSize, ExtTable *extTable = 0);
-	virtual ~Script_Urban();
+	Script_v5(byte *totData, uint32 totSize, ExtTable *extTable = 0);
+	virtual ~Script_v5();
 
 protected:
-	typedef void (Script_Urban::*OpcodeDrawProcUrban)(FuncParams &);
-	typedef void (Script_Urban::*OpcodeFuncProcUrban)(FuncParams &);
-	typedef void (Script_Urban::*OpcodeGoblinProcUrban)(FuncParams &);
-	struct OpcodeDrawEntryUrban {
+	typedef void (Script_v5::*OpcodeDrawProcV5)(FuncParams &);
+	typedef void (Script_v5::*OpcodeFuncProcV5)(FuncParams &);
+	typedef void (Script_v5::*OpcodeGoblinProcV5)(FuncParams &);
+	struct OpcodeDrawEntryV5 {
 		FuncType type;
-		OpcodeDrawProcUrban proc;
+		OpcodeDrawProcV5 proc;
 		const char *desc;
 		const Param params[16];
 	};
-	struct OpcodeFuncEntryUrban {
+	struct OpcodeFuncEntryV5 {
 		FuncType type;
-		OpcodeFuncProcUrban proc;
+		OpcodeFuncProcV5 proc;
 		const char *desc;
 		const Param params[16];
 	};
-	struct OpcodeGoblinEntryUrban {
+	struct OpcodeGoblinEntryV5 {
 		FuncType type;
-		OpcodeGoblinProcUrban proc;
+		OpcodeGoblinProcV5 proc;
 		const char *desc;
 		const Param params[16];
 	};
-	const OpcodeDrawEntryUrban *_opcodesDrawUrban;
-	const OpcodeFuncEntryUrban *_opcodesFuncUrban;
-	const OpcodeGoblinEntryUrban *_opcodesGoblinUrban;
+	const OpcodeDrawEntryV5 *_opcodesDrawV5;
+	const OpcodeFuncEntryV5 *_opcodesFuncV5;
+	const OpcodeGoblinEntryV5 *_opcodesGoblinV5;
 	static const int _goblinFuncLookUp[][2];
 
 	virtual void setupOpcodes();
@@ -455,9 +455,50 @@ protected:
 	virtual void funcOpcode(byte i, byte j, FuncParams &params);
 	virtual void goblinOpcode(int i, FuncParams &params);
 
-	void oUrban_loadCursor(FuncParams &params);
-	void oUrban_createSprite(FuncParams &params);
-	void oUrban_istrlen(FuncParams &params);
+	void o5_spaceShooter(FuncParams &params);
+
+	void o5_istrlen(FuncParams &params);
+};
+
+class Script_v6 : public Script_v5 {
+public:
+	Script_v6(byte *totData, uint32 totSize, ExtTable *extTable = 0);
+	virtual ~Script_v6();
+
+protected:
+	typedef void (Script_v6::*OpcodeDrawProcV6)(FuncParams &);
+	typedef void (Script_v6::*OpcodeFuncProcV6)(FuncParams &);
+	typedef void (Script_v6::*OpcodeGoblinProcV6)(FuncParams &);
+	struct OpcodeDrawEntryV6 {
+		FuncType type;
+		OpcodeDrawProcV6 proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeFuncEntryV6 {
+		FuncType type;
+		OpcodeFuncProcV6 proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeGoblinEntryV6 {
+		FuncType type;
+		OpcodeGoblinProcV6 proc;
+		const char *desc;
+		const Param params[16];
+	};
+	const OpcodeDrawEntryV6 *_opcodesDrawV6;
+	const OpcodeFuncEntryV6 *_opcodesFuncV6;
+	const OpcodeGoblinEntryV6 *_opcodesGoblinV6;
+	static const int _goblinFuncLookUp[][2];
+
+	virtual void setupOpcodes();
+	virtual void drawOpcode(byte i, FuncParams &params);
+	virtual void funcOpcode(byte i, byte j, FuncParams &params);
+	virtual void goblinOpcode(int i, FuncParams &params);
+
+	void o6_loadCursor(FuncParams &params);
+	void o6_createSprite(FuncParams &params);
 };
 
 #endif // DEGOB_SCRIPT_H

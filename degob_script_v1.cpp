@@ -740,9 +740,6 @@ void Script_v1::o1_goblinFunc(FuncParams &params) {
 void Script_v1::o1_callSub(FuncParams &params) {
 	uint16 offset = readUint16();
 
-	if (offset < 128)
-		error("o1_callSub: Offset %d points into the header", offset);
-
 	printIndent();
 
 	uint32 pos = getPos();
@@ -751,11 +748,12 @@ void Script_v1::o1_callSub(FuncParams &params) {
 
 	if (peekUint8() == 1) {
 		print("sub_%d();\n", offset);
-		addFuncOffset(offset);
+		if (offset >= 128)
+			addFuncOffset(offset);
 	} else if (peekUint8() == 2)
 		print("o1_collisionsBlock(%d);\n", offset);
 	else
-		error("Unknown block type %d (%d)", peekUint8(), offset);
+		print("<Unknown block type %d (%d)>\n", peekUint8(), offset);
 
 	seek(pos);
 }

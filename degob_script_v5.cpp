@@ -22,35 +22,35 @@
 
 #include "degob_script.h"
 
-#define OPCODET(x) _OPCODET(Script_Urban, x)
-#define OPCODEF(x) _OPCODEF(Script_Urban, x)
-#define OPCODEB(x) _OPCODEB(Script_Urban, x)
+#define OPCODET(x) _OPCODET(Script_v5, x)
+#define OPCODEF(x) _OPCODEF(Script_v5, x)
+#define OPCODEB(x) _OPCODEB(Script_v5, x)
 
-const int Script_Urban::_goblinFuncLookUp[][2] = {
+const int Script_v5::_goblinFuncLookUp[][2] = {
 	{0, 0},
-	{1, 1},
-	{2, 2},
-	{4, 3},
-	{5, 4},
-	{6, 5},
-	{7, 6},
-	{8, 7},
-	{9, 8},
-	{10, 9},
-	{12, 10},
-	{13, 71},
-	{14, 12},
-	{15, 13},
-	{16, 14},
-	{21, 15},
-	{22, 16},
-	{23, 17},
-	{24, 18},
-	{25, 19},
-	{26, 20},
-	{27, 21},
-	{28, 22},
-	{29, 23},
+	{1, 0},
+	{80, 1},
+	{81, 2},
+	{82, 3},
+	{83, 4},
+	{84, 5},
+	{85, 6},
+	{86, 7},
+	{87, 0},
+	{88, 0},
+	{89, 0},
+	{90, 0},
+	{91, 0},
+	{92, 8},
+	{93, 0},
+	{94, 0},
+	{95, 9},
+	{96, 10},
+	{97, 11},
+	{98, 12},
+	{99, 0},
+	{100, 13},
+	{200, 14},
 	{30, 24},
 	{32, 25},
 	{33, 26},
@@ -101,17 +101,17 @@ const int Script_Urban::_goblinFuncLookUp[][2] = {
 	{3, 71}
 };
 
-Script_Urban::Script_Urban(byte *totData, uint32 totSize, ExtTable *extTable) :
+Script_v5::Script_v5(byte *totData, uint32 totSize, ExtTable *extTable) :
 	Script_v4(totData, totSize, extTable) {
 
 	setupOpcodes();
 }
 
-Script_Urban::~Script_Urban() {
+Script_v5::~Script_v5() {
 }
 
-void Script_Urban::setupOpcodes() {
-	static const OpcodeDrawEntryUrban opcodesDraw[256] = {
+void Script_v5::setupOpcodes() {
+	static const OpcodeDrawEntryV5 opcodesDraw[256] = {
 		/* 00 */
 		{OPCODEF(o2_loadMult), {PARAM_NONE}},
 		{OPCODEF(o2_playMult), {PARAM_NONE}},
@@ -234,7 +234,7 @@ void Script_Urban::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 60 */
 		{OPCODET(o4_draw0x60), {PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o4_draw0x61), {PARAM_EXPR}},
+		{OPCODET(o5_deleteFile), {PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 64 */
@@ -434,12 +434,12 @@ void Script_Urban::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 	};
 
-	static const OpcodeFuncEntryUrban opcodesFunc[80] = {
+	static const OpcodeFuncEntryV5 opcodesFunc[80] = {
 		/* 00 */
 		{OPCODEF(o1_callSub), {PARAM_NONE}},
 		{OPCODEF(o1_callSub), {PARAM_NONE}},
 		{OPCODET(o1_printTotText), {PARAM_INT16}},
-		{OPCODEF(oUrban_loadCursor), {PARAM_NONE}},
+		{OPCODET(o1_loadCursor), {PARAM_INT16, PARAM_INT8}},
 		/* 04 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{OPCODEF(o1_switch), {PARAM_NONE}},
@@ -483,7 +483,7 @@ void Script_Urban::setupOpcodes() {
 		/* 24 */
 		{OPCODET(o1_putPixel), {PARAM_INT16, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODEF(o2_goblinFunc), {PARAM_NONE}},
-		{OPCODEF(oUrban_createSprite), {PARAM_NONE}},
+		{OPCODET(o2_createSprite), {PARAM_INT16, PARAM_INT16, PARAM_INT16, PARAM_INT16}},
 		{OPCODET(o1_freeSprite), {PARAM_INT16}},
 		/* 28 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -522,8 +522,7 @@ void Script_Urban::setupOpcodes() {
 		{OPCODET(o1_cutStr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_EXPR}},
 		/* 44 */
 		{OPCODET(o1_strstr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_VARINDEX}},
-//		{OPCODET(o1_istrlen), {PARAM_VARINDEX, PARAM_VARINDEX}},
-		{OPCODEF(oUrban_istrlen), {PARAM_NONE}},
+		{OPCODEF(o5_istrlen), {PARAM_NONE}},
 		{OPCODET(o1_setMousePos), {PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o1_setFrameRate), {PARAM_EXPR}},
 		/* 48 */
@@ -538,26 +537,26 @@ void Script_Urban::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryUrban opcodesGoblin[72] = {
+	static const OpcodeGoblinEntryV5 opcodesGoblin[72] = {
 		/* 00 */
-		{OPCODEF(o1_dummy), {PARAM_NONE}},
-		{OPCODET(o2_startInfogrames), {PARAM_UINT16}},
-		{OPCODET(o2_stopInfogrames), {PARAM_UINT16}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODEF(o5_spaceShooter), {PARAM_NONE}},
+		{OPCODET(o5_getSystemCDSpeed), {PARAM_UINT16}},
+		{OPCODET(o5_getSystemRAM), {PARAM_UINT16}},
+		{OPCODET(o5_getSystemCPUSpeed), {PARAM_UINT16}},
 		/* 04 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o5_getSystemDrawSpeed), {PARAM_UINT16}},
+		{OPCODET(o5_totalSystemSpecs), {PARAM_UINT16}},
+		{OPCODET(o5_saveSystemSpecs), {PARAM_NONE}},
+		{OPCODET(o5_loadSystemSpecs), {PARAM_NONE}},
 		/* 08 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{OPCODEF(o2_playInfogrames), {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o5_gob92), {PARAM_UINT16}},
+		{OPCODET(o5_gob95), {PARAM_UINT16, PARAM_UINT16, PARAM_UINT16, PARAM_UINT16}},
+		{OPCODET(o5_gob96), {PARAM_UINT16, PARAM_UINT16, PARAM_UINT16, PARAM_UINT16}},
+		{OPCODET(o5_gob97), {PARAM_NONE}},
 		/* 0C */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o5_gob98), {PARAM_NONE}},
+		{OPCODET(o5_gob100), {PARAM_UINT16, PARAM_UINT16, PARAM_UINT16, PARAM_UINT16}},
+		{OPCODET(o5_gob200), {PARAM_UINT16, PARAM_UINT16, PARAM_UINT16}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 10 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -588,7 +587,7 @@ void Script_Urban::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{OPCODET(o3_wobble), {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 28 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -628,47 +627,47 @@ void Script_Urban::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{OPCODEF(o1_dummy), {PARAM_NONE}}
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 	};
 
-	_opcodesDrawUrban = opcodesDraw;
-	_opcodesFuncUrban = opcodesFunc;
-	_opcodesGoblinUrban = opcodesGoblin;
+	_opcodesDrawV5 = opcodesDraw;
+	_opcodesFuncV5 = opcodesFunc;
+	_opcodesGoblinV5 = opcodesGoblin;
 }
 
-void Script_Urban::drawOpcode(byte i, FuncParams &params) {
-	FuncType type = _opcodesDrawUrban[i].type;
-	params.desc = _opcodesDrawUrban[i].desc;
-	OpcodeDrawProcUrban op = _opcodesDrawUrban[i].proc;
+void Script_v5::drawOpcode(byte i, FuncParams &params) {
+	FuncType type = _opcodesDrawV5[i].type;
+	params.desc = _opcodesDrawV5[i].desc;
+	OpcodeDrawProcV5 op = _opcodesDrawV5[i].proc;
 
 	if (type == TYPE_NONE)
 		warning("No such opcodeDraw: %d", i);
 	if ((type == TYPE_TEXTDESC) || (type == TYPE_BOTHDESC))
-		printFuncDesc(params, _opcodesDrawUrban[i].params);
+		printFuncDesc(params, _opcodesDrawV5[i].params);
 	if ((type == TYPE_FUNCDESC) || (type == TYPE_BOTHDESC))
 		(this->*op)(params);
 }
 
-void Script_Urban::funcOpcode(byte i, byte j, FuncParams &params) {
+void Script_v5::funcOpcode(byte i, byte j, FuncParams &params) {
 	int n = i*16 + j;
 	FuncType type = TYPE_NONE;
-	OpcodeFuncProcUrban op = 0;
+	OpcodeFuncProcV5 op = 0;
 
 	if ((i <= 4) && (j <= 15)) {
-		op = _opcodesFuncUrban[n].proc;
-		params.desc = _opcodesFuncUrban[n].desc;
-		type = _opcodesFuncUrban[n].type;
+		op = _opcodesFuncV5[n].proc;
+		params.desc = _opcodesFuncV5[n].desc;
+		type = _opcodesFuncV5[n].type;
 	}
 
 	if (type == TYPE_NONE)
 		error("No such opcodeFunc: %d.%d", i, j);
 	if ((type == TYPE_TEXTDESC) || (type == TYPE_BOTHDESC))
-		printFuncDesc(params, _opcodesFuncUrban[n].params);
+		printFuncDesc(params, _opcodesFuncV5[n].params);
 	if ((type == TYPE_FUNCDESC) || (type == TYPE_BOTHDESC))
 		(this->*op)(params);
 }
 
-void Script_Urban::goblinOpcode(int i, FuncParams &params) {
+void Script_v5::goblinOpcode(int i, FuncParams &params) {
 	int n = -1;
 	for (int j = 0; j < ARRAYSIZE(_goblinFuncLookUp); j++)
 		if (_goblinFuncLookUp[j][0] == i) {
@@ -677,12 +676,12 @@ void Script_Urban::goblinOpcode(int i, FuncParams &params) {
 		}
 
 	FuncType type = TYPE_NONE;
-	OpcodeGoblinProcUrban op = 0;
+	OpcodeGoblinProcV5 op = 0;
 
 	if (n >= 0) {
-		op = _opcodesGoblinUrban[n].proc;
-		params.desc = _opcodesGoblinUrban[n].desc;
-		type = _opcodesGoblinUrban[n].type;
+		op = _opcodesGoblinV5[n].proc;
+		params.desc = _opcodesGoblinV5[n].desc;
+		type = _opcodesGoblinV5[n].type;
 	}
 
 	if (type == TYPE_NONE) {
@@ -690,17 +689,39 @@ void Script_Urban::goblinOpcode(int i, FuncParams &params) {
 		o1_dummy(params);
 	}
 	if ((type == TYPE_TEXTDESC) || (type == TYPE_BOTHDESC)) {
-		const Param *param = _opcodesGoblinUrban[n].params;
+		const Param *param = _opcodesGoblinV5[n].params;
 		if (*param == PARAM_GOB)
 			printFuncDesc(params);
 		else
 			printFuncDesc(params, param);
 	}
-	if ((type == TYPE_FUNCDESC) || (type == TYPE_BOTHDESC))
+	if ((type == TYPE_FUNCDESC) || (type == TYPE_BOTHDESC)) {
+		seek((uint32) -2, SEEK_CUR);
+		params.extraData = (int16) i;
 		(this->*op)(params);
+	}
 }
 
-void Script_Urban::oUrban_istrlen(FuncParams &params) {
+void Script_v5::o5_spaceShooter(FuncParams &params) {
+	int16 paramCount = readUint16();
+
+	startFunc(params);
+	print("%d, ", params.extraData);
+	for (int i = 0; i < paramCount; i++) {
+		uint16 n = readUint16();
+
+		if (i < 3)
+			print("%d", n * 4);
+		else
+			print("%d", n);
+
+		if (i < (paramCount - 1))
+			print(", ");
+	}
+	endFunc();
+}
+
+void Script_v5::o5_istrlen(FuncParams &params) {
 	int16 sSize1, sSize2;
 
 	if (peekUint8() == 0x80)
@@ -709,47 +730,5 @@ void Script_Urban::oUrban_istrlen(FuncParams &params) {
 	startFunc(params);
 	print("%s, ", readVarIndex().c_str());
 	print("%s", readVarIndex().c_str());
-	endFunc();
-}
-
-void Script_Urban::oUrban_createSprite(FuncParams &params) {
-	uint32 pos;
-
-	pos = getPos();
-	skip(1);
-
-	startFunc(params);
-	if (peekUint8() == 0) {
-		seek(pos);
-		print("%d, ", readUint16());
-		print("%d, ", readUint16());
-		print("%d, ", readUint16());
-	} else {
-		seek(pos);
-		print("%s, ", readExpr().c_str());
-		print("%s, ", readExpr().c_str());
-		print("%s, ", readExpr().c_str());
-	}
-	print("%d", readUint16());
-	endFunc();
-}
-
-void Script_Urban::oUrban_loadCursor(FuncParams &params) {
-	int16 id = (int16) readUint16();
-
-	startFunc(params);
-	print("%d, ", id);
-	if (id == -1) {
-		print("%s, ", peekString());
-		skip(9);
-		print("%d, ", readUint16());
-		print("%d", (int8) readUint8());
-	} else if (id == -2) {
-		print("%d, ", readUint16());
-		print("%d, ", readUint16());
-		print("%d", (int8) readUint8());
-	} else {
-		print("%d", (int8) readUint8());
-	}
 	endFunc();
 }
