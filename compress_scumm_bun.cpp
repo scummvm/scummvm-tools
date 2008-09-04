@@ -1227,7 +1227,8 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < numFiles; i++) {
 		if (strcmp(bundleTable[i].filename, "PRELOAD.") == 0)
 			continue;
-		int offsetData = 0, bits = 0, freq = 0, channels = 0, size = 0;
+		int offsetData = 0, bits = 0, freq = 0, channels = 0;
+		int32 size = 0;
 		byte *compFinal = decompressBundleSound(i, input, size);
 		writeToRMAPFile(compFinal, output, bundleTable[i].filename, offsetData, bits, freq, channels);
 		writeRegions(compFinal + offsetData, bits, freq, channels, outputDir, bundleTable[i].filename, output);

@@ -47,11 +47,15 @@
 typedef unsigned char byte;
 typedef unsigned char uint8;
 typedef unsigned short uint16;
-typedef unsigned int uint32;
 typedef signed char int8;
 typedef signed short int16;
+#ifdef __amigaos4__ 
+#include <exec/types.h> 
+#include <stdlib.h>
+#else
+typedef unsigned int uint32;
 typedef signed int int32;
-
+#endif
 
 /*
  * Various utility macros
