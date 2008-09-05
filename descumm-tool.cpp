@@ -42,7 +42,6 @@ void ShowHelpAndExit() {
 			"\t-6\tInput Script is v6\n"
 			"\t-7\tInput Script is v7\n"
 			"\t-8\tInput Script is v8\n"
-			"\t-p\tInput Script is from Humongous Entertainment game\n"
 			"\t-n\tUse Indy3-256 specific hacks\n"
 			"\t-z\tUse Zak256 specific hacks\n"
 			"\t-u\tScript is Unblocked/has no header\n"
@@ -183,9 +182,6 @@ char *parseCommandLine(int argc, char *argv[]) {
 					g_options.GF_UNBLOCKED = true;
 					break;
 
-				case 'p':
-					g_options.HumongousFlag = true;
-					// Fall through
 				case '6':
 					g_options.scriptVersion = 6;
 					g_jump_opcode = 0x73;
@@ -204,8 +200,8 @@ char *parseCommandLine(int argc, char *argv[]) {
 					g_options.scriptVersion = 6;
 					g_jump_opcode = 0x73;
 
-					// Skip two digits for HE version
-					s += 2;
+					// Skip three digits for HE version
+					s += 3;
 					break;
 
 				case 'o':
@@ -395,7 +391,9 @@ int main(int argc, char *argv[]) {
 			next_line_V345(outputLineBuffer);
 			break;
 		case 6:
-			if (g_options.heVersion)
+			if (g_options.heVersion == 100)
+				next_line_HE_V100(outputLineBuffer);
+			else if (g_options.heVersion >= 72)
 				next_line_HE_V72(outputLineBuffer);
 			else
 				next_line_V67(outputLineBuffer);
