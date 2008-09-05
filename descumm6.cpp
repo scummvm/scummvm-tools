@@ -1492,8 +1492,6 @@ void next_line_HE_V100(char *output) {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
 
-	//printf("HE_V100 Opcode: 0x0%x\n", code);
-
 	switch (code) {
 	case 0x0:
 		ext(output, "x" "actorOps\0"
@@ -1724,7 +1722,7 @@ void next_line_HE_V100(char *output) {
 	case 0x24:
 		ext(output, "pppp|drawWizImage");
 		break;
-	case 0x25: // HE80+
+	case 0x25:
 		ext(output, "pp|drawWizPolygon");
 		break;
 	case 0x26:
@@ -2123,34 +2121,36 @@ void next_line_HE_V100(char *output) {
 				"\x88p|setSoundFlag32");
 		break;
 	case 0x79:
-		// TODO: Convert to HE100
 		ext(output, "x" "setSpriteInfo\0"
-				"\x22p|setDistX,"
-				"\x23p|setDistY,"
-				"\x25p|setGroup,"
-				"\x2App|setFlags,"
-				"\x2Bp|setPriority,"
-				"\x2Cpp|move,"
-				"\x34p|setImageState,"
-				"\x35p|setAngle,"
-				"\x39pp|setRange,"
-				"\x3Ep|setSourceImage,"
-				"\x3Fp|setImage,"
-				"\x41pp|setPosition,"
-				"\x44p|setEraseType,"
-				"\x4Dpp|setDist,"
-				"\x52p|setAutoAnimFlag,"
-				"\x56p|setPalette,"
-				"\x5Cp|setScale,"
-				"\x61p|setAnimSpeed,"
-				"\x62p|setAutoShadow,"
-				"\x7Cp|setUpdateType,"
-				"\x7Dl|setClass,"
-				"\x8Bpp|setGeneralProperty,"
-				"\x8Cp|setMaskImage,"
-				"\x9E|resetTables,"
-				"\xC6pp|setUserValue,"
-				"\xD9|resetSprite");
+				"\x0pp|setRange,"
+				"\x2p|setAngle,"
+				"\x3p|setAutoAnimFlag,"
+				"\x4p|setAnimSpeed,"
+				"\x6pp|setPosition,"
+				"\x7p|setSourceImage,"
+				"\x10l|setClass,"
+				"\x20p|setEraseType,"
+				"\x26p|setGroup,"
+				"\x28p|setImage,"
+				"\x30p|setMaskImage,"
+				"\x31pp|move,"
+				"\x34|stringUnk,"
+				"\x35|resetSprite,"
+				"\x36pp|setGeneralProperty,"
+				"\x39p|setPalette,"
+				"\x3Bp|setPriority,"
+				"\x3Cpp|setFlags,"
+				"\x3D|resetTables,"
+				"\x41p|setScale,"
+				"\x46p|setAutoShadow,"
+				"\x49p|setImageState,"
+				"\x4App|setDist,"
+				"\x4Bp|setDistX,"
+				"\x4Cp|setDistY,"
+				"\x52p|setUpdateType,"
+				"\x53pp|setUserValue,"
+				"\x58p|setField84,"
+				"\x59|clearField84");
 		break;
 	case 0x7A:
 		ext(output, "pppp|stampObject");
@@ -2337,7 +2337,12 @@ void next_line_HE_V100(char *output) {
 		ext(output, "rp|cos");
 		break;
 	case 0xA8:
-		ext(output, "rh|debugInput");
+		ext(output, "x" "debugInput\0"
+				"\x0h|case0,"
+				"\x1Ap|case26,"
+				"\x1Bh|case27,"
+				"\x50h|case80,"
+				"\x5Ch|case92");
 		break;
 	case 0xA9:
 		ext(output, "rh|getFileSize");
@@ -2422,9 +2427,10 @@ void next_line_HE_V100(char *output) {
 				"\x1App|imageCount,"
 				"\x21pppp|isPixelNonTransparentnumber,"
 				"\x27pp|height,"
-				"\x36pp|width,"
-				"\x54pp|imageSpotX,"
-				"\x55pp|imageSpotY");
+				"\x36ppp|block,"
+				"\x54pp|width,"
+				"\x55pp|imageSpotX,"
+				"\x56pp|imageSpotY");
 		break;
 	case 0xBB:
 		ext(output, "rpp|isActorInBox");
@@ -2545,35 +2551,34 @@ void next_line_HE_V100(char *output) {
 		ext(output, "rpp|getSoundVar");
 		break;
 	case 0xDB:
-		// TODO: Convert to HE100
 			ext(output, "rx" "getSpriteInfo\0"
-					"\x1Ep|getPosX,"
-					"\x1Fp|getPosY,"
-					"\x20p|getImageX,"
-					"\x21p|getImageY,"
-					"\x22p|getDistX,"
-					"\x23p|getDistY,"
-					"\x24p|getImageStateCount,"
-					"\x25p|getGroup,"
-					"\x26p|getDisplayX,"
-					"\x27p|getDisplayY,"
-					"\x2App|getFlags,"
-					"\x2Bp|getPriority,"
-					"\x2Dlpppp|findSprite,"
-					"\x34p|getImageState,"
-					"\x3Ep|getSourceImage,"
-					"\x3Fp|getImage,"
-					"\x44p|getEraseType,"
-					"\x52p|getFlagAutoAnim,"
-					"\x56p|getPalette,"
-					"\x5Cp|getScale,"
-					"\x61p|getAnimSpeed,"
-					"\x62p|getShadow,"
-					"\x7Cp|getUpdateType,"
-					"\x7Dlp|getClass,"
-					"\x8Bpp|getGeneralProperty,"
-					"\x8Cp|getMaskImage,"
-					"\xC6pp|getUserValue");
+					"\x3p|getFlagAutoAnim,"
+					"\x4p|getAnimSpeed,"
+					"\x7p|getSourceImage,"
+					"\x10lp|getClass,"
+					"\x1Ap|getImageStateCount,"
+					"\x1Ep|getDisplayX,"
+					"\x1Fp|getDisplayY,"
+					"\x20p|getEraseType,"
+					"\x21lpppp|findSprite,"
+					"\x26p|getGroup,"
+					"\x27p|getImageY,"
+					"\x28p|getImage,"
+					"\x30p|getMaskImage,"
+					"\x36pp|getGeneralProperty,"
+					"\x39p|getPalette,"
+					"\x3Bp|getPriority,"
+					"\x3Cpp|getFlags,"
+					"\x41p|getScale,"
+					"\x46p|getShadow,"
+					"\x49p|getImageState,"
+					"\x4Bp|getDistX,"
+					"\x4Cp|getDistY,"
+					"\x52p|getUpdateType,"
+					"\x53pp|getUserValue,"
+					"\x54p|getImageX,"
+					"\x55p|getPosX,"
+					"\x56p|getPosY");
 		break;
 	case 0xDC:
 		ext(output, "rp|sqrt");
@@ -2657,8 +2662,6 @@ void next_line_HE_V100(char *output) {
 void next_line_HE_V72(char *output) {
 	byte code = get_byte();
 	StackEnt *se_a, *se_b;
-
-	//printf("HE_V72 Opcode: 0x0%x\n", code);
 
 	switch (code) {
 	case 0x0:
