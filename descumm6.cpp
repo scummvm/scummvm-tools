@@ -1510,7 +1510,7 @@ void next_line_HE_V100(char *output) {
 				"\x35|initLittle,"
 				"\x39pp|setPalette,"
 				"\x3Bp|layer,"
-				"\x3Dp|setPaletteNum,"
+				"\x3Fp|setPaletteNum,"
 				"\x41p|setScale,"
 				"\x46p|setShadowMode,"
 				"\x4App|setWalkSpeed,"
@@ -2207,14 +2207,20 @@ void next_line_HE_V100(char *output) {
 				 "\x88|copyVirtBuf");
 		break;
 	case 0x89:
-		// TODO
 		ext(output, "x" "windowOps\0"
-				"\x39p|case25,"
-				"\x3Ap|case26,"
-				"\x3Fp|case31,"
-				"\xD9|case185,"
-				"\xF3h|case211,"
-				"\xFF|case223");
+				"\x0p|case0,"
+				"\x6pp|case6,"
+				"\x11p|case17,"
+				"\x27p|case39,"
+				"\x28p|case40,"
+				"\x31pp|case49,"
+				"\x35|case53,"
+				"\x42p|case66,"
+				"\x43p|case67,"
+				"\x47p|case71,"
+				"\x50h|case80,"
+				"\x54p|case84,"
+				"\x5C|case92");
 		break;
 	case 0x8A:
 		ext(output, "pi|setTimer");
