@@ -1810,8 +1810,8 @@ void next_line_HE_V100(char *output) {
 				"\x81|dummy,"
 				"\x84|lockResource,"
 				"\x85|nukeResource,"
-				"\x86|heapUnk1,"
-				"\x87|heapUnk2,"
+				"\x86|setOffHeapOn,"
+				"\x87|setOffHeapOff,"
 				"\x88|queueResource,"
 				"\x89|unlock");
 		break;
@@ -1827,9 +1827,10 @@ void next_line_HE_V100(char *output) {
 				"\x6pp|setPosition,"
 				"\x7p|setSourceImage,"
 				"\xBppppp|setCaptureRect,"
+				"\x12pppp|setClipRect,"
 				"\x15p|processMode6,"
 				"\x1D|processMode1,"
-				"\x24pppp|setClipRect,"
+				"\x24pppp|setRect,"
 				"\x27p|setResDefImageHeight,"
 				"\x2Fh|processMode3,"
 				"\x35|processMode8,"
@@ -1880,8 +1881,7 @@ void next_line_HE_V100(char *output) {
 				"\x19|resumActors,"
 				"\x1E|actorBottomClipOverride,"
 				"\x2A|setWizImageClip,"
-				"\x2B|setWizImageClipOff,"
-				);
+				"\x2B|setWizImageClipOff");
 		break;
 	case 0x3D:
 		se_a = pop();
@@ -1939,7 +1939,7 @@ void next_line_HE_V100(char *output) {
 		ext(output, "x" "redim2dimArray\0"
 				"\x2Appppw|int,"
 				"\x2Bppppw|dword,"
-				"\x2Cppppw|byte");
+				"\x2Dppppw|byte");
 		break;
 	case 0x4A:
 		push(se_oper(pop(), isZero));
@@ -2269,7 +2269,7 @@ void next_line_HE_V100(char *output) {
 				"\x5ppi|writeArrayToFile,"
 				"\x2App|writeWord,"
 				"\x2Bpp|writeDWord,"
-				"\x2Cpp|writeByte");
+				"\x2Dpp|writeByte");
 		break;
 	case 0x91:
 		ext(output, "x" "writeINI\0"
@@ -2436,7 +2436,9 @@ void next_line_HE_V100(char *output) {
 				"\x36ppp|block,"
 				"\x54pp|width,"
 				"\x55pp|imageSpotX,"
-				"\x56pp|imageSpotY");
+				"\x56pp|imageSpotY,"
+				"\x83php|case131,"
+				"\x84pppppp|histogram");
 		break;
 	case 0xBB:
 		ext(output, "rpp|isActorInBox");
@@ -2527,7 +2529,7 @@ void next_line_HE_V100(char *output) {
 	case 0xD3:
 		ext(output, "rx" "readFile\0"
 				"\x5ppi|readArrayFromFile,"
-				"\x29p|readWord,"
+				"\x2Ap|readWord,"
 				"\x2Bp|readDWord,"
 				"\x2Dp|readByte");
 		break;
@@ -2639,6 +2641,15 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0xEB:
 		ext(output, "rpp|getVerbEntrypoint");
+		break;
+	case 0xEC:
+		ext(output, "rx" "getVideoData\0"
+				"\x1Ap|frameCount,"
+				"\x27p|height,"
+				"\x28p|imageNum,"
+				"\x36pp|case54,"
+				"\x49p|curFrame,"
+				"\x54p|width");
 		break;
 	default:
 		invalidop(NULL, code);
