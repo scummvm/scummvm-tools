@@ -85,8 +85,7 @@ int getSampleRateFromVOCRate(int vocSR) {
  *
  * Copied from lame 3.96.1
  */
-static int map2MP3Frequency(int freq)
-{
+static int map2MP3Frequency(int freq) {
     if (freq <=  8000) return  8000;
     if (freq <= 11025) return 11025;
     if (freq <= 12000) return 12000;
@@ -156,7 +155,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		}
 	}
 
-#ifdef DISABLE_VORBIS
+#ifdef DISABLE_BUILTIN_VORBIS
 		if (compmode == kVorbisMode) {
 			tmp += sprintf(tmp, "oggenc ");
 			if (rawInput) {
@@ -200,7 +199,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		}
 #endif
 
-#ifdef DISABLE_FLAC
+#ifdef DISABLE_BUILTIN_FLAC
 		if (compmode == kFlacMode) {
 			/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
 			/* -f is reqired to force override of unremoved temp file. See bug #1294648 */
@@ -297,7 +296,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 }
 
 void encodeRaw(char *rawData, int length, int samplerate, const char *outname, CompressMode compmode) {
-#ifndef DISABLE_VORBIS
+#ifndef DISABLE_BUILTIN_VORBIS
 	if (compmode == kVorbisMode) {
 		FILE *outputOgg;
 		char outputString[256] = "";
@@ -509,7 +508,7 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 	}
 #endif
 
-#ifndef DISABLE_FLAC
+#ifndef DISABLE_BUILTIN_FLAC
 	if (compmode == kFlacMode) {
 		int i;
 		int numChannels = (rawAudioType.isStereo ? 2 : 1);
@@ -795,12 +794,11 @@ int process_ogg_parms(int argc, char *argv[], int i) {
 			}
 
 			if (oggparms.minBitr < 8) {
-				oggparms.minBitr = 8;
+				oggparms.minBitr = 8;		
 			}
 
 			i++;
-		}
-		else if (strcmp(argv[i], "-M") == 0) {
+		} else if (strcmp(argv[i], "-M") == 0) {
 			oggparms.maxBitr = atoi(argv[i + 1]);
 
 			if ((oggparms.maxBitr % 8) != 0) {
@@ -816,21 +814,16 @@ int process_ogg_parms(int argc, char *argv[], int i) {
 			}
 
 			i++;
-		}
-		else if (strcmp(argv[i], "-q") == 0) {
+		} else if (strcmp(argv[i], "-q") == 0) {
 			oggparms.quality = atoi(argv[i + 1]);
 			i++;
-		}
-		else if (strcmp(argv[i], "--silent") == 0) {
+		} else if (strcmp(argv[i], "--silent") == 0) {
 			oggparms.silent = 1;
-		}
-		else if (strcmp(argv[i], "--help") == 0) {
+		} else if (strcmp(argv[i], "--help") == 0) {
 			return 0;
-		}
-		else if (argv[i][0] == '-') {
+		} else if (argv[i][0] == '-') {
 			return 0;
-		}
-		else {
+		} else {
 			break;
 		}
 	}
@@ -847,53 +840,37 @@ int process_flac_parms(int argc, char *argv[], int i){
 		if (strcmp(argv[i], "-b") == 0) {
 			flacparms.blocksize = atoi(argv[i + 1]);
 			i++;
-		}
-		else if (strcmp(argv[i], "--fast") == 0) {
+		} else if (strcmp(argv[i], "--fast") == 0) {
 			flacparms.compressionLevel = 0;
-		}
-		else if (strcmp(argv[i], "--best") == 0) {
+		} else if (strcmp(argv[i], "--best") == 0) {
 			flacparms.compressionLevel = 8;
-		}
-		else if (strcmp(argv[i], "-0") == 0) {
+		} else if (strcmp(argv[i], "-0") == 0) {
 			flacparms.compressionLevel = 0;
-		}
-		else if (strcmp(argv[i], "-1") == 0) {
+		} else if (strcmp(argv[i], "-1") == 0) {
 			flacparms.compressionLevel = 1;
-		}
-		else if (strcmp(argv[i], "-2") == 0) {
+		} else if (strcmp(argv[i], "-2") == 0) {
 			flacparms.compressionLevel = 2;
-		}
-		else if (strcmp(argv[i], "-3") == 0) {
+		} else if (strcmp(argv[i], "-3") == 0) {
 			flacparms.compressionLevel = 3;
-		}
-		else if (strcmp(argv[i], "-4") == 0) {
+		} else if (strcmp(argv[i], "-4") == 0) {
 			flacparms.compressionLevel = 4;
-		}
-		else if (strcmp(argv[i], "-5") == 0) {
+		} else if (strcmp(argv[i], "-5") == 0) {
 			flacparms.compressionLevel = 5;
-		}
-		else if (strcmp(argv[i], "-6") == 0) {
+		} else if (strcmp(argv[i], "-6") == 0) {
 			flacparms.compressionLevel = 6;
-		}
-		else if (strcmp(argv[i], "-7") == 0) {
+		} else if (strcmp(argv[i], "-7") == 0) {
 			flacparms.compressionLevel = 7;
-		}
-		else if (strcmp(argv[i], "-8") == 0) {
+		} else if (strcmp(argv[i], "-8") == 0) {
 			flacparms.compressionLevel = 8;
-		}
-		else if (strcmp(argv[i], "--verify") == 0) {
+		} else if (strcmp(argv[i], "--verify") == 0) {
 			flacparms.verify = true;
-		}
-		else if (strcmp(argv[i], "--silent") == 0) {
+		} else if (strcmp(argv[i], "--silent") == 0) {
 			flacparms.silent = true;
-		}
-		else if (strcmp(argv[i], "--help") == 0) {
+		} else if (strcmp(argv[i], "--help") == 0) {
 			return 0;
-		}
-		else if (argv[i][0] == '-') {
+		} else if (argv[i][0] == '-') {
 			return 0;
-		}
-		else {
+		} else {
 			break;
 		}
 	}

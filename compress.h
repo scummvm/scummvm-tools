@@ -20,12 +20,16 @@
  *
  */
 
-#ifndef EXTRACT_H
-#define EXTRACT_H
+#ifndef COMPRESS_H
+#define COMPRESS_H
 
 #include "util.h"
+#ifndef DISABLE_BUILTIN_VORBIS
 #include <vorbis/vorbisenc.h>
+#endif
+#ifndef DISABLE_BUILTIN_FLAC
 #include <FLAC/stream_encoder.h>
+#endif
 
 /* These are the defaults parameters for the Lame invocation */
 #define minBitrDef 24

@@ -146,7 +146,7 @@ Compression Tools:
                   *.bin files)
                 - The unsupported early DOS demo of Inherit the Earth
 
-        compress_scumm_bun <inputfile> <inputdir> <outputdir> [params]
+        compress_scumm_bun
                 Used to the compress '.bun' music/voice files with MP3, Vorbis
                 or FLAC.
 
