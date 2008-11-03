@@ -97,6 +97,9 @@ UTILS := \
 
 all: $(TARGETS)
 
+install: $(TARGETS)
+       for i in $^ ; do        install -p -m 0755 $$i $(DESTDIR) ; done
+
 bundle_name = ScummVM\ Tools\ GUI.app
 bundle: $(TARGETS)
 	mkdir -p $(bundle_name)
