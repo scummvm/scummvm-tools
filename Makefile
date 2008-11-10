@@ -68,6 +68,7 @@ TARGETS := \
 	compress_sword1$(EXEEXT) \
 	compress_sword2$(EXEEXT) \
 	compress_touche$(EXEEXT) \
+	compress_tucker$(EXEEXT) \
 	decine$(EXEEXT) \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
@@ -98,7 +99,7 @@ UTILS := \
 all: $(TARGETS)
 
 install: $(TARGETS)
-       for i in $^ ; do        install -p -m 0755 $$i $(DESTDIR) ; done
+	for i in $^ ; do install -p -m 0755 $$i $(DESTDIR) ; done
 
 bundle_name = ScummVM\ Tools\ GUI.app
 bundle: $(TARGETS)
@@ -139,6 +140,9 @@ compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_touche$(EXEEXT): compress_touche.o compress.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+
+compress_tucker$(EXEEXT): compress_tucker.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 decine$(EXEEXT): decine.o

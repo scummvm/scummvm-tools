@@ -211,6 +211,13 @@ Compression Tools:
                 Example of usage:
                 compress_touche [params] <inputdir> <outputdir>
 
+        compress_tucker
+                Used to compress .wav files from FX/MUSIC/SPEECH directories
+                to a single file named TUCKER.SOx
+
+                Once compressed, the 3 directories aren't required to play
+                the game under ScummVM.
+
 Script Tools:
         decine
                 Decompiles Delphine's Cinematique engine's scripts.
