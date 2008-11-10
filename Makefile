@@ -8,7 +8,7 @@
 srcdir      ?= .
 
 DEFINES     := -DUNIX
-LDFLAGS     :=
+LDFLAGS     := $(LDFLAGS)
 INCLUDES    := -I. -I$(srcdir)
 LIBS        :=
 OBJS        :=
