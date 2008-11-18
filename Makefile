@@ -84,6 +84,7 @@ TARGETS := \
 	extract_mm_nes$(EXEEXT) \
 	extract_parallaction$(EXEEXT) \
 	extract_scumm_mac$(EXEEXT) \
+	extract_t7g_mac$(EXEEXT) \
 	extract_zak_c64$(EXEEXT) \
 	extract_gob_stk$(EXEEXT) \
 	tools_gui$(EXEEXT)
@@ -188,6 +189,9 @@ extract_parallaction$(EXEEXT): extract_parallaction.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
+extract_t7g_mac$(EXEEXT): extract_t7g_mac.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
