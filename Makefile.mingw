@@ -37,6 +37,7 @@ install:   all
 	strip extract_mm_nes.exe -o $(SCUMMVMPATH)/tools/extract_mm_nes.exe
 	strip extract_parallaction.exe -o $(SCUMMVMPATH)/tools/extract_parallaction.exe
 	strip extract_scumm_mac.exe -o $(SCUMMVMPATH)/tools/extract_scumm_mac.exe
+	strip extract_t7g_mac.exe -o $(SCUMMVMPATH)/tools/extract_t7g_mac.exe
 	strip extract_zak_c64.exe -o $(SCUMMVMPATH)/tools/extract_zak_c64.exe
 	strip tools_gui.exe -o $(SCUMMVMPATH)/tools/tools_gui.exe
 
