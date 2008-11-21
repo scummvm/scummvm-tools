@@ -26,11 +26,11 @@ Extraction Tools:
 
         extract_kyra
                 Unpacks .PAK files from Kyrandia games.
-				It is also able to extract the installer package files from
-				Hand of Fate DOS floppy version. You should be sure you got
-				all WESTWOOD.### files for that, since they are one big package
-				file splitted into several, so with -x you will extract *all*
-				files from the installer files.
+                It is also able to extract the installer package files from
+                Hand of Fate DOS floppy version. You should be sure you got
+                all WESTWOOD.### files for that, since they are one big package
+                file splitted into several, so with -x you will extract *all*
+                files from the installer files.
                 
                 Example of usage:
                 extract_kyra [params] <file>
@@ -104,7 +104,7 @@ Compression Tools:
         compress_kyra
                 Used to compress The Legend of Kyrandia, The Legend of
                 Kyrandia: Hand of Fate and The Legend of Kyrandia: Malcolm's
-				Revenge audio files with MP3, Vorbis or FLAC.
+                Revenge audio files with MP3, Vorbis or FLAC.
 
                 Examples of usage:
                 compress_kyra [params] GEMCUT.VRM inputdir/ outputdir/
@@ -249,10 +249,10 @@ Script Tools:
                 "Bargon", "Lost" and "Woodruff".
 
                 If the script file calls loadMult(), the script file's
-								EXT file must be supplied on the command line as well;
-								some script files also require a commun.ext. degob throws
-								an error to let you know if any of the two should be the
-								case.
+                EXT file must be supplied on the command line as well;
+                some script files also require a commun.ext. degob throws
+                an error to let you know if any of the two should be the
+                case.
 
 Encoder Tools:
         encode_dxa [params] <file>
