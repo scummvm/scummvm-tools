@@ -2380,8 +2380,8 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0xB3:
 		ext(output, "rx" "fontUnk\0"
-				"\x0|unk1,"
-				"\x3Cpp|unk2");
+				"\x0|case0,"
+				"\x3Cpp|case60");
 		break;
 	case 0xB4:
 		ext(output, "r|getNumFreeArrays");
@@ -2743,6 +2743,7 @@ void next_line_HE_V72(char *output) {
 				"\x32hp|processMode4,"
 				"\x33ppppp|setCaptureRect,"
 				"\x34p|setImageState,"
+				"\x35p|setAngle,"
 				"\x36p|setFlags,"
 				"\x38ppppp|drawWizImage,"
 				"\x39p|setImage,"
@@ -2752,10 +2753,20 @@ void next_line_HE_V72(char *output) {
 				"\x43pppp|setClipRect,"
 				"\x56p|setPalette,"
 				"\x5Cp|setScale,"
+				"\x62p|setShadow,"
 				"\x83ppp|processMode7,"
 				"\x85ppppp|proxessMode9,"
+				"\x86ppppp|proxessMode10,"
+				"\x87ppp|proxessMode11,"
+				"\x88ppp|proxessMode12,"
 				"\x89p|setDstResNum,"
+				"\x8Bpp|setThinkLine,"
+				"\x8D|processMode13,"
+				"\x8Epppph|processMode15,"
+				"\x8Fpph|processMode16,"
 				"\x9App|setPosition,"
+				"\xBDpppppppp|processMode17,"
+				"\xC4|processMode14,"
 				"\xD9|processMode8,"
 				"\xF6p|setupPolygon,"
 				"\xF9pp|remapPalette,"
@@ -2967,7 +2978,8 @@ void next_line_HE_V72(char *output) {
 				"\x21pp|height,"
 				"\x24pp|imageCount,"
 				"\x2Dpppp|isPixelNonTransparentnumber,"
-				"\x42pppp|pixelColor");
+				"\x42pppp|pixelColor,"
+				"\x8Dphp|case141");
 		break;
 	case 0x2A: // HE90+
 		ext(output, "rppp|getActorData");
@@ -3569,10 +3581,18 @@ void next_line_HE_V72(char *output) {
 		}
 		break;
 	case 0xA5:
-		ext(output, "x" "saveRestoreVerbs\0"
-				"\x8Dppp|saveVerbs,"
-				"\x8Eppp|restoreVerbs,"
-				"\x8Fppp|deleteVerbs");
+		if (g_options.heVersion >= 99) {
+			ext(output, "rx" "fontUnk\0"
+					"\x2App|case42,"
+					"\x39|case57");
+		} else if (g_options.heVersion >= 80) {
+			invalidop(NULL, code);
+		} else {
+			ext(output, "x" "saveRestoreVerbs\0"
+					"\x8Dppp|saveVerbs,"
+					"\x8Eppp|restoreVerbs,"
+					"\x8Fppp|deleteVerbs");
+		}
 		break;
 	case 0xA6:
 		ext(output, "ppppp|drawBox");
