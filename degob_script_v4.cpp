@@ -195,8 +195,8 @@ void Script_v4::setupOpcodes() {
 		/* 40 */
 		{OPCODEF(o2_totSub), {PARAM_NONE}},
 		{OPCODET(o2_switchTotSub), {PARAM_UINT16, PARAM_UINT16}},
-		{OPCODEF(o2_copyVars), {PARAM_NONE}},
-		{OPCODEF(o2_pasteVars), {PARAM_NONE}},
+		{OPCODEF(o2_pushVars), {PARAM_NONE}},
+		{OPCODEF(o2_popVars), {PARAM_NONE}},
 		/* 44 */
 		{OPCODET(o4_draw0x44), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o4_draw0x45), {PARAM_EXPR, PARAM_EXPR}},
@@ -233,8 +233,8 @@ void Script_v4::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 60 */
-		{OPCODET(o4_draw0x60), {PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o4_draw0x61), {PARAM_EXPR}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 64 */

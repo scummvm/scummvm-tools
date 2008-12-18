@@ -266,8 +266,14 @@ void Script::skipExpr(char stopToken) {
 	while (1) {
 		operation = readUint8();
 
-		if ((operation >= 16) && (operation <= 29)) {
+		if ((operation >= 14) && (operation <= 29)) {
 			switch (operation) {
+			case 14:
+				skip(4);
+				if (peekUint8() == 97)
+					skip(1);
+				break;
+
 			case 17:
 			case 18:
 			case 20:
@@ -296,6 +302,9 @@ void Script::skipExpr(char stopToken) {
 				}
 				break;
 
+			case 15:
+				skip(2);
+								
 			case 16:
 			case 26:
 			case 27:
@@ -318,7 +327,7 @@ void Script::skipExpr(char stopToken) {
 				skipExpr(10);
 			}
 			continue;
-		} // if ((operation >= 16) && (operation <= 29))
+		} // if ((operation >= 14) && (operation <= 29))
 
 		if (operation == 9) {
 			num++;
@@ -354,6 +363,33 @@ std::string Script::readExpr(char stopToken) {
 	num = 0;
 	while (1) {
 		operation = readUint8();
+
+		while ((operation == 14) || (operation == 15)) {
+			if (operation == 14) {
+				expr += printStr("#%d#", readUint16() * 4);
+
+				skip(2);
+				if (peekUint8() == 97)
+					skip(1);
+			} else if (operation == 15) {
+				expr += printStr("#%d->", readUint16() * 4);
+
+				skip(2);
+				uint8 var_A = readUint8();
+
+				skip(var_A);
+
+				for (int i = 0; i < var_A; i++)
+					expr += readExpr(12) + "->";
+
+				expr += "#";
+
+				if (peekUint8() == 97)
+					skip(1);
+			}
+
+			operation = readUint8();
+		}
 
 		if ((operation >= 16) && (operation <= 29)) {
 			// operands
@@ -564,8 +600,8 @@ std::string Script::readExpr(char stopToken) {
 	}
 }
 
-std::string Script::readVarIndex() {
-	std::string expr;
+std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
+	std::string expr, pref;
 	byte *arrDesc;
 	int16 dim;
 	int16 dimCount;
@@ -573,12 +609,56 @@ std::string Script::readVarIndex() {
 	int16 temp;
 
 	operation = readUint8();
+
+	while ((operation == 14) || (operation == 15)) {
+		if (operation == 14) {
+			pref += printStr("#%d#", readUint16() * 4);
+
+			if (arg_0)
+				*arg_0 = peekUint16();
+			if (arg_4)
+				*arg_4 = 14;
+
+			skip(2);
+			if (peekUint8() != 97)
+				return expr;
+
+			skip(1);
+		} else if (operation == 15) {
+			pref += printStr("#%d->", readUint16() * 4);
+
+			if (arg_0)
+				*arg_0 = peekUint16();
+			if (arg_4)
+				*arg_4 = 14;
+
+			skip(2);
+			uint8 var_A = readUint8();
+
+			skip(var_A);
+
+			for (int i = 0; i < var_A; i++)
+				pref += readExpr(12) + "->";
+
+			pref += "#";
+
+			if (peekUint8() != 97)
+				return expr;
+
+			skip(1);
+		}
+
+		operation = readUint8();
+	}
+
 	if ((operation == 16) || (operation == 18) || (operation == 25) || (operation == 28))
 		expr = "var8_";
 	else if ((operation == 17) || (operation == 24) || (operation == 27))
 		expr = "var16_";
 	else if ((operation == 23) || (operation == 26))
 		expr = "var32_";
+
+	expr += pref;
 
 	switch (operation) {
 	case 23:
@@ -793,6 +873,7 @@ void Script::addFuncOffset(uint32 offset) {
 void Script::deGob() {
 	_funcOffsets.clear();
 	_funcOffsets.push_back(_start);
+	_funcOffsets.push_back(21921);
 
 	for (std::list<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it) {
 		seek(*it);

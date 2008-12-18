@@ -194,8 +194,8 @@ void Script_Bargon::setupOpcodes() {
 		/* 40 */
 		{OPCODEF(o2_totSub), {PARAM_NONE}},
 		{OPCODET(o2_switchTotSub), {PARAM_UINT16, PARAM_UINT16}},
-		{OPCODEF(o2_copyVars), {PARAM_NONE}},
-		{OPCODEF(o2_pasteVars), {PARAM_NONE}},
+		{OPCODEF(o2_pushVars), {PARAM_NONE}},
+		{OPCODEF(o2_popVars), {PARAM_NONE}},
 		/* 44 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},

@@ -195,8 +195,8 @@ void Script_v6::setupOpcodes() {
 		/* 40 */
 		{OPCODEF(o2_totSub), {PARAM_NONE}},
 		{OPCODET(o2_switchTotSub), {PARAM_UINT16, PARAM_UINT16}},
-		{OPCODEF(o2_copyVars), {PARAM_NONE}},
-		{OPCODEF(o2_pasteVars), {PARAM_NONE}},
+		{OPCODEF(o2_pushVars), {PARAM_NONE}},
+		{OPCODEF(o2_popVars), {PARAM_NONE}},
 		/* 44 */
 		{OPCODET(o4_draw0x44), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o4_draw0x45), {PARAM_EXPR, PARAM_EXPR}},
@@ -234,7 +234,7 @@ void Script_v6::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 60 */
 		{OPCODET(o4_draw0x60), {PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o4_draw0x61), {PARAM_EXPR}},
+		{OPCODET(o5_deleteFile), {PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 64 */
@@ -447,7 +447,7 @@ void Script_v6::setupOpcodes() {
 		{OPCODEF(o1_whileDo), {PARAM_NONE}},
 		/* 08 */
 		{OPCODEF(o1_if), {PARAM_NONE}},
-		{OPCODEF(o2_evaluateStore), {PARAM_NONE}},
+		{OPCODEF(o6_evaluateStore), {PARAM_NONE}},
 		{OPCODEF(o1_loadSpriteToPos), {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 0C */
@@ -740,3 +740,57 @@ void Script_v6::o6_loadCursor(FuncParams &params) {
 	}
 	endFunc();
 }
+
+void Script_v6::o6_evaluateStore(FuncParams &params) {
+	uint8 type = peekUint8();
+	uint16 var_0, var_4;
+	std::string varIndex = readVarIndex(&var_0, &var_4);
+
+	if (var_0 != 0) {
+		std::string varIndex2;
+		uint16 var_6;
+
+		uint32 savedPos = getPos();
+
+		varIndex2 = readVarIndex(&var_6, 0);
+
+		printIndent();
+		print("memcpy(%s, %s, %d);\n", varIndex, varIndex2, var_6 * 4);
+
+		seek(savedPos);
+		skipExpr(99);
+
+		return;
+	}
+
+	if (peekUint8() == 98) {
+		skip(1);
+		uint8 loopCount = readUint8();
+
+		uint32 off = 0;
+		for (uint16 i = 0; i < loopCount; i++) {
+			uint8 c = readUint8();
+			uint16 n = readUint16();
+
+			printIndent();
+			print("memset(%s + %d, %d, %d);\n", varIndex, off, c, n);
+
+			off += n;
+		}
+	} else if (peekUint8() == 99) {
+		skip(1);
+		uint8 loopCount = readUint8();
+
+		for (uint16 i = 0; i < loopCount; i++) {
+			std::string expr = readExpr();
+			printIndent();
+			print("%s[%d] = %s;\n", varIndex.c_str(), (type == 24) ? (i * 2) : i, expr.c_str());
+		}
+	} else {
+		std::string expr = readExpr();
+
+		printIndent();
+		print("%s = %s;\n", varIndex.c_str(), expr.c_str());
+	}
+}
+

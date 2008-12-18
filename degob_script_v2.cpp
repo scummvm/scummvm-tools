@@ -195,8 +195,8 @@ void Script_v2::setupOpcodes() {
 		/* 40 */
 		{OPCODEF(o2_totSub), {PARAM_NONE}},
 		{OPCODET(o2_switchTotSub), {PARAM_UINT16, PARAM_UINT16}},
-		{OPCODEF(o2_copyVars), {PARAM_NONE}},
-		{OPCODEF(o2_pasteVars), {PARAM_NONE}},
+		{OPCODEF(o2_pushVars), {PARAM_NONE}},
+		{OPCODEF(o2_popVars), {PARAM_NONE}},
 		/* 44 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -744,31 +744,26 @@ void Script_v2::o2_evaluateStore(FuncParams &params) {
 	}
 }
 
-void Script_v2::o2_copyVars(FuncParams &params) {
+void Script_v2::o2_pushVars(FuncParams &params) {
 	uint8 count = readUint8();
-
-	startFunc(params);
-	print("%d", count);
 
 	for (uint16 i = 0; i < count; i++) {
+		printIndent();
 		if ((peekUint8() == 25) || (peekUint8() == 28)) {
-			print(", %s", readVarIndex().c_str());
+			print("push(%s, animDataSize);\n", readVarIndex().c_str());
 			skip(1);
 		} else
-			print(", %s", readExpr().c_str());
+			print("push(%s, 4);\n", readExpr().c_str());
 	}
-
-	endFunc();
 }
 
-void Script_v2::o2_pasteVars(FuncParams &params) {
+void Script_v2::o2_popVars(FuncParams &params) {
 	uint8 count = readUint8();
 
-	startFunc(params);
-	print("%d", count);
-	for (uint16 i = 0; i < count; i++)
-		print(", %s", readVarIndex().c_str());
-	endFunc();
+	for (uint16 i = 0; i < count; i++) {
+		printIndent();
+		print("pop(%s);\n", readVarIndex().c_str());
+	}
 }
 
 void Script_v2::o2_loadSound(FuncParams &params) {

@@ -141,7 +141,7 @@ protected:
 
 	void skipExpr(char stopToken = 99);
 	std::string readExpr(char stopToken = 99);
-	std::string readVarIndex();
+	std::string readVarIndex(uint16 *arg_0 = 0, uint16 *arg_4 = 0);
 
 	uint16 getBlockSize() const;
 
@@ -287,8 +287,8 @@ protected:
 
 	void o2_totSub(FuncParams &params);
 	void o2_evaluateStore(FuncParams &params);
-	void o2_copyVars(FuncParams &params);
-	void o2_pasteVars(FuncParams &params);
+	void o2_pushVars(FuncParams &params);
+	void o2_popVars(FuncParams &params);
 
 	void o2_loadSound(FuncParams &params);
 
@@ -498,6 +498,7 @@ protected:
 	virtual void goblinOpcode(int i, FuncParams &params);
 
 	void o6_loadCursor(FuncParams &params);
+	void o6_evaluateStore(FuncParams &params);
 	void o6_createSprite(FuncParams &params);
 };
 
