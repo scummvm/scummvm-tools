@@ -2647,7 +2647,7 @@ void next_line_HE_V100(char *output) {
 				"\x1Ap|frameCount,"
 				"\x27p|height,"
 				"\x28p|imageNum,"
-				"\x36pp|case54,"
+				"\x36pp|statistics,"
 				"\x49p|curFrame,"
 				"\x54p|width");
 		break;
@@ -2998,6 +2998,15 @@ void next_line_HE_V72(char *output) {
 				"\x3Fp|setWizResNumX,"
 				"\xA5|setStatus,"
 				"\xFF|playOrStopVideo,");
+		break;
+	case 0x2E: // HE95+
+		ext(output, "rx" "getVideoData\0"
+				"\x20p|width,"
+				"\x21p|height,"
+				"\x24p|frameCount,"
+				"\x34p|curFrame,"
+				"\x3Fp|imageNum,"
+				"\x8Bpp|statistics");
 		break;
 	case 0x2F: // HE90+
 		ext(output, "x" "floodFill\0"
