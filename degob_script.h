@@ -81,7 +81,7 @@ public:
 	uint8 getSuffixIM() const;
 	uint8 getSuffixEX() const;
 
-	void deGob();
+	void deGob(int32 offset = -1);
 
 protected:
 	enum FuncType {

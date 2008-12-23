@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
 	FILE *f;
 	byte *totData = 0, *extData = 0, *extComData = 0;
 	uint32 totSize = 0, extSize = 0, extComSize = 0;
+	int32 offset = -1;
 
 	if (!(f = fopen(argv[2], "r")))
 		error("Couldn't open file \"%s\"", argv[2]);
@@ -53,19 +54,46 @@ int main(int argc, char **argv) {
 
 	ExtTable *extTable = 0;
 	if (argc > 3) {
-		if (!(f = fopen(argv[3], "r")))
-			error("Couldn't open file \"%s\"", argv[3]);
-		extData = readFile(f, extSize);
-		fclose(f);
+		int n = 3;
 
-		if (argc > 4) {
-			if (!(f = fopen(argv[4], "r")))
-				error("Couldn't open file \"%s\"", argv[4]);
-			extComData = readFile(f, extComSize);
-			fclose(f);
+		if (!strncmp(argv[n], "-o", 2)) {
+			char *strOffset;
+
+			if (strlen(argv[n]) > 2)
+				strOffset = argv[n] + 2;
+			else if (argc <= (n + 1))
+				error("No offset specified");
+			else
+				strOffset = argv[++n];
+
+			long int tempOffset;
+
+			if ((sscanf(strOffset, "%ld", &tempOffset) != 1) || (tempOffset < 0))
+				error("Invalid offset specified");
+
+			offset = (int32) tempOffset;
+
+			n++;
 		}
 
-		extTable = new ExtTable(extData, extSize, extComData, extComSize);
+		if (argc > n) {
+
+			if (!(f = fopen(argv[n], "r")))
+				error("Couldn't open file \"%s\"", argv[n]);
+			extData = readFile(f, extSize);
+			fclose(f);
+
+			n++;
+
+			if (argc > n) {
+				if (!(f = fopen(argv[n], "r")))
+					error("Couldn't open file \"%s\"", argv[n]);
+				extComData = readFile(f, extComSize);
+				fclose(f);
+			}
+
+			extTable = new ExtTable(extData, extSize, extComData, extComSize);
+		}
 	}
 
 	Script *script = initScript(totData, totSize, extTable, version);
@@ -77,7 +105,7 @@ int main(int argc, char **argv) {
 	printInfo(*script);
 	printf("-----\n");
 
-	script->deGob();
+	script->deGob(offset);
 
 	delete[] totData;
 	delete[] extData;
@@ -88,7 +116,7 @@ int main(int argc, char **argv) {
 }
 
 void printHelp(const char *bin) {
-	printf("Usage: %s <version> <file.tot> [<file.ext>] [<commun.ext>]\n\n", bin);
+	printf("Usage: %s <version> <file.tot> [-o <offset>] [<file.ext>] [<commun.ext>]\n\n", bin);
 	printf("The disassembled script will be written to stdout.\n\n");
 	printf("Supported versions:\n");
 	printf("	Gob1     - Gobliiins 1\n");

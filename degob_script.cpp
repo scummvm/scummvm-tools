@@ -870,9 +870,12 @@ void Script::addFuncOffset(uint32 offset) {
 	_funcOffsets.push_back(offset);
 }
 
-void Script::deGob() {
+void Script::deGob(int32 offset) {
+	if (offset < 0)
+		offset = _start;
+
 	_funcOffsets.clear();
-	_funcOffsets.push_back(_start);
+	_funcOffsets.push_back(offset);
 
 	for (std::list<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it) {
 		seek(*it);

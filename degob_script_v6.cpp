@@ -755,7 +755,7 @@ void Script_v6::o6_evaluateStore(FuncParams &params) {
 		varIndex2 = readVarIndex(&var_6, 0);
 
 		printIndent();
-		print("memcpy(%s, %s, %d);\n", varIndex, varIndex2, var_6 * 4);
+		print("memcpy(%s, %s, %d);\n", varIndex.c_str(), varIndex2.c_str(), var_6 * 4);
 
 		seek(savedPos);
 		skipExpr(99);
@@ -773,7 +773,7 @@ void Script_v6::o6_evaluateStore(FuncParams &params) {
 			uint16 n = readUint16();
 
 			printIndent();
-			print("memset(%s + %d, %d, %d);\n", varIndex, off, c, n);
+			print("memset(%s + %d, %d, %d);\n", varIndex.c_str(), off, c, n);
 
 			off += n;
 		}
