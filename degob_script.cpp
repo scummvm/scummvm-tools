@@ -651,6 +651,11 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 		operation = readUint8();
 	}
 
+	if (arg_0)
+		*arg_0 = 0;
+	if (arg_4)
+		*arg_4 = operation;
+
 	if ((operation == 16) || (operation == 18) || (operation == 25) || (operation == 28))
 		expr = "var8_";
 	else if ((operation == 17) || (operation == 24) || (operation == 27))
