@@ -2105,9 +2105,9 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0x77:
 		ext(output, "x" "startSound\0"
-				"\x6p|setQuickStartFlag,"
+				"\x6p|setSoundFlag16,"
 				"\x2Fhp|loadSoundFromFile,"
-				"\x37|setSoundFlag8,"
+				"\x37|setQuickStartFlag,"
 				"\x53ppp|setSoundVar,"
 				"\x5C|start,"
 				"\x80|setForceQueueFlag,"
