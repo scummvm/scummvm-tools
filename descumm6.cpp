@@ -5363,7 +5363,7 @@ void next_line_V67(char *output) {
 		break;
 	case 0xC9:
 		if (g_options.heVersion)
-				ext(output, "ry" "kernelSetFunctions\0"
+				ext(output, "y" "kernelSetFunctions\0"
 					"\x1|virtScreenLoad"
 					);
 		else if (g_options.scriptVersion == 7)
