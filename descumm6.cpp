@@ -1320,6 +1320,28 @@ void ext(char *output, const char *fmt) {
 			/* found a command, continue at the beginning */
 			continue;
 		}
+		if (cmd == 'u' && !extstr) {
+			/* Sub-op: next byte specifies which one */
+			extstr = fmt;
+			while (*fmt++)
+				;
+			e += sprintf(e, "%s.", extstr);
+
+			/* extended thing */
+			extcmd = pop()->getIntVal();
+
+			/* locate our extended item */
+			while ((cmd = *fmt++) != extcmd) {
+				/* scan until we find , or \0 */
+				while ((cmd = *fmt++) != ',') {
+					if (cmd == 0) {
+						invalidop(extstr, extcmd);
+					}
+				}
+			}
+			/* found a command, continue at the beginning */
+			continue;
+		}
 		if (cmd == 'y' && !extstr) {
 			/* Sub-op: parameters are in a list, first element of the list specified the command */
 			ListStackEnt *se;
@@ -4810,10 +4832,26 @@ void next_line_V67(char *output) {
 		jump(output);
 		break;
 	case 0x74:
-		if (g_options.heVersion)
+		if (g_options.heVersion >= 70) {
+			ext(output, "x" "startSound\0"
+					"\x9|setSoundFlag4,"
+					"\x17ppp|setSoundVar,"
+					"\x19pp|startWithFlag8,"
+					"\x38|setQuickStartFlag,"
+					"\xA4|setForceQueueFlag,"
+					"\xDE|dummy,"
+					"\xE0p|setFrequency,"
+					"\xE6p|setChannel,"
+					"\xE7p|setOffset,"
+					"\xE8p|setId,"
+					"\xF5|setLoop,"
+					"\xFF|start");
+			break;
+		} else if (g_options.heVersion) {
 			ext(output, "pp|startSound");
-		else
+		} else {
 			ext(output, "p|startSound");
+		}
 		break;
 	case 0x75:
 		ext(output, "p|stopSound");
@@ -4964,7 +5002,8 @@ void next_line_V67(char *output) {
 					"\xcap|lockImage,"
 					"\xcbp|queueloadImage,"
 					"\xe9p|lockFlObject,"
-					"\xebp|unlockFlObject");
+					"\xebp|unlockFlObject,"
+					"\xef|dummy");
 		else
 			ext(output, "x" "resourceRoutines\0"
 					"\x64p|loadScript,"
@@ -5028,6 +5067,7 @@ void next_line_V67(char *output) {
 		if (g_options.heVersion)
 			ext(output, "x" "actorOps\0"
 					"\xC5p|setCurActor,"
+					"\x1Epppp|setClipRect,"
 					"\x4Cp|setCostume,"
 					"\x4Dpp|setWalkSpeed,"
 					"\x4El|setSound,"
@@ -5262,17 +5302,34 @@ void next_line_V67(char *output) {
 		break;
 	case 0xB8:
 		// This is *almost* identical to the other print opcodes, only the 'begin' subop differs
-		ext(output, "x" "printActor\0"
-				"\x41pp|XY,"
-				"\x42p|color,"
-				"\x43p|right,"
-				"\x45|center,"
-				"\x47|left,"
-				"\x48|overhead,"
-				"\x4A|mumble,"
-				"\x4Bs|msg,"
-				"\xFEp|begin,"
-				"\xFF|end");
+		if (g_options.heVersion) {
+			ext(output, "x" "printActor\0"
+					"\x41pp|XY,"
+					"\x42p|color,"
+					"\x43p|right,"
+					"\x45|center,"
+					"\x47|left,"
+					"\x48|overhead,"
+					"\x4A|mumble,"
+					"\x4Bs|msg,"
+					"\xF9l|colors,"
+					"\xC2lps|debug,"
+					"\xE1p|getText,"
+					"\xFEp|begin,"
+					"\xFF|end");
+		} else {
+			ext(output, "x" "printActor\0"
+					"\x41pp|XY,"
+					"\x42p|color,"
+					"\x43p|right,"
+					"\x45|center,"
+					"\x47|left,"
+					"\x48|overhead,"
+					"\x4A|mumble,"
+					"\x4Bs|msg,"
+					"\xFEp|begin,"
+					"\xFF|end");
+		} 
 		break;
 	case 0xB9:
 		if (g_options.heVersion)
@@ -5564,17 +5621,41 @@ void next_line_V67(char *output) {
 		else
 			invalidop(NULL, code);
 		break;
-	case 0xF3:
+	case 0xF1:
 		if (g_options.heVersion)
-			ext(output, "rsp|readINI");
+			ext(output, "rpp|compareString");
 		else
 			invalidop(NULL, code);
 		break;
-	case 0xF4:
-		if (g_options.heVersion)
-			ext(output, "rsp|writeINI");
-		else
+	case 0xF2:
+		if (g_options.heVersion) {
+			ext(output, "rx" "isResourceLoaded\0"
+					"\x12p|image,"
+					"\xE2p|room,"
+					"\xE3p|costume,"
+					"\xE4p|sound,"
+					"\xE5p|script");
+		} else {
 			invalidop(NULL, code);
+		}
+		break;
+	case 0xF3:
+		if (g_options.heVersion) {
+			ext(output, "ru" "readINI\0"
+					"\x01s|number,"
+					"\x02s|string");
+		} else {
+			invalidop(NULL, code);
+		}
+		break;
+	case 0xF4:
+		if (g_options.heVersion) {
+			ext(output, "u" "writeINI\0"
+					"\x01ps|number,"
+					"\x02pss|string");
+		} else {
+			invalidop(NULL, code);
+		}
 		break;
 	case 0xF5:
 		if (g_options.heVersion)
@@ -5585,6 +5666,12 @@ void next_line_V67(char *output) {
 	case 0xF6:
 		if (g_options.heVersion)
 			ext(output, "rpppp|getCharIndexInString");
+		else
+			invalidop(NULL, code);
+		break;
+	case 0xF7:
+		if (g_options.heVersion)
+			ext(output, "rpp|findBox");
 		else
 			invalidop(NULL, code);
 		break;
