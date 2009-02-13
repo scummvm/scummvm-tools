@@ -722,8 +722,6 @@ void Script_v5::o5_spaceShooter(FuncParams &params) {
 }
 
 void Script_v5::o5_istrlen(FuncParams &params) {
-	int16 sSize1, sSize2;
-
 	if (peekUint8() == 0x80)
 		skip(1);
 
