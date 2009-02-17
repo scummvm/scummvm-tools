@@ -4448,7 +4448,7 @@ void next_line_V8(char *output) {
 				"\x1B|saveGameReadName,"
 				"\x1C|saveGameStampScreenshot,"
 				"\x1D|setKeyScript,"
-				"\x1E|killAllScriptsButMe,"
+				"\x1E|killAllScriptsExceptCurrent,"
 				"\x1F|stopAllVideo,"
 				"\x20|writeRegistryValue,"
 				"\x21|paletteSetIntensity,"
