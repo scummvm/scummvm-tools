@@ -235,7 +235,7 @@ const char *var_names3[] = {
 	"VAR_MOUSE_X",
 	"VAR_MOUSE_Y",
 	"VAR_TIMER",
-	"VAR_TMR_4",
+	"VAR_TIMER_TOTAL",
 	/* 48 */
 	"VAR_SOUNDCARD",
 	"VAR_VIDEOMODE",
@@ -303,7 +303,7 @@ const char *var_names4[] = {
 	"VAR_MOUSE_X",
 	"VAR_MOUSE_Y",
 	"VAR_TIMER",
-	"VAR_TMR_4",
+	"VAR_TIMER_TOTAL",
 	/* 48 */
 	"VAR_SOUNDCARD",
 	"VAR_VIDEOMODE",
@@ -392,7 +392,7 @@ const char *var_names5[] = {
 	"VAR_MOUSE_X",
 	"VAR_MOUSE_Y",
 	"VAR_TIMER",
-	"VAR_TMR_4",
+	"VAR_TIMER_TOTAL",
 	/* 48 */
 	"VAR_SOUNDCARD",
 	"VAR_VIDEOMODE",
@@ -1042,13 +1042,13 @@ void do_resource(char *buf, byte opco) {
 		break;
 
 	case 0x22 + 1:
-		do_tok(buf, "resUnk1", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "setCDVolume?", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x23 + 1:
-		do_tok(buf, "resUnk2", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
+		do_tok(buf, "setSoundLoudness", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
 		break;
 	case 0x24 + 1:
-		do_tok(buf, "resUnk3", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "setSoundPitch", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 
@@ -1117,10 +1117,10 @@ void do_room_ops(char *buf) {
 						 ((opcode & 0x20) ? A3V : A3B));
 		break;
 	case 0x09:
-		buf = do_tok(buf, "saveLoad?", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		buf = do_tok(buf, "saveLoad", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x0A:
-		buf = do_tok(buf, "screenEffect?", ((opcode & 0x80) ? A1V : A1W));
+		buf = do_tok(buf, "screenEffect", ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x0B:
 		buf =
