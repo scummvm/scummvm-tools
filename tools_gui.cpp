@@ -62,7 +62,7 @@ bool ToolsGui::OnInit() {
 
 MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY, title, wxDefaultPosition, wxSize(600, 450)) {
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-	this->SetSizer(mainSizer);
+	SetSizer(mainSizer);
 
 	_mainNotebook = new wxNotebook(this, wxID_ANY);
 
@@ -84,7 +84,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY,
 	_mainNotebook->AddPage(extractionPage, wxT("Extraction"), false, wxID_ANY);
 
 	mainSizer->Add(_mainNotebook, 1, wxEXPAND);
-	this->SetMinSize(wxSize(600, 450));
+	SetMinSize(wxSize(600, 450));
 }
 
 /* ----- Common ----- */
@@ -92,17 +92,17 @@ MainFrame::MainFrame(const wxString& title) : wxFrame((wxFrame *)NULL, wxID_ANY,
 Process::Process(MainFrame *parent, wxTextCtrl *target) : wxProcess(parent) {
 	_parent = parent;
 	_target = target;
-	this->Redirect();
+	Redirect();
 }
 
 bool Process::HasInput() {
-	if (this->IsInputAvailable()) {
-		wxTextInputStream stream(*this->GetInputStream());
+	if (IsInputAvailable()) {
+		wxTextInputStream stream(*GetInputStream());
 
 		wxString output;
 		output << stream.ReadLine() << wxT("\n");
 
-		this->_target->AppendText(output);
+		_target->AppendText(output);
 
 		return true;
 	}
@@ -111,10 +111,10 @@ bool Process::HasInput() {
 }
 
 void Process::OnTerminate(int pid, int status) {
-	while (this->HasInput());
-	this->_target->AppendText(wxT("\n\n-------------------------"));
-	this->_target->AppendText(wxT("\nOperation Finished."));
-	this->_target->AppendText(wxT("\n-------------------------"));
+	while (HasInput());
+	_target->AppendText(wxT("\n\n-------------------------"));
+	_target->AppendText(wxT("\nOperation Finished."));
+	_target->AppendText(wxT("\n-------------------------"));
 	_parent->OnProcessTerminated(this);
 	delete this;
 }
@@ -131,28 +131,28 @@ LocationDialog::LocationDialog(wxTextCtrl *target, bool isFileChooser, wxString 
 }
 
 void LocationDialog::prompt() {
-	if (this->_isFileChooser) {
+	if (_isFileChooser) {
 		wxFileDialog *dialog = dynamic_cast<wxFileDialog*>(_dialog);
 
 		if (dialog->ShowModal() == wxID_OK) {
 			wxArrayString filenames;
 			dialog->GetPaths(filenames);
 
-			this->_target->SetValue(wxT("\""));
-			this->_target->AppendText(filenames.Item(0));
-			this->_target->AppendText(wxT("\""));
+			_target->SetValue(wxT("\""));
+			_target->AppendText(filenames.Item(0));
+			_target->AppendText(wxT("\""));
 	
-			this->_target->SetInsertionPoint(0);
+			_target->SetInsertionPoint(0);
 		}
 	} else {
 		wxDirDialog *dialog = dynamic_cast<wxDirDialog*>(_dialog);
 
 		if (dialog->ShowModal() == wxID_OK) {
-			this->_target->SetValue(wxT("\""));
-			this->_target->AppendText(dialog->GetPath());
-			this->_target->AppendText(wxT("\""));
+			_target->SetValue(wxT("\""));
+			_target->AppendText(dialog->GetPath());
+			_target->AppendText(wxT("\""));
 	
-			this->_target->SetInsertionPoint(0);
+			_target->SetInsertionPoint(0);
 		}
 	}
 }
@@ -180,7 +180,7 @@ bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames)
 IOChooser::IOChooser(wxWindow *parent, kEventId buttonId, wxString title, bool isFileChooser) : wxPanel(parent) {
 	wxStaticBox *staticBox = new wxStaticBox(this, wxID_ANY, title);
 	wxStaticBoxSizer *staticBoxSizer = new wxStaticBoxSizer(staticBox, wxHORIZONTAL);
-	this->SetSizer(staticBoxSizer);
+	SetSizer(staticBoxSizer);
 
 	wxPanel *panel = new wxPanel(this);
 	wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -203,7 +203,7 @@ IOChooser::IOChooser(wxWindow *parent, kEventId buttonId, wxString title, bool i
 DropDownBox::DropDownBox(wxWindow *parent, kEventId boxId, wxString title, int numItems, wxString items[]) : wxPanel(parent) {
 	wxStaticBox *box = new wxStaticBox(this, wxID_ANY, title);
 	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(box, wxHORIZONTAL);
-	this->SetSizer(sizer);
+	SetSizer(sizer);
 
 	_choice = new wxChoice(this, boxId, wxDefaultPosition, wxDefaultSize, numItems, items);
 
@@ -215,7 +215,7 @@ DropDownBox::DropDownBox(wxWindow *parent, kEventId boxId, wxString title, int n
 CompressionOptions::CompressionOptions(wxWindow *parent) : wxPanel(parent) {
 	wxStaticBox *box = new wxStaticBox(this, wxID_ANY, wxT("Compression Options"));
 	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(box, wxVERTICAL);
-	this->SetSizer(sizer);
+	SetSizer(sizer);
 
 	wxPanel *grid = new wxPanel(this);
 	wxGridSizer *gridSizer = new wxGridSizer(2, 5, 0, 10);
@@ -280,7 +280,7 @@ CompressionOptions::CompressionOptions(wxWindow *parent) : wxPanel(parent) {
 
 CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-	this->SetSizer(sizer);
+	SetSizer(sizer);
 
 	/* Top Panel */
 	wxPanel *topPanel = new wxPanel(this);
@@ -325,12 +325,12 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 	/* Simulate selecting the first tool to set up the compression options */
 	_compressionToolChooserBox->_choice->SetSelection(0);
 	wxCommandEvent toolEvent = wxCommandEvent(wxEVT_COMMAND_CHOICE_SELECTED, kCompressionToolChoice);
-	this->OnCompressionToolChange(toolEvent);
+	OnCompressionToolChange(toolEvent);
 
 	/* Simulate selecting the first compression type to set up the compression options */
 	_compressionTypeBox->_choice->SetSelection(0);
 	wxCommandEvent compressionEvent = wxCommandEvent(wxEVT_COMMAND_CHOICE_SELECTED, kCompressionTypeChoice);
-	this->OnCompressionTypeChange(compressionEvent);
+	OnCompressionTypeChange(compressionEvent);
 }
 
 /* ----- Extraction ----- */
@@ -338,7 +338,7 @@ CompressionPanel::CompressionPanel(wxWindow *parent) : wxPanel(parent) {
 ExtractionOptions::ExtractionOptions(wxWindow *parent) : wxPanel(parent) {
 	wxStaticBox *box = new wxStaticBox(this, wxID_ANY, wxT("Extraction Options"));
 	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(box, wxVERTICAL);
-	this->SetSizer(sizer);
+	SetSizer(sizer);
 
 	wxPanel *grid = new wxPanel(this);
 	wxFlexGridSizer *gridSizer = new wxFlexGridSizer(2, 5, 0, 20);
@@ -377,7 +377,7 @@ ExtractionOptions::ExtractionOptions(wxWindow *parent) : wxPanel(parent) {
 
 ExtractionPanel::ExtractionPanel(wxWindow *parent) : wxPanel(parent) {
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-	this->SetSizer(sizer);
+	SetSizer(sizer);
 
 	/* Top Panel */
 	wxPanel *topPanel = new wxPanel(this);
@@ -415,209 +415,209 @@ ExtractionPanel::ExtractionPanel(wxWindow *parent) : wxPanel(parent) {
 	/* Simulate selecting the first tool to set up the extraction options */
 	_extractionToolChooserPanel->_choice->SetSelection(0);
 	wxCommandEvent toolEvent = wxCommandEvent(wxEVT_COMMAND_CHOICE_SELECTED, kExtractionToolChoice);
-	this->OnExtractionToolChange(toolEvent);
+	OnExtractionToolChange(toolEvent);
 }
 
 /* ----- Compression Events ----- */
 
 void CompressionPanel::OnCompressionToolChange(wxCommandEvent &event) {
-	wxString selectedTool = this->_compressionToolChooserBox->_choice->GetStringSelection();
+	wxString selectedTool = _compressionToolChooserBox->_choice->GetStringSelection();
 
-	this->_inputPanel->_browse->Enable(true);
-	this->_inputPanel->_text->Enable(true);
-	this->_inputPanel->_text->Clear();
-	this->_outputPanel->_isFileChooser = false;
-	this->_outputPanel->_text->Clear();
+	_inputPanel->_browse->Enable(true);
+	_inputPanel->_text->Enable(true);
+	_inputPanel->_text->Clear();
+	_outputPanel->_isFileChooser = false;
+	_outputPanel->_text->Clear();
 
 	if (selectedTool == wxT("AGOS")) {
-		this->_inputPanel->_isFileChooser = true;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
+		_inputPanel->_isFileChooser = true;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
 	} else if (selectedTool == wxT("Broken Sword 1")) {
-		this->_inputPanel->_isFileChooser = false;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
+		_inputPanel->_isFileChooser = false;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
 	} else if (selectedTool == wxT("Broken Sword 2")) {
-		this->_inputPanel->_isFileChooser = true;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
+		_inputPanel->_isFileChooser = true;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
 	} else if (selectedTool == wxT("Encode DXA")) {
-		this->_inputPanel->_isFileChooser = true;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
+		_inputPanel->_isFileChooser = true;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
 	} else if (selectedTool == wxT("Flight of the Amazon Queen")) {
-		this->_inputPanel->_isFileChooser = true;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
+		_inputPanel->_isFileChooser = true;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
 	} else if (selectedTool == wxT("Kyra")) {
-		this->_inputPanel->_isFileChooser = true;
-		this->_outputPanel->_browse->Enable(true);
-		this->_outputPanel->_text->Enable(true);
+		_inputPanel->_isFileChooser = true;
+		_outputPanel->_browse->Enable(true);
+		_outputPanel->_text->Enable(true);
 	} else if (selectedTool == wxT("SAGA")) {
-		this->_inputPanel->_isFileChooser = true;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
+		_inputPanel->_isFileChooser = true;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
 	} else if (selectedTool == wxT("SCUMM BUN")) {
-		this->_inputPanel->_isFileChooser = true;
-		this->_outputPanel->_browse->Enable(true);
-		this->_outputPanel->_text->Enable(true);
+		_inputPanel->_isFileChooser = true;
+		_outputPanel->_browse->Enable(true);
+		_outputPanel->_text->Enable(true);
 	} else if (selectedTool == wxT("SCUMM SAN")) {
-		this->_inputPanel->_isFileChooser = true;
-		this->_outputPanel->_browse->Enable(true);
-		this->_outputPanel->_text->Enable(true);
+		_inputPanel->_isFileChooser = true;
+		_outputPanel->_browse->Enable(true);
+		_outputPanel->_text->Enable(true);
 	} else if (selectedTool == wxT("SCUMM SOU")) {
-		this->_inputPanel->_isFileChooser = true;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
+		_inputPanel->_isFileChooser = true;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
 	} else if (selectedTool == wxT("Simon 2 (MAC)")) {
-		this->_inputPanel->_isFileChooser = false;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
+		_inputPanel->_isFileChooser = false;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
 	} else if (selectedTool == wxT("Touche")) {
-		this->_inputPanel->_isFileChooser = false;
-		this->_outputPanel->_browse->Enable(true);
-		this->_outputPanel->_text->Enable(true);
+		_inputPanel->_isFileChooser = false;
+		_outputPanel->_browse->Enable(true);
+		_outputPanel->_text->Enable(true);
 	} else {
-		this->_inputPanel->_browse->Enable(false);
-		this->_inputPanel->_text->Enable(false);
-		this->_inputPanel->_isFileChooser = false;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_outputPanel->_isFileChooser = false;
+		_inputPanel->_browse->Enable(false);
+		_inputPanel->_text->Enable(false);
+		_inputPanel->_isFileChooser = false;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_outputPanel->_isFileChooser = false;
 	}
 }
 
 void CompressionPanel::OnCompressionTypeChange(wxCommandEvent &event) {
-	wxString selectedCompression = this->_compressionTypeBox->_choice->GetStringSelection();
+	wxString selectedCompression = _compressionTypeBox->_choice->GetStringSelection();
 
 	if (selectedCompression == wxT("MP3")) {
-		this->_compressionOptionsPanel->_avgBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_blockSize->SetSelection(0);
-		this->_compressionOptionsPanel->_compressionLevelChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_maxBitrateChooser->SetStringSelection(kDefaultMP3VBRMaxBitrate);
-		this->_compressionOptionsPanel->_minBitrateChooser->SetStringSelection(kDefaultMP3VBRMinBitrate);
-		this->_compressionOptionsPanel->_modeChooser->SetStringSelection(kDefaultMP3CompressionType);
-		this->_compressionOptionsPanel->_mpegQualityChooser->SetStringSelection(kDefaultMP3MpegQuality);
-		this->_compressionOptionsPanel->_silentChooser->SetValue(true);
-		this->_compressionOptionsPanel->_verifyChooser->SetValue(false);
-		this->_compressionOptionsPanel->_vbrQualityChooser->SetStringSelection(kDefaultMP3VBRQuality);
+		_compressionOptionsPanel->_avgBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_blockSize->SetSelection(0);
+		_compressionOptionsPanel->_compressionLevelChooser->SetSelection(0);
+		_compressionOptionsPanel->_maxBitrateChooser->SetStringSelection(kDefaultMP3VBRMaxBitrate);
+		_compressionOptionsPanel->_minBitrateChooser->SetStringSelection(kDefaultMP3VBRMinBitrate);
+		_compressionOptionsPanel->_modeChooser->SetStringSelection(kDefaultMP3CompressionType);
+		_compressionOptionsPanel->_mpegQualityChooser->SetStringSelection(kDefaultMP3MpegQuality);
+		_compressionOptionsPanel->_silentChooser->SetValue(true);
+		_compressionOptionsPanel->_verifyChooser->SetValue(false);
+		_compressionOptionsPanel->_vbrQualityChooser->SetStringSelection(kDefaultMP3VBRQuality);
 
-		this->_compressionOptionsPanel->_minBitrateChooser->Enable(true);
-		this->_compressionOptionsPanel->_avgBitrateChooser->Enable(false);
-		this->_compressionOptionsPanel->_maxBitrateChooser->Enable(true);
-		this->_compressionOptionsPanel->_vbrQualityChooser->Enable(true);
-		this->_compressionOptionsPanel->_mpegQualityChooser->Enable(true);
-		this->_compressionOptionsPanel->_compressionLevelChooser->Enable(false);
-		this->_compressionOptionsPanel->_modeChooser->Enable(true);
-		this->_compressionOptionsPanel->_blockSize->Enable(false);
-		this->_compressionOptionsPanel->_verifyChooser->Enable(false);
-		this->_compressionOptionsPanel->_silentChooser->Enable(false);
+		_compressionOptionsPanel->_minBitrateChooser->Enable(true);
+		_compressionOptionsPanel->_avgBitrateChooser->Enable(false);
+		_compressionOptionsPanel->_maxBitrateChooser->Enable(true);
+		_compressionOptionsPanel->_vbrQualityChooser->Enable(true);
+		_compressionOptionsPanel->_mpegQualityChooser->Enable(true);
+		_compressionOptionsPanel->_compressionLevelChooser->Enable(false);
+		_compressionOptionsPanel->_modeChooser->Enable(true);
+		_compressionOptionsPanel->_blockSize->Enable(false);
+		_compressionOptionsPanel->_verifyChooser->Enable(false);
+		_compressionOptionsPanel->_silentChooser->Enable(false);
 	} else if (selectedCompression == wxT("Vorbis")) {
-		this->_compressionOptionsPanel->_avgBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_blockSize->SetSelection(0);
-		this->_compressionOptionsPanel->_compressionLevelChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_maxBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_minBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_modeChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_mpegQualityChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_silentChooser->SetValue(false);
-		this->_compressionOptionsPanel->_verifyChooser->SetValue(false);
-		this->_compressionOptionsPanel->_vbrQualityChooser->SetStringSelection(kDefaultOggQuality);
+		_compressionOptionsPanel->_avgBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_blockSize->SetSelection(0);
+		_compressionOptionsPanel->_compressionLevelChooser->SetSelection(0);
+		_compressionOptionsPanel->_maxBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_minBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_modeChooser->SetSelection(0);
+		_compressionOptionsPanel->_mpegQualityChooser->SetSelection(0);
+		_compressionOptionsPanel->_silentChooser->SetValue(false);
+		_compressionOptionsPanel->_verifyChooser->SetValue(false);
+		_compressionOptionsPanel->_vbrQualityChooser->SetStringSelection(kDefaultOggQuality);
 
-		this->_compressionOptionsPanel->_minBitrateChooser->Enable(true);
-		this->_compressionOptionsPanel->_avgBitrateChooser->Enable(true);
-		this->_compressionOptionsPanel->_maxBitrateChooser->Enable(true);
-		this->_compressionOptionsPanel->_vbrQualityChooser->Enable(true);
-		this->_compressionOptionsPanel->_mpegQualityChooser->Enable(false);
-		this->_compressionOptionsPanel->_compressionLevelChooser->Enable(false);
-		this->_compressionOptionsPanel->_modeChooser->Enable(false);
-		this->_compressionOptionsPanel->_blockSize->Enable(false);
-		this->_compressionOptionsPanel->_verifyChooser->Enable(false);
-		this->_compressionOptionsPanel->_silentChooser->Enable(true);
+		_compressionOptionsPanel->_minBitrateChooser->Enable(true);
+		_compressionOptionsPanel->_avgBitrateChooser->Enable(true);
+		_compressionOptionsPanel->_maxBitrateChooser->Enable(true);
+		_compressionOptionsPanel->_vbrQualityChooser->Enable(true);
+		_compressionOptionsPanel->_mpegQualityChooser->Enable(false);
+		_compressionOptionsPanel->_compressionLevelChooser->Enable(false);
+		_compressionOptionsPanel->_modeChooser->Enable(false);
+		_compressionOptionsPanel->_blockSize->Enable(false);
+		_compressionOptionsPanel->_verifyChooser->Enable(false);
+		_compressionOptionsPanel->_silentChooser->Enable(true);
 	} else if (selectedCompression == wxT("FLAC")) {
-		this->_compressionOptionsPanel->_avgBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_blockSize->SetStringSelection(kDefaultFlacBlocksize);
-		this->_compressionOptionsPanel->_compressionLevelChooser->SetStringSelection(kDefaultFlacCompress);
-		this->_compressionOptionsPanel->_maxBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_minBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_modeChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_mpegQualityChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_silentChooser->SetValue(false);
-		this->_compressionOptionsPanel->_verifyChooser->SetValue(false);
-		this->_compressionOptionsPanel->_vbrQualityChooser->SetSelection(0);
+		_compressionOptionsPanel->_avgBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_blockSize->SetStringSelection(kDefaultFlacBlocksize);
+		_compressionOptionsPanel->_compressionLevelChooser->SetStringSelection(kDefaultFlacCompress);
+		_compressionOptionsPanel->_maxBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_minBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_modeChooser->SetSelection(0);
+		_compressionOptionsPanel->_mpegQualityChooser->SetSelection(0);
+		_compressionOptionsPanel->_silentChooser->SetValue(false);
+		_compressionOptionsPanel->_verifyChooser->SetValue(false);
+		_compressionOptionsPanel->_vbrQualityChooser->SetSelection(0);
 
-		this->_compressionOptionsPanel->_minBitrateChooser->Enable(false);
-		this->_compressionOptionsPanel->_avgBitrateChooser->Enable(false);
-		this->_compressionOptionsPanel->_maxBitrateChooser->Enable(false);
-		this->_compressionOptionsPanel->_vbrQualityChooser->Enable(false);
-		this->_compressionOptionsPanel->_mpegQualityChooser->Enable(false);
-		this->_compressionOptionsPanel->_compressionLevelChooser->Enable(true);
-		this->_compressionOptionsPanel->_modeChooser->Enable(false);
-		this->_compressionOptionsPanel->_blockSize->Enable(true);
-		this->_compressionOptionsPanel->_verifyChooser->Enable(true);
-		this->_compressionOptionsPanel->_silentChooser->Enable(true);
+		_compressionOptionsPanel->_minBitrateChooser->Enable(false);
+		_compressionOptionsPanel->_avgBitrateChooser->Enable(false);
+		_compressionOptionsPanel->_maxBitrateChooser->Enable(false);
+		_compressionOptionsPanel->_vbrQualityChooser->Enable(false);
+		_compressionOptionsPanel->_mpegQualityChooser->Enable(false);
+		_compressionOptionsPanel->_compressionLevelChooser->Enable(true);
+		_compressionOptionsPanel->_modeChooser->Enable(false);
+		_compressionOptionsPanel->_blockSize->Enable(true);
+		_compressionOptionsPanel->_verifyChooser->Enable(true);
+		_compressionOptionsPanel->_silentChooser->Enable(true);
 	} else {
-		this->_compressionOptionsPanel->_avgBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_blockSize->SetSelection(0);
-		this->_compressionOptionsPanel->_compressionLevelChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_maxBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_minBitrateChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_modeChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_mpegQualityChooser->SetSelection(0);
-		this->_compressionOptionsPanel->_silentChooser->SetValue(false);
-		this->_compressionOptionsPanel->_verifyChooser->SetValue(false);
-		this->_compressionOptionsPanel->_vbrQualityChooser->SetSelection(0);
+		_compressionOptionsPanel->_avgBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_blockSize->SetSelection(0);
+		_compressionOptionsPanel->_compressionLevelChooser->SetSelection(0);
+		_compressionOptionsPanel->_maxBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_minBitrateChooser->SetSelection(0);
+		_compressionOptionsPanel->_modeChooser->SetSelection(0);
+		_compressionOptionsPanel->_mpegQualityChooser->SetSelection(0);
+		_compressionOptionsPanel->_silentChooser->SetValue(false);
+		_compressionOptionsPanel->_verifyChooser->SetValue(false);
+		_compressionOptionsPanel->_vbrQualityChooser->SetSelection(0);
 
-		this->_compressionOptionsPanel->_minBitrateChooser->Enable(false);
-		this->_compressionOptionsPanel->_avgBitrateChooser->Enable(false);
-		this->_compressionOptionsPanel->_maxBitrateChooser->Enable(false);
-		this->_compressionOptionsPanel->_vbrQualityChooser->Enable(false);
-		this->_compressionOptionsPanel->_mpegQualityChooser->Enable(false);
-		this->_compressionOptionsPanel->_compressionLevelChooser->Enable(false);
-		this->_compressionOptionsPanel->_modeChooser->Enable(false);
-		this->_compressionOptionsPanel->_verifyChooser->Enable(false);
-		this->_compressionOptionsPanel->_silentChooser->Enable(false);
+		_compressionOptionsPanel->_minBitrateChooser->Enable(false);
+		_compressionOptionsPanel->_avgBitrateChooser->Enable(false);
+		_compressionOptionsPanel->_maxBitrateChooser->Enable(false);
+		_compressionOptionsPanel->_vbrQualityChooser->Enable(false);
+		_compressionOptionsPanel->_mpegQualityChooser->Enable(false);
+		_compressionOptionsPanel->_compressionLevelChooser->Enable(false);
+		_compressionOptionsPanel->_modeChooser->Enable(false);
+		_compressionOptionsPanel->_verifyChooser->Enable(false);
+		_compressionOptionsPanel->_silentChooser->Enable(false);
 	}
 }
 
 void CompressionOptions::OnCompressionModeChange(wxCommandEvent &event) {
-	wxString selectedMode = this->_modeChooser->GetStringSelection();
+	wxString selectedMode = _modeChooser->GetStringSelection();
 
 	if (selectedMode == wxT("VBR")) {
-		this->_avgBitrateChooser->SetSelection(0);
-		this->_maxBitrateChooser->SetStringSelection(kDefaultMP3VBRMaxBitrate);
-		this->_minBitrateChooser->SetStringSelection(kDefaultMP3VBRMinBitrate);
-		this->_vbrQualityChooser->SetStringSelection(kDefaultMP3VBRQuality);
+		_avgBitrateChooser->SetSelection(0);
+		_maxBitrateChooser->SetStringSelection(kDefaultMP3VBRMaxBitrate);
+		_minBitrateChooser->SetStringSelection(kDefaultMP3VBRMinBitrate);
+		_vbrQualityChooser->SetStringSelection(kDefaultMP3VBRQuality);
 
-		this->_avgBitrateChooser->Enable(false);
-		this->_minBitrateChooser->Enable(true);
-		this->_maxBitrateChooser->Enable(true);
-		this->_vbrQualityChooser->Enable(true);
+		_avgBitrateChooser->Enable(false);
+		_minBitrateChooser->Enable(true);
+		_maxBitrateChooser->Enable(true);
+		_vbrQualityChooser->Enable(true);
 	} else if (selectedMode == wxT("ABR")) {
-		this->_avgBitrateChooser->SetStringSelection(kDefaultMP3ABRAvgBitrate);
-		this->_maxBitrateChooser->SetSelection(0);
-		this->_minBitrateChooser->SetSelection(0);
-		this->_vbrQualityChooser->SetSelection(0);
+		_avgBitrateChooser->SetStringSelection(kDefaultMP3ABRAvgBitrate);
+		_maxBitrateChooser->SetSelection(0);
+		_minBitrateChooser->SetSelection(0);
+		_vbrQualityChooser->SetSelection(0);
 
-		this->_avgBitrateChooser->Enable(true);
-		this->_minBitrateChooser->Enable(true);
-		this->_maxBitrateChooser->Enable(true);
-		this->_vbrQualityChooser->Enable(false);
+		_avgBitrateChooser->Enable(true);
+		_minBitrateChooser->Enable(true);
+		_maxBitrateChooser->Enable(true);
+		_vbrQualityChooser->Enable(false);
 	} else {
-		this->_avgBitrateChooser->SetSelection(0);
-		this->_maxBitrateChooser->SetSelection(0);
-		this->_minBitrateChooser->SetSelection(0);
-		this->_vbrQualityChooser->SetSelection(0);
+		_avgBitrateChooser->SetSelection(0);
+		_maxBitrateChooser->SetSelection(0);
+		_minBitrateChooser->SetSelection(0);
+		_vbrQualityChooser->SetSelection(0);
 
-		this->_avgBitrateChooser->Enable(false);
-		this->_minBitrateChooser->Enable(false);
-		this->_maxBitrateChooser->Enable(false);
-		this->_vbrQualityChooser->Enable(false);
+		_avgBitrateChooser->Enable(false);
+		_minBitrateChooser->Enable(false);
+		_maxBitrateChooser->Enable(false);
+		_vbrQualityChooser->Enable(false);
 	}
 }
 
 void CompressionPanel::OnCompressionInputBrowse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this->_inputPanel->_text, this->_inputPanel->_isFileChooser, wxT("*.*"));
+	LocationDialog *dialog = new LocationDialog(_inputPanel->_text, _inputPanel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
 
 	dialog->_dialog->Destroy();
@@ -625,7 +625,7 @@ void CompressionPanel::OnCompressionInputBrowse(wxCommandEvent &event) {
 }
 
 void CompressionPanel::OnCompressionOutputBrowse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT("*.*"));
+	LocationDialog *dialog = new LocationDialog(_outputPanel->_text, _outputPanel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
 
 	dialog->_dialog->Destroy();
@@ -635,127 +635,127 @@ void CompressionPanel::OnCompressionOutputBrowse(wxCommandEvent &event) {
 /* ----- Extraction Events ----- */
 
 void ExtractionPanel::OnExtractionToolChange(wxCommandEvent &event) {
-	wxString selectedTool = this->_extractionToolChooserPanel->_choice->GetStringSelection();
+	wxString selectedTool = _extractionToolChooserPanel->_choice->GetStringSelection();
 
-	this->_input1Panel->_browse->Enable(true);
-	this->_input1Panel->_text->Enable(true);
-	this->_input1Panel->_isFileChooser = true;
-	this->_input1Panel->_text->Clear();
-	this->_input2Panel->_isFileChooser = true;
-	this->_input2Panel->_text->Clear();
-	this->_outputPanel->_isFileChooser = false;
-	this->_outputPanel->_text->Clear();
+	_input1Panel->_browse->Enable(true);
+	_input1Panel->_text->Enable(true);
+	_input1Panel->_isFileChooser = true;
+	_input1Panel->_text->Clear();
+	_input2Panel->_isFileChooser = true;
+	_input2Panel->_text->Clear();
+	_outputPanel->_isFileChooser = false;
+	_outputPanel->_text->Clear();
 
 	if (selectedTool == wxT("AGOS")) {
-		this->_input2Panel->_browse->Enable(false);
-		this->_input2Panel->_text->Enable(false);
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(false);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(false);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
+		_input2Panel->_browse->Enable(false);
+		_input2Panel->_text->Enable(false);
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_extractionOptionsPanel->_kyraAllFiles->Enable(false);
+		_extractionOptionsPanel->_kyraAmiga->Enable(false);
+		_extractionOptionsPanel->_kyraFilename->Enable(false);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(false);
+		_extractionOptionsPanel->_parallactionSmall->Enable(false);
 	} else if (selectedTool == wxT("Kyra")) {
-		this->_input2Panel->_browse->Enable(false);
-		this->_input2Panel->_text->Enable(false);
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(true);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(true);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(true);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(true);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
+		_input2Panel->_browse->Enable(false);
+		_input2Panel->_text->Enable(false);
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_extractionOptionsPanel->_kyraAllFiles->Enable(true);
+		_extractionOptionsPanel->_kyraAmiga->Enable(true);
+		_extractionOptionsPanel->_kyraFilename->Enable(true);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(true);
+		_extractionOptionsPanel->_parallactionSmall->Enable(false);
 	} else if (selectedTool == wxT("Loom (TG16)")) {
-		this->_input2Panel->_browse->Enable(false);
-		this->_input2Panel->_text->Enable(false);
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(false);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(false);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
+		_input2Panel->_browse->Enable(false);
+		_input2Panel->_text->Enable(false);
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_extractionOptionsPanel->_kyraAllFiles->Enable(false);
+		_extractionOptionsPanel->_kyraAmiga->Enable(false);
+		_extractionOptionsPanel->_kyraFilename->Enable(false);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(false);
+		_extractionOptionsPanel->_parallactionSmall->Enable(false);
 	} else if (selectedTool == wxT("Maniac Mansion (Apple)")) {
-		this->_input2Panel->_browse->Enable(true);
-		this->_input2Panel->_text->Enable(true);
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(false);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(false);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
+		_input2Panel->_browse->Enable(true);
+		_input2Panel->_text->Enable(true);
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_extractionOptionsPanel->_kyraAllFiles->Enable(false);
+		_extractionOptionsPanel->_kyraAmiga->Enable(false);
+		_extractionOptionsPanel->_kyraFilename->Enable(false);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(false);
+		_extractionOptionsPanel->_parallactionSmall->Enable(false);
 	} else if (selectedTool == wxT("Maniac Mansion (C64)")) {
-		this->_input2Panel->_browse->Enable(true);
-		this->_input2Panel->_text->Enable(true);
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(false);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(false);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
+		_input2Panel->_browse->Enable(true);
+		_input2Panel->_text->Enable(true);
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_extractionOptionsPanel->_kyraAllFiles->Enable(false);
+		_extractionOptionsPanel->_kyraAmiga->Enable(false);
+		_extractionOptionsPanel->_kyraFilename->Enable(false);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(false);
+		_extractionOptionsPanel->_parallactionSmall->Enable(false);
 	} else if (selectedTool == wxT("Maniac Mansion (NES)")) {
-		this->_input2Panel->_browse->Enable(false);
-		this->_input2Panel->_text->Enable(false);
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(false);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(false);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
+		_input2Panel->_browse->Enable(false);
+		_input2Panel->_text->Enable(false);
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_extractionOptionsPanel->_kyraAllFiles->Enable(false);
+		_extractionOptionsPanel->_kyraAmiga->Enable(false);
+		_extractionOptionsPanel->_kyraFilename->Enable(false);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(false);
+		_extractionOptionsPanel->_parallactionSmall->Enable(false);
 	} else if (selectedTool == wxT("Parallaction")) {
-		this->_input2Panel->_browse->Enable(false);
-		this->_input2Panel->_text->Enable(false);
-		this->_outputPanel->_browse->Enable(true);
-		this->_outputPanel->_text->Enable(true);
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(false);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(false);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(true);
+		_input2Panel->_browse->Enable(false);
+		_input2Panel->_text->Enable(false);
+		_outputPanel->_browse->Enable(true);
+		_outputPanel->_text->Enable(true);
+		_extractionOptionsPanel->_kyraAllFiles->Enable(false);
+		_extractionOptionsPanel->_kyraAmiga->Enable(false);
+		_extractionOptionsPanel->_kyraFilename->Enable(false);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(false);
+		_extractionOptionsPanel->_parallactionSmall->Enable(true);
 	} else if (selectedTool == wxT("SCUMM (MAC)")) {
-		this->_input2Panel->_browse->Enable(false);
-		this->_input2Panel->_text->Enable(false);
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(false);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(false);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
+		_input2Panel->_browse->Enable(false);
+		_input2Panel->_text->Enable(false);
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_extractionOptionsPanel->_kyraAllFiles->Enable(false);
+		_extractionOptionsPanel->_kyraAmiga->Enable(false);
+		_extractionOptionsPanel->_kyraFilename->Enable(false);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(false);
+		_extractionOptionsPanel->_parallactionSmall->Enable(false);
 	} else if (selectedTool == wxT("Zak McKracken (C64)")) {
-		this->_input2Panel->_browse->Enable(true);
-		this->_input2Panel->_text->Enable(true);
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(false);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(false);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
+		_input2Panel->_browse->Enable(true);
+		_input2Panel->_text->Enable(true);
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_extractionOptionsPanel->_kyraAllFiles->Enable(false);
+		_extractionOptionsPanel->_kyraAmiga->Enable(false);
+		_extractionOptionsPanel->_kyraFilename->Enable(false);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(false);
+		_extractionOptionsPanel->_parallactionSmall->Enable(false);
 	} else {
-		this->_input1Panel->_browse->Enable(false);
-		this->_input1Panel->_text->Enable(false);
-		this->_input1Panel->_isFileChooser = false;
-		this->_input2Panel->_browse->Enable(false);
-		this->_input2Panel->_text->Enable(false);
-		this->_input2Panel->_isFileChooser = false;
-		this->_outputPanel->_browse->Enable(false);
-		this->_outputPanel->_text->Enable(false);
-		this->_outputPanel->_isFileChooser = false;
-		this->_extractionOptionsPanel->_kyraAllFiles->Enable(false);
-		this->_extractionOptionsPanel->_kyraAmiga->Enable(false);
-		this->_extractionOptionsPanel->_kyraFilename->Enable(false);
-		this->_extractionOptionsPanel->_kyraSingleFile->Enable(false);
-		this->_extractionOptionsPanel->_parallactionSmall->Enable(false);
+		_input1Panel->_browse->Enable(false);
+		_input1Panel->_text->Enable(false);
+		_input1Panel->_isFileChooser = false;
+		_input2Panel->_browse->Enable(false);
+		_input2Panel->_text->Enable(false);
+		_input2Panel->_isFileChooser = false;
+		_outputPanel->_browse->Enable(false);
+		_outputPanel->_text->Enable(false);
+		_outputPanel->_isFileChooser = false;
+		_extractionOptionsPanel->_kyraAllFiles->Enable(false);
+		_extractionOptionsPanel->_kyraAmiga->Enable(false);
+		_extractionOptionsPanel->_kyraFilename->Enable(false);
+		_extractionOptionsPanel->_kyraSingleFile->Enable(false);
+		_extractionOptionsPanel->_parallactionSmall->Enable(false);
 	}
 }
 
 void ExtractionPanel::OnExtractionInput1Browse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this->_input1Panel->_text, this->_input1Panel->_isFileChooser, wxT("*.*"));
+	LocationDialog *dialog = new LocationDialog(_input1Panel->_text, _input1Panel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
 
 	dialog->_dialog->Destroy();
@@ -763,7 +763,7 @@ void ExtractionPanel::OnExtractionInput1Browse(wxCommandEvent &event) {
 }
 
 void ExtractionPanel::OnExtractionInput2Browse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this->_input2Panel->_text, this->_input2Panel->_isFileChooser, wxT("*.*"));
+	LocationDialog *dialog = new LocationDialog(_input2Panel->_text, _input2Panel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
 
 	dialog->_dialog->Destroy();
@@ -771,7 +771,7 @@ void ExtractionPanel::OnExtractionInput2Browse(wxCommandEvent &event) {
 }
 
 void ExtractionPanel::OnExtractionOutputBrowse(wxCommandEvent &event) {
-	LocationDialog *dialog = new LocationDialog(this->_outputPanel->_text, this->_outputPanel->_isFileChooser, wxT("*.*"));
+	LocationDialog *dialog = new LocationDialog(_outputPanel->_text, _outputPanel->_isFileChooser, wxT("*.*"));
 	dialog->prompt();
 
 	dialog->_dialog->Destroy();
@@ -781,33 +781,33 @@ void ExtractionPanel::OnExtractionOutputBrowse(wxCommandEvent &event) {
 /* ----- MainFrame Events ----- */
 
 void MainFrame::OnCompressionOptionsToggle(wxCommandEvent &event) {
-	this->_compressionTools->_compressionOptionsPanel->Show(!this->_compressionTools->_compressionOptionsPanel->IsShown());
+	_compressionTools->_compressionOptionsPanel->Show(!_compressionTools->_compressionOptionsPanel->IsShown());
 
-	this->_compressionTools->Fit();
-	this->_compressionTools->SetSize(this->_mainNotebook->GetPage(0)->GetSize());
+	_compressionTools->Fit();
+	_compressionTools->SetSize(_mainNotebook->GetPage(0)->GetSize());
 
-	this->_extractionTools->Fit();
-	this->_extractionTools->SetSize(this->_mainNotebook->GetPage(1)->GetSize());
+	_extractionTools->Fit();
+	_extractionTools->SetSize(_mainNotebook->GetPage(1)->GetSize());
 }
 
 void MainFrame::OnCompressionStart(wxCommandEvent &event) {
-	this->_compressionTools->_toolOutput->Clear();
+	_compressionTools->_toolOutput->Clear();
 
-	wxString selectedTool = kCompressionToolFilenames[this->_compressionTools->_compressionToolChooserBox->_choice->GetSelection()];
-	wxString compressionType = kCompressionTypeArguments[this->_compressionTools->_compressionTypeBox->_choice->GetSelection()];
-	wxString inputPath = this->_compressionTools->_inputPanel->_text->GetValue();
-	wxString outputPath = this->_compressionTools->_outputPanel->_text->GetValue();
+	wxString selectedTool = kCompressionToolFilenames[_compressionTools->_compressionToolChooserBox->_choice->GetSelection()];
+	wxString compressionType = kCompressionTypeArguments[_compressionTools->_compressionTypeBox->_choice->GetSelection()];
+	wxString inputPath = _compressionTools->_inputPanel->_text->GetValue();
+	wxString outputPath = _compressionTools->_outputPanel->_text->GetValue();
 
-	wxString avgBitrate = this->_compressionTools->_compressionOptionsPanel->_avgBitrateChooser->GetStringSelection();
-	wxString blocksize = this->_compressionTools->_compressionOptionsPanel->_blockSize->GetStringSelection();
-	wxString compressionLevel = this->_compressionTools->_compressionOptionsPanel->_compressionLevelChooser->GetStringSelection();
-	wxString maxBitrate = this->_compressionTools->_compressionOptionsPanel->_maxBitrateChooser->GetStringSelection();
-	wxString minBitrate = this->_compressionTools->_compressionOptionsPanel->_minBitrateChooser->GetStringSelection();
-	wxString mode = this->_compressionTools->_compressionOptionsPanel->_modeChooser->GetStringSelection();
-	wxString mpegQuality = this->_compressionTools->_compressionOptionsPanel->_mpegQualityChooser->GetStringSelection();
-	bool isSilent = this->_compressionTools->_compressionOptionsPanel->_silentChooser->IsChecked();
-	wxString vbrQuality = this->_compressionTools->_compressionOptionsPanel->_vbrQualityChooser->GetStringSelection();
-	bool isVerify = this->_compressionTools->_compressionOptionsPanel->_verifyChooser->IsChecked();
+	wxString avgBitrate = _compressionTools->_compressionOptionsPanel->_avgBitrateChooser->GetStringSelection();
+	wxString blocksize = _compressionTools->_compressionOptionsPanel->_blockSize->GetStringSelection();
+	wxString compressionLevel = _compressionTools->_compressionOptionsPanel->_compressionLevelChooser->GetStringSelection();
+	wxString maxBitrate = _compressionTools->_compressionOptionsPanel->_maxBitrateChooser->GetStringSelection();
+	wxString minBitrate = _compressionTools->_compressionOptionsPanel->_minBitrateChooser->GetStringSelection();
+	wxString mode = _compressionTools->_compressionOptionsPanel->_modeChooser->GetStringSelection();
+	wxString mpegQuality = _compressionTools->_compressionOptionsPanel->_mpegQualityChooser->GetStringSelection();
+	bool isSilent = _compressionTools->_compressionOptionsPanel->_silentChooser->IsChecked();
+	wxString vbrQuality = _compressionTools->_compressionOptionsPanel->_vbrQualityChooser->GetStringSelection();
+	bool isVerify = _compressionTools->_compressionOptionsPanel->_verifyChooser->IsChecked();
 
 	if (!inputPath.IsEmpty()) {
 		wxString commandString = wxT("");
@@ -918,28 +918,28 @@ void MainFrame::OnCompressionStart(wxCommandEvent &event) {
 			commandString += outputPath;
 		}
 
-		this->_compressionTools->_toolOutput->AppendText(commandString);
-		this->_compressionTools->_toolOutput->AppendText(wxT("\n\n"));
+		_compressionTools->_toolOutput->AppendText(commandString);
+		_compressionTools->_toolOutput->AppendText(wxT("\n\n"));
 
-		Process *command = new Process(this, this->_compressionTools->_toolOutput);
-		this->_processList.Add(command);
+		Process *command = new Process(this, _compressionTools->_toolOutput);
+		_processList.Add(command);
 		wxExecute(commandString, wxEXEC_ASYNC, command);
 	}
 }
 
 void MainFrame::OnExtractionStart(wxCommandEvent &event) {
-	this->_extractionTools->_toolOutput->Clear();
+	_extractionTools->_toolOutput->Clear();
 
-	wxString selectedTool = kExtractionToolFilenames[this->_extractionTools->_extractionToolChooserPanel->_choice->GetSelection()];
-	wxString input1Path = this->_extractionTools->_input1Panel->_text->GetValue();
-	wxString input2Path = this->_extractionTools->_input2Panel->_text->GetValue();
-	wxString outputPath = this->_extractionTools->_outputPanel->_text->GetValue();
+	wxString selectedTool = kExtractionToolFilenames[_extractionTools->_extractionToolChooserPanel->_choice->GetSelection()];
+	wxString input1Path = _extractionTools->_input1Panel->_text->GetValue();
+	wxString input2Path = _extractionTools->_input2Panel->_text->GetValue();
+	wxString outputPath = _extractionTools->_outputPanel->_text->GetValue();
 
-	bool kyraAllFiles = this->_extractionTools->_extractionOptionsPanel->_kyraAllFiles->IsChecked();
-	bool kyraAmiga = this->_extractionTools->_extractionOptionsPanel->_kyraAmiga->IsChecked();
-	wxString kyraFilename = this->_extractionTools->_extractionOptionsPanel->_kyraFilename->GetValue();
-	bool kyraSingleFile = this->_extractionTools->_extractionOptionsPanel->_kyraSingleFile->IsChecked();
-	bool parallactionSmall = this->_extractionTools->_extractionOptionsPanel->_parallactionSmall->IsChecked();
+	bool kyraAllFiles = _extractionTools->_extractionOptionsPanel->_kyraAllFiles->IsChecked();
+	bool kyraAmiga = _extractionTools->_extractionOptionsPanel->_kyraAmiga->IsChecked();
+	wxString kyraFilename = _extractionTools->_extractionOptionsPanel->_kyraFilename->GetValue();
+	bool kyraSingleFile = _extractionTools->_extractionOptionsPanel->_kyraSingleFile->IsChecked();
+	bool parallactionSmall = _extractionTools->_extractionOptionsPanel->_parallactionSmall->IsChecked();
 
 	if (!input1Path.IsEmpty()) {
 		wxString commandString = wxT("");
@@ -979,27 +979,27 @@ void MainFrame::OnExtractionStart(wxCommandEvent &event) {
 			commandString += outputPath;
 		}
 
-		this->_extractionTools->_toolOutput->AppendText(commandString);
-		this->_extractionTools->_toolOutput->AppendText(wxT("\n\n"));
+		_extractionTools->_toolOutput->AppendText(commandString);
+		_extractionTools->_toolOutput->AppendText(wxT("\n\n"));
 
-		Process *command = new Process(this, this->_extractionTools->_toolOutput);
-		this->_processList.Add(command);
+		Process *command = new Process(this, _extractionTools->_toolOutput);
+		_processList.Add(command);
 		wxExecute(commandString, wxEXEC_ASYNC, command);
 	}
 }
 
 void MainFrame::OnIdle(wxIdleEvent& event) {
-	for (size_t x = 0; x < this->_processList.GetCount(); x++) {
-		if (this->_processList[x]->HasInput()) {
+	for (size_t x = 0; x < _processList.GetCount(); x++) {
+		if (_processList[x]->HasInput()) {
 			event.RequestMore();
 		}
 
-		if (this->_processList[x]->HasInput()) {
+		if (_processList[x]->HasInput()) {
 			event.RequestMore();
 		}
 	}
 }
 
 void MainFrame::OnProcessTerminated(Process* process) {
-	this->_processList.Remove(process);
+	_processList.Remove(process);
 }
