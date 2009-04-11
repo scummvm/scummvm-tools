@@ -237,7 +237,7 @@ CompressionOptions::CompressionOptions(wxWindow *parent) : wxPanel(parent) {
 	_mpegQualityChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumValidQuality, kVaildQualityNames);
 
 	wxStaticText *compressionLevelLabel = new wxStaticText(grid, wxID_ANY, wxT("Compression Level"));
-	_compressionLevelChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumValidCompressionLevels, kVaildCompressionLevels);
+	_compressionLevelChooser = new wxChoice(grid, wxID_ANY, wxDefaultPosition, wxDefaultSize, kNumValidCompressionLevels, kValidCompressionLevels);
 
 	wxStaticText *modeLabel = new wxStaticText(grid, wxID_ANY, wxT("Compression Mode"));
 	_modeChooser = new wxChoice(grid, kCompressionModeChoice, wxDefaultPosition, wxDefaultSize, kNumMP3Modes, kMP3ModeNames);
