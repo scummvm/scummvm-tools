@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 
 	FILE *stk;
 
-	if (!(stk = fopen(argv[1], "r")))
+	if (!(stk = fopen(argv[1], "rb")))
 		error("Couldn't open file \"%s\"", argv[1]);
 
 	Chunk *chunks = readChunkList(stk);
@@ -100,7 +100,7 @@ void extractChunks(FILE *stk, Chunk *chunks) {
 		printf("Extracting \"%s\"\n", curChunk->name);
 
 		FILE *chunkFile;
-		if (!(chunkFile = fopen(curChunk->name, "w")))
+		if (!(chunkFile = fopen(curChunk->name, "wb")))
 			extractError(stk, 0, chunks, "Couldn't write file");
 
 		if (fseek(stk, curChunk->offset, SEEK_SET) == -1)
