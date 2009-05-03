@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 	uint32 totSize = 0, extSize = 0, extComSize = 0;
 	int32 offset = -1;
 
-	if (!(f = fopen(argv[2], "r")))
+	if (!(f = fopen(argv[2], "rb")))
 		error("Couldn't open file \"%s\"", argv[2]);
 	totData = readFile(f, totSize);
 	fclose(f);
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
 
 		if (argc > n) {
 
-			if (!(f = fopen(argv[n], "r")))
+			if (!(f = fopen(argv[n], "rb")))
 				error("Couldn't open file \"%s\"", argv[n]);
 			extData = readFile(f, extSize);
 			fclose(f);
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
 			n++;
 
 			if (argc > n) {
-				if (!(f = fopen(argv[n], "r")))
+				if (!(f = fopen(argv[n], "rb")))
 					error("Couldn't open file \"%s\"", argv[n]);
 				extComData = readFile(f, extComSize);
 				fclose(f);
