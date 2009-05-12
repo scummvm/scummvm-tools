@@ -394,7 +394,9 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 			src++;
 			newCounter--;
 			if (newCounter == 0)
-				break;		}
+				break;
+		}
+		
 		if ((cmd & 1) != 0) { /* copy */
 			*dest++ = *src;
 			size++;
