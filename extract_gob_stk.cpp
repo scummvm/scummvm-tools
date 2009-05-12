@@ -350,7 +350,6 @@ byte *unpackData(byte *src, uint32 &size) {
 
 // Some LZ77-variant
 byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
-//	uint32 counter;
 	uint16 cmd;
 	byte tmpBuf[4114];
 	int16 off;
@@ -362,19 +361,29 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 	newCounter = compSize;
 	size = 0;
 
-    dummy1 = READ_LE_UINT32(src);
-	READ_LE_UINT16(src);
+    dummy1 = READ_LE_UINT16(src);
+	src+=2;
+	newCounter -= 2;
 
-//	counter = size = 32768;//READ_LE_UINT32(src);
+//  The 6 first bytes are grouped by 2 :
+//  - bytes 0&1 : if set to 0xFFFF, the real size is in bytes 2&3. Else : not understand
+//  - bytes 2&3 : Either the real size or 0x007D. Directly related to the size of the file.
+//  - bytes 4&5 : 0x0000 (files are small) ;)
+	if (dummy1 == 0xFFFF)
+		printf("Real size %d\n",READ_LE_UINT32(src));
+	else
+		printf("Unknown real size %xX %xX\n",dummy1>>8, dummy1&0x00FF);
+
+//	counter = size = READ_LE_UINT32(src);
 
 	for (int i = 0; i < 4078; i++)
 		tmpBuf[i] = 0x20;
 	tmpIndex = 4078;
 
-	src += 6; 
-	newCounter -= 6;
+	src += 4; 
+	newCounter -= 4;
 
-	byte *unpacked = new byte[500000];//[size];
+	byte *unpacked = new byte[500000];//[size] Replaced by dummy as real size is not always known;
 	byte *dest = unpacked;
 
 	cmd = 0;
