@@ -12,6 +12,7 @@ install:   all
 	mkdir -p $(SCUMMVMPATH)
 	mkdir -p $(SCUMMVMPATH)/tools
 	strip compress_agos.exe -o $(SCUMMVMPATH)/tools/compress_agos.exe
+	strip compress_gob.exe -o $(SCUMMVMPATH)/tools/compress_gob.exe
 	strip compress_kyra.exe -o $(SCUMMVMPATH)/tools/compress_kyra.exe
 	strip compress_queen.exe -o $(SCUMMVMPATH)/tools/compress_queen.exe
 	strip compress_saga.exe -o $(SCUMMVMPATH)/tools/compress_saga.exe

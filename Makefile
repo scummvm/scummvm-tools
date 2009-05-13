@@ -59,6 +59,7 @@ MODULE_DIRS := ./ utils/
 
 TARGETS := \
 	compress_agos$(EXEEXT) \
+	compress_gob$(EXEEXT) \
 	compress_kyra$(EXEEXT) \
 	compress_queen$(EXEEXT) \
 	compress_saga$(EXEEXT) \
@@ -116,6 +117,9 @@ bundle: $(TARGETS)
 compress_agos$(EXEEXT): compress_agos.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
+compress_gob$(EXEEXT): compress_gob.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
 compress_kyra$(EXEEXT): compress_kyra.o kyra_pak.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
@@ -170,6 +174,9 @@ extract_cine$(EXEEXT): extract_cine.o util.o
 extract_agos$(EXEEXT): extract_agos.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
+extract_gob_stk$(EXEEXT): extract_gob_stk.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
 extract_kyra$(EXEEXT): extract_kyra.o kyra_pak.o kyra_ins.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
@@ -195,9 +202,6 @@ extract_t7g_mac$(EXEEXT): extract_t7g_mac.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
-
-extract_gob_stk$(EXEEXT): extract_gob_stk.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 tools_gui$(EXEEXT): tools_gui.o
