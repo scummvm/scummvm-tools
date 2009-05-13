@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 	if (fread(signature, 1, 6, stk) < 6)
 		error("Unexpected EOF while reading signature in \"%s\"", argv[1]);
 	
-	if (strncmp(signature, "STK2.1", 6)==0)
+	if (strncmp(signature, "STK2.1", 6) == 0)
 	{
 		warning("Signature of new STK format (STK 2.1) detected in file \"%s\"", argv[1]);
 		fprintf(gobConf, "%s\n", confSTK21);
@@ -205,7 +205,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		// + 04 bytes : Start position of the File Section
 		// + 04 bytes : Compression flag (AFAIK : 0= uncompressed, 1= compressed)
 
-		if (fseek(stk, miscPos+(cpt*61), SEEK_SET)!=0)
+		if (fseek(stk, miscPos + (cpt * 61), SEEK_SET)!=0)
 			extractError(stk, gobConf, chunks, "Unable to locate Misc Section");
 		filenamePos = readUint32LE(stk);
 		
@@ -221,7 +221,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		compressFlag = readUint32LE(stk);
 
 		if (compressFlag == 1)
-			curChunk->packed=true;
+			curChunk->packed = true;
 		else {
 			if ((curChunk->size != decompSize) | (compressFlag != 0))
 			{
@@ -236,10 +236,10 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		// Filename are stored one after the other, separated by 0x00.
 		// Those are now long filenames, at the opposite of previous STK version.
 
-		if (fseek(stk, filenamePos, SEEK_SET)!=0)
+		if (fseek(stk, filenamePos, SEEK_SET) != 0)
 			extractError(stk, gobConf, chunks, "Unable to locate filename");
 		
-		if (fgets(curChunk->name, 64, stk)==0)
+		if (fgets(curChunk->name, 64, stk) == 0)
 			extractError(stk, gobConf, chunks, "Unable to read filename");
 
 		// Files
@@ -384,7 +384,7 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 	size = 0;
 
 	dummy1 = READ_LE_UINT16(src);
-	src+=2;
+	src += 2;
 	newCounter -= 2;
 
 //  The 6 first bytes are grouped by 2 :
@@ -392,9 +392,9 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 //  - bytes 2&3 : Either the real size or 0x007D. Directly related to the size of the file.
 //  - bytes 4&5 : 0x0000 (files are small) ;)
 	if (dummy1 == 0xFFFF)
-		printf("Real size %d\n",READ_LE_UINT32(src));
+		printf("Real size %d\n", READ_LE_UINT32(src));
 	else
-		printf("Unknown real size %xX %xX\n",dummy1>>8, dummy1&0x00FF);
+		printf("Unknown real size %xX %xX\n", dummy1>>8, dummy1 & 0x00FF);
 
 //	counter = size = READ_LE_UINT32(src);
 
@@ -429,9 +429,6 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 				break;
 			tmpIndex++;
 			tmpIndex %= 4096;
-//			counter--;
-//			if (counter == 0)
-//				break;
 		} else { /* copy string */
 
 			off = *src++;
@@ -443,16 +440,12 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 			for (int i = 0; i < len; i++) {
 				*dest++ = tmpBuf[(off + i) % 4096];
 				size++;
-//				if (--counter == 0)
-//					return unpacked;
-
 				tmpBuf[tmpIndex] = tmpBuf[(off + i) % 4096];
 				tmpIndex++;
 				tmpIndex %= 4096;
 			}
 			if (newCounter <= 0)
 				break;
-
 		}
 	}
 
