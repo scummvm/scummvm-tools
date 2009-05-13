@@ -21,6 +21,8 @@
  */
 
 #include "util.h"
+#define confSTK21 "STK21"
+#define confSTK10 "STK10"
 
 struct Chunk {
 	char name[64];
@@ -35,28 +37,39 @@ struct Chunk {
 };
 
 void extractError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg);
-Chunk *readChunkList(FILE *stk);
-Chunk *readChunkListV2(FILE *stk);
+Chunk *readChunkList(FILE *stk, FILE *gobConf);
+Chunk *readChunkListV2(FILE *stk, FILE *gobConf);
 void extractChunks(FILE *stk, Chunk *chunks);
 byte *unpackData(byte *src, uint32 &size);
 byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize);
 
 int main(int argc, char **argv) {
 	char signature[7];
+	char *outFilename;
+	char *tmpStr;
 	Chunk *chunks;
+	FILE *stk;
+	FILE *gobConf;
 
 	if ((argc < 2) || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-
 		printf("Usage: %s <file>\n\n", argv[0]);
 		printf("The files will be extracted into the current directory.\n");
-
 		return -1;
 	}
 
-	FILE *stk;
-
 	if (!(stk = fopen(argv[1], "rb")))
 		error("Couldn't open file \"%s\"", argv[1]);
+
+	outFilename = new char[strlen(argv[1])+5];
+	strcpy(outFilename, argv[1]);
+	tmpStr = strstr(outFilename, ".");
+	if (tmpStr != 0)
+		strncpy(tmpStr, ".gob\0", 5);
+	else
+		strcat(outFilename, ".gob\0");
+
+	if (!(gobConf = fopen(outFilename, "w")))
+		error("Couldn't create conf file \"/s\"", outFilename);
 
 	if (fread(signature, 1, 6, stk) < 6)
 		error("Unexpected EOF while reading signature in \"%s\"", argv[1]);
@@ -64,13 +77,16 @@ int main(int argc, char **argv) {
 	if (strncmp(signature, "STK2.1", 6)==0)
 	{
 		warning("Signature of new STK format (STK 2.1) detected in file \"%s\"", argv[1]);
-		chunks = readChunkListV2(stk);
+		fprintf(gobConf, "%s\n", confSTK21);
+		chunks = readChunkListV2(stk, gobConf);
 
 	} else {
+		fprintf(gobConf, "%s\n", confSTK10);
 		rewind(stk);
-		chunks = readChunkList(stk);
+		chunks = readChunkList(stk, gobConf);
 	}
-	
+
+	fclose(gobConf);
 	extractChunks(stk, chunks);
 	delete chunks;
 	fclose(stk);
@@ -87,7 +103,7 @@ void extractError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg) {
 	error(msg);
 }
 
-Chunk *readChunkList(FILE *stk) {
+Chunk *readChunkList(FILE *stk, FILE *gobConf) {
 	uint16 numDataChunks = readUint16LE(stk);
 	Chunk *chunks = new Chunk;
 	Chunk *curChunk = chunks;
@@ -95,7 +111,7 @@ Chunk *readChunkList(FILE *stk) {
 
 	while (numDataChunks-- > 0) {
 		if (fread(curChunk->name, 1, 13, stk) < 13)
-			extractError(stk, 0, chunks, "Unexpected EOF");
+			extractError(stk, gobConf, chunks, "Unexpected EOF");
 
 		curChunk->size = readUint32LE(stk);
 		curChunk->offset = readUint32LE(stk);
@@ -110,6 +126,9 @@ Chunk *readChunkList(FILE *stk) {
 			curChunk->preGob = true;
 		}
 
+		// Write the chunk info in the gob Conf file
+		fprintf(gobConf, "%s %d\n", curChunk->name, curChunk->packed?1:0);
+
 		if (numDataChunks > 0) {
 			curChunk->next = new Chunk;
 			curChunk = curChunk->next;
@@ -119,7 +138,7 @@ Chunk *readChunkList(FILE *stk) {
 	return chunks;
 }
 
-Chunk *readChunkListV2(FILE *stk) {
+Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	uint32 numDataChunks;
 	Chunk *chunks = new Chunk;
 	Chunk *curChunk = chunks;
@@ -144,12 +163,12 @@ Chunk *readChunkListV2(FILE *stk) {
 	// + 04 bytes : Start position of Filenames Section
 
 	if (fread(buffer, 1, 14, stk) < 14) 
-		extractError(stk, 0, chunks, "Unexpected EOF");
+		extractError(stk, gobConf, chunks, "Unexpected EOF");
 	buffer[14]='\0';
 	sprintf(debugStr, "File generated on %s by ", buffer);
 
 	if (fread(buffer, 1, 8, stk) < 8)
-		extractError(stk, 0, chunks, "Unexpected EOF");
+		extractError(stk, gobConf, chunks, "Unexpected EOF");
 	buffer[8] = '\0';
 	strcat(debugStr, buffer);
 	printf("%s\n",debugStr);
@@ -162,13 +181,13 @@ Chunk *readChunkListV2(FILE *stk) {
 	// + 04 bytes : Start position of Misc Section
 
 	if (fseek(stk, filenamePos, SEEK_SET)!=0)
-		extractError(stk, 0, chunks, "Unable to locate Filename Section");
+		extractError(stk, gobConf, chunks, "Unable to locate Filename Section");
 
 	numDataChunks = readUint32LE(stk);
 	miscPos = readUint32LE(stk);
 	
 	if (numDataChunks == 0)
-		extractError(stk, 0, chunks, "Empty ITK/STK !");
+		extractError(stk, gobConf, chunks, "Empty ITK/STK !");
 
 	while (numDataChunks-- > 0) {
 		// Misc
@@ -187,16 +206,16 @@ Chunk *readChunkListV2(FILE *stk) {
 		// + 04 bytes : Compression flag (AFAIK : 0= uncompressed, 1= compressed)
 
 		if (fseek(stk, miscPos+(cpt*61), SEEK_SET)!=0)
-			extractError(stk, 0, chunks, "Unable to locate Misc Section");
+			extractError(stk, gobConf, chunks, "Unable to locate Misc Section");
 		filenamePos = readUint32LE(stk);
 		
 		if (fread(buffer, 1, 36, stk) < 36)
-			extractError(stk, 0, chunks, "Unexpected EOF in Misc Section");
+			extractError(stk, gobConf, chunks, "Unexpected EOF in Misc Section");
 		curChunk->size = readUint32LE(stk);
 		decompSize = readUint32LE(stk);
 
 		if (fread(buffer, 1, 5, stk) < 5)
-			extractError(stk, 0, chunks, "Unexpected EOF in Misc Section");
+			extractError(stk, gobConf, chunks, "Unexpected EOF in Misc Section");
 
 		filePos = readUint32LE(stk);
 		compressFlag = readUint32LE(stk);
@@ -207,7 +226,7 @@ Chunk *readChunkListV2(FILE *stk) {
 			if ((curChunk->size != decompSize) | (compressFlag != 0))
 			{
 				sprintf(debugStr, "Unexpected value in compress flag : %d - Size : %d Uncompressed size : %d", compressFlag, curChunk->size, decompSize);
-				extractError(stk, 0, chunks, debugStr);
+				extractError(stk, gobConf, chunks, debugStr);
 			} else
 				curChunk->packed=false;
 		}
@@ -218,10 +237,10 @@ Chunk *readChunkListV2(FILE *stk) {
 		// Those are now long filenames, at the opposite of previous STK version.
 
 		if (fseek(stk, filenamePos, SEEK_SET)!=0)
-			extractError(stk, 0, chunks, "Unable to locate filename");
+			extractError(stk, gobConf, chunks, "Unable to locate filename");
 		
 		if (fgets(curChunk->name, 64, stk)==0)
-			extractError(stk, 0, chunks, "Unable to read filename");
+			extractError(stk, gobConf, chunks, "Unable to read filename");
 
 		// Files
 		// =====
@@ -231,6 +250,9 @@ Chunk *readChunkListV2(FILE *stk) {
 
 		curChunk->offset = filePos;
 		curChunk->preGob = false;
+
+		// Write the chunk info in the gob Conf file
+		fprintf(gobConf, "%s %d\n", curChunk->name, curChunk->packed?1:0);
 
 		if (numDataChunks > 0) {
 			curChunk->next = new Chunk;
@@ -361,7 +383,7 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 	newCounter = compSize;
 	size = 0;
 
-    dummy1 = READ_LE_UINT16(src);
+	dummy1 = READ_LE_UINT16(src);
 	src+=2;
 	newCounter -= 2;
 
