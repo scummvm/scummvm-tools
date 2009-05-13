@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+# Visual C++ Express 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_scumm_san", "compress_scumm_san.vcproj", "{1712DDB9-8BB1-4108-9A06-F86F28409B20}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_scumm_bun", "compress_scumm_bun.vcproj", "{C423ACAC-C398-4419-BA32-B77F6A8AC1F9}"
@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_sword2", "compress
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_touche", "compress_touche.vcproj", "{FF790984-B460-4B34-8471-26E66B8ECD4C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "degob", "degob.vcproj", "{C151022B-EAC8-4680-9018-C0A897F7F9C6}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dekyra", "dekyra.vcproj", "{0B9A669F-83C2-4AE4-841F-3B015713605C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "descumm", "descumm.vcproj", "{A95C647D-7CD0-47F9-8BFF-887E30533045}"
@@ -30,6 +32,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "encode_dxa", "encode_dxa.vcproj", "{D39F34DF-2FA5-4857-A9C3-1F9EC8C8468F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_agos", "extract_agos.vcproj", "{A59D7F94-4875-4337-8246-A28F21A1DF78}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_gob_stk", "extract_gob_stk.vcproj", "{7F599814-F7B1-4C4C-931C-04C05B0CA670}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_kyra", "extract_kyra.vcproj", "{5BCEC6FE-1EDD-464F-B09A-660C9B706AFD}"
 EndProject
@@ -145,6 +149,14 @@ Global
 		{F4B04E6F-5916-44DA-A957-E8FA789D2CBC}.Debug|Win32.Build.0 = Debug|Win32
 		{F4B04E6F-5916-44DA-A957-E8FA789D2CBC}.Release|Win32.ActiveCfg = Release|Win32
 		{F4B04E6F-5916-44DA-A957-E8FA789D2CBC}.Release|Win32.Build.0 = Release|Win32
+		{7F599814-F7B1-4C4C-931C-04C05B0CA670}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7F599814-F7B1-4C4C-931C-04C05B0CA670}.Debug|Win32.Build.0 = Debug|Win32
+		{7F599814-F7B1-4C4C-931C-04C05B0CA670}.Release|Win32.ActiveCfg = Release|Win32
+		{7F599814-F7B1-4C4C-931C-04C05B0CA670}.Release|Win32.Build.0 = Release|Win32
+		{C151022B-EAC8-4680-9018-C0A897F7F9C6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C151022B-EAC8-4680-9018-C0A897F7F9C6}.Debug|Win32.Build.0 = Debug|Win32
+		{C151022B-EAC8-4680-9018-C0A897F7F9C6}.Release|Win32.ActiveCfg = Release|Win32
+		{C151022B-EAC8-4680-9018-C0A897F7F9C6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
