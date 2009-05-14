@@ -64,6 +64,7 @@ int main(int argc, char **argv) {
 	outFilename = new char[strlen(argv[1]) + 5];
 	strcpy(outFilename, argv[1]);
 	tmpStr = strstr(outFilename, ".");
+
 	if (tmpStr != 0)
 		strncpy(tmpStr, ".stk\0", 5);
 	else
@@ -103,6 +104,7 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 // first read (signature, not yet used)
 	fscanf(gobConf, "%s", buffer);
 	fscanf(gobConf, "%s", buffer);
+
 	while (!feof(gobConf)) {
 		strcpy(curChunk->name, buffer);
 		fscanf(gobConf, "%s", buffer);
@@ -121,8 +123,7 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 	return chunks;
 }
 
-void *writeBody (FILE *stk, uint16 chunkCount, Chunk *chunks)
-{
+void *writeBody (FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	Chunk *curChunk = chunks;
 	FILE *src;
 	char buffer[4096];
@@ -136,16 +137,20 @@ void *writeBody (FILE *stk, uint16 chunkCount, Chunk *chunks)
 	for (;;) {
 		if (!(src = fopen(curChunk->name, "rb")))
 			error("Couldn't open conf file \"%s\"", curChunk->name);
+
 		curChunk->size = 0;
+
 		for (;;) {
-			count=fread(buffer, 1, 4096, src);
+			count = fread(buffer, 1, 4096, src);
 			fwrite(buffer, 1, count, stk);
 			curChunk->size += count;
+
 			if (count < 4096)
 				break;
 		}
 		printf("%s taille %d\n", curChunk->name, curChunk->size);
 		fclose(src);
+
 		if (curChunk->next != 0)
 			curChunk = curChunk->next;
 		else
@@ -154,8 +159,7 @@ void *writeBody (FILE *stk, uint16 chunkCount, Chunk *chunks)
 	return 0;
 }
 
-void *rewriteHeader (FILE *stk, uint16 chunkCount, Chunk *chunks)
-{
+void *rewriteHeader (FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	uint16 i;
 	char buffer[1024];
 	Chunk *curChunk = chunks;
@@ -176,9 +180,9 @@ void *rewriteHeader (FILE *stk, uint16 chunkCount, Chunk *chunks)
 	buffer[0] = chunkCount & 0xFF;
 	buffer[1] = chunkCount >> 8;
 	fwrite(buffer, 1, 2, stk);
+
 	// TODO : Implement STK21
-	for (;;)
-	{
+	for (;;) {
 		for (i = 0; i < 13; i++)
 			if (i < strlen(curChunk->name))
 				buffer[i] = curChunk->name[i];
