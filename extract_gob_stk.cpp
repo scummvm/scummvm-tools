@@ -60,17 +60,17 @@ int main(int argc, char **argv) {
 	if (!(stk = fopen(argv[1], "rb")))
 		error("Couldn't open file \"%s\"", argv[1]);
 
-	outFilename = new char[strlen(argv[1])+5];
-	strcpy(outFilename, argv[1]);
-	tmpStr = strstr(outFilename, ".");
+	outFilename = new char[strlen(argv[1]) + 5];
+	getFilename(argv[1], outFilename);
 
+	tmpStr = strstr(outFilename, ".");
 	if (tmpStr != 0)
-		strncpy(tmpStr, ".gob\0", 5);
+		strcpy(tmpStr, ".gob");
 	else
-		strcat(outFilename, ".gob\0");
+		strcat(outFilename, ".gob");
 
 	if (!(gobConf = fopen(outFilename, "w")))
-		error("Couldn't create conf file \"/s\"", outFilename);
+		error("Couldn't create config file \"%s\"", outFilename);
 
 	if (fread(signature, 1, 6, stk) < 6)
 		error("Unexpected EOF while reading signature in \"%s\"", argv[1]);
@@ -86,9 +86,12 @@ int main(int argc, char **argv) {
 	}
 
 	fclose(gobConf);
+
 	extractChunks(stk, chunks);
+
 	delete chunks;
 	fclose(stk);
+
 	return 0;
 }
 
@@ -117,7 +120,7 @@ Chunk *readChunkList(FILE *stk, FILE *gobConf) {
 		curChunk->packed = readByte(stk) != 0;
 		curChunk->preGob = false;
 
-// Geisha TOTs are compressed without having the flag set
+		// Geisha TOTs are compressed without having the flag set
 		fakeTotPtr = strstr(curChunk->name, "0OT");
 		if (fakeTotPtr != 0) {
 			strncpy(fakeTotPtr, "TOT", 3);
@@ -126,7 +129,7 @@ Chunk *readChunkList(FILE *stk, FILE *gobConf) {
 		}
 
 		// Write the chunk info in the gob Conf file
-		fprintf(gobConf, "%s %d\n", curChunk->name, curChunk->packed?1:0);
+		fprintf(gobConf, "%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
 
 		if (numDataChunks > 0) {
 			curChunk->next = new Chunk;
@@ -164,7 +167,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	if (fread(buffer, 1, 14, stk) < 14) 
 		extractError(stk, gobConf, chunks, "Unexpected EOF");
 
-	buffer[14]='\0';
+	buffer[14] = '\0';
 	sprintf(debugStr, "File generated on %s by ", buffer);
 
 	if (fread(buffer, 1, 8, stk) < 8)
@@ -206,7 +209,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		// + 04 bytes : Start position of the File Section
 		// + 04 bytes : Compression flag (AFAIK : 0= uncompressed, 1= compressed)
 
-		if (fseek(stk, miscPos + (cpt * 61), SEEK_SET)!=0)
+		if (fseek(stk, miscPos + (cpt * 61), SEEK_SET) != 0)
 			extractError(stk, gobConf, chunks, "Unable to locate Misc Section");
 		filenamePos = readUint32LE(stk);
 		
@@ -225,7 +228,9 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 			curChunk->packed = true;
 		} else {
 			if ((curChunk->size != decompSize) | (compressFlag != 0)) {
-				sprintf(debugStr, "Unexpected value in compress flag : %d - Size : %d Uncompressed size : %d", compressFlag, curChunk->size, decompSize);
+				sprintf(debugStr,
+						"Unexpected value in compress flag : %d - Size : %d Uncompressed size : %d",
+						compressFlag, curChunk->size, decompSize);
 				extractError(stk, gobConf, chunks, debugStr);
 			} else {
 				curChunk->packed=false;
@@ -253,7 +258,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		curChunk->preGob = false;
 
 		// Write the chunk info in the gob Conf file
-		fprintf(gobConf, "%s %d\n", curChunk->name, curChunk->packed?1:0);
+		fprintf(gobConf, "%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
 
 		if (numDataChunks > 0) {
 			curChunk->next = new Chunk;
