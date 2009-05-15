@@ -62,13 +62,13 @@ int main(int argc, char **argv) {
 		error("Couldn't open conf file \"%s\"", argv[1]);
 
 	outFilename = new char[strlen(argv[1]) + 5];
-	strcpy(outFilename, argv[1]);
-	tmpStr = strstr(outFilename, ".");
+	getFilename(argv[1], outFilename);
 
+	tmpStr = strstr(outFilename, ".");
 	if (tmpStr != 0)
-		strncpy(tmpStr, ".stk\0", 5);
+		strcpy(tmpStr, ".stk");
 	else
-		strcat(outFilename, ".stk\0");
+		strcat(outFilename, ".stk");
 
 	if (!(stk = fopen(outFilename, "wb")))
 		error("Couldn't create file \"%s\"", outFilename);
@@ -123,43 +123,37 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 	return chunks;
 }
 
-void *writeBody (FILE *stk, uint16 chunkCount, Chunk *chunks) {
+void *writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	Chunk *curChunk = chunks;
 	FILE *src;
 	char buffer[4096];
 	int count;
 
-	for (count = 0; count < 2 + (chunkCount * 22); count++) {
-		buffer[count] = '\0';
-	}
-	fwrite(buffer, 1, 2 + (chunkCount * 22), stk);
+	for (count = 0; count < 2 + (chunkCount * 22); count++)
+		fputc(0, stk);
 
-	for (;;) {
+	while (curChunk) {
 		if (!(src = fopen(curChunk->name, "rb")))
 			error("Couldn't open conf file \"%s\"", curChunk->name);
 
 		curChunk->size = 0;
 
-		for (;;) {
+		do {
 			count = fread(buffer, 1, 4096, src);
 			fwrite(buffer, 1, count, stk);
 			curChunk->size += count;
+		} while (count == 4096);
 
-			if (count < 4096)
-				break;
-		}
-		printf("%s taille %d\n", curChunk->name, curChunk->size);
+		printf("File: %s - Size: %d\n", curChunk->name, curChunk->size);
 		fclose(src);
 
-		if (curChunk->next != 0)
-			curChunk = curChunk->next;
-		else
-			break;
+		curChunk = curChunk->next;
 	}
+
 	return 0;
 }
 
-void *rewriteHeader (FILE *stk, uint16 chunkCount, Chunk *chunks) {
+void *rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	uint16 i;
 	char buffer[1024];
 	Chunk *curChunk = chunks;
@@ -182,7 +176,7 @@ void *rewriteHeader (FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	fwrite(buffer, 1, 2, stk);
 
 	// TODO : Implement STK21
-	for (;;) {
+	while (curChunk) {
 		for (i = 0; i < 13; i++)
 			if (i < strlen(curChunk->name))
 				buffer[i] = curChunk->name[i];
@@ -205,10 +199,8 @@ void *rewriteHeader (FILE *stk, uint16 chunkCount, Chunk *chunks) {
 		fwrite(buffer, 1, 9, stk);
 		filPos += curChunk->size;
 
-		if (curChunk->next != 0)
-			curChunk = curChunk->next;
-		else
-			break;
+		curChunk = curChunk->next;
 	}
+
 	return 0;
 }
