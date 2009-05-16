@@ -28,6 +28,7 @@
 #include <vorbis/vorbisenc.h>
 #endif
 #ifndef DISABLE_BUILTIN_FLAC
+#define FLAC__NO_DLL 1
 #include <FLAC/stream_encoder.h>
 #endif
 
