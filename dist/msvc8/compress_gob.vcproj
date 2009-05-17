@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
-	Name="compress_agos"
-	ProjectGUID="{4E9E6AA8-0A17-4DF3-992D-265EC9035AD8}"
-	RootNamespace="compress_agos"
+	Version="8,00"
+	Name="compress_gob"
+	ProjectGUID="{8C4BC409-2EEC-41F5-A017-972F38414289}"
+	RootNamespace="compress_gob"
 	Keyword="Win32Proj"
-	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -61,12 +60,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ogg_static.lib vorbis_static.lib vorbisenc_static.lib libFLAC_static.lib"
-				OutputFile="$(OutDir)/compress_agos.exe"
+				OutputFile="$(OutDir)/compress_gob.exe"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="libc.lib;libcmt.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/compress_agos.pdb"
+				ProgramDatabaseFile="$(OutDir)/compress_gob.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -135,8 +133,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ogg_static.lib vorbis_static.lib vorbisenc_static.lib libFLAC_static.lib"
-				OutputFile="$(OutDir)/compress_agos.exe"
+				OutputFile="$(OutDir)/compress_gob.exe"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="libc.lib"
 				SubSystem="1"
@@ -172,84 +169,8 @@
 	<References>
 	</References>
 	<Files>
-		<Filter
-			Name="utils"
-			>
-			<File
-				RelativePath="..\..\utils\adpcm.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\adpcm.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\audiostream.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\audiostream.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\file.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\file.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\md5.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\md5.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\pack-end.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\pack-start.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\stream.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\util.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\voc.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\voc.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\wave.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\utils\wave.h"
-				>
-			</File>
-		</Filter>
 		<File
-			RelativePath="..\..\compress.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\compress.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\compress_agos.cpp"
+			RelativePath="..\..\compress_gob.cpp"
 			>
 		</File>
 		<File

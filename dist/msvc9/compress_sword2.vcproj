@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/wd4996"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;DISABLE_BUILTIN_FLAC"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -120,7 +120,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/wd4996"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;DISABLE_BUILTIN_FLAC"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 			/>
