@@ -36,13 +36,14 @@ struct Chunk {
 };
 
 Chunk *readChunkConf (FILE *gobconf, uint16 &chunkCount);
-void *rewriteHeader (FILE *stk, uint16 chunkCount, Chunk *chunks);
-void *writeBody (FILE *stk, uint16 chunkcount, Chunk *chunks);
+void writeEmptyHeader (FILE *stk, uint16 chunkCount);
+void writeBody (FILE *stk, uint16 chunkcount, Chunk *chunks);
+uint32 writeBodyFile (FILE *stk, FILE *src);
+uint32 writeBodyPackFile (FILE *stk, FILE *src);
+void rewriteHeader (FILE *stk, uint16 chunkCount, Chunk *chunks);
+bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 &pos, uint8 &length);
 
-Chunk *readChunkList(FILE *stk, FILE *gobConf);
-
-void extractChunks(FILE *stk, Chunk *chunks);
-byte *unpackData(byte *src, uint32 &size);
+byte *packData(byte *src, uint32 &size);
 
 int main(int argc, char **argv) {
 	char *outFilename;
@@ -75,10 +76,12 @@ int main(int argc, char **argv) {
 
 	chunks = readChunkConf(gobConf, chunkCount);
 	fclose(gobConf);
-	
+
+	writeEmptyHeader (stk, chunkCount);
 	writeBody(stk, chunkCount, chunks);
 	rewriteHeader(stk, chunkCount, chunks);
 
+	fflush(stk);
 	delete chunks;
 	fclose(stk);
 	return 0;
@@ -103,8 +106,8 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 
 // first read (signature, not yet used)
 	fscanf(gobConf, "%s", buffer);
-	fscanf(gobConf, "%s", buffer);
 
+	fscanf(gobConf, "%s", buffer);
 	while (!feof(gobConf)) {
 		strcpy(curChunk->name, buffer);
 		fscanf(gobConf, "%s", buffer);
@@ -123,37 +126,65 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 	return chunks;
 }
 
-void *writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
-	Chunk *curChunk = chunks;
-	FILE *src;
-	char buffer[4096];
+void writeEmptyHeader (FILE *stk, uint16 chunkCount) {
 	int count;
 
+// Write empty header
 	for (count = 0; count < 2 + (chunkCount * 22); count++)
 		fputc(0, stk);
 
-	while (curChunk) {
+	return;
+}
+
+void writeBody (FILE *stk, uint16 chunkCount, Chunk *chunks) {
+	Chunk *curChunk = chunks;
+	FILE *src;
+	uint32 realSize;
+	int count;
+	char buffer[4096];
+	uint32 tmpSize;
+
+	while(curChunk) {
 		if (!(src = fopen(curChunk->name, "rb")))
 			error("Couldn't open conf file \"%s\"", curChunk->name);
 
-		curChunk->size = 0;
+		realSize = fileSize(src);
 
-		do {
-			count = fread(buffer, 1, 4096, src);
-			fwrite(buffer, 1, count, stk);
-			curChunk->size += count;
-		} while (count == 4096);
-
-		printf("File: %s - Size: %d\n", curChunk->name, curChunk->size);
+		if (curChunk->packed)
+			curChunk->size = writeBodyPackFile(stk, src);
+		else {
+			tmpSize = 0;
+			do {
+				count = fread(buffer, 1, 4096, src);
+				fwrite(buffer, 1, count, stk);
+				tmpSize += count;
+			} while (count == 4096);
+			curChunk->size = tmpSize;
+		}
+		
+//		printf("File: %s inside STK size: %d original size: %d\n", curChunk->name, curChunk->size, realSize);
 		fclose(src);
-
 		curChunk = curChunk->next;
 	}
-
-	return 0;
+	return;
 }
 
-void *rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
+uint32 writeBodyFile (FILE *stk, FILE *src) {
+	int count;
+	char buffer[4096];
+	uint32 tmpSize;
+
+	tmpSize = 0;
+	do {
+		count = fread(buffer, 1, 4096, src);
+		fwrite(buffer, 1, count, stk);
+		tmpSize += count;
+	} while (count == 4096);
+	return tmpSize;
+}
+
+
+void rewriteHeader (FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	uint16 i;
 	char buffer[1024];
 	Chunk *curChunk = chunks;
@@ -174,7 +205,6 @@ void *rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	buffer[0] = chunkCount & 0xFF;
 	buffer[1] = chunkCount >> 8;
 	fwrite(buffer, 1, 2, stk);
-
 	// TODO : Implement STK21
 	while (curChunk) {
 		for (i = 0; i < 13; i++)
@@ -193,14 +223,157 @@ void *rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 		buffer[6] = filPos >> 16;
 		buffer[7] = filPos >> 24;
 
-// Compression not yet implemented => always uncompressed
-//		buffer[8]=curChunk->packed?'\1':'\0';
-		buffer[8] = '\0';
+		buffer[8] = curChunk->packed ? 0x1 : 0x0;
+
 		fwrite(buffer, 1, 9, stk);
 		filPos += curChunk->size;
 
 		curChunk = curChunk->next;
 	}
+	return;
+}
 
-	return 0;
+// Some LZ77-variant
+uint32 writeBodyPackFile (FILE *stk, FILE *src) {
+	byte dico[4114];
+	byte writeBuffer[17];
+	uint32 counter;
+	uint16 dicoIndex;
+	uint32 unpackedIndex, size;
+	uint8 cmd;
+	uint8 buffIndex, cpt, i;
+	uint16 resultcheckpos;
+	byte resultchecklength;
+
+	size = fileSize(src);
+
+	byte *unpacked = new byte [size + 1];
+	for (int i = 0; i < 4096 - 18; i++)
+		dico[i] = 0x20;
+
+	fread(unpacked, 1, size, src);
+
+	writeBuffer[0] = size & 0xFF;
+	writeBuffer[1] = size >> 8;
+	writeBuffer[2] = size >> 16;
+	writeBuffer[3] = size >> 24;
+	fwrite(writeBuffer, 1, 4, stk);
+
+// TODO : check size, if too small, handle correctly
+
+	dicoIndex = 4078;
+	dico[dicoIndex] = unpacked[0];
+	dico[dicoIndex+1] = unpacked[1];
+	dico[dicoIndex+2] = unpacked[2];
+	dicoIndex += 3;
+
+//writeBuffer[0] is reserved for the command byte
+	writeBuffer[1] = unpacked[0];
+	writeBuffer[2] = unpacked[1];
+	writeBuffer[3] = unpacked[2];
+
+	counter = size - 3;
+	unpackedIndex = 3;
+	cpt = 3;
+	buffIndex = 4;
+	cmd = (1 << 3) - 1;
+
+	size=4;
+	resultcheckpos = 0;
+	resultchecklength = 0;
+
+	while (counter>0) {
+		if (!checkDico(unpacked, unpackedIndex, counter, dico, resultcheckpos, resultchecklength)) {
+			dico[dicoIndex] = unpacked[unpackedIndex];
+			writeBuffer[buffIndex] = unpacked[unpackedIndex];
+			cmd |= (1 << cpt);
+			unpackedIndex++;
+			dicoIndex = (dicoIndex + 1) % 4096;
+			buffIndex++;
+			counter--;
+		} else {
+// Copy the string in the dictionary
+			for (i=0; i < resultchecklength; i++)
+				dico[((dicoIndex + i) % 4096)] = dico[((resultcheckpos + i) % 4096)];
+
+// Write the copy string command
+			writeBuffer[buffIndex] = resultcheckpos & 0xFF;
+			writeBuffer[buffIndex + 1] = ((resultcheckpos & 0x0F00) >> 4) + (resultchecklength - 3);
+//			printf("ptr 0x%x cpt 0x%x -> 0x%x 0x%x\n", resultcheckpos, resultchecklength, (byte) writeBuffer[buffIndex], writeBuffer[buffIndex + 1]);
+
+			unpackedIndex += resultchecklength;
+			dicoIndex = (dicoIndex + resultchecklength) % 4096;
+			resultcheckpos = (resultcheckpos + resultchecklength) % 4096;
+
+			buffIndex += 2;
+			counter -= resultchecklength;
+		}
+
+
+		if ((cpt == 7) | (counter == 0)) {
+			writeBuffer[0] = cmd;
+			fwrite(writeBuffer, 1, buffIndex, stk);
+			size += buffIndex;
+			buffIndex = 1;
+			cmd = 0;
+			cpt = 0;
+		} else
+			cpt++;
+	}
+
+//	filDico = fopen("dico.gob", "wb");
+//	fwrite(dico, 1, 4114, filDico);
+//	fclose(filDico);
+
+	delete[] unpacked;
+	return size;
+}
+
+bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 &pos, uint8 &length) {
+	uint16 tmpPos, bestPos;
+	uint8 tmpLength, bestLength, i;
+//	FILE *filDico;
+
+	bestPos = 0;
+	bestLength = 0;
+
+	if (counter < 3)
+		return false;
+
+	for (tmpPos = 0; tmpPos < 0x1000; tmpPos++) {
+		tmpLength = 0;
+		for (i = 0; ((i < 8) & (i < counter)); i++)
+			if (unpacked[unpackedIndex + i] == dico[(tmpPos + i) % 4096])
+				tmpLength++;
+			else
+				break;
+		if (tmpLength > bestLength) {
+			bestLength = tmpLength;
+			bestPos = tmpPos;
+		}
+
+		if (bestLength == 8) 
+			break;
+	}
+
+	pos = bestPos;
+	length = bestLength;
+
+	if (bestLength > 2) {
+//		filDico = fopen("dico.gob", "wb");
+//		fwrite(dico, 1, 4114, filDico);
+//		fclose(filDico);
+//		printf("Found ");
+//		for (i = 0; i < bestLength; i++)
+//			printf("0x%x ", dico[(bestPos + i) % 4096]);
+//
+//		printf("while looking for ");
+//		for (i = 0; i < bestLength; i++)
+//			printf("0x%x ", unpacked[unpackedIndex + i]);
+//		printf("org pos 0x%x at dico pos 0x%x\n", unpackedIndex, bestPos);
+//
+		return true;
+	}
+	else
+		return false;
 }
