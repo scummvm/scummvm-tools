@@ -104,7 +104,8 @@ Compression Tools:
         compress_kyra
                 Used to compress The Legend of Kyrandia, The Legend of
                 Kyrandia: Hand of Fate and The Legend of Kyrandia: Malcolm's
-                Revenge audio files with MP3, Vorbis or FLAC.
+                Revenge, Lands of Lore: The Throne of Chaos audio files with
+                MP3, Vorbis or FLAC.
 
                 Examples of usage:
                 compress_kyra [params] GEMCUT.VRM inputdir/ outputdir/
