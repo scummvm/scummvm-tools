@@ -28,13 +28,8 @@ static void process(const char *infile, const char *output);
 static void processKyra3(const char *infile, const char *output);
 static bool detectKyra3File(const char *infile);
 
-#define OUTPUT_MP3 ".VO3"
-#define OUTPUT_OGG ".VOG"
-#define OUTPUT_FLAC ".VOF"
-
 #define TEMPFILE "TEMP.VOC"
 
-const char *outputExt = 0;
 static CompressMode gCompMode = kMP3Mode;
 
 int main(int argc, char *argv[]) {
@@ -62,19 +57,16 @@ int main(int argc, char *argv[]) {
 
 	switch (gCompMode) {
 	case kMP3Mode:
-		outputExt = OUTPUT_MP3;
 		tempEncoded = TEMP_MP3;
 		if (!process_mp3_parms(argc - 2, argv, i))
 			showhelp(argv[0]);
 		break;
 	case kVorbisMode:
-		outputExt = OUTPUT_OGG;
 		tempEncoded = TEMP_OGG;
 		if (!process_ogg_parms(argc - 2, argv, i))
 			showhelp(argv[0]);
 		break;
 	case kFlacMode:
-		outputExt = OUTPUT_FLAC;
 		tempEncoded = TEMP_FLAC;
 		if (!process_flac_parms(argc - 2, argv, i))
 			showhelp(argv[0]);
@@ -149,6 +141,41 @@ static bool hasSuffix(const char *str, const char *suf) {
 	return (scumm_stricmp(&str[off], suf) == 0);
 }
 
+static void changeFileExt(char *filename) {
+	char *str = filename + strlen(filename) - 4;
+
+	if (*str != '.')
+		error("Invalid filename '%s'", filename);
+
+	++str;
+
+	switch (gCompMode) {
+	case kMP3Mode:
+		*str++ = 'm';
+		*str++ = 'p';
+		*str++ = '3';
+		break;
+
+	case kVorbisMode:
+		*str++ = 'o';
+		*str++ = 'g';
+		*str++ = 'g';
+		break;
+
+	case kFlacMode:
+		*str++ = 'f';
+		*str++ = 'l';
+		*str++ = 'a';
+		break;
+
+	default:
+		error("Unknown compression mode");
+	}
+
+	*str = 0;
+}
+
+
 static void process(const char *infile, const char *outfile) {
 	PAKFile input, output;
 
@@ -162,7 +189,8 @@ static void process(const char *infile, const char *outfile) {
 	char outputName[32];
 
 	for (; list; list = list->next) {
-		if (!hasSuffix(list->filename, ".VOC"))
+		// Detect VOC file from content instead of extension. This is needed for Lands of Lore TLK files.
+		if (memcmp(list->data, "Creative Voice File", 19) != 0)
 			continue;
 
 		if (list->data[26] != 1) {
@@ -171,16 +199,24 @@ static void process(const char *infile, const char *outfile) {
 		}
 
 		input.outputFileAs(list->filename, TEMPFILE);
-		strncpy(outputName, list->filename, 32);
+		strncpy(outputName, list->filename, sizeof(outputName) - 5);
+		outputName[sizeof(outputName) - 5] = 0;
 
 		FILE *tempFile = fopen(TEMPFILE, "rb");
 		fseek(tempFile, 26, SEEK_CUR);
 		extractAndEncodeVOC(TEMP_RAW, tempFile, gCompMode);
 		fclose(tempFile);
 
-		char *vocStart = strstr(outputName, ".VOC");
-		for (unsigned int i = 0; i < strlen(outputExt); ++i)
-			vocStart[i] = outputExt[i];
+		if (hasSuffix(outputName, ".VOC")) {
+			// When a ".VOC" extension is present we will replace it with a extension
+			// based on the compression method used.
+			changeFileExt(outputName);
+		} else {
+			// When no ".VOC" extension is present we will just append a extension
+			// based on the compression method used.
+			strcat(outputName, ".VOC");
+			changeFileExt(outputName);
+		}
 
 		output.addFile(outputName, tempEncoded);
 
@@ -378,40 +414,6 @@ static void compressAUDFile(FILE *input, const char *outfile) {
 	encodeAudio(TEMP_RAW, true, header.freq, outfile, gCompMode);
 
 	unlink(TEMP_RAW);
-}
-
-static void changeFileExt(char *filename) {
-	char *str = filename + strlen(filename) - 4;
-
-	if (*str != '.')
-		error("Invalid filename '%s'", filename);
-
-	++str;
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		*str++ = 'm';
-		*str++ = 'p';
-		*str++ = '3';
-		break;
-
-	case kVorbisMode:
-		*str++ = 'o';
-		*str++ = 'g';
-		*str++ = 'g';
-		break;
-
-	case kFlacMode:
-		*str++ = 'f';
-		*str++ = 'l';
-		*str++ = 'a';
-		break;
-
-	default:
-		error("Unknown compression mode");
-	}
-
-	*str = 0;
 }
 
 struct DuplicatedFile {
