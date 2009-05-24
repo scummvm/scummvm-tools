@@ -142,7 +142,7 @@ public:
 	virtual uint32 size() const = 0;
 
 	virtual void seek(int32 offset, int whence = SEEK_SET) = 0;
-	
+
 	void skip(uint32 offset) { seek(offset, SEEK_CUR); }
 };
 

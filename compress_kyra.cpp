@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 	if (scumm_stricmp(inputFile, outputFile) == 0)
 		error("infile and outfile are the same file");
 
-	bool isKyra3 = detectKyra3File(inputFile); 
+	bool isKyra3 = detectKyra3File(inputFile);
 	if (!isKyra3)
 		process(inputFile, outputFile);
 	else

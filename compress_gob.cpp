@@ -111,7 +111,7 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 	while (!feof(gobConf)) {
 		strcpy(curChunk->name, buffer);
 		fscanf(gobConf, "%s", buffer);
-		if (strcmp(buffer, "1") == 0) 
+		if (strcmp(buffer, "1") == 0)
 			curChunk->packed = true;
 		else
 			curChunk->packed = false;
@@ -161,7 +161,7 @@ void writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 			} while (count == 4096);
 			curChunk->size = tmpSize;
 		}
-		
+
 //		printf("File: %s inside STK size: %d original size: %d\n", curChunk->name, curChunk->size, realSize);
 		fclose(src);
 		curChunk = curChunk->next;
@@ -195,7 +195,7 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 //	The structure of the header is the following :
 //+ 2 bytes : numbers of files archived in the .stk/.itk
 //	Then, for each files :
-//+ 13 bytes : the filename, terminated by '\0'. In original, there's 
+//+ 13 bytes : the filename, terminated by '\0'. In original, there's
 //  garbage after if the filename has not the maximum length
 //+ 4  bytes : size of the chunk
 //+ 4  bytes : start position of the chunk in the file
@@ -213,7 +213,7 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 			else
 				buffer[i] = '\0';
 		fwrite(buffer, 1, 13, stk);
-		
+
 		buffer[0] = curChunk->size;
 		buffer[1] = curChunk->size >> 8;
 		buffer[2] = curChunk->size >> 16;
@@ -352,7 +352,7 @@ bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, 
 			bestPos = tmpPos;
 		}
 
-		if (bestLength == 8) 
+		if (bestLength == 8)
 			break;
 	}
 

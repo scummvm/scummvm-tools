@@ -304,7 +304,7 @@ void Script::skipExpr(char stopToken) {
 
 			case 15:
 				skip(2);
-								
+
 			case 16:
 			case 26:
 			case 27:

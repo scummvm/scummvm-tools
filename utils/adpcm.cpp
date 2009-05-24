@@ -172,7 +172,7 @@ int ADPCMInputStream::readBufferMSIMA2(int16 *buffer, const int numSamples) {
 	for (samples = 0; samples < numSamples && !_stream->eos() && _stream->pos() < _endpos;) {
 		for (int channel = 0; channel < 2; channel++) {
 			data = _stream->readUint32LE();
-			
+
 			for (nibble = 0; nibble < 8; nibble++) {
 				byte k = ((data & 0xf0000000) >> 28);
 				WRITE_LE_UINT16(buffer + samples + channel + nibble * 2, decodeMSIMA(k));

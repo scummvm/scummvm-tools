@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
 	if (fread(signature, 1, 6, stk) < 6)
 		error("Unexpected EOF while reading signature in \"%s\"", argv[1]);
-	
+
 	if (strncmp(signature, "STK2.1", 6) == 0) {
 		warning("Signature of new STK format (STK 2.1) detected in file \"%s\"", argv[1]);
 		fprintf(gobConf, "%s\n", confSTK21);
@@ -109,7 +109,7 @@ Chunk *readChunkList(FILE *stk, FILE *gobConf) {
 	uint16 numDataChunks = readUint16LE(stk);
 	Chunk *chunks = new Chunk;
 	Chunk *curChunk = chunks;
-	char *fakeTotPtr; 
+	char *fakeTotPtr;
 
 	while (numDataChunks-- > 0) {
 		if (fread(curChunk->name, 1, 13, stk) < 13)
@@ -145,8 +145,8 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	Chunk *chunks = new Chunk;
 	Chunk *curChunk = chunks;
 
-//	char *fakeTotPtr; 
-	
+//	char *fakeTotPtr;
+
 	int cpt = 0;
 	char buffer[64];
 	char debugStr[256];
@@ -155,7 +155,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	uint32 filePos;
 	uint32 compressFlag;
 	uint32 decompSize;
-	
+
 	// Header (Signature already read)
 	// ======
 	// Structure of header is :
@@ -164,7 +164,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	// + 08 bytes : Name / acronym of STK/ITK creator
 	// + 04 bytes : Start position of Filenames Section
 
-	if (fread(buffer, 1, 14, stk) < 14) 
+	if (fread(buffer, 1, 14, stk) < 14)
 		extractError(stk, gobConf, chunks, "Unexpected EOF");
 
 	buffer[14] = '\0';
@@ -189,7 +189,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 
 	numDataChunks = readUint32LE(stk);
 	miscPos = readUint32LE(stk);
-	
+
 	if (numDataChunks == 0)
 		extractError(stk, gobConf, chunks, "Empty ITK/STK !");
 
@@ -212,7 +212,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		if (fseek(stk, miscPos + (cpt * 61), SEEK_SET) != 0)
 			extractError(stk, gobConf, chunks, "Unable to locate Misc Section");
 		filenamePos = readUint32LE(stk);
-		
+
 		if (fread(buffer, 1, 36, stk) < 36)
 			extractError(stk, gobConf, chunks, "Unexpected EOF in Misc Section");
 		curChunk->size = readUint32LE(stk);
@@ -244,7 +244,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 
 		if (fseek(stk, filenamePos, SEEK_SET) != 0)
 			extractError(stk, gobConf, chunks, "Unable to locate filename");
-		
+
 		if (fgets(curChunk->name, 64, stk) == 0)
 			extractError(stk, gobConf, chunks, "Unable to read filename");
 
@@ -330,7 +330,7 @@ byte *unpackData(byte *src, uint32 &size) {
 		tmpBuf[i] = 0x20;
 	tmpIndex = 4078;
 
-	src += 4; 
+	src += 4;
 
 	byte *unpacked = new byte[size];
 	byte *dest = unpacked;
@@ -406,7 +406,7 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 		tmpBuf[i] = 0x20;
 	tmpIndex = 4078;
 
-	src += 4; 
+	src += 4;
 	newCounter -= 4;
 
 	byte *unpacked = new byte[500000];//[size] Replaced by dummy as real size is not always known;
@@ -422,7 +422,7 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 			if (newCounter == 0)
 				break;
 		}
-		
+
 		if ((cmd & 1) != 0) { /* copy */
 			*dest++ = *src;
 			size++;

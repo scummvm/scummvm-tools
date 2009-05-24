@@ -225,7 +225,7 @@ bool PAKFile::addFile(const char *name, uint8 *data, uint32 size) {
 			error("entry '%s' already exists");
 			return false;
 		}
-		
+
 		if (memcmp(fileData, data, size) == 0)
 			return true;
 
@@ -268,8 +268,8 @@ bool PAKFile::linkFiles(const char *name, const char *linkTo) {
 		_links = entry;
 	else
 		_links->addEntry(entry);
-	
-	return true;	
+
+	return true;
 }
 
 static bool isInList(const char * const *linkList, const char *linkTo, const int maxSize) {
@@ -290,7 +290,7 @@ void PAKFile::generateLinkEntry() {
 	FILE *output = fopen("LINKLIST.TMP", "wb");
 	if (!output)
 		error("Couldn't open file 'LINKLIST.TMP'");
-	
+
 	const char **linkList = new const char *[countLinks];
 	int usedLinks = 0;
 
@@ -298,7 +298,7 @@ void PAKFile::generateLinkEntry() {
 	for (int i = 0; i < countLinks && entry; ++i, entry = entry->next) {
 		if (isInList(linkList, entry->linksTo, usedLinks))
 			continue;
-		
+
 		linkList[usedLinks++] = entry->linksTo;
 	}
 
@@ -306,7 +306,7 @@ void PAKFile::generateLinkEntry() {
 	writeUint32BE(output, usedLinks);
 	for (int i = 0; i < usedLinks; ++i) {
 		int count = 0;
-		entry = _links;		
+		entry = _links;
 		while (entry) {
 			if (scumm_stricmp(entry->linksTo, linkList[i]) == 0)
 				++count;

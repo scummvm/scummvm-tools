@@ -276,7 +276,7 @@ void ppdepack(byte* packed, byte* depacked, uint32 plen, uint32 unplen) {
 			/* and maybe a bigger offset */
 			if (get_bits(1) == 0)
 				offset = get_bits(7);
-			else 
+			else
 				offset = get_bits(n_bits);
 
 			do {

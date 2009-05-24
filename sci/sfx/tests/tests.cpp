@@ -9,14 +9,14 @@ static unsigned char song[] = {
 // PCM not present
 0,
 // channel defs
-0, 0x20, 0, 0x21, 0, 0, 0, 0, 
-0, 0,    0, 0,    0, 0, 0, 0, 
-0, 0,    0, 0,    0, 0, 0, 0, 
+0, 0x20, 0, 0x21, 0, 0, 0, 0,
+0, 0,    0, 0,    0, 0, 0, 0,
+0, 0,    0, 0,    0, 0, 0, 0,
 0, 0,    0, 0,    0, 0, 0, 0,
 // note on, wait, note off
 0xAA,
 0x90, 0xAA, 0xAA,
-0xAA, 
+0xAA,
 0x80, 0xAA, 0xAA,
 0xAA,
 0x91, 0xAA, 0xAA,
@@ -76,7 +76,7 @@ void testDeathListener()
 
 	song_iterator_add_death_listener(
 			it,
-			it, 
+			it,
 			(void (*)(void *, void*))DeathListenerCallback);
 
 	for (i=0; i < SONG_CMD_COUNT; i++)
@@ -97,12 +97,12 @@ void testMultipleDeathListeners()
 
 	song_iterator_add_death_listener(
 			it,
-			it, 
+			it,
 			(void (*)(void *, void*))DeathListenerCallback);
 
 	song_iterator_add_death_listener(
 			it,
-			it, 
+			it,
 			(void (*)(void *, void*))DeathListenerCallback);
 
 	for (i=0; i < SONG_CMD_COUNT; i++)
@@ -121,7 +121,7 @@ void testStopSong()
 {
 	TEST_SETUP();
 	SIMSG_SEND(it, SIMSG_STOP);
-	
+
 	message = songit_next(&it, &cmds, &result, IT_READER_MASK_ALL);
 	TESTEQUAL(SI_FINISHED, message);
 

@@ -66,7 +66,7 @@ static const char *objectField[] = {
 static bool decodeOpcode(int isV2) {
 	uint8 opcode;
 	unsigned int addr = _scriptData - _baseScriptData;
-	
+
 	opcode = fetchScriptByte();
 	if (opcode == 0) {
 		printf("[%04X] (FF) ", addr);
@@ -88,7 +88,7 @@ static bool decodeOpcode(int isV2) {
 				uint8 var = fetchScriptByte();
 				if (field >= 7) return false;
 				printf("LOAD localvars[%d], object[%d].%s", var, num, objectField[field]);
-			}		
+			}
 			break;
 		case 0x02: {
 				uint8 num = fetchScriptByte();
@@ -238,7 +238,7 @@ static bool decodeOpcode(int isV2) {
 		case 0x0F: {
 				uint8 num = fetchScriptByte();
 				uint8 field = fetchScriptByte();
-				int16 var = fetchScriptByte();				
+				int16 var = fetchScriptByte();
 				if (field >= 7) return false;
 				printf("SET object[%d].%s, localvars[%d]", num, objectField[field], var);
 			}
@@ -407,7 +407,7 @@ static bool decodeOpcode(int isV2) {
 				uint8 type = fetchScriptByte();
 				printf("ROTATE_PALETTE first_color=%d, end_color=%d, type=%d", firstColor, endColor, type);
 			}
-			break;			
+			break;
 		case 0x4F: {
 				printf("BREAK");
 			}
@@ -425,7 +425,7 @@ static bool decodeOpcode(int isV2) {
 				int16 color = fetchScriptWord();
 				printf("ADD_MESSAGE num=%d x=%d y=%d width=%d color=%d", num, x, y, width, color);
 			}
-			break;		
+			break;
 		case 0x52: {
 				uint8 var = fetchScriptByte();
 				uint8 type = fetchScriptByte();
@@ -478,12 +478,12 @@ static bool decodeOpcode(int isV2) {
 				int16 value = fetchScriptWord();
 				printf("SET zones[%d], %d", num, value);
 			}
-			break;			
+			break;
 		case 0x68: {
 				uint8 color = fetchScriptByte();
 				printf("SET_MENU_COLOR_2 %d", color);
 			}
-			break;		
+			break;
 		case 0x69: {
 				printf("ENABLE_PLAYER_INPUT");
 			}
@@ -514,7 +514,7 @@ static bool decodeOpcode(int isV2) {
 				printf("STOP_MUSIC");
 			}
 			break;
-		case 0x77: 
+		case 0x77:
 		case 0x78: {
 				uint8 frame = fetchScriptByte();
 				uint8 channel = fetchScriptByte();
@@ -550,7 +550,7 @@ static bool decodeOpcode(int isV2) {
 				int16 f = fetchScriptWord();
 				int16 g = fetchScriptWord();
 				printf("ADD_ANIM_SEQUENCE %d %d %d %d %d %d %d", a, b, c, d, e, f, g);
-			}			
+			}
 			break;
 		case 0x80:
 			assert(isV2); {
@@ -568,12 +568,12 @@ static bool decodeOpcode(int isV2) {
 				uint8 e = fetchScriptByte();
 				printf("OP_0x82 %d %d %d %d %d", a, b, c, d, e);
 			}
-			break;			
+			break;
 		case 0x83:
 			assert(isV2); {
 				uint8 a = fetchScriptByte();
 				uint8 b = fetchScriptByte();
-				printf("IS_ANIM_SEQUENCE_PLAYING %d %d", a, b);				
+				printf("IS_ANIM_SEQUENCE_PLAYING %d %d", a, b);
 			}
 			break;
 		case 0x84:
@@ -585,15 +585,15 @@ static bool decodeOpcode(int isV2) {
 		case 0x85:
 			assert(isV2); {
 				uint8 num = fetchScriptByte();
-				printf("JUMP GEQ LABEL_%d", num);	
+				printf("JUMP GEQ LABEL_%d", num);
 			}
-			break;	
+			break;
 		case 0x86:
 			assert(isV2); {
 				uint8 num = fetchScriptByte();
 				printf("JUMP L LABEL_%d", num);
 			}
-			break;		
+			break;
 		case 0x88:
 			assert(isV2); {
 				uint8 num = fetchScriptByte();
@@ -658,7 +658,7 @@ static bool decodeOpcode(int isV2) {
 			}
 			break;
 		case 0x9A:
-			assert(isV2); {				
+			assert(isV2); {
 				uint8 a = fetchScriptByte();
 				printf("OP_0x9A %d", a);
 			}
@@ -780,7 +780,7 @@ static void decodeRel(int isV2, const uint8 *data, int dataSize) {
 	if (num >= 256) {
 		printf("// Number of scripts (%d) in REL-file is too large (i.e. >= 256)\n\n", num);
 		return;
-	}	
+	}
 	for (i = 0; i < num; ++i) {
 		hdr[i].size = READ_BE_UINT16(data); data += 2;
 		hdr[i].param1 = READ_BE_UINT16(data); data += 2;
@@ -819,7 +819,7 @@ int main(int argc, char *argv[]) {
 		uint8 *data;
 		int dataSize, isV2;
 		DecodeFile decodeFile;
-		
+
 		if (strcmp(argv[1], "-prc") == 0) {
 			decodeFile = decodePrc;
 		}  else if (strcmp(argv[1], "-rel") == 0) {
@@ -827,7 +827,7 @@ int main(int argc, char *argv[]) {
 		} else {
 			return showUsage();
 		}
-		
+
 		if (strcmp(argv[2], "-v1") == 0) {
 			isV2 = 0;
 		}  else if (strcmp(argv[2], "-v2") == 0) {
@@ -835,7 +835,7 @@ int main(int argc, char *argv[]) {
 		} else {
 			return showUsage();
 		}
-		
+
 		fp = fopen(argv[3], "rb");
 		if (fp) {
 			fseek(fp, 0, SEEK_END);

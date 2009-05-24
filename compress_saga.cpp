@@ -173,7 +173,7 @@ bool detectFile(const char *inFileName) {
 					printf("Matched game: Inherit the Earth: Quest for the Orb\n");
 					return true;
 				}
-			} else {			// IHNM			
+			} else {			// IHNM
 				// Filename based detection, used in IHNM, as all its sound files have the
 				// same encoding
 

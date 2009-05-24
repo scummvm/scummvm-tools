@@ -126,7 +126,7 @@ static uint32 compress_sounds_directory(FILE *output, const struct SoundDirector
 	current_offset = 0;
 	for (i = 0; i < dir->count; ++i) {
 		temp_table[i].offset = current_offset;
-		sprintf(filename, dir->fmt, i);	
+		sprintf(filename, dir->fmt, i);
 		input = fopen(filepath, "rb");
 		if (input) {
 			temp_table[i].size = compress_file_wav(input, output);
@@ -405,7 +405,7 @@ static uint32 compress_audio_directory(FILE *output, int count, int index) {
 		temp_table[i].offset = current_offset;
 		switch (index) {
 		case 0: /* .wav */
-			sprintf(filepath, "%s/audio/%s", g_input_directory, audio_wav_fileslist[i]);	
+			sprintf(filepath, "%s/audio/%s", g_input_directory, audio_wav_fileslist[i]);
 			input = fopen(filepath, "rb");
 			if (!input) {
 				error("Can't open file '%s'", filepath);
@@ -414,7 +414,7 @@ static uint32 compress_audio_directory(FILE *output, int count, int index) {
 			fclose(input);
 			break;
 		case 1: /* .raw */
-			is_16LE = bsearch(audio_raw_fileslist[i], audio_raw_fileslist_16LE, 
+			is_16LE = bsearch(audio_raw_fileslist[i], audio_raw_fileslist_16LE,
 				ARRAYSIZE(audio_raw_fileslist_16LE), sizeof(const char *), cmp_helper) != NULL;
 			temp_table[i].offset = current_offset;
 			sprintf(filepath, "%s/audio/%s", g_input_directory, audio_raw_fileslist[i]);

@@ -794,7 +794,7 @@ int process_ogg_parms(int argc, char *argv[], int i) {
 			}
 
 			if (oggparms.minBitr < 8) {
-				oggparms.minBitr = 8;		
+				oggparms.minBitr = 8;
 			}
 
 			i++;

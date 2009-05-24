@@ -63,7 +63,7 @@ wxString kDefaultFlacBlocksize = wxT("1152");
 #  define wxFD_MULTIPLE wxMULTIPLE
 #endif
 
-/* Options available in the UI 
+/* Options available in the UI
  * In most cases, the "Names" filled in here will directly be provided in the UI
  * For the fields that have two options, the second option will be the one
  * passed on as a command line option, in other cases the Name will be directly
@@ -195,7 +195,7 @@ public:
 #endif
 
 /* This is just a wxFilePicker with the addition of a constructor
- * argument for picking directiories instead 
+ * argument for picking directiories instead
  */
 class IOChooser : public wxPanel {
 public:
@@ -223,7 +223,7 @@ public:
 /* ----- Compression ----- */
 
 /* The compression options, a panel containing the controls
- * for controlling the output of the tools 
+ * for controlling the output of the tools
  */
 class CompressionOptions : public wxPanel {
 public:

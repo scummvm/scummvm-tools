@@ -166,20 +166,20 @@ static void unpackFile(FILE *fp, const char *outDir) {
 		fileName[14] = '\0';
 		sprintf(filePath, "%s/%s", outDir, fileName);
 		FILE *fpOut = fopen(filePath, "wb");
-		
+
 		uint32 offset = readUint32BE(fp);
 		unsigned int packedSize = readUint32BE(fp);
 		unsigned int unpackedSize = readUint32BE(fp);
 		readUint32BE(fp);
 		unsigned int savedPos = ftell(fp);
-		
+
 		if (!fpOut) {
 			printf("ERROR: unable to open '%s' for writing\n", filePath);
 			continue;
 		}
-		printf("unpacking '%s' ... ", filePath);		
-		
-		fseek(fp, offset, SEEK_SET);		
+		printf("unpacking '%s' ... ", filePath);
+
+		fseek(fp, offset, SEEK_SET);
 		assert(unpackedSize >= packedSize);
 		uint8 *data = (uint8 *)calloc(unpackedSize, 1);
 		uint8 *packedData = (uint8 *)calloc(packedSize, 1);
@@ -197,7 +197,7 @@ static void unpackFile(FILE *fp, const char *outDir) {
 		fwrite(data, unpackedSize, 1, fpOut);
 		fclose(fpOut);
 		free(data);
-		
+
 		if (!status) {
 			printf("CRC ERROR");
 		} else {
@@ -210,11 +210,11 @@ static void unpackFile(FILE *fp, const char *outDir) {
 
 void fixVolCnfFileName(char *dst, const uint8 *src) {
 	char *ext, *end;
-	
+
 	memcpy(dst, src, 8);
 	src += 8;
-	dst[8] = 0;	
-	ext = strchr(dst, ' ');	
+	dst[8] = 0;
+	ext = strchr(dst, ' ');
 	if (!ext) {
 		ext = &dst[8];
 	}
@@ -231,13 +231,13 @@ void fixVolCnfFileName(char *dst, const uint8 *src) {
 	}
 }
 
-void unpackAllResourceFiles(const char *filename, const char *outDir) { 
+void unpackAllResourceFiles(const char *filename, const char *outDir) {
 	FILE *fp = fopen(filename, "rb");
 	if (!fp) {
 		printf("Unable to open file '%s'\n", filename);
 		exit(1);
 	}
-	
+
 	uint32 unpackedSize, packedSize;
 	{
 		char header[8];
@@ -292,7 +292,7 @@ int showUsage() {
 int main(int argc, char *argv[]) {
 	int i;
 	char tmp[512];
-	
+
 	if (argc == 3) {
 		strcpy(tmp, argv[1]);
 		for (i = 0; tmp[i] != 0; i++) {

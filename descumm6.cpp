@@ -1567,7 +1567,7 @@ void next_line_HE_V100(char *output) {
 		ext(output, "pp|faceActor");
 		break;
 
-	case 0x03: 
+	case 0x03:
 		ext(output, "x" "sortArray\0"
 				"\x86pppppw|sort,");
 		break;
@@ -2056,7 +2056,7 @@ void next_line_HE_V100(char *output) {
 	case 0x66:
 		ext(output, "|stopObjectCode");
 		break;
-	case 0x67: 
+	case 0x67:
 		ext(output, "p|localizeArrayToRoom");
 		break;
 	case 0x68:
@@ -5329,7 +5329,7 @@ void next_line_V67(char *output) {
 					"\x4Bs|msg,"
 					"\xFEp|begin,"
 					"\xFF|end");
-		} 
+		}
 		break;
 	case 0xB9:
 		if (g_options.heVersion)

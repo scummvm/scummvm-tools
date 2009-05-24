@@ -801,7 +801,7 @@ void Script_v2::o2_loadMult(FuncParams &params) {
 	// Statics
 	for (int i = 0; i < count1; i++, data += 14) {
 		int16 sSize;
-		
+
 		readExpr();
 		sSize = (int16) readUint16();
 		skip(sSize * 2);

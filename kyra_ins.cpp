@@ -47,7 +47,7 @@ private:
 };
 
 void FileExpanderSource::advSrcBitsBy1() {
-	_key >>= 1;		
+	_key >>= 1;
 	if (!--_bitsLeft) {
 		if (_dataPtr < _endofBuffer)
 			_key = ((*_dataPtr++) << 8 ) | (_key & 0xff);
@@ -75,7 +75,7 @@ uint16 FileExpanderSource::getKeyMasked(uint8 newIndex) {
 
 	if (_index > 8) {
 		newIndex = _index - 8;
-		res = (_key & 0xff) & mskTable[8];		
+		res = (_key & 0xff) & mskTable[8];
 		advSrcBitsByIndex(8);
 		_index = newIndex;
 		res |= (((_key & 0xff) & mskTable[_index]) << 8);
@@ -162,7 +162,7 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 		0x10, 0x11, 0x12, 0x00, 0x08, 0x07, 0x09, 0x06, 0x0A,
 		0x05, 0x0B, 0x04, 0x0C, 0x03, 0x0D, 0x02, 0x0E, 0x01, 0x0F
 	};
-	
+
 	memset(_tables[0], 0, 3914);
 
 	uint8 *d = dst;
@@ -187,10 +187,10 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 			tableSize0 = _src->getKeyMasked(5) + 257;
 			tableSize1 = _src->getKeyMasked(5) + 1;
 			memset(_tables[7], 0, 19);
-				
+
 			const uint8 *itbl = indexTable;
 			int numbytes = _src->getKeyMasked(4) + 4;
-			
+
 			while (numbytes--)
 				_tables[7][*itbl++] = _src->getKeyMasked(3);
 
@@ -211,7 +211,7 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 					uint8 tmpI = 0;
 					if (cmd == 16) {
 						cmd = _src->getKeyMasked(2) + 3;
-						tmpI = *(tmp - 1);							
+						tmpI = *(tmp - 1);
 					} else if (cmd == 17) {
 						cmd = _src->getKeyMasked(3) + 3;
 					} else {
@@ -226,7 +226,7 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 						error("decompression failure");
 				}
 			}
-				
+
 			memcpy(_tables[1], _tables[0] + tableSize0, tableSize1);
 			generateTables(0, 2, 3, tableSize0);
 			generateTables(1, 4, 5, tableSize1);
@@ -236,7 +236,7 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 			postprocess = false;
 			needrefresh = true;
 		} else if (mode == 0){
-			uint8 *d2 = _tables[0];			
+			uint8 *d2 = _tables[0];
 			memset(d2, 8, 144);
 			memset(d2 + 144, 9, 112);
 			memset(d2 + 256, 7, 24);
@@ -255,9 +255,9 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 
 		if (!postprocess)
 			continue;
-		
+
 		int16 cmd = 0;
-		
+
 		do  {
 			cmd = ((int16*) _tables[2])[_src->getKeyLower()];
 			_src->advSrcBitsByIndex(cmd < 0 ? calcCmdAndIndex(_tables[3], cmd) : _tables[0][cmd]);
@@ -318,8 +318,8 @@ void FileExpander::generateTables(uint8 srcIndex, uint8 dstIndex, uint8 dstIndex
 
 	const uint8 *s = tbl1;
 	memset(_tables16[0], 0, 32);
-	
-	for (int i = 0; i < cnt; i++) 
+
+	for (int i = 0; i < cnt; i++)
 		_tables16[0][(*s++)]++;
 
 	_tables16[1][1] = 0;
@@ -355,12 +355,12 @@ void FileExpander::generateTables(uint8 srcIndex, uint8 dstIndex, uint8 dstIndex
 		if (t > 0) {
 			uint16 v1 = *d;
 			uint16 v2 = 0;
-			
+
 			do {
 				v2 = (v2 << 1) | (v1 & 1);
 				v1 >>= 1;
 			} while (--t && v1);
-			
+
 			t++;
 			uint8 c1 = (v1 & 1);
 			while (t--) {
@@ -372,7 +372,7 @@ void FileExpander::generateTables(uint8 srcIndex, uint8 dstIndex, uint8 dstIndex
 			*d++ = v2;
 		} else {
 			d++;
-		}		
+		}
 	}
 
 	memset((void*) tbl2, 0, 512);
@@ -391,7 +391,7 @@ void FileExpander::generateTables(uint8 srcIndex, uint8 dstIndex, uint8 dstIndex
 		if (t && t < 9) {
 			inc = 1 << t;
 			uint16 o = *d;
-			
+
 			do {
 				s2[o] = cnt;
 				o += inc;
@@ -421,7 +421,7 @@ void FileExpander::generateTables(uint8 srcIndex, uint8 dstIndex, uint8 dstIndex
 			} while (--t);
 			*s2 = cnt;
 		}
-		d--;		
+		d--;
 	} while (--cnt >= 0);
 }
 
@@ -498,7 +498,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 		bytesleft -= cs;
 
 		fclose(file);
-		
+
 		pos += cs;
 		if (cs == size) {
 			if (!bytesleft) {
@@ -552,7 +552,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 			}
 
 			uint32 size = (i == a->lastFile) ? a->endOffset : fileSize(file);
-			
+
 			if (startFile) {
 				startFile = false;
 				pos = a->startOffset + kExecSize;
@@ -604,7 +604,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 							fseek(file, pos, SEEK_SET);
 						}
 					}
-				
+
 					snprintf(filename, 64, "%s.%03d", _baseFilename, i+1);
 
 					FILE *file2 = fopen(filename, "rb");
@@ -619,13 +619,13 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 				}
 
 				uint32 id = READ_LE_UINT32(hdr);
-				
+
 				if (id == 0x04034B50) {
 					if (hdr[8] != 8)
 						error("compression type not implemented");
 					insize = READ_LE_UINT32(hdr + 18);
 					outsize = READ_LE_UINT32(hdr + 22);
-			
+
 					uint16 filestrlen = READ_LE_UINT16(hdr + 26);
 					*(hdr + 30 + filestrlen) = 0;
 					strcpy(entryStr, (const char *)(hdr + 30));
@@ -643,7 +643,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 					if ((pos + insize) > size) {
 						// this is for files that are split between two archive files
 						inPart1 = size - pos;
-						inPart2 = insize - inPart1;				
+						inPart2 = insize - inPart1;
 						fread(inbuffer, 1, inPart1, file);
 					} else {
 						fread(inbuffer, 1, insize, file);

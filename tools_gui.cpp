@@ -141,7 +141,7 @@ void LocationDialog::prompt() {
 			_target->SetValue(wxT("\""));
 			_target->AppendText(filenames.Item(0));
 			_target->AppendText(wxT("\""));
-	
+
 			_target->SetInsertionPoint(0);
 		}
 	} else {
@@ -151,7 +151,7 @@ void LocationDialog::prompt() {
 			_target->SetValue(wxT("\""));
 			_target->AppendText(dialog->GetPath());
 			_target->AppendText(wxT("\""));
-	
+
 			_target->SetInsertionPoint(0);
 		}
 	}
@@ -169,7 +169,7 @@ bool FileDrop::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString &filenames)
 		_target->SetValue(wxT("\""));
 		_target->AppendText(filenames[0]);
 		_target->AppendText(wxT("\""));
-	
+
 		_target->SetInsertionPoint(0);
 	}
 
