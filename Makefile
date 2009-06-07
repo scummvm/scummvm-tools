@@ -207,6 +207,8 @@ extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 tools_gui$(EXEEXT): tools_gui.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs`
 
+sword2_clue$(EXEEXT): sword2_clue.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+ `pkg-config --libs gtk+-2.0`
 
 clean:
 	rm -f *.o utils/*.o $(TARGETS)
@@ -214,6 +216,8 @@ clean:
 tools_gui.o: tools_gui.cpp tools_gui.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c tools_gui.cpp -o tools_gui.o
 
+sword2_clue.o: sword2_clue.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `pkg-config --cflags gtk+-2.0` -c sword2_clue.cpp
 
 ######################################################################
 # The build rules follow - normally you should have no need to
