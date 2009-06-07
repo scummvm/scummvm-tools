@@ -1,4 +1,4 @@
-#include <iostream>
+#include <cstdio>
 #include <vector>
 
 using namespace std;
@@ -10,6 +10,6 @@ using namespace std;
 int main(int argc, char **argv) {
 	vector<Instruction*> v = Scumm6Parser().parseFile(argv[1]);
 	for (unsigned i = 0; i < v.size(); i++)
-		cout << v[i]->_addr << ": " << v[i]->_description << endl;
+		printf("%04x: %s\n", v[i]->_addr-8, v[i]->_description.c_str());
 	return 0;
 }

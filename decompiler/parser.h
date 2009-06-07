@@ -1,5 +1,5 @@
-#ifndef READER_H
-#define READER_H
+#ifndef PARSER_H
+#define PARSER_H
 
 
 #include <fstream>
@@ -13,69 +13,57 @@ using namespace std;
 
 
 #include "misc.h"
+#include "reader.h"
 #include "instruction.h"
-
-
-using namespace std;
-
-
-struct Reader {
-	virtual void readInstruction(ifstream &f, vector<Instruction*> &v, uint32 addr) = 0;
-};
-
-
-struct SimpleReader : public Reader {
-
-	string _description;
-	int _skip;
-
-	SimpleReader(string description, int skip=0) : _description(description), _skip(skip) {};
-
-	virtual void readInstruction(ifstream &f, vector<Instruction*> &v, uint32 addr) {
-		for (int i = 0; i < _skip; i++) {
-			char c = f.get();
-			printf("SKIPPED: 0x%x\n", (unsigned int) c);
-		}
-		v.push_back(new Instruction(_description, addr));
-	}
-};
-
-
-struct SubopcodeReader : public Reader {
-
-	Reader *_dispatchTable[256];
-
-	SubopcodeReader() {
-		memset(_dispatchTable, 0, sizeof(_dispatchTable));
-	}
-
-	void registerOpcode(uint8 opcode, Reader *reader) {
-		_dispatchTable[opcode] = reader;
-	}
-
-	void readInstruction(ifstream& f, vector<Instruction*> &v, uint32 addr) {
-		uint8 opcode = f.get();
-		Reader* reader = _dispatchTable[opcode];
-		assert(reader);
-		reader->readInstruction(f, v, addr);
-	}
-};
 
 
 struct Scumm6Parser {
 
-	Reader *_dispatchTable[256];
+	SubopcodeReader *_reader;
 
 	Scumm6Parser() {
-		memset(_dispatchTable, 0, sizeof(_dispatchTable));
-		_dispatchTable[0] = new SimpleReader("zero", 0);
-		_dispatchTable[1] = new SimpleReader("one", 1);
-		_dispatchTable[2] = new SimpleReader("two", 2);
-		SubopcodeReader *three = new SubopcodeReader();
-		three->registerOpcode(1, new SimpleReader("three/1", 1));
-		three->registerOpcode(2, new SimpleReader("three/2", 2));
-		_dispatchTable[3] = three;
-		_dispatchTable[4] = new SimpleReader("four", 4);
+		_reader = new SubopcodeReader();
+		_reader->registerOpcode(0x01, new SimpleReader("push", "w"));
+		_reader->registerOpcode(0x03, new SimpleReader("pushVar(v->s)", "w"));
+		_reader->registerOpcode(0x07, new SimpleReader("arrayRead", "w"));
+		_reader->registerOpcode(0x0e, new SimpleReader("=="));
+		_reader->registerOpcode(0x0f, new SimpleReader("!="));
+		_reader->registerOpcode(0x10, new SimpleReader(">"));
+		_reader->registerOpcode(0x12, new SimpleReader("<"));
+		_reader->registerOpcode(0x13, new SimpleReader(">="));
+		_reader->registerOpcode(0x14, new SimpleReader("+"));
+		_reader->registerOpcode(0x43, new SimpleReader("writeVar(s->v)", "w"));
+		_reader->registerOpcode(0x4f, new SimpleReader("varInc", "w"));
+		_reader->registerOpcode(0x5d, new SimpleReader("jumpIfNot", "w"));
+		_reader->registerOpcode(0x5e, new SimpleReader("startScript"));
+		_reader->registerOpcode(0x60, new SimpleReader("startObject"));
+		_reader->registerOpcode(0x66, new SimpleReader("stopObjectCode"));
+		_reader->registerOpcode(0x67, new SimpleReader("endCutscene"));
+		_reader->registerOpcode(0x68, new SimpleReader("cutscene"));
+		_reader->registerOpcode(0x6d, new SimpleReader("classOfIs"));
+		_reader->registerOpcode(0x72, new SimpleReader("getOwner"));
+		_reader->registerOpcode(0x73, new SimpleReader("jump", "w"));
+		_reader->registerOpcode(0x7c, new SimpleReader("stopScript"));
+		_reader->registerOpcode(0x7d, new SimpleReader("walkActorToObj"));
+		_reader->registerOpcode(0x7e, new SimpleReader("walkActorTo"));
+		_reader->registerOpcode(0x81, new SimpleReader("faceCutscene"));
+		_reader->registerOpcode(0x82, new SimpleReader("animateActor"));
+		_reader->registerOpcode(0x83, new SimpleReader("doSentence"));
+		_reader->registerOpcode(0x8d, new SimpleReader("getObjectX"));
+		_reader->registerOpcode(0x8e, new SimpleReader("getObjectY"));
+		_reader->registerOpcode(0xa3, new SimpleReader("getVerbEntryPoint"));
+		SubopcodeReader *wait = new SubopcodeReader();
+		wait->registerOpcode(168, new SimpleReader("wait_forActor", "w"));
+		_reader->registerOpcode(0xa9, wait);
+		_reader->registerOpcode(0xad, new SimpleReader("isAnyOf"));
+		_reader->registerOpcode(0xb0, new SimpleReader("delay"));
+		_reader->registerOpcode(0xb3, new SimpleReader("stopSentence"));
+
+		//		SubopcodeReader *three = new SubopcodeReader();
+		//		three->registerOpcode(1, new SimpleReader("three/1", 1));
+		//		three->registerOpcode(2, new SimpleReader("three/2", 2));
+		//		_reader->registerOpcode(3, three);
+		//		_reader->registerOpcode(4, new SimpleReader("four", 4));
 	}
 
 	void parseHeader(ifstream &f) {
@@ -98,7 +86,7 @@ struct Scumm6Parser {
 			uint16 minOffset = 65535;
 			for (uint8 code = f.get(); code != 0; code = f.get()) {
 				uint16 offset = read_le_uint16(f);
-				printf("%2X - %.4X\n", code, offset);
+				printf("%2x - %.4x\n", code, offset);
 				if (offset < minOffset)
 					minOffset = offset;
 			}
@@ -112,15 +100,9 @@ struct Scumm6Parser {
 		ifstream f;
 		f.open(filename, ios::binary);
 		parseHeader(f);
-		while (true) {
-			uint8 addr = f.tellg();
-			uint8 opcode = f.get();
-			if (f.eof())
-				return v;
-			Reader* reader = _dispatchTable[opcode];
-			assert(reader);
-			reader->readInstruction(f, v, addr);
-		}
+		while (_reader->readInstruction(f, v, f.tellg()))
+			;
+		return v;
 	}
 
 };
