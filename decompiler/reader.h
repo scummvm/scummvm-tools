@@ -21,6 +21,7 @@ using namespace std;
 struct Reader {
 	// return true if all went ok and we can safely read next afterwards
 	virtual bool readInstruction(ifstream &f, vector<Instruction*> &v, uint32 addr) = 0;
+	virtual ~Reader() {}
 };
 
 
