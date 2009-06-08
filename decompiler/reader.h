@@ -37,10 +37,23 @@ struct SimpleReader : public Reader {
 		description << _description;
 		for (uint32 i = 0; i < _format.size(); i++)
 			switch (_format[i]) {
-			case 'w':
+			case 'w': {
 				uint16 w = read_le_uint16(f);
 				description.setf(ios::hex, ios::basefield);
 				description << "_0x" << setfill('0') << setw(4) << w;
+				break;
+			}
+				/*			case 'b': {
+				uint8 b = f.get();
+				description.setf(ios::dec, ios::basefield);
+				description << "_0x" << setfill('0') << setw(2) << b;
+				break;
+				}*/
+			case 's':
+				description << "_\"";
+				for (char c = f.get(); c != 0; c = f.get())
+					description << c;
+				description << '"';
 				break;
 			}
 		v.push_back(new Instruction(description.str(), addr));
@@ -63,13 +76,14 @@ struct SubopcodeReader : public Reader {
 
 	bool readInstruction(ifstream& f, vector<Instruction*> &v, uint32 addr) {
 		uint8 opcode = f.get();
-		if (f.eof())
+		if (f.eof()) {
 			return false;
-		else if (!_dispatchTable[opcode]) {
+		} else if (!_dispatchTable[opcode]) {
 			printf("! unhandled opcode 0x%02x (%d) at address 0x%02x (%d)\n", opcode, opcode, addr, addr);
 			return false;
-		} else
+		} else {
 			return _dispatchTable[opcode]->readInstruction(f, v, addr);
+		}
 	}
 };
 
