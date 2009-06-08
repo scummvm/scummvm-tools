@@ -39,38 +39,49 @@ struct Chunk {
 void extractError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg);
 Chunk *readChunkList(FILE *stk, FILE *gobConf);
 Chunk *readChunkListV2(FILE *stk, FILE *gobConf);
-void extractChunks(FILE *stk, Chunk *chunks);
+void extractChunks(Filename *outpath, FILE *stk, Chunk *chunks);
 byte *unpackData(byte *src, uint32 &size);
 byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize);
 
 int main(int argc, char **argv) {
 	char signature[7];
-	char *outFilename;
-	char *tmpStr;
 	Chunk *chunks;
 	FILE *stk;
 	FILE *gobConf;
 
-	if ((argc < 2) || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-		printf("Usage: %s <file>\n\n", argv[0]);
-		printf("The files will be extracted into the current directory.\n");
-		return -1;
-	}
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	if (!(stk = fopen(argv[1], "rb")))
-		error("Couldn't open file \"%s\"", argv[1]);
+	Filename inpath, outpath;
 
-	outFilename = new char[strlen(argv[1]) + 5];
-	getFilename(argv[1], outFilename);
-
-	tmpStr = strstr(outFilename, ".");
-	if (tmpStr != 0)
-		strcpy(tmpStr, ".gob");
+	// Check if we should display some heplful text
+	parseHelpArguments(argv, argc);
+	
+	// Continuing with finding out output directory
+	// also make sure we skip those arguments
+	if (parseOutputArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
 	else
-		strcat(outFilename, ".gob");
+		// Standard output dir
+		outpath.setFullPath("out/");
 
-	if (!(gobConf = fopen(outFilename, "w")))
-		error("Couldn't create config file \"%s\"", outFilename);
+	// We only got one input file
+	if (last_arg == first_arg)
+		error("Only one input file expected!\n");
+
+	inpath.setFullPath(argv[first_arg]);
+
+	if (!(stk = fopen(inpath.getFullPath(), "rb")))
+		error("Couldn't open file \"%s\"", inpath.getFullPath());
+
+	if (inpath.empty())
+		outpath = inpath;
+	outpath.addExtension(".gob");
+
+	if (!(gobConf = fopen(outpath.getFullPath(), "w")))
+		error("Couldn't create config file \"%s\"", outpath.getFullPath());
 
 	if (fread(signature, 1, 6, stk) < 6)
 		error("Unexpected EOF while reading signature in \"%s\"", argv[1]);
@@ -87,7 +98,7 @@ int main(int argc, char **argv) {
 
 	fclose(gobConf);
 
-	extractChunks(stk, chunks);
+	extractChunks(&outpath, stk, chunks);
 
 	delete chunks;
 	fclose(stk);
@@ -270,7 +281,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	return chunks;
 }
 
-void extractChunks(FILE *stk, Chunk *chunks) {
+void extractChunks(Filename *outpath, FILE *stk, Chunk *chunks) {
 	Chunk *curChunk = chunks;
 	byte *unpackedData;
 
@@ -278,7 +289,8 @@ void extractChunks(FILE *stk, Chunk *chunks) {
 		printf("Extracting \"%s\"\n", curChunk->name);
 
 		FILE *chunkFile;
-		if (!(chunkFile = fopen(curChunk->name, "wb")))
+		outpath->setFullName(curChunk->name);
+		if (!(chunkFile = fopen(outpath->getFullPath(), "wb")))
 			extractError(stk, 0, chunks, "Couldn't write file");
 
 		if (fseek(stk, curChunk->offset, SEEK_SET) == -1)

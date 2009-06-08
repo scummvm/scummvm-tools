@@ -24,74 +24,87 @@
 #include "kyra_pak.h"
 #include "kyra_ins.h"
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] <file>\n", exename);
-
-	printf("\nParams:\n");
-	printf( "-o <filename>     Extract only <filename>\n"
-			"-x                Extract all files\n"
-			"-a                Extract files from the Amiga .PAK files\n"
-			"-2                Extract files from HoF installer files\n");
-
-	exit(2);
-}
-
 int main(int argc, char **argv) {
 	char inputPath[768];
 
-	if (argc < 2)
-		showhelp(argv[0]);
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	bool extractAll = false, extractOne = false, isAmiga = false, isHoFInstaller = false;
+	bool extractAll = true, extractOne = false, isAmiga = false, isHoFInstaller = false;
 	char singleFilename[256] = "";
-	int param;
 
-	for (param = 1; param < argc; param++) {
-		if (strcmp(argv[param], "-o") == 0) {
-			extractOne = true;
-			param++;
+	Filename outpath, inputpath;
 
-			if (param >= (argc - 1)) {
-				printf("You must supply a filename with -o\n");
-				printf("Example: %s -o ALGAE.CPS A_E.PAK\n", argv[0]);
+	// Check if we should display some heplful text
+	parseHelpArguments(argv, argc, "\n"
+		"Usage: %s [params] [-o output] <archivefile> [-o output]\n"
+		"Default output path is ./out/\n"
+		"nParams:\n"
+		"-e <filename>     Extract only <filename> from the archive, wiil be extracted \n"
+		"                  into the current directory.\n"
+		"-x                Extract all files (default)\n"
+		"-a                Extract files from the Amiga .PAK files\n"
+		"-2                Extract files from HoF installer files\n");
 
-				exit(-1);
-			} else {
-				strcpy(singleFilename, argv[param]);
-			}
-		} else if (strcmp(argv[param], "-x") == 0) {
+	int param = first_arg;
+
+	// Parse our own arguments
+	for(; param < last_arg; ++param) {
+		if (strcmp(argv[param], "-x") == 0) {
 			extractAll = true;
+			extractOne = false;
 		} else if (strcmp(argv[param], "-a") == 0) {
 			isAmiga = true;
 		} else if (strcmp(argv[param], "-2") == 0) {
 			isHoFInstaller = true;
+		} else if (strcmp(argv[param], "-n") == 0) {
+			extractOne = true;
+			extractAll = false;
+
+			++param;
+
+			if (param >= last_arg) {
+				error("No filename supplied to -n\nShould be used on the form: %s -n ALGAE.CPS -o out/ A_E.PAK");
+			} else {
+				strcpy(singleFilename, argv[param]);
+			}
+		} else {
+			break;
 		}
 	}
 
-	if (param > argc)
-		showhelp(argv[0]);
+	// Parse output argument
+	if (parseOutputArguments(&outpath, argv, argc, param))
+		param += 2;
+	else if (parseOutputArguments(&outpath, argv, argc, argc - 2))
+		last_arg -= 1;
+	else
+		outpath.setFullPath("out/");
 
+	// Extract files
+	if (first_arg != last_arg)
+		error("Expected only one input file.");
+
+	inputpath.setFullPath(argv[param]);
 	Extractor *extract = 0;
 	if (isHoFInstaller) {
-		extract = new HoFInstaller(argv[argc - 1]);
+		extract = new HoFInstaller(inputpath.getFullPath());
 	} else {
 		PAKFile *myfile = new PAKFile;
-		if (!myfile->loadFile(argv[argc - 1], isAmiga)) {
+		if (!myfile->loadFile(inputpath.getFullPath(), isAmiga)) {
 			delete myfile;
-			error("Couldn't load file '%s'", argv[argc - 1]);
+			error("Couldn't load file '%s'", inputpath.getFullPath());
 		}
 
 		extract = myfile;
 	}
 
-	getPath(argc[argv - 1], inputPath);
-
+	// Everything has been decided, do the actual extraction
 	if (extractAll) {
-		extract->outputAllFiles(inputPath);
+		extract->outputAllFiles(outpath.getFullPath());
 	} else if (extractOne) {
-		char outputFilename[1024];
-		snprintf(outputFilename, 1024, "%s/%s", inputPath, singleFilename);
-		extract->outputFileAs(singleFilename, outputFilename);
+		inputpath.setFullName(singleFilename);
+		extract->outputFileAs(singleFilename, inputpath.getFullPath());
 	} else {
 		extract->drawFileList();
 	}
@@ -99,4 +112,3 @@ int main(int argc, char **argv) {
 	delete extract;
 	return 0;
 }
-

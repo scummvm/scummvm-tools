@@ -158,7 +158,7 @@ FORCEINLINE uint16 READ_BE_UINT16(const void *ptr) {
 	return (b[0] << 8) + b[1];
 }
 FORCEINLINE uint32 READ_BE_UINT32(const void *ptr) {
-	const byte *b = (const byte*)ptr;
+	const byte *b = (const byte *)ptr;
 	return (b[0] << 24) + (b[1] << 16) + (b[2] << 8) + (b[3]);
 }
 FORCEINLINE void WRITE_BE_UINT16(void *ptr, uint16 value) {
@@ -204,7 +204,26 @@ void NORETURN_PRE error(const char *s, ...) NORETURN_POST;
 void warning(const char *s, ...);
 void debug(int level, const char *s, ...);
 void notice(const char *s, ...);
-void getPath(const char *fullpath, char *path);
-void getFilename(const char *fullpath, char *filename);
+
+struct Filename {
+	char _path[1024];
+
+	Filename(const char *path = "");
+
+	void setFullPath(const char *path);
+	Filename *setFullName(const char *name);
+	void addExtension(const char *ext);
+
+	bool empty() const;
+
+	const char *getFullPath() const;
+	const char *getFullName() const;
+	const char *getFullName(char *out) const;
+	const char *getPath(char *out) const;
+};
+
+void parseHelpArguments(const char * const argv[], int argc, const char *msg = NULL);
+bool parseOutputArguments(Filename *outputname, const char * const argv[], int argc, int start_arg);
+
 
 #endif

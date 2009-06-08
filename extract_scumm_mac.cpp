@@ -31,25 +31,34 @@ int main(int argc, char *argv[]) {
 	unsigned long file_record_off, file_record_len;
 	unsigned long file_off, file_len;
 	unsigned long data_file_len;
-	char fname[1024];
-	char inputPath[768];
 	char file_name[0x20];
 	char *buf;
 	unsigned long i;
 	int j;
 
-	if (argc != 2) {
-		printf("\nUsage: %s <file>\n", argv[0]);
-		printf("\nNote: Some Lucas Arts CDs appear to contains only an application.\n");
-		printf("They actually contain a seperate data file as an invisible file.\n");
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-		exit(2);
-	}
+	Filename outpath;
 
-	getPath(argv[argc - 1], inputPath);
+	// Check if we should display some heplful text
+	parseHelpArguments(argv, argc,
+		"\nUsage: %s [-o <output dir> = out/] <file>\n"
+		"\tSome Lucas Arts CDs appear to contains only an application.\n"
+		"\tThey actually contain a seperate data file as a hidden file.\n");
+	
+	// Continuing with finding out output directory
+	// also make sure we skip those arguments
+	if (parseOutputArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else
+		// Standard output dir
+		outpath.setFullPath("out/");
 
-	if ((ifp = fopen(argv[1], "rb")) == NULL) {
-		error("Could not open \'%s\'.", argv[1]);
+	if ((ifp = fopen(argv[first_arg], "rb")) == NULL) {
+		error("Could not open \'%s\'.", argv[first_arg]);
 	}
 
 	/* Get the length of the data file to use for consistency checks */
@@ -62,13 +71,13 @@ int main(int argc, char *argv[]) {
 	/* Do a quick check to make sure the offset and length are good */
 	if (file_record_off + file_record_len > data_file_len) {
 		fclose(ifp);
-		error("\'%s\'. file records out of bounds.", argv[1]);
+		error("\'%s\'. file records out of bounds.", argv[first_arg]);
 	}
 
 	/* Do a little consistancy check on file_record_length */
 	if (file_record_len % 0x28) {
 		fclose(ifp);
-		error("\'%s\'. file record length not multiple of 40.", argv[1]);
+		error("\'%s\'. file record length not multiple of 40.", argv[first_arg]);
 	}
 
 	/* Extract the files */
@@ -85,7 +94,7 @@ int main(int argc, char *argv[]) {
 
 		if (!file_name[0]) {
 			fclose(ifp);
-			error("\'%s\'. file has no name.", argv[1]);
+			error("\'%s\'. file has no name.", argv[first_arg]);
 		}
 		printf("extracting \'%s\'", file_name);
 
@@ -109,7 +118,7 @@ int main(int argc, char *argv[]) {
 		if (j == 0x20) {
 			file_name[0x1f] = 0;
 			fprintf(stderr, "\nwarning: \'%s\'. file name not null terminated.\n", file_name);
-			fprintf(stderr, "data file \'%s\' may be not a file extract_scumm_mac can extract.\n", argv[1]);
+			fprintf(stderr, "data file \'%s\' may be not a file extract_scumm_mac can extract.\n", argv[first_arg]);
 		}
 
 		printf(", saving as \'%s\'\n", file_name);
@@ -117,7 +126,7 @@ int main(int argc, char *argv[]) {
 		/* Consistency check. make sure the file data is in the file */
 		if (file_off + file_len > data_file_len) {
 			fclose(ifp);
-			error("\'%s\'. file out of bounds.", argv[1]);
+			error("\'%s\'. file out of bounds.", argv[first_arg]);
 		}
 
 		/* Write a file */
@@ -126,8 +135,8 @@ int main(int argc, char *argv[]) {
 			error("Seek error.");
 		}
 
-		sprintf(fname, "%s/%s", inputPath, file_name);
-		ofp = fopen(fname, "wb");
+		outpath.setFullName(file_name);
+		ofp = fopen(outpath.getFullPath(), "wb");
 
 		if (!(buf = (char *)malloc(file_len))) {
 			fclose(ifp);

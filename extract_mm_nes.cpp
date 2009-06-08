@@ -1167,22 +1167,33 @@ static uint32 CheckROM(FILE *file) {
 
 int main(int argc, char **argv) {
 	FILE *input, *output;
-	char fname[1024];
-	char inputPath[768];
 	int i, j;
 	uint32 CRC;
 
-	if (argc < 2) {
-		printf("\nUsage: %s <infile.PRG>\n", argv[0]);
-		printf("\tSupported versions: USA, Europe, Sweden, France, Germany, Spain\n");
-		printf("\tJapanese version is NOT supported!\n");
-		exit(2);
-	}
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	getPath(argv[argc - 1], inputPath);
+	char fname[256];
+	Filename inpath, outpath;
 
-	if (!(input = fopen(argv[1], "rb")))
-		error("Unable to open file %s for input", argv[1]);
+	// Check if we should display some heplful text
+	parseHelpArguments(argv, argc,
+		"\nUsage: %s [-o <output dir> = out/] <infile.PRG>\n"
+		"\tSupported versions: USA, Europe, Sweden, France, Germany, Spain\n"
+		"\tJapanese version is NOT supported!\n");
+	
+	// Continuing with finding out output directory
+	// also make sure we skip those arguments
+	if (parseOutputArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else
+		// Standard output dir
+		outpath.setFullPath("out/");
+
+	if (!(input = fopen(argv[first_arg], "rb")))
+		error("Unable to open file %s for input", argv[first_arg]);
 
 	if ((readByte(input) == 'N') && (readByte(input) == 'E') && (readByte(input) == 'S') && (readByte(input) == 0x1A)) {
 		printf("You have specified an iNES formatted ROM image, which is not supported.\n"
@@ -1232,11 +1243,14 @@ int main(int argc, char **argv) {
 
 	for (i = 0; lfls[i].num != -1; i++) {
 		const struct t_lfl *lfl = &lfls[i];
-		sprintf(fname, "%s/%02i.LFL", inputPath, lfl->num);
-		output = fopen(fname, "wb");
+
+		sprintf(fname, "%02i.LFL", lfl->num);
+		outpath.setFullName(fname);
+		output = fopen(outpath.getFullPath(), "wb");
 		if (!output)
 			error("Unable to create %s", fname);
 		notice("Creating %s...", fname);
+		
 		for (j = 0; lfl->entries[j].type != NULL; j++) {
 			const struct t_lflentry *entry = &lfl->entries[j];
 			switch (entry->type->type) {
@@ -1301,11 +1315,13 @@ int main(int argc, char **argv) {
 		writeUint16LE(output, 0xF5D1);
 		fclose(output);
 	}
-	sprintf(fname, "%s/00.LFL", inputPath);
-	output = fopen(fname, "wb");
+
+	outpath.setFullName("00.LFL");
+	output = fopen(outpath.getFullPath(), "wb");
 	if (!output)
 		error("Unable to create index file");
-	notice("Creating %s...", fname);
+	notice("Creating 00.LFL...");
+
 	writeUint16LE(output, 0x4643);
 	extract_resource(input, output, &res_globdata.langs[ROMset][0], res_globdata.type);
 	for (i = 0; i < (int)sizeof(struct t_lflindex); i++)

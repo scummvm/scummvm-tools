@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "util.h"
+
 typedef unsigned int ULONG;
 typedef unsigned char UBYTE;
 
@@ -142,7 +144,7 @@ ULONG simon_decr_length(UBYTE *src, ULONG srclen) {
  * - call free() on ptr to free memory
  * - size of loaded file is available in global var 'filelen'
  */
-void *loadfile(char *name) {
+void *loadfile(const char *name) {
 	void *mem = NULL;
 	FILE *fd;
 
@@ -166,7 +168,7 @@ void *loadfile(char *name) {
  *   the file named by [filename]
  * - returns zero if failed, or non-zero if successful
  */
-int savefile(char *name, void *mem, size_t length) {
+int savefile(const char *name, void *mem, size_t length) {
 	unsigned int bytesWritten;
 
 	FILE *fd = fopen(name, "wb");
@@ -184,19 +186,32 @@ int savefile(char *name, void *mem, size_t length) {
 	return 1;
 }
 
-char filename[1024];
-
 int main(int argc, char *argv[]) {
-	int i;
+	int first_arg = 1;
+	int last_arg = argc;
 
-	if (argc < 2) {
-		printf("\nUsage: %s <file 1> ... <file n>\n", argv[0]);
-		exit(2);
-	}
+	Filename inpath, outpath;
 
-	for (i = 1; i < argc; i++) {
-		UBYTE *x = (UBYTE *) loadfile(argv[i]);
-		strcpy(filename, argv[i]);
+	// Check if we should display some heplful text
+	parseHelpArguments(argv, argc);
+	
+	// Continuing with finding out output directory
+	// also make sure we skip those arguments
+	if ( parseOutputArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else
+		// Standard output dir
+		outpath.setFullPath("out/");
+
+	// Loop through all input files
+	for (int parsed_args = first_arg; parsed_args <= last_arg; ++parsed_args) {
+		const char *filename = argv[parsed_args];
+		UBYTE *x = (UBYTE *) loadfile(filename);
+
+		inpath.setFullPath(filename);
+		outpath.setFullName(inpath.getFullName());
 
 		if (x) {
 			ULONG decrlen = simon_decr_length(x, (ULONG) filelen);
@@ -204,15 +219,17 @@ int main(int argc, char *argv[]) {
 
 			if (out) {
 				if (simon_decr(x, out, filelen)) {
-					strcat(filename, ".out");
-					savefile(filename, out, decrlen);
+					savefile(outpath.getFullPath(), out, decrlen);
 				}
 				else {
-					printf("%s: decrunch error\n", filename);
+					notice("%s: decrunch error\n", filename);
 				}
 
 				free((void *) x);
 			}
+		}
+		else {
+			notice("Could not load file %s\n", filename);
 		}
 	}
 

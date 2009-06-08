@@ -146,48 +146,96 @@ uint32 fileSize(FILE *fp) {
 	return sz;
 }
 
-void getPath(const char *fullpath, char *path) {
-	const char *p;
+Filename::Filename(const char *path) {
+	strcpy(_path, path);
+}
 
-	/* Find the last occurence of '/' or '\'
-	 * Everything before this point is the path
-	 * Everything after this point is the filename
-	 */
-	p = strrchr(fullpath, '/');
-	if (!p) {
-		p = strrchr(fullpath, '\\');
+void Filename::setFullPath(const char *path) {
+	strcpy(_path, path);
+}
 
-		if (!p) {
-			p = fullpath - 1;
-		}
+Filename *Filename::setFullName(const char *newname) {
+	char p[1024];
+	if (getPath(p)) {
+		strcat(p, newname);
+		strcpy(_path, p);
+		return this;
 	}
+	return NULL;
+}
 
-	/* The path is everything before p, unless the file is in the current
-	 * directory, in which case the path is '.'
-	 */
-	if (p < fullpath) {
-		strcpy(path, ".");
-	} else {
-		strncpy(path, fullpath, p - fullpath);
-		path[strlen(fullpath) - strlen(p)] = '\0';
+void Filename::addExtension(const char *ext) {
+	strcat(_path, ext);
+}
+
+bool Filename::empty() const {
+	return *_path == 0;
+}
+
+const char *Filename::getFullPath() const {
+	return _path;
+}
+
+const char *Filename::getFullName(char *out) const {
+	const char *slash;
+	if ((slash = strrchr(_path, '/')) || (slash = strrchr(_path, '\\'))) {
+		strcpy(out, slash + 1);
+		return out;
+	}
+	return NULL;
+}
+
+const char *Filename::getFullName() const {
+	const char *slash;
+	if ((slash = strrchr(_path, '/')) || (slash = strrchr(_path, '\\'))) {
+		return slash + 1;
+	}
+	return NULL;
+}
+
+const char *Filename::getPath(char *out) const {
+	const char *slash;
+	if ((slash = strrchr(_path, '/')) || (slash = strrchr(_path, '\\'))) {
+		int end = strlen(_path) - strlen(slash) + 1;
+		strncpy(out, _path, end);
+		out[end] = 0;
+		return out;
+	}
+	// If there was no '/', this was a relative path
+	strcpy(out, _path);
+	return out;
+}
+
+void parseHelpArguments(const char * const argv[], int argc, const char *msg) {
+	if (argc < 2 || strcmp(argv[1], "--help") == 0 || stricmp(argv[1], "-h") == 0) {
+		if (!msg) {
+			printf("\nUsage: %s [-o <output dir> = out/] <file 1> ... <file n>\n", argv[0]);
+		}
+		else {
+			printf(msg, argv[0]);
+		}
+		exit(2);
 	}
 }
 
-void getFilename(const char *fullpath, char *filename) {
-	const char *p;
+bool parseOutputArguments(Filename *outputname, const char * const argv[], int argc, int start_arg) {
+	char lastchr;
 
-	/* Find the last occurence of '/' or '\'
-	 * Everything before this point is the path
-	 * Everything after this point is the filename
-	 */
-	p = strrchr(fullpath, '/');
-	if (!p) {
-		p = strrchr(fullpath, '\\');
+	if (start_arg >= 0 && (strcmp(argv[start_arg], "-o") == 0 || strcmp(argv[start_arg], "--output") == 0)) {
+		/* It's a -o argument, can we check next arg? */
 
-		if (!p) {
-			p = fullpath - 1;
+		if (start_arg + 1 < argc) {
+			outputname->setFullPath(argv[start_arg + 1]);
+
+			/* Ensure last character is a /, this way we force directory output */
+			lastchr = outputname->getFullPath()[strlen(outputname->getFullPath()) - 1];
+			if (lastchr != '/' && lastchr != '\\') {
+				strcat(outputname->_path, "/");
+			}
+			return true;
+		} else {
+			error("Expected directory path after '-o' or '--output'.");
 		}
 	}
-
-	strcpy(filename, p + 1);
+	return false;
 }

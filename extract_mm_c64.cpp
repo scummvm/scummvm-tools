@@ -55,20 +55,37 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 
 int main (int argc, char **argv) {
 	FILE *input1, *input2, *output;
-	char fname[1024];
-	char inputPath[768];
 	int i, j;
 	unsigned short signature;
 
-	if (argc < 3) {
-		printf("\nUsage: %s <disk1.d64> <disk2.d64>\n", argv[0]);
-		exit(2);
-	}
-	getPath(argv[argc - 1], inputPath);
-	if (!(input1 = fopen(argv[1],"rb")))
-		error("Unable to open file %s for input!",argv[1]);
-	if (!(input2 = fopen(argv[2],"rb")))
-		error("Unable to open file %s for input!",argv[2]);
+	int first_arg = 1;
+	int last_arg = argc - 1;
+
+	char fname[256];
+	Filename inpath, outpath;
+
+	// Check if we should display some heplful text
+	parseHelpArguments(argv, argc,
+		"\nUsage: %s [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n");
+	
+	// Continuing with finding out output directory
+	// also make sure we skip those arguments
+	if (parseOutputArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else
+		// Standard output dir
+		outpath.setFullPath("out/");
+
+	if (last_arg - first_arg == 1)
+		error("Requires two disk files");
+
+	if (!(input1 = fopen(argv[first_arg],"rb")))
+		error("Unable to open file %s for input!",argv[first_arg]);
+	++first_arg;
+	if (!(input2 = fopen(argv[first_arg],"rb")))
+		error("Unable to open file %s for input!",argv[first_arg]);
 
 	/* check signature */
 	signature = readUint16LE(input1);
@@ -78,8 +95,8 @@ int main (int argc, char **argv) {
 	if (signature != 0x0132)
 		error("Signature not found in disk 2!");
 
-	sprintf(fname, "%s/00.LFL", inputPath);
-	if (!(output = fopen(fname, "wb")))
+	outpath.setFullName("00.LFL");
+	if (!(output = fopen(outpath.getFullPath(), "wb")))
 		error("Unable to create index file!");
 	notice("Creating 00.LFL...");
 
@@ -129,8 +146,9 @@ int main (int argc, char **argv) {
 		else
 			continue;
 
-		sprintf(fname, "%s/%02i.LFL", inputPath, i);
-		output = fopen(fname, "wb");
+		sprintf(fname, "%02i.LFL", i);
+		outpath.setFullName(fname);
+		output = fopen(outpath.getFullPath(), "wb");
 
 		if (output == NULL) {
 			error("Unable to create %s!", fname);

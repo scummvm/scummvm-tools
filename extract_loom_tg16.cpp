@@ -837,7 +837,8 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 				error("extract_resource(room) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 			if (rtype != 0x01)
 				error("extract_resource(room) - resource tag is incorrect");
-			off = ftell(output);
+
+			off = (uint16)ftell(output);
 			rlen = 0;
 			write_clong(output, 0, &rlen);
 			write_cword(output, 'OR', &rlen); /* RO - Room */
@@ -1226,24 +1227,35 @@ uint32 ISO_CRC (FILE *file) {
 int main (int argc, char **argv) {
 #ifdef MAKE_LFLS
 	FILE *input, *output;
-	char fname[1024];
 	int i, j;
-	char inputPath[768];
 #else
 	FILE *input;
 	int i;
 #endif
 	uint32 CRC;
 
-	if (argc < 2) {
-		printf("\nUsage: %s <code_##.ISO>\n", argv[0]);
-		return 1;
-	}
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	getPath(argv[argc - 1], inputPath);
-	input = fopen(argv[1], "rb");
+	char fname[256];
+	Filename inpath, outpath;
+
+	// Check if we should display some heplful text
+	parseHelpArguments(argv, argc);
+	
+	// Continuing with finding out output directory
+	// also make sure we skip those arguments
+	if (parseOutputArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else
+		// Standard output dir
+		outpath.setFullPath("out/");
+	
+	input = fopen(argv[first_arg], "rb");
 	if (!input)
-		error("unable to open file %s for input", argv[1]);
+		error("unable to open file %s for input", argv[first_arg]);
 
 	InitCRC();
 	CRC = ISO_CRC(input);
@@ -1267,10 +1279,14 @@ int main (int argc, char **argv) {
 
 	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
-		sprintf(fname, "%s/%02i.LFL", inputPath, lfl->num);
-		output = fopen(fname, "wb");
+		sprintf(fname, "%02i.LFL", lfl->num);
+
+		outpath.setFullName(fname);
+		output = fopen(outpath.getFullPath(), "wb");
+
 		if (!output)
 			error("unable to create %s", fname);
+
 		notice("Creating %s...", fname);
 		for (j = 0; lfl->entries[j] != NULL; j++) {
 			p_resource entry = lfl->entries[j];
@@ -1301,11 +1317,12 @@ int main (int argc, char **argv) {
 
 		fclose(output);
 	}
-	sprintf(fname, "%s/00.LFL", inputPath);
-	output = fopen(fname, "wb");
+
+	outpath.setFullName("00.LFL");
+	output = fopen(outpath.getFullPath(), "wb");
 	if (!output)
 		error("Unable to create index file!");
-	notice("Creating %s...", fname);
+	notice("Creating 00.LFL...");
 
 	lfl_index.num_rooms = NUM_ROOMS;
 	lfl_index.num_costumes = NUM_COSTUMES;
@@ -1354,27 +1371,28 @@ int main (int argc, char **argv) {
 
 	fclose(output);
 
-	sprintf(fname, "%s/97.LFL", inputPath);
-	output = fopen(fname, "wb");
+	outpath.setFullName("97.LFL");
+	output = fopen(outpath.getFullPath(), "wb");
 	if (!output)
 		error("Unable to create charset file 97.LFL");
-	notice("Creating %s...", fname);
+
+	notice("Creating 97.LFL...");
 	extract_resource(input, output, &res_charset);
 	fclose(output);
 
-	sprintf(fname, "%s/98.LFL", inputPath);
-	output = fopen(fname, "wb");
+	outpath.setFullName("98.LFL");
+	output = fopen(outpath.getFullPath(), "wb");
 	if (!output)
 		error("Unable to create charset file 98.LFL");
-	notice("Creating %s...", fname);
+	notice("Creating 98.LFL...");
 	extract_resource(input, output, &res_charset);
 	fclose(output);
 
-	sprintf(fname, "%s/99.LFL", inputPath);
-	output = fopen(fname, "wb");
+	outpath.setFullName("99.LFL");
+	output = fopen(outpath.getFullPath(), "wb");
 	if (!output)
 		error("Unable to create charset file 99.LFL");
-	notice("Creating %s...", fname);
+	notice("Creating 99.LFL...");
 	extract_resource(input, output, &res_charset);
 	fclose(output);
 

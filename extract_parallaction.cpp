@@ -41,17 +41,17 @@ Archive::~Archive() {
 	_file = NULL;
 }
 
-bool Archive::isPackedSubfile(byte* data) {
+bool Archive::isPackedSubfile(byte *data) {
 	return (data[0] == 'P' && data[1] == 'P' && data[2] == '2' && data[3] == '0');
 }
 
-uint32 Archive::getSizeOfPackedSubfile(byte* packedData, uint32 packedSize) {
-	uint32 size = *(uint32*)(packedData + packedSize - 4);
+uint32 Archive::getSizeOfPackedSubfile(byte *packedData, uint32 packedSize) {
+	uint32 size = *(uint32 *)(packedData + packedSize - 4);
 
 	return ((size & 0xFF00)) | ((size & 0xFF0000) >> 16);
 }
 
-int32 Archive::findSubfile(const char* filename) {
+int32 Archive::findSubfile(const char *filename) {
 	for (uint32 i = 0; i < _numFiles; i++) {
 		if (!scumm_stricmp(filename, _names[i])) return i;
 	}
@@ -59,7 +59,7 @@ int32 Archive::findSubfile(const char* filename) {
 	return -1;
 }
 
-void Archive::unpackSubfile(byte* packedData, uint32 packedSize) {
+void Archive::unpackSubfile(byte *packedData, uint32 packedSize) {
 	ppdepack(packedData, _fileData, packedSize, _fileSize);
 }
 
@@ -82,13 +82,13 @@ void Archive::openSubfile(uint32 index) {
 	uint32 srcOffset = _offsets[index];
 	uint32 srcSize = _sizes[index];
 
-	byte *srcData = (byte*)malloc(srcSize);
+	byte *srcData = (byte *)malloc(srcSize);
 	fseek(_file, srcOffset, SEEK_SET);
 	fread(srcData, 1, srcSize, _file);
 
 	if (isPackedSubfile(srcData)) {
 		_fileSize = getSizeOfPackedSubfile(srcData, srcSize);
-		_fileData = (byte*)malloc(_fileSize);
+		_fileData = (byte *)malloc(_fileSize);
 
 		unpackSubfile(srcData, srcSize);
 
@@ -99,7 +99,7 @@ void Archive::openSubfile(uint32 index) {
 	}
 }
 
-void Archive::openSubfile(const char* filename) {
+void Archive::openSubfile(const char *filename) {
 
 	int32 index = findSubfile(filename);
 
@@ -110,14 +110,14 @@ void Archive::openSubfile(const char* filename) {
 	return;
 }
 
-void Archive::readSubfile(byte* buf, uint32 size) {
+void Archive::readSubfile(byte *buf, uint32 size) {
 	assert(size + _filePos <= _fileSize);
 	memcpy(buf, _fileData + _filePos, size);
 	_filePos += size;
 	return;
 }
 
-void Archive::open(const char* filename, bool smallArchive) {
+void Archive::open(const char *filename, bool smallArchive) {
 	uint16 maxEntries = (smallArchive) ? 180 : 384;
 
 	_file = fopen(filename, "rb");
@@ -137,7 +137,7 @@ void Archive::open(const char* filename, bool smallArchive) {
 	_numFiles = i;
 
 	if (_numFiles < maxEntries) {
-		uint32* t = (uint32*)_names[i];
+		uint32 *t = (uint32*)_names[i];
 
 		for (; i < (uint32)maxEntries + 1; i++) {
 			if (*t != 0)
@@ -173,16 +173,16 @@ void Archive::open(const char* filename, bool smallArchive) {
 	return;
 }
 
-void Archive::dumpStructs(FILE* dump) {
+void Archive::dumpStructs(FILE *dump) {
 	char arcName[32];
 
-	char* s = strrchr(_name, '/');
+	char *s = strrchr(_name, '/');
 	if (s == NULL) {
 		s = strrchr(_name, '\\');
 		if (s == NULL) s = _name;
 	}
 
-	char* d = arcName;
+	char *d = arcName;
 
 	for (; *s; ) *d++ = toupper(*s++);
 	*d = '\0';
@@ -195,7 +195,7 @@ void Archive::dumpStructs(FILE* dump) {
 
 #define val(p) ((p)[0]<<16 | (p)[1] << 8 | (p)[2])
 
-uint32  depackedlen(byte* packed, uint32 plen) {
+uint32  depackedlen(byte *packed, uint32 plen) {
 	if (packed[0] != 'P' || packed[1] != 'P' ||
 		packed[2] != '2' || packed[3] != '0')
 			return 0; /* not a powerpacker file */
@@ -224,7 +224,7 @@ static uint32 get_bits(uint32 n) {
 	return result;
 }
 
-void ppdepack(byte* packed, byte* depacked, uint32 plen, uint32 unplen) {
+void ppdepack(byte *packed, byte *depacked, uint32 plen, uint32 unplen) {
 	byte *dest;
 	int n_bits;
 	int idx;
@@ -298,7 +298,7 @@ void ppdepack(byte* packed, byte* depacked, uint32 plen, uint32 unplen) {
 
 }
 
-void optDump(const char* file, const char* dir, bool smallArchive) {
+void optDump(const char *file, Filename *outpath, bool smallArchive) {
 	Archive arc;
 	arc.open(file, smallArchive);
 
@@ -306,41 +306,42 @@ void optDump(const char* file, const char* dir, bool smallArchive) {
 
 		arc.openSubfile(i);
 
-		char path[260];
-		strcpy(path, dir);
-
-		char *d = path + (strlen(path) - 1);
-		if (*d == '/')
-			d++;
-		else {
-			if (*d != '\\')
-				d++;
-			*d++ = '/';
-			*d = '\0';
-		}
+		char filename[260], * d = filename;
 
 		for (char *s = arc._names[i]; *s; s++, d++)
 			*d = *s == '/' ? '_' : *s;
-
 		*d = '\0';
 
-		FILE* ofile = fopen(path, "wb");
+		outpath->setFullName(d);
+
+		FILE *ofile = fopen(outpath->getFullPath(), "wb");
 		fwrite(arc._fileData, 1, arc._fileSize, ofile);
 		fclose(ofile);
 	}
 }
 
 int main(int argc, char *argv[]) {
+	Filename outpath;
 
-	if (argc < 3) {
-		printf("\nUsage: %s [--small] <file> <outputdir>\n", argv[0]);
-		exit(1);
-	}
+	parseHelpArguments(argv, argc,
+		"\nUsage: %s [--small] [-o <output dir> = out/] <file>\n");
 
-	if (!strcmp(argv[1], "--small")) {
-		optDump(argv[2], argv[3], true);
+	// Continuing with finding out output directory
+	// also make sure we skip those arguments
+	int arg = 1;
+	if (parseOutputArguments(&outpath, argv, argc, 1))
+		arg += 2;
+	else if (parseOutputArguments(&outpath, argv, argc, argc - 3))
+		arg -= 2;
+	else
+		// Standard output dir
+		outpath.setFullPath("out/");
+	
+
+	if (strcmp(argv[arg], "--small") == 0) {
+		optDump(argv[arg], &outpath, true);
 	} else {
-		optDump(argv[1], argv[2], false);
+		optDump(argv[arg], &outpath, false);
 	}
 
 	return 0;
