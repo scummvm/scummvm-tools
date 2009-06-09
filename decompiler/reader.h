@@ -53,7 +53,7 @@ struct SimpleReader : public Reader {
 				int len = _format[++i] - '0';
 				int16 w = len + (int16) read_le_uint16(f);
 				arguments.push_back(w);
-				ssret << ' ' << (w>=0?'+':'-') << w;
+				ssret << ' ' << (w>=0?"+":"") << w;
 				break;
 			}
 			case 's':
