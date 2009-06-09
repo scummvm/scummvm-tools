@@ -8,7 +8,7 @@ DEPS = $(patsubst %.cc,%.o,$(*.cc))
 decompiler: decompiler.o $(DEPS)
 	g++ -Wall -g $^ -o $@
 
-decompiler.o: decompiler.cc misc.h instruction.h parser.h reader.h
+decompiler.o: decompiler.cc misc.h instruction.h parser.h reader.h cfg.h
 	g++ -Wall -g -c decompiler.cc -o decompiler.o
 
 clean:

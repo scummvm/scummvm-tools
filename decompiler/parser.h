@@ -24,9 +24,10 @@ struct Scumm6Parser {
 	Scumm6Parser() {
 		_reader = new SubopcodeReader();
 		//		_reader->registerOpcode(0x00, new SimpleReader("pushByte", "b"));
-		_reader->registerOpcode(0x01, new SimpleReader("push", "w"));
-		_reader->registerOpcode(0x03, new SimpleReader("pushVar(v->s)", "w"));
+		_reader->registerOpcode(0x01, new SimpleReader("push", "W"));
+		_reader->registerOpcode(0x03, new SimpleReader("pushVar", "w"));
 		_reader->registerOpcode(0x07, new SimpleReader("wordArrayRead", "w"));
+		_reader->registerOpcode(0x0d, new SimpleReader("not"));
 		_reader->registerOpcode(0x0e, new SimpleReader("=="));
 		_reader->registerOpcode(0x0f, new SimpleReader("!="));
 		_reader->registerOpcode(0x10, new SimpleReader(">"));
@@ -34,10 +35,13 @@ struct Scumm6Parser {
 		_reader->registerOpcode(0x12, new SimpleReader("<="));
 		_reader->registerOpcode(0x13, new SimpleReader(">="));
 		_reader->registerOpcode(0x14, new SimpleReader("+"));
-		_reader->registerOpcode(0x43, new SimpleReader("writeVar(s->v)", "w"));
+		_reader->registerOpcode(0x43, new SimpleReader("writeVar", "w"));
 		_reader->registerOpcode(0x47, new SimpleReader("wordArrayWrite", "w"));
-		_reader->registerOpcode(0x4f, new SimpleReader("varInc", "w"));
-		_reader->registerOpcode(0x5d, new SimpleReader("jumpIfNot", "w"));
+		_reader->registerOpcode(0x4f, new SimpleReader("wordVarInc", "w"));
+		_reader->registerOpcode(0x5c, new CondJumpReader("jumpIf", "o3"));
+		_reader->registerOpcode(0x5d, new SeqReader(new SimpleReader("not"),
+													new CondJumpReader("jumpIf", "o3")));
+
 		_reader->registerOpcode(0x5e, new SimpleReader("startScript"));
 		_reader->registerOpcode(0x5f, new SimpleReader("startScriptQuick"));
 		_reader->registerOpcode(0x60, new SimpleReader("startObject"));
@@ -56,7 +60,7 @@ struct Scumm6Parser {
 		_reader->registerOpcode(0x6d, new SimpleReader("classOfIs"));
 		_reader->registerOpcode(0x6e, new SimpleReader("setClass"));
 		_reader->registerOpcode(0x72, new SimpleReader("getOwner"));
-		_reader->registerOpcode(0x73, new SimpleReader("jump", "w"));
+		_reader->registerOpcode(0x73, new JumpReader("jump", "o3"));
 		_reader->registerOpcode(0x7b, new SimpleReader("loadRoom"));
 		_reader->registerOpcode(0x7c, new SimpleReader("stopScript"));
 		_reader->registerOpcode(0x7d, new SimpleReader("walkActorToObj"));
@@ -80,7 +84,7 @@ struct Scumm6Parser {
 		actor->registerOpcode(87, new SimpleReader("actorOps.setTalkColor"));
 		actor->registerOpcode(95, new SimpleReader("actorOps.setIgnoreBoxes"));
 		actor->registerOpcode(99, new SimpleReader("actorOps.setTalkPos"));
-		actor->registerOpcode(0xc5, new SimpleReader("actorOps.setCurActor")); // not in scumm, descumm says it's from HE???
+		actor->registerOpcode(0xc5, new SimpleReader("actorOps.setCurActor"));
 
 		_reader->registerOpcode(0xa3, new SimpleReader("getVerbEntryPoint"));
 
@@ -90,7 +94,9 @@ struct Scumm6Parser {
 
 		SubopcodeReader *wait = new SubopcodeReader();
 		_reader->registerOpcode(0xa9, wait);
-		wait->registerOpcode(168, new SimpleReader("wait.forActor", "w"));
+		wait->registerOpcode(168, new SeqReader(new SimpleReader("wait.forActor.pushCond"),
+												new CondJumpReader("jumpIf", "o4")));
+		
 
 		_reader->registerOpcode(0xad, new SimpleReader("isAnyOf"));
 		_reader->registerOpcode(0xb0, new SimpleReader("delay"));
