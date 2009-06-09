@@ -63,7 +63,7 @@ int main (int argc, char **argv) {
 	char fname[256];
 	Filename inpath, outpath;
 
-	// Check if we should display some heplful text
+	// Check if we should display some helpful text
 	parseHelpArguments(argv, argc,
 		"\nUsage: %s [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n");
 	

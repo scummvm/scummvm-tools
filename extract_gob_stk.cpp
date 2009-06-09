@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
 	Filename inpath, outpath;
 
-	// Check if we should display some heplful text
+	// Check if we should display some helpful text
 	parseHelpArguments(argv, argc);
 	
 	// Continuing with finding out output directory
@@ -68,8 +68,8 @@ int main(int argc, char **argv) {
 		outpath.setFullPath("out/");
 
 	// We only got one input file
-	if (last_arg == first_arg)
-		error("Only one input file expected!\n");
+	if (last_arg != first_arg)
+		error("Only one input file expected!");
 
 	inpath.setFullPath(argv[first_arg]);
 

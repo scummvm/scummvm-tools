@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
 	Filename outpath;
 
-	// Check if we should display some heplful text
+	// Check if we should display some helpful text
 	parseHelpArguments(argv, argc,
 		"\nUsage: %s [-o <output dir> = out/] <file>\n"
 		"\tSome Lucas Arts CDs appear to contains only an application.\n"

@@ -1176,7 +1176,7 @@ int main(int argc, char **argv) {
 	char fname[256];
 	Filename inpath, outpath;
 
-	// Check if we should display some heplful text
+	// Check if we should display some helpful text
 	parseHelpArguments(argv, argc,
 		"\nUsage: %s [-o <output dir> = out/] <infile.PRG>\n"
 		"\tSupported versions: USA, Europe, Sweden, France, Germany, Spain\n"

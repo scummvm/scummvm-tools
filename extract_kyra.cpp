@@ -35,12 +35,12 @@ int main(int argc, char **argv) {
 
 	Filename outpath, inputpath;
 
-	// Check if we should display some heplful text
+	// Check if we should display some helpful text
 	parseHelpArguments(argv, argc, "\n"
 		"Usage: %s [params] [-o output] <archivefile> [-o output]\n"
 		"Default output path is ./out/\n"
 		"nParams:\n"
-		"-e <filename>     Extract only <filename> from the archive, wiil be extracted \n"
+		"-e <filename>     Extract only <filename> from the archive, will be extracted \n"
 		"                  into the current directory.\n"
 		"-x                Extract all files (default)\n"
 		"-a                Extract files from the Amiga .PAK files\n"
