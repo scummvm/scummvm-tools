@@ -25,8 +25,6 @@
 #include "kyra_ins.h"
 
 int main(int argc, char **argv) {
-	char inputPath[768];
-
 	int first_arg = 1;
 	int last_arg = argc - 1;
 
@@ -74,9 +72,9 @@ int main(int argc, char **argv) {
 	}
 
 	// Parse output argument
-	if (parseOutputArguments(&outpath, argv, argc, param))
+	if (parseOutputDirectoryArguments(&outpath, argv, argc, param))
 		param += 2;
-	else if (parseOutputArguments(&outpath, argv, argc, argc - 2))
+	else if (parseOutputDirectoryArguments(&outpath, argv, argc, argc - 2))
 		last_arg -= 1;
 	else
 		outpath.setFullPath("out/");
@@ -101,7 +99,7 @@ int main(int argc, char **argv) {
 
 	// Everything has been decided, do the actual extraction
 	if (extractAll) {
-		extract->outputAllFiles(outpath.getFullPath());
+		extract->outputAllFiles(&outpath);
 	} else if (extractOne) {
 		inputpath.setFullName(singleFilename);
 		extract->outputFileAs(singleFilename, inputpath.getFullPath());

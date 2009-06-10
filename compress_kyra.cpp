@@ -23,110 +23,55 @@
 #include "compress.h"
 #include "kyra_pak.h"
 
-static void showhelp(const char *exename);
-static void process(const char *infile, const char *output);
-static void processKyra3(const char *infile, const char *output);
-static bool detectKyra3File(const char *infile);
+static void process(Filename *infile, Filename *output);
+static void processKyra3(Filename *infile, Filename *output);
+static bool detectKyra3File(Filename *infile);
 
 #define TEMPFILE "TEMP.VOC"
 
 static CompressMode gCompMode = kMP3Mode;
 
+const char *helptext = "\nUsage: %s [params] [mode params] [-o out = ] <infile>\n" kCompressionAudioHelp;
+
 int main(int argc, char *argv[]) {
-	if (argc < 3)
-		showhelp(argv[0]);
+	Filename inpath, outpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	char inputFile[1024];
-	char outputFile[1024];
-	int i = 0;
+	parseHelpArguments(argv, argc, helptext);
 
-	/* Compression mode */
-	gCompMode = kMP3Mode;
-	i = 1;
+	// Compression mode
+	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	for (; i < argc - 2; ++i) {
-		if (strcmp(argv[i], "--mp3") == 0)
-			gCompMode = kMP3Mode;
-		else if (strcmp(argv[i], "--vorbis") == 0)
-			gCompMode = kVorbisMode;
-		else if (strcmp(argv[i], "--flac") == 0)
-			gCompMode = kFlacMode;
-		else
-			break;
+	if(gCompMode == kNoAudioMode) {
+		// Unknown mode (failed to parse arguments), display help and exit
+		printf(helptext, argv[0]);
+		exit(2);
 	}
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc - 2, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kVorbisMode:
-		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc - 2, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kFlacMode:
-		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc - 2, argv, i))
-			showhelp(argv[0]);
-		break;
-	}
-
-	sprintf(inputFile, "%s/%s", argv[argc - 2], argv[argc - 3]);
-	sprintf(outputFile, "%s/%s", argv[argc - 1], argv[argc - 3]);
-
-	if (scumm_stricmp(inputFile, outputFile) == 0)
-		error("infile and outfile are the same file");
-
-	bool isKyra3 = detectKyra3File(inputFile);
-	if (!isKyra3)
-		process(inputFile, outputFile);
+	
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
 	else
-		processKyra3(inputFile, outputFile);
+		// Standard output file is 'out'
+		outpath.setFullPath("out");
+	
+	inpath.setFullName(argv[first_arg]);
+	outpath.setFullName(argv[first_arg]);
+
+	if (inpath.equals(&outpath))
+		error("Infile and outfile cannot be the same file");
+
+	bool isKyra3 = detectKyra3File(&inpath);
+	if (!isKyra3)
+		process(&inpath, &outpath);
+	else
+		processKyra3(&inpath, &outpath);
 
 	return 0;
-}
-
-static void showhelp(const char *exename) {
-	printf("\nUsage: %s [params] [mode params] <file> <inputdir> <outputdir>\n", exename);
-
-	printf("\nParams:\n");
-	printf(" --mp3        encode to MP3 format (default)\n");
-	printf(" --vorbis     encode to Vorbis format\n");
-	printf(" --flac       encode to Flac format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
- 	printf(" --fast       FLAC uses compression level 0\n");
- 	printf(" --best       FLAC uses compression level 8\n");
- 	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
- 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
-	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-
-	exit(2);
 }
 
 static bool hasSuffix(const char *str, const char *suf) {
@@ -141,52 +86,16 @@ static bool hasSuffix(const char *str, const char *suf) {
 	return (scumm_stricmp(&str[off], suf) == 0);
 }
 
-static void changeFileExt(char *filename) {
-	char *str = filename + strlen(filename) - 4;
-
-	if (*str != '.')
-		error("Invalid filename '%s'", filename);
-
-	++str;
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		*str++ = 'm';
-		*str++ = 'p';
-		*str++ = '3';
-		break;
-
-	case kVorbisMode:
-		*str++ = 'o';
-		*str++ = 'g';
-		*str++ = 'g';
-		break;
-
-	case kFlacMode:
-		*str++ = 'f';
-		*str++ = 'l';
-		*str++ = 'a';
-		break;
-
-	default:
-		error("Unknown compression mode");
-	}
-
-	*str = 0;
-}
-
-
-static void process(const char *infile, const char *outfile) {
+static void process(Filename *infile, Filename *outfile) {
 	PAKFile input, output;
 
-	if (!input.loadFile(infile, false))
+	if (!input.loadFile(infile->getFullPath(), false))
 		return;
 
-	if (!output.loadFile(0, false))
+	if (!output.loadFile(NULL, false))
 		return;
 
 	PAKFile::cFileList *list = input.getFileList();
-	char outputName[32];
 
 	for (; list; list = list->next) {
 		// Detect VOC file from content instead of extension. This is needed for Lands of Lore TLK files.
@@ -194,31 +103,23 @@ static void process(const char *infile, const char *outfile) {
 			continue;
 
 		if (list->data[26] != 1) {
-			warning("'%s' contains broken VOC file '%s' skipping it...", infile, list->filename);
+			warning("'%s' contains broken VOC file '%s' skipping it...", infile->getFullPath(), list->filename);
 			continue;
 		}
 
+		Filename outputName;
 		input.outputFileAs(list->filename, TEMPFILE);
-		strncpy(outputName, list->filename, sizeof(outputName) - 5);
-		outputName[sizeof(outputName) - 5] = 0;
+		strncpy(outputName._path, list->filename, 27);
+		outputName._path[27] = 0;
 
 		FILE *tempFile = fopen(TEMPFILE, "rb");
 		fseek(tempFile, 26, SEEK_CUR);
 		extractAndEncodeVOC(TEMP_RAW, tempFile, gCompMode);
 		fclose(tempFile);
 
-		if (hasSuffix(outputName, ".VOC")) {
-			// When a ".VOC" extension is present we will replace it with a extension
-			// based on the compression method used.
-			changeFileExt(outputName);
-		} else {
-			// When no ".VOC" extension is present we will just append a extension
-			// based on the compression method used.
-			strcat(outputName, ".VOC");
-			changeFileExt(outputName);
-		}
+		outputName.setExtension(audio_extensions[gCompMode]);
 
-		output.addFile(outputName, tempEncoded);
+		output.addFile(outputName.getFullPath(), tempEncoded);
 
 		unlink(TEMPFILE);
 		unlink(TEMP_RAW);
@@ -226,9 +127,9 @@ static void process(const char *infile, const char *outfile) {
 	}
 
 	if (output.getFileList())
-		output.saveFile(outfile);
+		output.saveFile(outfile->getFullPath());
 	else
-		printf("file '%s' doesn't contain any .voc files\n", infile);
+		printf("file '%s' doesn't contain any .voc files\n", infile->getFullPath());
 }
 
 // Kyra3 specifc code
@@ -315,7 +216,7 @@ static int decodeChunk(FILE *in, FILE *out) {
 				/* NOTE: count is signed! */
 				count <<= 3;
 				curSample += (count >> 3);
-				outputBuffer[j++] = curSample;
+				outputBuffer[j++] = (byte)curSample;
 				remaining--;
 			} else {
 				for (; count >= 0; count--) {
@@ -331,11 +232,11 @@ static int decodeChunk(FILE *in, FILE *out) {
 
 				curSample += WSTable4Bit[code & 0x0f];
 				curSample = clip8BitSample(curSample);
-				outputBuffer[j++] = curSample;
+				outputBuffer[j++] = (byte)curSample;
 
 				curSample += WSTable4Bit[code >> 4];
 				curSample = clip8BitSample(curSample);
-				outputBuffer[j++] = curSample;
+				outputBuffer[j++] = (byte)curSample;
 
 				remaining -= 2;
 			}
@@ -346,26 +247,26 @@ static int decodeChunk(FILE *in, FILE *out) {
 
 				curSample += WSTable2Bit[code & 0x03];
 				curSample = clip8BitSample(curSample);
-				outputBuffer[j++] = curSample;
+				outputBuffer[j++] = (byte)curSample;
 
 				curSample += WSTable2Bit[(code >> 2) & 0x03];
 				curSample = clip8BitSample(curSample);
-				outputBuffer[j++] = curSample;
+				outputBuffer[j++] = (byte)curSample;
 
 				curSample += WSTable2Bit[(code >> 4) & 0x03];
 				curSample = clip8BitSample(curSample);
-				outputBuffer[j++] = curSample;
+				outputBuffer[j++] = (byte)curSample;
 
 				curSample += WSTable2Bit[(code >> 6) & 0x03];
 				curSample = clip8BitSample(curSample);
-				outputBuffer[j++] = curSample;
+				outputBuffer[j++] = (byte)curSample;
 
 				remaining -= 4;
 			}
 			break;
 		default:
 			for (; count >= 0; count--) {
-				outputBuffer[j++] = curSample;
+				outputBuffer[j++] = (byte)curSample;
 				remaining--;
 			}
 		}
@@ -430,28 +331,25 @@ static const DuplicatedFile *findDuplicatedFile(uint32 resOffset, const Duplicat
 	return 0;
 }
 
-static void processKyra3(const char *infile, const char *outfile) {
-	if (hasSuffix(infile, ".AUD")) {
-		char outname[1024];
+static void processKyra3(Filename *infile, Filename *outfile) {
+	if (infile->hasExtension("AUD")) {
+		outfile->setExtension(audio_extensions[gCompMode]);
 
-		strncpy(outname, outfile, sizeof(outname));
-		changeFileExt(outname);
-
-		FILE *input = fopen(infile, "rb");
+		FILE *input = fopen(infile->getFullPath(), "rb");
 		if (!input)
-			error("Couldn't open file '%s'", infile);
+			error("Couldn't open file '%s'", infile->getFullPath());
 
-		compressAUDFile(input, outname);
+		compressAUDFile(input, outfile->getFullPath());
 
 		fclose(input);
-	} else if (hasSuffix(infile, ".TLK")) {
+	} else if (infile->hasExtension("TLK")) {
 		PAKFile output;
 
-		FILE *input = fopen(infile, "rb");
+		FILE *input = fopen(infile->getFullPath(), "rb");
 		if (!input)
-			error("Couldn't open file '%s'", infile);
+			error("Couldn't open file '%s'", infile->getFullPath());
 
-		if (!output.loadFile(0, false))
+		if (!output.loadFile(NULL, false))
 			return;
 
 		uint16 files = readUint16LE(input);
@@ -463,14 +361,12 @@ static void processKyra3(const char *infile, const char *outfile) {
 			uint32 resOffset = readUint32LE(input);
 
 			char outname[16];
-			snprintf(outname, 16, "%.08u.AUD", resFilename);
-			changeFileExt(outname);
+			snprintf(outname, 16, "%.08u.%s", resFilename, audio_extensions[gCompMode]);
 
 			const DuplicatedFile *file = findDuplicatedFile(resOffset, red, files);
 			if (file) {
 				char linkname[16];
-				snprintf(linkname, 16, "%.08u.AUD", file->resFilename);
-				changeFileExt(linkname);
+				snprintf(linkname, 16, "%.08u.%s", file->resFilename, audio_extensions[gCompMode]);
 
 				output.linkFiles(outname, linkname);
 			} else {
@@ -494,26 +390,26 @@ static void processKyra3(const char *infile, const char *outfile) {
 		fclose(input);
 
 		if (output.getFileList())
-			output.saveFile(outfile);
+			output.saveFile(outfile->getFullPath());
 	} else {
-		error("Unsupported file '%s'", infile);
+		error("Unsupported file '%s'", infile->getFullPath());
 	}
 }
 
-bool detectKyra3File(const char *infile) {
-	if (hasSuffix(infile, ".AUD")) {
+bool detectKyra3File(Filename *infile) {
+	if (infile->hasExtension("AUD")) {
 		return true;
-	} else if (hasSuffix(infile, ".VRM") || hasSuffix(infile, ".PAK")) {
-		if (!PAKFile::isPakFile(infile))
-			error("Unknown filetype of file: '%s'", infile);
+	} else if (infile->hasExtension("VRM") || infile->hasExtension("PAK")) {
+		if (!PAKFile::isPakFile(infile->getFullPath()))
+			error("Unknown filetype of file: '%s'", infile->getFullPath());
 		return false;
-	} else if (hasSuffix(infile, ".TLK")) {
-		if (PAKFile::isPakFile(infile))
+	} else if (infile->hasExtension("TLK")) {
+		if (PAKFile::isPakFile(infile->getFullPath()))
 			return false;
 
-		FILE *f = fopen(infile, "rb");
+		FILE *f = fopen(infile->getFullPath(), "rb");
 		if (!f)
-			error("Couldn't open file '%s'", infile);
+			error("Couldn't open file '%s'", infile->getFullPath());
 
 		uint16 entries = readUint16LE(f);
 		uint32 entryTableSize = (entries * 8);
@@ -521,7 +417,7 @@ bool detectKyra3File(const char *infile) {
 
 		if (entryTableSize + 2 > filesize) {
 			fclose(f);
-			error("Unknown filetype of file: '%s'", infile);
+			error("Unknown filetype of file: '%s'", infile->getFullPath());
 		}
 
 		uint32 offset = 0;
@@ -530,12 +426,12 @@ bool detectKyra3File(const char *infile) {
 			offset = readUint32LE(f);
 
 			if (offset > filesize)
-				error("Unknown filetype of file: '%s'", infile);
+				error("Unknown filetype of file: '%s'", infile->getFullPath());
 		}
 
 		return true;
 	}
 
-	error("Unknown filetype of file: '%s'", infile);
+	error("Unknown filetype of file: '%s'", infile->getFullPath());
 }
 

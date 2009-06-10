@@ -59,9 +59,9 @@ int main(int argc, char **argv) {
 	
 	// Continuing with finding out output directory
 	// also make sure we skip those arguments
-	if (parseOutputArguments(&outpath, argv, argc, first_arg))
+	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
 		first_arg += 2;
-	else if (parseOutputArguments(&outpath, argv, argc, last_arg - 2))
+	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
 		last_arg -= 2;
 	else
 		// Standard output dir

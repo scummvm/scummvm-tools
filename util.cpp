@@ -150,6 +150,15 @@ Filename::Filename(const char *path) {
 	strcpy(_path, path);
 }
 
+Filename::Filename(const Filename& filename) {
+	strcpy(_path, filename._path);
+}
+
+Filename& Filename::operator=(const Filename& filename) {
+	strcpy(_path, filename._path);
+	return *this;
+}
+
 void Filename::setFullPath(const char *path) {
 	strcpy(_path, path);
 }
@@ -168,8 +177,56 @@ void Filename::addExtension(const char *ext) {
 	strcat(_path, ext);
 }
 
+void Filename::setExtension(const char *ext) {
+	char *dot = strrchr(_path, '.');
+	if(!dot)
+		dot = _path + strlen(_path);
+	// Don't copy the dot
+	if(*ext == '.')
+		ext++;
+	strcpy(dot+1, ext);
+}
+
+bool Filename::equals(const Filename *other) const {
+#ifdef _WIN32
+	// On Windows paths are case-insensitive
+	return scumm_stricmp(_path, other->_path) == 0;
+#else
+	return strcmp(_path, other->_path) == 0;
+#endif
+}
+
 bool Filename::empty() const {
 	return *_path == 0;
+}
+
+bool Filename::hasExtension(const char *suffix) const {
+	const char *dot = strrchr(_path, '.');
+	if(!dot)
+		dot = _path + strlen(_path);
+
+	// Check that dot position is less than /, since some
+	// directories contain ., like /home/.data/file
+	const char *slash = strrchr(_path, '/');
+	if(slash && slash > dot)
+		return false;
+
+	slash = strrchr(_path, '\\');
+	if(slash && slash > dot)
+		return false;
+
+	// We compare extensions, skip any dots
+	if(*dot == '.')
+		dot++;
+	if(*suffix == '.')
+		suffix++;
+
+#ifdef _WIN32
+	// On Windows paths are case-insensitive
+	return scumm_stricmp(dot, suffix) == 0;
+#else
+	return strcmp(dot, suffix) == 0;
+#endif
 }
 
 const char *Filename::getFullPath() const {
@@ -206,31 +263,40 @@ const char *Filename::getPath(char *out) const {
 	return out;
 }
 
+void displayHelp(const char *msg, const char *exename) {
+	if (!msg) {
+		printf("\nUsage: %s [-o <output dir> = out/] <file 1> ... <file n>\n", exename);
+	}
+	else {
+		printf(msg, exename);
+	}
+	exit(2);
+}
+
 void parseHelpArguments(const char * const argv[], int argc, const char *msg) {
 	if (argc < 2 || strcmp(argv[1], "--help") == 0 || stricmp(argv[1], "-h") == 0) {
-		if (!msg) {
-			printf("\nUsage: %s [-o <output dir> = out/] <file 1> ... <file n>\n", argv[0]);
-		}
-		else {
-			printf(msg, argv[0]);
-		}
-		exit(2);
+		displayHelp(msg, argv[0]);
 	}
 }
 
-bool parseOutputArguments(Filename *outputname, const char * const argv[], int argc, int start_arg) {
-	char lastchr;
-
+bool parseOutputArguments(Filename *outputname, bool output_directory, const char * const argv[], int argc, int start_arg) {
 	if (start_arg >= 0 && (strcmp(argv[start_arg], "-o") == 0 || strcmp(argv[start_arg], "--output") == 0)) {
 		/* It's a -o argument, can we check next arg? */
 
 		if (start_arg + 1 < argc) {
 			outputname->setFullPath(argv[start_arg + 1]);
 
-			/* Ensure last character is a /, this way we force directory output */
-			lastchr = outputname->getFullPath()[strlen(outputname->getFullPath()) - 1];
-			if (lastchr != '/' && lastchr != '\\') {
-				strcat(outputname->_path, "/");
+			if (output_directory) {
+				/* Ensure last character is a /, this way we force directory output */
+				char lastchr = outputname->getFullPath()[strlen(outputname->getFullPath()) - 1];
+				if (lastchr != '/' && lastchr != '\\') {
+					strcat(outputname->_path, "/");
+				}
+			} else {
+				char* lastchr = outputname->_path + strlen(outputname->getFullPath()) - 1;
+				if (*lastchr == '/' && *lastchr == '\\') {
+					*lastchr = '\0';
+				}
 			}
 			return true;
 		} else {
@@ -238,4 +304,12 @@ bool parseOutputArguments(Filename *outputname, const char * const argv[], int a
 		}
 	}
 	return false;
+}
+
+bool parseOutputFileArguments(Filename *outputname, const char * const argv[], int argc, int start_arg) {
+	return parseOutputArguments(outputname, false, argv, argc, start_arg);
+}
+
+bool parseOutputDirectoryArguments(Filename *outputname, const char * const argv[], int argc, int start_arg) {
+	return parseOutputArguments(outputname, true, argv, argc, start_arg);
 }

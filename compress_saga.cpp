@@ -147,15 +147,14 @@ uint8 sampleStereo;
 
 // --------------------------------------------------------------------------------
 
-bool detectFile(const char *inFileName) {
+bool detectFile(Filename *infile) {
 	int gamesCount = ARRAYSIZE(gameDescriptions);
 	int i, j;
 	uint8 md5sum[16];
 	char md5str[32+1];
-	char currentFile[256];
 
-	Common::md5_file(inFileName, md5sum, FILE_MD5_BYTES);
-	printf("Input file name: %s\n", inFileName);
+	Common::md5_file(infile->getFullPath(), md5sum, FILE_MD5_BYTES);
+	printf("Input file name: %s\n", infile->getFullPath());
 	for (j = 0; j < 16; j++) {
 		sprintf(md5str + j*2, "%02x", (int)md5sum[j]);
 	}
@@ -177,11 +176,7 @@ bool detectFile(const char *inFileName) {
 				// Filename based detection, used in IHNM, as all its sound files have the
 				// same encoding
 
-				getFilename(inFileName, currentFile);
-				for (unsigned int k = 0; k < strlen(currentFile); k++)
-					currentFile[k] = tolower(currentFile[k]);
-
-				if (strcmp(gameDescriptions[i].filesDescriptions[j].fileName, currentFile) == 0) {
+				if (scumm_stricmp(gameDescriptions[i].filesDescriptions[j].fileName, infile->getFullName()) == 0) {
 					currentGameDescription = &gameDescriptions[i];
 					currentFileDescription = &currentGameDescription->filesDescriptions[j];
 
@@ -343,9 +338,7 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 	error("Unsupported resourceType %ul\n", currentFileDescription->resourceType);
 }
 
-void sagaEncode(const char *inputPath, const char *inputFileName, const char *inputFileNameExt) {
-	char inputFileNameWithExt[256];
-	char outputFileNameWithExt[256];
+void sagaEncode(Filename *inpath, Filename *outpath) {
 	FILE *inputFile;
 	FILE *outputFile;
 	uint32 inputFileSize;
@@ -356,8 +349,7 @@ void sagaEncode(const char *inputPath, const char *inputFileName, const char *in
 	Record *inputTable;
 	Record *outputTable;
 
-	sprintf(inputFileNameWithExt, "%s/%s%s", inputPath, inputFileName, inputFileNameExt);
-	inputFile = fopen(inputFileNameWithExt, "rb");
+	inputFile = fopen(inpath->getFullPath(), "rb");
 	inputFileSize = fileSize(inputFile);
 	printf("Filesize: %ul\n", inputFileSize);
 	/*
@@ -399,15 +391,18 @@ void sagaEncode(const char *inputPath, const char *inputFileName, const char *in
 		printf("Record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
 
 		if ((inputTable[i].offset > inputFileSize) ||
-		    (inputTable[i].offset + inputTable[i].size > inputFileSize)) {
+			(inputTable[i].offset + inputTable[i].size > inputFileSize)) {
 			error("The offset points outside the file");
 		}
 
 	}
 	outputTable = (Record*)malloc(resTableCount * sizeof(Record));
 
-	sprintf(outputFileNameWithExt, "%s/%s.cmp", inputPath, inputFileName);
-	outputFile = fopen(outputFileNameWithExt, "wb");
+	if(outpath->empty()) {
+		*outpath = *inpath;
+		outpath->setExtension(".cmp");
+	}
+	outputFile = fopen(outpath->getFullPath(), "wb");
 
 	for (i = 0; i < resTableCount; i++) {
 		fseek(inputFile, inputTable[i].offset, SEEK_SET);
@@ -441,122 +436,59 @@ void sagaEncode(const char *inputPath, const char *inputFileName, const char *in
 	printf("Done!\n");
 }
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] <file>\n", exename);
-
-	printf("\nParams:\n");
-
-	printf("--mp3        encode to MP3 format (default)\n");
-	printf("--vorbis     encode to Vorbis format\n");
-	printf("--flac       encode to Flac format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf("-b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf("-B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf("--vbr        LAME uses the VBR mode (default)\n");
-	printf("--abr        LAME uses the ABR mode\n");
-	printf("-V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf("-q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf("--silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf("-b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf("-m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf("-M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf("-q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf("--silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
- 	printf(" --fast       FLAC uses compression level 0\n");
- 	printf(" --best       FLAC uses compression level 8\n");
- 	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
- 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
- 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n--help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	exit(2);
-}
+const char *helptext = "\nUsage: %s [params] [mode params] [-o out = 'infile.cmp'] <infile>\n" kCompressionAudioHelp;
 
 int main(int argc, char *argv[]) {
-	int	i;
-	char inputPath[768];
-	char inputFileName[256];
-	char inputFileNameWithExt[256];
+	Filename inpath, outpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	if (argc < 2) {
-		showhelp(argv[0]);
+
+	parseHelpArguments(argv, argc, helptext);
+
+	// compression mode
+	gCompMode = process_audio_params(argc, argv, &first_arg);
+
+	if(gCompMode == kNoAudioMode) {
+		// Unknown mode (failed to parse arguments), display help and exit
+		printf(helptext, argv[0]);
+		exit(2);
 	}
 
-	/* compression mode */
-	gCompMode = kMP3Mode;
-	i = 1;
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;;
 
-	if (strcmp(argv[1], "--mp3") == 0) {
-		gCompMode = kMP3Mode;
-		i++;
-	} else if (strcmp(argv[1], "--vorbis") == 0) {
-		gCompMode = kVorbisMode;
-		i++;
-	} else if (strcmp(argv[1], "--flac") == 0) {
-		gCompMode = kFlacMode;
-		i++;
-	}
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-		break;
-	case kVorbisMode:
-		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-		break;
-	case kFlacMode:
-		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-		break;
-	}
-
-	getPath(argv[argc - 1], inputPath);
-	getFilename(argv[argc - 1], inputFileName);
-
-	if (strrchr(inputFileName, '.') != NULL) {
-		error("Please specify the filename without an extension");
-	}
+	inpath.setFullPath(argv[first_arg]);
 
 	// ITE
-	sprintf(inputFileNameWithExt, "%s/%s.rsc", inputPath, inputFileName);
-	if (detectFile(inputFileNameWithExt)) {
-		sagaEncode(inputPath, inputFileName, ".rsc");
+	inpath.setExtension(".rsc");
+	if (detectFile(&inpath)) {
+		sagaEncode(&inpath, &outpath);
 	} else {
 		// IHNM
-		sprintf(inputFileNameWithExt, "%s/%s.res", inputPath, inputFileName);
-		if (detectFile(inputFileNameWithExt)) {
-			sagaEncode(inputPath, inputFileName, ".res");
+		inpath.setExtension(".res");
+		if (detectFile(&inpath)) {
+			sagaEncode(&inpath, &outpath);
 		} else {
 			// Check for "inherit the earth voices"
-			if (detectFile("inherit the earth voices")) {
-				sagaEncode(inputPath, "inherit the earth voices", "");
+			inpath.setFullName("inherit the earth voices");
+			if (detectFile(&inpath)) {
+				sagaEncode(&inpath, &outpath);
 			} else {
 				// Check for MacBinary
-				sprintf(inputFileNameWithExt, "%s/%s.bin", inputPath, inputFileName);
-				if (detectFile(inputFileNameWithExt)) {
-					sagaEncode(inputPath, inputFileName, ".bin");
+				inpath.setExtension(".bin");
+				if (detectFile(&inpath)) {
+					sagaEncode(&inpath, &outpath);
+				} else {
+					error("Failed to compress file %s", inpath.getFullPath());
 				}
 			}
 		}
 	}
 
-	return (0);
+	return 0;
 }

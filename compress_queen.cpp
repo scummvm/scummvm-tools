@@ -121,47 +121,6 @@ const struct PatchFile patchFiles[] = {
 
 const struct GameVersion *version;
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] queen.1\n", exename);
-
-	printf("\nParams:\n");
-
-	printf(" --mp3        encode to MP3 format (default)\n");
-	printf(" --vorbis     encode to Ogg Vorbis format\n");
-	printf(" --flac       encode to Flac format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
-	printf(" --fast       FLAC uses compression level 0\n");
-	printf(" --best       FLAC uses compression level 8\n");
-	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
-	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
-	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	exit(2);
-}
-
 const struct GameVersion *detectGameVersion(uint32 size) {
 	const struct GameVersion *pgv = gameVersions;
 	int i;
@@ -201,9 +160,8 @@ void fromFileToFile(FILE *in, FILE *out, uint32 amount) {
 	}
 }
 
-void createFinalFile(char *inputPath) {
+void createFinalFile(Filename *inputPath) {
 	FILE *inTbl, *inData, *outFinal;
-	char tmp[1024];
 	int i;
 	uint32 dataStartOffset;
 	uint32 dataSize;
@@ -212,9 +170,9 @@ void createFinalFile(char *inputPath) {
 	checkOpen(inTbl, TEMP_TBL);
 	inData = fopen(TEMP_DAT, "rb");
 	checkOpen(inData, TEMP_DAT);
-	sprintf(tmp, "%s/%s", inputPath, FINAL_OUT);
-	outFinal = fopen(tmp, "wb");
-	checkOpen(outFinal, FINAL_OUT);
+	inputPath->setFullName(FINAL_OUT);
+	outFinal = fopen(inputPath->getFullPath(), "wb");
+	checkOpen(outFinal, inputPath->getFullPath());
 
 	dataStartOffset = fileSize(inTbl) + EXTRA_TBL_HEADER;
 	dataSize = fileSize(inData);
@@ -248,71 +206,48 @@ void createFinalFile(char *inputPath) {
 	unlink(TEMP_DAT);
 }
 
+const char *helptext = "\nUsage: %s [params] queen.1\n" kCompressionAudioHelp;
+
 int main(int argc, char *argv[]) {
 	FILE *inputData, *inputTbl, *outputTbl, *outputData, *tmpFile, *compFile;
 	uint8 compressionType = COMPRESSION_NONE;
-	char inputPath[768];
-	char tblPath[1024];
+	Filename inpath, outpath;;
 	char tmp[5];
 	int size, i = 1;
 	uint32 prevOffset;
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	if (argc < 2) {
-		showhelp(argv[0]);
+	parseHelpArguments(argv, argc, helptext);
+
+	gCompMode = process_audio_params(argc, argv, &first_arg);
+
+	if(gCompMode == kNoAudioMode) {
+		// Unknown mode (failed to parse arguments), display help and exit
+		printf(helptext, argv[0]);
+		exit(2);
 	}
+	
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else
+		// Standard output
+		outpath.setFullPath("out");
 
-	/* compression mode */
-	compressionType = COMPRESSION_MP3;
-	gCompMode = kMP3Mode;
-
-	if (strcmp(argv[1], "--mp3") == 0) {
-		compressionType = COMPRESSION_MP3;
-		gCompMode = kMP3Mode;
-		i++;
-	} else if (strcmp(argv[1], "--vorbis") == 0) {
-		compressionType = COMPRESSION_OGG;
-		gCompMode = kVorbisMode;
-		i++;
-	} else if (strcmp(argv[1], "--flac") == 0) {
-		compressionType = COMPRESSION_FLAC;
-		gCompMode = kFlacMode;
-		i++;
-	}
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
-		break;
-	case kVorbisMode:
-		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
-		break;
-	case kFlacMode:
-		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
-		break;
-	}
-
-	getPath(argv[argc - 1], inputPath);
+	inpath.setFullPath(argv[first_arg]);
 
 	/* Open input file (QUEEN.1) */
-	inputData = fopen(argv[argc-1], "rb");
-	checkOpen(inputData, argv[argc-1]);
+	inputData = fopen(inpath.getFullPath(), "rb");
+	checkOpen(inputData, inpath.getFullPath());
 
 	/* Open TBL file (QUEEN.TBL) */
-	sprintf(tblPath, "%s/%s", inputPath, INPUT_TBL);
-	inputTbl = fopen(tblPath, "rb");
-	checkOpen(inputTbl, INPUT_TBL);
+	inpath.setFullName(INPUT_TBL);
+	inputTbl = fopen(inpath.getFullPath(), "rb");
+	checkOpen(inputTbl, inpath.getFullPath());
 
 	size = fileSize(inputData);
 	fread(tmp, 1, 4, inputTbl);
@@ -443,7 +378,7 @@ int main(int argc, char *argv[]) {
 	fclose(inputData);
 
 	/* Merge the temporary table and temporary datafile to create final file */
-	createFinalFile(inputPath);
+	createFinalFile(&inpath);
 
 	return 0;
 }

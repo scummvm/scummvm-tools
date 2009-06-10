@@ -23,26 +23,6 @@
 #include "compress.h"
 #include "zlib.h"
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [--vorbis] [params] <file> <inputdir> <outputdir>\n", exename);
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-	exit(2);
-}
-
 struct FrameInfo {
 	int32 frameSize;
 	int32 offsetOutput;
@@ -235,7 +215,8 @@ void decompressComiIACT(char *fileName, byte *output_data, byte *d_src, int bsiz
 	}
 }
 
-void handleComiIACT(FILE *input, int size, char *outputDir, char *inputFilename, char *tmpPath) {
+void handleComiIACT(FILE *input, int size, const char *outputDir, const char *inputFilename) {
+	char tmpPath[1024];
 	fseek(input, 10, SEEK_CUR);
 	int bsize = size - 18;
 	byte output_data[0x1000];
@@ -273,7 +254,7 @@ void flushTracks(int frame) {
 	}
 }
 
-void prepareForMixing(char *outputDir, char *inputFilename) {
+void prepareForMixing(const char *outputDir, const char *inputFilename) {
 	char filename[200];
 
 	printf("Decompresing tracks files...\n");
@@ -392,7 +373,7 @@ static inline void clampedAdd(int16& a, int b) {
 
 	a = val;
 }
-void mixing(char *outputDir, char *inputFilename, int frames, int fps) {
+void mixing(const char *outputDir, const char *inputFilename, int frames, int fps) {
 	char wavPath[200];
 	char filename[200];
 	int l, r, z;
@@ -538,8 +519,9 @@ int32 handleSaudChunk(AudioTrackInfo *audioTrack, FILE *input) {
 	return size;
 }
 
-void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *input, char *outputDir,
-					  char *inputFilename, char *tmpPath, int &size, int volume, int pan, bool iact) {
+void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *input, const char *outputDir,
+					  const char *inputFilename, int &size, int volume, int pan, bool iact) {
+	char tmpPath[1024];
 	AudioTrackInfo *audioTrack = NULL;
 	if (index == 0) {
 		audioTrack = allocAudioTrack(trackId, frame);
@@ -607,7 +589,7 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 	}
 }
 
-void handleDigIACT(FILE *input, int size, char *outputDir, char *inputFilename, char *tmpPath, int flags, int track_flags, int frame) {
+void handleDigIACT(FILE *input, int size, const char *outputDir, const char *inputFilename,int flags, int track_flags, int frame) {
 	int track = readUint16LE(input);
 	int index = readUint16LE(input);
 	int nbframes = readUint16LE(input);
@@ -636,10 +618,10 @@ void handleDigIACT(FILE *input, int size, char *outputDir, char *inputFilename, 
 		exit(1);
 	}
 
-	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, tmpPath, size, volume, pan, true);
+	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, size, volume, pan, true);
 }
 
-void handlePSAD(FILE *input, int size, char *outputDir, char *inputFilename, char *tmpPath, int frame) {
+void handlePSAD(FILE *input, int size, const char *outputDir, const char *inputFilename, int frame) {
 	int trackId = readUint16LE(input);
 	int index = readUint16LE(input);
 	int nbframes = readUint16LE(input);
@@ -647,78 +629,90 @@ void handlePSAD(FILE *input, int size, char *outputDir, char *inputFilename, cha
 	int volume = readByte(input);
 	int pan = readByte(input);
 
-	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, tmpPath, size, volume, pan, false);
+	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, size, volume, pan, false);
 }
 
+// TODO
+// Feature set seems more limited than what kCompressionAudioHelp contains
+const char *helptext = "\nUsage: %s [mode] [mode-params] <file> <inputdir> <outputdir>\n" kCompressionAudioHelp;
+
 int main(int argc, char *argv[]) {
-	if (argc < 4)
-		showhelp(argv[0]);
+	Filename inpath, outpath;
+	char outdir[768];
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	char inputDir[768];
-	char outputDir[768];
-	char inputFilename[256];
-	char tmpPath[768];
+	parseHelpArguments(argv, argc, helptext);
 
-	strcpy(inputFilename, argv[argc - 3]);
-	strcpy(inputDir, argv[argc - 2]);
-	strcpy(outputDir, argv[argc - 1]);
+	// compression mode
+	CompressMode compMode = process_audio_params(argc, argv, &first_arg);
 
-	if (argc > 4) {
-		int result;
-		int i = 1;
-
-		if (strcmp(argv[1], "--vorbis") == 0) {
-			_oggMode = true;
-			i++;
-		}
-
-
-		if (_oggMode)
-			result = process_ogg_parms(argc - 2, argv, i);
-		else
-			result = process_mp3_parms(argc - 2, argv, i);
-
-		if (!result)
-			showhelp(argv[0]);
+	// TODO
+	// Support flac too?
+	if(compMode == kVorbisMode)
+		_oggMode = true;
+	else if(compMode != kMP3Mode)
+		notice("Only ogg vorbis and MP3 is supported for this tool.");
+	if(compMode == kNoAudioMode) {
+		// Unknown mode (failed to parse arguments), display help and exit
+		printf(helptext, argv[0]);
+		exit(2);
 	}
 
-	char *index = strrchr(inputFilename, '.');
-	if (index != NULL) {
-		*index = 0;
-	}
+	uint32 tag;
 
-	sprintf(tmpPath, "%s/%s.san", inputDir, inputFilename);
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else 
+		// Just leave it empty, we just change extension of input file
+		;
 
-	FILE *input = fopen(tmpPath, "rb");
+	// We need this path for some functions, alot quicker than rewriting
+	// them to use the Filename class
+	outpath.getPath(outdir);
+
+
+	inpath.setFullPath(argv[first_arg]);
+
+	FILE *input = fopen(inpath.getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", tmpPath);
+		printf("Cannot open file: %s\n", inpath.getFullPath());
 		exit(-1);
 	}
 
-	sprintf(tmpPath, "%s/%s.san", outputDir, inputFilename);
+	if(outpath.empty()) {
+		// Change extension for output
+		outpath = inpath;
+		outpath.setExtension(".san");
+	}
 
-	FILE *output = fopen(tmpPath, "wb");
+	FILE *output = fopen(outpath.getFullPath(), "wb");
 	if (!output) {
-		printf("Cannot open file: %s\n", tmpPath);
+		printf("Cannot open file: %s\n", outpath.getFullPath());
 		exit(-1);
 	}
 
-	sprintf(tmpPath, "%s/%s.flu", inputDir, inputFilename);
+	Filename flupath(inpath);
+	flupath.setExtension(".flu");
 
 	FILE *flu_in = NULL;
 	FILE *flu_out = NULL;
-	flu_in = fopen(tmpPath, "rb");
+	flu_in = fopen(flupath.getFullPath(), "rb");
 
 	if (flu_in) {
-		sprintf(tmpPath, "%s/%s.flu", outputDir, inputFilename);
-		flu_out = fopen(tmpPath, "wb");
+		flupath = outpath;
+		flupath.setExtension(".flu");
+		flu_out = fopen(flupath.getFullPath(), "wb");
 		if (!flu_out) {
-			printf("Cannot open file: %s\n", tmpPath);
+			printf("Cannot open ancillary file: %s\n", flupath.getFullPath());
 			exit(-1);
 		}
 	}
 
-	uint32 tag;
 	int32 l, size;
 
 	writeUint32BE(output, readUint32BE(input)); // ANIM
@@ -802,9 +796,9 @@ int main(int argc, char *argv[]) {
 				int unk = readUint16LE(input);
 				int track_flags = readUint16LE(input);
 				if ((code == 8) && (track_flags == 0) && (unk == 0) && (flags == 46)) {
-					handleComiIACT(input, size, outputDir, inputFilename, tmpPath);
+					handleComiIACT(input, size, outdir, inpath.getFullName());
 				} else if ((code == 8) && (track_flags != 0) && (unk == 0) && (flags == 46)) {
-					handleDigIACT(input, size, outputDir, inputFilename, tmpPath, flags, track_flags, l);
+					handleDigIACT(input, size, outdir, inpath.getFullName(), flags, track_flags, l);
 					tracksCompress = true;
 					fps = 12;
 				} else {
@@ -820,7 +814,7 @@ int main(int argc, char *argv[]) {
 				continue;
 			} else if ((tag == 'PSAD') && (!flu_in)) {
 				size = readUint32BE(input); // chunk size
-				handlePSAD(input, size, outputDir, inputFilename, tmpPath, l);
+				handlePSAD(input, size, outdir, inpath.getFullName(), l);
 				if ((size & 1) != 0) {
 					fseek(input, 1, SEEK_CUR);
 					size++;
@@ -843,19 +837,20 @@ skip:
 	}
 
 	if (tracksCompress) {
-		prepareForMixing(outputDir, inputFilename);
+		prepareForMixing(outdir, inpath.getFullName());
 		assert(fps);
-		mixing(outputDir, inputFilename, nbframes, fps);
+		mixing(outdir, inpath.getFullName(), nbframes, fps);
 	}
 
 	if (_waveTmpFile) {
+		char tmpPath[1024];
 		writeWaveHeader(_waveDataSize);
-		sprintf(tmpPath, "%s/%s", outputDir, inputFilename);
+		sprintf(tmpPath, "%s/%s", outdir, inpath.getFullName());
 		if (_oggMode)
 			encodeWaveWithOgg(tmpPath);
 		else
 			encodeWaveWithLame(tmpPath);
-		sprintf(tmpPath, "%s/%s.wav", outputDir, inputFilename);
+		sprintf(tmpPath, "%s/%s.wav", outdir, inpath.getFullName());
 		unlink(tmpPath);
 	}
 

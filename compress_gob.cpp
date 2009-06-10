@@ -52,35 +52,47 @@ int main(int argc, char **argv) {
 	FILE *stk;
 	FILE *gobConf;
 	uint16 chunkCount;
+	Filename inpath, outpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	if ((argc < 2) || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-		printf("Usage: %s <Conf file>\n\n", argv[0]);
-		printf("The archive will be created into the current directory.\n");
-		return -1;
-	}
+	// Check if we should display some helpful text
+	parseHelpArguments(argv, argc, "\nUsage: %s [-o <output> = out.stk] <input file>\n");
 
-	if (!(gobConf = fopen(argv[1], "r")))
-		error("Couldn't open conf file \"%s\"", argv[1]);
-
-	outFilename = new char[strlen(argv[1]) + 5];
-	getFilename(argv[1], outFilename);
-
-	tmpStr = strstr(outFilename, ".");
-	if (tmpStr != 0)
-		strcpy(tmpStr, ".stk");
+	// Now we try to find the proper output
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
 	else
-		strcat(outFilename, ".stk");
+		// Standard output
+		outpath.setFullPath("out.stk");
 
+	if(last_arg - first_arg != 0)
+		error("Expected only one input file");
+
+	// Open input (config) file
+	if (!(gobConf = fopen(argv[first_arg], "r")))
+		error("Couldn't open conf file '%s'", argv[first_arg]);
+
+	// We output with .stk extension
+	outpath.setExtension(".stk");
+
+	// Open output filk
 	if (!(stk = fopen(outFilename, "wb")))
 		error("Couldn't create file \"%s\"", outFilename);
 
+	// Read the input into memory
 	chunks = readChunkConf(gobConf, chunkCount);
 	fclose(gobConf);
 
+	// Output in compressed format
 	writeEmptyHeader (stk, chunkCount);
 	writeBody(stk, chunkCount, chunks);
 	rewriteHeader(stk, chunkCount, chunks);
 
+	// Cleanup
 	fflush(stk);
 	delete chunks;
 	fclose(stk);

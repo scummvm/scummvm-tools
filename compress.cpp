@@ -52,7 +52,7 @@ typedef struct {
 } rawtype;
 
 lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0 };
-oggencparams oggparms = { -1, -1, -1, oggqualDef, 0 };
+oggencparams oggparms = { -1, -1, -1, (float)oggqualDef, 0 };
 flaccparams flacparms = { flacCompressDef, flacBlocksizeDef, false, false };
 rawtype	rawAudioType = { false, false, 8 };
 
@@ -358,7 +358,7 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 			int result = 0;
 
 			/* Quality input is 1 - 10, function takes -0.1 through 1.0 */
-			result = vorbis_encode_setup_vbr(&vi, numChannels, samplerate, oggparms.quality * 0.1);
+			result = vorbis_encode_setup_vbr(&vi, numChannels, samplerate, oggparms.quality * 0.1f);
 
 			if (result == OV_EFAULT) {
 				printf("Error: Internal Logic Fault.\n\n");
@@ -445,8 +445,8 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 							buffer[j][i] = ((int)(rawDataUnsigned[i * numChannels + j]) - 128) / 128.0f;
 						}
 					}
-				} else if(rawAudioType.bitsPerSample == 16) {
-					if(rawAudioType.isLittleEndian) {
+				} else if (rawAudioType.bitsPerSample == 16) {
+					if (rawAudioType.isLittleEndian) {
 						for(i = 0; i < numSamples; i++) {
 							for(j = 0; j < numChannels; j++) {
 								buffer[j][i] = ((rawData[(i * 2 * numChannels) + (2 * j) + 1] << 8) | (rawData[(i * 2 * numChannels) + (2 * j)] & 0xff)) / 32768.0f;
@@ -475,14 +475,14 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 					while (!eos) {
 						int result = ogg_stream_pageout(&os, &og);
 
-						if(result == 0) {
+						if (result == 0) {
 							break;
 						}
 
 						totalBytes += fwrite(og.header, 1, og.header_len, outputOgg);
 						totalBytes += fwrite(og.body, 1, og.body_len, outputOgg);
 
-						if(ogg_page_eos(&og)) {
+						if (ogg_page_eos(&og)) {
 							eos = 1;
 						}
 					}
@@ -684,14 +684,14 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 	encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
 }
 
-int process_mp3_parms(int argc, char *argv[], int i) {
-	for (; i < argc; i++) {
-		if (strcmp(argv[i], "--vbr") == 0) {
+int process_mp3_parms(int argc, char *argv[], int* i) {
+	for (; *i < argc; (*i)++) {
+		if (strcmp(argv[*i], "--vbr") == 0) {
 			encparms.abr = 0;
-		} else if (strcmp(argv[i], "--abr") == 0) {
+		} else if (strcmp(argv[*i], "--abr") == 0) {
 			encparms.abr = 1;
-		} else if (strcmp(argv[i], "-b") == 0) {
-			encparms.minBitr = atoi(argv[i + 1]);
+		} else if (strcmp(argv[*i], "-b") == 0) {
+			encparms.minBitr = atoi(argv[*i + 1]);
 
 			if ((encparms.minBitr % 8) != 0) {
 				encparms.minBitr -= encparms.minBitr % 8;
@@ -705,9 +705,9 @@ int process_mp3_parms(int argc, char *argv[], int i) {
 				encparms.minBitr = 8;
 			}
 
-			i++;
-		} else if (strcmp(argv[i], "-B") == 0) {
-			encparms.maxBitr = atoi(argv[i + 1]);
+			(*i)++;
+		} else if (strcmp(argv[*i], "-B") == 0) {
+			encparms.maxBitr = atoi(argv[*i + 1]);
 
 			if ((encparms.maxBitr % 8) != 0) {
 				encparms.maxBitr -= encparms.maxBitr % 8;
@@ -721,21 +721,21 @@ int process_mp3_parms(int argc, char *argv[], int i) {
 				encparms.maxBitr = 8;
 			}
 
-			i++;
-		} else if (strcmp(argv[i], "-V") == 0) {
-			encparms.vbrqual = atoi(argv[i + 1]);
+			(*i)++;
+		} else if (strcmp(argv[*i], "-V") == 0) {
+			encparms.vbrqual = atoi(argv[*i + 1]);
 
-			if(encparms.vbrqual < 0) {
+			if (encparms.vbrqual < 0) {
 				encparms.vbrqual = 0;
 			}
 
-			if(encparms.vbrqual > 9) {
+			if (encparms.vbrqual > 9) {
 				encparms.vbrqual = 9;
 			}
 
-			i++;
-		} else if (strcmp(argv[i], "-q") == 0) {
-			encparms.algqual = atoi(argv[i + 1]);
+			(*i)++;
+		} else if (strcmp(argv[*i], "-q") == 0) {
+			encparms.algqual = atoi(argv[*i + 1]);
 
 			if (encparms.algqual < 0) {
 				encparms.algqual = 0;
@@ -745,29 +745,29 @@ int process_mp3_parms(int argc, char *argv[], int i) {
 				encparms.algqual = 9;
 			}
 
-			i++;
-		} else if (strcmp(argv[i], "--silent") == 0) {
+			(*i)++;
+		} else if (strcmp(argv[*i], "--silent") == 0) {
 			encparms.silent = 1;
-		} else if (strcmp(argv[i], "--help") == 0) {
+		} else if (strcmp(argv[*i], "--help") == 0) {
 			return 0;
-		} else if (argv[i][0] == '-') {
+		} else if (argv[*i][0] == '-') {
 			return 0;
 		} else {
 			break;
 		}
 	}
 
-	if (i != (argc - 1)) {
+	if (*i != (argc - 1)) {
 		return 0;
 	}
 
 	return 1;
 }
 
-int process_ogg_parms(int argc, char *argv[], int i) {
-	for (; i < argc; i++) {
-		if (strcmp(argv[i], "-b") == 0) {
-			oggparms.nominalBitr = atoi(argv[i + 1]);
+int process_ogg_parms(int argc, char *argv[], int* i) {
+	for (; *i < argc; (*i)++) {
+		if (strcmp(argv[*i], "-b") == 0) {
+			oggparms.nominalBitr = atoi(argv[*i + 1]);
 
 			if ((oggparms.nominalBitr % 8) != 0) {
 				oggparms.nominalBitr -= oggparms.nominalBitr % 8;
@@ -781,9 +781,9 @@ int process_ogg_parms(int argc, char *argv[], int i) {
 				oggparms.nominalBitr = 8;
 			}
 
-			i++;
-		} else if (strcmp(argv[i], "-m") == 0) {
-			oggparms.minBitr = atoi(argv[i + 1]);
+			(*i)++;
+		} else if (strcmp(argv[*i], "-m") == 0) {
+			oggparms.minBitr = atoi(argv[*i + 1]);
 
 			if ((oggparms.minBitr % 8) != 0) {
 				oggparms.minBitr -= oggparms.minBitr % 8;
@@ -797,9 +797,9 @@ int process_ogg_parms(int argc, char *argv[], int i) {
 				oggparms.minBitr = 8;
 			}
 
-			i++;
-		} else if (strcmp(argv[i], "-M") == 0) {
-			oggparms.maxBitr = atoi(argv[i + 1]);
+			(*i)++;
+		} else if (strcmp(argv[*i], "-M") == 0) {
+			oggparms.maxBitr = atoi(argv[*i + 1]);
 
 			if ((oggparms.maxBitr % 8) != 0) {
 				oggparms.maxBitr -= encparms.minBitr % 8;
@@ -813,71 +813,107 @@ int process_ogg_parms(int argc, char *argv[], int i) {
 				oggparms.maxBitr = 8;
 			}
 
-			i++;
-		} else if (strcmp(argv[i], "-q") == 0) {
-			oggparms.quality = atoi(argv[i + 1]);
-			i++;
-		} else if (strcmp(argv[i], "--silent") == 0) {
+			(*i)++;
+		} else if (strcmp(argv[*i], "-q") == 0) {
+			oggparms.quality = (float)atoi(argv[*i + 1]);
+			(*i)++;
+		} else if (strcmp(argv[*i], "--silent") == 0) {
 			oggparms.silent = 1;
-		} else if (strcmp(argv[i], "--help") == 0) {
+		} else if (strcmp(argv[*i], "--help") == 0) {
 			return 0;
-		} else if (argv[i][0] == '-') {
+		} else if (argv[*i][0] == '-') {
 			return 0;
 		} else {
 			break;
 		}
 	}
 
-	if (i != argc - 1) {
+	if (*i != argc - 1) {
 		return 0;
 	}
 
 	return 1;
 }
 
-int process_flac_parms(int argc, char *argv[], int i){
-	for (; i < argc; i++) {
-		if (strcmp(argv[i], "-b") == 0) {
-			flacparms.blocksize = atoi(argv[i + 1]);
-			i++;
-		} else if (strcmp(argv[i], "--fast") == 0) {
+int process_flac_parms(int argc, char *argv[], int *i){
+	for (; *i < argc; (*i)++) {
+		if (strcmp(argv[*i], "-b") == 0) {
+			flacparms.blocksize = atoi(argv[*i + 1]);
+			(*i)++;
+		} else if (strcmp(argv[*i], "--fast") == 0) {
 			flacparms.compressionLevel = 0;
-		} else if (strcmp(argv[i], "--best") == 0) {
+		} else if (strcmp(argv[*i], "--best") == 0) {
 			flacparms.compressionLevel = 8;
-		} else if (strcmp(argv[i], "-0") == 0) {
+		} else if (strcmp(argv[*i], "-0") == 0) {
 			flacparms.compressionLevel = 0;
-		} else if (strcmp(argv[i], "-1") == 0) {
+		} else if (strcmp(argv[*i], "-1") == 0) {
 			flacparms.compressionLevel = 1;
-		} else if (strcmp(argv[i], "-2") == 0) {
+		} else if (strcmp(argv[*i], "-2") == 0) {
 			flacparms.compressionLevel = 2;
-		} else if (strcmp(argv[i], "-3") == 0) {
+		} else if (strcmp(argv[*i], "-3") == 0) {
 			flacparms.compressionLevel = 3;
-		} else if (strcmp(argv[i], "-4") == 0) {
+		} else if (strcmp(argv[*i], "-4") == 0) {
 			flacparms.compressionLevel = 4;
-		} else if (strcmp(argv[i], "-5") == 0) {
+		} else if (strcmp(argv[*i], "-5") == 0) {
 			flacparms.compressionLevel = 5;
-		} else if (strcmp(argv[i], "-6") == 0) {
+		} else if (strcmp(argv[*i], "-6") == 0) {
 			flacparms.compressionLevel = 6;
-		} else if (strcmp(argv[i], "-7") == 0) {
+		} else if (strcmp(argv[*i], "-7") == 0) {
 			flacparms.compressionLevel = 7;
-		} else if (strcmp(argv[i], "-8") == 0) {
+		} else if (strcmp(argv[*i], "-8") == 0) {
 			flacparms.compressionLevel = 8;
-		} else if (strcmp(argv[i], "--verify") == 0) {
+		} else if (strcmp(argv[*i], "--verify") == 0) {
 			flacparms.verify = true;
-		} else if (strcmp(argv[i], "--silent") == 0) {
+		} else if (strcmp(argv[*i], "--silent") == 0) {
 			flacparms.silent = true;
-		} else if (strcmp(argv[i], "--help") == 0) {
+		} else if (strcmp(argv[*i], "--help") == 0) {
 			return 0;
-		} else if (argv[i][0] == '-') {
+		} else if (argv[*i][0] == '-') {
 			return 0;
 		} else {
 			break;
 		}
 	}
 
-	if (i != argc - 1) {
+	if (*i != argc - 1) {
 		return 0;
 	}
 
 	return 1;
+}
+
+CompressMode process_audio_params(int argc, char *argv[], int* i) {
+	/* Compression mode */
+	CompressMode compMode = kMP3Mode;
+
+	for (; *i < argc - 2; ++*i) {
+		if (strcmp(argv[*i], "--mp3") == 0)
+			compMode = kMP3Mode;
+		else if (strcmp(argv[*i], "--vorbis") == 0)
+			compMode = kVorbisMode;
+		else if (strcmp(argv[*i], "--flac") == 0)
+			compMode = kFlacMode;
+		else
+			break;
+	}
+
+	switch (compMode) {
+	case kMP3Mode:
+		tempEncoded = TEMP_MP3;
+		if (!process_mp3_parms(argc - 2, argv, i))
+			return kNoAudioMode;
+		break;
+	case kVorbisMode:
+		tempEncoded = TEMP_OGG;
+		if (!process_ogg_parms(argc - 2, argv, i))
+			return kNoAudioMode;
+		break;
+	case kFlacMode:
+		tempEncoded = TEMP_FLAC;
+		if (!process_flac_parms(argc - 2, argv, i))
+			return kNoAudioMode;
+		break;
+	}
+
+	return compMode;
 }

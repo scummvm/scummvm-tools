@@ -29,46 +29,6 @@ static FILE *input, *output_idx, *output_snd;
 
 static CompressMode gCompMode = kMP3Mode;
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] <file>\n", exename);
-
-	printf("\nParams:\n");
-	printf(" --mp3        encode to MP3 format (default)\n");
-	printf(" --vorbis     encode to Vorbis format\n");
-	printf(" --flac       encode to Flac format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
-	printf(" --fast       FLAC uses compression level 0\n");
-	printf(" --best       FLAC uses compression level 8\n");
-	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
-	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
-	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	exit(2);
-}
-
 uint32 append_to_file(FILE *f1, const char *filename) {
 	FILE *f2;
 	uint32 length, orig_length;
@@ -101,6 +61,8 @@ uint32 append_to_file(FILE *f1, const char *filename) {
 #define GetCompressedSign(n)       (((n) >> 3) & 1)
 #define GetCompressedAmplitude(n)  ((n) & 7)
 
+const char *helptext = "\nUsage: %s [params] <file>\n\n" kCompressionAudioHelp;
+
 int main(int argc, char *argv[]) {
 	char output_filename[1024];
 	FILE *output, *f;
@@ -109,9 +71,39 @@ int main(int argc, char *argv[]) {
 	uint32 indexSize;
 	uint32 totalSize;
 	uint32 length;
+	
+	Filename inpath, outpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	if (argc < 2)
-		showhelp(argv[0]);
+	parseHelpArguments(argv, argc, helptext);
+
+	/* compression mode */
+	gCompMode = process_audio_params(argc, argv, &first_arg);
+
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else {
+		switch(gCompMode) {
+		case kMP3Mode:
+			g_output_filename = OUTPUT_MP3;
+			break;
+		case kVorbisMode:
+			g_output_filename = OUTPUT_OGG;
+			break;
+		case kFlacMode:
+			g_output_filename = OUTPUT_FLA;
+			break;
+		default:
+			printf(helptext, argv[0]);
+			exit(2);
+			break;
+		}
+	}
 
 	i = 1;
 

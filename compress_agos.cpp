@@ -29,41 +29,17 @@ static FILE *input, *output_idx, *output_snd;
 
 static CompressMode gCompMode = kMP3Mode;
 
-static void end(char *inputPath, char* inputFile) {
+static void end(Filename *inputPath) {
 	int size;
 	char fbuf[2048];
-	char tmp[1024];
-	char *p;
-	const char *head;
 
-	switch (gCompMode) {
-	case kMP3Mode:
-		head = "mp3";
-		break;
-	case kVorbisMode:
-		head = "ogg";
-		break;
-	case kFlacMode:
-		head = "fla";
-		break;
-	default:
-		error("Unknown compression mode");
-	}
+	inputPath->setExtension(audio_extensions[gCompMode]);
 
 	fclose(output_snd);
 	fclose(output_idx);
 	fclose(input);
 
-	/* Remove the extension from the filename if it exists
-	 * so that we can append the new extension
-	*/
-	p = strrchr(inputFile, '.');
-	if (p) {
-		*p = '\0';
-	}
-
-	sprintf(tmp, "%s/%s.%s", inputPath, inputFile, head);
-	output_idx = fopen(tmp, "wb");
+	output_idx = fopen(inputPath->getFullPath(), "wb");
 
 	input = fopen(TEMP_IDX, "rb");
 	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
@@ -154,61 +130,15 @@ static uint32 get_sound(uint32 offset) {
 	return(tot_size);
 }
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] [--mac] <file>\n", exename);
 
-	printf("\nParams:\n");
-	printf(" --mp3        encode to MP3 format (default)\n");
-	printf(" --vorbis     encode to Vorbis format\n");
-	printf(" --flac       encode to Flac format\n");
-	printf(" --mac        encode simon2mac sounds\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
- 	printf(" --fast       FLAC uses compression level 0\n");
- 	printf(" --best       FLAC uses compression level 8\n");
- 	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
- 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
- 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	printf("\nIf converting simon2mac sounds, use the --mac option\n");
-	printf("and replace <file> with the path to the 'voices' folder\n");
-	printf("If the input directory is the same as the current directory use '.'\n");
-	exit(2);
-}
-
-
-static void convert_pc(char *inputPath, char *inputFile) {
+static void convert_pc(Filename* inputPath) {
 	int i, size, num;
-	char tmp[1024];
 	uint32 filenums[32768];
 	uint32 offsets[32768];
 
-	sprintf(tmp, "%s/%s", inputPath, inputFile);
-	input = fopen(tmp, "rb");
+	input = fopen(inputPath->getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", tmp);
+		printf("Cannot open file: %s\n", inputPath->getFullPath());
 		exit(-1);
 	}
 
@@ -247,14 +177,13 @@ static void convert_pc(char *inputPath, char *inputFile) {
 	}
 }
 
-static void convert_mac(char *inputPath) {
+static void convert_mac(Filename *inputPath) {
 	int i, size, num;
-	char tmp[1024];
 	uint32 filenums[32768];
 	uint32 offsets[32768];
 
-	sprintf(tmp, "%s/voices.idx", inputPath);
-	input = fopen(tmp, "rb");
+	inputPath->setFullName("voices.idx");
+	input = fopen(inputPath->getFullPath(), "rb");
 	if (!input) {
 		printf("Cannot open file: %s\n", "voices.idx");
 		exit(-1);
@@ -289,15 +218,17 @@ static void convert_mac(char *inputPath) {
 		}
 
 		if (filenums[i] != filenums[i - 1]) {
-			sprintf(tmp, "%s/voices%d.dat", inputPath, filenums[i]);
+			char filename[256];
+			sprintf(filename, "voices%d.dat", filenums[i]);
+			inputPath->setFullName(filename);
 
 			if (input) {
 				fclose(input);
 			}
 
-			input = fopen(tmp, "rb");
+			input = fopen(inputPath->getFullPath(), "rb");
 			if (!input) {
-				printf("Cannot open file: %s\n", tmp);
+				printf("Cannot open file: %s\n", inputPath->getFullPath());
 				exit(-1);
 			}
 		}
@@ -310,71 +241,35 @@ static void convert_mac(char *inputPath) {
 	}
 }
 
+const char *helptext = "\nUsage: %s [params] [--mac] <file>\n" kCompressionAudioHelp;
+
 int main(int argc, char *argv[]) {
-	int i;
-	char inputFile[256];
-	char inputPath[768];
 	bool convertMac = false;
 
-	if (argc < 2) {
-		showhelp(argv[0]);
+	Filename inpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
+
+	parseHelpArguments(argv, argc, helptext);
+
+	gCompMode = process_audio_params(argc, argv, &first_arg);
+
+	if(gCompMode == kNoAudioMode) {
+		// Unknown mode (failed to parse arguments), display help and exit
+		printf(helptext, argv[0]);
+		exit(2);
 	}
 
-	/* compression mode */
-	gCompMode = kMP3Mode;
-	i = 1;
-
-	if (strcmp(argv[i], "--mp3") == 0) {
-		gCompMode = kMP3Mode;
-		i++;
-	} else if (strcmp(argv[i], "--vorbis") == 0) {
-		gCompMode = kVorbisMode;
-		i++;
-	} else if (strcmp(argv[i], "--flac") == 0) {
-		gCompMode = kFlacMode;
-		i++;
-	}
-
-	if (strcmp(argv[i], "--mac") == 0) {
-		convertMac = true;
-		i++;
-	}
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
-		break;
-	case kVorbisMode:
-		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
-		break;
-	case kFlacMode:
-		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
-		break;
-	}
+	inpath.setFullPath(argv[first_arg]);
 
 	if (convertMac) {
-		strcpy(inputFile, "simon2");
-		strcpy(inputPath, argv[argc - 1]);
-		convert_mac(inputPath);
+		convert_mac(&inpath);
+		inpath.setFullName("simon2");
 	} else {
-		getPath(argv[argc - 1], inputPath);
-		getFilename(argv[argc - 1], inputFile);
-		convert_pc(inputPath, inputFile);
+		convert_pc(&inpath);
 	}
 
-	end(inputPath, inputFile);
+	end(&inpath);
 
 	return(0);
 }

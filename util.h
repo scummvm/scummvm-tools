@@ -209,12 +209,20 @@ struct Filename {
 	char _path[1024];
 
 	Filename(const char *path = "");
+	Filename(const Filename &path);
+	Filename& operator=(const Filename &fn);
 
 	void setFullPath(const char *path);
 	Filename *setFullName(const char *name);
 	void addExtension(const char *ext);
+	void setExtension(const char *ext);
 
+	bool hasExtension(const char *suffix) const;
 	bool empty() const;
+	bool equals(const Filename* other) const;
+	
+	// Doesn't work
+	bool mkdir(int permission = 077);
 
 	const char *getFullPath() const;
 	const char *getFullName() const;
@@ -222,8 +230,14 @@ struct Filename {
 	const char *getPath(char *out) const;
 };
 
+inline bool operator==(const Filename &f1, const Filename &f2){
+	return f1.equals(&f2);
+}
+
+void displayHelp(const char *msg = NULL, const char *exename = NULL);
 void parseHelpArguments(const char * const argv[], int argc, const char *msg = NULL);
-bool parseOutputArguments(Filename *outputname, const char * const argv[], int argc, int start_arg);
+bool parseOutputFileArguments(Filename *outputname, const char * const argv[], int argc, int start_arg);
+bool parseOutputDirectoryArguments(Filename *outputname, const char * const argv[], int argc, int start_arg);
 
 
 #endif

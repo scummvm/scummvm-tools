@@ -32,10 +32,7 @@
 #define OUTPUT_OGG   "TOUCHE.SOG"
 #define OUTPUT_FLA   "TOUCHE.SOF"
 
-static CompressMode g_mode = kMP3Mode;
-static const char *g_output_filename = OUTPUT_MP3;
-static const char *g_output_directory = NULL;
-static const char *g_input_directory = NULL;
+static CompressMode gCompMode = kMP3Mode;
 
 static uint32 input_OBJ_offs[OBJ_HDR_LEN];
 static uint32 input_OBJ_size[OBJ_HDR_LEN];
@@ -69,7 +66,7 @@ static uint32 compress_sound_data_file(uint32 current_offset, FILE *output, FILE
 
 			printf("VOC found (pos = %d) :\n", offs_table[i]);
 			fseek(input, 18, SEEK_CUR);
-			extractAndEncodeVOC(TEMP_RAW, input, g_mode);
+			extractAndEncodeVOC(TEMP_RAW, input, gCompMode);
 
 			/* append converted data to output file */
 			temp = fopen(tempEncoded, "rb");
@@ -101,17 +98,15 @@ static uint32 compress_sound_data_file(uint32 current_offset, FILE *output, FILE
 	return current_offset;
 }
 
-static void compress_sound_data() {
+static void compress_sound_data(Filename *inpath, Filename *outpath) {
 	int i;
-	char filepath[1024];
 	FILE *output, *input;
 	uint32 current_offset;
 	uint32 offsets_table[MAX_OFFSETS];
 
-	sprintf(filepath, "%s/%s", g_output_directory, g_output_filename);
-	output = fopen(filepath, "wb");
+	output = fopen(outpath->getFullPath(), "wb");
 	if (!output) {
-		error("Cannot open file '%s' for writing", filepath);
+		error("Cannot open file '%s' for writing", outpath->getFullPath());
 	}
 
 	writeUint16LE(output, 1); /* current version */
@@ -127,8 +122,8 @@ static void compress_sound_data() {
 	}
 
 	/* process 'OBJ' file */
-	sprintf(filepath, "%s/OBJ", g_input_directory);
-	input = fopen(filepath, "rb");
+	inpath->setFullName("OBJ");
+	input = fopen(inpath->getFullPath(), "rb");
 	if (!input) {
 		error("Cannot open file 'OBJ' for reading");
 	}
@@ -136,18 +131,21 @@ static void compress_sound_data() {
 	offsets_table[0] = current_offset;
 	current_offset = compress_sound_data_file(current_offset, output, input, input_OBJ_offs, input_OBJ_size, OBJ_HDR_LEN);
 	fclose(input);
-	printf("Processed '%s'.\n", filepath);
+	printf("Processed '%s'.\n", inpath->getFullPath());
 
 	/* process Vxx files */
 	for (i = 1; i < MAX_OFFSETS; ++i) {
-		sprintf(filepath, "%s/V%d", g_input_directory, i);
 
-		input = fopen(filepath, "rb");
+		char d[16];
+		sprintf(d, "V%d", i);
+		inpath->setFullName(d);
+
+		input = fopen(inpath->getFullPath(), "rb");
 		if (input) {
 			offsets_table[i] = current_offset;
 			current_offset = compress_sound_data_file(current_offset, output, input, input_Vxx_offs, input_Vxx_size, Vxx_HDR_LEN);
 			fclose(input);
-			printf("Processed '%s'.\n", filepath);
+			printf("Processed '%s'.\n", inpath->getFullPath());
 		}
 	}
 
@@ -166,98 +164,58 @@ static void compress_sound_data() {
 	printf("Done.\n");
 }
 
-static void showhelp(const char *exename) {
-	printf("\nUsage: %s [params] <inputdir> <outputdir>\n", exename);
-
-	printf("\nParams:\n");
-
-	printf(" --mp3        encode to MP3 format (default)\n");
-	printf(" --vorbis     encode to Vorbis format\n");
-	printf(" --flac       encode to Flac format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
-	printf(" --fast       FLAC uses compression level 0\n");
-	printf(" --best       FLAC uses compression level 8\n");
-	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
-	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
-	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	exit(2);
-}
+const char *helptext = "\nUsage: %s [params] [-o outputfile TOUCHE.*] <inputdir>\n* differs with compression type.\n" kCompressionAudioHelp;
 
 int main(int argc, char *argv[]) {
-	int i;
+	Filename inpath, outpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	if (argc < 2) {
-		showhelp(argv[0]);
+	parseHelpArguments(argv, argc, helptext);
+
+	// compression mode
+	gCompMode = process_audio_params(argc, argv, &first_arg);
+
+	if(gCompMode == kNoAudioMode) {
+		// Unknown mode (failed to parse arguments), display help and exit
+		printf(helptext, argv[0]);
+		exit(2);
 	}
 
-	i = 1;
-	if (strcmp(argv[1], "--mp3") == 0) {
-		g_mode = kMP3Mode;
-		g_output_filename = OUTPUT_MP3;
-		++i;
-	} else if (strcmp(argv[1], "--vorbis") == 0) {
-		g_mode = kVorbisMode;
-		g_output_filename = OUTPUT_OGG;
-		++i;
-	} else if (strcmp(argv[1], "--flac") == 0) {
-		g_mode = kFlacMode;
-		g_output_filename = OUTPUT_FLA;
-		++i;
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else {
+		switch(gCompMode) {
+		case kMP3Mode:
+			outpath.setFullName(OUTPUT_MP3);
+			break;
+		case kVorbisMode:
+			outpath.setFullName(OUTPUT_OGG);
+			break;
+		case kFlacMode:
+			outpath.setFullName(OUTPUT_FLA);
+			break;
+		default:
+			printf(helptext, argv[0]);
+			exit(2);
+			break;
+		}
 	}
 
-	g_input_directory = argv[argc - 2];
-	g_output_directory = argv[argc - 1];
+	inpath.setFullPath(argv[first_arg]);
 
-	switch (g_mode) {
-	case kMP3Mode:
-		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc - 1, argv, i)) {
-			showhelp(argv[0]);
-		}
-
-		break;
-	case kVorbisMode:
-		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc - 1, argv, i)) {
-			showhelp(argv[0]);
-		}
-
-		break;
-	case kFlacMode:
-		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc - 1, argv, i)) {
-			showhelp(argv[0]);
-		}
-
-		break;
+	// Append '/' if it's not already done
+	// TODO: We need a way to detect a directory here!
+	size_t s = strlen(inpath._path);
+	if(inpath._path[s-1] == '/' || inpath._path[s-1] == '\\') {
+		inpath._path[s] = '/';
+		inpath._path[s+1] = '\0';
 	}
 
-
-
-	compress_sound_data();
+	compress_sound_data(&inpath, &outpath);
 	return 0;
 }

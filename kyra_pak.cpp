@@ -436,14 +436,13 @@ void PAKFile::drawFileList() {
 	}
 }
 
-bool PAKFile::outputAllFiles(const char *outputPath) {
+bool PAKFile::outputAllFiles(Filename *outputPath) {
 	if (!Extractor::outputAllFiles(outputPath))
 		return false;
 
-	char outputFilename[1024];
 	for (const LinkList *entry = _links; entry; entry = entry->next) {
-		sprintf(outputFilename, "%s/%s", outputPath, entry->filename);
-		if (!outputFileAs(entry->linksTo, outputPath))
+		outputPath->setFullName(entry->filename);
+		if (!outputFileAs(entry->linksTo, outputPath->getFullPath()))
 			return false;
 	}
 
@@ -471,15 +470,14 @@ void Extractor::drawFileList() {
 	}
 }
 
-bool Extractor::outputAllFiles(const char *outputPath) {
+bool Extractor::outputAllFiles(Filename *outputPath) {
 	cFileList *cur = getFileList();
-	char outputFilename[1024];
 
 	while (cur) {
-		sprintf(outputFilename, "%s/%s", outputPath, cur->filename);
-		FILE *file = fopen(outputFilename, "wb");
+		outputPath->setFullName(cur->filename);
+		FILE *file = fopen(outputPath->getFullPath(), "wb");
 		if (!file) {
-			error("couldn't open file '%s' for writing", outputFilename);
+			error("couldn't open file '%s' for writing", outputPath->getFullPath());
 			return false;
 		}
 		printf("Exracting file '%s'...", cur->filename);

@@ -613,45 +613,6 @@ int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 in
 	return output_size;
 }
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] <file> <inputdir> <outputdir>\n", exename);
-	printf("\nParams:\n");
-	printf(" --mp3        encode to MP3 format (default)\n");
-	printf(" --vorbis     encode to Vorbis format\n");
-	printf(" --flac       encode to Flac format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
- 	printf(" --fast       FLAC uses compression level 0\n");
- 	printf(" --best       FLAC uses compression level 8\n");
- 	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
- 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
- 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	exit(2);
-}
-
 struct BundleAudioTable {
 	char filename[24];
 	int size;
@@ -1127,68 +1088,54 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 	cbundleCurIndex++;
 }
 
-int main(int argc, char *argv[]) {
-	if (argc < 4)
-		showhelp(argv[0]);
+const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outputfile = inputfile.san] <inputfile>\n";
 
-	char inputDir[768];
-	char outputDir[768];
-	char inputFilename[256];
-	char tmpPath[768];
+int main(int argc, char *argv[]) {
+	Filename inpath, outpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
+
+	parseHelpArguments(argv, argc, helptext);
+
+	// compression mode
+	gCompMode = process_audio_params(argc, argv, &first_arg);
+
+	if(gCompMode == kNoAudioMode) {
+		// Unknown mode (failed to parse arguments), display help and exit
+		printf(helptext, argv[0]);
+		exit(2);
+	}
 
 	uint32 tag;
 	int32 numFiles, offset;
-	int i = 1;
 
-	strcpy(inputFilename, argv[argc - 3]);
-	strcpy(inputDir, argv[argc - 2]);
-	strcpy(outputDir, argv[argc - 1]);
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else 
+		// Just leave it empty, we just change extension of input file
+		;
 
-	if (!strcmp(argv[i], "--mp3")) {
-		gCompMode = kMP3Mode;
-		i++;
-	} else if (!strcmp(argv[i], "--vorbis")) {
-		gCompMode = kVorbisMode;
-		i++;
-	} else if (!strcmp(argv[i], "--flac")) {
-		gCompMode = kFlacMode;
-		i++;
-	}
+	inpath.setFullPath(argv[first_arg]);
 
-	switch (gCompMode) {
-	case kMP3Mode:
-		if (!process_mp3_parms(argc - 2, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kVorbisMode:
-		if (!process_ogg_parms(argc - 2, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kFlacMode:
-		if (!process_flac_parms(argc - 2, argv, i))
-			showhelp(argv[0]);
-		break;
-	default:
-		error("Unknown encoding method");
-	}
-
-	char *index = strrchr(inputFilename, '.');
-	if (index != NULL)
-		*index = 0;
-
-	sprintf(tmpPath, "%s/%s.bun", inputDir, inputFilename);
-
-	FILE *input = fopen(tmpPath, "rb");
+	FILE *input = fopen(inpath.getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", tmpPath);
+		printf("Cannot open file: %s\n", inpath.getFullPath());
 		exit(-1);
 	}
 
-	sprintf(tmpPath, "%s/%s.bun", outputDir, inputFilename);
+	if(outpath.empty()) {
+		// Change extension for output
+		outpath = inpath;
+		outpath.setExtension(".bun");
+	}
 
-	FILE *output = fopen(tmpPath, "wb");
+	FILE *output = fopen(outpath.getFullPath(), "wb");
 	if (!output) {
-		printf("Cannot open file: %s\n", tmpPath);
+		printf("Cannot open file: %s\n", outpath.getFullPath());
 		exit(-1);
 	}
 
@@ -1206,7 +1153,7 @@ int main(int argc, char *argv[]) {
 	bundleTable = (BundleAudioTable *)malloc(numFiles * sizeof(BundleAudioTable));
 	fseek(input, offset, SEEK_SET);
 
-	for (i = 0; i < numFiles; i++) {
+	for (int i = 0; i < numFiles; i++) {
 		char filename[13], c;
 		int z = 0;
 		int z2;
@@ -1224,19 +1171,21 @@ int main(int argc, char *argv[]) {
 		bundleTable[i].size = readUint32BE(input);
 	}
 
-	for (i = 0; i < numFiles; i++) {
+	for (int i = 0; i < numFiles; i++) {
 		if (strcmp(bundleTable[i].filename, "PRELOAD.") == 0)
 			continue;
 		int offsetData = 0, bits = 0, freq = 0, channels = 0;
 		int32 size = 0;
 		byte *compFinal = decompressBundleSound(i, input, size);
 		writeToRMAPFile(compFinal, output, bundleTable[i].filename, offsetData, bits, freq, channels);
-		writeRegions(compFinal + offsetData, bits, freq, channels, outputDir, bundleTable[i].filename, output);
+		char outdir[1024];
+		outpath.getPath(outdir);
+		writeRegions(compFinal + offsetData, bits, freq, channels, outdir, bundleTable[i].filename, output);
 		free(compFinal);
 	}
 
 	int32 curPos = ftell(output);
-	for (i = 0; i < cbundleCurIndex; i++) {
+	for (int i = 0; i < cbundleCurIndex; i++) {
 		fwrite(cbundleTable[i].filename, 24, 1, output);
 		writeUint32BE(output, cbundleTable[i].offset);
 		writeUint32BE(output, cbundleTable[i].size);

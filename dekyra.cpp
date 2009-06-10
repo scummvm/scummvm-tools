@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
 		if (*argv[param] != '-' && file == -1)
 			file = param;
 		else {
-			if(argv[param][1] == 't') {
+			if (argv[param][1] == 't') {
 				displayText = true;
 			} else if (argv[param][1] == 'e') {
 				engine = atoi(argv[param+1]);

@@ -51,7 +51,7 @@ public:
 	cFileList *getFileList() const { return _fileList; }
 
 	void drawFileList();
-	bool outputAllFiles(const char *outputPath);
+	bool outputAllFiles(Filename *outputPath);
 	bool outputFileAs(const char *file, const char *outputName);
 private:
 	FileList *_fileList;
