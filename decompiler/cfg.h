@@ -21,6 +21,7 @@ struct BasicBlock {
 		_id = _g_id++;
 	}
 	void printInsns(vector<Instruction*> &v) {
+		printHeader(v);
 		printf(" in(");
 		for (unsigned i = 0; i < _in.size(); i++)
 			printf("%d%s", _in[i]->_id, i == _in.size()-1 ? "" : ",");
@@ -42,6 +43,9 @@ struct BasicBlock {
 	}
 	virtual void printOuts() {
 	};
+	void printHeader(vector<Instruction*> &v) {
+		printf("%d (%04x..%04x)", _id, v[_start]->_addr-8, v[_end-1]->_addr-8);
+	}
 	virtual void print(vector<Instruction*> &v) = 0;
 	virtual ~BasicBlock() {
 	}
@@ -54,7 +58,7 @@ struct BB2Way : public BasicBlock {
 	BB2Way(uint32 start, uint32 end) : BasicBlock(start, end) {
 	}
 	void print(vector<Instruction*> &v) {
-		printf("=== BB2Way %d [%d,%d)", _id, _start, _end);
+		printf("=== BB2Way #");
 		printInsns(v);
 		printf("===\n\n");
 	}
@@ -68,7 +72,7 @@ struct BBFall : public BasicBlock {
 	BBFall(uint32 start, uint32 end) : BasicBlock(start, end) {
 	}
 	void print(vector<Instruction*> &v) {
-		printf("=== BBFall #%d [%d,%d)", _id, _start, _end);
+		printf("=== BBFall #");
 		printInsns(v);
 		printf("===\n\n");
 	}
@@ -81,7 +85,7 @@ struct BBEnd : public BasicBlock {
 	BBEnd(uint32 start, uint32 end) : BasicBlock(start, end) {
 	}
 	void print(vector<Instruction*> &v) {
-		printf("=== BBEnd #%d [%d,%d)", _id, _start, _end);
+		printf("=== BBEnd #");
 		printInsns(v);
 		printf("===\n\n");
 	}
@@ -92,6 +96,40 @@ struct CFG {
 
 	vector<BasicBlock*> _blocks;
 	vector<uint32> _targets;
+	vector<Instruction*> *_v;
+
+	void printBBs() {
+		for (uint32 i = 0; i < _blocks.size(); i++)
+			_blocks[i]->print(*_v);
+	}
+
+	void printDot() {
+		printf("digraph G {\n");
+		for (uint32 i = 0; i < _blocks.size(); i++) {
+			BB2Way *bb2way = dynamic_cast<BB2Way*>(_blocks[i]);
+			BBFall *bbfall = dynamic_cast<BBFall*>(_blocks[i]);
+			BBEnd  *bbend  = dynamic_cast<BBEnd*> (_blocks[i]);
+			if (bb2way) {
+				printf("\""); bb2way->printHeader(*_v); printf("\"");
+				printf(" -> ");
+				printf("\""); bb2way->_out1->printHeader(*_v); printf("\"");
+				printf(" [style=bold]\n");
+				printf("\""); bb2way->printHeader(*_v); printf("\"");
+				printf(" -> ");
+				printf("\""); bb2way->_out2->printHeader(*_v); printf("\"");
+				printf("\n");
+			} else if (bbfall) {
+				printf("\""); bbfall->printHeader(*_v); printf("\"");
+				printf(" -> ");
+				printf("\""); bbfall->_out->printHeader(*_v); printf("\"");
+				printf(" [style=bold]\n");
+			} else if (bbend) {
+				printf("\""); bbend->printHeader(*_v); printf("\"");
+				printf("\n");
+			}
+		}
+		printf("}\n");
+	}
 
 	bool isTarget(uint32 addr) {
 		for (uint32 i = 0; i < _targets.size(); i++)
@@ -116,6 +154,7 @@ struct CFG {
 
 	CFG(vector<Instruction*> &v) {
 		Script s(v);
+		_v = new vector<Instruction*>(v);
 		_targets.push_back(0);
 		for (uint32 i = 0; i < v.size(); i++) {
 			Jump *j = dynamic_cast<Jump*>(v[i]);

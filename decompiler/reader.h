@@ -63,7 +63,7 @@ struct SimpleReader : public Reader {
 				ssret << '"';
 				break;
 			default:
-				printf("! unhandled format char '%c'\n", _format[i]);
+				fprintf(stderr, "! unhandled format char '%c'\n", _format[i]);
 				return false;
 			}
 		description = ssret.str();
@@ -118,11 +118,13 @@ struct SubopcodeReader : public Reader {
 	}
 
 	bool readInstruction(ifstream& f, vector<Instruction*> &v, uint32 addr) {
+		//		if (f.tellg() >= 0x67)
+		//			return false;
 		uint8 opcode = f.get();
 		if (f.eof()) {
 			return false;
 		} else if (!_dispatchTable[opcode]) {
-			printf("! unhandled opcode 0x%02x (%d) at address 0x%02x (%d)\n", opcode, opcode, addr, addr);
+			fprintf(stderr, "! unhandled opcode 0x%02x (%d) at address 0x%02x (%d)\n", opcode, opcode, addr, addr);
 			return false;
 		} else {
 			return _dispatchTable[opcode]->readInstruction(f, v, addr);

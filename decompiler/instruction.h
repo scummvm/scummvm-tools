@@ -40,7 +40,7 @@ struct Script {
 		for (uint32 i = 0; i < _v.size(); i++)
 			if (_v[i]->_addr == addr)
 				return i;
-		printf("!!! no instruction with address %x (%d)\n", addr, addr);
+		fprintf(stderr, "!!! no instruction with address %x (%d)\n", addr, addr);
 		return -1;
 	}
 

@@ -9,17 +9,27 @@ using namespace std;
 #include "cfg.h"
 
 bool g_disasm = false;
-bool g_bbcuts = true;
+bool g_blocks = false;
+bool g_graph = false;
 
 int main(int argc, char **argv) {
 	int argno = 1;
 	if (argno >= argc) {
-		printf("decompiler [-disasm] file.dmp\n");
+		printf("decompiler [-disasm] [-blocks] [-graph] file.dmp\n");
 		return 0;
 	}
-	if (0 == strcmp("-disasm", argv[argno])) {
-		g_disasm = true;
-		argno++;
+	while (true) {
+		if (0 == strcmp("-disasm", argv[argno])) {
+			g_disasm = true;
+			argno++;
+		} else if (0 == strcmp("-blocks", argv[argno])) {
+			g_blocks = true;
+			argno++;
+		} else if (0 == strcmp("-graph", argv[argno])) {
+			g_graph = true;
+			argno++;
+		} else
+			break;
 	}
 	vector<Instruction*> v = Scumm6Parser().parseFile(argv[argno]);
 	if (g_disasm) {
@@ -31,7 +41,9 @@ int main(int argc, char **argv) {
 		}
 	}
 	CFG *cfg = new CFG(v);
-	for (uint32 i = 0; i < cfg->_blocks.size(); i++)
-		cfg->_blocks[i]->print(v);
+	if (g_blocks)
+		cfg->printBBs();
+	if (g_graph)
+		cfg->printDot();
 	return 0;
 }
