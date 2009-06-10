@@ -17,7 +17,7 @@ using namespace std;
 #include "instruction.h"
 
 
-struct Scumm6Parser {
+struct Scumm6Parser : public Parser {
 
 	SubopcodeReader *_reader;
 
@@ -143,14 +143,12 @@ struct Scumm6Parser {
 		}
 	}
 
-	vector<Instruction*> parseFile(const char *filename) {
-		vector<Instruction*> v;
+	void parseFile(Script* script, const char *filename) {
 		ifstream f;
 		f.open(filename, ios::binary);
 		parseHeader(f);
-		while (_reader->readInstruction(f, v, f.tellg()))
+		while (_reader->readInstruction(f, script, f.tellg()))
 			;
-		return v;
 	}
 
 };

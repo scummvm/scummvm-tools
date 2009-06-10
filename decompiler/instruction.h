@@ -6,7 +6,6 @@
 
 #include "misc.h"
 
-
 struct Instruction {
 	string _description;
 	uint32 _addr;
@@ -19,6 +18,9 @@ struct Instruction {
 
 struct Jump : public Instruction {
 	int16 _offset;
+	uint32 target() {
+		return _addr+_offset;
+	}
 	Jump(string description, uint32 addr, int16 offset) : Instruction(description, addr), _offset(offset) {
 	}
 };
@@ -29,19 +31,38 @@ struct CondJump : public Jump {
 };
 
 
+struct Script;
+
+struct Parser {
+	virtual void parseFile(Script* script, const char *filename) = 0;
+};
+
 struct Script {
 
-	vector<Instruction*> _v;
+	vector<Instruction*> _instructions;
 
-	Script(vector<Instruction*> v) : _v(v) {
+	Script(Parser *parser, const char *filename) {
+		parser->parseFile(this, filename);
 	}
 
-	uint32 findIdx(uint32 addr) {
-		for (uint32 i = 0; i < _v.size(); i++)
-			if (_v[i]->_addr == addr)
+	void append(Instruction *instr) {
+		_instructions.push_back(instr);
+	}
+
+	index_t index(address_t addr) {
+		for (index_t i = 0; i < _instructions.size(); i++)
+			if (_instructions[i]->_addr == addr)
 				return i;
 		fprintf(stderr, "!!! no instruction with address %x (%d)\n", addr, addr);
 		return -1;
+	}
+
+	Instruction* operator[](index_t i) {
+		return _instructions[i];
+	}
+
+	index_t size() {
+		return _instructions.size();
 	}
 
 };

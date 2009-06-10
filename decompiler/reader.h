@@ -20,7 +20,7 @@ using namespace std;
 
 struct Reader {
 	// return true if all went ok and we can safely read next afterwards
-	virtual bool readInstruction(ifstream &f, vector<Instruction*> &v, uint32 addr) = 0;
+	virtual bool readInstruction(ifstream &f, Script* script, uint32 addr) = 0;
 	virtual ~Reader() {
 	}
 };
@@ -70,11 +70,11 @@ struct SimpleReader : public Reader {
 		return true;
 	}
 
-	virtual bool readInstruction(ifstream &f, vector<Instruction*> &v, uint32 addr) {
+	virtual bool readInstruction(ifstream &f, Script *script, uint32 addr) {
 		vector<int16> args;
 		string descr;
 		if (readArguments(f, descr, args)) {
-			v.push_back(new Instruction(descr, addr));
+			script->append(new Instruction(descr, addr));
 			return true;
 		} else {
 			return false;
@@ -87,11 +87,11 @@ template<typename T>
 struct _JmpReader : public SimpleReader {
 	_JmpReader(string description, string format="") : SimpleReader(description, format) {
 	}
-	virtual bool readInstruction(ifstream &f, vector<Instruction*> &v, uint32 addr) {
+	virtual bool readInstruction(ifstream &f, Script* script, uint32 addr) {
 		vector<int16> args;
 		string descr;
 		if (readArguments(f, descr, args)) {
-			v.push_back(new T(descr, addr, args[0]));
+			script->append(new T(descr, addr, args[0]));
 			return true;
 		} else {
 			return false;
@@ -117,9 +117,8 @@ struct SubopcodeReader : public Reader {
 		_dispatchTable[opcode] = reader;
 	}
 
-	bool readInstruction(ifstream& f, vector<Instruction*> &v, uint32 addr) {
-		//		if (f.tellg() >= 0x67)
-		//			return false;
+	bool readInstruction(ifstream& f, Script *script, uint32 addr) {
+		// if (f.tellg() >= 0x67) return false; // CUT
 		uint8 opcode = f.get();
 		if (f.eof()) {
 			return false;
@@ -127,7 +126,7 @@ struct SubopcodeReader : public Reader {
 			fprintf(stderr, "! unhandled opcode 0x%02x (%d) at address 0x%02x (%d)\n", opcode, opcode, addr, addr);
 			return false;
 		} else {
-			return _dispatchTable[opcode]->readInstruction(f, v, addr);
+			return _dispatchTable[opcode]->readInstruction(f, script, addr);
 		}
 	}
 };
@@ -140,8 +139,8 @@ struct SeqReader : public Reader {
 	SeqReader(Reader *first, Reader *second) : _first(first), _second(second) {
 	}
 
-	bool readInstruction(ifstream& f, vector<Instruction*> &v, uint32 addr) {
-		return _first->readInstruction(f, v, addr) && _second->readInstruction(f, v, addr);
+	bool readInstruction(ifstream& f, Script *script, uint32 addr) {
+		return _first->readInstruction(f, script, addr) && _second->readInstruction(f, script, addr);
 	}
 };
 

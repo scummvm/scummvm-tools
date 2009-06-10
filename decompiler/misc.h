@@ -10,6 +10,9 @@ typedef short int16;
 typedef unsigned short uint16;
 typedef unsigned uint32;
 
+typedef uint32 address_t; // bytecode address
+typedef uint32 index_t;   // instruction number in intermediate script
+
 uint32 read_be_uint32(ifstream &f) {
 	uint32 ret = 0;
 	ret |= f.get() << 24;

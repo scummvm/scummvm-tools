@@ -1,7 +1,9 @@
 #ifndef CFG_H
 #define CFG_H
 
+#include <set>
 #include <vector>
+
 
 #include <cstdio>
 
@@ -12,14 +14,31 @@ using namespace std;
 #include "misc.h"
 
 
-struct BasicBlock {
-	static uint32 _g_id;
+struct Node {
 	uint32 _id;
-	uint32 _start, _end;
-	vector<BasicBlock*> _in;
-	BasicBlock(uint32 start, uint32 end) : _start(start), _end(end) {
+	static uint32 _g_id;
+	vector<Node*> _in, _out;
+	Node() {
 		_id = _g_id++;
 	}
+	virtual ~Node() {
+	};
+};
+
+uint32 Node::_g_id = 0;
+
+
+struct BasicBlock : public Node {
+	enum Type {
+		TwoWay,
+		OneWay,
+		End
+	};
+	Type _type;
+	index_t _start, _end;
+	BasicBlock(Type type, index_t start, index_t end) : Node(), _type(type), _start(start), _end(end) {
+	}
+
 	void printInsns(vector<Instruction*> &v) {
 		printHeader(v);
 		printf(" in(");
@@ -46,166 +65,102 @@ struct BasicBlock {
 	void printHeader(vector<Instruction*> &v) {
 		printf("%d (%04x..%04x)", _id, v[_start]->_addr-8, v[_end-1]->_addr-8);
 	}
-	virtual void print(vector<Instruction*> &v) = 0;
-	virtual ~BasicBlock() {
-	}
-};
-
-uint32 BasicBlock::_g_id = 0;
-
-struct BB2Way : public BasicBlock {
-	BasicBlock *_out1, *_out2;
-	BB2Way(uint32 start, uint32 end) : BasicBlock(start, end) {
-	}
-	void print(vector<Instruction*> &v) {
-		printf("=== BB2Way #");
+	virtual void print(vector<Instruction*> &v) {
+		printf("=== ");
 		printInsns(v);
 		printf("===\n\n");
 	}
-	void printOuts() {
-		printf("%d,%d", _out1->_id, _out2->_id);
-	}
-};
 
-struct BBFall : public BasicBlock {
-	BasicBlock *_out;
-	BBFall(uint32 start, uint32 end) : BasicBlock(start, end) {
-	}
-	void print(vector<Instruction*> &v) {
-		printf("=== BBFall #");
-		printInsns(v);
-		printf("===\n\n");
-	}
-	void printOuts() {
-		printf("%d", _out->_id);
-	}
-};
-
-struct BBEnd : public BasicBlock {
-	BBEnd(uint32 start, uint32 end) : BasicBlock(start, end) {
-	}
-	void print(vector<Instruction*> &v) {
-		printf("=== BBEnd #");
-		printInsns(v);
-		printf("===\n\n");
-	}
 };
 
 
 struct CFG {
 
 	vector<BasicBlock*> _blocks;
-	vector<uint32> _targets;
-	vector<Instruction*> *_v;
+	Script &_script;
 
-	void printBBs() {
+	void printBasicBlocks() {
 		for (uint32 i = 0; i < _blocks.size(); i++)
-			_blocks[i]->print(*_v);
+			_blocks[i]->print(_script._instructions);
 	}
 
 	void printDot() {
 		printf("digraph G {\n");
+		vector<Instruction*> *_v = &_script._instructions;
 		for (uint32 i = 0; i < _blocks.size(); i++) {
-			BB2Way *bb2way = dynamic_cast<BB2Way*>(_blocks[i]);
-			BBFall *bbfall = dynamic_cast<BBFall*>(_blocks[i]);
-			BBEnd  *bbend  = dynamic_cast<BBEnd*> (_blocks[i]);
-			if (bb2way) {
-				printf("\""); bb2way->printHeader(*_v); printf("\"");
+			BasicBlock *bb = _blocks[i];
+			if (bb->_type == BasicBlock::TwoWay) {
+				printf("\""); bb->printHeader(*_v); printf("\"");
 				printf(" -> ");
-				printf("\""); bb2way->_out1->printHeader(*_v); printf("\"");
+				printf("\""); ((BasicBlock*)bb->_out[0])->printHeader(*_v); printf("\"");
 				printf(" [style=bold]\n");
-				printf("\""); bb2way->printHeader(*_v); printf("\"");
+				printf("\""); bb->printHeader(*_v); printf("\"");
 				printf(" -> ");
-				printf("\""); bb2way->_out2->printHeader(*_v); printf("\"");
+				printf("\""); ((BasicBlock*)bb->_out[1])->printHeader(*_v); printf("\"");
 				printf("\n");
-			} else if (bbfall) {
-				printf("\""); bbfall->printHeader(*_v); printf("\"");
+			} else if (bb->_type == BasicBlock::OneWay) {
+				printf("\""); bb->printHeader(*_v); printf("\"");
 				printf(" -> ");
-				printf("\""); bbfall->_out->printHeader(*_v); printf("\"");
+				printf("\""); ((BasicBlock*)bb->_out[0])->printHeader(*_v); printf("\"");
 				printf(" [style=bold]\n");
-			} else if (bbend) {
-				printf("\""); bbend->printHeader(*_v); printf("\"");
+			} else if (bb->_type == BasicBlock::End) {
+				printf("\""); bb->printHeader(*_v); printf("\"");
 				printf("\n");
 			}
 		}
 		printf("}\n");
 	}
 
-	bool isTarget(uint32 addr) {
-		for (uint32 i = 0; i < _targets.size(); i++)
-			if (_targets[i] == addr)
-				return true;
-		return false;
-	}
-
-	BasicBlock *blockByStartIdx(uint32 idx) {
-		for (uint32 i = 0; i < _blocks.size(); i++)
+	BasicBlock *blockByStart(index_t idx) {
+		for (index_t i = 0; i < _blocks.size(); i++)
 			if (_blocks[i]->_start == idx)
 				return _blocks[i];
 		return 0;
 	}
 
-	BasicBlock *blockByEndIdx(uint32 idx) {
-		for (uint32 i = 0; i < _blocks.size(); i++)
+	BasicBlock *blockByEnd(index_t idx) {
+		for (index_t i = 0; i < _blocks.size(); i++)
 			if (_blocks[i]->_end == idx)
 				return _blocks[i];
 		return 0;
 	}
 
-	CFG(vector<Instruction*> &v) {
-		Script s(v);
-		_v = new vector<Instruction*>(v);
-		_targets.push_back(0);
-		for (uint32 i = 0; i < v.size(); i++) {
-			Jump *j = dynamic_cast<Jump*>(v[i]);
-			if (j) {
-				_targets.push_back(s.findIdx(j->_addr+j->_offset));
-				if (dynamic_cast<CondJump*>(v[i]) && i != v.size()-1)
-					_targets.push_back(s.findIdx(v[i+1]->_addr));
+	void addEdge(BasicBlock *from, BasicBlock *to) {
+		from->_out.push_back(to);
+		to->_in.push_back(from);
+	}
+
+	CFG(Script &script) : _script(script) {
+		Jump *j;
+		set<address_t> targets;
+		targets.insert(0);
+		for (index_t i = 0; i < script.size(); i++) {
+			if ((j = dynamic_cast<Jump*>(script[i]))) {
+				targets.insert(script.index(j->_addr+j->_offset));
+				if (dynamic_cast<CondJump*>(script[i]) && i != script.size()-1)
+					targets.insert(i+1);
 			}
 		}
-		uint32 bbstart = 0;
-		for (uint32 i = 0; i < v.size(); i++)
-			if (dynamic_cast<CondJump*>(v[i])) {
-				_blocks.push_back(new BB2Way(bbstart, i+1));
+		index_t bbstart = 0;
+		for (index_t i = 0; i < script.size(); i++)
+			if (dynamic_cast<CondJump*>(script[i])) {
+				_blocks.push_back(new BasicBlock(BasicBlock::TwoWay, bbstart, i+1));
+				bbstart = i+1;
+			} else if (dynamic_cast<Jump*>(script[i])) {
+				_blocks.push_back(new BasicBlock(BasicBlock::OneWay, bbstart, i+1));
+				bbstart = i+1;
+			} else if (targets.find(i+1) != targets.end()) {
+				_blocks.push_back(new BasicBlock(BasicBlock::OneWay, bbstart, i+1));
 				bbstart = i+1;
 			}
-			else if (dynamic_cast<Jump*>(v[i])) {
-				_blocks.push_back(new BBFall(bbstart, i+1));
-				bbstart = i+1;
-			} else if (isTarget(i+1)) {
-				_blocks.push_back(new BBFall(bbstart, i+1));
-				bbstart = i+1;
-			}
-		if (bbstart != v.size())
-			_blocks.push_back(new BBEnd(bbstart, v.size()));
-		for (uint32 i = 0; i < v.size(); i++) {
-			Jump *j = dynamic_cast<Jump*>(v[i]);
-			CondJump *cj = dynamic_cast<CondJump*>(v[i]);
-			if (cj) {
-				BB2Way *bb2way = dynamic_cast<BB2Way*>(blockByEndIdx(i+1));
-				bb2way->_out1 = blockByStartIdx(s.findIdx(cj->_addr+cj->_offset));
-				bb2way->_out2 = blockByStartIdx(s.findIdx(v[i+1]->_addr));
-			}
-			else if (j) {
-				BBFall *bbfall = dynamic_cast<BBFall*>(blockByEndIdx(i+1));
-				bbfall->_out = blockByStartIdx(s.findIdx(j->_addr+j->_offset));
-			} else if (isTarget(i+1)) {
-				BBFall *bbfall = dynamic_cast<BBFall*>(blockByEndIdx(i+1));
-				bbfall->_out = blockByStartIdx(s.findIdx(v[i+1]->_addr));
-			}
-			if (cj) {
-				BasicBlock *bb1 = blockByStartIdx(s.findIdx(cj->_addr+cj->_offset));
-				BasicBlock *bb2 = blockByStartIdx(s.findIdx(v[i+1]->_addr));
-				bb1->_in.push_back(blockByEndIdx(i+1));
-				bb2->_in.push_back(blockByEndIdx(i+1));
-			} else if (j) {
-				BasicBlock *bb1 = blockByStartIdx(s.findIdx(j->_addr+j->_offset));
-				bb1->_in.push_back(blockByEndIdx(i+1));
-			} else if (isTarget(i+1)) {
-				BasicBlock *bb2 = blockByStartIdx(s.findIdx(v[i+1]->_addr));
-				bb2->_in.push_back(blockByEndIdx(i+1));
-			}
+		if (bbstart != script.size())
+			_blocks.push_back(new BasicBlock(BasicBlock::End, bbstart, script.size()));
+		for (index_t i = 0; i < script.size(); i++) {
+			BasicBlock *bb = blockByEnd(i+1);
+			if ((j = dynamic_cast<Jump*>(script[i])))
+				addEdge(bb, blockByStart(script.index(j->target())));
+			if (targets.find(i+1) != targets.end() || dynamic_cast<CondJump*>(script[i]))
+				addEdge(bb, blockByStart(i+1));
 		}
 	};
 
