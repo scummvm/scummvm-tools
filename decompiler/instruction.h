@@ -35,6 +35,7 @@ struct Script;
 
 struct Parser {
 	virtual void parseFile(Script* script, const char *filename) = 0;
+	virtual ~Parser() {}
 };
 
 struct Script {
