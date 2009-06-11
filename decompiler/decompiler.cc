@@ -33,6 +33,9 @@ int main(int argc, char **argv) {
 	}
 	Script script(new Scumm6Parser(), argv[argno]);
 	CFG *cfg = new CFG(script);
+	if (g_disasm)
+		for (index_t i = 0; i < script.size(); i++)
+			script.print(i);
 	if (g_blocks)
 		cfg->printBasicBlocks();
 	if (g_graph)

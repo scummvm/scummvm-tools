@@ -29,42 +29,30 @@ uint32 Node::_g_id = 0;
 
 
 struct BasicBlock : public Node {
+
 	index_t _start, _end;
+
 	BasicBlock(index_t start, index_t end) : Node(), _start(start), _end(end) {
 	}
 
-	void printInsns(vector<Instruction*> &v) {
-		printHeader(v);
+	void printHeader(Script &script) {
+		printf("%d (%04x..%04x)", _id, script[_start]->_addr-8, script[_end-1]->_addr-8);
+	}
+
+	virtual void print(Script &script) {
+		printf("=== ");
+		printHeader(script);
 		printf(" in(");
 		for (unsigned i = 0; i < _in.size(); i++)
 			printf("%d%s", _in[i]->_id, i == _in.size()-1 ? "" : ",");
 		printf(") out(");
-		printOuts();
+		for (unsigned i = 0; i < _out.size(); i++)
+			printf("%d%s", _out[i]->_id, i == _out.size()-1 ? "" : ",");
 		printf("):\n");
-		for (unsigned i = _start; i < _end; i++) {
-			if (i >= 1 && v[i]->_addr == v[i-1]->_addr)
-				printf("         |           %s", v[i]->_description.c_str());
-			else
-				printf("[d] %04x | [r] %04x: %s", v[i]->_addr-8, v[i]->_addr, v[i]->_description.c_str());
-			Jump *j = dynamic_cast<Jump*>(v[i]);
-			if (j) {
-				uint32 jaddr = j->_addr+j->_offset;
-				printf(" ([d] %04x | [r] %04x)", jaddr-8, jaddr);
-			}
-			printf("\n");
-		}
-	}
-	virtual void printOuts() {
-	};
-	void printHeader(vector<Instruction*> &v) {
-		printf("%d (%04x..%04x)", _id, v[_start]->_addr-8, v[_end-1]->_addr-8);
-	}
-	virtual void print(vector<Instruction*> &v) {
-		printf("=== ");
-		printInsns(v);
+		for (unsigned i = _start; i < _end; i++)
+			script.print(i);
 		printf("===\n\n");
 	}
-
 };
 
 
@@ -75,21 +63,20 @@ struct CFG {
 
 	void printBasicBlocks() {
 		for (uint32 i = 0; i < _blocks.size(); i++)
-			_blocks[i]->print(_script._instructions);
+			_blocks[i]->print(_script);
 	}
 
 	void printDot() {
 		printf("digraph G {\n");
-		vector<Instruction*> *_v = &_script._instructions;
 		for (uint32 i = 0; i < _blocks.size(); i++) {
 			BasicBlock *bb = _blocks[i];
 			for (uint32 j = 0; j < bb->_out.size(); j++) {
-				printf("\""); bb->printHeader(*_v); printf("\"");
+				printf("\""); bb->printHeader(_script); printf("\"");
 				printf(" -> ");
-				printf("\""); ((BasicBlock*)bb->_out[j])->printHeader(*_v); printf("\"");
+				printf("\""); ((BasicBlock*)bb->_out[j])->printHeader(_script); printf("\"");
 				printf(" %s\n", j == 0 ? "[style=bold]" : "");
 			}
-			printf("\""); bb->printHeader(*_v); printf("\"\n");
+			printf("\""); bb->printHeader(_script); printf("\"\n");
 		}
 		printf("}\n");
 	}

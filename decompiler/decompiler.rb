@@ -11,12 +11,14 @@ end
 
 def graph filename
    tmpfile = Tempfile.new 'decompiler'
-   `./decompiler -graph #{filename} | dot -T svg -o #{tmpfile.path}`
+   system "./decompiler -graph #{filename} | dot -T svg -o #{tmpfile.path}"
    `#{$image_viewer} #{tmpfile.path}`
 end
 
 
-opts = GetoptLong.new(['--graph', '-g', GetoptLong::NO_ARGUMENT])
+opts = GetoptLong.new(['--disasm', '-d', GetoptLong::NO_ARGUMENT],
+                      ['--blocks', '-b', GetoptLong::NO_ARGUMENT],
+                      ['--graph',  '-g', GetoptLong::NO_ARGUMENT])
 
 if ARGV.size < 1
    usage
@@ -27,6 +29,12 @@ for opt, arg in opts
    case opt
    when '--help'
       usage
+      exit
+   when '--disasm'
+      system "./decompiler -disasm #{ARGV[0]}"
+      exit
+   when '--blocks'
+      system "./decompiler -blocks #{ARGV[0]}"
       exit
    when '--graph'
       graph ARGV[0]
