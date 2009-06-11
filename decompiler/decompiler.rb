@@ -3,7 +3,7 @@
 require 'getoptlong'
 require 'tempfile'
 
-$image_viewer = 'eog'
+$image_viewer = 'eog -n'
 
 def usage
    puts "decompiler.rb [--graph] file.dmp"
@@ -12,7 +12,7 @@ end
 def graph filename
    tmpfile = Tempfile.new 'decompiler'
    system "./decompiler -graph #{filename} | dot -T svg -o #{tmpfile.path}"
-   `#{$image_viewer} #{tmpfile.path}`
+   system `#{$image_viewer} #{tmpfile.path}`
 end
 
 

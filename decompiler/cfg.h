@@ -15,12 +15,23 @@ using namespace std;
 
 
 struct Node {
+
 	uint32 _id;
 	static uint32 _g_id;
 	vector<Node*> _in, _out;
+
 	Node() {
 		_id = _g_id++;
 	}
+
+	void removeInEdge(Node *from) {
+		for (vector<Node*>::iterator it = _in.begin(); it != _in.end(); it++)
+			if (*it == from) {
+				_in.erase(it);
+				return;
+			}
+	}
+
 	virtual ~Node() {
 	};
 };
@@ -82,14 +93,14 @@ struct CFG {
 	}
 
 	BasicBlock *blockByStart(index_t idx) {
-		for (index_t i = 0; i < _blocks.size(); i++)
+		for (uint32 i = 0; i < _blocks.size(); i++)
 			if (_blocks[i]->_start == idx)
 				return _blocks[i];
 		return 0;
 	}
 
 	BasicBlock *blockByEnd(index_t idx) {
-		for (index_t i = 0; i < _blocks.size(); i++)
+		for (uint32 i = 0; i < _blocks.size(); i++)
 			if (_blocks[i]->_end == idx)
 				return _blocks[i];
 		return 0;
@@ -98,6 +109,50 @@ struct CFG {
 	void addEdge(BasicBlock *from, BasicBlock *to) {
 		from->_out.push_back(to);
 		to->_in.push_back(from);
+	}
+
+	void removeJumpsToJumps() {
+		for (bool changed = true; changed; ) {
+			changed = false;
+			for (uint32 i = 0; i < _blocks.size(); i++)
+				for (uint32 j = 0; j < _blocks[i]->_out.size(); j++) {
+					BasicBlock *bbout = (BasicBlock*) _blocks[i]->_out[j];
+					Jump *jump = dynamic_cast<Jump*>(_script[bbout->_start]);
+					if (jump && !dynamic_cast<CondJump*>(jump)) {
+						changed = true;
+						BasicBlock *newtgt = blockByStart(_script.index(jump->target()));
+						bbout->removeInEdge(_blocks[i]);
+						newtgt->_in.push_back(_blocks[i]);
+						_blocks[i]->_out[j] = newtgt;
+					}
+				}
+		}
+	}
+
+	// TODO
+	// after this _blocks[i]->_id == i no longer holds
+	// also it won't work for more than one graph so we need a better way
+	// (move to _blocks being a list and map<id,Block*> for quick access?)
+	void removeDeadBlocks() {
+		set<uint32> visited;
+		vector<uint32> stack;
+		visited.insert(0);
+		stack.push_back(0);
+		while (!stack.empty()) {
+			uint32 id = stack.back();
+			stack.pop_back();
+			Node *node = _blocks[id];
+			for (uint32 i = 0; i < node->_out.size(); i++)
+				if (visited.find(node->_out[i]->_id) == visited.end()) {
+					visited.insert(node->_out[i]->_id);
+					stack.push_back(node->_out[i]->_id);
+				}
+		}
+		for (vector<BasicBlock*>::iterator it = _blocks.begin(); it != _blocks.end(); )
+			if (visited.find((*it)->_id) == visited.end())
+				it = _blocks.erase(it);
+			else
+				it++;
 	}
 
 	CFG(Script &script) : _script(script) {

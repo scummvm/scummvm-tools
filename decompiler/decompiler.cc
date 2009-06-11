@@ -38,6 +38,8 @@ int main(int argc, char **argv) {
 			script.print(i);
 	if (g_blocks)
 		cfg->printBasicBlocks();
+	cfg->removeJumpsToJumps();
+	cfg->removeDeadBlocks();
 	if (g_graph)
 		cfg->printDot();
 	return 0;
