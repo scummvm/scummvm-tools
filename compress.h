@@ -56,15 +56,15 @@
 #define TEMP_OGG	"tempfile.ogg"
 #define TEMP_FLAC	"tempfile.fla"
 
-typedef enum { kNoAudioMode, kMP3Mode, kVorbisMode, kFlacMode } CompressMode;
-
-// The order should match the enum above
-static const char *audio_extensions[] = {
-	".unk",
-	".mp3",
-	".ogg",
-	".fla"
+enum CompressMode {
+	kNoAudioMode,
+	kMP3Mode,
+	kVorbisMode,
+	kFlacMode
 };
+
+extern const char *audio_extensions[];
+
 
 /*
  * Stuff which is in compress.c

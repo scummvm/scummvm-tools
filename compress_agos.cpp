@@ -248,7 +248,7 @@ int main(int argc, char *argv[]) {
 
 	Filename inpath;
 	int first_arg = 1;
-	int last_arg = argc - 1;
+//	int last_arg = argc - 1;
 
 	parseHelpArguments(argv, argc, helptext);
 

@@ -22,6 +22,14 @@
 
 #include "compress.h"
 
+// The order should match the CompressMode enum
+const char *audio_extensions[] = {
+	".unk",
+	".mp3",
+	".ogg",
+	".fla"
+};
+
 typedef struct  {
 	uint32 minBitr;
 	uint32 maxBitr;
@@ -912,6 +920,8 @@ CompressMode process_audio_params(int argc, char *argv[], int* i) {
 		tempEncoded = TEMP_FLAC;
 		if (!process_flac_parms(argc - 2, argv, i))
 			return kNoAudioMode;
+		break;
+	case kNoAudioMode:	// cannot occur but we check anyway to avoid compiler warnings
 		break;
 	}
 

@@ -171,7 +171,7 @@ encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
 extract_cine$(EXEEXT): extract_cine.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_agos$(EXEEXT): extract_agos.o
+extract_agos$(EXEEXT): extract_agos.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_gob_stk$(EXEEXT): extract_gob_stk.o util.o

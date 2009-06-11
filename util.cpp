@@ -274,7 +274,7 @@ void displayHelp(const char *msg, const char *exename) {
 }
 
 void parseHelpArguments(const char * const argv[], int argc, const char *msg) {
-	if (argc < 2 || strcmp(argv[1], "--help") == 0 || stricmp(argv[1], "-h") == 0) {
+	if (argc < 2 || strcmp(argv[1], "--help") == 0 || scumm_stricmp(argv[1], "-h") == 0) {
 		displayHelp(msg, argv[0]);
 	}
 }
