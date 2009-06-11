@@ -59,6 +59,7 @@ struct Scumm6Parser : public Parser {
 		cursor->registerOpcode(0x9c, new SimpleReader("cursor.initCharset"));
 		//		cursor->registerOpcode(0x9d, new SimpleReader("cursor.charsetColor"));
 
+		_reader->registerOpcode(0x6c, new SimpleReader("breakHere"));	// = yield
 		_reader->registerOpcode(0x6d, new SimpleReader("classOfIs"));
 		_reader->registerOpcode(0x6e, new SimpleReader("setClass"));
 		_reader->registerOpcode(0x70, new SimpleReader("setState"));
@@ -144,9 +145,7 @@ struct Scumm6Parser : public Parser {
 		dimArray->registerOpcode(199, new SimpleReader("dimArray.int", "w"));
 		dimArray->registerOpcode(204, new SimpleReader("dimArray.undim", "w"));
 
-		SubopcodeReader *kernelSet = new SubopcodeReader();
-		_reader->registerOpcode(0xc9, kernelSet);
-		kernelSet->registerOpcode(108, new SimpleReader("kernelSetFunctions.setShadowPalette"));
+		_reader->registerOpcode(0xc9, new SimpleReader("kernelSetFunctions.dummy"));
 	}
 
 	void parseHeader(ifstream &f) {
