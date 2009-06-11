@@ -59,7 +59,19 @@ struct SimpleReader : public Reader {
 			case 's':
 				ssret << " \"";
 				for (char c = f.get(); c != 0; c = f.get())
-					ssret << c;
+					if ((uint8) c == 0xff || c == 0xfe)
+						switch (f.get()) {
+						case 10:
+							ssret << "::sound::";
+							for (uint32 q = 0; q < 14; q++)
+								f.get();
+							break;
+						default:
+							fprintf(stderr, "! unhandled SCUMM STRING format char\n");
+							return false;
+						}
+					else
+						ssret << c;
 				ssret << '"';
 				break;
 			default:
@@ -108,8 +120,9 @@ typedef _JmpReader<CondJump> CondJumpReader;
 struct SubopcodeReader : public Reader {
 
 	Reader *_dispatchTable[256];
+	string _name;
 
-	SubopcodeReader() {
+	SubopcodeReader(string name) : _name(name) {
 		memset(_dispatchTable, 0, sizeof(_dispatchTable));
 	}
 
@@ -126,7 +139,7 @@ struct SubopcodeReader : public Reader {
 		if (f.eof()) {
 			return false;
 		} else if (!_dispatchTable[opcode]) {
-			fprintf(stderr, "! unhandled opcode 0x%02x (%d) at address 0x%02x (%d)\n", opcode, opcode, addr, addr);
+			fprintf(stderr, "! [%s] unhandled opcode 0x%02x (%d) at address 0x%02x (%d)\n", _name.c_str(), opcode, opcode, addr, addr);
 			return false;
 		} else {
 			return _dispatchTable[opcode]->readInstruction(f, script, addr);
