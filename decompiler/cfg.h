@@ -29,14 +29,8 @@ uint32 Node::_g_id = 0;
 
 
 struct BasicBlock : public Node {
-	enum Type {
-		TwoWay,
-		OneWay,
-		End
-	};
-	Type _type;
 	index_t _start, _end;
-	BasicBlock(Type type, index_t start, index_t end) : Node(), _type(type), _start(start), _end(end) {
+	BasicBlock(index_t start, index_t end) : Node(), _start(start), _end(end) {
 	}
 
 	void printInsns(vector<Instruction*> &v) {
@@ -89,24 +83,13 @@ struct CFG {
 		vector<Instruction*> *_v = &_script._instructions;
 		for (uint32 i = 0; i < _blocks.size(); i++) {
 			BasicBlock *bb = _blocks[i];
-			if (bb->_type == BasicBlock::TwoWay) {
+			for (uint32 j = 0; j < bb->_out.size(); j++) {
 				printf("\""); bb->printHeader(*_v); printf("\"");
 				printf(" -> ");
-				printf("\""); ((BasicBlock*)bb->_out[0])->printHeader(*_v); printf("\"");
-				printf(" [style=bold]\n");
-				printf("\""); bb->printHeader(*_v); printf("\"");
-				printf(" -> ");
-				printf("\""); ((BasicBlock*)bb->_out[1])->printHeader(*_v); printf("\"");
-				printf("\n");
-			} else if (bb->_type == BasicBlock::OneWay) {
-				printf("\""); bb->printHeader(*_v); printf("\"");
-				printf(" -> ");
-				printf("\""); ((BasicBlock*)bb->_out[0])->printHeader(*_v); printf("\"");
-				printf(" [style=bold]\n");
-			} else if (bb->_type == BasicBlock::End) {
-				printf("\""); bb->printHeader(*_v); printf("\"");
-				printf("\n");
+				printf("\""); ((BasicBlock*)bb->_out[j])->printHeader(*_v); printf("\"");
+				printf(" %s\n", j == 0 ? "[style=bold]" : "");
 			}
+			printf("\""); bb->printHeader(*_v); printf("\"\n");
 		}
 		printf("}\n");
 	}
@@ -143,18 +126,12 @@ struct CFG {
 		}
 		index_t bbstart = 0;
 		for (index_t i = 0; i < script.size(); i++)
-			if (dynamic_cast<CondJump*>(script[i])) {
-				_blocks.push_back(new BasicBlock(BasicBlock::TwoWay, bbstart, i+1));
-				bbstart = i+1;
-			} else if (dynamic_cast<Jump*>(script[i])) {
-				_blocks.push_back(new BasicBlock(BasicBlock::OneWay, bbstart, i+1));
-				bbstart = i+1;
-			} else if (targets.find(i+1) != targets.end()) {
-				_blocks.push_back(new BasicBlock(BasicBlock::OneWay, bbstart, i+1));
+			if (targets.find(i+1) != targets.end() || dynamic_cast<Jump*>(script[i])) {
+				_blocks.push_back(new BasicBlock(bbstart, i+1));
 				bbstart = i+1;
 			}
 		if (bbstart != script.size())
-			_blocks.push_back(new BasicBlock(BasicBlock::End, bbstart, script.size()));
+			_blocks.push_back(new BasicBlock(bbstart, script.size()));
 		for (index_t i = 0; i < script.size(); i++) {
 			BasicBlock *bb = blockByEnd(i+1);
 			if ((j = dynamic_cast<Jump*>(script[i])))
