@@ -114,6 +114,9 @@ struct SubopcodeReader : public Reader {
 	}
 
 	void registerOpcode(uint8 opcode, Reader *reader) {
+		// don't allow registering two readers for the same opcode
+		assert(_dispatchTable[opcode] == 0);
+
 		_dispatchTable[opcode] = reader;
 	}
 
