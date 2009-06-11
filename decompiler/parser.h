@@ -27,6 +27,7 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x01, new SimpleReader("push", "W"));
 		_reader->registerOpcode(0x03, new SimpleReader("pushVar", "w"));
 		_reader->registerOpcode(0x07, new SimpleReader("wordArrayRead", "w"));
+		_reader->registerOpcode(0x0c, new SimpleReader("dup"));
 		_reader->registerOpcode(0x0d, new SimpleReader("not"));
 		_reader->registerOpcode(0x0e, new SimpleReader("=="));
 		_reader->registerOpcode(0x0f, new SimpleReader("!="));
@@ -35,6 +36,7 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x12, new SimpleReader("<="));
 		_reader->registerOpcode(0x13, new SimpleReader(">="));
 		_reader->registerOpcode(0x14, new SimpleReader("+"));
+		_reader->registerOpcode(0x15, new SimpleReader("-"));
 		_reader->registerOpcode(0x43, new SimpleReader("writeVar", "w"));
 		_reader->registerOpcode(0x47, new SimpleReader("wordArrayWrite", "w"));
 		_reader->registerOpcode(0x4f, new SimpleReader("wordVarInc", "w"));
@@ -59,6 +61,7 @@ struct Scumm6Parser : public Parser {
 
 		_reader->registerOpcode(0x6d, new SimpleReader("classOfIs"));
 		_reader->registerOpcode(0x6e, new SimpleReader("setClass"));
+		_reader->registerOpcode(0x70, new SimpleReader("setState"));
 		_reader->registerOpcode(0x72, new SimpleReader("getOwner"));
 		_reader->registerOpcode(0x73, new JumpReader("jump", "o3"));
 		_reader->registerOpcode(0x7b, new SimpleReader("loadRoom"));
@@ -73,8 +76,28 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x8d, new SimpleReader("getObjectX"));
 		_reader->registerOpcode(0x8e, new SimpleReader("getObjectY"));
 
+		SubopcodeReader *res = new SubopcodeReader();
+		_reader->registerOpcode(0x9b, res);
+		res->registerOpcode(100, new SimpleReader("resOps.loadScript"));
+		res->registerOpcode(101, new SimpleReader("resOps.loadSound"));
+		res->registerOpcode(102, new SimpleReader("resOps.loadCostume"));
+		res->registerOpcode(103, new SimpleReader("resOps.loadRoom"));
+		res->registerOpcode(104, new SimpleReader("resOps.nukeScript"));
+		res->registerOpcode(105, new SimpleReader("resOps.nukeSound"));
+		res->registerOpcode(106, new SimpleReader("resOps.nukeCostume"));
+		res->registerOpcode(107, new SimpleReader("resOps.nukeRoom"));
+		res->registerOpcode(108, new SimpleReader("resOps.lockScript"));
+		res->registerOpcode(109, new SimpleReader("resOps.lockSound"));
+		res->registerOpcode(110, new SimpleReader("resOps.lockCostume"));
+		res->registerOpcode(111, new SimpleReader("resOps.lockRoom"));
+		res->registerOpcode(112, new SimpleReader("resOps.unlockScript"));
+		res->registerOpcode(113, new SimpleReader("resOps.unlockSound"));
+		res->registerOpcode(114, new SimpleReader("resOps.unlockCostume"));
+		res->registerOpcode(115, new SimpleReader("resOps.unlockRoom"));
+
 		SubopcodeReader *room = new SubopcodeReader();
 		_reader->registerOpcode(0x9c, room);
+		room->registerOpcode(175, new SimpleReader("roomOps.roomPalette"));
 		room->registerOpcode(181, new SimpleReader("roomOps.fade"));
 
 		SubopcodeReader *actor = new SubopcodeReader();
@@ -99,19 +122,31 @@ struct Scumm6Parser : public Parser {
 		
 
 		_reader->registerOpcode(0xad, new SimpleReader("isAnyOf"));
+		_reader->registerOpcode(0xaf, new SimpleReader("isActorInBox"));
 		_reader->registerOpcode(0xb0, new SimpleReader("delay"));
 		_reader->registerOpcode(0xb3, new SimpleReader("stopSentence"));
+
+		// TODO: The various print* opcodes share all subopcodes. Fix this code duplication
+		SubopcodeReader *printDebug = new SubopcodeReader();
+		_reader->registerOpcode(0xb6, printDebug);
+		printDebug->registerOpcode(75, new SimpleReader("printDebug.msg", "s"));
+		printDebug->registerOpcode(0xfe, new SimpleReader("printDebug.loadDefault"));
+		printDebug->registerOpcode(0xff, new SimpleReader("printDebug.saveDefault"));
 
 		SubopcodeReader *print = new SubopcodeReader();
 		_reader->registerOpcode(0xb7, print);
 		print->registerOpcode(75, new SimpleReader("printSystem.msg", "s"));
 		print->registerOpcode(0xfe, new SimpleReader("printSystem.begin"));
+		print->registerOpcode(0xff, new SimpleReader("printSystem.saveDefault"));
 
 		SubopcodeReader *dimArray = new SubopcodeReader();
 		_reader->registerOpcode(0xbc, dimArray);
 		dimArray->registerOpcode(199, new SimpleReader("dimArray.int", "w"));
+		dimArray->registerOpcode(204, new SimpleReader("dimArray.undim", "w"));
 
-		_reader->registerOpcode(0xc9, new SimpleReader("kernelSetFunctions.dummy"));
+		SubopcodeReader *kernelSet = new SubopcodeReader();
+		_reader->registerOpcode(0xc9, kernelSet);
+		kernelSet->registerOpcode(108, new SimpleReader("kernelSetFunctions.setShadowPalette"));
 	}
 
 	void parseHeader(ifstream &f) {
