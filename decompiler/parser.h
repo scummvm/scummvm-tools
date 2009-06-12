@@ -45,9 +45,9 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x47, new SimpleReader("wordArrayWrite", "w"));
 		_reader->registerOpcode(0x4f, new SimpleReader("wordVarInc", "w"));
 
+		_reader->registerOpcode(0x57, new SimpleReader("wordVarDec", "w"));
 		_reader->registerOpcode(0x5c, new CondJumpReader("jumpIf", "o3"));
-		_reader->registerOpcode(0x5d, new SeqReader(new SimpleReader("not"),
-													new CondJumpReader("jumpIf", "o3")));
+		_reader->registerOpcode(0x5d, new SeqReader(new SimpleReader("not"), new CondJumpReader("jumpIf", "o3")));
 		_reader->registerOpcode(0x5e, new SimpleReader("startScript"));
 		_reader->registerOpcode(0x5f, new SimpleReader("startScriptQuick"));
 
@@ -57,13 +57,7 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x66, new SimpleReader("stopObjectCodeB"));
 		_reader->registerOpcode(0x67, new SimpleReader("endCutscene"));
 		_reader->registerOpcode(0x68, new SimpleReader("cutscene"));
-		SubopcodeReader *cursor = new SubopcodeReader("cursor");
-		_reader->registerOpcode(0x6b, cursor);
-		cursor->registerOpcode(0x90, new SimpleReader("cursor.cursorOn"));
-		cursor->registerOpcode(0x92, new SimpleReader("cursor.userPutOn"));
-		cursor->registerOpcode(0x99, new SimpleReader("cursor.setCursorImg"));
-		cursor->registerOpcode(0x9c, new SimpleReader("cursor.initCharset"));
-		//		cursor->registerOpcode(0x9d, new SimpleReader("cursor.charsetColor"));
+		SubopcodeReader *cursor = new SubopcodeReader("cursor"); _reader->registerOpcode(0x6b, cursor);
 		_reader->registerOpcode(0x6c, new SimpleReader("breakHere"));	// = yield
 		_reader->registerOpcode(0x6d, new SimpleReader("classOfIs"));
 		_reader->registerOpcode(0x6e, new SimpleReader("setClass"));
@@ -72,7 +66,8 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x70, new SimpleReader("setState"));
 		_reader->registerOpcode(0x72, new SimpleReader("getOwner"));
 		_reader->registerOpcode(0x73, new JumpReader("jump", "o3"));
-		_reader->registerOpcode(0x74, new JumpReader("startSound"));
+		_reader->registerOpcode(0x74, new SimpleReader("startSound"));
+		_reader->registerOpcode(0x75, new SimpleReader("stopSound"));
 		_reader->registerOpcode(0x7a, new SimpleReader("setCameraAt"));
 		_reader->registerOpcode(0x7b, new SimpleReader("loadRoom"));
 		_reader->registerOpcode(0x7c, new SimpleReader("stopScript"));
@@ -84,16 +79,46 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x82, new SimpleReader("animateActor"));
 		_reader->registerOpcode(0x83, new SimpleReader("doSentence"));
 		_reader->registerOpcode(0x84, new SimpleReader("pickupObject"));
+		_reader->registerOpcode(0x87, new SimpleReader("getRandomNumber"));
 		_reader->registerOpcode(0x8b, new SimpleReader("delay"));
 		_reader->registerOpcode(0x8c, new SimpleReader("getActorRoom"));
 		_reader->registerOpcode(0x8d, new SimpleReader("getObjectX"));
 		_reader->registerOpcode(0x8e, new SimpleReader("getObjectY"));
 
+		_reader->registerOpcode(0x95, new SimpleReader("beginOverride", "bw")); // TODO: how to handle this?
+		_reader->registerOpcode(0x96, new SimpleReader("endOverride"));
 		_reader->registerOpcode(0x97, new SimpleReader("setObjectName", "s"));
 		_reader->registerOpcode(0x99, new SimpleReader("setBoxFlags"));
 		_reader->registerOpcode(0x9a, new SimpleReader("createBoxMatrix"));
-		SubopcodeReader *res = new SubopcodeReader("res");
-		_reader->registerOpcode(0x9b, res);
+		SubopcodeReader *res   = new SubopcodeReader("res");   _reader->registerOpcode(0x9b, res);
+		SubopcodeReader *room  = new SubopcodeReader("room");  _reader->registerOpcode(0x9c, room);
+		SubopcodeReader *actor = new SubopcodeReader("actor"); _reader->registerOpcode(0x9d, actor);
+
+		_reader->registerOpcode(0xa3, new SimpleReader("getVerbEntryPoint"));
+		_reader->registerOpcode(0xa6, new SimpleReader("drawBox"));
+		SubopcodeReader *array = new SubopcodeReader("array"); _reader->registerOpcode(0xa4, array);
+		SubopcodeReader *wait  = new SubopcodeReader("wait");  _reader->registerOpcode(0xa9, wait);
+		_reader->registerOpcode(0xad, new SimpleReader("isAnyOf"));
+		_reader->registerOpcode(0xaf, new SimpleReader("isActorInBox"));
+
+		_reader->registerOpcode(0xb0, new SimpleReader("delay"));
+		_reader->registerOpcode(0xb1, new SimpleReader("delaySeconds"));
+		_reader->registerOpcode(0xb3, new SimpleReader("stopSentence"));
+		SubopcodeReader *printText  = new SubopcodeReader("printText");  _reader->registerOpcode(0xb5, printText);
+		SubopcodeReader *printDebug = new SubopcodeReader("printDebug"); _reader->registerOpcode(0xb6, printDebug);
+		SubopcodeReader *print     =  new SubopcodeReader("print");      _reader->registerOpcode(0xb7, print);
+		_reader->registerOpcode(0xba, new SimpleReader("actorTalk", "s"));
+		SubopcodeReader *dimArray = new SubopcodeReader("dimArray");     _reader->registerOpcode(0xbc, dimArray);
+
+		_reader->registerOpcode(0xc9, new SimpleReader("kernelSetFunctions.dummy"));
+		_reader->registerOpcode(0xca, new SimpleReader("delayFrames"));
+
+		cursor->registerOpcode(0x90, new SimpleReader("cursor.cursorOn"));
+		cursor->registerOpcode(0x92, new SimpleReader("cursor.userPutOn"));
+		cursor->registerOpcode(0x99, new SimpleReader("cursor.setCursorImg"));
+		cursor->registerOpcode(0x9c, new SimpleReader("cursor.initCharset"));
+		//		cursor->registerOpcode(0x9d, new SimpleReader("cursor.charsetColor"));
+
 		res->registerOpcode(100, new SimpleReader("resOps.loadScript"));
 		res->registerOpcode(101, new SimpleReader("resOps.loadSound"));
 		res->registerOpcode(102, new SimpleReader("resOps.loadCostume"));
@@ -110,14 +135,13 @@ struct Scumm6Parser : public Parser {
 		res->registerOpcode(113, new SimpleReader("resOps.unlockSound"));
 		res->registerOpcode(114, new SimpleReader("resOps.unlockCostume"));
 		res->registerOpcode(115, new SimpleReader("resOps.unlockRoom"));
-		SubopcodeReader *room = new SubopcodeReader("room");
-		_reader->registerOpcode(0x9c, room);
+
 		room->registerOpcode(172, new SimpleReader("roomOps.scroll"));
 		room->registerOpcode(174, new SimpleReader("roomOps.setScreen"));
 		room->registerOpcode(175, new SimpleReader("roomOps.roomPalette"));
+		room->registerOpcode(179, new SimpleReader("roomOps.darkenPalette"));
 		room->registerOpcode(181, new SimpleReader("roomOps.fade"));
-		SubopcodeReader *actor = new SubopcodeReader("actor");
-		_reader->registerOpcode(0x9d, actor);
+
 		actor->registerOpcode(76, new SimpleReader("actorOps.setCostume"));
 		actor->registerOpcode(83, new SimpleReader("actorOps.init"));
 		actor->registerOpcode(84, new SimpleReader("actorOps.setElevation"));
@@ -127,41 +151,31 @@ struct Scumm6Parser : public Parser {
 		actor->registerOpcode(93, new SimpleReader("actorOps.setNeverClip"));
 		actor->registerOpcode(94, new SimpleReader("actorOps.setAlwaysZClip"));
 		actor->registerOpcode(95, new SimpleReader("actorOps.setIgnoreBoxes"));
+		actor->registerOpcode(96, new SimpleReader("actorOps.setFollowBoxes"));
 		actor->registerOpcode(97, new SimpleReader("actorOps.setAnimationSpeed"));
 		actor->registerOpcode(99, new SimpleReader("actorOps.setTalkPos"));
 		actor->registerOpcode(0xc5, new SimpleReader("actorOps.setCurActor"));
 
-		_reader->registerOpcode(0xa3, new SimpleReader("getVerbEntryPoint"));
-		SubopcodeReader *array = new SubopcodeReader("array");
-		_reader->registerOpcode(0xa4, array);
 		array->registerOpcode(205, new SimpleReader("array.assignString", "ws"));
-		SubopcodeReader *wait = new SubopcodeReader("wait");
-		_reader->registerOpcode(0xa9, wait);
-		wait->registerOpcode(168, new SeqReader(new SimpleReader("wait.forActor.pushCond"),
-												new CondJumpReader("jumpIf", "o4")));
-		_reader->registerOpcode(0xad, new SimpleReader("isAnyOf"));
-		_reader->registerOpcode(0xaf, new SimpleReader("isActorInBox"));
 
-		_reader->registerOpcode(0xb0, new SimpleReader("delay"));
-		_reader->registerOpcode(0xb3, new SimpleReader("stopSentence"));
+		wait->registerOpcode(168, new SeqReader(new SimpleReader("wait.forActor.pushCond"),	new CondJumpReader("jumpIf", "o4")));
+
 		// TODO: The various print* opcodes share all subopcodes. Fix this code duplication
-		SubopcodeReader *printDebug = new SubopcodeReader("printDebug");
-		_reader->registerOpcode(0xb6, printDebug);
+		printText->registerOpcode(65, new SimpleReader("printText.at"));
+		printText->registerOpcode(66, new SimpleReader("printText.color"));
+		printText->registerOpcode(69, new SimpleReader("printText.center"));
+		printText->registerOpcode(74, new SimpleReader("printText.mumble"));
+		printText->registerOpcode(75, new SimpleReader("printText.msg", "s"));
+		printText->registerOpcode(0xfe, new SimpleReader("printText.begin"));
 		printDebug->registerOpcode(75, new SimpleReader("printDebug.msg", "s"));
 		printDebug->registerOpcode(0xfe, new SimpleReader("printDebug.loadDefault"));
 		printDebug->registerOpcode(0xff, new SimpleReader("printDebug.saveDefault"));
-		SubopcodeReader *print = new SubopcodeReader("print");
-		_reader->registerOpcode(0xb7, print);
 		print->registerOpcode(75, new SimpleReader("printSystem.msg", "s"));
 		print->registerOpcode(0xfe, new SimpleReader("printSystem.begin"));
 		print->registerOpcode(0xff, new SimpleReader("printSystem.saveDefault"));
-		SubopcodeReader *dimArray = new SubopcodeReader("dimArray");
-		_reader->registerOpcode(0xba, new SimpleReader("actorTalk", "s"));
-		_reader->registerOpcode(0xbc, dimArray);
+
 		dimArray->registerOpcode(199, new SimpleReader("dimArray.int", "w"));
 		dimArray->registerOpcode(204, new SimpleReader("dimArray.undim", "w"));
-
-		_reader->registerOpcode(0xc9, new SimpleReader("kernelSetFunctions.dummy"));
 	}
 
 	void parseHeader(ifstream &f) {

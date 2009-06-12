@@ -39,6 +39,11 @@ struct SimpleReader : public Reader {
 		ssret << _description;
 		for (uint32 i = 0; i < _format.size(); i++)
 			switch (_format[i]) {
+			case 'b': {
+				uint16 b = f.get();
+				ssret << ' ' << b;
+				break;
+			}
 			case 'w': {
 				uint16 w = read_le_uint16(f);
 				ssret << ' ' << w;
@@ -59,17 +64,23 @@ struct SimpleReader : public Reader {
 			case 's':
 				ssret << " \"";
 				for (char c = f.get(); c != 0; c = f.get())
-					if ((uint8) c == 0xff || c == 0xfe)
-						switch (f.get()) {
+					if ((uint8) c == 0xff || c == 0xfe) {
+						uint8 cmd = f.get();
+						switch (cmd) {
+						case 4: {
+							uint16 w = (uint16) read_le_uint16(f);
+							ssret << "::" << w << "::";
+						}
 						case 10:
 							ssret << "::sound::";
 							for (uint32 q = 0; q < 14; q++)
 								f.get();
 							break;
 						default:
-							fprintf(stderr, "! unhandled SCUMM STRING format char\n");
+							fprintf(stderr, "! unhandled SCUMM STRING format char '%d' at pos 0x%x\n", cmd, ((uint32)f.tellg())-1);
 							return false;
 						}
+					}
 					else
 						ssret << c;
 				ssret << '"';
