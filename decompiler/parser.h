@@ -138,6 +138,7 @@ struct Scumm6Parser : public Parser {
 		res->registerOpcode(113, new SimpleReader("resOps.unlockSound"));
 		res->registerOpcode(114, new SimpleReader("resOps.unlockCostume"));
 		res->registerOpcode(115, new SimpleReader("resOps.unlockRoom"));
+		res->registerOpcode(119, new SimpleReader("resOps.loadObject"));
 
 		room->registerOpcode(172, new SimpleReader("roomOps.scroll"));
 		room->registerOpcode(174, new SimpleReader("roomOps.setScreen"));
