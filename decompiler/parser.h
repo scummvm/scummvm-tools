@@ -57,6 +57,7 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x66, new SimpleReader("stopObjectCodeB"));
 		_reader->registerOpcode(0x67, new SimpleReader("endCutscene"));
 		_reader->registerOpcode(0x68, new SimpleReader("cutscene"));
+		_reader->registerOpcode(0x6a, new SimpleReader("freezeUnfreeze"));
 		SubopcodeReader *cursor = new SubopcodeReader("cursor"); _reader->registerOpcode(0x6b, cursor);
 		_reader->registerOpcode(0x6c, new SimpleReader("breakHere"));	// = yield
 		_reader->registerOpcode(0x6d, new SimpleReader("classOfIs"));
@@ -115,6 +116,8 @@ struct Scumm6Parser : public Parser {
 
 		cursor->registerOpcode(0x90, new SimpleReader("cursor.cursorOn"));
 		cursor->registerOpcode(0x92, new SimpleReader("cursor.userPutOn"));
+		cursor->registerOpcode(0x95, new SimpleReader("cursor.softOff"));
+		cursor->registerOpcode(0x97, new SimpleReader("cursor.userputSoftOff"));
 		cursor->registerOpcode(0x99, new SimpleReader("cursor.setCursorImg"));
 		cursor->registerOpcode(0x9c, new SimpleReader("cursor.initCharset"));
 		//		cursor->registerOpcode(0x9d, new SimpleReader("cursor.charsetColor"));
