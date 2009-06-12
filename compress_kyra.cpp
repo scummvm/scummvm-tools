@@ -74,18 +74,6 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-static bool hasSuffix(const char *str, const char *suf) {
-	const int sufSize = strlen(suf);
-
-	int off = strlen(str);
-	if (off < sufSize)
-		return false;
-
-	off -= sufSize;
-
-	return (scumm_stricmp(&str[off], suf) == 0);
-}
-
 static void process(Filename *infile, Filename *outfile) {
 	PAKFile input, output;
 
