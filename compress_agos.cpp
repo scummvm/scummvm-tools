@@ -29,17 +29,15 @@ static FILE *input, *output_idx, *output_snd;
 
 static CompressMode gCompMode = kMP3Mode;
 
-static void end(Filename *inputPath) {
+static void end(Filename *outPath) {
 	int size;
 	char fbuf[2048];
-
-	inputPath->setExtension(audio_extensions[gCompMode]);
 
 	fclose(output_snd);
 	fclose(output_idx);
 	fclose(input);
 
-	output_idx = fopen(inputPath->getFullPath(), "wb");
+	output_idx = fopen(outPath->getFullPath(), "wb");
 
 	input = fopen(TEMP_IDX, "rb");
 	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
@@ -241,14 +239,14 @@ static void convert_mac(Filename *inputPath) {
 	}
 }
 
-const char *helptext = "\nUsage: %s [params] [--mac] <file>\n" kCompressionAudioHelp;
+const char *helptext = "\nUsage: %s [mode] [mode params] [--mac] <infile>\n" kCompressionAudioHelp;
 
 int main(int argc, char *argv[]) {
 	bool convertMac = false;
 
-	Filename inpath;
+	Filename inpath, outpath;
 	int first_arg = 1;
-//	int last_arg = argc - 1;
+	int last_arg = argc - 1;
 
 	parseHelpArguments(argv, argc, helptext);
 
@@ -260,7 +258,27 @@ int main(int argc, char *argv[]) {
 		exit(2);
 	}
 
+	if(strcmp(argv[first_arg], "--mac") == 0) {
+		++first_arg;
+		convertMac = true;
+	}
+	
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else 
+		// Just leave it empty, we just change extension of input file
+		;
+
 	inpath.setFullPath(argv[first_arg]);
+
+	if(outpath.empty()) {
+		outpath = inpath;
+		outpath.setExtension(audio_extensions[gCompMode]);
+	}
 
 	if (convertMac) {
 		convert_mac(&inpath);
@@ -269,7 +287,7 @@ int main(int argc, char *argv[]) {
 		convert_pc(&inpath);
 	}
 
-	end(&inpath);
+	end(&outpath);
 
 	return(0);
 }

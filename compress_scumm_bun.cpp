@@ -1088,7 +1088,7 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 	cbundleCurIndex++;
 }
 
-const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outputfile = inputfile.san] <inputfile>\n";
+const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outputfile = inputfile.bun] <inputfile>\n";
 
 int main(int argc, char *argv[]) {
 	Filename inpath, outpath;

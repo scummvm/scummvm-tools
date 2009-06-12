@@ -305,8 +305,8 @@ uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
 
 		Audio::AudioStream *voxStream = Audio::makeADPCMStream(&inputFileStream, inputSize, Audio::kADPCMOki);
 		buffer = (byte *)malloc(sampleSize);
-        uint32 voxSize = voxStream->readBuffer((int16*)buffer, inputSize * 2);
-        if (voxSize != inputSize * 2)
+		uint32 voxSize = voxStream->readBuffer((int16*)buffer, inputSize * 2);
+		if (voxSize != inputSize * 2)
 			error("Wrong VOX output size");
 		writeBufferToFile((uint8 *)buffer, sampleSize, TEMP_RAW);
 		free(buffer);
@@ -436,13 +436,12 @@ void sagaEncode(Filename *inpath, Filename *outpath) {
 	printf("Done!\n");
 }
 
-const char *helptext = "\nUsage: %s [params] [mode params] [-o out = 'infile.cmp'] <infile>\n" kCompressionAudioHelp;
+const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n" kCompressionAudioHelp;
 
 int main(int argc, char *argv[]) {
 	Filename inpath, outpath;
 	int first_arg = 1;
 	int last_arg = argc - 1;
-
 
 	parseHelpArguments(argv, argc, helptext);
 
@@ -460,7 +459,10 @@ int main(int argc, char *argv[]) {
 	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
 		first_arg += 2;
 	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;;
+		last_arg -= 2;
+	else 
+		// Just leave it empty, we just change extension of input file
+		;
 
 	inpath.setFullPath(argv[first_arg]);
 

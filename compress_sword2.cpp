@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 			g_output_filename = OUTPUT_OGG;
 			break;
 		case kFlacMode:
-			g_output_filename = OUTPUT_FLA;
+			g_output_filename = OUTPUT_FLAC;
 			break;
 		default:
 			printf(helptext, argv[0]);

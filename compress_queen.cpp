@@ -160,7 +160,7 @@ void fromFileToFile(FILE *in, FILE *out, uint32 amount) {
 	}
 }
 
-void createFinalFile(Filename *inputPath) {
+void createFinalFile(Filename *outPath) {
 	FILE *inTbl, *inData, *outFinal;
 	int i;
 	uint32 dataStartOffset;
@@ -170,9 +170,9 @@ void createFinalFile(Filename *inputPath) {
 	checkOpen(inTbl, TEMP_TBL);
 	inData = fopen(TEMP_DAT, "rb");
 	checkOpen(inData, TEMP_DAT);
-	inputPath->setFullName(FINAL_OUT);
-	outFinal = fopen(inputPath->getFullPath(), "wb");
-	checkOpen(outFinal, inputPath->getFullPath());
+
+	outFinal = fopen(outPath->getFullPath(), "wb");
+	checkOpen(outFinal, outPath->getFullPath());
 
 	dataStartOffset = fileSize(inTbl) + EXTRA_TBL_HEADER;
 	dataSize = fileSize(inData);
@@ -206,7 +206,7 @@ void createFinalFile(Filename *inputPath) {
 	unlink(TEMP_DAT);
 }
 
-const char *helptext = "\nUsage: %s [params] queen.1\n" kCompressionAudioHelp;
+const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
 
 int main(int argc, char *argv[]) {
 	FILE *inputData, *inputTbl, *outputTbl, *outputData, *tmpFile, *compFile;
@@ -234,11 +234,16 @@ int main(int argc, char *argv[]) {
 		first_arg += 2;
 	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
 		last_arg -= 2;
-	else
-		// Standard output
-		outpath.setFullPath("out");
+	else 
+		// Just leave it empty, we just change extension of input file
+		;
 
 	inpath.setFullPath(argv[first_arg]);
+
+	if(outpath.empty()) {
+		outpath = inpath;
+		outpath.setFullName(FINAL_OUT);
+	}
 
 	/* Open input file (QUEEN.1) */
 	inputData = fopen(inpath.getFullPath(), "rb");
@@ -378,7 +383,7 @@ int main(int argc, char *argv[]) {
 	fclose(inputData);
 
 	/* Merge the temporary table and temporary datafile to create final file */
-	createFinalFile(&inpath);
+	createFinalFile(&outpath);
 
 	return 0;
 }

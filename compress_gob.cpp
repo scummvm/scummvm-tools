@@ -45,8 +45,9 @@ bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, 
 
 byte *packData(byte *src, uint32 &size);
 
+const char *helptext = "\nUsage: %s [-o <output> = out.stk] <input file>\n";
+
 int main(int argc, char **argv) {
-	char *outFilename;
 	Chunk *chunks;
 	FILE *stk;
 	FILE *gobConf;
@@ -56,7 +57,7 @@ int main(int argc, char **argv) {
 	int last_arg = argc - 1;
 
 	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc, "\nUsage: %s [-o <output> = out.stk] <input file>\n");
+	parseHelpArguments(argv, argc, helptext);
 
 	// Now we try to find the proper output
 	// also make sure we skip those arguments
@@ -79,8 +80,8 @@ int main(int argc, char **argv) {
 	outpath.setExtension(".stk");
 
 	// Open output filk
-	if (!(stk = fopen(outFilename, "wb")))
-		error("Couldn't create file \"%s\"", outFilename);
+	if (!(stk = fopen(outpath.getFullPath(), "wb")))
+		error("Couldn't create file \"%s\"", outpath.getFullPath());
 
 	// Read the input into memory
 	chunks = readChunkConf(gobConf, chunkCount);

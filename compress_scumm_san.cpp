@@ -634,7 +634,7 @@ void handlePSAD(FILE *input, int size, const char *outputDir, const char *inputF
 
 // TODO
 // Feature set seems more limited than what kCompressionAudioHelp contains
-const char *helptext = "\nUsage: %s [mode] [mode-params] <file> <inputdir> <outputdir>\n" kCompressionAudioHelp;
+const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" kCompressionAudioHelp;
 
 int main(int argc, char *argv[]) {
 	Filename inpath, outpath;
@@ -671,23 +671,22 @@ int main(int argc, char *argv[]) {
 		// Just leave it empty, we just change extension of input file
 		;
 
-	// We need this path for some functions, alot quicker than rewriting
-	// them to use the Filename class
-	outpath.getPath(outdir);
-
-
 	inpath.setFullPath(argv[first_arg]);
-
-	FILE *input = fopen(inpath.getFullPath(), "rb");
-	if (!input) {
-		printf("Cannot open file: %s\n", inpath.getFullPath());
-		exit(-1);
-	}
 
 	if(outpath.empty()) {
 		// Change extension for output
 		outpath = inpath;
 		outpath.setExtension(".san");
+	}
+
+	// We need this path for some functions, alot quicker than rewriting
+	// them to use the Filename class
+	outpath.getPath(outdir);
+
+	FILE *input = fopen(inpath.getFullPath(), "rb");
+	if (!input) {
+		printf("Cannot open file: %s\n", inpath.getFullPath());
+		exit(-1);
 	}
 
 	FILE *output = fopen(outpath.getFullPath(), "wb");
