@@ -65,14 +65,14 @@ private:
 	uLong m13encode(byte *frame, byte *outbuf);
 
 public:
-	DxaEncoder(char *filename, int width, int height, int framerate, ScaleMode scaleMode);
+	DxaEncoder(const char *filename, int width, int height, int framerate, ScaleMode scaleMode);
 	~DxaEncoder();
 	void writeHeader();
 	void writeNULL();
 	void writeFrame(uint8 *frame, uint8 *palette);
 };
 
-DxaEncoder::DxaEncoder(char *filename, int width, int height, int framerate, ScaleMode scaleMode) {
+DxaEncoder::DxaEncoder(const char *filename, int width, int height, int framerate, ScaleMode scaleMode) {
 	_dxa = fopen(filename, "wb");
 	_width = width;
 	_height = height;
@@ -487,9 +487,9 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 					memcpy(dataB, pixels, count);
 					dataB += count;
 					if (codeSize == 2) {
-						WRITE_BE_UINT16(maskB, code);
+						WRITE_BE_UINT16(maskB, (uint16)code);
 					} else {
-						WRITE_BE_UINT32(maskB, code);
+						WRITE_BE_UINT32(maskB, (uint16)code);
 					}
 					maskB += codeSize;
 				} else {
@@ -541,7 +541,7 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 	return outb - outbuf;
 }
 
-int read_png_file(char* filename, unsigned char *&image, unsigned char *&palette, int &width, int &height) {
+int read_png_file(const char* filename, unsigned char *&image, unsigned char *&palette, int &width, int &height) {
 	png_byte header[8];
 
 	png_byte color_type;
@@ -623,10 +623,10 @@ int read_png_file(char* filename, unsigned char *&image, unsigned char *&palette
 	return 0;
 }
 
-void readVideoInfo(char *filename, int &width, int &height, int &framerate, int &frames,
+void readVideoInfo(Filename *filename, int &width, int &height, int &framerate, int &frames,
 	ScaleMode &scaleMode) {
 
-	FILE *smk = fopen(filename, "rb");
+	FILE *smk = fopen(filename->getFullPath(), "rb");
 	if (!smk) {
 		printf("readVideoInfo: Can't open file: %s\n", filename);
 		exit(-1);
@@ -675,135 +675,64 @@ void readVideoInfo(char *filename, int &width, int &height, int &framerate, int 
 	fclose(smk);
 }
 
-void convertWAV(char *wavName, char *prefix) {
-	const char *ext;
-	char outName[256];
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		ext = "mp3"; break;
-	case kVorbisMode:
-		ext = "ogg"; break;
-	case kFlacMode:
-		ext = "fla"; break;
-	default:
-		error("Unknown compression mode");
-	}
-
+void convertWAV(const Filename *inpath, const Filename* outpath) {
 	printf("Encoding audio...");
 	fflush(stdout);
 
-	sprintf(outName, "%s.%s", prefix, ext);
-	encodeAudio(wavName, false, -1, outName, gCompMode);
+	encodeAudio(inpath->getFullPath(), false, -1, outpath->getFullPath(), gCompMode);
 }
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] <file>\n", exename);
-
-	printf("\nParams:\n");
-	printf(" --mp3        encode to MP3 format (default)\n");
-	printf(" --vorbis     encode to Vorbis format\n");
-	printf(" --flac       encode to Flac format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
-	printf(" --fast       FLAC uses compression level 0\n");
-	printf(" --best       FLAC uses compression level 8\n");
-	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
-	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
-	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	exit(2);
-}
+const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\nOutput will be two files with the .dxa and the other depending on the used audio codec." kCompressionAudioHelp;
 
 int main(int argc, char *argv[]) {
-	if (argc < 2)
-		showhelp(argv[0]);
-
-	char strbuf[512];
 	int width, height, framerate, frames;
 	ScaleMode scaleMode;
+	Filename inpath, outpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
 
-	/* compression mode */
-	gCompMode = kMP3Mode;
-	int i = 1;
-	if (!strcmp(argv[1], "--mp3")) {
-		gCompMode = kMP3Mode;
-		i++;
-	} else if (!strcmp(argv[1], "--vorbis")) {
-		gCompMode = kVorbisMode;
-		i++;
-	} else if (!strcmp(argv[1], "--flac")) {
-		gCompMode = kFlacMode;
-		i++;
+	parseHelpArguments(argv, argc, helptext);
+
+	// compression mode
+	gCompMode = process_audio_params(argc, argv, &first_arg);
+	
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	else 
+		// Just leave it empty, we just change extension of input file
+		;
+
+	inpath.setFullPath(argv[first_arg]);
+
+	if(outpath.empty()) {
+		// Change extension for output
+		outpath = inpath;
 	}
 
-	switch (gCompMode) {
-	case kMP3Mode:
-		if (!process_mp3_parms(argc, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kVorbisMode:
-		if (!process_ogg_parms(argc, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kFlacMode:
-		if (!process_flac_parms(argc, argv, i))
-			showhelp(argv[0]);
-		break;
-	}
-
-	i = argc - 1;
-
-	// get filename prefix
-	char *filename = argv[i++];
-	char prefix[256];
-	char *p;
-
-	getFilename(filename, prefix);
-
-	p = strrchr(prefix, '.');
-	if (p) {
-		*p = '\0';
-	}
+	inpath.setFullPath(argv[first_arg]);
 
 	// check if the wav file exists.
-	sprintf(strbuf, "%s.wav", prefix);
+	Filename wavpath(inpath);
+	wavpath.setExtension(".wav");
 	struct stat statinfo;
-	if (!stat(strbuf, &statinfo)) {
-		convertWAV(strbuf, prefix);
+	if (!stat(wavpath.getFullPath(), &statinfo)) {
+		outpath.setExtension(audio_extensions[gCompMode]);
+		convertWAV(&wavpath, &outpath);
 	}
 
 	// read some data from the Bink or Smacker file.
-	readVideoInfo(filename, width, height, framerate, frames, scaleMode);
+	readVideoInfo(&inpath, width, height, framerate, frames, scaleMode);
 
 	printf("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
 		   width, height, framerate, frames);
 
 	// create the encoder object
-	sprintf(strbuf, "%s.dxa", prefix);
-	DxaEncoder dxe(strbuf, width, height, framerate, scaleMode);
+	outpath.setExtension(".dxa");
+	DxaEncoder dxe(outpath.getFullPath(), width, height, framerate, scaleMode);
 
 	// No sound block
 	dxe.writeNULL();
@@ -815,17 +744,21 @@ int main(int argc, char *argv[]) {
 	printf("Encoding video...");
 	fflush(stdout);
 
+	char fullname[1024];
+	strcpy(fullname, inpath.getFullPath());
 	for (int f = 0; f < frames; f++) {
+		char strbuf[1024];
 		if (frames > 999)
-			sprintf(strbuf, "%s%04d.png", prefix, framenum);
+			sprintf(strbuf, "%s%04d.png", fullname, framenum);
 		else if (frames > 99)
-			sprintf(strbuf, "%s%03d.png", prefix, framenum);
+			sprintf(strbuf, "%s%03d.png", fullname, framenum);
 		else if (frames > 9)
-			sprintf(strbuf, "%s%02d.png", prefix, framenum);
+			sprintf(strbuf, "%s%02d.png", fullname, framenum);
 		else
-			sprintf(strbuf, "%s%d.png", prefix, framenum);
+			sprintf(strbuf, "%s%d.png", fullname, framenum);
+		inpath.setFullName(strbuf);
 
-		int r = read_png_file(strbuf, image, palette, width, height);
+		int r = read_png_file(inpath.getFullPath(), image, palette, width, height);
 
 		if (!palette) {
 			error("8-bit 256-color image expected");
