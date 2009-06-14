@@ -758,8 +758,6 @@ int process_mp3_parms(int argc, char *argv[], int* i) {
 			encparms.silent = 1;
 		} else if (strcmp(argv[*i], "--help") == 0) {
 			return 0;
-		} else if (argv[*i][0] == '-') {
-			return 0;
 		} else {
 			break;
 		}

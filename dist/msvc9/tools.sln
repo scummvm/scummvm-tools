@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
+# Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_scumm_san", "compress_scumm_san.vcproj", "{1712DDB9-8BB1-4108-9A06-F86F28409B20}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_scumm_bun", "compress_scumm_bun.vcproj", "{C423ACAC-C398-4419-BA32-B77F6A8AC1F9}"
@@ -52,6 +52,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_parallaction", "extract_parallaction.vcproj", "{F4B04E6F-5916-44DA-A957-E8FA789D2CBC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_gob", "compress_gob.vcproj", "{8C4BC409-2EEC-41F5-A017-972F38414289}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_tucker", "compress_tucker.vcproj", "{DFBC3A41-17AF-4789-B775-35EFC39118A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -163,6 +165,10 @@ Global
 		{8C4BC409-2EEC-41F5-A017-972F38414289}.Debug|Win32.Build.0 = Debug|Win32
 		{8C4BC409-2EEC-41F5-A017-972F38414289}.Release|Win32.ActiveCfg = Release|Win32
 		{8C4BC409-2EEC-41F5-A017-972F38414289}.Release|Win32.Build.0 = Release|Win32
+		{DFBC3A41-17AF-4789-B775-35EFC39118A1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DFBC3A41-17AF-4789-B775-35EFC39118A1}.Debug|Win32.Build.0 = Debug|Win32
+		{DFBC3A41-17AF-4789-B775-35EFC39118A1}.Release|Win32.ActiveCfg = Release|Win32
+		{DFBC3A41-17AF-4789-B775-35EFC39118A1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

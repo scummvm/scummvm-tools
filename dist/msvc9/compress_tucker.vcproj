@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="extract_agos"
-	ProjectGUID="{A59D7F94-4875-4337-8246-A28F21A1DF78}"
-	RootNamespace="extract_agos"
+	Name="compress_tucker"
+	ProjectGUID="{DFBC3A41-17AF-4789-B775-35EFC39118A1}"
+	RootNamespace="compress_tucker"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -61,11 +61,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/extract_agos.exe"
+				AdditionalDependencies="ogg_static.lib vorbis_static.lib vorbisenc_static.lib libFLAC_static.lib"
+				OutputFile="$(OutDir)/compress_tucker.exe"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="libc.lib;libcmt.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/extract_agos.pdb"
+				ProgramDatabaseFile="$(OutDir)/compress_tucker.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -134,7 +135,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/extract_agos.exe"
+				AdditionalDependencies="ogg_static.lib vorbis_static.lib vorbisenc_static.lib libFLAC_static.lib"
+				OutputFile="$(OutDir)/compress_tucker.exe"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="libc.lib"
 				SubSystem="1"
@@ -171,7 +173,15 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\..\extract_agos.cpp"
+			RelativePath="..\..\compress.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\compress.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\compress_tucker.cpp"
 			>
 		</File>
 		<File

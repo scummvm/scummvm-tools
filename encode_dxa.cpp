@@ -709,7 +709,7 @@ int main(int argc, char *argv[]) {
 	inpath.setFullPath(argv[first_arg]);
 
 	if(outpath.empty()) {
-		// Change extension for output
+		// Actual change of extension is done later...
 		outpath = inpath;
 	}
 

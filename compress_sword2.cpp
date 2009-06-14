@@ -64,10 +64,8 @@ uint32 append_to_file(FILE *f1, const char *filename) {
 const char *helptext = "\nUsage: %s [params] <file>\n\n" kCompressionAudioHelp;
 
 int main(int argc, char *argv[]) {
-	char output_filename[1024];
 	FILE *output, *f;
-	char *ptr;
-	int i, j;
+	int j;
 	uint32 indexSize;
 	uint32 totalSize;
 	uint32 length;
@@ -87,67 +85,32 @@ int main(int argc, char *argv[]) {
 		first_arg += 2;
 	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
 		last_arg -= 2;
-	else {
-		switch(gCompMode) {
-		case kMP3Mode:
-			g_output_filename = OUTPUT_MP3;
-			break;
-		case kVorbisMode:
-			g_output_filename = OUTPUT_OGG;
-			break;
-		case kFlacMode:
-			g_output_filename = OUTPUT_FLAC;
-			break;
-		default:
-			printf(helptext, argv[0]);
-			exit(2);
-			break;
-		}
-	}
 
-	i = 1;
-
-	if (strcmp(argv[1], "--mp3") == 0) {
-		gCompMode = kMP3Mode;
-		i++;
-	}
-	else if (strcmp(argv[1], "--vorbis") == 0) {
-		gCompMode = kVorbisMode;
-		i++;
-	} else if (strcmp(argv[1], "--flac") == 0) {
-		gCompMode = kFlacMode;
-		i++;
-	}
-
-	switch (gCompMode) {
+	switch(gCompMode) {
 	case kMP3Mode:
-		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
+	tempEncoded = TEMP_MP3;
 		break;
 	case kVorbisMode:
-		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
+	tempEncoded = TEMP_OGG;
 		break;
 	case kFlacMode:
-		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
+	tempEncoded = TEMP_FLAC;
+		break;
+	default:
+		printf(helptext, argv[0]);
+		exit(2);
 		break;
 	}
 
-	i = argc - 1;
+	inpath.setFullPath(argv[first_arg]);
 
-	input = fopen(argv[i], "rb");
+	if(outpath.empty())
+		// Extensions change between the in/out files, so we can use the same directory
+		outpath = inpath;
+
+	input = fopen(inpath.getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", argv[i]);
+		printf("Cannot open file: %s\n", inpath.getFullPath());
 		return EXIT_FAILURE;
 	}
 
@@ -175,7 +138,7 @@ int main(int argc, char *argv[]) {
 	writeUint32BE(output_idx, 0xfff0fff0);
 	writeUint32BE(output_idx, 0xfff0fff0);
 
-	for (i = 0; i < (int)indexSize; i++) {
+	for (int i = 0; i < (int)indexSize; i++) {
 		uint32 pos;
 		uint32 enc_length;
 
@@ -263,25 +226,9 @@ int main(int argc, char *argv[]) {
 	fclose(output_idx);
 	fclose(output_snd);
 
-	strcpy(output_filename, argv[argc - 1]);
-	ptr = output_filename + strlen(output_filename) - 1;
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		*ptr = '3';
-		break;
-	case kVorbisMode:
-		*ptr = 'g';
-		break;
-	case kFlacMode:
-		*ptr = 'f';
-		break;
-	}
-
-
-	output = fopen(output_filename, "wb");
+	output = fopen(outpath.getFullPath(), "wb");
 	if (!output) {
-		printf("Can't open file %s for writing!\n", output_filename);
+		printf("Can't open file %s for writing!\n", outpath.getFullPath());
 		return EXIT_FAILURE;
 	}
 

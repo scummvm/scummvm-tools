@@ -27,13 +27,12 @@
 
 #define TOTAL_TUNES 269
 
-char tempOutName[16];
-char inputDir[256];
+const char *tempOutName;
 
 typedef struct {
 	char fileName[8];
-	bool missing; /* Some of the music files seem to have been removed from the game. */
-		      /* Try and look for them, but don't warn if they are missing. */
+	bool missing; /* Some of the music files seem to have been removed from the game
+	                 Try and look for them, but don't warn if they are missing. */
 } MusicFile;
 
 MusicFile musicNames[TOTAL_TUNES] = {
@@ -308,53 +307,6 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "RM3D", false }
 };
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] <inputdir>\n", exename);
-
-	printf("\nParams:\n");
-	printf(" --mp3          encode to MP3 format (default)\n");
-	printf(" --vorbis       encode to Vorbis format\n");
-	printf(" --flac         encode to Flac format\n");
-	printf(" --speech-only  only encode speech clusters\n");
-	printf(" --music-only   only encode music files\n");
-	printf("                (default: encode both)\n");
-	printf("(The above parameters have to be specified first)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>      <rate> is the target bitrate(ABR)/minimal bitrate(VBR)\n");
-	printf("                (default:%d)\n", minBitrDef);
-	printf(" -B <rate>      <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr          LAME uses the VBR mode (default)\n");
-	printf(" --abr          LAME uses the ABR mode\n");
-	printf(" -V <value>     specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>     specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent       the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>      <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>      <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>      <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>     specifies the value (0 - 10) of VBR quality (10=best)\n");
-	printf("                (default:%d)\n", oggqualDef);
-	printf(" --silent       the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
- 	printf(" --fast       FLAC uses compression level 0\n");
- 	printf(" --best       FLAC uses compression level 8\n");
- 	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
- 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
- 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help         this help message\n");
-
-	printf("\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	printf("\nMake sure the input directory contains the \"MUSIC\" and \"SPEECH\" subdirectories.\n");
-	printf("If the input directory is the same as the current directory use '.'\n");
-	exit(2);
-}
-
 int16 *uncompressSpeech(FILE *clu, uint32 idx, uint32 cSize, uint32 *returnSize) {
 	uint32 resSize, srcPos;
 	int16 *srcData, *dstData, *dstPos;
@@ -482,10 +434,14 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 	free(cowHeader);
 }
 
-void compressSpeech(CompressMode compMode) {
+void compressSpeech(CompressMode compMode, const Filename *inpath, const Filename *outpath) {
 	FILE *clu, *cl3 = NULL;
 	int i;
 	char cluName[256], outName[256];
+	char inputDir[256], outDir[256];
+
+	inpath->getPath(inputDir);
+	outpath->getPath(outDir);
 
 	setRawAudioType(true, false, 16);
 
@@ -498,13 +454,13 @@ void compressSpeech(CompressMode compMode) {
 		} else {
 			switch (compMode) {
 			case kMP3Mode:
-				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", inputDir, i, "CL3");
+				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outDir, i, "CL3");
 				break;
 			case kVorbisMode:
-				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", inputDir, i, "CLV");
+				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outDir, i, "CLV");
 				break;
 			case kFlacMode:
-				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", inputDir, i, "CLF");
+				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outDir, i, "CLF");
 				break;
 			default:
 				error("Unknown encoding method");
@@ -528,10 +484,14 @@ void compressSpeech(CompressMode compMode) {
 	unlink(tempOutName);
 }
 
-void compressMusic(CompressMode compMode) {
+void compressMusic(CompressMode compMode, const Filename *inpath, const Filename *outpath) {
 	int i;
 	FILE *inf;
 	char fNameIn[256], fNameOut[256];
+	char inputDir[256], outDir[256];
+
+	inpath->getPath(inputDir);
+	outpath->getPath(outDir);
 
 	for (i = 0; i < TOTAL_TUNES; i++) {
 		sprintf(fNameIn, "%s/MUSIC/%s.WAV", inputDir, musicNames[i].fileName);
@@ -546,13 +506,13 @@ void compressMusic(CompressMode compMode) {
 
 			switch (compMode) {
 			case kMP3Mode:
-				sprintf(fNameOut, "%s/MUSIC/%s.%s", inputDir, musicNames[i].fileName, "MP3");
+				sprintf(fNameOut, "%s/MUSIC/%s.%s", outDir, musicNames[i].fileName, "MP3");
 				break;
 			case kVorbisMode:
-				sprintf(fNameOut, "%s/MUSIC/%s.%s", inputDir, musicNames[i].fileName, "OGG");
+				sprintf(fNameOut, "%s/MUSIC/%s.%s", outDir, musicNames[i].fileName, "OGG");
 				break;
 			case kFlacMode:
-				sprintf(fNameOut, "%s/MUSIC/%s.%s", inputDir, musicNames[i].fileName, "FLA");
+				sprintf(fNameOut, "%s/MUSIC/%s.%s", outDir, musicNames[i].fileName, "FLA");
 				break;
 			default:
 				error("Unknown encoding method");
@@ -564,11 +524,13 @@ void compressMusic(CompressMode compMode) {
 	}
 }
 
-void checkFilesExist(bool checkSpeech, bool checkMusic) {
+void checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath) {
 	int i;
 	FILE *testFile;
-	char fileName[256];
+	char fileName[256], inputDir[256];
 	bool speechFound = false, musicFound = false;
+
+	inpath->getPath(inputDir);
 
 	if (checkSpeech) {
 		for (i = 1; i <= 2; i++) {
@@ -617,64 +579,77 @@ void checkFilesExist(bool checkSpeech, bool checkMusic) {
 	}
 }
 
+const char *helptext = "\nUsage: %s [only] [mode] [mode params] [-o outputdir] <inputdir>\n"
+	"only can be either:\n"
+	" --speech-only  only encode speech clusters\n"
+	" --music-only   only encode music files\n"
+	kCompressionAudioHelp;
+
 int main(int argc, char *argv[]) {
 	CompressMode compMode = kMP3Mode;
-	int i = 1;
+	Filename inpath, outpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
 	bool compMusic = true, compSpeech = true;
 
-	while (i < argc) {
-		if (!strcmp(argv[i], "--mp3"))
-			compMode = kMP3Mode;
-		else if (!strcmp(argv[i], "--vorbis"))
-			compMode = kVorbisMode;
-		else if (!strcmp(argv[i], "--flac"))
-			compMode = kFlacMode;
-		else if (!strcmp(argv[i], "--speech-only"))
-			compMusic = false;
-		else if (!strcmp(argv[i], "--music-only"))
-			compSpeech = false;
-		else
-			break;
-		i++;
+	// Should we display some help perhaps?
+	parseHelpArguments(argv, argc, helptext);
+
+	// Check extra arguments
+	if(strcmp(argv[first_arg], "--speech-only") == 0) {
+		compMusic = false;
+		++first_arg;
+	} else if (strcmp(argv[first_arg], "--music-only") == 0) {
+		compSpeech = false;
+		++first_arg;
 	}
 
-	switch (compMode) {
-	case kMP3Mode:
-		strcpy(tempOutName, TEMP_MP3);
-		if (!process_mp3_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
+	// compression mode
+	compMode = process_audio_params(argc, argv, &first_arg);
 
+	if(compMode == kNoAudioMode) {
+		// Unknown mode (failed to parse arguments), display help and exit
+		printf(helptext, argv[0]);
+		exit(2);
+	}
+
+	// Now we try to find the proper output dir
+	// also make sure we skip those arguments
+	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+	
+	switch(compMode) {
+	case kMP3Mode:
+		tempOutName = TEMP_MP3;
 		break;
 	case kVorbisMode:
-		strcpy(tempOutName, TEMP_OGG);
-		if (!process_ogg_parms(argc, argv, i)) {
-			showhelp(argv[0]);
-		}
-
+		tempOutName = TEMP_OGG;
 		break;
 	case kFlacMode:
-		strcpy(tempOutName, TEMP_FLAC);
-		if (!process_flac_parms(argc, argv, i)){
-			showhelp(argv[0]);
-		}
-
+		tempOutName = TEMP_FLAC;
 		break;
 	default:
-		error("Unknown encoding method");
+		// Never happends, avoid warnings
+		break;
 	}
 
-	sprintf(inputDir, argv[argc - 1]);
+	inpath.setFullPath(argv[first_arg]);
+
+	if(outpath.empty())
+		// Extensions change between the in/out files, so we can use the same directory
+		outpath = inpath;
 
 	/* Do a quick check to see if we can open any files at all */
-	checkFilesExist(compSpeech, compMusic);
+	checkFilesExist(compSpeech, compMusic, &inpath);
 
 	if (compSpeech) {
-		compressSpeech(compMode);
+		compressSpeech(compMode, &inpath, &outpath);
 	}
 
 	if (compMusic) {
-		compressMusic(compMode);
+		compressMusic(compMode, &inpath, &outpath);
 	}
 
 	return EXIT_SUCCESS;
