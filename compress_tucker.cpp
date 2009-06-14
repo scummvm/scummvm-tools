@@ -148,19 +148,14 @@ static uint32 compress_sounds_directory(FILE *output, const struct SoundDirector
 	return current_offset + dir->count * 8;
 }
 
-#define AUDIO_TYPES_COUNT 2
-
-#define AUDIO_WAV_COUNT 120
-#define AUDIO_RAW_COUNT 51
-
-static const char *audio_wav_fileslist[] = {
-	"fx100.wav",
+static const char *audio_files_list[] = {
+	"demomenu.raw",
+	"demorolc.raw",
 	"fx101.wav",
 	"fx102.wav",
 	"fx103.wav",
 	"fx104.wav",
 	"fx105.wav",
-	"fx106.wav",
 	"fx107.wav",
 	"fx108.wav",
 	"fx109.wav",
@@ -169,7 +164,6 @@ static const char *audio_wav_fileslist[] = {
 	"fx112.wav",
 	"fx113.wav",
 	"fx114.wav",
-	"fx115.wav",
 	"fx116.wav",
 	"fx117.wav",
 	"fx32.wav",
@@ -185,15 +179,12 @@ static const char *audio_wav_fileslist[] = {
 	"fx43.wav",
 	"fx44.wav",
 	"fx45.wav",
-	"fx46.wav",
 	"fx47.wav",
 	"fx48.wav",
 	"fx49.wav",
 	"fx50.wav",
-	"fx51.wav",
 	"fx52.wav",
 	"fx53.wav",
-	"fx54.wav",
 	"fx55.wav",
 	"fx56.wav",
 	"fx57.wav",
@@ -220,74 +211,14 @@ static const char *audio_wav_fileslist[] = {
 	"fx79.wav",
 	"fx80.wav",
 	"fx81.wav",
-	"fx82.wav",
 	"fx83.wav",
-	"fx84.wav",
-	"fx85.wav",
 	"fx86.wav",
-	"fx87.wav",
-	"fx88.wav",
-	"fx89.wav",
-	"fx90.wav",
 	"fx91.wav",
 	"fx92.wav",
 	"fx93.wav",
-	"fx96.wav",
 	"fx97.wav",
 	"fx98.wav",
-	"fx99.wav",
-	"introdua.wav",
-	"rdfx1.wav",
-	"rdfx10.wav",
-	"rdfx11.wav",
-	"rdfx12.wav",
-	"rdfx13.wav",
-	"rdfx14.wav",
-	"rdfx15.wav",
-	"rdfx16.wav",
-	"rdfx17.wav",
-	"rdfx18.wav",
-	"rdfx19.wav",
-	"rdfx2.wav",
-	"rdfx20.wav",
-	"rdfx21.wav",
-	"rdfx22.wav",
-	"rdfx23.wav",
-	"rdfx24.wav",
-	"rdfx25.wav",
-	"rdfx26.wav",
-	"rdfx27.wav",
-	"rdfx28.wav",
-	"rdfx29.wav",
-	"rdfx3.wav",
-	"rdfx30.wav",
-	"rdfx31.wav",
-	"rdfx32.wav",
-	"rdfx33.wav",
-	"rdfx35.wav",
-	"rdfx36.wav",
-	"rdfx37.wav",
-	"rdfx38.wav",
-	"rdfx4.wav",
-	"rdfx5.wav",
-	"rdfx6.wav",
-	"rdfx7.wav",
-	"rdfx8.wav",
-	"rdfx9.wav"
-};
-
-static const char *audio_raw_fileslist[] = {
-	"democha1.raw",
-	"democha2.raw",
-	"demomenu.raw",
-	"demorola.raw",
-	"demorolc.raw",
-	"icrmusic.raw",
 	"int1.raw",
-	"int10.raw",
-	"int11.raw",
-	"int12.raw",
-	"int13.raw",
 	"int14.raw",
 	"int15.raw",
 	"int16.raw",
@@ -315,87 +246,64 @@ static const char *audio_raw_fileslist[] = {
 	"int36.raw",
 	"int37.raw",
 	"int38.raw",
-	"int39.raw",
 	"int4.raw",
-	"int40.raw",
 	"int41.raw",
 	"int42.raw",
 	"int5.raw",
 	"int6.raw",
 	"int7.raw",
-	"int8.raw",
-	"int9.raw",
-	"introdua.raw",
-	"introdub.raw",
-	"merilogo.raw"
+	"introdua.wav",
+	"merilogo.raw",
+	"rdfx1.wav",
+	"rdfx12.wav",
+	"rdfx13.wav",
+	"rdfx14.wav",
+	"rdfx15.wav",
+	"rdfx16.wav",
+	"rdfx17.wav",
+	"rdfx18.wav",
+	"rdfx20.wav",
+	"rdfx21.wav",
+	"rdfx22.wav",
+	"rdfx24.wav",
+	"rdfx25.wav",
+	"rdfx26.wav",
+	"rdfx27.wav",
+	"rdfx28.wav",
+	"rdfx3.wav",
+	"rdfx30.wav",
+	"rdfx31.wav",
+	"rdfx33.wav",
+	"rdfx36.wav",
+	"rdfx37.wav",
+	"rdfx38.wav",
+	"rdfx8.wav",
+	"rdfx9.wav"
 };
 
-static const char *audio_raw_fileslist_16LE[] = {
-	"int1.raw",
-	"int15.raw",
-	"int16.raw",
-	"int17.raw",
-	"int18.raw",
-	"int19.raw",
-	"int2.raw",
-	"int20.raw",
-	"int21.raw",
-	"int22.raw",
-	"int23.raw",
-	"int24.raw",
-	"int25.raw",
-	"int26.raw",
-	"int27.raw",
-	"int28.raw",
-	"int29.raw",
-	"int3.raw",
-	"int30.raw",
-	"int31.raw",
-	"int32.raw",
-	"int33.raw",
-	"int34.raw",
-	"int35.raw",
-	"int36.raw",
-	"int37.raw",
-	"int38.raw",
-	"int4.raw",
-	"int41.raw",
-	"int42.raw",
-	"int5.raw",
-	"int6.raw",
-	"int7.raw"
+static const int audio_formats_table[] = {
+	3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 
+	1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 
+	1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 2, 2, 
+	1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 
+	4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 
+	4, 4, 4, 4, 4, 4, 4, 2, 3, 1, 1, 2, 1, 1, 1, 1, 
+	1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+	2, 1
 };
 
-static int cmp_helper(const void *a, const void *b) {
-	return strcmp((const char *)a, *(const char **)b);
-}
-
-struct AudioDirectory {
-	const char *ext;
-	int count;
-};
-
-static AudioDirectory audio_directory_table[AUDIO_TYPES_COUNT] = {
-	{ "wav", AUDIO_WAV_COUNT },
-	{ "raw", AUDIO_RAW_COUNT }
-};
-
-static uint32 compress_audio_directory(FILE *output, int count, int index) {
+static uint32 compress_audio_directory(FILE *output) {
 	char filepath[1024];
-	int i, pos;
+	int i, pos, count;
 	uint32 current_offset;
 	FILE *input;
-	char entry_name[13];
-	bool is_16LE;
 
-	assert(ARRAYSIZE(audio_wav_fileslist) == AUDIO_WAV_COUNT);
-
+	count = ARRAYSIZE(audio_files_list);
 	pos = ftell(output);
 
 	/* write 0 offsets/sizes table */
-	memset(entry_name, 0, sizeof(entry_name));
 	for (i = 0; i < count; ++i) {
-		fwrite(entry_name, 1, 12, output);
 		writeUint32LE(output, 0);
 		writeUint32LE(output, 0);
 	}
@@ -403,29 +311,25 @@ static uint32 compress_audio_directory(FILE *output, int count, int index) {
 	current_offset = 0;
 	for (i = 0; i < count; ++i) {
 		temp_table[i].offset = current_offset;
-		switch (index) {
-		case 0: /* .wav */
-			sprintf(filepath, "%s/audio/%s", g_input_directory, audio_wav_fileslist[i]);
-			input = fopen(filepath, "rb");
-			if (!input) {
-				error("Can't open file '%s'", filepath);
+		sprintf(filepath, "%s/audio/%s", g_input_directory, audio_files_list[i]);
+		input = fopen(filepath, "rb");
+		if (!input) {
+			warning("Can't open file '%s'", filepath);
+			temp_table[i].size = 0;
+		} else {
+			switch (audio_formats_table[i]) {
+			case 1:
+			case 2:
+				temp_table[i].size = compress_file_wav(input, output);
+				break;
+			case 3:
+				temp_table[i].size = compress_file_raw(filepath, 0, output);
+				break;
+			case 4:
+				temp_table[i].size = compress_file_raw(filepath, 1, output);
+				break;
 			}
-			temp_table[i].size = compress_file_wav(input, output);
 			fclose(input);
-			break;
-		case 1: /* .raw */
-			is_16LE = bsearch(audio_raw_fileslist[i], audio_raw_fileslist_16LE,
-				ARRAYSIZE(audio_raw_fileslist_16LE), sizeof(const char *), cmp_helper) != NULL;
-			temp_table[i].offset = current_offset;
-			sprintf(filepath, "%s/audio/%s", g_input_directory, audio_raw_fileslist[i]);
-			input = fopen(filepath, "rb");
-			if (input) {
-				fclose(input);
-				temp_table[i].size = compress_file_raw(filepath, is_16LE, output);
-			} else {
-				temp_table[i].size = 0;
-			}
-			break;
 		}
 		current_offset += temp_table[i].size;
 	}
@@ -433,9 +337,6 @@ static uint32 compress_audio_directory(FILE *output, int count, int index) {
 	/* fix offsets/sizes table */
 	fseek(output, pos, SEEK_SET);
 	for (i = 0; i < count; ++i) {
-		memset(entry_name, 0, sizeof(entry_name));
-		strcpy(entry_name, audio_wav_fileslist[i]);
-		fwrite(entry_name, 1, 12, output);
 		writeUint32LE(output, temp_table[i].offset);
 		writeUint32LE(output, temp_table[i].size);
 	}
@@ -450,7 +351,7 @@ static void compress_sound_files() {
 	char filepath[1024];
 	uint32 current_offset;
 	uint32 sound_directory_size[SOUND_TYPES_COUNT];
-	uint32 audio_directory_size[AUDIO_TYPES_COUNT];
+	uint32 audio_directory_size;
 	const uint16 flags = 0; // HEADER_FLAG_AUDIO_INTRO;
 
 	snprintf(filepath, sizeof(filepath), "%s/%s", g_output_directory, g_output_filename);
@@ -468,10 +369,7 @@ static void compress_sound_files() {
 		writeUint32LE(output, 0);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
-		for (i = 0; i < AUDIO_TYPES_COUNT; ++i) {
-			writeUint32LE(output, 0);
-			writeUint32LE(output, 0);
-		}
+		writeUint32LE(output, 0);
 	}
 
 	/* compress the .wav files in each directory */
@@ -481,11 +379,9 @@ static void compress_sound_files() {
 		printf("Done (%d bytes)\n", sound_directory_size[i]);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
-		for (i = 0; i < AUDIO_TYPES_COUNT; ++i) {
-			printf("Processing 'audio/*.%s' files...\n", audio_directory_table[i].ext);
-			audio_directory_size[i] = compress_audio_directory(output, audio_directory_table[i].count, i);
-			printf("Done (%d bytes)\n", audio_directory_size[i]);
-		}
+		printf("Processing directory 'audio'...\n");
+		audio_directory_size = compress_audio_directory(output);
+		printf("Done (%d bytes)\n", audio_directory_size);
 	}
 
 	/* fix sound types offsets/counts */
@@ -497,11 +393,9 @@ static void compress_sound_files() {
 		current_offset += sound_directory_size[i];
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
-		for (i = 0; i < AUDIO_TYPES_COUNT; ++i) {
-			writeUint32LE(output, current_offset);
-			writeUint32LE(output, audio_directory_table[i].count);
-			current_offset += audio_directory_size[i];
-		}
+		writeUint32LE(output, current_offset);
+		writeUint32LE(output, ARRAYSIZE(audio_files_list));
+		current_offset += audio_directory_size;
 	}
 
 	fclose(output);
