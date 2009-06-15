@@ -695,8 +695,7 @@ void writeWaveHeader(int s_size, int rate, int chan) {
 
 	fseek(_waveTmpFile, 0, SEEK_SET);
 	if (fwrite(wav, 1, 44, _waveTmpFile) != 44) {
-		printf("error write temp wave file");
-		exit(1);
+		error("error writing temp wave file");
 	}
 	fclose(_waveTmpFile);
 	_waveTmpFile = NULL;
@@ -706,14 +705,12 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile) {
 		_waveTmpFile = fopen(fileName, "wb");
 		if (!_waveTmpFile) {
-			printf("error write temp wave file");
-			exit(1);
+			error("error writing temp wave file");
 		}
 		byte wav[44];
 		memset(wav, 0, 44);
 		if (fwrite(output_data, 1, 44, _waveTmpFile) != 44) {
-			printf("error write temp wave file");
-			exit(1);
+			error("error writing temp wave file");
 		}
 		_waveDataSize = 0;
 	}
@@ -723,8 +720,7 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 		output_data[j + 1] = tmp;
 	}
 	if (fwrite(output_data, 1, size, _waveTmpFile) != size) {
-		printf("error write temp wave file");
-		exit(1);
+		error("error writing temp wave file");
 	}
 	_waveDataSize += size;
 }
@@ -1123,8 +1119,7 @@ int main(int argc, char *argv[]) {
 
 	FILE *input = fopen(inpath.getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", inpath.getFullPath());
-		exit(-1);
+		error("Cannot open file: %s", inpath.getFullPath());
 	}
 
 	if(outpath.empty()) {
@@ -1135,8 +1130,7 @@ int main(int argc, char *argv[]) {
 
 	FILE *output = fopen(outpath.getFullPath(), "wb");
 	if (!output) {
-		printf("Cannot open file: %s\n", outpath.getFullPath());
-		exit(-1);
+		error("Cannot open file: %s", outpath.getFullPath());
 	}
 
 	writeUint32BE(output, 'LB23');

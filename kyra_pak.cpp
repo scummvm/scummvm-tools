@@ -250,9 +250,9 @@ bool PAKFile::addFile(const char *name, uint8 *data, uint32 size) {
 
 bool PAKFile::linkFiles(const char *name, const char *linkTo) {
 	if (!_fileList)
-		error("Can't find file '%s' in file list", linkTo);
+		error("Cannot find file '%s' in file list", linkTo);
 	if (!_fileList->findEntry(linkTo))
-		error("Can't find file '%s' in file list", linkTo);
+		error("Cannot find file '%s' in file list", linkTo);
 	if ((_fileList && _fileList->findEntry(name)) || (_links && _links->findSrcEntry(name)))
 		error("entry '%s' already exists");
 

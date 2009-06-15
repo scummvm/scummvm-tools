@@ -136,26 +136,22 @@ static void convert_pc(Filename* inputPath) {
 
 	input = fopen(inputPath->getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", inputPath->getFullPath());
-		exit(-1);
+		error("Cannot open file: %s", inputPath->getFullPath());
 	}
 
 	output_idx = fopen(TEMP_IDX, "wb");
 	if (!output_idx) {
-		printf("Can't open file " TEMP_IDX " for write!\n" );
-		exit(-1);
+		error("Cannot open file " TEMP_IDX " for write");
 	}
 
 	output_snd = fopen(TEMP_DAT, "wb");
 	if (!output_snd) {
-		printf("Can't open file " TEMP_DAT " for write!\n" );
-		exit(-1);
+		error("Cannot open file " TEMP_DAT " for write");
 	}
 
 	num = get_offsets(filenums, offsets);
 	if (!num) {
-		printf("This does not seem to be a valid file\n");
-		exit(-1);
+		error("This does not seem to be a valid file");
 	}
 	size = num * 4;
 
@@ -183,26 +179,22 @@ static void convert_mac(Filename *inputPath) {
 	inputPath->setFullName("voices.idx");
 	input = fopen(inputPath->getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", "voices.idx");
-		exit(-1);
+		error("Cannot open file: %s", "voices.idx");
 	}
 
 	output_idx = fopen(TEMP_IDX, "wb");
 	if (!output_idx) {
-		printf("Can't open file " TEMP_IDX " for write!\n" );
-		exit(-1);
+		error("Cannot open file " TEMP_IDX " for write");
 	}
 
 	output_snd = fopen(TEMP_DAT, "wb");
 	if (!output_snd) {
-		printf("Can't open file " TEMP_DAT " for write!\n" );
-		exit(-1);
+		error("Cannot open file " TEMP_DAT " for write");
 	}
 
 	num = get_offsets_mac(filenums, offsets);
 	if (!num) {
-		printf("This does not seem to be a valid file\n");
-		exit(-1);
+		error("This does not seem to be a valid file");
 	}
 	size = num * 4;
 
@@ -226,8 +218,7 @@ static void convert_mac(Filename *inputPath) {
 
 			input = fopen(inputPath->getFullPath(), "rb");
 			if (!input) {
-				printf("Cannot open file: %s\n", inputPath->getFullPath());
-				exit(-1);
+				error("Cannot open file: %s", inputPath->getFullPath());
 			}
 		}
 

@@ -338,13 +338,11 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 			result = vorbis_encode_setup_managed(&vi, numChannels, samplerate, (oggparms.maxBitr > 0 ? 1000 * oggparms.maxBitr : -1), (1000 * oggparms.nominalBitr), (oggparms.minBitr > 0 ? 1000 * oggparms.minBitr : -1));
 
 			if (result == OV_EFAULT) {
-				printf("Error: Internal Logic Fault.\n\n");
 				vorbis_info_clear(&vi);
-				exit(-1);
+				error("Error: Internal Logic Fault");
 			} else if ((result == OV_EINVAL) || (result == OV_EIMPL)) {
-				printf("Error: Invalid bitrate parameters.\n\n");
 				vorbis_info_clear(&vi);
-				exit(-1);
+				error("Error: Invalid bitrate parameters");
 			}
 
 			if (!oggparms.silent) {
@@ -369,13 +367,11 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 			result = vorbis_encode_setup_vbr(&vi, numChannels, samplerate, oggparms.quality * 0.1f);
 
 			if (result == OV_EFAULT) {
-				printf("Error: Internal Logic Fault.\n\n");
 				vorbis_info_clear(&vi);
-				exit(-1);
+				error("Internal Logic Fault");
 			} else if ((result == OV_EINVAL) || (result == OV_EIMPL)) {
-				printf("Error: Invalid bitrate parameters.\n\n");
 				vorbis_info_clear(&vi);
-				exit(-1);
+				error("Invalid bitrate parameters");
 			}
 
 			if (!oggparms.silent) {

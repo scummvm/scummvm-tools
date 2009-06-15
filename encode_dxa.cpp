@@ -554,8 +554,7 @@ int read_png_file(const char* filename, unsigned char *&image, unsigned char *&p
 
 	FILE *fp = fopen(filename, "rb");
 	if (!fp) {
-		printf("read_png_file: Can't open file: %s\n", filename);
-		exit(-1);
+		error("read_png_file: Cannot open file: %s", filename);
 	}
 	fread(header, 1, 8, fp);
 	if (png_sig_cmp(header, 0, 8))
@@ -628,8 +627,7 @@ void readVideoInfo(Filename *filename, int &width, int &height, int &framerate, 
 
 	FILE *smk = fopen(filename->getFullPath(), "rb");
 	if (!smk) {
-		printf("readVideoInfo: Can't open file: %s\n", filename->getFullPath());
-		exit(-1);
+		error("readVideoInfo: Cannot open file: %s", filename->getFullPath());
 	}
 
 	scaleMode = S_NONE;

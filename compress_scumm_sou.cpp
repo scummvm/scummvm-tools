@@ -189,26 +189,22 @@ int main(int argc, char *argv[]) {
 
 	input = fopen(inpath.getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", inpath.getFullPath());
-		exit(-1);
+		error("Cannot open file: %s", inpath.getFullPath());
 	}
 
 	output_idx = fopen(TEMP_IDX, "wb");
 	if (!output_idx) {
-		printf("Can't open file " TEMP_IDX " for write!\n" );
-		exit(-1);
+		error("Cannot open file " TEMP_IDX " for write" );
 	}
 	output_snd = fopen(TEMP_DAT, "wb");
 	if (!output_snd) {
-		printf("Can't open file " TEMP_DAT " for write!\n");
-		exit(-1);
+		error("Cannot open file " TEMP_DAT " for write");
 	}
 
 	/* Get the 'SOU ....' header */
 	fread(buf, 1, 8, input);
 	if (strncmp(buf, f_hdr, 8)) {
-		printf("Bad SOU\n");
-		exit(-1);
+		error("Bad SOU");
 	}
 
 	while (1)

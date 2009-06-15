@@ -415,7 +415,7 @@ static uint32 compress_audio_directory(const Filename *inpath, const Filename *o
 			sprintf(filepath, "%s/audio/%s", inputDir, audio_wav_fileslist[i]);
 			input = fopen(filepath, "rb");
 			if (!input) {
-				error("Can't open file '%s'", filepath);
+				error("Cannot open file '%s'", filepath);
 			}
 			temp_table[i].size = compress_file_wav(input, output);
 			fclose(input);

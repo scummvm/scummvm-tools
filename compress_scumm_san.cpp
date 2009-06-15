@@ -123,8 +123,7 @@ void writeWaveHeader(int s_size) {
 
 	fseek(_waveTmpFile, 0, SEEK_SET);
 	if (fwrite(wav, 1, 44, _waveTmpFile) != 44) {
-		printf("error write temp wave file");
-		exit(1);
+		error("error writing temp wave file");
 	}
 	fclose(_waveTmpFile);
 	_waveTmpFile = NULL;
@@ -133,14 +132,12 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile) {
 		_waveTmpFile = fopen(fileName, "wb");
 		if (!_waveTmpFile) {
-			printf("error write temp wave file");
-			exit(1);
+			error("error writing temp wave file");
 		}
 		byte wav[44];
 		memset(wav, 0, 44);
 		if (fwrite(output_data, 1, 44, _waveTmpFile) != 44) {
-			printf("error write temp wave file");
-			exit(1);
+			error("error writing temp wave file");
 		}
 		_waveDataSize = 0;
 	}
@@ -151,8 +148,7 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 	}
 
 	if (fwrite(output_data, 1, size, _waveTmpFile) != size) {
-		printf("error write temp wave file");
-		exit(1);
+		error("error writing temp wave file");
 	}
 	_waveDataSize += size;
 }
@@ -551,8 +547,7 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 		sprintf(tmpPath, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, frame, trackId);
 		audioTrack->file = fopen(tmpPath, "wb");
 		if (!audioTrack->file) {
-			printf("error write temp file");
-			exit(1);
+			error("error writing temp file");
 		}
 	} else {
 		if (!iact)
@@ -614,8 +609,7 @@ void handleDigIACT(FILE *input, int size, const char *outputDir, const char *inp
 		trackId = track + 600;
 		volume = track_flags * 2 - 600;
 	} else {
-		printf("handleDigIACT() Bad track_flags: %d\n", track_flags);
-		exit(1);
+		error("handleDigIACT() Bad track_flags: %d", track_flags);
 	}
 
 	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, size, volume, pan, true);
@@ -685,14 +679,12 @@ int main(int argc, char *argv[]) {
 
 	FILE *input = fopen(inpath.getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", inpath.getFullPath());
-		exit(-1);
+		error("Cannot open file: %s", inpath.getFullPath());
 	}
 
 	FILE *output = fopen(outpath.getFullPath(), "wb");
 	if (!output) {
-		printf("Cannot open file: %s\n", outpath.getFullPath());
-		exit(-1);
+		error("Cannot open file: %s", outpath.getFullPath());
 	}
 
 	Filename flupath(inpath);
@@ -707,8 +699,7 @@ int main(int argc, char *argv[]) {
 		flupath.setExtension(".flu");
 		flu_out = fopen(flupath.getFullPath(), "wb");
 		if (!flu_out) {
-			printf("Cannot open ancillary file: %s\n", flupath.getFullPath());
-			exit(-1);
+			error("Cannot open ancillary file: %s", flupath.getFullPath());
 		}
 	}
 

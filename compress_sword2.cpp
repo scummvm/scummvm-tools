@@ -37,8 +37,7 @@ uint32 append_to_file(FILE *f1, const char *filename) {
 
 	f2 = fopen(filename, "rb");
 	if (!f2) {
-		printf("Can't open file %s for reading!\n", filename);
-		exit(-1);
+		error("Cannot open file %s for reading", filename);
 	}
 
 	orig_length = length = fileSize(f2);
@@ -110,28 +109,24 @@ int main(int argc, char *argv[]) {
 
 	input = fopen(inpath.getFullPath(), "rb");
 	if (!input) {
-		printf("Cannot open file: %s\n", inpath.getFullPath());
-		return EXIT_FAILURE;
+		error("Cannot open file: %s", inpath.getFullPath());
 	}
 
 	indexSize = readUint32LE(input);
 	totalSize = 12 * (indexSize + 1);
 
 	if (readUint32BE(input) != 0xfff0fff0) {
-		printf("This doesn't look like a cluster file\n");
-		return EXIT_FAILURE;
+		error("This doesn't look like a cluster file");
 	}
 
 	output_idx = fopen(TEMP_IDX, "wb");
 	if (!output_idx) {
-		printf("Can't open file " TEMP_IDX " for writing!\n");
-		return EXIT_FAILURE;
+		error("Cannot open file " TEMP_IDX " for writing");
 	}
 
 	output_snd = fopen(TEMP_DAT, "wb");
 	if (!output_snd) {
-		printf("Can't open file " TEMP_DAT " for writing!\n");
-		return EXIT_FAILURE;
+		error("Cannot open file " TEMP_DAT " for writing");
 	}
 
 	writeUint32LE(output_idx, indexSize);
@@ -152,8 +147,7 @@ int main(int argc, char *argv[]) {
 
 			f = fopen(TEMP_WAV, "wb");
 			if (!f) {
-				printf("Can't open file %s for writing!\n", TEMP_WAV);
-				return EXIT_FAILURE;
+				error("Cannot open file %s for writing", TEMP_WAV);
 			}
 
 			/*
@@ -228,8 +222,7 @@ int main(int argc, char *argv[]) {
 
 	output = fopen(outpath.getFullPath(), "wb");
 	if (!output) {
-		printf("Can't open file %s for writing!\n", outpath.getFullPath());
-		return EXIT_FAILURE;
+		error("Cannot open file %s for writing", outpath.getFullPath());
 	}
 
 	append_to_file(output, TEMP_IDX);
