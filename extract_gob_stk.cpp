@@ -78,9 +78,10 @@ int main(int argc, char **argv) {
 	if (!(stk = fopen(inpath.getFullPath(), "rb")))
 		error("Couldn't open file \"%s\"", inpath.getFullPath());
 
-	if (inpath.empty())
+	if (outpath.empty()) {
 		outpath = inpath;
-	outpath.addExtension(".gob");
+		outpath.setExtension(".gob");
+	}
 
 	if (!(gobConf = fopen(outpath.getFullPath(), "w")))
 		error("Couldn't create config file \"%s\"", outpath.getFullPath());

@@ -255,11 +255,11 @@ const char *Filename::getPath(char *out) const {
 	if ((slash = strrchr(_path, '/')) || (slash = strrchr(_path, '\\'))) {
 		int end = strlen(_path) - strlen(slash) + 1;
 		strncpy(out, _path, end);
-		out[end] = 0;
+		out[end] = '\0';
 		return out;
 	}
-	// If there was no '/', this was a relative path
-	strcpy(out, _path);
+	// If there was no '/', this was a local path
+	out[0] = '\0';
 	return out;
 }
 
