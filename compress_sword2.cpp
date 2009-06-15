@@ -88,13 +88,13 @@ int main(int argc, char *argv[]) {
 
 	switch(gCompMode) {
 	case kMP3Mode:
-	tempEncoded = TEMP_MP3;
+		tempEncoded = TEMP_MP3;
 		break;
 	case kVorbisMode:
-	tempEncoded = TEMP_OGG;
+		tempEncoded = TEMP_OGG;
 		break;
 	case kFlacMode:
-	tempEncoded = TEMP_FLAC;
+		tempEncoded = TEMP_FLAC;
 		break;
 	default:
 		printf(helptext, argv[0]);

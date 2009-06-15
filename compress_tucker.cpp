@@ -30,10 +30,7 @@
 #define OUTPUT_OGG  "TUCKER.SOG"
 #define OUTPUT_FLA  "TUCKER.SOF"
 
-static CompressMode g_mode = kMP3Mode;
-static const char *g_output_filename = OUTPUT_MP3;
-static const char *g_output_directory = NULL;
-static const char *g_input_directory = NULL;
+static CompressMode gCompMode = kMP3Mode;
 
 struct CompressedData {
 	int offset;
@@ -63,7 +60,7 @@ static int compress_file_wav(FILE *input, FILE *output) {
 	char buf[8];
 
 	if (fread(buf, 1, 8, input) == 8 && memcmp(buf, "RIFF", 4) == 0) {
-		extractAndEncodeWAV(TEMP_WAV, input, g_mode);
+		extractAndEncodeWAV(TEMP_WAV, input, gCompMode);
 		return append_compress_file(output);
 	}
 	return 0;
@@ -75,7 +72,7 @@ static int compress_file_raw(const char *input, bool is16, FILE *output) {
 	} else {
 		setRawAudioType(false, false, 8);
 	}
-	encodeAudio(input, true, 22050, tempEncoded, g_mode);
+	encodeAudio(input, true, 22050, tempEncoded, gCompMode);
 	return append_compress_file(output);
 }
 
@@ -97,20 +94,27 @@ static SoundDirectory sound_directory_table[SOUND_TYPES_COUNT] = {
 	{ "SPEECH", "sam%04d.wav", MAX_SPEECH_FILES }
 };
 
-static uint32 compress_sounds_directory(FILE *output, const struct SoundDirectory *dir) {
+static uint32 compress_sounds_directory(const Filename *inpath, const Filename *outpath, FILE *output, const struct SoundDirectory *dir) {
 	char filepath[1024];
+	char inputDir[1024];
 	char *filename;
-	struct stat s;
+	//struct stat s;
 	int i, pos;
 	uint32 current_offset;
 	FILE *input;
 
+	inpath->getPath(inputDir);
+
 	assert(dir->count <= ARRAYSIZE(temp_table));
 
-	snprintf(filepath, sizeof(filepath), "%s/%s", g_input_directory, dir->name);
+	// We can't use setFullName since dir->name can contain '/'
+	snprintf(filepath, sizeof(filepath), "%s/%s", inputDir, dir->name);
+	/* stat is NOT standard C, but rather a POSIX call and fails under MSVC
+	 * this could be factored out to Filename::isDirectory ?
 	if (stat(filepath, &s) != 0 || !S_ISDIR(s.st_mode)) {
 		error("Cannot stat directory '%s'", filepath);
 	}
+	*/
 	strcat(filepath, "/");
 	filename = filepath + strlen(filepath);
 
@@ -380,13 +384,16 @@ static AudioDirectory audio_directory_table[AUDIO_TYPES_COUNT] = {
 	{ "raw", AUDIO_RAW_COUNT }
 };
 
-static uint32 compress_audio_directory(FILE *output, int count, int index) {
+static uint32 compress_audio_directory(const Filename *inpath, const Filename *outpath, FILE *output, int count, int index) {
 	char filepath[1024];
 	int i, pos;
 	uint32 current_offset;
 	FILE *input;
 	char entry_name[13];
 	bool is_16LE;
+
+	char inputDir[1024];
+	inpath->getPath(inputDir);
 
 	assert(ARRAYSIZE(audio_wav_fileslist) == AUDIO_WAV_COUNT);
 
@@ -405,7 +412,7 @@ static uint32 compress_audio_directory(FILE *output, int count, int index) {
 		temp_table[i].offset = current_offset;
 		switch (index) {
 		case 0: /* .wav */
-			sprintf(filepath, "%s/audio/%s", g_input_directory, audio_wav_fileslist[i]);
+			sprintf(filepath, "%s/audio/%s", inputDir, audio_wav_fileslist[i]);
 			input = fopen(filepath, "rb");
 			if (!input) {
 				error("Can't open file '%s'", filepath);
@@ -417,7 +424,7 @@ static uint32 compress_audio_directory(FILE *output, int count, int index) {
 			is_16LE = bsearch(audio_raw_fileslist[i], audio_raw_fileslist_16LE,
 				ARRAYSIZE(audio_raw_fileslist_16LE), sizeof(const char *), cmp_helper) != NULL;
 			temp_table[i].offset = current_offset;
-			sprintf(filepath, "%s/audio/%s", g_input_directory, audio_raw_fileslist[i]);
+			sprintf(filepath, "%s/audio/%s", inputDir, audio_raw_fileslist[i]);
 			input = fopen(filepath, "rb");
 			if (input) {
 				fclose(input);
@@ -444,19 +451,17 @@ static uint32 compress_audio_directory(FILE *output, int count, int index) {
 	return current_offset + count * 8;
 }
 
-static void compress_sound_files() {
+static void compress_sound_files(const Filename *inpath, const Filename *outpath) {
 	int i;
 	FILE *output;
-	char filepath[1024];
 	uint32 current_offset;
 	uint32 sound_directory_size[SOUND_TYPES_COUNT];
 	uint32 audio_directory_size[AUDIO_TYPES_COUNT];
 	const uint16 flags = 0; // HEADER_FLAG_AUDIO_INTRO;
 
-	snprintf(filepath, sizeof(filepath), "%s/%s", g_output_directory, g_output_filename);
-	output = fopen(filepath, "wb");
+	output = fopen(outpath->getFullPath(), "wb");
 	if (!output) {
-		error("Cannot open file '%s' for writing", filepath);
+		error("Cannot open file '%s' for writing", outpath->getFullPath());
 	}
 
 	writeUint16LE(output, CURRENT_VER);
@@ -477,13 +482,13 @@ static void compress_sound_files() {
 	/* compress the .wav files in each directory */
 	for (i = 0; i < SOUND_TYPES_COUNT; ++i) {
 		printf("Processing directory '%s'...\n", sound_directory_table[i].name);
-		sound_directory_size[i] = compress_sounds_directory(output, &sound_directory_table[i]);
+		sound_directory_size[i] = compress_sounds_directory(inpath, outpath, output, &sound_directory_table[i]);
 		printf("Done (%d bytes)\n", sound_directory_size[i]);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
 		for (i = 0; i < AUDIO_TYPES_COUNT; ++i) {
 			printf("Processing 'audio/*.%s' files...\n", audio_directory_table[i].ext);
-			audio_directory_size[i] = compress_audio_directory(output, audio_directory_table[i].count, i);
+			audio_directory_size[i] = compress_audio_directory(inpath, outpath, output, audio_directory_table[i].count, i);
 			printf("Done (%d bytes)\n", audio_directory_size[i]);
 		}
 	}
@@ -514,57 +519,53 @@ static void compress_sound_files() {
 	printf("Done.\n");
 }
 
-static void showhelp(const char *exename) {
-	printf("\nUsage: %s [params] <inputdir> <outputdir>\n", exename);
-	exit(2);
-}
+const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputdir] inputdir\n";
 
 int main(int argc, char *argv[]) {
-	int i;
+	Filename inpath, outpath;
+	int first_arg = 1;
+	int last_arg = argc - 1;
+	
+	parseHelpArguments(argv, argc, helptext);
 
-	if (argc < 2) {
-		showhelp(argv[0]);
+	// compression mode
+	gCompMode = process_audio_params(argc, argv, &first_arg);
+
+
+	// Now we try to find the proper output file
+	// also make sure we skip those arguments
+	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
+		first_arg += 2;
+	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
+		last_arg -= 2;
+
+	inpath.setFullPath(argv[first_arg]);
+
+	// Default out is same as in directory, file names differ by extension
+	if(outpath.empty()) {
+		outpath = inpath;
 	}
 
-	i = 1;
-	if (strcmp(argv[1], "--mp3") == 0) {
-		g_mode = kMP3Mode;
-		g_output_filename = OUTPUT_MP3;
-		++i;
-	} else if (strcmp(argv[1], "--vorbis") == 0) {
-		g_mode = kVorbisMode;
-		g_output_filename = OUTPUT_OGG;
-		++i;
-	} else if (strcmp(argv[1], "--flac") == 0) {
-		g_mode = kFlacMode;
-		g_output_filename = OUTPUT_FLA;
-		++i;
-	}
-
-	g_input_directory = argv[argc - 2];
-	g_output_directory = argv[argc - 1];
-
-	switch (g_mode) {
+	// Temporary output file
+	switch(gCompMode) {
 	case kMP3Mode:
 		tempEncoded = TEMP_MP3;
-		if (!process_mp3_parms(argc - 1, argv, i)) {
-			showhelp(argv[0]);
-		}
+		outpath.setFullName(OUTPUT_MP3);
 		break;
 	case kVorbisMode:
 		tempEncoded = TEMP_OGG;
-		if (!process_ogg_parms(argc - 1, argv, i)) {
-			showhelp(argv[0]);
-		}
+		outpath.setFullName(OUTPUT_OGG);
 		break;
 	case kFlacMode:
 		tempEncoded = TEMP_FLAC;
-		if (!process_flac_parms(argc - 1, argv, i)) {
-			showhelp(argv[0]);
-		}
+		outpath.setFullName(OUTPUT_FLA);
+		break;
+	default:
+		printf(helptext, argv[0]);
+		exit(2);
 		break;
 	}
 
-	compress_sound_files();
+	compress_sound_files(&inpath, &outpath);
 	return 0;
 }
