@@ -628,7 +628,7 @@ void readVideoInfo(Filename *filename, int &width, int &height, int &framerate, 
 
 	FILE *smk = fopen(filename->getFullPath(), "rb");
 	if (!smk) {
-		printf("readVideoInfo: Can't open file: %s\n", filename);
+		printf("readVideoInfo: Can't open file: %s\n", filename->getFullPath());
 		exit(-1);
 	}
 
