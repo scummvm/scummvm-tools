@@ -86,10 +86,10 @@ int main(int argc, char **argv) {
 		error("Couldn't create config file \"%s\"", outpath.getFullPath());
 
 	if (fread(signature, 1, 6, stk) < 6)
-		error("Unexpected EOF while reading signature in \"%s\"", argv[1]);
+		error("Unexpected EOF while reading signature in \"%s\"", inpath.getFullPath()));
 
 	if (strncmp(signature, "STK2.1", 6) == 0) {
-		warning("Signature of new STK format (STK 2.1) detected in file \"%s\"", argv[1]);
+		warning("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath()));
 		fprintf(gobConf, "%s\n", confSTK21);
 		chunks = readChunkListV2(stk, gobConf);
 	} else {
