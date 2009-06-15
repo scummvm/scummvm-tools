@@ -37,7 +37,7 @@ struct Chunk {
 
 Chunk *readChunkConf(FILE *gobconf, uint16 &chunkCount);
 void writeEmptyHeader(FILE *stk, uint16 chunkCount);
-void writeBody(FILE *stk, uint16 chunkcount, Chunk *chunks);
+void writeBody(Filename *inpath, FILE *stk, uint16 chunkcount, Chunk *chunks);
 uint32 writeBodyFile(FILE *stk, FILE *src);
 uint32 writeBodyPackFile(FILE *stk, FILE *src);
 void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks);
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 
 	// Output in compressed format
 	writeEmptyHeader (stk, chunkCount);
-	writeBody(stk, chunkCount, chunks);
+	writeBody(&inpath, stk, chunkCount, chunks);
 	rewriteHeader(stk, chunkCount, chunks);
 
 	// Cleanup
@@ -153,7 +153,7 @@ void writeEmptyHeader(FILE *stk, uint16 chunkCount) {
 	return;
 }
 
-void writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
+void writeBody(Filename *inpath, FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	Chunk *curChunk = chunks;
 	FILE *src;
 	uint32 realSize;
@@ -162,8 +162,9 @@ void writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	uint32 tmpSize;
 
 	while(curChunk) {
-		if (!(src = fopen(curChunk->name, "rb")))
-			error("Couldn't open conf file \"%s\"", curChunk->name);
+		inpath->setFullName(curChunk->name);
+		if (!(src = fopen(inpath->getFullPath(), "rb")))
+			error("Couldn't open conf file \"%s\"", inpath->getFullPath());
 
 		realSize = fileSize(src);
 

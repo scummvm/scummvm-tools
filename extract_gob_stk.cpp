@@ -59,10 +59,13 @@ int main(int argc, char **argv) {
 	
 	// Continuing with finding out output directory
 	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
+	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
 		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
+	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
 		last_arg -= 2;
+	else
+		outpath.setFullPath("./");
+
 
 	// We only got one input file
 	if (last_arg != first_arg)
@@ -70,18 +73,14 @@ int main(int argc, char **argv) {
 
 	inpath.setFullPath(argv[first_arg]);
 
-	if(outpath.empty()) {
-		outpath = inpath;
-		outpath.setExtension(".stk");
-	}
-
 	if (!(stk = fopen(inpath.getFullPath(), "rb")))
 		error("Couldn't open file \"%s\"", inpath.getFullPath());
 
-	if (outpath.empty()) {
+	if (outpath.empty())
 		outpath = inpath;
-		outpath.setExtension(".gob");
-	}
+	else
+		outpath.setFullName(inpath.getFullName());
+	outpath.setExtension(".gob");
 
 	if (!(gobConf = fopen(outpath.getFullPath(), "w")))
 		error("Couldn't create config file \"%s\"", outpath.getFullPath());

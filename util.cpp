@@ -239,7 +239,8 @@ const char *Filename::getFullName(char *out) const {
 		strcpy(out, slash + 1);
 		return out;
 	}
-	return NULL;
+	strcpy(out, _path);
+	return out;
 }
 
 const char *Filename::getFullName() const {
@@ -247,7 +248,7 @@ const char *Filename::getFullName() const {
 	if ((slash = strrchr(_path, '/')) || (slash = strrchr(_path, '\\'))) {
 		return slash + 1;
 	}
-	return NULL;
+	return _path;
 }
 
 const char *Filename::getPath(char *out) const {
