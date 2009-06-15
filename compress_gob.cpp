@@ -72,12 +72,17 @@ int main(int argc, char **argv) {
 	if(last_arg - first_arg != 0)
 		error("Expected only one input file");
 
-	// Open input (config) file
-	if (!(gobConf = fopen(argv[first_arg], "r")))
-		error("Couldn't open conf file '%s'", argv[first_arg]);
+	inpath.setFullPath(argv[first_arg]);
 
-	// We output with .stk extension
-	outpath.setExtension(".stk");
+	// We output with .stk extension, if there is no specific out file
+	if(outpath.empty()) {
+		outpath = inpath;
+		outpath.setExtension(".stk");
+	}
+
+	// Open input (config) file
+	if (!(gobConf = fopen(inpath.getFullPath(), "r")))
+		error("Couldn't open conf file '%s'", inpath.getFullPath());
 
 	// Open output filk
 	if (!(stk = fopen(outpath.getFullPath(), "wb")))

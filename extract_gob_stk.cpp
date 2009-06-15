@@ -59,19 +59,21 @@ int main(int argc, char **argv) {
 	
 	// Continuing with finding out output directory
 	// also make sure we skip those arguments
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
+	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
 		first_arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
+	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
 		last_arg -= 2;
-	else
-		// Standard output dir
-		outpath.setFullPath("out/");
 
 	// We only got one input file
 	if (last_arg != first_arg)
 		error("Only one input file expected!");
 
 	inpath.setFullPath(argv[first_arg]);
+
+	if(outpath.empty()) {
+		outpath = inpath;
+		outpath.setExtension(".stk");
+	}
 
 	if (!(stk = fopen(inpath.getFullPath(), "rb")))
 		error("Couldn't open file \"%s\"", inpath.getFullPath());

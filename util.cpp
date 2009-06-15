@@ -180,7 +180,7 @@ void Filename::addExtension(const char *ext) {
 void Filename::setExtension(const char *ext) {
 	char *dot = strrchr(_path, '.');
 	if(!dot)
-		dot = _path + strlen(_path);
+		dot = _path + strlen(_path) - 1;
 	// Don't copy the dot
 	if(*ext == '.')
 		ext++;
