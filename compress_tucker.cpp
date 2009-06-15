@@ -561,8 +561,7 @@ int main(int argc, char *argv[]) {
 		outpath.setFullName(OUTPUT_FLA);
 		break;
 	default:
-		printf(helptext, argv[0]);
-		exit(2);
+		displayHelp(helptext, argv[0]);
 		break;
 	}
 

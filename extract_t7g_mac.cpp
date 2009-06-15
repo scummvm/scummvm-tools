@@ -7,8 +7,7 @@ int main(int argc, char *argv[]) {
 	char *filenames[NUM_FILES];
 
 	if (argc != 2) {
-		printf("Usage: %s <file>\n", argv[0]);
-		exit(2);
+		displayHelp("Usage: %s <file>\n", argv[0]);
 	}
 
 	if ((ifp = fopen(argv[1], "rb")) == NULL) {

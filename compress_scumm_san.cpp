@@ -649,8 +649,7 @@ int main(int argc, char *argv[]) {
 		notice("Only ogg vorbis and MP3 is supported for this tool.");
 	if(compMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
-		printf(helptext, argv[0]);
-		exit(2);
+		displayHelp(helptext, argv[0]);
 	}
 
 	uint32 tag;

@@ -245,8 +245,7 @@ int main(int argc, char *argv[]) {
 
 	if(gCompMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
-		printf(helptext, argv[0]);
-		exit(2);
+		displayHelp(helptext, argv[0]);
 	}
 
 	if(strcmp(argv[first_arg], "--mac") == 0) {

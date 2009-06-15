@@ -132,16 +132,14 @@ const struct GameVersion *detectGameVersion(uint32 size) {
 		}
  	}
 
-	printf("Unknown/unsupported FOTAQ version!\n");
+	error("Unknown/unsupported FOTAQ version");
 
-	exit(1);
 	return NULL;
 }
 
 void checkOpen(FILE *fp, const char *filename) {
 	if (!fp) {
-		printf("Cannot open file: %s\n", filename);
-		exit(-1);
+		error("Cannot open file: %s", filename);
 	}
 }
 
@@ -224,8 +222,7 @@ int main(int argc, char *argv[]) {
 
 	if(gCompMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
-		printf(helptext, argv[0]);
-		exit(2);
+		displayHelp(helptext, argv[0]);
 	}
 	
 	// Now we try to find the proper output file

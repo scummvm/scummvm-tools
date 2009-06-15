@@ -234,8 +234,7 @@ void fixVolCnfFileName(char *dst, const uint8 *src) {
 void unpackAllResourceFiles(const char *filename, const char *outDir) {
 	FILE *fp = fopen(filename, "rb");
 	if (!fp) {
-		printf("Unable to open file '%s'\n", filename);
-		exit(1);
+		error("Unable to open file '%s'", filename);
 	}
 
 	uint32 unpackedSize, packedSize;
@@ -259,8 +258,7 @@ void unpackAllResourceFiles(const char *filename, const char *outDir) {
 	if (packedSize != unpackedSize) {
 		CineUnpacker cineUnpacker;
 		if (!cineUnpacker.unpack(buf, packedSize, buf, unpackedSize)) {
-			printf("Error while unpacking 'vol.cnf' data");
-			exit(1);
+			error("Failed to unpack 'vol.cnf' data");
 		}
 	}
 	unsigned int resourceFilesCount = READ_BE_UINT16(&buf[0]);

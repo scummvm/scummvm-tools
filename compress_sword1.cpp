@@ -609,8 +609,7 @@ int main(int argc, char *argv[]) {
 
 	if(compMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
-		printf(helptext, argv[0]);
-		exit(2);
+		displayHelp(helptext, argv[0]);
 	}
 
 	// Now we try to find the proper output dir

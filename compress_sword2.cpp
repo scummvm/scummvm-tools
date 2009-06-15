@@ -96,8 +96,7 @@ int main(int argc, char *argv[]) {
 		tempEncoded = TEMP_FLAC;
 		break;
 	default:
-		printf(helptext, argv[0]);
-		exit(2);
+		displayHelp(helptext, argv[0]);
 		break;
 	}
 

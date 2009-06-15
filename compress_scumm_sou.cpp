@@ -104,8 +104,7 @@ void get_part(const char *inputPath) {
 	}
 
 	tags = readUint32BE(input);
-	if (tags < 8)
-		exit(-1);
+	assert(tags >= 8);
 	tags -= 8;
 
 	writeUint32BE(output_idx, (uint32)pos);
@@ -157,8 +156,7 @@ int main(int argc, char *argv[]) {
 
 	if(gCompMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
-		printf(helptext, argv[0]);
-		exit(2);
+		displayHelp(helptext, argv[0]);
 	}
 
 	// Now we try to find the proper output file
@@ -179,8 +177,7 @@ int main(int argc, char *argv[]) {
 			g_output_filename = OUTPUT_FLAC;
 			break;
 		default:
-			printf(helptext, argv[0]);
-			exit(2);
+			displayHelp(helptext, argv[0]);
 			break;
 		}
 	}
