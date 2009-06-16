@@ -3,6 +3,10 @@
 
 #include <fstream>
 
+#include <boost/foreach.hpp>
+
+#define foreach BOOST_FOREACH
+
 using namespace std;
 
 typedef unsigned char uint8;
