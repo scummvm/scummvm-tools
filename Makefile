@@ -204,20 +204,20 @@ extract_t7g_mac$(EXEEXT): extract_t7g_mac.o util.o
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-tools_gui$(EXEEXT): tools_gui.o
+tools_gui$(EXEEXT): gui/main.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs`
 
 sword2_clue$(EXEEXT): sword2_clue.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `pkg-config --libs gtk+-2.0`
 
-clean:
-	rm -f *.o utils/*.o $(TARGETS)
-
-tools_gui.o: tools_gui.cpp tools_gui.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c tools_gui.cpp -o tools_gui.o
+gui/main.o: gui/main.cpp gui/main.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/main.cpp -o gui/main.o
 
 sword2_clue.o: sword2_clue.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `pkg-config --cflags gtk+-2.0` -c sword2_clue.cpp
+
+clean:
+	rm -f *.o utils/*.o $(TARGETS)
 
 ######################################################################
 # The build rules follow - normally you should have no need to
