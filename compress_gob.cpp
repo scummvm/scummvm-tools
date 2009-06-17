@@ -145,10 +145,9 @@ void writeEmptyHeader(FILE *stk, uint16 chunkCount) {
 void writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	Chunk *curChunk = chunks;
 	FILE *src;
-	uint32 realSize;
+	uint32 realSize, tmpSize, filPos;
 	int count;
 	char buffer[4096];
-	uint32 tmpSize;
 
 	while(curChunk) {
 		if (!(src = fopen(curChunk->name, "rb")))
@@ -158,9 +157,21 @@ void writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 
 		if (curChunk->packed) {
 			printf("Compressing %12s\t", curChunk->name);
+			filPos = ftell(stk);
 			curChunk->size = writeBodyPackFile(stk, src);
-			printf("%d -> %d bytes\n", realSize, curChunk->size);
-		} else {
+			printf("%d -> %d bytes", realSize, curChunk->size);
+			if (curChunk->size >= realSize) {
+// If compressed size >= realsize, compression is useless
+// => Store instead
+				curChunk->packed = 0;
+				fseek(stk, filPos, SEEK_SET);
+				rewind(src);
+				printf("!!!");
+			}
+			printf("\n");
+		} 
+
+		if (!curChunk->packed) {
 			tmpSize = 0;
 			printf("Storing %12s\t", curChunk->name);
 			do {
@@ -214,7 +225,7 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	buffer[0] = chunkCount & 0xFF;
 	buffer[1] = chunkCount >> 8;
 	fwrite(buffer, 1, 2, stk);
-	// TODO : Implement STK21
+// TODO : Implement STK21
 	while (curChunk) {
 		for (i = 0; i < 13; i++)
 			if (i < strlen(curChunk->name))
@@ -344,10 +355,11 @@ bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, 
 	for (tmpPos = 0; tmpPos < 0x1000; tmpPos++) {
 		tmpLength = 0;
 		for (i = 0; ((i < 18) & (i < counter)); i++)
-			if ((unpacked[unpackedIndex + i] == dico[(tmpPos + i) % 4096]) & (((tmpPos + i) % 4096 != currIndex) | (i == 0)))
+			if ((unpacked[unpackedIndex + i] == dico[(tmpPos + i) % 4096]) & 
+				// avoid dictionary collision
+				(((tmpPos + i) % 4096 != currIndex) | (i == 0)))
 				tmpLength++;
 			else
-				// avoid dictionary collision
 				break;
 		if (tmpLength > bestLength)
 		{
