@@ -4,8 +4,9 @@
 #include <fstream>
 
 #include <boost/foreach.hpp>
-
+#ifndef foreach
 #define foreach BOOST_FOREACH
+#endif
 
 using namespace std;
 

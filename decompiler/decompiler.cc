@@ -35,12 +35,12 @@ int main(int argc, char **argv) {
 	if (g_disasm)
 		for (index_t i = 0; i < script.size(); i++)
 			script.print(i);
-	CFG *cfg = new CFG(script);
+	CFG cfg(script);
 	if (g_blocks)
-		cfg->printBasicBlocks();
-	cfg->removeJumpsToJumps();
-	cfg->removeDeadBlocks();
+		cfg.printBasicBlocks();
+	cfg.removeJumpsToJumps();
+	cfg.removeDeadBlocks();
 	if (g_graph)
-		cfg->printDot();
+		cfg.printDot();
 	return 0;
 }
