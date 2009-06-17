@@ -41,7 +41,7 @@ void writeBody(FILE *stk, uint16 chunkcount, Chunk *chunks);
 uint32 writeBodyFile(FILE *stk, FILE *src);
 uint32 writeBodyPackFile(FILE *stk, FILE *src);
 void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks);
-bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 &pos, uint8 &length);
+bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length);
 
 byte *packData(byte *src, uint32 &size);
 
@@ -104,9 +104,14 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 
 	chunkCount = 1;
 
-// first read (signature, not yet used)
+// first read: signature
 	fscanf(gobConf, "%s", buffer);
+	if (!strcmp(buffer, confSTK21))
+		error("STK21 not yet handled");
+	else if (strcmp(buffer, confSTK10))
+		error("Unknown format signature");
 
+// All the other reads concern file + compression flag
 	fscanf(gobConf, "%s", buffer);
 	while (!feof(gobConf)) {
 		strcpy(curChunk->name, buffer);
@@ -129,7 +134,8 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 void writeEmptyHeader(FILE *stk, uint16 chunkCount) {
 	int count;
 
-// Write empty header
+// Write empty header dummy header, which will be overwritten
+// at the end of the program execution.
 	for (count = 0; count < 2 + (chunkCount * 22); count++)
 		fputc(0, stk);
 
@@ -150,19 +156,22 @@ void writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 
 		realSize = fileSize(src);
 
-		if (curChunk->packed)
+		if (curChunk->packed) {
+			printf("Compressing %12s\t", curChunk->name); 
 			curChunk->size = writeBodyPackFile(stk, src);
-		else {
+			printf("%d -> %d bytes\n", realSize, curChunk->size);
+		} else {
 			tmpSize = 0;
+			printf("Storing %12s\t", curChunk->name);
 			do {
 				count = fread(buffer, 1, 4096, src);
 				fwrite(buffer, 1, count, stk);
 				tmpSize += count;
 			} while (count == 4096);
 			curChunk->size = tmpSize;
+			printf("%d bytes\n", tmpSize);
 		}
 
-//		printf("File: %s inside STK size: %d original size: %d\n", curChunk->name, curChunk->size, realSize);
 		fclose(src);
 		curChunk = curChunk->next;
 	}
@@ -283,7 +292,7 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 	resultchecklength = 0;
 
 	while (counter>0) {
-		if (!checkDico(unpacked, unpackedIndex, counter, dico, resultcheckpos, resultchecklength)) {
+		if (!checkDico(unpacked, unpackedIndex, counter, dico, dicoIndex, resultcheckpos, resultchecklength)) {
 			dico[dicoIndex] = unpacked[unpackedIndex];
 			writeBuffer[buffIndex] = unpacked[unpackedIndex];
 			cmd |= (1 << cpt);
@@ -299,7 +308,6 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 // Write the copy string command
 			writeBuffer[buffIndex] = resultcheckpos & 0xFF;
 			writeBuffer[buffIndex + 1] = ((resultcheckpos & 0x0F00) >> 4) + (resultchecklength - 3);
-//			printf("ptr 0x%x cpt 0x%x -> 0x%x 0x%x\n", resultcheckpos, resultchecklength, (byte) writeBuffer[buffIndex], writeBuffer[buffIndex + 1]);
 
 			unpackedIndex += resultchecklength;
 			dicoIndex = (dicoIndex + resultchecklength) % 4096;
@@ -308,7 +316,6 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 			buffIndex += 2;
 			counter -= resultchecklength;
 		}
-
 
 		if ((cpt == 7) | (counter == 0)) {
 			writeBuffer[0] = cmd;
@@ -321,59 +328,44 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 			cpt++;
 	}
 
-//	filDico = fopen("dico.gob", "wb");
-//	fwrite(dico, 1, 4114, filDico);
-//	fclose(filDico);
-
 	delete[] unpacked;
 	return size;
 }
 
-bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 &pos, uint8 &length) {
+bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length) {
 	uint16 tmpPos, bestPos;
 	uint8 tmpLength, bestLength, i;
-//	FILE *filDico;
 
 	bestPos = 0;
-	bestLength = 0;
+	bestLength = 2;
 
 	if (counter < 3)
 		return false;
 
 	for (tmpPos = 0; tmpPos < 0x1000; tmpPos++) {
 		tmpLength = 0;
-		for (i = 0; ((i < 8) & (i < counter)); i++)
-			if (unpacked[unpackedIndex + i] == dico[(tmpPos + i) % 4096])
+		for (i = 0; ((i < 18) & (i < counter)); i++)
+			if ((unpacked[unpackedIndex + i] == dico[(tmpPos + i) % 4096]) & (((tmpPos + i) % 4096 != currIndex) | (i==0)))
 				tmpLength++;
 			else
 				break;
-		if (tmpLength > bestLength) {
-			bestLength = tmpLength;
+		if (tmpLength > bestLength)
+		{
 			bestPos = tmpPos;
+			if ((bestLength= tmpLength) == 18)
+				break;
 		}
-
-		if (bestLength == 8)
-			break;
 	}
 
 	pos = bestPos;
 	length = bestLength;
 
 	if (bestLength > 2) {
-//		filDico = fopen("dico.gob", "wb");
-//		fwrite(dico, 1, 4114, filDico);
-//		fclose(filDico);
-//		printf("Found ");
-//		for (i = 0; i < bestLength; i++)
-//			printf("0x%x ", dico[(bestPos + i) % 4096]);
-//
-//		printf("while looking for ");
-//		for (i = 0; i < bestLength; i++)
-//			printf("0x%x ", unpacked[unpackedIndex + i]);
-//		printf("org pos 0x%x at dico pos 0x%x\n", unpackedIndex, bestPos);
-//
 		return true;
 	}
 	else
+	{
+		length = 0;
 		return false;
+	}
 }
