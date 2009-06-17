@@ -157,7 +157,7 @@ void writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 		realSize = fileSize(src);
 
 		if (curChunk->packed) {
-			printf("Compressing %12s\t", curChunk->name); 
+			printf("Compressing %12s\t", curChunk->name);
 			curChunk->size = writeBodyPackFile(stk, src);
 			printf("%d -> %d bytes\n", realSize, curChunk->size);
 		} else {
@@ -242,7 +242,6 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	return;
 }
 
-// Some LZ77-variant
 uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 	byte dico[4114];
 	byte writeBuffer[17];
@@ -345,14 +344,15 @@ bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, 
 	for (tmpPos = 0; tmpPos < 0x1000; tmpPos++) {
 		tmpLength = 0;
 		for (i = 0; ((i < 18) & (i < counter)); i++)
-			if ((unpacked[unpackedIndex + i] == dico[(tmpPos + i) % 4096]) & (((tmpPos + i) % 4096 != currIndex) | (i==0)))
+			if ((unpacked[unpackedIndex + i] == dico[(tmpPos + i) % 4096]) & (((tmpPos + i) % 4096 != currIndex) | (i == 0)))
 				tmpLength++;
 			else
+				// avoid dictionary collision
 				break;
 		if (tmpLength > bestLength)
 		{
 			bestPos = tmpPos;
-			if ((bestLength= tmpLength) == 18)
+			if ((bestLength = tmpLength) == 18)
 				break;
 		}
 	}
@@ -360,11 +360,9 @@ bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, 
 	pos = bestPos;
 	length = bestLength;
 
-	if (bestLength > 2) {
+	if (bestLength > 2)
 		return true;
-	}
-	else
-	{
+	else {
 		length = 0;
 		return false;
 	}
