@@ -2782,7 +2782,7 @@ void next_line_HE_V72(char *output) {
 				"\x87ppp|fillWizPixel,"
 				"\x88ppp|fillWizFlood,"
 				"\x89p|setDstResNum,"
-				"\x8Bpp|setThinkLine,"
+				"\x8Bpp|setThickLine,"
 				"\x8D|startFont,"
 				"\x8Epppph|createFont,"
 				"\x8Fpph|renderFontString,"
