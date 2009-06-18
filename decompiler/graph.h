@@ -27,8 +27,10 @@ struct Graph : boost::noncopyable {
 
 		std::list<Node*> _in;
 		std::list<Node*> _out;
+		bool _hidden;
+		bool _visited;
 
-		Node(const Data &data) : _data(data) {
+		Node(const Data &data) : _data(data), _hidden(false) {
 		}
 
 		~Node() {
@@ -51,28 +53,62 @@ struct Graph : boost::noncopyable {
 		return node;
 	}
 
+	void hideNode(Node *u) {
+		foreach (Node *v, u->_in)
+			v->_out.remove(u);
+		foreach (Node *v, u->_out)
+			v->_in.remove(u);
+		u->_hidden = true;
+	}
+
 	void addEdge(Node *from, Node *to) {
 		from->_out.push_back(to);
 		to->_in.push_back(from);
+	}
+
+	void replaceEdges(Node *from, Node *oldTo, Node *newTo) {
+		size_t n = count(oldTo->_in.begin(), oldTo->_in.end(), from);
+		oldTo->_in.remove(from);
+		fill_n(back_inserter(newTo->_in), n, from);
+		foreach (Node *&node, from->_out)
+			if (node == oldTo)
+				node = newTo;
+	}
+
+	void visit(Node *u) {
+		u->_visited = true;
+		foreach (Node *v, u->_out)
+			if (!v->_visited)
+				visit(v);
+	}
+
+	void removeUnreachableNodes(Node *start) {
+		foreach (Node *u, _nodes)
+			u->_visited = false;
+		visit(start);
+		foreach (Node *u, _nodes)
+			if (!u->_visited)
+				hideNode(u);
 	}
 
 	template<typename Printer>   // printer is a functor taking Data and returning a string
 	std::string graphvizPrint(Printer printer, const std::string &fontname="Courier", int fontsize=14) const {
 		std::stringstream ret;
 		ret << "digraph G {" << std::endl;
-		foreach (Node *u, _nodes) {
-			ret << '"' << u << '"'
-				<< "[fontname=" << '"' << fontname << '"'
-				<< ",fontsize=" << fontsize
-				<< ",shape=box"
-				<< ",label=" << '"' << graphvizEscapeLabel(printer(u->_data)) << '"'
-				<< "];" << std::endl;
-			foreach (Node *v, u->_out)
+		foreach (Node *u, _nodes)
+			if (!u->_hidden) {
 				ret << '"' << u << '"'
-					<< " -> "
-					<< '"' << v << '"'
-					<< ";" << std::endl;
-		}
+					<< "[fontname=" << '"' << fontname << '"'
+					<< ",fontsize=" << fontsize
+					<< ",shape=box"
+					<< ",label=" << '"' << graphvizEscapeLabel(printer(u->_data)) << '"'
+					<< "];" << std::endl;
+				foreach (Node *v, u->_out)
+					ret << '"' << u << '"'
+						<< " -> "
+						<< '"' << v << '"'
+						<< ";" << std::endl;
+			}
 		ret << "}" << std::endl;
 		return ret.str();
 	}

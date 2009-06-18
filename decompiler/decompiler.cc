@@ -41,18 +41,18 @@ int main(int argc, char **argv) {
 	Script script(new Scumm6Parser, vars["inputfile"].as<string>().c_str());
 	if (vars.count("disasm")) {
 		for (size_t i = 0; i < script.size(); i++)
-			script.print(i);
+			script.print(cout, i);
 		exit(0);
 	}
 	CFG cfg(script);
 	if (vars.count("blocks")) {
-		cfg.printBasicBlocks();
+		cfg.printBasicBlocks(cout);
 		exit(0);
 	}
 	cfg.removeJumpsToJumps();
 	cfg.removeDeadBlocks();
 	if (vars.count("graph")) {
-		cfg.printDot();
+		cfg.printDot(cout);
 		exit(0);
 	}
 	return 0;

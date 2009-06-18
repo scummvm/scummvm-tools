@@ -66,15 +66,15 @@ struct Script {
 		return _instructions.size();
 	}
 
-	void print(index_t i) {
+	void print(ostream &out, index_t i) {
 		if (i >= 1 && _instructions[i]->_addr == _instructions[i-1]->_addr)
-			printf("         |           %s", _instructions[i]->_description.c_str());
+			out << "       " << _instructions[i]->_description;
 		else
-			printf("[d] %04x | [r] %04x: %s", _instructions[i]->_addr-8, _instructions[i]->_addr, _instructions[i]->_description.c_str());
-		Jump *j = dynamic_cast<Jump*>(_instructions[i]);
-		if (j)
-			printf(" ([d] %04x | [r] %04x)", j->target()-8, j->target());
-		printf("\n");
+			out << phex(_instructions[i]->_addr-8) << "  " << _instructions[i]->_description;
+		Jump *jump = dynamic_cast<Jump*>(_instructions[i]);
+		if (jump)
+			out << " (" << phex(jump->target()-8) << ")";
+		out << endl;
 	}
 
 };
