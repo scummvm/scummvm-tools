@@ -26,9 +26,9 @@
 
 struct Chunk {
 	char name[64];
-	uint32 size, offset;
-	bool packed;
-
+	uint32 size, realSize, offset;
+	uint8 packed;
+	Chunk *replChunk;
 	Chunk *next;
 
 	Chunk() : next(0) { }
@@ -100,7 +100,13 @@ void extractError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg) {
 Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 	Chunk *chunks = new Chunk;
 	Chunk *curChunk = chunks;
-	char buffer [1024];
+	Chunk *parseChunk;
+	FILE *src1, *src2;
+	char buffer[1024];
+	char buf1[4096];
+	char buf2[4096];
+	uint8 checkFl;
+	uint16 readCount;
 
 	chunkCount = 1;
 
@@ -121,6 +127,42 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 		else
 			curChunk->packed = false;
 
+		if (! (src1 = fopen(curChunk->name, "rb"))) {
+			error("Unable to read %s", curChunk->name);
+		}
+		fseek(src1, 0, SEEK_END);
+// if file is too small, force 'Store' method
+		if ((curChunk->realSize = ftell(src1)) < 8) 
+			curChunk->packed = 0;
+
+		parseChunk = chunks;
+		while (parseChunk != curChunk) {
+			if ((parseChunk->realSize == curChunk->realSize) & (parseChunk->packed != 2)) {
+				if (strcmp(parseChunk->name, curChunk->name) == 0)
+					error("Duplicate filename found in conf file: %s", parseChunk->name);
+				rewind(src1);
+				src2 = fopen(parseChunk->name, "rb");
+				checkFl = 0;
+				do {
+					readCount = fread(buf1, 1, 4096, src1);
+					fread(buf2, 1, 4096, src2);
+					for (int i = 0; (i < readCount) & (checkFl == 0); i++)
+						if (buf1[i] != buf2[i])
+							checkFl = 1;
+				} while ((readCount == 4096) & (checkFl == 0));
+				fclose(src2);
+				if (checkFl == 0) {
+// If files are identical, use the same compressed chunk instead of re-compressing the same thing
+					curChunk->packed = 2;
+					curChunk->replChunk = parseChunk;
+					printf("Identical files : %s %s (%d bytes)\n", curChunk->name, parseChunk->name, curChunk->realSize);
+					break;
+				}
+			}
+			parseChunk = parseChunk->next;
+		}
+		fclose(src1);
+		
 		fscanf(gobConf, "%s", buffer);
 		if (!feof(gobConf)) {
 			curChunk->next = new Chunk;
@@ -145,33 +187,34 @@ void writeEmptyHeader(FILE *stk, uint16 chunkCount) {
 void writeBody(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	Chunk *curChunk = chunks;
 	FILE *src;
-	uint32 realSize, tmpSize, filPos;
+	uint32 tmpSize;
 	int count;
 	char buffer[4096];
 
 	while(curChunk) {
 		if (!(src = fopen(curChunk->name, "rb")))
-			error("Couldn't open conf file \"%s\"", curChunk->name);
+			error("Couldn't open file \"%s\"", curChunk->name);
 
-		realSize = fileSize(src);
+		if (curChunk->packed == 2)
+			printf("Identical file %12s\t(compressed size %d bytes)\n", curChunk->name, curChunk->replChunk->size);
 
-		if (curChunk->packed) {
+		curChunk->offset = ftell(stk);
+		if (curChunk->packed == 1) {
 			printf("Compressing %12s\t", curChunk->name);
-			filPos = ftell(stk);
 			curChunk->size = writeBodyPackFile(stk, src);
-			printf("%d -> %d bytes", realSize, curChunk->size);
-			if (curChunk->size >= realSize) {
+			printf("%d -> %d bytes", curChunk->realSize, curChunk->size);
+			if (curChunk->size >= curChunk->realSize) {
 // If compressed size >= realsize, compression is useless
 // => Store instead
 				curChunk->packed = 0;
-				fseek(stk, filPos, SEEK_SET);
+				fseek(stk, curChunk->offset, SEEK_SET);
 				rewind(src);
 				printf("!!!");
 			}
 			printf("\n");
 		} 
 
-		if (!curChunk->packed) {
+		if (curChunk->packed == 0) {
 			tmpSize = 0;
 			printf("Storing %12s\t", curChunk->name);
 			do {
@@ -208,7 +251,6 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	uint16 i;
 	char buffer[1024];
 	Chunk *curChunk = chunks;
-	uint32 filPos;
 
 	rewind(stk);
 
@@ -220,8 +262,6 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 //+ 4  bytes : size of the chunk
 //+ 4  bytes : start position of the chunk in the file
 //+ 1  byte  : If 0 : not compressed, if 1 : compressed
-	filPos = 2 + (chunkCount * 22);
-
 	buffer[0] = chunkCount & 0xFF;
 	buffer[1] = chunkCount >> 8;
 	fwrite(buffer, 1, 2, stk);
@@ -234,20 +274,29 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 				buffer[i] = '\0';
 		fwrite(buffer, 1, 13, stk);
 
-		buffer[0] = curChunk->size;
-		buffer[1] = curChunk->size >> 8;
-		buffer[2] = curChunk->size >> 16;
-		buffer[3] = curChunk->size >> 24;
-		buffer[4] = filPos;
-		buffer[5] = filPos >> 8;
-		buffer[6] = filPos >> 16;
-		buffer[7] = filPos >> 24;
-
-		buffer[8] = curChunk->packed ? 0x1 : 0x0;
-
+		if (curChunk->packed == 2)
+		{
+			buffer[0] = curChunk->replChunk->size;
+			buffer[1] = curChunk->replChunk->size >> 8;
+			buffer[2] = curChunk->replChunk->size >> 16;
+			buffer[3] = curChunk->replChunk->size >> 24;
+			buffer[4] = curChunk->replChunk->offset;
+			buffer[5] = curChunk->replChunk->offset >> 8;
+			buffer[6] = curChunk->replChunk->offset >> 16;
+			buffer[7] = curChunk->replChunk->offset >> 24;
+			buffer[8] = curChunk->replChunk->packed;
+		} else {
+			buffer[0] = curChunk->size;
+			buffer[1] = curChunk->size >> 8;
+			buffer[2] = curChunk->size >> 16;
+			buffer[3] = curChunk->size >> 24;
+			buffer[4] = curChunk->offset;
+			buffer[5] = curChunk->offset >> 8;
+			buffer[6] = curChunk->offset >> 16;
+			buffer[7] = curChunk->offset >> 24;
+			buffer[8] = curChunk->packed;
+		}
 		fwrite(buffer, 1, 9, stk);
-		filPos += curChunk->size;
-
 		curChunk = curChunk->next;
 	}
 	return;
