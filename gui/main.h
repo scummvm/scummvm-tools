@@ -25,8 +25,17 @@
 
 #include <wx/wx.h>
 
+#include "configuration.h"
+
 class WizardButtons;
 class WizardPage;
+
+enum GUI_ID {
+	ID_FIRST = wxID_HIGHEST, // Ensure no collisions
+	ID_NEXT,
+	ID_PREV,
+	ID_CANCEL,
+};
 
 // Application top window
 
@@ -39,6 +48,7 @@ public:
 	void SwitchPage(WizardPage *nextPage);
 
 private:
+	Configuration configuration;
 	wxPanel *_wizardpane;
 	WizardButtons *_buttons;
 
@@ -53,6 +63,14 @@ class WizardButtons : public wxPanel {
 public:
 	WizardButtons(wxWindow *parent, wxStaticText *linetext);
 
+	// Set the buttons to the standard configuration
+	// (prev, next shown and enabled, finish disabled)
+	void reset();
+
+	// Set the current wizard page, done from SwitchPage required
+	// for the buttons to know where to drop their events
+	void setPage(WizardPage *current);
+
 	// Set the label of the line above the buttons, can display some useful info here
 	void setLineLabel(wxString label);
 
@@ -66,11 +84,20 @@ public:
 	// Changes 'next' into 'finish'
 	void showFinish(bool show);
 
+	// wx event handlers
+	// overload the virtual functions below for the page-specific handlers
+	void onClickNext(wxCommandEvent &e);
+	void onClickPrevious(wxCommandEvent &e);
+	void onClickCancel(wxCommandEvent &e);
+
 protected:
 	wxButton *_next;
 	wxButton *_prev;
 	wxButton *_cancel;
 	wxStaticText *_linetext;
+	WizardPage *_currentPage;
+
+	DECLARE_EVENT_TABLE()
 };
 
 // The header at the top of the window
@@ -98,11 +125,30 @@ protected:
 class WizardPage : public wxPanel
 {
 public:
-	WizardPage(wxWindow *parent, WizardButtons *buttons);
+	WizardPage(wxWindow *parent);
+	virtual void updateButtons();
 
 	// This adds an offset (about 100px) to the left of the sizer
 	// to center the text somewhat, before adding it to the panel
 	void SetAlignedSizer(wxSizer *sizer);
+
+	// This calls parent -> SwitchPage
+	// This page WILL BE DELETED
+	// You should return out of this class immedietly after calling this function
+	void SwitchPage(WizardPage *next);
+
+	// Load/Save configuration
+	virtual void load(Configuration &configuration);
+	virtual void save(Configuration &configuration);
+	
+	// Event handlers
+	// overload these to handle prev/next/cancel clicks
+	virtual void onNext() {}
+	virtual void onPrevious() {}
+	virtual void onCancel(); // Default is to display 'Are you sure' and quit if you click 'Yes'
+
+	// Calls updateButtons
+	void onUpdateButtons(WizardButtons *buttons);
 
 protected:
 	WizardPage *_nextPage;
@@ -115,16 +161,30 @@ protected:
 class IntroPage : public WizardPage
 {
 public:
-	IntroPage(wxWindow *parent, WizardButtons *buttons);
+	IntroPage(wxWindow *parent);
+	virtual void updateButtons();
+
+	void load(Configuration &configuration);
+	void save(Configuration &configuration);
+
+	virtual void onNext();
 
 protected:
 	wxRadioBox *_options;
 };
 
-class TestPage : public WizardPage
+class CompressionPage : public WizardPage
 {
 public:
-	TestPage(wxWindow *parent, WizardButtons *buttons);
+	CompressionPage(wxWindow *parent);
+
+	void load(Configuration &configuration);
+	void save(Configuration &configuration);
+
+	virtual void onPrevious();
+
+protected:
+	wxChoice *_game;
 };
 
 
