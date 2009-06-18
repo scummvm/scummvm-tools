@@ -1,46 +1,59 @@
-#include <cstdio>
-#include <cstring>
-#include <vector>
+#include <iostream>
 
-using namespace std;
+#include <boost/program_options.hpp>
 
 #include "parser.h"
-#include "instruction.h"
 #include "cfg.h"
 
-bool g_disasm = false;
-bool g_blocks = false;
-bool g_graph = false;
+using namespace std;
+using namespace boost::program_options;
+
+
+variables_map parseArgs(int argc, char **argv) {
+	variables_map vars;
+	options_description visible("Allowed options");
+	visible.add_options()
+		("help", "this message")
+		("disasm", "print disassembly and exit")
+		("blocks", "print basic blocks and exit")
+		("graph",  "print graph and exit");
+	options_description options("Allowed options");
+	options.add(visible).add_options()
+		("inputfile", value<string>(), "input file");
+	positional_options_description pos;
+	pos.add("inputfile", 1);
+	try {
+		store(command_line_parser(argc, argv).options(options).positional(pos).run(), vars);
+		notify(vars);
+	} catch (error) {
+	}
+	if (vars.count("help") || !vars.count("inputfile")) {
+		cout << argv[0] << " [option...] file" << endl << endl;
+		cout << visible;
+		exit(0);
+	}
+	return vars;
+}
+
 
 int main(int argc, char **argv) {
-	int argno = 1;
-	if (argno >= argc) {
-		printf("decompiler [-disasm] [-blocks] [-graph] file.dmp\n");
-		return 0;
-	}
-	while (true) {
-		if (0 == strcmp("-disasm", argv[argno])) {
-			g_disasm = true;
-			argno++;
-		} else if (0 == strcmp("-blocks", argv[argno])) {
-			g_blocks = true;
-			argno++;
-		} else if (0 == strcmp("-graph", argv[argno])) {
-			g_graph = true;
-			argno++;
-		} else
-			break;
-	}
-	Script script(new Scumm6Parser(), argv[argno]);
-	if (g_disasm)
-		for (index_t i = 0; i < script.size(); i++)
+	variables_map vars = parseArgs(argc, argv);
+	Script script(new Scumm6Parser, vars["inputfile"].as<string>().c_str());
+	if (vars.count("disasm")) {
+		for (size_t i = 0; i < script.size(); i++)
 			script.print(i);
+		exit(0);
+	}
 	CFG cfg(script);
-	if (g_blocks)
+	if (vars.count("blocks")) {
 		cfg.printBasicBlocks();
+		exit(0);
+	}
 	cfg.removeJumpsToJumps();
 	cfg.removeDeadBlocks();
-	if (g_graph)
+	if (vars.count("graph")) {
 		cfg.printDot();
+		exit(0);
+	}
 	return 0;
 }
