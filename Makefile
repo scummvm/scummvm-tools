@@ -204,14 +204,17 @@ extract_t7g_mac$(EXEEXT): extract_t7g_mac.o util.o
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-tools_gui$(EXEEXT): gui/main.o
+tools_gui$(EXEEXT): gui/main.o gui/pages.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs`
 
 sword2_clue$(EXEEXT): sword2_clue.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `pkg-config --libs gtk+-2.0`
 
-gui/main.o: gui/main.cpp gui/main.h gui/configuration.h
+gui/main.o: gui/main.cpp gui/main.h gui/configuration.h gui/pages.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/main.cpp -o gui/main.o
+
+gui/pages.o: gui/pages.cpp gui/pages.h gui/main.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/pages.cpp -o gui/pages.o
 
 sword2_clue.o: sword2_clue.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `pkg-config --cflags gtk+-2.0` -c sword2_clue.cpp
