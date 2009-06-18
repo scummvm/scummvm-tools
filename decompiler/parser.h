@@ -39,7 +39,12 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x13, new SimpleReader(">="));
 		_reader->registerOpcode(0x14, new SimpleReader("+"));
 		_reader->registerOpcode(0x15, new SimpleReader("-"));
+		_reader->registerOpcode(0x16, new SimpleReader("*"));
+		_reader->registerOpcode(0x17, new SimpleReader("/"));
 		_reader->registerOpcode(0x18, new SimpleReader("&&"));
+		_reader->registerOpcode(0x19, new SimpleReader("||"));
+		_reader->registerOpcode(0x1a, new SimpleReader("pop"));
+
 
 		_reader->registerOpcode(0x43, new SimpleReader("writeVar", "w"));
 		_reader->registerOpcode(0x47, new SimpleReader("wordArrayWrite", "w"));
@@ -69,6 +74,7 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x73, new JumpReader("jump", "o3"));
 		_reader->registerOpcode(0x74, new SimpleReader("startSound"));
 		_reader->registerOpcode(0x75, new SimpleReader("stopSound"));
+		_reader->registerOpcode(0x79, new SimpleReader("actorFollowCamera"));
 		_reader->registerOpcode(0x7a, new SimpleReader("setCameraAt"));
 		_reader->registerOpcode(0x7b, new SimpleReader("loadRoom"));
 		_reader->registerOpcode(0x7c, new SimpleReader("stopScript"));
@@ -76,7 +82,8 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x7e, new SimpleReader("walkActorTo"));
 		_reader->registerOpcode(0x7f, new SimpleReader("putActorAtXY"));
 
-		_reader->registerOpcode(0x81, new SimpleReader("faceCutscene"));
+		_reader->registerOpcode(0x80, new SimpleReader("putActorAtObject"));
+		_reader->registerOpcode(0x81, new SimpleReader("faceActor"));
 		_reader->registerOpcode(0x82, new SimpleReader("animateActor"));
 		_reader->registerOpcode(0x83, new SimpleReader("doSentence"));
 		_reader->registerOpcode(0x84, new SimpleReader("pickupObject"));
