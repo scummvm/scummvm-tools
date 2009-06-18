@@ -1874,10 +1874,10 @@ void next_line_HE_V100(char *output) {
 				"\x83|startFont,"
 				"\x84pp|setPosition,"
 				"\x85pppppppp|ellipse,"
-				"\x86ppp|processMode12,"
+				"\x86ppp|fillWizFlood,"
 				"\x87p|setDstResNum,"
-				"\x88ppppp|processMode10,"
-				"\x89ppp|processMode11,"
+				"\x88ppppp|fillWizLine,"
+				"\x89ppp|fillWizPixel,"
 				"\x8Appppp|fillWizRect");
 		break;
 	case 0x38:
