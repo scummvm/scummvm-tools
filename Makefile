@@ -210,7 +210,7 @@ tools_gui$(EXEEXT): gui/main.o
 sword2_clue$(EXEEXT): sword2_clue.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `pkg-config --libs gtk+-2.0`
 
-gui/main.o: gui/main.cpp gui/main.h
+gui/main.o: gui/main.cpp gui/main.h gui/configuration.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/main.cpp -o gui/main.o
 
 sword2_clue.o: sword2_clue.cpp
