@@ -32,7 +32,7 @@ CXXFLAGS+= -Wpointer-arith -Wcast-qual -Wconversion
 CXXFLAGS+= -Wimplicit -Wundef -Wnon-virtual-dtor -Wwrite-strings
 
 # Disable exceptions, and enabled checking of pointers returned by "new"
-CXXFLAGS+= -fno-exceptions -fcheck-new
+CXXFLAGS+= -fcheck-new
 
 #######################################################################
 # Default commands - put the necessary replacements in config.mk      #
@@ -72,6 +72,8 @@ clean:
 
 decompiler$(EXEEXT): decompiler.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lboost_program_options
+
+decompiler.o: cfg.h graph.h instruction.h misc.h parser.h reader.h
 
 
 ######################################################################

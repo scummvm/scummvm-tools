@@ -207,7 +207,7 @@ struct Scumm6Parser : public Parser {
 		case 'VERB':
 			read_le_uint32(f);
 			uint16 minOffset = 65535;
-			for (uint8 code = f.get(); code != 0; code = f.get()) {
+			for (int code = f.get(); code != 0; code = f.get()) {
 				uint16 offset = read_le_uint16(f);
 				printf("%2x - %.4x\n", code, offset);
 				if (offset < minOffset)
@@ -222,7 +222,7 @@ struct Scumm6Parser : public Parser {
 		ifstream f;
 		f.open(filename, ios::binary);
 		parseHeader(f);
-		while (_reader->readInstruction(f, script, f.tellg()))
+		while (_reader->readInstruction(f, script, (uint32) f.tellg()))
 			;
 	}
 

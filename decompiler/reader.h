@@ -40,8 +40,8 @@ struct SimpleReader : public Reader {
 		for (uint32 i = 0; i < _format.size(); i++)
 			switch (_format[i]) {
 			case 'b': {
-				uint16 b = f.get();
-				ssret << ' ' << b;
+				int b = f.get();
+				ssret << ' ' << (uint16) b;
 				break;
 			}
 			case 'w': {
@@ -56,16 +56,16 @@ struct SimpleReader : public Reader {
 			}
 			case 'o': { // offset, fixed to be counted from the beginning of instruction
 				int len = _format[++i] - '0';
-				int16 w = len + (int16) read_le_uint16(f);
-				arguments.push_back(w);
+				int w = len + read_le_uint16(f);
+				arguments.push_back((int16) w);
 				ssret << ' ' << (w>=0?"+":"") << w;
 				break;
 			}
 			case 's':
 				ssret << " \"";
-				for (char c = f.get(); c != 0; c = f.get())
-					if ((uint8) c == 0xff || c == 0xfe) {
-						uint8 cmd = f.get();
+				for (int c = f.get(); c != 0; c = f.get())
+					if (c == 0xff || c == 0xfe) {
+						int cmd = f.get();
 						switch (cmd) {
 						case 4: {
 							uint16 w = (uint16) read_le_uint16(f);
@@ -146,8 +146,8 @@ struct SubopcodeReader : public Reader {
 
 	bool readInstruction(ifstream& f, Script *script, uint32 addr) {
 		// if (f.tellg() >= 0x67) return false; // CUT
-		uint8 opcode = f.get();
-		if (f.eof()) {
+		int opcode = f.get();
+		if (!f.good()) {
 			return false;
 		} else if (!_dispatchTable[opcode]) {
 			fprintf(stderr, "! [%s] unhandled opcode 0x%02x (%d) at address 0x%02x (%d)\n", _name.c_str(), opcode, opcode, addr, addr);

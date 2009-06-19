@@ -45,10 +45,10 @@ uint32 read_le_uint32(ifstream &f) {
 }
 
 uint16 read_le_uint16(ifstream &f) {
-	uint16 ret = 0;
+	int ret = 0;
 	ret |= f.get();
 	ret |= f.get() << 8;
-	return ret;
+	return (uint16) ret;
 }
 
 #endif
