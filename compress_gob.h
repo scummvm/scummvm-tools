@@ -20,6 +20,9 @@
  *
  */
 
+#ifndef COMPRESS_GOB_H
+#define COMPRESS_GOB_H
+
 #define confSTK21 "STK21"
 #define confSTK10 "STK10"
 
@@ -27,3 +30,5 @@
 #define MODE_HELP   1
 #define MODE_FORCE  2
 #define MODE_SET    4
+
+#endif
