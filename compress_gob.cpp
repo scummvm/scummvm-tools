@@ -41,6 +41,7 @@ void writeBody(FILE *stk, uint16 chunkcount, Chunk *chunks);
 uint32 writeBodyFile(FILE *stk, FILE *src);
 uint32 writeBodyPackFile(FILE *stk, FILE *src);
 void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks);
+bool filcmp(FILE *src1, Chunk *compChunk);
 bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length);
 
 byte *packData(byte *src, uint32 &size);
@@ -66,6 +67,8 @@ int main(int argc, char **argv) {
 	getFilename(argv[1], outFilename);
 
 	tmpStr = strstr(outFilename, ".");
+
+// TODO : other extensions ? (ITK, LTK)
 	if (tmpStr != 0)
 		strcpy(tmpStr, ".stk");
 	else
@@ -101,12 +104,8 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 	Chunk *chunks = new Chunk;
 	Chunk *curChunk = chunks;
 	Chunk *parseChunk;
-	FILE *src1, *src2;
+	FILE *src1;
 	char buffer[1024];
-	char buf1[4096];
-	char buf2[4096];
-	uint8 checkFl;
-	uint16 readCount;
 
 	chunkCount = 1;
 
@@ -140,18 +139,7 @@ Chunk *readChunkConf(FILE *gobConf, uint16 &chunkCount) {
 			if ((parseChunk->realSize == curChunk->realSize) & (parseChunk->packed != 2)) {
 				if (strcmp(parseChunk->name, curChunk->name) == 0)
 					error("Duplicate filename found in conf file: %s", parseChunk->name);
-				rewind(src1);
-				src2 = fopen(parseChunk->name, "rb");
-				checkFl = 0;
-				do {
-					readCount = fread(buf1, 1, 4096, src1);
-					fread(buf2, 1, 4096, src2);
-					for (int i = 0; (i < readCount) & (checkFl == 0); i++)
-						if (buf1[i] != buf2[i])
-							checkFl = 1;
-				} while ((readCount == 4096) & (checkFl == 0));
-				fclose(src2);
-				if (checkFl == 0) {
+				if (filcmp(src1, parseChunk)) {
 // If files are identical, use the same compressed chunk instead of re-compressing the same thing
 					curChunk->packed = 2;
 					curChunk->replChunk = parseChunk;
@@ -389,6 +377,29 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 
 	delete[] unpacked;
 	return size;
+}
+
+bool filcmp(FILE *src1, Chunk *compChunk) {
+	uint16 readCount;
+	bool checkFl = true;
+	char buf1[4096]; 
+	char buf2[4096];
+	FILE *src2;
+
+	rewind(src1);
+	if (!(src2 = fopen(compChunk->name, "rb")))
+		error("Couldn't open file \"%s\"", compChunk->name);
+	
+	do {
+		readCount = fread(buf1, 1, 4096, src1);
+		fread(buf2, 1, 4096, src2);
+		for (int i = 0; checkFl & (i < readCount); i++)
+			if (buf1[i] != buf2[i])
+				checkFl = false;
+	} while (checkFl & (readCount == 4096));
+	fclose(src2);
+
+	return checkFl;
 }
 
 bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length) {
