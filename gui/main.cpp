@@ -110,6 +110,11 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	_buttons->setPage(introPage);
 }
 
+ScummToolsFrame::~ScummToolsFrame() {
+	for(std::vector<WizardPageClass *>::iterator iter = _previousPages.begin(); iter != _previousPages.end(); ++iter)
+		delete *iter;
+}
+
 void ScummToolsFrame::SwitchPage(WizardPage *next) {
 	// Find the old page
 	WizardPage *old = dynamic_cast<WizardPage*>(_wizardpane->FindWindow(wxT("Wizard Page")));
@@ -117,6 +122,9 @@ void ScummToolsFrame::SwitchPage(WizardPage *next) {
 	wxASSERT_MSG(old, wxT("Expected the child 'Wizard Page' to be an actual Wizard Page window."));
 
 	old->save(configuration);
+
+	// Save the old page
+	_previousPages.push_back(old->getClass());
 
 	// Destroy the old page
 	old->Destroy();
@@ -133,6 +141,13 @@ void ScummToolsFrame::SwitchPage(WizardPage *next) {
 	// And reset the buttons to a standard state
 	_buttons->reset();
 	_buttons->setPage(next);
+}
+
+void ScummToolsFrame::SwitchToPreviousPage() {
+	WizardPage *prev = _previousPages.back()->create(_wizardpane);
+	delete _previousPages.back();
+	_previousPages.pop_back();
+	SwitchPage(prev);
 }
 
 BEGIN_EVENT_TABLE(WizardButtons, wxPanel)

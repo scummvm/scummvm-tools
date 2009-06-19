@@ -24,6 +24,15 @@
 
 #include "configuration.h"
 
+struct WizardPageClass {
+	virtual WizardPage *create(wxWindow *parent) = 0;
+};
+
+template <typename T>
+struct WizardPageClass_ : public WizardPageClass {
+	virtual WizardPage *create(wxWindow *parent) {return new T(parent);}
+};
+
 // Wizard Page
 // A page in the extraction wizard
 
@@ -32,6 +41,7 @@ class WizardPage : public wxPanel
 public:
 	WizardPage(wxWindow *parent);
 	virtual void updateButtons();
+	virtual WizardPageClass *getClass() = 0;
 
 	// This adds an offset (about 100px) to the left of the sizer
 	// to center the text somewhat, before adding it to the panel
@@ -48,16 +58,14 @@ public:
 	
 	// Event handlers
 	// overload these to handle prev/next/cancel clicks
-	virtual void onNext() {}
-	virtual void onPrevious() {}
+	virtual void onNext();
+	virtual void onPrevious();
 	virtual void onCancel(); // Default is to display 'Are you sure' and quit if you click 'Yes'
 
 	// Calls updateButtons
 	void onUpdateButtons(WizardButtons *buttons);
 
 protected:
-	WizardPage *_nextPage;
-	WizardPage *_prevPage;
 	WizardButtons *_buttons;
 };
 
@@ -68,6 +76,8 @@ class IntroPage : public WizardPage
 public:
 	IntroPage(wxWindow *parent);
 	virtual void updateButtons();
+	virtual WizardPageClass *getClass() {return new WizardPageClass_<IntroPage>();}
+	
 
 	void load(Configuration &configuration);
 	void save(Configuration &configuration);
@@ -78,16 +88,28 @@ protected:
 	wxRadioBox *_options;
 };
 
-class CompressionPage : public WizardPage
+class ChooseCompressionPage : public WizardPage
 {
 public:
-	CompressionPage(wxWindow *parent);
+	ChooseCompressionPage(wxWindow *parent);
+	virtual WizardPageClass *getClass() {return new WizardPageClass_<ChooseCompressionPage>();}
 
 	void load(Configuration &configuration);
 	void save(Configuration &configuration);
 
-	virtual void onPrevious();
-
 protected:
 	wxChoice *_game;
+};
+
+class ChooseToolPage : public WizardPage
+{
+public:
+	ChooseToolPage(wxWindow *parent);
+	virtual WizardPageClass *getClass() {return new WizardPageClass_<ChooseToolPage>();}
+
+	void load(Configuration &configuration);
+	void save(Configuration &configuration);
+
+protected:
+	wxChoice *_tool;
 };

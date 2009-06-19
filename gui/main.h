@@ -24,10 +24,12 @@
 #define GUI_MAIN_H
 
 #include <wx/wx.h>
+#include <vector>
 
 #include "configuration.h"
 
 class WizardButtons;
+struct WizardPageClass;
 class WizardPage;
 
 enum GUI_ID {
@@ -43,14 +45,20 @@ class ScummToolsFrame : public wxFrame
 {
 public:
 	ScummToolsFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
+	~ScummToolsFrame();
 
 	// Switches to this page and resets the buttons
 	void SwitchPage(WizardPage *nextPage);
+
+	// Switches to the previous page
+	void SwitchToPreviousPage();
 
 private:
 	Configuration configuration;
 	wxPanel *_wizardpane;
 	WizardButtons *_buttons;
+	
+	std::vector<WizardPageClass *> _previousPages;
 
 	DECLARE_EVENT_TABLE()
 };

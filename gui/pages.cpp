@@ -32,11 +32,10 @@
 
 #include "main.h"
 #include "pages.h"
+#include "tools.h"
 
 WizardPage::WizardPage(wxWindow *parent)
 	: wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("Wizard Page")),
-	  _nextPage(NULL),
-	  _prevPage(NULL),
 	  _buttons(NULL)
 {
 }
@@ -65,7 +64,24 @@ void WizardPage::SwitchPage(WizardPage *next) {
 	}
 }
 
-// Our default handler for cancel
+// Our default handler for next/prev/cancel
+
+void WizardPage::onNext() {
+}
+
+void WizardPage::onPrevious() {
+	wxWindow *grandparent = GetParent();
+	while(grandparent->GetParent() != NULL)
+		grandparent = grandparent->GetParent();
+
+	if(grandparent) {
+		ScummToolsFrame *frame = dynamic_cast<ScummToolsFrame*>(grandparent);
+		frame->SwitchToPreviousPage();
+		// We are probably dead now, make sure to do nothing 
+		// involving member variabls after this point
+	}
+}
+
 void WizardPage::onCancel() {
 	wxMessageDialog dlg(this, wxT("Are you sure you want to abort the wizard?"), wxT("Abort"), wxYES | wxNO);
 	wxWindowID ret = dlg.ShowModal();
@@ -109,10 +125,11 @@ IntroPage::IntroPage(wxWindow *parent)
 	
 	wxString choices[] = {
 		wxT("Extract from game data files"),
-		wxT("Compress audio files")
+		wxT("Compress audio files"),
+		wxT("Choose tool to use (advanced)")
 	};
 
-	_options = new wxRadioBox(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 2, choices, 1, wxRA_SPECIFY_COLS | wxBORDER_NONE);
+	_options = new wxRadioBox(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 3, choices, 1, wxRA_SPECIFY_COLS | wxBORDER_NONE);
 	sizer->Add(_options);
 	_options->SetSelection(0);
 
@@ -125,26 +142,35 @@ void IntroPage::updateButtons() {
 }
 
 void IntroPage::load(Configuration &config) {
-	if(config.compressing)
+	// TODO use generic way to get indexes
+	if(config.advanced)
+		_options->SetSelection(2);
+	else if(config.compressing)
 		_options->SetSelection(1);
+	else
+		_options->SetSelection(0);
 }
 
 void IntroPage::save(Configuration &config) {
+	config.advanced    = _options->GetStringSelection().Lower().Find(wxT("advanced")) != wxNOT_FOUND;
 	config.compressing = _options->GetStringSelection().Lower().Find(wxT("extract")) == wxNOT_FOUND;
 }
 
 void IntroPage::onNext() {
 	if(_options->GetStringSelection().Lower().Find(wxT("extract")) != wxNOT_FOUND) {
 		// extract
+	} else if(_options->GetStringSelection().Lower().Find(wxT("advanced")) != wxNOT_FOUND) {
+		// advanced
+		SwitchPage(new ChooseToolPage(this->GetParent()));
 	} else {
 		// compress
-		SwitchPage(new CompressionPage(this->GetParent()));
+		SwitchPage(new ChooseCompressionPage(this->GetParent()));
 	}
 }
 
-// Page to choose compression tool
+// Page to choose what game files to compress
 
-CompressionPage::CompressionPage(wxWindow *parent)
+ChooseCompressionPage::ChooseCompressionPage(wxWindow *parent)
 	: WizardPage(parent)
 {
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
@@ -159,6 +185,8 @@ CompressionPage::CompressionPage(wxWindow *parent)
 
 	// Many games use the same tool internally, and are grouped by tool used here
 	// the array is ordered before being displayed, though
+
+	// TODO: This should be moved to tools.cpp and stored in each tool instead
 
 	// compress_agos
 	choices.Add(wxT("Feeble Files")),
@@ -178,8 +206,7 @@ CompressionPage::CompressionPage(wxWindow *parent)
 
 	// compress_saga
 	choices.Add(wxT("SAGA: Inherit The Earth")),
-	choices.Add(wxT("I Have No Mouth")),
-	choices.Add(wxT("I Must Scream")),
+	choices.Add(wxT("I Have No Mouth and I Must Scream")),
 
 	// compress_scumm_bun
 	choices.Add(wxT("The Secret of Monkey Island")),
@@ -213,19 +240,48 @@ CompressionPage::CompressionPage(wxWindow *parent)
 	SetAlignedSizer(sizer);
 }
 
-void CompressionPage::onPrevious() {
-	// It's kinda ugly that we must know the type here, would be better
-	// if we could infer previous page automatically, somehow, possibly
-	// templates + inheritence could solve this?
-	SwitchPage(new IntroPage(this->GetParent()));
+
+// Load/Save settings
+void ChooseCompressionPage::load(Configuration &config) {
+	_game->SetStringSelection(config.selectedGame);
+}
+
+void ChooseCompressionPage::save(Configuration &config) {
+	config.selectedGame = _game->GetStringSelection();
+}
+
+// Page to choose ANY tool to use
+
+ChooseToolPage::ChooseToolPage(wxWindow *parent)
+	: WizardPage(parent)
+{
+	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+
+	sizer->AddSpacer(15);
+
+	sizer->Add(new wxStaticText(this, wxID_ANY, 
+		wxT("Select what tool you'd like to use.")));
+	
+	// This list is most likely incomplete
+	wxArrayString choices = g_tools.getToolList();
+
+	// Sort the array for display (it should actually always be sorted since 
+	// they're stored in a ordered tree but you can never be too safe)
+	choices.Sort();
+
+	_tool = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
+	sizer->Add(_tool);
+	_tool->SetSelection(0);
+
+	SetAlignedSizer(sizer);
 }
 
 
 // Load/Save settings
-void CompressionPage::load(Configuration &config) {
-	_game->SetStringSelection(config.selectedGame);
+void ChooseToolPage::load(Configuration &config) {
+	_tool->SetStringSelection(config.selectedTool);
 }
 
-void CompressionPage::save(Configuration &config) {
-	config.selectedGame = _game->GetStringSelection();
+void ChooseToolPage::save(Configuration &config) {
+	config.selectedTool = _tool->GetStringSelection();
 }

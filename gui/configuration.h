@@ -23,6 +23,8 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include <wx/string.h>
+
 struct Configuration {
 	Configuration();
 	
@@ -30,6 +32,7 @@ struct Configuration {
 	// this class is just a glorified map with different types, so it seems
 	// unnecessary.
 
+	bool advanced;
 	bool compressing;
 	wxString selectedGame;
 	wxString selectedTool;
@@ -38,6 +41,7 @@ struct Configuration {
 inline Configuration::Configuration() {
 	// Default values for all the settings
 
+	advanced = false;
 	compressing = false;
 
 	selectedGame = wxT("");
