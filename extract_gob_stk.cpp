@@ -45,7 +45,7 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize);
 
 int main(int argc, char **argv) {
 	char signature[7];
-	char *outFilename;
+	char *gobFilename, *stkFilename;
 	char *tmpStr;
 	Chunk *chunks;
 	FILE *stk;
@@ -60,19 +60,21 @@ int main(int argc, char **argv) {
 	if (!(stk = fopen(argv[1], "rb")))
 		error("Couldn't open file \"%s\"", argv[1]);
 
-	outFilename = new char[strlen(argv[1]) + 5];
-	getFilename(argv[1], outFilename);
+	gobFilename = new char[strlen(argv[1]) + 5];
+	stkFilename = new char[strlen(argv[1]) + 1];
+	getFilename(argv[1], gobFilename);
+	strcpy(stkFilename, gobFilename);
 
-	tmpStr = strstr(outFilename, ".");
+	tmpStr = strstr(gobFilename, ".");
 	if (tmpStr != 0)
 		strcpy(tmpStr, ".gob");
 	else
-		strcat(outFilename, ".gob");
+		strcat(gobFilename, ".gob");
 
-	if (!(gobConf = fopen(outFilename, "w")))
-		error("Couldn't create config file \"%s\"", outFilename);
+	if (!(gobConf = fopen(gobFilename, "w")))
+		error("Couldn't create config file \"%s\"", gobFilename);
 
-	fprintf(gobConf, "%s\n", argv[1]);
+	fprintf(gobConf, "%s\n", stkFilename);
 
 	if (fread(signature, 1, 6, stk) < 6)
 		error("Unexpected EOF while reading signature in \"%s\"", argv[1]);
