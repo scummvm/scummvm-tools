@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 using namespace std;
 
 #include "graph.h"
@@ -72,5 +73,6 @@ int main() {
 	g.addEdge(n15, n6);
 	g.assignIntervals(n1);
 	cout << g.graphvizPrint(printer);
+	g.test(0);
 	return 0;
 }

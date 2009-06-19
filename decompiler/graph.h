@@ -26,13 +26,14 @@ struct Graph : boost::noncopyable {
 
 		friend class Graph;
 
-		std::list<Node*> _in;
-		std::list<Node*> _out;
 		bool _hidden;
 		bool _visited;
 		Node *_interval;
+		Node *_primitive;
+		std::list<Node*> _in;
+		std::list<Node*> _out;
 
-		Node(const Data &data) : _data(data), _hidden(false), _interval(0) {
+		Node(const Data &data) : _data(data), _hidden(false), _interval(0), _primitive(0) {
 		}
 
 		~Node() {
@@ -84,6 +85,30 @@ struct Graph : boost::noncopyable {
 		foreach (Node *u, _nodes)
 			if (!u->_visited)
 				removeNode(u);
+	}
+
+	Graph derive() {
+		return Graph();
+	}
+
+
+	Graph(const Graph &g) {
+		map<Node*, Node*> trans;
+		foreach (Node *u, g._nodes)
+			trans[u] = addNode(u->_data);
+		foreach (Node *u, g._nodes) {
+			foreach (Node *v, u->_in)
+				trans[u]->_in.push_back(trans[v]);
+			foreach (Node *v, u->_out)
+				trans[u]->_in.push_back(trans[v]);
+		}
+	}
+
+	void test(int level=0) {
+		if (level == 0)
+			cout << _nodes.size();
+		else
+			derive().test(level-1);
 	}
 
 	void assignIntervals(Node *start) {

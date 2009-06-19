@@ -41,7 +41,7 @@ struct SimpleReader : public Reader {
 			switch (_format[i]) {
 			case 'b': {
 				int b = f.get();
-				ssret << ' ' << (uint16) b;
+				ssret << ' ' << b;
 				break;
 			}
 			case 'w': {
@@ -67,22 +67,72 @@ struct SimpleReader : public Reader {
 					if (c == 0xff || c == 0xfe) {
 						int cmd = f.get();
 						switch (cmd) {
+						case 1:
+							ssret << "::newline::";
+							break;
+						case 2:
+							ssret << "::keeptext::";
+							break;
+						case 3:
+							ssret << "::wait::";
+							break;
 						case 4: {
 							uint16 w = (uint16) read_le_uint16(f);
-							ssret << "::" << w << "::";
+							ssret << "::addIntToStack(" << w << ")::";
+							break;
+						}
+						case 5: {
+							uint16 w = (uint16) read_le_uint16(f);
+							ssret << "::addVerbToStack(" << w << ")::";
+							break;
+						}
+						case 6: {
+							uint16 w = (uint16) read_le_uint16(f);
+							ssret << "::addNameToStack(" << w << ")::";
+							break;
+						}
+						case 7: {
+							uint16 w = (uint16) read_le_uint16(f);
+							ssret << "::addStringToStack(" << w << ")::";
+							break;
+						}
+						case 8: {
+							uint16 w = (uint16) read_le_uint16(f);
+							ssret << "::UNKNOWN/(" << w << ")::";
+							break;
+						}
+						case 9: {
+							uint16 w = (uint16) read_le_uint16(f);
+							ssret << "::startAnim(" << w << ")::";
+							break;
 						}
 						case 10:
 							ssret << "::sound::";
 							for (uint32 q = 0; q < 14; q++)
 								f.get();
 							break;
+						case 12: {
+							uint16 w = (uint16) read_le_uint16(f);
+							ssret << "::setColor(" << w << ")::";
+							break;
+						}
+						case 13: {
+							uint16 w = (uint16) read_le_uint16(f);
+							ssret << "::UNKNOWN13(" << w << ")::";
+							break;
+						}
+						case 14: {
+							uint16 w = (uint16) read_le_uint16(f);
+							ssret << "::setFont(" << w << ")::";
+							break;
+						}
 						default:
 							fprintf(stderr, "! unhandled SCUMM STRING format char '%d' at pos 0x%x\n", cmd, ((uint32)f.tellg())-1);
 							return false;
 						}
 					}
 					else
-						ssret << c;
+						ssret << (char) c;
 				ssret << '"';
 				break;
 			default:

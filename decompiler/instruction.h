@@ -54,7 +54,7 @@ struct Script {
 		for (index_t i = 0; i < _instructions.size(); i++)
 			if (_instructions[i]->_addr == addr)
 				return i;
-		fprintf(stderr, "!!! no instruction with address %x (%d)\n", addr, addr);
+		fprintf(stderr, "!!! (unhandled) no instruction with address %x (%d)\n", addr, addr);
 		return (index_t)-1;	// Note: -1 is negative, but index_t unsigned
 	}
 
