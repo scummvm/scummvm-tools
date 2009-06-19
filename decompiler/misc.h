@@ -51,4 +51,11 @@ uint16 read_le_uint16(ifstream &f) {
 	return (uint16) ret;
 }
 
+int16 read_le_int16(ifstream &f) {
+	int ret = 0;
+	ret |= f.get();
+	ret |= f.get() << 8;
+	return (int16) ret;
+}
+
 #endif

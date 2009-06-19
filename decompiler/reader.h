@@ -56,7 +56,7 @@ struct SimpleReader : public Reader {
 			}
 			case 'o': { // offset, fixed to be counted from the beginning of instruction
 				int len = _format[++i] - '0';
-				int w = len + read_le_uint16(f);
+				int w = len + read_le_int16(f);
 				arguments.push_back((int16) w);
 				ssret << ' ' << (w>=0?"+":"") << w;
 				break;
