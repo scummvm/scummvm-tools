@@ -58,7 +58,6 @@ int main(int argc, char **argv) {
 		execMode = MODE_HELP; 
 	else
 		for (uint8 i = 1; i < argc; ++i) {
-			printf("%d %s\n", i, argv[i]);
 			if ((!strcmp(argv[i], "-h")) || (!strcmp(argv[i], "--help")))
 				execMode |= MODE_HELP;
 			else if (!strcmp(argv[i], "-f"))
