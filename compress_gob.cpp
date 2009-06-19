@@ -21,8 +21,7 @@
  */
 
 #include "util.h"
-#define confSTK21 "STK21"
-#define confSTK10 "STK10"
+#include "compress_gob.h"
 
 struct Chunk {
 	char name[64];
@@ -44,23 +43,43 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks);
 bool filcmp(FILE *src1, Chunk *compChunk);
 bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length);
 
-byte *packData(byte *src, uint32 &size);
+uint8 execMode;
 
 int main(int argc, char **argv) {
 	Chunk *chunks;
 	FILE *stk;
 	FILE *gobConf;
 	uint16 chunkCount;
+	char gobConfName[256];
 	char stkName[256];
 
-	if ((argc < 2) || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-		printf("Usage: %s <Conf file>\n\n", argv[0]);
-		printf("The archive will be created into the current directory.\n");
+	execMode = MODE_NORMAL;
+	if ((argc < 2) || (argc > 4))
+		execMode = MODE_HELP; 
+	else
+		for (uint8 i = 1; i < argc; ++i) {
+			printf("%d %s\n", i, argv[i]);
+			if ((!strcmp(argv[i], "-h")) || (!strcmp(argv[i], "--help")))
+				execMode |= MODE_HELP;
+			else if (!strcmp(argv[i], "-f"))
+				execMode |= MODE_FORCE;
+			else if ((strlen(argv[i]) < 255) && !(execMode & MODE_SET)) {
+				strcpy (gobConfName, argv[i]);
+				execMode &= MODE_SET;
+			} else 
+				execMode &= MODE_HELP;
+		}
+
+	if (execMode & MODE_HELP) {
+		printf("Usage: %s <Conf file> <-f>\n\n", argv[0]);
+		printf("<Conf file> is a .gob file generated extract_gob_stk\n");
+		printf("<-f> ignores the compression flag in the .gob file and force compression for all files\n\n");
+		printf("The STK/ITK archive will be created in the current directory.\n");
 		return -1;
 	}
 
-	if (!(gobConf = fopen(argv[1], "r")))
-		error("Couldn't open conf file \"%s\"", argv[1]);
+	if (!(gobConf = fopen(gobConfName, "r")))
+		error("Couldn't open conf file \"%s\"", gobConfName);
 
 	chunks = readChunkConf(gobConf, stkName, chunkCount);
 	fclose(gobConf);
@@ -123,7 +142,7 @@ Chunk *readChunkConf(FILE *gobConf, char *stkName, uint16 &chunkCount) {
 	while (!feof(gobConf)) {
 		strcpy(curChunk->name, buffer);
 		fscanf(gobConf, "%s", buffer);
-		if (strcmp(buffer, "1") == 0)
+		if ((strcmp(buffer, "1") == 0) || (execMode & MODE_FORCE))
 			curChunk->packed = true;
 		else
 			curChunk->packed = false;

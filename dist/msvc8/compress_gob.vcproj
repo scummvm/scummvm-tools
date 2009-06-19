@@ -170,6 +170,10 @@
 	</References>
 	<Files>
 		<File
+			RelativePath="..\..\compress_gob.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\compress_gob.cpp"
 			>
 		</File>
