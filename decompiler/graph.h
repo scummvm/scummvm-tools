@@ -2,6 +2,7 @@
 #define GRAPH_H
 
 #include <list>
+#include <set>
 #include <sstream>
 
 #include <boost/foreach.hpp>
@@ -29,15 +30,16 @@ struct Graph : boost::noncopyable {
 		std::list<Node*> _out;
 		bool _hidden;
 		bool _visited;
+		Node *_interval;
 
-		Node(const Data &data) : _data(data), _hidden(false) {
+		Node(const Data &data) : _data(data), _hidden(false), _interval(0) {
 		}
 
 		~Node() {
 		}
 	};
 
-	std::list<Node*> _nodes;
+	mutable std::list<Node*> _nodes;
 
 	Graph() {
 	}
@@ -53,7 +55,7 @@ struct Graph : boost::noncopyable {
 		return node;
 	}
 
-	void hideNode(Node *u) {
+	void removeNode(Node *u) {
 		foreach (Node *v, u->_in)
 			v->_out.remove(u);
 		foreach (Node *v, u->_out)
@@ -75,6 +77,75 @@ struct Graph : boost::noncopyable {
 				node = newTo;
 	}
 
+	void removeUnreachableNodes(Node *start) {
+		foreach (Node *u, _nodes)
+			u->_visited = false;
+		visit(start);
+		foreach (Node *u, _nodes)
+			if (!u->_visited)
+				removeNode(u);
+	}
+
+	void assignIntervals(Node *start) {
+		std::list<Node*> intervals;
+		intervals.push_back(start);
+		foreach (Node *interval, intervals) {
+			interval->_interval = interval;
+			for (bool added = true; added; ) {
+				added = false;
+				foreach (Node *m, _nodes) {
+					bool allPredInInterval = true;
+					foreach (Node *p, m->_in)
+						allPredInInterval &= p->_interval == interval;
+					if (!m->_interval && allPredInInterval) {
+						added = true;
+						m->_interval = interval;
+					}
+				}
+			}
+			foreach (Node *m, _nodes) {
+				bool hasPredInInterval = false;
+				foreach (Node *p, m->_in)
+					hasPredInInterval |= p->_interval == interval;
+				if (!m->_interval && hasPredInInterval)
+					intervals.push_back(m);
+			}
+		}
+	}
+
+	template<typename Printer>   // printer is a functor taking Data and returning a string
+	std::string graphvizPrint(Printer printer, const std::string &fontname="Courier", int fontsize=14) const {
+		std::stringstream ret;
+		ret << "digraph G {" << std::endl;
+		removeHiddenNodes();
+		std::set<Node*> intervals;
+		foreach (Node *u, _nodes)
+			intervals.insert(u->_interval);
+		foreach (Node *interval, intervals) {
+			ret << "subgraph " << '"' << "cluster_" << interval << '"' << " {" << std::endl;
+			ret << "style=dotted;" << std::endl;
+			foreach (Node *u, _nodes)
+				if (u->_interval == interval)
+					ret << '"' << u << '"'
+						<< "[fontname=" << '"' << fontname << '"'
+						<< ",fontsize=" << fontsize
+						<< ",shape=box"
+						<< ",label=" << '"' << graphvizEscapeLabel(printer(u->_data)) << '"'
+						<< "];" << std::endl;
+			ret << "}" << std::endl;
+		}
+		foreach (Node *u, _nodes)
+			foreach (Node *v, u->_out)
+			ret << '"' << u << '"'
+				<< " -> "
+				<< '"' << v << '"'
+				<< ";" << std::endl;
+		ret << "}" << std::endl;
+		return ret.str();
+	}
+
+private:
+
 	void visit(Node *u) {
 		u->_visited = true;
 		foreach (Node *v, u->_out)
@@ -82,38 +153,14 @@ struct Graph : boost::noncopyable {
 				visit(v);
 	}
 
-	void removeUnreachableNodes(Node *start) {
-		foreach (Node *u, _nodes)
-			u->_visited = false;
-		visit(start);
-		foreach (Node *u, _nodes)
-			if (!u->_visited)
-				hideNode(u);
+	void removeHiddenNodes() const {
+		for (typename std::list<Node*>::iterator it = _nodes.begin(); it != _nodes.end(); )
+			if ((*it)->_hidden) {
+				delete *it;
+				it = _nodes.erase(it);
+			} else
+				it++;
 	}
-
-	template<typename Printer>   // printer is a functor taking Data and returning a string
-	std::string graphvizPrint(Printer printer, const std::string &fontname="Courier", int fontsize=14) const {
-		std::stringstream ret;
-		ret << "digraph G {" << std::endl;
-		foreach (Node *u, _nodes)
-			if (!u->_hidden) {
-				ret << '"' << u << '"'
-					<< "[fontname=" << '"' << fontname << '"'
-					<< ",fontsize=" << fontsize
-					<< ",shape=box"
-					<< ",label=" << '"' << graphvizEscapeLabel(printer(u->_data)) << '"'
-					<< "];" << std::endl;
-				foreach (Node *v, u->_out)
-					ret << '"' << u << '"'
-						<< " -> "
-						<< '"' << v << '"'
-						<< ";" << std::endl;
-			}
-		ret << "}" << std::endl;
-		return ret.str();
-	}
-
-private:
 
 	static std::string graphvizEscapeLabel(const std::string &s) {
 		std::string ret;
