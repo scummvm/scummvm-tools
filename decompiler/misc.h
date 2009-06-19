@@ -22,7 +22,7 @@ typedef uint32 index_t;   // instruction number in intermediate script
 
 string phex(int i, int width=4) {
 	ostringstream ret;
-	ret << setfill('0') << setw(width) << i << 'h';
+	ret << hex << setfill('0') << setw(width) << i;
 	return ret.str();
 }
 
