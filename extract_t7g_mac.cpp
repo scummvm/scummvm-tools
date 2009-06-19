@@ -119,10 +119,10 @@ int main(int argc, char *argv[]) {
 		fclose(ifp);
 		error("Seek error");
 	}
-	uint numResTypes = readUint16BE(ifp) + 1;
+	uint16 numResTypes = readUint16BE(ifp) + 1;
 	char resType[5];
 	resType[4] = 0;
-	for (uint i = 0; i < numResTypes; i++) {
+	for (uint16 i = 0; i < numResTypes; i++) {
 		if (fseek(ifp, offsetResTypes + 2 + 8 * i, SEEK_SET)) {
 			fclose(ifp);
 			error("Seek error");
