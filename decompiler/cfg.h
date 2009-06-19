@@ -22,6 +22,8 @@ struct Block {
 
 	Block(Script &script, index_t begin, index_t end) : _script(script), _begin(begin), _end(end) {
 	}
+	
+	virtual ~Block() {}
 
 	virtual void print(ostream &out) {
 	}

@@ -55,7 +55,7 @@ struct Script {
 			if (_instructions[i]->_addr == addr)
 				return i;
 		fprintf(stderr, "!!! no instruction with address %x (%d)\n", addr, addr);
-		return -1;
+		return (index_t)-1;	// Note: -1 is negative, but index_t unsigned
 	}
 
 	Instruction* operator[](index_t i) {
