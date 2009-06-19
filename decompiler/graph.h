@@ -104,10 +104,10 @@ struct Graph : boost::noncopyable {
 				}
 			}
 			foreach (Node *m, _nodes) {
-				bool hasPredInInterval = false;
+				bool anyPredInInterval = false;
 				foreach (Node *p, m->_in)
-					hasPredInInterval |= p->_interval == interval;
-				if (!m->_interval && hasPredInInterval)
+					anyPredInInterval |= p->_interval == interval;
+				if (!m->_interval && anyPredInInterval)
 					intervals.push_back(m);
 			}
 		}

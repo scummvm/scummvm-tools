@@ -93,6 +93,8 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x8d, new SimpleReader("getObjectX"));
 		_reader->registerOpcode(0x8e, new SimpleReader("getObjectY"));
 
+		_reader->registerOpcode(0x92, new SimpleReader("findInventory"));
+		_reader->registerOpcode(0x93, new SimpleReader("getInventoryCount"));
 		_reader->registerOpcode(0x95, new SimpleReader("beginOverride", "bw")); // TODO: how to handle this?
 		_reader->registerOpcode(0x96, new SimpleReader("endOverride"));
 		_reader->registerOpcode(0x97, new SimpleReader("setObjectName", "s"));
