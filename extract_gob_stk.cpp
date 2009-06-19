@@ -72,6 +72,8 @@ int main(int argc, char **argv) {
 	if (!(gobConf = fopen(outFilename, "w")))
 		error("Couldn't create config file \"%s\"", outFilename);
 
+	fprintf(gobConf, "%s\n", argv[1]);
+
 	if (fread(signature, 1, 6, stk) < 6)
 		error("Unexpected EOF while reading signature in \"%s\"", argv[1]);
 
@@ -309,6 +311,7 @@ void extractChunks(FILE *stk, Chunk *chunks) {
 		}
 
 		delete[] data;
+		fflush(chunkFile);
 		fclose(chunkFile);
 
 		curChunk = curChunk->next;
@@ -367,7 +370,6 @@ byte *unpackData(byte *src, uint32 &size) {
 				tmpIndex++;
 				tmpIndex %= 4096;
 			}
-
 		}
 	}
 
