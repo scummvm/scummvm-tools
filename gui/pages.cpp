@@ -34,93 +34,70 @@
 #include "pages.h"
 #include "tools.h"
 
-WizardPage::WizardPage(wxWindow *parent)
-	: wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("Wizard Page")),
-	  _buttons(NULL)
+WizardPage::WizardPage(ScummToolsFrame *frame)
+	: _topframe(frame)
 {
 }
 
-void WizardPage::updateButtons() {
-	// Do nothing
+wxWindow *WizardPage::CreatePanel(wxWindow *parent) {
+	return new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("Wizard Page"));
 }
 
-void WizardPage::SetAlignedSizer(wxSizer *sizer) {
+void WizardPage::switchPage(WizardPage *next) {
+	_topframe->switchPage(next);
+}
+
+void WizardPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
+	// Do nothing, keep default button state
+}
+
+void WizardPage::SetAlignedSizer(wxWindow *panel, wxSizer *sizer) {
 	wxSizer *topsizer = new wxBoxSizer(wxHORIZONTAL);
 	topsizer->AddSpacer(100);
 	topsizer->Add(sizer);
-	SetSizer(topsizer);
-}
-
-void WizardPage::SwitchPage(WizardPage *next) {
-	wxWindow *grandparent = GetParent();
-	while(grandparent->GetParent() != NULL)
-		grandparent = grandparent->GetParent();
-
-	if(grandparent) {
-		ScummToolsFrame *frame = dynamic_cast<ScummToolsFrame*>(grandparent);
-		frame->SwitchPage(next);
-		// We are probably dead now, make sure to do nothing 
-		// involving member variabls after this point
-	}
+	panel->SetSizer(topsizer);
 }
 
 // Our default handler for next/prev/cancel
 
-void WizardPage::onNext() {
+void WizardPage::onNext(wxWindow *panel) {
 }
 
-void WizardPage::onPrevious() {
-	wxWindow *grandparent = GetParent();
-	while(grandparent->GetParent() != NULL)
-		grandparent = grandparent->GetParent();
-
-	if(grandparent) {
-		ScummToolsFrame *frame = dynamic_cast<ScummToolsFrame*>(grandparent);
-		frame->SwitchToPreviousPage();
-		// We are probably dead now, make sure to do nothing 
-		// involving member variabls after this point
-	}
+void WizardPage::onPrevious(wxWindow *panel) {
+	_topframe->switchToPreviousPage();
 }
 
-void WizardPage::onCancel() {
-	wxMessageDialog dlg(this, wxT("Are you sure you want to abort the wizard?"), wxT("Abort"), wxYES | wxNO);
+void WizardPage::onCancel(wxWindow *panel) {
+	wxMessageDialog dlg(panel, wxT("Are you sure you want to abort the wizard?"), wxT("Abort"), wxYES | wxNO);
 	wxWindowID ret = dlg.ShowModal();
 	if(ret == wxID_YES) {
-		wxWindow *grandparent = GetParent();
-		while(grandparent->GetParent() != NULL)
-			grandparent = grandparent->GetParent();
-
-		grandparent->Close(true);
+		_topframe->Close(true);
 	} else {
 		// Do nothing
 	}
 }
 
-void WizardPage::onUpdateButtons(WizardButtons *buttons) {
-	// We have this functions to avoid having to this in every child handler
-	_buttons = buttons;
-	updateButtons();
-}
-
 // Load/Save settings
-void WizardPage::load(Configuration &configuration) {
-}
-
-void WizardPage::save(Configuration &configuration) {
+void WizardPage::save(wxWindow *panel, Configuration &configuration) {
 }
 
 // Introduction page
 
-IntroPage::IntroPage(wxWindow *parent)
-	: WizardPage(parent)
+IntroPage::IntroPage(ScummToolsFrame* frame)
+	: WizardPage(frame)
 {
+}
+
+wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
 	sizer->AddSpacer(15);
 
-	sizer->Add(new wxStaticText(this, wxID_ANY, 
+	sizer->Add(new wxStaticText(panel, wxID_ANY, 
 		wxT("Welcome to the ScummVM extraction and compression utility.")));
-	sizer->Add(new wxStaticText(this, wxID_ANY,
+	sizer->Add(new wxStaticText(panel, wxID_ANY,
 		wxT("Please select what you want to do, or drop a file or folder on this window for automatic .")));
 	
 	wxString choices[] = {
@@ -129,55 +106,66 @@ IntroPage::IntroPage(wxWindow *parent)
 		wxT("Choose tool to use (advanced)")
 	};
 
-	_options = new wxRadioBox(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 3, choices, 1, wxRA_SPECIFY_COLS | wxBORDER_NONE);
-	sizer->Add(_options);
-	_options->SetSelection(0);
+	wxRadioBox *options = new wxRadioBox(panel, wxID_ANY, wxT(""), 
+		wxDefaultPosition, wxDefaultSize, 3, choices, 1, 
+		wxRA_SPECIFY_COLS | wxBORDER_NONE, wxDefaultValidator, wxT("ChooseActivity"));
+	sizer->Add(options);
+	options->SetSelection(0);
 
-	SetAlignedSizer(sizer);
-}
+	SetAlignedSizer(panel, sizer);
 
-void IntroPage::updateButtons() {
-	_buttons->showPrevious(false);
-	_buttons->enableNext(true);
-}
-
-void IntroPage::load(Configuration &config) {
-	// TODO use generic way to get indexes
+	// Load options
+	Configuration &config = _topframe->configuration;
 	if(config.advanced)
-		_options->SetSelection(2);
+		options->SetSelection(2);
 	else if(config.compressing)
-		_options->SetSelection(1);
+		options->SetSelection(1);
 	else
-		_options->SetSelection(0);
+		options->SetSelection(0);
+
+	return panel;
 }
 
-void IntroPage::save(Configuration &config) {
-	config.advanced    = _options->GetStringSelection().Lower().Find(wxT("advanced")) != wxNOT_FOUND;
-	config.compressing = _options->GetStringSelection().Lower().Find(wxT("extract")) == wxNOT_FOUND;
+void IntroPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
+	buttons->showPrevious(false);
+	buttons->enableNext(true);
 }
 
-void IntroPage::onNext() {
-	if(_options->GetStringSelection().Lower().Find(wxT("extract")) != wxNOT_FOUND) {
+void IntroPage::save(wxWindow *panel, Configuration &config) {
+	wxString selected_option = static_cast<wxRadioBox *>(panel->FindWindowByName(wxT("")))->GetStringSelection().Lower();
+
+	config.advanced    = selected_option.Find(wxT("advanced")) != wxNOT_FOUND;
+	config.compressing = selected_option.Find(wxT("extract")) == wxNOT_FOUND;
+}
+
+void IntroPage::onNext(wxWindow *panel) {
+	wxString selected_option = static_cast<wxRadioBox *>(panel->FindWindowByName(wxT("")))->GetStringSelection().Lower();
+	if(selected_option.Find(wxT("extract")) != wxNOT_FOUND) {
 		// extract
-	} else if(_options->GetStringSelection().Lower().Find(wxT("advanced")) != wxNOT_FOUND) {
+	} else if(selected_option.Find(wxT("advanced")) != wxNOT_FOUND) {
 		// advanced
-		SwitchPage(new ChooseToolPage(this->GetParent()));
+		_topframe->switchPage(new ChooseToolPage(_topframe));
 	} else {
 		// compress
-		SwitchPage(new ChooseCompressionPage(this->GetParent()));
+		_topframe->switchPage(new ChooseCompressionPage(_topframe));
 	}
 }
 
 // Page to choose what game files to compress
 
-ChooseCompressionPage::ChooseCompressionPage(wxWindow *parent)
-	: WizardPage(parent)
+ChooseCompressionPage::ChooseCompressionPage(ScummToolsFrame* frame)
+	: WizardPage(frame)
 {
+}
+
+wxWindow *ChooseCompressionPage::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
 	sizer->AddSpacer(15);
 
-	sizer->Add(new wxStaticText(this, wxID_ANY, 
+	sizer->Add(new wxStaticText(panel, wxID_ANY, 
 		wxT("Please select for what game/engine you'd like to compress files.")));
 	
 	// This list is most likely incomplete
@@ -233,33 +221,42 @@ ChooseCompressionPage::ChooseCompressionPage(wxWindow *parent)
 	// Sort the array for display
 	choices.Sort();
 
-	_game = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-	sizer->Add(_game);
-	_game->SetSelection(0);
+	wxChoice *game = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		choices, 0, wxDefaultValidator, wxT("GameSelection"));
+	sizer->Add(game);
+	game->SetSelection(0);
 
-	SetAlignedSizer(sizer);
+	SetAlignedSizer(panel, sizer);
+
+	// Load already set values
+	game->SetStringSelection(_topframe->configuration.selectedGame);
+
+
+	return panel;
 }
-
 
 // Load/Save settings
-void ChooseCompressionPage::load(Configuration &config) {
-	_game->SetStringSelection(config.selectedGame);
-}
 
-void ChooseCompressionPage::save(Configuration &config) {
-	config.selectedGame = _game->GetStringSelection();
+void ChooseCompressionPage::save(wxWindow *panel, Configuration &config) {
+	wxString game = static_cast<wxChoice *>(panel->FindWindowByName(wxT("GameSelection")))->GetStringSelection();
+	config.selectedGame = game;
 }
 
 // Page to choose ANY tool to use
 
-ChooseToolPage::ChooseToolPage(wxWindow *parent)
-	: WizardPage(parent)
+ChooseToolPage::ChooseToolPage(ScummToolsFrame* frame)
+	: WizardPage(frame)
 {
+}
+
+wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
 	sizer->AddSpacer(15);
 
-	sizer->Add(new wxStaticText(this, wxID_ANY, 
+	sizer->Add(new wxStaticText(panel, wxID_ANY, 
 		wxT("Select what tool you'd like to use.")));
 	
 	// This list is most likely incomplete
@@ -269,19 +266,20 @@ ChooseToolPage::ChooseToolPage(wxWindow *parent)
 	// they're stored in a ordered tree but you can never be too safe)
 	choices.Sort();
 
-	_tool = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-	sizer->Add(_tool);
-	_tool->SetSelection(0);
+	wxChoice *tool = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		choices, 0, wxDefaultValidator, wxT("ToolSelection"));
+	sizer->Add(tool);
+	tool->SetSelection(0);
 
-	SetAlignedSizer(sizer);
+	SetAlignedSizer(panel, sizer);
+
+	// Load configuration
+	tool->SetStringSelection(_topframe->configuration.selectedTool);
+
+	return panel;
 }
-
 
 // Load/Save settings
-void ChooseToolPage::load(Configuration &config) {
-	_tool->SetStringSelection(config.selectedTool);
-}
-
-void ChooseToolPage::save(Configuration &config) {
-	config.selectedTool = _tool->GetStringSelection();
+void ChooseToolPage::save(wxWindow *panel, Configuration &config) {
+	config.selectedTool = static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection();
 }

@@ -97,57 +97,61 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	_buttons = new WizardButtons(main, linetext);
 	sizer->Add(_buttons, wxSizerFlags().Border().Right());
 	
+	// Create input page
+	WizardPage *introPage = new IntroPage(this);
+
 	// We create the intro page once the window is setup
 	wxSizer *panesizer = new wxBoxSizer(wxVERTICAL);
-	WizardPage *introPage = new IntroPage(_wizardpane);
-	panesizer->Add(introPage, wxSizerFlags(1).Expand());
+	wxWindow *introPanel = introPage->CreatePanel(_wizardpane);
+	panesizer->Add(introPanel, wxSizerFlags(1).Expand());
 	_wizardpane->SetSizerAndFit(panesizer);
-
 
 	main->SetSizer(sizer);
 
+	// Set current page
+	_pages.push_back(introPage);
+
 	// And reset the buttons to a standard state
-	_buttons->setPage(introPage);
+	_buttons->setPage(introPage, introPanel);
 }
 
 ScummToolsFrame::~ScummToolsFrame() {
-	for(std::vector<WizardPageClass *>::iterator iter = _previousPages.begin(); iter != _previousPages.end(); ++iter)
+	for(std::vector<WizardPage *>::iterator iter = _pages.begin(); iter != _pages.end(); ++iter)
 		delete *iter;
 }
 
-void ScummToolsFrame::SwitchPage(WizardPage *next) {
+void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	// Find the old page
-	WizardPage *old = dynamic_cast<WizardPage*>(_wizardpane->FindWindow(wxT("Wizard Page")));
+	wxPanel *oldPanel = dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page")));
 
-	wxASSERT_MSG(old, wxT("Expected the child 'Wizard Page' to be an actual Wizard Page window."));
+	_pages.back()->save(oldPanel, configuration);
 
-	old->save(configuration);
-
-	// Save the old page
-	_previousPages.push_back(old->getClass());
+	if(moveback) {
+		// Don't save the old page (which is ontop of the stack already)
+		delete _pages.back();
+		_pages.pop_back();
+	} else {
+		_pages.push_back(next);
+	}
 
 	// Destroy the old page
-	old->Destroy();
+	oldPanel->Destroy();
 
-	next->load(configuration);
+	wxWindow *newPanel = _pages.back()->CreatePanel(_wizardpane);
 
 	// Add the new page!
-	next->Reparent(_wizardpane);
-	_wizardpane->GetSizer()->Add(next, wxSizerFlags(1).Expand());
+	_wizardpane->GetSizer()->Add(newPanel, wxSizerFlags(1).Expand());
 
 	// Make sure it fits
 	_wizardpane->Fit();
 
 	// And reset the buttons to a standard state
 	_buttons->reset();
-	_buttons->setPage(next);
+	_buttons->setPage(_pages.back(), newPanel);
 }
 
-void ScummToolsFrame::SwitchToPreviousPage() {
-	WizardPage *prev = _previousPages.back()->create(_wizardpane);
-	delete _previousPages.back();
-	_previousPages.pop_back();
-	SwitchPage(prev);
+void ScummToolsFrame::switchToPreviousPage() {
+	switchPage(NULL, true);
 }
 
 BEGIN_EVENT_TABLE(WizardButtons, wxPanel)
@@ -188,13 +192,14 @@ void WizardButtons::reset() {
 	showFinish(false);
 }
 
-void WizardButtons::setPage(WizardPage *current) {
+void WizardButtons::setPage(WizardPage *current, wxWindow *panel) {
 	_currentPage = current;
+	_currentPanel = panel;
 	// We call onUpdateButtons, which sets the _buttons member of WizardPage
 	// to this, and in turn calls updateButtons on itself and sets up the buttons
 	// We cannot set this up in the constructor of the WizardPage, since it's impossible
 	// to call reset *before* the page is created from SwicthPage
-	current->onUpdateButtons(this);
+	_currentPage->updateButtons(_currentPanel, this);
 }
 
 void WizardButtons::enableNext(bool enable) {
@@ -224,18 +229,17 @@ void WizardButtons::showPrevious(bool show) {
 // wx event handlers
 void WizardButtons::onClickNext(wxCommandEvent &e) {
 	wxASSERT(_currentPage);
-	_currentPage->Hide();
-	_currentPage->onNext();
+	_currentPage->onNext(_currentPanel);
 }
 
 void WizardButtons::onClickPrevious(wxCommandEvent &e) {
 	wxASSERT(_currentPage);
-	_currentPage->onPrevious();
+	_currentPage->onPrevious(_currentPanel);
 }
 
 void WizardButtons::onClickCancel(wxCommandEvent &e) {
 	wxASSERT(_currentPage);
-	_currentPage->onCancel();
+	_currentPage->onCancel(_currentPanel);
 }
 
 BEGIN_EVENT_TABLE(Header, wxPanel)

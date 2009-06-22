@@ -48,17 +48,18 @@ public:
 	~ScummToolsFrame();
 
 	// Switches to this page and resets the buttons
-	void SwitchPage(WizardPage *nextPage);
+	void switchPage(WizardPage *nextPage, bool moveback = false);
 
 	// Switches to the previous page
-	void SwitchToPreviousPage();
+	void switchToPreviousPage();
+
+	Configuration configuration;
 
 private:
-	Configuration configuration;
 	wxPanel *_wizardpane;
 	WizardButtons *_buttons;
 	
-	std::vector<WizardPageClass *> _previousPages;
+	std::vector<WizardPage *> _pages;
 
 	DECLARE_EVENT_TABLE()
 };
@@ -77,7 +78,7 @@ public:
 
 	// Set the current wizard page, done from SwitchPage required
 	// for the buttons to know where to drop their events
-	void setPage(WizardPage *current);
+	void setPage(WizardPage *current, wxWindow *panel);
 
 	// Set the label of the line above the buttons, can display some useful info here
 	void setLineLabel(wxString label);
@@ -104,6 +105,7 @@ protected:
 	wxButton *_cancel;
 	wxStaticText *_linetext;
 	WizardPage *_currentPage;
+	wxWindow *_currentPanel;
 
 	DECLARE_EVENT_TABLE()
 };

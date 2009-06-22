@@ -24,49 +24,40 @@
 
 #include "configuration.h"
 
-struct WizardPageClass {
-	virtual WizardPage *create(wxWindow *parent) = 0;
-};
-
-template <typename T>
-struct WizardPageClass_ : public WizardPageClass {
-	virtual WizardPage *create(wxWindow *parent) {return new T(parent);}
-};
-
 // Wizard Page
 // A page in the extraction wizard
 
-class WizardPage : public wxPanel
+class WizardPage : public wxEvtHandler
 {
 public:
-	WizardPage(wxWindow *parent);
-	virtual void updateButtons();
-	virtual WizardPageClass *getClass() = 0;
+	WizardPage(ScummToolsFrame* frame);
+	~WizardPage() {
+;
+	}
 
-	// This adds an offset (about 100px) to the left of the sizer
-	// to center the text somewhat, before adding it to the panel
-	void SetAlignedSizer(wxSizer *sizer);
+	// Creates a visual representation of this page as a child problem of the supplied parent
+	virtual wxWindow *CreatePanel(wxWindow *parent);
 
-	// This calls parent -> SwitchPage
-	// This page WILL BE DELETED
-	// You should return out of this class immedietly after calling this function
-	void SwitchPage(WizardPage *next);
+	void switchPage(WizardPage *next);
 
-	// Load/Save configuration
-	virtual void load(Configuration &configuration);
-	virtual void save(Configuration &configuration);
+	// Load/Save configuration, reads data from the panel supplied
+	virtual void save(wxWindow *panel, Configuration &configuration);
 	
 	// Event handlers
 	// overload these to handle prev/next/cancel clicks
-	virtual void onNext();
-	virtual void onPrevious();
-	virtual void onCancel(); // Default is to display 'Are you sure' and quit if you click 'Yes'
+	virtual void onNext(wxWindow *panel);
+	virtual void onPrevious(wxWindow *panel);
+	virtual void onCancel(wxWindow *panel); // Default is to display 'Are you sure' and quit if you click 'Yes'
 
-	// Calls updateButtons
-	void onUpdateButtons(WizardButtons *buttons);
+	// Update button states
+	virtual void updateButtons(wxWindow *panel, WizardButtons *buttons);
 
 protected:
-	WizardButtons *_buttons;
+	// This adds an offset (about 100px) to the left of the sizer
+	// to center the text somewhat, before adding it to the panel
+	void SetAlignedSizer(wxWindow *panel, wxSizer *sizer);
+
+	ScummToolsFrame* _topframe;
 };
 
 // Introduction page, with options to extract/compress
@@ -74,42 +65,33 @@ protected:
 class IntroPage : public WizardPage
 {
 public:
-	IntroPage(wxWindow *parent);
-	virtual void updateButtons();
-	virtual WizardPageClass *getClass() {return new WizardPageClass_<IntroPage>();}
+	IntroPage(ScummToolsFrame* frame);
 	
+	wxWindow *CreatePanel(wxWindow *parent);
 
-	void load(Configuration &configuration);
-	void save(Configuration &configuration);
+	void save(wxWindow *panel, Configuration &configuration);
 
-	virtual void onNext();
-
-protected:
-	wxRadioBox *_options;
+	void onNext(wxWindow *panel);
+	
+	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
 
 class ChooseCompressionPage : public WizardPage
 {
 public:
-	ChooseCompressionPage(wxWindow *parent);
-	virtual WizardPageClass *getClass() {return new WizardPageClass_<ChooseCompressionPage>();}
+	ChooseCompressionPage(ScummToolsFrame* frame);
 
-	void load(Configuration &configuration);
-	void save(Configuration &configuration);
+	wxWindow *CreatePanel(wxWindow *parent);
 
-protected:
-	wxChoice *_game;
+	void save(wxWindow *panel, Configuration &configuration);
 };
 
 class ChooseToolPage : public WizardPage
 {
 public:
-	ChooseToolPage(wxWindow *parent);
-	virtual WizardPageClass *getClass() {return new WizardPageClass_<ChooseToolPage>();}
+	ChooseToolPage(ScummToolsFrame* frame);
 
-	void load(Configuration &configuration);
-	void save(Configuration &configuration);
+	wxWindow *CreatePanel(wxWindow *parent);
 
-protected:
-	wxChoice *_tool;
+	void save(wxWindow *panel, Configuration &configuration);
 };

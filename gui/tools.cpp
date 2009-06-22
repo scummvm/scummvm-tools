@@ -72,7 +72,9 @@ const Tool &Tools::operator[](const wxString& name) {
 Tool::Tool() {
 	// should never be called
 	// required for std::map template to work
-	wxLogError(wxT("Created empty tool, should never happened."));
+	
+	// Seems std is allowed to create dummy objects in maps.
+	//wxLogError(wxT("Created empty tool, should never happened."));
 }
 
 Tool::Tool(wxString name, wxString input_extensions) {
