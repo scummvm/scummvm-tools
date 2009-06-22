@@ -168,58 +168,7 @@ wxWindow *ChooseCompressionPage::CreatePanel(wxWindow *parent) {
 	sizer->Add(new wxStaticText(panel, wxID_ANY, 
 		wxT("Please select for what game/engine you'd like to compress files.")));
 	
-	// This list is most likely incomplete
-	wxArrayString choices;
-
-	// Many games use the same tool internally, and are grouped by tool used here
-	// the array is ordered before being displayed, though
-
-	// TODO: This should be moved to tools.cpp and stored in each tool instead
-
-	// compress_agos
-	choices.Add(wxT("Feeble Files")),
-	choices.Add(wxT("Simon the Sorcerer I/II")),
-
-	// compress_gob
-	choices.Add(wxT("Gobliiins (all versions)")),
-
-	// compress_kyra
-	choices.Add(wxT("The Legend of Kyrandia")),
-	choices.Add(wxT("The Legend of Kyrandia: Hand of Fate")),
-	choices.Add(wxT("The Legend of Kyrandia: Malcolm's Revenge")),
-	choices.Add(wxT("Lands of Lore: The Throne of Chaos")),
-
-	// compress_queen
-	choices.Add(wxT("Flight of the Amazon Queen")),
-
-	// compress_saga
-	choices.Add(wxT("SAGA: Inherit The Earth")),
-	choices.Add(wxT("I Have No Mouth and I Must Scream")),
-
-	// compress_scumm_bun
-	choices.Add(wxT("The Secret of Monkey Island")),
-	choices.Add(wxT("Monkey Island 2: LeChuck's Revenge")),
-	choices.Add(wxT("The Curse of Monkey Island")),
-
-	// compress_scumm_san
-	// compress_scumm_sou
-	// Unsure of exact games...
-
-	// compress_sword1
-	choices.Add(wxT("Broken Sword 1")),
-
-	// compress_sword2
-	choices.Add(wxT("Broken Sword 2")),
-
-	// compress_touche
-	choices.Add(wxT("Touche: The Adventures of the Fifth Musketeer")),
-
-	// compress_tucker
-	choices.Add(wxT("Bud Tucker in Double Trouble")),
-
-
-	// Sort the array for display
-	choices.Sort();
+	wxArrayString choices = g_tools.getGameList(TOOLTYPE_COMPRESSION);
 
 	wxChoice *game = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		choices, 0, wxDefaultValidator, wxT("GameSelection"));
@@ -259,8 +208,7 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 	sizer->Add(new wxStaticText(panel, wxID_ANY, 
 		wxT("Select what tool you'd like to use.")));
 	
-	// This list is most likely incomplete
-	wxArrayString choices = g_tools.getToolList();
+	wxArrayString choices = g_tools.getToolList(TOOLTYPE_ALL);
 
 	// Sort the array for display (it should actually always be sorted since 
 	// they're stored in a ordered tree but you can never be too safe)

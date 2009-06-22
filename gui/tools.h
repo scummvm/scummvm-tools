@@ -37,6 +37,15 @@ enum AudioFormat {
 	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
 };
 
+// Different types of tools, used to differentiate them when 
+// fetching lists of games & tools
+enum ToolType {
+	TOOLTYPE_COMPRESSION,
+	TOOLTYPE_EXTRACTION,
+	TOOLTYPE_UNKNOWN,
+	TOOLTYPE_ALL,
+};
+
 
 // Describes a possible input to the tool (since some take two seperate files, 
 // some a dir and some a single file
@@ -51,6 +60,8 @@ public:
 	Tool();
 	Tool(wxString name, wxString input_extensions = wxT("*.*"));
 
+	void addGame(const wxString &game_name);
+
 	// Helpfer functions to get info about the tool
 	bool supportsAudioFormat(AudioFormat format);
 	bool pickFiles();
@@ -59,9 +70,11 @@ public:
 
 
 	wxString _name;
+	ToolType _type;
 	AudioFormat _supportedFormats;
 	typedef std::vector<ToolInput> ToolInputs;
 	ToolInputs _inputs;
+	wxArrayString _games;
 };
 
 // Collection of all tools
@@ -69,11 +82,13 @@ class Tools {
 public:
 	Tools();
 
-	const Tool &operator[](const wxString &name);
+	const Tool &operator[](const wxString &name) const;
 
-	// Returns all tool names in a list
+	// Returns all tool/game names in a list
 	// conveinent for creating the choose tool page
-	wxArrayString getToolList();
+	// List will be sorted and unique
+	wxArrayString getToolList(ToolType tt) const;
+	wxArrayString getGameList(ToolType tt) const;
 
 protected:
 	void addTool(const Tool &tool);
