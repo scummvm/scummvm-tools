@@ -2513,10 +2513,10 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0xC8:
 		ext(output, "rx" "getPaletteData\0"
-				"\xDpp|getColorCompontent2,"
+				"\xDpp|get16BitColorComponent,"
 				"\x14pp|getColor,"
-				"\x21pppppp|,"
-				"\x35ppp|getSimilarColor2,"
+				"\x21pppppp|getSimilarColor,"
+				"\x35ppp|get16BitColor,"
 				"\x49ppp|getColorCompontent");
 		break;
 	case 0xC9:
@@ -3386,11 +3386,11 @@ void next_line_HE_V72(char *output) {
 	case 0x94:
 		if (g_options.heVersion >= 90) {
 			ext(output, "rx" "getPaletteData\0"
-					"\x2Dpppppp|,"
+					"\x2Dpppppp|getSimilarColor,"
 					"\x34ppp|getColorCompontent,"
 					"\x42pp|getColor,"
-					"\x84pp|getColorCompontent2,"
-					"\xD9ppp|getSimilarColor2");
+					"\x84pp|get16BitColorComponent,"
+					"\xD9ppp|get16BitColor");
 		} else {
 			ext(output, "rpp|getVerbFromXY");
 		}
