@@ -16,7 +16,8 @@ variables_map parseArgs(int argc, char **argv) {
 		("help", "this message")
 		("disasm", "print disassembly and exit")
 		("blocks", "print basic blocks and exit")
-		("graph",  "print graph and exit");
+		("graph",  "print graph and exit")
+		("derive", value<int>(), "find nth derivative");
 	options_description options("Allowed options");
 	options.add(visible).add_options()
 		("inputfile", value<string>(), "input file");
@@ -35,6 +36,7 @@ variables_map parseArgs(int argc, char **argv) {
 	return vars;
 }
 
+#include <sstream>
 
 int main(int argc, char **argv) {
 	variables_map vars = parseArgs(argc, argv);
@@ -53,6 +55,17 @@ int main(int argc, char **argv) {
 	// cfg.removeDeadBlocks();
 	cfg._graph.intervals();
 	if (vars.count("graph")) {
+		Graph<Block*> g = cfg._graph;
+		cfg._graph = g;
+		cfg.printDot(cout);
+		exit(0);
+	}
+	if (vars.count("derive")) {
+		Graph<Block*> g = cfg._graph;
+		for (int i = 0; i < vars["derive"].as<int>(); i++)
+			g = g.derive();
+		cfg._graph = g; // FIXME: evil
+		g.intervals();
 		cfg.printDot(cout);
 		exit(0);
 	}

@@ -15,6 +15,8 @@
 #define foreach BOOST_FOREACH
 #endif
 
+#include <iostream>
+
 
 template<typename Data>
 struct Graph {
@@ -55,21 +57,39 @@ struct Graph {
 	Graph() : _entry() {
 	}
 
-	Graph(const Graph &g) {
+	Graph(const Graph &g) : _entry() {
 		g.removeHiddenNodes();
 		std::map<Node*, Node*> trans;
 		trans[0] = 0;
 		foreach (Node *u, g._nodes)
 			trans[u] = addNode(u->_data);
 		foreach (Node *u, g._nodes) {
-			foreach (Node *v, u->_in)
-				trans[u]->_in.push_back(trans[v]);
 			foreach (Node *v, u->_out)
-				trans[u]->_in.push_back(trans[v]);
+				addEdge(trans[u], trans[v]);
 			trans[u]->_interval = trans[u->_interval];
 			trans[u]->_primitive = u->_primitive;
 		}
 		_entry = trans[g._entry];
+	}
+
+	// TODO cleanup
+	Graph &operator=(const Graph &g) {
+		foreach (Node *u, _nodes)
+			delete u;
+		_nodes.clear();
+		g.removeHiddenNodes();
+		std::map<Node*, Node*> trans;
+		trans[0] = 0;
+		foreach (Node *u, g._nodes)
+			trans[u] = addNode(u->_data);
+		foreach (Node *u, g._nodes) {
+			foreach (Node *v, u->_out)
+				addEdge(trans[u], trans[v]);
+			trans[u]->_interval = trans[u->_interval];
+			trans[u]->_primitive = u->_primitive;
+		}
+		_entry = trans[g._entry];
+		return *this;
 	}
 
 	~Graph() {
