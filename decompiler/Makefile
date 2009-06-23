@@ -68,7 +68,7 @@ clean:
 
 test:
 	cxxtest/cxxtestgen.pl --error-printer --abort-on-fail --have-eh -o test_runner.cpp test/test_graph.h
-	g++ -I. -Icxxtest -o test_runner test_runner.cpp
+	g++ -g -I. -Icxxtest -o test_runner test_runner.cpp
 	./test_runner
 
 

@@ -51,6 +51,10 @@ struct Graph {
 		}
 	};
 
+	const std::list<Node*> &nodes() const {
+		return _nodes;
+	}
+
 	mutable std::list<Node*> _nodes;
 	Node *_entry;
 
