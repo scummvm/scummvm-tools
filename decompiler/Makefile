@@ -66,8 +66,13 @@ all: $(TARGETS)
 clean:
 	rm -f *.o $(TARGETS)
 
+test:
+	cxxtest/cxxtestgen.pl --error-printer -o test_runner.cpp test/graph.h
+	g++ -Icxxtest -o test_runner test_runner.cpp
+	./test_runner
 
-.PHONY: all clean
+
+.PHONY: all clean test
 
 
 decompiler$(EXEEXT): decompiler.o
