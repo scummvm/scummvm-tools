@@ -2,6 +2,7 @@
 #define GRAPH_H
 
 #include <list>
+#include <map>
 #include <set>
 #include <sstream>
 
@@ -12,7 +13,7 @@
 
 
 template<typename Data>
-struct Graph : boost::noncopyable {
+struct Graph {
 
 	struct Node : boost::noncopyable {
 
@@ -20,6 +21,10 @@ struct Graph : boost::noncopyable {
 
 		const std::list<Node*> &out() const {
 			return _out;
+		}
+
+		Node *interval() const {
+			return _interval;
 		}
 
 	private:
@@ -33,7 +38,7 @@ struct Graph : boost::noncopyable {
 		std::list<Node*> _in;
 		std::list<Node*> _out;
 
-		Node(const Data &data) : _data(data), _hidden(false), _interval(0), _primitive(0) {
+		Node(const Data &data) : _data(data), _hidden(), _interval(), _primitive() {
 		}
 
 		~Node() {
@@ -43,6 +48,22 @@ struct Graph : boost::noncopyable {
 	mutable std::list<Node*> _nodes;
 
 	Graph() {
+	}
+
+	Graph(const Graph &g) {
+		std::map<Node*, Node*> trans;
+		g.removeHiddenNodes();
+		foreach (Node *u, g._nodes)
+			trans[u] = addNode(u->_data);
+		foreach (Node *u, g._nodes) {
+			foreach (Node *v, u->_in)
+				trans[u]->_in.push_back(trans[v]);
+			foreach (Node *v, u->_out)
+				trans[u]->_in.push_back(trans[v]);
+			if (u->_interval)
+				trans[u]->_interval = trans[u->_interval];
+			trans[u]->_primary = u->_primary;
+		}
 	}
 
 	~Graph() {
@@ -91,24 +112,7 @@ struct Graph : boost::noncopyable {
 		return Graph();
 	}
 
-
-	Graph(const Graph &g) {
-		map<Node*, Node*> trans;
-		foreach (Node *u, g._nodes)
-			trans[u] = addNode(u->_data);
-		foreach (Node *u, g._nodes) {
-			foreach (Node *v, u->_in)
-				trans[u]->_in.push_back(trans[v]);
-			foreach (Node *v, u->_out)
-				trans[u]->_in.push_back(trans[v]);
-		}
-	}
-
 	void test(int level=0) {
-		if (level == 0)
-			cout << _nodes.size();
-		else
-			derive().test(level-1);
 	}
 
 	void assignIntervals(Node *start) {
