@@ -13,10 +13,10 @@ class GraphTestSuite : public CxxTest::TestSuite {
 
 public:
 
-	void test_assignIntervals() {
+	void test_intervals() {
 		vector<IntNode*> nodes1;
 		IntGraph *g1 = makeGraph1(nodes1);
-		g1->assignIntervals(nodes1[0]);
+		g1->intervals();
 		TS_ASSERT_EQUALS(nodes1[0]->interval()->_data, nodes1[0]->_data);
 		TS_ASSERT_EQUALS(nodes1[1]->interval()->_data, nodes1[1]->_data);
 		TS_ASSERT_EQUALS(nodes1[2]->interval()->_data, nodes1[1]->_data);
@@ -25,7 +25,7 @@ public:
 		TS_ASSERT_EQUALS(nodes1[5]->interval()->_data, nodes1[1]->_data);
 		vector<IntNode*> nodes2;
 		IntGraph *g2 = makeGraph2(nodes2);
-		g2->assignIntervals(nodes2[0]);
+		g2->intervals();
 		TS_ASSERT_EQUALS(nodes2[0]->interval()->_data, nodes2[0]->_data);
 		TS_ASSERT_EQUALS(nodes2[1]->interval()->_data, nodes2[0]->_data);
 		TS_ASSERT_EQUALS(nodes2[2]->interval()->_data, nodes2[0]->_data);

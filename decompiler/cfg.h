@@ -81,7 +81,7 @@ struct CFG {
 	}
 
 	void removeDeadBlocks() {
-		_graph.removeUnreachableNodes(_nodes[0]);
+		_graph.removeUnreachableNodes();
 	}
 
 	typedef Graph<Block*>::Node Node;
@@ -90,11 +90,6 @@ struct CFG {
 	Script &_script;
 
 	Graph<Block*> _graph;
-
-	template<typename Container, typename Element>
-	static bool contains(const Container &c, const Element &e) {
-		return c.find(e) != c.end();
-	}
 
 	CFG(Script &script) : _script(script) {
 		_nodes[script.size()] = 0;

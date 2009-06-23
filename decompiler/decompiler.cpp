@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 	}
 	// cfg.removeJumpsToJumps();
 	// cfg.removeDeadBlocks();
-	cfg._graph.assignIntervals(cfg._nodes[0]);
+	cfg._graph.intervals();
 	if (vars.count("graph")) {
 		cfg.printDot(cout);
 		exit(0);
