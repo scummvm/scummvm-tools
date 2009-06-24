@@ -29,10 +29,6 @@ struct Graph {
 			return _out;
 		}
 
-		Node *interval() const {
-			return _interval;
-		}
-
 	private:
 
 		friend class Graph;
@@ -49,10 +45,6 @@ struct Graph {
 		~Node() {
 		}
 	};
-
-	const std::list<Node*> &nodes() const {
-		return _nodes;
-	}
 
 	std::list<Node*> _nodes;
 	Node *_entry;
@@ -76,6 +68,8 @@ struct Graph {
 
 	// TODO cleanup
 	Graph &operator=(const Graph &g) {
+		if (this == &g)
+			return *this;
 		foreach (Node *u, _nodes)
 			delete u;
 		_nodes.clear();

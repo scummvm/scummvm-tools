@@ -1,5 +1,9 @@
 #include <cxxtest/TestSuite.h>
+
+// TODO: move interal tests to a separate file
+#define private public
 #include <graph.h>
+#undef private
 
 #include <list>
 #include <vector>
@@ -26,39 +30,41 @@ public:
 		g3 = makeGraph3();
 	}
 
+	// this tests internal, intermediate results, not part of the api
 	void test_intervals() {
 		g1.intervals();
-		TS_ASSERT_EQUALS(findNode(g1, 1)->interval()->_data, findNode(g1, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 2)->interval()->_data, findNode(g1, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 3)->interval()->_data, findNode(g1, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 4)->interval()->_data, findNode(g1, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 5)->interval()->_data, findNode(g1, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 6)->interval()->_data, findNode(g1, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g1, 1)->_interval->_data, findNode(g1, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g1, 2)->_interval->_data, findNode(g1, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g1, 3)->_interval->_data, findNode(g1, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g1, 4)->_interval->_data, findNode(g1, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g1, 5)->_interval->_data, findNode(g1, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g1, 6)->_interval->_data, findNode(g1, 2)->_data);
 		g2.intervals();
-		TS_ASSERT_EQUALS(findNode(g2, 1)->interval()->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 2)->interval()->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 3)->interval()->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 4)->interval()->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 5)->interval()->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 6)->interval()->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 7)->interval()->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 8)->interval()->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 9)->interval()->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 10)->interval()->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 11)->interval()->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 12)->interval()->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 13)->interval()->_data, findNode(g2, 13)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 14)->interval()->_data, findNode(g2, 13)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 15)->interval()->_data, findNode(g2, 13)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 1)->_interval->_data, findNode(g2, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 2)->_interval->_data, findNode(g2, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 3)->_interval->_data, findNode(g2, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 4)->_interval->_data, findNode(g2, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 5)->_interval->_data, findNode(g2, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 6)->_interval->_data, findNode(g2, 6)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 7)->_interval->_data, findNode(g2, 6)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 8)->_interval->_data, findNode(g2, 6)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 9)->_interval->_data, findNode(g2, 6)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 10)->_interval->_data, findNode(g2, 6)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 11)->_interval->_data, findNode(g2, 6)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 12)->_interval->_data, findNode(g2, 6)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 13)->_interval->_data, findNode(g2, 13)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 14)->_interval->_data, findNode(g2, 13)->_data);
+		TS_ASSERT_EQUALS(findNode(g2, 15)->_interval->_data, findNode(g2, 13)->_data);
 		g3.intervals();
-		TS_ASSERT_EQUALS(findNode(g3, 1)->interval()->_data, findNode(g3, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g3, 2)->interval()->_data, findNode(g3, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g3, 3)->interval()->_data, findNode(g3, 3)->_data);
+		TS_ASSERT_EQUALS(findNode(g3, 1)->_interval->_data, findNode(g3, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g3, 2)->_interval->_data, findNode(g3, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g3, 3)->_interval->_data, findNode(g3, 3)->_data);
 	}
 
+	// this tests internal, intermediate results, not part of the api
 	void test_derive() {
 		IntGraph g1d = g1.derive();
-		TS_ASSERT_EQUALS(g1d.nodes().size(), 2);
+		TS_ASSERT_EQUALS(g1d._nodes.size(), 2);
 		TS_ASSERT(findNode(g1d, 1));
 		TS_ASSERT(findNode(g1d, 2));
 		TS_ASSERT_EQUALS(outEdgesCount(g1d, 1), 1);
@@ -66,11 +72,11 @@ public:
 		TS_ASSERT(pointsTo(g1d, 1, 2));
 		TS_ASSERT(pointsTo(g1d, 1, 2));
 		IntGraph g1dd = g1d.derive();
-		TS_ASSERT_EQUALS(g1dd.nodes().size(), 1);
+		TS_ASSERT_EQUALS(g1dd._nodes.size(), 1);
 		TS_ASSERT(findNode(g1d, 1));
 		TS_ASSERT_EQUALS(outEdgesCount(g1dd, 1), 0);
 		IntGraph g2d = g2.derive();
-		TS_ASSERT_EQUALS(g2d.nodes().size(), 3);
+		TS_ASSERT_EQUALS(g2d._nodes.size(), 3);
 		TS_ASSERT(findNode(g2d, 1));
 		TS_ASSERT(findNode(g2d, 6));
 		TS_ASSERT(findNode(g2d, 13));
@@ -81,7 +87,7 @@ public:
 		TS_ASSERT(pointsTo(g2d, 6, 13));
 		TS_ASSERT(pointsTo(g2d, 13, 6));
 		IntGraph g3d = g3.derive();
-		TS_ASSERT_EQUALS(g3d.nodes().size(), 3);
+		TS_ASSERT_EQUALS(g3d._nodes.size(), 3);
 		TS_ASSERT(findNode(g3d, 1));
 		TS_ASSERT(findNode(g3d, 2));
 		TS_ASSERT(findNode(g3d, 3));
@@ -97,7 +103,7 @@ public:
 private:
 
 	IntNode *findNode(IntGraph &g, int data) {
-		foreach (IntNode *u, g.nodes())
+		foreach (IntNode *u, g._nodes)
 			if (u->_data == data)
 				return u;
 		return 0;
