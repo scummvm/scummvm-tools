@@ -68,7 +68,7 @@ struct Script {
 
 	void print(ostream &out, index_t i) {
 		if (i >= 1 && _instructions[i]->_addr == _instructions[i-1]->_addr)
-			out << "       " << _instructions[i]->_description;
+			out << "      " << _instructions[i]->_description;
 		else
 			out << phex(_instructions[i]->_addr-8) << "  " << _instructions[i]->_description;
 		Jump *jump = dynamic_cast<Jump*>(_instructions[i]);

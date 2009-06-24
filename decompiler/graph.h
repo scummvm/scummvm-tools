@@ -42,8 +42,10 @@ struct Graph {
 		Node *_interval;
 		std::list<Node*> _in;
 		std::list<Node*> _out;
+		int _order;
+		int _loop;
 
-		Node(const Data &data) : _data(data), _interval() {
+		Node(const Data &data) : _data(data), _interval(), _order(), _loop() {
 		}
 
 		~Node() {
@@ -52,8 +54,10 @@ struct Graph {
 
 	std::list<Node*> _nodes;
 	Node *_entry;
+	int _currentOrder;
+	int _currentLoop;
 
-	Graph() : _entry() {
+	Graph() : _entry(), _currentOrder(), _currentLoop() {
 	}
 
 	Graph(const Graph &g) : _entry() {
@@ -65,7 +69,6 @@ struct Graph {
 			foreach (Node *v, u->_out)
 				addEdge(trans[u], trans[v]);
 			trans[u]->_interval = trans[u->_interval];
-			trans[u]->_primitive = u->_primitive;
 		}
 		_entry = trans[g._entry];
 	}
@@ -85,7 +88,6 @@ struct Graph {
 			foreach (Node *v, u->_out)
 				addEdge(trans[u], trans[v]);
 			trans[u]->_interval = trans[u->_interval];
-			trans[u]->_primitive = u->_primitive;
 		}
 		_entry = trans[g._entry];
 		return *this;
@@ -147,6 +149,30 @@ struct Graph {
 		return ret;
 	}
 
+	// TODO: merge with removeUnreachableNodes?
+	void markReversePostOrder() {
+		foreach (Node *u, _nodes)
+			u->_visited = false;
+		_currentOrder = _nodes.size();
+		assert(_entry);
+		visit(_entry);
+	}
+
+	void loopStruct() {
+		foreach (Node *interval, intervals()) {
+			foreach (Node *latch, interval->_in) {
+				if (latch->_interval == interval) { // it *is* latching node not only by name :)
+					if (!latch->_loop && !interval->_loop) {
+						int curloop = ++_currentLoop;
+						foreach (Node *u, _nodes)
+							if (interval->_order <= u->_order && u->_order <= latch->_order && u->_interval == interval)
+								u->_loop = curloop;
+					}
+				}
+			}
+		}
+	}
+
 	void extendIntervals() {
 		Graph<Node*> d;
 		std::map<Node*, typename Graph<Node*>::Node*> trans;
@@ -177,7 +203,11 @@ struct Graph {
 						<< "[fontname=" << '"' << fontname << '"'
 						<< ",fontsize=" << fontsize
 						<< ",shape=box"
-						<< ",label=" << '"' << graphvizEscapeLabel(printer(u->_data)) << '"'
+						<< ",label=" << '"'
+						             << "<order: " << u->_order << ", "
+						             << "loop: " << u->_loop << ">\\n"
+						             << graphvizEscapeLabel(printer(u->_data))
+						             << '"'
 						<< "];" << std::endl;
 			ret << "}" << std::endl;
 		}
@@ -198,6 +228,7 @@ private:
 		foreach (Node *v, u->_out)
 			if (!v->_visited)
 				visit(v);
+		u->_order = _currentOrder--;
 	}
 
 	void assignIntervals() const {
