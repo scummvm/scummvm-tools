@@ -55,14 +55,13 @@ struct Graph {
 		return _nodes;
 	}
 
-	mutable std::list<Node*> _nodes;
+	std::list<Node*> _nodes;
 	Node *_entry;
 
 	Graph() : _entry() {
 	}
 
 	Graph(const Graph &g) : _entry() {
-		g.removeHiddenNodes();
 		std::map<Node*, Node*> trans;
 		trans[0] = 0;
 		foreach (Node *u, g._nodes)
@@ -81,7 +80,6 @@ struct Graph {
 		foreach (Node *u, _nodes)
 			delete u;
 		_nodes.clear();
-		g.removeHiddenNodes();
 		std::map<Node*, Node*> trans;
 		trans[0] = 0;
 		foreach (Node *u, g._nodes)
@@ -113,14 +111,6 @@ struct Graph {
 		return node;
 	}
 
-	void removeNode(Node *u) {
-		foreach (Node *v, u->_in)
-			v->_out.remove(u);
-		foreach (Node *v, u->_out)
-			v->_in.remove(u);
-		u->_hidden = true;
-	}
-
 	void addEdge(Node *from, Node *to) {
 		from->_out.push_back(to);
 		to->_in.push_back(from);
@@ -142,7 +132,8 @@ struct Graph {
 		visit(_entry);
 		foreach (Node *u, _nodes)
 			if (!u->_visited)
-				removeNode(u);
+				hideNode(u);
+		removeHiddenNodes();
 	}
 
 	std::list<Node*> intervals() const {
@@ -155,7 +146,6 @@ struct Graph {
 	}
 
 	Graph derive() {
-		removeHiddenNodes();
 		assignIntervals();
 		Graph g;
 		std::map<Node*, Node*> trans;
@@ -176,9 +166,16 @@ struct Graph {
 		return g;
 	}
 
+	//	std::list<Graph> derivedSequence() {
+	//		std::list<Graph> ret;
+	//		ret.push_back(*this);
+	//		while (ret.back().derive().nodes().size() < ret.back().nodes().size())
+	//			ret.push_back(ret.back().derive());
+	//		return ret;
+	//	}
+
 	template<typename Printer>   // printer is a functor taking Data and returning a string
 	std::string graphvizPrint(Printer printer, const std::string &fontname="Courier", int fontsize=14) const {
-		removeHiddenNodes();
 		std::stringstream ret;
 		ret << "digraph G {" << std::endl;
 		foreach (Node *interval, intervals()) {
@@ -205,6 +202,14 @@ struct Graph {
 	}
 
 private:
+
+	void hideNode(Node *u) {
+		foreach (Node *v, u->_in)
+			v->_out.remove(u);
+		foreach (Node *v, u->_out)
+			v->_in.remove(u);
+		u->_hidden = true;
+	}
 
 	void visit(Node *u) {
 		u->_visited = true;
@@ -240,7 +245,7 @@ private:
 		}
 	}
 
-	void removeHiddenNodes() const {
+	void removeHiddenNodes() {
 		for (typename std::list<Node*>::iterator it = _nodes.begin(); it != _nodes.end(); )
 			if ((*it)->_hidden) {
 				delete *it;
