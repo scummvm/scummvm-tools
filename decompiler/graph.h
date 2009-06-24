@@ -37,14 +37,13 @@ struct Graph {
 
 		friend class Graph;
 
-		bool _hidden;
 		bool _visited;
 		Node *_interval;
 		Node *_primitive;
 		std::list<Node*> _in;
 		std::list<Node*> _out;
 
-		Node(const Data &data) : _data(data), _hidden(), _interval(), _primitive() {
+		Node(const Data &data) : _data(data), _interval(), _primitive() {
 		}
 
 		~Node() {
@@ -130,10 +129,15 @@ struct Graph {
 			u->_visited = false;
 		assert(_entry);
 		visit(_entry);
-		foreach (Node *u, _nodes)
-			if (!u->_visited)
-				hideNode(u);
-		removeHiddenNodes();
+		for (typename std::list<Node*>::iterator uit = _nodes.begin(); uit != _nodes.end(); )
+			if ((*uit)->_visited)
+				uit++;
+			else {
+				foreach (Node *v, (*uit)->_out)
+					v->_in.remove(*uit);
+				delete *uit;
+				uit = _nodes.erase(uit);
+			}
 	}
 
 	std::list<Node*> intervals() const {
@@ -203,14 +207,6 @@ struct Graph {
 
 private:
 
-	void hideNode(Node *u) {
-		foreach (Node *v, u->_in)
-			v->_out.remove(u);
-		foreach (Node *v, u->_out)
-			v->_in.remove(u);
-		u->_hidden = true;
-	}
-
 	void visit(Node *u) {
 		u->_visited = true;
 		foreach (Node *v, u->_out)
@@ -243,15 +239,6 @@ private:
 					intervals.push_back(m);
 			}
 		}
-	}
-
-	void removeHiddenNodes() {
-		for (typename std::list<Node*>::iterator it = _nodes.begin(); it != _nodes.end(); )
-			if ((*it)->_hidden) {
-				delete *it;
-				it = _nodes.erase(it);
-			} else
-				it++;
 	}
 
 	static std::string graphvizEscapeLabel(const std::string &s) {
