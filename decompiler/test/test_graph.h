@@ -20,7 +20,7 @@ typedef IntGraph::Node IntNode;
 
 class GraphTestSuite : public CxxTest::TestSuite {
 
-	IntGraph g1, g2, g3;
+	IntGraph g1, g2, g3, g4;
 
 public:
 
@@ -28,76 +28,56 @@ public:
 		g1 = makeGraph1();
 		g2 = makeGraph2();
 		g3 = makeGraph3();
+		g4 = makeGraph4();
 	}
 
 	// this tests internal, intermediate results, not part of the api
 	void test_intervals() {
 		g1.intervals();
-		TS_ASSERT_EQUALS(findNode(g1, 1)->_interval->_data, findNode(g1, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 2)->_interval->_data, findNode(g1, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 3)->_interval->_data, findNode(g1, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 4)->_interval->_data, findNode(g1, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 5)->_interval->_data, findNode(g1, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g1, 6)->_interval->_data, findNode(g1, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g1, 1)->interval()->_data, findNode(g1, 1)->_data);
+		for (int i = 2; i <= 6; i++)
+			TS_ASSERT_EQUALS(findNode(g1, i)->interval()->_data, findNode(g1, 2)->_data);
 		g2.intervals();
-		TS_ASSERT_EQUALS(findNode(g2, 1)->_interval->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 2)->_interval->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 3)->_interval->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 4)->_interval->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 5)->_interval->_data, findNode(g2, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 6)->_interval->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 7)->_interval->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 8)->_interval->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 9)->_interval->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 10)->_interval->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 11)->_interval->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 12)->_interval->_data, findNode(g2, 6)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 13)->_interval->_data, findNode(g2, 13)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 14)->_interval->_data, findNode(g2, 13)->_data);
-		TS_ASSERT_EQUALS(findNode(g2, 15)->_interval->_data, findNode(g2, 13)->_data);
+		for (int i = 1; i <= 5; i++)
+			TS_ASSERT_EQUALS(findNode(g2, i)->interval()->_data, findNode(g2, 1)->_data);
+		for (int i = 6; i <= 12; i++)
+			TS_ASSERT_EQUALS(findNode(g2, i)->interval()->_data, findNode(g2, 6)->_data);
+		for (int i = 13; i <= 15; i++)
+			TS_ASSERT_EQUALS(findNode(g2, i)->interval()->_data, findNode(g2, 13)->_data);
 		g3.intervals();
-		TS_ASSERT_EQUALS(findNode(g3, 1)->_interval->_data, findNode(g3, 1)->_data);
-		TS_ASSERT_EQUALS(findNode(g3, 2)->_interval->_data, findNode(g3, 2)->_data);
-		TS_ASSERT_EQUALS(findNode(g3, 3)->_interval->_data, findNode(g3, 3)->_data);
+		TS_ASSERT_EQUALS(findNode(g3, 1)->interval()->_data, findNode(g3, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g3, 2)->interval()->_data, findNode(g3, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g3, 3)->interval()->_data, findNode(g3, 3)->_data);
+		g4.intervals();
+		TS_ASSERT_EQUALS(findNode(g4, 1)->interval()->_data, findNode(g4, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g4, 2)->interval()->_data, findNode(g4, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g4, 3)->interval()->_data, findNode(g4, 2)->_data);
 	}
 
-	// this tests internal, intermediate results, not part of the api
-	void test_derive() {
-		IntGraph g1d = g1.derive();
-		TS_ASSERT_EQUALS(g1d._nodes.size(), 2);
-		TS_ASSERT(findNode(g1d, 1));
-		TS_ASSERT(findNode(g1d, 2));
-		TS_ASSERT_EQUALS(outEdgesCount(g1d, 1), 1);
-		TS_ASSERT_EQUALS(outEdgesCount(g1d, 2), 1);
-		TS_ASSERT(pointsTo(g1d, 1, 2));
-		TS_ASSERT(pointsTo(g1d, 1, 2));
-		IntGraph g1dd = g1d.derive();
-		TS_ASSERT_EQUALS(g1dd._nodes.size(), 1);
-		TS_ASSERT(findNode(g1d, 1));
-		TS_ASSERT_EQUALS(outEdgesCount(g1dd, 1), 0);
-		IntGraph g2d = g2.derive();
-		TS_ASSERT_EQUALS(g2d._nodes.size(), 3);
-		TS_ASSERT(findNode(g2d, 1));
-		TS_ASSERT(findNode(g2d, 6));
-		TS_ASSERT(findNode(g2d, 13));
-		TS_ASSERT_EQUALS(outEdgesCount(g2d, 1), 1);
-		TS_ASSERT_EQUALS(outEdgesCount(g2d, 6), 1);
-		TS_ASSERT_EQUALS(outEdgesCount(g2d, 13), 1);
-		TS_ASSERT(pointsTo(g2d, 1, 6));
-		TS_ASSERT(pointsTo(g2d, 6, 13));
-		TS_ASSERT(pointsTo(g2d, 13, 6));
-		IntGraph g3d = g3.derive();
-		TS_ASSERT_EQUALS(g3d._nodes.size(), 3);
-		TS_ASSERT(findNode(g3d, 1));
-		TS_ASSERT(findNode(g3d, 2));
-		TS_ASSERT(findNode(g3d, 3));
-		TS_ASSERT_EQUALS(outEdgesCount(g3d, 1), 2);
-		TS_ASSERT_EQUALS(outEdgesCount(g3d, 2), 1);
-		TS_ASSERT_EQUALS(outEdgesCount(g3d, 3), 1);
-		TS_ASSERT(pointsTo(g3d, 1, 2));
-		TS_ASSERT(pointsTo(g3d, 1, 3));
-		TS_ASSERT(pointsTo(g3d, 2, 3));
-		TS_ASSERT(pointsTo(g3d, 3, 2));
+	void test_extendIntervals() {
+		g1.intervals();
+		g1.extendIntervals();
+		for (int i = 1; i <= 6; i++)
+			TS_ASSERT_EQUALS(findNode(g1, i)->interval()->_data, findNode(g1, 1)->_data);
+		g2.intervals();
+		g2.extendIntervals();
+		for (int i = 1; i <= 5; i++)
+			TS_ASSERT_EQUALS(findNode(g2, i)->interval()->_data, findNode(g2, 1)->_data);
+		for (int i = 6; i <= 15; i++)
+			TS_ASSERT_EQUALS(findNode(g2, i)->interval()->_data, findNode(g2, 6)->_data);
+		g2.extendIntervals();
+		for (int i = 1; i <= 15; i++)
+			TS_ASSERT_EQUALS(findNode(g2, i)->interval()->_data, findNode(g2, 1)->_data);
+		g3.intervals();
+		g3.extendIntervals();
+		TS_ASSERT_EQUALS(findNode(g3, 1)->interval()->_data, findNode(g3, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g3, 2)->interval()->_data, findNode(g3, 2)->_data);
+		TS_ASSERT_EQUALS(findNode(g3, 3)->interval()->_data, findNode(g3, 3)->_data);
+		g4.intervals();
+		g4.extendIntervals();
+		TS_ASSERT_EQUALS(findNode(g4, 1)->interval()->_data, findNode(g4, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g4, 2)->interval()->_data, findNode(g4, 1)->_data);
+		TS_ASSERT_EQUALS(findNode(g4, 3)->interval()->_data, findNode(g4, 1)->_data);
 	}
 
 private:
@@ -187,6 +167,18 @@ private:
 		g.addEdge(findNode(g, 1), findNode(g, 3));
 		g.addEdge(findNode(g, 2), findNode(g, 3));
 		g.addEdge(findNode(g, 3), findNode(g, 2));
+		return g;
+	}
+
+	IntGraph makeGraph4() {
+		IntGraph g;
+		g.addNode(1);
+		g.addNode(2);
+		g.addNode(3);
+		g.addEdge(findNode(g, 1), findNode(g, 2));
+		g.addEdge(findNode(g, 2), findNode(g, 2));
+		g.addEdge(findNode(g, 2), findNode(g, 3));
+		g.addEdge(findNode(g, 3), findNode(g, 1));
 		return g;
 	}
 };

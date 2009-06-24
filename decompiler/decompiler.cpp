@@ -17,7 +17,7 @@ variables_map parseArgs(int argc, char **argv) {
 		("disasm", "print disassembly and exit")
 		("blocks", "print basic blocks and exit")
 		("graph",  "print graph and exit")
-		("derive", value<int>(), "find nth derivative");
+		("derive", value<int>()->default_value(0), "find arg-th order intervals");
 	options_description options("Allowed options");
 	options.add(visible).add_options()
 		("inputfile", value<string>(), "input file");
@@ -55,17 +55,10 @@ int main(int argc, char **argv) {
 	// cfg.removeDeadBlocks();
 	cfg._graph.intervals();
 	if (vars.count("graph")) {
-		Graph<Block*> g = cfg._graph;
-		cfg._graph = g;
-		cfg.printDot(cout);
-		exit(0);
-	}
-	if (vars.count("derive")) {
-		Graph<Block*> g = cfg._graph;
-		for (int i = 0; i < vars["derive"].as<int>(); i++)
-			g = g.derive();
-		cfg._graph = g; // FIXME: evil
+		Graph<Block*> &g = cfg._graph;
 		g.intervals();
+		for (int i = 0; i < vars["derive"].as<int>(); i++)
+			g.extendIntervals();
 		cfg.printDot(cout);
 		exit(0);
 	}

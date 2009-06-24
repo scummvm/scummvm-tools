@@ -29,17 +29,21 @@ struct Graph {
 			return _out;
 		}
 
+		// wouldn't be needed if Graph<X> and Graph<Y> weren't totally alien classes
+		Node *interval() const {
+			return _interval;
+		}
+
 	private:
 
 		friend class Graph;
 
 		bool _visited;
 		Node *_interval;
-		Node *_primitive;
 		std::list<Node*> _in;
 		std::list<Node*> _out;
 
-		Node(const Data &data) : _data(data), _interval(), _primitive() {
+		Node(const Data &data) : _data(data), _interval() {
 		}
 
 		~Node() {
@@ -143,34 +147,22 @@ struct Graph {
 		return ret;
 	}
 
-	Graph derive() {
-		assignIntervals();
-		Graph g;
-		std::map<Node*, Node*> trans;
+	void extendIntervals() {
+		Graph<Node*> d;
+		std::map<Node*, typename Graph<Node*>::Node*> trans;
 		foreach (Node *u, _nodes)
-			if (u->_interval == u) {
-				trans[u] = g.addNode(u->_data);
-				trans[u]->_primitive = u;
-			}
-		foreach (Node *interval, intervals()) {
-			std::set<Node*> pred;
+			if (u->_interval == u)
+				trans[u] = d.addNode(u->_interval);
+		foreach (Node *interval, intervals())
 			foreach (Node *u, interval->_in)
-				if (u->_interval != interval && !contains(pred, u->_interval)) {
-					pred.insert(u->_interval);
-					g.addEdge(trans[u->_interval], trans[interval]);
-				}
-		}
-		g.setEntry(trans[_entry]);
-		return g;
+				if (u->_interval != interval)
+					d.addEdge(trans[u->_interval], trans[interval]);
+		d.intervals();
+		foreach (typename Graph<Node*>::Node *du, d._nodes)
+			foreach (Node *v, _nodes)
+				if (v->_interval == du->_data)
+					v->_interval = du->interval()->_data;
 	}
-
-	//	std::list<Graph> derivedSequence() {
-	//		std::list<Graph> ret;
-	//		ret.push_back(*this);
-	//		while (ret.back().derive().nodes().size() < ret.back().nodes().size())
-	//			ret.push_back(ret.back().derive());
-	//		return ret;
-	//	}
 
 	template<typename Printer>   // printer is a functor taking Data and returning a string
 	std::string graphvizPrint(Printer printer, const std::string &fontname="Courier", int fontsize=14) const {
