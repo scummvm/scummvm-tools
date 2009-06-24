@@ -25,6 +25,17 @@
 
 #include <wx/string.h>
 
+class Tool;
+
+// Different audio formats
+// They're used for bitwise operations
+enum AudioFormat {
+	AUDIO_VORBIS = 1,
+	AUDIO_FLAC = 2,
+	AUDIO_MP3 = 4,
+	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
+};
+
 struct Configuration {
 	Configuration();
 	
@@ -34,8 +45,12 @@ struct Configuration {
 
 	bool advanced;
 	bool compressing;
+	bool advancedAudioSettings;
 	wxString selectedGame;
-	wxString selectedTool;
+	const Tool* selectedTool;
+	wxArrayString inputFilePaths;
+	wxString outputPath;
+	AudioFormat selectedAudioFormat;
 };
 
 inline Configuration::Configuration() {
@@ -43,9 +58,11 @@ inline Configuration::Configuration() {
 
 	advanced = false;
 	compressing = false;
+	advancedAudioSettings = false;
 
-	selectedGame = wxT("");
-	selectedTool = wxT("");
+	selectedTool = NULL;
+
+	selectedAudioFormat = AUDIO_VORBIS;
 }
 
 #endif

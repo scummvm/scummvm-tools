@@ -41,7 +41,7 @@ public:
 	void switchPage(WizardPage *next);
 
 	// Load/Save configuration, reads data from the panel supplied
-	virtual void save(wxWindow *panel, Configuration &configuration);
+	virtual void save(wxWindow *panel);
 	
 	// Event handlers
 	// overload these to handle prev/next/cancel clicks
@@ -58,9 +58,11 @@ protected:
 	void SetAlignedSizer(wxWindow *panel, wxSizer *sizer);
 
 	ScummToolsFrame* _topframe;
+	Configuration &_configuration;
 };
 
 // Introduction page, with options to extract/compress
+// Step 1
 
 class IntroPage : public WizardPage
 {
@@ -69,12 +71,14 @@ public:
 	
 	wxWindow *CreatePanel(wxWindow *parent);
 
-	void save(wxWindow *panel, Configuration &configuration);
+	void save(wxWindow *panel);
 
 	void onNext(wxWindow *panel);
 	
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
+
+// Step 2, choose tool / game
 
 class ChooseCompressionPage : public WizardPage
 {
@@ -83,7 +87,21 @@ public:
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
-	void save(wxWindow *panel, Configuration &configuration);
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+};
+
+class ChooseExtractionPage : public WizardPage
+{
+public:
+	ChooseExtractionPage(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
 };
 
 class ChooseToolPage : public WizardPage
@@ -93,5 +111,35 @@ public:
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
-	void save(wxWindow *panel, Configuration &configuration);
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+};
+
+// Step 3, choose input & output directory/file
+
+class ChooseInOutPage : public WizardPage
+{
+public:
+	ChooseInOutPage(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+};
+
+// Step 4, choose audio format
+
+class ChooseAudioFormatPage : public WizardPage
+{
+public:
+	ChooseAudioFormatPage(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	//void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
 };

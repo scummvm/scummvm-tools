@@ -28,14 +28,7 @@
 #include <map>
 #include <vector>
 
-// Different audio formats
-// They're used for bitwise operations
-enum AudioFormat {
-	AUDIO_VORBIS = 1,
-	AUDIO_FLAC = 2,
-	AUDIO_MP3 = 4,
-	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
-};
+#include "configuration.h"
 
 // Different types of tools, used to differentiate them when 
 // fetching lists of games & tools
@@ -51,8 +44,11 @@ enum ToolType {
 // some a dir and some a single file
 struct ToolInput {
 	wxString _extension;
+	wxString _description;
 	bool _file; // dir otherwise
 };
+
+typedef std::vector<ToolInput> ToolInputs;
 
 // A tool, contains all info necessary to run it
 class Tool {
@@ -72,8 +68,9 @@ public:
 	wxString _name;
 	ToolType _type;
 	AudioFormat _supportedFormats;
-	typedef std::vector<ToolInput> ToolInputs;
 	ToolInputs _inputs;
+	bool _outputToDirectory;
+	wxString _inoutHelpText;
 	wxArrayString _games;
 };
 
@@ -83,6 +80,8 @@ public:
 	Tools();
 
 	const Tool &operator[](const wxString &name) const;
+	const Tool *get(const wxString &name) const;
+	const Tool *getByGame(const wxString &game) const;
 
 	// Returns all tool/game names in a list
 	// conveinent for creating the choose tool page

@@ -124,7 +124,7 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	// Find the old page
 	wxPanel *oldPanel = dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page")));
 
-	_pages.back()->save(oldPanel, configuration);
+	_pages.back()->save(oldPanel);
 
 	if(moveback) {
 		// Don't save the old page (which is ontop of the stack already)

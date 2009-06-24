@@ -196,6 +196,23 @@ const Tool &Tools::operator[](const wxString& name) const {
 	return iter->second;
 }
 
+const Tool *Tools::get(const wxString& name) const {
+	std::map<wxString, Tool>::const_iterator iter = tools.find(name);
+
+	if(iter == tools.end())
+		return NULL;
+
+	return &iter->second;
+}
+
+const Tool *Tools::getByGame(const wxString &gamename) const {
+	for(std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
+		for(wxArrayString::const_iterator citer = iter->second._games.begin(); citer != iter->second._games.end(); ++citer)
+			if(*citer == gamename)
+				return &iter->second;
+	return NULL;
+}
+
 
 // The Tool class
 
@@ -222,6 +239,9 @@ Tool::Tool(wxString name, wxString input_extensions) {
 	input._extension = input_extensions;
 	input._file = true;
 	_inputs.push_back(input);
+
+	_outputToDirectory = true;
+	_inoutHelpText = wxT("Output files produced by the tool will be put in this directory.");
 }
 
 void Tool::addGame(const wxString &game_name) {

@@ -53,7 +53,7 @@ public:
 	// Switches to the previous page
 	void switchToPreviousPage();
 
-	Configuration configuration;
+	Configuration _configuration;
 
 private:
 	wxPanel *_wizardpane;
