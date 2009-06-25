@@ -59,8 +59,8 @@ struct CFG {
 		return ret.str();
 	}
 
-	void printDot(ostream &out) {
-		out << _graph.graphvizPrint(printer);
+	void printDot(ostream &out, const string &fontname = "Courier") {
+		out << _graph.graphvizPrint(printer, fontname);
 	}
 
 	void removeJumpsToJumps() {
