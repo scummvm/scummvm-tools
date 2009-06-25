@@ -143,13 +143,13 @@ struct Graph : boost::noncopyable {
 	void extendIntervals() {
 		Graph<Node*> d;
 		std::map<Node*, typename Graph<Node*>::Node*> trans;
-		foreach (Node *u, _nodes)
-			if (u->_interval == u)
-				trans[u] = d.addNode(u->_interval);
+		foreach (Node *interval, intervals())
+			trans[interval] = d.addNode(interval);
 		foreach (Node *interval, intervals())
 			foreach (Node *u, interval->_in)
 				if (u->_interval != interval)
 					d.addEdge(trans[u->_interval], trans[interval]);
+		d.setEntry(trans[_entry]);
 		d.intervals();
 		foreach (typename Graph<Node*>::Node *du, d._nodes)
 			foreach (Node *v, _nodes)

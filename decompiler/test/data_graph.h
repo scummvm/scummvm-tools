@@ -31,21 +31,22 @@ Graph<int> *makeGraph1() {
 
 Graph<int> *makeGraph2() {
 	Graph<int> *g = new Graph<int>;
-	g->addNode(1);
-	g->addNode(2);
-	g->addNode(3);
-	g->addNode(4);
-	g->addNode(5);
-	g->addNode(6);
-	g->addNode(7);
-	g->addNode(8);
-	g->addNode(9);
-	g->addNode(10);
-	g->addNode(11);
-	g->addNode(12);
-	g->addNode(13);
-	g->addNode(14);
 	g->addNode(15);
+	g->addNode(14);
+	g->addNode(13);
+	g->addNode(12);
+	g->addNode(11);
+	g->addNode(10);
+	g->addNode(9);
+	g->addNode(8);
+	g->addNode(7);
+	g->addNode(6);
+	g->addNode(5);
+	g->addNode(4);
+	g->addNode(3);
+	g->addNode(2);
+	g->addNode(1);
+	g->setEntry(findNode(g, 1));
 	g->addEdge(findNode(g, 1), findNode(g, 2));
 	g->addEdge(findNode(g, 1), findNode(g, 5));
 	g->addEdge(findNode(g, 2), findNode(g, 3));
