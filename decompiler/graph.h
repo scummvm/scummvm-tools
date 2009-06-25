@@ -165,17 +165,20 @@ struct Graph : boost::noncopyable {
 			ret << "subgraph " << '"' << "cluster_" << interval << '"' << " {" << std::endl;
 			ret << "style=dotted;" << std::endl;
 			foreach (Node *u, _nodes)
-				if (u->_interval == interval)
+				if (u->_interval == interval) {
 					ret << '"' << u << '"'
-						<< "[fontname=" << '"' << fontname << '"'
-						<< ",fontsize=" << fontsize
-						<< ",shape=box"
-						<< ",label=" << '"'
-						             << "<order: " << u->_order << ", "
-						             << "loop: " << u->_loop << ">\\n"
-						             << graphvizEscapeLabel(printer(u->_data))
-						             << '"'
+						<< "[";
+					if (fontname != "")
+						ret << "fontname=" << '"' << fontname << '"' << ","
+							<< "fontsize=" << fontsize << ",";
+					ret	<< "shape=box,"
+						<< "label=" << '"'
+						            << "<order: " << u->_order << ", "
+						            << "loop: " << u->_loop << ">\\n"
+						            << graphvizEscapeLabel(printer(u->_data))
+						            << '"'
 						<< "];" << std::endl;
+				}
 			ret << "}" << std::endl;
 		}
 		foreach (Node *u, _nodes)
