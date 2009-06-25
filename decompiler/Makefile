@@ -64,7 +64,7 @@ TARGETS := \
 all: $(TARGETS)
 
 clean:
-	rm -f *.o $(TARGETS)
+	rm -f *.o $(TARGETS) test_runner*
 
 test:
 	cxxtest/cxxtestgen.pl --error-printer --abort-on-fail --have-eh -o test_runner.cpp test/test_graph.h

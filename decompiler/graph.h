@@ -19,7 +19,7 @@
 
 
 template<typename Data>
-struct Graph {
+struct Graph : boost::noncopyable {
 
 	struct Node : boost::noncopyable {
 
@@ -58,39 +58,6 @@ struct Graph {
 	int _currentLoop;
 
 	Graph() : _entry(), _currentOrder(), _currentLoop() {
-	}
-
-	Graph(const Graph &g) : _entry() {
-		std::map<Node*, Node*> trans;
-		trans[0] = 0;
-		foreach (Node *u, g._nodes)
-			trans[u] = addNode(u->_data);
-		foreach (Node *u, g._nodes) {
-			foreach (Node *v, u->_out)
-				addEdge(trans[u], trans[v]);
-			trans[u]->_interval = trans[u->_interval];
-		}
-		_entry = trans[g._entry];
-	}
-
-	// TODO cleanup
-	Graph &operator=(const Graph &g) {
-		if (this == &g)
-			return *this;
-		foreach (Node *u, _nodes)
-			delete u;
-		_nodes.clear();
-		std::map<Node*, Node*> trans;
-		trans[0] = 0;
-		foreach (Node *u, g._nodes)
-			trans[u] = addNode(u->_data);
-		foreach (Node *u, g._nodes) {
-			foreach (Node *v, u->_out)
-				addEdge(trans[u], trans[v]);
-			trans[u]->_interval = trans[u->_interval];
-		}
-		_entry = trans[g._entry];
-		return *this;
 	}
 
 	~Graph() {
