@@ -67,7 +67,7 @@ clean:
 	rm -f *.o $(TARGETS) test_runner*
 
 test:
-	cxxtest/cxxtestgen.pl --error-printer --abort-on-fail --have-eh -o test_runner.cpp test/test_graph.h
+	cxxtest/cxxtestgen.pl --error-printer --abort-on-fail --have-eh -o test_runner.cpp test/test_*.h
 	g++ -g $(DEFINES) $(INCLUDES)  -Icxxtest -o test_runner test_runner.cpp
 	./test_runner
 
