@@ -58,9 +58,9 @@ int main(int argc, char **argv) {
 		Graph<Block*> &g = cfg._graph;
 		g.markReversePostOrder();
 		g.intervals();
-		g.loopStruct();
 		for (int i = 0; i < vars["derive"].as<int>(); i++)
 			g.extendIntervals();
+		g.loopStruct();
 		cfg.printDot(cout);
 		exit(0);
 	}
