@@ -186,6 +186,7 @@ void WizardButtons::reset() {
 	enableNext(true);
 	enablePrevious(true);
 	showFinish(false);
+	setLineLabel(wxT("ScummVM Tools"));
 }
 
 void WizardButtons::setPage(WizardPage *current, wxWindow *panel) {
@@ -196,6 +197,10 @@ void WizardButtons::setPage(WizardPage *current, wxWindow *panel) {
 	// We cannot set this up in the constructor of the WizardPage, since it's impossible
 	// to call reset *before* the page is created from SwicthPage
 	_currentPage->updateButtons(_currentPanel, this);
+}
+
+void WizardButtons::setLineLabel(wxString label) {
+	_linetext->SetLabel(label);
 }
 
 void WizardButtons::enableNext(bool enable) {

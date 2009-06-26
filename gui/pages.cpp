@@ -145,13 +145,13 @@ void IntroPage::onNext(wxWindow *panel) {
 	wxString selected_option = static_cast<wxRadioBox *>(panel->FindWindowByName(wxT("ChooseActivity")))->GetStringSelection().Lower();
 	if(selected_option.Find(wxT("extract")) != wxNOT_FOUND) {
 		// extract
-		_topframe->switchPage(new ChooseExtractionPage(_topframe));
+		switchPage(new ChooseExtractionPage(_topframe));
 	} else if(selected_option.Find(wxT("advanced")) != wxNOT_FOUND) {
 		// advanced
-		_topframe->switchPage(new ChooseToolPage(_topframe));
+		switchPage(new ChooseToolPage(_topframe));
 	} else {
 		// compress
-		_topframe->switchPage(new ChooseCompressionPage(_topframe));
+		switchPage(new ChooseCompressionPage(_topframe));
 	}
 }
 
@@ -195,7 +195,7 @@ void ChooseCompressionPage::save(wxWindow *panel) {
 }
 
 void ChooseCompressionPage::onNext(wxWindow *panel) {
-	_topframe->switchPage(new ChooseInOutPage(_topframe));
+	switchPage(new ChooseInOutPage(_topframe));
 }
 
 // Page to choose what game files to extract, 
@@ -238,7 +238,7 @@ void ChooseExtractionPage::save(wxWindow *panel) {
 }
 
 void ChooseExtractionPage::onNext(wxWindow *panel) {
-	_topframe->switchPage(new ChooseInOutPage(_topframe));
+	switchPage(new ChooseInOutPage(_topframe));
 }
 
 // Page to choose ANY tool to use
@@ -279,7 +279,7 @@ void ChooseToolPage::save(wxWindow *panel) {
 }
 
 void ChooseToolPage::onNext(wxWindow *panel) {
-	_topframe->switchPage(new ChooseInOutPage(_topframe));
+	switchPage(new ChooseInOutPage(_topframe));
 }
 
 // Page to choose input and output directory or file
@@ -382,7 +382,9 @@ void ChooseInOutPage::save(wxWindow *panel) {
 
 void ChooseInOutPage::onNext(wxWindow *panel) {
 	if(_configuration.compressing)
-		_topframe->switchPage(new ChooseAudioFormatPage(_topframe));
+		switchPage(new ChooseAudioFormatPage(_topframe));
+	else
+		; // Go to confirm page, nothing more to query
 }
 
 // Page to choose input and output directory or file
