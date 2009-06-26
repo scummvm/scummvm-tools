@@ -24,8 +24,13 @@
 
 #include "configuration.h"
 
-// Wizard Page
-// A page in the extraction wizard
+/**
+ * A backend of a page in the wizard 
+ * This class is decoupled from the UI, and you can spawn as many pages as you like from this template
+ * 
+ * @todo Add the ability to not have to have a ScummToolsFrame as parent, to be able to put the pages
+ *       in a default config window, for example.
+ */
 
 class WizardPage : public wxEvtHandler
 {
@@ -35,34 +40,86 @@ public:
 ;
 	}
 
-	// Creates a visual representation of this page as a child problem of the supplied parent
+	/**
+	 * Creates a visual representation of this page as a child problem of the supplied parent
+	 * Values will be loaded from the configuration object stored by the ScummToolsFrame
+	 * 
+	 * @param parent The parent window, the page will be a direct child window of this window.
+	 * @return       The created window.
+	 */
 	virtual wxWindow *CreatePanel(wxWindow *parent);
 
+	/**
+	 * Simply calls ScummToolsFrame::switchPage
+	 *
+	 * @param next The window to switch to.
+	 */
 	void switchPage(WizardPage *next);
 
-	// Load/Save configuration, reads data from the panel supplied
+	/**
+	 * Saves the state of the panel passed as the argument in the configuration object of
+	 * the ScummToolsFrame that was passed to the constructor
+	 *
+	 * @param panel Panel to read data from, should be a window created by CreatePanel
+	 */ 
 	virtual void save(wxWindow *panel);
 	
 	// Event handlers
-	// overload these to handle prev/next/cancel clicks
+	
+	/**
+	 * This handler is called when the user clicks the Next button, if you overload this
+	 * you should generally just call switchPage with the next page in the wizard
+	 *
+	 * @param panel The panel associated with this page, should have bene created by CreatePanel previously.
+	 */
 	virtual void onNext(wxWindow *panel);
+
+	/**
+	 * This handler is called when the user clicks the Previous button, you do not generally
+	 * need to overload this as the default handler returns to the privous page already.
+	 *
+	 * @param panel The panel associated with this page, should have bene created by CreatePanel previously.
+	 */
 	virtual void onPrevious(wxWindow *panel);
+
+	/**
+	 * This handler is called when the user clicks the Cancel button, overlaod this to destroy any
+	 * state this page might hold (the destructor will still be called though, so it's doubtful there
+	 * is a reason to overload this). The default handler queries the user if the really want to close
+	 * the wizard.
+	 *
+	 * @param panel The panel associated with this page, should have bene created by CreatePanel previously.
+	 */
 	virtual void onCancel(wxWindow *panel); // Default is to display 'Are you sure' and quit if you click 'Yes'
 
-	// Update button states
+	/**
+	 * Update state of the next/prev/cancel buttons, by default all buttons are shown, and the next button
+	 * is in "next" state (ie. finish is not displayed instead of next)
+	 *
+	 * @param panel The panel associated with this page, should have bene created by CreatePanel previously.
+	 * @param buttons The window that holds the concerned buttons
+	 */
 	virtual void updateButtons(wxWindow *panel, WizardButtons *buttons);
 
 protected:
-	// This adds an offset (about 100px) to the left of the sizer
-	// to center the text somewhat, before adding it to the panel
+	/** 
+	 * This adds an offset (about 100px) to the left of the sizer to center the text somewhat, before adding it 
+	 * to the panel using wxWindow::SetSizer.
+	 *
+	 * @param panel The panel associated with this page, should have bene created by CreatePanel previously.
+	 * @param sizer The topsizer of the window.
+	 */
 	void SetAlignedSizer(wxWindow *panel, wxSizer *sizer);
 
 	ScummToolsFrame* _topframe;
 	Configuration &_configuration;
 };
 
-// Introduction page, with options to extract/compress
-// Step 1
+/**
+ * Introduction page. Introduces the option to extract, compress or the advanced route (choose tool manually)
+ * 
+ * @todo Add the ability to drag & drop files onto this window, to automatically detect whether to compress or extract
+ */
 
 class IntroPage : public WizardPage
 {
@@ -78,7 +135,11 @@ public:
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
 
-// Step 2, choose tool / game
+/**
+ * Presents a list of games that are supported for compression.
+ * 
+ * @todo Possibly merge with ChooseExtractionPage
+ */
 
 class ChooseCompressionPage : public WizardPage
 {
@@ -92,6 +153,12 @@ public:
 	void save(wxWindow *panel);
 };
 
+/**
+ * Presents a list of games that are supported for extraction.
+ * 
+ * @todo Possibly merge with ChooseCompressionPage
+ */
+
 class ChooseExtractionPage : public WizardPage
 {
 public:
@@ -103,6 +170,10 @@ public:
 
 	void save(wxWindow *panel);
 };
+
+/**
+ * Presents a list of all supported tools, the "advanced route"
+ */
 
 class ChooseToolPage : public WizardPage
 {
@@ -116,7 +187,12 @@ public:
 	void save(wxWindow *panel);
 };
 
-// Step 3, choose input & output directory/file
+/**
+ * Presents a list of all input and outputs supported by the selected tool
+ * expects the configuration to already contain the selected tool
+ *
+ * @todo Make it look better and save state
+ */
 
 class ChooseInOutPage : public WizardPage
 {
@@ -130,7 +206,13 @@ public:
 	void save(wxWindow *panel);
 };
 
-// Step 4, choose audio format
+/**
+ * Presents a dropdown list of the three different audio compression methods
+ * or possibly fewer, if the selected tool does not support all methods.
+ *
+ * @todo Make it look better and save state, and possibly skip it if the tool
+ *       only support one method of compression.
+ */
 
 class ChooseAudioFormatPage : public WizardPage
 {

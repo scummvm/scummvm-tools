@@ -30,8 +30,10 @@
 
 #include "configuration.h"
 
-// Different types of tools, used to differentiate them when 
-// fetching lists of games & tools
+
+/** Different types of tools, used to differentiate them when 
+ * fetching lists of games & tools
+ */
 enum ToolType {
 	TOOLTYPE_COMPRESSION,
 	TOOLTYPE_EXTRACTION,
@@ -40,37 +42,76 @@ enum ToolType {
 };
 
 
-// Describes a possible input to the tool (since some take two seperate files, 
-// some a dir and some a single file
+/**
+ * Describes a possible input to the tool (since some take two seperate files, 
+ * some a dir and some a single file
+ */
 struct ToolInput {
+	/** The extension of this input file, ignored for directories */
 	wxString _extension;
+	/** A short description of what file is expected, displayed in the UI */
 	wxString _description;
-	bool _file; // dir otherwise
+	/** If false, this input is a directory */
+	bool _file;
 };
 
 typedef std::vector<ToolInput> ToolInputs;
 
-// A tool, contains all info necessary to run it
+/**
+ * A tool supported by the Wizard, holds all information about what format it supports
+ * what input it requires etc.
+ *
+ * @todo Add some way to represent extra arguments to the tool
+ */
 class Tool {
 public:
 	Tool();
-	Tool(wxString name, wxString input_extensions = wxT("*.*"));
+	/**
+	 * Creates a new tool, can be stack allocated and copied without problems
+	 * The type of tool is deduced from the name, if it contains 'extract', it's an extraction tool
+	 * and if it contains 'compress' it's a compression tool. If the tool does not contain either,
+	 * you must set the type manually.
+	 *
+	 * @param name The name of the tool, should match the executable name (without the extension)
+	 * @param input_extenion Filename filter of the input  to expect.
+	 */
+	Tool(wxString name, wxString input_extension = wxT("*.*"));
 
+	/**
+	 * Adds a supported game to this tool
+	 *
+	 * @param game_name The name of the game this tool supports
+	 */
 	void addGame(const wxString &game_name);
 
-	// Helpfer functions to get info about the tool
+	// Helper functions to get info about the tool
+	
+	/**
+	 * Returns true if the audio format(s) is supported by this tool
+	 * 
+	 * @param format The audio format(s) to test for
+	 */
 	bool supportsAudioFormat(AudioFormat format);
-	bool pickFiles();
-	bool pickDirs();
+	/**
+	 * Returns the name of the executable of this tool.
+	 * This simple returns the name under *nix, and name.exe under Windows
+	 */
 	wxString getExecutable();
 
 
+	/** Name of the tool */
 	wxString _name;
+	/** Type of tool, either extract, compress or unknown */
 	ToolType _type;
+	/* Formats supported by the tool, bitwise ORed */
 	AudioFormat _supportedFormats;
+	/** List of all inputs this tool expects */
 	ToolInputs _inputs;
+	/** Try if this tool does not output a single file, but rather an entire directory */
 	bool _outputToDirectory;
+	/** The help text displayed on the input/output page */
 	wxString _inoutHelpText;
+	/** A list of all games supported by this tool */
 	wxArrayString _games;
 };
 
@@ -78,18 +119,55 @@ public:
 class Tools {
 public:
 	Tools();
+	
+	/**
+	 * Returns a tool by name
+	 * asserts if the tool is not found
+	 *
+	 * @param name Name of the tool to fetch
+	 * @return A reference to the tool, tools cannot be modified.
+	 */
 
 	const Tool &operator[](const wxString &name) const;
+	/**
+	 * Returns a tool by name
+	 *
+	 * @param name Name of the tool to fetch
+	 * @return A pointer to the tool, NULL if there is no tool by that name.
+	 */
 	const Tool *get(const wxString &name) const;
-	const Tool *getByGame(const wxString &game) const;
 
-	// Returns all tool/game names in a list
-	// conveinent for creating the choose tool page
-	// List will be sorted and unique
-	wxArrayString getToolList(ToolType tt) const;
-	wxArrayString getGameList(ToolType tt) const;
+	/**
+	 * Returns a tool that supports the selected game
+	 * 
+	 * @param game Name of the game
+	 * @param type The type of tool we're looking for
+	 * @return The tool that supports this game, and NULL if no tool does
+	 */
+	const Tool *getByGame(const wxString &game, ToolType type = TOOLTYPE_ALL) const;
+
+	/**
+	 * Returns a list of all tools
+	 *
+	 * @param tt Filter by this type of tool
+	 * @return Returns all tools of this type, list is sorted and contains no duplicates
+	 */
+	wxArrayString getToolList(ToolType tt = TOOLTYPE_ALL) const;
+
+	/**
+	 * Returns a list of all games supported by all tools (of the specified type)
+	 *
+	 * @param tt Filter by this type of tool
+	 * @return Returns all games supported, list is sorted and contains no duplicates
+	 */
+	wxArrayString getGameList(ToolType tt = TOOLTYPE_ALL) const;
 
 protected:
+	/**
+	 * Adds a supported tool. Should not be done after construction, since it might break pointers
+	 *
+	 * @param tool the tool to add.
+	 */
 	void addTool(const Tool &tool);
 
 	std::map<wxString, Tool> tools;

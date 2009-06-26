@@ -27,8 +27,10 @@
 
 class Tool;
 
-// Different audio formats
-// They're used for bitwise operations
+/** 
+ * Different audio formats
+ * You can bitwise them to represent several formats
+ */
 enum AudioFormat {
 	AUDIO_VORBIS = 1,
 	AUDIO_FLAC = 2,
@@ -36,6 +38,9 @@ enum AudioFormat {
 	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
 };
 
+/**
+ * Current state of the wizard
+ */
 struct Configuration {
 	Configuration();
 	
@@ -43,14 +48,25 @@ struct Configuration {
 	// this class is just a glorified map with different types, so it seems
 	// unnecessary.
 
+	/** If the user chose the advanced route from the start */
 	bool advanced;
+	/** true if the chose to compress, false if compress, undefined if advanced */
 	bool compressing;
-	bool advancedAudioSettings;
+
+	/** The name of the game we are extracting or compressing */
 	wxString selectedGame;
+	/** The tool the user chose to use, NULL if none has been chosen yet */
 	const Tool* selectedTool;
+
+	/** Input files selected */
 	wxArrayString inputFilePaths;
+	/** Path to output to */
 	wxString outputPath;
+
+	/** Audio format selected */
 	AudioFormat selectedAudioFormat;
+	/** true if the user wants to see the advanced audio options */
+	bool advancedAudioSettings;
 };
 
 inline Configuration::Configuration() {
@@ -58,11 +74,11 @@ inline Configuration::Configuration() {
 
 	advanced = false;
 	compressing = false;
-	advancedAudioSettings = false;
 
 	selectedTool = NULL;
 
 	selectedAudioFormat = AUDIO_VORBIS;
+	advancedAudioSettings = false;
 }
 
 #endif

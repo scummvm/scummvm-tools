@@ -150,10 +150,6 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	_buttons->setPage(_pages.back(), newPanel);
 }
 
-void ScummToolsFrame::switchToPreviousPage() {
-	switchPage(NULL, true);
-}
-
 BEGIN_EVENT_TABLE(WizardButtons, wxPanel)
 	EVT_BUTTON(ID_NEXT, WizardButtons::onClickNext)
 	EVT_BUTTON(ID_PREV, WizardButtons::onClickPrevious)

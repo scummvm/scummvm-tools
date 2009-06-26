@@ -205,11 +205,12 @@ const Tool *Tools::get(const wxString& name) const {
 	return &iter->second;
 }
 
-const Tool *Tools::getByGame(const wxString &gamename) const {
+const Tool *Tools::getByGame(const wxString &gamename, ToolType type) const {
 	for(std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
-		for(wxArrayString::const_iterator citer = iter->second._games.begin(); citer != iter->second._games.end(); ++citer)
-			if(*citer == gamename)
-				return &iter->second;
+		if(type == TOOLTYPE_ALL || iter->second._type == type)
+			for(wxArrayString::const_iterator citer = iter->second._games.begin(); citer != iter->second._games.end(); ++citer)
+				if(*citer == gamename)
+					return &iter->second;
 	return NULL;
 }
 
@@ -250,17 +251,6 @@ void Tool::addGame(const wxString &game_name) {
 
 bool Tool::supportsAudioFormat(AudioFormat format) {
 	return (_supportedFormats & format) == format;
-}
-
-bool Tool::pickFiles() {
-	for(ToolInputs::const_iterator iter = _inputs.begin(); iter != _inputs.end(); ++iter)
-		if(iter->_file)
-			return true;
-	return false;
-}
-
-bool Tool::pickDirs() {
-	return !pickFiles();
 }
 
 wxString Tool::getExecutable() {
