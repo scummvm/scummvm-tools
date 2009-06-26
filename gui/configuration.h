@@ -67,6 +67,14 @@ struct Configuration {
 	AudioFormat selectedAudioFormat;
 	/** true if the user wants to see the advanced audio options */
 	bool advancedAudioSettings;
+
+	// mp3 settings
+	wxString mp3CompressionType;
+	wxString mp3MpegQuality;
+	wxString mp3ABRBitrate;
+	wxString mp3VBRMinBitrate;
+	wxString mp3VBRMaxBitrate;
+	wxString mp3VBRQuality;
 };
 
 inline Configuration::Configuration() {
@@ -79,6 +87,17 @@ inline Configuration::Configuration() {
 
 	selectedAudioFormat = AUDIO_VORBIS;
 	advancedAudioSettings = false;
+	
+	// mp3 params
+	mp3CompressionType = wxT("VBR");
+	mp3MpegQuality = wxT("2");
+
+	mp3ABRBitrate = wxT("24");
+
+	mp3VBRMinBitrate = wxT("24");
+	mp3VBRMaxBitrate = wxT("64");
+	mp3VBRQuality = wxT("4");
+
 }
 
 #endif

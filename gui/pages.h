@@ -221,6 +221,23 @@ public:
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+};
+
+/**
+ * Presents advanced audio settings for the MP3 compression format
+ *
+ */
+
+class ChooseAudioOptionsMp3Page : public WizardPage
+{
+public:
+	ChooseAudioOptionsMp3Page(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
 	//void onNext(wxWindow *panel);
 
 	void save(wxWindow *panel);

@@ -453,3 +453,143 @@ void ChooseAudioFormatPage::save(wxWindow *panel) {
 	
 }
 
+void ChooseAudioFormatPage::onNext(wxWindow *panel) {
+	wxChoice *format = static_cast<wxChoice *>(panel->FindWindowByName(wxT("AudioSelection")));
+	wxCheckBox *advanced = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("AdvancedAudio")));
+
+	if(advanced->GetValue()) {
+
+		if(format->GetStringSelection() == wxT("Ogg"))
+			; // TODO 
+		else if(format->GetStringSelection() == wxT("FLAC"))
+			; // TODO 
+		else if(format->GetStringSelection() == wxT("MP3"))
+			switchPage(new ChooseAudioOptionsMp3Page(_topframe));
+	}
+}
+
+// Page to choose Mp3 compression options
+
+ChooseAudioOptionsMp3Page::ChooseAudioOptionsMp3Page(ScummToolsFrame* frame)
+	: WizardPage(frame)
+{
+}
+
+wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+
+	
+	/*
+	"\nMP3 mode params:\n"
+	" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" minBitrDef_str "%d)\n"
+	" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%" maxBitrDef_str ")\n"
+	" --vbr        LAME uses the VBR mode (default)\n"
+	" --abr        LAME uses the ABR mode\n" \
+	" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:" vbrqualDef_str "%d)\n"
+	" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:" algqualDef_str ")\n"
+	" --silent     the output of LAME is hidden (default:disabled)\n"
+	*/
+
+	wxFlexGridSizer *sizer = new wxFlexGridSizer(6, 2, 10, 25);
+	sizer->AddGrowableCol(1);
+
+
+	// Type of compression
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Compression Type:")));
+
+	wxSizer *radioSizer = new wxBoxSizer(wxHORIZONTAL);
+	radioSizer->Add(
+		new wxRadioButton(panel, wxID_ANY, wxT("ABR"), 
+		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("ABR")));
+	radioSizer->Add(
+		new wxRadioButton(panel, wxID_ANY, wxT("VBR"), 
+		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("VBR")));
+
+	sizer->Add(radioSizer);
+
+	// Bitrates
+	const int possibleBitrateCount = 160 / 8;
+	wxString possibleBitrates[possibleBitrateCount + 1];
+	for(int i = 0; i <= possibleBitrateCount; ++i) {
+		possibleBitrates[i] << i*8;
+	}
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:")));
+
+	wxChoice *vbrMinBitrate = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
+	sizer->Add(vbrMinBitrate);
+	
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
+	
+	wxChoice *vbrMaxBitrate = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
+	sizer->Add(vbrMaxBitrate);
+	
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Average Bitrate:")));
+	
+	wxChoice *abrAvgBitrate = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("AverageBitrate"));
+	sizer->Add(abrAvgBitrate);
+
+	// Quality
+	const int possibleQualityCount = 9;
+	wxString possibleQualities[possibleQualityCount + 1];
+	for(int i = 0; i <= possibleQualityCount; ++i) {
+		possibleQualities[i] << i;
+	}
+	
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("VBR Quality:")));
+	
+	wxChoice *vbrQuality = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("VBRQuality"));
+	sizer->Add(vbrQuality);
+	
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Average Bitrate:")));
+	
+	wxChoice *mpegQuality = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("MpegQuality"));
+	sizer->Add(mpegQuality);
+
+	// Finish the window
+	SetAlignedSizer(panel, sizer);
+
+
+	// Load settings
+	// TODO: Fields should be enabled / disabled depending on settings
+	vbrMinBitrate->SetStringSelection(_topframe->_configuration.mp3VBRMinBitrate);
+	vbrMaxBitrate->SetStringSelection(_topframe->_configuration.mp3VBRMaxBitrate);
+	abrAvgBitrate->SetStringSelection(_topframe->_configuration.mp3ABRBitrate);
+	vbrQuality   ->SetStringSelection(_topframe->_configuration.mp3VBRQuality);
+	mpegQuality  ->SetStringSelection(_topframe->_configuration.mp3MpegQuality);
+
+	return panel;
+}
+
+void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
+	wxRadioButton *abr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("ABR")));
+	wxRadioButton *vbr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("VBR")));
+
+	wxChoice *vbrMinBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MinimumBitrate")));
+	wxChoice *vbrMaxBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MaximumBitrate")));
+	wxChoice *abrAvgBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("AverageBitrate")));
+	wxChoice *vbrQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("VBRQuality")));
+	wxChoice *mpegQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MpegQuality")));
+
+	_topframe->_configuration.mp3VBRMinBitrate = vbrMinBitrate->GetStringSelection();
+	_topframe->_configuration.mp3VBRMaxBitrate = vbrMaxBitrate->GetStringSelection();
+	_topframe->_configuration.mp3ABRBitrate    = abrAvgBitrate->GetStringSelection();
+	_topframe->_configuration.mp3VBRQuality    = vbrQuality   ->GetStringSelection();
+	_topframe->_configuration.mp3MpegQuality   = mpegQuality  ->GetStringSelection();
+}
+
+
