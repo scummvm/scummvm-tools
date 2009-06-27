@@ -18,6 +18,14 @@
 #include <iostream>
 
 
+
+enum LoopType {
+	PRE_TESTED,
+	POST_TESTED,
+	ENDLESS
+};
+
+
 template<typename Data>
 struct Graph : boost::noncopyable {
 
@@ -38,14 +46,18 @@ struct Graph : boost::noncopyable {
 
 		friend class Graph;
 
-		bool _visited;
 		Node *_interval;
 		std::list<Node*> _in;
 		std::list<Node*> _out;
-		int _order;
-		int _loop;
 
-		Node(const Data &data) : _data(data), _interval(), _order(), _loop() {
+		int _number;
+
+		Node *_loopHead;
+		Node *_loopLatch;
+		Node *_loopFollow;
+		LoopType _loopType;
+
+		Node(const Data &data) : _data(data), _interval(), _number(), _loopHead(), _loopFollow() {
 		}
 
 		~Node() {
@@ -54,10 +66,9 @@ struct Graph : boost::noncopyable {
 
 	std::list<Node*> _nodes;
 	Node *_entry;
-	int _currentOrder;
-	int _currentLoop;
+	int _currentNumber;
 
-	Graph() : _entry(), _currentOrder(), _currentLoop() {
+	Graph() : _entry(), _currentNumber() {
 	}
 
 	~Graph() {
@@ -91,13 +102,10 @@ struct Graph : boost::noncopyable {
 				node = newTo;
 	}
 
+	// to be called after order nodes
 	void removeUnreachableNodes() {
-		foreach (Node *u, _nodes)
-			u->_visited = false;
-		assert(_entry);
-		visit(_entry);
 		for (typename std::list<Node*>::iterator uit = _nodes.begin(); uit != _nodes.end(); )
-			if ((*uit)->_visited)
+			if ((*uit)->_number)
 				uit++;
 			else {
 				foreach (Node *v, (*uit)->_out)
@@ -105,6 +113,21 @@ struct Graph : boost::noncopyable {
 				delete *uit;
 				uit = _nodes.erase(uit);
 			}
+	}
+
+	// assign node numbers in post-order
+	void orderNodes() {
+		assert(_entry);
+		orderVisit(_entry, 0);
+	}
+
+	int orderVisit(Node *u, int number) {
+		u->_number = -1;
+		foreach (Node *v, u->_out)
+			if (!v->_number)
+				number = orderVisit(v, number);
+		u->_number = ++number;
+		return number;
 	}
 
 	std::list<Node*> intervals() const {
@@ -116,28 +139,51 @@ struct Graph : boost::noncopyable {
 		return ret;
 	}
 
-	// TODO: merge with removeUnreachableNodes?
-	void markReversePostOrder() {
+	bool inLoop(Node *head, Node *latch, Node *u) {
+		return u->_interval == head && latch->_number <= u->_number && u->_number < head->_number;
+	}
+
+	LoopType loopType(Node *head, Node *latch) {
+		if (head->_out.size() == 1 && latch->_out.size() == 1)
+			return ENDLESS;
+		if (head->_out.size() == 1 && latch->_out.size() == 2)
+			return POST_TESTED;
+		if (head->_out.size() == 2 && latch->_out.size() == 1)
+			return PRE_TESTED;
+		// head->_out.size() == 2 && latch->_out.size() == 2
+		if (inLoop(head, latch, head->_out.front()))
+			return POST_TESTED;
+		else
+			return PRE_TESTED;
+	}
+
+	Node *loopFollow(Node *head, Node *latch) {
+		if (head->_loopType == PRE_TESTED)
+			return head->_out.front();
+		if (head->_loopType == POST_TESTED)
+			return latch->_out.back();
+		// ENDLESS
+		Node *ret = 0;
 		foreach (Node *u, _nodes)
-			u->_visited = false;
-		_currentOrder = _nodes.size();
-		assert(_entry);
-		visit(_entry);
+			if (inLoop(head, latch, u) && u->_out.size() == 2 && (!ret || ret->_number < u->_out.back()->_number))
+				ret = u->_out.back();
+		return ret;
 	}
 
 	void loopStruct() {
-		foreach (Node *interval, intervals()) {
-			foreach (Node *latch, interval->_in) {
-				if (latch->_interval == interval) { // it *is* latching node not only by name :)
-					if (!latch->_loop && !interval->_loop) {
-						int curloop = ++_currentLoop;
+		for (size_t size = _nodes.size()+1; size > intervals().size(); size = intervals().size(), extendIntervals())
+			foreach (Node *interval, intervals()) {
+				foreach (Node *latch, interval->_in) {
+					if (latch->_interval == interval && !latch->_loopHead) {
 						foreach (Node *u, _nodes)
-							if (interval->_order <= u->_order && u->_order <= latch->_order && u->_interval == interval)
-								u->_loop = curloop;
+							if (inLoop(interval, latch, u))
+								u->_loopHead = interval;
+						interval->_loopLatch = latch; // TODO do we need this?
+						interval->_loopType = loopType(interval, latch);
+						interval->_loopFollow = loopFollow(interval, latch);
 					}
 				}
 			}
-		}
 	}
 
 	void extendIntervals() {
@@ -173,33 +219,29 @@ struct Graph : boost::noncopyable {
 							<< "fontsize=" << fontsize << ",";
 					ret	<< "shape=box,"
 						<< "label=" << '"'
-						            << "<order: " << u->_order << ", "
-						            << "loop: " << u->_loop << ">\\n"
-						            << graphvizEscapeLabel(printer(u->_data))
-						            << '"'
+						<< "<number: " << u->_number;
+					if (u->_loopFollow)
+						ret << ", loop_type=" << (u->_loopType == PRE_TESTED ? "pre_tested" : u->_loopType == POST_TESTED ? "post_tested" : "endless");
+					ret << ">\\n"
+						<< graphvizEscapeLabel(printer(u->_data))
+						<< '"'
 						<< "];" << std::endl;
 				}
 			ret << "}" << std::endl;
 		}
-		foreach (Node *u, _nodes)
+		foreach (Node *u, _nodes) {
 			foreach (Node *v, u->_out)
-			ret << '"' << u << '"'
-				<< " -> "
-				<< '"' << v << '"'
-				<< ";" << std::endl;
+				ret << '"' << u << '"'
+					<< " -> "
+					<< '"' << v << '"'
+				    << (v == u->_loopFollow ? "[color=blue]" : "")
+					<< ";" << std::endl;
+		}
 		ret << "}" << std::endl;
 		return ret.str();
 	}
 
 private:
-
-	void visit(Node *u) {
-		u->_visited = true;
-		foreach (Node *v, u->_out)
-			if (!v->_visited)
-				visit(v);
-		u->_order = _currentOrder--;
-	}
 
 	void assignIntervals() const {
 		std::list<Node*> intervals;

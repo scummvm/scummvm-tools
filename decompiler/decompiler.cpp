@@ -17,10 +17,10 @@ variables_map parseArgs(int argc, char **argv) {
 		("disasm", "print disassembly and exit")
 		("blocks", "print basic blocks and exit")
 		("graph",  "print graph and exit")
-		("derive", value<int>()->default_value(0), "find arg-th order intervals")
 		("fontname", value<string>()->default_value("Courier"), "font to use with graphical output");
 	options_description options("Allowed options");
 	options.add(visible).add_options()
+		("derive", value<int>()->default_value(0), "find arg-th order intervals")
 		("inputfile", value<string>(), "input file");
 	positional_options_description pos;
 	pos.add("inputfile", 1);
@@ -52,12 +52,12 @@ int main(int argc, char **argv) {
 		cfg.printBasicBlocks(cout);
 		exit(0);
 	}
-	// cfg.removeJumpsToJumps();
-	// cfg.removeDeadBlocks();
+	cfg.removeJumpsToJumps();
 	cfg._graph.intervals();
 	if (vars.count("graph")) {
 		Graph<Block*> &g = cfg._graph;
-		g.markReversePostOrder();
+		g.orderNodes();
+		cfg.removeDeadBlocks();
 		g.intervals();
 		for (int i = 0; i < vars["derive"].as<int>(); i++)
 			g.extendIntervals();
