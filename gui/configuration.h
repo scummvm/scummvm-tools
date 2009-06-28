@@ -75,6 +75,16 @@ struct Configuration {
 	wxString mp3VBRMinBitrate;
 	wxString mp3VBRMaxBitrate;
 	wxString mp3VBRQuality;
+
+	// flac
+	wxString flacCompressionLevel;
+	wxString flacBlockSize;
+	
+	// flac
+	wxString oggQuality;
+	wxString oggMinBitrate;
+	wxString oggAvgBitrate;
+	wxString oggMaxBitrate;
 };
 
 inline Configuration::Configuration() {
@@ -97,6 +107,16 @@ inline Configuration::Configuration() {
 	mp3VBRMinBitrate = wxT("24");
 	mp3VBRMaxBitrate = wxT("64");
 	mp3VBRQuality = wxT("4");
+
+	// flac params
+	flacCompressionLevel = wxT("8");
+	flacBlockSize = wxT("1152");
+
+	// flac params
+	oggQuality = wxT("3");
+	oggMinBitrate = wxT("24");
+	oggAvgBitrate = wxT("24");
+	oggMaxBitrate = wxT("64");
 
 }
 

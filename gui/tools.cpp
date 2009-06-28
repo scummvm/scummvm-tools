@@ -249,11 +249,11 @@ void Tool::addGame(const wxString &game_name) {
 	_games.Add(game_name);
 }
 
-bool Tool::supportsAudioFormat(AudioFormat format) {
+bool Tool::supportsAudioFormat(AudioFormat format) const {
 	return (_supportedFormats & format) == format;
 }
 
-wxString Tool::getExecutable() {
+wxString Tool::getExecutable() const {
 #ifdef WIN32
 	return _name + wxT(".exe");
 #else

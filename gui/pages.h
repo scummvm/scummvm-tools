@@ -238,6 +238,74 @@ public:
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+
+	/**
+	 * Handles clicks on the radio buttons for VBR / ABR
+	 */
+	void onChangeCompressionType(wxCommandEvent &evt);
+
+	/**
+	 * Enables/Disables the different fields depending on ABR/VBR setting
+	 *
+	 * @param panel The panel to operate on
+	 */
+	void updateFields(wxWindow *panel);
+};
+
+/**
+ * Presents advanced audio settings for the flac compression format
+ *
+ */
+
+class ChooseAudioOptionsFlacPage : public WizardPage
+{
+public:
+	ChooseAudioOptionsFlacPage(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+};
+
+/**
+ * Presents advanced audio settings for the OGG Vorbis compression format
+ *
+ */
+
+class ChooseAudioOptionsVorbisPage : public WizardPage
+{
+public:
+	ChooseAudioOptionsVorbisPage(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+};
+
+
+/**
+ * Runs the subprocess and displays it's output to the user
+ *
+ * @todo Run the subprocess
+ */
+
+class ProcessPage : public WizardPage
+{
+public:
+	ProcessPage(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	wxString createCommandLine();
+	void runProcess(wxTextCtrl *outwin);
+
 	//void onNext(wxWindow *panel);
 
 	void save(wxWindow *panel);

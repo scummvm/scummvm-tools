@@ -191,7 +191,7 @@ wxWindow *ChooseCompressionPage::CreatePanel(wxWindow *parent) {
 void ChooseCompressionPage::save(wxWindow *panel) {
 	wxString game = static_cast<wxChoice *>(panel->FindWindowByName(wxT("GameSelection")))->GetStringSelection();
 	_configuration.selectedGame = game;
-	_configuration.selectedTool = g_tools.getByGame(game);
+	_configuration.selectedTool = g_tools.getByGame(game, TOOLTYPE_COMPRESSION);
 }
 
 void ChooseCompressionPage::onNext(wxWindow *panel) {
@@ -232,9 +232,8 @@ wxWindow *ChooseExtractionPage::CreatePanel(wxWindow *parent) {
 }
 
 void ChooseExtractionPage::save(wxWindow *panel) {
-	wxString game =
-		static_cast<wxChoice *>(panel->FindWindowByName(wxT("GameSelection")))->GetStringSelection();
-	_configuration.selectedTool = g_tools.getByGame(game);
+	wxString game = static_cast<wxChoice *>(panel->FindWindowByName(wxT("GameSelection")))->GetStringSelection();
+	_configuration.selectedTool = g_tools.getByGame(game, TOOLTYPE_EXTRACTION);
 }
 
 void ChooseExtractionPage::onNext(wxWindow *panel) {
@@ -384,7 +383,7 @@ void ChooseInOutPage::onNext(wxWindow *panel) {
 	if(_configuration.compressing)
 		switchPage(new ChooseAudioFormatPage(_topframe));
 	else
-		; // Go to confirm page, nothing more to query
+		switchPage(new ProcessPage(_topframe));
 }
 
 // Page to choose input and output directory or file
@@ -406,7 +405,7 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 	
 	wxArrayString choices;
 
-	choices.Add(wxT("Ogg"));
+	choices.Add(wxT("Vorbis"));
 	choices.Add(wxT("FLAC"));
 	choices.Add(wxT("MP3"));
 
@@ -414,13 +413,13 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 
 	wxChoice *format = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxSize(80, -1), 
 		choices, 0, wxDefaultValidator, wxT("AudioSelection"));
-	sizer->Add(format);
+	sizer->Add(format, wxSizerFlags().Expand());
 	
 	sizer->AddSpacer(10);
 
 	wxCheckBox *advanced = new wxCheckBox(panel, wxID_ANY, wxT("Select advanced audio settings"), 
 		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("AdvancedAudio"));
-	sizer->Add(advanced);
+	sizer->Add(advanced, wxSizerFlags().Expand());
 
 	SetAlignedSizer(panel, sizer);
 
@@ -442,7 +441,7 @@ void ChooseAudioFormatPage::save(wxWindow *panel) {
 	wxChoice *format = static_cast<wxChoice *>(panel->FindWindowByName(wxT("AudioSelection")));
 	wxCheckBox *advanced = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("AdvancedAudio")));
 
-	if(format->GetStringSelection() == wxT("Ogg"))
+	if(format->GetStringSelection() == wxT("Vorbis"))
 		_configuration.selectedAudioFormat = AUDIO_VORBIS;
 	else if(format->GetStringSelection() == wxT("FLAC"))
 		_configuration.selectedAudioFormat = AUDIO_FLAC;
@@ -459,12 +458,14 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 
 	if(advanced->GetValue()) {
 
-		if(format->GetStringSelection() == wxT("Ogg"))
-			; // TODO 
+		if(format->GetStringSelection() == wxT("Vorbis"))
+			switchPage(new ChooseAudioOptionsVorbisPage(_topframe));
 		else if(format->GetStringSelection() == wxT("FLAC"))
-			; // TODO 
+			switchPage(new ChooseAudioOptionsFlacPage(_topframe));
 		else if(format->GetStringSelection() == wxT("MP3"))
 			switchPage(new ChooseAudioOptionsMp3Page(_topframe));
+	} else {
+		switchPage(new ProcessPage(_topframe));
 	}
 }
 
@@ -497,15 +498,17 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	// Type of compression
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Compression Type:")));
 
-	wxSizer *radioSizer = new wxBoxSizer(wxHORIZONTAL);
-	radioSizer->Add(
-		new wxRadioButton(panel, wxID_ANY, wxT("ABR"), 
-		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("ABR")));
-	radioSizer->Add(
-		new wxRadioButton(panel, wxID_ANY, wxT("VBR"), 
-		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("VBR")));
+	wxRadioButton *abrButton = new wxRadioButton(panel, wxID_ANY, wxT("ABR"), 
+		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("ABR"));
 
-	sizer->Add(radioSizer);
+	wxSizer *radioSizer = new wxBoxSizer(wxHORIZONTAL);
+	radioSizer->Add(abrButton);
+	
+	wxRadioButton *vbrButton = new wxRadioButton(panel, wxID_ANY, wxT("VBR"), 
+		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("VBR"));
+	radioSizer->Add(vbrButton);
+
+	sizer->Add(radioSizer, wxSizerFlags().Expand());
 
 	// Bitrates
 	const int possibleBitrateCount = 160 / 8;
@@ -519,7 +522,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxChoice *vbrMinBitrate = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
-	sizer->Add(vbrMinBitrate);
+	sizer->Add(vbrMinBitrate, wxSizerFlags().Expand());
 	
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
@@ -527,7 +530,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxChoice *vbrMaxBitrate = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
-	sizer->Add(vbrMaxBitrate);
+	sizer->Add(vbrMaxBitrate, wxSizerFlags().Expand());
 	
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Average Bitrate:")));
@@ -535,7 +538,10 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxChoice *abrAvgBitrate = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("AverageBitrate"));
-	sizer->Add(abrAvgBitrate);
+	sizer->Add(abrAvgBitrate, wxSizerFlags().Expand());
+
+	abrButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsMp3Page::onChangeCompressionType), NULL, this);
+	vbrButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsMp3Page::onChangeCompressionType), NULL, this);
 
 	// Quality
 	const int possibleQualityCount = 9;
@@ -543,34 +549,38 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	for(int i = 0; i <= possibleQualityCount; ++i) {
 		possibleQualities[i] << i;
 	}
-	
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("VBR Quality:")));
 	
 	wxChoice *vbrQuality = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("VBRQuality"));
-	sizer->Add(vbrQuality);
+	sizer->Add(vbrQuality, wxSizerFlags().Expand());
 	
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Average Bitrate:")));
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("MPEG Quality:")));
 	
 	wxChoice *mpegQuality = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("MpegQuality"));
-	sizer->Add(mpegQuality);
+	sizer->Add(mpegQuality, wxSizerFlags().Expand());
 
 	// Finish the window
 	SetAlignedSizer(panel, sizer);
 
 
 	// Load settings
-	// TODO: Fields should be enabled / disabled depending on settings
+	if(_topframe->_configuration.mp3CompressionType == wxT("ABR"))
+		abrButton->SetValue(true);
+	else
+		vbrButton->SetValue(true);
 	vbrMinBitrate->SetStringSelection(_topframe->_configuration.mp3VBRMinBitrate);
 	vbrMaxBitrate->SetStringSelection(_topframe->_configuration.mp3VBRMaxBitrate);
 	abrAvgBitrate->SetStringSelection(_topframe->_configuration.mp3ABRBitrate);
 	vbrQuality   ->SetStringSelection(_topframe->_configuration.mp3VBRQuality);
 	mpegQuality  ->SetStringSelection(_topframe->_configuration.mp3MpegQuality);
+
+	updateFields(panel);
 
 	return panel;
 }
@@ -590,6 +600,304 @@ void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
 	_topframe->_configuration.mp3ABRBitrate    = abrAvgBitrate->GetStringSelection();
 	_topframe->_configuration.mp3VBRQuality    = vbrQuality   ->GetStringSelection();
 	_topframe->_configuration.mp3MpegQuality   = mpegQuality  ->GetStringSelection();
+	if(abr->GetValue())
+		_topframe->_configuration.mp3CompressionType = wxT("ABR");
+	else
+		_topframe->_configuration.mp3CompressionType = wxT("VBR");
+}
+
+void ChooseAudioOptionsMp3Page::updateFields(wxWindow *panel) {
+	wxRadioButton *abr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("ABR")));
+	//wxRadioButton *vbr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("VBR")));
+	wxChoice *vbrMinBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MinimumBitrate")));
+	wxChoice *vbrMaxBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MaximumBitrate")));
+	wxChoice *abrAvgBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("AverageBitrate")));
+	wxChoice *vbrQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("VBRQuality")));
+	//wxChoice *mpegQuality =  static_cast<wxChoice *>(panel->FindWindowByName(wxT("MpegQuality")));
+
+	vbrMinBitrate->Enable(!abr->GetValue());
+	vbrMaxBitrate->Enable(!abr->GetValue());
+	vbrQuality->Enable(!abr->GetValue());
+	
+	abrAvgBitrate->Enable(abr->GetValue());
+}
+
+void ChooseAudioOptionsMp3Page::onChangeCompressionType(wxCommandEvent &evt) {
+	wxRadioButton *btn = static_cast<wxRadioButton *>(evt.GetEventObject());
+	wxWindow *parent = btn->GetParent();
+	updateFields(parent);
+}
+
+void ChooseAudioOptionsMp3Page::onNext(wxWindow *panel) {
+	switchPage(new ProcessPage(_topframe));
+}
+
+// Page to choose Flac compression options
+
+ChooseAudioOptionsFlacPage::ChooseAudioOptionsFlacPage(ScummToolsFrame* frame)
+	: WizardPage(frame)
+{
+}
+
+wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+	
+	wxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
+
+	topsizer->AddSpacer(15);
+	topsizer->Add(new wxStaticText(panel, wxID_ANY, 
+		wxT("Choose advanced audio options, high compression levels means better quality,\nlower faster runtime.")));
+	topsizer->AddSpacer(10);
+	
+	/*
+	"\nFlac mode params:\n" \
+	" --fast       FLAC uses compression level 0\n" \
+	" --best       FLAC uses compression level 8\n" \
+	" -<value>     specifies the value (0 - 8) of compression (8=best)(default:" flacCompressDef_str ")\n" \
+	" -b <value>   specifies a blocksize of <value> samples (default:" flacBlocksizeDef_str ")\n" \
+	" --verify     files are encoded and then decoded to check accuracy\n" \
+	" --silent     the output of FLAC is hidden (default:disabled)\n" \
+	*/
+
+	wxFlexGridSizer *sizer = new wxFlexGridSizer(2, 2, 10, 25);
+	sizer->AddGrowableCol(1);
+	
+
+	// 
+
+	// Compression Level
+	const int possibleLevelCount = 8;
+	wxString possibleLevels[possibleLevelCount + 1];
+	for(int i = 0; i <= possibleLevelCount; ++i) {
+		possibleLevels[i] << i;
+	}
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Compression Level:")));
+	
+	wxChoice *compressionLevel = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleLevelCount, possibleLevels, 0, wxDefaultValidator, wxT("CompressionLevel"));
+	sizer->Add(compressionLevel, wxSizerFlags().Expand());
+
+
+	// Block Size
+
+	wxString blockSizes[] = {
+		wxT("576"),
+		wxT("1152"),
+		wxT("2304"),
+		wxT("4608")
+	};
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Block Size:")));
+
+	wxChoice *blockSize = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		sizeof blockSizes / sizeof *blockSizes, blockSizes, 0, wxDefaultValidator, wxT("BlockSize"));
+	sizer->Add(blockSize, wxSizerFlags().Expand());
+	
+	// Finish the window
+	topsizer->Add(sizer);
+	SetAlignedSizer(panel, topsizer);
+
+
+	// Load settings
+	compressionLevel->SetStringSelection(_topframe->_configuration.flacCompressionLevel);
+	blockSize->SetStringSelection(_topframe->_configuration.flacBlockSize);
+
+	return panel;
+}
+
+void ChooseAudioOptionsFlacPage::save(wxWindow *panel) {
+	wxChoice *compressionLevel = static_cast<wxChoice *>(panel->FindWindowByName(wxT("CompressionLevel")));
+	wxChoice *blockSize = static_cast<wxChoice *>(panel->FindWindowByName(wxT("BlockSize")));
+
+	_topframe->_configuration.flacCompressionLevel = compressionLevel->GetStringSelection();
+	_topframe->_configuration.flacBlockSize = blockSize->GetStringSelection();
+}
+
+void ChooseAudioOptionsFlacPage::onNext(wxWindow *panel) {
+	switchPage(new ProcessPage(_topframe));
+}
+
+// Page to choose Vorbis compression options
+
+ChooseAudioOptionsVorbisPage::ChooseAudioOptionsVorbisPage(ScummToolsFrame* frame)
+	: WizardPage(frame)
+{
+}
+
+wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+
+	
+	/* Vorbis mode params
+	" -b <rate>    <rate> is the nominal bitrate (default:unset)\n" \
+	" -m <rate>    <rate> is the minimum bitrate (default:unset)\n" \
+	" -M <rate>    <rate> is the maximum bitrate (default:unset)\n" \
+	" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:" oggqualDef_str ")\n" \
+	" --silent     the output of oggenc is hidden (default:disabled)\n" \
+	*/
+
+	wxFlexGridSizer *sizer = new wxFlexGridSizer(4, 2, 10, 25);
+	sizer->AddGrowableCol(1);
+
+	// Bitrates
+	const int possibleBitrateCount = 160 / 8;
+	wxString possibleBitrates[possibleBitrateCount + 1];
+	for(int i = 0; i <= possibleBitrateCount; ++i) {
+		possibleBitrates[i] << i*8;
+	}
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:")));
+
+	wxChoice *MinBitrate = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
+	sizer->Add(MinBitrate, wxSizerFlags().Expand());
+	
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Nominal Bitrate:")));
+	
+	wxChoice *AvgBitrate = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("NominalBitrate"));
+	sizer->Add(AvgBitrate, wxSizerFlags().Expand());
+	
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
+	
+	wxChoice *MaxBitrate = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
+	sizer->Add(MaxBitrate, wxSizerFlags().Expand());
+
+	// Quality
+	const int possibleQualityCount = 10;
+	wxString possibleQualities[possibleQualityCount + 1];
+	for(int i = 0; i <= possibleQualityCount; ++i) {
+		possibleQualities[i] << i;
+	}
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Quality:")));
+	
+	wxChoice *quality = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("Quality"));
+	sizer->Add(quality, wxSizerFlags().Expand());
+
+	// Finish the window
+	SetAlignedSizer(panel, sizer);
+
+
+	// Load settings
+	MinBitrate->SetStringSelection(_topframe->_configuration.oggMinBitrate);
+	AvgBitrate->SetStringSelection(_topframe->_configuration.oggAvgBitrate);
+	MaxBitrate->SetStringSelection(_topframe->_configuration.oggMaxBitrate);
+	quality   ->SetStringSelection(_topframe->_configuration.oggQuality);
+
+	return panel;
+}
+
+void ChooseAudioOptionsVorbisPage::save(wxWindow *panel) {
+	wxChoice *minBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MinimumBitrate")));
+	wxChoice *avgBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("NominalBitrate")));
+	wxChoice *maxBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MaximumBitrate")));
+	wxChoice *quality    = static_cast<wxChoice *>(panel->FindWindowByName(wxT("Quality")));
+
+	_topframe->_configuration.oggMinBitrate = minBitrate->GetStringSelection();
+	_topframe->_configuration.oggAvgBitrate = avgBitrate->GetStringSelection();
+	_topframe->_configuration.oggMaxBitrate = maxBitrate->GetStringSelection();
+	_topframe->_configuration.oggQuality    = quality   ->GetStringSelection();
+}
+
+void ChooseAudioOptionsVorbisPage::onNext(wxWindow *panel) {
+	switchPage(new ProcessPage(_topframe));
 }
 
 
+// Page to choose ANY tool to use
+
+ProcessPage::ProcessPage(ScummToolsFrame* frame)
+	: WizardPage(frame)
+{
+}
+
+wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+
+	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+
+	sizer->AddSpacer(15);
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Processing data...")), wxSizerFlags().Expand().Border(wxLEFT, 20));
+	
+	wxTextCtrl *outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 
+		wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("OutputText"));
+	outwin->Enable(false);
+	sizer->Add(outwin, wxSizerFlags(1).Expand().Border(wxALL, 10));
+
+	panel->SetSizer(sizer);
+
+	// This should NOT be called from the 'constructor' (once it runs the subprocess)
+	runProcess(outwin);
+
+	return panel;
+}
+
+void ProcessPage::save(wxWindow *panel) {
+	//_configuration.selectedTool = 
+	//	g_tools.get(static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection());
+}
+
+wxString ProcessPage::createCommandLine() {
+	wxString cli;
+	Configuration &conf = _topframe->_configuration;
+	
+	// Executable
+	cli << conf.selectedTool->getExecutable();
+	
+	// Audio format args
+	if(conf.compressing) {
+		cli << wxT(" --mp3");
+		if(conf.selectedAudioFormat == AUDIO_VORBIS) {
+			cli << wxT(" --vorbis");
+			cli << wxT(" -b ") << conf.oggAvgBitrate;
+			cli << wxT(" -m ") << conf.oggMinBitrate;
+			cli << wxT(" -M ") << conf.oggMaxBitrate;
+			cli << wxT(" -q ") << conf.oggQuality;
+		} else if(conf.selectedAudioFormat == AUDIO_FLAC) {
+			cli << wxT(" --flac");
+			cli << wxT(" -") << conf.flacCompressionLevel;
+			cli << wxT(" -b ")<< conf.flacBlockSize;
+		} else if(conf.selectedAudioFormat == AUDIO_MP3) {
+			if(conf.mp3CompressionType == wxT("ABR")) {
+				cli << wxT(" --abr");
+				cli << wxT(" -b ") << conf.mp3ABRBitrate;
+				cli << wxT(" -b ") << conf.mp3VBRMinBitrate;
+			} else {
+				cli << wxT(" --vbr");
+				cli << wxT(" -b ") << conf.mp3VBRMinBitrate;
+				cli << wxT(" -B ") << conf.mp3VBRMaxBitrate;
+			}
+					
+			cli << wxT(" -q ") << conf.mp3MpegQuality;
+		}
+	}
+
+	cli << wxT(" -o ") << conf.outputPath;
+	for(wxArrayString::const_iterator i = conf.inputFilePaths.begin(); i != conf.inputFilePaths.end(); ++i)
+		cli << *i << wxT(" ");
+
+	cli << wxT("\n");
+	return cli;
+}
+
+void ProcessPage::runProcess(wxTextCtrl *outwin) {
+	outwin->WriteText(createCommandLine());
+}
+
+/*
+void ProcessPage::onNext(wxWindow *panel) {
+	switchPage(new ChooseInOutPage(_topframe));
+}*/

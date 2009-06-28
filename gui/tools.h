@@ -91,12 +91,12 @@ public:
 	 * 
 	 * @param format The audio format(s) to test for
 	 */
-	bool supportsAudioFormat(AudioFormat format);
+	bool supportsAudioFormat(AudioFormat format) const;
 	/**
 	 * Returns the name of the executable of this tool.
 	 * This simple returns the name under *nix, and name.exe under Windows
 	 */
-	wxString getExecutable();
+	wxString getExecutable() const;
 
 
 	/** Name of the tool */

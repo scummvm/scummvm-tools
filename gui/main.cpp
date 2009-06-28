@@ -143,7 +143,7 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	_wizardpane->GetSizer()->Add(newPanel, wxSizerFlags(1).Expand());
 
 	// Make sure it fits
-	_wizardpane->Fit();
+	_wizardpane->Layout();
 
 	// And reset the buttons to a standard state
 	_buttons->reset();
