@@ -73,6 +73,11 @@ public:
 	void switchToPreviousPage() {
 		switchPage(NULL, true);}
 
+	/**
+	 * Handle wx OnIdle events
+	 */
+	void onIdle(wxIdleEvent &evt);
+
 	/** The state of the wizard so far */
 	Configuration _configuration;
 

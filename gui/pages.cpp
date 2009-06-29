@@ -31,10 +31,15 @@
 #endif
 
 #include <wx/filepicker.h>
+#include <wx/file.h>
 
 #include "main.h"
 #include "pages.h"
 #include "tools.h"
+
+
+BEGIN_EVENT_TABLE(WizardPage, wxEvtHandler)
+END_EVENT_TABLE()
 
 WizardPage::WizardPage(ScummToolsFrame *frame)
 	: _topframe(frame),
@@ -82,6 +87,10 @@ void WizardPage::onCancel(wxWindow *panel) {
 
 // Load/Save settings
 void WizardPage::save(wxWindow *panel) {
+}
+
+bool WizardPage::onIdle(wxPanel *panel) {
+	return false;
 }
 
 // Introduction page
@@ -818,8 +827,15 @@ void ChooseAudioOptionsVorbisPage::onNext(wxWindow *panel) {
 
 // Page to choose ANY tool to use
 
+BEGIN_EVENT_TABLE(ProcessPage, WizardPage)
+	EVT_END_PROCESS(wxID_ANY, ProcessPage::onTerminate)
+END_EVENT_TABLE()
+
 ProcessPage::ProcessPage(ScummToolsFrame* frame)
-	: WizardPage(frame)
+	: WizardPage(frame),
+	  _finished(false),
+	  _success(false),
+	  _process(NULL)
 {
 }
 
@@ -833,7 +849,7 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Processing data...")), wxSizerFlags().Expand().Border(wxLEFT, 20));
 	
 	wxTextCtrl *outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 
-		wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("OutputText"));
+		wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("OutputWindow"));
 	outwin->Enable(false);
 	sizer->Add(outwin, wxSizerFlags(1).Expand().Border(wxALL, 10));
 
@@ -894,10 +910,83 @@ wxString ProcessPage::createCommandLine() {
 }
 
 void ProcessPage::runProcess(wxTextCtrl *outwin) {
-	outwin->WriteText(createCommandLine());
+	wxString cli = createCommandLine();
+	outwin->WriteText(cli + wxT("\n"));
+
+	if(wxFile::Exists(_topframe->_configuration.selectedTool->getExecutable())) {
+		_process = new wxProcess(this);
+		bool success = wxExecute(cli, wxEXEC_ASYNC, _process) != 0;
+
+		if(!success) {
+			outwin->WriteText(wxT("Could not run process."));
+			return;
+		}
+
+		_process->Redirect();
+	} else {
+		_finished = true;
+		outwin->WriteText(wxT("Could not find executable file on the current path. Check that the executable for the selected tool is available and place in the correct directory."));
+	}
+
+}
+
+bool ProcessPage::onIdle(wxPanel *panel) {
+	if(_process) {
+		wxInputStream *stream = _process->GetInputStream();
+		wxTextCtrl *outwin = static_cast<wxTextCtrl *>(panel->FindWindowByName(wxT("OutputWindow")));
+
+		wxASSERT_MSG(stream, wxT("Could not bind input stream!"));
+
+		while(stream->CanRead()) {
+			wxFileOffset off = stream->GetLength();
+			if(off = wxInvalidOffset) {
+				return false;
+			}
+			char *buf = new char[(size_t)off];
+			stream->Read(buf, (size_t)off);
+			outwin->WriteText(wxString(buf, wxConvUTF8, (size_t)off));
+			delete[] buf;
+		}
+
+		return true;
+	}
+	return false;
+}
+
+void ProcessPage::onTerminate(wxProcessEvent &evt) {
+	// Ugly hack, should not find the panel this way...
+	wxWindow *panel = _topframe->FindWindowByName(wxT("WizardPage"));
+	wxTextCtrl *outwin = static_cast<wxTextCtrl *>(panel->FindWindowByName(wxT("OutputWindow")));
+
+	_success = evt.GetExitCode() == 0;
+	if(_success) {
+		outwin->WriteText(wxT("Subprocess exited sucessfully!"));
+	} else {
+		outwin->WriteText(wxT("Subprocess exited sucessfully!"));
+	}
+	_finished = true;
+
+	updateButtons(panel, static_cast<WizardButtons *>(_topframe->FindWindowByName(wxT("WizardButtonPanel"))));
 }
 
 /*
 void ProcessPage::onNext(wxWindow *panel) {
 	switchPage(new ChooseInOutPage(_topframe));
 }*/
+
+void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
+	if(_success) {
+		buttons->enablePrevious(false);
+		buttons->enableNext(true);
+	} else if(_finished) {
+		buttons->enablePrevious(true);
+		buttons->enableNext(true);
+	} else {
+		buttons->enablePrevious(false);
+		buttons->enableNext(false);
+	}
+}
+
+
+
+	

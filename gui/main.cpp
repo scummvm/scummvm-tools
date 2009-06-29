@@ -53,6 +53,7 @@ bool ScummVMToolsApp::OnInit()
 }
 
 BEGIN_EVENT_TABLE(ScummToolsFrame, wxFrame)
+	EVT_IDLE(ScummToolsFrame::onIdle)
 END_EVENT_TABLE()
 
 ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, const wxSize& size)
@@ -150,6 +151,15 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	_buttons->setPage(_pages.back(), newPanel);
 }
 
+void ScummToolsFrame::onIdle(wxIdleEvent &evt) {
+	if(_pages.back()->onIdle(dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page"))))) {
+		// We want more!
+		evt.RequestMore(true);
+	}
+}
+
+//
+
 BEGIN_EVENT_TABLE(WizardButtons, wxPanel)
 	EVT_BUTTON(ID_NEXT, WizardButtons::onClickNext)
 	EVT_BUTTON(ID_PREV, WizardButtons::onClickPrevious)
@@ -157,7 +167,7 @@ BEGIN_EVENT_TABLE(WizardButtons, wxPanel)
 END_EVENT_TABLE()
 
 WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext)
-	: wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("Wizard Button Panel")),
+	: wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("WizardButtonPanel")),
 	  _linetext(linetext),
 	  _currentPage(NULL)
 {

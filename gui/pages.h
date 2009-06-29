@@ -21,6 +21,7 @@
  */
 
 #include <wx/wx.h>
+#include <wx/process.h>
 
 #include "configuration.h"
 
@@ -101,6 +102,13 @@ public:
 	 */
 	virtual void updateButtons(wxWindow *panel, WizardButtons *buttons);
 
+	/**
+	 * This handler is called when the application is idle, used to read output from the subprocess.
+	 *
+	 * @return false indicates that we do not want to receive more idle events.
+	 */
+	virtual bool onIdle(wxPanel *panel);
+
 protected:
 	/** 
 	 * This adds an offset (about 100px) to the left of the sizer to center the text somewhat, before adding it 
@@ -113,6 +121,8 @@ protected:
 
 	ScummToolsFrame* _topframe;
 	Configuration &_configuration;
+
+	DECLARE_EVENT_TABLE()
 };
 
 /**
@@ -292,12 +302,15 @@ public:
 
 /**
  * Runs the subprocess and displays it's output to the user
- *
- * @todo Run the subprocess
+ * You really ought to only run one subprocess at the time, as
+ * this class keeps internal state.
  */
 
 class ProcessPage : public WizardPage
 {
+	bool _finished;
+	bool _success;
+	wxProcess *_process;
 public:
 	ProcessPage(ScummToolsFrame* frame);
 
@@ -306,7 +319,15 @@ public:
 	wxString createCommandLine();
 	void runProcess(wxTextCtrl *outwin);
 
+	void onTerminate(wxProcessEvent &evt);
+
+	bool onIdle(wxPanel *panel);
+
 	//void onNext(wxWindow *panel);
 
+	void updateButtons(wxWindow *panel, WizardButtons *buttons);
+
 	void save(wxWindow *panel);
+
+	DECLARE_EVENT_TABLE()
 };
