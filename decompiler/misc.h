@@ -6,9 +6,12 @@
 #include <iomanip>
 
 #include <boost/foreach.hpp>
+#include <boost/utility.hpp>
 #ifndef foreach
 #define foreach BOOST_FOREACH
 #endif
+
+using namespace boost;
 
 typedef unsigned char uint8;
 typedef short int16;

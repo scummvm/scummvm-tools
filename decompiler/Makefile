@@ -78,7 +78,7 @@ test:
 decompiler$(EXEEXT): decompiler.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lboost_program_options
 
-decompiler.o: cfg.h graph.h instruction.h misc.h parser.h reader.h
+decompiler.o: graph.h instruction.h misc.h parser.h reader.h
 
 
 ######################################################################

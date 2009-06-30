@@ -2,21 +2,12 @@
 #define GRAPH_H
 
 #include "misc.h"
-
 #include <cassert>
-
 #include <list>
 #include <map>
 #include <set>
 #include <sstream>
-
-#include <boost/foreach.hpp>
-#ifndef foreach
-#define foreach BOOST_FOREACH
-#endif
-
 #include <iostream>
-
 
 
 enum LoopType {
@@ -26,124 +17,161 @@ enum LoopType {
 };
 
 
-template<typename Data>
-struct Graph : boost::noncopyable {
+struct Block : boost::noncopyable {
 
-	struct Node : boost::noncopyable {
+	Block *_interval;
+	Block *_loopFollow;
+	Block *_loopHead;
+	Block *_loopLatch;
+	Block *_primitive;
+	LoopType _loopType;
+	int _number;
+	list<Block*> _in;
+	list<Block*> _out;
+	list<Instruction*> _instructions;
 
-		Data _data;
-
-		const std::list<Node*> &out() const {
-			return _out;
-		}
-
-		// wouldn't be needed if Graph<X> and Graph<Y> weren't totally alien classes
-		Node *interval() const {
-			return _interval;
-		}
-
-	private:
-
-		friend class Graph;
-
-		Node *_interval;
-		std::list<Node*> _in;
-		std::list<Node*> _out;
-
-		int _number;
-
-		Node *_loopHead;
-		Node *_loopLatch;
-		Node *_loopFollow;
-		LoopType _loopType;
-
-		Node(const Data &data) : _data(data), _interval(), _number(), _loopHead(), _loopFollow() {
-		}
-
-		~Node() {
-		}
-	};
-
-	std::list<Node*> _nodes;
-	Node *_entry;
-	int _currentNumber;
-
-	Graph() : _entry(), _currentNumber() {
+	string toString() {
+		ostringstream ret;
+		foreach (Instruction *instruction, _instructions)
+			ret << instruction->toString();
+		return ret.str();
 	}
 
-	~Graph() {
-		foreach (Node *u, _nodes)
+	Block() : _interval(), _number(), _loopHead(), _loopFollow() {
+	}
+
+	~Block() {
+	}
+};
+
+
+struct ControlFlowGraph : boost::noncopyable {
+
+	Block *_entry;
+	std::list<Block*> _blocks;
+	map<address_t, Block*> _targets;
+
+	ControlFlowGraph() : _entry() {
+	}
+
+	~ControlFlowGraph() {
+		foreach (Block *u, _blocks)
 			delete u;
 	}
 
-	void setEntry(Node *entry) {
-		_entry = entry;
+	template<typename Iterator>
+	void addBlocksFromScript(Iterator scriptBegin, Iterator scriptEnd) {
+		Jump *jump;
+		for (Iterator it = scriptBegin; it != scriptEnd; it++)
+			if ((jump = dynamic_cast<Jump*>(*it))) {
+				_targets[jump->target()] = 0;
+				if (next(it) != scriptEnd)
+					_targets[(*next(it))->_addr] = 0;
+			}
+		Iterator first = scriptBegin;
+		for (Iterator last = scriptBegin; last != scriptEnd; last++) {
+			if (next(last) == scriptEnd || contains(_targets, (*next(last))->_addr)) {
+				_targets[(*first)->_addr] = addBlock(first, next(last));
+				first = next(last);
+			}
+		}
+		foreach (Block *block, _blocks) {
+			if ((jump = dynamic_cast<Jump*>(block->_instructions.back())))
+				addEdge(block, _targets[jump->target()]);
+			map<address_t, Block*>::iterator succ = next(_targets.find(block->_instructions.front()->_addr));
+			if (succ != _targets.end() && (!jump || dynamic_cast<CondJump*>(jump)))
+				addEdge(block, succ->second);
+		}
 	}
 
-	Node *addNode(const Data &data) {
-		Node* node = new Node(data);
-		_nodes.push_back(node);
-		if (!_entry)
-			_entry = node;
-		return node;
+	void setEntry(address_t entry) {
+		foreach (Block *block, _blocks)
+			if (block->_instructions.front()->_addr == entry)
+				_entry = block;
 	}
 
-	void addEdge(Node *from, Node *to) {
+	template<typename Iterator>
+	Block *addBlock(Iterator first, Iterator last) {
+		Block* block = new Block;
+		_blocks.push_back(block);
+		copy(first, last, back_inserter(block->_instructions));
+		return block;
+	}
+
+	void addEdge(Block *from, Block *to) {
 		from->_out.push_back(to);
 		to->_in.push_back(from);
 	}
 
-	void replaceEdges(Node *from, Node *oldTo, Node *newTo) {
+	void removeJumpsToJumps() {
+		for (bool changed = true; changed; ) {
+			changed = false;
+			foreach (Block *u, _blocks) {
+				foreach (Block *v, u->_out) {
+					Jump *jump = dynamic_cast<Jump*>(v->_instructions.front());
+					if (jump && !dynamic_cast<CondJump*>(jump) && jump->target() != jump->_addr) {
+						changed = true;
+						replaceEdges(u, v, _targets[jump->target()]);
+					}
+				}
+			}
+		}
+	}
+
+	void replaceEdges(Block *from, Block *oldTo, Block *newTo) {
 		size_t n = count(oldTo->_in.begin(), oldTo->_in.end(), from);
 		oldTo->_in.remove(from);
 		fill_n(back_inserter(newTo->_in), n, from);
-		foreach (Node *&node, from->_out)
-			if (node == oldTo)
-				node = newTo;
+		foreach (Block *&block, from->_out)
+			if (block == oldTo)
+				block = newTo;
 	}
 
-	// to be called after order nodes
-	void removeUnreachableNodes() {
-		for (typename std::list<Node*>::iterator uit = _nodes.begin(); uit != _nodes.end(); )
-			if ((*uit)->_number)
-				uit++;
+	// to be called after order blocks
+	void removeUnreachableBlocks() {
+		foreach (Block *u, _blocks)
+			if (!u->_number) {
+				foreach (Block *v, u->_out)
+					v->_in.remove(u);
+			}
+		for (list<Block*>::iterator it = _blocks.begin(); it != _blocks.end(); )
+			if ((*it)->_number)
+				it++;
 			else {
-				foreach (Node *v, (*uit)->_out)
-					v->_in.remove(*uit);
-				delete *uit;
-				uit = _nodes.erase(uit);
+				delete *it;
+				it = _blocks.erase(it);
 			}
 	}
 
-	// assign node numbers in post-order
-	void orderNodes() {
+	// assign block numbers in post-order
+	void orderBlocks() {
 		assert(_entry);
 		orderVisit(_entry, 0);
 	}
 
-	int orderVisit(Node *u, int number) {
+	int orderVisit(Block *u, int number) {
 		u->_number = -1;
-		foreach (Node *v, u->_out)
+		foreach (Block *v, u->_out)
 			if (!v->_number)
 				number = orderVisit(v, number);
 		u->_number = ++number;
 		return number;
 	}
 
-	std::list<Node*> intervals() const {
-		std::list<Node*> ret;
+	std::list<Block*> intervals() const {
+		std::list<Block*> ret;
 		assignIntervals();
-		foreach (Node *u, _nodes)
+		foreach (Block *u, _blocks)
 			if (u->_interval == u)
 				ret.push_back(u);
 		return ret;
 	}
 
-	bool inLoop(Node *head, Node *latch, Node *u) {
+	bool inLoop(Block *head, Block *latch, Block *u) {
 		return u->_interval == head && latch->_number <= u->_number && u->_number < head->_number;
 	}
 
-	LoopType loopType(Node *head, Node *latch) {
+	LoopType loopType(Block *head, Block *latch) {
 		if (head->_out.size() == 1 && latch->_out.size() == 1)
 			return ENDLESS;
 		if (head->_out.size() == 1 && latch->_out.size() == 2)
@@ -157,25 +185,25 @@ struct Graph : boost::noncopyable {
 			return PRE_TESTED;
 	}
 
-	Node *loopFollow(Node *head, Node *latch) {
+	Block *loopFollow(Block *head, Block *latch) {
 		if (head->_loopType == PRE_TESTED)
 			return head->_out.front();
 		if (head->_loopType == POST_TESTED)
 			return latch->_out.back();
 		// ENDLESS
-		Node *ret = 0;
-		foreach (Node *u, _nodes)
+		Block *ret = 0;
+		foreach (Block *u, _blocks)
 			if (inLoop(head, latch, u) && u->_out.size() == 2 && (!ret || ret->_number < u->_out.back()->_number))
 				ret = u->_out.back();
 		return ret;
 	}
 
 	void loopStruct() {
-		for (size_t size = _nodes.size()+1; size > intervals().size(); size = intervals().size(), extendIntervals())
-			foreach (Node *interval, intervals()) {
-				foreach (Node *latch, interval->_in) {
+		for (size_t size = _blocks.size()+1; size > intervals().size(); size = intervals().size(), extendIntervals())
+			foreach (Block *interval, intervals()) {
+				foreach (Block *latch, interval->_in) {
 					if (latch->_interval == interval && !latch->_loopHead) {
-						foreach (Node *u, _nodes)
+						foreach (Block *u, _blocks)
 							if (inLoop(interval, latch, u))
 								u->_loopHead = interval;
 						interval->_loopLatch = latch; // TODO do we need this?
@@ -187,72 +215,61 @@ struct Graph : boost::noncopyable {
 	}
 
 	void extendIntervals() {
-		Graph<Node*> d;
-		std::map<Node*, typename Graph<Node*>::Node*> trans;
-		foreach (Node *interval, intervals())
-			trans[interval] = d.addNode(interval);
-		foreach (Node *interval, intervals())
-			foreach (Node *u, interval->_in)
+		ControlFlowGraph d;
+		std::map<Block*, Block*> trans;
+		foreach (Block *interval, intervals()) {
+			trans[interval] = d.addBlock(interval->_instructions.begin(), interval->_instructions.end());
+			trans[interval]->_primitive = interval;
+		}
+		foreach (Block *interval, intervals())
+			foreach (Block *u, interval->_in)
 				if (u->_interval != interval)
 					d.addEdge(trans[u->_interval], trans[interval]);
-		d.setEntry(trans[_entry]);
+		d.setEntry(_entry->_instructions.front()->_addr);
 		d.intervals();
-		foreach (typename Graph<Node*>::Node *du, d._nodes)
-			foreach (Node *v, _nodes)
-				if (v->_interval == du->_data)
-					v->_interval = du->interval()->_data;
+		foreach (Block *du, d._blocks)
+			foreach (Block *v, _blocks)
+				if (v->_interval == du->_primitive)
+					v->_interval = du->_interval->_primitive;
 	}
 
-	template<typename Printer>   // printer is a functor taking Data and returning a string
-	std::string graphvizPrint(Printer printer, const std::string &fontname="Courier", int fontsize=14) const {
+	std::string graphvizToString(const std::string &fontname="", int fontsize=0) const {
 		std::stringstream ret;
 		ret << "digraph G {" << std::endl;
-		foreach (Node *interval, intervals()) {
+		foreach (Block *interval, intervals()) {
 			ret << "subgraph " << '"' << "cluster_" << interval << '"' << " {" << std::endl;
 			ret << "style=dotted;" << std::endl;
-			foreach (Node *u, _nodes)
+			foreach (Block *u, _blocks)
 				if (u->_interval == interval) {
-					ret << '"' << u << '"'
-						<< "[";
+					ret << '"' << u << "\"[";
 					if (fontname != "")
-						ret << "fontname=" << '"' << fontname << '"' << ","
-							<< "fontsize=" << fontsize << ",";
-					ret	<< "shape=box,"
-						<< "label=" << '"'
-						<< "<number: " << u->_number;
+						ret << "fontname=" << '"' << fontname << "\",";
+					if (fontsize != 0)
+						ret << "fontsize=" << fontsize << ",";
+					ret	<< "shape=box,label=\"<number: " << u->_number;
 					if (u->_loopFollow)
 						ret << ", loop_type=" << (u->_loopType == PRE_TESTED ? "pre_tested" : u->_loopType == POST_TESTED ? "post_tested" : "endless");
-					ret << ">\\n"
-						<< graphvizEscapeLabel(printer(u->_data))
-						<< '"'
-						<< "];" << std::endl;
+					ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << std::endl;
 				}
 			ret << "}" << std::endl;
 		}
-		foreach (Node *u, _nodes) {
-			foreach (Node *v, u->_out)
-				ret << '"' << u << '"'
-					<< " -> "
-					<< '"' << v << '"'
-				    << (v == u->_loopFollow ? "[color=blue]" : "")
-					<< ";" << std::endl;
-		}
+		foreach (Block *u, _blocks)
+			foreach (Block *v, u->_out)
+				ret << '"' << u << "\" -> \"" << v << '"' << (v == u->_loopFollow ? "[color=blue]" : "") << ";" << std::endl;
 		ret << "}" << std::endl;
 		return ret.str();
 	}
 
-private:
-
 	void assignIntervals() const {
-		std::list<Node*> intervals;
+		std::list<Block*> intervals;
 		intervals.push_back(_entry);
-		foreach (Node *interval, intervals) {
+		foreach (Block *interval, intervals) {
 			interval->_interval = interval;
 			for (bool added = true; added; ) {
 				added = false;
-				foreach (Node *m, _nodes) {
+				foreach (Block *m, _blocks) {
 					bool allPredInInterval = true;
-					foreach (Node *p, m->_in)
+					foreach (Block *p, m->_in)
 						allPredInInterval &= p->_interval == interval;
 					if (!m->_interval && allPredInInterval) {
 						added = true;
@@ -260,9 +277,9 @@ private:
 					}
 				}
 			}
-			foreach (Node *m, _nodes) {
+			foreach (Block *m, _blocks) {
 				bool anyPredInInterval = false;
-				foreach (Node *p, m->_in)
+				foreach (Block *p, m->_in)
 					anyPredInInterval |= p->_interval == interval;
 				if (!m->_interval && anyPredInInterval)
 					intervals.push_back(m);

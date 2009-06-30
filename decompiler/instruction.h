@@ -9,6 +9,13 @@
 struct Instruction {
 	string _description;
 	uint32 _addr;
+
+	virtual string toString() {
+		ostringstream ret;
+		ret << phex(_addr-8) << "  " << _description << endl;
+		return ret.str();
+	}
+
 	Instruction(string description, uint32 addr) : _description(description), _addr(addr) {
 	}
 	virtual ~Instruction() {
@@ -21,6 +28,12 @@ struct Jump : public Instruction {
 	uint32 target() {
 		return _addr+_offset;
 	}
+	string toString() {
+		ostringstream ret;
+		ret << phex(_addr-8) << "  " << _description << " (" << phex(target()-8) << ")" << endl;
+		return ret.str();
+	}
+
 	Jump(string description, uint32 addr, int16 offset) : Instruction(description, addr), _offset(offset) {
 	}
 };
@@ -48,33 +61,6 @@ struct Script {
 
 	void append(Instruction *instr) {
 		_instructions.push_back(instr);
-	}
-
-	index_t index(address_t addr) {
-		for (index_t i = 0; i < _instructions.size(); i++)
-			if (_instructions[i]->_addr == addr)
-				return i;
-		fprintf(stderr, "!!! (unhandled) no instruction with address %x (%d)\n", addr, addr);
-		return (index_t)-1;	// Note: -1 is negative, but index_t unsigned
-	}
-
-	Instruction* operator[](index_t i) {
-		return _instructions[i];
-	}
-
-	index_t size() {
-		return _instructions.size();
-	}
-
-	void print(ostream &out, index_t i) {
-		if (i >= 1 && _instructions[i]->_addr == _instructions[i-1]->_addr)
-			out << "      " << _instructions[i]->_description;
-		else
-			out << phex(_instructions[i]->_addr-8) << "  " << _instructions[i]->_description;
-		Jump *jump = dynamic_cast<Jump*>(_instructions[i]);
-		if (jump)
-			out << " (" << phex(jump->target()-8) << ")";
-		out << endl;
 	}
 
 };

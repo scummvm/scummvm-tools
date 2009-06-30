@@ -3,7 +3,7 @@
 #include <boost/program_options.hpp>
 
 #include "parser.h"
-#include "cfg.h"
+#include "graph.h"
 
 using namespace std;
 using namespace boost::program_options;
@@ -20,7 +20,7 @@ variables_map parseArgs(int argc, char **argv) {
 		("fontname", value<string>()->default_value("Courier"), "font to use with graphical output");
 	options_description options("Allowed options");
 	options.add(visible).add_options()
-		("derive", value<int>()->default_value(0), "find arg-th order intervals")
+		//		("derive", value<int>()->default_value(0), "find arg-th order intervals")
 		("inputfile", value<string>(), "input file");
 	positional_options_description pos;
 	pos.add("inputfile", 1);
@@ -43,26 +43,26 @@ int main(int argc, char **argv) {
 	variables_map vars = parseArgs(argc, argv);
 	Script script(new Scumm6Parser, vars["inputfile"].as<string>().c_str());
 	if (vars.count("disasm")) {
-		for (size_t i = 0; i < script.size(); i++)
-			script.print(cout, i);
+		foreach (Instruction *instruction, script._instructions)
+			cout << instruction->toString();
 		exit(0);
 	}
-	CFG cfg(script);
+	ControlFlowGraph cfg;
+	cfg.addBlocksFromScript(script._instructions.begin(), script._instructions.end());
+	cfg.setEntry(script._instructions.front()->_addr);
 	if (vars.count("blocks")) {
-		cfg.printBasicBlocks(cout);
+		foreach (Block *block, cfg._blocks)
+			cout << block->toString() << endl;
 		exit(0);
 	}
-	cfg.removeJumpsToJumps();
-	cfg._graph.intervals();
 	if (vars.count("graph")) {
-		Graph<Block*> &g = cfg._graph;
-		g.orderNodes();
-		cfg.removeDeadBlocks();
-		g.intervals();
-		for (int i = 0; i < vars["derive"].as<int>(); i++)
-			g.extendIntervals();
-		g.loopStruct();
-		cfg.printDot(cout, vars["fontname"].as<string>());
+		cfg.removeJumpsToJumps();
+		cfg.orderBlocks();
+		cfg.removeUnreachableBlocks();
+		//		for (int i = 0; i < vars["derive"].as<int>(); i++)
+		//			cfg.extendIntervals();
+		cfg.loopStruct();
+		cout << cfg.graphvizToString(vars["fontname"].as<string>());
 		exit(0);
 	}
 	return 0;
