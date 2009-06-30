@@ -937,7 +937,7 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 
 		wxASSERT_MSG(stream, wxT("Could not bind input stream!"));
 
-		while(stream->CanRead()) {
+		while(stream && stream->CanRead()) {
 			wxFileOffset off = stream->GetLength();
 			if(off = wxInvalidOffset) {
 				return false;
@@ -965,14 +965,15 @@ void ProcessPage::onTerminate(wxProcessEvent &evt) {
 		outwin->WriteText(wxT("Subprocess exited sucessfully!"));
 	}
 	_finished = true;
+	_process = NULL;
 
 	updateButtons(panel, static_cast<WizardButtons *>(_topframe->FindWindowByName(wxT("WizardButtonPanel"))));
 }
 
-/*
+
 void ProcessPage::onNext(wxWindow *panel) {
-	switchPage(new ChooseInOutPage(_topframe));
-}*/
+	switchPage(new FinishPage(_topframe));
+}
 
 void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	if(_success) {
@@ -987,6 +988,47 @@ void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	}
 }
 
+// Page to choose ANY tool to use
+
+FinishPage::FinishPage(ScummToolsFrame* frame)
+	: WizardPage(frame)
+{
+}
+
+wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+
+	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+
+	sizer->AddSpacer(15);
+
+	wxString text = wxT("You have finished the wizard! Your files should now be extracted or compressed.");
+	sizer->Add(new wxStaticText(panel, wxID_ANY, text));
+
+	sizer->AddSpacer(10);
+
+	wxCheckBox *displayOut = new wxCheckBox(panel, wxID_ANY, wxT("Open output folder"), wxDefaultPosition, wxDefaultSize, 
+		0, wxDefaultValidator, wxT("DisplayOutput"));
+	sizer->Add(displayOut);
+
+	SetAlignedSizer(panel, sizer);
+
+	return panel;
+}
+
+void FinishPage::onNext(wxWindow *panel) {
+	wxCheckBox *display = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("DisplayOutput")));
+	if(display->GetValue())
+		// Haven't found the function to do this yet...
+		//wxOpenExplorer(_topframe->_configuration.outputPath);
+		;
+	_topframe->Close(true);
+}
+
+void FinishPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
+	buttons->enablePrevious(false);
+	buttons->showFinish(true);
+}
 
 
-	
+

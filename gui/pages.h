@@ -323,11 +323,28 @@ public:
 
 	bool onIdle(wxPanel *panel);
 
-	//void onNext(wxWindow *panel);
+	void onNext(wxWindow *panel);
 
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 
 	void save(wxWindow *panel);
 
 	DECLARE_EVENT_TABLE()
+};
+
+/**
+ * Just displays that we extracted the files, and offers to open the target folder
+ *
+ */
+
+class FinishPage : public WizardPage
+{
+public:
+	FinishPage(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	void onNext(wxWindow *panel);
+
+	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
