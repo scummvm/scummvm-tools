@@ -596,7 +596,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 
 void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
 	wxRadioButton *abr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("ABR")));
-	wxRadioButton *vbr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("VBR")));
+//	wxRadioButton *vbr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("VBR")));
 
 	wxChoice *vbrMinBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MinimumBitrate")));
 	wxChoice *vbrMaxBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MaximumBitrate")));
@@ -939,7 +939,7 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 
 		while(stream && stream->CanRead()) {
 			wxFileOffset off = stream->GetLength();
-			if(off = wxInvalidOffset) {
+			if(off == wxInvalidOffset) {
 				return false;
 			}
 			char *buf = new char[(size_t)off];
