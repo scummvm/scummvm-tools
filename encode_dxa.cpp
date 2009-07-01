@@ -569,8 +569,8 @@ int read_png_file(const char* filename, unsigned char *&image, unsigned char *&p
 	if (!info_ptr)
 		return 1;
 
-	if (setjmp(png_jmpbuf(png_ptr)))
-		return 1;
+	//if (setjmp(png_jmpbuf(png_ptr)))
+	//	return 1;
 
 	png_init_io(png_ptr, fp);
 	png_set_sig_bytes(png_ptr, 8);
@@ -591,8 +591,8 @@ int read_png_file(const char* filename, unsigned char *&image, unsigned char *&p
 	png_read_update_info(png_ptr, info_ptr);
 
 	// read file
-	if (setjmp(png_jmpbuf(png_ptr)))
-		return 1;
+	//if (setjmp(png_jmpbuf(png_ptr)))
+	//	return 1;
 
 	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
 	for (int y=0; y<height; y++)
@@ -680,9 +680,10 @@ void convertWAV(const Filename *inpath, const Filename* outpath) {
 	encodeAudio(inpath->getFullPath(), false, -1, outpath->getFullPath(), gCompMode);
 }
 
-const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\nOutput will be two files with the .dxa and the other depending on the used audio codec." kCompressionAudioHelp;
 
-int main(int argc, char *argv[]) {
+int export_main(compress_dxa)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\nOutput will be two files with the .dxa and the other depending on the used audio codec." kCompressionAudioHelp;
+	
 	int width, height, framerate, frames;
 	ScaleMode scaleMode;
 	Filename inpath, outpath;

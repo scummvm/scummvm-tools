@@ -57,6 +57,21 @@ typedef unsigned int uint32;
 typedef signed int int32;
 #endif
 
+
+/*
+ * Tools should not implement the actual main() themselves
+ * when they are compiled as a part of the master tool. So
+ * we make a macro to rename it automatically
+ *
+ * Perhaps EXPORT_MAIN is a bad name though.
+ */
+
+#ifdef EXPORT_MAIN
+	#define export_main(tool_name) main_ ## tool_name
+#else
+	#define export_main(tool_name) main
+#endif
+
 /*
  * Various utility macros
  */

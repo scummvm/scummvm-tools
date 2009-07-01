@@ -53,7 +53,9 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 	 3, 10,  1,  0,  0
 };
 
-int main (int argc, char **argv) {
+int export_main(extract_mm_c64)(int argc, char **argv) {
+	const char *helptext = "\nUsage: %s [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n";
+	
 	FILE *input1, *input2, *output;
 	int i, j;
 	unsigned short signature;
@@ -65,8 +67,7 @@ int main (int argc, char **argv) {
 	Filename inpath, outpath;
 
 	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc,
-		"\nUsage: %s [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n");
+	parseHelpArguments(argv, argc, helptext);
 	
 	// Continuing with finding out output directory
 	// also make sure we skip those arguments

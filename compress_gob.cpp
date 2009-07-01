@@ -45,9 +45,9 @@ bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, 
 
 byte *packData(byte *src, uint32 &size);
 
-const char *helptext = "\nUsage: %s [-o <output> = out.stk] <input file>\n";
+int export_main(compress_gob)(int argc, char **argv) {
+	const char *helptext = "\nUsage: %s [-o <output> = out.stk] <input file>\n";
 
-int main(int argc, char **argv) {
 	Chunk *chunks;
 	FILE *stk;
 	FILE *gobConf;

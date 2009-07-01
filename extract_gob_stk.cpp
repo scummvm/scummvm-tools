@@ -36,14 +36,14 @@ struct Chunk {
 	~Chunk() { delete next; }
 };
 
-void extractError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg);
+void reportExtractionError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg);
 Chunk *readChunkList(FILE *stk, FILE *gobConf);
 Chunk *readChunkListV2(FILE *stk, FILE *gobConf);
 void extractChunks(Filename *outpath, FILE *stk, Chunk *chunks);
 byte *unpackData(byte *src, uint32 &size);
 byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize);
 
-int main(int argc, char **argv) {
+int export_main(extract_gob_stk)(int argc, char **argv) {
 	char signature[7];
 	Chunk *chunks;
 	FILE *stk;
@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void extractError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg) {
+void reportExtractionError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg) {
 	if (f1)
 		fclose(f1);
 	if (f2)
@@ -126,7 +126,7 @@ Chunk *readChunkList(FILE *stk, FILE *gobConf) {
 
 	while (numDataChunks-- > 0) {
 		if (fread(curChunk->name, 1, 13, stk) < 13)
-			extractError(stk, gobConf, chunks, "Unexpected EOF");
+			reportExtractionError(stk, gobConf, chunks, "Unexpected EOF");
 
 		curChunk->size = readUint32LE(stk);
 		curChunk->offset = readUint32LE(stk);
@@ -178,13 +178,13 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	// + 04 bytes : Start position of Filenames Section
 
 	if (fread(buffer, 1, 14, stk) < 14)
-		extractError(stk, gobConf, chunks, "Unexpected EOF");
+		reportExtractionError(stk, gobConf, chunks, "Unexpected EOF");
 
 	buffer[14] = '\0';
 	sprintf(debugStr, "File generated on %s by ", buffer);
 
 	if (fread(buffer, 1, 8, stk) < 8)
-		extractError(stk, gobConf, chunks, "Unexpected EOF");
+		reportExtractionError(stk, gobConf, chunks, "Unexpected EOF");
 
 	buffer[8] = '\0';
 	strcat(debugStr, buffer);
@@ -198,13 +198,13 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	// + 04 bytes : Start position of Misc Section
 
 	if (fseek(stk, filenamePos, SEEK_SET) != 0)
-		extractError(stk, gobConf, chunks, "Unable to locate Filename Section");
+		reportExtractionError(stk, gobConf, chunks, "Unable to locate Filename Section");
 
 	numDataChunks = readUint32LE(stk);
 	miscPos = readUint32LE(stk);
 
 	if (numDataChunks == 0)
-		extractError(stk, gobConf, chunks, "Empty ITK/STK !");
+		reportExtractionError(stk, gobConf, chunks, "Empty ITK/STK !");
 
 	while (numDataChunks-- > 0) {
 		// Misc
@@ -223,16 +223,16 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		// + 04 bytes : Compression flag (AFAIK : 0= uncompressed, 1= compressed)
 
 		if (fseek(stk, miscPos + (cpt * 61), SEEK_SET) != 0)
-			extractError(stk, gobConf, chunks, "Unable to locate Misc Section");
+			reportExtractionError(stk, gobConf, chunks, "Unable to locate Misc Section");
 		filenamePos = readUint32LE(stk);
 
 		if (fread(buffer, 1, 36, stk) < 36)
-			extractError(stk, gobConf, chunks, "Unexpected EOF in Misc Section");
+			reportExtractionError(stk, gobConf, chunks, "Unexpected EOF in Misc Section");
 		curChunk->size = readUint32LE(stk);
 		decompSize = readUint32LE(stk);
 
 		if (fread(buffer, 1, 5, stk) < 5)
-			extractError(stk, gobConf, chunks, "Unexpected EOF in Misc Section");
+			reportExtractionError(stk, gobConf, chunks, "Unexpected EOF in Misc Section");
 
 		filePos = readUint32LE(stk);
 		compressFlag = readUint32LE(stk);
@@ -244,7 +244,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 				sprintf(debugStr,
 						"Unexpected value in compress flag : %d - Size : %d Uncompressed size : %d",
 						compressFlag, curChunk->size, decompSize);
-				extractError(stk, gobConf, chunks, debugStr);
+				reportExtractionError(stk, gobConf, chunks, debugStr);
 			} else {
 				curChunk->packed=false;
 			}
@@ -256,10 +256,10 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		// Those are now long filenames, at the opposite of previous STK version.
 
 		if (fseek(stk, filenamePos, SEEK_SET) != 0)
-			extractError(stk, gobConf, chunks, "Unable to locate filename");
+			reportExtractionError(stk, gobConf, chunks, "Unable to locate filename");
 
 		if (fgets(curChunk->name, 64, stk) == 0)
-			extractError(stk, gobConf, chunks, "Unable to read filename");
+			reportExtractionError(stk, gobConf, chunks, "Unable to read filename");
 
 		// Files
 		// =====
@@ -293,15 +293,15 @@ void extractChunks(Filename *outpath, FILE *stk, Chunk *chunks) {
 		FILE *chunkFile;
 		outpath->setFullName(curChunk->name);
 		if (!(chunkFile = fopen(outpath->getFullPath(), "wb")))
-			extractError(stk, 0, chunks, "Couldn't write file");
+			reportExtractionError(stk, 0, chunks, "Couldn't write file");
 
 		if (fseek(stk, curChunk->offset, SEEK_SET) == -1)
-			extractError(stk, chunkFile, chunks, "Unexpected EOF");
+			reportExtractionError(stk, chunkFile, chunks, "Unexpected EOF");
 
 		byte *data = new byte[curChunk->size];
 
 		if (fread((char *) data, curChunk->size, 1, stk) < 1)
-			extractError(stk, chunkFile, chunks, "Unexpected EOF");
+			reportExtractionError(stk, chunkFile, chunks, "Unexpected EOF");
 
 		if (curChunk->packed) {
 			uint32 realSize;
@@ -313,13 +313,13 @@ void extractChunks(Filename *outpath, FILE *stk, Chunk *chunks) {
 			}
 
 			if (fwrite((char *) unpackedData, realSize, 1, chunkFile) < 1)
-				extractError(stk, chunkFile, chunks, "Couldn't write");
+				reportExtractionError(stk, chunkFile, chunks, "Couldn't write");
 
 			delete[] unpackedData;
 
 		} else {
 			if (fwrite((char *) data, curChunk->size, 1, chunkFile) < 1)
-				extractError(stk, chunkFile, chunks, "Couldn't write");
+				reportExtractionError(stk, chunkFile, chunks, "Couldn't write");
 		}
 
 		delete[] data;

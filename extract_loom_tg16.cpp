@@ -1224,7 +1224,7 @@ uint32 ISO_CRC (FILE *file) {
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int main (int argc, char **argv) {
+int export_main(extract_loom_tg16)(int argc, char **argv) {
 #ifdef MAKE_LFLS
 	FILE *input, *output;
 	int i, j;

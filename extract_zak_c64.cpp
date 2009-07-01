@@ -23,19 +23,19 @@
 #include "util.h"
 #include <stdarg.h>
 
-void writeByteAlt(FILE *fp, uint8 b) {
+void writeByteAltC64(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
 
-void writeUint16LEAlt(FILE *fp, uint16 value) {
+void writeUint16LEAltC64(FILE *fp, uint16 value) {
 	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
 }
 
-#define writeByte writeByteAlt
-#define writeUint16LE writeUint16LEAlt
+#define writeByte writeByteAltC64
+#define writeUint16LE writeUint16LEAltC64
 
 #define NUM_ROOMS 59
-unsigned char room_disks[NUM_ROOMS], room_tracks[NUM_ROOMS], room_sectors[NUM_ROOMS];
+unsigned char room_disks_c64[NUM_ROOMS], room_tracks_c64[NUM_ROOMS], room_sectors_c64[NUM_ROOMS];
 
 static const int SectorOffset[36] = {
 	0,
@@ -53,7 +53,9 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 	 3,  1,  2,  1,  2,  1, 10,  1,  1
 };
 
-int main (int argc, char **argv) {
+int export_main(extract_zak_c64)(int argc, char **argv) {
+	const char *helptext = "\nUsage: %s [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n";
+
 	FILE *input1, *input2, *output;
 	int i, j;
 	unsigned short signature;
@@ -65,8 +67,7 @@ int main (int argc, char **argv) {
 	Filename outpath;
 
 	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc,
-		"\nUsage: %s [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n");
+	parseHelpArguments(argv, argc, helptext);
 	
 	// Continuing with finding out output directory
 	// also make sure we skip those arguments
@@ -108,14 +109,14 @@ int main (int argc, char **argv) {
 
 	/* copy room offsets */
 	for (i = 0; i < NUM_ROOMS; i++) {
-		room_disks[i] = readByte(input1);
-		writeByte(output, room_disks[i]);
+		room_disks_c64[i] = readByte(input1);
+		writeByte(output, room_disks_c64[i]);
 	}
 	for (i = 0; i < NUM_ROOMS; i++) {
-		room_sectors[i] = readByte(input1);
-		writeByte(output, room_sectors[i]);
-		room_tracks[i] = readByte(input1);
-		writeByte(output, room_tracks[i]);
+		room_sectors_c64[i] = readByte(input1);
+		writeByte(output, room_sectors_c64[i]);
+		room_tracks_c64[i] = readByte(input1);
+		writeByte(output, room_tracks_c64[i]);
 	}
 
 	/* copy costume offsets */
@@ -141,9 +142,9 @@ int main (int argc, char **argv) {
 	for (i = 0; i < NUM_ROOMS; i++) {
 		FILE *input;
 
-		if (room_disks[i] == '1')
+		if (room_disks_c64[i] == '1')
 			input = input1;
-		else if (room_disks[i] == '2')
+		else if (room_disks_c64[i] == '2')
 			input = input2;
 		else
 			continue;
@@ -157,7 +158,7 @@ int main (int argc, char **argv) {
 		}
 
 		notice("Creating %s...", fname);
-		fseek(input, (SectorOffset[room_tracks[i]] + room_sectors[i]) * 256, SEEK_SET);
+		fseek(input, (SectorOffset[room_tracks_c64[i]] + room_sectors_c64[i]) * 256, SEEK_SET);
 
 		for (j = 0; j < ResourcesPerFile[i]; j++) {
 			unsigned short len = readUint16LE(input);

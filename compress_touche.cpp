@@ -164,9 +164,10 @@ static void compress_sound_data(Filename *inpath, Filename *outpath) {
 	printf("Done.\n");
 }
 
-const char *helptext = "\nUsage: %s [params] [-o outputfile TOUCHE.*] <inputdir>\n* differs with compression type.\n" kCompressionAudioHelp;
 
-int main(int argc, char *argv[]) {
+int export_main(compress_touche)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [params] [-o outputfile TOUCHE.*] <inputdir>\n* differs with compression type.\n" kCompressionAudioHelp;
+	
 	Filename inpath, outpath;
 	int first_arg = 1;
 	int last_arg = argc - 1;

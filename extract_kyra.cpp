@@ -24,7 +24,17 @@
 #include "kyra_pak.h"
 #include "kyra_ins.h"
 
-int main(int argc, char **argv) {
+int export_main(extract_kyra)(int argc, char **argv) {
+	const char *helptext = "\n"
+		"Usage: %s [params] [-o output] <archivefile> [-o output]\n"
+		"Default output path is ./out/\n"
+		"nParams:\n"
+		"-e <filename>     Extract only <filename> from the archive, will be extracted \n"
+		"                  into the current directory.\n"
+		"-x                Extract all files (default)\n"
+		"-a                Extract files from the Amiga .PAK files\n"
+		"-2                Extract files from HoF installer files\n";
+
 	int first_arg = 1;
 	int last_arg = argc - 1;
 
@@ -34,15 +44,7 @@ int main(int argc, char **argv) {
 	Filename outpath, inputpath;
 
 	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc, "\n"
-		"Usage: %s [params] [-o output] <archivefile> [-o output]\n"
-		"Default output path is ./out/\n"
-		"nParams:\n"
-		"-e <filename>     Extract only <filename> from the archive, will be extracted \n"
-		"                  into the current directory.\n"
-		"-x                Extract all files (default)\n"
-		"-a                Extract files from the Amiga .PAK files\n"
-		"-2                Extract files from HoF installer files\n");
+	parseHelpArguments(argv, argc, helptext);
 
 	int param = first_arg;
 

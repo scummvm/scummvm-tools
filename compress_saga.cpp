@@ -436,9 +436,9 @@ void sagaEncode(Filename *inpath, Filename *outpath) {
 	printf("Done!\n");
 }
 
-const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n" kCompressionAudioHelp;
+int export_main(compress_saga)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n" kCompressionAudioHelp;
 
-int main(int argc, char *argv[]) {
 	Filename inpath, outpath;
 	int first_arg = 1;
 	int last_arg = argc - 1;

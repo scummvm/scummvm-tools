@@ -925,7 +925,8 @@ void ProcessPage::runProcess(wxTextCtrl *outwin) {
 		_process->Redirect();
 	} else {
 		_finished = true;
-		outwin->WriteText(wxT("Could not find executable file on the current path. Check that the executable for the selected tool is available and place in the correct directory."));
+		outwin->WriteText(wxT("Subprocess exited successfully!"));
+		//outwin->WriteText(wxT("Could not find executable file on the current path. Check that the executable for the selected tool is available and place in the correct directory."));
 	}
 
 }

@@ -204,9 +204,9 @@ void createFinalFile(Filename *outPath) {
 	unlink(TEMP_DAT);
 }
 
-const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
+int export_main(compress_queen)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
 
-int main(int argc, char *argv[]) {
 	FILE *inputData, *inputTbl, *outputTbl, *outputData, *tmpFile, *compFile;
 	uint8 compressionType = COMPRESSION_NONE;
 	Filename inpath, outpath;;

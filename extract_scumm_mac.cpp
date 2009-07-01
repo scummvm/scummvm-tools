@@ -26,7 +26,12 @@
 /* this makes extract_scumm_mac convert extracted file names to lower case */
 #define CHANGECASE
 
-int main(int argc, char *argv[]) {
+int export_main(extract_scumm_mac)(int argc, char *argv[]) {
+	const char *helptext =
+		"\nUsage: %s [-o <output dir> = out/] <file>\n"
+		"\tSome Lucas Arts CDs appear to contains only an application.\n"
+		"\tThey actually contain a seperate data file as a hidden file.\n";
+
 	FILE *ifp, *ofp;
 	unsigned long file_record_off, file_record_len;
 	unsigned long file_off, file_len;
@@ -42,10 +47,7 @@ int main(int argc, char *argv[]) {
 	Filename outpath;
 
 	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc,
-		"\nUsage: %s [-o <output dir> = out/] <file>\n"
-		"\tSome Lucas Arts CDs appear to contains only an application.\n"
-		"\tThey actually contain a seperate data file as a hidden file.\n");
+	parseHelpArguments(argv, argc, helptext);
 	
 	// Continuing with finding out output directory
 	// also make sure we skip those arguments

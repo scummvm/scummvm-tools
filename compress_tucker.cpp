@@ -519,9 +519,10 @@ static void compress_sound_files(const Filename *inpath, const Filename *outpath
 	printf("Done.\n");
 }
 
-const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputdir] inputdir\n";
 
-int main(int argc, char *argv[]) {
+int export_main(compress_tucker)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputdir] inputdir\n";
+
 	Filename inpath, outpath;
 	int first_arg = 1;
 	int last_arg = argc - 1;

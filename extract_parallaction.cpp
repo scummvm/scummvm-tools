@@ -320,11 +320,12 @@ void optDump(const char *file, Filename *outpath, bool smallArchive) {
 	}
 }
 
-int main(int argc, char *argv[]) {
+int export_main(extract_parallaction)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [--small] [-o <output dir> = out/] <file>\n";
+
 	Filename outpath;
 
-	parseHelpArguments(argv, argc,
-		"\nUsage: %s [--small] [-o <output dir> = out/] <file>\n");
+	parseHelpArguments(argv, argc, helptext);
 
 	// Continuing with finding out output directory
 	// also make sure we skip those arguments

@@ -31,9 +31,9 @@ static bool detectKyra3File(Filename *infile);
 
 static CompressMode gCompMode = kMP3Mode;
 
-const char *helptext = "\nUsage: %s [mode] [mode params] [-o out = ] <infile>\n" kCompressionAudioHelp;
+int export_main(compress_kyra)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [mode] [mode params] [-o out = ] <infile>\n" kCompressionAudioHelp;
 
-int main(int argc, char *argv[]) {
 	Filename inpath, outpath;
 	int first_arg = 1;
 	int last_arg = argc - 1;

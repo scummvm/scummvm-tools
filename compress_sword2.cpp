@@ -60,9 +60,10 @@ uint32 append_to_file(FILE *f1, const char *filename) {
 #define GetCompressedSign(n)       (((n) >> 3) & 1)
 #define GetCompressedAmplitude(n)  ((n) & 7)
 
-const char *helptext = "\nUsage: %s [params] <file>\n\n" kCompressionAudioHelp;
 
-int main(int argc, char *argv[]) {
+int export_main(compress_sword2)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [params] <file>\n\n" kCompressionAudioHelp;
+	
 	FILE *output, *f;
 	int j;
 	uint32 indexSize;

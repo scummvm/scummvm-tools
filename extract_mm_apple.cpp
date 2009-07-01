@@ -23,19 +23,19 @@
 #include "util.h"
 #include <stdarg.h>
 
-void writeByteAlt(FILE *fp, uint8 b) {
+void writeByteAltApple(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
 
-void writeUint16LEAlt(FILE *fp, uint16 value) {
+void writeUint16LEAltApple(FILE *fp, uint16 value) {
 	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
 }
 
-#define writeByte writeByteAlt
-#define writeUint16LE writeUint16LEAlt
+#define writeByte writeByteAltApple
+#define writeUint16LE writeUint16LEAltApple
 
 #define NUM_ROOMS	55
-unsigned char room_disks[NUM_ROOMS], room_tracks[NUM_ROOMS], room_sectors[NUM_ROOMS];
+unsigned char room_disks_apple[NUM_ROOMS], room_tracks_apple[NUM_ROOMS], room_sectors_apple[NUM_ROOMS];
 
 static const int SectorOffset[36] = {
 	0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256,
@@ -52,7 +52,9 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 	 3, 10,  1,  0,  0
 };
 
-int main (int argc, char **argv) {
+int export_main(extract_mm_apple)(int argc, char **argv) {
+	const char *helptext = "\nUsage: %s [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n";
+
 	FILE *input1, *input2, *output;
 	int i, j;
 	unsigned short signature;
@@ -64,8 +66,7 @@ int main (int argc, char **argv) {
 	Filename inpath, outpath;
 
 	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc,
-		"\nUsage: %s [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n");
+	parseHelpArguments(argv, argc, helptext);
 	
 	// Continuing with finding out output directory
 	// also make sure we skip those arguments
@@ -112,14 +113,14 @@ int main (int argc, char **argv) {
 
 	/* copy room offsets */
 	for (i = 0; i < NUM_ROOMS; i++) {
-		room_disks[i] = readByte(input1);
-		writeByte(output, room_disks[i]);
+		room_disks_apple[i] = readByte(input1);
+		writeByte(output, room_disks_apple[i]);
 	}
 	for (i = 0; i < NUM_ROOMS; i++) {
-		room_sectors[i] = readByte(input1);
-		writeByte(output, room_sectors[i]);
-		room_tracks[i] = readByte(input1);
-		writeByte(output, room_tracks[i]);
+		room_sectors_apple[i] = readByte(input1);
+		writeByte(output, room_sectors_apple[i]);
+		room_tracks_apple[i] = readByte(input1);
+		writeByte(output, room_tracks_apple[i]);
 	}
 
 	/* copy costume offsets */
@@ -147,9 +148,9 @@ int main (int argc, char **argv) {
 	for (i = 0; i < NUM_ROOMS; i++) {
 		FILE *input;
 
-		if (room_disks[i] == '1')
+		if (room_disks_apple[i] == '1')
 			input = input1;
-		else if (room_disks[i] == '2')
+		else if (room_disks_apple[i] == '2')
 			input = input2;
 		else
 			continue;
@@ -161,7 +162,7 @@ int main (int argc, char **argv) {
 			error("Unable to create %s!", fname);
 
 		notice("Creating %s...", fname);
-		fseek(input, (SectorOffset[room_tracks[i]] + room_sectors[i]) * 256, SEEK_SET);
+		fseek(input, (SectorOffset[room_tracks_apple[i]] + room_sectors_apple[i]) * 256, SEEK_SET);
 
 		for (j = 0; j < ResourcesPerFile[i]; j++) {
 			unsigned short len = readUint16LE(input);

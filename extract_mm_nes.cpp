@@ -28,16 +28,16 @@
 #define MAKE_LFLS
 
 #ifdef MAKE_LFLS
-void writeByteAlt(FILE *fp, uint8 b) {
+void writeByteAltNES(FILE *fp, uint8 b) {
 	writeByte(fp, (uint8)(b ^ 0xFF));
 }
 
-void writeUint16LEAlt(FILE *fp, uint16 value) {
+void writeUint16LEAltNES(FILE *fp, uint16 value) {
 	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
 }
 
-#define writeByte writeByteAlt
-#define writeUint16LE writeUint16LEAlt
+#define writeByte writeByteAltNES
+#define writeUint16LE writeUint16LEAltNES
 #endif
 
 typedef enum _res_type {
@@ -1165,7 +1165,12 @@ static uint32 CheckROM(FILE *file) {
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int main(int argc, char **argv) {
+int export_main(extract_mm_nes)(int argc, char **argv) {
+	const char *helptext =
+		"\nUsage: %s [-o <output dir> = out/] <infile.PRG>\n"
+		"\tSupported versions: USA, Europe, Sweden, France, Germany, Spain\n"
+		"\tJapanese version is NOT supported!\n";
+
 	FILE *input, *output;
 	int i, j;
 	uint32 CRC;
@@ -1177,10 +1182,7 @@ int main(int argc, char **argv) {
 	Filename inpath, outpath;
 
 	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc,
-		"\nUsage: %s [-o <output dir> = out/] <infile.PRG>\n"
-		"\tSupported versions: USA, Europe, Sweden, France, Germany, Spain\n"
-		"\tJapanese version is NOT supported!\n");
+	parseHelpArguments(argv, argc, helptext);
 	
 	// Continuing with finding out output directory
 	// also make sure we skip those arguments

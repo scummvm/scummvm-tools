@@ -186,7 +186,7 @@ int savefile(const char *name, void *mem, size_t length) {
 	return 1;
 }
 
-int main(int argc, char *argv[]) {
+int export_main(extract_agos)(int argc, char *argv[]) {
 	int first_arg = 1;
 	int last_arg = argc;
 

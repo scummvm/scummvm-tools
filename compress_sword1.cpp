@@ -579,13 +579,14 @@ void checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath) 
 	}
 }
 
-const char *helptext = "\nUsage: %s [only] [mode] [mode params] [-o outputdir] <inputdir>\n"
-	"only can be either:\n"
-	" --speech-only  only encode speech clusters\n"
-	" --music-only   only encode music files\n"
-	kCompressionAudioHelp;
+int export_main(compress_sword1)(int argc, char *argv[]) {
 
-int main(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [only] [mode] [mode params] [-o outputdir] <inputdir>\n"
+		"only can be either:\n"
+		" --speech-only  only encode speech clusters\n"
+		" --music-only   only encode music files\n"
+		kCompressionAudioHelp;
+
 	CompressMode compMode = kMP3Mode;
 	Filename inpath, outpath;
 	int first_arg = 1;

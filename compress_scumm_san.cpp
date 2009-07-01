@@ -59,7 +59,7 @@ static int32 _waveDataSize;
 static AudioTrackInfo _audioTracks[MAX_TRACKS];
 static bool _oggMode = false; // mp3 default
 
-void encodeWaveWithOgg(char *filename) {
+void encodeSanWaveWithOgg(char *filename) {
 	char fbuf[2048];
 	char fbuf2[2048];
 	sprintf(fbuf, "%s.wav", filename);
@@ -67,7 +67,7 @@ void encodeWaveWithOgg(char *filename) {
 	encodeAudio(fbuf, false, -1, fbuf2, kVorbisMode);
 }
 
-void encodeWaveWithLame(char *filename) {
+void encodeSanWaveWithLame(char *filename) {
 	char fbuf[2048];
 	char fbuf2[2048];
 
@@ -128,7 +128,7 @@ void writeWaveHeader(int s_size) {
 	fclose(_waveTmpFile);
 	_waveTmpFile = NULL;
 }
-void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
+void writeToTempWaveFile(char *fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile) {
 		_waveTmpFile = fopen(fileName, "wb");
 		if (!_waveTmpFile) {
@@ -193,7 +193,7 @@ void decompressComiIACT(char *fileName, byte *output_data, byte *d_src, int bsiz
 						*dst++ = (byte)(val);
 					}
 				} while (--count);
-				writeToTempWave(fileName, output_data, 0x1000);
+				writeToTempWaveFile(fileName, output_data, 0x1000);
 				bsize -= len;
 				d_src += len;
 				_IACTpos = 0;
@@ -626,11 +626,11 @@ void handlePSAD(FILE *input, int size, const char *outputDir, const char *inputF
 	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, size, volume, pan, false);
 }
 
-// TODO
-// Feature set seems more limited than what kCompressionAudioHelp contains
-const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" kCompressionAudioHelp;
+int export_main(compress_scumm_san)(int argc, char *argv[]) {
+	// TODO
+	// Feature set seems more limited than what kCompressionAudioHelp contains
+	const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" kCompressionAudioHelp;
 
-int main(int argc, char *argv[]) {
 	Filename inpath, outpath;
 	char outdir[768];
 	int first_arg = 1;
@@ -836,9 +836,9 @@ skip:
 		writeWaveHeader(_waveDataSize);
 		sprintf(tmpPath, "%s/%s", outdir, inpath.getFullName());
 		if (_oggMode)
-			encodeWaveWithOgg(tmpPath);
+			encodeSanWaveWithOgg(tmpPath);
 		else
-			encodeWaveWithLame(tmpPath);
+			encodeSanWaveWithLame(tmpPath);
 		sprintf(tmpPath, "%s/%s.wav", outdir, inpath.getFullName());
 		unlink(tmpPath);
 	}

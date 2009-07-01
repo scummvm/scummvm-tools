@@ -192,7 +192,7 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 			int numbytes = _src->getKeyMasked(4) + 4;
 
 			while (numbytes--)
-				_tables[7][*itbl++] = _src->getKeyMasked(3);
+				_tables[7][*itbl++] = (uint8)_src->getKeyMasked(3);
 
 			generateTables(7, 8, 255, 19);
 
@@ -205,7 +205,7 @@ bool FileExpander::process(uint8 *dst, const uint8 *src, uint32 outsize, uint32 
 				_src->advSrcBitsByIndex(_tables[7][cmd]);
 
 				if (cmd < 16) {
-					*tmp++ = cmd;
+					*tmp++ = (uint8)cmd;
 					cnt--;
 				} else {
 					uint8 tmpI = 0;

@@ -140,9 +140,10 @@ void get_part(const char *inputPath) {
 	writeUint32BE(output_idx, tot_size);
 }
 
-const char *helptext = "\nUsage: %s [mode] [mode params] monster.sou\n" kCompressionAudioHelp;
 
-int main(int argc, char *argv[]) {
+int export_main(compress_scumm_sou)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [mode] [mode params] monster.sou\n" kCompressionAudioHelp;
+
 	char buf[2048];
 	Filename inpath, outpath;
 	int first_arg = 1;

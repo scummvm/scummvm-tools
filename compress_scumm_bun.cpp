@@ -1084,9 +1084,10 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 	cbundleCurIndex++;
 }
 
-const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outputfile = inputfile.bun] <inputfile>\n";
 
-int main(int argc, char *argv[]) {
+int export_main(compress_scumm_bun)(int argc, char *argv[]) {
+	const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outputfile = inputfile.bun] <inputfile>\n";
+
 	Filename inpath, outpath;
 	int first_arg = 1;
 	int last_arg = argc - 1;
