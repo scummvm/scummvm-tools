@@ -68,7 +68,7 @@ clean:
 
 test:
 	cxxtest/cxxtestgen.pl --error-printer --abort-on-fail --have-eh -o test_runner.cpp test/test_*.h
-	g++ -g $(DEFINES) $(INCLUDES)  -Icxxtest -o test_runner test_runner.cpp
+	g++ -g $(DEFINES) $(INCLUDES)  -Icxxtest -o test_runner test_runner.cpp graph.cpp misc.cpp
 	./test_runner
 
 

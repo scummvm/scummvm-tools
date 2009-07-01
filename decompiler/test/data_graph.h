@@ -2,95 +2,78 @@
 #define DATA_GRAPH_H
 
 #include <boost/foreach.hpp>
+#include <list>
+
+#include <graph.h>
+#include <instruction.h>
 
 
-Graph<int>::Node *findNode(Graph<int> *g, int data) {
-	BOOST_FOREACH (Graph<int>::Node *u, g->_nodes)
-		if (u->_data == data)
+unsigned addr(Block *block) {
+	return block->_instructions.front()->_addr;
+}
+
+Block *node(ControlFlowGraph *g, unsigned addr) {
+	BOOST_FOREACH (Block *u, g->_blocks)
+		if (u->_instructions.front()->_addr == addr)
 			return u;
 	return 0;
 }
 
-Graph<int> *makeGraph1() {
-	Graph<int> *g = new Graph<int>;
-	g->addNode(1);
-	g->addNode(2);
-	g->addNode(3);
-	g->addNode(4);
-	g->addNode(5);
-	g->addNode(6);
-	g->addEdge(findNode(g, 1), findNode(g, 2));
-	g->addEdge(findNode(g, 2), findNode(g, 3));
-	g->addEdge(findNode(g, 2), findNode(g, 5));
-	g->addEdge(findNode(g, 3), findNode(g, 4));
-	g->addEdge(findNode(g, 4), findNode(g, 2));
-	g->addEdge(findNode(g, 5), findNode(g, 1));
-	g->addEdge(findNode(g, 5), findNode(g, 6));
+ControlFlowGraph *makeGraph1() {
+	std::list<Instruction*> instructions;
+	instructions.push_back(new        Jump("nop",       1, +1));
+	instructions.push_back(new    CondJump("jumpif +3", 2, +3));
+	instructions.push_back(new        Jump("nop",       3, +1));
+	instructions.push_back(new        Jump("jump -2",   4, -2));
+	instructions.push_back(new    CondJump("jumpif -4", 5, -4));
+	instructions.push_back(new Instruction("ret",       6    ));
+	ControlFlowGraph *g = new ControlFlowGraph;
+	g->addBlocksFromScript(instructions.begin(), instructions.end());
+	g->setEntry(1);
 	return g;
 }
 
-Graph<int> *makeGraph2() {
-	Graph<int> *g = new Graph<int>;
-	g->addNode(15);
-	g->addNode(14);
-	g->addNode(13);
-	g->addNode(12);
-	g->addNode(11);
-	g->addNode(10);
-	g->addNode(9);
-	g->addNode(8);
-	g->addNode(7);
-	g->addNode(6);
-	g->addNode(5);
-	g->addNode(4);
-	g->addNode(3);
-	g->addNode(2);
-	g->addNode(1);
-	g->setEntry(findNode(g, 1));
-	g->addEdge(findNode(g, 1), findNode(g, 2));
-	g->addEdge(findNode(g, 1), findNode(g, 5));
-	g->addEdge(findNode(g, 2), findNode(g, 3));
-	g->addEdge(findNode(g, 2), findNode(g, 4));
-	g->addEdge(findNode(g, 3), findNode(g, 5));
-	g->addEdge(findNode(g, 4), findNode(g, 5));
-	g->addEdge(findNode(g, 5), findNode(g, 6));
-	g->addEdge(findNode(g, 6), findNode(g, 7));
-	g->addEdge(findNode(g, 6), findNode(g, 12));
-	g->addEdge(findNode(g, 7), findNode(g, 8));
-	g->addEdge(findNode(g, 7), findNode(g, 9));
-	g->addEdge(findNode(g, 8), findNode(g, 9));
-	g->addEdge(findNode(g, 8), findNode(g, 10));
-	g->addEdge(findNode(g, 9), findNode(g, 10));
-	g->addEdge(findNode(g, 10), findNode(g, 11));
-	g->addEdge(findNode(g, 12), findNode(g, 13));
-	g->addEdge(findNode(g, 13), findNode(g, 14));
-	g->addEdge(findNode(g, 14), findNode(g, 13));
-	g->addEdge(findNode(g, 14), findNode(g, 15));
-	g->addEdge(findNode(g, 15), findNode(g, 6));
+ControlFlowGraph *makeGraph2() {
+	std::list<Instruction*> instructions;
+	instructions.push_back(new    CondJump("jumpif +4",  1, +4));
+	instructions.push_back(new    CondJump("jumpif +2",  2, +2));
+	instructions.push_back(new        Jump("jump +2",    3, +2));
+	instructions.push_back(new        Jump("nop",        4, +1));
+	instructions.push_back(new        Jump("nop",        5, +1));
+	instructions.push_back(new    CondJump("jumpif +5",  6, +5));
+	instructions.push_back(new        Jump("nop",        7, +1));
+	instructions.push_back(new        Jump("nop",        8, +1));
+	instructions.push_back(new    CondJump("jumpif ",    9, -1));
+	instructions.push_back(new        Jump("-4",        10, -4));
+	instructions.push_back(new    CondJump("jumpif +2", 11, +2));
+	instructions.push_back(new        Jump("nop",       12, +1));
+	instructions.push_back(new        Jump("nop",       13, +1));
+	instructions.push_back(new Instruction("ret",       14    ));
+	ControlFlowGraph *g = new ControlFlowGraph;
+	g->addBlocksFromScript(instructions.begin(), instructions.end());
+	g->setEntry(1);
 	return g;
 }
 
-Graph<int> *makeGraph3() {
-	Graph<int> *g = new Graph<int>;
-	g->addNode(1);
-	g->addNode(2);
-	g->addNode(3);
-	g->addEdge(findNode(g, 1), findNode(g, 2));
-	g->addEdge(findNode(g, 1), findNode(g, 3));
-	g->addEdge(findNode(g, 2), findNode(g, 3));
-	g->addEdge(findNode(g, 3), findNode(g, 2));
+ControlFlowGraph *makeGraph3() {
+	std::list<Instruction*> instructions;
+	instructions.push_back(new    CondJump("jumpif +2", 1, +2));
+	instructions.push_back(new        Jump("nop",       2, +1));
+	instructions.push_back(new        Jump("jump -1",   3, -1));
+	ControlFlowGraph *g = new ControlFlowGraph;
+	g->addBlocksFromScript(instructions.begin(), instructions.end());
+	g->setEntry(1);
 	return g;
 }
 
-Graph<int> *makeGraph4() {
-	Graph<int> *g = new Graph<int>;
-	g->addNode(1);
-	g->addNode(2);
-	g->addNode(3);
-	g->addEdge(findNode(g, 1), findNode(g, 2));
-	g->addEdge(findNode(g, 2), findNode(g, 2));
-	g->addEdge(findNode(g, 2), findNode(g, 3));
-	g->addEdge(findNode(g, 3), findNode(g, 1));
+ControlFlowGraph *makeGraph4() {
+	std::list<Instruction*> instructions;
+	instructions.push_back(new        Jump("nop",       1, +1));
+	instructions.push_back(new    CondJump("jumpif +0", 2, +0));
+	instructions.push_back(new        Jump("jump -2",   3, -2));
+	ControlFlowGraph *g = new ControlFlowGraph;
+	g->addBlocksFromScript(instructions.begin(), instructions.end());
+	g->setEntry(1);
 	return g;
 }
 
