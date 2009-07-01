@@ -348,7 +348,7 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 	uint16 dicoIndex;
 	uint32 unpackedIndex, size;
 	uint8 cmd;
-	uint8 buffIndex, cpt, i;
+	uint8 buffIndex, cpt;
 	uint16 resultcheckpos;
 	byte resultchecklength;
 
@@ -402,7 +402,7 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 			counter--;
 		} else {
 // Copy the string in the dictionary
-			for (i=0; i < resultchecklength; i++)
+			for (int i = 0; i < resultchecklength; i++)
 				dico[((dicoIndex + i) % 4096)] = dico[((resultcheckpos + i) % 4096)];
 
 // Write the copy string command
