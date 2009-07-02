@@ -37,10 +37,8 @@ public:
 		TS_ASSERT_EQUALS(addr(node(gb,8)->_interval), 8);
 		TS_ASSERT_EQUALS(addr(node(gb,9)->_interval), 8);
 		TS_ASSERT_EQUALS(addr(node(gb,10)->_interval), 8);
-		TS_ASSERT_EQUALS(addr(node(gb,11)->_interval), 6);
-		TS_ASSERT_EQUALS(addr(node(gb,12)->_interval), 6);
-		TS_ASSERT_EQUALS(addr(node(gb,13)->_interval), 6);
-		TS_ASSERT_EQUALS(addr(node(gb,14)->_interval), 6);
+		for (int i = 11; i <= 15; i++)
+			TS_ASSERT_EQUALS(addr(node(gb,i)->_interval), 6);
 
 		gc->intervals();
 		TS_ASSERT_EQUALS(addr(node(gc,1)->_interval), 1);
@@ -64,10 +62,10 @@ public:
 		gb->extendIntervals();
 		for (int i = 1; i <= 5; i++)
 			TS_ASSERT_EQUALS(addr(node(gb,i)->_interval), 1);
-		for (int i = 6; i <= 14; i++)
+		for (int i = 6; i <= 15; i++)
 			TS_ASSERT_EQUALS(addr(node(gb,i)->_interval), 6);
 		gb->extendIntervals();
-		for (int i = 1; i <= 14; i++)
+		for (int i = 1; i <= 15; i++)
 			TS_ASSERT_EQUALS(addr(node(gb,i)->_interval), 1);
 
 		gc->intervals();

@@ -46,9 +46,10 @@ ControlFlowGraph *makeGraph2() {
 	instructions.push_back(new    CondJump("jumpif ",    9, -1));
 	instructions.push_back(new        Jump("-4",        10, -4));
 	instructions.push_back(new    CondJump("jumpif +2", 11, +2));
-	instructions.push_back(new        Jump("nop",       12, +1));
+	instructions.push_back(new    CondJump("jumpif +2", 12, +2));
 	instructions.push_back(new        Jump("nop",       13, +1));
-	instructions.push_back(new Instruction("ret",       14    ));
+	instructions.push_back(new        Jump("nop",       14, +1));
+	instructions.push_back(new Instruction("ret",       15    ));
 	ControlFlowGraph *g = new ControlFlowGraph;
 	g->addBlocksFromScript(instructions.begin(), instructions.end());
 	g->setEntry(1);
