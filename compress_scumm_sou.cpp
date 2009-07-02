@@ -155,7 +155,7 @@ int export_main(compress_scumm_sou)(int argc, char *argv[]) {
 	// compression mode
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if(gCompMode == kNoAudioMode) {
+	if (gCompMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}

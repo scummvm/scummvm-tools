@@ -69,13 +69,13 @@ int export_main(compress_gob)(int argc, char *argv[]) {
 		// Standard output
 		outpath.setFullPath("out.stk");
 
-	if(last_arg - first_arg != 0)
+	if (last_arg - first_arg != 0)
 		error("Expected only one input file");
 
 	inpath.setFullPath(argv[first_arg]);
 
 	// We output with .stk extension, if there is no specific out file
-	if(outpath.empty()) {
+	if (outpath.empty()) {
 		outpath = inpath;
 		outpath.setExtension(".stk");
 	}
@@ -161,7 +161,7 @@ void writeBody(Filename *inpath, FILE *stk, uint16 chunkCount, Chunk *chunks) {
 	char buffer[4096];
 	uint32 tmpSize;
 
-	while(curChunk) {
+	while (curChunk) {
 		inpath->setFullName(curChunk->name);
 		if (!(src = fopen(inpath->getFullPath(), "rb")))
 			error("Couldn't open conf file \"%s\"", inpath->getFullPath());

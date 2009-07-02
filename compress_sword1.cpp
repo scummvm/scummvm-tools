@@ -597,7 +597,7 @@ int export_main(compress_sword1)(int argc, char *argv[]) {
 	parseHelpArguments(argv, argc, helptext);
 
 	// Check extra arguments
-	if(strcmp(argv[first_arg], "--speech-only") == 0) {
+	if (strcmp(argv[first_arg], "--speech-only") == 0) {
 		compMusic = false;
 		++first_arg;
 	} else if (strcmp(argv[first_arg], "--music-only") == 0) {
@@ -608,7 +608,7 @@ int export_main(compress_sword1)(int argc, char *argv[]) {
 	// compression mode
 	compMode = process_audio_params(argc, argv, &first_arg);
 
-	if(compMode == kNoAudioMode) {
+	if (compMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -637,7 +637,7 @@ int export_main(compress_sword1)(int argc, char *argv[]) {
 
 	inpath.setFullPath(argv[first_arg]);
 
-	if(outpath.empty())
+	if (outpath.empty())
 		// Extensions change between the in/out files, so we can use the same directory
 		outpath = inpath;
 

@@ -707,7 +707,7 @@ int export_main(compress_dxa)(int argc, char *argv[]) {
 
 	inpath.setFullPath(argv[first_arg]);
 
-	if(outpath.empty()) {
+	if (outpath.empty()) {
 		// Actual change of extension is done later...
 		outpath = inpath;
 	}

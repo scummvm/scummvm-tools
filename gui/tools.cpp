@@ -169,8 +169,8 @@ void Tools::addTool(const Tool& tool) {
 
 wxArrayString Tools::getToolList(ToolType tt) const {
 	wxArrayString l;
-	for(std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
-		if(tt == TOOLTYPE_ALL || iter->second._type == tt)
+	for (std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
+		if (tt == TOOLTYPE_ALL || iter->second._type == tt)
 			l.Add(iter->first);
 	l.Sort();
 	std::unique(l.begin(), l.end());
@@ -179,9 +179,9 @@ wxArrayString Tools::getToolList(ToolType tt) const {
 
 wxArrayString Tools::getGameList(ToolType tt) const {
 	wxArrayString l;
-	for(std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
-		if(tt == TOOLTYPE_ALL || iter->second._type == tt)
-			for(wxArrayString::const_iterator citer = iter->second._games.begin(); citer != iter->second._games.end(); ++citer)
+	for (std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
+		if (tt == TOOLTYPE_ALL || iter->second._type == tt)
+			for (wxArrayString::const_iterator citer = iter->second._games.begin(); citer != iter->second._games.end(); ++citer)
 				l.Add(*citer);
 	l.Sort();
 	std::unique(l.begin(), l.end());
@@ -199,17 +199,17 @@ const Tool &Tools::operator[](const wxString& name) const {
 const Tool *Tools::get(const wxString& name) const {
 	std::map<wxString, Tool>::const_iterator iter = tools.find(name);
 
-	if(iter == tools.end())
+	if (iter == tools.end())
 		return NULL;
 
 	return &iter->second;
 }
 
 const Tool *Tools::getByGame(const wxString &gamename, ToolType type) const {
-	for(std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
-		if(type == TOOLTYPE_ALL || iter->second._type == type)
-			for(wxArrayString::const_iterator citer = iter->second._games.begin(); citer != iter->second._games.end(); ++citer)
-				if(*citer == gamename)
+	for (std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
+		if (type == TOOLTYPE_ALL || iter->second._type == type)
+			for (wxArrayString::const_iterator citer = iter->second._games.begin(); citer != iter->second._games.end(); ++citer)
+				if (*citer == gamename)
 					return &iter->second;
 	return NULL;
 }
@@ -226,9 +226,9 @@ Tool::Tool(wxString name, MainFunction main, wxString input_extensions) {
 	_name = name;
 	invoke = main;
 
-	if(name.Find(wxT("extract")) != wxNOT_FOUND)
+	if (name.Find(wxT("extract")) != wxNOT_FOUND)
 		_type = TOOLTYPE_EXTRACTION;
-	else if(name.Find(wxT("compress")) != wxNOT_FOUND)
+	else if (name.Find(wxT("compress")) != wxNOT_FOUND)
 		_type = TOOLTYPE_COMPRESSION;
 	else {
 		wxLogError(wxT("Tools with unknown type shouldn't exist."));

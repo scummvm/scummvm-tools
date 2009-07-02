@@ -543,7 +543,7 @@ int export_main(compress_tucker)(int argc, char *argv[]) {
 	inpath.setFullPath(argv[first_arg]);
 
 	// Default out is same as in directory, file names differ by extension
-	if(outpath.empty()) {
+	if (outpath.empty()) {
 		outpath = inpath;
 	}
 

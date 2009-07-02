@@ -451,15 +451,15 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 					}
 				} else if (rawAudioType.bitsPerSample == 16) {
 					if (rawAudioType.isLittleEndian) {
-						for(i = 0; i < numSamples; i++) {
-							for(j = 0; j < numChannels; j++) {
+						for (i = 0; i < numSamples; i++) {
+							for (j = 0; j < numChannels; j++) {
 								buffer[j][i] = ((rawData[(i * 2 * numChannels) + (2 * j) + 1] << 8) | (rawData[(i * 2 * numChannels) + (2 * j)] & 0xff)) / 32768.0f;
 							}
 						}
 					}
 					else {
-						for(i = 0; i < numSamples; i++) {
-							for(j = 0; j < numChannels; j++) {
+						for (i = 0; i < numSamples; i++) {
+							for (j = 0; j < numChannels; j++) {
 								buffer[j][i] = ((rawData[(i * 2 * numChannels) + (2 * j)] << 8) | (rawData[(i * 2 * numChannels) + (2 * j) + 1] & 0xff)) / 32768.0f;
 							}
 						}

@@ -117,7 +117,7 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 }
 
 ScummToolsFrame::~ScummToolsFrame() {
-	for(std::vector<WizardPage *>::iterator iter = _pages.begin(); iter != _pages.end(); ++iter)
+	for (std::vector<WizardPage *>::iterator iter = _pages.begin(); iter != _pages.end(); ++iter)
 		delete *iter;
 }
 
@@ -127,7 +127,7 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 
 	_pages.back()->save(oldPanel);
 
-	if(moveback) {
+	if (moveback) {
 		// Don't save the old page (which is ontop of the stack already)
 		delete _pages.back();
 		_pages.pop_back();
@@ -152,7 +152,7 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 }
 
 void ScummToolsFrame::onIdle(wxIdleEvent &evt) {
-	if(_pages.back()->onIdle(dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page"))))) {
+	if (_pages.back()->onIdle(dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page"))))) {
 		// We want more!
 		evt.RequestMore(true);
 	}
@@ -218,20 +218,20 @@ void WizardButtons::enableNext(bool enable) {
 }
 
 void WizardButtons::enablePrevious(bool enable) {
-	if(enable)
+	if (enable)
 		showPrevious(true);
 	_prev->Enable(enable);
 }
 
 void WizardButtons::showFinish(bool show) {
-	if(show)
+	if (show)
 		_next->SetLabel(wxT("Finish!"));
 	else
 		_next->SetLabel(wxT("Next >"));
 }
 
 void WizardButtons::showPrevious(bool show) {
-	if(show)
+	if (show)
 		_prev->Show();
 	else
 		_prev->Hide();
@@ -264,9 +264,9 @@ Header::Header(wxWindow *parent)
 	wxLogNull nulllog;
 
 	// Add support for loading .jpg images
-	if(wxImage::FindHandler(wxT("jpg")) == NULL)
+	if (wxImage::FindHandler(wxT("jpg")) == NULL)
 		wxImage::AddHandler(new wxJPEGHandler);
-	if(wxImage::FindHandler(wxT("gif")) == NULL)
+	if (wxImage::FindHandler(wxT("gif")) == NULL)
 		wxImage::AddHandler(new wxGIFHandler);
 
 	// Load image files
@@ -283,7 +283,7 @@ void Header::onPaint(wxPaintEvent &evt) {
 	int w, h;
 	this->GetSize(&w, &h);
 	
-	if(_logo.IsOk() == false || _tile.IsOk() == false) {
+	if (_logo.IsOk() == false || _tile.IsOk() == false) {
 		// If we couldn't load the images, use orange instead!
 		dc.SetBackground(wxBrush(wxColor(213, 114, 0)));
 		dc.Clear();
@@ -298,7 +298,7 @@ void Header::onPaint(wxPaintEvent &evt) {
 		dc.DrawBitmap(_logo, x, 0);
 		x += _logo.GetWidth();
 
-		while(x < w) {
+		while (x < w) {
 			dc.DrawBitmap(_tile, x, 0);
 			x += _tile.GetWidth();
 		}

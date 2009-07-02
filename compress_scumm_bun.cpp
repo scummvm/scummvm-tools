@@ -1097,7 +1097,7 @@ int export_main(compress_scumm_bun)(int argc, char *argv[]) {
 	// compression mode
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if(gCompMode == kNoAudioMode) {
+	if (gCompMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -1122,7 +1122,7 @@ int export_main(compress_scumm_bun)(int argc, char *argv[]) {
 		error("Cannot open file: %s", inpath.getFullPath());
 	}
 
-	if(outpath.empty()) {
+	if (outpath.empty()) {
 		// Change extension for output
 		outpath = inpath;
 		outpath.setExtension(".bun");

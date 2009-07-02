@@ -177,7 +177,7 @@ int export_main(compress_touche)(int argc, char *argv[]) {
 	// compression mode
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if(gCompMode == kNoAudioMode) {
+	if (gCompMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -210,7 +210,7 @@ int export_main(compress_touche)(int argc, char *argv[]) {
 	// Append '/' if it's not already done
 	// TODO: We need a way to detect a directory here!
 	size_t s = strlen(inpath._path);
-	if(inpath._path[s-1] == '/' || inpath._path[s-1] == '\\') {
+	if (inpath._path[s-1] == '/' || inpath._path[s-1] == '\\') {
 		inpath._path[s] = '/';
 		inpath._path[s+1] = '\0';
 	}

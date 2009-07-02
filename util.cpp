@@ -179,10 +179,10 @@ void Filename::addExtension(const char *ext) {
 
 void Filename::setExtension(const char *ext) {
 	char *dot = strrchr(_path, '.');
-	if(!dot)
+	if (!dot)
 		dot = _path + strlen(_path) - 1;
 	// Don't copy the dot
-	if(*ext == '.')
+	if (*ext == '.')
 		ext++;
 	strcpy(dot+1, ext);
 }
@@ -202,23 +202,23 @@ bool Filename::empty() const {
 
 bool Filename::hasExtension(const char *suffix) const {
 	const char *dot = strrchr(_path, '.');
-	if(!dot)
+	if (!dot)
 		dot = _path + strlen(_path);
 
 	// Check that dot position is less than /, since some
 	// directories contain ., like /home/.data/file
 	const char *slash = strrchr(_path, '/');
-	if(slash && slash > dot)
+	if (slash && slash > dot)
 		return false;
 
 	slash = strrchr(_path, '\\');
-	if(slash && slash > dot)
+	if (slash && slash > dot)
 		return false;
 
 	// We compare extensions, skip any dots
-	if(*dot == '.')
+	if (*dot == '.')
 		dot++;
-	if(*suffix == '.')
+	if (*suffix == '.')
 		suffix++;
 
 #ifdef _WIN32

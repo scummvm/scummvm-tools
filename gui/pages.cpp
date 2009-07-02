@@ -78,7 +78,7 @@ void WizardPage::onPrevious(wxWindow *panel) {
 void WizardPage::onCancel(wxWindow *panel) {
 	wxMessageDialog dlg(panel, wxT("Are you sure you want to abort the wizard?"), wxT("Abort"), wxYES | wxNO);
 	wxWindowID ret = dlg.ShowModal();
-	if(ret == wxID_YES) {
+	if (ret == wxID_YES) {
 		_topframe->Close(true);
 	} else {
 		// Do nothing
@@ -128,9 +128,9 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 
 	// Load options
 	Configuration &config = _configuration;
-	if(config.advanced)
+	if (config.advanced)
 		options->SetSelection(2);
-	else if(config.compressing)
+	else if (config.compressing)
 		options->SetSelection(1);
 	else
 		options->SetSelection(0);
@@ -152,10 +152,10 @@ void IntroPage::save(wxWindow *panel) {
 
 void IntroPage::onNext(wxWindow *panel) {
 	wxString selected_option = static_cast<wxRadioBox *>(panel->FindWindowByName(wxT("ChooseActivity")))->GetStringSelection().Lower();
-	if(selected_option.Find(wxT("extract")) != wxNOT_FOUND) {
+	if (selected_option.Find(wxT("extract")) != wxNOT_FOUND) {
 		// extract
 		switchPage(new ChooseExtractionPage(_topframe));
-	} else if(selected_option.Find(wxT("advanced")) != wxNOT_FOUND) {
+	} else if (selected_option.Find(wxT("advanced")) != wxNOT_FOUND) {
 		// advanced
 		switchPage(new ChooseToolPage(_topframe));
 	} else {
@@ -275,7 +275,7 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 	SetAlignedSizer(panel, sizer);
 
 	// Load configuration
-	if(_configuration.selectedTool != NULL)
+	if (_configuration.selectedTool != NULL)
 		tool->SetStringSelection(_configuration.selectedTool->_name);
 
 	return panel;
@@ -315,13 +315,13 @@ wxWindow *ChooseInOutPage::CreatePanel(wxWindow *parent) {
 	wxStaticBoxSizer *inputbox = new wxStaticBoxSizer(wxVERTICAL, panel, wxT("Input files"));
 
 	int i = 1;
-	for(ToolInputs::const_iterator iter = tool._inputs.begin(); iter != tool._inputs.end(); ++iter) {
+	for (ToolInputs::const_iterator iter = tool._inputs.begin(); iter != tool._inputs.end(); ++iter) {
 		const ToolInput &input = *iter;
 
 		wxString windowName = wxT("InputPicker");
 		windowName << i;
 
-		if(input._file) {
+		if (input._file) {
 			inputbox->Add(new wxFilePickerCtrl(
 				panel, wxID_ANY, wxEmptyString, wxT("Select a file"), 
 				input._extension, 
@@ -347,7 +347,7 @@ wxWindow *ChooseInOutPage::CreatePanel(wxWindow *parent) {
 
 	// Create output selection
 
-	if(tool._outputToDirectory) {
+	if (tool._outputToDirectory) {
 		wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, panel, wxT("Destination folder"));
 
 		box->Add(new wxDirPickerCtrl(
@@ -380,16 +380,16 @@ void ChooseInOutPage::save(wxWindow *panel) {
 	wxDirPickerCtrl *outDirWindow = dynamic_cast<wxDirPickerCtrl *>(outputWindow);
 	wxFilePickerCtrl *inDirWindow = dynamic_cast<wxFilePickerCtrl *>(outputWindow);
 
-	if(outDirWindow)
+	if (outDirWindow)
 		_configuration.outputPath = outDirWindow->GetPath();
-	if(inDirWindow)
+	if (inDirWindow)
 		_configuration.outputPath = inDirWindow->GetPath();
 
 	// TODO: save input, unsure of exact format
 }
 
 void ChooseInOutPage::onNext(wxWindow *panel) {
-	if(_configuration.compressing)
+	if (_configuration.compressing)
 		switchPage(new ChooseAudioFormatPage(_topframe));
 	else
 		switchPage(new ProcessPage(_topframe));
@@ -433,11 +433,11 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 	SetAlignedSizer(panel, sizer);
 
 	// Load already set values
-	if(_configuration.selectedAudioFormat == AUDIO_VORBIS)
+	if (_configuration.selectedAudioFormat == AUDIO_VORBIS)
 		format->SetSelection(0);
-	else if(_configuration.selectedAudioFormat == AUDIO_FLAC)
+	else if (_configuration.selectedAudioFormat == AUDIO_FLAC)
 		format->SetSelection(1);
-	else if(_configuration.selectedAudioFormat == AUDIO_MP3)
+	else if (_configuration.selectedAudioFormat == AUDIO_MP3)
 		format->SetSelection(2);
 
 	advanced->SetValue(_configuration.advancedAudioSettings);
@@ -450,11 +450,11 @@ void ChooseAudioFormatPage::save(wxWindow *panel) {
 	wxChoice *format = static_cast<wxChoice *>(panel->FindWindowByName(wxT("AudioSelection")));
 	wxCheckBox *advanced = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("AdvancedAudio")));
 
-	if(format->GetStringSelection() == wxT("Vorbis"))
+	if (format->GetStringSelection() == wxT("Vorbis"))
 		_configuration.selectedAudioFormat = AUDIO_VORBIS;
-	else if(format->GetStringSelection() == wxT("FLAC"))
+	else if (format->GetStringSelection() == wxT("FLAC"))
 		_configuration.selectedAudioFormat = AUDIO_FLAC;
-	else if(format->GetStringSelection() == wxT("MP3"))
+	else if (format->GetStringSelection() == wxT("MP3"))
 		_configuration.selectedAudioFormat = AUDIO_MP3;
 
 	_configuration.advancedAudioSettings = advanced->GetValue();
@@ -465,13 +465,13 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 	wxChoice *format = static_cast<wxChoice *>(panel->FindWindowByName(wxT("AudioSelection")));
 	wxCheckBox *advanced = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("AdvancedAudio")));
 
-	if(advanced->GetValue()) {
+	if (advanced->GetValue()) {
 
-		if(format->GetStringSelection() == wxT("Vorbis"))
+		if (format->GetStringSelection() == wxT("Vorbis"))
 			switchPage(new ChooseAudioOptionsVorbisPage(_topframe));
-		else if(format->GetStringSelection() == wxT("FLAC"))
+		else if (format->GetStringSelection() == wxT("FLAC"))
 			switchPage(new ChooseAudioOptionsFlacPage(_topframe));
-		else if(format->GetStringSelection() == wxT("MP3"))
+		else if (format->GetStringSelection() == wxT("MP3"))
 			switchPage(new ChooseAudioOptionsMp3Page(_topframe));
 	} else {
 		switchPage(new ProcessPage(_topframe));
@@ -522,7 +522,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	// Bitrates
 	const int possibleBitrateCount = 160 / 8;
 	wxString possibleBitrates[possibleBitrateCount + 1];
-	for(int i = 0; i <= possibleBitrateCount; ++i) {
+	for (int i = 0; i <= possibleBitrateCount; ++i) {
 		possibleBitrates[i] << i*8;
 	}
 
@@ -555,7 +555,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	// Quality
 	const int possibleQualityCount = 9;
 	wxString possibleQualities[possibleQualityCount + 1];
-	for(int i = 0; i <= possibleQualityCount; ++i) {
+	for (int i = 0; i <= possibleQualityCount; ++i) {
 		possibleQualities[i] << i;
 	}
 
@@ -579,7 +579,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 
 
 	// Load settings
-	if(_topframe->_configuration.mp3CompressionType == wxT("ABR"))
+	if (_topframe->_configuration.mp3CompressionType == wxT("ABR"))
 		abrButton->SetValue(true);
 	else
 		vbrButton->SetValue(true);
@@ -609,7 +609,7 @@ void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
 	_topframe->_configuration.mp3ABRBitrate    = abrAvgBitrate->GetStringSelection();
 	_topframe->_configuration.mp3VBRQuality    = vbrQuality   ->GetStringSelection();
 	_topframe->_configuration.mp3MpegQuality   = mpegQuality  ->GetStringSelection();
-	if(abr->GetValue())
+	if (abr->GetValue())
 		_topframe->_configuration.mp3CompressionType = wxT("ABR");
 	else
 		_topframe->_configuration.mp3CompressionType = wxT("VBR");
@@ -677,7 +677,7 @@ wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
 	// Compression Level
 	const int possibleLevelCount = 8;
 	wxString possibleLevels[possibleLevelCount + 1];
-	for(int i = 0; i <= possibleLevelCount; ++i) {
+	for (int i = 0; i <= possibleLevelCount; ++i) {
 		possibleLevels[i] << i;
 	}
 
@@ -754,7 +754,7 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	// Bitrates
 	const int possibleBitrateCount = 160 / 8;
 	wxString possibleBitrates[possibleBitrateCount + 1];
-	for(int i = 0; i <= possibleBitrateCount; ++i) {
+	for (int i = 0; i <= possibleBitrateCount; ++i) {
 		possibleBitrates[i] << i*8;
 	}
 
@@ -784,7 +784,7 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	// Quality
 	const int possibleQualityCount = 10;
 	wxString possibleQualities[possibleQualityCount + 1];
-	for(int i = 0; i <= possibleQualityCount; ++i) {
+	for (int i = 0; i <= possibleQualityCount; ++i) {
 		possibleQualities[i] << i;
 	}
 
@@ -865,9 +865,9 @@ std::pair<int, char **> ProcessPage::createCommandLine() {
 	cli.Add(conf.selectedTool->getExecutable());
 	
 	// Audio format args
-	if(conf.compressing) {
+	if (conf.compressing) {
 		cli.Add(wxT("--mp3"));
-		if(conf.selectedAudioFormat == AUDIO_VORBIS) {
+		if (conf.selectedAudioFormat == AUDIO_VORBIS) {
 			cli.Add(wxT("--vorbis"));
 			cli.Add(wxT("-b"));
 			cli.Add(conf.oggAvgBitrate);
@@ -877,14 +877,14 @@ std::pair<int, char **> ProcessPage::createCommandLine() {
 			cli.Add(conf.oggMaxBitrate);
 			cli.Add(wxT("-q"));
 			cli.Add(conf.oggQuality);
-		} else if(conf.selectedAudioFormat == AUDIO_FLAC) {
+		} else if (conf.selectedAudioFormat == AUDIO_FLAC) {
 			cli.Add(wxT("--flac"));
 			cli.Add(wxT("-"));
 			cli.Add(conf.flacCompressionLevel);
 			cli.Add(wxT("-b"));
 			cli.Add(conf.flacBlockSize);
-		} else if(conf.selectedAudioFormat == AUDIO_MP3) {
-			if(conf.mp3CompressionType == wxT("ABR")) {
+		} else if (conf.selectedAudioFormat == AUDIO_MP3) {
+			if (conf.mp3CompressionType == wxT("ABR")) {
 				cli.Add(wxT("--abr"));
 				cli.Add(wxT("-b"));
 				cli.Add(conf.mp3ABRBitrate);
@@ -933,7 +933,7 @@ void ProcessPage::runTool(wxTextCtrl *outwin) {
 	_success = (ret == 0);
 
 	// Free memory in use by the CLI args
-	for(int i = 0; i != cli.first; ++i) {
+	for (int i = 0; i != cli.first; ++i) {
 		delete[] cli.second[i];
 	}
 	delete[] cli.second;
@@ -952,10 +952,10 @@ void ProcessPage::onNext(wxWindow *panel) {
 }
 
 void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
-	if(_success) {
+	if (_success) {
 		buttons->enablePrevious(false);
 		buttons->enableNext(true);
-	} else if(_finished) {
+	} else if (_finished) {
 		buttons->enablePrevious(true);
 		buttons->enableNext(true);
 	} else {
@@ -994,7 +994,7 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 
 void FinishPage::onNext(wxWindow *panel) {
 	wxCheckBox *display = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("DisplayOutput")));
-	if(display->GetValue())
+	if (display->GetValue())
 		// Haven't found the function to do this yet...
 		//wxOpenExplorer(_topframe->_configuration.outputPath);
 		(void)0;

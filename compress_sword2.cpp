@@ -103,7 +103,7 @@ int export_main(compress_sword2)(int argc, char *argv[]) {
 
 	inpath.setFullPath(argv[first_arg]);
 
-	if(outpath.empty())
+	if (outpath.empty())
 		// Extensions change between the in/out files, so we can use the same directory
 		outpath = inpath;
 

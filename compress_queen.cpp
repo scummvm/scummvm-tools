@@ -220,7 +220,7 @@ int export_main(compress_queen)(int argc, char *argv[]) {
 
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if(gCompMode == kNoAudioMode) {
+	if (gCompMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -237,7 +237,7 @@ int export_main(compress_queen)(int argc, char *argv[]) {
 
 	inpath.setFullPath(argv[first_arg]);
 
-	if(outpath.empty()) {
+	if (outpath.empty()) {
 		outpath = inpath;
 		outpath.setFullName(FINAL_OUT);
 	}

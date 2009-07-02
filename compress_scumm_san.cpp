@@ -643,11 +643,11 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 
 	// TODO
 	// Support flac too?
-	if(compMode == kVorbisMode)
+	if (compMode == kVorbisMode)
 		_oggMode = true;
-	else if(compMode != kMP3Mode)
+	else if (compMode != kMP3Mode)
 		notice("Only ogg vorbis and MP3 is supported for this tool.");
-	if(compMode == kNoAudioMode) {
+	if (compMode == kNoAudioMode) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -666,7 +666,7 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 
 	inpath.setFullPath(argv[first_arg]);
 
-	if(outpath.empty()) {
+	if (outpath.empty()) {
 		// Change extension for output
 		outpath = inpath;
 		outpath.setExtension(".san");

@@ -49,7 +49,7 @@ int export_main(extract_kyra)(int argc, char *argv[]) {
 	int param = first_arg;
 
 	// Parse our own arguments
-	for(; param < last_arg; ++param) {
+	for (; param < last_arg; ++param) {
 		if (strcmp(argv[param], "-x") == 0) {
 			extractAll = true;
 			extractOne = false;
