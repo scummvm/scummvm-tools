@@ -308,28 +308,36 @@ public:
 
 class ProcessPage : public WizardPage
 {
-	bool _finished;
+	/** True if the tool exited with success */
 	bool _success;
-	wxProcess *_process;
+	/** True if the tool has exited */
+	bool _finished;
 public:
 	ProcessPage(ScummToolsFrame* frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
-	wxString createCommandLine();
-	void runProcess(wxTextCtrl *outwin);
+	/**
+	 * Creates a list of command line arguments
+	 * The list is allocated, and needed to be looped through and delete[] ed
+	 * and then the list itself delete[]ed
+	 *
+	 * @return A pair containing number of args, and the list of CLI args themselves
+	 */
+	std::pair<int, char **> createCommandLine();
 
-	void onTerminate(wxProcessEvent &evt);
+	/**
+	 * Runs the specified tool, output will be put in outwin
+	 *
+	 * @param outwin Text control to redirect output to
+	 */
+	void runTool(wxTextCtrl *outwin);
 
 	bool onIdle(wxPanel *panel);
 
 	void onNext(wxWindow *panel);
 
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
-
-	void save(wxWindow *panel);
-
-	DECLARE_EVENT_TABLE()
 };
 
 /**

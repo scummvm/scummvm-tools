@@ -53,7 +53,7 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 	 3,  1,  2,  1,  2,  1, 10,  1,  1
 };
 
-int export_main(extract_zak_c64)(int argc, char **argv) {
+int export_main(extract_zak_c64)(int argc, char *argv[]) {
 	const char *helptext = "\nUsage: %s [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n";
 
 	FILE *input1, *input2, *output;

@@ -52,7 +52,7 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 	 3, 10,  1,  0,  0
 };
 
-int export_main(extract_mm_apple)(int argc, char **argv) {
+int export_main(extract_mm_apple)(int argc, char *argv[]) {
 	const char *helptext = "\nUsage: %s [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n";
 
 	FILE *input1, *input2, *output;

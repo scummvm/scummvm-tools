@@ -29,6 +29,7 @@
 #include <vector>
 
 #include "configuration.h"
+#include "../tool_entry_points.h"
 
 
 /** Different types of tools, used to differentiate them when 
@@ -73,9 +74,10 @@ public:
 	 * you must set the type manually.
 	 *
 	 * @param name The name of the tool, should match the executable name (without the extension)
+	 * @param main The tool entry point, defined in tool_entry_point.h
 	 * @param input_extenion Filename filter of the input  to expect.
 	 */
-	Tool(wxString name, wxString input_extension = wxT("*.*"));
+	Tool(wxString name, MainFunction main, wxString input_extension = wxT("*.*"));
 
 	/**
 	 * Adds a supported game to this tool
@@ -101,6 +103,8 @@ public:
 
 	/** Name of the tool */
 	wxString _name;
+	/** Entry point of the tool, for invoking it, accepts CLI in the same format as the classic main function */
+	MainFunction invoke;
 	/** Type of tool, either extract, compress or unknown */
 	ToolType _type;
 	/* Formats supported by the tool, bitwise ORed */

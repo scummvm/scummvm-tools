@@ -43,7 +43,7 @@ void extractChunks(Filename *outpath, FILE *stk, Chunk *chunks);
 byte *unpackData(byte *src, uint32 &size);
 byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize);
 
-int export_main(extract_gob_stk)(int argc, char **argv) {
+int export_main(extract_gob_stk)(int argc, char *argv[]) {
 	char signature[7];
 	Chunk *chunks;
 	FILE *stk;

@@ -24,7 +24,7 @@
 #include "kyra_pak.h"
 #include "kyra_ins.h"
 
-int export_main(extract_kyra)(int argc, char **argv) {
+int export_main(extract_kyra)(int argc, char *argv[]) {
 	const char *helptext = "\n"
 		"Usage: %s [params] [-o output] <archivefile> [-o output]\n"
 		"Default output path is ./out/\n"

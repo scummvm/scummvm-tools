@@ -1165,7 +1165,7 @@ static uint32 CheckROM(FILE *file) {
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int export_main(extract_mm_nes)(int argc, char **argv) {
+int export_main(extract_mm_nes)(int argc, char *argv[]) {
 	const char *helptext =
 		"\nUsage: %s [-o <output dir> = out/] <infile.PRG>\n"
 		"\tSupported versions: USA, Europe, Sweden, France, Germany, Spain\n"

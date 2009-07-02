@@ -827,15 +827,10 @@ void ChooseAudioOptionsVorbisPage::onNext(wxWindow *panel) {
 
 // Page to choose ANY tool to use
 
-BEGIN_EVENT_TABLE(ProcessPage, WizardPage)
-	EVT_END_PROCESS(wxID_ANY, ProcessPage::onTerminate)
-END_EVENT_TABLE()
-
 ProcessPage::ProcessPage(ScummToolsFrame* frame)
 	: WizardPage(frame),
-	  _finished(false),
 	  _success(false),
-	  _process(NULL)
+	  _finished(false)
 {
 }
 
@@ -855,122 +850,102 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 
 	panel->SetSizer(sizer);
 
-	// This should NOT be called from the 'constructor' (once it runs the subprocess)
-	runProcess(outwin);
+	// Run the tool
+	runTool(outwin);
 
 	return panel;
 }
 
-void ProcessPage::save(wxWindow *panel) {
-	//_configuration.selectedTool = 
-	//	g_tools.get(static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection());
-}
-
-wxString ProcessPage::createCommandLine() {
-	wxString cli;
+std::pair<int, char **> ProcessPage::createCommandLine() {
 	Configuration &conf = _topframe->_configuration;
-	
-	// Executable
-	cli << conf.selectedTool->getExecutable();
+
+	// Contruct the arguments in unicode mode first
+	wxArrayString cli;
+
+	cli.Add(conf.selectedTool->getExecutable());
 	
 	// Audio format args
 	if(conf.compressing) {
-		cli << wxT(" --mp3");
+		cli.Add(wxT("--mp3"));
 		if(conf.selectedAudioFormat == AUDIO_VORBIS) {
-			cli << wxT(" --vorbis");
-			cli << wxT(" -b ") << conf.oggAvgBitrate;
-			cli << wxT(" -m ") << conf.oggMinBitrate;
-			cli << wxT(" -M ") << conf.oggMaxBitrate;
-			cli << wxT(" -q ") << conf.oggQuality;
+			cli.Add(wxT("--vorbis"));
+			cli.Add(wxT("-b"));
+			cli.Add(conf.oggAvgBitrate);
+			cli.Add(wxT("-m"));
+			cli.Add(conf.oggMinBitrate);
+			cli.Add(wxT("-M"));
+			cli.Add(conf.oggMaxBitrate);
+			cli.Add(wxT("-q"));
+			cli.Add(conf.oggQuality);
 		} else if(conf.selectedAudioFormat == AUDIO_FLAC) {
-			cli << wxT(" --flac");
-			cli << wxT(" -") << conf.flacCompressionLevel;
-			cli << wxT(" -b ")<< conf.flacBlockSize;
+			cli.Add(wxT("--flac"));
+			cli.Add(wxT("-"));
+			cli.Add(conf.flacCompressionLevel);
+			cli.Add(wxT("-b"));
+			cli.Add(conf.flacBlockSize);
 		} else if(conf.selectedAudioFormat == AUDIO_MP3) {
 			if(conf.mp3CompressionType == wxT("ABR")) {
-				cli << wxT(" --abr");
-				cli << wxT(" -b ") << conf.mp3ABRBitrate;
-				cli << wxT(" -b ") << conf.mp3VBRMinBitrate;
+				cli.Add(wxT("--abr"));
+				cli.Add(wxT("-b"));
+				cli.Add(conf.mp3ABRBitrate);
+				cli.Add(wxT("-b"));
+				cli.Add(conf.mp3VBRMinBitrate);
 			} else {
-				cli << wxT(" --vbr");
-				cli << wxT(" -b ") << conf.mp3VBRMinBitrate;
-				cli << wxT(" -B ") << conf.mp3VBRMaxBitrate;
+				cli.Add(wxT("--vbr"));
+				cli.Add(wxT("-b"));
+				cli.Add(conf.mp3VBRMinBitrate);
+				cli.Add(wxT("-B"));
+				cli.Add(conf.mp3VBRMaxBitrate);
 			}
-					
-			cli << wxT(" -q ") << conf.mp3MpegQuality;
+			
+			cli.Add(wxT("-q"));
+			cli.Add(conf.mp3MpegQuality);
 		}
 	}
 
-	cli << wxT(" -o ") << conf.outputPath;
-	for(wxArrayString::const_iterator i = conf.inputFilePaths.begin(); i != conf.inputFilePaths.end(); ++i)
-		cli << *i << wxT(" ");
+	cli.Add(wxT("-o"));
+	cli.Add(conf.outputPath);
+	for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter)
+		cli.Add(*iter);
 
-	cli << wxT("\n");
-	return cli;
+	// And now convert to a plain char * string
+	char **real_cli = new char *[cli.size()];
+	int i = 0;
+	for (wxArrayString::const_iterator iter = cli.begin(); iter != cli.end(); ++iter, ++i) {
+		const char *in = (const char *)iter->mb_str();
+		real_cli[i] = new char[strlen(in)];
+		strcpy(real_cli[i], in);
+	}
+
+	return std::make_pair(i, real_cli);
 }
 
-void ProcessPage::runProcess(wxTextCtrl *outwin) {
-	wxString cli = createCommandLine();
-	outwin->WriteText(cli + wxT("\n"));
+void ProcessPage::runTool(wxTextCtrl *outwin) {
+	// Build command line arguments...
+	std::pair<int, char **> cli = createCommandLine();
+	
+	// TODO
+	// Redirect output
 
-	if(wxFile::Exists(_topframe->_configuration.selectedTool->getExecutable())) {
-		_process = new wxProcess(this);
-		bool success = wxExecute(cli, wxEXEC_ASYNC, _process) != 0;
+	// Run the tool
+	int ret = _topframe->_configuration.selectedTool->invoke(cli.first, cli.second);
+	_finished = true;
+	_success = (ret == 0);
 
-		if(!success) {
-			outwin->WriteText(wxT("Could not run process."));
-			return;
-		}
-
-		_process->Redirect();
-	} else {
-		_finished = true;
-		outwin->WriteText(wxT("Subprocess exited successfully!"));
-		//outwin->WriteText(wxT("Could not find executable file on the current path. Check that the executable for the selected tool is available and place in the correct directory."));
+	// Free memory in use by the CLI args
+	for(int i = 0; i != cli.first; ++i) {
+		delete[] cli.second[i];
 	}
+	delete[] cli.second;
 
+	// Cancel output redirection
 }
 
 bool ProcessPage::onIdle(wxPanel *panel) {
-	if(_process) {
-		wxInputStream *stream = _process->GetInputStream();
-		wxTextCtrl *outwin = static_cast<wxTextCtrl *>(panel->FindWindowByName(wxT("OutputWindow")));
-
-		wxASSERT_MSG(stream, wxT("Could not bind input stream!"));
-
-		while(stream && stream->CanRead()) {
-			wxFileOffset off = stream->GetLength();
-			if(off == wxInvalidOffset) {
-				return false;
-			}
-			char *buf = new char[(size_t)off];
-			stream->Read(buf, (size_t)off);
-			outwin->WriteText(wxString(buf, wxConvUTF8, (size_t)off));
-			delete[] buf;
-		}
-
-		return true;
-	}
+	// TODO
+	// Possibly write stdout to outwin here?
 	return false;
 }
-
-void ProcessPage::onTerminate(wxProcessEvent &evt) {
-	// Ugly hack, should not find the panel this way...
-	wxWindow *panel = _topframe->FindWindowByName(wxT("WizardPage"));
-	wxTextCtrl *outwin = static_cast<wxTextCtrl *>(panel->FindWindowByName(wxT("OutputWindow")));
-
-	_success = evt.GetExitCode() == 0;
-	if(_success) {
-		outwin->WriteText(wxT("Subprocess exited sucessfully!"));
-	} else {
-		outwin->WriteText(wxT("Subprocess exited sucessfully!"));
-	}
-	_finished = true;
-	_process = NULL;
-
-	updateButtons(panel, static_cast<WizardButtons *>(_topframe->FindWindowByName(wxT("WizardButtonPanel"))));
-}
-
 
 void ProcessPage::onNext(wxWindow *panel) {
 	switchPage(new FinishPage(_topframe));
@@ -1022,7 +997,7 @@ void FinishPage::onNext(wxWindow *panel) {
 	if(display->GetValue())
 		// Haven't found the function to do this yet...
 		//wxOpenExplorer(_topframe->_configuration.outputPath);
-		;
+		(void)0;
 	_topframe->Close(true);
 }
 

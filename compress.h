@@ -67,7 +67,7 @@ extern const char *audio_extensions[];
 
 
 /*
- * Stuff which is in compress.c
+ * Stuff which is in compress.cpp
  */
 
 const extern char *tempEncoded;
