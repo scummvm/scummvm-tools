@@ -6,6 +6,13 @@ std::string phex(int i, int width) {
 	return ret.str();
 }
 
+std::string spaces(int width) {
+	std::ostringstream ret;
+	while (width--)
+		ret << ' ';
+	return ret.str();
+}
+
 uint32 read_be_uint32(std::ifstream &f) {
 	uint32 ret = 0;
 	ret |= f.get() << 24;

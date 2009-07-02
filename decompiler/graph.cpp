@@ -108,9 +108,15 @@ string ControlFlowGraph::graphvizToString(const std::string &fontname, int fonts
 			}
 		ret << "}" << std::endl;
 	}
-	foreach (Block *u, _blocks)
-		foreach (Block *v, u->_out)
-		ret << '"' << u << "\" -> \"" << v << '"' << (v == u->_loopFollow ? "[color=blue]" : "") << ";" << std::endl;
+	foreach (Block *u, _blocks) {
+		bool hadFollow = false;
+		foreach (Block *v, u->_out) {
+			hadFollow |= v == u->_loopFollow;
+		    ret << '"' << u << "\" -> \"" << v << '"' << (v == u->_loopFollow ? "[color=blue]" : "") << ";" << std::endl;
+		}
+		if (u->_loopFollow && !hadFollow)
+		    ret << '"' << u << "\" -> \"" << u->_loopFollow << '"' << "[color=blue,style=dashed];" << std::endl;
+	}
 	ret << "}" << std::endl;
 	return ret.str();
 }

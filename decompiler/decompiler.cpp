@@ -1,9 +1,11 @@
 #include <iostream>
 
+#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
 #include "parser.h"
 #include "graph.h"
+#include "syntax.h"
 
 using namespace std;
 using namespace boost::program_options;
@@ -17,10 +19,10 @@ variables_map parseArgs(int argc, char **argv) {
 		("disasm", "print disassembly and exit")
 		("blocks", "print basic blocks and exit")
 		("graph",  "print graph and exit")
+		("decompile", "print decompiled program and exit")
 		("fontname", value<string>()->default_value("Courier"), "font to use with graphical output");
 	options_description options("Allowed options");
 	options.add(visible).add_options()
-		//		("derive", value<int>()->default_value(0), "find arg-th order intervals")
 		("inputfile", value<string>(), "input file");
 	positional_options_description pos;
 	pos.add("inputfile", 1);
@@ -55,14 +57,17 @@ int main(int argc, char **argv) {
 			cout << block->toString() << endl;
 		exit(0);
 	}
+	cfg.removeJumpsToJumps();
+	cfg.orderBlocks();
+	cfg.removeUnreachableBlocks();
+	cfg.loopStruct();
 	if (vars.count("graph")) {
-		cfg.removeJumpsToJumps();
-		cfg.orderBlocks();
-		cfg.removeUnreachableBlocks();
-		//		for (int i = 0; i < vars["derive"].as<int>(); i++)
-		//			cfg.extendIntervals();
-		cfg.loopStruct();
 		cout << cfg.graphvizToString(vars["fontname"].as<string>());
+		exit(0);
+	}
+	if (vars.count("decompile")) {
+		foreach (Statement *stmt, buildAbstractSyntaxTree(cfg))
+			cout << stmt->toString(0);
 		exit(0);
 	}
 	return 0;

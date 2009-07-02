@@ -65,8 +65,8 @@ struct Scumm6Parser : public Parser {
 		_reader->registerOpcode(0x57, new SimpleReader("wordVarDec", "w"));
 		_reader->registerOpcode(0x5a, new SimpleReader("byteArrayDec", "b"));
 		_reader->registerOpcode(0x5b, new SimpleReader("wordArrayDec", "w"));
-		_reader->registerOpcode(0x5c, new CondJumpReader("jumpIf", "o3"));
-		_reader->registerOpcode(0x5d, new SeqReader(new SimpleReader("not"), new CondJumpReader("jumpIf", "o3")));
+		_reader->registerOpcode(0x5c, new SeqReader(new SimpleReader("not"), new CondJumpReader("jumpIfNot", "o3")));
+		_reader->registerOpcode(0x5d, new CondJumpReader("jumpIfNot", "o3"));
 		_reader->registerOpcode(0x5e, new SimpleReader("startScript"));
 		_reader->registerOpcode(0x5f, new SimpleReader("startScriptQuick"));
 
@@ -314,12 +314,12 @@ struct Scumm6Parser : public Parser {
 		srVerbs->registerOpcode(142, new SimpleReader("saveRestoreVerbs.restoreVerbs"));
 		srVerbs->registerOpcode(143, new SimpleReader("saveRestoreVerbs.deleteVerbs"));
 
-		wait->registerOpcode(168, new SeqReader(new SimpleReader("wait.forActor.pushCond"),	new CondJumpReader("jumpIf", "o4")));
+		wait->registerOpcode(168, new SeqReader(new SimpleReader("wait.forActor.pushCondNeg"),	new CondJumpReader("jumpIfNot", "o4")));
 		wait->registerOpcode(169, new SimpleReader("wait.forMessage"));
 		wait->registerOpcode(170, new SimpleReader("wait.forCamera"));
 		wait->registerOpcode(171, new SimpleReader("wait.forSentence"));
-		wait->registerOpcode(226, new SeqReader(new SimpleReader("wait.forAnimation.pushCond"),	new CondJumpReader("jumpIf", "o4")));
-		wait->registerOpcode(232, new SeqReader(new SimpleReader("wait.forTurn.pushCond"),	new CondJumpReader("jumpIf", "o4")));
+		wait->registerOpcode(226, new SeqReader(new SimpleReader("wait.forAnimation.pushCondNeg"),	new CondJumpReader("jumpIfNot", "o4")));
+		wait->registerOpcode(232, new SeqReader(new SimpleReader("wait.forTurn.pushCondNeg"),	new CondJumpReader("jumpIfNot", "o4")));
 
 		system->registerOpcode(158, new SimpleReader("system.restart"));
 		system->registerOpcode(159, new SimpleReader("system.pause"));

@@ -14,7 +14,7 @@ struct Instruction {
 
 	virtual std::string toString() {
 		std::ostringstream ret;
-		ret << phex(_addr-8) << "  " << _description << std::endl;
+		ret << _description << "  [" << phex(_addr-8) << "]" << std::endl;
 		return ret.str();
 	}
 
@@ -32,7 +32,7 @@ struct Jump : public Instruction {
 	}
 	std::string toString() {
 		std::ostringstream ret;
-		ret << phex(_addr-8) << "  " << _description << " (" << phex(target()-8) << ")" << std::endl;
+		ret << _description << " (" << phex(target()-8) << ")  [" << phex(_addr-8) << "]" << std::endl;
 		return ret.str();
 	}
 

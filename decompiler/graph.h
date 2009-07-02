@@ -21,6 +21,7 @@ enum LoopType {
 
 struct Block : boost::noncopyable {
 
+	bool _visited;
 	Block *_interval;        // header node of the interval this block belongs to
 	Block *_loopFollow;      // if not null, this block is a loop header, and follow is a first block after exit
     Block *_loopHead;        // if not null, this is a latching block
@@ -40,17 +41,24 @@ struct Block : boost::noncopyable {
 	}
 
 	bool inLoop(Block *head) {
-		return _interval == head && head->_loopLatch->_number <= _number && _number <= head->_number;
+		return _interval == head && head->_loopLatch->_number <= _number && _number < head->_number;
 	}
 
-	Block *outEdgeOutsideLoop(Block *head) {
+	Block *nonFollowEdge() {
 		foreach (Block *u, _out)
-			if (!u->inLoop(head))
+			if (u != _loopFollow)
 				return u;
 		return 0;
 	}
 
-	Block() : _interval(), _number(), _loopHead(), _loopFollow() {
+	Block *outEdgeOutsideLoop(Block *head) {
+		foreach (Block *u, _out)
+			if (!u->inLoop(head) && u != head)
+				return u;
+		return 0;
+	}
+
+	Block() : _interval(), _number(), _loopHead(), _loopFollow(), _loopLatch(), _visited() {
 	}
 
 	~Block() {

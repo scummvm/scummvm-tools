@@ -26,6 +26,7 @@ bool contains(const Container &c, const Element &e) {
 }
 
 std::string phex(int i, int width=4);
+std::string spaces(int width);
 uint32 read_be_uint32(std::ifstream &f);
 uint32 read_le_uint32(std::ifstream &f);
 uint16 read_le_uint16(std::ifstream &f);
