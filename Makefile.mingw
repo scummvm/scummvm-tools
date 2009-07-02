@@ -21,6 +21,7 @@ install:   all
 	strip compress_scumm_sou.exe -o $(SCUMMVMPATH)/tools/compress_scumm_sou.exe
 	strip compress_sword1.exe -o $(SCUMMVMPATH)/tools/compress_sword1.exe
 	strip compress_sword2.exe -o $(SCUMMVMPATH)/tools/compress_sword2.exe
+	strip compress_tinsel.exe -o $(SCUMMVMPATH)/tools/compress_tinsel.exe
 	strip compress_touche.exe -o $(SCUMMVMPATH)/tools/compress_touche.exe
 	strip compress_tucker.exe -o $(SCUMMVMPATH)/tools/compress_tucker.exe
 	strip decine.exe -o $(SCUMMVMPATH)/tools/decine.exe
