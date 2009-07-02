@@ -116,11 +116,6 @@ string ControlFlowGraph::graphvizToString(const std::string &fontname, int fonts
 }
 
 
-bool ControlFlowGraph::inLoop(Block *head, Block *latch, Block *u) {
-	return u->_interval == head && latch->_number <= u->_number && u->_number < head->_number;
-}
-
-
 list<Block*> ControlFlowGraph::intervals() {
 	std::list<Block*> ret;
 	assignIntervals();
@@ -133,17 +128,16 @@ list<Block*> ControlFlowGraph::intervals() {
 
 Block *ControlFlowGraph::loopFollow(Block *head, Block *latch) {
 	if (head->_loopType == PRE_TESTED)
-		return head->_out.front();
+		return head->outEdgeOutsideLoop(head);
 	if (head->_loopType == POST_TESTED)
-		return latch->_out.back();
+		return latch->outEdgeOutsideLoop(head);
 	// ENDLESS
 	Block *ret = 0;
 	foreach (Block *u, _blocks)
-		if (inLoop(head, latch, u) && u->_out.size() == 2 && (!ret || ret->_number < u->_out.back()->_number))
-			ret = u->_out.back();
+		if (u->inLoop(head) && u->outEdgeOutsideLoop(head) && (!ret || ret->_number < u->outEdgeOutsideLoop(head)->_number))
+			ret = u->outEdgeOutsideLoop(head);
 	return ret;
 }
-
 
 // for each set of 'growing' intervals in derived sequence of graphs,
 // every interval header is a potential loop header
@@ -154,17 +148,14 @@ void ControlFlowGraph::loopStruct() {
 		foreach (Block *interval, intervals()) {
 			foreach (Block *latch, interval->_in) {
 				if (latch->_interval == interval && !latch->_loopHead) {
-					foreach (Block *u, _blocks)
-						if (inLoop(interval, latch, u))
-							u->_loopHead = interval;
-					interval->_loopLatch = latch; // TODO do we need this?
+					interval->_loopLatch = latch;
 					interval->_loopType = loopType(interval, latch);
 					interval->_loopFollow = loopFollow(interval, latch);
+					latch->_loopHead = interval;
 				}
 			}
 		}
 }
-
 
 LoopType ControlFlowGraph::loopType(Block *head, Block *latch) {
 	if (head->_out.size() == 1 && latch->_out.size() == 1)
@@ -174,7 +165,7 @@ LoopType ControlFlowGraph::loopType(Block *head, Block *latch) {
 	if (head->_out.size() == 2 && latch->_out.size() == 1)
 		return PRE_TESTED;
 	// head->_out.size() == 2 && latch->_out.size() == 2
-	if (inLoop(head, latch, head->_out.front()))
+	if (!head->outEdgeOutsideLoop(head))
 		return POST_TESTED;
 	else
 		return PRE_TESTED;

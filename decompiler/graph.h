@@ -11,6 +11,7 @@
 #include "instruction.h"
 #include "misc.h"
 
+
 enum LoopType {
 	PRE_TESTED,
 	POST_TESTED,
@@ -22,7 +23,7 @@ struct Block : boost::noncopyable {
 
 	Block *_interval;        // header node of the interval this block belongs to
 	Block *_loopFollow;      // if not null, this block is a loop header, and follow is a first block after exit
-	Block *_loopHead;        // if not null, this block belongs to a loop
+    Block *_loopHead;        // if not null, this is a latching block
 	Block *_loopLatch;       // if not null, this block is a loop header, and latch is the last block in the loop
 	Block *_primitive;       // interval header of the graph from which this graph has been derived
 	LoopType _loopType;
@@ -36,6 +37,17 @@ struct Block : boost::noncopyable {
 		foreach (Instruction *instruction, _instructions)
 			ret << instruction->toString();
 		return ret.str();
+	}
+
+	bool inLoop(Block *head) {
+		return _interval == head && head->_loopLatch->_number <= _number && _number <= head->_number;
+	}
+
+	Block *outEdgeOutsideLoop(Block *head) {
+		foreach (Block *u, _out)
+			if (!u->inLoop(head))
+				return u;
+		return 0;
 	}
 
 	Block() : _interval(), _number(), _loopHead(), _loopFollow() {
@@ -105,7 +117,6 @@ struct ControlFlowGraph : boost::noncopyable {
 private:
 	LoopType loopType(Block *head, Block *latch);
 	Block *loopFollow(Block *head, Block *latch);     // to be called after loopType
-	bool inLoop(Block *head, Block *latch, Block *u);
 
 	void addEdge(Block *from, Block *to);
 
