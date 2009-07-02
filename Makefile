@@ -7,7 +7,7 @@
 
 srcdir      ?= .
 
-DEFINES     := -DUNIX
+DEFINES     := -DUNIX -DEXPORT_MAIN
 LDFLAGS     := $(LDFLAGS)
 INCLUDES    := -I. -I$(srcdir)
 LIBS        :=
@@ -204,8 +204,13 @@ extract_t7g_mac$(EXEEXT): extract_t7g_mac.o util.o
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-tools_gui$(EXEEXT): gui/main.o gui/pages.o gui/tools.o
-	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs`
+tools_gui$(EXEEXT): gui/main.o gui/pages.o gui/tools.o compress_agos.o compress_gob.o compress_kyra.o \
+	compress_queen.o compress_saga.o compress_scumm_bun.o compress_scumm_san.o compress_scumm_sou.o \
+	compress_sword1.o compress_sword2.o compress_touche.o compress_tucker.o encode_dxa.o \
+	extract_agos.o extract_gob_stk.o extract_kyra.o extract_loom_tg16.o extract_mm_apple.o \
+	extract_mm_c64.o extract_mm_nes.o extract_parallaction.o extract_scumm_mac.o \
+	extract_zak_c64.o kyra_pak.o kyra_ins.o compress.o util.o $(UTILS)
+	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs` -lpng -lz -lvorbis -logg -lvorbisenc -lFLAC
 
 sword2_clue$(EXEEXT): sword2_clue.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `pkg-config --libs gtk+-2.0`

@@ -470,3 +470,11 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 
 	return unpacked;
 }
+
+#ifdef UNIX
+int main(int argc, char *argv[]) __attribute__((weak));
+int main(int argc, char *argv[]) {
+	return export_main(extract_gob_stk)(argc, argv);
+}
+#endif
+

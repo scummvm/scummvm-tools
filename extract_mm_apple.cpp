@@ -176,3 +176,11 @@ int export_main(extract_mm_apple)(int argc, char *argv[]) {
 	notice("All done!");
 	return 0;
 }
+
+#ifdef UNIX
+int main(int argc, char *argv[]) __attribute__((weak));
+int main(int argc, char *argv[]) {
+	return export_main(extract_mm_apple)(argc, argv);
+}
+#endif
+

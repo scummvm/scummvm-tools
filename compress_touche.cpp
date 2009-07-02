@@ -218,3 +218,11 @@ int export_main(compress_touche)(int argc, char *argv[]) {
 	compress_sound_data(&inpath, &outpath);
 	return 0;
 }
+
+#ifdef UNIX
+int main(int argc, char *argv[]) __attribute__((weak));
+int main(int argc, char *argv[]) {
+	return export_main(compress_touche)(argc, argv);
+}
+#endif
+

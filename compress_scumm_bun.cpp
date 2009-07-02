@@ -1197,3 +1197,11 @@ int export_main(compress_scumm_bun)(int argc, char *argv[]) {
 
 	return 0;
 }
+
+#ifdef UNIX
+int main(int argc, char *argv[]) __attribute__((weak));
+int main(int argc, char *argv[]) {
+	return export_main(compress_scumm_bun)(argc, argv);
+}
+#endif
+

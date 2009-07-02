@@ -154,3 +154,9 @@ int export_main(extract_scumm_mac)(int argc, char *argv[]) {
 	fclose(ifp);
 	return 0;
 }
+
+int main(int argc, char *argv[]) __attribute__((weak));
+int main(int argc, char *argv[]) {
+	return export_main(extract_scumm_mac)(argc, argv);
+}
+

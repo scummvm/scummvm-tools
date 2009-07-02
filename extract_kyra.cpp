@@ -112,3 +112,11 @@ int export_main(extract_kyra)(int argc, char *argv[]) {
 	delete extract;
 	return 0;
 }
+
+#ifdef UNIX
+int main(int argc, char *argv[]) __attribute__((weak));
+int main(int argc, char *argv[]) {
+	return export_main(extract_kyra)(argc, argv);
+}
+#endif
+

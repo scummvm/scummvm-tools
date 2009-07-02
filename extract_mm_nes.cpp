@@ -1125,7 +1125,7 @@ struct	t_lflindex {
 	uint16	script_addr[200];
 	uint8	sound_lfl[100];
 	uint16	sound_addr[100];
-} GCC_PACK lfl_index;
+} GCC_PACK mm_lfl_index;
 
 #include "utils/pack-end.h"	/* END STRUCT PACKING */
 
@@ -1241,7 +1241,7 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 	}
 
 #ifdef MAKE_LFLS
-	memset(&lfl_index, 0, sizeof(struct t_lflindex));
+	memset(&mm_lfl_index, 0, sizeof(struct t_lflindex));
 
 	for (i = 0; lfls[i].num != -1; i++) {
 		const struct t_lfl *lfl = &lfls[i];
@@ -1257,56 +1257,56 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 			const struct t_lflentry *entry = &lfl->entries[j];
 			switch (entry->type->type) {
 			case NES_ROOM:
-				lfl_index.room_lfl[entry->index] = lfl->num;
-				lfl_index.room_addr[entry->index] = (uint16)ftell(output);
+				mm_lfl_index.room_lfl[entry->index] = lfl->num;
+				mm_lfl_index.room_addr[entry->index] = (uint16)ftell(output);
 				break;
 			case NES_COSTUME:
-				lfl_index.costume_lfl[entry->index] = lfl->num;
-				lfl_index.costume_addr[entry->index] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[entry->index] = lfl->num;
+				mm_lfl_index.costume_addr[entry->index] = (uint16)ftell(output);
 				break;
 			case NES_SPRDESC:
-				lfl_index.costume_lfl[entry->index + 25] = lfl->num;
-				lfl_index.costume_addr[entry->index + 25] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[entry->index + 25] = lfl->num;
+				mm_lfl_index.costume_addr[entry->index + 25] = (uint16)ftell(output);
 				break;
 			case NES_SPRLENS:
-				lfl_index.costume_lfl[entry->index + 27] = lfl->num;
-				lfl_index.costume_addr[entry->index + 27] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[entry->index + 27] = lfl->num;
+				mm_lfl_index.costume_addr[entry->index + 27] = (uint16)ftell(output);
 				break;
 			case NES_SPROFFS:
-				lfl_index.costume_lfl[entry->index + 29] = lfl->num;
-				lfl_index.costume_addr[entry->index + 29] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[entry->index + 29] = lfl->num;
+				mm_lfl_index.costume_addr[entry->index + 29] = (uint16)ftell(output);
 				break;
 			case NES_SPRDATA:
-				lfl_index.costume_lfl[entry->index + 31] = lfl->num;
-				lfl_index.costume_addr[entry->index + 31] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[entry->index + 31] = lfl->num;
+				mm_lfl_index.costume_addr[entry->index + 31] = (uint16)ftell(output);
 				break;
 			case NES_COSTUMEGFX:
-				lfl_index.costume_lfl[entry->index + 33] = lfl->num;
-				lfl_index.costume_addr[entry->index + 33] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[entry->index + 33] = lfl->num;
+				mm_lfl_index.costume_addr[entry->index + 33] = (uint16)ftell(output);
 				break;
 			case NES_SPRPALS:
-				lfl_index.costume_lfl[entry->index + 35] = lfl->num;
-				lfl_index.costume_addr[entry->index + 35] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[entry->index + 35] = lfl->num;
+				mm_lfl_index.costume_addr[entry->index + 35] = (uint16)ftell(output);
 				break;
 			case NES_ROOMGFX:
-				lfl_index.costume_lfl[entry->index + 37] = lfl->num;
-				lfl_index.costume_addr[entry->index + 37] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[entry->index + 37] = lfl->num;
+				mm_lfl_index.costume_addr[entry->index + 37] = (uint16)ftell(output);
 				break;
 			case NES_SCRIPT:
-				lfl_index.script_lfl[entry->index] = lfl->num;
-				lfl_index.script_addr[entry->index] = (uint16)ftell(output);
+				mm_lfl_index.script_lfl[entry->index] = lfl->num;
+				mm_lfl_index.script_addr[entry->index] = (uint16)ftell(output);
 				break;
 			case NES_SOUND:
-				lfl_index.sound_lfl[entry->index] = lfl->num;
-				lfl_index.sound_addr[entry->index] = (uint16)ftell(output);
+				mm_lfl_index.sound_lfl[entry->index] = lfl->num;
+				mm_lfl_index.sound_addr[entry->index] = (uint16)ftell(output);
 				break;
 			case NES_CHARSET:
-				lfl_index.costume_lfl[77] = lfl->num;
-				lfl_index.costume_addr[77] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[77] = lfl->num;
+				mm_lfl_index.costume_addr[77] = (uint16)ftell(output);
 				break;
 			case NES_PREPLIST:
-				lfl_index.costume_lfl[78] = lfl->num;
-				lfl_index.costume_addr[78] = (uint16)ftell(output);
+				mm_lfl_index.costume_lfl[78] = lfl->num;
+				mm_lfl_index.costume_addr[78] = (uint16)ftell(output);
 				break;
 			default:
 				error("Unindexed entry found");
@@ -1327,7 +1327,7 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 	writeUint16LE(output, 0x4643);
 	extract_resource(input, output, &res_globdata.langs[ROMset][0], res_globdata.type);
 	for (i = 0; i < (int)sizeof(struct t_lflindex); i++)
-		writeByte(output, ((uint8 *)&lfl_index)[i]);
+		writeByte(output, ((uint8 *)&mm_lfl_index)[i]);
 	fclose(output);
 #else	/* !MAKE_LFLS */
 	dump_resource(input, "globdata.dmp", 0, &res_globdata.langs[ROMset][0], res_globdata.type);
@@ -1358,3 +1358,11 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 
 	return 0;
 }
+
+#ifdef UNIX
+int main(int argc, char *argv[]) __attribute__((weak));
+int main(int argc, char *argv[]) {
+	return export_main(extract_mm_nes)(argc, argv);
+}
+#endif
+
