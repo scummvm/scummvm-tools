@@ -422,7 +422,7 @@ bool detectKyra3File(Filename *infile) {
 	error("Unknown filetype of file: '%s'", infile->getFullPath());
 }
 
-#ifdef UNIX
+#if defined(UNIX) && defined(EXPORT_MAIN)
 int main(int argc, char *argv[]) __attribute__((weak));
 int main(int argc, char *argv[]) {
 	return export_main(compress_kyra)(argc, argv);

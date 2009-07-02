@@ -236,7 +236,7 @@ int export_main(extract_agos)(int argc, char *argv[]) {
 	return 0;
 }
 
-#ifdef UNIX
+#if defined(UNIX) && defined(EXPORT_MAIN)
 int main(int argc, char *argv[]) __attribute__((weak));
 int main(int argc, char *argv[]) {
 	return export_main(extract_agos)(argc, argv);

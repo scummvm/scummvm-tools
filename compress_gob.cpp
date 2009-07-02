@@ -396,7 +396,7 @@ bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, 
 		return false;
 }
 
-#ifdef UNIX
+#if defined(UNIX) && defined(EXPORT_MAIN)
 int main(int argc, char *argv[]) __attribute__((weak));
 int main(int argc, char *argv[]) {
 	return export_main(compress_gob)(argc, argv);

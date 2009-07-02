@@ -239,7 +239,7 @@ int export_main(compress_sword2)(int argc, char *argv[]) {
 	return EXIT_SUCCESS;
 }
 
-#ifdef UNIX
+#if defined(UNIX) && defined(EXPORT_MAIN)
 int main(int argc, char *argv[]) __attribute__((weak));
 int main(int argc, char *argv[]) {
 	return export_main(compress_sword2)(argc, argv);

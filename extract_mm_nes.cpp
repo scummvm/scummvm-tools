@@ -1359,7 +1359,7 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 	return 0;
 }
 
-#ifdef UNIX
+#if defined(UNIX) && defined(EXPORT_MAIN)
 int main(int argc, char *argv[]) __attribute__((weak));
 int main(int argc, char *argv[]) {
 	return export_main(extract_mm_nes)(argc, argv);
