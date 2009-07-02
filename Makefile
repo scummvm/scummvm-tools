@@ -68,6 +68,7 @@ TARGETS := \
 	compress_scumm_sou$(EXEEXT) \
 	compress_sword1$(EXEEXT) \
 	compress_sword2$(EXEEXT) \
+	compress_tinsel$(EXEEXT) \
 	compress_touche$(EXEEXT) \
 	compress_tucker$(EXEEXT) \
 	decine$(EXEEXT) \
@@ -142,6 +143,9 @@ compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
+	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+
+compress_tinsel$(EXEEXT): compress_tinsel.o compress.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 compress_touche$(EXEEXT): compress_touche.o compress.o util.o
