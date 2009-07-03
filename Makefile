@@ -30,8 +30,8 @@ CXXFLAGS+= -Wno-long-long -Wno-multichar -Wno-unknown-pragmas -Wno-reorder
 CXXFLAGS+= -Wpointer-arith -Wcast-qual -Wconversion
 CXXFLAGS+= -Wshadow -Wimplicit -Wundef -Wnon-virtual-dtor -Wwrite-strings
 
-# Disable exceptions, and enabled checking of pointers returned by "new"
-CXXFLAGS+= -fno-exceptions -fcheck-new
+# Enable checking of pointers returned by "new"
+CXXFLAGS+= -fcheck-new
 
 #######################################################################
 # Default commands - put the necessary replacements in config.mk      #

@@ -40,7 +40,7 @@
 #endif
 
 #include <string>
-
+#include <stdexcept>
 
 /*
  * Some useful types

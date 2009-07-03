@@ -236,8 +236,6 @@ static void convert_mac(Filename *inputPath) {
 int export_main(compress_agos)(int argc, char *argv[]) {
 	const char *helptext = "\nUsage: %s [mode] [mode params] [--mac] <infile>\n" kCompressionAudioHelp;
 
-	const char *h = "Something something " INT_STR(INT);
-
 	bool convertMac = false;
 
 	Filename inpath, outpath;
