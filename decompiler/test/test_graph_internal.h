@@ -80,6 +80,48 @@ public:
 		TS_ASSERT_EQUALS(addr(node(gd,2)->_interval), 1);
 		TS_ASSERT_EQUALS(addr(node(gd,3)->_interval), 1);
 	}
+
+
+	void test_assignDominators() {
+		ga->orderBlocks();
+		ga->assignDominators();
+		TS_ASSERT(!node(ga,1)->_dominator);
+		TS_ASSERT_EQUALS(addr(node(ga,2)->_dominator), 1);
+		TS_ASSERT_EQUALS(addr(node(ga,3)->_dominator), 2);
+		TS_ASSERT_EQUALS(addr(node(ga,4)->_dominator), 3);
+		TS_ASSERT_EQUALS(addr(node(ga,5)->_dominator), 2);
+		TS_ASSERT_EQUALS(addr(node(ga,6)->_dominator), 5);
+
+		gb->orderBlocks();
+		gb->assignDominators();
+		TS_ASSERT(!node(gb,1)->_dominator);
+		TS_ASSERT_EQUALS(addr(node(gb,2)->_dominator), 1);
+		TS_ASSERT_EQUALS(addr(node(gb,3)->_dominator), 2);
+		TS_ASSERT_EQUALS(addr(node(gb,4)->_dominator), 2);
+		TS_ASSERT_EQUALS(addr(node(gb,5)->_dominator), 1);
+		TS_ASSERT_EQUALS(addr(node(gb,6)->_dominator), 5);
+		TS_ASSERT_EQUALS(addr(node(gb,7)->_dominator), 6);
+		TS_ASSERT_EQUALS(addr(node(gb,8)->_dominator), 7);
+		TS_ASSERT_EQUALS(addr(node(gb,9)->_dominator), 8);
+		TS_ASSERT_EQUALS(addr(node(gb,10)->_dominator), 9);
+		TS_ASSERT_EQUALS(addr(node(gb,11)->_dominator), 6);
+		TS_ASSERT_EQUALS(addr(node(gb,12)->_dominator), 11);
+		TS_ASSERT_EQUALS(addr(node(gb,13)->_dominator), 11);
+		TS_ASSERT_EQUALS(addr(node(gb,14)->_dominator), 11);
+		TS_ASSERT_EQUALS(addr(node(gb,15)->_dominator), 14);
+
+		gc->orderBlocks();
+		gc->assignDominators();
+		TS_ASSERT(!node(gc,1)->_dominator);
+		TS_ASSERT_EQUALS(addr(node(gc,2)->_dominator), 1);
+		TS_ASSERT_EQUALS(addr(node(gc,3)->_dominator), 1);
+
+		gd->orderBlocks();
+		gd->assignDominators();
+		TS_ASSERT(!node(gd,1)->_dominator);
+		TS_ASSERT_EQUALS(addr(node(gd,2)->_dominator), 1);
+		TS_ASSERT_EQUALS(addr(node(gd,3)->_dominator), 2);
+	}
 };
 
 #endif

@@ -5,6 +5,12 @@
 using namespace std;
 
 
+Block *dominatorIntersect(Block *u, Block *v);
+std::list<Block*> inPostOrder(std::list<Block*> &blocks);
+int orderVisit(Block *u, int number);
+bool postOrderCompare(Block *a, Block *b);
+
+
 
 ControlFlowGraph::ControlFlowGraph() : _entry() {
 }
@@ -19,6 +25,29 @@ ControlFlowGraph::~ControlFlowGraph() {
 void ControlFlowGraph::addEdge(Block *from, Block *to) {
 	from->_out.push_back(to);
 	to->_in.push_back(from);
+}
+
+
+void ControlFlowGraph::assignDominators() {
+	std::list<Block*> blocks = inPostOrder(_blocks);
+	blocks.reverse();
+	blocks.remove(_entry);
+	_entry->_dominator = _entry;
+	for (bool changed = true; changed; ) {
+		changed = false;
+		foreach (Block *u, blocks) {
+			std::list<Block*>::iterator it = u->_in.begin();
+			Block *dom = *it++;
+			for (; it != u->_in.end(); it++)
+				if ((*it)->_dominator)
+					dom = dominatorIntersect(*it, dom);
+			if (u->_dominator != dom) {
+				changed = true;
+				u->_dominator = dom;
+			}
+		}
+	}
+	_entry->_dominator = 0;
 }
 
 
@@ -50,6 +79,17 @@ void ControlFlowGraph::assignIntervals() {
 				intervals.push_back(m);
 		}
 	}
+}
+
+
+Block *dominatorIntersect(Block *u, Block *v) {
+	while (u != v) {
+		while (u->_number < v->_number)
+			u = u->_dominator;
+		while (v->_number < u->_number)
+			v = v->_dominator;
+	}
+	return u;
 }
 
 
@@ -101,7 +141,9 @@ string ControlFlowGraph::graphvizToString(const std::string &fontname, int fonts
 					ret << "fontname=" << '"' << fontname << "\",";
 				if (fontsize != 0)
 					ret << "fontsize=" << fontsize << ",";
-				ret	<< "shape=box,label=\"<number: " << u->_number;
+				ret	<< "shape=box,label=\"<number=" << u->_number;
+				if (u->_dominator)
+					ret	<< ", dom=" << u->_dominator->_number;
 				if (u->_loopFollow)
 					ret << ", loop_type=" << (u->_loopType == PRE_TESTED ? "pre_tested" : u->_loopType == POST_TESTED ? "post_tested" : "endless");
 				ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << std::endl;
@@ -119,6 +161,13 @@ string ControlFlowGraph::graphvizToString(const std::string &fontname, int fonts
 	}
 	ret << "}" << std::endl;
 	return ret.str();
+}
+
+
+std::list<Block*> inPostOrder(std::list<Block*> &blocks) {
+	std::list<Block*> ret(blocks);
+	ret.sort(postOrderCompare);
+	return ret;
 }
 
 
@@ -184,13 +233,18 @@ void ControlFlowGraph::orderBlocks() {
 }
 
 
-int ControlFlowGraph::orderVisit(Block *u, int number) {
+int orderVisit(Block *u, int number) {
 	u->_number = -1;
 	foreach (Block *v, u->_out)
 		if (!v->_number)
 			number = orderVisit(v, number);
 	u->_number = ++number;
 	return number;
+}
+
+
+bool postOrderCompare(Block *a, Block *b) {
+	return a->_number < b->_number;
 }
 
 

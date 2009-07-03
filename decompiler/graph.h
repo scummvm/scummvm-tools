@@ -22,13 +22,14 @@ enum LoopType {
 struct Block : boost::noncopyable {
 
 	bool _visited;
+	Block *_dominator;       // immediate dominator
 	Block *_interval;        // header node of the interval this block belongs to
 	Block *_loopFollow;      // if not null, this block is a loop header, and follow is a first block after exit
     Block *_loopHead;        // if not null, this is a latching block
 	Block *_loopLatch;       // if not null, this block is a loop header, and latch is the last block in the loop
 	Block *_primitive;       // interval header of the graph from which this graph has been derived
 	LoopType _loopType;
-	int _number;             // number in reverse post-order
+	int _number;             // number in post-order
 	std::list<Block*> _in;
 	std::list<Block*> _out;
 	std::list<Instruction*> _instructions;
@@ -58,7 +59,7 @@ struct Block : boost::noncopyable {
 		return 0;
 	}
 
-	Block() : _interval(), _number(), _loopHead(), _loopFollow(), _loopLatch(), _visited() {
+	Block() : _interval(), _number(), _loopHead(), _loopFollow(), _loopLatch(), _visited(), _dominator() {
 	}
 
 	~Block() {
@@ -123,6 +124,7 @@ struct ControlFlowGraph : boost::noncopyable {
 
 	void assignIntervals();  // can be called multiple times
 	void extendIntervals();
+	void assignDominators();
 
 private:
 	LoopType loopType(Block *head, Block *latch);
@@ -131,7 +133,6 @@ private:
 	void addEdge(Block *from, Block *to);
 
 	static std::string graphvizEscapeLabel(const std::string &s);
-	int orderVisit(Block *u, int number);             // visit blocks recursively, depth first, helper for orderBlocks
 
 	void replaceEdges(Block *from, Block *oldTo, Block *newTo);
 };

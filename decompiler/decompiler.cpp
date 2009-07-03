@@ -61,6 +61,7 @@ int main(int argc, char **argv) {
 		cfg.removeJumpsToJumps();
 	cfg.orderBlocks();
 	cfg.removeUnreachableBlocks();
+	cfg.assignDominators();
 	if (vars.count("graph-intervals")) {
 		cfg.assignIntervals();
 		for (unsigned i = 0; i < vars["graph-intervals"].as<unsigned>(); i++)
