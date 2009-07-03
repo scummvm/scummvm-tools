@@ -23,6 +23,7 @@ struct Block : boost::noncopyable {
 
 	bool _visited;
 	Block *_dominator;       // immediate dominator
+	Block *_ifFollow;        // block is header node for if, branches converge at _ifFollow
 	Block *_interval;        // header node of the interval this block belongs to
 	Block *_loopFollow;      // if not null, this block is a loop header, and follow is a first block after exit
     Block *_loopHead;        // if not null, this is a latching block
@@ -59,7 +60,7 @@ struct Block : boost::noncopyable {
 		return 0;
 	}
 
-	Block() : _interval(), _number(), _loopHead(), _loopFollow(), _loopLatch(), _visited(), _dominator() {
+	Block() : _interval(), _number(), _loopHead(), _loopFollow(), _loopLatch(), _visited(), _dominator(), _ifFollow() {
 	}
 
 	~Block() {
@@ -115,6 +116,7 @@ struct ControlFlowGraph : boost::noncopyable {
 
 	void loopStruct();               // fill in all information about loops
 	std::list<Block*> intervals();   // partition graph into intervals and return list of header blocks
+	void ifStruct();                 // fill in all information about if-then-else, must be called after loopStruct
 
 	void orderBlocks();              // assign block numbers in post-order
 	void removeJumpsToJumps();

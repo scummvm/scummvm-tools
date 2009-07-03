@@ -70,6 +70,7 @@ int main(int argc, char **argv) {
 		exit(0);
 	}
 	cfg.loopStruct();
+	cfg.ifStruct();
 	if (vars.count("graph-struct")) {
 		cout << cfg.graphvizToString(vars["fontname"].as<string>());
 		exit(0);

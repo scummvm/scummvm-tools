@@ -158,9 +158,31 @@ string ControlFlowGraph::graphvizToString(const std::string &fontname, int fonts
 		}
 		if (u->_loopFollow && !hadFollow)
 		    ret << '"' << u << "\" -> \"" << u->_loopFollow << '"' << "[color=blue,style=dashed];" << std::endl;
+		if (u->_ifFollow)
+		    ret << '"' << u << "\" -> \"" << u->_ifFollow << '"' << "[color=red,style=dashed];" << std::endl;
 	}
 	ret << "}" << std::endl;
 	return ret.str();
+}
+
+
+void ControlFlowGraph::ifStruct() {
+	std::list<Block*> unresolved;
+	foreach (Block *u, inPostOrder(_blocks))
+		// TODO how will this work with 2-way head and 2-way latch loops - on latch node? how are loops going to be structured anyway
+		if (u->_out.size() == 2 && !((u->_loopLatch && u->_loopType == PRE_TESTED) || u->_loopHead)) {
+			Block *follow = 0;
+			// find the deepest node with immediate dominator u
+			foreach (Block *v, _blocks)
+				if (v->_dominator == u && v->_in.size() >= 2 && (!follow || v->_number < follow->_number))
+					follow = v;
+			unresolved.push_back(u);
+			if (follow) {
+				foreach (Block *v, unresolved)
+					v->_ifFollow = follow;
+				unresolved.clear();
+			}
+		}
 }
 
 
