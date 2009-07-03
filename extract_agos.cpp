@@ -23,11 +23,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
 
 #include "util.h"
-
-typedef unsigned int ULONG;
-typedef unsigned char UBYTE;
 
 size_t filelen;
 #define EndGetM32(a)	((((a)[0])<<24)|(((a)[1])<<16)|(((a)[2])<<8)|((a)[3]))
@@ -44,12 +42,12 @@ size_t filelen;
 #define SD_TYPE_LITERAL (0)
 #define SD_TYPE_MATCH   (1)
 
-int simon_decr(UBYTE *src, UBYTE *dest, ULONG srclen) {
-	UBYTE *s = &src[srclen - 4];
-	ULONG destlen = EndGetM32(s);
-	ULONG bb, x, y;
-	UBYTE *d = &dest[destlen];
-	UBYTE bc, bit, bits, type;
+int simon_decr(uint8 *src, uint8 *dest, uint32 srclen) {
+	uint8 *s = &src[srclen - 4];
+	uint32 destlen = EndGetM32(s);
+	uint32 bb, x, y;
+	uint8 *d = &dest[destlen];
+	uint8 bc, bit, bits, type;
 
 	/* initialise bit buffer */
 	s -= 4;
@@ -134,59 +132,47 @@ int simon_decr(UBYTE *src, UBYTE *dest, ULONG srclen) {
 	return 1;
 }
 
-ULONG simon_decr_length(UBYTE *src, ULONG srclen) {
+uint32 simon_decr_length(uint8 *src, uint32 srclen) {
 	return EndGetM32(&src[srclen - 4]);
 }
 
 
-/* - loadfile(filename) loads a file from disk, and returns a pointer to that
- *   loaded file, or returns NULL on failure
- * - call free() on ptr to free memory
- * - size of loaded file is available in global var 'filelen'
+/**
+ * loadfile(filename) loads a file from disk, and returns a pointer to that
+ * loaded file, or returns NULL on failure
+ * call free() on ptr to free memory
+ * size of loaded file is available in global var 'filelen'
+ *
+ * @param name The name of the file to be loaded
  */
-void *loadfile(const char *name) {
-	void *mem = NULL;
-	FILE *fd;
+void *loadfile(const Filename &name) {
+	File file(name, FILEMODE_READ);
 
-	fd = fopen(name, "rb");
-	if (fd != NULL) {
-		if ((fseek(fd, 0, SEEK_END) == 0) && (filelen = ftell(fd))
-		&&	(fseek(fd, 0, SEEK_SET) == 0) && (mem = malloc(filelen))) {
+	// Using global here is not pretty
+	filelen = file.size();
+	void *mem = malloc(file.size());
 
-			if (fread(mem, 1, filelen, fd) < filelen) {
-				free(mem); mem = NULL;
-			}
-		}
-
-		fclose(fd);
-	}
+	// Read data
+	file.read(file, 1, filelen);
 
 	return mem;
 }
 
-/* - savefile(filename, mem, length) saves [length] bytes from [mem] into
- *   the file named by [filename]
- * - returns zero if failed, or non-zero if successful
+/**
+ * Saves N bytes from the buffer to the target file.
+ * Throws FileException on failure
+ * 
+ * @param name The name of the file to save to
+ * @param mem Where to get data from
+ * @param length How many bytes to write
  */
-int savefile(const char *name, void *mem, size_t length) {
-	unsigned int bytesWritten;
-
-	FILE *fd = fopen(name, "wb");
-	if (fd == NULL) {
-		return 0;
-	}
-
-	bytesWritten = fwrite(mem, 1, length, fd);
-	if (bytesWritten != length) {
-		return 0;
-	}
-
-	fclose(fd);
-
-	return 1;
+void savefile(const Filename &name, void *mem, size_t length) {
+	File file(name, FILEMODE_WRITE);
+	file.write(mem, 1, length);
 }
 
-int export_main(extract_agos)(int argc, char *argv[]) {
+// Run the actual tool
+int run(int argc, char *argv[]) {
 	int first_arg = 1;
 	int last_arg = argc;
 
@@ -208,32 +194,38 @@ int export_main(extract_agos)(int argc, char *argv[]) {
 	// Loop through all input files
 	for (int parsed_args = first_arg; parsed_args <= last_arg; ++parsed_args) {
 		const char *filename = argv[parsed_args];
-		UBYTE *x = (UBYTE *) loadfile(filename);
+		uint8 *x = (uint8 *)loadfile(filename);
 
 		inpath.setFullPath(filename);
 		outpath.setFullName(inpath.getFullName());
 
-		if (x) {
-			ULONG decrlen = simon_decr_length(x, (ULONG) filelen);
-			UBYTE *out = (UBYTE *) malloc(decrlen);
+		uint32 decrlen = simon_decr_length(x, (uint32) filelen);
+		uint8 *out = (uint8 *) malloc(decrlen);
 
-			if (out) {
-				if (simon_decr(x, out, filelen)) {
-					savefile(outpath.getFullPath(), out, decrlen);
-				}
-				else {
-					notice("%s: decrunch error\n", filename);
-				}
-
-				free((void *) x);
+		if (out) {
+			if (simon_decr(x, out, filelen)) {
+				savefile(outpath.getFullPath(), out, decrlen);
 			}
-		}
-		else {
-			notice("Could not load file %s\n", filename);
+			else {
+				notice("%s: decrunch error\n", filename);
+			}
+
+			free((void *) x);
 		}
 	}
 
 	return 0;
+}
+
+int export_main(extract_agos)(int argc, char *argv[]) {
+	try {
+		run(argc, argv);
+	} catch(ToolException &err) {
+		std::cout << "FATAL ERROR: " << err.what();
+		return err._retcode;
+	}
+	return 0;
+}
 }
 
 #if defined(UNIX) && defined(EXPORT_MAIN)

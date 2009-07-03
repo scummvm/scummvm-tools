@@ -39,6 +39,8 @@
 #include <process.h>
 #endif
 
+#include <string>
+
 
 /*
  * Some useful types
@@ -220,6 +222,41 @@ void warning(const char *s, ...);
 void debug(int level, const char *s, ...);
 void notice(const char *s, ...);
 
+// Below this line are more C++ ish interface
+// Above is kept for compatibility with non-converted tools
+
+/**
+ * Throw an exception of this type (or subtype of it), if the tool fails fatally.
+ * This type is intended for general errors
+ */
+class ToolException : public std::runtime_error {
+public:
+	/**
+	 * Construct an exception, with an appropriate error message
+	 * A return value for the tool should be supplied if none is appropriate
+	 * @todo If the tools are even more C++ized, the tool should decide retcode itself, not by exception
+	 *
+	 * @param error The error message
+	 * @param retcode The return value of the process
+	 */
+	ToolException(std::string error, int retcode = -1) : std::runtime_error(error), _retcode(retcode) {}
+
+	int _retcode;
+};
+
+/**
+ * Something unexpected happened while reading / writing to a file
+ * Usually premature end, or that it could not be opened (write / read protected)
+ */
+class FileException : public ToolException {
+public: 
+	FileException(std::string error, int retcode = -1) : ToolException(error, retcode) {}
+};
+
+/**
+ * A file path, can be queried for different parts
+ * and the parts can be modified seperately
+ */
 struct Filename {
 	char _path[1024];
 
@@ -248,6 +285,133 @@ struct Filename {
 inline bool operator==(const Filename &f1, const Filename &f2){
 	return f1.equals(&f2);
 }
+
+/**
+ * Possible modes for opening files
+ */
+enum FileMode {
+	FILEMODE_READ,
+	FILEMODE_WRITE
+};
+
+/**
+ * A basic wrapper around the FILE class
+ * Offers functionality to write words easily
+ */
+class File {
+public:
+	/**
+	 * Opens the given file path as an in/out stream, depending on the second argument
+	 * File is always opened in binary mode
+	 *
+	 * @param filename The file to open
+	 * @param mode The mode to open the file in
+	 */
+	File(const Filename &filename, FileMode mode);
+	File(const char *filename, FileMode mode);
+	/**
+	 * Create an empty file, used for two-step construction
+	 */
+	File();
+	~File();
+
+	/**
+	 * Opens the given file path as an in/out stream, depending on the second argument
+	 * File is always opened in binary mode
+	 *
+	 * @param filename The file to open
+	 * @param mode The mode to open the file in
+	 */
+	void open(const char *filename, FileMode mode);
+	
+	
+	/**
+	 * Read a single unsigned byte
+	 * Throws FileException if file is not open / if read failed ended prematurely
+	 */
+	uint8 readByte();
+	/**
+	 * Read a single 16-bit word, big endian
+	 * Throws FileException if file is not open / if read failed
+	 */
+	uint16 readU16BE();
+	/**
+	 * Read a single 16-bit word, little endian
+	 * Throws FileException if file is not open / if read failed
+	 */
+	uint16 readU16LE();
+	/**
+	 * Read a single 32-bit word, big endian
+	 * Throws FileException if file is not open / if read failed
+	 */
+	uint32 readU32BE();
+	/**
+	 * Read a single 32-bit word, little endian
+	 * Throws FileException if file is not open / if read failed
+	 */
+	uint32 readU32LE();
+
+	/**
+	 * Works the same way as fread, but throws on error or if it could not read all elements
+	 *
+	 * @param data Where to put the read data
+	 * @param elementSize the size of one element (in bytes)
+	 * @param elementCount the number of elements to read
+	 */
+	void read(void *data, size_t elementSize, size_t elementCount);
+
+	
+	/**
+	 * Writes a single byte to the file
+	 * Throws FileException if file is not open / if write failed
+	 */
+	void writeByte(uint8 b);
+	/**
+	 * Writes a single 16-bit word to the file, big endian
+	 * Throws FileException if file is not open / if write failed
+	 */
+	void writeU16BE(uint16 value);
+	/**
+	 * Writes a single 16-bit word to the file, little endian
+	 * Throws FileException if file is not open / if write failed
+	 */
+	void writeU16LE(uint16 value);
+	/**
+	 * Writes a single 32-bit word to the file, big endian
+	 * Throws FileException if file is not open / if write failed
+	 */
+	void writeU32BE(uint32 value);
+	/**
+	 * Writes a single 32-bit word to the file, little endian
+	 * Throws FileException if file is not open / if write failed
+	 */
+	void writeU32LE(uint32 value);
+
+	/**
+	 * Works the same way as fwrite, but throws on error or if it could not write all data
+	 *
+	 * @param data Where to read data from
+	 * @param elementSize the size of one element (in bytes)
+	 * @param elementCount the number of elements to read
+	 */
+	void write(const void *data, size_t elementSize, size_t elementCount);
+
+	/**
+	 * Returns the length of the file, in bytes, does not move the cursor
+	 */
+	uint32 size();
+
+	/** We implicitly convert into a FILE, so we can use fread() etc. directly */
+	operator FILE *() {return _file;}
+
+protected:
+	/** The mode the file was opened in */
+	FileMode _mode;
+	/** Internal reference to the file */
+	FILE *_file;
+	/** The name of the file, used for better error messages */
+	Filename _name;
+};
 
 void displayHelp(const char *msg = NULL, const char *exename = NULL);
 void parseHelpArguments(const char * const argv[], int argc, const char *msg = NULL);

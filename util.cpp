@@ -146,6 +146,7 @@ uint32 fileSize(FILE *fp) {
 	return sz;
 }
 
+// Filenname implementation
 Filename::Filename(const char *path) {
 	strcpy(_path, path);
 }
@@ -263,6 +264,155 @@ const char *Filename::getPath(char *out) const {
 	out[0] = '\0';
 	return out;
 }
+
+// File interface
+// While this does massive duplication of the code above, it's required to make sure that
+// unconverted tools are backwards-compatible
+
+File::File() {
+	_file = NULL;
+	_mode = FILEMODE_READ;
+}
+
+File::File(const Filename &filepath, FileMode mode) {
+	open(filepath.getFullPath(), mode);
+}
+
+File::File(const char *filepath, FileMode mode) {
+	open(filepath, mode);
+}
+
+File::~File() {
+	if (_file)
+		fclose(_file);
+}
+
+void File::open(const char *filepath, FileMode mode) {
+	assert(mode == FILEMODE_READ || mode == FILEMODE_WRITE);
+
+	if (mode == FILEMODE_READ) {
+		_file = fopen(filepath, "rb");
+	} else {
+		_file = fopen(filepath, "wb");
+	}
+	_mode = mode;
+	_name.setFullPath(filepath);
+
+	if (_file)
+		throw FileException("Could not open file " + std::string(filepath));
+}
+
+uint8 File::readByte() {
+	if (!_file) 
+		throw FileException("File is not open");
+	if (_mode != FILEMODE_READ)
+		throw FileException("Tried to read from file opened in write mode (" + std::string(_name.getFullPath()) + ")");
+
+	int u8 = fgetc(_file);
+	if (u8 == EOF)
+		throw FileException("Read beyond the end of file (" + std::string(_name.getFullPath()) + ")");
+	return (uint8)u8;
+}
+
+uint16 File::readU16BE() {
+	uint16 ret = 0;
+	ret |= readByte() << 8;
+	ret |= readByte();
+	return ret;
+}
+
+uint16 File::readU16LE() {
+	uint16 ret = 0;
+	ret |= readByte();
+	ret |= readByte() << 8;
+	return ret;
+}
+
+uint32 File::readU32BE() {
+	uint32 ret = 0;
+	ret |= readByte() << 24;
+	ret |= readByte() << 16;
+	ret |= readByte() << 8;
+	ret |= readByte();
+	return ret;
+}
+
+uint32 File::readU32LE() {
+	uint32 ret = 0;
+	ret |= readByte();
+	ret |= readByte() << 8;
+	ret |= readByte() << 16;
+	ret |= readByte() << 24;
+	return ret;
+}
+
+void File::read(void *data, size_t elementSize, size_t elementCount) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if (_mode != FILEMODE_READ)
+		throw FileException("Tried to read from file opened in write mode (" + std::string(_name.getFullPath()) + ")");
+
+	size_t data_read = fread(data, elementSize, elementCount, _file);
+	if (data_read != elementCount)
+		throw FileException("Read beyond the end of file (" + std::string(_name.getFullPath()) + ")");
+}
+
+void File::writeByte(uint8 b) {
+	if (!_file) 
+		throw FileException("File  is not open");
+	if (_mode != FILEMODE_WRITE)
+		throw FileException("Tried to write to a file opened in read mode (" + std::string(_name.getFullPath()) + ")");
+
+	if (fwrite(&b, 1, 1, _file) == 1)
+		throw FileException("Could not write to file (" + std::string(_name.getFullPath()) + ")");
+}
+
+void File::writeU16BE(uint16 value) {
+	writeByte((uint8)(value >> 8));
+	writeByte((uint8)(value));
+}
+
+void File::writeU16LE(uint16 value) {
+	writeByte((uint8)(value));
+	writeByte((uint8)(value >> 8));
+}
+
+void File::writeU32BE(uint32 value) {
+	writeByte((uint8)(value >> 24));
+	writeByte((uint8)(value >> 16));
+	writeByte((uint8)(value >> 8));
+	writeByte((uint8)(value));
+}
+
+void File::writeU32LE(uint32 value) {
+	writeByte((uint8)(value));
+	writeByte((uint8)(value >> 8));
+	writeByte((uint8)(value >> 16));
+	writeByte((uint8)(value >> 24));
+}
+
+void File::write(const void *data, size_t elementSize, size_t elementCount) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if (_mode != FILEMODE_WRITE)
+		throw FileException("Tried to write to file opened in read mode (" + std::string(_name.getFullPath()) + ")");
+
+	size_t data_read = fwrite(data, elementSize, elementCount, _file);
+	if (data_read != elementCount)
+		throw FileException("Could not write to file (" + std::string(_name.getFullPath()) + ")");
+}
+
+uint32 File::size() {
+	uint32 sz;
+	uint32 pos = ftell(_file);
+	fseek(_file, 0, SEEK_END);
+	sz = ftell(_file);
+	fseek(_file, pos, SEEK_SET);
+	return sz;
+}
+
+
+// Functions to parse the command line
 
 void displayHelp(const char *msg, const char *exename) {
 	if (!msg) {
