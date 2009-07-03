@@ -117,6 +117,16 @@ struct IfThenElse : public Statement {
 void append(Block *block, Block *until, std::list<Statement*> &seq);
 
 
+IfThenElse *buildIfThenElse(Block *head) {
+	IfThenElse *ifte = new IfThenElse;
+	foreach (Instruction *insn, head->_instructions)
+		ifte->_condition.push_back(new InstructionWrapper(insn));
+	append(head->_out.back(), head->_ifFollow, ifte->_consequence);
+	append(head->_out.front(), head->_ifFollow, ifte->_alternative);
+	return ifte;
+}
+
+
 DoWhileLoop *buildDoWhileLoop(Block *head) {
 	DoWhileLoop *loop = new DoWhileLoop;
 	foreach (Instruction *insn, head->_loopLatch->_instructions)
@@ -139,7 +149,7 @@ void append(Block *block, Block *until, std::list<Statement*> &seq) {
 		return;
 	if (block->_visited) {
 		// TODO they should be printed more before append() only sometimes
-		// seq.push_back(new Goto(block->_instructions.front()->_addr));
+		seq.push_back(new Goto(block->_instructions.front()->_addr));
 		return;
 	}
 	block->_visited = true;
@@ -150,6 +160,11 @@ void append(Block *block, Block *until, std::list<Statement*> &seq) {
 			seq.push_back(buildDoWhileLoop(block));
 		// TODO ENDLESS
 		append(block->_loopFollow, until, seq);
+		return;
+	}
+	if (block->_ifFollow) {
+		seq.push_back(buildIfThenElse(block));
+		append(block->_ifFollow, until, seq);
 		return;
 	}
 	foreach (Instruction *insn, block->_instructions) {
@@ -181,15 +196,9 @@ std::list<Statement*> buildSequence(Block *block, Block *until=0) {
 
 
 std::list<Statement*> buildAbstractSyntaxTree(ControlFlowGraph &graph) {
-	foreach (Block *block, graph._blocks) {
-		if (block->_loopLatch && block->_loopType == PRE_TESTED) {
+	foreach (Block *block, graph._blocks)
+		if (dynamic_cast<Jump*>(block->_instructions.back()))
 			block->_instructions.pop_back();
-			if (block->_loopLatch != block)
-				block->_loopLatch->_instructions.pop_back();
-		} else if (block->_loopLatch && block->_loopType == POST_TESTED) {
-			block->_loopLatch->_instructions.pop_back();
-		}
-	}
 	return buildSequence(graph._entry);
 }
 
