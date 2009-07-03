@@ -121,6 +121,8 @@ struct ControlFlowGraph : boost::noncopyable {
 
 	std::string graphvizToString(const std::string &fontname="", int fontsize=0);
 
+	void assignIntervals();  // can be called multiple times
+	void extendIntervals();
 
 private:
 	LoopType loopType(Block *head, Block *latch);
@@ -132,9 +134,6 @@ private:
 	int orderVisit(Block *u, int number);             // visit blocks recursively, depth first, helper for orderBlocks
 
 	void replaceEdges(Block *from, Block *oldTo, Block *newTo);
-	void assignIntervals();  // can be called multiple times
-	void extendIntervals();
-
 };
 
 #endif

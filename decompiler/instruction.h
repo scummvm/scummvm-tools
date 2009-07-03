@@ -12,9 +12,9 @@ struct Instruction {
 	std::string _description;
 	uint32 _addr;
 
-	virtual std::string toString() {
+	virtual std::string toString(unsigned i=0) {
 		std::ostringstream ret;
-		ret << _description << "  [" << phex(_addr-8) << "]" << std::endl;
+		ret << "[" << phex(_addr) << "]  " << spaces(i) << _description << std::endl;
 		return ret.str();
 	}
 
@@ -30,9 +30,9 @@ struct Jump : public Instruction {
 	uint32 target() {
 		return _addr+_offset;
 	}
-	std::string toString() {
+	std::string toString(unsigned i=0) {
 		std::ostringstream ret;
-		ret << _description << " (" << phex(target()-8) << ")  [" << phex(_addr-8) << "]" << std::endl;
+		ret << "[" << phex(_addr) << "]  " << spaces(i) << _description << " (" << phex(target()) << ")" << std::endl;
 		return ret.str();
 	}
 

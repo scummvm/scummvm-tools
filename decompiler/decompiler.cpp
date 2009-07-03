@@ -16,11 +16,13 @@ variables_map parseArgs(int argc, char **argv) {
 	options_description visible("Allowed options");
 	visible.add_options()
 		("help", "this message")
-		("disasm", "print disassembly and exit")
-		("blocks", "print basic blocks and exit")
-		("graph",  "print graph and exit")
+		("disasm", "print disassembly")
+		("blocks", "print basic blocks")
+		("graph-intervals", value<unsigned>(), "print arg-th graph intervals")
+		("graph-struct", "print graph with marked structure information")
 		("decompile", "print decompiled program and exit")
-		("fontname", value<string>()->default_value("Courier"), "font to use with graphical output");
+		("no-remove-jumps", "don't remove jumps-to-jumps")
+		("fontname", value<string>()->default_value("Courier"), "font to use with dot output");
 	options_description options("Allowed options");
 	options.add(visible).add_options()
 		("inputfile", value<string>(), "input file");
@@ -39,8 +41,6 @@ variables_map parseArgs(int argc, char **argv) {
 	return vars;
 }
 
-#include <sstream>
-
 int main(int argc, char **argv) {
 	variables_map vars = parseArgs(argc, argv);
 	Script script(new Scumm6Parser, vars["inputfile"].as<string>().c_str());
@@ -57,11 +57,19 @@ int main(int argc, char **argv) {
 			cout << block->toString() << endl;
 		exit(0);
 	}
-	cfg.removeJumpsToJumps();
+	if (!vars.count("no-remove-jumps"))
+		cfg.removeJumpsToJumps();
 	cfg.orderBlocks();
 	cfg.removeUnreachableBlocks();
+	if (vars.count("graph-intervals")) {
+		cfg.assignIntervals();
+		for (unsigned i = 0; i < vars["graph-intervals"].as<unsigned>(); i++)
+			cfg.extendIntervals();
+		cout << cfg.graphvizToString(vars["fontname"].as<string>());
+		exit(0);
+	}
 	cfg.loopStruct();
-	if (vars.count("graph")) {
+	if (vars.count("graph-struct")) {
 		cout << cfg.graphvizToString(vars["fontname"].as<string>());
 		exit(0);
 	}

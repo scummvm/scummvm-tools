@@ -433,7 +433,8 @@ struct Scumm6Parser : public Parser {
 		ifstream f;
 		f.open(filename, ios::binary);
 		parseHeader(f);
-		while (_reader->readInstruction(f, script, (uint32) f.tellg()))
+		std::streamoff start = f.tellg();
+		while (_reader->readInstruction(f, script, (uint32) (f.tellg()-start)))
 			;
 	}
 

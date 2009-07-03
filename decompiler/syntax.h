@@ -29,7 +29,7 @@ struct InstructionWrapper : public Statement {
 	};
 
 	std::string toString(unsigned i) {
-		return spaces(i) + _instruction->toString();
+		return _instruction->toString(i);
 	}
 };
 
@@ -43,7 +43,7 @@ struct Goto : public Statement {
 
 	std::string toString(unsigned i) {
 		std::ostringstream ret;
-		ret << spaces(i) << "goto " << phex(_address-8) << std::endl;
+		ret << spaces(i) << "goto " << phex(_address) << std::endl;
 		return ret.str();
 	}
 };
@@ -56,7 +56,7 @@ struct WhileLoop : public Statement {
 
 	std::string toString(unsigned i) {
 		std::ostringstream ret;
-		ret << std::endl << spaces(i) << "while (";
+		ret << std::endl << spaces(i) << "while (" << std::endl;
 		foreach (InstructionWrapper* insn, _condition)
 			ret << insn->toString(i);
 		ret << spaces(i) << ") {" << std::endl;
@@ -75,10 +75,10 @@ struct DoWhileLoop : public Statement {
 
 	std::string toString(unsigned i) {
 		std::ostringstream ret;
-		ret << std::endl << spaces(i) << "do {";
+		ret << std::endl << spaces(i) << "do {" << std::endl;
 		foreach (Statement *stmt, _body)
 			ret << stmt->toString(i+4);
-		ret << spaces(i) << "} while (";
+		ret << spaces(i) << "} while (" << std::endl;
 		foreach (InstructionWrapper* insn, _condition)
 			ret << insn->toString(i);
 		ret << spaces(i) << ")" << std::endl << std::endl;
@@ -95,7 +95,7 @@ struct IfThenElse : public Statement {
 
 	std::string toString(unsigned i) {
 		std::ostringstream ret;
-		ret << std::endl << spaces(i) << "if (";
+		ret << std::endl << spaces(i) << "if (" << std::endl;
 		foreach (InstructionWrapper* insn, _condition)
 			ret << insn->toString(i);
 		ret << spaces(i) << ") {" << std::endl;
@@ -158,7 +158,7 @@ void append(Block *block, Block *until, std::list<Statement*> &seq) {
 		CondJump *condjump = dynamic_cast<CondJump*>(insn);
 		if (condjump) {
 			IfThenElse *ifte = new IfThenElse;
-			ifte->_condition.push_back(new InstructionWrapper(new Instruction("not", 999999)));
+			ifte->_condition.push_back(new InstructionWrapper(new Instruction("not", 0xffff)));
 			ifte->_consequence.push_back(new Goto(jump->target()));
 			seq.push_back(ifte);
 		} else if (jump)
