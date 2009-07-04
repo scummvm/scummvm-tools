@@ -302,7 +302,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 			printf(" - sample rate = %d\n", sampleRate);
 			printf(" - compression = %dbits\n", bitsPerSample);
 
-			setRawAudioType(true, numChannels == 2, bitsPerSample);
+			setRawAudioType(true, numChannels == 2, (uint8)bitsPerSample);
 			encodeRaw(wavData, length, sampleRate, outname, compmode);
 
 			fclose(inputWav);

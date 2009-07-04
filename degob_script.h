@@ -156,6 +156,8 @@ protected:
 
 	void funcBlock(int16 retFlag);
 
+	void addStartingOffsets();
+
 	void addFuncOffset(uint32 offset);
 	void deGobFunction();
 

@@ -1,10 +1,93 @@
+/* extract_t7g_mac - Extractor for the Mac version of The 7th Guest
+ * Copyright (C) 2008-2009 The ScummVM project
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ * $URL$
+ * $Id$
+ *
+ */
+
+// Resource fork format taken from:
+// http://developer.apple.com/documentation/mac/MoreToolbox/MoreToolbox-99.html
+
 #include "util.h"
 
-#define NUM_FILES 45
+#define offsetResFork 128
+uint32 offsetResourceData;
+
+char *readString(FILE *ifp) {
+	byte len = readByte(ifp);
+	char *name = new char[len + 1];
+	fread(name, len, 1, ifp);
+	name[len] = 0;
+	return name;
+}
+
+void dumpResource(FILE *ifp, char *name) {
+	// Show the resource details
+	uint32 fileSize = readUint32BE(ifp);
+	printf("  \"%s\" (%d bytes)\n", name, fileSize);
+
+	// Read the resource contents
+	byte *buf = new byte[fileSize];
+	if (!buf) {
+		fclose(ifp);
+		error("Could not allocate %ld bytes of memory", fileSize);
+	}
+
+	// Dump the resource to the output file
+	FILE *ofp = fopen(name, "wb");
+	fread(buf, 1, fileSize, ifp);
+	fwrite(buf, 1, fileSize, ofp);
+	fclose(ofp);
+
+	// Free the resource memory
+	delete[] buf;
+}
+
+void handleReferenceList(FILE *ifp, uint32 offsetRefList, uint16 numRes, uint32 offsetResNames) {
+	for (int i = 0; i < numRes; i++) {
+		if (fseek(ifp, offsetRefList + 12 * i + 2, SEEK_SET)) {
+			fclose(ifp);
+			error("Seek error");
+		}
+		uint32 offsetResName = offsetResNames + readUint16BE(ifp);
+		uint32 offsetResData = offsetResourceData + (readUint32BE(ifp) & 0xFFFFFF);
+
+		// Read the resource name
+		if (fseek(ifp, offsetResName, SEEK_SET)) {
+			fclose(ifp);
+			error("Seek error");
+		}
+		char *name = readString(ifp);
+
+		// Dump the resource
+		if (fseek(ifp, offsetResData, SEEK_SET)) {
+			fclose(ifp);
+			error("Seek error");
+		}
+		dumpResource(ifp, name);
+
+		// Free the resource name
+		delete[] name;
+	}
+}
 
 int main(int argc, char *argv[]) {
 	FILE *ifp;
-	char *filenames[NUM_FILES];
 
 	if (argc != 2) {
 		displayHelp("Usage: %s <file>\n", argv[0]);
@@ -14,46 +97,59 @@ int main(int argc, char *argv[]) {
 		error("Could not open \'%s\'", argv[1]);
 	}
 
-	// Load the file names
-	printf("Getting the name of the files...\n");
-	if (fseek(ifp, 0x1BEEA8, SEEK_SET)) {
+	// Read the resource fork header
+	if (fseek(ifp, offsetResFork, SEEK_SET)) {
 		fclose(ifp);
 		error("Seek error");
 	}
-	for (int i = 0; i < NUM_FILES; i++) {
-		uint8 len = readByte(ifp);
-		char *name = new char[len + 1];
-		fread(name, len, 1, ifp);
-		name[len] = 0;
-		filenames[i] = name;
-	}
+	offsetResourceData = offsetResFork + readUint32BE(ifp);
+	uint32 offsetResMap = offsetResFork + readUint32BE(ifp);
 
-	// Extract the data
-	printf("Extracting the files...\n");
-	if (fseek(ifp, 0x1777B2, SEEK_SET)) {
+	// Read the resource map
+	if (fseek(ifp, offsetResMap + 24, SEEK_SET)) {
 		fclose(ifp);
 		error("Seek error");
 	}
-	for (int i = 0; i < NUM_FILES; i++) {
-		printf("  %s\n", filenames[i]);
-		uint32 file_size = readUint32BE(ifp);
+	uint32 offsetResTypes = offsetResMap + readUint16BE(ifp);
+	uint32 offsetResNames = offsetResMap + readUint16BE(ifp);
 
-		byte *buf = new byte[file_size];
-		if (!buf) {
+	// Handle the resource types
+	if (fseek(ifp, offsetResTypes, SEEK_SET)) {
+		fclose(ifp);
+		error("Seek error");
+	}
+	uint16 numResTypes = readUint16BE(ifp) + 1;
+	char resType[5];
+	resType[4] = 0;
+	for (uint16 i = 0; i < numResTypes; i++) {
+		if (fseek(ifp, offsetResTypes + 2 + 8 * i, SEEK_SET)) {
 			fclose(ifp);
-			error("Could not allocate %ld bytes of memory", file_size);
+			error("Seek error");
 		}
 
-		FILE *ofp = fopen(filenames[i], "wb");
-		fread(buf, 1, file_size, ifp);
-		fwrite(buf, 1, file_size, ofp);
-		fclose(ofp);
-		delete[] buf;
-	}
+		// Read the resource type name
+		fread(resType, 4, 1, ifp);
+		switch (READ_BE_UINT32(resType)) {
+			case MKID_BE('csnd'):
+			case MKID_BE('snd '):
+			case MKID_BE('Midi'):
+			case MKID_BE('cmid'):
+			//case MKID_BE('SMOD'):
+			case MKID_BE('SONG'):
+			case MKID_BE('INST'):
+			case MKID_BE('T7GM'):
+			{
+				printf("Extracting \"%s\" resources\n", resType);
+				uint16 numRes = readUint16BE(ifp);
+				uint32 offsetRefList = offsetResTypes + readUint16BE(ifp);
 
-	// Free the allocated filenames
-	for (int i = 0; i < NUM_FILES; i++) {
-		delete[] filenames[i];
+				handleReferenceList(ifp, offsetRefList, numRes, offsetResNames);
+				break;
+			}
+			default:
+				printf("Skipping \"%s\" resources\n", resType);
+				break;
+		}
 	}
 
 	fclose(ifp);

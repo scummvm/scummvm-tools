@@ -1874,10 +1874,10 @@ void next_line_HE_V100(char *output) {
 				"\x83|startFont,"
 				"\x84pp|setPosition,"
 				"\x85pppppppp|ellipse,"
-				"\x86ppp|processMode12,"
+				"\x86ppp|fillWizFlood,"
 				"\x87p|setDstResNum,"
-				"\x88ppppp|processMode10,"
-				"\x89ppp|processMode11,"
+				"\x88ppppp|fillWizLine,"
+				"\x89ppp|fillWizPixel,"
 				"\x8Appppp|fillWizRect");
 		break;
 	case 0x38:
@@ -2253,7 +2253,7 @@ void next_line_HE_V100(char *output) {
 				"\xFl|charsetColors,"
 				"\x80z|setCursorImg,"
 				"\x81z|setCursorImg,"
-				"\x82zp|setCursorImg,"
+				"\x82zp|setCursorImgWithPal,"
 				"\x86|cursorOn,"
 				"\x87|cursorOff,"
 				"\x88|softCursorOn,"
@@ -2513,10 +2513,10 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0xC8:
 		ext(output, "rx" "getPaletteData\0"
-				"\xDpp|getColorCompontent2,"
+				"\xDpp|get16BitColorComponent,"
 				"\x14pp|getColor,"
-				"\x21pppppp|,"
-				"\x35ppp|getSimilarColor2,"
+				"\x21pppppp|getSimilarColor,"
+				"\x35ppp|get16BitColor,"
 				"\x49ppp|getColorCompontent");
 		break;
 	case 0xC9:
@@ -2782,7 +2782,7 @@ void next_line_HE_V72(char *output) {
 				"\x87ppp|fillWizPixel,"
 				"\x88ppp|fillWizFlood,"
 				"\x89p|setDstResNum,"
-				"\x8Bpp|setThinkLine,"
+				"\x8Bpp|setThickLine,"
 				"\x8D|startFont,"
 				"\x8Epppph|createFont,"
 				"\x8Fpph|renderFontString,"
@@ -3242,7 +3242,7 @@ void next_line_HE_V72(char *output) {
 		ext(output, "x" "cursorCommand\0"
 				"\x13z|setCursorImg,"
 				"\x14z|setCursorImg,"
-				"\x3Czp|setCursorImg,"
+				"\x3Czp|setCursorImgWithPal,"
 				"\x90|cursorOn,"
 				"\x91|cursorOff,"
 				"\x92|userPutOn,"
@@ -3386,11 +3386,11 @@ void next_line_HE_V72(char *output) {
 	case 0x94:
 		if (g_options.heVersion >= 90) {
 			ext(output, "rx" "getPaletteData\0"
-					"\x2Dpppppp|,"
+					"\x2Dpppppp|getSimilarColor,"
 					"\x34ppp|getColorCompontent,"
 					"\x42pp|getColor,"
-					"\x84pp|getColorCompontent2,"
-					"\xD9ppp|getSimilarColor2");
+					"\x84pp|get16BitColorComponent,"
+					"\xD9ppp|get16BitColor");
 		} else {
 			ext(output, "rpp|getVerbFromXY");
 		}

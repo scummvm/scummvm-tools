@@ -55,7 +55,6 @@ void ExtractGobStk::execute() {
 
 	File f1;
 	File f2;
-	std::auto_ptr<Chunk> _chunk;
 
 	// We only got one input file
 	if (_inputPaths.size() > 1)
@@ -72,6 +71,8 @@ void ExtractGobStk::execute() {
 	_outputPath.setExtension(".gob");
 
 	gobConf.open(_outputPath.getFullPath(), "w");
+
+	fprintf(gobConf, "%s\n", inpath.getFullName().c_str());
 
 	stk.read(signature, 1, 6);
 
@@ -260,35 +261,37 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 		outpath.setFullName(curChunk->name);
 		File chunkFile(outpath, "wb");
 
-		chunkFile.seek(curChunk->offset, SEEK_SET);
+		if (curChunk->size > 0) {
+			chunkFile.seek(curChunk->offset, SEEK_SET);
 
-		byte *data = new byte[curChunk->size];
+			byte *data = new byte[curChunk->size];
 
-		stk.read((char *) data, curChunk->size, 1);
+			stk.read((char *) data, curChunk->size, 1);
 
-		try {
-			if (curChunk->packed) {
-				uint32 realSize;
+			try {
+				if (curChunk->packed) {
+					uint32 realSize;
 
-				if (curChunk->preGob) {
-					unpackedData = unpackPreGobData(data, realSize, curChunk->size);
+					if (curChunk->preGob) {
+						unpackedData = unpackPreGobData(data, realSize, curChunk->size);
+					} else {
+						unpackedData = unpackData(data, realSize);
+					}
+
+					chunkFile.write((char *) unpackedData, realSize, 1);
+
+					delete[] unpackedData;
 				} else {
-					unpackedData = unpackData(data, realSize);
+					chunkFile.write((char *) data, curChunk->size, 1);
 				}
-
-				chunkFile.write((char *) unpackedData, realSize, 1);
-
+			} catch(...) {
+				delete[] data;
 				delete[] unpackedData;
-			} else {
-				chunkFile.write((char *) data, curChunk->size, 1);
+				throw;
 			}
-		} catch(...) {
-			delete[] data;
-			delete[] unpackedData;
-			throw;
 		}
 
-		delete[] data;
+		fflush(chunkFile);
 
 		curChunk = curChunk->next;
 	}
@@ -346,7 +349,6 @@ byte *ExtractGobStk::unpackData(byte *src, uint32 &size) {
 				tmpIndex++;
 				tmpIndex %= 4096;
 			}
-
 		}
 	}
 

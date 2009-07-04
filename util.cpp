@@ -74,7 +74,7 @@ void notice(const char *s, ...) {
 }
 
 uint8 readByte(FILE *fp) {
-	return fgetc(fp);
+	return (uint8)fgetc(fp);
 }
 
 uint16 readUint16BE(FILE *fp) {

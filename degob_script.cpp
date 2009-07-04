@@ -867,6 +867,14 @@ void Script::funcBlock(int16 retFlag) {
 	} while (params.counter != params.cmdCount);
 }
 
+void Script::addStartingOffsets() {
+	for (int i = 100; i < 128; i += 2) {
+		uint16 offset = READ_LE_UINT16(_totData + i);
+		if ((offset >= 128) && (offset != ((uint16) -1)))
+			addFuncOffset(offset);
+	}
+}
+
 void Script::addFuncOffset(uint32 offset) {
 	for (std::list<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it)
 		if (*it == offset)
@@ -876,10 +884,11 @@ void Script::addFuncOffset(uint32 offset) {
 }
 
 void Script::deGob(int32 offset) {
-	if (offset < 0)
-		offset = _start;
-
 	_funcOffsets.clear();
+
+	if (offset < 0)
+		addStartingOffsets();
+	else
 	_funcOffsets.push_back(offset);
 
 	for (std::list<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it) {
