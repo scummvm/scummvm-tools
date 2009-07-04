@@ -39,6 +39,7 @@
 #include <process.h>
 #endif
 
+#include <exception>
 #include <string>
 #include <stdexcept>
 
@@ -125,7 +126,9 @@ typedef signed int int32;
         #define GCC_PRINTF(x,y)
 #endif
 
+#ifndef ARRAYSIZE
 #define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
+#endif
 
 #if defined(INVERSE_MKID)
 #define MKID_BE(a) ((uint32) \
@@ -147,7 +150,9 @@ static inline uint16 SWAP_16(uint16 a) {
 	return ((a >> 8) & 0xFF) | ((a << 8) & 0xFF00);
 }
 
+#ifndef FORCEINLINE
 #define FORCEINLINE static inline
+#endif
 
 FORCEINLINE uint16 READ_LE_UINT16(const void *ptr) {
 	const byte *b = (const byte *)ptr;
@@ -222,6 +227,21 @@ void warning(const char *s, ...);
 void debug(int level, const char *s, ...);
 void notice(const char *s, ...);
 
+
+/** 
+ * Different audio formats
+ * You can bitwise them to represent several formats
+ */
+enum AudioFormat {
+	AUDIO_NONE = 0,
+	AUDIO_VORBIS = 1,
+	AUDIO_FLAC = 2,
+	AUDIO_MP3 = 4,
+	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
+};
+
+const char *audio_extensions(AudioFormat format);
+
 // Below this line are more C++ ish interface
 // Above is kept for compatibility with non-converted tools
 
@@ -258,28 +278,28 @@ public:
  * and the parts can be modified seperately
  */
 struct Filename {
-	char _path[1024];
+	std::string _path;
 
-	Filename(const char *path = "");
+	Filename(std::string path = "");
+	Filename(const char *path);
 	Filename(const Filename &path);
 	Filename& operator=(const Filename &fn);
 
-	void setFullPath(const char *path);
-	Filename *setFullName(const char *name);
-	void addExtension(const char *ext);
-	void setExtension(const char *ext);
+	void setFullPath(std::string path);
+	void setFullName(std::string name);
+	void addExtension(std::string ext);
+	void setExtension(std::string ext);
 
-	bool hasExtension(const char *suffix) const;
+	bool hasExtension(std::string suffix) const;
 	bool empty() const;
 	bool equals(const Filename* other) const;
 	
 	// Doesn't work
 	bool mkdir(int permission = 077);
 
-	const char *getFullPath() const;
-	const char *getFullName() const;
-	const char *getFullName(char *out) const;
-	const char *getPath(char *out) const;
+	std::string getFullPath() const;
+	std::string getFullName() const;
+	std::string getPath() const;
 };
 
 inline bool operator==(const Filename &f1, const Filename &f2){
@@ -290,13 +310,15 @@ inline bool operator==(const Filename &f1, const Filename &f2){
  * Possible modes for opening files
  */
 enum FileMode {
-	FILEMODE_READ,
-	FILEMODE_WRITE
+	FILEMODE_READ = 1,
+	FILEMODE_WRITE = 2,
+	FILEMODE_BINARY = 4,
 };
 
 /**
  * A basic wrapper around the FILE class
- * Offers functionality to write words easily
+ * Offers functionality to write words easily, and deallocates the FILE
+ * automatically on destruction.
  */
 class File {
 public:
@@ -305,10 +327,10 @@ public:
 	 * File is always opened in binary mode
 	 *
 	 * @param filename The file to open
-	 * @param mode The mode to open the file in
+	 * @param mode The mode to open the file in, can be either OR mask or in text
 	 */
 	File(const Filename &filename, FileMode mode);
-	File(const char *filename, FileMode mode);
+	File(const Filename &filename, const char *mode);
 	/**
 	 * Create an empty file, used for two-step construction
 	 */
@@ -322,7 +344,10 @@ public:
 	 * @param filename The file to open
 	 * @param mode The mode to open the file in
 	 */
-	void open(const char *filename, FileMode mode);
+	void open(const std::string &filename, const char *mode);
+	void open(const Filename &filename, const char *mode);
+	void open(const std::string &filename, FileMode mode);
+	void open(const Filename &filename, FileMode mode);
 	
 	
 	/**
@@ -395,6 +420,14 @@ public:
 	 * @param elementCount the number of elements to read
 	 */
 	void write(const void *data, size_t elementSize, size_t elementCount);
+
+	/**
+	 * Seek to the specified position in the stream
+	 *
+	 * @param offset how many bytes to jump
+	 * @param origin SEEK_SET, SEEK_CUR or SEEK_END
+	 */
+	void seek(long offset, int origin);
 
 	/**
 	 * Returns the length of the file, in bytes, does not move the cursor

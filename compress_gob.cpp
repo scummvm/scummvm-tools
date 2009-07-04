@@ -81,12 +81,12 @@ int export_main(compress_gob)(int argc, char *argv[]) {
 	}
 
 	// Open input (config) file
-	if (!(gobConf = fopen(inpath.getFullPath(), "r")))
-		error("Couldn't open conf file '%s'", inpath.getFullPath());
+	if (!(gobConf = fopen(inpath.getFullPath().c_str(), "r")))
+		error("Couldn't open conf file '%s'", inpath.getFullPath().c_str());
 
 	// Open output filk
-	if (!(stk = fopen(outpath.getFullPath(), "wb")))
-		error("Couldn't create file \"%s\"", outpath.getFullPath());
+	if (!(stk = fopen(outpath.getFullPath().c_str(), "wb")))
+		error("Couldn't create file \"%s\"", outpath.getFullPath().c_str());
 
 	// Read the input into memory
 	chunks = readChunkConf(gobConf, chunkCount);
@@ -163,8 +163,8 @@ void writeBody(Filename *inpath, FILE *stk, uint16 chunkCount, Chunk *chunks) {
 
 	while (curChunk) {
 		inpath->setFullName(curChunk->name);
-		if (!(src = fopen(inpath->getFullPath(), "rb")))
-			error("Couldn't open conf file \"%s\"", inpath->getFullPath());
+		if (!(src = fopen(inpath->getFullPath().c_str(), "rb")))
+			error("Couldn't open conf file \"%s\"", inpath->getFullPath().c_str());
 
 		realSize = fileSize(src);
 

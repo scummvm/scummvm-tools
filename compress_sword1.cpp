@@ -349,7 +349,7 @@ int16 *uncompressSpeech(FILE *clu, uint32 idx, uint32 cSize, uint32 *returnSize)
 	}
 }
 
-uint8 *convertData(uint8 *rawData, uint32 rawSize, CompressMode compMode, uint32 *resSize) {
+uint8 *convertData(uint8 *rawData, uint32 rawSize, AudioFormat compMode, uint32 *resSize) {
 	FILE *temp;
 	uint8 *resBuf;
 
@@ -368,7 +368,7 @@ uint8 *convertData(uint8 *rawData, uint32 rawSize, CompressMode compMode, uint32
 	return resBuf;
 }
 
-void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
+void convertClu(FILE *clu, FILE *cl3, AudioFormat compMode) {
 	uint32 *cowHeader;
 	uint32 numRooms;
 	uint32 numSamples;
@@ -434,33 +434,29 @@ void convertClu(FILE *clu, FILE *cl3, CompressMode compMode) {
 	free(cowHeader);
 }
 
-void compressSpeech(CompressMode compMode, const Filename *inpath, const Filename *outpath) {
+void compressSpeech(AudioFormat compMode, const Filename *inpath, const Filename *outpath) {
 	FILE *clu, *cl3 = NULL;
 	int i;
 	char cluName[256], outName[256];
-	char inputDir[256], outDir[256];
-
-	inpath->getPath(inputDir);
-	outpath->getPath(outDir);
 
 	setRawAudioType(true, false, 16);
 
 	for (i = 1; i <= 2; i++) {
-		sprintf(cluName, "%s/SPEECH/SPEECH%d.CLU", inputDir, i);
+		sprintf(cluName, "%s/SPEECH/SPEECH%d.CLU", inpath->getPath().c_str(), i);
 		clu = fopen(cluName, "rb");
 		if (!clu) {
 			printf("Unable to open \"SPEECH%d.CLU\".\n", i);
 			printf("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".\n", i, i);
 		} else {
 			switch (compMode) {
-			case kMP3Mode:
-				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outDir, i, "CL3");
+			case AUDIO_MP3:
+				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CL3");
 				break;
-			case kVorbisMode:
-				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outDir, i, "CLV");
+			case AUDIO_VORBIS:
+				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CLV");
 				break;
-			case kFlacMode:
-				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outDir, i, "CLF");
+			case AUDIO_FLAC:
+				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CLF");
 				break;
 			default:
 				error("Unknown encoding method");
@@ -484,17 +480,13 @@ void compressSpeech(CompressMode compMode, const Filename *inpath, const Filenam
 	unlink(tempOutName);
 }
 
-void compressMusic(CompressMode compMode, const Filename *inpath, const Filename *outpath) {
+void compressMusic(AudioFormat compMode, const Filename *inpath, const Filename *outpath) {
 	int i;
 	FILE *inf;
 	char fNameIn[256], fNameOut[256];
-	char inputDir[256], outDir[256];
-
-	inpath->getPath(inputDir);
-	outpath->getPath(outDir);
 
 	for (i = 0; i < TOTAL_TUNES; i++) {
-		sprintf(fNameIn, "%s/MUSIC/%s.WAV", inputDir, musicNames[i].fileName);
+		sprintf(fNameIn, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
 		inf = fopen(fNameIn, "rb");
 
 		if (!inf) {
@@ -505,14 +497,14 @@ void compressMusic(CompressMode compMode, const Filename *inpath, const Filename
 			fclose(inf);
 
 			switch (compMode) {
-			case kMP3Mode:
-				sprintf(fNameOut, "%s/MUSIC/%s.%s", outDir, musicNames[i].fileName, "MP3");
+			case AUDIO_MP3:
+				sprintf(fNameOut, "%s/MUSIC/%s.%s", outpath->getPath().c_str(), musicNames[i].fileName, "MP3");
 				break;
-			case kVorbisMode:
-				sprintf(fNameOut, "%s/MUSIC/%s.%s", outDir, musicNames[i].fileName, "OGG");
+			case AUDIO_VORBIS:
+				sprintf(fNameOut, "%s/MUSIC/%s.%s", outpath->getPath().c_str(), musicNames[i].fileName, "OGG");
 				break;
-			case kFlacMode:
-				sprintf(fNameOut, "%s/MUSIC/%s.%s", outDir, musicNames[i].fileName, "FLA");
+			case AUDIO_FLAC:
+				sprintf(fNameOut, "%s/MUSIC/%s.%s", outpath->getPath().c_str(), musicNames[i].fileName, "FLA");
 				break;
 			default:
 				error("Unknown encoding method");
@@ -527,14 +519,12 @@ void compressMusic(CompressMode compMode, const Filename *inpath, const Filename
 void checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath) {
 	int i;
 	FILE *testFile;
-	char fileName[256], inputDir[256];
+	char fileName[256];
 	bool speechFound = false, musicFound = false;
-
-	inpath->getPath(inputDir);
 
 	if (checkSpeech) {
 		for (i = 1; i <= 2; i++) {
-			sprintf(fileName, "%s/SPEECH/SPEECH%d.CLU", inputDir, i);
+			sprintf(fileName, "%s/SPEECH/SPEECH%d.CLU", inpath->getPath().c_str(), i);
 			testFile = fopen(fileName, "rb");
 
 			if (testFile){
@@ -555,7 +545,7 @@ void checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath) 
 
 	if (checkMusic) {
 		for (i = 0; i < 20; i++) { /* Check the first 20 music files */
-			sprintf(fileName, "%s/MUSIC/%s.WAV", inputDir, musicNames[i].fileName);
+			sprintf(fileName, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
 			testFile = fopen(fileName, "rb");
 
 			if (testFile) {
@@ -587,7 +577,7 @@ int export_main(compress_sword1)(int argc, char *argv[]) {
 		" --music-only   only encode music files\n"
 		kCompressionAudioHelp;
 
-	CompressMode compMode = kMP3Mode;
+	AudioFormat compMode = AUDIO_MP3;
 	Filename inpath, outpath;
 	int first_arg = 1;
 	int last_arg = argc - 1;
@@ -608,7 +598,7 @@ int export_main(compress_sword1)(int argc, char *argv[]) {
 	// compression mode
 	compMode = process_audio_params(argc, argv, &first_arg);
 
-	if (compMode == kNoAudioMode) {
+	if (compMode == AUDIO_NONE) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -621,13 +611,13 @@ int export_main(compress_sword1)(int argc, char *argv[]) {
 		last_arg -= 2;
 	
 	switch(compMode) {
-	case kMP3Mode:
+	case AUDIO_MP3:
 		tempOutName = TEMP_MP3;
 		break;
-	case kVorbisMode:
+	case AUDIO_VORBIS:
 		tempOutName = TEMP_OGG;
 		break;
-	case kFlacMode:
+	case AUDIO_FLAC:
 		tempOutName = TEMP_FLAC;
 		break;
 	default:

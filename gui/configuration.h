@@ -25,18 +25,9 @@
 
 #include <wx/string.h>
 
-class Tool;
+#include "../util.h"
 
-/** 
- * Different audio formats
- * You can bitwise them to represent several formats
- */
-enum AudioFormat {
-	AUDIO_VORBIS = 1,
-	AUDIO_FLAC = 2,
-	AUDIO_MP3 = 4,
-	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
-};
+class ToolGUI;
 
 /**
  * Current state of the wizard
@@ -56,7 +47,7 @@ struct Configuration {
 	/** The name of the game we are extracting or compressing */
 	wxString selectedGame;
 	/** The tool the user chose to use, NULL if none has been chosen yet */
-	const Tool* selectedTool;
+	const ToolGUI* selectedTool;
 
 	/** Input files selected */
 	wxArrayString inputFilePaths;

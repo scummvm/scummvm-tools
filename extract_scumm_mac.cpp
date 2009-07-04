@@ -138,7 +138,7 @@ int export_main(extract_scumm_mac)(int argc, char *argv[]) {
 		}
 
 		outpath.setFullName(file_name);
-		ofp = fopen(outpath.getFullPath(), "wb");
+		ofp = fopen(outpath.getFullPath().c_str(), "wb");
 
 		if (!(buf = (char *)malloc(file_len))) {
 			fclose(ifp);
@@ -155,8 +155,9 @@ int export_main(extract_scumm_mac)(int argc, char *argv[]) {
 	return 0;
 }
 
+#if defined(UNIX) && defined(EXPORT_MAIN)
 int main(int argc, char *argv[]) __attribute__((weak));
 int main(int argc, char *argv[]) {
 	return export_main(extract_scumm_mac)(argc, argv);
 }
-
+#endif

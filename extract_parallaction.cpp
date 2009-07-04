@@ -314,7 +314,7 @@ void optDump(const char *file, Filename *outpath, bool smallArchive) {
 
 		outpath->setFullName(d);
 
-		FILE *ofile = fopen(outpath->getFullPath(), "wb");
+		FILE *ofile = fopen(outpath->getFullPath().c_str(), "wb");
 		fwrite(arc._fileData, 1, arc._fileSize, ofile);
 		fclose(ofile);
 	}

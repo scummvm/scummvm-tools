@@ -30,7 +30,7 @@
 #define OUTPUT_OGG  "TUCKER.SOG"
 #define OUTPUT_FLA  "TUCKER.SOF"
 
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 struct CompressedData {
 	int offset;
@@ -96,19 +96,16 @@ static SoundDirectory sound_directory_table[SOUND_TYPES_COUNT] = {
 
 static uint32 compress_sounds_directory(const Filename *inpath, const Filename *outpath, FILE *output, const struct SoundDirectory *dir) {
 	char filepath[1024];
-	char inputDir[1024];
 	char *filename;
 	//struct stat s;
 	int i, pos;
 	uint32 current_offset;
 	FILE *input;
 
-	inpath->getPath(inputDir);
-
 	assert(dir->count <= ARRAYSIZE(temp_table));
 
 	// We can't use setFullName since dir->name can contain '/'
-	snprintf(filepath, sizeof(filepath), "%s/%s", inputDir, dir->name);
+	snprintf(filepath, sizeof(filepath), "%s/%s", inpath->getPath().c_str(), dir->name);
 	/* stat is NOT standard C, but rather a POSIX call and fails under MSVC
 	 * this could be factored out to Filename::isDirectory ?
 	if (stat(filepath, &s) != 0 || !S_ISDIR(s.st_mode)) {
@@ -392,9 +389,6 @@ static uint32 compress_audio_directory(const Filename *inpath, const Filename *o
 	char entry_name[13];
 	bool is_16LE;
 
-	char inputDir[1024];
-	inpath->getPath(inputDir);
-
 	assert(ARRAYSIZE(audio_wav_fileslist) == AUDIO_WAV_COUNT);
 
 	pos = ftell(output);
@@ -412,7 +406,7 @@ static uint32 compress_audio_directory(const Filename *inpath, const Filename *o
 		temp_table[i].offset = current_offset;
 		switch (index) {
 		case 0: /* .wav */
-			sprintf(filepath, "%s/audio/%s", inputDir, audio_wav_fileslist[i]);
+			sprintf(filepath, "%s/audio/%s", inpath->getPath().c_str(), audio_wav_fileslist[i]);
 			input = fopen(filepath, "rb");
 			if (!input) {
 				error("Cannot open file '%s'", filepath);
@@ -424,7 +418,7 @@ static uint32 compress_audio_directory(const Filename *inpath, const Filename *o
 			is_16LE = bsearch(audio_raw_fileslist[i], audio_raw_fileslist_16LE,
 				ARRAYSIZE(audio_raw_fileslist_16LE), sizeof(const char *), cmp_helper) != NULL;
 			temp_table[i].offset = current_offset;
-			sprintf(filepath, "%s/audio/%s", inputDir, audio_raw_fileslist[i]);
+			sprintf(filepath, "%s/audio/%s", inpath->getPath().c_str(), audio_raw_fileslist[i]);
 			input = fopen(filepath, "rb");
 			if (input) {
 				fclose(input);
@@ -459,9 +453,9 @@ static void compress_sound_files(const Filename *inpath, const Filename *outpath
 	uint32 audio_directory_size[AUDIO_TYPES_COUNT];
 	const uint16 flags = 0; // HEADER_FLAG_AUDIO_INTRO;
 
-	output = fopen(outpath->getFullPath(), "wb");
+	output = fopen(outpath->getFullPath().c_str(), "wb");
 	if (!output) {
-		error("Cannot open file '%s' for writing", outpath->getFullPath());
+		error("Cannot open file '%s' for writing", outpath->getFullPath().c_str());
 	}
 
 	writeUint16LE(output, CURRENT_VER);
@@ -549,15 +543,15 @@ int export_main(compress_tucker)(int argc, char *argv[]) {
 
 	// Temporary output file
 	switch(gCompMode) {
-	case kMP3Mode:
+	case AUDIO_MP3:
 		tempEncoded = TEMP_MP3;
 		outpath.setFullName(OUTPUT_MP3);
 		break;
-	case kVorbisMode:
+	case AUDIO_VORBIS:
 		tempEncoded = TEMP_OGG;
 		outpath.setFullName(OUTPUT_OGG);
 		break;
-	case kFlacMode:
+	case AUDIO_FLAC:
 		tempEncoded = TEMP_FLAC;
 		outpath.setFullName(OUTPUT_FLA);
 		break;

@@ -304,7 +304,7 @@ wxWindow *ChooseInOutPage::CreatePanel(wxWindow *parent) {
 
 	sizer->AddSpacer(15);
 	
-	const Tool &tool = *_configuration.selectedTool;
+	const ToolGUI &tool = *_configuration.selectedTool;
 
 	// some help perhaps?
 	sizer->Add(new wxStaticText(panel, wxID_ANY, tool._inoutHelpText));
@@ -347,7 +347,7 @@ wxWindow *ChooseInOutPage::CreatePanel(wxWindow *parent) {
 
 	// Create output selection
 
-	if (tool._outputToDirectory) {
+	if (tool.outputToDirectory()) {
 		wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, panel, wxT("Destination folder"));
 
 		box->Add(new wxDirPickerCtrl(
@@ -378,14 +378,32 @@ wxWindow *ChooseInOutPage::CreatePanel(wxWindow *parent) {
 void ChooseInOutPage::save(wxWindow *panel) {
 	wxWindow *outputWindow = panel->FindWindowByName(wxT("OutputPicker"));
 	wxDirPickerCtrl *outDirWindow = dynamic_cast<wxDirPickerCtrl *>(outputWindow);
-	wxFilePickerCtrl *inDirWindow = dynamic_cast<wxFilePickerCtrl *>(outputWindow);
+	wxFilePickerCtrl *outFileWindow = dynamic_cast<wxFilePickerCtrl *>(outputWindow);
 
 	if (outDirWindow)
 		_configuration.outputPath = outDirWindow->GetPath();
-	if (inDirWindow)
-		_configuration.outputPath = inDirWindow->GetPath();
+	if (outFileWindow)
+		_configuration.outputPath = outFileWindow->GetPath();
 
-	// TODO: save input, unsure of exact format
+	const ToolGUI &tool = *_configuration.selectedTool;
+
+	int i = 1;
+	for (ToolInputs::const_iterator iter = tool._inputs.begin(); iter != tool._inputs.end(); ++iter) {
+		const ToolInput &input = *iter;
+
+		wxString windowName = wxT("InputPicker");
+		windowName << i;
+
+		wxDirPickerCtrl *inDirWindow = dynamic_cast<wxDirPickerCtrl *>(panel->FindWindowByName(windowName));
+		wxFilePickerCtrl *inFileWindow = dynamic_cast<wxFilePickerCtrl *>(panel->FindWindowByName(windowName));
+
+		if (inDirWindow)
+			_configuration.inputFilePaths.Add(inDirWindow ->GetPath());
+		if (inFileWindow)
+			_configuration.inputFilePaths.Add(inFileWindow->GetPath());
+
+		++i;
+	}
 }
 
 void ChooseInOutPage::onNext(wxWindow *panel) {
@@ -856,89 +874,22 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 	return panel;
 }
 
-std::pair<int, char **> ProcessPage::createCommandLine() {
-	Configuration &conf = _topframe->_configuration;
-
-	// Contruct the arguments in unicode mode first
-	wxArrayString cli;
-
-	cli.Add(conf.selectedTool->getExecutable());
-	
-	// Audio format args
-	if (conf.compressing) {
-		cli.Add(wxT("--mp3"));
-		if (conf.selectedAudioFormat == AUDIO_VORBIS) {
-			cli.Add(wxT("--vorbis"));
-			cli.Add(wxT("-b"));
-			cli.Add(conf.oggAvgBitrate);
-			cli.Add(wxT("-m"));
-			cli.Add(conf.oggMinBitrate);
-			cli.Add(wxT("-M"));
-			cli.Add(conf.oggMaxBitrate);
-			cli.Add(wxT("-q"));
-			cli.Add(conf.oggQuality);
-		} else if (conf.selectedAudioFormat == AUDIO_FLAC) {
-			cli.Add(wxT("--flac"));
-			cli.Add(wxT("-"));
-			cli.Add(conf.flacCompressionLevel);
-			cli.Add(wxT("-b"));
-			cli.Add(conf.flacBlockSize);
-		} else if (conf.selectedAudioFormat == AUDIO_MP3) {
-			if (conf.mp3CompressionType == wxT("ABR")) {
-				cli.Add(wxT("--abr"));
-				cli.Add(wxT("-b"));
-				cli.Add(conf.mp3ABRBitrate);
-				cli.Add(wxT("-b"));
-				cli.Add(conf.mp3VBRMinBitrate);
-			} else {
-				cli.Add(wxT("--vbr"));
-				cli.Add(wxT("-b"));
-				cli.Add(conf.mp3VBRMinBitrate);
-				cli.Add(wxT("-B"));
-				cli.Add(conf.mp3VBRMaxBitrate);
-			}
-			
-			cli.Add(wxT("-q"));
-			cli.Add(conf.mp3MpegQuality);
-		}
-	}
-
-	cli.Add(wxT("-o"));
-	cli.Add(conf.outputPath);
-	for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter)
-		cli.Add(*iter);
-
-	// And now convert to a plain char * string
-	char **real_cli = new char *[cli.size()];
-	int i = 0;
-	for (wxArrayString::const_iterator iter = cli.begin(); iter != cli.end(); ++iter, ++i) {
-		const char *in = (const char *)iter->mb_str();
-		real_cli[i] = new char[strlen(in)];
-		strcpy(real_cli[i], in);
-	}
-
-	return std::make_pair(i, real_cli);
+void ProcessPage::writeToOutput(void *udata, const char *text) {
+	wxTextCtrl *outwin = reinterpret_cast<wxTextCtrl *>(udata);
+	outwin->WriteText(wxString(text, wxConvUTF8));
 }
 
 void ProcessPage::runTool(wxTextCtrl *outwin) {
-	// Build command line arguments...
-	std::pair<int, char **> cli = createCommandLine();
-	
-	// TODO
-	// Redirect output
-
-	// Run the tool
-	int ret = _topframe->_configuration.selectedTool->invoke(cli.first, cli.second);
-	_finished = true;
-	_success = (ret == 0);
-
-	// Free memory in use by the CLI args
-	for (int i = 0; i != cli.first; ++i) {
-		delete[] cli.second[i];
+	const ToolGUI *tool = _topframe->_configuration.selectedTool;
+	tool->_backend->setPrintFunction(writeToOutput, reinterpret_cast<void *>(outwin));
+	try {
+		tool->run();
+		_success = true;
+	} catch(std::exception &err) {
+		outwin->WriteText(wxString(err.what(), wxConvUTF8));
+		_success = false;
 	}
-	delete[] cli.second;
-
-	// Cancel output redirection
+	_finished = true;
 }
 
 bool ProcessPage::onIdle(wxPanel *panel) {

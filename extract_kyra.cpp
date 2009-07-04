@@ -88,12 +88,12 @@ int export_main(extract_kyra)(int argc, char *argv[]) {
 	inputpath.setFullPath(argv[param]);
 	Extractor *extract = 0;
 	if (isHoFInstaller) {
-		extract = new HoFInstaller(inputpath.getFullPath());
+		extract = new HoFInstaller(inputpath.getFullPath().c_str());
 	} else {
 		PAKFile *myfile = new PAKFile;
-		if (!myfile->loadFile(inputpath.getFullPath(), isAmiga)) {
+		if (!myfile->loadFile(inputpath.getFullPath().c_str(), isAmiga)) {
 			delete myfile;
-			error("Couldn't load file '%s'", inputpath.getFullPath());
+			error("Couldn't load file '%s'", inputpath.getFullPath().c_str());
 		}
 
 		extract = myfile;
@@ -104,7 +104,7 @@ int export_main(extract_kyra)(int argc, char *argv[]) {
 		extract->outputAllFiles(&outpath);
 	} else if (extractOne) {
 		inputpath.setFullName(singleFilename);
-		extract->outputFileAs(singleFilename, inputpath.getFullPath());
+		extract->outputFileAs(singleFilename, inputpath.getFullPath().c_str());
 	} else {
 		extract->drawFileList();
 	}

@@ -1,3 +1,4 @@
+
 /* compress_saga - Compress SAGA engine digital sound files into
  * MP3 and Ogg Vorbis format
  * Copyright (C) 2004, Marcoen Hirschberg
@@ -135,7 +136,7 @@ typedef struct  {
 	uint32 size;
 } Record;
 
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 GameDescription *currentGameDescription = NULL;
 GameFileDescription *currentFileDescription = NULL;
@@ -153,7 +154,7 @@ bool detectFile(Filename *infile) {
 	uint8 md5sum[16];
 	char md5str[32+1];
 
-	Common::md5_file(infile->getFullPath(), md5sum, FILE_MD5_BYTES);
+	Common::md5_file(infile->getFullPath().c_str(), md5sum, FILE_MD5_BYTES);
 	printf("Input file name: %s\n", infile->getFullPath());
 	for (j = 0; j < 16; j++) {
 		sprintf(md5str + j*2, "%02x", (int)md5sum[j]);
@@ -176,7 +177,7 @@ bool detectFile(Filename *infile) {
 				// Filename based detection, used in IHNM, as all its sound files have the
 				// same encoding
 
-				if (scumm_stricmp(gameDescriptions[i].filesDescriptions[j].fileName, infile->getFullName()) == 0) {
+				if (scumm_stricmp(gameDescriptions[i].filesDescriptions[j].fileName, infile->getFullName().c_str()) == 0) {
 					currentGameDescription = &gameDescriptions[i];
 					currentFileDescription = &currentGameDescription->filesDescriptions[j];
 
@@ -349,7 +350,7 @@ void sagaEncode(Filename *inpath, Filename *outpath) {
 	Record *inputTable;
 	Record *outputTable;
 
-	inputFile = fopen(inpath->getFullPath(), "rb");
+	inputFile = fopen(inpath->getFullPath().c_str(), "rb");
 	inputFileSize = fileSize(inputFile);
 	printf("Filesize: %ul\n", inputFileSize);
 	/*
@@ -402,7 +403,7 @@ void sagaEncode(Filename *inpath, Filename *outpath) {
 		*outpath = *inpath;
 		outpath->setExtension(".cmp");
 	}
-	outputFile = fopen(outpath->getFullPath(), "wb");
+	outputFile = fopen(outpath->getFullPath().c_str(), "wb");
 
 	for (i = 0; i < resTableCount; i++) {
 		fseek(inputFile, inputTable[i].offset, SEEK_SET);
@@ -448,7 +449,7 @@ int export_main(compress_saga)(int argc, char *argv[]) {
 	// compression mode
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if (gCompMode == kNoAudioMode) {
+	if (gCompMode == AUDIO_NONE) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -485,7 +486,7 @@ int export_main(compress_saga)(int argc, char *argv[]) {
 				if (detectFile(&inpath)) {
 					sagaEncode(&inpath, &outpath);
 				} else {
-					error("Failed to compress file %s", inpath.getFullPath());
+					error("Failed to compress file %s", inpath.getFullPath().c_str());
 				}
 			}
 		}

@@ -27,7 +27,7 @@
 
 static FILE *input, *output_idx, *output_snd;
 
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 static void end(Filename *outPath) {
 	int size;
@@ -37,7 +37,7 @@ static void end(Filename *outPath) {
 	fclose(output_idx);
 	fclose(input);
 
-	output_idx = fopen(outPath->getFullPath(), "wb");
+	output_idx = fopen(outPath->getFullPath().c_str(), "wb");
 
 	input = fopen(TEMP_IDX, "rb");
 	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
@@ -134,9 +134,9 @@ static void convert_pc(Filename* inputPath) {
 	uint32 filenums[32768];
 	uint32 offsets[32768];
 
-	input = fopen(inputPath->getFullPath(), "rb");
+	input = fopen(inputPath->getFullPath().c_str(), "rb");
 	if (!input) {
-		error("Cannot open file: %s", inputPath->getFullPath());
+		error("Cannot open file: %s", inputPath->getFullPath().c_str());
 	}
 
 	output_idx = fopen(TEMP_IDX, "wb");
@@ -177,7 +177,7 @@ static void convert_mac(Filename *inputPath) {
 	uint32 offsets[32768];
 
 	inputPath->setFullName("voices.idx");
-	input = fopen(inputPath->getFullPath(), "rb");
+	input = fopen(inputPath->getFullPath().c_str(), "rb");
 	if (!input) {
 		error("Cannot open file: %s", "voices.idx");
 	}
@@ -216,9 +216,9 @@ static void convert_mac(Filename *inputPath) {
 				fclose(input);
 			}
 
-			input = fopen(inputPath->getFullPath(), "rb");
+			input = fopen(inputPath->getFullPath().c_str(), "rb");
 			if (!input) {
-				error("Cannot open file: %s", inputPath->getFullPath());
+				error("Cannot open file: %s", inputPath->getFullPath().c_str());
 			}
 		}
 
@@ -246,7 +246,7 @@ int export_main(compress_agos)(int argc, char *argv[]) {
 
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if (gCompMode == kNoAudioMode) {
+	if (gCompMode == AUDIO_NONE) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -270,7 +270,7 @@ int export_main(compress_agos)(int argc, char *argv[]) {
 
 	if (outpath.empty()) {
 		outpath = inpath;
-		outpath.setExtension(audio_extensions[gCompMode]);
+		outpath.setExtension(audio_extensions(gCompMode));
 	}
 
 	if (convertMac) {

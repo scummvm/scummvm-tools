@@ -1248,7 +1248,7 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 
 		sprintf(fname, "%02i.LFL", lfl->num);
 		outpath.setFullName(fname);
-		output = fopen(outpath.getFullPath(), "wb");
+		output = fopen(outpath.getFullPath().c_str(), "wb");
 		if (!output)
 			error("Unable to create %s", fname);
 		notice("Creating %s...", fname);
@@ -1319,7 +1319,7 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 	}
 
 	outpath.setFullName("00.LFL");
-	output = fopen(outpath.getFullPath(), "wb");
+	output = fopen(outpath.getFullPath().c_str(), "wb");
 	if (!output)
 		error("Unable to create index file");
 	notice("Creating 00.LFL...");

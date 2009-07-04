@@ -22,13 +22,20 @@
 
 #include "compress.h"
 
-// The order should match the CompressMode enum
-const char *audio_extensions[] = {
-	".unk",
-	".mp3",
-	".ogg",
-	".fla"
-};
+// The order should match the AudioFormat enum
+const char *audio_extensions(AudioFormat format) {
+	switch(format) {
+	case AUDIO_MP3:
+		return ".mp3";
+	case AUDIO_VORBIS:
+		return ".ogg";
+	case AUDIO_FLAC:
+		return ".fla";
+	case AUDIO_NONE:
+	default:
+		return ".unk";
+	}
+}
 
 typedef struct  {
 	uint32 minBitr;
@@ -106,12 +113,12 @@ static int map2MP3Frequency(int freq) {
     return 48000;
 }
 
-void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode) {
+void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, AudioFormat compmode) {
 	bool err = false;
 	char fbuf[2048];
 	char *tmp = fbuf;
 
-	if (compmode == kMP3Mode) {
+	if (compmode == AUDIO_MP3) {
 		tmp += sprintf(tmp, "lame -t ");
 		if (rawInput) {
 			tmp += sprintf(tmp, "-r ");
@@ -164,7 +171,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 	}
 
 #ifdef DISABLE_BUILTIN_VORBIS
-		if (compmode == kVorbisMode) {
+		if (compmode == AUDIO_VORBIS) {
 			tmp += sprintf(tmp, "oggenc ");
 			if (rawInput) {
 				tmp += sprintf(tmp, "--raw ");
@@ -208,7 +215,7 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 #endif
 
 #ifdef DISABLE_BUILTIN_FLAC
-		if (compmode == kFlacMode) {
+		if (compmode == AUDIO_FLAC) {
 			/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
 			/* -f is reqired to force override of unremoved temp file. See bug #1294648 */
 			tmp += sprintf(tmp, "flac -f --lax --no-padding --no-seektable --no-ogg ");
@@ -303,9 +310,9 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		}
 }
 
-void encodeRaw(char *rawData, int length, int samplerate, const char *outname, CompressMode compmode) {
+void encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode) {
 #ifndef DISABLE_BUILTIN_VORBIS
-	if (compmode == kVorbisMode) {
+	if (compmode == AUDIO_VORBIS) {
 		FILE *outputOgg;
 		char outputString[256] = "";
 		int numChannels = (rawAudioType.isStereo ? 2 : 1);
@@ -513,7 +520,7 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 #endif
 
 #ifndef DISABLE_BUILTIN_FLAC
-	if (compmode == kFlacMode) {
+	if (compmode == AUDIO_FLAC) {
 		int i;
 		int numChannels = (rawAudioType.isStereo ? 2 : 1);
 		int samplesPerChannel = length / ((rawAudioType.bitsPerSample / 8) * numChannels);
@@ -576,7 +583,7 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 #endif
 }
 
-void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode) {
+void extractAndEncodeWAV(const char *outName, FILE *input, AudioFormat compMode) {
 	unsigned int length;
 	FILE *f;
 	char fbuf[2048];
@@ -602,7 +609,7 @@ void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode
 	encodeAudio(outName, false, -1, tempEncoded, compMode);
 }
 
-void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode) {
+void extractAndEncodeVOC(const char *outName, FILE *input, AudioFormat compMode) {
 	FILE *f;
 	int bits;
 	int blocktype;
@@ -884,40 +891,87 @@ int process_flac_parms(int argc, char *argv[], int *i){
 	return 1;
 }
 
-CompressMode process_audio_params(int argc, char *argv[], int* i) {
+AudioFormat process_audio_params(int argc, char *argv[], int* i) {
 	/* Compression mode */
-	CompressMode compMode = kMP3Mode;
+	AudioFormat compMode = AUDIO_MP3;
 
 	for (; *i < argc - 2; ++*i) {
 		if (strcmp(argv[*i], "--mp3") == 0)
-			compMode = kMP3Mode;
+			compMode = AUDIO_MP3;
 		else if (strcmp(argv[*i], "--vorbis") == 0)
-			compMode = kVorbisMode;
+			compMode = AUDIO_VORBIS;
 		else if (strcmp(argv[*i], "--flac") == 0)
-			compMode = kFlacMode;
+			compMode = AUDIO_FLAC;
 		else
 			break;
 	}
 
 	switch (compMode) {
-	case kMP3Mode:
+	case AUDIO_MP3:
 		tempEncoded = TEMP_MP3;
 		if (!process_mp3_parms(argc - 2, argv, i))
-			return kNoAudioMode;
+			return AUDIO_NONE;
 		break;
-	case kVorbisMode:
+	case AUDIO_VORBIS:
 		tempEncoded = TEMP_OGG;
 		if (!process_ogg_parms(argc - 2, argv, i))
-			return kNoAudioMode;
+			return AUDIO_NONE;
 		break;
-	case kFlacMode:
+	case AUDIO_FLAC:
 		tempEncoded = TEMP_FLAC;
 		if (!process_flac_parms(argc - 2, argv, i))
-			return kNoAudioMode;
+			return AUDIO_NONE;
 		break;
-	case kNoAudioMode:	// cannot occur but we check anyway to avoid compiler warnings
+	case AUDIO_NONE:	// cannot occur but we check anyway to avoid compiler warnings
 		break;
 	}
 
 	return compMode;
+}
+
+// Compression tool interface
+// Duplicates code above in the new way
+// The old code can be removed once all tools have been converted
+
+CompressionTool::CompressionTool(const std::string &name) : Tool(name) {
+}
+
+void CompressionTool::parseAudioArguments() {
+	AudioFormat format = AUDIO_NONE;
+
+	if (_arguments[_arguments_parsed] ==  "--mp3")
+		format = AUDIO_MP3;
+	else if (_arguments[_arguments_parsed] == "--vorbis")
+		format = AUDIO_VORBIS;
+	else if (_arguments[_arguments_parsed] == "--flac")
+		format = AUDIO_FLAC;
+	else
+		// No audio arguments then
+		return;
+
+	++_arguments_parsed;
+
+	// Need workaround to be sign-correct
+	int arg = (int)_arguments_parsed;
+
+	switch (format) {
+	case AUDIO_MP3:
+		tempEncoded = TEMP_MP3;
+		if (!process_mp3_parms(_arguments.size() - 2, _argv, &arg))
+			throw ToolException("Could not parse command line arguments, use --help for options");
+		break;
+	case AUDIO_VORBIS:
+		tempEncoded = TEMP_OGG;
+		if (!process_ogg_parms(_arguments.size() - 2, _argv, &arg))
+			throw ToolException("Could not parse command line arguments, use --help for options");
+		break;
+	case AUDIO_FLAC:
+		tempEncoded = TEMP_FLAC;
+		if (!process_flac_parms(_arguments.size() - 2, _argv, &arg))
+			throw ToolException("Could not parse arguments: Use --help for options");
+		break;
+	default: // cannot occur but we check anyway to avoid compiler warnings
+		throw ToolException("Unknown audio format, should be impossible!");
+	}
+	_arguments_parsed = (size_t)arg;
 }

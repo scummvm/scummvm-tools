@@ -318,13 +318,9 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	/**
-	 * Creates a list of command line arguments
-	 * The list is allocated, and needed to be looped through and delete[] ed
-	 * and then the list itself delete[]ed
-	 *
-	 * @return A pair containing number of args, and the list of CLI args themselves
+	 * Write to the output window pointed to by udata
 	 */
-	std::pair<int, char **> createCommandLine();
+	static void writeToOutput(void *udata, const char *text);
 
 	/**
 	 * Runs the specified tool, output will be put in outwin

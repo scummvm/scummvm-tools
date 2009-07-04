@@ -64,7 +64,7 @@ void encodeSanWaveWithOgg(char *filename) {
 	char fbuf2[2048];
 	sprintf(fbuf, "%s.wav", filename);
 	sprintf(fbuf2, "%s.ogg", filename);
-	encodeAudio(fbuf, false, -1, fbuf2, kVorbisMode);
+	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_VORBIS);
 }
 
 void encodeSanWaveWithLame(char *filename) {
@@ -73,7 +73,7 @@ void encodeSanWaveWithLame(char *filename) {
 
 	sprintf(fbuf, "%s.wav", filename);
 	sprintf(fbuf2, "%s.mp3", filename);
-	encodeAudio(fbuf, false, -1, fbuf2, kMP3Mode);
+	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_MP3);
 }
 
 void writeWaveHeader(int s_size) {
@@ -632,22 +632,21 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 	const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" kCompressionAudioHelp;
 
 	Filename inpath, outpath;
-	char outdir[768];
 	int first_arg = 1;
 	int last_arg = argc - 1;
 
 	parseHelpArguments(argv, argc, helptext);
 
 	// compression mode
-	CompressMode compMode = process_audio_params(argc, argv, &first_arg);
+	AudioFormat compMode = process_audio_params(argc, argv, &first_arg);
 
 	// TODO
 	// Support flac too?
-	if (compMode == kVorbisMode)
+	if (compMode == AUDIO_VORBIS)
 		_oggMode = true;
-	else if (compMode != kMP3Mode)
+	else if (compMode != AUDIO_MP3)
 		notice("Only ogg vorbis and MP3 is supported for this tool.");
-	if (compMode == kNoAudioMode) {
+	if (compMode == AUDIO_NONE) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -672,18 +671,14 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 		outpath.setExtension(".san");
 	}
 
-	// We need this path for some functions, alot quicker than rewriting
-	// them to use the Filename class
-	outpath.getPath(outdir);
-
-	FILE *input = fopen(inpath.getFullPath(), "rb");
+	FILE *input = fopen(inpath.getFullPath().c_str(), "rb");
 	if (!input) {
-		error("Cannot open file: %s", inpath.getFullPath());
+		error("Cannot open file: %s", inpath.getFullPath().c_str());
 	}
 
-	FILE *output = fopen(outpath.getFullPath(), "wb");
+	FILE *output = fopen(outpath.getFullPath().c_str(), "wb");
 	if (!output) {
-		error("Cannot open file: %s", outpath.getFullPath());
+		error("Cannot open file: %s", outpath.getFullPath().c_str());
 	}
 
 	Filename flupath(inpath);
@@ -691,14 +686,14 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 
 	FILE *flu_in = NULL;
 	FILE *flu_out = NULL;
-	flu_in = fopen(flupath.getFullPath(), "rb");
+	flu_in = fopen(flupath.getFullPath().c_str(), "rb");
 
 	if (flu_in) {
 		flupath = outpath;
 		flupath.setExtension(".flu");
-		flu_out = fopen(flupath.getFullPath(), "wb");
+		flu_out = fopen(flupath.getFullPath().c_str(), "wb");
 		if (!flu_out) {
-			error("Cannot open ancillary file: %s", flupath.getFullPath());
+			error("Cannot open ancillary file: %s", flupath.getFullPath().c_str());
 		}
 	}
 
@@ -785,9 +780,9 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 				int unk = readUint16LE(input);
 				int track_flags = readUint16LE(input);
 				if ((code == 8) && (track_flags == 0) && (unk == 0) && (flags == 46)) {
-					handleComiIACT(input, size, outdir, inpath.getFullName());
+					handleComiIACT(input, size, outpath.getPath().c_str(), inpath.getFullName().c_str());
 				} else if ((code == 8) && (track_flags != 0) && (unk == 0) && (flags == 46)) {
-					handleDigIACT(input, size, outdir, inpath.getFullName(), flags, track_flags, l);
+					handleDigIACT(input, size, outpath.getPath().c_str(), inpath.getFullName().c_str(), flags, track_flags, l);
 					tracksCompress = true;
 					fps = 12;
 				} else {
@@ -803,7 +798,7 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 				continue;
 			} else if ((tag == 'PSAD') && (!flu_in)) {
 				size = readUint32BE(input); // chunk size
-				handlePSAD(input, size, outdir, inpath.getFullName(), l);
+				handlePSAD(input, size, outpath.getPath().c_str(), inpath.getFullName().c_str(), l);
 				if ((size & 1) != 0) {
 					fseek(input, 1, SEEK_CUR);
 					size++;
@@ -826,20 +821,20 @@ skip:
 	}
 
 	if (tracksCompress) {
-		prepareForMixing(outdir, inpath.getFullName());
+		prepareForMixing(outpath.getPath().c_str(), inpath.getFullName().c_str());
 		assert(fps);
-		mixing(outdir, inpath.getFullName(), nbframes, fps);
+		mixing(outpath.getPath().c_str(), inpath.getFullName().c_str(), nbframes, fps);
 	}
 
 	if (_waveTmpFile) {
 		char tmpPath[1024];
 		writeWaveHeader(_waveDataSize);
-		sprintf(tmpPath, "%s/%s", outdir, inpath.getFullName());
+		sprintf(tmpPath, "%s/%s", outpath.getPath().c_str(), inpath.getFullName().c_str());
 		if (_oggMode)
 			encodeSanWaveWithOgg(tmpPath);
 		else
 			encodeSanWaveWithLame(tmpPath);
-		sprintf(tmpPath, "%s/%s.wav", outdir, inpath.getFullName());
+		sprintf(tmpPath, "%s/%s.wav", outpath.getPath().c_str(), inpath.getFullName().c_str());
 		unlink(tmpPath);
 	}
 

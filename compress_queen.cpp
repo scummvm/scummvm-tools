@@ -23,7 +23,7 @@
 #include "compress.h"
 
 static const uint32 QTBL = 'QTBL';
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 #define INPUT_TBL	"queen.tbl"
 #define FINAL_OUT	"queen.1c"
@@ -169,8 +169,8 @@ void createFinalFile(Filename *outPath) {
 	inData = fopen(TEMP_DAT, "rb");
 	checkOpen(inData, TEMP_DAT);
 
-	outFinal = fopen(outPath->getFullPath(), "wb");
-	checkOpen(outFinal, outPath->getFullPath());
+	outFinal = fopen(outPath->getFullPath().c_str(), "wb");
+	checkOpen(outFinal, outPath->getFullPath().c_str());
 
 	dataStartOffset = fileSize(inTbl) + EXTRA_TBL_HEADER;
 	dataSize = fileSize(inData);
@@ -220,7 +220,7 @@ int export_main(compress_queen)(int argc, char *argv[]) {
 
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if (gCompMode == kNoAudioMode) {
+	if (gCompMode == AUDIO_NONE) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -243,13 +243,13 @@ int export_main(compress_queen)(int argc, char *argv[]) {
 	}
 
 	/* Open input file (QUEEN.1) */
-	inputData = fopen(inpath.getFullPath(), "rb");
-	checkOpen(inputData, inpath.getFullPath());
+	inputData = fopen(inpath.getFullPath().c_str(), "rb");
+	checkOpen(inputData, inpath.getFullPath().c_str());
 
 	/* Open TBL file (QUEEN.TBL) */
 	inpath.setFullName(INPUT_TBL);
-	inputTbl = fopen(inpath.getFullPath(), "rb");
-	checkOpen(inputTbl, inpath.getFullPath());
+	inputTbl = fopen(inpath.getFullPath().c_str(), "rb");
+	checkOpen(inputTbl, inpath.getFullPath().c_str());
 
 	size = fileSize(inputData);
 	fread(tmp, 1, 4, inputTbl);

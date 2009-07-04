@@ -34,10 +34,26 @@
 
 #include "tools.h"
 
+// Include all tools
+#include "../extract_agos.h"
+#include "../extract_gob_stk.h"
+
+
+// Our global tools object, which holds all tools
 Tools g_tools;
 
 Tools::Tools() {
+}
 
+void Tools::init() {
+
+	// Compress agos also has a --mac parameter, need to add an additional page / option for this
+	addTool(new ToolGUI(new ExtractAgos()));
+
+	// extract_gob_stk
+	addTool(new ToolGUI(new ExtractGobStk()));
+
+	/* "Old" tool list, will be converted incrementally
 	// Compression tools
 
 	// Compress agos also has a --mac parameter, need to add an additional page / option for this
@@ -108,16 +124,6 @@ Tools::Tools() {
 
 	// Extraction tools
 
-	// Compress agos also has a --mac parameter, need to add an additional page / option for this
-	Tool extract_agos(wxT("extract_agos"), main_extract_agos, wxT("*."));
-	extract_agos.addGame(wxT("Feeble Files")),
-	extract_agos.addGame(wxT("Simon the Sorcerer I/II")),
-	addTool(extract_agos);
-
-	// extract_gob_stk
-	Tool extract_gob_stk(wxT("extract_gob_stk"), main_extract_gob_stk, wxT("*.*"));
-	addTool(extract_gob_stk);
-
 	// extract_kyra
 	Tool extract_kyra(wxT("extract_kyra"), main_extract_kyra, wxT("*.*"));
 	extract_kyra.addGame(wxT("The Legend of Kyrandia")),
@@ -161,16 +167,22 @@ Tools::Tools() {
 	Tool extract_zak_c64(wxT("extract_zak_c64"), main_extract_zak_c64, wxT(".d64"));
 	extract_zak_c64.addGame(wxT("Bud Tucker in Double Trouble")),
 	addTool(extract_zak_c64);
+	*/
 }
 
-void Tools::addTool(const Tool& tool) {
-	tools[tool._name] = tool;
+Tools::~Tools() {
+	for (std::map<wxString, ToolGUI *>::iterator iter = tools.begin(); iter != tools.end(); ++iter)
+		delete iter->second;
+}
+
+void Tools::addTool(ToolGUI* tool) {
+	tools[tool->_name] = tool;
 }
 
 wxArrayString Tools::getToolList(ToolType tt) const {
 	wxArrayString l;
-	for (std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
-		if (tt == TOOLTYPE_ALL || iter->second._type == tt)
+	for (std::map<wxString, ToolGUI *>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
+		if (tt == TOOLTYPE_ALL || iter->second->_type == tt)
 			l.Add(iter->first);
 	l.Sort();
 	std::unique(l.begin(), l.end());
@@ -179,56 +191,56 @@ wxArrayString Tools::getToolList(ToolType tt) const {
 
 wxArrayString Tools::getGameList(ToolType tt) const {
 	wxArrayString l;
-	for (std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
-		if (tt == TOOLTYPE_ALL || iter->second._type == tt)
-			for (wxArrayString::const_iterator citer = iter->second._games.begin(); citer != iter->second._games.end(); ++citer)
+	for (std::map<wxString, ToolGUI *>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
+		if (tt == TOOLTYPE_ALL || iter->second->_type == tt)
+			for (wxArrayString::const_iterator citer = iter->second->_games.begin(); citer != iter->second->_games.end(); ++citer)
 				l.Add(*citer);
 	l.Sort();
 	std::unique(l.begin(), l.end());
 	return l;
 }
 
-const Tool &Tools::operator[](const wxString& name) const {
-	std::map<wxString, Tool>::const_iterator iter = tools.find(name);
+const ToolGUI &Tools::operator[](const wxString& name) const {
+	std::map<wxString, ToolGUI *>::const_iterator iter = tools.find(name);
 
 	wxASSERT_MSG(iter != tools.end(), wxT("All tools should be added, never try to access a tool that does not exist."));
 
-	return iter->second;
+	return *iter->second;
 }
 
-const Tool *Tools::get(const wxString& name) const {
-	std::map<wxString, Tool>::const_iterator iter = tools.find(name);
+const ToolGUI *Tools::get(const wxString& name) const {
+	std::map<wxString, ToolGUI *>::const_iterator iter = tools.find(name);
 
 	if (iter == tools.end())
 		return NULL;
 
-	return &iter->second;
+	return iter->second;
 }
 
-const Tool *Tools::getByGame(const wxString &gamename, ToolType type) const {
-	for (std::map<wxString, Tool>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
-		if (type == TOOLTYPE_ALL || iter->second._type == type)
-			for (wxArrayString::const_iterator citer = iter->second._games.begin(); citer != iter->second._games.end(); ++citer)
+const ToolGUI *Tools::getByGame(const wxString &gamename, ToolType type) const {
+	for (std::map<wxString, ToolGUI *>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
+		if (type == TOOLTYPE_ALL || iter->second->_type == type)
+			for (wxArrayString::const_iterator citer = iter->second->_games.begin(); citer != iter->second->_games.end(); ++citer)
 				if (*citer == gamename)
-					return &iter->second;
+					return iter->second;
 	return NULL;
 }
 
 
 // The Tool class
 
-Tool::Tool() {
+ToolGUI::ToolGUI() {
 	// Seems std is allowed to create dummy objects in maps.
 	//wxLogError(wxT("Created empty tool, should never happened."));
 }
 
-Tool::Tool(wxString name, MainFunction main, wxString input_extensions) {
-	_name = name;
-	invoke = main;
+ToolGUI::ToolGUI(Tool *tool, wxString input_extensions) {
+	_backend = tool;
+	_name = wxString(tool->_name.c_str(), wxConvUTF8);
 
-	if (name.Find(wxT("extract")) != wxNOT_FOUND)
+	if (_name.Find(wxT("extract")) != wxNOT_FOUND)
 		_type = TOOLTYPE_EXTRACTION;
-	else if (name.Find(wxT("compress")) != wxNOT_FOUND)
+	else if (_name.Find(wxT("compress")) != wxNOT_FOUND)
 		_type = TOOLTYPE_COMPRESSION;
 	else {
 		wxLogError(wxT("Tools with unknown type shouldn't exist."));
@@ -236,25 +248,30 @@ Tool::Tool(wxString name, MainFunction main, wxString input_extensions) {
 	}
 	
 	// Sensible defaults
-	_supportedFormats = AUDIO_ALL;
 	ToolInput input;
 	input._extension = input_extensions;
 	input._file = true;
 	_inputs.push_back(input);
 
-	_outputToDirectory = true;
 	_inoutHelpText = wxT("Output files produced by the tool will be put in this directory.");
 }
 
-void Tool::addGame(const wxString &game_name) {
+void ToolGUI::addGame(const wxString &game_name) {
 	_games.Add(game_name);
 }
 
-bool Tool::supportsAudioFormat(AudioFormat format) const {
-	return (_supportedFormats & format) == format;
+bool ToolGUI::supportsAudioFormat(AudioFormat format) const {
+	return (_backend->_supported_formats & format) == format;
 }
 
-wxString Tool::getExecutable() const {
+bool ToolGUI::outputToDirectory() const {
+	return _backend->_outputToDirectory;
+}
+
+void ToolGUI::run() const {
+}
+
+wxString ToolGUI::getExecutable() const {
 #ifdef WIN32
 	return _name + wxT(".exe");
 #else

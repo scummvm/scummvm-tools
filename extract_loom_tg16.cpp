@@ -1282,7 +1282,7 @@ int export_main(extract_loom_tg16)(int argc, char *argv[]) {
 		sprintf(fname, "%02i.LFL", lfl->num);
 
 		outpath.setFullName(fname);
-		output = fopen(outpath.getFullPath(), "wb");
+		output = fopen(outpath.getFullPath().c_str(), "wb");
 
 		if (!output)
 			error("unable to create %s", fname);
@@ -1319,7 +1319,7 @@ int export_main(extract_loom_tg16)(int argc, char *argv[]) {
 	}
 
 	outpath.setFullName("00.LFL");
-	output = fopen(outpath.getFullPath(), "wb");
+	output = fopen(outpath.getFullPath().c_str(), "wb");
 	if (!output)
 		error("Unable to create index file!");
 	notice("Creating 00.LFL...");
@@ -1372,7 +1372,7 @@ int export_main(extract_loom_tg16)(int argc, char *argv[]) {
 	fclose(output);
 
 	outpath.setFullName("97.LFL");
-	output = fopen(outpath.getFullPath(), "wb");
+	output = fopen(outpath.getFullPath().c_str(), "wb");
 	if (!output)
 		error("Unable to create charset file 97.LFL");
 
@@ -1381,7 +1381,7 @@ int export_main(extract_loom_tg16)(int argc, char *argv[]) {
 	fclose(output);
 
 	outpath.setFullName("98.LFL");
-	output = fopen(outpath.getFullPath(), "wb");
+	output = fopen(outpath.getFullPath().c_str(), "wb");
 	if (!output)
 		error("Unable to create charset file 98.LFL");
 	notice("Creating 98.LFL...");
@@ -1389,7 +1389,7 @@ int export_main(extract_loom_tg16)(int argc, char *argv[]) {
 	fclose(output);
 
 	outpath.setFullName("99.LFL");
-	output = fopen(outpath.getFullPath(), "wb");
+	output = fopen(outpath.getFullPath().c_str(), "wb");
 	if (!output)
 		error("Unable to create charset file 99.LFL");
 	notice("Creating 99.LFL...");

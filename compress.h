@@ -23,7 +23,8 @@
 #ifndef COMPRESS_H
 #define COMPRESS_H
 
-#include "util.h"
+#include "tool.h"
+
 #ifndef DISABLE_BUILTIN_VORBIS
 #include <vorbis/vorbisenc.h>
 #endif
@@ -56,32 +57,54 @@
 #define TEMP_OGG	"tempfile.ogg"
 #define TEMP_FLAC	"tempfile.fla"
 
-enum CompressMode {
-	kNoAudioMode,
-	kMP3Mode,
-	kVorbisMode,
-	kFlacMode
+
+
+/**
+ * Compression tool
+ * A tool, which can compress to either MP3, Vorbis or FLAC formats
+ */
+
+class CompressionTool : public Tool {
+public:
+	CompressionTool(const std::string &name);
+
+	void parseAudioArguments();
+public:
+	// Settings
+	// mp3 settings
+	std::string _mp3CompressionType;
+	std::string _mp3MpegQuality;
+	std::string _mp3ABRBitrate;
+	std::string _mp3VBRMinBitrate;
+	std::string _mp3VBRMaxBitrate;
+	std::string _mp3VBRQuality;
+
+	// flac
+	std::string _flacCompressionLevel;
+	std::string _flacBlockSize;
+	
+	// vorbis
+	std::string _oggQuality;
+	std::string _oggMinBitrate;
+	std::string _oggAvgBitrate;
+	std::string _oggMaxBitrate;
 };
-
-extern const char *audio_extensions[];
-
 
 /*
  * Stuff which is in compress.cpp
  */
-
 const extern char *tempEncoded;
 
-extern CompressMode process_audio_params(int argc, char *argv[], int* i);
+extern AudioFormat process_audio_params(int argc, char *argv[], int* i);
 extern int process_mp3_parms(int argc, char *argv[], int* i);
 extern int process_ogg_parms(int argc, char *argv[], int* i);
 extern int process_flac_parms(int argc, char *argv[], int* i);
 
-extern void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode);
-extern void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode);
+extern void extractAndEncodeVOC(const char *outName, FILE *input, AudioFormat compMode);
+extern void extractAndEncodeWAV(const char *outName, FILE *input, AudioFormat compMode);
 
-extern void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode);
-extern void encodeRaw(char *rawData, int length, int samplerate, const char *outname, CompressMode compmode);
+extern void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, AudioFormat compmode);
+extern void encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode);
 extern void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample);
 
 

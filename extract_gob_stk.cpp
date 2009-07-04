@@ -21,6 +21,8 @@
  */
 
 #include "util.h"
+#include "extract_gob_stk.h"
+
 #define confSTK21 "STK21"
 #define confSTK10 "STK10"
 
@@ -36,97 +38,68 @@ struct Chunk {
 	~Chunk() { delete next; }
 };
 
-void reportExtractionError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg);
-Chunk *readChunkList(FILE *stk, FILE *gobConf);
-Chunk *readChunkListV2(FILE *stk, FILE *gobConf);
-void extractChunks(Filename *outpath, FILE *stk, Chunk *chunks);
-byte *unpackData(byte *src, uint32 &size);
-byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize);
+ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name) {
+	_chunks = NULL;
 
-int export_main(extract_gob_stk)(int argc, char *argv[]) {
+	_helptext = "\nUsage: " + _name + " [-o outputname] infilename\n";
+}
+
+ExtractGobStk::~ExtractGobStk() {
+	delete _chunks;
+}
+
+void ExtractGobStk::execute() {
 	char signature[7];
-	Chunk *chunks;
-	FILE *stk;
-	FILE *gobConf;
+	File stk;
+	File gobConf;
 
-	int first_arg = 1;
-	int last_arg = argc - 1;
-
-	Filename inpath, outpath;
-
-	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc);
-	
-	// Continuing with finding out output directory
-	// also make sure we skip those arguments
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else
-		outpath.setFullPath("./");
-
+	File f1;
+	File f2;
+	std::auto_ptr<Chunk> _chunk;
 
 	// We only got one input file
-	if (last_arg != first_arg)
+	if (_inputPaths.size() > 1)
 		error("Only one input file expected!");
+	Filename inpath(_inputPaths[0]);
 
-	inpath.setFullPath(argv[first_arg]);
+	stk.open(inpath.getFullPath(), "rb");
 
-	if (!(stk = fopen(inpath.getFullPath(), "rb")))
-		error("Couldn't open file \"%s\"", inpath.getFullPath());
-
-	if (outpath.empty())
-		outpath = inpath;
+	if (_outputPath.empty())
+		_outputPath = inpath;
 	else
-		outpath.setFullName(inpath.getFullName());
-	outpath.setExtension(".gob");
+		_outputPath.setFullName(inpath.getFullName());
 
-	if (!(gobConf = fopen(outpath.getFullPath(), "w")))
-		error("Couldn't create config file \"%s\"", outpath.getFullPath());
+	_outputPath.setExtension(".gob");
 
-	if (fread(signature, 1, 6, stk) < 6)
-		error("Unexpected EOF while reading signature in \"%s\"", inpath.getFullPath());
+	gobConf.open(_outputPath.getFullPath(), "w");
+
+	stk.read(signature, 1, 6);
 
 	if (strncmp(signature, "STK2.1", 6) == 0) {
-		warning("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath());
+		print("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath());
 		fprintf(gobConf, "%s\n", confSTK21);
-		chunks = readChunkListV2(stk, gobConf);
+		readChunkListV2(stk, gobConf);
 	} else {
 		fprintf(gobConf, "%s\n", confSTK10);
 		rewind(stk);
-		chunks = readChunkList(stk, gobConf);
+		readChunkList(stk, gobConf);
 	}
 
-	fclose(gobConf);
-
-	extractChunks(&outpath, stk, chunks);
-
-	delete chunks;
-	fclose(stk);
-
-	return 0;
+	extractChunks(_outputPath, stk);
 }
 
-void reportExtractionError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg) {
-	if (f1)
-		fclose(f1);
-	if (f2)
-		fclose(f2);
-	delete chunks;
-
-	error(msg);
-}
-
-Chunk *readChunkList(FILE *stk, FILE *gobConf) {
+void ExtractGobStk::readChunkList(File &stk, File &gobConf) {
 	uint16 numDataChunks = readUint16LE(stk);
-	Chunk *chunks = new Chunk;
-	Chunk *curChunk = chunks;
+
+	// If we are run multiple times, free previous chunk list
+	if(_chunks)
+		delete _chunks;
+	_chunks = new Chunk;
+	Chunk *curChunk = _chunks;
 	char *fakeTotPtr;
 
 	while (numDataChunks-- > 0) {
-		if (fread(curChunk->name, 1, 13, stk) < 13)
-			reportExtractionError(stk, gobConf, chunks, "Unexpected EOF");
+		stk.read(curChunk->name, 1, 13);
 
 		curChunk->size = readUint32LE(stk);
 		curChunk->offset = readUint32LE(stk);
@@ -149,14 +122,12 @@ Chunk *readChunkList(FILE *stk, FILE *gobConf) {
 			curChunk = curChunk->next;
 		}
 	}
-
-	return chunks;
 }
 
-Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
+void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 	uint32 numDataChunks;
-	Chunk *chunks = new Chunk;
-	Chunk *curChunk = chunks;
+	_chunks = new Chunk;
+	Chunk *curChunk = _chunks;
 
 //	char *fakeTotPtr;
 
@@ -177,18 +148,17 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	// + 08 bytes : Name / acronym of STK/ITK creator
 	// + 04 bytes : Start position of Filenames Section
 
-	if (fread(buffer, 1, 14, stk) < 14)
-		reportExtractionError(stk, gobConf, chunks, "Unexpected EOF");
+	stk.read(buffer, 1, 14);
 
 	buffer[14] = '\0';
 	sprintf(debugStr, "File generated on %s by ", buffer);
 
 	if (fread(buffer, 1, 8, stk) < 8)
-		reportExtractionError(stk, gobConf, chunks, "Unexpected EOF");
+		throw ToolException("Unexpected EOF");
 
 	buffer[8] = '\0';
 	strcat(debugStr, buffer);
-	printf("%s\n",debugStr);
+	print("%s\n",debugStr);
 	filenamePos = readUint32LE(stk);
 
 	// Filenames - Header
@@ -197,14 +167,13 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 	// + 04 bytes : Number of files stored in STK/ITK
 	// + 04 bytes : Start position of Misc Section
 
-	if (fseek(stk, filenamePos, SEEK_SET) != 0)
-		reportExtractionError(stk, gobConf, chunks, "Unable to locate Filename Section");
+	stk.seek(filenamePos, SEEK_SET);
 
 	numDataChunks = readUint32LE(stk);
 	miscPos = readUint32LE(stk);
 
 	if (numDataChunks == 0)
-		reportExtractionError(stk, gobConf, chunks, "Empty ITK/STK !");
+		throw ToolException("Empty ITK/STK !");
 
 	while (numDataChunks-- > 0) {
 		// Misc
@@ -223,16 +192,16 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		// + 04 bytes : Compression flag (AFAIK : 0= uncompressed, 1= compressed)
 
 		if (fseek(stk, miscPos + (cpt * 61), SEEK_SET) != 0)
-			reportExtractionError(stk, gobConf, chunks, "Unable to locate Misc Section");
+			throw ToolException("Unable to locate Misc Section");
 		filenamePos = readUint32LE(stk);
 
 		if (fread(buffer, 1, 36, stk) < 36)
-			reportExtractionError(stk, gobConf, chunks, "Unexpected EOF in Misc Section");
+			throw ToolException("Unexpected EOF in Misc Section");
 		curChunk->size = readUint32LE(stk);
 		decompSize = readUint32LE(stk);
 
 		if (fread(buffer, 1, 5, stk) < 5)
-			reportExtractionError(stk, gobConf, chunks, "Unexpected EOF in Misc Section");
+			throw ToolException("Unexpected EOF in Misc Section");
 
 		filePos = readUint32LE(stk);
 		compressFlag = readUint32LE(stk);
@@ -244,7 +213,7 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 				sprintf(debugStr,
 						"Unexpected value in compress flag : %d - Size : %d Uncompressed size : %d",
 						compressFlag, curChunk->size, decompSize);
-				reportExtractionError(stk, gobConf, chunks, debugStr);
+				throw ToolException(debugStr);
 			} else {
 				curChunk->packed=false;
 			}
@@ -256,10 +225,10 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		// Those are now long filenames, at the opposite of previous STK version.
 
 		if (fseek(stk, filenamePos, SEEK_SET) != 0)
-			reportExtractionError(stk, gobConf, chunks, "Unable to locate filename");
+			throw ToolException("Unable to locate filename");
 
 		if (fgets(curChunk->name, 64, stk) == 0)
-			reportExtractionError(stk, gobConf, chunks, "Unable to read filename");
+			throw ToolException("Unable to read filename");
 
 		// Files
 		// =====
@@ -279,58 +248,54 @@ Chunk *readChunkListV2(FILE *stk, FILE *gobConf) {
 		}
 		cpt++;
 	}
-
-	return chunks;
 }
 
-void extractChunks(Filename *outpath, FILE *stk, Chunk *chunks) {
-	Chunk *curChunk = chunks;
-	byte *unpackedData;
+void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
+	Chunk *curChunk = _chunks;
+	byte *unpackedData = NULL;
 
 	while (curChunk != 0) {
-		printf("Extracting \"%s\"\n", curChunk->name);
+		print("Extracting \"%s\"\n", curChunk->name);
 
-		FILE *chunkFile;
-		outpath->setFullName(curChunk->name);
-		if (!(chunkFile = fopen(outpath->getFullPath(), "wb")))
-			reportExtractionError(stk, 0, chunks, "Couldn't write file");
+		outpath.setFullName(curChunk->name);
+		File chunkFile(outpath, "wb");
 
-		if (fseek(stk, curChunk->offset, SEEK_SET) == -1)
-			reportExtractionError(stk, chunkFile, chunks, "Unexpected EOF");
+		chunkFile.seek(curChunk->offset, SEEK_SET);
 
 		byte *data = new byte[curChunk->size];
 
-		if (fread((char *) data, curChunk->size, 1, stk) < 1)
-			reportExtractionError(stk, chunkFile, chunks, "Unexpected EOF");
+		stk.read((char *) data, curChunk->size, 1);
 
-		if (curChunk->packed) {
-			uint32 realSize;
+		try {
+			if (curChunk->packed) {
+				uint32 realSize;
 
-			if (curChunk->preGob) {
-				unpackedData = unpackPreGobData(data, realSize, curChunk->size);
+				if (curChunk->preGob) {
+					unpackedData = unpackPreGobData(data, realSize, curChunk->size);
+				} else {
+					unpackedData = unpackData(data, realSize);
+				}
+
+				chunkFile.write((char *) unpackedData, realSize, 1);
+
+				delete[] unpackedData;
 			} else {
-				unpackedData = unpackData(data, realSize);
+				chunkFile.write((char *) data, curChunk->size, 1);
 			}
-
-			if (fwrite((char *) unpackedData, realSize, 1, chunkFile) < 1)
-				reportExtractionError(stk, chunkFile, chunks, "Couldn't write");
-
+		} catch(...) {
+			delete[] data;
 			delete[] unpackedData;
-
-		} else {
-			if (fwrite((char *) data, curChunk->size, 1, chunkFile) < 1)
-				reportExtractionError(stk, chunkFile, chunks, "Couldn't write");
+			throw;
 		}
 
 		delete[] data;
-		fclose(chunkFile);
 
 		curChunk = curChunk->next;
 	}
 }
 
 // Some LZ77-variant
-byte *unpackData(byte *src, uint32 &size) {
+byte *ExtractGobStk::unpackData(byte *src, uint32 &size) {
 	uint32 counter;
 	uint16 cmd;
 	byte tmpBuf[4114];
@@ -389,7 +354,7 @@ byte *unpackData(byte *src, uint32 &size) {
 }
 
 // Some LZ77-variant
-byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
+byte *ExtractGobStk::unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 	uint16 cmd;
 	byte tmpBuf[4114];
 	int16 off;
@@ -410,9 +375,9 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 //  - bytes 2&3 : Either the real size or 0x007D. Directly related to the size of the file.
 //  - bytes 4&5 : 0x0000 (files are small) ;)
 	if (dummy1 == 0xFFFF)
-		printf("Real size %d\n", READ_LE_UINT32(src));
+		print("Real size %d\n", READ_LE_UINT32(src));
 	else
-		printf("Unknown real size %xX %xX\n", dummy1>>8, dummy1 & 0x00FF);
+		print("Unknown real size %xX %xX\n", dummy1>>8, dummy1 & 0x00FF);
 
 //	counter = size = READ_LE_UINT32(src);
 
@@ -471,10 +436,10 @@ byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize) {
 	return unpacked;
 }
 
-#if defined(UNIX) && defined(EXPORT_MAIN)
-int main(int argc, char *argv[]) __attribute__((weak));
+#ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(extract_gob_stk)(argc, argv);
+	ExtractGobStk gob_stk(argv[0]);
+	return gob_stk.run(argc, argv);
 }
 #endif
 

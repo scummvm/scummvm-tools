@@ -51,7 +51,7 @@ void warning(const char *s, ...) {
 	fprintf(stderr, "WARNING: %s!\n", buf);
 }
 
-void debug(int level, const char *s, ...) {
+void debug(int /*level*/, const char *s, ...) {
 	char buf[1024];
 	va_list va;
 
@@ -148,121 +148,112 @@ uint32 fileSize(FILE *fp) {
 
 // Filenname implementation
 Filename::Filename(const char *path) {
-	strcpy(_path, path);
+	_path = path;
+}
+Filename::Filename(std::string path) {
+	_path = path;
 }
 
 Filename::Filename(const Filename& filename) {
-	strcpy(_path, filename._path);
+	_path = filename._path;
 }
 
 Filename& Filename::operator=(const Filename& filename) {
-	strcpy(_path, filename._path);
+	_path = filename._path;
 	return *this;
 }
 
-void Filename::setFullPath(const char *path) {
-	strcpy(_path, path);
+void Filename::setFullPath(std::string path) {
+	_path = path;
 }
 
-Filename *Filename::setFullName(const char *newname) {
-	char p[1024];
-	if (getPath(p)) {
-		strcat(p, newname);
-		strcpy(_path, p);
-		return this;
+void Filename::setFullName(std::string newname) {
+	_path = getPath() + newname;
+}
+
+void Filename::addExtension(std::string ext) {
+	_path += ext;
+}
+
+void Filename::setExtension(std::string ext) {
+	size_t dot = _path.rfind('.');
+	if (dot == std::string::npos) {
+		_path += ext;
+	} else {
+		_path.resize(dot);
+		_path += ext;
 	}
-	return NULL;
-}
-
-void Filename::addExtension(const char *ext) {
-	strcat(_path, ext);
-}
-
-void Filename::setExtension(const char *ext) {
-	char *dot = strrchr(_path, '.');
-	if (!dot)
-		dot = _path + strlen(_path) - 1;
-	// Don't copy the dot
-	if (*ext == '.')
-		ext++;
-	strcpy(dot+1, ext);
 }
 
 bool Filename::equals(const Filename *other) const {
 #ifdef _WIN32
 	// On Windows paths are case-insensitive
-	return scumm_stricmp(_path, other->_path) == 0;
+	return scumm_stricmp(_path.c_str(), other->_path.c_str()) == 0;
 #else
-	return strcmp(_path, other->_path) == 0;
+	return _path == other->_path;
 #endif
 }
 
 bool Filename::empty() const {
-	return *_path == 0;
+	return _path.empty();
 }
 
-bool Filename::hasExtension(const char *suffix) const {
-	const char *dot = strrchr(_path, '.');
-	if (!dot)
-		dot = _path + strlen(_path);
+bool Filename::hasExtension(std::string suffix) const {
+	size_t dot = _path.rfind('.');
+	if (dot == std::string::npos)
+		return false;
 
 	// Check that dot position is less than /, since some
 	// directories contain ., like /home/.data/file
-	const char *slash = strrchr(_path, '/');
-	if (slash && slash > dot)
-		return false;
+	size_t slash = _path.rfind('/');
+	if (slash != std::string::npos)
+		if (slash > dot)
+			return false;
 
-	slash = strrchr(_path, '\\');
-	if (slash && slash > dot)
-		return false;
+	slash = _path.rfind('\\');
+	if (slash != std::string::npos)
+		if (slash > dot)
+			return false;
 
 	// We compare extensions, skip any dots
-	if (*dot == '.')
+	if (_path[dot] == '.')
 		dot++;
-	if (*suffix == '.')
-		suffix++;
+	if (suffix[0] == '.')
+		suffix = suffix.substr(1);
 
+	std::string tmp = _path.substr(dot);
 #ifdef _WIN32
 	// On Windows paths are case-insensitive
-	return scumm_stricmp(dot, suffix) == 0;
+	return scumm_stricmp(tmp.c_str(), suffix.c_str()) == 0;
 #else
-	return strcmp(dot, suffix) == 0;
+	return tmp == suffix;
 #endif
 }
 
-const char *Filename::getFullPath() const {
-	return _path;
+std::string Filename::getFullPath() const {
+	return _path.c_str();
 }
 
-const char *Filename::getFullName(char *out) const {
-	const char *slash;
-	if ((slash = strrchr(_path, '/')) || (slash = strrchr(_path, '\\'))) {
-		strcpy(out, slash + 1);
-		return out;
-	}
-	strcpy(out, _path);
-	return out;
+std::string Filename::getFullName() const {
+	size_t slash = _path.rfind('/');
+	if (slash == std::string::npos)
+		slash = _path.rfind('\\');
+
+	if (slash == std::string::npos)
+		return _path;
+
+	return _path.substr(slash);
 }
 
-const char *Filename::getFullName() const {
-	const char *slash;
-	if ((slash = strrchr(_path, '/')) || (slash = strrchr(_path, '\\'))) {
-		return slash + 1;
-	}
-	return _path;
-}
+std::string Filename::getPath() const {
+	size_t slash = _path.rfind('/');
+	if (slash == std::string::npos)
+		slash = _path.rfind('\\');
 
-const char *Filename::getPath(char *out) const {
-	const char *slash;
-	if ((slash = strrchr(_path, '/')) || (slash = strrchr(_path, '\\'))) {
-		int end = strlen(_path) - strlen(slash) + 1;
-		strncpy(out, _path, end);
-		out[end] = '\0';
-		return out;
-	}
-	// If there was no '/', this was a local path
-	out[0] = '\0';
-	return out;
+	if (slash == std::string::npos)
+		return "";
+
+	return _path.substr(0, slash + 1);
 }
 
 // File interface
@@ -275,10 +266,16 @@ File::File() {
 }
 
 File::File(const Filename &filepath, FileMode mode) {
-	open(filepath.getFullPath(), mode);
+	_file = NULL;
+	_mode = FILEMODE_READ;
+
+	open(filepath, mode);
 }
 
-File::File(const char *filepath, FileMode mode) {
+File::File(const Filename &filepath, const char *mode) {
+	_file = NULL;
+	_mode = FILEMODE_READ;
+
 	open(filepath, mode);
 }
 
@@ -287,30 +284,57 @@ File::~File() {
 		fclose(_file);
 }
 
-void File::open(const char *filepath, FileMode mode) {
-	assert(mode == FILEMODE_READ || mode == FILEMODE_WRITE);
+void File::open(const std::string &filepath, FileMode mode) {
+	open(Filename(filepath), mode);
+}
 
-	if (mode == FILEMODE_READ) {
-		_file = fopen(filepath, "rb");
-	} else {
-		_file = fopen(filepath, "wb");
-	}
-	_mode = mode;
-	_name.setFullPath(filepath);
+void File::open(const std::string &filepath, const char *mode) {
+	open(Filename(filepath), mode);
+}
 
+void File::open(const Filename &filepath, const char *mode) {
+	if(strcmp(mode, "w") == 0)
+		open(filepath, FILEMODE_WRITE);
+	else if(strcmp(mode, "r") == 0)
+		open(filepath, FILEMODE_READ);
+	else if(strcmp(mode, "wb") == 0)
+		open(filepath, FileMode(FILEMODE_WRITE | FILEMODE_BINARY));
+	else if(strcmp(mode, "rb") == 0)
+		open(filepath, FileMode(FILEMODE_READ | FILEMODE_BINARY));
+	else
+		throw FileException(std::string("Unsupported FileMode ") + mode);
+}
+
+void File::open(const Filename &filepath, FileMode mode) {
+	// Clean up previous opened file
 	if (_file)
-		throw FileException("Could not open file " + std::string(filepath));
+		fclose(_file);
+
+	std::string strmode;
+	if(mode & FILEMODE_READ)
+		strmode += 'r';
+	if(mode & FILEMODE_WRITE)
+		strmode += 'w';
+	if(mode & FILEMODE_BINARY)
+		strmode += 'b';
+
+	_file = fopen(filepath.getFullPath().c_str(), strmode.c_str());
+	_mode = mode;
+	_name = filepath;
+
+	if (!_file)
+		throw FileException("Could not open file " + filepath.getFullPath());
 }
 
 uint8 File::readByte() {
 	if (!_file) 
 		throw FileException("File is not open");
-	if (_mode != FILEMODE_READ)
-		throw FileException("Tried to read from file opened in write mode (" + std::string(_name.getFullPath()) + ")");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
 
 	int u8 = fgetc(_file);
 	if (u8 == EOF)
-		throw FileException("Read beyond the end of file (" + std::string(_name.getFullPath()) + ")");
+		throw FileException("Read beyond the end of file (" + _name.getFullPath() + ")");
 	return (uint8)u8;
 }
 
@@ -349,22 +373,22 @@ uint32 File::readU32LE() {
 void File::read(void *data, size_t elementSize, size_t elementCount) {
 	if (!_file) 
 		throw FileException("File is not open");
-	if (_mode != FILEMODE_READ)
-		throw FileException("Tried to read from file opened in write mode (" + std::string(_name.getFullPath()) + ")");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
 
 	size_t data_read = fread(data, elementSize, elementCount, _file);
 	if (data_read != elementCount)
-		throw FileException("Read beyond the end of file (" + std::string(_name.getFullPath()) + ")");
+		throw FileException("Read beyond the end of file (" + _name.getFullPath() + ")");
 }
 
 void File::writeByte(uint8 b) {
 	if (!_file) 
 		throw FileException("File  is not open");
-	if (_mode != FILEMODE_WRITE)
-		throw FileException("Tried to write to a file opened in read mode (" + std::string(_name.getFullPath()) + ")");
+	if ((_mode & FILEMODE_WRITE) == 0)
+		throw FileException("Tried to write to a file opened in read mode (" + _name.getFullPath() + ")");
 
 	if (fwrite(&b, 1, 1, _file) == 1)
-		throw FileException("Could not write to file (" + std::string(_name.getFullPath()) + ")");
+		throw FileException("Could not write to file (" + _name.getFullPath() + ")");
 }
 
 void File::writeU16BE(uint16 value) {
@@ -394,12 +418,20 @@ void File::writeU32LE(uint32 value) {
 void File::write(const void *data, size_t elementSize, size_t elementCount) {
 	if (!_file) 
 		throw FileException("File is not open");
-	if (_mode != FILEMODE_WRITE)
-		throw FileException("Tried to write to file opened in read mode (" + std::string(_name.getFullPath()) + ")");
+	if ((_mode & FILEMODE_WRITE) == 0)
+		throw FileException("Tried to write to file opened in read mode (" + _name.getFullPath() + ")");
 
 	size_t data_read = fwrite(data, elementSize, elementCount, _file);
 	if (data_read != elementCount)
-		throw FileException("Could not write to file (" + std::string(_name.getFullPath()) + ")");
+		throw FileException("Could not write to file (" + _name.getFullPath() + ")");
+}
+
+void File::seek(long offset, int origin) {
+	if (!_file) 
+		throw FileException("File is not open");
+
+	if(fseek(_file, offset, origin) != 0)
+		throw FileException("Could not seek in file (" + _name.getFullPath() + ")");
 }
 
 uint32 File::size() {
@@ -439,14 +471,9 @@ bool parseOutputArguments(Filename *outputname, bool output_directory, const cha
 
 			if (output_directory) {
 				/* Ensure last character is a /, this way we force directory output */
-				char lastchr = outputname->getFullPath()[strlen(outputname->getFullPath()) - 1];
+				char lastchr = outputname->getFullPath()[outputname->getFullPath().size() - 1];
 				if (lastchr != '/' && lastchr != '\\') {
-					strcat(outputname->_path, "/");
-				}
-			} else {
-				char* lastchr = outputname->_path + strlen(outputname->getFullPath()) - 1;
-				if (*lastchr == '/' && *lastchr == '\\') {
-					*lastchr = '\0';
+					outputname->_path += '/';
 				}
 			}
 			return true;

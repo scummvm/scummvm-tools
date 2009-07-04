@@ -29,7 +29,7 @@
 #include <vector>
 
 #include "configuration.h"
-#include "../tool_entry_points.h"
+#include "../tool.h"
 
 
 /** Different types of tools, used to differentiate them when 
@@ -61,12 +61,15 @@ typedef std::vector<ToolInput> ToolInputs;
 /**
  * A tool supported by the Wizard, holds all information about what format it supports
  * what input it requires etc.
+ * This is just the frontend, for the backend, the 'Tool' class is used, which this class
+ * holds an instance off.
  *
+ * @todo Move some logic to the 'Tool' class
  * @todo Add some way to represent extra arguments to the tool
  */
-class Tool {
+class ToolGUI {
 public:
-	Tool();
+	ToolGUI();
 	/**
 	 * Creates a new tool, can be stack allocated and copied without problems
 	 * The type of tool is deduced from the name, if it contains 'extract', it's an extraction tool
@@ -77,7 +80,7 @@ public:
 	 * @param main The tool entry point, defined in tool_entry_point.h
 	 * @param input_extenion Filename filter of the input  to expect.
 	 */
-	Tool(wxString name, MainFunction main, wxString input_extension = wxT("*.*"));
+	ToolGUI(Tool *tool, wxString input_extension = wxT("*.*"));
 
 	/**
 	 * Adds a supported game to this tool
@@ -94,25 +97,32 @@ public:
 	 * @param format The audio format(s) to test for
 	 */
 	bool supportsAudioFormat(AudioFormat format) const;
+
+	/**
+	 * Returns true if the tool outputs to an entire directory, not a single file
+	 */
+	bool outputToDirectory() const;
+
 	/**
 	 * Returns the name of the executable of this tool.
 	 * This simple returns the name under *nix, and name.exe under Windows
 	 */
 	wxString getExecutable() const;
 
+	/**
+	 * Runs the actual tool, will throw errors if it fails
+	 */
+	void run() const;
+
 
 	/** Name of the tool */
 	wxString _name;
-	/** Entry point of the tool, for invoking it, accepts CLI in the same format as the classic main function */
-	MainFunction invoke;
+	/** The actual tool instance, which runs the compression/extraction */
+	Tool *_backend;
 	/** Type of tool, either extract, compress or unknown */
 	ToolType _type;
-	/* Formats supported by the tool, bitwise ORed */
-	AudioFormat _supportedFormats;
 	/** List of all inputs this tool expects */
 	ToolInputs _inputs;
-	/** Try if this tool does not output a single file, but rather an entire directory */
-	bool _outputToDirectory;
 	/** The help text displayed on the input/output page */
 	wxString _inoutHelpText;
 	/** A list of all games supported by this tool */
@@ -123,7 +133,15 @@ public:
 class Tools {
 public:
 	Tools();
-	
+	~Tools();
+
+	/**
+	 * Must be called before the tools can be used
+	 * Setup cannot be done in the constructor since it depends on wx setup code
+	 * that must be run before it.
+	 */
+	void init();
+
 	/**
 	 * Returns a tool by name
 	 * asserts if the tool is not found
@@ -132,14 +150,14 @@ public:
 	 * @return A reference to the tool, tools cannot be modified.
 	 */
 
-	const Tool &operator[](const wxString &name) const;
+	const ToolGUI &operator[](const wxString &name) const;
 	/**
 	 * Returns a tool by name
 	 *
 	 * @param name Name of the tool to fetch
 	 * @return A pointer to the tool, NULL if there is no tool by that name.
 	 */
-	const Tool *get(const wxString &name) const;
+	const ToolGUI *get(const wxString &name) const;
 
 	/**
 	 * Returns a tool that supports the selected game
@@ -148,7 +166,7 @@ public:
 	 * @param type The type of tool we're looking for
 	 * @return The tool that supports this game, and NULL if no tool does
 	 */
-	const Tool *getByGame(const wxString &game, ToolType type = TOOLTYPE_ALL) const;
+	const ToolGUI *getByGame(const wxString &game, ToolType type = TOOLTYPE_ALL) const;
 
 	/**
 	 * Returns a list of all tools
@@ -172,9 +190,9 @@ protected:
 	 *
 	 * @param tool the tool to add.
 	 */
-	void addTool(const Tool &tool);
+	void addTool(ToolGUI *tool);
 
-	std::map<wxString, Tool> tools;
+	std::map<wxString, ToolGUI *> tools;
 };
 
 extern Tools g_tools;

@@ -29,7 +29,7 @@ static bool detectKyra3File(Filename *infile);
 
 #define TEMPFILE "TEMP.VOC"
 
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 int export_main(compress_kyra)(int argc, char *argv[]) {
 	const char *helptext = "\nUsage: %s [mode] [mode params] [-o out = ] <infile>\n" kCompressionAudioHelp;
@@ -43,7 +43,7 @@ int export_main(compress_kyra)(int argc, char *argv[]) {
 	// Compression mode
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if (gCompMode == kNoAudioMode) {
+	if (gCompMode == AUDIO_NONE) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -76,7 +76,7 @@ int export_main(compress_kyra)(int argc, char *argv[]) {
 static void process(Filename *infile, Filename *outfile) {
 	PAKFile input, output;
 
-	if (!input.loadFile(infile->getFullPath(), false))
+	if (!input.loadFile(infile->getFullPath().c_str(), false))
 		return;
 
 	if (!output.loadFile(NULL, false))
@@ -90,23 +90,22 @@ static void process(Filename *infile, Filename *outfile) {
 			continue;
 
 		if (list->data[26] != 1) {
-			warning("'%s' contains broken VOC file '%s' skipping it...", infile->getFullPath(), list->filename);
+			warning("'%s' contains broken VOC file '%s' skipping it...", infile->getFullPath().c_str(), list->filename);
 			continue;
 		}
 
 		Filename outputName;
 		input.outputFileAs(list->filename, TEMPFILE);
-		strncpy(outputName._path, list->filename, 27);
-		outputName._path[27] = 0;
+		outputName._path = list->filename;
 
 		FILE *tempFile = fopen(TEMPFILE, "rb");
 		fseek(tempFile, 26, SEEK_CUR);
 		extractAndEncodeVOC(TEMP_RAW, tempFile, gCompMode);
 		fclose(tempFile);
 
-		outputName.setExtension(audio_extensions[gCompMode]);
+		outputName.setExtension(audio_extensions(gCompMode));
 
-		output.addFile(outputName.getFullPath(), tempEncoded);
+		output.addFile(outputName.getFullPath().c_str(), tempEncoded);
 
 		unlink(TEMPFILE);
 		unlink(TEMP_RAW);
@@ -114,9 +113,9 @@ static void process(Filename *infile, Filename *outfile) {
 	}
 
 	if (output.getFileList())
-		output.saveFile(outfile->getFullPath());
+		output.saveFile(outfile->getFullPath().c_str());
 	else
-		printf("file '%s' doesn't contain any .voc files\n", infile->getFullPath());
+		printf("file '%s' doesn't contain any .voc files\n", infile->getFullPath().c_str());
 }
 
 // Kyra3 specifc code
@@ -320,21 +319,21 @@ static const DuplicatedFile *findDuplicatedFile(uint32 resOffset, const Duplicat
 
 static void processKyra3(Filename *infile, Filename *outfile) {
 	if (infile->hasExtension("AUD")) {
-		outfile->setExtension(audio_extensions[gCompMode]);
+		outfile->setExtension(audio_extensions(gCompMode));
 
-		FILE *input = fopen(infile->getFullPath(), "rb");
+		FILE *input = fopen(infile->getFullPath().c_str(), "rb");
 		if (!input)
-			error("Couldn't open file '%s'", infile->getFullPath());
+			error("Couldn't open file '%s'", infile->getFullPath().c_str());
 
-		compressAUDFile(input, outfile->getFullPath());
+		compressAUDFile(input, outfile->getFullPath().c_str());
 
 		fclose(input);
 	} else if (infile->hasExtension("TLK")) {
 		PAKFile output;
 
-		FILE *input = fopen(infile->getFullPath(), "rb");
+		FILE *input = fopen(infile->getFullPath().c_str(), "rb");
 		if (!input)
-			error("Couldn't open file '%s'", infile->getFullPath());
+			error("Couldn't open file '%s'", infile->getFullPath().c_str());
 
 		if (!output.loadFile(NULL, false))
 			return;
@@ -348,12 +347,12 @@ static void processKyra3(Filename *infile, Filename *outfile) {
 			uint32 resOffset = readUint32LE(input);
 
 			char outname[16];
-			snprintf(outname, 16, "%.08u.%s", resFilename, audio_extensions[gCompMode]);
+			snprintf(outname, 16, "%.08u.%s", resFilename, audio_extensions(gCompMode));
 
 			const DuplicatedFile *file = findDuplicatedFile(resOffset, red, files);
 			if (file) {
 				char linkname[16];
-				snprintf(linkname, 16, "%.08u.%s", file->resFilename, audio_extensions[gCompMode]);
+				snprintf(linkname, 16, "%.08u.%s", file->resFilename, audio_extensions(gCompMode));
 
 				output.linkFiles(outname, linkname);
 			} else {
@@ -377,9 +376,9 @@ static void processKyra3(Filename *infile, Filename *outfile) {
 		fclose(input);
 
 		if (output.getFileList())
-			output.saveFile(outfile->getFullPath());
+			output.saveFile(outfile->getFullPath().c_str());
 	} else {
-		error("Unsupported file '%s'", infile->getFullPath());
+		error("Unsupported file '%s'", infile->getFullPath().c_str());
 	}
 }
 
@@ -387,16 +386,16 @@ bool detectKyra3File(Filename *infile) {
 	if (infile->hasExtension("AUD")) {
 		return true;
 	} else if (infile->hasExtension("VRM") || infile->hasExtension("PAK")) {
-		if (!PAKFile::isPakFile(infile->getFullPath()))
-			error("Unknown filetype of file: '%s'", infile->getFullPath());
+		if (!PAKFile::isPakFile(infile->getFullPath().c_str()))
+			error("Unknown filetype of file: '%s'", infile->getFullPath().c_str());
 		return false;
 	} else if (infile->hasExtension("TLK")) {
-		if (PAKFile::isPakFile(infile->getFullPath()))
+		if (PAKFile::isPakFile(infile->getFullPath().c_str()))
 			return false;
 
-		FILE *f = fopen(infile->getFullPath(), "rb");
+		FILE *f = fopen(infile->getFullPath().c_str(), "rb");
 		if (!f)
-			error("Couldn't open file '%s'", infile->getFullPath());
+			error("Couldn't open file '%s'", infile->getFullPath().c_str());
 
 		uint16 entries = readUint16LE(f);
 		uint32 entryTableSize = (entries * 8);
@@ -404,7 +403,7 @@ bool detectKyra3File(Filename *infile) {
 
 		if (entryTableSize + 2 > filesize) {
 			fclose(f);
-			error("Unknown filetype of file: '%s'", infile->getFullPath());
+			error("Unknown filetype of file: '%s'", infile->getFullPath().c_str());
 		}
 
 		uint32 offset = 0;
@@ -413,13 +412,13 @@ bool detectKyra3File(Filename *infile) {
 			offset = readUint32LE(f);
 
 			if (offset > filesize)
-				error("Unknown filetype of file: '%s'", infile->getFullPath());
+				error("Unknown filetype of file: '%s'", infile->getFullPath().c_str());
 		}
 
 		return true;
 	}
 
-	error("Unknown filetype of file: '%s'", infile->getFullPath());
+	error("Unknown filetype of file: '%s'", infile->getFullPath().c_str());
 }
 
 #if defined(UNIX) && defined(EXPORT_MAIN)

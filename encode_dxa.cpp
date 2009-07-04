@@ -38,7 +38,7 @@ const uint32 typeNULL = 0x4C4C554E;
 #define  BLOCKW	4
 #define  BLOCKH	4
 
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 enum ScaleMode { S_NONE, S_INTERLACED, S_DOUBLE };
 
@@ -625,9 +625,9 @@ int read_png_file(const char* filename, unsigned char *&image, unsigned char *&p
 void readVideoInfo(Filename *filename, int &width, int &height, int &framerate, int &frames,
 	ScaleMode &scaleMode) {
 
-	FILE *smk = fopen(filename->getFullPath(), "rb");
+	FILE *smk = fopen(filename->getFullPath().c_str(), "rb");
 	if (!smk) {
-		error("readVideoInfo: Cannot open file: %s", filename->getFullPath());
+		error("readVideoInfo: Cannot open file: %s", filename->getFullPath().c_str());
 	}
 
 	scaleMode = S_NONE;
@@ -677,7 +677,7 @@ void convertWAV(const Filename *inpath, const Filename* outpath) {
 	printf("Encoding audio...");
 	fflush(stdout);
 
-	encodeAudio(inpath->getFullPath(), false, -1, outpath->getFullPath(), gCompMode);
+	encodeAudio(inpath->getFullPath().c_str(), false, -1, outpath->getFullPath().c_str(), gCompMode);
 }
 
 
@@ -718,8 +718,8 @@ int export_main(compress_dxa)(int argc, char *argv[]) {
 	Filename wavpath(inpath);
 	wavpath.setExtension(".wav");
 	struct stat statinfo;
-	if (!stat(wavpath.getFullPath(), &statinfo)) {
-		outpath.setExtension(audio_extensions[gCompMode]);
+	if (!stat(wavpath.getFullPath().c_str(), &statinfo)) {
+		outpath.setExtension(audio_extensions(gCompMode));
 		convertWAV(&wavpath, &outpath);
 	}
 
@@ -731,7 +731,7 @@ int export_main(compress_dxa)(int argc, char *argv[]) {
 
 	// create the encoder object
 	outpath.setExtension(".dxa");
-	DxaEncoder dxe(outpath.getFullPath(), width, height, framerate, scaleMode);
+	DxaEncoder dxe(outpath.getFullPath().c_str(), width, height, framerate, scaleMode);
 
 	// No sound block
 	dxe.writeNULL();
@@ -744,7 +744,7 @@ int export_main(compress_dxa)(int argc, char *argv[]) {
 	fflush(stdout);
 
 	char fullname[1024];
-	strcpy(fullname, inpath.getFullPath());
+	strcpy(fullname, inpath.getFullPath().c_str());
 	for (int f = 0; f < frames; f++) {
 		char strbuf[1024];
 		if (frames > 999)
@@ -757,7 +757,7 @@ int export_main(compress_dxa)(int argc, char *argv[]) {
 			sprintf(strbuf, "%s%d.png", fullname, framenum);
 		inpath.setFullName(strbuf);
 
-		int r = read_png_file(inpath.getFullPath(), image, palette, width, height);
+		int r = read_png_file(inpath.getFullPath().c_str(), image, palette, width, height);
 
 		if (!palette) {
 			error("8-bit 256-color image expected");

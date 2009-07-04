@@ -1,3 +1,4 @@
+
 /* compress_scumm_sou - monster.sou to MP3-compressed monster.so3 converter
  * Copyright (C) 2002-2006  The ScummVM Team
  *
@@ -38,7 +39,7 @@ static const char *g_output_filename = OUTPUT_MP3;
 
 static FILE *input, *output_idx, *output_snd;
 
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 
 void end_of_file(const char *inputPath) {
@@ -155,7 +156,7 @@ int export_main(compress_scumm_sou)(int argc, char *argv[]) {
 	// compression mode
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if (gCompMode == kNoAudioMode) {
+	if (gCompMode == AUDIO_NONE) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -168,13 +169,13 @@ int export_main(compress_scumm_sou)(int argc, char *argv[]) {
 		last_arg -= 2;
 	else {
 		switch(gCompMode) {
-		case kMP3Mode:
+		case AUDIO_MP3:
 			g_output_filename = OUTPUT_MP3;
 			break;
-		case kVorbisMode:
+		case AUDIO_VORBIS:
 			g_output_filename = OUTPUT_OGG;
 			break;
-		case kFlacMode:
+		case AUDIO_FLAC:
 			g_output_filename = OUTPUT_FLAC;
 			break;
 		default:
@@ -185,9 +186,9 @@ int export_main(compress_scumm_sou)(int argc, char *argv[]) {
 
 	inpath.setFullPath(argv[first_arg]);
 
-	input = fopen(inpath.getFullPath(), "rb");
+	input = fopen(inpath.getFullPath().c_str(), "rb");
 	if (!input) {
-		error("Cannot open file: %s", inpath.getFullPath());
+		error("Cannot open file: %s", inpath.getFullPath().c_str());
 	}
 
 	output_idx = fopen(TEMP_IDX, "wb");
@@ -206,7 +207,7 @@ int export_main(compress_scumm_sou)(int argc, char *argv[]) {
 	}
 
 	while (1)
-		get_part(inpath.getFullPath());
+		get_part(inpath.getFullPath().c_str());
 
 	return 0;
 }

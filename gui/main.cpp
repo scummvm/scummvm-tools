@@ -35,6 +35,7 @@
 #include "main.h"
 
 #include "pages.h"
+#include "tools.h"
 
 class ScummVMToolsApp : public wxApp
 {
@@ -45,10 +46,15 @@ IMPLEMENT_APP(ScummVMToolsApp)
 
 bool ScummVMToolsApp::OnInit()
 {
+	// Init tools
+	g_tools.init();
+
+	// Create window & display
 	ScummToolsFrame *frame = new ScummToolsFrame(wxT("ScummVM Tools"), wxDefaultPosition, wxSize(600,400));
 	frame->SetMinSize(wxSize(600, 400));
 	frame->Show(true);
 	SetTopWindow(frame);
+
 	return true;
 }
 

@@ -1,3 +1,5 @@
+
+
 /* compress_touche - Compress Touche Speech Data Files
  * Copyright (C) 2006  The ScummVM Team
  *
@@ -32,7 +34,7 @@
 #define OUTPUT_OGG   "TOUCHE.SOG"
 #define OUTPUT_FLA   "TOUCHE.SOF"
 
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 static uint32 input_OBJ_offs[OBJ_HDR_LEN];
 static uint32 input_OBJ_size[OBJ_HDR_LEN];
@@ -104,9 +106,9 @@ static void compress_sound_data(Filename *inpath, Filename *outpath) {
 	uint32 current_offset;
 	uint32 offsets_table[MAX_OFFSETS];
 
-	output = fopen(outpath->getFullPath(), "wb");
+	output = fopen(outpath->getFullPath().c_str(), "wb");
 	if (!output) {
-		error("Cannot open file '%s' for writing", outpath->getFullPath());
+		error("Cannot open file '%s' for writing", outpath->getFullPath().c_str());
 	}
 
 	writeUint16LE(output, 1); /* current version */
@@ -123,7 +125,7 @@ static void compress_sound_data(Filename *inpath, Filename *outpath) {
 
 	/* process 'OBJ' file */
 	inpath->setFullName("OBJ");
-	input = fopen(inpath->getFullPath(), "rb");
+	input = fopen(inpath->getFullPath().c_str(), "rb");
 	if (!input) {
 		error("Cannot open file 'OBJ' for reading");
 	}
@@ -131,7 +133,7 @@ static void compress_sound_data(Filename *inpath, Filename *outpath) {
 	offsets_table[0] = current_offset;
 	current_offset = compress_sound_data_file(current_offset, output, input, input_OBJ_offs, input_OBJ_size, OBJ_HDR_LEN);
 	fclose(input);
-	printf("Processed '%s'.\n", inpath->getFullPath());
+	printf("Processed '%s'.\n", inpath->getFullPath().c_str());
 
 	/* process Vxx files */
 	for (i = 1; i < MAX_OFFSETS; ++i) {
@@ -140,12 +142,12 @@ static void compress_sound_data(Filename *inpath, Filename *outpath) {
 		sprintf(d, "V%d", i);
 		inpath->setFullName(d);
 
-		input = fopen(inpath->getFullPath(), "rb");
+		input = fopen(inpath->getFullPath().c_str(), "rb");
 		if (input) {
 			offsets_table[i] = current_offset;
 			current_offset = compress_sound_data_file(current_offset, output, input, input_Vxx_offs, input_Vxx_size, Vxx_HDR_LEN);
 			fclose(input);
-			printf("Processed '%s'.\n", inpath->getFullPath());
+			printf("Processed '%s'.\n", inpath->getFullPath().c_str());
 		}
 	}
 
@@ -177,7 +179,7 @@ int export_main(compress_touche)(int argc, char *argv[]) {
 	// compression mode
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if (gCompMode == kNoAudioMode) {
+	if (gCompMode == AUDIO_NONE) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -190,13 +192,13 @@ int export_main(compress_touche)(int argc, char *argv[]) {
 		last_arg -= 2;
 	else {
 		switch(gCompMode) {
-		case kMP3Mode:
+		case AUDIO_MP3:
 			outpath.setFullName(OUTPUT_MP3);
 			break;
-		case kVorbisMode:
+		case AUDIO_VORBIS:
 			outpath.setFullName(OUTPUT_OGG);
 			break;
-		case kFlacMode:
+		case AUDIO_FLAC:
 			outpath.setFullName(OUTPUT_FLA);
 			break;
 		default:
@@ -209,7 +211,7 @@ int export_main(compress_touche)(int argc, char *argv[]) {
 
 	// Append '/' if it's not already done
 	// TODO: We need a way to detect a directory here!
-	size_t s = strlen(inpath._path);
+	size_t s = inpath._path.size();
 	if (inpath._path[s-1] == '/' || inpath._path[s-1] == '\\') {
 		inpath._path[s] = '/';
 		inpath._path[s+1] = '\0';

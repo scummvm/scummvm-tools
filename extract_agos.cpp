@@ -25,9 +25,40 @@
 #include <string.h>
 #include <iostream>
 
-#include "util.h"
+#include "extract_agos.h"
 
-size_t filelen;
+ExtractAgos::ExtractAgos(const std::string &name) : Tool(name) {
+	_filelen = 0;
+
+	_helptext = "\nUsage: " + _name + " [-o outputname] infilename\n";
+}
+
+// Run the actual tool
+void ExtractAgos::execute() {
+	// Loop through all input files
+	for (std::vector<std::string>::const_iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
+		Filename infilename(*iter);
+		uint8 *x = (uint8 *)loadfile(infilename);
+
+		_outputPath.setFullName(infilename.getFullName());
+
+		uint32 decrlen = simon_decr_length(x, (uint32) _filelen);
+		uint8 *out = (uint8 *)malloc(decrlen);
+
+		if (out) {
+			if (simon_decr(x, out, _filelen)) {
+				savefile(_outputPath.getFullPath(), out, decrlen);
+			}
+			else {
+				print("%s: decrunch error\n", iter->c_str());
+			}
+
+			free(x);
+			free(out);
+		}
+	}
+}
+
 #define EndGetM32(a)	((((a)[0])<<24)|(((a)[1])<<16)|(((a)[2])<<8)|((a)[3]))
 
 #define SD_GETBIT(var) do { \
@@ -42,7 +73,7 @@ size_t filelen;
 #define SD_TYPE_LITERAL (0)
 #define SD_TYPE_MATCH   (1)
 
-int simon_decr(uint8 *src, uint8 *dest, uint32 srclen) {
+int ExtractAgos::simon_decr(uint8 *src, uint8 *dest, uint32 srclen) {
 	uint8 *s = &src[srclen - 4];
 	uint32 destlen = EndGetM32(s);
 	uint32 bb, x, y;
@@ -132,7 +163,7 @@ int simon_decr(uint8 *src, uint8 *dest, uint32 srclen) {
 	return 1;
 }
 
-uint32 simon_decr_length(uint8 *src, uint32 srclen) {
+uint32 ExtractAgos::simon_decr_length(uint8 *src, uint32 srclen) {
 	return EndGetM32(&src[srclen - 4]);
 }
 
@@ -145,15 +176,15 @@ uint32 simon_decr_length(uint8 *src, uint32 srclen) {
  *
  * @param name The name of the file to be loaded
  */
-void *loadfile(const Filename &name) {
+void *ExtractAgos::loadfile(const Filename &name) {
 	File file(name, FILEMODE_READ);
 
 	// Using global here is not pretty
-	filelen = file.size();
+	_filelen = file.size();
 	void *mem = malloc(file.size());
 
 	// Read data
-	file.read(file, 1, filelen);
+	file.read(file, 1, _filelen);
 
 	return mem;
 }
@@ -166,71 +197,14 @@ void *loadfile(const Filename &name) {
  * @param mem Where to get data from
  * @param length How many bytes to write
  */
-void savefile(const Filename &name, void *mem, size_t length) {
+void ExtractAgos::savefile(const Filename &name, void *mem, size_t length) {
 	File file(name, FILEMODE_WRITE);
 	file.write(mem, 1, length);
 }
 
-// Run the actual tool
-int run(int argc, char *argv[]) {
-	int first_arg = 1;
-	int last_arg = argc;
-
-	Filename inpath, outpath;
-
-	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc);
-	
-	// Now we try to find the proper output directory
-	// also make sure we skip those arguments
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else
-		// Standard output dir
-		outpath.setFullPath("out/");
-
-	// Loop through all input files
-	for (int parsed_args = first_arg; parsed_args <= last_arg; ++parsed_args) {
-		const char *filename = argv[parsed_args];
-		uint8 *x = (uint8 *)loadfile(filename);
-
-		inpath.setFullPath(filename);
-		outpath.setFullName(inpath.getFullName());
-
-		uint32 decrlen = simon_decr_length(x, (uint32) filelen);
-		uint8 *out = (uint8 *) malloc(decrlen);
-
-		if (out) {
-			if (simon_decr(x, out, filelen)) {
-				savefile(outpath.getFullPath(), out, decrlen);
-			}
-			else {
-				notice("%s: decrunch error\n", filename);
-			}
-
-			free((void *) x);
-		}
-	}
-
-	return 0;
-}
-
-int export_main(extract_agos)(int argc, char *argv[]) {
-	try {
-		run(argc, argv);
-	} catch(ToolException &err) {
-		std::cout << "FATAL ERROR: " << err.what();
-		return err._retcode;
-	}
-	return 0;
-}
-
-#if defined(UNIX) && defined(EXPORT_MAIN)
-int main(int argc, char *argv[]) __attribute__((weak));
+#ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(extract_agos)(argc, argv);
+	ExtractAgos agos(argv[0]);
+	return agos.run(argc, argv);
 }
 #endif
-

@@ -96,7 +96,7 @@ int export_main(extract_zak_c64)(int argc, char *argv[]) {
 	if (signature != 0x0132)
 		error("Signature not found in disk 2!");
 	outpath.setFullName("00.LFL");
-	if (!(output = fopen(outpath.getFullPath(), "wb")))
+	if (!(output = fopen(outpath.getFullPath().c_str(), "wb")))
 		error("Unable to create index file!");
 	notice("Creating 00.LFL...");
 
@@ -151,7 +151,7 @@ int export_main(extract_zak_c64)(int argc, char *argv[]) {
 
 		sprintf(fname,"%02i.LFL", i);
 		outpath.setFullName(fname);
-		output = fopen(outpath.getFullPath(), "wb");
+		output = fopen(outpath.getFullPath().c_str(), "wb");
 
 		if (output == NULL) {
 			error("Unable to create %s!", fname);

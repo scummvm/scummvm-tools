@@ -442,7 +442,7 @@ bool PAKFile::outputAllFiles(Filename *outputPath) {
 
 	for (const LinkList *entry = _links; entry; entry = entry->next) {
 		outputPath->setFullName(entry->filename);
-		if (!outputFileAs(entry->linksTo, outputPath->getFullPath()))
+		if (!outputFileAs(entry->linksTo, outputPath->getFullPath().c_str()))
 			return false;
 	}
 
@@ -475,7 +475,7 @@ bool Extractor::outputAllFiles(Filename *outputPath) {
 
 	while (cur) {
 		outputPath->setFullName(cur->filename);
-		FILE *file = fopen(outputPath->getFullPath(), "wb");
+		FILE *file = fopen(outputPath->getFullPath().c_str(), "wb");
 		if (!file) {
 			error("couldn't open file '%s' for writing", outputPath->getFullPath());
 			return false;

@@ -630,7 +630,7 @@ void encodeWaveWithFlac(char *filename) {
 	char fbuf2[2048];
 	sprintf(fbuf, "%s.wav", filename);
 	sprintf(fbuf2, "%s.fla", filename);
-	encodeAudio(fbuf, false, -1, fbuf2, kFlacMode);
+	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_FLAC);
 }
 
 void encodeWaveWithOgg(char *filename) {
@@ -638,7 +638,7 @@ void encodeWaveWithOgg(char *filename) {
 	char fbuf2[2048];
 	sprintf(fbuf, "%s.wav", filename);
 	sprintf(fbuf2, "%s.ogg", filename);
-	encodeAudio(fbuf, false, -1, fbuf2, kVorbisMode);
+	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_VORBIS);
 }
 
 void encodeWaveWithLame(char *filename) {
@@ -647,7 +647,7 @@ void encodeWaveWithLame(char *filename) {
 
 	sprintf(fbuf, "%s.wav", filename);
 	sprintf(fbuf2, "%s.mp3", filename);
-	encodeAudio(fbuf, false, -1, fbuf2, kMP3Mode);
+	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_MP3);
 }
 
 void writeWaveHeader(int s_size, int rate, int chan) {
@@ -725,7 +725,7 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 	_waveDataSize += size;
 }
 
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 typedef struct { int offset, size, codec; } CompTable;
 
@@ -881,7 +881,7 @@ struct Marker {
 static Region *_region;
 static int _numRegions;
 
-void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *filename, FILE *output) {
+void writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, FILE *output) {
 	char tmpPath[200];
 
 	for (int l = 0; l < _numRegions; l++) {
@@ -896,13 +896,13 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *
 		sprintf(tmpPath, "%s/%s_reg%03d", dir, filename, l);
 
 		switch (gCompMode) {
-		case kMP3Mode:
+		case AUDIO_MP3:
 			encodeWaveWithLame(tmpPath);
 			break;
-		case kVorbisMode:
+		case AUDIO_VORBIS:
 			encodeWaveWithOgg(tmpPath);
 			break;
-		case kFlacMode:
+		case AUDIO_FLAC:
 			encodeWaveWithFlac(tmpPath);
 			break;
 		default:
@@ -914,15 +914,15 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, char *dir, char *
 
 		int32 startPos = ftell(output);
 		switch (gCompMode) {
-		case kMP3Mode:
+		case AUDIO_MP3:
 			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.mp3", filename, l);
 			sprintf(tmpPath, "%s/%s_reg%03d.mp3", dir, filename, l);
 			break;
-		case kVorbisMode:
+		case AUDIO_VORBIS:
 			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.ogg", filename, l);
 			sprintf(tmpPath, "%s/%s_reg%03d.ogg", dir, filename, l);
 			break;
-		case kFlacMode:
+		case AUDIO_FLAC:
 			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.fla", filename, l);
 			sprintf(tmpPath, "%s/%s_reg%03d.fla", dir, filename, l);
 			break;
@@ -1097,7 +1097,7 @@ int export_main(compress_scumm_bun)(int argc, char *argv[]) {
 	// compression mode
 	gCompMode = process_audio_params(argc, argv, &first_arg);
 
-	if (gCompMode == kNoAudioMode) {
+	if (gCompMode == AUDIO_NONE) {
 		// Unknown mode (failed to parse arguments), display help and exit
 		displayHelp(helptext, argv[0]);
 	}
@@ -1117,9 +1117,9 @@ int export_main(compress_scumm_bun)(int argc, char *argv[]) {
 
 	inpath.setFullPath(argv[first_arg]);
 
-	FILE *input = fopen(inpath.getFullPath(), "rb");
+	FILE *input = fopen(inpath.getFullPath().c_str(), "rb");
 	if (!input) {
-		error("Cannot open file: %s", inpath.getFullPath());
+		error("Cannot open file: %s", inpath.getFullPath().c_str());
 	}
 
 	if (outpath.empty()) {
@@ -1128,9 +1128,9 @@ int export_main(compress_scumm_bun)(int argc, char *argv[]) {
 		outpath.setExtension(".bun");
 	}
 
-	FILE *output = fopen(outpath.getFullPath(), "wb");
+	FILE *output = fopen(outpath.getFullPath().c_str(), "wb");
 	if (!output) {
-		error("Cannot open file: %s", outpath.getFullPath());
+		error("Cannot open file: %s", outpath.getFullPath().c_str());
 	}
 
 	writeUint32BE(output, 'LB23');
@@ -1172,9 +1172,7 @@ int export_main(compress_scumm_bun)(int argc, char *argv[]) {
 		int32 size = 0;
 		byte *compFinal = decompressBundleSound(i, input, size);
 		writeToRMAPFile(compFinal, output, bundleTable[i].filename, offsetData, bits, freq, channels);
-		char outdir[1024];
-		outpath.getPath(outdir);
-		writeRegions(compFinal + offsetData, bits, freq, channels, outdir, bundleTable[i].filename, output);
+		writeRegions(compFinal + offsetData, bits, freq, channels, outpath.getPath().c_str(), bundleTable[i].filename, output);
 		free(compFinal);
 	}
 

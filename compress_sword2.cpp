@@ -27,7 +27,7 @@
 
 static FILE *input, *output_idx, *output_snd;
 
-static CompressMode gCompMode = kMP3Mode;
+static AudioFormat gCompMode = AUDIO_MP3;
 
 uint32 append_to_file(FILE *f1, const char *filename) {
 	FILE *f2;
@@ -87,13 +87,13 @@ int export_main(compress_sword2)(int argc, char *argv[]) {
 		last_arg -= 2;
 
 	switch(gCompMode) {
-	case kMP3Mode:
+	case AUDIO_MP3:
 		tempEncoded = TEMP_MP3;
 		break;
-	case kVorbisMode:
+	case AUDIO_VORBIS:
 		tempEncoded = TEMP_OGG;
 		break;
-	case kFlacMode:
+	case AUDIO_FLAC:
 		tempEncoded = TEMP_FLAC;
 		break;
 	default:
@@ -107,9 +107,9 @@ int export_main(compress_sword2)(int argc, char *argv[]) {
 		// Extensions change between the in/out files, so we can use the same directory
 		outpath = inpath;
 
-	input = fopen(inpath.getFullPath(), "rb");
+	input = fopen(inpath.getFullPath().c_str(), "rb");
 	if (!input) {
-		error("Cannot open file: %s", inpath.getFullPath());
+		error("Cannot open file: %s", inpath.getFullPath().c_str());
 	}
 
 	indexSize = readUint32LE(input);
@@ -220,9 +220,9 @@ int export_main(compress_sword2)(int argc, char *argv[]) {
 	fclose(output_idx);
 	fclose(output_snd);
 
-	output = fopen(outpath.getFullPath(), "wb");
+	output = fopen(outpath.getFullPath().c_str(), "wb");
 	if (!output) {
-		error("Cannot open file %s for writing", outpath.getFullPath());
+		error("Cannot open file %s for writing", outpath.getFullPath().c_str());
 	}
 
 	append_to_file(output, TEMP_IDX);
