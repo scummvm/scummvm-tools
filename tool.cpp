@@ -56,24 +56,24 @@ int Tool::run(int argc, char *argv[]) {
 	_argv = 0;
 
 	// Check for help
-	if(_arguments.empty() || _arguments[0] == "-h" || _arguments[0] == "--help") {
+	if (_arguments.empty() || _arguments[0] == "-h" || _arguments[0] == "--help") {
 		print(_helptext.c_str());
 		return 2;
 	}
 
 	// Read standard arguments
-	if(_supported_formats != AUDIO_NONE)
+	if (_supported_formats != AUDIO_NONE)
 		parseAudioArguments();
 	parseOutputArguments();
 	// Read tool specific arguments
 	parseExtraArguments();
 
 	// Read input files from CLI
-	while(_arguments_parsed < _arguments.size()) {
+	while (_arguments_parsed < _arguments.size()) {
 		_inputPaths.push_back(_arguments[_arguments_parsed++]);
 	}
 
-	if(_inputPaths.empty()) {
+	if (_inputPaths.empty()) {
 		// Display help text if we got no input
 		print(_helptext.c_str());
 		return 2;
@@ -126,9 +126,9 @@ void Tool::parseAudioArguments() {
 }
 
 void Tool::parseOutputArguments() {
-	if(_arguments_parsed >= _arguments.size())
+	if (_arguments_parsed >= _arguments.size())
 		return;
-	if(_arguments[_arguments_parsed] == "-o" || _arguments[_arguments_parsed] == "--output") {
+	if (_arguments[_arguments_parsed] == "-o" || _arguments[_arguments_parsed] == "--output") {
 		// It's an -o argument
 
 		if (_arguments_parsed + 1 < _arguments.size()) {

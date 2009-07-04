@@ -1,4 +1,4 @@
-/* extract_gob_stk.h - Extractor for Coktel Vision game's .stk/.itk archives
+/* compress_agos.h - Compress Simon the Sorcerer 1/2 digital sound files into compressed audio format
  * Copyright (C) 2009 The ScummVM project
  *
  * This program is free software; you can redistribute it and/or
@@ -20,27 +20,30 @@
  *
  */
 
-#ifndef EXTRACT_GOB_STK_H
-#define EXTRACT_GOB_STK_H
+#ifndef COMPRESS_AGOS_H
+#define COMPRESS_AGOS_H
 
-#include "tool.h"
-class ExtractGobStk : public Tool {
+#include "compress.h"
+
+class CompressAgos : public CompressionTool {
 public:
-	ExtractGobStk(const std::string &name = "extract_gob_stk");
-	~ExtractGobStk();
+	CompressAgos(const std::string &name = "compress_agos");
 
 	virtual void execute();
 
 protected:
-	struct Chunk;
+	void parseExtraArguments();
 
-	Chunk *_chunks;
+	File _input, _output_idx, _output_snd;
+	AudioFormat _compMode;
+	bool _convertMac;
 
-	void readChunkList(File &stk, File &gobConf);
-	void readChunkListV2(File &stk, File &gobConf);
-	void extractChunks(Filename &outpath, File &stk);
-	byte *unpackData(byte *src, uint32 &size);
-	byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize);
+	void end();
+	int get_offsets(uint32 filenums[], uint32 offsets[]);
+	int get_offsets_mac(uint32 filenums[], uint32 offsets[]);
+	uint32 get_sound(uint32 offset);
+	void convert_pc(Filename* inputPath);
+	void convert_mac(Filename *inputPath);
 };
 
 #endif

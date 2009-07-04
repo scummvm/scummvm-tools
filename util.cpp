@@ -242,7 +242,7 @@ std::string Filename::getFullName() const {
 	if (slash == std::string::npos)
 		return _path;
 
-	return _path.substr(slash);
+	return _path.substr(slash + 1);
 }
 
 std::string Filename::getPath() const {
@@ -280,42 +280,32 @@ File::File(const Filename &filepath, const char *mode) {
 }
 
 File::~File() {
-	if (_file)
-		fclose(_file);
-}
-
-void File::open(const std::string &filepath, FileMode mode) {
-	open(Filename(filepath), mode);
-}
-
-void File::open(const std::string &filepath, const char *mode) {
-	open(Filename(filepath), mode);
+	close();
 }
 
 void File::open(const Filename &filepath, const char *mode) {
-	if(strcmp(mode, "w") == 0)
+	if (strcmp(mode, "w") == 0)
 		open(filepath, FILEMODE_WRITE);
-	else if(strcmp(mode, "r") == 0)
+	else if (strcmp(mode, "r") == 0)
 		open(filepath, FILEMODE_READ);
-	else if(strcmp(mode, "wb") == 0)
+	else if (strcmp(mode, "wb") == 0)
 		open(filepath, FileMode(FILEMODE_WRITE | FILEMODE_BINARY));
-	else if(strcmp(mode, "rb") == 0)
+	else if (strcmp(mode, "rb") == 0)
 		open(filepath, FileMode(FILEMODE_READ | FILEMODE_BINARY));
 	else
 		throw FileException(std::string("Unsupported FileMode ") + mode);
 }
 
 void File::open(const Filename &filepath, FileMode mode) {
-	// Clean up previous opened file
-	if (_file)
-		fclose(_file);
+	// Clean up previously opened file
+	close();
 
 	std::string strmode;
-	if(mode & FILEMODE_READ)
+	if (mode & FILEMODE_READ)
 		strmode += 'r';
-	if(mode & FILEMODE_WRITE)
+	if (mode & FILEMODE_WRITE)
 		strmode += 'w';
-	if(mode & FILEMODE_BINARY)
+	if (mode & FILEMODE_BINARY)
 		strmode += 'b';
 
 	_file = fopen(filepath.getFullPath().c_str(), strmode.c_str());
@@ -324,6 +314,12 @@ void File::open(const Filename &filepath, FileMode mode) {
 
 	if (!_file)
 		throw FileException("Could not open file " + filepath.getFullPath());
+}
+
+void File::close() {
+	if (_file)
+		fclose(_file);
+	_file = NULL;
 }
 
 uint8 File::readByte() {
@@ -430,7 +426,7 @@ void File::seek(long offset, int origin) {
 	if (!_file) 
 		throw FileException("File is not open");
 
-	if(fseek(_file, offset, origin) != 0)
+	if (fseek(_file, offset, origin) != 0)
 		throw FileException("Could not seek in file (" + _name.getFullPath() + ")");
 }
 

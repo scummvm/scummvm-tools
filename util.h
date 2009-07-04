@@ -344,10 +344,13 @@ public:
 	 * @param filename The file to open
 	 * @param mode The mode to open the file in
 	 */
-	void open(const std::string &filename, const char *mode);
 	void open(const Filename &filename, const char *mode);
-	void open(const std::string &filename, FileMode mode);
 	void open(const Filename &filename, FileMode mode);
+
+	/**
+	 * Closes the file, if it's open
+	 */
+	void close();
 	
 	
 	/**

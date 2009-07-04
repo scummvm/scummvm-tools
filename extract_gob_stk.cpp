@@ -26,7 +26,7 @@
 #define confSTK21 "STK21"
 #define confSTK10 "STK10"
 
-struct Chunk {
+struct ExtractGobStk::Chunk {
 	char name[64];
 	uint32 size, offset;
 	bool packed;
@@ -35,7 +35,7 @@ struct Chunk {
 	Chunk *next;
 
 	Chunk() : next(0) { }
-	~Chunk() { delete next; }
+	~Chunk() : { delete next; }
 };
 
 ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name) {
@@ -289,6 +289,7 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 				delete[] unpackedData;
 				throw;
 			}
+			delete[] data;
 		}
 
 		fflush(chunkFile);

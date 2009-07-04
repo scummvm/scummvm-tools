@@ -20,39 +20,37 @@
  *
  */
 
-#include "compress.h"
+#include "compress_agos.h"
 
 #define TEMP_DAT	"tempfile.dat"
 #define TEMP_IDX	"tempfile.idx"
 
-static FILE *input, *output_idx, *output_snd;
+CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name) {
+	_compMode = AUDIO_MP3;
+	_convertMac = false;
 
-static AudioFormat gCompMode = AUDIO_MP3;
+	_helptext = "\nUsage: %s [mode] [mode params] [--mac] <infile>\n" kCompressionAudioHelp
+}
 
-static void end(Filename *outPath) {
+void CompressAgos::end() {
 	int size;
 	char fbuf[2048];
 
-	fclose(output_snd);
-	fclose(output_idx);
-	fclose(input);
+	_output_idx.open(_outputPath, "wb");
 
-	output_idx = fopen(outPath->getFullPath().c_str(), "wb");
-
-	input = fopen(TEMP_IDX, "rb");
-	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
-		fwrite(fbuf, 1, size, output_idx);
+	_input.open(TEMP_IDX, "rb");
+	while ((size = fread(fbuf, 1, 2048, _input)) > 0) {
+		fwrite(fbuf, 1, size, _output_idx);
 	}
 
-	fclose(input);
-
-	input = fopen(TEMP_DAT, "rb");
-	while ((size = fread(fbuf, 1, 2048, input)) > 0) {
-		fwrite(fbuf, 1, size, output_idx);
+	_input.open(TEMP_DAT, "rb");
+	while ((size = fread(fbuf, 1, 2048, _input)) > 0) {
+		fwrite(fbuf, 1, size, _output_idx);
 	}
 
-	fclose(input);
-	fclose(output_idx);
+	_input.close();
+	_output_idx.close();
+	_output_snd.close();
 
 	/* And some clean-up :-) */
 	unlink(TEMP_IDX);
@@ -60,94 +58,81 @@ static void end(Filename *outPath) {
 	unlink(TEMP_RAW);
 	unlink(tempEncoded);
 	unlink(TEMP_WAV);
-
-	exit(0);
 }
 
 
-static int get_offsets(uint32 filenums[], uint32 offsets[]) {
+int CompressAgos::get_offsets(uint32 filenums[], uint32 offsets[]) {
 	int i;
 	char buf[8];
 
 	for (i = 0;; i++) {
-		fread(buf, 1, 8, input);
+		fread(buf, 1, 8, _input);
 		if (!memcmp(buf, "Creative", 8) || !memcmp(buf, "RIFF", 4)) {
 			return i;
 		}
-		fseek(input, -8, SEEK_CUR);
+		fseek(_input, -8, SEEK_CUR);
 
-		offsets[i] = readUint32LE(input);
+		offsets[i] = _input.readU32LE();
 	}
 }
 
-static int get_offsets_mac(uint32 filenums[], uint32 offsets[]) {
+int CompressAgos::get_offsets_mac(uint32 filenums[], uint32 offsets[]) {
 	int i, size;
-	size = fileSize(input);
+	size = _input.size();
 
 	for (i = 1; i <= size / 6; i++) {
-		filenums[i] = readUint16BE(input);
-		offsets[i] = readUint32BE(input);
+		filenums[i] = _input.readU16BE();
+		offsets[i] = _input.readU32BE();
 	}
 
 	return(size/6);
 }
 
 
-static uint32 get_sound(uint32 offset) {
-	FILE *f;
+uint32 CompressAgos::get_sound(uint32 offset) {
 	uint32 tot_size;
 	char outname[256];
 	int size;
 	char fbuf[2048];
 	char buf[8];
 
-	fseek(input, offset, SEEK_SET);
+	fseek(_input, offset, SEEK_SET);
 
-	fread(buf, 1, 8, input);
+	fread(buf, 1, 8, _input);
 	if (!memcmp(buf, "Creative", 8)) {
-		printf("VOC found (pos = %d) :\n", offset);
-		fseek(input, 18, SEEK_CUR);
-		extractAndEncodeVOC(TEMP_RAW, input, gCompMode);
+		print("VOC found (pos = %d) :\n", offset);
+		fseek(_input, 18, SEEK_CUR);
+		extractAndEncodeVOC(TEMP_RAW, _input, _compMode);
 	} else if (!memcmp(buf, "RIFF", 4)) {
-		printf("WAV found (pos = %d) :\n", offset);
-		extractAndEncodeWAV(TEMP_WAV, input, gCompMode);
+		print("WAV found (pos = %d) :\n", offset);
+		extractAndEncodeWAV(TEMP_WAV, _input, _compMode);
 	} else {
 		error("Unexpected data at offset: %d", offset);
 	}
 
 	/* Append the converted data to the master output file */
 	sprintf(outname, tempEncoded);
-	f = fopen(outname, "rb");
+	File f(outname, "rb");
 	tot_size = 0;
 	while ((size = fread(fbuf, 1, 2048, f)) > 0) {
 		tot_size += size;
-		fwrite(fbuf, 1, size, output_snd);
+		fwrite(fbuf, 1, size, _output_snd);
 	}
-	fclose(f);
 
 	return(tot_size);
 }
 
 
-static void convert_pc(Filename* inputPath) {
+void CompressAgos::convert_pc(Filename* inputPath) {
 	int i, size, num;
 	uint32 filenums[32768];
 	uint32 offsets[32768];
 
-	input = fopen(inputPath->getFullPath().c_str(), "rb");
-	if (!input) {
-		error("Cannot open file: %s", inputPath->getFullPath().c_str());
-	}
+	_input.open(*inputPath, "rb");
 
-	output_idx = fopen(TEMP_IDX, "wb");
-	if (!output_idx) {
-		error("Cannot open file " TEMP_IDX " for write");
-	}
+	_output_idx.open(TEMP_IDX, "wb");
 
-	output_snd = fopen(TEMP_DAT, "wb");
-	if (!output_snd) {
-		error("Cannot open file " TEMP_DAT " for write");
-	}
+	_output_snd.open(TEMP_DAT, "wb");
 
 	num = get_offsets(filenums, offsets);
 	if (!num) {
@@ -155,42 +140,33 @@ static void convert_pc(Filename* inputPath) {
 	}
 	size = num * 4;
 
-	writeUint32LE(output_idx, 0);
-	writeUint32LE(output_idx, size);
+	_output_idx.writeU32LE(0);
+	_output_idx.writeU32LE(size);
 
 	for (i = 1; i < num; i++) {
 		if (offsets[i] == offsets[i + 1]) {
-			writeUint32LE(output_idx, size);
+			_output_idx.writeU32LE(size);
 			continue;
 		}
 
 		if (offsets[i] != 0)
 			size += get_sound(offsets[i]);
 		if (i < num - 1)
-			writeUint32LE(output_idx, size);
+			_output_idx.writeU32LE(size);
 	}
 }
 
-static void convert_mac(Filename *inputPath) {
+void CompressAgos::convert_mac(Filename *inputPath) {
 	int i, size, num;
 	uint32 filenums[32768];
 	uint32 offsets[32768];
 
 	inputPath->setFullName("voices.idx");
-	input = fopen(inputPath->getFullPath().c_str(), "rb");
-	if (!input) {
-		error("Cannot open file: %s", "voices.idx");
-	}
+	_input.open(*inputPath, "rb");
 
-	output_idx = fopen(TEMP_IDX, "wb");
-	if (!output_idx) {
-		error("Cannot open file " TEMP_IDX " for write");
-	}
+	_output_idx.open(TEMP_IDX, "wb");
 
-	output_snd = fopen(TEMP_DAT, "wb");
-	if (!output_snd) {
-		error("Cannot open file " TEMP_DAT " for write");
-	}
+	_output_snd.open(TEMP_DAT, "wb");
 
 	num = get_offsets_mac(filenums, offsets);
 	if (!num) {
@@ -198,12 +174,12 @@ static void convert_mac(Filename *inputPath) {
 	}
 	size = num * 4;
 
-	writeUint32LE(output_idx, 0);
-	writeUint32LE(output_idx, size);
+	_output_idx.writeU32LE(0);
+	_output_idx.writeU32LE(size);
 
 	for (i = 1; i < num; i++) {
 		if (filenums[i] == filenums[i + 1] && offsets[i] == offsets[i + 1]) {
-			writeUint32LE(output_idx, size);
+			_output_idx.writeU32LE(size);
 			continue;
 		}
 
@@ -212,83 +188,49 @@ static void convert_mac(Filename *inputPath) {
 			sprintf(filename, "voices%d.dat", filenums[i]);
 			inputPath->setFullName(filename);
 
-			if (input) {
-				fclose(input);
-			}
-
-			input = fopen(inputPath->getFullPath().c_str(), "rb");
-			if (!input) {
-				error("Cannot open file: %s", inputPath->getFullPath().c_str());
-			}
+			_input.open(*inputPath, "rb");
 		}
 
 		size += get_sound(offsets[i]);
 
 		if (i < num - 1) {
-			writeUint32LE(output_idx, size);
+			_output_idx.writeU32LE(size);
 		}
 	}
 }
 
-#define INT 2
-#define INT_STR(x) #x
+void CompressAgos::parseExtraArguments() {
+	if (_arguments[_arguments_parsed] == "--mac") {
+		_convertMac = true;
+	}
+}
 
-int export_main(compress_agos)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [mode] [mode params] [--mac] <infile>\n" kCompressionAudioHelp;
+void CompressAgos::execute() {
 
-	bool convertMac = false;
+	// We only got one input file
+	if (_inputPaths.size() > 1)
+		error("Only one input file expected!");
+	Filename inpath(_inputPaths[0]);
 
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
-
-	parseHelpArguments(argv, argc, helptext);
-
-	gCompMode = process_audio_params(argc, argv, &first_arg);
-
-	if (gCompMode == AUDIO_NONE) {
-		// Unknown mode (failed to parse arguments), display help and exit
-		displayHelp(helptext, argv[0]);
+	if (_outputPath.empty()) {
+		_outputPath = inpath;
+		_outputPath.setExtension(audio_extensions(_compMode));
 	}
 
-	if (strcmp(argv[first_arg], "--mac") == 0) {
-		++first_arg;
-		convertMac = true;
-	}
-	
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else 
-		// Just leave it empty, we just change extension of input file
-		;
-
-	inpath.setFullPath(argv[first_arg]);
-
-	if (outpath.empty()) {
-		outpath = inpath;
-		outpath.setExtension(audio_extensions(gCompMode));
-	}
-
-	if (convertMac) {
+	if (_convertMac) {
 		convert_mac(&inpath);
 		inpath.setFullName("simon2");
 	} else {
 		convert_pc(&inpath);
 	}
 
-	end(&outpath);
-
-	return(0);
+	end();
 }
 
-#if defined(UNIX) && defined(EXPORT_MAIN)
-int main(int argc, char *argv[]) __attribute__((weak));
+#ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(compress_agos)(argc, argv);
+	CompressAgos agos(argv[0]);
+	return agos.run(argc, argv);
 }
 #endif
 
