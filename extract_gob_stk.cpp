@@ -285,34 +285,37 @@ void extractChunks(FILE *stk, Chunk *chunks) {
 		if (!(chunkFile = fopen(curChunk->name, "wb")))
 			extractError(stk, 0, chunks, "Couldn't write file");
 
-		if (fseek(stk, curChunk->offset, SEEK_SET) == -1)
-			extractError(stk, chunkFile, chunks, "Unexpected EOF");
+		if (curChunk->size > 0) {
+			if (fseek(stk, curChunk->offset, SEEK_SET) == -1)
+				extractError(stk, chunkFile, chunks, "Unexpected EOF");
 
-		byte *data = new byte[curChunk->size];
+			byte *data = new byte[curChunk->size];
 
-		if (fread((char *) data, curChunk->size, 1, stk) < 1)
-			extractError(stk, chunkFile, chunks, "Unexpected EOF");
+			if (fread((char *) data, curChunk->size, 1, stk) < 1)
+				extractError(stk, chunkFile, chunks, "Unexpected EOF");
 
-		if (curChunk->packed) {
-			uint32 realSize;
+			if (curChunk->packed) {
+				uint32 realSize;
 
-			if (curChunk->preGob) {
-				unpackedData = unpackPreGobData(data, realSize, curChunk->size);
+				if (curChunk->preGob) {
+					unpackedData = unpackPreGobData(data, realSize, curChunk->size);
+				} else {
+					unpackedData = unpackData(data, realSize);
+				}
+
+				if (fwrite((char *) unpackedData, realSize, 1, chunkFile) < 1)
+					extractError(stk, chunkFile, chunks, "Couldn't write");
+
+				delete[] unpackedData;
+
 			} else {
-				unpackedData = unpackData(data, realSize);
+				if (fwrite((char *) data, curChunk->size, 1, chunkFile) < 1)
+					extractError(stk, chunkFile, chunks, "Couldn't write");
 			}
 
-			if (fwrite((char *) unpackedData, realSize, 1, chunkFile) < 1)
-				extractError(stk, chunkFile, chunks, "Couldn't write");
-
-			delete[] unpackedData;
-
-		} else {
-			if (fwrite((char *) data, curChunk->size, 1, chunkFile) < 1)
-				extractError(stk, chunkFile, chunks, "Couldn't write");
+			delete[] data;
 		}
 
-		delete[] data;
 		fflush(chunkFile);
 		fclose(chunkFile);
 
