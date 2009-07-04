@@ -302,8 +302,8 @@ public:
 
 /**
  * Runs the subprocess and displays it's output to the user
- * You really ought to only run one subprocess at the time, as
- * this class keeps internal state.
+ * You can only create one panel from this, unlike the other pages
+ * as the class keeps internal state
  */
 
 class ProcessPage : public WizardPage
@@ -312,6 +312,8 @@ class ProcessPage : public WizardPage
 	bool _success;
 	/** True if the tool has exited */
 	bool _finished;
+	/** Output window */
+	wxTextCtrl *outwin;
 public:
 	ProcessPage(ScummToolsFrame* frame);
 
@@ -327,7 +329,7 @@ public:
 	 *
 	 * @param outwin Text control to redirect output to
 	 */
-	void runTool(wxTextCtrl *outwin);
+	void runTool();
 
 	bool onIdle(wxPanel *panel);
 

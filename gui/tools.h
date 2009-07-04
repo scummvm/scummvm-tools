@@ -81,6 +81,7 @@ public:
 	 * @param input_extenion Filename filter of the input  to expect.
 	 */
 	ToolGUI(Tool *tool, wxString input_extension = wxT("*.*"));
+	~ToolGUI();
 
 	/**
 	 * Adds a supported game to this tool
@@ -112,7 +113,7 @@ public:
 	/**
 	 * Runs the actual tool, will throw errors if it fails
 	 */
-	void run() const;
+	void run(const Configuration &conf) const;
 
 
 	/** Name of the tool */

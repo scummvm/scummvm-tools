@@ -35,6 +35,7 @@
 #include "tools.h"
 
 // Include all tools
+#include "../compress_agos.h"
 #include "../extract_agos.h"
 #include "../extract_gob_stk.h"
 
@@ -48,6 +49,9 @@ Tools::Tools() {
 void Tools::init() {
 
 	// Compress agos also has a --mac parameter, need to add an additional page / option for this
+	addTool(new ToolGUI(new CompressAgos()));
+
+	// extract_agos
 	addTool(new ToolGUI(new ExtractAgos()));
 
 	// extract_gob_stk
@@ -256,6 +260,10 @@ ToolGUI::ToolGUI(Tool *tool, wxString input_extensions) {
 	_inoutHelpText = wxT("Output files produced by the tool will be put in this directory.");
 }
 
+ToolGUI::~ToolGUI() {
+	delete _backend;
+}
+
 void ToolGUI::addGame(const wxString &game_name) {
 	_games.Add(game_name);
 }
@@ -268,7 +276,13 @@ bool ToolGUI::outputToDirectory() const {
 	return _backend->_outputToDirectory;
 }
 
-void ToolGUI::run() const {
+void ToolGUI::run(const Configuration &conf) const {
+	_backend->_inputPaths.clear();
+	for(wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter)
+		_backend->_inputPaths.push_back((const char *)iter->mb_str());
+	_backend->_outputPath = std::string(conf.outputPath.mb_str());
+
+	_backend->run();
 }
 
 wxString ToolGUI::getExecutable() const {

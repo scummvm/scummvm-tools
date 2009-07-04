@@ -387,6 +387,8 @@ void ChooseInOutPage::save(wxWindow *panel) {
 
 	const ToolGUI &tool = *_configuration.selectedTool;
 
+	_configuration.inputFilePaths.clear();
+
 	int i = 1;
 	for (ToolInputs::const_iterator iter = tool._inputs.begin(); iter != tool._inputs.end(); ++iter) {
 		const ToolInput &input = *iter;
@@ -861,7 +863,7 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Processing data...")), wxSizerFlags().Expand().Border(wxLEFT, 20));
 	
-	wxTextCtrl *outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 
+	outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 
 		wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("OutputWindow"));
 	outwin->Enable(false);
 	sizer->Add(outwin, wxSizerFlags(1).Expand().Border(wxALL, 10));
@@ -869,21 +871,22 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 	panel->SetSizer(sizer);
 
 	// Run the tool
-	runTool(outwin);
+	runTool();
 
 	return panel;
 }
 
 void ProcessPage::writeToOutput(void *udata, const char *text) {
-	wxTextCtrl *outwin = reinterpret_cast<wxTextCtrl *>(udata);
-	outwin->WriteText(wxString(text, wxConvUTF8));
+	ProcessPage *self = reinterpret_cast<ProcessPage *>(udata);
+
+	self->outwin->WriteText(wxString(text, wxConvUTF8));
 }
 
-void ProcessPage::runTool(wxTextCtrl *outwin) {
+void ProcessPage::runTool() {
 	const ToolGUI *tool = _topframe->_configuration.selectedTool;
-	tool->_backend->setPrintFunction(writeToOutput, reinterpret_cast<void *>(outwin));
+	tool->_backend->setPrintFunction(writeToOutput, reinterpret_cast<void *>(this));
 	try {
-		tool->run();
+		tool->run(_topframe->_configuration);
 		_success = true;
 	} catch(std::exception &err) {
 		outwin->WriteText(wxString(err.what(), wxConvUTF8));
