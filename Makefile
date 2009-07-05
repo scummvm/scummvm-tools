@@ -30,7 +30,7 @@ CXXFLAGS:= -Wall $(CXXFLAGS)
 CXXFLAGS+= -Wno-long-long -Wno-multichar -Wno-unknown-pragmas -Wno-reorder
 # Enable even more warnings...
 #CXXFLAGS+= -pedantic	# -pedantic is too pedantic, at least on Mac OS X
-CXXFLAGS+= -Wpointer-arith -Wcast-qual -Wuninitialized -Wcast-align -Wconversion
+CXXFLAGS+= -Wpointer-arith -Wcast-qual -Wuninitialized -Wcast-align 
 CXXFLAGS+= -Wshadow -Wimplicit -Wundef -Wnon-virtual-dtor -Wwrite-strings
 
 # Enable checking of pointers returned by "new"
