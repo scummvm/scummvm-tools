@@ -142,12 +142,12 @@ typedef signed int int32;
 #endif
 
 static inline uint32 SWAP_32(uint32 a) {
-	return ((a >> 24) & 0xFF) | ((a >> 8) & 0xFF00) | ((a << 8) & 0xFF0000) |
-		((a << 24) & 0xFF000000);
+	return uint16(((a >> 24) & 0xFF) | ((a >> 8) & 0xFF00) | ((a << 8) & 0xFF0000) |
+		((a << 24) & 0xFF000000));
 }
 
 static inline uint16 SWAP_16(uint16 a) {
-	return ((a >> 8) & 0xFF) | ((a << 8) & 0xFF00);
+	return uint16(((a >> 8) & 0xFF) | ((a << 8) & 0xFF00));
 }
 
 #ifndef FORCEINLINE
@@ -156,7 +156,7 @@ static inline uint16 SWAP_16(uint16 a) {
 
 FORCEINLINE uint16 READ_LE_UINT16(const void *ptr) {
 	const byte *b = (const byte *)ptr;
-	return (b[1] << 8) + b[0];
+	return uint16((b[1] << 8) + b[0]);
 }
 FORCEINLINE uint32 READ_LE_UINT32(const void *ptr) {
 	const byte *b = (const byte *)ptr;
@@ -177,11 +177,11 @@ FORCEINLINE void WRITE_LE_UINT32(void *ptr, uint32 value) {
 
 FORCEINLINE uint16 READ_BE_UINT16(const void *ptr) {
 	const byte *b = (const byte *)ptr;
-	return (b[0] << 8) + b[1];
+	return uint16((b[0] << 8) + b[1]);
 }
 FORCEINLINE uint32 READ_BE_UINT32(const void *ptr) {
 	const byte *b = (const byte *)ptr;
-	return (b[0] << 24) + (b[1] << 16) + (b[2] << 8) + (b[3]);
+	return uint32((b[0] << 24) + (b[1] << 16) + (b[2] << 8) + (b[3]));
 }
 FORCEINLINE void WRITE_BE_UINT16(void *ptr, uint16 value) {
 	byte *b = (byte *)ptr;

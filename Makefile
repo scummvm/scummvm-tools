@@ -7,7 +7,10 @@
 
 srcdir      ?= .
 
-DEFINES     := -DUNIX -DEXPORT_MAIN
+DEFINES     := -DUNIX
+STANDALONE  := 
+# This one will go away once all tools are converted
+NO_MAIN     := -DEXPORT_MAIN
 LDFLAGS     := $(LDFLAGS)
 INCLUDES    := -I. -I$(srcdir)
 LIBS        :=
@@ -19,7 +22,7 @@ DEPDIR      := .deps
 # manually create a config.mk files with overrides, if needed.
 -include config.mk
 
-CXXFLAGS  += -g -O -Wuninitialized
+CXXFLAGS  += -g -O
 
 # Additional warnings
 CXXFLAGS:= -Wall $(CXXFLAGS)
@@ -27,7 +30,7 @@ CXXFLAGS:= -Wall $(CXXFLAGS)
 CXXFLAGS+= -Wno-long-long -Wno-multichar -Wno-unknown-pragmas -Wno-reorder
 # Enable even more warnings...
 #CXXFLAGS+= -pedantic	# -pedantic is too pedantic, at least on Mac OS X
-CXXFLAGS+= -Wpointer-arith -Wcast-qual -Wconversion
+CXXFLAGS+= -Wpointer-arith -Wcast-qual -Wuninitialized -Wcast-align -Wconversion
 CXXFLAGS+= -Wshadow -Wimplicit -Wundef -Wnon-virtual-dtor -Wwrite-strings
 
 # Enable checking of pointers returned by "new"
@@ -58,37 +61,11 @@ MODULE_DIRS := ./ utils/
 #######################################################################
 
 TARGETS := \
-	compress_agos$(EXEEXT) \
-	compress_gob$(EXEEXT) \
-	compress_kyra$(EXEEXT) \
-	compress_queen$(EXEEXT) \
-	compress_saga$(EXEEXT) \
-	compress_scumm_bun$(EXEEXT) \
-	compress_scumm_san$(EXEEXT) \
-	compress_scumm_sou$(EXEEXT) \
-	compress_sword1$(EXEEXT) \
-	compress_sword2$(EXEEXT) \
-	compress_tinsel$(EXEEXT) \
-	compress_touche$(EXEEXT) \
-	compress_tucker$(EXEEXT) \
 	decine$(EXEEXT) \
 	dekyra$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	degob$(EXEEXT) \
-	encode_dxa$(EXEEXT) \
-	extract_agos$(EXEEXT) \
-	extract_cine$(EXEEXT) \
-	extract_kyra$(EXEEXT) \
-	extract_loom_tg16$(EXEEXT) \
-	extract_mm_apple$(EXEEXT) \
-	extract_mm_c64$(EXEEXT) \
-	extract_mm_nes$(EXEEXT) \
-	extract_parallaction$(EXEEXT) \
-	extract_scumm_mac$(EXEEXT) \
-	extract_t7g_mac$(EXEEXT) \
-	extract_zak_c64$(EXEEXT) \
-	extract_gob_stk$(EXEEXT) \
 	tools_gui$(EXEEXT)
 
 UTILS := \
@@ -115,44 +92,44 @@ bundle: $(TARGETS)
 	cp $(TARGETS) $(bundle_name)/Contents/Resources/
 	mv $(bundle_name)/Contents/Resources/tools_gui $(bundle_name)/Contents/MacOS/
 
-compress_agos$(EXEEXT): compress_agos.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_agos$(EXEEXT): compress_agos.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_gob$(EXEEXT): compress_gob.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#compress_gob$(EXEEXT): compress_gob.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-compress_kyra$(EXEEXT): compress_kyra.o kyra_pak.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_kyra$(EXEEXT): compress_kyra.o kyra_pak.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_queen$(EXEEXT): compress_queen.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_queen$(EXEEXT): compress_queen.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_saga$(EXEEXT): compress_saga.o compress.o util.o $(UTILS)
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_saga$(EXEEXT): compress_saga.o compress.o util.o tool.o $(UTILS)
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_scumm_bun$(EXEEXT): compress_scumm_bun.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_scumm_san$(EXEEXT): compress_scumm_san.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lz -lvorbis -logg -lvorbisenc -lFLAC
+#compress_scumm_san$(EXEEXT): compress_scumm_san.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lz -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_scumm_sou$(EXEEXT): compress_scumm_sou.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_sword1$(EXEEXT): compress_sword1.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_sword2$(EXEEXT): compress_sword2.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_tinsel$(EXEEXT): compress_tinsel.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_tinsel$(EXEEXT): compress_tinsel.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_touche$(EXEEXT): compress_touche.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_touche$(EXEEXT): compress_touche.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
-compress_tucker$(EXEEXT): compress_tucker.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
+#compress_tucker$(EXEEXT): compress_tucker.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
 
 decine$(EXEEXT): decine.o
 	$(CXX) $(LDFLAGS) -o $@ $+
@@ -160,60 +137,60 @@ decine$(EXEEXT): decine.o
 dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o
+descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o tool.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-desword2$(EXEEXT): desword2.o util.o
+desword2$(EXEEXT): desword2.o util.o tool.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob_script_v3.o degob_script_v4.o degob_script_v5.o degob_script_v6.o degob_script_bargon.o util.o
+degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob_script_v3.o degob_script_v4.o degob_script_v5.o degob_script_v6.o degob_script_bargon.o util.o tool.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz -lvorbis -logg -lvorbisenc -lFLAC
+#encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz -lvorbis -logg -lvorbisenc -lFLAC
 
-extract_cine$(EXEEXT): extract_cine.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_cine$(EXEEXT): extract_cine.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_agos$(EXEEXT): extract_agos.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_agos$(EXEEXT): extract_agos.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_gob_stk$(EXEEXT): extract_gob_stk.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_gob_stk$(EXEEXT): extract_gob_stk.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_kyra$(EXEEXT): extract_kyra.o kyra_pak.o kyra_ins.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_kyra$(EXEEXT): extract_kyra.o kyra_pak.o kyra_ins.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_loom_tg16$(EXEEXT): extract_loom_tg16.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_mm_apple$(EXEEXT): extract_mm_apple.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_mm_apple$(EXEEXT): extract_mm_apple.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_mm_c64$(EXEEXT): extract_mm_c64.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_mm_c64$(EXEEXT): extract_mm_c64.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_mm_nes$(EXEEXT): extract_mm_nes.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_mm_nes$(EXEEXT): extract_mm_nes.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_parallaction$(EXEEXT): extract_parallaction.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_parallaction$(EXEEXT): extract_parallaction.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_scumm_mac$(EXEEXT): extract_scumm_mac.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_t7g_mac$(EXEEXT): extract_t7g_mac.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_t7g_mac$(EXEEXT): extract_t7g_mac.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
-extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
-	$(CXX) $(LDFLAGS) -o $@ $+
+#extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o tool.o
+#	$(CXX) $(LDFLAGS) -o $@ $+
 
 tools_gui$(EXEEXT): gui/main.o gui/pages.o gui/tools.o compress_agos.o compress_gob.o compress_kyra.o \
 	compress_queen.o compress_saga.o compress_scumm_bun.o compress_scumm_san.o compress_scumm_sou.o \
 	compress_sword1.o compress_sword2.o compress_touche.o compress_tucker.o encode_dxa.o \
 	extract_agos.o extract_gob_stk.o extract_kyra.o extract_loom_tg16.o extract_mm_apple.o \
 	extract_mm_c64.o extract_mm_nes.o extract_parallaction.o extract_scumm_mac.o \
-	extract_zak_c64.o kyra_pak.o kyra_ins.o compress.o util.o $(UTILS)
+	extract_zak_c64.o kyra_pak.o kyra_ins.o compress.o util.o tool.o $(UTILS)
 	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs` -lpng -lz -lvorbis -logg -lvorbisenc -lFLAC
 
 sword2_clue$(EXEEXT): sword2_clue.o util.o
@@ -251,7 +228,7 @@ DEPFILES =
 
 %.o: %.cpp
 	$(MKDIR) $(*D)/$(DEPDIR)
-	$(CXX) -Wp,-MMD,"$(*D)/$(DEPDIR)/$(*F).d",-MQ,"$@",-MP $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+	$(CXX) $(NO_MAIN) -Wp,-MMD,"$(*D)/$(DEPDIR)/$(*F).d",-MQ,"$@",-MP $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
 
 # Include the dependency tracking files.
 -include $(wildcard $(addsuffix /*.d,$(DEPDIRS)))

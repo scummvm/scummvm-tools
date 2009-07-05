@@ -96,7 +96,7 @@ bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 	uint8 *buffer = new uint8[filesize];
 	assert(buffer);
 
-	fread(buffer, filesize, 1, pakfile);
+	(void)fread(buffer, filesize, 1, pakfile);
 
 	fclose(pakfile);
 
@@ -477,7 +477,7 @@ bool Extractor::outputAllFiles(Filename *outputPath) {
 		outputPath->setFullName(cur->filename);
 		FILE *file = fopen(outputPath->getFullPath().c_str(), "wb");
 		if (!file) {
-			error("couldn't open file '%s' for writing", outputPath->getFullPath());
+			error("couldn't open file '%s' for writing", outputPath->getFullPath().c_str());
 			return false;
 		}
 		printf("Exracting file '%s'...", cur->filename);

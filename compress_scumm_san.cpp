@@ -217,7 +217,7 @@ void handleComiIACT(FILE *input, int size, const char *outputDir, const char *in
 	int bsize = size - 18;
 	byte output_data[0x1000];
 	byte *src = (byte *)malloc(bsize);
-	fread(src, bsize, 1, input);
+	(void)fread(src, bsize, 1, input);
 
 	sprintf(tmpPath, "%s/%s.wav", outputDir, inputFilename);
 	decompressComiIACT(tmpPath, output_data, src, bsize);
@@ -265,7 +265,7 @@ void prepareForMixing(const char *outputDir, const char *inputFilename) {
 			int fileSize = ftell(_audioTracks[l].file);
 			fseek(_audioTracks[l].file, 0, SEEK_SET);
 			byte *audioBuf = (byte *)malloc(fileSize);
-			fread(audioBuf, fileSize, 1, _audioTracks[l].file);
+			(void)fread(audioBuf, fileSize, 1, _audioTracks[l].file);
 			fclose(_audioTracks[l].file);
 			_audioTracks[l].file = NULL;
 
@@ -402,13 +402,13 @@ void mixing(const char *outputDir, const char *inputFilename, int frames, int fp
 			int fileSize = ftell(_audioTracks[l].file);
 			fseek(_audioTracks[l].file, 0, SEEK_SET);
 			byte *tmpBuf = (byte *)malloc(fileSize);
-			fread(tmpBuf, fileSize, 1, _audioTracks[l].file);
+			(void)fread(tmpBuf, fileSize, 1, _audioTracks[l].file);
 			fclose(_audioTracks[l].file);
 			unlink(filename);
 
 			byte *wavBuf = (byte *)malloc(fileSize);
 			fseek(wavFile, 44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
-			fread(wavBuf, fileSize, 1, wavFile);
+			(void)fread(wavBuf, fileSize, 1, wavFile);
 
 			int offset = 0;
 			for (z = 0; z < _audioTracks[l].countFrames; z++) {
@@ -562,7 +562,7 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 		}
 	}
 	byte *buffer = (byte *)malloc(size);
-	fread(buffer, size, 1, input);
+	(void)fread(buffer, size, 1, input);
 	fwrite(buffer, size, 1, audioTrack->file);
 	free(buffer);
 	audioTrack->volumes[index] = volume;
@@ -891,8 +891,7 @@ skip:
 	return 0;
 }
 
-#if defined(UNIX) && defined(EXPORT_MAIN)
-int main(int argc, char *argv[]) __attribute__((weak));
+#ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
         return export_main(compress_scumm_san)(argc, argv);
 }

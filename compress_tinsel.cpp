@@ -25,6 +25,8 @@
 #include "compress.h"
 #include "util.h"
 
+#if 0
+
 // data-format of index-file:
 //  [pointer to data file DWORD] [pointer to data file DWORD] [pointer to data file DWORD]
 //  we use index[0] to signal the engine what data format it's supposed to expect. It may be 'MP3 ', 'OGG ' or 'FLAC'
@@ -407,3 +409,6 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
+
+#endif
+

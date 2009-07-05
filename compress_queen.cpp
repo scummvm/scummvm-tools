@@ -385,8 +385,7 @@ int export_main(compress_queen)(int argc, char *argv[]) {
 	return 0;
 }
 
-#if defined(UNIX) && defined(EXPORT_MAIN)
-int main(int argc, char *argv[]) __attribute__((weak));
+#ifdef STANDALON_MAIN
 int main(int argc, char *argv[]) {
 	return export_main(compress_queen)(argc, argv);
 }

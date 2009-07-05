@@ -111,7 +111,7 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 	}
 
 	/* Append the converted data to the master output file */
-	sprintf(outname, tempEncoded);
+	sprintf(outname, "%s", tempEncoded);
 	File f(outname, "rb");
 	tot_size = 0;
 	while ((size = fread(fbuf, 1, 2048, f)) > 0) {

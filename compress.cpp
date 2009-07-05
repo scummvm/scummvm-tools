@@ -415,7 +415,7 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, A
 			}
 		}
 
-		printf(outputString);
+		puts(outputString);
 
 		vorbis_encode_setup_init(&vi);
 		vorbis_comment_init(&vc);
@@ -922,7 +922,7 @@ AudioFormat process_audio_params(int argc, char *argv[], int* i) {
 		if (!process_flac_parms(argc - 2, argv, i))
 			return AUDIO_NONE;
 		break;
-	case AUDIO_NONE:	// cannot occur but we check anyway to avoid compiler warnings
+	default:	// cannot occur but we check anyway to avoid compiler warnings
 		break;
 	}
 

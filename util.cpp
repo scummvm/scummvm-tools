@@ -336,33 +336,33 @@ uint8 File::readByte() {
 
 uint16 File::readU16BE() {
 	uint16 ret = 0;
-	ret |= readByte() << 8;
-	ret |= readByte();
+	ret |= uint16(readByte() << 8ul);
+	ret |= uint16(readByte());
 	return ret;
 }
 
 uint16 File::readU16LE() {
 	uint16 ret = 0;
-	ret |= readByte();
-	ret |= readByte() << 8;
+	ret |= uint16(readByte());
+	ret |= uint16(readByte() << 8ul);
 	return ret;
 }
 
 uint32 File::readU32BE() {
 	uint32 ret = 0;
-	ret |= readByte() << 24;
-	ret |= readByte() << 16;
-	ret |= readByte() << 8;
-	ret |= readByte();
+	ret |= uint32(readByte() << 24);
+	ret |= uint32(readByte() << 16);
+	ret |= uint32(readByte() << 8);
+	ret |= uint32(readByte());
 	return ret;
 }
 
 uint32 File::readU32LE() {
 	uint32 ret = 0;
-	ret |= readByte();
-	ret |= readByte() << 8;
-	ret |= readByte() << 16;
-	ret |= readByte() << 24;
+	ret |= uint32(readByte());
+	ret |= uint32(readByte() << 8);
+	ret |= uint32(readByte() << 16);
+	ret |= uint32(readByte() << 24);
 	return ret;
 }
 

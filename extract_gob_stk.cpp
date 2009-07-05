@@ -35,7 +35,7 @@ struct ExtractGobStk::Chunk {
 	Chunk *next;
 
 	Chunk() : next(0) { }
-	~Chunk() : { delete next; }
+	~Chunk() { delete next; }
 };
 
 ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name) {
@@ -77,7 +77,7 @@ void ExtractGobStk::execute() {
 	stk.read(signature, 1, 6);
 
 	if (strncmp(signature, "STK2.1", 6) == 0) {
-		print("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath());
+		print("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath().c_str());
 		fprintf(gobConf, "%s\n", confSTK21);
 		readChunkListV2(stk, gobConf);
 	} else {

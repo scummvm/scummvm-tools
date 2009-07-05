@@ -645,8 +645,7 @@ int export_main(compress_sword1)(int argc, char *argv[]) {
 	return EXIT_SUCCESS;
 }
 
-#if defined(UNIX) && defined(EXPORT_MAIN)
-int main(int argc, char *argv[]) __attribute__((weak));
+#ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
 	return export_main(compress_sword1)(argc, argv);
 }
