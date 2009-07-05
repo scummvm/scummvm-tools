@@ -383,7 +383,7 @@ void File::writeByte(uint8 b) {
 	if ((_mode & FILEMODE_WRITE) == 0)
 		throw FileException("Tried to write to a file opened in read mode (" + _name.getFullPath() + ")");
 
-	if (fwrite(&b, 1, 1, _file) == 1)
+	if (fwrite(&b, 1, 1, _file) != 1)
 		throw FileException("Could not write to file (" + _name.getFullPath() + ")");
 }
 
