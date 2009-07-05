@@ -21,9 +21,11 @@
  */
 
 #include <wx/wx.h>
-#include <wx/process.h>
+#include <wx/thread.h>
 
 #include "configuration.h"
+
+class Tool;
 
 /**
  * A backend of a page in the wizard 
@@ -301,6 +303,50 @@ public:
 
 
 /**
+ * Used for outputting from the subthread
+ * Since the GUI can only be updated from the main thread
+ * We pass this intermediate struct around between main thread
+ * & child thread to update it
+ */
+
+struct ThreadOutputBuffer {
+	std::string buffer;
+	wxMutex mutex;
+};
+
+/**
+ *
+ */
+
+class ProcessToolThread : public wxThread {
+public:
+	ProcessToolThread(const ToolGUI *tool, Configuration &configuration, ThreadOutputBuffer &output);
+
+	/**
+	 * Entry point of the subthread
+	 */
+	virtual ExitCode Entry();
+
+	/**
+	 * Write to the output window pointed to by udata, this adds 
+	 * the message to a locked queue, and prints it to the GUI from 
+	 * the main thread, as doing it from another thread can cause weird bugs.
+	 */
+	static void writeToOutput(void *udata, const char *text);
+
+	bool _finished;
+
+protected:
+	/** The current configuration */
+	Configuration &_configuration;
+	/** */
+	ThreadOutputBuffer &_output;
+	/** */
+	const ToolGUI *_tool;
+};
+
+
+/**
  * Runs the subprocess and displays it's output to the user
  * You can only create one panel from this, unlike the other pages
  * as the class keeps internal state
@@ -313,16 +359,17 @@ class ProcessPage : public WizardPage
 	/** True if the tool has exited */
 	bool _finished;
 	/** Output window */
-	wxTextCtrl *outwin;
+	wxTextCtrl *_outwin;
+	/** The thread which the tool is run in */
+	ProcessToolThread *_thread;
+	/** The structure to exchange output between thread & gui */
+	ThreadOutputBuffer _output;
+
 public:
 	ProcessPage(ScummToolsFrame* frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
-	/**
-	 * Write to the output window pointed to by udata
-	 */
-	static void writeToOutput(void *udata, const char *text);
 
 	/**
 	 * Runs the specified tool, output will be put in outwin

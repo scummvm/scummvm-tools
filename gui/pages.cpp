@@ -849,7 +849,6 @@ void ChooseAudioOptionsVorbisPage::onNext(wxWindow *panel) {
 
 ProcessPage::ProcessPage(ScummToolsFrame* frame)
 	: WizardPage(frame),
-	  _success(false),
 	  _finished(false)
 {
 }
@@ -863,10 +862,9 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Processing data...")), wxSizerFlags().Expand().Border(wxLEFT, 20));
 	
-	outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 
+	_outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 
 		wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("OutputWindow"));
-	outwin->Enable(false);
-	sizer->Add(outwin, wxSizerFlags(1).Expand().Border(wxALL, 10));
+	sizer->Add(_outwin, wxSizerFlags(1).Expand().Border(wxALL, 10));
 
 	panel->SetSizer(sizer);
 
@@ -876,29 +874,39 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 	return panel;
 }
 
-void ProcessPage::writeToOutput(void *udata, const char *text) {
-	ProcessPage *self = reinterpret_cast<ProcessPage *>(udata);
-
-	self->outwin->WriteText(wxString(text, wxConvUTF8));
-}
-
 void ProcessPage::runTool() {
 	const ToolGUI *tool = _topframe->_configuration.selectedTool;
-	tool->_backend->setPrintFunction(writeToOutput, reinterpret_cast<void *>(this));
-	try {
-		tool->run(_topframe->_configuration);
-		_success = true;
-	} catch(std::exception &err) {
-		outwin->WriteText(wxString(err.what(), wxConvUTF8));
-		_success = false;
-	}
-	_finished = true;
+
+	_thread = new ProcessToolThread(tool, _topframe->_configuration, _output);
+
+	// We should check return value of this
+	_thread->Create();
+
+	_thread->Run();
 }
 
 bool ProcessPage::onIdle(wxPanel *panel) {
-	// TODO
-	// Possibly write stdout to outwin here?
-	return false;
+	if(!_thread)
+		return false;
+
+	{
+		wxMutexLocker lock(_output.mutex);
+
+		_outwin->WriteText(wxString(_output.buffer.c_str(), wxConvUTF8));
+
+		_output.buffer = "";
+	}
+
+	// Check if thread finished
+	if(_thread && _thread->_finished) {
+		// It's done, Wait deallocates resources
+		_thread->Wait();
+		delete _thread;
+		_thread = NULL;
+		return false;
+	}
+
+	return true;
 }
 
 void ProcessPage::onNext(wxWindow *panel) {
@@ -916,6 +924,38 @@ void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 		buttons->enablePrevious(false);
 		buttons->enableNext(false);
 	}
+}
+
+// The thread a tool is run in
+
+ProcessToolThread::ProcessToolThread(const ToolGUI *tool, Configuration &configuration, ThreadOutputBuffer &output) : 
+	wxThread(wxTHREAD_JOINABLE), 
+	_configuration(configuration),
+	_output(output) 
+{
+	_tool = tool;
+	_finished = false;
+	
+	_tool->_backend->setPrintFunction(writeToOutput, reinterpret_cast<void *>(this));
+}
+
+wxThread::ExitCode ProcessToolThread::Entry() {
+	try {
+		_tool->run(_configuration);
+		_output.buffer += "\nTool finished without errors!\n";
+	} catch (ToolException &err) {
+		wxMutexLocker lock(_output.mutex);
+		_output.buffer = _output.buffer + "\nFatal Error Occured: " + err.what() + "\n";
+	}
+	_finished = true;
+	return NULL;
+}
+
+void ProcessToolThread::writeToOutput(void *udata, const char *text) {
+	ProcessToolThread *self = reinterpret_cast<ProcessToolThread *>(udata);
+	
+	wxMutexLocker lock(self->_output.mutex);
+	self->_output.buffer += text;
 }
 
 // Page to choose ANY tool to use
