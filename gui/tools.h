@@ -68,6 +68,8 @@ typedef std::vector<ToolInput> ToolInputs;
  * @todo Add some way to represent extra arguments to the tool
  */
 class ToolGUI {
+	// Block copy-construction
+	ToolGUI(const ToolGUI &);
 public:
 	ToolGUI();
 	/**

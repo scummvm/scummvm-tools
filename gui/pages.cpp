@@ -409,7 +409,7 @@ void ChooseInOutPage::save(wxWindow *panel) {
 }
 
 void ChooseInOutPage::onNext(wxWindow *panel) {
-	if (_configuration.compressing)
+	if (_configuration.selectedTool->_type == TOOLTYPE_COMPRESSION)
 		switchPage(new ChooseAudioFormatPage(_topframe));
 	else
 		switchPage(new ProcessPage(_topframe));
@@ -430,7 +430,7 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(15);
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, 
-		wxT("Please select for what game/engine you'd like to extract files from.")));
+		wxT("Select audio format you want to compress to")));
 	
 	wxArrayString choices;
 
@@ -877,6 +877,10 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 void ProcessPage::runTool() {
 	const ToolGUI *tool = _topframe->_configuration.selectedTool;
 
+	// Write some text that we've started...
+	_outwin->WriteText(wxT("Running ") + tool->_name + wxT("\n\n"));
+
+	// Child thread to run the tool
 	_thread = new ProcessToolThread(tool, _topframe->_configuration, _output);
 
 	// We should check return value of this
@@ -972,7 +976,11 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 
 	sizer->AddSpacer(15);
 
-	wxString text = wxT("You have finished the wizard! Your files should now be extracted or compressed.");
+	wxString text;
+	if(_topframe->_configuration.selectedTool->_type == TOOLTYPE_COMPRESSION)
+		text = wxT("You have finished the wizard! Your files should now be compressed.");
+	else
+		text = wxT("You have finished the wizard! Your files should now be extracted.");
 	sizer->Add(new wxStaticText(panel, wxID_ANY, text));
 
 	sizer->AddSpacer(10);

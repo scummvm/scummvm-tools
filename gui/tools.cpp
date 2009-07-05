@@ -282,6 +282,28 @@ void ToolGUI::run(const Configuration &conf) const {
 		_backend->_inputPaths.push_back((const char *)iter->mb_str());
 	_backend->_outputPath = std::string(conf.outputPath.mb_str());
 
+	CompressionTool *compression = dynamic_cast<CompressionTool *>(_backend);
+	if(compression) {
+		// mp3
+		compression->_mp3ABRBitrate        = (const char *)conf.mp3ABRBitrate.mb_str();
+		compression->_mp3CompressionType   = (const char *)conf.mp3CompressionType.mb_str();
+		compression->_mp3MpegQuality       = (const char *)conf.mp3MpegQuality.mb_str();
+		compression->_mp3ABRBitrate        = (const char *)conf.mp3ABRBitrate.mb_str();
+		compression->_mp3VBRMinBitrate     = (const char *)conf.mp3VBRMinBitrate.mb_str();
+		compression->_mp3VBRMaxBitrate     = (const char *)conf.mp3VBRMaxBitrate.mb_str();
+		compression->_mp3VBRQuality        = (const char *)conf.mp3VBRQuality.mb_str();
+
+		// flac
+		compression->_flacCompressionLevel = (const char *)conf.flacCompressionLevel.mb_str();
+		compression->_flacBlockSize        = (const char *)conf.flacBlockSize.mb_str();
+		
+		// vorbis
+		compression->_oggQuality           = (const char *)conf.oggQuality.mb_str();
+		compression->_oggMinBitrate        = (const char *)conf.oggMinBitrate.mb_str();
+		compression->_oggAvgBitrate        = (const char *)conf.oggAvgBitrate.mb_str();
+		compression->_oggMaxBitrate        = (const char *)conf.oggMaxBitrate.mb_str();
+	}
+
 	_backend->run();
 }
 

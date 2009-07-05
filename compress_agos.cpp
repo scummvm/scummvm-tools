@@ -29,7 +29,9 @@ CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name) {
 	_compMode = AUDIO_MP3;
 	_convertMac = false;
 
-	_helptext = "\nUsage: %s [mode] [mode params] [--mac] <infile>\n" kCompressionAudioHelp
+	_outputToDirectory = false;
+
+	_helptext = "\nUsage: %s [mode params] [--mac] [-o outfile] <infile>\n" kCompressionAudioHelp
 }
 
 void CompressAgos::end() {
@@ -206,7 +208,6 @@ void CompressAgos::parseExtraArguments() {
 }
 
 void CompressAgos::execute() {
-
 	// We only got one input file
 	if (_inputPaths.size() > 1)
 		error("Only one input file expected!");
