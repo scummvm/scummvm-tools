@@ -23,7 +23,7 @@
 #include "util.h"
 #include "compress_gob.h"
 
-struct Chunk {
+struct CompressGob::Chunk {
 	char name[64];
 	uint32 size, realSize, offset;
 	uint8 packed;
@@ -34,53 +34,39 @@ struct Chunk {
 	~Chunk() { delete next; }
 };
 
-Chunk *readChunkConf(FILE *gobconf, const char *stkName, uint16 &chunkCount);
-void writeEmptyHeader(FILE *stk, uint16 chunkCount);
-void writeBody(Filename *inpath, FILE *stk, Chunk *chunks);
-uint32 writeBodyStoreFile(FILE *stk, FILE *src);
-uint32 writeBodyPackFile(FILE *stk, FILE *src);
-void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks);
-bool filcmp(FILE *src1, Chunk *compChunk);
-bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length);
 
-uint8 execMode;
-
-int export_main(compress_gob)(int argc, char *argv[]) {
-	const char *helptext = 
-		"\nUsage: %s [-f] [-o <output> = out.stk] <conf file>\n"
+CompressGob::CompressGob(const std::string &name) : CompressionTool(name) {
+	_helptext = 
+		"\nUsage: " + _name + " [-f] [-o <output> = out.stk] <conf file>\n"
 		"<conf file> is a .gob file generated extract_gob_stk\n"
 		"<-f> ignores the compression flag in the .gob file and force compression for all files\n\n"
 		"The STK/ITK archive will be created in the current directory.\n";
 
-	Chunk *chunks;
-	FILE *stk;
-	FILE *gobConf;
-	uint16 chunkCount;
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
+	_execMode = MODE_NORMAL;
+	_chunks = NULL;
+}
 
-	// Now we try to find the proper output
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else
-		// Standard output
-		outpath.setFullPath("out.stk");
+CompressGob::~CompressGob() {
+	delete _chunks;
+}
 
-
-	execMode = MODE_NORMAL;
-	if(strcmp(argv[first_arg],  "-f") == 0) {
-		execMode |= MODE_FORCE;
-		++first_arg;
+void CompressGob::parseExtraArguments() {
+	if (_arguments[_arguments_parsed] == "-f") {
+		_execMode |= MODE_FORCE;
+		++_arguments_parsed;
 	}
+}
 
-	if (last_arg - first_arg != 0)
-		error("Expected only one input file");
+void CompressGob::execute() {
+	File stk;
+	File gobConf;
+	uint16 chunkCount;
 
-	inpath.setFullPath(argv[first_arg]);
+	// We only got one input file
+	if (_inputPaths.size() > 1)
+		error("Only one input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
 	// We output with .stk extension, if there is no specific out file
 	if (outpath.empty()) {
@@ -89,36 +75,18 @@ int export_main(compress_gob)(int argc, char *argv[]) {
 	}
 
 	// Open input (config) file
-	if (!(gobConf = fopen(inpath.getFullPath().c_str(), "r")))
-		error("Couldn't open conf file '%s'", inpath.getFullPath().c_str());
+	gobConf.open(inpath, "r");
 
-	if (!(stk = fopen(outpath.getFullPath().c_str(), "wb")))
-		error("Couldn't create file \"%s\"", outpath.getFullPath().c_str());
+	stk.open(outpath, "wb");
 
 	// Read the input into memory
-	chunks = readChunkConf(gobConf, outpath.getFullName().c_str(), chunkCount);
-	fclose(gobConf);
+	_chunks = readChunkConf(gobConf, outpath, chunkCount);
+	gobConf.close();
 
 	// Output in compressed format
 	writeEmptyHeader (stk, chunkCount);
-	writeBody(&inpath, stk, chunks);
-	rewriteHeader(stk, chunkCount, chunks);
-
-	// Cleanup
-	fflush(stk);
-	delete chunks;
-	fclose(stk);
-	return 0;
-}
-
-void extractError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg) {
-	if (f1)
-		fclose(f1);
-	if (f2)
-		fclose(f2);
-	delete chunks;
-
-	error(msg);
+	writeBody(&inpath, stk, _chunks);
+	rewriteHeader(stk, chunkCount, _chunks);
 }
 
 /*! \brief Config file parser
@@ -133,17 +101,17 @@ void extractError(FILE *f1, FILE *f2, Chunk *chunks, const char *msg) {
  * In order to have a slightly better compression ration in some cases (Playtoons), it
  * also detects duplicate files.
  */
-Chunk *readChunkConf(FILE *gobConf, const char *stkName, uint16 &chunkCount) {
+CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, const Filename &stkName, uint16 &chunkCount) {
 	Chunk *chunks = new Chunk;
 	Chunk *curChunk = chunks;
 	Chunk *parseChunk;
-	FILE *src1;
+	File src1;
 	char buffer[1024];
 
 	chunkCount = 1;
 
 // First read: Output filename
-	fscanf(gobConf, "%s", stkName);
+	fscanf(gobConf, "%s", stkName.getFullPath().c_str());
 
 // Second read: signature
 	fscanf(gobConf, "%s", buffer);
@@ -157,15 +125,13 @@ Chunk *readChunkConf(FILE *gobConf, const char *stkName, uint16 &chunkCount) {
 	while (!feof(gobConf)) {
 		strcpy(curChunk->name, buffer);
 		fscanf(gobConf, "%s", buffer);
-		if ((strcmp(buffer, "1") == 0) || (execMode & MODE_FORCE))
+		if ((strcmp(buffer, "1") == 0) || (_execMode & MODE_FORCE))
 			curChunk->packed = true;
 		else
 			curChunk->packed = false;
 
-		if (! (src1 = fopen(curChunk->name, "rb"))) {
-			error("Unable to read %s", curChunk->name);
-		}
-		fseek(src1, 0, SEEK_END);
+		src1.open(curChunk->name, "rb");
+		src1.seek(0, SEEK_END);
 // if file is too small, force 'Store' method
 		if ((curChunk->realSize = ftell(src1)) < 8) 
 			curChunk->packed = 0;
@@ -179,13 +145,13 @@ Chunk *readChunkConf(FILE *gobConf, const char *stkName, uint16 &chunkCount) {
 // If files are identical, use the same compressed chunk instead of re-compressing the same thing
 					curChunk->packed = 2;
 					curChunk->replChunk = parseChunk;
-					printf("Identical files : %s %s (%d bytes)\n", curChunk->name, parseChunk->name, curChunk->realSize);
+					print("Identical files : %s %s (%d bytes)\n", curChunk->name, parseChunk->name, curChunk->realSize);
 					break;
 				}
 			}
 			parseChunk = parseChunk->next;
 		}
-		fclose(src1);
+		src1.close();
 		
 		fscanf(gobConf, "%s", buffer);
 		if (!feof(gobConf)) {
@@ -207,7 +173,7 @@ Chunk *readChunkConf(FILE *gobConf, const char *stkName, uint16 &chunkCount) {
  *
  * This header will be overwritten just before the end of the program execution
  */
-void writeEmptyHeader(FILE *stk, uint16 chunkCount) {
+void CompressGob::writeEmptyHeader(File &stk, uint16 chunkCount) {
 	for (uint32 count = 0; count < 2 + (uint32) (chunkCount * 22); count++)
 		fputc(0, stk);
 
@@ -223,46 +189,42 @@ void writeEmptyHeader(FILE *stk, uint16 chunkCount) {
  * with the size of the chunk in the archive, the compression method (if modified),
  * ...
  */
-void writeBody(Filename *inpath, FILE *stk, Chunk *chunks) {
+void CompressGob::writeBody(Filename *inpath, File &stk, Chunk *chunks) {
 	Chunk *curChunk = chunks;
-	FILE *src;
+	File src;
 	uint32 tmpSize;
 	
 	while(curChunk) {
 		inpath->setFullName(curChunk->name);
-		if (!(src = fopen(inpath->getFullPath().c_str(), "rb")))
-			error("Couldn't open file \"%s\"", inpath->getFullPath().c_str());
+		src.open(*inpath, "rb");
 
 		if (curChunk->packed == 2)
-			printf("Identical file %12s\t(compressed size %d bytes)\n", curChunk->name, curChunk->replChunk->size);
+			print("Identical file %12s\t(compressed size %d bytes)\n", curChunk->name, curChunk->replChunk->size);
 
 		curChunk->offset = ftell(stk);
 		if (curChunk->packed == 1) {
-			printf("Compressing %12s\t", curChunk->name);
+			print("Compressing %12s\t", curChunk->name);
 			curChunk->size = writeBodyPackFile(stk, src);
-			printf("%d -> %d bytes", curChunk->realSize, curChunk->size);
+			print("%d -> %d bytes", curChunk->realSize, curChunk->size);
 			if (curChunk->size >= curChunk->realSize) {
 // If compressed size >= realsize, compression is useless
 // => Store instead
 				curChunk->packed = 0;
-				fseek(stk, curChunk->offset, SEEK_SET);
+				stk.seek(curChunk->offset, SEEK_SET);
 				rewind(src);
-				printf("!!!");
+				print("!!!");
 			}
-			printf("\n");
+			print("\n");
 		} 
 
 		if (curChunk->packed == 0) {
 			tmpSize = 0;
-			printf("Storing %12s\t", curChunk->name);
+			print("Storing %12s\t", curChunk->name);
 			curChunk->size = writeBodyStoreFile(stk, src);
-			printf("%d bytes\n", curChunk->size);
+			print("%d bytes\n", curChunk->size);
 		}
-
-		fclose(src);
 		curChunk = curChunk->next;
 	}
-	return;
 }
 
 /*! \brief Rewrites the header of the archive file
@@ -284,7 +246,7 @@ void writeBody(Filename *inpath, FILE *stk, Chunk *chunks) {
  * The duplicate files are defined using the same information
  * as the one of the replacement file.
 */
-void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
+void CompressGob::rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks) {
 	uint16 i;
 	char buffer[1024];
 	Chunk *curChunk = chunks;
@@ -293,7 +255,7 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 
 	buffer[0] = chunkCount & 0xFF;
 	buffer[1] = chunkCount >> 8;
-	fwrite(buffer, 1, 2, stk);
+	stk.write(buffer, 1, 2);
 // TODO : Implement STK21
 	while (curChunk) {
 		for (i = 0; i < 13; i++)
@@ -301,7 +263,7 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 				buffer[i] = curChunk->name[i];
 			else
 				buffer[i] = '\0';
-		fwrite(buffer, 1, 13, stk);
+		stk.write(buffer, 1, 13);
 
 		if (curChunk->packed == 2)
 		{
@@ -325,10 +287,9 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
 			buffer[7] = curChunk->offset >> 24;
 			buffer[8] = curChunk->packed;
 		}
-		fwrite(buffer, 1, 9, stk);
+		stk.write(buffer, 1, 9);
 		curChunk = curChunk->next;
 	}
-	return;
 }
 
 /*! \brief Stores a file in the archive file
@@ -338,14 +299,14 @@ void rewriteHeader(FILE *stk, uint16 chunkCount, Chunk *chunks) {
  *
  * This function stores a file in the STK archive
  */
-uint32 writeBodyStoreFile(FILE *stk, FILE *src) {
+uint32 CompressGob::writeBodyStoreFile(File &stk, File &src) {
 	int count;
 	char buffer[4096];
 	uint32 tmpSize = 0;
 
 	do {
 		count = fread(buffer, 1, 4096, src);
-		fwrite(buffer, 1, count, stk);
+		stk.write(buffer, 1, count);
 		tmpSize += count;
 	} while (count == 4096);
 	return tmpSize;
@@ -358,7 +319,7 @@ uint32 writeBodyStoreFile(FILE *stk, FILE *src) {
  *
  * This function compress a file in the STK archive
  */
-uint32 writeBodyPackFile(FILE *stk, FILE *src) {
+uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
 	byte dico[4114];
 	byte writeBuffer[17];
 	uint32 counter;
@@ -375,13 +336,13 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 	for (int i = 0; i < 4096 - 18; i++)
 		dico[i] = 0x20;
 
-	fread(unpacked, 1, size, src);
+	src.read(unpacked, 1, size);
 
 	writeBuffer[0] = size & 0xFF;
 	writeBuffer[1] = size >> 8;
 	writeBuffer[2] = size >> 16;
 	writeBuffer[3] = size >> 24;
-	fwrite(writeBuffer, 1, 4, stk);
+	stk.write(writeBuffer, 1, 4);
 
 // Size is already checked : small files (less than 8 characters) 
 // are not compressed, so copying the first three bytes is safe.
@@ -462,16 +423,15 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
  * This function compares a file to another defined in a chunk. The file sizes 
  * are already tested outside the function.
  */
-bool filcmp(FILE *src1, Chunk *compChunk) {
+bool CompressGob::filcmp(File &src1, Chunk *compChunk) {
 	uint16 readCount;
 	bool checkFl = true;
 	char buf1[4096]; 
 	char buf2[4096];
-	FILE *src2;
+	File src2;
 
 	rewind(src1);
-	if (!(src2 = fopen(compChunk->name, "rb")))
-		error("Couldn't open file \"%s\"", compChunk->name);
+	src2.open(compChunk->name, "rb");
 	
 	do {
 		readCount = fread(buf1, 1, 4096, src1);
@@ -480,7 +440,6 @@ bool filcmp(FILE *src1, Chunk *compChunk) {
 			if (buf1[i] != buf2[i])
 				checkFl = false;
 	} while (checkFl & (readCount == 4096));
-	fclose(src2);
 
 	return checkFl;
 }
@@ -500,7 +459,7 @@ bool filcmp(FILE *src1, Chunk *compChunk) {
  * are found in the dictionary. The match lengths are limited to 18 characters, as the 
  * length (minus 3) is stored on 4 bits.
  */
-bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length) {
+bool CompressGob::checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length) {
 	uint16 tmpPos, bestPos;
 	uint8 tmpLength, bestLength, i;
 
@@ -540,6 +499,7 @@ bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, 
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(compress_gob)(argc, argv);
+	CompressGob gob(argv[0]);
+	return gob.run(argc, argv);
 }
 #endif

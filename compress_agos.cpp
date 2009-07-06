@@ -26,7 +26,6 @@
 #define TEMP_IDX	"tempfile.idx"
 
 CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name) {
-	_compMode = AUDIO_MP3;
 	_convertMac = false;
 
 	_outputToDirectory = false;
@@ -104,10 +103,10 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 	if (!memcmp(buf, "Creative", 8)) {
 		print("VOC found (pos = %d) :\n", offset);
 		fseek(_input, 18, SEEK_CUR);
-		extractAndEncodeVOC(TEMP_RAW, _input, _compMode);
+		extractAndEncodeVOC(TEMP_RAW, _input, _format);
 	} else if (!memcmp(buf, "RIFF", 4)) {
 		print("WAV found (pos = %d) :\n", offset);
-		extractAndEncodeWAV(TEMP_WAV, _input, _compMode);
+		extractAndEncodeWAV(TEMP_WAV, _input, _format);
 	} else {
 		error("Unexpected data at offset: %d", offset);
 	}
@@ -204,6 +203,7 @@ void CompressAgos::convert_mac(Filename *inputPath) {
 void CompressAgos::parseExtraArguments() {
 	if (_arguments[_arguments_parsed] == "--mac") {
 		_convertMac = true;
+		++_arguments_parsed;
 	}
 }
 
@@ -215,7 +215,7 @@ void CompressAgos::execute() {
 
 	if (_outputPath.empty()) {
 		_outputPath = inpath;
-		_outputPath.setExtension(audio_extensions(_compMode));
+		_outputPath.setExtension(audio_extensions(_format));
 	}
 
 	if (_convertMac) {

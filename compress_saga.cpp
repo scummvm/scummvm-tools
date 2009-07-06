@@ -1,4 +1,3 @@
-
 /* compress_saga - Compress SAGA engine digital sound files into
  * MP3 and Ogg Vorbis format
  * Copyright (C) 2004, Marcoen Hirschberg
@@ -24,6 +23,7 @@
  */
 
 #include "compress.h"
+#include "compress_saga.h"
 #include "utils/md5.h"
 #include "utils/util.h"
 #include "utils/audiostream.h"
@@ -37,25 +37,8 @@
 #define RSC_TABLEENTRY_SIZE 8
 #define HEADER_SIZE 9
 
-enum GameSoundTypes {
-	kSoundPCM = 0,
-	kSoundVOX = 1,
-	kSoundVOC = 2,
-	kSoundWAV = 3,
-	kSoundMacPCM = 4
-};
-
-struct GameFileDescription {
-	const char *fileName;
-	bool swapEndian;
-	const char *md5;
-	GameSoundTypes resourceType;
-	long frequency;
-	bool stereo;
-};
-
 // Known ITE files
-static GameFileDescription ITE_GameFiles[] = {
+static CompressSaga::GameFileDescription ITE_GameFiles[] = {
 	//	Filename					swapEndian	md5									resourceType	frequency	stereo
 	{"sounds.rsc",					false,		"e2ccb61c325d6d1ead3be0e731fe29fe", kSoundPCM,		22050,		false},	// PC CD/disk
 	{"sounds.rsc",					true,		"95863b89a0916941f6c5e1789843ba14", kSoundPCM,		22050,		false},	// Mac
@@ -86,7 +69,7 @@ static GameFileDescription ITE_GameFiles[] = {
 };
 
 // Known IHNM files
-static GameFileDescription IHNM_GameFiles[] = {
+static CompressSaga::GameFileDescription IHNM_GameFiles[] = {
 	//	Filename					swapEndian	md5									resourceType	frequency	stereo
 	// FIXME: sfx.res is disabled for now, as there are issues when trying to encode it
 	//{"sfx.res",					false,		"1c610d543f32ec8b525e3f652536f269", kSoundWAV,		-1,			false},
@@ -103,18 +86,7 @@ static GameFileDescription IHNM_GameFiles[] = {
 
 // --------------------------------------------------------------------------------
 
-enum SAGAGameType {
-	GType_ITE = 0,
-	GType_IHNM = 1
-};
-
-struct GameDescription {
-	SAGAGameType gameType;
-	int filesCount;
-	GameFileDescription *filesDescriptions;
-};
-
-static GameDescription gameDescriptions[] = {
+static CompressSaga::GameDescription gameDescriptions[] = {
 	// Inherit the earth
 	{
 		GType_ITE,
@@ -136,30 +108,28 @@ typedef struct  {
 	uint32 size;
 } Record;
 
-static AudioFormat gCompMode = AUDIO_MP3;
+// Constructor
+CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name) {
+	_currentGameDescription = NULL;
+	_currentFileDescription = NULL;
 
-GameDescription *currentGameDescription = NULL;
-GameFileDescription *currentFileDescription = NULL;
-
-uint16 sampleRate;
-uint32 sampleSize;
-uint8 sampleBits;
-uint8 sampleStereo;
+	_helptext = "\nUsage: %s [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n" kCompressionAudioHelp;
+}
 
 // --------------------------------------------------------------------------------
 
-bool detectFile(Filename *infile) {
+bool CompressSaga::detectFile(Filename *infile) {
 	int gamesCount = ARRAYSIZE(gameDescriptions);
 	int i, j;
 	uint8 md5sum[16];
 	char md5str[32+1];
 
 	Common::md5_file(infile->getFullPath().c_str(), md5sum, FILE_MD5_BYTES);
-	printf("Input file name: %s\n", infile->getFullPath());
+	print("Input file name: %s\n", infile->getFullPath());
 	for (j = 0; j < 16; j++) {
 		sprintf(md5str + j*2, "%02x", (int)md5sum[j]);
 	}
-	printf("md5: %s\n", md5str);
+	print("md5: %s\n", md5str);
 
 	for (i = 0; i < gamesCount; i++) {
 		for (j = 0; j < gameDescriptions[i].filesCount; j++) {
@@ -167,10 +137,10 @@ bool detectFile(Filename *infile) {
 				// MD5 based detection, needed to distinguish the different file encodings
 				// of the ITE sound files
 				if (strcmp(gameDescriptions[i].filesDescriptions[j].md5, md5str) == 0) {
-					currentGameDescription = &gameDescriptions[i];
-					currentFileDescription = &currentGameDescription->filesDescriptions[j];
+					_currentGameDescription = &gameDescriptions[i];
+					_currentFileDescription = &_currentGameDescription->filesDescriptions[j];
 
-					printf("Matched game: Inherit the Earth: Quest for the Orb\n");
+					print("Matched game: Inherit the Earth: Quest for the Orb\n");
 					return true;
 				}
 			} else {			// IHNM
@@ -178,25 +148,24 @@ bool detectFile(Filename *infile) {
 				// same encoding
 
 				if (scumm_stricmp(gameDescriptions[i].filesDescriptions[j].fileName, infile->getFullName().c_str()) == 0) {
-					currentGameDescription = &gameDescriptions[i];
-					currentFileDescription = &currentGameDescription->filesDescriptions[j];
+					_currentGameDescription = &gameDescriptions[i];
+					_currentFileDescription = &_currentGameDescription->filesDescriptions[j];
 
-					printf("Matched game: I have no mouth, and I must scream\n");
+					print("Matched game: I have no mouth, and I must scream\n");
 					return true;
 				}
 			}
 		}
 	}
-	printf("Unsupported file\n");
+	print("Unsupported file\n");
 	return false;
 }
 
-uint32 copyFile(const char *fromFileName, FILE* outputFile) {
+uint32 CompressSaga::copyFile(const char *fromFileName, File &outputFile) {
 	uint32 size;
 	char fbuf[2048];
-	FILE * tempf;
+	File tempf(fromFileName, "rb");
 
-	tempf = fopen(fromFileName, "rb");
 	if (tempf == NULL)
 		error("Unable to open %s", fromFileName);
 
@@ -204,16 +173,14 @@ uint32 copyFile(const char *fromFileName, FILE* outputFile) {
 		fwrite(fbuf, 1, size, outputFile);
 	}
 	size = ftell(tempf);
-	fclose(tempf);
 	return size;
 }
 
-void copyFile(FILE* inputFile, uint32 inputSize, const char* toFileName) {
+void CompressSaga::copyFile(File &inputFile, uint32 inputSize, const char *toFileName) {
 	uint32 size;
 	char fbuf[2048];
-	FILE * tempf;
+	File tempf(toFileName, "wb");
 
-	tempf = fopen(toFileName, "wb");
 	if (tempf == NULL)
 		error("Unable to open %s", toFileName);
 	while (inputSize > 0) {
@@ -224,124 +191,122 @@ void copyFile(FILE* inputFile, uint32 inputSize, const char* toFileName) {
 		fwrite(fbuf, 1, size, tempf);
 		inputSize -= size;
 	}
-	fclose(tempf);
 }
 
-void writeBufferToFile(uint8* data, uint32 inputSize, const char* toFileName) {
-	FILE * tempf;
-
-	tempf = fopen(toFileName, "wb");
+void CompressSaga::writeBufferToFile(uint8 *data, uint32 inputSize, const char *toFileName) {
+	File tempf(toFileName, "wb");
 	if (tempf == NULL)
 		error("Unable to open %s", toFileName);
 	fwrite(data, 1, inputSize, tempf);
-	fclose(tempf);
 }
 
-void writeHeader(FILE* outputFile) {
-	writeByte(outputFile, gCompMode);
-	writeUint16LE(outputFile, sampleRate);
-	writeUint32LE(outputFile, sampleSize);
-	writeByte(outputFile, sampleBits);
-	writeByte(outputFile, sampleStereo);
+void CompressSaga::writeHeader(File &outputFile) {
+	writeByte(outputFile, compression_format(_format));
+	writeUint16LE(outputFile, _sampleRate);
+	writeUint32LE(outputFile, _sampleSize);
+	writeByte(outputFile, _sampleBits);
+	writeByte(outputFile, _sampleStereo);
 }
 
-uint32 encodeEntry(FILE* inputFile, uint32 inputSize, FILE* outputFile) {
+uint32 CompressSaga::encodeEntry(File &inputFile, uint32 inputSize, File &outputFile) {
 	uint8 *inputData = 0;
 	byte *buffer = 0;
 	Common::File inputFileStream(inputFile);
 	int rate, size;
 	byte flags;
 
-	if (currentFileDescription->resourceType == kSoundVOC) {
+	if (_currentFileDescription->resourceType == kSoundVOC) {
 		inputData = Audio::loadVOCFromStream(inputFileStream, size, rate);
 
-		sampleSize = size;
-		sampleRate = rate;
-		sampleBits = 8;
-		sampleStereo = 0;
+		_sampleSize = size;
+		_sampleRate = rate;
+		_sampleBits = 8;
+		_sampleStereo = 0;
 		writeHeader(outputFile);
 
-		writeBufferToFile(inputData, sampleSize, TEMP_RAW);
+		writeBufferToFile(inputData, _sampleSize, TEMP_RAW);
 		free(inputData);
 
 		setRawAudioType( true, false, 8);
-		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
+		encodeAudio(TEMP_RAW, true, _sampleRate, tempEncoded, _format);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
-	if (currentFileDescription->resourceType == kSoundPCM) {
-		sampleSize = inputSize;
-		sampleRate = (uint16)currentFileDescription->frequency;
-		sampleBits = 16;
-		sampleStereo = currentFileDescription->stereo;
+	if (_currentFileDescription->resourceType == kSoundPCM) {
+		_sampleSize = inputSize;
+		_sampleRate = (uint16)_currentFileDescription->frequency;
+		_sampleBits = 16;
+		_sampleStereo = _currentFileDescription->stereo;
 		writeHeader(outputFile);
 
 		copyFile(inputFile, inputSize, TEMP_RAW);
 
-		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo != 0, sampleBits);
-		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
+		setRawAudioType( !_currentFileDescription->swapEndian, _sampleStereo != 0, _sampleBits);
+		encodeAudio(TEMP_RAW, true, _sampleRate, tempEncoded, _format);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
-	if (currentFileDescription->resourceType == kSoundWAV) {
+	if (_currentFileDescription->resourceType == kSoundWAV) {
 		if (!Audio::loadWAVFromStream(inputFileStream, size, rate, flags))
 			error("Unable to read WAV");
 
-		sampleSize = size;
-		sampleRate = rate;
-		sampleBits = ((flags & Audio::Mixer::FLAG_16BITS) != 0) ? 16 : 8;
-		sampleStereo = ((flags & Audio::Mixer::FLAG_STEREO) != 0);
+		_sampleSize = size;
+		_sampleRate = rate;
+		_sampleBits = ((flags & Audio::Mixer::FLAG_16BITS) != 0) ? 16 : 8;
+		_sampleStereo = ((flags & Audio::Mixer::FLAG_STEREO) != 0);
 		writeHeader(outputFile);
 
 		copyFile(inputFile, size, TEMP_RAW);
 
-		setRawAudioType( true, sampleStereo != 0, sampleBits);
-		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
+		setRawAudioType( true, _sampleStereo != 0, _sampleBits);
+		encodeAudio(TEMP_RAW, true, _sampleRate, tempEncoded, _format);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
-	if (currentFileDescription->resourceType == kSoundVOX) {
-		sampleSize = inputSize * 4;
-		sampleRate = (uint16)currentFileDescription->frequency;
-		sampleBits = 16;
-		sampleStereo = currentFileDescription->stereo;
+	if (_currentFileDescription->resourceType == kSoundVOX) {
+		_sampleSize = inputSize * 4;
+		_sampleRate = (uint16)_currentFileDescription->frequency;
+		_sampleBits = 16;
+		_sampleStereo = _currentFileDescription->stereo;
 		writeHeader(outputFile);
 
 		Audio::AudioStream *voxStream = Audio::makeADPCMStream(&inputFileStream, inputSize, Audio::kADPCMOki);
-		buffer = (byte *)malloc(sampleSize);
+		buffer = (byte *)malloc(_sampleSize);
 		uint32 voxSize = voxStream->readBuffer((int16*)buffer, inputSize * 2);
 		if (voxSize != inputSize * 2)
 			error("Wrong VOX output size");
-		writeBufferToFile((uint8 *)buffer, sampleSize, TEMP_RAW);
+		writeBufferToFile((uint8 *)buffer, _sampleSize, TEMP_RAW);
 		free(buffer);
 
-		setRawAudioType( !currentFileDescription->swapEndian, sampleStereo != 0, sampleBits);
-		encodeAudio(TEMP_RAW, true, sampleRate, tempEncoded, gCompMode);
+		setRawAudioType( !_currentFileDescription->swapEndian, _sampleStereo != 0, _sampleBits);
+		encodeAudio(TEMP_RAW, true, _sampleRate, tempEncoded, _format);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
-	if (currentFileDescription->resourceType == kSoundMacPCM) {
+	if (_currentFileDescription->resourceType == kSoundMacPCM) {
 		error("MacBinary files are not supported yet");
 		// TODO
 		// Note: MacBinary files are unsigned. With the pending changes to setRawAudioType, there will need
 		// to be some changes here
 		/*
 		copyFile(inputFile, inputSize, TEMP_RAW);
-		sampleSize = inputSize - 36;
-		sampleRate = (uint16)currentFileDescription->frequency;
+		_sampleSize = inputSize - 36;
+		_sampleRate = (uint16)currentFileDescription->frequency;
 		// The MAC CD Guild version has 8 bit sound, whereas the other versions have 16 bit sound
-		sampleBits = 8;
-		sampleStereo = currentFileDescription->stereo;
+		_sampleBits = 8;
+		_sampleStereo = currentFileDescription->stereo;
 		writeHeader(outputFile);
 
-		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, sampleBits);
+		setRawAudioType( !currentFileDescription->swapEndian, currentFileDescription->stereo, _sampleBits);
 		encodeAudio(TEMP_RAW, true, currentFileDescription->frequency, tempEncoded, gCompMode);
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 		*/
 	}
 
-	error("Unsupported resourceType %ul\n", currentFileDescription->resourceType);
+	error("Unsupported resourceType %ul\n", _currentFileDescription->resourceType);
+	// Never reached
+	return 0;
 }
 
-void sagaEncode(Filename *inpath, Filename *outpath) {
-	FILE *inputFile;
-	FILE *outputFile;
+void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
+	File inputFile;
+	File outputFile;
 	uint32 inputFileSize;
 	uint32 resTableOffset;
 	uint32 resTableCount;
@@ -350,25 +315,25 @@ void sagaEncode(Filename *inpath, Filename *outpath) {
 	Record *inputTable;
 	Record *outputTable;
 
-	inputFile = fopen(inpath->getFullPath().c_str(), "rb");
-	inputFileSize = fileSize(inputFile);
-	printf("Filesize: %ul\n", inputFileSize);
+	inputFile.open(*inpath, "rb");
+	inputFileSize = inputFile.size();
+	print("Filesize: %ul\n", inputFileSize);
 	/*
 	 * At the end of the resource file there are 2 values: one points to the
 	 * beginning of the resource table the other gives the number of
 	 * records in the table
 	 */
-	fseek(inputFile, inputFileSize - RSC_TABLEINFO_SIZE, SEEK_SET);
+	inputFile.seek(inputFileSize - RSC_TABLEINFO_SIZE, SEEK_SET);
 
-	if (!currentFileDescription->swapEndian) {
-		resTableOffset = readUint32LE(inputFile);
-		resTableCount = readUint32LE(inputFile);
+	if (!_currentFileDescription->swapEndian) {
+		resTableOffset = inputFile.readU32LE();
+		resTableCount = inputFile.readU32LE();
 	} else {
-		resTableOffset = readUint32BE(inputFile);
-		resTableCount = readUint32BE(inputFile);
+		resTableOffset = inputFile.readU32BE();
+		resTableCount = inputFile.readU32BE();
 	}
 
-	printf("Table offset: %ul\nnumber of records: %ul\n", resTableOffset, resTableCount);
+	print("Table offset: %ul\nnumber of records: %ul\n", resTableOffset, resTableCount);
 	if (resTableOffset != inputFileSize - RSC_TABLEINFO_SIZE - RSC_TABLEENTRY_SIZE * resTableCount) {
 		error("Something's wrong with your resource file");
 	}
@@ -381,15 +346,15 @@ void sagaEncode(Filename *inpath, Filename *outpath) {
 	// Put offsets of all the records in a table
 	for (i = 0; i < resTableCount; i++) {
 
-		if (!currentFileDescription->swapEndian) {
-			inputTable[i].offset = readUint32LE(inputFile);
-			inputTable[i].size = readUint32LE(inputFile);
+		if (!_currentFileDescription->swapEndian) {
+			inputTable[i].offset = inputFile.readU32LE();
+			inputTable[i].size = inputFile.readU32LE();
 		} else {
-			inputTable[i].offset = readUint32BE(inputFile);
-			inputTable[i].size = readUint32BE(inputFile);
+			inputTable[i].offset = inputFile.readU32BE();
+			inputTable[i].size = inputFile.readU32BE();
 		}
 
-		printf("Record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
+		print("Record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
 
 		if ((inputTable[i].offset > inputFileSize) ||
 			(inputTable[i].offset + inputTable[i].size > inputFileSize)) {
@@ -403,10 +368,10 @@ void sagaEncode(Filename *inpath, Filename *outpath) {
 		*outpath = *inpath;
 		outpath->setExtension(".cmp");
 	}
-	outputFile = fopen(outpath->getFullPath().c_str(), "wb");
+	outputFile.open(*outpath, "wb");
 
 	for (i = 0; i < resTableCount; i++) {
-		fseek(inputFile, inputTable[i].offset, SEEK_SET);
+		inputFile.seek(inputTable[i].offset, SEEK_SET);
 		outputTable[i].offset = ftell(outputFile);
 
 		if (inputTable[i].size >= 8) {
@@ -415,17 +380,17 @@ void sagaEncode(Filename *inpath, Filename *outpath) {
 			outputTable[i].size = inputTable[i].size;	// Empty sound resource
 		}
 	}
-	fclose(inputFile);
+	inputFile.close();
 
 	resTableOffset = ftell(outputFile);
 	for (i = 0; i < resTableCount; i++) {
-		writeUint32LE(outputFile, outputTable[i].offset);
-		writeUint32LE(outputFile, outputTable[i].size);
+		outputFile.writeU32LE(outputTable[i].offset);
+		outputFile.writeU32LE(outputTable[i].size);
 	}
-	writeUint32LE(outputFile, resTableOffset);
-	writeUint32LE(outputFile, resTableCount);	// Should be the same number of entries
+	outputFile.writeU32LE(resTableOffset);
+	outputFile.writeU32LE(resTableCount);	// Should be the same number of entries
 
-	fclose(outputFile);
+	outputFile.close();
 
 	free(inputTable);
 	free(outputTable);
@@ -434,37 +399,15 @@ void sagaEncode(Filename *inpath, Filename *outpath) {
 	unlink(TEMP_RAW);
 	unlink(tempEncoded);
 
-	printf("Done!\n");
+	print("Done!\n");
 }
 
-int export_main(compress_saga)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n" kCompressionAudioHelp;
-
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
-
-	parseHelpArguments(argv, argc, helptext);
-
-	// compression mode
-	gCompMode = process_audio_params(argc, argv, &first_arg);
-
-	if (gCompMode == AUDIO_NONE) {
-		// Unknown mode (failed to parse arguments), display help and exit
-		displayHelp(helptext, argv[0]);
-	}
-
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else 
-		// Just leave it empty, we just change extension of input file
-		;
-
-	inpath.setFullPath(argv[first_arg]);
+void CompressSaga::execute() {
+	// Check input
+	if (_inputPaths.size() == 1)
+		error("One input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
 	// ITE
 	inpath.setExtension(".rsc");
@@ -491,13 +434,12 @@ int export_main(compress_saga)(int argc, char *argv[]) {
 			}
 		}
 	}
-
-	return 0;
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(compress_saga)(argc, argv);
+	CompressSaga saga(argv[0]);
+	return saga.run(argc, argv);
 }
 #endif
 

@@ -26,13 +26,17 @@
 namespace Common {
 
 
-File::File(FILE*file)
-	: _handle(file), _ioFailed(false) {
+File::File(FILE *file)
+	: _handle(file), _ioFailed(false), _owned(true) {
 }
 
+File::File(::File &file)
+	: _handle((FILE *)file), _ioFailed(false), _owned(false) {
+}
 
 File::~File() {
-	close();
+	if(_owned)
+		close();
 }
 
 void File::close() {

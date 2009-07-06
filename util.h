@@ -240,7 +240,19 @@ enum AudioFormat {
 	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
 };
 
+/**
+ * Another enum, which cannot be ORed
+ * These are the values written to the output files
+ */
+enum CompressionFormat {
+	COMPRESSION_NONE = 0,
+	COMPRESSION_MP3 = 1,
+	COMPRESSION_OGG = 2,
+	COMPRESSION_FLAC = 3
+};
+
 const char *audio_extensions(AudioFormat format);
+CompressionFormat compression_format(AudioFormat format);
 
 // Below this line are more C++ ish interface
 // Above is kept for compatibility with non-converted tools

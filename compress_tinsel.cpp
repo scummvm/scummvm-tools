@@ -25,7 +25,7 @@
 #include "compress.h"
 #include "util.h"
 
-#if 0
+#include "compress_tinsel.h"
 
 // data-format of index-file:
 //  [pointer to data file DWORD] [pointer to data file DWORD] [pointer to data file DWORD]
@@ -47,51 +47,50 @@
 #define TEMP_RAW "tempfile.raw"
 #define TEMP_ENC "tempfile.enc"
 
-static FILE *input_idx, *input_smp, *output_idx, *output_smp;
-static CompressMode gCompMode = kMP3Mode;
-static char INPUT_IDX[256], INPUT_SMP[256];
+CompressTinsel::CompressTinsel(const std::string &name) : CompressionTool(name) {
+	_helptext = "\nUsage: " + _name + " [mode-params] [-o outputname] <infile.smp> [infile.idx]\n" + kCompressionAudioHelp;
+}
 
 /* Converts raw-data sample in input_smp of size SampleSize to requested dataformat and writes to output_smp */
-void convertTinselRawSample (uint32 sampleSize) {
+void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	uint32 copyLeft = 0;
 	uint32 doneRead = 0;
 	char buffer[2048];
-    FILE *curFileHandle;
+	File curFileHandle;
 
 	printf("Assuming DW1 sample being 8-bit raw...\n");
 
 	unlink(TEMP_RAW); unlink(TEMP_ENC);
-	curFileHandle = fopen(TEMP_RAW, "wb");
+	curFileHandle.open(TEMP_RAW, "wb");
 	copyLeft = sampleSize;
 	while (copyLeft > 0) {
-		doneRead = fread(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft, input_smp);
+		doneRead = fread(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft, _input_smp);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
-		fwrite(buffer, 1, doneRead, curFileHandle);
+		curFileHandle.write(buffer, 1, doneRead);
 	}
-	fclose(curFileHandle);
+	curFileHandle.close();
 
 	// Encode this raw data...
 	setRawAudioType(true, false, 8); // LE, mono, 8-bit (??)
-	encodeAudio(TEMP_RAW, true, 22050, TEMP_ENC, gCompMode);
+	encodeAudio(TEMP_RAW, true, 22050, TEMP_ENC, _format);
 
 	// Append compressed data to output_smp
-	curFileHandle = fopen(TEMP_ENC, "rb");
+	curFileHandle.open(TEMP_ENC, "rb");
 	fseek(curFileHandle, 0, SEEK_END);
 	copyLeft = ftell(curFileHandle);
-    fseek(curFileHandle, 0, SEEK_SET);
+	fseek(curFileHandle, 0, SEEK_SET);
 	// Write size of compressed data
-	writeUint32LE(output_smp, copyLeft);
+	_output_smp.writeU32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
 		doneRead = fread(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft, curFileHandle);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
-		fwrite(buffer, 1, doneRead, output_smp);
+		_output_smp.write(buffer, 1, doneRead);
 	}
-	fclose(curFileHandle);
 }
 
 static const double TinselFilterTable[4][2] = {
@@ -101,12 +100,18 @@ static const double TinselFilterTable[4][2] = {
 	{1.53125, -0.859375}
 };
 
-template<typename T> inline T CLIP (T v, T amin, T amax)
-		{ if (v < amin) return amin; else if (v > amax) return amax; else return v; }
+template<typename T> inline T CLIP (T v, T amin, T amax) {
+	if (v < amin)
+		return amin;
+	else if (v > amax)
+		return amax;
+	else
+		return v;
+}
 
 /* Converts ADPCM-data sample in input_smp of size SampleSize to requested dataformat and writes to output_smp */
 /* Quick hack together from adpcm.cpp */
-void convertTinselADPCMSample (uint32 sampleSize) {
+void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	byte *inBuffer, *inPos;
 	int16 *outBuffer, *outPos;
 	double predictor = 0;
@@ -124,7 +129,7 @@ void convertTinselADPCMSample (uint32 sampleSize) {
 	uint32 copyLeft = 0;
 	uint32 doneRead = 0;
 	char buffer[2048];
-    FILE *curFileHandle;
+	File curFileHandle;
 
 	printf("Assuming DW2 sample using ADPCM 6-bit, decoding to 16-bit raw...\n");
 
@@ -143,14 +148,14 @@ void convertTinselADPCMSample (uint32 sampleSize) {
 		return;
 	}
 
-	fread(inBuffer, 1, sampleSize, input_smp);
+	_input_smp.read(inBuffer, 1, sampleSize);
 
 	// 1 channel, 22050 rate, block align 24,
 	blockAlign = 24; // Fixed for Tinsel 6-bit
 	blockPos = blockAlign; // To make sure first header is read
 
 	inPos = inBuffer; outPos = outBuffer;
-    decodeLeft = sampleSize;
+	decodeLeft = sampleSize;
 	while (decodeLeft > 0) {
 		if (blockPos == blockAlign) {
 			// read Tinsel header
@@ -200,83 +205,42 @@ void convertTinselADPCMSample (uint32 sampleSize) {
 		sample += (d0 * k0) + (d1 * k1);
 		d1 = d0;
 		d0 = sample;
-        *outPos = (int16) CLIP<double>(sample, -32768.0, 32767.0); outPos++;
+		*outPos = (int16) CLIP<double>(sample, -32768.0, 32767.0); outPos++;
 		decodedCount++;
 		chunkPos = (chunkPos + 1) % 4;
 	}
 
-	unlink(TEMP_RAW); unlink(TEMP_ENC);
-	curFileHandle = fopen(TEMP_RAW, "wb");
-	fwrite(outBuffer, 1, decodedCount*2, curFileHandle);
-	fclose(curFileHandle);
+	unlink(TEMP_RAW);
+	unlink(TEMP_ENC);
 
-	free(inBuffer); free(outBuffer);
+	curFileHandle.open(TEMP_RAW, "wb");
+	curFileHandle.write(outBuffer, 1, decodedCount*2);
+
+	free(inBuffer);
+	free(outBuffer);
 
 	// Encode this raw data...
 	setRawAudioType(true, false, 16); // LE, mono, 16-bit
-	encodeAudio(TEMP_RAW, true, 22050, TEMP_ENC, gCompMode);
+	encodeAudio(TEMP_RAW, true, 22050, TEMP_ENC, _format);
 
 	// Append compressed data to output_smp
-	curFileHandle = fopen(TEMP_ENC, "rb");
-	fseek(curFileHandle, 0, SEEK_END);
+	curFileHandle.open(TEMP_ENC, "rb");
+	curFileHandle.seek(0, SEEK_END);
 	copyLeft = ftell(curFileHandle);
-    fseek(curFileHandle, 0, SEEK_SET);
+	curFileHandle.seek(0, SEEK_SET);
 	// Write size of compressed data
-	writeUint32LE(output_smp, copyLeft);
+	_output_smp.writeU32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
 		doneRead = fread(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft, curFileHandle);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
-		fwrite(buffer, 1, doneRead, output_smp);
+		_output_smp.write(buffer, 1, doneRead);
 	}
-	fclose(curFileHandle);
 }
 
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] [file]\n", exename);
-
-	printf("\nParams:\n");
-	printf(" --mp3        encode to MP3 format (default)\n");
-	printf(" --vorbis     encode to Vorbis format\n");
-	printf(" --flac       encode to Flac format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
- 	printf(" --fast       FLAC uses compression level 0\n");
- 	printf(" --best       FLAC uses compression level 8\n");
- 	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
- 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
- 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	exit(2);
-}
-
-int main(int argc, char *argv[]) {
-	char inputPath[768];
-	int i;
+void CompressTinsel::execute() {
 	uint32 indexNo = 0;
 	uint32 indexCount = 0;
 	uint32 indexOffset = 0;
@@ -284,99 +248,62 @@ int main(int argc, char *argv[]) {
 	uint32 sampleSize = 0;
 	uint32 sampleCount = 0;
 
-	if (argc < 2) {
-		showhelp(argv[0]);
+	Filename inpath_smp, inpath_idx;
+
+	// Check input
+	if (_inputPaths.size() < 1)
+		error("Atleast one input file expected!");
+
+	if (_inputPaths.size() == 1) {
+		// One input, assume idx and change extension for second input
+		inpath_smp = _inputPaths[0];
+		inpath_idx = inpath_smp;
+		inpath_idx.setExtension(".idx");
+	} else if(_inputPaths.size() == 2) {
+		inpath_smp = _inputPaths[0];
+		inpath_idx = _inputPaths[1];
+	} else {
+		error("At most two input files expected!");
 	}
+	Filename &outpath = _outputPath;
 
-	/* Compression mode */
-	gCompMode = kMP3Mode;
-	i = 1;
-
-	if (strcmp(argv[1], "--mp3") == 0) {
-		gCompMode = kMP3Mode;
-		i++;
-	} else if (strcmp(argv[1], "--vorbis") == 0) {
-		gCompMode = kVorbisMode;
-		i++;
-	} else if (strcmp(argv[1], "--flac") == 0) {
-		gCompMode = kFlacMode;
-		i++;
-	}
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		if (!process_mp3_parms(argc, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kVorbisMode:
-		if (!process_ogg_parms(argc, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kFlacMode:
-		if (!process_flac_parms(argc, argv, i))
-			showhelp(argv[0]);
-		break;
-	}
-
-	getPath(argv[argc - 1], inputPath);
-
-	sprintf(INPUT_IDX, "%s.idx", argv[argc - 1]);
-	sprintf(INPUT_SMP, "%s.smp", argv[argc - 1]);
-
-	input_idx = fopen(INPUT_IDX, "rb");
-	if (!input_idx) {
-		printf("Cannot open file: %s\n", INPUT_IDX);
-		exit(-1);
-	}
-
-	input_smp = fopen(INPUT_SMP, "rb");
-	if (!input_smp) {
-		printf("Cannot open file: %s\n", INPUT_SMP);
-		exit(-1);
-	}
+	_input_idx.open(inpath_idx, "rb");
+	_input_smp.open(inpath_smp, "rb");
 
 	unlink(TEMP_IDX);
-	output_idx = fopen(TEMP_IDX, "wb");
-	if (!output_idx) {
-		printf("Can't open file " TEMP_IDX " for write!\n" );
-		exit(-1);
-	}
-	unlink(TEMP_SMP);
-	output_smp = fopen(TEMP_SMP, "wb");
-	if (!output_smp) {
-		printf("Can't open file " TEMP_SMP " for write!\n");
-		exit(-1);
-	}
+	_output_idx.open(TEMP_IDX, "wb");
 
-	fseek(input_idx, 0, SEEK_END);
-	indexCount = ftell(input_idx) / sizeof(uint32);
-    fseek(input_idx, 0, SEEK_SET);
+	unlink(TEMP_SMP);
+	_output_smp.open(TEMP_SMP, "wb");
+
+	_input_idx.seek(0, SEEK_END);
+	indexCount = ftell(_input_idx) / sizeof(uint32);
+	_input_idx.seek(0, SEEK_SET);
 
 	loopCount = indexCount;
 	while (loopCount>0) {
-		indexOffset = readUint32LE(input_idx);
+		indexOffset = _input_idx.readU32LE();
 		if (indexOffset) {
 			if (indexNo==0) {
-				printf("The sourcefiles are already compressed, aborting...\n");
-				return 1;
+				error("The sourcefiles are already compressed, aborting...\n");
 			}
 			// Got sample(s), so convert...
 			printf("Converting sample %d of %d\n", indexNo, indexCount);
 
 			// Seek to Sample in input-file and read SampleSize
-			fseek(input_smp, indexOffset, SEEK_SET);
-			sampleSize = readUint32LE(input_smp);
+			_input_smp.seek(indexOffset, SEEK_SET);
+			sampleSize = _input_smp.readU32LE();
 
 			// Write offset of new data to new index file
-			writeUint32LE(output_idx, ftell(output_smp));
+			_output_idx.writeU32LE(ftell(_output_smp));
 
 			if (sampleSize & 0x80000000) {
 				// multiple samples in ADPCM format
 				sampleCount = sampleSize & ~0x80000000;
 				// Write sample count to new sample file
-				writeUint32LE(output_smp, sampleSize);
+				_output_smp.writeU32LE(sampleSize);
 				while (sampleCount>0) {
-					sampleSize = readUint32LE(input_smp);
+					sampleSize = _input_smp.readU32LE();
 					convertTinselADPCMSample(sampleSize);
 					sampleCount--;
 				}
@@ -387,28 +314,29 @@ int main(int argc, char *argv[]) {
 		} else {
 			if (indexNo==0) {
 				// Write signature as index 0
-				switch (gCompMode) {
-				case kMP3Mode: writeUint32BE(output_idx, MKID_BE('MP3 ')); break;
-				case kVorbisMode: writeUint32BE(output_idx, MKID_BE('OGG ')); break;
-				case kFlacMode: writeUint32BE(output_idx, MKID_BE('FLAC')); break;
+				switch (_format) {
+				case AUDIO_MP3: _output_idx.writeU32BE(MKID_BE('MP3 ')); break;
+				case AUDIO_VORBIS: _output_idx.writeU32BE(MKID_BE('OGG ')); break;
+				case AUDIO_FLAC: _output_idx.writeU32BE(MKID_BE('FLAC')); break;
+				default: throw ToolException("Unknown audio format!");
 				}
 			} else {
-				writeUint32LE(output_idx, 0);
+				_output_idx.writeU32LE(0);
 			}
 		}
-		loopCount--; indexNo++;
+		loopCount--;
+		indexNo++;
 	}
-	fclose(output_smp);
-	fclose(output_idx);
-	fclose(input_smp);
-	fclose(input_idx);
 
 	/* And some clean-up :-) */
 	unlink(TEMP_RAW);
 	unlink(TEMP_ENC);
-
-	return 0;
 }
 
-#endif
 
+#ifdef STANDALONE_MAIN
+int main(int argc, char *argv[]) {
+	CompressTinsel tinsel(argv[0]);
+	return tinsel.run(argc, argv);
+}
+#endif

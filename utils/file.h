@@ -32,6 +32,9 @@ protected:
 	/** POSIX file handle to the actual file; 0 if no file is open. */
 	FILE *_handle;
 
+	/** If we own the internal handle or not (we don't if we're constructed from a ::File object */
+	bool _owned;
+
 	/** Status flag which tells about recent I/O failures. */
 	bool _ioFailed;
 
@@ -45,7 +48,10 @@ private:
 
 public:
 
-	File(FILE*file);
+	File(FILE *file);
+	// Allow construction from a ::File object, not that we *do not* own the file pointer
+	// in this scenario, we just act as a different wrapper for the file
+	File(::File &file);
 	virtual ~File();
 
 	virtual void close();

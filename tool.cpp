@@ -32,6 +32,7 @@ Tool::Tool(const std::string &name) {
 	_arguments_parsed = 0;
 	_argv = NULL;
 
+	_inputFromDirectory = false;
 	_outputToDirectory = true;
 	_supported_formats = AUDIO_NONE;
 
@@ -70,7 +71,17 @@ int Tool::run(int argc, char *argv[]) {
 
 	// Read input files from CLI
 	while (_arguments_parsed < _arguments.size()) {
-		_inputPaths.push_back(_arguments[_arguments_parsed++]);
+		std::string &in = _arguments[_arguments_parsed++];
+		if(_inputFromDirectory) {
+			// Append '/' to input if it's not already done
+			// TODO: We need a way to detect a proper directory here!
+			size_t s = in.size();
+			if (in[s-1] == '/' || in[s-1] == '\\') {
+				in[s] = '/';
+				in[s+1] = '\0';
+			}
+		}
+		_inputPaths.push_back(in);
 	}
 
 	if (_inputPaths.empty()) {

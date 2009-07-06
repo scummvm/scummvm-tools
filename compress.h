@@ -70,6 +70,8 @@ public:
 
 	void parseAudioArguments();
 public:
+	AudioFormat _format;
+
 	// Settings
 	// mp3 settings
 	std::string _mp3CompressionType;

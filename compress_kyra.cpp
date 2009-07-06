@@ -20,48 +20,25 @@
  *
  */
 
+#include "compress_kyra.h"
+
 #include "compress.h"
 #include "kyra_pak.h"
 
-static void process(Filename *infile, Filename *output);
-static void processKyra3(Filename *infile, Filename *output);
-static bool detectKyra3File(Filename *infile);
-
 #define TEMPFILE "TEMP.VOC"
 
-static AudioFormat gCompMode = AUDIO_MP3;
+CompressKyra::CompressKyra(const std::string &name) : CompressionTool(name) {
+	_helptext = "\nUsage: " + _name + " [mode params] [-o outfile] <infile>\n" kCompressionAudioHelp;
+}
 
-int export_main(compress_kyra)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [mode] [mode params] [-o out = ] <infile>\n" kCompressionAudioHelp;
+void CompressKyra::execute() {
+	// Check input
+	if (_inputPaths.size() == 1)
+		error("One input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
-
-	parseHelpArguments(argv, argc, helptext);
-
-	// Compression mode
-	gCompMode = process_audio_params(argc, argv, &first_arg);
-
-	if (gCompMode == AUDIO_NONE) {
-		// Unknown mode (failed to parse arguments), display help and exit
-		displayHelp(helptext, argv[0]);
-	}
-	
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else
-		// Standard output file is 'out'
-		outpath.setFullPath("out");
-	
-	inpath.setFullName(argv[first_arg]);
-	outpath.setFullName(argv[first_arg]);
-
-	if (inpath.equals(&outpath))
+	if (inpath == outpath)
 		error("Infile and outfile cannot be the same file");
 
 	bool isKyra3 = detectKyra3File(&inpath);
@@ -69,11 +46,9 @@ int export_main(compress_kyra)(int argc, char *argv[]) {
 		process(&inpath, &outpath);
 	else
 		processKyra3(&inpath, &outpath);
-
-	return 0;
 }
 
-static void process(Filename *infile, Filename *outfile) {
+void CompressKyra::process(Filename *infile, Filename *outfile) {
 	PAKFile input, output;
 
 	if (!input.loadFile(infile->getFullPath().c_str(), false))
@@ -98,12 +73,12 @@ static void process(Filename *infile, Filename *outfile) {
 		input.outputFileAs(list->filename, TEMPFILE);
 		outputName._path = list->filename;
 
-		FILE *tempFile = fopen(TEMPFILE, "rb");
-		fseek(tempFile, 26, SEEK_CUR);
-		extractAndEncodeVOC(TEMP_RAW, tempFile, gCompMode);
-		fclose(tempFile);
+		File tempFile(TEMPFILE, "rb");
+		tempFile.seek(26, SEEK_CUR);
+		extractAndEncodeVOC(TEMP_RAW, tempFile, _format);
+		tempFile.close();
 
-		outputName.setExtension(audio_extensions(gCompMode));
+		outputName.setExtension(audio_extensions(_format));
 
 		output.addFile(outputName.getFullPath().c_str(), tempEncoded);
 
@@ -115,12 +90,12 @@ static void process(Filename *infile, Filename *outfile) {
 	if (output.getFileList())
 		output.saveFile(outfile->getFullPath().c_str());
 	else
-		printf("file '%s' doesn't contain any .voc files\n", infile->getFullPath().c_str());
+		print("file '%s' doesn't contain any .voc files\n", infile->getFullPath().c_str());
 }
 
 // Kyra3 specifc code
 
-static uint16 clip8BitSample(int16 sample) {
+uint16 CompressKyra::clip8BitSample(int16 sample) {
 	if (sample > 255)
 		return 255;
 	if (sample < 0)
@@ -128,10 +103,10 @@ static uint16 clip8BitSample(int16 sample) {
 	return sample;
 }
 
-static int decodeChunk(FILE *in, FILE *out) {
-	uint16 size = readUint16LE(in);
-	uint16 outSize = readUint16LE(in);
-	uint32 id = readUint32LE(in);
+int CompressKyra::decodeChunk(File &in, File &out) {
+	uint16 size = in.readU16LE();
+	uint16 outSize = in.readU16LE();
+	uint32 id = in.readU32LE();
 	byte *inputBuffer, *outputBuffer;
 	int bytesRead = 0;
 
@@ -166,8 +141,6 @@ static int decodeChunk(FILE *in, FILE *out) {
 		}
 		while (size > 0)  {
 			int written = fwrite(outputBuffer, 1, size, out);
-			if (written <= 0)
-				error("[1] Couldn't write data");
 			size -= written;
 		}
 		free(outputBuffer);
@@ -278,37 +251,32 @@ typedef struct {
 	byte type;
 } AUDHeader;
 
-static void compressAUDFile(FILE *input, const char *outfile) {
+void CompressKyra::compressAUDFile(File &input, const char *outfile) {
 	AUDHeader header;
 
-	header.freq = readUint16LE(input);
-	header.size = readUint32LE(input);
-	header.flags = readByte(input);
-	header.type = readByte(input);
-	//printf("%d Hz, %d bytes, type %d (%08X)\n", header.freq, header.size, header.type, header.flags);
+	header.freq = input.readU16LE();
+	header.size = input.readU32LE();
+	header.flags = input.readByte();
+	header.type = input.readByte();
+	//print("%d Hz, %d bytes, type %d (%08X)\n", header.freq, header.size, header.type, header.flags);
 
-	FILE *output = fopen(TEMP_RAW, "wb");
-
-	if (!output)
-		error("Couldn't create temporary file '%s'", TEMP_RAW);
+	File output(TEMP_RAW, "wb");
 
 	uint32 remaining = header.size;
 	while (remaining > 0)
 		remaining -= decodeChunk(input, output);
 
-	fclose(output);
-
-	encodeAudio(TEMP_RAW, true, header.freq, outfile, gCompMode);
+	encodeAudio(TEMP_RAW, true, header.freq, outfile, _format);
 
 	unlink(TEMP_RAW);
 }
 
-struct DuplicatedFile {
+struct CompressKyra::DuplicatedFile {
 	uint32 resFilename;
 	uint32 resOffset;
 };
 
-static const DuplicatedFile *findDuplicatedFile(uint32 resOffset, const DuplicatedFile *list, const uint32 maxEntries) {
+const CompressKyra::DuplicatedFile *CompressKyra::findDuplicatedFile(uint32 resOffset, const DuplicatedFile *list, const uint32 maxEntries) {
 	for (uint32 i = 0; i < maxEntries; ++i) {
 		if (list[i].resOffset == resOffset && list[i].resOffset != 0)
 			return &list[i];
@@ -317,42 +285,36 @@ static const DuplicatedFile *findDuplicatedFile(uint32 resOffset, const Duplicat
 	return 0;
 }
 
-static void processKyra3(Filename *infile, Filename *outfile) {
+void CompressKyra::processKyra3(Filename *infile, Filename *outfile) {
 	if (infile->hasExtension("AUD")) {
-		outfile->setExtension(audio_extensions(gCompMode));
+		outfile->setExtension(audio_extensions(_format));
 
-		FILE *input = fopen(infile->getFullPath().c_str(), "rb");
-		if (!input)
-			error("Couldn't open file '%s'", infile->getFullPath().c_str());
+		File input(*infile, "rb");
 
 		compressAUDFile(input, outfile->getFullPath().c_str());
-
-		fclose(input);
 	} else if (infile->hasExtension("TLK")) {
 		PAKFile output;
 
-		FILE *input = fopen(infile->getFullPath().c_str(), "rb");
-		if (!input)
-			error("Couldn't open file '%s'", infile->getFullPath().c_str());
+		File input(*infile, "rb");
 
 		if (!output.loadFile(NULL, false))
 			return;
 
-		uint16 files = readUint16LE(input);
+		uint16 files = input.readU16LE();
 		DuplicatedFile *red = new DuplicatedFile[files];
 		memset(red, 0, sizeof(DuplicatedFile)*files);
 
 		for (uint16 i = 0; i < files; ++i) {
-			uint32 resFilename = readUint32LE(input);
-			uint32 resOffset = readUint32LE(input);
+			uint32 resFilename = input.readU32LE();
+			uint32 resOffset = input.readU32LE();
 
 			char outname[16];
-			snprintf(outname, 16, "%.08u.%s", resFilename, audio_extensions(gCompMode));
+			snprintf(outname, 16, "%.08u.%s", resFilename, audio_extensions(_format));
 
 			const DuplicatedFile *file = findDuplicatedFile(resOffset, red, files);
 			if (file) {
 				char linkname[16];
-				snprintf(linkname, 16, "%.08u.%s", file->resFilename, audio_extensions(gCompMode));
+				snprintf(linkname, 16, "%.08u.%s", file->resFilename, audio_extensions(_format));
 
 				output.linkFiles(outname, linkname);
 			} else {
@@ -373,7 +335,6 @@ static void processKyra3(Filename *infile, Filename *outfile) {
 		}
 
 		delete[] red;
-		fclose(input);
 
 		if (output.getFileList())
 			output.saveFile(outfile->getFullPath().c_str());
@@ -382,7 +343,7 @@ static void processKyra3(Filename *infile, Filename *outfile) {
 	}
 }
 
-bool detectKyra3File(Filename *infile) {
+bool CompressKyra::detectKyra3File(Filename *infile) {
 	if (infile->hasExtension("AUD")) {
 		return true;
 	} else if (infile->hasExtension("VRM") || infile->hasExtension("PAK")) {
@@ -393,23 +354,20 @@ bool detectKyra3File(Filename *infile) {
 		if (PAKFile::isPakFile(infile->getFullPath().c_str()))
 			return false;
 
-		FILE *f = fopen(infile->getFullPath().c_str(), "rb");
-		if (!f)
-			error("Couldn't open file '%s'", infile->getFullPath().c_str());
+		File f(*infile, "rb");
 
 		uint16 entries = readUint16LE(f);
 		uint32 entryTableSize = (entries * 8);
 		const uint32 filesize = fileSize(f);
 
 		if (entryTableSize + 2 > filesize) {
-			fclose(f);
 			error("Unknown filetype of file: '%s'", infile->getFullPath().c_str());
 		}
 
 		uint32 offset = 0;
 		for (uint16 i = 0; i < entries; ++i) {
-			readUint32LE(f);
-			offset = readUint32LE(f);
+			f.readU32LE();
+			offset = f.readU32LE();
 
 			if (offset > filesize)
 				error("Unknown filetype of file: '%s'", infile->getFullPath().c_str());
@@ -419,6 +377,9 @@ bool detectKyra3File(Filename *infile) {
 	}
 
 	error("Unknown filetype of file: '%s'", infile->getFullPath().c_str());
+
+	// Never reached
+	return false;
 }
 
 #ifdef STANDALONE_MAIN

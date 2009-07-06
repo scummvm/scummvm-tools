@@ -27,6 +27,34 @@
 	#define	vsnprintf _vsnprintf
 #endif
 
+const char *audio_extensions(AudioFormat format) {
+	switch(format) {
+	case AUDIO_MP3:
+		return ".mp3";
+	case AUDIO_VORBIS:
+		return ".ogg";
+	case AUDIO_FLAC:
+		return ".fla";
+	case AUDIO_NONE:
+	default:
+		return ".unk";
+	}
+}
+
+CompressionFormat compression_format(AudioFormat format) {
+	switch(format) {
+	case AUDIO_MP3:
+		return COMPRESSION_MP3;
+	case AUDIO_VORBIS:
+		return COMPRESSION_OGG;
+	case AUDIO_FLAC:
+		return COMPRESSION_FLAC;
+	case AUDIO_NONE:
+	default:
+		throw ToolException("Unknown compression format");
+	}
+}
+
 void error(const char *s, ...) {
 	char buf[1024];
 	va_list va;

@@ -22,21 +22,6 @@
 
 #include "compress.h"
 
-// The order should match the AudioFormat enum
-const char *audio_extensions(AudioFormat format) {
-	switch(format) {
-	case AUDIO_MP3:
-		return ".mp3";
-	case AUDIO_VORBIS:
-		return ".ogg";
-	case AUDIO_FLAC:
-		return ".fla";
-	case AUDIO_NONE:
-	default:
-		return ".unk";
-	}
-}
-
 typedef struct  {
 	uint32 minBitr;
 	uint32 maxBitr;
@@ -934,17 +919,18 @@ AudioFormat process_audio_params(int argc, char *argv[], int* i) {
 // The old code can be removed once all tools have been converted
 
 CompressionTool::CompressionTool(const std::string &name) : Tool(name) {
+	_format = AUDIO_MP3;
 }
 
 void CompressionTool::parseAudioArguments() {
-	AudioFormat format = AUDIO_NONE;
+	_format = AUDIO_NONE;
 
 	if (_arguments[_arguments_parsed] ==  "--mp3")
-		format = AUDIO_MP3;
+		_format = AUDIO_MP3;
 	else if (_arguments[_arguments_parsed] == "--vorbis")
-		format = AUDIO_VORBIS;
+		_format = AUDIO_VORBIS;
 	else if (_arguments[_arguments_parsed] == "--flac")
-		format = AUDIO_FLAC;
+		_format = AUDIO_FLAC;
 	else
 		// No audio arguments then
 		return;
@@ -954,7 +940,7 @@ void CompressionTool::parseAudioArguments() {
 	// Need workaround to be sign-correct
 	int arg = (int)_arguments_parsed;
 
-	switch (format) {
+	switch (_format) {
 	case AUDIO_MP3:
 		tempEncoded = TEMP_MP3;
 		if (!process_mp3_parms(_arguments.size() - 2, _argv, &arg))

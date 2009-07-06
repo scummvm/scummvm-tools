@@ -22,6 +22,8 @@
 
 #include "compress.h"
 
+#include "compress_tucker.h"
+
 #define CURRENT_VER  1
 #define HEADER_SIZE  4
 #define HEADER_FLAG_AUDIO_INTRO (1 << 0)
@@ -30,8 +32,6 @@
 #define OUTPUT_OGG  "TUCKER.SOG"
 #define OUTPUT_FLA  "TUCKER.SOF"
 
-static AudioFormat gCompMode = AUDIO_MP3;
-
 struct CompressedData {
 	int offset;
 	int size;
@@ -39,40 +39,42 @@ struct CompressedData {
 
 static CompressedData temp_table[10000];
 
-static int append_compress_file(FILE *output) {
+CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name) {
+	_inputFromDirectory = true;
+
+	_helptext = "\nUsage: %s [mode params] [-o outputdir] inputdir\n";
+}
+
+int CompressTucker::append_compress_file(File &output) {
 	char buf[2048];
-	FILE *input_temp;
 	int sz, compress_sz = 0;
 
-	input_temp = fopen(tempEncoded, "rb");
-	if (input_temp) {
-		while ((sz = fread(buf, 1, sizeof(buf), input_temp)) > 0) {
-			if ((sz = fwrite(buf, 1, sz, output)) > 0) {
-				compress_sz += sz;
-			}
+	File input_temp(tempEncoded, "rb");
+	while ((sz = fread(buf, 1, sizeof(buf), input_temp)) > 0) {
+		if ((sz = fwrite(buf, 1, sz, output)) > 0) {
+			compress_sz += sz;
 		}
-		fclose(input_temp);
 	}
 	return compress_sz;
 }
 
-static int compress_file_wav(FILE *input, FILE *output) {
+int CompressTucker::compress_file_wav(File &input, File &output) {
 	char buf[8];
 
 	if (fread(buf, 1, 8, input) == 8 && memcmp(buf, "RIFF", 4) == 0) {
-		extractAndEncodeWAV(TEMP_WAV, input, gCompMode);
+		extractAndEncodeWAV(TEMP_WAV, input, _format);
 		return append_compress_file(output);
 	}
 	return 0;
 }
 
-static int compress_file_raw(const char *input, bool is16, FILE *output) {
+int CompressTucker::compress_file_raw(const char *input, bool is16, File &output) {
 	if (is16) {
 		setRawAudioType(true, false, 16);
 	} else {
 		setRawAudioType(false, false, 8);
 	}
-	encodeAudio(input, true, 22050, tempEncoded, gCompMode);
+	encodeAudio(input, true, 22050, tempEncoded, _format);
 	return append_compress_file(output);
 }
 
@@ -94,13 +96,13 @@ static SoundDirectory sound_directory_table[SOUND_TYPES_COUNT] = {
 	{ "SPEECH", "sam%04d.wav", MAX_SPEECH_FILES }
 };
 
-static uint32 compress_sounds_directory(const Filename *inpath, const Filename *outpath, FILE *output, const struct SoundDirectory *dir) {
+uint32 CompressTucker::compress_sounds_directory(const Filename *inpath, const Filename *outpath, File &output, const struct SoundDirectory *dir) {
 	char filepath[1024];
 	char *filename;
 	//struct stat s;
 	int i, pos;
 	uint32 current_offset;
-	FILE *input;
+	File input;
 
 	assert(dir->count <= ARRAYSIZE(temp_table));
 
@@ -119,8 +121,8 @@ static uint32 compress_sounds_directory(const Filename *inpath, const Filename *
 
 	/* write 0 offsets/sizes table */
 	for (i = 0; i < dir->count; ++i) {
-		writeUint32LE(output, 0);
-		writeUint32LE(output, 0);
+		output.writeU32LE(0);
+		output.writeU32LE(0);
 	}
 
 	/* compress .wav files in directory */
@@ -128,11 +130,10 @@ static uint32 compress_sounds_directory(const Filename *inpath, const Filename *
 	for (i = 0; i < dir->count; ++i) {
 		temp_table[i].offset = current_offset;
 		sprintf(filename, dir->fmt, i);
-		input = fopen(filepath, "rb");
-		if (input) {
+		try {
+			input.open(filepath, "rb");
 			temp_table[i].size = compress_file_wav(input, output);
-			fclose(input);
-		} else {
+		} catch (...) {
 			temp_table[i].size = 0;
 		}
 		current_offset += temp_table[i].size;
@@ -294,11 +295,10 @@ static const int audio_formats_table[] = {
 	2, 1
 };
 
-static uint32 compress_audio_directory(const Filename *inpath, const Filename *outpath, FILE *output) {
+uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Filename *outpath, File &output) {
 	char filepath[1024];
 	int i, pos, count;
 	uint32 current_offset;
-	FILE *input;
 
 	count = ARRAYSIZE(audio_files_list);
 	pos = ftell(output);
@@ -313,7 +313,7 @@ static uint32 compress_audio_directory(const Filename *inpath, const Filename *o
 	for (i = 0; i < count; ++i) {
 		temp_table[i].offset = current_offset;
 		sprintf(filepath, "%s/audio/%s", inpath->getPath().c_str(), audio_files_list[i]);
-		input = fopen(filepath, "rb");
+		File input(filepath, "rb");
 		if (!input) {
 			warning("Can't open file '%s'", filepath);
 			temp_table[i].size = 0;
@@ -346,29 +346,25 @@ static uint32 compress_audio_directory(const Filename *inpath, const Filename *o
 	return current_offset + count * 8;
 }
 
-static void compress_sound_files(const Filename *inpath, const Filename *outpath) {
+void CompressTucker::compress_sound_files(const Filename *inpath, const Filename *outpath) {
 	int i;
-	FILE *output;
 	uint32 current_offset;
 	uint32 sound_directory_size[SOUND_TYPES_COUNT];
 	uint32 audio_directory_size;
 	const uint16 flags = 0; // HEADER_FLAG_AUDIO_INTRO;
 
-	output = fopen(outpath->getFullPath().c_str(), "wb");
-	if (!output) {
-		error("Cannot open file '%s' for writing", outpath->getFullPath().c_str());
-	}
+	File output(*outpath, "wb");
 
-	writeUint16LE(output, CURRENT_VER);
-	writeUint16LE(output, flags);
+	output.writeU16LE(CURRENT_VER);
+	output.writeU16LE(flags);
 
 	/* write 0 offsets/count */
 	for (i = 0; i < SOUND_TYPES_COUNT; ++i) {
-		writeUint32LE(output, 0);
-		writeUint32LE(output, 0);
+		output.writeU32LE(0);
+		output.writeU32LE(0);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
-		writeUint32LE(output, 0);
+		output.writeU32LE(0);
 	}
 
 	/* compress the .wav files in each directory */
@@ -387,13 +383,13 @@ static void compress_sound_files(const Filename *inpath, const Filename *outpath
 	fseek(output, HEADER_SIZE, SEEK_SET);
 	current_offset = 0;
 	for (i = 0; i < SOUND_TYPES_COUNT; ++i) {
-		writeUint32LE(output, current_offset);
-		writeUint32LE(output, sound_directory_table[i].count);
+		output.writeU32LE(current_offset);
+		output.writeU32LE(sound_directory_table[i].count);
 		current_offset += sound_directory_size[i];
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
-		writeUint32LE(output, current_offset);
-		writeUint32LE(output, ARRAYSIZE(audio_files_list));
+		output.writeU32LE(current_offset);
+		output.writeU32LE(ARRAYSIZE(audio_files_list));
 		current_offset += audio_directory_size;
 	}
 
@@ -408,27 +404,12 @@ static void compress_sound_files(const Filename *inpath, const Filename *outpath
 }
 
 
-int export_main(compress_tucker)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputdir] inputdir\n";
-
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
-	
-	parseHelpArguments(argv, argc, helptext);
-
-	// compression mode
-	gCompMode = process_audio_params(argc, argv, &first_arg);
-
-
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-
-	inpath.setFullPath(argv[first_arg]);
+void CompressTucker::execute() {
+	// We only got one input dir
+	if (_inputPaths.size() > 1)
+		error("Only one input directory expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
 	// Default out is same as in directory, file names differ by extension
 	if (outpath.empty()) {
@@ -436,7 +417,7 @@ int export_main(compress_tucker)(int argc, char *argv[]) {
 	}
 
 	// Temporary output file
-	switch(gCompMode) {
+	switch(_format) {
 	case AUDIO_MP3:
 		tempEncoded = TEMP_MP3;
 		outpath.setFullName(OUTPUT_MP3);
@@ -450,12 +431,11 @@ int export_main(compress_tucker)(int argc, char *argv[]) {
 		outpath.setFullName(OUTPUT_FLA);
 		break;
 	default:
-		displayHelp(helptext, argv[0]);
+		throw ToolException("Unknown audio format");
 		break;
 	}
 
 	compress_sound_files(&inpath, &outpath);
-	return 0;
 }
 
 #ifdef STANDALONE_MAIN

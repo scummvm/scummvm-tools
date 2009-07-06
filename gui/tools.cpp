@@ -36,6 +36,13 @@
 
 // Include all tools
 #include "../compress_agos.h"
+#include "../compress_gob.h"
+#include "../compress_kyra.h"
+#include "../compress_queen.h"
+#include "../compress_saga.h"
+#include "../compress_tinsel.h"
+#include "../compress_touche.h"
+#include "../compress_tucker.h"
 #include "../extract_agos.h"
 #include "../extract_gob_stk.h"
 
@@ -50,6 +57,27 @@ void Tools::init() {
 
 	// Compress agos also has a --mac parameter, need to add an additional page / option for this
 	addTool(new ToolGUI(new CompressAgos()));
+
+	// Compress gob also has a --f parameter, need to add an additional page / option for this
+	addTool(new ToolGUI(new CompressGob()));
+
+	// Compress kyra...
+	addTool(new ToolGUI(new CompressKyra()));
+
+	// Compress queen...
+	addTool(new ToolGUI(new CompressQueen()));
+
+	// Compress saga...
+	addTool(new ToolGUI(new CompressSaga()));
+
+	// Compress tinsel...
+	addTool(new ToolGUI(new CompressTinsel()));
+	
+	// Compress touche...
+	addTool(new ToolGUI(new CompressTouche(), wxT("/")));
+	
+	// Compress tucker...
+	addTool(new ToolGUI(new CompressTucker(), wxT("/")));
 
 	// extract_agos
 	addTool(new ToolGUI(new ExtractAgos()));
@@ -254,7 +282,7 @@ ToolGUI::ToolGUI(Tool *tool, wxString input_extensions) {
 	// Sensible defaults
 	ToolInput input;
 	input._extension = input_extensions;
-	input._file = true;
+	input._file = input_extensions != wxT("/");
 	_inputs.push_back(input);
 
 	_inoutHelpText = wxT("Output files produced by the tool will be put in this directory.");

@@ -81,10 +81,12 @@ protected:
 	// We need to keep the raw arguments to invoke some functions
 	char **_argv;
 
-	// What does this tool support?
+	/** If this tools outputs to a directory, not a file */
 	bool _outputToDirectory;
+	/** We don't take a single file, but an entire directory as input */
+	bool _inputFromDirectory;
+	/** */
 	AudioFormat _supported_formats;
-	std::vector<std::string> _games;
 
 	/** Name of the tool */
 	std::string _name;

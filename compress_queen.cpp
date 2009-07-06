@@ -1,5 +1,5 @@
 /* compress_queen - Rebuild QUEEN.1 file to contain Resource Table (and optionally compress sound & speech)
- * Copyright (C) 2003-2006  The ScummVM Team
+ * Copyright (C) 2009  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,8 +22,9 @@
 
 #include "compress.h"
 
-static const uint32 QTBL = 'QTBL';
-static AudioFormat gCompMode = AUDIO_MP3;
+#include "compress_queen.h"
+
+const uint32 QTBL = 'QTBL';
 
 #define INPUT_TBL	"queen.tbl"
 #define FINAL_OUT	"queen.1c"
@@ -36,13 +37,6 @@ static AudioFormat gCompMode = AUDIO_MP3;
 #define EXTRA_TBL_HEADER 8
 #define SB_HEADER_SIZE_V104 110
 #define SB_HEADER_SIZE_V110 122
-
-enum {
-	COMPRESSION_NONE = 0,
-	COMPRESSION_MP3 = 1,
-	COMPRESSION_OGG = 2,
-	COMPRESSION_FLAC = 3
-};
 
 enum {
 	VER_ENG_FLOPPY     = 0,
@@ -65,36 +59,12 @@ enum {
 	VER_PC_COUNT       = 13 /* PC versions */
 };
 
-struct GameVersion {
-	char versionString[6];
-	uint8 isFloppy;
-	uint8 isDemo;
-	uint32 tableOffset;
-	uint32 dataFileSize;
-};
-
-struct Entry {
-	char filename[13];
-	uint8 bundle;
-	uint32 offset;
-	uint32 size;
-};
-
-Entry entry;
-
-struct VersionExtra {
-	uint8	compression;
-	uint16	entries;
-};
-
-VersionExtra versionExtra;
-
 struct PatchFile {
 	const char *filename;
 	char lang;
 };
 
-const struct GameVersion gameVersions[] = {
+const struct CompressQueen::GameVersion gameVersions[] = {
 	{ "PEM10", 1, 0, 0x00000008,  22677657 },
 	{ "CEM10", 0, 0, 0x0000584E, 190787021 },
 	{ "PFM10", 1, 0, 0x0002CD93,  22157304 },
@@ -119,9 +89,12 @@ const struct PatchFile patchFiles[] = {
 	{ "BUD1.DOG",   'I' }
 };
 
-const struct GameVersion *version;
+CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name) {
+	
+	_helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
+}
 
-const struct GameVersion *detectGameVersion(uint32 size) {
+const CompressQueen::GameVersion *CompressQueen::detectGameVersion(uint32 size) {
 	const struct GameVersion *pgv = gameVersions;
 	int i;
 
@@ -137,13 +110,7 @@ const struct GameVersion *detectGameVersion(uint32 size) {
 	return NULL;
 }
 
-void checkOpen(FILE *fp, const char *filename) {
-	if (!fp) {
-		error("Cannot open file: %s", filename);
-	}
-}
-
-void fromFileToFile(FILE *in, FILE *out, uint32 amount) {
+void CompressQueen::fromFileToFile(File &in, File &out, uint32 amount) {
 	char fBuf[2048];
 	uint32 numRead;
 
@@ -154,88 +121,58 @@ void fromFileToFile(FILE *in, FILE *out, uint32 amount) {
 		}
 
 		amount -= numRead;
-		fwrite(fBuf, 1, numRead, out);
+		out.write(fBuf, 1, numRead);
 	}
 }
 
-void createFinalFile(Filename *outPath) {
-	FILE *inTbl, *inData, *outFinal;
+void CompressQueen::createFinalFile(Filename *outPath) {
 	int i;
 	uint32 dataStartOffset;
 	uint32 dataSize;
 
-	inTbl = fopen(TEMP_TBL, "rb");
-	checkOpen(inTbl, TEMP_TBL);
-	inData = fopen(TEMP_DAT, "rb");
-	checkOpen(inData, TEMP_DAT);
+	File inTbl(TEMP_TBL, "rb");
+	File inData(TEMP_DAT, "rb");
+	File outFinal(*outPath, "wb");
 
-	outFinal = fopen(outPath->getFullPath().c_str(), "wb");
-	checkOpen(outFinal, outPath->getFullPath().c_str());
-
-	dataStartOffset = fileSize(inTbl) + EXTRA_TBL_HEADER;
+	dataStartOffset = inTbl.size() + EXTRA_TBL_HEADER;
 	dataSize = fileSize(inData);
 
-	fseek(inTbl, 7, SEEK_SET);	/* Skip past header */
+	inTbl.seek(7, SEEK_SET);	/* Skip past header */
 
 	/* Write new header */
-	writeUint32BE(outFinal, QTBL);
-	fwrite(version->versionString, 6, 1, outFinal);
-	writeByte(outFinal, version->isFloppy);
-	writeByte(outFinal, version->isDemo);
-	writeByte(outFinal, versionExtra.compression);
-	writeUint16BE(outFinal, versionExtra.entries);
+	outFinal.writeU32BE(QTBL);
+	outFinal.write(_version->versionString, 6, 1);
+	outFinal.writeByte(_version->isFloppy);
+	outFinal.writeByte(_version->isDemo);
+	outFinal.writeByte(_versionExtra.compression);
+	outFinal.writeU16BE(_versionExtra.entries);
 
-	for (i = 0; i < versionExtra.entries; i++) {
+	for (i = 0; i < _versionExtra.entries; i++) {
 		fromFileToFile(inTbl, outFinal, 12);
-		writeByte(outFinal, readByte(inTbl));
-		writeUint32BE(outFinal, dataStartOffset + readUint32BE(inTbl));
-		writeUint32BE(outFinal, readUint32BE(inTbl));
+		outFinal.writeByte(inTbl.readByte());
+		outFinal.writeU32BE(dataStartOffset + inTbl.readU32BE());
+		outFinal.writeU32BE(inTbl.readU32BE());
 	}
 
 	/* Append contents of temporary datafile to final datafile */
 	fromFileToFile(inData, outFinal, dataSize);
-
-	fclose(inTbl);
-	fclose(inData);
-	fclose(outFinal);
 
 	/* Cleanup */
 	unlink(TEMP_TBL);
 	unlink(TEMP_DAT);
 }
 
-int export_main(compress_queen)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
-
-	FILE *inputData, *inputTbl, *outputTbl, *outputData, *tmpFile, *compFile;
-	uint8 compressionType = COMPRESSION_NONE;
-	Filename inpath, outpath;;
+void CompressQueen::execute() {
+	File inputData, inputTbl, outputTbl, outputData, compFile;
 	char tmp[5];
 	int size, i = 1;
 	uint32 prevOffset;
-	int first_arg = 1;
-	int last_arg = argc - 1;
 
-	parseHelpArguments(argv, argc, helptext);
-
-	gCompMode = process_audio_params(argc, argv, &first_arg);
-
-	if (gCompMode == AUDIO_NONE) {
-		// Unknown mode (failed to parse arguments), display help and exit
-		displayHelp(helptext, argv[0]);
-	}
-	
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else 
-		// Just leave it empty, we just change extension of input file
-		;
-
-	inpath.setFullPath(argv[first_arg]);
+	// Check input
+	if (_inputPaths.size() == 1)
+		error("One input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
 	if (outpath.empty()) {
 		outpath = inpath;
@@ -243,66 +180,62 @@ int export_main(compress_queen)(int argc, char *argv[]) {
 	}
 
 	/* Open input file (QUEEN.1) */
-	inputData = fopen(inpath.getFullPath().c_str(), "rb");
-	checkOpen(inputData, inpath.getFullPath().c_str());
+	inputData.open(inpath, "rb");
 
 	/* Open TBL file (QUEEN.TBL) */
 	inpath.setFullName(INPUT_TBL);
-	inputTbl = fopen(inpath.getFullPath().c_str(), "rb");
-	checkOpen(inputTbl, inpath.getFullPath().c_str());
+	inputTbl.open(inpath, "rb");
 
-	size = fileSize(inputData);
-	fread(tmp, 1, 4, inputTbl);
+	size = inputData.size();
+	inputTbl.read(tmp, 1, 4);
 	tmp[4] = '\0';
 
 	if (memcmp(tmp, "QTBL", 4)) {
 		error("Invalid TBL file");
 	}
 
-	if (readUint32BE(inputTbl) != CURRENT_TBL_VERSION) {
+	if (inputTbl.readU32BE() != CURRENT_TBL_VERSION) {
 		error("You are using an incorrect (outdated?) version of the queen.tbl file");
 	}
 
-	version = detectGameVersion(size);
-	fseek(inputTbl, version->tableOffset, SEEK_SET);
+	_version = detectGameVersion(size);
+	inputTbl.seek(_version->tableOffset, SEEK_SET);
 
-	versionExtra.compression = compressionType;
-	versionExtra.entries = readUint16BE(inputTbl);
+	_versionExtra.compression = compression_format(_format);
+	_versionExtra.entries = inputTbl.readU16BE();
 
-	outputTbl = fopen(TEMP_TBL, "wb");
-	checkOpen(outputTbl, TEMP_TBL);
+	outputTbl.open(TEMP_TBL, "wb");
 
-	outputData = fopen(TEMP_DAT, "wb");
-	checkOpen(outputData, TEMP_DAT);
+	outputData.open(TEMP_DAT, "wb");
 
 	/* Write tablefile header */
-	writeUint32BE(outputTbl, QTBL);
-	writeByte(outputTbl, versionExtra.compression);
-	writeUint16BE(outputTbl, versionExtra.entries);
+	outputTbl.writeU32BE(QTBL);
+	outputTbl.writeByte(_versionExtra.compression);
+	outputTbl.writeU16BE(_versionExtra.entries);
 
-	for (i = 0; i < versionExtra.entries; i++) {
+	for (i = 0; i < _versionExtra.entries; i++) {
 		prevOffset = ftell(outputData);
 
 		/* Read entry */
-		fread(entry.filename, 1, 12, inputTbl);
-		entry.filename[12] = '\0';
-		entry.bundle = readByte(inputTbl);
-		entry.offset = readUint32BE(inputTbl);
-		entry.size = readUint32BE(inputTbl);
+		inputTbl.read(_entry.filename, 1, 12);
+		_entry.filename[12] = '\0';
+		_entry.bundle = inputTbl.readByte();
+		_entry.offset = inputTbl.readU32BE();
+		_entry.size = inputTbl.readU32BE();
 
-		printf("Processing entry: %s\n", entry.filename);
-		fseek(inputData, entry.offset, SEEK_SET);
+		print("Processing entry: %s\n", _entry.filename);
+		fseek(inputData, _entry.offset, SEEK_SET);
 
-		if (versionExtra.compression && strstr(entry.filename, ".SB")) { /* Do we want to compress? */
+		if (_versionExtra.compression && strstr(_entry.filename, ".SB")) { /* Do we want to compress? */
 			uint16 sbVersion;
 			int headerSize;
 
 			/* Read in .SB */
-			tmpFile = fopen(TEMP_SB, "wb");
-			fseek(inputData, entry.offset, SEEK_SET);
+			File tmpFile(TEMP_SB, "wb");
+			inputData.seek(_entry.offset, SEEK_SET);
 
-			fseek(inputData, 2, SEEK_CUR);
-			sbVersion = readUint16LE(inputData);
+			inputData.seek(2, SEEK_CUR);
+			sbVersion = inputData.readU16LE();
 
 			switch (sbVersion) {
 			case 104:
@@ -317,21 +250,20 @@ int export_main(compress_queen)(int argc, char *argv[]) {
 				break;
 			}
 
-			fseek(inputData, headerSize - 4, SEEK_CUR);
-			entry.size -= headerSize;
+			inputData.seek(headerSize - 4, SEEK_CUR);
+			_entry.size -= headerSize;
 
-			fromFileToFile(inputData, tmpFile, entry.size);
-			fclose(tmpFile);
+			fromFileToFile(inputData, tmpFile, _entry.size);
 
 			/* Invoke encoder */
 			setRawAudioType(false, false, 8);
-			encodeAudio(TEMP_SB, true, 11840, tempEncoded, gCompMode);
+			encodeAudio(TEMP_SB, true, 11840, tempEncoded, _format);
 
 			/* Append MP3/OGG to data file */
-			compFile = fopen(tempEncoded, "rb");
-			entry.size = fileSize(compFile);
-			fromFileToFile(compFile, outputData, entry.size);
-			fclose(compFile);
+			compFile.open(tempEncoded, "rb");
+			_entry.size = fileSize(compFile);
+			fromFileToFile(compFile, outputData, _entry.size);
+			compFile.close();
 
 			/* Delete temporary files */
 			unlink(TEMP_SB);
@@ -345,15 +277,15 @@ int export_main(compress_queen)(int argc, char *argv[]) {
 			for (j = 0; j < ARRAYSIZE(patchFiles); ++j) {
 				const struct PatchFile *pf = &patchFiles[j];
 
-				if (version->versionString[1] == pf->lang && strcmp(pf->filename, entry.filename) == 0) {
+				if (_version->versionString[1] == pf->lang && strcmp(pf->filename, _entry.filename) == 0) {
 					/* XXX patched data files are supposed to be in cwd */
-					FILE *fpPatch = fopen(pf->filename, "rb");
+					File fpPatch(pf->filename, "rb");
 
 					if (fpPatch) {
-						entry.size = fileSize(fpPatch);
-						printf("Patching entry, new size = %d bytes\n", entry.size);
-						fromFileToFile(fpPatch, outputData, entry.size);
-						fclose(fpPatch);
+						_entry.size = fpPatch.size();
+						print("Patching entry, new size = %d bytes\n", _entry.size);
+						fromFileToFile(fpPatch, outputData, _entry.size);
+						fpPatch.close();
 						patched = true;
 					}
 
@@ -362,32 +294,25 @@ int export_main(compress_queen)(int argc, char *argv[]) {
 			}
 
 			if (!patched) {
-				fromFileToFile(inputData, outputData, entry.size);
+				fromFileToFile(inputData, outputData, _entry.size);
 			}
 		}
 
 		/* Write entry to table */
-		fwrite(entry.filename, 12, 1, outputTbl);
-		writeByte(outputTbl, entry.bundle);
-		writeUint32BE(outputTbl, prevOffset);
-		writeUint32BE(outputTbl, entry.size);
+		outputTbl.write(_entry.filename, 12, 1);
+		outputTbl.writeByte(_entry.bundle);
+		outputTbl.writeU32BE(prevOffset);
+		outputTbl.writeU32BE(_entry.size);
 	}
-
-	/* Close files */
-	fclose(outputTbl);
-	fclose(outputData);
-	fclose(inputTbl);
-	fclose(inputData);
 
 	/* Merge the temporary table and temporary datafile to create final file */
 	createFinalFile(&outpath);
-
-	return 0;
 }
 
-#ifdef STANDALON_MAIN
+#ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(compress_queen)(argc, argv);
+	CompressQueen queen(argv[0]);
+	return queen.run(argc, argv);
 }
 #endif
 

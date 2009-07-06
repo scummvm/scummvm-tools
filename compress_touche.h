@@ -1,5 +1,5 @@
-/* compress_agos.h - Compress Simon the Sorcerer 1/2 digital sound files into compressed audio format
- * Copyright (C) 2009 The ScummVM project
+/* compress_touche - Compress Touche Speech Data Files
+ * Copyright (C) 2009  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,34 +15,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL
- * $Id
+ * $URL$
+ * $Id$
  *
  */
 
-#ifndef COMPRESS_AGOS_H
-#define COMPRESS_AGOS_H
+#ifndef COMPRESS_TOUCHE_H
+#define COMPRESS_TOUCHE_H
 
 #include "compress.h"
 
-class CompressAgos : public CompressionTool {
+class CompressTouche : public CompressionTool {
 public:
-	CompressAgos(const std::string &name = "compress_agos");
+	CompressTouche(const std::string &name = "compress_touche");
 
 	virtual void execute();
 
 protected:
-	void parseExtraArguments();
 
-	File _input, _output_idx, _output_snd;
-	bool _convertMac;
-
-	void end();
-	int get_offsets(uint32 filenums[], uint32 offsets[]);
-	int get_offsets_mac(uint32 filenums[], uint32 offsets[]);
-	uint32 get_sound(uint32 offset);
-	void convert_pc(Filename* inputPath);
-	void convert_mac(Filename *inputPath);
+	uint32 compress_sound_data_file(uint32 current_offset, File &output, File &input, uint32 *offs_table, uint32 *size_table, int len);
+	void compress_sound_data(Filename *inpath, Filename *outpath);
 };
 
 #endif
+

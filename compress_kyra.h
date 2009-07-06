@@ -1,5 +1,5 @@
-/* compress_agos.h - Compress Simon the Sorcerer 1/2 digital sound files into compressed audio format
- * Copyright (C) 2009 The ScummVM project
+/* compress_kyra_bun - compressor for kyra sound file packages
+ * Copyright (C) 2006  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,34 +15,32 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL
- * $Id
+ * $URL$
+ * $Id$
  *
  */
 
-#ifndef COMPRESS_AGOS_H
-#define COMPRESS_AGOS_H
+#ifndef COMPRESS_KYRA_H
+#define COMPRESS_KYRA_H
 
 #include "compress.h"
 
-class CompressAgos : public CompressionTool {
+class CompressKyra : public CompressionTool {
 public:
-	CompressAgos(const std::string &name = "compress_agos");
+	CompressKyra(const std::string &name = "compress_kyra");
 
 	virtual void execute();
 
 protected:
-	void parseExtraArguments();
+	struct DuplicatedFile;
 
-	File _input, _output_idx, _output_snd;
-	bool _convertMac;
-
-	void end();
-	int get_offsets(uint32 filenums[], uint32 offsets[]);
-	int get_offsets_mac(uint32 filenums[], uint32 offsets[]);
-	uint32 get_sound(uint32 offset);
-	void convert_pc(Filename* inputPath);
-	void convert_mac(Filename *inputPath);
+	uint16 clip8BitSample(int16 sample);
+	int decodeChunk(File &in, File &out);
+	void compressAUDFile(File &input, const char *outfile);
+	const DuplicatedFile *findDuplicatedFile(uint32 resOffset, const DuplicatedFile *list, const uint32 maxEntries);
+	void process(Filename *infile, Filename *output);
+	void processKyra3(Filename *infile, Filename *output);
+	bool detectKyra3File(Filename *infile);
 };
 
 #endif

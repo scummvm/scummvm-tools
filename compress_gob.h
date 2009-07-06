@@ -23,6 +23,8 @@
 #ifndef COMPRESS_GOB_H
 #define COMPRESS_GOB_H
 
+#include "compress.h"
+
 #define confSTK21 "STK21"
 #define confSTK10 "STK10"
 
@@ -30,5 +32,32 @@
 #define MODE_HELP   1
 #define MODE_FORCE  2
 #define MODE_SET    4
+
+
+class CompressGob : public CompressionTool {
+public:
+	CompressGob(const std::string &name = "compress_gob");
+	~CompressGob();
+
+	virtual void execute();
+
+protected:
+	struct Chunk;
+	
+	uint8 _execMode;
+	Chunk *_chunks;
+
+	void parseExtraArguments();
+
+	Chunk *readChunkConf(File &gobconf, const Filename &stkName, uint16 &chunkCount);
+	void writeEmptyHeader(File &stk, uint16 chunkCount);
+	void writeBody(Filename *inpath, File &stk, Chunk *chunks);
+	uint32 writeBodyStoreFile(File &stk, File &src);
+	uint32 writeBodyPackFile(File &stk, File &src);
+	void rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks);
+	bool filcmp(File &src1, Chunk *compChunk);
+	bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length);
+
+};
 
 #endif
