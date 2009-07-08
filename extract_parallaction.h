@@ -20,6 +20,10 @@
  *
  */
 
+#ifndef EXTRACT_PARALLACTION_H
+#define EXTRACT_PARALLACTION_H
+
+#include "tool.h"
 #include "util.h"
 
 uint32 depackedlen(byte *packed, uint32 plen);
@@ -32,9 +36,12 @@ void ppdepack(byte *packed, byte *depacked, uint32 plen, uint32 unplen);
 
 
 struct Archive {
+	// Required for printing errors
+	Tool &_tool;
+
 	uint32	_numSlots;
 	uint32	_numFiles;
-	FILE   *_file;
+	File    _file;
 	char	_name[260];
 
 	// file data
@@ -53,7 +60,7 @@ struct Archive {
 	void 	readSubfile(byte* buf, uint32 size);
 	uint32  getSizeOfSubfile();
 
-	Archive();
+	Archive(Tool &tool);
 	~Archive();
 
 	// debug stuff
@@ -68,3 +75,17 @@ private:
 	void	unpackSubfile(byte* packedData, uint32 packedSize);
 
 };
+
+class ExtractParallaction : public Tool {
+public:
+	ExtractParallaction(const std::string &name = "extract_parallaction");
+
+	virtual void execute();
+
+protected:
+	void parseExtraArguments();
+
+	bool _small;
+};
+
+#endif

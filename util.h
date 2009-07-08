@@ -351,7 +351,6 @@ public:
 
 	/**
 	 * Opens the given file path as an in/out stream, depending on the second argument
-	 * File is always opened in binary mode
 	 *
 	 * @param filename The file to open
 	 * @param mode The mode to open the file in
@@ -363,7 +362,13 @@ public:
 	 * Closes the file, if it's open
 	 */
 	void close();
-	
+
+	/**
+	 * Sets the xor mode of the file, bytes written / read to the file
+	 * will be XORed with this value. this value is *not* reset when opening a new file
+	 * Only works for write* and read* operation, not for the array "read" and "write" methods
+	 */
+	void setXorMode(uint8 xormode);
 	
 	/**
 	 * Read a single unsigned byte
@@ -459,7 +464,14 @@ protected:
 	FILE *_file;
 	/** The name of the file, used for better error messages */
 	Filename _name;
+	/** xor with this value while reading/writing (default 0), does not work for "read"/"write", only for byte operations */
+	uint8 _xormode;
 };
+
+// This generates a warning when used, so we don't use fclose accidently on 
+// a File object (this is a VERY EASY error to do when converting, and a warning
+// really helps find those cases)
+void fclose(File& f);
 
 void displayHelp(const char *msg = NULL, const char *exename = NULL);
 void parseHelpArguments(const char * const argv[], int argc, const char *msg = NULL);

@@ -122,6 +122,17 @@ void Tool::error(const char *format, ...) {
 	throw ToolException(buf);
 }
 
+void Tool::warning(const char *format, ...) {
+	char buf[4096];
+	va_list va;
+
+	va_start(va, format);
+	vsnprintf(buf, 4096, format, va);
+	va_end(va);
+
+	_internalPrint(_print_udata, (std::string("Warning: ") + buf).c_str());
+}
+
 void Tool::print(const char *format, ...) {
 	char buf[4096] = "";
 	va_list va;

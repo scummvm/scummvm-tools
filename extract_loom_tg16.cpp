@@ -23,29 +23,31 @@
 #include "util.h"
 #include <stdarg.h>
 
+#include "extract_loom_tg16.h"
+
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
 #define MAKE_LFLS
 
-uint8 read_cbyte (FILE *input, short *ctr) {
+uint8 read_cbyte (File &input, short *ctr) {
 	(*ctr) += 1;
-	return readByte(input);
+	return input.readByte();
 }
-uint16 read_cword (FILE *input, short *ctr) {
+uint16 read_cword (File &input, short *ctr) {
 	(*ctr) += 2;
-	return readUint16LE(input);
+	return input.readU16LE();
 }
 
-void write_cbyte (FILE *output, uint8 val, short *ctr) {
-	writeByte(output, val);
+void write_cbyte (File &output, uint8 val, short *ctr) {
+	output.writeByte(val);
 	(*ctr) += 1;
 }
-void write_cword (FILE *output, uint16 val, short *ctr) {
-	writeUint16LE(output, val);
+void write_cword (File &output, uint16 val, short *ctr) {
+	output.writeU16LE(val);
 	(*ctr) += 2;
 }
-void write_clong (FILE *output, uint32 val, short *ctr) {
-	writeUint32LE(output, val);
+void write_clong (File &output, uint32 val, short *ctr) {
+	output.writeU32LE(val);
 	(*ctr) += 4;
 }
 
@@ -67,11 +69,13 @@ typedef enum _iso {
 
 t_iso ISO = NUM_ISOS;
 
-typedef struct _resource {
+struct t_resource {
 	uint32 offset[NUM_ISOS];
 	uint16 length[NUM_ISOS];
 	res_type type;
-}	t_resource, *p_resource;
+};
+
+typedef t_resource * p_resource;
 
 #define NUM_ROOMS 100
 t_resource res_rooms[NUM_ROOMS] = {
@@ -778,7 +782,7 @@ signed short r_length (p_resource res) {
 	return res->length[ISO];
 }
 
-void extract_resource (FILE *input, FILE *output, p_resource res) {
+void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res) {
 #ifdef MAKE_LFLS
 	uint16 j, off;
 #endif
@@ -790,26 +794,26 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 
 	if ((r_offset(res) == 0) && (r_length(res) == 0))
 		return; /* if offset/length are both 0, skip it */
-	fseek(input, r_offset(res), SEEK_SET);
+	input.seek(r_offset(res), SEEK_SET);
 
 	switch (res->type) {
 	case RES_CHARSET:
 		rlen = r_length(res);
-		writeUint16LE(output, (uint16)(rlen + 4));
-		writeUint16LE(output, 0);
+		output.writeU16LE((uint16)(rlen + 4));
+		output.writeU16LE(0);
 
 		/* Skip 4 bytes */
 		read_cword(input, &i);
 		read_cword(input, &i);
 
 		/* Write expected charset header */
-		writeByte(output, 0x63);
-		writeByte(output, 0x01);
-		writeByte(output, 0x80);
-		writeByte(output, 0x08);
+		output.writeByte(0x63);
+		output.writeByte(0x01);
+		output.writeByte(0x80);
+		output.writeByte(0x08);
 
 		for (i = 0; i < rlen - 4; i++)
-			writeByte(output, readByte(input));
+			output.writeByte(input.readByte());
 		break;
 	case RES_GLOBDATA:
 		rlen = read_cword(input,&i);
@@ -820,10 +824,10 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 			error("extract_resource(globdata) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x11)
 			error("extract_resource(globdata) - resource tag is incorrect");
-		writeUint32LE(output,(uint16)(rlen + 1));
-		writeUint16LE(output,'O0');	/* 0O - Object Index */
+		output.writeU32LE((uint16)(rlen + 1));
+		output.writeU16LE('O0');	/* 0O - Object Index */
 		for (i = 5; i < rlen; i++)
-			writeByte(output,readByte(input));
+			output.writeByte(input.readByte());
 		break;
 #ifdef MAKE_LFLS
 	case RES_ROOM:
@@ -941,13 +945,13 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				default:
-					fseek(input, slen, SEEK_CUR);
+					input.seek(slen, SEEK_CUR);
 					error("extract_resource(room) - unknown resource tag encountered: len %04X type %02X", slen, stype);
 				}
 			}
-			fseek(output, off, SEEK_SET);
-			writeUint32LE(output, rlen);
-			fseek(output, 0, SEEK_END);
+			output.seek(off, SEEK_SET);
+			output.writeU32LE(rlen);
+			output.seek(0, SEEK_END);
 		}
 
 		break;
@@ -963,10 +967,10 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 			error("extract_resource(costume) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x03)
 			error("extract_resource(costume) - resource tag is incorrect");
-		writeUint32LE(output,(uint16)(rlen + 1));
-		writeUint16LE(output,'OC');	/* CO - Costume */
+		output.writeU32LE((uint16)(rlen + 1));
+		output.writeU16LE('OC');	/* CO - Costume */
 		for (i = 5; i < rlen; i++)
-			writeByte(output,readByte(input));
+			output.writeByte(readByte(input));
 		break;
 	case RES_SCRIPT:
 		rlen = read_cword(input,&i);
@@ -977,10 +981,10 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 			error("extract_resource(script) - length mismatch while extracting resource (was %04X, expected %04X)", rlen, r_length(res));
 		if (rtype != 0x02)
 			error("extract_resource(script) - resource tag is incorrect");
-		writeUint32LE(output,(uint16)(rlen + 1));
-		writeUint16LE(output,'CS');	/* SC - Script */
+		output.writeU32LE((uint16)(rlen + 1));
+		output.writeU16LE('CS');	/* SC - Script */
 		for (i = 5; i < rlen; i++)
-			writeByte(output,readByte(input));
+			output.writeByte(readByte(input));
 		break;
 	case RES_UNKNOWN:
 #else
@@ -992,10 +996,9 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 		rlen = read_cword(input,&i);
 		if (rlen != r_length(res))
 			error("extract_resource - length mismatch while extracting resource (was %04X, expected %04X)", rlen, r_length(res));
-		writeUint16LE(output,rlen);
+		output.writeUint16LE(rlen);
 		for (i = 2; i < rlen; i++)
-			writeByte(output,readByte(input));
-		break;
+			output.writeByte(readByte(input));
 		break;
 #endif
 	default:
@@ -1188,15 +1191,11 @@ struct _index {
 	uint32 sound_addr[NUM_SOUNDS];
 }	lfl_index;
 #else /* !MAKE_LFLS */
-void dump_resource (FILE *input, const char *fn_template, int num, p_resource res) {
+void dump_resource (File &input, const char *fn_template, int num, p_resource res) {
 	char fname[256];
-	FILE *output;
 	sprintf(fname, fn_template, num);
-	output = fopen(fname, "wb");
-	if (!output)
-		error("Unable to create %s", fname);
+	File output(fname, "wb");
 	extract_resource(input, output, res);
-	fclose(output);
 }
 #endif /* MAKE_LFLS */
 
@@ -1213,49 +1212,41 @@ void InitCRC (void) {
 	}
 }
 
-uint32 ISO_CRC (FILE *file) {
+uint32 ISO_CRC (File &file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i, len;
-	fseek(file, 0, SEEK_END);
+	file.seek(0, SEEK_END);
 	len = ftell(file);
-	fseek(file, 0, SEEK_SET);
+	file.seek(0, SEEK_SET);
 	for (i = 0; i < len; i++)
 		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ readByte(file)) & 0xFF];
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int export_main(extract_loom_tg16)(int argc, char *argv[]) {
+ExtractLoomTG16::ExtractLoomTG16(const std::string &name) : Tool(name) {
+	_helptext = "\nUsage: " + _name + " [-o outputdir = out/] <infile>";
+}
+
+void ExtractLoomTG16::execute() {
 #ifdef MAKE_LFLS
-	FILE *input, *output;
 	int i, j;
 #else
-	FILE *input;
 	int i;
 #endif
 	uint32 CRC;
 
-	int first_arg = 1;
-	int last_arg = argc - 1;
 
-	char fname[256];
-	Filename inpath, outpath;
+	// We only got one input file
+	if (_inputPaths.size() > 1)
+		error("Only one input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
-	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc);
-	
-	// Continuing with finding out output directory
-	// also make sure we skip those arguments
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else
-		// Standard output dir
+	if(outpath.empty())
+		// Standard output path
 		outpath.setFullPath("out/");
-	
-	input = fopen(argv[first_arg], "rb");
-	if (!input)
-		error("unable to open file %s for input", argv[first_arg]);
+
+	File input(inpath, "rb");
 
 	InitCRC();
 	CRC = ISO_CRC(input);
@@ -1263,12 +1254,12 @@ int export_main(extract_loom_tg16)(int argc, char *argv[]) {
 	case 0x29EED3C5: // dumpcd
 	case 0xE70FA498: // turborip
 		ISO = ISO_USA;
-		notice("ISO contents verified as Loom USA (track 2)");
+		print("ISO contents verified as Loom USA (track 2)");
 		break;
 	case 0xD7B5F808: // dumpcd
 	case 0xCA757D06: // turborip
 		ISO = ISO_JPN;
-		notice("ISO contents verified as Loom Japan (track 2)");
+		print("ISO contents verified as Loom Japan (track 2)");
 		break;
 	default:
 		error("ISO contents not recognized");
@@ -1279,15 +1270,13 @@ int export_main(extract_loom_tg16)(int argc, char *argv[]) {
 
 	for (i = 0; lfls[i].num != -1; i++) {
 		p_lfl lfl = &lfls[i];
+		char fname[256];
 		sprintf(fname, "%02i.LFL", lfl->num);
-
 		outpath.setFullName(fname);
-		output = fopen(outpath.getFullPath().c_str(), "wb");
 
-		if (!output)
-			error("unable to create %s", fname);
+		File output(outpath, "wb");
 
-		notice("Creating %s...", fname);
+		print("Creating %s...", fname);
 		for (j = 0; lfl->entries[j] != NULL; j++) {
 			p_resource entry = lfl->entries[j];
 			switch (entry->type) {
@@ -1308,93 +1297,77 @@ int export_main(extract_loom_tg16)(int argc, char *argv[]) {
 				lfl_index.sound_addr[entry - res_sounds] = (uint16)ftell(output);
 				break;
 			default:
-				notice("Unknown resource type %d detected in LFL index!", entry->type);
+				print("Unknown resource type %d detected in LFL index!", entry->type);
 				break;
 			}
 
 			extract_resource(input, output, entry);
 		}
-
-		fclose(output);
 	}
 
 	outpath.setFullName("00.LFL");
-	output = fopen(outpath.getFullPath().c_str(), "wb");
-	if (!output)
-		error("Unable to create index file!");
-	notice("Creating 00.LFL...");
+	File output(outpath, "wb");
+	print("Creating 00.LFL...");
 
 	lfl_index.num_rooms = NUM_ROOMS;
 	lfl_index.num_costumes = NUM_COSTUMES;
 	lfl_index.num_scripts = NUM_SCRIPTS;
 	lfl_index.num_sounds = NUM_SOUNDS;
 
-	writeUint32LE(output, 8 + 5 * lfl_index.num_rooms);
-	writeUint16LE(output, 'R0'); /* 0R - room index */
-	writeUint16LE(output, lfl_index.num_rooms);
+	output.writeU32LE(8 + 5 * lfl_index.num_rooms);
+	output.writeU16LE('R0'); /* 0R - room index */
+	output.writeU16LE(lfl_index.num_rooms);
 
 	for (i = 0; i < lfl_index.num_rooms; i++) {
-		writeByte(output, lfl_index.room_lfl[i]);
-		writeUint32LE(output, lfl_index.room_addr[i]);
+		output.writeByte(lfl_index.room_lfl[i]);
+		output.writeU32LE(lfl_index.room_addr[i]);
 	}
 
-	writeUint32LE(output, 8 + 5 * lfl_index.num_scripts);
-	writeUint16LE(output, 'S0'); /* 0S - script index */
-	writeUint16LE(output, lfl_index.num_scripts);
+	output.writeU32LE(8 + 5 * lfl_index.num_scripts);
+	output.writeU16LE('S0'); /* 0S - script index */
+	output.writeU16LE(lfl_index.num_scripts);
 
 	for (i = 0; i < lfl_index.num_scripts; i++) {
-		writeByte(output, lfl_index.script_lfl[i]);
-		writeUint32LE(output, lfl_index.script_addr[i]);
+		output.writeByte(lfl_index.script_lfl[i]);
+		output.writeU32LE(lfl_index.script_addr[i]);
 	}
 
-	writeUint32LE(output, 8 + 5 * lfl_index.num_costumes);
-	writeUint16LE(output, 'C0'); /* 0C - costume index */
-	writeUint16LE(output, lfl_index.num_costumes);
+	output.writeU32LE(8 + 5 * lfl_index.num_costumes);
+	output.writeU16LE('C0'); /* 0C - costume index */
+	output.writeU16LE(lfl_index.num_costumes);
 
 	for (i = 0; i < lfl_index.num_costumes; i++) {
-		writeByte(output, lfl_index.costume_lfl[i]);
-		writeUint32LE(output, lfl_index.costume_addr[i]);
+		output.writeByte(lfl_index.costume_lfl[i]);
+		output.writeU32LE(lfl_index.costume_addr[i]);
 	}
 
 /*
-	writeUint32LE(output, 8 + 5 * lfl_index.num_sounds);
-	writeUint16LE(output, 'N0'); 0N - sounds index
-	writeUint16LE(output, lfl_index.num_sounds);
+	output.writeU32LE(8 + 5 * lfl_index.num_sounds);
+	output.writeU16LE('N0'); 0N - sounds index
+	output.writeU16LE(lfl_index.num_sounds);
 
 	for (i = 0; i < lfl_index.num_sounds; i++) {
-		writeByte(output, lfl_index.sound_lfl[i]);
-		writeUint32LE(output, lfl_index.sound_addr[i]);
+		output.writeByte(lfl_index.sound_lfl[i]);
+		output.writeU32LE(lfl_index.sound_addr[i]);
 	}
 */
 
 	extract_resource(input, output, &res_globdata);
 
-	fclose(output);
-
 	outpath.setFullName("97.LFL");
-	output = fopen(outpath.getFullPath().c_str(), "wb");
-	if (!output)
-		error("Unable to create charset file 97.LFL");
-
-	notice("Creating 97.LFL...");
+	output.open(outpath, "wb");
+	print("Creating 97.LFL...");
 	extract_resource(input, output, &res_charset);
-	fclose(output);
 
 	outpath.setFullName("98.LFL");
-	output = fopen(outpath.getFullPath().c_str(), "wb");
-	if (!output)
-		error("Unable to create charset file 98.LFL");
-	notice("Creating 98.LFL...");
+	output.open(outpath, "wb");
+	print("Creating 98.LFL...");
 	extract_resource(input, output, &res_charset);
-	fclose(output);
 
 	outpath.setFullName("99.LFL");
-	output = fopen(outpath.getFullPath().c_str(), "wb");
-	if (!output)
-		error("Unable to create charset file 99.LFL");
-	notice("Creating 99.LFL...");
+	output.open(outpath, "wb");
+	print("Creating 99.LFL...");
 	extract_resource(input, output, &res_charset);
-	fclose(output);
 
 #else /* !MAKE_LFLS */
 	dump_resource(input, "globdata.dmp", 0, &res_globdata);
@@ -1411,13 +1384,13 @@ int export_main(extract_loom_tg16)(int argc, char *argv[]) {
 	for (i = 0; i < NUM_SOUNDS; i++)
 		dump_resource(input, "sound-%d.dmp", i, &res_sounds[i]);
 #endif /* MAKE_LFLS */
-	notice("All done!");
-	return 0;
+	print("All done!");
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(extract_loom_tg16)(argc, argv);
+	ExtractLoomTG16 loom(argv[0]);
+	return loom.run(argc, argv);
 }
 #endif
 

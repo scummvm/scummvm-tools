@@ -291,6 +291,7 @@ std::string Filename::getPath() const {
 File::File() {
 	_file = NULL;
 	_mode = FILEMODE_READ;
+	_xormode = 0;
 }
 
 File::File(const Filename &filepath, FileMode mode) {
@@ -350,6 +351,10 @@ void File::close() {
 	_file = NULL;
 }
 
+void File::setXorMode(uint8 xormode) {
+	_xormode = xormode;
+}
+
 uint8 File::readByte() {
 	if (!_file) 
 		throw FileException("File is not open");
@@ -357,6 +362,7 @@ uint8 File::readByte() {
 		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
 
 	int u8 = fgetc(_file);
+	u8 ^= _xormode;
 	if (u8 == EOF)
 		throw FileException("Read beyond the end of file (" + _name.getFullPath() + ")");
 	return (uint8)u8;
@@ -410,6 +416,8 @@ void File::writeByte(uint8 b) {
 		throw FileException("File  is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
 		throw FileException("Tried to write to a file opened in read mode (" + _name.getFullPath() + ")");
+
+	b ^= _xormode;
 
 	if (fwrite(&b, 1, 1, _file) != 1)
 		throw FileException("Could not write to file (" + _name.getFullPath() + ")");

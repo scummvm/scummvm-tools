@@ -22,8 +22,7 @@
 
 #include "extract_parallaction.h"
 
-Archive::Archive() {
-	_file = NULL;
+Archive::Archive(Tool &tool) : _tool(tool) {
 	_fileData = NULL;
 	_fileSize = 0;
 	_filePos = 0;
@@ -34,11 +33,6 @@ Archive::Archive() {
 
 Archive::~Archive() {
 	closeSubfile();
-
-	if (_file)
-		fclose(_file);
-
-	_file = NULL;
 }
 
 bool Archive::isPackedSubfile(byte *data) {
@@ -64,7 +58,8 @@ void Archive::unpackSubfile(byte *packedData, uint32 packedSize) {
 }
 
 void Archive::closeSubfile() {
-	if (_fileData) free(_fileData);
+	if (_fileData)
+		free(_fileData);
 	_fileData = NULL;
 	_fileSize = 0;
 	_filePos = 0;
@@ -83,8 +78,8 @@ void Archive::openSubfile(uint32 index) {
 	uint32 srcSize = _sizes[index];
 
 	byte *srcData = (byte *)malloc(srcSize);
-	fseek(_file, srcOffset, SEEK_SET);
-	fread(srcData, 1, srcSize, _file);
+	_file.seek(srcOffset, SEEK_SET);
+	_file.read(srcData, 1, srcSize);
 
 	if (isPackedSubfile(srcData)) {
 		_fileSize = getSizeOfPackedSubfile(srcData, srcSize);
@@ -120,13 +115,12 @@ void Archive::readSubfile(byte *buf, uint32 size) {
 void Archive::open(const char *filename, bool smallArchive) {
 	uint16 maxEntries = (smallArchive) ? 180 : 384;
 
-	_file = fopen(filename, "rb");
-	if (!_file) exit(10);
+	_file.open(filename, "rb");
 
 	strcpy(_name, filename);
 
-	fseek(_file, ARCHIVE_HEADER_SIZE, SEEK_SET);
-	fread(_names, maxEntries + 1, ARCHIVE_FILENAME_LEN, _file);
+	_file.seek(ARCHIVE_HEADER_SIZE, SEEK_SET);
+	_file.read(_names, maxEntries + 1, ARCHIVE_FILENAME_LEN);
 
 	uint32 i;
 	for (i = 0; i < maxEntries; i++) {
@@ -151,12 +145,12 @@ void Archive::open(const char *filename, bool smallArchive) {
 
 	_numSlots = i;
 
-	fprintf(stderr, "%i files found in %i slots (%i empty)\n", _numFiles, _numSlots, _numSlots - _numFiles);
+	_tool.print("%i files found in %i slots (%i empty)\n", _numFiles, _numSlots, _numSlots - _numFiles);
 
-	fseek(_file, _numSlots * ARCHIVE_FILENAME_LEN + ARCHIVE_HEADER_SIZE, SEEK_SET);
+	_file.seek(_numSlots * ARCHIVE_FILENAME_LEN + ARCHIVE_HEADER_SIZE, SEEK_SET);
 
 	for (i = 0; i < _numSlots; i++) {
-		_sizes[i] = readUint32BE(_file);
+		_sizes[i] = _file.readU32BE();
 	}
 
 	if (smallArchive) {
@@ -298,9 +292,30 @@ void ppdepack(byte *packed, byte *depacked, uint32 plen, uint32 unplen) {
 
 }
 
-void optDump(const char *file, Filename *outpath, bool smallArchive) {
-	Archive arc;
-	arc.open(file, smallArchive);
+ExtractParallaction::ExtractParallaction(const std::string &name) : Tool(name) {
+	_helptext = "\nUsage: " + _name + " [--small] [-o <output dir> = out/] <file>\n";
+}
+
+void ExtractParallaction::parseExtraArguments() {
+	if(_arguments[_arguments_parsed] == "--small") {
+		_small = true;
+		++_arguments_parsed;
+	}
+}
+
+void ExtractParallaction::execute() {
+
+	// We only got one input file
+	if (_inputPaths.size() > 1)
+		error("Only one input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
+
+	if(outpath.empty())
+		outpath.setFullPath("out/");
+
+	Archive arc(*this);
+	arc.open(inpath.getFullPath().c_str(), _small);
 
 	for (uint32 i = 0; i < arc._numFiles; i++) {
 
@@ -312,45 +327,17 @@ void optDump(const char *file, Filename *outpath, bool smallArchive) {
 			*d = *s == '/' ? '_' : *s;
 		*d = '\0';
 
-		outpath->setFullName(d);
+		outpath.setFullName(d);
 
-		FILE *ofile = fopen(outpath->getFullPath().c_str(), "wb");
-		fwrite(arc._fileData, 1, arc._fileSize, ofile);
-		fclose(ofile);
+		File ofile(outpath, "wb");
+		ofile.write(arc._fileData, 1, arc._fileSize);
 	}
-}
-
-int export_main(extract_parallaction)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [--small] [-o <output dir> = out/] <file>\n";
-
-	Filename outpath;
-
-	parseHelpArguments(argv, argc, helptext);
-
-	// Continuing with finding out output directory
-	// also make sure we skip those arguments
-	int arg = 1;
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, 1))
-		arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, argc - 3))
-		arg -= 2;
-	else
-		// Standard output dir
-		outpath.setFullPath("out/");
-	
-
-	if (strcmp(argv[arg], "--small") == 0) {
-		optDump(argv[arg], &outpath, true);
-	} else {
-		optDump(argv[arg], &outpath, false);
-	}
-
-	return 0;
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(extract_parallaction)(argc, argv);
+	ExtractParallaction parallaction(argv[0]);
+	return parallaction.run(argc, argv);
 }
 #endif
 

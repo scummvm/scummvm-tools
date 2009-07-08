@@ -22,63 +22,13 @@
 
 #include "util.h"
 #include <stdarg.h>
+#include "extract_mm_nes.h"
 
 /* if defined, generates a set of .LFL files */
 /* if not defined, dumps all resources to separate files */
 #define MAKE_LFLS
 
-#ifdef MAKE_LFLS
-void writeByteAltNES(FILE *fp, uint8 b) {
-	writeByte(fp, (uint8)(b ^ 0xFF));
-}
-
-void writeUint16LEAltNES(FILE *fp, uint16 value) {
-	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
-}
-
-#define writeByte writeByteAltNES
-#define writeUint16LE writeUint16LEAltNES
-#endif
-
-typedef enum _res_type {
-	NES_UNKNOWN,
-	NES_GLOBDATA,
-	NES_ROOM,
-	NES_SCRIPT,
-	NES_SOUND,
-	NES_COSTUME,
-	NES_ROOMGFX,
-	NES_COSTUMEGFX,
-	NES_SPRPALS,
-	NES_SPRDESC,
-	NES_SPRLENS,
-	NES_SPROFFS,
-	NES_SPRDATA,
-	NES_CHARSET,
-	NES_PREPLIST
-} res_type;
-
-typedef enum _romset {
-	ROMSET_USA,
-	ROMSET_EUROPE,
-	ROMSET_SWEDEN,
-	ROMSET_FRANCE,
-	ROMSET_GERMANY,
-	ROMSET_SPAIN,
-	NUM_ROMSETS
-} t_romset;
-
 t_romset ROMset = NUM_ROMSETS;
-
-struct t_resource {
-	uint32 offset;
-	uint16 length;
-};
-
-struct t_resgroup {
-	res_type type;
-	const struct t_resource *langs[NUM_ROMSETS];
-};
 
 const struct t_resource res_roomgfx_usa[40] = {
 	{ 0x04001, 0x03C9 }, { 0x043CA, 0x069E }, { 0x04A68, 0x0327 }, { 0x04D8F, 0x053B }, { 0x052CA, 0x06BE },
@@ -868,7 +818,7 @@ const struct t_resgroup res_preplist = {
 	}
 };
 
-void extract_resource (FILE *input, FILE *output, const struct t_resource *res, res_type type) {
+void ExtractMMNes::extract_resource(File &input, File &output, const struct t_resource *res, res_type type) {
 	uint16 len, i, j;
 	uint8 val;
 	uint8 cnt;
@@ -877,77 +827,77 @@ void extract_resource (FILE *input, FILE *output, const struct t_resource *res, 
 		error("extract_resource - no resource specified");
 	if ((res->offset == 0) && (res->length == 0))
 		return; /* there are 8 scripts that are zero bytes long, so we should skip them */
-	fseek(input, res->offset, SEEK_SET);
+	input.seek(res->offset, SEEK_SET);
 
 	switch (type) {
 	case NES_GLOBDATA:
 		len = res->length;
 		for (i = 0; i < len; i++)
-			writeByte(output, readByte(input));
+			output.writeByte(input.readByte());
 		break;
 	case NES_ROOMGFX:
 	case NES_COSTUMEGFX:
-		writeUint16LE(output, (uint16)(res->length + 2));
-		len = readByte(input);
-		writeByte(output, (uint8)len);
+		output.writeU16LE((uint16)(res->length + 2));
+		len = input.readByte();
+		output.writeByte((uint8)len);
 		if (!len)
 			len = 256;
 		len = len << 4;
 		for (i = 0; i < len;) {
-			cnt = readByte(input);
-			writeByte(output, cnt);
+			cnt = input.readByte();
+			output.writeByte(cnt);
 			for (j = 0; j < (cnt & 0x7F); j++, i++)
 				if ((cnt & 0x80) || (j == 0))
-					writeByte(output, readByte(input));
+					output.writeByte(input.readByte());
 		}
 		if (ftell(input) - res->offset != res->length)
 			error("extract_resource - length mismatch while extracting graphics resource (was %04X, should be %04X)", ftell(input) - res->offset, res->length);
 		break;
 	case NES_ROOM:
 	case NES_SCRIPT:
-		len = readUint16LE(input);
+		len = input.readU16LE();
 		if (len != res->length)
 			error("extract_resource - length mismatch while extracting room/script resource (was %04X, should be %04X)", len, res->length);
-		fseek(input, -2, SEEK_CUR);
+		input.seek(-2, SEEK_CUR);
 		for (i = 0; i < len; i++)
-			writeByte(output, readByte(input));
+			output.writeByte(input.readByte());
 		break;
 	case NES_SOUND:
 		len = res->length + 2;
-		val = readByte(input);
-		cnt = readByte(input);
+		val = input.readByte();
+		cnt = input.readByte();
 		if ((val == 2) && (cnt == 100)) {
-			writeUint16LE(output, len);
-			writeByte(output, val);
-			writeByte(output, cnt);
-			cnt = readByte(input);
-			writeByte(output, cnt);
+			output.writeU16LE(len);
+			output.writeByte(val);
+			output.writeByte(cnt);
+			cnt = input.readByte();
+			output.writeByte(cnt);
 			for (i = 0; i < cnt; i++)
-				writeByte(output, readByte(input));
+				output.writeByte(input.readByte());
 			for (i = 0; i < cnt; i++)
-				writeByte(output, readByte(input));
+				output.writeByte(input.readByte());
 			while (1) {
-				val = readByte(input);
-				writeByte(output, val);
+				val = input.readByte();
+				output.writeByte(val);
 				if (val >= 0xFE)
 					break;
 				}
 		} else if (((val == 0) || (val == 1) || (val == 4)) && (cnt == 10)) {
-			writeUint16LE(output, len);
-			writeByte(output, val);
-			writeByte(output, cnt);
+			output.writeU16LE(len);
+			output.writeByte(val);
+			output.writeByte(cnt);
 			while (1) {
-				val = readByte(input);
-				writeByte(output, val);
+				val = input.readByte();
+				output.writeByte(val);
 				if (val >= 0xFE)
 					break;
 				if (val >= 0x10)
-					writeByte(output, readByte(input));
+					output.writeByte(input.readByte());
 				else {
-					writeByte(output, readByte(input));
-					writeByte(output, readByte(input));
-					writeByte(output, readByte(input));
-					writeByte(output, readByte(input));
+					output.writeByte(input.readByte());
+					output.writeByte(input.readByte());
+					output.writeByte(input.readByte());
+					output.writeByte(input.readByte());
 				}
 			}
 		} else {
@@ -964,22 +914,22 @@ void extract_resource (FILE *input, FILE *output, const struct t_resource *res, 
 	case NES_SPRDATA:
 	case NES_CHARSET:
 		len = res->length;
-		writeUint16LE(output, (uint16)(len + 2));
+		output.writeU16LE((uint16)(len + 2));
 		for (i = 0; i < len; i++)
-			writeByte(output, readByte(input));
+			output.writeByte(input.readByte());
 		break;
 	case NES_PREPLIST:
 		len = res->length;
-		writeUint16LE(output, 0x002A);
-		writeByte(output, ' ');
+		output.writeU16LE(0x002A);
+		output.writeByte(' ');
 		for (i = 1; i < 8; i++)
-			writeByte(output, 0);
+			output.writeByte(0);
 		for (j = 0; j < 4; j++) {
-			writeByte(output, ' ');
-			for (i = 1; (val = readByte(input)); i++)
-				writeByte(output, val);
+			output.writeByte(' ');
+			for (i = 1; (val = input.readByte()); i++)
+				output.writeByte(val);
 			for (; i < 8; i++)
-				writeByte(output, 0);
+				output.writeByte(0);
 		}
 		break;
 	default:
@@ -1130,16 +1080,12 @@ struct	t_lflindex {
 #include "utils/pack-end.h"	/* END STRUCT PACKING */
 
 #else	/* !MAKE_LFLS */
-void	dump_resource (FILE *input, const char *fn_template, int num, const struct t_resource *res, res_type type) {
+void ExtractMMNES::dump_resource (File &input, const char *fn_template, int num, const struct t_resource *res, res_type type) {
 	char fname[256];
-	FILE *output;
 	sprintf(fname, fn_template, num);
-	output = fopen(fname, "wb");
-	if (!output)
-		error("unable to create %s", fname);
-	notice("Extracting resource to %s", fname);
+	File output(fname, "wb");
+	print("Extracting resource to %s", fname);
 	extract_resource(input, output, res, type);
-	fclose(output);
 }
 #endif /* MAKE_LFLS */
 
@@ -1155,52 +1101,39 @@ static void InitCRC(void) {
 		CRCtable[i] = n;
 	}
 }
-static uint32 CheckROM(FILE *file) {
+static uint32 CheckROM(File &file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i;
 
 	for (i = 0; i < 262144; i++)
-		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ readByte(file)) & 0xFF];
+		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ file.readByte()) & 0xFF];
 
 	return CRC ^ 0xFFFFFFFF;
 }
 
-int export_main(extract_mm_nes)(int argc, char *argv[]) {
-	const char *helptext =
-		"\nUsage: %s [-o <output dir> = out/] <infile.PRG>\n"
+ExtractMMNes::ExtractMMNes(const std::string &name) : Tool(name) {
+	_helptext = 
+		"\nUsage: " + _name + " [-o <output dir> = out/] <infile.PRG>\n"
 		"\tSupported versions: USA, Europe, Sweden, France, Germany, Spain\n"
 		"\tJapanese version is NOT supported!\n";
+}
 
-	FILE *input, *output;
+void ExtractMMNes::execute() {
 	int i, j;
 	uint32 CRC;
 
-	int first_arg = 1;
-	int last_arg = argc - 1;
+	// We only got one input file
+	if (_inputPaths.size() > 1)
+		error("Only one input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
-	char fname[256];
-	Filename inpath, outpath;
+	File input(inpath, "rb");
 
-	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc, helptext);
-	
-	// Continuing with finding out output directory
-	// also make sure we skip those arguments
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else
-		// Standard output dir
-		outpath.setFullPath("out/");
-
-	if (!(input = fopen(argv[first_arg], "rb")))
-		error("Unable to open file %s for input", argv[first_arg]);
-
-	if ((readByte(input) == 'N') && (readByte(input) == 'E') && (readByte(input) == 'S') && (readByte(input) == 0x1A)) {
-		printf("You have specified an iNES formatted ROM image, which is not supported.\n"
+	if ((input.readByte() == 'N') && (input.readByte() == 'E') && (input.readByte() == 'S') && (input.readByte() == 0x1A)) {
+		error(
+			"You have specified an iNES formatted ROM image, which is not supported.\n"
 			"You must input the PRG section only - see Maniac Mansion NES notes section of README.");
-		return 1;
 	}
 
 	rewind(input);
@@ -1210,27 +1143,27 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 	switch (CRC) {
 	case 0x0D9F5BD1:
 		ROMset = ROMSET_USA;
-		notice("ROM contents verified as Maniac Mansion (USA)");
+		print("ROM contents verified as Maniac Mansion (USA)");
 		break;
 	case 0xF59CFC3D:
 		ROMset = ROMSET_EUROPE;
-		notice("ROM contents verified as Maniac Mansion (Europe)");
+		print("ROM contents verified as Maniac Mansion (Europe)");
 		break;
 	case 0x3F2BDA65:
 		ROMset = ROMSET_SWEDEN;
-		notice("ROM contents verified as Maniac Mansion (Sweden)");
+		print("ROM contents verified as Maniac Mansion (Sweden)");
 		break;
 	case 0xF4B70BFE:
 		ROMset = ROMSET_FRANCE;
-		notice("ROM contents verified as Maniac Mansion (France)");
+		print("ROM contents verified as Maniac Mansion (France)");
 		break;
 	case 0x60EA98A0:
 		ROMset = ROMSET_GERMANY;
-		notice("ROM contents verified as Maniac Mansion (Germany)");
+		print("ROM contents verified as Maniac Mansion (Germany)");
 		break;
 	case 0xF5B2AFCA:
 		ROMset = ROMSET_SPAIN;
-		notice("ROM contents verified as Maniac Mansion (Spain)");
+		print("ROM contents verified as Maniac Mansion (Spain)");
 		break;
 	case 0x3DA2085E:
 		error("Maniac Mansion (Japan) is not supported");
@@ -1244,14 +1177,16 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 	memset(&mm_lfl_index, 0, sizeof(struct t_lflindex));
 
 	for (i = 0; lfls[i].num != -1; i++) {
+		char fname[256];
 		const struct t_lfl *lfl = &lfls[i];
 
 		sprintf(fname, "%02i.LFL", lfl->num);
 		outpath.setFullName(fname);
-		output = fopen(outpath.getFullPath().c_str(), "wb");
-		if (!output)
-			error("Unable to create %s", fname);
-		notice("Creating %s...", fname);
+		File output(outpath, "wb");
+#ifdef MAKE_LFLS
+		output.setXorMode(0xFF);
+#endif
+		print("Creating %s...", fname);
 		
 		for (j = 0; lfl->entries[j].type != NULL; j++) {
 			const struct t_lflentry *entry = &lfl->entries[j];
@@ -1314,21 +1249,20 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 			}
 			extract_resource(input, output, &entry->type->langs[ROMset][entry->index], entry->type->type);
 		}
-		writeUint16LE(output, 0xF5D1);
-		fclose(output);
+		output.writeU16LE(0xF5D1);
 	}
 
 	outpath.setFullName("00.LFL");
-	output = fopen(outpath.getFullPath().c_str(), "wb");
-	if (!output)
-		error("Unable to create index file");
-	notice("Creating 00.LFL...");
+	File output(outpath, "wb");
+#ifdef MAKE_LFLS
+	output.setXorMode(0xFF);
+#endif
+	print("Creating 00.LFL...");
 
-	writeUint16LE(output, 0x4643);
+	output.writeU16LE(0x4643);
 	extract_resource(input, output, &res_globdata.langs[ROMset][0], res_globdata.type);
 	for (i = 0; i < (int)sizeof(struct t_lflindex); i++)
-		writeByte(output, ((uint8 *)&mm_lfl_index)[i]);
-	fclose(output);
+		output.writeByte(((uint8 *)&mm_lfl_index)[i]);
 #else	/* !MAKE_LFLS */
 	dump_resource(input, "globdata.dmp", 0, &res_globdata.langs[ROMset][0], res_globdata.type);
 	for (i = 0; i < 40; i++)
@@ -1354,15 +1288,13 @@ int export_main(extract_mm_nes)(int argc, char *argv[]) {
 	for (i = 0; i < 2; i++)
 		dump_resource(input, "sproffs-%d.dmp", i, &res_sproffs.langs[ROMset][i], res_sproffs.type);
 #endif	/* MAKE_LFLS */
-	notice("All done!");
-
-	return 0;
+	print("All done!");
 }
 
-#if defined(UNIX) && defined(EXPORT_MAIN)
-int main(int argc, char *argv[]) __attribute__((weak));
+#ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(extract_mm_nes)(argc, argv);
+	ExtractMMNes mm_nes(argv[0]);
+	return mm_nes.run(argc, argv);
 }
 #endif
 

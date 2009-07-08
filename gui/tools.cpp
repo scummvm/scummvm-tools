@@ -45,6 +45,12 @@
 #include "../compress_tucker.h"
 #include "../extract_agos.h"
 #include "../extract_gob_stk.h"
+#include "../extract_loom_tg16.h"
+#include "../extract_mm_apple.h"
+#include "../extract_mm_c64.h"
+#include "../extract_mm_nes.h"
+#include "../extract_parallaction.h"
+#include "../extract_zak_c64.h"
 
 
 // Our global tools object, which holds all tools
@@ -57,33 +63,23 @@ void Tools::init() {
 
 	// Compress agos also has a --mac parameter, need to add an additional page / option for this
 	addTool(new ToolGUI(new CompressAgos()));
-
 	// Compress gob also has a --f parameter, need to add an additional page / option for this
 	addTool(new ToolGUI(new CompressGob()));
-
-	// Compress kyra...
 	addTool(new ToolGUI(new CompressKyra()));
-
-	// Compress queen...
 	addTool(new ToolGUI(new CompressQueen()));
-
-	// Compress saga...
 	addTool(new ToolGUI(new CompressSaga()));
-
-	// Compress tinsel...
 	addTool(new ToolGUI(new CompressTinsel()));
-	
-	// Compress touche...
 	addTool(new ToolGUI(new CompressTouche(), wxT("/")));
-	
-	// Compress tucker...
 	addTool(new ToolGUI(new CompressTucker(), wxT("/")));
 
-	// extract_agos
 	addTool(new ToolGUI(new ExtractAgos()));
-
-	// extract_gob_stk
 	addTool(new ToolGUI(new ExtractGobStk()));
+	addTool(new ToolGUI(new ExtractLoomTG16()));
+	addTool(new ToolGUI(new ExtractMMApple()));
+	addTool(new ToolGUI(new ExtractMMC64()));
+	addTool(new ToolGUI(new ExtractMMNes()));
+	addTool(new ToolGUI(new ExtractParallaction()));
+	addTool(new ToolGUI(new ExtractZakC64()));
 
 	/* "Old" tool list, will be converted incrementally
 	// Compression tools

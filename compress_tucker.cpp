@@ -330,7 +330,6 @@ uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Fi
 				temp_table[i].size = compress_file_raw(filepath, 1, output);
 				break;
 			}
-			fclose(input);
 		}
 		current_offset += temp_table[i].size;
 	}
@@ -392,8 +391,6 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 		output.writeU32LE(ARRAYSIZE(audio_files_list));
 		current_offset += audio_directory_size;
 	}
-
-	fclose(output);
 
 	/* cleanup */
 	unlink(TEMP_WAV);

@@ -43,6 +43,7 @@ public:
 	void run();
 
 	void error(const char *format, ...);
+	void warning(const char *format, ...);
 	void print(const char *format, ...);
 
 	/** Returns name of the tool */

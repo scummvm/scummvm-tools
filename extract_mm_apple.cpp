@@ -22,17 +22,7 @@
 
 #include "util.h"
 #include <stdarg.h>
-
-void writeByteAltApple(FILE *fp, uint8 b) {
-	writeByte(fp, (uint8)(b ^ 0xFF));
-}
-
-void writeUint16LEAltApple(FILE *fp, uint16 value) {
-	writeUint16LE(fp, (uint16)(value ^ 0xFFFF));
-}
-
-#define writeByte writeByteAltApple
-#define writeUint16LE writeUint16LEAltApple
+#include "extract_mm_apple.h"
 
 #define NUM_ROOMS	55
 unsigned char room_disks_apple[NUM_ROOMS], room_tracks_apple[NUM_ROOMS], room_sectors_apple[NUM_ROOMS];
@@ -52,134 +42,119 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 	 3, 10,  1,  0,  0
 };
 
-int export_main(extract_mm_apple)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n";
+ExtractMMApple::ExtractMMApple(const std::string &name) : Tool(name) {
+	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n";
+}
 
-	FILE *input1, *input2, *output;
+void ExtractMMApple::execute() {
 	int i, j;
 	unsigned short signature;
-
-	int first_arg = 1;
-	int last_arg = argc - 1;
-
 	char fname[256];
-	Filename inpath, outpath;
 
-	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc, helptext);
-	
-	// Continuing with finding out output directory
-	// also make sure we skip those arguments
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else
-		// Standard output dir
+	// Two disks...
+	if (_inputPaths.size() != 2)
+		error("Two input files expected!");
+	Filename inpath1(_inputPaths[0]);
+	Filename inpath2(_inputPaths[1]);
+	Filename &outpath = _outputPath;
+
+	if(outpath.empty())
+		// Standard output path
 		outpath.setFullPath("out/");
 
-	if (last_arg - first_arg == 1)
-		error("Requires two disk files");
+	File input1(inpath1, "rb");
+	File input2(inpath2, "rb");
 
-	if (!(input1 = fopen(argv[first_arg],"rb")))
-		error("Unable to open file %s for input!",argv[first_arg]);
-	++first_arg;
-	if (!(input2 = fopen(argv[first_arg],"rb")))
-		error("Unable to open file %s for input!",argv[first_arg]);
-
-	fseek(input1, 142080, SEEK_SET);
-	fseek(input2, 143104, SEEK_SET);
+	input1.seek(142080, SEEK_SET);
+	input2.seek(143104, SEEK_SET);
 
 	/* check signature */
-	signature = readUint16LE(input1);
+	signature = input1.readU16LE();
 	if (signature != 0x0A31)
 		error("Signature not found in disk 1!");
 
-	signature = readUint16LE(input2);
+	signature = input2.readU16LE();
 	if (signature != 0x0032)
 		error("Signature not found in disk 2!");
 
 	outpath.setFullName("00.LFL");
-	if (!(output = fopen(fname, "wb")))
-		error("Unable to create index file!");
-	notice("Creating 00.LFL...");
+	File output(fname, "wb");
+	// All output should be xored
+	output.setXorMode(0xFF);
+	print("Creating 00.LFL...");
 
 	/* write signature */
-	writeUint16LE(output, signature);
+	output.writeU16LE(signature);
 
 	/* copy object flags */
 	for (i = 0; i < 256; i++)
-		writeByte(output, readByte(input1));
+		output.writeByte(input1.readByte());
 
 	/* copy room offsets */
 	for (i = 0; i < NUM_ROOMS; i++) {
-		room_disks_apple[i] = readByte(input1);
-		writeByte(output, room_disks_apple[i]);
+		room_disks_apple[i] = input1.readByte();
+		output.writeByte(room_disks_apple[i]);
 	}
 	for (i = 0; i < NUM_ROOMS; i++) {
-		room_sectors_apple[i] = readByte(input1);
-		writeByte(output, room_sectors_apple[i]);
-		room_tracks_apple[i] = readByte(input1);
-		writeByte(output, room_tracks_apple[i]);
+		room_sectors_apple[i] = input1.readByte();
+		output.writeByte(room_sectors_apple[i]);
+		room_tracks_apple[i] = input1.readByte();
+		output.writeByte(room_tracks_apple[i]);
 	}
 
 	/* copy costume offsets */
 	for (i = 0; i < 25; i++)
-		writeByte(output, readByte(input1));
+		output.writeByte(input1.readByte());
 	for (i = 0; i < 25; i++)
-		writeUint16LE(output, readUint16LE(input1));
+		output.writeU16LE(input1.readU16LE());
 
 	/* copy script offsets */
 	for (i = 0; i < 160; i++)
-		writeByte(output, readByte(input1));
+		output.writeByte(input1.readByte());
 	for (i = 0; i < 160; i++)
-		writeUint16LE(output, readUint16LE(input1));
+		output.writeU16LE(input1.readU16LE());
 
 	/* copy sound offsets */
 	for (i = 0; i < 70; i++)
-		writeByte(output, readByte(input1));
+		output.writeByte(input1.readByte());
 	for (i = 0; i < 70; i++)
-		writeUint16LE(output, readUint16LE(input1));
+		output.writeU16LE(input1.readU16LE());
 
 	/* NOTE: Extra 92 bytes of unknown data */
 
-	fclose(output);
-
 	for (i = 0; i < NUM_ROOMS; i++) {
-		FILE *input;
+		File *input;
 
 		if (room_disks_apple[i] == '1')
-			input = input1;
+			input = &input1;
 		else if (room_disks_apple[i] == '2')
-			input = input2;
+			input = &input2;
 		else
 			continue;
 
 		sprintf(fname, "%02i.LFL", i);
 		outpath.setFullName(fname);
-		output = fopen(fname, "wb");
-		if (output == NULL)
-			error("Unable to create %s!", fname);
+		output.open(fname, "wb");
 
-		notice("Creating %s...", fname);
-		fseek(input, (SectorOffset[room_tracks_apple[i]] + room_sectors_apple[i]) * 256, SEEK_SET);
+		print("Creating %s...", fname);
+		input->seek((SectorOffset[room_tracks_apple[i]] + room_sectors_apple[i]) * 256, SEEK_SET);
 
 		for (j = 0; j < ResourcesPerFile[i]; j++) {
-			unsigned short len = readUint16LE(input);
-			writeUint16LE(output, len);
+			unsigned short len = input->readU16LE();
+			output.writeU16LE(len);
 
 			for (len -= 2; len > 0; len--)
-				writeByte(output, readByte(input));
+				output.writeByte(input->readByte());
 		}
-		rewind(input);
+		rewind(*input);
 	}
-	notice("All done!");
-	return 0;
+	print("All done!");
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(extract_mm_apple)(argc, argv);
+	ExtractMMApple mmapple(argv[0]);
+	return mmapple.run(argc, argv);
 }
 #endif
 
