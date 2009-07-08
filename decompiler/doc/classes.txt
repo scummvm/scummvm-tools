@@ -1,0 +1,128 @@
+Data flow
+=========
+
+Script data is first passed into a _Parser_ instance, which produces
+a stream of _Instructions_. This list is then passed to _Control Flow Graph_,
+which uses it to build a graph comprised of _Blocks_. We ask _Control Flow
+Graph_ to perform a number of analyses, and finally use the information
+filled in by it to traverse the graph starting from the entry point and
+rebuild the abstract syntax tree.
+
+
+Classes
+=======
+
+Instruction
+-----------
+
+Represents a logical instruction of the original script in a unified way.
+Contains opcode's address (offset of the original opcode in the input byte
+stream) and a textual description.
+
+
+### Jump
+
+A conditional or unconditional jump. In addition to information contained by
+its superclass _Instruction_, it also contains jump target - address of the
+_Instruction_ to which the control is transferred.
+
+#### CondJump
+
+Unconditional jump. By convention, these are only "jump if not" instructions,
+so the other types of conditional jumps need to be normalized to this form.
+
+
+
+Script
+------
+
+A sequence of _Instructions_, and a sink for a _Parser_ instance. To be
+removed in favor of using a simple collection.
+
+
+
+Parser
+------
+
+Given a byte source (currently file/filename), its task is to produce
+an intermediate _Instruction_ stream. As of now, the _Instructions_ are
+appended into a _Script_. A _Parser_ typically uses a number of helper
+_Reader_ instances.
+
+
+### Scumm6Parser
+
+
+
+Reader
+------
+
+A _Reader_ is responsible for producing a single Instruction, typically
+it will consume a few bytes from the input byte stream. It will either
+produce an Instruction, or sometimes delegate the task to another
+_Reader_. Currently, a number of _Reader_ subclasses exist:
+
+
+### SimpleReader
+
+Produces an _Instruction_. It accepts a format string in its constructor,
+which describes type and number of immediate arguments of the _Instruction_.
+The bytes corresponding to these inlined script arguments will be consumed
+from the input stream. Currently, the following argument types are supported:
+
+* b - byte
+* w - unsigned word (2 bytes)
+* W - signed word
+* o - jump offset (signed word)
+* s - SCUMM string
+
+
+### JumpReader and CondJumpReader
+
+These are specialized _SimpleReaders_ that emit a _Jump_ or _CondJump_
+instruction, instead of a regular _Instruction_.
+
+
+### SubopcodeReader
+
+A compound _Reader_, which delegates the work to previously registered
+_Readers_, after consuming a single byte to make the decision on which
+child _Reader_ to use.
+
+
+### SeqReader
+
+This reader calls two readers in sequence. Typically used to add two or more
+_Instructions_ to the output stream, using _SimpleReaders_ as children.
+
+
+
+ControlFlowGraph
+----------------
+
+Represents Control Flow Graph of the original script. It needs to be
+initialized by first giving it a stream of _Instructions_, and then
+setting an entry point. After calling a number of normalization
+functions (which remove jumps to jumps, remove blocks unreachable from the
+entry point, order the blocks in post-order, and assign block dominators),
+we can perform control flow analysis, first finding loops, and then
+if-then-else structures. When this is finished, each _Block_ is annotated
+with information sufficient to rebuild abstract syntax tree.
+
+At any point a graphical output in _dot_ format can be obtained for
+debugging information.
+
+
+Block
+-----
+
+The basic element of a _Control Flow Graph_. Contains a list of
+_Instructions_, and in/out edges to other _Blocks_. By convention,
+if the block ends with a conditional jump, the first edge corsesponds
+to the branch taken if the test condition is false ("jump if not").
+
+After performing the control flow analysis using _Control Flow Graph_ instance,
+every Block is annoted with the following information (if applicable):
+
+* loop information - follow node, loop header, loop latching node
+* if-then-else-information - follow node
