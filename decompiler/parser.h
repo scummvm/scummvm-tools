@@ -420,7 +420,7 @@ struct Scumm6Parser : public Parser {
 			uint16 minOffset = 65535;
 			for (int code = f.get(); code != 0; code = f.get()) {
 				uint16 offset = read_le_uint16(f);
-				printf("%2x - %.4x\n", code, offset);
+				fprintf(stderr, "%2x - %.4x\n", code, offset);
 				if (offset < minOffset)
 					minOffset = offset;
 			}
