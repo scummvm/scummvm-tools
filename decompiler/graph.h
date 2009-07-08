@@ -126,6 +126,7 @@ struct ControlFlowGraph : boost::noncopyable {
 
 	void assignIntervals();  // can be called multiple times
 	void extendIntervals();
+	bool isReducible();
 	void assignDominators();
 
 private:

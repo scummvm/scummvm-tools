@@ -16,6 +16,7 @@ variables_map parseArgs(int argc, char **argv) {
 	options_description visible("Allowed options");
 	visible.add_options()
 		("help", "this message")
+		("check-reducibility", "check if the graph is reducible")
 		("disasm", "print disassembly")
 		("blocks", "print basic blocks")
 		("graph-intervals", value<unsigned>(), "print arg-th graph intervals")
@@ -62,6 +63,13 @@ int main(int argc, char **argv) {
 	cfg.orderBlocks();
 	cfg.removeUnreachableBlocks();
 	cfg.assignDominators();
+	if (vars.count("check-reducibility")) {
+		if (cfg.isReducible())
+			exit(0);
+		foreach (Block *interval, cfg.intervals())
+			cout << phex(interval->_instructions.front()->_addr) << endl;
+		exit(1);
+	}
 	if (vars.count("graph-intervals")) {
 		cfg.assignIntervals();
 		for (unsigned i = 0; i < vars["graph-intervals"].as<unsigned>(); i++)

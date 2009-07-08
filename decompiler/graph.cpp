@@ -203,6 +203,13 @@ list<Block*> ControlFlowGraph::intervals() {
 }
 
 
+bool ControlFlowGraph::isReducible() {
+	for (size_t size = _blocks.size()+1; size > intervals().size(); size = intervals().size(), extendIntervals())
+		;
+	return intervals().size() == 1;
+}
+
+
 Block *ControlFlowGraph::loopFollow(Block *head, Block *latch) {
 	if (head->_loopType == PRE_TESTED)
 		return head->outEdgeOutsideLoop(head);
