@@ -281,7 +281,7 @@ ToolGUI::ToolGUI(Tool *tool, wxString input_extensions) {
 	input._file = input_extensions != wxT("/");
 	_inputs.push_back(input);
 
-	_inoutHelpText = wxT("Output files produced by the tool will be put in this directory.");
+	_inHelpText = wxT("Please select any additional input files.");
 }
 
 ToolGUI::~ToolGUI() {

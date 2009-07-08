@@ -148,49 +148,51 @@ public:
 };
 
 /**
- * Presents a list of games that are supported for compression.
- * 
- * @todo Possibly merge with ChooseExtractionPage
- */
-
-class ChooseCompressionPage : public WizardPage
-{
-public:
-	ChooseCompressionPage(ScummToolsFrame* frame);
-
-	wxWindow *CreatePanel(wxWindow *parent);
-
-	void onNext(wxWindow *panel);
-
-	void save(wxWindow *panel);
-};
-
-/**
- * Presents a list of games that are supported for extraction.
- * 
- * @todo Possibly merge with ChooseCompressionPage
- */
-
-class ChooseExtractionPage : public WizardPage
-{
-public:
-	ChooseExtractionPage(ScummToolsFrame* frame);
-
-	wxWindow *CreatePanel(wxWindow *parent);
-
-	void onNext(wxWindow *panel);
-
-	void save(wxWindow *panel);
-};
-
-/**
  * Presents a list of all supported tools, the "advanced route"
+ * OR, if the second parameter is supplied to a construction
+ * it offers that list of tools instead (and the help text says
+ * "multiple tools matched that input file..."
  */
 
 class ChooseToolPage : public WizardPage
 {
 public:
-	ChooseToolPage(ScummToolsFrame* frame);
+	ChooseToolPage(ScummToolsFrame* frame, const wxArrayString &options = wxArrayString());
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+
+protected:
+	wxArrayString _options;
+};
+
+/**
+ * Offers the user to input a file or directory
+ */
+
+class ChooseInPage : public WizardPage
+{
+public:
+	ChooseInPage(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+};
+
+/**
+ * If the tool requires more than one input, the additional will be presented here
+ */
+
+class ChooseExtraInPage : public WizardPage
+{
+public:
+	ChooseExtraInPage(ScummToolsFrame* frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -206,10 +208,10 @@ public:
  * @todo Make it look better and save state
  */
 
-class ChooseInOutPage : public WizardPage
+class ChooseOutPage : public WizardPage
 {
 public:
-	ChooseInOutPage(ScummToolsFrame* frame);
+	ChooseOutPage(ScummToolsFrame* frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 

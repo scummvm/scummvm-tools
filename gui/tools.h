@@ -127,7 +127,7 @@ public:
 	/** List of all inputs this tool expects */
 	ToolInputs _inputs;
 	/** The help text displayed on the input/output page */
-	wxString _inoutHelpText;
+	wxString _inHelpText;
 	/** A list of all games supported by this tool */
 	wxArrayString _games;
 };
