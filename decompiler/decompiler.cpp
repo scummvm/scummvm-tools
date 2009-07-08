@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
 	}
 	ControlFlowGraph cfg;
 	cfg.addBlocksFromScript(script._instructions.begin(), script._instructions.end());
+	// TODO won't work with empty script
 	cfg.setEntry(script._instructions.front()->_addr);
 	if (vars.count("blocks")) {
 		foreach (Block *block, cfg._blocks)

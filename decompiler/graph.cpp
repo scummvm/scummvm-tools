@@ -37,7 +37,9 @@ void ControlFlowGraph::assignDominators() {
 		changed = false;
 		foreach (Block *u, blocks) {
 			std::list<Block*>::iterator it = u->_in.begin();
-			Block *dom = *it++;
+			while (!(*it)->_dominator)
+				it++;
+			Block *dom = *it++; // first processed predecessor
 			for (; it != u->_in.end(); it++)
 				if ((*it)->_dominator)
 					dom = dominatorIntersect(*it, dom);
