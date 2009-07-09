@@ -29,6 +29,7 @@ struct Block : boost::noncopyable {
     Block *_loopHead;        // if not null, this is a latching block
 	Block *_loopLatch;       // if not null, this block is a loop header, and latch is the last block in the loop
 	Block *_primitive;       // interval header of the graph from which this graph has been derived
+	Block *_component;
 	LoopType _loopType;
 	int _number;             // number in post-order
 	std::list<Block*> _in;
@@ -60,7 +61,7 @@ struct Block : boost::noncopyable {
 		return 0;
 	}
 
-	Block() : _interval(), _number(), _loopHead(), _loopFollow(), _loopLatch(), _visited(), _dominator(), _ifFollow() {
+	Block() : _interval(), _number(), _loopHead(), _loopFollow(), _loopLatch(), _visited(), _dominator(), _ifFollow(), _component() {
 	}
 
 	~Block() {
@@ -116,6 +117,7 @@ struct ControlFlowGraph : boost::noncopyable {
 
 	void loopStruct();               // fill in all information about loops
 	std::list<Block*> intervals();   // partition graph into intervals and return list of header blocks
+	std::list<Block*> components();
 	void ifStruct();                 // fill in all information about if-then-else, must be called after loopStruct
 
 	void orderBlocks();              // assign block numbers in post-order
@@ -127,7 +129,8 @@ struct ControlFlowGraph : boost::noncopyable {
 	void assignIntervals();  // can be called multiple times
 	void extendIntervals();
 	bool isReducible();
-	void assignDominators();
+	void assignDominators(); // after order
+	void assignComponents(); // after order
 
 private:
 	LoopType loopType(Block *head, Block *latch);

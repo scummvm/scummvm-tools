@@ -5,6 +5,7 @@
 using namespace std;
 
 
+void componentVisit(Block *u, Block *head);
 Block *dominatorIntersect(Block *u, Block *v);
 std::list<Block*> inPostOrder(std::list<Block*> &blocks);
 int orderVisit(Block *u, int number);
@@ -25,6 +26,15 @@ ControlFlowGraph::~ControlFlowGraph() {
 void ControlFlowGraph::addEdge(Block *from, Block *to) {
 	from->_out.push_back(to);
 	to->_in.push_back(from);
+}
+
+
+void ControlFlowGraph::assignComponents() {
+	orderBlocks();
+	std::list<Block*> blocks = inPostOrder(_blocks);
+	blocks.reverse();
+	foreach (Block *u, blocks)
+		componentVisit(u, u);
 }
 
 
@@ -84,6 +94,15 @@ void ControlFlowGraph::assignIntervals() {
 }
 
 
+void componentVisit(Block *u, Block *head) {
+	if (u->_component)
+		return;
+	u->_component = head;
+	foreach (Block *v, u->_in)
+		componentVisit(v, head);
+}
+
+
 Block *dominatorIntersect(Block *u, Block *v) {
 	while (u != v) {
 		while (u->_number < v->_number)
@@ -129,6 +148,14 @@ string ControlFlowGraph::graphvizEscapeLabel(const std::string &s) {
 	return ret;
 }
 
+std::list<Block*> ControlFlowGraph::components() {
+	std::list<Block*> ret;
+	assignComponents();
+	foreach (Block *u, _blocks)
+		if (u->_component == u)
+			ret.push_back(u);
+	return ret;
+}
 
 string ControlFlowGraph::graphvizToString(const std::string &fontname, int fontsize) {
 	std::stringstream ret;
@@ -260,6 +287,7 @@ LoopType ControlFlowGraph::loopType(Block *head, Block *latch) {
 
 void ControlFlowGraph::orderBlocks() {
 	assert(_entry);
+	if (!_entry->_number)
 		orderVisit(_entry, 0);
 }
 
