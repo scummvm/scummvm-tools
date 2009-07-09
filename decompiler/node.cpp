@@ -1,4 +1,4 @@
-#include "block.h"
+#include "node.h"
 
 #include <boost/foreach.hpp>
 
@@ -10,14 +10,14 @@ using namespace std;
 #endif
 
 
-Block::Block() : _interval(), _number(), _dominator(), _component() {
+Node::Node() : _interval(), _number(), _dominator(), _component() {
 }
 
 
-Block::~Block() {
+Node::~Node() {
 }
 
-string Block::toString() {
+string Node::toString() {
 	ostringstream ret;
 	foreach (Instruction *instruction, _instructions)
 		ret << instruction->toString();

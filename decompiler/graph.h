@@ -9,36 +9,36 @@
 #include <sstream>
 
 #include "instruction.h"
-#include "block.h"
+#include "node.h"
 #include "misc.h"
 
 
 struct ControlFlowGraph : boost::noncopyable {
 
-	Block *_entry;
-	std::list<Block*> _blocks;
-	std::map<address_t, Block*> _targets; // helps partitioning code into basic blocks
+	Node *_entry;
+	std::list<Node*> _nodes;
+	std::map<address_t, Node*> _targets; // helps partitioning code into basic nodes
 
 	ControlFlowGraph();
 	~ControlFlowGraph();
 
-	Block *addBlock(std::list<Instruction*>::iterator first, std::list<Instruction*>::iterator last);
-	void addBlocksFromScript(std::list<Instruction*>::iterator scriptBegin, std::list<Instruction*>::iterator scriptEnd);
-	void addEdge(Block *from, Block *to);
+	Node *addNode(std::list<Instruction*>::iterator first, std::list<Instruction*>::iterator last);
+	void addNodesFromScript(std::list<Instruction*>::iterator scriptBegin, std::list<Instruction*>::iterator scriptEnd);
+	void addEdge(Node *from, Node *to);
 	void assignComponents(); // after order
 	void assignDominators(); // after order
-	std::list<Block*> components();
+	std::list<Node*> components();
 	std::string graphvizToString(const std::string &fontname="", int fontsize=0);
-	void orderBlocks();
+	void orderNodes();
 	void removeJumpsToJumps();
-	void removeUnreachableBlocks(); // after order
-	void replaceEdges(Block *from, Block *oldTo, Block *newTo);
+	void removeUnreachableNodes(); // after order
+	void replaceEdges(Node *from, Node *oldTo, Node *newTo);
 	void setEntry(address_t entry);
 
 	// to be removed
 	void assignIntervals();
 	void extendIntervals();
-	std::list<Block*> intervals();
+	std::list<Node*> intervals();
 	bool isReducible();
 };
 

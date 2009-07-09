@@ -54,23 +54,23 @@ int main(int argc, char **argv) {
 		exit(0);
 	}
 	ControlFlowGraph cfg;
-	cfg.addBlocksFromScript(script._instructions.begin(), script._instructions.end());
+	cfg.addNodesFromScript(script._instructions.begin(), script._instructions.end());
 	// TODO won't work with empty script
 	cfg.setEntry(script._instructions.front()->_addr);
 	if (vars.count("blocks")) {
-		foreach (Block *block, cfg._blocks)
-			cout << block->toString() << endl;
+		foreach (Node *node, cfg._nodes)
+			cout << node->toString() << endl;
 		exit(0);
 	}
 	if (!vars.count("no-remove-jumps"))
 		cfg.removeJumpsToJumps();
-	cfg.orderBlocks();
-	cfg.removeUnreachableBlocks();
+	cfg.orderNodes();
+	cfg.removeUnreachableNodes();
 	cfg.assignDominators();
 	if (vars.count("check-reducibility")) {
 		if (cfg.isReducible())
 			exit(0);
-		foreach (Block *interval, cfg.intervals())
+		foreach (Node *interval, cfg.intervals())
 			cout << phex(interval->_instructions.front()->_addr) << endl;
 		exit(1);
 	}

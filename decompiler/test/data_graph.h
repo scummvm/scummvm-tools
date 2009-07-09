@@ -8,12 +8,12 @@
 #include <instruction.h>
 
 
-unsigned addr(Block *block) {
-	return block->_instructions.front()->_addr;
+unsigned addr(Node *node) {
+	return node->_instructions.front()->_addr;
 }
 
-Block *node(ControlFlowGraph *g, unsigned addr) {
-	BOOST_FOREACH (Block *u, g->_blocks)
+Node *node(ControlFlowGraph *g, unsigned addr) {
+	BOOST_FOREACH (Node *u, g->_nodes)
 		if (u->_instructions.front()->_addr == addr)
 			return u;
 	return 0;
@@ -28,7 +28,7 @@ ControlFlowGraph *makeGraph1() {
 	instructions.push_back(new    CondJump("jumpif -4", 5, -4));
 	instructions.push_back(new Instruction("ret",       6    ));
 	ControlFlowGraph *g = new ControlFlowGraph;
-	g->addBlocksFromScript(instructions.begin(), instructions.end());
+	g->addNodesFromScript(instructions.begin(), instructions.end());
 	g->setEntry(1);
 	return g;
 }
@@ -51,7 +51,7 @@ ControlFlowGraph *makeGraph2() {
 	instructions.push_back(new        Jump("nop",       14, +1));
 	instructions.push_back(new Instruction("ret",       15    ));
 	ControlFlowGraph *g = new ControlFlowGraph;
-	g->addBlocksFromScript(instructions.begin(), instructions.end());
+	g->addNodesFromScript(instructions.begin(), instructions.end());
 	g->setEntry(1);
 	return g;
 }
@@ -62,7 +62,7 @@ ControlFlowGraph *makeGraph3() {
 	instructions.push_back(new        Jump("nop",       2, +1));
 	instructions.push_back(new        Jump("jump -1",   3, -1));
 	ControlFlowGraph *g = new ControlFlowGraph;
-	g->addBlocksFromScript(instructions.begin(), instructions.end());
+	g->addNodesFromScript(instructions.begin(), instructions.end());
 	g->setEntry(1);
 	return g;
 }
@@ -73,7 +73,7 @@ ControlFlowGraph *makeGraph4() {
 	instructions.push_back(new    CondJump("jumpif +0", 2, +0));
 	instructions.push_back(new        Jump("jump -2",   3, -2));
 	ControlFlowGraph *g = new ControlFlowGraph;
-	g->addBlocksFromScript(instructions.begin(), instructions.end());
+	g->addNodesFromScript(instructions.begin(), instructions.end());
 	g->setEntry(1);
 	return g;
 }

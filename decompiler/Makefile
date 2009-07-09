@@ -68,7 +68,7 @@ clean:
 
 test:
 	cxxtest/cxxtestgen.pl --error-printer --abort-on-fail --have-eh -o test_runner.cpp test/test_*.h
-	g++ -g $(DEFINES) $(INCLUDES)  -Icxxtest -o test_runner test_runner.cpp graph.cpp misc.cpp block.cpp
+	g++ -g $(DEFINES) $(INCLUDES)  -Icxxtest -o test_runner test_runner.cpp graph.cpp misc.cpp node.cpp
 	rm test_runner.cpp
 	./test_runner
 
@@ -76,7 +76,7 @@ test:
 .PHONY: all clean test
 
 
-decompiler$(EXEEXT): decompiler.o graph.o misc.o block.o
+decompiler$(EXEEXT): decompiler.o graph.o misc.o node.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lboost_program_options
 
 decompiler.o: instruction.h misc.h parser.h reader.h

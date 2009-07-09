@@ -13,16 +13,16 @@ using namespace std;
 #endif
 
 
-void componentVisit(Block *u, Block *head) {
+void componentVisit(Node *u, Node *head) {
 	if (u->_component)
 		return;
 	u->_component = head;
-	foreach (Block *v, u->_in)
+	foreach (Node *v, u->_in)
 		componentVisit(v, head);
 }
 
 
-Block *dominatorIntersect(Block *u, Block *v) {
+Node *dominatorIntersect(Node *u, Node *v) {
 	while (u != v) {
 		while (u->_number < v->_number)
 			u = u->_dominator;
@@ -33,20 +33,20 @@ Block *dominatorIntersect(Block *u, Block *v) {
 }
 
 
-bool postOrderCompare(Block *a, Block *b) {
+bool postOrderCompare(Node *a, Node *b) {
 	return a->_number < b->_number;
 }
 
-list<Block*> inPostOrder(list<Block*> &blocks) {
-	list<Block*> ret(blocks);
+list<Node*> inPostOrder(list<Node*> &nodes) {
+	list<Node*> ret(nodes);
 	ret.sort(postOrderCompare);
 	return ret;
 }
 
 
-int orderVisit(Block *u, int number) {
+int orderVisit(Node *u, int number) {
 	u->_number = -1;
-	foreach (Block *v, u->_out)
+	foreach (Node *v, u->_out)
 		if (!v->_number)
 			number = orderVisit(v, number);
 	u->_number = ++number;
@@ -60,20 +60,20 @@ ControlFlowGraph::ControlFlowGraph() : _entry() {
 
 
 ControlFlowGraph::~ControlFlowGraph() {
-	foreach (Block *u, _blocks)
+	foreach (Node *u, _nodes)
 		delete u;
 }
 
 
-Block *ControlFlowGraph::addBlock(list<Instruction*>::iterator first, list<Instruction*>::iterator last) {
-	Block* block = new Block;
-	_blocks.push_back(block);
-	copy(first, last, back_inserter(block->_instructions));
-	return block;
+Node *ControlFlowGraph::addNode(list<Instruction*>::iterator first, list<Instruction*>::iterator last) {
+	Node* node = new Node;
+	_nodes.push_back(node);
+	copy(first, last, back_inserter(node->_instructions));
+	return node;
 }
 
 
-void ControlFlowGraph::addBlocksFromScript(list<Instruction*>::iterator scriptBegin, list<Instruction*>::iterator scriptEnd) {
+void ControlFlowGraph::addNodesFromScript(list<Instruction*>::iterator scriptBegin, list<Instruction*>::iterator scriptEnd) {
 	Jump *jump;
 	for (list<Instruction*>::iterator it = scriptBegin; it != scriptEnd; it++)
 		if ((jump = dynamic_cast<Jump*>(*it))) {
@@ -84,47 +84,47 @@ void ControlFlowGraph::addBlocksFromScript(list<Instruction*>::iterator scriptBe
 	list<Instruction*>::iterator first = scriptBegin;
 	for (list<Instruction*>::iterator last = scriptBegin; last != scriptEnd; last++) {
 		if (next(last) == scriptEnd || contains(_targets, (*next(last))->_addr)) {
-			_targets[(*first)->_addr] = addBlock(first, next(last));
+			_targets[(*first)->_addr] = addNode(first, next(last));
 			first = next(last);
 		}
 	}
-	foreach (Block *block, _blocks) {
-		if ((jump = dynamic_cast<Jump*>(block->_instructions.back())))
-			addEdge(block, _targets[jump->target()]);
-		map<address_t, Block*>::iterator succ = next(_targets.find(block->_instructions.front()->_addr));
+	foreach (Node *node, _nodes) {
+		if ((jump = dynamic_cast<Jump*>(node->_instructions.back())))
+			addEdge(node, _targets[jump->target()]);
+		map<address_t, Node*>::iterator succ = next(_targets.find(node->_instructions.front()->_addr));
 		if (succ != _targets.end() && (!jump || dynamic_cast<CondJump*>(jump)))
-			addEdge(block, succ->second);
+			addEdge(node, succ->second);
 	}
 }
 
 
-void ControlFlowGraph::addEdge(Block *from, Block *to) {
+void ControlFlowGraph::addEdge(Node *from, Node *to) {
 	from->_out.push_back(to);
 	to->_in.push_back(from);
 }
 
 
 void ControlFlowGraph::assignComponents() {
-	orderBlocks();
-	list<Block*> blocks = inPostOrder(_blocks);
-	blocks.reverse();
-	foreach (Block *u, blocks)
+	orderNodes();
+	list<Node*> nodes = inPostOrder(_nodes);
+	nodes.reverse();
+	foreach (Node *u, nodes)
 		componentVisit(u, u);
 }
 
 
 void ControlFlowGraph::assignDominators() {
-	list<Block*> blocks = inPostOrder(_blocks);
-	blocks.reverse();
-	blocks.remove(_entry);
+	list<Node*> nodes = inPostOrder(_nodes);
+	nodes.reverse();
+	nodes.remove(_entry);
 	_entry->_dominator = _entry;
 	for (bool changed = true; changed; ) {
 		changed = false;
-		foreach (Block *u, blocks) {
-			list<Block*>::iterator it = u->_in.begin();
+		foreach (Node *u, nodes) {
+			list<Node*>::iterator it = u->_in.begin();
 			while (!(*it)->_dominator)
 				it++;
-			Block *dom = *it++; // first processed predecessor
+			Node *dom = *it++; // first processed predecessor
 			for (; it != u->_in.end(); it++)
 				if ((*it)->_dominator)
 					dom = dominatorIntersect(*it, dom);
@@ -142,15 +142,15 @@ void ControlFlowGraph::assignDominators() {
 // a node belongs to an interval, if all its immediate predecessors belong the given interval
 // otherwise it is an interval header
 void ControlFlowGraph::assignIntervals() {
-	list<Block*> intervals;
+	list<Node*> intervals;
 	intervals.push_back(_entry);
-	foreach (Block *interval, intervals) {
+	foreach (Node *interval, intervals) {
 		interval->_interval = interval;
 		for (bool added = true; added; ) {
 			added = false;
-			foreach (Block *m, _blocks) {
+			foreach (Node *m, _nodes) {
 				bool allPredInInterval = true;
-				foreach (Block *p, m->_in)
+				foreach (Node *p, m->_in)
 					allPredInInterval &= p->_interval == interval;
 				if (!m->_interval && allPredInInterval) {
 					added = true;
@@ -158,9 +158,9 @@ void ControlFlowGraph::assignIntervals() {
 				}
 			}
 		}
-		foreach (Block *m, _blocks) {
+		foreach (Node *m, _nodes) {
 			bool anyPredInInterval = false;
-			foreach (Block *p, m->_in)
+			foreach (Node *p, m->_in)
 				anyPredInInterval |= p->_interval == interval;
 			if (!m->_interval && anyPredInInterval)
 				intervals.push_back(m);
@@ -175,19 +175,19 @@ void ControlFlowGraph::assignIntervals() {
 // intervals in the original graph
 void ControlFlowGraph::extendIntervals() {
 	ControlFlowGraph d;
-	map<Block*, Block*> trans;
-	foreach (Block *interval, intervals()) {
-		trans[interval] = d.addBlock(interval->_instructions.begin(), interval->_instructions.end());
+	map<Node*, Node*> trans;
+	foreach (Node *interval, intervals()) {
+		trans[interval] = d.addNode(interval->_instructions.begin(), interval->_instructions.end());
 		trans[interval]->_primitive = interval;
 	}
-	foreach (Block *interval, intervals())
-		foreach (Block *u, interval->_in)
+	foreach (Node *interval, intervals())
+		foreach (Node *u, interval->_in)
 		if (u->_interval != interval)
 			d.addEdge(trans[u->_interval], trans[interval]);
 	d.setEntry(_entry->_instructions.front()->_addr);
 	d.assignIntervals();
-	foreach (Block *du, d._blocks)
-		foreach (Block *v, _blocks)
+	foreach (Node *du, d._nodes)
+		foreach (Node *v, _nodes)
 		if (v->_interval == du->_primitive)
 			v->_interval = du->_interval->_primitive;
 }
@@ -203,10 +203,10 @@ string graphvizEscapeLabel(const string &s) {
 	return ret;
 }
 
-list<Block*> ControlFlowGraph::components() {
-	list<Block*> ret;
+list<Node*> ControlFlowGraph::components() {
+	list<Node*> ret;
 	assignComponents();
-	foreach (Block *u, _blocks)
+	foreach (Node *u, _nodes)
 		if (u->_component == u)
 			ret.push_back(u);
 	return ret;
@@ -215,10 +215,10 @@ list<Block*> ControlFlowGraph::components() {
 string ControlFlowGraph::graphvizToString(const string &fontname, int fontsize) {
 	stringstream ret;
 	ret << "digraph G {" << endl;
-	foreach (Block *interval, intervals()) {
+	foreach (Node *interval, intervals()) {
 		ret << "subgraph " << '"' << "cluster_" << interval << '"' << " {" << endl;
 		ret << "style=dotted;" << endl;
-		foreach (Block *u, _blocks)
+		foreach (Node *u, _nodes)
 			if (u->_interval == interval) {
 				ret << '"' << u << "\"[";
 				if (fontname != "")
@@ -232,18 +232,18 @@ string ControlFlowGraph::graphvizToString(const string &fontname, int fontsize) 
 			}
 		ret << "}" << endl;
 	}
-	foreach (Block *u, _blocks)
-		foreach (Block *v, u->_out)
+	foreach (Node *u, _nodes)
+		foreach (Node *v, u->_out)
 		    ret << '"' << u << "\" -> \"" << v << '"' << ";" << endl;
 	ret << "}" << endl;
 	return ret.str();
 }
 
 
-list<Block*> ControlFlowGraph::intervals() {
-	list<Block*> ret;
+list<Node*> ControlFlowGraph::intervals() {
+	list<Node*> ret;
 	assignIntervals();
-	foreach (Block *u, _blocks)
+	foreach (Node *u, _nodes)
 		if (u->_interval == u)
 			ret.push_back(u);
 	return ret;
@@ -251,13 +251,13 @@ list<Block*> ControlFlowGraph::intervals() {
 
 
 bool ControlFlowGraph::isReducible() {
-	for (size_t size = _blocks.size()+1; size > intervals().size(); size = intervals().size(), extendIntervals())
+	for (size_t size = _nodes.size()+1; size > intervals().size(); size = intervals().size(), extendIntervals())
 		;
 	return intervals().size() == 1;
 }
 
 
-void ControlFlowGraph::orderBlocks() {
+void ControlFlowGraph::orderNodes() {
 	assert(_entry);
 	if (!_entry->_number)
 		orderVisit(_entry, 0);
@@ -267,8 +267,8 @@ void ControlFlowGraph::orderBlocks() {
 void ControlFlowGraph::removeJumpsToJumps() {
 	for (bool changed = true; changed; ) {
 		changed = false;
-		foreach (Block *u, _blocks) {
-			foreach (Block *v, u->_out) {
+		foreach (Node *u, _nodes) {
+			foreach (Node *v, u->_out) {
 				Jump *jump = dynamic_cast<Jump*>(v->_instructions.front());
 				if (jump && !dynamic_cast<CondJump*>(jump) && jump->target() != jump->_addr) {
 					changed = true;
@@ -280,36 +280,36 @@ void ControlFlowGraph::removeJumpsToJumps() {
 }
 
 
-void ControlFlowGraph::removeUnreachableBlocks() {
-	foreach (Block *u, _blocks)
+void ControlFlowGraph::removeUnreachableNodes() {
+	foreach (Node *u, _nodes)
 		if (!u->_number) {
-			foreach (Block *v, u->_out)
+			foreach (Node *v, u->_out)
 				v->_in.remove(u);
-			foreach (Block *v, u->_in)
+			foreach (Node *v, u->_in)
 				v->_out.remove(u);
 		}
-	for (list<Block*>::iterator it = _blocks.begin(); it != _blocks.end(); )
+	for (list<Node*>::iterator it = _nodes.begin(); it != _nodes.end(); )
 		if ((*it)->_number)
 			it++;
 		else {
 			delete *it;
-			it = _blocks.erase(it);
+			it = _nodes.erase(it);
 		}
 }
 
 
-void ControlFlowGraph::replaceEdges(Block *from, Block *oldTo, Block *newTo) {
+void ControlFlowGraph::replaceEdges(Node *from, Node *oldTo, Node *newTo) {
 	size_t n = count(oldTo->_in.begin(), oldTo->_in.end(), from);
 	oldTo->_in.remove(from);
 	fill_n(back_inserter(newTo->_in), n, from);
-	foreach (Block *&block, from->_out)
-		if (block == oldTo)
-			block = newTo;
+	foreach (Node *&node, from->_out)
+		if (node == oldTo)
+			node = newTo;
 }
 
 
 void ControlFlowGraph::setEntry(address_t entry) {
-	foreach (Block *block, _blocks)
-		if (block->_instructions.front()->_addr == entry)
-			_entry = block;
+	foreach (Node *node, _nodes)
+		if (node->_instructions.front()->_addr == entry)
+			_entry = node;
 }
