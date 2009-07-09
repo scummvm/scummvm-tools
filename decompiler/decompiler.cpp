@@ -5,10 +5,13 @@
 
 #include "parser.h"
 #include "graph.h"
-#include "syntax.h"
 
 using namespace std;
 using namespace boost::program_options;
+
+#ifndef foreach
+#define foreach BOOST_FOREACH
+#endif
 
 
 variables_map parseArgs(int argc, char **argv) {
@@ -21,7 +24,7 @@ variables_map parseArgs(int argc, char **argv) {
 		("blocks", "print basic blocks")
 		("graph-intervals", value<unsigned>(), "print arg-th graph intervals")
 		("graph-struct", "print graph with marked structure information")
-		("decompile", "print decompiled program and exit")
+		//		("decompile", "print decompiled program and exit")
 		("no-remove-jumps", "don't remove jumps-to-jumps")
 		("fontname", value<string>()->default_value("Courier"), "font to use with dot output");
 	options_description options("Allowed options");
@@ -82,11 +85,6 @@ int main(int argc, char **argv) {
 	cfg.ifStruct();
 	if (vars.count("graph-struct")) {
 		cout << cfg.graphvizToString(vars["fontname"].as<string>());
-		exit(0);
-	}
-	if (vars.count("decompile")) {
-		foreach (Statement *stmt, buildAbstractSyntaxTree(cfg))
-			cout << stmt->toString(0);
 		exit(0);
 	}
 	return 0;
