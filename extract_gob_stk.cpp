@@ -264,7 +264,7 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 
 			byte *data = new byte[curChunk->size];
 
-			stk.read((char *) data, curChunk->size, 1);
+			stk.read(data, curChunk->size, 1);
 
 			try {
 				if (curChunk->packed) {
@@ -276,11 +276,11 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 						unpackedData = unpackData(data, realSize);
 					}
 
-					chunkFile.write((char *) unpackedData, realSize, 1);
+					chunkFile.write(unpackedData, realSize, 1);
 
 					delete[] unpackedData;
 				} else {
-					chunkFile.write((char *) data, curChunk->size, 1);
+					chunkFile.write(data, curChunk->size, 1);
 				}
 			} catch(...) {
 				delete[] data;
