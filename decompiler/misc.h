@@ -5,6 +5,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include <boost/foreach.hpp>
+
 
 typedef unsigned char uint8;
 typedef short int16;

@@ -25,7 +25,6 @@ struct ControlFlowGraph : boost::noncopyable {
 	void addBasicBlocksFromScript(std::list<Instruction*>::iterator scriptBegin, std::list<Instruction*>::iterator scriptEnd);
 	void addEdge(Node *from, Node *to);
 	void assignDominators(); // after order
-	static std::list<Node*> componentEntryPoints(std::list<Node*> &component);
 	std::string graphvizToString(const std::string &fontname="", int fontsize=0);
 	void orderNodes();
 	void removeJumpsToJumps();
@@ -33,6 +32,9 @@ struct ControlFlowGraph : boost::noncopyable {
 	void replaceEdges(Node *from, Node *oldTo, Node *newTo);
 	void setEntry(address_t entry);
 	std::list< std::list<Node*> > stronglyConnectedComponents();
+	void yank(std::set<Node*> &body, ControlFlowGraph &subgraph);
+
+	void structureLoops();
 
 	// to be removed
 	void assignIntervals();

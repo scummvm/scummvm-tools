@@ -13,6 +13,19 @@ using namespace std;
 #endif
 
 
+
+std::list<Node*> componentEntryPoints(std::list<Node*> &component) {
+	std::list<Node*> ret;
+	foreach (Node *u, component)
+		foreach (Node *v, u->_in)
+			if (u->_component != v->_component) {
+				ret.push_back(u);
+				break;
+			}
+	return ret;
+}
+
+
 void componentVisit(Node *u, Node *representative, list<Node*> &component) {
 	u->_component = representative;
 	component.push_back(u);
@@ -165,18 +178,6 @@ void ControlFlowGraph::assignIntervals() {
 }
 
 
-std::list<Node*> ControlFlowGraph::componentEntryPoints(std::list<Node*> &component) {
-	std::list<Node*> ret;
-	foreach (Node *u, component)
-		foreach (Node *v, u->_in)
-			if (u->_component != v->_component) {
-				ret.push_back(u);
-				break;
-			}
-	return ret;
-}
-
-
 // a derived graph, given set of intervals, is a graph in which
 // all intervals have been collapsed to a single node, and edge
 // exists between nodes if there are edges crossing corresponding
@@ -316,4 +317,42 @@ list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
 			ret.push_back(component);
 		}
 	return ret;
+}
+
+
+void ControlFlowGraph::yank(set<Node*> &nodes, ControlFlowGraph &subgraph) {
+	foreach (Node *u, nodes) {
+		subgraph._nodes.push_back(u);
+		_nodes.remove(u);
+		foreach (Node *&v, u->_out)
+			if (!contains(nodes, v))
+				v = new OutsideNode(v);
+		foreach (Node *&v, u->_in)
+			if (!contains(nodes, v))
+				v = new OutsideNode(v);
+	}
+}
+
+
+void ControlFlowGraph::structureLoops() {
+	foreach (list<Node*> component, stronglyConnectedComponents()) {
+		list<Node*> entries = componentEntryPoints(component);
+		if (entries.size() == 1) {
+			Node *entry = entries.front();
+			Node *latch = 0;
+			foreach (Node *u, component) // find the deepest latching node
+				foreach (Node *v, u->_out)
+					if (v == entry && (!latch || latch->_number > u->_number))
+						latch = u;
+			if (entry->edgeOutsideComponent()) { // while loop
+				new WhileLoop(*this, entry);
+			} else if (latch->edgeOutsideComponent()) {
+				// TODO do-while loop
+			} else {
+				// TODO infinite loop
+			}
+		} else {
+			// TODO: unreducible graph, lots of heuristics
+		}
+	}
 }

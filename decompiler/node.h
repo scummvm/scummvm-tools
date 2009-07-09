@@ -8,6 +8,9 @@
 #include <boost/utility.hpp>
 
 
+struct ControlFlowGraph;
+
+
 struct Node : boost::noncopyable {
 
 	Node *_component;
@@ -21,6 +24,8 @@ struct Node : boost::noncopyable {
 	virtual ~Node();
 
 	virtual uint32 address() = 0;
+	bool dominates(Node *u);
+	Node *edgeOutsideComponent();
 	virtual std::string toString() = 0;
 };
 
@@ -43,6 +48,31 @@ struct DerivedNode : public Node {
 
 	DerivedNode(Node *primitive);
 	~DerivedNode();
+
+	uint32 address();
+	std::string toString();
+};
+
+
+struct OutsideNode : public Node {
+
+	Node *_node;
+
+	OutsideNode(Node *node);
+	~OutsideNode();
+
+	uint32 address();
+	std::string toString();
+};
+
+
+struct WhileLoop : public Node {
+
+	Node *_condition;
+	ControlFlowGraph *_body;
+
+	WhileLoop(ControlFlowGraph &graph, Node *entry);
+	~WhileLoop();
 
 	uint32 address();
 	std::string toString();
