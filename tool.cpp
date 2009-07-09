@@ -51,7 +51,7 @@ int Tool::run(int argc, char *argv[]) {
 	argv += 1; 
 
 	_arguments.clear();
-	for(int i = 0; i < argc; ++i)
+	for (int i = 0; i < argc; ++i)
 		_arguments.push_back(argv[i]);
 	_arguments_parsed = 0;
 	_argv = 0;
@@ -72,7 +72,7 @@ int Tool::run(int argc, char *argv[]) {
 	// Read input files from CLI
 	while (_arguments_parsed < _arguments.size()) {
 		std::string &in = _arguments[_arguments_parsed++];
-		if(_inputFromDirectory) {
+		if (_inputFromDirectory) {
 			// Append '/' to input if it's not already done
 			// TODO: We need a way to detect a proper directory here!
 			size_t s = in.size();

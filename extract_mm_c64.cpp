@@ -59,7 +59,7 @@ void ExtractMMC64::execute() {
 	Filename inpath2(_inputPaths[1]);
 	Filename &outpath = _outputPath;
 
-	if(outpath.empty())
+	if (outpath.empty())
 		// Standard output path
 		outpath.setFullPath("out/");
 	

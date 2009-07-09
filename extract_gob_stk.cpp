@@ -93,7 +93,7 @@ void ExtractGobStk::readChunkList(File &stk, File &gobConf) {
 	uint16 numDataChunks = readUint16LE(stk);
 
 	// If we are run multiple times, free previous chunk list
-	if(_chunks)
+	if (_chunks)
 		delete _chunks;
 	_chunks = new Chunk;
 	Chunk *curChunk = _chunks;

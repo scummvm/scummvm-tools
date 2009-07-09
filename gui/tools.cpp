@@ -302,12 +302,12 @@ bool ToolGUI::outputToDirectory() const {
 
 void ToolGUI::run(const Configuration &conf) const {
 	_backend->_inputPaths.clear();
-	for(wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter)
+	for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter)
 		_backend->_inputPaths.push_back((const char *)iter->mb_str());
 	_backend->_outputPath = std::string(conf.outputPath.mb_str());
 
 	CompressionTool *compression = dynamic_cast<CompressionTool *>(_backend);
-	if(compression) {
+	if (compression) {
 		// mp3
 		compression->_mp3ABRBitrate        = (const char *)conf.mp3ABRBitrate.mb_str();
 		compression->_mp3CompressionType   = (const char *)conf.mp3CompressionType.mb_str();

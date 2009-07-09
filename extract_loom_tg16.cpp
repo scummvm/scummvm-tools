@@ -1242,7 +1242,7 @@ void ExtractLoomTG16::execute() {
 	Filename inpath(_inputPaths[0]);
 	Filename &outpath = _outputPath;
 
-	if(outpath.empty())
+	if (outpath.empty())
 		// Standard output path
 		outpath.setFullPath("out/");
 

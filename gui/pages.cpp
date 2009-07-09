@@ -178,7 +178,7 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 
 	wxArrayString choices;
 
-	if(_options.size()) {
+	if (!_options.empty()) {
 		sizer->Add(new wxStaticText(panel, wxID_ANY, 
 			wxT("There are multiple possible tools for this input, please select the correct one.")));
 		choices = _options;
@@ -208,7 +208,7 @@ void ChooseToolPage::save(wxWindow *panel) {
 }
 
 void ChooseToolPage::onNext(wxWindow *panel) {
-	if(_configuration.advanced)
+	if (_configuration.advanced)
 		switchPage(new ChooseInPage(_topframe));
 	else
 		// TODO: Display extra input page
@@ -267,9 +267,9 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 }
 
 void ChooseInPage::save(wxWindow *panel) {
-	wxWindow *outputWindow = panel->FindWindowByName(wxT("OutputPicker"));
-	wxDirPickerCtrl *outDirWindow = dynamic_cast<wxDirPickerCtrl *>(outputWindow);
-	wxFilePickerCtrl *outFileWindow = dynamic_cast<wxFilePickerCtrl *>(outputWindow);
+//	wxWindow *outputWindow = panel->FindWindowByName(wxT("OutputPicker"));
+//	wxDirPickerCtrl *outDirWindow = dynamic_cast<wxDirPickerCtrl *>(outputWindow);
+//	wxFilePickerCtrl *outFileWindow = dynamic_cast<wxFilePickerCtrl *>(outputWindow);
 
 	_configuration.inputFilePaths.clear();
 
@@ -283,7 +283,7 @@ void ChooseInPage::save(wxWindow *panel) {
 }
 
 void ChooseInPage::onNext(wxWindow *panel) {
-	if(_configuration.advanced)
+	if (_configuration.advanced)
 		// TODO: Display extra input page
 		switchPage(new ChooseOutPage(_topframe));
 	else
@@ -364,7 +364,7 @@ void ChooseExtraInPage::save(wxWindow *panel) {
 
 	int i = 1;
 	for (ToolInputs::const_iterator iter = tool._inputs.begin(); iter != tool._inputs.end(); ++iter) {
-		const ToolInput &input = *iter;
+//		const ToolInput &input = *iter;
 
 		wxString windowName = wxT("InputPicker");
 		windowName << i;
@@ -931,7 +931,7 @@ void ProcessPage::runTool() {
 }
 
 bool ProcessPage::onIdle(wxPanel *panel) {
-	if(!_thread)
+	if (!_thread)
 		return false;
 
 	{
@@ -943,7 +943,7 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 	}
 
 	// Check if thread finished
-	if(_thread && _thread->_finished) {
+	if (_thread && _thread->_finished) {
 		// It's done, Wait deallocates resources
 		_thread->Wait();
 		delete _thread;
@@ -1018,7 +1018,7 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(15);
 
 	wxString text;
-	if(_topframe->_configuration.selectedTool->_type == TOOLTYPE_COMPRESSION)
+	if (_topframe->_configuration.selectedTool->_type == TOOLTYPE_COMPRESSION)
 		text = wxT("You have finished the wizard! Your files should now be compressed.");
 	else
 		text = wxT("You have finished the wizard! Your files should now be extracted.");

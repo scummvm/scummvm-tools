@@ -35,7 +35,7 @@ File::File(::File &file)
 }
 
 File::~File() {
-	if(_owned)
+	if (_owned)
 		close();
 }
 

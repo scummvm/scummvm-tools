@@ -39,10 +39,12 @@
  */
 
 /* These are the defaults parameters for the Lame invocation */
-#define minBitrDef_str "24"
+#define minBitrDef	24
 #define maxBitrDef_str "64"
 #define algqualDef_str "2"
 #define vbrqualDef_str "4"
+
+#define INT_STR(x)	#x
 
 /* The default for oggenc invocation is to use the --quality option only */
 #define oggqualDef_str "3"
@@ -111,7 +113,6 @@ extern void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSam
 
 
 /* Integer definitions for the constants above */
-#define minBitrDef atoi(minBitrDef_str)
 #define maxBitrDef atoi(maxBitrDef_str)
 #define algqualDef atoi(algqualDef_str)
 #define vbrqualDef atoi(vbrqualDef_str)
@@ -128,7 +129,7 @@ extern void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSam
 	"(If one of these is specified, it must be the first parameter.)\n" \
 	\
 	"\nMP3 mode params:\n" \
-	" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" minBitrDef_str "%d)\n" \
+	" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" INT_STR(minBitrDef) "%d)\n" \
 	" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%" maxBitrDef_str ")\n" \
 	" --vbr        LAME uses the VBR mode (default)\n" \
 	" --abr        LAME uses the ABR mode\n" \

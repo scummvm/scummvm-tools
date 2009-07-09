@@ -118,9 +118,9 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	double k0 = 0, k1 = 0;
 	double d0 = 0, d1 = 0;
 	uint32 blockAlign, blockPos;
-	uint16 chunkData;
-	int16 chunkWord;
-	uint8 headerByte, filterVal, chunkPos;
+	uint16 chunkData = 0;
+	int16 chunkWord = 0;
+	uint8 headerByte, filterVal, chunkPos = 0;
 	const double eVal = 1.032226562;
 	uint32 decodeLeft = 0, decodedCount = 0;
 	uint32 uncompressedSize;
@@ -259,13 +259,12 @@ void CompressTinsel::execute() {
 		inpath_smp = _inputPaths[0];
 		inpath_idx = inpath_smp;
 		inpath_idx.setExtension(".idx");
-	} else if(_inputPaths.size() == 2) {
+	} else if (_inputPaths.size() == 2) {
 		inpath_smp = _inputPaths[0];
 		inpath_idx = _inputPaths[1];
 	} else {
 		error("At most two input files expected!");
 	}
-	Filename &outpath = _outputPath;
 
 	_input_idx.open(inpath_idx, "rb");
 	_input_smp.open(inpath_smp, "rb");

@@ -194,7 +194,7 @@ void CompressGob::writeBody(Filename *inpath, File &stk, Chunk *chunks) {
 	File src;
 	uint32 tmpSize;
 	
-	while(curChunk) {
+	while (curChunk) {
 		inpath->setFullName(curChunk->name);
 		src.open(*inpath, "rb");
 

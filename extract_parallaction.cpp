@@ -297,7 +297,7 @@ ExtractParallaction::ExtractParallaction(const std::string &name) : Tool(name) {
 }
 
 void ExtractParallaction::parseExtraArguments() {
-	if(_arguments[_arguments_parsed] == "--small") {
+	if (_arguments[_arguments_parsed] == "--small") {
 		_small = true;
 		++_arguments_parsed;
 	}
@@ -311,7 +311,7 @@ void ExtractParallaction::execute() {
 	Filename inpath(_inputPaths[0]);
 	Filename &outpath = _outputPath;
 
-	if(outpath.empty())
+	if (outpath.empty())
 		outpath.setFullPath("out/");
 
 	Archive arc(*this);
