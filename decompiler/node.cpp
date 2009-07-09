@@ -100,6 +100,8 @@ string OutsideNode::toString() {
 WhileLoop::WhileLoop(ControlFlowGraph &graph, Node *entry) : Node(), _condition(entry) {
 	Node *exit = entry->edgeOutsideComponent();
 	_out.push_back(exit);
+	foreach (Node *u, entry->_out)
+		u->_in.remove(entry); // remove dangling back-edges just in case
 	set<Node*> body;
 	foreach (Node *u, graph._nodes)
 		if (entry->dominates(u) && u != exit && !exit->dominates(u))
