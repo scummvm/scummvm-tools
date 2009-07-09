@@ -470,6 +470,10 @@ void File::seek(long offset, int origin) {
 		throw FileException("Could not seek in file (" + _name.getFullPath() + ")");
 }
 
+void File::rewind() {
+	return ::rewind(_file);
+}
+
 int File::pos() {
 	return ftell(_file);
 }

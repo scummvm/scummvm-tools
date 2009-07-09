@@ -49,8 +49,9 @@ private:
 public:
 
 	File(FILE *file);
-	// Allow construction from a ::File object, not that we *do not* own the file pointer
+	// Allow construction from a ::File object, note that we *do not* own the file pointer
 	// in this scenario, we just act as a different wrapper for the file
+	// FIXME: Actually -- why do we have *two* wrappers anyway???
 	File(::File &file);
 	virtual ~File();
 

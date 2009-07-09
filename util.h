@@ -455,6 +455,9 @@ public:
 	 */
 	void seek(long offset, int origin);
 
+	// TODO: document
+	void rewind();
+
 	/**
 	 * Returns the position in the stream.
 	 */
@@ -469,7 +472,10 @@ public:
 	 * We implicitly convert into a FILE, so we can use fread() etc. directly.
 	 * @todo get rid of this ASAP
 	 */
-	operator FILE *() {return _file;}
+	operator FILE *() { return _file; }
+
+	// FIXME: Remove this method ASAP
+	FILE *getFileHandle() { return _file; }
 
 protected:
 	/** The mode the file was opened in. */

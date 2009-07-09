@@ -31,7 +31,7 @@ File::File(FILE *file)
 }
 
 File::File(::File &file)
-	: _handle((FILE *)file), _ioFailed(false), _owned(false) {
+	: _handle(file.getFileHandle()), _ioFailed(false), _owned(false) {
 }
 
 File::~File() {
