@@ -90,7 +90,7 @@ void ExtractGobStk::execute() {
 }
 
 void ExtractGobStk::readChunkList(File &stk, File &gobConf) {
-	uint16 numDataChunks = readUint16LE(stk);
+	uint16 numDataChunks = stk.readUint16LE();
 
 	// If we are run multiple times, free previous chunk list
 	if (_chunks)
@@ -102,9 +102,9 @@ void ExtractGobStk::readChunkList(File &stk, File &gobConf) {
 	while (numDataChunks-- > 0) {
 		stk.read(curChunk->name, 1, 13);
 
-		curChunk->size = readUint32LE(stk);
-		curChunk->offset = readUint32LE(stk);
-		curChunk->packed = readByte(stk) != 0;
+		curChunk->size = stk.readUint32LE();
+		curChunk->offset = stk.readUint32LE();
+		curChunk->packed = stk.readByte() != 0;
 		curChunk->preGob = false;
 
 		// Geisha TOTs are compressed without having the flag set
@@ -160,7 +160,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 	buffer[8] = '\0';
 	strcat(debugStr, buffer);
 	print("%s\n",debugStr);
-	filenamePos = readUint32LE(stk);
+	filenamePos = stk.readUint32LE();
 
 	// Filenames - Header
 	// ==================
@@ -170,8 +170,8 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 
 	stk.seek(filenamePos, SEEK_SET);
 
-	numDataChunks = readUint32LE(stk);
-	miscPos = readUint32LE(stk);
+	numDataChunks = stk.readUint32LE();
+	miscPos = stk.readUint32LE();
 
 	if (numDataChunks == 0)
 		throw ToolException("Empty ITK/STK !");
@@ -192,20 +192,19 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 		// + 04 bytes : Start position of the File Section
 		// + 04 bytes : Compression flag (AFAIK : 0= uncompressed, 1= compressed)
 
-		if (fseek(stk, miscPos + (cpt * 61), SEEK_SET) != 0)
-			throw ToolException("Unable to locate Misc Section");
-		filenamePos = readUint32LE(stk);
+		stk.seek(miscPos + (cpt * 61), SEEK_SET);
+		filenamePos = stk.readUint32LE();
 
 		if (stk.read(buffer, 1, 36) < 36)
 			throw ToolException("Unexpected EOF in Misc Section");
-		curChunk->size = readUint32LE(stk);
-		decompSize = readUint32LE(stk);
+		curChunk->size = stk.readUint32LE();
+		decompSize = stk.readUint32LE();
 
 		if (stk.read(buffer, 1, 5) < 5)
 			throw ToolException("Unexpected EOF in Misc Section");
 
-		filePos = readUint32LE(stk);
-		compressFlag = readUint32LE(stk);
+		filePos = stk.readUint32LE();
+		compressFlag = stk.readUint32LE();
 
 		if (compressFlag == 1) {
 			curChunk->packed = true;
@@ -225,8 +224,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 		// Filename are stored one after the other, separated by 0x00.
 		// Those are now long filenames, at the opposite of previous STK version.
 
-		if (fseek(stk, filenamePos, SEEK_SET) != 0)
-			throw ToolException("Unable to locate filename");
+		stk.seek(filenamePos, SEEK_SET);
 
 		if (fgets(curChunk->name, 64, stk) == 0)
 			throw ToolException("Unable to read filename");

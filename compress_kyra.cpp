@@ -75,7 +75,7 @@ void CompressKyra::process(Filename *infile, Filename *outfile) {
 
 		File tempFile(TEMPFILE, "rb");
 		tempFile.seek(26, SEEK_CUR);
-		extractAndEncodeVOC(TEMP_RAW, tempFile, _format);
+		extractAndEncodeVOC(TEMP_RAW, tempFile.getFileHandle(), _format);
 		tempFile.close();
 
 		outputName.setExtension(audio_extensions(_format));
@@ -322,7 +322,7 @@ void CompressKyra::processKyra3(Filename *infile, Filename *outfile) {
 				red[i].resOffset = resOffset;
 
 				uint32 pos = (uint32)input.pos();
-				fseek(input, resOffset + 4, SEEK_SET);
+				input.seek(resOffset + 4, SEEK_SET);
 
 				compressAUDFile(input, outname);
 
@@ -330,7 +330,7 @@ void CompressKyra::processKyra3(Filename *infile, Filename *outfile) {
 
 				unlink(outname);
 
-				fseek(input, pos, SEEK_SET);
+				input.seek(pos, SEEK_SET);
 			}
 		}
 
@@ -356,9 +356,9 @@ bool CompressKyra::detectKyra3File(Filename *infile) {
 
 		File f(*infile, "rb");
 
-		uint16 entries = readUint16LE(f);
+		uint16 entries = f.readUint16LE();
 		uint32 entryTableSize = (entries * 8);
-		const uint32 filesize = fileSize(f);
+		const uint32 filesize = f.size();
 
 		if (entryTableSize + 2 > filesize) {
 			error("Unknown filetype of file: '%s'", infile->getFullPath().c_str());

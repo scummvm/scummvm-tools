@@ -51,8 +51,8 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 
 	/* write 0 offsets/sizes table */
 	for (i = 0; i < len; ++i) {
-		offs_table[i] = readUint32LE(input);
-		size_table[i] = readUint32LE(input);
+		offs_table[i] = input.readUint32LE();
+		size_table[i] = input.readUint32LE();
 		output.writeUint32LE(0);
 		output.writeUint32LE(0);
 		current_offset += 8;
@@ -70,7 +70,7 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 
 			print("VOC found (pos = %d) :\n", offs_table[i]);
 			input.seek(18, SEEK_CUR);
-			extractAndEncodeVOC(TEMP_RAW, input, _format);
+			extractAndEncodeVOC(TEMP_RAW, input.getFileHandle(), _format);
 
 			/* append converted data to output file */
 			File temp(tempEncoded, "rb");
@@ -105,8 +105,8 @@ void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
 
 	File output(*outpath, "wb");
 
-	writeUint16LE(output, 1); /* current version */
-	writeUint16LE(output, 0); /* flags */
+	output.writeUint16LE(1); /* current version */
+	output.writeUint16LE(0); /* flags */
 
 	current_offset = HEADER_SIZE;
 
@@ -134,7 +134,7 @@ void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
 		inpath->setFullName(d);
 
 		input.open(*inpath, "rb");
-		if (input) {
+		if (input.isOpen()) {
 			offsets_table[i] = current_offset;
 			current_offset = compress_sound_data_file(current_offset, output, input, input_Vxx_offs, input_Vxx_size, Vxx_HDR_LEN);
 			input.close();

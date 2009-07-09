@@ -166,7 +166,7 @@ uint32 CompressSaga::copyFile(const char *fromFileName, File &outputFile) {
 	char fbuf[2048];
 	File tempf(fromFileName, "rb");
 
-	if (tempf == NULL)
+	if (!tempf.isOpen())
 		error("Unable to open %s", fromFileName);
 
 	while ((size = (uint32)tempf.read(fbuf, 1, sizeof(fbuf))) > 0) {
@@ -181,7 +181,7 @@ void CompressSaga::copyFile(File &inputFile, uint32 inputSize, const char *toFil
 	char fbuf[2048];
 	File tempf(toFileName, "wb");
 
-	if (tempf == NULL)
+	if (!tempf.isOpen())
 		error("Unable to open %s", toFileName);
 	while (inputSize > 0) {
 		size = (uint32)inputFile.read(fbuf, 1, inputSize > sizeof(fbuf) ? sizeof(fbuf) : inputSize);
@@ -195,17 +195,17 @@ void CompressSaga::copyFile(File &inputFile, uint32 inputSize, const char *toFil
 
 void CompressSaga::writeBufferToFile(uint8 *data, uint32 inputSize, const char *toFileName) {
 	File tempf(toFileName, "wb");
-	if (tempf == NULL)
+	if (!tempf.isOpen())
 		error("Unable to open %s", toFileName);
 	tempf.write(data, 1, inputSize);
 }
 
 void CompressSaga::writeHeader(File &outputFile) {
-	writeByte(outputFile, compression_format(_format));
-	writeUint16LE(outputFile, _sampleRate);
-	writeUint32LE(outputFile, _sampleSize);
-	writeByte(outputFile, _sampleBits);
-	writeByte(outputFile, _sampleStereo);
+	outputFile.writeByte(compression_format(_format));
+	outputFile.writeUint16LE(_sampleRate);
+	outputFile.writeUint32LE(_sampleSize);
+	outputFile.writeByte(_sampleBits);
+	outputFile.writeByte(_sampleStereo);
 }
 
 uint32 CompressSaga::encodeEntry(File &inputFile, uint32 inputSize, File &outputFile) {
@@ -339,7 +339,7 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 	}
 
 	// Go to beginning of the table
-	fseek(inputFile, resTableOffset, SEEK_SET);
+	inputFile.seek(resTableOffset, SEEK_SET);
 
 	inputTable = (Record*)malloc(resTableCount * sizeof(Record));
 

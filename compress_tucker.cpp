@@ -62,7 +62,7 @@ int CompressTucker::compress_file_wav(File &input, File &output) {
 	char buf[8];
 
 	if (input.read(buf, 1, 8) == 8 && memcmp(buf, "RIFF", 4) == 0) {
-		extractAndEncodeWAV(TEMP_WAV, input, _format);
+		extractAndEncodeWAV(TEMP_WAV, input.getFileHandle(), _format);
 		return append_compress_file(output);
 	}
 	return 0;
@@ -140,13 +140,13 @@ uint32 CompressTucker::compress_sounds_directory(const Filename *inpath, const F
 	}
 
 	/* fix offsets/sizes table */
-	fseek(output, pos, SEEK_SET);
+	output.seek(pos, SEEK_SET);
 	for (i = 0; i < dir->count; ++i) {
-		writeUint32LE(output, temp_table[i].offset);
-		writeUint32LE(output, temp_table[i].size);
+		output.writeUint32LE(temp_table[i].offset);
+		output.writeUint32LE(temp_table[i].size);
 	}
 
-	fseek(output, 0, SEEK_END);
+	output.seek(0, SEEK_END);
 	return current_offset + dir->count * 8;
 }
 
@@ -305,8 +305,8 @@ uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Fi
 
 	/* write 0 offsets/sizes table */
 	for (i = 0; i < count; ++i) {
-		writeUint32LE(output, 0);
-		writeUint32LE(output, 0);
+		output.writeUint32LE(0);
+		output.writeUint32LE(0);
 	}
 
 	current_offset = 0;
@@ -314,7 +314,7 @@ uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Fi
 		temp_table[i].offset = current_offset;
 		sprintf(filepath, "%s/audio/%s", inpath->getPath().c_str(), audio_files_list[i]);
 		File input(filepath, "rb");
-		if (!input) {
+		if (!input.isOpen()) {
 			warning("Can't open file '%s'", filepath);
 			temp_table[i].size = 0;
 		} else {
@@ -335,13 +335,13 @@ uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Fi
 	}
 
 	/* fix offsets/sizes table */
-	fseek(output, pos, SEEK_SET);
+	output.seek(pos, SEEK_SET);
 	for (i = 0; i < count; ++i) {
-		writeUint32LE(output, temp_table[i].offset);
-		writeUint32LE(output, temp_table[i].size);
+		output.writeUint32LE(temp_table[i].offset);
+		output.writeUint32LE(temp_table[i].size);
 	}
 
-	fseek(output, 0, SEEK_END);
+	output.seek(0, SEEK_END);
 	return current_offset + count * 8;
 }
 
@@ -379,7 +379,7 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 	}
 
 	/* fix sound types offsets/counts */
-	fseek(output, HEADER_SIZE, SEEK_SET);
+	output.seek(HEADER_SIZE, SEEK_SET);
 	current_offset = 0;
 	for (i = 0; i < SOUND_TYPES_COUNT; ++i) {
 		output.writeUint32LE(current_offset);

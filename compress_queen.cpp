@@ -135,7 +135,7 @@ void CompressQueen::createFinalFile(Filename *outPath) {
 	File outFinal(*outPath, "wb");
 
 	dataStartOffset = inTbl.size() + EXTRA_TBL_HEADER;
-	dataSize = fileSize(inData);
+	dataSize = inData.size();
 
 	inTbl.seek(7, SEEK_SET);	/* Skip past header */
 
@@ -224,7 +224,7 @@ void CompressQueen::execute() {
 		_entry.size = inputTbl.readUint32BE();
 
 		print("Processing entry: %s\n", _entry.filename);
-		fseek(inputData, _entry.offset, SEEK_SET);
+		inputData.seek(_entry.offset, SEEK_SET);
 
 		if (_versionExtra.compression && strstr(_entry.filename, ".SB")) { /* Do we want to compress? */
 			uint16 sbVersion;
@@ -261,7 +261,7 @@ void CompressQueen::execute() {
 
 			/* Append MP3/OGG to data file */
 			compFile.open(tempEncoded, "rb");
-			_entry.size = fileSize(compFile);
+			_entry.size = compFile.size();
 			fromFileToFile(compFile, outputData, _entry.size);
 			compFile.close();
 
@@ -281,7 +281,7 @@ void CompressQueen::execute() {
 					/* XXX patched data files are supposed to be in cwd */
 					File fpPatch(pf->filename, "rb");
 
-					if (fpPatch) {
+					if (fpPatch.isOpen()) {
 						_entry.size = fpPatch.size();
 						print("Patching entry, new size = %d bytes\n", _entry.size);
 						fromFileToFile(fpPatch, outputData, _entry.size);

@@ -365,6 +365,8 @@ public:
 	 */
 	void close();
 
+	bool isOpen() const { return _file != 0; }
+
 	/**
 	 * Sets the xor mode of the file, bytes written / read to the file
 	 * will be XORed with this value. This value is *not* reset when

@@ -179,7 +179,7 @@ I have no idea what this code is meant to do, so I'll leave it to Remere to clea
  */
 void CompressGob::writeEmptyHeader(File &stk, uint16 chunkCount) {
 	for (uint32 count = 0; count < 2 + (uint32) (chunkCount * 22); count++)
-		fputc(0, stk);
+		stk.writeByte(0);
 
 	return;
 }
@@ -309,7 +309,7 @@ uint32 CompressGob::writeBodyStoreFile(File &stk, File &src) {
 	uint32 tmpSize = 0;
 
 	do {
-		count = fread(buffer, 1, 4096, src);
+		count = src.read(buffer, 1, 4096);
 		stk.write(buffer, 1, count);
 		tmpSize += count;
 	} while (count == 4096);
@@ -334,7 +334,7 @@ uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
 	uint16 resultcheckpos;
 	byte resultchecklength;
 
-	size = fileSize(src);
+	size = src.size();
 
 	byte *unpacked = new byte [size + 1];
 	for (int i = 0; i < 4096 - 18; i++)
@@ -406,7 +406,7 @@ uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
 // when the 8 operation bits are set.
 		if ((cpt == 7) | (counter == 0)) {
 			writeBuffer[0] = cmd;
-			fwrite(writeBuffer, 1, buffIndex, stk);
+			stk.write(writeBuffer, 1, buffIndex);
 			size += buffIndex;
 			buffIndex = 1;
 			cmd = 0;
@@ -438,8 +438,8 @@ bool CompressGob::filcmp(File &src1, Chunk *compChunk) {
 	src2.open(compChunk->name, "rb");
 	
 	do {
-		readCount = fread(buf1, 1, 4096, src1);
-		fread(buf2, 1, 4096, src2);
+		readCount = src1.read(buf1, 1, 4096);
+		src2.read(buf2, 1, 4096);
 		for (int i = 0; checkFl & (i < readCount); i++)
 			if (buf1[i] != buf2[i])
 				checkFl = false;

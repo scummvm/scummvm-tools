@@ -78,9 +78,9 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 
 	// Append compressed data to output_smp
 	curFileHandle.open(TEMP_ENC, "rb");
-	fseek(curFileHandle, 0, SEEK_END);
+	curFileHandle.seek(0, SEEK_END);
 	copyLeft = curFileHandle.pos();
-	fseek(curFileHandle, 0, SEEK_SET);
+	curFileHandle.seek(0, SEEK_SET);
 	// Write size of compressed data
 	_output_smp.writeUint32LE(copyLeft);
 	// Write actual data
