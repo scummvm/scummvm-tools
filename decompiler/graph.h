@@ -38,12 +38,8 @@ struct ControlFlowGraph : boost::noncopyable {
 	// to be removed
 	void assignIntervals();
 	void extendIntervals();
-	void ifStruct(); // after loopStruct
 	std::list<Block*> intervals();
 	bool isReducible();
-	Block *loopFollow(Block *head, Block *latch);
-	void loopStruct();
-	LoopType loopType(Block *head, Block *latch);
 };
 
 #endif

@@ -228,45 +228,15 @@ string ControlFlowGraph::graphvizToString(const string &fontname, int fontsize) 
 				ret	<< "shape=box,label=\"<number=" << u->_number;
 				if (u->_dominator)
 					ret	<< ", dom=" << u->_dominator->_number;
-				if (u->_loopFollow)
-					ret << ", loop_type=" << (u->_loopType == PRE_TESTED ? "pre_tested" : u->_loopType == POST_TESTED ? "post_tested" : "endless");
 				ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << endl;
 			}
 		ret << "}" << endl;
 	}
-	foreach (Block *u, _blocks) {
-		bool hadFollow = false;
-		foreach (Block *v, u->_out) {
-			hadFollow |= v == u->_loopFollow;
-		    ret << '"' << u << "\" -> \"" << v << '"' << (v == u->_loopFollow ? "[color=blue]" : "") << ";" << endl;
-		}
-		if (u->_loopFollow && !hadFollow)
-		    ret << '"' << u << "\" -> \"" << u->_loopFollow << '"' << "[color=blue,style=dashed];" << endl;
-		if (u->_ifFollow)
-		    ret << '"' << u << "\" -> \"" << u->_ifFollow << '"' << "[color=red,style=dashed];" << endl;
-	}
+	foreach (Block *u, _blocks)
+		foreach (Block *v, u->_out)
+		    ret << '"' << u << "\" -> \"" << v << '"' << ";" << endl;
 	ret << "}" << endl;
 	return ret.str();
-}
-
-
-void ControlFlowGraph::ifStruct() {
-	list<Block*> unresolved;
-	foreach (Block *u, inPostOrder(_blocks))
-		// TODO how will this work with 2-way head and 2-way latch loops - on latch node? how are loops going to be structured anyway
-		if (u->_out.size() == 2 && !((u->_loopLatch && u->_loopType == PRE_TESTED) || u->_loopHead)) {
-			Block *follow = 0;
-			// find the deepest node with immediate dominator u
-			foreach (Block *v, _blocks)
-				if (v->_dominator == u && v->_in.size() >= 2 && (!follow || v->_number < follow->_number))
-					follow = v;
-			unresolved.push_back(u);
-			if (follow) {
-				foreach (Block *v, unresolved)
-					v->_ifFollow = follow;
-				unresolved.clear();
-			}
-		}
 }
 
 
@@ -284,53 +254,6 @@ bool ControlFlowGraph::isReducible() {
 	for (size_t size = _blocks.size()+1; size > intervals().size(); size = intervals().size(), extendIntervals())
 		;
 	return intervals().size() == 1;
-}
-
-
-Block *ControlFlowGraph::loopFollow(Block *head, Block *latch) {
-	if (head->_loopType == PRE_TESTED)
-		return head->outEdgeOutsideLoop(head);
-	if (head->_loopType == POST_TESTED)
-		return latch->outEdgeOutsideLoop(head);
-	// ENDLESS
-	Block *ret = 0;
-	foreach (Block *u, _blocks)
-		if (u->inLoop(head) && u->outEdgeOutsideLoop(head) && (!ret || ret->_number < u->outEdgeOutsideLoop(head)->_number))
-			ret = u->outEdgeOutsideLoop(head);
-	return ret;
-}
-
-
-// for each set of 'growing' intervals in derived sequence of graphs,
-// every interval header is a potential loop header
-// we check for back edges that don't belong to loops discovered earlier
-// (inner loops)
-void ControlFlowGraph::loopStruct() {
-	for (size_t size = _blocks.size()+1; size > intervals().size(); size = intervals().size(), extendIntervals())
-		foreach (Block *interval, intervals()) {
-			foreach (Block *latch, interval->_in) {
-				if (latch->_interval == interval && !latch->_loopHead) {
-					interval->_loopLatch = latch;
-					interval->_loopType = loopType(interval, latch);
-					interval->_loopFollow = loopFollow(interval, latch);
-					latch->_loopHead = interval;
-				}
-			}
-		}
-}
-
-LoopType ControlFlowGraph::loopType(Block *head, Block *latch) {
-	if (head->_out.size() == 1 && latch->_out.size() == 1)
-		return ENDLESS;
-	if (head->_out.size() == 1 && latch->_out.size() == 2)
-		return POST_TESTED;
-	if (head->_out.size() == 2 && latch->_out.size() == 1)
-		return PRE_TESTED;
-	// head->_out.size() == 2 && latch->_out.size() == 2
-	if (!head->outEdgeOutsideLoop(head))
-		return POST_TESTED;
-	else
-		return PRE_TESTED;
 }
 
 
