@@ -162,7 +162,7 @@ static void unpackFile(FILE *fp, const char *outDir) {
 	unsigned int entrySize = readUint16BE(fp); // How many bytes per entry?
 	assert(entrySize == 0x1e);
 	while (entryCount--) {
-		fread(fileName, 14, 1, fp);
+		fp.read(fileName, 14, 1);
 		fileName[14] = '\0';
 		sprintf(filePath, "%s/%s", outDir, fileName);
 		FILE *fpOut = fopen(filePath, "wb");
@@ -171,7 +171,7 @@ static void unpackFile(FILE *fp, const char *outDir) {
 		unsigned int packedSize = readUint32BE(fp);
 		unsigned int unpackedSize = readUint32BE(fp);
 		readUint32BE(fp);
-		unsigned int savedPos = ftell(fp);
+		unsigned int savedPos = fp.pos();
 
 		if (!fpOut) {
 			printf("ERROR: unable to open '%s' for writing\n", filePath);
@@ -185,7 +185,7 @@ static void unpackFile(FILE *fp, const char *outDir) {
 		uint8 *packedData = (uint8 *)calloc(packedSize, 1);
 		assert(data);
 		assert(packedData);
-		fread(packedData, packedSize, 1, fp);
+		fp.read(packedData, packedSize, 1);
 		bool status = true;
 		if (packedSize != unpackedSize) {
 			CineUnpacker cineUnpacker;
@@ -194,7 +194,7 @@ static void unpackFile(FILE *fp, const char *outDir) {
 			memcpy(data, packedData, packedSize);
 		}
 		free(packedData);
-		fwrite(data, unpackedSize, 1, fpOut);
+		fpOut.write(data, unpackedSize, 1);
 		fclose(fpOut);
 		free(data);
 
@@ -240,20 +240,20 @@ void unpackAllResourceFiles(const char *filename, const char *outDir) {
 	uint32 unpackedSize, packedSize;
 	{
 		char header[8];
-		fread(header, 8, 1, fp);
+		fp.read(header, 8, 1);
 		if (memcmp(header, "ABASECP", 7) == 0) {
 			unpackedSize = readUint32BE(fp);
 			packedSize = readUint32BE(fp);
 		} else {
 			fseek(fp, 0, SEEK_END);
-			unpackedSize = packedSize = ftell(fp); /* Get file size */
+			unpackedSize = packedSize = fp.pos(); /* Get file size */
 			fseek(fp, 0, SEEK_SET);
 		}
 	}
 	assert(unpackedSize >= packedSize);
 	uint8 *buf = (uint8 *)calloc(unpackedSize, 1);
 	assert(buf);
-	fread(buf, packedSize, 1, fp);
+	fp.read(buf, packedSize, 1);
 	fclose(fp);
 	if (packedSize != unpackedSize) {
 		CineUnpacker cineUnpacker;

@@ -850,8 +850,8 @@ void ExtractMMNes::extract_resource(File &input, File &output, const struct t_re
 				if ((cnt & 0x80) || (j == 0))
 					output.writeByte(input.readByte());
 		}
-		if (ftell(input) - res->offset != res->length)
-			error("extract_resource - length mismatch while extracting graphics resource (was %04X, should be %04X)", ftell(input) - res->offset, res->length);
+		if (input.pos() - res->offset != res->length)
+			error("extract_resource - length mismatch while extracting graphics resource (was %04X, should be %04X)", input.pos() - res->offset, res->length);
 		break;
 	case NES_ROOM:
 	case NES_SCRIPT:
@@ -903,8 +903,8 @@ void ExtractMMNes::extract_resource(File &input, File &output, const struct t_re
 		} else {
 			error("extract_resource - unknown sound type %d/%d detected", val, cnt);
 		}
-		if (ftell(input) - res->offset != res->length)
-			error("extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)", ftell(input) - res->offset, res->length);
+		if (input.pos() - res->offset != res->length)
+			error("extract_resource - length mismatch while extracting sound resource (was %04X, should be %04X)", input.pos() - res->offset, res->length);
 		break;
 	case NES_COSTUME:
 	case NES_SPRPALS:
@@ -1136,7 +1136,7 @@ void ExtractMMNes::execute() {
 			"You must input the PRG section only - see Maniac Mansion NES notes section of README.");
 	}
 
-	rewind(input);
+	input.rewind();
 
 	InitCRC();
 	CRC = CheckROM(input);
@@ -1193,55 +1193,55 @@ void ExtractMMNes::execute() {
 			switch (entry->type->type) {
 			case NES_ROOM:
 				mm_lfl_index.room_lfl[entry->index] = lfl->num;
-				mm_lfl_index.room_addr[entry->index] = (uint16)ftell(output);
+				mm_lfl_index.room_addr[entry->index] = (uint16)output.pos();
 				break;
 			case NES_COSTUME:
 				mm_lfl_index.costume_lfl[entry->index] = lfl->num;
-				mm_lfl_index.costume_addr[entry->index] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[entry->index] = (uint16)output.pos();
 				break;
 			case NES_SPRDESC:
 				mm_lfl_index.costume_lfl[entry->index + 25] = lfl->num;
-				mm_lfl_index.costume_addr[entry->index + 25] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[entry->index + 25] = (uint16)output.pos();
 				break;
 			case NES_SPRLENS:
 				mm_lfl_index.costume_lfl[entry->index + 27] = lfl->num;
-				mm_lfl_index.costume_addr[entry->index + 27] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[entry->index + 27] = (uint16)output.pos();
 				break;
 			case NES_SPROFFS:
 				mm_lfl_index.costume_lfl[entry->index + 29] = lfl->num;
-				mm_lfl_index.costume_addr[entry->index + 29] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[entry->index + 29] = (uint16)output.pos();
 				break;
 			case NES_SPRDATA:
 				mm_lfl_index.costume_lfl[entry->index + 31] = lfl->num;
-				mm_lfl_index.costume_addr[entry->index + 31] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[entry->index + 31] = (uint16)output.pos();
 				break;
 			case NES_COSTUMEGFX:
 				mm_lfl_index.costume_lfl[entry->index + 33] = lfl->num;
-				mm_lfl_index.costume_addr[entry->index + 33] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[entry->index + 33] = (uint16)output.pos();
 				break;
 			case NES_SPRPALS:
 				mm_lfl_index.costume_lfl[entry->index + 35] = lfl->num;
-				mm_lfl_index.costume_addr[entry->index + 35] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[entry->index + 35] = (uint16)output.pos();
 				break;
 			case NES_ROOMGFX:
 				mm_lfl_index.costume_lfl[entry->index + 37] = lfl->num;
-				mm_lfl_index.costume_addr[entry->index + 37] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[entry->index + 37] = (uint16)output.pos();
 				break;
 			case NES_SCRIPT:
 				mm_lfl_index.script_lfl[entry->index] = lfl->num;
-				mm_lfl_index.script_addr[entry->index] = (uint16)ftell(output);
+				mm_lfl_index.script_addr[entry->index] = (uint16)output.pos();
 				break;
 			case NES_SOUND:
 				mm_lfl_index.sound_lfl[entry->index] = lfl->num;
-				mm_lfl_index.sound_addr[entry->index] = (uint16)ftell(output);
+				mm_lfl_index.sound_addr[entry->index] = (uint16)output.pos();
 				break;
 			case NES_CHARSET:
 				mm_lfl_index.costume_lfl[77] = lfl->num;
-				mm_lfl_index.costume_addr[77] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[77] = (uint16)output.pos();
 				break;
 			case NES_PREPLIST:
 				mm_lfl_index.costume_lfl[78] = lfl->num;
-				mm_lfl_index.costume_addr[78] = (uint16)ftell(output);
+				mm_lfl_index.costume_addr[78] = (uint16)output.pos();
 				break;
 			default:
 				error("Unindexed entry found");

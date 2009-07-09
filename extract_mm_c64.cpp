@@ -80,7 +80,7 @@ void ExtractMMC64::execute() {
 	print("Creating 00.LFL...");
 
 	/* write signature */
-	writeUint16LE(output, signature);
+	output.writeU16LE(signature);
 
 	/* copy object flags */
 	for (i = 0; i < 256; i++)
@@ -142,7 +142,7 @@ void ExtractMMC64::execute() {
 			}
 		}
 
-		rewind(*input);
+		input->rewind();
 	}
 
 	print("All done!");

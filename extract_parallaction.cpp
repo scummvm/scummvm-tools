@@ -159,7 +159,7 @@ void Archive::open(const char *filename, bool smallArchive) {
 		_offsets[0] = 0x4000;
 	}
 
-	ftell(_file);
+	_file.pos();
 
 	for (i = 1; i < _numSlots; i++)
 		_offsets[i] = _offsets[i-1] + _sizes[i-1];

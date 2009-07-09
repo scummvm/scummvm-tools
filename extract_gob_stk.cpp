@@ -82,7 +82,7 @@ void ExtractGobStk::execute() {
 		readChunkListV2(stk, gobConf);
 	} else {
 		fprintf(gobConf, "%s\n", confSTK10);
-		rewind(stk);
+		stk.rewind();
 		readChunkList(stk, gobConf);
 	}
 
@@ -154,7 +154,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 	buffer[14] = '\0';
 	sprintf(debugStr, "File generated on %s by ", buffer);
 
-	if (fread(buffer, 1, 8, stk) < 8)
+	if (stk.read(buffer, 1, 8) < 8)
 		throw ToolException("Unexpected EOF");
 
 	buffer[8] = '\0';
@@ -196,12 +196,12 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 			throw ToolException("Unable to locate Misc Section");
 		filenamePos = readUint32LE(stk);
 
-		if (fread(buffer, 1, 36, stk) < 36)
+		if (stk.read(buffer, 1, 36) < 36)
 			throw ToolException("Unexpected EOF in Misc Section");
 		curChunk->size = readUint32LE(stk);
 		decompSize = readUint32LE(stk);
 
-		if (fread(buffer, 1, 5, stk) < 5)
+		if (stk.read(buffer, 1, 5) < 5)
 			throw ToolException("Unexpected EOF in Misc Section");
 
 		filePos = readUint32LE(stk);

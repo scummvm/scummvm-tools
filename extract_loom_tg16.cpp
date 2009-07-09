@@ -842,7 +842,7 @@ void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res
 			if (rtype != 0x01)
 				error("extract_resource(room) - resource tag is incorrect");
 
-			off = (uint16)ftell(output);
+			off = (uint16)output.pos();
 			rlen = 0;
 			write_clong(output, 0, &rlen);
 			write_cword(output, 'OR', &rlen); /* RO - Room */
@@ -970,7 +970,7 @@ void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res
 		output.writeU32LE((uint16)(rlen + 1));
 		output.writeU16LE('OC');	/* CO - Costume */
 		for (i = 5; i < rlen; i++)
-			output.writeByte(readByte(input));
+			output.writeByte(input.readByte());
 		break;
 	case RES_SCRIPT:
 		rlen = read_cword(input,&i);
@@ -984,7 +984,7 @@ void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res
 		output.writeU32LE((uint16)(rlen + 1));
 		output.writeU16LE('CS');	/* SC - Script */
 		for (i = 5; i < rlen; i++)
-			output.writeByte(readByte(input));
+			output.writeByte(input.readByte());
 		break;
 	case RES_UNKNOWN:
 #else
@@ -998,7 +998,7 @@ void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res
 			error("extract_resource - length mismatch while extracting resource (was %04X, expected %04X)", rlen, r_length(res));
 		output.writeUint16LE(rlen);
 		for (i = 2; i < rlen; i++)
-			output.writeByte(readByte(input));
+			output.writeByte(input.readByte());
 		break;
 #endif
 	default:
@@ -1216,10 +1216,10 @@ uint32 ISO_CRC (File &file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i, len;
 	file.seek(0, SEEK_END);
-	len = ftell(file);
+	len = file.pos();
 	file.seek(0, SEEK_SET);
 	for (i = 0; i < len; i++)
-		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ readByte(file)) & 0xFF];
+		CRC = (CRC >> 8) ^ CRCtable[(CRC ^ file.readByte()) & 0xFF];
 	return CRC ^ 0xFFFFFFFF;
 }
 
@@ -1282,19 +1282,19 @@ void ExtractLoomTG16::execute() {
 			switch (entry->type) {
 			case RES_ROOM:
 				lfl_index.room_lfl[entry - res_rooms] = lfl->num;
-				lfl_index.room_addr[entry - res_rooms] = (uint16)ftell(output);
+				lfl_index.room_addr[entry - res_rooms] = (uint16)output.pos();
 				break;
 			case RES_COSTUME:
 				lfl_index.costume_lfl[entry - res_costumes] = lfl->num;
-				lfl_index.costume_addr[entry - res_costumes] = (uint16)ftell(output);
+				lfl_index.costume_addr[entry - res_costumes] = (uint16)output.pos();
 				break;
 			case RES_SCRIPT:
 				lfl_index.script_lfl[entry - res_scripts] = lfl->num;
-				lfl_index.script_addr[entry - res_scripts] = (uint16)ftell(output);
+				lfl_index.script_addr[entry - res_scripts] = (uint16)output.pos();
 				break;
 			case RES_SOUND:
 				lfl_index.sound_lfl[entry - res_sounds] = lfl->num;
-				lfl_index.sound_addr[entry - res_sounds] = (uint16)ftell(output);
+				lfl_index.sound_addr[entry - res_sounds] = (uint16)output.pos();
 				break;
 			default:
 				print("Unknown resource type %d detected in LFL index!", entry->type);

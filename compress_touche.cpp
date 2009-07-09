@@ -77,8 +77,8 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 
 			size_table[i] = 0;
 
-			while ((size = fread(buf, 1, 2048, temp)) > 0) {
-				fwrite(buf, 1, size, output);
+			while ((size = temp.read(buf, 1, 2048)) > 0) {
+				output.write(buf, 1, size);
 				size_table[i] += size;
 			}
 

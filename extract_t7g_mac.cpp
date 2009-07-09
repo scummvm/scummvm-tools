@@ -31,7 +31,7 @@ uint32 offsetResourceData;
 char *readString(FILE *ifp) {
 	byte len = readByte(ifp);
 	char *name = new char[len + 1];
-	fread(name, len, 1, ifp);
+	ifp.read(name, len, 1);
 	name[len] = 0;
 	return name;
 }
@@ -50,8 +50,8 @@ void dumpResource(FILE *ifp, char *name) {
 
 	// Dump the resource to the output file
 	FILE *ofp = fopen(name, "wb");
-	fread(buf, 1, fileSize, ifp);
-	fwrite(buf, 1, fileSize, ofp);
+	ifp.read(buf, 1, fileSize);
+	ofp.write(buf, 1, fileSize);
 	fclose(ofp);
 
 	// Free the resource memory
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Read the resource type name
-		fread(resType, 4, 1, ifp);
+		ifp.read(resType, 4, 1);
 		switch (READ_BE_UINT32(resType)) {
 			case MKID_BE('csnd'):
 			case MKID_BE('snd '):

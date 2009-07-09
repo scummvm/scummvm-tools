@@ -40,13 +40,13 @@ void CompressAgos::end() {
 	_output_idx.open(_outputPath, "wb");
 
 	_input.open(TEMP_IDX, "rb");
-	while ((size = fread(fbuf, 1, 2048, _input)) > 0) {
-		fwrite(fbuf, 1, size, _output_idx);
+	while ((size = _input.read(fbuf, 1, 2048)) > 0) {
+		_output_idx.write(fbuf, 1, size);
 	}
 
 	_input.open(TEMP_DAT, "rb");
-	while ((size = fread(fbuf, 1, 2048, _input)) > 0) {
-		fwrite(fbuf, 1, size, _output_idx);
+	while ((size = _input.read(fbuf, 1, 2048)) > 0) {
+		_output_idx.write(fbuf, 1, size);
 	}
 
 	_input.close();
@@ -67,7 +67,7 @@ int CompressAgos::get_offsets(uint32 filenums[], uint32 offsets[]) {
 	char buf[8];
 
 	for (i = 0;; i++) {
-		fread(buf, 1, 8, _input);
+		_input.read(buf, 1, 8);
 		if (!memcmp(buf, "Creative", 8) || !memcmp(buf, "RIFF", 4)) {
 			return i;
 		}
@@ -99,7 +99,7 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 
 	fseek(_input, offset, SEEK_SET);
 
-	fread(buf, 1, 8, _input);
+	_input.read(buf, 1, 8);
 	if (!memcmp(buf, "Creative", 8)) {
 		print("VOC found (pos = %d) :\n", offset);
 		fseek(_input, 18, SEEK_CUR);
@@ -115,9 +115,9 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 	sprintf(outname, "%s", tempEncoded);
 	File f(outname, "rb");
 	tot_size = 0;
-	while ((size = fread(fbuf, 1, 2048, f)) > 0) {
+	while ((size = f.read(fbuf, 1, 2048)) > 0) {
 		tot_size += size;
-		fwrite(fbuf, 1, size, _output_snd);
+		_output_snd.write(fbuf, 1, size);
 	}
 
 	return(tot_size);

@@ -64,7 +64,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	curFileHandle.open(TEMP_RAW, "wb");
 	copyLeft = sampleSize;
 	while (copyLeft > 0) {
-		doneRead = fread(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft, _input_smp);
+		doneRead = _input_smp.read(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
@@ -79,13 +79,13 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	// Append compressed data to output_smp
 	curFileHandle.open(TEMP_ENC, "rb");
 	fseek(curFileHandle, 0, SEEK_END);
-	copyLeft = ftell(curFileHandle);
+	copyLeft = curFileHandle.pos();
 	fseek(curFileHandle, 0, SEEK_SET);
 	// Write size of compressed data
 	_output_smp.writeU32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
-		doneRead = fread(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft, curFileHandle);
+		doneRead = curFileHandle.read(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
@@ -226,13 +226,13 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	// Append compressed data to output_smp
 	curFileHandle.open(TEMP_ENC, "rb");
 	curFileHandle.seek(0, SEEK_END);
-	copyLeft = ftell(curFileHandle);
+	copyLeft = curFileHandle.pos();
 	curFileHandle.seek(0, SEEK_SET);
 	// Write size of compressed data
 	_output_smp.writeU32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
-		doneRead = fread(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft, curFileHandle);
+		doneRead = curFileHandle.read(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
@@ -276,7 +276,7 @@ void CompressTinsel::execute() {
 	_output_smp.open(TEMP_SMP, "wb");
 
 	_input_idx.seek(0, SEEK_END);
-	indexCount = ftell(_input_idx) / sizeof(uint32);
+	indexCount = _input_idx.pos() / sizeof(uint32);
 	_input_idx.seek(0, SEEK_SET);
 
 	loopCount = indexCount;
@@ -294,7 +294,7 @@ void CompressTinsel::execute() {
 			sampleSize = _input_smp.readU32LE();
 
 			// Write offset of new data to new index file
-			_output_idx.writeU32LE(ftell(_output_smp));
+			_output_idx.writeU32LE(_output_smp.pos());
 
 			if (sampleSize & 0x80000000) {
 				// multiple samples in ADPCM format

@@ -146,7 +146,7 @@ void ExtractMMApple::execute() {
 			for (len -= 2; len > 0; len--)
 				output.writeByte(input->readByte());
 		}
-		rewind(*input);
+		input->rewind();
 	}
 	print("All done!");
 }

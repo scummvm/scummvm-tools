@@ -115,7 +115,7 @@ void CompressQueen::fromFileToFile(File &in, File &out, uint32 amount) {
 	uint32 numRead;
 
 	while (amount > 0) {
-		numRead = fread(fBuf, 1, amount > 2048 ? 2048 : amount, in);
+		numRead = in.read(fBuf, 1, amount > 2048 ? 2048 : amount);
 		if (numRead <= 0) {
 			break;
 		}
@@ -214,7 +214,7 @@ void CompressQueen::execute() {
 	outputTbl.writeU16BE(_versionExtra.entries);
 
 	for (i = 0; i < _versionExtra.entries; i++) {
-		prevOffset = ftell(outputData);
+		prevOffset = outputData.pos();
 
 		/* Read entry */
 		inputTbl.read(_entry.filename, 1, 12);

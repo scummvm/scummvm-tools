@@ -134,13 +134,13 @@ int CompressKyra::decodeChunk(File &in, File &out) {
 	if (size == outSize) {
 		int readSize = size;
 		while (readSize > 0) {
-			int read = fread(outputBuffer, 1, readSize, in);
+			int read = in.read(outputBuffer, 1, readSize);
 			if (read <= 0)
 				error("[1] Couldn't read data");
 			readSize -= read;
 		}
 		while (size > 0)  {
-			int written = fwrite(outputBuffer, 1, size, out);
+			int written = out.write(outputBuffer, 1, size);
 			size -= written;
 		}
 		free(outputBuffer);
@@ -152,7 +152,7 @@ int CompressKyra::decodeChunk(File &in, File &out) {
 
 	int readSize = size;
 	while (readSize > 0) {
-		int read = fread(inputBuffer, 1, readSize, in);
+		int read = in.read(inputBuffer, 1, readSize);
 		if (read <= 0)
 			error("[2] Couldn't read data");
 		readSize -= read;
@@ -232,7 +232,7 @@ int CompressKyra::decodeChunk(File &in, File &out) {
 	}
 
 	while (outSize > 0)  {
-		int written = fwrite(outputBuffer, 1, outSize, out);
+		int written = out.write(outputBuffer, 1, outSize);
 		if (written <= 0)
 			error("[2] Couldn't write data");
 		outSize -= written;
@@ -321,7 +321,7 @@ void CompressKyra::processKyra3(Filename *infile, Filename *outfile) {
 				red[i].resFilename = resFilename;
 				red[i].resOffset = resOffset;
 
-				uint32 pos = (uint32)ftell(input);
+				uint32 pos = (uint32)input.pos();
 				fseek(input, resOffset + 4, SEEK_SET);
 
 				compressAUDFile(input, outname);

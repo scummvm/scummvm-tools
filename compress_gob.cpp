@@ -137,7 +137,7 @@ I have no idea what this code is meant to do, so I'll leave it to Remere to clea
 		src1.open(curChunk->name, "rb");
 		src1.seek(0, SEEK_END);
 // if file is too small, force 'Store' method
-		if ((curChunk->realSize = ftell(src1)) < 8) 
+		if ((curChunk->realSize = src1.pos()) < 8) 
 			curChunk->packed = 0;
 
 		parseChunk = chunks;
@@ -205,7 +205,7 @@ void CompressGob::writeBody(Filename *inpath, File &stk, Chunk *chunks) {
 		if (curChunk->packed == 2)
 			print("Identical file %12s\t(compressed size %d bytes)\n", curChunk->name, curChunk->replChunk->size);
 
-		curChunk->offset = ftell(stk);
+		curChunk->offset = stk.pos();
 		if (curChunk->packed == 1) {
 			print("Compressing %12s\t", curChunk->name);
 			curChunk->size = writeBodyPackFile(stk, src);
@@ -215,7 +215,7 @@ void CompressGob::writeBody(Filename *inpath, File &stk, Chunk *chunks) {
 // => Store instead
 				curChunk->packed = 0;
 				stk.seek(curChunk->offset, SEEK_SET);
-				rewind(src);
+				src.rewind();
 				print("!!!");
 			}
 			print("\n");
@@ -255,7 +255,7 @@ void CompressGob::rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks) {
 	char buffer[1024];
 	Chunk *curChunk = chunks;
 
-	rewind(stk);
+	stk.rewind();
 
 	buffer[0] = chunkCount & 0xFF;
 	buffer[1] = chunkCount >> 8;
@@ -434,7 +434,7 @@ bool CompressGob::filcmp(File &src1, Chunk *compChunk) {
 	char buf2[4096];
 	File src2;
 
-	rewind(src1);
+	src1.rewind();
 	src2.open(compChunk->name, "rb");
 	
 	do {

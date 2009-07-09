@@ -169,10 +169,10 @@ uint32 CompressSaga::copyFile(const char *fromFileName, File &outputFile) {
 	if (tempf == NULL)
 		error("Unable to open %s", fromFileName);
 
-	while ((size = (uint32)fread(fbuf, 1, sizeof(fbuf), tempf)) > 0) {
-		fwrite(fbuf, 1, size, outputFile);
+	while ((size = (uint32)tempf.read(fbuf, 1, sizeof(fbuf))) > 0) {
+		outputFile.write(fbuf, 1, size);
 	}
-	size = ftell(tempf);
+	size = tempf.pos();
 	return size;
 }
 
@@ -184,11 +184,11 @@ void CompressSaga::copyFile(File &inputFile, uint32 inputSize, const char *toFil
 	if (tempf == NULL)
 		error("Unable to open %s", toFileName);
 	while (inputSize > 0) {
-		size = (uint32)fread(fbuf, 1, inputSize > sizeof(fbuf) ? sizeof(fbuf) : inputSize, inputFile);
+		size = (uint32)inputFile.read(fbuf, 1, inputSize > sizeof(fbuf) ? sizeof(fbuf) : inputSize);
 		if (size == 0) {
 			error("Unable to copy file");
 		}
-		fwrite(fbuf, 1, size, tempf);
+		tempf.write(fbuf, 1, size);
 		inputSize -= size;
 	}
 }
@@ -197,7 +197,7 @@ void CompressSaga::writeBufferToFile(uint8 *data, uint32 inputSize, const char *
 	File tempf(toFileName, "wb");
 	if (tempf == NULL)
 		error("Unable to open %s", toFileName);
-	fwrite(data, 1, inputSize, tempf);
+	tempf.write(data, 1, inputSize);
 }
 
 void CompressSaga::writeHeader(File &outputFile) {
@@ -372,7 +372,7 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 
 	for (i = 0; i < resTableCount; i++) {
 		inputFile.seek(inputTable[i].offset, SEEK_SET);
-		outputTable[i].offset = ftell(outputFile);
+		outputTable[i].offset = outputFile.pos();
 
 		if (inputTable[i].size >= 8) {
 			outputTable[i].size = encodeEntry(inputFile, inputTable[i].size, outputFile);
@@ -382,7 +382,7 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 	}
 	inputFile.close();
 
-	resTableOffset = ftell(outputFile);
+	resTableOffset = outputFile.pos();
 	for (i = 0; i < resTableCount; i++) {
 		outputFile.writeU32LE(outputTable[i].offset);
 		outputFile.writeU32LE(outputTable[i].size);

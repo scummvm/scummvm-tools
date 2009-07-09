@@ -146,7 +146,7 @@ void ExtractZakC64::execute() {
 			}
 		}
 
-		rewind(*input);
+		input->rewind();
 	}
 
 	print("All done!");
