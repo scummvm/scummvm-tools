@@ -111,6 +111,10 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, const Filename &st
 	chunkCount = 1;
 
 // First read: Output filename
+FIXME: The following is an error, you cannot read into getFullPath this way, since
+(a) it is a *const* object, and 
+(b) you are not allowed to read into a string like that -- c_str may point to a tiny storage, for example
+I have no idea what this code is meant to do, so I'll leave it to Remere to clean it up ;)
 	fscanf(gobConf, "%s", stkName.getFullPath().c_str());
 
 // Second read: signature

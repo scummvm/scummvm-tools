@@ -125,7 +125,7 @@ bool CompressSaga::detectFile(Filename *infile) {
 	char md5str[32+1];
 
 	Common::md5_file(infile->getFullPath().c_str(), md5sum, FILE_MD5_BYTES);
-	print("Input file name: %s\n", infile->getFullPath());
+	print("Input file name: %s\n", infile->getFullPath().c_str());
 	for (j = 0; j < 16; j++) {
 		sprintf(md5str + j*2, "%02x", (int)md5sum[j]);
 	}
