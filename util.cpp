@@ -400,7 +400,7 @@ uint32 File::readU32LE() {
 	return ret;
 }
 
-void File::read(void *data, size_t elementSize, size_t elementCount) {
+size_t File::read(void *data, size_t elementSize, size_t elementCount) {
 	if (!_file) 
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
@@ -409,6 +409,8 @@ void File::read(void *data, size_t elementSize, size_t elementCount) {
 	size_t data_read = fread(data, elementSize, elementCount, _file);
 	if (data_read != elementCount)
 		throw FileException("Read beyond the end of file (" + _name.getFullPath() + ")");
+
+	return data_read;
 }
 
 void File::writeByte(uint8 b) {
@@ -447,7 +449,7 @@ void File::writeU32LE(uint32 value) {
 	writeByte((uint8)(value >> 24));
 }
 
-void File::write(const void *data, size_t elementSize, size_t elementCount) {
+size_t File::write(const void *data, size_t elementSize, size_t elementCount) {
 	if (!_file) 
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
@@ -456,6 +458,8 @@ void File::write(const void *data, size_t elementSize, size_t elementCount) {
 	size_t data_read = fwrite(data, elementSize, elementCount, _file);
 	if (data_read != elementCount)
 		throw FileException("Could not write to file (" + _name.getFullPath() + ")");
+
+	return data_read;
 }
 
 void File::seek(long offset, int origin) {
@@ -466,12 +470,16 @@ void File::seek(long offset, int origin) {
 		throw FileException("Could not seek in file (" + _name.getFullPath() + ")");
 }
 
+int File::pos() {
+	return ftell(_file);
+}
+
 uint32 File::size() {
 	uint32 sz;
-	uint32 pos = ftell(_file);
+	uint32 p = ftell(_file);
 	fseek(_file, 0, SEEK_END);
 	sz = ftell(_file);
-	fseek(_file, pos, SEEK_SET);
+	fseek(_file, p, SEEK_SET);
 	return sz;
 }
 

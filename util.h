@@ -328,14 +328,15 @@ enum FileMode {
 };
 
 /**
- * A basic wrapper around the FILE class
+ * A basic wrapper around the FILE class.
  * Offers functionality to write words easily, and deallocates the FILE
  * automatically on destruction.
  */
 class File {
 public:
 	/**
-	 * Opens the given file path as an in/out stream, depending on the second argument
+	 * Opens the given file path as an in/out stream, depending on the
+	 * second argument.
 	 * File is always opened in binary mode
 	 *
 	 * @param filename The file to open
@@ -344,13 +345,14 @@ public:
 	File(const Filename &filename, FileMode mode);
 	File(const Filename &filename, const char *mode);
 	/**
-	 * Create an empty file, used for two-step construction
+	 * Create an empty file, used for two-step construction.
 	 */
 	File();
 	~File();
 
 	/**
-	 * Opens the given file path as an in/out stream, depending on the second argument
+	 * Opens the given file path as an in/out stream, depending on the
+	 * second argument.
 	 *
 	 * @param filename The file to open
 	 * @param mode The mode to open the file in
@@ -365,84 +367,88 @@ public:
 
 	/**
 	 * Sets the xor mode of the file, bytes written / read to the file
-	 * will be XORed with this value. this value is *not* reset when opening a new file
-	 * Only works for write* and read* operation, not for the array "read" and "write" methods
+	 * will be XORed with this value. This value is *not* reset when
+	 * opening a new file.
+	 * Only works for write* and read* operation, not for the array
+	 * "read" and "write" methods
 	 */
 	void setXorMode(uint8 xormode);
 	
 	/**
-	 * Read a single unsigned byte
-	 * Throws FileException if file is not open / if read failed ended prematurely
+	 * Read a single unsigned byte.
+	 * Throws FileException if file is not open / if read failed.
 	 */
 	uint8 readByte();
 	/**
-	 * Read a single 16-bit word, big endian
-	 * Throws FileException if file is not open / if read failed
+	 * Read a single 16-bit word, big endian.
+	 * Throws FileException if file is not open / if read failed.
 	 */
 	uint16 readU16BE();
 	/**
-	 * Read a single 16-bit word, little endian
-	 * Throws FileException if file is not open / if read failed
+	 * Read a single 16-bit word, little endian.
+	 * Throws FileException if file is not open / if read failed.
 	 */
 	uint16 readU16LE();
 	/**
-	 * Read a single 32-bit word, big endian
-	 * Throws FileException if file is not open / if read failed
+	 * Read a single 32-bit word, big endian.
+	 * Throws FileException if file is not open / if read failed.
 	 */
 	uint32 readU32BE();
 	/**
-	 * Read a single 32-bit word, little endian
-	 * Throws FileException if file is not open / if read failed
+	 * Read a single 32-bit word, little endian.
+	 * Throws FileException if file is not open / if read failed.
 	 */
 	uint32 readU32LE();
 
 	/**
-	 * Works the same way as fread, but throws on error or if it could not read all elements
+	 * Works the same way as fread, but throws on error or if it could
+	 * not read all elements.
 	 *
 	 * @param data Where to put the read data
 	 * @param elementSize the size of one element (in bytes)
 	 * @param elementCount the number of elements to read
 	 */
-	void read(void *data, size_t elementSize, size_t elementCount);
+	size_t read(void *data, size_t elementSize, size_t elementCount);
 
 	
 	/**
-	 * Writes a single byte to the file
-	 * Throws FileException if file is not open / if write failed
+	 * Writes a single byte to the file.
+	 * Throws FileException if file is not open / if write failed.
 	 */
 	void writeByte(uint8 b);
 	/**
-	 * Writes a single 16-bit word to the file, big endian
-	 * Throws FileException if file is not open / if write failed
+	 * Writes a single 16-bit word to the file, big endian.
+	 * Throws FileException if file is not open / if write failed.
 	 */
 	void writeU16BE(uint16 value);
 	/**
-	 * Writes a single 16-bit word to the file, little endian
-	 * Throws FileException if file is not open / if write failed
+	 * Writes a single 16-bit word to the file, little endian.
+	 * Throws FileException if file is not open / if write failed.
 	 */
 	void writeU16LE(uint16 value);
 	/**
-	 * Writes a single 32-bit word to the file, big endian
-	 * Throws FileException if file is not open / if write failed
+	 * Writes a single 32-bit word to the file, big endian.
+	 * Throws FileException if file is not open / if write failed.
 	 */
 	void writeU32BE(uint32 value);
 	/**
-	 * Writes a single 32-bit word to the file, little endian
-	 * Throws FileException if file is not open / if write failed
+	 * Writes a single 32-bit word to the file, little endian.
+	 * Throws FileException if file is not open / if write failed.
 	 */
 	void writeU32LE(uint32 value);
 
 	/**
-	 * Works the same way as fwrite, but throws on error or if it could not write all data
+	 * Works the same way as fwrite, but throws on error or if
+	 * it could not write all data.
 	 *
 	 * @param data Where to read data from
 	 * @param elementSize the size of one element (in bytes)
 	 * @param elementCount the number of elements to read
 	 */
-	void write(const void *data, size_t elementSize, size_t elementCount);
+	size_t write(const void *data, size_t elementSize, size_t elementCount);
 
 	/**
-	 * Seek to the specified position in the stream
+	 * Seek to the specified position in the stream.
 	 *
 	 * @param offset how many bytes to jump
 	 * @param origin SEEK_SET, SEEK_CUR or SEEK_END
@@ -450,21 +456,29 @@ public:
 	void seek(long offset, int origin);
 
 	/**
-	 * Returns the length of the file, in bytes, does not move the cursor
+	 * Returns the position in the stream.
+	 */
+	int pos();
+
+	/**
+	 * Returns the length of the file, in bytes, does not move the cursor.
 	 */
 	uint32 size();
 
-	/** We implicitly convert into a FILE, so we can use fread() etc. directly */
+	/**
+	 * We implicitly convert into a FILE, so we can use fread() etc. directly.
+	 * @todo get rid of this ASAP
+	 */
 	operator FILE *() {return _file;}
 
 protected:
-	/** The mode the file was opened in */
+	/** The mode the file was opened in. */
 	FileMode _mode;
-	/** Internal reference to the file */
+	/** Internal reference to the file. */
 	FILE *_file;
-	/** The name of the file, used for better error messages */
+	/** The name of the file, used for better error messages. */
 	Filename _name;
-	/** xor with this value while reading/writing (default 0), does not work for "read"/"write", only for byte operations */
+	/** xor with this value while reading/writing (default 0), does not work for "read"/"write", only for byte operations. */
 	uint8 _xormode;
 };
 
