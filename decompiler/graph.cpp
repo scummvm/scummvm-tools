@@ -1,15 +1,57 @@
-#include <algorithm>
-
 #include "graph.h"
 
+#include <algorithm>
+
+#include <boost/foreach.hpp>
+#include <boost/utility.hpp>
+
+using namespace boost;
 using namespace std;
 
+#ifndef foreach
+#define foreach BOOST_FOREACH
+#endif
 
-void componentVisit(Block *u, Block *head);
-Block *dominatorIntersect(Block *u, Block *v);
-std::list<Block*> inPostOrder(std::list<Block*> &blocks);
-int orderVisit(Block *u, int number);
-bool postOrderCompare(Block *a, Block *b);
+
+void componentVisit(Block *u, Block *head) {
+	if (u->_component)
+		return;
+	u->_component = head;
+	foreach (Block *v, u->_in)
+		componentVisit(v, head);
+}
+
+
+Block *dominatorIntersect(Block *u, Block *v) {
+	while (u != v) {
+		while (u->_number < v->_number)
+			u = u->_dominator;
+		while (v->_number < u->_number)
+			v = v->_dominator;
+	}
+	return u;
+}
+
+
+bool postOrderCompare(Block *a, Block *b) {
+	return a->_number < b->_number;
+}
+
+list<Block*> inPostOrder(list<Block*> &blocks) {
+	list<Block*> ret(blocks);
+	ret.sort(postOrderCompare);
+	return ret;
+}
+
+
+int orderVisit(Block *u, int number) {
+	u->_number = -1;
+	foreach (Block *v, u->_out)
+		if (!v->_number)
+			number = orderVisit(v, number);
+	u->_number = ++number;
+	return number;
+}
 
 
 
@@ -23,6 +65,39 @@ ControlFlowGraph::~ControlFlowGraph() {
 }
 
 
+Block *ControlFlowGraph::addBlock(list<Instruction*>::iterator first, list<Instruction*>::iterator last) {
+	Block* block = new Block;
+	_blocks.push_back(block);
+	copy(first, last, back_inserter(block->_instructions));
+	return block;
+}
+
+
+void ControlFlowGraph::addBlocksFromScript(list<Instruction*>::iterator scriptBegin, list<Instruction*>::iterator scriptEnd) {
+	Jump *jump;
+	for (list<Instruction*>::iterator it = scriptBegin; it != scriptEnd; it++)
+		if ((jump = dynamic_cast<Jump*>(*it))) {
+			_targets[jump->target()] = 0;
+			if (next(it) != scriptEnd)
+				_targets[(*next(it))->_addr] = 0;
+		}
+	list<Instruction*>::iterator first = scriptBegin;
+	for (list<Instruction*>::iterator last = scriptBegin; last != scriptEnd; last++) {
+		if (next(last) == scriptEnd || contains(_targets, (*next(last))->_addr)) {
+			_targets[(*first)->_addr] = addBlock(first, next(last));
+			first = next(last);
+		}
+	}
+	foreach (Block *block, _blocks) {
+		if ((jump = dynamic_cast<Jump*>(block->_instructions.back())))
+			addEdge(block, _targets[jump->target()]);
+		map<address_t, Block*>::iterator succ = next(_targets.find(block->_instructions.front()->_addr));
+		if (succ != _targets.end() && (!jump || dynamic_cast<CondJump*>(jump)))
+			addEdge(block, succ->second);
+	}
+}
+
+
 void ControlFlowGraph::addEdge(Block *from, Block *to) {
 	from->_out.push_back(to);
 	to->_in.push_back(from);
@@ -31,7 +106,7 @@ void ControlFlowGraph::addEdge(Block *from, Block *to) {
 
 void ControlFlowGraph::assignComponents() {
 	orderBlocks();
-	std::list<Block*> blocks = inPostOrder(_blocks);
+	list<Block*> blocks = inPostOrder(_blocks);
 	blocks.reverse();
 	foreach (Block *u, blocks)
 		componentVisit(u, u);
@@ -39,14 +114,14 @@ void ControlFlowGraph::assignComponents() {
 
 
 void ControlFlowGraph::assignDominators() {
-	std::list<Block*> blocks = inPostOrder(_blocks);
+	list<Block*> blocks = inPostOrder(_blocks);
 	blocks.reverse();
 	blocks.remove(_entry);
 	_entry->_dominator = _entry;
 	for (bool changed = true; changed; ) {
 		changed = false;
 		foreach (Block *u, blocks) {
-			std::list<Block*>::iterator it = u->_in.begin();
+			list<Block*>::iterator it = u->_in.begin();
 			while (!(*it)->_dominator)
 				it++;
 			Block *dom = *it++; // first processed predecessor
@@ -67,7 +142,7 @@ void ControlFlowGraph::assignDominators() {
 // a node belongs to an interval, if all its immediate predecessors belong the given interval
 // otherwise it is an interval header
 void ControlFlowGraph::assignIntervals() {
-	std::list<Block*> intervals;
+	list<Block*> intervals;
 	intervals.push_back(_entry);
 	foreach (Block *interval, intervals) {
 		interval->_interval = interval;
@@ -94,33 +169,13 @@ void ControlFlowGraph::assignIntervals() {
 }
 
 
-void componentVisit(Block *u, Block *head) {
-	if (u->_component)
-		return;
-	u->_component = head;
-	foreach (Block *v, u->_in)
-		componentVisit(v, head);
-}
-
-
-Block *dominatorIntersect(Block *u, Block *v) {
-	while (u != v) {
-		while (u->_number < v->_number)
-			u = u->_dominator;
-		while (v->_number < u->_number)
-			v = v->_dominator;
-	}
-	return u;
-}
-
-
 // a derived graph, given set of intervals, is a graph in which
 // all intervals have been collapsed to a single node, and edge
 // exists between nodes if there are edges crossing corresponding
 // intervals in the original graph
 void ControlFlowGraph::extendIntervals() {
 	ControlFlowGraph d;
-	std::map<Block*, Block*> trans;
+	map<Block*, Block*> trans;
 	foreach (Block *interval, intervals()) {
 		trans[interval] = d.addBlock(interval->_instructions.begin(), interval->_instructions.end());
 		trans[interval]->_primitive = interval;
@@ -138,8 +193,8 @@ void ControlFlowGraph::extendIntervals() {
 }
 
 
-string ControlFlowGraph::graphvizEscapeLabel(const std::string &s) {
-	std::string ret;
+string graphvizEscapeLabel(const string &s) {
+	string ret;
 	foreach (char c, s) {
 		if (c == '\n' || c == '"' || c == '\\')
 			ret.push_back('\\');
@@ -148,8 +203,8 @@ string ControlFlowGraph::graphvizEscapeLabel(const std::string &s) {
 	return ret;
 }
 
-std::list<Block*> ControlFlowGraph::components() {
-	std::list<Block*> ret;
+list<Block*> ControlFlowGraph::components() {
+	list<Block*> ret;
 	assignComponents();
 	foreach (Block *u, _blocks)
 		if (u->_component == u)
@@ -157,12 +212,12 @@ std::list<Block*> ControlFlowGraph::components() {
 	return ret;
 }
 
-string ControlFlowGraph::graphvizToString(const std::string &fontname, int fontsize) {
-	std::stringstream ret;
-	ret << "digraph G {" << std::endl;
+string ControlFlowGraph::graphvizToString(const string &fontname, int fontsize) {
+	stringstream ret;
+	ret << "digraph G {" << endl;
 	foreach (Block *interval, intervals()) {
-		ret << "subgraph " << '"' << "cluster_" << interval << '"' << " {" << std::endl;
-		ret << "style=dotted;" << std::endl;
+		ret << "subgraph " << '"' << "cluster_" << interval << '"' << " {" << endl;
+		ret << "style=dotted;" << endl;
 		foreach (Block *u, _blocks)
 			if (u->_interval == interval) {
 				ret << '"' << u << "\"[";
@@ -175,28 +230,28 @@ string ControlFlowGraph::graphvizToString(const std::string &fontname, int fonts
 					ret	<< ", dom=" << u->_dominator->_number;
 				if (u->_loopFollow)
 					ret << ", loop_type=" << (u->_loopType == PRE_TESTED ? "pre_tested" : u->_loopType == POST_TESTED ? "post_tested" : "endless");
-				ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << std::endl;
+				ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << endl;
 			}
-		ret << "}" << std::endl;
+		ret << "}" << endl;
 	}
 	foreach (Block *u, _blocks) {
 		bool hadFollow = false;
 		foreach (Block *v, u->_out) {
 			hadFollow |= v == u->_loopFollow;
-		    ret << '"' << u << "\" -> \"" << v << '"' << (v == u->_loopFollow ? "[color=blue]" : "") << ";" << std::endl;
+		    ret << '"' << u << "\" -> \"" << v << '"' << (v == u->_loopFollow ? "[color=blue]" : "") << ";" << endl;
 		}
 		if (u->_loopFollow && !hadFollow)
-		    ret << '"' << u << "\" -> \"" << u->_loopFollow << '"' << "[color=blue,style=dashed];" << std::endl;
+		    ret << '"' << u << "\" -> \"" << u->_loopFollow << '"' << "[color=blue,style=dashed];" << endl;
 		if (u->_ifFollow)
-		    ret << '"' << u << "\" -> \"" << u->_ifFollow << '"' << "[color=red,style=dashed];" << std::endl;
+		    ret << '"' << u << "\" -> \"" << u->_ifFollow << '"' << "[color=red,style=dashed];" << endl;
 	}
-	ret << "}" << std::endl;
+	ret << "}" << endl;
 	return ret.str();
 }
 
 
 void ControlFlowGraph::ifStruct() {
-	std::list<Block*> unresolved;
+	list<Block*> unresolved;
 	foreach (Block *u, inPostOrder(_blocks))
 		// TODO how will this work with 2-way head and 2-way latch loops - on latch node? how are loops going to be structured anyway
 		if (u->_out.size() == 2 && !((u->_loopLatch && u->_loopType == PRE_TESTED) || u->_loopHead)) {
@@ -215,15 +270,8 @@ void ControlFlowGraph::ifStruct() {
 }
 
 
-std::list<Block*> inPostOrder(std::list<Block*> &blocks) {
-	std::list<Block*> ret(blocks);
-	ret.sort(postOrderCompare);
-	return ret;
-}
-
-
 list<Block*> ControlFlowGraph::intervals() {
-	std::list<Block*> ret;
+	list<Block*> ret;
 	assignIntervals();
 	foreach (Block *u, _blocks)
 		if (u->_interval == u)
@@ -251,6 +299,7 @@ Block *ControlFlowGraph::loopFollow(Block *head, Block *latch) {
 			ret = u->outEdgeOutsideLoop(head);
 	return ret;
 }
+
 
 // for each set of 'growing' intervals in derived sequence of graphs,
 // every interval header is a potential loop header
@@ -292,21 +341,6 @@ void ControlFlowGraph::orderBlocks() {
 }
 
 
-int orderVisit(Block *u, int number) {
-	u->_number = -1;
-	foreach (Block *v, u->_out)
-		if (!v->_number)
-			number = orderVisit(v, number);
-	u->_number = ++number;
-	return number;
-}
-
-
-bool postOrderCompare(Block *a, Block *b) {
-	return a->_number < b->_number;
-}
-
-
 void ControlFlowGraph::removeJumpsToJumps() {
 	for (bool changed = true; changed; ) {
 		changed = false;
@@ -323,14 +357,13 @@ void ControlFlowGraph::removeJumpsToJumps() {
 }
 
 
-// there are no paths that lead from entries to an unreachable node
-// but unreachable node can still have outgoing edge to the main part
-// of the graph, and we need to remove it from predecessor lists
 void ControlFlowGraph::removeUnreachableBlocks() {
 	foreach (Block *u, _blocks)
 		if (!u->_number) {
 			foreach (Block *v, u->_out)
 				v->_in.remove(u);
+			foreach (Block *v, u->_in)
+				v->_out.remove(u);
 		}
 	for (list<Block*>::iterator it = _blocks.begin(); it != _blocks.end(); )
 		if ((*it)->_number)

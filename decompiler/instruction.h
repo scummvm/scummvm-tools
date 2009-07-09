@@ -2,9 +2,9 @@
 #define INSTRUCTION_H
 
 #include <cstdio>
+#include <list>
 #include <sstream>
 #include <string>
-#include <vector>
 
 #include "misc.h"
 
@@ -55,7 +55,7 @@ struct Parser {
 
 struct Script {
 
-	std::vector<Instruction*> _instructions;
+	std::list<Instruction*> _instructions;
 
 	Script(Parser *parser, const char *filename) {
 		parser->parseFile(this, filename);

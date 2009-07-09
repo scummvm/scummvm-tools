@@ -75,11 +75,11 @@ test:
 .PHONY: all clean test
 
 
-decompiler$(EXEEXT): decompiler.o graph.o misc.o
+decompiler$(EXEEXT): decompiler.o graph.o misc.o block.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lboost_program_options
 
-decompiler.o: graph.h instruction.h misc.h parser.h reader.h syntax.h
-
+decompiler.o: instruction.h misc.h parser.h reader.h syntax.h
+graph.o: graph.h
 
 ######################################################################
 # The build rules follow - normally you should have no need to

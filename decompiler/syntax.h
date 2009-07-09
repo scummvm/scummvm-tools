@@ -10,6 +10,11 @@
 #include "misc.h"
 
 
+#include <boost/foreach.hpp>
+#ifndef foreach
+#define foreach BOOST_FOREACH
+#endif
+
 #include <iostream>
 using namespace std;
 
