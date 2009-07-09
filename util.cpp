@@ -191,19 +191,19 @@ Filename& Filename::operator=(const Filename& filename) {
 	return *this;
 }
 
-void Filename::setFullPath(std::string path) {
+void Filename::setFullPath(const std::string &path) {
 	_path = path;
 }
 
-void Filename::setFullName(std::string newname) {
+void Filename::setFullName(const std::string &newname) {
 	_path = getPath() + newname;
 }
 
-void Filename::addExtension(std::string ext) {
+void Filename::addExtension(const std::string &ext) {
 	_path += ext;
 }
 
-void Filename::setExtension(std::string ext) {
+void Filename::setExtension(const std::string &ext) {
 	size_t dot = _path.rfind('.');
 	if (dot == std::string::npos) {
 		_path += ext;
@@ -213,12 +213,12 @@ void Filename::setExtension(std::string ext) {
 	}
 }
 
-bool Filename::equals(const Filename *other) const {
+bool Filename::equals(const Filename &other) const {
 #ifdef _WIN32
 	// On Windows paths are case-insensitive
-	return scumm_stricmp(_path.c_str(), other->_path.c_str()) == 0;
+	return scumm_stricmp(_path.c_str(), other._path.c_str()) == 0;
 #else
-	return _path == other->_path;
+	return _path == other._path;
 #endif
 }
 
@@ -258,8 +258,8 @@ bool Filename::hasExtension(std::string suffix) const {
 #endif
 }
 
-std::string Filename::getFullPath() const {
-	return _path.c_str();
+const std::string &Filename::getFullPath() const {
+	return _path;
 }
 
 std::string Filename::getFullName() const {

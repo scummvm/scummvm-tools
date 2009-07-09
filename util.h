@@ -297,26 +297,26 @@ struct Filename {
 	Filename(const Filename &path);
 	Filename& operator=(const Filename &fn);
 
-	void setFullPath(std::string path);
-	void setFullName(std::string name);
-	void addExtension(std::string ext);
-	void setExtension(std::string ext);
+	inline bool operator==(const Filename &fn){
+		return equals(fn);
+	}
+	
+	void setFullPath(const std::string &path);
+	void setFullName(const std::string &name);
+	void addExtension(const std::string &ext);
+	void setExtension(const std::string &ext);
 
 	bool hasExtension(std::string suffix) const;
 	bool empty() const;
-	bool equals(const Filename* other) const;
+	bool equals(const Filename &other) const;
 	
 	// Doesn't work
 	bool mkdir(int permission = 077);
 
-	std::string getFullPath() const;
+	const std::string &getFullPath() const;
 	std::string getFullName() const;
 	std::string getPath() const;
 };
-
-inline bool operator==(const Filename &f1, const Filename &f2){
-	return f1.equals(&f2);
-}
 
 /**
  * Possible modes for opening files
