@@ -368,21 +368,21 @@ uint8 File::readByte() {
 	return (uint8)u8;
 }
 
-uint16 File::readU16BE() {
+uint16 File::readUint16BE() {
 	uint16 ret = 0;
 	ret |= uint16(readByte() << 8ul);
 	ret |= uint16(readByte());
 	return ret;
 }
 
-uint16 File::readU16LE() {
+uint16 File::readUint16LE() {
 	uint16 ret = 0;
 	ret |= uint16(readByte());
 	ret |= uint16(readByte() << 8ul);
 	return ret;
 }
 
-uint32 File::readU32BE() {
+uint32 File::readUint32BE() {
 	uint32 ret = 0;
 	ret |= uint32(readByte() << 24);
 	ret |= uint32(readByte() << 16);
@@ -391,7 +391,7 @@ uint32 File::readU32BE() {
 	return ret;
 }
 
-uint32 File::readU32LE() {
+uint32 File::readUint32LE() {
 	uint32 ret = 0;
 	ret |= uint32(readByte());
 	ret |= uint32(readByte() << 8);
@@ -425,24 +425,24 @@ void File::writeByte(uint8 b) {
 		throw FileException("Could not write to file (" + _name.getFullPath() + ")");
 }
 
-void File::writeU16BE(uint16 value) {
+void File::writeUint16BE(uint16 value) {
 	writeByte((uint8)(value >> 8));
 	writeByte((uint8)(value));
 }
 
-void File::writeU16LE(uint16 value) {
+void File::writeUint16LE(uint16 value) {
 	writeByte((uint8)(value));
 	writeByte((uint8)(value >> 8));
 }
 
-void File::writeU32BE(uint32 value) {
+void File::writeUint32BE(uint32 value) {
 	writeByte((uint8)(value >> 24));
 	writeByte((uint8)(value >> 16));
 	writeByte((uint8)(value >> 8));
 	writeByte((uint8)(value));
 }
 
-void File::writeU32LE(uint32 value) {
+void File::writeUint32LE(uint32 value) {
 	writeByte((uint8)(value));
 	writeByte((uint8)(value >> 8));
 	writeByte((uint8)(value >> 16));

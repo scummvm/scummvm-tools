@@ -73,7 +73,7 @@ int CompressAgos::get_offsets(uint32 filenums[], uint32 offsets[]) {
 		}
 		fseek(_input, -8, SEEK_CUR);
 
-		offsets[i] = _input.readU32LE();
+		offsets[i] = _input.readUint32LE();
 	}
 }
 
@@ -82,8 +82,8 @@ int CompressAgos::get_offsets_mac(uint32 filenums[], uint32 offsets[]) {
 	size = _input.size();
 
 	for (i = 1; i <= size / 6; i++) {
-		filenums[i] = _input.readU16BE();
-		offsets[i] = _input.readU32BE();
+		filenums[i] = _input.readUint16BE();
+		offsets[i] = _input.readUint32BE();
 	}
 
 	return(size/6);
@@ -141,19 +141,19 @@ void CompressAgos::convert_pc(Filename* inputPath) {
 	}
 	size = num * 4;
 
-	_output_idx.writeU32LE(0);
-	_output_idx.writeU32LE(size);
+	_output_idx.writeUint32LE(0);
+	_output_idx.writeUint32LE(size);
 
 	for (i = 1; i < num; i++) {
 		if (offsets[i] == offsets[i + 1]) {
-			_output_idx.writeU32LE(size);
+			_output_idx.writeUint32LE(size);
 			continue;
 		}
 
 		if (offsets[i] != 0)
 			size += get_sound(offsets[i]);
 		if (i < num - 1)
-			_output_idx.writeU32LE(size);
+			_output_idx.writeUint32LE(size);
 	}
 }
 
@@ -175,12 +175,12 @@ void CompressAgos::convert_mac(Filename *inputPath) {
 	}
 	size = num * 4;
 
-	_output_idx.writeU32LE(0);
-	_output_idx.writeU32LE(size);
+	_output_idx.writeUint32LE(0);
+	_output_idx.writeUint32LE(size);
 
 	for (i = 1; i < num; i++) {
 		if (filenums[i] == filenums[i + 1] && offsets[i] == offsets[i + 1]) {
-			_output_idx.writeU32LE(size);
+			_output_idx.writeUint32LE(size);
 			continue;
 		}
 
@@ -195,7 +195,7 @@ void CompressAgos::convert_mac(Filename *inputPath) {
 		size += get_sound(offsets[i]);
 
 		if (i < num - 1) {
-			_output_idx.writeU32LE(size);
+			_output_idx.writeUint32LE(size);
 		}
 	}
 }

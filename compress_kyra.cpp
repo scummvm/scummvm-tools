@@ -104,9 +104,9 @@ uint16 CompressKyra::clip8BitSample(int16 sample) {
 }
 
 int CompressKyra::decodeChunk(File &in, File &out) {
-	uint16 size = in.readU16LE();
-	uint16 outSize = in.readU16LE();
-	uint32 id = in.readU32LE();
+	uint16 size = in.readUint16LE();
+	uint16 outSize = in.readUint16LE();
+	uint32 id = in.readUint32LE();
 	byte *inputBuffer, *outputBuffer;
 	int bytesRead = 0;
 
@@ -254,8 +254,8 @@ typedef struct {
 void CompressKyra::compressAUDFile(File &input, const char *outfile) {
 	AUDHeader header;
 
-	header.freq = input.readU16LE();
-	header.size = input.readU32LE();
+	header.freq = input.readUint16LE();
+	header.size = input.readUint32LE();
 	header.flags = input.readByte();
 	header.type = input.readByte();
 	//print("%d Hz, %d bytes, type %d (%08X)\n", header.freq, header.size, header.type, header.flags);
@@ -300,13 +300,13 @@ void CompressKyra::processKyra3(Filename *infile, Filename *outfile) {
 		if (!output.loadFile(NULL, false))
 			return;
 
-		uint16 files = input.readU16LE();
+		uint16 files = input.readUint16LE();
 		DuplicatedFile *red = new DuplicatedFile[files];
 		memset(red, 0, sizeof(DuplicatedFile)*files);
 
 		for (uint16 i = 0; i < files; ++i) {
-			uint32 resFilename = input.readU32LE();
-			uint32 resOffset = input.readU32LE();
+			uint32 resFilename = input.readUint32LE();
+			uint32 resOffset = input.readUint32LE();
 
 			char outname[16];
 			snprintf(outname, 16, "%.08u.%s", resFilename, audio_extensions(_format));
@@ -366,8 +366,8 @@ bool CompressKyra::detectKyra3File(Filename *infile) {
 
 		uint32 offset = 0;
 		for (uint16 i = 0; i < entries; ++i) {
-			f.readU32LE();
-			offset = f.readU32LE();
+			f.readUint32LE();
+			offset = f.readUint32LE();
 
 			if (offset > filesize)
 				error("Unknown filetype of file: '%s'", infile->getFullPath().c_str());

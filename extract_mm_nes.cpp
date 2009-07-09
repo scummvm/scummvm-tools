@@ -837,7 +837,7 @@ void ExtractMMNes::extract_resource(File &input, File &output, const struct t_re
 		break;
 	case NES_ROOMGFX:
 	case NES_COSTUMEGFX:
-		output.writeU16LE((uint16)(res->length + 2));
+		output.writeUint16LE((uint16)(res->length + 2));
 		len = input.readByte();
 		output.writeByte((uint8)len);
 		if (!len)
@@ -855,7 +855,7 @@ void ExtractMMNes::extract_resource(File &input, File &output, const struct t_re
 		break;
 	case NES_ROOM:
 	case NES_SCRIPT:
-		len = input.readU16LE();
+		len = input.readUint16LE();
 		if (len != res->length)
 			error("extract_resource - length mismatch while extracting room/script resource (was %04X, should be %04X)", len, res->length);
 		input.seek(-2, SEEK_CUR);
@@ -867,7 +867,7 @@ void ExtractMMNes::extract_resource(File &input, File &output, const struct t_re
 		val = input.readByte();
 		cnt = input.readByte();
 		if ((val == 2) && (cnt == 100)) {
-			output.writeU16LE(len);
+			output.writeUint16LE(len);
 			output.writeByte(val);
 			output.writeByte(cnt);
 			cnt = input.readByte();
@@ -883,7 +883,7 @@ void ExtractMMNes::extract_resource(File &input, File &output, const struct t_re
 					break;
 				}
 		} else if (((val == 0) || (val == 1) || (val == 4)) && (cnt == 10)) {
-			output.writeU16LE(len);
+			output.writeUint16LE(len);
 			output.writeByte(val);
 			output.writeByte(cnt);
 			while (1) {
@@ -914,13 +914,13 @@ void ExtractMMNes::extract_resource(File &input, File &output, const struct t_re
 	case NES_SPRDATA:
 	case NES_CHARSET:
 		len = res->length;
-		output.writeU16LE((uint16)(len + 2));
+		output.writeUint16LE((uint16)(len + 2));
 		for (i = 0; i < len; i++)
 			output.writeByte(input.readByte());
 		break;
 	case NES_PREPLIST:
 		len = res->length;
-		output.writeU16LE(0x002A);
+		output.writeUint16LE(0x002A);
 		output.writeByte(' ');
 		for (i = 1; i < 8; i++)
 			output.writeByte(0);
@@ -1249,7 +1249,7 @@ void ExtractMMNes::execute() {
 			}
 			extract_resource(input, output, &entry->type->langs[ROMset][entry->index], entry->type->type);
 		}
-		output.writeU16LE(0xF5D1);
+		output.writeUint16LE(0xF5D1);
 	}
 
 	outpath.setFullName("00.LFL");
@@ -1259,7 +1259,7 @@ void ExtractMMNes::execute() {
 #endif
 	print("Creating 00.LFL...");
 
-	output.writeU16LE(0x4643);
+	output.writeUint16LE(0x4643);
 	extract_resource(input, output, &res_globdata.langs[ROMset][0], res_globdata.type);
 	for (i = 0; i < (int)sizeof(struct t_lflindex); i++)
 		output.writeByte(((uint8 *)&mm_lfl_index)[i]);

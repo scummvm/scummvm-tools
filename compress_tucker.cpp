@@ -121,8 +121,8 @@ uint32 CompressTucker::compress_sounds_directory(const Filename *inpath, const F
 
 	/* write 0 offsets/sizes table */
 	for (i = 0; i < dir->count; ++i) {
-		output.writeU32LE(0);
-		output.writeU32LE(0);
+		output.writeUint32LE(0);
+		output.writeUint32LE(0);
 	}
 
 	/* compress .wav files in directory */
@@ -354,16 +354,16 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 
 	File output(*outpath, "wb");
 
-	output.writeU16LE(CURRENT_VER);
-	output.writeU16LE(flags);
+	output.writeUint16LE(CURRENT_VER);
+	output.writeUint16LE(flags);
 
 	/* write 0 offsets/count */
 	for (i = 0; i < SOUND_TYPES_COUNT; ++i) {
-		output.writeU32LE(0);
-		output.writeU32LE(0);
+		output.writeUint32LE(0);
+		output.writeUint32LE(0);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
-		output.writeU32LE(0);
+		output.writeUint32LE(0);
 	}
 
 	/* compress the .wav files in each directory */
@@ -382,13 +382,13 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 	fseek(output, HEADER_SIZE, SEEK_SET);
 	current_offset = 0;
 	for (i = 0; i < SOUND_TYPES_COUNT; ++i) {
-		output.writeU32LE(current_offset);
-		output.writeU32LE(sound_directory_table[i].count);
+		output.writeUint32LE(current_offset);
+		output.writeUint32LE(sound_directory_table[i].count);
 		current_offset += sound_directory_size[i];
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
-		output.writeU32LE(current_offset);
-		output.writeU32LE(ARRAYSIZE(audio_files_list));
+		output.writeUint32LE(current_offset);
+		output.writeUint32LE(ARRAYSIZE(audio_files_list));
 		current_offset += audio_directory_size;
 	}
 

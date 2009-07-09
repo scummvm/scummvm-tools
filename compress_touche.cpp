@@ -53,8 +53,8 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 	for (i = 0; i < len; ++i) {
 		offs_table[i] = readUint32LE(input);
 		size_table[i] = readUint32LE(input);
-		output.writeU32LE(0);
-		output.writeU32LE(0);
+		output.writeUint32LE(0);
+		output.writeUint32LE(0);
 		current_offset += 8;
 	}
 	for (i = 0; i < len; ++i) {
@@ -90,8 +90,8 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 	/* fix data offsets table */
 	output.seek(start_offset, SEEK_SET);
 	for (i = 0; i < len; ++i) {
-		output.writeU32LE(offs_table[i]);
-		output.writeU32LE(size_table[i]);
+		output.writeUint32LE(offs_table[i]);
+		output.writeUint32LE(size_table[i]);
 	}
 	output.seek(0, SEEK_END);
 
@@ -113,7 +113,7 @@ void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
 	/* write 0 offsets table */
 	for (i = 0; i < MAX_OFFSETS; ++i) {
 		offsets_table[i] = 0;
-		output.writeU32LE(offsets_table[i]);
+		output.writeUint32LE(offsets_table[i]);
 		current_offset += 4;
 	}
 
@@ -145,7 +145,7 @@ void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
 	/* fix global offsets table at the beginning of the file */
 	output.seek(HEADER_SIZE, SEEK_SET);
 	for (i = 0; i < MAX_OFFSETS; ++i) {
-		output.writeU32LE(offsets_table[i]);
+		output.writeUint32LE(offsets_table[i]);
 	}
 
 	output.close();

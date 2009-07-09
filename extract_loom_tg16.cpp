@@ -35,7 +35,7 @@ uint8 read_cbyte (File &input, short *ctr) {
 }
 uint16 read_cword (File &input, short *ctr) {
 	(*ctr) += 2;
-	return input.readU16LE();
+	return input.readUint16LE();
 }
 
 void write_cbyte (File &output, uint8 val, short *ctr) {
@@ -43,11 +43,11 @@ void write_cbyte (File &output, uint8 val, short *ctr) {
 	(*ctr) += 1;
 }
 void write_cword (File &output, uint16 val, short *ctr) {
-	output.writeU16LE(val);
+	output.writeUint16LE(val);
 	(*ctr) += 2;
 }
 void write_clong (File &output, uint32 val, short *ctr) {
-	output.writeU32LE(val);
+	output.writeUint32LE(val);
 	(*ctr) += 4;
 }
 
@@ -799,8 +799,8 @@ void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res
 	switch (res->type) {
 	case RES_CHARSET:
 		rlen = r_length(res);
-		output.writeU16LE((uint16)(rlen + 4));
-		output.writeU16LE(0);
+		output.writeUint16LE((uint16)(rlen + 4));
+		output.writeUint16LE(0);
 
 		/* Skip 4 bytes */
 		read_cword(input, &i);
@@ -824,8 +824,8 @@ void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res
 			error("extract_resource(globdata) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x11)
 			error("extract_resource(globdata) - resource tag is incorrect");
-		output.writeU32LE((uint16)(rlen + 1));
-		output.writeU16LE('O0');	/* 0O - Object Index */
+		output.writeUint32LE((uint16)(rlen + 1));
+		output.writeUint16LE('O0');	/* 0O - Object Index */
 		for (i = 5; i < rlen; i++)
 			output.writeByte(input.readByte());
 		break;
@@ -950,7 +950,7 @@ void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res
 				}
 			}
 			output.seek(off, SEEK_SET);
-			output.writeU32LE(rlen);
+			output.writeUint32LE(rlen);
 			output.seek(0, SEEK_END);
 		}
 
@@ -967,8 +967,8 @@ void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res
 			error("extract_resource(costume) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x03)
 			error("extract_resource(costume) - resource tag is incorrect");
-		output.writeU32LE((uint16)(rlen + 1));
-		output.writeU16LE('OC');	/* CO - Costume */
+		output.writeUint32LE((uint16)(rlen + 1));
+		output.writeUint16LE('OC');	/* CO - Costume */
 		for (i = 5; i < rlen; i++)
 			output.writeByte(input.readByte());
 		break;
@@ -981,8 +981,8 @@ void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res
 			error("extract_resource(script) - length mismatch while extracting resource (was %04X, expected %04X)", rlen, r_length(res));
 		if (rtype != 0x02)
 			error("extract_resource(script) - resource tag is incorrect");
-		output.writeU32LE((uint16)(rlen + 1));
-		output.writeU16LE('CS');	/* SC - Script */
+		output.writeUint32LE((uint16)(rlen + 1));
+		output.writeUint16LE('CS');	/* SC - Script */
 		for (i = 5; i < rlen; i++)
 			output.writeByte(input.readByte());
 		break;
@@ -1314,41 +1314,41 @@ void ExtractLoomTG16::execute() {
 	lfl_index.num_scripts = NUM_SCRIPTS;
 	lfl_index.num_sounds = NUM_SOUNDS;
 
-	output.writeU32LE(8 + 5 * lfl_index.num_rooms);
-	output.writeU16LE('R0'); /* 0R - room index */
-	output.writeU16LE(lfl_index.num_rooms);
+	output.writeUint32LE(8 + 5 * lfl_index.num_rooms);
+	output.writeUint16LE('R0'); /* 0R - room index */
+	output.writeUint16LE(lfl_index.num_rooms);
 
 	for (i = 0; i < lfl_index.num_rooms; i++) {
 		output.writeByte(lfl_index.room_lfl[i]);
-		output.writeU32LE(lfl_index.room_addr[i]);
+		output.writeUint32LE(lfl_index.room_addr[i]);
 	}
 
-	output.writeU32LE(8 + 5 * lfl_index.num_scripts);
-	output.writeU16LE('S0'); /* 0S - script index */
-	output.writeU16LE(lfl_index.num_scripts);
+	output.writeUint32LE(8 + 5 * lfl_index.num_scripts);
+	output.writeUint16LE('S0'); /* 0S - script index */
+	output.writeUint16LE(lfl_index.num_scripts);
 
 	for (i = 0; i < lfl_index.num_scripts; i++) {
 		output.writeByte(lfl_index.script_lfl[i]);
-		output.writeU32LE(lfl_index.script_addr[i]);
+		output.writeUint32LE(lfl_index.script_addr[i]);
 	}
 
-	output.writeU32LE(8 + 5 * lfl_index.num_costumes);
-	output.writeU16LE('C0'); /* 0C - costume index */
-	output.writeU16LE(lfl_index.num_costumes);
+	output.writeUint32LE(8 + 5 * lfl_index.num_costumes);
+	output.writeUint16LE('C0'); /* 0C - costume index */
+	output.writeUint16LE(lfl_index.num_costumes);
 
 	for (i = 0; i < lfl_index.num_costumes; i++) {
 		output.writeByte(lfl_index.costume_lfl[i]);
-		output.writeU32LE(lfl_index.costume_addr[i]);
+		output.writeUint32LE(lfl_index.costume_addr[i]);
 	}
 
 /*
-	output.writeU32LE(8 + 5 * lfl_index.num_sounds);
-	output.writeU16LE('N0'); 0N - sounds index
-	output.writeU16LE(lfl_index.num_sounds);
+	output.writeUint32LE(8 + 5 * lfl_index.num_sounds);
+	output.writeUint16LE('N0'); 0N - sounds index
+	output.writeUint16LE(lfl_index.num_sounds);
 
 	for (i = 0; i < lfl_index.num_sounds; i++) {
 		output.writeByte(lfl_index.sound_lfl[i]);
-		output.writeU32LE(lfl_index.sound_addr[i]);
+		output.writeUint32LE(lfl_index.sound_addr[i]);
 	}
 */
 

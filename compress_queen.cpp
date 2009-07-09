@@ -140,18 +140,18 @@ void CompressQueen::createFinalFile(Filename *outPath) {
 	inTbl.seek(7, SEEK_SET);	/* Skip past header */
 
 	/* Write new header */
-	outFinal.writeU32BE(QTBL);
+	outFinal.writeUint32BE(QTBL);
 	outFinal.write(_version->versionString, 6, 1);
 	outFinal.writeByte(_version->isFloppy);
 	outFinal.writeByte(_version->isDemo);
 	outFinal.writeByte(_versionExtra.compression);
-	outFinal.writeU16BE(_versionExtra.entries);
+	outFinal.writeUint16BE(_versionExtra.entries);
 
 	for (i = 0; i < _versionExtra.entries; i++) {
 		fromFileToFile(inTbl, outFinal, 12);
 		outFinal.writeByte(inTbl.readByte());
-		outFinal.writeU32BE(dataStartOffset + inTbl.readU32BE());
-		outFinal.writeU32BE(inTbl.readU32BE());
+		outFinal.writeUint32BE(dataStartOffset + inTbl.readUint32BE());
+		outFinal.writeUint32BE(inTbl.readUint32BE());
 	}
 
 	/* Append contents of temporary datafile to final datafile */
@@ -194,7 +194,7 @@ void CompressQueen::execute() {
 		error("Invalid TBL file");
 	}
 
-	if (inputTbl.readU32BE() != CURRENT_TBL_VERSION) {
+	if (inputTbl.readUint32BE() != CURRENT_TBL_VERSION) {
 		error("You are using an incorrect (outdated?) version of the queen.tbl file");
 	}
 
@@ -202,16 +202,16 @@ void CompressQueen::execute() {
 	inputTbl.seek(_version->tableOffset, SEEK_SET);
 
 	_versionExtra.compression = compression_format(_format);
-	_versionExtra.entries = inputTbl.readU16BE();
+	_versionExtra.entries = inputTbl.readUint16BE();
 
 	outputTbl.open(TEMP_TBL, "wb");
 
 	outputData.open(TEMP_DAT, "wb");
 
 	/* Write tablefile header */
-	outputTbl.writeU32BE(QTBL);
+	outputTbl.writeUint32BE(QTBL);
 	outputTbl.writeByte(_versionExtra.compression);
-	outputTbl.writeU16BE(_versionExtra.entries);
+	outputTbl.writeUint16BE(_versionExtra.entries);
 
 	for (i = 0; i < _versionExtra.entries; i++) {
 		prevOffset = outputData.pos();
@@ -220,8 +220,8 @@ void CompressQueen::execute() {
 		inputTbl.read(_entry.filename, 1, 12);
 		_entry.filename[12] = '\0';
 		_entry.bundle = inputTbl.readByte();
-		_entry.offset = inputTbl.readU32BE();
-		_entry.size = inputTbl.readU32BE();
+		_entry.offset = inputTbl.readUint32BE();
+		_entry.size = inputTbl.readUint32BE();
 
 		print("Processing entry: %s\n", _entry.filename);
 		fseek(inputData, _entry.offset, SEEK_SET);
@@ -235,7 +235,7 @@ void CompressQueen::execute() {
 			inputData.seek(_entry.offset, SEEK_SET);
 
 			inputData.seek(2, SEEK_CUR);
-			sbVersion = inputData.readU16LE();
+			sbVersion = inputData.readUint16LE();
 
 			switch (sbVersion) {
 			case 104:
@@ -301,8 +301,8 @@ void CompressQueen::execute() {
 		/* Write entry to table */
 		outputTbl.write(_entry.filename, 12, 1);
 		outputTbl.writeByte(_entry.bundle);
-		outputTbl.writeU32BE(prevOffset);
-		outputTbl.writeU32BE(_entry.size);
+		outputTbl.writeUint32BE(prevOffset);
+		outputTbl.writeUint32BE(_entry.size);
 	}
 
 	/* Merge the temporary table and temporary datafile to create final file */

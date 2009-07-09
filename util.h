@@ -383,22 +383,22 @@ public:
 	 * Read a single 16-bit word, big endian.
 	 * Throws FileException if file is not open / if read failed.
 	 */
-	uint16 readU16BE();
+	uint16 readUint16BE();
 	/**
 	 * Read a single 16-bit word, little endian.
 	 * Throws FileException if file is not open / if read failed.
 	 */
-	uint16 readU16LE();
+	uint16 readUint16LE();
 	/**
 	 * Read a single 32-bit word, big endian.
 	 * Throws FileException if file is not open / if read failed.
 	 */
-	uint32 readU32BE();
+	uint32 readUint32BE();
 	/**
 	 * Read a single 32-bit word, little endian.
 	 * Throws FileException if file is not open / if read failed.
 	 */
-	uint32 readU32LE();
+	uint32 readUint32LE();
 
 	/**
 	 * Works the same way as fread, but throws on error or if it could
@@ -420,22 +420,22 @@ public:
 	 * Writes a single 16-bit word to the file, big endian.
 	 * Throws FileException if file is not open / if write failed.
 	 */
-	void writeU16BE(uint16 value);
+	void writeUint16BE(uint16 value);
 	/**
 	 * Writes a single 16-bit word to the file, little endian.
 	 * Throws FileException if file is not open / if write failed.
 	 */
-	void writeU16LE(uint16 value);
+	void writeUint16LE(uint16 value);
 	/**
 	 * Writes a single 32-bit word to the file, big endian.
 	 * Throws FileException if file is not open / if write failed.
 	 */
-	void writeU32BE(uint32 value);
+	void writeUint32BE(uint32 value);
 	/**
 	 * Writes a single 32-bit word to the file, little endian.
 	 * Throws FileException if file is not open / if write failed.
 	 */
-	void writeU32LE(uint32 value);
+	void writeUint32LE(uint32 value);
 
 	/**
 	 * Works the same way as fwrite, but throws on error or if

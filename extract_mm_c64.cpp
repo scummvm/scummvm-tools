@@ -67,10 +67,10 @@ void ExtractMMC64::execute() {
 	File input2(inpath2, "rb");
 
 	/* check signature */
-	signature = input1.readU16LE();
+	signature = input1.readUint16LE();
 	if (signature != 0x0A31)
 		error("Signature not found in disk 1!");
-	signature = input2.readU16LE();
+	signature = input2.readUint16LE();
 	if (signature != 0x0132)
 		error("Signature not found in disk 2!");
 
@@ -80,7 +80,7 @@ void ExtractMMC64::execute() {
 	print("Creating 00.LFL...");
 
 	/* write signature */
-	output.writeU16LE(signature);
+	output.writeUint16LE(signature);
 
 	/* copy object flags */
 	for (i = 0; i < 256; i++)
@@ -101,19 +101,19 @@ void ExtractMMC64::execute() {
 	for (i = 0; i < 25; i++)
 		output.writeByte(input1.readByte());
 	for (i = 0; i < 25; i++)
-		output.writeU16LE(input1.readU16LE());
+		output.writeUint16LE(input1.readUint16LE());
 
 	/* copy script offsets */
 	for (i = 0; i < 160; i++)
 		output.writeByte(input1.readByte());
 	for (i = 0; i < 160; i++)
-		output.writeU16LE(input1.readU16LE());
+		output.writeUint16LE(input1.readUint16LE());
 
 	/* copy sound offsets */
 	for (i = 0; i < 70; i++)
 		output.writeByte(input1.readByte());
 	for (i = 0; i < 70; i++)
-		output.writeU16LE(input1.readU16LE());
+		output.writeUint16LE(input1.readUint16LE());
 	output.close();
 
 	for (i = 0; i < NUM_ROOMS; i++) {
@@ -134,8 +134,8 @@ void ExtractMMC64::execute() {
 		input->seek((SectorOffset[room_tracks[i]] + room_sectors[i]) * 256, SEEK_SET);
 
 		for (j = 0; j < ResourcesPerFile[i]; j++) {
-			unsigned short len = input->readU16LE();
-			output.writeU16LE(len);
+			unsigned short len = input->readUint16LE();
+			output.writeUint16LE(len);
 
 			for (len -= 2; len > 0; len--) {
 				output.writeByte(input->readByte());

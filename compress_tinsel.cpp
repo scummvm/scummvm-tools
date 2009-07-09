@@ -82,7 +82,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	copyLeft = curFileHandle.pos();
 	fseek(curFileHandle, 0, SEEK_SET);
 	// Write size of compressed data
-	_output_smp.writeU32LE(copyLeft);
+	_output_smp.writeUint32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
 		doneRead = curFileHandle.read(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
@@ -229,7 +229,7 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	copyLeft = curFileHandle.pos();
 	curFileHandle.seek(0, SEEK_SET);
 	// Write size of compressed data
-	_output_smp.writeU32LE(copyLeft);
+	_output_smp.writeUint32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
 		doneRead = curFileHandle.read(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
@@ -281,7 +281,7 @@ void CompressTinsel::execute() {
 
 	loopCount = indexCount;
 	while (loopCount>0) {
-		indexOffset = _input_idx.readU32LE();
+		indexOffset = _input_idx.readUint32LE();
 		if (indexOffset) {
 			if (indexNo==0) {
 				error("The sourcefiles are already compressed, aborting...\n");
@@ -291,18 +291,18 @@ void CompressTinsel::execute() {
 
 			// Seek to Sample in input-file and read SampleSize
 			_input_smp.seek(indexOffset, SEEK_SET);
-			sampleSize = _input_smp.readU32LE();
+			sampleSize = _input_smp.readUint32LE();
 
 			// Write offset of new data to new index file
-			_output_idx.writeU32LE(_output_smp.pos());
+			_output_idx.writeUint32LE(_output_smp.pos());
 
 			if (sampleSize & 0x80000000) {
 				// multiple samples in ADPCM format
 				sampleCount = sampleSize & ~0x80000000;
 				// Write sample count to new sample file
-				_output_smp.writeU32LE(sampleSize);
+				_output_smp.writeUint32LE(sampleSize);
 				while (sampleCount>0) {
-					sampleSize = _input_smp.readU32LE();
+					sampleSize = _input_smp.readUint32LE();
 					convertTinselADPCMSample(sampleSize);
 					sampleCount--;
 				}
@@ -314,13 +314,13 @@ void CompressTinsel::execute() {
 			if (indexNo==0) {
 				// Write signature as index 0
 				switch (_format) {
-				case AUDIO_MP3: _output_idx.writeU32BE(MKID_BE('MP3 ')); break;
-				case AUDIO_VORBIS: _output_idx.writeU32BE(MKID_BE('OGG ')); break;
-				case AUDIO_FLAC: _output_idx.writeU32BE(MKID_BE('FLAC')); break;
+				case AUDIO_MP3: _output_idx.writeUint32BE(MKID_BE('MP3 ')); break;
+				case AUDIO_VORBIS: _output_idx.writeUint32BE(MKID_BE('OGG ')); break;
+				case AUDIO_FLAC: _output_idx.writeUint32BE(MKID_BE('FLAC')); break;
 				default: throw ToolException("Unknown audio format!");
 				}
 			} else {
-				_output_idx.writeU32LE(0);
+				_output_idx.writeUint32LE(0);
 			}
 		}
 		loopCount--;

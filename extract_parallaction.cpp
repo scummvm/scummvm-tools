@@ -150,7 +150,7 @@ void Archive::open(const char *filename, bool smallArchive) {
 	_file.seek(_numSlots * ARCHIVE_FILENAME_LEN + ARCHIVE_HEADER_SIZE, SEEK_SET);
 
 	for (i = 0; i < _numSlots; i++) {
-		_sizes[i] = _file.readU32BE();
+		_sizes[i] = _file.readUint32BE();
 	}
 
 	if (smallArchive) {

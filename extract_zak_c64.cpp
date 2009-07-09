@@ -68,10 +68,10 @@ void ExtractZakC64::execute() {
 	File input2(inpath2, "rb");
 
 	/* check signature */
-	signature = input1.readU16LE();
+	signature = input1.readUint16LE();
 	if (signature != 0x0A31)
 		error("Signature not found in disk 1!");
-	signature = input2.readU16LE();
+	signature = input2.readUint16LE();
 	if (signature != 0x0132)
 		error("Signature not found in disk 2!");
 
@@ -82,7 +82,7 @@ void ExtractZakC64::execute() {
 	print("Creating 00.LFL...");
 
 	/* write signature */
-	output.writeU16LE(signature);
+	output.writeUint16LE(signature);
 
 	/* copy object flags */
 	for (i = 0; i < 775; i++)
@@ -104,19 +104,19 @@ void ExtractZakC64::execute() {
 	for (i = 0; i < 38; i++)
 		output.writeByte(input1.readByte());
 	for (i = 0; i < 38; i++)
-		output.writeU16LE(input1.readU16LE());
+		output.writeUint16LE(input1.readUint16LE());
 
 	/* copy script offsets */
 	for (i = 0; i < 155; i++)
 		output.writeByte(input1.readByte());
 	for (i = 0; i < 155; i++)
-		output.writeU16LE(input1.readU16LE());
+		output.writeUint16LE(input1.readUint16LE());
 
 	/* copy sound offsets */
 	for (i = 0; i < 127; i++)
 		output.writeByte(input1.readByte());
 	for (i = 0; i < 127; i++)
-		output.writeU16LE(input1.readU16LE());
+		output.writeUint16LE(input1.readUint16LE());
 
 	output.close();
 
@@ -138,8 +138,8 @@ void ExtractZakC64::execute() {
 		input->seek((SectorOffset[room_tracks_c64[i]] + room_sectors_c64[i]) * 256, SEEK_SET);
 
 		for (j = 0; j < ResourcesPerFile[i]; j++) {
-			unsigned short len = input->readU16LE();
-			output.writeU16LE(len);
+			unsigned short len = input->readUint16LE();
+			output.writeUint16LE(len);
 
 			for (len -= 2; len > 0; len--) {
 				output.writeByte(input->readByte());

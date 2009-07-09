@@ -326,11 +326,11 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 	inputFile.seek(inputFileSize - RSC_TABLEINFO_SIZE, SEEK_SET);
 
 	if (!_currentFileDescription->swapEndian) {
-		resTableOffset = inputFile.readU32LE();
-		resTableCount = inputFile.readU32LE();
+		resTableOffset = inputFile.readUint32LE();
+		resTableCount = inputFile.readUint32LE();
 	} else {
-		resTableOffset = inputFile.readU32BE();
-		resTableCount = inputFile.readU32BE();
+		resTableOffset = inputFile.readUint32BE();
+		resTableCount = inputFile.readUint32BE();
 	}
 
 	print("Table offset: %ul\nnumber of records: %ul\n", resTableOffset, resTableCount);
@@ -347,11 +347,11 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 	for (i = 0; i < resTableCount; i++) {
 
 		if (!_currentFileDescription->swapEndian) {
-			inputTable[i].offset = inputFile.readU32LE();
-			inputTable[i].size = inputFile.readU32LE();
+			inputTable[i].offset = inputFile.readUint32LE();
+			inputTable[i].size = inputFile.readUint32LE();
 		} else {
-			inputTable[i].offset = inputFile.readU32BE();
-			inputTable[i].size = inputFile.readU32BE();
+			inputTable[i].offset = inputFile.readUint32BE();
+			inputTable[i].size = inputFile.readUint32BE();
 		}
 
 		print("Record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
@@ -384,11 +384,11 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 
 	resTableOffset = outputFile.pos();
 	for (i = 0; i < resTableCount; i++) {
-		outputFile.writeU32LE(outputTable[i].offset);
-		outputFile.writeU32LE(outputTable[i].size);
+		outputFile.writeUint32LE(outputTable[i].offset);
+		outputFile.writeUint32LE(outputTable[i].size);
 	}
-	outputFile.writeU32LE(resTableOffset);
-	outputFile.writeU32LE(resTableCount);	// Should be the same number of entries
+	outputFile.writeUint32LE(resTableOffset);
+	outputFile.writeUint32LE(resTableCount);	// Should be the same number of entries
 
 	outputFile.close();
 
