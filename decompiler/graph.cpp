@@ -13,12 +13,12 @@ using namespace std;
 #endif
 
 
-void componentVisit(Node *u, Node *head) {
-	if (u->_component)
-		return;
-	u->_component = head;
+void componentVisit(Node *u, Node *representative, list<Node*> &component) {
+	u->_component = representative;
+	component.push_back(u);
 	foreach (Node *v, u->_in)
-		componentVisit(v, head);
+		if (!v->_component)
+			componentVisit(v, representative, component);
 }
 
 
@@ -30,6 +30,17 @@ Node *dominatorIntersect(Node *u, Node *v) {
 			v = v->_dominator;
 	}
 	return u;
+}
+
+
+string graphvizEscapeLabel(const string &s) {
+	string ret;
+	foreach (char c, s) {
+		if (c == '\n' || c == '"' || c == '\\')
+			ret.push_back('\\');
+		ret.push_back(c == '\n' ? 'l' : c);   // align lines to the left
+	}
+	return ret;
 }
 
 
@@ -98,15 +109,6 @@ void ControlFlowGraph::addEdge(Node *from, Node *to) {
 }
 
 
-void ControlFlowGraph::assignComponents() {
-	orderNodes();
-	list<Node*> nodes = inPostOrder(_nodes);
-	nodes.reverse();
-	foreach (Node *u, nodes)
-		componentVisit(u, u);
-}
-
-
 void ControlFlowGraph::assignDominators() {
 	list<Node*> nodes = inPostOrder(_nodes);
 	nodes.reverse();
@@ -163,6 +165,18 @@ void ControlFlowGraph::assignIntervals() {
 }
 
 
+std::list<Node*> ControlFlowGraph::componentEntryPoints(std::list<Node*> &component) {
+	std::list<Node*> ret;
+	foreach (Node *u, component)
+		foreach (Node *v, u->_in)
+			if (u->_component != v->_component) {
+				ret.push_back(u);
+				break;
+			}
+	return ret;
+}
+
+
 // a derived graph, given set of intervals, is a graph in which
 // all intervals have been collapsed to a single node, and edge
 // exists between nodes if there are edges crossing corresponding
@@ -186,25 +200,6 @@ void ControlFlowGraph::extendIntervals() {
 				v->_interval = dynamic_cast<DerivedNode*>(du->_interval)->_primitive;
 }
 
-
-string graphvizEscapeLabel(const string &s) {
-	string ret;
-	foreach (char c, s) {
-		if (c == '\n' || c == '"' || c == '\\')
-			ret.push_back('\\');
-		ret.push_back(c == '\n' ? 'l' : c);   // align lines to the left
-	}
-	return ret;
-}
-
-list<Node*> ControlFlowGraph::components() {
-	list<Node*> ret;
-	assignComponents();
-	foreach (Node *u, _nodes)
-		if (u->_component == u)
-			ret.push_back(u);
-	return ret;
-}
 
 string ControlFlowGraph::graphvizToString(const string &fontname, int fontsize) {
 	stringstream ret;
@@ -306,4 +301,19 @@ void ControlFlowGraph::setEntry(address_t entry) {
 	foreach (Node *node, _nodes)
 		if (node->address() == entry)
 			_entry = node;
+}
+
+
+list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
+	list< list<Node*> > ret;
+	orderNodes();
+	list<Node*> nodes = inPostOrder(_nodes);
+	nodes.reverse();
+	foreach (Node *u, nodes)
+		if (!u->_component) {
+			list<Node*> component;
+			componentVisit(u, u, component);
+			ret.push_back(component);
+		}
+	return ret;
 }
