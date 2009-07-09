@@ -1,0 +1,90 @@
+Definitions
+===========
+
+Domination
+----------
+
+* Node _a_ dominates node _b_ in a graph, if node _a_ appears on every
+  path from graph entry to node _b_
+* Node _a_ strictly dominates _b_ if _a_ dominates _b_ and _a_ is not _b_
+* Node _a_ immediately dominates _b_ if _a_ strictly dominates _b_ and
+  every node _c_ that strictly dominates _b_ also dominates _a_
+
+
+
+Algorithm
+=========
+
+The structuring of the control flow graph is performed in two stages:
+first we find loops, then we find if-then-else expressions. In each stage,
+we find appropriate control structures in a top-down fashion, at each
+time applying the same analysis to the obtained smaller structures.
+
+
+Loops
+-----
+
+For now, let's assume that the script contains only single entry loops.
+
+Each outermost loop corresponds to a strongly connected component of the
+control flow graph. If we assume every loop has a single entry point, then
+this is also the entry to the corresponding strongly connected component.
+There exist three kinds of loops:
+
+* While loop - entry node has one edge pointing outside strongly connected
+  component
+* Do-While loop - entry node has single outgoing edge, or two edges leading
+  inside the strongly connected component, and a latching node (the deepest
+  node pointing back to the entry node) with one edge pointing outside
+  the strongly connected component.
+* infinite loop - both entry and latching nodes have single edges pointing
+  inside strongly connected components.
+
+A follow node is a node outside of a strongly connected component, first
+reached after normal exit from a loop. In case of a While loop, it is a node
+pointed to by the entry node, and in the case of a Do-While loop, node
+pointed to by the latching node.
+
+A node belongs to the body of the loop if:
+
+* It is dominated by the loop entry node
+* It is not dominated by the loop follow node
+
+In particular, a node belonging to a loop body does not have to belong to
+strongly connected component - it can be an abnormal exit from a loop.
+
+
+### Nested loops
+
+To find loops nested with a loop, we repeat the analysis on the loop body
+with removed condition node of a conditional loop, or an entry node of an
+unconditonal loop. Usually this won't destroy a nested loop, but there exists
+a special case of a While loop nested within infinite loop:
+
+    while True:
+        while condition():
+            do_a()
+        do_b()
+
+In this case only the outer loop will be detected, leading to restructured
+code:
+
+    while True:
+        if condition():
+            do_a()
+            continue
+        do_b()
+
+This can be later cleaned up by a post-processor.
+
+
+
+If-Then-Else expressions
+------------------------
+
+Once we have identified all conditions of loops, we know the remaning
+conditionals must by represented by _if_ statements. The node belongs 
+to the body of a branch of _if_ statement if:
+
+* it is strictly dominated by the condition
+* it is reachable by only one of the conditional paths
