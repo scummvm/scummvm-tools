@@ -10,18 +10,41 @@
 
 struct Node : boost::noncopyable {
 
-	bool _visited;
-	Node *_dominator;       // immediate dominator
-	Node *_interval;        // header node of the interval this node belongs to
-	Node *_primitive;       // interval header of the graph from which this graph has been derived
 	Node *_component;
-	int _number;             // number in post-order
+	Node *_dominator;    // immediate dominator
+	Node *_interval;     // header node of the interval this node belongs to
+	int _number;         // number in post-order
 	std::list<Node*> _in;
 	std::list<Node*> _out;
-	std::list<Instruction*> _instructions;
 
 	Node();
-	~Node();
+	virtual ~Node();
+
+	virtual uint32 address() = 0;
+	virtual std::string toString() = 0;
+};
+
+
+struct BasicBlock : public Node {
+
+	std::list<Instruction*> _instructions;
+
+	BasicBlock(std::list<Instruction*>::iterator first, std::list<Instruction*>::iterator last);
+	~BasicBlock();
+
+	uint32 address();
+	std::string toString();
+};
+
+
+struct DerivedNode : public Node {
+
+	Node *_primitive;     // interval header of the graph from which this graph has been derived
+
+	DerivedNode(Node *primitive);
+	~DerivedNode();
+
+	uint32 address();
 	std::string toString();
 };
 

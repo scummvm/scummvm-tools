@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 		exit(0);
 	}
 	ControlFlowGraph cfg;
-	cfg.addNodesFromScript(script._instructions.begin(), script._instructions.end());
+	cfg.addBasicBlocksFromScript(script._instructions.begin(), script._instructions.end());
 	// TODO won't work with empty script
 	cfg.setEntry(script._instructions.front()->_addr);
 	if (vars.count("blocks")) {
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 		if (cfg.isReducible())
 			exit(0);
 		foreach (Node *interval, cfg.intervals())
-			cout << phex(interval->_instructions.front()->_addr) << endl;
+			cout << phex(dynamic_cast<BasicBlock*>(interval)->_instructions.front()->_addr) << endl;
 		exit(1);
 	}
 	if (vars.count("graph-intervals")) {

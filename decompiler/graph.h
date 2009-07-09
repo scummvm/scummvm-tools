@@ -17,13 +17,12 @@ struct ControlFlowGraph : boost::noncopyable {
 
 	Node *_entry;
 	std::list<Node*> _nodes;
-	std::map<address_t, Node*> _targets; // helps partitioning code into basic nodes
+	std::map<address_t, BasicBlock*> _targets; // helps partitioning code into basic nodes
 
 	ControlFlowGraph();
 	~ControlFlowGraph();
 
-	Node *addNode(std::list<Instruction*>::iterator first, std::list<Instruction*>::iterator last);
-	void addNodesFromScript(std::list<Instruction*>::iterator scriptBegin, std::list<Instruction*>::iterator scriptEnd);
+	void addBasicBlocksFromScript(std::list<Instruction*>::iterator scriptBegin, std::list<Instruction*>::iterator scriptEnd);
 	void addEdge(Node *from, Node *to);
 	void assignComponents(); // after order
 	void assignDominators(); // after order

@@ -65,15 +65,7 @@ ControlFlowGraph::~ControlFlowGraph() {
 }
 
 
-Node *ControlFlowGraph::addNode(list<Instruction*>::iterator first, list<Instruction*>::iterator last) {
-	Node* node = new Node;
-	_nodes.push_back(node);
-	copy(first, last, back_inserter(node->_instructions));
-	return node;
-}
-
-
-void ControlFlowGraph::addNodesFromScript(list<Instruction*>::iterator scriptBegin, list<Instruction*>::iterator scriptEnd) {
+void ControlFlowGraph::addBasicBlocksFromScript(list<Instruction*>::iterator scriptBegin, list<Instruction*>::iterator scriptEnd) {
 	Jump *jump;
 	for (list<Instruction*>::iterator it = scriptBegin; it != scriptEnd; it++)
 		if ((jump = dynamic_cast<Jump*>(*it))) {
@@ -84,14 +76,16 @@ void ControlFlowGraph::addNodesFromScript(list<Instruction*>::iterator scriptBeg
 	list<Instruction*>::iterator first = scriptBegin;
 	for (list<Instruction*>::iterator last = scriptBegin; last != scriptEnd; last++) {
 		if (next(last) == scriptEnd || contains(_targets, (*next(last))->_addr)) {
-			_targets[(*first)->_addr] = addNode(first, next(last));
+			BasicBlock *block = new BasicBlock(first, next(last));
+			_targets[(*first)->_addr] = block;
+			_nodes.push_back(block);
 			first = next(last);
 		}
 	}
 	foreach (Node *node, _nodes) {
-		if ((jump = dynamic_cast<Jump*>(node->_instructions.back())))
+		if ((jump = dynamic_cast<Jump*>(dynamic_cast<BasicBlock*>(node)->_instructions.back())))
 			addEdge(node, _targets[jump->target()]);
-		map<address_t, Node*>::iterator succ = next(_targets.find(node->_instructions.front()->_addr));
+		map<address_t, BasicBlock*>::iterator succ = next(_targets.find(node->address()));
 		if (succ != _targets.end() && (!jump || dynamic_cast<CondJump*>(jump)))
 			addEdge(node, succ->second);
 	}
@@ -175,21 +169,21 @@ void ControlFlowGraph::assignIntervals() {
 // intervals in the original graph
 void ControlFlowGraph::extendIntervals() {
 	ControlFlowGraph d;
-	map<Node*, Node*> trans;
+	map<Node*, DerivedNode*> trans;
 	foreach (Node *interval, intervals()) {
-		trans[interval] = d.addNode(interval->_instructions.begin(), interval->_instructions.end());
-		trans[interval]->_primitive = interval;
+		trans[interval] = new DerivedNode(interval);
+		d._nodes.push_back(trans[interval]);
 	}
 	foreach (Node *interval, intervals())
 		foreach (Node *u, interval->_in)
-		if (u->_interval != interval)
-			d.addEdge(trans[u->_interval], trans[interval]);
-	d.setEntry(_entry->_instructions.front()->_addr);
+			if (u->_interval != interval)
+				d.addEdge(trans[u->_interval], trans[interval]);
+	d.setEntry(_entry->address());
 	d.assignIntervals();
 	foreach (Node *du, d._nodes)
 		foreach (Node *v, _nodes)
-		if (v->_interval == du->_primitive)
-			v->_interval = du->_interval->_primitive;
+			if (v->_interval == dynamic_cast<DerivedNode*>(du)->_primitive)
+				v->_interval = dynamic_cast<DerivedNode*>(du->_interval)->_primitive;
 }
 
 
@@ -269,7 +263,7 @@ void ControlFlowGraph::removeJumpsToJumps() {
 		changed = false;
 		foreach (Node *u, _nodes) {
 			foreach (Node *v, u->_out) {
-				Jump *jump = dynamic_cast<Jump*>(v->_instructions.front());
+				Jump *jump = dynamic_cast<Jump*>(dynamic_cast<BasicBlock*>(v)->_instructions.front());
 				if (jump && !dynamic_cast<CondJump*>(jump) && jump->target() != jump->_addr) {
 					changed = true;
 					replaceEdges(u, v, _targets[jump->target()]);
@@ -310,6 +304,6 @@ void ControlFlowGraph::replaceEdges(Node *from, Node *oldTo, Node *newTo) {
 
 void ControlFlowGraph::setEntry(address_t entry) {
 	foreach (Node *node, _nodes)
-		if (node->_instructions.front()->_addr == entry)
+		if (node->address() == entry)
 			_entry = node;
 }
