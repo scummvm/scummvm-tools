@@ -184,7 +184,7 @@ void *ExtractAgos::loadfile(const Filename &name) {
 	void *mem = malloc(file.size());
 
 	// Read data
-	file.read(file, 1, _filelen);
+	file.read(mem, 1, _filelen);
 
 	return mem;
 }
