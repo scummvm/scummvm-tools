@@ -72,9 +72,19 @@ string graphvizPrintSubgraph(ControlFlowGraph *graph, const string &fontname, in
 			ret	<< ", dom=" << u->_dominator->_number;
 		ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << endl;
 		foreach (Node *v, u->_out)
-			ret << '"' << u << "\" -> \"" << v << '"' << ";" << endl;
+			ret << '"' << u << "\" -> \"" << v << "\";" << endl;
 	}
 	ret << "}" << endl;
+
+	foreach (ControlFlowGraph *subgraph, graph->_subgraphs)
+		ret << graphvizPrintSubgraph(subgraph, fontname, fontsize);
+
+	foreach (Node *u, graph->_nodes) {
+		WhileLoop *loop = dynamic_cast<WhileLoop*>(u);
+		if (loop && loop->_body->_entry)
+			ret << '"' << u << "\" -> \"" << loop->_body->_entry << "\"[color=blue,style=dashed]" << endl;
+	}
+
 	return ret.str();
 }
 
@@ -228,8 +238,6 @@ string ControlFlowGraph::graphvizToString(const string &fontname, int fontsize) 
 	stringstream ret;
 	ret << "digraph G {" << endl;
 	ret << graphvizPrintSubgraph(this, fontname, fontsize);
-	foreach (ControlFlowGraph *graph, _subgraphs)
-		ret << graphvizPrintSubgraph(graph, fontname, fontsize);
 	ret << "}" << endl;
 	return ret.str();
 }
@@ -312,7 +320,6 @@ void ControlFlowGraph::setEntry(address_t entry) {
 
 list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
 	list< list<Node*> > ret;
-	orderNodes();
 	list<Node*> nodes = inPostOrder(_nodes);
 	nodes.reverse();
 	foreach (Node *u, nodes)
@@ -325,7 +332,7 @@ list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
 }
 
 
-
+// TODO force same proxy nodes for all nodes?
 ControlFlowGraph *ControlFlowGraph::yank(set<Node*> &nodes) {
 	ControlFlowGraph *subgraph = new ControlFlowGraph;
 	_subgraphs.push_back(subgraph);
@@ -356,6 +363,16 @@ ControlFlowGraph *ControlFlowGraph::yank(set<Node*> &nodes) {
 
 
 void ControlFlowGraph::structureLoops() {
+	if (!_entry)
+		return;
+	foreach (Node *u, _nodes) {
+		u->_component = 0;
+		u->_dominator = 0;
+		u->_interval = 0;
+		u->_number = 0;
+	}
+	orderNodes();
+	assignDominators();
 	foreach (list<Node*> component, stronglyConnectedComponents()) {
 		list<Node*> entries = componentEntryPoints(component);
 		if (entries.size() == 1) {

@@ -113,6 +113,8 @@ WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Node(), _condition(
 		graph->replaceEdges(u, entry, this);
 	graph->addEdge(this, exit);
 	graph->_nodes.remove(entry);
+
+	_body->structureLoops();
 }
 
 
