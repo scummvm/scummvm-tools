@@ -17,6 +17,7 @@ struct ControlFlowGraph : boost::noncopyable {
 
 	Node *_entry;
 	std::list<Node*> _nodes;
+	std::list<ControlFlowGraph*> _subgraphs;
 	std::map<address_t, BasicBlock*> _targets; // helps partitioning code into basic nodes
 
 	ControlFlowGraph();
@@ -32,7 +33,7 @@ struct ControlFlowGraph : boost::noncopyable {
 	void replaceEdges(Node *from, Node *oldTo, Node *newTo);
 	void setEntry(address_t entry);
 	std::list< std::list<Node*> > stronglyConnectedComponents();
-	void yank(std::set<Node*> &body, ControlFlowGraph &subgraph);
+	ControlFlowGraph *yank(std::set<Node*> &body);
 
 	void structureLoops();
 

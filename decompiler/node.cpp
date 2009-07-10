@@ -59,61 +59,55 @@ string BasicBlock::toString() {
 }
 
 
-DerivedNode::DerivedNode(Node *primitive) : Node(), _primitive(primitive) {
+ProxyNode::ProxyNode(Node *node) : Node(), _node(node) {
+	_component = node->_component;
+	_dominator = node->_dominator;
+	_interval = node->_interval;
+	_number = node->_number;
 }
 
 
-DerivedNode::~DerivedNode() {
+ProxyNode::~ProxyNode() {
 }
 
 
-uint32 DerivedNode::address() {
-	return _primitive->address();
-}
-
-
-string DerivedNode::toString() {
-	return _primitive->toString();
-}
-
-
-OutsideNode::OutsideNode(Node *node) : Node(), _node(node) {
-}
-
-
-OutsideNode::~OutsideNode() {
-}
-
-
-uint32 OutsideNode::address() {
+uint32 ProxyNode::address() {
 	return _node->address();
 }
 
 
-string OutsideNode::toString() {
+string ProxyNode::toString() {
 	ostringstream ret;
 	ret << "goto " << _node->address() << endl;
 	return ret.str();
 }
 
 
-WhileLoop::WhileLoop(ControlFlowGraph &graph, Node *entry) : Node(), _condition(entry) {
+WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Node(), _condition(entry) {
 	Node *exit = entry->edgeOutsideComponent();
-	_out.push_back(exit);
-	foreach (Node *u, entry->_out)
-		u->_in.remove(entry); // remove dangling back-edges just in case
+	_negate = exit != entry->_out.front();
+	_condition = entry;
+	_component = entry->_component;
+	_dominator = entry->_dominator;
+	_interval = entry->_interval;
+	_number = entry->_number;
+
 	set<Node*> body;
-	foreach (Node *u, graph._nodes)
+	foreach (Node *u, graph->_nodes)
 		if (entry->dominates(u) && u != exit && !exit->dominates(u))
 			body.insert(u);
-	_body = new ControlFlowGraph;
-	graph.yank(body, *_body);
-	graph._nodes.remove(entry);
-	foreach (Node *u, entry->_in)
-		graph.replaceEdges(u, entry, this);
+	_body = graph->yank(body);
 	foreach (Node *u, entry->_out)
 		if (u != exit)
 			_body->setEntry(u->address());
+
+	foreach (Node *u, entry->_out)
+		u->_in.remove(entry);
+	entry->_out.clear();
+	foreach (Node *u, list<Node*>(entry->_in))
+		graph->replaceEdges(u, entry, this);
+	graph->addEdge(this, exit);
+	graph->_nodes.remove(entry);
 }
 
 
@@ -128,6 +122,14 @@ uint32 WhileLoop::address() {
 
 string WhileLoop::toString() {
 	ostringstream ret;
-	ret << "while loop..." << endl;
+	ret << "while";
+	if (_negate)
+		ret << " not";
+	ret << " (" << endl;
+	ret << _condition->toString();
+	if (_body->_entry)
+		ret << ") { [" << phex(_body->_entry->address()) << "] }" << endl;
+	else
+		ret << ") { }" << endl;
 	return ret.str();
 }

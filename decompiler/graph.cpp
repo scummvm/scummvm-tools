@@ -57,6 +57,28 @@ string graphvizEscapeLabel(const string &s) {
 }
 
 
+string graphvizPrintSubgraph(ControlFlowGraph *graph, const string &fontname, int fontsize) {
+	ostringstream ret;
+	ret << "subgraph \"cluster_" << graph << "\" {" << endl;
+	ret << "style=dotted" << endl;
+	foreach (Node *u, graph->_nodes) {
+		ret << '"' << u << "\"[";
+		if (fontname != "")
+			ret << "fontname=" << '"' << fontname << "\",";
+		if (fontsize != 0)
+			ret << "fontsize=" << fontsize << ",";
+		ret	<< "shape=box,label=\"<number=" << u->_number;
+		if (u->_dominator)
+			ret	<< ", dom=" << u->_dominator->_number;
+		ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << endl;
+		foreach (Node *v, u->_out)
+			ret << '"' << u << "\" -> \"" << v << '"' << ";" << endl;
+	}
+	ret << "}" << endl;
+	return ret.str();
+}
+
+
 bool postOrderCompare(Node *a, Node *b) {
 	return a->_number < b->_number;
 }
@@ -184,9 +206,9 @@ void ControlFlowGraph::assignIntervals() {
 // intervals in the original graph
 void ControlFlowGraph::extendIntervals() {
 	ControlFlowGraph d;
-	map<Node*, DerivedNode*> trans;
+	map<Node*, ProxyNode*> trans;
 	foreach (Node *interval, intervals()) {
-		trans[interval] = new DerivedNode(interval);
+		trans[interval] = new ProxyNode(interval);
 		d._nodes.push_back(trans[interval]);
 	}
 	foreach (Node *interval, intervals())
@@ -197,34 +219,17 @@ void ControlFlowGraph::extendIntervals() {
 	d.assignIntervals();
 	foreach (Node *du, d._nodes)
 		foreach (Node *v, _nodes)
-			if (v->_interval == dynamic_cast<DerivedNode*>(du)->_primitive)
-				v->_interval = dynamic_cast<DerivedNode*>(du->_interval)->_primitive;
+			if (v->_interval == dynamic_cast<ProxyNode*>(du)->_node)
+				v->_interval = dynamic_cast<ProxyNode*>(du->_interval)->_node;
 }
 
 
 string ControlFlowGraph::graphvizToString(const string &fontname, int fontsize) {
 	stringstream ret;
 	ret << "digraph G {" << endl;
-	foreach (Node *interval, intervals()) {
-		ret << "subgraph " << '"' << "cluster_" << interval << '"' << " {" << endl;
-		ret << "style=dotted;" << endl;
-		foreach (Node *u, _nodes)
-			if (u->_interval == interval) {
-				ret << '"' << u << "\"[";
-				if (fontname != "")
-					ret << "fontname=" << '"' << fontname << "\",";
-				if (fontsize != 0)
-					ret << "fontsize=" << fontsize << ",";
-				ret	<< "shape=box,label=\"<number=" << u->_number;
-				if (u->_dominator)
-					ret	<< ", dom=" << u->_dominator->_number;
-				ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << endl;
-			}
-		ret << "}" << endl;
-	}
-	foreach (Node *u, _nodes)
-		foreach (Node *v, u->_out)
-		    ret << '"' << u << "\" -> \"" << v << '"' << ";" << endl;
+	ret << graphvizPrintSubgraph(this, fontname, fontsize);
+	foreach (ControlFlowGraph *graph, _subgraphs)
+		ret << graphvizPrintSubgraph(graph, fontname, fontsize);
 	ret << "}" << endl;
 	return ret.str();
 }
@@ -320,17 +325,25 @@ list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
 }
 
 
-void ControlFlowGraph::yank(set<Node*> &nodes, ControlFlowGraph &subgraph) {
+ControlFlowGraph *ControlFlowGraph::yank(set<Node*> &nodes) {
+	foreach (Node *u, _nodes)
+		foreach (Node *v, _nodes) 
+			if (contains(nodes, u) != contains(nodes, v)) { // replace all cross-graph edges with proxies
+				size_t n = count(v->_in.begin(), v->_in.end(), u);
+				v->_in.remove(u);
+				while (n--)
+					v->_in.push_back(new ProxyNode(u));
+				foreach (Node *&node, u->_out)
+					if (node == v)
+						node = new ProxyNode(v);
+			}
+	ControlFlowGraph *subgraph = new ControlFlowGraph;
+	_subgraphs.push_back(subgraph);
 	foreach (Node *u, nodes) {
-		subgraph._nodes.push_back(u);
+		subgraph->_nodes.push_back(u);
 		_nodes.remove(u);
-		foreach (Node *&v, u->_out)
-			if (!contains(nodes, v))
-				v = new OutsideNode(v);
-		foreach (Node *&v, u->_in)
-			if (!contains(nodes, v))
-				v = new OutsideNode(v);
 	}
+	return subgraph;
 }
 
 
@@ -344,9 +357,9 @@ void ControlFlowGraph::structureLoops() {
 				foreach (Node *v, u->_out)
 					if (v == entry && (!latch || latch->_number > u->_number))
 						latch = u;
-			if (entry->edgeOutsideComponent()) { // while loop
-				new WhileLoop(*this, entry);
-			} else if (latch->edgeOutsideComponent()) {
+			if (latch && entry->edgeOutsideComponent()) { // while loop
+				_nodes.push_back(new WhileLoop(this, entry));
+			} else if (latch && latch->edgeOutsideComponent()) {
 				// TODO do-while loop
 			} else {
 				// TODO infinite loop

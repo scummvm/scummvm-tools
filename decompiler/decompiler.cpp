@@ -23,7 +23,7 @@ variables_map parseArgs(int argc, char **argv) {
 		("disasm", "print disassembly")
 		("blocks", "print basic blocks")
 		("graph-intervals", value<unsigned>(), "print arg-th graph intervals")
-		//		("graph-struct", "print graph with marked structure information")
+		("graph-struct", "print graph with marked structure information")
 		//		("decompile", "print decompiled program and exit")
 		("no-remove-jumps", "don't remove jumps-to-jumps")
 		("fontname", value<string>()->default_value("Courier"), "font to use with dot output");
@@ -78,6 +78,11 @@ int main(int argc, char **argv) {
 		cfg.assignIntervals();
 		for (unsigned i = 0; i < vars["graph-intervals"].as<unsigned>(); i++)
 			cfg.extendIntervals();
+		cout << cfg.graphvizToString(vars["fontname"].as<string>());
+		exit(0);
+	}
+	if (vars.count("graph-struct")) {
+		cfg.structureLoops();
 		cout << cfg.graphvizToString(vars["fontname"].as<string>());
 		exit(0);
 	}

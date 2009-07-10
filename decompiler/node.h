@@ -42,24 +42,12 @@ struct BasicBlock : public Node {
 };
 
 
-struct DerivedNode : public Node {
-
-	Node *_primitive;     // interval header of the graph from which this graph has been derived
-
-	DerivedNode(Node *primitive);
-	~DerivedNode();
-
-	uint32 address();
-	std::string toString();
-};
-
-
-struct OutsideNode : public Node {
+struct ProxyNode : public Node {
 
 	Node *_node;
 
-	OutsideNode(Node *node);
-	~OutsideNode();
+	ProxyNode(Node *node);
+	~ProxyNode();
 
 	uint32 address();
 	std::string toString();
@@ -70,8 +58,9 @@ struct WhileLoop : public Node {
 
 	Node *_condition;
 	ControlFlowGraph *_body;
+	bool _negate;
 
-	WhileLoop(ControlFlowGraph &graph, Node *entry);
+	WhileLoop(ControlFlowGraph *graph, Node *entry);
 	~WhileLoop();
 
 	uint32 address();
