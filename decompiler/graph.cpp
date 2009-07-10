@@ -57,22 +57,32 @@ string graphvizEscapeLabel(const string &s) {
 }
 
 
+string graphvizPrintBox(Node *u, const string &fontname, int fontsize) {
+	ostringstream ret;
+	ret << '"' << u << "\"[";
+	if (fontname != "")
+		ret << "fontname=" << '"' << fontname << "\",";
+	if (fontsize != 0)
+		ret << "fontsize=" << fontsize << ",";
+	ret	<< "shape=box,label=\"<number=" << u->_number;
+	if (u->_dominator)
+		ret	<< ", dom=" << u->_dominator->_number;
+	ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << endl;
+	return ret.str();
+}
+
 string graphvizPrintSubgraph(ControlFlowGraph *graph, const string &fontname, int fontsize) {
 	ostringstream ret;
 	ret << "subgraph \"cluster_" << graph << "\" {" << endl;
 	ret << "style=dotted" << endl;
 	foreach (Node *u, graph->_nodes) {
-		ret << '"' << u << "\"[";
-		if (fontname != "")
-			ret << "fontname=" << '"' << fontname << "\",";
-		if (fontsize != 0)
-			ret << "fontsize=" << fontsize << ",";
-		ret	<< "shape=box,label=\"<number=" << u->_number;
-		if (u->_dominator)
-			ret	<< ", dom=" << u->_dominator->_number;
-		ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << endl;
+		ret << graphvizPrintBox(u, fontname, fontsize);
 		foreach (Node *v, u->_out)
 			ret << '"' << u << "\" -> \"" << v << "\";" << endl;
+		//		foreach (Node *v, u->_in) {
+		//			ret << graphvizPrintBox(v, fontname, fontsize);
+		//			ret << '"' << v << "\" -> \"" << u << "\"[style=dashed];" << endl;
+		//		}
 	}
 	ret << "}" << endl;
 
@@ -80,7 +90,7 @@ string graphvizPrintSubgraph(ControlFlowGraph *graph, const string &fontname, in
 		ret << graphvizPrintSubgraph(subgraph, fontname, fontsize);
 
 	foreach (Node *u, graph->_nodes) {
-		WhileLoop *loop = dynamic_cast<WhileLoop*>(u);
+		Loop *loop = dynamic_cast<Loop*>(u);
 		if (loop && loop->_body->_entry)
 			ret << '"' << u << "\" -> \"" << loop->_body->_entry << "\"[color=blue,style=dashed]" << endl;
 	}
@@ -261,8 +271,7 @@ bool ControlFlowGraph::isReducible() {
 
 
 void ControlFlowGraph::orderNodes() {
-	assert(_entry);
-	if (!_entry->_number)
+	if (_entry && !_entry->_number)
 		orderVisit(_entry, 0);
 }
 
@@ -295,7 +304,7 @@ void ControlFlowGraph::removeUnreachableNodes() {
 		if ((*it)->_number)
 			it++;
 		else {
-			delete *it;
+			// delete *it;
 			it = _nodes.erase(it);
 		}
 }
@@ -320,6 +329,18 @@ void ControlFlowGraph::setEntry(address_t entry) {
 
 list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
 	list< list<Node*> > ret;
+	foreach (Node *u, _nodes) {
+		u->_component = 0;
+		u->_number = 0;
+	}
+
+	int n = 0;
+	if (_entry && !_entry->_number)
+		n = orderVisit(_entry, n);
+	foreach (Node *u, _nodes)
+		if (!u->_number)
+			n = orderVisit(u, n);
+
 	list<Node*> nodes = inPostOrder(_nodes);
 	nodes.reverse();
 	foreach (Node *u, nodes)
@@ -362,18 +383,17 @@ ControlFlowGraph *ControlFlowGraph::yank(set<Node*> &nodes) {
 }
 
 
-void ControlFlowGraph::structureLoops() {
+void ControlFlowGraph::structureLoops(const list< list<Node*> > &components) {
 	if (!_entry)
 		return;
 	foreach (Node *u, _nodes) {
-		u->_component = 0;
 		u->_dominator = 0;
-		u->_interval = 0;
 		u->_number = 0;
 	}
 	orderNodes();
+	removeUnreachableNodes();
 	assignDominators();
-	foreach (list<Node*> component, stronglyConnectedComponents()) {
+	foreach (list<Node*> component, components) {
 		list<Node*> entries = componentEntryPoints(component);
 		if (entries.size() == 1) {
 			Node *entry = entries.front();
@@ -382,12 +402,16 @@ void ControlFlowGraph::structureLoops() {
 				foreach (Node *v, u->_out)
 					if (v == entry && (!latch || latch->_number > u->_number))
 						latch = u;
-			if (latch && entry->edgeOutsideComponent()) { // while loop
-				_nodes.push_back(new WhileLoop(this, entry));
-			} else if (latch && latch->edgeOutsideComponent()) {
-				// TODO do-while loop
-			} else {
-				// TODO infinite loop
+			if (0) {
+			} else if (latch && latch != entry && latch->edgeOutsideComponent()) {
+				_nodes.push_back(new DoWhileLoop(this, entry, latch));
+				cerr << "done do-while loop at " << phex(entry->address()) << endl;
+			} else if (latch && entry->edgeOutsideComponent()) { // while loop
+					_nodes.push_back(new WhileLoop(this, entry));
+				cerr << "done while loop at " << phex(entry->address()) << endl;
+			} else if (latch) {
+				_nodes.push_back(new EndlessLoop(this, entry));
+				cerr << "done infinite loop at " << phex(entry->address()) << endl;
 			}
 		} else {
 			// TODO: unreducible graph, lots of heuristics

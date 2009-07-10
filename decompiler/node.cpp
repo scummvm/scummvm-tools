@@ -83,10 +83,9 @@ string ProxyNode::toString() {
 }
 
 
-WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Node(), _condition(entry) {
+WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Loop(), _condition(entry) {
 	Node *exit = entry->edgeOutsideComponent();
 	_negate = exit != entry->_out.front();
-	_condition = entry;
 	_component = entry->_component;
 	_dominator = entry->_dominator;
 	_interval = entry->_interval;
@@ -103,9 +102,9 @@ WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Node(), _condition(
 
 	foreach (Node *u, entry->_out) {
 		u->_in.remove(entry);
-		if (u != exit) {
+		if (u != exit && u != entry) { // proxy node
 			graph->_nodes.remove(u);
-			delete u;
+			//			delete u;
 		}
 	}
 	entry->_out.clear();
@@ -114,7 +113,12 @@ WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Node(), _condition(
 	graph->addEdge(this, exit);
 	graph->_nodes.remove(entry);
 
-	_body->structureLoops();
+	_body->structureLoops(_body->stronglyConnectedComponents());
+
+	foreach (Node *u, _body->_nodes)
+		u->_number = 0;
+	_body->orderNodes();
+	_body->removeUnreachableNodes();
 }
 
 
@@ -138,5 +142,142 @@ string WhileLoop::toString() {
 		ret << ") { [" << phex(_body->_entry->address()) << "] }" << endl;
 	else
 		ret << ") { }" << endl;
+	return ret.str();
+}
+
+
+DoWhileLoop::DoWhileLoop(ControlFlowGraph *graph, Node *entry, Node *latch) : Loop(), _condition(latch) {
+	Node *exit = latch->edgeOutsideComponent();
+	_negate = exit == latch->_out.front();
+	_component = entry->_component;
+	_dominator = entry->_dominator;
+	_interval = entry->_interval;
+	_number = entry->_number;
+
+	set<Node*> body;
+	foreach (Node *u, graph->_nodes)
+		if (entry == u || (u != latch && entry->dominates(u) && u != exit && !exit->dominates(u)))
+			body.insert(u);
+	_body = graph->yank(body);
+	_body->setEntry(entry->address());
+
+	foreach (Node *u, latch->_out) {
+		u->_in.remove(latch);
+		if (u != exit) { // proxy node
+			graph->_nodes.remove(u);
+//			delete u;
+		}
+	}
+	latch->_out.clear();
+	foreach (Node *u, graph->_nodes)
+		foreach (Node *&v, u->_out)
+			if (v->address() == entry->address()) { // proxy node
+				//				delete v;
+				v = this;
+				_in.push_back(u);
+			}
+	graph->addEdge(this, exit);
+	graph->_nodes.remove(latch);
+
+	_body->structureLoops(_body->stronglyConnectedComponents());
+
+	foreach (Node *u, _body->_nodes)
+		u->_number = 0;
+	_body->orderNodes();
+	_body->removeUnreachableNodes();
+}
+
+
+DoWhileLoop::~DoWhileLoop() {
+}
+
+
+uint32 DoWhileLoop::address() {
+	return _body->_entry->address();
+}
+
+
+string DoWhileLoop::toString() {
+	ostringstream ret;
+	ret << "do { [" << phex(_body->_entry->address()) << "] } while ";
+	if (_negate)
+		ret << "not ";
+	ret << "(" << endl;
+	ret << _condition->toString();
+	ret << ")" << endl;
+	return ret.str();
+}
+
+#include <cstdlib>
+void panic() {
+	exit(0);
+}
+
+EndlessLoop::EndlessLoop(ControlFlowGraph *graph, Node *entry) : Loop() {
+	_component = entry->_component;
+	_dominator = entry->_dominator;
+	_interval = entry->_interval;
+	_number = entry->_number;
+	Node *exit = 0;
+	foreach (Node *u, graph->_nodes)
+		if (u->_component == entry->_component) {
+			foreach (Node *v, u->_out)
+				if (v->_component != entry->_component && (!exit || exit->_number < v->_number))
+					exit = v;
+		}
+
+	set<Node*> body;
+	foreach (Node *u, graph->_nodes)
+		if (entry->dominates(u) && (!exit || (u != exit && !exit->dominates(u))))
+			body.insert(u);
+	_body = graph->yank(body);
+	list< list<Node*> > components = _body->stronglyConnectedComponents();
+	foreach (Node *u, list<Node*>(entry->_in))
+		graph->replaceEdges(u, entry, this);
+	// we have broken down strongly connected components, now reattach entry
+	foreach (Node *&u, entry->_out) {
+		u->_in.remove(entry);
+		if (u != entry) { // proxy node
+			graph->_nodes.remove(u);
+			Node *uref = dynamic_cast<ProxyNode*>(u)->_node;
+			foreach (Node *&v, uref->_in) {
+				if (v->address() == entry->address()) {
+					_body->_nodes.remove(v);
+					v = entry;
+				}
+			}
+			u = uref;
+			//			delete u;
+		}
+	}
+	if (exit)
+		graph->addEdge(this, exit);
+	graph->_nodes.remove(entry);
+	_body->_nodes.push_back(entry);
+
+	_body->setEntry(entry->address());
+	_body->structureLoops(components);
+	foreach (Node *u, _body->_nodes)
+		u->_number = 0;
+	_body->orderNodes();
+	_body->removeUnreachableNodes();
+}
+
+
+EndlessLoop::~EndlessLoop() {
+}
+
+
+uint32 EndlessLoop::address() {
+	return _body->_entry->address();
+}
+
+
+string EndlessLoop::toString() {
+	ostringstream ret;
+	ret << "for (;;) { ";
+	if (_body->_entry)
+		ret << "[" << phex(_body->_entry->address()) << "] ";
+	ret << "}" << endl;
 	return ret.str();
 }

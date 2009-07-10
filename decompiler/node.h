@@ -54,14 +54,46 @@ struct ProxyNode : public Node {
 };
 
 
-struct WhileLoop : public Node {
+struct Loop : public Node {
+
+	ControlFlowGraph *_body;
+
+	Loop() : Node(), _body() {
+	}
+
+};
+
+
+struct WhileLoop : public Loop {
 
 	Node *_condition;
-	ControlFlowGraph *_body;
 	bool _negate;
 
 	WhileLoop(ControlFlowGraph *graph, Node *entry);
 	~WhileLoop();
+
+	uint32 address();
+	std::string toString();
+};
+
+
+struct DoWhileLoop : public Loop {
+
+	Node *_condition;
+	bool _negate;
+
+	DoWhileLoop(ControlFlowGraph *graph, Node *entry, Node *latch);
+	~DoWhileLoop();
+
+	uint32 address();
+	std::string toString();
+};
+
+
+struct EndlessLoop : public Loop {
+
+	EndlessLoop(ControlFlowGraph *graph, Node *entry);
+	~EndlessLoop();
 
 	uint32 address();
 	std::string toString();

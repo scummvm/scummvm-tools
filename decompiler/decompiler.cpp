@@ -22,6 +22,7 @@ variables_map parseArgs(int argc, char **argv) {
 		("check-reducibility", "check if the graph is reducible")
 		("disasm", "print disassembly")
 		("blocks", "print basic blocks")
+		("graph", "print graph")
 		//		("graph-intervals", value<unsigned>(), "print arg-th graph intervals")
 		("graph-struct", "print graph with marked structure information")
 		//		("decompile", "print decompiled program and exit")
@@ -67,6 +68,10 @@ int main(int argc, char **argv) {
 	cfg.orderNodes();
 	cfg.removeUnreachableNodes();
 	cfg.assignDominators();
+	if (vars.count("graph")) {
+		cout << cfg.graphvizToString(vars["fontname"].as<string>());
+		exit(0);
+	}
 	if (vars.count("check-reducibility")) {
 		if (cfg.isReducible())
 			exit(0);
@@ -75,7 +80,7 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	if (vars.count("graph-struct")) {
-		cfg.structureLoops();
+		cfg.structureLoops(cfg.stronglyConnectedComponents());
 		cout << cfg.graphvizToString(vars["fontname"].as<string>());
 		exit(0);
 	}
