@@ -78,7 +78,7 @@ uint32 ProxyNode::address() {
 
 string ProxyNode::toString() {
 	ostringstream ret;
-	ret << "goto " << _node->address() << endl;
+	ret << "goto " << phex(_node->address()) << endl;
 	return ret.str();
 }
 
@@ -101,8 +101,13 @@ WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Node(), _condition(
 		if (u != exit)
 			_body->setEntry(u->address());
 
-	foreach (Node *u, entry->_out)
+	foreach (Node *u, entry->_out) {
 		u->_in.remove(entry);
+		if (u != exit) {
+			graph->_nodes.remove(u);
+			delete u;
+		}
+	}
 	entry->_out.clear();
 	foreach (Node *u, list<Node*>(entry->_in))
 		graph->replaceEdges(u, entry, this);

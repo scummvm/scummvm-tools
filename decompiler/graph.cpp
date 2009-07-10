@@ -325,7 +325,11 @@ list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
 }
 
 
+
 ControlFlowGraph *ControlFlowGraph::yank(set<Node*> &nodes) {
+	ControlFlowGraph *subgraph = new ControlFlowGraph;
+	_subgraphs.push_back(subgraph);
+	list<Node*> newNodes;
 	foreach (Node *u, _nodes)
 		foreach (Node *v, _nodes) 
 			if (contains(nodes, u) != contains(nodes, v)) { // replace all cross-graph edges with proxies
@@ -334,11 +338,15 @@ ControlFlowGraph *ControlFlowGraph::yank(set<Node*> &nodes) {
 				while (n--)
 					v->_in.push_back(new ProxyNode(u));
 				foreach (Node *&node, u->_out)
-					if (node == v)
-						node = new ProxyNode(v);
+					if (node == v) {
+						node = new ProxyNode(node);
+						if (contains(nodes, u))
+							subgraph->_nodes.push_back(node);
+						else
+							newNodes.push_back(node);
+					}
 			}
-	ControlFlowGraph *subgraph = new ControlFlowGraph;
-	_subgraphs.push_back(subgraph);
+	copy(newNodes.begin(), newNodes.end(), back_inserter(_nodes));
 	foreach (Node *u, nodes) {
 		subgraph->_nodes.push_back(u);
 		_nodes.remove(u);
