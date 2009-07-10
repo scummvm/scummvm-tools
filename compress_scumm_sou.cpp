@@ -21,7 +21,7 @@
  *
  */
 
-#include "compress.h"
+#include "compress_scumm_sou.h"
 
 
 static const char f_hdr[] = {
@@ -32,189 +32,153 @@ static const char f_hdr[] = {
 #define OUTPUT_OGG	"monster.sog"
 #define OUTPUT_FLAC	"monster.sof"
 
-static const char *g_output_filename = OUTPUT_MP3;
-
 #define TEMP_DAT	"tempfile.dat"
 #define TEMP_IDX	"tempfile.idx"
 
-static FILE *input, *output_idx, *output_snd;
-
-static AudioFormat gCompMode = AUDIO_MP3;
-
-
-void end_of_file(const char *inputPath) {
-	FILE *in;
-	int idx_size = ftell(output_idx);
+void CompressScummSou::end_of_file(const char *inputPath) {
+	int idx_size = _output_idx.pos();
 	size_t size;
 	char buf[2048];
 
-	fclose(output_snd);
-	fclose(output_idx);
+	_output_snd.close();
+	_output_idx.close();
 
-	output_idx = fopen(g_output_filename, "wb");
-	writeUint32BE(output_idx, (uint32)idx_size);
+	_output_idx.open(_audioOuputFilename, "wb");
+	_output_idx.writeUint32BE((uint32)idx_size);
 
-	in = fopen(TEMP_IDX, "rb");
-	while ((size = fread(buf, 1, 2048, in)) > 0) {
-		fwrite(buf, 1, size, output_idx);
+	File in(TEMP_IDX, "rb");
+	while ((size = in.readN(buf, 1, 2048)) > 0) {
+		_output_idx.write(buf, 1, size);
 	}
-	fclose(in);
-	in = fopen(TEMP_DAT, "rb");
-	while ((size = fread(buf, 1, 2048, in)) > 0) {
-		fwrite(buf, 1, size, output_idx);
+
+	in.open(TEMP_DAT, "rb");
+	while ((size = in.readN(buf, 1, 2048)) > 0) {
+		_output_idx.write(buf, 1, size);
 	}
-	fclose(in);
-	fclose(output_idx);
-	fclose(input);
+	in.close();
+	_output_idx.close();
+	_input.close();
 
 	/* And some clean-up :-) */
 	unlink(TEMP_IDX);
 	unlink(TEMP_DAT);
 	unlink(TEMP_RAW);
 	unlink(tempEncoded);
-
-	exit(-1);
 }
 
-void append_byte(int size, char buf[]) {
+void CompressScummSou::append_byte(int size, char buf[]) {
 	int i;
 	for (i = 0; i < (size - 1); i++)
 		buf[i] = buf[i + 1];
-	buf[i] = fgetc(input);
+	buf[i] = _input.readByte();
 }
 
-void get_part(const char *inputPath) {
-	FILE *f;
+void CompressScummSou::get_part(const char *inputPath) {
 	uint32 tot_size;
 	char outname[256];
 	int size;
 	char fbuf[2048];
 
 	char buf[2048];
-	int pos = ftell(input);
+	int pos = _input.pos();
 	uint32 tags;
 
 	/* Scan for the VCTL header */
-	fread(buf, 1, 4, input);
+	_input.read(buf, 1, 4);
 	/* The demo (snmdemo) and floppy version of Sam & Max use VTTL */
 	while (memcmp(buf, "VCTL", 4)&&memcmp(buf, "VTTL", 4)) {
 		pos++;
 		append_byte(4, buf);
-		if (feof(input))
+		if (feof(_input)) {
 			end_of_file(inputPath);
-	}
-
-	tags = readUint32BE(input);
-	assert(tags >= 8);
-	tags -= 8;
-
-	writeUint32BE(output_idx, (uint32)pos);
-	writeUint32BE(output_idx, (uint32)ftell(output_snd));
-	writeUint32BE(output_idx, tags);
-	while (tags > 0) {
-		fputc(fgetc(input), output_snd);
-		tags--;
-	}
-
-	fread(buf, 1, 8, input);
-	if (!memcmp(buf, "Creative", 8))
-		fseek(input, 18, SEEK_CUR);
-	else if (!memcmp(buf, "VTLK", 4))
-		fseek(input, 26, SEEK_CUR);
-	else
-		error("Unexpected data encountered");
-	printf("Voice file found (pos = %d) :", pos);
-
-	/* Convert the VOC data */
-	extractAndEncodeVOC(TEMP_RAW, input, gCompMode);
-
-	/* Append the converted data to the master output file */
-	sprintf(outname, tempEncoded);
-	f = fopen(outname, "rb");
-	tot_size = 0;
-	while ((size = fread(fbuf, 1, 2048, f)) > 0) {
-		tot_size += size;
-		fwrite(fbuf, 1, size, output_snd);
-	}
-	fclose(f);
-
-	writeUint32BE(output_idx, tot_size);
-}
-
-
-int export_main(compress_scumm_sou)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [mode] [mode params] monster.sou\n" kCompressionAudioHelp;
-
-	char buf[2048];
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
-
-	// Should we help the user?
-	parseHelpArguments(argv, argc, helptext);
-
-	// compression mode
-	gCompMode = process_audio_params(argc, argv, &first_arg);
-
-	if (gCompMode == AUDIO_NONE) {
-		// Unknown mode (failed to parse arguments), display help and exit
-		displayHelp(helptext, argv[0]);
-	}
-
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else {
-		switch(gCompMode) {
-		case AUDIO_MP3:
-			g_output_filename = OUTPUT_MP3;
-			break;
-		case AUDIO_VORBIS:
-			g_output_filename = OUTPUT_OGG;
-			break;
-		case AUDIO_FLAC:
-			g_output_filename = OUTPUT_FLAC;
-			break;
-		default:
-			displayHelp(helptext, argv[0]);
-			break;
+			return;
 		}
 	}
 
-	inpath.setFullPath(argv[first_arg]);
+	tags = _input.readUint32BE();
+	assert(tags >= 8);
+	tags -= 8;
 
-	input = fopen(inpath.getFullPath().c_str(), "rb");
-	if (!input) {
-		error("Cannot open file: %s", inpath.getFullPath().c_str());
+	_output_idx.writeUint32BE((uint32)pos);
+	_output_idx.writeUint32BE((uint32)_output_snd.pos());
+	_output_idx.writeUint32BE(tags);
+	while (tags > 0) {
+		fputc(fgetc(_input), _output_snd);
+		tags--;
 	}
 
-	output_idx = fopen(TEMP_IDX, "wb");
-	if (!output_idx) {
-		error("Cannot open file " TEMP_IDX " for write" );
+	_input.read(buf, 1, 8);
+	if (!memcmp(buf, "Creative", 8))
+		_input.seek(18, SEEK_CUR);
+	else if (!memcmp(buf, "VTLK", 4))
+		_input.seek(26, SEEK_CUR);
+	else
+		error("Unexpected data encountered");
+	print("Voice file found (pos = %d) :", pos);
+
+	/* Convert the VOC data */
+	extractAndEncodeVOC(TEMP_RAW, _input, _format);
+
+	/* Append the converted data to the master output file */
+	sprintf(outname, tempEncoded);
+	File f(outname, "rb");
+	tot_size = 0;
+	while ((size = f.read(fbuf, 1, 2048)) > 0) {
+		tot_size += size;
+		_output_snd.write(fbuf, 1, size);
 	}
-	output_snd = fopen(TEMP_DAT, "wb");
-	if (!output_snd) {
-		error("Cannot open file " TEMP_DAT " for write");
+
+	_output_idx.writeUint32BE(tot_size);
+}
+
+CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(name) {
+	_audioOuputFilename = OUTPUT_MP3;
+
+	_helptext = "\nUsage: " + _name + " [mode] [mode params] monster.sou\n" kCompressionAudioHelp;
+}
+
+void CompressScummSou::execute() {
+	char buf[2048];
+
+	// Check input
+	if (_inputPaths.size() == 1)
+		error("One input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
+
+	switch (_format) {
+	case AUDIO_MP3:
+		_audioOuputFilename = OUTPUT_MP3;
+		break;
+	case AUDIO_VORBIS:
+		_audioOuputFilename = OUTPUT_OGG;
+		break;
+	case AUDIO_FLAC:
+		_audioOuputFilename = OUTPUT_FLAC;
+		break;
+	default:
+		throw ToolException("Unknown audio format");
+		break;
 	}
+
+	_input.open(inpath.getFullPath().c_str(), "rb");
+	_output_idx.open(TEMP_IDX, "wb");
+	_output_snd.open(TEMP_DAT, "wb");
 
 	/* Get the 'SOU ....' header */
-	fread(buf, 1, 8, input);
+	_input.read(buf, 1, 8);
 	if (strncmp(buf, f_hdr, 8)) {
 		error("Bad SOU");
 	}
 
-	while (1)
+	while (true)
 		get_part(inpath.getFullPath().c_str());
-
-	return 0;
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(compress_scumm_sou)(argc, argv);
+	CompressScummSou scummsou(argv[0]);
+	return scummsou.run(argc, argv);
 }
 #endif
 

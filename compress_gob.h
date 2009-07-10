@@ -49,7 +49,7 @@ protected:
 
 	void parseExtraArguments();
 
-	Chunk *readChunkConf(File &gobconf, const Filename &stkName, uint16 &chunkCount);
+	Chunk *readChunkConf(File &gobconf, Filename stkName, uint16 &chunkCount);
 	void writeEmptyHeader(File &stk, uint16 chunkCount);
 	void writeBody(Filename *inpath, File &stk, Chunk *chunks);
 	uint32 writeBodyStoreFile(File &stk, File &src);

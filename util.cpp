@@ -313,16 +313,18 @@ File::~File() {
 }
 
 void File::open(const Filename &filepath, const char *mode) {
-	if (strcmp(mode, "w") == 0)
-		open(filepath, FILEMODE_WRITE);
-	else if (strcmp(mode, "r") == 0)
-		open(filepath, FILEMODE_READ);
-	else if (strcmp(mode, "wb") == 0)
-		open(filepath, FileMode(FILEMODE_WRITE | FILEMODE_BINARY));
-	else if (strcmp(mode, "rb") == 0)
-		open(filepath, FileMode(FILEMODE_READ | FILEMODE_BINARY));
-	else
-		throw FileException(std::string("Unsupported FileMode ") + mode);
+	FileMode m = FILEMODE_WRITE;
+	do {
+		switch(*mode) {
+		case 'w': m = FILEMODE_WRITE; break;
+		case 'r': m = FILEMODE_READ; break;
+		case 'b': m = FileMode(m | FILEMODE_BINARY); break;
+		case '+': m = FileMode(m | FILEMODE_APPEND); break;
+		default: throw FileException(std::string("Unsupported FileMode ") + mode);
+		}
+	} while(*++mode);
+	
+	open(filepath, m);
 }
 
 void File::open(const Filename &filepath, FileMode mode) {
@@ -336,6 +338,8 @@ void File::open(const Filename &filepath, FileMode mode) {
 		strmode += 'w';
 	if (mode & FILEMODE_BINARY)
 		strmode += 'b';
+	if (mode & FILEMODE_APPEND)
+		strmode += '+';
 
 	_file = fopen(filepath.getFullPath().c_str(), strmode.c_str());
 	_mode = mode;

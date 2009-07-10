@@ -20,7 +20,7 @@
  *
  */
 
-#include "compress.h"
+#include "compress_scumm_bun.h"
 
 /*
  * The "IMC" codec below (see cases 13 & 15 in decompressCodec) is actually a
@@ -120,7 +120,7 @@ void initializeImcTables() {
 		}                                  \
 	} while (0)
 
-static int32 compDecode(byte *src, byte *dst) {
+int32 CompressScummBun::compDecode(byte *src, byte *dst) {
 	byte *result, *srcptr = src, *dstptr = dst;
 	int data, size, bit, bitsleft = 16, mask = READ_LE_UINT16(srcptr);
 	srcptr += 2;
@@ -156,7 +156,7 @@ static int32 compDecode(byte *src, byte *dst) {
 }
 #undef NextBit
 
-int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 input_size) {
+int32 CompressScummBun::decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 input_size) {
 	int32 output_size, channels;
 	int32 offset1, offset2, offset3, length, k, c, s, j, r, t, z;
 	byte *src, *t_table, *p, *ptr;
@@ -605,7 +605,7 @@ int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 in
 		break;
 
 	default:
-		printf("decompressCodec() Unknown codec %d!", (int)codec);
+		print("decompressCodec() Unknown codec %d!", (int)codec);
 		output_size = 0;
 		break;
 	}
@@ -613,19 +613,7 @@ int32 decompressCodec(int32 codec, byte *comp_input, byte *comp_output, int32 in
 	return output_size;
 }
 
-struct BundleAudioTable {
-	char filename[24];
-	int size;
-	int offset;
-};
-
-static FILE *_waveTmpFile;
-static int32 _waveDataSize;
-static BundleAudioTable *bundleTable;
-static BundleAudioTable cbundleTable[10000]; // difficult to calculate
-static int32 cbundleCurIndex = 0;
-
-void encodeWaveWithFlac(char *filename) {
+void CompressScummBun::encodeWaveWithFlac(char *filename) {
 	char fbuf[2048];
 	char fbuf2[2048];
 	sprintf(fbuf, "%s.wav", filename);
@@ -633,7 +621,7 @@ void encodeWaveWithFlac(char *filename) {
 	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_FLAC);
 }
 
-void encodeWaveWithOgg(char *filename) {
+void CompressScummBun::encodeWaveWithOgg(char *filename) {
 	char fbuf[2048];
 	char fbuf2[2048];
 	sprintf(fbuf, "%s.wav", filename);
@@ -641,7 +629,7 @@ void encodeWaveWithOgg(char *filename) {
 	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_VORBIS);
 }
 
-void encodeWaveWithLame(char *filename) {
+void CompressScummBun::encodeWaveWithLame(char *filename) {
 	char fbuf[2048];
 	char fbuf2[2048];
 
@@ -650,7 +638,7 @@ void encodeWaveWithLame(char *filename) {
 	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_MP3);
 }
 
-void writeWaveHeader(int s_size, int rate, int chan) {
+void CompressScummBun::writeWaveHeader(int s_size, int rate, int chan) {
 	int bits = 16;
 	byte wav[44];
 	memset(wav, 0, 44);
@@ -693,25 +681,19 @@ void writeWaveHeader(int s_size, int rate, int chan) {
 	wav[42]	= (s_size >> 16) & 0xff;
 	wav[43]	= (s_size >> 24) & 0xff;
 
-	fseek(_waveTmpFile, 0, SEEK_SET);
-	if (fwrite(wav, 1, 44, _waveTmpFile) != 44) {
+	_waveTmpFile.seek(0, SEEK_SET);
+	if (_waveTmpFile.write(wav, 1, 44) != 44) {
 		error("error writing temp wave file");
 	}
-	fclose(_waveTmpFile);
-	_waveTmpFile = NULL;
+	_waveTmpFile.close();
 }
 
-void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
+void CompressScummBun::writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile) {
-		_waveTmpFile = fopen(fileName, "wb");
-		if (!_waveTmpFile) {
-			error("error writing temp wave file");
-		}
+		_waveTmpFile.open(fileName, "wb");
 		byte wav[44];
 		memset(wav, 0, 44);
-		if (fwrite(output_data, 1, 44, _waveTmpFile) != 44) {
-			error("error writing temp wave file");
-		}
+		_waveTmpFile.write(output_data, 1, 44);
 		_waveDataSize = 0;
 	}
 	for (unsigned int j = 0; j < size - 1; j += 2) {
@@ -719,9 +701,7 @@ void writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
 		output_data[j + 0] = output_data[j + 1];
 		output_data[j + 1] = tmp;
 	}
-	if (fwrite(output_data, 1, size, _waveTmpFile) != size) {
-		error("error writing temp wave file");
-	}
+	_waveTmpFile.write(output_data, 1, size);
 	_waveDataSize += size;
 }
 
@@ -729,24 +709,24 @@ static AudioFormat gCompMode = AUDIO_MP3;
 
 typedef struct { int offset, size, codec; } CompTable;
 
-byte *decompressBundleSound(int index, FILE *input, int32 &finalSize) {
+byte *CompressScummBun::decompressBundleSound(int index, File  &input, int32 &finalSize) {
 	byte compOutput[0x2000];
 	int i;
 
-	fseek(input, bundleTable[index].offset, SEEK_SET);
+	input.seek(_bundleTable[index].offset, SEEK_SET);
 
-	uint32 tag = readUint32BE(input);
+	uint32 tag = input.readUint32BE();
 	assert(tag == 'COMP');
-	int numCompItems = readUint32BE(input);
-	fseek(input, 8, SEEK_CUR);
+	int numCompItems = input.readUint32BE();
+	input.seek(8, SEEK_CUR);
 
 	CompTable *compTable = (CompTable *)malloc(sizeof(CompTable) * numCompItems);
 	int32 maxSize = 0;
 	for (i = 0; i < numCompItems; i++) {
-		compTable[i].offset = readUint32BE(input);
-		compTable[i].size = readUint32BE(input);
-		compTable[i].codec = readUint32BE(input);
-		fseek(input, 4, SEEK_CUR);
+		compTable[i].offset = input.readUint32BE();
+		compTable[i].size = input.readUint32BE();
+		compTable[i].codec = input.readUint32BE();
+		input.seek(4, SEEK_CUR);
 		if (compTable[i].size > maxSize)
 			maxSize = compTable[i].size;
 	}
@@ -758,8 +738,8 @@ byte *decompressBundleSound(int index, FILE *input, int32 &finalSize) {
 
 	for (i = 0; i < numCompItems; i++) {
 		compInput[compTable[i].size] = 0;
-		fseek(input, bundleTable[index].offset + compTable[i].offset, SEEK_SET);
-		fread(compInput, 1, compTable[i].size, input);
+		input.seek(_bundleTable[index].offset + compTable[i].offset, SEEK_SET);
+		input.read(compInput, 1, compTable[i].size);
 		int outputSize = decompressCodec(compTable[i].codec, compInput, compOutput, compTable[i].size);
 		assert(outputSize <= 0x2000);
 		memcpy(compFinal + finalSize, compOutput, outputSize);
@@ -772,7 +752,7 @@ byte *decompressBundleSound(int index, FILE *input, int32 &finalSize) {
 	return compFinal;
 }
 
-byte *convertTo16bit(byte *ptr, int inputSize, int &outputSize, int bits, int freq, int channels) {
+byte *CompressScummBun::convertTo16bit(byte *ptr, int inputSize, int &outputSize, int bits, int freq, int channels) {
 	outputSize = inputSize;
 	if (bits == 8)
 		outputSize *= 2;
@@ -820,7 +800,7 @@ byte *convertTo16bit(byte *ptr, int inputSize, int &outputSize, int bits, int fr
 	return outputBuf;
 }
 
-void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs, int &numMarkers) {
+void CompressScummBun::countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs, int &numMarkers) {
 	uint32 tag;
 	int32 size = 0;
 
@@ -881,7 +861,7 @@ struct Marker {
 static Region *_region;
 static int _numRegions;
 
-void writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, FILE *output) {
+void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, File &output) {
 	char tmpPath[200];
 
 	for (int l = 0; l < _numRegions; l++) {
@@ -912,42 +892,43 @@ void writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, 
 		sprintf(tmpPath, "%s/%s_reg%03d.wav", dir, filename, l);
 		unlink(tmpPath);
 
-		int32 startPos = ftell(output);
+		int32 startPos = output.pos();
 		switch (gCompMode) {
 		case AUDIO_MP3:
-			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.mp3", filename, l);
+			sprintf(_cbundleTable[_cbundleCurIndex].filename, "%s_reg%03d.mp3", filename, l);
 			sprintf(tmpPath, "%s/%s_reg%03d.mp3", dir, filename, l);
 			break;
 		case AUDIO_VORBIS:
-			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.ogg", filename, l);
+			sprintf(_cbundleTable[_cbundleCurIndex].filename, "%s_reg%03d.ogg", filename, l);
 			sprintf(tmpPath, "%s/%s_reg%03d.ogg", dir, filename, l);
 			break;
 		case AUDIO_FLAC:
-			sprintf(cbundleTable[cbundleCurIndex].filename, "%s_reg%03d.fla", filename, l);
+			sprintf(_cbundleTable[_cbundleCurIndex].filename, "%s_reg%03d.fla", filename, l);
 			sprintf(tmpPath, "%s/%s_reg%03d.fla", dir, filename, l);
 			break;
 		default:
 			error("Unknown encoding method");
 		}
-		cbundleTable[cbundleCurIndex].offset = startPos;
+		_cbundleTable[_cbundleCurIndex].offset = startPos;
 
-		FILE *cmpFile = fopen(tmpPath, "rb");
-		fseek(cmpFile, 0, SEEK_END);
-		size = ftell(cmpFile);
-		fseek(cmpFile, 0, SEEK_SET);
+		File cmpFile(tmpPath, "rb");
+		cmpFile.seek(0, SEEK_END);
+		size = cmpFile.pos();
+		cmpFile.seek(0, SEEK_SET);
 		byte *tmpBuf = (byte *)malloc(size);
-		fread(tmpBuf, size, 1, cmpFile);
-		fclose(cmpFile);
+		cmpFile.read(tmpBuf, size, 1);
+		cmpFile.close();
 		unlink(tmpPath);
-		fwrite(tmpBuf, size, 1, output);
+
+		output.write(tmpBuf, size, 1);
 		free(tmpBuf);
-		cbundleTable[cbundleCurIndex].size = ftell(output) - startPos;
-		cbundleCurIndex++;
+		_cbundleTable[_cbundleCurIndex].size = output.pos() - startPos;
+		_cbundleCurIndex++;
 	}
 	free(_region);
 }
 
-void recalcRegions(int32 &value, int bits, int freq, int channels) {
+void CompressScummBun::recalcRegions(int32 &value, int bits, int freq, int channels) {
 	int size = value;
 	if (bits == 8)
 		size *= 2;
@@ -956,7 +937,7 @@ void recalcRegions(int32 &value, int bits, int freq, int channels) {
 	value = size;
 }
 
-void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, int &bits, int &freq, int &channels) {
+void CompressScummBun::writeToRMAPFile(byte *ptr, File &output, char *filename, int &offsetData, int &bits, int &freq, int &channels) {
 	byte *s_ptr = ptr;
 	int32 size = 0;
 	int l;
@@ -1032,47 +1013,47 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 	} while (tag != 'DATA');
 	offsetData = (int32)(ptr - s_ptr);
 
-	int32 startPos = ftell(output);
-	sprintf(cbundleTable[cbundleCurIndex].filename, "%s.map", filename);
-	cbundleTable[cbundleCurIndex].offset = startPos;
+	int32 startPos = output.pos();
+	sprintf(_cbundleTable[_cbundleCurIndex].filename, "%s.map", filename);
+	_cbundleTable[_cbundleCurIndex].offset = startPos;
 
-	writeUint32BE(output, 'RMAP');
-	writeUint32BE(output, 3); // version
-	writeUint32BE(output, 16); // bits
-	writeUint32BE(output, freq);
-	writeUint32BE(output, channels);
-	writeUint32BE(output, numRegions);
-	writeUint32BE(output, numJumps);
-	writeUint32BE(output, numSyncs);
-	writeUint32BE(output, numMarkers);
+	output.writeUint32BE('RMAP');
+	output.writeUint32BE(3); // version
+	output.writeUint32BE(16); // bits
+	output.writeUint32BE(freq);
+	output.writeUint32BE(channels);
+	output.writeUint32BE(numRegions);
+	output.writeUint32BE(numJumps);
+	output.writeUint32BE(numSyncs);
+	output.writeUint32BE(numMarkers);
 	memcpy(_region, region, sizeof(Region) * numRegions);
 	for (l = 0; l < numRegions; l++) {
 		_region[l].offset -= offsetData;
 		region[l].offset -= offsetData;
 		recalcRegions(region[l].offset, bits, freq, channels);
 		recalcRegions(region[l].length, bits, freq, channels);
-		writeUint32BE(output, region[l].offset);
-		writeUint32BE(output, region[l].length);
+		output.writeUint32BE(region[l].offset);
+		output.writeUint32BE(region[l].length);
 	}
 	for (l = 0; l < numJumps; l++) {
 		jump[l].offset -= offsetData;
 		jump[l].dest -= offsetData;
 		recalcRegions(jump[l].offset, bits, freq, channels);
 		recalcRegions(jump[l].dest, bits, freq, channels);
-		writeUint32BE(output, jump[l].offset);
-		writeUint32BE(output, jump[l].dest);
-		writeUint32BE(output, jump[l].hookId);
-		writeUint32BE(output, jump[l].fadeDelay);
+		output.writeUint32BE(jump[l].offset);
+		output.writeUint32BE(jump[l].dest);
+		output.writeUint32BE(jump[l].hookId);
+		output.writeUint32BE(jump[l].fadeDelay);
 	}
 	for (l = 0; l < numSyncs; l++) {
-		writeUint32BE(output, sync[l].size);
-		fwrite(sync[l].ptr, sync[l].size, 1, output);
+		output.writeUint32BE(sync[l].size);
+		output.write(sync[l].ptr, sync[l].size, 1);
 		free(sync[l].ptr);
 	}
 	for (l = 0; l < numMarkers; l++) {
-		writeUint32BE(output, marker[l].pos);
-		writeUint32BE(output, marker[l].length);
-		fwrite(marker[l].ptr, marker[l].length, 1, output);
+		output.writeUint32BE(marker[l].pos);
+		output.writeUint32BE(marker[l].length);
+		output.write(marker[l].ptr, marker[l].length, 1);
 		delete[] marker[l].ptr;
 	}
 	free(region);
@@ -1080,47 +1061,27 @@ void writeToRMAPFile(byte *ptr, FILE *output, char *filename, int &offsetData, i
 	free(sync);
 	free(marker);
 
-	cbundleTable[cbundleCurIndex].size = ftell(output) - startPos;
-	cbundleCurIndex++;
+	_cbundleTable[_cbundleCurIndex].size = output.pos() - startPos;
+	_cbundleCurIndex++;
 }
 
+CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(name) {
+	_cbundleCurIndex = 0;
 
-int export_main(compress_scumm_bun)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outputfile = inputfile.bun] <inputfile>\n";
+	_helptext = "\nUsage: " + _name + " [mode] [mode-params] [-o outputfile = inputfile.bun] <inputfile>\n";
+}
 
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
-
-	parseHelpArguments(argv, argc, helptext);
-
-	// compression mode
-	gCompMode = process_audio_params(argc, argv, &first_arg);
-
-	if (gCompMode == AUDIO_NONE) {
-		// Unknown mode (failed to parse arguments), display help and exit
-		displayHelp(helptext, argv[0]);
-	}
+void CompressScummBun::execute() {
+	// Check input
+	if (_inputPaths.size() == 1)
+		error("One input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
 	uint32 tag;
 	int32 numFiles, offset;
 
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else 
-		// Just leave it empty, we just change extension of input file
-		;
-
-	inpath.setFullPath(argv[first_arg]);
-
-	FILE *input = fopen(inpath.getFullPath().c_str(), "rb");
-	if (!input) {
-		error("Cannot open file: %s", inpath.getFullPath().c_str());
-	}
+	File input(inpath, "rb");
 
 	if (outpath.empty()) {
 		// Change extension for output
@@ -1128,24 +1089,21 @@ int export_main(compress_scumm_bun)(int argc, char *argv[]) {
 		outpath.setExtension(".bun");
 	}
 
-	FILE *output = fopen(outpath.getFullPath().c_str(), "wb");
-	if (!output) {
-		error("Cannot open file: %s", outpath.getFullPath().c_str());
-	}
+	File output(outpath, "wb");
 
-	writeUint32BE(output, 'LB23');
-	writeUint32BE(output, 0); // will be later
-	writeUint32BE(output, 0); // will be later
+	output.writeUint32BE('LB23');
+	output.writeUint32BE(0); // will be later
+	output.writeUint32BE(0); // will be later
 
 	initializeImcTables();
 
-	tag = readUint32BE(input);
+	tag = input.readUint32BE();
 	assert(tag == 'LB83');
-	offset = readUint32BE(input);
-	numFiles = readUint32BE(input);
+	offset = input.readUint32BE();
+	numFiles = input.readUint32BE();
 
-	bundleTable = (BundleAudioTable *)malloc(numFiles * sizeof(BundleAudioTable));
-	fseek(input, offset, SEEK_SET);
+	_bundleTable = (BundleAudioTable *)malloc(numFiles * sizeof(BundleAudioTable));
+	input.seek(offset, SEEK_SET);
 
 	for (int i = 0; i < numFiles; i++) {
 		char filename[13], c;
@@ -1160,45 +1118,42 @@ int export_main(compress_scumm_bun)(int argc, char *argv[]) {
 			if ((c = readByte(input)) != 0)
 				filename[z++] = c;
 		filename[z] = '\0';
-		strcpy(bundleTable[i].filename, filename);
-		bundleTable[i].offset = readUint32BE(input);
-		bundleTable[i].size = readUint32BE(input);
+		strcpy(_bundleTable[i].filename, filename);
+		_bundleTable[i].offset = input.readUint32BE();
+		_bundleTable[i].size = input.readUint32BE();
 	}
 
 	for (int i = 0; i < numFiles; i++) {
-		if (strcmp(bundleTable[i].filename, "PRELOAD.") == 0)
+		if (strcmp(_bundleTable[i].filename, "PRELOAD.") == 0)
 			continue;
 		int offsetData = 0, bits = 0, freq = 0, channels = 0;
 		int32 size = 0;
 		byte *compFinal = decompressBundleSound(i, input, size);
-		writeToRMAPFile(compFinal, output, bundleTable[i].filename, offsetData, bits, freq, channels);
-		writeRegions(compFinal + offsetData, bits, freq, channels, outpath.getPath().c_str(), bundleTable[i].filename, output);
+		writeToRMAPFile(compFinal, output, _bundleTable[i].filename, offsetData, bits, freq, channels);
+		writeRegions(compFinal + offsetData, bits, freq, channels, outpath.getPath().c_str(), _bundleTable[i].filename, output);
 		free(compFinal);
 	}
 
-	int32 curPos = ftell(output);
-	for (int i = 0; i < cbundleCurIndex; i++) {
-		fwrite(cbundleTable[i].filename, 24, 1, output);
-		writeUint32BE(output, cbundleTable[i].offset);
-		writeUint32BE(output, cbundleTable[i].size);
+	int32 curPos = output.pos();
+	for (int i = 0; i < _cbundleCurIndex; i++) {
+		output.write(_cbundleTable[i].filename, 24, 1);
+		output.writeUint32BE(_cbundleTable[i].offset);
+		output.writeUint32BE(_cbundleTable[i].size);
 	}
 
-	fseek(output, 4, SEEK_SET);
-	writeUint32BE(output, curPos);
-	writeUint32BE(output, cbundleCurIndex);
+	output.seek(4, SEEK_SET);
+	output.writeUint32BE(curPos);
+	output.writeUint32BE(_cbundleCurIndex);
 
-	free(bundleTable);
+	free(_bundleTable);
 
-	fclose(input);
-
-	printf("compression done.\n");
-
-	return 0;
+	print("compression done.\n");
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(compress_scumm_bun)(argc, argv);
+	CompressScummBun scummbun(argv[0]);
+	return scummbun.run(argc, argv);
 }
 #endif
 

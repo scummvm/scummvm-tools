@@ -40,6 +40,11 @@
 #include "../compress_kyra.h"
 #include "../compress_queen.h"
 #include "../compress_saga.h"
+#include "../compress_scumm_bun.h"
+#include "../compress_scumm_san.h"
+#include "../compress_scumm_sou.h"
+#include "../compress_sword1.h"
+#include "../compress_touche.h"
 #include "../compress_tinsel.h"
 #include "../compress_touche.h"
 #include "../compress_tucker.h"
@@ -68,6 +73,10 @@ void Tools::init() {
 	addTool(new ToolGUI(new CompressKyra()));
 	addTool(new ToolGUI(new CompressQueen()));
 	addTool(new ToolGUI(new CompressSaga()));
+	addTool(new ToolGUI(new CompressScummBun()));
+	addTool(new ToolGUI(new CompressScummSan()));
+	addTool(new ToolGUI(new CompressScummSou()));
+	addTool(new ToolGUI(new CompressSword1()));
 	addTool(new ToolGUI(new CompressTinsel()));
 	addTool(new ToolGUI(new CompressTouche(), wxT("/")));
 	addTool(new ToolGUI(new CompressTucker(), wxT("/")));

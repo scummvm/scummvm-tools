@@ -20,46 +20,10 @@
  *
  */
 
-#include "compress.h"
+#include "compress_scumm_san.h"
 #include "zlib.h"
 
-struct FrameInfo {
-	int32 frameSize;
-	int32 offsetOutput;
-	int32 fobjDecompressedSize;
-	int32 fobjCompressedSize;
-	int32 lessIACTSize;
-	int32 lessPSADSize;
-};
-
-struct AudioTrackInfo {
-	int animFrame;
-	int trackId;
-	int bits;
-	bool stereo;
-	int freq;
-	bool used;
-	FILE *file;
-	int waveDataSize;
-	int *volumes;
-	int *pans;
-	int *sizes;
-	int nbframes;
-	int countFrames;
-	int lastFrame;
-	int32 sdatSize;
-};
-
-#define MAX_TRACKS 150
-
-static byte _IACToutput[0x1000];
-static int _IACTpos = 0;
-static FILE *_waveTmpFile;
-static int32 _waveDataSize;
-static AudioTrackInfo _audioTracks[MAX_TRACKS];
-static bool _oggMode = false; // mp3 default
-
-void encodeSanWaveWithOgg(char *filename) {
+void CompressScummSan::encodeSanWaveWithOgg(char *filename) {
 	char fbuf[2048];
 	char fbuf2[2048];
 	sprintf(fbuf, "%s.wav", filename);
@@ -67,7 +31,7 @@ void encodeSanWaveWithOgg(char *filename) {
 	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_VORBIS);
 }
 
-void encodeSanWaveWithLame(char *filename) {
+void CompressScummSan::encodeSanWaveWithLame(char *filename) {
 	char fbuf[2048];
 	char fbuf2[2048];
 
@@ -76,7 +40,7 @@ void encodeSanWaveWithLame(char *filename) {
 	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_MP3);
 }
 
-void writeWaveHeader(int s_size) {
+void CompressScummSan::writeWaveHeader(int s_size) {
 	int rate = 22050;
 	int bits = 16;
 	int chan = 2;
@@ -121,24 +85,18 @@ void writeWaveHeader(int s_size) {
 	wav[42]	= (s_size >> 16) & 0xff;
 	wav[43]	= (s_size >> 24) & 0xff;
 
-	fseek(_waveTmpFile, 0, SEEK_SET);
-	if (fwrite(wav, 1, 44, _waveTmpFile) != 44) {
-		error("error writing temp wave file");
-	}
-	fclose(_waveTmpFile);
-	_waveTmpFile = NULL;
+	_waveTmpFile.seek(0, SEEK_SET);
+	_waveTmpFile.write(wav, 1, 44);
 }
-void writeToTempWaveFile(char *fileName, byte *output_data, unsigned int size) {
+void CompressScummSan::writeToTempWaveFile(char *fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile) {
-		_waveTmpFile = fopen(fileName, "wb");
+		_waveTmpFile.open(fileName, "wb");
 		if (!_waveTmpFile) {
 			error("error writing temp wave file");
 		}
 		byte wav[44];
 		memset(wav, 0, 44);
-		if (fwrite(output_data, 1, 44, _waveTmpFile) != 44) {
-			error("error writing temp wave file");
-		}
+		_waveTmpFile.write(output_data, 1, 44);
 		_waveDataSize = 0;
 	}
 	for (unsigned int j = 0; j < size - 1; j += 2) {
@@ -147,13 +105,11 @@ void writeToTempWaveFile(char *fileName, byte *output_data, unsigned int size) {
 		output_data[j + 1] = tmp;
 	}
 
-	if (fwrite(output_data, 1, size, _waveTmpFile) != size) {
-		error("error writing temp wave file");
-	}
+	_waveTmpFile.write(output_data, 1, size);
 	_waveDataSize += size;
 }
 
-void decompressComiIACT(char *fileName, byte *output_data, byte *d_src, int bsize) {
+void CompressScummSan::decompressComiIACT(char *fileName, byte *output_data, byte *d_src, int bsize) {
 	byte value;
 
 	while (bsize > 0) {
@@ -211,13 +167,13 @@ void decompressComiIACT(char *fileName, byte *output_data, byte *d_src, int bsiz
 	}
 }
 
-void handleComiIACT(FILE *input, int size, const char *outputDir, const char *inputFilename) {
+void CompressScummSan::handleComiIACT(File &input, int size, const char *outputDir, const char *inputFilename) {
 	char tmpPath[1024];
-	fseek(input, 10, SEEK_CUR);
+	input.seek(10, SEEK_CUR);
 	int bsize = size - 18;
 	byte output_data[0x1000];
 	byte *src = (byte *)malloc(bsize);
-	(void)fread(src, bsize, 1, input);
+	input.read(src, bsize, 1);
 
 	sprintf(tmpPath, "%s/%s.wav", outputDir, inputFilename);
 	decompressComiIACT(tmpPath, output_data, src, bsize);
@@ -225,49 +181,46 @@ void handleComiIACT(FILE *input, int size, const char *outputDir, const char *in
 	free(src);
 }
 
-AudioTrackInfo *allocAudioTrack(int trackId, int frame) {
-	for (int l = 0; l < MAX_TRACKS; l++) {
+CompressScummSan::AudioTrackInfo *CompressScummSan::allocAudioTrack(int trackId, int frame) {
+	for (int l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if ((_audioTracks[l].animFrame != frame) && (_audioTracks[l].trackId != trackId) && (!_audioTracks[l].used))
 			return &_audioTracks[l];
 	}
 	return NULL;
 }
 
-AudioTrackInfo *findAudioTrack(int trackId) {
-	for (int l = 0; l < MAX_TRACKS; l++) {
+CompressScummSan::AudioTrackInfo *CompressScummSan::findAudioTrack(int trackId) {
+	for (int l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].trackId == trackId && _audioTracks[l].used && _audioTracks[l].file)
 			return &_audioTracks[l];
 	}
 	return NULL;
 }
 
-void flushTracks(int frame) {
-	for (int l = 0; l < MAX_TRACKS; l++) {
+void CompressScummSan::flushTracks(int frame) {
+	for (int l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used && _audioTracks[l].file && (frame - _audioTracks[l].lastFrame) > 1) {
-			fclose(_audioTracks[l].file);
-			_audioTracks[l].file = NULL;
+			_audioTracks[l].file.close();
 		}
 	}
 }
 
-void prepareForMixing(const char *outputDir, const char *inputFilename) {
+void CompressScummSan::prepareForMixing(const char *outputDir, const char *inputFilename) {
 	char filename[200];
 
-	printf("Decompresing tracks files...\n");
-	for (int l = 0; l < MAX_TRACKS; l++) {
+	print("Decompresing tracks files...\n");
+	for (int l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
-			if (_audioTracks[l].file)
-				fclose(_audioTracks[l].file);
+			_audioTracks[l].file.close();
+			
 			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, _audioTracks[l].animFrame, _audioTracks[l].trackId);
-			_audioTracks[l].file = fopen(filename, "rb");
-			assert(_audioTracks[l].file);
-			fseek(_audioTracks[l].file, 0, SEEK_END);
-			int fileSize = ftell(_audioTracks[l].file);
-			fseek(_audioTracks[l].file, 0, SEEK_SET);
+			_audioTracks[l].file.open(filename, "rb");
+			_audioTracks[l].file.seek(0, SEEK_END);
+			int fileSize = _audioTracks[l].file.pos();
+			_audioTracks[l].file.seek(0, SEEK_SET);
 			byte *audioBuf = (byte *)malloc(fileSize);
-			(void)fread(audioBuf, fileSize, 1, _audioTracks[l].file);
-			fclose(_audioTracks[l].file);
-			_audioTracks[l].file = NULL;
+			_audioTracks[l].file.read(audioBuf, fileSize, 1);
+			_audioTracks[l].file.close();
 
 			int outputSize = fileSize;
 			if (_audioTracks[l].bits == 8)
@@ -345,11 +298,8 @@ void prepareForMixing(const char *outputDir, const char *inputFilename) {
 			}
 
 			free(audioBuf);
-			_audioTracks[l].file = fopen(filename, "wb");
-			assert(_audioTracks[l].file);
-			fwrite(outputBuf, outputSize, 1, _audioTracks[l].file);
-			fclose(_audioTracks[l].file);
-			_audioTracks[l].file = NULL;
+			_audioTracks[l].file.open(filename, "wb");
+			_audioTracks[l].file.write(outputBuf, outputSize, 1);
 			free(outputBuf);
 		}
 	}
@@ -369,14 +319,13 @@ static inline void clampedAdd(int16& a, int b) {
 
 	a = val;
 }
-void mixing(const char *outputDir, const char *inputFilename, int frames, int fps) {
+void CompressScummSan::mixing(const char *outputDir, const char *inputFilename, int frames, int fps) {
 	char wavPath[200];
 	char filename[200];
 	int l, r, z;
 
 	sprintf(wavPath, "%s/%s.wav", outputDir, inputFilename);
-	FILE *wavFile = fopen(wavPath, "wb+");
-	assert(wavFile);
+	File wavFile(wavPath, "wb+");
 
 	int frameAudioSize;
 	if (fps == 12) {
@@ -387,28 +336,28 @@ void mixing(const char *outputDir, const char *inputFilename, int frames, int fp
 		error("Unsupported fps value %d", fps);
 	}
 
-	printf("Creating silent wav file...\n");
+	print("Creating silent wav file...\n");
 	for (l = 0; l < 44 + (frameAudioSize * frames); l++) {
 		fputc(0, wavFile);
 	}
 
-	printf("Mixing tracks into wav file...\n");
-	for (l = 0; l < MAX_TRACKS; l++) {
+	print("Mixing tracks into wav file...\n");
+	for (l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
 			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, _audioTracks[l].animFrame, _audioTracks[l].trackId);
-			_audioTracks[l].file = fopen(filename, "rb");
+			_audioTracks[l].file.open(filename, "rb");
 			assert(_audioTracks[l].file);
-			fseek(_audioTracks[l].file, 0, SEEK_END);
-			int fileSize = ftell(_audioTracks[l].file);
-			fseek(_audioTracks[l].file, 0, SEEK_SET);
+			_audioTracks[l].file.seek(0, SEEK_END);
+			int fileSize = _audioTracks[l].file.pos();
+			_audioTracks[l].file.seek(0, SEEK_SET);
 			byte *tmpBuf = (byte *)malloc(fileSize);
-			(void)fread(tmpBuf, fileSize, 1, _audioTracks[l].file);
-			fclose(_audioTracks[l].file);
+			_audioTracks[l].file.read(tmpBuf, fileSize, 1);
+			_audioTracks[l].file.close();
 			unlink(filename);
 
 			byte *wavBuf = (byte *)malloc(fileSize);
-			fseek(wavFile, 44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
-			(void)fread(wavBuf, fileSize, 1, wavFile);
+			wavFile.seek(44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
+			wavFile.read(wavBuf, fileSize, 1);
 
 			int offset = 0;
 			for (z = 0; z < _audioTracks[l].countFrames; z++) {
@@ -435,8 +384,8 @@ void mixing(const char *outputDir, const char *inputFilename, int frames, int fp
 				}
 				offset += length;
 			}
-			fseek(wavFile, 44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
-			fwrite(wavBuf, fileSize, 1, wavFile);
+			wavFile.seek(44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
+			wavFile.write(wavBuf, fileSize, 1);
 
 			free(wavBuf);
 			free(tmpBuf);
@@ -447,75 +396,75 @@ void mixing(const char *outputDir, const char *inputFilename, int frames, int fp
 	_waveDataSize = frames * frameAudioSize;
 }
 
-void handleMapChunk(AudioTrackInfo *audioTrack, FILE *input) {
+void CompressScummSan::handleMapChunk(AudioTrackInfo *audioTrack, File &input) {
 	uint32 tag;
 	int32 size;
-	tag = readUint32BE(input);
-	size = readUint32BE(input);
+	tag = input.readUint32BE();
+	size = input.readUint32BE();
 	assert(tag == 'iMUS');
-	tag = readUint32BE(input);
-	size = readUint32BE(input);
+	tag = input.readUint32BE();
+	size = input.readUint32BE();
 	assert(tag == 'MAP ');
-	tag = readUint32BE(input);
-	size = readUint32BE(input);
+	tag = input.readUint32BE();
+	size = input.readUint32BE();
 	assert(tag == 'FRMT');
-	fseek(input, 8, SEEK_CUR);
-	audioTrack->bits = readUint32BE(input);
-	audioTrack->freq = readUint32BE(input);
-	int chan = readUint32BE(input);
+	input.seek(8, SEEK_CUR);
+	audioTrack->bits = input.readUint32BE();
+	audioTrack->freq = input.readUint32BE();
+	int chan = input.readUint32BE();
 	if (chan == 2)
 		audioTrack->stereo = true;
-	tag = readUint32BE(input);
-	size = readUint32BE(input);
+	tag = input.readUint32BE();
+	size = input.readUint32BE();
 	if (tag == 'TEXT') {
-		fseek(input, size, SEEK_CUR);
-		tag = readUint32BE(input);
-		size = readUint32BE(input);
+		input.seek(size, SEEK_CUR);
+		tag = input.readUint32BE();
+		size = input.readUint32BE();
 		if (tag == 'TEXT') {
-			fseek(input, size, SEEK_CUR);
-			tag = readUint32BE(input);
-			size = readUint32BE(input);
+			input.seek(size, SEEK_CUR);
+			tag = input.readUint32BE();
+			size = input.readUint32BE();
 		}
 	}
 	assert(tag == 'REGN');
-	fseek(input, 8, SEEK_CUR);
-	tag = readUint32BE(input);
-	size = readUint32BE(input);
+	input.seek(8, SEEK_CUR);
+	tag = input.readUint32BE();
+	size = input.readUint32BE();
 	if (tag == 'TEXT') {
-		fseek(input, size, SEEK_CUR);
-		tag = readUint32BE(input);
-		size = readUint32BE(input);
+		input.seek(size, SEEK_CUR);
+		tag = input.readUint32BE();
+		size = input.readUint32BE();
 		if (tag == 'REGN') {
-			fseek(input, 8, SEEK_CUR);
-			tag = readUint32BE(input);
-			size = readUint32BE(input);
+			input.seek(8, SEEK_CUR);
+			tag = input.readUint32BE();
+			size = input.readUint32BE();
 		}
 	}
 	if (tag == 'STOP') {
-		fseek(input, 4, SEEK_CUR);
-		tag = readUint32BE(input);
-		size = readUint32BE(input);
+		input.seek(4, SEEK_CUR);
+		tag = input.readUint32BE();
+		size = input.readUint32BE();
 	}
 	assert(tag == 'DATA');
 }
 
-int32 handleSaudChunk(AudioTrackInfo *audioTrack, FILE *input) {
+int32 CompressScummSan::handleSaudChunk(AudioTrackInfo *audioTrack, File &input) {
 	uint32 tag;
 	int32 size;
-	tag = readUint32BE(input);
-	size = readUint32BE(input);
+	tag = input.readUint32BE();
+	size = input.readUint32BE();
 	assert(tag == 'SAUD');
-	tag = readUint32BE(input);
-	size = readUint32BE(input);
+	tag = input.readUint32BE();
+	size = input.readUint32BE();
 	assert(tag == 'STRK');
-	fseek(input, size, SEEK_CUR);
-	tag = readUint32BE(input);
-	size = readUint32BE(input);
+	input.seek(size, SEEK_CUR);
+	tag = input.readUint32BE();
+	size = input.readUint32BE();
 	assert(tag == 'SDAT');
 	return size;
 }
 
-void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *input, const char *outputDir,
+void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int nbframes, File &input, const char *outputDir,
 					  const char *inputFilename, int &size, int volume, int pan, bool iact) {
 	char tmpPath[1024];
 	AudioTrackInfo *audioTrack = NULL;
@@ -531,21 +480,21 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 		audioTrack->sizes = (int *)malloc(nbframes * sizeof(int));
 		memset(audioTrack->sizes, 0, nbframes * sizeof(int));
 		if (iact) {
-			int pos = ftell(input);
+			int pos = input.pos();
 			handleMapChunk(audioTrack, input);
-			size -= (ftell(input) - pos) + 18;
+			size -= (input.pos() - pos) + 18;
 		} else {
 			audioTrack->bits = 8;
 			audioTrack->stereo = false;
 			audioTrack->freq = 22050;
-			int pos = ftell(input);
+			int pos = input.pos();
 			audioTrack->sdatSize = handleSaudChunk(audioTrack, input);
 			audioTrack->sdatSize *= 4;
-			size -= (ftell(input) - pos) + 10;
+			size -= (input.pos() - pos) + 10;
 			audioTrack->lastFrame = frame;
 		}
 		sprintf(tmpPath, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, frame, trackId);
-		audioTrack->file = fopen(tmpPath, "wb");
+		audioTrack->file.open(tmpPath, "wb");
 		if (!audioTrack->file) {
 			error("error writing temp file");
 		}
@@ -562,8 +511,8 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 		}
 	}
 	byte *buffer = (byte *)malloc(size);
-	(void)fread(buffer, size, 1, input);
-	fwrite(buffer, size, 1, audioTrack->file);
+	input.read(buffer, size, 1);
+	audioTrack->file.write(buffer, size, 1);
 	free(buffer);
 	audioTrack->volumes[index] = volume;
 	audioTrack->pans[index] = pan;
@@ -578,13 +527,11 @@ void handleAudioTrack(int index, int trackId, int frame, int nbframes, FILE *inp
 		audioTrack->sizes[index] *= 2;
 	audioTrack->countFrames++;
 	if ((index + 1) == nbframes) {
-		if (audioTrack->file)
-			fclose(audioTrack->file);
-		audioTrack->file = NULL;
+		audioTrack->file.close();
 	}
 }
 
-void handleDigIACT(FILE *input, int size, const char *outputDir, const char *inputFilename,int flags, int track_flags, int frame) {
+void CompressScummSan::handleDigIACT(File &input, int size, const char *outputDir, const char *inputFilename,int flags, int track_flags, int frame) {
 	int track = readUint16LE(input);
 	int index = readUint16LE(input);
 	int nbframes = readUint16LE(input);
@@ -615,7 +562,7 @@ void handleDigIACT(FILE *input, int size, const char *outputDir, const char *inp
 	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, size, volume, pan, true);
 }
 
-void handlePSAD(FILE *input, int size, const char *outputDir, const char *inputFilename, int frame) {
+void CompressScummSan::handlePSAD(File &input, int size, const char *outputDir, const char *inputFilename, int frame) {
 	int trackId = readUint16LE(input);
 	int index = readUint16LE(input);
 	int nbframes = readUint16LE(input);
@@ -626,44 +573,22 @@ void handlePSAD(FILE *input, int size, const char *outputDir, const char *inputF
 	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, size, volume, pan, false);
 }
 
-int export_main(compress_scumm_san)(int argc, char *argv[]) {
-	// TODO
-	// Feature set seems more limited than what kCompressionAudioHelp contains
-	const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" kCompressionAudioHelp;
+CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(name) {
+	_IACTpos = 0;
 
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
+	// TODO: Feature set seems more limited than what kCompressionAudioHelp contains
+	_helptext = "\nUsage: " + _name + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" kCompressionAudioHelp;
+}
 
-	parseHelpArguments(argv, argc, helptext);
+void CompressScummSan::execute() {
+	if (_format == AUDIO_FLAC)
+		error("Only ogg vorbis and MP3 is supported for this tool.");
 
-	// compression mode
-	AudioFormat compMode = process_audio_params(argc, argv, &first_arg);
-
-	// TODO
-	// Support flac too?
-	if (compMode == AUDIO_VORBIS)
-		_oggMode = true;
-	else if (compMode != AUDIO_MP3)
-		notice("Only ogg vorbis and MP3 is supported for this tool.");
-	if (compMode == AUDIO_NONE) {
-		// Unknown mode (failed to parse arguments), display help and exit
-		displayHelp(helptext, argv[0]);
-	}
-
-	uint32 tag;
-
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else 
-		// Just leave it empty, we just change extension of input file
-		;
-
-	inpath.setFullPath(argv[first_arg]);
+	// Check input
+	if (_inputPaths.size() == 1)
+		error("One input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
 	if (outpath.empty()) {
 		// Change extension for output
@@ -671,41 +596,36 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 		outpath.setExtension(".san");
 	}
 
-	FILE *input = fopen(inpath.getFullPath().c_str(), "rb");
-	if (!input) {
-		error("Cannot open file: %s", inpath.getFullPath().c_str());
-	}
-
-	FILE *output = fopen(outpath.getFullPath().c_str(), "wb");
-	if (!output) {
-		error("Cannot open file: %s", outpath.getFullPath().c_str());
-	}
+	File input(inpath, "rb");
+	File output(outpath, "wb");
 
 	Filename flupath(inpath);
 	flupath.setExtension(".flu");
 
-	FILE *flu_in = NULL;
-	FILE *flu_out = NULL;
-	flu_in = fopen(flupath.getFullPath().c_str(), "rb");
+	File flu_in;
+	
+	try {
+		flu_in.open(flupath, "rb");
+	} catch(...) {
+		// pass
+	}
 
-	if (flu_in) {
+	File flu_out;
+	if (flu_in.isOpen()) {
 		flupath = outpath;
 		flupath.setExtension(".flu");
-		flu_out = fopen(flupath.getFullPath().c_str(), "wb");
-		if (!flu_out) {
-			error("Cannot open ancillary file: %s", flupath.getFullPath().c_str());
-		}
+		flu_out.open(flupath, "wb");
 	}
 
 	int32 l, size;
 
-	writeUint32BE(output, readUint32BE(input)); // ANIM
-	int32 animChunkSize = readUint32BE(input); // ANIM size
-	writeUint32BE(output, animChunkSize);
+	output.writeUint32BE(input.readUint32BE()); // ANIM
+	int32 animChunkSize = input.readUint32BE(); // ANIM size
+	output.writeUint32BE(animChunkSize);
 
-	writeUint32BE(output, readUint32BE(input)); // AHDR
-	size = readUint32BE(input);
-	writeUint32BE(output, size); // AHDR size
+	output.writeUint32BE(input.readUint32BE()); // AHDR
+	size = input.readUint32BE();
+	output.writeUint32BE(size); // AHDR size
 	writeUint16BE(output, readUint16BE(input)); // version
 	int32 nbframes = readUint16LE(input); // number frames
 	writeUint16LE(output, nbframes);
@@ -716,8 +636,8 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 
 	FrameInfo *frameInfo = (FrameInfo *)malloc(sizeof(FrameInfo) * nbframes);
 
-	memset(_audioTracks, 0, sizeof(AudioTrackInfo) * MAX_TRACKS);
-	for (l = 0; l < MAX_TRACKS; l++) {
+	memset(_audioTracks, 0, sizeof(AudioTrackInfo) * COMPRESS_SCUMM_SAN_MAX_TRACKS);
+	for (l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		_audioTracks[l].animFrame = -1;
 	}
 
@@ -725,28 +645,28 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 	int fps = 0;
 
 	for (l = 0; l < nbframes; l++) {
-		printf("frame: %d\n", l);
+		print("frame: %d\n", l);
 		bool first_fobj = true;
-		tag = readUint32BE(input); // chunk tag
+		uint32 tag = input.readUint32BE(); // chunk tag
 		assert(tag == 'FRME');
-		writeUint32BE(output, tag); // FRME
-		int32 frameSize = readUint32BE(input); // FRME size
+		output.writeUint32BE(tag); // FRME
+		int32 frameSize = input.readUint32BE(); // FRME size
 		frameInfo[l].frameSize = frameSize;
-		frameInfo[l].offsetOutput = ftell(output);
+		frameInfo[l].offsetOutput = output.pos();
 		frameInfo[l].fobjDecompressedSize = 0;
 		frameInfo[l].fobjCompressedSize = 0;
 		frameInfo[l].lessIACTSize = 0;
 		frameInfo[l].lessPSADSize = 0;
-		writeUint32BE(output, frameSize);
+		output.writeUint32BE(frameSize);
 		for (;;) {
-			tag = readUint32BE(input); // chunk tag
+			tag = input.readUint32BE(); // chunk tag
 			if (feof(input))
 				break;
 			if (tag == 'FRME') {
-				fseek(input, -4, SEEK_CUR);
+				input.seek(-4, SEEK_CUR);
 				break;
 			} else if ((tag == 'FOBJ') && (first_fobj)) {
-				size = readUint32BE(input); // FOBJ size
+				size = input.readUint32BE(); // FOBJ size
 				if ((size & 1) != 0)
 					size++;
 				first_fobj = false;
@@ -764,9 +684,9 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 					outputSize++;
 				frameInfo[l].fobjDecompressedSize = size;
 				frameInfo[l].fobjCompressedSize = outputSize;
-				writeUint32BE(output, 'ZFOB');
-				writeUint32BE(output, outputSize + 4);
-				writeUint32BE(output, size);
+				output.writeUint32BE('ZFOB');
+				output.writeUint32BE(outputSize + 4);
+				output.writeUint32BE(size);
 				for (unsigned int k = 0; k < outputSize; k++) {
 					writeByte(output, *(zlibOutputBuffer + k)); // compressed FOBJ datas
 				}
@@ -774,7 +694,7 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 				free(zlibOutputBuffer);
 				continue;
 			} else if ((tag == 'IACT') && (!flu_in)) {
-				size = readUint32BE(input); // chunk size
+				size = input.readUint32BE(); // chunk size
 				int code = readUint16LE(input);
 				int flags = readUint16LE(input);
 				int unk = readUint16LE(input);
@@ -786,21 +706,21 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 					tracksCompress = true;
 					fps = 12;
 				} else {
-					fseek(input, -12, SEEK_CUR);
+					input.seek(-12, SEEK_CUR);
 					goto skip;
 				}
 
 				if ((size & 1) != 0) {
-					fseek(input, 1, SEEK_CUR);
+					input.seek(1, SEEK_CUR);
 					size++;
 				}
 				frameInfo[l].lessIACTSize += size + 8;
 				continue;
 			} else if ((tag == 'PSAD') && (!flu_in)) {
-				size = readUint32BE(input); // chunk size
+				size = input.readUint32BE(); // chunk size
 				handlePSAD(input, size, outpath.getPath().c_str(), inpath.getFullName().c_str(), l);
 				if ((size & 1) != 0) {
-					fseek(input, 1, SEEK_CUR);
+					input.seek(1, SEEK_CUR);
 					size++;
 				}
 				frameInfo[l].lessPSADSize += size + 8;
@@ -808,9 +728,9 @@ int export_main(compress_scumm_san)(int argc, char *argv[]) {
 				fps = 10;
 			} else {
 skip:
-				size = readUint32BE(input); // chunk size
-				writeUint32BE(output, tag);
-				writeUint32BE(output, size);
+				size = input.readUint32BE(); // chunk size
+				output.writeUint32BE(tag);
+				output.writeUint32BE(size);
 				if ((size & 1) != 0)
 					size++;
 				for (int k = 0; k < size; k++) {
@@ -830,7 +750,7 @@ skip:
 		char tmpPath[1024];
 		writeWaveHeader(_waveDataSize);
 		sprintf(tmpPath, "%s/%s", outpath.getPath().c_str(), inpath.getFullName().c_str());
-		if (_oggMode)
+		if (_format == AUDIO_VORBIS)
 			encodeSanWaveWithOgg(tmpPath);
 		else
 			encodeSanWaveWithLame(tmpPath);
@@ -838,9 +758,9 @@ skip:
 		unlink(tmpPath);
 	}
 
-	fclose(input);
+	input.close();
 
-	printf("Fixing frames header...\n");
+	print("Fixing frames header...\n");
 	int32 sumDiff = 0;
 	for (l = 0; l < nbframes; l++) {
 		int32 diff = 0;
@@ -853,47 +773,40 @@ skip:
 		if (frameInfo[l].lessPSADSize != 0) {
 			diff += frameInfo[l].lessPSADSize;
 		}
-		fseek(output, frameInfo[l].offsetOutput, SEEK_SET);
+		output.seek(frameInfo[l].offsetOutput, SEEK_SET);
 		sumDiff += diff;
 		if (diff != 0)
-			writeUint32BE(output, frameInfo[l].frameSize - diff);
+			output.writeUint32BE(frameInfo[l].frameSize - diff);
 	}
-	printf("done.\n");
+	print("done.\n");
 
-	printf("Fixing anim header...\n");
-	fseek(output, 4, SEEK_SET);
-	writeUint32BE(output, animChunkSize - sumDiff);
-	printf("done.\n");
+	print("Fixing anim header...\n");
+	output.seek(4, SEEK_SET);
+	output.writeUint32BE(animChunkSize - sumDiff);
+	print("done.\n");
 
-	if (flu_in) {
-		printf("Fixing flu offsets...\n");
-		fseek(flu_in, 0, SEEK_END);
-		int fsize = ftell(flu_in);
-		fseek(flu_in, 0, SEEK_SET);
+	if (flu_in.isOpen()) {
+		print("Fixing flu offsets...\n");
+		int fsize = flu_in.size();
 		for (int k = 0; k < fsize; k++) {
-			writeByte(flu_out, readByte(flu_in));
+			flu_out.writeByte(readByte(flu_in));
 		}
-		fseek(flu_out, 0x324, SEEK_SET);
+		flu_out.seek(0x324, SEEK_SET);
 		for (l = 0; l < nbframes; l++) {
-			writeUint32LE(flu_out, frameInfo[l].offsetOutput - 4);
+			flu_out.writeUint32LE(frameInfo[l].offsetOutput - 4);
 		}
-		fclose(flu_in);
-		fclose(flu_out);
-		printf("done.\n");
+		print("done.\n");
 	}
 
 	free(frameInfo);
 
-	fclose(output);
-
-	printf("compression done.\n");
-
-	return 0;
+	print("compression done.\n");
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-        return export_main(compress_scumm_san)(argc, argv);
+	CompressScummSan scummsan(argv[0]);
+	return scummsan.run(argc, argv);
 }
 #endif
 

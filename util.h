@@ -325,6 +325,7 @@ enum FileMode {
 	FILEMODE_READ = 1,
 	FILEMODE_WRITE = 2,
 	FILEMODE_BINARY = 4,
+	FILEMODE_APPEND = 8,
 };
 
 /**
@@ -411,6 +412,10 @@ public:
 	 * @param elementCount the number of elements to read
 	 */
 	size_t read(void *data, size_t elementSize, size_t elementCount);
+	// Just an alias, for now... 
+	// (if we change the other version to throw it will be 
+	// easier if the concerned places already use the no-throw version)
+	size_t readN(void *data, size_t elementSize, size_t elementCount) {return read(data, elementSize, elementCount);}
 
 	
 	/**
@@ -461,7 +466,7 @@ public:
 	void rewind();
 
 	/**
-	 * Returns the position in the stream.
+	 * Returns current position of the file cursor
 	 */
 	int pos();
 
@@ -475,6 +480,10 @@ public:
 	 * @todo get rid of this ASAP
 	 */
 	operator FILE *() { return _file; }
+	/**
+	 * Explicit conversion to a FILE *, all code should use this in the future
+	 */
+	FILE *handle() {return _file;}
 
 	// FIXME: Remove this method ASAP
 	FILE *getFileHandle() { return _file; }

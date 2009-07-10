@@ -20,14 +20,12 @@
  *
  */
 
-#include "compress.h"
+#include "compress_sword1.h"
 
 #define READ_BE_UINT32(x) \
 	((((uint8*)(x))[0] << 24) | (((uint8*)(x))[1] << 16) | (((uint8*)(x))[2] << 8) | (((uint8*)(x))[3] << 0))
 
 #define TOTAL_TUNES 269
-
-const char *tempOutName;
 
 typedef struct {
 	char fileName[8];
@@ -307,13 +305,13 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "RM3D", false }
 };
 
-int16 *uncompressSpeech(FILE *clu, uint32 idx, uint32 cSize, uint32 *returnSize) {
+int16 *CompressSword1::uncompressSpeech(File &clu, uint32 idx, uint32 cSize, uint32 *returnSize) {
 	uint32 resSize, srcPos;
 	int16 *srcData, *dstData, *dstPos;
 	uint32 headerPos = 0;
 	int16 length, cnt;
 	uint8 *fBuf = (uint8 *)malloc(cSize);
-	fseek(clu, idx, SEEK_SET);
+	clu.seek(idx, SEEK_SET);
 	assert(fread(fBuf, 1, cSize, clu) == cSize);
 	while ((READ_BE_UINT32(fBuf + headerPos) != 'data') && (headerPos < 100))
 		headerPos++;
@@ -349,26 +347,23 @@ int16 *uncompressSpeech(FILE *clu, uint32 idx, uint32 cSize, uint32 *returnSize)
 	}
 }
 
-uint8 *convertData(uint8 *rawData, uint32 rawSize, AudioFormat compMode, uint32 *resSize) {
-	FILE *temp;
+uint8 *CompressSword1::convertData(uint8 *rawData, uint32 rawSize, uint32 *resSize) {
 	uint8 *resBuf;
 
 	uint32 size;
-	temp = fopen(TEMP_RAW, "wb");
-	assert(fwrite(rawData, 1, rawSize, temp) == rawSize);
-	fclose(temp);
-	encodeAudio(TEMP_RAW, true, 11025, tempOutName, compMode);
-	temp = fopen(tempOutName, "rb");
-	fseek(temp, 0, SEEK_END);
-	*resSize = size = ftell(temp);
+	File temp(TEMP_RAW, "wb");
+	assert(temp.write(rawData, 1, rawSize) == rawSize);
+	encodeAudio(TEMP_RAW, true, 11025, _audioOuputFilename.c_str(), _format);
+	temp.open(_audioOuputFilename, "rb");
+	temp.seek(0, SEEK_END);
+	*resSize = size = temp.pos();
 	resBuf = (uint8*)malloc(size);
-	fseek(temp, 0, SEEK_SET);
-	fread(resBuf, 1, size, temp);
-	fclose(temp);
+	temp.seek(0, SEEK_SET);
+	temp.read(resBuf, 1, size);
 	return resBuf;
 }
 
-void convertClu(FILE *clu, FILE *cl3, AudioFormat compMode) {
+void CompressSword1::convertClu(File &clu, File &cl3) {
 	uint32 *cowHeader;
 	uint32 numRooms;
 	uint32 numSamples;
@@ -377,7 +372,7 @@ void convertClu(FILE *clu, FILE *cl3, AudioFormat compMode) {
 	uint32 smpSize, mp3Size;
 	uint8 *smpData, *mp3Data;
 
-	uint32 headerSize = readUint32LE(clu);
+	uint32 headerSize = clu.readUint32LE();
 
 	assert(!(headerSize & 3));
 	cowHeader = (uint32*)malloc(headerSize);
@@ -390,15 +385,15 @@ void convertClu(FILE *clu, FILE *cl3, AudioFormat compMode) {
 
 	/* The samples are divided into rooms and samples. We don't care about the room indexes at all. */
 	/* We simply copy them and go to the sample-index data. */
-	writeUint32LE(cl3, headerSize);
+	cl3.writeUint32LE(headerSize);
 	for (cnt = 0; cnt < numRooms; cnt++)
-		writeUint32LE(cl3, cowHeader[cnt]);
-	writeUint32LE(cl3, cowHeader[numRooms]);
+		cl3.writeUint32LE(cowHeader[cnt]);
+	cl3.writeUint32LE(cowHeader[numRooms]);
 
 	numSamples = (((headerSize / 4) - numRooms) / 2) - 1;
 	for (cnt = 0; cnt < numSamples * 2; cnt++) {
 		/* This is where we'll put the sample index data later. */
-		writeUint32BE(cl3, 0xdeadbeefL);
+		cl3.writeUint32BE(0xdeadbeefL);
 	}
 	cl3Index = (uint32*)malloc(numSamples * 8);
 	memset(cl3Index, 0, numSamples * 8);
@@ -406,17 +401,17 @@ void convertClu(FILE *clu, FILE *cl3, AudioFormat compMode) {
 	sampleIndex = cowHeader + numRooms + 1;
 	/* This points to the sample index table. 8 bytes each (4 bytes size and then 4 bytes file index) */
 
-	printf("converting %d samples\n", numSamples);
+	print("converting %d samples\n", numSamples);
 
 	for (cnt = 0; cnt < numSamples; cnt++) {
 		if (sampleIndex[cnt << 1] | sampleIndex[(cnt << 1) | 1]) {
-			printf("sample %5d: \n", cnt);
+			print("sample %5d: \n", cnt);
 			smpData = (uint8*)uncompressSpeech(clu, sampleIndex[cnt << 1] + headerSize, sampleIndex[(cnt << 1) | 1], &smpSize);
 			if ((!smpData) || (!smpSize))
 				error("unable to handle speech sample %d!\n", cnt);
 
-			mp3Data = convertData(smpData, smpSize, compMode, &mp3Size);
-			cl3Index[cnt << 1] = ftell(cl3);
+			mp3Data = convertData(smpData, smpSize, &mp3Size);
+			cl3Index[cnt << 1] = cl3.pos();
 			cl3Index[(cnt << 1) | 1] = mp3Size;
 			assert(fwrite(mp3Data, 1, mp3Size, cl3) == mp3Size);
 
@@ -424,18 +419,18 @@ void convertClu(FILE *clu, FILE *cl3, AudioFormat compMode) {
 			free(mp3Data);
 		} else {
 			cl3Index[cnt << 1] = cl3Index[(cnt << 1) | 1] = 0;
-			printf("sample %5d: skipped\n", cnt);
+			print("sample %5d: skipped\n", cnt);
 		}
 	}
-	fseek(cl3, (numRooms + 2) * 4, SEEK_SET);	/* Now write the sample index into the CL3 file */
+	cl3.seek((numRooms + 2) * 4, SEEK_SET);	/* Now write the sample index into the CL3 file */
 	for (cnt = 0; cnt < numSamples * 2; cnt++)
-		writeUint32LE(cl3, cl3Index[cnt]);
+		cl3.writeUint32LE(cl3Index[cnt]);
 	free(cl3Index);
 	free(cowHeader);
 }
 
-void compressSpeech(AudioFormat compMode, const Filename *inpath, const Filename *outpath) {
-	FILE *clu, *cl3 = NULL;
+void CompressSword1::compressSpeech(const Filename *inpath, const Filename *outpath) {
+	File clu, cl3;
 	int i;
 	char cluName[256], outName[256];
 
@@ -443,60 +438,51 @@ void compressSpeech(AudioFormat compMode, const Filename *inpath, const Filename
 
 	for (i = 1; i <= 2; i++) {
 		sprintf(cluName, "%s/SPEECH/SPEECH%d.CLU", inpath->getPath().c_str(), i);
-		clu = fopen(cluName, "rb");
-		if (!clu) {
-			printf("Unable to open \"SPEECH%d.CLU\".\n", i);
-			printf("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".\n", i, i);
-		} else {
-			switch (compMode) {
-			case AUDIO_MP3:
-				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CL3");
-				break;
-			case AUDIO_VORBIS:
-				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CLV");
-				break;
-			case AUDIO_FLAC:
-				sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CLF");
-				break;
-			default:
-				error("Unknown encoding method");
-			}
-
-			cl3 = fopen(outName, "wb");
-			if (!cl3) {
-				printf("Unable to create file \"%s\".\n", outName);
-				printf("Please make sure you've got write permission in this directory.\n");
-			} else {
-				printf("Converting CD %d...\n", i);
-				convertClu(clu, cl3, compMode);
-			}
+		try {
+			clu.open(cluName, "rb");
+		} catch(FileException &) {
+			print("Unable to open \"SPEECH%d.CLU\".\n", i);
+			print("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".\n", i, i);
+			continue;
 		}
-		if (clu)
-			fclose(clu);
-		if (cl3)
-			fclose(cl3);
+
+		switch (_format) {
+		case AUDIO_MP3:
+			sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CL3");
+			break;
+		case AUDIO_VORBIS:
+			sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CLV");
+			break;
+		case AUDIO_FLAC:
+			sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CLF");
+			break;
+		default:
+			error("Unknown encoding method");
+		}
+
+		cl3.open(outName, "wb");
+		if (!cl3) {
+			print("Unable to create file \"%s\".\n", outName);
+			print("Please make sure you've got write permission in this directory.\n");
+		} else {
+			print("Converting CD %d...\n", i);
+			convertClu(clu, cl3);
+		}
 	}
 	unlink(TEMP_RAW);
-	unlink(tempOutName);
+	unlink(_audioOuputFilename.c_str());
 }
 
-void compressMusic(AudioFormat compMode, const Filename *inpath, const Filename *outpath) {
+void CompressSword1::compressMusic(const Filename *inpath, const Filename *outpath) {
 	int i;
-	FILE *inf;
 	char fNameIn[256], fNameOut[256];
 
 	for (i = 0; i < TOTAL_TUNES; i++) {
 		sprintf(fNameIn, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
-		inf = fopen(fNameIn, "rb");
+		try {
+			File inf(fNameIn, "rb");
 
-		if (!inf) {
-			if (!musicNames[i].missing) {
-				printf("unable to open file \"%s\"\n", fNameIn);
-			}
-		} else {
-			fclose(inf);
-
-			switch (compMode) {
+			switch (_format) {
 			case AUDIO_MP3:
 				sprintf(fNameOut, "%s/MUSIC/%s.%s", outpath->getPath().c_str(), musicNames[i].fileName, "MP3");
 				break;
@@ -510,13 +496,15 @@ void compressMusic(AudioFormat compMode, const Filename *inpath, const Filename 
 				error("Unknown encoding method");
 			}
 
-			printf("encoding file (%3d/%d) %s -> %s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, fNameOut);
-			encodeAudio(fNameIn, false, -1, fNameOut, compMode);
+			print("encoding file (%3d/%d) %s -> %s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, fNameOut);
+			encodeAudio(fNameIn, false, -1, fNameOut, _format);
+		} catch(FileException& err) {
+			print(err.what());
 		}
 	}
 }
 
-void checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath) {
+void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath) {
 	int i;
 	FILE *testFile;
 	char fileName[256];
@@ -534,12 +522,12 @@ void checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath) 
 		}
 
 		if (!speechFound) {
-			printf("Unable to find speech files.\n");
-			printf("Please copy the SPEECH.CLU files from Broken Sword CD1 and CD2\n");
-			printf("into the \"SPEECH\" subdirectory and rename them to\n");
-			printf("SPEECH1.CLU and SPEECH2.CLU\n\n");
-			printf("If your OS is case-sensitive, make sure the filenames\n");
-			printf("and directorynames are all upper-case.\n\n");
+			print("Unable to find speech files.\n");
+			print("Please copy the SPEECH.CLU files from Broken Sword CD1 and CD2\n");
+			print("into the \"SPEECH\" subdirectory and rename them to\n");
+			print("SPEECH1.CLU and SPEECH2.CLU\n\n");
+			print("If your OS is case-sensitive, make sure the filenames\n");
+			print("and directorynames are all upper-case.\n\n");
 		}
 	}
 
@@ -555,99 +543,80 @@ void checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath) 
 		}
 
 		if (!musicFound) {
-			printf("Unable to find music files.\n");
-			printf("Please copy the music files from Broken Sword CD1 and CD2\n");
-			printf("into the \"MUSIC\" subdirectory.\n");
-			printf("If your OS is case-sensitive, make sure the filenames\n");
-			printf("and directorynames are all upper-case.\n");
+			print("Unable to find music files.\n");
+			print("Please copy the music files from Broken Sword CD1 and CD2\n");
+			print("into the \"MUSIC\" subdirectory.\n");
+			print("If your OS is case-sensitive, make sure the filenames\n");
+			print("and directorynames are all upper-case.\n");
 		}
 	}
 
 	if ((checkSpeech && (!speechFound)) || (checkMusic && (!musicFound))) {
-		printf("\nUse --help for more information\n");
-		exit(2);
+		throw ToolException("Use --help for more information");
 	}
 }
 
-int export_main(compress_sword1)(int argc, char *argv[]) {
+CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name) {
+	_compSpeech = true;
+	_compMusic = true;
 
-	const char *helptext = "\nUsage: %s [only] [mode] [mode params] [-o outputdir] <inputdir>\n"
+	_helptext = "\nUsage: %s [only] [mode] [mode params] [-o outputdir] <inputdir>\n"
 		"only can be either:\n"
 		" --speech-only  only encode speech clusters\n"
 		" --music-only   only encode music files\n"
 		kCompressionAudioHelp;
+}
 
-	AudioFormat compMode = AUDIO_MP3;
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
-	bool compMusic = true, compSpeech = true;
-
-	// Should we display some help perhaps?
-	parseHelpArguments(argv, argc, helptext);
-
-	// Check extra arguments
-	if (strcmp(argv[first_arg], "--speech-only") == 0) {
-		compMusic = false;
-		++first_arg;
-	} else if (strcmp(argv[first_arg], "--music-only") == 0) {
-		compSpeech = false;
-		++first_arg;
+void CompressSword1::parseExtraArguments() {
+	if(_arguments[_arguments_parsed] == "--speech-only") {
+		_compMusic = false;
+		++_arguments_parsed;
 	}
-
-	// compression mode
-	compMode = process_audio_params(argc, argv, &first_arg);
-
-	if (compMode == AUDIO_NONE) {
-		// Unknown mode (failed to parse arguments), display help and exit
-		displayHelp(helptext, argv[0]);
+	if(_arguments[_arguments_parsed] == "--music-only") {
+		_compSpeech = false;
+		++_arguments_parsed;
 	}
+}
 
-	// Now we try to find the proper output dir
-	// also make sure we skip those arguments
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	
-	switch(compMode) {
+void CompressSword1::execute() {
+	// Check input
+	if (_inputPaths.size() == 1)
+		error("One input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
+
+	switch (_format) {
 	case AUDIO_MP3:
-		tempOutName = TEMP_MP3;
+		_audioOuputFilename = TEMP_MP3;
 		break;
 	case AUDIO_VORBIS:
-		tempOutName = TEMP_OGG;
+		_audioOuputFilename = TEMP_OGG;
 		break;
 	case AUDIO_FLAC:
-		tempOutName = TEMP_FLAC;
+		_audioOuputFilename = TEMP_FLAC;
 		break;
 	default:
-		// Never happends, avoid warnings
+		throw ToolException("Unknown audio format");
 		break;
 	}
-
-	inpath.setFullPath(argv[first_arg]);
 
 	if (outpath.empty())
 		// Extensions change between the in/out files, so we can use the same directory
 		outpath = inpath;
 
 	/* Do a quick check to see if we can open any files at all */
-	checkFilesExist(compSpeech, compMusic, &inpath);
+	checkFilesExist(_compSpeech, _compMusic, &inpath);
 
-	if (compSpeech) {
-		compressSpeech(compMode, &inpath, &outpath);
-	}
-
-	if (compMusic) {
-		compressMusic(compMode, &inpath, &outpath);
-	}
-
-	return EXIT_SUCCESS;
+	if (_compSpeech)
+		compressSpeech(&inpath, &outpath);
+	if (_compMusic)
+		compressMusic(&inpath, &outpath);
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(compress_sword1)(argc, argv);
+	CompressSword1 sword1(argv[0]);
+	return sword1.run(argc, argv);
 }
 #endif
 
