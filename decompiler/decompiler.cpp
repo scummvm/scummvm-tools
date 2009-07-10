@@ -22,7 +22,7 @@ variables_map parseArgs(int argc, char **argv) {
 		("check-reducibility", "check if the graph is reducible")
 		("disasm", "print disassembly")
 		("blocks", "print basic blocks")
-		("graph-intervals", value<unsigned>(), "print arg-th graph intervals")
+		//		("graph-intervals", value<unsigned>(), "print arg-th graph intervals")
 		("graph-struct", "print graph with marked structure information")
 		//		("decompile", "print decompiled program and exit")
 		("no-remove-jumps", "don't remove jumps-to-jumps")
@@ -73,13 +73,6 @@ int main(int argc, char **argv) {
 		foreach (Node *interval, cfg.intervals())
 			cout << phex(dynamic_cast<BasicBlock*>(interval)->_instructions.front()->_addr) << endl;
 		exit(1);
-	}
-	if (vars.count("graph-intervals")) {
-		cfg.assignIntervals();
-		for (unsigned i = 0; i < vars["graph-intervals"].as<unsigned>(); i++)
-			cfg.extendIntervals();
-		cout << cfg.graphvizToString(vars["fontname"].as<string>());
-		exit(0);
 	}
 	if (vars.count("graph-struct")) {
 		cfg.structureLoops();
