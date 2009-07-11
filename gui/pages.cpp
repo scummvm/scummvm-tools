@@ -62,7 +62,7 @@ void WizardPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 void WizardPage::SetAlignedSizer(wxWindow *panel, wxSizer *sizer) {
 	wxSizer *topsizer = new wxBoxSizer(wxHORIZONTAL);
 	topsizer->AddSpacer(100);
-	topsizer->Add(sizer, 0, wxEXPAND);
+	topsizer->Add(sizer, 1, wxEXPAND);
 	panel->SetSizer(topsizer);
 }
 
@@ -109,8 +109,6 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, 
 		wxT("Welcome to the ScummVM extraction and compression utility.")));
-	sizer->Add(new wxStaticText(panel, wxID_ANY,
-		wxT("Please select what you want to do, or drop a file or folder on this window for automatic detection.")));
 	
 	wxString choices[] = {
 		wxT("Extract from game data files"),
@@ -187,6 +185,8 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 			wxT("Select what tool you'd like to use.")));
 		choices = g_tools.getToolList(TOOLTYPE_ALL);
 	}
+	
+	sizer->AddSpacer(20);
 
 	wxChoice *tool = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		choices, 0, wxDefaultValidator, wxT("ToolSelection"));
@@ -230,22 +230,25 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(15);
 	
 	// some help perhaps?
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Select an input file")));
+	sizer->Add(new wxStaticText(panel, wxID_ANY, 
+		wxT("Select an input file, if you have two input files (CD1 and CD2), ")
+		wxT("you will be queried for the other file later.")
+		wxT("You can also drag & drop a file on this window.")
+		),
+		wxSizerFlags(1).Expand());
 
 	sizer->AddSpacer(10);
 
-	// Create input selection
-	wxStaticBoxSizer *inputbox = new wxStaticBoxSizer(wxVERTICAL, panel, wxT("Input file"));
-
 
 	//if (input._file) {
-		inputbox->Add(new wxFilePickerCtrl(
+		sizer->Add(new wxFilePickerCtrl(
 				panel, wxID_ANY, wxEmptyString, wxT("Select a file"), 
 				wxT("*.*"), 
-				wxDefaultPosition, wxDefaultSize, 
+				wxDefaultPosition, wxSize(300, -1),
 				wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
-				wxT("InputPicker")),
-			wxSizerFlags().Expand());
+				wxT("InputPicker")));
+
+	sizer->AddSpacer(30);
 	/* 
 	// TODO: There is no way to select directory input, yet
 	} else {
@@ -259,18 +262,12 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 	}
 	*/
 	
-	sizer->Add(inputbox, wxSizerFlags().Expand());
-	
 	SetAlignedSizer(panel, sizer);
 	
 	return panel;
 }
 
 void ChooseInPage::save(wxWindow *panel) {
-//	wxWindow *outputWindow = panel->FindWindowByName(wxT("OutputPicker"));
-//	wxDirPickerCtrl *outDirWindow = dynamic_cast<wxDirPickerCtrl *>(outputWindow);
-//	wxFilePickerCtrl *outFileWindow = dynamic_cast<wxFilePickerCtrl *>(outputWindow);
-
 	_configuration.inputFilePaths.clear();
 
 	wxDirPickerCtrl *inDirWindow = dynamic_cast<wxDirPickerCtrl *>(panel->FindWindowByName(wxT("InputPicker")));
@@ -283,11 +280,16 @@ void ChooseInPage::save(wxWindow *panel) {
 }
 
 void ChooseInPage::onNext(wxWindow *panel) {
-	if (_configuration.advanced)
-		// TODO: Display extra input page
-		switchPage(new ChooseOutPage(_topframe));
-	else
-		switchPage(new ChooseToolPage(_topframe, g_tools.getToolList()));
+	if (_configuration.advanced) {
+		if(_configuration.selectedTool->_inputs.size() > 1)
+			switchPage(new ChooseExtraInPage(_topframe));
+		else
+			switchPage(new ChooseOutPage(_topframe));
+	} else {
+		wxArrayString ls = g_tools.getToolList();
+		// TODO: If only one input, skip this page and go right to ExtraInput
+		switchPage(new ChooseToolPage(_topframe, ls));
+	}
 }
 
 // Page to choose input and output directory or file
@@ -316,6 +318,7 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 
 	int i = 1;
 	wxASSERT_MSG(tool._inputs.size() > 1, wxT("Extra input page should not display with only one input"));
+
 	for (ToolInputs::const_iterator iter = tool._inputs.begin() + 1; iter != tool._inputs.end(); ++iter) {
 		const ToolInput &input = *iter;
 
@@ -328,14 +331,14 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 				input._extension, 
 				wxDefaultPosition, wxDefaultSize, 
 				wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
-				windowName), wxSizerFlags().Expand());
+				windowName));
 
 		} else {
 			inputbox->Add(new wxDirPickerCtrl(
 				panel, wxID_ANY, wxEmptyString, wxT("Select a folder"), 
 				wxDefaultPosition, wxDefaultSize, 
 				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
-				windowName), wxSizerFlags().Expand());
+				windowName));
 
 		}
 		++i;
@@ -360,12 +363,13 @@ void ChooseExtraInPage::save(wxWindow *panel) {
 
 	const ToolGUI &tool = *_configuration.selectedTool;
 
-	_configuration.inputFilePaths.clear();
+	// Remove all additional inputs
+	wxArrayString filelist = _configuration.inputFilePaths;
+	if(filelist.size() > 1)
+		filelist.erase(filelist.begin() + 1, filelist.end());
 
 	int i = 1;
 	for (ToolInputs::const_iterator iter = tool._inputs.begin(); iter != tool._inputs.end(); ++iter) {
-//		const ToolInput &input = *iter;
-
 		wxString windowName = wxT("InputPicker");
 		windowName << i;
 
@@ -402,7 +406,12 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 	const ToolGUI &tool = *_configuration.selectedTool;
 
 	// some help perhaps?
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Select output directory / file")));
+	sizer->Add(new wxStaticText(panel, wxID_ANY, 
+		wxT("Select an output directory.\n\n")
+		wxT("Note: Some tools display file picker here, this should perhaps be changed to always ")
+		wxT("be directory output, since often don't want to name the output file.)")
+		),
+		wxSizerFlags(1).Expand());
 
 	// Create input selection	
 
@@ -415,22 +424,22 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 
 		box->Add(new wxDirPickerCtrl(
 			panel, wxID_ANY, _configuration.outputPath, wxT("Select a folder"), 
-			wxDefaultPosition, wxDefaultSize, 
+			wxDefaultPosition, wxSize(300, -1),
 			wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
 			wxT("OutputPicker")));
 
-		sizer->Add(box, wxSizerFlags().Expand());
+		sizer->Add(box);
 	} else {
 		wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, panel, wxT("Destination file"));
 
 		box->Add(new wxFilePickerCtrl(
 			panel, wxID_ANY, _configuration.outputPath, wxT("Select a file"), 
 			wxT("*.*"),
-			wxDefaultPosition, wxDefaultSize, 
+			wxDefaultPosition, wxSize(300, -1),
 			wxFLP_USE_TEXTCTRL | wxFLP_OVERWRITE_PROMPT | wxFLP_SAVE, wxDefaultValidator, 
 			wxT("OutputPicker")));
 		
-		sizer->Add(box, wxSizerFlags().Expand());
+		sizer->Add(box);
 	}
 
 	SetAlignedSizer(panel, sizer);
@@ -471,7 +480,9 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(15);
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, 
-		wxT("Select audio format you want to compress to")));
+		wxT("Select audio format you want to compress to.")));
+
+	sizer->AddSpacer(20);
 	
 	wxArrayString choices;
 
@@ -479,17 +490,15 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 	choices.Add(wxT("FLAC"));
 	choices.Add(wxT("MP3"));
 
-	sizer->AddSpacer(10);
-
 	wxChoice *format = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxSize(80, -1), 
 		choices, 0, wxDefaultValidator, wxT("AudioSelection"));
-	sizer->Add(format, wxSizerFlags().Expand());
+	sizer->Add(format);
 	
 	sizer->AddSpacer(10);
 
 	wxCheckBox *advanced = new wxCheckBox(panel, wxID_ANY, wxT("Select advanced audio settings"), 
 		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("AdvancedAudio"));
-	sizer->Add(advanced, wxSizerFlags().Expand());
+	sizer->Add(advanced);
 
 	SetAlignedSizer(panel, sizer);
 
@@ -1037,10 +1046,14 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 
 void FinishPage::onNext(wxWindow *panel) {
 	wxCheckBox *display = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("DisplayOutput")));
-	if (display->GetValue())
-		// Haven't found the function to do this yet...
-		//wxOpenExplorer(_topframe->_configuration.outputPath);
-		(void)0;
+	if (display->GetValue()) {
+		// There is no standard way to do this
+		// On windows we can simply spawn an explorer instance
+#ifdef __WINDOWS__
+		wxExecute(wxT("explorer.exe") + _topframe->_configuration.outputPath);
+#else
+#endif
+	}
 	_topframe->Close(true);
 }
 

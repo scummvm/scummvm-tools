@@ -31,6 +31,7 @@
 #endif
 
 #include <wx/statline.h>
+#include <wx/aboutdlg.h>
 
 #include "main.h"
 
@@ -102,7 +103,7 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 
 	// Buttons on the bottom
 	_buttons = new WizardButtons(main, linetext);
-	sizer->Add(_buttons, wxSizerFlags().Border().Right());
+	sizer->Add(_buttons, wxSizerFlags().Border().Center().Expand());
 	
 	// Create input page
 	WizardPage *introPage = new IntroPage(this);
@@ -161,12 +162,15 @@ void ScummToolsFrame::onIdle(wxIdleEvent &evt) {
 	if (_pages.back()->onIdle(dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page"))))) {
 		// We want more!
 		evt.RequestMore(true);
+		// This way we don't freeze the OS with continous events
+		wxMilliSleep(10);
 	}
 }
 
 //
 
 BEGIN_EVENT_TABLE(WizardButtons, wxPanel)
+	EVT_BUTTON(ID_ABOUT, WizardButtons::onClickAbout)
 	EVT_BUTTON(ID_NEXT, WizardButtons::onClickNext)
 	EVT_BUTTON(ID_PREV, WizardButtons::onClickPrevious)
 	EVT_BUTTON(ID_CANCEL, WizardButtons::onClickCancel)
@@ -177,23 +181,37 @@ WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext)
 	  _linetext(linetext),
 	  _currentPage(NULL)
 {
+	wxSizer *topsizer = new wxBoxSizer(wxHORIZONTAL);
+
 	wxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+
+	_prev = new wxButton(this, ID_ABOUT, wxT("About"));
+	_prev->SetSize(80, -1);
+	sizer->Add(_prev, wxSizerFlags().Left().ReserveSpaceEvenIfHidden());
+
+	// Insert space between the buttons
+	topsizer->Add(sizer, wxSizerFlags().Left());
+	topsizer->Add(10, 10, 1, wxEXPAND);
+	sizer = new wxBoxSizer(wxHORIZONTAL);
+
 
 	_prev = new wxButton(this, ID_PREV, wxT("< Back"));
 	_prev->SetSize(80, -1);
-	sizer->Add(_prev, wxSizerFlags().Center().ReserveSpaceEvenIfHidden());
+	sizer->Add(_prev, wxSizerFlags().Right().ReserveSpaceEvenIfHidden());
 
 	_next = new wxButton(this, ID_NEXT, wxT("Next >"));
 	_next->SetSize(80, -1);
-	sizer->Add(_next, wxSizerFlags().Center().ReserveSpaceEvenIfHidden());
+	sizer->Add(_next, wxSizerFlags().Right().ReserveSpaceEvenIfHidden());
 
 	sizer->AddSpacer(10);
 
 	_cancel = new wxButton(this, ID_CANCEL, wxT("Cancel"));
 	_cancel->SetSize(80, -1);
-	sizer->Add(_cancel, wxSizerFlags().Center().ReserveSpaceEvenIfHidden());
+	sizer->Add(_cancel, wxSizerFlags().Right().ReserveSpaceEvenIfHidden());
+	
+	topsizer->Add(sizer, wxSizerFlags().Right());
 
-	SetSizerAndFit(sizer);
+	SetSizerAndFit(topsizer);
 
 	reset();
 }
@@ -244,6 +262,22 @@ void WizardButtons::showPrevious(bool show) {
 }
 
 // wx event handlers
+void WizardButtons::onClickAbout(wxCommandEvent &e) {
+	wxAboutDialogInfo about = wxAboutDialogInfo();
+	about.SetVersion(wxT("Development Version"));
+	about.SetCopyright(wxT("ScummVM Team 2009"));
+	about.SetLicense(
+		wxT("Published under the GNU General Public License\n")
+		wxT("This program comes with ABSOLUTELY NO WARRANTY\n")
+		wxT("This is free software, and you are welcome to redistribute it ")
+		wxT("under certain conditions"));
+	about.SetDescription(
+		wxT("This tool allows you to extract data files from several different games \n")
+		wxT("to be used by ScummVM, it can also compress audio data files into a more \n")
+		wxT("compact format than the original."));
+	::wxAboutBox(about);
+}
+
 void WizardButtons::onClickNext(wxCommandEvent &e) {
 	wxASSERT(_currentPage);
 	_currentPage->onNext(_currentPanel);

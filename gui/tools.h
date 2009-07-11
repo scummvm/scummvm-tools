@@ -92,6 +92,14 @@ public:
 	 */
 	void addGame(const wxString &game_name);
 
+	/**
+	 * Adds a file input to the tool.
+	 *
+	 * @param input_wildcard The wildcard filename of the input, like "*.zip".
+	 * @param input_is_directory True if input is a directory (false by default).
+	 */
+	void addInput(const wxString &input_wildcard, bool input_is_directory = false);
+
 	// Helper functions to get info about the tool
 	
 	/**

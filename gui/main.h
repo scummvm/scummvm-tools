@@ -37,6 +37,7 @@ enum GUI_ID {
 	ID_NEXT,
 	ID_PREV,
 	ID_CANCEL,
+	ID_ABOUT,
 };
 
 /**
@@ -148,7 +149,7 @@ public:
 	void showFinish(bool show);
 
 	// wx event handlers
-	// overload the virtual functions below for the page-specific handlers
+	void onClickAbout(wxCommandEvent &e);
 	void onClickNext(wxCommandEvent &e);
 	void onClickPrevious(wxCommandEvent &e);
 	void onClickCancel(wxCommandEvent &e);

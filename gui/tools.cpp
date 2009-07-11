@@ -44,6 +44,7 @@
 #include "../compress_scumm_san.h"
 #include "../compress_scumm_sou.h"
 #include "../compress_sword1.h"
+#include "../compress_sword2.h"
 #include "../compress_touche.h"
 #include "../compress_tinsel.h"
 #include "../compress_touche.h"
@@ -77,6 +78,7 @@ void Tools::init() {
 	addTool(new ToolGUI(new CompressScummSan()));
 	addTool(new ToolGUI(new CompressScummSou()));
 	addTool(new ToolGUI(new CompressSword1()));
+	addTool(new ToolGUI(new CompressSword2()));
 	addTool(new ToolGUI(new CompressTinsel()));
 	addTool(new ToolGUI(new CompressTouche(), wxT("/")));
 	addTool(new ToolGUI(new CompressTucker(), wxT("/")));
@@ -85,8 +87,12 @@ void Tools::init() {
 	addTool(new ToolGUI(new ExtractGobStk()));
 	addTool(new ToolGUI(new ExtractLoomTG16()));
 	addTool(new ToolGUI(new ExtractMMApple()));
-	addTool(new ToolGUI(new ExtractMMC64()));
-	addTool(new ToolGUI(new ExtractMMNes()));
+	ToolGUI *mmc64 = new ToolGUI(new ExtractMMC64());
+	mmc64->addInput(wxT("*.*"));
+	addTool(mmc64);
+	ToolGUI *mmnes = new ToolGUI(new ExtractMMNes());
+	mmnes->addInput(wxT("*.*"));
+	addTool(mmnes);
 	addTool(new ToolGUI(new ExtractParallaction()));
 	addTool(new ToolGUI(new ExtractZakC64()));
 
@@ -299,6 +305,13 @@ ToolGUI::~ToolGUI() {
 
 void ToolGUI::addGame(const wxString &game_name) {
 	_games.Add(game_name);
+}
+
+void ToolGUI::addInput(const wxString &input_wildcard, bool input_is_directory) {
+	ToolInput t;
+	t._extension = input_wildcard;
+	t._file = !input_is_directory;
+	_inputs.push_back(t);
 }
 
 bool ToolGUI::supportsAudioFormat(AudioFormat format) const {
