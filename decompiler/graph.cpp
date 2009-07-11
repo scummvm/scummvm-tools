@@ -176,6 +176,11 @@ void ControlFlowGraph::addEdge(Node *from, Node *to) {
 
 
 void ControlFlowGraph::assignDominators() {
+	foreach (Node *u, _nodes) {
+		u->_dominator = 0;
+		u->_postOrder = 0;
+	}
+	orderVisit(_entry, 0);
 	list<Node*> nodes = inPostOrder(_nodes);
 	nodes.reverse();
 	nodes.remove(_entry);
@@ -295,12 +300,6 @@ bool ControlFlowGraph::isReducible() {
 }
 
 
-void ControlFlowGraph::orderNodes() {
-	if (_entry && !_entry->_postOrder)
-		orderVisit(_entry, 0);
-}
-
-
 void ControlFlowGraph::removeJumpsToJumps() {
 	for (bool changed = true; changed; ) {
 		changed = false;
@@ -318,6 +317,7 @@ void ControlFlowGraph::removeJumpsToJumps() {
 
 
 void ControlFlowGraph::removeUnreachableNodes() {
+	orderVisit(_entry, 0);
 	foreach (Node *u, _nodes)
 		if (!u->_postOrder) {
 			foreach (Node *v, u->_out)
@@ -329,7 +329,7 @@ void ControlFlowGraph::removeUnreachableNodes() {
 		if ((*it)->_postOrder)
 			it++;
 		else {
-			// delete *it;
+			delete *it;
 			it = _nodes.erase(it);
 		}
 }
@@ -359,7 +359,7 @@ list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
 		u->_postOrder = 0;
 	}
 	int n = 0;
-	if (_entry && !_entry->_postOrder)
+	if (_entry)
 		n = orderVisit(_entry, n);
 	foreach (Node *u, _nodes)
 		if (!u->_postOrder)
@@ -394,15 +394,8 @@ ControlFlowGraph *ControlFlowGraph::yank(set<Node*> &nodes) {
 
 
 void ControlFlowGraph::structureLoops(const list< list<Node*> > &components) {
-	if (!_entry)
-		return;
-	foreach (Node *u, _nodes) {
-		u->_dominator = 0;
-		u->_postOrder = 0;
-	}
-	orderNodes();
-	assignDominators();
 	foreach (list<Node*> component, components) {
+		assignDominators();
 		list<Node*> entries = componentEntryPoints(component);
 		if (entries.size() == 1) {
 			Node *entry = entries.front();

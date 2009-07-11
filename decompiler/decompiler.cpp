@@ -65,10 +65,9 @@ int main(int argc, char **argv) {
 	}
 	if (!vars.count("no-remove-jumps"))
 		cfg.removeJumpsToJumps();
-	cfg.orderNodes();
 	cfg.removeUnreachableNodes();
-	cfg.assignDominators();
 	if (vars.count("graph")) {
+		cfg.assignDominators();
 		cout << cfg.graphvizToString(vars["fontname"].as<string>());
 		exit(0);
 	}

@@ -83,7 +83,6 @@ public:
 
 
 	void test_assignDominators() {
-		ga->orderNodes();
 		ga->assignDominators();
 		TS_ASSERT(!node(ga,1)->_dominator);
 		TS_ASSERT_EQUALS(node(ga,2)->_dominator->address(), 1);
@@ -92,7 +91,6 @@ public:
 		TS_ASSERT_EQUALS(node(ga,5)->_dominator->address(), 2);
 		TS_ASSERT_EQUALS(node(ga,6)->_dominator->address(), 5);
 
-		gb->orderNodes();
 		gb->assignDominators();
 		TS_ASSERT(!node(gb,1)->_dominator);
 		TS_ASSERT_EQUALS(node(gb,2)->_dominator->address(), 1);
@@ -110,13 +108,11 @@ public:
 		TS_ASSERT_EQUALS(node(gb,14)->_dominator->address(), 11);
 		TS_ASSERT_EQUALS(node(gb,15)->_dominator->address(), 14);
 
-		gc->orderNodes();
 		gc->assignDominators();
 		TS_ASSERT(!node(gc,1)->_dominator);
 		TS_ASSERT_EQUALS(node(gc,2)->_dominator->address(), 1);
 		TS_ASSERT_EQUALS(node(gc,3)->_dominator->address(), 1);
 
-		gd->orderNodes();
 		gd->assignDominators();
 		TS_ASSERT(!node(gd,1)->_dominator);
 		TS_ASSERT_EQUALS(node(gd,2)->_dominator->address(), 1);
