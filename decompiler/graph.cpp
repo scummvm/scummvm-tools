@@ -121,7 +121,7 @@ int orderVisit(Node *u, int number) {
 }
 
 
-void replaceCrossEdgesWithProxies(ControlFlowGraph *gu, Node *u, ControlFlowGraph *gv, Node *v) {
+void replaceCrossEdgesWithProxies(ControlFlowGraph *gu, Node *u, Node *v) {
 	foreach (Node *&node, u->_out)
 		if (node == v) {
 			node = new ProxyNode(v);
@@ -385,8 +385,8 @@ ControlFlowGraph *ControlFlowGraph::yank(set<Node*> &nodes) {
 	}
 	foreach (Node *u, nodes)
 		foreach (Node *v, list<Node*>(_nodes)) {
-			replaceCrossEdgesWithProxies(subgraph, u, this, v);
-			replaceCrossEdgesWithProxies(this, v, subgraph, u);
+			replaceCrossEdgesWithProxies(subgraph, u, v);
+			replaceCrossEdgesWithProxies(this, v, u);
 		}
 	_subgraphs.push_back(subgraph);
 	return subgraph;
