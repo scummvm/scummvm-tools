@@ -20,39 +20,28 @@
  *
  */
 
-#include "compress.h"
+#include "compress_sword2.h"
 
 #define TEMP_IDX	"tempfile.idx"
 #define TEMP_DAT	"tempfile.dat"
 
-static FILE *input, *output_idx, *output_snd;
-
-static AudioFormat gCompMode = AUDIO_MP3;
-
-uint32 append_to_file(FILE *f1, const char *filename) {
-	FILE *f2;
+uint32 CompressSword2::append_to_file(File &f1, const char *filename) {
 	uint32 length, orig_length;
 	size_t size;
 	char fbuf[2048];
 
-	f2 = fopen(filename, "rb");
-	if (!f2) {
-		error("Cannot open file %s for reading", filename);
-	}
-
+	File f2(filename, "rb");
 	orig_length = length = fileSize(f2);
 
 	while (length > 0) {
-		size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length, f2);
+		size = f2.readN(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length);
 		if (size <= 0) {
 			break;
 		}
 
 		length -= size;
-		fwrite(fbuf, 1, size, f1);
+		f1.write(fbuf, 1, size);
 	}
-
-	fclose(f2);
 	return orig_length;
 }
 
@@ -60,95 +49,71 @@ uint32 append_to_file(FILE *f1, const char *filename) {
 #define GetCompressedSign(n)       (((n) >> 3) & 1)
 #define GetCompressedAmplitude(n)  ((n) & 7)
 
+CompressSword2::CompressSword2(const std::string &name) : CompressionTool(name) {
+	_helptext = "\nUsage: " + _name + " [params] <file>\n\n" kCompressionAudioHelp;
+}
 
-int export_main(compress_sword2)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [params] <file>\n\n" kCompressionAudioHelp;
-	
-	FILE *output, *f;
+void CompressSword2::execute() {
 	int j;
 	uint32 indexSize;
 	uint32 totalSize;
 	uint32 length;
 	
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
 
-	parseHelpArguments(argv, argc, helptext);
+	// Check _input
+	if (_inputPaths.size() == 1)
+		error("One _input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename &outpath = _outputPath;
 
-	/* compression mode */
-	gCompMode = process_audio_params(argc, argv, &first_arg);
-
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-
-	switch(gCompMode) {
+	switch (_format) {
 	case AUDIO_MP3:
-		tempEncoded = TEMP_MP3;
+		_audioOuputFilename = TEMP_MP3;
 		break;
 	case AUDIO_VORBIS:
-		tempEncoded = TEMP_OGG;
+		_audioOuputFilename = TEMP_OGG;
 		break;
 	case AUDIO_FLAC:
-		tempEncoded = TEMP_FLAC;
+		_audioOuputFilename = TEMP_FLAC;
 		break;
 	default:
-		displayHelp(helptext, argv[0]);
+		throw ToolException("Unknown audio format");
 		break;
 	}
-
-	inpath.setFullPath(argv[first_arg]);
 
 	if (outpath.empty())
 		// Extensions change between the in/out files, so we can use the same directory
 		outpath = inpath;
 
-	input = fopen(inpath.getFullPath().c_str(), "rb");
-	if (!input) {
-		error("Cannot open file: %s", inpath.getFullPath().c_str());
-	}
+	_input.open(inpath, "rb");
 
-	indexSize = readUint32LE(input);
+	indexSize = _input.readUint32LE();
 	totalSize = 12 * (indexSize + 1);
 
-	if (readUint32BE(input) != 0xfff0fff0) {
+	if (_input.readUint32BE() != 0xfff0fff0) {
 		error("This doesn't look like a cluster file");
 	}
 
-	output_idx = fopen(TEMP_IDX, "wb");
-	if (!output_idx) {
-		error("Cannot open file " TEMP_IDX " for writing");
-	}
+	_output_idx.open(TEMP_IDX, "wb");
+	_output_snd.open(TEMP_DAT, "wb");
 
-	output_snd = fopen(TEMP_DAT, "wb");
-	if (!output_snd) {
-		error("Cannot open file " TEMP_DAT " for writing");
-	}
-
-	writeUint32LE(output_idx, indexSize);
-	writeUint32BE(output_idx, 0xfff0fff0);
-	writeUint32BE(output_idx, 0xfff0fff0);
+	_output_idx.writeUint32LE(indexSize);
+	_output_idx.writeUint32BE(0xfff0fff0);
+	_output_idx.writeUint32BE(0xfff0fff0);
 
 	for (int i = 0; i < (int)indexSize; i++) {
 		uint32 pos;
 		uint32 enc_length;
 
-		fseek(input, 8 * (i + 1), SEEK_SET);
+		_input.seek(8 * (i + 1), SEEK_SET);
 
-		pos = readUint32LE(input);
-		length = readUint32LE(input);
+		pos = _input.readUint32LE();
+		length = _input.readUint32LE();
 
 		if (pos != 0 && length != 0) {
 			uint16 prev;
 
-			f = fopen(TEMP_WAV, "wb");
-			if (!f) {
-				error("Cannot open file %s for writing", TEMP_WAV);
-			}
+			File f(TEMP_WAV, "wb");
 
 			/*
 			 * The number of decodeable 16-bit samples is one less
@@ -163,85 +128,80 @@ int export_main(compress_sword2)(int argc, char *argv[]) {
 			 * output a WAV file.
 			 */
 
-			writeUint32BE(f, 0x52494646);	/* "RIFF" */
-			writeUint32LE(f, 2 * length + 36);
-			writeUint32BE(f, 0x57415645);	/* "WAVE" */
-			writeUint32BE(f, 0x666d7420);	/* "fmt " */
-			writeUint32LE(f, 16);
-			writeUint16LE(f, 1);		/* PCM */
-			writeUint16LE(f, 1);		/* mono */
-			writeUint32LE(f, 22050);	/* sample rate */
-			writeUint32LE(f, 44100);	/* bytes per second */
-			writeUint16LE(f, 2);		/* basic block size */
-			writeUint16LE(f, 16);		/* sample width */
-			writeUint32BE(f, 0x64617461);	/* "data" */
-			writeUint32LE(f, 2 * length);
+			f.writeUint32BE(0x52494646);	/* "RIFF" */
+			f.writeUint32LE(2 * length + 36);
+			f.writeUint32BE(0x57415645);	/* "WAVE" */
+			f.writeUint32BE(0x666d7420);	/* "fmt " */
+			f.writeUint32LE(16);
+			f.writeUint16LE(1);		/* PCM */
+			f.writeUint16LE(1);		/* mono */
+			f.writeUint32LE(22050);	/* sample rate */
+			f.writeUint32LE(44100);	/* bytes per second */
+			f.writeUint16LE(2);		/* basic block size */
+			f.writeUint16LE(16);		/* sample width */
+			f.writeUint32BE(0x64617461);	/* "data" */
+			f.writeUint32LE(2 * length);
 
-			fseek(input, pos, SEEK_SET);
+			fseek(_input, pos, SEEK_SET);
 
 			/*
 			 * The first sample is stored uncompressed. Subsequent
 			 * samples are stored as some sort of 8-bit delta.
 			 */
 
-			prev = readUint16LE(input);
+			prev = _input.readUint16LE();
 
-			writeUint16LE(f, prev);
+			f.writeUint16LE(prev);
 
 			for (j = 1; j < (int)length; j++) {
 				byte data;
 				uint16 out;
 
-				data = readByte(input);
+				data = readByte(_input);
 				if (GetCompressedSign(data))
 					out = prev - (GetCompressedAmplitude(data) << GetCompressedShift(data));
 				else
 					out = prev + (GetCompressedAmplitude(data) << GetCompressedShift(data));
 
-				writeUint16LE(f, out);
+				f.writeUint16LE(out);
 				prev = out;
 			}
-			fclose(f);
 
-			encodeAudio(TEMP_WAV, false, -1, tempEncoded, gCompMode);
-			enc_length = append_to_file(output_snd, tempEncoded);
+			encodeAudio(TEMP_WAV, false, -1, tempEncoded, _format);
+			enc_length = append_to_file(_output_snd, tempEncoded);
 
-			writeUint32LE(output_idx, totalSize);
-			writeUint32LE(output_idx, length);
-			writeUint32LE(output_idx, enc_length);
+			_output_idx.writeUint32LE(totalSize);
+			_output_idx.writeUint32LE(length);
+			_output_idx.writeUint32LE(enc_length);
 			totalSize = totalSize + enc_length;
 		} else {
-			writeUint32LE(output_idx, 0);
-			writeUint32LE(output_idx, 0);
-			writeUint32LE(output_idx, 0);
+			_output_idx.writeUint32LE(0);
+			_output_idx.writeUint32LE(0);
+			_output_idx.writeUint32LE(0);
 		}
 	}
 
-	fclose(output_idx);
-	fclose(output_snd);
-
-	output = fopen(outpath.getFullPath().c_str(), "wb");
-	if (!output) {
-		error("Cannot open file %s for writing", outpath.getFullPath().c_str());
-	}
+	File output(outpath, "wb");
 
 	append_to_file(output, TEMP_IDX);
 	append_to_file(output, TEMP_DAT);
 
-	fclose(output);
+	output.close();
+	_output_snd.close();
+	_output_idx.close();
+
 	unlink(TEMP_DAT);
 	unlink(TEMP_IDX);
 	unlink(TEMP_MP3);
 	unlink(TEMP_OGG);
 	unlink(TEMP_FLAC);
 	unlink(TEMP_WAV);
-
-	return EXIT_SUCCESS;
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(compress_sword2)(argc, argv);
+	CompressSword2 sword2(argv[0]);
+	return sword2.run(argc, argv);
 }
 #endif
 
