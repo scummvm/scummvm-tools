@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef COMPRESS_SWORD1_H
-#define COMPRESS_SWORD1_H
+#ifndef COMPRESS_SWORD2_H
+#define COMPRESS_SWORD2_H
 
 #include "compress.h"
 
