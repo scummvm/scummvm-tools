@@ -26,6 +26,7 @@ struct Node : boost::noncopyable {
 	virtual uint32 address() = 0;
 	bool dominates(Node *u);
 	Node *edgeOutsideComponent();
+	void mimic(Node *node);
 	virtual std::string toString() = 0;
 };
 

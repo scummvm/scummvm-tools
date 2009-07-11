@@ -13,7 +13,7 @@ using namespace std;
 #endif
 
 
-Node::Node() : _interval(), _postOrder(), _dominator(), _component() {
+Node::Node() : _component(), _dominator(), _interval(), _postOrder() {
 }
 
 
@@ -23,7 +23,7 @@ Node::~Node() {
 
 bool Node::dominates(Node *u) {
 	for (; u; u = u->_dominator)
-		if (u->_dominator == this)
+		if (u == this)
 			return true;
 	return false;
 }
@@ -34,6 +34,14 @@ Node *Node::edgeOutsideComponent() {
 		if (u->_component != _component)
 			return u;
 	return 0;
+}
+
+
+void Node::mimic(Node *node) {
+	_component = node->_component;
+	_dominator = node->_dominator;
+	_interval  = node->_interval;
+	_postOrder = node->_postOrder;
 }
 
 
@@ -60,10 +68,7 @@ string BasicBlock::toString() {
 
 
 ProxyNode::ProxyNode(Node *node) : Node(), _node(node) {
-	_component = node->_component;
-	_dominator = node->_dominator;
-	_interval = node->_interval;
-	_postOrder = node->_postOrder;
+	mimic(node);
 }
 
 
@@ -84,41 +89,34 @@ string ProxyNode::toString() {
 
 
 WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Loop(), _condition(entry) {
+	mimic(entry);
 	Node *exit = entry->edgeOutsideComponent();
 	_negate = exit != entry->_out.front();
-	_component = entry->_component;
-	_dominator = entry->_dominator;
-	_interval = entry->_interval;
-	_postOrder = entry->_postOrder;
 
+	// yank out loop body
 	set<Node*> body;
 	foreach (Node *u, graph->_nodes)
-		if (entry->dominates(u) && u != exit && !exit->dominates(u))
+		if (u != entry && entry->dominates(u) && !exit->dominates(u))
 			body.insert(u);
 	_body = graph->yank(body);
 	foreach (Node *u, entry->_out)
 		if (u != exit)
 			_body->setEntry(u->address());
 
-	foreach (Node *u, entry->_out) {
-		u->_in.remove(entry);
-		if (u != exit && u != entry) { // proxy node
-			graph->_nodes.remove(u);
-			//			delete u;
-		}
-	}
-	entry->_out.clear();
+	// remove unneeded nodes in main graph
+	graph->forgetNode(entry);
+	foreach (Node *u, entry->_out)
+		if (dynamic_cast<ProxyNode*>(u))
+			graph->deleteNode(u);
+
+	// attach this while block in place of entry
 	foreach (Node *u, list<Node*>(entry->_in))
-		graph->replaceEdges(u, entry, this);
+		if (!dynamic_cast<ProxyNode*>(u))
+			graph->replaceEdges(u, entry, this);
 	graph->addEdge(this, exit);
-	graph->_nodes.remove(entry);
 
-	_body->structureLoops(_body->stronglyConnectedComponents());
-
-	foreach (Node *u, _body->_nodes)
-		u->_postOrder = 0;
-	_body->orderNodes();
-	_body->removeUnreachableNodes();
+	if (_body->_entry)
+		_body->structureLoops(_body->stronglyConnectedComponents());
 }
 
 
@@ -147,44 +145,30 @@ string WhileLoop::toString() {
 
 
 DoWhileLoop::DoWhileLoop(ControlFlowGraph *graph, Node *entry, Node *latch) : Loop(), _condition(latch) {
+	mimic(entry);
 	Node *exit = latch->edgeOutsideComponent();
 	_negate = exit == latch->_out.front();
-	_component = entry->_component;
-	_dominator = entry->_dominator;
-	_interval = entry->_interval;
-	_postOrder = entry->_postOrder;
 
+	// yank out loop body
 	set<Node*> body;
 	foreach (Node *u, graph->_nodes)
-		if (entry == u || (u != latch && entry->dominates(u) && u != exit && !exit->dominates(u)))
+		if (u != latch && entry->dominates(u) && !exit->dominates(u))
 			body.insert(u);
 	_body = graph->yank(body);
 	_body->setEntry(entry->address());
 
-	foreach (Node *u, latch->_out) {
-		u->_in.remove(latch);
-		if (u != exit) { // proxy node
-			graph->_nodes.remove(u);
-//			delete u;
-		}
-	}
-	latch->_out.clear();
+	// remove unneeded nodes in main graph and attach this while block in place of entry
 	foreach (Node *u, graph->_nodes)
 		foreach (Node *&v, u->_out)
-			if (v->address() == entry->address()) { // proxy node
-				//				delete v;
+			if (v->address() == entry->address()) {
+				graph->deleteNode(v);
 				v = this;
 				_in.push_back(u);
 			}
+	graph->forgetNode(latch);
 	graph->addEdge(this, exit);
-	graph->_nodes.remove(latch);
 
 	_body->structureLoops(_body->stronglyConnectedComponents());
-
-	foreach (Node *u, _body->_nodes)
-		u->_postOrder = 0;
-	_body->orderNodes();
-	_body->removeUnreachableNodes();
 }
 
 
@@ -208,59 +192,45 @@ string DoWhileLoop::toString() {
 	return ret.str();
 }
 
-#include <cstdlib>
-void panic() {
-	exit(0);
-}
 
 EndlessLoop::EndlessLoop(ControlFlowGraph *graph, Node *entry) : Loop() {
-	_component = entry->_component;
-	_dominator = entry->_dominator;
-	_interval = entry->_interval;
-	_postOrder = entry->_postOrder;
+	mimic(entry);
 	Node *exit = 0;
 	foreach (Node *u, graph->_nodes)
-		if (u->_component == entry->_component) {
+		if (u->_component == _component) {
 			foreach (Node *v, u->_out)
-				if (v->_component != entry->_component && (!exit || exit->_postOrder < v->_postOrder))
+				if (v->_component != _component && (!exit || exit->_postOrder < v->_postOrder))
 					exit = v;
 		}
 
+	// yank out body
 	set<Node*> body;
 	foreach (Node *u, graph->_nodes)
-		if (entry->dominates(u) && (!exit || (u != exit && !exit->dominates(u))))
+		if (u != entry && entry->dominates(u) && (!exit || !exit->dominates(u)))
 			body.insert(u);
 	_body = graph->yank(body);
+
+	// compute strongly connected components with detached entry
 	list< list<Node*> > components = _body->stronglyConnectedComponents();
-	foreach (Node *u, list<Node*>(entry->_in))
-		graph->replaceEdges(u, entry, this);
-	// we have broken down strongly connected components, now reattach entry
+
+	// reattach entry to the loop body
 	foreach (Node *&u, entry->_out) {
-		u->_in.remove(entry);
-		if (u != entry) { // proxy node
-			graph->_nodes.remove(u);
-			Node *uref = dynamic_cast<ProxyNode*>(u)->_node;
-			foreach (Node *&v, uref->_in) {
-				if (v->address() == entry->address()) {
-					_body->_nodes.remove(v);
-					v = entry;
-				}
-			}
-			u = uref;
-			//			delete u;
-		}
+		Node *uref = dynamic_cast<ProxyNode*>(u)->_node;
+		uref->_in.push_back(entry);
+		graph->deleteNode(u);
+		u = uref;
 	}
-	if (exit)
-		graph->addEdge(this, exit);
 	graph->_nodes.remove(entry);
 	_body->_nodes.push_back(entry);
 
+	// attach this while block in place of entry
+	foreach (Node *u, list<Node*>(entry->_in))
+		graph->replaceEdges(u, entry, this);
+	if (exit)
+		graph->addEdge(this, exit);
+
 	_body->setEntry(entry->address());
 	_body->structureLoops(components);
-	foreach (Node *u, _body->_nodes)
-		u->_postOrder = 0;
-	_body->orderNodes();
-	_body->removeUnreachableNodes();
 }
 
 
