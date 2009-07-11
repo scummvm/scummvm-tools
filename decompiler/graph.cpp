@@ -254,6 +254,7 @@ void ControlFlowGraph::extendIntervals() {
 	map<Node*, ProxyNode*> trans;
 	foreach (Node *interval, intervals()) {
 		trans[interval] = new ProxyNode(interval);
+		trans[interval]->_interval = 0;
 		d._nodes.push_back(trans[interval]);
 	}
 	foreach (Node *interval, intervals())
