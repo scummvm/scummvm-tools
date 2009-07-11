@@ -345,20 +345,6 @@ void ControlFlowGraph::replaceEdges(Node *from, Node *oldTo, Node *newTo) {
 }
 
 
-void ControlFlowGraph::replaceEdges(Node *from, uint32 oldTo, Node *newTo) {
-	size_t n = 0;
-	foreach (Node *node, from->_out)
-		if (node->address() == oldTo) {
-			n += count(node->_in.begin(), node->_in.end(), from);
-			node->_in.remove(from);
-		}
-	fill_n(back_inserter(newTo->_in), n, from);
-	foreach (Node *&node, from->_out)
-		if (node->address() == oldTo)
-			node = newTo;
-}
-
-
 void ControlFlowGraph::setEntry(address_t entry) {
 	foreach (Node *node, _nodes)
 		if (node->address() == entry)

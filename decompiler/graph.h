@@ -33,7 +33,6 @@ struct ControlFlowGraph : boost::noncopyable {
 	void removeJumpsToJumps();
 	void removeUnreachableNodes(); // after order
 	void replaceEdges(Node *from, Node *oldTo, Node *newTo);
-	void replaceEdges(Node *from, uint32 oldTo, Node *newTo);
 	void setEntry(address_t entry);
 	std::list< std::list<Node*> > stronglyConnectedComponents();
 	ControlFlowGraph *yank(std::set<Node*> &body);
