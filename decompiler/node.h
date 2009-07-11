@@ -14,9 +14,9 @@ struct ControlFlowGraph;
 struct Node : boost::noncopyable {
 
 	Node *_component;
-	Node *_dominator;    // immediate dominator
-	Node *_interval;     // header node of the interval this node belongs to
-	int _number;         // number in post-order
+	Node *_dominator;
+	Node *_interval;
+	int _postOrder;
 	std::list<Node*> _in;
 	std::list<Node*> _out;
 

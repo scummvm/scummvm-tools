@@ -13,7 +13,7 @@ using namespace std;
 #endif
 
 
-Node::Node() : _interval(), _number(), _dominator(), _component() {
+Node::Node() : _interval(), _postOrder(), _dominator(), _component() {
 }
 
 
@@ -63,7 +63,7 @@ ProxyNode::ProxyNode(Node *node) : Node(), _node(node) {
 	_component = node->_component;
 	_dominator = node->_dominator;
 	_interval = node->_interval;
-	_number = node->_number;
+	_postOrder = node->_postOrder;
 }
 
 
@@ -89,7 +89,7 @@ WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Loop(), _condition(
 	_component = entry->_component;
 	_dominator = entry->_dominator;
 	_interval = entry->_interval;
-	_number = entry->_number;
+	_postOrder = entry->_postOrder;
 
 	set<Node*> body;
 	foreach (Node *u, graph->_nodes)
@@ -116,7 +116,7 @@ WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Loop(), _condition(
 	_body->structureLoops(_body->stronglyConnectedComponents());
 
 	foreach (Node *u, _body->_nodes)
-		u->_number = 0;
+		u->_postOrder = 0;
 	_body->orderNodes();
 	_body->removeUnreachableNodes();
 }
@@ -152,7 +152,7 @@ DoWhileLoop::DoWhileLoop(ControlFlowGraph *graph, Node *entry, Node *latch) : Lo
 	_component = entry->_component;
 	_dominator = entry->_dominator;
 	_interval = entry->_interval;
-	_number = entry->_number;
+	_postOrder = entry->_postOrder;
 
 	set<Node*> body;
 	foreach (Node *u, graph->_nodes)
@@ -182,7 +182,7 @@ DoWhileLoop::DoWhileLoop(ControlFlowGraph *graph, Node *entry, Node *latch) : Lo
 	_body->structureLoops(_body->stronglyConnectedComponents());
 
 	foreach (Node *u, _body->_nodes)
-		u->_number = 0;
+		u->_postOrder = 0;
 	_body->orderNodes();
 	_body->removeUnreachableNodes();
 }
@@ -217,12 +217,12 @@ EndlessLoop::EndlessLoop(ControlFlowGraph *graph, Node *entry) : Loop() {
 	_component = entry->_component;
 	_dominator = entry->_dominator;
 	_interval = entry->_interval;
-	_number = entry->_number;
+	_postOrder = entry->_postOrder;
 	Node *exit = 0;
 	foreach (Node *u, graph->_nodes)
 		if (u->_component == entry->_component) {
 			foreach (Node *v, u->_out)
-				if (v->_component != entry->_component && (!exit || exit->_number < v->_number))
+				if (v->_component != entry->_component && (!exit || exit->_postOrder < v->_postOrder))
 					exit = v;
 		}
 
@@ -258,7 +258,7 @@ EndlessLoop::EndlessLoop(ControlFlowGraph *graph, Node *entry) : Loop() {
 	_body->setEntry(entry->address());
 	_body->structureLoops(components);
 	foreach (Node *u, _body->_nodes)
-		u->_number = 0;
+		u->_postOrder = 0;
 	_body->orderNodes();
 	_body->removeUnreachableNodes();
 }

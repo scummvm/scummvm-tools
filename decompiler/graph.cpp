@@ -37,9 +37,9 @@ void componentVisit(Node *u, Node *representative, list<Node*> &component) {
 
 Node *dominatorIntersect(Node *u, Node *v) {
 	while (u != v) {
-		while (u->_number < v->_number)
+		while (u->_postOrder < v->_postOrder)
 			u = u->_dominator;
-		while (v->_number < u->_number)
+		while (v->_postOrder < u->_postOrder)
 			v = v->_dominator;
 	}
 	return u;
@@ -64,9 +64,9 @@ string graphvizPrintBox(Node *u, const string &fontname, int fontsize) {
 		ret << "fontname=" << '"' << fontname << "\",";
 	if (fontsize != 0)
 		ret << "fontsize=" << fontsize << ",";
-	ret	<< "shape=box,label=\"<number=" << u->_number;
-	if (u->_dominator)
-		ret	<< ", dom=" << u->_dominator->_number;
+	ret	<< "shape=box,label=\"<number=" << u->_postOrder;
+	//	if (u->_dominator)
+	//		ret	<< ", dom=" << u->_dominator->_postOrder;
 	ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << endl;
 	return ret.str();
 }
@@ -100,7 +100,7 @@ string graphvizPrintSubgraph(ControlFlowGraph *graph, const string &fontname, in
 
 
 bool postOrderCompare(Node *a, Node *b) {
-	return a->_number < b->_number;
+	return a->_postOrder < b->_postOrder;
 }
 
 list<Node*> inPostOrder(list<Node*> &nodes) {
@@ -111,14 +111,28 @@ list<Node*> inPostOrder(list<Node*> &nodes) {
 
 
 int orderVisit(Node *u, int number) {
-	u->_number = -1;
+	u->_postOrder = -1;
 	foreach (Node *v, u->_out)
-		if (!v->_number)
+		if (!v->_postOrder)
 			number = orderVisit(v, number);
-	u->_number = ++number;
+	u->_postOrder = ++number;
 	return number;
 }
 
+
+void replaceCrossEdgesWithProxies(ControlFlowGraph *gu, Node *u, ControlFlowGraph *gv, Node *v) {
+	foreach (Node *&node, u->_out)
+		if (node == v) {
+			node = new ProxyNode(v);
+			gu->_nodes.push_back(node);
+		}
+	size_t n = count(v->_in.begin(), v->_in.end(), u);
+	v->_in.remove(u);
+	while (n--) {
+		v->_in.push_back(new ProxyNode(u));
+		gv->_nodes.push_back(v->_in.back());
+	}
+}
 
 
 ControlFlowGraph::ControlFlowGraph() : _entry() {
@@ -271,7 +285,7 @@ bool ControlFlowGraph::isReducible() {
 
 
 void ControlFlowGraph::orderNodes() {
-	if (_entry && !_entry->_number)
+	if (_entry && !_entry->_postOrder)
 		orderVisit(_entry, 0);
 }
 
@@ -294,14 +308,14 @@ void ControlFlowGraph::removeJumpsToJumps() {
 
 void ControlFlowGraph::removeUnreachableNodes() {
 	foreach (Node *u, _nodes)
-		if (!u->_number) {
+		if (!u->_postOrder) {
 			foreach (Node *v, u->_out)
 				v->_in.remove(u);
 			foreach (Node *v, u->_in)
 				v->_out.remove(u);
 		}
 	for (list<Node*>::iterator it = _nodes.begin(); it != _nodes.end(); )
-		if ((*it)->_number)
+		if ((*it)->_postOrder)
 			it++;
 		else {
 			// delete *it;
@@ -331,14 +345,14 @@ list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
 	list< list<Node*> > ret;
 	foreach (Node *u, _nodes) {
 		u->_component = 0;
-		u->_number = 0;
+		u->_postOrder = 0;
 	}
 
 	int n = 0;
-	if (_entry && !_entry->_number)
+	if (_entry && !_entry->_postOrder)
 		n = orderVisit(_entry, n);
 	foreach (Node *u, _nodes)
-		if (!u->_number)
+		if (!u->_postOrder)
 			n = orderVisit(u, n);
 
 	list<Node*> nodes = inPostOrder(_nodes);
@@ -353,32 +367,18 @@ list< list<Node*> > ControlFlowGraph::stronglyConnectedComponents() {
 }
 
 
-// TODO force same proxy nodes for all nodes?
 ControlFlowGraph *ControlFlowGraph::yank(set<Node*> &nodes) {
 	ControlFlowGraph *subgraph = new ControlFlowGraph;
-	_subgraphs.push_back(subgraph);
-	list<Node*> newNodes;
-	foreach (Node *u, _nodes)
-		foreach (Node *v, _nodes) 
-			if (contains(nodes, u) != contains(nodes, v)) { // replace all cross-graph edges with proxies
-				size_t n = count(v->_in.begin(), v->_in.end(), u);
-				v->_in.remove(u);
-				while (n--)
-					v->_in.push_back(new ProxyNode(u));
-				foreach (Node *&node, u->_out)
-					if (node == v) {
-						node = new ProxyNode(node);
-						if (contains(nodes, u))
-							subgraph->_nodes.push_back(node);
-						else
-							newNodes.push_back(node);
-					}
-			}
-	copy(newNodes.begin(), newNodes.end(), back_inserter(_nodes));
 	foreach (Node *u, nodes) {
 		subgraph->_nodes.push_back(u);
 		_nodes.remove(u);
 	}
+	foreach (Node *u, nodes)
+		foreach (Node *v, list<Node*>(_nodes)) {
+			replaceCrossEdgesWithProxies(subgraph, u, this, v);
+			replaceCrossEdgesWithProxies(this, v, subgraph, u);
+		}
+	_subgraphs.push_back(subgraph);
 	return subgraph;
 }
 
@@ -388,7 +388,7 @@ void ControlFlowGraph::structureLoops(const list< list<Node*> > &components) {
 		return;
 	foreach (Node *u, _nodes) {
 		u->_dominator = 0;
-		u->_number = 0;
+		u->_postOrder = 0;
 	}
 	orderNodes();
 	removeUnreachableNodes();
@@ -400,7 +400,7 @@ void ControlFlowGraph::structureLoops(const list< list<Node*> > &components) {
 			Node *latch = 0;
 			foreach (Node *u, component) // find the deepest latching node
 				foreach (Node *v, u->_out)
-					if (v == entry && (!latch || latch->_number > u->_number))
+					if (v == entry && (!latch || latch->_postOrder > u->_postOrder))
 						latch = u;
 			if (0) {
 			} else if (latch && latch != entry && latch->edgeOutsideComponent()) {
