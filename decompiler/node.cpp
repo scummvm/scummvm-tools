@@ -13,6 +13,20 @@ using namespace std;
 #endif
 
 
+
+bool reaches(Node *u, Node *t, set<Node*> &visited) {
+	if (u == t)
+		return true;
+	if (contains(visited, u))
+		return false;
+	visited.insert(u);
+	foreach (Node *v, u->_out)
+		if (reaches(v, t, visited))
+			return true;
+	return false;
+}
+
+
 Node::Node() : _component(), _dominator(), _interval(), _postOrder() {
 }
 
@@ -42,6 +56,12 @@ void Node::mimic(Node *node) {
 	_dominator = node->_dominator;
 	_interval  = node->_interval;
 	_postOrder = node->_postOrder;
+}
+
+
+bool Node::reaches(Node *t) {
+	set<Node*> visited;
+	return ::reaches(this, t, visited);
 }
 
 
@@ -109,7 +129,9 @@ WhileLoop::WhileLoop(ControlFlowGraph *graph, Node *entry) : Loop(), _condition(
 		if (dynamic_cast<ProxyNode*>(u))
 			graph->deleteNode(u);
 
-	// attach this while block in place of entry
+	// attach this loop block in place of entry
+	if (graph->_entry == entry)
+		graph->_entry = this;
 	foreach (Node *u, list<Node*>(entry->_in))
 		if (!dynamic_cast<ProxyNode*>(u))
 			graph->replaceEdges(u, entry, this);
@@ -157,7 +179,9 @@ DoWhileLoop::DoWhileLoop(ControlFlowGraph *graph, Node *entry, Node *latch) : Lo
 	_body = graph->yank(body);
 	_body->setEntry(entry->address());
 
-	// remove unneeded nodes in main graph and attach this while block in place of entry
+	// remove unneeded nodes in main graph and attach this loop block in place of entry
+	if (graph->_entry == entry)
+		graph->_entry = this;
 	foreach (Node *u, graph->_nodes)
 		foreach (Node *&v, u->_out)
 			if (v->address() == entry->address()) {
@@ -223,7 +247,9 @@ EndlessLoop::EndlessLoop(ControlFlowGraph *graph, Node *entry) : Loop() {
 	graph->_nodes.remove(entry);
 	_body->_nodes.push_back(entry);
 
-	// attach this while block in place of entry
+	// attach this loop block in place of entry
+	if (graph->_entry == entry)
+		graph->_entry = this;
 	foreach (Node *u, list<Node*>(entry->_in))
 		graph->replaceEdges(u, entry, this);
 	if (exit)
@@ -248,6 +274,68 @@ string EndlessLoop::toString() {
 	ret << "for (;;) { ";
 	if (_body->_entry)
 		ret << "[" << phex(_body->_entry->address()) << "] ";
+	ret << "}" << endl;
+	return ret.str();
+}
+
+
+IfThenElse::IfThenElse(ControlFlowGraph *graph, Node *entry) : Node(), _condition(entry) {
+	mimic(entry);
+	Node *exit = 0;
+	foreach (Node *u, graph->_nodes)
+		if (u->_dominator == entry && u->_in.size() >= 2)
+			exit = u;
+
+	// yank out true and false branch
+	set<Node*> consequence, alternative;
+	foreach (Node *u, graph->_nodes)
+		if (u != entry && entry->dominates(u) && !entry->_out.front()->reaches(u))
+			consequence.insert(u);
+	foreach (Node *u, graph->_nodes)
+		if (u != entry && entry->dominates(u) && !entry->_out.back()->reaches(u))
+			alternative.insert(u);
+	_consequence = graph->yank(consequence);
+	if (!consequence.empty())
+		_consequence->setEntry(entry->_out.back()->address());
+	_alternative = graph->yank(alternative);
+	if (!alternative.empty())
+		_alternative->setEntry(entry->_out.front()->address());
+
+	// remove unneeded nodes in main graph
+	graph->forgetNode(entry);
+	foreach (Node *u, entry->_out)
+		if (dynamic_cast<ProxyNode*>(u))
+			graph->deleteNode(u);
+
+	// attach this conditional block in place of entry
+	if (graph->_entry == entry)
+		graph->_entry = this;
+	foreach (Node *u, list<Node*>(entry->_in))
+		graph->replaceEdges(u, entry, this);
+	if (exit)
+		graph->addEdge(this, exit);
+}
+
+
+IfThenElse::~IfThenElse() {
+}
+
+
+uint32 IfThenElse::address() {
+	return _condition->address();
+}
+
+
+string IfThenElse::toString() {
+	ostringstream ret;
+	ret << "if (" << endl;
+	ret << _condition->toString();
+	ret << ") { ";
+	if (_consequence->_entry)
+		ret << "[" << phex(_consequence->_entry->address()) << "] ";
+	ret << "} else { ";
+	if (_alternative->_entry)
+		ret << "[" << phex(_alternative->_entry->address()) << "] ";
 	ret << "}" << endl;
 	return ret.str();
 }

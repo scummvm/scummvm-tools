@@ -27,6 +27,7 @@ struct Node : boost::noncopyable {
 	bool dominates(Node *u);
 	Node *edgeOutsideComponent();
 	void mimic(Node *node);
+	bool reaches(Node *t);
 	virtual std::string toString() = 0;
 };
 
@@ -61,7 +62,6 @@ struct Loop : public Node {
 
 	Loop() : Node(), _body() {
 	}
-
 };
 
 
@@ -95,6 +95,20 @@ struct EndlessLoop : public Loop {
 
 	EndlessLoop(ControlFlowGraph *graph, Node *entry);
 	~EndlessLoop();
+
+	uint32 address();
+	std::string toString();
+};
+
+
+struct IfThenElse : public Node {
+
+	Node *_condition;
+	ControlFlowGraph *_consequence;
+	ControlFlowGraph *_alternative;
+
+	IfThenElse(ControlFlowGraph *graph, Node *entry);
+	~IfThenElse();
 
 	uint32 address();
 	std::string toString();

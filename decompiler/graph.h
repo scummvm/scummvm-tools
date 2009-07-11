@@ -37,6 +37,7 @@ struct ControlFlowGraph : boost::noncopyable {
 	ControlFlowGraph *yank(std::set<Node*> &body);
 
 	void structureLoops(const std::list< std::list<Node*> > &components);
+	void structureConditionals();
 
 	// to be removed
 	void assignIntervals();

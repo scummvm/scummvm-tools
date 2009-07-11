@@ -96,6 +96,14 @@ string graphvizPrintSubgraph(ControlFlowGraph *graph, const string &fontname, in
 			ret << '"' << u << "\" -> \"" << loop->_body->_entry << "\"[color=blue,style=dashed]" << endl;
 	}
 
+	foreach (Node *u, graph->_nodes) {
+		IfThenElse *ifte = dynamic_cast<IfThenElse*>(u);
+		if (ifte && ifte->_consequence->_entry)
+			ret << '"' << u << "\" -> \"" << ifte->_consequence->_entry << "\"[color=red]" << endl;
+		if (ifte && ifte->_alternative->_entry)
+			ret << '"' << u << "\" -> \"" << ifte->_alternative->_entry << "\"[color=red,style=dashed]" << endl;
+	}
+
 	return ret.str();
 }
 
@@ -404,7 +412,7 @@ void ControlFlowGraph::structureLoops(const list< list<Node*> > &components) {
 				foreach (Node *v, u->_out)
 					if (v == entry && (!latch || latch->_postOrder > u->_postOrder))
 						latch = u;
-			if (latch && latch != entry &&latch->edgeOutsideComponent()) {
+			if (latch && latch != entry && latch->edgeOutsideComponent()) {
 				_nodes.push_back(new DoWhileLoop(this, entry, latch));
 				cerr << "done do-while loop at " << phex(entry->address()) << endl;
 			} else if (latch && entry->edgeOutsideComponent()) {
@@ -418,4 +426,18 @@ void ControlFlowGraph::structureLoops(const list< list<Node*> > &components) {
 			// TODO: unreducible graph, lots of heuristics
 		}
 	}
+}
+
+
+void ControlFlowGraph::structureConditionals() {
+	assignDominators();
+	foreach (Node *u, inPostOrder(_nodes))
+		if (u->_out.size() == 2) {
+			_nodes.push_back(new IfThenElse(this, u));
+			cerr << "done if-then-else at " << phex(u->address()) << endl;
+			return structureConditionals();
+		}
+	foreach (ControlFlowGraph *subgraph, _subgraphs)
+		if (subgraph->_entry)
+			subgraph->structureConditionals();
 }

@@ -80,6 +80,7 @@ int main(int argc, char **argv) {
 	}
 	if (vars.count("graph-struct")) {
 		cfg.structureLoops(cfg.stronglyConnectedComponents());
+		cfg.structureConditionals();
 		cout << cfg.graphvizToString(vars["fontname"].as<string>());
 		exit(0);
 	}
