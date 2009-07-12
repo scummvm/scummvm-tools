@@ -3498,6 +3498,7 @@ void next_line_HE_V72(char *output) {
 				"\x61p|setAnimSpeed,"
 				"\x62p|setShadowMode,"
 				"\x63pp|setTalkPos,"
+				"\x8Bpp|case139,"
 				"\x9Cp|charset,"
 				"\xAFp|setPaletteNum,"
 				"\xC6pp|setAnimVar,"
