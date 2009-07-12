@@ -82,11 +82,12 @@ public:
 	/** The state of the wizard so far */
 	Configuration _configuration;
 
+	/** The button pane */
+	WizardButtons *_buttons;
 private:
 	void switchPage(WizardPage *nextPage, bool moveback);
 
 	wxPanel *_wizardpane;
-	WizardButtons *_buttons;
 	
 	std::vector<WizardPage *> _pages;
 
@@ -147,6 +148,11 @@ public:
 	 * Changes name of the 'next' button to finish
 	 */
 	void showFinish(bool show);
+
+	/**
+	 * Changes name of the 'Cancel' button to abort
+	 */
+	void showAbort(bool show);
 
 	// wx event handlers
 	void onClickAbout(wxCommandEvent &e);

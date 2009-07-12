@@ -899,7 +899,8 @@ void ChooseAudioOptionsVorbisPage::onNext(wxWindow *panel) {
 
 ProcessPage::ProcessPage(ScummToolsFrame* frame)
 	: WizardPage(frame),
-	  _finished(false)
+	  _finished(false),
+	  _success(false)
 {
 }
 
@@ -957,6 +958,10 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 		_thread->Wait();
 		delete _thread;
 		_thread = NULL;
+		_finished = true;
+
+		// Update UI
+		updateButtons(panel, _topframe->_buttons);
 		return false;
 	}
 
@@ -967,16 +972,26 @@ void ProcessPage::onNext(wxWindow *panel) {
 	switchPage(new FinishPage(_topframe));
 }
 
+void ProcessPage::onCancel(wxWindow *panel) {
+	if(_finished)
+		WizardPage::onCancel(panel);
+	else
+		_thread->abort();
+}
+
 void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	if (_success) {
 		buttons->enablePrevious(false);
 		buttons->enableNext(true);
+		buttons->showAbort(false);
 	} else if (_finished) {
 		buttons->enablePrevious(true);
 		buttons->enableNext(true);
+		buttons->showAbort(false);
 	} else {
 		buttons->enablePrevious(false);
 		buttons->enableNext(false);
+		buttons->showAbort(true);
 	}
 }
 
@@ -1003,6 +1018,11 @@ wxThread::ExitCode ProcessToolThread::Entry() {
 	}
 	_finished = true;
 	return NULL;
+}
+
+void ProcessToolThread::abort() {
+	// Notify the tool of the abort
+	_tool->_backend->abort();
 }
 
 void ProcessToolThread::writeToOutput(void *udata, const char *text) {
@@ -1050,7 +1070,7 @@ void FinishPage::onNext(wxWindow *panel) {
 		// There is no standard way to do this
 		// On windows we can simply spawn an explorer instance
 #ifdef __WINDOWS__
-		wxExecute(wxT("explorer.exe") + _topframe->_configuration.outputPath);
+		wxExecute(wxT("explorer.exe \"") + _topframe->_configuration.outputPath + wxT("\""));
 #else
 #endif
 	}

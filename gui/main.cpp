@@ -220,6 +220,7 @@ void WizardButtons::reset() {
 	enableNext(true);
 	enablePrevious(true);
 	showFinish(false);
+	showAbort(false);
 	setLineLabel(wxT("ScummVM Tools"));
 }
 
@@ -252,6 +253,13 @@ void WizardButtons::showFinish(bool show) {
 		_next->SetLabel(wxT("Finish!"));
 	else
 		_next->SetLabel(wxT("Next >"));
+}
+
+void WizardButtons::showAbort(bool show) {
+	if (show)
+		_cancel->SetLabel(wxT("Abort"));
+	else
+		_cancel->SetLabel(wxT("Cancel"));
 }
 
 void WizardButtons::showPrevious(bool show) {

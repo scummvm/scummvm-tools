@@ -325,9 +325,14 @@ public:
 	ProcessToolThread(const ToolGUI *tool, Configuration &configuration, ThreadOutputBuffer &output);
 
 	/**
-	 * Entry point of the subthread
+	 * Entry point of the child thread.
 	 */
 	virtual ExitCode Entry();
+
+	/**
+	 * Aborts execution of the thread gracefully, if possible.
+	 */
+	void abort();
 
 	/**
 	 * Write to the output window pointed to by udata, this adds 
@@ -383,6 +388,7 @@ public:
 	bool onIdle(wxPanel *panel);
 
 	void onNext(wxWindow *panel);
+	void onCancel(wxWindow *panel);
 
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };

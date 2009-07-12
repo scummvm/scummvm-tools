@@ -39,6 +39,11 @@ Tool::Tool(const std::string &name) {
 	_internalPrint = printToSTDOUT;
 	_print_udata = NULL;
 
+	_internalProgress = standardProgress;
+	_progress_udata = this;
+
+	_abort = false;
+
 	_helptext = "\nUsage: tool [-o outputname] <infile>\n";
 }
 
@@ -102,13 +107,26 @@ int Tool::run(int argc, char *argv[]) {
 }
 
 void Tool::run() {
-	// Not much done here, but we might want extra handling later
+	// Reset abort state
+	_abort = false;
+	
 	execute();
 }
 
 void Tool::setPrintFunction(void (*f)(void *, const char *), void *udata) {
 	_internalPrint = f;
 	_print_udata = udata;
+}
+
+void Tool::setProgressFunction(void (*f)(void *, int, int), void *udata) {
+	_internalProgress = f;
+	_progress_udata = udata;
+}
+
+void Tool::abort() {
+	// Set abort safe
+	// (Non-concurrent) writes are atomic on x86
+	_abort = true;
 }
 
 void Tool::error(const char *format, ...) {
@@ -142,6 +160,23 @@ void Tool::print(const char *format, ...) {
 	va_end(va);
 
 	_internalPrint(_print_udata, buf);
+
+	// We notify of progress here
+	// This way, almost all tools will be able to exit gracefully (as they print stuff)
+	notifyProgress(false);
+}
+
+void Tool::notifyProgress(bool print_dot) {
+	if(_abort)
+		throw AbortException();
+	if(print_dot)
+		_internalProgress(_progress_udata, 0, 0);
+}
+
+void Tool::updateProgress(int done, int total) {
+	if(_abort)
+		throw AbortException();
+	_internalProgress(_progress_udata, done, total);
 }
 
 void Tool::parseAudioArguments() {
@@ -176,4 +211,10 @@ void Tool::parseExtraArguments() {
 // Standard print function
 void Tool::printToSTDOUT(void * /*udata*/, const char *text) {
 	puts(text);
+}
+
+// Standard progress function (does nothing)
+void Tool::standardProgress(void *udata, int done, int total) {
+	if(total == 0)
+		reinterpret_cast<Tool*>(udata)->print(".");
 }

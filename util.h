@@ -286,6 +286,15 @@ public:
 };
 
 /**
+ * Something unexpected happened while reading / writing to a file
+ * Usually premature end, or that it could not be opened (write / read protected)
+ */
+class AbortException : public ToolException {
+public: 
+	AbortException() : ToolException("Operation was aborted", -2) {}
+};
+
+/**
  * A file path, can be queried for different parts
  * and the parts can be modified seperately
  */

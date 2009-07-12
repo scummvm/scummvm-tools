@@ -42,20 +42,66 @@ public:
 	// passes through errors
 	void run();
 
+	/**
+	 * Aborts executing of the tool, can be called from another thread
+	 * The progress will not be aborted until the next call to notifyProgress
+	 */
+	void abort();
+
+	/**
+	 * Fatal error in the tool, throws a ToolException,
+	 * you shouldn't really catch this exception.
+	 */
 	void error(const char *format, ...);
+	/**
+	 * A warning, the same as print but WARNING: is prepended to the message.
+	 */
 	void warning(const char *format, ...);
+	/**
+	 * Prints a message, to either stdout or the GUI, always use this instead of printf
+	 */
 	void print(const char *format, ...);
 
 	/** Returns name of the tool */
 	std::string getName() const;
 
+
 	/**
-	 * This function will be called when the tool needs to output something
+	 * Notifies of progress, normally just prints a dot if enough time has passed since the last call
+	 * This may through an AbortException, you should generally not catch this
+	 * (more than to do cleanup)
+	 *
+	 * @param print_dot Provides visual feedback to the user, defaults to true
+	 */
+	void notifyProgress(bool print_dot = true);
+
+	/**
+	 * Update progress in a more distinct way, if we know the estimated runtime
+	 * This may through an AbortException, you should generally not catch this
+	 * (more than to do cleanup)
+	 *
+	 * @param done how many parts that have been done
+	 * @param total parts in total
+	 */
+	void updateProgress(int done, int total = 100);
+
+	/**
+	 * This function sets the function which will be called needs to output something
 	 * 
 	 * @param f the function to be called, it takes a userdata argument in addition to text to print
 	 * @param udata The userdata to call to the print function each time it is called
 	 */
 	void setPrintFunction(void f(void *, const char *), void *udata);
+	
+	/**
+	 * Set the function that is called on status updates
+	 * Parameters to the function are 'done' and 'total', if total is 0, 
+	 * it's a simple status notification (print a dot or something)
+	 *
+	 * @param f this function will be called with udata arguments and 'done' / 'total'
+	 * @param udata Userdata that will be passed to the function each time it is 
+	 */
+	void setProgressFunction(void f(void *, int, int), void *udata);
 
 protected:
 	virtual void parseAudioArguments();
@@ -76,17 +122,20 @@ public:
 	Filename _outputPath;
 
 protected:
-	// Command line arguments we are parsing...
+	/* Command line arguments we are parsing. */
 	std::vector<std::string> _arguments;
+	/* How many of the arguments we have parsed so far */
 	size_t _arguments_parsed;
-	// We need to keep the raw arguments to invoke some functions
+	/**
+	 * The raw arguments, necossary to invoke some functions properly, 
+	 * argc is the same as _arguments.size() */
 	char **_argv;
 
-	/** If this tools outputs to a directory, not a file */
+	/** If this tools outputs to a directory, not a file. */
 	bool _outputToDirectory;
-	/** We don't take a single file, but an entire directory as input */
+	/** We don't take a single file, but an entire directory as input .*/
 	bool _inputFromDirectory;
-	/** */
+	/** Formats supported by this tool. */
 	AudioFormat _supported_formats;
 
 	/** Name of the tool */
@@ -94,11 +143,23 @@ protected:
 	/** The text to display to help the user */
 	std::string _helptext;
 
+	/** Status of internal abort flag, if set, next call to *Progress will throw */
+	bool _abort;
+	
 private:
 	typedef void (*PrintFunction)(void *, const char *);
 	PrintFunction _internalPrint;
 	void *_print_udata;
+
+	typedef void (*ProgressFunction)(void *, int, int);
+	ProgressFunction _internalProgress;
+	void *_progress_udata;
+
+	// Standard print function
 	static void printToSTDOUT(void *udata, const char *message);
+	
+	// Standard progress function
+	static void standardProgress(void *udata, int done, int total);
 
 	friend class ToolGUI;
 };
