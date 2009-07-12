@@ -355,8 +355,9 @@ uint32 writeBodyPackFile(FILE *stk, FILE *src) {
 	size = fileSize(src);
 
 	byte *unpacked = new byte [size + 1];
-	for (int i = 0; i < 4096 - 18; i++)
-		dico[i] = 0x20;
+
+	memset(dico, 0x20, 4114);
+	memset(unpacked, 0, size + 1);
 
 	fread(unpacked, 1, size, src);
 
