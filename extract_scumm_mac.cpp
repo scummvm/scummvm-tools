@@ -21,18 +21,19 @@
  *
  */
 
-#include "util.h"
+#include "extract_scumm_mac.h"
 
 /* this makes extract_scumm_mac convert extracted file names to lower case */
 #define CHANGECASE
 
-int export_main(extract_scumm_mac)(int argc, char *argv[]) {
-	const char *helptext =
-		"\nUsage: %s [-o <output dir> = out/] <file>\n"
+ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name) {
+	_helptext =
+		"\nUsage: " + _name + " [-o <output dir> = out/] <file>\n"
 		"\tSome Lucas Arts CDs appear to contains only an application.\n"
 		"\tThey actually contain a seperate data file as a hidden file.\n";
+}
 
-	FILE *ifp, *ofp;
+void ExtractScummMac::execute() {
 	unsigned long file_record_off, file_record_len;
 	unsigned long file_off, file_len;
 	unsigned long data_file_len;
@@ -41,63 +42,46 @@ int export_main(extract_scumm_mac)(int argc, char *argv[]) {
 	unsigned long i;
 	int j;
 
-	int first_arg = 1;
-	int last_arg = argc - 1;
+	// We only got one input file
+	if (_inputPaths.size() > 1)
+		error("Only one input file expected!");
+	Filename inpath(_inputPaths[0]);
+	Filename outpath(_outputPath);
 
-	Filename outpath;
-
-	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc, helptext);
-	
-	// Continuing with finding out output directory
-	// also make sure we skip those arguments
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else
-		// Standard output dir
+	if(outpath.empty())
 		outpath.setFullPath("out/");
 
-	if ((ifp = fopen(argv[first_arg], "rb")) == NULL) {
-		error("Could not open \'%s\'.", argv[first_arg]);
-	}
+	File ifp(inpath, "rb");
 
 	/* Get the length of the data file to use for consistency checks */
-	data_file_len = fileSize(ifp);
+	data_file_len = ifp.size();
 
 	/* Read offset and length to the file records */
-	file_record_off = readUint32BE(ifp);
-	file_record_len = readUint32BE(ifp);
+	file_record_off = ifp.readUint32BE();
+	file_record_len = ifp.readUint32BE();
 
 	/* Do a quick check to make sure the offset and length are good */
 	if (file_record_off + file_record_len > data_file_len) {
-		fclose(ifp);
-		error("\'%s\'. file records out of bounds.", argv[first_arg]);
+		error("\'%s\'. file records out of bounds.", inpath.getFullPath().c_str());
 	}
 
 	/* Do a little consistancy check on file_record_length */
 	if (file_record_len % 0x28) {
-		fclose(ifp);
-		error("\'%s\'. file record length not multiple of 40.", argv[first_arg]);
+		error("\'%s\'. file record length not multiple of 40.", inpath.getFullPath().c_str());
 	}
 
 	/* Extract the files */
 	for (i = 0; i < file_record_len; i += 0x28) {
 		/* read a file record */
-		if (fseek(ifp, file_record_off + i, SEEK_SET)) {
-			fclose(ifp);
-			error("Seek error.");
-		}
+		ifp.seek(file_record_off + i, SEEK_SET);
 
-		file_off = readUint32BE(ifp);
-		file_len = readUint32BE(ifp);
-		fread(file_name, 0x20, 1, ifp);
+		file_off = ifp.readUint32BE();
+		file_len = ifp.readUint32BE();
+		ifp.read(file_name, 0x20, 1);
 
-		if (!file_name[0]) {
-			fclose(ifp);
-			error("\'%s\'. file has no name.", argv[first_arg]);
-		}
+		if (!file_name[0])
+			error("\'%s\'. file has no name.", inpath.getFullPath().c_str());
+		
 		printf("extracting \'%s\'", file_name);
 
 		/* For convenience compatibility with scummvm (and case sensitive
@@ -119,40 +103,31 @@ int export_main(extract_scumm_mac)(int argc, char *argv[]) {
 
 		if (j == 0x20) {
 			file_name[0x1f] = 0;
-			fprintf(stderr, "\nwarning: \'%s\'. file name not null terminated.\n", file_name);
-			fprintf(stderr, "data file \'%s\' may be not a file extract_scumm_mac can extract.\n", argv[first_arg]);
+			warning("\'%s\'. file name not null terminated.\n", file_name);
+			print("data file \'%s\' may be not a file extract_scumm_mac can extract.\n", inpath.getFullPath().c_str());
 		}
 
 		printf(", saving as \'%s\'\n", file_name);
 
 		/* Consistency check. make sure the file data is in the file */
 		if (file_off + file_len > data_file_len) {
-			fclose(ifp);
-			error("\'%s\'. file out of bounds.", argv[first_arg]);
+			error("\'%s\'. file out of bounds.", inpath.getFullPath().c_str());
 		}
 
 		/* Write a file */
-		if (fseek(ifp, file_off, SEEK_SET)) {
-			fclose(ifp);
-			error("Seek error.");
-		}
+		ifp.seek(file_off, SEEK_SET);
 
 		outpath.setFullName(file_name);
-		ofp = fopen(outpath.getFullPath().c_str(), "wb");
+		File ofp(outpath, "wb");
 
 		if (!(buf = (char *)malloc(file_len))) {
-			fclose(ifp);
 			error("Could not allocate %ld bytes of memory.", file_len);
 		}
 
-		fread(buf, 1, file_len, ifp);
-		fwrite(buf, 1, file_len, ofp);
-		fclose(ofp);
+		ifp.read(buf, 1, file_len);
+		ofp.write(buf, 1, file_len);
 		free(buf);
 	}
-
-	fclose(ifp);
-	return 0;
 }
 
 #ifdef STANDALONE_MAIN
