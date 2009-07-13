@@ -21,8 +21,8 @@
  */
 
 
-#ifndef ENCODE_DXA_H
-#define ENCODE_DXA_H
+#ifndef EXTRACT_SCUMM_MAC_H
+#define EXTRACT_SCUMM_MAC_H
 
 #include "tool.h"
 
