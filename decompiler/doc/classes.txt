@@ -3,7 +3,7 @@ Data flow
 
 Script data is first passed into a _Parser_ instance, which produces
 a stream of _Instructions_. This list is then passed to _Control Flow Graph_,
-which uses it to build a graph comprised of _Blocks_. We ask _Control Flow
+which uses it to build a graph comprised of _Nodes_. We ask _Control Flow
 Graph_ to perform a number of analyses, and finally use the information
 filled in by it to traverse the graph starting from the entry point and
 rebuild the abstract syntax tree.
@@ -102,27 +102,61 @@ ControlFlowGraph
 
 Represents Control Flow Graph of the original script. It needs to be
 initialized by first giving it a stream of _Instructions_, and then
-setting an entry point. After calling a number of normalization
-functions (which remove jumps to jumps, remove blocks unreachable from the
-entry point, order the blocks in post-order, and assign block dominators),
-we can perform control flow analysis, first finding loops, and then
-if-then-else structures. When this is finished, each _Block_ is annotated
-with information sufficient to rebuild abstract syntax tree.
+setting an entry point. It has 3 main methods that are used to perform
+consecutive stages of code structuring
 
-At any point a graphical output in _dot_ format can be obtained for
-debugging information.
+* structureLoops
+* structureConditionals
+* structureSequences (not implemented)
+
+Most of these methods collapse a subgraph into a single node as a result,
+and append the corresponding subgraph to a list of subgraphs - for the
+ease of calling next restructuring stages on them.
 
 
-Block
------
+
+Node
+----
 
 The basic element of a _Control Flow Graph_. Contains a list of
-_Instructions_, and in/out edges to other _Blocks_. By convention,
-if the block ends with a conditional jump, the first edge corsesponds
+_Instructions_, and in/out edges to other _Nodes_. By convention,
+if the node ends with a conditional jump, the first edge corsesponds
 to the branch taken if the test condition is false ("jump if not").
 
-After performing the control flow analysis using _Control Flow Graph_ instance,
-every Block is annoted with the following information (if applicable):
+It has the following subclasses:
 
-* loop information - follow node, loop header, loop latching node
-* if-then-else-information - follow node
+
+### BasicBlock
+
+Holds a list of primitive instructions.
+
+
+### ProxyNode
+
+Contains a single reference to a node in a different graph, and by convention
+never has any outgoing edges. As of now it is used in two situations
+
+* interval analysis, to build the Derived Sequence of Graphs
+* yanking out subgraphs when collapsing loops and conditionals - each
+  out edge crossing the graph boundary is replaced with an edge to
+  a _ProxyNode_
+
+
+### Loop
+
+Contains the loop body (a subgraph) and optionally an exit condition.
+The constructor of each of the subclasses links the collapsed node
+back to the original graph, and recursively performs the loop
+structuring on the obtained subgraph.
+
+
+#### WhileLoop
+
+#### DoWhileLoop
+
+#### EndlessLoop
+
+
+### IfThenElse
+
+Contains two conditional branches (subgraphs).

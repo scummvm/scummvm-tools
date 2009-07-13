@@ -31,12 +31,12 @@ control flow graph. If we assume every loop has a single entry point, then
 this is also the entry to the corresponding strongly connected component.
 There exist three kinds of loops:
 
-* While loop - entry node has one edge pointing outside strongly connected
-  component
 * Do-While loop - entry node has single outgoing edge, or two edges leading
   inside the strongly connected component, and a latching node (the deepest
   node pointing back to the entry node) with one edge pointing outside
   the strongly connected component.
+* While loop - entry node has one edge pointing outside strongly connected
+  component
 * infinite loop - both entry and latching nodes have single edges pointing
   inside strongly connected components.
 
@@ -78,6 +78,17 @@ code:
 This can be later cleaned up by a post-processor.
 
 
+### Unreducible graphs
+
+Classification of abnormal loops is given in the sections 6.5.1 and
+6.6.4 of "Reverse Decompilation Techniques" by Cristina Cifuentes
+(Figures 6-17, 6-29 and 6-39). Cases of Overlapping loops and each
+of four cases of Multientry Loops will probably need a separate heuristic
+to structure correctly.
+
+Fortunately, unreducible graphs form only a small fraction of SCUMM scripts.
+
+
 
 If-Then-Else expressions
 ------------------------
@@ -88,3 +99,7 @@ to the body of a branch of _if_ statement if:
 
 * it is strictly dominated by the condition
 * it is reachable by only one of the conditional paths
+
+Collapsing the bottommost (with the least post-order number) nodes first
+seems to give a better structuring (less gotos) but should not affect the
+correctness of the output.
