@@ -902,6 +902,11 @@ ProcessPage::ProcessPage(ScummToolsFrame* frame)
 	  _finished(false),
 	  _success(false)
 {
+	_gauge = NULL;
+	_outwin = NULL;
+
+	_output.done = 0;
+	_output.total = 100;
 }
 
 wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
@@ -915,7 +920,11 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 	
 	_outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 
 		wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("OutputWindow"));
-	sizer->Add(_outwin, wxSizerFlags(1).Expand().Border(wxALL, 10));
+	sizer->Add(_outwin, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT, 10));
+
+	_gauge = new wxGauge(panel, wxID_ANY, _output.total, wxDefaultPosition, wxDefaultSize, 
+		wxGA_HORIZONTAL, wxDefaultValidator, wxT("ProgressBar"));
+	sizer->Add(_gauge, wxSizerFlags(0).Expand().Border(wxBOTTOM | wxLEFT | wxRIGHT, 10));
 
 	panel->SetSizer(sizer);
 
@@ -941,15 +950,23 @@ void ProcessPage::runTool() {
 }
 
 bool ProcessPage::onIdle(wxPanel *panel) {
+	const ToolGUI *tool = _topframe->_configuration.selectedTool;
+
 	if (!_thread)
 		return false;
 
 	{
 		wxMutexLocker lock(_output.mutex);
 
+		// Write text
 		_outwin->WriteText(wxString(_output.buffer.c_str(), wxConvUTF8));
-
 		_output.buffer = "";
+
+		if(tool->supportsProgressBar()) {
+			// Update gauge
+			_gauge->SetRange(_output.total);
+			_gauge->SetValue(_output.done);
+		}
 	}
 
 	// Check if thread finished
@@ -965,11 +982,19 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 		return false;
 	}
 
+	if(!tool->supportsProgressBar()) {
+		// Just move the bar back & forth
+		_gauge->Pulse();
+	}
+
 	return true;
 }
 
 void ProcessPage::onNext(wxWindow *panel) {
-	switchPage(new FinishPage(_topframe));
+	if(_success)
+		switchPage(new FinishPage(_topframe));
+	else
+		switchPage(new FailurePage(_topframe));
 }
 
 void ProcessPage::onCancel(wxWindow *panel) {
@@ -984,10 +1009,17 @@ void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 		buttons->enablePrevious(false);
 		buttons->enableNext(true);
 		buttons->showAbort(false);
+
+		_gauge->SetRange(100);
+		_gauge->SetValue(100);
 	} else if (_finished) {
 		buttons->enablePrevious(true);
 		buttons->enableNext(true);
 		buttons->showAbort(false);
+
+		// It's not possible to disable them, leave it empty instead
+		_gauge->SetRange(0);
+		_gauge->SetValue(100);
 	} else {
 		buttons->enablePrevious(false);
 		buttons->enableNext(false);
@@ -1006,6 +1038,7 @@ ProcessToolThread::ProcessToolThread(const ToolGUI *tool, Configuration &configu
 	_finished = false;
 	
 	_tool->_backend->setPrintFunction(writeToOutput, reinterpret_cast<void *>(this));
+	_tool->_backend->setProgressFunction(gaugeProgress, reinterpret_cast<void *>(this));
 }
 
 wxThread::ExitCode ProcessToolThread::Entry() {
@@ -1032,7 +1065,15 @@ void ProcessToolThread::writeToOutput(void *udata, const char *text) {
 	self->_output.buffer += text;
 }
 
-// Page to choose ANY tool to use
+void ProcessToolThread::gaugeProgress(void *udata, int done, int total) {
+	ProcessToolThread *self = reinterpret_cast<ProcessToolThread *>(udata);
+	
+	wxMutexLocker lock(self->_output.mutex);
+	self->_output.done  = done;
+	self->_output.total = total;
+}
+
+// Last page of the wizard, offers the option to open the output directory
 
 FinishPage::FinishPage(ScummToolsFrame* frame)
 	: WizardPage(frame)
@@ -1078,6 +1119,39 @@ void FinishPage::onNext(wxWindow *panel) {
 }
 
 void FinishPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
+	buttons->enablePrevious(false);
+	buttons->showFinish(true);
+}
+
+
+// If the tool fails, this page is shown instead of the last page
+
+FailurePage::FailurePage(ScummToolsFrame* frame)
+	: WizardPage(frame)
+{
+}
+
+wxWindow *FailurePage::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+
+	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+
+	sizer->AddSpacer(15);
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY,
+		wxT("The execution of the tool failed. You can try running the wizard again and ensure that the file paths are accurate.")),
+		wxSizerFlags(1).Expand());
+
+	SetAlignedSizer(panel, sizer);
+
+	return panel;
+}
+
+void FailurePage::onNext(wxWindow *panel) {
+	_topframe->Close(true);
+}
+
+void FailurePage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->enablePrevious(false);
 	buttons->showFinish(true);
 }

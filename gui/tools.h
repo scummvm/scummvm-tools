@@ -108,6 +108,11 @@ public:
 	 * @param format The audio format(s) to test for
 	 */
 	bool supportsAudioFormat(AudioFormat format) const;
+	
+	/**
+	 * Returns true if the tool supports a load bar for displaying progress
+	 */
+	bool supportsProgressBar() const;
 
 	/**
 	 * Returns true if the tool outputs to an entire directory, not a single file

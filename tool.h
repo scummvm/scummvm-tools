@@ -136,7 +136,9 @@ protected:
 	/** We don't take a single file, but an entire directory as input .*/
 	bool _inputFromDirectory;
 	/** Formats supported by this tool. */
-	AudioFormat _supported_formats;
+	AudioFormat _supportedFormats;
+	/** If this tool can display output progress in % */
+	bool _supportsProgressBar;
 
 	/** Name of the tool */
 	std::string _name;

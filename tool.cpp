@@ -34,7 +34,8 @@ Tool::Tool(const std::string &name) {
 
 	_inputFromDirectory = false;
 	_outputToDirectory = true;
-	_supported_formats = AUDIO_NONE;
+	_supportedFormats = AUDIO_NONE;
+	_supportsProgressBar = false;
 
 	_internalPrint = printToSTDOUT;
 	_print_udata = NULL;
@@ -68,7 +69,7 @@ int Tool::run(int argc, char *argv[]) {
 	}
 
 	// Read standard arguments
-	if (_supported_formats != AUDIO_NONE)
+	if (_supportedFormats != AUDIO_NONE)
 		parseAudioArguments();
 	parseOutputArguments();
 	// Read tool specific arguments

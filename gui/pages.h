@@ -313,6 +313,8 @@ public:
 
 struct ThreadOutputBuffer {
 	std::string buffer;
+	int done;
+	int total;
 	wxMutex mutex;
 };
 
@@ -341,6 +343,13 @@ public:
 	 */
 	static void writeToOutput(void *udata, const char *text);
 
+	/**
+	 * Update progress bar, thread-safe
+	 * simply updates the values in the shared buffer, and the actual control
+	 * is then updated in the main thread.
+	 */
+	static void gaugeProgress(void *udata, int done, int total);
+
 	bool _finished;
 
 protected:
@@ -367,6 +376,8 @@ class ProcessPage : public WizardPage
 	bool _finished;
 	/** Output window */
 	wxTextCtrl *_outwin;
+	/** Gauge showing progress */
+	wxGauge *_gauge;
 	/** The thread which the tool is run in */
 	ProcessToolThread *_thread;
 	/** The structure to exchange output between thread & gui */
@@ -409,3 +420,21 @@ public:
 
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
+
+/**
+ * Displays a message saying that we failed, and clicking next will close the wizard
+ *
+ */
+
+class FailurePage : public WizardPage
+{
+public:
+	FailurePage(ScummToolsFrame* frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	void onNext(wxWindow *panel);
+
+	void updateButtons(wxWindow *panel, WizardButtons *buttons);
+};
+

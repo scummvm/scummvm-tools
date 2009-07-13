@@ -315,7 +315,11 @@ void ToolGUI::addInput(const wxString &input_wildcard, bool input_is_directory) 
 }
 
 bool ToolGUI::supportsAudioFormat(AudioFormat format) const {
-	return (_backend->_supported_formats & format) == format;
+	return (_backend->_supportedFormats & format) == format;
+}
+
+bool ToolGUI::supportsProgressBar() const {
+	return _backend->_supportsProgressBar;
 }
 
 bool ToolGUI::outputToDirectory() const {
