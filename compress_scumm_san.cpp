@@ -585,7 +585,7 @@ void CompressScummSan::execute() {
 		error("Only ogg vorbis and MP3 is supported for this tool.");
 
 	// Check input
-	if (_inputPaths.size() == 1)
+	if (_inputPaths.size() != 1)
 		error("One input file expected!");
 	Filename inpath(_inputPaths[0]);
 	Filename &outpath = _outputPath;

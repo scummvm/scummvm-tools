@@ -101,7 +101,7 @@ void CompressGob::execute() {
  * In order to have a slightly better compression ration in some cases (Playtoons), it
  * also detects duplicate files.
  */
-CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename stkName, uint16 &chunkCount) {
+CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName, uint16 &chunkCount) {
 	Chunk *chunks = new Chunk;
 	Chunk *curChunk = chunks;
 	Chunk *parseChunk;
