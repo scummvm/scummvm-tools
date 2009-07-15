@@ -359,16 +359,21 @@ void File::setXorMode(uint8 xormode) {
 	_xormode = xormode;
 }
 
-uint8 File::readByte() {
+int File::readChar() {
 	if (!_file) 
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
 		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
 
 	int u8 = fgetc(_file);
-	u8 ^= _xormode;
 	if (u8 == EOF)
 		throw FileException("Read beyond the end of file (" + _name.getFullPath() + ")");
+	u8 ^= _xormode;
+	return u8;
+}
+
+uint8 File::readByte() {
+	int u8 = readChar();
 	return (uint8)u8;
 }
 
@@ -417,16 +422,29 @@ size_t File::read(void *data, size_t elementSize, size_t elementCount) {
 	return data_read;
 }
 
-void File::writeByte(uint8 b) {
+size_t File::readN(void *data, size_t elementSize, size_t elementCount) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
+
+	return fread(data, elementSize, elementCount, _file);
+}
+
+void File::writeChar(int i) {
 	if (!_file) 
 		throw FileException("File  is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
 		throw FileException("Tried to write to a file opened in read mode (" + _name.getFullPath() + ")");
 
-	b ^= _xormode;
+	i ^= _xormode;
 
-	if (fwrite(&b, 1, 1, _file) != 1)
+	if (fwrite(&i, 1, 1, _file) != 1)
 		throw FileException("Could not write to file (" + _name.getFullPath() + ")");
+}
+
+void File::writeByte(uint8 b) {
+	writeChar(b);
 }
 
 void File::writeUint16BE(uint16 value) {

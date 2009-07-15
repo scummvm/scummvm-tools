@@ -103,7 +103,7 @@ void CompressScummSou::get_part(const char *inputPath) {
 	_output_idx.writeUint32BE((uint32)_output_snd.pos());
 	_output_idx.writeUint32BE(tags);
 	while (tags > 0) {
-		fputc(fgetc(_input), _output_snd);
+		_output_snd.writeChar(_input.readChar());
 		tags--;
 	}
 

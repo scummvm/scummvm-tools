@@ -290,8 +290,6 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 			delete[] data;
 		}
 
-		fflush(chunkFile);
-
 		curChunk = curChunk->next;
 	}
 }

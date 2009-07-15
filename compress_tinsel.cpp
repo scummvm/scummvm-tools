@@ -58,7 +58,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	char buffer[2048];
 	File curFileHandle;
 
-	printf("Assuming DW1 sample being 8-bit raw...\n");
+	print("Assuming DW1 sample being 8-bit raw...\n");
 
 	unlink(TEMP_RAW); unlink(TEMP_ENC);
 	curFileHandle.open(TEMP_RAW, "wb");
@@ -131,12 +131,12 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	char buffer[2048];
 	File curFileHandle;
 
-	printf("Assuming DW2 sample using ADPCM 6-bit, decoding to 16-bit raw...\n");
+	print("Assuming DW2 sample using ADPCM 6-bit, decoding to 16-bit raw...\n");
 
 	// Allocate buffer for the ADPCM-compressed sample
 	inBuffer = (byte *)malloc(sampleSize);
 	if (!inBuffer) {
-		printf("malloc failed!\n");
+		print("malloc failed!\n");
 		return;
 	}
 
@@ -144,7 +144,7 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	uncompressedSize = (sampleSize/3)*4*2+16;
 	outBuffer = (int16 *)malloc(uncompressedSize);
 	if (!outBuffer) {
-		printf("malloc failed!\n");
+		print("malloc failed!\n");
 		return;
 	}
 
@@ -287,7 +287,7 @@ void CompressTinsel::execute() {
 				error("The sourcefiles are already compressed, aborting...\n");
 			}
 			// Got sample(s), so convert...
-			printf("Converting sample %d of %d\n", indexNo, indexCount);
+			print("Converting sample %d of %d\n", indexNo, indexCount);
 
 			// Seek to Sample in input-file and read SampleSize
 			_input_smp.seek(indexOffset, SEEK_SET);

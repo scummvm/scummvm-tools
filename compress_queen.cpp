@@ -90,7 +90,8 @@ const struct PatchFile patchFiles[] = {
 };
 
 CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name) {
-	
+	_outputToDirectory = false;
+
 	_helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
 }
 
@@ -115,7 +116,7 @@ void CompressQueen::fromFileToFile(File &in, File &out, uint32 amount) {
 	uint32 numRead;
 
 	while (amount > 0) {
-		numRead = in.read(fBuf, 1, amount > 2048 ? 2048 : amount);
+		numRead = in.readN(fBuf, 1, amount > 2048 ? 2048 : amount);
 		if (numRead <= 0) {
 			break;
 		}
@@ -169,7 +170,7 @@ void CompressQueen::execute() {
 	uint32 prevOffset;
 
 	// Check input
-	if (_inputPaths.size() == 1)
+	if (_inputPaths.size() != 1)
 		error("One input file expected!");
 	Filename inpath(_inputPaths[0]);
 	Filename &outpath = _outputPath;
@@ -254,6 +255,7 @@ void CompressQueen::execute() {
 			_entry.size -= headerSize;
 
 			fromFileToFile(inputData, tmpFile, _entry.size);
+			tmpFile.close();
 
 			/* Invoke encoder */
 			setRawAudioType(false, false, 8);

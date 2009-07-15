@@ -92,24 +92,24 @@ public:
 	std::string _oggMinBitrate;
 	std::string _oggAvgBitrate;
 	std::string _oggMaxBitrate;
+	
+public:
+	int processMp3Parms(int argc, char *argv[], int* i);
+	int processOggParms(int argc, char *argv[], int* i);
+	int processFlacParms(int argc, char *argv[], int* i);
+
+	void extractAndEncodeVOC(const char *outName, File &input, AudioFormat compMode);
+	void extractAndEncodeWAV(const char *outName, File &input, AudioFormat compMode);
+
+	void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, AudioFormat compmode);
+	void encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode);
+	void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample);
 };
 
 /*
  * Stuff which is in compress.cpp
  */
 const extern char *tempEncoded;
-
-extern AudioFormat process_audio_params(int argc, char *argv[], int* i);
-extern int process_mp3_parms(int argc, char *argv[], int* i);
-extern int process_ogg_parms(int argc, char *argv[], int* i);
-extern int process_flac_parms(int argc, char *argv[], int* i);
-
-extern void extractAndEncodeVOC(const char *outName, FILE *input, AudioFormat compMode);
-extern void extractAndEncodeWAV(const char *outName, FILE *input, AudioFormat compMode);
-
-extern void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, AudioFormat compmode);
-extern void encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode);
-extern void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample);
 
 
 /* Integer definitions for the constants above */

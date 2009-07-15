@@ -70,7 +70,7 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 
 			print("VOC found (pos = %d) :\n", offs_table[i]);
 			input.seek(18, SEEK_CUR);
-			extractAndEncodeVOC(TEMP_RAW, input.getFileHandle(), _format);
+			extractAndEncodeVOC(TEMP_RAW, input, _format);
 
 			/* append converted data to output file */
 			File temp(tempEncoded, "rb");

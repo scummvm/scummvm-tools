@@ -75,7 +75,7 @@ void CompressKyra::process(Filename *infile, Filename *outfile) {
 
 		File tempFile(TEMPFILE, "rb");
 		tempFile.seek(26, SEEK_CUR);
-		extractAndEncodeVOC(TEMP_RAW, tempFile.getFileHandle(), _format);
+		extractAndEncodeVOC(TEMP_RAW, tempFile, _format);
 		tempFile.close();
 
 		outputName.setExtension(audio_extensions(_format));

@@ -387,6 +387,10 @@ public:
 	void setXorMode(uint8 xormode);
 	
 	/**
+	 * Reads a single character (equivalent of fgetc
+	 */
+	int readChar();
+	/**
 	 * Read a single unsigned byte.
 	 * Throws FileException if file is not open / if read failed.
 	 */
@@ -421,12 +425,21 @@ public:
 	 * @param elementCount the number of elements to read
 	 */
 	size_t read(void *data, size_t elementSize, size_t elementCount);
-	// Just an alias, for now... 
-	// (if we change the other version to throw it will be 
-	// easier if the concerned places already use the no-throw version)
-	size_t readN(void *data, size_t elementSize, size_t elementCount) {return read(data, elementSize, elementCount);}
+	/**
+	 * Works the same way as fread, does NOT throw if it could not read all elements
+	 * still throws if file is not open.
+	 *
+	 * @param data Where to put the read data
+	 * @param elementSize the size of one element (in bytes)
+	 * @param elementCount the number of elements to read
+	 */
+	size_t readN(void *data, size_t elementSize, size_t elementCount);
 
 	
+	/**
+	 * Writes a single character (equivalent of fputc)
+	 */
+	void writeChar(int c);
 	/**
 	 * Writes a single byte to the file.
 	 * Throws FileException if file is not open / if write failed.
@@ -489,10 +502,6 @@ public:
 	 * @todo get rid of this ASAP
 	 */
 	operator FILE *() { return _file; }
-	/**
-	 * Explicit conversion to a FILE *, all code should use this in the future
-	 */
-	FILE *handle() {return _file;}
 
 	// FIXME: Remove this method ASAP
 	FILE *getFileHandle() { return _file; }

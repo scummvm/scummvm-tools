@@ -82,7 +82,7 @@ void ExtractScummMac::execute() {
 		if (!file_name[0])
 			error("\'%s\'. file has no name.", inpath.getFullPath().c_str());
 		
-		printf("extracting \'%s\'", file_name);
+		print("extracting \'%s\'", file_name);
 
 		/* For convenience compatibility with scummvm (and case sensitive
 		 * file systems) change the file name to lowercase.
@@ -107,7 +107,7 @@ void ExtractScummMac::execute() {
 			print("data file \'%s\' may be not a file extract_scumm_mac can extract.\n", inpath.getFullPath().c_str());
 		}
 
-		printf(", saving as \'%s\'\n", file_name);
+		print(", saving as \'%s\'\n", file_name);
 
 		/* Consistency check. make sure the file data is in the file */
 		if (file_off + file_len > data_file_len) {

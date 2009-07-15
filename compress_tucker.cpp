@@ -62,7 +62,7 @@ int CompressTucker::compress_file_wav(File &input, File &output) {
 	char buf[8];
 
 	if (input.read(buf, 1, 8) == 8 && memcmp(buf, "RIFF", 4) == 0) {
-		extractAndEncodeWAV(TEMP_WAV, input.getFileHandle(), _format);
+		extractAndEncodeWAV(TEMP_WAV, input, _format);
 		return append_compress_file(output);
 	}
 	return 0;
@@ -368,14 +368,14 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 
 	/* compress the .wav files in each directory */
 	for (i = 0; i < SOUND_TYPES_COUNT; ++i) {
-		printf("Processing directory '%s'...\n", sound_directory_table[i].name);
+		print("Processing directory '%s'...\n", sound_directory_table[i].name);
 		sound_directory_size[i] = compress_sounds_directory(inpath, outpath, output, &sound_directory_table[i]);
-		printf("Done (%d bytes)\n", sound_directory_size[i]);
+		print("Done (%d bytes)\n", sound_directory_size[i]);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
-		printf("Processing directory 'audio'...\n");
+		print("Processing directory 'audio'...\n");
 		audio_directory_size = compress_audio_directory(inpath, outpath, output);
-		printf("Done (%d bytes)\n", audio_directory_size);
+		print("Done (%d bytes)\n", audio_directory_size);
 	}
 
 	/* fix sound types offsets/counts */
@@ -397,7 +397,7 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 	unlink(TEMP_RAW);
 	unlink(tempEncoded);
 
-	printf("Done.\n");
+	print("Done.\n");
 }
 
 
