@@ -99,7 +99,3 @@ to the body of a branch of _if_ statement if:
 
 * it is strictly dominated by the condition
 * it is reachable by only one of the conditional paths
-
-Collapsing the bottommost (with the least post-order number) nodes first
-seems to give a better structuring (less gotos) but should not affect the
-correctness of the output.
