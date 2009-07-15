@@ -65,8 +65,9 @@ string graphvizPrintBox(Node *u, const string &fontname, int fontsize) {
 	if (fontsize != 0)
 		ret << "fontsize=" << fontsize << ",";
 	ret	<< "shape=box,label=\"<number=" << u->_postOrder;
-	if (u->_dominator)
-		ret	<< ", dom=" << u->_dominator->_postOrder;
+        // TODO: instead, fix the dominator (and post-ordering) algorithm to deal with multi-entry graphs
+        //	if (u->_dominator)
+        //		ret	<< ", dom=" << u->_dominator->_postOrder;
 	ret << ">\\n" << graphvizEscapeLabel(u->toString()) << "\"];" << endl;
 	return ret.str();
 }
@@ -432,7 +433,9 @@ void ControlFlowGraph::structureLoops(const list< list<Node*> > &components) {
 
 void ControlFlowGraph::structureConditionals() {
 	assignDominators();
-	foreach (Node *u, inPostOrder(_nodes))
+        list<Node*> nodes = inPostOrder(_nodes);
+        nodes.reverse();
+	foreach (Node *u, nodes)
 		if (u->_out.size() == 2) {
 			_nodes.push_back(new IfThenElse(this, u));
 			cerr << "done if-then-else at " << phex(u->address()) << endl;
