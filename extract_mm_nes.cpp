@@ -1118,6 +1118,10 @@ ExtractMMNes::ExtractMMNes(const std::string &name) : Tool(name) {
 		"\tJapanese version is NOT supported!\n";
 }
 
+bool ExtractMMNes::inspectInput(const Filename &filename) {
+	return filename.hasExtension("PRG");
+}
+
 void ExtractMMNes::execute() {
 	int i, j;
 	uint32 CRC;

@@ -29,8 +29,11 @@
 class CompressSword1 : public CompressionTool {
 public:
 	CompressSword1(const std::string &name = "compress_sword1");
+	
+	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
+
 protected:
 	void parseExtraArguments();
 

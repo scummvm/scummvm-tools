@@ -31,6 +31,8 @@ typedef t_resource * p_resource;
 class ExtractLoomTG16 : public Tool {
 public:
 	ExtractLoomTG16(const std::string &name = "extract_loom_tg16");
+	
+	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

@@ -33,7 +33,7 @@ CompressKyra::CompressKyra(const std::string &name) : CompressionTool(name) {
 
 void CompressKyra::execute() {
 	// Check input
-	if (_inputPaths.size() == 1)
+	if (_inputPaths.size() != 1)
 		error("One input file expected!");
 	Filename inpath(_inputPaths[0]);
 	Filename &outpath = _outputPath;

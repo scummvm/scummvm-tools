@@ -580,6 +580,10 @@ CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(na
 	_helptext = "\nUsage: " + _name + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" kCompressionAudioHelp;
 }
 
+bool CompressScummSan::inspectInput(const Filename &filename) {
+	return filename.hasExtension("san");
+}
+
 void CompressScummSan::execute() {
 	if (_format == AUDIO_FLAC)
 		error("Only ogg vorbis and MP3 is supported for this tool.");

@@ -46,6 +46,10 @@ ExtractMMApple::ExtractMMApple(const std::string &name) : Tool(name) {
 	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n";
 }
 
+bool ExtractMMApple::inspectInput(const Filename &filename) {
+	return filename.hasExtension("dsk");
+}
+
 void ExtractMMApple::execute() {
 	int i, j;
 	unsigned short signature;

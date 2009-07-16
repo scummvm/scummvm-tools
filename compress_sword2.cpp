@@ -53,6 +53,10 @@ CompressSword2::CompressSword2(const std::string &name) : CompressionTool(name) 
 	_helptext = "\nUsage: " + _name + " [params] <file>\n\n" kCompressionAudioHelp;
 }
 
+bool CompressSword2::inspectInput(const Filename &filename) {
+	return filename.hasExtension("clu");
+}
+
 void CompressSword2::execute() {
 	int j;
 	uint32 indexSize;
@@ -61,8 +65,8 @@ void CompressSword2::execute() {
 	
 
 	// Check _input
-	if (_inputPaths.size() == 1)
-		error("One _input file expected!");
+	if (_inputPaths.size() != 1)
+		error("One input file expected!");
 	Filename inpath(_inputPaths[0]);
 	Filename &outpath = _outputPath;
 

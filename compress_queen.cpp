@@ -96,6 +96,10 @@ CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name) {
 	_helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
 }
 
+bool CompressQueen::inspectInput(const Filename &filename) {
+	return filename.getFullName() == "queen.1";
+}
+
 const CompressQueen::GameVersion *CompressQueen::detectGameVersion(uint32 size) {
 	const struct GameVersion *pgv = gameVersions;
 	int i;

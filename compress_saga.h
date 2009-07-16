@@ -44,6 +44,8 @@ enum SAGAGameType {
 class CompressSaga : public CompressionTool {
 public:
 	CompressSaga(const std::string &name = "compress_saga");
+	
+	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

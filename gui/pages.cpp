@@ -281,13 +281,25 @@ void ChooseInPage::save(wxWindow *panel) {
 }
 
 void ChooseInPage::onNext(wxWindow *panel) {
+
+	wxDirPickerCtrl *inDirWindow = dynamic_cast<wxDirPickerCtrl *>(panel->FindWindowByName(wxT("InputPicker")));
+	wxFilePickerCtrl *inFileWindow = dynamic_cast<wxFilePickerCtrl *>(panel->FindWindowByName(wxT("InputPicker")));
+
+	Filename filename;
+
+	if (inDirWindow)
+		filename = (const char *)inDirWindow ->GetPath().mb_str();
+	if (inFileWindow)
+		filename = (const char *)inFileWindow ->GetPath().mb_str();
+
 	if (_configuration.advanced) {
 		if (_configuration.selectedTool->_inputs.size() > 1)
 			switchPage(new ChooseExtraInPage(_topframe));
 		else
 			switchPage(new ChooseOutPage(_topframe));
 	} else {
-		wxArrayString ls = g_tools.getToolList();
+		wxArrayString ls = g_tools.getToolList(filename,
+			_configuration.compressing? TOOLTYPE_COMPRESSION : TOOLTYPE_EXTRACTION);
 		// TODO: If only one input, skip this page and go right to ExtraInput
 		switchPage(new ChooseToolPage(_topframe, ls));
 	}
@@ -1193,6 +1205,4 @@ void FailurePage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->enablePrevious(false);
 	buttons->showFinish(true);
 }
-
-
 

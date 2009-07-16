@@ -47,6 +47,10 @@ ExtractZakC64::ExtractZakC64(const std::string &name) : Tool(name) {
 	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n";
 }
 
+bool ExtractZakC64::inspectInput(const Filename &filename) {
+	return filename.hasExtension("d64");
+}
+
 void ExtractZakC64::execute() {
 	int i, j;
 	unsigned short signature;

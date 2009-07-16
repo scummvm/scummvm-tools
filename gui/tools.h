@@ -100,6 +100,14 @@ public:
 	 */
 	void addInput(const wxString &input_wildcard, bool input_is_directory = false);
 
+	/**
+	 * Returns true if the file appears to be valid input to this tool.
+	 *
+	 * @param filename The file to inspect.
+	 * @return True if we can possibly parse this file.
+	 */
+	bool inspectInput(const Filename &filename) const;
+
 	// Helper functions to get info about the tool
 	
 	/**
@@ -141,8 +149,6 @@ public:
 	ToolInputs _inputs;
 	/** The help text displayed on the input/output page */
 	wxString _inHelpText;
-	/** A list of all games supported by this tool */
-	wxArrayString _games;
 };
 
 // Collection of all tools
@@ -176,15 +182,6 @@ public:
 	const ToolGUI *get(const wxString &name) const;
 
 	/**
-	 * Returns a tool that supports the selected game
-	 * 
-	 * @param game Name of the game
-	 * @param type The type of tool we're looking for
-	 * @return The tool that supports this game, and NULL if no tool does
-	 */
-	const ToolGUI *getByGame(const wxString &game, ToolType type = TOOLTYPE_ALL) const;
-
-	/**
 	 * Returns a list of all tools
 	 *
 	 * @param tt Filter by this type of tool
@@ -193,12 +190,13 @@ public:
 	wxArrayString getToolList(ToolType tt = TOOLTYPE_ALL) const;
 
 	/**
-	 * Returns a list of all games supported by all tools (of the specified type)
+	 * Inspects the file and returns a list of tools that might be able to handle it
 	 *
-	 * @param tt Filter by this type of tool
-	 * @return Returns all games supported, list is sorted and contains no duplicates
+	 * @param filename The path to the file to inspect
+	 * @param tt Only check tools of this type
+	 * @return Returns all tools might be able to handle the file
 	 */
-	wxArrayString getGameList(ToolType tt = TOOLTYPE_ALL) const;
+	wxArrayString getToolList(const Filename &filename, ToolType tt = TOOLTYPE_ALL) const;
 
 protected:
 	/**

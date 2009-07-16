@@ -44,6 +44,14 @@ public:
 	void run();
 
 	/**
+	 * Returns true if the file appears to be a valid input to this tool,
+	 * Default implementation always return true
+	 *
+	 * @param filename The file to inspect
+	 */
+	virtual bool inspectInput(const Filename &filename);
+
+	/**
 	 * Aborts executing of the tool, can be called from another thread
 	 * The progress will not be aborted until the next call to notifyProgress
 	 */

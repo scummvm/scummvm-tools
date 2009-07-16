@@ -209,7 +209,7 @@ void CompressAgos::parseExtraArguments() {
 
 void CompressAgos::execute() {
 	// We only got one input file
-	if (_inputPaths.size() > 1)
+	if (_inputPaths.size() != 1)
 		error("Only one input file expected!");
 	Filename inpath(_inputPaths[0]);
 

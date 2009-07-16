@@ -117,6 +117,10 @@ void Tool::run() {
 	execute();
 }
 
+bool Tool::inspectInput(const Filename &filename) {
+	return true;
+}
+
 void Tool::setPrintFunction(void (*f)(void *, const char *), void *udata) {
 	_internalPrint = f;
 	_print_udata = udata;

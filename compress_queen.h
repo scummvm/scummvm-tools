@@ -28,6 +28,8 @@
 class CompressQueen : public CompressionTool {
 public:
 	CompressQueen(const std::string &name = "compress_queen");
+	
+	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

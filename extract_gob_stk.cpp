@@ -44,6 +44,10 @@ ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name) {
 	_helptext = "\nUsage: " + _name + " [-o outputname] infilename\n";
 }
 
+bool ExtractGobStk::inspectInput(const Filename &filename) {
+	return filename.hasExtension("stk") || filename.hasExtension("STK");
+}
+
 ExtractGobStk::~ExtractGobStk() {
 	delete _chunks;
 }

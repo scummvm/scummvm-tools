@@ -28,6 +28,8 @@
 class ExtractZakC64 : public Tool {
 public:
 	ExtractZakC64(const std::string &name = "extract_zak_c64");
+	
+	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

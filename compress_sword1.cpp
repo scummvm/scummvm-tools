@@ -567,12 +567,16 @@ CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name) 
 		kCompressionAudioHelp;
 }
 
+bool CompressSword1::inspectInput(const Filename &filename) {
+	return filename.hasExtension("clu");
+}
+
 void CompressSword1::parseExtraArguments() {
-	if(_arguments[_arguments_parsed] == "--speech-only") {
+	if (_arguments[_arguments_parsed] == "--speech-only") {
 		_compMusic = false;
 		++_arguments_parsed;
 	}
-	if(_arguments[_arguments_parsed] == "--music-only") {
+	if (_arguments[_arguments_parsed] == "--music-only") {
 		_compSpeech = false;
 		++_arguments_parsed;
 	}
@@ -580,7 +584,7 @@ void CompressSword1::parseExtraArguments() {
 
 void CompressSword1::execute() {
 	// Check input
-	if (_inputPaths.size() == 1)
+	if (_inputPaths.size() != 1)
 		error("One input file expected!");
 	Filename inpath(_inputPaths[0]);
 	Filename &outpath = _outputPath;

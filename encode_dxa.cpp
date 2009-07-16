@@ -21,7 +21,7 @@
  *
  */
 
-#include "compress.h"
+#include "encode_dxa.h"
 #include "util.h"
 
 #include <png.h>
@@ -674,7 +674,7 @@ void readVideoInfo(Filename *filename, int &width, int &height, int &framerate, 
 }
 
 void convertWAV(const Filename *inpath, const Filename* outpath) {
-	printf("Encoding audio...");
+	print("Encoding audio...");
 	fflush(stdout);
 
 	encodeAudio(inpath->getFullPath().c_str(), false, -1, outpath->getFullPath().c_str(), gCompMode);
@@ -726,7 +726,7 @@ int export_main(compress_dxa)(int argc, char *argv[]) {
 	// read some data from the Bink or Smacker file.
 	readVideoInfo(&inpath, width, height, framerate, frames, scaleMode);
 
-	printf("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
+	print("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
 		   width, height, framerate, frames);
 
 	// create the encoder object
@@ -740,7 +740,7 @@ int export_main(compress_dxa)(int argc, char *argv[]) {
 	uint8 *palette = NULL;
 	int framenum = 0;
 
-	printf("Encoding video...");
+	print("Encoding video...");
 	fflush(stdout);
 
 	char fullname[1024];
@@ -786,20 +786,20 @@ int export_main(compress_dxa)(int argc, char *argv[]) {
 		framenum++;
 
 		if (framenum % 20 == 0) {
-			printf("\rEncoding video...%d%% (%d of %d)", 100 * framenum / frames, framenum, frames);
+			print("\rEncoding video...%d%% (%d of %d)", 100 * framenum / frames, framenum, frames);
 			fflush(stdout);
 		}
 	}
 
-	printf("\rEncoding video...100%% (%d of %d)\n", frames, frames);
+	print("\rEncoding video...100%% (%d of %d)\n", frames, frames);
 
 	return 0;
 }
 
-#if defined(UNIX) && defined(EXPORT_MAIN)
-int main(int argc, char *argv[]) __attribute__((weak));
+#ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(compress_dxa)(argc, argv);
+	EncodeDXA encode_dxa(argv[0]);
+	return encode_dxa.run(argc, argv);
 }
 #endif
 

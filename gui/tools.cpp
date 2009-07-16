@@ -232,12 +232,12 @@ wxArrayString Tools::getToolList(ToolType tt) const {
 	return l;
 }
 
-wxArrayString Tools::getGameList(ToolType tt) const {
+wxArrayString Tools::getToolList(const Filename &filename, ToolType tt) const {
 	wxArrayString l;
 	for (std::map<wxString, ToolGUI *>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
 		if (tt == TOOLTYPE_ALL || iter->second->_type == tt)
-			for (wxArrayString::const_iterator citer = iter->second->_games.begin(); citer != iter->second->_games.end(); ++citer)
-				l.Add(*citer);
+			if (iter->second->inspectInput(filename))
+				l.Add(iter->second->_name);
 	l.Sort();
 	std::unique(l.begin(), l.end());
 	return l;
@@ -259,16 +259,6 @@ const ToolGUI *Tools::get(const wxString& name) const {
 
 	return iter->second;
 }
-
-const ToolGUI *Tools::getByGame(const wxString &gamename, ToolType type) const {
-	for (std::map<wxString, ToolGUI *>::const_iterator iter = tools.begin(); iter != tools.end(); ++iter)
-		if (type == TOOLTYPE_ALL || iter->second->_type == type)
-			for (wxArrayString::const_iterator citer = iter->second->_games.begin(); citer != iter->second->_games.end(); ++citer)
-				if (*citer == gamename)
-					return iter->second;
-	return NULL;
-}
-
 
 // The Tool class
 
@@ -303,8 +293,8 @@ ToolGUI::~ToolGUI() {
 	delete _backend;
 }
 
-void ToolGUI::addGame(const wxString &game_name) {
-	_games.Add(game_name);
+bool ToolGUI::inspectInput(const Filename &filename) const {
+	return _backend->inspectInput(filename);
 }
 
 void ToolGUI::addInput(const wxString &input_wildcard, bool input_is_directory) {

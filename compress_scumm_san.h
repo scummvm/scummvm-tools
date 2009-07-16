@@ -32,6 +32,8 @@
 class CompressScummSan : public CompressionTool {
 public:
 	CompressScummSan(const std::string &name = "compress_scumm_san");
+	
+	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

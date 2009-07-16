@@ -1227,6 +1227,10 @@ ExtractLoomTG16::ExtractLoomTG16(const std::string &name) : Tool(name) {
 	_helptext = "\nUsage: " + _name + " [-o outputdir = out/] <infile>";
 }
 
+bool ExtractLoomTG16::inspectInput(const Filename &filename) {
+	return filename.hasExtension("ISO") || filename.hasExtension("iso");
+}
+
 void ExtractLoomTG16::execute() {
 #ifdef MAKE_LFLS
 	int i, j;
