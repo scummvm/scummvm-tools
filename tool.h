@@ -1,3 +1,4 @@
+
 /* tool.h - Common base class for all tools
  * Copyright (C) 2009 The ScummVM project
  *
@@ -86,6 +87,14 @@ public:
 	void updateProgress(int done, int total = 100);
 
 	/**
+	 * Spawns a subprocess with the given commandline
+	 * this acts exactly the same as 'system()', but hides the process window
+	 *
+	 * @param cmd The commandline to run
+	 */
+	int spawnSubprocess(const char *cmd);
+
+	/**
 	 * This function sets the function which will be called needs to output something
 	 * 
 	 * @param f the function to be called, it takes a userdata argument in addition to text to print
@@ -99,9 +108,19 @@ public:
 	 * it's a simple status notification (print a dot or something)
 	 *
 	 * @param f this function will be called with udata arguments and 'done' / 'total'
-	 * @param udata Userdata that will be passed to the function each time it is 
+	 * @param udata Userdata that will be passed to the function on each call
 	 */
 	void setProgressFunction(void f(void *, int, int), void *udata);
+
+	/**
+	 * Sets the function to use to execute a process
+	 * this defaults to the function 'system()', GUI overloads this
+	 * to not spawn a window.
+	 *
+	 * @param f this function will be called when a process needs to be spawned
+	 * @param udata Userdata that will be passed to the function on each call
+	 */
+	void setSubprocessFunction(int f(void *, const char *), void *udata);
 
 protected:
 	virtual void parseAudioArguments();
@@ -157,11 +176,19 @@ private:
 	ProgressFunction _internalProgress;
 	void *_progress_udata;
 
+
+	typedef int (*SubprocessFunction)(void *, const char *);
+	SubprocessFunction _internalSubprocess;
+	void *_subprocess_udata;
+
 	// Standard print function
-	static void printToSTDOUT(void *udata, const char *message);
+	static void standardPrint(void *udata, const char *message);
 	
 	// Standard progress function
 	static void standardProgress(void *udata, int done, int total);
+
+	// Standard subprocess function
+	static int standardSpawnSubprocess(void *udata, const char *);
 
 	friend class ToolGUI;
 };

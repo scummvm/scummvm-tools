@@ -144,7 +144,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 		tmp += sprintf(tmp, "-B %d ", encparms.maxBitr);
 		tmp += sprintf(tmp, "\"%s\" \"%s\" ", inname, outname);
 
-		err = system(fbuf) != 0;
+		err = spawnSubprocess(fbuf) != 0;
 
 		if (err) {
 			char buf[2048];
@@ -187,7 +187,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 			tmp += sprintf(tmp, "--output=\"%s\" ", outname);
 			tmp += sprintf(tmp, "\"%s\" ", inname);
 
-			err = system(fbuf) != 0;
+			err = spawnSubprocess(fbuf) != 0;
 
 			if (err) {
 				char buf[2048];35xk'x25uk
@@ -227,7 +227,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 			tmp += sprintf(tmp, "-o \"%s\" ", outname);
 			tmp += sprintf(tmp, "\"%s\" ", inname);
 
-			err = system(fbuf) != 0;
+			err = spawnSubprocess(fbuf) != 0;
 
 			if (err) {
 				char buf[2048];

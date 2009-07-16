@@ -32,6 +32,7 @@
 
 #include <wx/filepicker.h>
 #include <wx/file.h>
+#include <wx/process.h>
 
 #include "main.h"
 #include "pages.h"
@@ -281,7 +282,7 @@ void ChooseInPage::save(wxWindow *panel) {
 
 void ChooseInPage::onNext(wxWindow *panel) {
 	if (_configuration.advanced) {
-		if(_configuration.selectedTool->_inputs.size() > 1)
+		if (_configuration.selectedTool->_inputs.size() > 1)
 			switchPage(new ChooseExtraInPage(_topframe));
 		else
 			switchPage(new ChooseOutPage(_topframe));
@@ -365,7 +366,7 @@ void ChooseExtraInPage::save(wxWindow *panel) {
 
 	// Remove all additional inputs
 	wxArrayString filelist = _configuration.inputFilePaths;
-	if(filelist.size() > 1)
+	if (filelist.size() > 1)
 		filelist.erase(filelist.begin() + 1, filelist.end());
 
 	int i = 1;
@@ -907,6 +908,10 @@ ProcessPage::ProcessPage(ScummToolsFrame* frame)
 
 	_output.done = 0;
 	_output.total = 100;
+
+	_output.cmd = NULL;
+	_output.retval = 0;
+	_output.subprocessFinished = NULL;
 }
 
 wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
@@ -955,6 +960,7 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 	if (!_thread)
 		return false;
 
+	// Check if our subthread has something for us to do
 	{
 		wxMutexLocker lock(_output.mutex);
 
@@ -962,10 +968,21 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 		_outwin->WriteText(wxString(_output.buffer.c_str(), wxConvUTF8));
 		_output.buffer = "";
 
-		if(tool->supportsProgressBar()) {
+		if (tool->supportsProgressBar()) {
 			// Update gauge
 			_gauge->SetRange(_output.total);
 			_gauge->SetValue(_output.done);
+		}
+
+		if (_output.cmd) {
+			// We have a waiting subprocess to run, the other thread is sleeping since we could lock the mutex
+			
+			wxProcess proc(wxPROCESS_REDIRECT);
+			_output.retval = wxExecute(wxString(_output.cmd, wxConvUTF8), wxEXEC_SYNC, &proc);
+			_output.cmd = NULL;
+
+			// Signal the other thread that we have run the subprocess
+			_output.subprocessFinished->Signal();
 		}
 	}
 
@@ -982,7 +999,7 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 		return false;
 	}
 
-	if(!tool->supportsProgressBar()) {
+	if (!tool->supportsProgressBar()) {
 		// Just move the bar back & forth
 		_gauge->Pulse();
 	}
@@ -991,14 +1008,14 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 }
 
 void ProcessPage::onNext(wxWindow *panel) {
-	if(_success)
+	if (_success)
 		switchPage(new FinishPage(_topframe));
 	else
 		switchPage(new FailurePage(_topframe));
 }
 
 void ProcessPage::onCancel(wxWindow *panel) {
-	if(_finished)
+	if (_finished)
 		WizardPage::onCancel(panel);
 	else
 		_thread->abort();
@@ -1029,7 +1046,7 @@ void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 
 // The thread a tool is run in
 
-ProcessToolThread::ProcessToolThread(const ToolGUI *tool, Configuration &configuration, ThreadOutputBuffer &output) : 
+ProcessToolThread::ProcessToolThread(const ToolGUI *tool, Configuration &configuration, ThreadCommunicationBuffer &output) : 
 	wxThread(wxTHREAD_JOINABLE), 
 	_configuration(configuration),
 	_output(output) 
@@ -1039,6 +1056,7 @@ ProcessToolThread::ProcessToolThread(const ToolGUI *tool, Configuration &configu
 	
 	_tool->_backend->setPrintFunction(writeToOutput, reinterpret_cast<void *>(this));
 	_tool->_backend->setProgressFunction(gaugeProgress, reinterpret_cast<void *>(this));
+	_tool->_backend->setSubprocessFunction(spawnSubprocess, reinterpret_cast<void *>(this));
 }
 
 wxThread::ExitCode ProcessToolThread::Entry() {
@@ -1071,6 +1089,26 @@ void ProcessToolThread::gaugeProgress(void *udata, int done, int total) {
 	wxMutexLocker lock(self->_output.mutex);
 	self->_output.done  = done;
 	self->_output.total = total;
+}
+
+int ProcessToolThread::spawnSubprocess(void *udata, const char *cmd) {
+	ProcessToolThread *self = reinterpret_cast<ProcessToolThread *>(udata);
+	
+	wxASSERT_MSG(self->_output.subprocessFinished == NULL, wxT("You can only spawn one subprocess."));
+
+	wxMutexLocker mutex(self->_output.mutex);
+	self->_output.subprocessFinished = new wxCondition(self->_output.mutex);
+	self->_output.cmd = cmd;
+
+	// Wait for the other thread, this unlocks the mutex
+	self->_output.subprocessFinished->Wait();
+	// Mutex is locked again after wait, so we can clear safely
+
+	// Cleanup the condition
+	delete self->_output.subprocessFinished;
+	self->_output.subprocessFinished = NULL;
+
+	return self->_output.retval;
 }
 
 // Last page of the wizard, offers the option to open the output directory

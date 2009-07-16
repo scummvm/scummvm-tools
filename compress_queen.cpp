@@ -91,6 +91,7 @@ const struct PatchFile patchFiles[] = {
 
 CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name) {
 	_outputToDirectory = false;
+	_supportsProgressBar = true;
 
 	_helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
 }
@@ -215,6 +216,9 @@ void CompressQueen::execute() {
 	outputTbl.writeUint16BE(_versionExtra.entries);
 
 	for (i = 0; i < _versionExtra.entries; i++) {
+		/* Update progress */
+		updateProgress(i, _versionExtra.entries);
+
 		prevOffset = outputData.pos();
 
 		/* Read entry */

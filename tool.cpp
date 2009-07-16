@@ -37,11 +37,14 @@ Tool::Tool(const std::string &name) {
 	_supportedFormats = AUDIO_NONE;
 	_supportsProgressBar = false;
 
-	_internalPrint = printToSTDOUT;
+	_internalPrint = standardPrint;
 	_print_udata = NULL;
 
 	_internalProgress = standardProgress;
 	_progress_udata = this;
+
+	_internalSubprocess = standardSpawnSubprocess;
+	_subprocess_udata = NULL;
 
 	_abort = false;
 
@@ -124,6 +127,15 @@ void Tool::setProgressFunction(void (*f)(void *, int, int), void *udata) {
 	_progress_udata = udata;
 }
 
+void Tool::setSubprocessFunction(int (*f)(void *, const char *), void *udata) {
+	_internalSubprocess = f;
+	_subprocess_udata = udata;
+}
+
+int Tool::spawnSubprocess(const char *cmd) {
+	return _internalSubprocess(_subprocess_udata, cmd);
+}
+
 void Tool::abort() {
 	// Set abort safe
 	// (Non-concurrent) writes are atomic on x86
@@ -168,14 +180,14 @@ void Tool::print(const char *format, ...) {
 }
 
 void Tool::notifyProgress(bool print_dot) {
-	if(_abort)
+	if (_abort)
 		throw AbortException();
-	if(print_dot)
+	if (print_dot)
 		_internalProgress(_progress_udata, 0, 0);
 }
 
 void Tool::updateProgress(int done, int total) {
-	if(_abort)
+	if (_abort)
 		throw AbortException();
 	_internalProgress(_progress_udata, done, total);
 }
@@ -210,12 +222,15 @@ void Tool::parseExtraArguments() {
 }
 
 // Standard print function
-void Tool::printToSTDOUT(void * /*udata*/, const char *text) {
+void Tool::standardPrint(void * /*udata*/, const char *text) {
 	puts(text);
 }
 
 // Standard progress function (does nothing)
 void Tool::standardProgress(void *udata, int done, int total) {
-	if(total == 0)
-		reinterpret_cast<Tool*>(udata)->print(".");
+}
+
+// Standard subprocess function
+int Tool::standardSpawnSubprocess(void *udata, const char *cmd) {
+	return system(cmd);
 }

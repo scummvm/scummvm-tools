@@ -311,10 +311,20 @@ public:
  * & child thread to update it
  */
 
-struct ThreadOutputBuffer {
+struct ThreadCommunicationBuffer {
 	std::string buffer;
 	int done;
 	int total;
+
+	// Subprocesses can only be spawned from the main thread
+	// Commands are exchanged with the main thread here
+	// If cmd is not NULL when the main thread is checking, the buffer is locked
+	// The subprocess is spawned and waited for exit, the cmd is set to NULL and retval
+	// is set to the return value of the subprocess.
+	const char *cmd;
+	int retval;
+	wxCondition *subprocessFinished;
+
 	wxMutex mutex;
 };
 
@@ -324,7 +334,7 @@ struct ThreadOutputBuffer {
 
 class ProcessToolThread : public wxThread {
 public:
-	ProcessToolThread(const ToolGUI *tool, Configuration &configuration, ThreadOutputBuffer &output);
+	ProcessToolThread(const ToolGUI *tool, Configuration &configuration, ThreadCommunicationBuffer &output);
 
 	/**
 	 * Entry point of the child thread.
@@ -350,13 +360,18 @@ public:
 	 */
 	static void gaugeProgress(void *udata, int done, int total);
 
+	/**
+	 * Spawns a subprocess without GUI
+	 */
+	static int spawnSubprocess(void *udata, const char *cmd);
+
 	bool _finished;
 
 protected:
 	/** The current configuration */
 	Configuration &_configuration;
 	/** */
-	ThreadOutputBuffer &_output;
+	ThreadCommunicationBuffer &_output;
 	/** */
 	const ToolGUI *_tool;
 };
@@ -381,7 +396,7 @@ class ProcessPage : public WizardPage
 	/** The thread which the tool is run in */
 	ProcessToolThread *_thread;
 	/** The structure to exchange output between thread & gui */
-	ThreadOutputBuffer _output;
+	ThreadCommunicationBuffer _output;
 
 public:
 	ProcessPage(ScummToolsFrame* frame);
