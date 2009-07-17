@@ -96,7 +96,7 @@ bool WizardPage::onIdle(wxPanel *panel) {
 
 // Introduction page
 
-IntroPage::IntroPage(ScummToolsFrame* frame)
+IntroPage::IntroPage(ScummToolsFrame *frame)
 	: WizardPage(frame)
 {
 }
@@ -162,7 +162,7 @@ void IntroPage::onNext(wxWindow *panel) {
 
 // Page to choose the tool to use
 
-ChooseToolPage::ChooseToolPage(ScummToolsFrame* frame, const wxArrayString &options)
+ChooseToolPage::ChooseToolPage(ScummToolsFrame *frame, const wxArrayString &options)
 	: WizardPage(frame),
 	  _options(options)
 {
@@ -216,10 +216,52 @@ void ChooseToolPage::onNext(wxWindow *panel) {
 		switchPage(new ChooseOutPage(_topframe));
 }
 
+// Common base class for the IO pages
+
+ChooseIOPage::ChooseIOPage(ScummToolsFrame *frame)
+	: WizardPage(frame)
+{
+}
+
+void ChooseIOPage::onSelectFile(wxFileDirPickerEvent &evt) {
+	wxWindow *win = dynamic_cast<wxWindow *>(evt.GetEventObject());
+	wxPanel *panel = dynamic_cast<wxPanel *>(win->GetParent());
+	
+	updateButtons(panel, _topframe->_buttons);
+}
+
+void ChooseIOPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
+	wxWindow *picker = NULL;
+	if(!picker)
+		picker = panel->FindWindowByName(wxT("InputPicker"));
+	
+	const ToolGUI *tool = _topframe->_configuration.selectedTool;
+	if(tool && !picker) {
+		for(size_t i = 1; i < tool->getInputList().size(); ++i) {
+			wxString name(wxT("InputPicker"));
+			name << i;
+			picker = panel->FindWindowByName(name);
+			if(picker)
+				break;
+		}
+	}
+
+	if(!picker)
+		picker = panel->FindWindowByName(wxT("OutputPicker"));
+
+
+	wxDirPickerCtrl *inDirWindow = dynamic_cast<wxDirPickerCtrl *>(picker);
+	wxFilePickerCtrl *inFileWindow = dynamic_cast<wxFilePickerCtrl *>(picker);
+
+	_topframe->_buttons->enableNext(
+		(inDirWindow && inDirWindow->GetPath().size() > 0) || 
+		(inFileWindow && inFileWindow->GetPath().size() > 0));
+}
+
 // Page to choose input directory or file
 
-ChooseInPage::ChooseInPage(ScummToolsFrame* frame)
-	: WizardPage(frame)
+ChooseInPage::ChooseInPage(ScummToolsFrame *frame)
+	: ChooseIOPage(frame)
 {
 }
 
@@ -242,12 +284,16 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 
 
 	//if (input._file) {
-		sizer->Add(new wxFilePickerCtrl(
+		wxFilePickerCtrl *picker = new wxFilePickerCtrl(
 				panel, wxID_ANY, wxEmptyString, wxT("Select a file"), 
 				wxT("*.*"), 
 				wxDefaultPosition, wxSize(300, -1),
 				wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
-				wxT("InputPicker")));
+				wxT("InputPicker"));
+		sizer->Add(picker);
+		panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
+		if(_topframe->_configuration.inputFilePaths.size() > 0)
+			picker->SetPath(_topframe->_configuration.inputFilePaths[0]);
 
 	sizer->AddSpacer(30);
 	/* 
@@ -307,8 +353,8 @@ void ChooseInPage::onNext(wxWindow *panel) {
 
 // Page to choose input and output directory or file
 
-ChooseExtraInPage::ChooseExtraInPage(ScummToolsFrame* frame)
-	: WizardPage(frame)
+ChooseExtraInPage::ChooseExtraInPage(ScummToolsFrame *frame)
+	: ChooseIOPage(frame)
 {
 }
 
@@ -339,20 +385,26 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 		wxString windowName = wxT("InputPicker");
 		windowName << i;
 
+		wxString inputFile;
+		if(_topframe->_configuration.inputFilePaths.size() > (size_t)i)
+			inputFile = _topframe->_configuration.inputFilePaths[i];
+
 		if (input.file) {
 			inputbox->Add(new wxFilePickerCtrl(
-				panel, wxID_ANY, wxEmptyString, wxT("Select a file"), 
+				panel, wxID_ANY, inputFile, wxT("Select a file"), 
 				wxString(input.format.c_str(), wxConvUTF8), 
 				wxDefaultPosition, wxDefaultSize, 
 				wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
 				windowName));
+			panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 
 		} else {
 			inputbox->Add(new wxDirPickerCtrl(
-				panel, wxID_ANY, wxEmptyString, wxT("Select a folder"), 
+				panel, wxID_ANY, inputFile, wxT("Select a folder"), 
 				wxDefaultPosition, wxDefaultSize, 
 				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
 				windowName));
+			panel->Connect(wxEVT_COMMAND_DIRPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 
 		}
 		++i;
@@ -405,8 +457,8 @@ void ChooseExtraInPage::onNext(wxWindow *panel) {
 
 // Page to choose input and output directory or file
 
-ChooseOutPage::ChooseOutPage(ScummToolsFrame* frame)
-	: WizardPage(frame)
+ChooseOutPage::ChooseOutPage(ScummToolsFrame *frame)
+	: ChooseIOPage(frame)
 {
 }
 
@@ -436,22 +488,30 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 	if (tool.outputToDirectory()) {
 		wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, panel, wxT("Destination folder"));
 
-		box->Add(new wxDirPickerCtrl(
+		wxDirPickerCtrl *picker = new wxDirPickerCtrl(
 			panel, wxID_ANY, _configuration.outputPath, wxT("Select a folder"), 
 			wxDefaultPosition, wxSize(300, -1),
 			wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
-			wxT("OutputPicker")));
+			wxT("OutputPicker"));
+		box->Add(picker);
+
+		panel->Connect(wxEVT_COMMAND_DIRPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
+		picker->SetPath(_topframe->_configuration.outputPath);
 
 		sizer->Add(box);
 	} else {
 		wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, panel, wxT("Destination file"));
 
-		box->Add(new wxFilePickerCtrl(
+		wxFilePickerCtrl *picker = new wxFilePickerCtrl(
 			panel, wxID_ANY, _configuration.outputPath, wxT("Select a file"), 
 			wxT("*.*"),
 			wxDefaultPosition, wxSize(300, -1),
 			wxFLP_USE_TEXTCTRL | wxFLP_OVERWRITE_PROMPT | wxFLP_SAVE, wxDefaultValidator, 
-			wxT("OutputPicker")));
+			wxT("OutputPicker"));
+		box->Add(picker);
+
+		panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
+		picker->SetPath(_topframe->_configuration.outputPath);
 		
 		sizer->Add(box);
 	}
@@ -481,7 +541,7 @@ void ChooseOutPage::onNext(wxWindow *panel) {
 
 // Page to choose input and output directory or file
 
-ChooseAudioFormatPage::ChooseAudioFormatPage(ScummToolsFrame* frame)
+ChooseAudioFormatPage::ChooseAudioFormatPage(ScummToolsFrame *frame)
 	: WizardPage(frame)
 {
 }
@@ -564,7 +624,7 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 
 // Page to choose Mp3 compression options
 
-ChooseAudioOptionsMp3Page::ChooseAudioOptionsMp3Page(ScummToolsFrame* frame)
+ChooseAudioOptionsMp3Page::ChooseAudioOptionsMp3Page(ScummToolsFrame *frame)
 	: WizardPage(frame)
 {
 }
@@ -727,7 +787,7 @@ void ChooseAudioOptionsMp3Page::onNext(wxWindow *panel) {
 
 // Page to choose Flac compression options
 
-ChooseAudioOptionsFlacPage::ChooseAudioOptionsFlacPage(ScummToolsFrame* frame)
+ChooseAudioOptionsFlacPage::ChooseAudioOptionsFlacPage(ScummToolsFrame *frame)
 	: WizardPage(frame)
 {
 }
@@ -815,7 +875,7 @@ void ChooseAudioOptionsFlacPage::onNext(wxWindow *panel) {
 
 // Page to choose Vorbis compression options
 
-ChooseAudioOptionsVorbisPage::ChooseAudioOptionsVorbisPage(ScummToolsFrame* frame)
+ChooseAudioOptionsVorbisPage::ChooseAudioOptionsVorbisPage(ScummToolsFrame *frame)
 	: WizardPage(frame)
 {
 }
@@ -911,7 +971,7 @@ void ChooseAudioOptionsVorbisPage::onNext(wxWindow *panel) {
 
 // Page to choose ANY tool to use
 
-ProcessPage::ProcessPage(ScummToolsFrame* frame)
+ProcessPage::ProcessPage(ScummToolsFrame *frame)
 	: WizardPage(frame),
 	  _finished(false),
 	  _success(false)
@@ -1001,7 +1061,7 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 			// Only windows needs this
 			// It hides the process window, on unix it doesn't appear to work very well
 			wxProcess proc(wxPROCESS_REDIRECT);
-			_output.retval = wxExecute(wxString(_output.cmd, ), wxEXEC_SYNC, &proc);
+			_output.retval = wxExecute(wxString(_output.cmd, wxConvUTF8), wxEXEC_SYNC, &proc);
 #else
 			// Process windows are hidden by default under other OSes, so we don't need any special code
 			_output.retval = system(_output.cmd);
@@ -1140,7 +1200,7 @@ int ProcessToolThread::spawnSubprocess(void *udata, const char *cmd) {
 
 // Last page of the wizard, offers the option to open the output directory
 
-FinishPage::FinishPage(ScummToolsFrame* frame)
+FinishPage::FinishPage(ScummToolsFrame *frame)
 	: WizardPage(frame)
 {
 }
@@ -1191,7 +1251,7 @@ void FinishPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 
 // If the tool fails, this page is shown instead of the last page
 
-FailurePage::FailurePage(ScummToolsFrame* frame)
+FailurePage::FailurePage(ScummToolsFrame *frame)
 	: WizardPage(frame)
 {
 }

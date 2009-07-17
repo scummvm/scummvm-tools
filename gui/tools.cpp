@@ -304,7 +304,6 @@ bool ToolGUI::outputToDirectory() const {
 }
 
 void ToolGUI::run(const Configuration &conf) const {
-	_backend->_inputPaths.clear();
 	size_t i = 0;
 	for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter, ++i)
 		_backend->_inputPaths[i].path = (const char *)iter->mb_str();

@@ -26,6 +26,7 @@
 #include "configuration.h"
 
 class Tool;
+class wxFileDirPickerEvent;
 
 /**
  * A backend of a page in the wizard 
@@ -35,13 +36,10 @@ class Tool;
  *       in a default config window, for example.
  */
 
-class WizardPage : public wxEvtHandler
-{
+class WizardPage : public wxEvtHandler {
 public:
-	WizardPage(ScummToolsFrame* frame);
-	~WizardPage() {
-;
-	}
+	WizardPage(ScummToolsFrame *frame);
+	~WizardPage() {}
 
 	/**
 	 * Creates a visual representation of this page as a child problem of the supplied parent
@@ -121,7 +119,7 @@ protected:
 	 */
 	void SetAlignedSizer(wxWindow *panel, wxSizer *sizer);
 
-	ScummToolsFrame* _topframe;
+	ScummToolsFrame *_topframe;
 	Configuration &_configuration;
 
 	DECLARE_EVENT_TABLE()
@@ -133,10 +131,9 @@ protected:
  * @todo Add the ability to drag & drop files onto this window, to automatically detect whether to compress or extract
  */
 
-class IntroPage : public WizardPage
-{
+class IntroPage : public WizardPage {
 public:
-	IntroPage(ScummToolsFrame* frame);
+	IntroPage(ScummToolsFrame *frame);
 	
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -154,10 +151,9 @@ public:
  * "multiple tools matched that input file..."
  */
 
-class ChooseToolPage : public WizardPage
-{
+class ChooseToolPage : public WizardPage {
 public:
-	ChooseToolPage(ScummToolsFrame* frame, const wxArrayString &options = wxArrayString());
+	ChooseToolPage(ScummToolsFrame *frame, const wxArrayString &options = wxArrayString());
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -170,13 +166,25 @@ protected:
 };
 
 /**
+ * Common class for the pages that display input selection
+ */
+
+class ChooseIOPage : public WizardPage  {
+public:
+	ChooseIOPage(ScummToolsFrame *frame);
+
+	void onSelectFile(wxFileDirPickerEvent &evt);
+	
+	void updateButtons(wxWindow *panel, WizardButtons *buttons);
+};
+
+/**
  * Offers the user to input a file or directory
  */
 
-class ChooseInPage : public WizardPage
-{
+class ChooseInPage : public ChooseIOPage {
 public:
-	ChooseInPage(ScummToolsFrame* frame);
+	ChooseInPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -189,10 +197,9 @@ public:
  * If the tool requires more than one input, the additional will be presented here
  */
 
-class ChooseExtraInPage : public WizardPage
-{
+class ChooseExtraInPage : public ChooseIOPage {
 public:
-	ChooseExtraInPage(ScummToolsFrame* frame);
+	ChooseExtraInPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -208,10 +215,9 @@ public:
  * @todo Make it look better and save state
  */
 
-class ChooseOutPage : public WizardPage
-{
+class ChooseOutPage : public ChooseIOPage {
 public:
-	ChooseOutPage(ScummToolsFrame* frame);
+	ChooseOutPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -228,10 +234,9 @@ public:
  *       only support one method of compression.
  */
 
-class ChooseAudioFormatPage : public WizardPage
-{
+class ChooseAudioFormatPage : public WizardPage {
 public:
-	ChooseAudioFormatPage(ScummToolsFrame* frame);
+	ChooseAudioFormatPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -245,10 +250,9 @@ public:
  *
  */
 
-class ChooseAudioOptionsMp3Page : public WizardPage
-{
+class ChooseAudioOptionsMp3Page : public WizardPage {
 public:
-	ChooseAudioOptionsMp3Page(ScummToolsFrame* frame);
+	ChooseAudioOptionsMp3Page(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -274,10 +278,9 @@ public:
  *
  */
 
-class ChooseAudioOptionsFlacPage : public WizardPage
-{
+class ChooseAudioOptionsFlacPage : public WizardPage {
 public:
-	ChooseAudioOptionsFlacPage(ScummToolsFrame* frame);
+	ChooseAudioOptionsFlacPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -291,10 +294,9 @@ public:
  *
  */
 
-class ChooseAudioOptionsVorbisPage : public WizardPage
-{
+class ChooseAudioOptionsVorbisPage : public WizardPage {
 public:
-	ChooseAudioOptionsVorbisPage(ScummToolsFrame* frame);
+	ChooseAudioOptionsVorbisPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -383,8 +385,8 @@ protected:
  * as the class keeps internal state
  */
 
-class ProcessPage : public WizardPage
-{
+class ProcessPage : public WizardPage {
+
 	/** True if the tool exited with success */
 	bool _success;
 	/** True if the tool has exited */
@@ -399,7 +401,7 @@ class ProcessPage : public WizardPage
 	ThreadCommunicationBuffer _output;
 
 public:
-	ProcessPage(ScummToolsFrame* frame);
+	ProcessPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -424,10 +426,9 @@ public:
  *
  */
 
-class FinishPage : public WizardPage
-{
+class FinishPage : public WizardPage {
 public:
-	FinishPage(ScummToolsFrame* frame);
+	FinishPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -441,10 +442,9 @@ public:
  *
  */
 
-class FailurePage : public WizardPage
-{
+class FailurePage : public WizardPage {
 public:
-	FailurePage(ScummToolsFrame* frame);
+	FailurePage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
