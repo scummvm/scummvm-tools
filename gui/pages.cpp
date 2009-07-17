@@ -330,7 +330,7 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 	wxStaticBoxSizer *inputbox = new wxStaticBoxSizer(wxVERTICAL, panel, wxT("Input files"));
 
 	int i = 1;
-	ToolInputs &inputs = tool.getInputList();
+	const ToolInputs &inputs = tool.getInputList();
 	wxASSERT_MSG(inputs.size() > 1, wxT("Extra input page should not display with only one input"));
 
 	for (ToolInputs::const_iterator iter = inputs.begin() + 1; iter != inputs.end(); ++iter) {
