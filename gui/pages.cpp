@@ -968,9 +968,16 @@ void ProcessPage::runTool() {
 
 bool ProcessPage::onIdle(wxPanel *panel) {
 	const ToolGUI *tool = _topframe->_configuration.selectedTool;
-
+	
 	if (!_thread)
 		return false;
+	
+	// This function can be called recursively, by checking if lock is available, we avoid it
+	if(_output.mutex.TryLock() == wxMUTEX_BUSY)
+		return false;
+	else
+		// Immedietly unlock
+		_output.mutex.Unlock();
 
 	// Check if our subthread has something for us to do
 	{
@@ -989,8 +996,15 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 		if (_output.cmd) {
 			// We have a waiting subprocess to run, the other thread is sleeping since we could lock the mutex
 			
+#ifdef __WINDOWS__
+			// Only windows needs this
+			// It hides the process window, on unix it doesn't appear to work very well
 			wxProcess proc(wxPROCESS_REDIRECT);
-			_output.retval = wxExecute(wxString(_output.cmd, wxConvUTF8), wxEXEC_SYNC, &proc);
+			_output.retval = wxExecute(wxString(_output.cmd, ), wxEXEC_SYNC, &proc);
+#else
+			// Process windows are hidden by default under other OSes, so we don't need any special code
+			_output.retval = system(_output.cmd);
+#endif
 			_output.cmd = NULL;
 
 			// Signal the other thread that we have run the subprocess
