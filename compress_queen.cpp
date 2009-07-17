@@ -312,6 +312,9 @@ void CompressQueen::execute() {
 		outputTbl.writeUint32BE(_entry.size);
 	}
 
+	outputTbl.close();
+	outputData.close();
+
 	/* Merge the temporary table and temporary datafile to create final file */
 	createFinalFile(&outpath);
 }
