@@ -39,9 +39,12 @@ static uint32 input_Vxx_offs[Vxx_HDR_LEN];
 static uint32 input_Vxx_size[Vxx_HDR_LEN];
 
 CompressTouche::CompressTouche(const std::string &name) : CompressionTool(name) {
-	_inputFromDirectory = true;
 
-//	const char *helptext = "\nUsage: %s [params] [-o outputfile TOUCHE.*] <inputdir>\n* differs with compression type.\n" kCompressionAudioHelp;
+	ToolInput input;
+	input.format = "/";
+	_inputPaths.push_back(input);
+
+	_helptext = "\nUsage: %s [params] [-o outputfile TOUCHE.*] <inputdir>\n* differs with compression type.\n" kCompressionAudioHelp;
 }
 
 uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &output, File &input, uint32 *offs_table, uint32 *size_table, int len) {
@@ -158,10 +161,7 @@ void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
 }
 
 void CompressTouche::execute() {
-	// We only got one input file
-	if (_inputPaths.size() > 1)
-		error("Only one input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	if (outpath.empty()) {

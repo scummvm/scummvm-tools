@@ -44,11 +44,16 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 };
 
 ExtractMMC64::ExtractMMC64(const std::string &name) : Tool(name) {
-	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n";
-}
+	
+	ToolInput input1;
+	input1.format = "*.d64";
+	_inputPaths.push_back(input1);
 
-bool ExtractMMC64::inspectInput(const Filename &filename) {
-	return filename.hasExtension("d64");
+	ToolInput input2;
+	input2.format = "*.d64";
+	_inputPaths.push_back(input2);
+
+	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n";
 }
 
 void ExtractMMC64::execute() {
@@ -56,11 +61,8 @@ void ExtractMMC64::execute() {
 	unsigned short signature;
 	char fname[256];
 	
-	// Two disks...
-	if (_inputPaths.size() != 2)
-		error("Two input files expected!");
-	Filename inpath1(_inputPaths[0]);
-	Filename inpath2(_inputPaths[1]);
+	Filename inpath1(_inputPaths[0].path);
+	Filename inpath2(_inputPaths[1].path);
 	Filename &outpath = _outputPath;
 
 	if (outpath.empty())

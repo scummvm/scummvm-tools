@@ -273,6 +273,42 @@ std::string Filename::getFullName() const {
 	return _path.substr(slash + 1);
 }
 
+std::string Filename::getName() const {
+	size_t slash = _path.rfind('/');
+	size_t dot = _path.rfind('.');
+	if (slash == std::string::npos)
+		slash = _path.rfind('\\');
+
+	if (dot == std::string::npos)
+		dot = _path.size();
+
+	if (slash == std::string::npos)
+		return _path.substr(0, dot);
+
+	if (dot < slash)
+		dot = _path.size();
+
+	return _path.substr(slash + 1, dot - slash - 1);
+}
+
+std::string Filename::getExtension() const {
+	size_t slash = _path.rfind('/');
+	size_t dot = _path.rfind('.');
+	if (slash == std::string::npos)
+		slash = _path.rfind('\\');
+
+	if (slash == std::string::npos)
+		slash = 0;
+
+	if (dot == std::string::npos)
+		return "";
+
+	if (dot < slash)
+		return "";
+
+	return _path.substr(dot + 1);
+}
+
 std::string Filename::getPath() const {
 	size_t slash = _path.rfind('/');
 	if (slash == std::string::npos)

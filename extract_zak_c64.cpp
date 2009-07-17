@@ -44,11 +44,11 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 };
 
 ExtractZakC64::ExtractZakC64(const std::string &name) : Tool(name) {
-	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n";
-}
+	ToolInput input;
+	input.format = "*.d64";
+	_inputPaths.push_back(input);
 
-bool ExtractZakC64::inspectInput(const Filename &filename) {
-	return filename.hasExtension("d64");
+	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n";
 }
 
 void ExtractZakC64::execute() {
@@ -58,10 +58,8 @@ void ExtractZakC64::execute() {
 	char fname[1024];
 
 	// Two disks...
-	if (_inputPaths.size() != 2)
-		error("Two input files expected!");
-	Filename inpath1(_inputPaths[0]);
-	Filename inpath2(_inputPaths[1]);
+	Filename inpath1(_inputPaths[0].path);
+	Filename inpath2(_inputPaths[1].path);
 	Filename &outpath = _outputPath;
 
 	if (outpath.empty())
@@ -158,7 +156,8 @@ void ExtractZakC64::execute() {
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(extract_zak_c64)(argc, argv);
+	ExtractZakC64 z64(argv[0]);
+	return z64.run(argc, argv);
 }
 #endif
 

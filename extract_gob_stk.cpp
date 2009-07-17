@@ -40,12 +40,12 @@ struct ExtractGobStk::Chunk {
 
 ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name) {
 	_chunks = NULL;
+	
+	ToolInput input;
+	input.format = "*.stk";
+	_inputPaths.push_back(input);
 
 	_helptext = "\nUsage: " + _name + " [-o outputname] infilename\n";
-}
-
-bool ExtractGobStk::inspectInput(const Filename &filename) {
-	return filename.hasExtension("stk") || filename.hasExtension("STK");
 }
 
 ExtractGobStk::~ExtractGobStk() {
@@ -60,10 +60,7 @@ void ExtractGobStk::execute() {
 	File f1;
 	File f2;
 
-	// We only got one input file
-	if (_inputPaths.size() > 1)
-		error("Only one input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 
 	stk.open(inpath.getFullPath(), "rb");
 

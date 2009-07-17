@@ -575,23 +575,20 @@ void CompressScummSan::handlePSAD(File &input, int size, const char *outputDir, 
 
 CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(name) {
 	_IACTpos = 0;
+	
+	ToolInput input;
+	input.format = "*.san";
+	_inputPaths.push_back(input);
 
 	// TODO: Feature set seems more limited than what kCompressionAudioHelp contains
 	_helptext = "\nUsage: " + _name + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" kCompressionAudioHelp;
-}
-
-bool CompressScummSan::inspectInput(const Filename &filename) {
-	return filename.hasExtension("san");
 }
 
 void CompressScummSan::execute() {
 	if (_format == AUDIO_FLAC)
 		error("Only ogg vorbis and MP3 is supported for this tool.");
 
-	// Check input
-	if (_inputPaths.size() != 1)
-		error("One input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	if (outpath.empty()) {

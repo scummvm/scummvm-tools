@@ -28,8 +28,6 @@ class ExtractGobStk : public Tool {
 public:
 	ExtractGobStk(const std::string &name = "extract_gob_stk");
 	~ExtractGobStk();
-	
-	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

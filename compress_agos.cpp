@@ -27,8 +27,11 @@
 
 CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name) {
 	_convertMac = false;
-
 	_outputToDirectory = false;
+	
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
 
 	_helptext = "\nUsage: %s [mode params] [--mac] [-o outfile] <infile>\n" kCompressionAudioHelp
 }
@@ -208,10 +211,7 @@ void CompressAgos::parseExtraArguments() {
 }
 
 void CompressAgos::execute() {
-	// We only got one input file
-	if (_inputPaths.size() != 1)
-		error("Only one input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 
 	if (_outputPath.empty()) {
 		_outputPath = inpath;

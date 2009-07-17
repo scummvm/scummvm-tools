@@ -43,11 +43,16 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 };
 
 ExtractMMApple::ExtractMMApple(const std::string &name) : Tool(name) {
-	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n";
-}
+	
+	ToolInput input1;
+	input1.format = "*.dsk";
+	_inputPaths.push_back(input1);
 
-bool ExtractMMApple::inspectInput(const Filename &filename) {
-	return filename.hasExtension("dsk");
+	ToolInput input2;
+	input2.format = "*.dsk";
+	_inputPaths.push_back(input2);
+
+	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n";
 }
 
 void ExtractMMApple::execute() {
@@ -55,11 +60,8 @@ void ExtractMMApple::execute() {
 	unsigned short signature;
 	char fname[256];
 
-	// Two disks...
-	if (_inputPaths.size() != 2)
-		error("Two input files expected!");
-	Filename inpath1(_inputPaths[0]);
-	Filename inpath2(_inputPaths[1]);
+	Filename inpath1(_inputPaths[0].path);
+	Filename inpath2(_inputPaths[1].path);
 	Filename &outpath = _outputPath;
 
 	if (outpath.empty())

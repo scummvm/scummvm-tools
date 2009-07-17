@@ -28,14 +28,15 @@
 #define TEMPFILE "TEMP.VOC"
 
 CompressKyra::CompressKyra(const std::string &name) : CompressionTool(name) {
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
+
 	_helptext = "\nUsage: " + _name + " [mode params] [-o outfile] <infile>\n" kCompressionAudioHelp;
 }
 
 void CompressKyra::execute() {
-	// Check input
-	if (_inputPaths.size() != 1)
-		error("One input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	if (inpath == outpath)

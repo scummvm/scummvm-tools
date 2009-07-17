@@ -31,8 +31,6 @@ typedef t_resource * p_resource;
 class ExtractMMApple : public Tool {
 public:
 	ExtractMMApple(const std::string &name = "extract_mm_apple");
-	
-	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

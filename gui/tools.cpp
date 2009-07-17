@@ -80,19 +80,15 @@ void Tools::init() {
 	addTool(new ToolGUI(new CompressSword1()));
 	addTool(new ToolGUI(new CompressSword2()));
 	addTool(new ToolGUI(new CompressTinsel()));
-	addTool(new ToolGUI(new CompressTouche(), wxT("/")));
-	addTool(new ToolGUI(new CompressTucker(), wxT("/")));
+	addTool(new ToolGUI(new CompressTouche()));
+	addTool(new ToolGUI(new CompressTucker()));
 
 	addTool(new ToolGUI(new ExtractAgos()));
 	addTool(new ToolGUI(new ExtractGobStk()));
 	addTool(new ToolGUI(new ExtractLoomTG16()));
 	addTool(new ToolGUI(new ExtractMMApple()));
-	ToolGUI *mmc64 = new ToolGUI(new ExtractMMC64());
-	mmc64->addInput(wxT("*.*"));
-	addTool(mmc64);
-	ToolGUI *mmnes = new ToolGUI(new ExtractMMNes());
-	mmnes->addInput(wxT("*.*"));
-	addTool(mmnes);
+	addTool(new ToolGUI(new ExtractMMC64()));
+	addTool(new ToolGUI(new ExtractMMNes()));
 	addTool(new ToolGUI(new ExtractParallaction()));
 	addTool(new ToolGUI(new ExtractZakC64()));
 
@@ -267,7 +263,7 @@ ToolGUI::ToolGUI() {
 	//wxLogError(wxT("Created empty tool, should never happened."));
 }
 
-ToolGUI::ToolGUI(Tool *tool, wxString input_extensions) {
+ToolGUI::ToolGUI(Tool *tool) {
 	_backend = tool;
 	_name = wxString(tool->_name.c_str(), wxConvUTF8);
 
@@ -279,12 +275,6 @@ ToolGUI::ToolGUI(Tool *tool, wxString input_extensions) {
 		wxLogError(wxT("Tools with unknown type shouldn't exist."));
 		_type = TOOLTYPE_UNKNOWN;
 	}
-	
-	// Sensible defaults
-	ToolInput input;
-	input._extension = input_extensions;
-	input._file = input_extensions != wxT("/");
-	_inputs.push_back(input);
 
 	_inHelpText = wxT("Please select any additional input files.");
 }
@@ -297,11 +287,8 @@ bool ToolGUI::inspectInput(const Filename &filename) const {
 	return _backend->inspectInput(filename);
 }
 
-void ToolGUI::addInput(const wxString &input_wildcard, bool input_is_directory) {
-	ToolInput t;
-	t._extension = input_wildcard;
-	t._file = !input_is_directory;
-	_inputs.push_back(t);
+ToolInputs ToolGUI::getInputList() const {
+	return _backend->_inputPaths;
 }
 
 bool ToolGUI::supportsAudioFormat(AudioFormat format) const {
@@ -318,8 +305,9 @@ bool ToolGUI::outputToDirectory() const {
 
 void ToolGUI::run(const Configuration &conf) const {
 	_backend->_inputPaths.clear();
-	for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter)
-		_backend->_inputPaths.push_back((const char *)iter->mb_str());
+	size_t i = 0;
+	for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter, ++i)
+		_backend->_inputPaths[i].path = (const char *)iter->mb_str();
 	_backend->_outputPath = std::string(conf.outputPath.mb_str());
 
 	CompressionTool *compression = dynamic_cast<CompressionTool *>(_backend);

@@ -31,6 +31,25 @@
 
 class ToolGUI;
 
+/**
+ * Describes a possible input to the tool (since some take two seperate files, 
+ * some a dir and some a single file
+ */
+struct ToolInput {
+	ToolInput() : format("*.*"), file(true) {}
+
+	/** The expected format of the input file, in wildcard fashion */
+	std::string format;
+	/** A short description of what file is expected, displayed in the UI */
+	std::string description;
+	/** The path filled in */
+	std::string path;
+	/** If false, this input is a directory */
+	bool file;
+};
+
+typedef std::vector<ToolInput> ToolInputs;
+
 class Tool {
 public:
 	Tool(const std::string &name);
@@ -142,8 +161,8 @@ protected:
 
 public:
 
-	// Input
-	std::vector<std::string> _inputPaths;
+	/** List of all inputs this tool expects, also contains the paths filled in */
+	ToolInputs _inputPaths;
 
 	// Output
 	Filename _outputPath;
@@ -160,8 +179,6 @@ protected:
 
 	/** If this tools outputs to a directory, not a file. */
 	bool _outputToDirectory;
-	/** We don't take a single file, but an entire directory as input .*/
-	bool _inputFromDirectory;
 	/** Formats supported by this tool. */
 	AudioFormat _supportedFormats;
 	/** If this tool can display output progress in % */

@@ -48,7 +48,15 @@
 #define TEMP_ENC "tempfile.enc"
 
 CompressTinsel::CompressTinsel(const std::string &name) : CompressionTool(name) {
-	_helptext = "\nUsage: " + _name + " [mode-params] [-o outputname] <infile.smp> [infile.idx]\n" + kCompressionAudioHelp;
+	ToolInput input1;
+	input1.format = "*.smp";
+	_inputPaths.push_back(input1);
+	
+	ToolInput input2;
+	input2.format = "*.idx";
+	_inputPaths.push_back(input2);
+
+	_helptext = "\nUsage: " + _name + " [mode-params] [-o outputname] <infile.smp> <infile.idx>\n" + kCompressionAudioHelp;
 }
 
 /* Converts raw-data sample in input_smp of size SampleSize to requested dataformat and writes to output_smp */
@@ -248,23 +256,8 @@ void CompressTinsel::execute() {
 	uint32 sampleSize = 0;
 	uint32 sampleCount = 0;
 
-	Filename inpath_smp, inpath_idx;
-
-	// Check input
-	if (_inputPaths.size() < 1)
-		error("Atleast one input file expected!");
-
-	if (_inputPaths.size() == 1) {
-		// One input, assume idx and change extension for second input
-		inpath_smp = _inputPaths[0];
-		inpath_idx = inpath_smp;
-		inpath_idx.setExtension(".idx");
-	} else if (_inputPaths.size() == 2) {
-		inpath_smp = _inputPaths[0];
-		inpath_idx = _inputPaths[1];
-	} else {
-		error("At most two input files expected!");
-	}
+	Filename inpath_smp = _inputPaths[0].path;
+	Filename inpath_idx = _inputPaths[1].path;
 
 	_input_idx.open(inpath_idx, "rb");
 	_input_smp.open(inpath_smp, "rb");

@@ -1112,24 +1112,22 @@ static uint32 CheckROM(File &file) {
 }
 
 ExtractMMNes::ExtractMMNes(const std::string &name) : Tool(name) {
+	
+	ToolInput input;
+	input.format = "*.PRG";
+	_inputPaths.push_back(input);
+
 	_helptext = 
 		"\nUsage: " + _name + " [-o <output dir> = out/] <infile.PRG>\n"
 		"\tSupported versions: USA, Europe, Sweden, France, Germany, Spain\n"
 		"\tJapanese version is NOT supported!\n";
 }
 
-bool ExtractMMNes::inspectInput(const Filename &filename) {
-	return filename.hasExtension("PRG");
-}
-
 void ExtractMMNes::execute() {
 	int i, j;
 	uint32 CRC;
 
-	// We only got one input file
-	if (_inputPaths.size() > 1)
-		error("Only one input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	File input(inpath, "rb");

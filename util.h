@@ -324,6 +324,8 @@ struct Filename {
 
 	const std::string &getFullPath() const;
 	std::string getFullName() const;
+	std::string getName() const;
+	std::string getExtension() const;
 	std::string getPath() const;
 };
 

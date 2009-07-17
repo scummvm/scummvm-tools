@@ -29,6 +29,10 @@
 
 ExtractAgos::ExtractAgos(const std::string &name) : Tool(name) {
 	_filelen = 0;
+	
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
 
 	_helptext = "\nUsage: " + _name + " [-o outputname] infilename\n";
 }
@@ -36,26 +40,25 @@ ExtractAgos::ExtractAgos(const std::string &name) : Tool(name) {
 // Run the actual tool
 void ExtractAgos::execute() {
 	// Loop through all input files
-	for (std::vector<std::string>::const_iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
-		Filename infilename(*iter);
-		uint8 *x = (uint8 *)loadfile(infilename);
+	Filename infilename(_inputPaths[0].path);
 
-		_outputPath.setFullName(infilename.getFullName());
+	uint8 *x = (uint8 *)loadfile(infilename);
 
-		uint32 decrlen = simon_decr_length(x, (uint32) _filelen);
-		uint8 *out = (uint8 *)malloc(decrlen);
+	_outputPath.setFullName(infilename.getFullName());
 
-		if (out) {
-			if (simon_decr(x, out, _filelen)) {
-				savefile(_outputPath.getFullPath(), out, decrlen);
-			}
-			else {
-				print("%s: decrunch error\n", iter->c_str());
-			}
+	uint32 decrlen = simon_decr_length(x, (uint32) _filelen);
+	uint8 *out = (uint8 *)malloc(decrlen);
 
-			free(x);
-			free(out);
+	if (out) {
+		if (simon_decr(x, out, _filelen)) {
+			savefile(_outputPath.getFullPath(), out, decrlen);
 		}
+		else {
+			print("%s: decrunch error\n", infilename.getFullPath());
+		}
+
+		free(x);
+		free(out);
 	}
 }
 

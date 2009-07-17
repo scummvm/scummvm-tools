@@ -50,11 +50,12 @@ uint32 CompressSword2::append_to_file(File &f1, const char *filename) {
 #define GetCompressedAmplitude(n)  ((n) & 7)
 
 CompressSword2::CompressSword2(const std::string &name) : CompressionTool(name) {
-	_helptext = "\nUsage: " + _name + " [params] <file>\n\n" kCompressionAudioHelp;
-}
+	
+	ToolInput input;
+	input.format = "*.clu";
+	_inputPaths.push_back(input);
 
-bool CompressSword2::inspectInput(const Filename &filename) {
-	return filename.hasExtension("clu");
+	_helptext = "\nUsage: " + _name + " [params] <file>\n\n" kCompressionAudioHelp;
 }
 
 void CompressSword2::execute() {
@@ -63,11 +64,7 @@ void CompressSword2::execute() {
 	uint32 totalSize;
 	uint32 length;
 	
-
-	// Check _input
-	if (_inputPaths.size() != 1)
-		error("One input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	switch (_format) {

@@ -133,21 +133,18 @@ void CompressScummSou::get_part(const char *inputPath) {
 
 CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(name) {
 	_audioOuputFilename = OUTPUT_MP3;
+	
+	ToolInput input;
+	input.format = "*.sou";
+	_inputPaths.push_back(input);
 
 	_helptext = "\nUsage: " + _name + " [mode] [mode params] monster.sou\n" kCompressionAudioHelp;
-}
-
-bool CompressScummSou::inspectInput(const Filename &filename) {
-	return filename.hasExtension("sou");
 }
 
 void CompressScummSou::execute() {
 	char buf[2048];
 
-	// Check input
-	if (_inputPaths.size() != 1)
-		error("One input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	switch (_format) {

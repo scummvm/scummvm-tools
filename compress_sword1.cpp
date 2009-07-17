@@ -559,16 +559,16 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Fi
 CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name) {
 	_compSpeech = true;
 	_compMusic = true;
+	
+	ToolInput input;
+	input.format = "*.clu";
+	_inputPaths.push_back(input);
 
 	_helptext = "\nUsage: %s [only] [mode] [mode params] [-o outputdir] <inputdir>\n"
 		"only can be either:\n"
 		" --speech-only  only encode speech clusters\n"
 		" --music-only   only encode music files\n"
 		kCompressionAudioHelp;
-}
-
-bool CompressSword1::inspectInput(const Filename &filename) {
-	return filename.hasExtension("clu");
 }
 
 void CompressSword1::parseExtraArguments() {
@@ -583,10 +583,7 @@ void CompressSword1::parseExtraArguments() {
 }
 
 void CompressSword1::execute() {
-	// Check input
-	if (_inputPaths.size() != 1)
-		error("One input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	switch (_format) {

@@ -66,8 +66,6 @@ struct t_resgroup {
 class ExtractMMNes : public Tool {
 public:
 	ExtractMMNes(const std::string &name = "extract_mm_nes");
-	
-	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

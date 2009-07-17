@@ -31,8 +31,6 @@ typedef t_resource * p_resource;
 class ExtractMMC64 : public Tool {
 public:
 	ExtractMMC64(const std::string &name = "extract_mm_c64");
-	
-	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

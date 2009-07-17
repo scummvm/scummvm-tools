@@ -1224,11 +1224,12 @@ uint32 ISO_CRC (File &file) {
 }
 
 ExtractLoomTG16::ExtractLoomTG16(const std::string &name) : Tool(name) {
-	_helptext = "\nUsage: " + _name + " [-o outputdir = out/] <infile>";
-}
+	
+	ToolInput input;
+	input.format = "*.iso";
+	_inputPaths.push_back(input);
 
-bool ExtractLoomTG16::inspectInput(const Filename &filename) {
-	return filename.hasExtension("ISO") || filename.hasExtension("iso");
+	_helptext = "\nUsage: " + _name + " [-o outputdir = out/] <infile>";
 }
 
 void ExtractLoomTG16::execute() {
@@ -1239,11 +1240,7 @@ void ExtractLoomTG16::execute() {
 #endif
 	uint32 CRC;
 
-
-	// We only got one input file
-	if (_inputPaths.size() > 1)
-		error("Only one input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	if (outpath.empty())

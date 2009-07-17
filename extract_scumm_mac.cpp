@@ -27,6 +27,11 @@
 #define CHANGECASE
 
 ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name) {
+	
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
+
 	_helptext =
 		"\nUsage: " + _name + " [-o <output dir> = out/] <file>\n"
 		"\tSome Lucas Arts CDs appear to contains only an application.\n"
@@ -42,10 +47,7 @@ void ExtractScummMac::execute() {
 	unsigned long i;
 	int j;
 
-	// We only got one input file
-	if (_inputPaths.size() > 1)
-		error("Only one input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename outpath(_outputPath);
 
 	if (outpath.empty())

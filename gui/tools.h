@@ -42,22 +42,6 @@ enum ToolType {
 	TOOLTYPE_ALL,
 };
 
-
-/**
- * Describes a possible input to the tool (since some take two seperate files, 
- * some a dir and some a single file
- */
-struct ToolInput {
-	/** The extension of this input file, ignored for directories */
-	wxString _extension;
-	/** A short description of what file is expected, displayed in the UI */
-	wxString _description;
-	/** If false, this input is a directory */
-	bool _file;
-};
-
-typedef std::vector<ToolInput> ToolInputs;
-
 /**
  * A tool supported by the Wizard, holds all information about what format it supports
  * what input it requires etc.
@@ -70,6 +54,7 @@ typedef std::vector<ToolInput> ToolInputs;
 class ToolGUI {
 	// Block copy-construction
 	ToolGUI(const ToolGUI &);
+
 public:
 	ToolGUI();
 	/**
@@ -79,10 +64,8 @@ public:
 	 * you must set the type manually.
 	 *
 	 * @param name The name of the tool, should match the executable name (without the extension)
-	 * @param main The tool entry point, defined in tool_entry_point.h
-	 * @param input_extenion Filename filter of the input  to expect.
 	 */
-	ToolGUI(Tool *tool, wxString input_extension = wxT("*.*"));
+	ToolGUI(Tool *tool);
 	~ToolGUI();
 
 	/**
@@ -93,20 +76,17 @@ public:
 	void addGame(const wxString &game_name);
 
 	/**
-	 * Adds a file input to the tool.
-	 *
-	 * @param input_wildcard The wildcard filename of the input, like "*.zip".
-	 * @param input_is_directory True if input is a directory (false by default).
-	 */
-	void addInput(const wxString &input_wildcard, bool input_is_directory = false);
-
-	/**
 	 * Returns true if the file appears to be valid input to this tool.
 	 *
 	 * @param filename The file to inspect.
 	 * @return True if we can possibly parse this file.
 	 */
 	bool inspectInput(const Filename &filename) const;
+
+	/**
+	 *
+	 */
+	ToolInputs getInputList() const;
 
 	// Helper functions to get info about the tool
 	
@@ -145,8 +125,6 @@ public:
 	Tool *_backend;
 	/** Type of tool, either extract, compress or unknown */
 	ToolType _type;
-	/** List of all inputs this tool expects */
-	ToolInputs _inputs;
 	/** The help text displayed on the input/output page */
 	wxString _inHelpText;
 };

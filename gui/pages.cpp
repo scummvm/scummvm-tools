@@ -293,7 +293,7 @@ void ChooseInPage::onNext(wxWindow *panel) {
 		filename = (const char *)inFileWindow ->GetPath().mb_str();
 
 	if (_configuration.advanced) {
-		if (_configuration.selectedTool->_inputs.size() > 1)
+		if (_configuration.selectedTool->getInputList().size() > 1)
 			switchPage(new ChooseExtraInPage(_topframe));
 		else
 			switchPage(new ChooseOutPage(_topframe));
@@ -330,18 +330,19 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 	wxStaticBoxSizer *inputbox = new wxStaticBoxSizer(wxVERTICAL, panel, wxT("Input files"));
 
 	int i = 1;
-	wxASSERT_MSG(tool._inputs.size() > 1, wxT("Extra input page should not display with only one input"));
+	ToolInputs &inputs = tool.getInputList();
+	wxASSERT_MSG(inputs.size() > 1, wxT("Extra input page should not display with only one input"));
 
-	for (ToolInputs::const_iterator iter = tool._inputs.begin() + 1; iter != tool._inputs.end(); ++iter) {
+	for (ToolInputs::const_iterator iter = inputs.begin() + 1; iter != inputs.end(); ++iter) {
 		const ToolInput &input = *iter;
 
 		wxString windowName = wxT("InputPicker");
 		windowName << i;
 
-		if (input._file) {
+		if (input.file) {
 			inputbox->Add(new wxFilePickerCtrl(
 				panel, wxID_ANY, wxEmptyString, wxT("Select a file"), 
-				input._extension, 
+				wxString(input.format.c_str(), wxConvUTF8), 
 				wxDefaultPosition, wxDefaultSize, 
 				wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
 				windowName));
@@ -382,7 +383,7 @@ void ChooseExtraInPage::save(wxWindow *panel) {
 		filelist.erase(filelist.begin() + 1, filelist.end());
 
 	int i = 1;
-	for (ToolInputs::const_iterator iter = tool._inputs.begin(); iter != tool._inputs.end(); ++iter) {
+	for (ToolInputs::const_iterator iter = tool.getInputList().begin(); iter != tool.getInputList().end(); ++iter) {
 		wxString windowName = wxT("InputPicker");
 		windowName << i;
 

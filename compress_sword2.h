@@ -29,8 +29,6 @@
 class CompressSword2 : public CompressionTool {
 public:
 	CompressSword2(const std::string &name = "compress_sword2");
-	
-	virtual bool inspectInput(const Filename &filename);
 
 	virtual void execute();
 

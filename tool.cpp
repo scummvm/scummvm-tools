@@ -32,7 +32,6 @@ Tool::Tool(const std::string &name) {
 	_arguments_parsed = 0;
 	_argv = NULL;
 
-	_inputFromDirectory = false;
 	_outputToDirectory = true;
 	_supportedFormats = AUDIO_NONE;
 	_supportsProgressBar = false;
@@ -79,9 +78,14 @@ int Tool::run(int argc, char *argv[]) {
 	parseExtraArguments();
 
 	// Read input files from CLI
-	while (_arguments_parsed < _arguments.size()) {
+	for(ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
+		if(_arguments_parsed > _inputPaths.size()) {
+			print("Too few input files!");
+			return -2;
+		}
+
 		std::string &in = _arguments[_arguments_parsed++];
-		if (_inputFromDirectory) {
+		if (!iter->file) {
 			// Append '/' to input if it's not already done
 			// TODO: We need a way to detect a proper directory here!
 			size_t s = in.size();
@@ -90,7 +94,13 @@ int Tool::run(int argc, char *argv[]) {
 				in[s+1] = '\0';
 			}
 		}
-		_inputPaths.push_back(in);
+
+		iter->path = in;
+	}
+
+	if(_arguments_parsed < _arguments.size()) {
+		print("Too many input files!");
+		return -2;
 	}
 
 	if (_inputPaths.empty()) {
@@ -118,7 +128,36 @@ void Tool::run() {
 }
 
 bool Tool::inspectInput(const Filename &filename) {
-	return true;
+	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
+		std::string p = iter->format;
+		if (p == "/") {
+			// Directory, we don't handle this yet, display all tools
+			return true;
+		}
+		
+		Filename cmp_filename = p;
+
+		if (cmp_filename.getName() == "*") {
+			if (cmp_filename.getExtension() == "*")
+				// Match anything!
+				return true;
+			else if (cmp_filename.getExtension() == filename.getExtension())
+				// Extensions are the same
+				return true;
+		} else {
+			// Match on filename
+			if (cmp_filename.getName() == filename.getName()) {
+				if (cmp_filename.getExtension() == "*")
+					return true;
+				else if (cmp_filename.getExtension() == filename.getExtension())
+					// Filenames are identical
+					return true;
+			}
+		}
+	}
+
+	// Didn't match any of our inputs
+	return false;
 }
 
 void Tool::setPrintFunction(void (*f)(void *, const char *), void *udata) {

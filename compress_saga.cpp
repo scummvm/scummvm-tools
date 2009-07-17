@@ -112,6 +112,13 @@ typedef struct  {
 CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name) {
 	_currentGameDescription = NULL;
 	_currentFileDescription = NULL;
+	
+	
+	ToolInput input;
+	// We accept many extensions, and the fact that "inherit the earth voices" does not have an extension
+	// makes it pretty much unsupported by the standard dialogs to open
+	input.format = "*.*";
+	_inputPaths.push_back(input);
 
 	_helptext = "\nUsage: %s [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n" kCompressionAudioHelp;
 }
@@ -407,10 +414,7 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 }
 
 void CompressSaga::execute() {
-	// Check input
-	if (_inputPaths.size() != 1)
-		error("One input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	// ITE

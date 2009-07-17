@@ -1067,19 +1067,16 @@ void CompressScummBun::writeToRMAPFile(byte *ptr, File &output, char *filename, 
 
 CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(name) {
 	_cbundleCurIndex = 0;
+	
+	ToolInput input;
+	input.format = "*.bun";
+	_inputPaths.push_back(input);
 
 	_helptext = "\nUsage: " + _name + " [mode] [mode-params] [-o outputfile = inputfile.bun] <inputfile>\n";
 }
 
-bool CompressScummBun::inspectInput(const Filename &filename) {
-	return filename.hasExtension("bun");
-}
-
 void CompressScummBun::execute() {
-	// Check input
-	if (_inputPaths.size() != 1)
-		error("One input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	uint32 tag;

@@ -36,14 +36,20 @@ struct CompressGob::Chunk {
 
 
 CompressGob::CompressGob(const std::string &name) : CompressionTool(name) {
+	_execMode = MODE_NORMAL;
+	_chunks = NULL;
+
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
+
 	_helptext = 
 		"\nUsage: " + _name + " [-f] [-o <output> = out.stk] <conf file>\n"
 		"<conf file> is a .gob file generated extract_gob_stk\n"
 		"<-f> ignores the compression flag in the .gob file and force compression for all files\n\n"
 		"The STK/ITK archive will be created in the current directory.\n";
 
-	_execMode = MODE_NORMAL;
-	_chunks = NULL;
+
 }
 
 CompressGob::~CompressGob() {
@@ -62,10 +68,7 @@ void CompressGob::execute() {
 	File gobConf;
 	uint16 chunkCount;
 
-	// We only got one input file
-	if (_inputPaths.size() > 1)
-		error("Only one input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	// We output with .stk extension, if there is no specific out file

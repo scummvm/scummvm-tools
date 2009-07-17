@@ -92,12 +92,12 @@ const struct PatchFile patchFiles[] = {
 CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name) {
 	_outputToDirectory = false;
 	_supportsProgressBar = true;
+	
+	ToolInput input;
+	input.format = "queen.1";
+	_inputPaths.push_back(input);
 
 	_helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
-}
-
-bool CompressQueen::inspectInput(const Filename &filename) {
-	return filename.getFullName() == "queen.1";
 }
 
 const CompressQueen::GameVersion *CompressQueen::detectGameVersion(uint32 size) {
@@ -174,10 +174,7 @@ void CompressQueen::execute() {
 	int size, i = 1;
 	uint32 prevOffset;
 
-	// Check input
-	if (_inputPaths.size() != 1)
-		error("One input file expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	if (outpath.empty()) {

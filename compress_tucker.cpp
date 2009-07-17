@@ -40,7 +40,10 @@ struct CompressedData {
 static CompressedData temp_table[10000];
 
 CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name) {
-	_inputFromDirectory = true;
+	
+	ToolInput input;
+	input.format = "/";
+	_inputPaths.push_back(input);
 
 	_helptext = "\nUsage: %s [mode params] [-o outputdir] inputdir\n";
 }
@@ -402,10 +405,7 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 
 
 void CompressTucker::execute() {
-	// We only got one input dir
-	if (_inputPaths.size() > 1)
-		error("Only one input directory expected!");
-	Filename inpath(_inputPaths[0]);
+	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
 	// Default out is same as in directory, file names differ by extension
