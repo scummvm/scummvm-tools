@@ -327,7 +327,7 @@ void CompressScummSan::mixing(const char *outputDir, const char *inputFilename, 
 	sprintf(wavPath, "%s/%s.wav", outputDir, inputFilename);
 	File wavFile(wavPath, "wb+");
 
-	int frameAudioSize;
+	int frameAudioSize = 0;
 	if (fps == 12) {
 		frameAudioSize = 7352;
 	} else if (fps == 10) {

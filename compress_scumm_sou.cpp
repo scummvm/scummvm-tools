@@ -75,7 +75,6 @@ void CompressScummSou::append_byte(int size, char buf[]) {
 
 void CompressScummSou::get_part(const char *inputPath) {
 	uint32 tot_size;
-	char outname[256];
 	int size;
 	char fbuf[2048];
 
@@ -120,8 +119,7 @@ void CompressScummSou::get_part(const char *inputPath) {
 	extractAndEncodeVOC(TEMP_RAW, _input, _format);
 
 	/* Append the converted data to the master output file */
-	sprintf(outname, tempEncoded);
-	File f(outname, "rb");
+	File f(tempEncoded, "rb");
 	tot_size = 0;
 	while ((size = f.read(fbuf, 1, 2048)) > 0) {
 		tot_size += size;
@@ -145,7 +143,7 @@ void CompressScummSou::execute() {
 	char buf[2048];
 
 	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	//Filename &outpath = _outputPath;
 
 	switch (_format) {
 	case AUDIO_MP3:

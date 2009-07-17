@@ -190,7 +190,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 			err = spawnSubprocess(fbuf) != 0;
 
 			if (err) {
-				char buf[2048];35xk'x25uk
+				char buf[2048];
 				sprintf(buf, "Error in Vorbis encoder. (check parameters)\nVorbis Encoder Commandline:%s\n", fbuf);
 				throw ToolException(buf, err);
 			} else {
