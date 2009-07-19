@@ -21,71 +21,65 @@
  *
  */
 
+#include "extract_kyra.h"
+
 #include "kyra_pak.h"
 #include "kyra_ins.h"
 
-int export_main(extract_kyra)(int argc, char *argv[]) {
-	const char *helptext = "\n"
-		"Usage: %s [params] [-o output] <archivefile> [-o output]\n"
-		"Default output path is ./out/\n"
-		"nParams:\n"
-		"-e <filename>     Extract only <filename> from the archive, will be extracted \n"
-		"                  into the current directory.\n"
-		"-x                Extract all files (default)\n"
-		"-a                Extract files from the Amiga .PAK files\n"
+ExtractKyra::ExtractKyra(const std::string &name) : Tool(name) {
+	extractAll = true;
+	extractOne = false;
+	isAmiga = false;
+	isHoFInstaller = false;
+	singleFilename = "";
+	
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
+
+	_helptext = 
+		"Usage: " + _name + "[params] [-o output] <archivefile> [-o output]\n" +
+		"Default output path is ./out/\n" +
+		"nParams:\n" +
+		"-e <filename>     Extract only <filename> from the archive, will be extracted \n" +
+		"                  into the current directory.\n" +
+		"-x                Extract all files (default)\n" +
+		"-a                Extract files from the Amiga .PAK files\n" +
 		"-2                Extract files from HoF installer files\n";
+}
 
-	int first_arg = 1;
-	int last_arg = argc - 1;
-
-	bool extractAll = true, extractOne = false, isAmiga = false, isHoFInstaller = false;
-	char singleFilename[256] = "";
-
-	Filename outpath, inputpath;
-
-	// Check if we should display some helpful text
-	parseHelpArguments(argv, argc, helptext);
-
-	int param = first_arg;
-
+void ExtractKyra::parseExtraArguments() {
 	// Parse our own arguments
-	for (; param < last_arg; ++param) {
-		if (strcmp(argv[param], "-x") == 0) {
+	while(_arguments_parsed < _arguments.size()) {
+		std::string arg = _arguments[_arguments_parsed];
+		if (arg == "-x") {
 			extractAll = true;
 			extractOne = false;
-		} else if (strcmp(argv[param], "-a") == 0) {
+		} else if (arg == "-a") {
 			isAmiga = true;
-		} else if (strcmp(argv[param], "-2") == 0) {
+		} else if (arg == "-2") {
 			isHoFInstaller = true;
-		} else if (strcmp(argv[param], "-n") == 0) {
+		} else if (arg == "-n") {
 			extractOne = true;
 			extractAll = false;
 
-			++param;
+			++_arguments_parsed;
 
-			if (param >= last_arg) {
+			if (_arguments_parsed >= _arguments.size()) {
 				error("No filename supplied to -n\nShould be used on the form: %s -n ALGAE.CPS -o out/ A_E.PAK");
 			} else {
-				strcpy(singleFilename, argv[param]);
+				singleFilename = _arguments[_arguments_parsed];
 			}
 		} else {
 			break;
 		}
+		++_arguments_parsed;
 	}
+}
 
-	// Parse output argument
-	if (parseOutputDirectoryArguments(&outpath, argv, argc, param))
-		param += 2;
-	else if (parseOutputDirectoryArguments(&outpath, argv, argc, argc - 2))
-		last_arg -= 1;
-	else
-		outpath.setFullPath("out/");
+void ExtractKyra::execute() {
+	Filename inputpath(_inputPaths[0].path);
 
-	// Extract files
-	if (first_arg != last_arg)
-		error("Expected only one input file.");
-
-	inputpath.setFullPath(argv[param]);
 	Extractor *extract = 0;
 	if (isHoFInstaller) {
 		extract = new HoFInstaller(inputpath.getFullPath().c_str());
@@ -101,21 +95,21 @@ int export_main(extract_kyra)(int argc, char *argv[]) {
 
 	// Everything has been decided, do the actual extraction
 	if (extractAll) {
-		extract->outputAllFiles(&outpath);
+		extract->outputAllFiles(&_outputPath);
 	} else if (extractOne) {
 		inputpath.setFullName(singleFilename);
-		extract->outputFileAs(singleFilename, inputpath.getFullPath().c_str());
+		extract->outputFileAs(singleFilename.c_str(), inputpath.getFullPath().c_str());
 	} else {
 		extract->drawFileList();
 	}
 
 	delete extract;
-	return 0;
 }
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	return export_main(extract_kyra)(argc, argv);
+	ExtractKyra kyra(argv[0]);
+	return kyra.run(argc, argv);
 }
 #endif
 

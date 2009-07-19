@@ -49,8 +49,10 @@
 #include "../compress_tinsel.h"
 #include "../compress_touche.h"
 #include "../compress_tucker.h"
+#include "../encode_dxa.h"
 #include "../extract_agos.h"
 #include "../extract_gob_stk.h"
+#include "../extract_kyra.h"
 #include "../extract_loom_tg16.h"
 #include "../extract_mm_apple.h"
 #include "../extract_mm_c64.h"
@@ -82,9 +84,11 @@ void Tools::init() {
 	addTool(new ToolGUI(new CompressTinsel()));
 	addTool(new ToolGUI(new CompressTouche()));
 	addTool(new ToolGUI(new CompressTucker()));
+	addTool(new ToolGUI(new EncodeDXA(), TOOLTYPE_COMPRESSION));
 
 	addTool(new ToolGUI(new ExtractAgos()));
 	addTool(new ToolGUI(new ExtractGobStk()));
+	addTool(new ToolGUI(new ExtractKyra()));
 	addTool(new ToolGUI(new ExtractLoomTG16()));
 	addTool(new ToolGUI(new ExtractMMApple()));
 	addTool(new ToolGUI(new ExtractMMC64()));
@@ -258,23 +262,21 @@ const ToolGUI *Tools::get(const wxString& name) const {
 
 // The Tool class
 
-ToolGUI::ToolGUI() {
-	// Seems std is allowed to create dummy objects in maps.
-	//wxLogError(wxT("Created empty tool, should never happened."));
-}
-
-ToolGUI::ToolGUI(Tool *tool) {
+ToolGUI::ToolGUI(Tool *tool, ToolType type) {
 	_backend = tool;
 	_name = wxString(tool->_name.c_str(), wxConvUTF8);
 
-	if (_name.Find(wxT("extract")) != wxNOT_FOUND)
-		_type = TOOLTYPE_EXTRACTION;
-	else if (_name.Find(wxT("compress")) != wxNOT_FOUND)
-		_type = TOOLTYPE_COMPRESSION;
-	else {
-		wxLogError(wxT("Tools with unknown type shouldn't exist."));
-		_type = TOOLTYPE_UNKNOWN;
-	}
+	if(type == TOOLTYPE_UNKNOWN) {
+		if (_name.Find(wxT("extract")) != wxNOT_FOUND)
+			_type = TOOLTYPE_EXTRACTION;
+		else if (_name.Find(wxT("compress")) != wxNOT_FOUND)
+			_type = TOOLTYPE_COMPRESSION;
+		else {
+			wxLogError(wxT("Tools with unknown type shouldn't exist."));
+			_type = TOOLTYPE_UNKNOWN;
+		}
+	} else
+		_type = type;
 
 	_inHelpText = wxT("Please select any additional input files.");
 }

@@ -56,7 +56,6 @@ class ToolGUI {
 	ToolGUI(const ToolGUI &);
 
 public:
-	ToolGUI();
 	/**
 	 * Creates a new tool, can be stack allocated and copied without problems
 	 * The type of tool is deduced from the name, if it contains 'extract', it's an extraction tool
@@ -65,7 +64,7 @@ public:
 	 *
 	 * @param name The name of the tool, should match the executable name (without the extension)
 	 */
-	ToolGUI(Tool *tool);
+	ToolGUI(Tool *tool, ToolType type = TOOLTYPE_UNKNOWN);
 	~ToolGUI();
 
 	/**

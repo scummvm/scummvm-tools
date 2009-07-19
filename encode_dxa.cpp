@@ -38,10 +38,6 @@ const uint32 typeNULL = 0x4C4C554E;
 #define  BLOCKW	4
 #define  BLOCKH	4
 
-static AudioFormat gCompMode = AUDIO_MP3;
-
-enum ScaleMode { S_NONE, S_INTERLACED, S_DOUBLE };
-
 struct DiffStruct {
 	uint16 map;
 	int count;
@@ -50,7 +46,7 @@ struct DiffStruct {
 
 class DxaEncoder {
 private:
-	FILE *_dxa;
+	File _dxa;
 	int _width, _height, _framerate, _framecount, _workheight;
 	uint8 *_prevframe, *_prevpalette;
 	ScaleMode _scaleMode;
@@ -65,15 +61,15 @@ private:
 	uLong m13encode(byte *frame, byte *outbuf);
 
 public:
-	DxaEncoder(const char *filename, int width, int height, int framerate, ScaleMode scaleMode);
+	DxaEncoder(Tool &tool, Filename filename, int width, int height, int framerate, ScaleMode scaleMode);
 	~DxaEncoder();
 	void writeHeader();
 	void writeNULL();
 	void writeFrame(uint8 *frame, uint8 *palette);
 };
 
-DxaEncoder::DxaEncoder(const char *filename, int width, int height, int framerate, ScaleMode scaleMode) {
-	_dxa = fopen(filename, "wb");
+DxaEncoder::DxaEncoder(Tool &tool, Filename filename, int width, int height, int framerate, ScaleMode scaleMode) {
+	_dxa.open(filename, "wb");
 	_width = width;
 	_height = height;
 	_framerate = framerate;
@@ -92,11 +88,9 @@ DxaEncoder::DxaEncoder(const char *filename, int width, int height, int framerat
 }
 
 DxaEncoder::~DxaEncoder() {
-	fseek(_dxa, 0, SEEK_SET);
+	_dxa.seek(0, SEEK_SET);
 
 	writeHeader();
-
-	fclose(_dxa);
 
 	delete[] _codeBuf;
 	delete[] _dataBuf;
@@ -117,25 +111,25 @@ void DxaEncoder::writeHeader() {
 	else if (_scaleMode == S_DOUBLE)
 		version |= 0x40;
 
-	writeUint32LE(_dxa, typeDEXA);
-	writeByte(_dxa, version);
+	_dxa.writeUint32LE(typeDEXA);
+	_dxa.writeByte(version);
 
-	writeUint16BE(_dxa, _framecount);
-	writeUint32BE(_dxa, _framerate);
-	writeUint16BE(_dxa, _width);
-	writeUint16BE(_dxa, _height);
+	_dxa.writeUint16BE(_framecount);
+	_dxa.writeUint32BE(_framerate);
+	_dxa.writeUint16BE(_width);
+	_dxa.writeUint16BE(_height);
 }
 
 void DxaEncoder::writeNULL() {
 	//NULL
-	writeUint32LE(_dxa, typeNULL);
+	_dxa.writeUint32LE(typeNULL);
 }
 
 void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 
 	if (_framecount == 0 || memcmp(_prevpalette, palette, 768)) {
-		writeUint32LE(_dxa, typeCMAP);
-		fwrite(palette, 768, 1, _dxa);
+		_dxa.writeUint32LE(typeCMAP);
+		_dxa.write(palette, 768, 1);
 		memcpy(_prevpalette, palette, 768);
 	} else {
 		writeNULL();
@@ -145,7 +139,7 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 		//FRAM
 		byte compType;
 
-		writeUint32LE(_dxa, typeFRAM);
+		_dxa.writeUint32LE(typeFRAM);
 
 		if (_framecount == 0)
 			compType = 2;
@@ -159,9 +153,9 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 				uLong outsize = _width * _workheight;
 				byte *outbuf = new byte[outsize];
 				compress2(outbuf, &outsize, frame, _width * _workheight, 9);
-				writeByte(_dxa, compType);
-				writeUint32BE(_dxa, outsize);
-				fwrite(outbuf, outsize, 1, _dxa);
+				_dxa.writeByte(compType);
+				_dxa.writeUint32BE(outsize);
+				_dxa.write(outbuf, outsize, 1);
 				delete[] outbuf;
 				break;
 			}
@@ -220,9 +214,9 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 					frameoutbuf = rawbuf_z;
 				}
 
-				writeByte(_dxa, compType);
-				writeUint32BE(_dxa, frameoutsize);
-				fwrite(frameoutbuf, frameoutsize, 1, _dxa);
+				_dxa.writeByte(compType);
+				_dxa.writeUint32BE(frameoutsize);
+				_dxa.write(frameoutbuf, frameoutsize, 1);
 
 				delete[] xorbuf_z;
 				delete[] rawbuf_z;
@@ -541,7 +535,107 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 	return outb - outbuf;
 }
 
-int read_png_file(const char* filename, unsigned char *&image, unsigned char *&palette, int &width, int &height) {
+EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name) {
+	
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
+
+	_helptext = 
+		"Usage: " + _name + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" +
+		"Output will be two files, one with .dxa extension and the other depending on the used audio codec." 
+		+ kCompressionAudioHelp;
+}
+
+void EncodeDXA::execute() {
+	int width, height, framerate, frames;
+	ScaleMode scaleMode;
+	Filename inpath(_inputPaths[0].path);
+	Filename outpath(_outputPath);
+	
+	if (outpath.empty())
+		// Actual change of extension is done later...
+		outpath = inpath;
+
+	// check if the wav file exists.
+	Filename wavpath(inpath);
+	wavpath.setExtension(".wav");
+	struct stat statinfo;
+	if (!stat(wavpath.getFullPath().c_str(), &statinfo)) {
+		outpath.setExtension(audio_extensions(_format));
+		convertWAV(&wavpath, &outpath);
+	}
+
+	// read some data from the Bink or Smacker file.
+	readVideoInfo(&inpath, width, height, framerate, frames, scaleMode);
+
+	print("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
+		   width, height, framerate, frames);
+
+	// create the encoder object
+	outpath.setExtension(".dxa");
+	DxaEncoder dxe(*this, outpath, width, height, framerate, scaleMode);
+
+	// No sound block
+	dxe.writeNULL();
+
+	uint8 *image = NULL;
+	uint8 *palette = NULL;
+	int framenum = 0;
+
+	print("Encoding video...");
+
+	char fullname[1024];
+	strcpy(fullname, inpath.getFullPath().c_str());
+	for (int f = 0; f < frames; f++) {
+		char strbuf[1024];
+		if (frames > 999)
+			sprintf(strbuf, "%s%04d.png", fullname, framenum);
+		else if (frames > 99)
+			sprintf(strbuf, "%s%03d.png", fullname, framenum);
+		else if (frames > 9)
+			sprintf(strbuf, "%s%02d.png", fullname, framenum);
+		else
+			sprintf(strbuf, "%s%d.png", fullname, framenum);
+		inpath.setFullName(strbuf);
+
+		int r = read_png_file(inpath.getFullPath().c_str(), image, palette, width, height);
+
+		if (!palette) {
+			error("8-bit 256-color image expected");
+		}
+
+		if (!r) {
+			if (scaleMode != S_NONE) {
+				byte *unscaledImage = new byte[width * height / 2];
+
+				for (int y = 0; y < height; y += 2)
+					memcpy(&unscaledImage[(width*y)/2], &image[width*y], width);
+
+				dxe.writeFrame(unscaledImage, palette);
+				delete[] unscaledImage;
+			} else {
+				dxe.writeFrame(image, palette);
+			}
+		}
+
+		if (image) delete[] image;
+		if (palette) delete[] palette;
+
+		if (r)
+			break;
+
+		framenum++;
+
+		if (framenum % 20 == 0) {
+			print("Encoding video...%d%% (%d of %d)", 100 * framenum / frames, framenum, frames);
+		}
+	}
+
+	print("Encoding video...100%% (%d of %d)\n", frames, frames);
+}
+
+int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsigned char *&palette, int &width, int &height) {
 	png_byte header[8];
 
 	png_byte color_type;
@@ -552,11 +646,9 @@ int read_png_file(const char* filename, unsigned char *&image, unsigned char *&p
 	int number_of_passes;
 	png_bytep *row_pointers;
 
-	FILE *fp = fopen(filename, "rb");
-	if (!fp) {
-		error("read_png_file: Cannot open file: %s", filename);
-	}
-	fread(header, 1, 8, fp);
+	File fp(filename, "rb");
+
+	fp.read(header, 1, 8);
 	if (png_sig_cmp(header, 0, 8))
 		return 1;
 
@@ -617,44 +709,38 @@ int read_png_file(const char* filename, unsigned char *&image, unsigned char *&p
 	memcpy(palette, pngpalette, 768);
 	free(pngpalette);
 
-	fclose(fp);
-
 	return 0;
 }
 
-void readVideoInfo(Filename *filename, int &width, int &height, int &framerate, int &frames,
-	ScaleMode &scaleMode) {
+void EncodeDXA::readVideoInfo(Filename *filename, int &width, int &height, int &framerate, int &frames, ScaleMode &scaleMode) {
 
-	FILE *smk = fopen(filename->getFullPath().c_str(), "rb");
-	if (!smk) {
-		error("readVideoInfo: Cannot open file: %s", filename->getFullPath().c_str());
-	}
+	File smk(*filename, "rb");
 
 	scaleMode = S_NONE;
 
 	char buf[4];
-	fread(buf, 1, 4, smk);
+	smk.read(buf, 1, 4);
 	if (!memcmp(buf, "BIK", 3)) {
 		// Skip file size
-		readUint32LE(smk);
+		smk.readUint32LE();
 
-		frames = readUint32LE(smk);
+		frames = smk.readUint32LE();
 
 		// Skip unknown
-		readUint32LE(smk);
-		readUint32LE(smk);
+		smk.readUint32LE();
+		smk.readUint32LE();
 
-		width = readUint32LE(smk);
-		height = readUint32LE(smk);
-		framerate = readUint32LE(smk);
+		width = smk.readUint32LE();
+		height = smk.readUint32LE();
+		framerate = smk.readUint32LE();
 	} else if (!memcmp(buf, "SMK2", 4) || !memcmp(buf, "SMK4", 4)) {
 		uint32 flags;
 
-		width = readUint32LE(smk);
-		height = readUint32LE(smk);
-		frames = readUint32LE(smk);
-		framerate = readUint32LE(smk);
-		flags = readUint32LE(smk);
+		width = smk.readUint32LE();
+		height = smk.readUint32LE();
+		frames = smk.readUint32LE();
+		framerate = smk.readUint32LE();
+		flags = smk.readUint32LE();
 
 		// If the Y-interlaced or Y-doubled flag is set, the RAD Video Tools
 		// will have scaled the frames to twice their original height.
@@ -669,131 +755,13 @@ void readVideoInfo(Filename *filename, int &width, int &height, int &framerate, 
 	} else {
 		error("readVideoInfo: Unknown type");
 	}
-
-	fclose(smk);
 }
 
-void convertWAV(const Filename *inpath, const Filename* outpath) {
+void EncodeDXA::convertWAV(const Filename *inpath, const Filename* outpath) {
 	print("Encoding audio...");
 	fflush(stdout);
 
-	encodeAudio(inpath->getFullPath().c_str(), false, -1, outpath->getFullPath().c_str(), gCompMode);
-}
-
-
-int export_main(compress_dxa)(int argc, char *argv[]) {
-	const char *helptext = "\nUsage: %s [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\nOutput will be two files with the .dxa and the other depending on the used audio codec." kCompressionAudioHelp;
-	
-	int width, height, framerate, frames;
-	ScaleMode scaleMode;
-	Filename inpath, outpath;
-	int first_arg = 1;
-	int last_arg = argc - 1;
-
-	parseHelpArguments(argv, argc, helptext);
-
-	// compression mode
-	gCompMode = process_audio_params(argc, argv, &first_arg);
-	
-	// Now we try to find the proper output file
-	// also make sure we skip those arguments
-	if (parseOutputFileArguments(&outpath, argv, argc, first_arg))
-		first_arg += 2;
-	else if (parseOutputFileArguments(&outpath, argv, argc, last_arg - 2))
-		last_arg -= 2;
-	else 
-		// Just leave it empty, we just change extension of input file
-		;
-
-	inpath.setFullPath(argv[first_arg]);
-
-	if (outpath.empty()) {
-		// Actual change of extension is done later...
-		outpath = inpath;
-	}
-
-	inpath.setFullPath(argv[first_arg]);
-
-	// check if the wav file exists.
-	Filename wavpath(inpath);
-	wavpath.setExtension(".wav");
-	struct stat statinfo;
-	if (!stat(wavpath.getFullPath().c_str(), &statinfo)) {
-		outpath.setExtension(audio_extensions(gCompMode));
-		convertWAV(&wavpath, &outpath);
-	}
-
-	// read some data from the Bink or Smacker file.
-	readVideoInfo(&inpath, width, height, framerate, frames, scaleMode);
-
-	print("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
-		   width, height, framerate, frames);
-
-	// create the encoder object
-	outpath.setExtension(".dxa");
-	DxaEncoder dxe(outpath.getFullPath().c_str(), width, height, framerate, scaleMode);
-
-	// No sound block
-	dxe.writeNULL();
-
-	uint8 *image = NULL;
-	uint8 *palette = NULL;
-	int framenum = 0;
-
-	print("Encoding video...");
-	fflush(stdout);
-
-	char fullname[1024];
-	strcpy(fullname, inpath.getFullPath().c_str());
-	for (int f = 0; f < frames; f++) {
-		char strbuf[1024];
-		if (frames > 999)
-			sprintf(strbuf, "%s%04d.png", fullname, framenum);
-		else if (frames > 99)
-			sprintf(strbuf, "%s%03d.png", fullname, framenum);
-		else if (frames > 9)
-			sprintf(strbuf, "%s%02d.png", fullname, framenum);
-		else
-			sprintf(strbuf, "%s%d.png", fullname, framenum);
-		inpath.setFullName(strbuf);
-
-		int r = read_png_file(inpath.getFullPath().c_str(), image, palette, width, height);
-
-		if (!palette) {
-			error("8-bit 256-color image expected");
-		}
-
-		if (!r) {
-			if (scaleMode != S_NONE) {
-				byte *unscaledImage = new byte[width * height / 2];
-
-				for (int y = 0; y < height; y += 2)
-					memcpy(&unscaledImage[(width*y)/2], &image[width*y], width);
-
-				dxe.writeFrame(unscaledImage, palette);
-				delete[] unscaledImage;
-			} else {
-				dxe.writeFrame(image, palette);
-			}
-		}
-
-		if (image) delete[] image;
-		if (palette) delete[] palette;
-
-		if (r)
-			break;
-
-		framenum++;
-
-		if (framenum % 20 == 0) {
-			print("\rEncoding video...%d%% (%d of %d)", 100 * framenum / frames, framenum, frames);
-			fflush(stdout);
-		}
-	}
-
-	print("\rEncoding video...100%% (%d of %d)\n", frames, frames);
-
-	return 0;
+	encodeAudio(inpath->getFullPath().c_str(), false, -1, outpath->getFullPath().c_str(), _format);
 }
 
 #ifdef STANDALONE_MAIN

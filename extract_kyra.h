@@ -23,7 +23,21 @@
 #ifndef EXTRACT_KYRA_H
 #define EXTRACT_KYRA_H
 
-#include "util.h"
+#include "tool.h"
+
+class ExtractKyra : public Tool {
+public:
+	ExtractKyra(const std::string &name = "extract_kyra");
+
+	virtual void execute();
+	
+	void parseExtraArguments();
+
+protected:
+	bool extractAll, extractOne, isAmiga, isHoFInstaller;
+	std::string singleFilename;
+};
+
 
 class Extractor {
 public:
