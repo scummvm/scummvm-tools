@@ -209,10 +209,13 @@ void ChooseToolPage::save(wxWindow *panel) {
 }
 
 void ChooseToolPage::onNext(wxWindow *panel) {
+	const ToolGUI *tool = g_tools.get(static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection());
+
 	if (_configuration.advanced)
 		switchPage(new ChooseInPage(_topframe));
+	else if (tool && tool->getInputList().size() > 1)
+		switchPage(new ChooseExtraInPage(_topframe));
 	else
-		// TODO: Display extra input page
 		switchPage(new ChooseOutPage(_topframe));
 }
 
@@ -346,8 +349,10 @@ void ChooseInPage::onNext(wxWindow *panel) {
 	} else {
 		wxArrayString ls = g_tools.getToolList(filename,
 			_configuration.compressing? TOOLTYPE_COMPRESSION : TOOLTYPE_EXTRACTION);
-		// TODO: If only one input, skip this page and go right to ExtraInput
-		switchPage(new ChooseToolPage(_topframe, ls));
+		if(ls.size() == 1)
+			switchPage(new ChooseOutPage(_topframe));
+		else
+			switchPage(new ChooseToolPage(_topframe, ls));
 	}
 }
 

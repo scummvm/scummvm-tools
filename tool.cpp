@@ -124,6 +124,16 @@ void Tool::run() {
 	// Reset abort state
 	_abort = false;
 	
+
+	// Change output to directory if necessary
+	if (_outputToDirectory) {
+		// Ensure last character is a /, this way we force directory output
+		char lastchr = _outputPath.getFullPath()[_outputPath.getFullPath().size() - 1];
+		if (lastchr != '/' && lastchr != '\\') {
+			_outputPath._path += '/';
+		}
+	}
+
 	execute();
 }
 
@@ -246,14 +256,6 @@ void Tool::parseOutputArguments() {
 
 		if (_arguments_parsed + 1 < _arguments.size()) {
 			_outputPath = _arguments[_arguments_parsed + 1];
-
-			if (_outputToDirectory) {
-				// Ensure last character is a /, this way we force directory output
-				char lastchr = _outputPath.getFullPath()[_outputPath.getFullPath().size() - 1];
-				if (lastchr != '/' && lastchr != '\\') {
-					_outputPath._path += '/';
-				}
-			}
 			_arguments_parsed += 2;
 		} else {
 			throw ToolException("Could not parse arguments: Expected path after '-o' or '--output'.");
