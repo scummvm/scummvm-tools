@@ -368,6 +368,7 @@ public:
 	static int spawnSubprocess(void *udata, const char *cmd);
 
 	bool _finished;
+	bool _success;
 
 protected:
 	/** The current configuration */

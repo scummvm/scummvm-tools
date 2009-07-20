@@ -141,7 +141,7 @@ bool Tool::inspectInput(const Filename &filename) {
 			if (cmp_filename.getExtension() == "*")
 				// Match anything!
 				return true;
-			else if (cmp_filename.getExtension() == filename.getExtension())
+			else if (scumm_stricmp(cmp_filename.getExtension().c_str(), filename.getExtension().c_str()) == 0)
 				// Extensions are the same
 				return true;
 		} else {
@@ -149,7 +149,7 @@ bool Tool::inspectInput(const Filename &filename) {
 			if (cmp_filename.getName() == filename.getName()) {
 				if (cmp_filename.getExtension() == "*")
 					return true;
-				else if (cmp_filename.getExtension() == filename.getExtension())
+				else if (scumm_stricmp(cmp_filename.getExtension().c_str(), filename.getExtension().c_str()) == 0)
 					// Filenames are identical
 					return true;
 			}

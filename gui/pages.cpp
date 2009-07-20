@@ -288,7 +288,7 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 				panel, wxID_ANY, wxEmptyString, wxT("Select a file"), 
 				wxT("*.*"), 
 				wxDefaultPosition, wxSize(300, -1),
-				wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
+				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
 				wxT("InputPicker"));
 		sizer->Add(picker);
 		panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
@@ -1075,7 +1075,9 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 
 	// Check if thread finished
 	if (_thread && _thread->_finished) {
-		// It's done, Wait deallocates resources
+		// Tool has finished 
+		_success = _thread->_success;
+		// Wait deallocates thread resources
 		_thread->Wait();
 		delete _thread;
 		_thread = NULL;
@@ -1140,6 +1142,7 @@ ProcessToolThread::ProcessToolThread(const ToolGUI *tool, Configuration &configu
 {
 	_tool = tool;
 	_finished = false;
+	_success = false;
 	
 	_tool->_backend->setPrintFunction(writeToOutput, reinterpret_cast<void *>(this));
 	_tool->_backend->setProgressFunction(gaugeProgress, reinterpret_cast<void *>(this));
@@ -1150,6 +1153,7 @@ wxThread::ExitCode ProcessToolThread::Entry() {
 	try {
 		_tool->run(_configuration);
 		_output.buffer += "\nTool finished without errors!\n";
+		_success = true;
 	} catch (ToolException &err) {
 		wxMutexLocker lock(_output.mutex);
 		_output.buffer = _output.buffer + "\nFatal Error Occured: " + err.what() + "\n";
@@ -1223,6 +1227,7 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 
 	wxCheckBox *displayOut = new wxCheckBox(panel, wxID_ANY, wxT("Open output folder"), wxDefaultPosition, wxDefaultSize, 
 		0, wxDefaultValidator, wxT("DisplayOutput"));
+	displayOut->SetValue(true);
 	sizer->Add(displayOut);
 
 	SetAlignedSizer(panel, sizer);
