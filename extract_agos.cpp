@@ -52,9 +52,8 @@ void ExtractAgos::execute() {
 	if (out) {
 		if (simon_decr(x, out, _filelen)) {
 			savefile(_outputPath.getFullPath(), out, decrlen);
-		}
-		else {
-			print("%s: decrunch error\n", infilename.getFullPath());
+		} else {
+			print("%s: decrunch error\n", infilename.getFullPath().c_str());
 		}
 
 		free(x);
