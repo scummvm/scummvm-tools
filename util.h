@@ -62,20 +62,6 @@ typedef signed int int32;
 
 
 /*
- * Tools should not implement the actual main() themselves
- * when they are compiled as a part of the master tool. So
- * we make a macro to rename it automatically
- *
- * Perhaps EXPORT_MAIN is a bad name though.
- */
-
-#ifdef EXPORT_MAIN
-	#define export_main(tool_name) main_ ## tool_name
-#else
-	#define export_main(tool_name) main
-#endif
-
-/*
  * Various utility macros
  */
 
@@ -206,6 +192,13 @@ FORCEINLINE void WRITE_BE_UINT32(void *ptr, uint32 value) {
 #define NORETURN_PRE
 #define NORETURN_POST
 #endif
+
+
+/**
+ * Returns the size of the FILE
+ * Technically all code should use the File class instead, but until then we need this
+ */
+size_t fileSize(FILE *f);
 
 /* Misc stuff */
 void NORETURN_PRE error(const char *s, ...) NORETURN_POST;

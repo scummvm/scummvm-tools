@@ -102,70 +102,6 @@ void notice(const char *s, ...) {
 	fprintf(stdout, "%s\n", buf);
 }
 
-uint8 readByte(FILE *fp) {
-	return (uint8)fgetc(fp);
-}
-
-uint16 readUint16BE(FILE *fp) {
-	uint16 ret = 0;
-	ret |= fgetc(fp) << 8;
-	ret |= fgetc(fp);
-	return ret;
-}
-
-uint16 readUint16LE(FILE *fp) {
-	uint16 ret = 0;
-	ret |= fgetc(fp);
-	ret |= fgetc(fp) << 8;
-	return ret;
-}
-
-uint32 readUint32BE(FILE *fp) {
-	uint32 ret = 0;
-	ret |= fgetc(fp) << 24;
-	ret |= fgetc(fp) << 16;
-	ret |= fgetc(fp) << 8;
-	ret |= fgetc(fp);
-	return ret;
-}
-
-uint32 readUint32LE(FILE *fp) {
-	uint32 ret = 0;
-	ret |= fgetc(fp);
-	ret |= fgetc(fp) << 8;
-	ret |= fgetc(fp) << 16;
-	ret |= fgetc(fp) << 24;
-	return ret;
-}
-
-void writeByte(FILE *fp, uint8 b) {
-	fwrite(&b, 1, 1, fp);
-}
-
-void writeUint16BE(FILE *fp, uint16 value) {
-	writeByte(fp, (uint8)(value >> 8));
-	writeByte(fp, (uint8)(value));
-}
-
-void writeUint16LE(FILE *fp, uint16 value) {
-	writeByte(fp, (uint8)(value));
-	writeByte(fp, (uint8)(value >> 8));
-}
-
-void writeUint32BE(FILE *fp, uint32 value) {
-	writeByte(fp, (uint8)(value >> 24));
-	writeByte(fp, (uint8)(value >> 16));
-	writeByte(fp, (uint8)(value >> 8));
-	writeByte(fp, (uint8)(value));
-}
-
-void writeUint32LE(FILE *fp, uint32 value) {
-	writeByte(fp, (uint8)(value));
-	writeByte(fp, (uint8)(value >> 8));
-	writeByte(fp, (uint8)(value >> 16));
-	writeByte(fp, (uint8)(value >> 24));
-}
-
 uint32 fileSize(FILE *fp) {
 	uint32 sz;
 	uint32 pos = ftell(fp);
@@ -468,7 +404,7 @@ std::string File::readString() {
 	std::string s;
 	try {
 		char c;
-		while (c = readByte()) {
+		while ((c = readByte())) {
 			s += c;
 		}
 	} catch (FileException &) {

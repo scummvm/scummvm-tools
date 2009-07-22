@@ -269,8 +269,8 @@ const char *globalVar(int num) {
 	}
 }
 
-int main(int argc, char *argv[]) {
-	FILE *in;
+int entry(int argc, char *argv[]) {
+	File in;
 	uint8 type;
 	char name[34];
 	int32 size;
@@ -284,11 +284,7 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	in = fopen(argv[1], "rb");
-	if (!in) {
-		printf("Cannot open `%s' for reading\n", argv[1]);
-		return EXIT_FAILURE;
-	}
+	in.open(argv[1], "rb");
 
 	/* Standard header
 	 *
@@ -299,14 +295,14 @@ int main(int argc, char *argv[]) {
 	 * 34 bytes name of object
 	 */
 
-	type = readByte(in);
+	type = in.readByte();
 	if (type != GAME_OBJECT && type != SCREEN_MANAGER) {
 		printf("This resource type does not include any scripts\n");
 		return EXIT_FAILURE;
 	}
 
-	fseek(in, 9, SEEK_CUR);
-	fread(name, 1, sizeof(name), in);
+	in.seek(9, SEEK_CUR);
+	in.read(name, 1, sizeof(name));
 
 	printf("\"%s\"\n", name);
 
@@ -319,7 +315,7 @@ int main(int argc, char *argv[]) {
 	 * 12 bytes script_pc
 	 */
 
-	fseek(in, 44, SEEK_CUR);
+	in.seek(44, SEEK_CUR);
 
 	/* Script data
 	 *
@@ -329,15 +325,15 @@ int main(int argc, char *argv[]) {
 	 * offsets for each script (4 bytes each)
 	 */
 
-	size = (int32) readUint32LE(in);
-	fseek(in, size, SEEK_CUR);
+	size = (int32) in.readUint32LE();
+	in.seek(size, SEEK_CUR);
 
-	numScripts = (int32) readUint32LE(in);
+	numScripts = (int32) in.readUint32LE();
 
 	printf("numScripts = %d\n", numScripts);
 
 	for (i = 0; i < numScripts; i++)
-		scriptOffsets[i] = (int32) readUint32LE(in);
+		scriptOffsets[i] = (int32) in.readUint32LE();
 
 	/* Checksum block
 	 *
@@ -346,9 +342,9 @@ int main(int argc, char *argv[]) {
 	 * 4 bytes checksum
 	 */
 
-	fseek(in, 12, SEEK_CUR);
+	in.seek(12, SEEK_CUR);
 
-	scriptBase = ftell(in);
+	scriptBase = in.pos();
 
 	for (i = 0; i < numScripts; i++) {
 		int done = 0;
@@ -356,7 +352,7 @@ int main(int argc, char *argv[]) {
 
 		printf("\nScript #%d\n\n", i + 1);
 
-		fseek(in, scriptBase + scriptOffsets[i], SEEK_SET);
+		in.seek(scriptBase + scriptOffsets[i], SEEK_SET);
 
 		while (!done) {
 			uint32 curCommand;
@@ -366,7 +362,7 @@ int main(int argc, char *argv[]) {
 
 			printf("%04x: ", pc);
 
-			curCommand = readByte(in);
+			curCommand = in.readByte();
 			pc++;
 
 			switch (curCommand) {
@@ -375,91 +371,91 @@ int main(int argc, char *argv[]) {
 				done = 1;
 				break;
 			case CP_PUSH_LOCAL_VAR32:
-				parameter = (int16) readUint16LE(in);
+				parameter = (int16) in.readUint16LE();
 				pc += 2;
 				printf("PUSH local(%d)\n", parameter);
 				break;
 			case CP_PUSH_GLOBAL_VAR32:
-				parameter = (int16) readUint16LE(in);
+				parameter = (int16) in.readUint16LE();
 				pc += 2;
 				printf("PUSH %s\n", globalVar(parameter));
 				break;
 			case CP_POP_LOCAL_VAR32:
-				parameter = (int16) readUint16LE(in);
+				parameter = (int16) in.readUint16LE();
 				pc += 2;
 				printf("POP -> local(%d)\n", parameter);
 				break;
 			case CP_CALL_MCODE:
-				parameter = (int16) readUint16LE(in);
-				value = (int8) readByte(in);
+				parameter = (int16) in.readUint16LE();
+				value = (int8) in.readByte();
 				pc += 3;
 				printf("CALL %d, %s\n", value, opcodes[parameter]);
 				break;
 			case CP_PUSH_LOCAL_ADDR:
-				parameter = (int16) readUint16LE(in);
+				parameter = (int16) in.readUint16LE();
 				pc += 2;
 				printf("PUSH &local(%d)\n", parameter);
 				break;
 			case CP_PUSH_INT32:
-				parameter = (int32) readUint32LE(in);
+				parameter = (int32) in.readUint32LE();
 				pc += 4;
 				printf("PUSH %d\n", parameter);
 				break;
 			case CP_SKIPONFALSE:
-				parameter = (int32) readUint32LE(in);
+				parameter = (int32) in.readUint32LE();
 				printf("IFNOT POP THEN JUMP %04x\n", pc + parameter);
 				pc += 4;
 				break;
 			case CP_SKIPALWAYS:
-				parameter = (int32) readUint32LE(in);
+				parameter = (int32) in.readUint32LE();
 				printf("JUMP %04x\n", pc + parameter);
 				pc += 4;
 				break;
 			case CP_SWITCH:
-				caseCount = (int32) readUint32LE(in);
+				caseCount = (int32) in.readUint32LE();
 				pc += 4;
 				printf("SWITCH POP\n");
 				for (j = 0; j < caseCount; j++) {
 					int32 to;
 
-					value = (int32) readUint32LE(in);
-					to = (int32) readUint32LE(in);
+					value = (int32) in.readUint32LE();
+					to = (int32) in.readUint32LE();
 
 					printf("----:     %-7d -> JUMP %04x\n", value, pc + to);
 
 					pc += 8;
 				}
 
-				printf("----:     default -> JUMP %04x\n", pc + (int32) readUint32LE(in));
+				printf("----:     default -> JUMP %04x\n", pc + (int32) in.readUint32LE());
 				pc += 4;
 				break;
 			case CP_ADDNPOP_LOCAL_VAR32:
-				parameter = (int16) readUint16LE(in);
+				parameter = (int16) in.readUint16LE();
 				pc += 2;
 				printf("local(%d) += POP\n", parameter);
 				break;
 			case CP_SUBNPOP_LOCAL_VAR32:
-				parameter = (int16) readUint16LE(in);
+				parameter = (int16) in.readUint16LE();
 				pc += 2;
 				printf("local(%d) -= POP\n", parameter);
 				break;
 			case CP_SKIPONTRUE:
-				parameter = (int32) readUint32LE(in);
+				parameter = (int32) in.readUint32LE();
 				printf("IF POP THEN JUMP %04x\n", pc + parameter);
 				pc += 4;
 				break;
 			case CP_POP_GLOBAL_VAR32:
-				parameter = (int16) readUint16LE(in);
+				parameter = (int16) in.readUint16LE();
 				pc += 2;
 				printf("%s = POP\n", globalVar(parameter));
 				break;
 			case CP_ADDNPOP_GLOBAL_VAR32:
-				parameter = (int16) readUint16LE(in);
+				parameter = (int16) in.readUint16LE();
 				pc += 2;
 				printf("%s += POP\n", globalVar(parameter));
 				break;
 			case CP_SUBNPOP_GLOBAL_VAR32:
-				parameter = (int16) readUint16LE(in);
+				parameter = (int16) in.readUint16LE();
 				pc += 2;
 				printf("%s -= POP\n", globalVar(parameter));
 				break;
@@ -503,12 +499,12 @@ int main(int argc, char *argv[]) {
 				printf("PUSH POP < POP\n");
 				break;
 			case CP_JUMP_ON_RETURNED:
-				readByte(in);
+				in.readByte();
 				printf("JUMP_ON_RETURNED\n");
 				pc++;
 				break;
 			case CP_TEMP_TEXT_PROCESS:
-				readUint32LE(in);
+				in.readUint32LE();
 				pc += 4;
 				printf("TEMP_TEXT_PROCESS\n");
 				break;
@@ -519,19 +515,19 @@ int main(int argc, char *argv[]) {
 				printf("RESTART_SCRIPT\n");
 				break;
 			case CP_PUSH_STRING:
-				parameter = (int8) readByte(in);
+				parameter = (int8) in.readByte();
 				printf("PUSH \"");
 				for (j = 0; j < parameter; j++) {
-					byte c = readByte(in);
+					byte c = in.readByte();
 					fputc(c, stdout);
 					pc++;
 				}
 				printf("\"\n");
-				readByte(in);
+				in.readByte();
 				pc += 2;
 				break;
 			case CP_PUSH_DEREFERENCED_STRUCTURE:
-				parameter = (int32) readUint32LE(in);
+				parameter = (int32) in.readUint32LE();
 				pc += 4;
 				printf("PUSH far(%d)\n", parameter);
 				break;
@@ -551,7 +547,17 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	fclose(in);
-
 	return EXIT_SUCCESS;
 }
+
+int main(int argc, char *argv[]) {
+	// Catch exceptions
+	try {
+		return entry(argc, argv);
+	} catch(std::exception &e) {
+		printf("Fatal Error: %s\n", e.what());
+	}
+	return -1;
+}
+
+
