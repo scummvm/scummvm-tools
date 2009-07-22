@@ -664,7 +664,7 @@ int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsign
 	//if (setjmp(png_jmpbuf(png_ptr)))
 	//	return 1;
 
-	png_init_io(png_ptr, fp);
+	png_init_io(png_ptr, fp.getFileHandle());
 	png_set_sig_bytes(png_ptr, 8);
 
 	png_read_info(png_ptr, info_ptr);

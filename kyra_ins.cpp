@@ -467,27 +467,25 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 		char filename[64];
 		snprintf(filename, 64, "%s%03d", _baseFilename, currentFile);
 
-		FILE *file = NULL;
-		if ((file = fopen(filename, "rb")) == NULL)
-			break;
+		File file(filename, "rb");
 
-		fseek(file, pos, SEEK_SET);
-		uint8 fileId = readByte(file);
+		file.seek(pos, SEEK_SET);
+		uint8 fileId = file.readByte();
 		pos++;
 
-		uint32 size = fileSize(file) - 1;
+		uint32 size = file.size() - 1;
 		if (startFile) {
 			size -= 4;
 			if (fileId == currentFile) {
 				size -= 6;
 				pos += 6;
-				fseek(file, 6, SEEK_CUR);
+				file.seek(6, SEEK_CUR);
 			} else {
 				size = size + 1 - pos;
 			}
 
 			strcpy(newArchive->filename, _baseFilename);
-			bytesleft = newArchive->totalSize = readUint32LE(file);
+			bytesleft = newArchive->totalSize = file.readUint32LE();
 			pos += 4;
 			newArchive->firstFile = currentFile;
 			newArchive->startOffset = pos;
@@ -497,7 +495,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 		uint32 cs = MIN(size, bytesleft);
 		bytesleft -= cs;
 
-		fclose(file);
+		file.close();
 
 		pos += cs;
 		if (cs == size) {
@@ -545,26 +543,21 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 			char filename[64];
 			snprintf(filename, 64, "%s%03d", _baseFilename, i);
 
-			FILE *file = NULL;
-			if ((file = fopen(filename, "rb")) == NULL) {
-				error("[2] Couldn't open file '%s'", filename);
-				break;
-			}
+			File file(filename, "rb");
 
-			uint32 size = (i == a->lastFile) ? a->endOffset : fileSize(file);
+			uint32 size = (i == a->lastFile) ? a->endOffset : file.size();
 
 			if (startFile) {
 				startFile = false;
 				pos = a->startOffset + kExecSize;
 				if (pos > size) {
 					pos -= size;
-					fclose(file);
 					continue;
 				}
 			} else {
 				if (inPart2) {
-					fseek(file, 1, SEEK_SET);
-					fread(inbuffer + inPart1, 1, inPart2, file);
+					file.seek(1, SEEK_SET);
+					file.read(inbuffer + inPart1, 1, inPart2);
 					inPart2 = 0;
 					exp.process(outbuffer, inbuffer, outsize, insize);
 					delete[] inbuffer;
@@ -589,33 +582,29 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 			while (pos < size) {
 				uint8 hdr[43];
 				uint32 m = 0;
-				fseek(file, pos, SEEK_SET);
+				file.seek(pos, SEEK_SET);
 
 				if (pos + 42 > size) {
 					m = size - pos;
 					uint32 b = 42 - m;
 
 					if (m >= 4) {
-						uint32 id = readUint32LE(file);
+						uint32 id = file.readUint32LE();
 						if (id == 0x06054B50) {
 							startFile = true;
 							break;
 						} else {
-							fseek(file, pos, SEEK_SET);
+							file.seek(pos, SEEK_SET);
 						}
 					}
 
 					snprintf(filename, 64, "%s.%03d", _baseFilename, i+1);
 
-					FILE *file2 = fopen(filename, "rb");
-					if (file2 == NULL)
-						error("Couldn't open file '%s'", filename);
-
-					fread(hdr, 1, m, file);
-					fread(hdr + m , 1, b, file2);
-					fclose(file2);
+					File file2(filename, "rb");
+					file.read(hdr, 1, m);
+					file2.read(hdr + m , 1, b);
 				} else {
-					fread(hdr, 1, 42, file);
+					file.read(hdr, 1, 42);
 				}
 
 				uint32 id = READ_LE_UINT32(hdr);
@@ -630,7 +619,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 					*(hdr + 30 + filestrlen) = 0;
 					strcpy(entryStr, (const char *)(hdr + 30));
 					pos += (kHeaderSize + filestrlen - m);
-					fseek(file, pos, SEEK_SET);
+					file.seek(pos, SEEK_SET);
 
 					outbuffer = new uint8[outsize];
 					assert(outbuffer);
@@ -644,9 +633,9 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 						// this is for files that are split between two archive files
 						inPart1 = size - pos;
 						inPart2 = insize - inPart1;
-						fread(inbuffer, 1, inPart1, file);
+						file.read(inbuffer, 1, inPart1);
 					} else {
-						fread(inbuffer, 1, insize, file);
+						file.read(inbuffer, 1, insize);
 						inPart2 = 0;
 						exp.process(outbuffer, inbuffer, outsize, insize);
 						delete[] inbuffer;
@@ -676,8 +665,6 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 					pos += (kHeaderSize2 + filestrlen - m);
 				}
 			}
-
-			fclose(file);
 		}
 	}
 }

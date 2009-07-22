@@ -243,7 +243,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 			char *rawData;
 
 			File inputRaw(inname, "rb");
-			length = fileSize(inputRaw);
+			length = inputRaw.size();
 			rawData = (char *)malloc(length);
 			inputRaw.read(rawData, 1, length);
 
@@ -270,11 +270,11 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 			sampleRate = inputWav.readUint32LE();
 
 			inputWav.seek(34, SEEK_SET);
-			bitsPerSample = readUint16LE(inputWav);
+			bitsPerSample = inputWav.readUint16LE();
 
 			/* The size of the raw audio is after the RIFF chunk (12 bytes), fmt chunk (8 + fmtHeaderSize bytes), and data chunk id (4 bytes) */
-			fseek(inputWav, 24 + fmtHeaderSize, SEEK_SET);
-			length = readUint32LE(inputWav);
+			inputWav.seek(24 + fmtHeaderSize, SEEK_SET);
+			length = inputWav.readUint32LE();
 
 			wavData = (char *)malloc(length);
 			inputWav.read(wavData, 1, length);
@@ -415,8 +415,8 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 				break;
 			}
 
-			fwrite(og.header, 1, og.header_len, outputOgg);
-			fwrite(og.body, 1, og.body_len, outputOgg);
+			outputOgg.write(og.header, 1, og.header_len);
+			outputOgg.write(og.body, 1, og.body_len);
 		}
 
 		while (!eos) {
@@ -470,8 +470,8 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 							break;
 						}
 
-						totalBytes += fwrite(og.header, 1, og.header_len, outputOgg);
-						totalBytes += fwrite(og.body, 1, og.body_len, outputOgg);
+						totalBytes += outputOgg.write(og.header, 1, og.header_len);
+						totalBytes += outputOgg.write(og.body, 1, og.body_len);
 
 						if (ogg_page_eos(&og)) {
 							eos = 1;
@@ -625,14 +625,14 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, File &input, Audi
 			real_samplerate = getSampleRateFromVOCRate(sample_rate);
 		} else { /* (blocktype == 9) */
 			length -= 12;
-			real_samplerate = sample_rate = readUint32LE(input);
+			real_samplerate = sample_rate = input.readUint32LE();
 			bits = input.readChar();;
 			channels = input.readChar();;
 			if (bits != 8 || channels != 1) {
 				error("Unsupported VOC file format (%d bits per sample, %d channels)", bits, channels);
 			}
-			comp = readUint16LE(input);
-			readUint32LE(input);
+			comp = input.readUint16LE();
+			input.readUint32LE();
 		}
 
 		print(" - length = %d\n", length);
@@ -650,14 +650,14 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, File &input, Audi
 
 		/* Copy the raw data to a temporary file */
 		while (length > 0) {
-			size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length, input);
+			size = input.readN(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length);
 
 			if (size <= 0) {
 				break;
 			}
 
 			length -= (int)size;
-			fwrite(fbuf, 1, size, f);
+			f.write(fbuf, 1, size);
 		}
 	}
 

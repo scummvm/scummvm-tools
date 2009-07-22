@@ -689,7 +689,7 @@ void CompressScummBun::writeWaveHeader(int s_size, int rate, int chan) {
 }
 
 void CompressScummBun::writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
-	if (!_waveTmpFile) {
+	if (!_waveTmpFile.isOpen()) {
 		_waveTmpFile.open(fileName, "wb");
 		byte wav[44];
 		memset(wav, 0, 44);
@@ -1112,11 +1112,11 @@ void CompressScummBun::execute() {
 		int z2;
 
 		for (z2 = 0; z2 < 8; z2++)
-			if ((c = readByte(input)) != 0)
+			if ((c = input.readByte()) != 0)
 				filename[z++] = c;
 		filename[z++] = '.';
 		for (z2 = 0; z2 < 4; z2++)
-			if ((c = readByte(input)) != 0)
+			if ((c = input.readByte()) != 0)
 				filename[z++] = c;
 		filename[z] = '\0';
 		strcpy(_bundleTable[i].filename, filename);

@@ -109,27 +109,25 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 	Chunk *curChunk = chunks;
 	Chunk *parseChunk;
 	File src1;
-	char buffer[1024];
 
 	chunkCount = 1;
 
 // First read: Output filename
-	fscanf(gobConf, "%s", buffer);
-	stkName.setFullName(buffer);
+	stkName.setFullName(gobConf.readString());
 
 // Second read: signature
-	fscanf(gobConf, "%s", buffer);
-	if (!strcmp(buffer, confSTK21))
+	std::string signature = gobConf.readString();
+	if (signature == confSTK21)
 		error("STK21 not yet handled");
-	else if (strcmp(buffer, confSTK10))
+	else if (signature != confSTK10)
 		error("Unknown format signature");
 
 // All the other reads concern file + compression flag
-	fscanf(gobConf, "%s", buffer);
-	while (!feof(gobConf)) {
-		strcpy(curChunk->name, buffer);
-		fscanf(gobConf, "%s", buffer);
-		if ((strcmp(buffer, "1") == 0) || (_execMode & MODE_FORCE))
+	std::string fname = gobConf.readString();
+	while (!gobConf.reachedEOF()) {
+		strcpy(curChunk->name, fname.c_str());
+		fname = gobConf.readString();
+		if ((fname == "1") || (_execMode & MODE_FORCE))
 			curChunk->packed = true;
 		else
 			curChunk->packed = false;
@@ -157,8 +155,8 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 		}
 		src1.close();
 		
-		fscanf(gobConf, "%s", buffer);
-		if (!feof(gobConf)) {
+		std::string tmp = gobConf.readString();
+		if (!gobConf.reachedEOF()) {
 			curChunk->next = new Chunk;
 			curChunk = curChunk->next;
 			chunkCount++;

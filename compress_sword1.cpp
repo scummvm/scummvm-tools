@@ -312,7 +312,8 @@ int16 *CompressSword1::uncompressSpeech(File &clu, uint32 idx, uint32 cSize, uin
 	int16 length, cnt;
 	uint8 *fBuf = (uint8 *)malloc(cSize);
 	clu.seek(idx, SEEK_SET);
-	assert(fread(fBuf, 1, cSize, clu) == cSize);
+	clu.read(fBuf, 1, cSize);
+
 	while ((READ_BE_UINT32(fBuf + headerPos) != 'data') && (headerPos < 100))
 		headerPos++;
 	if (headerPos < 100) {
@@ -378,7 +379,7 @@ void CompressSword1::convertClu(File &clu, File &cl3) {
 	cowHeader = (uint32*)malloc(headerSize);
 
 	for (cnt = 0; cnt < (headerSize / 4) - 1; cnt++)
-		cowHeader[cnt] = readUint32LE(clu);
+		cowHeader[cnt] = clu.readUint32LE();
 	assert(!(cowHeader[0] & 3));
 	numRooms = cowHeader[0] / 4;
 	assert(cowHeader[numRooms] == 0);	/* This dword should be unused. */
@@ -413,7 +414,7 @@ void CompressSword1::convertClu(File &clu, File &cl3) {
 			mp3Data = convertData(smpData, smpSize, &mp3Size);
 			cl3Index[cnt << 1] = cl3.pos();
 			cl3Index[(cnt << 1) | 1] = mp3Size;
-			assert(fwrite(mp3Data, 1, mp3Size, cl3) == mp3Size);
+			cl3.write(mp3Data, 1, mp3Size);
 
 			free(smpData);
 			free(mp3Data);
@@ -461,7 +462,7 @@ void CompressSword1::compressSpeech(const Filename *inpath, const Filename *outp
 		}
 
 		cl3.open(outName, "wb");
-		if (!cl3) {
+		if (!cl3.isOpen()) {
 			print("Unable to create file \"%s\".\n", outName);
 			print("Please make sure you've got write permission in this directory.\n");
 		} else {

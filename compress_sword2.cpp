@@ -31,7 +31,7 @@ uint32 CompressSword2::append_to_file(File &f1, const char *filename) {
 	char fbuf[2048];
 
 	File f2(filename, "rb");
-	orig_length = length = fileSize(f2);
+	orig_length = length = f2.size();
 
 	while (length > 0) {
 		size = f2.readN(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length);
@@ -143,7 +143,7 @@ void CompressSword2::execute() {
 			f.writeUint32BE(0x64617461);	/* "data" */
 			f.writeUint32LE(2 * length);
 
-			fseek(_input, pos, SEEK_SET);
+			_input.seek(pos, SEEK_SET);
 
 			/*
 			 * The first sample is stored uncompressed. Subsequent
@@ -158,7 +158,7 @@ void CompressSword2::execute() {
 				byte data;
 				uint16 out;
 
-				data = readByte(_input);
+				data = _input.readByte();
 				if (GetCompressedSign(data))
 					out = prev - (GetCompressedAmplitude(data) << GetCompressedShift(data));
 				else

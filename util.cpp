@@ -20,6 +20,7 @@
  *
  */
 
+#include "stdio.h"
 #include "util.h"
 #include <stdarg.h>
 
@@ -458,6 +459,25 @@ size_t File::read(void *data, size_t elementSize, size_t elementCount) {
 	return data_read;
 }
 
+std::string File::readString() {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
+
+	std::string s;
+	try {
+		char c;
+		while (c = readByte()) {
+			s += c;
+		}
+	} catch (FileException &) {
+		// pass, we reached EOF
+	}
+
+	return s;
+}
+
 size_t File::readN(void *data, size_t elementSize, size_t elementCount) {
 	if (!_file) 
 		throw FileException("File is not open");
@@ -520,6 +540,20 @@ size_t File::write(const void *data, size_t elementSize, size_t elementCount) {
 	return data_read;
 }
 
+void File::printf(const char *format, ...) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_WRITE) == 0)
+		throw FileException("Tried to write to file opened in read mode (" + _name.getFullPath() + ")");
+
+
+	va_list va;
+
+	va_start(va, format);
+	vfprintf(_file, format, va);
+	va_end(va);
+}
+
 void File::seek(long offset, int origin) {
 	if (!_file) 
 		throw FileException("File is not open");
@@ -532,11 +566,15 @@ void File::rewind() {
 	return ::rewind(_file);
 }
 
-int File::pos() {
+int File::pos() const {
 	return ftell(_file);
 }
 
-uint32 File::size() {
+bool File::reachedEOF() const {
+	return feof(_file) != 0;
+}
+
+uint32 File::size() const {
 	uint32 sz;
 	uint32 p = ftell(_file);
 	fseek(_file, 0, SEEK_END);

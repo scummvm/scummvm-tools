@@ -88,7 +88,7 @@ void CompressScummSou::get_part(const char *inputPath) {
 	while (memcmp(buf, "VCTL", 4)&&memcmp(buf, "VTTL", 4)) {
 		pos++;
 		append_byte(4, buf);
-		if (feof(_input)) {
+		if (_input.reachedEOF()) {
 			end_of_file(inputPath);
 			return;
 		}

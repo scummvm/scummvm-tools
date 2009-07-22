@@ -23,44 +23,39 @@
 #include "kyra_pak.h"
 
 bool PAKFile::isPakFile(const char *filename) {
-	FILE *f = fopen(filename, "rb");
-	if (!f)
-		error("Couldn't open file '%s'", filename);
+	File f(filename, "rb");
 
-	int32 filesize = fileSize(f);
+	int32 filesize = f.size();
 	int32 offset = 0;
 	bool switchEndian = false;
 	bool firstFile = true;
 
-	offset = readUint32LE(f);
+	offset = f.readUint32LE();
 	if (offset > filesize) {
 		switchEndian = true;
 		offset = SWAP_32(offset);
 	}
 
 	char lastFilenameByte = 0;
-	while (!feof(f)) {
+	while (!f.reachedEOF()) {
 		// The start offset of a file should never be in the filelist
-		if (offset < ftell(f) || offset > filesize) {
-			fclose(f);
+		if (offset < f.pos() || offset > filesize) {
 			return false;
 		}
 
 		byte c = 0;
 
 		lastFilenameByte = 0;
-		while (!feof(f) && (c = readByte(f)) != 0)
+		while (!f.reachedEOF() && (c = f.readByte()) != 0)
 			lastFilenameByte = c;
 
-		if (feof(f)) {
-			fclose(f);
+		if (f.reachedEOF()) {
 			return false;
 		}
 
 		// Quit now if we encounter an empty string
 		if (!lastFilenameByte) {
 			if (firstFile) {
-				fclose(f);
 				return false;
 			} else {
 				break;
@@ -68,13 +63,12 @@ bool PAKFile::isPakFile(const char *filename) {
 		}
 
 		firstFile = false;
-		offset = switchEndian ? readUint32BE(f) : readUint32LE(f);
+		offset = switchEndian ? f.readUint32BE() : f.readUint32LE();
 
 		if (!offset || offset == filesize)
 			break;
 	}
 
-	fclose(f);
 	return true;
 }
 
@@ -86,19 +80,15 @@ bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 	delete _fileList;
 	_fileList = 0;
 
-	FILE *pakfile = fopen(file, "rb");
-	if (!pakfile)
-		return false;
+	File pakfile(file, "rb");
 
-	uint32 filesize = fileSize(pakfile);
+	uint32 filesize = pakfile.size();
 
 	// TODO: get rid of temp. buffer
 	uint8 *buffer = new uint8[filesize];
 	assert(buffer);
 
-	(void)fread(buffer, filesize, 1, pakfile);
-
-	fclose(pakfile);
+	pakfile.read(buffer, filesize, 1);
 
 	const char *currentName = 0;
 
@@ -144,11 +134,7 @@ bool PAKFile::saveFile(const char *file) {
 		return true;
 	generateLinkEntry();
 
-	FILE *f = fopen(file, "wb");
-	if (!f) {
-		error("couldn't open file '%s' for writing", file);
-		return false;
-	}
+	File f(file, "wb");
 
 	// TODO: implement error handling
 	uint32 startAddr = _fileList->getTableSize()+5+4;
@@ -157,22 +143,21 @@ bool PAKFile::saveFile(const char *file) {
 	uint32 curAddr = startAddr;
 	for (FileList *cur = _fileList; cur; cur = cur->next) {
 		if (_isAmiga)
-			writeUint32BE(f, curAddr);
+			f.writeUint32BE(curAddr);
 		else
-			writeUint32LE(f, curAddr);
-		fwrite(cur->filename, 1, strlen(cur->filename) + 1, f);
+			f.writeUint32LE(curAddr);
+		f.write(cur->filename, 1, strlen(cur->filename) + 1);
 		curAddr += cur->size;
 	}
 	if (_isAmiga)
-		writeUint32BE(f, curAddr);
+		f.writeUint32BE(curAddr);
 	else
-		writeUint32LE(f, curAddr);
-	fwrite(zeroName, 1, 5, f);
+		f.writeUint32LE(curAddr);
+	f.write(zeroName, 1, 5);
 
 	for (FileList *cur = _fileList; cur; cur = cur->next)
-		fwrite(cur->data, 1, cur->size, f);
+		f.write(cur->data, 1, cur->size);
 
-	fclose(f);
 	return true;
 }
 
@@ -199,20 +184,12 @@ bool PAKFile::addFile(const char *name, const char *file) {
 		return false;
 	}
 
-	FILE *f = fopen(file, "rb");
-	if (!f) {
-		error("couldn't open file '%s'", file);
-		return false;
-	}
+	File f(file, "rb");
 
-	uint32 filesize = fileSize(f);
+	uint32 filesize = f.size();
 	uint8 *data = new uint8[filesize];
 	assert(data);
-	if (fread(data, 1, filesize, f) != filesize) {
-		error("couldn't read from file '%s'", file);
-		return false;
-	}
-	fclose(f);
+	f.read(data, 1, filesize);
 	return addFile(name, data, filesize);
 }
 
@@ -287,9 +264,7 @@ void PAKFile::generateLinkEntry() {
 		return;
 
 	const int countLinks = _links->size();
-	FILE *output = fopen("LINKLIST.TMP", "wb");
-	if (!output)
-		error("Couldn't open file 'LINKLIST.TMP'");
+	File output("LINKLIST.TMP", "wb");
 
 	const char **linkList = new const char *[countLinks];
 	int usedLinks = 0;
@@ -302,8 +277,8 @@ void PAKFile::generateLinkEntry() {
 		linkList[usedLinks++] = entry->linksTo;
 	}
 
-	writeUint32BE(output, MKID_BE('SCVM'));
-	writeUint32BE(output, usedLinks);
+	output.writeUint32BE(MKID_BE('SCVM'));
+	output.writeUint32BE(usedLinks);
 	for (int i = 0; i < usedLinks; ++i) {
 		int count = 0;
 		entry = _links;
@@ -315,22 +290,21 @@ void PAKFile::generateLinkEntry() {
 
 		const char *p = linkList[i];
 		while (*p)
-			writeByte(output, *p++);
-		writeByte(output, 0);
+			output.writeByte(*p++);
+		output.writeByte(0);
 
-		writeUint32BE(output, count);
+		output.writeUint32BE(count);
 		for (entry = _links; entry; entry = entry->next) {
 			if (scumm_stricmp(entry->linksTo, linkList[i]) != 0)
 				continue;
 
 			p = entry->filename;
 			while (*p)
-				writeByte(output, *p++);
-			writeByte(output, 0);
+				output.writeByte(*p++);
+			output.writeByte(0);
 		}
 	}
-
-	fclose(output);
+	output.close();
 
 	addFile("LINKLIST", "LINKLIST.TMP");
 
@@ -487,7 +461,6 @@ bool Extractor::outputAllFiles(Filename *outputPath) {
 			printf("FAILED\n");
 			return false;
 		}
-		fclose(file);
 		cur = cur->next;
 	}
 	return true;
@@ -514,7 +487,6 @@ bool Extractor::outputFileAs(const char *f, const char *fn) {
 		printf("FAILED\n");
 		return false;
 	}
-	fclose(file);
 	return true;
 }
 

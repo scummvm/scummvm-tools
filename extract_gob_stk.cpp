@@ -73,16 +73,16 @@ void ExtractGobStk::execute() {
 
 	gobConf.open(_outputPath.getFullPath(), "w");
 
-	fprintf(gobConf, "%s\n", inpath.getFullName().c_str());
+	gobConf.printf("%s\n", inpath.getFullName().c_str());
 
 	stk.read(signature, 1, 6);
 
 	if (strncmp(signature, "STK2.1", 6) == 0) {
 		print("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath().c_str());
-		fprintf(gobConf, "%s\n", confSTK21);
+		gobConf.printf("%s\n", confSTK21);
 		readChunkListV2(stk, gobConf);
 	} else {
-		fprintf(gobConf, "%s\n", confSTK10);
+		gobConf.printf("%s\n", confSTK10);
 		stk.rewind();
 		readChunkList(stk, gobConf);
 	}
@@ -117,7 +117,7 @@ void ExtractGobStk::readChunkList(File &stk, File &gobConf) {
 		}
 
 		// Write the chunk info in the gob Conf file
-		fprintf(gobConf, "%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
+		gobConf.printf("%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
 
 		if (numDataChunks > 0) {
 			curChunk->next = new Chunk;
@@ -227,8 +227,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 
 		stk.seek(filenamePos, SEEK_SET);
 
-		if (fgets(curChunk->name, 64, stk) == 0)
-			throw ToolException("Unable to read filename");
+		strcpy(curChunk->name, stk.readString().c_str());
 
 		// Files
 		// =====
@@ -240,7 +239,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 		curChunk->preGob = false;
 
 		// Write the chunk info in the gob Conf file
-		fprintf(gobConf, "%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
+		gobConf.printf("%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
 
 		if (numDataChunks > 0) {
 			curChunk->next = new Chunk;

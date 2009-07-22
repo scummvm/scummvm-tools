@@ -207,20 +207,6 @@ FORCEINLINE void WRITE_BE_UINT32(void *ptr, uint32 value) {
 #define NORETURN_POST
 #endif
 
-
-/* File I/O */
-uint8 readByte(FILE *fp);
-uint16 readUint16BE(FILE *fp);
-uint16 readUint16LE(FILE *fp);
-uint32 readUint32BE(FILE *fp);
-uint32 readUint32LE(FILE *fp);
-void writeByte(FILE *fp, uint8 b);
-void writeUint16BE(FILE *fp, uint16 value);
-void writeUint16LE(FILE *fp, uint16 value);
-void writeUint32BE(FILE *fp, uint32 value);
-void writeUint32LE(FILE *fp, uint32 value);
-uint32 fileSize(FILE *fp);
-
 /* Misc stuff */
 void NORETURN_PRE error(const char *s, ...) NORETURN_POST;
 void warning(const char *s, ...);
@@ -377,7 +363,15 @@ public:
 	 */
 	void close();
 
+	/**
+	 * If the file is opened for reading / writing
+	 */
 	bool isOpen() const { return _file != 0; }
+
+	/**
+	 * True if there is nothing more to read from this file
+	 */
+	bool reachedEOF() const;
 
 	/**
 	 * Sets the xor mode of the file, bytes written / read to the file
@@ -427,6 +421,7 @@ public:
 	 * @param elementCount the number of elements to read
 	 */
 	size_t read(void *data, size_t elementSize, size_t elementCount);
+
 	/**
 	 * Works the same way as fread, does NOT throw if it could not read all elements
 	 * still throws if file is not open.
@@ -437,6 +432,11 @@ public:
 	 */
 	size_t readN(void *data, size_t elementSize, size_t elementCount);
 
+	/**
+	 * Read a single 32-bit word, little endian.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	std::string readString();
 	
 	/**
 	 * Writes a single character (equivalent of fputc)
@@ -479,6 +479,11 @@ public:
 	size_t write(const void *data, size_t elementSize, size_t elementCount);
 
 	/**
+	 * Works the same as fprintf
+	 */
+	void printf(const char *format, ...);
+
+	/**
 	 * Seek to the specified position in the stream.
 	 *
 	 * @param offset how many bytes to jump
@@ -492,18 +497,12 @@ public:
 	/**
 	 * Returns current position of the file cursor
 	 */
-	int pos();
+	int pos() const;
 
 	/**
 	 * Returns the length of the file, in bytes, does not move the cursor.
 	 */
-	uint32 size();
-
-	/**
-	 * We implicitly convert into a FILE, so we can use fread() etc. directly.
-	 * @todo get rid of this ASAP
-	 */
-	operator FILE *() { return _file; }
+	uint32 size() const;
 
 	// FIXME: Remove this method ASAP
 	FILE *getFileHandle() { return _file; }
@@ -518,11 +517,6 @@ protected:
 	/** xor with this value while reading/writing (default 0), does not work for "read"/"write", only for byte operations. */
 	uint8 _xormode;
 };
-
-// This generates a warning when used, so we don't use fclose accidently on 
-// a File object (this is a VERY EASY error to do when converting, and a warning
-// really helps find those cases)
-void fclose(File& f);
 
 void displayHelp(const char *msg = NULL, const char *exename = NULL);
 void parseHelpArguments(const char * const argv[], int argc, const char *msg = NULL);
