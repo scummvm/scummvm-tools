@@ -28,8 +28,6 @@
 
 #include "util.h"
 
-class ToolGUI;
-
 /** 
  * Different types of tools, used to differentiate them when 
  * fetching lists of games & tools.

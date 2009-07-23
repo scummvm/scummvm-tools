@@ -30,7 +30,7 @@ CXXFLAGS:= -Wall $(CXXFLAGS)
 CXXFLAGS+= -Wno-long-long -Wno-multichar -Wno-unknown-pragmas -Wno-reorder
 # Enable even more warnings...
 #CXXFLAGS+= -pedantic	# -pedantic is too pedantic, at least on Mac OS X
-CXXFLAGS+= -Wpointer-arith -Wcast-qual -Wuninitialized -Wcast-align
+CXXFLAGS+= -Wpointer-arith -Wuninitialized -Wcast-align
 CXXFLAGS+= -Wshadow -Wimplicit -Wundef -Wnon-virtual-dtor -Wwrite-strings
 
 # Enable checking of pointers returned by "new"
@@ -185,7 +185,7 @@ degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob
 #extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o tool.o
 #	$(CXX) $(LDFLAGS) -o $@ $+
 
-tools_gui$(EXEEXT): gui/main.o gui/pages.o gui/tools.o compress_agos.o compress_gob.o compress_kyra.o \
+tools_gui$(EXEEXT): gui/main.o gui/pages.o gui/gui_tools.o compress_agos.o compress_gob.o compress_kyra.o \
 	compress_queen.o compress_saga.o compress_scumm_bun.o compress_scumm_san.o compress_scumm_sou.o \
 	compress_sword1.o compress_sword2.o compress_touche.o compress_tucker.o compress_tinsel.o \
 	extract_agos.o extract_gob_stk.o extract_kyra.o extract_loom_tg16.o extract_mm_apple.o \
@@ -199,11 +199,11 @@ sword2_clue$(EXEEXT): sword2_clue.o util.o
 gui/main.o: gui/main.cpp gui/main.h gui/configuration.h gui/pages.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/main.cpp -o gui/main.o
 
-gui/pages.o: gui/pages.cpp gui/pages.h gui/main.h gui/tools.h
+gui/pages.o: gui/pages.cpp gui/pages.h gui/main.h gui/gui_tools.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/pages.cpp -o gui/pages.o
 
-gui/tools.o: gui/tools.cpp gui/tools.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/tools.cpp -o gui/tools.o
+gui/gui_tools.o: gui/gui_tools.cpp gui/gui_tools.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/gui_tools.cpp -o gui/gui_tools.o
 
 sword2_clue.o: sword2_clue.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `pkg-config --cflags gtk+-2.0` -c sword2_clue.cpp

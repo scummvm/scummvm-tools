@@ -535,7 +535,7 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 	return outb - outbuf;
 }
 
-EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name) {
+EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	
 	ToolInput input;
 	input.format = "*.*";

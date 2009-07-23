@@ -32,7 +32,7 @@
 
 #include <algorithm>
 
-#include "tools.h"
+#include "gui_tools.h"
 
 // Include all tools
 #include "../compress_agos.h"
