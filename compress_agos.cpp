@@ -25,7 +25,7 @@
 #define TEMP_DAT	"tempfile.dat"
 #define TEMP_IDX	"tempfile.idx"
 
-CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name) {
+CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_convertMac = false;
 	_outputToDirectory = false;
 	

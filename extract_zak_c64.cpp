@@ -43,7 +43,7 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 	 3,  1,  2,  1,  2,  1, 10,  1,  1
 };
 
-ExtractZakC64::ExtractZakC64(const std::string &name) : Tool(name) {
+ExtractZakC64::ExtractZakC64(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	ToolInput input;
 	input.format = "*.d64";
 	_inputPaths.push_back(input);

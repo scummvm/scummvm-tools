@@ -43,7 +43,7 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 	 3, 10,  1,  0,  0
 };
 
-ExtractMMC64::ExtractMMC64(const std::string &name) : Tool(name) {
+ExtractMMC64::ExtractMMC64(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	
 	ToolInput input1;
 	input1.format = "*.d64";

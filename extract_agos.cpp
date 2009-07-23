@@ -27,7 +27,7 @@
 
 #include "extract_agos.h"
 
-ExtractAgos::ExtractAgos(const std::string &name) : Tool(name) {
+ExtractAgos::ExtractAgos(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	_filelen = 0;
 	
 	ToolInput input;

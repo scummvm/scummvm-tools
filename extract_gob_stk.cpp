@@ -38,7 +38,7 @@ struct ExtractGobStk::Chunk {
 	~Chunk() { delete next; }
 };
 
-ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name) {
+ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	_chunks = NULL;
 	
 	ToolInput input;

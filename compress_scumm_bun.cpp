@@ -1065,7 +1065,7 @@ void CompressScummBun::writeToRMAPFile(byte *ptr, File &output, char *filename, 
 	_cbundleCurIndex++;
 }
 
-CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(name) {
+CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_cbundleCurIndex = 0;
 	
 	ToolInput input;

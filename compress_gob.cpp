@@ -35,7 +35,7 @@ struct CompressGob::Chunk {
 };
 
 
-CompressGob::CompressGob(const std::string &name) : CompressionTool(name) {
+CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_execMode = MODE_NORMAL;
 	_chunks = NULL;
 

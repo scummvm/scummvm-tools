@@ -26,7 +26,7 @@
 /* this makes extract_scumm_mac convert extracted file names to lower case */
 #define CHANGECASE
 
-ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name) {
+ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	
 	ToolInput input;
 	input.format = "*.*";

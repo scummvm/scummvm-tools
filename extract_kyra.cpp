@@ -26,7 +26,7 @@
 #include "kyra_pak.h"
 #include "kyra_ins.h"
 
-ExtractKyra::ExtractKyra(const std::string &name) : Tool(name) {
+ExtractKyra::ExtractKyra(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	extractAll = true;
 	extractOne = false;
 	isAmiga = false;

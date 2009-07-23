@@ -32,16 +32,6 @@
 #include "../tool.h"
 
 
-/** Different types of tools, used to differentiate them when 
- * fetching lists of games & tools
- */
-enum ToolType {
-	TOOLTYPE_COMPRESSION,
-	TOOLTYPE_EXTRACTION,
-	TOOLTYPE_UNKNOWN,
-	TOOLTYPE_ALL,
-};
-
 /**
  * A tool supported by the Wizard, holds all information about what format it supports
  * what input it requires etc.

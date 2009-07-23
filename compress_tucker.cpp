@@ -39,7 +39,7 @@ struct CompressedData {
 
 static CompressedData temp_table[10000];
 
-CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name) {
+CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	
 	ToolInput input;
 	input.format = "/";

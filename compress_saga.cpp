@@ -109,7 +109,7 @@ typedef struct  {
 } Record;
 
 // Constructor
-CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name) {
+CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_currentGameDescription = NULL;
 	_currentFileDescription = NULL;
 	

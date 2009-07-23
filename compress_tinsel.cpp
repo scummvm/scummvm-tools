@@ -47,7 +47,7 @@
 #define TEMP_RAW "tempfile.raw"
 #define TEMP_ENC "tempfile.enc"
 
-CompressTinsel::CompressTinsel(const std::string &name) : CompressionTool(name) {
+CompressTinsel::CompressTinsel(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	ToolInput input1;
 	input1.format = "*.smp";
 	_inputPaths.push_back(input1);

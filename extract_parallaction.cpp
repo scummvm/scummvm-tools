@@ -292,7 +292,7 @@ void ppdepack(byte *packed, byte *depacked, uint32 plen, uint32 unplen) {
 
 }
 
-ExtractParallaction::ExtractParallaction(const std::string &name) : Tool(name) {
+ExtractParallaction::ExtractParallaction(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	
 	ToolInput input;
 	input.format = "*.*";

@@ -36,7 +36,7 @@
 
 #include "main.h"
 #include "pages.h"
-#include "tools.h"
+#include "gui_tools.h"
 
 
 BEGIN_EVENT_TABLE(WizardPage, wxEvtHandler)
@@ -44,7 +44,7 @@ END_EVENT_TABLE()
 
 WizardPage::WizardPage(ScummToolsFrame *frame)
 	: _topframe(frame),
-		_configuration(frame->_configuration)
+	  _configuration(frame->_configuration)
 {
 }
 
@@ -238,7 +238,7 @@ void ChooseIOPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	if(!picker)
 		picker = panel->FindWindowByName(wxT("InputPicker"));
 	
-	const ToolGUI *tool = _topframe->_configuration.selectedTool;
+	const ToolGUI *tool = _configuration.selectedTool;
 	if(tool && !picker) {
 		for(size_t i = 1; i < tool->getInputList().size(); ++i) {
 			wxString name(wxT("InputPicker"));
@@ -295,8 +295,8 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 				wxT("InputPicker"));
 		sizer->Add(picker);
 		panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
-		if(_topframe->_configuration.inputFilePaths.size() > 0)
-			picker->SetPath(_topframe->_configuration.inputFilePaths[0]);
+		if(_configuration.inputFilePaths.size() > 0)
+			picker->SetPath(_configuration.inputFilePaths[0]);
 
 	sizer->AddSpacer(30);
 	/* 
@@ -391,8 +391,8 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 		windowName << i;
 
 		wxString inputFile;
-		if(_topframe->_configuration.inputFilePaths.size() > (size_t)i)
-			inputFile = _topframe->_configuration.inputFilePaths[i];
+		if(_configuration.inputFilePaths.size() > (size_t)i)
+			inputFile = _configuration.inputFilePaths[i];
 
 		if (input.file) {
 			inputbox->Add(new wxFilePickerCtrl(
@@ -501,7 +501,7 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 		box->Add(picker);
 
 		panel->Connect(wxEVT_COMMAND_DIRPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
-		picker->SetPath(_topframe->_configuration.outputPath);
+		picker->SetPath(_configuration.outputPath);
 
 		sizer->Add(box);
 	} else {
@@ -516,7 +516,7 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 		box->Add(picker);
 
 		panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
-		picker->SetPath(_topframe->_configuration.outputPath);
+		picker->SetPath(_configuration.outputPath);
 		
 		sizer->Add(box);
 	}
@@ -728,15 +728,15 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 
 
 	// Load settings
-	if (_topframe->_configuration.mp3CompressionType == wxT("ABR"))
+	if (_configuration.mp3CompressionType == wxT("ABR"))
 		abrButton->SetValue(true);
 	else
 		vbrButton->SetValue(true);
-	vbrMinBitrate->SetStringSelection(_topframe->_configuration.mp3VBRMinBitrate);
-	vbrMaxBitrate->SetStringSelection(_topframe->_configuration.mp3VBRMaxBitrate);
-	abrAvgBitrate->SetStringSelection(_topframe->_configuration.mp3ABRBitrate);
-	vbrQuality   ->SetStringSelection(_topframe->_configuration.mp3VBRQuality);
-	mpegQuality  ->SetStringSelection(_topframe->_configuration.mp3MpegQuality);
+	vbrMinBitrate->SetStringSelection(_configuration.mp3VBRMinBitrate);
+	vbrMaxBitrate->SetStringSelection(_configuration.mp3VBRMaxBitrate);
+	abrAvgBitrate->SetStringSelection(_configuration.mp3ABRBitrate);
+	vbrQuality   ->SetStringSelection(_configuration.mp3VBRQuality);
+	mpegQuality  ->SetStringSelection(_configuration.mp3MpegQuality);
 
 	updateFields(panel);
 
@@ -753,15 +753,15 @@ void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
 	wxChoice *vbrQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("VBRQuality")));
 	wxChoice *mpegQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MpegQuality")));
 
-	_topframe->_configuration.mp3VBRMinBitrate = vbrMinBitrate->GetStringSelection();
-	_topframe->_configuration.mp3VBRMaxBitrate = vbrMaxBitrate->GetStringSelection();
-	_topframe->_configuration.mp3ABRBitrate    = abrAvgBitrate->GetStringSelection();
-	_topframe->_configuration.mp3VBRQuality    = vbrQuality   ->GetStringSelection();
-	_topframe->_configuration.mp3MpegQuality   = mpegQuality  ->GetStringSelection();
+	_configuration.mp3VBRMinBitrate = vbrMinBitrate->GetStringSelection();
+	_configuration.mp3VBRMaxBitrate = vbrMaxBitrate->GetStringSelection();
+	_configuration.mp3ABRBitrate    = abrAvgBitrate->GetStringSelection();
+	_configuration.mp3VBRQuality    = vbrQuality   ->GetStringSelection();
+	_configuration.mp3MpegQuality   = mpegQuality  ->GetStringSelection();
 	if (abr->GetValue())
-		_topframe->_configuration.mp3CompressionType = wxT("ABR");
+		_configuration.mp3CompressionType = wxT("ABR");
 	else
-		_topframe->_configuration.mp3CompressionType = wxT("VBR");
+		_configuration.mp3CompressionType = wxT("VBR");
 }
 
 void ChooseAudioOptionsMp3Page::updateFields(wxWindow *panel) {
@@ -860,8 +860,8 @@ wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
 
 
 	// Load settings
-	compressionLevel->SetStringSelection(_topframe->_configuration.flacCompressionLevel);
-	blockSize->SetStringSelection(_topframe->_configuration.flacBlockSize);
+	compressionLevel->SetStringSelection(_configuration.flacCompressionLevel);
+	blockSize->SetStringSelection(_configuration.flacBlockSize);
 
 	return panel;
 }
@@ -870,8 +870,8 @@ void ChooseAudioOptionsFlacPage::save(wxWindow *panel) {
 	wxChoice *compressionLevel = static_cast<wxChoice *>(panel->FindWindowByName(wxT("CompressionLevel")));
 	wxChoice *blockSize = static_cast<wxChoice *>(panel->FindWindowByName(wxT("BlockSize")));
 
-	_topframe->_configuration.flacCompressionLevel = compressionLevel->GetStringSelection();
-	_topframe->_configuration.flacBlockSize = blockSize->GetStringSelection();
+	_configuration.flacCompressionLevel = compressionLevel->GetStringSelection();
+	_configuration.flacBlockSize = blockSize->GetStringSelection();
 }
 
 void ChooseAudioOptionsFlacPage::onNext(wxWindow *panel) {
@@ -949,10 +949,10 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 
 
 	// Load settings
-	MinBitrate->SetStringSelection(_topframe->_configuration.oggMinBitrate);
-	AvgBitrate->SetStringSelection(_topframe->_configuration.oggAvgBitrate);
-	MaxBitrate->SetStringSelection(_topframe->_configuration.oggMaxBitrate);
-	quality   ->SetStringSelection(_topframe->_configuration.oggQuality);
+	MinBitrate->SetStringSelection(_configuration.oggMinBitrate);
+	AvgBitrate->SetStringSelection(_configuration.oggAvgBitrate);
+	MaxBitrate->SetStringSelection(_configuration.oggMaxBitrate);
+	quality   ->SetStringSelection(_configuration.oggQuality);
 
 	return panel;
 }
@@ -963,10 +963,10 @@ void ChooseAudioOptionsVorbisPage::save(wxWindow *panel) {
 	wxChoice *maxBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MaximumBitrate")));
 	wxChoice *quality    = static_cast<wxChoice *>(panel->FindWindowByName(wxT("Quality")));
 
-	_topframe->_configuration.oggMinBitrate = minBitrate->GetStringSelection();
-	_topframe->_configuration.oggAvgBitrate = avgBitrate->GetStringSelection();
-	_topframe->_configuration.oggMaxBitrate = maxBitrate->GetStringSelection();
-	_topframe->_configuration.oggQuality    = quality   ->GetStringSelection();
+	_configuration.oggMinBitrate = minBitrate->GetStringSelection();
+	_configuration.oggAvgBitrate = avgBitrate->GetStringSelection();
+	_configuration.oggMaxBitrate = maxBitrate->GetStringSelection();
+	_configuration.oggQuality    = quality   ->GetStringSelection();
 }
 
 void ChooseAudioOptionsVorbisPage::onNext(wxWindow *panel) {
@@ -1018,13 +1018,13 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 }
 
 void ProcessPage::runTool() {
-	const ToolGUI *tool = _topframe->_configuration.selectedTool;
+	const ToolGUI *tool = _configuration.selectedTool;
 
 	// Write some text that we've started...
 	_outwin->WriteText(wxT("Running ") + tool->_name + wxT("\n\n"));
 
 	// Child thread to run the tool
-	_thread = new ProcessToolThread(tool, _topframe->_configuration, _output);
+	_thread = new ProcessToolThread(tool, _configuration, _output);
 
 	// We should check return value of this
 	_thread->Create();
@@ -1033,7 +1033,7 @@ void ProcessPage::runTool() {
 }
 
 bool ProcessPage::onIdle(wxPanel *panel) {
-	const ToolGUI *tool = _topframe->_configuration.selectedTool;
+	const ToolGUI *tool = _configuration.selectedTool;
 	
 	if (!_thread)
 		return false;
@@ -1222,7 +1222,7 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(15);
 
 	wxString text;
-	if (_topframe->_configuration.selectedTool->_type == TOOLTYPE_COMPRESSION)
+	if (_configuration.selectedTool->_type == TOOLTYPE_COMPRESSION)
 		text = wxT("You have finished the wizard! Your files should now be compressed.");
 	else
 		text = wxT("You have finished the wizard! Your files should now be extracted.");
@@ -1246,7 +1246,7 @@ void FinishPage::onNext(wxWindow *panel) {
 		// There is no standard way to do this
 		// On windows we can simply spawn an explorer instance
 #ifdef __WINDOWS__
-		wxExecute(wxT("explorer.exe \"") + _topframe->_configuration.outputPath + wxT("\""));
+		wxExecute(wxT("explorer.exe \"") + _configuration.outputPath + wxT("\""));
 #else
 #endif
 	}

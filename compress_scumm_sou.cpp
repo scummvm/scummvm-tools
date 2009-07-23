@@ -129,7 +129,7 @@ void CompressScummSou::get_part(const char *inputPath) {
 	_output_idx.writeUint32BE(tot_size);
 }
 
-CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(name) {
+CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_audioOuputFilename = OUTPUT_MP3;
 	
 	ToolInput input;

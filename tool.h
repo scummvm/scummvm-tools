@@ -1,4 +1,3 @@
-
 /* tool.h - Common base class for all tools
  * Copyright (C) 2009 The ScummVM project
  *
@@ -31,20 +30,31 @@
 
 class ToolGUI;
 
+/** 
+ * Different types of tools, used to differentiate them when 
+ * fetching lists of games & tools.
+ */
+enum ToolType {
+	TOOLTYPE_COMPRESSION,
+	TOOLTYPE_EXTRACTION,
+	TOOLTYPE_UNKNOWN,
+	TOOLTYPE_ALL,
+};
+
 /**
  * Describes a possible input to the tool (since some take two seperate files, 
- * some a dir and some a single file
+ * some a dir and some a single file.
  */
 struct ToolInput {
 	ToolInput() : format("*.*"), file(true) {}
 
-	/** The expected format of the input file, in wildcard fashion */
+	/** The expected format of the input file, in wildcard fashion. */
 	std::string format;
-	/** A short description of what file is expected, displayed in the UI */
+	/** A short description of what file is expected, displayed in the UI. */
 	std::string description;
-	/** The path filled in */
+	/** The path filled in. */
 	std::string path;
-	/** If false, this input is a directory */
+	/** If false, this input is a directory. */
 	bool file;
 };
 
@@ -52,7 +62,7 @@ typedef std::vector<ToolInput> ToolInputs;
 
 class Tool {
 public:
-	Tool(const std::string &name);
+	Tool(const std::string &name, ToolType type);
 	virtual ~Tool();
 
 	// Run with CLI args (parses them, and then calls run())
@@ -93,6 +103,11 @@ public:
 	/** Returns name of the tool */
 	std::string getName() const;
 
+	/** Returns the helpstring of the tool */
+	std::string getHelp() const;
+
+	/** Returns the type of the tool */
+	ToolType getType() const;
 
 	/**
 	 * Notifies of progress, normally just prints a dot if enough time has passed since the last call
@@ -184,9 +199,11 @@ protected:
 	/** If this tool can display output progress in % */
 	bool _supportsProgressBar;
 
-	/** Name of the tool */
+	/** Name of the tool. */
 	std::string _name;
-	/** The text to display to help the user */
+	/** Type of the tool. */
+	ToolType _type;
+	/** The text to display to help the user. */
 	std::string _helptext;
 
 	/** Status of internal abort flag, if set, next call to *Progress will throw */

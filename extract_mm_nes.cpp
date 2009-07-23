@@ -1111,7 +1111,7 @@ static uint32 CheckROM(File &file) {
 	return CRC ^ 0xFFFFFFFF;
 }
 
-ExtractMMNes::ExtractMMNes(const std::string &name) : Tool(name) {
+ExtractMMNes::ExtractMMNes(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	
 	ToolInput input;
 	input.format = "*.PRG";

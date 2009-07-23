@@ -89,7 +89,7 @@ const struct PatchFile patchFiles[] = {
 	{ "BUD1.DOG",   'I' }
 };
 
-CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name) {
+CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_outputToDirectory = false;
 	_supportsProgressBar = true;
 	

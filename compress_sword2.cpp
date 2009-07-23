@@ -49,7 +49,7 @@ uint32 CompressSword2::append_to_file(File &f1, const char *filename) {
 #define GetCompressedSign(n)       (((n) >> 3) & 1)
 #define GetCompressedAmplitude(n)  ((n) & 7)
 
-CompressSword2::CompressSword2(const std::string &name) : CompressionTool(name) {
+CompressSword2::CompressSword2(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	
 	ToolInput input;
 	input.format = "*.clu";

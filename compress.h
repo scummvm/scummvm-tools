@@ -68,7 +68,7 @@
 
 class CompressionTool : public Tool {
 public:
-	CompressionTool(const std::string &name);
+	CompressionTool(const std::string &name, ToolType type);
 
 	void parseAudioArguments();
 public:

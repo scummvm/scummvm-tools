@@ -572,7 +572,7 @@ void CompressScummSan::handlePSAD(File &input, int size, const char *outputDir, 
 	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, size, volume, pan, false);
 }
 
-CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(name) {
+CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_IACTpos = 0;
 	
 	ToolInput input;

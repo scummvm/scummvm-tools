@@ -38,7 +38,7 @@ static uint32 input_OBJ_size[OBJ_HDR_LEN];
 static uint32 input_Vxx_offs[Vxx_HDR_LEN];
 static uint32 input_Vxx_size[Vxx_HDR_LEN];
 
-CompressTouche::CompressTouche(const std::string &name) : CompressionTool(name) {
+CompressTouche::CompressTouche(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 
 	ToolInput input;
 	input.format = "/";

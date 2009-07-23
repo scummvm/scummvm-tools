@@ -871,7 +871,7 @@ int CompressionTool::processFlacParms(int argc, char *argv[], int *i){
 // Duplicates code above in the new way
 // The old code can be removed once all tools have been converted
 
-CompressionTool::CompressionTool(const std::string &name) : Tool(name) {
+CompressionTool::CompressionTool(const std::string &name, ToolType type) : Tool(name, type) {
 	_format = AUDIO_MP3;
 }
 

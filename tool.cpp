@@ -26,8 +26,9 @@
 #include "util.h"
 #include "tool.h"
 
-Tool::Tool(const std::string &name) {
+Tool::Tool(const std::string &name, ToolType type) {
 	_name = name;
+	_type = type;
 
 	_arguments_parsed = 0;
 	_argv = NULL;
@@ -126,7 +127,7 @@ void Tool::run() {
 	
 
 	// Change output to directory if necessary
-	if (_outputToDirectory) {
+	if (_outputToDirectory && _outputPath.empty() == false) {
 		// Ensure last character is a /, this way we force directory output
 		char lastchr = _outputPath.getFullPath()[_outputPath.getFullPath().size() - 1];
 		if (lastchr != '/' && lastchr != '\\') {
@@ -264,6 +265,18 @@ void Tool::parseOutputArguments() {
 }
 
 void Tool::parseExtraArguments() {
+}
+
+std::string Tool::getName() const {
+	return _name;
+}
+
+std::string Tool::getHelp() const {
+	return _helptext;
+}
+
+ToolType Tool::getType() const {
+	return _type;
 }
 
 // Standard print function

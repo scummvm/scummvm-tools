@@ -27,7 +27,7 @@
 
 #define TEMPFILE "TEMP.VOC"
 
-CompressKyra::CompressKyra(const std::string &name) : CompressionTool(name) {
+CompressKyra::CompressKyra(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	ToolInput input;
 	input.format = "*.*";
 	_inputPaths.push_back(input);

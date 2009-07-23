@@ -557,7 +557,7 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Fi
 	}
 }
 
-CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name) {
+CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_compSpeech = true;
 	_compMusic = true;
 	

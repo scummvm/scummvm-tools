@@ -1223,7 +1223,7 @@ uint32 ISO_CRC (File &file) {
 	return CRC ^ 0xFFFFFFFF;
 }
 
-ExtractLoomTG16::ExtractLoomTG16(const std::string &name) : Tool(name) {
+ExtractLoomTG16::ExtractLoomTG16(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	
 	ToolInput input;
 	input.format = "*.iso";
