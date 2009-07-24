@@ -67,7 +67,7 @@ Tools::Tools() {
 	_tools.push_back(new CompressTinsel());
 	_tools.push_back(new CompressTouche());
 	_tools.push_back(new CompressTucker());
-	//_tools.push_back(new EncodeDXA());
+	_tools.push_back(new EncodeDXA());
 
 	_tools.push_back(new ExtractAgos());
 	_tools.push_back(new ExtractGobStk());
@@ -82,17 +82,16 @@ Tools::Tools() {
 }
 
 Tools::~Tools() {
-	for (ToolList::iterator iter = _tools.begin(); iter != _tools.end(); ++iter) {
+	for (ToolList::iterator iter = _tools.begin(); iter != _tools.end(); ++iter)
 		delete *iter;
-	}
 }
 
-Tools::ToolList Tools::inspectInput(ToolType type, std::deque<char *> arguments) {
+Tools::ToolList Tools::inspectInput(ToolType type, std::deque<char *> files) const {
 	ToolList choices;
-	for (ToolList::iterator tool = _tools.begin(); tool != _tools.end(); ++tool) {
+	for (ToolList::const_iterator tool = _tools.begin(); tool != _tools.end(); ++tool) {
 		if (type == TOOLTYPE_ALL || (*tool)->getType() == type) {
-			if ((*tool)->_inputPaths.size() == arguments.size()) {
-				for (std::deque<char *>::const_iterator filename = arguments.begin(); filename != arguments.end(); ++filename) {
+			if ((*tool)->_inputPaths.size() == files.size()) {
+				for (std::deque<char *>::const_iterator filename = files.begin(); filename != files.end(); ++filename) {
 					if((*tool)->inspectInput(*filename)) {
 						choices.push_back(*tool);
 						break;

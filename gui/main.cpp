@@ -36,7 +36,7 @@
 #include "main.h"
 
 #include "pages.h"
-#include "tools.h"
+#include "gui_tools.h"
 
 class ScummVMToolsApp : public wxApp
 {

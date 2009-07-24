@@ -27,6 +27,11 @@
 
 #include <deque>
 
+/**
+ * This class holds a list of all the tools available
+ * Used by both the GUI and CLI as a base class to get ahold
+ * of all the tools.
+ */
 class Tools {
 public:
 	Tools();
@@ -34,9 +39,14 @@ public:
 
 	typedef std::vector<Tool *> ToolList;
 	
-	ToolList inspectInput(ToolType type, std::deque<char *> arguments);
+	/**
+	 * Returns a list of the tools that supports opening the input file
+	 * specified in the input list.
+	 */
+	ToolList inspectInput(ToolType type, std::deque<char *> files) const;
 
 protected:
+	/** List of all tools */
 	ToolList _tools;
 };
 

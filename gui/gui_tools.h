@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef TOOLS_H
-#define TOOLS_H
+#ifndef GUI_TOOLS_H
+#define GUI_TOOLS_H
 
 #include <wx/string.h>
 
@@ -29,7 +29,7 @@
 #include <vector>
 
 #include "configuration.h"
-#include "../tool.h"
+#include "../tools.h"
 
 
 /**
@@ -73,9 +73,25 @@ public:
 	bool inspectInput(const Filename &filename) const;
 
 	/**
-	 *
+	 * Returns the list of valid inputs of this tool, along with the 
+	 * paths already set (if applicable)
 	 */
 	ToolInputs getInputList() const;
+
+	/**
+	 * Returns the name of the tool
+	 */
+	wxString getName() const;
+
+	/**
+	 * Returns the helptext of the tool
+	 */
+	wxString getHelp() const;
+
+	/**
+	 * Returns the type of the tool
+	 */
+	ToolType getType() const;
 
 	// Helper functions to get info about the tool
 	
@@ -107,22 +123,15 @@ public:
 	 */
 	void run(const Configuration &conf) const;
 
-
-	/** Name of the tool */
-	wxString _name;
 	/** The actual tool instance, which runs the compression/extraction */
 	Tool *_backend;
-	/** Type of tool, either extract, compress or unknown */
-	ToolType _type;
-	/** The help text displayed on the input/output page */
-	wxString _inHelpText;
 };
 
 // Collection of all tools
-class Tools {
+class ToolsGUI : public Tools {
 public:
-	Tools();
-	~Tools();
+	ToolsGUI();
+	~ToolsGUI();
 
 	/**
 	 * Must be called before the tools can be used
@@ -166,16 +175,9 @@ public:
 	wxArrayString getToolList(const Filename &filename, ToolType tt = TOOLTYPE_ALL) const;
 
 protected:
-	/**
-	 * Adds a supported tool. Should not be done after construction, since it might break pointers
-	 *
-	 * @param tool the tool to add.
-	 */
-	void addTool(ToolGUI *tool);
-
-	std::map<wxString, ToolGUI *> tools;
+	std::map<wxString, ToolGUI *> _toolmap;
 };
 
-extern Tools g_tools;
+extern ToolsGUI g_tools;
 
 #endif

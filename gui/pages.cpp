@@ -198,7 +198,7 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 
 	// Load configuration
 	if (_configuration.selectedTool != NULL)
-		tool->SetStringSelection(_configuration.selectedTool->_name);
+		tool->SetStringSelection(_configuration.selectedTool->getName());
 
 	return panel;
 }
@@ -373,7 +373,7 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 	const ToolGUI &tool = *_configuration.selectedTool;
 
 	// some help perhaps?
-	sizer->Add(new wxStaticText(panel, wxID_ANY, tool._inHelpText));
+	sizer->Add(new wxStaticText(panel, wxID_ANY, tool.getHelp()));
 
 	sizer->AddSpacer(10);
 
@@ -538,7 +538,7 @@ void ChooseOutPage::save(wxWindow *panel) {
 }
 
 void ChooseOutPage::onNext(wxWindow *panel) {
-	if (_configuration.selectedTool->_type == TOOLTYPE_COMPRESSION)
+	if (_configuration.selectedTool->getType() == TOOLTYPE_COMPRESSION)
 		switchPage(new ChooseAudioFormatPage(_topframe));
 	else
 		switchPage(new ProcessPage(_topframe));
@@ -1021,7 +1021,7 @@ void ProcessPage::runTool() {
 	const ToolGUI *tool = _configuration.selectedTool;
 
 	// Write some text that we've started...
-	_outwin->WriteText(wxT("Running ") + tool->_name + wxT("\n\n"));
+	_outwin->WriteText(wxT("Running ") + tool->getName() + wxT("\n\n"));
 
 	// Child thread to run the tool
 	_thread = new ProcessToolThread(tool, _configuration, _output);
@@ -1222,7 +1222,7 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(15);
 
 	wxString text;
-	if (_configuration.selectedTool->_type == TOOLTYPE_COMPRESSION)
+	if (_configuration.selectedTool->getType() == TOOLTYPE_COMPRESSION)
 		text = wxT("You have finished the wizard! Your files should now be compressed.");
 	else
 		text = wxT("You have finished the wizard! Your files should now be extracted.");
