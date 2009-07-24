@@ -190,7 +190,7 @@ tools_gui$(EXEEXT): gui/main.o gui/pages.o gui/gui_tools.o compress_agos.o compr
 	compress_sword1.o compress_sword2.o compress_touche.o compress_tucker.o compress_tinsel.o \
 	extract_agos.o extract_gob_stk.o extract_kyra.o extract_loom_tg16.o extract_mm_apple.o \
 	extract_mm_c64.o extract_mm_nes.o extract_parallaction.o extract_scumm_mac.o encode_dxa.o \
-	extract_zak_c64.o kyra_pak.o kyra_ins.o compress.o util.o tool.o $(UTILS)
+	extract_zak_c64.o kyra_pak.o kyra_ins.o compress.o util.o tool.o tools.o $(UTILS)
 	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs` -lpng -lz -lvorbis -logg -lvorbisenc -lFLAC
 
 sword2_clue$(EXEEXT): sword2_clue.o util.o
