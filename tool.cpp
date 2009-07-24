@@ -34,7 +34,7 @@ Tool::Tool(const std::string &name, ToolType type) {
 	_argv = NULL;
 
 	_outputToDirectory = true;
-	_supportedFormats = AUDIO_NONE;
+	_supportedFormats = AUDIO_ALL;
 	_supportsProgressBar = false;
 
 	_internalPrint = standardPrint;

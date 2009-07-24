@@ -426,7 +426,7 @@ public:
 	size_t readN(void *data, size_t elementSize, size_t elementCount);
 
 	/**
-	 * Read a single 32-bit word, little endian.
+	 * Reads a full string, until NULL or EOF
 	 * Throws FileException if file is not open / if read failed.
 	 */
 	std::string readString();

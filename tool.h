@@ -216,7 +216,6 @@ private:
 	ProgressFunction _internalProgress;
 	void *_progress_udata;
 
-
 	typedef int (*SubprocessFunction)(void *, const char *);
 	SubprocessFunction _internalSubprocess;
 	void *_subprocess_udata;

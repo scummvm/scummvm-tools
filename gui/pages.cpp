@@ -565,9 +565,14 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 	
 	wxArrayString choices;
 
-	choices.Add(wxT("Vorbis"));
-	choices.Add(wxT("FLAC"));
-	choices.Add(wxT("MP3"));
+	const ToolGUI *tool = _configuration.selectedTool;
+
+	if (tool->supportsAudioFormat(AUDIO_VORBIS))
+		choices.Add(wxT("Vorbis"));
+	if (tool->supportsAudioFormat(AUDIO_FLAC))
+		choices.Add(wxT("FLAC"));
+	if (tool->supportsAudioFormat(AUDIO_MP3))
+		choices.Add(wxT("MP3"));
 
 	wxChoice *format = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxSize(80, -1), 
 		choices, 0, wxDefaultValidator, wxT("AudioSelection"));

@@ -1,4 +1,3 @@
-
 /* compress_scumm_sou - monster.sou to MP3-compressed monster.so3 converter
  * Copyright (C) 2002-2006  The ScummVM Team
  *
