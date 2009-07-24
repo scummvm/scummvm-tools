@@ -48,6 +48,8 @@
 #define TEMP_ENC "tempfile.enc"
 
 CompressTinsel::CompressTinsel(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
+	_supportsProgressBar = true;
+
 	ToolInput input1;
 	input1.format = "*.smp";
 	_inputPaths.push_back(input1);
@@ -274,6 +276,9 @@ void CompressTinsel::execute() {
 
 	loopCount = indexCount;
 	while (loopCount>0) {
+		// Update progress
+		updateProgress(indexCount - loopCount, indexCount);
+
 		indexOffset = _input_idx.readUint32LE();
 		if (indexOffset) {
 			if (indexNo==0) {

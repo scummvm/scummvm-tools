@@ -34,7 +34,7 @@ public:
 	virtual void execute();
 
 protected:
-	std::string _audioOuputFilename;
+	std::string _audioOutputFilename;
 	File _input, _output_idx, _output_snd;
 
 	void end_of_file(const char *inputPath);

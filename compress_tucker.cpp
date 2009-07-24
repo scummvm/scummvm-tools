@@ -40,7 +40,8 @@ struct CompressedData {
 static CompressedData temp_table[10000];
 
 CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
-	
+	_supportsProgressBar = true;
+
 	ToolInput input;
 	input.format = "/";
 	_inputPaths.push_back(input);
@@ -371,11 +372,15 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 
 	/* compress the .wav files in each directory */
 	for (i = 0; i < SOUND_TYPES_COUNT; ++i) {
+		updateProgress(i, SOUND_TYPES_COUNT + 1);
+
 		print("Processing directory '%s'...\n", sound_directory_table[i].name);
 		sound_directory_size[i] = compress_sounds_directory(inpath, outpath, output, &sound_directory_table[i]);
 		print("Done (%d bytes)\n", sound_directory_size[i]);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
+		updateProgress(1, 1);
+
 		print("Processing directory 'audio'...\n");
 		audio_directory_size = compress_audio_directory(inpath, outpath, output);
 		print("Done (%d bytes)\n", audio_directory_size);

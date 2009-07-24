@@ -43,7 +43,7 @@ void CompressScummSou::end_of_file(const char *inputPath) {
 	_output_snd.close();
 	_output_idx.close();
 
-	_output_idx.open(_audioOuputFilename, "wb");
+	_output_idx.open(_audioOutputFilename, "wb");
 	_output_idx.writeUint32BE((uint32)idx_size);
 
 	File in(TEMP_IDX, "rb");
@@ -130,7 +130,7 @@ void CompressScummSou::get_part(const char *inputPath) {
 }
 
 CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
-	_audioOuputFilename = OUTPUT_MP3;
+	_audioOutputFilename = OUTPUT_MP3;
 	
 	ToolInput input;
 	input.format = "*.sou";
@@ -147,13 +147,13 @@ void CompressScummSou::execute() {
 
 	switch (_format) {
 	case AUDIO_MP3:
-		_audioOuputFilename = OUTPUT_MP3;
+		_audioOutputFilename = OUTPUT_MP3;
 		break;
 	case AUDIO_VORBIS:
-		_audioOuputFilename = OUTPUT_OGG;
+		_audioOutputFilename = OUTPUT_OGG;
 		break;
 	case AUDIO_FLAC:
-		_audioOuputFilename = OUTPUT_FLAC;
+		_audioOutputFilename = OUTPUT_FLAC;
 		break;
 	default:
 		throw ToolException("Unknown audio format");

@@ -438,6 +438,9 @@ void CompressSword1::compressSpeech(const Filename *inpath, const Filename *outp
 	setRawAudioType(true, false, 16);
 
 	for (i = 1; i <= 2; i++) {
+		// Updates the progress bar, add music files if we compress those too
+		updateProgress(i, 2 +(_compMusic? TOTAL_TUNES : 0));
+
 		sprintf(cluName, "%s/SPEECH/SPEECH%d.CLU", inpath->getPath().c_str(), i);
 		try {
 			clu.open(cluName, "rb");
@@ -479,6 +482,9 @@ void CompressSword1::compressMusic(const Filename *inpath, const Filename *outpa
 	char fNameIn[256], fNameOut[256];
 
 	for (i = 0; i < TOTAL_TUNES; i++) {
+		// Update the progress bar, we add 2 if we compress speech to, for those files
+		updateProgress(i, TOTAL_TUNES +(_compSpeech? 2 : 0));
+
 		sprintf(fNameIn, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
 		try {
 			File inf(fNameIn, "rb");
@@ -560,6 +566,8 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Fi
 CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_compSpeech = true;
 	_compMusic = true;
+
+	_supportsProgressBar = true;
 	
 	ToolInput input;
 	input.format = "*.clu";

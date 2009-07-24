@@ -28,6 +28,7 @@
 CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_convertMac = false;
 	_outputToDirectory = false;
+	_supportsProgressBar = true;
 	
 	ToolInput input;
 	input.format = "*.*";
@@ -148,6 +149,8 @@ void CompressAgos::convert_pc(Filename* inputPath) {
 	_output_idx.writeUint32LE(size);
 
 	for (i = 1; i < num; i++) {
+		updateProgress(i, num);
+
 		if (offsets[i] == offsets[i + 1]) {
 			_output_idx.writeUint32LE(size);
 			continue;
@@ -182,6 +185,8 @@ void CompressAgos::convert_mac(Filename *inputPath) {
 	_output_idx.writeUint32LE(size);
 
 	for (i = 1; i < num; i++) {
+		updateProgress(i, num);
+
 		if (filenums[i] == filenums[i + 1] && offsets[i] == offsets[i + 1]) {
 			_output_idx.writeUint32LE(size);
 			continue;

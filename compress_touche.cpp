@@ -39,6 +39,7 @@ static uint32 input_Vxx_offs[Vxx_HDR_LEN];
 static uint32 input_Vxx_size[Vxx_HDR_LEN];
 
 CompressTouche::CompressTouche(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
+	_supportsProgressBar = true;
 
 	ToolInput input;
 	input.format = "/";
@@ -131,6 +132,7 @@ void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
 
 	/* process Vxx files */
 	for (i = 1; i < MAX_OFFSETS; ++i) {
+		updateProgress(i, MAX_OFFSETS);
 
 		char d[16];
 		sprintf(d, "V%d", i);

@@ -1067,6 +1067,8 @@ void CompressScummBun::writeToRMAPFile(byte *ptr, File &output, char *filename, 
 
 CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_cbundleCurIndex = 0;
+
+	_supportsProgressBar = true;
 	
 	ToolInput input;
 	input.format = "*.bun";
@@ -1127,6 +1129,9 @@ void CompressScummBun::execute() {
 	for (int i = 0; i < numFiles; i++) {
 		if (strcmp(_bundleTable[i].filename, "PRELOAD.") == 0)
 			continue;
+
+		updateProgress(i, numFiles);
+
 		int offsetData = 0, bits = 0, freq = 0, channels = 0;
 		int32 size = 0;
 		byte *compFinal = decompressBundleSound(i, input, size);

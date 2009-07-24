@@ -574,7 +574,10 @@ void CompressScummSan::handlePSAD(File &input, int size, const char *outputDir, 
 
 CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_IACTpos = 0;
-	
+
+	_supportedFormats = AudioFormat(AUDIO_MP3 | AUDIO_VORBIS);
+	_supportsProgressBar = true;
+
 	ToolInput input;
 	input.format = "*.san";
 	_inputPaths.push_back(input);
@@ -585,7 +588,7 @@ CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(na
 
 void CompressScummSan::execute() {
 	if (_format == AUDIO_FLAC)
-		error("Only ogg vorbis and MP3 is supported for this tool.");
+		error("Only ogg vorbis and MP3 are supported for this tool.");
 
 	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
@@ -645,6 +648,9 @@ void CompressScummSan::execute() {
 	int fps = 0;
 
 	for (l = 0; l < nbframes; l++) {
+		// Compression takes place in this loops, which takes the most time by far
+		updateProgress(l, nbframes);
+
 		print("frame: %d\n", l);
 		bool first_fobj = true;
 		uint32 tag = input.readUint32BE(); // chunk tag

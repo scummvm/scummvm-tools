@@ -50,7 +50,8 @@ uint32 CompressSword2::append_to_file(File &f1, const char *filename) {
 #define GetCompressedAmplitude(n)  ((n) & 7)
 
 CompressSword2::CompressSword2(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
-	
+	_supportsProgressBar = true;
+
 	ToolInput input;
 	input.format = "*.clu";
 	_inputPaths.push_back(input);
@@ -103,6 +104,9 @@ void CompressSword2::execute() {
 	_output_idx.writeUint32BE(0xfff0fff0);
 
 	for (int i = 0; i < (int)indexSize; i++) {
+		// Update progress, this loop is where most of the time is spent
+		updateProgress(i, indexSize);
+
 		uint32 pos;
 		uint32 enc_length;
 

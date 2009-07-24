@@ -112,7 +112,7 @@ typedef struct  {
 CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_currentGameDescription = NULL;
 	_currentFileDescription = NULL;
-	
+	_supportsProgressBar = true;
 	
 	ToolInput input;
 	// We accept many extensions, and the fact that "inherit the earth voices" does not have an extension
@@ -382,6 +382,9 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 	outputFile.open(*outpath, "wb");
 
 	for (i = 0; i < resTableCount; i++) {
+		// This is where compression takes place, and where all time is spent
+		updateProgress(i, resTableCount);
+
 		inputFile.seek(inputTable[i].offset, SEEK_SET);
 		outputTable[i].offset = outputFile.pos();
 
