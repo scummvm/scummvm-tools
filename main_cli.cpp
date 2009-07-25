@@ -1,4 +1,4 @@
-/* cli_main.cpp - Main entry point for the CLI tool, very thin
+/* main_cli.cpp - Main entry point for the CLI tool, very thin
  * Copyright (C) 2009 The ScummVM project
  *
  * This program is free software; you can redistribute it and/or
@@ -20,7 +20,7 @@
  *
  */
 
-#include "cli_tools.h"
+#include "tools_cli.h"
 
 int main(int argc, char *argv[]) {
 	ToolsCLI cli;

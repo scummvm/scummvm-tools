@@ -1,4 +1,4 @@
-/* cli_tools - CLI interface for the tools
+/* tools_cli - CLI interface for the tools
  * Copyright (C) 2009 The ScummVM project
  *
  * This program is free software; you can redistribute it and/or

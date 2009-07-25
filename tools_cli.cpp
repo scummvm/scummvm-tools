@@ -1,4 +1,4 @@
-/* cli_tools - CLI interface for the tools
+/* tools_cli - CLI interface for the tools
  * Copyright (C) 2009 The ScummVM project
  *
  * This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@
 
 #include <iostream>
 
-#include "cli_tools.h"
+#include "tools_cli.h"
 
 ToolsCLI::ToolsCLI() {
 }
@@ -93,7 +93,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 				std::cin >> i;
 
 				// Valid ?
-				if(std::cin && i >= 1 && i < choices.size())
+				if(std::cin && i >= 1 && (size_t)i < choices.size())
 					break;
 
 				std::cout << "Invalid input, try again: ";
