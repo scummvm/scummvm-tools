@@ -190,7 +190,7 @@ Compression Tools:
                 Example of usage:
                 compress_sword1 [params] <inputdir>
 
-       compress_sword2
+        compress_sword2
                 Used to compress Broken Sword 2's music and speech .clu
                 files to .cl3 (MP3), .clg (Vorbis) or .clf (FLAC).
 
