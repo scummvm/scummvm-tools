@@ -198,7 +198,7 @@ FORCEINLINE void WRITE_BE_UINT32(void *ptr, uint32 value) {
  * Returns the size of the FILE
  * Technically all code should use the File class instead, but until then we need this
  */
-size_t fileSize(FILE *f);
+uint32 fileSize(FILE *f);
 
 /* Misc stuff */
 void NORETURN_PRE error(const char *s, ...) NORETURN_POST;
