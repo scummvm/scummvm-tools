@@ -208,6 +208,9 @@ extract_t7g_mac$(EXEEXT): extract_t7g_mac.o util.o
 extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
+create_sjisfnt$(EXEEXT): create_sjisfnt.o util.o
+	$(CXX) $(LDFLAGS) `freetype-config --libs` -o $@ $+
+
 tools_gui$(EXEEXT): tools_gui.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `wx-config --libs`
 
@@ -216,6 +219,9 @@ sword2_clue$(EXEEXT): sword2_clue.o util.o
 
 clean:
 	rm -f *.o utils/*.o $(TARGETS)
+
+create_sjisfnt.o: create_sjisfnt.cpp util.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `freetype-config --cflags` -c create_sjisfnt.cpp -o create_sjisfnt.o
 
 tools_gui.o: tools_gui.cpp tools_gui.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c tools_gui.cpp -o tools_gui.o
