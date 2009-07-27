@@ -544,8 +544,7 @@ EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_C
 	_shorthelp = "Used to create DXA files from extracted Smacker archives.";
 	_helptext = 
 		"Usage: " + getName() + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" +
-		"Output will be two files, one with .dxa extension and the other depending on the used audio codec." 
-		+ kCompressionAudioHelp;
+		"Output will be two files, one with .dxa extension and the other depending on the used audio codec."; 
 }
 
 void EncodeDXA::execute() {

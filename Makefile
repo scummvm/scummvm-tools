@@ -66,8 +66,8 @@ TARGETS := \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	degob$(EXEEXT) \
-	tools_gui$(EXEEXT) \
-	tools_cli$(EXEEXT)
+	tools_cli$(EXEEXT) \
+	tools_gui$(EXEEXT)
 
 UTILS := \
 	utils/adpcm.o \
