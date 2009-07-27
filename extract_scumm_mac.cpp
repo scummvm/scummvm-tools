@@ -35,7 +35,7 @@ ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name, TOOLTYPE_
 	_shorthelp = "Extract data from Lucas Art CDs, sometimes the CD appears to only hold an \n"
 		"application but there is a hidden data file.";
 	_helptext =
-		"\nUsage: " + _name + " [-o <output dir> = out/] <file>\n" +
+		"\nUsage: " + getName() + " [-o <output dir> = out/] <file>\n" +
 		_shorthelp + "\n";
 }
 

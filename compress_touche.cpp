@@ -46,7 +46,7 @@ CompressTouche::CompressTouche(const std::string &name) : CompressionTool(name, 
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress Touche speech files (Vxxx and OBJ).";
-	_helptext = "\nUsage: " + getName() + " [params] [-o outputfile TOUCHE.*] <inputdir>\n* differs with compression type.\n" kCompressionAudioHelp;
+	_helptext = "\nUsage: " + getName() + " [params] [-o outputfile TOUCHE.*] <inputdir>\n* differs with compression type.\n";
 }
 
 uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &output, File &input, uint32 *offs_table, uint32 *size_table, int len) {

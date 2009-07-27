@@ -67,7 +67,7 @@ int Tool::run(int argc, char *argv[]) {
 
 	// Check for help
 	if (_arguments.empty() || _arguments[0] == "-h" || _arguments[0] == "--help") {
-		print(_helptext.c_str());
+		print(getHelp().c_str());
 		return 2;
 	}
 

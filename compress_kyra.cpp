@@ -33,7 +33,7 @@ CompressKyra::CompressKyra(const std::string &name) : CompressionTool(name, TOOL
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress Legend of Kyrandia games.";
-	_helptext = "\nUsage: " + getName() + " [mode params] [-o outfile] <infile>\n" kCompressionAudioHelp;
+	_helptext = "\nUsage: " + getName() + " [mode params] [-o outfile] <infile>\n";
 }
 
 void CompressKyra::execute() {

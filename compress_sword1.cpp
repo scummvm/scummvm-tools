@@ -577,8 +577,7 @@ CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, 
 	_helptext = "\nUsage: " + getName() + " [only] [mode] [mode params] [-o outputdir] <inputdir>\n"
 		"only can be either:\n"
 		" --speech-only  only encode speech clusters\n"
-		" --music-only   only encode music files\n"
-		kCompressionAudioHelp;
+		" --music-only   only encode music files\n";
 }
 
 void CompressSword1::parseExtraArguments() {

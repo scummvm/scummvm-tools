@@ -35,7 +35,7 @@ CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name, TOOL
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Compresses Simon the Sorcer and Feeble Files data files.";
-	_helptext = "\nUsage: " + getName() + " [mode params] [--mac] [-o outfile] <infile>\n" kCompressionAudioHelp
+	_helptext = "\nUsage: " + getName() + " [mode params] [--mac] [-o outfile] <infile>\n";
 }
 
 void CompressAgos::end() {

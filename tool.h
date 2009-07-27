@@ -102,10 +102,10 @@ public:
 	std::string getName() const;
 
 	/** Returns the helpstring of the tool */
-	std::string getHelp() const;
+	virtual std::string getHelp() const;
 
 	/** Returns the helpstring of the tool */
-	std::string getShortHelp() const;
+	virtual std::string getShortHelp() const;
 
 	/** Returns the type of the tool */
 	ToolType getType() const;

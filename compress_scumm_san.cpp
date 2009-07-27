@@ -584,7 +584,7 @@ CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(na
 
 	_shorthelp = "Used to compress the .san smush files.";
 	// TODO: Feature set seems more limited than what kCompressionAudioHelp contains
-	_helptext = "\nUsage: " + getName() + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" kCompressionAudioHelp;
+	_helptext = "\nUsage: " + getName() + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n";
 }
 
 void CompressScummSan::execute() {

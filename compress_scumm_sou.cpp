@@ -136,7 +136,7 @@ CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(na
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress the .sou data files.";
-	_helptext = "\nUsage: " + getName() + " [mode] [mode params] monster.sou\n" kCompressionAudioHelp;
+	_helptext = "\nUsage: " + getName() + " [mode] [mode params] monster.sou\n";
 }
 
 void CompressScummSou::execute() {

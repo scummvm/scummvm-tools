@@ -121,7 +121,7 @@ CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name, TOOL
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress SAGA engine games such as Inherit the Earth.";
-	_helptext = "\nUsage: " + getName() +" [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n" kCompressionAudioHelp;
+	_helptext = "\nUsage: " + getName() +" [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n";
 }
 
 bool CompressSaga::inspectInput(const Filename &filename) {

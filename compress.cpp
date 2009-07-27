@@ -22,6 +22,8 @@
 
 #include "compress.h"
 
+#include <sstream>
+
 typedef struct  {
 	uint32 minBitr;
 	uint32 maxBitr;
@@ -913,4 +915,61 @@ void CompressionTool::parseAudioArguments() {
 		throw ToolException("Unknown audio format, should be impossible!");
 	}
 	_arguments_parsed = (size_t)arg;
+}
+
+std::string CompressionTool::getHelp() const {
+	std::ostringstream os;
+	
+	// Standard help text + our additions
+	os << Tool::getHelp();
+
+	if (_supportedFormats == AUDIO_NONE)
+		return os.str();
+
+	os << "\nParams:\n";
+
+	if (_supportedFormats & AUDIO_MP3)
+		os << " --mp3        encode to MP3 format (default)\n";
+	if (_supportedFormats & AUDIO_VORBIS)
+		os << " --vorbis     encode to Vorbis format\n";
+	if (_supportedFormats & AUDIO_FLAC)
+		os << " --flac       encode to Flac format\n";
+	os << "(If one of these is specified, it must be the first parameter.)\n";
+
+	if (_supportedFormats & AUDIO_MP3) {
+		os << "\nMP3 mode params:\n";
+		os << " -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" << minBitrDef << "%d)\n";
+		os << " -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%" << maxBitrDef << ")\n";
+		os << " --vbr        LAME uses the VBR mode (default)\n";
+		os << " --abr        LAME uses the ABR mode\n";
+		os << " -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:" << vbrqualDef << "%d)\n";
+		os << " -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:" << algqualDef << ")\n";
+		os << " --silent     the output of LAME is hidden (default:disabled)\n";
+	}
+
+	if (_supportedFormats & AUDIO_VORBIS) {
+		os << "\nVorbis mode params:\n";
+		os << " -b <rate>    <rate> is the nominal bitrate (default:unset)\n";
+		os << " -m <rate>    <rate> is the minimum bitrate (default:unset)\n";
+		os << " -M <rate>    <rate> is the maximum bitrate (default:unset)\n";
+		os << " -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:" << oggqualDef << ")\n";
+		os << " --silent     the output of oggenc is hidden (default:disabled)\n";
+	}
+
+	if (_supportedFormats & AUDIO_FLAC) {
+		os << "\nFlac mode params:\n";
+		os << " --fast       FLAC uses compression level 0\n";
+		os << " --best       FLAC uses compression level 8\n";
+		os << " -<value>     specifies the value (0 - 8) of compression (8=best)(default:" << flacCompressDef << ")\n";
+		os << " -b <value>   specifies a blocksize of <value> samples (default:" << flacBlocksizeDef << ")\n";
+		os << " --verify     files are encoded and then decoded to check accuracy\n";
+		os << " --silent     the output of FLAC is hidden (default:disabled)\n";
+	}
+
+	os << "\n --help     this help message\n";
+
+	os << "\n\nIf a parameter is not given the default value is used\n";
+	os << "If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n";
+
+	return os.str();
 }
