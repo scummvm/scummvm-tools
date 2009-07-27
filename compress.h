@@ -94,9 +94,9 @@ public:
 	std::string _oggMaxBitrate;
 	
 public:
-	int processMp3Parms(int argc, char *argv[], int* i);
-	int processOggParms(int argc, char *argv[], int* i);
-	int processFlacParms(int argc, char *argv[], int* i);
+	bool processMp3Parms();
+	bool processOggParms();
+	bool processFlacParms();
 
 	void extractAndEncodeVOC(const char *outName, File &input, AudioFormat compMode);
 	void extractAndEncodeWAV(const char *outName, File &input, AudioFormat compMode);

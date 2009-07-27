@@ -43,7 +43,7 @@ public:
 	 * Returns a list of the tools that supports opening the input file
 	 * specified in the input list.
 	 */
-	ToolList inspectInput(ToolType type, std::deque<char *> files) const;
+	ToolList inspectInput(ToolType type, std::deque<std::string> files) const;
 
 protected:
 	/** List of all tools */

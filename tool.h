@@ -63,11 +63,21 @@ public:
 	Tool(const std::string &name, ToolType type);
 	virtual ~Tool();
 
-	// Run with CLI args (parses them, and then calls run())
-	// This version also catches all errors and prints them before exiting
+	/**
+	 * Run tool with CLI args (parses them, and then calls run())
+	 * This version also catches all errors and prints them before exiting
+	 *
+	 * @param argc Argument count
+	 * @param argv Argument values
+	 */
 	int run(int argc, char *argv[]);
-	// Parse with args set already
-	// passes through errors
+	/** Same as the above, but accepts vector of string instead */
+	int run(std::vector<std::string> args);
+
+	/**
+	 * Parse with args set already (modify the public members to set them)
+	 * Exceptions are not caught, so this function may throw
+	 */
 	void run();
 
 	/**
@@ -188,10 +198,6 @@ protected:
 	std::vector<std::string> _arguments;
 	/* How many of the arguments we have parsed so far */
 	size_t _arguments_parsed;
-	/**
-	 * The raw arguments, necossary to invoke some functions properly, 
-	 * argc is the same as _arguments.size() */
-	char **_argv;
 
 	/** If this tools outputs to a directory, not a file. */
 	bool _outputToDirectory;

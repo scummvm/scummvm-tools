@@ -37,10 +37,10 @@ int ToolsCLI::run(int argc, char *argv[]) {
 	if (argc == 1) {
 		// Run without any arguments
 		printHelp();
-		return 0;
+		return 2;
 	}
 
-	std::deque<char *> arguments(argv, argv + argc);
+	std::deque<std::string> arguments(argv, argv + argc);
 	arguments.pop_front(); // Pop our own name
 
 	ToolType type = TOOLTYPE_ALL;
@@ -53,13 +53,27 @@ int ToolsCLI::run(int argc, char *argv[]) {
 			Tool *tool = *iter;
 			if (arguments.front() == tool->getName()) {
 				// Run the tool, first argument will be name, very nice!
-				return tool->run(arguments.size(), &arguments.front());
+				return tool->run(std::vector<std::string>(arguments.begin(), arguments.end()));
 			}
 		}
 		std::cout << "\tUnknown tool, make sure you input one of the following:\n";
 		printTools();
 	} else if (option == "--help" || option == "-h") {
+		arguments.pop_front();
+
+		if(arguments.size()) {
+			for (ToolList::iterator iter = _tools.begin(); iter != _tools.end(); ++iter) {
+				Tool *tool = *iter;
+				if (arguments.front() == tool->getName()) {
+					// Run the tool, first argument will be name, very nice!
+					std::cout << tool->getHelp() << std::endl;
+					return 2;
+				}
+			}
+			std::cout << "\nUnknown help topic '" << arguments[1] << "'\n";
+		}
 		printHelp();
+		return 2;
 	} else if (option == "--list" || option == "-l") {
 		printTools();
 	} else {
@@ -114,10 +128,8 @@ int ToolsCLI::run(int argc, char *argv[]) {
 		std::cout << "\tRunning using " << tool->getName() << "\n";
 		
 		// Run the tool, with the remaining arguments
-		// We also add the name of the tool so it can displayed (requires an evil cast but it's safe)
-		std::string name = tool->getName();
-		arguments.push_front(const_cast<char *>(name.c_str()));
-		return tool->run(arguments.size(), &arguments.front());
+		arguments.push_front(tool->getName());
+		return tool->run(std::vector<std::string>(arguments.begin(), arguments.end()));
 	}
 
 	return 0;

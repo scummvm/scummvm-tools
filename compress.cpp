@@ -673,14 +673,17 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, File &input, Audi
 	encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
 }
 
-int CompressionTool::processMp3Parms(int argc, char *argv[], int* i) {
-	for (; *i < argc; (*i)++) {
-		if (strcmp(argv[*i], "--vbr") == 0) {
+bool CompressionTool::processMp3Parms() {
+	while (_arguments_parsed < _arguments.size()) {
+		std::string arg = _arguments[_arguments_parsed];
+
+		if (arg == "--vbr") {
 			encparms.abr = 0;
-		} else if (strcmp(argv[*i], "--abr") == 0) {
+		} else if (arg == "--abr") {
 			encparms.abr = 1;
-		} else if (strcmp(argv[*i], "-b") == 0) {
-			encparms.minBitr = atoi(argv[*i + 1]);
+		} else if (arg == "-b") {
+			++_arguments_parsed;
+			encparms.minBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((encparms.minBitr % 8) != 0) {
 				encparms.minBitr -= encparms.minBitr % 8;
@@ -694,9 +697,9 @@ int CompressionTool::processMp3Parms(int argc, char *argv[], int* i) {
 				encparms.minBitr = 8;
 			}
 
-			(*i)++;
-		} else if (strcmp(argv[*i], "-B") == 0) {
-			encparms.maxBitr = atoi(argv[*i + 1]);
+		} else if (arg == "-B") {
+			++_arguments_parsed;
+			encparms.maxBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((encparms.maxBitr % 8) != 0) {
 				encparms.maxBitr -= encparms.maxBitr % 8;
@@ -710,9 +713,9 @@ int CompressionTool::processMp3Parms(int argc, char *argv[], int* i) {
 				encparms.maxBitr = 8;
 			}
 
-			(*i)++;
-		} else if (strcmp(argv[*i], "-V") == 0) {
-			encparms.vbrqual = atoi(argv[*i + 1]);
+		} else if (arg == "-V") {
+			++_arguments_parsed;
+			encparms.vbrqual = atoi(_arguments[_arguments_parsed].c_str());
 
 			if (encparms.vbrqual < 0) {
 				encparms.vbrqual = 0;
@@ -722,9 +725,9 @@ int CompressionTool::processMp3Parms(int argc, char *argv[], int* i) {
 				encparms.vbrqual = 9;
 			}
 
-			(*i)++;
-		} else if (strcmp(argv[*i], "-q") == 0) {
-			encparms.algqual = atoi(argv[*i + 1]);
+		} else if (arg == "-q") {
+			++_arguments_parsed;
+			encparms.algqual = atoi(_arguments[_arguments_parsed].c_str());
 
 			if (encparms.algqual < 0) {
 				encparms.algqual = 0;
@@ -734,27 +737,25 @@ int CompressionTool::processMp3Parms(int argc, char *argv[], int* i) {
 				encparms.algqual = 9;
 			}
 
-			(*i)++;
-		} else if (strcmp(argv[*i], "--silent") == 0) {
+		} else if (arg == "--silent") {
 			encparms.silent = 1;
-		} else if (strcmp(argv[*i], "--help") == 0) {
-			return 0;
 		} else {
 			break;
 		}
+
+		++_arguments_parsed;
 	}
 
-	if (*i != (argc - 1)) {
-		return 0;
-	}
-
-	return 1;
+	return true;
 }
 
-int CompressionTool::processOggParms(int argc, char *argv[], int* i) {
-	for (; *i < argc; (*i)++) {
-		if (strcmp(argv[*i], "-b") == 0) {
-			oggparms.nominalBitr = atoi(argv[*i + 1]);
+bool CompressionTool::processOggParms() {
+	while (_arguments_parsed < _arguments.size()) {
+		std::string arg = _arguments[_arguments_parsed];
+
+		if (arg == "-b") {
+			++_arguments_parsed;
+			oggparms.nominalBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((oggparms.nominalBitr % 8) != 0) {
 				oggparms.nominalBitr -= oggparms.nominalBitr % 8;
@@ -768,9 +769,9 @@ int CompressionTool::processOggParms(int argc, char *argv[], int* i) {
 				oggparms.nominalBitr = 8;
 			}
 
-			(*i)++;
-		} else if (strcmp(argv[*i], "-m") == 0) {
-			oggparms.minBitr = atoi(argv[*i + 1]);
+		} else if (arg == "-m") {
+			++_arguments_parsed;
+			oggparms.minBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((oggparms.minBitr % 8) != 0) {
 				oggparms.minBitr -= oggparms.minBitr % 8;
@@ -784,9 +785,9 @@ int CompressionTool::processOggParms(int argc, char *argv[], int* i) {
 				oggparms.minBitr = 8;
 			}
 
-			(*i)++;
-		} else if (strcmp(argv[*i], "-M") == 0) {
-			oggparms.maxBitr = atoi(argv[*i + 1]);
+		} else if (arg == "-M") {
+			++_arguments_parsed;
+			oggparms.maxBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((oggparms.maxBitr % 8) != 0) {
 				oggparms.maxBitr -= encparms.minBitr % 8;
@@ -800,73 +801,60 @@ int CompressionTool::processOggParms(int argc, char *argv[], int* i) {
 				oggparms.maxBitr = 8;
 			}
 
-			(*i)++;
-		} else if (strcmp(argv[*i], "-q") == 0) {
-			oggparms.quality = (float)atoi(argv[*i + 1]);
-			(*i)++;
-		} else if (strcmp(argv[*i], "--silent") == 0) {
+		} else if (arg == "-q") {
+			++_arguments_parsed;
+			oggparms.quality = (float)atoi(_arguments[_arguments_parsed].c_str());
+		} else if (arg == "--silent") {
 			oggparms.silent = 1;
-		} else if (strcmp(argv[*i], "--help") == 0) {
-			return 0;
-		} else if (argv[*i][0] == '-') {
-			return 0;
 		} else {
 			break;
 		}
+
+		++_arguments_parsed;
 	}
 
-	if (*i != argc - 1) {
-		return 0;
-	}
-
-	return 1;
+	return true;
 }
 
-int CompressionTool::processFlacParms(int argc, char *argv[], int *i){
-	for (; *i < argc; (*i)++) {
-		if (strcmp(argv[*i], "-b") == 0) {
-			flacparms.blocksize = atoi(argv[*i + 1]);
-			(*i)++;
-		} else if (strcmp(argv[*i], "--fast") == 0) {
+bool CompressionTool::processFlacParms(){
+	while (_arguments_parsed < _arguments.size()) {
+		std::string arg = _arguments[_arguments_parsed];
+
+		if (arg == "-b") {
+			++_arguments_parsed;
+			flacparms.blocksize = atoi(_arguments[_arguments_parsed].c_str());
+		} else if (arg == "--fast") {
 			flacparms.compressionLevel = 0;
-		} else if (strcmp(argv[*i], "--best") == 0) {
+		} else if (arg == "--best") {
 			flacparms.compressionLevel = 8;
-		} else if (strcmp(argv[*i], "-0") == 0) {
+		} else if (arg == "-0") {
 			flacparms.compressionLevel = 0;
-		} else if (strcmp(argv[*i], "-1") == 0) {
+		} else if (arg == "-1") {
 			flacparms.compressionLevel = 1;
-		} else if (strcmp(argv[*i], "-2") == 0) {
+		} else if (arg == "-2") {
 			flacparms.compressionLevel = 2;
-		} else if (strcmp(argv[*i], "-3") == 0) {
+		} else if (arg == "-3") {
 			flacparms.compressionLevel = 3;
-		} else if (strcmp(argv[*i], "-4") == 0) {
+		} else if (arg == "-4") {
 			flacparms.compressionLevel = 4;
-		} else if (strcmp(argv[*i], "-5") == 0) {
+		} else if (arg == "-5") {
 			flacparms.compressionLevel = 5;
-		} else if (strcmp(argv[*i], "-6") == 0) {
+		} else if (arg == "-6") {
 			flacparms.compressionLevel = 6;
-		} else if (strcmp(argv[*i], "-7") == 0) {
+		} else if (arg == "-7") {
 			flacparms.compressionLevel = 7;
-		} else if (strcmp(argv[*i], "-8") == 0) {
+		} else if (arg == "-8") {
 			flacparms.compressionLevel = 8;
-		} else if (strcmp(argv[*i], "--verify") == 0) {
+		} else if (arg == "--verify") {
 			flacparms.verify = true;
-		} else if (strcmp(argv[*i], "--silent") == 0) {
+		} else if (arg == "--silent") {
 			flacparms.silent = true;
-		} else if (strcmp(argv[*i], "--help") == 0) {
-			return 0;
-		} else if (argv[*i][0] == '-') {
-			return 0;
 		} else {
 			break;
 		}
 	}
 
-	if (*i != argc - 1) {
-		return 0;
-	}
-
-	return 1;
+	return true;
 }
 
 // Compression tool interface
@@ -898,17 +886,17 @@ void CompressionTool::parseAudioArguments() {
 	switch (_format) {
 	case AUDIO_MP3:
 		tempEncoded = TEMP_MP3;
-		if (!processMp3Parms(_arguments.size() - 2, _argv, &arg))
+		if (!processMp3Parms())
 			throw ToolException("Could not parse command line arguments, use --help for options");
 		break;
 	case AUDIO_VORBIS:
 		tempEncoded = TEMP_OGG;
-		if (!processOggParms(_arguments.size() - 2, _argv, &arg))
+		if (!processOggParms())
 			throw ToolException("Could not parse command line arguments, use --help for options");
 		break;
 	case AUDIO_FLAC:
 		tempEncoded = TEMP_FLAC;
-		if (!processFlacParms(_arguments.size() - 2, _argv, &arg))
+		if (!processFlacParms())
 			throw ToolException("Could not parse arguments: Use --help for options");
 		break;
 	default: // cannot occur but we check anyway to avoid compiler warnings

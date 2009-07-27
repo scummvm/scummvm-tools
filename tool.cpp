@@ -31,7 +31,6 @@ Tool::Tool(const std::string &name, ToolType type) {
 	_type = type;
 
 	_arguments_parsed = 0;
-	_argv = NULL;
 
 	_outputToDirectory = true;
 	_supportedFormats = AUDIO_ALL;
@@ -59,11 +58,19 @@ int Tool::run(int argc, char *argv[]) {
 	argc -= 1;
 	argv += 1; 
 
-	_arguments.clear();
+	std::vector<std::string> args;
 	for (int i = 0; i < argc; ++i)
-		_arguments.push_back(argv[i]);
+		args.push_back(argv[i]);
+
+	return run(args);
+}
+
+int Tool::run(std::vector<std::string> args) {
+	_arguments = args;
 	_arguments_parsed = 0;
-	_argv = 0;
+
+	// Pop the first argument (name of ourselves)
+	_arguments.erase(_arguments.begin());
 
 	// Check for help
 	if (_arguments.empty() || _arguments[0] == "-h" || _arguments[0] == "--help") {
