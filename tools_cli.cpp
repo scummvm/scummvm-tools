@@ -138,9 +138,10 @@ void ToolsCLI::printHelp() {
 }
 
 void ToolsCLI::printTools() {
+	std::cout << "\nAll available tools:\n";
 	for (ToolList::iterator tool = _tools.begin(); tool != _tools.end(); ++tool)
 		// There *really* should be a short version of the help text available
-		std::cout << "\t" << (*tool)->getName() << ": " << (*tool)->getHelp() << "\n";
+		std::cout << "\t" << (*tool)->getName() << ":\t" << (*tool)->getShortHelp() << "\n";
 }
 
 

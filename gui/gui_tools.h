@@ -89,6 +89,11 @@ public:
 	wxString getHelp() const;
 
 	/**
+	 * Returns the short version of the helptext, much more suitable for the GUI
+	 */
+	wxString getShortHelp() const;
+
+	/**
 	 * Returns the type of the tool
 	 */
 	ToolType getType() const;

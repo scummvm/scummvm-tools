@@ -104,6 +104,9 @@ public:
 	/** Returns the helpstring of the tool */
 	std::string getHelp() const;
 
+	/** Returns the helpstring of the tool */
+	std::string getShortHelp() const;
+
 	/** Returns the type of the tool */
 	ToolType getType() const;
 
@@ -203,6 +206,8 @@ protected:
 	ToolType _type;
 	/** The text to display to help the user. */
 	std::string _helptext;
+	/** The text to display to help the user. */
+	std::string _shorthelp;
 
 	/** Status of internal abort flag, if set, next call to *Progress will throw */
 	bool _abort;

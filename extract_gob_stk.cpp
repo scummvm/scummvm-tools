@@ -45,7 +45,8 @@ ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 	input.format = "*.stk";
 	_inputPaths.push_back(input);
 
-	_helptext = "\nUsage: " + _name + " [-o outputname] infilename\n";
+	_shorthelp = "Used to extract the contents of Gobliiins! .STK files.";
+	_helptext = "\nUsage: " + getName() + " [-o outputname] infilename\n";
 }
 
 ExtractGobStk::~ExtractGobStk() {

@@ -121,6 +121,10 @@ wxString ToolGUI::getHelp() const {
 	return wxString(_backend->getHelp().c_str(), wxConvUTF8);
 }
 
+wxString ToolGUI::getShortHelp() const {
+	return wxString(_backend->getShortHelp().c_str(), wxConvUTF8);
+}
+
 ToolType ToolGUI::getType() const {
 	return _backend->getType();
 }

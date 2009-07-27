@@ -161,6 +161,8 @@ public:
 
 	void save(wxWindow *panel);
 
+	void onChangeTool(wxCommandEvent &evt);
+
 protected:
 	wxArrayString _options;
 };

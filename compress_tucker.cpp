@@ -46,7 +46,8 @@ CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name, 
 	input.format = "/";
 	_inputPaths.push_back(input);
 
-	_helptext = "\nUsage: %s [mode params] [-o outputdir] inputdir\n";
+	_shorthelp = "Used to compress the tucker data files.";
+	_helptext = "\nUsage: " + getName() + " [mode params] [-o outputdir] inputdir\n";
 }
 
 int CompressTucker::append_compress_file(File &output) {

@@ -275,6 +275,15 @@ std::string Tool::getHelp() const {
 	return _helptext;
 }
 
+std::string Tool::getShortHelp() const {
+	if (_shorthelp.empty()) {
+		if (getHelp().size() && getHelp()[0] == '\n')
+			return getHelp().substr(1);
+		return getHelp();
+	}
+	return _shorthelp;
+}
+
 ToolType Tool::getType() const {
 	return _type;
 }

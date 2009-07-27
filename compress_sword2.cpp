@@ -56,7 +56,8 @@ CompressSword2::CompressSword2(const std::string &name) : CompressionTool(name, 
 	input.format = "*.clu";
 	_inputPaths.push_back(input);
 
-	_helptext = "\nUsage: " + _name + " [params] <file>\n\n" kCompressionAudioHelp;
+	_shorthelp = "Used to compress Broken Sword 2 data files.";
+	_helptext = "\nUsage: " + getName() + " [params] <file>\n\n" kCompressionAudioHelp;
 }
 
 void CompressSword2::execute() {

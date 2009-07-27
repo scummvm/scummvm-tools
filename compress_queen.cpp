@@ -97,7 +97,8 @@ CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name, TO
 	input.format = "queen.1";
 	_inputPaths.push_back(input);
 
-	_helptext = "\nUsage: %s [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
+	_shorthelp = "Used to compress Flight of the Amazon Queen data files.";
+	_helptext = "\nUsage: " + getName() + " [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n" kCompressionAudioHelp;
 }
 
 const CompressQueen::GameVersion *CompressQueen::detectGameVersion(uint32 size) {

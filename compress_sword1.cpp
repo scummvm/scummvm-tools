@@ -573,7 +573,8 @@ CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, 
 	input.format = "*.clu";
 	_inputPaths.push_back(input);
 
-	_helptext = "\nUsage: %s [only] [mode] [mode params] [-o outputdir] <inputdir>\n"
+	_shorthelp = "Used to compress the Broken Sword 1 data files.";
+	_helptext = "\nUsage: " + getName() + " [only] [mode] [mode params] [-o outputdir] <inputdir>\n"
 		"only can be either:\n"
 		" --speech-only  only encode speech clusters\n"
 		" --music-only   only encode music files\n"

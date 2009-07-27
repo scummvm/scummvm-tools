@@ -186,19 +186,33 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 			wxT("Select what tool you'd like to use.")));
 		choices = g_tools.getToolList(TOOLTYPE_ALL);
 	}
+	wxString toolname = choices.front();
 	
 	sizer->AddSpacer(20);
 
 	wxChoice *tool = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		choices, 0, wxDefaultValidator, wxT("ToolSelection"));
+
+	tool->Connect(wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler(ChooseToolPage::onChangeTool), NULL, this);
+	tool->SetClientData(tool);
+
 	sizer->Add(tool);
 	tool->SetSelection(0);
+
+	sizer->AddSpacer(20);
+
+	wxStaticText *text = new wxStaticText(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, wxT("ToolText"));
+	sizer->Add(text);
 
 	SetAlignedSizer(panel, sizer);
 
 	// Load configuration
-	if (_configuration.selectedTool != NULL)
-		tool->SetStringSelection(_configuration.selectedTool->getName());
+	const ToolGUI *selected = _configuration.selectedTool;
+	if (selected == NULL)
+		selected = g_tools.get(tool->GetStringSelection());
+
+	tool->SetStringSelection(selected->getName());
+	text->SetLabel(selected->getShortHelp());
 
 	return panel;
 }
@@ -217,6 +231,14 @@ void ChooseToolPage::onNext(wxWindow *panel) {
 		switchPage(new ChooseExtraInPage(_topframe));
 	else
 		switchPage(new ChooseOutPage(_topframe));
+}
+
+void ChooseToolPage::onChangeTool(wxCommandEvent &evt) {
+	wxChoice *tool = dynamic_cast<wxChoice *>(evt.GetEventObject());
+	wxStaticText *text = dynamic_cast<wxStaticText *>(tool->GetParent()->FindWindowByName(wxT("ToolText")));
+	
+	text->SetLabel(g_tools[tool->GetStringSelection()].getShortHelp());
+	//text->Wrap(text->GetParent()->GetSize().GetWidth());
 }
 
 // Common base class for the IO pages

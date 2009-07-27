@@ -58,7 +58,8 @@ CompressTinsel::CompressTinsel(const std::string &name) : CompressionTool(name, 
 	input2.format = "*.idx";
 	_inputPaths.push_back(input2);
 
-	_helptext = "\nUsage: " + _name + " [mode-params] [-o outputname] <infile.smp> <infile.idx>\n" + kCompressionAudioHelp;
+	_shorthelp = "Used to compress tinsel .smp files.";
+	_helptext = "\nUsage: " + getName() + " [mode-params] [-o outputname] <infile.smp> <infile.idx>\n" + kCompressionAudioHelp;
 }
 
 /* Converts raw-data sample in input_smp of size SampleSize to requested dataformat and writes to output_smp */
