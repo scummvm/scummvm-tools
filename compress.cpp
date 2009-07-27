@@ -866,7 +866,7 @@ CompressionTool::CompressionTool(const std::string &name, ToolType type) : Tool(
 }
 
 void CompressionTool::parseAudioArguments() {
-	_format = AUDIO_NONE;
+	_format = AUDIO_MP3;
 
 	if (_arguments[_arguments_parsed] ==  "--mp3")
 		_format = AUDIO_MP3;
