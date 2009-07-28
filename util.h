@@ -296,6 +296,7 @@ struct Filename {
 
 	bool hasExtension(std::string suffix) const;
 	bool empty() const;
+	bool directory() const {return getFullName().size() == 0;}
 	bool equals(const Filename &other) const;
 	
 	// Doesn't work
