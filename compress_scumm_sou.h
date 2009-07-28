@@ -34,12 +34,12 @@ public:
 	virtual void execute();
 
 protected:
-	std::string _audioOutputFilename;
 	File _input, _output_idx, _output_snd;
 
-	void end_of_file(const char *inputPath);
+	std::string getOutputName() const;
+	void end_of_file();
 	void append_byte(int size, char buf[]);
-	void get_part(const char *inputPath);
+	bool get_part();
 };
 
 #endif

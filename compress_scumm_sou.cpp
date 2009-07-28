@@ -27,14 +27,20 @@ static const char f_hdr[] = {
 	'S', 'O', 'U', ' ', 0, 0, 0, 0, 0
 };
 
-#define OUTPUT_MP3	"monster.so3"
-#define OUTPUT_OGG	"monster.sog"
-#define OUTPUT_FLAC	"monster.sof"
-
 #define TEMP_DAT	"tempfile.dat"
 #define TEMP_IDX	"tempfile.idx"
 
-void CompressScummSou::end_of_file(const char *inputPath) {
+
+CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
+	ToolInput input;
+	input.format = "*.sou";
+	_inputPaths.push_back(input);
+
+	_shorthelp = "Used to compress the .sou data files.";
+	_helptext = "\nUsage: " + getName() + " [mode] [mode params] monster.sou\n";
+}
+
+void CompressScummSou::end_of_file() {
 	int idx_size = _output_idx.pos();
 	size_t size;
 	char buf[2048];
@@ -42,7 +48,7 @@ void CompressScummSou::end_of_file(const char *inputPath) {
 	_output_snd.close();
 	_output_idx.close();
 
-	_output_idx.open(_audioOutputFilename, "wb");
+	_output_idx.open(_outputPath, "wb");
 	_output_idx.writeUint32BE((uint32)idx_size);
 
 	File in(TEMP_IDX, "rb");
@@ -72,25 +78,24 @@ void CompressScummSou::append_byte(int size, char buf[]) {
 	buf[i] = _input.readByte();
 }
 
-void CompressScummSou::get_part(const char *inputPath) {
+bool CompressScummSou::get_part() {
 	uint32 tot_size;
 	int size;
-	char fbuf[2048];
-
 	char buf[2048];
 	int pos = _input.pos();
 	uint32 tags;
 
-	/* Scan for the VCTL header */
-	_input.read(buf, 1, 4);
-	/* The demo (snmdemo) and floppy version of Sam & Max use VTTL */
-	while (memcmp(buf, "VCTL", 4)&&memcmp(buf, "VTTL", 4)) {
-		pos++;
-		append_byte(4, buf);
-		if (_input.reachedEOF()) {
-			end_of_file(inputPath);
-			return;
+	try {
+		/* Scan for the VCTL header */
+		_input.read(buf, 1, 4);
+		/* The demo (snmdemo) and floppy version of Sam & Max use VTTL */
+		while (memcmp(buf, "VCTL", 4)&&memcmp(buf, "VTTL", 4)) {
+			pos++;
+			append_byte(4, buf);
 		}
+	} catch (FileException &) {
+		// EOF reached
+		return false;
 	}
 
 	tags = _input.readUint32BE();
@@ -120,23 +125,24 @@ void CompressScummSou::get_part(const char *inputPath) {
 	/* Append the converted data to the master output file */
 	File f(tempEncoded, "rb");
 	tot_size = 0;
-	while ((size = f.read(fbuf, 1, 2048)) > 0) {
+	while ((size = f.readN(buf, 1, 2048)) > 0) {
 		tot_size += size;
-		_output_snd.write(fbuf, 1, size);
+		_output_snd.write(buf, 1, size);
 	}
 
 	_output_idx.writeUint32BE(tot_size);
+
+	return true;
 }
 
-CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
-	_audioOutputFilename = OUTPUT_MP3;
-	
-	ToolInput input;
-	input.format = "*.sou";
-	_inputPaths.push_back(input);
-
-	_shorthelp = "Used to compress the .sou data files.";
-	_helptext = "\nUsage: " + getName() + " [mode] [mode params] monster.sou\n";
+std::string CompressScummSou::getOutputName() const {
+	switch (_format) {
+	case AUDIO_MP3:    return "monster.so3";
+	case AUDIO_VORBIS: return "monster.sog";
+	case AUDIO_FLAC:   return "monster.sof";
+	default:
+		throw ToolException("Unknown audio format");
+	}
 }
 
 void CompressScummSou::execute() {
@@ -145,22 +151,12 @@ void CompressScummSou::execute() {
 	Filename inpath(_inputPaths[0].path);
 	//Filename &outpath = _outputPath;
 
-	switch (_format) {
-	case AUDIO_MP3:
-		_audioOutputFilename = OUTPUT_MP3;
-		break;
-	case AUDIO_VORBIS:
-		_audioOutputFilename = OUTPUT_OGG;
-		break;
-	case AUDIO_FLAC:
-		_audioOutputFilename = OUTPUT_FLAC;
-		break;
-	default:
-		throw ToolException("Unknown audio format");
-		break;
-	}
+	if (_outputPath.directory())
+		_outputPath.setFullName(getOutputName());
+	else if (_outputPath.empty())
+		_outputPath.setFullPath(getOutputName());
 
-	_input.open(inpath.getFullPath().c_str(), "rb");
+	_input.open(inpath, "rb");
 	_output_idx.open(TEMP_IDX, "wb");
 	_output_snd.open(TEMP_DAT, "wb");
 
@@ -170,8 +166,9 @@ void CompressScummSou::execute() {
 		error("Bad SOU");
 	}
 
-	while (true)
-		get_part(inpath.getFullPath().c_str());
+	while (get_part())
+		(void)0;// Do nothing
+	end_of_file();
 }
 
 #ifdef STANDALONE_MAIN
