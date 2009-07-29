@@ -86,17 +86,12 @@ Tools::~Tools() {
 		delete *iter;
 }
 
-Tools::ToolList Tools::inspectInput(ToolType type, std::deque<std::string> files) const {
+Tools::ToolList Tools::inspectInput(ToolType type, const Filename &filename) const {
 	ToolList choices;
 	for (ToolList::const_iterator tool = _tools.begin(); tool != _tools.end(); ++tool) {
 		if (type == TOOLTYPE_ALL || (*tool)->getType() == type) {
-			if ((*tool)->_inputPaths.size() == files.size()) {
-				for (std::deque<std::string>::const_iterator filename = files.begin(); filename != files.end(); ++filename) {
-					if((*tool)->inspectInput(*filename)) {
-						choices.push_back(*tool);
-						break;
-					}
-				}
+			if((*tool)->inspectInput(filename)) {
+				choices.push_back(*tool);
 			}
 		}
 	}
