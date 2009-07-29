@@ -757,6 +757,8 @@ bool CompressionTool::processMp3Parms() {
 	return true;
 }
 
+#include <iostream>
+
 bool CompressionTool::processOggParms() {
 	while (_arguments_parsed < _arguments.size()) {
 		std::string arg = _arguments[_arguments_parsed];
@@ -766,6 +768,7 @@ bool CompressionTool::processOggParms() {
 			if (_arguments_parsed >= _arguments.size())
 				throw ToolException("Could not parse command line options, expected value after -b");
 			oggparms.nominalBitr = atoi(_arguments[_arguments_parsed].c_str());
+			std::cout << "Parsed b=" << oggparms.nominalBitr << "\n";
 
 			if ((oggparms.nominalBitr % 8) != 0) {
 				oggparms.nominalBitr -= oggparms.nominalBitr % 8;
@@ -899,8 +902,6 @@ void CompressionTool::parseAudioArguments() {
 	++_arguments_parsed;
 
 	// Need workaround to be sign-correct
-	int arg = (int)_arguments_parsed;
-
 	switch (_format) {
 	case AUDIO_MP3:
 		tempEncoded = TEMP_MP3;
@@ -920,7 +921,6 @@ void CompressionTool::parseAudioArguments() {
 	default: // cannot occur but we check anyway to avoid compiler warnings
 		throw ToolException("Unknown audio format, should be impossible!");
 	}
-	_arguments_parsed = (size_t)arg;
 }
 
 std::string CompressionTool::getHelp() const {

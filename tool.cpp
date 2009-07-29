@@ -22,6 +22,8 @@
 
 
 #include <stdarg.h>
+#include <iostream>
+#include <sstream>
 
 #include "util.h"
 #include "tool.h"
@@ -85,9 +87,14 @@ int Tool::run(std::vector<std::string> args) {
 	// Read tool specific arguments
 	parseExtraArguments();
 
+	if (_arguments.size() && _arguments[_arguments_parsed][0] == '-') {
+		std::string s = "Possibly ignored option " + _arguments[_arguments_parsed] + ".";
+		print(s.c_str());
+	}
+
 	// Read input files from CLI
 	for(ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
-		if(_arguments_parsed > _inputPaths.size()) {
+		if(_arguments.size() - _arguments_parsed < _inputPaths.size()) {
 			print("Too few input files!");
 			return -2;
 		}
@@ -106,8 +113,14 @@ int Tool::run(std::vector<std::string> args) {
 		iter->path = in;
 	}
 
-	if(_arguments_parsed < _arguments.size()) {
-		print("Too many input files!");
+	// We should have parsed all arguments by now
+	if(_arguments_parsed < _arguments.size() - _inputPaths.size()) {
+		std::ostringstream os;
+		os << "Too many inputs files ( ";
+		while (_arguments_parsed < _arguments.size())
+			os << "'" << _arguments[_arguments_parsed++] << "' ";
+		os << ")\n";
+		print(os.str().c_str());
 		return -2;
 	}
 

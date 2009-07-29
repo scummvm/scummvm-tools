@@ -21,6 +21,7 @@
  */
 
 #include <iostream>
+#include <algorithm>
 
 #include "tools_cli.h"
 
@@ -80,29 +81,64 @@ int ToolsCLI::run(int argc, char *argv[]) {
 	} else if (option == "--list" || option == "-l") {
 		printTools();
 	} else {
-		// Allow user to the narrow choices
-		if(option == "compress") {
+		ToolList choices;
+		std::deque<std::string>::reverse_iterator reader = arguments.rbegin();
+		std::deque<std::string>::iterator hint_arg;
+		std::string infile;
+		
+		hint_arg = std::find(arguments.begin(), arguments.end(), "compress");
+		if (hint_arg != arguments.end()) {
 			type = TOOLTYPE_COMPRESSION;
-			arguments.pop_front();
-		} else if(option == "extract") {
-			type = TOOLTYPE_EXTRACTION;
-			arguments.pop_front();
+		} else {
+			hint_arg = std::find(arguments.begin(), arguments.end(), "extract");
+			if (hint_arg != arguments.end())
+				type = TOOLTYPE_EXTRACTION;
 		}
 
-		// Only possible if compress/extract was parsed
-		if (arguments.empty())
-			std::cout << "\tExpected more arguments after '" << option << "'\n";
+		while (reader != arguments.rend()) {
+			//std::cout << "Checking backarg " << *reader << "\n";
+			if (hint_arg != arguments.end() && *reader == *hint_arg) {
+				//std::cout << "It is the hint! begin anew" << "\n";
+				// It seems hint_arg was an input file, start over but with generic file type
+				type = TOOLTYPE_ALL;
+				reader = arguments.rbegin();
+				hint_arg = arguments.end();
+				continue;
+			}
+
+			// It must be a filename now
+			choices = inspectInput(type, *reader);
+			
+			// If anything matched, we stop
+			if (choices.size() > 0) {
+				infile = *reader;
+				break;
+			}
+			++reader;
+		}
+		if (hint_arg != arguments.end()) {
+			// Remove hint as it's not used after this, and can't be in tool CLI
+			arguments.erase(hint_arg);
+
+			// Only possible if compress/extract was parsed
+			if (arguments.empty())
+				// compress was the arg removed so...
+				std::cout << "\tExpected more arguments after '" << option << "'\n";
+		}
+
+		// This should never happen, as args are only removed if we used compress|extract
+		assert(arguments.empty() == false);
 
 		// Find out what tools take this file as input
-		ToolList choices = inspectInput(type, arguments.front());
 		Tool *tool = NULL;
 
 		if (choices.empty()) {
 			std::cout << "\tNo tool could parse input file '" << arguments.front() << "', use --list to list all available tools and --tool to force running the correct one.\n";
-			std::cout << "\tIf you intended to specify tool-specific options, do so AFTER the input file.\n\n";
-			std::cout << "\tExample: tools_cli monster.sou --vorbis\n";
 			return 0;
 		} else if (choices.size() > 1) {
+			if (infile.size() && infile[0] == '-')
+				std::cout << "\tWARNING: Input file '" << infile << "' looks like an argument, is this what you wanted?\n";
+
 			std::cout << "\tMultiple tools accept this input:\n\n";
 
 			// Present a list of possible tools
@@ -111,7 +147,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 				std::cout << "\t" << i << ") " << (*choice)->getName() << "\n";
 			}
 
-			std::cout << "Which tool to use: ";
+			std::cout << "Which tool to use ('q' to abort): ";
 			i = 0;
 			while(true) {
 
@@ -122,13 +158,15 @@ int ToolsCLI::run(int argc, char *argv[]) {
 				if(std::cin && i >= 1 && (size_t)i < choices.size())
 					break;
 
-				std::cout << "Invalid input, try again: ";
-
 				// Clear any error flags
 				std::cin.clear();
+				
+				std::string q;
+				std::cin >> q;
+				if (q == "q" || q == "exit" || q == "quit" || q == "abort")
+					return 0;
 
-				// Skip invalid input characters
-				std::cin.ignore(1000, '\n');
+				std::cout << "Invalid input, try again: ";
 			}
 
 			// Account for the fact arrays start at 0
@@ -152,9 +190,8 @@ void ToolsCLI::printHelp() {
 		"\tScumm VM Tools master interface\n" <<
 		"\n" <<
 		"\tCommon use:\n" <<
-		"\ttools [--tool <tool name>] [compression options] [-o output directory] [tool args] <input args>\n" <<
-		"\ttools [extract|compress] <input args> [tool args]\n" <<
-		"\tNote that on the second form, tool arguments are specified AFTER the input file.\n" <<
+		"\ttools [--tool <tool name>] [tool-specific options] [-o <output directory>] <input files>\n" <<
+		"\ttools [tool-specific option] [extract|compress] <input files>\n" <<
 		"\n" <<
 		"\tOther Options:\n" <<
 		"\t--help\tDisplay this text\n" <<
