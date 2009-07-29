@@ -45,6 +45,9 @@ int ToolsCLI::run(int argc, char *argv[]) {
 
 	ToolType type = TOOLTYPE_ALL;
 
+	if (arguments.empty())
+		std::cout << "\tExpected more arguments\n";
+
 	// Check first argument
 	std::string option = arguments.front();
 	if (option == "--tool" || option == "-t") {
@@ -86,11 +89,20 @@ int ToolsCLI::run(int argc, char *argv[]) {
 			arguments.pop_front();
 		}
 
+		// Only possible if compress/extract was parsed
+		if (arguments.empty())
+			std::cout << "\tExpected more arguments after '" << option << "'\n";
+
 		// Find out what tools take this file as input
-		ToolList choices = inspectInput(type, arguments);
+		ToolList choices = inspectInput(type, arguments.front());
 		Tool *tool = NULL;
 
-		if (choices.size() > 1) {
+		if (choices.empty()) {
+			std::cout << "\tNo tool could parse input file '" << arguments.front() << "', use --list to list all available tools and --tool to force running the correct one.\n";
+			std::cout << "\tIf you intended to specify tool-specific options, do so AFTER the input file.\n\n";
+			std::cout << "\tExample: tools_cli monster.sou --vorbis\n";
+			return 0;
+		} else if (choices.size() > 1) {
 			std::cout << "\tMultiple tools accept this input:\n\n";
 
 			// Present a list of possible tools
@@ -140,8 +152,9 @@ void ToolsCLI::printHelp() {
 		"\tScumm VM Tools master interface\n" <<
 		"\n" <<
 		"\tCommon use:\n" <<
-		"\ttools [--tool <tool name>] [compression options] [-o output directory] <input args>\n" <<
-		"\ttools [extract|compress] <input args>\n" <<
+		"\ttools [--tool <tool name>] [compression options] [-o output directory] [tool args] <input args>\n" <<
+		"\ttools [extract|compress] <input args> [tool args]\n" <<
+		"\tNote that on the second form, tool arguments are specified AFTER the input file.\n" <<
 		"\n" <<
 		"\tOther Options:\n" <<
 		"\t--help\tDisplay this text\n" <<

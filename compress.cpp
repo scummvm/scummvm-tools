@@ -683,6 +683,8 @@ bool CompressionTool::processMp3Parms() {
 			encparms.abr = 1;
 		} else if (arg == "-b") {
 			++_arguments_parsed;
+			if (_arguments_parsed >= _arguments.size())
+				throw ToolException("Could not parse command line options, expected value after -b");
 			encparms.minBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((encparms.minBitr % 8) != 0) {
@@ -699,6 +701,8 @@ bool CompressionTool::processMp3Parms() {
 
 		} else if (arg == "-B") {
 			++_arguments_parsed;
+			if (_arguments_parsed >= _arguments.size())
+				throw ToolException("Could not parse command line options, expected value after -B");
 			encparms.maxBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((encparms.maxBitr % 8) != 0) {
@@ -715,6 +719,8 @@ bool CompressionTool::processMp3Parms() {
 
 		} else if (arg == "-V") {
 			++_arguments_parsed;
+			if (_arguments_parsed >= _arguments.size())
+				throw ToolException("Could not parse command line options, expected value after -V");
 			encparms.vbrqual = atoi(_arguments[_arguments_parsed].c_str());
 
 			if (encparms.vbrqual < 0) {
@@ -727,6 +733,8 @@ bool CompressionTool::processMp3Parms() {
 
 		} else if (arg == "-q") {
 			++_arguments_parsed;
+			if (_arguments_parsed >= _arguments.size())
+				throw ToolException("Could not parse command line options, expected value after -q");
 			encparms.algqual = atoi(_arguments[_arguments_parsed].c_str());
 
 			if (encparms.algqual < 0) {
@@ -755,6 +763,8 @@ bool CompressionTool::processOggParms() {
 
 		if (arg == "-b") {
 			++_arguments_parsed;
+			if (_arguments_parsed >= _arguments.size())
+				throw ToolException("Could not parse command line options, expected value after -b");
 			oggparms.nominalBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((oggparms.nominalBitr % 8) != 0) {
@@ -771,6 +781,8 @@ bool CompressionTool::processOggParms() {
 
 		} else if (arg == "-m") {
 			++_arguments_parsed;
+			if (_arguments_parsed >= _arguments.size())
+				throw ToolException("Could not parse command line options, expected value after -m");
 			oggparms.minBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((oggparms.minBitr % 8) != 0) {
@@ -787,6 +799,8 @@ bool CompressionTool::processOggParms() {
 
 		} else if (arg == "-M") {
 			++_arguments_parsed;
+			if (_arguments_parsed >= _arguments.size())
+				throw ToolException("Could not parse command line options, expected value after -M");
 			oggparms.maxBitr = atoi(_arguments[_arguments_parsed].c_str());
 
 			if ((oggparms.maxBitr % 8) != 0) {
@@ -822,6 +836,8 @@ bool CompressionTool::processFlacParms(){
 
 		if (arg == "-b") {
 			++_arguments_parsed;
+			if (_arguments_parsed >= _arguments.size())
+				throw ToolException("Could not parse command line options, expected value after -b");
 			flacparms.blocksize = atoi(_arguments[_arguments_parsed].c_str());
 		} else if (arg == "--fast") {
 			flacparms.compressionLevel = 0;
@@ -852,6 +868,8 @@ bool CompressionTool::processFlacParms(){
 		} else {
 			break;
 		}
+
+		++_arguments_parsed;
 	}
 
 	return true;
