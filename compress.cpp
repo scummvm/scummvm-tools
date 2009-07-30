@@ -687,17 +687,14 @@ bool CompressionTool::processMp3Parms() {
 				throw ToolException("Could not parse command line options, expected value after -b");
 			encparms.minBitr = atoi(_arguments[_arguments_parsed].c_str());
 
-			if ((encparms.minBitr % 8) != 0) {
-				encparms.minBitr -= encparms.minBitr % 8;
-			}
+			if (encparms.minBitr > 160)
+				throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
 
-			if (encparms.minBitr > 160) {
-				encparms.minBitr = 160;
-			}
+			if (encparms.minBitr == 0 && _arguments[_arguments_parsed] != "0")
+				throw ToolException("Minimum bitrate (-b) must be a number.");
 
-			if (encparms.minBitr < 8) {
-				encparms.minBitr = 8;
-			}
+			if (encparms.minBitr < 8)
+				throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
 
 		} else if (arg == "-B") {
 			++_arguments_parsed;
@@ -709,13 +706,14 @@ bool CompressionTool::processMp3Parms() {
 				encparms.maxBitr -= encparms.maxBitr % 8;
 			}
 
-			if (encparms.maxBitr > 160) {
-				encparms.maxBitr = 160;
-			}
+			if (encparms.maxBitr > 160)
+				throw ToolException("Maximum bitrate out of bounds (-B), must be between 8 and 160.");
 
-			if (encparms.maxBitr < 8) {
-				encparms.maxBitr = 8;
-			}
+			if (encparms.maxBitr == 0 && _arguments[_arguments_parsed] != "0")
+				throw ToolException("Maximum bitrate (-B) must be a number.");
+
+			if (encparms.maxBitr < 8)
+				throw ToolException("Maximum bitrate out of bounds (-B), must be between 8 and 160.");
 
 		} else if (arg == "-V") {
 			++_arguments_parsed;
@@ -723,13 +721,11 @@ bool CompressionTool::processMp3Parms() {
 				throw ToolException("Could not parse command line options, expected value after -V");
 			encparms.vbrqual = atoi(_arguments[_arguments_parsed].c_str());
 
-			if (encparms.vbrqual < 0) {
-				encparms.vbrqual = 0;
-			}
+			if (encparms.vbrqual < 0)
+				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
 
-			if (encparms.vbrqual > 9) {
-				encparms.vbrqual = 9;
-			}
+			if (encparms.vbrqual > 9)
+				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
 
 		} else if (arg == "-q") {
 			++_arguments_parsed;
@@ -737,13 +733,11 @@ bool CompressionTool::processMp3Parms() {
 				throw ToolException("Could not parse command line options, expected value after -q");
 			encparms.algqual = atoi(_arguments[_arguments_parsed].c_str());
 
-			if (encparms.algqual < 0) {
-				encparms.algqual = 0;
-			}
+			if (encparms.algqual < 0)
+				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
 
-			if (encparms.algqual > 9) {
-				encparms.algqual = 9;
-			}
+			if (encparms.algqual > 9)
+				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
 
 		} else if (arg == "--silent") {
 			encparms.silent = 1;
@@ -757,8 +751,6 @@ bool CompressionTool::processMp3Parms() {
 	return true;
 }
 
-#include <iostream>
-
 bool CompressionTool::processOggParms() {
 	while (_arguments_parsed < _arguments.size()) {
 		std::string arg = _arguments[_arguments_parsed];
@@ -768,19 +760,18 @@ bool CompressionTool::processOggParms() {
 			if (_arguments_parsed >= _arguments.size())
 				throw ToolException("Could not parse command line options, expected value after -b");
 			oggparms.nominalBitr = atoi(_arguments[_arguments_parsed].c_str());
-			std::cout << "Parsed b=" << oggparms.nominalBitr << "\n";
 
-			if ((oggparms.nominalBitr % 8) != 0) {
+			if ((oggparms.nominalBitr % 8) != 0)
 				oggparms.nominalBitr -= oggparms.nominalBitr % 8;
-			}
 
-			if (oggparms.nominalBitr >160) {
-				oggparms.nominalBitr = 160;
-			}
+			if (oggparms.nominalBitr > 160)
+				throw ToolException("Nominal bitrate out of bounds (-b), must be between 8 and 160.");
 
-			if (oggparms.nominalBitr < 8) {
-				oggparms.nominalBitr = 8;
-			}
+			if (oggparms.nominalBitr == 0 && _arguments[_arguments_parsed] != "0")
+				throw ToolException("Nominal bitrate (-b) must be a number.");
+
+			if (oggparms.nominalBitr < 8)
+				throw ToolException("Nominal bitrate out of bounds (-b), must be between 8 and 160.");
 
 		} else if (arg == "-m") {
 			++_arguments_parsed;
@@ -788,17 +779,17 @@ bool CompressionTool::processOggParms() {
 				throw ToolException("Could not parse command line options, expected value after -m");
 			oggparms.minBitr = atoi(_arguments[_arguments_parsed].c_str());
 
-			if ((oggparms.minBitr % 8) != 0) {
+			if ((oggparms.minBitr % 8) != 0)
 				oggparms.minBitr -= oggparms.minBitr % 8;
-			}
 
-			if (oggparms.minBitr >160) {
-				oggparms.minBitr = 160;
-			}
+			if (oggparms.minBitr > 160)
+				throw ToolException("Minimal bitrate out of bounds (-m), must be between 8 and 160.");
 
-			if (oggparms.minBitr < 8) {
-				oggparms.minBitr = 8;
-			}
+			if (oggparms.minBitr == 0 && _arguments[_arguments_parsed] != "0")
+				throw ToolException("Minimal bitrate (-m) must be a number.");
+
+			if (oggparms.minBitr < 8)
+				throw ToolException("Minimal bitrate out of bounds (-m), must be between 8 and 160.");
 
 		} else if (arg == "-M") {
 			++_arguments_parsed;
@@ -806,21 +797,23 @@ bool CompressionTool::processOggParms() {
 				throw ToolException("Could not parse command line options, expected value after -M");
 			oggparms.maxBitr = atoi(_arguments[_arguments_parsed].c_str());
 
-			if ((oggparms.maxBitr % 8) != 0) {
-				oggparms.maxBitr -= encparms.minBitr % 8;
-			}
+			if ((oggparms.maxBitr % 8) != 0)
+				oggparms.maxBitr -= oggparms.maxBitr % 8;
 
-			if (oggparms.maxBitr >160) {
-				oggparms.maxBitr = 160;
-			}
+			if (oggparms.maxBitr > 160)
+				throw ToolException("Minimal bitrate out of bounds (-M), must be between 8 and 160.");
 
-			if (oggparms.maxBitr < 8) {
-				oggparms.maxBitr = 8;
-			}
+			if (oggparms.maxBitr == 0 && _arguments[_arguments_parsed] != "0")
+				throw ToolException("Minimal bitrate (-M) must be a number.");
 
+			if (oggparms.maxBitr < 8)
+				throw ToolException("Minimal bitrate out of bounds (-M), must be between 8 and 160.");
 		} else if (arg == "-q") {
 			++_arguments_parsed;
 			oggparms.quality = (float)atoi(_arguments[_arguments_parsed].c_str());
+
+			if (oggparms.quality == 0 && _arguments[_arguments_parsed] != "0")
+				throw ToolException("Quality (-q) must be a number.");
 		} else if (arg == "--silent") {
 			oggparms.silent = 1;
 		} else {
