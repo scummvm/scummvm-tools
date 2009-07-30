@@ -561,9 +561,56 @@ void ChooseOutPage::save(wxWindow *panel) {
 
 void ChooseOutPage::onNext(wxWindow *panel) {
 	if (_configuration.selectedTool->getType() == TOOLTYPE_COMPRESSION)
-		switchPage(new ChooseAudioFormatPage(_topframe));
+		switchPage(new ChooseTargetPlatformPage(_topframe));
 	else
 		switchPage(new ProcessPage(_topframe));
+}
+
+// Page to choose input and output directory or file
+
+ChooseTargetPlatformPage::ChooseTargetPlatformPage(ScummToolsFrame *frame)
+	: WizardPage(frame)
+{
+}
+
+wxWindow *ChooseTargetPlatformPage::CreatePanel(wxWindow *parent) {
+	wxWindow *panel = WizardPage::CreatePanel(parent);
+
+	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+
+	sizer->AddSpacer(15);
+
+	sizer->Add(new wxStaticText(panel, wxID_ANY, 
+		wxT("Select target platform (The platform ScummVM will run on)")));
+
+	sizer->AddSpacer(20);
+	
+	wxArrayString choices = _configuration.getTargetPlatforms();
+
+	wxChoice *platform = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxSize(80, -1), 
+		choices, 0, wxDefaultValidator, wxT("PlatformSelection"));
+	sizer->Add(platform);
+
+	SetAlignedSizer(panel, sizer);
+
+	// Load already set values
+	// We call with (0) first to set a default if the platform ain't in the list
+	platform->SetSelection(0);
+	platform->SetStringSelection(_configuration.selectedPlatform);
+
+
+	return panel;
+}
+
+void ChooseTargetPlatformPage::save(wxWindow *panel) {
+	wxChoice *platform = static_cast<wxChoice *>(panel->FindWindowByName(wxT("PlatformSelection")));
+
+	_configuration.selectedPlatform = platform->GetStringSelection();
+	_configuration.setPlatformDefaults();
+}
+
+void ChooseTargetPlatformPage::onNext(wxWindow *panel) {
+	switchPage(new ChooseAudioFormatPage(_topframe));
 }
 
 // Page to choose input and output directory or file

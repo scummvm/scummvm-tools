@@ -232,13 +232,26 @@ public:
  * Presents a dropdown list of the three different audio compression methods
  * or possibly fewer, if the selected tool does not support all methods.
  *
- * @todo Make it look better and save state, and possibly skip it if the tool
- *       only support one method of compression.
  */
 
 class ChooseAudioFormatPage : public WizardPage {
 public:
 	ChooseAudioFormatPage(ScummToolsFrame *frame);
+
+	wxWindow *CreatePanel(wxWindow *parent);
+
+	void onNext(wxWindow *panel);
+
+	void save(wxWindow *panel);
+};
+
+/**
+ * Presents a dropdown list of different target platforms, and sets audio settings accordingly
+ */
+
+class ChooseTargetPlatformPage : public WizardPage {
+public:
+	ChooseTargetPlatformPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 

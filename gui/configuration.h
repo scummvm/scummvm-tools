@@ -35,6 +35,16 @@ class ToolGUI;
 struct Configuration {
 	Configuration();
 	
+	/**
+	 * Returns a list of all supported (as in, we have some defaults for it) platforms
+	 */
+	static wxArrayString getTargetPlatforms();
+
+	/**
+	 * Sets all the compression members to default values based on the 'selectedPlatform' member
+	 */
+	void setPlatformDefaults();
+
 	// While prepending with _ would be in line with the coding conventions
 	// this class is just a glorified map with different types, so it seems
 	// unnecessary.
@@ -44,8 +54,8 @@ struct Configuration {
 	/** true if the chose to compress, false if compress, undefined if advanced */
 	bool compressing;
 
-	/** The name of the game we are extracting or compressing */
-	wxString selectedGame;
+	/** The platform the output files are going to be used on (compression only) */
+	wxString selectedPlatform;
 	/** The tool the user chose to use, NULL if none has been chosen yet */
 	const ToolGUI* selectedTool;
 
@@ -108,7 +118,29 @@ inline Configuration::Configuration() {
 	oggMinBitrate = wxT("24");
 	oggAvgBitrate = wxT("24");
 	oggMaxBitrate = wxT("64");
+}
 
+inline wxArrayString Configuration::getTargetPlatforms() {
+	wxArrayString platforms;
+	// Just add new platforms here, it's easy!
+	// You specify additional defaults in the next function
+	platforms.Add(wxT("PC"));
+	platforms.Add(wxT("iPhone"));
+	platforms.Add(wxT("Nintendo DS"));
+	platforms.Add(wxT("PlayStation 2"));
+	platforms.Add(wxT("PocketPC"));
+	platforms.Add(wxT("PSP"));
+	platforms.Add(wxT("Symbian"));
+	platforms.Add(wxT("Wii"));
+
+	return platforms;
+}
+
+inline void Configuration::setPlatformDefaults() {
+	// Switch for strings would be nice here...
+	// Ogg works better on the small platforms (maybe all...?)
+	if (selectedPlatform == wxT("iPhone") || selectedPlatform == wxT("Nintendo DS") || selectedPlatform == wxT("PocketPC"))
+		selectedAudioFormat = AUDIO_VORBIS;
 }
 
 #endif
