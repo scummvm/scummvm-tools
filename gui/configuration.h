@@ -23,7 +23,8 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#include <wx/string.h>
+#include <wx/config.h>
+#include <wx/filename.h>
 
 #include "../util.h"
 
@@ -34,6 +35,7 @@ class ToolGUI;
  */
 struct Configuration {
 	Configuration();
+	~Configuration();
 	
 	/**
 	 * Returns a list of all supported (as in, we have some defaults for it) platforms
@@ -118,6 +120,17 @@ inline Configuration::Configuration() {
 	oggMinBitrate = wxT("24");
 	oggAvgBitrate = wxT("24");
 	oggMaxBitrate = wxT("64");
+
+	wxConfig *filecnf = new wxConfig(wxT("ScummVMTools"));
+	filecnf->Read(wxT("outputpath"), &outputPath);
+	delete filecnf;
+}
+
+inline Configuration::~Configuration() {
+	wxConfig *filecnf = new wxConfig(wxT("ScummVMTools"));
+	wxFileName op(outputPath);
+	filecnf->Write(wxT("outputpath"), op.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR));
+	delete filecnf;
 }
 
 inline wxArrayString Configuration::getTargetPlatforms() {

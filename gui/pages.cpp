@@ -190,14 +190,20 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 	
 	sizer->AddSpacer(20);
 
+
 	wxChoice *tool = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		choices, 0, wxDefaultValidator, wxT("ToolSelection"));
 
 	tool->Connect(wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler(ChooseToolPage::onChangeTool), NULL, this);
 	tool->SetClientData(tool);
-
-	sizer->Add(tool);
 	tool->SetSelection(0);
+
+	wxSizer *toolsizer = new wxBoxSizer(wxHORIZONTAL);
+	toolsizer->Add(tool, wxSizerFlags(2).Expand());
+	toolsizer->Add(20, 20, 1, wxEXPAND);
+
+
+	sizer->Add(toolsizer, wxSizerFlags().Expand());
 
 	sizer->AddSpacer(20);
 
@@ -309,17 +315,22 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 
 
 	//if (input._file) {
-		wxFilePickerCtrl *picker = new wxFilePickerCtrl(
-				panel, wxID_ANY, wxEmptyString, wxT("Select a file"), 
-				wxT("*.*"), 
-				wxDefaultPosition, wxSize(300, -1),
-				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
-				wxT("InputPicker"));
-		sizer->Add(picker);
-		panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
-		if(_configuration.inputFilePaths.size() > 0)
-			picker->SetPath(_configuration.inputFilePaths[0]);
+	wxSizer *pickersizer = new wxBoxSizer(wxHORIZONTAL);
 
+	wxFilePickerCtrl *picker = new wxFilePickerCtrl(
+			panel, wxID_ANY, wxEmptyString, wxT("Select a file"), 
+			wxT("*.*"), 
+			wxDefaultPosition, wxSize(300, -1),
+			wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
+			wxT("InputPicker"));
+	panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
+	if(_configuration.inputFilePaths.size() > 0)
+		picker->SetPath(_configuration.inputFilePaths[0]);
+
+	pickersizer->Add(picker, wxSizerFlags(2).Expand());
+	pickersizer->Add(20, 20, 1, wxEXPAND);
+
+	sizer->Add(pickersizer, wxSizerFlags().Expand());
 	sizer->AddSpacer(30);
 	/* 
 	// TODO: There is no way to select directory input, yet
@@ -399,8 +410,9 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 
 	sizer->AddSpacer(10);
 
-	// Create input selection	
-	wxStaticBoxSizer *inputbox = new wxStaticBoxSizer(wxVERTICAL, panel, wxT("Input files"));
+	// Create input selection
+	wxSizer *inputbox = new wxBoxSizer(wxHORIZONTAL);
+	wxStaticBoxSizer *inputsizer = new wxStaticBoxSizer(wxVERTICAL, panel, wxT("Input files"));
 
 	int i = 1;
 	const ToolInputs &inputs = tool.getInputList();
@@ -417,26 +429,28 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 			inputFile = _configuration.inputFilePaths[i];
 
 		if (input.file) {
-			inputbox->Add(new wxFilePickerCtrl(
+			inputsizer->Add(new wxFilePickerCtrl(
 				panel, wxID_ANY, inputFile, wxT("Select a file"), 
 				wxString(input.format.c_str(), wxConvUTF8), 
 				wxDefaultPosition, wxDefaultSize, 
 				wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
-				windowName));
+				windowName), wxSizerFlags().Expand());
 			panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 
 		} else {
-			inputbox->Add(new wxDirPickerCtrl(
+			inputsizer->Add(new wxDirPickerCtrl(
 				panel, wxID_ANY, inputFile, wxT("Select a folder"), 
 				wxDefaultPosition, wxDefaultSize, 
 				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
-				windowName));
+				windowName), wxSizerFlags().Expand());
 			panel->Connect(wxEVT_COMMAND_DIRPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 
 		}
 		++i;
 	}
-	
+	inputbox->Add(inputsizer, wxSizerFlags(2).Expand());
+	inputbox->Add(20, 20, 1, wxEXPAND);
+
 	sizer->Add(inputbox, wxSizerFlags().Expand());
 
 	SetAlignedSizer(panel, sizer);
@@ -462,7 +476,8 @@ void ChooseExtraInPage::save(wxWindow *panel) {
 		filelist.erase(filelist.begin() + 1, filelist.end());
 
 	int i = 1;
-	for (ToolInputs::const_iterator iter = tool.getInputList().begin(); iter != tool.getInputList().end(); ++iter) {
+	ToolInputs inputs = tool.getInputList();
+	for (ToolInputs::const_iterator iter = inputs.begin(); iter != inputs.end(); ++iter) {
 		wxString windowName = wxT("InputPicker");
 		windowName << i;
 
