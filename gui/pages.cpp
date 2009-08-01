@@ -137,11 +137,6 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	return panel;
 }
 
-void IntroPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
-	buttons->showPrevious(false);
-	buttons->enableNext(true);
-}
-
 void IntroPage::save(wxWindow *panel) {
 	wxString selected_option = static_cast<wxRadioBox *>(panel->FindWindowByName(wxT("ChooseActivity")))->GetStringSelection().Lower();
 

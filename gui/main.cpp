@@ -53,9 +53,22 @@ bool ScummVMToolsApp::OnInit()
 	// Create window & display
 	ScummToolsFrame *frame = new ScummToolsFrame(wxT("ScummVM Tools"), wxDefaultPosition, wxSize(600,400));
 	frame->SetMinSize(wxSize(600, 400));
-	frame->Show(true);
 	SetTopWindow(frame);
+	
+	if (argc == 2) {
+		Filename fn((const char *)wxString(argv[1]).mb_str());
 
+		wxArrayString ls = g_tools.getToolList(fn);
+		if(ls.size() == 1)
+			frame->switchPage(new ChooseOutPage(frame));
+		else
+			frame->switchPage(new ChooseToolPage(frame, ls));
+	} else {
+		frame->switchPage(new IntroPage(frame));
+	}
+	
+	frame->Show(true);
+	
 	return true;
 }
 
@@ -77,6 +90,7 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 
 	// Pane that holds the wizard window
 	_wizardpane = new wxPanel(main);
+	_wizardpane->SetSizer(new wxBoxSizer(wxVERTICAL));
 	sizer->Add(_wizardpane, wxSizerFlags(1).Expand().Border());
 
 	// Add a spacer line
@@ -104,23 +118,8 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	// Buttons on the bottom
 	_buttons = new WizardButtons(main, linetext);
 	sizer->Add(_buttons, wxSizerFlags().Border().Center().Expand());
-	
-	// Create input page
-	WizardPage *introPage = new IntroPage(this);
-
-	// We create the intro page once the window is setup
-	wxSizer *panesizer = new wxBoxSizer(wxVERTICAL);
-	wxWindow *introPanel = introPage->CreatePanel(_wizardpane);
-	panesizer->Add(introPanel, wxSizerFlags(1).Expand());
-	_wizardpane->SetSizerAndFit(panesizer);
 
 	main->SetSizer(sizer);
-
-	// Set current page
-	_pages.push_back(introPage);
-
-	// And reset the buttons to a standard state
-	_buttons->setPage(introPage, introPanel);
 }
 
 ScummToolsFrame::~ScummToolsFrame() {
@@ -132,7 +131,8 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	// Find the old page
 	wxPanel *oldPanel = dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page")));
 
-	_pages.back()->save(oldPanel);
+	if (oldPanel)
+		_pages.back()->save(oldPanel);
 
 	if (moveback) {
 		// Don't save the old page (which is ontop of the stack already)
@@ -142,8 +142,9 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 		_pages.push_back(next);
 	}
 
-	// Destroy the old page
-	oldPanel->Destroy();
+	if (oldPanel)
+		// Destroy the old page
+		oldPanel->Destroy();
 
 	wxWindow *newPanel = _pages.back()->CreatePanel(_wizardpane);
 
@@ -155,6 +156,7 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 
 	// And reset the buttons to a standard state
 	_buttons->reset();
+	_buttons->showPrevious(_pages.size() > 1);
 	_buttons->setPage(_pages.back(), newPanel);
 }
 
@@ -227,6 +229,7 @@ void WizardButtons::reset() {
 void WizardButtons::setPage(WizardPage *current, wxWindow *panel) {
 	_currentPage = current;
 	_currentPanel = panel;
+
 	// We call onUpdateButtons, which sets the _buttons member of WizardPage
 	// to this, and in turn calls updateButtons on itself and sets up the buttons
 	// We cannot set this up in the constructor of the WizardPage, since it's impossible

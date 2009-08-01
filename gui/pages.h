@@ -140,8 +140,6 @@ public:
 	void save(wxWindow *panel);
 
 	void onNext(wxWindow *panel);
-	
-	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
 
 /**
