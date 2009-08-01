@@ -71,13 +71,13 @@ void CompressSword2::execute() {
 
 	switch (_format) {
 	case AUDIO_MP3:
-		_audioOuputFilename = TEMP_MP3;
+		_audioOutputFilename = TEMP_MP3;
 		break;
 	case AUDIO_VORBIS:
-		_audioOuputFilename = TEMP_OGG;
+		_audioOutputFilename = TEMP_OGG;
 		break;
 	case AUDIO_FLAC:
-		_audioOuputFilename = TEMP_FLAC;
+		_audioOutputFilename = TEMP_FLAC;
 		break;
 	default:
 		throw ToolException("Unknown audio format");

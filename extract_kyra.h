@@ -33,7 +33,6 @@ public:
 	
 	void parseExtraArguments();
 
-protected:
 	bool extractAll, extractOne, isAmiga, isHoFInstaller;
 	std::string singleFilename;
 };

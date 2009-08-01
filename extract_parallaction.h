@@ -82,10 +82,10 @@ public:
 
 	virtual void execute();
 
+	bool _small;
+
 protected:
 	void parseExtraArguments();
-
-	bool _small;
 };
 
 #endif

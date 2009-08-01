@@ -31,11 +31,12 @@ public:
 
 	virtual void execute();
 
+	bool _convertMac;
+
 protected:
 	void parseExtraArguments();
 
 	File _input, _output_idx, _output_snd;
-	bool _convertMac;
 
 	void end();
 	int get_offsets(uint32 filenums[], uint32 offsets[]);

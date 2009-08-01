@@ -32,12 +32,13 @@ public:
 
 	virtual void execute();
 
+	bool _compSpeech;
+	bool _compMusic;
+
 protected:
 	void parseExtraArguments();
 
 	std::string _audioOuputFilename;
-	bool _compSpeech;
-	bool _compMusic;
 
 	int16 *uncompressSpeech(File &clu, uint32 idx, uint32 cSize, uint32 *returnSize);
 	uint8 *convertData(uint8 *rawData, uint32 rawSize, uint32 *resSize);

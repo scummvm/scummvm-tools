@@ -36,7 +36,7 @@ public:
 protected:
 
 	File _input, _output_snd, _output_idx;
-	std::string _audioOuputFilename;
+	std::string _audioOutputFilename;
 
 	
 	uint32 append_to_file(File &f1, const char *filename);

@@ -54,7 +54,9 @@ void ExtractAgos::execute() {
 		if (simon_decr(x, out, _filelen)) {
 			savefile(_outputPath.getFullPath(), out, decrlen);
 		} else {
-			print("%s: decrunch error\n", infilename.getFullPath().c_str());
+			free(x);
+			free(out);
+			error("%s: decrunch error\n", infilename.getFullPath().c_str());
 		}
 
 		free(x);
@@ -180,7 +182,7 @@ uint32 ExtractAgos::simon_decr_length(uint8 *src, uint32 srclen) {
  * @param name The name of the file to be loaded
  */
 void *ExtractAgos::loadfile(const Filename &name) {
-	File file(name, FILEMODE_READ);
+	File file(name, "rb");
 
 	// Using global here is not pretty
 	_filelen = file.size();

@@ -30,9 +30,6 @@ public:
 	ExtractZakC64(const std::string &name = "extract_zak_c64");
 
 	virtual void execute();
-
-protected:
-
 };
 
 #endif
