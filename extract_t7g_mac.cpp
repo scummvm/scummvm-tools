@@ -51,7 +51,7 @@ std::string ExtractT7GMac::readString(File &infile) {
 void ExtractT7GMac::dumpResource(File &infile, std::string name) {
 	// Show the resource details
 	uint32 fileSize = infile.readUint32BE();
-	print("  \"%s\" (%d bytes)\n", name, fileSize);
+	print("  \"%s\" (%d bytes)\n", name.c_str(), fileSize);
 
 	// Read the resource contents
 	byte *buf = new byte[fileSize];

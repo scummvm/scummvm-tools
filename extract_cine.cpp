@@ -192,7 +192,7 @@ void ExtractCine::unpackFile(File &file) {
 		file.readUint32BE();
 		unsigned int savedPos = file.pos();
 
-		print("unpacking '%s' ... ", outPath.getFullName());
+		print("unpacking '%s' ... ", outPath.getFullName().c_str());
 
 		File fpOut(outPath, "wb");
 
