@@ -75,7 +75,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	curFileHandle.open(TEMP_RAW, "wb");
 	copyLeft = sampleSize;
 	while (copyLeft > 0) {
-		doneRead = _input_smp.read(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
+		doneRead = _input_smp.readN(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
@@ -96,7 +96,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	_output_smp.writeUint32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
-		doneRead = curFileHandle.read(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
+		doneRead = curFileHandle.readN(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
@@ -243,7 +243,7 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	_output_smp.writeUint32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
-		doneRead = curFileHandle.read(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
+		doneRead = curFileHandle.readN(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;

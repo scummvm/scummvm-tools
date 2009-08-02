@@ -23,112 +23,95 @@
 // Resource fork format taken from:
 // http://developer.apple.com/documentation/mac/MoreToolbox/MoreToolbox-99.html
 
-#include "util.h"
+#include "extract_t7g_mac.h"
 
 #define offsetResFork 128
 uint32 offsetResourceData;
 
-char *readString(FILE *ifp) {
-	byte len = readByte(ifp);
+ExtractT7GMac::ExtractT7GMac(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
+	
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
+
+	_shorthelp = "Used to the 7th guest data files.";
+	_helptext = 
+		"Usage: " + getName() + " [params] [-o outputdir] <archivefile>\n" +
+		_shorthelp + "\n";
+}
+
+std::string ExtractT7GMac::readString(File &infile) {
+	byte len = infile.readByte();
 	char *name = new char[len + 1];
-	ifp.read(name, len, 1);
+	infile.read(name, len, 1);
 	name[len] = 0;
 	return name;
 }
 
-void dumpResource(FILE *ifp, char *name) {
+void ExtractT7GMac::dumpResource(File &infile, std::string name) {
 	// Show the resource details
-	uint32 fileSize = readUint32BE(ifp);
-	printf("  \"%s\" (%d bytes)\n", name, fileSize);
+	uint32 fileSize = infile.readUint32BE();
+	print("  \"%s\" (%d bytes)\n", name, fileSize);
 
 	// Read the resource contents
 	byte *buf = new byte[fileSize];
-	if (!buf) {
-		fclose(ifp);
-		error("Could not allocate %ld bytes of memory", fileSize);
+	
+	try {
+		// Dump the resource to the output file
+		File out(name, "wb");
+		infile.read(buf, 1, fileSize);
+		out.write(buf, 1, fileSize);
+	} catch (...) {
+		delete[] buf;
+		throw;
 	}
-
-	// Dump the resource to the output file
-	FILE *ofp = fopen(name, "wb");
-	ifp.read(buf, 1, fileSize);
-	ofp.write(buf, 1, fileSize);
-	fclose(ofp);
 
 	// Free the resource memory
 	delete[] buf;
 }
 
-void handleReferenceList(FILE *ifp, uint32 offsetRefList, uint16 numRes, uint32 offsetResNames) {
+void ExtractT7GMac::handleReferenceList(File &infile, uint32 offsetRefList, uint16 numRes, uint32 offsetResNames) {
 	for (int i = 0; i < numRes; i++) {
-		if (fseek(ifp, offsetRefList + 12 * i + 2, SEEK_SET)) {
-			fclose(ifp);
-			error("Seek error");
-		}
-		uint32 offsetResName = offsetResNames + readUint16BE(ifp);
-		uint32 offsetResData = offsetResourceData + (readUint32BE(ifp) & 0xFFFFFF);
+		infile.seek(offsetRefList + 12 * i + 2, SEEK_SET);
+		uint32 offsetResName = offsetResNames + infile.readUint16BE();
+		uint32 offsetResData = offsetResourceData + (infile.readUint32BE() & 0xFFFFFF);
 
 		// Read the resource name
-		if (fseek(ifp, offsetResName, SEEK_SET)) {
-			fclose(ifp);
-			error("Seek error");
-		}
-		char *name = readString(ifp);
+		infile.seek(offsetResName, SEEK_SET);
+
+		std::string name = readString(infile);
 
 		// Dump the resource
-		if (fseek(ifp, offsetResData, SEEK_SET)) {
-			fclose(ifp);
-			error("Seek error");
-		}
-		dumpResource(ifp, name);
-
-		// Free the resource name
-		delete[] name;
+		infile.seek(offsetResData, SEEK_SET);
+		dumpResource(infile, name);
 	}
 }
 
-int main(int argc, char *argv[]) {
-	FILE *ifp;
-
-	if (argc != 2) {
-		displayHelp("Usage: %s <file>\n", argv[0]);
-	}
-
-	if ((ifp = fopen(argv[1], "rb")) == NULL) {
-		error("Could not open \'%s\'", argv[1]);
-	}
+void ExtractT7GMac::execute() {
+	File infile(_inputPaths[0].path, "rb");
 
 	// Read the resource fork header
-	if (fseek(ifp, offsetResFork, SEEK_SET)) {
-		fclose(ifp);
-		error("Seek error");
-	}
-	offsetResourceData = offsetResFork + readUint32BE(ifp);
-	uint32 offsetResMap = offsetResFork + readUint32BE(ifp);
+	infile.seek(offsetResFork, SEEK_SET);
+
+	offsetResourceData = offsetResFork + infile.readUint32BE();
+	uint32 offsetResMap = offsetResFork + infile.readUint32BE();
 
 	// Read the resource map
-	if (fseek(ifp, offsetResMap + 24, SEEK_SET)) {
-		fclose(ifp);
-		error("Seek error");
-	}
-	uint32 offsetResTypes = offsetResMap + readUint16BE(ifp);
-	uint32 offsetResNames = offsetResMap + readUint16BE(ifp);
+	infile.seek(offsetResMap + 24, SEEK_SET);
+	uint32 offsetResTypes = offsetResMap + infile.readUint16BE();
+	uint32 offsetResNames = offsetResMap + infile.readUint16BE();
 
 	// Handle the resource types
-	if (fseek(ifp, offsetResTypes, SEEK_SET)) {
-		fclose(ifp);
-		error("Seek error");
-	}
-	uint16 numResTypes = readUint16BE(ifp) + 1;
+	infile.seek(offsetResTypes, SEEK_SET);
+
+	uint16 numResTypes = infile.readUint16BE() + 1;
 	char resType[5];
 	resType[4] = 0;
 	for (uint16 i = 0; i < numResTypes; i++) {
-		if (fseek(ifp, offsetResTypes + 2 + 8 * i, SEEK_SET)) {
-			fclose(ifp);
-			error("Seek error");
-		}
+		infile.seek(offsetResTypes + 2 + 8 * i, SEEK_SET);
 
 		// Read the resource type name
-		ifp.read(resType, 4, 1);
+		infile.read(resType, 4, 1);
 		switch (READ_BE_UINT32(resType)) {
 			case MKID_BE('csnd'):
 			case MKID_BE('snd '):
@@ -139,19 +122,16 @@ int main(int argc, char *argv[]) {
 			case MKID_BE('INST'):
 			case MKID_BE('T7GM'):
 			{
-				printf("Extracting \"%s\" resources\n", resType);
-				uint16 numRes = readUint16BE(ifp);
-				uint32 offsetRefList = offsetResTypes + readUint16BE(ifp);
+				print("Extracting \"%s\" resources\n", resType);
+				uint16 numRes = infile.readUint16BE();
+				uint32 offsetRefList = offsetResTypes + infile.readUint16BE();
 
-				handleReferenceList(ifp, offsetRefList, numRes, offsetResNames);
+				handleReferenceList(infile, offsetRefList, numRes, offsetResNames);
 				break;
 			}
 			default:
-				printf("Skipping \"%s\" resources\n", resType);
+				print("Skipping \"%s\" resources\n", resType);
 				break;
 		}
 	}
-
-	fclose(ifp);
-	return 0;
 }

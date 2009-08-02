@@ -1,7 +1,7 @@
 #ifndef EXTRACT_CINE_H
 #define EXTRACT_CINE_H
 
-#include "util.h"
+#include "tool.h"
 
 /**
  * A LZ77 style decompressor for Delphine's data files
@@ -82,6 +82,19 @@ private:
 	const byte *_srcEnd;   //!< Source buffer's end
 	byte *_dstBegin;       //!< Destination buffer's beginning
 	byte *_dstEnd;         //!< Destination buffer's end
+};
+
+
+class ExtractCine : public Tool {
+public:
+	ExtractCine(const std::string &name = "extract_cine");
+
+	virtual void execute();
+
+protected:
+	void unpackFile(File &file);
+	void fixVolCnfFileName(char *dst, const uint8 *src);
+	void unpackAllResourceFiles(const Filename &filename);
 };
 
 #endif

@@ -40,6 +40,7 @@
 #include "compress_tucker.h"
 #include "encode_dxa.h"
 #include "extract_agos.h"
+#include "extract_cine.h"
 #include "extract_gob_stk.h"
 #include "extract_kyra.h"
 #include "extract_loom_tg16.h"
@@ -48,6 +49,7 @@
 #include "extract_mm_nes.h"
 #include "extract_parallaction.h"
 #include "extract_scumm_mac.h"
+#include "extract_t7g_mac.h"
 #include "extract_zak_c64.h"
 
 Tools::Tools() {
@@ -70,6 +72,7 @@ Tools::Tools() {
 	_tools.push_back(new EncodeDXA());
 
 	_tools.push_back(new ExtractAgos());
+	_tools.push_back(new ExtractCine());
 	_tools.push_back(new ExtractGobStk());
 	_tools.push_back(new ExtractKyra());
 	_tools.push_back(new ExtractLoomTG16());
@@ -78,6 +81,7 @@ Tools::Tools() {
 	_tools.push_back(new ExtractMMNes());
 	_tools.push_back(new ExtractParallaction());
 	_tools.push_back(new ExtractScummMac());
+	_tools.push_back(new ExtractT7GMac());
 	_tools.push_back(new ExtractZakC64());
 }
 

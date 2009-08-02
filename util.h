@@ -414,7 +414,7 @@ public:
 	 * @param elementSize the size of one element (in bytes)
 	 * @param elementCount the number of elements to read
 	 */
-	size_t read(void *data, size_t elementSize, size_t elementCount);
+	void read(void *data, size_t elementSize, size_t elementCount);
 
 	/**
 	 * Works the same way as fread, does NOT throw if it could not read all elements
@@ -423,6 +423,7 @@ public:
 	 * @param data Where to put the read data
 	 * @param elementSize the size of one element (in bytes)
 	 * @param elementCount the number of elements to read
+	 * @return number of bytes read
 	 */
 	size_t readN(void *data, size_t elementSize, size_t elementCount);
 
@@ -431,7 +432,19 @@ public:
 	 * Throws FileException if file is not open / if read failed.
 	 */
 	std::string readString();
+
+	/**
+	 * Reads the queried amount of bytes and returns it as a string
+	 * Throws FileException if file is not open / if read failed.
+	 *
+	 * @param len How many bytes to read
+	 * @return the data read
+	 */
+	std::string readString(size_t len);
 	
+
+
+
 	/**
 	 * Writes a single character (equivalent of fputc)
 	 */

@@ -39,7 +39,7 @@ ExtractKyra::ExtractKyra(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTI
 
 	_shorthelp = "Used to extract The Legend of Kyrandia series data file contents.";
 	_helptext = 
-		"Usage: " + getName() + "[params] [-o output] <archivefile> [-o output]\n" +
+		"Usage: " + getName() + " [params] [-o output] <archivefile>\n" +
 		_shorthelp + "\n" +
 		"Default output path is ./out/\n" +
 		"nParams:\n" +

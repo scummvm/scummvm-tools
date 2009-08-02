@@ -174,14 +174,14 @@ bool CompressSaga::detectFile(Filename *infile) {
 }
 
 uint32 CompressSaga::copyFile(const char *fromFileName, File &outputFile) {
-	uint32 size;
+	size_t size;
 	char fbuf[2048];
 	File tempf(fromFileName, "rb");
 
 	if (!tempf.isOpen())
 		error("Unable to open %s", fromFileName);
 
-	while ((size = (uint32)tempf.read(fbuf, 1, sizeof(fbuf))) > 0) {
+	while ((size = tempf.readN(fbuf, 1, sizeof(fbuf))) > 0) {
 		outputFile.write(fbuf, 1, size);
 	}
 	size = tempf.pos();
@@ -189,14 +189,14 @@ uint32 CompressSaga::copyFile(const char *fromFileName, File &outputFile) {
 }
 
 void CompressSaga::copyFile(File &inputFile, uint32 inputSize, const char *toFileName) {
-	uint32 size;
+	size_t size;
 	char fbuf[2048];
 	File tempf(toFileName, "wb");
 
 	if (!tempf.isOpen())
 		error("Unable to open %s", toFileName);
 	while (inputSize > 0) {
-		size = (uint32)inputFile.read(fbuf, 1, inputSize > sizeof(fbuf) ? sizeof(fbuf) : inputSize);
+		size = inputFile.readN(fbuf, 1, inputSize > sizeof(fbuf) ? sizeof(fbuf) : inputSize);
 		if (size == 0) {
 			error("Unable to copy file");
 		}

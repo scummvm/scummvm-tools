@@ -55,7 +55,7 @@ int CompressTucker::append_compress_file(File &output) {
 	int sz, compress_sz = 0;
 
 	File input_temp(tempEncoded, "rb");
-	while ((sz = input_temp.read(buf, 1, sizeof(buf))) > 0) {
+	while ((sz = input_temp.readN(buf, 1, sizeof(buf))) > 0) {
 		if ((sz = output.write(buf, 1, sz)) > 0) {
 			compress_sz += sz;
 		}
@@ -66,7 +66,7 @@ int CompressTucker::append_compress_file(File &output) {
 int CompressTucker::compress_file_wav(File &input, File &output) {
 	char buf[8];
 
-	if (input.read(buf, 1, 8) == 8 && memcmp(buf, "RIFF", 4) == 0) {
+	if (input.readN(buf, 1, 8) == 8 && memcmp(buf, "RIFF", 4) == 0) {
 		extractAndEncodeWAV(TEMP_WAV, input, _format);
 		return append_compress_file(output);
 	}

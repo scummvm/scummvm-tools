@@ -35,6 +35,23 @@
 
 #include "extract_cine.h"
 
+#include <algorithm>
+
+////////////////////////////////////////////////////////////////////////////
+
+ExtractCine::ExtractCine(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
+	
+	ToolInput input;
+	input.format = "*.CNF";
+	_inputPaths.push_back(input);
+
+	_shorthelp = "Used to unpack Delphine's Cinematique engine's archive files.";
+	_helptext = 
+		"Usage: " + getName() + " [params] [-o outputdir] <archivefile>\n" +
+		_shorthelp + "\n" +
+		"Supports using Operation Stealth's 'vol.cnf' file as input.\n";
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 uint32 CineUnpacker::readSource() {
@@ -155,37 +172,37 @@ bool CineUnpacker::unpack(const byte *src, unsigned int srcLen, byte *dst, unsig
 
 ////////////////////////////////////////////////////////////////////////////
 
-static void unpackFile(FILE *fp, const char *outDir) {
-	char filePath[512], fileName[15];
+void ExtractCine::unpackFile(File &file) {
+	char fileName[15];
 
-	unsigned int entryCount = readUint16BE(fp); // How many entries?
-	unsigned int entrySize = readUint16BE(fp); // How many bytes per entry?
+	unsigned int entryCount = file.readUint16BE(); // How many entries?
+	unsigned int entrySize = file.readUint16BE(); // How many bytes per entry?
 	assert(entrySize == 0x1e);
 	while (entryCount--) {
-		fp.read(fileName, 14, 1);
+		file.read(fileName, 14, 1);
 		fileName[14] = '\0';
-		sprintf(filePath, "%s/%s", outDir, fileName);
-		FILE *fpOut = fopen(filePath, "wb");
 
-		uint32 offset = readUint32BE(fp);
-		unsigned int packedSize = readUint32BE(fp);
-		unsigned int unpackedSize = readUint32BE(fp);
-		readUint32BE(fp);
-		unsigned int savedPos = fp.pos();
+		Filename outPath(_outputPath);
+		outPath.setFullName(fileName);
+		
+		uint32 offset = file.readUint32BE();
+		unsigned int packedSize = file.readUint32BE();
+		unsigned int unpackedSize = file.readUint32BE();
+		// Skip one
+		file.readUint32BE();
+		unsigned int savedPos = file.pos();
 
-		if (!fpOut) {
-			printf("ERROR: unable to open '%s' for writing\n", filePath);
-			continue;
-		}
-		printf("unpacking '%s' ... ", filePath);
+		print("unpacking '%s' ... ", outPath.getFullName());
 
-		fseek(fp, offset, SEEK_SET);
+		File fpOut(outPath, "wb");
+
+		file.seek(offset, SEEK_SET);
 		assert(unpackedSize >= packedSize);
 		uint8 *data = (uint8 *)calloc(unpackedSize, 1);
 		uint8 *packedData = (uint8 *)calloc(packedSize, 1);
 		assert(data);
 		assert(packedData);
-		fp.read(packedData, packedSize, 1);
+		file.read(packedData, packedSize, 1);
 		bool status = true;
 		if (packedSize != unpackedSize) {
 			CineUnpacker cineUnpacker;
@@ -195,20 +212,19 @@ static void unpackFile(FILE *fp, const char *outDir) {
 		}
 		free(packedData);
 		fpOut.write(data, unpackedSize, 1);
-		fclose(fpOut);
 		free(data);
 
 		if (!status) {
-			printf("CRC ERROR");
+			print("CRC ERROR");
 		} else {
-			printf("ok");
+			print("ok");
 		}
-		printf(", packedSize %u unpackedSize %u\n", packedSize, unpackedSize);
-		fseek(fp, savedPos, SEEK_SET);
+		print(", packedSize %u unpackedSize %u\n", packedSize, unpackedSize);
+		file.seek(savedPos, SEEK_SET);
 	}
 }
 
-void fixVolCnfFileName(char *dst, const uint8 *src) {
+void ExtractCine::fixVolCnfFileName(char *dst, const uint8 *src) {
 	char *ext, *end;
 
 	memcpy(dst, src, 8);
@@ -231,87 +247,63 @@ void fixVolCnfFileName(char *dst, const uint8 *src) {
 	}
 }
 
-void unpackAllResourceFiles(const char *filename, const char *outDir) {
-	FILE *fp = fopen(filename, "rb");
-	if (!fp) {
-		error("Unable to open file '%s'", filename);
-	}
+void ExtractCine::unpackAllResourceFiles(const Filename &filename) {
+	File f(filename, "rb");
 
 	uint32 unpackedSize, packedSize;
 	{
 		char header[8];
-		fp.read(header, 8, 1);
+		f.read(header, 8, 1);
 		if (memcmp(header, "ABASECP", 7) == 0) {
-			unpackedSize = readUint32BE(fp);
-			packedSize = readUint32BE(fp);
+			unpackedSize = f.readUint32BE();
+			packedSize = f.readUint32BE();
 		} else {
-			fseek(fp, 0, SEEK_END);
-			unpackedSize = packedSize = fp.pos(); /* Get file size */
-			fseek(fp, 0, SEEK_SET);
+			unpackedSize = packedSize = f.pos(); /* Get file size */
+			f.seek(0, SEEK_SET);
 		}
 	}
+
 	assert(unpackedSize >= packedSize);
 	uint8 *buf = (uint8 *)calloc(unpackedSize, 1);
 	assert(buf);
-	fp.read(buf, packedSize, 1);
-	fclose(fp);
+	f.read(buf, packedSize, 1);
+	
 	if (packedSize != unpackedSize) {
 		CineUnpacker cineUnpacker;
 		if (!cineUnpacker.unpack(buf, packedSize, buf, unpackedSize)) {
 			error("Failed to unpack 'vol.cnf' data");
 		}
 	}
+
 	unsigned int resourceFilesCount = READ_BE_UINT16(&buf[0]);
 	unsigned int entrySize = READ_BE_UINT16(&buf[2]);
-	printf("--- Unpacking all %d resource files from 'vol.cnf' (entrySize = %d):\n", resourceFilesCount, entrySize);
+	print("--- Unpacking all %d resource files from 'vol.cnf' (entrySize = %d):\n", resourceFilesCount, entrySize);
 	char resourceFileName[9];
 	for (unsigned int i = 0; i < resourceFilesCount; ++i) {
 		memcpy(resourceFileName, &buf[4 + i * entrySize], 8);
 		resourceFileName[8] = 0;
-		FILE *fpResFile = fopen(resourceFileName, "rb");
-		if (fpResFile) {
-			printf("--- Unpacking resource file %s:\n", resourceFileName);
-			unpackFile(fpResFile, outDir);
-			fclose(fpResFile);
-		} else {
-			printf("ERROR: Unable to open resource file %s\n", resourceFileName);
-		}
+		
+		File fpResFile(resourceFileName, "rb");
+		print("--- Unpacking resource file %s:\n", resourceFileName);
+		unpackFile(fpResFile);
 	}
 
 	free(buf);
 }
 
-int showUsage() {
-	printf("USAGE: extract_cine [input file] [output directory]\n" \
-		"Supports using Operation Stealth's 'vol.cnf' file as input.\n");
-	return -1;
-}
+void ExtractCine::execute() {
+	Filename infilename(_inputPaths[0].path);
 
-int main(int argc, char *argv[]) {
-	int i;
-	char tmp[512];
+	std::string fname = infilename.getFullName();
+	std::transform(fname.begin(), fname.end(), fname.begin(), toupper);
 
-	if (argc == 3) {
-		strcpy(tmp, argv[1]);
-		for (i = 0; tmp[i] != 0; i++) {
-			tmp[i] = toupper(tmp[i]);
-		}
-		if (!strcmp(tmp, "VOL.CNF")) {
-			/* Unpack all archive files listed in 'vol.cnf' */
-			unpackAllResourceFiles(argv[1], argv[2]);
-		} else {
-			/* Unpack a single archive file */
-			FILE *fp = fopen(argv[1], "rb");
-			if (fp) {
-				unpackFile(fp, argv[2]);
-				fclose(fp);
-			} else {
-				printf("Couldn't open input file '%s'\n", argv[1]);
-				return -1;
-			}
-		}
+	if (fname == "VOL.CNF") {
+		/* Unpack all archive files listed in 'vol.cnf' */
+		unpackAllResourceFiles(infilename);
 	} else {
-		return showUsage();
+		/* Unpack a single archive file */
+		File f(infilename, "rb");
+
+		unpackFile(f);
 	}
-	return 0;
 }

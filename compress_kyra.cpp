@@ -136,7 +136,7 @@ int CompressKyra::decodeChunk(File &in, File &out) {
 	if (size == outSize) {
 		int readSize = size;
 		while (readSize > 0) {
-			int read = in.read(outputBuffer, 1, readSize);
+			int read = in.readN(outputBuffer, 1, readSize);
 			if (read <= 0)
 				error("[1] Couldn't read data");
 			readSize -= read;
@@ -154,7 +154,7 @@ int CompressKyra::decodeChunk(File &in, File &out) {
 
 	int readSize = size;
 	while (readSize > 0) {
-		int read = in.read(inputBuffer, 1, readSize);
+		int read = in.readN(inputBuffer, 1, readSize);
 		if (read <= 0)
 			error("[2] Couldn't read data");
 		readSize -= read;

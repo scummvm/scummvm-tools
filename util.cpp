@@ -382,7 +382,7 @@ uint32 File::readUint32LE() {
 	return ret;
 }
 
-size_t File::read(void *data, size_t elementSize, size_t elementCount) {
+void File::read(void *data, size_t elementSize, size_t elementCount) {
 	if (!_file) 
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
@@ -391,8 +391,15 @@ size_t File::read(void *data, size_t elementSize, size_t elementCount) {
 	size_t data_read = fread(data, elementSize, elementCount, _file);
 	if (data_read != elementCount)
 		throw FileException("Read beyond the end of file (" + _name.getFullPath() + ")");
+}
 
-	return data_read;
+size_t File::readN(void *data, size_t elementSize, size_t elementCount) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
+
+	return fread(data, elementSize, elementCount, _file);
 }
 
 std::string File::readString() {
@@ -414,13 +421,21 @@ std::string File::readString() {
 	return s;
 }
 
-size_t File::readN(void *data, size_t elementSize, size_t elementCount) {
+std::string File::readString(size_t len) {
 	if (!_file) 
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
 		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
 
-	return fread(data, elementSize, elementCount, _file);
+	std::string s('\0', len);
+	std::string::iterator is = s.begin();
+
+	char c;
+	while ((c = readByte())) {
+		*is = c;
+	}
+
+	return s;
 }
 
 void File::writeChar(int i) {

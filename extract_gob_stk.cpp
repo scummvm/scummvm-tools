@@ -156,8 +156,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 	buffer[14] = '\0';
 	sprintf(debugStr, "File generated on %s by ", buffer);
 
-	if (stk.read(buffer, 1, 8) < 8)
-		throw ToolException("Unexpected EOF");
+	stk.read(buffer, 1, 8);
 
 	buffer[8] = '\0';
 	strcat(debugStr, buffer);
@@ -197,13 +196,11 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 		stk.seek(miscPos + (cpt * 61), SEEK_SET);
 		filenamePos = stk.readUint32LE();
 
-		if (stk.read(buffer, 1, 36) < 36)
-			throw ToolException("Unexpected EOF in Misc Section");
+		stk.read(buffer, 1, 36);
 		curChunk->size = stk.readUint32LE();
 		decompSize = stk.readUint32LE();
 
-		if (stk.read(buffer, 1, 5) < 5)
-			throw ToolException("Unexpected EOF in Misc Section");
+		stk.read(buffer, 1, 5);
 
 		filePos = stk.readUint32LE();
 		compressFlag = stk.readUint32LE();
