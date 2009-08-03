@@ -40,7 +40,7 @@ CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTY
 	_chunks = NULL;
 
 	ToolInput input;
-	input.format = "*.*";
+	input.format = "*.stk";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Compresses Gobliiins! files data files.";

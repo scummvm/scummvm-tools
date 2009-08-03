@@ -90,14 +90,28 @@ Tools::~Tools() {
 		delete *iter;
 }
 
-Tools::ToolList Tools::inspectInput(ToolType type, const Filename &filename) const {
-	ToolList choices;
+Tools::ToolList Tools::inspectInput(const Filename &filename, ToolType type) const {
+	ToolList perfect_choices;
+	ToolList good_choices;
+	ToolList awful_choices;
+
 	for (ToolList::const_iterator tool = _tools.begin(); tool != _tools.end(); ++tool) {
 		if (type == TOOLTYPE_ALL || (*tool)->getType() == type) {
-			if((*tool)->inspectInput(filename)) {
-				choices.push_back(*tool);
-			}
+			InspectionMatch m = (*tool)->inspectInput(filename);
+			
+			if (m == IMATCH_PERFECT)
+				perfect_choices.push_back(*tool);
+			else if (m == IMATCH_POSSIBLE)
+				good_choices.push_back(*tool);
+			else
+				awful_choices.push_back(*tool);
 		}
 	}
-	return choices;
+
+	if (perfect_choices.size() > 0)
+		return perfect_choices;
+	if (good_choices.size() > 0)
+		return good_choices;
+
+	return awful_choices;
 }

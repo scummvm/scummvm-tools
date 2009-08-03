@@ -239,7 +239,6 @@ void ChooseToolPage::onChangeTool(wxCommandEvent &evt) {
 	wxStaticText *text = dynamic_cast<wxStaticText *>(tool->GetParent()->FindWindowByName(wxT("ToolText")));
 	
 	text->SetLabel(g_tools[tool->GetStringSelection()].getShortHelp());
-	//text->Wrap(text->GetParent()->GetSize().GetWidth());
 }
 
 // Common base class for the IO pages
@@ -377,10 +376,12 @@ void ChooseInPage::onNext(wxWindow *panel) {
 	} else {
 		wxArrayString ls = g_tools.getToolList(filename,
 			_configuration.compressing? TOOLTYPE_COMPRESSION : TOOLTYPE_EXTRACTION);
-		if(ls.size() == 1)
+		if(ls.size() == 1) {
+			_configuration.selectedTool = g_tools.get(ls[0]);
 			switchPage(new ChooseOutPage(_topframe));
-		else
+		} else {
 			switchPage(new ChooseToolPage(_topframe, ls));
+		}
 	}
 }
 
@@ -510,8 +511,8 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 
 	// some help perhaps?
 	sizer->Add(new wxStaticText(panel, wxID_ANY, 
-		wxT("Select an output directory.\n\n")
-		wxT("Note: Some tools display file picker here, this should perhaps be changed to always ")
+		wxT("Select an output directory (using tool ") + _configuration.selectedTool->getName() + wxT(").\n\n") +
+		wxT("Note: Some tools display file picker here, this should perhaps be changed to always ") +
 		wxT("be directory output, since often don't want to name the output file.)")
 		),
 		wxSizerFlags(1).Expand());
@@ -521,21 +522,22 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(10);
 
 	// Create output selection
+	wxSizer *colsizer = new wxBoxSizer(wxHORIZONTAL);
 
 	if (tool.outputToDirectory()) {
 		wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, panel, wxT("Destination folder"));
-
+		
 		wxDirPickerCtrl *picker = new wxDirPickerCtrl(
 			panel, wxID_ANY, _configuration.outputPath, wxT("Select a folder"), 
 			wxDefaultPosition, wxSize(300, -1),
 			wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
 			wxT("OutputPicker"));
-		box->Add(picker);
+		box->Add(picker, wxSizerFlags(1).Expand());
 
 		panel->Connect(wxEVT_COMMAND_DIRPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 		picker->SetPath(_configuration.outputPath);
 
-		sizer->Add(box);
+		colsizer->Add(box, wxSizerFlags(2).Expand());
 	} else {
 		wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, panel, wxT("Destination file"));
 
@@ -545,13 +547,16 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 			wxDefaultPosition, wxSize(300, -1),
 			wxFLP_USE_TEXTCTRL | wxFLP_OVERWRITE_PROMPT | wxFLP_SAVE, wxDefaultValidator, 
 			wxT("OutputPicker"));
-		box->Add(picker);
+		box->Add(picker, wxSizerFlags(1).Expand());
 
 		panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 		picker->SetPath(_configuration.outputPath);
 		
-		sizer->Add(box);
+		colsizer->Add(box, wxSizerFlags(2).Expand());
 	}
+
+	colsizer->Add(20, 20, 1, wxEXPAND);
+	sizer->Add(colsizer, wxSizerFlags(0).Expand());
 
 	SetAlignedSizer(panel, sizer);
 

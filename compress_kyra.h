@@ -31,6 +31,8 @@ public:
 
 	virtual void execute();
 
+	virtual InspectionMatch inspectInput(const Filename &filename);
+
 protected:
 	struct DuplicatedFile;
 

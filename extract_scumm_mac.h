@@ -31,6 +31,8 @@ public:
 	ExtractScummMac(const std::string &name = "extract_scumm_mac");
 
 	virtual void execute();
+	
+	virtual InspectionMatch inspectInput(const Filename &filename);
 };
 
 #endif

@@ -65,14 +65,6 @@ public:
 	void addGame(const wxString &game_name);
 
 	/**
-	 * Returns true if the file appears to be valid input to this tool.
-	 *
-	 * @param filename The file to inspect.
-	 * @return True if we can possibly parse this file.
-	 */
-	bool inspectInput(const Filename &filename) const;
-
-	/**
 	 * Returns the list of valid inputs of this tool, along with the 
 	 * paths already set (if applicable)
 	 */

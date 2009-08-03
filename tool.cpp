@@ -158,12 +158,13 @@ void Tool::run() {
 	execute();
 }
 
-bool Tool::inspectInput(const Filename &filename) {
+InspectionMatch Tool::inspectInput(const Filename &filename) {
 	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
 		std::string p = iter->format;
 		if (p == "/") {
-			// Directory, we don't handle this yet, display all tools
-			return true;
+			// TODO
+			// Directory, we don't handle this yet, don't display at all
+			return IMATCH_AWFUL;
 		}
 		
 		Filename cmp_filename = p;
@@ -171,24 +172,24 @@ bool Tool::inspectInput(const Filename &filename) {
 		if (cmp_filename.getName() == "*") {
 			if (cmp_filename.getExtension() == "*")
 				// Match anything!
-				return true;
+				return IMATCH_POSSIBLE;
 			else if (scumm_stricmp(cmp_filename.getExtension().c_str(), filename.getExtension().c_str()) == 0)
 				// Extensions are the same
-				return true;
+				return IMATCH_PERFECT;
 		} else {
 			// Match on filename
 			if (cmp_filename.getName() == filename.getName()) {
 				if (cmp_filename.getExtension() == "*")
-					return true;
+					return IMATCH_PERFECT;
 				else if (scumm_stricmp(cmp_filename.getExtension().c_str(), filename.getExtension().c_str()) == 0)
 					// Filenames are identical
-					return true;
+					return IMATCH_PERFECT;
 			}
 		}
 	}
 
 	// Didn't match any of our inputs
-	return false;
+	return IMATCH_AWFUL;
 }
 
 void Tool::setPrintFunction(void (*f)(void *, const char *), void *udata) {

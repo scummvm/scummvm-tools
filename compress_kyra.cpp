@@ -36,6 +36,15 @@ CompressKyra::CompressKyra(const std::string &name) : CompressionTool(name, TOOL
 	_helptext = "\nUsage: " + getName() + " [mode params] [-o outfile] <infile>\n";
 }
 
+InspectionMatch CompressKyra::inspectInput(const Filename &filename) {
+	if (filename.hasExtension("VRM") ||
+		filename.hasExtension("PAK") ||
+		filename.hasExtension("TLK") ||
+		filename.hasExtension("AUD"))
+		return IMATCH_PERFECT;
+	return IMATCH_AWFUL;
+}
+
 void CompressKyra::execute() {
 	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;

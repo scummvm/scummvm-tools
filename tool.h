@@ -40,6 +40,19 @@ enum ToolType {
 };
 
 /**
+ * Return type of the inspectInput function, perfect match means we know we can
+ * parse this file, possible means we might be able to, Awful means we most likely
+ * can't read this file.
+ * If there are perfect results, those are displayed first, if there are none, 
+ * possible results are displayed and finally awful results are dispalyed.
+ */
+enum InspectionMatch {
+	IMATCH_PERFECT,
+	IMATCH_POSSIBLE,
+	IMATCH_AWFUL,
+};
+
+/**
  * Describes a possible input to the tool (since some take two seperate files, 
  * some a dir and some a single file.
  */
@@ -86,7 +99,7 @@ public:
 	 *
 	 * @param filename The file to inspect
 	 */
-	virtual bool inspectInput(const Filename &filename);
+	virtual InspectionMatch inspectInput(const Filename &filename);
 
 	/**
 	 * Aborts executing of the tool, can be called from another thread

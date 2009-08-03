@@ -107,8 +107,9 @@ public:
 	 *
 	 * @param parent The parent window
 	 * @param linetext A static text that is used to display some extra information
+	 * @param conf The configuration object used for the tools
 	 */
-	WizardButtons(wxWindow *parent, wxStaticText *linetext);
+	WizardButtons(wxWindow *parent, wxStaticText *linetext, Configuration &conf);
 
 	/* Set the buttons to the standard configuration
 	 * (prev, next shown and enabled, finish disabled)
@@ -161,17 +162,19 @@ public:
 	void onClickCancel(wxCommandEvent &e);
 
 protected:
-	/** 'Next' (or finish) button */
+	/** Configuration used by the Wizard. */
+	Configuration &_configuration;
+	/** 'Next' (or finish) button. */
 	wxButton *_next;
-	/** 'Previous' button */
+	/** 'Previous' button. */
 	wxButton *_prev;
-	/** 'Cancel' button */
+	/** 'Cancel' button. */
 	wxButton *_cancel;
-	/** The static text on the line seperating the page area and the buttons */
+	/** The static text on the line seperating the page area and the buttons. */
 	wxStaticText *_linetext;
-	/** Current page, required for dumping events to it */
+	/** Current page, required for dumping events to it. */
 	WizardPage *_currentPage;
-	/** Current panel, required so we can pass it as arguments to the handlers */
+	/** Current panel, required so we can pass it as arguments to the handlers. */
 	wxWindow *_currentPanel;
 
 	DECLARE_EVENT_TABLE()

@@ -62,15 +62,11 @@ wxArrayString ToolsGUI::getToolList(ToolType tt) const {
 }
 
 wxArrayString ToolsGUI::getToolList(const Filename &filename, ToolType tt) const {
+	ToolList choices = inspectInput(filename, tt);
 	wxArrayString l;
 
-	for (std::map<wxString, ToolGUI *>::const_iterator tool = _toolmap.begin(); tool != _toolmap.end(); ++tool) {
-		if (tt == TOOLTYPE_ALL || tool->second->getType() == tt) {
-			if(tool->second->inspectInput(filename)) {
-				l.Add(tool->second->getName());
-			}
-		}
-	}
+	for (ToolList::const_iterator tool = choices.begin(); tool != choices.end(); ++tool)
+		l.Add(wxString((*tool)->getName().c_str(), wxConvUTF8));
 
 	l.Sort();
 	std::unique(l.begin(), l.end());
@@ -103,10 +99,6 @@ ToolGUI::ToolGUI(Tool *tool, ToolType type) {
 ToolGUI::~ToolGUI() {
 	//The parent Tools client deletes the backends
 	//delete _backend;
-}
-
-bool ToolGUI::inspectInput(const Filename &filename) const {
-	return _backend->inspectInput(filename);
 }
 
 ToolInputs ToolGUI::getInputList() const {

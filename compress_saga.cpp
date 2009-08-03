@@ -124,8 +124,13 @@ CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name, TOOL
 	_helptext = "\nUsage: " + getName() +" [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n";
 }
 
-bool CompressSaga::inspectInput(const Filename &filename) {
-	return filename.hasExtension("rsc") || filename.hasExtension("res") || filename.hasExtension("bin") || filename.getFullName() == "inherit the earth voices";
+InspectionMatch CompressSaga::inspectInput(const Filename &filename) {
+	if (filename.hasExtension("rsc") ||
+		filename.hasExtension("res") ||
+		filename.hasExtension("bin") ||
+		filename.getFullName() == "inherit the earth voices")
+		return IMATCH_PERFECT;
+	return IMATCH_AWFUL;
 }
 
 // --------------------------------------------------------------------------------

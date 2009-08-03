@@ -23,6 +23,8 @@
 
 #include "extract_scumm_mac.h"
 
+#include <algorithm>
+
 /* this makes extract_scumm_mac convert extracted file names to lower case */
 #define CHANGECASE
 
@@ -37,6 +39,15 @@ ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name, TOOLTYPE_
 	_helptext =
 		"\nUsage: " + getName() + " [-o <output dir> = out/] <file>\n" +
 		_shorthelp + "\n";
+}
+
+InspectionMatch ExtractScummMac::inspectInput(const Filename &filename) {
+	std::string name = filename.getFullName();
+	std::transform(name.begin(), name.end(), name.begin(), tolower);
+	std::string::size_type pos = name.find("data");
+	if (pos == name.length() - 4) // True if the file name ends with "Data"
+		return IMATCH_PERFECT;
+	return IMATCH_AWFUL;
 }
 
 void ExtractScummMac::execute() {

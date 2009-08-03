@@ -116,7 +116,7 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	sizer->Add(linepanel, wxSizerFlags().Expand().Center().Border());
 
 	// Buttons on the bottom
-	_buttons = new WizardButtons(main, linetext);
+	_buttons = new WizardButtons(main, linetext, _configuration);
 	sizer->Add(_buttons, wxSizerFlags().Border().Center().Expand());
 
 	main->SetSizer(sizer);
@@ -178,8 +178,9 @@ BEGIN_EVENT_TABLE(WizardButtons, wxPanel)
 	EVT_BUTTON(ID_CANCEL, WizardButtons::onClickCancel)
 END_EVENT_TABLE()
 
-WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext)
+WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext, Configuration &conf)
 	: wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("WizardButtonPanel")),
+	  _configuration(conf),
 	  _linetext(linetext),
 	  _currentPage(NULL)
 {
@@ -223,7 +224,11 @@ void WizardButtons::reset() {
 	enablePrevious(true);
 	showFinish(false);
 	showAbort(false);
-	setLineLabel(wxT("ScummVM Tools"));
+
+	wxString label(wxT("ScummVM Tools"));
+	if (_configuration.selectedTool)
+		label << wxT(" - ") << _configuration.selectedTool->getName();
+	setLineLabel(label);
 }
 
 void WizardButtons::setPage(WizardPage *current, wxWindow *panel) {
