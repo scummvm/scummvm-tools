@@ -107,7 +107,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 			}
 
 			// It must be a filename now
-			choices = inspectInput(type, *reader);
+			choices = inspectInput(*reader, type);
 			
 			// If anything matched, we stop
 			if (choices.size() > 0) {
