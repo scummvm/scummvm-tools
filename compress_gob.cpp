@@ -43,7 +43,7 @@ CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTY
 	input.format = "*.stk";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Compresses Gobliiins! files data files.";
+	_shorthelp = "Compresses Gobliiins! data files.";
 	_helptext = 
 		"\nUsage: " + getName() + " [-f] [-o <output> = out.stk] <conf file>\n"
 		"<conf file> is a .gob file generated extract_gob_stk\n"

@@ -31,6 +31,8 @@ public:
 
 	virtual void execute();
 
+	virtual InspectionMatch inspectInput(const Filename &filename);
+
 protected:
 
 	uint32 compress_sound_data_file(uint32 current_offset, File &output, File &input, uint32 *offs_table, uint32 *size_table, int len);
