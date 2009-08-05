@@ -163,7 +163,22 @@ bool Filename::empty() const {
 	return _path.empty();
 }
 
-bool Filename::hasExtension(std::string suffix) const {
+bool Filename::directory() const {
+	return getFullName().size() == 0;
+}
+
+bool Filename::exists() const { 
+	// This fails if we don't have permission to read the file
+	// but in most cases, that's the same thing for us.
+	FILE *f = fopen(_path.c_str(), "r");
+	if (f) {
+		fclose(f);
+		return true;
+	}
+	return false;
+}
+
+bool Filename::hasExtension(std::string ext) const {
 	size_t dot = _path.rfind('.');
 	if (dot == std::string::npos)
 		return false;
@@ -183,19 +198,19 @@ bool Filename::hasExtension(std::string suffix) const {
 	// We compare extensions, skip any dots
 	if (_path[dot] == '.')
 		dot++;
-	if (suffix[0] == '.')
-		suffix = suffix.substr(1);
+	if (ext[0] == '.')
+		ext = ext.substr(1);
 
 	std::string tmp = _path.substr(dot);
 #ifdef _WIN32
 	// On Windows paths are case-insensitive
-	return scumm_stricmp(tmp.c_str(), suffix.c_str()) == 0;
+	return scumm_stricmp(tmp.c_str(), ext.c_str()) == 0;
 #else
-	return tmp == suffix;
+	return tmp == ext;
 #endif
 }
 
-const std::string &Filename::getFullPath() const {
+std::string Filename::getFullPath() const {
 	return _path;
 }
 

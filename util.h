@@ -289,23 +289,92 @@ struct Filename {
 		return equals(fn);
 	}
 	
+	/**
+	 * Change the entire path including directory, volume and actual filname.
+	 *
+	 * @param path The new path.
+	 */
 	void setFullPath(const std::string &path);
+
+	/**
+	 * Sets the name of the file referred to, does not change the directory referred to.
+	 *
+	 * @param name New filename.
+	 */
 	void setFullName(const std::string &name);
+
+	/**
+	 * Adds an extension to the filename (does not replace any current extension).
+	 *
+	 * @param ext Extension to add.
+	 */
 	void addExtension(const std::string &ext);
+
+	/**
+	 * Sets the extension of the filename, replacing any current one, or adding one if there isn't any.
+	 *
+	 * @param ext The new extension of the filename.
+	 */
 	void setExtension(const std::string &ext);
 
-	bool hasExtension(std::string suffix) const;
+	/**
+	 * Returns true if the file has that extension.
+	 *
+	 * @param ext Extension to check for, only last extension is checked.
+	 * @return True if the filename has that extension.
+	 */
+	bool hasExtension(std::string ext) const;
+
+	/**
+	 * Has the filename been set to anything.
+	 */
 	bool empty() const;
-	bool directory() const {return getFullName().size() == 0;}
+
+	/**
+	 * Returns true if the file exists, does NOT work for directories
+	 */
+	bool exists() const;
+
+	/**
+	 * Returns true if the file is a directory, which is if the path ends with '/'.
+	 *
+	 * @return true if the path looks like a directory.
+	 */
+	bool directory() const;
+
+	/**
+	 * True if the filenames are different (relative and absolute paths will NOT compare equally).
+	 *
+	 * @param other The filename to compare to.
+	 * @return True if they are equal.
+	 */
 	bool equals(const Filename &other) const;
 	
-	// Doesn't work
-	bool mkdir(int permission = 077);
 
-	const std::string &getFullPath() const;
+	/**
+	 * Returns the entire path.
+	 */
+	std::string getFullPath() const;
+
+	/**
+	 * Returns the filename (ie. strips all directories from the path)
+	 */
 	std::string getFullName() const;
+
+	/**
+	 * Returns the name of the file, excluding extension and directories.
+	 * Note that in the case of multiple extensions, only the last extension is stripped.
+	 */
 	std::string getName() const;
+
+	/**
+	 * Get the extension of the filename, only the last extension in case of many.
+	 */
 	std::string getExtension() const;
+
+	/**
+	 * Returns the path of the filename, the name and extension of the file is stripped.
+	 */
 	std::string getPath() const;
 };
 
