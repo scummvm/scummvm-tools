@@ -138,13 +138,15 @@ decine$(EXEEXT): decine.o
 dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o tool.o
+descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o tool.o $(UTILS)
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-desword2$(EXEEXT): desword2.o util.o tool.o
+desword2$(EXEEXT): desword2.o util.o tool.o $(UTILS)
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob_script_v3.o degob_script_v4.o degob_script_v5.o degob_script_v6.o degob_script_bargon.o util.o tool.o
+degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob_script_v3.o \
+	degob_script_v4.o degob_script_v5.o degob_script_v6.o degob_script_bargon.o \
+	util.o tool.o $(UTILS)
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 #encode_dxa$(EXEEXT): encode_dxa.o compress.o util.o tool.o

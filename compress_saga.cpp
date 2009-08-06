@@ -228,12 +228,11 @@ void CompressSaga::writeHeader(File &outputFile) {
 uint32 CompressSaga::encodeEntry(File &inputFile, uint32 inputSize, File &outputFile) {
 	uint8 *inputData = 0;
 	byte *buffer = 0;
-	Common::File inputFileStream(inputFile);
 	int rate, size;
 	byte flags;
 
 	if (_currentFileDescription->resourceType == kSoundVOC) {
-		inputData = Audio::loadVOCFromStream(inputFileStream, size, rate);
+		inputData = Audio::loadVOCFromStream(inputFile, size, rate);
 
 		_sampleSize = size;
 		_sampleRate = rate;
@@ -262,7 +261,7 @@ uint32 CompressSaga::encodeEntry(File &inputFile, uint32 inputSize, File &output
 		return copyFile(tempEncoded, outputFile) + HEADER_SIZE;
 	}
 	if (_currentFileDescription->resourceType == kSoundWAV) {
-		if (!Audio::loadWAVFromStream(inputFileStream, size, rate, flags))
+		if (!Audio::loadWAVFromStream(inputFile, size, rate, flags))
 			error("Unable to read WAV");
 
 		_sampleSize = size;
@@ -284,7 +283,7 @@ uint32 CompressSaga::encodeEntry(File &inputFile, uint32 inputSize, File &output
 		_sampleStereo = _currentFileDescription->stereo;
 		writeHeader(outputFile);
 
-		Audio::AudioStream *voxStream = Audio::makeADPCMStream(&inputFileStream, inputSize, Audio::kADPCMOki);
+		Audio::AudioStream *voxStream = Audio::makeADPCMStream(&inputFile, inputSize, Audio::kADPCMOki);
 		buffer = (byte *)malloc(_sampleSize);
 		uint32 voxSize = voxStream->readBuffer((int16*)buffer, inputSize * 2);
 		if (voxSize != inputSize * 2)

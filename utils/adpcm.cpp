@@ -30,7 +30,7 @@ namespace Audio {
 // flexibility of this code.
 class ADPCMInputStream : public AudioStream {
 private:
-	Common::SeekableReadStream *_stream;
+	File *_stream;
 	uint32 _endpos;
 	int _channels;
 	typesADPCM _type;
@@ -63,7 +63,7 @@ private:
 	int16 decodeMS(ADPCMChannelStatus *c, byte);
 
 public:
-	ADPCMInputStream(Common::SeekableReadStream *stream, uint32 size, typesADPCM type, int rate, int channels = 2, uint32 blockAlign = 0);
+	ADPCMInputStream(File *stream, uint32 size, typesADPCM type, int rate, int channels = 2, uint32 blockAlign = 0);
 	~ADPCMInputStream() {};
 
 	int readBuffer(int16 *buffer, const int numSamples);
@@ -72,7 +72,7 @@ public:
 	int readBufferMSIMA2(int16 *buffer, const int numSamples);
 	int readBufferMS(int channels, int16 *buffer, const int numSamples);
 
-	bool endOfData() const { return (_stream->eos() || _stream->pos() >= _endpos); }
+	bool endOfData() const { return (_stream->eos() || _stream->pos() >= (int)_endpos); }
 	bool isStereo() const	{ return false; }
 	int getRate() const	{ return _rate; }
 };
@@ -84,7 +84,7 @@ public:
 // In addition, also MS IMA ADPCM is supported. See
 //   <http://wiki.multimedia.cx/index.php?title=Microsoft_IMA_ADPCM>.
 
-ADPCMInputStream::ADPCMInputStream(Common::SeekableReadStream *stream, uint32 size, typesADPCM type, int rate, int channels, uint32 blockAlign)
+ADPCMInputStream::ADPCMInputStream(File *stream, uint32 size, typesADPCM type, int rate, int channels, uint32 blockAlign)
 	: _stream(stream), _channels(channels), _type(type), _blockAlign(blockAlign), _rate(rate) {
 
 	_status.last = 0;
@@ -126,7 +126,7 @@ int ADPCMInputStream::readBufferOKI(int16 *buffer, const int numSamples) {
 
 	assert(numSamples % 2 == 0);
 
-	for (samples = 0; samples < numSamples && !_stream->eos() && _stream->pos() < _endpos; samples += 2) {
+	for (samples = 0; samples < numSamples && !_stream->eos() && _stream->pos() < (int)_endpos; samples += 2) {
 		data = _stream->readByte();
 		WRITE_LE_UINT16(buffer + samples,     decodeOKI((data >> 4) & 0x0f));
 		WRITE_LE_UINT16(buffer + samples + 1, decodeOKI(data & 0x0f));
@@ -143,7 +143,7 @@ int ADPCMInputStream::readBufferMSIMA1(int16 *buffer, const int numSamples) {
 
 	samples = 0;
 
-	while (samples < numSamples && !_stream->eos() && _stream->pos() < _endpos) {
+	while (samples < numSamples && !_stream->eos() && _stream->pos() < (int)_endpos) {
 		if (_blockPos == _blockAlign) {
 			// read block header
 			_status.last = _stream->readSint16LE();
@@ -151,7 +151,7 @@ int ADPCMInputStream::readBufferMSIMA1(int16 *buffer, const int numSamples) {
 			_blockPos = 4;
 		}
 
-		for (; samples < numSamples && _blockPos < _blockAlign && !_stream->eos() && _stream->pos() < _endpos; samples += 2) {
+		for (; samples < numSamples && _blockPos < _blockAlign && !_stream->eos() && _stream->pos() < (int)_endpos; samples += 2) {
 			data = _stream->readByte();
 			_blockPos++;
 			WRITE_LE_UINT16(buffer + samples,     decodeMSIMA(data & 0x0f));
@@ -169,7 +169,7 @@ int ADPCMInputStream::readBufferMSIMA2(int16 *buffer, const int numSamples) {
 	uint32 data;
 	int nibble;
 
-	for (samples = 0; samples < numSamples && !_stream->eos() && _stream->pos() < _endpos;) {
+	for (samples = 0; samples < numSamples && !_stream->eos() && _stream->pos() < (int)_endpos;) {
 		for (int channel = 0; channel < 2; channel++) {
 			data = _stream->readUint32LE();
 
@@ -199,7 +199,7 @@ int ADPCMInputStream::readBufferMS(int channels, int16 *buffer, const int numSam
 
 	samples = 0;
 
-	while (samples < numSamples && !_stream->eos() && _stream->pos() < _endpos) {
+	while (samples < numSamples && !_stream->eos() && _stream->pos() < (int)_endpos) {
 		if (_blockPos == _blockAlign) {
 			// read block header
 			_status.ch[0].predictor = Common::CLIP(_stream->readByte(), (byte)0, (byte)6);
@@ -227,7 +227,7 @@ int ADPCMInputStream::readBufferMS(int channels, int16 *buffer, const int numSam
 		}
 
 
-		for (; samples < numSamples && _blockPos < _blockAlign && !_stream->eos() && _stream->pos() < _endpos; samples += 2) {
+		for (; samples < numSamples && _blockPos < _blockAlign && !_stream->eos() && _stream->pos() < (int)_endpos; samples += 2) {
 			data = _stream->readByte();
 			_blockPos++;
 			WRITE_LE_UINT16(buffer + samples,     decodeMS(&_status.ch[0], (data >> 4) & 0x0f));
@@ -347,7 +347,7 @@ int16 ADPCMInputStream::decodeMS(ADPCMChannelStatus *c, byte code) {
 	return (int16)predictor;
 }
 
-AudioStream *makeADPCMStream(Common::SeekableReadStream *stream, uint32 size, typesADPCM type, int rate, int channels, uint32 blockAlign) {
+AudioStream *makeADPCMStream(File *stream, uint32 size, typesADPCM type, int rate, int channels, uint32 blockAlign) {
 	return new ADPCMInputStream(stream, size, type, rate, channels, blockAlign);
 }
 

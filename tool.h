@@ -27,6 +27,7 @@
 #include <string>
 
 #include "util.h"
+#include "utils/file.h"
 
 /** 
  * Different types of tools, used to differentiate them when 
@@ -111,10 +112,12 @@ public:
 	 * Fatal error in the tool, throws a ToolException,
 	 * you shouldn't really catch this exception.
 	 */
+
 	void error(const char *format, ...);
 	/**
 	 * A warning, the same as print but WARNING: is prepended to the message.
 	 */
+
 	void warning(const char *format, ...);
 	/**
 	 * Prints a message, to either stdout or the GUI, always use this instead of printf

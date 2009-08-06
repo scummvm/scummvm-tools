@@ -667,7 +667,7 @@ void CompressScummSan::execute() {
 		output.writeUint32BE(frameSize);
 		for (;;) {
 			tag = input.readUint32BE(); // chunk tag
-			if (input.reachedEOF())
+			if (input.eos())
 				break;
 			if (tag == 'FRME') {
 				input.seek(-4, SEEK_CUR);

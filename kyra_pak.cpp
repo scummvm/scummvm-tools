@@ -37,7 +37,7 @@ bool PAKFile::isPakFile(const char *filename) {
 	}
 
 	char lastFilenameByte = 0;
-	while (!f.reachedEOF()) {
+	while (!f.eos()) {
 		// The start offset of a file should never be in the filelist
 		if (offset < f.pos() || offset > filesize) {
 			return false;
@@ -46,10 +46,10 @@ bool PAKFile::isPakFile(const char *filename) {
 		byte c = 0;
 
 		lastFilenameByte = 0;
-		while (!f.reachedEOF() && (c = f.readByte()) != 0)
+		while (!f.eos() && (c = f.readByte()) != 0)
 			lastFilenameByte = c;
 
-		if (f.reachedEOF()) {
+		if (f.eos()) {
 			return false;
 		}
 

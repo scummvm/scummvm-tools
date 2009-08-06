@@ -24,7 +24,7 @@
 #define SOUND_ADPCM_H
 
 #include "audiostream.h"
-#include "stream.h"
+#include "file.h"
 
 namespace Audio {
 
@@ -36,7 +36,7 @@ enum typesADPCM {
 	kADPCMMS
 };
 
-AudioStream *makeADPCMStream(Common::SeekableReadStream *stream, uint32 size, typesADPCM type, int rate = 22050, int channels = 2, uint32 blockAlign = 0);
+AudioStream *makeADPCMStream(File *stream, uint32 size, typesADPCM type, int rate = 22050, int channels = 2, uint32 blockAlign = 0);
 
 } // End of namespace Audio
 

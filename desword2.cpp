@@ -21,6 +21,7 @@
  */
 
 #include "util.h"
+#include "utils/file.h"
 
 enum {
 	GAME_OBJECT = 3,

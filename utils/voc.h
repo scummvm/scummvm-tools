@@ -24,8 +24,7 @@
 #define SOUND_VOC_H
 
 #include "../util.h"
-
-namespace Common { class ReadStream; }
+#include "file.h"
 
 namespace Audio {
 
@@ -67,7 +66,7 @@ extern int getSampleRateFromVOCRate(int vocSR);
  * responsibility to dellocate that data again later on! Currently this
  * function only supports uncompressed raw PCM data.
  */
-extern byte *loadVOCFromStream(Common::ReadStream &stream, int &size, int &rate);
+extern byte *loadVOCFromStream(File &stream, int &size, int &rate);
 
 /**
  * Try to load a VOC from the given seekable stream and create an AudioStream
@@ -76,7 +75,7 @@ extern byte *loadVOCFromStream(Common::ReadStream &stream, int &size, int &rate)
  *
  * This function uses loadVOCFromStream() internally.
  */
-AudioStream *makeVOCStream(Common::ReadStream &stream);
+AudioStream *makeVOCStream(File &stream);
 
 } // End of namespace Audio
 

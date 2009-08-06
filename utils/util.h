@@ -23,6 +23,10 @@
 #ifndef COMMON_UTIL_H
 #define COMMON_UTIL_H
 
+#include <exception>
+#include <stdexcept>
+#include <string>
+
 namespace Common {
 
 
@@ -90,6 +94,91 @@ enum Platform {
 
 	kPlatformUnknown = -1
 };
-}
+
+} // End of Common namespace
+
+/*
+ * Some useful types
+ */
+
+typedef unsigned char byte;
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef signed char int8;
+typedef signed short int16;
+#ifdef __amigaos4__
+#include <exec/types.h>
+#include <stdlib.h>
+#else
+typedef unsigned int uint32;
+typedef signed int int32;
+#endif
+
+/*
+ * Various utility macros
+ */
+
+#if defined(_MSC_VER)
+
+	#define scumm_stricmp stricmp
+	#define scumm_strnicmp _strnicmp
+	#define snprintf _snprintf
+
+	#define SCUMM_LITTLE_ENDIAN
+	#pragma once
+	#pragma warning( disable : 4068 ) /* turn off "unknown pragma" warning */
+	#pragma warning( disable : 4996 ) /* turn off warnings about unsafe functions */
+
+#elif defined(__MINGW32__)
+
+	#define scumm_stricmp strcasecmp
+	#define scumm_stricmp stricmp
+	#define scumm_strnicmp strnicmp
+
+	#define SCUMM_LITTLE_ENDIAN
+
+#elif defined(UNIX)
+	#define scumm_stricmp strcasecmp
+	#define scumm_strnicmp strncasecmp
+
+	#if defined(__DECCXX) /* Assume alpha architecture */
+	#define INVERSE_MKID
+	#define SCUMM_NEED_ALIGNMENT
+	#endif
+
+#else
+
+	#error No system type defined
+
+#endif
+
+
+/**
+ * Throw an exception of this type (or subtype of it), if the tool fails fatally.
+ * This type is intended for general errors
+ */
+class ToolException : public std::runtime_error {
+public:
+	/**
+	 * Construct an exception, with an appropriate error message
+	 * A return value for the tool should be supplied if none is appropriate
+	 * @todo If the tools are even more C++ized, the tool should decide retcode itself, not by exception
+	 *
+	 * @param error The error message
+	 * @param retcode The return value of the process
+	 */
+	ToolException(std::string error, int retcode = -1) : std::runtime_error(error), _retcode(retcode) {}
+
+	int _retcode;
+};
+
+/**
+ * Something unexpected happened while reading / writing to a file
+ * Usually premature end, or that it could not be opened (write / read protected)
+ */
+class AbortException : public ToolException {
+public: 
+	AbortException() : ToolException("Operation was aborted", -2) {}
+};
 
 #endif

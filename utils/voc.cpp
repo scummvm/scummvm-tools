@@ -21,7 +21,6 @@
  */
 
 #include "voc.h"
-#include "stream.h"
 #include "audiostream.h"
 
 
@@ -41,7 +40,7 @@ int getSampleRateFromVOCRate(int vocSR) {
 	}
 }
 
-byte *loadVOCFromStream(Common::ReadStream &stream, int &size, int &rate, int &loops, int &begin_loop, int &end_loop) {
+byte *loadVOCFromStream(File &stream, int &size, int &rate, int &loops, int &begin_loop, int &end_loop) {
 	VocFileHeader fileHeader;
 
 	if (stream.read(&fileHeader, 8) != 8)
@@ -121,12 +120,12 @@ byte *loadVOCFromStream(Common::ReadStream &stream, int &size, int &rate, int &l
 	return ret_sound;
 }
 
-byte *loadVOCFromStream(Common::ReadStream &stream, int &size, int &rate) {
+byte *loadVOCFromStream(File &stream, int &size, int &rate) {
 	int loops, begin_loop, end_loop;
 	return loadVOCFromStream(stream, size, rate, loops, begin_loop, end_loop);
 }
 
-AudioStream *makeVOCStream(Common::ReadStream &stream) {
+AudioStream *makeVOCStream(File &stream) {
 	int size, rate;
 	byte *data = loadVOCFromStream(stream, size, rate);
 

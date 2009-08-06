@@ -26,6 +26,7 @@
 #include <sstream>
 
 #include "util.h"
+#include "utils/file.h"
 #include "tool.h"
 
 Tool::Tool(const std::string &name, ToolType type) {

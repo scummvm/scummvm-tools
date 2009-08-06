@@ -20,35 +20,12 @@
  *
  */
 
-/* Scumm Tools
- * Copyright (C) 2004-2006  The ScummVM Team
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
- *
- */
-
-#include "stream.h"
 #include "audiostream.h"
 #include "adpcm.h"
 
 namespace Audio {
 
-bool loadWAVFromStream(Common::SeekableReadStream &stream, int &size, int &rate, byte &flags, uint16 *wavType, int *blockAlign_) {
+bool loadWAVFromStream(File &stream, int &size, int &rate, byte &flags, uint16 *wavType, int *blockAlign_) {
 	const uint32 initialPos = stream.pos();
 	byte buf[4+1];
 
@@ -159,7 +136,7 @@ bool loadWAVFromStream(Common::SeekableReadStream &stream, int &size, int &rate,
 
 	do {
 		stream.seek(offset, SEEK_CUR);
-		if (stream.pos() >= initialPos + wavLength + 8) {
+		if (stream.pos() >= int(initialPos + wavLength + 8)) {
 			warning("getWavInfo: Cannot find 'data' chunk");
 			return false;
 		}
@@ -177,7 +154,7 @@ bool loadWAVFromStream(Common::SeekableReadStream &stream, int &size, int &rate,
 	return true;
 }
 
-AudioStream *makeWAVStream(Common::SeekableReadStream &stream) {
+AudioStream *makeWAVStream(File &stream) {
 	int size, rate;
 	byte flags;
 	uint16 type;

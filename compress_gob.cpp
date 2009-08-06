@@ -125,7 +125,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 
 // All the other reads concern file + compression flag
 	std::string fname = gobConf.readString();
-	while (!gobConf.reachedEOF()) {
+	while (!gobConf.eos()) {
 		strcpy(curChunk->name, fname.c_str());
 		fname = gobConf.readString();
 		if ((fname == "1") || (_execMode & MODE_FORCE))
@@ -157,7 +157,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 		src1.close();
 		
 		std::string tmp = gobConf.readString();
-		if (!gobConf.reachedEOF()) {
+		if (!gobConf.eos()) {
 			curChunk->next = new Chunk;
 			curChunk = curChunk->next;
 			chunkCount++;

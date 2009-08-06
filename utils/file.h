@@ -1,5 +1,5 @@
 /* Scumm Tools
- * Copyright (C) 2004-2006  The ScummVM Team
+ * Copyright (C) 2009  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,50 +23,372 @@
 #ifndef COMMON_FILE_H
 #define COMMON_FILE_H
 
-#include "stream.h"
+#include "util.h"
 
-namespace Common {
+#include <stdio.h>
+#include <string>
 
-class File : public SeekableReadStream {
-protected:
-	/** POSIX file handle to the actual file; 0 if no file is open. */
-	FILE *_handle;
-
-	/** If we own the internal handle or not (we don't if we're constructed from a ::File object */
-	bool _owned;
-
-	/** Status flag which tells about recent I/O failures. */
-	bool _ioFailed;
-
-private:
-	// Disallow copying File objects. There is not strict reason for this,
-	// except that so far we never had real need for such a feature, and
-	// code that accidentally copied File objects tended to break in strange
-	// ways.
-	File(const File &f);
-	File &operator  =(const File &f);
-
-public:
-
-	File(FILE *file);
-	// Allow construction from a ::File object, note that we *do not* own the file pointer
-	// in this scenario, we just act as a different wrapper for the file
-	// FIXME: Actually -- why do we have *two* wrappers anyway???
-	File(::File &file);
-	virtual ~File();
-
-	virtual void close();
-	bool isOpen() const;
-	bool ioFailed() const;
-	void clearIOFailed();
-	bool eos() const { return eof(); }
-	bool eof() const;
-	uint32 pos() const;
-	uint32 size() const;
-	void seek(int32 offs, int whence = SEEK_SET);
-	uint32 read(void *dataPtr, uint32 dataSize);
+/**
+ * Something unexpected happened while reading / writing to a file
+ * Usually premature end, or that it could not be opened (write / read protected)
+ */
+class FileException : public ToolException {
+public: 
+	FileException(std::string error, int retcode = -1) : ToolException(error, retcode) {}
 };
 
-} // End of namespace Common
+/**
+ * A file path, can be queried for different parts
+ * and the parts can be modified seperately
+ */
+class Filename {
+public:
+	std::string _path;
+
+	Filename(std::string path = "");
+	Filename(const char *path);
+	Filename(const Filename &path);
+	Filename& operator=(const Filename &fn);
+
+	inline bool operator==(const Filename &fn){
+		return equals(fn);
+	}
+	
+	/**
+	 * Change the entire path including directory, volume and actual filname.
+	 *
+	 * @param path The new path.
+	 */
+	void setFullPath(const std::string &path);
+
+	/**
+	 * Sets the name of the file referred to, does not change the directory referred to.
+	 *
+	 * @param name New filename.
+	 */
+	void setFullName(const std::string &name);
+
+	/**
+	 * Adds an extension to the filename (does not replace any current extension).
+	 *
+	 * @param ext Extension to add.
+	 */
+	void addExtension(const std::string &ext);
+
+	/**
+	 * Sets the extension of the filename, replacing any current one, or adding one if there isn't any.
+	 *
+	 * @param ext The new extension of the filename.
+	 */
+	void setExtension(const std::string &ext);
+
+	/**
+	 * Returns true if the file has that extension.
+	 *
+	 * @param ext Extension to check for, only last extension is checked.
+	 * @return True if the filename has that extension.
+	 */
+	bool hasExtension(std::string ext) const;
+
+	/**
+	 * Has the filename been set to anything.
+	 */
+	bool empty() const;
+
+	/**
+	 * Returns true if the file exists, does NOT work for directories
+	 */
+	bool exists() const;
+
+	/**
+	 * Returns true if the file is a directory, which is if the path ends with '/'.
+	 *
+	 * @return true if the path looks like a directory.
+	 */
+	bool directory() const;
+
+	/**
+	 * True if the filenames are different (relative and absolute paths will NOT compare equally).
+	 *
+	 * @param other The filename to compare to.
+	 * @return True if they are equal.
+	 */
+	bool equals(const Filename &other) const;
+	
+
+	/**
+	 * Returns the entire path.
+	 */
+	std::string getFullPath() const;
+
+	/**
+	 * Returns the filename (ie. strips all directories from the path)
+	 */
+	std::string getFullName() const;
+
+	/**
+	 * Returns the name of the file, excluding extension and directories.
+	 * Note that in the case of multiple extensions, only the last extension is stripped.
+	 */
+	std::string getName() const;
+
+	/**
+	 * Get the extension of the filename, only the last extension in case of many.
+	 */
+	std::string getExtension() const;
+
+	/**
+	 * Returns the path of the filename, the name and extension of the file is stripped.
+	 */
+	std::string getPath() const;
+};
+
+/**
+ * Possible modes for opening files
+ */
+enum FileMode {
+	FILEMODE_READ = 1,
+	FILEMODE_WRITE = 2,
+	FILEMODE_BINARY = 4,
+	FILEMODE_APPEND = 8,
+};
+
+/**
+ * A basic wrapper around the FILE class.
+ * Offers functionality to write words easily, and deallocates the FILE
+ * automatically on destruction.
+ */
+class File {
+public:
+	/**
+	 * Opens the given file path as an in/out stream, depending on the
+	 * second argument.
+	 * File is always opened in binary mode
+	 *
+	 * @param filename The file to open
+	 * @param mode The mode to open the file in, can be either OR mask or in text
+	 */
+	File(const Filename &filename, FileMode mode);
+	File(const Filename &filename, const char *mode);
+	/**
+	 * Create an empty file, used for two-step construction.
+	 */
+	File();
+	~File();
+
+	/**
+	 * Opens the given file path as an in/out stream, depending on the
+	 * second argument.
+	 *
+	 * @param filename The file to open
+	 * @param mode The mode to open the file in
+	 */
+	void open(const Filename &filename, const char *mode);
+	void open(const Filename &filename, FileMode mode);
+
+	/**
+	 * Closes the file, if it's open
+	 */
+	void close();
+
+	/**
+	 * If the file is opened for reading / writing
+	 */
+	bool isOpen() const { return _file != 0; }
+
+	/**
+	 * Sets the xor mode of the file, bytes written / read to the file
+	 * will be XORed with this value. This value is *not* reset when
+	 * opening a new file.
+	 * Only works for write* and read* operation, not for the array
+	 * "read" and "write" methods
+	 */
+	void setXorMode(uint8 xormode);
+	
+	/**
+	 * Reads a single character (equivalent of fgetc
+	 */
+	int readChar();
+	/**
+	 * Read a single unsigned byte.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	uint8 readByte();
+	/**
+	 * Read a single 16-bit word, big endian.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	uint16 readUint16BE();
+	/**
+	 * Read a single 16-bit word, little endian.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	uint16 readUint16LE();
+	/**
+	 * Read a single 32-bit word, big endian.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	uint32 readUint32BE();
+	/**
+	 * Read a single 32-bit word, little endian.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	uint32 readUint32LE();
+	
+	/**
+	 * Read a single 16-bit word, big endian.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	int16 readSint16BE();
+	/**
+	 * Read a single 16-bit word, little endian.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	int16 readSint16LE();
+	/**
+	 * Read a single 32-bit word, big endian.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	int32 readSint32BE();
+	/**
+	 * Read a single 32-bit word, little endian.
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	int32 readSint32LE();
+
+
+	/**
+	 * Works the same way as fread, but throws on error or if it could
+	 * not read all elements.
+	 *
+	 * @param data Where to put the read data
+	 * @param elementSize the size of one element (in bytes)
+	 * @param elementCount the number of elements to read
+	 */
+	void read(void *data, size_t elementSize, size_t elementCount);
+
+	/**
+	 * Works the same way as fread, does NOT throw if it could not read all elements
+	 * still throws if file is not open.
+	 *
+	 * @param data Where to put the read data
+	 * @param elementSize the size of one element (in bytes)
+	 * @param elementCount the number of elements to read
+	 * @return number of bytes read
+	 */
+	size_t readN(void *data, size_t elementSize, size_t elementCount);
+
+	/**
+	 * Read on a shorter form, does not throw (like readN)
+	 *
+	 * @param data Where to put the data in memory.
+	 * @param bytes How many bytes of data to read.
+	 * @return Returns the amount of bytes actually read
+	 */
+	size_t read(void *data, size_t bytes);
+
+	/**
+	 * Reads a full string, until NULL or EOF
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	std::string readString();
+
+	/**
+	 * Reads the queried amount of bytes and returns it as a string
+	 * Throws FileException if file is not open / if read failed.
+	 *
+	 * @param len How many bytes to read
+	 * @return the data read
+	 */
+	std::string readString(size_t len);
+	
+
+
+	/**
+	 * Writes a single character (equivalent of fputc)
+	 */
+	void writeChar(int c);
+	/**
+	 * Writes a single byte to the file.
+	 * Throws FileException if file is not open / if write failed.
+	 */
+	void writeByte(uint8 b);
+	/**
+	 * Writes a single 16-bit word to the file, big endian.
+	 * Throws FileException if file is not open / if write failed.
+	 */
+	void writeUint16BE(uint16 value);
+	/**
+	 * Writes a single 16-bit word to the file, little endian.
+	 * Throws FileException if file is not open / if write failed.
+	 */
+	void writeUint16LE(uint16 value);
+	/**
+	 * Writes a single 32-bit word to the file, big endian.
+	 * Throws FileException if file is not open / if write failed.
+	 */
+	void writeUint32BE(uint32 value);
+	/**
+	 * Writes a single 32-bit word to the file, little endian.
+	 * Throws FileException if file is not open / if write failed.
+	 */
+	void writeUint32LE(uint32 value);
+
+	/**
+	 * Works the same way as fwrite, but throws on error or if
+	 * it could not write all data.
+	 *
+	 * @param data Where to read data from
+	 * @param elementSize the size of one element (in bytes)
+	 * @param elementCount the number of elements to read
+	 */
+	size_t write(const void *data, size_t elementSize, size_t elementCount);
+
+	/**
+	 * Works the same as fprintf
+	 */
+	void printf(const char *format, ...);
+
+	/**
+	 * Seek to the specified position in the stream.
+	 *
+	 * @param offset how many bytes to jump
+	 * @param origin SEEK_SET, SEEK_CUR or SEEK_END
+	 */
+	void seek(long offset, int origin);
+
+	/**
+	 * Resets the file pointer to the start of the file, in essence the same as re-opening it.
+	 */
+	void rewind();
+
+	/**
+	 * Returns current position of the file cursor
+	 */
+	int pos() const;
+
+	/**
+	 * True if there is nothing more to read from this file
+	 */
+	bool eos() const;
+
+	/**
+	 * Returns the length of the file, in bytes, does not move the cursor.
+	 */
+	uint32 size() const;
+
+	// FIXME: Remove this method ASAP
+	FILE *getFileHandle() { return _file; }
+
+protected:
+	/** The mode the file was opened in. */
+	FileMode _mode;
+	/** Internal reference to the file. */
+	FILE *_file;
+	/** The name of the file, used for better error messages. */
+	Filename _name;
+	/** xor with this value while reading/writing (default 0), does not work for "read"/"write", only for byte operations. */
+	uint8 _xormode;
+};
 
 #endif

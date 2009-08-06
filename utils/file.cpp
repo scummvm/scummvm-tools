@@ -1,5 +1,5 @@
 /* Scumm Tools
- * Copyright (C) 2004-2006  The ScummVM Team
+ * Copyright (C) 2004-2009  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,99 +22,485 @@
 
 #include "file.h"
 
+#include <stdarg.h>
 
-namespace Common {
 
-
-File::File(FILE *file)
-	: _handle(file), _ioFailed(false), _owned(true) {
+// Filenname implementation
+Filename::Filename(const char *path) {
+	_path = path;
+}
+Filename::Filename(std::string path) {
+	_path = path;
 }
 
-File::File(::File &file)
-	: _handle(file.getFileHandle()), _ioFailed(false), _owned(false) {
+Filename::Filename(const Filename& filename) {
+	_path = filename._path;
+}
+
+Filename& Filename::operator=(const Filename& filename) {
+	_path = filename._path;
+	return *this;
+}
+
+void Filename::setFullPath(const std::string &path) {
+	_path = path;
+}
+
+void Filename::setFullName(const std::string &newname) {
+	_path = getPath() + newname;
+}
+
+void Filename::addExtension(const std::string &ext) {
+	_path += ext;
+}
+
+void Filename::setExtension(const std::string &ext) {
+	size_t dot = _path.rfind('.');
+	if (dot == std::string::npos) {
+		_path += ext;
+	} else {
+		_path.resize(dot);
+		_path += ext;
+	}
+}
+
+bool Filename::equals(const Filename &other) const {
+#ifdef _WIN32
+	// On Windows paths are case-insensitive
+	return scumm_stricmp(_path.c_str(), other._path.c_str()) == 0;
+#else
+	return _path == other._path;
+#endif
+}
+
+bool Filename::empty() const {
+	return _path.empty();
+}
+
+bool Filename::directory() const {
+	return getFullName().size() == 0;
+}
+
+bool Filename::exists() const { 
+	// This fails if we don't have permission to read the file
+	// but in most cases, that's the same thing for us.
+	FILE *f = fopen(_path.c_str(), "r");
+	if (f) {
+		fclose(f);
+		return true;
+	}
+	return false;
+}
+
+bool Filename::hasExtension(std::string ext) const {
+	size_t dot = _path.rfind('.');
+	if (dot == std::string::npos)
+		return false;
+
+	// Check that dot position is less than /, since some
+	// directories contain ., like /home/.data/file
+	size_t slash = _path.rfind('/');
+	if (slash != std::string::npos)
+		if (slash > dot)
+			return false;
+
+	slash = _path.rfind('\\');
+	if (slash != std::string::npos)
+		if (slash > dot)
+			return false;
+
+	// We compare extensions, skip any dots
+	if (_path[dot] == '.')
+		dot++;
+	if (ext[0] == '.')
+		ext = ext.substr(1);
+
+	std::string tmp = _path.substr(dot);
+#ifdef _WIN32
+	// On Windows paths are case-insensitive
+	return scumm_stricmp(tmp.c_str(), ext.c_str()) == 0;
+#else
+	return tmp == ext;
+#endif
+}
+
+std::string Filename::getFullPath() const {
+	return _path;
+}
+
+std::string Filename::getFullName() const {
+	size_t slash = _path.rfind('/');
+	if (slash == std::string::npos)
+		slash = _path.rfind('\\');
+
+	if (slash == std::string::npos)
+		return _path;
+
+	return _path.substr(slash + 1);
+}
+
+std::string Filename::getName() const {
+	size_t slash = _path.rfind('/');
+	size_t dot = _path.rfind('.');
+	if (slash == std::string::npos)
+		slash = _path.rfind('\\');
+
+	if (dot == std::string::npos)
+		dot = _path.size();
+
+	if (slash == std::string::npos)
+		return _path.substr(0, dot);
+
+	if (dot < slash)
+		dot = _path.size();
+
+	return _path.substr(slash + 1, dot - slash - 1);
+}
+
+std::string Filename::getExtension() const {
+	size_t slash = _path.rfind('/');
+	size_t dot = _path.rfind('.');
+	if (slash == std::string::npos)
+		slash = _path.rfind('\\');
+
+	if (slash == std::string::npos)
+		slash = 0;
+
+	if (dot == std::string::npos)
+		return "";
+
+	if (dot < slash)
+		return "";
+
+	return _path.substr(dot + 1);
+}
+
+std::string Filename::getPath() const {
+	size_t slash = _path.rfind('/');
+	if (slash == std::string::npos)
+		slash = _path.rfind('\\');
+
+	if (slash == std::string::npos)
+		return "";
+
+	return _path.substr(0, slash + 1);
+}
+
+// File interface
+// While this does massive duplication of the code above, it's required to make sure that
+// unconverted tools are backwards-compatible
+
+File::File() {
+	_file = NULL;
+	_mode = FILEMODE_READ;
+	_xormode = 0;
+}
+
+File::File(const Filename &filepath, FileMode mode) {
+	_file = NULL;
+	_mode = FILEMODE_READ;
+
+	open(filepath, mode);
+}
+
+File::File(const Filename &filepath, const char *mode) {
+	_file = NULL;
+	_mode = FILEMODE_READ;
+
+	open(filepath, mode);
 }
 
 File::~File() {
-	if (_owned)
-		close();
+	close();
+}
+
+void File::open(const Filename &filepath, const char *mode) {
+	FileMode m = FILEMODE_WRITE;
+	do {
+		switch(*mode) {
+		case 'w': m = FILEMODE_WRITE; break;
+		case 'r': m = FILEMODE_READ; break;
+		case 'b': m = FileMode(m | FILEMODE_BINARY); break;
+		case '+': m = FileMode(m | FILEMODE_APPEND); break;
+		default: throw FileException(std::string("Unsupported FileMode ") + mode);
+		}
+	} while(*++mode);
+	
+	open(filepath, m);
+}
+
+void File::open(const Filename &filepath, FileMode mode) {
+	// Clean up previously opened file
+	close();
+
+	std::string strmode;
+	if (mode & FILEMODE_READ)
+		strmode += 'r';
+	if (mode & FILEMODE_WRITE)
+		strmode += 'w';
+	if (mode & FILEMODE_BINARY)
+		strmode += 'b';
+	if (mode & FILEMODE_APPEND)
+		strmode += '+';
+
+	_file = fopen(filepath.getFullPath().c_str(), strmode.c_str());
+	_mode = mode;
+	_name = filepath;
+
+	if (!_file)
+		throw FileException("Could not open file " + filepath.getFullPath());
 }
 
 void File::close() {
-	_handle = NULL;
+	if (_file)
+		fclose(_file);
+	_file = NULL;
 }
 
-bool File::isOpen() const {
-	return _handle != NULL;
+void File::setXorMode(uint8 xormode) {
+	_xormode = xormode;
 }
 
-bool File::ioFailed() const {
-	return _ioFailed != 0;
+int File::readChar() {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
+
+	int u8 = fgetc(_file);
+	if (u8 == EOF)
+		throw FileException("Read beyond the end of file (" + _name.getFullPath() + ")");
+	u8 ^= _xormode;
+	return u8;
 }
 
-void File::clearIOFailed() {
-	_ioFailed = false;
+uint8 File::readByte() {
+	int u8 = readChar();
+	return (uint8)u8;
 }
 
-bool File::eof() const {
-	if (_handle == NULL) {
-		error("File::eof: File is not open!");
-		return false;
+uint16 File::readUint16BE() {
+	uint16 ret = 0;
+	ret |= uint16(readByte() << 8ul);
+	ret |= uint16(readByte());
+	return ret;
+}
+
+uint16 File::readUint16LE() {
+	uint16 ret = 0;
+	ret |= uint16(readByte());
+	ret |= uint16(readByte() << 8ul);
+	return ret;
+}
+
+uint32 File::readUint32BE() {
+	uint32 ret = 0;
+	ret |= uint32(readByte() << 24);
+	ret |= uint32(readByte() << 16);
+	ret |= uint32(readByte() << 8);
+	ret |= uint32(readByte());
+	return ret;
+}
+
+uint32 File::readUint32LE() {
+	uint32 ret = 0;
+	ret |= uint32(readByte());
+	ret |= uint32(readByte() << 8);
+	ret |= uint32(readByte() << 16);
+	ret |= uint32(readByte() << 24);
+	return ret;
+}
+
+int16 File::readSint16BE() {
+	int16 ret = 0;
+	ret |= int16(readByte() << 8ul);
+	ret |= int16(readByte());
+	return ret;
+}
+
+int16 File::readSint16LE() {
+	int16 ret = 0;
+	ret |= int16(readByte());
+	ret |= int16(readByte() << 8ul);
+	return ret;
+}
+
+int32 File::readSint32BE() {
+	int32 ret = 0;
+	ret |= int32(readByte() << 24);
+	ret |= int32(readByte() << 16);
+	ret |= int32(readByte() << 8);
+	ret |= int32(readByte());
+	return ret;
+}
+
+int32 File::readSint32LE() {
+	int32 ret = 0;
+	ret |= int32(readByte());
+	ret |= int32(readByte() << 8);
+	ret |= int32(readByte() << 16);
+	ret |= int32(readByte() << 24);
+	return ret;
+}
+
+void File::read(void *data, size_t elementSize, size_t elementCount) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
+
+	size_t data_read = fread(data, elementSize, elementCount, _file);
+	if (data_read != elementCount)
+		throw FileException("Read beyond the end of file (" + _name.getFullPath() + ")");
+}
+
+size_t File::readN(void *data, size_t elementSize, size_t elementCount) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
+
+	return fread(data, elementSize, elementCount, _file);
+}
+
+size_t File::read(void *data, size_t bytes) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
+
+	return fread(data, 1, bytes, _file);
+}
+
+std::string File::readString() {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
+
+	std::string s;
+	try {
+		char c;
+		while ((c = readByte())) {
+			s += c;
+		}
+	} catch (FileException &) {
+		// pass, we reached EOF
 	}
 
-	return feof(_handle) != 0;
+	return s;
 }
 
-uint32 File::pos() const {
-	if (_handle == NULL) {
-		error("File::pos: File is not open!");
-		return 0;
+std::string File::readString(size_t len) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
+
+	std::string s('\0', len);
+	std::string::iterator is = s.begin();
+
+	char c;
+	while ((c = readByte())) {
+		*is = c;
 	}
 
-	return ftell(_handle);
+	return s;
+}
+
+void File::writeChar(int i) {
+	if (!_file) 
+		throw FileException("File  is not open");
+	if ((_mode & FILEMODE_WRITE) == 0)
+		throw FileException("Tried to write to a file opened in read mode (" + _name.getFullPath() + ")");
+
+	i ^= _xormode;
+
+	if (fwrite(&i, 1, 1, _file) != 1)
+		throw FileException("Could not write to file (" + _name.getFullPath() + ")");
+}
+
+void File::writeByte(uint8 b) {
+	writeChar(b);
+}
+
+void File::writeUint16BE(uint16 value) {
+	writeByte((uint8)(value >> 8));
+	writeByte((uint8)(value));
+}
+
+void File::writeUint16LE(uint16 value) {
+	writeByte((uint8)(value));
+	writeByte((uint8)(value >> 8));
+}
+
+void File::writeUint32BE(uint32 value) {
+	writeByte((uint8)(value >> 24));
+	writeByte((uint8)(value >> 16));
+	writeByte((uint8)(value >> 8));
+	writeByte((uint8)(value));
+}
+
+void File::writeUint32LE(uint32 value) {
+	writeByte((uint8)(value));
+	writeByte((uint8)(value >> 8));
+	writeByte((uint8)(value >> 16));
+	writeByte((uint8)(value >> 24));
+}
+
+size_t File::write(const void *data, size_t elementSize, size_t elementCount) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_WRITE) == 0)
+		throw FileException("Tried to write to file opened in read mode (" + _name.getFullPath() + ")");
+
+	size_t data_read = fwrite(data, elementSize, elementCount, _file);
+	if (data_read != elementCount)
+		throw FileException("Could not write to file (" + _name.getFullPath() + ")");
+
+	return data_read;
+}
+
+void File::printf(const char *format, ...) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_WRITE) == 0)
+		throw FileException("Tried to write to file opened in read mode (" + _name.getFullPath() + ")");
+
+
+	va_list va;
+
+	va_start(va, format);
+	vfprintf(_file, format, va);
+	va_end(va);
+}
+
+void File::seek(long offset, int origin) {
+	if (!_file) 
+		throw FileException("File is not open");
+
+	if (fseek(_file, offset, origin) != 0)
+		throw FileException("Could not seek in file (" + _name.getFullPath() + ")");
+}
+
+void File::rewind() {
+	return ::rewind(_file);
+}
+
+int File::pos() const {
+	return ftell(_file);
+}
+
+bool File::eos() const {
+	return feof(_file) != 0;
 }
 
 uint32 File::size() const {
-	if (_handle == NULL) {
-		error("File::size: File is not open!");
-		return 0;
-	}
-
-	uint32 oldPos = ftell(_handle);
-	fseek(_handle, 0, SEEK_END);
-	uint32 length = ftell(_handle);
-	fseek(_handle, oldPos, SEEK_SET);
-
-	return length;
+	uint32 sz;
+	uint32 p = ftell(_file);
+	fseek(_file, 0, SEEK_END);
+	sz = ftell(_file);
+	fseek(_file, p, SEEK_SET);
+	return sz;
 }
 
-void File::seek(int32 offs, int whence) {
-	if (_handle == NULL) {
-		error("File::seek: File is not open!");
-		return;
-	}
-
-	if (fseek(_handle, offs, whence) != 0)
-		clearerr(_handle);
-}
-
-uint32 File::read(void *ptr, uint32 len) {
-	byte *ptr2 = (byte *)ptr;
-	size_t real_len;
-
-	if (_handle == NULL) {
-		error("File::read: File is not open!");
-		return 0;
-	}
-
-	if (len == 0)
-		return 0;
-
-	real_len = fread(ptr2, 1, len, _handle);
-	if (real_len < len) {
-		_ioFailed = true;
-	}
-
-	return (uint32)real_len;
-}
-
-}	// End of namespace Common
