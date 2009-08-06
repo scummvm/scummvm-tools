@@ -199,6 +199,7 @@ File::File() {
 File::File(const Filename &filepath, FileMode mode) {
 	_file = NULL;
 	_mode = FILEMODE_READ;
+	_xormode = 0;
 
 	open(filepath, mode);
 }
@@ -206,6 +207,7 @@ File::File(const Filename &filepath, FileMode mode) {
 File::File(const Filename &filepath, const char *mode) {
 	_file = NULL;
 	_mode = FILEMODE_READ;
+	_xormode = 0;
 
 	open(filepath, mode);
 }
@@ -246,6 +248,7 @@ void File::open(const Filename &filepath, FileMode mode) {
 	_file = fopen(filepath.getFullPath().c_str(), strmode.c_str());
 	_mode = mode;
 	_name = filepath;
+	_xormode = 0;
 
 	if (!_file)
 		throw FileException("Could not open file " + filepath.getFullPath());
