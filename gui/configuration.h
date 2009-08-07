@@ -94,7 +94,7 @@ inline Configuration::Configuration() {
 	// Default values for all the settings
 
 	advanced = false;
-	compressing = false;
+	compressing = true;
 
 	selectedTool = NULL;
 

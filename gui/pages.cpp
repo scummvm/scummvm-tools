@@ -112,8 +112,8 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 		wxT("Welcome to the ScummVM extraction and compression utility.")));
 	
 	wxString choices[] = {
-		wxT("Extract from game data files"),
 		wxT("Compress audio files"),
+		wxT("Extract from game data files"),
 		wxT("Choose tool to use (advanced)")
 	};
 
@@ -130,9 +130,9 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	if (config.advanced)
 		options->SetSelection(2);
 	else if (config.compressing)
-		options->SetSelection(1);
-	else
 		options->SetSelection(0);
+	else
+		options->SetSelection(1);
 
 	return panel;
 }

@@ -67,11 +67,9 @@ void CompressAgos::end() {
 }
 
 
-int CompressAgos::get_offsets(uint32 filenums[], uint32 offsets[]) {
-	int i;
-	char buf[8];
-
-	for (i = 0;; i++) {
+int CompressAgos::get_offsets(size_t maxcount, uint32 filenums[], uint32 offsets[]) {
+	for (size_t i = 0; i < maxcount; i++) {
+		char buf[8];
 		_input.read(buf, 1, 8);
 		if (!memcmp(buf, "Creative", 8) || !memcmp(buf, "RIFF", 4)) {
 			return i;
@@ -80,18 +78,22 @@ int CompressAgos::get_offsets(uint32 filenums[], uint32 offsets[]) {
 
 		offsets[i] = _input.readUint32LE();
 	}
+
+	// We exceeded size of array
+	throw ToolException("Too many indexes read, file does not appear to be of the correct format.");
 }
 
-int CompressAgos::get_offsets_mac(uint32 filenums[], uint32 offsets[]) {
-	int i, size;
-	size = _input.size();
+int CompressAgos::get_offsets_mac(size_t maxcount, uint32 filenums[], uint32 offsets[]) {
+	int size = _input.size();
 
-	for (i = 1; i <= size / 6; i++) {
+	for (int i = 1; i <= size / 6; i++) {
+		if ((size_t)i >= maxcount)
+			throw ToolException("Too many indexes read, file does not appear to be of the correct format.");
 		filenums[i] = _input.readUint16BE();
 		offsets[i] = _input.readUint32BE();
 	}
 
-	return(size/6);
+	return (size/6);
 }
 
 
@@ -140,7 +142,7 @@ void CompressAgos::convert_pc(Filename* inputPath) {
 
 	_output_snd.open(TEMP_DAT, "wb");
 
-	num = get_offsets(filenums, offsets);
+	num = get_offsets(32768, filenums, offsets);
 	if (!num) {
 		error("This does not seem to be a valid file");
 	}
@@ -176,7 +178,7 @@ void CompressAgos::convert_mac(Filename *inputPath) {
 
 	_output_snd.open(TEMP_DAT, "wb");
 
-	num = get_offsets_mac(filenums, offsets);
+	num = get_offsets_mac(32768, filenums, offsets);
 	if (!num) {
 		error("This does not seem to be a valid file");
 	}
