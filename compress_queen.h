@@ -57,7 +57,7 @@ protected:
 	VersionExtra _versionExtra;
 	const GameVersion *_version;
 
-	void createFinalFile(Filename *outPath);
+	void createFinalFile(Filename outPath);
 	void fromFileToFile(File &in, File &out, uint32 amount);
 	const GameVersion *detectGameVersion(uint32 size);
 };
