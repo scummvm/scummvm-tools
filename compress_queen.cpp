@@ -90,15 +90,14 @@ const struct PatchFile patchFiles[] = {
 };
 
 CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
-	_outputToDirectory = false;
 	_supportsProgressBar = true;
 	
 	ToolInput input;
 	input.format = "queen.1";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress Flight of the Amazon Queen data files.";
-	_helptext = "\nUsage: " + getName() + " [mode] [mode params] [-o outputfile] <inputfile (queen.1)>\n";
+	_shorthelp = "Used to compress Flight of the Amazon Queen data files. Output filename is " + std::string(FINAL_OUT) + " .";
+	_helptext = "\nUsage: " + getName() + " [mode] [mode params] [-o outputdir] <inputfile (queen.1)>\n\t" + _shorthelp + "\n";
 }
 
 const CompressQueen::GameVersion *CompressQueen::detectGameVersion(uint32 size) {
@@ -132,14 +131,16 @@ void CompressQueen::fromFileToFile(File &in, File &out, uint32 amount) {
 	}
 }
 
-void CompressQueen::createFinalFile(Filename *outPath) {
+void CompressQueen::createFinalFile(Filename outPath) {
 	int i;
 	uint32 dataStartOffset;
 	uint32 dataSize;
 
+	outPath.setFullName(FINAL_OUT);
+
 	File inTbl(TEMP_TBL, "rb");
 	File inData(TEMP_DAT, "rb");
-	File outFinal(*outPath, "wb");
+	File outFinal(outPath, "wb");
 
 	dataStartOffset = inTbl.size() + EXTRA_TBL_HEADER;
 	dataSize = inData.size();
@@ -178,10 +179,8 @@ void CompressQueen::execute() {
 	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
 
-	if (outpath.empty()) {
+	if (outpath.empty())
 		outpath = inpath;
-		outpath.setFullName(FINAL_OUT);
-	}
 
 	/* Open input file (QUEEN.1) */
 	inputData.open(inpath, "rb");
@@ -317,7 +316,7 @@ void CompressQueen::execute() {
 	outputData.close();
 
 	/* Merge the temporary table and temporary datafile to create final file */
-	createFinalFile(&outpath);
+	createFinalFile(outpath);
 }
 
 #ifdef STANDALONE_MAIN
