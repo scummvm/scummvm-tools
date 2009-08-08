@@ -53,7 +53,8 @@ ExtractMMC64::ExtractMMC64(const std::string &name) : Tool(name, TOOLTYPE_EXTRAC
 	input2.format = "*.d64";
 	_inputPaths.push_back(input2);
 
-	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n";
+	_shorthelp = "Extract Maniac Mansion data files, from the C64 version.";
+	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n\t" + _shorthelp + "\n";
 }
 
 void ExtractMMC64::execute() {

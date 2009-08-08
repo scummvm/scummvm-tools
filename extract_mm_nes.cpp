@@ -1117,8 +1117,10 @@ ExtractMMNes::ExtractMMNes(const std::string &name) : Tool(name, TOOLTYPE_EXTRAC
 	input.format = "*.PRG";
 	_inputPaths.push_back(input);
 
+	_shorthelp = "Extract Maniac Mansion data files, from the NES version.";
 	_helptext = 
-		"\nUsage: " + _name + " [-o <output dir> = out/] <infile.PRG>\n"
+		"\nUsage: " + _name + " [-o <output dir> = out/] <infile.PRG>\n" +
+		"\t" + _shorthelp + "\n" +
 		"\tSupported versions: USA, Europe, Sweden, France, Germany, Spain\n"
 		"\tJapanese version is NOT supported!\n";
 }

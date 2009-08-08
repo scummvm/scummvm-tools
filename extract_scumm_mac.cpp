@@ -44,8 +44,8 @@ ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name, TOOLTYPE_
 InspectionMatch ExtractScummMac::inspectInput(const Filename &filename) {
 	std::string name = filename.getFullName();
 	std::transform(name.begin(), name.end(), name.begin(), tolower);
-	std::string::size_type pos = name.find("data");
-	if (pos == name.length() - 4) // True if the file name ends with "Data"
+	std::string::size_type pos = name.find(" data");
+	if (pos == name.length() - 5) // True if the file name ends with " Data"
 		return IMATCH_PERFECT;
 	return IMATCH_AWFUL;
 }

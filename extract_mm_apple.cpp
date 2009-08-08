@@ -52,7 +52,8 @@ ExtractMMApple::ExtractMMApple(const std::string &name) : Tool(name, TOOLTYPE_EX
 	input2.format = "*.dsk";
 	_inputPaths.push_back(input2);
 
-	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n";
+	_shorthelp = "Extract Maniac Mansion data files, from the Apple II version.";
+	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.dsk> <disk2.dsk>\n\t" + _shorthelp + "\n";
 }
 
 void ExtractMMApple::execute() {

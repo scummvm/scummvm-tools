@@ -140,6 +140,8 @@ public:
 	void save(wxWindow *panel);
 
 	void onNext(wxWindow *panel);
+	
+	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
 
 /**
@@ -160,6 +162,8 @@ public:
 	void save(wxWindow *panel);
 
 	void onChangeTool(wxCommandEvent &evt);
+	
+	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 
 protected:
 	wxArrayString _options;
@@ -191,6 +195,8 @@ public:
 	void onNext(wxWindow *panel);
 
 	void save(wxWindow *panel);
+	
+	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
 
 /**

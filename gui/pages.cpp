@@ -155,6 +155,11 @@ void IntroPage::onNext(wxWindow *panel) {
 	}
 }
 
+void IntroPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
+	buttons->setLineLabel(wxT("ScummVM Tools"));
+}
+
+
 // Page to choose the tool to use
 
 ChooseToolPage::ChooseToolPage(ScummToolsFrame *frame, const wxArrayString &options)
@@ -241,6 +246,10 @@ void ChooseToolPage::onChangeTool(wxCommandEvent &evt) {
 	text->SetLabel(g_tools[tool->GetStringSelection()].getShortHelp());
 }
 
+void ChooseToolPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
+	buttons->setLineLabel(wxT("ScummVM Tools"));
+}
+
 // Common base class for the IO pages
 
 ChooseIOPage::ChooseIOPage(ScummToolsFrame *frame)
@@ -278,7 +287,7 @@ void ChooseIOPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	wxDirPickerCtrl *inDirWindow = dynamic_cast<wxDirPickerCtrl *>(picker);
 	wxFilePickerCtrl *inFileWindow = dynamic_cast<wxFilePickerCtrl *>(picker);
 
-	_topframe->_buttons->enableNext(
+	buttons->enableNext(
 		(inDirWindow && inDirWindow->GetPath().size() > 0) || 
 		(inFileWindow && inFileWindow->GetPath().size() > 0));
 }
@@ -386,6 +395,11 @@ void ChooseInPage::onNext(wxWindow *panel) {
 			switchPage(new ChooseToolPage(_topframe, ls));
 		}
 	}
+}
+
+void ChooseInPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
+	if (!_configuration.advanced)
+		buttons->setLineLabel(wxT("ScummVM Tools"));
 }
 
 // Page to choose input and output directory or file

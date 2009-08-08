@@ -142,6 +142,7 @@ inline wxArrayString Configuration::getTargetPlatforms() {
 	platforms.Add(wxT("Nintendo DS"));
 	platforms.Add(wxT("PlayStation 2"));
 	platforms.Add(wxT("PocketPC"));
+	platforms.Add(wxT("Dreamcast"));
 	platforms.Add(wxT("PSP"));
 	platforms.Add(wxT("Symbian"));
 	platforms.Add(wxT("Wii"));
@@ -152,8 +153,8 @@ inline wxArrayString Configuration::getTargetPlatforms() {
 inline void Configuration::setPlatformDefaults() {
 	// Switch for strings would be nice here...
 	// Ogg works better on the small platforms (maybe all...?)
-	if (selectedPlatform == wxT("iPhone") || selectedPlatform == wxT("Nintendo DS") || selectedPlatform == wxT("PocketPC"))
-		selectedAudioFormat = AUDIO_VORBIS;
+	if (selectedPlatform == wxT("Nintendo DS") || selectedPlatform == wxT("Dreamcast"))
+		selectedAudioFormat = AUDIO_MP3;
 }
 
 #endif

@@ -70,7 +70,8 @@ uint32 Archive::getSizeOfSubfile() {
 }
 
 void Archive::openSubfile(uint32 index) {
-	if (index >= _numFiles) exit(-3);
+	if (index >= _numFiles)
+		throw ToolException("File index out of bounds.");
 
 	closeSubfile();
 
@@ -98,7 +99,8 @@ void Archive::openSubfile(const char *filename) {
 
 	int32 index = findSubfile(filename);
 
-	if (index == -1) exit(-2);
+	if (index == -1)
+		throw ToolException("Could not open subfile.");
 
 	openSubfile(index);
 
@@ -141,7 +143,7 @@ void Archive::open(const char *filename, bool smallArchive) {
 	}
 
 	if (i > (uint32)maxEntries)
-		exit(9);
+		throw ToolException("Could not open archive, index out of range.");
 
 	_numSlots = i;
 
@@ -298,7 +300,8 @@ ExtractParallaction::ExtractParallaction(const std::string &name) : Tool(name, T
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
-	_helptext = "\nUsage: " + _name + " [--small] [-o <output dir> = out/] <file>\n";
+	_shorthelp = "Extract data files from games built on the Parallaction engine.";
+	_helptext = "\nUsage: " + _name + " [--small] [-o <output dir> = out/] <file>\n" + _shorthelp + "\n";
 }
 
 void ExtractParallaction::parseExtraArguments() {

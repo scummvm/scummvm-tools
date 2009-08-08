@@ -1229,7 +1229,8 @@ ExtractLoomTG16::ExtractLoomTG16(const std::string &name) : Tool(name, TOOLTYPE_
 	input.format = "*.iso";
 	_inputPaths.push_back(input);
 
-	_helptext = "\nUsage: " + _name + " [-o outputdir = out/] <infile>";
+	_shorthelp = "Extract data files from the Loom game.";
+	_helptext = "\nUsage: " + _name + " [-o outputdir = out/] <infile>\n\t" + _shorthelp + "\n";
 }
 
 void ExtractLoomTG16::execute() {
