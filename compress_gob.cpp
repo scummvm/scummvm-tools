@@ -336,8 +336,9 @@ uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
 	size = src.size();
 
 	byte *unpacked = new byte [size + 1];
-	for (int i = 0; i < 4096 - 18; i++)
-		dico[i] = 0x20;
+
+	memset(dico, 0x20, 4114);
+	memset(unpacked, 0, size + 1);
 
 	src.read(unpacked, 1, size);
 

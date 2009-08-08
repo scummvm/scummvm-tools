@@ -1,26 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual C++ Express 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_scumm_san", "compress_scumm_san.vcproj", "{1712DDB9-8BB1-4108-9A06-F86F28409B20}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_scumm_bun", "compress_scumm_bun.vcproj", "{C423ACAC-C398-4419-BA32-B77F6A8AC1F9}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_kyra", "compress_kyra.vcproj", "{B4D19F72-1F7B-48B2-8067-C6395B94DF05}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_saga", "compress_saga.vcproj", "{457CC8A6-E7AA-4C96-A7F8-F1D121762160}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_agos", "compress_agos.vcproj", "{4E9E6AA8-0A17-4DF3-992D-265EC9035AD8}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_queen", "compress_queen.vcproj", "{9E1854BD-1272-417D-88EB-34D7FD884C8C}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_scumm_sou", "compress_scumm_sou.vcproj", "{31465450-F58F-4237-9FF5-50874209B700}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_sword1", "compress_sword1.vcproj", "{9F35213C-290F-4656-81D5-263D2E2C1059}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_sword2", "compress_sword2.vcproj", "{ADE72D13-51EB-4B77-82F5-9DF3ED0480BF}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_touche", "compress_touche.vcproj", "{FF790984-B460-4B34-8471-26E66B8ECD4C}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "degob", "degob.vcproj", "{C151022B-EAC8-4680-9018-C0A897F7F9C6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dekyra", "dekyra.vcproj", "{0B9A669F-83C2-4AE4-841F-3B015713605C}"
@@ -28,30 +8,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "descumm", "descumm.vcproj", "{A95C647D-7CD0-47F9-8BFF-887E30533045}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "desword2", "desword2.vcproj", "{455E0465-9E4D-449F-A2C7-77506EF6912D}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "encode_dxa", "encode_dxa.vcproj", "{D39F34DF-2FA5-4857-A9C3-1F9EC8C8468F}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_agos", "extract_agos.vcproj", "{A59D7F94-4875-4337-8246-A28F21A1DF78}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_gob_stk", "extract_gob_stk.vcproj", "{7F599814-F7B1-4C4C-931C-04C05B0CA670}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_kyra", "extract_kyra.vcproj", "{5BCEC6FE-1EDD-464F-B09A-660C9B706AFD}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_loom_tg16", "extract_loom_tg16.vcproj", "{C3696126-6FDE-48E7-85EB-729CA0A65B3B}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_mm_apple", "extract_mm_apple.vcproj", "{E72A394B-F909-41F8-BC6A-AB1A7D43F068}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_mm_c64", "extract_mm_c64.vcproj", "{A511F49C-7CD7-425B-8EFE-759473873180}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_mm_nes", "extract_mm_nes.vcproj", "{FCB14856-1F26-4426-AAA0-1308441B3E2B}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_scumm_mac", "extract_scumm_mac.vcproj", "{D915987F-39E4-423A-857B-E9DBA8790619}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_zak_c64", "extract_zak_c64.vcproj", "{E79A9C02-416F-4165-AE11-E9C5205FBD29}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extract_parallaction", "extract_parallaction.vcproj", "{F4B04E6F-5916-44DA-A957-E8FA789D2CBC}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "compress_gob", "compress_gob.vcproj", "{8C4BC409-2EEC-41F5-A017-972F38414289}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

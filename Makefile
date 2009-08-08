@@ -188,6 +188,8 @@ degob$(EXEEXT): degob.o degob_script.o degob_script_v1.o degob_script_v2.o degob
 #extract_zak_c64$(EXEEXT): extract_zak_c64.o util.o tool.o
 #	$(CXX) $(LDFLAGS) -o $@ $+
 
+create_sjisfnt$(EXEEXT): create_sjisfnt.o util.o
+	$(CXX) $(LDFLAGS) `freetype-config --libs` -o $@ $+
 tools_gui$(EXEEXT): gui/main.o gui/pages.o gui/gui_tools.o compress_agos.o compress_gob.o compress_kyra.o \
 	compress_queen.o compress_saga.o compress_scumm_bun.o compress_scumm_san.o compress_scumm_sou.o \
 	compress_sword1.o compress_sword2.o compress_touche.o compress_tucker.o compress_tinsel.o \
@@ -212,6 +214,12 @@ gui/main.o: gui/main.cpp gui/main.h gui/configuration.h gui/pages.h
 
 gui/pages.o: gui/pages.cpp gui/pages.h gui/main.h gui/gui_tools.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/pages.cpp -o gui/pages.o
+
+create_sjisfnt.o: create_sjisfnt.cpp util.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `freetype-config --cflags` -c create_sjisfnt.cpp -o create_sjisfnt.o
+
+tools_gui.o: tools_gui.cpp tools_gui.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c tools_gui.cpp -o tools_gui.o
 
 gui/gui_tools.o: gui/gui_tools.cpp gui/gui_tools.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `wx-config --cxxflags` -c gui/gui_tools.cpp -o gui/gui_tools.o
