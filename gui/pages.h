@@ -65,6 +65,13 @@ public:
 	 */ 
 	virtual void save(wxWindow *panel);
 	
+	/**
+	 * Returns the associated help text with this page
+	 *
+	 * @return Returns the help text.
+	 */
+	virtual wxString getHelp();
+
 	// Event handlers
 	
 	/**
@@ -90,8 +97,9 @@ public:
 	 * the wizard.
 	 *
 	 * @param panel The panel associated with this page, should have bene created by CreatePanel previously.
+	 * @return Return true to make the application close (false does nothing)
 	 */
-	virtual void onCancel(wxWindow *panel); // Default is to display 'Are you sure' and quit if you click 'Yes'
+	virtual bool onCancel(wxWindow *panel); // Default is to display 'Are you sure' and return true if you click 'Yes'
 
 	/**
 	 * Update state of the next/prev/cancel buttons, by default all buttons are shown, and the next button
@@ -139,6 +147,8 @@ public:
 
 	void save(wxWindow *panel);
 
+	wxString getHelp();
+
 	void onNext(wxWindow *panel);
 	
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
@@ -160,6 +170,8 @@ public:
 	void onNext(wxWindow *panel);
 
 	void save(wxWindow *panel);
+	
+	wxString getHelp();
 
 	void onChangeTool(wxCommandEvent &evt);
 	
@@ -193,6 +205,8 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
+	
+	wxString getHelp();
 
 	void save(wxWindow *panel);
 	
@@ -210,6 +224,8 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
+	
+	wxString getHelp();
 
 	void save(wxWindow *panel);
 };
@@ -228,6 +244,8 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
+	
+	wxString getHelp();
 
 	void save(wxWindow *panel);
 };
@@ -245,6 +263,8 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
+	
+	wxString getHelp();
 
 	void save(wxWindow *panel);
 };
@@ -260,6 +280,8 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
+	
+	wxString getHelp();
 
 	void save(wxWindow *panel);
 };
@@ -432,11 +454,13 @@ public:
 	 * @param outwin Text control to redirect output to
 	 */
 	void runTool();
+	
+	wxString getHelp();
 
 	bool onIdle(wxPanel *panel);
 
 	void onNext(wxWindow *panel);
-	void onCancel(wxWindow *panel);
+	bool onCancel(wxWindow *panel);
 
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
@@ -451,6 +475,8 @@ public:
 	FinishPage(ScummToolsFrame *frame);
 
 	wxWindow *CreatePanel(wxWindow *parent);
+	
+	wxString getHelp();
 
 	void onNext(wxWindow *panel);
 

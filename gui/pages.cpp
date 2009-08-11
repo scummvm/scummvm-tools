@@ -76,14 +76,14 @@ void WizardPage::onPrevious(wxWindow *panel) {
 	_topframe->switchToPreviousPage();
 }
 
-void WizardPage::onCancel(wxWindow *panel) {
+bool WizardPage::onCancel(wxWindow *panel) {
 	wxMessageDialog dlg(panel, wxT("Are you sure you want to abort the wizard?"), wxT("Abort"), wxYES | wxNO);
 	wxWindowID ret = dlg.ShowModal();
 	if (ret == wxID_YES) {
 		_topframe->Close(true);
-	} else {
-		// Do nothing
+		return true;
 	}
+	return false;
 }
 
 // Load/Save settings
@@ -92,6 +92,11 @@ void WizardPage::save(wxWindow *panel) {
 
 bool WizardPage::onIdle(wxPanel *panel) {
 	return false;
+}
+
+// Get the help text
+wxString WizardPage::getHelp() {
+	return wxT("Sorry.\nThere is no additional help for this page.");
 }
 
 // Introduction page
@@ -144,6 +149,10 @@ void IntroPage::save(wxWindow *panel) {
 	_configuration.compressing = selected_option.Find(wxT("extract")) == wxNOT_FOUND;
 }
 
+wxString IntroPage::getHelp() {
+	return wxT("Select the activity you would like to do. In order to play your game.\nMost common usage is compression of game files.");
+}
+
 void IntroPage::onNext(wxWindow *panel) {
 	wxString selected_option = static_cast<wxRadioBox *>(panel->FindWindowByName(wxT("ChooseActivity")))->GetStringSelection().Lower();
 	if (selected_option.Find(wxT("advanced")) != wxNOT_FOUND) {
@@ -157,6 +166,8 @@ void IntroPage::onNext(wxWindow *panel) {
 
 void IntroPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->setLineLabel(wxT("ScummVM Tools"));
+
+	WizardPage::updateButtons(panel, buttons);
 }
 
 
@@ -179,7 +190,8 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 
 	if (!_options.empty()) {
 		sizer->Add(new wxStaticText(panel, wxID_ANY, 
-			wxT("There are multiple possible tools for this input, please select the correct one.")));
+			wxT("There are multiple possible tools for this input, please select the correct one.\n\n")
+			wxT("If none of the tools appear to match, you probably supplied the wrong file.")));
 		choices = _options;
 	} else {
 		sizer->Add(new wxStaticText(panel, wxID_ANY, 
@@ -228,6 +240,10 @@ void ChooseToolPage::save(wxWindow *panel) {
 		g_tools.get(static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection());
 }
 
+wxString ChooseToolPage::getHelp() {
+	return wxT("Select the tool you want to use.\nRead the short description below the dropdown box for a short hint on what the tool does.");
+}
+
 void ChooseToolPage::onNext(wxWindow *panel) {
 	const ToolGUI *tool = g_tools.get(static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection());
 
@@ -248,6 +264,8 @@ void ChooseToolPage::onChangeTool(wxCommandEvent &evt) {
 
 void ChooseToolPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->setLineLabel(wxT("ScummVM Tools"));
+	
+	WizardPage::updateButtons(panel, buttons);
 }
 
 // Common base class for the IO pages
@@ -290,6 +308,8 @@ void ChooseIOPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->enableNext(
 		(inDirWindow && inDirWindow->GetPath().size() > 0) || 
 		(inFileWindow && inFileWindow->GetPath().size() > 0));
+	
+	WizardPage::updateButtons(panel, buttons);
 }
 
 // Page to choose input directory or file
@@ -397,9 +417,17 @@ void ChooseInPage::onNext(wxWindow *panel) {
 	}
 }
 
+wxString ChooseInPage::getHelp() {
+	return wxT("Choose the input file.\n\nIf you are unsure, a general hint ")
+		wxT("is to select the file with an extension that is different from ")
+		wxT("all other files in the selected directory.");
+}
+
 void ChooseInPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	if (!_configuration.advanced)
 		buttons->setLineLabel(wxT("ScummVM Tools"));
+
+	ChooseIOPage::updateButtons(panel, buttons);
 }
 
 // Page to choose input and output directory or file
@@ -506,6 +534,10 @@ void ChooseExtraInPage::save(wxWindow *panel) {
 	}
 }
 
+wxString ChooseExtraInPage::getHelp() {
+	return wxT("Select any additional input files (usually extra disks) for this tool.");
+}
+
 void ChooseExtraInPage::onNext(wxWindow *panel) {
 	switchPage(new ChooseOutPage(_topframe));
 }
@@ -591,6 +623,13 @@ void ChooseOutPage::save(wxWindow *panel) {
 		_configuration.outputPath = outFileWindow->GetPath();
 }
 
+wxString ChooseOutPage::getHelp() {
+	return wxT("Select the output path.\t\nIn most cases it's enough to select an output ")
+		wxT("directory, and the tool will fill it with files.\nIf you must supply a file, ")
+		wxT("the filename is not important.\nOther files in the directory will be overwritten ")
+		wxT("without warnings the user.");
+}
+
 void ChooseOutPage::onNext(wxWindow *panel) {
 	if (_configuration.selectedTool->getType() == TOOLTYPE_COMPRESSION)
 		switchPage(new ChooseTargetPlatformPage(_topframe));
@@ -639,6 +678,11 @@ void ChooseTargetPlatformPage::save(wxWindow *panel) {
 
 	_configuration.selectedPlatform = platform->GetStringSelection();
 	_configuration.setPlatformDefaults();
+}
+
+wxString ChooseTargetPlatformPage::getHelp() {
+	return wxT("Choose the target platform.\n\nIf you do not know the target platform, ")
+		wxT("simply select PC.\nThis only effects the audio settings (optimized defaults).");
 }
 
 void ChooseTargetPlatformPage::onNext(wxWindow *panel) {
@@ -701,6 +745,11 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 	return panel;
 }
 
+wxString ChooseAudioFormatPage::getHelp() {
+	return wxT("Select audio format, for most platforms, Ogg Vorbis is preferred, as it's license free ")
+		wxT("and GPL based will still offer great quality.\nNintendo DS and Dremcast platforms only work with MP3 compression.");
+}
+
 void ChooseAudioFormatPage::save(wxWindow *panel) {
 	wxChoice *format = static_cast<wxChoice *>(panel->FindWindowByName(wxT("AudioSelection")));
 	wxCheckBox *advanced = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("AdvancedAudio")));
@@ -713,7 +762,6 @@ void ChooseAudioFormatPage::save(wxWindow *panel) {
 		_configuration.selectedAudioFormat = AUDIO_MP3;
 
 	_configuration.advancedAudioSettings = advanced->GetValue();
-	
 }
 
 void ChooseAudioFormatPage::onNext(wxWindow *panel) {
@@ -1138,6 +1186,11 @@ void ProcessPage::runTool() {
 	_thread->Run();
 }
 
+wxString ProcessPage::getHelp() {
+	return wxT("The tool is running, wait for the progress to finish then click the next button.\n")
+		wxT("If you did an error with your input, or want to abort execution, press the abort button.");
+}
+
 bool ProcessPage::onIdle(wxPanel *panel) {
 	const ToolGUI *tool = _configuration.selectedTool;
 	
@@ -1214,11 +1267,13 @@ void ProcessPage::onNext(wxWindow *panel) {
 		switchPage(new FailurePage(_topframe));
 }
 
-void ProcessPage::onCancel(wxWindow *panel) {
+bool ProcessPage::onCancel(wxWindow *panel) {
 	if (_finished)
-		WizardPage::onCancel(panel);
-	else
+		return WizardPage::onCancel(panel);
+	else {
 		_thread->abort();
+		return false;
+	}
 }
 
 void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
@@ -1242,6 +1297,8 @@ void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 		buttons->enableNext(false);
 		buttons->showAbort(true);
 	}
+
+	WizardPage::updateButtons(panel, buttons);
 }
 
 // The thread a tool is run in
@@ -1353,15 +1410,23 @@ void FinishPage::onNext(wxWindow *panel) {
 		// On windows we can simply spawn an explorer instance
 #ifdef __WINDOWS__
 		wxExecute(wxT("explorer.exe \"") + _configuration.outputPath + wxT("\""));
+#elif __WXMAC__
+		wxExecute(wxT("open \"") + _configuration.outputPath + wxT("\""));
 #else
 #endif
 	}
 	_topframe->Close(true);
 }
 
+wxString FinishPage::getHelp() {
+	return wxT("You have finished the wizard!\n\nJust click the finish button and enjoy your outputted files, if you compressed, you can now import the compressed file into ScummVM to get access to your data.");
+}
+
 void FinishPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->enablePrevious(false);
 	buttons->showFinish(true);
+	
+	WizardPage::updateButtons(panel, buttons);
 }
 
 
@@ -1395,5 +1460,7 @@ void FailurePage::onNext(wxWindow *panel) {
 void FailurePage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->enablePrevious(false);
 	buttons->showFinish(true);
+	
+	WizardPage::updateButtons(panel, buttons);
 }
 

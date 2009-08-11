@@ -38,9 +38,16 @@
 #include "pages.h"
 #include "gui_tools.h"
 
+
+/**
+ * The application class, main entry point for wxWidgets applications.
+ */
 class ScummVMToolsApp : public wxApp
 {
 	virtual bool OnInit();
+
+public:
+	void OnAbout();
 };
 
 IMPLEMENT_APP(ScummVMToolsApp)
@@ -52,6 +59,9 @@ bool ScummVMToolsApp::OnInit()
 
 	// Create window & display
 	ScummToolsFrame *frame = new ScummToolsFrame(wxT("ScummVM Tools"), wxDefaultPosition, wxSize(600,400));
+#ifdef __WXMAC__ // Menu bar looks ugly when it's part of the window, on OSX it's not
+	frame->CreateMenuBar();
+#endif
 	frame->SetMinSize(wxSize(600, 400));
 	SetTopWindow(frame);
 	
@@ -72,8 +82,33 @@ bool ScummVMToolsApp::OnInit()
 	return true;
 }
 
+void ScummVMToolsApp::OnAbout() {
+	wxAboutDialogInfo about = wxAboutDialogInfo();
+	about.SetVersion(wxT("Development Version"));
+	about.SetCopyright(wxT("ScummVM Team 2009"));
+	about.SetLicense(
+		wxT("Published under the GNU General Public License\n")
+		wxT("This program comes with ABSOLUTELY NO WARRANTY\n")
+		wxT("This is free software, and you are welcome to redistribute it ")
+		wxT("under certain conditions"));
+	about.SetDescription(
+		wxT("This tool allows you to extract data files from several different games \n")
+		wxT("to be used by ScummVM, it can also compress audio data files into a more \n")
+		wxT("compact format than the original."));
+	::wxAboutBox(about);
+}
+
+
+// Event table for the top frame
 BEGIN_EVENT_TABLE(ScummToolsFrame, wxFrame)
+	//EVT_MENU(wxID_PREFERENCES, ScummToolsFrame::onMenuPreferences)
+	EVT_BUTTON(ID_HELP, ScummToolsFrame::onMenuHelp)
+	EVT_MENU(wxID_HELP, ScummToolsFrame::onMenuHelp)
+	EVT_BUTTON(ID_ABOUT, ScummToolsFrame::onMenuAbout)
+	EVT_MENU(wxID_EXIT, ScummToolsFrame::onMenuExit)
+
 	EVT_IDLE(ScummToolsFrame::onIdle)
+	EVT_CLOSE(ScummToolsFrame::onClose)
 END_EVENT_TABLE()
 
 ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, const wxSize& size)
@@ -127,6 +162,21 @@ ScummToolsFrame::~ScummToolsFrame() {
 		delete *iter;
 }
 
+void ScummToolsFrame::CreateMenuBar() {
+	wxMenuBar* menubar = new wxMenuBar();
+	// Name of this seems really inappropriate
+	wxMenu* testmenu = new  wxMenu(wxT("File"));
+
+	//testmenu->Append(wxID_PREFERENCES, wxT("&Preferences"));
+	testmenu->Append(wxID_HELP, wxT("&Help"));
+	testmenu->Append(wxID_ABOUT, wxT("&About"));
+	testmenu->Append(wxID_EXIT, wxT("&Exit"));
+	
+	menubar->Append(testmenu, wxT("File"));
+
+	SetMenuBar(menubar);
+}
+
 void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	// Find the old page
 	wxPanel *oldPanel = dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page")));
@@ -160,6 +210,24 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	_buttons->setPage(_pages.back(), newPanel);
 }
 
+wxString ScummToolsFrame::GetHelpText() {
+	return _pages.back()->getHelp();
+}
+
+void ScummToolsFrame::onMenuHelp(wxCommandEvent &evt) {
+	wxString help = _pages.back()->getHelp();
+	wxMessageDialog dlg(this, help, wxT("Help"));
+	dlg.ShowModal();
+}
+
+void ScummToolsFrame::onMenuAbout(wxCommandEvent &evt) {
+	wxGetApp().OnAbout();
+}
+
+void ScummToolsFrame::onMenuExit(wxCommandEvent &evt) {
+	Close();
+}
+
 void ScummToolsFrame::onIdle(wxIdleEvent &evt) {
 	if (_pages.back()->onIdle(dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page"))))) {
 		// We want more!
@@ -169,10 +237,16 @@ void ScummToolsFrame::onIdle(wxIdleEvent &evt) {
 	}
 }
 
-//
+void ScummToolsFrame::onClose(wxCloseEvent &evt) {
+	if (!evt.CanVeto() || _pages.back()->onCancel(dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page")))))
+		wxFrame::OnCloseWindow(evt);
+}
 
+
+// Event table for the WizardButtons window
 BEGIN_EVENT_TABLE(WizardButtons, wxPanel)
-	EVT_BUTTON(ID_ABOUT, WizardButtons::onClickAbout)
+	//EVT_BUTTON(ID_HELP, WizardButtons::onClickHelp)
+	//EVT_BUTTON(ID_ABOUT, WizardButtons::onClickAbout)
 	EVT_BUTTON(ID_NEXT, WizardButtons::onClickNext)
 	EVT_BUTTON(ID_PREV, WizardButtons::onClickPrevious)
 	EVT_BUTTON(ID_CANCEL, WizardButtons::onClickCancel)
@@ -191,6 +265,12 @@ WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext, Configura
 	_prev = new wxButton(this, ID_ABOUT, wxT("About"));
 	_prev->SetSize(80, -1);
 	sizer->Add(_prev, wxSizerFlags().Left().ReserveSpaceEvenIfHidden());
+
+	sizer->AddSpacer(10);
+
+	_help = new wxButton(this, ID_HELP, wxT("Help"));
+	_help->SetSize(80, -1);
+	sizer->Add(_help, wxSizerFlags().Left().ReserveSpaceEvenIfHidden());
 
 	// Insert space between the buttons
 	topsizer->Add(sizer, wxSizerFlags().Left());
@@ -278,21 +358,6 @@ void WizardButtons::showPrevious(bool show) {
 }
 
 // wx event handlers
-void WizardButtons::onClickAbout(wxCommandEvent &e) {
-	wxAboutDialogInfo about = wxAboutDialogInfo();
-	about.SetVersion(wxT("Development Version"));
-	about.SetCopyright(wxT("ScummVM Team 2009"));
-	about.SetLicense(
-		wxT("Published under the GNU General Public License\n")
-		wxT("This program comes with ABSOLUTELY NO WARRANTY\n")
-		wxT("This is free software, and you are welcome to redistribute it ")
-		wxT("under certain conditions"));
-	about.SetDescription(
-		wxT("This tool allows you to extract data files from several different games \n")
-		wxT("to be used by ScummVM, it can also compress audio data files into a more \n")
-		wxT("compact format than the original."));
-	::wxAboutBox(about);
-}
 
 void WizardButtons::onClickNext(wxCommandEvent &e) {
 	wxASSERT(_currentPage);

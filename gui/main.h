@@ -37,6 +37,7 @@ enum GUI_ID {
 	ID_NEXT,
 	ID_PREV,
 	ID_CANCEL,
+	ID_HELP,
 	ID_ABOUT,
 };
 
@@ -58,6 +59,12 @@ public:
 	~ScummToolsFrame();
 
 	/**
+	 * Creates the menu bar for the application
+	 * only called when running under mac osx (as menu bars are ugly in wizards when they are part of the window)
+	 */
+	void CreateMenuBar();
+
+	/**
 	 * Switches page, old page is stored on a stack for going backwards
 	 * Buttons are reset, and state is saved
 	 *
@@ -75,9 +82,25 @@ public:
 		switchPage(NULL, true);}
 
 	/**
+	 * Get help text of this window
+	 */
+	virtual wxString GetHelpText();
+
+	/**
 	 * Handle wx OnIdle events
 	 */
 	void onIdle(wxIdleEvent &evt);
+
+	/**
+	 * Handle application close event
+	 */
+	void onClose(wxCloseEvent &evt);
+
+	void onMenuHelp(wxCommandEvent &evt);
+	void onMenuAbout(wxCommandEvent &evt);
+	void onMenuExit(wxCommandEvent &evt);
+
+
 
 	/** The state of the wizard so far */
 	Configuration _configuration;
@@ -156,6 +179,7 @@ public:
 	void showAbort(bool show);
 
 	// wx event handlers
+	void onClickHelp(wxCommandEvent &e);
 	void onClickAbout(wxCommandEvent &e);
 	void onClickNext(wxCommandEvent &e);
 	void onClickPrevious(wxCommandEvent &e);
@@ -168,6 +192,8 @@ protected:
 	wxButton *_next;
 	/** 'Previous' button. */
 	wxButton *_prev;
+	/** 'Help' button. */
+	wxButton *_help;
 	/** 'Cancel' button. */
 	wxButton *_cancel;
 	/** The static text on the line seperating the page area and the buttons. */
