@@ -1410,7 +1410,7 @@ void FinishPage::onNext(wxWindow *panel) {
 		// On windows we can simply spawn an explorer instance
 #ifdef __WINDOWS__
 		wxExecute(wxT("explorer.exe \"") + _configuration.outputPath + wxT("\""));
-#elif __WXMAC__
+#elif defined __WXMAC__
 		wxExecute(wxT("open \"") + _configuration.outputPath + wxT("\""));
 #else
 #endif
