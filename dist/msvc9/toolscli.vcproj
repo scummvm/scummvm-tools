@@ -134,7 +134,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="zlib.lib ogg_static.lib vorbis_static.lib vorbisenc_static.lib libFLAC_static.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="1"
+				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -525,6 +527,18 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\resource_cli.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\gui\media\scummvmtools.ico"
+			>
+		</File>
+		<File
+			RelativePath=".\toolscli.rc"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
