@@ -90,8 +90,8 @@ bundle: $(TARGETS)
 	mkdir -p $(bundle_name)/Contents/Resources
 	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
 	cp $(srcdir)/dist/macosx/Info.plist $(bundle_name)/Contents/
-	cp $(TARGETS) $(bundle_name)/Contents/Resources/
-	mv $(bundle_name)/Contents/Resources/tools_gui $(bundle_name)/Contents/MacOS/
+	cp $(srcdir)/gui/media/scummvmtools.icns $(bundle_name)/Contents/Resources
+	cp tools_gui$(EXEEXT) $(bundle_name)/Contents/MacOS/
 
 #compress_agos$(EXEEXT): compress_agos.o compress.o util.o tool.o
 #	$(CXX) $(LDFLAGS) -o $@ $+ -lvorbis -logg -lvorbisenc -lFLAC
