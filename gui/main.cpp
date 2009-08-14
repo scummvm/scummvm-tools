@@ -32,6 +32,7 @@
 
 #include <wx/statline.h>
 #include <wx/aboutdlg.h>
+#include "wx/stdpaths.h"
 
 #include "main.h"
 
@@ -396,8 +397,13 @@ Header::Header(wxWindow *parent)
 		wxImage::AddHandler(new wxGIFHandler);
 
 	// Load image files
+#ifdef __WXMAC__
+	_logo.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/logo.jpg"), wxBITMAP_TYPE_JPEG);
+	_tile.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/tile.gif"), wxBITMAP_TYPE_GIF);
+#else
 	_logo.LoadFile(wxT("media/logo.jpg"), wxBITMAP_TYPE_JPEG);
 	_tile.LoadFile(wxT("media/tile.gif"), wxBITMAP_TYPE_GIF);
+#endif
 
 	// Load font
 	_font = wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false);

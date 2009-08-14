@@ -90,6 +90,8 @@ bundle: $(TARGETS)
 	mkdir -p $(bundle_name)/Contents/Resources
 	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
 	cp $(srcdir)/dist/macosx/Info.plist $(bundle_name)/Contents/
+	cp $(srcdir)/gui/media/tile.gif $(bundle_name)/Contents/Resources
+	cp $(srcdir)/gui/media/logo.jpg $(bundle_name)/Contents/Resources
 	cp $(srcdir)/gui/media/scummvmtools.icns $(bundle_name)/Contents/Resources
 	cp tools_gui$(EXEEXT) $(bundle_name)/Contents/MacOS/
 
