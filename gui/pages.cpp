@@ -101,6 +101,12 @@ wxString WizardPage::getHelp() {
 
 // Introduction page
 
+BEGIN_EVENT_TABLE(IntroPage, WizardPage)
+	EVT_BUTTON(ID_COMPRESS, IntroPage::onClickCompress)
+	EVT_BUTTON(ID_EXTRACT, IntroPage::onClickExtract)
+	EVT_BUTTON(ID_ADVANCED, IntroPage::onClickAdvanced)
+END_EVENT_TABLE()
+
 IntroPage::IntroPage(ScummToolsFrame *frame)
 	: WizardPage(frame)
 {
@@ -114,62 +120,90 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(15);
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, 
-		wxT("Welcome to the ScummVM extraction and compression utility.")));
+		wxT("Welcome to the ScummVM extraction and compression utility.\nWhat do you want to do?")));
 	
-	wxString choices[] = {
-		wxT("Compress audio files"),
-		wxT("Extract from game data files"),
-		wxT("Choose tool to use (advanced)")
-	};
+	sizer->AddSpacer(15);
 
-	wxRadioBox *options = new wxRadioBox(panel, wxID_ANY, wxT(""), 
-		wxDefaultPosition, wxDefaultSize, 3, choices, 1, 
-		wxRA_SPECIFY_COLS | wxBORDER_NONE, wxDefaultValidator, wxT("ChooseActivity"));
-	sizer->Add(options);
-	options->SetSelection(0);
+	wxSizer *sidesizer = new wxBoxSizer(wxHORIZONTAL);
 
+	wxPanel *buttonpanel;
+	wxSizer *buttonsizer;
+
+	// The precise pixel dimensions used for the text here is actually quite bad, as it relies
+	// on specific measurements from different platforms...
+
+	buttonpanel = new wxPanel(panel, wxID_ANY);
+	buttonsizer = new wxStaticBoxSizer(wxVERTICAL, buttonpanel, wxT(""));
+	buttonsizer->Add(new wxButton(buttonpanel, ID_COMPRESS, wxT("Compress")), wxSizerFlags().Expand());
+	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
+		wxT("Compress game audio files into archive files for use with ScummVM."),
+		wxDefaultPosition, wxSize(100, 60), wxALIGN_CENTER));
+	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickCompress), NULL, this);
+	buttonpanel->SetSizer(buttonsizer);
+	sidesizer->Add(buttonpanel);
+
+	sidesizer->AddSpacer(15);
+
+	buttonpanel = new wxPanel(panel, wxID_ANY);
+	buttonsizer = new wxStaticBoxSizer(wxVERTICAL, buttonpanel, wxT(""));
+	buttonsizer->Add(new wxButton(buttonpanel, ID_EXTRACT, wxT("Extract")), wxSizerFlags().Expand());
+	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
+		wxT("Extract the contents of archive files used by many games."),
+		wxDefaultPosition, wxSize(100, 60), wxALIGN_CENTER));
+	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickExtract), NULL, this);
+	buttonpanel->SetSizer(buttonsizer);
+	sidesizer->Add(buttonpanel);
+
+	sidesizer->AddSpacer(15);
+
+	buttonpanel = new wxPanel(panel, wxID_ANY);
+	buttonsizer = new wxStaticBoxSizer(wxVERTICAL, buttonpanel, wxT(""));
+	buttonsizer->Add(new wxButton(buttonpanel, ID_ADVANCED, wxT("Advanced")), wxSizerFlags().Expand());
+	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
+		wxT("Choose the precise tool you want to use."),
+		wxDefaultPosition, wxSize(100, 60), wxALIGN_CENTER));
+	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickAdvanced), NULL, this);
+	buttonpanel->SetSizer(buttonsizer);
+	sidesizer->Add(buttonpanel);
+
+
+	sizer->Add(sidesizer);
 	SetAlignedSizer(panel, sizer);
 
-	// Load options
-	Configuration &config = _configuration;
-	if (config.advanced)
-		options->SetSelection(2);
-	else if (config.compressing)
-		options->SetSelection(0);
-	else
-		options->SetSelection(1);
-
 	return panel;
-}
-
-void IntroPage::save(wxWindow *panel) {
-	wxString selected_option = static_cast<wxRadioBox *>(panel->FindWindowByName(wxT("ChooseActivity")))->GetStringSelection().Lower();
-
-	_configuration.advanced    = selected_option.Find(wxT("advanced")) != wxNOT_FOUND;
-	_configuration.compressing = selected_option.Find(wxT("extract")) == wxNOT_FOUND;
 }
 
 wxString IntroPage::getHelp() {
 	return wxT("Select the activity you would like to do. In order to play your game.\nMost common usage is compression of game files.");
 }
 
-void IntroPage::onNext(wxWindow *panel) {
-	wxString selected_option = static_cast<wxRadioBox *>(panel->FindWindowByName(wxT("ChooseActivity")))->GetStringSelection().Lower();
-	if (selected_option.Find(wxT("advanced")) != wxNOT_FOUND) {
-		// advanced
-		switchPage(new ChooseToolPage(_topframe));
-	} else {
-		// extract / compress
-		switchPage(new ChooseInPage(_topframe));
-	}
-}
-
 void IntroPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->setLineLabel(wxT("ScummVM Tools"));
+	
+	buttons->showNavigation(false);
 
 	WizardPage::updateButtons(panel, buttons);
 }
 
+void IntroPage::onClickCompress(wxCommandEvent &e) {
+	_configuration.compressing = true;
+	_configuration.advanced = false;
+
+	switchPage(new ChooseInPage(_topframe));
+}
+
+void IntroPage::onClickExtract(wxCommandEvent &e) {
+	_configuration.compressing = false;
+	_configuration.advanced = false;
+
+	switchPage(new ChooseInPage(_topframe));
+}
+
+void IntroPage::onClickAdvanced(wxCommandEvent &e) {
+	_configuration.advanced = true;
+
+	switchPage(new ChooseToolPage(_topframe));
+}
 
 // Page to choose the tool to use
 

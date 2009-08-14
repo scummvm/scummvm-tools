@@ -206,7 +206,6 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 
 	// And reset the buttons to a standard state
 	_buttons->reset();
-	_buttons->showPrevious(_pages.size() > 1);
 	_buttons->setPage(_pages.back(), newPanel);
 }
 
@@ -304,6 +303,7 @@ void WizardButtons::reset() {
 	enablePrevious(true);
 	showFinish(false);
 	showAbort(false);
+	showNavigation(true);
 
 	wxString label(wxT("ScummVM Tools"));
 	if (_configuration.selectedTool)
@@ -331,8 +331,6 @@ void WizardButtons::enableNext(bool enable) {
 }
 
 void WizardButtons::enablePrevious(bool enable) {
-	if (enable)
-		showPrevious(true);
 	_prev->Enable(enable);
 }
 
@@ -350,11 +348,14 @@ void WizardButtons::showAbort(bool show) {
 		_cancel->SetLabel(wxT("Cancel"));
 }
 
-void WizardButtons::showPrevious(bool show) {
-	if (show)
+void WizardButtons::showNavigation(bool show) {
+	if (show) {
+		_next->Show();
 		_prev->Show();
-	else
+	} else {
+		_next->Hide();
 		_prev->Hide();
+	}
 }
 
 // wx event handlers

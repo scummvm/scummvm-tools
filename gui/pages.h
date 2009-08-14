@@ -145,13 +145,15 @@ public:
 	
 	wxWindow *CreatePanel(wxWindow *parent);
 
-	void save(wxWindow *panel);
-
 	wxString getHelp();
-
-	void onNext(wxWindow *panel);
 	
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
+
+	void onClickCompress(wxCommandEvent &e);
+	void onClickExtract(wxCommandEvent &e);
+	void onClickAdvanced(wxCommandEvent &e);
+
+	DECLARE_EVENT_TABLE()
 };
 
 /**

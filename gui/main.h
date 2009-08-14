@@ -39,6 +39,9 @@ enum GUI_ID {
 	ID_CANCEL,
 	ID_HELP,
 	ID_ABOUT,
+	ID_COMPRESS,
+	ID_EXTRACT,
+	ID_ADVANCED,
 };
 
 /**
@@ -164,9 +167,9 @@ public:
 
 
 	/**
-	 * Display the previous button.
+	 * Display the previous/next button.
 	 */ 
-	void showPrevious(bool show);
+	void showNavigation(bool show);
 
 	/**
 	 * Changes name of the 'next' button to finish
