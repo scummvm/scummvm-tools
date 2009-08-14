@@ -54,9 +54,11 @@ IMPLEMENT_APP(ScummVMToolsApp)
 bool ScummVMToolsApp::OnInit() {
 	// Init tools
 	g_tools.init();
+	
+	SetAppName(wxT("ScummVM Tools"));
 
 	// Create window & display
-	ScummToolsFrame *frame = new ScummToolsFrame(wxT("ScummVM Tools"), wxDefaultPosition, wxSize(600,400));
+	ScummToolsFrame *frame = new ScummToolsFrame(GetAppName(), wxDefaultPosition, wxSize(600,400));
 #ifdef __WXMAC__ // Menu bar looks ugly when it's part of the window, on OSX it's not
 	frame->CreateMenuBar();
 #endif
@@ -84,6 +86,7 @@ void ScummVMToolsApp::OnAbout() {
 	wxAboutDialogInfo about = wxAboutDialogInfo();
 	about.SetVersion(wxT("Development Version"));
 	about.SetCopyright(wxT("ScummVM Team 2009"));
+	about.SetWebSite(wxT("http://www.scummvm.org"));
 	about.SetLicense(
 		wxT("Published under the GNU General Public License\n")
 		wxT("This program comes with ABSOLUTELY NO WARRANTY\n")
@@ -132,7 +135,7 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	wxPanel *linepanel = new wxPanel(main, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("Wizard Line Panel"));
 	wxSizer *linesizer = new wxBoxSizer(wxHORIZONTAL);
 	
-	wxStaticText *linetext = new wxStaticText(linepanel, wxID_ANY, wxT("ScummVM Tools"));
+	wxStaticText *linetext = new wxStaticText(linepanel, wxID_ANY, wxGetApp().GetAppName());
 	linesizer->Add(linetext, wxSizerFlags());
 	linetext->Disable();
 
@@ -162,16 +165,14 @@ ScummToolsFrame::~ScummToolsFrame() {
 }
 
 void ScummToolsFrame::CreateMenuBar() {
-	wxMenuBar* menubar = new wxMenuBar();
-	// Name of this seems really inappropriate
-	wxMenu* testmenu = new  wxMenu(wxT("File"));
+	wxMenuBar *menubar = new wxMenuBar();
 
-	//testmenu->Append(wxID_PREFERENCES, wxT("&Preferences"));
-	testmenu->Append(wxID_HELP, wxT("&Help"));
-	testmenu->Append(wxID_ABOUT, wxT("&About"));
-	testmenu->Append(wxID_EXIT, wxT("&Exit"));
-	
-	menubar->Append(testmenu, wxT("File"));
+	// Name of this seems really inappropriate
+	wxMenu *helpmenu = new wxMenu();
+	//filemenu->Append(wxID_PREFERENCES, wxT("&Preferences"));
+	helpmenu->Append(wxID_HELP, wxT("&Help"));
+	helpmenu->Append(wxID_ABOUT, wxT("&About ") + wxGetApp().GetAppName());
+	menubar->Append(helpmenu, wxT("Help"));
 
 	SetMenuBar(menubar);
 }
@@ -304,7 +305,7 @@ void WizardButtons::reset() {
 	showAbort(false);
 	showNavigation(true);
 
-	wxString label(wxT("ScummVM Tools"));
+	wxString label(wxGetApp().GetAppName());
 	if (_configuration.selectedTool)
 		label << wxT(" - ") << _configuration.selectedTool->getName();
 	setLineLabel(label);
