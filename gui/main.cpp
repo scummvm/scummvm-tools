@@ -42,8 +42,7 @@
 /**
  * The application class, main entry point for wxWidgets applications.
  */
-class ScummVMToolsApp : public wxApp
-{
+class ScummVMToolsApp : public wxApp {
 	virtual bool OnInit();
 
 public:
@@ -52,8 +51,7 @@ public:
 
 IMPLEMENT_APP(ScummVMToolsApp)
 
-bool ScummVMToolsApp::OnInit()
-{
+bool ScummVMToolsApp::OnInit() {
 	// Init tools
 	g_tools.init();
 
@@ -104,6 +102,7 @@ BEGIN_EVENT_TABLE(ScummToolsFrame, wxFrame)
 	//EVT_MENU(wxID_PREFERENCES, ScummToolsFrame::onMenuPreferences)
 	EVT_BUTTON(ID_HELP, ScummToolsFrame::onMenuHelp)
 	EVT_MENU(wxID_HELP, ScummToolsFrame::onMenuHelp)
+	EVT_MENU(wxID_ABOUT, ScummToolsFrame::onMenuAbout)
 	EVT_BUTTON(ID_ABOUT, ScummToolsFrame::onMenuAbout)
 	EVT_MENU(wxID_EXIT, ScummToolsFrame::onMenuExit)
 
