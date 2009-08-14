@@ -167,10 +167,14 @@ ScummToolsFrame::~ScummToolsFrame() {
 void ScummToolsFrame::CreateMenuBar() {
 	wxMenuBar *menubar = new wxMenuBar();
 
+#ifdef __WXMAC__
+	wxApp::s_macHelpMenuTitleName = "Help";
+#endif 
+
 	// Name of this seems really inappropriate
 	wxMenu *helpmenu = new wxMenu();
 	//filemenu->Append(wxID_PREFERENCES, wxT("&Preferences"));
-	helpmenu->Append(wxID_HELP, wxT("&Help"));
+	helpmenu->Append(wxID_HELP, wxT("Help"));
 	helpmenu->Append(wxID_ABOUT, wxT("&About ") + wxGetApp().GetAppName());
 	menubar->Append(helpmenu, wxT("Help"));
 
