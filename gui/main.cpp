@@ -32,7 +32,8 @@
 
 #include <wx/statline.h>
 #include <wx/aboutdlg.h>
-#include "wx/stdpaths.h"
+#include <wx/stdpaths.h>
+#include <wx/hyperlink.h>
 
 #include "main.h"
 
@@ -84,20 +85,62 @@ bool ScummVMToolsApp::OnInit() {
 }
 
 void ScummVMToolsApp::OnAbout() {
-	wxAboutDialogInfo about = wxAboutDialogInfo();
-	about.SetVersion(wxT("Development Version"));
-	about.SetCopyright(wxT("ScummVM Team 2009"));
-	about.SetWebSite(wxT("http://www.scummvm.org"));
-	about.SetLicense(
+	wxDialog *dialog = new wxDialog(NULL, wxID_ANY, wxT("About"), wxDefaultPosition, wxSize(500, 380));
+
+	wxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
+
+	topsizer->Add(new Header(dialog, wxT("detaillogo.jpg"), wxT("tile.gif"), wxT("")), wxSizerFlags().Expand());
+
+	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+
+	// Create text content
+
+	wxStaticText *titletext = new wxStaticText(dialog, wxID_ANY, wxT("ScummTools GUI"));
+	titletext->SetFont(wxFont(22, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Arial")));
+	sizer->Add(titletext, wxSizerFlags());
+	
+	wxStaticText *versiontext = new wxStaticText(dialog, wxID_ANY, wxT("Development Version"));
+	versiontext->SetForegroundColour(wxColor(128, 128, 128));
+	versiontext->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
+	sizer->Add(versiontext, wxSizerFlags());
+	
+	wxHyperlinkCtrl *websitetext = new wxHyperlinkCtrl(dialog, wxID_ANY, wxT("http://www.scummvm.org"), wxT("http://www.scummvm.org"));
+	sizer->Add(websitetext, wxSizerFlags().Border(wxTOP, 5));
+
+	wxStaticText *copyrighttext = new wxStaticText(dialog, wxID_ANY, wxT("© ScummVM Team 2009"));
+	copyrighttext->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
+	sizer->Add(copyrighttext, wxSizerFlags());
+	
+	wxStaticText *descriptiontext = new wxStaticText(dialog, wxID_ANY,
+		wxT("This tool allows you to extract data files from several different games \n")
+		wxT("to be used by ScummVM, it can also compress audio data files into a more \n")
+		wxT("compact format than the original."));
+	descriptiontext->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
+	sizer->Add(descriptiontext, wxSizerFlags().Border(wxTOP, 6));
+	
+	wxStaticText *licensetext = new wxStaticText(dialog, wxID_ANY,
 		wxT("Published under the GNU General Public License\n")
 		wxT("This program comes with ABSOLUTELY NO WARRANTY\n")
 		wxT("This is free software, and you are welcome to redistribute it ")
 		wxT("under certain conditions"));
-	about.SetDescription(
-		wxT("This tool allows you to extract data files from several different games \n")
-		wxT("to be used by ScummVM, it can also compress audio data files into a more \n")
-		wxT("compact format than the original."));
-	::wxAboutBox(about);
+	licensetext->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
+	sizer->Add(licensetext, wxSizerFlags().Border(wxTOP, 10));
+
+
+	// Apply layout
+	topsizer->Add(sizer, wxSizerFlags().Expand().Border(wxALL, 10));
+
+	// Add the standard buttons (only one)
+	topsizer->Add(dialog->CreateStdDialogButtonSizer(wxOK), wxSizerFlags().Center().Border());
+
+	// Add the standard buttons
+	dialog->SetSizerAndFit(topsizer);
+
+	// Display it
+	dialog->ShowModal();
+
+	// Destroy it
+	dialog->Destroy();
 }
 
 
@@ -126,7 +169,9 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 	
 	// Add the top header, it's sweet!
-	sizer->Add(new Header(main), wxSizerFlags(0).Expand());
+	sizer->Add(
+		new Header(main, wxT("logo.jpg"), wxT("tile.gif"), wxT("Extraction & Compression Wizard")),
+		wxSizerFlags(0).Expand());
 
 	// Pane that holds the wizard window
 	_wizardpane = new wxPanel(main);
@@ -406,7 +451,7 @@ BEGIN_EVENT_TABLE(Header, wxPanel)
 	EVT_PAINT(Header::onPaint)
 END_EVENT_TABLE()
 
-Header::Header(wxWindow *parent)
+Header::Header(wxWindow *parent, const wxString &logo, const wxString &tile, const wxString &title)
 	: wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(400, 118), wxBORDER_NONE, wxT("Wizard Splash"))
 {
 	// Disable warnings in this function
@@ -421,16 +466,19 @@ Header::Header(wxWindow *parent)
 	// Load image files
 #ifdef __WXWINDOWS__
 	// Windows likes subfolders for media files
-	_logo.LoadFile(wxT("media/logo.jpg"), wxBITMAP_TYPE_JPEG);
-	_tile.LoadFile(wxT("media/tile.gif"), wxBITMAP_TYPE_GIF);
+	_logo.LoadFile(wxT("media/") + logo, wxBITMAP_TYPE_JPEG);
+	_tile.LoadFile(wxT("media/") + tile, wxBITMAP_TYPE_GIF);
 #else
 	// On other platforms, files are more scattered, and we use the standard resource dir
-	_logo.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/logo.jpg"), wxBITMAP_TYPE_JPEG);
-	_tile.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/tile.gif"), wxBITMAP_TYPE_GIF);
+	_logo.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/") + logo, wxBITMAP_TYPE_JPEG);
+	_tile.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/") + tile, wxBITMAP_TYPE_GIF);
 #endif
 
 	// Load font
 	_font = wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false);
+	
+	// Set the text title
+	_title = title;
 }
 
 void Header::onPaint(wxPaintEvent &evt) {
@@ -461,6 +509,6 @@ void Header::onPaint(wxPaintEvent &evt) {
 	}
 	
 	dc.SetFont(_font);
-	dc.DrawText(wxT("Extraction & Compression Wizard"), 290, 70);
+	dc.DrawText(_title, 290, 70);
 }
 

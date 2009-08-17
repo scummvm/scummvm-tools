@@ -228,13 +228,14 @@ protected:
 class Header : public wxPanel
 {
 public:
-	Header(wxWindow *parent);
+	Header(wxWindow *parent, const wxString &logo, const wxString &tile, const wxString &title = wxT(""));
 
 	void onPaint(wxPaintEvent &evt);
 protected:
 	wxFont _font;
 	wxBitmap _logo;
 	wxBitmap _tile;
+	wxString _title;
 
 	DECLARE_EVENT_TABLE()
 };
