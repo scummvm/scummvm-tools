@@ -137,7 +137,7 @@ inline wxArrayString Configuration::getTargetPlatforms() {
 	wxArrayString platforms;
 	// Just add new platforms here, it's easy!
 	// You specify additional defaults in the next function
-	platforms.Add(wxT("PC"));
+	platforms.Add(wxT("PC (Windows, Linux, Mac)"));
 	platforms.Add(wxT("iPhone"));
 	platforms.Add(wxT("Nintendo DS"));
 	platforms.Add(wxT("PlayStation 2"));

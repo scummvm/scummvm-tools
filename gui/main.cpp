@@ -106,6 +106,8 @@ BEGIN_EVENT_TABLE(ScummToolsFrame, wxFrame)
 	//EVT_MENU(wxID_PREFERENCES, ScummToolsFrame::onMenuPreferences)
 	EVT_BUTTON(ID_HELP, ScummToolsFrame::onMenuHelp)
 	EVT_MENU(wxID_HELP, ScummToolsFrame::onMenuHelp)
+	EVT_MENU(ID_MANUAL, ScummToolsFrame::onMenuManual)
+	EVT_MENU(ID_WEBSITE, ScummToolsFrame::onMenuWebsite)
 	EVT_MENU(wxID_ABOUT, ScummToolsFrame::onMenuAbout)
 	EVT_BUTTON(ID_ABOUT, ScummToolsFrame::onMenuAbout)
 	EVT_MENU(wxID_EXIT, ScummToolsFrame::onMenuExit)
@@ -176,6 +178,8 @@ void ScummToolsFrame::CreateMenuBar() {
 	wxMenu *helpmenu = new wxMenu();
 	//filemenu->Append(wxID_PREFERENCES, wxT("&Preferences"));
 	helpmenu->Append(wxID_HELP, wxT("Help"));
+	helpmenu->Append(ID_MANUAL, wxT("&Manual Page"));
+	helpmenu->Append(ID_WEBSITE, wxT("Visit ScummVM &Website"));
 	helpmenu->Append(wxID_ABOUT, wxT("&About ") + wxGetApp().GetAppName());
 	menubar->Append(helpmenu, wxT("Help"));
 
@@ -223,6 +227,15 @@ void ScummToolsFrame::onMenuHelp(wxCommandEvent &evt) {
 	wxString help = _pages.back()->getHelp();
 	wxMessageDialog dlg(this, help, wxT("Help"));
 	dlg.ShowModal();
+}
+
+void ScummToolsFrame::onMenuManual(wxCommandEvent &evt) {
+	// Wiki page
+	::wxLaunchDefaultBrowser(wxT("http://wiki.scummvm.org/index.php/User_Manual/Appendix:_Tools"));
+}
+
+void ScummToolsFrame::onMenuWebsite(wxCommandEvent &evt) {
+	::wxLaunchDefaultBrowser(wxT("http://scummvm.org"));
 }
 
 void ScummToolsFrame::onMenuAbout(wxCommandEvent &evt) {
@@ -297,7 +310,7 @@ WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext, Configura
 	_cancel->SetSize(80, -1);
 	sizer->Add(_cancel, wxSizerFlags().Right().ReserveSpaceEvenIfHidden());
 	
-	topsizer->Add(sizer, wxSizerFlags().Right());
+	topsizer->Add(sizer, wxSizerFlags().Right().Border());
 
 	SetSizerAndFit(topsizer);
 
@@ -406,12 +419,14 @@ Header::Header(wxWindow *parent)
 		wxImage::AddHandler(new wxGIFHandler);
 
 	// Load image files
-#ifdef __WXMAC__
-	_logo.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/logo.jpg"), wxBITMAP_TYPE_JPEG);
-	_tile.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/tile.gif"), wxBITMAP_TYPE_GIF);
-#else
+#ifdef __WXWINDOWS__
+	// Windows likes subfolders for media files
 	_logo.LoadFile(wxT("media/logo.jpg"), wxBITMAP_TYPE_JPEG);
 	_tile.LoadFile(wxT("media/tile.gif"), wxBITMAP_TYPE_GIF);
+#else
+	// On other platforms, files are more scattered, and we use the standard resource dir
+	_logo.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/logo.jpg"), wxBITMAP_TYPE_JPEG);
+	_tile.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/tile.gif"), wxBITMAP_TYPE_GIF);
 #endif
 
 	// Load font

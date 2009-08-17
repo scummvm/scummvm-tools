@@ -42,6 +42,8 @@ enum GUI_ID {
 	ID_COMPRESS,
 	ID_EXTRACT,
 	ID_ADVANCED,
+	ID_WEBSITE,
+	ID_MANUAL,
 };
 
 /**
@@ -100,6 +102,8 @@ public:
 	void onClose(wxCloseEvent &evt);
 
 	void onMenuHelp(wxCommandEvent &evt);
+	void onMenuWebsite(wxCommandEvent &evt);
+	void onMenuManual(wxCommandEvent &evt);
 	void onMenuAbout(wxCommandEvent &evt);
 	void onMenuExit(wxCommandEvent &evt);
 
