@@ -211,6 +211,7 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 
 	// And reset the buttons to a standard state
 	_buttons->reset();
+	_buttons->showPrevious(_pages.size() > 1);
 	_buttons->setPage(_pages.back(), newPanel);
 }
 
@@ -359,6 +360,14 @@ void WizardButtons::showNavigation(bool show) {
 		_prev->Show();
 	} else {
 		_next->Hide();
+		_prev->Hide();
+	}
+}
+
+void WizardButtons::showPrevious(bool show) {
+	if (show) {
+		_prev->Show();
+	} else {
 		_prev->Hide();
 	}
 }

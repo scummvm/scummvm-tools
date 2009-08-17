@@ -133,7 +133,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	// on specific measurements from different platforms...
 
 	buttonpanel = new wxPanel(panel, wxID_ANY);
-	buttonsizer = new wxStaticBoxSizer(wxVERTICAL, buttonpanel, wxT(""));
+	buttonsizer = new wxBoxSizer(wxVERTICAL);
 	buttonsizer->Add(new wxButton(buttonpanel, ID_COMPRESS, wxT("Compress")), wxSizerFlags().Expand());
 	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
 		wxT("Compress game audio files into archive files for use with ScummVM."),
@@ -145,7 +145,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	sidesizer->AddSpacer(15);
 
 	buttonpanel = new wxPanel(panel, wxID_ANY);
-	buttonsizer = new wxStaticBoxSizer(wxVERTICAL, buttonpanel, wxT(""));
+	buttonsizer = new wxBoxSizer(wxVERTICAL);
 	buttonsizer->Add(new wxButton(buttonpanel, ID_EXTRACT, wxT("Extract")), wxSizerFlags().Expand());
 	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
 		wxT("Extract the contents of archive files used by many games."),
@@ -157,7 +157,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	sidesizer->AddSpacer(15);
 
 	buttonpanel = new wxPanel(panel, wxID_ANY);
-	buttonsizer = new wxStaticBoxSizer(wxVERTICAL, buttonpanel, wxT(""));
+	buttonsizer = new wxBoxSizer(wxVERTICAL);
 	buttonsizer->Add(new wxButton(buttonpanel, ID_ADVANCED, wxT("Advanced")), wxSizerFlags().Expand());
 	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
 		wxT("Choose the precise tool you want to use."),

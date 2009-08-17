@@ -172,6 +172,12 @@ public:
 	void showNavigation(bool show);
 
 	/**
+	 * Display the previous button.
+	 * If the showNavigation has been used, this overrides that (for the previous button).
+	 */ 
+	void showPrevious(bool show);
+
+	/**
 	 * Changes name of the 'next' button to finish
 	 */
 	void showFinish(bool show);
