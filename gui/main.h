@@ -101,6 +101,7 @@ public:
 	 */
 	void onClose(wxCloseEvent &evt);
 
+	void onMenuAdvanced(wxCommandEvent &evt);
 	void onMenuHelp(wxCommandEvent &evt);
 	void onMenuWebsite(wxCommandEvent &evt);
 	void onMenuManual(wxCommandEvent &evt);
@@ -207,6 +208,8 @@ protected:
 	wxButton *_prev;
 	/** 'Help' button. */
 	wxButton *_help;
+	/** 'Preferences' button */
+	wxButton *_prefs;
 	/** 'Cancel' button. */
 	wxButton *_cancel;
 	/** The static text on the line seperating the page area and the buttons. */
@@ -238,6 +241,28 @@ protected:
 	wxString _title;
 
 	DECLARE_EVENT_TABLE()
+};
+
+/**
+ *
+ */
+
+class ChooseAudioOptionsMp3Page;
+class ChooseAudioOptionsFlacPage;
+class ChooseAudioOptionsVorbisPage;
+
+class AdvancedSettingsDialog : public wxDialog
+{
+public:
+	AdvancedSettingsDialog(wxWindow *parent, Configuration &defaults);
+	~AdvancedSettingsDialog();
+
+protected:
+	Configuration &_defaults;
+
+	ChooseAudioOptionsMp3Page *mp3;
+	ChooseAudioOptionsFlacPage *flac;
+	ChooseAudioOptionsVorbisPage *vorbis;
 };
 
 #endif

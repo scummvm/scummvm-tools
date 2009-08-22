@@ -34,6 +34,7 @@
 #include <wx/aboutdlg.h>
 #include <wx/stdpaths.h>
 #include <wx/hyperlink.h>
+#include <wx/notebook.h>
 
 #include "main.h"
 
@@ -67,16 +68,18 @@ bool ScummVMToolsApp::OnInit() {
 	frame->SetMinSize(wxSize(600, 400));
 	SetTopWindow(frame);
 	
+	Configuration &configuration = frame->_configuration;
+
 	if (argc == 2) {
 		Filename fn((const char *)wxString(argv[1]).mb_str());
 
 		wxArrayString ls = g_tools.getToolList(fn);
 		if(ls.size() == 1)
-			frame->switchPage(new ChooseOutPage(frame));
+			frame->switchPage(new ChooseOutPage(configuration));
 		else
-			frame->switchPage(new ChooseToolPage(frame, ls));
+			frame->switchPage(new ChooseToolPage(configuration, ls));
 	} else {
-		frame->switchPage(new IntroPage(frame));
+		frame->switchPage(new IntroPage(configuration));
 	}
 	
 	frame->Show(true);
@@ -149,6 +152,8 @@ BEGIN_EVENT_TABLE(ScummToolsFrame, wxFrame)
 	//EVT_MENU(wxID_PREFERENCES, ScummToolsFrame::onMenuPreferences)
 	EVT_BUTTON(ID_HELP, ScummToolsFrame::onMenuHelp)
 	EVT_MENU(wxID_HELP, ScummToolsFrame::onMenuHelp)
+	EVT_BUTTON(ID_ADVANCED, ScummToolsFrame::onMenuAdvanced)
+	EVT_MENU(ID_ADVANCED, ScummToolsFrame::onMenuAdvanced)
 	EVT_MENU(ID_MANUAL, ScummToolsFrame::onMenuManual)
 	EVT_MENU(ID_WEBSITE, ScummToolsFrame::onMenuWebsite)
 	EVT_MENU(wxID_ABOUT, ScummToolsFrame::onMenuAbout)
@@ -221,8 +226,9 @@ void ScummToolsFrame::CreateMenuBar() {
 
 	// Name of this seems really inappropriate
 	wxMenu *helpmenu = new wxMenu();
-	//filemenu->Append(wxID_PREFERENCES, wxT("&Preferences"));
 	helpmenu->Append(wxID_HELP, wxT("Help"));
+	// Might be under the wrong menu...
+	helpmenu->Append(ID_ADVANCED, wxT("&Default Settings"));
 	helpmenu->Append(ID_MANUAL, wxT("&Manual Page"));
 	helpmenu->Append(ID_WEBSITE, wxT("Visit ScummVM &Website"));
 	helpmenu->Append(wxID_ABOUT, wxT("&About ") + wxGetApp().GetAppName());
@@ -232,6 +238,10 @@ void ScummToolsFrame::CreateMenuBar() {
 }
 
 void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
+	// Associate us with the new page
+	if(next)
+		next->SetScummFrame(this);
+
 	// Find the old page
 	wxPanel *oldPanel = dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page")));
 
@@ -274,6 +284,12 @@ void ScummToolsFrame::onMenuHelp(wxCommandEvent &evt) {
 	dlg.ShowModal();
 }
 
+void ScummToolsFrame::onMenuAdvanced(wxCommandEvent &evt) {
+	Configuration defaults;
+	AdvancedSettingsDialog dlg(this, defaults);
+	dlg.ShowModal();
+}
+
 void ScummToolsFrame::onMenuManual(wxCommandEvent &evt) {
 	// Wiki page
 	::wxLaunchDefaultBrowser(wxT("http://wiki.scummvm.org/index.php/User_Manual/Appendix:_Tools"));
@@ -308,8 +324,6 @@ void ScummToolsFrame::onClose(wxCloseEvent &evt) {
 
 // Event table for the WizardButtons window
 BEGIN_EVENT_TABLE(WizardButtons, wxPanel)
-	//EVT_BUTTON(ID_HELP, WizardButtons::onClickHelp)
-	//EVT_BUTTON(ID_ABOUT, WizardButtons::onClickAbout)
 	EVT_BUTTON(ID_NEXT, WizardButtons::onClickNext)
 	EVT_BUTTON(ID_PREV, WizardButtons::onClickPrevious)
 	EVT_BUTTON(ID_CANCEL, WizardButtons::onClickCancel)
@@ -334,6 +348,17 @@ WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext, Configura
 	_help = new wxButton(this, ID_HELP, wxT("Help"));
 	_help->SetSize(80, -1);
 	sizer->Add(_help, wxSizerFlags().Left().ReserveSpaceEvenIfHidden());
+
+	sizer->AddSpacer(10);
+
+	_prefs= new wxButton(this, ID_ADVANCED, wxT("Default Settings"));
+	_prefs->SetSize(80, -1);
+	sizer->Add(_prefs, wxSizerFlags().Left().ReserveSpaceEvenIfHidden());
+
+#ifdef __WXMAC__
+	_help->Hide();
+	_prefs->Hide();
+#endif
 
 	// Insert space between the buttons
 	topsizer->Add(sizer, wxSizerFlags().Left());
@@ -447,6 +472,8 @@ void WizardButtons::onClickCancel(wxCommandEvent &e) {
 	_currentPage->onCancel(_currentPanel);
 }
 
+// Window header
+
 BEGIN_EVENT_TABLE(Header, wxPanel)
 	EVT_PAINT(Header::onPaint)
 END_EVENT_TABLE()
@@ -512,3 +539,30 @@ void Header::onPaint(wxPaintEvent &evt) {
 	dc.DrawText(_title, 290, 70);
 }
 
+AdvancedSettingsDialog::AdvancedSettingsDialog(wxWindow *parent, Configuration &defaults) :
+	wxDialog(parent, wxID_ANY, wxT("Default Settings"), wxDefaultPosition, wxDefaultSize),
+	_defaults(defaults)
+{
+	wxNotebook *notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP);
+	
+	mp3 = new ChooseAudioOptionsMp3Page(defaults);
+	flac = new ChooseAudioOptionsFlacPage(defaults);
+	vorbis = new ChooseAudioOptionsVorbisPage(defaults);
+
+	notebook->AddPage(mp3->CreatePanel(notebook), wxT("MP3"));
+	notebook->AddPage(flac->CreatePanel(notebook), wxT("Flac"));
+	notebook->AddPage(vorbis->CreatePanel(notebook), wxT("Vorbis"));
+	
+	wxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
+
+	topsizer->Add(notebook, wxSizerFlags(1).Expand().Border());
+	topsizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), wxSizerFlags(0).Center().Border());
+
+	SetSizerAndFit(topsizer);
+}
+
+AdvancedSettingsDialog::~AdvancedSettingsDialog() {
+	delete mp3;
+	delete flac;
+	delete vorbis;
+}

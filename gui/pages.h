@@ -38,8 +38,17 @@ class wxFileDirPickerEvent;
 
 class WizardPage : public wxEvtHandler {
 public:
-	WizardPage(ScummToolsFrame *frame);
+	WizardPage(Configuration &config);
 	~WizardPage() {}
+
+	/**
+	 * Associate a topframe with this WizardPage, if the page is a child of another type
+	 * of window, you shouldn't call this. Note that button response functions cannot be
+	 * called without a topframe
+	 *
+	 * @param topframe The topframe to associate with.
+	 */
+	void SetScummFrame(ScummToolsFrame *topframe);
 
 	/**
 	 * Creates a visual representation of this page as a child problem of the supplied parent
@@ -141,7 +150,7 @@ protected:
 
 class IntroPage : public WizardPage {
 public:
-	IntroPage(ScummToolsFrame *frame);
+	IntroPage(Configuration &configuration);
 	
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -165,7 +174,7 @@ public:
 
 class ChooseToolPage : public WizardPage {
 public:
-	ChooseToolPage(ScummToolsFrame *frame, const wxArrayString &options = wxArrayString());
+	ChooseToolPage(Configuration &config, const wxArrayString &options = wxArrayString());
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -189,7 +198,7 @@ protected:
 
 class ChooseIOPage : public WizardPage  {
 public:
-	ChooseIOPage(ScummToolsFrame *frame);
+	ChooseIOPage(Configuration &configuration);
 
 	void onSelectFile(wxFileDirPickerEvent &evt);
 	
@@ -202,7 +211,7 @@ public:
 
 class ChooseInPage : public ChooseIOPage {
 public:
-	ChooseInPage(ScummToolsFrame *frame);
+	ChooseInPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -221,7 +230,7 @@ public:
 
 class ChooseExtraInPage : public ChooseIOPage {
 public:
-	ChooseExtraInPage(ScummToolsFrame *frame);
+	ChooseExtraInPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -241,7 +250,7 @@ public:
 
 class ChooseOutPage : public ChooseIOPage {
 public:
-	ChooseOutPage(ScummToolsFrame *frame);
+	ChooseOutPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -260,7 +269,7 @@ public:
 
 class ChooseAudioFormatPage : public WizardPage {
 public:
-	ChooseAudioFormatPage(ScummToolsFrame *frame);
+	ChooseAudioFormatPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -277,7 +286,7 @@ public:
 
 class ChooseTargetPlatformPage : public WizardPage {
 public:
-	ChooseTargetPlatformPage(ScummToolsFrame *frame);
+	ChooseTargetPlatformPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -295,7 +304,7 @@ public:
 
 class ChooseAudioOptionsMp3Page : public WizardPage {
 public:
-	ChooseAudioOptionsMp3Page(ScummToolsFrame *frame);
+	ChooseAudioOptionsMp3Page(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -323,7 +332,7 @@ public:
 
 class ChooseAudioOptionsFlacPage : public WizardPage {
 public:
-	ChooseAudioOptionsFlacPage(ScummToolsFrame *frame);
+	ChooseAudioOptionsFlacPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -339,7 +348,7 @@ public:
 
 class ChooseAudioOptionsVorbisPage : public WizardPage {
 public:
-	ChooseAudioOptionsVorbisPage(ScummToolsFrame *frame);
+	ChooseAudioOptionsVorbisPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -445,7 +454,7 @@ class ProcessPage : public WizardPage {
 	ThreadCommunicationBuffer _output;
 
 public:
-	ProcessPage(ScummToolsFrame *frame);
+	ProcessPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
@@ -474,7 +483,7 @@ public:
 
 class FinishPage : public WizardPage {
 public:
-	FinishPage(ScummToolsFrame *frame);
+	FinishPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 	
@@ -492,7 +501,7 @@ public:
 
 class FailurePage : public WizardPage {
 public:
-	FailurePage(ScummToolsFrame *frame);
+	FailurePage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
 

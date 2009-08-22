@@ -42,10 +42,14 @@
 BEGIN_EVENT_TABLE(WizardPage, wxEvtHandler)
 END_EVENT_TABLE()
 
-WizardPage::WizardPage(ScummToolsFrame *frame)
-	: _topframe(frame),
-	  _configuration(frame->_configuration)
+WizardPage::WizardPage(Configuration &config)
+	: _configuration(config),
+	  _topframe(NULL)
 {
+}
+
+void WizardPage::SetScummFrame(ScummToolsFrame *topframe) {
+	_topframe = topframe;
 }
 
 wxWindow *WizardPage::CreatePanel(wxWindow *parent) {
@@ -70,13 +74,16 @@ void WizardPage::SetAlignedSizer(wxWindow *panel, wxSizer *sizer) {
 // Our default handler for next/prev/cancel
 
 void WizardPage::onNext(wxWindow *panel) {
+	wxASSERT_MSG(_topframe != NULL, wxT("Can not call onNext without topframe set."));
 }
 
 void WizardPage::onPrevious(wxWindow *panel) {
+	wxASSERT_MSG(_topframe != NULL, wxT("Can not call onPrevious without topframe set."));
 	_topframe->switchToPreviousPage();
 }
 
 bool WizardPage::onCancel(wxWindow *panel) {
+	wxASSERT_MSG(_topframe != NULL, wxT("Can not call onCancel without topframe set."));
 	wxMessageDialog dlg(panel, wxT("Are you sure you want to abort the wizard?"), wxT("Abort"), wxYES | wxNO);
 	wxWindowID ret = dlg.ShowModal();
 	if (ret == wxID_YES) {
@@ -107,8 +114,8 @@ BEGIN_EVENT_TABLE(IntroPage, WizardPage)
 	EVT_BUTTON(ID_ADVANCED, IntroPage::onClickAdvanced)
 END_EVENT_TABLE()
 
-IntroPage::IntroPage(ScummToolsFrame *frame)
-	: WizardPage(frame)
+IntroPage::IntroPage(Configuration &config)
+	: WizardPage(config)
 {
 }
 
@@ -189,26 +196,26 @@ void IntroPage::onClickCompress(wxCommandEvent &e) {
 	_configuration.compressing = true;
 	_configuration.advanced = false;
 
-	switchPage(new ChooseInPage(_topframe));
+	switchPage(new ChooseInPage(_configuration));
 }
 
 void IntroPage::onClickExtract(wxCommandEvent &e) {
 	_configuration.compressing = false;
 	_configuration.advanced = false;
 
-	switchPage(new ChooseInPage(_topframe));
+	switchPage(new ChooseInPage(_configuration));
 }
 
 void IntroPage::onClickAdvanced(wxCommandEvent &e) {
 	_configuration.advanced = true;
 
-	switchPage(new ChooseToolPage(_topframe));
+	switchPage(new ChooseToolPage(_configuration));
 }
 
 // Page to choose the tool to use
 
-ChooseToolPage::ChooseToolPage(ScummToolsFrame *frame, const wxArrayString &options)
-	: WizardPage(frame),
+ChooseToolPage::ChooseToolPage(Configuration &config, const wxArrayString &options)
+	: WizardPage(config),
 	  _options(options)
 {
 }
@@ -282,11 +289,11 @@ void ChooseToolPage::onNext(wxWindow *panel) {
 	const ToolGUI *tool = g_tools.get(static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection());
 
 	if (_configuration.advanced)
-		switchPage(new ChooseInPage(_topframe));
+		switchPage(new ChooseInPage(_configuration));
 	else if (tool && tool->getInputList().size() > 1)
-		switchPage(new ChooseExtraInPage(_topframe));
+		switchPage(new ChooseExtraInPage(_configuration));
 	else
-		switchPage(new ChooseOutPage(_topframe));
+		switchPage(new ChooseOutPage(_configuration));
 }
 
 void ChooseToolPage::onChangeTool(wxCommandEvent &evt) {
@@ -304,12 +311,14 @@ void ChooseToolPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 
 // Common base class for the IO pages
 
-ChooseIOPage::ChooseIOPage(ScummToolsFrame *frame)
-	: WizardPage(frame)
+ChooseIOPage::ChooseIOPage(Configuration &config)
+	: WizardPage(config)
 {
 }
 
 void ChooseIOPage::onSelectFile(wxFileDirPickerEvent &evt) {
+	wxASSERT_MSG(_topframe != NULL, wxT("Can not call onSelectFile without topframe set."));
+
 	wxWindow *win = dynamic_cast<wxWindow *>(evt.GetEventObject());
 	wxPanel *panel = dynamic_cast<wxPanel *>(win->GetParent());
 	
@@ -348,8 +357,8 @@ void ChooseIOPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 
 // Page to choose input directory or file
 
-ChooseInPage::ChooseInPage(ScummToolsFrame *frame)
-	: ChooseIOPage(frame)
+ChooseInPage::ChooseInPage(Configuration &config)
+	: ChooseIOPage(config)
 {
 }
 
@@ -433,20 +442,20 @@ void ChooseInPage::onNext(wxWindow *panel) {
 
 	if (_configuration.advanced) {
 		if (_configuration.selectedTool->getInputList().size() > 1)
-			switchPage(new ChooseExtraInPage(_topframe));
+			switchPage(new ChooseExtraInPage(_configuration));
 		else
-			switchPage(new ChooseOutPage(_topframe));
+			switchPage(new ChooseOutPage(_configuration));
 	} else {
 		wxArrayString ls = g_tools.getToolList(filename,
 			_configuration.compressing? TOOLTYPE_COMPRESSION : TOOLTYPE_EXTRACTION);
 		if(ls.size() == 1) {
 			_configuration.selectedTool = g_tools.get(ls[0]);
 			if (_configuration.selectedTool->getInputList().size() == 1)
-				switchPage(new ChooseOutPage(_topframe));
+				switchPage(new ChooseOutPage(_configuration));
 			else
-				switchPage(new ChooseExtraInPage(_topframe));
+				switchPage(new ChooseExtraInPage(_configuration));
 		} else {
-			switchPage(new ChooseToolPage(_topframe, ls));
+			switchPage(new ChooseToolPage(_configuration, ls));
 		}
 	}
 }
@@ -466,8 +475,8 @@ void ChooseInPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 
 // Page to choose input and output directory or file
 
-ChooseExtraInPage::ChooseExtraInPage(ScummToolsFrame *frame)
-	: ChooseIOPage(frame)
+ChooseExtraInPage::ChooseExtraInPage(Configuration &config)
+	: ChooseIOPage(config)
 {
 }
 
@@ -573,13 +582,13 @@ wxString ChooseExtraInPage::getHelp() {
 }
 
 void ChooseExtraInPage::onNext(wxWindow *panel) {
-	switchPage(new ChooseOutPage(_topframe));
+	switchPage(new ChooseOutPage(_configuration));
 }
 
 // Page to choose input and output directory or file
 
-ChooseOutPage::ChooseOutPage(ScummToolsFrame *frame)
-	: ChooseIOPage(frame)
+ChooseOutPage::ChooseOutPage(Configuration &config)
+	: ChooseIOPage(config)
 {
 }
 
@@ -666,15 +675,15 @@ wxString ChooseOutPage::getHelp() {
 
 void ChooseOutPage::onNext(wxWindow *panel) {
 	if (_configuration.selectedTool->getType() == TOOLTYPE_COMPRESSION)
-		switchPage(new ChooseTargetPlatformPage(_topframe));
+		switchPage(new ChooseTargetPlatformPage(_configuration));
 	else
-		switchPage(new ProcessPage(_topframe));
+		switchPage(new ProcessPage(_configuration));
 }
 
 // Page to choose input and output directory or file
 
-ChooseTargetPlatformPage::ChooseTargetPlatformPage(ScummToolsFrame *frame)
-	: WizardPage(frame)
+ChooseTargetPlatformPage::ChooseTargetPlatformPage(Configuration &config)
+	: WizardPage(config)
 {
 }
 
@@ -694,7 +703,7 @@ wxWindow *ChooseTargetPlatformPage::CreatePanel(wxWindow *parent) {
 
 	wxChoice *platform = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxSize(80, -1), 
 		choices, 0, wxDefaultValidator, wxT("PlatformSelection"));
-	sizer->Add(platform);
+	sizer->Add(platform, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	SetAlignedSizer(panel, sizer);
 
@@ -720,13 +729,13 @@ wxString ChooseTargetPlatformPage::getHelp() {
 }
 
 void ChooseTargetPlatformPage::onNext(wxWindow *panel) {
-	switchPage(new ChooseAudioFormatPage(_topframe));
+	switchPage(new ChooseAudioFormatPage(_configuration));
 }
 
 // Page to choose input and output directory or file
 
-ChooseAudioFormatPage::ChooseAudioFormatPage(ScummToolsFrame *frame)
-	: WizardPage(frame)
+ChooseAudioFormatPage::ChooseAudioFormatPage(Configuration &config)
+	: WizardPage(config)
 {
 }
 
@@ -805,20 +814,20 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 	if (advanced->GetValue()) {
 
 		if (format->GetStringSelection() == wxT("Vorbis"))
-			switchPage(new ChooseAudioOptionsVorbisPage(_topframe));
+			switchPage(new ChooseAudioOptionsVorbisPage(_configuration));
 		else if (format->GetStringSelection() == wxT("FLAC"))
-			switchPage(new ChooseAudioOptionsFlacPage(_topframe));
+			switchPage(new ChooseAudioOptionsFlacPage(_configuration));
 		else if (format->GetStringSelection() == wxT("MP3"))
-			switchPage(new ChooseAudioOptionsMp3Page(_topframe));
+			switchPage(new ChooseAudioOptionsMp3Page(_configuration));
 	} else {
-		switchPage(new ProcessPage(_topframe));
+		switchPage(new ProcessPage(_configuration));
 	}
 }
 
 // Page to choose Mp3 compression options
 
-ChooseAudioOptionsMp3Page::ChooseAudioOptionsMp3Page(ScummToolsFrame *frame)
-	: WizardPage(frame)
+ChooseAudioOptionsMp3Page::ChooseAudioOptionsMp3Page(Configuration &config)
+	: WizardPage(config)
 {
 }
 
@@ -868,7 +877,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxChoice *vbrMinBitrate = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
-	sizer->Add(vbrMinBitrate, wxSizerFlags().Expand());
+	sizer->Add(vbrMinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 	
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
@@ -876,7 +885,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxChoice *vbrMaxBitrate = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
-	sizer->Add(vbrMaxBitrate, wxSizerFlags().Expand());
+	sizer->Add(vbrMaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 	
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Average Bitrate:")));
@@ -884,7 +893,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxChoice *abrAvgBitrate = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("AverageBitrate"));
-	sizer->Add(abrAvgBitrate, wxSizerFlags().Expand());
+	sizer->Add(abrAvgBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	abrButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsMp3Page::onChangeCompressionType), NULL, this);
 	vbrButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsMp3Page::onChangeCompressionType), NULL, this);
@@ -901,7 +910,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxChoice *vbrQuality = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("VBRQuality"));
-	sizer->Add(vbrQuality, wxSizerFlags().Expand());
+	sizer->Add(vbrQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 	
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("MPEG Quality:")));
@@ -909,7 +918,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxChoice *mpegQuality = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("MpegQuality"));
-	sizer->Add(mpegQuality, wxSizerFlags().Expand());
+	sizer->Add(mpegQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	// Finish the window
 	SetAlignedSizer(panel, sizer);
@@ -975,13 +984,13 @@ void ChooseAudioOptionsMp3Page::onChangeCompressionType(wxCommandEvent &evt) {
 }
 
 void ChooseAudioOptionsMp3Page::onNext(wxWindow *panel) {
-	switchPage(new ProcessPage(_topframe));
+	switchPage(new ProcessPage(_configuration));
 }
 
 // Page to choose Flac compression options
 
-ChooseAudioOptionsFlacPage::ChooseAudioOptionsFlacPage(ScummToolsFrame *frame)
-	: WizardPage(frame)
+ChooseAudioOptionsFlacPage::ChooseAudioOptionsFlacPage(Configuration &config)
+	: WizardPage(config)
 {
 }
 
@@ -1023,7 +1032,7 @@ wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
 	wxChoice *compressionLevel = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleLevelCount, possibleLevels, 0, wxDefaultValidator, wxT("CompressionLevel"));
-	sizer->Add(compressionLevel, wxSizerFlags().Expand());
+	sizer->Add(compressionLevel, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 
 	// Block Size
@@ -1040,7 +1049,7 @@ wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
 	wxChoice *blockSize = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		sizeof blockSizes / sizeof *blockSizes, blockSizes, 0, wxDefaultValidator, wxT("BlockSize"));
-	sizer->Add(blockSize, wxSizerFlags().Expand());
+	sizer->Add(blockSize, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 	
 	// Finish the window
 	topsizer->Add(sizer);
@@ -1063,13 +1072,13 @@ void ChooseAudioOptionsFlacPage::save(wxWindow *panel) {
 }
 
 void ChooseAudioOptionsFlacPage::onNext(wxWindow *panel) {
-	switchPage(new ProcessPage(_topframe));
+	switchPage(new ProcessPage(_configuration));
 }
 
 // Page to choose Vorbis compression options
 
-ChooseAudioOptionsVorbisPage::ChooseAudioOptionsVorbisPage(ScummToolsFrame *frame)
-	: WizardPage(frame)
+ChooseAudioOptionsVorbisPage::ChooseAudioOptionsVorbisPage(Configuration &config)
+	: WizardPage(config)
 {
 }
 
@@ -1100,7 +1109,7 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	wxChoice *MinBitrate = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
-	sizer->Add(MinBitrate, wxSizerFlags().Expand());
+	sizer->Add(MinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 	
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Nominal Bitrate:")));
@@ -1108,7 +1117,7 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	wxChoice *AvgBitrate = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("NominalBitrate"));
-	sizer->Add(AvgBitrate, wxSizerFlags().Expand());
+	sizer->Add(AvgBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 	
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
@@ -1116,7 +1125,7 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	wxChoice *MaxBitrate = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
-	sizer->Add(MaxBitrate, wxSizerFlags().Expand());
+	sizer->Add(MaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	// Quality
 	const int possibleQualityCount = 10;
@@ -1130,7 +1139,7 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	wxChoice *quality = new wxChoice(
 		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("Quality"));
-	sizer->Add(quality, wxSizerFlags().Expand());
+	sizer->Add(quality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	// Finish the window
 	SetAlignedSizer(panel, sizer);
@@ -1158,14 +1167,14 @@ void ChooseAudioOptionsVorbisPage::save(wxWindow *panel) {
 }
 
 void ChooseAudioOptionsVorbisPage::onNext(wxWindow *panel) {
-	switchPage(new ProcessPage(_topframe));
+	switchPage(new ProcessPage(_configuration));
 }
 
 
 // Page to choose ANY tool to use
 
-ProcessPage::ProcessPage(ScummToolsFrame *frame)
-	: WizardPage(frame),
+ProcessPage::ProcessPage(Configuration &config)
+	: WizardPage(config),
 	  _finished(false),
 	  _success(false)
 {
@@ -1282,7 +1291,8 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 		_finished = true;
 
 		// Update UI
-		updateButtons(panel, _topframe->_buttons);
+		if (_topframe)
+			updateButtons(panel, _topframe->_buttons);
 		return false;
 	}
 
@@ -1296,9 +1306,9 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 
 void ProcessPage::onNext(wxWindow *panel) {
 	if (_success)
-		switchPage(new FinishPage(_topframe));
+		switchPage(new FinishPage(_configuration));
 	else
-		switchPage(new FailurePage(_topframe));
+		switchPage(new FailurePage(_configuration));
 }
 
 bool ProcessPage::onCancel(wxWindow *panel) {
@@ -1406,8 +1416,8 @@ int ProcessToolThread::spawnSubprocess(void *udata, const char *cmd) {
 
 // Last page of the wizard, offers the option to open the output directory
 
-FinishPage::FinishPage(ScummToolsFrame *frame)
-	: WizardPage(frame)
+FinishPage::FinishPage(Configuration &config)
+	: WizardPage(config)
 {
 }
 
@@ -1466,8 +1476,8 @@ void FinishPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 
 // If the tool fails, this page is shown instead of the last page
 
-FailurePage::FailurePage(ScummToolsFrame *frame)
-	: WizardPage(frame)
+FailurePage::FailurePage(Configuration &config)
+	: WizardPage(config)
 {
 }
 
