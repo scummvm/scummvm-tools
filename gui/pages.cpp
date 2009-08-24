@@ -143,8 +143,8 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	buttonsizer = new wxBoxSizer(wxVERTICAL);
 	buttonsizer->Add(new wxButton(buttonpanel, ID_COMPRESS, wxT("Compress")), wxSizerFlags().Expand());
 	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
-		wxT("Compress game audio files into archive files for use with ScummVM."),
-		wxDefaultPosition, wxSize(100, 60), wxALIGN_CENTER));
+		wxT("Compress game audio files into archives."),
+		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
 	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickCompress), NULL, this);
 	buttonpanel->SetSizer(buttonsizer);
 	sidesizer->Add(buttonpanel);
@@ -155,8 +155,8 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	buttonsizer = new wxBoxSizer(wxVERTICAL);
 	buttonsizer->Add(new wxButton(buttonpanel, ID_EXTRACT, wxT("Extract")), wxSizerFlags().Expand());
 	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
-		wxT("Extract the contents of archive files used by many games."),
-		wxDefaultPosition, wxSize(100, 60), wxALIGN_CENTER));
+		wxT("Extract the contents of archive filess."),
+		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
 	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickExtract), NULL, this);
 	buttonpanel->SetSizer(buttonsizer);
 	sidesizer->Add(buttonpanel);
@@ -168,7 +168,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	buttonsizer->Add(new wxButton(buttonpanel, ID_ADVANCED, wxT("Advanced")), wxSizerFlags().Expand());
 	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
 		wxT("Choose the precise tool you want to use."),
-		wxDefaultPosition, wxSize(100, 60), wxALIGN_CENTER));
+		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
 	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickAdvanced), NULL, this);
 	buttonpanel->SetSizer(buttonsizer);
 	sidesizer->Add(buttonpanel);
