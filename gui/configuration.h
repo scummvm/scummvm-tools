@@ -38,6 +38,19 @@ struct Configuration {
 	~Configuration();
 	
 	/**
+	 * Fills this config object with values loaded from the permanent storage method
+	 */
+	void load();
+
+	/**
+	 * Saves configuration to a more permanent storage
+	 * (registry under unix, .ini like file under other OSes)
+	 *
+	 * @param all True if all parameters should be saved, including audio parameters.
+	 */
+	void save(bool all = true);
+
+	/**
 	 * Returns a list of all supported (as in, we have some defaults for it) platforms
 	 */
 	static wxArrayString getTargetPlatforms();
@@ -121,15 +134,63 @@ inline Configuration::Configuration() {
 	oggAvgBitrate = wxT("24");
 	oggMaxBitrate = wxT("64");
 
-	wxConfig *filecnf = new wxConfig(wxT("ScummVMTools"));
-	filecnf->Read(wxT("outputpath"), &outputPath);
-	delete filecnf;
 }
 
 inline Configuration::~Configuration() {
+}
+
+inline void Configuration::load() {
 	wxConfig *filecnf = new wxConfig(wxT("ScummVMTools"));
+
+	filecnf->Read(wxT("outputpath"), &outputPath);
+
+	// mp3 params
+	filecnf->Read(wxT("mp3CompressionType"), &mp3CompressionType, mp3CompressionType);
+	filecnf->Read(wxT("mp3MpegQuality"), &mp3MpegQuality, mp3MpegQuality);
+	filecnf->Read(wxT("mp3ABRBitrate"), &mp3ABRBitrate, mp3ABRBitrate);
+	filecnf->Read(wxT("mp3VBRMinBitrate"), &mp3VBRMinBitrate, mp3VBRMinBitrate);
+	filecnf->Read(wxT("mp3VBRMaxBitrate"), &mp3VBRMaxBitrate, mp3VBRMaxBitrate);
+	filecnf->Read(wxT("mp3VBRQuality"), &mp3VBRQuality, mp3VBRQuality);
+
+	// flac params
+	filecnf->Read(wxT("flacCompressionLevel"), &flacCompressionLevel, flacCompressionLevel);
+	filecnf->Read(wxT("flacBlockSize"), &flacBlockSize, flacBlockSize);
+
+	// flac params
+	filecnf->Read(wxT("oggQuality"), &oggQuality, oggQuality);
+	filecnf->Read(wxT("oggMinBitrate"), &oggMinBitrate, oggMinBitrate);
+	filecnf->Read(wxT("oggAvgBitrate"), &oggAvgBitrate, oggAvgBitrate);
+	filecnf->Read(wxT("oggMaxBitrate"), &oggMaxBitrate, oggMaxBitrate);
+
+	delete filecnf;
+}
+
+inline void Configuration::save(bool all) {
+	wxConfig *filecnf = new wxConfig(wxT("ScummVMTools"));
+
 	wxFileName op(outputPath);
 	filecnf->Write(wxT("outputpath"), op.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR));
+	
+	if (all) {
+		// mp3 params
+		filecnf->Write(wxT("mp3CompressionType"), mp3CompressionType);
+		filecnf->Write(wxT("mp3MpegQuality"), mp3MpegQuality);
+		filecnf->Write(wxT("mp3ABRBitrate"), mp3ABRBitrate);
+		filecnf->Write(wxT("mp3VBRMinBitrate"), mp3VBRMinBitrate);
+		filecnf->Write(wxT("mp3VBRMaxBitrate"), mp3VBRMaxBitrate);
+		filecnf->Write(wxT("mp3VBRQuality"), mp3VBRQuality);
+
+		// flac params
+		filecnf->Write(wxT("flacCompressionLevel"), flacCompressionLevel);
+		filecnf->Write(wxT("flacBlockSize"), flacBlockSize);
+
+		// flac params
+		filecnf->Write(wxT("oggQuality"), oggQuality);
+		filecnf->Write(wxT("oggMinBitrate"), oggMinBitrate);
+		filecnf->Write(wxT("oggAvgBitrate"), oggAvgBitrate);
+		filecnf->Write(wxT("oggMaxBitrate"), oggMaxBitrate);
+	}
+	
 	delete filecnf;
 }
 

@@ -67,7 +67,7 @@ void WizardPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 void WizardPage::SetAlignedSizer(wxWindow *panel, wxSizer *sizer) {
 	wxSizer *topsizer = new wxBoxSizer(wxHORIZONTAL);
 	topsizer->AddSpacer(100);
-	topsizer->Add(sizer, 1, wxEXPAND);
+	topsizer->Add(sizer, wxSizerFlags(1).Expand().Border());
 	panel->SetSizer(topsizer);
 }
 
@@ -869,7 +869,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	const int possibleBitrateCount = 160 / 8;
 	wxString possibleBitrates[possibleBitrateCount + 1];
 	for (int i = 0; i <= possibleBitrateCount; ++i) {
-		possibleBitrates[i] << i*8;
+		possibleBitrates[i] << (i+1)*8;
 	}
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:")));
@@ -1021,7 +1021,7 @@ wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
 	// 
 
 	// Compression Level
-	const int possibleLevelCount = 8;
+	const int possibleLevelCount = 9;
 	wxString possibleLevels[possibleLevelCount + 1];
 	for (int i = 0; i <= possibleLevelCount; ++i) {
 		possibleLevels[i] << i;
@@ -1101,7 +1101,7 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	const int possibleBitrateCount = 160 / 8;
 	wxString possibleBitrates[possibleBitrateCount + 1];
 	for (int i = 0; i <= possibleBitrateCount; ++i) {
-		possibleBitrates[i] << i*8;
+		possibleBitrates[i] << (i+1)*8;
 	}
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:")));
@@ -1128,7 +1128,7 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	sizer->Add(MaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	// Quality
-	const int possibleQualityCount = 10;
+	const int possibleQualityCount = 11;
 	wxString possibleQualities[possibleQualityCount + 1];
 	for (int i = 0; i <= possibleQualityCount; ++i) {
 		possibleQualities[i] << i;

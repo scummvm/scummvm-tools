@@ -260,9 +260,12 @@ public:
 protected:
 	Configuration &_defaults;
 
-	ChooseAudioOptionsMp3Page *mp3;
-	ChooseAudioOptionsFlacPage *flac;
-	ChooseAudioOptionsVorbisPage *vorbis;
+	ChooseAudioOptionsMp3Page *_mp3;
+	wxWindow *_mp3panel;
+	ChooseAudioOptionsFlacPage *_flac;
+	wxWindow *_flacpanel;
+	ChooseAudioOptionsVorbisPage *_vorbis;
+	wxWindow *_vorbispanel;
 };
 
 #endif

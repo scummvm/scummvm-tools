@@ -49,6 +49,11 @@ class ScummVMToolsApp : public wxApp {
 	virtual bool OnInit();
 
 public:
+	/**
+	 * Essentially a global function to display the about dialog
+	 * We keep it here since there is no good place to stick it since it's called
+	 * from many different classes.
+	 */
 	void OnAbout();
 };
 
@@ -61,13 +66,14 @@ bool ScummVMToolsApp::OnInit() {
 	SetAppName(wxT("ScummVM Tools"));
 
 	// Create window & display
-	ScummToolsFrame *frame = new ScummToolsFrame(GetAppName(), wxDefaultPosition, wxSize(600,400));
+	ScummToolsFrame *frame = new ScummToolsFrame(GetAppName(), wxDefaultPosition, wxSize(600,420));
 #ifdef __WXMAC__ // Menu bar looks ugly when it's part of the window, on OSX it's not
 	frame->CreateMenuBar();
 #endif
-	frame->SetMinSize(wxSize(600, 400));
+	frame->SetMinSize(wxSize(600, 420));
 	SetTopWindow(frame);
 	
+	// Create and load configuration
 	Configuration &configuration = frame->_configuration;
 
 	if (argc == 2) {
@@ -167,9 +173,12 @@ END_EVENT_TABLE()
 ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, const wxSize& size)
 		: wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
+	// Load the default configuration
+	_configuration.load();
+
+
 	// We need a parent frame for correct background color (default frame looks 'disabled' in the background)
 	wxPanel *main = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("Wizard Main Panel"));
-
 
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 	
@@ -213,6 +222,10 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 }
 
 ScummToolsFrame::~ScummToolsFrame() {
+	// Save the current configuration
+	// false means we don't save audio settings
+	_configuration.save(false);
+
 	for (std::vector<WizardPage *>::iterator iter = _pages.begin(); iter != _pages.end(); ++iter)
 		delete *iter;
 }
@@ -285,9 +298,25 @@ void ScummToolsFrame::onMenuHelp(wxCommandEvent &evt) {
 }
 
 void ScummToolsFrame::onMenuAdvanced(wxCommandEvent &evt) {
+	// We fill the temporary object with the current standard settings
 	Configuration defaults;
-	AdvancedSettingsDialog dlg(this, defaults);
-	dlg.ShowModal();
+	defaults.load();
+
+	// Display the dialog with options
+	int ok;
+	{
+		AdvancedSettingsDialog dlg(this, defaults);
+		ok = dlg.ShowModal();
+		// Settings are saved once the window is closed
+	}
+
+	// Save the settings
+	if (ok == wxID_OK) {
+		defaults.save();
+		// Fill in values from the defaults, note that this overrides
+		// current settings!
+		_configuration.load();
+	}
 }
 
 void ScummToolsFrame::onMenuManual(wxCommandEvent &evt) {
@@ -361,8 +390,8 @@ WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext, Configura
 #endif
 
 	// Insert space between the buttons
-	topsizer->Add(sizer, wxSizerFlags().Left());
-	topsizer->Add(10, 10, 1, wxEXPAND);
+	topsizer->Add(sizer, wxSizerFlags().Left().Border());
+	topsizer->Add(new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize), wxSizerFlags(1).Expand());
 	sizer = new wxBoxSizer(wxHORIZONTAL);
 
 
@@ -545,13 +574,13 @@ AdvancedSettingsDialog::AdvancedSettingsDialog(wxWindow *parent, Configuration &
 {
 	wxNotebook *notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP);
 	
-	mp3 = new ChooseAudioOptionsMp3Page(defaults);
-	flac = new ChooseAudioOptionsFlacPage(defaults);
-	vorbis = new ChooseAudioOptionsVorbisPage(defaults);
+	_mp3 = new ChooseAudioOptionsMp3Page(defaults);
+	_flac = new ChooseAudioOptionsFlacPage(defaults);
+	_vorbis = new ChooseAudioOptionsVorbisPage(defaults);
 
-	notebook->AddPage(mp3->CreatePanel(notebook), wxT("MP3"));
-	notebook->AddPage(flac->CreatePanel(notebook), wxT("Flac"));
-	notebook->AddPage(vorbis->CreatePanel(notebook), wxT("Vorbis"));
+	notebook->AddPage(_mp3panel = _mp3->CreatePanel(notebook), wxT("MP3"));
+	notebook->AddPage(_flacpanel = _flac->CreatePanel(notebook), wxT("Flac"));
+	notebook->AddPage(_vorbispanel = _vorbis->CreatePanel(notebook), wxT("Vorbis"));
 	
 	wxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
 
@@ -562,7 +591,10 @@ AdvancedSettingsDialog::AdvancedSettingsDialog(wxWindow *parent, Configuration &
 }
 
 AdvancedSettingsDialog::~AdvancedSettingsDialog() {
-	delete mp3;
-	delete flac;
-	delete vorbis;
+	_mp3->save(_mp3panel);
+	_flac->save(_flacpanel);
+	_vorbis->save(_vorbispanel);
+	delete _mp3;
+	delete _flac;
+	delete _vorbis;
 }
