@@ -155,7 +155,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	buttonsizer = new wxBoxSizer(wxVERTICAL);
 	buttonsizer->Add(new wxButton(buttonpanel, ID_EXTRACT, wxT("Extract")), wxSizerFlags().Expand());
 	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
-		wxT("Extract the contents of archive filess."),
+		wxT("Extract the contents of archive files."),
 		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
 	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickExtract), NULL, this);
 	buttonpanel->SetSizer(buttonsizer);
