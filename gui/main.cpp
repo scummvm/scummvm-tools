@@ -520,7 +520,7 @@ Header::Header(wxWindow *parent, const wxString &logo, const wxString &tile, con
 		wxImage::AddHandler(new wxGIFHandler);
 
 	// Load image files
-#ifdef __WXWINDOWS__
+#ifdef __WXMSW__
 	// Windows likes subfolders for media files
 	_logo.LoadFile(wxT("media/") + logo, wxBITMAP_TYPE_JPEG);
 	_tile.LoadFile(wxT("media/") + tile, wxBITMAP_TYPE_GIF);
