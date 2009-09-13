@@ -24,6 +24,10 @@ Extraction Tools:
                 Example of usage:
                 extract_cine [input file] [output directory]
 
+	extract_cruise_pc
+		Extracts the packed files E1, E4, E5 as found on some PC
+		versions.
+
         extract_kyra
                 Unpacks .PAK files from Kyrandia games.
                 It is also able to extract the installer package files from

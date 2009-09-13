@@ -79,6 +79,7 @@ TARGETS := \
 	encode_dxa$(EXEEXT) \
 	extract_agos$(EXEEXT) \
 	extract_cine$(EXEEXT) \
+	extract_cruise_pc$(EXEEXT) \
 	extract_kyra$(EXEEXT) \
 	extract_loom_tg16$(EXEEXT) \
 	extract_mm_apple$(EXEEXT) \
@@ -176,6 +177,9 @@ extract_cine$(EXEEXT): extract_cine.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_agos$(EXEEXT): extract_agos.o
+	$(CXX) $(LDFLAGS) -o $@ $+
+
+extract_cruise_pc$(EXEEXT): extract_cruise_pc.o util.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 extract_gob_stk$(EXEEXT): extract_gob_stk.o util.o
