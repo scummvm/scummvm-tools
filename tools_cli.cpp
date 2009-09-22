@@ -37,7 +37,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 
 	if (argc == 1) {
 		// Run without any arguments
-		printHelp();
+		printHelp(argv[0]);
 		return 2;
 	}
 
@@ -76,7 +76,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 			}
 			std::cout << "\nUnknown help topic '" << arguments[1] << "'\n";
 		}
-		printHelp();
+		printHelp(argv[0]);
 		return 2;
 	} else if (option == "--list" || option == "-l") {
 		printTools();
@@ -185,13 +185,13 @@ int ToolsCLI::run(int argc, char *argv[]) {
 	return 0;
 }
 
-void ToolsCLI::printHelp() {
+void ToolsCLI::printHelp(const char *exeName) {
 	std::cout << 
-		"\tScumm VM Tools master interface\n" <<
+		"\tScummVM Tools master interface\n" <<
 		"\n" <<
 		"\tCommon use:\n" <<
-		"\ttools [--tool <tool name>] [tool-specific options] [-o <output directory>] <input files>\n" <<
-		"\ttools [tool-specific option] [extract|compress] <input files>\n" <<
+		"\t" << exeName << " [--tool <tool name>] [tool-specific options] [-o <output directory>] <input files>\n" <<
+		"\t" << exeName << " [tool-specific option] [extract|compress] <input files>\n" <<
 		"\n" <<
 		"\tOther Options:\n" <<
 		"\t--help\tDisplay this text\n" <<

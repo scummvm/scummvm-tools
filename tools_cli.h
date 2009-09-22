@@ -35,7 +35,7 @@ public:
 
 	int run(int argc, char *argv[]);
 
-	void printHelp();
+	void printHelp(const char *exeName);
 	void printTools();
 };
 
