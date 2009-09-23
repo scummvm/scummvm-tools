@@ -42,21 +42,23 @@ void CompressAgos::end() {
 	int size;
 	char fbuf[2048];
 
-	_output_idx.open(_outputPath, "wb");
+	_output_idx.close();
+	_output_snd.close();
+
+	File outputFile(_outputPath, "wb");
 
 	_input.open(TEMP_IDX, "rb");
 	while ((size = _input.readN(fbuf, 1, 2048)) > 0) {
-		_output_idx.write(fbuf, 1, size);
+		outputFile.write(fbuf, 1, size);
 	}
 
 	_input.open(TEMP_DAT, "rb");
 	while ((size = _input.readN(fbuf, 1, 2048)) > 0) {
-		_output_idx.write(fbuf, 1, size);
+		outputFile.write(fbuf, 1, size);
 	}
 
 	_input.close();
-	_output_idx.close();
-	_output_snd.close();
+	outputFile.close();
 
 	/* And some clean-up :-) */
 	unlink(TEMP_IDX);
