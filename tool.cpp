@@ -93,13 +93,14 @@ int Tool::run(std::vector<std::string> args) {
 		print(s.c_str());
 	}
 
+	// Make sure we have enough input files.
+	if (_arguments.size() - _arguments_parsed < _inputPaths.size()) {
+		print("Too few input files!");
+		return -2;
+	}
+
 	// Read input files from CLI
 	for(ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
-		if(_arguments.size() - _arguments_parsed < _inputPaths.size()) {
-			print("Too few input files!");
-			return -2;
-		}
-
 		std::string &in = _arguments[_arguments_parsed++];
 		if (!iter->file) {
 			// Append '/' to input if it's not already done
