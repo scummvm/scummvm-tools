@@ -438,8 +438,8 @@ const char *var_names72[] = {
 	NULL,
 	"VAR_REDRAW_ALL_ACTORS",
 	/* 96 */
-	NULL,
-	NULL,
+	"VAR_TIMER_1",
+	"VAR_TIMER_2",
 	NULL,
 	NULL,
 	/* 100 */
