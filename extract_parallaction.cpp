@@ -305,9 +305,9 @@ ExtractParallaction::ExtractParallaction(const std::string &name) : Tool(name, T
 }
 
 void ExtractParallaction::parseExtraArguments() {
-	if (_arguments[_arguments_parsed] == "--small") {
+	if (!_arguments.empty() && _arguments.front() == "--small") {
 		_small = true;
-		++_arguments_parsed;
+		_arguments.pop_front();
 	}
 }
 

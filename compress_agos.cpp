@@ -214,9 +214,9 @@ void CompressAgos::convert_mac(Filename *inputPath) {
 }
 
 void CompressAgos::parseExtraArguments() {
-	if (_arguments[_arguments_parsed] == "--mac") {
+	if (!_arguments.empty() && _arguments.front() == "--mac") {
 		_convertMac = true;
-		++_arguments_parsed;
+		_arguments.pop_front();
 	}
 }
 

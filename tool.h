@@ -24,6 +24,7 @@
 #define TOOL_H
 
 #include <vector>
+#include <deque>
 #include <string>
 
 #include "util.h"
@@ -78,15 +79,9 @@ public:
 	virtual ~Tool();
 
 	/**
-	 * Run tool with CLI args (parses them, and then calls run())
-	 * This version also catches all errors and prints them before exiting
-	 *
-	 * @param argc Argument count
-	 * @param argv Argument values
+	 * Run tool with command line arguments.
 	 */
-	int run(int argc, char *argv[]);
-	/** Same as the above, but accepts vector of string instead */
-	int run(std::vector<std::string> args);
+	int run(const std::deque<std::string> &args);
 
 	/**
 	 * Parse with args set already (modify the public members to set them)
@@ -211,9 +206,7 @@ public:
 
 protected:
 	/* Command line arguments we are parsing. */
-	std::vector<std::string> _arguments;
-	/* How many of the arguments we have parsed so far */
-	size_t _arguments_parsed;
+	std::deque<std::string> _arguments;
 
 	/** If this tools outputs to a directory, not a file. */
 	bool _outputToDirectory;

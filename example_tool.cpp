@@ -91,15 +91,14 @@ CompressionExample::CompressionExample(const std::string &name) : Tool(name, TOO
 void CompressionExample::parseExtraArguments() {
 	// Here, we parse our own arguments
 
-	// Arguments are stored in the _arguments member
-	// and the number of arguments already parsed is in _
-	if (_arguments.size() < _arguments_parsed) {
-		if (_arguments[_arguments_parsed] == "-a") {
+	// Arguments are stored in the _arguments member.
+	// Remove any arguments that you have "used up"
+	if (!_arguments.empty() && _arguments.front() == "-a") {
 			// Set our member
 			_outputFiles = true;
 
-			// We matched one argument, make sure to advance argument counter
-			++_arguments_parsed;
+			// We matched one argument, so remove it
+			_arguments.pop_front();
 		}
 	}
 }

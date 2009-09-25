@@ -581,13 +581,13 @@ CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, 
 }
 
 void CompressSword1::parseExtraArguments() {
-	if (_arguments[_arguments_parsed] == "--speech-only") {
+	if (!_arguments.empty() && _arguments.front() == "--speech-only") {
 		_compMusic = false;
-		++_arguments_parsed;
+		_arguments.pop_front();
 	}
-	if (_arguments[_arguments_parsed] == "--music-only") {
+	if (!_arguments.empty() && _arguments.front() == "--music-only") {
 		_compSpeech = false;
-		++_arguments_parsed;
+		_arguments.pop_front();
 	}
 }
 

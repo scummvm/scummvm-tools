@@ -58,9 +58,9 @@ CompressGob::~CompressGob() {
 }
 
 void CompressGob::parseExtraArguments() {
-	if (_arguments[_arguments_parsed] == "-f") {
+	if (!_arguments.empty() && _arguments.front() == "-f") {
 		_execMode |= MODE_FORCE;
-		++_arguments_parsed;
+		_arguments.pop_front();
 	}
 }
 

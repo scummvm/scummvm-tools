@@ -32,8 +32,6 @@ Tool::Tool(const std::string &name, ToolType type) {
 	_name = name;
 	_type = type;
 
-	_arguments_parsed = 0;
-
 	_outputToDirectory = true;
 	_supportedFormats = AUDIO_ALL;
 	_supportsProgressBar = false;
@@ -56,26 +54,14 @@ Tool::~Tool() {
 	// ...
 }
 
-int Tool::run(int argc, char *argv[]) {
-	argc -= 1;
-	argv += 1; 
-
-	std::vector<std::string> args;
-	for (int i = 0; i < argc; ++i)
-		args.push_back(argv[i]);
-
-	return run(args);
-}
-
-int Tool::run(std::vector<std::string> args) {
+int Tool::run(const std::deque<std::string> &args) {
 	_arguments = args;
-	_arguments_parsed = 0;
 
 	// Pop the first argument (name of ourselves)
-	_arguments.erase(_arguments.begin());
+	_arguments.pop_front();
 
 	// Check for help
-	if (_arguments.empty() || _arguments[0] == "-h" || _arguments[0] == "--help") {
+	if (_arguments.empty() || _arguments.front() == "-h" || _arguments.front() == "--help") {
 		print(getHelp().c_str());
 		return 2;
 	}
@@ -87,20 +73,21 @@ int Tool::run(std::vector<std::string> args) {
 	// Read tool specific arguments
 	parseExtraArguments();
 
-	if (_arguments.size() && _arguments[_arguments_parsed][0] == '-') {
-		std::string s = "Possibly ignored option " + _arguments[_arguments_parsed] + ".";
+	if (!_arguments.empty() && _arguments.front()[0] == '-') {
+		std::string s = "Possibly ignored option " + _arguments.front() + ".";
 		print(s.c_str());
 	}
 
 	// Make sure we have enough input files.
-	if (_arguments.size() - _arguments_parsed < _inputPaths.size()) {
+	if (_arguments.size() < _inputPaths.size()) {
 		print("Too few input files!");
 		return -2;
 	}
 
 	// Read input files from CLI
 	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
-		std::string &in = _arguments[_arguments_parsed++];
+		std::string &in = _arguments.front();
+		_arguments.pop_front();
 		if (!iter->file) {
 			// Append '/' to input if it's not already done
 			// TODO: We need a way to detect a proper directory here!
@@ -115,11 +102,13 @@ int Tool::run(std::vector<std::string> args) {
 	}
 
 	// We should have parsed all arguments by now
-	if (_arguments_parsed < _arguments.size() - _inputPaths.size()) {
+	if (_inputPaths.size() < _arguments.size()) {
 		std::ostringstream os;
 		os << "Too many inputs files ( ";
-		while (_arguments_parsed < _arguments.size())
-			os << "'" << _arguments[_arguments_parsed++] << "' ";
+		while (!_arguments.empty()) {
+			os << "'" << _arguments.front() << "' ";
+			_arguments.pop_front();
+		}
 		os << ")\n";
 		print(os.str().c_str());
 		return -2;
@@ -272,17 +261,16 @@ void Tool::parseAudioArguments() {
 }
 
 void Tool::parseOutputArguments() {
-	if (_arguments_parsed >= _arguments.size())
+	if (_arguments.empty())
 		return;
-	if (_arguments[_arguments_parsed] == "-o" || _arguments[_arguments_parsed] == "--output") {
+	if (_arguments.front() == "-o" || _arguments.front() == "--output") {
 		// It's an -o argument
 
-		if (_arguments_parsed + 1 < _arguments.size()) {
-			_outputPath = _arguments[_arguments_parsed + 1];
-			_arguments_parsed += 2;
-		} else {
+		_arguments.pop_front();
+		if (_arguments.empty());
 			throw ToolException("Could not parse arguments: Expected path after '-o' or '--output'.");
-		}
+
+		_outputPath = _arguments.front();
 	}
 }
 

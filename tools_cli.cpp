@@ -57,7 +57,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 			Tool *tool = *iter;
 			if (arguments.front() == tool->getName()) {
 				// Run the tool, first argument will be name, very nice!
-				return tool->run(std::vector<std::string>(arguments.begin(), arguments.end()));
+				return tool->run(arguments);
 			}
 		}
 		std::cout << "\tUnknown tool, make sure you input one of the following:\n";
@@ -69,7 +69,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 			for (ToolList::iterator iter = _tools.begin(); iter != _tools.end(); ++iter) {
 				Tool *tool = *iter;
 				if (arguments.front() == tool->getName()) {
-					// Run the tool, first argument will be name, very nice!
+					// Obtain the help text for this tool and print it
 					std::cout << tool->getHelp() << std::endl;
 					return 2;
 				}
@@ -179,7 +179,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 		
 		// Run the tool, with the remaining arguments
 		arguments.push_front(tool->getName());
-		return tool->run(std::vector<std::string>(arguments.begin(), arguments.end()));
+		return tool->run(arguments);
 	}
 
 	return 0;
