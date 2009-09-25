@@ -63,7 +63,6 @@
  * Compression tool
  * A tool, which can compress to either MP3, Vorbis or FLAC formats
  */
-
 class CompressionTool : public Tool {
 public:
 	CompressionTool(const std::string &name, ToolType type);

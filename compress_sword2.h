@@ -25,23 +25,18 @@
 
 #include "compress.h"
 
-
 class CompressSword2 : public CompressionTool {
 public:
 	CompressSword2(const std::string &name = "compress_sword2");
 
 	virtual void execute();
 
-
 protected:
 
 	File _input, _output_snd, _output_idx;
 	std::string _audioOutputFilename;
-
 	
 	uint32 append_to_file(File &f1, const char *filename);
 };
 
 #endif
-
-

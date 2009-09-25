@@ -20,14 +20,14 @@
  *
  */
 
-
 #ifndef COMPRESS_SCUMM_SAN_H
 #define COMPRESS_SCUMM_SAN_H
 
 #include "compress.h"
 
-
-#define COMPRESS_SCUMM_SAN_MAX_TRACKS 150
+enum {
+	COMPRESS_SCUMM_SAN_MAX_TRACKS = 150
+};
 
 class CompressScummSan : public CompressionTool {
 public:
@@ -89,5 +89,3 @@ protected:
 };
 
 #endif
-
-

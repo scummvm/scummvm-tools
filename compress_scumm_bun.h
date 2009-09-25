@@ -20,7 +20,6 @@
  *
  */
 
-
 #ifndef COMPRESS_SCUMM_BUN_H
 #define COMPRESS_SCUMM_BUN_H
 
@@ -31,7 +30,6 @@ public:
 	CompressScummBun(const std::string &name = "compress_scumm_bun");
 
 	virtual void execute();
-
 
 	struct BundleAudioTable {
 		char filename[24];
@@ -60,9 +58,6 @@ protected:
 	void writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, File &output);
 	void recalcRegions(int32 &value, int bits, int freq, int channels);
 	void writeToRMAPFile(byte *ptr, File &output, char *filename, int &offsetData, int &bits, int &freq, int &channels);
-
 };
 
 #endif
-
-

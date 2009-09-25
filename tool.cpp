@@ -20,7 +20,6 @@
  *
  */
 
-
 #include <stdarg.h>
 #include <iostream>
 #include <sstream>
@@ -100,7 +99,7 @@ int Tool::run(std::vector<std::string> args) {
 	}
 
 	// Read input files from CLI
-	for(ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
+	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
 		std::string &in = _arguments[_arguments_parsed++];
 		if (!iter->file) {
 			// Append '/' to input if it's not already done
@@ -116,7 +115,7 @@ int Tool::run(std::vector<std::string> args) {
 	}
 
 	// We should have parsed all arguments by now
-	if(_arguments_parsed < _arguments.size() - _inputPaths.size()) {
+	if (_arguments_parsed < _arguments.size() - _inputPaths.size()) {
 		std::ostringstream os;
 		os << "Too many inputs files ( ";
 		while (_arguments_parsed < _arguments.size())

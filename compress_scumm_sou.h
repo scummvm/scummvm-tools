@@ -20,12 +20,10 @@
  *
  */
 
-
 #ifndef COMPRESS_SCUMM_SOU_H
 #define COMPRESS_SCUMM_SOU_H
 
 #include "compress.h"
-
 
 class CompressScummSou : public CompressionTool {
 public:
@@ -43,5 +41,3 @@ protected:
 };
 
 #endif
-
-

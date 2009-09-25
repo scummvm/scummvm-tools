@@ -226,7 +226,7 @@ void File::open(const Filename &filepath, const char *mode) {
 		case '+': m = FileMode(m | FILEMODE_APPEND); break;
 		default: throw FileException(std::string("Unsupported FileMode ") + mode);
 		}
-	} while(*++mode);
+	} while (*++mode);
 	
 	open(filepath, m);
 }

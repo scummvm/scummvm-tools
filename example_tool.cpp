@@ -120,7 +120,7 @@ void CompressionExample::execute() {
 	// We always need to setup default output path, since there is no obligation to specify it
 	// If you don't do this, the OS will usually default to the working directory, if we output a file
 	// it will fail most likely
-	if(_outputPath.empty())
+	if (_outputPath.empty())
 		_outputPath = "output/";
 
 	// The File class is very similar to the FILE struct, look in util.h for details
@@ -149,7 +149,7 @@ void CompressionExample::execute() {
 		outname << i;
 
 		// Open a file for writing
-		if(_outputFiles) {
+		if (_outputFiles) {
 			File out(_outputPath.getPath() + outname.str() + ".exo", "w");
 
 			// What we actually do, output some text alot
@@ -161,7 +161,7 @@ void CompressionExample::execute() {
 			}
 		} else {
 			// Do nothing for awhile
-			for(int i = 0; i < 1000000; ++i) {
+			for (int i = 0; i < 1000000; ++i) {
 				int *n = new int;
 				delete n;
 			}

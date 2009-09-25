@@ -26,5 +26,3 @@ int main(int argc, char *argv[]) {
 	ToolsCLI cli;
 	return cli.run(argc, argv);
 }
-
-

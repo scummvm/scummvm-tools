@@ -22,7 +22,6 @@
  *
  */
 
-
 #ifndef COMPRESS_SAGA_H
 #define COMPRESS_SAGA_H
 
@@ -86,5 +85,3 @@ protected:
 };
 
 #endif
-
-

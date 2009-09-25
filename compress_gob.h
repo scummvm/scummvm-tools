@@ -28,11 +28,12 @@
 #define confSTK21 "STK21"
 #define confSTK10 "STK10"
 
-#define MODE_NORMAL 0
-#define MODE_HELP   1
-#define MODE_FORCE  2
-#define MODE_SET    4
-
+enum {
+	MODE_NORMAL = 0,
+	MODE_HELP   = 1,
+	MODE_FORCE  = 2,
+	MODE_SET    = 4
+};
 
 class CompressGob : public CompressionTool {
 public:

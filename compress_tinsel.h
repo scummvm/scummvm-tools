@@ -23,6 +23,8 @@
 #ifndef COMPRESS_TINSEL_H
 #define COMPRESS_TINSEL_H
 
+#include "compress.h"
+
 class CompressTinsel : public CompressionTool {
 public:
 	CompressTinsel(const std::string &name = "compress_tinsel");

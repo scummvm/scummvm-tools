@@ -65,7 +65,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 	} else if (option == "--help" || option == "-h") {
 		arguments.pop_front();
 
-		if(arguments.size()) {
+		if (arguments.size()) {
 			for (ToolList::iterator iter = _tools.begin(); iter != _tools.end(); ++iter) {
 				Tool *tool = *iter;
 				if (arguments.front() == tool->getName()) {
@@ -149,13 +149,13 @@ int ToolsCLI::run(int argc, char *argv[]) {
 
 			std::cout << "Which tool to use ('q' to abort): ";
 			i = 0;
-			while(true) {
+			while (true) {
 
 				// Read input
 				std::cin >> i;
 
 				// Valid ?
-				if(std::cin && i >= 1 && (size_t)i < choices.size())
+				if (std::cin && i >= 1 && (size_t)i < choices.size())
 					break;
 
 				// Clear any error flags
@@ -205,5 +205,3 @@ void ToolsCLI::printTools() {
 		// There *really* should be a short version of the help text available
 		std::cout << "\t" << (*tool)->getName() << ":\t" << (*tool)->getShortHelp() << "\n";
 }
-
-
