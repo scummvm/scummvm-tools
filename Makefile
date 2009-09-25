@@ -30,11 +30,17 @@ CXXFLAGS:= -Wall $(CXXFLAGS)
 CXXFLAGS+= -Wno-long-long -Wno-multichar -Wno-unknown-pragmas -Wno-reorder
 # Enable even more warnings...
 #CXXFLAGS+= -pedantic	# -pedantic is too pedantic, at least on Mac OS X
-CXXFLAGS+= -Wpointer-arith -Wuninitialized -Wcast-align
+CXXFLAGS+= -Wpointer-arith -Wcast-align
 CXXFLAGS+= -Wshadow -Wimplicit -Wundef -Wnon-virtual-dtor -Wwrite-strings
 
 # Enable checking of pointers returned by "new"
 CXXFLAGS+= -fcheck-new
+
+# There is a nice extra warning that flags variables that are potentially
+# used before being initialized. Very handy to catch a certain kind of
+# bugs. Unfortunately, it only works when optimizations are turned on,
+# which is why we normally don't use it.
+#CXXFLAGS+= -O -Wuninitialized
 
 #######################################################################
 # Default commands - put the necessary replacements in config.mk      #
