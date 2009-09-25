@@ -22,7 +22,7 @@ DEPDIR      := .deps
 # manually create a config.mk files with overrides, if needed.
 -include config.mk
 
-CXXFLAGS  += -g -O
+CXXFLAGS  += -g
 
 # Additional warnings
 CXXFLAGS:= -Wall $(CXXFLAGS)
