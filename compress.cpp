@@ -249,11 +249,6 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 			rawData = (char *)malloc(length);
 			inputRaw.read(rawData, 1, length);
 
-			print(" - length = %ld\n", length);
-			print(" - channels = %d\n", (rawAudioType.isStereo ? 2 : 1));
-			print(" - sample rate = %d\n", rawSamplerate);
-			print(" - compression = %dbits\n", rawAudioType.bitsPerSample);
-
 			encodeRaw(rawData, length, rawSamplerate, outname, compmode);
 
 			free(rawData);
@@ -281,19 +276,20 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 			wavData = (char *)malloc(length);
 			inputWav.read(wavData, 1, length);
 
-			print(" - length = %d\n", length);
-			print(" - channels = %d\n", numChannels);
-			print(" - sample rate = %d\n", sampleRate);
-			print(" - compression = %dbits\n", bitsPerSample);
-
 			setRawAudioType(true, numChannels == 2, (uint8)bitsPerSample);
 			encodeRaw(wavData, length, sampleRate, outname, compmode);
 
-			free (wavData);
+			free(wavData);
 		}
 }
 
 void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode) {
+
+	print(" - length = %ld\n", length);
+	print(" - channels = %d\n", (rawAudioType.isStereo ? 2 : 1));
+	print(" - sample rate = %d\n", samplerate);
+	print(" - compression = %dbits\n", rawAudioType.bitsPerSample);
+
 #ifndef DISABLE_BUILTIN_VORBIS
 	if (compmode == AUDIO_VORBIS) {
 		char outputString[256] = "";
