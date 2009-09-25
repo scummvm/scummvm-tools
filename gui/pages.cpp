@@ -327,21 +327,21 @@ void ChooseIOPage::onSelectFile(wxFileDirPickerEvent &evt) {
 
 void ChooseIOPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	wxWindow *picker = NULL;
-	if(!picker)
+	if (!picker)
 		picker = panel->FindWindowByName(wxT("InputPicker"));
 	
 	const ToolGUI *tool = _configuration.selectedTool;
-	if(tool && !picker) {
-		for(size_t i = 1; i < tool->getInputList().size(); ++i) {
+	if (tool && !picker) {
+		for (size_t i = 1; i < tool->getInputList().size(); ++i) {
 			wxString name(wxT("InputPicker"));
 			name << i;
 			picker = panel->FindWindowByName(name);
-			if(picker)
+			if (picker)
 				break;
 		}
 	}
 
-	if(!picker)
+	if (!picker)
 		picker = panel->FindWindowByName(wxT("OutputPicker"));
 
 
@@ -390,7 +390,7 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 			wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
 			wxT("InputPicker"));
 	panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
-	if(_configuration.inputFilePaths.size() > 0)
+	if (_configuration.inputFilePaths.size() > 0)
 		picker->SetPath(_configuration.inputFilePaths[0]);
 
 	pickersizer->Add(picker, wxSizerFlags(2).Expand());
@@ -448,7 +448,7 @@ void ChooseInPage::onNext(wxWindow *panel) {
 	} else {
 		wxArrayString ls = g_tools.getToolList(filename,
 			_configuration.compressing? TOOLTYPE_COMPRESSION : TOOLTYPE_EXTRACTION);
-		if(ls.size() == 1) {
+		if (ls.size() == 1) {
 			_configuration.selectedTool = g_tools.get(ls[0]);
 			if (_configuration.selectedTool->getInputList().size() == 1)
 				switchPage(new ChooseOutPage(_configuration));
@@ -509,7 +509,7 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 		windowName << i;
 
 		wxString inputFile;
-		if(_configuration.inputFilePaths.size() > (size_t)i)
+		if (_configuration.inputFilePaths.size() > (size_t)i)
 			inputFile = _configuration.inputFilePaths[i];
 
 		if (input.file) {
@@ -1241,7 +1241,7 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 		return false;
 	
 	// This function can be called recursively, by checking if lock is available, we avoid it
-	if(_output.mutex.TryLock() == wxMUTEX_BUSY)
+	if (_output.mutex.TryLock() == wxMUTEX_BUSY)
 		return false;
 	else
 		// Immedietly unlock

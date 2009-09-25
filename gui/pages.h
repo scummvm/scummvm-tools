@@ -509,4 +509,3 @@ public:
 
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
-

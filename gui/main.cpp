@@ -80,7 +80,7 @@ bool ScummVMToolsApp::OnInit() {
 		Filename fn((const char *)wxString(argv[1]).mb_str());
 
 		wxArrayString ls = g_tools.getToolList(fn);
-		if(ls.size() == 1)
+		if (ls.size() == 1)
 			frame->switchPage(new ChooseOutPage(configuration));
 		else
 			frame->switchPage(new ChooseToolPage(configuration, ls));
@@ -252,7 +252,7 @@ void ScummToolsFrame::CreateMenuBar() {
 
 void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	// Associate us with the new page
-	if(next)
+	if (next)
 		next->SetScummFrame(this);
 
 	// Find the old page
