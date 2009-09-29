@@ -369,6 +369,8 @@ bool drawGlyph16x16(uint32 unicode, Glyph &glyph) {
 		}
 	}
 
+	glyph.pitch = abs(glyph.pitch);
+
 	return true;
 }
 
