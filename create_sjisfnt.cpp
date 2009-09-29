@@ -56,7 +56,9 @@ struct Glyph {
 	uint8 *plainData;
 };
 
-bool drawGlyph16x16(uint32 unicode, Glyph &glyph);
+bool setGlyphSize(int width, int height);
+
+bool drawGlyph(uint32 unicode, Glyph &glyph);
 
 } // end of anonymous namespace
 
@@ -78,17 +80,21 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	atexit(deinitSJIStoUTF32Conversion);
+	std::atexit(deinitSJIStoUTF32Conversion);
 
 	if (!initFreeType(font)) {
 		error("Could not initialize FreeType library.");
 		return -1;
 	}
 
-	atexit(deinitFreeType);
+	std::atexit(deinitFreeType);
 
 	std::vector<Glyph> glyphs;
 	int chars = 0;
+
+	// The two byte SJIS chars will be rendered as 16x16
+	if (!setGlyphSize(16, 16))
+		return -1;
 
 	for (uint8 fB = 0x81; fB <= 0xEF; ++fB) {
 		if (fB >= 0xA0 && fB <= 0xDF)
@@ -115,7 +121,7 @@ int main(int argc, char *argv[]) {
 			Glyph data;
 			data.fB = fB;
 			data.sB = sB;
-			if (!drawGlyph16x16(utf32, data)) {
+			if (!drawGlyph(utf32, data)) {
 				warning("Could not render glyph: %.2X %.2X", fB, sB);
 				continue;
 			}
@@ -309,11 +315,8 @@ bool initFreeType(const char *font) {
 		return false;
 	}
 
-	err = FT_Set_Pixel_Sizes(sjisFont, 16, 16);
-	if (err) {
-		warning("Could not initialize font for 16x16 outout.");
+	if (!setGlyphSize(16, 16))
 		return false;
-	}
 
 	err = FT_Select_Charmap(sjisFont, FT_ENCODING_UNICODE);
 	if (err) {
@@ -329,7 +332,17 @@ void deinitFreeType() {
 	FT_Done_FreeType(ft);
 }
 
-bool drawGlyph16x16(uint32 unicode, Glyph &glyph) {
+bool setGlyphSize(int width, int height) {
+	FT_Error err = FT_Set_Pixel_Sizes(sjisFont, width, height);
+	if (err) {
+		warning("Could not initialize font for %dx%d outout.", width, height);
+		return false;
+	}
+
+	return true;
+}
+
+bool drawGlyph(uint32 unicode, Glyph &glyph) {
 	uint32 index = FT_Get_Char_Index(sjisFont, unicode);
 	if (!index)
 		return false;
@@ -352,7 +365,7 @@ bool drawGlyph16x16(uint32 unicode, Glyph &glyph) {
 	glyph.plainData = 0;
 
 	if (glyph.height) {
-		glyph.plainData = new uint8[glyph.height * abs(glyph.pitch)];
+		glyph.plainData = new uint8[glyph.height * std::abs(glyph.pitch)];
 		if (!glyph.plainData)
 			return false;
 
@@ -369,7 +382,7 @@ bool drawGlyph16x16(uint32 unicode, Glyph &glyph) {
 		}
 	}
 
-	glyph.pitch = abs(glyph.pitch);
+	glyph.pitch = std::abs(glyph.pitch);
 
 	return true;
 }
