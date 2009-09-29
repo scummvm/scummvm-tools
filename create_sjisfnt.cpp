@@ -24,7 +24,7 @@
  */
 
 #include <iconv.h>
-#include <vector>
+#include <list>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -57,8 +57,17 @@ struct Glyph {
 };
 
 bool setGlyphSize(int width, int height);
+bool checkGlyphSize(const Glyph &g, const int baseLine, const int maxW, const int maxH);
 
+bool drawGlyph(uint8 fB, uint8 sB, Glyph &glyph);
 bool drawGlyph(uint32 unicode, Glyph &glyph);
+
+typedef std::list<Glyph> GlyphList;
+void freeGlyphlist(GlyphList &list) {
+	for (GlyphList::iterator i = list.begin(); i != list.end(); ++i)
+		delete[] i->plainData;
+	list.clear();
+}
 
 } // end of anonymous namespace
 
@@ -89,8 +98,8 @@ int main(int argc, char *argv[]) {
 
 	std::atexit(deinitFreeType);
 
-	std::vector<Glyph> glyphs;
-	int chars = 0;
+	GlyphList glyphs;
+	int chars16x16 = 0;
 
 	// The two byte SJIS chars will be rendered as 16x16
 	if (!setGlyphSize(16, 16))
@@ -104,35 +113,17 @@ int main(int argc, char *argv[]) {
 			if (sB == 0x7F)
 				continue;
 
-			++chars;
-
-			uint32 utf32 = convertSJIStoUTF32(fB, sB);
-			if (utf32 == (uint32)-1) {
-				// For now we disable that warning, since iconv will fail for all reserved,
-				// that means unused, valid SJIS character codes.
-				//
-				// It might be useful to enable that warning again to detect problems with
-				// iconv though. An example for such an iconv problem is the 
-				// "FULLWIDTH APOSTROPHE", which iconv refuses to convert to UTF-32.
-				//warning("Conversion error on: %.2X %.02X", fB, sB);
-				continue;
-			}
+			++chars16x16;
 
 			Glyph data;
-			data.fB = fB;
-			data.sB = sB;
-			if (!drawGlyph(utf32, data)) {
-				warning("Could not render glyph: %.2X %.2X", fB, sB);
-				continue;
-			}
-
-			glyphs.push_back(data);
+			if (drawGlyph(fB, sB, data))
+				glyphs.push_back(data);
 		}
 	}
 
 	// Calculate the base line for the font. The possible range is [0, 15].
 	int baseLine = 15;
-	for (std::vector<Glyph>::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
+	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
 		int bL = 16 + (i->yOffset - i->height);
 
 		if (bL < baseLine)
@@ -140,11 +131,9 @@ int main(int argc, char *argv[]) {
 	}
 	
 	// Check whether we have an character which does not fit in 16x16
-	for (std::vector<Glyph>::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
-		if (baseLine - i->yOffset < 0 || baseLine - i->yOffset + i->height > 16 ||
-			i->xOffset > 15 || i->xOffset + i->width > 16) {
-
-			for (std::vector<Glyph>::iterator j = glyphs.begin(); j != glyphs.end(); ++j)
+	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
+		if (!checkGlyphSize(*i, baseLine, 16, 16)) {
+			for (GlyphList::iterator j = glyphs.begin(); j != glyphs.end(); ++j)
 				delete[] i->plainData;
 
 			error("Could not fit glyph for %.2X %.2X top: %d bottom: %d, left: %d right: %d", i->fB, i->sB, 
@@ -152,18 +141,17 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	const int sjisDataSize = chars * 32;
+	const int sjisDataSize = chars16x16 * 32;
 	uint8 *sjisFontData = new uint8[sjisDataSize];
 
 	if (!sjisFontData) {
-		for (std::vector<Glyph>::iterator i = glyphs.begin(); i != glyphs.end(); ++i)
-			delete[] i->plainData;
+		freeGlyphlist(glyphs);
 		error("Out of memory");
 	}
 
 	memset(sjisFontData, 0, sjisDataSize);
 
-	for (std::vector<Glyph>::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
+	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
 		int chunk = mapSJIStoChunk(i->fB, i->sB);
 
 		if (chunk != -1) {
@@ -196,9 +184,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	for (std::vector<Glyph>::iterator i = glyphs.begin(); i != glyphs.end(); ++i)
-		delete[] i->plainData;
-	glyphs.clear();
+	freeGlyphlist(glyphs);
 
 	FILE *sjisFont = std::fopen(out, "wb");
 	if (sjisFont) {
@@ -210,7 +196,7 @@ int main(int argc, char *argv[]) {
 		writeUint32BE(sjisFont, 0x00000001);
 
 		// Write character count
-		writeUint16BE(sjisFont, chars);
+		writeUint16BE(sjisFont, chars16x16);
 
 		std::fwrite(sjisFontData, 1, sjisDataSize, sjisFont);
 		std::fflush(sjisFont);
@@ -336,6 +322,36 @@ bool setGlyphSize(int width, int height) {
 	FT_Error err = FT_Set_Pixel_Sizes(sjisFont, width, height);
 	if (err) {
 		warning("Could not initialize font for %dx%d outout.", width, height);
+		return false;
+	}
+
+	return true;
+}
+
+bool checkGlyphSize(const Glyph &g, const int baseLine, const int maxW, const int maxH) {
+	if (baseLine - g.yOffset < 0 || baseLine - g.yOffset + g.height > maxH ||
+		g.xOffset > (maxW - 1) || g.xOffset + g.width > maxW)
+		return false;
+	return true;
+}
+
+bool drawGlyph(uint8 fB, uint8 sB, Glyph &glyph) {
+	uint32 utf32 = convertSJIStoUTF32(fB, sB);
+	if (utf32 == (uint32)-1) {
+		// For now we disable that warning, since iconv will fail for all reserved,
+		// that means unused, valid SJIS character codes.
+		//
+		// It might be useful to enable that warning again to detect problems with
+		// iconv though. An example for such an iconv problem is the 
+		// "FULLWIDTH APOSTROPHE", which iconv refuses to convert to UTF-32.
+		//warning("Conversion error on: %.2X %.02X", fB, sB);
+		return false;
+	}
+
+	glyph.fB = fB;
+	glyph.sB = sB;
+	if (!drawGlyph(utf32, glyph)) {
+		warning("Could not render glyph: %.2X %.2X", fB, sB);
 		return false;
 	}
 
