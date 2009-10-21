@@ -27,24 +27,24 @@
 /* if not defined, dumps all resources to separate files */
 #define MAKE_LFLS
 
-uint8 read_cbyte (FILE *input, short *ctr) {
+uint8 read_cbyte (FILE *input, uint32 *ctr) {
 	(*ctr) += 1;
 	return readByte(input);
 }
-uint16 read_cword (FILE *input, short *ctr) {
+uint16 read_cword (FILE *input, uint32 *ctr) {
 	(*ctr) += 2;
 	return readUint16LE(input);
 }
 
-void write_cbyte (FILE *output, uint8 val, short *ctr) {
+void write_cbyte (FILE *output, uint8 val, uint32 *ctr) {
 	writeByte(output, val);
 	(*ctr) += 1;
 }
-void write_cword (FILE *output, uint16 val, short *ctr) {
+void write_cword (FILE *output, uint16 val, uint32 *ctr) {
 	writeUint16LE(output, val);
 	(*ctr) += 2;
 }
-void write_clong (FILE *output, uint32 val, short *ctr) {
+void write_clong (FILE *output, uint32 val, uint32 *ctr) {
 	writeUint32LE(output, val);
 	(*ctr) += 4;
 }
@@ -683,7 +683,7 @@ t_resource res_unknowns[NUM_UNKNOWNS] = {
 uint32 r_offset (p_resource res) {
 	return res->offset[ISO];
 }
-signed short r_length (p_resource res) {
+uint16 r_length (p_resource res) {
 	return res->length[ISO];
 }
 
@@ -691,7 +691,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 #ifdef MAKE_LFLS
 	uint16 j, off;
 #endif
-	signed short i, rlen;
+	uint32 i, rlen;
 	uint8 junk, rtype, rid;
 
 	if (res == NULL)
