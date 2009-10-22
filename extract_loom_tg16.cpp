@@ -729,7 +729,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 			error("extract_resource(globdata) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x11)
 			error("extract_resource(globdata) - resource tag is incorrect");
-		writeUint32LE(output,(uint16)(rlen + 1));
+		writeUint32LE(output, (rlen + 1));
 		writeUint16LE(output,'O0');	/* 0O - Object Index */
 		for (i = 5; i < rlen; i++)
 			writeByte(output,readByte(input));
@@ -896,7 +896,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 			error("extract_resource(costume) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x03)
 			error("extract_resource(costume) - resource tag is incorrect");
-		writeUint32LE(output,(uint16)(rlen + 1));
+		writeUint32LE(output, (rlen + 1));
 		writeUint16LE(output,'OC');	/* CO - Costume */
 		for (i = 5; i < rlen; i++)
 			writeByte(output,readByte(input));
@@ -910,7 +910,7 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 			error("extract_resource(script) - length mismatch while extracting resource (was %04X, expected %04X)", rlen, r_length(res));
 		if (rtype != 0x02)
 			error("extract_resource(script) - resource tag is incorrect");
-		writeUint32LE(output,(uint16)(rlen + 1));
+		writeUint32LE(output, (rlen + 1));
 		writeUint16LE(output,'CS');	/* SC - Script */
 		for (i = 5; i < rlen; i++)
 			writeByte(output,readByte(input));
@@ -1211,19 +1211,19 @@ int main (int argc, char **argv) {
 			switch (entry->type) {
 			case RES_ROOM:
 				lfl_index.room_lfl[entry - res_rooms] = lfl->num;
-				lfl_index.room_addr[entry - res_rooms] = (uint16)ftell(output);
+				lfl_index.room_addr[entry - res_rooms] = (uint32)ftell(output);
 				break;
 			case RES_COSTUME:
 				lfl_index.costume_lfl[entry - res_costumes] = lfl->num;
-				lfl_index.costume_addr[entry - res_costumes] = (uint16)ftell(output);
+				lfl_index.costume_addr[entry - res_costumes] = (uint32)ftell(output);
 				break;
 			case RES_SCRIPT:
 				lfl_index.script_lfl[entry - res_scripts] = lfl->num;
-				lfl_index.script_addr[entry - res_scripts] = (uint16)ftell(output);
+				lfl_index.script_addr[entry - res_scripts] = (uint32)ftell(output);
 				break;
 			case RES_SOUND:
 				lfl_index.sound_lfl[entry - res_sounds] = lfl->num;
-				lfl_index.sound_addr[entry - res_sounds] = (uint16)ftell(output);
+				lfl_index.sound_addr[entry - res_sounds] = (uint32)ftell(output);
 				break;
 			default:
 				notice("Unknown resource type %d detected in LFL index!", entry->type);
