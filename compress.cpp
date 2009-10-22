@@ -400,7 +400,8 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 					}
 				}
 			} else {
-				sprintf(outputString + strlen(outputString), "\n");
+				if (!oggparms.silent)
+					sprintf(outputString + strlen(outputString), "\n");
 			}
 		}
 
@@ -445,17 +446,17 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 							buffer[j][i] = ((int)(rawDataUnsigned[i * numChannels + j]) - 128) / 128.0f;
 						}
 					}
-				} else if(rawAudioType.bitsPerSample == 16) {
-					if(rawAudioType.isLittleEndian) {
-						for(i = 0; i < numSamples; i++) {
-							for(j = 0; j < numChannels; j++) {
+				} else if (rawAudioType.bitsPerSample == 16) {
+					if (rawAudioType.isLittleEndian) {
+						for (i = 0; i < numSamples; i++) {
+							for (j = 0; j < numChannels; j++) {
 								buffer[j][i] = ((rawData[(i * 2 * numChannels) + (2 * j) + 1] << 8) | (rawData[(i * 2 * numChannels) + (2 * j)] & 0xff)) / 32768.0f;
 							}
 						}
 					}
 					else {
-						for(i = 0; i < numSamples; i++) {
-							for(j = 0; j < numChannels; j++) {
+						for (i = 0; i < numSamples; i++) {
+							for (j = 0; j < numChannels; j++) {
 								buffer[j][i] = ((rawData[(i * 2 * numChannels) + (2 * j)] << 8) | (rawData[(i * 2 * numChannels) + (2 * j) + 1] & 0xff)) / 32768.0f;
 							}
 						}
@@ -475,14 +476,14 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 					while (!eos) {
 						int result = ogg_stream_pageout(&os, &og);
 
-						if(result == 0) {
+						if (result == 0) {
 							break;
 						}
 
 						totalBytes += fwrite(og.header, 1, og.header_len, outputOgg);
 						totalBytes += fwrite(og.body, 1, og.body_len, outputOgg);
 
-						if(ogg_page_eos(&og)) {
+						if (ogg_page_eos(&og)) {
 							eos = 1;
 						}
 					}
@@ -725,11 +726,11 @@ int process_mp3_parms(int argc, char *argv[], int i) {
 		} else if (strcmp(argv[i], "-V") == 0) {
 			encparms.vbrqual = atoi(argv[i + 1]);
 
-			if(encparms.vbrqual < 0) {
+			if (encparms.vbrqual < 0) {
 				encparms.vbrqual = 0;
 			}
 
-			if(encparms.vbrqual > 9) {
+			if (encparms.vbrqual > 9) {
 				encparms.vbrqual = 9;
 			}
 

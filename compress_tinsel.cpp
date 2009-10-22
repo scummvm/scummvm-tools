@@ -54,7 +54,7 @@ void convertTinselRawSample (uint32 sampleSize) {
 	uint32 copyLeft = 0;
 	uint32 doneRead = 0;
 	char buffer[2048];
-    FILE *curFileHandle;
+	FILE *curFileHandle;
 
 	printf("Assuming DW1 sample being 8-bit raw...\n");
 
@@ -78,7 +78,7 @@ void convertTinselRawSample (uint32 sampleSize) {
 	curFileHandle = fopen(TEMP_ENC, "rb");
 	fseek(curFileHandle, 0, SEEK_END);
 	copyLeft = ftell(curFileHandle);
-    fseek(curFileHandle, 0, SEEK_SET);
+	fseek(curFileHandle, 0, SEEK_SET);
 	// Write size of compressed data
 	writeUint32LE(output_smp, copyLeft);
 	// Write actual data
@@ -122,7 +122,7 @@ void convertTinselADPCMSample (uint32 sampleSize) {
 	uint32 copyLeft = 0;
 	uint32 doneRead = 0;
 	char buffer[2048];
-    FILE *curFileHandle;
+	FILE *curFileHandle;
 
 	printf("Assuming DW2 sample using ADPCM 6-bit, decoding to 16-bit raw...\n");
 
@@ -148,7 +148,7 @@ void convertTinselADPCMSample (uint32 sampleSize) {
 	blockPos = blockAlign; // To make sure first header is read
 
 	inPos = inBuffer; outPos = outBuffer;
-    decodeLeft = sampleSize;
+	decodeLeft = sampleSize;
 	while (decodeLeft > 0) {
 		if (blockPos == blockAlign) {
 			// read Tinsel header
@@ -198,7 +198,7 @@ void convertTinselADPCMSample (uint32 sampleSize) {
 		sample += (d0 * k0) + (d1 * k1);
 		d1 = d0;
 		d0 = sample;
-        *outPos = (int16) CLIP<double>(sample, -32768.0, 32767.0); outPos++;
+		*outPos = (int16) CLIP<double>(sample, -32768.0, 32767.0); outPos++;
 		decodedCount++;
 		chunkPos = (chunkPos + 1) % 4;
 	}
@@ -218,7 +218,7 @@ void convertTinselADPCMSample (uint32 sampleSize) {
 	curFileHandle = fopen(TEMP_ENC, "rb");
 	fseek(curFileHandle, 0, SEEK_END);
 	copyLeft = ftell(curFileHandle);
-    fseek(curFileHandle, 0, SEEK_SET);
+	fseek(curFileHandle, 0, SEEK_SET);
 	// Write size of compressed data
 	writeUint32LE(output_smp, copyLeft);
 	// Write actual data
@@ -258,12 +258,12 @@ void showhelp(char *exename) {
 	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
 
 	printf("\nFlac mode params:\n");
- 	printf(" --fast       FLAC uses compression level 0\n");
- 	printf(" --best       FLAC uses compression level 8\n");
- 	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
- 	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
+	printf(" --fast       FLAC uses compression level 0\n");
+	printf(" --best       FLAC uses compression level 8\n");
+	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
+	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
 	printf(" --verify     files are encoded and then decoded to check accuracy\n");
- 	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
+	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
 
 	printf("\n --help     this help message\n");
 
@@ -323,32 +323,28 @@ int main(int argc, char *argv[]) {
 
 	input_idx = fopen(INPUT_IDX, "rb");
 	if (!input_idx) {
-		printf("Cannot open file: %s\n", INPUT_IDX);
-		exit(-1);
+		error("Cannot open file: %s", INPUT_IDX);
 	}
 
 	input_smp = fopen(INPUT_SMP, "rb");
 	if (!input_smp) {
-		printf("Cannot open file: %s\n", INPUT_SMP);
-		exit(-1);
+		error("Cannot open file: %s", INPUT_SMP);
 	}
 
 	unlink(TEMP_IDX);
 	output_idx = fopen(TEMP_IDX, "wb");
 	if (!output_idx) {
-		printf("Can't open file " TEMP_IDX " for write!\n" );
-		exit(-1);
+		error("Can't open file " TEMP_IDX " for write" );
 	}
 	unlink(TEMP_SMP);
 	output_smp = fopen(TEMP_SMP, "wb");
 	if (!output_smp) {
-		printf("Can't open file " TEMP_SMP " for write!\n");
-		exit(-1);
+		error("Can't open file " TEMP_SMP " for write");
 	}
 
 	fseek(input_idx, 0, SEEK_END);
 	indexCount = ftell(input_idx) / sizeof(uint32);
-    fseek(input_idx, 0, SEEK_SET);
+	fseek(input_idx, 0, SEEK_SET);
 
 	loopCount = indexCount;
 	while (loopCount>0) {
