@@ -94,7 +94,7 @@ enum TokenType {
 #define ASTARTCOMMA (1<<28)
 #define AVARSTORE (1<<27)
 #define ANOENDSEMICOLON (1<<26)
-
+#define ATOWITHLASTPAREN (1<<25)
 
 
 void emit_if(char *buf, char *condition);
@@ -564,11 +564,17 @@ char *get_list(char *buf) {
 
 char *putascii(char *buf, int i) {
 	if (i > 31 && i < 128) {
+		// non-printable chars are escaped by backslashes as so: "\x00"
+		// backslashes and quote marks are escaped like so: "\\" "\""
+		if (i == '\\' || i == '"') {
+			buf[0] = '\\';
+			buf++;
+		}
 		buf[0] = i;
 		buf[1] = 0;
 		return buf + 1;
 	}
-	return buf + sprintf(buf, "^%d", i);
+	return buf + sprintf(buf, "\\x%.2X", i);
 }
 
 char *get_ascii(char *buf) {
@@ -661,6 +667,9 @@ char *do_tok(char *buf, const char *text, int args) {
 
 	if (args & ATO) {
 		char tmp[256];
+		if (args & ATOWITHLASTPAREN) {
+			buf = strecpy(buf, ")");
+		}
 		strcpy(tmp, buforg);
 		emit_if(buforg, tmp);
 	} else {
@@ -684,11 +693,14 @@ void do_decodeparsestring_v2(char *buf, byte opcode) {
 		c &= 0x7f;
 
 		if (c < 8) {
-			buf += sprintf(buf, "^%d", (int)c);
+			buf += sprintf(buf, "\\x%.2X", (int)c);
 			if (c > 3) {
-				buf += sprintf(buf, "^%d", (int)get_byte());
+				buf += sprintf(buf, "\\x%.2X", (int)get_byte());
 			}
-		} else
+		} else {
+			if (c == '\\' || c == '"') // backslash is the escape character
+				*buf++ = '\\';
+			}
 			*buf++ = c;
 		if (flag)
 			*buf++ = ' ';
@@ -802,7 +814,7 @@ void do_actorops(char *buf, byte opcode) {
 		case 0x0E:
 			buf = do_tok(buf, "InitAnimNr", ((opcode & 0x80) ? A1V : A1B) | ANOENDSEMICOLON);
 			break;
-//    		case 0x0F: buf=do_tok(buf, "PaletteList", A1LIST); break;
+//			case 0x0F: buf=do_tok(buf, "PaletteList", A1LIST); break;
 		case 0x10:
 			buf = do_tok(buf, "Width", ((opcode & 0x80) ? A1V : A1B) | ANOENDSEMICOLON);
 			break;
@@ -1048,7 +1060,7 @@ void do_resource(char *buf, byte opco) {
 		break;
 
 	case 0x22 + 1:
-		do_tok(buf, "setCDVolume?", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
+		do_tok(buf, "setCDVolume", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x23 + 1:
 		do_tok(buf, "setSoundLoudness", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | A3B);
@@ -1091,13 +1103,13 @@ void do_room_ops(char *buf) {
 
 	switch (opcode & 0x1F) {
 	case 0x01:
-		do_tok(buf, "RoomScroll", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) | ANOENDSEMICOLON);
+		do_tok(buf, "RoomScroll", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 	case 0x02:
-		do_tok(buf, "RoomColor", ANOENDSEMICOLON);
+		do_tok(buf, "RoomColor", 0);
 		break;
 	case 0x03:
-		do_tok(buf, "SetScreen", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) | ANOENDSEMICOLON);
+		do_tok(buf, "SetScreen", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
 		break;
 	case 0x04:
 		buf =
@@ -1105,28 +1117,40 @@ void do_room_ops(char *buf) {
 						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) |
 						 ((opcode & 0x20) ? A3V : A3W) | ANOLASTPAREN | ANOENDSEMICOLON);
 		opcode = get_byte();
-		buf = do_tok(buf, NULL, ASTARTCOMMA | ANOFIRSTPAREN | ANOENDSEMICOLON | ((opcode & 0x80) ? A1V : A1B));
+		buf = do_tok(buf, NULL, ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B));
 		break;
 	case 0x05:
-		do_tok(buf, "ShakeOn", ANOENDSEMICOLON);
+		do_tok(buf, "ShakeOn", 0);
 		break;
 	case 0x06:
-		do_tok(buf, "ShakeOff", ANOENDSEMICOLON);
+		do_tok(buf, "ShakeOff", 0);
 		break;
 	case 0x07:
-		do_tok(buf, "Unused", ANOENDSEMICOLON);
+		// Possibly unused, but changed to match ScummVM anyway
+		//do_tok(buf, "Unused", 0);
+		buf = do_tok(buf, "SetRoomScale",
+						 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) |
+						  ANOLASTPAREN | ANOENDSEMICOLON);
+		opcode = get_byte();
+		buf = do_tok(buf, NULL,
+						 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) |
+						  ASTARTCOMMA | ANOFIRSTPAREN | ANOLASTPAREN | ANOENDSEMICOLON);
+		opcode = get_byte();
+		buf = do_tok(buf, NULL,
+						 ((opcode & 0x40) ? A2V : A2B) | // apparently it uses the param 2 bit
+						  ASTARTCOMMA | ANOFIRSTPAREN);
 		break;
 	case 0x08:
 		buf =
 			do_tok(buf, "RoomIntensity",
 						 ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) |
-						 ((opcode & 0x20) ? A3V : A3B) | ANOENDSEMICOLON);
+						 ((opcode & 0x20) ? A3V : A3B));
 		break;
 	case 0x09:
-		buf = do_tok(buf, "saveLoad", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | ANOENDSEMICOLON);
+		buf = do_tok(buf, "saveLoad", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x0A:
-		buf = do_tok(buf, "screenEffect", ((opcode & 0x80) ? A1V : A1W) | ANOENDSEMICOLON);
+		buf = do_tok(buf, "screenEffect", ((opcode & 0x80) ? A1V : A1W));
 		break;
 	case 0x0B:
 		buf =
@@ -1137,7 +1161,7 @@ void do_room_ops(char *buf) {
 		opcode = get_byte();
 		buf =
 			do_tok(buf, NULL,
-						 ASTARTCOMMA | ANOFIRSTPAREN | ANOENDSEMICOLON | ((opcode & 0x80) ? A1V : A1B) |
+						 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B) |
 						 ((opcode & 0x40) ? A2V : A2B));
 		break;
 
@@ -1150,15 +1174,15 @@ void do_room_ops(char *buf) {
 		opcode = get_byte();
 		buf =
 			do_tok(buf, NULL,
-						 ASTARTCOMMA | ANOFIRSTPAREN | ANOENDSEMICOLON | ((opcode & 0x80) ? A1V : A1B) |
+						 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1B) |
 						 ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x0D:
-		do_tok(buf, "saveString", ((opcode & 0x80) ? A1V : A1B) | A2ASCII | ANOENDSEMICOLON);
+		do_tok(buf, "saveString", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
 		break;
 	case 0x0E:
-		do_tok(buf, "loadString", ((opcode & 0x80) ? A1V : A1B) | A2ASCII | ANOENDSEMICOLON);
+		do_tok(buf, "loadString", ((opcode & 0x80) ? A1V : A1B) | A2ASCII);
 		break;
 
 	case 0x0F:
@@ -1174,14 +1198,12 @@ void do_room_ops(char *buf) {
 		break;
 
 	case 0x10:
-		do_tok(buf, "colorCycleDelay", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | ANOENDSEMICOLON);
+		do_tok(buf, "colorCycleDelay", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	default:
 		strcpy(buf, "Unknown??");
 	}
-
-	strcat(buf, ");");
 }
 
 void do_room_ops_old(char *buf, byte opcode) {
@@ -1957,7 +1979,7 @@ void next_line_V12(char *buf) {
 	case 0xB5:
 	case 0xF5:
 		do_tok(buf, "findObject",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 	case 0x71:
 	case 0xF1:
@@ -2035,7 +2057,7 @@ void next_line_V12(char *buf) {
 	case 0x9D:
 	case 0xDD:
 		//ifClassOfIs
-		do_tok(buf, "classOfIs", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ATO);
+		do_tok(buf, "classOfIs", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ATO | ATOWITHLASTPAREN);
 		break;
 
 	case 0x3F:
@@ -2119,7 +2141,7 @@ void next_line_V12(char *buf) {
 		//loadRoomWithEgo
 		buf =
 			do_tok(buf, "loadRoomWithEgo",
-						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ANOLASTPAREN);
+						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ANOLASTPAREN | ANOENDSEMICOLON);
 		do_tok(buf, NULL, A1B | A2B | ANOFIRSTPAREN | ASTARTCOMMA);
 		break;
 
@@ -2973,15 +2995,15 @@ void next_line_V345(char *buf) {
 			opcode = get_byte();
 			switch (opcode & 0x1F) {
 			case 1:
-				do_tok(buf, ", setXY(",
-							 ANOLASTPAREN | ANOFIRSTPAREN | ANOENDSEMICOLON | ((opcode & 0x80) ? A1V : A1W) |
+				do_tok(buf, "setXY",
+							 ASTARTCOMMA | ANOENDSEMICOLON | ((opcode & 0x80) ? A1V : A1W) |
 							 ((opcode & 0x40) ? A2V : A2W));
 				break;
 			case 2:
-				do_tok(buf, ", setImage(", ANOLASTPAREN | ANOFIRSTPAREN | ANOENDSEMICOLON | ((opcode & 0x80) ? A1V : A1W));
+				do_tok(buf, "setImage", ASTARTCOMMA | ANOENDSEMICOLON | ((opcode & 0x80) ? A1V : A1W));
 				break;
 			}
-			strcat(buf, "));");
+			strcat(buf, ");");
 
 		} else {
 			buf = do_tok(buf, "drawObject",
@@ -3032,9 +3054,15 @@ void next_line_V345(char *buf) {
 	case 0xCA:
 	case 0x6A:
 	case 0xEA:
-		do_tok(buf, "startScript", ((opcode & 0x80) ? A1V : A1B) | A2LIST);
+		buf = do_tok(buf, "startScript", ((opcode & 0x80) ? A1V : A1B) | A2LIST | ANOLASTPAREN | ANOENDSEMICOLON);
+		if (opcode & 0x20) { // freeze resistant
+			buf += sprintf(buf, ",F");
+		}
+		if (opcode & 0x40) { // recursive
+			buf += sprintf(buf, ",R");
+		}
+		buf += sprintf(buf, ");");
 		break;
-
 
 	case 0x0B:
 	case 0x4B:
@@ -3109,7 +3137,7 @@ void next_line_V345(char *buf) {
 
 	case 0x1D:
 	case 0x9D:
-		do_tok(buf, "classOfIs", ((opcode & 0x80) ? A1V : A1W) | A2LIST | ATO);
+		do_tok(buf, "classOfIs", ((opcode & 0x80) ? A1V : A1W) | A2LIST | ATO | ATOWITHLASTPAREN);
 		break;											/* arg1=object; vararg=classes to test; arg3=jumpoffs */
 
 	case 0x1E:
@@ -3131,7 +3159,7 @@ void next_line_V345(char *buf) {
 	case 0xE4:
 		buf =
 			do_tok(buf, "loadRoomWithEgo",
-						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ANOLASTPAREN);
+						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ANOLASTPAREN | ANOENDSEMICOLON);
 		do_tok(buf, NULL, A1W | A2W | ANOFIRSTPAREN | ASTARTCOMMA);
 		break;
 
@@ -3465,7 +3493,7 @@ void next_line_V345(char *buf) {
 	case 0xB5:
 	case 0xF5:
 		do_tok(buf, "findObject",
-					 AVARSTORE | ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W));
+					 AVARSTORE | ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B));
 		break;
 
 	case 0x26:
@@ -3658,7 +3686,7 @@ void next_line_V345(char *buf) {
 		break;
 
 	case 0x6B:
-		do_tok(buf, "debug?", ((opcode & 0x80) ? A1V : A1W));
+		do_tok(buf, "debug", ((opcode & 0x80) ? A1V : A1W));
 		break;
 
 	default:
