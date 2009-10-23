@@ -689,7 +689,8 @@ uint16 r_length (p_resource res) {
 
 void extract_resource (FILE *input, FILE *output, p_resource res) {
 #ifdef MAKE_LFLS
-	uint16 j, off;
+	uint32 off;
+	uint16 j;
 #endif
 	uint32 i, rlen;
 	uint8 junk, rtype, rid;
@@ -1162,12 +1163,12 @@ int main (int argc, char **argv) {
 	FILE *input, *output;
 	char fname[1024];
 	int i, j;
-	char inputPath[768];
 #else
 	FILE *input;
 	int i;
 #endif
 	uint32 CRC;
+	char inputPath[768];
 
 	if (argc < 2) {
 		printf("\nUsage: %s <code_##.ISO>\n", argv[0]);
