@@ -796,7 +796,6 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 				stype = read_cbyte(input, &i);
 				slen -= 3;
 				switch (stype) {
-				/* SL, NL - are current unknowns */
 				case 0x06:
 					write_clong(output, slen + 6, &rlen);
 					write_cword(output, 'AP', &rlen); /* PA - palettes */
@@ -810,9 +809,8 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
 				case 0x0A:
-					/* Resource type doesn't exists in all rooms */
 					write_clong(output, slen + 6, &rlen);
-					write_cword(output, 'AU', &rlen); /* Unknown */
+					write_cword(output, 'PZ', &rlen); /* ZP - Mask data */
 					for (j = 0; j < slen; j++)
 						write_cbyte(output, read_cbyte(input, &i), &rlen);
 					break;
