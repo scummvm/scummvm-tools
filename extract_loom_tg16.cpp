@@ -55,8 +55,9 @@ typedef enum _res_type {
 	RES_SCRIPT = 2,
 	RES_COSTUME = 3,
 	RES_CHARSET = 4,
-	RES_SOUND = 5,
-	RES_UNKNOWN = 6
+	RES_CUSTOM_ROOM = 5,
+	RES_SOUND = 6,
+	RES_UNKNOWN = 7
 } res_type;
 
 typedef enum _iso {
@@ -163,9 +164,9 @@ t_resource res_rooms[NUM_ROOMS] = {
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 85 */
 	{ {0x2AE000, 0x2AE000}, {0x5591, 0x5591}, RES_ROOM }, /* 86 */
 	{ {0x2B4800, 0x2B4800}, {0x22E9, 0x22E9}, RES_ROOM }, /* 87 */
-	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 0 */
-	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 0 */
-	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 0 */
+	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 88 */
+	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 89 */
+	{ {0x013000, 0x013000}, {0x1A7F, 0x1A7F}, RES_CUSTOM_ROOM }, /* 90 */
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 0 */
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 0 */
 	{ {0x000000, 0x000000}, {0x0000, 0x0000}, RES_ROOM }, /* 0 */
@@ -676,7 +677,6 @@ t_resource res_charset =
 
 #define NUM_UNKNOWNS 2
 t_resource res_unknowns[NUM_UNKNOWNS] = {
-	{ {0x013000, 0x013000}, {0x1A7F, 0x1A7F}, RES_UNKNOWN }, /* Unknown resource type, looks like a small Room resource */
 	{ {0x2B4000, 0x2B4000}, {0x0155, 0x0155}, RES_COSTUME }  /* Duplicate of Costume 155 */
 };
 
@@ -736,6 +736,52 @@ void extract_resource (FILE *input, FILE *output, p_resource res) {
 			writeByte(output,readByte(input));
 		break;
 #ifdef MAKE_LFLS
+	case RES_CUSTOM_ROOM:
+		{
+			i = 0;
+			rlen = read_cword(input,&i);
+			junk = read_cbyte(input,&i);
+			rtype = read_cbyte(input,&i);
+			rid = read_cbyte(input,&i);
+			if (rlen != r_length(res))
+				error("extract_resource(room) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
+			if (rtype != 0x05)
+				error("extract_resource(room) - resource tag is incorrect");
+			off = ftell(output);
+			rlen = 0;
+			write_clong(output, 0, &rlen);
+			write_cword(output, 'OR', &rlen); /* RO - Room */
+
+			uint16 slen;
+			uint8 stype;
+
+			slen = read_cword(input, &i) - 3;
+			stype = read_cbyte(input, &i);
+
+			write_clong(output, slen + 6, &rlen);
+			write_cword(output, 'AP', &rlen); /* PA - palettes */
+
+			/* Change palette slot to 15 */
+			read_cbyte(input, &i);
+			write_cbyte(output, 15, &rlen);
+
+			for (j = 0; j < slen - 1; j++)
+				write_cbyte(output, read_cbyte(input, &i), &rlen);
+
+			slen = read_cword(input, &i) - 3;
+			stype = read_cbyte(input, &i);
+
+			write_clong(output, slen + 6, &rlen);
+			write_cword(output, 'LT', &rlen); /* TL - tiles */
+			for (j = 0; j < slen; j++)
+				write_cbyte(output, read_cbyte(input, &i), &rlen);
+
+			fseek(output, off, SEEK_SET);
+			writeUint32LE(output, rlen);
+			fseek(output, 0, SEEK_END);
+		}
+
+		break;
 	case RES_ROOM:
 		{
 			i = 0;
@@ -1015,6 +1061,7 @@ p_resource lfl_85[] = { &res_rooms[85], &res_sounds[64], NULL };
 */
 p_resource lfl_86[] = { &res_rooms[86], &res_scripts[111], &res_costumes[155], NULL };
 p_resource lfl_87[] = { &res_rooms[87], NULL };
+p_resource lfl_90[] = { &res_rooms[90], NULL };
 
 typedef struct _lfl {
 	int num;
@@ -1100,6 +1147,7 @@ t_lfl lfls[] = {
 */
 	{ 86, lfl_86 },
 	{ 87, lfl_87 },
+	{ 90, lfl_90 },
 	{ -1, NULL }
 };
 
@@ -1209,6 +1257,7 @@ int main (int argc, char **argv) {
 			p_resource entry = lfl->entries[j];
 			switch (entry->type) {
 			case RES_ROOM:
+			case RES_CUSTOM_ROOM:
 				lfl_index.room_lfl[entry - res_rooms] = lfl->num;
 				lfl_index.room_addr[entry - res_rooms] = (uint32)ftell(output);
 				break;
