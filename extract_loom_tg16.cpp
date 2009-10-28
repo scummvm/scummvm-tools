@@ -1050,7 +1050,7 @@ p_resource lfl_66[] = { &res_rooms[66], &res_scripts[106], &res_scripts[115], &r
 p_resource lfl_67[] = { &res_rooms[67], NULL };
 p_resource lfl_68[] = { &res_rooms[68], &res_costumes[117], NULL };
 p_resource lfl_69[] = { &res_rooms[69], &res_sounds[16], &res_sounds[22], &res_sounds[32], &res_costumes[4], NULL };
-p_resource lfl_70[] = { &res_rooms[70], &res_scripts[4], &res_sounds[9], &res_sounds[10], &res_sounds[13], &res_sounds[18], &res_sounds[23], &res_costumes[5], NULL };
+p_resource lfl_70[] = { &res_rooms[70], &res_scripts[4], &res_costumes[136], &res_sounds[9], &res_sounds[10], &res_sounds[13], &res_sounds[18], &res_sounds[23], &res_costumes[5], NULL };
 p_resource lfl_79[] = { &res_rooms[79], NULL };
 p_resource lfl_81[] = { &res_rooms[81], &res_costumes[144], &res_costumes[52], &res_costumes[138], NULL };
 /*
