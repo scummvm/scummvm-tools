@@ -86,7 +86,7 @@ int Tool::run(const std::deque<std::string> &args) {
 
 	// Read input files from CLI
 	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
-		std::string &in = _arguments.front();
+		std::string in = _arguments.front();
 		_arguments.pop_front();
 		if (!iter->file) {
 			// Append '/' to input if it's not already done
