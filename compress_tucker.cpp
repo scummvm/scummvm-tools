@@ -352,7 +352,7 @@ static void compress_sound_files() {
 	uint32 current_offset;
 	uint32 sound_directory_size[SOUND_TYPES_COUNT];
 	uint32 audio_directory_size;
-	const uint16 flags = HEADER_FLAG_AUDIO_INTRO;
+	const uint16 flags = 0; // HEADER_FLAG_AUDIO_INTRO;
 
 	snprintf(filepath, sizeof(filepath), "%s/%s", g_output_directory, g_output_filename);
 	output = fopen(filepath, "wb");
@@ -369,7 +369,6 @@ static void compress_sound_files() {
 		writeUint32LE(output, 0);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
-		writeUint32LE(output, 0);
 		writeUint32LE(output, 0);
 	}
 
