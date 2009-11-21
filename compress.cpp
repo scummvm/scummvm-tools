@@ -743,6 +743,7 @@ bool CompressionTool::processMp3Parms() {
 		} else if (arg == "--silent") {
 			encparms.silent = 1;
 		} else {
+			_arguments.push_front(arg);	//put back the non-audio argument we popped.
 			break;
 		}
 	}
@@ -823,6 +824,7 @@ bool CompressionTool::processOggParms() {
 		} else if (arg == "--silent") {
 			oggparms.silent = 1;
 		} else {
+			_arguments.push_front(arg);	//put back the non-audio argument we popped.
 			break;
 		}
 	}
@@ -867,6 +869,7 @@ bool CompressionTool::processFlacParms(){
 		} else if (arg == "--silent") {
 			flacparms.silent = true;
 		} else {
+			_arguments.push_front(arg);	//put back the non-audio argument we popped.
 			break;
 		}
 	}
