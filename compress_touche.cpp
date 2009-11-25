@@ -150,12 +150,14 @@ void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
 		sprintf(d, "V%d", i);
 		inpath->setFullName(d);
 
-		input.open(*inpath, "rb");
-		if (input.isOpen()) {
+		try {
+			input.open(*inpath, "rb");
 			offsets_table[i] = current_offset;
 			current_offset = compress_sound_data_file(current_offset, output, input, input_Vxx_offs, input_Vxx_size, Vxx_HDR_LEN);
 			input.close();
 			print("Processed '%s'.\n", inpath->getFullPath().c_str());
+		} catch (...) {
+			//print("Skipping '%s'.\n", inpath->getFullPath().c_str());
 		}
 	}
 
