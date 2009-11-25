@@ -318,11 +318,10 @@ uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Fi
 	for (i = 0; i < count; ++i) {
 		temp_table[i].offset = current_offset;
 		sprintf(filepath, "%s/audio/%s", inpath->getPath().c_str(), audio_files_list[i]);
-		File input(filepath, "rb");
-		if (!input.isOpen()) {
-			warning("Can't open file '%s'", filepath);
-			temp_table[i].size = 0;
-		} else {
+		
+		try {
+			File input(filepath, "rb");
+			
 			switch (audio_formats_table[i]) {
 			case 1:
 			case 2:
@@ -335,7 +334,11 @@ uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Fi
 				temp_table[i].size = compress_file_raw(filepath, 1, output);
 				break;
 			}
+		} catch (...) {
+			warning("Can't open file '%s'", filepath);
+			temp_table[i].size = 0;
 		}
+
 		current_offset += temp_table[i].size;
 	}
 
@@ -355,7 +358,7 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 	uint32 current_offset;
 	uint32 sound_directory_size[SOUND_TYPES_COUNT];
 	uint32 audio_directory_size;
-	const uint16 flags = 0; // HEADER_FLAG_AUDIO_INTRO;
+	const uint16 flags = HEADER_FLAG_AUDIO_INTRO;
 
 	File output(*outpath, "wb");
 
@@ -368,6 +371,7 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 		output.writeUint32LE(0);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
+		output.writeUint32LE(0);
 		output.writeUint32LE(0);
 	}
 
@@ -400,6 +404,8 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 		output.writeUint32LE(ARRAYSIZE(audio_files_list));
 		current_offset += audio_directory_size;
 	}
+
+	output.close();
 
 	/* cleanup */
 	unlink(TEMP_WAV);
