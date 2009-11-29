@@ -33,7 +33,7 @@ ToolsCLI::~ToolsCLI() {
 
 int ToolsCLI::run(int argc, char *argv[]) {
 	// No matter what we ouput, we should begin with a newline
-	std::cout << "\n"; 
+	std::cout << std::endl; 
 
 	if (argc == 1) {
 		// Run without any arguments
@@ -47,7 +47,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 	ToolType type = TOOLTYPE_ALL;
 
 	if (arguments.empty())
-		std::cout << "\tExpected more arguments\n";
+		std::cout << "\tExpected more arguments" << std::endl;
 
 	// Check first argument
 	std::string option = arguments.front();
@@ -60,7 +60,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 				return tool->run(arguments);
 			}
 		}
-		std::cout << "\tUnknown tool, make sure you input one of the following:\n";
+		std::cout << "\tUnknown tool, make sure you input one of the following:" << std::endl;
 		printTools();
 	} else if (option == "--help" || option == "-h") {
 		arguments.pop_front();
@@ -74,7 +74,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 					return 2;
 				}
 			}
-			std::cout << "\nUnknown help topic '" << arguments[1] << "'\n";
+			std::cout << std::endl << "Unknown help topic '" << arguments[1] << "'" << std::endl;
 		}
 		printHelp(argv[0]);
 		return 2;
@@ -96,9 +96,9 @@ int ToolsCLI::run(int argc, char *argv[]) {
 		}
 
 		while (reader != arguments.rend()) {
-			//std::cout << "Checking backarg " << *reader << "\n";
+			//std::cout << "Checking backarg " << *reader << std::endl;
 			if (hint_arg != arguments.end() && *reader == *hint_arg) {
-				//std::cout << "It is the hint! begin anew" << "\n";
+				//std::cout << "It is the hint! begin anew" << std::endl;
 				// It seems hint_arg was an input file, start over but with generic file type
 				type = TOOLTYPE_ALL;
 				reader = arguments.rbegin();
@@ -123,7 +123,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 			// Only possible if compress/extract was parsed
 			if (arguments.empty())
 				// compress was the arg removed so...
-				std::cout << "\tExpected more arguments after '" << option << "'\n";
+				std::cout << "\tExpected more arguments after '" << option << "'" << std::endl;
 		}
 
 		// This should never happen, as args are only removed if we used compress|extract
@@ -133,18 +133,18 @@ int ToolsCLI::run(int argc, char *argv[]) {
 		Tool *tool = NULL;
 
 		if (choices.empty()) {
-			std::cout << "\tNo tool could parse input file '" << arguments.front() << "', use --list to list all available tools and --tool to force running the correct one.\n";
+			std::cout << "\tNo tool could parse input file '" << arguments.front() << "', use --list to list all available tools and --tool to force running the correct one." << std::endl;
 			return 0;
 		} else if (choices.size() > 1) {
 			if (infile.size() && infile[0] == '-')
-				std::cout << "\tWARNING: Input file '" << infile << "' looks like an argument, is this what you wanted?\n";
+				std::cout << "\tWARNING: Input file '" << infile << "' looks like an argument, is this what you wanted?" << std::endl;
 
-			std::cout << "\tMultiple tools accept this input:\n\n";
+			std::cout << "\tMultiple tools accept this input:" << std::endl << std::endl;
 
 			// Present a list of possible tools
 			int i = 1;
 			for (ToolList::iterator choice = choices.begin(); choice != choices.end(); ++choice, ++i) {
-				std::cout << "\t" << i << ") " << (*choice)->getName() << "\n";
+				std::cout << "\t" << i << ") " << (*choice)->getName() << std::endl;
 			}
 
 			std::cout << "Which tool to use ('q' to abort): ";
@@ -175,7 +175,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 			tool = choices.front();
 		}
 
-		std::cout << "\tRunning using " << tool->getName() << "\n";
+		std::cout << "\tRunning using " << tool->getName() << std::endl;
 		
 		// Run the tool, with the remaining arguments
 		arguments.push_front(tool->getName());
@@ -187,21 +187,21 @@ int ToolsCLI::run(int argc, char *argv[]) {
 
 void ToolsCLI::printHelp(const char *exeName) {
 	std::cout << 
-		"\tScummVM Tools master interface\n" <<
-		"\n" <<
-		"\tCommon use:\n" <<
-		"\t" << exeName << " [--tool <tool name>] [tool-specific options] [-o <output directory>] <input files>\n" <<
-		"\t" << exeName << " [tool-specific option] [extract|compress] <input files>\n" <<
-		"\n" <<
-		"\tOther Options:\n" <<
-		"\t--help\tDisplay this text\n" <<
-		"\t--list\tList all tools that are available\n" <<
+		"\tScummVM Tools master interface" << std::endl <<
+		std::endl <<
+		"\tCommon use:" << std::endl <<
+		"\t" << exeName << " [--tool <tool name>] [tool-specific options] [-o <output directory>] <input files>" << std::endl <<
+		"\t" << exeName << " [tool-specific option] [extract|compress] <input files>" << std::endl <<
+		std::endl <<
+		"\tOther Options:" << std::endl <<
+		"\t--help\tDisplay this text" << std::endl <<
+		"\t--list\tList all tools that are available" << std::endl <<
 		"";
 }
 
 void ToolsCLI::printTools() {
-	std::cout << "\nAll available tools:\n";
+	std::cout << std::endl << "All available tools:" << std::endl;
 	for (ToolList::iterator tool = _tools.begin(); tool != _tools.end(); ++tool)
 		// There *really* should be a short version of the help text available
-		std::cout << "\t" << (*tool)->getName() << ":\t" << (*tool)->getShortHelp() << "\n";
+		std::cout << "\t" << (*tool)->getName() << ":\t" << (*tool)->getShortHelp() << std::endl;
 }
