@@ -25,8 +25,6 @@
 
 #include "tool.h"
 
-#include <deque>
-
 /**
  * This class holds a list of all the tools available
  * Used by both the GUI and CLI as a base class to get ahold

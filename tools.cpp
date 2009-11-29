@@ -54,8 +54,6 @@
 
 Tools::Tools() {
 
-	// TODO: Rather than having the list here and in gui/tools.cpp
-	// those "tools" should inherit this class with the complete list
 	_tools.push_back(new CompressAgos());
 	_tools.push_back(new CompressGob());
 	_tools.push_back(new CompressKyra());
