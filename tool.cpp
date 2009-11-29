@@ -271,6 +271,7 @@ void Tool::parseOutputArguments() {
 			throw ToolException("Could not parse arguments: Expected path after '-o' or '--output'.");
 
 		_outputPath = _arguments.front();
+		_arguments.pop_front();
 	}
 }
 
