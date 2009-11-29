@@ -22,6 +22,7 @@
  */
 
 #include "dekyra.h"
+#include "utils/file.h"
 
 #include <stdio.h>
 
@@ -182,24 +183,23 @@ bool Script::setCommands(CommandProc *commands, int commandsSize) {
 }
 
 bool Script::loadScript(const char *filename, ScriptData *scriptData, OpcodeEntry *opcodes, int opcodeSize) {
-	FILE *scriptFile = fopen(filename, "rb");
+	File scriptFile(filename, "rb");
 
-	if (scriptFile == NULL) {
+	if (!scriptFile.isOpen()) {
 		error("couldn't load file '%s'", filename);
 		return false;
 	}
 
-	uint32 size = fileSize(scriptFile);
+	uint32 size = scriptFile.size();
 	scriptData->fileSize = size;
 	uint8 *data = new uint8[size];
 	assert(data);
-	if (size != fread(data, sizeof(uint8), size, scriptFile)) {
+	if (size != scriptFile.read(data, size)) {
 		delete [] data;
 		error("couldn't read all bytes from file '%s'", filename);
 		return false;
 	}
-	fclose(scriptFile);
-	scriptFile = NULL;
+	scriptFile.close();
 
 	byte *curData = data;
 

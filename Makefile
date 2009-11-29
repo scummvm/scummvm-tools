@@ -141,7 +141,7 @@ bundle: $(TARGETS)
 decine$(EXEEXT): decine.o
 	$(CXX) $(LDFLAGS) -o $@ $+
 
-dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o
+dekyra$(EXEEXT): dekyra.o dekyra_v1.o util.o $(UTILS)
 	$(CXX) $(LDFLAGS) -o $@ $+
 
 descumm$(EXEEXT): descumm-tool.o descumm.o descumm6.o descumm-common.o util.o tool.o $(UTILS)

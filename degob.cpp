@@ -21,13 +21,13 @@
  */
 
 #include "degob_script.h"
-#include <iostream>
+#include "utils/file.h"
 
-void printHelp(const char *bin);
-int getVersion(const char *verStr);
-byte *readFile(FILE *tot, uint32 &size);
-Script *initScript(byte *totData, uint32 totSize, ExtTable *extTable, int version);
-void printInfo(Script &script);
+static void printHelp(const char *bin);
+static int getVersion(const char *verStr);
+static byte *readFile(const char *filename, uint32 &size);
+static Script *initScript(byte *totData, uint32 totSize, ExtTable *extTable, int version);
+static void printInfo(Script &script);
 
 int main(int argc, char **argv) {
 
@@ -42,15 +42,11 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	FILE *f;
 	byte *totData = 0, *extData = 0, *extComData = 0;
 	uint32 totSize = 0, extSize = 0, extComSize = 0;
 	int32 offset = -1;
 
-	if (!(f = fopen(argv[2], "rb")))
-		error("Couldn't open file \"%s\"", argv[2]);
-	totData = readFile(f, totSize);
-	fclose(f);
+	totData = readFile(argv[2], totSize);
 
 	ExtTable *extTable = 0;
 	if (argc > 3) {
@@ -78,18 +74,12 @@ int main(int argc, char **argv) {
 
 		if (argc > n) {
 
-			if (!(f = fopen(argv[n], "rb")))
-				error("Couldn't open file \"%s\"", argv[n]);
-			extData = readFile(f, extSize);
-			fclose(f);
+			extData = readFile(argv[n], extSize);
 
 			n++;
 
 			if (argc > n) {
-				if (!(f = fopen(argv[n], "rb")))
-					error("Couldn't open file \"%s\"", argv[n]);
-				extComData = readFile(f, extComSize);
-				fclose(f);
+				extComData = readFile(argv[n], extComSize);
 			}
 
 			extTable = new ExtTable(extData, extSize, extComData, extComSize);
@@ -153,11 +143,14 @@ int getVersion(const char *verStr) {
 	return -1;
 }
 
-byte *readFile(FILE *tot, uint32 &size) {
-	size = fileSize(tot);
-	byte *data = new byte[size];
+byte *readFile(const char *filename, uint32 &size) {
+	File f(filename, "rb");
+	if (!f.isOpen())
+		error("Couldn't open file \"%s\"", filename);
 
-	fread(data, size, 1, tot);
+	size = f.size();
+	byte *data = new byte[size];
+	f.read(data, size);
 	return data;
 }
 

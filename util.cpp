@@ -101,13 +101,3 @@ void notice(const char *s, ...) {
 
 	fprintf(stdout, "%s\n", buf);
 }
-
-uint32 fileSize(FILE *fp) {
-	uint32 sz;
-	uint32 pos = ftell(fp);
-	fseek(fp, 0, SEEK_END);
-	sz = ftell(fp);
-	fseek(fp, pos, SEEK_SET);
-	return sz;
-}
-
