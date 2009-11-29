@@ -154,19 +154,22 @@ int ToolsCLI::run(int argc, char *argv[]) {
 				// Read input
 				std::cin >> i;
 
-				// Valid ?
-				if (std::cin && i >= 1 && (size_t)i < choices.size())
+				// Was it an integer and in range?
+				if (std::cin && i >= 1 && (size_t)i <= choices.size())
 					break;
 
-				// Clear any error flags
-				std::cin.clear();
-				
-				std::string q;
-				std::cin >> q;
-				if (q == "q" || q == "exit" || q == "quit" || q == "abort")
-					return 0;
+				// If it wasn't an integer, trying reading input again, this time as a string.
+				if (!std::cin) {
+					// Clear any error flags
+					std::cin.clear();
+					
+					std::string q;
+					std::cin >> q;
+					if (q == "q" || q == "exit" || q == "quit" || q == "abort")
+						return 0;
+				}
 
-				std::cout << "Invalid input, try again: ";
+				std::cout << "Invalid input, try again ('q' to abort): ";
 			}
 
 			// Account for the fact arrays start at 0
