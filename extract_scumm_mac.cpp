@@ -63,7 +63,7 @@ void ExtractScummMac::execute() {
 	Filename outpath(_outputPath);
 
 	if (outpath.empty())
-		outpath.setFullPath("out/");
+		outpath.setFullPath("./");
 
 	File ifp(inpath, "rb");
 
