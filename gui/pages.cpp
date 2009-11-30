@@ -790,7 +790,7 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 
 wxString ChooseAudioFormatPage::getHelp() {
 	return wxT("Select audio format, for most platforms, Ogg Vorbis is preferred, as it's license free ")
-		wxT("and GPL based will still offer great quality.\nNintendo DS and Dremcast platforms only work with MP3 compression.");
+		wxT("and GPL based will still offer great quality.\nNintendo DS and Dreamcast platforms only work with MP3 compression.");
 }
 
 void ChooseAudioFormatPage::save(wxWindow *panel) {
