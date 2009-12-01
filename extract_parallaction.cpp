@@ -332,7 +332,7 @@ void ExtractParallaction::execute() {
 			*d = *s == '/' ? '_' : *s;
 		*d = '\0';
 
-		outpath.setFullName(d);
+		outpath.setFullName(filename);
 
 		File ofile(outpath, "wb");
 		ofile.write(arc._fileData, 1, arc._fileSize);
