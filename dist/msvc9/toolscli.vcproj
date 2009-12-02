@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlib.lib libpng.lib ogg_static.lib vorbis_static.lib vorbisenc_static.lib libFLAC_static.lib"
+				AdditionalDependencies="zlib.lib libpng.lib libogg_static.lib libvorbis_static.lib libvorbisenc_static.lib libFLAC_static.lib"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBCMT;MSVCRT"
 				GenerateDebugInformation="true"
@@ -134,7 +134,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlib.lib ogg_static.lib vorbis_static.lib vorbisenc_static.lib libFLAC_static.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="zlib.lib libogg_static.lib libvorbis_static.lib libvorbisenc_static.lib libFLAC_static.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"
