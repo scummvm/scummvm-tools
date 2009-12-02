@@ -69,6 +69,8 @@ uint32 Archive::getSizeOfSubfile() {
 	return _fileSize;
 }
 
+static int __count;
+
 void Archive::openSubfile(uint32 index) {
 	if (index >= _numFiles)
 		throw ToolException("File index out of bounds.");
@@ -86,7 +88,13 @@ void Archive::openSubfile(uint32 index) {
 		_fileSize = getSizeOfPackedSubfile(srcData, srcSize);
 		_fileData = (byte *)malloc(_fileSize);
 
+		printf("unpacking file at position %i: %s [%x]\n", index, _names[index], srcOffset);
+		printf("packed size    = %i\n", srcSize);
+		printf("unpacked size  = %i\n", _fileSize);
+
 		unpackSubfile(srcData, srcSize);
+
+		printf("unpacked bytes = %i\n", __count);
 
 		free(srcData);
 	} else {
@@ -221,6 +229,8 @@ static uint32 get_bits(uint32 n) {
 }
 
 void ppdepack(byte *packed, byte *depacked, uint32 plen, uint32 unplen) {
+	__count = 0;
+
 	byte *dest;
 	int n_bits;
 	int idx;
@@ -256,6 +266,8 @@ void ppdepack(byte *packed, byte *depacked, uint32 plen, uint32 unplen) {
 				bytes += to_add;
 			} while (to_add == 3);
 
+			__count += (bytes+1);
+
 			for (i = 0; i <= bytes; i++)
 				*--dest = get_bits(8);
 
@@ -283,6 +295,8 @@ void ppdepack(byte *packed, byte *depacked, uint32 plen, uint32 unplen) {
 			offset = get_bits(n_bits);
 		}
 
+		__count += (bytes+1);
+
 		for (i = 0; i <= bytes; i++) {
 			dest[-1] = dest[offset];
 			dest--;
@@ -301,7 +315,7 @@ ExtractParallaction::ExtractParallaction(const std::string &name) : Tool(name, T
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Extract data files from games built on the Parallaction engine.";
-	_helptext = "\nUsage: " + _name + " [--small] [-o <output dir> = out/] <file>\n" + _shorthelp + "\n";
+	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] [--small] <file>\n" + _shorthelp + "\n";
 }
 
 void ExtractParallaction::parseExtraArguments() {
