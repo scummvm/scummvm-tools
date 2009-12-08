@@ -45,8 +45,8 @@ ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 	input.format = "*.stk";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to extract the contents of Gobliiins! .STK files.";
-	_helptext = "\nUsage: " + getName() + " [-o outputname] infilename\n";
+	_shorthelp = "Extracts the files from a Stick file used by 'gob' engine (.STK/.ITK/.LTK).";
+	_helptext = "\nUsage: " + getName() + " [-o outputname] stickname\nwhere\n  ouputname is used to force the gob config filename (used by compress_gob)\n  stickname is the name of the file to extract/decompress";
 }
 
 ExtractGobStk::~ExtractGobStk() {
@@ -67,8 +67,6 @@ void ExtractGobStk::execute() {
 
 	if (_outputPath.empty())
 		_outputPath = inpath;
-	else
-		_outputPath.setFullName(inpath.getFullName());
 
 	_outputPath.setExtension(".gob");
 
@@ -367,7 +365,7 @@ byte *ExtractGobStk::unpackPreGobData(byte *src, uint32 &size, uint32 &compSize)
 	newCounter -= 2;
 
 //  The 6 first bytes are grouped by 2 :
-//  - bytes 0&1 : if set to 0xFFFF, the real size is in bytes 2&3. Else : not understand
+//  - bytes 0&1 : if set to 0xFFFF, the real size is in bytes 2&3. Else : unknown 
 //  - bytes 2&3 : Either the real size or 0x007D. Directly related to the size of the file.
 //  - bytes 4&5 : 0x0000 (files are small) ;)
 	if (dummy1 == 0xFFFF)
