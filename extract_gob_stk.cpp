@@ -73,7 +73,6 @@ void ExtractGobStk::execute() {
 	_outputPath.setExtension(".gob");
 
 	gobConf.open(_outputPath.getFullPath(), "w");
-
 	gobConf.printf("%s\n", inpath.getFullName().c_str());
 
 	stk.read(signature, 1, 6);
@@ -160,7 +159,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 
 	buffer[8] = '\0';
 	strcat(debugStr, buffer);
-	print("%s\n",debugStr);
+	print("%s",debugStr);
 	filenamePos = stk.readUint32LE();
 
 	// Filenames - Header
@@ -252,13 +251,13 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 	byte *unpackedData = NULL;
 
 	while (curChunk != 0) {
-		print("Extracting \"%s\"\n", curChunk->name);
+		print("Extracting \"%s\"", curChunk->name);
 
 		outpath.setFullName(curChunk->name);
 		File chunkFile(outpath, "wb");
 
 		if (curChunk->size > 0) {
-			chunkFile.seek(curChunk->offset, SEEK_SET);
+			stk.seek(curChunk->offset, SEEK_SET);
 
 			byte *data = new byte[curChunk->size];
 
@@ -372,9 +371,9 @@ byte *ExtractGobStk::unpackPreGobData(byte *src, uint32 &size, uint32 &compSize)
 //  - bytes 2&3 : Either the real size or 0x007D. Directly related to the size of the file.
 //  - bytes 4&5 : 0x0000 (files are small) ;)
 	if (dummy1 == 0xFFFF)
-		print("Real size %d\n", READ_LE_UINT32(src));
+		print("Real size %d", READ_LE_UINT32(src));
 	else
-		print("Unknown real size %xX %xX\n", dummy1>>8, dummy1 & 0x00FF);
+		print("Unknown real size %xX %xX", dummy1>>8, dummy1 & 0x00FF);
 
 //	counter = size = READ_LE_UINT32(src);
 
