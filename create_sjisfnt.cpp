@@ -116,8 +116,8 @@ int main(int argc, char *argv[]) {
 	// We should try to find some proper way of detecting and handling this.
 
 	// ASCII chars will be rendererd as 8x16
-	//if (!setGlyphSize(8, 16))
-	//	return -1;
+	if (!setGlyphSize(8, 16))
+		return -1;
 
 	for (uint8 fB = 0x00; fB <= 0xDF; ++fB) {
 		if (mapASCIItoChunk(fB) == -1)
@@ -433,7 +433,7 @@ bool drawGlyph(uint32 unicode, Glyph &glyph) {
 	if (!index)
 		return false;
 
-	FT_Error err = FT_Load_Glyph(sjisFont, index, FT_LOAD_MONOCHROME);
+	FT_Error err = FT_Load_Glyph(sjisFont, index, FT_LOAD_MONOCHROME | FT_LOAD_NO_HINTING);
 	if (err)
 		return false;
 
