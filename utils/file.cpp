@@ -21,9 +21,7 @@
  */
 
 #include "file.h"
-
 #include <stdarg.h>
-
 
 // Filenname implementation
 Filename::Filename(const char *path) {
@@ -409,6 +407,15 @@ std::string File::readString(size_t len) {
 	}
 
 	return s;
+}
+
+void File::scanString(char *result) {
+	if (!_file) 
+		throw FileException("File is not open");
+	if ((_mode & FILEMODE_READ) == 0)
+		throw FileException("Tried to write to file opened in read mode (" + _name.getFullPath() + ")");
+
+	fscanf(_file, "%s", result);
 }
 
 void File::writeChar(int i) {

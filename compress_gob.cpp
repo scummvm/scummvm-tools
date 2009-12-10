@@ -38,6 +38,7 @@ struct CompressGob::Chunk {
 CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_execMode = MODE_NORMAL;
 	_chunks = NULL;
+	_supportedFormats = AUDIO_NONE;
 
 	ToolInput input;
 	input.format = "*.stk";
@@ -48,9 +49,7 @@ CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTY
 		"\nUsage: " + getName() + " [-f] [-o <output> = out.stk] <conf file>\n"
 		"<conf file> is a .gob file generated extract_gob_stk\n"
 		"<-f> ignores the compression flag in the .gob file and force compression for all files\n\n"
-		"The STK/ITK archive will be created in the current directory.\n";
-
-
+		"The stick archive (STK/ITK/LTK) will be created in the current directory.\n";
 }
 
 CompressGob::~CompressGob() {
@@ -69,23 +68,24 @@ void CompressGob::execute() {
 	File gobConf;
 	uint16 chunkCount;
 
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
 
-	// We output with .stk extension, if there is no specific out file
+	Filename inpath(_inputPaths[0].path);
+	Filename outpath("");
+
+	// Open input (config) file
+	gobConf.open(inpath, "r");
+
+	// Read the input into memory
+	_chunks = readChunkConf(gobConf, outpath, chunkCount);
+	gobConf.close();
+
+// We output with .stk extension, if there is no specific out file
 	if (outpath.empty()) {
 		outpath = inpath;
 		outpath.setExtension(".stk");
 	}
 
-	// Open input (config) file
-	gobConf.open(inpath, "r");
-
 	stk.open(outpath, "wb");
-
-	// Read the input into memory
-	_chunks = readChunkConf(gobConf, outpath, chunkCount);
-	gobConf.close();
 
 	// Output in compressed format
 	writeEmptyHeader (stk, chunkCount);
@@ -110,25 +110,29 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 	Chunk *curChunk = chunks;
 	Chunk *parseChunk;
 	File src1;
+	char buffer[1024];
 
 	chunkCount = 1;
 
 // First read: Output filename
-	stkName.setFullName(gobConf.readString());
+	gobConf.scanString(buffer);
+	stkName.setFullName(buffer);
 
 // Second read: signature
-	std::string signature = gobConf.readString();
+	gobConf.scanString(buffer);
+	std::string signature(buffer);
 	if (signature == confSTK21)
 		error("STK21 not yet handled");
 	else if (signature != confSTK10)
-		error("Unknown format signature");
+		error("Unknown format signature %s", signature.c_str());
 
+	print("Checking duplicate files");
 // All the other reads concern file + compression flag
-	std::string fname = gobConf.readString();
+	gobConf.scanString(buffer);
 	while (!gobConf.eos()) {
-		strcpy(curChunk->name, fname.c_str());
-		fname = gobConf.readString();
-		if ((fname == "1") || (_execMode & MODE_FORCE))
+		strcpy(curChunk->name, buffer);
+		gobConf.scanString(buffer);
+		if ((strcmp(buffer, "1") == 0 )|| (_execMode & MODE_FORCE))
 			curChunk->packed = true;
 		else
 			curChunk->packed = false;
@@ -148,7 +152,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 // If files are identical, use the same compressed chunk instead of re-compressing the same thing
 					curChunk->packed = 2;
 					curChunk->replChunk = parseChunk;
-					print("Identical files : %s %s (%d bytes)\n", curChunk->name, parseChunk->name, curChunk->realSize);
+					print("Identical files : %s %s (%d bytes)", curChunk->name, parseChunk->name, curChunk->realSize);
 					break;
 				}
 			}
@@ -156,7 +160,8 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 		}
 		src1.close();
 		
-		std::string tmp = gobConf.readString();
+		gobConf.scanString(buffer);
+
 		if (!gobConf.eos()) {
 			curChunk->next = new Chunk;
 			curChunk = curChunk->next;
@@ -206,25 +211,22 @@ void CompressGob::writeBody(Filename *inpath, File &stk, Chunk *chunks) {
 
 		curChunk->offset = stk.pos();
 		if (curChunk->packed == 1) {
-			print("Compressing %12s\t", curChunk->name);
 			curChunk->size = writeBodyPackFile(stk, src);
-			print("%d -> %d bytes", curChunk->realSize, curChunk->size);
 			if (curChunk->size >= curChunk->realSize) {
 // If compressed size >= realsize, compression is useless
 // => Store instead
 				curChunk->packed = 0;
 				stk.seek(curChunk->offset, SEEK_SET);
 				src.rewind();
-				print("!!!");
-			}
-			print("\n");
+			} else
+				print("Compressing %12s\t%d -> %d bytes", curChunk->name, curChunk->realSize, curChunk->size);
+
 		} 
 
 		if (curChunk->packed == 0) {
 			tmpSize = 0;
-			print("Storing %12s\t", curChunk->name);
 			curChunk->size = writeBodyStoreFile(stk, src);
-			print("%d bytes\n", curChunk->size);
+			print("Storing %12s\t%d bytes", curChunk->name, curChunk->size);
 		}
 		curChunk = curChunk->next;
 	}
@@ -439,12 +441,14 @@ bool CompressGob::filcmp(File &src1, Chunk *compChunk) {
 	
 	do {
 		readCount = src1.readN(buf1, 1, 4096);
-		src2.read(buf2, 1, 4096);
+		src2.readN(buf2, 1, 4096);
 		for (int i = 0; checkFl & (i < readCount); i++)
 			if (buf1[i] != buf2[i])
 				checkFl = false;
 	} while (checkFl & (readCount == 4096));
 
+	src1.rewind();
+	src2.rewind();
 	return checkFl;
 }
 
@@ -507,3 +511,4 @@ int main(int argc, char *argv[]) {
 	return gob.run(argc, argv);
 }
 #endif
+

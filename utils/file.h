@@ -302,7 +302,11 @@ public:
 	 */
 	std::string readString(size_t len);
 	
-
+	/**
+	 * Reads a string, using until NULL or EOF or CR/LF
+	 * Throws FileException if file is not open / if read failed.
+	 */
+	void File::scanString(char *result);
 
 	/**
 	 * Writes a single character (equivalent of fputc)
