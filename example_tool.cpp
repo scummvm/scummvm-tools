@@ -94,12 +94,11 @@ void CompressionExample::parseExtraArguments() {
 	// Arguments are stored in the _arguments member.
 	// Remove any arguments that you have "used up"
 	if (!_arguments.empty() && _arguments.front() == "-a") {
-			// Set our member
-			_outputFiles = true;
+		// Set our member
+		_outputFiles = true;
 
-			// We matched one argument, so remove it
-			_arguments.pop_front();
-		}
+		// We matched one argument, so remove it
+		_arguments.pop_front();
 	}
 }
 
