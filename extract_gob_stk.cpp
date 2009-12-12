@@ -65,8 +65,11 @@ void ExtractGobStk::execute() {
 
 	stk.open(inpath.getFullPath(), "rb");
 
-	if (_outputPath.empty())
+	if (_outputPath.empty()) {
 		_outputPath = inpath;
+		_outputPath.setExtension("");
+		_outputPath.setFullName(_outputPath.getFullName() + inpath.getExtension());
+	}
 
 	_outputPath.setExtension(".gob");
 
@@ -84,6 +87,8 @@ void ExtractGobStk::execute() {
 		stk.rewind();
 		readChunkList(stk, gobConf);
 	}
+
+	print("config file created: %s\n", _outputPath.getFullName().c_str());
 
 	extractChunks(_outputPath, stk);
 }
