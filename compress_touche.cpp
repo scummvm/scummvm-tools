@@ -78,7 +78,7 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 			offs_table[i] = 0;
 		} else {
 			input.seek(offs_table[i], SEEK_SET);
-			input.read(buf, 1, 8);
+			input.read_throwsOnError(buf, 8);
 
 			if (memcmp(buf, "Creative", 8) != 0) {
 				error("Invalid VOC data found");
@@ -93,7 +93,7 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 
 			size_table[i] = 0;
 
-			while ((size = temp.readN(buf, 1, 2048)) > 0) {
+			while ((size = temp.read_noThrow(buf, 2048)) > 0) {
 				output.write(buf, size);
 				size_table[i] += size;
 			}

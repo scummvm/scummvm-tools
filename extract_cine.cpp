@@ -179,7 +179,7 @@ void ExtractCine::unpackFile(File &file) {
 	unsigned int entrySize = file.readUint16BE(); // How many bytes per entry?
 	assert(entrySize == 0x1e);
 	while (entryCount--) {
-		file.read(fileName, 14, 1);
+		file.read_throwsOnError(fileName, 14);
 		fileName[14] = '\0';
 
 		Filename outPath(_outputPath);
@@ -202,7 +202,7 @@ void ExtractCine::unpackFile(File &file) {
 		uint8 *packedData = (uint8 *)calloc(packedSize, 1);
 		assert(data);
 		assert(packedData);
-		file.read(packedData, packedSize, 1);
+		file.read_throwsOnError(packedData, packedSize);
 		bool status = true;
 		if (packedSize != unpackedSize) {
 			CineUnpacker cineUnpacker;
@@ -253,7 +253,7 @@ void ExtractCine::unpackAllResourceFiles(const Filename &filename) {
 	uint32 unpackedSize, packedSize;
 	{
 		char header[8];
-		f.read(header, 8, 1);
+		f.read_throwsOnError(header, 8);
 		if (memcmp(header, "ABASECP", 7) == 0) {
 			unpackedSize = f.readUint32BE();
 			packedSize = f.readUint32BE();
@@ -266,7 +266,7 @@ void ExtractCine::unpackAllResourceFiles(const Filename &filename) {
 	assert(unpackedSize >= packedSize);
 	uint8 *buf = (uint8 *)calloc(unpackedSize, 1);
 	assert(buf);
-	f.read(buf, packedSize, 1);
+	f.read_throwsOnError(buf, packedSize);
 	
 	if (packedSize != unpackedSize) {
 		CineUnpacker cineUnpacker;

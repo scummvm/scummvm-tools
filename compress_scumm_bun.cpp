@@ -739,7 +739,7 @@ byte *CompressScummBun::decompressBundleSound(int index, File  &input, int32 &fi
 	for (i = 0; i < numCompItems; i++) {
 		compInput[compTable[i].size] = 0;
 		input.seek(_bundleTable[index].offset + compTable[i].offset, SEEK_SET);
-		input.read(compInput, 1, compTable[i].size);
+		input.read_throwsOnError(compInput, compTable[i].size);
 		int outputSize = decompressCodec(compTable[i].codec, compInput, compOutput, compTable[i].size);
 		assert(outputSize <= 0x2000);
 		memcpy(compFinal + finalSize, compOutput, outputSize);
@@ -916,7 +916,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		size = cmpFile.pos();
 		cmpFile.seek(0, SEEK_SET);
 		byte *tmpBuf = (byte *)malloc(size);
-		cmpFile.read(tmpBuf, size, 1);
+		cmpFile.read_throwsOnError(tmpBuf, size);
 		cmpFile.close();
 		unlink(tmpPath);
 

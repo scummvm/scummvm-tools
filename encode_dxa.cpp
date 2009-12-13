@@ -649,7 +649,7 @@ int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsign
 
 	File fp(filename, "rb");
 
-	fp.read(header, 1, 8);
+	fp.read_throwsOnError(header, 8);
 	if (png_sig_cmp(header, 0, 8))
 		return 1;
 
@@ -720,7 +720,7 @@ void EncodeDXA::readVideoInfo(Filename *filename, int &width, int &height, int &
 	scaleMode = S_NONE;
 
 	char buf[4];
-	smk.read(buf, 1, 4);
+	smk.read_throwsOnError(buf, 4);
 	if (!memcmp(buf, "BIK", 3)) {
 		// Skip file size
 		smk.readUint32LE();

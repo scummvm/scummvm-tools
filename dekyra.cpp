@@ -194,7 +194,7 @@ bool Script::loadScript(const char *filename, ScriptData *scriptData, OpcodeEntr
 	scriptData->fileSize = size;
 	uint8 *data = new uint8[size];
 	assert(data);
-	if (size != scriptFile.read(data, size)) {
+	if (size != scriptFile.read_noThrow(data, size)) {
 		delete [] data;
 		error("couldn't read all bytes from file '%s'", filename);
 		return false;

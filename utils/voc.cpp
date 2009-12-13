@@ -43,14 +43,14 @@ int getSampleRateFromVOCRate(int vocSR) {
 byte *loadVOCFromStream(File &stream, int &size, int &rate, int &loops, int &begin_loop, int &end_loop) {
 	VocFileHeader fileHeader;
 
-	if (stream.read(&fileHeader, 8) != 8)
+	if (stream.read_noThrow(&fileHeader, 8) != 8)
 		goto invalid;
 
 	if (!memcmp(&fileHeader, "VTLK", 4)) {
-		if (stream.read(&fileHeader, sizeof(VocFileHeader)) != sizeof(VocFileHeader))
+		if (stream.read_noThrow(&fileHeader, sizeof(VocFileHeader)) != sizeof(VocFileHeader))
 			goto invalid;
 	} else if (!memcmp(&fileHeader, "Creative", 8)) {
-		if (stream.read(((byte *)&fileHeader) + 8, sizeof(VocFileHeader) - 8) != sizeof(VocFileHeader) - 8)
+		if (stream.read_noThrow(((byte *)&fileHeader) + 8, sizeof(VocFileHeader) - 8) != sizeof(VocFileHeader) - 8)
 			goto invalid;
 	} else {
 	invalid:;
@@ -96,7 +96,7 @@ byte *loadVOCFromStream(File &stream, int &size, int &rate, int &loops, int &beg
 				} else {
 					ret_sound = (byte *)malloc(len);
 				}
-				stream.read(ret_sound + size, len);
+				stream.read_noThrow(ret_sound + size, len);
 				size += len;
 				begin_loop = size;
 				end_loop = size;

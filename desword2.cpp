@@ -303,7 +303,7 @@ int entry(int argc, char *argv[]) {
 	}
 
 	in.seek(9, SEEK_CUR);
-	in.read(name, 1, sizeof(name));
+	in.read_throwsOnError(name, sizeof(name));
 
 	printf("\"%s\"\n", name);
 

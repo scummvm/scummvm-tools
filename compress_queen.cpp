@@ -121,7 +121,7 @@ void CompressQueen::fromFileToFile(File &in, File &out, uint32 amount) {
 	uint32 numRead;
 
 	while (amount > 0) {
-		numRead = in.readN(fBuf, 1, amount > 2048 ? 2048 : amount);
+		numRead = in.read_noThrow(fBuf, amount > 2048 ? 2048 : amount);
 		if (numRead <= 0) {
 			break;
 		}
@@ -190,7 +190,7 @@ void CompressQueen::execute() {
 	inputTbl.open(inpath, "rb");
 
 	size = inputData.size();
-	inputTbl.read(tmp, 1, 4);
+	inputTbl.read_throwsOnError(tmp, 4);
 	tmp[4] = '\0';
 
 	if (memcmp(tmp, "QTBL", 4)) {
@@ -223,7 +223,7 @@ void CompressQueen::execute() {
 		prevOffset = outputData.pos();
 
 		/* Read entry */
-		inputTbl.read(_entry.filename, 1, 12);
+		inputTbl.read_throwsOnError(_entry.filename, 12);
 		_entry.filename[12] = '\0';
 		_entry.bundle = inputTbl.readByte();
 		_entry.offset = inputTbl.readUint32BE();

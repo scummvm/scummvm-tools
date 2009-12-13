@@ -75,7 +75,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	curFileHandle.open(TEMP_RAW, "wb");
 	copyLeft = sampleSize;
 	while (copyLeft > 0) {
-		doneRead = _input_smp.readN(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
+		doneRead = _input_smp.read_noThrow(buffer, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
@@ -96,7 +96,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	_output_smp.writeUint32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
-		doneRead = curFileHandle.readN(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
+		doneRead = curFileHandle.read_noThrow(buffer, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
@@ -159,7 +159,7 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 		return;
 	}
 
-	_input_smp.read(inBuffer, 1, sampleSize);
+	_input_smp.read_throwsOnError(inBuffer, sampleSize);
 
 	// 1 channel, 22050 rate, block align 24,
 	blockAlign = 24; // Fixed for Tinsel 6-bit
@@ -243,7 +243,7 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	_output_smp.writeUint32LE(copyLeft);
 	// Write actual data
 	while (copyLeft > 0) {
-		doneRead = curFileHandle.readN(buffer, 1, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
+		doneRead = curFileHandle.read_noThrow(buffer, copyLeft > sizeof(buffer) ? sizeof(buffer) : copyLeft);
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;

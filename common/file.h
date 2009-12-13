@@ -260,31 +260,20 @@ public:
 	 * Works the same way as fread, but throws on error or if it could
 	 * not read all elements.
 	 *
-	 * @param data Where to put the read data
-	 * @param elementSize the size of one element (in bytes)
-	 * @param elementCount the number of elements to read
+	 * @param dataPtr	pointer to a buffer into which the data is read
+	 * @param dataSize	number of bytes to be read
 	 */
-	void read(void *data, size_t elementSize, size_t elementCount);
+	void read_throwsOnError(void *dataPtr, size_t dataSize);
 
 	/**
 	 * Works the same way as fread, does NOT throw if it could not read all elements
 	 * still throws if file is not open.
 	 *
-	 * @param data Where to put the read data
-	 * @param elementSize the size of one element (in bytes)
-	 * @param elementCount the number of elements to read
-	 * @return number of bytes read
-	 */
-	size_t readN(void *data, size_t elementSize, size_t elementCount);
-
-	/**
-	 * Read on a shorter form, does not throw (like readN)
-	 *
 	 * @param dataPtr	pointer to a buffer into which the data is read
 	 * @param dataSize	number of bytes to be read
 	 * @return the number of bytes which were actually read.
 	 */
-	size_t read(void *dataPtr, size_t dataSize);
+	size_t read_noThrow(void *dataPtr, size_t dataSize);
 
 	/**
 	 * Reads a full string, until NULL or EOF

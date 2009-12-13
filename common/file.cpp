@@ -346,27 +346,13 @@ int32 File::readSint32LE() {
 	return ret;
 }
 
-void File::read(void *data, size_t elementSize, size_t elementCount) {
-	if (!_file) 
-		throw FileException("File is not open");
-	if ((_mode & FILEMODE_READ) == 0)
-		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
-
-	size_t data_read = fread(data, elementSize, elementCount, _file);
-	if (data_read != elementCount)
+void File::read_throwsOnError(void *dataPtr, size_t dataSize) {
+	size_t data_read = read_noThrow(dataPtr, dataSize);
+	if (data_read != dataSize)
 		throw FileException("Read beyond the end of file (" + _name.getFullPath() + ")");
 }
 
-size_t File::readN(void *data, size_t elementSize, size_t elementCount) {
-	if (!_file) 
-		throw FileException("File is not open");
-	if ((_mode & FILEMODE_READ) == 0)
-		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
-
-	return fread(data, elementSize, elementCount, _file);
-}
-
-size_t File::read(void *dataPtr, size_t dataSize) {
+size_t File::read_noThrow(void *dataPtr, size_t dataSize) {
 	if (!_file) 
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)

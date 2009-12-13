@@ -557,7 +557,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 			} else {
 				if (inPart2) {
 					file.seek(1, SEEK_SET);
-					file.read(inbuffer + inPart1, 1, inPart2);
+					file.read_throwsOnError(inbuffer + inPart1, inPart2);
 					inPart2 = 0;
 					exp.process(outbuffer, inbuffer, outsize, insize);
 					delete[] inbuffer;
@@ -601,10 +601,10 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 					snprintf(filename, 64, "%s.%03d", _baseFilename, i+1);
 
 					File file2(filename, "rb");
-					file.read(hdr, 1, m);
-					file2.read(hdr + m , 1, b);
+					file.read_throwsOnError(hdr, m);
+					file2.read_throwsOnError(hdr + m , b);
 				} else {
-					file.read(hdr, 1, 42);
+					file.read_throwsOnError(hdr, 42);
 				}
 
 				uint32 id = READ_LE_UINT32(hdr);
@@ -633,9 +633,9 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 						// this is for files that are split between two archive files
 						inPart1 = size - pos;
 						inPart2 = insize - inPart1;
-						file.read(inbuffer, 1, inPart1);
+						file.read_throwsOnError(inbuffer, inPart1);
 					} else {
-						file.read(inbuffer, 1, insize);
+						file.read_throwsOnError(inbuffer, insize);
 						inPart2 = 0;
 						exp.process(outbuffer, inbuffer, outsize, insize);
 						delete[] inbuffer;

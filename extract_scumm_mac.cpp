@@ -91,7 +91,7 @@ void ExtractScummMac::execute() {
 
 		file_off = ifp.readUint32BE();
 		file_len = ifp.readUint32BE();
-		ifp.read(file_name, 0x20, 1);
+		ifp.read_throwsOnError(file_name, 0x20);
 
 		if (!file_name[0])
 			error("\'%s\'. file has no name.", inpath.getFullPath().c_str());
@@ -138,7 +138,7 @@ void ExtractScummMac::execute() {
 			error("Could not allocate %ld bytes of memory.", file_len);
 		}
 
-		ifp.read(buf, 1, file_len);
+		ifp.read_throwsOnError(buf, file_len);
 		ofp.write(buf, file_len);
 		free(buf);
 	}

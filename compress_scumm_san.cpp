@@ -173,7 +173,7 @@ void CompressScummSan::handleComiIACT(File &input, int size, const char *outputD
 	int bsize = size - 18;
 	byte output_data[0x1000];
 	byte *src = (byte *)malloc(bsize);
-	input.read(src, bsize, 1);
+	input.read_throwsOnError(src, bsize);
 
 	sprintf(tmpPath, "%s/%s.wav", outputDir, inputFilename);
 	decompressComiIACT(tmpPath, output_data, src, bsize);
@@ -219,7 +219,7 @@ void CompressScummSan::prepareForMixing(const char *outputDir, const char *input
 			int fileSize = _audioTracks[l].file.pos();
 			_audioTracks[l].file.seek(0, SEEK_SET);
 			byte *audioBuf = (byte *)malloc(fileSize);
-			_audioTracks[l].file.read(audioBuf, fileSize, 1);
+			_audioTracks[l].file.read_throwsOnError(audioBuf, fileSize);
 			_audioTracks[l].file.close();
 
 			int outputSize = fileSize;
@@ -350,13 +350,13 @@ void CompressScummSan::mixing(const char *outputDir, const char *inputFilename, 
 			int fileSize = _audioTracks[l].file.pos();
 			_audioTracks[l].file.seek(0, SEEK_SET);
 			byte *tmpBuf = (byte *)malloc(fileSize);
-			_audioTracks[l].file.read(tmpBuf, fileSize, 1);
+			_audioTracks[l].file.read_throwsOnError(tmpBuf, fileSize);
 			_audioTracks[l].file.close();
 			unlink(filename);
 
 			byte *wavBuf = (byte *)malloc(fileSize);
 			wavFile.seek(44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
-			wavFile.read(wavBuf, fileSize, 1);
+			wavFile.read_throwsOnError(wavBuf, fileSize);
 
 			int offset = 0;
 			for (z = 0; z < _audioTracks[l].countFrames; z++) {
@@ -510,7 +510,7 @@ void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int n
 		}
 	}
 	byte *buffer = (byte *)malloc(size);
-	input.read(buffer, size, 1);
+	input.read_throwsOnError(buffer, size);
 	audioTrack->file.write(buffer, size);
 	free(buffer);
 	audioTrack->volumes[index] = volume;

@@ -88,7 +88,7 @@ bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 	uint8 *buffer = new uint8[filesize];
 	assert(buffer);
 
-	pakfile.read(buffer, filesize, 1);
+	pakfile.read_throwsOnError(buffer, filesize);
 
 	const char *currentName = 0;
 
@@ -189,7 +189,7 @@ bool PAKFile::addFile(const char *name, const char *file) {
 	uint32 filesize = f.size();
 	uint8 *data = new uint8[filesize];
 	assert(data);
-	f.read(data, 1, filesize);
+	f.read_throwsOnError(data, filesize);
 	return addFile(name, data, filesize);
 }
 

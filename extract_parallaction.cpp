@@ -80,7 +80,7 @@ void Archive::openSubfile(uint32 index) {
 
 	byte *srcData = (byte *)malloc(srcSize);
 	_file.seek(srcOffset, SEEK_SET);
-	_file.read(srcData, 1, srcSize);
+	_file.read_throwsOnError(srcData, srcSize);
 
 	if (isPackedSubfile(srcData)) {
 		_fileSize = getSizeOfPackedSubfile(srcData, srcSize);
@@ -122,7 +122,7 @@ void Archive::open(const char *filename, bool smallArchive) {
 	strcpy(_name, filename);
 
 	_file.seek(ARCHIVE_HEADER_SIZE, SEEK_SET);
-	_file.read(_names, maxEntries + 1, ARCHIVE_FILENAME_LEN);
+	_file.read_throwsOnError(_names, (maxEntries + 1) * ARCHIVE_FILENAME_LEN);
 
 	uint32 i;
 	for (i = 0; i < maxEntries; i++) {

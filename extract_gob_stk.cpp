@@ -76,7 +76,7 @@ void ExtractGobStk::execute() {
 	gobConf.open(_outputPath.getFullPath(), "w");
 	gobConf.printf("%s\n", inpath.getFullName().c_str());
 
-	stk.read(signature, 1, 6);
+	stk.read_throwsOnError(signature, 6);
 
 	if (strncmp(signature, "STK2.1", 6) == 0) {
 		print("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath().c_str());
@@ -104,7 +104,7 @@ void ExtractGobStk::readChunkList(File &stk, File &gobConf) {
 	char *fakeTotPtr;
 
 	while (numDataChunks-- > 0) {
-		stk.read(curChunk->name, 1, 13);
+		stk.read_throwsOnError(curChunk->name, 13);
 
 		curChunk->size = stk.readUint32LE();
 		curChunk->offset = stk.readUint32LE();
@@ -153,12 +153,12 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 	// + 08 bytes : Name / acronym of STK/ITK creator
 	// + 04 bytes : Start position of Filenames Section
 
-	stk.read(buffer, 1, 14);
+	stk.read_throwsOnError(buffer, 14);
 
 	buffer[14] = '\0';
 	sprintf(debugStr, "File generated on %s by ", buffer);
 
-	stk.read(buffer, 1, 8);
+	stk.read_throwsOnError(buffer, 8);
 
 	buffer[8] = '\0';
 	strcat(debugStr, buffer);
@@ -198,11 +198,11 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 		stk.seek(miscPos + (cpt * 61), SEEK_SET);
 		filenamePos = stk.readUint32LE();
 
-		stk.read(buffer, 1, 36);
+		stk.read_throwsOnError(buffer, 36);
 		curChunk->size = stk.readUint32LE();
 		decompSize = stk.readUint32LE();
 
-		stk.read(buffer, 1, 5);
+		stk.read_throwsOnError(buffer, 5);
 
 		filePos = stk.readUint32LE();
 		compressFlag = stk.readUint32LE();
@@ -264,7 +264,7 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 
 			byte *data = new byte[curChunk->size];
 
-			stk.read(data, curChunk->size, 1);
+			stk.read_throwsOnError(data, curChunk->size);
 
 			try {
 				if (curChunk->packed) {

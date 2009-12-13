@@ -43,7 +43,7 @@ ExtractT7GMac::ExtractT7GMac(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 std::string ExtractT7GMac::readString(File &infile) {
 	byte len = infile.readByte();
 	char *name = new char[len + 1];
-	infile.read(name, len, 1);
+	infile.read_throwsOnError(name, len);
 	name[len] = 0;
 	return name;
 }
@@ -59,7 +59,7 @@ void ExtractT7GMac::dumpResource(File &infile, std::string name) {
 	try {
 		// Dump the resource to the output file
 		File out(name, "wb");
-		infile.read(buf, 1, fileSize);
+		infile.read_throwsOnError(buf, fileSize);
 		out.write(buf, fileSize);
 	} catch (...) {
 		delete[] buf;
@@ -111,7 +111,7 @@ void ExtractT7GMac::execute() {
 		infile.seek(offsetResTypes + 2 + 8 * i, SEEK_SET);
 
 		// Read the resource type name
-		infile.read(resType, 4, 1);
+		infile.read_throwsOnError(resType, 4);
 		switch (READ_BE_UINT32(resType)) {
 			case MKID_BE('csnd'):
 			case MKID_BE('snd '):

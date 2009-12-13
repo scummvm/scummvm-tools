@@ -48,12 +48,12 @@ void CompressAgos::end() {
 	File outputFile(_outputPath, "wb");
 
 	_input.open(TEMP_IDX, "rb");
-	while ((size = _input.readN(fbuf, 1, 2048)) > 0) {
+	while ((size = _input.read_noThrow(fbuf, 2048)) > 0) {
 		outputFile.write(fbuf, size);
 	}
 
 	_input.open(TEMP_DAT, "rb");
-	while ((size = _input.readN(fbuf, 1, 2048)) > 0) {
+	while ((size = _input.read_noThrow(fbuf, 2048)) > 0) {
 		outputFile.write(fbuf, size);
 	}
 
@@ -72,7 +72,7 @@ void CompressAgos::end() {
 int CompressAgos::get_offsets(size_t maxcount, uint32 filenums[], uint32 offsets[]) {
 	for (size_t i = 0; i < maxcount; i++) {
 		char buf[8];
-		_input.read(buf, 1, 8);
+		_input.read_throwsOnError(buf, 8);
 		if (!memcmp(buf, "Creative", 8) || !memcmp(buf, "RIFF", 4)) {
 			return i;
 		}
@@ -108,7 +108,7 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 
 	_input.seek(offset, SEEK_SET);
 
-	_input.read(buf, 1, 8);
+	_input.read_throwsOnError(buf, 8);
 	if (!memcmp(buf, "Creative", 8)) {
 		print("VOC found (pos = %d) :\n", offset);
 		_input.seek(18, SEEK_CUR);
@@ -124,7 +124,7 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 	sprintf(outname, "%s", tempEncoded);
 	File f(outname, "rb");
 	tot_size = 0;
-	while ((size = f.readN(fbuf, 1, 2048)) > 0) {
+	while ((size = f.read_noThrow(fbuf, 2048)) > 0) {
 		tot_size += size;
 		_output_snd.write(fbuf, size);
 	}

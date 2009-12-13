@@ -247,7 +247,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 			File inputRaw(inname, "rb");
 			length = inputRaw.size();
 			rawData = (char *)malloc(length);
-			inputRaw.read(rawData, 1, length);
+			inputRaw.read_throwsOnError(rawData, length);
 
 			encodeRaw(rawData, length, rawSamplerate, outname, compmode);
 
@@ -274,7 +274,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 			length = inputWav.readUint32LE();
 
 			wavData = (char *)malloc(length);
-			inputWav.read(wavData, 1, length);
+			inputWav.read_throwsOnError(wavData, length);
 
 			setRawAudioType(true, numChannels == 2, (uint8)bitsPerSample);
 			encodeRaw(wavData, length, sampleRate, outname, compmode);
@@ -572,7 +572,7 @@ void CompressionTool::extractAndEncodeWAV(const char *outName, File &input, Audi
 	/* Copy the WAV data to a temporary file */
 	File f(outName, "wb");
 	while (length > 0) {
-		size = input.readN(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length);
+		size = input.read_noThrow(fbuf, length > sizeof(fbuf) ? sizeof(fbuf) : length);
 		if (size <= 0)
 			break;
 		length -= (int)size;
@@ -648,7 +648,7 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, File &input, Audi
 
 		/* Copy the raw data to a temporary file */
 		while (length > 0) {
-			size = input.readN(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length);
+			size = input.read_noThrow(fbuf, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length);
 
 			if (size <= 0) {
 				break;

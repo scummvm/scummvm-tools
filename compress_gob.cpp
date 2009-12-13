@@ -310,7 +310,7 @@ uint32 CompressGob::writeBodyStoreFile(File &stk, File &src) {
 	uint32 tmpSize = 0;
 
 	do {
-		count = src.readN(buffer, 1, 4096);
+		count = src.read_noThrow(buffer, 4096);
 		stk.write(buffer, count);
 		tmpSize += count;
 	} while (count == 4096);
@@ -342,7 +342,7 @@ uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
 	memset(dico, 0x20, 4114);
 	memset(unpacked, 0, size + 1);
 
-	src.read(unpacked, 1, size);
+	src.read_throwsOnError(unpacked, size);
 
 	writeBuffer[0] = size & 0xFF;
 	writeBuffer[1] = size >> 8;
@@ -440,8 +440,8 @@ bool CompressGob::filcmp(File &src1, Chunk *compChunk) {
 	src2.open(compChunk->name, "rb");
 	
 	do {
-		readCount = src1.readN(buf1, 1, 4096);
-		src2.readN(buf2, 1, 4096);
+		readCount = src1.read_noThrow(buf1, 4096);
+		src2.read_noThrow(buf2, 4096);
 		for (int i = 0; checkFl & (i < readCount); i++)
 			if (buf1[i] != buf2[i])
 				checkFl = false;

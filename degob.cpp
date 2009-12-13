@@ -150,7 +150,7 @@ byte *readFile(const char *filename, uint32 &size) {
 
 	size = f.size();
 	byte *data = new byte[size];
-	f.read(data, size);
+	f.read_noThrow(data, size);
 	return data;
 }
 

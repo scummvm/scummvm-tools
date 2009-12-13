@@ -312,7 +312,7 @@ int16 *CompressSword1::uncompressSpeech(File &clu, uint32 idx, uint32 cSize, uin
 	int16 length, cnt;
 	uint8 *fBuf = (uint8 *)malloc(cSize);
 	clu.seek(idx, SEEK_SET);
-	clu.read(fBuf, 1, cSize);
+	clu.read_throwsOnError(fBuf, cSize);
 
 	while ((READ_BE_UINT32(fBuf + headerPos) != 'data') && (headerPos < 100))
 		headerPos++;
@@ -361,7 +361,7 @@ uint8 *CompressSword1::convertData(uint8 *rawData, uint32 rawSize, uint32 *resSi
 	*resSize = size = temp.pos();
 	resBuf = (uint8*)malloc(size);
 	temp.seek(0, SEEK_SET);
-	temp.read(resBuf, 1, size);
+	temp.read_throwsOnError(resBuf, size);
 	return resBuf;
 }
 

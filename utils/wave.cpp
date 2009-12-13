@@ -31,7 +31,7 @@ bool loadWAVFromStream(File &stream, int &size, int &rate, byte &flags, uint16 *
 
 	buf[4] = 0;
 
-	stream.read(buf, 4);
+	stream.read_noThrow(buf, 4);
 	if (memcmp(buf, "RIFF", 4) != 0) {
 		warning("getWavInfo: No 'RIFF' header");
 		return false;
@@ -39,13 +39,13 @@ bool loadWAVFromStream(File &stream, int &size, int &rate, byte &flags, uint16 *
 
 	uint32 wavLength = stream.readUint32LE();
 
-	stream.read(buf, 4);
+	stream.read_noThrow(buf, 4);
 	if (memcmp(buf, "WAVE", 4) != 0) {
 		warning("getWavInfo: No 'WAVE' header");
 		return false;
 	}
 
-	stream.read(buf, 4);
+	stream.read_noThrow(buf, 4);
 	if (memcmp(buf, "fmt ", 4) != 0) {
 		warning("getWavInfo: No 'fmt' header");
 		return false;
@@ -140,7 +140,7 @@ bool loadWAVFromStream(File &stream, int &size, int &rate, byte &flags, uint16 *
 			warning("getWavInfo: Cannot find 'data' chunk");
 			return false;
 		}
-		stream.read(buf, 4);
+		stream.read_noThrow(buf, 4);
 		offset = stream.readUint32LE();
 
 #if 0
@@ -170,7 +170,7 @@ AudioStream *makeWAVStream(File &stream) {
 
 	byte *data = (byte *)malloc(size);
 	assert(data);
-	stream.read(data, size);
+	stream.read_noThrow(data, size);
 
 	// Since we allocated our own buffer for the data, we must set the autofree flag.
 	flags |= Audio::Mixer::FLAG_AUTOFREE;

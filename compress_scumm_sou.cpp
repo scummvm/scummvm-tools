@@ -52,12 +52,12 @@ void CompressScummSou::end_of_file() {
 	_output_idx.writeUint32BE((uint32)idx_size);
 
 	File in(TEMP_IDX, "rb");
-	while ((size = in.readN(buf, 1, 2048)) > 0) {
+	while ((size = in.read_noThrow(buf, 2048)) > 0) {
 		_output_idx.write(buf, size);
 	}
 
 	in.open(TEMP_DAT, "rb");
-	while ((size = in.readN(buf, 1, 2048)) > 0) {
+	while ((size = in.read_noThrow(buf, 2048)) > 0) {
 		_output_idx.write(buf, size);
 	}
 	in.close();
@@ -87,7 +87,7 @@ bool CompressScummSou::get_part() {
 
 	try {
 		/* Scan for the VCTL header */
-		_input.read(buf, 1, 4);
+		_input.read_throwsOnError(buf, 4);
 		/* The demo (snmdemo) and floppy version of Sam & Max use VTTL */
 		while (memcmp(buf, "VCTL", 4)&&memcmp(buf, "VTTL", 4)) {
 			pos++;
@@ -110,7 +110,7 @@ bool CompressScummSou::get_part() {
 		tags--;
 	}
 
-	_input.read(buf, 1, 8);
+	_input.read_throwsOnError(buf, 8);
 	if (!memcmp(buf, "Creative", 8))
 		_input.seek(18, SEEK_CUR);
 	else if (!memcmp(buf, "VTLK", 4))
@@ -125,7 +125,7 @@ bool CompressScummSou::get_part() {
 	/* Append the converted data to the master output file */
 	File f(tempEncoded, "rb");
 	tot_size = 0;
-	while ((size = f.readN(buf, 1, 2048)) > 0) {
+	while ((size = f.read_noThrow(buf, 2048)) > 0) {
 		tot_size += size;
 		_output_snd.write(buf, size);
 	}
@@ -161,7 +161,7 @@ void CompressScummSou::execute() {
 	_output_snd.open(TEMP_DAT, "wb");
 
 	/* Get the 'SOU ....' header */
-	_input.read(buf, 1, 8);
+	_input.read_throwsOnError(buf, 8);
 	if (strncmp(buf, f_hdr, 8)) {
 		error("Bad SOU");
 	}

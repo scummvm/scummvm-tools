@@ -34,7 +34,7 @@ uint32 CompressSword2::append_to_file(File &f1, const char *filename) {
 	orig_length = length = f2.size();
 
 	while (length > 0) {
-		size = f2.readN(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length);
+		size = f2.read_noThrow(fbuf, length > sizeof(fbuf) ? sizeof(fbuf) : length);
 		if (size <= 0) {
 			break;
 		}
