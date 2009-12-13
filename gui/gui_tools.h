@@ -110,12 +110,6 @@ public:
 	bool outputToDirectory() const;
 
 	/**
-	 * Returns the name of the executable of this tool.
-	 * This simple returns the name under *nix, and name.exe under Windows
-	 */
-	wxString getExecutable() const;
-
-	/**
 	 * Runs the actual tool, will throw errors if it fails
 	 */
 	void run(const Configuration &conf) const;

@@ -167,11 +167,3 @@ void ToolGUI::run(const Configuration &conf) const {
 
 	_backend->run();
 }
-
-wxString ToolGUI::getExecutable() const {
-#ifdef WIN32
-	return getName() + wxT(".exe");
-#else
-	return getName();
-#endif
-}
