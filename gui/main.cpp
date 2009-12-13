@@ -46,7 +46,7 @@
  * The application class, main entry point for wxWidgets applications.
  */
 class ScummVMToolsApp : public wxApp {
-	bool OnInit();
+	virtual bool OnInit();
 
 public:
 	/**
