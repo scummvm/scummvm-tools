@@ -26,7 +26,7 @@
 #include "compress_saga.h"
 #include "common/md5.h"
 #include "common/file.h"
-#include "utils/util.h"
+#include "common/util.h"
 #include "utils/audiostream.h"
 #include "utils/voc.h"
 #include "utils/wave.h"

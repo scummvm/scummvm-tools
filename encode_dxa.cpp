@@ -24,6 +24,7 @@
 #include "encode_dxa.h"
 #include "util.h"
 
+#include <sys/stat.h>
 #include <png.h>
 
 const uint32 typeDEXA = 0x41584544;

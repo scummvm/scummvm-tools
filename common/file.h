@@ -23,10 +23,9 @@
 #ifndef COMMON_FILE_H
 #define COMMON_FILE_H
 
-#include "util.h"
+#include "common/scummsys.h"
 
-#include <stdio.h>
-#include <string>
+#include "tool_exception.h"
 
 /**
  * Something unexpected happened while reading / writing to a file
