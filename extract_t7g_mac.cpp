@@ -60,7 +60,7 @@ void ExtractT7GMac::dumpResource(File &infile, std::string name) {
 		// Dump the resource to the output file
 		File out(name, "wb");
 		infile.read(buf, 1, fileSize);
-		out.write(buf, 1, fileSize);
+		out.write(buf, fileSize);
 	} catch (...) {
 		delete[] buf;
 		throw;

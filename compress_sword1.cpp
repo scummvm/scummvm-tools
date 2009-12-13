@@ -353,7 +353,8 @@ uint8 *CompressSword1::convertData(uint8 *rawData, uint32 rawSize, uint32 *resSi
 
 	uint32 size;
 	File temp(TEMP_RAW, "wb");
-	assert(temp.write(rawData, 1, rawSize) == rawSize);
+	size = temp.write(rawData, rawSize);
+	assert(size == rawSize);
 	encodeAudio(TEMP_RAW, true, 11025, _audioOuputFilename.c_str(), _format);
 	temp.open(_audioOuputFilename, "rb");
 	temp.seek(0, SEEK_END);
@@ -414,7 +415,7 @@ void CompressSword1::convertClu(File &clu, File &cl3) {
 			mp3Data = convertData(smpData, smpSize, &mp3Size);
 			cl3Index[cnt << 1] = cl3.pos();
 			cl3Index[(cnt << 1) | 1] = mp3Size;
-			cl3.write(mp3Data, 1, mp3Size);
+			cl3.write(mp3Data, mp3Size);
 
 			free(smpData);
 			free(mp3Data);

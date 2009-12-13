@@ -365,13 +365,13 @@ size_t File::readN(void *data, size_t elementSize, size_t elementCount) {
 	return fread(data, elementSize, elementCount, _file);
 }
 
-size_t File::read(void *data, size_t bytes) {
+size_t File::read(void *dataPtr, size_t dataSize) {
 	if (!_file) 
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
 		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
 
-	return fread(data, 1, bytes, _file);
+	return fread(dataPtr, 1, dataSize, _file);
 }
 
 std::string File::readString() {
@@ -459,14 +459,16 @@ void File::writeUint32LE(uint32 value) {
 	writeByte((uint8)(value >> 24));
 }
 
-size_t File::write(const void *data, size_t elementSize, size_t elementCount) {
+size_t File::write(const void *dataPtr, size_t dataSize) {
 	if (!_file) 
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
 		throw FileException("Tried to write to file opened in read mode (" + _name.getFullPath() + ")");
 
-	size_t data_read = fwrite(data, elementSize, elementCount, _file);
-	if (data_read != elementCount)
+	assert(_xormode == 0);	// FIXME: This method does not work in XOR mode (and probably shouldn't)
+
+	size_t data_read = fwrite(dataPtr, 1, dataSize, _file);
+	if (data_read != dataSize)
 		throw FileException("Could not write to file (" + _name.getFullPath() + ")");
 
 	return data_read;

@@ -79,7 +79,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
-		curFileHandle.write(buffer, 1, doneRead);
+		curFileHandle.write(buffer, doneRead);
 	}
 	curFileHandle.close();
 
@@ -100,7 +100,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
-		_output_smp.write(buffer, 1, doneRead);
+		_output_smp.write(buffer, doneRead);
 	}
 }
 
@@ -225,7 +225,7 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	unlink(TEMP_ENC);
 
 	curFileHandle.open(TEMP_RAW, "wb");
-	curFileHandle.write(outBuffer, 1, decodedCount*2);
+	curFileHandle.write(outBuffer, decodedCount*2);
 
 	free(inBuffer);
 	free(outBuffer);
@@ -247,7 +247,7 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 		if (doneRead <= 0)
 			break;
 		copyLeft -= (int)doneRead;
-		_output_smp.write(buffer, 1, doneRead);
+		_output_smp.write(buffer, doneRead);
 	}
 }
 

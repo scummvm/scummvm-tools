@@ -276,11 +276,11 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 						unpackedData = unpackData(data, realSize);
 					}
 
-					chunkFile.write(unpackedData, realSize, 1);
+					chunkFile.write(unpackedData, realSize);
 
 					delete[] unpackedData;
 				} else {
-					chunkFile.write(data, curChunk->size, 1);
+					chunkFile.write(data, curChunk->size);
 				}
 			} catch(...) {
 				delete[] data;

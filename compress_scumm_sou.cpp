@@ -53,12 +53,12 @@ void CompressScummSou::end_of_file() {
 
 	File in(TEMP_IDX, "rb");
 	while ((size = in.readN(buf, 1, 2048)) > 0) {
-		_output_idx.write(buf, 1, size);
+		_output_idx.write(buf, size);
 	}
 
 	in.open(TEMP_DAT, "rb");
 	while ((size = in.readN(buf, 1, 2048)) > 0) {
-		_output_idx.write(buf, 1, size);
+		_output_idx.write(buf, size);
 	}
 	in.close();
 	_output_idx.close();
@@ -127,7 +127,7 @@ bool CompressScummSou::get_part() {
 	tot_size = 0;
 	while ((size = f.readN(buf, 1, 2048)) > 0) {
 		tot_size += size;
-		_output_snd.write(buf, 1, size);
+		_output_snd.write(buf, size);
 	}
 
 	_output_idx.writeUint32BE(tot_size);

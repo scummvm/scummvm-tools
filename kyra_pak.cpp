@@ -146,17 +146,17 @@ bool PAKFile::saveFile(const char *file) {
 			f.writeUint32BE(curAddr);
 		else
 			f.writeUint32LE(curAddr);
-		f.write(cur->filename, 1, strlen(cur->filename) + 1);
+		f.write(cur->filename, strlen(cur->filename) + 1);
 		curAddr += cur->size;
 	}
 	if (_isAmiga)
 		f.writeUint32BE(curAddr);
 	else
 		f.writeUint32LE(curAddr);
-	f.write(zeroName, 1, 5);
+	f.write(zeroName, 5);
 
 	for (FileList *cur = _fileList; cur; cur = cur->next)
-		f.write(cur->data, 1, cur->size);
+		f.write(cur->data, cur->size);
 
 	return true;
 }

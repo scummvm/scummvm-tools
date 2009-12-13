@@ -139,7 +139,7 @@ void ExtractScummMac::execute() {
 		}
 
 		ifp.read(buf, 1, file_len);
-		ofp.write(buf, 1, file_len);
+		ofp.write(buf, file_len);
 		free(buf);
 	}
 }

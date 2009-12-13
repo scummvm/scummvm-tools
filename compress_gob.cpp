@@ -260,7 +260,7 @@ void CompressGob::rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks) {
 
 	buffer[0] = chunkCount & 0xFF;
 	buffer[1] = chunkCount >> 8;
-	stk.write(buffer, 1, 2);
+	stk.write(buffer, 2);
 // TODO : Implement STK21
 	while (curChunk) {
 		for (i = 0; i < 13; i++)
@@ -268,7 +268,7 @@ void CompressGob::rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks) {
 				buffer[i] = curChunk->name[i];
 			else
 				buffer[i] = '\0';
-		stk.write(buffer, 1, 13);
+		stk.write(buffer, 13);
 
 		if (curChunk->packed == 2)
 		{
@@ -292,7 +292,7 @@ void CompressGob::rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks) {
 			buffer[7] = curChunk->offset >> 24;
 			buffer[8] = curChunk->packed;
 		}
-		stk.write(buffer, 1, 9);
+		stk.write(buffer, 9);
 		curChunk = curChunk->next;
 	}
 }
@@ -311,7 +311,7 @@ uint32 CompressGob::writeBodyStoreFile(File &stk, File &src) {
 
 	do {
 		count = src.readN(buffer, 1, 4096);
-		stk.write(buffer, 1, count);
+		stk.write(buffer, count);
 		tmpSize += count;
 	} while (count == 4096);
 	return tmpSize;
@@ -348,7 +348,7 @@ uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
 	writeBuffer[1] = size >> 8;
 	writeBuffer[2] = size >> 16;
 	writeBuffer[3] = size >> 24;
-	stk.write(writeBuffer, 1, 4);
+	stk.write(writeBuffer, 4);
 
 // Size is already checked : small files (less than 8 characters) 
 // are not compressed, so copying the first three bytes is safe.
@@ -408,7 +408,7 @@ uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
 // when the 8 operation bits are set.
 		if ((cpt == 7) | (counter == 0)) {
 			writeBuffer[0] = cmd;
-			stk.write(writeBuffer, 1, buffIndex);
+			stk.write(writeBuffer, buffIndex);
 			size += buffIndex;
 			buffIndex = 1;
 			cmd = 0;

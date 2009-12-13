@@ -335,7 +335,7 @@ void ExtractParallaction::execute() {
 		outpath.setFullName(filename);
 
 		File ofile(outpath, "wb");
-		ofile.write(arc._fileData, 1, arc._fileSize);
+		ofile.write(arc._fileData, arc._fileSize);
 	}
 }
 

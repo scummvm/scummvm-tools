@@ -127,7 +127,7 @@ void CompressQueen::fromFileToFile(File &in, File &out, uint32 amount) {
 		}
 
 		amount -= numRead;
-		out.write(fBuf, 1, numRead);
+		out.write(fBuf, numRead);
 	}
 }
 
@@ -149,7 +149,7 @@ void CompressQueen::createFinalFile(Filename outPath) {
 
 	/* Write new header */
 	outFinal.writeUint32BE(QTBL);
-	outFinal.write(_version->versionString, 6, 1);
+	outFinal.write(_version->versionString, 6);
 	outFinal.writeByte(_version->isFloppy);
 	outFinal.writeByte(_version->isDemo);
 	outFinal.writeByte(_versionExtra.compression);
@@ -306,7 +306,7 @@ void CompressQueen::execute() {
 		}
 
 		/* Write entry to table */
-		outputTbl.write(_entry.filename, 12, 1);
+		outputTbl.write(_entry.filename, 12);
 		outputTbl.writeByte(_entry.bundle);
 		outputTbl.writeUint32BE(prevOffset);
 		outputTbl.writeUint32BE(_entry.size);

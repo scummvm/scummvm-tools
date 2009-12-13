@@ -151,7 +151,7 @@ int CompressKyra::decodeChunk(File &in, File &out) {
 			readSize -= read;
 		}
 		while (size > 0)  {
-			int written = out.write(outputBuffer, 1, size);
+			int written = out.write(outputBuffer, size);
 			size -= written;
 		}
 		free(outputBuffer);
@@ -243,7 +243,7 @@ int CompressKyra::decodeChunk(File &in, File &out) {
 	}
 
 	while (outSize > 0)  {
-		int written = out.write(outputBuffer, 1, outSize);
+		int written = out.write(outputBuffer, outSize);
 		if (written <= 0)
 			error("[2] Couldn't write data");
 		outSize -= written;

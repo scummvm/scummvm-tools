@@ -413,8 +413,8 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 				break;
 			}
 
-			outputOgg.write(og.header, 1, og.header_len);
-			outputOgg.write(og.body, 1, og.body_len);
+			outputOgg.write(og.header, og.header_len);
+			outputOgg.write(og.body, og.body_len);
 		}
 
 		while (!eos) {
@@ -468,8 +468,8 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 							break;
 						}
 
-						totalBytes += outputOgg.write(og.header, 1, og.header_len);
-						totalBytes += outputOgg.write(og.body, 1, og.body_len);
+						totalBytes += outputOgg.write(og.header, og.header_len);
+						totalBytes += outputOgg.write(og.body, og.body_len);
 
 						if (ogg_page_eos(&og)) {
 							eos = 1;
@@ -576,7 +576,7 @@ void CompressionTool::extractAndEncodeWAV(const char *outName, File &input, Audi
 		if (size <= 0)
 			break;
 		length -= (int)size;
-		f.write(fbuf, 1, size);
+		f.write(fbuf, size);
 	}
 	f.close();
 
@@ -655,7 +655,7 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, File &input, Audi
 			}
 
 			length -= (int)size;
-			f.write(fbuf, 1, size);
+			f.write(fbuf, size);
 		}
 	}
 

@@ -130,7 +130,7 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 
 	if (_framecount == 0 || memcmp(_prevpalette, palette, 768)) {
 		_dxa.writeUint32LE(typeCMAP);
-		_dxa.write(palette, 768, 1);
+		_dxa.write(palette, 768);
 		memcpy(_prevpalette, palette, 768);
 	} else {
 		writeNULL();
@@ -156,7 +156,7 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 				compress2(outbuf, &outsize, frame, _width * _workheight, 9);
 				_dxa.writeByte(compType);
 				_dxa.writeUint32BE(outsize);
-				_dxa.write(outbuf, outsize, 1);
+				_dxa.write(outbuf, outsize);
 				delete[] outbuf;
 				break;
 			}
@@ -217,7 +217,7 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 
 				_dxa.writeByte(compType);
 				_dxa.writeUint32BE(frameoutsize);
-				_dxa.write(frameoutbuf, frameoutsize, 1);
+				_dxa.write(frameoutbuf, frameoutsize);
 
 				delete[] xorbuf_z;
 				delete[] rawbuf_z;

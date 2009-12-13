@@ -211,7 +211,7 @@ void ExtractCine::unpackFile(File &file) {
 			memcpy(data, packedData, packedSize);
 		}
 		free(packedData);
-		fpOut.write(data, unpackedSize, 1);
+		fpOut.write(data, unpackedSize);
 		free(data);
 
 		if (!status) {

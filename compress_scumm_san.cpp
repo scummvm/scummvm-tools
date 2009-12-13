@@ -86,7 +86,7 @@ void CompressScummSan::writeWaveHeader(int s_size) {
 	wav[43]	= (s_size >> 24) & 0xff;
 
 	_waveTmpFile.seek(0, SEEK_SET);
-	_waveTmpFile.write(wav, 1, 44);
+	_waveTmpFile.write(wav, 44);
 }
 void CompressScummSan::writeToTempWaveFile(char *fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile.isOpen()) {
@@ -96,7 +96,7 @@ void CompressScummSan::writeToTempWaveFile(char *fileName, byte *output_data, un
 		}
 		byte wav[44];
 		memset(wav, 0, 44);
-		_waveTmpFile.write(output_data, 1, 44);
+		_waveTmpFile.write(output_data, 44);
 		_waveDataSize = 0;
 	}
 	for (unsigned int j = 0; j < size - 1; j += 2) {
@@ -105,7 +105,7 @@ void CompressScummSan::writeToTempWaveFile(char *fileName, byte *output_data, un
 		output_data[j + 1] = tmp;
 	}
 
-	_waveTmpFile.write(output_data, 1, size);
+	_waveTmpFile.write(output_data, size);
 	_waveDataSize += size;
 }
 
@@ -299,7 +299,7 @@ void CompressScummSan::prepareForMixing(const char *outputDir, const char *input
 
 			free(audioBuf);
 			_audioTracks[l].file.open(filename, "wb");
-			_audioTracks[l].file.write(outputBuf, outputSize, 1);
+			_audioTracks[l].file.write(outputBuf, outputSize);
 			free(outputBuf);
 		}
 	}
@@ -384,7 +384,7 @@ void CompressScummSan::mixing(const char *outputDir, const char *inputFilename, 
 				offset += length;
 			}
 			wavFile.seek(44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
-			wavFile.write(wavBuf, fileSize, 1);
+			wavFile.write(wavBuf, fileSize);
 
 			free(wavBuf);
 			free(tmpBuf);
@@ -511,7 +511,7 @@ void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int n
 	}
 	byte *buffer = (byte *)malloc(size);
 	input.read(buffer, size, 1);
-	audioTrack->file.write(buffer, size, 1);
+	audioTrack->file.write(buffer, size);
 	free(buffer);
 	audioTrack->volumes[index] = volume;
 	audioTrack->pans[index] = pan;

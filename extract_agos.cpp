@@ -204,7 +204,7 @@ void *ExtractAgos::loadfile(const Filename &name) {
  */
 void ExtractAgos::savefile(const Filename &name, void *mem, size_t length) {
 	File file(name, FILEMODE_WRITE);
-	file.write(mem, 1, length);
+	file.write(mem, length);
 }
 
 #ifdef STANDALONE_MAIN

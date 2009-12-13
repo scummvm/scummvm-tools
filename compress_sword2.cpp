@@ -40,7 +40,7 @@ uint32 CompressSword2::append_to_file(File &f1, const char *filename) {
 		}
 
 		length -= size;
-		f1.write(fbuf, 1, size);
+		f1.write(fbuf, size);
 	}
 	return orig_length;
 }

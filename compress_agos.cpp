@@ -49,12 +49,12 @@ void CompressAgos::end() {
 
 	_input.open(TEMP_IDX, "rb");
 	while ((size = _input.readN(fbuf, 1, 2048)) > 0) {
-		outputFile.write(fbuf, 1, size);
+		outputFile.write(fbuf, size);
 	}
 
 	_input.open(TEMP_DAT, "rb");
 	while ((size = _input.readN(fbuf, 1, 2048)) > 0) {
-		outputFile.write(fbuf, 1, size);
+		outputFile.write(fbuf, size);
 	}
 
 	_input.close();
@@ -126,7 +126,7 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 	tot_size = 0;
 	while ((size = f.readN(fbuf, 1, 2048)) > 0) {
 		tot_size += size;
-		_output_snd.write(fbuf, 1, size);
+		_output_snd.write(fbuf, size);
 	}
 
 	return(tot_size);

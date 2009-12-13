@@ -682,7 +682,7 @@ void CompressScummBun::writeWaveHeader(int s_size, int rate, int chan) {
 	wav[43]	= (s_size >> 24) & 0xff;
 
 	_waveTmpFile.seek(0, SEEK_SET);
-	if (_waveTmpFile.write(wav, 1, 44) != 44) {
+	if (_waveTmpFile.write(wav, 44) != 44) {
 		error("error writing temp wave file");
 	}
 	_waveTmpFile.close();
@@ -693,7 +693,7 @@ void CompressScummBun::writeToTempWave(char *fileName, byte *output_data, unsign
 		_waveTmpFile.open(fileName, "wb");
 		byte wav[44];
 		memset(wav, 0, 44);
-		_waveTmpFile.write(output_data, 1, 44);
+		_waveTmpFile.write(output_data, 44);
 		_waveDataSize = 0;
 	}
 	for (unsigned int j = 0; j < size - 1; j += 2) {
@@ -701,7 +701,7 @@ void CompressScummBun::writeToTempWave(char *fileName, byte *output_data, unsign
 		output_data[j + 0] = output_data[j + 1];
 		output_data[j + 1] = tmp;
 	}
-	_waveTmpFile.write(output_data, 1, size);
+	_waveTmpFile.write(output_data, size);
 	_waveDataSize += size;
 }
 
@@ -920,7 +920,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		cmpFile.close();
 		unlink(tmpPath);
 
-		output.write(tmpBuf, size, 1);
+		output.write(tmpBuf, size);
 		free(tmpBuf);
 		_cbundleTable[_cbundleCurIndex].size = output.pos() - startPos;
 		_cbundleCurIndex++;
@@ -1047,13 +1047,13 @@ void CompressScummBun::writeToRMAPFile(byte *ptr, File &output, char *filename, 
 	}
 	for (l = 0; l < numSyncs; l++) {
 		output.writeUint32BE(sync[l].size);
-		output.write(sync[l].ptr, sync[l].size, 1);
+		output.write(sync[l].ptr, sync[l].size);
 		free(sync[l].ptr);
 	}
 	for (l = 0; l < numMarkers; l++) {
 		output.writeUint32BE(marker[l].pos);
 		output.writeUint32BE(marker[l].length);
-		output.write(marker[l].ptr, marker[l].length, 1);
+		output.write(marker[l].ptr, marker[l].length);
 		delete[] marker[l].ptr;
 	}
 	free(region);
@@ -1143,7 +1143,7 @@ void CompressScummBun::execute() {
 
 	int32 curPos = output.pos();
 	for (int i = 0; i < _cbundleCurIndex; i++) {
-		output.write(_cbundleTable[i].filename, 24, 1);
+		output.write(_cbundleTable[i].filename, 24);
 		output.writeUint32BE(_cbundleTable[i].offset);
 		output.writeUint32BE(_cbundleTable[i].size);
 	}

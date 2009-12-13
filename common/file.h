@@ -280,11 +280,11 @@ public:
 	/**
 	 * Read on a shorter form, does not throw (like readN)
 	 *
-	 * @param data Where to put the data in memory.
-	 * @param bytes How many bytes of data to read.
-	 * @return Returns the amount of bytes actually read
+	 * @param dataPtr	pointer to a buffer into which the data is read
+	 * @param dataSize	number of bytes to be read
+	 * @return the number of bytes which were actually read.
 	 */
-	size_t read(void *data, size_t bytes);
+	size_t read(void *dataPtr, size_t dataSize);
 
 	/**
 	 * Reads a full string, until NULL or EOF
@@ -341,11 +341,11 @@ public:
 	 * Works the same way as fwrite, but throws on error or if
 	 * it could not write all data.
 	 *
-	 * @param data Where to read data from
-	 * @param elementSize the size of one element (in bytes)
-	 * @param elementCount the number of elements to read
+	 * @param dataPtr	pointer to the data to be written
+	 * @param dataSize	number of bytes to be written
+	 * @return the number of bytes which were actually written.
 	 */
-	size_t write(const void *data, size_t elementSize, size_t elementCount);
+	size_t write(const void *dataPtr, size_t dataSize);
 
 	/**
 	 * Works the same as fprintf

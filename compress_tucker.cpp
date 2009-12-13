@@ -56,7 +56,7 @@ int CompressTucker::append_compress_file(File &output) {
 
 	File input_temp(tempEncoded, "rb");
 	while ((sz = input_temp.readN(buf, 1, sizeof(buf))) > 0) {
-		if ((sz = output.write(buf, 1, sz)) > 0) {
+		if ((sz = output.write(buf, sz)) > 0) {
 			compress_sz += sz;
 		}
 	}
