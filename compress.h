@@ -94,7 +94,10 @@ public:
 
 	void parseAudioArguments();
 
-protected:
+public:
+	// FIXME: These vars should not be public, but the ToolGUI currently
+	// accesses them directly. We should fix this.
+
 	/** Formats supported by this tool. */
 	AudioFormat _supportedFormats;
 

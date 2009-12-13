@@ -1064,7 +1064,7 @@ const struct t_lfl lfls[] = {
 	{ -1, NULL }
 };
 
-#include "utils/pack-start.h"	/* START STRUCT PACKING */
+#include "common/pack-start.h"	/* START STRUCT PACKING */
 
 struct	t_lflindex {
 	uint8	room_lfl[55];
@@ -1077,7 +1077,7 @@ struct	t_lflindex {
 	uint16	sound_addr[100];
 } GCC_PACK mm_lfl_index;
 
-#include "utils/pack-end.h"	/* END STRUCT PACKING */
+#include "common/pack-end.h"	/* END STRUCT PACKING */
 
 #else	/* !MAKE_LFLS */
 void ExtractMMNES::dump_resource (File &input, const char *fn_template, int num, const struct t_resource *res, res_type type) {

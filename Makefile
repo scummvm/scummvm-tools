@@ -62,7 +62,7 @@ CXX     := g++
 
 # HACK: Until we get proper module support, add these "module dirs" to 
 # get the dependency tracking code working.
-MODULE_DIRS := ./ utils/
+MODULE_DIRS := ./ utils/ common/ gui/
 
 #######################################################################
 
@@ -76,10 +76,10 @@ TARGETS := \
 	tools_gui$(EXEEXT)
 
 UTILS := \
+	common/file.o \
+	common/md5.o \
 	utils/adpcm.o \
 	utils/audiostream.o \
-	utils/file.o \
-	utils/md5.o \
 	utils/voc.o \
 	utils/wave.o
 
@@ -234,7 +234,7 @@ sword2_clue.o: sword2_clue.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `pkg-config --cflags gtk+-2.0` -c sword2_clue.cpp
 
 clean:
-	rm -f *.o utils/*.o $(TARGETS)
+	rm -f $(addsuffix *.o,$(MODULE_DIRS)) $(TARGETS)
 
 ######################################################################
 # The build rules follow - normally you should have no need to

@@ -24,7 +24,7 @@
 #define SOUND_ADPCM_H
 
 #include "audiostream.h"
-#include "file.h"
+#include "common/file.h"
 
 namespace Audio {
 

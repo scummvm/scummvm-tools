@@ -24,10 +24,10 @@
 
 #include "compress.h"
 #include "compress_saga.h"
-#include "utils/md5.h"
+#include "common/md5.h"
+#include "common/file.h"
 #include "utils/util.h"
 #include "utils/audiostream.h"
-#include "utils/file.h"
 #include "utils/voc.h"
 #include "utils/wave.h"
 #include "utils/adpcm.h"

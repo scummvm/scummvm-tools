@@ -24,13 +24,13 @@
 #define SOUND_VOC_H
 
 #include "../util.h"
-#include "file.h"
+#include "common/file.h"
 
 namespace Audio {
 
 class AudioStream;
 
-#include "pack-start.h"	/* START STRUCT PACKING */
+#include "common/pack-start.h"	/* START STRUCT PACKING */
 
 struct VocFileHeader {
 	uint8 desc[20];
@@ -46,7 +46,7 @@ struct VocBlockHeader {
 	uint8 pack;
 } GCC_PACK;
 
-#include "pack-end.h"	/* END STRUCT PACKING */
+#include "common/pack-end.h"	/* END STRUCT PACKING */
 
 /**
  * Take a sample rate parameter as it occurs in a VOC sound header, and

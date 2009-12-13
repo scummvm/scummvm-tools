@@ -1,4 +1,4 @@
-/* tools - Interface for accessing all the tools in a conveinient fashion
+/* tools - Interface for accessing all the tools in a convenient fashion
  * Copyright (C) 2009 The ScummVM project
  *
  * This program is free software; you can redistribute it and/or

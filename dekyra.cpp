@@ -22,7 +22,7 @@
  */
 
 #include "dekyra.h"
-#include "utils/file.h"
+#include "common/file.h"
 
 #include <stdio.h>
 

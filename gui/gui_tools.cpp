@@ -122,7 +122,9 @@ ToolType ToolGUI::getType() const {
 }
 
 bool ToolGUI::supportsAudioFormat(AudioFormat format) const {
-	return (_backend->_supportedFormats & format) == format;
+	// FIXME: This is a HACK!
+	CompressionTool *compression = dynamic_cast<CompressionTool *>(_backend);
+	return (compression->_supportedFormats & format) == format;
 }
 
 bool ToolGUI::supportsProgressBar() const {
