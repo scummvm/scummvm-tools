@@ -232,7 +232,7 @@ protected:
 	void o1_return(FuncParams &params);
 	void o1_returnTo(FuncParams &params);
 	void o1_setcmdCount(FuncParams &params);
-	void o1_evaluateStore(FuncParams &params);
+	void o1_assign(FuncParams &params);
 
 	void o1_palLoad(FuncParams &params);
 	void o1_loadSpriteToPos(FuncParams &params);
@@ -288,7 +288,7 @@ protected:
 	void o2_goblinFunc(FuncParams &params);
 
 	void o2_totSub(FuncParams &params);
-	void o2_evaluateStore(FuncParams &params);
+	void o2_assign(FuncParams &params);
 	void o2_pushVars(FuncParams &params);
 	void o2_popVars(FuncParams &params);
 
@@ -500,7 +500,7 @@ protected:
 	virtual void goblinOpcode(int i, FuncParams &params);
 
 	void o6_loadCursor(FuncParams &params);
-	void o6_evaluateStore(FuncParams &params);
+	void o6_assign(FuncParams &params);
 	void o6_createSprite(FuncParams &params);
 };
 

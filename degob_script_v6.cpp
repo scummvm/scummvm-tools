@@ -447,7 +447,7 @@ void Script_v6::setupOpcodes() {
 		{OPCODEF(o1_whileDo), {PARAM_NONE}},
 		/* 08 */
 		{OPCODEF(o1_if), {PARAM_NONE}},
-		{OPCODEF(o6_evaluateStore), {PARAM_NONE}},
+		{OPCODEF(o6_assign), {PARAM_NONE}},
 		{OPCODEF(o1_loadSpriteToPos), {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 0C */
@@ -466,8 +466,8 @@ void Script_v6::setupOpcodes() {
 		{OPCODET(o1_capturePop), {PARAM_NONE}},
 		{OPCODET(o2_animPalInit), {PARAM_INT16, PARAM_EXPR, PARAM_EXPR}},
 		/* 18 */
-		{OPCODET(o2_addCollision), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_UINT16}},
-		{OPCODET(o2_freeCollision), {PARAM_EXPR}},
+		{OPCODET(o2_addHotspot), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_UINT16}},
+		{OPCODET(o2_removeHotspot), {PARAM_EXPR}},
 		{OPCODET(o3_getTotTextItemPart), {PARAM_UINT16, PARAM_VARINDEX, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 1C */
@@ -517,7 +517,7 @@ void Script_v6::setupOpcodes() {
 		{OPCODET(o2_checkData), {PARAM_EXPR, PARAM_VARINDEX}},
 		/* 40 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{OPCODET(o1_prepareStr), {PARAM_VARINDEX}},
+		{OPCODET(o1_cleanupStr), {PARAM_VARINDEX}},
 		{OPCODET(o1_insertStr), {PARAM_VARINDEX, PARAM_EXPR}},
 		{OPCODET(o1_cutStr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_EXPR}},
 		/* 44 */
@@ -741,7 +741,7 @@ void Script_v6::o6_loadCursor(FuncParams &params) {
 	endFunc();
 }
 
-void Script_v6::o6_evaluateStore(FuncParams &params) {
+void Script_v6::o6_assign(FuncParams &params) {
 	uint8 type = peekUint8();
 	uint16 var_0, var_4;
 	std::string varIndex = readVarIndex(&var_0, &var_4);

@@ -446,7 +446,7 @@ void Script_Bargon::setupOpcodes() {
 		{OPCODEF(o1_whileDo), {PARAM_NONE}},
 		/* 08 */
 		{OPCODEF(o1_if), {PARAM_NONE}},
-		{OPCODEF(o2_evaluateStore), {PARAM_NONE}},
+		{OPCODEF(o2_assign), {PARAM_NONE}},
 		{OPCODEF(o1_loadSpriteToPos), {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 0C */
@@ -465,8 +465,8 @@ void Script_Bargon::setupOpcodes() {
 		{OPCODET(o1_capturePop), {PARAM_NONE}},
 		{OPCODET(o2_animPalInit), {PARAM_INT16, PARAM_EXPR, PARAM_EXPR}},
 		/* 18 */
-		{OPCODET(o2_addCollision), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_UINT16}},
-		{OPCODET(o2_freeCollision), {PARAM_EXPR}},
+		{OPCODET(o2_addHotspot), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_UINT16}},
+		{OPCODET(o2_removeHotspot), {PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 1C */
