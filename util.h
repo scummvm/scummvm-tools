@@ -43,17 +43,13 @@
 #include <string>
 #include <stdexcept>
 
-
 /*
  * GCC specific stuff
  */
 #if defined(__GNUC__)
-        #define GCC_PACK __attribute__((packed))
-        #define NORETURN __attribute__((__noreturn__))
-        #define GCC_PRINTF(x,y) __attribute__((format(printf, x, y)))
+	#define GCC_PACK __attribute__((packed))
 #else
-        #define GCC_PACK
-        #define GCC_PRINTF(x,y)
+	#define GCC_PACK
 #endif
 
 #ifndef ARRAYSIZE
@@ -142,32 +138,5 @@ void NORETURN_PRE error(const char *s, ...) NORETURN_POST;
 void warning(const char *s, ...);
 void debug(int level, const char *s, ...);
 void notice(const char *s, ...);
-
-
-/** 
- * Different audio formats
- * You can bitwise them to represent several formats
- */
-enum AudioFormat {
-	AUDIO_NONE = 0,
-	AUDIO_VORBIS = 1,
-	AUDIO_FLAC = 2,
-	AUDIO_MP3 = 4,
-	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
-};
-
-/**
- * Another enum, which cannot be ORed
- * These are the values written to the output files
- */
-enum CompressionFormat {
-	COMPRESSION_NONE = 0,
-	COMPRESSION_MP3 = 1,
-	COMPRESSION_OGG = 2,
-	COMPRESSION_FLAC = 3
-};
-
-const char *audio_extensions(AudioFormat format);
-CompressionFormat compression_format(AudioFormat format);
 
 #endif

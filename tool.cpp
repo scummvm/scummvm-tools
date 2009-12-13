@@ -33,7 +33,6 @@ Tool::Tool(const std::string &name, ToolType type) {
 	_type = type;
 
 	_outputToDirectory = true;
-	_supportedFormats = AUDIO_ALL;
 	_supportsProgressBar = false;
 
 	_internalPrint = standardPrint;
@@ -67,8 +66,7 @@ int Tool::run(const std::deque<std::string> &args) {
 	}
 
 	// Read standard arguments
-	if (_supportedFormats != AUDIO_NONE)
-		parseAudioArguments();
+	parseAudioArguments();
 	parseOutputArguments();
 	// Read tool specific arguments
 	parseExtraArguments();

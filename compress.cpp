@@ -882,10 +882,14 @@ bool CompressionTool::processFlacParms(){
 // The old code can be removed once all tools have been converted
 
 CompressionTool::CompressionTool(const std::string &name, ToolType type) : Tool(name, type) {
+	_supportedFormats = AUDIO_ALL;
 	_format = AUDIO_MP3;
 }
 
 void CompressionTool::parseAudioArguments() {
+	if (_supportedFormats == AUDIO_NONE)
+		return;
+
 	_format = AUDIO_MP3;
 
 	if (_arguments.front() ==  "--mp3")
@@ -978,3 +982,32 @@ std::string CompressionTool::getHelp() const {
 
 	return os.str();
 }
+
+const char *audio_extensions(AudioFormat format) {
+	switch(format) {
+	case AUDIO_MP3:
+		return ".mp3";
+	case AUDIO_VORBIS:
+		return ".ogg";
+	case AUDIO_FLAC:
+		return ".fla";
+	case AUDIO_NONE:
+	default:
+		return ".unk";
+	}
+}
+
+CompressionFormat compression_format(AudioFormat format) {
+	switch(format) {
+	case AUDIO_MP3:
+		return COMPRESSION_MP3;
+	case AUDIO_VORBIS:
+		return COMPRESSION_OGG;
+	case AUDIO_FLAC:
+		return COMPRESSION_FLAC;
+	case AUDIO_NONE:
+	default:
+		throw ToolException("Unknown compression format");
+	}
+}
+

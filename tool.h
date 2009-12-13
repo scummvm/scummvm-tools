@@ -210,8 +210,6 @@ protected:
 
 	/** If this tools outputs to a directory, not a file. */
 	bool _outputToDirectory;
-	/** Formats supported by this tool. */
-	AudioFormat _supportedFormats;
 	/** If this tool can display output progress in % */
 	bool _supportsProgressBar;
 

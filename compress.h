@@ -33,23 +33,20 @@
 #include <FLAC/stream_encoder.h>
 #endif
 
-/* We use string constants here, so we can insert the
- * constants directly into literals
- * These are given integer definitions below
- */
+enum {
+	/* These are the defaults parameters for the Lame invocation */
+	minBitrDef	= 24,
+	maxBitrDef	= 64,
+	algqualDef	= 2,
+	vbrqualDef	= 4,
 
-/* These are the defaults parameters for the Lame invocation */
-#define minBitrDef	24
-#define maxBitrDef 64
-#define algqualDef 2
-#define vbrqualDef 4
+	/* The default for oggenc invocation is to use the --quality option only */
+	oggqualDef	= 3,
 
-/* The default for oggenc invocation is to use the --quality option only */
-#define oggqualDef 3
-
-/* These are the default parameters for the FLAC invocation */
-#define flacCompressDef 8
-#define flacBlocksizeDef 1152
+	/* These are the default parameters for the FLAC invocation */
+	flacCompressDef		= 8,
+	flacBlocksizeDef	= 1152
+};
 
 #define TEMP_WAV	"tempfile.wav"
 #define TEMP_RAW	"tempfile.raw"
@@ -59,9 +56,35 @@
 
 
 
+/** 
+ * Different audio formats.
+ * You can bitwise them to represent several formats.
+ */
+enum AudioFormat {
+	AUDIO_NONE = 0,
+	AUDIO_VORBIS = 1,
+	AUDIO_FLAC = 2,
+	AUDIO_MP3 = 4,
+	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
+};
+
 /**
- * Compression tool
- * A tool, which can compress to either MP3, Vorbis or FLAC formats
+ * Another enum, which cannot be ORed.
+ * These are the values written to the output files.
+ */
+enum CompressionFormat {
+	COMPRESSION_NONE = 0,
+	COMPRESSION_MP3 = 1,
+	COMPRESSION_OGG = 2,
+	COMPRESSION_FLAC = 3
+};
+
+const char *audio_extensions(AudioFormat format);
+CompressionFormat compression_format(AudioFormat format);
+
+
+/**
+ * A tool, which can compress to either MP3, Vorbis or FLAC formats.
  */
 class CompressionTool : public Tool {
 public:
@@ -70,7 +93,11 @@ public:
 	virtual std::string getHelp() const;
 
 	void parseAudioArguments();
-public:
+
+protected:
+	/** Formats supported by this tool. */
+	AudioFormat _supportedFormats;
+
 	AudioFormat _format;
 
 	// Settings
@@ -85,13 +112,13 @@ public:
 	// flac
 	std::string _flacCompressionLevel;
 	std::string _flacBlockSize;
-	
+
 	// vorbis
 	std::string _oggQuality;
 	std::string _oggMinBitrate;
 	std::string _oggAvgBitrate;
 	std::string _oggMaxBitrate;
-	
+
 public:
 	bool processMp3Parms();
 	bool processOggParms();
@@ -107,6 +134,8 @@ public:
 
 /*
  * Stuff which is in compress.cpp
+ *
+ * TODO: What is this? Document it?
  */
 const extern char *tempEncoded;
 
