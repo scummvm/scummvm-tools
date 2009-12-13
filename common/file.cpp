@@ -23,6 +23,7 @@
 #include "file.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <assert.h>
 
 // Filenname implementation
 Filename::Filename(const char *path) {
