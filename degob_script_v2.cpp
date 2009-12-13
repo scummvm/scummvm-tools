@@ -483,7 +483,7 @@ void Script_v2::setupOpcodes() {
 		/* 24 */
 		{OPCODET(o1_putPixel), {PARAM_INT16, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODEF(o2_goblinFunc), {PARAM_NONE}},
-		{OPCODET(o2_createSprite), {PARAM_INT16, PARAM_INT16, PARAM_INT16, PARAM_INT16}},
+		{OPCODET(o1_createSprite), {PARAM_INT16, PARAM_INT16, PARAM_INT16, PARAM_INT16}},
 		{OPCODET(o1_freeSprite), {PARAM_INT16}},
 		/* 28 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
