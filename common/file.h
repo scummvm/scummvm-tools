@@ -370,6 +370,8 @@ public:
 	 */
 	int pos() const;
 
+	int err() const;
+
 	/**
 	 * True if there is nothing more to read from this file
 	 */

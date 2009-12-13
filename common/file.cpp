@@ -502,6 +502,10 @@ int File::pos() const {
 	return ftell(_file);
 }
 
+int File::err() const {
+	return ferror(_file);
+}
+
 bool File::eos() const {
 	return feof(_file) != 0;
 }

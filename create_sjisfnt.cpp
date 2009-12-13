@@ -23,15 +23,18 @@
  *
  */
 
+
+#include "common/endian.h"
+#include "common/file.h"
+#include "common/util.h"
+
 #include <iconv.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
-#include "util.h"
-#include <cstdio>
-#include <cstdlib>
 
 namespace {
 
@@ -62,7 +65,7 @@ bool drawGlyph16x16(uint32 unicode, Glyph &glyph);
 
 int main(int argc, char *argv[]) {
 	if (argc < 2 || argc > 3) {
-		std::printf("Usage:\n\t%s <input ttf font> [outfile]\n", argv[0]);
+		printf("Usage:\n\t%s <input ttf font> [outfile]\n", argv[0]);
 		return -1;
 	}
 
@@ -194,28 +197,24 @@ int main(int argc, char *argv[]) {
 		delete[] i->plainData;
 	glyphs.clear();
 
-	FILE *sjisFont = std::fopen(out, "wb");
-	if (sjisFont) {
+	File sjisFont(out, "wb");
+	if (sjisFont.isOpen()) {
 		// Write our magic bytes
-		writeUint32BE(sjisFont, MKID_BE('SCVM'));
-		writeUint32BE(sjisFont, MKID_BE('SJIS'));
+		sjisFont.writeUint32BE(MKID_BE('SCVM'));
+		sjisFont.writeUint32BE(MKID_BE('SJIS'));
 
 		// Write version
-		writeUint32BE(sjisFont, 0x00000001);
+		sjisFont.writeUint32BE(0x00000001);
 
 		// Write character count
-		writeUint16BE(sjisFont, chars);
+		sjisFont.writeUint16BE(chars);
 
-		std::fwrite(sjisFontData, 1, sjisDataSize, sjisFont);
-		std::fflush(sjisFont);
+		sjisFont.write(sjisFontData, 1, sjisDataSize);
 
-		if (std::ferror(sjisFont)) {
+		if (sjisFont.err()) {
 			delete[] sjisFontData;
-			std::fclose(sjisFont);
 			error("Error while writing to font file: '%s'", out);
 		}
-
-		std::fclose(sjisFont);
 	} else {
 		delete[] sjisFontData;
 		error("Could not open file '%s' for writing", out);

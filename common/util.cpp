@@ -1,5 +1,5 @@
-/* Scumm Tools
- * Copyright (C) 2003-2006  The ScummVM Team
+/* ScummVM Tools
+ * Copyright (C) 2002-2009 The ScummVM project
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,9 +20,11 @@
  *
  */
 
-#include "stdio.h"
-#include "util.h"
+#include "common/util.h"
+
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef _MSC_VER
 	#define	vsnprintf _vsnprintf
