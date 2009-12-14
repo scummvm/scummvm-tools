@@ -84,22 +84,22 @@ public:
 	int run(const std::deque<std::string> &args);
 
 	/**
-	 * Parse with args set already (modify the public members to set them)
-	 * Exceptions are not caught, so this function may throw
+	 * Parse with args set already (modify the public members to set them).
+	 * Exceptions are not caught, so this function may throw.
 	 */
 	void run();
 
 	/**
-	 * Returns true if the file appears to be a valid input to this tool,
-	 * Default implementation always return true
+	 * Returns true if the file appears to be a valid input to this tool.
+	 * Default implementation always return true.
 	 *
 	 * @param filename The file to inspect
 	 */
 	virtual InspectionMatch inspectInput(const Filename &filename);
 
 	/**
-	 * Aborts executing of the tool, can be called from another thread
-	 * The progress will not be aborted until the next call to notifyProgress
+	 * Aborts executing of the tool, can be called from another thread.
+	 * The progress will not be aborted until the next call to notifyProgress.
 	 */
 	void abort();
 
@@ -107,43 +107,45 @@ public:
 	 * Fatal error in the tool, throws a ToolException,
 	 * you shouldn't really catch this exception.
 	 */
-
 	void error(const char *format, ...);
+
 	/**
 	 * A warning, the same as print but WARNING: is prepended to the message.
 	 */
-
 	void warning(const char *format, ...);
+
 	/**
-	 * Prints a message, to either stdout or the GUI, always use this instead of printf
+	 * Prints a message, to either stdout or the GUI, always use this
+	 * instead of printf.
 	 */
 	void print(const char *format, ...);
 
-	/** Returns name of the tool */
+	/** Returns name of the tool. */
 	std::string getName() const;
 
-	/** Returns the helpstring of the tool */
+	/** Returns the helpstring of the tool. */
 	virtual std::string getHelp() const;
 
-	/** Returns the helpstring of the tool */
+	/** Returns the short helpstring of the tool. */
 	virtual std::string getShortHelp() const;
 
-	/** Returns the type of the tool */
+	/** Returns the type of the tool. */
 	ToolType getType() const;
 
 	/**
-	 * Notifies of progress, normally just prints a dot if enough time has passed since the last call
+	 * Notifies of progress, normally just prints a dot if enough time
+	 * has passed since the last call.
 	 * This may through an AbortException, you should generally not catch this
-	 * (more than to do cleanup)
+	 * (except for doing cleanup).
 	 *
 	 * @param print_dot Provides visual feedback to the user, defaults to true
 	 */
 	void notifyProgress(bool print_dot = true);
 
 	/**
-	 * Update progress in a more distinct way, if we know the estimated runtime
+	 * Update progress in a more distinct way, if we know the estimated runtime.
 	 * This may through an AbortException, you should generally not catch this
-	 * (more than to do cleanup)
+	 * (except for doing cleanup).
 	 *
 	 * @param done how many parts that have been done
 	 * @param total parts in total
@@ -151,15 +153,16 @@ public:
 	void updateProgress(int done, int total = 100);
 
 	/**
-	 * Spawns a subprocess with the given commandline
-	 * this acts exactly the same as 'system()', but hides the process window
+	 * Spawns a subprocess with the given commandline.
+	 * This acts exactly the same as 'system()', but hides the process window.
 	 *
 	 * @param cmd The commandline to run
 	 */
 	int spawnSubprocess(const char *cmd);
 
 	/**
-	 * This function sets the function which will be called needs to output something
+	 * This function sets the function which will be called needs to
+	 * output something.
 	 * 
 	 * @param f the function to be called, it takes a userdata argument in addition to text to print
 	 * @param udata The userdata to call to the print function each time it is called
@@ -167,9 +170,9 @@ public:
 	void setPrintFunction(void f(void *, const char *), void *udata);
 	
 	/**
-	 * Set the function that is called on status updates
+	 * Set the function that is called on status updates.
 	 * Parameters to the function are 'done' and 'total', if total is 0, 
-	 * it's a simple status notification (print a dot or something)
+	 * it's a simple status notification (print a dot or something).
 	 *
 	 * @param f this function will be called with udata arguments and 'done' / 'total'
 	 * @param udata Userdata that will be passed to the function on each call
@@ -177,8 +180,8 @@ public:
 	void setProgressFunction(void f(void *, int, int), void *udata);
 
 	/**
-	 * Sets the function to use to execute a process
-	 * this defaults to the function 'system()', GUI overloads this
+	 * Sets the function to use to execute a process.
+	 * This defaults to the function 'system()', GUI overloads this
 	 * to not spawn a window.
 	 *
 	 * @param f this function will be called when a process needs to be spawned
@@ -190,27 +193,27 @@ protected:
 	virtual void parseAudioArguments();
 	void parseOutputArguments();
 
-	// Parses the arguments only this tool takes
+	/** Parses the arguments only this tool takes. */
 	virtual void parseExtraArguments();
 
-	// Runs the internal tool (the 'main')
+	/** Runs the internal tool (the 'main'). */
 	virtual void execute() = 0;
 
 public:
 
-	/** List of all inputs this tool expects, also contains the paths filled in */
+	/** List of all inputs this tool expects, also contains the paths filled in. */
 	ToolInputs _inputPaths;
 
 	// Output
 	Filename _outputPath;
 
 protected:
-	/* Command line arguments we are parsing. */
+	/** Command line arguments we are parsing. */
 	std::deque<std::string> _arguments;
 
 	/** If this tools outputs to a directory, not a file. */
 	bool _outputToDirectory;
-	/** If this tool can display output progress in % */
+	/** If this tool can display output progress in percent. */
 	bool _supportsProgressBar;
 
 	/** Name of the tool. */
@@ -222,7 +225,7 @@ protected:
 	/** The text to display to help the user. */
 	std::string _shorthelp;
 
-	/** Status of internal abort flag, if set, next call to *Progress will throw */
+	/** Status of internal abort flag, if set, next call to *Progress will throw. */
 	bool _abort;
 	
 private:
