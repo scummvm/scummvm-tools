@@ -69,6 +69,7 @@ bool ScummVMToolsApp::OnInit() {
 	ScummToolsFrame *frame = new ScummToolsFrame(GetAppName(), wxDefaultPosition, wxSize(600,420));
 #ifdef __WXMAC__ // Menu bar looks ugly when it's part of the window, on OSX it's not
 	frame->CreateMenuBar();
+	frame->CentreOnScreen();
 #endif
 	frame->SetMinSize(wxSize(600, 420));
 	SetTopWindow(frame);
