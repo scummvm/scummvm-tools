@@ -24,34 +24,34 @@
 
 #include <sstream>
 
-typedef struct  {
+struct lameparams {
 	uint32 minBitr;
 	uint32 maxBitr;
 	bool abr;
 	uint32 algqual;
 	uint32 vbrqual;
 	bool silent;
-} lameparams;
+};
 
-typedef struct {
+struct oggencparams {
 	int nominalBitr;
 	int minBitr;
 	int maxBitr;
 	float quality;
 	bool silent;
-} oggencparams;
+};
 
-typedef struct {
+struct flaccparams {
 	int compressionLevel;
 	int blocksize;
 	bool verify;
 	bool silent;
-} flaccparams;
+};
 
-typedef struct {
+struct rawtype {
 	bool isLittleEndian, isStereo;
 	uint8 bitsPerSample;
-} rawtype;
+};
 
 lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0 };
 oggencparams oggparms = { -1, -1, -1, (float)oggqualDef, 0 };
