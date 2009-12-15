@@ -23,8 +23,8 @@
 #include "util.h"
 #include "extract_gob_stk.h"
 
-#define confSTK21 "STK21"
 #define confSTK10 "STK10"
+#define confSTK21 "STK21"
 
 struct ExtractGobStk::Chunk {
 	char name[64];
@@ -46,7 +46,7 @@ ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Extracts the files from a Stick file used by 'gob' engine (.STK/.ITK/.LTK).";
-	_helptext = "\nUsage: " + getName() + " [-o outputname] stickname\nwhere\n  ouputname is used to force the gob config filename (used by compress_gob)\n  stickname is the name of the file to extract/decompress";
+	_helptext  = "Usage: " + getName() + " [-o outputname] stickname\nwhere\n  ouputname is used to force the gob config filename (used by compress_gob)\n  stickname is the name of the file to extract/decompress";
 }
 
 ExtractGobStk::~ExtractGobStk() {
@@ -71,6 +71,12 @@ void ExtractGobStk::execute() {
 		_outputPath.setFullName(_outputPath.getFullName() + inpath.getExtension());
 	}
 
+	if (_outputPath.directory()) {
+		_outputPath.setFullName(inpath.getFullName());
+		_outputPath.setExtension("");
+		_outputPath.setFullName(_outputPath.getFullName() + inpath.getExtension());
+	}
+
 	_outputPath.setExtension(".gob");
 
 	gobConf.open(_outputPath.getFullPath(), "w");
@@ -88,7 +94,7 @@ void ExtractGobStk::execute() {
 		readChunkList(stk, gobConf);
 	}
 
-	print("config file created: %s\n", _outputPath.getFullName().c_str());
+	print("config file created: %s\n", _outputPath.getFullPath().c_str());
 
 	extractChunks(_outputPath, stk);
 }
@@ -254,7 +260,7 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 	byte *unpackedData = NULL;
 
 	while (curChunk != 0) {
-		print("Extracting \"%s\"", curChunk->name);
+		print("Extracting \"%s\"\n", curChunk->name);
 
 		outpath.setFullName(curChunk->name);
 		File chunkFile(outpath, "wb");
@@ -289,7 +295,6 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 			}
 			delete[] data;
 		}
-
 		curChunk = curChunk->next;
 	}
 }
