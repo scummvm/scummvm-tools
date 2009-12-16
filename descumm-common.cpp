@@ -23,6 +23,9 @@
 
 #include "descumm.h"
 
+#include "common/endian.h"
+
+#include <stdio.h>
 
 BlockStack g_blockStack;
 

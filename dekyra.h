@@ -24,7 +24,7 @@
 #ifndef DEKYRA_H
 #define DEKYRA_H
 
-#include "util.h"
+#include "common/scummsys.h"
 
 typedef unsigned int uint;
 

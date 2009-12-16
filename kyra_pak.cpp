@@ -22,6 +22,9 @@
 
 #include "kyra_pak.h"
 
+#include "common/endian.h"
+#include "common/util.h"
+
 bool PAKFile::isPakFile(const char *filename) {
 	File f(filename, "rb");
 

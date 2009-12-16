@@ -24,7 +24,6 @@
 #define KYRA_PAK_H
 
 #include "extract_kyra.h"
-#include "util.h"
 
 class PAKFile : public Extractor {
 public:

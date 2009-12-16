@@ -20,7 +20,10 @@
  *
  */
 
-#include "md5.h"
+#include "common/md5.h"
+#include "common/endian.h"
+
+#include <stdio.h>
 
 namespace Common {
 

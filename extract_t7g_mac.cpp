@@ -25,8 +25,10 @@
 
 #include "extract_t7g_mac.h"
 
+#include "common/endian.h"
+
 #define offsetResFork 128
-uint32 offsetResourceData;
+static uint32 offsetResourceData;
 
 ExtractT7GMac::ExtractT7GMac(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	

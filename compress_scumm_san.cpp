@@ -21,7 +21,9 @@
  */
 
 #include "compress_scumm_san.h"
-#include "zlib.h"
+#include "common/endian.h"
+
+#include <zlib.h>
 
 void CompressScummSan::encodeSanWaveWithOgg(char *filename) {
 	char fbuf[2048];

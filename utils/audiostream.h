@@ -23,8 +23,8 @@
 #ifndef SOUND_AUDIOSTREAM_H
 #define SOUND_AUDIOSTREAM_H
 
-#include "../util.h"
-#include "util.h"
+#include "common/scummsys.h"
+#include "common/util.h"
 
 namespace Audio {
 

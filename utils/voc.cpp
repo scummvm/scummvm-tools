@@ -23,6 +23,8 @@
 #include "voc.h"
 #include "audiostream.h"
 
+#include "common/endian.h"
+
 
 namespace Audio {
 

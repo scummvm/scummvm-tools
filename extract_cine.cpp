@@ -34,6 +34,7 @@
  */
 
 #include "extract_cine.h"
+#include "common/endian.h"
 
 #include <algorithm>
 

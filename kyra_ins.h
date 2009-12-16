@@ -24,7 +24,6 @@
 #define KYRA_INS_H
 
 #include "extract_kyra.h"
-#include "util.h"
 
 class HoFInstaller : public Extractor {
 public:

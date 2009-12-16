@@ -22,6 +22,9 @@
 
 #include "kyra_ins.h"
 
+#include "common/endian.h"
+#include "common/util.h"
+
 class FileExpanderSource {
 public:
 	FileExpanderSource(const uint8 *data, int dataSize) : _dataPtr(data), _endofBuffer(data + dataSize), _bitsLeft(8), _key(0), _index(0) {}

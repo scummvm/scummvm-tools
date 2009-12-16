@@ -23,7 +23,7 @@
 #ifndef COMMON_MD5_H
 #define COMMON_MD5_H
 
-#include "../util.h"
+#include "common/scummsys.h"
 
 namespace Common {
 

@@ -22,6 +22,10 @@
 
 #include "audiostream.h"
 
+#include "common/endian.h"
+
+#include <assert.h>
+#include <stdio.h>
 
 namespace Audio {
 

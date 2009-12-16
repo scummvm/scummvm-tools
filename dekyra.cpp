@@ -22,7 +22,9 @@
  */
 
 #include "dekyra.h"
+#include "common/endian.h"
 #include "common/file.h"
+#include "common/util.h"
 
 #include <stdio.h>
 

@@ -23,6 +23,12 @@
 
 #include "descumm.h"
 
+#include "common/endian.h"
+#include "common/util.h"
+
+#include <ctype.h>
+#include <stdio.h>
+
 // 200kb limit on the input file (we just read it all at once into memory).
 // Should be no problem, the biggest scripts I have seen were in COMI and
 // went up to 180kb (script-457).

@@ -21,6 +21,7 @@
  */
 
 #include "compress_scumm_bun.h"
+#include "common/endian.h"
 
 /*
  * The "IMC" codec below (see cases 13 & 15 in decompressCodec) is actually a

@@ -22,8 +22,7 @@
 
 #include "compress_sword1.h"
 
-#define READ_BE_UINT32(x) \
-	((((uint8*)(x))[0] << 24) | (((uint8*)(x))[1] << 16) | (((uint8*)(x))[2] << 8) | (((uint8*)(x))[3] << 0))
+#include "common/endian.h"
 
 #define TOTAL_TUNES 269
 
