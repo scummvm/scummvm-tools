@@ -454,7 +454,7 @@ bool Extractor::outputAllFiles(Filename *outputPath) {
 			error("couldn't open file '%s' for writing", outputPath->getFullPath().c_str());
 			return false;
 		}
-		printf("Exracting file '%s'...", cur->filename);
+		printf("Extracting file '%s'...", cur->filename);
 		if (fwrite(cur->data, 1, cur->size, file) == cur->size) {
 			printf("OK\n");
 		} else {
@@ -481,7 +481,7 @@ bool Extractor::outputFileAs(const char *f, const char *fn) {
 		error("couldn't open file '%s' in write mode", fn);
 		return false;
 	}
-	printf("Exracting file '%s' to file '%s'...", cur->filename, fn);
+	printf("Extracting file '%s' to file '%s'...", cur->filename, fn);
 	if (fwrite(cur->data, 1, cur->size, file) == cur->size) {
 		printf("OK\n");
 	} else {
