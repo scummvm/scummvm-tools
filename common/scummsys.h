@@ -65,6 +65,9 @@ typedef signed int int32;
 	#define SCUMM_LITTLE_ENDIAN
 
 #elif defined(UNIX)
+	// For strcasecmp and strncasecmp
+	#include <strings.h>
+
 	#define scumm_stricmp strcasecmp
 	#define scumm_strnicmp strncasecmp
 

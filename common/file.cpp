@@ -116,12 +116,8 @@ bool Filename::hasExtension(std::string ext) const {
 		ext = ext.substr(1);
 
 	std::string tmp = _path.substr(dot);
-#ifdef _WIN32
 	// On Windows paths are case-insensitive
 	return scumm_stricmp(tmp.c_str(), ext.c_str()) == 0;
-#else
-	return tmp == ext;
-#endif
 }
 
 std::string Filename::getFullPath() const {
