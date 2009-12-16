@@ -51,14 +51,15 @@ std::string ExtractT7GMac::readString(File &infile) {
 void ExtractT7GMac::dumpResource(File &infile, std::string name) {
 	// Show the resource details
 	uint32 fileSize = infile.readUint32BE();
-	print("  \"%s\" (%d bytes)\n", name.c_str(), fileSize);
+	print("  \"%s\" (%d bytes)", name.c_str(), fileSize);
 
 	// Read the resource contents
 	byte *buf = new byte[fileSize];
 	
 	try {
 		// Dump the resource to the output file
-		File out(name, "wb");
+		_outputPath.setFullName(name);
+		File out(_outputPath, "wb");
 		infile.read_throwsOnError(buf, fileSize);
 		out.write(buf, fileSize);
 	} catch (...) {
@@ -89,6 +90,9 @@ void ExtractT7GMac::handleReferenceList(File &infile, uint32 offsetRefList, uint
 
 void ExtractT7GMac::execute() {
 	File infile(_inputPaths[0].path, "rb");
+	
+	if (_outputPath.empty())
+		_outputPath.setFullPath("./");
 
 	// Read the resource fork header
 	infile.seek(offsetResFork, SEEK_SET);
@@ -122,7 +126,7 @@ void ExtractT7GMac::execute() {
 			case MKID_BE('INST'):
 			case MKID_BE('T7GM'):
 			{
-				print("Extracting \"%s\" resources\n", resType);
+				print("Extracting \"%s\" resources", resType);
 				uint16 numRes = infile.readUint16BE();
 				uint32 offsetRefList = offsetResTypes + infile.readUint16BE();
 
@@ -130,7 +134,7 @@ void ExtractT7GMac::execute() {
 				break;
 			}
 			default:
-				print("Skipping \"%s\" resources\n", resType);
+				print("Skipping \"%s\" resources", resType);
 				break;
 		}
 	}
