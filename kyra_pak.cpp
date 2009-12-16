@@ -461,6 +461,7 @@ bool Extractor::outputAllFiles(Filename *outputPath) {
 			printf("FAILED\n");
 			return false;
 		}
+		fclose(file);
 		cur = cur->next;
 	}
 	return true;
