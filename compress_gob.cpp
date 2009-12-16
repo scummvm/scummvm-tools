@@ -70,26 +70,24 @@ void CompressGob::execute() {
 
 
 	Filename inpath(_inputPaths[0].path);
-	Filename outpath("");
 
 // We output with .stk extension, if there is no specific out file
-	if (outpath.empty()) {
-		outpath = inpath;
-		outpath.setExtension(".stk");
+	if (_outputPath.empty()) {
+		_outputPath = inpath;
+		_outputPath.setExtension(".stk");
 	}
-
 	if (_outputPath.directory()) {
-		_outputPath.setFullName(inpath.getFullName());
+		_outputPath.setFullName(inpath.getName());
 		_outputPath.setExtension(".stk");
 	}
 
 	// Open input (config) file
 	gobConf.open(inpath, "r");
 	// Read the input into memory
-	_chunks = readChunkConf(gobConf, outpath, chunkCount);
+	_chunks = readChunkConf(gobConf, inpath, chunkCount);
 	gobConf.close();
 
-	stk.open(outpath, "wb");
+	stk.open(_outputPath, "wb");
 
 	// Output in compressed format
 	writeEmptyHeader (stk, chunkCount);
