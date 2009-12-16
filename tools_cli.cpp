@@ -194,7 +194,7 @@ void ToolsCLI::printHelp(const char *exeName) {
 		std::endl <<
 		"\tCommon use:" << std::endl <<
 		"\t" << exeName << " [--tool <tool name>] [tool-specific options] [-o <output directory>] <input files>" << std::endl <<
-		"\t" << exeName << " [tool-specific option] [extract|compress] <input files>" << std::endl <<
+		"\t" << exeName << " [tool-specific option] [-o <output directory>] [extract|compress] <input files>" << std::endl <<
 		std::endl <<
 		"\tOther Options:" << std::endl <<
 		"\t--help\tDisplay this text" << std::endl <<
