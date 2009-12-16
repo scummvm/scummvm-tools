@@ -487,6 +487,7 @@ bool Extractor::outputFileAs(const char *f, const char *fn) {
 		printf("FAILED\n");
 		return false;
 	}
+	fclose(file);
 	return true;
 }
 
