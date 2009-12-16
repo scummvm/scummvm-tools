@@ -48,6 +48,7 @@ InspectionMatch CompressKyra::inspectInput(const Filename &filename) {
 void CompressKyra::execute() {
 	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
+	outpath.setFullName(inpath.getFullName());
 
 	if (inpath == outpath)
 		error("Infile and outfile cannot be the same file");
@@ -320,12 +321,12 @@ void CompressKyra::processKyra3(Filename *infile, Filename *outfile) {
 			uint32 resOffset = input.readUint32LE();
 
 			char outname[16];
-			snprintf(outname, 16, "%.08u.%s", resFilename, audio_extensions(_format));
+			snprintf(outname, 16, "%.08u%s", resFilename, audio_extensions(_format));
 
 			const DuplicatedFile *file = findDuplicatedFile(resOffset, red, files);
 			if (file) {
 				char linkname[16];
-				snprintf(linkname, 16, "%.08u.%s", file->resFilename, audio_extensions(_format));
+				snprintf(linkname, 16, "%.08u%s", file->resFilename, audio_extensions(_format));
 
 				output.linkFiles(outname, linkname);
 			} else {
