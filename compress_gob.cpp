@@ -72,18 +72,22 @@ void CompressGob::execute() {
 	Filename inpath(_inputPaths[0].path);
 	Filename outpath("");
 
-	// Open input (config) file
-	gobConf.open(inpath, "r");
-
-	// Read the input into memory
-	_chunks = readChunkConf(gobConf, outpath, chunkCount);
-	gobConf.close();
-
 // We output with .stk extension, if there is no specific out file
 	if (outpath.empty()) {
 		outpath = inpath;
 		outpath.setExtension(".stk");
 	}
+
+	if (_outputPath.directory()) {
+		_outputPath.setFullName(inpath.getFullName());
+		_outputPath.setExtension(".stk");
+	}
+
+	// Open input (config) file
+	gobConf.open(inpath, "r");
+	// Read the input into memory
+	_chunks = readChunkConf(gobConf, outpath, chunkCount);
+	gobConf.close();
 
 	stk.open(outpath, "wb");
 
@@ -110,6 +114,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 	Chunk *curChunk = chunks;
 	Chunk *parseChunk;
 	File src1;
+	Filename srcName("");
 	char buffer[1024];
 
 	chunkCount = 1;
@@ -117,6 +122,8 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 // First read: Output filename
 	gobConf.scanString(buffer);
 	stkName.setFullName(buffer);
+
+	srcName.setFullPath(stkName.getPath());
 
 // Second read: signature
 	gobConf.scanString(buffer);
@@ -126,18 +133,20 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 	else if (signature != confSTK10)
 		error("Unknown format signature %s", signature.c_str());
 
-	print("Checking duplicate files");
+	print("Checking duplicate files\n");
+
 // All the other reads concern file + compression flag
 	gobConf.scanString(buffer);
 	while (!gobConf.eos()) {
 		strcpy(curChunk->name, buffer);
+		srcName.setFullName(buffer);
+
 		gobConf.scanString(buffer);
 		if ((strcmp(buffer, "1") == 0 )|| (_execMode & MODE_FORCE))
 			curChunk->packed = true;
 		else
 			curChunk->packed = false;
-
-		src1.open(curChunk->name, "rb");
+		src1.open(srcName, "rb");
 		src1.seek(0, SEEK_END);
 // if file is too small, force 'Store' method
 		if ((curChunk->realSize = src1.pos()) < 8) 
@@ -148,11 +157,12 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
 			if ((parseChunk->realSize == curChunk->realSize) & (parseChunk->packed != 2)) {
 				if (strcmp(parseChunk->name, curChunk->name) == 0)
 					error("Duplicate filename found in conf file: %s", parseChunk->name);
-				if (filcmp(src1, parseChunk)) {
+				srcName.setFullName(parseChunk->name);
+				if (filcmp(src1, srcName)) {
 // If files are identical, use the same compressed chunk instead of re-compressing the same thing
 					curChunk->packed = 2;
 					curChunk->replChunk = parseChunk;
-					print("Identical files : %s %s (%d bytes)", curChunk->name, parseChunk->name, curChunk->realSize);
+					print("Identical files : %s %s (%d bytes)\n", curChunk->name, parseChunk->name, curChunk->realSize);
 					break;
 				}
 			}
@@ -219,14 +229,14 @@ void CompressGob::writeBody(Filename *inpath, File &stk, Chunk *chunks) {
 				stk.seek(curChunk->offset, SEEK_SET);
 				src.rewind();
 			} else
-				print("Compressing %12s\t%d -> %d bytes", curChunk->name, curChunk->realSize, curChunk->size);
+				print("Compressing %12s\t%d -> %d bytes\n", curChunk->name, curChunk->realSize, curChunk->size);
 
 		} 
 
 		if (curChunk->packed == 0) {
 			tmpSize = 0;
 			curChunk->size = writeBodyStoreFile(stk, src);
-			print("Storing %12s\t%d bytes", curChunk->name, curChunk->size);
+			print("Storing %12s\t%d bytes\n", curChunk->name, curChunk->size);
 		}
 		curChunk = curChunk->next;
 	}
@@ -429,7 +439,7 @@ uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
  * This function compares a file to another defined in a chunk. The file sizes 
  * are already tested outside the function.
  */
-bool CompressGob::filcmp(File &src1, Chunk *compChunk) {
+bool CompressGob::filcmp(File &src1, Filename &stkName) {
 	uint16 readCount;
 	bool checkFl = true;
 	char buf1[4096]; 
@@ -437,7 +447,7 @@ bool CompressGob::filcmp(File &src1, Chunk *compChunk) {
 	File src2;
 
 	src1.rewind();
-	src2.open(compChunk->name, "rb");
+	src2.open(stkName.getFullPath(), "rb");
 	
 	do {
 		readCount = src1.read_noThrow(buf1, 4096);

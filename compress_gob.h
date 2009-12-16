@@ -56,7 +56,7 @@ protected:
 	uint32 writeBodyStoreFile(File &stk, File &src);
 	uint32 writeBodyPackFile(File &stk, File &src);
 	void rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks);
-	bool filcmp(File &src1, Chunk *compChunk);
+	bool filcmp(File &src1, Filename &stkName);
 	bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length);
 
 };
