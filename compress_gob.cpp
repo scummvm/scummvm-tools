@@ -41,7 +41,7 @@ CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTY
 	_supportedFormats = AUDIO_NONE;
 
 	ToolInput input;
-	input.format = "*.stk";
+	input.format = "*.gob";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Compresses Gobliiins! data files.";
