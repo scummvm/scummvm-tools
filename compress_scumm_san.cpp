@@ -45,7 +45,7 @@ void CompressScummSan::writeWaveHeader(int s_size) {
 	int bits = 16;
 	int chan = 2;
 	byte wav[44];
-	memset (wav, 0,	44);
+	memset(wav, 0,	44);
 	wav[0] = 'R';
 	wav[1] = 'I';
 	wav[2] = 'F';
@@ -650,9 +650,21 @@ void CompressScummSan::execute() {
 
 	FrameInfo *frameInfo = (FrameInfo *)malloc(sizeof(FrameInfo) * nbframes);
 
-	memset(_audioTracks, 0, sizeof(AudioTrackInfo) * COMPRESS_SCUMM_SAN_MAX_TRACKS);
 	for (l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		_audioTracks[l].animFrame = -1;
+		_audioTracks[l].trackId = 0;
+		_audioTracks[l].bits = 0;
+		_audioTracks[l].stereo = 0;
+		_audioTracks[l].freq = 0;
+		_audioTracks[l].used = 0;
+		_audioTracks[l].waveDataSize = 0;
+		_audioTracks[l].volumes = 0;
+		_audioTracks[l].pans = 0;
+		_audioTracks[l].sizes = 0;
+		_audioTracks[l].nbframes = 0;
+		_audioTracks[l].countFrames = 0;
+		_audioTracks[l].lastFrame = 0;
+		_audioTracks[l].sdatSize = 0;
 	}
 
 	bool tracksCompress = false;
@@ -676,7 +688,11 @@ void CompressScummSan::execute() {
 		frameInfo[l].lessPSADSize = 0;
 		output.writeUint32BE(frameSize);
 		for (;;) {
-			tag = input.readUint32BE(); // chunk tag
+			try {
+				tag = input.readUint32BE(); // chunk tag
+			} catch(...) {
+				break;
+			}
 			if (input.eos())
 				break;
 			if (tag == 'FRME') {
