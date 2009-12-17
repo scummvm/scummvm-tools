@@ -21,6 +21,7 @@
  */
 
 #include "degob_script.h"
+#include "common/util.h"
 
 #define OPCODET(x) _OPCODET(Script_Bargon, x)
 #define OPCODEF(x) _OPCODEF(Script_Bargon, x)

@@ -24,7 +24,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "util.h"
 #include "common/file.h"
 #include "tool.h"
 

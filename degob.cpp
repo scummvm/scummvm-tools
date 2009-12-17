@@ -22,6 +22,7 @@
 
 #include "degob_script.h"
 #include "common/file.h"
+#include "common/util.h"
 
 static void printHelp(const char *bin);
 static int getVersion(const char *verStr);

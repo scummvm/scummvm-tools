@@ -26,8 +26,7 @@
 #include <wx/config.h>
 #include <wx/filename.h>
 
-#include "../util.h"
-#include "../compress.h"	// for AudioFormat
+#include "compress.h"	// for AudioFormat
 
 class ToolGUI;
 

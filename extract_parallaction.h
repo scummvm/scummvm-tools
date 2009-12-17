@@ -24,7 +24,6 @@
 #define EXTRACT_PARALLACTION_H
 
 #include "tool.h"
-#include "util.h"
 
 uint32 depackedlen(byte *packed, uint32 plen);
 void ppdepack(byte *packed, byte *depacked, uint32 plen, uint32 unplen);

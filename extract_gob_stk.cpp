@@ -20,8 +20,8 @@
  *
  */
 
-#include "util.h"
 #include "extract_gob_stk.h"
+#include "common/endian.h"
 
 #define confSTK10 "STK10"
 #define confSTK21 "STK21"

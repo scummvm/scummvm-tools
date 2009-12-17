@@ -21,6 +21,7 @@
  */
 
 #include "degob_script.h"
+#include "common/util.h"
 
 #define OPCODET(x) _OPCODET(Script_v5, x)
 #define OPCODEF(x) _OPCODEF(Script_v5, x)

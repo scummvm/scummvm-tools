@@ -22,7 +22,7 @@
  */
 
 #include "encode_dxa.h"
-#include "util.h"
+#include "common/endian.h"
 
 #include <sys/stat.h>
 #include <png.h>

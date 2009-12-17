@@ -23,7 +23,7 @@
 // By Jimi (m [underline] kiewitz [AT] users.sourceforge.net)
 
 #include "compress.h"
-#include "util.h"
+#include "common/endian.h"
 
 #include "compress_tinsel.h"
 

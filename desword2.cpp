@@ -20,7 +20,6 @@
  *
  */
 
-#include "util.h"
 #include "common/file.h"
 
 enum {

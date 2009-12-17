@@ -20,7 +20,6 @@
  *
  */
 
-#include "util.h"
 #include <stdarg.h>
 
 #include "extract_loom_tg16.h"

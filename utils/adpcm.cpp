@@ -21,7 +21,7 @@
  */
 
 #include "adpcm.h"
-#include "util.h"
+#include "common/endian.h"
 
 namespace Audio {
 
