@@ -44,9 +44,13 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 };
 
 ExtractZakC64::ExtractZakC64(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
-	ToolInput input;
-	input.format = "*.d64";
-	_inputPaths.push_back(input);
+	ToolInput input1;
+	input1.format = "*.d64";
+	_inputPaths.push_back(input1);
+
+	ToolInput input2;
+	input2.format = "*.d64";
+	_inputPaths.push_back(input2);
 
 	_shorthelp = "Extract Zak McKraken data files from the C64 version.";
 	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n\t" + _shorthelp + "\n";
@@ -55,8 +59,7 @@ ExtractZakC64::ExtractZakC64(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 void ExtractZakC64::execute() {
 	int i, j;
 	unsigned short signature;
-
-	char fname[1024];
+	char fname[256];
 
 	// Two disks...
 	Filename inpath1(_inputPaths[0].path);
@@ -81,7 +84,6 @@ void ExtractZakC64::execute() {
 	outpath.setFullName("00.LFL");
 	File output(outpath, "wb");
 	output.setXorMode(0xFF);
-	error("Unable to create index file!");
 	print("Creating 00.LFL...");
 
 	/* write signature */
