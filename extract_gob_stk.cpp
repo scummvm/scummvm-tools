@@ -83,16 +83,16 @@ void ExtractGobStk::execute() {
 	_outputPath.setExtension(".gob");
 
 	gobConf.open(_outputPath.getFullPath(), "w");
-	gobConf.printf("%s\n", inpath.getFullName().c_str());
+	gobConf.print("%s\n", inpath.getFullName().c_str());
 
 	stk.read_throwsOnError(signature, 6);
 
 	if (strncmp(signature, "STK2.1", 6) == 0) {
 		print("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath().c_str());
-		gobConf.printf("%s\n", confSTK21);
+		gobConf.print("%s\n", confSTK21);
 		readChunkListV2(stk, gobConf);
 	} else {
-		gobConf.printf("%s\n", confSTK10);
+		gobConf.print("%s\n", confSTK10);
 		stk.rewind();
 		readChunkList(stk, gobConf);
 	}
@@ -129,7 +129,7 @@ void ExtractGobStk::readChunkList(File &stk, File &gobConf) {
 		}
 
 		// Write the chunk info in the gob Conf file
-		gobConf.printf("%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
+		gobConf.print("%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
 
 		if (numDataChunks > 0) {
 			curChunk->next = new Chunk;
@@ -248,7 +248,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 		curChunk->preGob = false;
 
 		// Write the chunk info in the gob Conf file
-		gobConf.printf("%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
+		gobConf.print("%s %d\n", curChunk->name, curChunk->packed ? 1 : 0);
 
 		if (numDataChunks > 0) {
 			curChunk->next = new Chunk;

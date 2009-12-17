@@ -340,7 +340,7 @@ public:
 	/**
 	 * Works the same as fprintf.
 	 */
-	void printf(const char *format, ...);
+	void print(const char *format, ...);
 
 	/**
 	 * Seek to the specified position in the stream.

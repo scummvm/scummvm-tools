@@ -55,13 +55,10 @@ void Filename::addExtension(const std::string &ext) {
 }
 
 void Filename::setExtension(const std::string &ext) {
-	size_t dot = _path.rfind('.');
-	if (dot == std::string::npos) {
-		_path += ext;
-	} else {
-		_path.resize(dot);
-		_path += ext;
-	}
+	// FIXME: quick and dirty hack. But then so is this whole class...
+	std::string path = getPath();
+	std::string name = getName();
+	_path = path + name + ext;
 }
 
 bool Filename::equals(const Filename &other) const {
@@ -457,7 +454,7 @@ size_t File::write(const void *dataPtr, size_t dataSize) {
 	return data_read;
 }
 
-void File::printf(const char *format, ...) {
+void File::print(const char *format, ...) {
 	if (!_file) 
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
