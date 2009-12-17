@@ -20,6 +20,7 @@
  *
  */
 
+#include <cstring>
 #include <stdarg.h>
 #include "extract_mm_nes.h"
 

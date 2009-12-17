@@ -21,11 +21,13 @@
  *
  */
 
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+
 #include "descumm.h"
 
 #include "common/util.h"
-
-#include <stdio.h>
 
 /*
   Similar to the code that detects "head" while loops like this:

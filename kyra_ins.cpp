@@ -20,6 +20,9 @@
  *
  */
 
+#include <cassert>
+#include <cstdio>
+
 #include "kyra_ins.h"
 
 #include "common/endian.h"

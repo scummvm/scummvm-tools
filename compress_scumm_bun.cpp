@@ -20,6 +20,10 @@
  *
  */
 
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+
 #include "compress_scumm_bun.h"
 #include "common/endian.h"
 

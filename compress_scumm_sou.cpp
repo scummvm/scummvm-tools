@@ -20,6 +20,9 @@
  *
  */
 
+#include <cassert>
+#include <cstring>
+
 #include "compress_scumm_sou.h"
 
 

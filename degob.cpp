@@ -20,6 +20,9 @@
  *
  */
 
+#include <cstring>
+#include <cstdio>
+
 #include "degob_script.h"
 #include "common/file.h"
 #include "common/util.h"

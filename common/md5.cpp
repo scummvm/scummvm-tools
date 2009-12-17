@@ -24,6 +24,7 @@
 #include "common/endian.h"
 
 #include <stdio.h>
+#include <string.h>
 
 namespace Common {
 

@@ -21,12 +21,15 @@
  *
  */
 
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+
 #include "dekyra.h"
 #include "common/endian.h"
 #include "common/file.h"
 #include "common/util.h"
-
-#include <stdio.h>
 
 void printCommandsV1Ref();
 void setupCommandsV1(Script *myScript);

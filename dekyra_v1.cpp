@@ -20,10 +20,11 @@
  *
  */
 
+#include <cstdio>
+
 #include "dekyra.h"
 #include "common/endian.h"
 #include "common/util.h"
-#include <stdio.h>
 
 extern FILE *outputFile;
 

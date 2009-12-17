@@ -20,6 +20,9 @@
  *
  */
 
+#include <cassert>
+#include <cstring>
+
 #include "compress.h"
 
 #include "compress_tucker.h"

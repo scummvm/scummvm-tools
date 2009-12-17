@@ -20,10 +20,14 @@
  *
  */
 
+#include <cassert>
+#include <cstdarg>
+#include <cstring>
+#include <cstdio>
+
 #include "degob_script.h"
 #include "common/endian.h"
 #include "common/util.h"
-#include <stdarg.h>
 
 #ifdef _MSC_VER
 	#define	vsnprintf _vsnprintf

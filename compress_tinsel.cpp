@@ -22,6 +22,8 @@
 
 // By Jimi (m [underline] kiewitz [AT] users.sourceforge.net)
 
+#include <cstdlib>
+
 #include "compress.h"
 #include "common/endian.h"
 

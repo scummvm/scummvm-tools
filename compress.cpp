@@ -20,9 +20,12 @@
  *
  */
 
-#include "compress.h"
-
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <sstream>
+
+#include "compress.h"
 
 struct lameparams {
 	uint32 minBitr;

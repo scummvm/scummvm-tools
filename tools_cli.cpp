@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cassert>
 
 #include "tools_cli.h"
 

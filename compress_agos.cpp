@@ -20,6 +20,8 @@
  *
  */
 
+#include <cstring>
+
 #include "compress_agos.h"
 
 #define TEMP_DAT	"tempfile.dat"

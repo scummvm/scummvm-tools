@@ -22,6 +22,8 @@
  *
  */
 
+#include <cstdlib>
+
 #include "compress.h"
 #include "compress_saga.h"
 #include "common/md5.h"

@@ -23,6 +23,8 @@
 #include "adpcm.h"
 #include "common/endian.h"
 
+#include <assert.h>
+
 namespace Audio {
 
 // TODO: Switch from a SeekableReadStream to a plain ReadStream. This requires

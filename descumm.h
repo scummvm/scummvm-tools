@@ -24,9 +24,9 @@
 #ifndef DESCUMM_H
 #define DESCUMM_H
 
-#include "common/scummsys.h"
+#include <cassert>
 
-#include <assert.h>
+#include "common/scummsys.h"
 
 typedef unsigned int uint;
 

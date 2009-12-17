@@ -23,10 +23,10 @@
 #ifndef DEGOB_SCRIPT_H
 #define DEGOB_SCRIPT_H
 
-#include "common/scummsys.h"
-
 #include <string>
 #include <list>
+
+#include "common/scummsys.h"
 
 #define _OPCODET(ver, x) TYPE_TEXTDESC, 0, #x
 #define _OPCODEF(ver, x) TYPE_FUNCDESC, &ver::x, #x

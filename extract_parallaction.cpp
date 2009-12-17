@@ -20,6 +20,11 @@
  *
  */
 
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+
 #include "extract_parallaction.h"
 
 Archive::Archive(Tool &tool) : _tool(tool) {

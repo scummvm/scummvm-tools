@@ -20,6 +20,9 @@
  *
  */
 
+#include <cassert>
+#include <cstdlib>
+
 #include "compress_kyra.h"
 
 #include "compress.h"

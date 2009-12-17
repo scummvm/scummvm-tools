@@ -33,10 +33,12 @@
  *        as the input file (e.g. "./vol.cnf" or "/games/os/vol.cnf").
  */
 
+#include <cassert>
+#include <cstring>
+#include <algorithm>
+
 #include "extract_cine.h"
 #include "common/endian.h"
-
-#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////////////
 

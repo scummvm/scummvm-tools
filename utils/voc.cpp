@@ -25,6 +25,8 @@
 
 #include "common/endian.h"
 
+#include <assert.h>
+#include <stdlib.h>
 
 namespace Audio {
 

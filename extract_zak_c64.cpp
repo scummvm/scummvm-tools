@@ -20,6 +20,7 @@
  *
  */
 
+#include <cstdio>
 #include <stdarg.h>
 #include "extract_zak_c64.h"
 

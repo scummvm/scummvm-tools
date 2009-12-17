@@ -20,6 +20,9 @@
  *
  */
 
+#include <cstdlib>
+#include <cstdio>
+
 #include "common/file.h"
 
 enum {

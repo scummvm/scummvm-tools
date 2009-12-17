@@ -31,12 +31,14 @@
  * FIXME: Make this code endian safe.
  */
 
+#include <cassert>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+
 #include "common/scummsys.h"
 #include "common/endian.h"
 #include "common/util.h"
-
-#include <assert.h>
-#include <stdio.h>
 
 static const uint8 *_baseScriptData, *_scriptData;
 

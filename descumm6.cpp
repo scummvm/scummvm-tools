@@ -21,11 +21,13 @@
  *
  */
 
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+
 #include "descumm.h"
 
 #include "common/util.h"
-
-#include <stdio.h>
 
 /*
 switch/case statements have a pattern that look as follows (they were probably

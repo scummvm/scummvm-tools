@@ -21,11 +21,12 @@
  *
  */
 
-#include "encode_dxa.h"
-#include "common/endian.h"
-
+#include <cstdlib>
 #include <sys/stat.h>
 #include <png.h>
+
+#include "encode_dxa.h"
+#include "common/endian.h"
 
 const uint32 typeDEXA = 0x41584544;
 const uint32 typeFRAM = 0x4d415246;

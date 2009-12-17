@@ -20,6 +20,10 @@
  *
  */
 
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+
 #include "compress_sword1.h"
 
 #include "common/endian.h"

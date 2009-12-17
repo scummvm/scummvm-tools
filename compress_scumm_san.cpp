@@ -20,10 +20,13 @@
  *
  */
 
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <zlib.h>
+
 #include "compress_scumm_san.h"
 #include "common/endian.h"
-
-#include <zlib.h>
 
 void CompressScummSan::encodeSanWaveWithOgg(char *filename) {
 	char fbuf[2048];

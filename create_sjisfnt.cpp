@@ -23,15 +23,14 @@
  *
  */
 
+#include <cstdio>
+#include <cstdlib>
+#include <iconv.h>
+#include <vector>
 
 #include "common/endian.h"
 #include "common/file.h"
 #include "common/util.h"
-
-#include <iconv.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

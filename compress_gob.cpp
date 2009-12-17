@@ -20,6 +20,8 @@
  *
  */
 
+#include <cstring>
+
 #include "compress_gob.h"
 
 struct CompressGob::Chunk {

@@ -26,6 +26,8 @@
 #include "common/scummsys.h"
 #include "common/util.h"
 
+#include <string.h>
+
 namespace Audio {
 
 class Mixer {

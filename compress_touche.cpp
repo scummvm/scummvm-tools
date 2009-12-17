@@ -20,6 +20,8 @@
  *
  */
 
+#include <cstring>
+
 #include "compress.h"
 #include "compress_touche.h"
 

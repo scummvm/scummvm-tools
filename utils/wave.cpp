@@ -23,6 +23,9 @@
 #include "audiostream.h"
 #include "adpcm.h"
 
+#include <stdlib.h>
+#include <assert.h>
+
 namespace Audio {
 
 bool loadWAVFromStream(File &stream, int &size, int &rate, byte &flags, uint16 *wavType, int *blockAlign_) {
