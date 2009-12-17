@@ -322,7 +322,9 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 	int l, r, z;
 
 	const std::string wavPath = outputDir + "/" + inputFilename + ".wav";
-	File wavFile(wavPath.c_str(), "wb+");
+	File &wavFile(_waveTmpFile);
+
+	wavFile.open(wavPath.c_str(), "wb+");
 
 	int frameAudioSize = 0;
 	if (fps == 12) {
@@ -341,20 +343,24 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 	print("Mixing tracks into wav file...\n");
 	for (l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
-		char filename[200];
+			char filename[200];
 			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), _audioTracks[l].animFrame, _audioTracks[l].trackId);
 			_audioTracks[l].file.open(filename, "rb");
-			_audioTracks[l].file.seek(0, SEEK_END);
-			int fileSize = _audioTracks[l].file.pos();
-			_audioTracks[l].file.seek(0, SEEK_SET);
+			const uint32 fileSize = _audioTracks[l].file.size();
 			byte *tmpBuf = (byte *)malloc(fileSize);
 			_audioTracks[l].file.read_throwsOnError(tmpBuf, fileSize);
 			_audioTracks[l].file.close();
 			unlink(filename);
 
 			byte *wavBuf = (byte *)malloc(fileSize);
+			memset(wavBuf, 0, fileSize);
 			wavFile.seek(44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
-			wavFile.read_throwsOnError(wavBuf, fileSize);
+			try {
+				wavFile.read_throwsOnError(wavBuf, fileSize);
+			} catch (...) {
+				// ... pass through
+				wavFile.clearErr();
+			}
 
 			int offset = 0;
 			for (z = 0; z < _audioTracks[l].countFrames; z++) {
@@ -389,7 +395,6 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 		}
 	}
 
-	_waveTmpFile = wavFile;
 	_waveDataSize = frames * frameAudioSize;
 }
 
@@ -620,7 +625,7 @@ void CompressScummSan::execute() {
 	
 	try {
 		flu_in.open(flupath, "rb");
-	} catch(...) {
+	} catch (...) {
 		// pass
 	}
 
@@ -690,7 +695,7 @@ void CompressScummSan::execute() {
 		for (;;) {
 			try {
 				tag = input.readUint32BE(); // chunk tag
-			} catch(...) {
+			} catch (...) {
 				break;
 			}
 			if (input.eos())
