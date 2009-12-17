@@ -24,6 +24,7 @@
 #define COMMON_FILE_H
 
 #include "common/scummsys.h"
+#include "common/noncopyable.h"
 
 #include "tool_exception.h"
 
@@ -157,7 +158,7 @@ enum FileMode {
  * Offers functionality to write words easily, and deallocates the FILE
  * automatically on destruction.
  */
-class File {
+class File : public Common::NonCopyable {
 public:
 	/**
 	 * Opens the given file path as an in/out stream, depending on the
