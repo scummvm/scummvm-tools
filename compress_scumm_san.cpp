@@ -605,6 +605,8 @@ void CompressScummSan::execute() {
 		outpath.setExtension(".san");
 	}
 
+	assert(inpath.getFullPath() != outpath.getFullPath());
+
 	File input(inpath, "rb");
 	File output(outpath, "wb");
 
