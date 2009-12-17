@@ -28,21 +28,16 @@
 #include "compress_scumm_san.h"
 #include "common/endian.h"
 
-void CompressScummSan::encodeSanWaveWithOgg(char *filename) {
-	char fbuf[2048];
-	char fbuf2[2048];
-	sprintf(fbuf, "%s.wav", filename);
-	sprintf(fbuf2, "%s.ogg", filename);
-	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_VORBIS);
+void CompressScummSan::encodeSanWaveWithOgg(const std::string &filename) {
+	std::string fbuf = filename + ".wav";
+	std::string fbuf2 = filename + ".ogg";
+	encodeAudio(fbuf.c_str(), false, -1, fbuf2.c_str(), AUDIO_VORBIS);
 }
 
-void CompressScummSan::encodeSanWaveWithLame(char *filename) {
-	char fbuf[2048];
-	char fbuf2[2048];
-
-	sprintf(fbuf, "%s.wav", filename);
-	sprintf(fbuf2, "%s.mp3", filename);
-	encodeAudio(fbuf, false, -1, fbuf2, AUDIO_MP3);
+void CompressScummSan::encodeSanWaveWithLame(const std::string &filename) {
+	std::string fbuf = filename + ".wav";
+	std::string fbuf2 = filename + ".mp3";
+	encodeAudio(fbuf.c_str(), false, -1, fbuf2.c_str(), AUDIO_MP3);
 }
 
 void CompressScummSan::writeWaveHeader(int s_size) {
@@ -93,7 +88,7 @@ void CompressScummSan::writeWaveHeader(int s_size) {
 	_waveTmpFile.seek(0, SEEK_SET);
 	_waveTmpFile.write(wav, 44);
 }
-void CompressScummSan::writeToTempWaveFile(char *fileName, byte *output_data, unsigned int size) {
+void CompressScummSan::writeToTempWaveFile(const std::string &fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile.isOpen()) {
 		_waveTmpFile.open(fileName, "wb");
 		if (!_waveTmpFile.isOpen()) {
@@ -114,7 +109,7 @@ void CompressScummSan::writeToTempWaveFile(char *fileName, byte *output_data, un
 	_waveDataSize += size;
 }
 
-void CompressScummSan::decompressComiIACT(char *fileName, byte *output_data, byte *d_src, int bsize) {
+void CompressScummSan::decompressComiIACT(const std::string &fileName, byte *output_data, byte *d_src, int bsize) {
 	byte value;
 
 	while (bsize > 0) {
@@ -172,15 +167,14 @@ void CompressScummSan::decompressComiIACT(char *fileName, byte *output_data, byt
 	}
 }
 
-void CompressScummSan::handleComiIACT(File &input, int size, const char *outputDir, const char *inputFilename) {
-	char tmpPath[1024];
+void CompressScummSan::handleComiIACT(File &input, int size, const std::string &outputDir, const std::string &inputFilename) {
 	input.seek(10, SEEK_CUR);
 	int bsize = size - 18;
 	byte output_data[0x1000];
 	byte *src = (byte *)malloc(bsize);
 	input.read_throwsOnError(src, bsize);
 
-	sprintf(tmpPath, "%s/%s.wav", outputDir, inputFilename);
+	const std::string tmpPath = outputDir + "/" + inputFilename + ".wav";
 	decompressComiIACT(tmpPath, output_data, src, bsize);
 
 	free(src);
@@ -210,7 +204,7 @@ void CompressScummSan::flushTracks(int frame) {
 	}
 }
 
-void CompressScummSan::prepareForMixing(const char *outputDir, const char *inputFilename) {
+void CompressScummSan::prepareForMixing(const std::string &outputDir, const std::string &inputFilename) {
 	char filename[200];
 
 	print("Decompresing tracks files...\n");
@@ -218,7 +212,7 @@ void CompressScummSan::prepareForMixing(const char *outputDir, const char *input
 		if (_audioTracks[l].used) {
 			_audioTracks[l].file.close();
 			
-			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, _audioTracks[l].animFrame, _audioTracks[l].trackId);
+			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), _audioTracks[l].animFrame, _audioTracks[l].trackId);
 			_audioTracks[l].file.open(filename, "rb");
 			_audioTracks[l].file.seek(0, SEEK_END);
 			int fileSize = _audioTracks[l].file.pos();
@@ -324,13 +318,11 @@ static inline void clampedAdd(int16& a, int b) {
 
 	a = val;
 }
-void CompressScummSan::mixing(const char *outputDir, const char *inputFilename, int frames, int fps) {
-	char wavPath[200];
-	char filename[200];
+void CompressScummSan::mixing(const std::string &outputDir, const std::string &inputFilename, int frames, int fps) {
 	int l, r, z;
 
-	sprintf(wavPath, "%s/%s.wav", outputDir, inputFilename);
-	File wavFile(wavPath, "wb+");
+	const std::string wavPath = outputDir + "/" + inputFilename + ".wav";
+	File wavFile(wavPath.c_str(), "wb+");
 
 	int frameAudioSize = 0;
 	if (fps == 12) {
@@ -349,7 +341,8 @@ void CompressScummSan::mixing(const char *outputDir, const char *inputFilename, 
 	print("Mixing tracks into wav file...\n");
 	for (l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
-			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, _audioTracks[l].animFrame, _audioTracks[l].trackId);
+		char filename[200];
+			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), _audioTracks[l].animFrame, _audioTracks[l].trackId);
 			_audioTracks[l].file.open(filename, "rb");
 			_audioTracks[l].file.seek(0, SEEK_END);
 			int fileSize = _audioTracks[l].file.pos();
@@ -468,9 +461,8 @@ int32 CompressScummSan::handleSaudChunk(AudioTrackInfo *audioTrack, File &input)
 	return size;
 }
 
-void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int nbframes, File &input, const char *outputDir,
-					  const char *inputFilename, int &size, int volume, int pan, bool iact) {
-	char tmpPath[1024];
+void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int nbframes, File &input, const std::string &outputDir,
+					  const std::string &inputFilename, int &size, int volume, int pan, bool iact) {
 	AudioTrackInfo *audioTrack = NULL;
 	if (index == 0) {
 		audioTrack = allocAudioTrack(trackId, frame);
@@ -497,7 +489,8 @@ void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int n
 			size -= (input.pos() - pos) + 10;
 			audioTrack->lastFrame = frame;
 		}
-		sprintf(tmpPath, "%s/%s_%04d_%03d.tmp", outputDir, inputFilename, frame, trackId);
+		char tmpPath[1024];
+		sprintf(tmpPath, "%s/%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), frame, trackId);
 		audioTrack->file.open(tmpPath, "wb");
 		if (!audioTrack->file.isOpen()) {
 			error("error writing temp file");
@@ -535,7 +528,7 @@ void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int n
 	}
 }
 
-void CompressScummSan::handleDigIACT(File &input, int size, const char *outputDir, const char *inputFilename,int flags, int track_flags, int frame) {
+void CompressScummSan::handleDigIACT(File &input, int size, const std::string &outputDir, const std::string &inputFilename,int flags, int track_flags, int frame) {
 	int track = input.readUint16LE();
 	int index = input.readUint16LE();
 	int nbframes = input.readUint16LE();
@@ -566,7 +559,7 @@ void CompressScummSan::handleDigIACT(File &input, int size, const char *outputDi
 	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, size, volume, pan, true);
 }
 
-void CompressScummSan::handlePSAD(File &input, int size, const char *outputDir, const char *inputFilename, int frame) {
+void CompressScummSan::handlePSAD(File &input, int size, const std::string &outputDir, const std::string &inputFilename, int frame) {
 	int trackId = input.readUint16LE();
 	int index = input.readUint16LE();
 	int nbframes = input.readUint16LE();
@@ -597,14 +590,24 @@ void CompressScummSan::execute() {
 		error("Only ogg vorbis and MP3 are supported for this tool.");
 
 	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Filename outpath(_outputPath);
 
+	// We default to the current directory.
+	// TODO: We shouldn't have to do this, an empty output path *should* work
+	// fine. However, it currently doesn't, because we insert an extra slash
+	// between the outpath and some filename, which would cause paths like
+	//  "/foo.san" be formed -- and we wouldn't want to write into the root dir
+	// by accident, right?
 	if (outpath.empty()) {
-		// Change extension for output
-		outpath = inpath;
-		outpath.setExtension(".san");
+		outpath.setFullPath("./");	// FIXME: Crude hack. Will this work on Windows?
 	}
 
+	// Use the same filename as for the input file, and ensure the extension is right.
+	outpath.setFullName(inpath.getName());
+	outpath.setExtension(".san");
+
+	// Don't use the input file name for output by some weird accident.
+	// (This check won't catch all cases of this, but it's better than nothing.)
 	assert(inpath.getFullPath() != outpath.getFullPath());
 
 	File input(inpath, "rb");
@@ -714,9 +717,9 @@ void CompressScummSan::execute() {
 				int unk = input.readUint16LE();
 				int track_flags = input.readUint16LE();
 				if ((code == 8) && (track_flags == 0) && (unk == 0) && (flags == 46)) {
-					handleComiIACT(input, size, outpath.getPath().c_str(), inpath.getFullName().c_str());
+					handleComiIACT(input, size, outpath.getPath(), inpath.getFullName());
 				} else if ((code == 8) && (track_flags != 0) && (unk == 0) && (flags == 46)) {
-					handleDigIACT(input, size, outpath.getPath().c_str(), inpath.getFullName().c_str(), flags, track_flags, l);
+					handleDigIACT(input, size, outpath.getPath(), inpath.getFullName(), flags, track_flags, l);
 					tracksCompress = true;
 					fps = 12;
 				} else {
@@ -732,7 +735,7 @@ void CompressScummSan::execute() {
 				continue;
 			} else if ((tag == 'PSAD') && (!flu_in.isOpen())) {
 				size = input.readUint32BE(); // chunk size
-				handlePSAD(input, size, outpath.getPath().c_str(), inpath.getFullName().c_str(), l);
+				handlePSAD(input, size, outpath.getPath(), inpath.getFullName(), l);
 				if ((size & 1) != 0) {
 					input.seek(1, SEEK_CUR);
 					size++;
@@ -755,21 +758,20 @@ skip:
 	}
 
 	if (tracksCompress) {
-		prepareForMixing(outpath.getPath().c_str(), inpath.getFullName().c_str());
+		prepareForMixing(outpath.getPath(), inpath.getFullName());
 		assert(fps);
-		mixing(outpath.getPath().c_str(), inpath.getFullName().c_str(), nbframes, fps);
+		mixing(outpath.getPath(), inpath.getFullName(), nbframes, fps);
 	}
 
 	if (_waveTmpFile.isOpen()) {
-		char tmpPath[1024];
+		std::string tmpPath = outpath.getPath() + "/" + inpath.getFullName();
 		writeWaveHeader(_waveDataSize);
-		sprintf(tmpPath, "%s/%s", outpath.getPath().c_str(), inpath.getFullName().c_str());
 		if (_format == AUDIO_VORBIS)
 			encodeSanWaveWithOgg(tmpPath);
 		else
 			encodeSanWaveWithLame(tmpPath);
-		sprintf(tmpPath, "%s/%s.wav", outpath.getPath().c_str(), inpath.getFullName().c_str());
-		unlink(tmpPath);
+		tmpPath += ".wav";
+		unlink(tmpPath.c_str());
 	}
 
 	input.close();
