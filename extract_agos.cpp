@@ -203,7 +203,7 @@ void *ExtractAgos::loadfile(const Filename &name) {
  * @param length How many bytes to write
  */
 void ExtractAgos::savefile(const Filename &name, void *mem, size_t length) {
-	File file(name, FILEMODE_WRITE);
+	File file(name, "wb");
 	file.write(mem, length);
 }
 

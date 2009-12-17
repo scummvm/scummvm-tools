@@ -26,15 +26,14 @@
 #include <assert.h>
 
 // Filenname implementation
-Filename::Filename(const char *path) {
-	_path = path;
+Filename::Filename() {
 }
-Filename::Filename(std::string path) {
-	_path = path;
+Filename::Filename(const char *path) : _path(path) {
+}
+Filename::Filename(std::string path) : _path(path) {
 }
 
-Filename::Filename(const Filename& filename) {
-	_path = filename._path;
+Filename::Filename(const Filename& filename) : _path(filename._path) {
 }
 
 Filename& Filename::operator=(const Filename& filename) {
@@ -189,14 +188,6 @@ File::File() {
 	_xormode = 0;
 }
 
-File::File(const Filename &filepath, FileMode mode) {
-	_file = NULL;
-	_mode = FILEMODE_READ;
-	_xormode = 0;
-
-	open(filepath, mode);
-}
-
 File::File(const Filename &filepath, const char *mode) {
 	_file = NULL;
 	_mode = FILEMODE_READ;
@@ -210,36 +201,24 @@ File::~File() {
 }
 
 void File::open(const Filename &filepath, const char *mode) {
-	FileMode m = FILEMODE_WRITE;
+	
+	// Clean up previously opened file
+	close();
+
+	_file = fopen(filepath.getFullPath().c_str(), mode);
+
+	FileMode m = FILEMODE_READ;
 	do {
 		switch(*mode) {
 		case 'w': m = FILEMODE_WRITE; break;
 		case 'r': m = FILEMODE_READ; break;
 		case 'b': m = FileMode(m | FILEMODE_BINARY); break;
-		case '+': m = FileMode(m | FILEMODE_APPEND); break;
+		case '+': m = FileMode(m | FILEMODE_READ | FILEMODE_WRITE); break;
 		default: throw FileException(std::string("Unsupported FileMode ") + mode);
 		}
 	} while (*++mode);
-	
-	open(filepath, m);
-}
+	_mode = m;
 
-void File::open(const Filename &filepath, FileMode mode) {
-	// Clean up previously opened file
-	close();
-
-	std::string strmode;
-	if (mode & FILEMODE_READ)
-		strmode += 'r';
-	if (mode & FILEMODE_WRITE)
-		strmode += 'w';
-	if (mode & FILEMODE_BINARY)
-		strmode += 'b';
-	if (mode & FILEMODE_APPEND)
-		strmode += '+';
-
-	_file = fopen(filepath.getFullPath().c_str(), strmode.c_str());
-	_mode = mode;
 	_name = filepath;
 	_xormode = 0;
 
@@ -486,6 +465,10 @@ int File::pos() const {
 
 int File::err() const {
 	return ferror(_file);
+}
+
+void File::clearErr() {
+	clearerr(_file);
 }
 
 bool File::eos() const {

@@ -44,7 +44,8 @@ class Filename {
 public:
 	std::string _path;
 
-	Filename(std::string path = "");
+	Filename();
+	Filename(std::string path);
 	Filename(const char *path);
 	Filename(const Filename &path);
 	Filename& operator=(const Filename &fn);
@@ -148,8 +149,7 @@ public:
 enum FileMode {
 	FILEMODE_READ = 1,
 	FILEMODE_WRITE = 2,
-	FILEMODE_BINARY = 4,
-	FILEMODE_APPEND = 8,
+	FILEMODE_BINARY = 4
 };
 
 /**
@@ -162,12 +162,10 @@ public:
 	/**
 	 * Opens the given file path as an in/out stream, depending on the
 	 * second argument.
-	 * File is always opened in binary mode.
 	 *
-	 * @param filename The file to open
-	 * @param mode The mode to open the file in, can be either OR mask or in text
+	 * @param filename	file to open
+	 * @param mode		mode to open the file in
 	 */
-	File(const Filename &filename, FileMode mode);
 	File(const Filename &filename, const char *mode);
 
 	/**
@@ -180,11 +178,10 @@ public:
 	 * Opens the given file path as an in/out stream, depending on the
 	 * second argument.
 	 *
-	 * @param filename The file to open
-	 * @param mode The mode to open the file in
+	 * @param filename	file to open
+	 * @param mode		mode to open the file in
 	 */
 	void open(const Filename &filename, const char *mode);
-	void open(const Filename &filename, FileMode mode);
 
 	/**
 	 * Closes the file, if it's open.
@@ -364,6 +361,8 @@ public:
 	 * Check whether an error occurred.
 	 */
 	int err() const;
+
+	void clearErr();
 
 	/**
 	 * True if there is nothing more to read from this file.
