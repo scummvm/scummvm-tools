@@ -122,7 +122,7 @@ CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name, TOOL
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress SAGA engine games such as Inherit the Earth.";
+	_shorthelp = "Used to compress SAGA engine games such as Inherit the Earth and I Have no Mouth.";
 	_helptext = "\nUsage: " + getName() +" [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n";
 }
 
@@ -426,6 +426,11 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 void CompressSaga::execute() {
 	Filename inpath(_inputPaths[0].path);
 	Filename &outpath = _outputPath;
+
+	if (outpath.directory()) {
+		outpath.setFullName(inpath.getName());
+		outpath.setExtension(".cmp");
+	}
 
 	// ITE
 	inpath.setExtension(".rsc");
