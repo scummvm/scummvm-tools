@@ -170,7 +170,7 @@ bool CompressSaga::detectFile(Filename *infile) {
 					_currentGameDescription = &gameDescriptions[i];
 					_currentFileDescription = &_currentGameDescription->filesDescriptions[j];
 
-					print("Matched game: I have no mouth, and I must scream\n");
+					print("Matched game: I Have No Mouth, and I Must Scream\n");
 					return true;
 				}
 			}

@@ -447,7 +447,7 @@ void ChooseInPage::onNext(wxWindow *panel) {
 			switchPage(new ChooseOutPage(_configuration));
 	} else {
 		wxArrayString ls = g_tools.getToolList(filename,
-			_configuration.compressing? TOOLTYPE_COMPRESSION : TOOLTYPE_EXTRACTION);
+			_configuration.compressing ? TOOLTYPE_COMPRESSION : TOOLTYPE_EXTRACTION);
 		if (ls.size() == 1) {
 			_configuration.selectedTool = g_tools.get(ls[0]);
 			if (_configuration.selectedTool->getInputList().size() == 1)
