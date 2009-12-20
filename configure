@@ -83,6 +83,8 @@ _ar="ar cru"
 _wxconfig=wx-config
 _wxpath="$PATH"
 _prefix=/usr/local
+_wxincludes=""
+_wxlibs=""
 
 _srcdir=`dirname $0`
 
@@ -883,8 +885,11 @@ test -z "$_libdir" && _libdir="$_prefix/lib"
 
 
 find_wxconfig
-INCLUDES="$INCLUDES `$_wxconfig --prefix="$_wxpath" --cflags`"
-LIBS="$LIBS `$_wxconfig --prefix="$_wxpath" --libs`"
+if test -n "$_wxconfig"; then
+	_wxincludes="`$_wxconfig --prefix="$_wxpath" --cflags`"
+	_wxlibs="`$_wxconfig --prefix="$_wxpath" --libs`"
+fi
+
 
 #
 # Do CXXFLAGS now we know the compiler version
@@ -983,6 +988,9 @@ INCLUDES += $INCLUDES
 OBJS += $OBJS
 DEFINES += $DEFINES
 LDFLAGS += $LDFLAGS
+
+WXINCLUDES := $_wxincludes
+WXLIBS:= $_wxlibs
 
 SAVED_CONFIGFLAGS  := $SAVED_CONFIGFLAGS
 SAVED_LDFLAGS      := $SAVED_LDFLAGS

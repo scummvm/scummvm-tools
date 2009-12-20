@@ -126,7 +126,7 @@ tools_gui$(EXEEXT): gui/main.o gui/pages.o gui/gui_tools.o compress_agos.o compr
 	extract_agos.o extract_cine.o extract_gob_stk.o extract_kyra.o extract_loom_tg16.o extract_mm_apple.o \
 	extract_mm_c64.o extract_mm_nes.o extract_parallaction.o extract_scumm_mac.o extract_t7g_mac.o \
 	encode_dxa.o extract_zak_c64.o kyra_pak.o kyra_ins.o compress.o tool.o tools.o $(UTILS)
-	$(CXX) $(LDFLAGS) -o $@ $+ $(LIBS)
+	$(CXX) $(LDFLAGS) -o $@ $+ $(WXLIBS) $(LIBS)
 
 tools_cli$(EXEEXT): main_cli.o tools_cli.o compress_agos.o compress_gob.o compress_kyra.o \
 	compress_queen.o compress_saga.o compress_scumm_bun.o compress_scumm_san.o compress_scumm_sou.o \
@@ -134,25 +134,25 @@ tools_cli$(EXEEXT): main_cli.o tools_cli.o compress_agos.o compress_gob.o compre
 	extract_agos.o extract_cine.o extract_gob_stk.o extract_kyra.o extract_loom_tg16.o extract_mm_apple.o \
 	extract_mm_c64.o extract_mm_nes.o extract_parallaction.o extract_scumm_mac.o extract_t7g_mac.o \
 	encode_dxa.o extract_zak_c64.o kyra_pak.o kyra_ins.o compress.o tool.o tools.o $(UTILS)
-	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -lz -lvorbis -logg -lvorbisenc -lFLAC
+	$(CXX) $(LDFLAGS) -o $@ $+ $(LIBS) -lpng
 
 sword2_clue$(EXEEXT): sword2_clue.o
 	$(CXX) $(LDFLAGS) -o $@ $+ `pkg-config --libs gtk+-2.0`
 
 gui/main.o: gui/main.cpp gui/main.h gui/configuration.h gui/pages.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c gui/main.cpp -o gui/main.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(WXINCLUDES) -c gui/main.cpp -o gui/main.o
 
 gui/pages.o: gui/pages.cpp gui/pages.h gui/main.h gui/gui_tools.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c gui/pages.cpp -o gui/pages.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(WXINCLUDES) -c gui/pages.cpp -o gui/pages.o
 
 create_sjisfnt.o: create_sjisfnt.cpp util.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `freetype-config --cflags` -c create_sjisfnt.cpp -o create_sjisfnt.o
 
 tools_gui.o: tools_gui.cpp tools_gui.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c tools_gui.cpp -o tools_gui.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(WXINCLUDES) -c tools_gui.cpp -o tools_gui.o
 
 gui/gui_tools.o: gui/gui_tools.cpp gui/gui_tools.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c gui/gui_tools.cpp -o gui/gui_tools.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(WXINCLUDES) -c gui/gui_tools.cpp -o gui/gui_tools.o
 
 sword2_clue.o: sword2_clue.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) `pkg-config --cflags gtk+-2.0` -c sword2_clue.cpp
