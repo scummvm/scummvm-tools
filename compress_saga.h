@@ -75,7 +75,7 @@ protected:
 	uint8 _sampleBits;
 	uint8 _sampleStereo;
 
-	bool detectFile(Filename *infile);
+	bool detectFile(const Filename *infile);
 	uint32 copyFile(const char *fromFileName, File &outputFile);
 	void copyFile(File &inputFile, uint32 inputSize, const char *toFileName);
 	void writeBufferToFile(uint8 *data, uint32 inputSize, const char *toFileName);

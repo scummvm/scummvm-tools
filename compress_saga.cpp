@@ -65,7 +65,7 @@ static CompressSaga::GameFileDescription ITE_GameFiles[] = {
 	{"voices.rsc",					false,		"c58e67c506af4ffa03fd0aac2079deb0", kSoundVOC,		-1,			false},	// Early DOS demo
 	{"voicesd.rsc",					false,		"e139d86bab2ee8ba3157337f894a92d4", kSoundVOX,		22050,		false},	// New PC demos and all Mac demos
 	// Unsupported (8 bit unsigned sound) - used in the early ITE Win32 demo
-	//{"voicesd.rsc",				false,		"0759eaf5b64ae19fd429920a70151ad3", kSoundPCM,		22050,			false},	// Old Win32 demo
+	//{"voicesd.rsc",				false,		"0759eaf5b64ae19fd429920a70151ad3", kSoundPCM,		22050,		false},	// Old Win32 demo
 	{"ite voices.bin",				true,		"dba92ae7d57e942250fe135609708369", kSoundMacPCM,	22050,		false}	// MacBinary
 	// TODO: Add known Amiga files
 };
@@ -127,17 +127,14 @@ CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name, TOOL
 }
 
 InspectionMatch CompressSaga::inspectInput(const Filename &filename) {
-	if (filename.hasExtension("rsc") ||
-		filename.hasExtension("res") ||
-		filename.hasExtension("bin") ||
-		filename.getFullName() == "inherit the earth voices")
+	if (detectFile(&filename))
 		return IMATCH_PERFECT;
 	return IMATCH_AWFUL;
 }
 
 // --------------------------------------------------------------------------------
 
-bool CompressSaga::detectFile(Filename *infile) {
+bool CompressSaga::detectFile(const Filename *infile) {
 	int gamesCount = ARRAYSIZE(gameDescriptions);
 	int i, j;
 	uint8 md5sum[16];
@@ -432,30 +429,10 @@ void CompressSaga::execute() {
 		outpath.setExtension(".cmp");
 	}
 
-	// ITE
-	inpath.setExtension(".rsc");
 	if (detectFile(&inpath)) {
 		sagaEncode(&inpath, &outpath);
 	} else {
-		// IHNM
-		inpath.setExtension(".res");
-		if (detectFile(&inpath)) {
-			sagaEncode(&inpath, &outpath);
-		} else {
-			// Check for "inherit the earth voices"
-			inpath.setFullName("inherit the earth voices");
-			if (detectFile(&inpath)) {
-				sagaEncode(&inpath, &outpath);
-			} else {
-				// Check for MacBinary
-				inpath.setExtension(".bin");
-				if (detectFile(&inpath)) {
-					sagaEncode(&inpath, &outpath);
-				} else {
-					error("Failed to compress file %s", inpath.getFullPath().c_str());
-				}
-			}
-		}
+		error("Failed to compress file %s", inpath.getFullPath().c_str());
 	}
 }
 
