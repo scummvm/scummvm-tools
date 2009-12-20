@@ -305,7 +305,7 @@ ToolType Tool::getType() const {
 
 // Standard print function
 void Tool::standardPrint(void * /*udata*/, const char *text) {
-	puts(text);
+	fputs(text, stdout);
 }
 
 // Standard progress function (does nothing)
