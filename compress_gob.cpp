@@ -47,10 +47,10 @@ CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTY
 
 	_shorthelp = "Compresses Gobliiins! data files.";
 	_helptext = 
-		"\nUsage: " + getName() + " [-o <output> = out.stk] [-f] <conf file>\n"
+		"\nUsage: " + getName() + " [-o <output path>] [-f] <conf file>\n"
 		"<conf file> is a .gob file generated extract_gob_stk\n"
-		"<-f> ignores the compression flag in the .gob file and force compression for all files\n\n"
-		"The stick archive (STK/ITK/LTK) will be created in the current directory.\n";
+		"<-f> forces compression for all files\n\n"
+		"The stick archive (STK/ITK/LTK) will be created in the directory specified by the '-o' parameter.\n";
 }
 
 CompressGob::~CompressGob() {
@@ -72,22 +72,18 @@ void CompressGob::execute() {
 
 	Common::Filename inpath(_inputPaths[0].path);
 
-// We output with .stk extension, if there is no specific out file
+	// We output with .stk extension, if there is no specific out file
 	if (_outputPath.empty()) {
 		_outputPath = inpath;
-		_outputPath.setExtension(".stk");
 	}
-	if (_outputPath.directory()) {
-		_outputPath.setFullName(inpath.getName());
-		_outputPath.setExtension(".stk");
-	}
-
 	// Open input (config) file
 	gobConf.open(inpath, "r");
 	// Read the input into memory
 	_chunks = readChunkConf(gobConf, inpath, chunkCount);
 	gobConf.close();
 
+	_outputPath.setFullName(inpath.getFullName());
+	
 	stk.open(_outputPath, "wb");
 
 	// Output in compressed format
