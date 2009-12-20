@@ -216,6 +216,20 @@ void CompressSaga::writeBufferToFile(uint8 *data, uint32 inputSize, const char *
 	tempf.write(data, inputSize);
 }
 
+byte CompressSaga::compression_format(AudioFormat format) {
+	switch(format) {
+	case AUDIO_MP3:
+		return 0;
+	case AUDIO_VORBIS:
+		return 1;
+	case AUDIO_FLAC:
+		return 2;
+	case AUDIO_NONE:
+	default:
+		throw ToolException("Unknown compression format");
+	}
+}
+
 void CompressSaga::writeHeader(File &outputFile) {
 	outputFile.writeByte(compression_format(_format));
 	outputFile.writeUint16LE(_sampleRate);

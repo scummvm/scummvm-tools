@@ -82,6 +82,8 @@ protected:
 	void writeHeader(File &outputFile);
 	uint32 encodeEntry(File &inputFile, uint32 inputSize, File &outputFile);
 	void sagaEncode(Filename *inpath, Filename *outpath);
+
+	byte compression_format(AudioFormat format);
 };
 
 #endif
