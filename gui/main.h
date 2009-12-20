@@ -43,7 +43,7 @@ enum GUI_ID {
 	ID_EXTRACT,
 	ID_ADVANCED,
 	ID_WEBSITE,
-	ID_MANUAL,
+	ID_MANUAL
 };
 
 /**
