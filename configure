@@ -73,6 +73,7 @@ _vorbis=auto
 _tremor=auto
 _flac=auto
 _mad=auto
+_zlib=auto
 _endian=unknown
 _need_memalign=no
 _verbose_build=no

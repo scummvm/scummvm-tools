@@ -126,7 +126,7 @@ tools_gui$(EXEEXT): gui/main.o gui/pages.o gui/gui_tools.o compress_agos.o compr
 	extract_agos.o extract_cine.o extract_gob_stk.o extract_kyra.o extract_loom_tg16.o extract_mm_apple.o \
 	extract_mm_c64.o extract_mm_nes.o extract_parallaction.o extract_scumm_mac.o extract_t7g_mac.o \
 	encode_dxa.o extract_zak_c64.o kyra_pak.o kyra_ins.o compress.o tool.o tools.o $(UTILS)
-	$(CXX) $(LDFLAGS) -o $@ $+ $(WXLIBS) $(LIBS)
+	$(CXX) $(LDFLAGS) -o $@ $+ $(WXLIBS) $(LIBS) -lpng
 
 tools_cli$(EXEEXT): main_cli.o tools_cli.o compress_agos.o compress_gob.o compress_kyra.o \
 	compress_queen.o compress_saga.o compress_scumm_bun.o compress_scumm_san.o compress_scumm_sou.o \
