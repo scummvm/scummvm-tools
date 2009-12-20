@@ -45,7 +45,7 @@
 ExtractCine::ExtractCine(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	
 	ToolInput input;
-	input.format = "*.CNF";
+	input.format = "*.*";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to unpack Delphine's Cinematique engine's archive files.";
