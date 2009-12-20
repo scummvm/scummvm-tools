@@ -161,129 +161,129 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 	}
 
 #ifdef DISABLE_BUILTIN_VORBIS
-		if (compmode == AUDIO_VORBIS) {
-			tmp += sprintf(tmp, "oggenc ");
-			if (rawInput) {
-				tmp += sprintf(tmp, "--raw ");
-				tmp += sprintf(tmp, "--raw-chan=%d ", (rawAudioType.isStereo ? 2 : 1));
-				tmp += sprintf(tmp, "--raw-bits=%d ", rawAudioType.bitsPerSample);
-				tmp += sprintf(tmp, "--raw-rate=%d ", rawSamplerate);
-				tmp += sprintf(tmp, "--raw-endianness=%d ", (rawAudioType.isLittleEndian ? 0 : 1));
-			}
-
-			if (oggparms.nominalBitr != -1) {
-				tmp += sprintf(tmp, "--bitrate=%d ", oggparms.nominalBitr);
-			} else {
-				tmp += sprintf(tmp, "--quality=%d ", oggparms.quality);
-			}
-
-			if (oggparms.minBitr != -1) {
-				tmp += sprintf(tmp, "--min-bitrate=%d ", oggparms.minBitr);
-			}
-
-			if (oggparms.maxBitr != -1) {
-				tmp += sprintf(tmp, "--max-bitrate=%d ", oggparms.maxBitr);
-			}
-
-			if (oggparms.silent) {
-				tmp += sprintf(tmp, "--quiet ");
-			}
-
-			tmp += sprintf(tmp, "--output=\"%s\" ", outname);
-			tmp += sprintf(tmp, "\"%s\" ", inname);
-
-			err = spawnSubprocess(fbuf) != 0;
-
-			if (err) {
-				char buf[2048];
-				sprintf(buf, "Error in Vorbis encoder. (check parameters)\nVorbis Encoder Commandline:%s\n", fbuf);
-				throw ToolException(buf, err);
-			} else {
-				return;
-			}
+	if (compmode == AUDIO_VORBIS) {
+		tmp += sprintf(tmp, "oggenc ");
+		if (rawInput) {
+			tmp += sprintf(tmp, "--raw ");
+			tmp += sprintf(tmp, "--raw-chan=%d ", (rawAudioType.isStereo ? 2 : 1));
+			tmp += sprintf(tmp, "--raw-bits=%d ", rawAudioType.bitsPerSample);
+			tmp += sprintf(tmp, "--raw-rate=%d ", rawSamplerate);
+			tmp += sprintf(tmp, "--raw-endianness=%d ", (rawAudioType.isLittleEndian ? 0 : 1));
 		}
+
+		if (oggparms.nominalBitr != -1) {
+			tmp += sprintf(tmp, "--bitrate=%d ", oggparms.nominalBitr);
+		} else {
+			tmp += sprintf(tmp, "--quality=%d ", oggparms.quality);
+		}
+
+		if (oggparms.minBitr != -1) {
+			tmp += sprintf(tmp, "--min-bitrate=%d ", oggparms.minBitr);
+		}
+
+		if (oggparms.maxBitr != -1) {
+			tmp += sprintf(tmp, "--max-bitrate=%d ", oggparms.maxBitr);
+		}
+
+		if (oggparms.silent) {
+			tmp += sprintf(tmp, "--quiet ");
+		}
+
+		tmp += sprintf(tmp, "--output=\"%s\" ", outname);
+		tmp += sprintf(tmp, "\"%s\" ", inname);
+
+		err = spawnSubprocess(fbuf) != 0;
+
+		if (err) {
+			char buf[2048];
+			sprintf(buf, "Error in Vorbis encoder. (check parameters)\nVorbis Encoder Commandline:%s\n", fbuf);
+			throw ToolException(buf, err);
+		} else {
+			return;
+		}
+	}
 #endif
 
 #ifdef DISABLE_BUILTIN_FLAC
-		if (compmode == AUDIO_FLAC) {
-			/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
-			/* -f is reqired to force override of unremoved temp file. See bug #1294648 */
-			tmp += sprintf(tmp, "flac -f --lax --no-padding --no-seektable --no-ogg ");
+	if (compmode == AUDIO_FLAC) {
+		/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
+		/* -f is reqired to force override of unremoved temp file. See bug #1294648 */
+		tmp += sprintf(tmp, "flac -f --lax --no-padding --no-seektable --no-ogg ");
 
-			if (rawInput) {
-				tmp += sprintf(tmp, "--force-raw-format ");
-				tmp += sprintf(tmp, "--sign=%s ", ((rawAudioType.bitsPerSample == 8) ? "unsigned" : "signed"));
-				tmp += sprintf(tmp, "--channels=%d ", (rawAudioType.isStereo ? 2 : 1));
-				tmp += sprintf(tmp, "--bps=%d ", rawAudioType.bitsPerSample);
-				tmp += sprintf(tmp, "--sample-rate=%d ", rawSamplerate);
-				tmp += sprintf(tmp, "--endian=%s ", (rawAudioType.isLittleEndian ? "little" : "big"));
-			}
-
-			if (flacparms.silent) {
-				tmp += sprintf(tmp, "--silent ");
-			}
-
-			if (flacparms.verify) {
-				tmp += sprintf(tmp, "--verify ");
-			}
-
-			tmp += sprintf(tmp, "--compression-level-%d ", flacparms.compressionLevel);
-			tmp += sprintf(tmp, "-b %d ", flacparms.blocksize);
-			tmp += sprintf(tmp, "-o \"%s\" ", outname);
-			tmp += sprintf(tmp, "\"%s\" ", inname);
-
-			err = spawnSubprocess(fbuf) != 0;
-
-			if (err) {
-				char buf[2048];
-				sprintf(buf, "Error in FLAC encoder. (check parameters)\nFLAC Encoder Commandline:%s\n", fbuf);
-				throw ToolException(buf, err);
-			} else {
-				return;
-			}
-		}
-#endif
 		if (rawInput) {
-			long length;
-			char *rawData;
-
-			File inputRaw(inname, "rb");
-			length = inputRaw.size();
-			rawData = (char *)malloc(length);
-			inputRaw.read_throwsOnError(rawData, length);
-
-			encodeRaw(rawData, length, rawSamplerate, outname, compmode);
-
-			free(rawData);
-		} else {
-			int fmtHeaderSize, length, numChannels, sampleRate, bitsPerSample;
-			char *wavData;
-
-			File inputWav(inname, "rb");
-
-			/* Standard PCM fmt header is 16 bits, but at least Simon 1 and 2 use 18 bits */
-			inputWav.seek(16, SEEK_SET);
-			fmtHeaderSize = inputWav.readUint32LE();
-
-			inputWav.seek(22, SEEK_SET);
-			numChannels = inputWav.readUint16LE();
-			sampleRate = inputWav.readUint32LE();
-
-			inputWav.seek(34, SEEK_SET);
-			bitsPerSample = inputWav.readUint16LE();
-
-			/* The size of the raw audio is after the RIFF chunk (12 bytes), fmt chunk (8 + fmtHeaderSize bytes), and data chunk id (4 bytes) */
-			inputWav.seek(24 + fmtHeaderSize, SEEK_SET);
-			length = inputWav.readUint32LE();
-
-			wavData = (char *)malloc(length);
-			inputWav.read_throwsOnError(wavData, length);
-
-			setRawAudioType(true, numChannels == 2, (uint8)bitsPerSample);
-			encodeRaw(wavData, length, sampleRate, outname, compmode);
-
-			free(wavData);
+			tmp += sprintf(tmp, "--force-raw-format ");
+			tmp += sprintf(tmp, "--sign=%s ", ((rawAudioType.bitsPerSample == 8) ? "unsigned" : "signed"));
+			tmp += sprintf(tmp, "--channels=%d ", (rawAudioType.isStereo ? 2 : 1));
+			tmp += sprintf(tmp, "--bps=%d ", rawAudioType.bitsPerSample);
+			tmp += sprintf(tmp, "--sample-rate=%d ", rawSamplerate);
+			tmp += sprintf(tmp, "--endian=%s ", (rawAudioType.isLittleEndian ? "little" : "big"));
 		}
+
+		if (flacparms.silent) {
+			tmp += sprintf(tmp, "--silent ");
+		}
+
+		if (flacparms.verify) {
+			tmp += sprintf(tmp, "--verify ");
+		}
+
+		tmp += sprintf(tmp, "--compression-level-%d ", flacparms.compressionLevel);
+		tmp += sprintf(tmp, "-b %d ", flacparms.blocksize);
+		tmp += sprintf(tmp, "-o \"%s\" ", outname);
+		tmp += sprintf(tmp, "\"%s\" ", inname);
+
+		err = spawnSubprocess(fbuf) != 0;
+
+		if (err) {
+			char buf[2048];
+			sprintf(buf, "Error in FLAC encoder. (check parameters)\nFLAC Encoder Commandline:%s\n", fbuf);
+			throw ToolException(buf, err);
+		} else {
+			return;
+		}
+	}
+#endif
+	if (rawInput) {
+		long length;
+		char *rawData;
+
+		File inputRaw(inname, "rb");
+		length = inputRaw.size();
+		rawData = (char *)malloc(length);
+		inputRaw.read_throwsOnError(rawData, length);
+
+		encodeRaw(rawData, length, rawSamplerate, outname, compmode);
+
+		free(rawData);
+	} else {
+		int fmtHeaderSize, length, numChannels, sampleRate, bitsPerSample;
+		char *wavData;
+
+		File inputWav(inname, "rb");
+
+		/* Standard PCM fmt header is 16 bits, but at least Simon 1 and 2 use 18 bits */
+		inputWav.seek(16, SEEK_SET);
+		fmtHeaderSize = inputWav.readUint32LE();
+
+		inputWav.seek(22, SEEK_SET);
+		numChannels = inputWav.readUint16LE();
+		sampleRate = inputWav.readUint32LE();
+
+		inputWav.seek(34, SEEK_SET);
+		bitsPerSample = inputWav.readUint16LE();
+
+		/* The size of the raw audio is after the RIFF chunk (12 bytes), fmt chunk (8 + fmtHeaderSize bytes), and data chunk id (4 bytes) */
+		inputWav.seek(24 + fmtHeaderSize, SEEK_SET);
+		length = inputWav.readUint32LE();
+
+		wavData = (char *)malloc(length);
+		inputWav.read_throwsOnError(wavData, length);
+
+		setRawAudioType(true, numChannels == 2, (uint8)bitsPerSample);
+		encodeRaw(wavData, length, sampleRate, outname, compmode);
+
+		free(wavData);
+	}
 }
 
 void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode) {
