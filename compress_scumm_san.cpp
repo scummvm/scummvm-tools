@@ -167,7 +167,7 @@ void CompressScummSan::decompressComiIACT(const std::string &fileName, byte *out
 	}
 }
 
-void CompressScummSan::handleComiIACT(File &input, int size, const std::string &outputDir, const std::string &inputFilename) {
+void CompressScummSan::handleComiIACT(Common::File &input, int size, const std::string &outputDir, const std::string &inputFilename) {
 	input.seek(10, SEEK_CUR);
 	int bsize = size - 18;
 	byte output_data[0x1000];
@@ -322,7 +322,7 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 	int l, r, z;
 
 	const std::string wavPath = outputDir + "/" + inputFilename + ".wav";
-	File &wavFile(_waveTmpFile);
+	Common::File &wavFile(_waveTmpFile);
 
 	wavFile.open(wavPath.c_str(), "wb+");
 
@@ -398,7 +398,7 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 	_waveDataSize = frames * frameAudioSize;
 }
 
-void CompressScummSan::handleMapChunk(AudioTrackInfo *audioTrack, File &input) {
+void CompressScummSan::handleMapChunk(AudioTrackInfo *audioTrack, Common::File &input) {
 	uint32 tag;
 	int32 size;
 	tag = input.readUint32BE();
@@ -450,7 +450,7 @@ void CompressScummSan::handleMapChunk(AudioTrackInfo *audioTrack, File &input) {
 	assert(tag == 'DATA');
 }
 
-int32 CompressScummSan::handleSaudChunk(AudioTrackInfo *audioTrack, File &input) {
+int32 CompressScummSan::handleSaudChunk(AudioTrackInfo *audioTrack, Common::File &input) {
 	uint32 tag;
 	int32 size;
 	tag = input.readUint32BE();
@@ -466,7 +466,7 @@ int32 CompressScummSan::handleSaudChunk(AudioTrackInfo *audioTrack, File &input)
 	return size;
 }
 
-void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int nbframes, File &input, const std::string &outputDir,
+void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int nbframes, Common::File &input, const std::string &outputDir,
 					  const std::string &inputFilename, int &size, int volume, int pan, bool iact) {
 	AudioTrackInfo *audioTrack = NULL;
 	if (index == 0) {
@@ -533,7 +533,7 @@ void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int n
 	}
 }
 
-void CompressScummSan::handleDigIACT(File &input, int size, const std::string &outputDir, const std::string &inputFilename,int flags, int track_flags, int frame) {
+void CompressScummSan::handleDigIACT(Common::File &input, int size, const std::string &outputDir, const std::string &inputFilename,int flags, int track_flags, int frame) {
 	int track = input.readUint16LE();
 	int index = input.readUint16LE();
 	int nbframes = input.readUint16LE();
@@ -564,7 +564,7 @@ void CompressScummSan::handleDigIACT(File &input, int size, const std::string &o
 	handleAudioTrack(index, trackId, frame, nbframes, input, outputDir, inputFilename, size, volume, pan, true);
 }
 
-void CompressScummSan::handlePSAD(File &input, int size, const std::string &outputDir, const std::string &inputFilename, int frame) {
+void CompressScummSan::handlePSAD(Common::File &input, int size, const std::string &outputDir, const std::string &inputFilename, int frame) {
 	int trackId = input.readUint16LE();
 	int index = input.readUint16LE();
 	int nbframes = input.readUint16LE();
@@ -594,8 +594,8 @@ void CompressScummSan::execute() {
 	if (_format == AUDIO_FLAC)
 		error("Only ogg vorbis and MP3 are supported for this tool.");
 
-	Filename inpath(_inputPaths[0].path);
-	Filename outpath(_outputPath);
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename outpath(_outputPath);
 
 	// We default to the current directory.
 	// TODO: We shouldn't have to do this, an empty output path *should* work
@@ -615,13 +615,13 @@ void CompressScummSan::execute() {
 	// (This check won't catch all cases of this, but it's better than nothing.)
 	assert(inpath.getFullPath() != outpath.getFullPath());
 
-	File input(inpath, "rb");
-	File output(outpath, "wb");
+	Common::File input(inpath, "rb");
+	Common::File output(outpath, "wb");
 
-	Filename flupath(inpath);
+	Common::Filename flupath(inpath);
 	flupath.setExtension(".flu");
 
-	File flu_in;
+	Common::File flu_in;
 	
 	try {
 		flu_in.open(flupath, "rb");
@@ -629,7 +629,7 @@ void CompressScummSan::execute() {
 		// pass
 	}
 
-	File flu_out;
+	Common::File flu_out;
 	if (flu_in.isOpen()) {
 		flupath = outpath;
 		flupath.setExtension(".flu");

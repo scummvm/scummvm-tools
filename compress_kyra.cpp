@@ -39,7 +39,7 @@ CompressKyra::CompressKyra(const std::string &name) : CompressionTool(name, TOOL
 	_helptext = "\nUsage: " + getName() + " [mode params] [-o outfile] <infile>\n";
 }
 
-InspectionMatch CompressKyra::inspectInput(const Filename &filename) {
+InspectionMatch CompressKyra::inspectInput(const Common::Filename &filename) {
 	if (filename.hasExtension("VRM") ||
 		filename.hasExtension("PAK") ||
 		filename.hasExtension("TLK") ||
@@ -49,8 +49,8 @@ InspectionMatch CompressKyra::inspectInput(const Filename &filename) {
 }
 
 void CompressKyra::execute() {
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 	outpath.setFullName(inpath.getFullName());
 
 	if (inpath == outpath)
@@ -63,7 +63,7 @@ void CompressKyra::execute() {
 		processKyra3(&inpath, &outpath);
 }
 
-void CompressKyra::process(Filename *infile, Filename *outfile) {
+void CompressKyra::process(Common::Filename *infile, Common::Filename *outfile) {
 	PAKFile input, output;
 
 	if (!input.loadFile(infile->getFullPath().c_str(), false))
@@ -84,11 +84,11 @@ void CompressKyra::process(Filename *infile, Filename *outfile) {
 			continue;
 		}
 
-		Filename outputName;
+		Common::Filename outputName;
 		input.outputFileAs(list->filename, TEMPFILE);
 		outputName._path = list->filename;
 
-		File tempFile(TEMPFILE, "rb");
+		Common::File tempFile(TEMPFILE, "rb");
 		tempFile.seek(26, SEEK_CUR);
 		extractAndEncodeVOC(TEMP_RAW, tempFile, _format);
 		tempFile.close();
@@ -118,7 +118,7 @@ uint16 CompressKyra::clip8BitSample(int16 sample) {
 	return sample;
 }
 
-int CompressKyra::decodeChunk(File &in, File &out) {
+int CompressKyra::decodeChunk(Common::File &in, Common::File &out) {
 	uint16 size = in.readUint16LE();
 	uint16 outSize = in.readUint16LE();
 	uint32 id = in.readUint32LE();
@@ -266,7 +266,7 @@ typedef struct {
 	byte type;
 } AUDHeader;
 
-void CompressKyra::compressAUDFile(File &input, const char *outfile) {
+void CompressKyra::compressAUDFile(Common::File &input, const char *outfile) {
 	AUDHeader header;
 
 	header.freq = input.readUint16LE();
@@ -275,7 +275,7 @@ void CompressKyra::compressAUDFile(File &input, const char *outfile) {
 	header.type = input.readByte();
 	//print("%d Hz, %d bytes, type %d (%08X)\n", header.freq, header.size, header.type, header.flags);
 
-	File output(TEMP_RAW, "wb");
+	Common::File output(TEMP_RAW, "wb");
 
 	uint32 remaining = header.size;
 	while (remaining > 0)
@@ -300,17 +300,17 @@ const CompressKyra::DuplicatedFile *CompressKyra::findDuplicatedFile(uint32 resO
 	return 0;
 }
 
-void CompressKyra::processKyra3(Filename *infile, Filename *outfile) {
+void CompressKyra::processKyra3(Common::Filename *infile, Common::Filename *outfile) {
 	if (infile->hasExtension("AUD")) {
 		outfile->setExtension(audio_extensions(_format));
 
-		File input(*infile, "rb");
+		Common::File input(*infile, "rb");
 
 		compressAUDFile(input, outfile->getFullPath().c_str());
 	} else if (infile->hasExtension("TLK")) {
 		PAKFile output;
 
-		File input(*infile, "rb");
+		Common::File input(*infile, "rb");
 
 		if (!output.loadFile(NULL, false))
 			return;
@@ -358,7 +358,7 @@ void CompressKyra::processKyra3(Filename *infile, Filename *outfile) {
 	}
 }
 
-bool CompressKyra::detectKyra3File(Filename *infile) {
+bool CompressKyra::detectKyra3File(Common::Filename *infile) {
 	if (infile->hasExtension("AUD")) {
 		return true;
 	} else if (infile->hasExtension("VRM") || infile->hasExtension("PAK")) {
@@ -369,7 +369,7 @@ bool CompressKyra::detectKyra3File(Filename *infile) {
 		if (PAKFile::isPakFile(infile->getFullPath().c_str()))
 			return false;
 
-		File f(*infile, "rb");
+		Common::File f(*infile, "rb");
 
 		uint16 entries = f.readUint16LE();
 		uint32 entryTableSize = (entries * 8);

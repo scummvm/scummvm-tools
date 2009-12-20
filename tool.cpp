@@ -149,7 +149,7 @@ void Tool::run() {
 	execute();
 }
 
-InspectionMatch Tool::inspectInput(const Filename &filename) {
+InspectionMatch Tool::inspectInput(const Common::Filename &filename) {
 	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
 		std::string p = iter->format;
 		if (p == "/") {
@@ -158,7 +158,7 @@ InspectionMatch Tool::inspectInput(const Filename &filename) {
 			return IMATCH_AWFUL;
 		}
 		
-		Filename cmp_filename = p;
+		Common::Filename cmp_filename = p;
 
 		if (cmp_filename.getName() == "*") {
 			if (cmp_filename.getExtension() == "*")

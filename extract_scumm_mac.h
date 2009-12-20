@@ -32,7 +32,7 @@ public:
 
 	virtual void execute();
 	
-	virtual InspectionMatch inspectInput(const Filename &filename);
+	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 };
 
 #endif

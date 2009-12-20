@@ -36,7 +36,7 @@ public:
 
 protected:
 
-	void extract_resource(File &input, File &output, p_resource res);
+	void extract_resource(Common::File &input, Common::File &output, p_resource res);
 };
 
 #endif

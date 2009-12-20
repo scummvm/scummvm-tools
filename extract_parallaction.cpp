@@ -318,8 +318,8 @@ void ExtractParallaction::parseExtraArguments() {
 
 void ExtractParallaction::execute() {
 
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 
 	if (outpath.empty())
 		outpath.setFullPath("out/");
@@ -339,7 +339,7 @@ void ExtractParallaction::execute() {
 
 		outpath.setFullName(filename);
 
-		File ofile(outpath, "wb");
+		Common::File ofile(outpath, "wb");
 		ofile.write(arc._fileData, arc._fileSize);
 	}
 }

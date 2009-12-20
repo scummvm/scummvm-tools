@@ -48,7 +48,7 @@ struct DiffStruct {
 
 class DxaEncoder {
 private:
-	File _dxa;
+	Common::File _dxa;
 	int _width, _height, _framerate, _framecount, _workheight;
 	uint8 *_prevframe, *_prevpalette;
 	ScaleMode _scaleMode;
@@ -63,14 +63,14 @@ private:
 	uLong m13encode(byte *frame, byte *outbuf);
 
 public:
-	DxaEncoder(Tool &tool, Filename filename, int width, int height, int framerate, ScaleMode scaleMode);
+	DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode);
 	~DxaEncoder();
 	void writeHeader();
 	void writeNULL();
 	void writeFrame(uint8 *frame, uint8 *palette);
 };
 
-DxaEncoder::DxaEncoder(Tool &tool, Filename filename, int width, int height, int framerate, ScaleMode scaleMode) {
+DxaEncoder::DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode) {
 	_dxa.open(filename, "wb");
 	_width = width;
 	_height = height;
@@ -552,15 +552,15 @@ EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_C
 void EncodeDXA::execute() {
 	int width, height, framerate, frames;
 	ScaleMode scaleMode;
-	Filename inpath(_inputPaths[0].path);
-	Filename outpath(_outputPath);
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename outpath(_outputPath);
 	
 	if (outpath.empty())
 		// Actual change of extension is done later...
 		outpath = inpath;
 
 	// check if the wav file exists.
-	Filename wavpath(inpath);
+	Common::Filename wavpath(inpath);
 	wavpath.setExtension(".wav");
 	struct stat statinfo;
 	if (!stat(wavpath.getFullPath().c_str(), &statinfo)) {
@@ -648,7 +648,7 @@ int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsign
 	int number_of_passes;
 	png_bytep *row_pointers;
 
-	File fp(filename, "rb");
+	Common::File fp(filename, "rb");
 
 	fp.read_throwsOnError(header, 8);
 	if (png_sig_cmp(header, 0, 8))
@@ -714,9 +714,9 @@ int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsign
 	return 0;
 }
 
-void EncodeDXA::readVideoInfo(Filename *filename, int &width, int &height, int &framerate, int &frames, ScaleMode &scaleMode) {
+void EncodeDXA::readVideoInfo(Common::Filename *filename, int &width, int &height, int &framerate, int &frames, ScaleMode &scaleMode) {
 
-	File smk(*filename, "rb");
+	Common::File smk(*filename, "rb");
 
 	scaleMode = S_NONE;
 
@@ -759,7 +759,7 @@ void EncodeDXA::readVideoInfo(Filename *filename, int &width, int &height, int &
 	}
 }
 
-void EncodeDXA::convertWAV(const Filename *inpath, const Filename* outpath) {
+void EncodeDXA::convertWAV(const Common::Filename *inpath, const Common::Filename* outpath) {
 	print("Encoding audio...");
 	fflush(stdout);
 

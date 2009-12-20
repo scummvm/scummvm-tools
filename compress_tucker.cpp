@@ -53,11 +53,11 @@ CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name, 
 	_helptext = "\nUsage: " + getName() + " [mode params] [-o outputdir] inputdir\n";
 }
 
-int CompressTucker::append_compress_file(File &output) {
+int CompressTucker::append_compress_file(Common::File &output) {
 	char buf[2048];
 	int sz, compress_sz = 0;
 
-	File input_temp(tempEncoded, "rb");
+	Common::File input_temp(tempEncoded, "rb");
 	while ((sz = input_temp.read_noThrow(buf, sizeof(buf))) > 0) {
 		if ((sz = output.write(buf, sz)) > 0) {
 			compress_sz += sz;
@@ -66,7 +66,7 @@ int CompressTucker::append_compress_file(File &output) {
 	return compress_sz;
 }
 
-int CompressTucker::compress_file_wav(File &input, File &output) {
+int CompressTucker::compress_file_wav(Common::File &input, Common::File &output) {
 	char buf[8];
 
 	if (input.read_noThrow(buf, 8) == 8 && memcmp(buf, "RIFF", 4) == 0) {
@@ -76,7 +76,7 @@ int CompressTucker::compress_file_wav(File &input, File &output) {
 	return 0;
 }
 
-int CompressTucker::compress_file_raw(const char *input, bool is16, File &output) {
+int CompressTucker::compress_file_raw(const char *input, bool is16, Common::File &output) {
 	if (is16) {
 		setRawAudioType(true, false, 16);
 	} else {
@@ -104,20 +104,20 @@ static SoundDirectory sound_directory_table[SOUND_TYPES_COUNT] = {
 	{ "SPEECH", "sam%04d.wav", MAX_SPEECH_FILES }
 };
 
-uint32 CompressTucker::compress_sounds_directory(const Filename *inpath, const Filename *outpath, File &output, const struct SoundDirectory *dir) {
+uint32 CompressTucker::compress_sounds_directory(const Common::Filename *inpath, const Common::Filename *outpath, Common::File &output, const struct SoundDirectory *dir) {
 	char filepath[1024];
 	char *filename;
 	//struct stat s;
 	int i, pos;
 	uint32 current_offset;
-	File input;
+	Common::File input;
 
 	assert(dir->count <= ARRAYSIZE(temp_table));
 
 	// We can't use setFullName since dir->name can contain '/'
 	snprintf(filepath, sizeof(filepath), "%s/%s", inpath->getPath().c_str(), dir->name);
 	/* stat is NOT standard C, but rather a POSIX call and fails under MSVC
-	 * this could be factored out to Filename::isDirectory ?
+	 * this could be factored out to Common::Filename::isDirectory ?
 	if (stat(filepath, &s) != 0 || !S_ISDIR(s.st_mode)) {
 		error("Cannot stat directory '%s'", filepath);
 	}
@@ -303,7 +303,7 @@ static const int audio_formats_table[] = {
 	2, 1
 };
 
-uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Filename *outpath, File &output) {
+uint32 CompressTucker::compress_audio_directory(const Common::Filename *inpath, const Common::Filename *outpath, Common::File &output) {
 	char filepath[1024];
 	int i, pos, count;
 	uint32 current_offset;
@@ -323,7 +323,7 @@ uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Fi
 		sprintf(filepath, "%s/audio/%s", inpath->getPath().c_str(), audio_files_list[i]);
 		
 		try {
-			File input(filepath, "rb");
+			Common::File input(filepath, "rb");
 			
 			switch (audio_formats_table[i]) {
 			case 1:
@@ -356,14 +356,14 @@ uint32 CompressTucker::compress_audio_directory(const Filename *inpath, const Fi
 	return current_offset + count * 8;
 }
 
-void CompressTucker::compress_sound_files(const Filename *inpath, const Filename *outpath) {
+void CompressTucker::compress_sound_files(const Common::Filename *inpath, const Common::Filename *outpath) {
 	int i;
 	uint32 current_offset;
 	uint32 sound_directory_size[SOUND_TYPES_COUNT];
 	uint32 audio_directory_size;
 	const uint16 flags = HEADER_FLAG_AUDIO_INTRO;
 
-	File output(*outpath, "wb");
+	Common::File output(*outpath, "wb");
 
 	output.writeUint16LE(CURRENT_VER);
 	output.writeUint16LE(flags);
@@ -420,8 +420,8 @@ void CompressTucker::compress_sound_files(const Filename *inpath, const Filename
 
 
 void CompressTucker::execute() {
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 
 	// Default out is same as in directory, file names differ by extension
 	if (outpath.empty()) {

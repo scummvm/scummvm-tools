@@ -36,9 +36,9 @@ protected:
 
 	Chunk *_chunks;
 
-	void readChunkList(File &stk, File &gobConf);
-	void readChunkListV2(File &stk, File &gobConf);
-	void extractChunks(Filename &outpath, File &stk);
+	void readChunkList(Common::File &stk, Common::File &gobConf);
+	void readChunkListV2(Common::File &stk, Common::File &gobConf);
+	void extractChunks(Common::Filename &outpath, Common::File &stk);
 	byte *unpackData(byte *src, uint32 &size);
 	byte *unpackPreGobData(byte *src, uint32 &size, uint32 &compSize);
 };

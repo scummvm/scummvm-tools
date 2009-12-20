@@ -433,7 +433,7 @@ void ChooseInPage::onNext(wxWindow *panel) {
 	wxDirPickerCtrl *inDirWindow = dynamic_cast<wxDirPickerCtrl *>(panel->FindWindowByName(wxT("InputPicker")));
 	wxFilePickerCtrl *inFileWindow = dynamic_cast<wxFilePickerCtrl *>(panel->FindWindowByName(wxT("InputPicker")));
 
-	Filename filename;
+	Common::Filename filename;
 
 	if (inDirWindow)
 		filename = (const char *)inDirWindow ->GetPath().mb_str();

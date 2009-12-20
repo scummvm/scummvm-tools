@@ -28,6 +28,9 @@
 
 #include "tool_exception.h"
 
+
+namespace Common {
+
 /**
  * Something unexpected happened while reading / writing to a file.
  * Usually premature end, or that it could not be opened (write / read protected).
@@ -158,7 +161,7 @@ enum FileMode {
  * Offers functionality to write words easily, and deallocates the FILE
  * automatically on destruction.
  */
-class File : public Common::NonCopyable {
+class File : public NonCopyable {
 public:
 	/**
 	 * Opens the given file path as an in/out stream, depending on the
@@ -388,5 +391,8 @@ protected:
 	/** xor with this value while reading/writing (default 0), does not work for "read"/"write", only for byte operations. */
 	uint8 _xormode;
 };
+
+} // End of namespace Common
+
 
 #endif

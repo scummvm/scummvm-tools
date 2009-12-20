@@ -47,7 +47,7 @@ void CompressAgos::end() {
 	_output_idx.close();
 	_output_snd.close();
 
-	File outputFile(_outputPath, "wb");
+	Common::File outputFile(_outputPath, "wb");
 
 	_input.open(TEMP_IDX, "rb");
 	while ((size = _input.read_noThrow(fbuf, 2048)) > 0) {
@@ -124,7 +124,7 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 
 	/* Append the converted data to the master output file */
 	sprintf(outname, "%s", tempEncoded);
-	File f(outname, "rb");
+	Common::File f(outname, "rb");
 	tot_size = 0;
 	while ((size = f.read_noThrow(fbuf, 2048)) > 0) {
 		tot_size += size;
@@ -135,7 +135,7 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 }
 
 
-void CompressAgos::convert_pc(Filename* inputPath) {
+void CompressAgos::convert_pc(Common::Filename* inputPath) {
 	int i, size, num;
 	uint32 filenums[32768];
 	uint32 offsets[32768];
@@ -170,7 +170,7 @@ void CompressAgos::convert_pc(Filename* inputPath) {
 	}
 }
 
-void CompressAgos::convert_mac(Filename *inputPath) {
+void CompressAgos::convert_mac(Common::Filename *inputPath) {
 	int i, size, num;
 	uint32 filenums[32768];
 	uint32 offsets[32768];
@@ -223,7 +223,7 @@ void CompressAgos::parseExtraArguments() {
 }
 
 void CompressAgos::execute() {
-	Filename inpath(_inputPaths[0].path);
+	Common::Filename inpath(_inputPaths[0].path);
 
 	if (_outputPath.empty()) {
 		_outputPath = inpath;

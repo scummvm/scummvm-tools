@@ -41,7 +41,7 @@ ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name, TOOLTYPE_
 		_shorthelp + "\n";
 }
 
-InspectionMatch ExtractScummMac::inspectInput(const Filename &filename) {
+InspectionMatch ExtractScummMac::inspectInput(const Common::Filename &filename) {
 	std::string name = filename.getFullName();
 	std::transform(name.begin(), name.end(), name.begin(), tolower);
 	std::string::size_type pos = name.find(" data");
@@ -59,13 +59,13 @@ void ExtractScummMac::execute() {
 	unsigned long i;
 	int j;
 
-	Filename inpath(_inputPaths[0].path);
-	Filename outpath(_outputPath);
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename outpath(_outputPath);
 
 	if (outpath.empty())
 		outpath.setFullPath("./");
 
-	File ifp(inpath, "rb");
+	Common::File ifp(inpath, "rb");
 
 	/* Get the length of the data file to use for consistency checks */
 	data_file_len = ifp.size();
@@ -132,7 +132,7 @@ void ExtractScummMac::execute() {
 		ifp.seek(file_off, SEEK_SET);
 
 		outpath.setFullName(file_name);
-		File ofp(outpath, "wb");
+		Common::File ofp(outpath, "wb");
 
 		if (!(buf = (char *)malloc(file_len))) {
 			error("Could not allocate %ld bytes of memory.", file_len);

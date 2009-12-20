@@ -163,7 +163,7 @@ public:
 	 * @param tt Only check tools of this type
 	 * @return Returns all tools might be able to handle the file
 	 */
-	wxArrayString getToolList(const Filename &filename, ToolType tt = TOOLTYPE_ALL) const;
+	wxArrayString getToolList(const Common::Filename &filename, ToolType tt = TOOLTYPE_ALL) const;
 
 protected:
 	std::map<wxString, ToolGUI *> _toolmap;

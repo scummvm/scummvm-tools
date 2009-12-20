@@ -46,7 +46,7 @@ public:
 
 	virtual void execute();
 	
-	virtual InspectionMatch inspectInput(const Filename &filename);
+	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 
 	// Declarations should be inside the class to prevent linker errors
 
@@ -75,13 +75,13 @@ protected:
 	uint8 _sampleBits;
 	uint8 _sampleStereo;
 
-	bool detectFile(const Filename *infile);
-	uint32 copyFile(const char *fromFileName, File &outputFile);
-	void copyFile(File &inputFile, uint32 inputSize, const char *toFileName);
+	bool detectFile(const Common::Filename *infile);
+	uint32 copyFile(const char *fromFileName, Common::File &outputFile);
+	void copyFile(Common::File &inputFile, uint32 inputSize, const char *toFileName);
 	void writeBufferToFile(uint8 *data, uint32 inputSize, const char *toFileName);
-	void writeHeader(File &outputFile);
-	uint32 encodeEntry(File &inputFile, uint32 inputSize, File &outputFile);
-	void sagaEncode(Filename *inpath, Filename *outpath);
+	void writeHeader(Common::File &outputFile);
+	uint32 encodeEntry(Common::File &inputFile, uint32 inputSize, Common::File &outputFile);
+	void sagaEncode(Common::Filename *inpath, Common::Filename *outpath);
 
 	byte compression_format(AudioFormat format);
 };

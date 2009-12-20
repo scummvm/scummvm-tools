@@ -58,13 +58,13 @@ ExtractGobStk::~ExtractGobStk() {
 
 void ExtractGobStk::execute() {
 	char signature[7];
-	File stk;
-	File gobConf;
+	Common::File stk;
+	Common::File gobConf;
 
-	File f1;
-	File f2;
+	Common::File f1;
+	Common::File f2;
 
-	Filename inpath(_inputPaths[0].path);
+	Common::Filename inpath(_inputPaths[0].path);
 
 	stk.open(inpath.getFullPath(), "rb");
 
@@ -102,7 +102,7 @@ void ExtractGobStk::execute() {
 	extractChunks(_outputPath, stk);
 }
 
-void ExtractGobStk::readChunkList(File &stk, File &gobConf) {
+void ExtractGobStk::readChunkList(Common::File &stk, Common::File &gobConf) {
 	uint16 numDataChunks = stk.readUint16LE();
 
 	// If we are run multiple times, free previous chunk list
@@ -138,7 +138,7 @@ void ExtractGobStk::readChunkList(File &stk, File &gobConf) {
 	}
 }
 
-void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
+void ExtractGobStk::readChunkListV2(Common::File &stk, Common::File &gobConf) {
 	uint32 numDataChunks;
 	_chunks = new Chunk;
 	Chunk *curChunk = _chunks;
@@ -176,7 +176,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 
 	// Filenames - Header
 	// ==================
-	// Structure of the header of Filename section is :
+	// Structure of the header of Common::Filename section is :
 	// + 04 bytes : Number of files stored in STK/ITK
 	// + 04 bytes : Start position of Misc Section
 
@@ -231,7 +231,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 
 		// Filenames
 		// =========
-		// Filename are stored one after the other, separated by 0x00.
+		// Common::Filename are stored one after the other, separated by 0x00.
 		// Those are now long filenames, at the opposite of previous STK version.
 
 		stk.seek(filenamePos, SEEK_SET);
@@ -258,7 +258,7 @@ void ExtractGobStk::readChunkListV2(File &stk, File &gobConf) {
 	}
 }
 
-void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
+void ExtractGobStk::extractChunks(Common::Filename &outpath, Common::File &stk) {
 	Chunk *curChunk = _chunks;
 	byte *unpackedData = NULL;
 
@@ -266,7 +266,7 @@ void ExtractGobStk::extractChunks(Filename &outpath, File &stk) {
 		print("Extracting \"%s\"\n", curChunk->name);
 
 		outpath.setFullName(curChunk->name);
-		File chunkFile(outpath, "wb");
+		Common::File chunkFile(outpath, "wb");
 
 		if (curChunk->size > 0) {
 			stk.seek(curChunk->offset, SEEK_SET);

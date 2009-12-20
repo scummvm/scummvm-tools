@@ -32,7 +32,7 @@ namespace Audio {
 // flexibility of this code.
 class ADPCMInputStream : public AudioStream {
 private:
-	File *_stream;
+	Common::File *_stream;
 	uint32 _endpos;
 	int _channels;
 	typesADPCM _type;
@@ -65,7 +65,7 @@ private:
 	int16 decodeMS(ADPCMChannelStatus *c, byte);
 
 public:
-	ADPCMInputStream(File *stream, uint32 size, typesADPCM type, int rate, int channels = 2, uint32 blockAlign = 0);
+	ADPCMInputStream(Common::File *stream, uint32 size, typesADPCM type, int rate, int channels = 2, uint32 blockAlign = 0);
 	~ADPCMInputStream() {};
 
 	int readBuffer(int16 *buffer, const int numSamples);
@@ -86,7 +86,7 @@ public:
 // In addition, also MS IMA ADPCM is supported. See
 //   <http://wiki.multimedia.cx/index.php?title=Microsoft_IMA_ADPCM>.
 
-ADPCMInputStream::ADPCMInputStream(File *stream, uint32 size, typesADPCM type, int rate, int channels, uint32 blockAlign)
+ADPCMInputStream::ADPCMInputStream(Common::File *stream, uint32 size, typesADPCM type, int rate, int channels, uint32 blockAlign)
 	: _stream(stream), _channels(channels), _type(type), _blockAlign(blockAlign), _rate(rate) {
 
 	_status.last = 0;
@@ -349,7 +349,7 @@ int16 ADPCMInputStream::decodeMS(ADPCMChannelStatus *c, byte code) {
 	return (int16)predictor;
 }
 
-AudioStream *makeADPCMStream(File *stream, uint32 size, typesADPCM type, int rate, int channels, uint32 blockAlign) {
+AudioStream *makeADPCMStream(Common::File *stream, uint32 size, typesADPCM type, int rate, int channels, uint32 blockAlign) {
 	return new ADPCMInputStream(stream, size, type, rate, channels, blockAlign);
 }
 

@@ -25,12 +25,12 @@
 #define TEMP_IDX	"tempfile.idx"
 #define TEMP_DAT	"tempfile.dat"
 
-uint32 CompressSword2::append_to_file(File &f1, const char *filename) {
+uint32 CompressSword2::append_to_file(Common::File &f1, const char *filename) {
 	uint32 length, orig_length;
 	size_t size;
 	char fbuf[2048];
 
-	File f2(filename, "rb");
+	Common::File f2(filename, "rb");
 	orig_length = length = f2.size();
 
 	while (length > 0) {
@@ -66,8 +66,8 @@ void CompressSword2::execute() {
 	uint32 totalSize;
 	uint32 length;
 	
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 
 	switch (_format) {
 	case AUDIO_MP3:
@@ -119,7 +119,7 @@ void CompressSword2::execute() {
 		if (pos != 0 && length != 0) {
 			uint16 prev;
 
-			File f(TEMP_WAV, "wb");
+			Common::File f(TEMP_WAV, "wb");
 
 			/*
 			 * The number of decodeable 16-bit samples is one less
@@ -187,7 +187,7 @@ void CompressSword2::execute() {
 		}
 	}
 
-	File output(outpath, "wb");
+	Common::File output(outpath, "wb");
 
 	append_to_file(output, TEMP_IDX);
 	append_to_file(output, TEMP_DAT);

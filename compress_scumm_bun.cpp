@@ -714,7 +714,7 @@ static AudioFormat gCompMode = AUDIO_MP3;
 
 typedef struct { int offset, size, codec; } CompTable;
 
-byte *CompressScummBun::decompressBundleSound(int index, File  &input, int32 &finalSize) {
+byte *CompressScummBun::decompressBundleSound(int index, Common::File  &input, int32 &finalSize) {
 	byte compOutput[0x2000];
 	int i;
 
@@ -866,7 +866,7 @@ struct Marker {
 static Region *_region;
 static int _numRegions;
 
-void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, File &output) {
+void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, Common::File &output) {
 	char tmpPath[200];
 
 	for (int l = 0; l < _numRegions; l++) {
@@ -916,7 +916,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		}
 		_cbundleTable[_cbundleCurIndex].offset = startPos;
 
-		File cmpFile(tmpPath, "rb");
+		Common::File cmpFile(tmpPath, "rb");
 		cmpFile.seek(0, SEEK_END);
 		size = cmpFile.pos();
 		cmpFile.seek(0, SEEK_SET);
@@ -942,7 +942,7 @@ void CompressScummBun::recalcRegions(int32 &value, int bits, int freq, int chann
 	value = size;
 }
 
-void CompressScummBun::writeToRMAPFile(byte *ptr, File &output, char *filename, int &offsetData, int &bits, int &freq, int &channels) {
+void CompressScummBun::writeToRMAPFile(byte *ptr, Common::File &output, char *filename, int &offsetData, int &bits, int &freq, int &channels) {
 	byte *s_ptr = ptr;
 	int32 size = 0;
 	int l;
@@ -1084,13 +1084,13 @@ CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(na
 }
 
 void CompressScummBun::execute() {
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 
 	uint32 tag;
 	int32 numFiles, offset;
 
-	File input(inpath, "rb");
+	Common::File input(inpath, "rb");
 
 	if (outpath.empty()) {
 		// Change extension for output
@@ -1098,7 +1098,7 @@ void CompressScummBun::execute() {
 		outpath.setExtension(".bun");
 	}
 
-	File output(outpath, "wb");
+	Common::File output(outpath, "wb");
 
 	output.writeUint32BE('LB23');
 	output.writeUint32BE(0); // will be later

@@ -39,12 +39,12 @@ protected:
 
 	std::string _audioOuputFilename;
 
-	int16 *uncompressSpeech(File &clu, uint32 idx, uint32 cSize, uint32 *returnSize);
+	int16 *uncompressSpeech(Common::File &clu, uint32 idx, uint32 cSize, uint32 *returnSize);
 	uint8 *convertData(uint8 *rawData, uint32 rawSize, uint32 *resSize);
-	void convertClu(File &clu, File &cl3);
-	void compressSpeech(const Filename *inpath, const Filename *outpath);
-	void compressMusic(const Filename *inpath, const Filename *outpath);
-	void checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath);
+	void convertClu(Common::File &clu, Common::File &cl3);
+	void compressSpeech(const Common::Filename *inpath, const Common::Filename *outpath);
+	void compressMusic(const Common::Filename *inpath, const Common::Filename *outpath);
+	void checkFilesExist(bool checkSpeech, bool checkMusic, const Common::Filename *inpath);
 };
 
 #endif

@@ -247,7 +247,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 		long length;
 		char *rawData;
 
-		File inputRaw(inname, "rb");
+		Common::File inputRaw(inname, "rb");
 		length = inputRaw.size();
 		rawData = (char *)malloc(length);
 		inputRaw.read_throwsOnError(rawData, length);
@@ -259,7 +259,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 		int fmtHeaderSize, length, numChannels, sampleRate, bitsPerSample;
 		char *wavData;
 
-		File inputWav(inname, "rb");
+		Common::File inputWav(inname, "rb");
 
 		/* Standard PCM fmt header is 16 bits, but at least Simon 1 and 2 use 18 bits */
 		inputWav.seek(16, SEEK_SET);
@@ -315,7 +315,7 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 		ogg_packet header_comm;
 		ogg_packet header_code;
 
-		File outputOgg(outname, "wb");
+		Common::File outputOgg(outname, "wb");
 
 		vorbis_info_init(&vi);
 
@@ -562,7 +562,7 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 #endif
 }
 
-void CompressionTool::extractAndEncodeWAV(const char *outName, File &input, AudioFormat compMode) {
+void CompressionTool::extractAndEncodeWAV(const char *outName, Common::File &input, AudioFormat compMode) {
 	unsigned int length;
 	char fbuf[2048];
 	size_t size;
@@ -573,7 +573,7 @@ void CompressionTool::extractAndEncodeWAV(const char *outName, File &input, Audi
 	input.seek(-8, SEEK_CUR);
 
 	/* Copy the WAV data to a temporary file */
-	File f(outName, "wb");
+	Common::File f(outName, "wb");
 	while (length > 0) {
 		size = input.read_noThrow(fbuf, length > sizeof(fbuf) ? sizeof(fbuf) : length);
 		if (size <= 0)
@@ -587,7 +587,7 @@ void CompressionTool::extractAndEncodeWAV(const char *outName, File &input, Audi
 	encodeAudio(outName, false, -1, tempEncoded, compMode);
 }
 
-void CompressionTool::extractAndEncodeVOC(const char *outName, File &input, AudioFormat compMode) {
+void CompressionTool::extractAndEncodeVOC(const char *outName, Common::File &input, AudioFormat compMode) {
 	int bits;
 	int blocktype;
 	int channels;
@@ -598,7 +598,7 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, File &input, Audi
 	size_t size;
 	int real_samplerate = -1;
 
-	File f(outName, "wb");
+	Common::File f(outName, "wb");
 
 	while ((blocktype = input.readByte())) {
 		if (blocktype != 1 && blocktype != 9) {

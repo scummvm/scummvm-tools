@@ -36,7 +36,7 @@ enum typesADPCM {
 	kADPCMMS
 };
 
-AudioStream *makeADPCMStream(File *stream, uint32 size, typesADPCM type, int rate = 22050, int channels = 2, uint32 blockAlign = 0);
+AudioStream *makeADPCMStream(Common::File *stream, uint32 size, typesADPCM type, int rate = 22050, int channels = 2, uint32 blockAlign = 0);
 
 } // End of namespace Audio
 

@@ -175,7 +175,7 @@ bool CineUnpacker::unpack(const byte *src, unsigned int srcLen, byte *dst, unsig
 
 ////////////////////////////////////////////////////////////////////////////
 
-void ExtractCine::unpackFile(File &file) {
+void ExtractCine::unpackFile(Common::File &file) {
 	char fileName[15];
 
 	unsigned int entryCount = file.readUint16BE(); // How many entries?
@@ -185,7 +185,7 @@ void ExtractCine::unpackFile(File &file) {
 		file.read_throwsOnError(fileName, 14);
 		fileName[14] = '\0';
 
-		Filename outPath(_outputPath);
+		Common::Filename outPath(_outputPath);
 		outPath.setFullName(fileName);
 		
 		uint32 offset = file.readUint32BE();
@@ -197,7 +197,7 @@ void ExtractCine::unpackFile(File &file) {
 
 		print("unpacking '%s' ... ", outPath.getFullName().c_str());
 
-		File fpOut(outPath, "wb");
+		Common::File fpOut(outPath, "wb");
 
 		file.seek(offset, SEEK_SET);
 		assert(unpackedSize >= packedSize);
@@ -250,8 +250,8 @@ void ExtractCine::fixVolCnfFileName(char *dst, const uint8 *src) {
 	}
 }
 
-void ExtractCine::unpackAllResourceFiles(const Filename &filename) {
-	File f(filename, "rb");
+void ExtractCine::unpackAllResourceFiles(const Common::Filename &filename) {
+	Common::File f(filename, "rb");
 
 	uint32 unpackedSize, packedSize;
 	{
@@ -286,7 +286,7 @@ void ExtractCine::unpackAllResourceFiles(const Filename &filename) {
 		memcpy(resourceFileName, &buf[4 + i * entrySize], 8);
 		resourceFileName[8] = 0;
 		
-		File fpResFile(resourceFileName, "rb");
+		Common::File fpResFile(resourceFileName, "rb");
 		print("--- Unpacking resource file %s:\n", resourceFileName);
 		unpackFile(fpResFile);
 	}
@@ -295,7 +295,7 @@ void ExtractCine::unpackAllResourceFiles(const Filename &filename) {
 }
 
 void ExtractCine::execute() {
-	Filename infilename(_inputPaths[0].path);
+	Common::Filename infilename(_inputPaths[0].path);
 
 	std::string fname = infilename.getFullName();
 	std::transform(fname.begin(), fname.end(), fname.begin(), toupper);
@@ -305,7 +305,7 @@ void ExtractCine::execute() {
 		unpackAllResourceFiles(infilename);
 	} else {
 		/* Unpack a single archive file */
-		File f(infilename, "rb");
+		Common::File f(infilename, "rb");
 
 		unpackFile(f);
 	}

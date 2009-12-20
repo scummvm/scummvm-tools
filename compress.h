@@ -129,8 +129,8 @@ public:
 
 	void setTempFileName();
 
-	void extractAndEncodeVOC(const char *outName, File &input, AudioFormat compMode);
-	void extractAndEncodeWAV(const char *outName, File &input, AudioFormat compMode);
+	void extractAndEncodeVOC(const char *outName, Common::File &input, AudioFormat compMode);
+	void extractAndEncodeWAV(const char *outName, Common::File &input, AudioFormat compMode);
 
 	void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, AudioFormat compmode);
 	void encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode);

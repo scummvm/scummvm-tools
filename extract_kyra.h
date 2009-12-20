@@ -46,7 +46,7 @@ public:
 
 	virtual void drawFileList();
 
-	virtual bool outputAllFiles(Filename *outputPath);
+	virtual bool outputAllFiles(Common::Filename *outputPath);
 
 	virtual bool outputFile(const char *file) { return outputFileAs(file, file); }
 	virtual bool outputFileAs(const char *file, const char *outputName);

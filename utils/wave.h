@@ -23,7 +23,9 @@
 #ifndef SOUND_WAVE_H
 #define SOUND_WAVE_H
 
-class File;
+namespace Common {
+	class File;
+}
 
 namespace Audio {
 
@@ -36,7 +38,7 @@ class AudioStream;
  * necessary for playback. Currently this function only supports uncompressed
  * raw PCM data as well as IMA ADPCM.
  */
-extern bool loadWAVFromStream(File &stream, int &size, int &rate, byte &flags, uint16 *wavType = 0, int *blockAlign = 0);
+extern bool loadWAVFromStream(Common::File &stream, int &size, int &rate, byte &flags, uint16 *wavType = 0, int *blockAlign = 0);
 
 /**
  * Try to load a WAVE from the given seekable stream and create an AudioStream
@@ -45,7 +47,7 @@ extern bool loadWAVFromStream(File &stream, int &size, int &rate, byte &flags, u
  *
  * This function uses loadWAVFromStream() internally.
  */
-AudioStream *makeWAVStream(File &stream);
+AudioStream *makeWAVStream(Common::File &stream);
 
 } // End of namespace Audio
 

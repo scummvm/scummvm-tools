@@ -40,7 +40,7 @@ struct Archive {
 
 	uint32	_numSlots;
 	uint32	_numFiles;
-	File    _file;
+	Common::File    _file;
 	char	_name[260];
 
 	// file data

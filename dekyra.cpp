@@ -188,7 +188,7 @@ bool Script::setCommands(CommandProc *commands, int commandsSize) {
 }
 
 bool Script::loadScript(const char *filename, ScriptData *scriptData, OpcodeEntry *opcodes, int opcodeSize) {
-	File scriptFile(filename, "rb");
+	Common::File scriptFile(filename, "rb");
 
 	if (!scriptFile.isOpen()) {
 		error("couldn't load file '%s'", filename);

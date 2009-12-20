@@ -28,7 +28,7 @@
 
 namespace Audio {
 
-bool loadWAVFromStream(File &stream, int &size, int &rate, byte &flags, uint16 *wavType, int *blockAlign_) {
+bool loadWAVFromStream(Common::File &stream, int &size, int &rate, byte &flags, uint16 *wavType, int *blockAlign_) {
 	const uint32 initialPos = stream.pos();
 	byte buf[4+1];
 
@@ -157,7 +157,7 @@ bool loadWAVFromStream(File &stream, int &size, int &rate, byte &flags, uint16 *
 	return true;
 }
 
-AudioStream *makeWAVStream(File &stream) {
+AudioStream *makeWAVStream(Common::File &stream) {
 	int size, rate;
 	byte flags;
 	uint16 type;

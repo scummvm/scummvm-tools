@@ -273,7 +273,7 @@ const char *globalVar(int num) {
 }
 
 int entry(int argc, char *argv[]) {
-	File in;
+	Common::File in;
 	uint8 type;
 	char name[34];
 	int32 size;

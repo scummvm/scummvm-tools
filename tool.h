@@ -94,7 +94,7 @@ public:
 	 *
 	 * @param filename The file to inspect
 	 */
-	virtual InspectionMatch inspectInput(const Filename &filename);
+	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 
 	/**
 	 * Aborts executing of the tool, can be called from another thread.
@@ -205,7 +205,7 @@ public:
 	ToolInputs _inputPaths;
 
 	// Output
-	Filename _outputPath;
+	Common::Filename _outputPath;
 
 protected:
 	/** Command line arguments we are parsing. */

@@ -148,7 +148,7 @@ int getVersion(const char *verStr) {
 }
 
 byte *readFile(const char *filename, uint32 &size) {
-	File f(filename, "rb");
+	Common::File f(filename, "rb");
 	if (!f.isOpen())
 		error("Couldn't open file \"%s\"", filename);
 

@@ -36,8 +36,8 @@ protected:
 
 	int simon_decr(uint8 *src, uint8 *dest, uint32 srclen);
 	uint32 simon_decr_length(uint8 *src, uint32 srclen);
-	void *loadfile(const Filename &name);
-	void savefile(const Filename &name, void *mem, size_t length);
+	void *loadfile(const Common::Filename &name);
+	void savefile(const Common::Filename &name, void *mem, size_t length);
 };
 
 #endif

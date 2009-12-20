@@ -69,7 +69,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 	uint32 copyLeft = 0;
 	uint32 doneRead = 0;
 	char buffer[2048];
-	File curFileHandle;
+	Common::File curFileHandle;
 
 	print("Assuming DW1 sample being 8-bit raw...\n");
 
@@ -142,7 +142,7 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	uint32 copyLeft = 0;
 	uint32 doneRead = 0;
 	char buffer[2048];
-	File curFileHandle;
+	Common::File curFileHandle;
 
 	print("Assuming DW2 sample using ADPCM 6-bit, decoding to 16-bit raw...\n");
 
@@ -261,8 +261,8 @@ void CompressTinsel::execute() {
 	uint32 sampleSize = 0;
 	uint32 sampleCount = 0;
 
-	Filename inpath_smp = _inputPaths[0].path;
-	Filename inpath_idx = _inputPaths[1].path;
+	Common::Filename inpath_smp = _inputPaths[0].path;
+	Common::Filename inpath_idx = _inputPaths[1].path;
 
 	_input_idx.open(inpath_idx, "rb");
 	_input_smp.open(inpath_smp, "rb");

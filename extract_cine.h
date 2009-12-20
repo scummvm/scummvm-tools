@@ -114,9 +114,9 @@ public:
 	virtual void execute();
 
 protected:
-	void unpackFile(File &file);
+	void unpackFile(Common::File &file);
 	void fixVolCnfFileName(char *dst, const uint8 *src);
-	void unpackAllResourceFiles(const Filename &filename);
+	void unpackAllResourceFiles(const Common::Filename &filename);
 };
 
 #endif

@@ -41,7 +41,7 @@ public:
 	 * Returns a list of the tools that supports opening the input file
 	 * specified in the input list.
 	 */
-	ToolList inspectInput(const Filename &filename, ToolType type = TOOLTYPE_ALL) const;
+	ToolList inspectInput(const Common::Filename &filename, ToolType type = TOOLTYPE_ALL) const;
 
 protected:
 	/** List of all tools */

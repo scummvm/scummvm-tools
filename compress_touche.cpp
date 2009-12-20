@@ -51,9 +51,9 @@ CompressTouche::CompressTouche(const std::string &name) : CompressionTool(name, 
 	_helptext = "\nUsage: " + getName() + " [params] [-o outputfile TOUCHE.*] <inputdir>\n* differs with compression type.\n" + _shorthelp + "\n";
 }
 
-InspectionMatch CompressTouche::inspectInput(const Filename &filename) {
+InspectionMatch CompressTouche::inspectInput(const Common::Filename &filename) {
 	// We don't care for the actual file, just what's in this directory
-	Filename probe(filename);
+	Common::Filename probe(filename);
 
 	probe.setFullName("TOUCHE.DAT");
 	if (probe.exists())
@@ -62,7 +62,7 @@ InspectionMatch CompressTouche::inspectInput(const Filename &filename) {
 	return IMATCH_AWFUL;
 }
 
-uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &output, File &input, uint32 *offs_table, uint32 *size_table, int len) {
+uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, Common::File &output, Common::File &input, uint32 *offs_table, uint32 *size_table, int len) {
 	int i, size;
 	uint8 buf[2048];
 	uint32 start_offset = current_offset;
@@ -91,7 +91,7 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 			extractAndEncodeVOC(TEMP_RAW, input, _format);
 
 			/* append converted data to output file */
-			File temp(tempEncoded, "rb");
+			Common::File temp(tempEncoded, "rb");
 
 			size_table[i] = 0;
 
@@ -116,12 +116,12 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, File &out
 	return current_offset;
 }
 
-void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
+void CompressTouche::compress_sound_data(Common::Filename *inpath, Common::Filename *outpath) {
 	int i;
 	uint32 current_offset;
 	uint32 offsets_table[MAX_OFFSETS];
 
-	File output(*outpath, "wb");
+	Common::File output(*outpath, "wb");
 
 	output.writeUint16LE(1); /* current version */
 	output.writeUint16LE(0); /* flags */
@@ -137,7 +137,7 @@ void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
 
 	/* process 'OBJ' file */
 	inpath->setFullName("OBJ");
-	File input(*inpath, "rb");
+	Common::File input(*inpath, "rb");
 
 	offsets_table[0] = current_offset;
 	current_offset = compress_sound_data_file(current_offset, output, input, input_OBJ_offs, input_OBJ_size, OBJ_HDR_LEN);
@@ -179,8 +179,8 @@ void CompressTouche::compress_sound_data(Filename *inpath, Filename *outpath) {
 }
 
 void CompressTouche::execute() {
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 
 	if (outpath.empty()) {
 		switch(_format) {

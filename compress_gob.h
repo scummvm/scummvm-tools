@@ -50,13 +50,13 @@ protected:
 
 	void parseExtraArguments();
 
-	Chunk *readChunkConf(File &gobconf, Filename &stkName, uint16 &chunkCount);
-	void writeEmptyHeader(File &stk, uint16 chunkCount);
-	void writeBody(Filename *inpath, File &stk, Chunk *chunks);
-	uint32 writeBodyStoreFile(File &stk, File &src);
-	uint32 writeBodyPackFile(File &stk, File &src);
-	void rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks);
-	bool filcmp(File &src1, Filename &stkName);
+	Chunk *readChunkConf(Common::File &gobconf, Common::Filename &stkName, uint16 &chunkCount);
+	void writeEmptyHeader(Common::File &stk, uint16 chunkCount);
+	void writeBody(Common::Filename *inpath, Common::File &stk, Chunk *chunks);
+	uint32 writeBodyStoreFile(Common::File &stk, Common::File &src);
+	uint32 writeBodyPackFile(Common::File &stk, Common::File &src);
+	void rewriteHeader(Common::File &stk, uint16 chunkCount, Chunk *chunks);
+	bool filcmp(Common::File &src1, Common::Filename &stkName);
 	bool checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length);
 
 };

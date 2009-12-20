@@ -308,7 +308,7 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "RM3D", false }
 };
 
-int16 *CompressSword1::uncompressSpeech(File &clu, uint32 idx, uint32 cSize, uint32 *returnSize) {
+int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cSize, uint32 *returnSize) {
 	uint32 resSize, srcPos;
 	int16 *srcData, *dstData, *dstPos;
 	uint32 headerPos = 0;
@@ -355,7 +355,7 @@ uint8 *CompressSword1::convertData(uint8 *rawData, uint32 rawSize, uint32 *resSi
 	uint8 *resBuf;
 
 	uint32 size;
-	File temp(TEMP_RAW, "wb");
+	Common::File temp(TEMP_RAW, "wb");
 	size = temp.write(rawData, rawSize);
 	assert(size == rawSize);
 	encodeAudio(TEMP_RAW, true, 11025, _audioOuputFilename.c_str(), _format);
@@ -368,7 +368,7 @@ uint8 *CompressSword1::convertData(uint8 *rawData, uint32 rawSize, uint32 *resSi
 	return resBuf;
 }
 
-void CompressSword1::convertClu(File &clu, File &cl3) {
+void CompressSword1::convertClu(Common::File &clu, Common::File &cl3) {
 	uint32 *cowHeader;
 	uint32 numRooms;
 	uint32 numSamples;
@@ -434,8 +434,8 @@ void CompressSword1::convertClu(File &clu, File &cl3) {
 	free(cowHeader);
 }
 
-void CompressSword1::compressSpeech(const Filename *inpath, const Filename *outpath) {
-	File clu, cl3;
+void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common::Filename *outpath) {
+	Common::File clu, cl3;
 	int i;
 	char cluName[256], outName[256];
 
@@ -448,7 +448,7 @@ void CompressSword1::compressSpeech(const Filename *inpath, const Filename *outp
 		sprintf(cluName, "%s/SPEECH/SPEECH%d.CLU", inpath->getPath().c_str(), i);
 		try {
 			clu.open(cluName, "rb");
-		} catch(FileException &) {
+		} catch (Common::FileException &) {
 			print("Unable to open \"SPEECH%d.CLU\".\n", i);
 			print("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".\n", i, i);
 			continue;
@@ -481,7 +481,7 @@ void CompressSword1::compressSpeech(const Filename *inpath, const Filename *outp
 	unlink(_audioOuputFilename.c_str());
 }
 
-void CompressSword1::compressMusic(const Filename *inpath, const Filename *outpath) {
+void CompressSword1::compressMusic(const Common::Filename *inpath, const Common::Filename *outpath) {
 	int i;
 	char fNameIn[256], fNameOut[256];
 
@@ -491,7 +491,7 @@ void CompressSword1::compressMusic(const Filename *inpath, const Filename *outpa
 
 		sprintf(fNameIn, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
 		try {
-			File inf(fNameIn, "rb");
+			Common::File inf(fNameIn, "rb");
 
 			switch (_format) {
 			case AUDIO_MP3:
@@ -509,13 +509,13 @@ void CompressSword1::compressMusic(const Filename *inpath, const Filename *outpa
 
 			print("encoding file (%3d/%d) %s -> %s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, fNameOut);
 			encodeAudio(fNameIn, false, -1, fNameOut, _format);
-		} catch(FileException& err) {
+		} catch (Common::FileException& err) {
 			print(err.what());
 		}
 	}
 }
 
-void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Filename *inpath) {
+void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Common::Filename *inpath) {
 	int i;
 	FILE *testFile;
 	char fileName[256];
@@ -596,8 +596,8 @@ void CompressSword1::parseExtraArguments() {
 }
 
 void CompressSword1::execute() {
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 
 	switch (_format) {
 	case AUDIO_MP3:

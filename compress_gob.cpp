@@ -65,12 +65,12 @@ void CompressGob::parseExtraArguments() {
 }
 
 void CompressGob::execute() {
-	File stk;
-	File gobConf;
+	Common::File stk;
+	Common::File gobConf;
 	uint16 chunkCount;
 
 
-	Filename inpath(_inputPaths[0].path);
+	Common::Filename inpath(_inputPaths[0].path);
 
 // We output with .stk extension, if there is no specific out file
 	if (_outputPath.empty()) {
@@ -108,12 +108,12 @@ void CompressGob::execute() {
  * In order to have a slightly better compression ration in some cases (Playtoons), it
  * also detects duplicate files.
  */
-CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName, uint16 &chunkCount) {
+CompressGob::Chunk *CompressGob::readChunkConf(Common::File &gobConf, Common::Filename &stkName, uint16 &chunkCount) {
 	Chunk *chunks = new Chunk;
 	Chunk *curChunk = chunks;
 	Chunk *parseChunk;
-	File src1;
-	Filename srcName("");
+	Common::File src1;
+	Common::Filename srcName("");
 	char buffer[1024];
 
 	chunkCount = 1;
@@ -190,7 +190,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(File &gobConf, Filename &stkName,
  *
  * This header will be overwritten just before the end of the program execution
  */
-void CompressGob::writeEmptyHeader(File &stk, uint16 chunkCount) {
+void CompressGob::writeEmptyHeader(Common::File &stk, uint16 chunkCount) {
 	for (uint32 count = 0; count < 2 + (uint32) (chunkCount * 22); count++)
 		stk.writeByte(0);
 
@@ -206,9 +206,9 @@ void CompressGob::writeEmptyHeader(File &stk, uint16 chunkCount) {
  * with the size of the chunk in the archive, the compression method (if modified),
  * ...
  */
-void CompressGob::writeBody(Filename *inpath, File &stk, Chunk *chunks) {
+void CompressGob::writeBody(Common::Filename *inpath, Common::File &stk, Chunk *chunks) {
 	Chunk *curChunk = chunks;
-	File src;
+	Common::File src;
 	uint32 tmpSize;
 	
 	while (curChunk) {
@@ -260,7 +260,7 @@ void CompressGob::writeBody(Filename *inpath, File &stk, Chunk *chunks) {
  * The duplicate files are defined using the same information
  * as the one of the replacement file.
 */
-void CompressGob::rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks) {
+void CompressGob::rewriteHeader(Common::File &stk, uint16 chunkCount, Chunk *chunks) {
 	uint16 i;
 	char buffer[1024];
 	Chunk *curChunk = chunks;
@@ -313,7 +313,7 @@ void CompressGob::rewriteHeader(File &stk, uint16 chunkCount, Chunk *chunks) {
  *
  * This function stores a file in the STK archive
  */
-uint32 CompressGob::writeBodyStoreFile(File &stk, File &src) {
+uint32 CompressGob::writeBodyStoreFile(Common::File &stk, Common::File &src) {
 	int count;
 	char buffer[4096];
 	uint32 tmpSize = 0;
@@ -333,7 +333,7 @@ uint32 CompressGob::writeBodyStoreFile(File &stk, File &src) {
  *
  * This function compress a file in the STK archive
  */
-uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
+uint32 CompressGob::writeBodyPackFile(Common::File &stk, Common::File &src) {
 	byte dico[4114];
 	byte writeBuffer[17];
 	uint32 counter;
@@ -438,12 +438,12 @@ uint32 CompressGob::writeBodyPackFile(File &stk, File &src) {
  * This function compares a file to another defined in a chunk. The file sizes 
  * are already tested outside the function.
  */
-bool CompressGob::filcmp(File &src1, Filename &stkName) {
+bool CompressGob::filcmp(Common::File &src1, Common::Filename &stkName) {
 	uint16 readCount;
 	bool checkFl = true;
 	char buf1[4096]; 
 	char buf2[4096];
-	File src2;
+	Common::File src2;
 
 	src1.rewind();
 	src2.open(stkName.getFullPath(), "rb");

@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+namespace Common {
+
 // Filenname implementation
 Filename::Filename() {
 }
@@ -483,4 +485,6 @@ uint32 File::size() const {
 	fseek(_file, p, SEEK_SET);
 	return sz;
 }
+
+} // End of namespace Common
 

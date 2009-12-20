@@ -88,7 +88,7 @@ Tools::~Tools() {
 		delete *iter;
 }
 
-Tools::ToolList Tools::inspectInput(const Filename &filename, ToolType type) const {
+Tools::ToolList Tools::inspectInput(const Common::Filename &filename, ToolType type) const {
 	ToolList perfect_choices;
 	ToolList good_choices;
 	ToolList awful_choices;

@@ -41,7 +41,7 @@ ExtractAgos::ExtractAgos(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTI
 // Run the actual tool
 void ExtractAgos::execute() {
 	// Loop through all input files
-	Filename infilename(_inputPaths[0].path);
+	Common::Filename infilename(_inputPaths[0].path);
 
 	uint8 *x = (uint8 *)loadfile(infilename);
 
@@ -181,8 +181,8 @@ uint32 ExtractAgos::simon_decr_length(uint8 *src, uint32 srclen) {
  *
  * @param name The name of the file to be loaded
  */
-void *ExtractAgos::loadfile(const Filename &name) {
-	File file(name, "rb");
+void *ExtractAgos::loadfile(const Common::Filename &name) {
+	Common::File file(name, "rb");
 
 	// Using global here is not pretty
 	_filelen = file.size();
@@ -202,8 +202,8 @@ void *ExtractAgos::loadfile(const Filename &name) {
  * @param mem Where to get data from
  * @param length How many bytes to write
  */
-void ExtractAgos::savefile(const Filename &name, void *mem, size_t length) {
-	File file(name, "wb");
+void ExtractAgos::savefile(const Common::Filename &name, void *mem, size_t length) {
+	Common::File file(name, "wb");
 	file.write(mem, length);
 }
 

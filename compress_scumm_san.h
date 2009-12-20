@@ -51,7 +51,7 @@ public:
 		bool stereo;
 		int freq;
 		bool used;
-		File file;
+		Common::File file;
 		int waveDataSize;
 		int *volumes;
 		int *pans;
@@ -65,7 +65,7 @@ public:
 protected:
 	byte _IACToutput[0x1000];
 	int _IACTpos;
-	File _waveTmpFile;
+	Common::File _waveTmpFile;
 	int32 _waveDataSize;
 	AudioTrackInfo _audioTracks[COMPRESS_SCUMM_SAN_MAX_TRACKS];
 
@@ -74,18 +74,18 @@ protected:
 	void writeWaveHeader(int s_size);
 	void writeToTempWaveFile(const std::string &fileName, byte *output_data, unsigned int size);
 	void decompressComiIACT(const std::string &fileName, byte *output_data, byte *d_src, int bsize);
-	void handleComiIACT(File &input, int size, const std::string &outputDir, const std::string &inputFilename);
+	void handleComiIACT(Common::File &input, int size, const std::string &outputDir, const std::string &inputFilename);
 	AudioTrackInfo *allocAudioTrack(int trackId, int frame);
 	AudioTrackInfo *findAudioTrack(int trackId);
 	void flushTracks(int frame);
 	void prepareForMixing(const std::string &outputDir, const std::string &inputFilename);
 	void mixing(const std::string &outputDir, const std::string &inputFilename, int frames, int fps);
-	void handleMapChunk(AudioTrackInfo *audioTrack, File &input);
-	int32 handleSaudChunk(AudioTrackInfo *audioTrack, File &input);
-	void handleAudioTrack(int index, int trackId, int frame, int nbframes, File &input, const std::string &outputDir,
+	void handleMapChunk(AudioTrackInfo *audioTrack, Common::File &input);
+	int32 handleSaudChunk(AudioTrackInfo *audioTrack, Common::File &input);
+	void handleAudioTrack(int index, int trackId, int frame, int nbframes, Common::File &input, const std::string &outputDir,
 		const std::string &inputFilename, int &size, int volume, int pan, bool iact);
-	void handleDigIACT(File &input, int size, const std::string &outputDir, const std::string &inputFilename,int flags, int track_flags, int frame);
-	void handlePSAD(File &input, int size, const std::string &outputDir, const std::string &inputFilename, int frame);
+	void handleDigIACT(Common::File &input, int size, const std::string &outputDir, const std::string &inputFilename,int flags, int track_flags, int frame);
+	void handlePSAD(Common::File &input, int size, const std::string &outputDir, const std::string &inputFilename, int frame);
 };
 
 #endif

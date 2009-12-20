@@ -31,12 +31,12 @@ public:
 
 	virtual void execute();
 
-	virtual InspectionMatch inspectInput(const Filename &filename);
+	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 
 protected:
 
-	uint32 compress_sound_data_file(uint32 current_offset, File &output, File &input, uint32 *offs_table, uint32 *size_table, int len);
-	void compress_sound_data(Filename *inpath, Filename *outpath);
+	uint32 compress_sound_data_file(uint32 current_offset, Common::File &output, Common::File &input, uint32 *offs_table, uint32 *size_table, int len);
+	void compress_sound_data(Common::Filename *inpath, Common::Filename *outpath);
 };
 
 #endif

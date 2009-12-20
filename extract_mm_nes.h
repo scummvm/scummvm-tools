@@ -71,8 +71,8 @@ public:
 
 protected:
 
-	void extract_resource(File &input, File &output, const t_resource *res, res_type type);
-	void dump_resource(File &input, const char *fn_template, int num, const t_resource *res, res_type type);
+	void extract_resource(Common::File &input, Common::File &output, const t_resource *res, res_type type);
+	void dump_resource(Common::File &input, const char *fn_template, int num, const t_resource *res, res_type type);
 };
 
 #endif

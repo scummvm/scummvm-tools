@@ -41,7 +41,7 @@
 
 // Known ITE files
 static CompressSaga::GameFileDescription ITE_GameFiles[] = {
-	//	Filename					swapEndian	md5									resourceType	frequency	stereo
+	//	Common::Filename					swapEndian	md5									resourceType	frequency	stereo
 	{"sounds.rsc",					false,		"e2ccb61c325d6d1ead3be0e731fe29fe", kSoundPCM,		22050,		false},	// PC CD/disk
 	{"sounds.rsc",					true,		"95863b89a0916941f6c5e1789843ba14", kSoundPCM,		22050,		false},	// Mac
 	{"soundsd.rsc",					false,		"95a6c148e22e99a8c243f2978223583c", kSoundPCM,		22050,		false},	// New PC demos
@@ -72,7 +72,7 @@ static CompressSaga::GameFileDescription ITE_GameFiles[] = {
 
 // Known IHNM files
 static CompressSaga::GameFileDescription IHNM_GameFiles[] = {
-	//	Filename					swapEndian	md5									resourceType	frequency	stereo
+	//	Common::Filename					swapEndian	md5									resourceType	frequency	stereo
 	// FIXME: sfx.res is disabled for now, as there are issues when trying to encode it
 	//{"sfx.res",					false,		"1c610d543f32ec8b525e3f652536f269", kSoundWAV,		-1,			false},
 	{"voicess.res",					false,		"-1", 								kSoundWAV,		-1,			false},
@@ -126,7 +126,7 @@ CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name, TOOL
 	_helptext = "\nUsage: " + getName() +" [mode] [mode params] [-o outputfile = infile.cmp] <inputfile>\n";
 }
 
-InspectionMatch CompressSaga::inspectInput(const Filename &filename) {
+InspectionMatch CompressSaga::inspectInput(const Common::Filename &filename) {
 	if (detectFile(&filename))
 		return IMATCH_PERFECT;
 	return IMATCH_AWFUL;
@@ -134,7 +134,7 @@ InspectionMatch CompressSaga::inspectInput(const Filename &filename) {
 
 // --------------------------------------------------------------------------------
 
-bool CompressSaga::detectFile(const Filename *infile) {
+bool CompressSaga::detectFile(const Common::Filename *infile) {
 	int gamesCount = ARRAYSIZE(gameDescriptions);
 	int i, j;
 	uint8 md5sum[16];
@@ -160,7 +160,7 @@ bool CompressSaga::detectFile(const Filename *infile) {
 					return true;
 				}
 			} else {			// IHNM
-				// Filename based detection, used in IHNM, as all its sound files have the
+				// Common::Filename based detection, used in IHNM, as all its sound files have the
 				// same encoding
 
 				if (scumm_stricmp(gameDescriptions[i].filesDescriptions[j].fileName, infile->getFullName().c_str()) == 0) {
@@ -177,10 +177,10 @@ bool CompressSaga::detectFile(const Filename *infile) {
 	return false;
 }
 
-uint32 CompressSaga::copyFile(const char *fromFileName, File &outputFile) {
+uint32 CompressSaga::copyFile(const char *fromFileName, Common::File &outputFile) {
 	size_t size;
 	char fbuf[2048];
-	File tempf(fromFileName, "rb");
+	Common::File tempf(fromFileName, "rb");
 
 	if (!tempf.isOpen())
 		error("Unable to open %s", fromFileName);
@@ -192,10 +192,10 @@ uint32 CompressSaga::copyFile(const char *fromFileName, File &outputFile) {
 	return size;
 }
 
-void CompressSaga::copyFile(File &inputFile, uint32 inputSize, const char *toFileName) {
+void CompressSaga::copyFile(Common::File &inputFile, uint32 inputSize, const char *toFileName) {
 	size_t size;
 	char fbuf[2048];
-	File tempf(toFileName, "wb");
+	Common::File tempf(toFileName, "wb");
 
 	if (!tempf.isOpen())
 		error("Unable to open %s", toFileName);
@@ -210,7 +210,7 @@ void CompressSaga::copyFile(File &inputFile, uint32 inputSize, const char *toFil
 }
 
 void CompressSaga::writeBufferToFile(uint8 *data, uint32 inputSize, const char *toFileName) {
-	File tempf(toFileName, "wb");
+	Common::File tempf(toFileName, "wb");
 	if (!tempf.isOpen())
 		error("Unable to open %s", toFileName);
 	tempf.write(data, inputSize);
@@ -230,7 +230,7 @@ byte CompressSaga::compression_format(AudioFormat format) {
 	}
 }
 
-void CompressSaga::writeHeader(File &outputFile) {
+void CompressSaga::writeHeader(Common::File &outputFile) {
 	outputFile.writeByte(compression_format(_format));
 	outputFile.writeUint16LE(_sampleRate);
 	outputFile.writeUint32LE(_sampleSize);
@@ -238,7 +238,7 @@ void CompressSaga::writeHeader(File &outputFile) {
 	outputFile.writeByte(_sampleStereo);
 }
 
-uint32 CompressSaga::encodeEntry(File &inputFile, uint32 inputSize, File &outputFile) {
+uint32 CompressSaga::encodeEntry(Common::File &inputFile, uint32 inputSize, Common::File &outputFile) {
 	uint8 *inputData = 0;
 	byte *buffer = 0;
 	int rate, size;
@@ -333,9 +333,9 @@ uint32 CompressSaga::encodeEntry(File &inputFile, uint32 inputSize, File &output
 	return 0;
 }
 
-void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
-	File inputFile;
-	File outputFile;
+void CompressSaga::sagaEncode(Common::Filename *inpath, Common::Filename *outpath) {
+	Common::File inputFile;
+	Common::File outputFile;
 	uint32 inputFileSize;
 	uint32 resTableOffset;
 	uint32 resTableCount;
@@ -435,8 +435,8 @@ void CompressSaga::sagaEncode(Filename *inpath, Filename *outpath) {
 }
 
 void CompressSaga::execute() {
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 
 	if (outpath.directory()) {
 		outpath.setFullName(inpath.getName());

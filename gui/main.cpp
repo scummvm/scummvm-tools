@@ -78,7 +78,7 @@ bool ScummVMToolsApp::OnInit() {
 	Configuration &configuration = frame->_configuration;
 
 	if (argc == 2) {
-		Filename fn((const char *)wxString(argv[1]).mb_str());
+		Common::Filename fn((const char *)wxString(argv[1]).mb_str());
 
 		wxArrayString ls = g_tools.getToolList(fn);
 		if (ls.size() == 1)

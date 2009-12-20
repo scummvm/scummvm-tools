@@ -818,7 +818,7 @@ const struct t_resgroup res_preplist = {
 	}
 };
 
-void ExtractMMNes::extract_resource(File &input, File &output, const struct t_resource *res, res_type type) {
+void ExtractMMNes::extract_resource(Common::File &input, Common::File &output, const struct t_resource *res, res_type type) {
 	uint16 len, i, j;
 	uint8 val;
 	uint8 cnt;
@@ -1080,10 +1080,10 @@ struct	t_lflindex {
 #include "common/pack-end.h"	/* END STRUCT PACKING */
 
 #else	/* !MAKE_LFLS */
-void ExtractMMNES::dump_resource (File &input, const char *fn_template, int num, const struct t_resource *res, res_type type) {
+void ExtractMMNES::dump_resource (Common::File &input, const char *fn_template, int num, const struct t_resource *res, res_type type) {
 	char fname[256];
 	sprintf(fname, fn_template, num);
-	File output(fname, "wb");
+	Common::File output(fname, "wb");
 	print("Extracting resource to %s\n", fname);
 	extract_resource(input, output, res, type);
 }
@@ -1101,7 +1101,7 @@ static void InitCRC(void) {
 		CRCtable[i] = n;
 	}
 }
-static uint32 CheckROM(File &file) {
+static uint32 CheckROM(Common::File &file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 i;
 
@@ -1129,10 +1129,10 @@ void ExtractMMNes::execute() {
 	int i, j;
 	uint32 CRC;
 
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 
-	File input(inpath, "rb");
+	Common::File input(inpath, "rb");
 
 	if ((input.readByte() == 'N') && (input.readByte() == 'E') && (input.readByte() == 'S') && (input.readByte() == 0x1A)) {
 		error(
@@ -1186,7 +1186,7 @@ void ExtractMMNes::execute() {
 
 		sprintf(fname, "%02i.LFL", lfl->num);
 		outpath.setFullName(fname);
-		File output(outpath, "wb");
+		Common::File output(outpath, "wb");
 #ifdef MAKE_LFLS
 		output.setXorMode(0xFF);
 #endif
@@ -1257,7 +1257,7 @@ void ExtractMMNes::execute() {
 	}
 
 	outpath.setFullName("00.LFL");
-	File output(outpath, "wb");
+	Common::File output(outpath, "wb");
 #ifdef MAKE_LFLS
 	output.setXorMode(0xFF);
 #endif

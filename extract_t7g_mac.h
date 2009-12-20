@@ -32,9 +32,9 @@ public:
 	virtual void execute();
 
 protected:
-	std::string readString(File &infile);
-	void dumpResource(File &infile, std::string name);
-	void handleReferenceList(File &infile, uint32 offsetRefList, uint16 numRes, uint32 offsetResNames);
+	std::string readString(Common::File &infile);
+	void dumpResource(Common::File &infile, std::string name);
+	void handleReferenceList(Common::File &infile, uint32 offsetRefList, uint16 numRes, uint32 offsetResNames);
 };
 
 #endif

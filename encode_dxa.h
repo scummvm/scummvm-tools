@@ -42,8 +42,8 @@ public:
 
 protected:
 
-	void convertWAV(const Filename *inpath, const Filename* outpath);
-	void readVideoInfo(Filename *filename, int &width, int &height, int &framerate, int &frames, ScaleMode &scaleMode);
+	void convertWAV(const Common::Filename *inpath, const Common::Filename* outpath);
+	void readVideoInfo(Common::Filename *filename, int &width, int &height, int &framerate, int &frames, ScaleMode &scaleMode);
 	int read_png_file(const char* filename, unsigned char *&image, unsigned char *&palette, int &width, int &height);
 };
 

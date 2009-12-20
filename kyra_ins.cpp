@@ -473,7 +473,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 		char filename[64];
 		snprintf(filename, 64, "%s%03d", _baseFilename, currentFile);
 
-		File file(filename, "rb");
+		Common::File file(filename, "rb");
 
 		file.seek(pos, SEEK_SET);
 		uint8 fileId = file.readByte();
@@ -549,7 +549,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 			char filename[64];
 			snprintf(filename, 64, "%s%03d", _baseFilename, i);
 
-			File file(filename, "rb");
+			Common::File file(filename, "rb");
 
 			uint32 size = (i == a->lastFile) ? a->endOffset : file.size();
 
@@ -606,7 +606,7 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 
 					snprintf(filename, 64, "%s.%03d", _baseFilename, i+1);
 
-					File file2(filename, "rb");
+					Common::File file2(filename, "rb");
 					file.read_throwsOnError(hdr, m);
 					file2.read_throwsOnError(hdr + m , b);
 				} else {

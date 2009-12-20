@@ -54,7 +54,7 @@ void CompressScummSou::end_of_file() {
 	_output_idx.open(_outputPath, "wb");
 	_output_idx.writeUint32BE((uint32)idx_size);
 
-	File in(TEMP_IDX, "rb");
+	Common::File in(TEMP_IDX, "rb");
 	while ((size = in.read_noThrow(buf, 2048)) > 0) {
 		_output_idx.write(buf, size);
 	}
@@ -96,7 +96,7 @@ bool CompressScummSou::get_part() {
 			pos++;
 			append_byte(4, buf);
 		}
-	} catch (FileException &) {
+	} catch (Common::FileException &) {
 		// EOF reached
 		return false;
 	}
@@ -126,7 +126,7 @@ bool CompressScummSou::get_part() {
 	extractAndEncodeVOC(TEMP_RAW, _input, _format);
 
 	/* Append the converted data to the master output file */
-	File f(tempEncoded, "rb");
+	Common::File f(tempEncoded, "rb");
 	tot_size = 0;
 	while ((size = f.read_noThrow(buf, 2048)) > 0) {
 		tot_size += size;
@@ -151,8 +151,8 @@ std::string CompressScummSou::getOutputName() const {
 void CompressScummSou::execute() {
 	char buf[2048];
 
-	Filename inpath(_inputPaths[0].path);
-	//Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	//Common::Filename &outpath = _outputPath;
 
 	if (_outputPath.directory())
 		_outputPath.setFullName(getOutputName());

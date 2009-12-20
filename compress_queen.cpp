@@ -118,7 +118,7 @@ const CompressQueen::GameVersion *CompressQueen::detectGameVersion(uint32 size) 
 	return NULL;
 }
 
-void CompressQueen::fromFileToFile(File &in, File &out, uint32 amount) {
+void CompressQueen::fromFileToFile(Common::File &in, Common::File &out, uint32 amount) {
 	char fBuf[2048];
 	uint32 numRead;
 
@@ -133,16 +133,16 @@ void CompressQueen::fromFileToFile(File &in, File &out, uint32 amount) {
 	}
 }
 
-void CompressQueen::createFinalFile(Filename outPath) {
+void CompressQueen::createFinalFile(Common::Filename outPath) {
 	int i;
 	uint32 dataStartOffset;
 	uint32 dataSize;
 
 	outPath.setFullName(FINAL_OUT);
 
-	File inTbl(TEMP_TBL, "rb");
-	File inData(TEMP_DAT, "rb");
-	File outFinal(outPath, "wb");
+	Common::File inTbl(TEMP_TBL, "rb");
+	Common::File inData(TEMP_DAT, "rb");
+	Common::File outFinal(outPath, "wb");
 
 	dataStartOffset = inTbl.size() + EXTRA_TBL_HEADER;
 	dataSize = inData.size();
@@ -173,13 +173,13 @@ void CompressQueen::createFinalFile(Filename outPath) {
 }
 
 void CompressQueen::execute() {
-	File inputData, inputTbl, outputTbl, outputData, compFile;
+	Common::File inputData, inputTbl, outputTbl, outputData, compFile;
 	char tmp[5];
 	int size, i = 1;
 	uint32 prevOffset;
 
-	Filename inpath(_inputPaths[0].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename &outpath = _outputPath;
 
 	if (outpath.empty())
 		outpath = inpath;
@@ -239,7 +239,7 @@ void CompressQueen::execute() {
 			int headerSize;
 
 			/* Read in .SB */
-			File tmpFile(TEMP_SB, "wb");
+			Common::File tmpFile(TEMP_SB, "wb");
 			inputData.seek(_entry.offset, SEEK_SET);
 
 			inputData.seek(2, SEEK_CUR);
@@ -288,7 +288,7 @@ void CompressQueen::execute() {
 
 				if (_version->versionString[1] == pf->lang && strcmp(pf->filename, _entry.filename) == 0) {
 					/* XXX patched data files are supposed to be in cwd */
-					File fpPatch(pf->filename, "rb");
+					Common::File fpPatch(pf->filename, "rb");
 
 					if (fpPatch.isOpen()) {
 						_entry.size = fpPatch.size();

@@ -60,16 +60,16 @@ void ExtractMMApple::execute() {
 	unsigned short signature;
 	char fname[256];
 
-	Filename inpath1(_inputPaths[0].path);
-	Filename inpath2(_inputPaths[1].path);
-	Filename &outpath = _outputPath;
+	Common::Filename inpath1(_inputPaths[0].path);
+	Common::Filename inpath2(_inputPaths[1].path);
+	Common::Filename &outpath = _outputPath;
 
 	if (outpath.empty())
 		// Standard output path
 		outpath.setFullPath("out/");
 
-	File input1(inpath1, "rb");
-	File input2(inpath2, "rb");
+	Common::File input1(inpath1, "rb");
+	Common::File input2(inpath2, "rb");
 
 	input1.seek(142080, SEEK_SET);
 	input2.seek(143104, SEEK_SET);
@@ -84,7 +84,7 @@ void ExtractMMApple::execute() {
 		error("Signature not found in disk 2!");
 
 	outpath.setFullName("00.LFL");
-	File output(fname, "wb");
+	Common::File output(fname, "wb");
 	// All output should be xored
 	output.setXorMode(0xFF);
 	print("Creating 00.LFL...\n");
@@ -129,7 +129,7 @@ void ExtractMMApple::execute() {
 	/* NOTE: Extra 92 bytes of unknown data */
 
 	for (i = 0; i < NUM_ROOMS; i++) {
-		File *input;
+		Common::File *input;
 
 		if (room_disks_apple[i] == '1')
 			input = &input1;

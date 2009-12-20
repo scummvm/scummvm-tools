@@ -39,7 +39,7 @@ public:
 
 protected:
 
-	File _waveTmpFile;
+	Common::File _waveTmpFile;
 	int32 _waveDataSize;
 	BundleAudioTable *_bundleTable;
 	BundleAudioTable _cbundleTable[10000]; // difficult to calculate
@@ -52,12 +52,12 @@ protected:
 	void encodeWaveWithLame(char *filename);
 	void writeWaveHeader(int s_size, int rate, int chan);
 	void writeToTempWave(char *fileName, byte *output_data, unsigned int size);
-	byte *decompressBundleSound(int index, File  &input, int32 &finalSize);
+	byte *decompressBundleSound(int index, Common::File  &input, int32 &finalSize);
 	byte *convertTo16bit(byte *ptr, int inputSize, int &outputSize, int bits, int freq, int channels);
 	void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs, int &numMarkers);
-	void writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, File &output);
+	void writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, Common::File &output);
 	void recalcRegions(int32 &value, int bits, int freq, int channels);
-	void writeToRMAPFile(byte *ptr, File &output, char *filename, int &offsetData, int &bits, int &freq, int &channels);
+	void writeToRMAPFile(byte *ptr, Common::File &output, char *filename, int &offsetData, int &bits, int &freq, int &channels);
 };
 
 #endif

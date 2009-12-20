@@ -77,7 +77,7 @@ void ExtractKyra::parseExtraArguments() {
 }
 
 void ExtractKyra::execute() {
-	Filename inputpath(_inputPaths[0].path);
+	Common::Filename inputpath(_inputPaths[0].path);
 
 	Extractor *extract = 0;
 	if (isHoFInstaller) {

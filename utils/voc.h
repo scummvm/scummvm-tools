@@ -66,7 +66,7 @@ extern int getSampleRateFromVOCRate(int vocSR);
  * responsibility to dellocate that data again later on! Currently this
  * function only supports uncompressed raw PCM data.
  */
-extern byte *loadVOCFromStream(File &stream, int &size, int &rate);
+extern byte *loadVOCFromStream(Common::File &stream, int &size, int &rate);
 
 /**
  * Try to load a VOC from the given seekable stream and create an AudioStream
@@ -75,7 +75,7 @@ extern byte *loadVOCFromStream(File &stream, int &size, int &rate);
  *
  * This function uses loadVOCFromStream() internally.
  */
-AudioStream *makeVOCStream(File &stream);
+AudioStream *makeVOCStream(Common::File &stream);
 
 } // End of namespace Audio
 

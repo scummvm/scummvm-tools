@@ -31,18 +31,18 @@ public:
 
 	virtual void execute();
 
-	virtual InspectionMatch inspectInput(const Filename &filename);
+	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 
 protected:
 	struct DuplicatedFile;
 
 	uint16 clip8BitSample(int16 sample);
-	int decodeChunk(File &in, File &out);
-	void compressAUDFile(File &input, const char *outfile);
+	int decodeChunk(Common::File &in, Common::File &out);
+	void compressAUDFile(Common::File &input, const char *outfile);
 	const DuplicatedFile *findDuplicatedFile(uint32 resOffset, const DuplicatedFile *list, const uint32 maxEntries);
-	void process(Filename *infile, Filename *output);
-	void processKyra3(Filename *infile, Filename *output);
-	bool detectKyra3File(Filename *infile);
+	void process(Common::Filename *infile, Common::Filename *output);
+	void processKyra3(Common::Filename *infile, Common::Filename *output);
+	bool detectKyra3File(Common::Filename *infile);
 };
 
 #endif

@@ -42,7 +42,7 @@ ExtractT7GMac::ExtractT7GMac(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 		_shorthelp + "\n";
 }
 
-std::string ExtractT7GMac::readString(File &infile) {
+std::string ExtractT7GMac::readString(Common::File &infile) {
 	byte len = infile.readByte();
 	char *name = new char[len + 1];
 	infile.read_throwsOnError(name, len);
@@ -50,7 +50,7 @@ std::string ExtractT7GMac::readString(File &infile) {
 	return name;
 }
 
-void ExtractT7GMac::dumpResource(File &infile, std::string name) {
+void ExtractT7GMac::dumpResource(Common::File &infile, std::string name) {
 	// Show the resource details
 	uint32 fileSize = infile.readUint32BE();
 	print("  \"%s\" (%d bytes)", name.c_str(), fileSize);
@@ -61,7 +61,7 @@ void ExtractT7GMac::dumpResource(File &infile, std::string name) {
 	try {
 		// Dump the resource to the output file
 		_outputPath.setFullName(name);
-		File out(_outputPath, "wb");
+		Common::File out(_outputPath, "wb");
 		infile.read_throwsOnError(buf, fileSize);
 		out.write(buf, fileSize);
 	} catch (...) {
@@ -73,7 +73,7 @@ void ExtractT7GMac::dumpResource(File &infile, std::string name) {
 	delete[] buf;
 }
 
-void ExtractT7GMac::handleReferenceList(File &infile, uint32 offsetRefList, uint16 numRes, uint32 offsetResNames) {
+void ExtractT7GMac::handleReferenceList(Common::File &infile, uint32 offsetRefList, uint16 numRes, uint32 offsetResNames) {
 	for (int i = 0; i < numRes; i++) {
 		infile.seek(offsetRefList + 12 * i + 2, SEEK_SET);
 		uint32 offsetResName = offsetResNames + infile.readUint16BE();
@@ -91,7 +91,7 @@ void ExtractT7GMac::handleReferenceList(File &infile, uint32 offsetRefList, uint
 }
 
 void ExtractT7GMac::execute() {
-	File infile(_inputPaths[0].path, "rb");
+	Common::File infile(_inputPaths[0].path, "rb");
 	
 	if (_outputPath.empty())
 		_outputPath.setFullPath("./");

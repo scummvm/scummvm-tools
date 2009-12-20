@@ -32,7 +32,7 @@ public:
 	virtual void execute();
 
 protected:
-	File _input_idx, _input_smp, _output_idx, _output_smp;
+	Common::File _input_idx, _input_smp, _output_idx, _output_smp;
 
 	void convertTinselRawSample(uint32 sampleSize);
 	void convertTinselADPCMSample(uint32 sampleSize);

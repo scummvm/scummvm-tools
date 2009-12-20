@@ -33,13 +33,13 @@ public:
 
 protected:
 
-	int append_compress_file(File &output);
-	int compress_file_wav(File &input, File &output);
-	int compress_file_raw(const char *input, bool is16, File &output);
-	uint32 compress_sounds_directory(const Filename *inpath, const Filename *outpath, File &output, const struct SoundDirectory *dir);
-	uint32 compress_audio_directory(const Filename *inpath, const Filename *outpath, File &output);
-	void compress_sound_data(Filename *inpath, Filename *outpath);
-	void compress_sound_files(const Filename *inpath, const Filename *outpath);
+	int append_compress_file(Common::File &output);
+	int compress_file_wav(Common::File &input, Common::File &output);
+	int compress_file_raw(const char *input, bool is16, Common::File &output);
+	uint32 compress_sounds_directory(const Common::Filename *inpath, const Common::Filename *outpath, Common::File &output, const struct SoundDirectory *dir);
+	uint32 compress_audio_directory(const Common::Filename *inpath, const Common::Filename *outpath, Common::File &output);
+	void compress_sound_data(Common::Filename *inpath, Common::Filename *outpath);
+	void compress_sound_files(const Common::Filename *inpath, const Common::Filename *outpath);
 };
 
 #endif

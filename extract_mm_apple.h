@@ -36,7 +36,7 @@ public:
 
 protected:
 
-	void dump_resource(File &input, const char *fn_template, int num, p_resource res);
+	void dump_resource(Common::File &input, const char *fn_template, int num, p_resource res);
 };
 
 #endif

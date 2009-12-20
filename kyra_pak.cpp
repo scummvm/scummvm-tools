@@ -29,7 +29,7 @@
 #include "common/util.h"
 
 bool PAKFile::isPakFile(const char *filename) {
-	File f(filename, "rb");
+	Common::File f(filename, "rb");
 
 	int32 filesize = f.size();
 	int32 offset = 0;
@@ -86,7 +86,7 @@ bool PAKFile::loadFile(const char *file, const bool isAmiga) {
 	delete _fileList;
 	_fileList = 0;
 
-	File pakfile(file, "rb");
+	Common::File pakfile(file, "rb");
 
 	uint32 filesize = pakfile.size();
 
@@ -140,7 +140,7 @@ bool PAKFile::saveFile(const char *file) {
 		return true;
 	generateLinkEntry();
 
-	File f(file, "wb");
+	Common::File f(file, "wb");
 
 	// TODO: implement error handling
 	uint32 startAddr = _fileList->getTableSize()+5+4;
@@ -190,7 +190,7 @@ bool PAKFile::addFile(const char *name, const char *file) {
 		return false;
 	}
 
-	File f(file, "rb");
+	Common::File f(file, "rb");
 
 	uint32 filesize = f.size();
 	uint8 *data = new uint8[filesize];
@@ -270,7 +270,7 @@ void PAKFile::generateLinkEntry() {
 		return;
 
 	const int countLinks = _links->size();
-	File output("LINKLIST.TMP", "wb");
+	Common::File output("LINKLIST.TMP", "wb");
 
 	const char **linkList = new const char *[countLinks];
 	int usedLinks = 0;
@@ -412,11 +412,11 @@ void PAKFile::drawFileList() {
 	if (_links) {
 		printf("Linked files (count: %d):\n", _links->size());
 		for (const LinkList *i = _links; i; i = i->next)
-			printf("Filename: '%s' -> '%s'\n", i->filename, i->linksTo);
+			printf("Common::Filename: '%s' -> '%s'\n", i->filename, i->linksTo);
 	}
 }
 
-bool PAKFile::outputAllFiles(Filename *outputPath) {
+bool PAKFile::outputAllFiles(Common::Filename *outputPath) {
 	if (!Extractor::outputAllFiles(outputPath))
 		return false;
 
@@ -445,12 +445,12 @@ bool PAKFile::outputFileAs(const char *file, const char *outputName) {
 void Extractor::drawFileList() {
 	cFileList *cur = getFileList();
 	while (cur) {
-		printf("Filename: '%s' size: %d\n", cur->filename, cur->size);
+		printf("Common::Filename: '%s' size: %d\n", cur->filename, cur->size);
 		cur = cur->next;
 	}
 }
 
-bool Extractor::outputAllFiles(Filename *outputPath) {
+bool Extractor::outputAllFiles(Common::Filename *outputPath) {
 	cFileList *cur = getFileList();
 
 	while (cur) {

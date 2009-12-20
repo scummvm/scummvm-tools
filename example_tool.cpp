@@ -112,8 +112,8 @@ void CompressionExample::execute() {
 	// It writes the of each file 100 times into X files, where X is the input file size.
 
 	// _inputPaths[0].path is always valid and contains the correct path, same for 1
-	Filename inpath1(_inputPaths[0].path);
-	Filename inpath2(_inputPaths[1].path);
+	Common::Filename inpath1(_inputPaths[0].path);
+	Common::Filename inpath2(_inputPaths[1].path);
 
 	// We always need to setup default output path, since there is no obligation to specify it
 	// If you don't do this, the OS will usually default to the working directory, if we output a file

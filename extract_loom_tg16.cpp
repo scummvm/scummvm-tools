@@ -29,24 +29,24 @@
 // if not defined, dumps all resources to separate files
 #define MAKE_LFLS
 
-uint8 read_cbyte (File &input, uint32 *ctr) {
+uint8 read_cbyte(Common::File &input, uint32 *ctr) {
 	(*ctr) += 1;
 	return input.readByte();
 }
-uint16 read_cword (File &input, uint32 *ctr) {
+uint16 read_cword(Common::File &input, uint32 *ctr) {
 	(*ctr) += 2;
 	return input.readUint16LE();
 }
 
-void write_cbyte (File &output, uint8 val, uint32 *ctr) {
+void write_cbyte(Common::File &output, uint8 val, uint32 *ctr) {
 	output.writeByte(val);
 	(*ctr) += 1;
 }
-void write_cword (File &output, uint16 val, uint32 *ctr) {
+void write_cword(Common::File &output, uint16 val, uint32 *ctr) {
 	output.writeUint16LE(val);
 	(*ctr) += 2;
 }
-void write_clong (File &output, uint32 val, uint32 *ctr) {
+void write_clong(Common::File &output, uint32 val, uint32 *ctr) {
 	output.writeUint32LE(val);
 	(*ctr) += 4;
 }
@@ -692,7 +692,7 @@ uint16 r_length(p_resource res) {
 	return res->length[ISO];
 }
 
-void ExtractLoomTG16::extract_resource(File &input, File &output, p_resource res) {
+void ExtractLoomTG16::extract_resource(Common::File &input, Common::File &output, p_resource res) {
 #ifdef MAKE_LFLS
 	uint32 off;
 	uint16 j;
@@ -1174,10 +1174,10 @@ struct _index {
 	uint32 sound_addr[NUM_SOUNDS];
 }	lfl_index;
 #else // !MAKE_LFLS
-void dump_resource (File &input, const char *fn_template, int num, p_resource res) {
+void dump_resource (Common::File &input, const char *fn_template, int num, p_resource res) {
 	char fname[256];
 	sprintf(fname, fn_template, num);
-	File output(fname, "wb");
+	Common::File output(fname, "wb");
 	extract_resource(input, output, res);
 }
 #endif // MAKE_LFLS
@@ -1195,7 +1195,7 @@ void InitCRC() {
 	}
 }
 
-uint32 ISO_CRC(File &file) {
+uint32 ISO_CRC(Common::File &file) {
 	uint32 CRC = 0xFFFFFFFF;
 	uint32 len = file.size();
 	for (uint32 i = 0; i < len; i++)
@@ -1216,7 +1216,7 @@ void ExtractLoomTG16::execute() {
 	if (_outputPath.empty())
 		_outputPath.setFullPath("./");
 
-	File input(_inputPaths[0].path, "rb");
+	Common::File input(_inputPaths[0].path, "rb");
 
 	InitCRC();
 	uint32 CRC = ISO_CRC(input);
@@ -1245,7 +1245,7 @@ void ExtractLoomTG16::execute() {
 		sprintf(fname, "%02i.LFL", lfl->num);
 		_outputPath.setFullName(fname);
 
-		File output(_outputPath, "wb");
+		Common::File output(_outputPath, "wb");
 
 		print("Creating %s...\n", fname);
 		for (int j = 0; lfl->entries[j] != NULL; j++) {
@@ -1278,7 +1278,7 @@ void ExtractLoomTG16::execute() {
 	}
 
 	_outputPath.setFullName("00.LFL");
-	File output(_outputPath, "wb");
+	Common::File output(_outputPath, "wb");
 	print("Creating 00.LFL...\n");
 
 	lfl_index.num_rooms = NUM_ROOMS;

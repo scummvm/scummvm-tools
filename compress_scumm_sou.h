@@ -32,7 +32,7 @@ public:
 	virtual void execute();
 
 protected:
-	File _input, _output_idx, _output_snd;
+	Common::File _input, _output_idx, _output_snd;
 
 	std::string getOutputName() const;
 	void end_of_file();

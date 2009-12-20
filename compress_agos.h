@@ -36,14 +36,14 @@ public:
 protected:
 	void parseExtraArguments();
 
-	File _input, _output_idx, _output_snd;
+	Common::File _input, _output_idx, _output_snd;
 
 	void end();
 	int get_offsets(size_t maxcount, uint32 filenums[], uint32 offsets[]);
 	int get_offsets_mac(size_t maxcount, uint32 filenums[], uint32 offsets[]);
 	uint32 get_sound(uint32 offset);
-	void convert_pc(Filename* inputPath);
-	void convert_mac(Filename *inputPath);
+	void convert_pc(Common::Filename* inputPath);
+	void convert_mac(Common::Filename *inputPath);
 };
 
 #endif
