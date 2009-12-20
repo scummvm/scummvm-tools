@@ -1084,7 +1084,7 @@ void ExtractMMNES::dump_resource (File &input, const char *fn_template, int num,
 	char fname[256];
 	sprintf(fname, fn_template, num);
 	File output(fname, "wb");
-	print("Extracting resource to %s", fname);
+	print("Extracting resource to %s\n", fname);
 	extract_resource(input, output, res, type);
 }
 #endif /* MAKE_LFLS */
@@ -1147,27 +1147,27 @@ void ExtractMMNes::execute() {
 	switch (CRC) {
 	case 0x0D9F5BD1:
 		ROMset = ROMSET_USA;
-		print("ROM contents verified as Maniac Mansion (USA)");
+		print("ROM contents verified as Maniac Mansion (USA)\n");
 		break;
 	case 0xF59CFC3D:
 		ROMset = ROMSET_EUROPE;
-		print("ROM contents verified as Maniac Mansion (Europe)");
+		print("ROM contents verified as Maniac Mansion (Europe)\n");
 		break;
 	case 0x3F2BDA65:
 		ROMset = ROMSET_SWEDEN;
-		print("ROM contents verified as Maniac Mansion (Sweden)");
+		print("ROM contents verified as Maniac Mansion (Sweden)\n");
 		break;
 	case 0xF4B70BFE:
 		ROMset = ROMSET_FRANCE;
-		print("ROM contents verified as Maniac Mansion (France)");
+		print("ROM contents verified as Maniac Mansion (France)\n");
 		break;
 	case 0x60EA98A0:
 		ROMset = ROMSET_GERMANY;
-		print("ROM contents verified as Maniac Mansion (Germany)");
+		print("ROM contents verified as Maniac Mansion (Germany)\n");
 		break;
 	case 0xF5B2AFCA:
 		ROMset = ROMSET_SPAIN;
-		print("ROM contents verified as Maniac Mansion (Spain)");
+		print("ROM contents verified as Maniac Mansion (Spain)\n");
 		break;
 	case 0x3DA2085E:
 		error("Maniac Mansion (Japan) is not supported");
@@ -1190,7 +1190,7 @@ void ExtractMMNes::execute() {
 #ifdef MAKE_LFLS
 		output.setXorMode(0xFF);
 #endif
-		print("Creating %s...", fname);
+		print("Creating %s...\n", fname);
 		
 		for (j = 0; lfl->entries[j].type != NULL; j++) {
 			const struct t_lflentry *entry = &lfl->entries[j];
@@ -1261,7 +1261,7 @@ void ExtractMMNes::execute() {
 #ifdef MAKE_LFLS
 	output.setXorMode(0xFF);
 #endif
-	print("Creating 00.LFL...");
+	print("Creating 00.LFL...\n");
 
 	output.writeUint16LE(0x4643);
 	extract_resource(input, output, &res_globdata.langs[ROMset][0], res_globdata.type);

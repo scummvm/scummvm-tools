@@ -128,7 +128,7 @@ void ExtractT7GMac::execute() {
 			case MKID_BE('INST'):
 			case MKID_BE('T7GM'):
 			{
-				print("Extracting \"%s\" resources", resType);
+				print("Extracting \"%s\" resources\n", resType);
 				uint16 numRes = infile.readUint16BE();
 				uint32 offsetRefList = offsetResTypes + infile.readUint16BE();
 
@@ -136,7 +136,7 @@ void ExtractT7GMac::execute() {
 				break;
 			}
 			default:
-				print("Skipping \"%s\" resources", resType);
+				print("Skipping \"%s\" resources\n", resType);
 				break;
 		}
 	}

@@ -1225,15 +1225,15 @@ void ExtractLoomTG16::execute() {
 	case 0x29EED3C5: // dumpcd
 	case 0xE70FA498: // turborip
 		ISO = ISO_USA;
-		print("ISO contents verified as Loom USA (track 2)");
+		print("ISO contents verified as Loom USA (track 2)\n");
 		break;
 	case 0xD7B5F808: // dumpcd
 	case 0xCA757D06: // turborip
 		ISO = ISO_JPN;
-		print("ISO contents verified as Loom Japan (track 2)");
+		print("ISO contents verified as Loom Japan (track 2)\n");
 		break;
 	default:
-		error("ISO contents not recognized");
+		error("ISO contents not recognized\n");
 		break;
 	}
 #ifdef	MAKE_LFLS
@@ -1247,7 +1247,7 @@ void ExtractLoomTG16::execute() {
 
 		File output(_outputPath, "wb");
 
-		print("Creating %s...", fname);
+		print("Creating %s...\n", fname);
 		for (int j = 0; lfl->entries[j] != NULL; j++) {
 			p_resource entry = lfl->entries[j];
 			switch (entry->type) {
@@ -1279,7 +1279,7 @@ void ExtractLoomTG16::execute() {
 
 	_outputPath.setFullName("00.LFL");
 	File output(_outputPath, "wb");
-	print("Creating 00.LFL...");
+	print("Creating 00.LFL...\n");
 
 	lfl_index.num_rooms = NUM_ROOMS;
 	lfl_index.num_costumes = NUM_COSTUMES;
@@ -1328,17 +1328,17 @@ void ExtractLoomTG16::execute() {
 
 	_outputPath.setFullName("97.LFL");
 	output.open(_outputPath, "wb");
-	print("Creating 97.LFL...");
+	print("Creating 97.LFL...\n");
 	extract_resource(input, output, &res_charset);
 
 	_outputPath.setFullName("98.LFL");
 	output.open(_outputPath, "wb");
-	print("Creating 98.LFL...");
+	print("Creating 98.LFL...\n");
 	extract_resource(input, output, &res_charset);
 
 	_outputPath.setFullName("99.LFL");
 	output.open(_outputPath, "wb");
-	print("Creating 99.LFL...");
+	print("Creating 99.LFL...\n");
 	extract_resource(input, output, &res_charset);
 
 #else // !MAKE_LFLS

@@ -88,7 +88,7 @@ void ExtractGobStk::execute() {
 	stk.read_throwsOnError(signature, 6);
 
 	if (strncmp(signature, "STK2.1", 6) == 0) {
-		print("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath().c_str());
+		print("Signature of new STK format (STK 2.1) detected in file \"%s\"\n", inpath.getFullPath().c_str());
 		gobConf.print("%s\n", confSTK21);
 		readChunkListV2(stk, gobConf);
 	} else {

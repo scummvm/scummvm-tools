@@ -79,7 +79,7 @@ int Tool::run(const std::deque<std::string> &args) {
 
 	// Make sure we have enough input files.
 	if (_arguments.size() < _inputPaths.size()) {
-		print("Too few input files!");
+		print("Too few input files!\n");
 		return -2;
 	}
 
@@ -124,7 +124,7 @@ int Tool::run(const std::deque<std::string> &args) {
 		run();
 	} catch(ToolException &err) {
 		const char *what = err.what();
-		print("Fatal Error : %s", what);
+		print("Fatal Error : %s\n", what);
 		return err._retcode;
 	}
 	return 0;
