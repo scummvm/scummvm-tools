@@ -47,7 +47,7 @@ CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTY
 
 	_shorthelp = "Compresses Gobliiins! data files.";
 	_helptext = 
-		"\nUsage: " + getName() + " [-f] [-o <output> = out.stk] <conf file>\n"
+		"\nUsage: " + getName() + " [-o <output> = out.stk] [-f] <conf file>\n"
 		"<conf file> is a .gob file generated extract_gob_stk\n"
 		"<-f> ignores the compression flag in the .gob file and force compression for all files\n\n"
 		"The stick archive (STK/ITK/LTK) will be created in the current directory.\n";
