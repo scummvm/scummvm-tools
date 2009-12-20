@@ -135,6 +135,8 @@ void Tool::run() {
 	_abort = false;
 	
 
+	setTempFileName();
+
 	// Change output to directory if necessary
 	if (_outputToDirectory && _outputPath.empty() == false) {
 		// Ensure last character is a /, this way we force directory output
@@ -257,6 +259,9 @@ void Tool::updateProgress(int done, int total) {
 }
 
 void Tool::parseAudioArguments() {
+}
+
+void Tool::setTempFileName() {
 }
 
 void Tool::parseOutputArguments() {

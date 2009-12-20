@@ -910,19 +910,32 @@ void CompressionTool::parseAudioArguments() {
 	// Need workaround to be sign-correct
 	switch (_format) {
 	case AUDIO_MP3:
-		tempEncoded = TEMP_MP3;
 		if (!processMp3Parms())
 			throw ToolException("Could not parse command line arguments, use --help for options");
 		break;
 	case AUDIO_VORBIS:
-		tempEncoded = TEMP_OGG;
 		if (!processOggParms())
 			throw ToolException("Could not parse command line arguments, use --help for options");
 		break;
 	case AUDIO_FLAC:
-		tempEncoded = TEMP_FLAC;
 		if (!processFlacParms())
 			throw ToolException("Could not parse arguments: Use --help for options");
+		break;
+	default: // cannot occur but we check anyway to avoid compiler warnings
+		throw ToolException("Unknown audio format, should be impossible!");
+	}
+}
+
+void CompressionTool::setTempFileName() {
+	switch (_format) {
+	case AUDIO_MP3:
+		tempEncoded = TEMP_MP3;
+		break;
+	case AUDIO_VORBIS:
+		tempEncoded = TEMP_OGG;
+		break;
+	case AUDIO_FLAC:
+		tempEncoded = TEMP_FLAC;
 		break;
 	default: // cannot occur but we check anyway to avoid compiler warnings
 		throw ToolException("Unknown audio format, should be impossible!");

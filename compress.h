@@ -127,6 +127,8 @@ public:
 	bool processOggParms();
 	bool processFlacParms();
 
+	void setTempFileName();
+
 	void extractAndEncodeVOC(const char *outName, File &input, AudioFormat compMode);
 	void extractAndEncodeWAV(const char *outName, File &input, AudioFormat compMode);
 

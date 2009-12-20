@@ -190,6 +190,7 @@ public:
 
 protected:
 	virtual void parseAudioArguments();
+	virtual void setTempFileName();
 	void parseOutputArguments();
 
 	/** Parses the arguments only this tool takes. */
