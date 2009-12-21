@@ -36,7 +36,7 @@ ExtractT7GMac::ExtractT7GMac(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to the 7th guest data files.";
+	_shorthelp = "Extract data files from the The 7th Guest Macintosh data file.";
 	_helptext = 
 		"Usage: " + getName() + " [params] [-o outputdir] <archivefile>\n" +
 		_shorthelp + "\n";

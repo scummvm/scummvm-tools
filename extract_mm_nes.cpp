@@ -1117,7 +1117,7 @@ ExtractMMNes::ExtractMMNes(const std::string &name) : Tool(name, TOOLTYPE_EXTRAC
 	input.format = "*.PRG";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Extract Maniac Mansion data files, from the NES version.";
+	_shorthelp = "Extract data files from the NES version of Maniac Mansion.";
 	_helptext = 
 		"\nUsage: " + _name + " [-o <output dir> = out/] <infile.PRG>\n" +
 		"\t" + _shorthelp + "\n" +

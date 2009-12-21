@@ -34,8 +34,7 @@ ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name, TOOLTYPE_
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Extract data from Lucas Art CDs, sometimes the CD appears to only hold an \n"
-		"application but there is a hidden data file.";
+	_shorthelp = "Extract data files from the single data file of later LucasArts Macintosh SCUMM games.";
 	_helptext =
 		"\nUsage: " + getName() + " [-o <output dir> = out/] <file>\n" +
 		_shorthelp + "\n";

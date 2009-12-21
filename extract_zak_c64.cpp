@@ -52,7 +52,7 @@ ExtractZakC64::ExtractZakC64(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 	input2.format = "*.d64";
 	_inputPaths.push_back(input2);
 
-	_shorthelp = "Extract Zak McKraken data files from the C64 version.";
+	_shorthelp = "Extract data files from the C64 version of Zak McKracken.";
 	_helptext = "\nUsage: " + _name + " [-o <output dir> = out/] <disk1.d64> <disk2.d64>\n\t" + _shorthelp + "\n";
 }
 

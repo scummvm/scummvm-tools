@@ -48,7 +48,7 @@ ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 	input.format = "*.stk";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Extracts the files from a Stick file used by 'gob' engine (.STK/.ITK/.LTK).";
+	_shorthelp = "Extract the files from a Stick file used by 'gob' engine (.STK/.ITK/.LTK).";
 	_helptext  = "Usage: " + getName() + " [-o outputname] stickname\nwhere\n  ouputname is used to force the gob config filename (used by compress_gob)\n  stickname is the name of the file to extract/decompress";
 }
 
