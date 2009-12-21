@@ -358,6 +358,7 @@ uint8 *CompressSword1::convertData(uint8 *rawData, uint32 rawSize, uint32 *resSi
 	Common::File temp(TEMP_RAW, "wb");
 	size = temp.write(rawData, rawSize);
 	assert(size == rawSize);
+	temp.close();
 	encodeAudio(TEMP_RAW, true, 11025, _audioOuputFilename.c_str(), _format);
 	temp.open(_audioOuputFilename, "rb");
 	temp.seek(0, SEEK_END);
