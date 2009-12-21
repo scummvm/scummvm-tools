@@ -288,10 +288,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 
 void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode) {
 
-	print(" - length = %ld\n", length);
-	print(" - channels = %d\n", (rawAudioType.isStereo ? 2 : 1));
-	print(" - sample rate = %d\n", samplerate);
-	print(" - compression = %dbits\n", rawAudioType.bitsPerSample);
+	print(" - len=%ld, ch=%d, rate=%d, %dbits\n", length, (rawAudioType.isStereo ? 2 : 1), samplerate, rawAudioType.bitsPerSample);
 
 #ifndef DISABLE_BUILTIN_VORBIS
 	if (compmode == AUDIO_VORBIS) {
