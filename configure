@@ -74,6 +74,7 @@ _tremor=auto
 _flac=auto
 _mad=auto
 _zlib=auto
+_png=auto
 _endian=unknown
 _need_memalign=no
 _verbose_build=no
@@ -276,6 +277,9 @@ Optional Libraries:
   --with-zlib-prefix=DIR   Prefix where zlib is installed (optional)
   --disable-zlib           disable zlib (compression) support [autodetect]
 
+  --with-png-prefix=DIR    Prefix where libpng is installed (optional)
+  --disable-png            disable libpng (compression) support [autodetect]
+
 
 Some influential environment variables:
   LDFLAGS        linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -302,6 +306,8 @@ for ac_option in $@; do
 	--disable-mad)            _mad=no         ;;
 	--enable-zlib)            _zlib=yes       ;;
 	--disable-zlib)           _zlib=no        ;;
+	--enable-png)             _png=yes        ;;
+	--disable-png)            _png=no         ;;
 	--enable-verbose-build)   _verbose_build=yes ;;
 	--with-ogg-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
@@ -332,6 +338,11 @@ for ac_option in $@; do
 		arg=`echo $ac_option | cut -d '=' -f 2`
 		ZLIB_CFLAGS="-I$arg/include"
 		ZLIB_LIBS="-L$arg/lib"
+		;;
+	--with-png-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		PNG_CFLAGS="-I$arg/include"
+		PNG_LIBS="-L$arg/lib"
 		;;
 	--with-wx-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
@@ -876,6 +887,34 @@ else
 fi
 add_to_config_mk_if_yes "$_zlib" 'USE_ZLIB = 1'
 echo "$_zlib"
+
+#
+# Check for PNG
+#
+echocheck "png"
+if test "$_png" = auto ; then
+	_png=no
+	cat > $TMPC << EOF
+#include <png.h>
+int main(void) {
+#ifdef PNG_LIBPNG_VER_STRING
+	return 0;
+#else
+	return -1;
+#endif
+}
+EOF
+	cc_check $LDFLAGS $CXXFLAGS $PNG_CFLAGS $PNG_LIBS -lpng && _png=yes
+fi
+if test "$_png" = yes ; then
+	_def_png='#define USE_PNG'
+	LIBS="$LIBS $PNG_LIBS -lpng"
+	INCLUDES="$INCLUDES $PNG_CFLAGS"
+else
+	_def_png='#undef USE_PNG'
+fi
+add_to_config_mk_if_yes "$_png" 'USE_PNG = 1'
+echo "$_png"
 
 #
 # Figure out installation directories
