@@ -235,7 +235,7 @@ void ScummToolsFrame::CreateMenuBar() {
 	wxMenuBar *menubar = new wxMenuBar();
 
 #ifdef __WXMAC__
-	wxApp::s_macHelpMenuTitleName = "Help";
+	wxApp::s_macHelpMenuTitleName = wxT("Help");
 #endif 
 
 	// Name of this seems really inappropriate
