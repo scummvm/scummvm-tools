@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# configure -- custom configure script for ScummVM Tools.
+# configure -- custom configure script for the ScummVM tools.
 #
 # ScummVM is the legal property of its developers, whose names
 # are too numerous to list here. Please refer to the COPYRIGHT
@@ -255,8 +255,8 @@ Configuration:
   -h, --help             display this help and exit
 
 Installation directories:
-  --prefix=DIR           use this prefix for installing ScummVM [/usr/local]
-  --bindir=DIR           directory to install the scummvm binary in [PREFIX/bin]
+  --prefix=DIR           use this prefix for installing the Tools [/usr/local]
+  --bindir=DIR           directory to install the tool binaries in [PREFIX/bin]
   --mandir=DIR           directory to install the manpage in [PREFIX/share/man]
   --libdir=DIR           directory to install the plugins in [PREFIX/lib]
 
