@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
 		delete[] i->plainData;
 	glyphs.clear();
 
-	File sjisFont(out, "wb");
+	Common::File sjisFont(out, "wb");
 	if (sjisFont.isOpen()) {
 		// Write our magic bytes
 		sjisFont.writeUint32BE(MKID_BE('SCVM'));
@@ -208,7 +208,7 @@ int main(int argc, char *argv[]) {
 		// Write character count
 		sjisFont.writeUint16BE(chars);
 
-		sjisFont.write(sjisFontData, 1, sjisDataSize);
+		sjisFont.write(sjisFontData, sjisDataSize);
 
 		if (sjisFont.err()) {
 			delete[] sjisFontData;
