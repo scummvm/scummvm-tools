@@ -85,6 +85,7 @@ create_sjisfnt_LIBS := `freetype-config --libs` -liconv
 
 tools_gui_OBJS := \
 	gui/main.o \
+	gui/configuration.o \
 	gui/pages.o \
 	gui/gui_tools.o \
 	compress_agos.o \
@@ -176,10 +177,12 @@ clean:
 
 
 # Set custom build flags for various files
+gui/configuration.o: CPPFLAGS+=$(WXINCLUDES)
+gui/gui_tools.o: CPPFLAGS+=$(WXINCLUDES)
 gui/main.o: CPPFLAGS+=$(WXINCLUDES)
 gui/pages.o: CPPFLAGS+=$(WXINCLUDES)
+
 create_sjisfnt.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
-gui/gui_tools.o: CPPFLAGS+=$(WXINCLUDES)
 sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
 
 
