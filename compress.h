@@ -25,13 +25,6 @@
 
 #include "tool.h"
 
-#ifndef DISABLE_BUILTIN_VORBIS
-#include <vorbis/vorbisenc.h>
-#endif
-#ifndef DISABLE_BUILTIN_FLAC
-#define FLAC__NO_DLL 1
-#include <FLAC/stream_encoder.h>
-#endif
 
 enum {
 	/* These are the defaults parameters for the Lame invocation */
