@@ -727,9 +727,6 @@ bool CompressionTool::processMp3Parms() {
 				throw ToolException("Could not parse command line options, expected value after -V");
 			encparms.vbrqual = atoi(_arguments.front().c_str());
 
-			if (encparms.vbrqual < 0)
-				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
-
 			if (encparms.vbrqual > 9)
 				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
 
@@ -739,9 +736,6 @@ bool CompressionTool::processMp3Parms() {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after -q");
 			encparms.algqual = atoi(_arguments.front().c_str());
-
-			if (encparms.algqual < 0)
-				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
 
 			if (encparms.algqual > 9)
 				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
