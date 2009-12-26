@@ -20,23 +20,36 @@
  *
  */
 
-#ifndef SOUND_ADPCM_H
-#define SOUND_ADPCM_H
+#ifndef SOUND_WAVE_H
+#define SOUND_WAVE_H
 
-#include "audiostream.h"
-#include "common/file.h"
+#include "common/scummsys.h"
+
+namespace Common {
+	class File;
+}
 
 namespace Audio {
 
 class AudioStream;
 
-enum typesADPCM {
-	kADPCMOki,
-	kADPCMMSIma,
-	kADPCMMS
-};
+/**
+ * Try to load a WAVE from the given seekable stream. Returns true if
+ * successful. In that case, the stream's seek position will be set to the
+ * start of the audio data, and size, rate and flags contain information
+ * necessary for playback. Currently this function only supports uncompressed
+ * raw PCM data as well as IMA ADPCM.
+ */
+extern bool loadWAVFromStream(Common::File &stream, int &size, int &rate, byte &flags, uint16 *wavType = 0, int *blockAlign = 0);
 
-AudioStream *makeADPCMStream(Common::File *stream, uint32 size, typesADPCM type, int rate = 22050, int channels = 2, uint32 blockAlign = 0);
+/**
+ * Try to load a WAVE from the given seekable stream and create an AudioStream
+ * from that data. Currently this function only supports uncompressed raw PCM
+ * data as well as IMA ADPCM.
+ *
+ * This function uses loadWAVFromStream() internally.
+ */
+AudioStream *makeWAVStream(Common::File &stream);
 
 } // End of namespace Audio
 

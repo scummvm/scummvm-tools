@@ -24,7 +24,10 @@
 #define SOUND_VOC_H
 
 #include "common/scummsys.h"
-#include "common/file.h"
+
+namespace Common {
+	class File;
+}
 
 namespace Audio {
 

@@ -29,10 +29,10 @@
 #include "common/md5.h"
 #include "common/file.h"
 #include "common/util.h"
-#include "utils/audiostream.h"
-#include "utils/voc.h"
-#include "utils/wave.h"
-#include "utils/adpcm.h"
+#include "sound/audiostream.h"
+#include "sound/voc.h"
+#include "sound/wave.h"
+#include "sound/adpcm.h"
 
 #define FILE_MD5_BYTES 5000
 #define RSC_TABLEINFO_SIZE 8

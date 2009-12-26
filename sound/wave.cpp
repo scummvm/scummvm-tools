@@ -20,8 +20,10 @@
  *
  */
 
-#include "audiostream.h"
-#include "adpcm.h"
+#include "sound/audiostream.h"
+#include "sound/adpcm.h"
+#include "common/file.h"
+#include "common/util.h"
 
 #include <stdlib.h>
 #include <assert.h>

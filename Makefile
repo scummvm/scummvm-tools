@@ -15,9 +15,7 @@ OBJS        :=
 DEPDIR      := .deps
 
 MODULES     :=
-# HACK: Until we get proper module support, add these "module dirs" to 
-# get the dependency tracking code working.
-MODULE_DIRS := ./ utils/ common/ gui/
+MODULE_DIRS :=
 
 STANDALONE  := 
 # This one will go away once all tools are converted

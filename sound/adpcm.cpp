@@ -20,8 +20,9 @@
  *
  */
 
-#include "adpcm.h"
+#include "sound/adpcm.h"
 #include "common/endian.h"
+#include "common/util.h"
 
 #include <assert.h>
 

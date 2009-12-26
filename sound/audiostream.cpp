@@ -23,6 +23,7 @@
 #include "audiostream.h"
 
 #include "common/endian.h"
+#include "common/util.h"
 
 #include <assert.h>
 #include <stdio.h>

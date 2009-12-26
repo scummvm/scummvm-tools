@@ -24,9 +24,6 @@
 #define SOUND_AUDIOSTREAM_H
 
 #include "common/scummsys.h"
-#include "common/util.h"
-
-#include <string.h>
 
 namespace Audio {
 
@@ -103,27 +100,6 @@ public:
 
 	/** Sample rate of the stream. */
 	virtual int getRate() const = 0;
-};
-
-/**
- * A simple AudioStream which represents a 'silent' stream,
- * containing the specified number of zero samples.
- */
-class ZeroInputStream : public AudioStream {
-private:
-	int _len;
-public:
-	ZeroInputStream(uint32 len) : _len(len) { }
-	int readBuffer(int16 *buffer, const int numSamples) {
-		int samples = Common::MIN(_len, numSamples);
-		memset(buffer, 0, samples * 2);
-		_len -= samples;
-		return samples;
-	}
-	bool isStereo() const { return false; }
-	bool eos() const { return _len <= 0; }
-
-	int getRate() const { return -1; }
 };
 
 AudioStream *makeLinearInputStream(int rate, byte flags, const byte *ptr, uint32 len, uint32 loopOffset, uint32 loopLen);
