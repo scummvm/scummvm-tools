@@ -69,24 +69,27 @@ void CompressSword2::execute() {
 	Common::Filename inpath(_inputPaths[0].path);
 	Common::Filename &outpath = _outputPath;
 
+	if (outpath.empty())
+		// Extensions change between the in/out files, so we can use the same directory
+		outpath = inpath;
+
 	switch (_format) {
 	case AUDIO_MP3:
 		_audioOutputFilename = TEMP_MP3;
+		outpath.setExtension(".cl3");
 		break;
 	case AUDIO_VORBIS:
 		_audioOutputFilename = TEMP_OGG;
+		outpath.setExtension(".clg");
 		break;
 	case AUDIO_FLAC:
 		_audioOutputFilename = TEMP_FLAC;
+		outpath.setExtension(".clf");
 		break;
 	default:
 		throw ToolException("Unknown audio format");
 		break;
 	}
-
-	if (outpath.empty())
-		// Extensions change between the in/out files, so we can use the same directory
-		outpath = inpath;
 
 	_input.open(inpath, "rb");
 
@@ -139,12 +142,12 @@ void CompressSword2::execute() {
 			f.writeUint32BE(0x57415645);	/* "WAVE" */
 			f.writeUint32BE(0x666d7420);	/* "fmt " */
 			f.writeUint32LE(16);
-			f.writeUint16LE(1);		/* PCM */
-			f.writeUint16LE(1);		/* mono */
-			f.writeUint32LE(22050);	/* sample rate */
-			f.writeUint32LE(44100);	/* bytes per second */
-			f.writeUint16LE(2);		/* basic block size */
-			f.writeUint16LE(16);		/* sample width */
+			f.writeUint16LE(1);				/* PCM */
+			f.writeUint16LE(1);				/* mono */
+			f.writeUint32LE(22050);			/* sample rate */
+			f.writeUint32LE(44100);			/* bytes per second */
+			f.writeUint16LE(2);				/* basic block size */
+			f.writeUint16LE(16);			/* sample width */
 			f.writeUint32BE(0x64617461);	/* "data" */
 			f.writeUint32LE(2 * length);
 
@@ -173,6 +176,8 @@ void CompressSword2::execute() {
 				prev = out;
 			}
 
+			f.close();
+
 			encodeAudio(TEMP_WAV, false, -1, tempEncoded, _format);
 			enc_length = append_to_file(_output_snd, tempEncoded);
 
@@ -187,14 +192,15 @@ void CompressSword2::execute() {
 		}
 	}
 
+	_output_snd.close();
+	_output_idx.close();
+
 	Common::File output(outpath, "wb");
 
 	append_to_file(output, TEMP_IDX);
 	append_to_file(output, TEMP_DAT);
 
 	output.close();
-	_output_snd.close();
-	_output_idx.close();
 
 	unlink(TEMP_DAT);
 	unlink(TEMP_IDX);
