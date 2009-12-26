@@ -5,6 +5,13 @@
 # $Id$
 
 
+######################################################################
+# The default build target
+######################################################################
+
+all:
+
+
 # TODO: This file should be restructured and much of it moved
 # to module.mk style files.
 
@@ -35,7 +42,7 @@ install: $(TARGETS)
 	for i in $^ ; do install -p -m 0755 $$i $(DESTDIR) ; done
 
 bundle_name = ScummVM\ Tools.app
-bundle: $(TARGETS)
+bundle: tools_gui$(EXEEXT)
 	mkdir -p $(bundle_name)
 	mkdir -p $(bundle_name)/Contents
 	mkdir -p $(bundle_name)/Contents/MacOS
@@ -80,8 +87,18 @@ degob_OBJS := \
 	tool.o \
 	$(UTILS)
 
+
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
 create_sjisfnt_LIBS := `freetype-config --libs` -liconv
+# Set custom build flags
+create_sjisfnt.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
+
+
+sword2_clue_OBJS := sword2_clue.o
+sword2_clue_LIBS := `pkg-config --libs gtk+-2.0`
+# Set custom build flags
+sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
+
 
 tools_gui_OBJS := \
 	gui/main.o \
@@ -122,6 +139,14 @@ tools_gui_OBJS := \
 	$(UTILS)
 tools_gui_LIBS := $(WXLIBS) $(LIBS)
 
+# Set custom build flags for various files
+gui/configuration.o: CPPFLAGS+=$(WXINCLUDES)
+gui/gui_tools.o: CPPFLAGS+=$(WXINCLUDES)
+gui/main.o: CPPFLAGS+=$(WXINCLUDES)
+gui/pages.o: CPPFLAGS+=$(WXINCLUDES)
+
+
+
 tools_cli_OBJS := \
 	main_cli.o \
 	tools_cli.o \
@@ -159,31 +184,29 @@ tools_cli_OBJS := \
 	$(UTILS)
 tools_cli_LIBS := $(LIBS)
 
-sword2_clue_OBJS := sword2_clue.o
-sword2_clue_LIBS := `pkg-config --libs gtk+-2.0`
+
+######################################################################
 
 
+# Template for all executable targets.
+# This also automatically hooks up a "clean" rule.
 define PROGRAM_template
 $(1)$(EXEEXT): $$($(1)_OBJS)
 	$(CXX) $(LDFLAGS) $$($(1)_LIBS) -o $(1)$(EXEEXT) $$($(1)_OBJS)
+#all: $(1)$(EXEEXT)
+clean-$(1):
+	$(RM) $(1)$(EXEEXT)
+clean: clean-$(1)
 endef
 
 # Generate build rules for all tools
 $(foreach prog,$(PROGRAMS),$(eval $(call PROGRAM_template,$(prog))))
 
 
+######################################################################
+
 clean:
-	rm -f $(addsuffix *.o,$(MODULE_DIRS)) $(TARGETS)
-
-
-# Set custom build flags for various files
-gui/configuration.o: CPPFLAGS+=$(WXINCLUDES)
-gui/gui_tools.o: CPPFLAGS+=$(WXINCLUDES)
-gui/main.o: CPPFLAGS+=$(WXINCLUDES)
-gui/pages.o: CPPFLAGS+=$(WXINCLUDES)
-
-create_sjisfnt.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
-sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
+	$(RM) $(addsuffix *.o,$(MODULE_DIRS))
 
 
 ######################################################################
