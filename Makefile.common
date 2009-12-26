@@ -43,6 +43,19 @@ MODULE_DIRS += \
 # to module.mk style files.
 
 
+# Replace regular output with quiet messages
+ifneq ($(findstring $(MAKEFLAGS),s),s)
+ifneq ($(VERBOSE_BUILD),1)
+ifneq ($(VERBOSE_BUILD),yes)
+QUIET_CXX    = @echo '   ' C++ '    ' $@;
+QUIET_AR     = @echo '   ' AR '     ' $@;
+QUIET_RANLIB = @echo '   ' RANLIB ' ' $@;
+QUIET_LINK   = @echo '   ' LINK '   ' $(1);
+QUIET        = @
+endif
+endif
+endif
+
 #######################################################################
 
 TARGETS := \
@@ -200,7 +213,7 @@ tools_cli_LIBS := $(LIBS)
 # This also automatically hooks up a "clean" rule.
 define PROGRAM_template
 $(1)$(EXEEXT): $$($(1)_OBJS)
-	$(CXX) $(LDFLAGS) $$($(1)_LIBS) -o $(1)$(EXEEXT) $$($(1)_OBJS)
+	$(QUIET_LINK)$(LD) $(LDFLAGS) $$($(1)_LIBS) -o $(1)$(EXEEXT) $$($(1)_OBJS)
 #all: $(1)$(EXEEXT)
 clean-$(1):
 	$(RM) $(1)$(EXEEXT)
@@ -232,9 +245,22 @@ CPPFLAGS := $(DEFINES) $(INCLUDES)
 DEPDIRS = $(addsuffix $(DEPDIR),$(MODULE_DIRS))
 DEPFILES =
 
+ifdef CXX_UPDATE_DEP_FLAG
+
+# Build rule for C++ files. Makes use of CXX_UPDATE_DEP_FLAG for advanced
+# dependency tracking.
 %.o: %.cpp
-	$(MKDIR) $(*D)/$(DEPDIR)
-	$(CXX) $(NO_MAIN) -Wp,-MMD,"$(*D)/$(DEPDIR)/$(*F).d",-MQ,"$@",-MP $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+	$(QUIET)$(MKDIR) $(*D)/$(DEPDIR)
+	$(QUIET_CXX)$(CXX) $(CXX_UPDATE_DEP_FLAG) $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+
+else
+
+# Dumb compile rule, for C++ compilers that don't allow dependency tracking or
+# where it is broken (such as GCC 2.95).
+.cpp.o:
+	$(QUIET_CXX)$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+
+endif
 
 # Include the dependency tracking files.
 -include $(wildcard $(addsuffix /*.d,$(DEPDIRS)))
