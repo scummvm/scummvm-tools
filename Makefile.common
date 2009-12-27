@@ -138,9 +138,9 @@ degob_OBJS := \
 
 
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
-create_sjisfnt_LIBS := `freetype-config --libs` -liconv
+create_sjisfnt_LIBS := `freetype-config --libs` #-liconv # TODO: Some systems seem to require "iconv" to be linked, we need to handle that...
 # Set custom build flags
-create_sjisfnt.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
+create_sjisfnt.o: CPPFLAGS+=`freetype-config --cflags`
 
 
 sword2_clue_OBJS := engines/sword2/sword2_clue.o
