@@ -65,12 +65,16 @@ TARGETS := \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	degob$(EXEEXT) \
-	tools_cli$(EXEEXT) \
-	tools_gui$(EXEEXT)
+	tools_cli$(EXEEXT)
 
 ifdef USE_FREETYPE
 TARGETS += \
 	create_sjisfnt$(EXEEXT)
+endif
+
+ifdef USE_WXWIDGETS
+TARGETS += \
+	tools_gui$(EXEEXT)
 endif
 
 UTILS := \

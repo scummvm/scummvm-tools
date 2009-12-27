@@ -75,6 +75,7 @@ _flac=auto
 _mad=auto
 _zlib=auto
 _png=auto
+_wxwidgets=auto
 _freetype=auto
 _endian=unknown
 _need_memalign=no
@@ -311,6 +312,8 @@ for ac_option in $@; do
 	--disable-zlib)           _zlib=no        ;;
 	--enable-png)             _png=yes        ;;
 	--disable-png)            _png=no         ;;
+	--enable-wxwidgets)       _wxsidgets=yes  ;;
+	--disable-wxwidgets)      _wxwidgets=no   ;;
 	--enable-freetype)        _freetype=yes   ;;
 	--disable-freetype)       _freetype=no    ;;
 	--enable-verbose-build)   _verbose_build=yes ;;
@@ -947,18 +950,29 @@ add_to_config_mk_if_yes "$_freetype" 'USE_FREETYPE = 1'
 echo "$freetype_version"
 
 #
+# Check for wxWidgets
+#
+if test "$_wxwidgets" = auto ; then
+	_wxwidgets=no
+	find_wxconfig
+	if test -n "$_wxconfig"; then
+		_wxwidgets=yes
+	fi
+fi
+
+if test "$_wxwidgets" = yes ; then
+	_wxincludes="`$_wxconfig --prefix="$_wxpath" --cflags`"
+	_wxlibs="`$_wxconfig --prefix="$_wxpath" --libs`"
+fi
+add_to_config_mk_if_yes "$_wxwidgets" 'USE_WXWIDGETS = 1'
+
+
+#
 # Figure out installation directories
 #
 test -z "$_bindir" && _bindir="$_prefix/bin"
 test -z "$_mandir" && _mandir="$_prefix/share/man"
 test -z "$_libdir" && _libdir="$_prefix/lib"
-
-
-find_wxconfig
-if test -n "$_wxconfig"; then
-	_wxincludes="`$_wxconfig --prefix="$_wxpath" --cflags`"
-	_wxlibs="`$_wxconfig --prefix="$_wxpath" --libs`"
-fi
 
 
 #
