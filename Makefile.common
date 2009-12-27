@@ -68,8 +68,10 @@ TARGETS := \
 	scummvm-tools-cli$(EXEEXT)
 
 ifdef USE_FREETYPE
+ifdef USE_ICONV
 TARGETS += \
 	create_sjisfnt$(EXEEXT)
+endif
 endif
 
 ifdef USE_WXWIDGETS
@@ -147,9 +149,9 @@ degob_OBJS := \
 
 
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
-create_sjisfnt_LIBS := $(FREETYPELIBS) #-liconv # TODO: Some systems seem to require "iconv" to be linked, we need to handle that...
+create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)
 # Set custom build flags
-create_sjisfnt.o: CPPFLAGS+=$(FREETYPEINCLUDES)
+create_sjisfnt.o: CPPFLAGS+=$(FREETYPEINCLUDES) $(ICONVCFLAGS)
 
 
 sword2_clue_OBJS := engines/sword2/sword2_clue.o

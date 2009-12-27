@@ -337,8 +337,11 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 
 	size_t inBufSize = sizeof(inBuf);
 	size_t outBufSize = sizeof(outBuf);
-	// This need to be "char *", because iconv requires the second parameter to be "char **" (at least on Linux).
+#ifdef ICONV_USES_CONST
+	const char *inBufWrap = inBuf;
+#else
 	char *inBufWrap = inBuf;
+#endif
 	char *outBufWrap = outBuf;
 
 	if (iconv(confSetup, &inBufWrap, &inBufSize, &outBufWrap, &outBufSize) == (size_t)-1)
