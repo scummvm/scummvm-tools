@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <iconv.h>
 #include <list>
+#include <cassert>
 
 #include "common/endian.h"
 #include "common/file.h"
@@ -265,6 +266,21 @@ int main(int argc, char *argv[]) {
 
 namespace {
 
+bool isASCII(uint8 fB) {
+	return (mapASCIItoChunk(fB) != -1);
+}
+
+int mapASCIItoChunk(uint8 fB) {
+	// ASCII chars
+	if (fB <= 0x7F)
+		return fB;
+
+	// half-width katakana
+	if (fB >= 0xA1 && fB <= 0xDF)
+		return fB - 0x21;
+	return -1;
+}
+
 int mapSJIStoChunk(uint8 fB, uint8 sB) {
 	// We only allow 2 byte SJIS characters.
 	if (fB <= 0x80 || fB >= 0xF0 || (fB >= 0xA0 && fB <= 0xDF) || sB == 0x7F)
@@ -321,7 +337,7 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 
 	size_t inBufSize = sizeof(inBuf);
 	size_t outBufSize = sizeof(outBuf);
-	char *inBufWrap = inBuf;
+	const char *inBufWrap = inBuf;
 	char *outBufWrap = outBuf;
 
 	if (iconv(confSetup, &inBufWrap, &inBufSize, &outBufWrap, &outBufSize) == (size_t)-1)
