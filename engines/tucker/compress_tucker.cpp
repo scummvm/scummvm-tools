@@ -22,6 +22,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <stdio.h>
 
 #include "compress.h"
 

@@ -21,6 +21,7 @@
  */
 
 #include <stdarg.h>
+#include <stdio.h>
 #include "extract_mm_c64.h"
 
 #define NUM_ROOMS	55

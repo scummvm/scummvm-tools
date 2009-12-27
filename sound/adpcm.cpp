@@ -25,6 +25,7 @@
 #include "common/util.h"
 
 #include <assert.h>
+#include <string.h>
 
 namespace Audio {
 

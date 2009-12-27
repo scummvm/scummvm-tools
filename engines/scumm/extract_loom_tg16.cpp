@@ -22,6 +22,7 @@
 
 #include <cstring>
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "extract_loom_tg16.h"
 

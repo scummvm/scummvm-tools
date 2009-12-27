@@ -23,6 +23,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <stdio.h>
 
 #include "compress_scumm_bun.h"
 #include "common/endian.h"

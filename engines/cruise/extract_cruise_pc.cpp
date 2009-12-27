@@ -21,6 +21,7 @@
  */
 
 #include <stdarg.h>
+#include <string.h>
 
 #include "extract_cruise_pc.h"
 

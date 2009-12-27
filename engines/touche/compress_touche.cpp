@@ -21,6 +21,7 @@
  */
 
 #include <cstring>
+#include <stdio.h>
 
 #include "compress.h"
 #include "compress_touche.h"

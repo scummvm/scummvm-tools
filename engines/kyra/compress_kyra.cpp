@@ -22,6 +22,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <stdio.h>
 
 #include "compress_kyra.h"
 

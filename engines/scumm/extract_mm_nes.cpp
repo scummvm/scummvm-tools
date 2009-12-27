@@ -22,6 +22,7 @@
 
 #include <cstring>
 #include <stdarg.h>
+#include <stdio.h>
 #include "extract_mm_nes.h"
 
 /* if defined, generates a set of .LFL files */

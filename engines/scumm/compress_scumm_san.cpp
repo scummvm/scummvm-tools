@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <zlib.h>
+#include <stdio.h>
 
 #include "compress_scumm_san.h"
 #include "common/endian.h"
