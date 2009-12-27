@@ -1,4 +1,4 @@
-/* extract_cruise_pc
+/* extract_cruise_pc - Extract data from PC version of Cruise for a Corpse
  * Copyright (C) 2009  The ScummVM Team
  *
  * This program is free software; you can redistribute it and/or
@@ -19,7 +19,10 @@
  * $Id$
  *
  */
-#include "util.h"
+
+#include <stdarg.h>
+
+#include "extract_cruise_pc.h"
 
 struct Disk1Header {
 	unsigned char signature[4];
@@ -33,34 +36,29 @@ struct Disk1Header {
 
 struct Disk1Stream {
 
-	FILE *_fp;
+	Common::File *_fp;
 
 	unsigned int _bitsBuffer;
 	int _bitsLeft;
 
-	Disk1Stream(FILE *fp) : _fp(fp), _bitsBuffer(0), _bitsLeft(0) {}
+	Disk1Stream(Common::File *fp) : _fp(fp), _bitsBuffer(0), _bitsLeft(0) {}
 
 	bool readHeader(Disk1Header *hdr) {
-		fread(hdr->signature, 4, 1, _fp);
-		hdr->headerSize = getInt(2);
-		hdr->uncompressedSize = getInt(4);
-		hdr->compressedSize = getInt(4);
-		fread(hdr->name, 14, 1, _fp);
-		hdr->creationTime = getInt(2);
-		hdr->creationDate = getInt(2);
+		for (int i = 0; i < 4; i++)
+			hdr->signature[i] = _fp->readByte();
+		hdr->headerSize = _fp->readSint16LE();
+		hdr->uncompressedSize = _fp->readSint32LE();
+		hdr->compressedSize = _fp->readSint32LE();
+		for (int i = 0; i < 14; i++)
+			hdr->name[i] = _fp->readByte();
+		hdr->creationTime = _fp->readSint16LE();
+		hdr->creationDate = _fp->readSint16LE();
 		return memcmp(hdr->signature, "PKD\0", 4) == 0 && hdr->headerSize == 32;
-	}
-	int getInt(int e) {
-		int num = 0;
-		for (int i = 0; i < e; ++i) {
-			num |= fgetc(_fp) << (i * 8);
-		}
-		return num;
 	}
 	int getBits(int count) {
 		while (_bitsLeft <= 24) {
-			int chr = fgetc(_fp);
-			if (feof(_fp)) chr = 0;
+			int chr = _fp->readByte();
+			if (_fp->eos()) chr = 0;
 			_bitsBuffer |= chr << (24 - _bitsLeft);
 			_bitsLeft += 8;
 		}
@@ -86,9 +84,9 @@ struct Disk1Decoder { // LzHuffman
 	int _parent[943];
 	unsigned char _historyBuffer[4156];
 	int _uncompressedSize;
-	FILE *_outputFile;
+	Common::File *_outputFile;
 
-	Disk1Decoder(Disk1Stream *stream, FILE *output, int uncompressedSize)
+	Disk1Decoder(Disk1Stream *stream, Common::File *output, int uncompressedSize)
 		: _stream(stream), _outputFile(output), _uncompressedSize(uncompressedSize) {
 		memset(_child, 0, sizeof(_child));
 		memset(_freq, 0, sizeof(_freq));
@@ -200,7 +198,7 @@ struct Disk1Decoder { // LzHuffman
 		while (currentSize < _uncompressedSize) {
 			int chr = decodeChar();
 			if (chr < 256) {
-				fputc(chr & 255, _outputFile);
+				_outputFile->writeByte(chr & 255);
 				_historyBuffer[offset++] = chr;
 				offset &= 0xFFF;
 				++currentSize;
@@ -209,7 +207,7 @@ struct Disk1Decoder { // LzHuffman
 				const int size = chr - 253;
 				for (int i = 0; i < size; ++i) {
 					chr = _historyBuffer[(baseOffset + i) & 0xFFF];
-					fputc(chr & 255, _outputFile);
+					_outputFile->writeByte(chr & 255);
 					_historyBuffer[offset++] = chr;
 					offset &= 0xFFF;
 					++currentSize;
@@ -220,37 +218,37 @@ struct Disk1Decoder { // LzHuffman
 	}
 };
 
-int main(int argc, char *argv[]) {
-	if (argc != 2) {
-		printf("usage: %s FILE\n", argv[0]);
-		exit(2);
-	}
-	FILE *input = fopen(argv[1], "rb");
-	if (!input) {
-		error("Unable to open '%s' for reading", argv[1]);
-	}
-	Disk1Stream stream(input);
+void ExtractCruisePC::execute() {
+	if (_outputPath.empty())
+		_outputPath.setFullPath("./");
+
+	Common::File input(_inputPaths[0].path, "rb");
+
+	Disk1Stream stream(&input);
 	Disk1Header hdr;
 	if (!stream.readHeader(&hdr)) {
 		error("Invalid file signature");
 	}
-	printf("Output filename '%s'\n", hdr.name);
-	printf("Date %02d/%02d/%04d\n", hdr.creationDate & 31, (hdr.creationDate >> 5) & 15, ((hdr.creationDate >> 9) & 127) + 1980);
-	printf("Time %02d:%02d:%02d\n", (hdr.creationTime >> 11) & 31, (hdr.creationTime >> 5) & 63, (hdr.creationTime & 31) << 1);
-	printf("Size %d (uncompressed %d)\n", hdr.compressedSize, hdr.uncompressedSize);
-	FILE *output = fopen(hdr.name, "wb");
-	if (!output) {
-		error("Unable to open '%s' for writing", hdr.name);
-	}
-	Disk1Decoder d(&stream, output, hdr.uncompressedSize);
-	printf("Decompressing...");
+	print("Output filename '%s'\n", hdr.name);
+	print("Date %02d/%02d/%04d\n", hdr.creationDate & 31, (hdr.creationDate >> 5) & 15, ((hdr.creationDate >> 9) & 127) + 1980);
+	print("Time %02d:%02d:%02d\n", (hdr.creationTime >> 11) & 31, (hdr.creationTime >> 5) & 63, (hdr.creationTime & 31) << 1);
+	print("Size %d (uncompressed %d)\n", hdr.compressedSize, hdr.uncompressedSize);
+
+	_outputPath.setFullName(hdr.name);
+	Common::File output(_outputPath, "wb");
+
+	Disk1Decoder d(&stream, &output, hdr.uncompressedSize);
+	print("Decompressing...");
 	if (d.decode()) {
-		printf("Ok\n");
+		print("Ok\n");
 	} else {
-		printf("Error\n");
+		print("Error\n");
 	}
-	fclose(input);
-	fclose(output);
-	return 0;
 }
 
+#ifdef STANDALONE_MAIN
+int main(int argc, char *argv[]) {
+	ExtractCrsuisePC cruise(argv[0]);
+	return cruise.run(argc, argv);
+}
+#endif
