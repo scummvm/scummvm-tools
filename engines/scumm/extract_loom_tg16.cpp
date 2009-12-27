@@ -735,7 +735,7 @@ void ExtractLoomTG16::extract_resource(Common::File &input, Common::File &output
 			error("extract_resource(globdata) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x11)
 			error("extract_resource(globdata) - resource tag is incorrect");
-		output.writeUint32LE((uint16)(rlen + 1));
+		output.writeUint32LE(rlen + 1);
 		output.writeUint16LE('O0');	// 0O - Object Index
 		for (i = 5; i < rlen; i++)
 			output.writeByte(input.readByte());
@@ -948,7 +948,7 @@ void ExtractLoomTG16::extract_resource(Common::File &input, Common::File &output
 			error("extract_resource(costume) - length mismatch while extracting resource (was %04X, expected %04X)",rlen,r_length(res));
 		if (rtype != 0x03)
 			error("extract_resource(costume) - resource tag is incorrect");
-		output.writeUint32LE((uint16)(rlen + 1));
+		output.writeUint32LE(rlen + 1);
 		output.writeUint16LE('OC');	// CO - Costume
 		for (i = 5; i < rlen; i++)
 			output.writeByte(input.readByte());
@@ -962,7 +962,7 @@ void ExtractLoomTG16::extract_resource(Common::File &input, Common::File &output
 			error("extract_resource(script) - length mismatch while extracting resource (was %04X, expected %04X)", rlen, r_length(res));
 		if (rtype != 0x02)
 			error("extract_resource(script) - resource tag is incorrect");
-		output.writeUint32LE((uint16)(rlen + 1));
+		output.writeUint32LE(rlen + 1);
 		output.writeUint16LE('CS');	// SC - Script
 		for (i = 5; i < rlen; i++)
 			output.writeByte(input.readByte());

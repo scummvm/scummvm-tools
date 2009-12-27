@@ -50,6 +50,7 @@ typedef enum _romset {
 	ROMSET_FRANCE,
 	ROMSET_GERMANY,
 	ROMSET_SPAIN,
+	ROMSET_ITALY,
 	NUM_ROMSETS
 } t_romset;
 
