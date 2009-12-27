@@ -218,6 +218,15 @@ struct Disk1Decoder { // LzHuffman
 	}
 };
 
+ExtractCruisePC::ExtractCruisePC(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
+
+	_shorthelp = "Extract data files from the PC version of CRuise for a Corpse.";
+	_helptext = "Usage: " + _name + " [-o outputdir] <infile>\n" + _shorthelp + "\n";
+}
+
 void ExtractCruisePC::execute() {
 	if (_outputPath.empty())
 		_outputPath.setFullPath("./");

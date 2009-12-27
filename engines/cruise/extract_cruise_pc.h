@@ -33,10 +33,6 @@ public:
 	ExtractCruisePC(const std::string &name = "extract_cruise_pc");
 
 	virtual void execute();
-
-protected:
-
-	void extract_resource(Common::File &input, Common::File &output, p_resource res);
 };
 
 #endif
