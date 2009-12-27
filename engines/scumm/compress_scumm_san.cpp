@@ -30,74 +30,24 @@
 #include "common/endian.h"
 
 void CompressScummSan::encodeSanWaveWithOgg(const std::string &filename) {
-	std::string fbuf = filename + ".wav";
+	std::string fbuf = filename + ".raw";
 	std::string fbuf2 = filename + ".ogg";
-	encodeAudio(fbuf.c_str(), false, -1, fbuf2.c_str(), AUDIO_VORBIS);
+	encodeAudio(fbuf.c_str(), true, 22050, fbuf2.c_str(), AUDIO_VORBIS);
 }
 
 void CompressScummSan::encodeSanWaveWithLame(const std::string &filename) {
-	std::string fbuf = filename + ".wav";
+	std::string fbuf = filename + ".raw";
 	std::string fbuf2 = filename + ".mp3";
-	encodeAudio(fbuf.c_str(), false, -1, fbuf2.c_str(), AUDIO_MP3);
+
+	encodeAudio(fbuf.c_str(), true, 22050, fbuf2.c_str(), AUDIO_MP3);
 }
 
-void CompressScummSan::writeWaveHeader(int s_size) {
-	int rate = 22050;
-	int bits = 16;
-	int chan = 2;
-	byte wav[44];
-	memset(wav, 0,	44);
-	wav[0] = 'R';
-	wav[1] = 'I';
-	wav[2] = 'F';
-	wav[3] = 'F';
-	wav[4] = (s_size + 36) & 0xff;
-	wav[5] = ((s_size +	36)	>> 8) &	0xff;
-	wav[6] = ((s_size +	36)	>> 16) & 0xff;
-	wav[7] = ((s_size +	36)	>> 24) & 0xff;
-	wav[8] = 'W';
-	wav[9] = 'A';
-	wav[10]	= 'V';
-	wav[11]	= 'E';
-	wav[12]	= 'f';
-	wav[13]	= 'm';
-	wav[14]	= 't';
-	wav[15]	= 0x20;
-	wav[16]	= 16;
-	wav[20]	= 1;
-	wav[22]	= chan;
-	wav[24]	= rate & 0xff;
-	wav[25]	= (rate	>> 8) &	0xff;
-	wav[26]	= (rate	>> 16) & 0xff;
-	wav[27]	= (rate	>> 24) & 0xff;
-	wav[28]	= (rate	* chan * (bits / 8)) & 0xff;
-	wav[29]	= ((rate * chan	* (bits	/ 8))>>	8) & 0xff;
-	wav[30]	= ((rate * chan	* (bits	/ 8)) >> 16) & 0xff;
-	wav[31]	= ((rate * chan	* (bits	/ 8)) >> 24) & 0xff;
-	wav[32]	= (chan	* (bits	/ 8)) &	0xff;
-	wav[33]	= ((chan * (bits / 8)) >> 8) & 0xff;
-	wav[34]	= bits;
-	wav[36]	= 'd';
-	wav[37]	= 'a';
-	wav[38]	= 't';
-	wav[39]	= 'a';
-	wav[40]	= s_size & 0xff;
-	wav[41]	= (s_size >> 8)	& 0xff;
-	wav[42]	= (s_size >> 16) & 0xff;
-	wav[43]	= (s_size >> 24) & 0xff;
-
-	_waveTmpFile.seek(0, SEEK_SET);
-	_waveTmpFile.write(wav, 44);
-}
 void CompressScummSan::writeToTempWaveFile(const std::string &fileName, byte *output_data, unsigned int size) {
 	if (!_waveTmpFile.isOpen()) {
 		_waveTmpFile.open(fileName, "wb");
 		if (!_waveTmpFile.isOpen()) {
 			error("error writing temp wave file");
 		}
-		byte wav[44];
-		memset(wav, 0, 44);
-		_waveTmpFile.write(output_data, 44);
 		_waveDataSize = 0;
 	}
 	for (unsigned int j = 0; j < size - 1; j += 2) {
@@ -175,7 +125,7 @@ void CompressScummSan::handleComiIACT(Common::File &input, int size, const std::
 	byte *src = (byte *)malloc(bsize);
 	input.read_throwsOnError(src, bsize);
 
-	const std::string tmpPath = outputDir + "/" + inputFilename + ".wav";
+	const std::string tmpPath = outputDir + inputFilename + ".raw";
 	decompressComiIACT(tmpPath, output_data, src, bsize);
 
 	free(src);
@@ -208,12 +158,12 @@ void CompressScummSan::flushTracks(int frame) {
 void CompressScummSan::prepareForMixing(const std::string &outputDir, const std::string &inputFilename) {
 	char filename[200];
 
-	print("Decompresing tracks files...\n");
+	print("Decompressing tracks files...\n");
 	for (int l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
 			_audioTracks[l].file.close();
 			
-			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), _audioTracks[l].animFrame, _audioTracks[l].trackId);
+			sprintf(filename, "%s%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), _audioTracks[l].animFrame, _audioTracks[l].trackId);
 			_audioTracks[l].file.open(filename, "rb");
 			_audioTracks[l].file.seek(0, SEEK_END);
 			int fileSize = _audioTracks[l].file.pos();
@@ -322,7 +272,7 @@ static inline void clampedAdd(int16& a, int b) {
 void CompressScummSan::mixing(const std::string &outputDir, const std::string &inputFilename, int frames, int fps) {
 	int l, r, z;
 
-	const std::string wavPath = outputDir + "/" + inputFilename + ".wav";
+	const std::string wavPath = outputDir + inputFilename + ".raw";
 	Common::File &wavFile(_waveTmpFile);
 
 	wavFile.open(wavPath.c_str(), "wb+");
@@ -337,7 +287,7 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 	}
 
 	print("Creating silent wav file...\n");
-	for (l = 0; l < 44 + (frameAudioSize * frames); l++) {
+	for (l = 0; l < frameAudioSize * frames; l++) {
 		wavFile.writeByte(0);
 	}
 
@@ -345,7 +295,7 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 	for (l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
 			char filename[200];
-			sprintf(filename, "%s/%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), _audioTracks[l].animFrame, _audioTracks[l].trackId);
+			sprintf(filename, "%s%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), _audioTracks[l].animFrame, _audioTracks[l].trackId);
 			_audioTracks[l].file.open(filename, "rb");
 			const uint32 fileSize = _audioTracks[l].file.size();
 			byte *tmpBuf = (byte *)malloc(fileSize);
@@ -355,7 +305,7 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 
 			byte *wavBuf = (byte *)malloc(fileSize);
 			memset(wavBuf, 0, fileSize);
-			wavFile.seek(44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
+			wavFile.seek(frameAudioSize * _audioTracks[l].animFrame, SEEK_SET);
 			try {
 				wavFile.read_throwsOnError(wavBuf, fileSize);
 			} catch (...) {
@@ -388,7 +338,7 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 				}
 				offset += length;
 			}
-			wavFile.seek(44 + (frameAudioSize * _audioTracks[l].animFrame), SEEK_SET);
+			wavFile.seek(frameAudioSize * _audioTracks[l].animFrame, SEEK_SET);
 			wavFile.write(wavBuf, fileSize);
 
 			free(wavBuf);
@@ -496,7 +446,7 @@ void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int n
 			audioTrack->lastFrame = frame;
 		}
 		char tmpPath[1024];
-		sprintf(tmpPath, "%s/%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), frame, trackId);
+		sprintf(tmpPath, "%s%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), frame, trackId);
 		audioTrack->file.open(tmpPath, "wb");
 		if (!audioTrack->file.isOpen()) {
 			error("error writing temp file");
@@ -675,6 +625,9 @@ void CompressScummSan::execute() {
 
 	bool tracksCompress = false;
 	int fps = 0;
+	uint32 inputSize = input.size();
+
+	print("Frames: %d\n", nbframes);
 
 	for (l = 0; l < nbframes; l++) {
 		// Compression takes place in this loops, which takes the most time by far
@@ -699,6 +652,7 @@ void CompressScummSan::execute() {
 			} catch (...) {
 				break;
 			}
+			
 			if (input.eos())
 				break;
 			if (tag == 'FRME') {
@@ -768,6 +722,13 @@ void CompressScummSan::execute() {
 			} else {
 skip:
 				size = input.readUint32BE(); // chunk size
+
+				// Some files have garbage at the end
+				if ((uint32)(size + input.pos()) > inputSize) {
+					print("Skipping rest of the file (%d bytes)\n", inputSize - input.pos());
+					break;
+				}
+
 				output.writeUint32BE(tag);
 				output.writeUint32BE(size);
 				if ((size & 1) != 0)
@@ -786,13 +747,14 @@ skip:
 	}
 
 	if (_waveTmpFile.isOpen()) {
-		std::string tmpPath = outpath.getPath() + "/" + inpath.getFullName();
-		writeWaveHeader(_waveDataSize);
+		std::string tmpPath = outpath.getPath() + inpath.getFullName();
+		setRawAudioType(true, true, 16); // LE, stereo, 16-bit
+
 		if (_format == AUDIO_VORBIS)
 			encodeSanWaveWithOgg(tmpPath);
 		else
 			encodeSanWaveWithLame(tmpPath);
-		tmpPath += ".wav";
+		tmpPath += ".raw";
 		unlink(tmpPath.c_str());
 	}
 

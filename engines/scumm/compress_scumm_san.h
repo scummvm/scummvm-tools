@@ -71,7 +71,6 @@ protected:
 
 	void encodeSanWaveWithOgg(const std::string &filename);
 	void encodeSanWaveWithLame(const std::string &filename);
-	void writeWaveHeader(int s_size);
 	void writeToTempWaveFile(const std::string &fileName, byte *output_data, unsigned int size);
 	void decompressComiIACT(const std::string &fileName, byte *output_data, byte *d_src, int bsize);
 	void handleComiIACT(Common::File &input, int size, const std::string &outputDir, const std::string &inputFilename);
