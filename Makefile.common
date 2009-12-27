@@ -68,6 +68,11 @@ TARGETS := \
 	tools_cli$(EXEEXT) \
 	tools_gui$(EXEEXT)
 
+ifdef USE_FREETYPE
+TARGETS += \
+	create_sjisfnt$(EXEEXT)
+endif
+
 UTILS := \
 	common/file.o \
 	common/md5.o \
@@ -138,9 +143,9 @@ degob_OBJS := \
 
 
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
-create_sjisfnt_LIBS := `freetype-config --libs` #-liconv # TODO: Some systems seem to require "iconv" to be linked, we need to handle that...
+create_sjisfnt_LIBS := $(FREETYPELIBS) #-liconv # TODO: Some systems seem to require "iconv" to be linked, we need to handle that...
 # Set custom build flags
-create_sjisfnt.o: CPPFLAGS+=`freetype-config --cflags`
+create_sjisfnt.o: CPPFLAGS+=$(FREETYPEINCLUDES)
 
 
 sword2_clue_OBJS := engines/sword2/sword2_clue.o

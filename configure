@@ -75,6 +75,7 @@ _flac=auto
 _mad=auto
 _zlib=auto
 _png=auto
+_freetype=auto
 _endian=unknown
 _need_memalign=no
 _verbose_build=no
@@ -87,6 +88,8 @@ _wxpath="$PATH"
 _prefix=/usr/local
 _wxincludes=""
 _wxlibs=""
+_freetypeincludes=""
+_freetypelibs=""
 
 _srcdir=`dirname $0`
 
@@ -308,6 +311,8 @@ for ac_option in $@; do
 	--disable-zlib)           _zlib=no        ;;
 	--enable-png)             _png=yes        ;;
 	--disable-png)            _png=no         ;;
+	--enable-freetype)        _freetype=yes   ;;
+	--disable-freetype)       _freetype=no    ;;
 	--enable-verbose-build)   _verbose_build=yes ;;
 	--with-ogg-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
@@ -619,6 +624,7 @@ case $_host_os in
 		DEFINES="$DEFINES -DUNIX"
 		LDFLAGS="$LDFLAGS -L/usr/local/lib"
 		CXXFLAGS="$CXXFLAGS -I/usr/local/include"
+		_iconv_const=yes
 		;;
 	beos*)
 		DEFINES="$DEFINES -DUNIX -DSYSTEM_NOT_SUPPORTING_D_TYPE"
@@ -917,6 +923,30 @@ add_to_config_mk_if_yes "$_png" 'USE_PNG = 1'
 echo "$_png"
 
 #
+# Check for FreeType
+#
+echocheck "freetype"
+if test "$_freetype" = auto ; then
+	_freetype=no
+	if type freetype-config > /dev/null 2>&1 ; then
+		_freetype=yes
+	fi
+fi
+
+if test "$_freetype" = yes ; then
+	freetype_version=`freetype-config --ftversion 2>/dev/null`
+
+	_def_freetype='#define USE_FREETYPE'
+	_freetypelibs=`freetype-config --libs`
+	_freetypeincludes=`freetype-config --cflags`
+else
+	_def_freetype='#undef USE_FREETYPE'
+	freetype_version="no"
+fi
+add_to_config_mk_if_yes "$_freetype" 'USE_FREETYPE = 1'
+echo "$freetype_version"
+
+#
 # Figure out installation directories
 #
 test -z "$_bindir" && _bindir="$_prefix/bin"
@@ -993,6 +1023,8 @@ $_def_tremor
 $_def_flac
 $_def_mad
 $_def_zlib
+$_def_png
+$_def_freetype
 
 #endif /* CONFIG_H */
 EOF
@@ -1030,7 +1062,10 @@ DEFINES += $DEFINES
 LDFLAGS += $LDFLAGS
 
 WXINCLUDES := $_wxincludes
-WXLIBS:= $_wxlibs
+WXLIBS := $_wxlibs
+
+FREETYPEINCLUDES := $_freetypeincludes
+FREETYPELIBS := $_freetypelibs
 
 SAVED_CONFIGFLAGS  := $SAVED_CONFIGFLAGS
 SAVED_LDFLAGS      := $SAVED_LDFLAGS
