@@ -20,7 +20,7 @@
  *
  */
 
-#include "tools_cli.h"
+#include "scummvm-tools-cli.h"
 
 int main(int argc, char *argv[]) {
 	ToolsCLI cli;

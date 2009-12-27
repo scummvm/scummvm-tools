@@ -24,7 +24,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include "tools_cli.h"
+#include "scummvm-tools-cli.h"
 
 ToolsCLI::ToolsCLI() {
 }

@@ -65,7 +65,7 @@ TARGETS := \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	degob$(EXEEXT) \
-	tools_cli$(EXEEXT)
+	scummvm-tools-cli$(EXEEXT)
 
 ifdef USE_FREETYPE
 TARGETS += \
@@ -74,7 +74,7 @@ endif
 
 ifdef USE_WXWIDGETS
 TARGETS += \
-	tools_gui$(EXEEXT)
+	scummvm-tools$(EXEEXT)
 endif
 
 UTILS := \
@@ -92,7 +92,7 @@ install: $(TARGETS)
 	for i in $^ ; do install -p -m 0755 $$i $(DESTDIR) ; done
 
 bundle_name = ScummVM\ Tools.app
-bundle: tools_gui$(EXEEXT)
+bundle: scummvm-tools$(EXEEXT)
 	mkdir -p $(bundle_name)
 	mkdir -p $(bundle_name)/Contents
 	mkdir -p $(bundle_name)/Contents/MacOS
@@ -100,7 +100,7 @@ bundle: tools_gui$(EXEEXT)
 	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
 	cp $(srcdir)/dist/macosx/Info.plist $(bundle_name)/Contents/
 	cp $(srcdir)/gui/media/*.* $(bundle_name)/Contents/Resources
-	cp tools_gui$(EXEEXT) $(bundle_name)/Contents/MacOS/
+	cp scummvm-tools$(EXEEXT) $(bundle_name)/Contents/MacOS/
 
 
 
@@ -111,8 +111,8 @@ PROGRAMS = \
 	desword2 \
 	degob \
 	create_sjisfnt \
-	tools_gui \
-	tools_cli \
+	scummvm-tools \
+	scummvm-tools-cli \
 	sword2_clue
 
 
@@ -194,13 +194,13 @@ tools_OBJS := \
 	$(UTILS)
 
 
-tools_gui_OBJS := \
+scummvm-tools_OBJS := \
 	gui/main.o \
 	gui/configuration.o \
 	gui/pages.o \
 	gui/gui_tools.o \
 	$(tools_OBJS)
-tools_gui_LIBS := $(WXLIBS) $(LIBS)
+scummvm-tools_LIBS := $(WXLIBS) $(LIBS)
 
 # Set custom build flags for various files
 gui/configuration.o: CPPFLAGS+=$(WXINCLUDES)
@@ -210,11 +210,11 @@ gui/pages.o: CPPFLAGS+=$(WXINCLUDES)
 
 
 
-tools_cli_OBJS := \
+scummvm-tools-cli_OBJS := \
 	main_cli.o \
-	tools_cli.o \
+	scummvm-tools-cli.o \
 	$(tools_OBJS)
-tools_cli_LIBS := $(LIBS)
+scummvm-tools-cli_LIBS := $(LIBS)
 
 
 ######################################################################
