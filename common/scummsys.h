@@ -58,7 +58,6 @@ typedef signed int int32;
 
 #elif defined(__MINGW32__)
 
-	#define scumm_stricmp strcasecmp
 	#define scumm_stricmp stricmp
 	#define scumm_strnicmp strnicmp
 
