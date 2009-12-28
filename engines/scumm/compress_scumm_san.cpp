@@ -479,9 +479,13 @@ void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int n
 	if (audioTrack->freq == 11025)
 		audioTrack->sizes[index] *= 2;
 	audioTrack->countFrames++;
-	if ((index + 1) == nbframes) {
+
+#if 0
+	// FIXME. This doesn't work in many cases, particularly with more than 10 videos in FT
+	if ((index + 1) >= nbframes) {
 		audioTrack->file.close();
 	}
+#endif
 }
 
 void CompressScummSan::handleDigIACT(Common::File &input, int size, const std::string &outputDir, const std::string &inputFilename,int flags, int track_flags, int frame) {
