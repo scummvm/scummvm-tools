@@ -38,7 +38,11 @@
 #include "engines/tinsel/compress_tinsel.h"
 #include "engines/touche/compress_touche.h"
 #include "engines/tucker/compress_tucker.h"
+
+#ifdef USE_PNG
 #include "encode_dxa.h"
+#endif
+
 #include "engines/agos/extract_agos.h"
 #include "engines/cine/extract_cine.h"
 #include "engines/gob/extract_gob_stk.h"
@@ -67,7 +71,10 @@ Tools::Tools() {
 	_tools.push_back(new CompressTinsel());
 	_tools.push_back(new CompressTouche());
 	_tools.push_back(new CompressTucker());
+
+#ifdef USE_PNG
 	_tools.push_back(new EncodeDXA());
+#endif
 
 	_tools.push_back(new ExtractAgos());
 	_tools.push_back(new ExtractCine());

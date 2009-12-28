@@ -189,12 +189,15 @@ tools_OBJS := \
 	engines/scumm/extract_zak_c64.o \
 	engines/kyra/kyra_pak.o \
 	engines/kyra/kyra_ins.o \
-	encode_dxa.o \
 	compress.o \
 	tool.o \
 	tools.o \
 	$(UTILS)
 
+ifdef USE_PNG
+tools_OBJS += \
+	encode_dxa.o
+endif
 
 scummvm-tools_OBJS := \
 	gui/main.o \
