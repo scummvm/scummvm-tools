@@ -203,7 +203,6 @@ find_wxconfig() {
 
 	if test -z "$_wxconfig"; then
 		echo "none found!"
-		exit 1
 	fi
 }
 
