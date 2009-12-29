@@ -54,7 +54,6 @@ void ExtractKyra::parseExtraArguments() {
 	// Parse our own arguments
 	while (!_arguments.empty()) {
 		std::string arg = _arguments.front();
-		_arguments.pop_front();
 		if (arg == "-x") {
 			extractAll = true;
 			extractOne = false;
@@ -67,12 +66,13 @@ void ExtractKyra::parseExtraArguments() {
 			extractAll = false;
 
 			if (_arguments.empty())
-				error("No filename supplied to -n\nShould be used on the form: %s -n ALGAE.CPS -o out/ A_E.PAK");
+				error("No filename supplied to -n\nShould be used on the form: -n ALGAE.CPS -o out/ A_E.PAK");
 			singleFilename = _arguments.front();
 			_arguments.pop_front();
 		} else {
 			break;
 		}
+		_arguments.pop_front();
 	}
 }
 
