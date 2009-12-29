@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
+#include <stdio.h>
 
 #include "compress.h"
 
