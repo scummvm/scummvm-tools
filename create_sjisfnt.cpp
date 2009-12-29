@@ -98,14 +98,14 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	std::atexit(deinitSJIStoUTF32Conversion);
+	atexit(deinitSJIStoUTF32Conversion);
 
 	if (!initFreeType(font)) {
 		error("Could not initialize FreeType library.");
 		return -1;
 	}
 
-	std::atexit(deinitFreeType);
+	atexit(deinitFreeType);
 
 	GlyphList glyphs;
 	int chars8x16 = 0;
@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
 	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i)
 		minXOffset = std::min(minXOffset, i->xOffset);
 
-	minXOffset = std::abs(minXOffset);
+	minXOffset = abs(minXOffset);
 
 	for (GlyphList::iterator i = glyphs.begin(); i != glyphs.end(); ++i)
 		i->xOffset += minXOffset;
@@ -453,7 +453,7 @@ bool drawGlyph(uint32 unicode, Glyph &glyph) {
 	glyph.plainData = 0;
 
 	if (glyph.height) {
-		glyph.plainData = new uint8[glyph.height * std::abs(glyph.pitch)];
+		glyph.plainData = new uint8[glyph.height * abs(glyph.pitch)];
 		if (!glyph.plainData)
 			return false;
 
@@ -464,13 +464,13 @@ bool drawGlyph(uint32 unicode, Glyph &glyph) {
 			dst += (glyph.height - 1) * (-glyph.pitch);
 
 		for (int i = 0; i < bitmap.rows; ++i) {
-			memcpy(dst, src, std::abs(glyph.pitch));
+			memcpy(dst, src, abs(glyph.pitch));
 			src += bitmap.pitch;
 			dst += glyph.pitch;
 		}
 	}
 
-	glyph.pitch = std::abs(glyph.pitch);
+	glyph.pitch = abs(glyph.pitch);
 
 	return true;
 }
