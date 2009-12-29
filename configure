@@ -685,8 +685,7 @@ case $_host_os in
 		;;
 	mingw*)
 		DEFINES="$DEFINES -DWIN32 -D__USE_MINGW_ANSI_STDIO=0"
-		LIBS="$LIBS -lmingw32 -lwinmm"
-		OBJS="$OBJS scummvmico.o"
+		LIBS="$LIBS -lmingw32"
 		;;
 	cygwin*)
 		echo ERROR: Cygwin building is not supported by ScummVM anymore. Consider using MinGW.
@@ -897,29 +896,6 @@ add_to_config_mk_if_yes "$_mad" 'USE_MAD = 1'
 echo "$_mad"
 
 #
-# Check for ZLib
-#
-echocheck "zlib"
-if test "$_zlib" = auto ; then
-	_zlib=no
-	cat > $TMPC << EOF
-#include <string.h>
-#include <zlib.h>
-int main(void) { return strcmp(ZLIB_VERSION, zlibVersion()); }
-EOF
-	cc_check $LDFLAGS $CXXFLAGS $ZLIB_CFLAGS $ZLIB_LIBS -lz && _zlib=yes
-fi
-if test "$_zlib" = yes ; then
-	_def_zlib='#define USE_ZLIB'
-	LIBS="$LIBS $ZLIB_LIBS -lz"
-	INCLUDES="$INCLUDES $ZLIB_CFLAGS"
-else
-	_def_zlib='#undef USE_ZLIB'
-fi
-add_to_config_mk_if_yes "$_zlib" 'USE_ZLIB = 1'
-echo "$_zlib"
-
-#
 # Check for PNG
 #
 echocheck "png"
@@ -946,6 +922,29 @@ else
 fi
 add_to_config_mk_if_yes "$_png" 'USE_PNG = 1'
 echo "$_png"
+
+#
+# Check for ZLib
+#
+echocheck "zlib"
+if test "$_zlib" = auto ; then
+	_zlib=no
+	cat > $TMPC << EOF
+#include <string.h>
+#include <zlib.h>
+int main(void) { return strcmp(ZLIB_VERSION, zlibVersion()); }
+EOF
+	cc_check $LDFLAGS $CXXFLAGS $ZLIB_CFLAGS $ZLIB_LIBS -lz && _zlib=yes
+fi
+if test "$_zlib" = yes ; then
+	_def_zlib='#define USE_ZLIB'
+	LIBS="$LIBS $ZLIB_LIBS -lz"
+	INCLUDES="$INCLUDES $ZLIB_CFLAGS"
+else
+	_def_zlib='#undef USE_ZLIB'
+fi
+add_to_config_mk_if_yes "$_zlib" 'USE_ZLIB = 1'
+echo "$_zlib"
 
 #
 # Check for FreeType
