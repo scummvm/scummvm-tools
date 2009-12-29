@@ -182,7 +182,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 		if (oggparms.nominalBitr != -1) {
 			tmp += sprintf(tmp, "--bitrate=%d ", oggparms.nominalBitr);
 		} else {
-			tmp += sprintf(tmp, "--quality=%d ", oggparms.quality);
+			tmp += sprintf(tmp, "--quality=%f ", oggparms.quality);
 		}
 
 		if (oggparms.minBitr != -1) {
