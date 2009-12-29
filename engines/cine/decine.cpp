@@ -31,10 +31,10 @@
  * FIXME: Make this code endian safe.
  */
 
-#include <cassert>
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "common/scummsys.h"
 #include "common/endian.h"

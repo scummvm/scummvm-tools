@@ -20,8 +20,8 @@
  *
  */
 
-#include <cassert>
-#include <cstring>
+#include <assert.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "compress.h"

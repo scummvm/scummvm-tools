@@ -20,7 +20,7 @@
  *
  */
 
-#include <cstring>
+#include <string.h>
 
 #include "compress_gob.h"
 

@@ -24,7 +24,7 @@
 #ifndef DESCUMM_H
 #define DESCUMM_H
 
-#include <cassert>
+#include <assert.h>
 
 #include "common/scummsys.h"
 

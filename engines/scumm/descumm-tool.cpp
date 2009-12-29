@@ -21,10 +21,10 @@
  *
  */
 
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "descumm.h"
 

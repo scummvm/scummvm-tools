@@ -20,10 +20,10 @@
  *
  */
 
-#include <cassert>
-#include <cstdarg>
-#include <cstring>
-#include <cstdio>
+#include <assert.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "degob_script.h"
 #include "common/endian.h"

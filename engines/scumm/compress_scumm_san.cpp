@@ -20,9 +20,9 @@
  *
  */
 
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 #include <zlib.h>
 #include <stdio.h>
 

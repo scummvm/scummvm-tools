@@ -23,11 +23,11 @@
  *
  */
 
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 #include <iconv.h>
 #include <list>
-#include <cassert>
+#include <assert.h>
 
 #include "common/endian.h"
 #include "common/file.h"

@@ -22,7 +22,7 @@
 
 #include <iostream>
 #include <algorithm>
-#include <cassert>
+#include <assert.h>
 
 #include "scummvm-tools-cli.h"
 

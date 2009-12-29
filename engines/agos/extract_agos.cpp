@@ -20,9 +20,9 @@
  *
  */
 
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include <iostream>
 
 #include "extract_agos.h"

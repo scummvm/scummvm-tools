@@ -21,8 +21,8 @@
  *
  */
 
-#include <cstring>
-#include <cstdio>
+#include <string.h>
+#include <stdio.h>
 
 #include "descumm.h"
 

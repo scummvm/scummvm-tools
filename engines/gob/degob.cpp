@@ -20,8 +20,8 @@
  *
  */
 
-#include <cstring>
-#include <cstdio>
+#include <string.h>
+#include <stdio.h>
 
 #include "degob_script.h"
 #include "common/file.h"

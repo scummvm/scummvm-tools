@@ -20,7 +20,7 @@
  *
  */
 
-#include <cstring>
+#include <string.h>
 #include <stdio.h>
 
 #include "compress_agos.h"

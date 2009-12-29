@@ -20,8 +20,8 @@
  *
  */
 
-#include <cstdlib>
-#include <cstdio>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "common/file.h"
 

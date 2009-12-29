@@ -20,7 +20,7 @@
  *
  */
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "dekyra.h"
 #include "common/endian.h"

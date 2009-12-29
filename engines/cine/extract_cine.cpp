@@ -33,8 +33,8 @@
  *        as the input file (e.g. "./vol.cnf" or "/games/os/vol.cnf").
  */
 
-#include <cassert>
-#include <cstring>
+#include <assert.h>
+#include <string.h>
 #include <algorithm>
 
 #include "extract_cine.h"

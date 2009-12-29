@@ -20,8 +20,8 @@
  *
  */
 
-#include <cstring>
-#include <cstdio>
+#include <string.h>
+#include <stdio.h>
 
 #include "extract_gob_stk.h"
 #include "common/endian.h"

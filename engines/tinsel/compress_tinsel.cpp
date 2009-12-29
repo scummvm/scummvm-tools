@@ -22,7 +22,7 @@
 
 // By Jimi (m [underline] kiewitz [AT] users.sourceforge.net)
 
-#include <cstdlib>
+#include <stdlib.h>
 
 #include "compress.h"
 #include "common/endian.h"

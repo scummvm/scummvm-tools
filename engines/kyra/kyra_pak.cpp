@@ -20,8 +20,8 @@
  *
  */
 
-#include <cassert>
-#include <cstdio>
+#include <assert.h>
+#include <stdio.h>
 
 #include "kyra_pak.h"
 

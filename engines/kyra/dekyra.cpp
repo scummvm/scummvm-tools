@@ -21,10 +21,10 @@
  *
  */
 
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "dekyra.h"
 #include "common/endian.h"
