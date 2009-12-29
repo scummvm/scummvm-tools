@@ -711,8 +711,6 @@ void CompressScummBun::writeToTempWave(char *fileName, byte *output_data, unsign
 	_waveDataSize += size;
 }
 
-static AudioFormat gCompMode = AUDIO_MP3;
-
 typedef struct { int offset, size, codec; } CompTable;
 
 byte *CompressScummBun::decompressBundleSound(int index, Common::File  &input, int32 &finalSize) {
@@ -881,7 +879,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		free(outputData);
 		sprintf(tmpPath, "%s%s_reg%03d", dir, filename, l);
 
-		switch (gCompMode) {
+		switch (_format) {
 		case AUDIO_MP3:
 			encodeWaveWithLame(tmpPath);
 			break;
@@ -899,7 +897,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		unlink(tmpPath);
 
 		int32 startPos = output.pos();
-		switch (gCompMode) {
+		switch (_format) {
 		case AUDIO_MP3:
 			sprintf(_cbundleTable[_cbundleCurIndex].filename, "%s_reg%03d.mp3", filename, l);
 			sprintf(tmpPath, "%s%s_reg%03d.mp3", dir, filename, l);
@@ -1096,10 +1094,10 @@ void CompressScummBun::execute() {
 	if (outpath.empty()) {
 		// Change extension for output
 		outpath = inpath;
-		outpath.setExtension(".bun");
 	}
 
 	outpath.setFullName(inpath.getName());
+	outpath.setExtension(".bun");
 	Common::File output(outpath, "wb");
 
 	output.writeUint32BE('LB23');
