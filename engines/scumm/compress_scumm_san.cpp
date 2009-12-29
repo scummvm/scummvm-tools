@@ -31,15 +31,18 @@
 
 void CompressScummSan::encodeSanWaveWithOgg(const std::string &filename) {
 	std::string fbuf = filename + ".raw";
-	std::string fbuf2 = filename + ".ogg";
-	encodeAudio(fbuf.c_str(), true, 22050, fbuf2.c_str(), AUDIO_VORBIS);
+	Common::Filename fbuf2(filename.c_str());
+
+	fbuf2.setExtension(".ogg");
+	encodeAudio(fbuf.c_str(), true, 22050, fbuf2.getFullPath().c_str(), AUDIO_VORBIS);
 }
 
 void CompressScummSan::encodeSanWaveWithLame(const std::string &filename) {
 	std::string fbuf = filename + ".raw";
-	std::string fbuf2 = filename + ".mp3";
+	Common::Filename fbuf2(filename.c_str());
 
-	encodeAudio(fbuf.c_str(), true, 22050, fbuf2.c_str(), AUDIO_MP3);
+	fbuf2.setExtension(".mp3");
+	encodeAudio(fbuf.c_str(), true, 22050, fbuf2.getFullPath().c_str(), AUDIO_MP3);
 }
 
 void CompressScummSan::writeToTempWaveFile(const std::string &fileName, byte *output_data, unsigned int size) {
@@ -480,12 +483,10 @@ void CompressScummSan::handleAudioTrack(int index, int trackId, int frame, int n
 		audioTrack->sizes[index] *= 2;
 	audioTrack->countFrames++;
 
-#if 0
-	// FIXME. This doesn't work in many cases, particularly with more than 10 videos in FT
+	// FIXME. This doesn't work with Russian FT
 	if ((index + 1) >= nbframes) {
 		audioTrack->file.close();
 	}
-#endif
 }
 
 void CompressScummSan::handleDigIACT(Common::File &input, int size, const std::string &outputDir, const std::string &inputFilename,int flags, int track_flags, int frame) {
