@@ -229,7 +229,7 @@ scummvm-tools-cli_LIBS := $(LIBS)
 # This also automatically hooks up a "clean" rule.
 define PROGRAM_template
 $(1)$(EXEEXT): $$($(1)_OBJS)
-	$(QUIET_LINK)$(LD) $(LDFLAGS) $$($(1)_LIBS) -o $(1)$(EXEEXT) $$($(1)_OBJS)
+	$(QUIET_LINK)$(LD) -o $(1)$(EXEEXT) $$($(1)_OBJS) $(LDFLAGS) $$($(1)_LIBS)
 #all: $(1)$(EXEEXT)
 clean-$(1):
 	$(RM) $(1)$(EXEEXT)
