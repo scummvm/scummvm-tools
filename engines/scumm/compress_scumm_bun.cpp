@@ -875,11 +875,11 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		int size = _region[l].length;
 		int offset = _region[l].offset;
 		byte *outputData = convertTo16bit(ptr + offset, size, outputSize, bits, freq, channels);
-		sprintf(tmpPath, "%s/%s_reg%03d.wav", dir, filename, l);
+		sprintf(tmpPath, "%s%s_reg%03d.wav", dir, filename, l);
 		writeToTempWave(tmpPath, outputData, outputSize);
 		writeWaveHeader(_waveDataSize, freq, channels);
 		free(outputData);
-		sprintf(tmpPath, "%s/%s_reg%03d", dir, filename, l);
+		sprintf(tmpPath, "%s%s_reg%03d", dir, filename, l);
 
 		switch (gCompMode) {
 		case AUDIO_MP3:
@@ -895,22 +895,22 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 			error("Unknown encoding method");
 		}
 
-		sprintf(tmpPath, "%s/%s_reg%03d.wav", dir, filename, l);
+		sprintf(tmpPath, "%s%s_reg%03d.wav", dir, filename, l);
 		unlink(tmpPath);
 
 		int32 startPos = output.pos();
 		switch (gCompMode) {
 		case AUDIO_MP3:
 			sprintf(_cbundleTable[_cbundleCurIndex].filename, "%s_reg%03d.mp3", filename, l);
-			sprintf(tmpPath, "%s/%s_reg%03d.mp3", dir, filename, l);
+			sprintf(tmpPath, "%s%s_reg%03d.mp3", dir, filename, l);
 			break;
 		case AUDIO_VORBIS:
 			sprintf(_cbundleTable[_cbundleCurIndex].filename, "%s_reg%03d.ogg", filename, l);
-			sprintf(tmpPath, "%s/%s_reg%03d.ogg", dir, filename, l);
+			sprintf(tmpPath, "%s%s_reg%03d.ogg", dir, filename, l);
 			break;
 		case AUDIO_FLAC:
 			sprintf(_cbundleTable[_cbundleCurIndex].filename, "%s_reg%03d.fla", filename, l);
-			sprintf(tmpPath, "%s/%s_reg%03d.fla", dir, filename, l);
+			sprintf(tmpPath, "%s%s_reg%03d.fla", dir, filename, l);
 			break;
 		default:
 			error("Unknown encoding method");
@@ -1099,6 +1099,7 @@ void CompressScummBun::execute() {
 		outpath.setExtension(".bun");
 	}
 
+	outpath.setFullName(inpath.getName());
 	Common::File output(outpath, "wb");
 
 	output.writeUint32BE('LB23');
