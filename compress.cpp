@@ -27,10 +27,10 @@
 
 #include "compress.h"
 
-#ifndef DISABLE_BUILTIN_VORBIS
+#ifdef USE_VORBIS
 #include <vorbis/vorbisenc.h>
 #endif
-#ifndef DISABLE_BUILTIN_FLAC
+#ifdef USE_FLAC
 #define FLAC__NO_DLL 1
 #include <FLAC/stream_encoder.h>
 #endif
@@ -168,7 +168,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 		}
 	}
 
-#ifdef DISABLE_BUILTIN_VORBIS
+#ifndef USE_VORBIS
 	if (compmode == AUDIO_VORBIS) {
 		tmp += sprintf(tmp, "oggenc ");
 		if (rawInput) {
@@ -212,7 +212,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 	}
 #endif
 
-#ifdef DISABLE_BUILTIN_FLAC
+#ifndef USE_FLAC
 	if (compmode == AUDIO_FLAC) {
 		/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
 		/* -f is reqired to force override of unremoved temp file. See bug #1294648 */
@@ -298,7 +298,7 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 
 	print(" - len=%ld, ch=%d, rate=%d, %dbits\n", length, (rawAudioType.isStereo ? 2 : 1), samplerate, rawAudioType.bitsPerSample);
 
-#ifndef DISABLE_BUILTIN_VORBIS
+#ifdef USE_VORBIS
 	if (compmode == AUDIO_VORBIS) {
 		char outputString[256] = "";
 		int numChannels = (rawAudioType.isStereo ? 2 : 1);
@@ -503,7 +503,7 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 	}
 #endif
 
-#ifndef DISABLE_BUILTIN_FLAC
+#ifdef USE_FLAC
 	if (compmode == AUDIO_FLAC) {
 		int i;
 		int numChannels = (rawAudioType.isStereo ? 2 : 1);
