@@ -23,15 +23,18 @@
  *
  */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <iconv.h>
 #include <list>
+#include <assert.h>
+
+#include "common/endian.h"
+#include "common/file.h"
+#include "common/util.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
-#include "util.h"
-#include <cstdio>
-#include <cstdlib>
 
 namespace {
 
@@ -79,7 +82,7 @@ void freeGlyphlist(GlyphList &list) {
 
 int main(int argc, char *argv[]) {
 	if (argc < 2 || argc > 3) {
-		std::printf("Usage:\n\t%s <input ttf font> [outfile]\n", argv[0]);
+		printf("Usage:\n\t%s <input ttf font> [outfile]\n", argv[0]);
 		return -1;
 	}
 
@@ -95,14 +98,14 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	std::atexit(deinitSJIStoUTF32Conversion);
+	atexit(deinitSJIStoUTF32Conversion);
 
 	if (!initFreeType(font)) {
 		error("Could not initialize FreeType library.");
 		return -1;
 	}
 
-	std::atexit(deinitFreeType);
+	atexit(deinitFreeType);
 
 	GlyphList glyphs;
 	int chars8x16 = 0;
@@ -157,7 +160,7 @@ int main(int argc, char *argv[]) {
 	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i)
 		minXOffset = std::min(minXOffset, i->xOffset);
 
-	minXOffset = std::abs(minXOffset);
+	minXOffset = abs(minXOffset);
 
 	for (GlyphList::iterator i = glyphs.begin(); i != glyphs.end(); ++i)
 		i->xOffset += minXOffset;
@@ -229,31 +232,27 @@ int main(int argc, char *argv[]) {
 
 	freeGlyphlist(glyphs);
 
-	FILE *sjisFont = std::fopen(out, "wb");
-	if (sjisFont) {
+	Common::File sjisFont(out, "wb");
+	if (sjisFont.isOpen()) {
 		// Write our magic bytes
-		writeUint32BE(sjisFont, MKID_BE('SCVM'));
-		writeUint32BE(sjisFont, MKID_BE('SJIS'));
+		sjisFont.writeUint32BE(MKID_BE('SCVM'));
+		sjisFont.writeUint32BE(MKID_BE('SJIS'));
 
 		// Write version
-		writeUint32BE(sjisFont, 0x00000002);
+		sjisFont.writeUint32BE(0x00000002);
 
 		// Write character count
-		writeUint16BE(sjisFont, chars16x16);
-		writeUint16BE(sjisFont, chars8x16);
+		sjisFont.writeUint16BE(chars16x16);
+		sjisFont.writeUint16BE(chars8x16);
 
-		std::fwrite(sjis16x16FontData, 1, sjis16x16DataSize, sjisFont);
-		std::fwrite(sjis8x16FontData, 1, sjis8x16DataSize, sjisFont);
-		std::fflush(sjisFont);
+		sjisFont.write(sjis16x16FontData, sjis16x16DataSize);
+		sjisFont.write(sjis8x16FontData, sjis8x16DataSize);
 
-		if (std::ferror(sjisFont)) {
+		if (sjisFont.err()) {
 			delete[] sjis8x16FontData;
 			delete[] sjis16x16FontData;
-			std::fclose(sjisFont);
 			error("Error while writing to font file: '%s'", out);
 		}
-
-		std::fclose(sjisFont);
 	} else {
 		delete[] sjis8x16FontData;
 		delete[] sjis16x16FontData;
@@ -279,7 +278,6 @@ int mapASCIItoChunk(uint8 fB) {
 	// half-width katakana
 	if (fB >= 0xA1 && fB <= 0xDF)
 		return fB - 0x21;
-
 	return -1;
 }
 
@@ -339,7 +337,11 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 
 	size_t inBufSize = sizeof(inBuf);
 	size_t outBufSize = sizeof(outBuf);
+#ifdef ICONV_USES_CONST
+	const char *inBufWrap = inBuf;
+#else
 	char *inBufWrap = inBuf;
+#endif
 	char *outBufWrap = outBuf;
 
 	if (iconv(confSetup, &inBufWrap, &inBufSize, &outBufWrap, &outBufSize) == (size_t)-1)
@@ -451,7 +453,7 @@ bool drawGlyph(uint32 unicode, Glyph &glyph) {
 	glyph.plainData = 0;
 
 	if (glyph.height) {
-		glyph.plainData = new uint8[glyph.height * std::abs(glyph.pitch)];
+		glyph.plainData = new uint8[glyph.height * abs(glyph.pitch)];
 		if (!glyph.plainData)
 			return false;
 
@@ -462,13 +464,13 @@ bool drawGlyph(uint32 unicode, Glyph &glyph) {
 			dst += (glyph.height - 1) * (-glyph.pitch);
 
 		for (int i = 0; i < bitmap.rows; ++i) {
-			memcpy(dst, src, std::abs(glyph.pitch));
+			memcpy(dst, src, abs(glyph.pitch));
 			src += bitmap.pitch;
 			dst += glyph.pitch;
 		}
 	}
 
-	glyph.pitch = std::abs(glyph.pitch);
+	glyph.pitch = abs(glyph.pitch);
 
 	return true;
 }

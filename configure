@@ -1,0 +1,1223 @@
+#!/bin/sh
+#
+# configure -- custom configure script for the ScummVM tools.
+#
+# ScummVM is the legal property of its developers, whose names
+# are too numerous to list here. Please refer to the COPYRIGHT
+# file distributed with this source distribution.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# $URL$
+# $Id$
+
+# Save the current environment variables for next runs
+SAVED_CONFIGFLAGS=$@
+SAVED_LDFLAGS=$LDFLAGS
+SAVED_CXX=$CXX
+SAVED_CXXFLAGS=$CXXFLAGS
+SAVED_CPPFLAGS=$CPPFLAGS
+SAVED_ASFLAGS=$ASFLAGS
+SAVED_WINDRESFLAGS=$WINDRESFLAGS
+
+# Use environment vars if set
+CXXFLAGS="$CXXFLAGS $CPPFLAGS"
+
+# Backslashes into forward slashes:
+# The following OS/2 specific code is performed to deal with handling of backslashes by ksh.
+# Borrowed from the Sane configure script
+
+if test "$ac_emxsupport" != "no" -a "$ac_emxsupport" != "NO"; then
+	ac_save_IFS="$IFS"
+	IFS="\\"
+	ac_TEMP_PATH=
+	for ac_dir in $PATH; do
+		IFS=$ac_save_IFS
+		if test -z "$ac_TEMP_PATH"; then
+			ac_TEMP_PATH="$ac_dir"
+		else
+			ac_TEMP_PATH="$ac_TEMP_PATH/$ac_dir"
+		fi
+	done
+	PATH="$ac_TEMP_PATH"
+	export PATH
+	unset ac_TEMP_PATH
+fi
+
+set_var() {
+	eval ${1}='${2}'
+}
+
+get_var() {
+	eval echo \$${1}
+}
+
+
+#
+# Default settings
+#
+# Default lib behaviour yes/no/auto
+_vorbis=auto
+_tremor=auto
+_flac=auto
+_mad=auto
+_zlib=auto
+_png=auto
+_wxwidgets=auto
+_freetype=auto
+_iconv=auto
+_endian=unknown
+_need_memalign=no
+# Default option behaviour yes/no
+_debug_build=auto
+_release_build=auto
+_verbose_build=no
+# Default commands
+_ranlib=ranlib
+_strip=strip
+_ar="ar cru"
+_wxconfig=wx-config
+_wxpath="$PATH"
+_prefix=/usr/local
+_wxincludes=""
+_wxlibs=""
+_freetypeincludes=""
+_freetypelibs=""
+
+_srcdir=`dirname $0`
+
+# Determine a tmp file name, using mktemp(1) when available.
+if type mktemp > /dev/null 2>&1 ; then
+	TMPO=`mktemp /tmp/scummvm-conf.XXXXXXXXXX`
+else
+	TMPO=./scummvm-tools-conf
+fi
+TMPC=${TMPO}.cpp
+TMPLOG=config.log
+
+cc_check() {
+	echo >> "$TMPLOG"
+	cat "$TMPC" >> "$TMPLOG"
+	echo >> "$TMPLOG"
+	echo "$CXX $TMPC -o $TMPO$HOSTEXEEXT $@" >> "$TMPLOG"
+	rm -f "$TMPO$HOSTEXEEXT"
+	( $CXX $CXXFLAGS "$TMPC" -o "$TMPO$HOSTEXEEXT" "$@" ) >> "$TMPLOG" 2>&1
+	TMP="$?"
+	echo >> "$TMPLOG"
+	return "$TMP"
+}
+
+#
+# Function to provide echo -n for bourne shells that don't have it
+#
+echo_n() {
+	printf "$@"
+}
+
+echocheck() {
+	echo_n "Checking for $@... "
+}
+
+# Add a line of data to config.mk.
+add_line_to_config_mk() {
+	_config_mk_data="$_config_mk_data"'
+'"$1"
+}
+
+# Add a line of data to config.h.
+add_line_to_config_h() {
+	_config_h_data="$_config_h_data"'
+'"$1"
+}
+
+add_to_config_h_if_yes() {
+	if test "$1" = yes ; then
+		add_line_to_config_h "$2"
+	else
+		add_line_to_config_h "/* $2 */"
+	fi
+}
+
+# Conditionally add a line of data to config.mk. Takes two parameters:
+# The first one can be set to 'no' to "comment out" the line, i.e.
+# make it ineffective, use 'yes' otherwise.
+# The second param is the line to insert.
+add_to_config_mk_if_yes() {
+	if test "$1" = yes ; then
+		add_line_to_config_mk "$2"
+	else
+		add_line_to_config_mk "# $2"
+	fi
+}
+
+# Conditionally add a line of data to config.mk. Takes two parameters:
+# The first one can be set to 'yes' to "comment out" the line, i.e.
+# make it ineffective, use 'no' otherwise.
+# The second param is the line to insert.
+add_to_config_mk_if_no() {
+	if test "$1" = no ; then
+		add_line_to_config_mk "$2"
+	else
+		add_line_to_config_mk "# $2"
+	fi
+}
+
+#
+# Determine wx-config
+#
+# TODO: small bit of code to test wxWidgets usability
+find_wxconfig() {
+	echo_n "Looking for wx-config... "
+	wxconfigs="$_wxconfig:wxgtk2-2.8-config"
+	_wxconfig=
+
+	IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="$SEPARATOR"
+	for path_dir in $_wxpath; do
+		#reset separator to parse wxconfigs
+		IFS=":"
+		for wxconfig in $wxconfigs; do
+			if test -f "$path_dir/$wxconfig" ; then
+				_wxconfig="$path_dir/$wxconfig"
+				echo $_wxconfig
+				# Save the prefix
+				_wxpath=$path_dir
+				if test `basename $path_dir` = bin ; then
+					_wxpath=`dirname $path_dir`
+				fi
+				# break at first sdl-config found in path
+				break 2
+			fi
+		done
+	done
+
+	IFS="$ac_save_ifs"
+
+	if test -z "$_wxconfig"; then
+		echo "none found!"
+	fi
+}
+
+#
+# Determine extension used for executables
+#
+get_system_exe_extension() {
+	case $1 in
+	mingw* | *os2-emx | wince)
+		_exeext=".exe"
+		;;
+	*)
+		_exeext=""
+		;;
+	esac
+}
+
+#
+# Generic options functions
+#
+
+# Show the configure help line for an option
+option_help() {
+	tmpopt=`echo $1 | sed 's/_/-/g'`
+	option=`echo "--${tmpopt}                       " | sed "s/\(.\{23\}\).*/\1/"`
+	echo "  ${option}  ${2}"
+}
+
+# Show an error about an unknown option
+option_error() {
+	echo "error: unrecognised option: $ac_option
+Try \`$0 --help' for more information." >&2
+	exit 1
+}
+
+
+#
+# Greet user
+#
+echo "Running ScummVM Tools configure..."
+echo "Configure run on" `date` > $TMPLOG
+
+#
+# Check any parameters we received
+#
+
+for parm in "$@" ; do
+	if test "$parm" = "--help" || test "$parm" = "-help" || test "$parm" = "-h" ; then
+		cat << EOF
+
+Usage: $0 [OPTIONS]...
+
+Configuration:
+  -h, --help             display this help and exit
+
+Installation directories:
+  --prefix=DIR           use this prefix for installing the Tools [/usr/local]
+  --bindir=DIR           directory to install the tool binaries in [PREFIX/bin]
+  --mandir=DIR           directory to install the manpage in [PREFIX/share/man]
+  --libdir=DIR           directory to install the plugins in [PREFIX/lib]
+
+Optional Features:
+  --disable-debug          disable building with debugging symbols
+  --enable-Werror          treat warnings as errors
+  --enable-verbose-build   enable regular echoing of commands during build process
+
+Optional Libraries:
+  --with-ogg-prefix=DIR    Prefix where libogg is installed (optional)
+  --with-vorbis-prefix=DIR Prefix where libvorbis is installed (optional)
+  --disable-vorbis         disable Ogg Vorbis support [autodetect]
+
+  --with-tremor-prefix=DIR Prefix where tremor is installed (optional)
+  --disable-tremor         disable tremor support [autodetect]
+
+  --with-mad-prefix=DIR    Prefix where libmad is installed (optional)
+  --disable-mad            disable libmad (MP3) support [autodetect]
+
+  --with-flac-prefix=DIR   Prefix where libFLAC is installed (optional)
+  --disable-flac           disable FLAC support [autodetect]
+
+  --with-zlib-prefix=DIR   Prefix where zlib is installed (optional)
+  --disable-zlib           disable zlib (compression) support [autodetect]
+
+  --with-png-prefix=DIR    Prefix where libpng is installed (optional)
+  --disable-png            disable libpng (compression) support [autodetect]
+
+
+Some influential environment variables:
+  LDFLAGS        linker flags, e.g. -L<lib dir> if you have libraries in a
+                 nonstandard directory <lib dir>
+  CXX            C++ compiler command
+  CXXFLAGS       C++ compiler flags
+  CPPFLAGS       C++ preprocessor flags, e.g. -I<include dir> if you have
+                 headers in a nonstandard directory <include dir>
+
+EOF
+		exit 0
+	fi
+done # for parm in ...
+
+for ac_option in $@; do
+	case "$ac_option" in
+	--enable-vorbis)          _vorbis=yes     ;;
+	--disable-vorbis)         _vorbis=no      ;;
+	--enable-tremor)          _tremor=yes     ;;
+	--disable-tremor)         _tremor=no      ;;
+	--enable-flac)            _flac=yes       ;;
+	--disable-flac)           _flac=no        ;;
+	--enable-mad)             _mad=yes        ;;
+	--disable-mad)            _mad=no         ;;
+	--enable-zlib)            _zlib=yes       ;;
+	--disable-zlib)           _zlib=no        ;;
+	--enable-png)             _png=yes        ;;
+	--disable-png)            _png=no         ;;
+	--enable-wxwidgets)       _wxsidgets=yes  ;;
+	--disable-wxwidgets)      _wxwidgets=no   ;;
+	--enable-freetype)        _freetype=yes   ;;
+	--disable-freetype)       _freetype=no    ;;
+	--enable-iconv)           _iconv=yes      ;;
+	--disable-iconv)          _iconv=no       ;;
+	--enable-verbose-build)   _verbose_build=yes ;;
+	--with-ogg-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		OGG_CFLAGS="-I$arg/include"
+		OGG_LIBS="-L$arg/lib"
+		;;
+	--with-vorbis-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		VORBIS_CFLAGS="-I$arg/include"
+		VORBIS_LIBS="-L$arg/lib"
+		;;
+	--with-tremor-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		TREMOR_CFLAGS="-I$arg/include"
+		TREMOR_LIBS="-L$arg/lib"
+		;;
+	--with-flac-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		FLAC_CFLAGS="-I$arg/include"
+		FLAC_LIBS="-L$arg/lib"
+		;;
+	--with-mad-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		MAD_CFLAGS="-I$arg/include"
+		MAD_LIBS="-L$arg/lib"
+		;;
+	--with-zlib-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		ZLIB_CFLAGS="-I$arg/include"
+		ZLIB_LIBS="-L$arg/lib"
+		;;
+	--with-png-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		PNG_CFLAGS="-I$arg/include"
+		PNG_LIBS="-L$arg/lib"
+		;;
+	--with-wx-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		_wxpath="$arg:$arg/bin"
+		;;
+	--enable-debug)
+		_debug_build=yes
+		;;
+	--disable-debug)
+		_debug_build=no
+		;;
+	--enable-Werror)
+		CXXFLAGS="$CXXFLAGS -Werror"
+		;;
+	--enable-release)
+		_release_build=yes
+		;;
+	--disable-release)
+		_release_build=no
+		;;
+	--enable-profiling)
+		CXXFLAGS="$CXXFLAGS -pg"
+		LDFLAGS="$LDFLAGS -pg"
+		;;
+	--prefix=*)
+		_prefix=`echo $ac_option | cut -d '=' -f 2`
+		;;
+	--bindir=*)
+		_bindir=`echo $ac_option | cut -d '=' -f 2`
+		;;
+	--mandir=*)
+		_mandir=`echo $ac_option | cut -d '=' -f 2`
+		;;
+	--libdir=*)
+		_libdir=`echo $ac_option | cut -d '=' -f 2`
+		;;
+	*)
+		option_error
+		;;
+	esac;
+done;
+
+guessed_host=`$_srcdir/config.guess`
+get_system_exe_extension $guessed_host
+NATIVEEXEEXT=$_exeext
+
+_host_cpu=`echo $guessed_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\1/'`
+_host_vendor=`echo $guessed_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
+_host_os=`echo $guessed_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
+_host_alias="$_host_cpu-$_host_os"
+
+#
+# Determine extra build flags for debug and/or release builds
+#
+
+if test "$_debug_build" != no; then
+	# debug mode not explicitly disabled -> compile with -g
+	CXXFLAGS="$CXXFLAGS -g"
+fi
+
+if test "$_release_build" = yes; then
+	# Release mode enabled: enable optimizations. This also
+	# makes it possible to use -Wuninitialized, so let's do that.
+	CXXFLAGS="$CXXFLAGS -O2 -Wuninitialized"
+fi
+
+
+#
+# Determine extension used for executables
+#
+get_system_exe_extension $_host_os 
+HOSTEXEEXT=$_exeext
+SEPARATOR=":"
+
+#
+# Determine the C++ compiler
+#
+echo_n "Looking for C++ compiler... "
+
+# Check whether the given command is a working C++ compiler
+test_compiler() {
+	cat <<EOF >tmp_cxx_compiler.cpp
+	class Foo { int a; };
+	int main(int argc, char **argv) {
+		Foo *a = new Foo(); delete a; return 0;
+	}
+EOF
+
+	eval "$1 $CXXFLAGS $LDFLAGS -o tmp_cxx_compiler$HOSTEXEEXT tmp_cxx_compiler.cpp" 2> /dev/null && eval "./tmp_cxx_compiler$HOSTEXEEXT 2> /dev/null" && rm -rf tmp_cxx_compiler$HOSTEXEEXT tmp_cxx_compiler.dSYM tmp_cxx_compiler.cpp
+}
+
+# Prepare a list of candidates for the C++ compiler
+if test -n "$CXX" && test_compiler "$CXX"; then
+	# Use the compiler specified in CXX
+	echo $CXX
+else
+	compilers="g++ c++"
+
+	# Iterate over all candidates, pick the first working one
+	CXX=
+	for compiler in $compilers; do
+		if test_compiler $compiler; then
+			CXX=$compiler
+			echo $CXX
+			break
+		fi
+	done
+fi
+
+if test -z "$CXX"; then
+	echo "none found!"
+	exit 1
+fi
+
+# By default, use the C++ compiler as linker
+LD=$CXX
+
+#
+# Determine the compiler version
+#
+echocheck "compiler version"
+
+have_gcc=no
+cxx_version=`( $CXX -dumpversion ) 2>&1`
+if test "$?" -gt 0; then
+	# TODO: Big scary warning about unsupported Compilers
+	cxx_version=`( $CXX -version ) 2>&1`
+	if test "$?" -eq 0; then
+		cxx_version="`echo "${cxx_version}" | sed -ne 's/^.*[^0-9]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*$/\1/gp'`"
+		if test -z "${cxx_version}"; then
+			cxx_version="not found"
+			cxx_verc_fail=yes
+		fi
+		echo non-gcc compiler version ${cxx_version}
+	else
+		cxx_version="not found"
+		cxx_verc_fail=yes
+		echo found non-gcc compiler version ${cxx_version}
+	fi
+else
+	add_line_to_config_mk 'HAVE_GCC = 1'
+	have_gcc=yes
+fi
+
+if test "$have_gcc" = yes; then
+	case $cxx_version in
+		2.95.[2-9]|2.95.[2-9][-.]*|3.[0-9]|3.[0-9].[0-9]|3.[0-9].[0-9][-.]*|4.[0-9]|4.[0-9].[0-9]|4.[0-9].[0-9][-.]*)
+			_cxx_major=`echo $cxx_version | cut -d '.' -f 1`
+			_cxx_minor=`echo $cxx_version | cut -d '.' -f 2`
+			cxx_version="$cxx_version, ok"
+			cxx_verc_fail=no
+			;;
+		# whacky beos version strings
+		2.9-beos-991026*|2.9-beos-000224*)
+			_cxx_major=2
+			_cxx_minor=95
+			cxx_version="$cxx_version, ok"
+			cxx_verc_fail=no
+			;;
+		3_4)
+			_cxx_major=3
+			_cxx_minor=4
+			;;
+		'not found')
+			cxx_verc_fail=yes
+			;;
+		*)
+			cxx_version="$cxx_version, bad"
+			cxx_verc_fail=yes
+			;;
+	esac
+else
+	case $_host_os in
+		irix*)
+			case $cxx_version in
+				7.4.4*)
+					# We just assume this is SGI MipsPRO
+					_cxx_major=7
+					_cxx_minor=4
+					add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MDupdate "$(*D)/$(DEPDIR)/$(*F).d"'
+					add_line_to_config_mk '-include Makedepend'
+					;;
+				*)
+					cxx_version="$cxx_version, bad"
+					cxx_verc_fail=yes
+					;;
+			esac
+			;;
+		*) 
+			cxx_version="$cxx_version, bad"
+			cxx_verc_fail=yes
+			;;
+	esac
+
+fi
+
+echo "$cxx_version"
+
+if test "$cxx_verc_fail" = yes ; then
+	echo
+	echo "The version of your compiler is not supported at this time"
+	echo "Please ensure you are using GCC >= 2.95"
+	exit 1
+fi
+
+#
+# Check for endianness
+#
+echo_n "Checking endianness... "
+cat <<EOF >tmp_endianness_check.cpp
+short ascii_mm[] = { 0x4249, 0x4765, 0x6E44, 0x6961, 0x6E53, 0x7953, 0 };
+short ascii_ii[] = { 0x694C, 0x5454, 0x656C, 0x6E45, 0x6944, 0x6E61, 0 };
+void _ascii() { char* s = (char*) ascii_mm; s = (char*) ascii_ii; }
+short ebcdic_ii[] = { 0x89D3, 0xE3E3, 0x8593, 0x95C5, 0x89C4, 0x9581, 0 };
+short ebcdic_mm[] = { 0xC2C9, 0xC785, 0x95C4, 0x8981, 0x95E2, 0xA8E2, 0 };
+void _ebcdic() { char* s = (char*) ebcdic_mm; s = (char*) ebcdic_ii; }
+int main() { _ascii (); _ebcdic (); return 0; }
+EOF
+$CXX $CXXFLAGS -c -o tmp_endianness_check.o tmp_endianness_check.cpp
+if strings tmp_endianness_check.o | grep BIGenDianSyS >/dev/null; then
+	_endian=big
+else
+	_endian=little
+fi
+echo $_endian;
+rm -f tmp_endianness_check.o tmp_endianness_check.cpp
+
+#
+# Determine a data type with the given length
+#
+find_type_with_size() {
+	for datatype in int short char long unknown; do
+	cat <<EOF >tmp_find_type_with_size.cpp
+typedef $datatype ac__type_sizeof_;
+int main() {
+	static int test_array [1 - 2 * !(((long int) (sizeof (ac__type_sizeof_))) == $1)];
+	test_array [0] = 0;
+	return 0;
+}
+EOF
+	if $CXX $CXXFLAGS -c -o tmp_find_type_with_size$HOSTEXEEXT tmp_find_type_with_size.cpp 2>/dev/null ; then
+		break
+	else
+		if test "$datatype" = "unknown"; then
+			echo "couldn't find data type with $1 bytes"
+			exit 1
+		fi
+		continue
+	fi
+	done
+	rm -f tmp_find_type_with_size$HOSTEXEEXT tmp_find_type_with_size.cpp
+	echo $datatype
+}
+
+#
+# Determine data type sizes
+#
+echo_n "Type with 1 byte... "
+type_1_byte=`find_type_with_size 1`
+TMP="$?"
+echo "$type_1_byte"
+test $TMP -eq 0 || exit 1	# check exit code of subshell
+
+echo_n "Type with 2 bytes... "
+type_2_byte=`find_type_with_size 2`
+TMP="$?"
+echo "$type_2_byte"
+test $TMP -eq 0 || exit 1	# check exit code of subshell
+
+echo_n "Type with 4 bytes... "
+type_4_byte=`find_type_with_size 4`
+TMP="$?"
+echo "$type_4_byte"
+test $TMP -eq 0 || exit 1	# check exit code of subshell
+
+#
+# Determine build settings
+#
+echo_n "Checking hosttype... "
+echo $_host_os
+case $_host_os in
+	linux* | uclinux* | openbsd* | netbsd* | bsd* | sunos* | hpux*)
+		DEFINES="$DEFINES -DUNIX"
+		;;
+	freebsd*)
+		DEFINES="$DEFINES -DUNIX"
+		LDFLAGS="$LDFLAGS -L/usr/local/lib"
+		CXXFLAGS="$CXXFLAGS -I/usr/local/include"
+		;;
+	beos*)
+		DEFINES="$DEFINES -DUNIX -DSYSTEM_NOT_SUPPORTING_D_TYPE"
+		# Needs -lbind -lsocket for the timidity MIDI driver
+		LDFLAGS="-L/boot/home/config/lib"
+		CFLAGS="-I/boot/home/config/include"
+		CXXFLAGS="$CXXFLAGS -fhuge-objects"
+		LIBS="$LIBS -lbind -lsocket"
+		# FIXME: Please document why 'long' has to be used instead of int
+		#type_4_byte='long'
+		;;
+	haiku*)
+		DEFINES="$DEFINES -DUNIX -DSYSTEM_NOT_SUPPORTING_D_TYPE"
+		# Needs -lnetwork for the timidity MIDI driver
+		LIBS="$LIBS -lnetwork"
+		CXXFLAGS="$CXXFLAGS -fhuge-objects"
+		# FIXME: Please document why 'long' has to be used instead of int
+		#type_4_byte='long'
+		;;
+	solaris*)
+		DEFINES="$DEFINES -DUNIX -DSOLARIS -DSYSTEM_NOT_SUPPORTING_D_TYPE"
+		# Needs -lbind -lsocket for the timidity MIDI driver
+		LIBS="$LIBS -lnsl -lsocket"
+		;;
+	irix*)
+		DEFINES="$DEFINES -DUNIX -DIRIX -DSYSTEM_NOT_SUPPORTING_D_TYPE"
+		LIBS="$LIBS -lmd -lfastm -lm"
+		_ranlib=:
+		;;
+	darwin*)
+		DEFINES="$DEFINES -DUNIX -DMACOSX"
+		LIBS="$LIBS -framework AudioUnit -framework AudioToolbox -framework Carbon -framework CoreMIDI"
+		add_line_to_config_mk 'MACOSX = 1'
+		;;
+	mingw*)
+		DEFINES="$DEFINES -DWIN32 -D__USE_MINGW_ANSI_STDIO=0"
+		LIBS="$LIBS -lmingw32 -lwinmm"
+		OBJS="$OBJS scummvmico.o"
+		;;
+	cygwin*)
+		echo ERROR: Cygwin building is not supported by ScummVM anymore. Consider using MinGW.
+		exit 1
+		;;
+	os2-emx*)
+		DEFINES="$DEFINES -DUNIX"
+		;;
+	mint*)
+		DEFINES="$DEFINES -DUNIX -DSYSTEM_NOT_SUPPORTING_D_TYPE"
+		;;
+	amigaos*)
+		CXXFLAGS="$CXXFLAGS -mcrt=newlib -mstrict-align -mcpu=750 -mtune=7400"
+		LDFLAGS="$LDFLAGS -mcrt=newlib -use-dynld -Lsobjs:"
+		# We have to use 'long' for our 4 byte typedef because AmigaOS already typedefs (u)int32
+		# as (unsigned) long, and consequently we'd get a compiler error otherwise.
+		type_4_byte='long'
+		;;
+	# given this is a shell script assume some type of unix
+	*)
+		echo "WARNING: could not establish system type, assuming unix like"
+		DEFINES="$DEFINES -DUNIX"
+		;;
+esac
+
+#
+# Check whether memory alignment is required
+#
+echo_n "Alignment required... "
+case $_host_cpu in
+	arm*)
+		_need_memalign=yes
+		;;
+	alpha*)
+		# Hardcode alignment requirements for Alpha processsors
+		_need_memalign=yes
+		;;
+	sh*)
+		# Hardcode alignment requirements for SH processsors.
+		# While these can emulate unaligned memory access, this
+		# emulation is rather slow.
+		_need_memalign=yes
+		;;
+	mips*)
+		# Hardcode alignment requirements for MIPS processsors.
+		# While these can emulate unaligned memory access, this
+		# emulation is rather slow.
+		_need_memalign=yes
+		;;
+	*)
+		# Try to auto-detect....
+		cat > $TMPC << EOF
+#include <stdlib.h>
+#include <signal.h>
+int main(int argc, char **argv) {
+	unsigned char test[8] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 };
+	signal(SIGBUS, exit);
+	signal(SIGABRT, exit);
+	signal(SIGSEGV, exit);
+	if (*((unsigned int *)(test + 1)) != 0x55443322 && *((unsigned int *)(test + 1)) != 0x22334455) {
+		return 1;
+	}
+	return 0;
+}
+EOF
+		_need_memalign=yes
+		cc_check && $TMPO$HOSTEXEEXT && _need_memalign=no
+		;;
+esac
+echo "$_need_memalign"
+
+#
+# Add the results of the above checks to config.h
+#
+case $_endian in
+	big)
+		add_line_to_config_h '/* #define SCUMM_LITTLE_ENDIAN */'
+		add_line_to_config_h '#define SCUMM_BIG_ENDIAN'
+		;;
+	little)
+		add_line_to_config_h '#define SCUMM_LITTLE_ENDIAN'
+		add_line_to_config_h '/* #define SCUMM_BIG_ENDIAN */'
+		;;
+	*)
+		exit 1
+		;;
+esac
+
+add_to_config_h_if_yes $_need_memalign '#define SCUMM_NEED_ALIGNMENT'
+
+#
+# Check whether to enable a verbose build
+#
+echo_n "Checking whether to have a verbose build... "
+echo "$_verbose_build"
+add_to_config_mk_if_yes "$_verbose_build" 'VERBOSE_BUILD = 1'
+
+#
+# Check for math lib
+#
+cat > $TMPC << EOF
+int main(void) { return 0; }
+EOF
+cc_check $LDFLAGS $CXXFLAGS -lm && LDFLAGS="$LDFLAGS -lm"
+
+#
+# Check for Ogg Vorbis
+#
+echocheck "Ogg Vorbis"
+if test "$_vorbis" = auto ; then
+	_vorbis=no
+	cat > $TMPC << EOF
+#include <vorbis/codec.h>
+int main(void) { vorbis_packet_blocksize(0,0); return 0; }
+EOF
+	cc_check $LDFLAGS $CXXFLAGS $OGG_CFLAGS $OGG_LIBS $VORBIS_CFLAGS $VORBIS_LIBS \
+		-lvorbisfile -lvorbis -logg && _vorbis=yes
+fi
+if test "$_vorbis" = yes ; then
+	_def_vorbis='#define USE_VORBIS'
+	LIBS="$LIBS $OGG_LIBS $VORBIS_LIBS -lvorbisfile -lvorbis -lvorbisenc -logg"
+	INCLUDES="$INCLUDES $OGG_CFLAGS $VORBIS_CFLAGS"
+else
+	_def_vorbis='#undef USE_VORBIS'
+fi
+add_to_config_mk_if_yes "$_vorbis" 'USE_VORBIS = 1'
+echo "$_vorbis"
+
+#
+# Check for Tremor
+#
+echocheck "Tremor"
+if test "$_tremor" = auto ; then
+	_tremor=no
+	cat > $TMPC << EOF
+#include <tremor/ivorbiscodec.h>
+int main(void) { vorbis_info_init(0); return 0; }
+EOF
+	cc_check $LDFLAGS $CXXFLAGS $TREMOR_CFLAGS $TREMOR_LIBS -lvorbisienc && \
+	_tremor=yes
+fi
+if test "$_tremor" = yes && test "$_vorbis" = no; then
+	_def_tremor='#define USE_TREMOR'
+	_def_vorbis='#define USE_VORBIS'
+	LIBS="$LIBS $TREMOR_LIBS -lvorbisenc"
+	INCLUDES="$INCLUDES $TREMOR_CFLAGS"
+else
+	if test "$_vorbis" = yes; then
+		_tremor="no (Ogg Vorbis/Tremor support is mutually exclusive)"
+	fi
+	_def_tremor='#undef USE_TREMOR'
+fi
+add_to_config_mk_if_yes "$_tremor" 'USE_TREMOR = 1'
+echo "$_tremor"
+
+#
+# Check for FLAC
+#
+echocheck "FLAC >= 1.0.1"
+if test "$_flac" = auto ; then
+	_flac=no
+	cat > $TMPC << EOF
+#include <FLAC/format.h>
+int main(void) { return FLAC__STREAM_SYNC_LEN >> 30; /* guaranteed to be 0 */ }
+EOF
+	if test "$_vorbis" = yes ; then
+		cc_check $LDFLAGS $CXXFLAGS $FLAC_CFLAGS $FLAC_LIBS $OGG_CFLAGS $OGG_LIBS \
+			-lFLAC -logg && _flac=yes
+	else
+		cc_check $LDFLAGS $CXXFLAGS $FLAC_CFLAGS $FLAC_LIBS \
+			-lFLAC && _flac=yes
+	fi
+fi
+if test "$_flac" = yes ; then
+	_def_flac='#define USE_FLAC'
+	if test "$_vorbis" = yes ; then
+		LIBS="$LIBS $FLAC_LIBS $OGG_LIBS -lFLAC -logg"
+	else
+		LIBS="$LIBS $FLAC_LIBS -lFLAC"
+	fi
+	INCLUDES="$INCLUDES $FLAC_CFLAGS"
+else
+	_def_flac='#undef USE_FLAC'
+fi
+add_to_config_mk_if_yes "$_flac" 'USE_FLAC = 1'
+echo "$_flac"
+
+#
+# Check for MAD (MP3 library)
+#
+echocheck "MAD"
+if test "$_mad" = auto ; then
+	_mad=no
+	cat > $TMPC << EOF
+#include <mad.h>
+int main(void) { return 0; }
+EOF
+	cc_check $LDFLAGS $CXXFLAGS $MAD_CFLAGS $MAD_LIBS -lmad && _mad=yes
+fi
+if test "$_mad" = yes ; then
+	_def_mad='#define USE_MAD'
+	LIBS="$LIBS $MAD_LIBS -lmad"
+	INCLUDES="$INCLUDES $MAD_CFLAGS"
+else
+	_def_mad='#undef USE_MAD'
+fi
+add_to_config_mk_if_yes "$_mad" 'USE_MAD = 1'
+echo "$_mad"
+
+#
+# Check for ZLib
+#
+echocheck "zlib"
+if test "$_zlib" = auto ; then
+	_zlib=no
+	cat > $TMPC << EOF
+#include <string.h>
+#include <zlib.h>
+int main(void) { return strcmp(ZLIB_VERSION, zlibVersion()); }
+EOF
+	cc_check $LDFLAGS $CXXFLAGS $ZLIB_CFLAGS $ZLIB_LIBS -lz && _zlib=yes
+fi
+if test "$_zlib" = yes ; then
+	_def_zlib='#define USE_ZLIB'
+	LIBS="$LIBS $ZLIB_LIBS -lz"
+	INCLUDES="$INCLUDES $ZLIB_CFLAGS"
+else
+	_def_zlib='#undef USE_ZLIB'
+fi
+add_to_config_mk_if_yes "$_zlib" 'USE_ZLIB = 1'
+echo "$_zlib"
+
+#
+# Check for PNG
+#
+echocheck "png"
+if test "$_png" = auto ; then
+	_png=no
+	cat > $TMPC << EOF
+#include <png.h>
+int main(void) {
+#ifdef PNG_LIBPNG_VER_STRING
+	return 0;
+#else
+	return -1;
+#endif
+}
+EOF
+	cc_check $LDFLAGS $CXXFLAGS $PNG_CFLAGS $PNG_LIBS -lpng && _png=yes
+fi
+if test "$_png" = yes ; then
+	_def_png='#define USE_PNG'
+	LIBS="$LIBS $PNG_LIBS -lpng"
+	INCLUDES="$INCLUDES $PNG_CFLAGS"
+else
+	_def_png='#undef USE_PNG'
+fi
+add_to_config_mk_if_yes "$_png" 'USE_PNG = 1'
+echo "$_png"
+
+#
+# Check for FreeType
+#
+echocheck "freetype"
+if test "$_freetype" = auto ; then
+	_freetype=no
+	if type freetype-config > /dev/null 2>&1 ; then
+		_freetype=yes
+	fi
+fi
+
+if test "$_freetype" = yes ; then
+	freetype_version=`freetype-config --ftversion 2>/dev/null`
+
+	_def_freetype='#define USE_FREETYPE'
+	_freetypelibs=`freetype-config --libs`
+	_freetypeincludes=`freetype-config --cflags`
+else
+	_def_freetype='#undef USE_FREETYPE'
+	freetype_version="no"
+fi
+add_to_config_mk_if_yes "$_freetype" 'USE_FREETYPE = 1'
+echo "$freetype_version"
+
+#
+# Check for iconv
+#
+echo_n "Checking whether iconv.h is present... "
+if test "$_iconv" = auto ; then
+	_iconv=no
+	cat > $TMPC << EOF
+#include <iconv.h>
+int main(int, char **) {
+	return 0;
+}
+EOF
+	cc_check $LDFLAGS $CXXFLAGS && _iconv=yes
+fi
+
+create_iconv_test() {
+	cat > $TMPC << EOF
+#include <iconv.h>
+int main(int, char **) {
+	iconv_t iconv = iconv_open("UTF-32", "SJIS");
+	iconv_close(iconv);
+	return 0;
+}
+EOF
+}
+echo "$_iconv"
+
+if test "$_iconv" = yes ; then
+	echo_n "Checking whether iconv needs linking against libiconv... "
+
+	needs_iconvlib='auto'
+	create_iconv_test
+	cc_check $LDFLAGS $CXXFLAGS -liconv && needs_iconvlib='yes'
+	# We do check linking without -liconv here too, just in case
+	# it would fail otherwise too
+	create_iconv_test
+	cc_check $LDFLAGS $CXXFLAGS && needs_iconvlib='no'
+
+	if test "$needs_iconvlib" = auto ; then
+		_iconv=no
+		echo "does not link at all"
+	else
+		if test "$needs_iconvlib" = yes ; then
+			_iconvlibs='-liconv'
+		else
+			_iconvlibs=''
+		fi
+		echo "$needs_iconvlib"
+
+		echo_n "Checking signature of iconv... "
+		uses_const=no
+
+		cat > $TMPC << EOF
+#include <iconv.h>
+int main(int argc, char **argv) {
+	iconv_t iconvP;
+	const char **inbuf = 0;
+	iconv(iconvP, inbuf, 0, 0, 0);
+	return 0;
+}
+EOF
+		cc_check $LDFLAGS $CXXFLAGS $_iconvlibs && uses_const=yes
+
+		if test "$uses_const" = yes ; then
+			echo "iconv_t, const char **, size_t *, char **, size_t *"
+			_iconvcflags='-DICONV_USES_CONST'
+		else
+			echo "iconv_t, char **, size_t *, char **, size_t *"
+			_iconvcflags='-UICONV_USES_CONST'
+		fi
+	fi
+fi
+
+if test "$_iconv" = yes ; then
+	_def_iconv='#define USE_ICONV'
+else
+	_def_iconv='#undef USE_ICONV'
+fi
+
+echocheck "iconv"
+add_to_config_mk_if_yes "$_iconv" 'USE_ICONV = 1'
+echo "$_iconv"
+
+#
+# Check for wxWidgets
+#
+if test "$_wxwidgets" = auto ; then
+	_wxwidgets=no
+	find_wxconfig
+	if test -n "$_wxconfig"; then
+		_wxwidgets=yes
+	fi
+fi
+
+if test "$_wxwidgets" = yes ; then
+	_wxincludes="`$_wxconfig --prefix="$_wxpath" --cflags`"
+	_wxlibs="`$_wxconfig --prefix="$_wxpath" --libs`"
+fi
+add_to_config_mk_if_yes "$_wxwidgets" 'USE_WXWIDGETS = 1'
+
+
+#
+# Figure out installation directories
+#
+test -z "$_bindir" && _bindir="$_prefix/bin"
+test -z "$_mandir" && _mandir="$_prefix/share/man"
+test -z "$_libdir" && _libdir="$_prefix/lib"
+
+
+#
+# Do CXXFLAGS now we know the compiler version
+#
+if test "$have_gcc" = yes ; then
+	if test "$_cxx_major" -ge "3" ; then
+		case $_host_os in
+		# newlib-based system include files suppress non-C89 function 
+		# declarations under __STRICT_ANSI__
+		mingw* | amigaos*)
+			CXXFLAGS="$CXXFLAGS -W -Wno-unused-parameter"
+			;;
+		*)
+			CXXFLAGS="$CXXFLAGS -ansi -W -Wno-unused-parameter"
+			;;
+		esac
+		add_line_to_config_mk 'HAVE_GCC3 = 1'
+		add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -Wp,-MMD,"$(*D)/$(DEPDIR)/$(*F).d",-MQ,"$@",-MP'
+	fi;
+
+	if test "$_cxx_major" -ge "4" && test "$_cxx_minor" -ge "3" ; then
+		CXXFLAGS="$CXXFLAGS -Wno-empty-body"
+	else
+		CXXFLAGS="$CXXFLAGS -Wconversion"
+	fi;
+fi;
+
+# Some platforms use certain GNU extensions in header files
+case $_host_os in
+wii | gamecube | psp)
+	;;
+*)
+	CXXFLAGS="$CXXFLAGS -pedantic"
+	;;
+esac
+
+echo
+echo "Creating config.h"
+cat > config.h << EOF
+/* This file is automatically generated by configure */
+/* DO NOT EDIT MANUALLY */
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+$_config_h_data
+
+/* Data types */
+typedef unsigned $type_1_byte byte;
+typedef unsigned int uint;
+typedef unsigned $type_1_byte uint8;
+typedef unsigned $type_2_byte uint16;
+typedef unsigned $type_4_byte uint32;
+typedef signed $type_1_byte int8;
+typedef signed $type_2_byte int16;
+typedef signed $type_4_byte int32;
+
+/* Libs */
+$_def_vorbis
+$_def_tremor
+$_def_flac
+$_def_mad
+$_def_zlib
+$_def_png
+$_def_freetype
+$_def_iconv
+
+#endif /* CONFIG_H */
+EOF
+
+echo "Creating config.mk"
+cat > config.mk << EOF
+# -------- Generated by configure -----------
+
+CXX := $CXX
+CXXFLAGS := $CXXFLAGS
+LD := $LD
+LIBS += $LIBS
+RANLIB := $_ranlib
+STRIP := $_strip
+AR := $_ar
+AS := $_as
+ASFLAGS := $ASFLAGS
+WINDRES := $_windres
+WINDRESFLAGS := $WINDRESFLAGS
+WIN32PATH=$_win32path
+STATICLIBPATH=$_staticlibpath
+
+EXEEXT := $HOSTEXEEXT
+
+PREFIX := $_prefix
+BINDIR := $_bindir
+MANDIR := $_mandir
+LIBDIR := $_libdir
+
+$_config_mk_data
+
+INCLUDES += $INCLUDES
+OBJS += $OBJS
+DEFINES += $DEFINES
+LDFLAGS += $LDFLAGS
+
+WXINCLUDES := $_wxincludes
+WXLIBS := $_wxlibs
+
+FREETYPEINCLUDES := $_freetypeincludes
+FREETYPELIBS := $_freetypelibs
+
+ICONVLIBS := $_iconvlibs
+ICONVCFLAGS := $_iconvcflags
+
+SAVED_CONFIGFLAGS  := $SAVED_CONFIGFLAGS
+SAVED_LDFLAGS      := $SAVED_LDFLAGS
+SAVED_CXX          := $SAVED_CXX
+SAVED_CXXFLAGS     := $SAVED_CXXFLAGS
+SAVED_CPPFLAGS     := $SAVED_CPPFLAGS
+SAVED_ASFLAGS      := $SAVED_ASFLAGS
+SAVED_WINDRESFLAGS := $SAVED_WINDRESFLAGS
+EOF
+
+#
+# Create a custom Makefile when building outside the source tree
+# TODO: Add a better check than just looking for 'Makefile'
+#
+if test ! -f Makefile.common ; then
+echo "Creating Makefile"
+
+cat > Makefile << EOF
+# -------- Generated by configure -----------
+srcdir = $_srcdir
+vpath %.h \$(srcdir)
+vpath %.cpp \$(srcdir)
+vpath %.c \$(srcdir)
+vpath %.m \$(srcdir)
+vpath %.mm \$(srcdir)
+vpath %.asm \$(srcdir)
+vpath %.s \$(srcdir)
+vpath %.S \$(srcdir)
+include \$(srcdir)/Makefile
+EOF
+
+fi

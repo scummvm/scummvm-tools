@@ -31,7 +31,6 @@ install:   all
 	strip encode_dxa.exe -o $(SCUMMVMPATH)/tools/encode_dxa.exe
 	strip extract_cine.exe -o $(SCUMMVMPATH)/tools/extract_cine.exe
 	strip extract_agos.exe -o $(SCUMMVMPATH)/tools/extract_agos.exe
-	strip extract_cruise_pc.exe -o $(SCUMMVMPATH)/tools/extract_cruise_pc.exe
 	strip extract_gob_stk.exe -o $(SCUMMVMPATH)/tools/extract_gob_stk.exe
 	strip extract_kyra.exe -o $(SCUMMVMPATH)/tools/extract_kyra.exe
 	strip extract_loom_tg16.exe -o $(SCUMMVMPATH)/tools/extract_loom_tg16.exe

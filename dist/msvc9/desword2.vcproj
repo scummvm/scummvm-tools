@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="desword2"
 	ProjectGUID="{455E0465-9E4D-449F-A2C7-77506EF6912D}"
 	RootNamespace="desword2"
@@ -170,6 +170,70 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="utils"
+			>
+			<File
+				RelativePath="..\..\utils\adpcm.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\adpcm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\audiostream.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\audiostream.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\file.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\file.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\md5.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\md5.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\pack-end.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\pack-start.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\util.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\voc.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\voc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\wave.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\wave.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\..\desword2.cpp"
 			>

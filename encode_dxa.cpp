@@ -21,10 +21,12 @@
  *
  */
 
-#include "compress.h"
-#include "util.h"
-
+#include <stdlib.h>
+#include <sys/stat.h>
 #include <png.h>
+
+#include "encode_dxa.h"
+#include "common/endian.h"
 
 const uint32 typeDEXA = 0x41584544;
 const uint32 typeFRAM = 0x4d415246;
@@ -38,10 +40,6 @@ const uint32 typeNULL = 0x4C4C554E;
 #define  BLOCKW	4
 #define  BLOCKH	4
 
-static CompressMode gCompMode = kMP3Mode;
-
-enum ScaleMode { S_NONE, S_INTERLACED, S_DOUBLE };
-
 struct DiffStruct {
 	uint16 map;
 	int count;
@@ -50,7 +48,7 @@ struct DiffStruct {
 
 class DxaEncoder {
 private:
-	FILE *_dxa;
+	Common::File _dxa;
 	int _width, _height, _framerate, _framecount, _workheight;
 	uint8 *_prevframe, *_prevpalette;
 	ScaleMode _scaleMode;
@@ -65,15 +63,15 @@ private:
 	uLong m13encode(byte *frame, byte *outbuf);
 
 public:
-	DxaEncoder(char *filename, int width, int height, int framerate, ScaleMode scaleMode);
+	DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode);
 	~DxaEncoder();
 	void writeHeader();
 	void writeNULL();
 	void writeFrame(uint8 *frame, uint8 *palette);
 };
 
-DxaEncoder::DxaEncoder(char *filename, int width, int height, int framerate, ScaleMode scaleMode) {
-	_dxa = fopen(filename, "wb");
+DxaEncoder::DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode) {
+	_dxa.open(filename, "wb");
 	_width = width;
 	_height = height;
 	_framerate = framerate;
@@ -92,11 +90,9 @@ DxaEncoder::DxaEncoder(char *filename, int width, int height, int framerate, Sca
 }
 
 DxaEncoder::~DxaEncoder() {
-	fseek(_dxa, 0, SEEK_SET);
+	_dxa.seek(0, SEEK_SET);
 
 	writeHeader();
-
-	fclose(_dxa);
 
 	delete[] _codeBuf;
 	delete[] _dataBuf;
@@ -117,25 +113,25 @@ void DxaEncoder::writeHeader() {
 	else if (_scaleMode == S_DOUBLE)
 		version |= 0x40;
 
-	writeUint32LE(_dxa, typeDEXA);
-	writeByte(_dxa, version);
+	_dxa.writeUint32LE(typeDEXA);
+	_dxa.writeByte(version);
 
-	writeUint16BE(_dxa, _framecount);
-	writeUint32BE(_dxa, _framerate);
-	writeUint16BE(_dxa, _width);
-	writeUint16BE(_dxa, _height);
+	_dxa.writeUint16BE(_framecount);
+	_dxa.writeUint32BE(_framerate);
+	_dxa.writeUint16BE(_width);
+	_dxa.writeUint16BE(_height);
 }
 
 void DxaEncoder::writeNULL() {
 	//NULL
-	writeUint32LE(_dxa, typeNULL);
+	_dxa.writeUint32LE(typeNULL);
 }
 
 void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 
 	if (_framecount == 0 || memcmp(_prevpalette, palette, 768)) {
-		writeUint32LE(_dxa, typeCMAP);
-		fwrite(palette, 768, 1, _dxa);
+		_dxa.writeUint32LE(typeCMAP);
+		_dxa.write(palette, 768);
 		memcpy(_prevpalette, palette, 768);
 	} else {
 		writeNULL();
@@ -145,7 +141,7 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 		//FRAM
 		byte compType;
 
-		writeUint32LE(_dxa, typeFRAM);
+		_dxa.writeUint32LE(typeFRAM);
 
 		if (_framecount == 0)
 			compType = 2;
@@ -159,9 +155,9 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 				uLong outsize = _width * _workheight;
 				byte *outbuf = new byte[outsize];
 				compress2(outbuf, &outsize, frame, _width * _workheight, 9);
-				writeByte(_dxa, compType);
-				writeUint32BE(_dxa, outsize);
-				fwrite(outbuf, outsize, 1, _dxa);
+				_dxa.writeByte(compType);
+				_dxa.writeUint32BE(outsize);
+				_dxa.write(outbuf, outsize);
 				delete[] outbuf;
 				break;
 			}
@@ -220,9 +216,9 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 					frameoutbuf = rawbuf_z;
 				}
 
-				writeByte(_dxa, compType);
-				writeUint32BE(_dxa, frameoutsize);
-				fwrite(frameoutbuf, frameoutsize, 1, _dxa);
+				_dxa.writeByte(compType);
+				_dxa.writeUint32BE(frameoutsize);
+				_dxa.write(frameoutbuf, frameoutsize);
 
 				delete[] xorbuf_z;
 				delete[] rawbuf_z;
@@ -487,9 +483,9 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 					memcpy(dataB, pixels, count);
 					dataB += count;
 					if (codeSize == 2) {
-						WRITE_BE_UINT16(maskB, code);
+						WRITE_BE_UINT16(maskB, (uint16)code);
 					} else {
-						WRITE_BE_UINT32(maskB, code);
+						WRITE_BE_UINT32(maskB, (uint16)code);
 					}
 					maskB += codeSize;
 				} else {
@@ -541,269 +537,46 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 	return outb - outbuf;
 }
 
-int read_png_file(char* filename, unsigned char *&image, unsigned char *&palette, int &width, int &height) {
-	png_byte header[8];
+EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
+	
+	ToolInput input;
+	input.format = "*.*";
+	_inputPaths.push_back(input);
 
-	png_byte color_type;
-	png_byte bit_depth;
-
-	png_structp png_ptr;
-	png_infop info_ptr;
-	int number_of_passes;
-	png_bytep *row_pointers;
-
-	FILE *fp = fopen(filename, "rb");
-	if (!fp) {
-		printf("read_png_file: Can't open file: %s\n", filename);
-		exit(-1);
-	}
-	fread(header, 1, 8, fp);
-	if (png_sig_cmp(header, 0, 8))
-		return 1;
-
-	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-
-	if (!png_ptr)
-		return 1;
-
-	info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr)
-		return 1;
-
-	if (setjmp(png_jmpbuf(png_ptr)))
-		return 1;
-
-	png_init_io(png_ptr, fp);
-	png_set_sig_bytes(png_ptr, 8);
-
-	png_read_info(png_ptr, info_ptr);
-
-	width = info_ptr->width;
-	height = info_ptr->height;
-	color_type = info_ptr->color_type;
-	bit_depth = info_ptr->bit_depth;
-
-	if (color_type != PNG_COLOR_TYPE_PALETTE) {
-		palette = NULL;
-		return 2;
-	}
-
-	number_of_passes = png_set_interlace_handling(png_ptr);
-	png_read_update_info(png_ptr, info_ptr);
-
-	// read file
-	if (setjmp(png_jmpbuf(png_ptr)))
-		return 1;
-
-	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
-	for (int y=0; y<height; y++)
-		row_pointers[y] = (png_byte*) malloc(info_ptr->rowbytes);
-
-	png_read_image(png_ptr, row_pointers);
-
-	image = new unsigned char[width * height];
-	for (int y=0; y<height; y++)
-		memcpy(&image[y*width], row_pointers[y], info_ptr->rowbytes);
-
-	for (int y=0; y<height; y++)
-		free(row_pointers[y]);
-	free(row_pointers);
-
-	png_colorp pngpalette;
-	int num_palette;
-
-	png_get_PLTE(png_ptr, info_ptr, &pngpalette, &num_palette);
-
-	palette = new unsigned char[768];
-	memcpy(palette, pngpalette, 768);
-	free(pngpalette);
-
-	fclose(fp);
-
-	return 0;
+	_shorthelp = "Used to create DXA files from extracted Smacker archives.";
+	_helptext = 
+		"Usage: " + getName() + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" +
+		"Output will be two files, one with .dxa extension and the other depending on the used audio codec."; 
 }
 
-void readVideoInfo(char *filename, int &width, int &height, int &framerate, int &frames,
-	ScaleMode &scaleMode) {
-
-	FILE *smk = fopen(filename, "rb");
-	if (!smk) {
-		printf("readVideoInfo: Can't open file: %s\n", filename);
-		exit(-1);
-	}
-
-	scaleMode = S_NONE;
-
-	char buf[4];
-	fread(buf, 1, 4, smk);
-	if (!memcmp(buf, "BIK", 3)) {
-		// Skip file size
-		readUint32LE(smk);
-
-		frames = readUint32LE(smk);
-
-		// Skip unknown
-		readUint32LE(smk);
-		readUint32LE(smk);
-
-		width = readUint32LE(smk);
-		height = readUint32LE(smk);
-		framerate = readUint32LE(smk);
-	} else if (!memcmp(buf, "SMK2", 4) || !memcmp(buf, "SMK4", 4)) {
-		uint32 flags;
-
-		width = readUint32LE(smk);
-		height = readUint32LE(smk);
-		frames = readUint32LE(smk);
-		framerate = readUint32LE(smk);
-		flags = readUint32LE(smk);
-
-		// If the Y-interlaced or Y-doubled flag is set, the RAD Video Tools
-		// will have scaled the frames to twice their original height.
-
-		if (flags & 0x02)
-			scaleMode = S_INTERLACED;
-		else if (flags & 0x04)
-			scaleMode = S_DOUBLE;
-
-		if (scaleMode != S_NONE)
-			height *= 2;
-	} else {
-		error("readVideoInfo: Unknown type");
-	}
-
-	fclose(smk);
-}
-
-void convertWAV(char *wavName, char *prefix) {
-	const char *ext;
-	char outName[256];
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		ext = "mp3"; break;
-	case kVorbisMode:
-		ext = "ogg"; break;
-	case kFlacMode:
-		ext = "fla"; break;
-	default:
-		error("Unknown compression mode");
-	}
-
-	printf("Encoding audio...");
-	fflush(stdout);
-
-	sprintf(outName, "%s.%s", prefix, ext);
-	encodeAudio(wavName, false, -1, outName, gCompMode);
-}
-
-void showhelp(char *exename) {
-	printf("\nUsage: %s [params] <file>\n", exename);
-
-	printf("\nParams:\n");
-	printf(" --mp3        encode to MP3 format (default)\n");
-	printf(" --vorbis     encode to Vorbis format\n");
-	printf(" --flac       encode to Flac format\n");
-	printf("(If one of these is specified, it must be the first parameter.)\n");
-
-	printf("\nMP3 mode params:\n");
-	printf(" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:%d)\n", minBitrDef);
-	printf(" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%d)\n", maxBitrDef);
-	printf(" --vbr        LAME uses the VBR mode (default)\n");
-	printf(" --abr        LAME uses the ABR mode\n");
-	printf(" -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:%d)\n", vbrqualDef);
-	printf(" -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:%d)\n", algqualDef);
-	printf(" --silent     the output of LAME is hidden (default:disabled)\n");
-
-	printf("\nVorbis mode params:\n");
-	printf(" -b <rate>    <rate> is the nominal bitrate (default:unset)\n");
-	printf(" -m <rate>    <rate> is the minimum bitrate (default:unset)\n");
-	printf(" -M <rate>    <rate> is the maximum bitrate (default:unset)\n");
-	printf(" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:%d)\n", oggqualDef);
-	printf(" --silent     the output of oggenc is hidden (default:disabled)\n");
-
-	printf("\nFlac mode params:\n");
-	printf(" --fast       FLAC uses compression level 0\n");
-	printf(" --best       FLAC uses compression level 8\n");
-	printf(" -<value>     specifies the value (0 - 8) of compression (8=best)(default:%d)\n", flacCompressDef);
-	printf(" -b <value>   specifies a blocksize of <value> samples (default:%d)\n", flacBlocksizeDef);
-	printf(" --verify     files are encoded and then decoded to check accuracy\n");
-	printf(" --silent     the output of FLAC is hidden (default:disabled)\n");
-
-	printf("\n --help     this help message\n");
-
-	printf("\n\nIf a parameter is not given the default value is used\n");
-	printf("If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n");
-	exit(2);
-}
-
-int main(int argc, char *argv[]) {
-	if (argc < 2)
-		showhelp(argv[0]);
-
-	char strbuf[512];
+void EncodeDXA::execute() {
 	int width, height, framerate, frames;
 	ScaleMode scaleMode;
-
-	/* compression mode */
-	gCompMode = kMP3Mode;
-	int i = 1;
-	if (!strcmp(argv[1], "--mp3")) {
-		gCompMode = kMP3Mode;
-		i++;
-	} else if (!strcmp(argv[1], "--vorbis")) {
-		gCompMode = kVorbisMode;
-		i++;
-	} else if (!strcmp(argv[1], "--flac")) {
-		gCompMode = kFlacMode;
-		i++;
-	}
-
-	switch (gCompMode) {
-	case kMP3Mode:
-		if (!process_mp3_parms(argc, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kVorbisMode:
-		if (!process_ogg_parms(argc, argv, i))
-			showhelp(argv[0]);
-		break;
-	case kFlacMode:
-		if (!process_flac_parms(argc, argv, i))
-			showhelp(argv[0]);
-		break;
-	}
-
-	i = argc - 1;
-
-	// get filename prefix
-	char *filename = argv[i++];
-	char prefix[256];
-	char *p;
-
-	getFilename(filename, prefix);
-
-	p = strrchr(prefix, '.');
-	if (p) {
-		*p = '\0';
-	}
+	Common::Filename inpath(_inputPaths[0].path);
+	Common::Filename outpath(_outputPath);
+	
+	if (outpath.empty())
+		// Actual change of extension is done later...
+		outpath = inpath;
 
 	// check if the wav file exists.
-	sprintf(strbuf, "%s.wav", prefix);
+	Common::Filename wavpath(inpath);
+	wavpath.setExtension(".wav");
 	struct stat statinfo;
-	if (!stat(strbuf, &statinfo)) {
-		convertWAV(strbuf, prefix);
+	if (!stat(wavpath.getFullPath().c_str(), &statinfo)) {
+		outpath.setExtension(audio_extensions(_format));
+		convertWAV(&wavpath, &outpath);
 	}
 
 	// read some data from the Bink or Smacker file.
-	readVideoInfo(filename, width, height, framerate, frames, scaleMode);
+	readVideoInfo(&inpath, width, height, framerate, frames, scaleMode);
 
-	printf("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
+	print("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
 		   width, height, framerate, frames);
 
 	// create the encoder object
-	sprintf(strbuf, "%s.dxa", prefix);
-	DxaEncoder dxe(strbuf, width, height, framerate, scaleMode);
+	outpath.setExtension(".dxa");
+	DxaEncoder dxe(*this, outpath, width, height, framerate, scaleMode);
 
 	// No sound block
 	dxe.writeNULL();
@@ -812,20 +585,23 @@ int main(int argc, char *argv[]) {
 	uint8 *palette = NULL;
 	int framenum = 0;
 
-	printf("Encoding video...");
-	fflush(stdout);
+	print("Encoding video...");
 
+	char fullname[1024];
+	strcpy(fullname, inpath.getFullPath().c_str());
 	for (int f = 0; f < frames; f++) {
+		char strbuf[1024];
 		if (frames > 999)
-			sprintf(strbuf, "%s%04d.png", prefix, framenum);
+			sprintf(strbuf, "%s%04d.png", fullname, framenum);
 		else if (frames > 99)
-			sprintf(strbuf, "%s%03d.png", prefix, framenum);
+			sprintf(strbuf, "%s%03d.png", fullname, framenum);
 		else if (frames > 9)
-			sprintf(strbuf, "%s%02d.png", prefix, framenum);
+			sprintf(strbuf, "%s%02d.png", fullname, framenum);
 		else
-			sprintf(strbuf, "%s%d.png", prefix, framenum);
+			sprintf(strbuf, "%s%d.png", fullname, framenum);
+		inpath.setFullName(strbuf);
 
-		int r = read_png_file(strbuf, image, palette, width, height);
+		int r = read_png_file(inpath.getFullPath().c_str(), image, palette, width, height);
 
 		if (!palette) {
 			error("8-bit 256-color image expected");
@@ -854,12 +630,146 @@ int main(int argc, char *argv[]) {
 		framenum++;
 
 		if (framenum % 20 == 0) {
-			printf("\rEncoding video...%d%% (%d of %d)", 100 * framenum / frames, framenum, frames);
-			fflush(stdout);
+			print("Encoding video...%d%% (%d of %d)", 100 * framenum / frames, framenum, frames);
 		}
 	}
 
-	printf("\rEncoding video...100%% (%d of %d)\n", frames, frames);
+	print("Encoding video...100%% (%d of %d)\n", frames, frames);
+}
+
+int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsigned char *&palette, int &width, int &height) {
+	png_byte header[8];
+
+	png_byte color_type;
+	png_byte bit_depth;
+
+	png_structp png_ptr;
+	png_infop info_ptr;
+	int number_of_passes;
+	png_bytep *row_pointers;
+
+	Common::File fp(filename, "rb");
+
+	fp.read_throwsOnError(header, 8);
+	if (png_sig_cmp(header, 0, 8))
+		return 1;
+
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	if (!png_ptr)
+		return 1;
+
+	info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr)
+		return 1;
+
+	//if (setjmp(png_jmpbuf(png_ptr)))
+	//	return 1;
+
+	png_init_io(png_ptr, fp.getFileHandle());
+	png_set_sig_bytes(png_ptr, 8);
+
+	png_read_info(png_ptr, info_ptr);
+
+	width = info_ptr->width;
+	height = info_ptr->height;
+	color_type = info_ptr->color_type;
+	bit_depth = info_ptr->bit_depth;
+
+	if (color_type != PNG_COLOR_TYPE_PALETTE) {
+		palette = NULL;
+		return 2;
+	}
+
+	number_of_passes = png_set_interlace_handling(png_ptr);
+	png_read_update_info(png_ptr, info_ptr);
+
+	// read file
+	//if (setjmp(png_jmpbuf(png_ptr)))
+	//	return 1;
+
+	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
+	for (int y=0; y<height; y++)
+		row_pointers[y] = (png_byte*) malloc(info_ptr->rowbytes);
+
+	png_read_image(png_ptr, row_pointers);
+
+	image = new unsigned char[width * height];
+	for (int y=0; y<height; y++)
+		memcpy(&image[y*width], row_pointers[y], info_ptr->rowbytes);
+
+	for (int y=0; y<height; y++)
+		free(row_pointers[y]);
+	free(row_pointers);
+
+	png_colorp pngpalette;
+	int num_palette;
+
+	png_get_PLTE(png_ptr, info_ptr, &pngpalette, &num_palette);
+
+	palette = new unsigned char[768];
+	memcpy(palette, pngpalette, 768);
+	free(pngpalette);
 
 	return 0;
 }
+
+void EncodeDXA::readVideoInfo(Common::Filename *filename, int &width, int &height, int &framerate, int &frames, ScaleMode &scaleMode) {
+
+	Common::File smk(*filename, "rb");
+
+	scaleMode = S_NONE;
+
+	char buf[4];
+	smk.read_throwsOnError(buf, 4);
+	if (!memcmp(buf, "BIK", 3)) {
+		// Skip file size
+		smk.readUint32LE();
+
+		frames = smk.readUint32LE();
+
+		// Skip unknown
+		smk.readUint32LE();
+		smk.readUint32LE();
+
+		width = smk.readUint32LE();
+		height = smk.readUint32LE();
+		framerate = smk.readUint32LE();
+	} else if (!memcmp(buf, "SMK2", 4) || !memcmp(buf, "SMK4", 4)) {
+		uint32 flags;
+
+		width = smk.readUint32LE();
+		height = smk.readUint32LE();
+		frames = smk.readUint32LE();
+		framerate = smk.readUint32LE();
+		flags = smk.readUint32LE();
+
+		// If the Y-interlaced or Y-doubled flag is set, the RAD Video Tools
+		// will have scaled the frames to twice their original height.
+
+		if (flags & 0x02)
+			scaleMode = S_INTERLACED;
+		else if (flags & 0x04)
+			scaleMode = S_DOUBLE;
+
+		if (scaleMode != S_NONE)
+			height *= 2;
+	} else {
+		error("readVideoInfo: Unknown type");
+	}
+}
+
+void EncodeDXA::convertWAV(const Common::Filename *inpath, const Common::Filename* outpath) {
+	print("Encoding audio...");
+	fflush(stdout);
+
+	encodeAudio(inpath->getFullPath().c_str(), false, -1, outpath->getFullPath().c_str(), _format);
+}
+
+#ifdef STANDALONE_MAIN
+int main(int argc, char *argv[]) {
+	EncodeDXA encode_dxa(argv[0]);
+	return encode_dxa.run(argc, argv);
+}
+#endif
+

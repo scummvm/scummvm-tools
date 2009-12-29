@@ -20,45 +20,59 @@
  *
  */
 
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sstream>
+#include <stdio.h>
+
 #include "compress.h"
 
-typedef struct  {
+#ifdef USE_VORBIS
+#include <vorbis/vorbisenc.h>
+#endif
+#ifdef USE_FLAC
+#define FLAC__NO_DLL 1
+#include <FLAC/stream_encoder.h>
+#endif
+
+struct lameparams {
 	uint32 minBitr;
 	uint32 maxBitr;
 	bool abr;
 	uint32 algqual;
 	uint32 vbrqual;
 	bool silent;
-} lameparams;
+};
 
-typedef struct {
+struct oggencparams {
 	int nominalBitr;
 	int minBitr;
 	int maxBitr;
 	float quality;
 	bool silent;
-} oggencparams;
+};
 
-typedef struct {
+struct flaccparams {
 	int compressionLevel;
 	int blocksize;
 	bool verify;
 	bool silent;
-} flaccparams;
+};
 
-typedef struct {
+struct rawtype {
 	bool isLittleEndian, isStereo;
 	uint8 bitsPerSample;
-} rawtype;
+};
 
 lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0 };
-oggencparams oggparms = { -1, -1, -1, oggqualDef, 0 };
+oggencparams oggparms = { -1, -1, -1, (float)oggqualDef, 0 };
 flaccparams flacparms = { flacCompressDef, flacBlocksizeDef, false, false };
 rawtype	rawAudioType = { false, false, 8 };
 
 const char *tempEncoded = TEMP_MP3;
 
-void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample) {
+void CompressionTool::setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample) {
 	rawAudioType.isLittleEndian = isLittleEndian;
 	rawAudioType.isStereo = isStereo;
 	rawAudioType.bitsPerSample = bitsPerSample;
@@ -98,12 +112,12 @@ static int map2MP3Frequency(int freq) {
     return 48000;
 }
 
-void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, CompressMode compmode) {
+void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, AudioFormat compmode) {
 	bool err = false;
 	char fbuf[2048];
 	char *tmp = fbuf;
 
-	if (compmode == kMP3Mode) {
+	if (compmode == AUDIO_MP3) {
 		tmp += sprintf(tmp, "lame -t ");
 		if (rawInput) {
 			tmp += sprintf(tmp, "-r ");
@@ -144,161 +158,149 @@ void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const cha
 		tmp += sprintf(tmp, "-B %d ", encparms.maxBitr);
 		tmp += sprintf(tmp, "\"%s\" \"%s\" ", inname, outname);
 
-		err = system(fbuf) != 0;
+		err = spawnSubprocess(fbuf) != 0;
 
 		if (err) {
-			printf("Got error from encoder. (check your parameters)\n");
-			printf("Encoder Commandline: %s\n", fbuf );
-			exit(-1);
+			char buf[2048];
+			sprintf(buf, "Error in MP3 encoder.(check parameters) \nMP3 Encoder Commandline:%s\n", fbuf);
+			throw ToolException(buf, err);
 		} else {
 			return;
 		}
 	}
 
-#ifdef DISABLE_BUILTIN_VORBIS
-		if (compmode == kVorbisMode) {
-			tmp += sprintf(tmp, "oggenc ");
-			if (rawInput) {
-				tmp += sprintf(tmp, "--raw ");
-				tmp += sprintf(tmp, "--raw-chan=%d ", (rawAudioType.isStereo ? 2 : 1));
-				tmp += sprintf(tmp, "--raw-bits=%d ", rawAudioType.bitsPerSample);
-				tmp += sprintf(tmp, "--raw-rate=%d ", rawSamplerate);
-				tmp += sprintf(tmp, "--raw-endianness=%d ", (rawAudioType.isLittleEndian ? 0 : 1));
-			}
-
-			if (oggparms.nominalBitr != -1) {
-				tmp += sprintf(tmp, "--bitrate=%d ", oggparms.nominalBitr);
-			} else {
-				tmp += sprintf(tmp, "--quality=%d ", oggparms.quality);
-			}
-
-			if (oggparms.minBitr != -1) {
-				tmp += sprintf(tmp, "--min-bitrate=%d ", oggparms.minBitr);
-			}
-
-			if (oggparms.maxBitr != -1) {
-				tmp += sprintf(tmp, "--max-bitrate=%d ", oggparms.maxBitr);
-			}
-
-			if (oggparms.silent) {
-				tmp += sprintf(tmp, "--quiet ");
-			}
-
-			tmp += sprintf(tmp, "--output=\"%s\" ", outname);
-			tmp += sprintf(tmp, "\"%s\" ", inname);
-
-			err = system(fbuf) != 0;
-
-			if (err) {
-				printf("Got error from encoder. (check your parameters)\n");
-				printf("Encoder Commandline: %s\n", fbuf );
-				exit(-1);
-			} else {
-				return;
-			}
-		}
-#endif
-
-#ifdef DISABLE_BUILTIN_FLAC
-		if (compmode == kFlacMode) {
-			/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
-			/* -f is reqired to force override of unremoved temp file. See bug #1294648 */
-			tmp += sprintf(tmp, "flac -f --lax --no-padding --no-seektable --no-ogg ");
-
-			if (rawInput) {
-				tmp += sprintf(tmp, "--force-raw-format ");
-				tmp += sprintf(tmp, "--sign=%s ", ((rawAudioType.bitsPerSample == 8) ? "unsigned" : "signed"));
-				tmp += sprintf(tmp, "--channels=%d ", (rawAudioType.isStereo ? 2 : 1));
-				tmp += sprintf(tmp, "--bps=%d ", rawAudioType.bitsPerSample);
-				tmp += sprintf(tmp, "--sample-rate=%d ", rawSamplerate);
-				tmp += sprintf(tmp, "--endian=%s ", (rawAudioType.isLittleEndian ? "little" : "big"));
-			}
-
-			if (flacparms.silent) {
-				tmp += sprintf(tmp, "--silent ");
-			}
-
-			if (flacparms.verify) {
-				tmp += sprintf(tmp, "--verify ");
-			}
-
-			tmp += sprintf(tmp, "--compression-level-%d ", flacparms.compressionLevel);
-			tmp += sprintf(tmp, "-b %d ", flacparms.blocksize);
-			tmp += sprintf(tmp, "-o \"%s\" ", outname);
-			tmp += sprintf(tmp, "\"%s\" ", inname);
-
-			err = system(fbuf) != 0;
-
-			if (err) {
-				printf("Got error from encoder. (check your parameters)\n");
-				printf("Encoder Commandline: %s\n", fbuf );
-				exit(-1);
-			} else {
-				return;
-			}
-		}
-#endif
+#ifndef USE_VORBIS
+	if (compmode == AUDIO_VORBIS) {
+		tmp += sprintf(tmp, "oggenc ");
 		if (rawInput) {
-			FILE *inputRaw;
-			long length;
-			char *rawData;
-
-			inputRaw = fopen(inname, "rb");
-			length = fileSize(inputRaw);
-			rawData = (char *)malloc(length);
-			fread(rawData, 1, length, inputRaw);
-
-			printf(" - length = %ld\n", length);
-			printf(" - channels = %d\n", (rawAudioType.isStereo ? 2 : 1));
-			printf(" - sample rate = %d\n", rawSamplerate);
-			printf(" - compression = %dbits\n", rawAudioType.bitsPerSample);
-
-			encodeRaw(rawData, length, rawSamplerate, outname, compmode);
-
-			fclose(inputRaw);
-			free(rawData);
-		} else {
-			FILE *inputWav;
-			int fmtHeaderSize, length, numChannels, sampleRate, bitsPerSample;
-			char *wavData;
-
-			inputWav = fopen(inname, "rb");
-
-			/* Standard PCM fmt header is 16 bits, but at least Simon 1 and 2 use 18 bits */
-			fseek(inputWav, 16, SEEK_SET);
-			fmtHeaderSize = readUint32LE(inputWav);
-
-			fseek(inputWav, 22, SEEK_SET);
-			numChannels = readUint16LE(inputWav);
-			sampleRate = readUint32LE(inputWav);
-
-			fseek(inputWav, 34, SEEK_SET);
-			bitsPerSample = readUint16LE(inputWav);
-
-			/* The size of the raw audio is after the RIFF chunk (12 bytes), fmt chunk (8 + fmtHeaderSize bytes), and data chunk id (4 bytes) */
-			fseek(inputWav, 24 + fmtHeaderSize, SEEK_SET);
-			length = readUint32LE(inputWav);
-
-			wavData = (char *)malloc(length);
-			fread(wavData, 1, length, inputWav);
-
-			printf(" - length = %d\n", length);
-			printf(" - channels = %d\n", numChannels);
-			printf(" - sample rate = %d\n", sampleRate);
-			printf(" - compression = %dbits\n", bitsPerSample);
-
-			setRawAudioType(true, numChannels == 2, bitsPerSample);
-			encodeRaw(wavData, length, sampleRate, outname, compmode);
-
-			fclose(inputWav);
-			free (wavData);
+			tmp += sprintf(tmp, "--raw ");
+			tmp += sprintf(tmp, "--raw-chan=%d ", (rawAudioType.isStereo ? 2 : 1));
+			tmp += sprintf(tmp, "--raw-bits=%d ", rawAudioType.bitsPerSample);
+			tmp += sprintf(tmp, "--raw-rate=%d ", rawSamplerate);
+			tmp += sprintf(tmp, "--raw-endianness=%d ", (rawAudioType.isLittleEndian ? 0 : 1));
 		}
+
+		if (oggparms.nominalBitr != -1) {
+			tmp += sprintf(tmp, "--bitrate=%d ", oggparms.nominalBitr);
+		} else {
+			tmp += sprintf(tmp, "--quality=%f ", oggparms.quality);
+		}
+
+		if (oggparms.minBitr != -1) {
+			tmp += sprintf(tmp, "--min-bitrate=%d ", oggparms.minBitr);
+		}
+
+		if (oggparms.maxBitr != -1) {
+			tmp += sprintf(tmp, "--max-bitrate=%d ", oggparms.maxBitr);
+		}
+
+		if (oggparms.silent) {
+			tmp += sprintf(tmp, "--quiet ");
+		}
+
+		tmp += sprintf(tmp, "--output=\"%s\" ", outname);
+		tmp += sprintf(tmp, "\"%s\" ", inname);
+
+		err = spawnSubprocess(fbuf) != 0;
+
+		if (err) {
+			char buf[2048];
+			sprintf(buf, "Error in Vorbis encoder. (check parameters)\nVorbis Encoder Commandline:%s\n", fbuf);
+			throw ToolException(buf, err);
+		} else {
+			return;
+		}
+	}
+#endif
+
+#ifndef USE_FLAC
+	if (compmode == AUDIO_FLAC) {
+		/* --lax is needed to allow 11kHz, we dont need place for meta-tags, and no seektable */
+		/* -f is reqired to force override of unremoved temp file. See bug #1294648 */
+		tmp += sprintf(tmp, "flac -f --lax --no-padding --no-seektable --no-ogg ");
+
+		if (rawInput) {
+			tmp += sprintf(tmp, "--force-raw-format ");
+			tmp += sprintf(tmp, "--sign=%s ", ((rawAudioType.bitsPerSample == 8) ? "unsigned" : "signed"));
+			tmp += sprintf(tmp, "--channels=%d ", (rawAudioType.isStereo ? 2 : 1));
+			tmp += sprintf(tmp, "--bps=%d ", rawAudioType.bitsPerSample);
+			tmp += sprintf(tmp, "--sample-rate=%d ", rawSamplerate);
+			tmp += sprintf(tmp, "--endian=%s ", (rawAudioType.isLittleEndian ? "little" : "big"));
+		}
+
+		if (flacparms.silent) {
+			tmp += sprintf(tmp, "--silent ");
+		}
+
+		if (flacparms.verify) {
+			tmp += sprintf(tmp, "--verify ");
+		}
+
+		tmp += sprintf(tmp, "--compression-level-%d ", flacparms.compressionLevel);
+		tmp += sprintf(tmp, "-b %d ", flacparms.blocksize);
+		tmp += sprintf(tmp, "-o \"%s\" ", outname);
+		tmp += sprintf(tmp, "\"%s\" ", inname);
+
+		err = spawnSubprocess(fbuf) != 0;
+
+		if (err) {
+			char buf[2048];
+			sprintf(buf, "Error in FLAC encoder. (check parameters)\nFLAC Encoder Commandline:%s\n", fbuf);
+			throw ToolException(buf, err);
+		} else {
+			return;
+		}
+	}
+#endif
+	if (rawInput) {
+		long length;
+		char *rawData;
+
+		Common::File inputRaw(inname, "rb");
+		length = inputRaw.size();
+		rawData = (char *)malloc(length);
+		inputRaw.read_throwsOnError(rawData, length);
+
+		encodeRaw(rawData, length, rawSamplerate, outname, compmode);
+
+		free(rawData);
+	} else {
+		int fmtHeaderSize, length, numChannels, sampleRate, bitsPerSample;
+		char *wavData;
+
+		Common::File inputWav(inname, "rb");
+
+		/* Standard PCM fmt header is 16 bits, but at least Simon 1 and 2 use 18 bits */
+		inputWav.seek(16, SEEK_SET);
+		fmtHeaderSize = inputWav.readUint32LE();
+
+		inputWav.seek(22, SEEK_SET);
+		numChannels = inputWav.readUint16LE();
+		sampleRate = inputWav.readUint32LE();
+
+		inputWav.seek(34, SEEK_SET);
+		bitsPerSample = inputWav.readUint16LE();
+
+		/* The size of the raw audio is after the RIFF chunk (12 bytes), fmt chunk (8 + fmtHeaderSize bytes), and data chunk id (4 bytes) */
+		inputWav.seek(24 + fmtHeaderSize, SEEK_SET);
+		length = inputWav.readUint32LE();
+
+		wavData = (char *)malloc(length);
+		inputWav.read_throwsOnError(wavData, length);
+
+		setRawAudioType(true, numChannels == 2, (uint8)bitsPerSample);
+		encodeRaw(wavData, length, sampleRate, outname, compmode);
+
+		free(wavData);
+	}
 }
 
-void encodeRaw(char *rawData, int length, int samplerate, const char *outname, CompressMode compmode) {
-#ifndef DISABLE_BUILTIN_VORBIS
-	if (compmode == kVorbisMode) {
-		FILE *outputOgg;
+void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode) {
+
+	print(" - len=%ld, ch=%d, rate=%d, %dbits\n", length, (rawAudioType.isStereo ? 2 : 1), samplerate, rawAudioType.bitsPerSample);
+
+#ifdef USE_VORBIS
+	if (compmode == AUDIO_VORBIS) {
 		char outputString[256] = "";
 		int numChannels = (rawAudioType.isStereo ? 2 : 1);
 		int totalSamples = length / ((rawAudioType.bitsPerSample / 8) * numChannels);
@@ -319,7 +321,7 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 		ogg_packet header_comm;
 		ogg_packet header_code;
 
-		outputOgg = fopen(outname,"wb");
+		Common::File outputOgg(outname, "wb");
 
 		vorbis_info_init(&vi);
 
@@ -330,13 +332,11 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 			result = vorbis_encode_setup_managed(&vi, numChannels, samplerate, (oggparms.maxBitr > 0 ? 1000 * oggparms.maxBitr : -1), (1000 * oggparms.nominalBitr), (oggparms.minBitr > 0 ? 1000 * oggparms.minBitr : -1));
 
 			if (result == OV_EFAULT) {
-				printf("Error: Internal Logic Fault.\n\n");
 				vorbis_info_clear(&vi);
-				exit(-1);
+				error("Error: Internal Logic Fault");
 			} else if ((result == OV_EINVAL) || (result == OV_EIMPL)) {
-				printf("Error: Invalid bitrate parameters.\n\n");
 				vorbis_info_clear(&vi);
-				exit(-1);
+				error("Error: Invalid bitrate parameters");
 			}
 
 			if (!oggparms.silent) {
@@ -358,16 +358,14 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 			int result = 0;
 
 			/* Quality input is 1 - 10, function takes -0.1 through 1.0 */
-			result = vorbis_encode_setup_vbr(&vi, numChannels, samplerate, oggparms.quality * 0.1);
+			result = vorbis_encode_setup_vbr(&vi, numChannels, samplerate, oggparms.quality * 0.1f);
 
 			if (result == OV_EFAULT) {
-				printf("Error: Internal Logic Fault.\n\n");
 				vorbis_info_clear(&vi);
-				exit(-1);
+				error("Internal Logic Fault");
 			} else if ((result == OV_EINVAL) || (result == OV_EIMPL)) {
-				printf("Error: Invalid bitrate parameters.\n\n");
 				vorbis_info_clear(&vi);
-				exit(-1);
+				error("Invalid bitrate parameters");
 			}
 
 			if (!oggparms.silent) {
@@ -400,12 +398,11 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 					}
 				}
 			} else {
-				if (!oggparms.silent)
-					sprintf(outputString + strlen(outputString), "\n");
+				sprintf(outputString + strlen(outputString), "\n");
 			}
 		}
 
-		printf(outputString);
+		puts(outputString);
 
 		vorbis_encode_setup_init(&vi);
 		vorbis_comment_init(&vc);
@@ -425,8 +422,8 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 				break;
 			}
 
-			fwrite(og.header, 1, og.header_len, outputOgg);
-			fwrite(og.body, 1, og.body_len, outputOgg);
+			outputOgg.write(og.header, og.header_len);
+			outputOgg.write(og.body, og.body_len);
 		}
 
 		while (!eos) {
@@ -480,8 +477,8 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 							break;
 						}
 
-						totalBytes += fwrite(og.header, 1, og.header_len, outputOgg);
-						totalBytes += fwrite(og.body, 1, og.body_len, outputOgg);
+						totalBytes += outputOgg.write(og.header, og.header_len);
+						totalBytes += outputOgg.write(og.body, og.body_len);
 
 						if (ogg_page_eos(&og)) {
 							eos = 1;
@@ -499,18 +496,16 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 		vorbis_dsp_clear(&vd);
 		vorbis_info_clear(&vi);
 
-		fclose(outputOgg);
-
 		if (!oggparms.silent) {
-			printf("\nDone encoding file \"%s\"\n", outname);
-			printf("\n\tFile length:  %dm %ds\n", (int)(totalSamples / samplerate / 60), (totalSamples / samplerate % 60));
-			printf("\tAverage bitrate: %.1f kb/s\n\n", (8.0 * (double)totalBytes / 1000.0) / ((double)totalSamples / (double)samplerate));
+			print("\nDone encoding file \"%s\"\n", outname);
+			print("\n\tFile length:  %dm %ds\n", (int)(totalSamples / samplerate / 60), (totalSamples / samplerate % 60));
+			print("\tAverage bitrate: %.1f kb/s\n\n", (8.0 * (double)totalBytes / 1000.0) / ((double)totalSamples / (double)samplerate));
 		}
 	}
 #endif
 
-#ifndef DISABLE_BUILTIN_FLAC
-	if (compmode == kFlacMode) {
+#ifdef USE_FLAC
+	if (compmode == AUDIO_FLAC) {
 		int i;
 		int numChannels = (rawAudioType.isStereo ? 2 : 1);
 		int samplesPerChannel = length / ((rawAudioType.bitsPerSample / 8) * numChannels);
@@ -536,7 +531,7 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 		}
 
 		if (!flacparms.silent) {
-			printf("Encoding to\n         \"%s\"\nat compression level %d using blocksize %d\n\n", outname, flacparms.compressionLevel, flacparms.blocksize);
+			print("Encoding to\n         \"%s\"\nat compression level %d using blocksize %d\n\n", outname, flacparms.compressionLevel, flacparms.blocksize);
 		}
 
 		encoder = FLAC__stream_encoder_new();
@@ -553,9 +548,9 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 		initStatus = FLAC__stream_encoder_init_file(encoder, outname, NULL, NULL);
 
 		if (initStatus != FLAC__STREAM_ENCODER_INIT_STATUS_OK) {
-			printf("Got error from encoder. (check your paramters)\n");
-			printf("FLAC error: %s\n\n", FLAC__StreamEncoderInitStatusString[initStatus]);
-			exit(-1);
+			char buf[2048];
+			sprintf(buf, "Error in FLAC encoder. (check the parameters)\nExact error was:%s\n", FLAC__StreamEncoderInitStatusString[initStatus]);
+			throw ToolException(buf);
 		} else {
 			FLAC__stream_encoder_process_interleaved(encoder, flacData, samplesPerChannel);
 		}
@@ -566,41 +561,39 @@ void encodeRaw(char *rawData, int length, int samplerate, const char *outname, C
 		free(flacData);
 
 		if (!flacparms.silent) {
-			printf("\nDone encoding file \"%s\"\n", outname);
-			printf("\n\tFile length:  %dm %ds\n\n", (int)(samplesPerChannel / samplerate / 60), (samplesPerChannel / samplerate % 60));
+			print("\nDone encoding file \"%s\"\n", outname);
+			print("\n\tFile length:  %dm %ds\n\n", (int)(samplesPerChannel / samplerate / 60), (samplesPerChannel / samplerate % 60));
 		}
 	}
 #endif
 }
 
-void extractAndEncodeWAV(const char *outName, FILE *input, CompressMode compMode) {
+void CompressionTool::extractAndEncodeWAV(const char *outName, Common::File &input, AudioFormat compMode) {
 	unsigned int length;
-	FILE *f;
 	char fbuf[2048];
 	size_t size;
 
-	fseek(input, -4, SEEK_CUR);
-	length = readUint32LE(input);
+	input.seek(-4, SEEK_CUR);
+	length = input.readUint32LE();
 	length += 8;
-	fseek(input, -8, SEEK_CUR);
+	input.seek(-8, SEEK_CUR);
 
 	/* Copy the WAV data to a temporary file */
-	f = fopen(outName, "wb");
+	Common::File f(outName, "wb");
 	while (length > 0) {
-		size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : length, input);
+		size = input.read_noThrow(fbuf, length > sizeof(fbuf) ? sizeof(fbuf) : length);
 		if (size <= 0)
 			break;
 		length -= (int)size;
-		fwrite(fbuf, 1, size, f);
+		f.write(fbuf, size);
 	}
-	fclose(f);
+	f.close();
 
 	/* Convert the WAV temp file to OGG/MP3 */
 	encodeAudio(outName, false, -1, tempEncoded, compMode);
 }
 
-void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode) {
-	FILE *f;
+void CompressionTool::extractAndEncodeVOC(const char *outName, Common::File &input, AudioFormat compMode) {
 	int bits;
 	int blocktype;
 	int channels;
@@ -611,9 +604,9 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 	size_t size;
 	int real_samplerate = -1;
 
-	f = fopen(outName, "wb");
+	Common::File f(outName, "wb");
 
-	while ((blocktype = fgetc(input))) {
+	while ((blocktype = input.readByte())) {
 		if (blocktype != 1 && blocktype != 9) {
 			/*
 			   We only generate a warning, instead of erroring out, because
@@ -627,31 +620,31 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 		}
 
 		/* Sound Data */
-		printf(" Sound Data\n");
-		length = fgetc(input);
-		length |= fgetc(input) << 8;
-		length |= fgetc(input) << 16;
+		print(" Sound Data\n");
+		length = input.readChar();
+		length |= input.readChar() << 8;
+		length |= input.readChar() << 16;
 
 		if (blocktype == 1) {
 			length -= 2;
-			sample_rate = fgetc(input);
-			comp = fgetc(input);
+			sample_rate = input.readByte();
+			comp = input.readByte();
 			real_samplerate = getSampleRateFromVOCRate(sample_rate);
 		} else { /* (blocktype == 9) */
 			length -= 12;
-			real_samplerate = sample_rate = readUint32LE(input);
-			bits = fgetc(input);
-			channels = fgetc(input);
+			real_samplerate = sample_rate = input.readUint32LE();
+			bits = input.readChar();;
+			channels = input.readChar();;
 			if (bits != 8 || channels != 1) {
 				error("Unsupported VOC file format (%d bits per sample, %d channels)", bits, channels);
 			}
-			comp = readUint16LE(input);
-			readUint32LE(input);
+			comp = input.readUint16LE();
+			input.readUint32LE();
 		}
 
-		printf(" - length = %d\n", length);
-		printf(" - sample rate = %d (%02x)\n", real_samplerate, sample_rate);
-		printf(" - compression = %s (%02x)\n",
+		print(" - length = %d\n", length);
+		print(" - sample rate = %d (%02x)\n", real_samplerate, sample_rate);
+		print(" - compression = %s (%02x)\n",
 			   (comp ==	   0 ? "8bits"   :
 				(comp ==   1 ? "4bits"   :
 				 (comp ==  2 ? "2.6bits" :
@@ -664,18 +657,18 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 
 		/* Copy the raw data to a temporary file */
 		while (length > 0) {
-			size = fread(fbuf, 1, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length, input);
+			size = input.read_noThrow(fbuf, length > sizeof(fbuf) ? sizeof(fbuf) : (uint32)length);
 
 			if (size <= 0) {
 				break;
 			}
 
 			length -= (int)size;
-			fwrite(fbuf, 1, size, f);
+			f.write(fbuf, size);
 		}
 	}
 
-	fclose(f);
+	f.close();
 
 	assert(real_samplerate != -1);
 
@@ -685,200 +678,352 @@ void extractAndEncodeVOC(const char *outName, FILE *input, CompressMode compMode
 	encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
 }
 
-int process_mp3_parms(int argc, char *argv[], int i) {
-	for (; i < argc; i++) {
-		if (strcmp(argv[i], "--vbr") == 0) {
+bool CompressionTool::processMp3Parms() {
+	while (!_arguments.empty()) {
+		std::string arg = _arguments.front();
+		_arguments.pop_front();
+
+		if (arg == "--vbr") {
 			encparms.abr = 0;
-		} else if (strcmp(argv[i], "--abr") == 0) {
+		} else if (arg == "--abr") {
 			encparms.abr = 1;
-		} else if (strcmp(argv[i], "-b") == 0) {
-			encparms.minBitr = atoi(argv[i + 1]);
+		} else if (arg == "-b") {
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -b");
+			encparms.minBitr = atoi(_arguments.front().c_str());
 
-			if ((encparms.minBitr % 8) != 0) {
-				encparms.minBitr -= encparms.minBitr % 8;
-			}
+			if (encparms.minBitr > 160)
+				throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
 
-			if (encparms.minBitr > 160) {
-				encparms.minBitr = 160;
-			}
+			if (encparms.minBitr == 0 && _arguments.front() != "0")
+				throw ToolException("Minimum bitrate (-b) must be a number.");
 
-			if (encparms.minBitr < 8) {
-				encparms.minBitr = 8;
-			}
+			if (encparms.minBitr < 8)
+				throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
 
-			i++;
-		} else if (strcmp(argv[i], "-B") == 0) {
-			encparms.maxBitr = atoi(argv[i + 1]);
+			_arguments.pop_front();
+
+		} else if (arg == "-B") {
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -B");
+			encparms.maxBitr = atoi(_arguments.front().c_str());
 
 			if ((encparms.maxBitr % 8) != 0) {
 				encparms.maxBitr -= encparms.maxBitr % 8;
 			}
 
-			if (encparms.maxBitr > 160) {
-				encparms.maxBitr = 160;
-			}
+			if (encparms.maxBitr > 160)
+				throw ToolException("Maximum bitrate out of bounds (-B), must be between 8 and 160.");
 
-			if (encparms.maxBitr < 8) {
-				encparms.maxBitr = 8;
-			}
+			if (encparms.maxBitr == 0 && _arguments.front() != "0")
+				throw ToolException("Maximum bitrate (-B) must be a number.");
 
-			i++;
-		} else if (strcmp(argv[i], "-V") == 0) {
-			encparms.vbrqual = atoi(argv[i + 1]);
+			if (encparms.maxBitr < 8)
+				throw ToolException("Maximum bitrate out of bounds (-B), must be between 8 and 160.");
 
-			if (encparms.vbrqual < 0) {
-				encparms.vbrqual = 0;
-			}
+			_arguments.pop_front();
 
-			if (encparms.vbrqual > 9) {
-				encparms.vbrqual = 9;
-			}
+		} else if (arg == "-V") {
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -V");
+			encparms.vbrqual = atoi(_arguments.front().c_str());
 
-			i++;
-		} else if (strcmp(argv[i], "-q") == 0) {
-			encparms.algqual = atoi(argv[i + 1]);
+			if (encparms.vbrqual > 9)
+				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
 
-			if (encparms.algqual < 0) {
-				encparms.algqual = 0;
-			}
+			_arguments.pop_front();
 
-			if (encparms.algqual > 9) {
-				encparms.algqual = 9;
-			}
+		} else if (arg == "-q") {
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -q");
+			encparms.algqual = atoi(_arguments.front().c_str());
 
-			i++;
-		} else if (strcmp(argv[i], "--silent") == 0) {
+			if (encparms.algqual > 9)
+				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
+
+			_arguments.pop_front();
+
+		} else if (arg == "--silent") {
 			encparms.silent = 1;
-		} else if (strcmp(argv[i], "--help") == 0) {
-			return 0;
-		} else if (argv[i][0] == '-') {
-			return 0;
 		} else {
+			_arguments.push_front(arg);	//put back the non-audio argument we popped.
 			break;
 		}
 	}
 
-	if (i != (argc - 1)) {
-		return 0;
-	}
-
-	return 1;
+	return true;
 }
 
-int process_ogg_parms(int argc, char *argv[], int i) {
-	for (; i < argc; i++) {
-		if (strcmp(argv[i], "-b") == 0) {
-			oggparms.nominalBitr = atoi(argv[i + 1]);
+bool CompressionTool::processOggParms() {
+	while (!_arguments.empty()) {
+		std::string arg = _arguments.front();
+		_arguments.pop_front();
 
-			if ((oggparms.nominalBitr % 8) != 0) {
+		if (arg == "-b") {
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -b");
+			oggparms.nominalBitr = atoi(_arguments.front().c_str());
+
+			if ((oggparms.nominalBitr % 8) != 0)
 				oggparms.nominalBitr -= oggparms.nominalBitr % 8;
-			}
 
-			if (oggparms.nominalBitr >160) {
-				oggparms.nominalBitr = 160;
-			}
+			if (oggparms.nominalBitr > 160)
+				throw ToolException("Nominal bitrate out of bounds (-b), must be between 8 and 160.");
 
-			if (oggparms.nominalBitr < 8) {
-				oggparms.nominalBitr = 8;
-			}
+			if (oggparms.nominalBitr == 0 && _arguments.front() != "0")
+				throw ToolException("Nominal bitrate (-b) must be a number.");
 
-			i++;
-		} else if (strcmp(argv[i], "-m") == 0) {
-			oggparms.minBitr = atoi(argv[i + 1]);
+			if (oggparms.nominalBitr < 8)
+				throw ToolException("Nominal bitrate out of bounds (-b), must be between 8 and 160.");
 
-			if ((oggparms.minBitr % 8) != 0) {
+			_arguments.pop_front();
+
+		} else if (arg == "-m") {
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -m");
+			oggparms.minBitr = atoi(_arguments.front().c_str());
+
+			if ((oggparms.minBitr % 8) != 0)
 				oggparms.minBitr -= oggparms.minBitr % 8;
-			}
 
-			if (oggparms.minBitr >160) {
-				oggparms.minBitr = 160;
-			}
+			if (oggparms.minBitr > 160)
+				throw ToolException("Minimal bitrate out of bounds (-m), must be between 8 and 160.");
 
-			if (oggparms.minBitr < 8) {
-				oggparms.minBitr = 8;
-			}
+			if (oggparms.minBitr == 0 && _arguments.front() != "0")
+				throw ToolException("Minimal bitrate (-m) must be a number.");
 
-			i++;
-		} else if (strcmp(argv[i], "-M") == 0) {
-			oggparms.maxBitr = atoi(argv[i + 1]);
+			if (oggparms.minBitr < 8)
+				throw ToolException("Minimal bitrate out of bounds (-m), must be between 8 and 160.");
 
-			if ((oggparms.maxBitr % 8) != 0) {
-				oggparms.maxBitr -= encparms.minBitr % 8;
-			}
+			_arguments.pop_front();
 
-			if (oggparms.maxBitr >160) {
-				oggparms.maxBitr = 160;
-			}
+		} else if (arg == "-M") {
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -M");
+			oggparms.maxBitr = atoi(_arguments.front().c_str());
 
-			if (oggparms.maxBitr < 8) {
-				oggparms.maxBitr = 8;
-			}
+			if ((oggparms.maxBitr % 8) != 0)
+				oggparms.maxBitr -= oggparms.maxBitr % 8;
 
-			i++;
-		} else if (strcmp(argv[i], "-q") == 0) {
-			oggparms.quality = atoi(argv[i + 1]);
-			i++;
-		} else if (strcmp(argv[i], "--silent") == 0) {
+			if (oggparms.maxBitr > 160)
+				throw ToolException("Minimal bitrate out of bounds (-M), must be between 8 and 160.");
+
+			if (oggparms.maxBitr == 0 && _arguments.front() != "0")
+				throw ToolException("Minimal bitrate (-M) must be a number.");
+
+			if (oggparms.maxBitr < 8)
+				throw ToolException("Minimal bitrate out of bounds (-M), must be between 8 and 160.");
+
+			_arguments.pop_front();
+
+		} else if (arg == "-q") {
+			oggparms.quality = (float)atoi(_arguments.front().c_str());
+
+			if (oggparms.quality == 0 && _arguments.front() != "0")
+				throw ToolException("Quality (-q) must be a number.");
+
+			_arguments.pop_front();
+
+		} else if (arg == "--silent") {
 			oggparms.silent = 1;
-		} else if (strcmp(argv[i], "--help") == 0) {
-			return 0;
-		} else if (argv[i][0] == '-') {
-			return 0;
 		} else {
+			_arguments.push_front(arg);	//put back the non-audio argument we popped.
 			break;
 		}
 	}
 
-	if (i != argc - 1) {
-		return 0;
-	}
-
-	return 1;
+	return true;
 }
 
-int process_flac_parms(int argc, char *argv[], int i){
-	for (; i < argc; i++) {
-		if (strcmp(argv[i], "-b") == 0) {
-			flacparms.blocksize = atoi(argv[i + 1]);
-			i++;
-		} else if (strcmp(argv[i], "--fast") == 0) {
+bool CompressionTool::processFlacParms(){
+	while (!_arguments.empty()) {
+		std::string arg = _arguments.front();
+		_arguments.pop_front();
+
+		if (arg == "-b") {
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -b");
+			flacparms.blocksize = atoi(_arguments.front().c_str());
+			_arguments.pop_front();
+		} else if (arg == "--fast") {
 			flacparms.compressionLevel = 0;
-		} else if (strcmp(argv[i], "--best") == 0) {
+		} else if (arg == "--best") {
 			flacparms.compressionLevel = 8;
-		} else if (strcmp(argv[i], "-0") == 0) {
+		} else if (arg == "-0") {
 			flacparms.compressionLevel = 0;
-		} else if (strcmp(argv[i], "-1") == 0) {
+		} else if (arg == "-1") {
 			flacparms.compressionLevel = 1;
-		} else if (strcmp(argv[i], "-2") == 0) {
+		} else if (arg == "-2") {
 			flacparms.compressionLevel = 2;
-		} else if (strcmp(argv[i], "-3") == 0) {
+		} else if (arg == "-3") {
 			flacparms.compressionLevel = 3;
-		} else if (strcmp(argv[i], "-4") == 0) {
+		} else if (arg == "-4") {
 			flacparms.compressionLevel = 4;
-		} else if (strcmp(argv[i], "-5") == 0) {
+		} else if (arg == "-5") {
 			flacparms.compressionLevel = 5;
-		} else if (strcmp(argv[i], "-6") == 0) {
+		} else if (arg == "-6") {
 			flacparms.compressionLevel = 6;
-		} else if (strcmp(argv[i], "-7") == 0) {
+		} else if (arg == "-7") {
 			flacparms.compressionLevel = 7;
-		} else if (strcmp(argv[i], "-8") == 0) {
+		} else if (arg == "-8") {
 			flacparms.compressionLevel = 8;
-		} else if (strcmp(argv[i], "--verify") == 0) {
+		} else if (arg == "--verify") {
 			flacparms.verify = true;
-		} else if (strcmp(argv[i], "--silent") == 0) {
+		} else if (arg == "--silent") {
 			flacparms.silent = true;
-		} else if (strcmp(argv[i], "--help") == 0) {
-			return 0;
-		} else if (argv[i][0] == '-') {
-			return 0;
 		} else {
+			_arguments.push_front(arg);	//put back the non-audio argument we popped.
 			break;
 		}
 	}
 
-	if (i != argc - 1) {
-		return 0;
+	return true;
+}
+
+// Compression tool interface
+// Duplicates code above in the new way
+// The old code can be removed once all tools have been converted
+
+CompressionTool::CompressionTool(const std::string &name, ToolType type) : Tool(name, type) {
+	_supportedFormats = AUDIO_ALL;
+	_format = AUDIO_MP3;
+}
+
+void CompressionTool::parseAudioArguments() {
+	if (_supportedFormats == AUDIO_NONE)
+		return;
+
+	_format = AUDIO_MP3;
+
+	if (_arguments.front() ==  "--mp3")
+		_format = AUDIO_MP3;
+	else if (_arguments.front() == "--vorbis")
+		_format = AUDIO_VORBIS;
+	else if (_arguments.front() == "--flac")
+		_format = AUDIO_FLAC;
+	else
+		// No audio arguments then
+		return;
+
+	_arguments.pop_front();
+
+	// Need workaround to be sign-correct
+	switch (_format) {
+	case AUDIO_MP3:
+		if (!processMp3Parms())
+			throw ToolException("Could not parse command line arguments, use --help for options");
+		break;
+	case AUDIO_VORBIS:
+		if (!processOggParms())
+			throw ToolException("Could not parse command line arguments, use --help for options");
+		break;
+	case AUDIO_FLAC:
+		if (!processFlacParms())
+			throw ToolException("Could not parse arguments: Use --help for options");
+		break;
+	default: // cannot occur but we check anyway to avoid compiler warnings
+		throw ToolException("Unknown audio format, should be impossible!");
+	}
+}
+
+void CompressionTool::setTempFileName() {
+	switch (_format) {
+	case AUDIO_MP3:
+		tempEncoded = TEMP_MP3;
+		break;
+	case AUDIO_VORBIS:
+		tempEncoded = TEMP_OGG;
+		break;
+	case AUDIO_FLAC:
+		tempEncoded = TEMP_FLAC;
+		break;
+	default: // cannot occur but we check anyway to avoid compiler warnings
+		throw ToolException("Unknown audio format, should be impossible!");
+	}
+}
+
+std::string CompressionTool::getHelp() const {
+	std::ostringstream os;
+	
+	// Standard help text + our additions
+	os << Tool::getHelp();
+
+	if (_supportedFormats == AUDIO_NONE)
+		return os.str();
+
+	os << "\nParams:\n";
+
+	if (_supportedFormats & AUDIO_MP3)
+		os << " --mp3        encode to MP3 format (default)\n";
+	if (_supportedFormats & AUDIO_VORBIS)
+		os << " --vorbis     encode to Vorbis format\n";
+	if (_supportedFormats & AUDIO_FLAC)
+		os << " --flac       encode to Flac format\n";
+	os << "(If one of these is specified, it must be the first parameter.)\n";
+
+	if (_supportedFormats & AUDIO_MP3) {
+		os << "\nMP3 mode params:\n";
+		os << " -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" << minBitrDef << "%d)\n";
+		os << " -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%" << maxBitrDef << ")\n";
+		os << " --vbr        LAME uses the VBR mode (default)\n";
+		os << " --abr        LAME uses the ABR mode\n";
+		os << " -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:" << vbrqualDef << "%d)\n";
+		os << " -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:" << algqualDef << ")\n";
+		os << " --silent     the output of LAME is hidden (default:disabled)\n";
 	}
 
-	return 1;
+	if (_supportedFormats & AUDIO_VORBIS) {
+		os << "\nVorbis mode params:\n";
+		os << " -b <rate>    <rate> is the nominal bitrate (default:unset)\n";
+		os << " -m <rate>    <rate> is the minimum bitrate (default:unset)\n";
+		os << " -M <rate>    <rate> is the maximum bitrate (default:unset)\n";
+		os << " -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:" << oggqualDef << ")\n";
+		os << " --silent     the output of oggenc is hidden (default:disabled)\n";
+	}
+
+	if (_supportedFormats & AUDIO_FLAC) {
+		os << "\nFlac mode params:\n";
+		os << " --fast       FLAC uses compression level 0\n";
+		os << " --best       FLAC uses compression level 8\n";
+		os << " -<value>     specifies the value (0 - 8) of compression (8=best)(default:" << flacCompressDef << ")\n";
+		os << " -b <value>   specifies a blocksize of <value> samples (default:" << flacBlocksizeDef << ")\n";
+		os << " --verify     files are encoded and then decoded to check accuracy\n";
+		os << " --silent     the output of FLAC is hidden (default:disabled)\n";
+	}
+
+	os << "\n --help     this help message\n";
+
+	os << "\n\nIf a parameter is not given the default value is used\n";
+	os << "If using VBR mode for MP3 -b and -B must be multiples of 8; the maximum is 160!\n";
+
+	return os.str();
 }
+
+const char *audio_extensions(AudioFormat format) {
+	switch(format) {
+	case AUDIO_MP3:
+		return ".mp3";
+	case AUDIO_VORBIS:
+		return ".ogg";
+	case AUDIO_FLAC:
+		return ".fla";
+	case AUDIO_NONE:
+	default:
+		return ".unk";
+	}
+}
+
+CompressionFormat compression_format(AudioFormat format) {
+	switch(format) {
+	case AUDIO_MP3:
+		return COMPRESSION_MP3;
+	case AUDIO_VORBIS:
+		return COMPRESSION_OGG;
+	case AUDIO_FLAC:
+		return COMPRESSION_FLAC;
+	case AUDIO_NONE:
+	default:
+		throw ToolException("Unknown compression format");
+	}
+}
+

@@ -170,7 +170,71 @@
 	<References>
 	</References>
 	<Files>
-		<File
+		<Filter
+			Name="utils"
+			>
+			<File
+				RelativePath="..\..\utils\adpcm.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\adpcm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\audiostream.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\audiostream.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\file.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\file.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\md5.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\md5.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\pack-end.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\pack-start.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\util.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\voc.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\voc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\wave.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\utils\wave.h"
+				>
+			</File>
+		</Filter>
+				<File
 			RelativePath="..\..\util.h"
 			>
 		</File>
@@ -222,3 +286,4 @@
 	<Globals>
 	</Globals>
 </VisualStudioProject>
+

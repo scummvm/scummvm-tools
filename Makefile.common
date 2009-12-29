@@ -1,0 +1,282 @@
+# This file is used by Makefile and declares common build rules,
+# a list of common object files etc.
+#
+# $URL$
+# $Id$
+
+
+######################################################################
+# The default build target
+######################################################################
+
+all:
+
+
+######################################################################
+# Module settings
+######################################################################
+
+#MODULES := test tools base $(MODULES)
+
+# HACK: Until we get proper module support, add these "module dirs" to 
+# get the dependency tracking code working.
+MODULE_DIRS := ./ common/ gui/ sound/
+
+MODULE_DIRS += \
+	engines/agos/ \
+	engines/cine/ \
+	engines/cruise/ \
+	engines/gob/ \
+	engines/groovie/ \
+	engines/kyra/ \
+	engines/parallaction/ \
+	engines/queen/ \
+	engines/saga/ \
+	engines/scumm/ \
+	engines/sword1/ \
+	engines/sword2/ \
+	engines/tinsel/ \
+	engines/touche/ \
+	engines/tucker/
+
+
+# TODO: This file should be restructured and much of it moved
+# to module.mk style files.
+
+
+# Replace regular output with quiet messages
+ifneq ($(findstring $(MAKEFLAGS),s),s)
+ifneq ($(VERBOSE_BUILD),1)
+ifneq ($(VERBOSE_BUILD),yes)
+QUIET_CXX    = @echo '   ' C++ '    ' $@;
+QUIET_AR     = @echo '   ' AR '     ' $@;
+QUIET_RANLIB = @echo '   ' RANLIB ' ' $@;
+QUIET_LINK   = @echo '   ' LINK '   ' $(1);
+QUIET        = @
+endif
+endif
+endif
+
+#######################################################################
+
+TARGETS := \
+	decine$(EXEEXT) \
+	dekyra$(EXEEXT) \
+	descumm$(EXEEXT) \
+	desword2$(EXEEXT) \
+	degob$(EXEEXT) \
+	scummvm-tools-cli$(EXEEXT)
+
+ifdef USE_FREETYPE
+ifdef USE_ICONV
+TARGETS += \
+	create_sjisfnt$(EXEEXT)
+endif
+endif
+
+ifdef USE_WXWIDGETS
+TARGETS += \
+	scummvm-tools$(EXEEXT)
+endif
+
+UTILS := \
+	common/file.o \
+	common/md5.o \
+	common/util.o \
+	sound/adpcm.o \
+	sound/audiostream.o \
+	sound/voc.o \
+	sound/wave.o
+
+all: $(TARGETS)
+
+install: $(TARGETS)
+	for i in $^ ; do install -p -m 0755 $$i $(DESTDIR) ; done
+
+bundle_name = ScummVM\ Tools.app
+bundle: scummvm-tools$(EXEEXT)
+	mkdir -p $(bundle_name)
+	mkdir -p $(bundle_name)/Contents
+	mkdir -p $(bundle_name)/Contents/MacOS
+	mkdir -p $(bundle_name)/Contents/Resources
+	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
+	cp $(srcdir)/dist/macosx/Info.plist $(bundle_name)/Contents/
+	cp $(srcdir)/gui/media/*.* $(bundle_name)/Contents/Resources
+	cp scummvm-tools$(EXEEXT) $(bundle_name)/Contents/MacOS/
+
+
+
+PROGRAMS = \
+	decine \
+	dekyra \
+	descumm \
+	desword2 \
+	degob \
+	create_sjisfnt \
+	scummvm-tools \
+	scummvm-tools-cli \
+	sword2_clue
+
+
+decine_OBJS := engines/cine/decine.o
+
+dekyra_OBJS := \
+	engines/kyra/dekyra.o \
+	engines/kyra/dekyra_v1.o \
+	$(UTILS)
+
+descumm_OBJS := \
+	engines/scumm/descumm-tool.o \
+	engines/scumm/descumm.o \
+	engines/scumm/descumm6.o \
+	engines/scumm/descumm-common.o \
+	tool.o $(UTILS)
+
+desword2_OBJS := engines/sword2/desword2.o tool.o $(UTILS)
+
+degob_OBJS := \
+	engines/gob/degob.o \
+	engines/gob/degob_script.o \
+	engines/gob/degob_script_v1.o \
+	engines/gob/degob_script_v2.o \
+	engines/gob/degob_script_v3.o \
+	engines/gob/degob_script_v4.o \
+	engines/gob/degob_script_v5.o \
+	engines/gob/degob_script_v6.o \
+	engines/gob/degob_script_bargon.o \
+	tool.o \
+	$(UTILS)
+
+
+create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
+create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)
+# Set custom build flags
+create_sjisfnt.o: CPPFLAGS+=$(FREETYPEINCLUDES) $(ICONVCFLAGS)
+
+
+sword2_clue_OBJS := engines/sword2/sword2_clue.o
+sword2_clue_LIBS := `pkg-config --libs gtk+-2.0`
+# Set custom build flags
+sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
+
+
+tools_OBJS := \
+	engines/agos/compress_agos.o \
+	engines/gob/compress_gob.o \
+	engines/kyra/compress_kyra.o \
+	engines/queen/compress_queen.o \
+	engines/saga/compress_saga.o \
+	engines/scumm/compress_scumm_bun.o \
+	engines/scumm/compress_scumm_san.o \
+	engines/scumm/compress_scumm_sou.o \
+	engines/sword1/compress_sword1.o \
+	engines/sword2/compress_sword2.o \
+	engines/touche/compress_touche.o \
+	engines/tucker/compress_tucker.o \
+	engines/tinsel/compress_tinsel.o \
+	engines/agos/extract_agos.o \
+	engines/cine/extract_cine.o \
+	engines/cruise/extract_cruise_pc.o \
+	engines/gob/extract_gob_stk.o \
+	engines/kyra/extract_kyra.o \
+	engines/scumm/extract_loom_tg16.o \
+	engines/scumm/extract_mm_apple.o \
+	engines/scumm/extract_mm_c64.o \
+	engines/scumm/extract_mm_nes.o \
+	engines/parallaction/extract_parallaction.o \
+	engines/scumm/extract_scumm_mac.o \
+	engines/groovie/extract_t7g_mac.o \
+	engines/scumm/extract_zak_c64.o \
+	engines/kyra/kyra_pak.o \
+	engines/kyra/kyra_ins.o \
+	compress.o \
+	tool.o \
+	tools.o \
+	$(UTILS)
+
+ifdef USE_PNG
+tools_OBJS += \
+	encode_dxa.o
+endif
+
+scummvm-tools_OBJS := \
+	gui/main.o \
+	gui/configuration.o \
+	gui/pages.o \
+	gui/gui_tools.o \
+	$(tools_OBJS)
+scummvm-tools_LIBS := $(WXLIBS) $(LIBS)
+
+# Set custom build flags for various files
+gui/configuration.o: CPPFLAGS+=$(WXINCLUDES)
+gui/gui_tools.o: CPPFLAGS+=$(WXINCLUDES)
+gui/main.o: CPPFLAGS+=$(WXINCLUDES)
+gui/pages.o: CPPFLAGS+=$(WXINCLUDES)
+
+
+
+scummvm-tools-cli_OBJS := \
+	main_cli.o \
+	scummvm-tools-cli.o \
+	$(tools_OBJS)
+scummvm-tools-cli_LIBS := $(LIBS)
+
+
+######################################################################
+
+
+# Template for all executable targets.
+# This also automatically hooks up a "clean" rule.
+define PROGRAM_template
+$(1)$(EXEEXT): $$($(1)_OBJS)
+	$(QUIET_LINK)$(LD) -o $(1)$(EXEEXT) $$($(1)_OBJS) $(LDFLAGS) $$($(1)_LIBS)
+#all: $(1)$(EXEEXT)
+clean-$(1):
+	$(RM) $(1)$(EXEEXT)
+clean: clean-$(1)
+endef
+
+# Generate build rules for all tools
+$(foreach prog,$(PROGRAMS),$(eval $(call PROGRAM_template,$(prog))))
+
+
+######################################################################
+
+clean:
+	$(RM) $(addsuffix *.o,$(MODULE_DIRS))
+
+
+######################################################################
+# The build rules follow - normally you should have no need to
+# touch whatever comes after here.
+######################################################################
+
+# Concat DEFINES and INCLUDES to form the CPPFLAGS
+CPPFLAGS := $(DEFINES) $(INCLUDES)
+
+# Include the build instructions for all modules
+#-include $(addprefix $(srcdir)/, $(addsuffix /module.mk,$(MODULES)))
+
+# Depdir information
+DEPDIRS = $(addsuffix $(DEPDIR),$(MODULE_DIRS))
+DEPFILES =
+
+ifdef CXX_UPDATE_DEP_FLAG
+
+# Build rule for C++ files. Makes use of CXX_UPDATE_DEP_FLAG for advanced
+# dependency tracking.
+%.o: %.cpp
+	$(QUIET)$(MKDIR) $(*D)/$(DEPDIR)
+	$(QUIET_CXX)$(CXX) $(CXX_UPDATE_DEP_FLAG) $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+
+else
+
+# Dumb compile rule, for C++ compilers that don't allow dependency tracking or
+# where it is broken (such as GCC 2.95).
+.cpp.o:
+	$(QUIET_CXX)$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+
+endif
+
+# Include the dependency tracking files.
+-include $(wildcard $(addsuffix /*.d,$(DEPDIRS)))

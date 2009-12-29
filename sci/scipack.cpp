@@ -167,7 +167,7 @@ write_files(int count, char **names) {
 		write_uint16(resource_000, 0);
 
 		do {
-			j = read(fd, buf, COPY_BLOCK_SIZE);
+			j = read_noThrow(fd, buf, COPY_BLOCK_SIZE);
 			write(resource_000, buf, j);
 		} while (j == COPY_BLOCK_SIZE);
 		close(fd);
