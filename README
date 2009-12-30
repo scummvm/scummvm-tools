@@ -104,7 +104,7 @@ Extraction Tools:
 Compression Tools:
 		All compression tools work on the general format
 			compress [mode] [mode params] [-o output] <infile>
-		mode is either --mp3, --vorbis or --flac, the specifci mode params
+		mode is either --mp3, --vorbis or --flac, the specific mode params
 		can be found by running the tool with --help.
 		output and input are for some tools a directory, for some a file.
 
