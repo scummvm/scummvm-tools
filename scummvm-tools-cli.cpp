@@ -54,14 +54,18 @@ int ToolsCLI::run(int argc, char *argv[]) {
 	std::string option = arguments.front();
 	if (option == "--tool" || option == "-t") {
 		arguments.pop_front();
-		for (ToolList::iterator iter = _tools.begin(); iter != _tools.end(); ++iter) {
-			Tool *tool = *iter;
-			if (arguments.front() == tool->getName()) {
-				// Run the tool, first argument will be name, very nice!
-				return tool->run(arguments);
+		if (arguments.size()) {
+			for (ToolList::iterator iter = _tools.begin(); iter != _tools.end(); ++iter) {
+				Tool *tool = *iter;
+				if (arguments.front() == tool->getName()) {
+					// Run the tool, first argument will be name, very nice!
+					return tool->run(arguments);
+				}
 			}
+			std::cout << "\tUnknown tool, make sure you input one of the following:" << std::endl;
+		} else {
+			std::cout << "\tMissing tool name, make sure you specify one of the following:" << std::endl;
 		}
-		std::cout << "\tUnknown tool, make sure you input one of the following:" << std::endl;
 		printTools();
 	} else if (option == "--help" || option == "-h") {
 		arguments.pop_front();
