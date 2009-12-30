@@ -95,26 +95,26 @@ void printUsage(const char *appName) {
 Common::StringList getNameList(MohawkFile *mohawkFile, uint16 id) {
 	MohawkOutputStream nameResource = mohawkFile->getRawData(ID_NAME, id);
 	Common::StringList nameList;
-	
+
 	uint16 namesCount = nameResource.stream->readUint16BE();
 	uint16 *stringOffsets = new uint16[namesCount];
 	for (uint16 i = 0; i < namesCount; i++)
 		stringOffsets[i] = nameResource.stream->readUint16BE();
 	nameResource.stream->seek(namesCount * 2, SEEK_CUR);
 	int32 curNamesPos = nameResource.stream->pos();
-	
+
 	for (uint32 i = 0; i < namesCount; i++) {
 		nameResource.stream->seek(curNamesPos + stringOffsets[i]);
-			
+
 		Common::String name = Common::String::emptyString;
 		for (char c = nameResource.stream->readByte(); c; c = nameResource.stream->readByte())
 			name += c;
 		nameList.push_back(name);
 	}
-	
+
 	delete nameResource.stream;
 	delete[] stringOffsets;
-	
+
 	return nameList;
 }
 
@@ -125,10 +125,10 @@ static void printTabs(byte tabs) {
 
 void dumpCommands(Common::SeekableReadStream *script, Common::StringList varNames, Common::StringList exNames, byte tabs) {
 	uint16 commandCount = script->readUint16BE();
-	
+
 	for (uint16 i = 0; i < commandCount; i++) {
 		uint16 command = script->readUint16BE();
-		
+
 		if (command == 8) { // "Switch" Statement
 			if (script->readUint16BE() != 2)
 				warning ("if-then-else unknown value is not 2");
@@ -137,7 +137,7 @@ void dumpCommands(Common::SeekableReadStream *script, Common::StringList varName
 			uint16 logicBlockCount = script->readUint16BE();
 			for (uint16 j = 0; j < logicBlockCount; j++) {
 				uint16 varCheck = script->readUint16BE();
-				printTabs(tabs + 1); 
+				printTabs(tabs + 1);
 				if (varCheck == 0xFFFF)
 					printf("default:\n");
 				else
@@ -183,7 +183,7 @@ void dumpCommands(Common::SeekableReadStream *script, Common::StringList varName
 
 void dumpScript(Common::SeekableReadStream *script, Common::StringList varNames, Common::StringList exNames, byte tabs) {
 	uint16 scriptCount = script->readUint16BE();
-	
+
 	for (uint16 i = 0; i < scriptCount; i++) {
 		printTabs(tabs); printf ("Stream Type %d:\n", script->readUint16BE());
 		dumpCommands(script, varNames, exNames, tabs + 1);
@@ -195,54 +195,54 @@ int main(int argc, char *argv[]) {
 		printUsage(argv[0]);
 		return 1;
 	}
-	
+
 	FILE *file = fopen(argv[1], "rb");
 	if (!file) {
 		printf ("Could not open \'%s\'\n", argv[1]);
 		return 1;
 	}
-	
+
 	// Open the file as a Mohawk archive
 	MohawkFile *mohawkFile = new MohawkFile();
 	mohawkFile->open(new Common::File(file));
-	
+
 	// Load in Variable/External Command Names'
 	Common::StringList exNames = getNameList(mohawkFile, 3);
 	Common::StringList varNames = getNameList(mohawkFile, 4);
-	
+
 	uint32 tag = READ_BE_UINT32(argv[2]);
 	uint32 cardId = (uint16)atoi(argv[3]);
-	
+
 	if (tag == ID_CARD) {
 		printf("\n\nDumping scripts for card %d!\n", cardId);
 		printf("==================================\n\n");
-	
+
 		MohawkOutputStream cardStream = mohawkFile->getRawData(ID_CARD, cardId);
 		cardStream.stream->readUint32BE(); // Skip first 4 bytes
-		
+
 		dumpScript(cardStream.stream, varNames, exNames, 0);
-		
+
 		delete cardStream.stream;
 	} else if (tag == ID_HSPT) {
 		printf("\n\nDumping scripts for card %d hotspots!\n", cardId);
 		printf("===========================================\n\n");
-	
+
 		MohawkOutputStream hsptStream = mohawkFile->getRawData(ID_HSPT, cardId);
 		uint16 hotspotCount = hsptStream.stream->readUint16BE();
-		
+
 		for (uint16 i = 0; i < hotspotCount; i++) {
 			printf("Hotspot %d:\n", i);
 			hsptStream.stream->seek(22, SEEK_CUR); // Skip non-script related stuff
 			dumpScript(hsptStream.stream, varNames, exNames, 1);
 		}
-		
+
 		delete hsptStream.stream;
 	} else {
 		printf("That resource (if it exists) doesn't contain script data!\n");
 	}
-	
+
 	exNames.clear();
 	varNames.clear();
-	
+
 	return 0;
 }

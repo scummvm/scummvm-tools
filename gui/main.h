@@ -73,7 +73,7 @@ public:
 	 * Switches page, old page is stored on a stack for going backwards
 	 * Buttons are reset, and state is saved
 	 *
-	 * @param nextPage The page to switch too, the old page window will be destroyed 
+	 * @param nextPage The page to switch too, the old page window will be destroyed
 	 *                 and this page displayed in it's stead.
 	 */
 	void switchPage(WizardPage *nextPage) {
@@ -119,7 +119,7 @@ private:
 	void switchPage(WizardPage *nextPage, bool moveback);
 
 	wxPanel *_wizardpane;
-	
+
 	std::vector<WizardPage *> _pages;
 
 	DECLARE_EVENT_TABLE()
@@ -173,13 +173,13 @@ public:
 
 	/**
 	 * Display the previous/next button.
-	 */ 
+	 */
 	void showNavigation(bool show);
 
 	/**
 	 * Display the previous button.
 	 * If the showNavigation has been used, this overrides that (for the previous button).
-	 */ 
+	 */
 	void showPrevious(bool show);
 
 	/**

@@ -93,7 +93,7 @@ const struct PatchFile patchFiles[] = {
 
 CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_supportsProgressBar = true;
-	
+
 	ToolInput input;
 	input.format = "queen.1";
 	_inputPaths.push_back(input);
@@ -111,7 +111,7 @@ const CompressQueen::GameVersion *CompressQueen::detectGameVersion(uint32 size) 
 		if (pgv->dataFileSize == size) {
 			return pgv;
 		}
- 	}
+	}
 
 	error("Unknown/unsupported FOTAQ version");
 

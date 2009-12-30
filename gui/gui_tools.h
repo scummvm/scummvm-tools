@@ -65,7 +65,7 @@ public:
 	void addGame(const wxString &game_name);
 
 	/**
-	 * Returns the list of valid inputs of this tool, along with the 
+	 * Returns the list of valid inputs of this tool, along with the
 	 * paths already set (if applicable)
 	 */
 	ToolInputs getInputList() const;
@@ -91,14 +91,14 @@ public:
 	ToolType getType() const;
 
 	// Helper functions to get info about the tool
-	
+
 	/**
 	 * Returns true if the audio format(s) is supported by this tool
-	 * 
+	 *
 	 * @param format The audio format(s) to test for
 	 */
 	bool supportsAudioFormat(AudioFormat format) const;
-	
+
 	/**
 	 * Returns true if the tool supports a load bar for displaying progress
 	 */

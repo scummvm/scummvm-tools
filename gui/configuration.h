@@ -35,7 +35,7 @@ class ToolGUI;
 struct Configuration {
 	Configuration();
 	~Configuration();
-	
+
 	/**
 	 * Fills this config object with values loaded from the permanent storage method
 	 */
@@ -94,7 +94,7 @@ struct Configuration {
 	// flac
 	wxString flacCompressionLevel;
 	wxString flacBlockSize;
-	
+
 	// flac
 	wxString oggQuality;
 	wxString oggMinBitrate;

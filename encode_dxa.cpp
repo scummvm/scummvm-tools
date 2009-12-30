@@ -392,7 +392,7 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 			byte subMot[4], subData[16];
 			int subMotSize = 0, subDataSize = 0;
 
- 			static const int subX[4] = {0, 2, 0, 2};
+			static const int subX[4] = {0, 2, 0, 2};
 			static const int subY[4] = {0, 0, 2, 2};
 
 			/* 0: skip
@@ -538,15 +538,15 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 }
 
 EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
-	
+
 	ToolInput input;
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to create DXA files from extracted Smacker archives.";
-	_helptext = 
+	_helptext =
 		"Usage: " + getName() + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" +
-		"Output will be two files, one with .dxa extension and the other depending on the used audio codec."; 
+		"Output will be two files, one with .dxa extension and the other depending on the used audio codec.";
 }
 
 void EncodeDXA::execute() {
@@ -554,7 +554,7 @@ void EncodeDXA::execute() {
 	ScaleMode scaleMode;
 	Common::Filename inpath(_inputPaths[0].path);
 	Common::Filename outpath(_outputPath);
-	
+
 	if (outpath.empty())
 		// Actual change of extension is done later...
 		outpath = inpath;

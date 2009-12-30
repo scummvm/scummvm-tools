@@ -29,7 +29,7 @@
 #define CHANGECASE
 
 ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
-	
+
 	ToolInput input;
 	input.format = "*.*";
 	_inputPaths.push_back(input);
@@ -94,7 +94,7 @@ void ExtractScummMac::execute() {
 
 		if (!file_name[0])
 			error("\'%s\'. file has no name.", inpath.getFullPath().c_str());
-		
+
 		print("extracting \'%s\'", file_name);
 
 		/* For convenience compatibility with scummvm (and case sensitive

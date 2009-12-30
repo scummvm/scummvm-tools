@@ -69,7 +69,7 @@ void ExtractZakC64::execute() {
 	if (outpath.empty())
 		// Standard output path
 		outpath.setFullPath("out/");
-	
+
 	Common::File input1(inpath1, "rb");
 	Common::File input2(inpath2, "rb");
 

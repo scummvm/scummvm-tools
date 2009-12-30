@@ -36,7 +36,7 @@ public:
 	~Tools();
 
 	typedef std::vector<Tool *> ToolList;
-	
+
 	/**
 	 * Returns a list of the tools that supports opening the input file
 	 * specified in the input list.

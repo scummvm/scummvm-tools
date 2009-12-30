@@ -32,7 +32,7 @@ public:
 	ExtractKyra(const std::string &name = "extract_kyra");
 
 	virtual void execute();
-	
+
 	void parseExtraArguments();
 
 	bool extractAll, extractOne, isAmiga, isHoFInstaller;

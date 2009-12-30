@@ -79,7 +79,7 @@ bool Filename::directory() const {
 	return getFullName().size() == 0;
 }
 
-bool Filename::exists() const { 
+bool Filename::exists() const {
 	// This fails if we don't have permission to read the file
 	// but in most cases, that's the same thing for us.
 	FILE *f = fopen(_path.c_str(), "r");
@@ -203,7 +203,7 @@ File::~File() {
 }
 
 void File::open(const Filename &filepath, const char *mode) {
-	
+
 	// Clean up previously opened file
 	close();
 
@@ -239,7 +239,7 @@ void File::setXorMode(uint8 xormode) {
 }
 
 int File::readChar() {
-	if (!_file) 
+	if (!_file)
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
 		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
@@ -327,7 +327,7 @@ void File::read_throwsOnError(void *dataPtr, size_t dataSize) {
 }
 
 size_t File::read_noThrow(void *dataPtr, size_t dataSize) {
-	if (!_file) 
+	if (!_file)
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
 		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
@@ -336,7 +336,7 @@ size_t File::read_noThrow(void *dataPtr, size_t dataSize) {
 }
 
 std::string File::readString() {
-	if (!_file) 
+	if (!_file)
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
 		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
@@ -355,7 +355,7 @@ std::string File::readString() {
 }
 
 std::string File::readString(size_t len) {
-	if (!_file) 
+	if (!_file)
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
 		throw FileException("Tried to read from file opened in write mode (" + _name.getFullPath() + ")");
@@ -372,7 +372,7 @@ std::string File::readString(size_t len) {
 }
 
 void File::scanString(char *result) {
-	if (!_file) 
+	if (!_file)
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_READ) == 0)
 		throw FileException("Tried to write to file opened in read mode (" + _name.getFullPath() + ")");
@@ -381,7 +381,7 @@ void File::scanString(char *result) {
 }
 
 void File::writeChar(int i) {
-	if (!_file) 
+	if (!_file)
 		throw FileException("File  is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
 		throw FileException("Tried to write to a file opened in read mode (" + _name.getFullPath() + ")");
@@ -421,7 +421,7 @@ void File::writeUint32LE(uint32 value) {
 }
 
 size_t File::write(const void *dataPtr, size_t dataSize) {
-	if (!_file) 
+	if (!_file)
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
 		throw FileException("Tried to write to file opened in read mode (" + _name.getFullPath() + ")");
@@ -436,7 +436,7 @@ size_t File::write(const void *dataPtr, size_t dataSize) {
 }
 
 void File::print(const char *format, ...) {
-	if (!_file) 
+	if (!_file)
 		throw FileException("File is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
 		throw FileException("Tried to write to file opened in read mode (" + _name.getFullPath() + ")");
@@ -450,7 +450,7 @@ void File::print(const char *format, ...) {
 }
 
 void File::seek(long offset, int origin) {
-	if (!_file) 
+	if (!_file)
 		throw FileException("File is not open");
 
 	if (fseek(_file, offset, origin) != 0)

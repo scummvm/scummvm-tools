@@ -62,7 +62,7 @@ IMPLEMENT_APP(ScummVMToolsApp)
 bool ScummVMToolsApp::OnInit() {
 	// Init tools
 	g_tools.init();
-	
+
 	SetAppName(wxT("ScummVM Tools"));
 
 	// Create window & display
@@ -73,7 +73,7 @@ bool ScummVMToolsApp::OnInit() {
 #endif
 	frame->SetMinSize(wxSize(600, 420));
 	SetTopWindow(frame);
-	
+
 	// Create and load configuration
 	Configuration &configuration = frame->_configuration;
 
@@ -88,9 +88,9 @@ bool ScummVMToolsApp::OnInit() {
 	} else {
 		frame->switchPage(new IntroPage(configuration));
 	}
-	
+
 	frame->Show(true);
-	
+
 	return true;
 }
 
@@ -108,26 +108,26 @@ void ScummVMToolsApp::OnAbout() {
 	wxStaticText *titletext = new wxStaticText(dialog, wxID_ANY, wxT("ScummTools GUI"));
 	titletext->SetFont(wxFont(22, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Arial")));
 	sizer->Add(titletext, wxSizerFlags());
-	
+
 	wxStaticText *versiontext = new wxStaticText(dialog, wxID_ANY, wxT("Development Version"));
 	versiontext->SetForegroundColour(wxColor(128, 128, 128));
 	versiontext->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
 	sizer->Add(versiontext, wxSizerFlags());
-	
+
 	wxHyperlinkCtrl *websitetext = new wxHyperlinkCtrl(dialog, wxID_ANY, wxT("http://www.scummvm.org"), wxT("http://www.scummvm.org"));
 	sizer->Add(websitetext, wxSizerFlags().Border(wxTOP, 5));
 
 	wxStaticText *copyrighttext = new wxStaticText(dialog, wxID_ANY, wxT("Copyright ScummVM Team 2009"));
 	copyrighttext->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
 	sizer->Add(copyrighttext, wxSizerFlags());
-	
+
 	wxStaticText *descriptiontext = new wxStaticText(dialog, wxID_ANY,
 		wxT("This tool allows you to extract data files from several different games \n")
 		wxT("to be used by ScummVM, it can also compress audio data files into a more \n")
 		wxT("compact format than the original."));
 	descriptiontext->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
 	sizer->Add(descriptiontext, wxSizerFlags().Border(wxTOP, 6));
-	
+
 	wxStaticText *licensetext = new wxStaticText(dialog, wxID_ANY,
 		wxT("Published under the GNU General Public License\n")
 		wxT("This program comes with ABSOLUTELY NO WARRANTY\n")
@@ -182,7 +182,7 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	wxPanel *main = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("Wizard Main Panel"));
 
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-	
+
 	// Add the top header, it's sweet!
 	sizer->Add(
 		new Header(main, wxT("logo.jpg"), wxT("tile.gif"), wxT("Extraction & Compression Wizard")),
@@ -197,21 +197,21 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	// We split it in two parts over a panel to have a small text there
 	wxPanel *linepanel = new wxPanel(main, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxT("Wizard Line Panel"));
 	wxSizer *linesizer = new wxBoxSizer(wxHORIZONTAL);
-	
+
 	wxStaticText *linetext = new wxStaticText(linepanel, wxID_ANY, wxGetApp().GetAppName());
 	linesizer->Add(linetext, wxSizerFlags());
 	linetext->Disable();
 
 	wxStaticLine *line = new wxStaticLine(
-			linepanel, wxID_ANY, 
-			wxDefaultPosition, wxSize(300, 1), 
+			linepanel, wxID_ANY,
+			wxDefaultPosition, wxSize(300, 1),
 			wxBORDER_SIMPLE | wxLI_HORIZONTAL, wxT("Line Spacer")
 		);
 	line->Disable();
 	linesizer->Add(line, wxSizerFlags(1).Center());
 
 	linepanel->SetSizer(linesizer);
-	
+
 	// Add the line to the main panel
 	sizer->Add(linepanel, wxSizerFlags().Expand().Center().Border());
 
@@ -236,7 +236,7 @@ void ScummToolsFrame::CreateMenuBar() {
 
 #ifdef __WXMAC__
 	wxApp::s_macHelpMenuTitleName = wxT("Help");
-#endif 
+#endif
 
 	// Name of this seems really inappropriate
 	wxMenu *helpmenu = new wxMenu();
@@ -409,7 +409,7 @@ WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext, Configura
 	_cancel = new wxButton(this, ID_CANCEL, wxT("Cancel"));
 	_cancel->SetSize(80, -1);
 	sizer->Add(_cancel, wxSizerFlags().Right().ReserveSpaceEvenIfHidden());
-	
+
 	topsizer->Add(sizer, wxSizerFlags().Right().Border());
 
 	SetSizerAndFit(topsizer);
@@ -533,7 +533,7 @@ Header::Header(wxWindow *parent, const wxString &logo, const wxString &tile, con
 
 	// Load font
 	_font = wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false);
-	
+
 	// Set the text title
 	_title = title;
 }
@@ -543,7 +543,7 @@ void Header::onPaint(wxPaintEvent &evt) {
 
 	int w, h;
 	this->GetSize(&w, &h);
-	
+
 	if (_logo.IsOk() == false || _tile.IsOk() == false) {
 		// If we couldn't load the images, use orange instead!
 		dc.SetBackground(wxBrush(wxColor(213, 114, 0)));
@@ -564,7 +564,7 @@ void Header::onPaint(wxPaintEvent &evt) {
 			x += _tile.GetWidth();
 		}
 	}
-	
+
 	dc.SetFont(_font);
 	dc.DrawText(_title, 290, 70);
 }
@@ -574,7 +574,7 @@ AdvancedSettingsDialog::AdvancedSettingsDialog(wxWindow *parent, Configuration &
 	_defaults(defaults)
 {
 	wxNotebook *notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP);
-	
+
 	_mp3 = new ChooseAudioOptionsMp3Page(defaults);
 	_flac = new ChooseAudioOptionsFlacPage(defaults);
 	_vorbis = new ChooseAudioOptionsVorbisPage(defaults);
@@ -582,7 +582,7 @@ AdvancedSettingsDialog::AdvancedSettingsDialog(wxWindow *parent, Configuration &
 	notebook->AddPage(_mp3panel = _mp3->CreatePanel(notebook), wxT("MP3"));
 	notebook->AddPage(_flacpanel = _flac->CreatePanel(notebook), wxT("Flac"));
 	notebook->AddPage(_vorbispanel = _vorbis->CreatePanel(notebook), wxT("Vorbis"));
-	
+
 	wxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
 
 	topsizer->Add(notebook, wxSizerFlags(1).Expand().Border());

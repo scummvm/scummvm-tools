@@ -802,7 +802,7 @@ void do_actorops(char *buf, byte opcode) {
 		case 0x0E:
 			buf = do_tok(buf, "InitAnimNr", ((opcode & 0x80) ? A1V : A1B));
 			break;
-//    		case 0x0F: buf=do_tok(buf, "PaletteList", A1LIST); break;
+//		case 0x0F: buf=do_tok(buf, "PaletteList", A1LIST); break;
 		case 0x10:
 			buf = do_tok(buf, "Width", ((opcode & 0x80) ? A1V : A1B));
 			break;

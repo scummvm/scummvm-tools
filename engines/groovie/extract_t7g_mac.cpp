@@ -31,13 +31,13 @@
 static uint32 offsetResourceData;
 
 ExtractT7GMac::ExtractT7GMac(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
-	
+
 	ToolInput input;
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Extract data files from the The 7th Guest Macintosh data file.";
-	_helptext = 
+	_helptext =
 		"Usage: " + getName() + " [params] [-o outputdir] <archivefile>\n" +
 		_shorthelp + "\n";
 }
@@ -57,7 +57,7 @@ void ExtractT7GMac::dumpResource(Common::File &infile, std::string name) {
 
 	// Read the resource contents
 	byte *buf = new byte[fileSize];
-	
+
 	try {
 		// Dump the resource to the output file
 		_outputPath.setFullName(name);
@@ -92,7 +92,7 @@ void ExtractT7GMac::handleReferenceList(Common::File &infile, uint32 offsetRefLi
 
 void ExtractT7GMac::execute() {
 	Common::File infile(_inputPaths[0].path, "rb");
-	
+
 	if (_outputPath.empty())
 		_outputPath.setFullPath("./");
 

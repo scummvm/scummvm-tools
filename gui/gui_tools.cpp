@@ -157,7 +157,7 @@ void ToolGUI::run(const Configuration &conf) const {
 		// flac
 		compression->_flacCompressionLevel = (const char *)conf.flacCompressionLevel.mb_str();
 		compression->_flacBlockSize        = (const char *)conf.flacBlockSize.mb_str();
-		
+
 		// vorbis
 		compression->_oggQuality           = (const char *)conf.oggQuality.mb_str();
 		compression->_oggMinBitrate        = (const char *)conf.oggMinBitrate.mb_str();

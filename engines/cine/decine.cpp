@@ -147,7 +147,7 @@ static bool decodeOpcode(int isV2) {
 					printf("SET localvars[%d], %d", var, value);
 				} else {
 					uint8 num = fetchScriptByte();
-				 	switch (type) {
+					switch (type) {
 					case 1:
 						printf("localvars[%d] = localvars[%d]", var, num);
 						break;

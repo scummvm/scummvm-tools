@@ -105,7 +105,7 @@ Tools::ToolList Tools::inspectInput(const Common::Filename &filename, ToolType t
 	for (ToolList::const_iterator tool = _tools.begin(); tool != _tools.end(); ++tool) {
 		if (type == TOOLTYPE_ALL || (*tool)->getType() == type) {
 			InspectionMatch m = (*tool)->inspectInput(filename);
-			
+
 			if (m == IMATCH_PERFECT)
 				perfect_choices.push_back(*tool);
 			else if (m == IMATCH_POSSIBLE)

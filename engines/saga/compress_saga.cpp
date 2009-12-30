@@ -77,13 +77,13 @@ static CompressSaga::GameFileDescription IHNM_GameFiles[] = {
 	//	Common::Filename					swapEndian	md5									resourceType	frequency	stereo
 	// FIXME: sfx.res is disabled for now, as there are issues when trying to encode it
 	//{"sfx.res",					false,		"1c610d543f32ec8b525e3f652536f269", kSoundWAV,		-1,			false},
-	{"voicess.res",					false,		"-1", 								kSoundWAV,		-1,			false},
-	{"voices1.res",					false,		"-1", 								kSoundWAV,		-1,			false},
-	{"voices2.res",					false,		"-1", 								kSoundWAV,		-1,			false},
-	{"voices3.res",					false,		"-1", 								kSoundWAV,		-1,			false},
-	{"voices4.res",					false,		"-1", 								kSoundWAV,		-1,			false},
-	{"voices5.res",					false,		"-1", 								kSoundWAV,		-1,			false},
-	{"voices6.res",					false,		"-1", 								kSoundWAV,		-1,			false},
+	{"voicess.res",					false,		"-1",								kSoundWAV,		-1,			false},
+	{"voices1.res",					false,		"-1",								kSoundWAV,		-1,			false},
+	{"voices2.res",					false,		"-1",								kSoundWAV,		-1,			false},
+	{"voices3.res",					false,		"-1",								kSoundWAV,		-1,			false},
+	{"voices4.res",					false,		"-1",								kSoundWAV,		-1,			false},
+	{"voices5.res",					false,		"-1",								kSoundWAV,		-1,			false},
+	{"voices6.res",					false,		"-1",								kSoundWAV,		-1,			false},
 	// Demo
 	{"voicesd.res",					false,		"-1",								kSoundWAV,		-1,			false},
 };
@@ -117,7 +117,7 @@ CompressSaga::CompressSaga(const std::string &name) : CompressionTool(name, TOOL
 	_currentGameDescription = NULL;
 	_currentFileDescription = NULL;
 	_supportsProgressBar = true;
-	
+
 	ToolInput input;
 	// We accept many extensions, and the fact that "inherit the earth voices" does not have an extension
 	// makes it pretty much unsupported by the standard dialogs to open

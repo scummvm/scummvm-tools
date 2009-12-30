@@ -1073,7 +1073,7 @@ CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(na
 	_cbundleCurIndex = 0;
 
 	_supportsProgressBar = true;
-	
+
 	ToolInput input;
 	input.format = "*.bun";
 	_inputPaths.push_back(input);

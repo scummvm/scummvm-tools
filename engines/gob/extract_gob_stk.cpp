@@ -43,7 +43,7 @@ struct ExtractGobStk::Chunk {
 
 ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	_chunks = NULL;
-	
+
 	ToolInput input;
 	input.format = "*.stk";
 	_inputPaths.push_back(input);
@@ -378,7 +378,7 @@ byte *ExtractGobStk::unpackPreGobData(byte *src, uint32 &size, uint32 &compSize)
 	newCounter -= 2;
 
 //  The 6 first bytes are grouped by 2 :
-//  - bytes 0&1 : if set to 0xFFFF, the real size is in bytes 2&3. Else : unknown 
+//  - bytes 0&1 : if set to 0xFFFF, the real size is in bytes 2&3. Else : unknown
 //  - bytes 2&3 : Either the real size or 0x007D. Directly related to the size of the file.
 //  - bytes 4&5 : 0x0000 (files are small) ;)
 	if (dummy1 == 0xFFFF)

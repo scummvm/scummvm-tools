@@ -944,7 +944,7 @@ void CompressionTool::setTempFileName() {
 
 std::string CompressionTool::getHelp() const {
 	std::ostringstream os;
-	
+
 	// Standard help text + our additions
 	os << Tool::getHelp();
 

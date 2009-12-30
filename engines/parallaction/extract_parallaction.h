@@ -48,15 +48,15 @@ struct Archive {
 	uint32	_fileSize;
 	uint32	_filePos;
 
-	char 	_names[MAX_ARCHIVE_ENTRIES+1][ARCHIVE_FILENAME_LEN];
-	uint32 	_sizes[MAX_ARCHIVE_ENTRIES];
-	uint32 	_offsets[MAX_ARCHIVE_ENTRIES];
+	char	_names[MAX_ARCHIVE_ENTRIES+1][ARCHIVE_FILENAME_LEN];
+	uint32	_sizes[MAX_ARCHIVE_ENTRIES];
+	uint32	_offsets[MAX_ARCHIVE_ENTRIES];
 
-	void 	open(const char* filename, bool smallArchive);
+	void	open(const char* filename, bool smallArchive);
 
-	void 	openSubfile(uint32 index);
-	void 	openSubfile(const char* filename);
-	void 	readSubfile(byte* buf, uint32 size);
+	void	openSubfile(uint32 index);
+	void	openSubfile(const char* filename);
+	void	readSubfile(byte* buf, uint32 size);
 	uint32  getSizeOfSubfile();
 
 	Archive(Tool &tool);

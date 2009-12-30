@@ -43,13 +43,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 ExtractCine::ExtractCine(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
-	
+
 	ToolInput input;
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to unpack Delphine's Cinematique engine's archive files.";
-	_helptext = 
+	_helptext =
 		"Usage: " + getName() + " [params] [-o outputdir] <archivefile>\n" +
 		_shorthelp + "\n" +
 		"Supports using Operation Stealth's 'vol.cnf' file as input.\n";
@@ -187,7 +187,7 @@ void ExtractCine::unpackFile(Common::File &file) {
 
 		Common::Filename outPath(_outputPath);
 		outPath.setFullName(fileName);
-		
+
 		uint32 offset = file.readUint32BE();
 		unsigned int packedSize = file.readUint32BE();
 		unsigned int unpackedSize = file.readUint32BE();
@@ -270,7 +270,7 @@ void ExtractCine::unpackAllResourceFiles(const Common::Filename &filename) {
 	uint8 *buf = (uint8 *)calloc(unpackedSize, 1);
 	assert(buf);
 	f.read_throwsOnError(buf, packedSize);
-	
+
 	if (packedSize != unpackedSize) {
 		CineUnpacker cineUnpacker;
 		if (!cineUnpacker.unpack(buf, packedSize, buf, unpackedSize)) {
@@ -285,7 +285,7 @@ void ExtractCine::unpackAllResourceFiles(const Common::Filename &filename) {
 	for (unsigned int i = 0; i < resourceFilesCount; ++i) {
 		memcpy(resourceFileName, &buf[4 + i * entrySize], 8);
 		resourceFileName[8] = 0;
-		
+
 		Common::File fpResFile(resourceFileName, "rb");
 		print("--- Unpacking resource file %s:\n", resourceFileName);
 		unpackFile(fpResFile);

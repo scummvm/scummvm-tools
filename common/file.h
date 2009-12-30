@@ -36,7 +36,7 @@ namespace Common {
  * Usually premature end, or that it could not be opened (write / read protected).
  */
 class FileException : public ToolException {
-public: 
+public:
 	FileException(std::string error, int retcode = -1) : ToolException(error, retcode) {}
 };
 
@@ -57,7 +57,7 @@ public:
 	inline bool operator==(const Filename &fn){
 		return equals(fn);
 	}
-	
+
 	/**
 	 * Change the entire path including directory, volume and actual filname.
 	 *
@@ -118,7 +118,7 @@ public:
 	 * @return True if they are equal.
 	 */
 	bool equals(const Filename &other) const;
-	
+
 
 	/**
 	 * Returns the entire path.
@@ -205,7 +205,7 @@ public:
 	 * "read" and "write" methods
 	 */
 	void setXorMode(uint8 xormode);
-	
+
 	/**
 	 * Reads a single character (equivalent of fgetc).
 	 */
@@ -235,7 +235,7 @@ public:
 	 * @throws FileException if file is not open / if read failed.
 	 */
 	uint32 readUint32LE();
-	
+
 	/**
 	 * Read a single 16-bit word, big endian.
 	 * @throws FileException if file is not open / if read failed.
@@ -291,7 +291,7 @@ public:
 	 * @return the data read
 	 */
 	std::string readString(size_t len);
-	
+
 	/**
 	 * Reads a string, using until NULL or EOF or CR/LF.
 	 * @throws FileException if file is not open / if read failed.

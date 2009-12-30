@@ -353,7 +353,7 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 	// before a character, we filter that out over here.
 	if (ret == 0x0000FEFF)
 		ret = *(uint32 *)(outBuf + 4);
-	
+
 	return ret;
 }
 
@@ -414,7 +414,7 @@ bool drawGlyph(uint8 fB, uint8 sB, Glyph &glyph) {
 		// that means unused, valid SJIS character codes.
 		//
 		// It might be useful to enable that warning again to detect problems with
-		// iconv though. An example for such an iconv problem is the 
+		// iconv though. An example for such an iconv problem is the
 		// "FULLWIDTH APOSTROPHE", which iconv refuses to convert to UTF-32.
 		//warning("Conversion error on: %.2X %.02X", fB, sB);
 		return false;

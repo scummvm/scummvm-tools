@@ -1228,13 +1228,13 @@ static uint32 CheckROM(Common::File &file) {
 }
 
 ExtractMMNes::ExtractMMNes(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
-	
+
 	ToolInput input;
 	input.format = "*.prg";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Extract data files from the NES version of Maniac Mansion.";
-	_helptext = 
+	_helptext =
 		"\nUsage: " + _name + " [-o <output dir> = out/] <infile.PRG>\n" +
 		"\t" + _shorthelp + "\n" +
 		"\tSupported versions: USA, Europe, Sweden, France, Germany, Spain, Italy\n"
@@ -1311,7 +1311,7 @@ void ExtractMMNes::execute() {
 		output.setXorMode(0xFF);
 #endif
 		print("Creating %s...\n", fname);
-		
+
 		for (j = 0; lfl->entries[j].type != NULL; j++) {
 			const struct t_lflentry *entry = &lfl->entries[j];
 			switch (entry->type->type) {

@@ -29,7 +29,7 @@
 
 ExtractAgos::ExtractAgos(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	_filelen = 0;
-	
+
 	ToolInput input;
 	input.format = "*.*";
 	_inputPaths.push_back(input);
@@ -197,7 +197,7 @@ void *ExtractAgos::loadfile(const Common::Filename &name) {
 /**
  * Saves N bytes from the buffer to the target file.
  * Throws FileException on failure
- * 
+ *
  * @param name The name of the file to save to
  * @param mem Where to get data from
  * @param length How many bytes to write

@@ -49,7 +49,7 @@ enum {
 
 
 
-/** 
+/**
  * Different audio formats.
  * You can bitwise them to represent several formats.
  */

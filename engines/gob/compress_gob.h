@@ -44,7 +44,7 @@ public:
 
 protected:
 	struct Chunk;
-	
+
 	uint8 _execMode;
 	Chunk *_chunks;
 

@@ -131,7 +131,7 @@ void CompressionExample::execute() {
 
 	// Start the 'extraction'
 	size_t total_files = in1.size() + in2.size();
-	
+
 	// There has to be some roof on this
 	if (total_files > 1000)
 		throw ToolException("Input files are too large!");

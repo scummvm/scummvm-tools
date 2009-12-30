@@ -297,7 +297,7 @@ void parseHeader() {
 			} else {
 				if (g_scriptSize <= 9) {
 					printf("File too small to be a local script\n");
- 				}
+				}
 				printf("Script# %d\n", (byte)g_scriptStart[8]);
 				g_scriptStart += 9;
 			}

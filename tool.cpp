@@ -133,7 +133,7 @@ int Tool::run(const std::deque<std::string> &args) {
 void Tool::run() {
 	// Reset abort state
 	_abort = false;
-	
+
 
 	setTempFileName();
 
@@ -157,7 +157,7 @@ InspectionMatch Tool::inspectInput(const Common::Filename &filename) {
 			// Directory, we don't handle this yet, don't display at all
 			return IMATCH_AWFUL;
 		}
-		
+
 		Common::Filename cmp_filename = p;
 
 		if (cmp_filename.getName() == "*") {

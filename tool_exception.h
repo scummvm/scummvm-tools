@@ -50,7 +50,7 @@ public:
  * Usually premature end, or that it could not be opened (write / read protected)
  */
 class AbortException : public ToolException {
-public: 
+public:
 	AbortException() : ToolException("Operation was aborted", -2) {}
 };
 

@@ -45,7 +45,7 @@ public:
 	CompressSaga(const std::string &name = "compress_saga");
 
 	virtual void execute();
-	
+
 	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 
 	// Declarations should be inside the class to prevent linker errors

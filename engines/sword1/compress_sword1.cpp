@@ -574,7 +574,7 @@ CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, 
 	_compMusic = true;
 
 	_supportsProgressBar = true;
-	
+
 	ToolInput input;
 	input.format = "*.clu";
 	_inputPaths.push_back(input);

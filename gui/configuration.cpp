@@ -35,7 +35,7 @@ Configuration::Configuration() {
 
 	selectedAudioFormat = AUDIO_VORBIS;
 	advancedAudioSettings = false;
-	
+
 	// mp3 params
 	mp3CompressionType = wxT("VBR");
 	mp3MpegQuality = wxT("2");
@@ -92,7 +92,7 @@ void Configuration::save(bool all) {
 
 	wxFileName op(outputPath);
 	filecnf->Write(wxT("outputpath"), op.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR));
-	
+
 	if (all) {
 		// mp3 params
 		filecnf->Write(wxT("mp3CompressionType"), mp3CompressionType);
@@ -112,7 +112,7 @@ void Configuration::save(bool all) {
 		filecnf->Write(wxT("oggAvgBitrate"), oggAvgBitrate);
 		filecnf->Write(wxT("oggMaxBitrate"), oggMaxBitrate);
 	}
-	
+
 	delete filecnf;
 }
 

@@ -29,9 +29,9 @@ class Tool;
 class wxFileDirPickerEvent;
 
 /**
- * A backend of a page in the wizard 
+ * A backend of a page in the wizard
  * This class is decoupled from the UI, and you can spawn as many pages as you like from this template
- * 
+ *
  * @todo Add the ability to not have to have a ScummToolsFrame as parent, to be able to put the pages
  *       in a default config window, for example.
  */
@@ -53,7 +53,7 @@ public:
 	/**
 	 * Creates a visual representation of this page as a child problem of the supplied parent
 	 * Values will be loaded from the configuration object stored by the ScummToolsFrame
-	 * 
+	 *
 	 * @param parent The parent window, the page will be a direct child window of this window.
 	 * @return       The created window.
 	 */
@@ -71,9 +71,9 @@ public:
 	 * the ScummToolsFrame that was passed to the constructor
 	 *
 	 * @param panel Panel to read data from, should be a window created by CreatePanel
-	 */ 
+	 */
 	virtual void save(wxWindow *panel);
-	
+
 	/**
 	 * Returns the associated help text with this page
 	 *
@@ -82,7 +82,7 @@ public:
 	virtual wxString getHelp();
 
 	// Event handlers
-	
+
 	/**
 	 * This handler is called when the user clicks the Next button, if you overload this
 	 * you should generally just call switchPage with the next page in the wizard
@@ -127,8 +127,8 @@ public:
 	virtual bool onIdle(wxPanel *panel);
 
 protected:
-	/** 
-	 * This adds an offset (about 100px) to the left of the sizer to center the text somewhat, before adding it 
+	/**
+	 * This adds an offset (about 100px) to the left of the sizer to center the text somewhat, before adding it
 	 * to the panel using wxWindow::SetSizer.
 	 *
 	 * @param panel The panel associated with this page, should have bene created by CreatePanel previously.
@@ -144,18 +144,18 @@ protected:
 
 /**
  * Introduction page. Introduces the option to extract, compress or the advanced route (choose tool manually)
- * 
+ *
  * @todo Add the ability to drag & drop files onto this window, to automatically detect whether to compress or extract
  */
 
 class IntroPage : public WizardPage {
 public:
 	IntroPage(Configuration &configuration);
-	
+
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	wxString getHelp();
-	
+
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 
 	void onClickCompress(wxCommandEvent &e);
@@ -181,11 +181,11 @@ public:
 	void onNext(wxWindow *panel);
 
 	void save(wxWindow *panel);
-	
+
 	wxString getHelp();
 
 	void onChangeTool(wxCommandEvent &evt);
-	
+
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 
 protected:
@@ -201,7 +201,7 @@ public:
 	ChooseIOPage(Configuration &configuration);
 
 	void onSelectFile(wxFileDirPickerEvent &evt);
-	
+
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
 
@@ -216,11 +216,11 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
-	
+
 	wxString getHelp();
 
 	void save(wxWindow *panel);
-	
+
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
 
@@ -235,7 +235,7 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
-	
+
 	wxString getHelp();
 
 	void save(wxWindow *panel);
@@ -255,7 +255,7 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
-	
+
 	wxString getHelp();
 
 	void save(wxWindow *panel);
@@ -274,7 +274,7 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
-	
+
 	wxString getHelp();
 
 	void save(wxWindow *panel);
@@ -291,7 +291,7 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
-	
+
 	wxString getHelp();
 
 	void save(wxWindow *panel);
@@ -401,8 +401,8 @@ public:
 	void abort();
 
 	/**
-	 * Write to the output window pointed to by udata, this adds 
-	 * the message to a locked queue, and prints it to the GUI from 
+	 * Write to the output window pointed to by udata, this adds
+	 * the message to a locked queue, and prints it to the GUI from
 	 * the main thread, as doing it from another thread can cause weird bugs.
 	 */
 	static void writeToOutput(void *udata, const char *text);
@@ -465,7 +465,7 @@ public:
 	 * @param outwin Text control to redirect output to
 	 */
 	void runTool();
-	
+
 	wxString getHelp();
 
 	bool onIdle(wxPanel *panel);
@@ -486,7 +486,7 @@ public:
 	FinishPage(Configuration &configuration);
 
 	wxWindow *CreatePanel(wxWindow *parent);
-	
+
 	wxString getHelp();
 
 	void onNext(wxWindow *panel);

@@ -29,8 +29,8 @@
 
 #include "common/file.h"
 
-/** 
- * Different types of tools, used to differentiate them when 
+/**
+ * Different types of tools, used to differentiate them when
  * fetching lists of games & tools.
  */
 enum ToolType {
@@ -44,7 +44,7 @@ enum ToolType {
  * Return type of the inspectInput function, perfect match means we know we can
  * parse this file, possible means we might be able to, Awful means we most likely
  * can't read this file.
- * If there are perfect results, those are displayed first, if there are none, 
+ * If there are perfect results, those are displayed first, if there are none,
  * possible results are displayed and finally awful results are dispalyed.
  */
 enum InspectionMatch {
@@ -54,7 +54,7 @@ enum InspectionMatch {
 };
 
 /**
- * Describes a possible input to the tool (since some take two seperate files, 
+ * Describes a possible input to the tool (since some take two seperate files,
  * some a dir and some a single file.
  */
 struct ToolInput {
@@ -162,15 +162,15 @@ public:
 	/**
 	 * This function sets the function which will be called needs to
 	 * output something.
-	 * 
+	 *
 	 * @param f the function to be called, it takes a userdata argument in addition to text to print
 	 * @param udata The userdata to call to the print function each time it is called
 	 */
 	void setPrintFunction(void f(void *, const char *), void *udata);
-	
+
 	/**
 	 * Set the function that is called on status updates.
-	 * Parameters to the function are 'done' and 'total', if total is 0, 
+	 * Parameters to the function are 'done' and 'total', if total is 0,
 	 * it's a simple status notification (print a dot or something).
 	 *
 	 * @param f this function will be called with udata arguments and 'done' / 'total'
@@ -227,7 +227,7 @@ protected:
 
 	/** Status of internal abort flag, if set, next call to *Progress will throw. */
 	bool _abort;
-	
+
 private:
 	typedef void (*PrintFunction)(void *, const char *);
 	PrintFunction _internalPrint;
@@ -243,7 +243,7 @@ private:
 
 	// Standard print function
 	static void standardPrint(void *udata, const char *message);
-	
+
 	// Standard progress function
 	static void standardProgress(void *udata, int done, int total);
 

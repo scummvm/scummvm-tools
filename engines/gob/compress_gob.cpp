@@ -46,7 +46,7 @@ CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTY
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Compresses Gobliiins! data files.";
-	_helptext = 
+	_helptext =
 		"\nUsage: " + getName() + " [-o <output path>] [-f] <conf file>\n"
 		"<conf file> is a .gob file generated extract_gob_stk\n"
 		"<-f> forces compression for all files\n\n"
@@ -83,7 +83,7 @@ void CompressGob::execute() {
 	gobConf.close();
 
 	_outputPath.setFullName(inpath.getFullName());
-	
+
 	stk.open(_outputPath, "wb");
 
 	// Output in compressed format
@@ -144,7 +144,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(Common::File &gobConf, Common::Fi
 		src1.open(srcName, "rb");
 		src1.seek(0, SEEK_END);
 // if file is too small, force 'Store' method
-		if ((curChunk->realSize = src1.pos()) < 8) 
+		if ((curChunk->realSize = src1.pos()) < 8)
 			curChunk->packed = 0;
 
 		parseChunk = chunks;
@@ -164,7 +164,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(Common::File &gobConf, Common::Fi
 			parseChunk = parseChunk->next;
 		}
 		src1.close();
-		
+
 		gobConf.scanString(buffer);
 
 		if (!gobConf.eos()) {
@@ -182,7 +182,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(Common::File &gobConf, Common::Fi
  *
  * This function writes an empty header in the STK archive. This is required as
  * the header length is variable and depends on the number of chunks to be written
- * in the archive file. 
+ * in the archive file.
  *
  * This header will be overwritten just before the end of the program execution
  */
@@ -206,7 +206,7 @@ void CompressGob::writeBody(Common::Filename *inpath, Common::File &stk, Chunk *
 	Chunk *curChunk = chunks;
 	Common::File src;
 	uint32 tmpSize;
-	
+
 	while (curChunk) {
 		inpath->setFullName(curChunk->name);
 		src.open(*inpath, "rb");
@@ -226,7 +226,7 @@ void CompressGob::writeBody(Common::Filename *inpath, Common::File &stk, Chunk *
 			} else
 				print("Compressing %12s\t%d -> %d bytes\n", curChunk->name, curChunk->realSize, curChunk->size);
 
-		} 
+		}
 
 		if (curChunk->packed == 0) {
 			tmpSize = 0;
@@ -242,7 +242,7 @@ void CompressGob::writeBody(Common::Filename *inpath, Common::File &stk, Chunk *
  * \param chunkCount Number of chunks
  * \param chunks List of chunks
  *
- * This function rewrites the header of the archive, replacing dummy values 
+ * This function rewrites the header of the archive, replacing dummy values
  * by the one computed during execution.
  * The structure of the header is the following :
  * + 2 bytes : numbers of files archived in the .stk/.itk
@@ -252,7 +252,7 @@ void CompressGob::writeBody(Common::Filename *inpath, Common::File &stk, Chunk *
  * + 4  bytes : size of the chunk
  * + 4  bytes : start position of the chunk in the file
  * + 1  byte  : If 0 : not compressed, if 1 : compressed
- * 
+ *
  * The duplicate files are defined using the same information
  * as the one of the replacement file.
 */
@@ -355,7 +355,7 @@ uint32 CompressGob::writeBodyPackFile(Common::File &stk, Common::File &src) {
 	writeBuffer[3] = size >> 24;
 	stk.write(writeBuffer, 4);
 
-// Size is already checked : small files (less than 8 characters) 
+// Size is already checked : small files (less than 8 characters)
 // are not compressed, so copying the first three bytes is safe.
 	dicoIndex = 4078;
 	dico[dicoIndex] = unpacked[0];
@@ -409,7 +409,7 @@ uint32 CompressGob::writeBodyPackFile(Common::File &stk, Common::File &src) {
 			counter -= resultchecklength;
 		}
 
-// The command byte is complete when the file is entirely compressed, or 
+// The command byte is complete when the file is entirely compressed, or
 // when the 8 operation bits are set.
 		if ((cpt == 7) | (counter == 0)) {
 			writeBuffer[0] = cmd;
@@ -431,19 +431,19 @@ uint32 CompressGob::writeBodyPackFile(Common::File &stk, Common::File &src) {
  * \param compChunk Chunk containing information on second file to be compared
  * \return whether they are identical or not.
  *
- * This function compares a file to another defined in a chunk. The file sizes 
+ * This function compares a file to another defined in a chunk. The file sizes
  * are already tested outside the function.
  */
 bool CompressGob::filcmp(Common::File &src1, Common::Filename &stkName) {
 	uint16 readCount;
 	bool checkFl = true;
-	char buf1[4096]; 
+	char buf1[4096];
 	char buf2[4096];
 	Common::File src2;
 
 	src1.rewind();
 	src2.open(stkName.getFullPath(), "rb");
-	
+
 	do {
 		readCount = src1.read_noThrow(buf1, 4096);
 		src2.read_noThrow(buf2, 4096);
@@ -467,9 +467,9 @@ bool CompressGob::filcmp(Common::File &src1, Common::Filename &stkName) {
  * \param length Length of the better match found, if any
  * \return whether a match has been found or not or not.
  *
- * This function search in the dictionary for matches with the characters still to be compressed. 
+ * This function search in the dictionary for matches with the characters still to be compressed.
  * 'A match' is when at least three characters of the buffer (comparing from the current 'read' position)
- * are found in the dictionary. The match lengths are limited to 18 characters, as the 
+ * are found in the dictionary. The match lengths are limited to 18 characters, as the
  * length (minus 3) is stored on 4 bits.
  */
 bool CompressGob::checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter, byte *dico, uint16 currIndex, uint16 &pos, uint8 &length) {
@@ -485,7 +485,7 @@ bool CompressGob::checkDico(byte *unpacked, uint32 unpackedIndex, int32 counter,
 	for (tmpPos = 0; tmpPos < 0x1000; tmpPos++) {
 		tmpLength = 0;
 		for (i = 0; ((i < 18) & (i < counter)); i++)
-			if ((unpacked[unpackedIndex + i] == dico[(tmpPos + i) % 4096]) & 
+			if ((unpacked[unpackedIndex + i] == dico[(tmpPos + i) % 4096]) &
 				// avoid dictionary collision
 				(((tmpPos + i) % 4096 != currIndex) | (i == 0)))
 				tmpLength++;

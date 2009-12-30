@@ -110,7 +110,7 @@ struct Disk1Decoder { // LzHuffman
 		_parent[kHuffmanRoot] = 0;
 	}
 	int getHuffCode() {
-        	static const int base[] = { 0, 1, 4, 12, 24, 48 };
+		static const int base[] = { 0, 1, 4, 12, 24, 48 };
 	        static const int count[] = { 0, 2, 5, 9, 12, 15 };
 		static const int length[] = { 0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5 };
 		int index = _stream->getBits(8);
@@ -187,7 +187,7 @@ struct Disk1Decoder { // LzHuffman
 				p = index;
 			}
 			p = _parent[p];
-		} while (p != 0);		
+		} while (p != 0);
 	}
 	bool decode() {
 		resetHuffTables();

@@ -55,7 +55,7 @@ CompressTinsel::CompressTinsel(const std::string &name) : CompressionTool(name, 
 	ToolInput input1;
 	input1.format = "*.smp";
 	_inputPaths.push_back(input1);
-	
+
 	ToolInput input2;
 	input2.format = "*.idx";
 	_inputPaths.push_back(input2);

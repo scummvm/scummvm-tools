@@ -39,7 +39,7 @@ void MohawkFile::close() {
 	delete _mhk; _mhk = NULL;
 	delete[] _types; _types = NULL;
 	delete[] _fileTable; _fileTable = NULL;
-	
+
 	_curFile = Common::String::emptyString;
 }
 
@@ -66,7 +66,7 @@ void MohawkFile::open(Common::SeekableReadStream *stream) {
 
 	/////////////////////////////////
 	//Resource Dir
-	/////////////////////////////////		
+	/////////////////////////////////
 
 	// Type Table
 	_mhk->seek(_rsrc.abs_offset);
@@ -95,12 +95,12 @@ void MohawkFile::open(Common::SeekableReadStream *stream) {
 		debug (3, "Resources = %04x", _types[i].resTable.resources);
 
 		_types[i].resTable.entries = new Type::ResourceTable::Entries[_types[i].resTable.resources];
-                        
+
 		for (uint16 j = 0; j < _types[i].resTable.resources; j++) {
 			_types[i].resTable.entries[j].id = _mhk->readUint16BE();
 			_types[i].resTable.entries[j].index = _mhk->readUint16BE();
 
-			debug (4, "Entry[%02x]: ID = %04x (%d) Index = %04x", j, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].index); 
+			debug (4, "Entry[%02x]: ID = %04x (%d) Index = %04x", j, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].index);
 		}
 
 		// Name Table
@@ -110,7 +110,7 @@ void MohawkFile::open(Common::SeekableReadStream *stream) {
 		debug (3, "Names = %04x", _types[i].nameTable.num);
 
 		_types[i].nameTable.entries = new Type::NameTable::Entries[_types[i].nameTable.num];
-                        
+
 		for (uint16 j = 0; j < _types[i].nameTable.num; j++) {
 			_types[i].nameTable.entries[j].offset = _mhk->readUint16BE();
 			_types[i].nameTable.entries[j].index = _mhk->readUint16BE();
@@ -141,14 +141,14 @@ void MohawkFile::open(Common::SeekableReadStream *stream) {
 	_mhk->seek(_rsrc.abs_offset + _rsrc.file_table_offset);
 	_fileTableAmount = _mhk->readUint32BE();
 	_fileTable = new FileTable[_fileTableAmount];
-                
+
 	for (uint32 i = 0; i < _fileTableAmount; i++) {
 		_fileTable[i].offset = _mhk->readUint32BE();
 		_fileTable[i].dataSize = _mhk->readUint16BE();
 		_fileTable[i].dataSize += _mhk->readByte() << 16; // Get bits 15-24 of dataSize too
 		_fileTable[i].flags = _mhk->readByte();
 		_fileTable[i].unk = _mhk->readUint16BE();
-		
+
 		// Add in another 3 bits for file size from the flags.
 		// The flags are useless to us except for doing this ;)
 		_fileTable[i].dataSize += (_fileTable[i].flags & 7) << 24;
@@ -187,7 +187,7 @@ MohawkOutputStream MohawkFile::getRawData(uint32 tag, uint16 id) {
 
 	// Note: the fileTableIndex is based off 1, not 0. So, subtract 1
 	uint16 fileTableIndex = _types[typeIndex].resTable.entries[idIndex].index - 1;
-	
+
 	// WORKAROUND: tMOV resources pretty much ignore the size part of the file table,
 	// as the original just passed the full Mohawk file to QuickTime and the offset.
 	// We need to do this because of the way Mohawk is set up (this is much more "proper"
@@ -200,7 +200,7 @@ MohawkOutputStream MohawkFile::getRawData(uint32 tag, uint16 id) {
 	} else
 		output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _fileTable[fileTableIndex].offset + _fileTable[fileTableIndex].dataSize);
 	output.tag = tag;
-	output.id = id; 
+	output.id = id;
 	if (_types[typeIndex].nameTable.num > 0)
 		output.name = _types[typeIndex].nameTable.entries[idIndex].name;
 
@@ -209,34 +209,34 @@ MohawkOutputStream MohawkFile::getRawData(uint32 tag, uint16 id) {
 
 MohawkOutputStream MohawkFile::getNextFile() {
 	MohawkOutputStream output = { 0, 0, 0, "" };
-	
+
 	if (_curExType >= _typeTable.resource_types) // No more!
 		return output;
-		
+
 	if (_curExTypeIndex >= _types[_curExType].resTable.resources) {
 		_curExType++;
 		_curExTypeIndex = 0;
-		
+
 		if (_curExType >= _typeTable.resource_types) // No more!
 			return output;
 	}
-		
+
 	uint16 fileTableIndex = _types[_curExType].resTable.entries[_curExTypeIndex].index - 1;
-	
+
 	// For some unknown reason, all tMOV resources have incorrect sizes. We correct this by getting the differences between offsets.
 	uint32 dataSize = 0;
 	if (_types[_curExType].tag == ID_TMOV)
 		dataSize = _fileTable[fileTableIndex + 1].offset - _fileTable[fileTableIndex].offset;
 	else
 		dataSize = _fileTable[fileTableIndex].dataSize;
-		
+
 	output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _fileTable[fileTableIndex].offset + dataSize, false);
 	output.tag = _types[_curExType].tag;
 	output.id = _types[_curExType].resTable.entries[_curExTypeIndex].id;
-	
+
 	if (_types[_curExType].nameTable.num > 0)
 		output.name = _types[_curExType].nameTable.entries[_curExTypeIndex].name;
-	
+
 	_curExTypeIndex++;
 	return output;
 }
@@ -244,48 +244,48 @@ MohawkOutputStream MohawkFile::getNextFile() {
 void OldMohawkFile::open(Common::SeekableReadStream *stream) {
 	close();
 	_mhk = stream;
-	
+
 	// This is for the "old" Mohawk resource format used in some older
 	// Living Books. It is very similar, just missing the MHWK tag and
 	// some other minor differences, especially with the file table
 	// being merged into the resource table.
-	
+
 	uint32 headerSize = _mhk->readUint32BE();
-	
+
 	// NOTE: There are differences besides endianness! (Subtle changes,
 	// but different).
-	
+
 	if (headerSize == 6) { // We're in Big Endian mode (Macintosh)
 		_mhk->readUint16BE(); // Resource Table Size
 		_typeTable.resource_types = _mhk->readUint16BE();
 		_types = new OldType[_typeTable.resource_types];
-		
+
 		debug (0, "Old Mohawk File (Macintosh): Number of Resource Types = %04x", _typeTable.resource_types);
-		
+
 		for (uint16 i = 0; i < _typeTable.resource_types; i++) {
 			_types[i].tag = _mhk->readUint32BE();
 			_types[i].resource_table_offset = (uint16)_mhk->readUint32BE() + 6;
 			_mhk->readUint32BE(); // Unknown (always 0?)
-			
+
 			debug (3, "Type[%02d]: Tag = \'%s\'  ResTable Offset = %04x", i, tag2str(_types[i].tag), _types[i].resource_table_offset);
 
 			uint32 oldPos = _mhk->pos();
-			
+
 			// Resource Table/File Table
 			_mhk->seek(_types[i].resource_table_offset);
 			_types[i].resTable.resources = _mhk->readUint16BE();
 			_types[i].resTable.entries = new OldType::ResourceTable::Entries[_types[i].resTable.resources];
-			
+
 			for (uint16 j = 0; j < _types[i].resTable.resources; j++) {
 				_types[i].resTable.entries[j].id = _mhk->readUint16BE();
 				_types[i].resTable.entries[j].offset = _mhk->readUint32BE();
 				_types[i].resTable.entries[j].size = _mhk->readByte() << 16;
 				_types[i].resTable.entries[j].size += _mhk->readUint16BE();
 				_mhk->skip(5); // Unknown (always 0?)
-				
+
 				debug (4, "Entry[%02x]: ID = %04x (%d)\tOffset = %08x, Size = %08x", j, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].offset, _types[i].resTable.entries[j].size);
 			}
-			
+
 			_mhk->seek(oldPos);
 			debug (3, "\n");
 		}
@@ -293,32 +293,32 @@ void OldMohawkFile::open(Common::SeekableReadStream *stream) {
 		_mhk->readUint16LE(); // Resource Table Size
 		_typeTable.resource_types = _mhk->readUint16LE();
 		_types = new OldType[_typeTable.resource_types];
-		
+
 		debug (0, "Old Mohawk File (Windows): Number of Resource Types = %04x", _typeTable.resource_types);
-		
+
 		for (uint16 i = 0; i < _typeTable.resource_types; i++) {
 			_types[i].tag = _mhk->readUint32LE();
 			_types[i].resource_table_offset = _mhk->readUint16LE() + 6;
 			_mhk->readUint16LE(); // Unknown (always 0?)
-			
+
 			debug (3, "Type[%02d]: Tag = \'%s\'  ResTable Offset = %04x", i, tag2str(_types[i].tag), _types[i].resource_table_offset);
-			
+
 			uint32 oldPos = _mhk->pos();
-			
+
 			// Resource Table/File Table
 			_mhk->seek(_types[i].resource_table_offset);
 			_types[i].resTable.resources = _mhk->readUint16LE();
 			_types[i].resTable.entries = new OldType::ResourceTable::Entries[_types[i].resTable.resources];
-			
+
 			for (uint16 j = 0; j < _types[i].resTable.resources; j++) {
 				_types[i].resTable.entries[j].id = _mhk->readUint16LE();
 				_types[i].resTable.entries[j].offset = _mhk->readUint32LE();
 				_types[i].resTable.entries[j].size = _mhk->readUint16LE();
 				_mhk->readUint32LE(); // Unknown (always 0?)
-				
-				debug (4, "Entry[%02x]: ID = %04x (%d)\tOffset = %08x, Size = %08x", j, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].offset, _types[i].resTable.entries[j].size); 
+
+				debug (4, "Entry[%02x]: ID = %04x (%d)\tOffset = %08x, Size = %08x", j, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].offset, _types[i].resTable.entries[j].size);
 			}
-			
+
 			_mhk->seek(oldPos);
 			debug (3, "\n");
 		}
@@ -352,22 +352,22 @@ MohawkOutputStream OldMohawkFile::getRawData(uint32 tag, uint16 id) {
 
 MohawkOutputStream OldMohawkFile::getNextFile() {
 	MohawkOutputStream output = { 0, 0, 0, "" };
-	
+
 	if (_curExType >= _typeTable.resource_types) // No more!
 		return output;
-		
+
 	if (_curExTypeIndex >= _types[_curExType].resTable.resources) {
 		_curExType++;
 		_curExTypeIndex = 0;
-		
+
 		if (_curExType >= _typeTable.resource_types) // No more!
 			return output;
 	}
-	
+
 	output.stream = new Common::SeekableSubReadStream(_mhk, _types[_curExType].resTable.entries[_curExTypeIndex].offset, _types[_curExType].resTable.entries[_curExTypeIndex].offset + _types[_curExType].resTable.entries[_curExTypeIndex].size);
 	output.tag = _types[_curExType].tag;
 	output.id = _types[_curExType].resTable.entries[_curExTypeIndex].id;
-	
+
 	_curExTypeIndex++;
 	return output;
 }

@@ -9,7 +9,7 @@ Future Goals
 ------------
 
 * Default Options
-    - Things like default games path, default LAME path, default compression 
+    - Things like default games path, default LAME path, default compression
       type, etc. could be added to a menu and saved to an *.ini file.
 * Batch Processing
     - Batch processing can be performed by holding a list of jobs to done in

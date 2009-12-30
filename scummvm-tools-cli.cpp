@@ -34,7 +34,7 @@ ToolsCLI::~ToolsCLI() {
 
 int ToolsCLI::run(int argc, char *argv[]) {
 	// No matter what we ouput, we should begin with a newline
-	std::cout << std::endl; 
+	std::cout << std::endl;
 
 	if (argc == 1) {
 		// Run without any arguments
@@ -90,7 +90,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 		std::deque<std::string>::reverse_iterator reader = arguments.rbegin();
 		std::deque<std::string>::iterator hint_arg;
 		std::string infile;
-		
+
 		hint_arg = std::find(arguments.begin(), arguments.end(), "compress");
 		if (hint_arg != arguments.end()) {
 			type = TOOLTYPE_COMPRESSION;
@@ -113,7 +113,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 
 			// It must be a filename now
 			choices = inspectInput(*reader, type);
-			
+
 			// If anything matched, we stop
 			if (choices.size() > 0) {
 				infile = *reader;
@@ -167,7 +167,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 				if (!std::cin) {
 					// Clear any error flags
 					std::cin.clear();
-					
+
 					std::string q;
 					std::cin >> q;
 					if (q == "q" || q == "exit" || q == "quit" || q == "abort")
@@ -184,7 +184,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 		}
 
 		std::cout << "\tRunning using " << tool->getName() << std::endl;
-		
+
 		// Run the tool, with the remaining arguments
 		arguments.push_front(tool->getName());
 		return tool->run(arguments);
@@ -194,7 +194,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 }
 
 void ToolsCLI::printHelp(const char *exeName) {
-	std::cout << 
+	std::cout <<
 		"\tScummVM Tools master interface" << std::endl <<
 		std::endl <<
 		"\tCommon use:" << std::endl <<

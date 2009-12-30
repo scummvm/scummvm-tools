@@ -126,9 +126,9 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 
 	sizer->AddSpacer(15);
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, 
+	sizer->Add(new wxStaticText(panel, wxID_ANY,
 		wxT("Welcome to the ScummVM extraction and compression utility.\nWhat do you want to do?")));
-	
+
 	sizer->AddSpacer(15);
 
 	wxSizer *sidesizer = new wxBoxSizer(wxHORIZONTAL);
@@ -142,7 +142,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	buttonpanel = new wxPanel(panel, wxID_ANY);
 	buttonsizer = new wxBoxSizer(wxVERTICAL);
 	buttonsizer->Add(new wxButton(buttonpanel, ID_COMPRESS, wxT("Compress")), wxSizerFlags().Expand());
-	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
+	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY,
 		wxT("Compress game audio files into archives."),
 		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
 	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickCompress), NULL, this);
@@ -154,7 +154,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	buttonpanel = new wxPanel(panel, wxID_ANY);
 	buttonsizer = new wxBoxSizer(wxVERTICAL);
 	buttonsizer->Add(new wxButton(buttonpanel, ID_EXTRACT, wxT("Extract")), wxSizerFlags().Expand());
-	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
+	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY,
 		wxT("Extract the contents of archive files."),
 		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
 	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickExtract), NULL, this);
@@ -166,7 +166,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 	buttonpanel = new wxPanel(panel, wxID_ANY);
 	buttonsizer = new wxBoxSizer(wxVERTICAL);
 	buttonsizer->Add(new wxButton(buttonpanel, ID_ADVANCED, wxT("Advanced")), wxSizerFlags().Expand());
-	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY, 
+	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY,
 		wxT("Choose the precise tool you want to use."),
 		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
 	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickAdvanced), NULL, this);
@@ -186,7 +186,7 @@ wxString IntroPage::getHelp() {
 
 void IntroPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->setLineLabel(wxT("ScummVM Tools"));
-	
+
 	buttons->showNavigation(false);
 
 	WizardPage::updateButtons(panel, buttons);
@@ -230,21 +230,21 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 	wxArrayString choices;
 
 	if (!_options.empty()) {
-		sizer->Add(new wxStaticText(panel, wxID_ANY, 
+		sizer->Add(new wxStaticText(panel, wxID_ANY,
 			wxT("There are multiple possible tools for this input, please select the correct one.\n\n")
 			wxT("If none of the tools appear to match, you probably supplied the wrong file.")));
 		choices = _options;
 	} else {
-		sizer->Add(new wxStaticText(panel, wxID_ANY, 
+		sizer->Add(new wxStaticText(panel, wxID_ANY,
 			wxT("Select what tool you'd like to use.")));
 		choices = g_tools.getToolList(TOOLTYPE_ALL);
 	}
 	wxString toolname = choices.front();
-	
+
 	sizer->AddSpacer(20);
 
 
-	wxChoice *tool = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+	wxChoice *tool = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		choices, 0, wxDefaultValidator, wxT("ToolSelection"));
 
 	tool->Connect(wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler(ChooseToolPage::onChangeTool), NULL, this);
@@ -277,7 +277,7 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 }
 
 void ChooseToolPage::save(wxWindow *panel) {
-	_configuration.selectedTool = 
+	_configuration.selectedTool =
 		g_tools.get(static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection());
 }
 
@@ -299,13 +299,13 @@ void ChooseToolPage::onNext(wxWindow *panel) {
 void ChooseToolPage::onChangeTool(wxCommandEvent &evt) {
 	wxChoice *tool = dynamic_cast<wxChoice *>(evt.GetEventObject());
 	wxStaticText *text = dynamic_cast<wxStaticText *>(tool->GetParent()->FindWindowByName(wxT("ToolText")));
-	
+
 	text->SetLabel(g_tools[tool->GetStringSelection()].getShortHelp());
 }
 
 void ChooseToolPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->setLineLabel(wxT("ScummVM Tools"));
-	
+
 	WizardPage::updateButtons(panel, buttons);
 }
 
@@ -321,7 +321,7 @@ void ChooseIOPage::onSelectFile(wxFileDirPickerEvent &evt) {
 
 	wxWindow *win = dynamic_cast<wxWindow *>(evt.GetEventObject());
 	wxPanel *panel = dynamic_cast<wxPanel *>(win->GetParent());
-	
+
 	updateButtons(panel, _topframe->_buttons);
 }
 
@@ -329,7 +329,7 @@ void ChooseIOPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	wxWindow *picker = NULL;
 	if (!picker)
 		picker = panel->FindWindowByName(wxT("InputPicker"));
-	
+
 	const ToolGUI *tool = _configuration.selectedTool;
 	if (tool && !picker) {
 		for (size_t i = 1; i < tool->getInputList().size(); ++i) {
@@ -349,9 +349,9 @@ void ChooseIOPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	wxFilePickerCtrl *inFileWindow = dynamic_cast<wxFilePickerCtrl *>(picker);
 
 	buttons->enableNext(
-		(inDirWindow && inDirWindow->GetPath().size() > 0) || 
+		(inDirWindow && inDirWindow->GetPath().size() > 0) ||
 		(inFileWindow && inFileWindow->GetPath().size() > 0));
-	
+
 	WizardPage::updateButtons(panel, buttons);
 }
 
@@ -368,9 +368,9 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
 	sizer->AddSpacer(15);
-	
+
 	// some help perhaps?
-	sizer->Add(new wxStaticText(panel, wxID_ANY, 
+	sizer->Add(new wxStaticText(panel, wxID_ANY,
 		wxT("Select an input file, if you have two input files (CD1 and CD2), ")
 		wxT("you will be queried for the other file later.")
 		wxT("You can also drag & drop a file on this window.")
@@ -384,10 +384,10 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 	wxSizer *pickersizer = new wxBoxSizer(wxHORIZONTAL);
 
 	wxFilePickerCtrl *picker = new wxFilePickerCtrl(
-			panel, wxID_ANY, wxEmptyString, wxT("Select a file"), 
-			wxT("*.*"), 
+			panel, wxID_ANY, wxEmptyString, wxT("Select a file"),
+			wxT("*.*"),
 			wxDefaultPosition, wxSize(300, -1),
-			wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
+			wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator,
 			wxT("InputPicker"));
 	panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 	if (_configuration.inputFilePaths.size() > 0)
@@ -398,21 +398,21 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 
 	sizer->Add(pickersizer, wxSizerFlags().Expand());
 	sizer->AddSpacer(30);
-	/* 
+	/*
 	// TODO: There is no way to select directory input, yet
 	} else {
 		inputbox->Add(new wxDirPickerCtrl(
-				panel, wxID_ANY, wxEmptyString, wxT("Select a folder"), 
-				wxDefaultPosition, wxDefaultSize, 
-				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
+				panel, wxID_ANY, wxEmptyString, wxT("Select a folder"),
+				wxDefaultPosition, wxDefaultSize,
+				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator,
 				wxT("InputPicker")),
 			wxSizerFlags().Expand());
-	
+
 	}
 	*/
-	
+
 	SetAlignedSizer(panel, sizer);
-	
+
 	return panel;
 }
 
@@ -486,7 +486,7 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
 	sizer->AddSpacer(15);
-	
+
 	const ToolGUI &tool = *_configuration.selectedTool;
 
 	// some help perhaps?
@@ -514,18 +514,18 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 
 		if (input.file) {
 			inputsizer->Add(new wxFilePickerCtrl(
-				panel, wxID_ANY, inputFile, wxT("Select a file"), 
-				wxString(input.format.c_str(), wxConvUTF8), 
-				wxDefaultPosition, wxDefaultSize, 
-				wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
+				panel, wxID_ANY, inputFile, wxT("Select a file"),
+				wxString(input.format.c_str(), wxConvUTF8),
+				wxDefaultPosition, wxDefaultSize,
+				wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator,
 				windowName), wxSizerFlags().Expand());
 			panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 
 		} else {
 			inputsizer->Add(new wxDirPickerCtrl(
-				panel, wxID_ANY, inputFile, wxT("Select a folder"), 
-				wxDefaultPosition, wxDefaultSize, 
-				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator, 
+				panel, wxID_ANY, inputFile, wxT("Select a folder"),
+				wxDefaultPosition, wxDefaultSize,
+				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator,
 				windowName), wxSizerFlags().Expand());
 			panel->Connect(wxEVT_COMMAND_DIRPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 
@@ -598,18 +598,18 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
 	sizer->AddSpacer(15);
-	
+
 	const ToolGUI &tool = *_configuration.selectedTool;
 
 	// some help perhaps?
-	sizer->Add(new wxStaticText(panel, wxID_ANY, 
+	sizer->Add(new wxStaticText(panel, wxID_ANY,
 		wxT("Select an output directory (using tool ") + _configuration.selectedTool->getName() + wxT(").\n\n") +
 		wxT("Note: Some tools display file picker here, this should perhaps be changed to always ") +
 		wxT("be directory output, since often don't want to name the output file.)")
 		),
 		wxSizerFlags(1).Expand());
 
-	// Create input selection	
+	// Create input selection
 
 	sizer->AddSpacer(10);
 
@@ -618,11 +618,11 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 
 	if (tool.outputToDirectory()) {
 		wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, panel, wxT("Destination folder"));
-		
+
 		wxDirPickerCtrl *picker = new wxDirPickerCtrl(
-			panel, wxID_ANY, _configuration.outputPath, wxT("Select a folder"), 
+			panel, wxID_ANY, _configuration.outputPath, wxT("Select a folder"),
 			wxDefaultPosition, wxSize(300, -1),
-			wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator, 
+			wxFLP_USE_TEXTCTRL | wxDIRP_DIR_MUST_EXIST, wxDefaultValidator,
 			wxT("OutputPicker"));
 		box->Add(picker, wxSizerFlags(1).Expand());
 
@@ -634,16 +634,16 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 		wxStaticBoxSizer *box = new wxStaticBoxSizer(wxHORIZONTAL, panel, wxT("Destination file"));
 
 		wxFilePickerCtrl *picker = new wxFilePickerCtrl(
-			panel, wxID_ANY, _configuration.outputPath, wxT("Select a file"), 
+			panel, wxID_ANY, _configuration.outputPath, wxT("Select a file"),
 			wxT("*.*"),
 			wxDefaultPosition, wxSize(300, -1),
-			wxFLP_USE_TEXTCTRL | wxFLP_OVERWRITE_PROMPT | wxFLP_SAVE, wxDefaultValidator, 
+			wxFLP_USE_TEXTCTRL | wxFLP_OVERWRITE_PROMPT | wxFLP_SAVE, wxDefaultValidator,
 			wxT("OutputPicker"));
 		box->Add(picker, wxSizerFlags(1).Expand());
 
 		panel->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 		picker->SetPath(_configuration.outputPath);
-		
+
 		colsizer->Add(box, wxSizerFlags(2).Expand());
 	}
 
@@ -694,14 +694,14 @@ wxWindow *ChooseTargetPlatformPage::CreatePanel(wxWindow *parent) {
 
 	sizer->AddSpacer(15);
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, 
+	sizer->Add(new wxStaticText(panel, wxID_ANY,
 		wxT("Select target platform (The platform ScummVM will run on)")));
 
 	sizer->AddSpacer(20);
-	
+
 	wxArrayString choices = _configuration.getTargetPlatforms();
 
-	wxChoice *platform = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxSize(80, -1), 
+	wxChoice *platform = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxSize(80, -1),
 		choices, 0, wxDefaultValidator, wxT("PlatformSelection"));
 	sizer->Add(platform, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
@@ -746,11 +746,11 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 
 	sizer->AddSpacer(15);
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, 
+	sizer->Add(new wxStaticText(panel, wxID_ANY,
 		wxT("Select audio format you want to compress to.")));
 
 	sizer->AddSpacer(20);
-	
+
 	wxArrayString choices;
 
 	const ToolGUI *tool = _configuration.selectedTool;
@@ -762,13 +762,13 @@ wxWindow *ChooseAudioFormatPage::CreatePanel(wxWindow *parent) {
 	if (tool->supportsAudioFormat(AUDIO_MP3))
 		choices.Add(wxT("MP3"));
 
-	wxChoice *format = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxSize(80, -1), 
+	wxChoice *format = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxSize(80, -1),
 		choices, 0, wxDefaultValidator, wxT("AudioSelection"));
 	sizer->Add(format);
-	
+
 	sizer->AddSpacer(10);
 
-	wxCheckBox *advanced = new wxCheckBox(panel, wxID_ANY, wxT("Select advanced audio settings"), 
+	wxCheckBox *advanced = new wxCheckBox(panel, wxID_ANY, wxT("Select advanced audio settings"),
 		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("AdvancedAudio"));
 	sizer->Add(advanced);
 
@@ -834,7 +834,7 @@ ChooseAudioOptionsMp3Page::ChooseAudioOptionsMp3Page(Configuration &config)
 wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxWindow *panel = WizardPage::CreatePanel(parent);
 
-	
+
 	/*
 	"\nMP3 mode params:\n"
 	" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" minBitrDef_str "%d)\n"
@@ -853,13 +853,13 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	// Type of compression
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Compression Type:")));
 
-	wxRadioButton *abrButton = new wxRadioButton(panel, wxID_ANY, wxT("ABR"), 
+	wxRadioButton *abrButton = new wxRadioButton(panel, wxID_ANY, wxT("ABR"),
 		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("ABR"));
 
 	wxSizer *radioSizer = new wxBoxSizer(wxHORIZONTAL);
 	radioSizer->Add(abrButton);
-	
-	wxRadioButton *vbrButton = new wxRadioButton(panel, wxID_ANY, wxT("VBR"), 
+
+	wxRadioButton *vbrButton = new wxRadioButton(panel, wxID_ANY, wxT("VBR"),
 		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("VBR"));
 	radioSizer->Add(vbrButton);
 
@@ -875,23 +875,23 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:")));
 
 	wxChoice *vbrMinBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
 	sizer->Add(vbrMinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
-	
+
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
-	
+
 	wxChoice *vbrMaxBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
 	sizer->Add(vbrMaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
-	
+
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Average Bitrate:")));
-	
+
 	wxChoice *abrAvgBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("AverageBitrate"));
 	sizer->Add(abrAvgBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
@@ -906,17 +906,17 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	}
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("VBR Quality:")));
-	
+
 	wxChoice *vbrQuality = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("VBRQuality"));
 	sizer->Add(vbrQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
-	
+
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("MPEG Quality:")));
-	
+
 	wxChoice *mpegQuality = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("MpegQuality"));
 	sizer->Add(mpegQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
@@ -973,7 +973,7 @@ void ChooseAudioOptionsMp3Page::updateFields(wxWindow *panel) {
 	vbrMinBitrate->Enable(!abr->GetValue());
 	vbrMaxBitrate->Enable(!abr->GetValue());
 	vbrQuality->Enable(!abr->GetValue());
-	
+
 	abrAvgBitrate->Enable(abr->GetValue());
 }
 
@@ -996,14 +996,14 @@ ChooseAudioOptionsFlacPage::ChooseAudioOptionsFlacPage(Configuration &config)
 
 wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
 	wxWindow *panel = WizardPage::CreatePanel(parent);
-	
+
 	wxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
 
 	topsizer->AddSpacer(15);
-	topsizer->Add(new wxStaticText(panel, wxID_ANY, 
+	topsizer->Add(new wxStaticText(panel, wxID_ANY,
 		wxT("Choose advanced audio options, high compression levels means better quality,\nlower faster runtime.")));
 	topsizer->AddSpacer(10);
-	
+
 	/*
 	"\nFlac mode params:\n" \
 	" --fast       FLAC uses compression level 0\n" \
@@ -1016,9 +1016,9 @@ wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
 
 	wxFlexGridSizer *sizer = new wxFlexGridSizer(2, 2, 10, 25);
 	sizer->AddGrowableCol(1);
-	
 
-	// 
+
+	//
 
 	// Compression Level
 	const int possibleLevelCount = 9;
@@ -1028,9 +1028,9 @@ wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
 	}
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Compression Level:")));
-	
+
 	wxChoice *compressionLevel = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleLevelCount, possibleLevels, 0, wxDefaultValidator, wxT("CompressionLevel"));
 	sizer->Add(compressionLevel, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
@@ -1047,10 +1047,10 @@ wxWindow *ChooseAudioOptionsFlacPage::CreatePanel(wxWindow *parent) {
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Block Size:")));
 
 	wxChoice *blockSize = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		sizeof blockSizes / sizeof *blockSizes, blockSizes, 0, wxDefaultValidator, wxT("BlockSize"));
 	sizer->Add(blockSize, wxSizerFlags().Expand().Border(wxRIGHT, 100));
-	
+
 	// Finish the window
 	topsizer->Add(sizer);
 	SetAlignedSizer(panel, topsizer);
@@ -1085,7 +1085,7 @@ ChooseAudioOptionsVorbisPage::ChooseAudioOptionsVorbisPage(Configuration &config
 wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	wxWindow *panel = WizardPage::CreatePanel(parent);
 
-	
+
 	/* Vorbis mode params
 	" -b <rate>    <rate> is the nominal bitrate (default:unset)\n" \
 	" -m <rate>    <rate> is the minimum bitrate (default:unset)\n" \
@@ -1107,23 +1107,23 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:")));
 
 	wxChoice *MinBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
 	sizer->Add(MinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
-	
+
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Nominal Bitrate:")));
-	
+
 	wxChoice *AvgBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("NominalBitrate"));
 	sizer->Add(AvgBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
-	
+
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
-	
+
 	wxChoice *MaxBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
 	sizer->Add(MaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
@@ -1135,9 +1135,9 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	}
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Quality:")));
-	
+
 	wxChoice *quality = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("Quality"));
 	sizer->Add(quality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
@@ -1197,12 +1197,12 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(15);
 
 	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Processing data...")), wxSizerFlags().Expand().Border(wxLEFT, 20));
-	
-	_outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 
+
+	_outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize,
 		wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("OutputWindow"));
 	sizer->Add(_outwin, wxSizerFlags(1).Expand().Border(wxTOP | wxLEFT | wxRIGHT, 10));
 
-	_gauge = new wxGauge(panel, wxID_ANY, _output.total, wxDefaultPosition, wxDefaultSize, 
+	_gauge = new wxGauge(panel, wxID_ANY, _output.total, wxDefaultPosition, wxDefaultSize,
 		wxGA_HORIZONTAL, wxDefaultValidator, wxT("ProgressBar"));
 	sizer->Add(_gauge, wxSizerFlags(0).Expand().Border(wxBOTTOM | wxLEFT | wxRIGHT, 10));
 
@@ -1236,10 +1236,10 @@ wxString ProcessPage::getHelp() {
 
 bool ProcessPage::onIdle(wxPanel *panel) {
 	const ToolGUI *tool = _configuration.selectedTool;
-	
+
 	if (!_thread)
 		return false;
-	
+
 	// This function can be called recursively, by checking if lock is available, we avoid it
 	if (_output.mutex.TryLock() == wxMUTEX_BUSY)
 		return false;
@@ -1263,7 +1263,7 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 
 		if (_output.cmd) {
 			// We have a waiting subprocess to run, the other thread is sleeping since we could lock the mutex
-			
+
 #ifdef __WINDOWS__
 			// Only windows needs this
 			// It hides the process window, on unix it doesn't appear to work very well
@@ -1282,7 +1282,7 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 
 	// Check if thread finished
 	if (_thread && _thread->_finished) {
-		// Tool has finished 
+		// Tool has finished
 		_success = _thread->_success;
 		// Wait deallocates thread resources
 		_thread->Wait();
@@ -1347,15 +1347,15 @@ void ProcessPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 
 // The thread a tool is run in
 
-ProcessToolThread::ProcessToolThread(const ToolGUI *tool, Configuration &configuration, ThreadCommunicationBuffer &output) : 
-	wxThread(wxTHREAD_JOINABLE), 
+ProcessToolThread::ProcessToolThread(const ToolGUI *tool, Configuration &configuration, ThreadCommunicationBuffer &output) :
+	wxThread(wxTHREAD_JOINABLE),
 	_configuration(configuration),
-	_output(output) 
+	_output(output)
 {
 	_tool = tool;
 	_finished = false;
 	_success = false;
-	
+
 	_tool->_backend->setPrintFunction(writeToOutput, reinterpret_cast<void *>(this));
 	_tool->_backend->setProgressFunction(gaugeProgress, reinterpret_cast<void *>(this));
 	_tool->_backend->setSubprocessFunction(spawnSubprocess, reinterpret_cast<void *>(this));
@@ -1381,14 +1381,14 @@ void ProcessToolThread::abort() {
 
 void ProcessToolThread::writeToOutput(void *udata, const char *text) {
 	ProcessToolThread *self = reinterpret_cast<ProcessToolThread *>(udata);
-	
+
 	wxMutexLocker lock(self->_output.mutex);
 	self->_output.buffer += text;
 }
 
 void ProcessToolThread::gaugeProgress(void *udata, int done, int total) {
 	ProcessToolThread *self = reinterpret_cast<ProcessToolThread *>(udata);
-	
+
 	wxMutexLocker lock(self->_output.mutex);
 	self->_output.done  = done;
 	self->_output.total = total;
@@ -1396,7 +1396,7 @@ void ProcessToolThread::gaugeProgress(void *udata, int done, int total) {
 
 int ProcessToolThread::spawnSubprocess(void *udata, const char *cmd) {
 	ProcessToolThread *self = reinterpret_cast<ProcessToolThread *>(udata);
-	
+
 	wxASSERT_MSG(self->_output.subprocessFinished == NULL, wxT("You can only spawn one subprocess."));
 
 	wxMutexLocker mutex(self->_output.mutex);
@@ -1437,7 +1437,7 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 
 	sizer->AddSpacer(10);
 
-	wxCheckBox *displayOut = new wxCheckBox(panel, wxID_ANY, wxT("Open output folder"), wxDefaultPosition, wxDefaultSize, 
+	wxCheckBox *displayOut = new wxCheckBox(panel, wxID_ANY, wxT("Open output folder"), wxDefaultPosition, wxDefaultSize,
 		0, wxDefaultValidator, wxT("DisplayOutput"));
 	displayOut->SetValue(true);
 	sizer->Add(displayOut);
@@ -1469,7 +1469,7 @@ wxString FinishPage::getHelp() {
 void FinishPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->enablePrevious(false);
 	buttons->showFinish(true);
-	
+
 	WizardPage::updateButtons(panel, buttons);
 }
 
@@ -1504,7 +1504,7 @@ void FailurePage::onNext(wxWindow *panel) {
 void FailurePage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->enablePrevious(false);
 	buttons->showFinish(true);
-	
+
 	WizardPage::updateButtons(panel, buttons);
 }
 

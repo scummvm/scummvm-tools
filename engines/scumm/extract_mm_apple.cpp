@@ -43,7 +43,7 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 };
 
 ExtractMMApple::ExtractMMApple(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
-	
+
 	ToolInput input1;
 	input1.format = "*.dsk";
 	_inputPaths.push_back(input1);

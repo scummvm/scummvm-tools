@@ -37,8 +37,8 @@ push SOMETHING		- the value we are switching on
 dup					- duplicate it
 push caseA			- push the first case value
 eq					- compare
-jump if false 		- if not equal, jump to next case
-  kill 				- we entered this case - kill the switch value from the stack
+jump if false		- if not equal, jump to next case
+  kill				- we entered this case - kill the switch value from the stack
   ...
   jump AFTER		- leave this switch
 dup
@@ -1082,7 +1082,7 @@ StackEnt *pop() {
 
 		if (!g_options.haltOnError)
 			return se_complex("**** INVALID DATA ****");
- 		exit(1);
+		exit(1);
 	}
 	return stack[--num_stack];
 }
@@ -4257,7 +4257,7 @@ void next_line_V8(char *output) {
 				"\xE6p|makeCursorColorTransparent,"
 				"\xE7p|initCharset,"
 				"\xE8l|charsetColors,"
-		    		"\xE9pp|setCursorPosition");
+				"\xE9pp|setCursorPosition");
 		break;
 	case 0x9D:
 		ext(output, "p|loadRoom");

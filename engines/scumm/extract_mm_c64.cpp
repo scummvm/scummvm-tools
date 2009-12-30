@@ -44,7 +44,7 @@ static const int ResourcesPerFile[NUM_ROOMS] = {
 };
 
 ExtractMMC64::ExtractMMC64(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
-	
+
 	ToolInput input1;
 	input1.format = "*.d64";
 	_inputPaths.push_back(input1);
@@ -61,7 +61,7 @@ void ExtractMMC64::execute() {
 	int i, j;
 	unsigned short signature;
 	char fname[256];
-	
+
 	Common::Filename inpath1(_inputPaths[0].path);
 	Common::Filename inpath2(_inputPaths[1].path);
 	Common::Filename &outpath = _outputPath;
@@ -69,7 +69,7 @@ void ExtractMMC64::execute() {
 	if (outpath.empty())
 		// Standard output path
 		outpath.setFullPath("out/");
-	
+
 	Common::File input1(inpath1, "rb");
 	Common::File input2(inpath2, "rb");
 

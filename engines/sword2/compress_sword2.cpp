@@ -65,7 +65,7 @@ void CompressSword2::execute() {
 	uint32 indexSize;
 	uint32 totalSize;
 	uint32 length;
-	
+
 	Common::Filename inpath(_inputPaths[0].path);
 	Common::Filename &outpath = _outputPath;
 

@@ -165,7 +165,7 @@ void CompressScummSan::prepareForMixing(const std::string &outputDir, const std:
 	for (int l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
 			_audioTracks[l].file.close();
-			
+
 			sprintf(filename, "%s%s_%04d_%03d.tmp", outputDir.c_str(), inputFilename.c_str(), _audioTracks[l].animFrame, _audioTracks[l].trackId);
 			_audioTracks[l].file.open(filename, "rb");
 			_audioTracks[l].file.seek(0, SEEK_END);
@@ -578,7 +578,7 @@ void CompressScummSan::execute() {
 	flupath.setExtension(".flu");
 
 	Common::File flu_in;
-	
+
 	try {
 		flu_in.open(flupath, "rb");
 	} catch (...) {
@@ -657,7 +657,7 @@ void CompressScummSan::execute() {
 			} catch (...) {
 				break;
 			}
-			
+
 			if (input.eos())
 				break;
 			if (tag == 'FRME') {

@@ -32,13 +32,13 @@ ExtractKyra::ExtractKyra(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTI
 	isAmiga = false;
 	isHoFInstaller = false;
 	singleFilename = "";
-	
+
 	ToolInput input;
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Extract data files from the The Legend of Kyrandia series of games.";
-	_helptext = 
+	_helptext =
 		"Usage: " + getName() + " [-o output] [params] <archivefile>\n" +
 		_shorthelp + "\n" +
 		"Default output path is ./out/\n" +

@@ -32,7 +32,7 @@ CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name, TOOL
 	_convertMac = false;
 	_outputToDirectory = false;
 	_supportsProgressBar = true;
-	
+
 	ToolInput input;
 	input.format = "*.*";
 	_inputPaths.push_back(input);
