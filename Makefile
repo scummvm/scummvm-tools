@@ -74,3 +74,25 @@ ifeq "$(findstring config.mk,$(MAKEFILE_LIST))" "config.mk"
 else
 	$(error You need to run $(srcdir)/configure before you can run make. Check $(srcdir)/configure --help for a list of parameters)
 endif
+
+# Special target to create a win32 tools snapshot binary
+WIN32PATH=C:/scummvm
+
+win32dist:   all
+	mkdir -p $(WIN32PATH)
+	mkdir -p $(WIN32PATH)/tools
+	mkdir -p $(WIN32PATH)/tools/media
+	cp gui/media/detaillogo.jpg $(WIN32PATH)/tools/media/
+	cp gui/media/logo.jpg $(WIN32PATH)/tools/media/
+	cp gui/media/tile.gif $(WIN32PATH)/tools/media/
+	strip decine.exe -o $(WIN32PATH)/tools/decine.exe
+	strip degob.exe -o $(WIN32PATH)/tools/degob.exe
+	strip dekyra.exe -o $(WIN32PATH)/tools/dekyra.exe
+	strip descumm.exe -o $(WIN32PATH)/tools/descumm.exe
+	strip desword2.exe -o $(WIN32PATH)/tools/desword2.exe
+	strip scummvm-tools.exe -o $(WIN32PATH)/tools/scummvm-tools.exe
+	strip scummvm-tools-cli.exe -o $(WIN32PATH)/tools/scummvm-tools-cli.exe
+	cp *.bat $(WIN32PATH)/tools
+	cp COPYING $(WIN32PATH)/tools/COPYING.txt
+	cp README $(WIN32PATH)/tools/README.txt
+	u2d $(WIN32PATH)/tools/*.txt
