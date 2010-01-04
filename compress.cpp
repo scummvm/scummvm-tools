@@ -26,6 +26,10 @@
 #include <sstream>
 #include <stdio.h>
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include "compress.h"
 
 #ifdef USE_VORBIS
