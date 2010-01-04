@@ -65,7 +65,7 @@ struct Configuration {
 
 	/** If the user chose the advanced route from the start */
 	bool advanced;
-	/** true if the chose to compress, false if compress, undefined if advanced */
+	/** true if the user chose to compress, false if extract, undefined if advanced */
 	bool compressing;
 
 	/** The platform the output files are going to be used on (compression only) */
