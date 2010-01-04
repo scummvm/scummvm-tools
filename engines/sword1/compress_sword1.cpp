@@ -343,6 +343,8 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 		}
 		free(fBuf);
 		*returnSize = resSize * 2;
+		if (_speechEndianness == UnknownEndian)
+			guessEndianness(dstData, length);
 		return dstData;
 	} else {
 		free(fBuf);
@@ -350,6 +352,28 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 		*returnSize = 0;
 		return NULL;
 	}
+}
+
+void CompressSword1::guessEndianness(int16 *data, int16 length) {
+	// Compute average of difference between two consecutive samples for both the given
+	// data array and the byte swapped array.
+	double bs_diff_sum = 0., diff_sum = 0.;
+	if (length > 2000)
+		length = 2000;
+
+	int16 prev_bs_value = (int16)SWAP_16(*((uint16*)data));
+	for (int16 i = 1 ; i < length ; ++i) {
+		diff_sum += data[i] > data[i-1] ? data[i] - data[i-1] : data[i-1] - data[i];
+		int16 bs_value = (int16)SWAP_16(*((uint16*)(data + i)));
+		bs_diff_sum += bs_value > prev_bs_value ? bs_value - prev_bs_value : prev_bs_value - bs_value;
+		prev_bs_value = bs_value;
+	}
+	// Set the little/big endian flags
+	if (diff_sum < bs_diff_sum)
+		_speechEndianness = LittleEndian;
+	else
+		_speechEndianness = BigEndian;
+	setRawAudioType(_speechEndianness == LittleEndian, false, 16);
 }
 
 uint8 *CompressSword1::convertData(uint8 *rawData, uint32 rawSize, uint32 *resSize) {
@@ -441,7 +465,8 @@ void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common
 	int i;
 	char cluName[256], outName[256];
 
-	setRawAudioType(true, false, 16);
+	if (_speechEndianness != UnknownEndian)
+		setRawAudioType(_speechEndianness == LittleEndian, false, 16);
 
 	for (i = 1; i <= 2; i++) {
 		// Updates the progress bar, add music files if we compress those too
@@ -491,7 +516,10 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 		// Update the progress bar, we add 2 if we compress speech to, for those files
 		updateProgress(i, TOTAL_TUNES +(_compSpeech? 2 : 0));
 
-		sprintf(fNameIn, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
+		if (!_macVersion)
+			sprintf(fNameIn, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
+		else
+			sprintf(fNameIn, "%s/MUSIC/%s.AIF", inpath->getPath().c_str(), musicNames[i].fileName);
 		try {
 			Common::File inf(fNameIn, "rb");
 
@@ -510,7 +538,10 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 			}
 
 			print("encoding file (%3d/%d) %s -> %s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, fNameOut);
-			encodeAudio(fNameIn, false, -1, fNameOut, _format);
+			if (!_macVersion)
+				encodeAudio(fNameIn, false, -1, fNameOut, _format);
+			else
+				encodeAIF(fNameIn, fNameOut, _format);
 		} catch (Common::FileException& err) {
 			print(err.what());
 		}
@@ -544,14 +575,34 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 		}
 	}
 
+	/* The PC Version uses LittleEndian speech files.
+	 The Mac version can be either with little endian speech files or big endian speech files.
+	 We detect if we have a PC or Mac version with the music files (WAV for PC and AIF for Mac).
+	 If we have the Mac version or if we don't check the music files, an heuristic will be used
+	 when first accessing the speech file to detect if it is little endian or big endian */
+	 
 	if (checkMusic) {
 		for (i = 0; i < 20; i++) { /* Check the first 20 music files */
+			// Check WAV file
 			sprintf(fileName, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
 			testFile = fopen(fileName, "rb");
 
 			if (testFile) {
 				musicFound = true;
 				fclose(testFile);
+				break;
+			}
+			
+			// Check AIF file
+			sprintf(fileName, "%s/MUSIC/%s.AIF", inpath->getPath().c_str(), musicNames[i].fileName);
+			testFile = fopen(fileName, "rb");
+			
+			if (testFile) {
+				musicFound = true;
+				_macVersion = true;
+				_speechEndianness = UnknownEndian;
+				fclose(testFile);
+				break;
 			}
 		}
 
@@ -562,6 +613,8 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 			print("If your OS is case-sensitive, make sure the filenames\n");
 			print("and directorynames are all upper-case.\n");
 		}
+	} else {
+		_speechEndianness = UnknownEndian;
 	}
 
 	if ((checkSpeech && (!speechFound)) || (checkMusic && (!musicFound))) {
@@ -569,14 +622,28 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 	}
 }
 
+InspectionMatch CompressSword1::inspectInput(const Common::Filename &filename) {
+	// Wildcard matching as implemented in Tools is too restrictive (e.g. it doesn't
+	// work with *.cl? or even *.cl*).
+	// This is the reason why this function is reimplemented there.
+	if (
+		scumm_stricmp(filename.getExtension().c_str(), "clu") == 0 ||
+		scumm_stricmp(filename.getExtension().c_str(), "clm") == 0
+	)
+		return IMATCH_PERFECT;
+	return IMATCH_AWFUL;
+}
+
 CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_compSpeech = true;
 	_compMusic = true;
+	_macVersion = false;
+	_speechEndianness = LittleEndian;
 
 	_supportsProgressBar = true;
 
 	ToolInput input;
-	input.format = "*.clu";
+	input.format = "*.*";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress the Broken Sword 1 data files.";

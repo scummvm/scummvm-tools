@@ -115,6 +115,8 @@ public:
 	void extractAndEncodeVOC(const char *outName, Common::File &input, AudioFormat compMode);
 	void extractAndEncodeWAV(const char *outName, Common::File &input, AudioFormat compMode);
 
+	void encodeAIF(const char *inName, const char *outName, AudioFormat compMode);
+
 	void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, AudioFormat compmode);
 	void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample);
 

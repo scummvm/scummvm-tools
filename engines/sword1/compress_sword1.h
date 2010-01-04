@@ -30,6 +30,8 @@ public:
 	CompressSword1(const std::string &name = "compress_sword1");
 
 	virtual void execute();
+	
+	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 
 	bool _compSpeech;
 	bool _compMusic;
@@ -45,6 +47,13 @@ protected:
 	void compressSpeech(const Common::Filename *inpath, const Common::Filename *outpath);
 	void compressMusic(const Common::Filename *inpath, const Common::Filename *outpath);
 	void checkFilesExist(bool checkSpeech, bool checkMusic, const Common::Filename *inpath);
+	void guessEndianness(int16 *data, int16 length);
+	
+private:
+	bool _macVersion;
+	
+	enum Endianness { BigEndian , LittleEndian , UnknownEndian } ;
+	Endianness _speechEndianness;
 };
 
 #endif
