@@ -295,7 +295,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 	}
 }
 
-void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode) {
+void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode) {
 
 	print(" - len=%ld, ch=%d, rate=%d, %dbits\n", length, (rawAudioType.isStereo ? 2 : 1), samplerate, rawAudioType.bitsPerSample);
 
@@ -437,7 +437,7 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 			} else {
 				/* Adapted from oggenc 1.1.1 */
 				if (rawAudioType.bitsPerSample == 8) {
-					unsigned char *rawDataUnsigned = (unsigned char *)rawData;
+					const byte *rawDataUnsigned = (const byte *)rawData;
 					for (i = 0; i < numSamples; i++) {
 						for (j = 0; j < numChannels; j++) {
 							buffer[j][i] = ((int)(rawDataUnsigned[i * numChannels + j]) - 128) / 128.0f;
@@ -450,8 +450,7 @@ void CompressionTool::encodeRaw(char *rawData, int length, int samplerate, const
 								buffer[j][i] = ((rawData[(i * 2 * numChannels) + (2 * j) + 1] << 8) | (rawData[(i * 2 * numChannels) + (2 * j)] & 0xff)) / 32768.0f;
 							}
 						}
-					}
-					else {
+					} else {
 						for (i = 0; i < numSamples; i++) {
 							for (j = 0; j < numChannels; j++) {
 								buffer[j][i] = ((rawData[(i * 2 * numChannels) + (2 * j)] << 8) | (rawData[(i * 2 * numChannels) + (2 * j) + 1] & 0xff)) / 32768.0f;
@@ -1013,14 +1012,14 @@ const char *audio_extensions(AudioFormat format) {
 	}
 }
 
-CompressionFormat compression_format(AudioFormat format) {
+int compression_format(AudioFormat format) {
 	switch(format) {
 	case AUDIO_MP3:
-		return COMPRESSION_MP3;
+		return 1;
 	case AUDIO_VORBIS:
-		return COMPRESSION_OGG;
+		return 2;
 	case AUDIO_FLAC:
-		return COMPRESSION_FLAC;
+		return 3;
 	case AUDIO_NONE:
 	default:
 		throw ToolException("Unknown compression format");

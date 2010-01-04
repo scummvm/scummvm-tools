@@ -54,26 +54,16 @@ enum {
  * You can bitwise them to represent several formats.
  */
 enum AudioFormat {
+	AUDIO_VORBIS = 1 << 0,
+	AUDIO_FLAC   = 1 << 1,
+	AUDIO_MP3    = 1 << 2,
+
 	AUDIO_NONE = 0,
-	AUDIO_VORBIS = 1,
-	AUDIO_FLAC = 2,
-	AUDIO_MP3 = 4,
 	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
 };
 
-/**
- * Another enum, which cannot be ORed.
- * These are the values written to the output files.
- */
-enum CompressionFormat {
-	COMPRESSION_NONE = 0,
-	COMPRESSION_MP3 = 1,
-	COMPRESSION_OGG = 2,
-	COMPRESSION_FLAC = 3
-};
-
 const char *audio_extensions(AudioFormat format);
-CompressionFormat compression_format(AudioFormat format);
+int compression_format(AudioFormat format);
 
 
 /**
@@ -126,8 +116,11 @@ public:
 	void extractAndEncodeWAV(const char *outName, Common::File &input, AudioFormat compMode);
 
 	void encodeAudio(const char *inname, bool rawInput, int rawSamplerate, const char *outname, AudioFormat compmode);
-	void encodeRaw(char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode);
 	void setRawAudioType(bool isLittleEndian, bool isStereo, uint8 bitsPerSample);
+
+protected:
+
+	void encodeRaw(const char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode);
 };
 
 /*
