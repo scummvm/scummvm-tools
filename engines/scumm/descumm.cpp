@@ -933,6 +933,9 @@ void do_expr_code(char *buf) {
 				next_line_V12(buf2);
 			else
 				next_line_V345(buf2);
+			if (buf2[(strlen(buf2) - 1)] == ';') {
+				buf2[(strlen(buf2) - 1)] = 0;
+			}
 			strecpy(strchr(buf2, 0), ">");
 			pushExprStack(buf);
 			break;
