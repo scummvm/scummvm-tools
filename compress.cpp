@@ -597,7 +597,7 @@ void CompressionTool::extractAndEncodeWAV(const char *outName, Common::File &inp
 	encodeAudio(outName, false, -1, tempEncoded, compMode);
 }
 
-void CompressionTool::encodeAIF(const char *inName, const char *outName, AudioFormat compmode) {
+void CompressionTool::extractAndEncodeAIFF(const char *inName, const char *outName, AudioFormat compmode) {
 	// Get sound definition (length, frequency, stereo, ...)
 	char buf[4];
 	Common::File inFile(inName, "rb");

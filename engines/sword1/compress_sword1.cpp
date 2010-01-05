@@ -541,7 +541,7 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 			if (!_macVersion)
 				encodeAudio(fNameIn, false, -1, fNameOut, _format);
 			else
-				encodeAIF(fNameIn, fNameOut, _format);
+				extractAndEncodeAIFF(fNameIn, fNameOut, _format);
 		} catch (Common::FileException& err) {
 			print(err.what());
 		}
