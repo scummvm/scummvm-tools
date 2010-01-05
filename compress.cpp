@@ -676,6 +676,7 @@ void CompressionTool::encodeAIF(const char *inName, const char *outName, AudioFo
 	Common::File tmpFile(TEMP_RAW, "wb");
 	tmpFile.write(aifData, size);
 	tmpFile.close();
+	free(aifData);
 	
 	// Convert the temporary raw file to MP3/OGG/FLAC
 	// Samples are always signed, and big endian.
