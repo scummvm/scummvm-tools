@@ -463,7 +463,7 @@ void CompressSword1::convertClu(Common::File &clu, Common::File &cl3) {
 void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common::Filename *outpath) {
 	Common::File clu, cl3;
 	int i;
-	char cluName[256], outName[256];
+	char cluName[256], outName[256], outFileName[12];
 
 	if (_speechEndianness != UnknownEndian)
 		setRawAudioType(_speechEndianness == LittleEndian, false, 16);
@@ -476,33 +476,51 @@ void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common
 		try {
 			clu.open(cluName, "rb");
 		} catch (Common::FileException &) {
-			print("Unable to open \"SPEECH%d.CLU\".\n", i);
-			print("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".\n", i, i);
-			continue;
+			// Not found in SPEECH sub-directory.
+			// Looking for the file at the root of the input directory.
+			sprintf(cluName, "%s/SPEECH%d.CLU", inpath->getPath().c_str(), i);
+			try {
+				clu.open(cluName, "rb");
+			} catch (Common::FileException &) {
+				print("Unable to open \"SPEECH%d.CLU\".\n", i);
+				print("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".\n", i, i);
+				continue;
+			}
 		}
-
+		
 		switch (_format) {
 		case AUDIO_MP3:
-			sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CL3");
+			sprintf(outFileName, "SPEECH%d.%s", i, "CL3");
 			break;
 		case AUDIO_VORBIS:
-			sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CLV");
+			sprintf(outFileName, "SPEECH%d.%s", i, "CLV");
 			break;
 		case AUDIO_FLAC:
-			sprintf(outName, "%s/SPEECH/SPEECH%d.%s", outpath->getPath().c_str(), i, "CLF");
+			sprintf(outFileName, "SPEECH%d.%s", i, "CLF");
 			break;
 		default:
 			error("Unknown encoding method");
 		}
-
-		cl3.open(outName, "wb");
-		if (!cl3.isOpen()) {
+		
+		// Try opening in SPEECH sub-directory
+		sprintf(outName, "%s/SPEECH/%s", outpath->getPath().c_str(), outFileName);
+		try {
+			cl3.open(outName, "wb");
+		} catch (Common::FileException &) {
+			// Try opening at root of output directory
 			print("Unable to create file \"%s\".\n", outName);
-			print("Please make sure you've got write permission in this directory.\n");
-		} else {
-			print("Converting CD %d...\n", i);
-			convertClu(clu, cl3);
+			sprintf(outName, "%s/%s", outpath->getPath().c_str(), outFileName);
+			print("Trying \"%s\".\n", outName);
+			try {
+				cl3.open(outName, "wb");
+			} catch (Common::FileException &) {
+				print("Unable to create file \"%s\".\n", outName);
+				print("Please make sure you've got write permission in this directory or its \"MUSIC\" sub-directory.\n");
+				continue;
+			}
 		}
+		print("Converting CD %d...\n", i);
+		convertClu(clu, cl3);
 	}
 	unlink(TEMP_RAW);
 	unlink(_audioOuputFilename.c_str());
@@ -510,40 +528,77 @@ void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common
 
 void CompressSword1::compressMusic(const Common::Filename *inpath, const Common::Filename *outpath) {
 	int i;
-	char fNameIn[256], fNameOut[256];
+	char inName[256], outName[256], inFileName[12], outFileName[12];
+	
+	// check if output music directory exist and if we can create files in it
+	sprintf(outName, "%s/MUSIC/compress_sword1_test_file", outpath->getPath().c_str());
+	try {
+		Common::File outf(outName, "wb");
+		outf.close();
+		unlink(outName);
+	} catch(Common::FileException& err) {
+		_useOutputMusicSubdir = false;
+		print("Cannot create files in %s/MUSIC/; will try in %s/\n", outpath->getPath().c_str(), outpath->getPath().c_str());
+	}
 
 	for (i = 0; i < TOTAL_TUNES; i++) {
 		// Update the progress bar, we add 2 if we compress speech to, for those files
 		updateProgress(i, TOTAL_TUNES +(_compSpeech? 2 : 0));
-
+		
+		// Get name of input file
 		if (!_macVersion)
-			sprintf(fNameIn, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
+			sprintf(inFileName, "%s.WAV", musicNames[i].fileName);
 		else
-			sprintf(fNameIn, "%s/MUSIC/%s.AIF", inpath->getPath().c_str(), musicNames[i].fileName);
+			sprintf(inFileName, "%s.AIF", musicNames[i].fileName);
+
+		Common::File inf;
+
+		// Trying to find input file in MUSIC sub-directory first
+		sprintf(inName, "%s/MUSIC/%s", inpath->getPath().c_str(), inFileName);
 		try {
-			Common::File inf(fNameIn, "rb");
-
-			switch (_format) {
-			case AUDIO_MP3:
-				sprintf(fNameOut, "%s/MUSIC/%s.%s", outpath->getPath().c_str(), musicNames[i].fileName, "MP3");
-				break;
-			case AUDIO_VORBIS:
-				sprintf(fNameOut, "%s/MUSIC/%s.%s", outpath->getPath().c_str(), musicNames[i].fileName, "OGG");
-				break;
-			case AUDIO_FLAC:
-				sprintf(fNameOut, "%s/MUSIC/%s.%s", outpath->getPath().c_str(), musicNames[i].fileName, "FLA");
-				break;
-			default:
-				error("Unknown encoding method");
-			}
-
-			print("encoding file (%3d/%d) %s -> %s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, fNameOut);
-			if (!_macVersion)
-				encodeAudio(fNameIn, false, -1, fNameOut, _format);
-			else
-				extractAndEncodeAIFF(fNameIn, fNameOut, _format);
+			inf.open(inName, "rb");
 		} catch (Common::FileException& err) {
+			// Try at root of input directory
 			print(err.what());
+			sprintf(inName, "%s/%s", inpath->getPath().c_str(), inFileName);
+			print(", trying %s\n", inName);
+			try {
+				inf.open(inName, "rb");
+			} catch (Common::FileException& err2) {
+				print("%s\n", err2.what());
+				continue;
+			}
+		}
+
+		// Get name of output file
+		switch (_format) {
+		case AUDIO_MP3:
+			sprintf(outFileName, "%s.%s", musicNames[i].fileName, "MP3");
+			break;
+		case AUDIO_VORBIS:
+			sprintf(outFileName, "%s.%s", musicNames[i].fileName, "OGG");
+			break;
+		case AUDIO_FLAC:
+			sprintf(outFileName, "%s.%s", musicNames[i].fileName, "FLA");
+			break;
+		default:
+			error("Unknown encoding method");
+		}
+		
+		if (_useOutputMusicSubdir)
+			sprintf(outName, "%s/MUSIC/%s", outpath->getPath().c_str(), outFileName);
+		else
+			sprintf(outName, "%s/%s", outpath->getPath().c_str(), outFileName);
+
+		print("encoding file (%3d/%d) %s -> %s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, outName);
+
+		try {
+			if (!_macVersion)
+				encodeAudio(inName, false, -1, outName, _format);
+			else
+				extractAndEncodeAIFF(inName, outName, _format);
+		} catch (Common::FileException& err) {
+			print("%s\n", err.what());
 		}
 	}
 }
@@ -556,20 +611,32 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 
 	if (checkSpeech) {
 		for (i = 1; i <= 2; i++) {
+			// Try first in SPEECH sub-directory
 			sprintf(fileName, "%s/SPEECH/SPEECH%d.CLU", inpath->getPath().c_str(), i);
 			testFile = fopen(fileName, "rb");
 
 			if (testFile){
 				speechFound = true;
 				fclose(testFile);
+				break;
+			}
+
+			// Then try at the root of the input directory
+			sprintf(fileName, "%s/SPEECH%d.CLU", inpath->getPath().c_str(), i);
+			testFile = fopen(fileName, "rb");
+
+			if (testFile){
+				speechFound = true;
+				fclose(testFile);
+				break;
 			}
 		}
 
 		if (!speechFound) {
 			print("Unable to find speech files.\n");
 			print("Please copy the SPEECH.CLU files from Broken Sword CD1 and CD2\n");
-			print("into the \"SPEECH\" subdirectory and rename them to\n");
-			print("SPEECH1.CLU and SPEECH2.CLU\n\n");
+			print("into the game directory on your disk or into a \"SPEECH\" subdirectory\n");
+			print("and rename them to SPEECH1.CLU and SPEECH2.CLU\n\n");
 			print("If your OS is case-sensitive, make sure the filenames\n");
 			print("and directorynames are all upper-case.\n\n");
 		}
@@ -584,6 +651,7 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 	if (checkMusic) {
 		for (i = 0; i < 20; i++) { /* Check the first 20 music files */
 			// Check WAV file
+			// Try first in MUSIC sub-directory
 			sprintf(fileName, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
 			testFile = fopen(fileName, "rb");
 
@@ -592,9 +660,32 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 				fclose(testFile);
 				break;
 			}
+
+			// Then try at root of input directory
+			sprintf(fileName, "%s/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
+			testFile = fopen(fileName, "rb");
 			
+			if (testFile) {
+				musicFound = true;
+				fclose(testFile);
+				break;
+			}
+
 			// Check AIF file
+			// Try first in MUSIC sub-directory
 			sprintf(fileName, "%s/MUSIC/%s.AIF", inpath->getPath().c_str(), musicNames[i].fileName);
+			testFile = fopen(fileName, "rb");
+
+			if (testFile) {
+				musicFound = true;
+				_macVersion = true;
+				_speechEndianness = UnknownEndian;
+				fclose(testFile);
+				break;
+			}
+
+			// Then try at root of input directory
+			sprintf(fileName, "%s/%s.AIF", inpath->getPath().c_str(), musicNames[i].fileName);
 			testFile = fopen(fileName, "rb");
 			
 			if (testFile) {
@@ -604,12 +695,13 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 				fclose(testFile);
 				break;
 			}
+			
 		}
 
 		if (!musicFound) {
 			print("Unable to find music files.\n");
 			print("Please copy the music files from Broken Sword CD1 and CD2\n");
-			print("into the \"MUSIC\" subdirectory.\n");
+			print("into the game directory on your disk or into a \"MUSIC\" subdirectory.\n");
 			print("If your OS is case-sensitive, make sure the filenames\n");
 			print("and directorynames are all upper-case.\n");
 		}
@@ -628,7 +720,8 @@ InspectionMatch CompressSword1::inspectInput(const Common::Filename &filename) {
 	// This is the reason why this function is reimplemented there.
 	if (
 		scumm_stricmp(filename.getExtension().c_str(), "clu") == 0 ||
-		scumm_stricmp(filename.getExtension().c_str(), "clm") == 0
+		scumm_stricmp(filename.getExtension().c_str(), "clm") == 0 ||
+		scumm_stricmp(filename.getFullName().c_str(), "swordres.rif") == 0
 	)
 		return IMATCH_PERFECT;
 	return IMATCH_AWFUL;
@@ -637,6 +730,7 @@ InspectionMatch CompressSword1::inspectInput(const Common::Filename &filename) {
 CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_compSpeech = true;
 	_compMusic = true;
+	_useOutputMusicSubdir = true;
 	_macVersion = false;
 	_speechEndianness = LittleEndian;
 
