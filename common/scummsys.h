@@ -29,6 +29,8 @@
  */
 
 typedef unsigned char byte;
+typedef unsigned int uint;
+
 typedef unsigned char uint8;
 typedef unsigned short uint16;
 typedef signed char int8;
