@@ -21,7 +21,10 @@
  */
 
 #include "mohawk_file.h"
+#include "util.h"
 #include "utils/file.h"
+
+#include <assert.h>
 
 // Have a maximum buffer size
 #define MAX_BUF_SIZE 16384

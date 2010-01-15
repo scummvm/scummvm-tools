@@ -21,7 +21,10 @@
  */
 
 #include "mohawk_file.h"
+#include "util.h"
 #include "utils/file.h"
+
+#include <assert.h>
 
 #define NO_OP "empty"
 

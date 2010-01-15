@@ -25,7 +25,7 @@
 #ifndef COMMON_STRING_H
 #define COMMON_STRING_H
 
-#include "utils/array.h"
+#include "common/array.h"
 
 namespace Common {
 

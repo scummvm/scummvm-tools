@@ -43,6 +43,14 @@ typedef unsigned int uint32;
 typedef signed int int32;
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <assert.h>
+#include <ctype.h>
+#include <math.h>
+
 /*
  * Various utility macros
  */

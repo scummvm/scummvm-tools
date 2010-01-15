@@ -22,8 +22,11 @@
  * $Id$
  */
 
-#include "utils/str.h"
-#include "utils/util.h"
+#include "str.h"
+#include "util.h"
+
+//#include "engines/mohawk/utils/str.h"
+//#include "engines/mohawk/utils/util.h"
 
 #if !defined(__SYMBIAN32__)
 #include <new>

@@ -29,6 +29,8 @@ MODULE_DIRS += \
 	engines/gob/ \
 	engines/groovie/ \
 	engines/kyra/ \
+	engines/mohawk/ \
+	engines/mohawk/utils/ \
 	engines/parallaction/ \
 	engines/queen/ \
 	engines/saga/ \
@@ -62,8 +64,10 @@ endif
 TARGETS := \
 	decine$(EXEEXT) \
 	dekyra$(EXEEXT) \
+	deriven$(EXEEXT) \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
+	extract_mohawk$(EXEEXT) \
 	degob$(EXEEXT) \
 	scummvm-tools-cli$(EXEEXT)
 
@@ -109,9 +113,11 @@ bundle: scummvm-tools$(EXEEXT)
 PROGRAMS = \
 	decine \
 	dekyra \
+	deriven \
 	descumm \
 	desword2 \
 	degob \
+	extract_mohawk \
 	create_sjisfnt \
 	scummvm-tools \
 	scummvm-tools-cli \
@@ -124,6 +130,18 @@ dekyra_OBJS := \
 	engines/kyra/dekyra.o \
 	engines/kyra/dekyra_v1.o \
 	$(UTILS)
+
+deriven_OBJS := \
+	engines/mohawk/deriven.o \
+	engines/mohawk/mohawk_file.o \
+	engines/mohawk/utils/str.o \
+	engines/mohawk/utils/file.o \
+	engines/mohawk/utils/adpcm.o \
+	engines/mohawk/utils/audiostream.o \
+	engines/mohawk/utils/voc.o \
+	engines/mohawk/utils/wave.o \
+	common/md5.o \
+	common/util.o
 
 descumm_OBJS := \
 	engines/scumm/descumm-tool.o \
@@ -147,6 +165,17 @@ degob_OBJS := \
 	tool.o \
 	$(UTILS)
 
+extract_mohawk_OBJS := \
+	engines/mohawk/extract_mohawk.o \
+	engines/mohawk/mohawk_file.o \
+	engines/mohawk/utils/str.o \
+	engines/mohawk/utils/file.o \
+	engines/mohawk/utils/adpcm.o \
+	engines/mohawk/utils/audiostream.o \
+	engines/mohawk/utils/voc.o \
+	engines/mohawk/utils/wave.o \
+	common/md5.o \
+	common/util.o
 
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
 create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)

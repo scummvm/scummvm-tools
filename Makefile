@@ -88,8 +88,10 @@ win32dist:   all
 	strip decine.exe -o $(WIN32PATH)/tools/decine.exe
 	strip degob.exe -o $(WIN32PATH)/tools/degob.exe
 	strip dekyra.exe -o $(WIN32PATH)/tools/dekyra.exe
+	strip deriven.exe -o $(WIN32PATH)/tools/deriven.exe
 	strip descumm.exe -o $(WIN32PATH)/tools/descumm.exe
 	strip desword2.exe -o $(WIN32PATH)/tools/desword2.exe
+	strip extract_mohawk.exe -o $(WIN32PATH)/tools/extract_mohawk.exe
 	strip scummvm-tools.exe -o $(WIN32PATH)/tools/scummvm-tools.exe
 	strip scummvm-tools-cli.exe -o $(WIN32PATH)/tools/scummvm-tools-cli.exe
 	cp *.bat $(WIN32PATH)/tools
