@@ -486,23 +486,23 @@ char *get_var(char *buf) {
 
 	if (g_options.scriptVersion >= 5 &&
 			i < ARRAYSIZE(var_names5) && var_names5[i]) {
-		buf += sprintf(buf, var_names5[i]);
+		buf += sprintf(buf, "%s", var_names5[i]);
 		return buf;
 	} else if (g_options.scriptVersion >= 4 &&
 			i < ARRAYSIZE(var_names4) && var_names4[i]) {
-		buf += sprintf(buf, var_names4[i]);
+		buf += sprintf(buf, "%s", var_names4[i]);
 		return buf;
 	} else if (g_options.scriptVersion >= 3 &&
 			i < ARRAYSIZE(var_names3) && var_names3[i]) {
-		buf += sprintf(buf, var_names3[i]);
+		buf += sprintf(buf, "%s", var_names3[i]);
 		return buf;
 	} else if (g_options.scriptVersion >= 1 &&
 			i < ARRAYSIZE(var_names2) && var_names2[i]) {
-		buf += sprintf(buf, var_names2[i]);
+		buf += sprintf(buf, "%s", var_names2[i]);
 		return buf;
 	} else if (g_options.scriptVersion == 0 &&
 			i < ARRAYSIZE(var_names0) && var_names0[i]) {
-		buf += sprintf(buf, var_names0[i]);
+		buf += sprintf(buf, "%s", var_names0[i]);
 		return buf;
 	} else if (g_options.scriptVersion <= 2 && g_options.ZakFlag && (i == 234 || i == 235)) {
 		buf += sprintf(buf, (i == 234) ? "ZERO" : "ONE");
@@ -983,7 +983,7 @@ void do_resource_v2(char *buf, byte opcode) {
 		else
 			buf += sprintf(buf, "nuke");
 		assert(0 <= type && type < ARRAYSIZE(resTypes));
-		buf += sprintf(buf, resTypes[type]);
+		buf += sprintf(buf, "%s", resTypes[type]);
 		buf += sprintf(buf, "(%s)", resid);
 	} else {
 		if (subop & 1)
@@ -991,7 +991,7 @@ void do_resource_v2(char *buf, byte opcode) {
 		else
 			buf += sprintf(buf, "unlock");
 		assert(0 <= type && type < ARRAYSIZE(resTypes));
-		buf += sprintf(buf, resTypes[type]);
+		buf += sprintf(buf, "%s", resTypes[type]);
 		buf += sprintf(buf, "(%s)", resid);
 	}
 }
