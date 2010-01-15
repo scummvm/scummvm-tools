@@ -437,6 +437,7 @@ void unpack_resource(int stype, int snr, char *outfilename) {
 					guint8 *outdata = makeMIDI0(found->data, &midilength, midimask);
 					if (!outdata) {
 						fprintf(stderr, "MIDI conversion failed. Aborting...\n");
+						close(outf);
 						return;
 					}
 					if (verbose) printf("MIDI conversion from %d bytes of sound resource"

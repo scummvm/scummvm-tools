@@ -33,7 +33,7 @@
 class Tools {
 public:
 	Tools();
-	~Tools();
+	virtual ~Tools();
 
 	typedef std::vector<Tool *> ToolList;
 

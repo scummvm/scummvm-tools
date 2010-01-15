@@ -158,6 +158,7 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 	outBuffer = (int16 *)malloc(uncompressedSize);
 	if (!outBuffer) {
 		print("malloc failed!\n");
+		free(inBuffer);
 		return;
 	}
 
