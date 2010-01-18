@@ -23,11 +23,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <assert.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "common/scummsys.h"
+
 #include <sys/stat.h>
 
 #if !defined(_MSC_VER)
@@ -37,24 +34,6 @@
 #ifdef WIN32
 #include <io.h>
 #include <process.h>
-#endif
-
-
-/*
- * Some useful types
- */
-
-typedef unsigned char byte;
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef signed char int8;
-typedef signed short int16;
-#ifdef __amigaos4__
-#include <exec/types.h>
-#include <stdlib.h>
-#else
-typedef unsigned int uint32;
-typedef signed int int32;
 #endif
 
 typedef uint32 uint;
@@ -102,15 +81,11 @@ typedef uint32 uint;
  * GCC specific stuff
  */
 #if defined(__GNUC__)
-        #define GCC_PACK __attribute__((packed))
-        #define NORETURN __attribute__((__noreturn__))
-        #define GCC_PRINTF(x,y) __attribute__((format(printf, x, y)))
+	#define GCC_PACK __attribute__((packed))
+	#define NORETURN __attribute__((__noreturn__))
 #else
-        #define GCC_PACK
-        #define GCC_PRINTF(x,y)
+	#define GCC_PACK
 #endif
-
-#define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
 #if defined(INVERSE_MKID)
 #define MKID_BE(a) ((uint32) \

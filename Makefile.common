@@ -85,7 +85,10 @@ endif
 
 UTILS := \
 	common/file.o \
+	common/hashmap.o \
 	common/md5.o \
+	common/memorypool.o \
+	common/str.o \
 	common/util.o \
 	sound/adpcm.o \
 	sound/audiostream.o \
@@ -134,7 +137,9 @@ dekyra_OBJS := \
 deriven_OBJS := \
 	engines/mohawk/deriven.o \
 	engines/mohawk/mohawk_file.o \
-	engines/mohawk/utils/str.o \
+	common/hashmap.o \
+	common/memorypool.o \
+	common/str.o \
 	engines/mohawk/utils/file.o \
 	engines/mohawk/utils/adpcm.o \
 	engines/mohawk/utils/audiostream.o \
@@ -168,7 +173,9 @@ degob_OBJS := \
 extract_mohawk_OBJS := \
 	engines/mohawk/extract_mohawk.o \
 	engines/mohawk/mohawk_file.o \
-	engines/mohawk/utils/str.o \
+	common/hashmap.o \
+	common/memorypool.o \
+	common/str.o \
 	engines/mohawk/utils/file.o \
 	engines/mohawk/utils/adpcm.o \
 	engines/mohawk/utils/audiostream.o \

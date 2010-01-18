@@ -97,8 +97,10 @@ typedef signed int int32;
  */
 #if defined(__GNUC__)
 	#define GCC_PACK __attribute__((packed))
+	#define GCC_PRINTF(x,y) __attribute__((format(printf, x, y)))
 #else
 	#define GCC_PACK
+	#define GCC_PRINTF(x,y)
 #endif
 
 #ifndef ARRAYSIZE

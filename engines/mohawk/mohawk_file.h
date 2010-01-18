@@ -23,7 +23,7 @@
 #ifndef MOHAWK_FILE_H
 #define MOHAWK_FILE_H
 
-#include "utils/str.h"
+#include "common/str.h"
 #include "utils/stream.h"
 
 // Main FourCC's
@@ -116,6 +116,8 @@
 #define ID_BBOX MKID_BE('BBOX') // Boxes? (CSWorld, CSAmtrak)
 #define ID_SYSX MKID_BE('SYSX') // MIDI Sysex
 
+#define tag2str(x)	MohawkFile::tag2string(x).c_str()
+
 struct MohawkOutputStream {
 	Common::SeekableSubReadStream *stream;
 	uint32 tag;
@@ -182,6 +184,8 @@ public:
 	bool hasResource(uint32 tag, uint16 id);
 	virtual MohawkOutputStream getRawData(uint32 tag, uint16 id);
 	virtual MohawkOutputStream getNextFile();
+
+	static Common::String tag2string(uint32 tag);
 
 protected:
 	Common::SeekableReadStream *_mhk;

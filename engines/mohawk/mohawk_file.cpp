@@ -28,6 +28,21 @@ inline uint32 SWAP_BYTES_32(uint32 a) {
 		   | (uint16)((high >> 8) | (high << 8));
 }
 
+Common::String MohawkFile::tag2string(uint32 tag) {
+	char str[5];
+	str[0] = (char)(tag >> 24);
+	str[1] = (char)(tag >> 16);
+	str[2] = (char)(tag >> 8);
+	str[3] = (char)tag;
+	str[4] = '\0';
+	// Replace non-printable chars by dot
+	for (int i = 0; i < 4; ++i) {
+		if (!isprint(str[i]))
+			str[i] = '.';
+	}
+	return Common::String(str);
+}
+
 MohawkFile::MohawkFile() {
 	_mhk = NULL;
 	_curFile = Common::String::emptyString;
