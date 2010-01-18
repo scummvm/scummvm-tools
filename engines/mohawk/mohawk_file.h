@@ -122,6 +122,7 @@ struct MohawkOutputStream {
 	Common::SeekableSubReadStream *stream;
 	uint32 tag;
 	uint32 id;
+	uint32 index;
 	Common::String name;
 };
 
