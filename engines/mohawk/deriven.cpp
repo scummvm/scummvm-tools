@@ -109,7 +109,8 @@ Common::StringList getNameList(MohawkFile *mohawkFile, uint16 id) {
 	for (uint32 i = 0; i < namesCount; i++) {
 		nameResource.stream->seek(curNamesPos + stringOffsets[i]);
 
-		Common::String name = Common::String::emptyString;
+		Common::String name;
+		name.clear();
 		for (char c = nameResource.stream->readByte(); c; c = nameResource.stream->readByte())
 			name += c;
 		nameList.push_back(name);

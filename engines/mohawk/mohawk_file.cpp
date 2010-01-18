@@ -45,7 +45,7 @@ Common::String MohawkFile::tag2string(uint32 tag) {
 
 MohawkFile::MohawkFile() {
 	_mhk = NULL;
-	_curFile = Common::String::emptyString;
+	_curFile.clear();
 	_types = NULL;
 	_fileTable = NULL;
 	_curExType = 0;
@@ -57,7 +57,7 @@ void MohawkFile::close() {
 	delete[] _types; _types = NULL;
 	delete[] _fileTable; _fileTable = NULL;
 
-	_curFile = Common::String::emptyString;
+	_curFile.clear();
 	_curExType = 0;
 	_curExTypeIndex = 0;
 }
