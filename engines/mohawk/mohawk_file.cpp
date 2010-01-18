@@ -220,7 +220,7 @@ MohawkOutputStream MohawkFile::getRawData(uint32 tag, uint16 id) {
 		output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _fileTable[fileTableIndex].offset + _fileTable[fileTableIndex].dataSize);
 	output.tag = tag;
 	output.id = id;
-	if (_types[typeIndex].nameTable.num > 0)
+	if (idIndex < _types[typeIndex].nameTable.num)
 		output.name = _types[typeIndex].nameTable.entries[idIndex].name;
 
 	return output;
@@ -253,7 +253,7 @@ MohawkOutputStream MohawkFile::getNextFile() {
 	output.tag = _types[_curExType].tag;
 	output.id = _types[_curExType].resTable.entries[_curExTypeIndex].id;
 
-	if (_types[_curExType].nameTable.num > 0)
+	if (_curExTypeIndex < _types[_curExType].nameTable.num)
 		output.name = _types[_curExType].nameTable.entries[_curExTypeIndex].name;
 
 	_curExTypeIndex++;
