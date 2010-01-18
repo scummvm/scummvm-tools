@@ -48,6 +48,8 @@ MohawkFile::MohawkFile() {
 	_curFile = Common::String::emptyString;
 	_types = NULL;
 	_fileTable = NULL;
+	_curExType = 0;
+	_curExTypeIndex = 0;
 }
 
 void MohawkFile::close() {
@@ -56,6 +58,8 @@ void MohawkFile::close() {
 	delete[] _fileTable; _fileTable = NULL;
 
 	_curFile = Common::String::emptyString;
+	_curExType = 0;
+	_curExTypeIndex = 0;
 }
 
 void MohawkFile::open(Common::SeekableReadStream *stream) {
