@@ -109,11 +109,11 @@ void outputMohawkStream(MohawkOutputStream output, bool doConversion) {
 	// File output naming format preserves all archive information...
 	char *strBuf = (char *)malloc(256);
 	sprintf(strBuf, "%04d_%s_%d", output.index, tag2str(output.tag), output.id);
-	if(!output.name.empty())
-		sprintf(strBuf+strlen(strBuf), "_%s", output.name.c_str());
+	if (!output.name.empty())
+		sprintf(strBuf + strlen(strBuf), "_%s", output.name.c_str());
 	output.name = strBuf;
 
-	if(doConversion) {
+	if (doConversion) {
 		// Intercept the sound tags
 		if (output.tag == ID_TWAV || output.tag == ID_MSND || output.tag == ID_SND) {
 			convertSoundResource(output);
@@ -141,15 +141,12 @@ void outputMohawkStream(MohawkOutputStream output, bool doConversion) {
 
 void printUsage(const char *appName) {
 	printf("Usage: %s [options] <mohawk archive> [tag id]\n", appName);
-	printf("Options : --raw     : Dump Resources as raw binary dump (default)");
-	printf("          --convert : Dump Resources as converted files");
-	printf("          --new     : Load Mohawk Archive assuming new file format (default)");
-	printf("          --old     : Load Mohawk Archive assuming old file format");
+	printf("Options : --raw       Dump Resources as raw binary dump (default)\n");
+	printf("          --convert   Dump Resources as converted files\n");
 }
 
 int main(int argc, char *argv[]) {
 	bool doConversion = false;
-	bool oldMohawkFormat = false;
 	int archiveArg;
 
 	// Parse parameters
@@ -160,14 +157,10 @@ int main(int argc, char *argv[]) {
 			break;
 
 		// Decode options
-		if(current.equals("--raw"))
+		if (current.equals("--raw"))
 			doConversion = false;
-		else if(current.equals("--convert"))
+		else if (current.equals("--convert"))
 			doConversion = true;
-		else if(current.equals("--new"))
-			oldMohawkFormat = false;
-		else if(current.equals("--old"))
-			oldMohawkFormat = true;
 		else {
 			printf("Unknown argument : \"%s\"\n", argv[archiveArg]);
 			printUsage(argv[0]);
@@ -175,8 +168,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if(! (archiveArg == argc     - 1) || // No tag and id
-	     (archiveArg == argc - 2 - 1)) { //    tag and id
+	if (archiveArg != argc - 1 && archiveArg != argc - 2 - 1) { // No tag and id or tag and id present
 		printUsage(argv[0]);
 		return 1;
 	}
@@ -188,19 +180,20 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Open the file as a Mohawk archive
-	MohawkFile *mohawkFile;
-	if(oldMohawkFormat)
-		mohawkFile = new OldMohawkFile();
-	else
-		mohawkFile = new MohawkFile();
-	mohawkFile->open(new Common::File(file));
+	MohawkFile *mohawkFile = MohawkFile::createMohawkFile(new Common::File(file));
+	
+	if (!mohawkFile) {
+		printf("\'%s\' is not a valid Mohawk archive\n", argv[1]);
+		fclose(file);
+		return 1;
+	}
 
 	// Allocate a buffer for the output
 	outputBuffer = (byte *)malloc(MAX_BUF_SIZE);
 
 	if (argc == archiveArg - 2 - 1) {
-		uint32 tag = READ_BE_UINT32(argv[archiveArg+1]);
-		uint16 id = (uint16)atoi(argv[archiveArg+2]);
+		uint32 tag = READ_BE_UINT32(argv[archiveArg + 1]);
+		uint16 id = (uint16)atoi(argv[archiveArg + 2]);
 
 		MohawkOutputStream output = mohawkFile->getRawData(tag, id);
 
@@ -219,9 +212,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	printf ("Done!\n");
-
+	printf("Done!\n");
 	free(outputBuffer);
-
 	return 0;
 }

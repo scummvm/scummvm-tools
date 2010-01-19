@@ -394,3 +394,26 @@ MohawkOutputStream OldMohawkFile::getNextFile() {
 	_curExTypeIndex++;
 	return output;
 }
+
+MohawkFile *MohawkFile::createMohawkFile(Common::SeekableReadStream *stream) {
+	uint32 headerTag = stream->readUint32BE();
+	
+	MohawkFile *mohawkFile = 0;
+	
+	if (headerTag == ID_MHWK) {
+		stream->readUint32BE(); // File size, ignore
+		headerTag = stream->readUint32BE();
+		if (headerTag == ID_RSRC)
+			mohawkFile = new MohawkFile();
+	} else if (headerTag == 6 || SWAP_BYTES_32(headerTag) == 6) {
+		// Assume the old archive format
+		mohawkFile = new OldMohawkFile();
+	}
+	
+	stream->seek(0);
+
+	if (mohawkFile)
+		mohawkFile->open(stream);
+
+	return mohawkFile;
+}
