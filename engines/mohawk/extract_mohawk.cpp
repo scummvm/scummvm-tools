@@ -105,7 +105,7 @@ void convertMIDIResource(MohawkOutputStream output) {
 	fclose(outputFile);
 }
 
-void outputMohawkStream(MohawkOutputStream output, bool do_conversion) {
+void outputMohawkStream(MohawkOutputStream output, bool doConversion) {
 	// File output naming format preserves all archive information...
 	char *strBuf = (char *)malloc(256);
 	sprintf(strBuf, "%04d_%s_%d", output.index, tag2str(output.tag), output.id);
@@ -113,7 +113,7 @@ void outputMohawkStream(MohawkOutputStream output, bool do_conversion) {
 		sprintf(strBuf+strlen(strBuf), "_%s", output.name.c_str());
 	output.name = strBuf;
 
-	if(do_conversion) {
+	if(doConversion) {
 		// Intercept the sound tags
 		if (output.tag == ID_TWAV || output.tag == ID_MSND || output.tag == ID_SND) {
 			convertSoundResource(output);
@@ -143,40 +143,45 @@ void printUsage(const char *appName) {
 	printf("Usage: %s [options] <mohawk archive> [tag id]\n", appName);
 	printf("Options : --raw     : Dump Resources as raw binary dump (default)");
 	printf("          --convert : Dump Resources as converted files");
+	printf("          --new     : Load Mohawk Archive assuming new file format (default)");
+	printf("          --old     : Load Mohawk Archive assuming old file format");
 }
 
 int main(int argc, char *argv[]) {
-	bool do_conversion = false;
-	int archive_arg;
+	bool doConversion = false;
+	bool oldMohawkFormat = false;
+	int archiveArg;
 
 	// Parse parameters
-	for (archive_arg = 1; archive_arg < argc; archive_arg++) {
-		Common::String current = Common::String(argv[archive_arg]);
+	for (archiveArg = 1; archiveArg < argc; archiveArg++) {
+		Common::String current = Common::String(argv[archiveArg]);
 
 		if(!current.hasPrefix("--"))
 			break;
 
 		// Decode options
 		if(current.equals("--raw"))
-			do_conversion = false;
+			doConversion = false;
 		else if(current.equals("--convert"))
-			do_conversion = true;
+			doConversion = true;
+		else if(current.equals("--new"))
+			oldMohawkFormat = false;
+		else if(current.equals("--old"))
+			oldMohawkFormat = true;
 		else {
-			printf("Unknown argument : \"%s\"\n", argv[archive_arg]);
+			printf("Unknown argument : \"%s\"\n", argv[archiveArg]);
 			printUsage(argv[0]);
 			return 1;
 		}
 	}
 
-	printf("Debug : argc : %d archive_arg : %d\n", argc, archive_arg);
-
-	if(! (archive_arg == argc     - 1) || // No tag and id
-	     (archive_arg == argc - 2 - 1)) { //    tag and id
+	if(! (archiveArg == argc     - 1) || // No tag and id
+	     (archiveArg == argc - 2 - 1)) { //    tag and id
 		printUsage(argv[0]);
 		return 1;
 	}
 
-	FILE *file = fopen(argv[archive_arg], "rb");
+	FILE *file = fopen(argv[archiveArg], "rb");
 	if (!file) {
 		printf ("Could not open \'%s\'\n", argv[1]);
 		return 1;
@@ -184,7 +189,7 @@ int main(int argc, char *argv[]) {
 
 	// Open the file as a Mohawk archive
 	MohawkFile *mohawkFile;
-	if(Common::String(argv[0]).hasSuffix("old"))
+	if(oldMohawkFormat)
 		mohawkFile = new OldMohawkFile();
 	else
 		mohawkFile = new MohawkFile();
@@ -193,14 +198,14 @@ int main(int argc, char *argv[]) {
 	// Allocate a buffer for the output
 	outputBuffer = (byte *)malloc(MAX_BUF_SIZE);
 
-	if (argc == archive_arg - 2 - 1) {
-		uint32 tag = READ_BE_UINT32(argv[archive_arg+1]);
-		uint16 id = (uint16)atoi(argv[archive_arg+2]);
+	if (argc == archiveArg - 2 - 1) {
+		uint32 tag = READ_BE_UINT32(argv[archiveArg+1]);
+		uint16 id = (uint16)atoi(argv[archiveArg+2]);
 
 		MohawkOutputStream output = mohawkFile->getRawData(tag, id);
 
 		if (output.stream) {
-			outputMohawkStream(output, do_conversion);
+			outputMohawkStream(output, doConversion);
 			delete output.stream;
 		} else {
 			printf ("Could not find specified data!\n");
@@ -208,7 +213,7 @@ int main(int argc, char *argv[]) {
 	} else {
 		MohawkOutputStream output = mohawkFile->getNextFile();
 		while (output.stream) {
-			outputMohawkStream(output, do_conversion);
+			outputMohawkStream(output, doConversion);
 			delete output.stream;
 			output = mohawkFile->getNextFile();
 		}
