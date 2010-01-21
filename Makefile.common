@@ -141,10 +141,6 @@ deriven_OBJS := \
 	common/memorypool.o \
 	common/str.o \
 	engines/mohawk/utils/file.o \
-	engines/mohawk/utils/adpcm.o \
-	engines/mohawk/utils/audiostream.o \
-	engines/mohawk/utils/voc.o \
-	engines/mohawk/utils/wave.o \
 	common/md5.o \
 	common/util.o
 
@@ -177,10 +173,6 @@ extract_mohawk_OBJS := \
 	common/memorypool.o \
 	common/str.o \
 	engines/mohawk/utils/file.o \
-	engines/mohawk/utils/adpcm.o \
-	engines/mohawk/utils/audiostream.o \
-	engines/mohawk/utils/voc.o \
-	engines/mohawk/utils/wave.o \
 	common/md5.o \
 	common/util.o
 
