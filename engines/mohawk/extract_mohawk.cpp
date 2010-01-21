@@ -31,26 +31,40 @@
 
 static byte *outputBuffer = NULL;
 
-void dumpRawResource(MohawkOutputStream output) {
-	assert(outputBuffer);
+bool fileExists(const char *filename) {
+	FILE *outputFile = fopen(filename, "rb");
+	if (outputFile != NULL) {
+		fclose(outputFile);
+		return true;
+	}
+	return false;
+}
 
+void dumpRawResource(MohawkOutputStream output) {
 	// Change the extension to bin
 	output.name += ".bin";
 
-	printf ("Extracting \'%s\'...\n", output.name.c_str());
+	const char* outputCStr = output.name.c_str();
 
-	FILE *outputFile = fopen(output.name.c_str(), "wb");
+	printf ("Extracting \'%s\'...\n", outputCStr);
+
+	if(fileExists(outputCStr)) {
+		printf ("File \'%s\' already exists!\n", outputCStr);
+		return;
+	}
+	FILE *outputFile = fopen(outputCStr, "wb");
 	if (!outputFile) {
 		printf ("Could not open file for output!\n");
 		return;
 	}
+
+	assert(outputBuffer);
 
 	while (output.stream->pos() < output.stream->size()) {
 		uint32 size = output.stream->read(outputBuffer, MAX_BUF_SIZE);
 		fwrite(outputBuffer, 1, size, outputFile);
 	}
 
-	fflush(outputFile);
 	fclose(outputFile);
 }
 
@@ -65,6 +79,23 @@ void convertMovieResource(MohawkOutputStream output) {
 }
 
 void convertMIDIResource(MohawkOutputStream output) {
+	// Change the extension to midi
+	output.name += ".mid";
+
+	const char* outputCStr = output.name.c_str();
+
+	printf ("Extracting \'%s\'...\n", outputCStr);
+
+	if(fileExists(outputCStr)) {
+		printf ("File \'%s\' already exists!\n", outputCStr);
+		return;
+	}
+	FILE *outputFile = fopen(outputCStr, "wb");
+	if (!outputFile) {
+		printf ("Could not open file for output!\n");
+		return;
+	}
+
 	// Read the Mohawk MIDI header
 	assert(output.stream->readUint32BE() == ID_MHWK);
 	output.stream->readUint32BE(); // Skip size
@@ -85,23 +116,10 @@ void convertMIDIResource(MohawkOutputStream output) {
 	uint32 mtrkSize = output.stream->size() - output.stream->pos();
 	output.stream->read(midiData + 14, mtrkSize);
 
-	// Change the extension to midi
-	output.name += ".mid";
-
-	printf ("Extracting \'%s\'...\n", output.name.c_str());
-
-	FILE *outputFile = fopen(output.name.c_str(), "wb");
-	if (!outputFile) {
-		printf ("Could not open file for output!\n");
-		free(midiData);
-		return;
-	}
-
 	// Output the data to the file.
 	fwrite(midiData, 1, 14 + mtrkSize, outputFile);
 	free(midiData);
 
-	fflush(outputFile);
 	fclose(outputFile);
 }
 
@@ -175,7 +193,7 @@ int main(int argc, char *argv[]) {
 
 	FILE *file = fopen(argv[archiveArg], "rb");
 	if (!file) {
-		printf ("Could not open \'%s\'\n", argv[1]);
+		printf ("Could not open \'%s\'\n", argv[archiveArg]);
 		return 1;
 	}
 
@@ -183,7 +201,7 @@ int main(int argc, char *argv[]) {
 	MohawkFile *mohawkFile = MohawkFile::createMohawkFile(new Common::File(file));
 	
 	if (!mohawkFile) {
-		printf("\'%s\' is not a valid Mohawk archive\n", argv[1]);
+		printf("\'%s\' is not a valid Mohawk archive\n", argv[archiveArg]);
 		fclose(file);
 		return 1;
 	}
@@ -214,5 +232,7 @@ int main(int argc, char *argv[]) {
 
 	printf("Done!\n");
 	free(outputBuffer);
+	mohawkFile->close();
+	fclose(file);
 	return 0;
 }
