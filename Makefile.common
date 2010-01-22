@@ -135,8 +135,8 @@ dekyra_OBJS := \
 	$(UTILS)
 
 deriven_OBJS := \
+	engines/mohawk/archive.o \
 	engines/mohawk/deriven.o \
-	engines/mohawk/mohawk_file.o \
 	common/hashmap.o \
 	common/memorypool.o \
 	common/str.o \
@@ -167,8 +167,8 @@ degob_OBJS := \
 	$(UTILS)
 
 extract_mohawk_OBJS := \
+	engines/mohawk/archive.o \
 	engines/mohawk/extract_mohawk.o \
-	engines/mohawk/mohawk_file.o \
 	common/hashmap.o \
 	common/memorypool.o \
 	common/str.o \

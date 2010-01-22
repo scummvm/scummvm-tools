@@ -20,7 +20,7 @@
  *
  */
 
-#include "mohawk_file.h"
+#include "engines/mohawk/archive.h"
 
 inline uint32 SWAP_BYTES_32(uint32 a) {
 	const uint16 low = (uint16)a, high = (uint16)(a >> 16);
@@ -28,7 +28,7 @@ inline uint32 SWAP_BYTES_32(uint32 a) {
 		   | (uint16)((high >> 8) | (high << 8));
 }
 
-Common::String MohawkFile::tag2string(uint32 tag) {
+Common::String MohawkArchive::tag2string(uint32 tag) {
 	char str[5];
 	str[0] = (char)(tag >> 24);
 	str[1] = (char)(tag >> 16);
@@ -43,7 +43,7 @@ Common::String MohawkFile::tag2string(uint32 tag) {
 	return Common::String(str);
 }
 
-MohawkFile::MohawkFile() {
+MohawkArchive::MohawkArchive() {
 	_mhk = NULL;
 	_curFile.clear();
 	_types = NULL;
@@ -52,7 +52,7 @@ MohawkFile::MohawkFile() {
 	_curExTypeIndex = 0;
 }
 
-void MohawkFile::close() {
+void MohawkArchive::close() {
 	delete _mhk; _mhk = NULL;
 	delete[] _types; _types = NULL;
 	delete[] _fileTable; _fileTable = NULL;
@@ -62,7 +62,7 @@ void MohawkFile::close() {
 	_curExTypeIndex = 0;
 }
 
-void MohawkFile::open(Common::SeekableReadStream *stream) {
+void MohawkArchive::open(Common::SeekableReadStream *stream) {
 	// Make sure no other file is open...
 	close();
 	_mhk = stream;
@@ -176,7 +176,7 @@ void MohawkFile::open(Common::SeekableReadStream *stream) {
 	}
 }
 
-bool MohawkFile::hasResource(uint32 tag, uint16 id) {
+bool MohawkArchive::hasResource(uint32 tag, uint16 id) {
 	if (!_mhk)
 		return false;
 
@@ -188,7 +188,7 @@ bool MohawkFile::hasResource(uint32 tag, uint16 id) {
 	return (getIdIndex(typeIndex, id) >= 0);
 }
 
-MohawkOutputStream MohawkFile::getRawData(uint32 tag, uint16 id) {
+MohawkOutputStream MohawkArchive::getRawData(uint32 tag, uint16 id) {
 	MohawkOutputStream output = { 0, 0, 0, 0, "" };
 
 	if (!_mhk)
@@ -227,7 +227,7 @@ MohawkOutputStream MohawkFile::getRawData(uint32 tag, uint16 id) {
 	return output;
 }
 
-MohawkOutputStream MohawkFile::getNextFile() {
+MohawkOutputStream MohawkArchive::getNextFile() {
 	MohawkOutputStream output = { 0, 0, 0, 0, "" };
 
 	if (_curExType >= _typeTable.resource_types) // No more!
@@ -262,7 +262,7 @@ MohawkOutputStream MohawkFile::getNextFile() {
 	return output;
 }
 
-void OldMohawkFile::open(Common::SeekableReadStream *stream) {
+void LivingBooksArchive_v1::open(Common::SeekableReadStream *stream) {
 	close();
 	_mhk = stream;
 
@@ -348,7 +348,7 @@ void OldMohawkFile::open(Common::SeekableReadStream *stream) {
 
 }
 
-MohawkOutputStream OldMohawkFile::getRawData(uint32 tag, uint16 id) {
+MohawkOutputStream LivingBooksArchive_v1::getRawData(uint32 tag, uint16 id) {
 	MohawkOutputStream output = { 0, 0, 0, 0, "" };
 
 	if (!_mhk)
@@ -372,7 +372,7 @@ MohawkOutputStream OldMohawkFile::getRawData(uint32 tag, uint16 id) {
 	return output;
 }
 
-MohawkOutputStream OldMohawkFile::getNextFile() {
+MohawkOutputStream LivingBooksArchive_v1::getNextFile() {
 	MohawkOutputStream output = { 0, 0, 0, 0, "" };
 
 	if (_curExType >= _typeTable.resource_types) // No more!
@@ -395,25 +395,27 @@ MohawkOutputStream OldMohawkFile::getNextFile() {
 	return output;
 }
 
-MohawkFile *MohawkFile::createMohawkFile(Common::SeekableReadStream *stream) {
+MohawkArchive *MohawkArchive::createMohawkArchive(Common::SeekableReadStream *stream) {
 	uint32 headerTag = stream->readUint32BE();
 	
-	MohawkFile *mohawkFile = 0;
+	MohawkArchive *mohawkArchive = 0;
 	
 	if (headerTag == ID_MHWK) {
 		stream->readUint32BE(); // File size, ignore
 		headerTag = stream->readUint32BE();
 		if (headerTag == ID_RSRC)
-			mohawkFile = new MohawkFile();
+			mohawkArchive = new MohawkArchive();
+	} else if (headerTag == ID_LBRC) {
+		printf("Detected Living Books v2 archive - not yet supported!\n");
 	} else if (headerTag == 6 || SWAP_BYTES_32(headerTag) == 6) {
-		// Assume the old archive format
-		mohawkFile = new OldMohawkFile();
+		// Assume the Living Books v1 archive format
+		mohawkArchive = new LivingBooksArchive_v1();
 	}
 	
 	stream->seek(0);
 
-	if (mohawkFile)
-		mohawkFile->open(stream);
+	if (mohawkArchive)
+		mohawkArchive->open(stream);
 
-	return mohawkFile;
+	return mohawkArchive;
 }

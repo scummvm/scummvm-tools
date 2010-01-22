@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef MOHAWK_FILE_H
-#define MOHAWK_FILE_H
+#ifndef MOHAWK_ARCHIVE_H
+#define MOHAWK_ARCHIVE_H
 
 #include "common/str.h"
 #include "utils/stream.h"
@@ -29,6 +29,7 @@
 // Main FourCC's
 #define ID_MHWK MKID_BE('MHWK') // Main FourCC
 #define ID_RSRC MKID_BE('RSRC') // Resource Directory Tag
+#define ID_LBRC MKID_BE('LBRC') // Living Books v2 FourCC
 
 // Myst Resource FourCC's
 #define ID_CLRC MKID_BE('CLRC') // Cursor Hotspots
@@ -116,7 +117,7 @@
 #define ID_BBOX MKID_BE('BBOX') // Boxes? (CSWorld, CSAmtrak)
 #define ID_SYSX MKID_BE('SYSX') // MIDI Sysex
 
-#define tag2str(x)	MohawkFile::tag2string(x).c_str()
+#define tag2str(x)	MohawkArchive::tag2string(x).c_str()
 
 struct MohawkOutputStream {
 	Common::SeekableSubReadStream *stream;
@@ -174,13 +175,13 @@ struct RSRC_Header {
 	uint16 file_table_size;
 };
 
-class MohawkFile {
+class MohawkArchive {
 public:
-	MohawkFile();
-	virtual ~MohawkFile() { close(); }
+	MohawkArchive();
+	virtual ~MohawkArchive() { close(); }
 	
 	// Detect new/old Mohawk archive format. Return NULL if the file is neither.
-	static MohawkFile *createMohawkFile(Common::SeekableReadStream *stream);
+	static MohawkArchive *createMohawkArchive(Common::SeekableReadStream *stream);
 
 	virtual void open(Common::SeekableReadStream *stream);
 	void close();
@@ -226,10 +227,10 @@ private:
 	}
 };
 
-class OldMohawkFile : public MohawkFile {
+class LivingBooksArchive_v1 : public MohawkArchive {
 public:
-	OldMohawkFile() : MohawkFile() {}
-	~OldMohawkFile() {}
+	LivingBooksArchive_v1() : MohawkArchive() {}
+	~LivingBooksArchive_v1() {}
 
 	void open(Common::SeekableReadStream *stream);
 	MohawkOutputStream getRawData(uint32 tag, uint16 id);

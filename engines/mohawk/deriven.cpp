@@ -20,7 +20,7 @@
  *
  */
 
-#include "mohawk_file.h"
+#include "engines/mohawk/archive.h"
 #include "util.h"
 #include "utils/file.h"
 
@@ -95,8 +95,8 @@ void printUsage(const char *appName) {
 	printf("Usage: %s <mohawk archive> [CARD or HSPT] [id]\n", appName);
 }
 
-Common::StringList getNameList(MohawkFile *mohawkFile, uint16 id) {
-	MohawkOutputStream nameResource = mohawkFile->getRawData(ID_NAME, id);
+Common::StringList getNameList(MohawkArchive *mohawkArchive, uint16 id) {
+	MohawkOutputStream nameResource = mohawkArchive->getRawData(ID_NAME, id);
 	Common::StringList nameList;
 
 	uint16 namesCount = nameResource.stream->readUint16BE();
@@ -207,12 +207,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Open the file as a Mohawk archive
-	MohawkFile *mohawkFile = new MohawkFile();
-	mohawkFile->open(new Common::File(file));
+	MohawkArchive *mohawkArchive = new MohawkArchive();
+	mohawkArchive->open(new Common::File(file));
 
 	// Load in Variable/External Command Names'
-	Common::StringList exNames = getNameList(mohawkFile, 3);
-	Common::StringList varNames = getNameList(mohawkFile, 4);
+	Common::StringList exNames = getNameList(mohawkArchive, 3);
+	Common::StringList varNames = getNameList(mohawkArchive, 4);
 
 	uint32 tag = READ_BE_UINT32(argv[2]);
 	uint32 cardId = (uint16)atoi(argv[3]);
@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
 		printf("\n\nDumping scripts for card %d!\n", cardId);
 		printf("==================================\n\n");
 
-		MohawkOutputStream cardStream = mohawkFile->getRawData(ID_CARD, cardId);
+		MohawkOutputStream cardStream = mohawkArchive->getRawData(ID_CARD, cardId);
 		cardStream.stream->readUint32BE(); // Skip first 4 bytes
 
 		dumpScript(cardStream.stream, varNames, exNames, 0);
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
 		printf("\n\nDumping scripts for card %d hotspots!\n", cardId);
 		printf("===========================================\n\n");
 
-		MohawkOutputStream hsptStream = mohawkFile->getRawData(ID_HSPT, cardId);
+		MohawkOutputStream hsptStream = mohawkArchive->getRawData(ID_HSPT, cardId);
 		uint16 hotspotCount = hsptStream.stream->readUint16BE();
 
 		for (uint16 i = 0; i < hotspotCount; i++) {

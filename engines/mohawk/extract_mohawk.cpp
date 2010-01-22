@@ -20,7 +20,7 @@
  *
  */
 
-#include "mohawk_file.h"
+#include "engines/mohawk/archive.h"
 #include "util.h"
 #include "utils/file.h"
 
@@ -198,9 +198,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Open the file as a Mohawk archive
-	MohawkFile *mohawkFile = MohawkFile::createMohawkFile(new Common::File(file));
+	MohawkArchive *mohawkArchive = MohawkArchive::createMohawkArchive(new Common::File(file));
 	
-	if (!mohawkFile) {
+	if (!mohawkArchive) {
 		printf("\'%s\' is not a valid Mohawk archive\n", argv[archiveArg]);
 		fclose(file);
 		return 1;
@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
 		uint32 tag = READ_BE_UINT32(argv[archiveArg + 1]);
 		uint16 id = (uint16)atoi(argv[archiveArg + 2]);
 
-		MohawkOutputStream output = mohawkFile->getRawData(tag, id);
+		MohawkOutputStream output = mohawkArchive->getRawData(tag, id);
 
 		if (output.stream) {
 			outputMohawkStream(output, doConversion);
@@ -222,17 +222,18 @@ int main(int argc, char *argv[]) {
 			printf ("Could not find specified data!\n");
 		}
 	} else {
-		MohawkOutputStream output = mohawkFile->getNextFile();
+		MohawkOutputStream output = mohawkArchive->getNextFile();
 		while (output.stream) {
 			outputMohawkStream(output, doConversion);
 			delete output.stream;
-			output = mohawkFile->getNextFile();
+			output = mohawkArchive->getNextFile();
 		}
 	}
 
 	printf("Done!\n");
 	free(outputBuffer);
-	mohawkFile->close();
+	mohawkArchive->close();
 	fclose(file);
+	delete mohawkArchive;
 	return 0;
 }
