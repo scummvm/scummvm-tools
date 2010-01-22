@@ -24,7 +24,9 @@
 #define MOHAWK_ARCHIVE_H
 
 #include "common/str.h"
-#include "utils/stream.h"
+#include "common/endian.h"
+#include "common/util.h"
+#include "engines/mohawk/utils/stream.h"
 
 // Main FourCC's
 #define ID_MHWK MKID_BE('MHWK') // Main FourCC

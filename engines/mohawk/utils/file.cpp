@@ -20,7 +20,8 @@
  *
  */
 
-#include "file.h"
+#include "common/util.h"
+#include "engines/mohawk/utils/file.h"
 
 
 namespace Common {

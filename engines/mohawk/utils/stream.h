@@ -23,7 +23,7 @@
 #ifndef COMMON_STREAM_H
 #define COMMON_STREAM_H
 
-#include "../util.h"
+#include "common/scummsys.h"
 
 namespace Common {
 
