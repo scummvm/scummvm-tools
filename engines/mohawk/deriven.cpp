@@ -21,8 +21,8 @@
  */
 
 #include "engines/mohawk/archive.h"
-#include "util.h"
-#include "utils/file.h"
+#include "common/util.h"
+#include "engines/mohawk/utils/file.h"
 
 #include <assert.h>
 
