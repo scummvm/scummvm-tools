@@ -248,19 +248,17 @@ int main(int argc, char *argv[]) {
 		sjisFont.write(sjis16x16FontData, sjis16x16DataSize);
 		sjisFont.write(sjis8x16FontData, sjis8x16DataSize);
 
-		if (sjisFont.err()) {
-			delete[] sjis8x16FontData;
-			delete[] sjis16x16FontData;
+		delete[] sjis8x16FontData;
+		delete[] sjis16x16FontData;
+
+		if (sjisFont.err())
 			error("Error while writing to font file: '%s'", out);
-		}
 	} else {
 		delete[] sjis8x16FontData;
 		delete[] sjis16x16FontData;
 		error("Could not open file '%s' for writing", out);
 	}
 
-	delete[] sjis8x16FontData;
-	delete[] sjis16x16FontData;
 	return 0;
 }
 
