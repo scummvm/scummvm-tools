@@ -140,6 +140,7 @@ write_files(int count, char **names) {
 
 	resource_map = creat("resource.map", 0644);
 	if (resource_map < 0) {
+		close(resource_000);
 		perror("While creating 'resource.map'");
 		return -1;
 	}
@@ -155,6 +156,8 @@ write_files(int count, char **names) {
 		int bot_offset = offset & 0xffff;
 
 		if (fd < 0) {
+			close(resource_000);
+			close(resource_map);
 			perror(names[i]);
 			return -1;
 		}
