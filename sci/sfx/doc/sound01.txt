@@ -78,7 +78,7 @@ allowed (since they are now separate resources).
     tracks, because the user may also have a Sound Blaster card
     connected. SCI1 most likely has more hardware IDs than these.
 
-    0x00 - Sound Blaster, Adlib
+    0x00 - Sound Blaster, AdLib
     0x06 - MT-32 with Sound Blaster (for digital audio)
     0x09 - CMS/Game Blaster
     0x0c - Roland MT-32
