@@ -432,7 +432,6 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 		}
 
 		while (!eos) {
-			int i, j;
 			int numSamples = ((samplesLeft < 2048) ? samplesLeft : 2048);
 			float **buffer = vorbis_analysis_buffer(&vd, numSamples);
 
@@ -443,21 +442,21 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 				/* Adapted from oggenc 1.1.1 */
 				if (rawAudioType.bitsPerSample == 8) {
 					const byte *rawDataUnsigned = (const byte *)rawData;
-					for (i = 0; i < numSamples; i++) {
-						for (j = 0; j < numChannels; j++) {
+					for (int i = 0; i < numSamples; i++) {
+						for (int j = 0; j < numChannels; j++) {
 							buffer[j][i] = ((int)(rawDataUnsigned[i * numChannels + j]) - 128) / 128.0f;
 						}
 					}
 				} else if (rawAudioType.bitsPerSample == 16) {
 					if (rawAudioType.isLittleEndian) {
-						for (i = 0; i < numSamples; i++) {
-							for (j = 0; j < numChannels; j++) {
+						for (int i = 0; i < numSamples; i++) {
+							for (int j = 0; j < numChannels; j++) {
 								buffer[j][i] = ((rawData[(i * 2 * numChannels) + (2 * j) + 1] << 8) | (rawData[(i * 2 * numChannels) + (2 * j)] & 0xff)) / 32768.0f;
 							}
 						}
 					} else {
-						for (i = 0; i < numSamples; i++) {
-							for (j = 0; j < numChannels; j++) {
+						for (int i = 0; i < numSamples; i++) {
+							for (int j = 0; j < numChannels; j++) {
 								buffer[j][i] = ((rawData[(i * 2 * numChannels) + (2 * j)] << 8) | (rawData[(i * 2 * numChannels) + (2 * j) + 1] & 0xff)) / 32768.0f;
 							}
 						}
@@ -554,6 +553,7 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 		if (initStatus != FLAC__STREAM_ENCODER_INIT_STATUS_OK) {
 			char buf[2048];
 			sprintf(buf, "Error in FLAC encoder. (check the parameters)\nExact error was:%s\n", FLAC__StreamEncoderInitStatusString[initStatus]);
+			free(flacData);
 			throw ToolException(buf);
 		} else {
 			FLAC__stream_encoder_process_interleaved(encoder, flacData, samplesPerChannel);
