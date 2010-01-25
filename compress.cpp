@@ -609,19 +609,19 @@ void CompressionTool::extractAndEncodeAIFF(const char *inName, const char *outNa
 	inFile.read_throwsOnError(buf, 4);
 	if (memcmp(buf, "AIFF", 4) != 0)
 		error("Error: AIFF file has no 'AIFF' header");
-	
+
 	bool foundCOMM = false;
 	bool foundSSND = false;
 	uint16 numChannels = 0, bitsPerSample = 0;
 	uint32 numSampleFrames = 0, offset = 0, blockSize = 0, soundOffset = 0;
 	uint32 sampleRate = 0;
-	
+
 	while ((!foundCOMM || !foundSSND) && !inFile.err() && !inFile.eos()) {
-		
+
 		inFile.read_throwsOnError(buf, 4);
 		uint32 length = inFile.readUint32BE();
 		uint32 pos = inFile.pos();
-		
+
 		if (memcmp(buf, "COMM", 4) == 0) {
 			foundCOMM = true;
 			numChannels = inFile.readUint16BE();
@@ -635,12 +635,12 @@ void CompressionTool::extractAndEncodeAIFF(const char *inName, const char *outNa
 			inFile.read_throwsOnError(rate_buf, 10);
 			sampleRate = READ_BE_UINT32(rate_buf + 2);
 			byte exp = 30 - rate_buf[1];
-			
+
 			while (exp--) {
 				last = sampleRate;
 				sampleRate >>= 1;
 			}
-			
+
 			if (last & 0x00000001)
 				sampleRate++;
 		} else if (memcmp(buf, "SSND", 4) == 0) {
@@ -649,25 +649,25 @@ void CompressionTool::extractAndEncodeAIFF(const char *inName, const char *outNa
 			blockSize = inFile.readUint32BE();
 			soundOffset = inFile.pos();
 		}
-		
+
 		inFile.seek(pos + length, SEEK_SET);
 	}
 	if (!foundCOMM)
 		error("Error: AIFF file has no 'COMM' chunk in 'AIFF' header");
-	
+
 	if (!foundSSND)
 		error("Error: AIFF file has no 'COMM' chunk in 'SSND' header");
-	
+
 	// Only a subset of the AIFF format is supported
 	if (numChannels < 1 || numChannels > 2)
 		error("Error: AIFF file has an unsupported number of channels");
-	
+
 	if (bitsPerSample != 8 && bitsPerSample != 16)
 		error("Error: AIFF file has an unsupported number of bits per sample");
-	
+
 	if (offset != 0 || blockSize != 0)
 		error("Error: AIFF file has block-aligned data, which is not supported");
-	
+
 	// Get data and write to temporary file
 	uint32 size = numSampleFrames * numChannels * (bitsPerSample / 8);
 	inFile.seek(soundOffset, SEEK_SET);
@@ -677,12 +677,12 @@ void CompressionTool::extractAndEncodeAIFF(const char *inName, const char *outNa
 	tmpFile.write(aifData, size);
 	tmpFile.close();
 	free(aifData);
-	
+
 	// Convert the temporary raw file to MP3/OGG/FLAC
 	// Samples are always signed, and big endian.
 	setRawAudioType(false, numChannels == 2, bitsPerSample);
 	encodeAudio(TEMP_RAW, true, sampleRate, outName, compmode);
-	
+
 	// Delete temporary file
 	unlink(TEMP_RAW);
 }
