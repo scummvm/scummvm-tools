@@ -106,8 +106,7 @@ void ExtractGobStk::readChunkList(Common::File &stk, Common::File &gobConf) {
 	uint16 numDataChunks = stk.readUint16LE();
 
 	// If we are run multiple times, free previous chunk list
-	if (_chunks)
-		delete _chunks;
+	delete _chunks;
 	_chunks = new Chunk;
 	Chunk *curChunk = _chunks;
 	char *fakeTotPtr;

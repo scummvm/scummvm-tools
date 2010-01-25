@@ -63,8 +63,7 @@ void Archive::unpackSubfile(byte *packedData, uint32 packedSize) {
 }
 
 void Archive::closeSubfile() {
-	if (_fileData)
-		free(_fileData);
+	free(_fileData);
 	_fileData = NULL;
 	_fileSize = 0;
 	_filePos = 0;

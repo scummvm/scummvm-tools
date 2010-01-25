@@ -621,8 +621,8 @@ void EncodeDXA::execute() {
 			}
 		}
 
-		if (image) delete[] image;
-		if (palette) delete[] palette;
+		delete[] image;
+		delete[] palette;
 
 		if (r)
 			break;
