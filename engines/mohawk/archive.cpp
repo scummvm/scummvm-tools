@@ -194,7 +194,7 @@ bool MohawkArchive::hasResource(uint32 tag, uint16 id) {
 }
 
 MohawkOutputStream MohawkArchive::getRawData(uint32 tag, uint16 id) {
-	MohawkOutputStream output = { 0, 0, 0, 0, "" };
+	MohawkOutputStream output = { 0, 0, 0, 0, 0, "" };
 
 	if (!_mhk)
 		return output;
@@ -226,6 +226,7 @@ MohawkOutputStream MohawkArchive::getRawData(uint32 tag, uint16 id) {
 	output.tag = tag;
 	output.id = id;
 	output.index = fileTableIndex;
+	output.flags = _fileTable[fileTableIndex].flags;
 	if (idIndex < _types[typeIndex].nameTable.num)
 		output.name = _types[typeIndex].nameTable.entries[idIndex].name;
 
@@ -233,7 +234,7 @@ MohawkOutputStream MohawkArchive::getRawData(uint32 tag, uint16 id) {
 }
 
 MohawkOutputStream MohawkArchive::getNextFile() {
-	MohawkOutputStream output = { 0, 0, 0, 0, "" };
+	MohawkOutputStream output = { 0, 0, 0, 0, 0, "" };
 
 	if (_curExType >= _typeTable.resource_types) // No more!
 		return output;
@@ -259,6 +260,7 @@ MohawkOutputStream MohawkArchive::getNextFile() {
 	output.tag = _types[_curExType].tag;
 	output.id = _types[_curExType].resTable.entries[_curExTypeIndex].id;
 	output.index = fileTableIndex;
+	output.flags = _fileTable[fileTableIndex].flags;
 
 	if (_curExTypeIndex < _types[_curExType].nameTable.num)
 		output.name = _types[_curExType].nameTable.entries[_curExTypeIndex].name;
@@ -354,7 +356,7 @@ void LivingBooksArchive_v1::open(Common::SeekableReadStream *stream) {
 }
 
 MohawkOutputStream LivingBooksArchive_v1::getRawData(uint32 tag, uint16 id) {
-	MohawkOutputStream output = { 0, 0, 0, 0, "" };
+	MohawkOutputStream output = { 0, 0, 0, 0, 0, "" };
 
 	if (!_mhk)
 		return output;
@@ -378,7 +380,7 @@ MohawkOutputStream LivingBooksArchive_v1::getRawData(uint32 tag, uint16 id) {
 }
 
 MohawkOutputStream LivingBooksArchive_v1::getNextFile() {
-	MohawkOutputStream output = { 0, 0, 0, 0, "" };
+	MohawkOutputStream output = { 0, 0, 0, 0, 0, "" };
 
 	if (_curExType >= _typeTable.resource_types) // No more!
 		return output;

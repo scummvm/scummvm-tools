@@ -126,6 +126,7 @@ struct MohawkOutputStream {
 	uint32 tag;
 	uint32 id;
 	uint32 index;
+	byte flags;
 	Common::String name;
 };
 

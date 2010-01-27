@@ -123,10 +123,15 @@ void convertMIDIResource(MohawkOutputStream output) {
 	fclose(outputFile);
 }
 
-void outputMohawkStream(MohawkOutputStream output, bool doConversion) {
+void outputMohawkStream(MohawkOutputStream output, bool doConversion, bool fileTableIndex, bool fileTableFlags) {
 	// File output naming format preserves all archive information...
 	char *strBuf = (char *)malloc(256);
-	sprintf(strBuf, "%04d_%s_%d", output.index, tag2str(output.tag), output.id);
+	strBuf[0] = '\0';
+	if (fileTableIndex)
+		sprintf(strBuf + strlen(strBuf), "%04d_", output.index);
+	if (fileTableFlags)
+		sprintf(strBuf + strlen(strBuf), "%02x_", output.flags);
+	sprintf(strBuf + strlen(strBuf), "%s_%d", tag2str(output.tag), output.id);
 	if (!output.name.empty())
 		sprintf(strBuf + strlen(strBuf), "_%s", output.name.c_str());
 	output.name = strBuf;
@@ -159,12 +164,22 @@ void outputMohawkStream(MohawkOutputStream output, bool doConversion) {
 
 void printUsage(const char *appName) {
 	printf("Usage: %s [options] <mohawk archive> [tag id]\n", appName);
-	printf("Options : --raw       Dump Resources as raw binary dump (default)\n");
-	printf("          --convert   Dump Resources as converted files\n");
+	printf("\n");
+	printf("Options : --raw        Dump Resources as raw binary dump (default)\n");
+	printf("          --convert    Dump Resources as converted files\n");
+	printf("\n");
+	printf("          --ftindex    Prepend File Table Index to dumped resource names (default)\n");
+	printf("          --no-ftindex Omit File Table Index from dumped resource names\n");
+	printf("          --ftflags    Prepend File Table Flags to dumped resource names (default)\n");
+	printf("          --no-ftflags Omit File Table Flags from dumped resource names\n");
 }
 
 int main(int argc, char *argv[]) {
+	// Defaults for options
 	bool doConversion = false;
+	bool fileTableIndex = true;
+	bool fileTableFlags = true;
+
 	int archiveArg;
 
 	// Parse parameters
@@ -179,6 +194,14 @@ int main(int argc, char *argv[]) {
 			doConversion = false;
 		else if (current.equals("--convert"))
 			doConversion = true;
+		else if (current.equals("--no-ftindex"))
+			fileTableIndex = false;
+		else if (current.equals("--ftindex"))
+			fileTableIndex = true;
+		else if (current.equals("--no-ftflags"))
+			fileTableFlags = false;
+		else if (current.equals("--no-ftflags"))
+			fileTableFlags = true;
 		else {
 			printf("Unknown argument : \"%s\"\n", argv[archiveArg]);
 			printUsage(argv[0]);
@@ -216,7 +239,7 @@ int main(int argc, char *argv[]) {
 		MohawkOutputStream output = mohawkArchive->getRawData(tag, id);
 
 		if (output.stream) {
-			outputMohawkStream(output, doConversion);
+			outputMohawkStream(output, doConversion, fileTableIndex, fileTableFlags);
 			delete output.stream;
 		} else {
 			printf ("Could not find specified data!\n");
@@ -224,7 +247,7 @@ int main(int argc, char *argv[]) {
 	} else {
 		MohawkOutputStream output = mohawkArchive->getNextFile();
 		while (output.stream) {
-			outputMohawkStream(output, doConversion);
+			outputMohawkStream(output, doConversion, fileTableIndex, fileTableFlags);
 			delete output.stream;
 			output = mohawkArchive->getNextFile();
 		}
