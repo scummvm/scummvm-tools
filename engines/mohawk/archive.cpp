@@ -227,8 +227,12 @@ MohawkOutputStream MohawkArchive::getRawData(uint32 tag, uint16 id) {
 	output.id = id;
 	output.index = fileTableIndex;
 	output.flags = _fileTable[fileTableIndex].flags;
-	if (idIndex < _types[typeIndex].nameTable.num)
-		output.name = _types[typeIndex].nameTable.entries[idIndex].name;
+	for (uint16 i = 0; i < _types[typeIndex].nameTable.num; i++) {
+		if (_types[typeIndex].nameTable.entries[i].index == fileTableIndex+1) {
+			output.name = _types[typeIndex].nameTable.entries[i].name;
+			break;
+		}
+	}
 
 	return output;
 }
@@ -262,8 +266,12 @@ MohawkOutputStream MohawkArchive::getNextFile() {
 	output.index = fileTableIndex;
 	output.flags = _fileTable[fileTableIndex].flags;
 
-	if (_curExTypeIndex < _types[_curExType].nameTable.num)
-		output.name = _types[_curExType].nameTable.entries[_curExTypeIndex].name;
+	for (uint16 i = 0; i < _types[_curExType].nameTable.num; i++) {
+		if (_types[_curExType].nameTable.entries[i].index == fileTableIndex+1) {
+			output.name = _types[_curExType].nameTable.entries[i].name;
+			break;
+		}
+	}
 
 	_curExTypeIndex++;
 	return output;
