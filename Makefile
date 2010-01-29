@@ -92,6 +92,7 @@ win32dist:   all
 	strip descumm.exe -o $(WIN32PATH)/tools/descumm.exe
 	strip desword2.exe -o $(WIN32PATH)/tools/desword2.exe
 	strip extract_mohawk.exe -o $(WIN32PATH)/tools/extract_mohawk.exe
+	strip construct_mohawk.exe -o $(WIN32PATH)/tools/construct_mohawk.exe
 	strip scummvm-tools.exe -o $(WIN32PATH)/tools/scummvm-tools.exe
 	strip scummvm-tools-cli.exe -o $(WIN32PATH)/tools/scummvm-tools-cli.exe
 	cp *.bat $(WIN32PATH)/tools

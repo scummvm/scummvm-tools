@@ -68,6 +68,7 @@ TARGETS := \
 	descumm$(EXEEXT) \
 	desword2$(EXEEXT) \
 	extract_mohawk$(EXEEXT) \
+	construct_mohawk$(EXEEXT) \
 	degob$(EXEEXT) \
 	scummvm-tools-cli$(EXEEXT)
 
@@ -121,6 +122,7 @@ PROGRAMS = \
 	desword2 \
 	degob \
 	extract_mohawk \
+	construct_mohawk \
 	create_sjisfnt \
 	scummvm-tools \
 	scummvm-tools-cli \
@@ -175,6 +177,10 @@ extract_mohawk_OBJS := \
 	engines/mohawk/utils/file.o \
 	common/md5.o \
 	common/util.o
+
+construct_mohawk_OBJS := \
+	engines/mohawk/construct_mohawk.o \
+	$(UTILS)	
 
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
 create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)
