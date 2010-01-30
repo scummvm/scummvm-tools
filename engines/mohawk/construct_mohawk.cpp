@@ -268,13 +268,16 @@ void sortTypeTable(Common::Array<TypeConstruct> *tempTypeTable) {
 	}
 }
 
-// Order of Name Table in same order as Resource Table cross referenced by index
 void sortNameTable(Common::Array<TypeConstructNameEntries> *tempNameTable, uint16 i) {
-	for (uint16 j = 0; j < _types[i].resTable.resources; j++) {
-		for (uint16 k = 0; k < _types[i].nameTable.num; k++) {
-			if (_types[i].resTable.entries[j].index == _types[i].nameTable.entries[k].index)
-				tempNameTable->push_back(_types[i].nameTable.entries[k]);
+	uint16 k, j;
+
+	// Insert in Type Name Table ordered Alphabetically by Name
+	for (k = 0; k < _types[i].nameTable.num; k++) {
+		for (j = 0; j < tempNameTable->size(); j++) {
+			if ((*tempNameTable)[j].name > _types[i].nameTable.entries[k].name)
+				break;
 		}
+		tempNameTable->insert_at(j, _types[i].nameTable.entries[k]);
 	}
 
 	assert(tempNameTable->size() == _types[i].nameTable.num);
@@ -347,7 +350,7 @@ void writeMohawkArchive(int argc, char **argv, int archiveArg, Common::File *moh
 		mohawkFile->writeUint16BE(_types[i].nameTable.num);
 
 		Common::Array<TypeConstructNameEntries> tempNameTable;
-		// _types[i].resTable.entries sorted into resource order output into tempNameTable
+		// _types[i].nameTable.entries sorted into alphabetical order by name into tempNameTable
 		sortNameTable(&tempNameTable, i);
 
 		for (uint16 j = 0; j < _types[i].nameTable.num; j++) {
@@ -368,11 +371,7 @@ void writeMohawkArchive(int argc, char **argv, int archiveArg, Common::File *moh
 		mohawkFile->writeUint32BE(_fileTable[i].offset);
 		mohawkFile->writeUint16BE(_fileTable[i].dataSize & 0xFFFF);
 		mohawkFile->writeByte((_fileTable[i].dataSize >> 16) & 0xFF);
-
-		// TODO: The following should be correct, but doesn't match up.
-		//mohawkFile->writeByte((_fileTable[i].dataSize >> 24) & 0x07) || (_fileTable[i].flags & 0xF8));
-		mohawkFile->writeByte(_fileTable[i].flags);
-
+		mohawkFile->writeByte(((_fileTable[i].dataSize >> 24) & 0x07) | (_fileTable[i].flags & 0xF8));
 		mohawkFile->writeUint16BE(_fileTable[i].unk);
 	}
 }
