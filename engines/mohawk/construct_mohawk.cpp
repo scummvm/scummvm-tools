@@ -24,6 +24,7 @@
 #include "common/array.h"
 #include "common/file.h"
 #include "common/str.h"
+#include "common/util.h"
 #include "archive.h"
 
 uint32 _fileSize;
@@ -268,13 +269,34 @@ void sortTypeTable(Common::Array<TypeConstruct> *tempTypeTable) {
 	}
 }
 
+// Original Archiver seems to treat '_' as greater than all alphanumerics which is not
+// the same as ASCII ordering and thus String '>' operator. This corrects for this.
+bool stringGreaterThan(Common::String *test, Common::String *ref) {
+	// Normal Function if just ASCII ordering..
+	//return *test > *ref;
+
+	// Function with correction for underscore ordered after Alphanumerics...
+	for (uint16 i = 0; i < Common::MIN(test->size(), ref->size()); i++) {
+		if ((*test)[i] == '_' && (*ref)[i] != '_')
+			return true;
+		else if ((*test)[i] > (*ref)[i])
+			return true;
+		else if ((*test)[i] < (*ref)[i])
+			return false;
+	}
+	if(test->size() > ref->size())
+		return true;
+	else
+		return false;
+}
+
 void sortNameTable(Common::Array<TypeConstructNameEntries> *tempNameTable, uint16 i) {
 	uint16 k, j;
 
 	// Insert in Type Name Table ordered Alphabetically by Name
 	for (k = 0; k < _types[i].nameTable.num; k++) {
 		for (j = 0; j < tempNameTable->size(); j++) {
-			if ((*tempNameTable)[j].name > _types[i].nameTable.entries[k].name)
+			if (stringGreaterThan(&((*tempNameTable)[j].name), &(_types[i].nameTable.entries[k].name)))
 				break;
 		}
 		tempNameTable->insert_at(j, _types[i].nameTable.entries[k]);
