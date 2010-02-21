@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="degob"
 	ProjectGUID="{C151022B-EAC8-4680-9018-C0A897F7F9C6}"
 	RootNamespace="degob"
@@ -42,6 +42,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/wd4996"
 				Optimization="0"
+				AdditionalIncludeDirectories="../.."
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -174,116 +175,115 @@
 			Name="utils"
 			>
 			<File
-				RelativePath="..\..\utils\adpcm.cpp"
+				RelativePath="..\..\sound\adpcm.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\adpcm.h"
+				RelativePath="..\..\sound\adpcm.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\audiostream.cpp"
+				RelativePath="..\..\sound\audiostream.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\audiostream.h"
+				RelativePath="..\..\sound\audiostream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\file.cpp"
+				RelativePath="..\..\common\file.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\file.h"
+				RelativePath="..\..\common\file.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\md5.cpp"
+				RelativePath="..\..\common\md5.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\md5.h"
+				RelativePath="..\..\common\md5.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\pack-end.h"
+				RelativePath="..\..\common\pack-end.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\pack-start.h"
+				RelativePath="..\..\common\pack-start.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\util.h"
+				RelativePath="..\..\common\util.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\voc.cpp"
+				RelativePath="..\..\sound\voc.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\voc.h"
+				RelativePath="..\..\sound\voc.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\wave.cpp"
+				RelativePath="..\..\sound\wave.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\utils\wave.h"
+				RelativePath="..\..\sound\wave.h"
 				>
 			</File>
 		</Filter>
-				<File
-			RelativePath="..\..\util.h"
+		<File
+			RelativePath="..\..\engines\gob\degob.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\util.cpp"
+			RelativePath="..\..\engines\gob\degob_script.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob.cpp"
+			RelativePath="..\..\engines\gob\degob_script.h"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob_script.cpp"
+			RelativePath="..\..\engines\gob\degob_script_bargon.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob_script.h"
+			RelativePath="..\..\engines\gob\degob_script_v1.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob_script_bargon.cpp"
+			RelativePath="..\..\engines\gob\degob_script_v2.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob_script_v1.cpp"
+			RelativePath="..\..\engines\gob\degob_script_v3.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob_script_v2.cpp"
+			RelativePath="..\..\engines\gob\degob_script_v4.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob_script_v3.cpp"
+			RelativePath="..\..\engines\gob\degob_script_v5.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob_script_v4.cpp"
+			RelativePath="..\..\engines\gob\degob_script_v6.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob_script_v5.cpp"
+			RelativePath="..\..\common\util.cpp"
 			>
 		</File>
 		<File
-			RelativePath="..\..\degob_script_v6.cpp"
+			RelativePath="..\..\common\util.h"
 			>
 		</File>
 	</Files>
 	<Globals>
 	</Globals>
 </VisualStudioProject>
-
