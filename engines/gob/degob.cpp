@@ -118,6 +118,7 @@ void printHelp(const char *bin) {
 	printf("	Gob3     - Goblins 3\n");
 	printf("	Ween     - Ween: The Prophecy\n");
 	printf("	Bargon   - Bargon Attack\n");
+	printf("	Fascin   - Fascination\n");
 	printf("	Lost     - Lost in Time\n");
 	printf("	Woodruff - The Bizarre Adventures of Woodruff and the Schnibble\n");
 	printf("	Dynasty  - The Last Dynasty\n");
@@ -135,14 +136,16 @@ int getVersion(const char *verStr) {
 		return 3;
 	else if (!scumm_stricmp(verStr, "Bargon"))
 		return 4;
-	else if (!scumm_stricmp(verStr, "Lost"))
+	else if (!scumm_stricmp(verStr, "Fascin"))
 		return 5;
-	else if (!scumm_stricmp(verStr, "Woodruff"))
+	else if (!scumm_stricmp(verStr, "Lost"))
 		return 6;
-	else if (!scumm_stricmp(verStr, "Dynasty"))
+	else if (!scumm_stricmp(verStr, "Woodruff"))
 		return 7;
-	else if (!scumm_stricmp(verStr, "Urban"))
+	else if (!scumm_stricmp(verStr, "Dynasty"))
 		return 8;
+	else if (!scumm_stricmp(verStr, "Urban"))
+		return 9;
 
 	return -1;
 }
@@ -176,15 +179,18 @@ Script *initScript(byte *totData, uint32 totSize, ExtTable *extTable, int versio
 			return new Script_Bargon(totData, totSize, extTable);
 			break;
 		case 5:
-			return new Script_v3(totData, totSize, extTable);
+			return new Script_Fascin(totData, totSize, extTable);
 			break;
 		case 6:
-			return new Script_v4(totData, totSize, extTable);
+			return new Script_v3(totData, totSize, extTable);
 			break;
 		case 7:
-			return new Script_v5(totData, totSize, extTable);
+			return new Script_v4(totData, totSize, extTable);
 			break;
 		case 8:
+			return new Script_v5(totData, totSize, extTable);
+			break;
+		case 9:
 			return new Script_v6(totData, totSize, extTable);
 			break;
 	}

@@ -345,6 +345,44 @@ protected:
 	virtual void goblinOpcode(int i, FuncParams &params);
 };
 
+class Script_Fascin : public Script_v2 {
+public:
+	Script_Fascin(byte *totData, uint32 totSize, ExtTable *extTable = 0);
+	virtual ~Script_Fascin();
+
+protected:
+	typedef void (Script_Fascin::*OpcodeDrawProcFascin)(FuncParams &);
+	typedef void (Script_Fascin::*OpcodeFuncProcFascin)(FuncParams &);
+	typedef void (Script_Fascin::*OpcodeGoblinProcFascin)(FuncParams &);
+	struct OpcodeDrawEntryFascin {
+		FuncType type;
+		OpcodeDrawProcFascin proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeFuncEntryFascin {
+		FuncType type;
+		OpcodeFuncProcFascin proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeGoblinEntryFascin {
+		FuncType type;
+		OpcodeGoblinProcFascin proc;
+		const char *desc;
+		const Param params[16];
+	};
+	const OpcodeDrawEntryFascin *_opcodesDrawFascin;
+	const OpcodeFuncEntryFascin *_opcodesFuncFascin;
+	const OpcodeGoblinEntryFascin *_opcodesGoblinFascin;
+	static const int _goblinFuncLookUp[][2];
+
+	virtual void setupOpcodes();
+	virtual void drawOpcode(byte i, FuncParams &params);
+	virtual void funcOpcode(byte i, byte j, FuncParams &params);
+	virtual void goblinOpcode(int i, FuncParams &params);
+};
+
 class Script_v3 : public Script_v2 {
 public:
 	Script_v3(byte *totData, uint32 totSize, ExtTable *extTable = 0);

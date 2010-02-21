@@ -281,7 +281,8 @@ Script Tools:
 
                 "<version>" describes from which game the script file
                 was taken and is one of "Gob1", "Gob2", "Gob3", "Ween",
-                "Bargon", "Lost" and "Woodruff".
+                "Bargon", "Fascination, "Lost", "Woodruff", "Dynasty" 
+                and "Urban".
 
                 If the script file calls loadMult(), the script file's
                 EXT file must be supplied on the command line as well;
