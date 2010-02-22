@@ -85,7 +85,7 @@ void ExtractMMApple::execute() {
 		error("Signature not found in disk 2!");
 
 	outpath.setFullName("00.LFL");
-	Common::File output(fname, "wb");
+	Common::File output(outpath, "wb");
 	// All output should be xored
 	output.setXorMode(0xFF);
 	print("Creating 00.LFL...\n");
@@ -141,7 +141,7 @@ void ExtractMMApple::execute() {
 
 		sprintf(fname, "%02i.LFL", i);
 		outpath.setFullName(fname);
-		output.open(fname, "wb");
+		output.open(outpath, "wb");
 
 		print("Creating %s...\n", fname);
 		input->seek((SectorOffset[room_tracks_apple[i]] + room_sectors_apple[i]) * 256, SEEK_SET);
