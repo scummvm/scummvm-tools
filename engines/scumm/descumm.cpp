@@ -2506,7 +2506,7 @@ void next_line_V0(char *buf) {
 	case 0xAB:
 	case 0xCB:
 	case 0xEB:
-		do_tok(buf, "setActorBitVar", A1B | ((opcode & 0x80) ? A2V : A2B) | ((opcode & 0x40) ? A3V : A3B));
+		do_tok(buf, "setActorBitVar", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | ((opcode & 0x20) ? A3V : A3B));
 		break;
 
 	case 0x58:
