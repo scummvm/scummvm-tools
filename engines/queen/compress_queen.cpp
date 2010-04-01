@@ -22,8 +22,8 @@
 
 #include <string.h>
 
+#include "common/util.h"
 #include "compress.h"
-
 #include "compress_queen.h"
 
 const uint32 QTBL = 'QTBL';

@@ -206,11 +206,11 @@ int ADPCMInputStream::readBufferMS(int channels, int16 *buffer, const int numSam
 	while (samples < numSamples && !_stream->eos() && _stream->pos() < (int)_endpos) {
 		if (_blockPos == _blockAlign) {
 			// read block header
-			_status.ch[0].predictor = Common::CLIP(_stream->readByte(), (byte)0, (byte)6);
+			_status.ch[0].predictor = CLIP(_stream->readByte(), (byte)0, (byte)6);
 			_status.ch[0].coeff1 = MSADPCMAdaptCoeff1[_status.ch[0].predictor];
 			_status.ch[0].coeff2 = MSADPCMAdaptCoeff2[_status.ch[0].predictor];
 			if (stereo) {
-				_status.ch[1].predictor = Common::CLIP(_stream->readByte(), (byte)0, (byte)6);
+				_status.ch[1].predictor = CLIP(_stream->readByte(), (byte)0, (byte)6);
 				_status.ch[1].coeff1 = MSADPCMAdaptCoeff1[_status.ch[1].predictor];
 				_status.ch[1].coeff2 = MSADPCMAdaptCoeff2[_status.ch[1].predictor];
 			}

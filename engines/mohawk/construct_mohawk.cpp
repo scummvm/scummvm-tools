@@ -276,7 +276,7 @@ bool stringGreaterThan(Common::String *test, Common::String *ref) {
 	//return *test > *ref;
 
 	// Function with correction for underscore ordered after Alphanumerics...
-	for (uint16 i = 0; i < Common::MIN(test->size(), ref->size()); i++) {
+	for (uint16 i = 0; i < MIN(test->size(), ref->size()); i++) {
 		if ((*test)[i] == '_' && (*ref)[i] != '_')
 			return true;
 		else if ((*test)[i] > (*ref)[i])

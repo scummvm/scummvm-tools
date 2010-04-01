@@ -1191,7 +1191,7 @@ struct	t_lflindex {
 	uint16	script_addr[200];
 	uint8	sound_lfl[100];
 	uint16	sound_addr[100];
-} GCC_PACK mm_lfl_index;
+} PACKED_STRUCT mm_lfl_index;
 
 #include "common/pack-end.h"	/* END STRUCT PACKING */
 

@@ -24,8 +24,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "common/util.h"
 #include "compress.h"
-
 #include "compress_tucker.h"
 
 #define CURRENT_VER  1

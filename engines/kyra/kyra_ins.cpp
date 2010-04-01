@@ -446,11 +446,6 @@ uint8 FileExpander::calcCmdAndIndex(const uint8 *tbl, int16 &para) {
 	return newIndex;
 }
 
-template<class T>
-T MIN(T l, T r) {
-	return (l < r) ? l : r;
-}
-
 HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 	strncpy(_baseFilename, baseFilename, sizeof(_baseFilename));
 	char *str = strstr(_baseFilename, ".");

@@ -40,14 +40,14 @@ struct VocFileHeader {
 	uint16 datablock_offset;
 	uint16 version;
 	uint16 id;
-} GCC_PACK;
+} PACKED_STRUCT;
 
 struct VocBlockHeader {
 	uint8 blocktype;
 	uint8 size[3];
 	uint8 sr;
 	uint8 pack;
-} GCC_PACK;
+} PACKED_STRUCT;
 
 #include "common/pack-end.h"	/* END STRUCT PACKING */
 

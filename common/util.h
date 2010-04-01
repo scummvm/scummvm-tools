@@ -25,9 +25,6 @@
 
 #include "common/scummsys.h"
 
-namespace Common {
-
-
 #ifdef MIN
 #undef MIN
 #endif
@@ -41,6 +38,20 @@ template<typename T> inline T MIN (T a, T b)	{ return (a<b) ? a : b; }
 template<typename T> inline T MAX (T a, T b)	{ return (a>b) ? a : b; }
 template<typename T> inline T CLIP (T v, T amin, T amax)
 		{ if (v < amin) return amin; else if (v > amax) return amax; else return v; }
+
+
+/**
+ * Template method which swaps the vaulues of its two parameters.
+ */
+template<typename T> inline void SWAP(T &a, T &b) { T tmp = a; a = b; b = tmp; }
+
+/**
+ * Macro which determines the number of entries in a fixed size array.
+ */
+#define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
+
+namespace Common {
+
 
 /**
  * List of game language.
