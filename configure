@@ -320,7 +320,7 @@ for ac_option in $@; do
 	--disable-zlib)           _zlib=no        ;;
 	--enable-png)             _png=yes        ;;
 	--disable-png)            _png=no         ;;
-	--enable-wxwidgets)       _wxsidgets=yes  ;;
+	--enable-wxwidgets)       _wxwidgets=yes  ;;
 	--disable-wxwidgets)      _wxwidgets=no   ;;
 	--enable-freetype)        _freetype=yes   ;;
 	--disable-freetype)       _freetype=no    ;;
