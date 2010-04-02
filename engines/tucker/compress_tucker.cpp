@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "common/util.h"
 #include "compress.h"

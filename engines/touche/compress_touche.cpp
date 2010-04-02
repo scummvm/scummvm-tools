@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "compress.h"
 #include "compress_touche.h"

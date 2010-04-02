@@ -21,6 +21,7 @@
  */
 
 #include <string.h>
+#include <unistd.h>
 
 #include "common/util.h"
 #include "compress.h"

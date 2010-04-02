@@ -22,6 +22,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "compress_scumm_sou.h"
 
