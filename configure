@@ -292,6 +292,12 @@ Optional Libraries:
   --with-png-prefix=DIR    Prefix where libpng is installed (optional)
   --disable-png            disable libpng (compression) support [autodetect]
 
+  --with-wx-prefix=DIR     Prefix where wxwidgets is installed (optional)
+  --disable-wxwidgets      disable wxwidgets (GUI) support [autodetect]
+
+  --disable-iconv          disable iconv (Japanese font) support [autodetect]
+
+  --disable-freetype       disable freetype (Japanese font) support [autodetect]
 
 Some influential environment variables:
   LDFLAGS        linker flags, e.g. -L<lib dir> if you have libraries in a
