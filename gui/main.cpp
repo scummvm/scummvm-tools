@@ -109,7 +109,7 @@ void ScummVMToolsApp::OnAbout() {
 	titletext->SetFont(wxFont(22, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Arial")));
 	sizer->Add(titletext, wxSizerFlags());
 
-	wxStaticText *versiontext = new wxStaticText(dialog, wxID_ANY, wxT("Development Version"));
+	wxStaticText *versiontext = new wxStaticText(dialog, wxID_ANY, wxT("Version 1.1.0 BETA"));
 	versiontext->SetForegroundColour(wxColor(128, 128, 128));
 	versiontext->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
 	sizer->Add(versiontext, wxSizerFlags());
@@ -117,7 +117,7 @@ void ScummVMToolsApp::OnAbout() {
 	wxHyperlinkCtrl *websitetext = new wxHyperlinkCtrl(dialog, wxID_ANY, wxT("http://www.scummvm.org"), wxT("http://www.scummvm.org"));
 	sizer->Add(websitetext, wxSizerFlags().Border(wxTOP, 5));
 
-	wxStaticText *copyrighttext = new wxStaticText(dialog, wxID_ANY, wxT("Copyright ScummVM Team 2009"));
+	wxStaticText *copyrighttext = new wxStaticText(dialog, wxID_ANY, wxT("Copyright ScummVM Team 2009-2010"));
 	copyrighttext->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
 	sizer->Add(copyrighttext, wxSizerFlags());
 
