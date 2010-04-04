@@ -25,6 +25,7 @@
 #include <string.h>
 #include <sstream>
 #include <stdio.h>
+#include <unistd.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

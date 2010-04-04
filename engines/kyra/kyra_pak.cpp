@@ -22,6 +22,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "kyra_pak.h"
 

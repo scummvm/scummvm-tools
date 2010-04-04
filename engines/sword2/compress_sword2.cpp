@@ -20,6 +20,8 @@
  *
  */
 
+#include <unistd.h>
+
 #include "compress_sword2.h"
 
 #define TEMP_IDX	"tempfile.idx"

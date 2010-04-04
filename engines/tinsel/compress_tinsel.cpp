@@ -23,6 +23,7 @@
 // By Jimi (m [underline] kiewitz [AT] users.sourceforge.net)
 
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "compress.h"
 #include "common/endian.h"

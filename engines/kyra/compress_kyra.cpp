@@ -23,6 +23,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+
 
 #include "compress_kyra.h"
 
