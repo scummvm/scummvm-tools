@@ -579,7 +579,9 @@ std::string Script::readExpr(char stopToken) {
 			break;
 
 		default:
-			while (((char) readUint8()) != stopToken);
+			// Unknown token -- don't know how to handle this, so just
+			// skip over everything until we reach the stopToken.
+			while (((char) readUint8()) != stopToken) {}
 			return printStr("Invalid operator in expression: <%d>", (int16) operation);
 			break;
 		}

@@ -168,7 +168,7 @@ struct Disk1Decoder { // LzHuffman
 			const int i = _freq[p];
 			int index = p + 1;
 			if (_freq[index] < i) {
-				while (_freq[++index] < i);
+				while (_freq[++index] < i) {}
 				--index;
 				_freq[p] = _freq[index];
 				_freq[index] = i;
