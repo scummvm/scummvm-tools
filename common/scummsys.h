@@ -85,6 +85,14 @@ typedef signed int int32;
 	#define SCUMM_NEED_ALIGNMENT
 	#endif
 
+#elif defined(__amigaos4__)
+
+	#define scumm_stricmp strcasecmp
+	#define scumm_strnicmp strncasecmp
+
+	#define SCUMM_BIG_ENDIAN
+	#define SCUMM_NEED_ALIGNMENT
+
 #else
 
 	#error No system type defined
