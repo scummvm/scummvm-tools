@@ -87,23 +87,24 @@ public:
 	AudioFormat _format;
 
 	// Settings
+	// These functions are used by the GUI Tools and by CLI argument parsing functions
 	// mp3 settings
-	std::string _mp3CompressionType;
-	std::string _mp3MpegQuality;
-	std::string _mp3ABRBitrate;
-	std::string _mp3VBRMinBitrate;
-	std::string _mp3VBRMaxBitrate;
-	std::string _mp3VBRQuality;
+	void setMp3CompressionType(const std::string&);
+	void setMp3MpegQuality(const std::string&);
+	void setMp3ABRBitrate(const std::string&);
+	void setMp3VBRMinBitrate(const std::string&);
+	void setMp3VBRMaxBitrate(const std::string&);
+	void setMp3VBRQuality(const std::string&);
 
 	// flac
-	std::string _flacCompressionLevel;
-	std::string _flacBlockSize;
+	void setFlacCompressionLevel(const std::string&);
+	void setFlacBlockSize(const std::string&);
 
 	// vorbis
-	std::string _oggQuality;
-	std::string _oggMinBitrate;
-	std::string _oggAvgBitrate;
-	std::string _oggMaxBitrate;
+	void setOggQuality(const std::string&);
+	void setOggMinBitrate(const std::string&);
+	void setOggAvgBitrate(const std::string&);
+	void setOggMaxBitrate(const std::string&);
 
 public:
 	bool processMp3Parms();

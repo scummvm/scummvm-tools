@@ -773,6 +773,123 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, Common::File &inp
 	encodeAudio(outName, true, real_samplerate, tempEncoded, compMode);
 }
 
+// mp3 settings
+void CompressionTool::setMp3CompressionType(const std::string& arg) {
+	encparms.abr = (arg == "ABR");
+}
+
+void CompressionTool::setMp3MpegQuality(const std::string& arg) {
+	encparms.algqual = atoi(arg.c_str());
+	
+	if (encparms.algqual == 0 && arg != "0")
+		throw ToolException("Quality (-q) must be a number.");
+	
+	if (encparms.algqual > 9)
+		throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
+}
+
+void CompressionTool::setMp3ABRBitrate(const std::string& arg) {
+	setMp3VBRMinBitrate(arg);
+}
+
+void CompressionTool::setMp3VBRMinBitrate(const std::string& arg) {
+	encparms.minBitr = atoi(arg.c_str());
+	
+	if (encparms.minBitr == 0 && arg != "0")
+		throw ToolException("Minimum bitrate (-b) must be a number.");
+	
+	if (encparms.minBitr < 8 || encparms.minBitr > 160)
+		throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
+}
+
+void CompressionTool::setMp3VBRMaxBitrate(const std::string& arg) {
+	encparms.maxBitr = atoi(arg.c_str());
+	
+	if (encparms.maxBitr == 0 && arg != "0")
+		throw ToolException("Maximum bitrate (-B) must be a number.");
+
+	if ((encparms.maxBitr % 8) != 0)
+		encparms.maxBitr -= encparms.maxBitr % 8;
+
+	if (encparms.maxBitr < 8 || encparms.maxBitr > 160)
+		throw ToolException("Maximum bitrate out of bounds (-B), must be between 8 and 160.");
+}
+
+void CompressionTool::setMp3VBRQuality(const std::string& arg) {
+	encparms.vbrqual = atoi(arg.c_str());
+	if (encparms.vbrqual > 9)
+		throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
+}
+
+// flac
+void CompressionTool::setFlacCompressionLevel(const std::string& arg) {
+	flacparms.compressionLevel = atoi(arg.c_str());
+	
+	if (flacparms.compressionLevel == 0 && arg != "0")
+		throw ToolException("FLAC compression level must be a number.");
+
+	if (flacparms.compressionLevel < 0 || flacparms.compressionLevel > 8)
+		throw ToolException("FLAC compression level ot of bounds, must be between 0 and 8.");
+		
+}
+
+void CompressionTool::setFlacBlockSize(const std::string& arg) {
+	flacparms.blocksize = atoi(arg.c_str());
+
+	if (flacparms.blocksize == 0 && arg != "0")
+		throw ToolException("FLAC block size (-b) must be a number.");
+}
+
+// vorbis
+void CompressionTool::setOggQuality(const std::string& arg) {
+	oggparms.quality = (float)atoi(arg.c_str());
+	
+	if (oggparms.quality == 0. && arg != "0")
+		throw ToolException("Quality (-q) must be a number.");
+	
+	if (oggparms.quality < 0. || oggparms.quality > 10.)
+		throw ToolException("Quality out of bounds (-q), must be between 0 and 10.");
+}
+
+void CompressionTool::setOggMinBitrate(const std::string& arg) {
+	oggparms.minBitr = atoi(arg.c_str());
+
+	if (oggparms.minBitr == 0 && arg != "0")
+		throw ToolException("Minimum bitrate (-m) must be a number.");
+
+	if ((oggparms.minBitr % 8) != 0)
+		oggparms.minBitr -= oggparms.minBitr % 8;
+	
+	if (oggparms.minBitr < 8 || oggparms.minBitr > 160)
+		throw ToolException("Minimum bitrate out of bounds (-m), must be between 8 and 160.");
+}
+
+void CompressionTool::setOggAvgBitrate(const std::string& arg) {
+	oggparms.nominalBitr = atoi(arg.c_str());
+	
+	if (oggparms.nominalBitr == 0 && arg != "0")
+		throw ToolException("Nominal bitrate (-b) must be a number.");
+
+	if ((oggparms.nominalBitr % 8) != 0)
+		oggparms.nominalBitr -= oggparms.nominalBitr % 8;
+
+	if (oggparms.nominalBitr < 8 || oggparms.nominalBitr > 160)
+		throw ToolException("Nominal bitrate out of bounds (-b), must be between 8 and 160.");
+}
+
+void CompressionTool::setOggMaxBitrate(const std::string& arg) {
+	oggparms.maxBitr = atoi(arg.c_str());
+
+	if (oggparms.maxBitr == 0 && arg != "0")
+		throw ToolException("Maximum bitrate (-M) must be a number.");
+
+	if ((oggparms.maxBitr % 8) != 0)
+		oggparms.maxBitr -= oggparms.maxBitr % 8;
+
+	if (oggparms.maxBitr < 8 || oggparms.maxBitr > 160)
+		throw ToolException("Maximum bitrate out of bounds (-M), must be between 8 and 160.");
+}
+
 bool CompressionTool::processMp3Parms() {
 	while (!_arguments.empty()) {
 		std::string arg = _arguments.front();
@@ -782,60 +899,29 @@ bool CompressionTool::processMp3Parms() {
 			encparms.abr = 0;
 		} else if (arg == "--abr") {
 			encparms.abr = 1;
+
 		} else if (arg == "-b") {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after -b");
-			encparms.minBitr = atoi(_arguments.front().c_str());
-
-			if (encparms.minBitr > 160)
-				throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
-
-			if (encparms.minBitr == 0 && _arguments.front() != "0")
-				throw ToolException("Minimum bitrate (-b) must be a number.");
-
-			if (encparms.minBitr < 8)
-				throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
-
+			setMp3VBRMinBitrate(_arguments.front());
 			_arguments.pop_front();
 
 		} else if (arg == "-B") {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after -B");
-			encparms.maxBitr = atoi(_arguments.front().c_str());
-
-			if ((encparms.maxBitr % 8) != 0) {
-				encparms.maxBitr -= encparms.maxBitr % 8;
-			}
-
-			if (encparms.maxBitr > 160)
-				throw ToolException("Maximum bitrate out of bounds (-B), must be between 8 and 160.");
-
-			if (encparms.maxBitr == 0 && _arguments.front() != "0")
-				throw ToolException("Maximum bitrate (-B) must be a number.");
-
-			if (encparms.maxBitr < 8)
-				throw ToolException("Maximum bitrate out of bounds (-B), must be between 8 and 160.");
-
+			setMp3VBRMaxBitrate(_arguments.front());
 			_arguments.pop_front();
 
 		} else if (arg == "-V") {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after -V");
-			encparms.vbrqual = atoi(_arguments.front().c_str());
-
-			if (encparms.vbrqual > 9)
-				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
-
+			setMp3VBRQuality(_arguments.front());
 			_arguments.pop_front();
 
 		} else if (arg == "-q") {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after -q");
-			encparms.algqual = atoi(_arguments.front().c_str());
-
-			if (encparms.algqual > 9)
-				throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
-
+			setMp3MpegQuality(_arguments.front());
 			_arguments.pop_front();
 
 		} else if (arg == "--silent") {
@@ -857,66 +943,25 @@ bool CompressionTool::processOggParms() {
 		if (arg == "-b") {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after -b");
-			oggparms.nominalBitr = atoi(_arguments.front().c_str());
-
-			if ((oggparms.nominalBitr % 8) != 0)
-				oggparms.nominalBitr -= oggparms.nominalBitr % 8;
-
-			if (oggparms.nominalBitr > 160)
-				throw ToolException("Nominal bitrate out of bounds (-b), must be between 8 and 160.");
-
-			if (oggparms.nominalBitr == 0 && _arguments.front() != "0")
-				throw ToolException("Nominal bitrate (-b) must be a number.");
-
-			if (oggparms.nominalBitr < 8)
-				throw ToolException("Nominal bitrate out of bounds (-b), must be between 8 and 160.");
-
+			setOggAvgBitrate(_arguments.front());
 			_arguments.pop_front();
 
 		} else if (arg == "-m") {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after -m");
-			oggparms.minBitr = atoi(_arguments.front().c_str());
-
-			if ((oggparms.minBitr % 8) != 0)
-				oggparms.minBitr -= oggparms.minBitr % 8;
-
-			if (oggparms.minBitr > 160)
-				throw ToolException("Minimal bitrate out of bounds (-m), must be between 8 and 160.");
-
-			if (oggparms.minBitr == 0 && _arguments.front() != "0")
-				throw ToolException("Minimal bitrate (-m) must be a number.");
-
-			if (oggparms.minBitr < 8)
-				throw ToolException("Minimal bitrate out of bounds (-m), must be between 8 and 160.");
-
+			setOggMinBitrate(_arguments.front());
 			_arguments.pop_front();
 
 		} else if (arg == "-M") {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after -M");
-			oggparms.maxBitr = atoi(_arguments.front().c_str());
-
-			if ((oggparms.maxBitr % 8) != 0)
-				oggparms.maxBitr -= oggparms.maxBitr % 8;
-
-			if (oggparms.maxBitr > 160)
-				throw ToolException("Minimal bitrate out of bounds (-M), must be between 8 and 160.");
-
-			if (oggparms.maxBitr == 0 && _arguments.front() != "0")
-				throw ToolException("Minimal bitrate (-M) must be a number.");
-
-			if (oggparms.maxBitr < 8)
-				throw ToolException("Minimal bitrate out of bounds (-M), must be between 8 and 160.");
-
+			setOggMaxBitrate(_arguments.front());
 			_arguments.pop_front();
 
 		} else if (arg == "-q") {
-			oggparms.quality = (float)atoi(_arguments.front().c_str());
-
-			if (oggparms.quality == 0 && _arguments.front() != "0")
-				throw ToolException("Quality (-q) must be a number.");
-
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -q");
+			setOggQuality(_arguments.front());
 			_arguments.pop_front();
 
 		} else if (arg == "--silent") {
@@ -938,7 +983,7 @@ bool CompressionTool::processFlacParms(){
 		if (arg == "-b") {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after -b");
-			flacparms.blocksize = atoi(_arguments.front().c_str());
+			setFlacBlockSize(_arguments.front());
 			_arguments.pop_front();
 		} else if (arg == "--fast") {
 			flacparms.compressionLevel = 0;

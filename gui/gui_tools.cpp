@@ -146,23 +146,22 @@ void ToolGUI::run(const Configuration &conf) const {
 		compression->_format               = conf.selectedAudioFormat;
 
 		// mp3
-		compression->_mp3ABRBitrate        = (const char *)conf.mp3ABRBitrate.mb_str();
-		compression->_mp3CompressionType   = (const char *)conf.mp3CompressionType.mb_str();
-		compression->_mp3MpegQuality       = (const char *)conf.mp3MpegQuality.mb_str();
-		compression->_mp3ABRBitrate        = (const char *)conf.mp3ABRBitrate.mb_str();
-		compression->_mp3VBRMinBitrate     = (const char *)conf.mp3VBRMinBitrate.mb_str();
-		compression->_mp3VBRMaxBitrate     = (const char *)conf.mp3VBRMaxBitrate.mb_str();
-		compression->_mp3VBRQuality        = (const char *)conf.mp3VBRQuality.mb_str();
+		compression->setMp3CompressionType( (const char *)conf.mp3CompressionType.mb_str() );
+		compression->setMp3MpegQuality    ( (const char *)conf.mp3MpegQuality.mb_str()     );
+		compression->setMp3ABRBitrate     ( (const char *)conf.mp3ABRBitrate.mb_str()      );
+		compression->setMp3VBRMinBitrate  ( (const char *)conf.mp3VBRMinBitrate.mb_str()   );
+		compression->setMp3VBRMaxBitrate  ( (const char *)conf.mp3VBRMaxBitrate.mb_str()   );
+		compression->setMp3VBRQuality     ( (const char *)conf.mp3VBRQuality.mb_str()      );
 
 		// flac
-		compression->_flacCompressionLevel = (const char *)conf.flacCompressionLevel.mb_str();
-		compression->_flacBlockSize        = (const char *)conf.flacBlockSize.mb_str();
+		compression->setFlacCompressionLevel( (const char *)conf.flacCompressionLevel.mb_str() );
+		compression->setFlacBlockSize       ( (const char *)conf.flacBlockSize.mb_str()        );
 
 		// vorbis
-		compression->_oggQuality           = (const char *)conf.oggQuality.mb_str();
-		compression->_oggMinBitrate        = (const char *)conf.oggMinBitrate.mb_str();
-		compression->_oggAvgBitrate        = (const char *)conf.oggAvgBitrate.mb_str();
-		compression->_oggMaxBitrate        = (const char *)conf.oggMaxBitrate.mb_str();
+		compression->setOggQuality    ( (const char *)conf.oggQuality.mb_str()    );
+		compression->setOggMinBitrate ( (const char *)conf.oggMinBitrate.mb_str() );
+		compression->setOggAvgBitrate ( (const char *)conf.oggAvgBitrate.mb_str() );
+		compression->setOggMaxBitrate ( (const char *)conf.oggMaxBitrate.mb_str() );
 	}
 
 	_backend->run();
