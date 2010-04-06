@@ -114,19 +114,27 @@ public:
 	void warning(const char *format, ...);
 
 	/**
-	 * Prints a message, to either stdout or the GUI, always use this
+	 * Prints a formatted message, to either stdout or the GUI. Always use this
 	 * instead of printf.
 	 */
 	void print(const char *format, ...);
 
+	/**
+	 * Prints a message, to either stdout or the GUI.
+	 */
+	void print(const std::string &msg);
+
 	/** Returns name of the tool. */
 	std::string getName() const;
 
-	/** Returns the helpstring of the tool. */
+	/** Returns the help string of the tool. */
 	virtual std::string getHelp() const;
 
-	/** Returns the short helpstring of the tool. */
+	/** Returns the short help string of the tool. */
 	virtual std::string getShortHelp() const;
+
+	/** Returns the version string of the tool. */
+	virtual std::string getVersion() const;
 
 	/** Returns the type of the tool. */
 	ToolType getType() const;

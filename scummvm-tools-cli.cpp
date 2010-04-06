@@ -25,6 +25,7 @@
 #include <assert.h>
 
 #include "scummvm-tools-cli.h"
+#include "version.h"
 
 ToolsCLI::ToolsCLI() {
 }
@@ -33,9 +34,6 @@ ToolsCLI::~ToolsCLI() {
 }
 
 int ToolsCLI::run(int argc, char *argv[]) {
-	// No matter what we ouput, we should begin with a newline
-	std::cout << std::endl;
-
 	if (argc == 1) {
 		// Run without any arguments
 		printHelp(argv[0]);
@@ -85,6 +83,8 @@ int ToolsCLI::run(int argc, char *argv[]) {
 		return 2;
 	} else if (option == "--list" || option == "-l") {
 		printTools();
+	} else if (option == "--version") {
+		printVersion();
 	} else {
 		ToolList choices;
 		std::deque<std::string>::reverse_iterator reader = arguments.rbegin();
@@ -195,16 +195,22 @@ int ToolsCLI::run(int argc, char *argv[]) {
 
 void ToolsCLI::printHelp(const char *exeName) {
 	std::cout <<
-		"\tScummVM Tools master interface" << std::endl <<
+		gScummVMToolsFullVersion << std::endl <<
 		std::endl <<
-		"\tCommon use:" << std::endl <<
-		"\t" << exeName << " [--tool <tool name>] [tool-specific options] [-o <output directory>] <input files>" << std::endl <<
-		"\t" << exeName << " [tool-specific option] [-o <output directory>] [extract|compress] <input files>" << std::endl <<
+		"Common use:" << std::endl <<
+		"  " << exeName << " [--tool <tool name>] [tool-specific options] [-o <output directory>] <input files>" << std::endl <<
+		"  " << exeName << " [tool-specific option] [-o <output directory>] [extract|compress] <input files>" << std::endl <<
 		std::endl <<
-		"\tOther Options:" << std::endl <<
-		"\t--help\tDisplay this text" << std::endl <<
-		"\t--list\tList all tools that are available" << std::endl <<
+		"Other Options:" << std::endl <<
+		"  --help\tDisplay this text" << std::endl <<
+		"  --version\tDisplay version information" << std::endl <<
+		"  --list\tList all tools that are available" << std::endl <<
 		"";
+}
+
+void ToolsCLI::printVersion() {
+	std::cout <<
+		gScummVMToolsFullVersion << std::endl;
 }
 
 void ToolsCLI::printTools() {

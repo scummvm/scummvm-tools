@@ -1,5 +1,5 @@
-/* tools_cli - CLI interface for the tools
- * Copyright (C) 2009 The ScummVM project
+/* ScummVM Tools
+ * Copyright (C) 2002-2009 The ScummVM project
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,23 +20,12 @@
  *
  */
 
-#ifndef CLI_TOOLS_H
-#define CLI_TOOLS_H
+#ifndef BASE_VERSION_H
+#define BASE_VERSION_H
 
-#include "tools.h"
-
-// Does nothing
-
-class ToolsCLI : public Tools {
-public:
-	ToolsCLI();
-	~ToolsCLI();
-
-	int run(int argc, char *argv[]);
-
-	void printHelp(const char *exeName);
-	void printVersion();
-	void printTools();
-};
+extern const char *gScummVMToolsVersion;     // e.g. "0.4.1"
+extern const char *gScummVMToolsBuildDate;   // e.g. "2003-06-24"
+extern const char *gScummVMToolsVersionDate; // e.g. "0.4.1 (2003-06-24)"
+extern const char *gScummVMToolsFullVersion; // e.g. "ScummVM Tools 0.4.1 (2003-06-24)"
 
 #endif

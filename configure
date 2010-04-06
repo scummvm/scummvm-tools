@@ -262,7 +262,7 @@ Configuration:
   -h, --help             display this help and exit
 
 Installation directories:
-  --prefix=DIR           use this prefix for installing the Tools [/usr/local]
+  --prefix=DIR           use this prefix for installing the ScummVM Tools [/usr/local]
   --bindir=DIR           directory to install the tool binaries in [PREFIX/bin]
   --mandir=DIR           directory to install the manpage in [PREFIX/share/man]
   --libdir=DIR           directory to install the plugins in [PREFIX/lib]
@@ -722,21 +722,21 @@ esac
 #
 echo_n "Alignment required... "
 case $_host_cpu in
-	arm*)
-		_need_memalign=yes
-		;;
 	alpha*)
 		# Hardcode alignment requirements for Alpha processsors
 		_need_memalign=yes
 		;;
-	sh*)
-		# Hardcode alignment requirements for SH processsors.
-		# While these can emulate unaligned memory access, this
-		# emulation is rather slow.
+	arm*)
 		_need_memalign=yes
 		;;
 	mips*)
 		# Hardcode alignment requirements for MIPS processsors.
+		# While these can emulate unaligned memory access, this
+		# emulation is rather slow.
+		_need_memalign=yes
+		;;
+	sh*)
+		# Hardcode alignment requirements for SH processsors.
 		# While these can emulate unaligned memory access, this
 		# emulation is rather slow.
 		_need_memalign=yes
@@ -1113,7 +1113,7 @@ fi;
 
 # Some platforms use certain GNU extensions in header files
 case $_host_os in
-wii | gamecube | psp)
+gamecube | psp | wii)
 	;;
 *)
 	CXXFLAGS="$CXXFLAGS -pedantic"

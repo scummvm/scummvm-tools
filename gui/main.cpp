@@ -36,10 +36,11 @@
 #include <wx/hyperlink.h>
 #include <wx/notebook.h>
 
-#include "main.h"
+#include "gui/main.h"
+#include "gui/pages.h"
+#include "gui/gui_tools.h"
 
-#include "pages.h"
-#include "gui_tools.h"
+#include "version.h"
 
 
 /**
@@ -109,7 +110,7 @@ void ScummVMToolsApp::OnAbout() {
 	titletext->SetFont(wxFont(22, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Arial")));
 	sizer->Add(titletext, wxSizerFlags());
 
-	wxStaticText *versiontext = new wxStaticText(dialog, wxID_ANY, wxT("Development Version"));
+	wxStaticText *versiontext = new wxStaticText(dialog, wxID_ANY, wxString(gScummVMToolsVersionDate, wxConvISO8859_1));
 	versiontext->SetForegroundColour(wxColor(128, 128, 128));
 	versiontext->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
 	sizer->Add(versiontext, wxSizerFlags());

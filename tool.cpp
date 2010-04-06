@@ -28,6 +28,7 @@
 
 #include "common/file.h"
 #include "tool.h"
+#include "version.h"
 
 Tool::Tool(const std::string &name, ToolType type) {
 	_name = name;
@@ -62,7 +63,13 @@ int Tool::run(const std::deque<std::string> &args) {
 
 	// Check for help
 	if (_arguments.empty() || _arguments.front() == "-h" || _arguments.front() == "--help") {
-		print(getHelp().c_str());
+		print(getHelp());
+		return 2;
+	}
+
+	// Check for version
+	if (_arguments.front() == "--version") {
+		print(getVersion());
 		return 2;
 	}
 
@@ -74,7 +81,7 @@ int Tool::run(const std::deque<std::string> &args) {
 
 	if (!_arguments.empty() && _arguments.front()[0] == '-') {
 		std::string s = "Possibly ignored option " + _arguments.front() + ".";
-		print(s.c_str());
+		print(s);
 	}
 
 	// Make sure we have enough input files.
@@ -109,13 +116,13 @@ int Tool::run(const std::deque<std::string> &args) {
 			_arguments.pop_front();
 		}
 		os << ")\n";
-		print(os.str().c_str());
+		print(os.str());
 		return -2;
 	}
 
 	if (_inputPaths.empty()) {
 		// Display help text if we got no input
-		print(_helptext.c_str());
+		print(_helptext);
 		return 2;
 	}
 
@@ -245,6 +252,14 @@ void Tool::print(const char *format, ...) {
 	notifyProgress(false);
 }
 
+void Tool::print(const std::string &msg) {
+	_internalPrint(_print_udata, msg.c_str());
+
+	// We notify of progress here
+	// This way, almost all tools will be able to exit gracefully (as they print stuff)
+	notifyProgress(false);
+}
+
 void Tool::notifyProgress(bool print_dot) {
 	if (_abort)
 		throw AbortException();
@@ -297,6 +312,10 @@ std::string Tool::getShortHelp() const {
 		return getHelp();
 	}
 	return _shorthelp;
+}
+
+std::string Tool::getVersion() const {
+	return gScummVMToolsFullVersion;
 }
 
 ToolType Tool::getType() const {

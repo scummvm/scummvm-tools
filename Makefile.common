@@ -46,19 +46,6 @@ MODULE_DIRS += \
 # to module.mk style files.
 
 
-# Replace regular output with quiet messages
-ifneq ($(findstring $(MAKEFLAGS),s),s)
-ifneq ($(VERBOSE_BUILD),1)
-ifneq ($(VERBOSE_BUILD),yes)
-QUIET_CXX    = @echo '   ' C++ '    ' $@;
-QUIET_AR     = @echo '   ' AR '     ' $@;
-QUIET_RANLIB = @echo '   ' RANLIB ' ' $@;
-QUIET_LINK   = @echo '   ' LINK '   ' $(1);
-QUIET        = @
-endif
-endif
-endif
-
 #######################################################################
 
 TARGETS := \
@@ -151,9 +138,15 @@ descumm_OBJS := \
 	engines/scumm/descumm.o \
 	engines/scumm/descumm6.o \
 	engines/scumm/descumm-common.o \
-	tool.o $(UTILS)
+	tool.o \
+	version.o \
+	$(UTILS)
 
-desword2_OBJS := engines/sword2/desword2.o tool.o $(UTILS)
+desword2_OBJS := \
+	engines/sword2/desword2.o \
+	tool.o \
+	version.o \
+	$(UTILS)
 
 degob_OBJS := \
 	engines/gob/degob.o \
@@ -167,6 +160,7 @@ degob_OBJS := \
 	engines/gob/degob_script_bargon.o \
 	engines/gob/degob_script_fascin.o \
 	tool.o \
+	version.o \
 	$(UTILS)
 
 extract_mohawk_OBJS := \
@@ -227,6 +221,7 @@ tools_OBJS := \
 	compress.o \
 	tool.o \
 	tools.o \
+	version.o \
 	$(UTILS)
 
 ifdef USE_PNG
@@ -255,6 +250,16 @@ scummvm-tools-cli_OBJS := \
 	scummvm-tools-cli.o \
 	$(tools_OBJS)
 scummvm-tools-cli_LIBS := $(LIBS)
+
+
+# Make base/version.o depend on all other object files. This way if anything is
+# changed, it causes version.cpp to be recompiled. This in turn ensures that
+# the build date in gScummVMBuildDate is correct.
+version.o: $(filter-out version.o,$(descumm_OBJS))
+version.o: $(filter-out version.o,$(desword2_OBJS))
+version.o: $(filter-out version.o,$(degob_OBJS))
+version.o: $(filter-out version.o,$(scummvm-tools_OBJS))
+version.o: $(filter-out version.o,$(scummvm-tools-cli_OBJS))
 
 
 ######################################################################
@@ -296,6 +301,19 @@ CPPFLAGS := $(DEFINES) $(INCLUDES)
 DEPDIRS = $(addsuffix $(DEPDIR),$(MODULE_DIRS))
 DEPFILES =
 
+# Replace regular output with quiet messages
+ifneq ($(findstring $(MAKEFLAGS),s),s)
+ifneq ($(VERBOSE_BUILD),1)
+ifneq ($(VERBOSE_BUILD),yes)
+QUIET_CXX    = @echo '   ' C++ '    ' $@;
+QUIET_AR     = @echo '   ' AR '     ' $@;
+QUIET_RANLIB = @echo '   ' RANLIB ' ' $@;
+QUIET_LINK   = @echo '   ' LINK '   ' $(1);
+QUIET        = @
+endif
+endif
+endif
+
 ifdef CXX_UPDATE_DEP_FLAG
 
 # Build rule for C++ files. Makes use of CXX_UPDATE_DEP_FLAG for advanced
@@ -315,3 +333,42 @@ endif
 
 # Include the dependency tracking files.
 -include $(wildcard $(addsuffix /*.d,$(DEPDIRS)))
+
+# Mark *.d files and most *.mk files as PHONY. This stops make from trying to
+# recreate them (which it can't), and in particular from looking for potential
+# source files. This can save quite a bit of disk access time.
+.PHONY: $(wildcard $(addsuffix /*.d,$(DEPDIRS))) $(addprefix $(srcdir)/, $(addsuffix /module.mk,$(MODULES))) \
+	$(srcdir)/$(port_mk) $(srcdir)/rules.mk $(srcdir)/engines/engines.mk
+
+######################################################################
+# Get the current version information
+######################################################################
+
+# AmigaOS4's grep has a problem with "./" in pathnames, so use cat.
+VERSION = $(shell cat "${srcdir}/internal_version.h" | grep SCUMMVM_TOOLS_VERSION | cut -d\" -f2)
+VER_MAJOR = $(shell echo $(VERSION) | cut -d. -f 1)
+VER_MINOR = $(shell echo $(VERSION) | cut -d. -f 2)
+VER_PATCH = $(shell echo $(VERSION) | cut -d. -f 3 | cut -c1)
+VER_EXTRA = $(shell echo $(VERSION) | cut -d. -f 3 | cut -c2-)
+
+
+######################################################################
+# Get Subversion's working copy information
+######################################################################
+
+ifeq ($(shell LANG=C svn stat $(srcdir) 2>&1 | grep "is not a working copy"),)
+SVNROOT := $(srcdir)
+ifeq ($(origin SVNREV), undefined)
+# Get the working copy base revision
+VER_SVNREV := $(shell LANG=C svn info $(SVNROOT) | grep "^Revision" | cut -d ' ' -f 2)
+endif
+else
+SVNROOT := https://scummvm.svn.sourceforge.net/svnroot/scummvm/tools/trunk/
+endif
+
+# Define the Subversion revision if available, either autodetected or
+# specified by the user
+ifneq ($(origin VER_SVNREV), undefined)
+CXXFLAGS+= -DSCUMMVM_TOOLS_SVN_REVISION=\"$(VER_SVNREV)\"
+endif
+
