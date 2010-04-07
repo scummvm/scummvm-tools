@@ -148,9 +148,12 @@ void ToolGUI::run(const Configuration &conf) const {
 		// mp3
 		compression->setMp3CompressionType( (const char *)conf.mp3CompressionType.mb_str() );
 		compression->setMp3MpegQuality    ( (const char *)conf.mp3MpegQuality.mb_str()     );
-		compression->setMp3ABRBitrate     ( (const char *)conf.mp3ABRBitrate.mb_str()      );
-		compression->setMp3VBRMinBitrate  ( (const char *)conf.mp3VBRMinBitrate.mb_str()   );
-		compression->setMp3VBRMaxBitrate  ( (const char *)conf.mp3VBRMaxBitrate.mb_str()   );
+		if (conf.mp3CompressionType == "ABR")
+			compression->setMp3ABRBitrate     ( (const char *)conf.mp3ABRBitrate.mb_str()      );
+		else {
+			compression->setMp3VBRMinBitrate  ( (const char *)conf.mp3VBRMinBitrate.mb_str()   );
+			compression->setMp3VBRMaxBitrate  ( (const char *)conf.mp3VBRMaxBitrate.mb_str()   );
+		}
 		compression->setMp3VBRQuality     ( (const char *)conf.mp3VBRQuality.mb_str()      );
 
 		// flac
