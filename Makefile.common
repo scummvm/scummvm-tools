@@ -258,12 +258,32 @@ scummvm-tools-cli_LIBS := $(LIBS)
 version.o: $(filter-out version.o,$(descumm_OBJS))
 version.o: $(filter-out version.o,$(desword2_OBJS))
 version.o: $(filter-out version.o,$(degob_OBJS))
-version.o: $(filter-out version.o,$(scummvm-tools_OBJS))
 version.o: $(filter-out version.o,$(scummvm-tools-cli_OBJS))
+ifdef USE_WXWIDGETS
+version.o: $(filter-out version.o,$(scummvm-tools_OBJS))
+endif
 
 
 ######################################################################
+# The build rules follow - normally you should have no need to
+# touch whatever comes after here.
+######################################################################
 
+# Replace regular output with quiet messages
+ifneq ($(findstring $(MAKEFLAGS),s),s)
+ifneq ($(VERBOSE_BUILD),1)
+ifneq ($(VERBOSE_BUILD),yes)
+QUIET_CXX    = @echo '   ' C++ '    ' $@;
+QUIET_AR     = @echo '   ' AR '     ' $@;
+QUIET_RANLIB = @echo '   ' RANLIB ' ' $@;
+QUIET_LINK   = @echo '   ' LINK '   ' $(1);
+QUIET        = @
+endif
+endif
+endif
+
+
+######################################################################
 
 # Template for all executable targets.
 # This also automatically hooks up a "clean" rule.
@@ -286,11 +306,6 @@ clean:
 	$(RM) $(addsuffix *.o,$(MODULE_DIRS))
 
 
-######################################################################
-# The build rules follow - normally you should have no need to
-# touch whatever comes after here.
-######################################################################
-
 # Concat DEFINES and INCLUDES to form the CPPFLAGS
 CPPFLAGS := $(DEFINES) $(INCLUDES)
 
@@ -300,19 +315,6 @@ CPPFLAGS := $(DEFINES) $(INCLUDES)
 # Depdir information
 DEPDIRS = $(addsuffix $(DEPDIR),$(MODULE_DIRS))
 DEPFILES =
-
-# Replace regular output with quiet messages
-ifneq ($(findstring $(MAKEFLAGS),s),s)
-ifneq ($(VERBOSE_BUILD),1)
-ifneq ($(VERBOSE_BUILD),yes)
-QUIET_CXX    = @echo '   ' C++ '    ' $@;
-QUIET_AR     = @echo '   ' AR '     ' $@;
-QUIET_RANLIB = @echo '   ' RANLIB ' ' $@;
-QUIET_LINK   = @echo '   ' LINK '   ' $(1);
-QUIET        = @
-endif
-endif
-endif
 
 ifdef CXX_UPDATE_DEP_FLAG
 
