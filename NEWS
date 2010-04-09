@@ -3,3 +3,7 @@ For a more comprehensive changelog for the latest experimental SVN code, see:
 
 1.1.1 (????-??-??)
  First tools version to contain a NEWS file.
+
+ - Patch #2982306: "set MP3 ABR bit rate in GUI Tools"
+ - Patch #2982090: "Tools: include unistd.h for unlink"
+ - Patch #2982091: "Tools: use $(INSTALL) instead of install".
