@@ -86,7 +86,7 @@ UTILS := \
 all: $(TARGETS)
 
 install: $(TARGETS)
-	for i in $^ ; do $(INSTALL) -p -m 0755 $$i $(DESTDIR) ; done
+	for i in $^ ; do $(INSTALL) -p -m 0755 $$i $(DESTDIR)$(BINDIR) ; done
 
 bundle_name = ScummVM\ Tools.app
 bundle: scummvm-tools$(EXEEXT)
