@@ -1,3 +1,13 @@
+ScummVM Tools README
+Last updated:    $Date$
+------------------------------------------------------------------------
+
+For more information on ScummVM, visit http://www.scummvm.org/.
+More on the tools can be found on our Wiki under
+  http://wiki.scummvm.org/index.php/User_Manual/Appendix:_Tools
+
+------------------------------------------------------------------------
+
 This is a collection of various tools that may be useful to use in conjunction
 with ScummVM. Please note that this module is not always in-sync with the latest
 STABLE version of ScummVM.
