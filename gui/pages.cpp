@@ -871,7 +871,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 
 	/*
 	"\nMP3 mode params:\n"
-	" -lame-path <path> Path to the lame excutable to use (default: lame)\n"
+	" --lame-path <path> Path to the lame excutable to use (default: lame)\n"
 	" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" minBitrDef_str "%d)\n"
 	" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%" maxBitrDef_str ")\n"
 	" --vbr        LAME uses the VBR mode (default)\n"
