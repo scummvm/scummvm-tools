@@ -21,6 +21,7 @@
  */
 
 #include <wx/config.h>
+#include <wx/utils.h>
 
 #include "gui/configuration.h"
 
@@ -37,6 +38,7 @@ Configuration::Configuration() {
 	advancedAudioSettings = false;
 
 	// mp3 params
+	mp3LamePath = wxT("lame");
 	mp3CompressionType = wxT("VBR");
 	mp3MpegQuality = wxT("2");
 
@@ -67,6 +69,7 @@ void Configuration::load() {
 	filecnf->Read(wxT("outputpath"), &outputPath);
 
 	// mp3 params
+	filecnf->Read(wxT("mp3LamePath"), &mp3LamePath, mp3LamePath);
 	filecnf->Read(wxT("mp3CompressionType"), &mp3CompressionType, mp3CompressionType);
 	filecnf->Read(wxT("mp3MpegQuality"), &mp3MpegQuality, mp3MpegQuality);
 	filecnf->Read(wxT("mp3ABRBitrate"), &mp3ABRBitrate, mp3ABRBitrate);
@@ -92,6 +95,7 @@ void Configuration::save(bool all) {
 
 	wxFileName op(outputPath);
 	filecnf->Write(wxT("outputpath"), op.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR));
+	filecnf->Write(wxT("mp3LamePath"), mp3LamePath);
 
 	if (all) {
 		// mp3 params
@@ -139,3 +143,10 @@ void Configuration::setPlatformDefaults() {
 	if (selectedPlatform == wxT("Nintendo DS") || selectedPlatform == wxT("Dreamcast"))
 		selectedAudioFormat = AUDIO_MP3;
 }
+
+bool Configuration::isLamePathValid(const wxString& mp3LamePath) {
+	wxString cmd = mp3LamePath + wxT(" --license");
+	int retval = wxExecute(cmd, wxEXEC_SYNC);
+	return retval == 0;
+}
+

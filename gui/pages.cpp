@@ -33,6 +33,8 @@
 #include <wx/filepicker.h>
 #include <wx/file.h>
 #include <wx/process.h>
+#include <wx/msgdlg.h>
+#include <wx/scrolwin.h>
 
 #include "main.h"
 #include "pages.h"
@@ -820,6 +822,29 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 		else if (format->GetStringSelection() == wxT("MP3"))
 			switchPage(new ChooseAudioOptionsMp3Page(_configuration));
 	} else {
+		
+		// For MP3 we check if the lame path is valid otherwise we let the choice
+		// tp the user to either change the audio format or to go to the MP3
+		// options page (to set the lame path).
+		if (
+			format->GetStringSelection() == wxT("MP3") &&
+			!Configuration::isLamePathValid(_configuration.mp3LamePath)
+		) {
+			wxMessageDialog *msgDialog = new wxMessageDialog(
+					NULL, 
+					wxT("The lame executable could not be found. It is needed to compress files to MP3. "
+						"You can either proceed to the advanced audio settings page and give the path to lame "
+						"or you can select another audio format to compress to.\n\n"
+						"Do you want to proceed to the advanced audio settings page?"),
+					wxT("lame not found"), 
+					wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION
+				);
+			int retval = msgDialog->ShowModal();
+			if (retval == wxID_YES)
+				switchPage(new ChooseAudioOptionsMp3Page(_configuration));
+			return;
+		}
+		
 		switchPage(new ProcessPage(_configuration));
 	}
 }
@@ -833,10 +858,20 @@ ChooseAudioOptionsMp3Page::ChooseAudioOptionsMp3Page(Configuration &config)
 
 wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxWindow *panel = WizardPage::CreatePanel(parent);
-
+	
+	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+	
+	// Add a ScrolledWindow in that panel as there is a lot of options
+	// and there might not be enough place to display them all.
+	wxScrolledWindow *scroll = new wxScrolledWindow(panel);
+	scroll->FitInside();
+	scroll->SetScrollRate(10, 10);
+	
+	sizer->Add(scroll, 1, wxEXPAND | wxALL);
 
 	/*
 	"\nMP3 mode params:\n"
+	" -lame-path <path> Path to the lame excutable to use (default: lame)\n"
 	" -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" minBitrDef_str "%d)\n"
 	" -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%" maxBitrDef_str ")\n"
 	" --vbr        LAME uses the VBR mode (default)\n"
@@ -846,24 +881,37 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	" --silent     the output of LAME is hidden (default:disabled)\n"
 	*/
 
-	wxFlexGridSizer *sizer = new wxFlexGridSizer(6, 2, 10, 25);
-	sizer->AddGrowableCol(1);
+	// Grid
+	wxFlexGridSizer *gridSizer = new wxFlexGridSizer(7, 2, 10, 25);
+	gridSizer->AddGrowableCol(1);
 
+	// Create output selection
+	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Lame executable:")));
+
+	wxFilePickerCtrl *lamePicker = new wxFilePickerCtrl(
+			scroll, wxID_ANY, _configuration.outputPath, wxT("Select lame executable"),
+			wxT("lame"),
+			wxDefaultPosition, wxSize(250, -1),
+			wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator,
+			wxT("LamePath")
+		);
+		
+	gridSizer->Add(lamePicker, wxSizerFlags().Expand());
 
 	// Type of compression
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Compression Type:")));
+	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Compression Type:")));
 
-	wxRadioButton *abrButton = new wxRadioButton(panel, wxID_ANY, wxT("ABR"),
+	wxRadioButton *abrButton = new wxRadioButton(scroll, wxID_ANY, wxT("ABR"),
 		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("ABR"));
 
 	wxSizer *radioSizer = new wxBoxSizer(wxHORIZONTAL);
 	radioSizer->Add(abrButton);
 
-	wxRadioButton *vbrButton = new wxRadioButton(panel, wxID_ANY, wxT("VBR"),
+	wxRadioButton *vbrButton = new wxRadioButton(scroll, wxID_ANY, wxT("VBR"),
 		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("VBR"));
 	radioSizer->Add(vbrButton);
 
-	sizer->Add(radioSizer, wxSizerFlags().Expand());
+	gridSizer->Add(radioSizer, wxSizerFlags().Expand());
 
 	// Bitrates
 	const int possibleBitrateCount = 160 / 8;
@@ -872,28 +920,28 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 		possibleBitrates[i] << (i+1)*8;
 	}
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:")));
+	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Minimum Bitrate:")));
 
 	wxChoice *vbrMinBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
-	sizer->Add(vbrMinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	gridSizer->Add(vbrMinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
+	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Maximum Bitrate:")));
 
 	wxChoice *vbrMaxBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
-	sizer->Add(vbrMaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	gridSizer->Add(vbrMaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Average Bitrate:")));
+	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Average Bitrate:")));
 
 	wxChoice *abrAvgBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("AverageBitrate"));
-	sizer->Add(abrAvgBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	gridSizer->Add(abrAvgBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	abrButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsMp3Page::onChangeCompressionType), NULL, this);
 	vbrButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsMp3Page::onChangeCompressionType), NULL, this);
@@ -905,26 +953,28 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 		possibleQualities[i] << i;
 	}
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("VBR Quality:")));
+	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("VBR Quality:")));
 
 	wxChoice *vbrQuality = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("VBRQuality"));
-	sizer->Add(vbrQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	gridSizer->Add(vbrQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("MPEG Quality:")));
+	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("MPEG Quality:")));
 
 	wxChoice *mpegQuality = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("MpegQuality"));
-	sizer->Add(mpegQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	gridSizer->Add(mpegQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	// Finish the window
+	scroll->SetSizer(gridSizer);
 	SetAlignedSizer(panel, sizer);
 
 
 	// Load settings
+	lamePicker->SetPath(_configuration.mp3LamePath);
 	if (_configuration.mp3CompressionType == wxT("ABR"))
 		abrButton->SetValue(true);
 	else
@@ -941,6 +991,8 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 }
 
 void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
+	wxFilePickerCtrl *lamePath = static_cast<wxFilePickerCtrl *>(panel->FindWindowByName(wxT("LamePath")));
+	
 	wxRadioButton *abr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("ABR")));
 //	wxRadioButton *vbr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("VBR")));
 
@@ -950,6 +1002,7 @@ void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
 	wxChoice *vbrQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("VBRQuality")));
 	wxChoice *mpegQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MpegQuality")));
 
+	_configuration.mp3LamePath      = lamePath->GetPath();
 	_configuration.mp3VBRMinBitrate = vbrMinBitrate->GetStringSelection();
 	_configuration.mp3VBRMaxBitrate = vbrMaxBitrate->GetStringSelection();
 	_configuration.mp3ABRBitrate    = abrAvgBitrate->GetStringSelection();
@@ -984,6 +1037,23 @@ void ChooseAudioOptionsMp3Page::onChangeCompressionType(wxCommandEvent &evt) {
 }
 
 void ChooseAudioOptionsMp3Page::onNext(wxWindow *panel) {
+	// Check if the lame path is valid.
+	// The configuration is updated when calling switchPage() and therefore
+	// is not yet up to date. So we get the path from the wxFilePickerCtrl
+	wxFilePickerCtrl *lamePath = static_cast<wxFilePickerCtrl *>(panel->FindWindowByName(wxT("LamePath")));
+	if (!Configuration::isLamePathValid(lamePath->GetPath())) {
+		wxMessageDialog *msgDialog = new wxMessageDialog(
+				NULL, 
+				wxT("The lame executable could not be found. It is needed to compress files to MP3. "
+				    "If you want to use MP3 compression you need to select a valid lame executable. "
+					"Otherwise you can go back to the audio format selection and select another format."),
+				wxT("lame not found"), 
+				wxOK | wxICON_EXCLAMATION
+			);
+		msgDialog->ShowModal();
+		return;
+	}
+	
 	switchPage(new ProcessPage(_configuration));
 }
 

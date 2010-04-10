@@ -49,6 +49,7 @@ struct lameparams {
 	uint32 algqual;
 	uint32 vbrqual;
 	bool silent;
+	std::string lamePath;
 };
 
 struct oggencparams {
@@ -71,7 +72,7 @@ struct rawtype {
 	uint8 bitsPerSample;
 };
 
-lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0 };
+lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0, "lame" };
 oggencparams oggparms = { -1, -1, -1, (float)oggqualDef, 0 };
 flaccparams flacparms = { flacCompressDef, flacBlocksizeDef, false, false };
 rawtype	rawAudioType = { false, false, 8 };
@@ -124,7 +125,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 	char *tmp = fbuf;
 
 	if (compmode == AUDIO_MP3) {
-		tmp += sprintf(tmp, "lame -t ");
+		tmp += sprintf(tmp, "%s -t ", encparms.lamePath.c_str());
 		if (rawInput) {
 			tmp += sprintf(tmp, "-r ");
 			tmp += sprintf(tmp, "--bitwidth %d ", rawAudioType.bitsPerSample);
@@ -774,6 +775,10 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, Common::File &inp
 }
 
 // mp3 settings
+void CompressionTool::setMp3LamePath(const std::string& arg) {
+	encparms.lamePath = arg;
+}
+
 void CompressionTool::setMp3CompressionType(const std::string& arg) {
 	encparms.abr = (arg == "ABR");
 }
@@ -899,6 +904,11 @@ bool CompressionTool::processMp3Parms() {
 			encparms.abr = 0;
 		} else if (arg == "--abr") {
 			encparms.abr = 1;
+		} else if (arg == "-lame-path") {
+			if (_arguments.empty())
+				throw ToolException("Could not parse command line options, expected value after -lame-path");
+			setMp3LamePath(_arguments.front());
+			_arguments.pop_front();
 
 		} else if (arg == "-b") {
 			if (_arguments.empty())
@@ -1103,6 +1113,7 @@ std::string CompressionTool::getHelp() const {
 
 	if (_supportedFormats & AUDIO_MP3) {
 		os << "\nMP3 mode params:\n";
+		os << " -lame-path <path> Path to the lame excutable to use (default: lame)\n";
 		os << " -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" << minBitrDef << "%d)\n";
 		os << " -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%" << maxBitrDef << ")\n";
 		os << " --vbr        LAME uses the VBR mode (default)\n";

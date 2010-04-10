@@ -89,6 +89,7 @@ public:
 	// Settings
 	// These functions are used by the GUI Tools and by CLI argument parsing functions
 	// mp3 settings
+	void setMp3LamePath(const std::string&);
 	void setMp3CompressionType(const std::string&);
 	void setMp3MpegQuality(const std::string&);
 	void setMp3ABRBitrate(const std::string&);

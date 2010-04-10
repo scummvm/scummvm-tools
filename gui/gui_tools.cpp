@@ -146,6 +146,7 @@ void ToolGUI::run(const Configuration &conf) const {
 		compression->_format               = conf.selectedAudioFormat;
 
 		// mp3
+		compression->setMp3LamePath       ( (const char *)conf.mp3LamePath.mb_str()        );
 		compression->setMp3CompressionType( (const char *)conf.mp3CompressionType.mb_str() );
 		compression->setMp3MpegQuality    ( (const char *)conf.mp3MpegQuality.mb_str()     );
 		if (conf.mp3CompressionType == wxT("ABR"))
