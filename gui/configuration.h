@@ -58,6 +58,13 @@ struct Configuration {
 	 * Sets all the compression members to default values based on the 'selectedPlatform' member
 	 */
 	void setPlatformDefaults();
+	
+	/**
+	 * Utility functions that test the given lame path.
+	 *
+	 * @return false indicate that the given lame path does not point to a valid lame executable.
+	 */
+	static bool isLamePathValid(const wxString& mp3LamePath);	
 
 	// While prepending with _ would be in line with the coding conventions
 	// this class is just a glorified map with different types, so it seems
@@ -84,6 +91,7 @@ struct Configuration {
 	bool advancedAudioSettings;
 
 	// mp3 settings
+	wxString mp3LamePath;
 	wxString mp3CompressionType;
 	wxString mp3MpegQuality;
 	wxString mp3ABRBitrate;
