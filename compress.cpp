@@ -904,9 +904,9 @@ bool CompressionTool::processMp3Parms() {
 			encparms.abr = 0;
 		} else if (arg == "--abr") {
 			encparms.abr = 1;
-		} else if (arg == "-lame-path") {
+		} else if (arg == "--lame-path") {
 			if (_arguments.empty())
-				throw ToolException("Could not parse command line options, expected value after -lame-path");
+				throw ToolException("Could not parse command line options, expected value after --lame-path");
 			setMp3LamePath(_arguments.front());
 			_arguments.pop_front();
 
@@ -1113,7 +1113,7 @@ std::string CompressionTool::getHelp() const {
 
 	if (_supportedFormats & AUDIO_MP3) {
 		os << "\nMP3 mode params:\n";
-		os << " -lame-path <path> Path to the lame excutable to use (default: lame)\n";
+		os << " --lame-path <path> Path to the lame excutable to use (default: lame)\n";
 		os << " -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" << minBitrDef << "%d)\n";
 		os << " -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%" << maxBitrDef << ")\n";
 		os << " --vbr        LAME uses the VBR mode (default)\n";
