@@ -80,7 +80,7 @@ int Tool::run(const std::deque<std::string> &args) {
 	parseExtraArguments();
 
 	if (!_arguments.empty() && _arguments.front()[0] == '-') {
-		std::string s = "Possibly ignored option " + _arguments.front() + ".";
+		std::string s = "Possibly ignored option " + _arguments.front() + ".\n";
 		print(s);
 	}
 
