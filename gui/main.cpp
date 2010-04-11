@@ -67,7 +67,10 @@ bool ScummVMToolsApp::OnInit() {
 	SetAppName(wxT("ScummVM Tools"));
 
 	// Create window & display
-	ScummToolsFrame *frame = new ScummToolsFrame(GetAppName(), wxDefaultPosition, wxSize(600,420));
+	ScummToolsFrame *frame = new ScummToolsFrame(
+			GetAppName() + wxT(" ") + wxString(gScummVMToolsVersionDate, wxConvISO8859_1),
+			wxDefaultPosition, wxSize(600,420)
+		);
 #ifdef __WXMAC__ // Menu bar looks ugly when it's part of the window, on OSX it's not
 	frame->CreateMenuBar();
 	frame->CentreOnScreen();
@@ -161,7 +164,7 @@ BEGIN_EVENT_TABLE(ScummToolsFrame, wxFrame)
 	EVT_BUTTON(ID_HELP, ScummToolsFrame::onMenuHelp)
 	EVT_MENU(wxID_HELP, ScummToolsFrame::onMenuHelp)
 	EVT_BUTTON(ID_ADVANCED, ScummToolsFrame::onMenuAdvanced)
-	EVT_MENU(ID_ADVANCED, ScummToolsFrame::onMenuAdvanced)
+	EVT_MENU(wxID_PREFERENCES, ScummToolsFrame::onMenuAdvanced)
 	EVT_MENU(ID_MANUAL, ScummToolsFrame::onMenuManual)
 	EVT_MENU(ID_WEBSITE, ScummToolsFrame::onMenuWebsite)
 	EVT_MENU(wxID_ABOUT, ScummToolsFrame::onMenuAbout)
@@ -243,7 +246,7 @@ void ScummToolsFrame::CreateMenuBar() {
 	wxMenu *helpmenu = new wxMenu();
 	helpmenu->Append(wxID_HELP, wxT("Help"));
 	// Might be under the wrong menu...
-	helpmenu->Append(ID_ADVANCED, wxT("&Default Settings"));
+	helpmenu->Append(wxID_PREFERENCES, wxT("&Default Settings"));
 	helpmenu->Append(ID_MANUAL, wxT("&Manual Page"));
 	helpmenu->Append(ID_WEBSITE, wxT("Visit ScummVM &Website"));
 	helpmenu->Append(wxID_ABOUT, wxT("&About ") + wxGetApp().GetAppName());
