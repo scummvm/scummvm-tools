@@ -132,51 +132,53 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 		wxT("Welcome to the ScummVM extraction and compression utility.\nWhat do you want to do?")));
 
 	sizer->AddSpacer(15);
-
-	wxSizer *sidesizer = new wxBoxSizer(wxHORIZONTAL);
-
-	wxPanel *buttonpanel;
-	wxSizer *buttonsizer;
-
-	// The precise pixel dimensions used for the text here is actually quite bad, as it relies
-	// on specific measurements from different platforms...
-
-	buttonpanel = new wxPanel(panel, wxID_ANY);
-	buttonsizer = new wxBoxSizer(wxVERTICAL);
-	buttonsizer->Add(new wxButton(buttonpanel, ID_COMPRESS, wxT("Compress")), wxSizerFlags().Expand());
-	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY,
-		wxT("Compress game audio files into archives."),
-		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
-	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickCompress), NULL, this);
-	buttonpanel->SetSizer(buttonsizer);
-	sidesizer->Add(buttonpanel);
-
-	sidesizer->AddSpacer(15);
-
-	buttonpanel = new wxPanel(panel, wxID_ANY);
-	buttonsizer = new wxBoxSizer(wxVERTICAL);
-	buttonsizer->Add(new wxButton(buttonpanel, ID_EXTRACT, wxT("Extract")), wxSizerFlags().Expand());
-	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY,
-		wxT("Extract the contents of archive files."),
-		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
-	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickExtract), NULL, this);
-	buttonpanel->SetSizer(buttonsizer);
-	sidesizer->Add(buttonpanel);
-
-	sidesizer->AddSpacer(15);
-
-	buttonpanel = new wxPanel(panel, wxID_ANY);
-	buttonsizer = new wxBoxSizer(wxVERTICAL);
-	buttonsizer->Add(new wxButton(buttonpanel, ID_ADVANCED, wxT("Advanced")), wxSizerFlags().Expand());
-	buttonsizer->Add(new wxStaticText(buttonpanel, wxID_ANY,
-		wxT("Choose the precise tool you want to use."),
-		wxDefaultPosition, wxSize(110, 60), wxALIGN_CENTER));
-	buttonpanel->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickAdvanced), NULL, this);
-	buttonpanel->SetSizer(buttonsizer);
-	sidesizer->Add(buttonpanel);
-
-
-	sizer->Add(sidesizer);
+	
+	wxFlexGridSizer *buttonSizer = new wxFlexGridSizer(2, 3, 10, 25);
+	buttonSizer->SetFlexibleDirection(wxVERTICAL);
+	
+	// Compress button
+	wxButton *compressButton = new wxButton(panel, ID_COMPRESS, wxT("Compress"));
+	buttonSizer->Add(compressButton, wxSizerFlags().Expand());
+	compressButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickCompress), NULL, this);
+	
+	// Extract button
+	wxButton *extractButton = new wxButton(panel, ID_EXTRACT, wxT("Extract"));
+	buttonSizer->Add(extractButton, wxSizerFlags().Expand());
+	extractButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickExtract), NULL, this);
+	
+	// Advanced button
+	wxButton *advancedButton = new wxButton(panel, ID_ADVANCED, wxT("Advanced"));
+	buttonSizer->Add(advancedButton, wxSizerFlags().Expand());
+	advancedButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickAdvanced), NULL, this);
+	
+	// Compress Label
+	wxStaticText *compressLabel = new wxStaticText(
+			panel, wxID_ANY,
+			wxT("Compress game audio files into archives."),
+			wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER
+		);
+	compressLabel->Wrap(110);
+	buttonSizer->Add(compressLabel, wxSizerFlags().Align(wxALIGN_CENTER_HORIZONTAL));
+	
+	// Extract Label
+	wxStaticText *extractLabel = new wxStaticText(
+			panel, wxID_ANY,
+			wxT("Extract the contents of archive files."),
+			wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER
+		);
+	extractLabel->Wrap(110);
+	buttonSizer->Add(extractLabel, wxSizerFlags().Align(wxALIGN_CENTER_HORIZONTAL));
+	
+	// Advanced Label
+	wxStaticText *advancedLabel = new wxStaticText(
+			panel, wxID_ANY,
+			wxT("Choose the precise tool you want to use."),
+			wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER
+		);
+	advancedLabel->Wrap(110);
+	buttonSizer->Add(advancedLabel, wxSizerFlags().Align(wxALIGN_CENTER_HORIZONTAL));
+	
+	sizer->Add(buttonSizer);
 	SetAlignedSizer(panel, sizer);
 
 	return panel;
