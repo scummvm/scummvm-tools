@@ -196,7 +196,7 @@ find_wxconfig() {
 				if test `basename $path_dir` = bin ; then
 					_wxpath=`dirname $path_dir`
 				fi
-				# break at first sdl-config found in path
+				# break at first wx-config found in path
 				break 2
 			fi
 		done
@@ -1073,6 +1073,42 @@ fi
 if test "$_wxwidgets" = yes ; then
 	_wxincludes="`$_wxconfig --prefix="$_wxpath" --cflags`"
 	_wxlibs="`$_wxconfig --prefix="$_wxpath" --libs`"
+
+echo_n "Checking for wxwidgets gui dev component... "
+	has_wx_gui_dev=no
+
+	cat > $TMPC << EOF
+#include <wx/wx.h>
+
+class Foo : public wxFrame {
+public:
+	Foo(const wxString& title) : wxFrame(NULL, wxID_ANY, title) {}
+};
+
+class FooApp : public wxApp {
+public:
+	virtual bool OnInit();
+};
+
+IMPLEMENT_APP(FooApp)
+
+bool FooApp::OnInit() {
+    Foo *foo = new Foo(wxT("Foo"));
+    foo->Show(true);
+    return true;
+}
+EOF
+	cc_check $LDFLAGS $CXXFLAGS $_wxincludes $_wxlibs && has_wx_gui_dev=yes
+
+	if test "$has_wx_gui_dev" = no ; then
+		_wxincludes=""
+		_wxlibs=""
+		_wxwidgets=no
+		echo "not found"
+	else
+		echo "found"
+	fi
+
 fi
 add_to_config_mk_if_yes "$_wxwidgets" 'USE_WXWIDGETS = 1'
 
