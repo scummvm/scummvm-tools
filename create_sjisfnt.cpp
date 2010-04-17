@@ -331,10 +331,10 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 	inBuf[1] = sB;
 	inBuf[2] = 0;
 
-	char outBuf[2 * sizeof(uint32)];
+	char outBuf[3 * sizeof(uint32)];
 	memset(outBuf, 0, sizeof(outBuf));
 
-	size_t inBufSize = sB ? sizeof(inBuf) : sizeof(inBuf) - 1;
+	size_t inBufSize = ((fB >= 0x81 && fB <= 0x9F) || (fB >= 0xE0 && fB <= 0xEF)) ? 3 : 2;
 	size_t outBufSize = sizeof(outBuf);
 #ifdef ICONV_USES_CONST
 	const char *inBufWrap = inBuf;
@@ -346,7 +346,16 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 	if (iconv(confSetup, &inBufWrap, &inBufSize, &outBufWrap, &outBufSize) == (size_t)-1)
 		return (uint32)-1;
 
-	return READ_LE_UINT32(outBuf);
+	const uint32 ret = READ_LE_UINT32(outBuf);
+
+	// According to http://www.unicode.org/reports/tr19/tr19-9.html it is possible
+	// that a "zero width no-break space" is added as first character (probably
+	// to be consistent with the "byte order mark"). In case any iconv implementation
+	// does that, we just skip over that bit.
+	if (ret == 0x0000FEFF)
+		return READ_LE_UINT32(outBuf + 4);
+	else
+		return ret;
 }
 
 FT_Library ft = NULL;
