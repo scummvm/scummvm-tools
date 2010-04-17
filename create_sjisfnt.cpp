@@ -28,6 +28,7 @@
 #include <iconv.h>
 #include <list>
 #include <assert.h>
+#include <errno.h>
 
 #include "common/endian.h"
 #include "common/file.h"
@@ -300,9 +301,9 @@ int mapSJIStoChunk(uint8 fB, uint8 sB) {
 iconv_t confSetup = (iconv_t)-1;
 
 bool initSJIStoUTF32Conversion() {
-	// We initialize a SJIS to native endian UTF-32 conversion
+	// We initialize a SJIS to little endian UTF-32 conversion
 	// over here.
-	confSetup = iconv_open("UTF-32", "SJIS");
+	confSetup = iconv_open("UTF-32LE", "SJIS");
 	return (confSetup != (iconv_t)-1);
 }
 
@@ -333,7 +334,7 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 	char outBuf[3 * sizeof(uint32)];
 	memset(outBuf, 0, sizeof(outBuf));
 
-	size_t inBufSize = sizeof(inBuf);
+	size_t inBufSize = ((fB >= 0x81 && fB <= 0x9F) || (fB >= 0xE0 && fB <= 0xEF)) ? 3 : 2;
 	size_t outBufSize = sizeof(outBuf);
 #ifdef ICONV_USES_CONST
 	const char *inBufWrap = inBuf;
@@ -345,14 +346,16 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 	if (iconv(confSetup, &inBufWrap, &inBufSize, &outBufWrap, &outBufSize) == (size_t)-1)
 		return (uint32)-1;
 
-	uint32 ret = *(uint32 *)outBuf;
+	const uint32 ret = READ_LE_UINT32(outBuf);
 
-	// It might happen that iconv will add a "ZERO WIDTH NO-BREAK SPACE"
-	// before a character, we filter that out over here.
+	// According to http://www.unicode.org/reports/tr19/tr19-9.html it is possible
+	// that a "zero width no-break space" is added as first character (probably
+	// to be consistent with the "byte order mark"). In case any iconv implementation
+	// does that, we just skip over that bit.
 	if (ret == 0x0000FEFF)
-		ret = *(uint32 *)(outBuf + 4);
-
-	return ret;
+		return READ_LE_UINT32(outBuf + 4);
+	else
+		return ret;
 }
 
 FT_Library ft = NULL;
@@ -414,7 +417,8 @@ bool drawGlyph(uint8 fB, uint8 sB, Glyph &glyph) {
 		// It might be useful to enable that warning again to detect problems with
 		// iconv though. An example for such an iconv problem is the
 		// "FULLWIDTH APOSTROPHE", which iconv refuses to convert to UTF-32.
-		//warning("Conversion error on: %.2X %.02X", fB, sB);
+		if (errno == E2BIG || errno == EINVAL)
+			warning("Conversion error on: %.2X %.02X", fB, sB);
 		return false;
 	}
 
