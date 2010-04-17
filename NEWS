@@ -13,3 +13,4 @@ For a more comprehensive changelog for the latest experimental SVN code, see:
  - Patch #2982306: "set MP3 ABR bit rate in GUI Tools"
  - Patch #2982090: "Tools: include unistd.h for unlink"
  - Patch #2982091: "Tools: use $(INSTALL) instead of install".
+ - Fix endian problem in create_sjisfnt
