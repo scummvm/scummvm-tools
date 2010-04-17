@@ -347,10 +347,12 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 
 	uint32 ret = *(uint32 *)outBuf;
 
-	// It might happen that iconv will add a "ZERO WIDTH NO-BREAK SPACE"
-	// before a character, we filter that out over here.
+	// It might happen that iconv will add a "byte order mark"
+	// we use that to determin the endianness.
 	if (ret == 0x0000FEFF)
 		ret = *(uint32 *)(outBuf + 4);
+	else if (SWAP_32(ret) == 0x0000FEFF)
+		ret = SWAP_32(*(uint32 *)(outBuf + 4));
 
 	return ret;
 }
