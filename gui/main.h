@@ -235,6 +235,8 @@ public:
 
 	void onPaint(wxPaintEvent &evt);
 protected:
+	wxBitmap loadBitmapFile(const wxString&, wxBitmapType);
+
 	wxFont _font;
 	wxBitmap _logo;
 	wxBitmap _tile;

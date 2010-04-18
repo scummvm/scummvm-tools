@@ -36,6 +36,9 @@
 #include <wx/hyperlink.h>
 #include <wx/notebook.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
 #include "gui/main.h"
 #include "gui/pages.h"
 #include "gui/gui_tools.h"
@@ -525,15 +528,8 @@ Header::Header(wxWindow *parent, const wxString &logo, const wxString &tile, con
 		wxImage::AddHandler(new wxGIFHandler);
 
 	// Load image files
-#ifdef __WXMSW__
-	// Windows likes subfolders for media files
-	_logo.LoadFile(wxT("media/") + logo, wxBITMAP_TYPE_JPEG);
-	_tile.LoadFile(wxT("media/") + tile, wxBITMAP_TYPE_GIF);
-#else
-	// On other platforms, files are more scattered, and we use the standard resource dir
-	_logo.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/") + logo, wxBITMAP_TYPE_JPEG);
-	_tile.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/") + tile, wxBITMAP_TYPE_GIF);
-#endif
+	_logo = loadBitmapFile(logo, wxBITMAP_TYPE_JPEG);
+	_tile = loadBitmapFile(tile, wxBITMAP_TYPE_GIF);
 
 	// Load font
 	_font = wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false);
@@ -571,6 +567,27 @@ void Header::onPaint(wxPaintEvent &evt) {
 
 	dc.SetFont(_font);
 	dc.DrawText(_title, 290, 70);
+}
+
+wxBitmap Header::loadBitmapFile(const wxString& file, wxBitmapType type) {
+	wxBitmap bitmap;
+
+	// Tries the following locations (in that order):
+	// - wxStandardPaths::GetResourcesDir()
+	// - APP_MEDIA_PATH/scummvm-tools (this one is because GetResourcesDir() is not always correct on Linux/Unix)
+	// - CURRENT_DIR/media (mainly for Windows when installed)
+	// - CURRENT_DIR/gui/media (for all platforms when not installed)
+	bitmap.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/") + file, type);
+#ifdef APP_MEDIA_PATH
+	if (!bitmap.IsOk())
+		bitmap.LoadFile(wxString(wxT(APP_MEDIA_PATH)) + wxT("/scummvm-tools/") + file, type);
+#endif
+	if (!bitmap.IsOk())
+		bitmap.LoadFile(wxT("media/") + file, type);
+	if (!bitmap.IsOk())
+		bitmap.LoadFile(wxT("gui/media/") + file, type);
+
+	return bitmap;
 }
 
 AdvancedSettingsDialog::AdvancedSettingsDialog(wxWindow *parent, Configuration &defaults) :
