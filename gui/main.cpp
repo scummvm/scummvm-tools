@@ -574,13 +574,18 @@ wxBitmap Header::loadBitmapFile(const wxString& file, wxBitmapType type) {
 
 	// Tries the following locations (in that order):
 	// - wxStandardPaths::GetResourcesDir()
-	// - APP_MEDIA_PATH/scummvm-tools (this one is because GetResourcesDir() is not always correct on Linux/Unix)
-	// - CURRENT_DIR/media (mainly for Windows when installed)
-	// - CURRENT_DIR/gui/media (for all platforms when not installed)
+	//   On Windows and Mac only or as a fall back on other platforms if APP_MEDIA_PATH is not defined.
+	// - APP_MEDIA_PATH/scummvm-tools
+	//   Linux/Unix (should be the same as GetResourcesDir(), but this GetResourcesDir() is not always correct on Linux/Unix)
+	//   APP_MEDIA_PATH is set by configure and is not correct for MacOS X bundle and probably not set for Windows.
+	// - CURRENT_DIR/media
+	//   On all platforms. This is a fallback if the above fails.
+	// - CURRENT_DIR/gui/media
+	//   On all platforms. This in last resort and is needed when running from the source tree.
+#if defined(__WXMAC__) || defined(__WXMSW__) || !defined(APP_MEDIA_PATH)
 	bitmap.LoadFile(wxStandardPaths::Get().GetResourcesDir() + wxT("/") + file, type);
-#ifdef APP_MEDIA_PATH
-	if (!bitmap.IsOk())
-		bitmap.LoadFile(wxString(wxT(APP_MEDIA_PATH)) + wxT("/scummvm-tools/") + file, type);
+#else
+	bitmap.LoadFile(wxString(wxT(APP_MEDIA_PATH)) + wxT("/scummvm-tools/") + file, type);
 #endif
 	if (!bitmap.IsOk())
 		bitmap.LoadFile(wxT("media/") + file, type);
