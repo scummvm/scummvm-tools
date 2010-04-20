@@ -196,7 +196,7 @@ find_wxconfig() {
 				if test `basename $path_dir` = bin ; then
 					_wxpath=`dirname $path_dir`
 				fi
-				# break at first sdl-config found in path
+				# break at first wx-config found in path
 				break 2
 			fi
 		done
@@ -262,8 +262,9 @@ Configuration:
   -h, --help             display this help and exit
 
 Installation directories:
-  --prefix=DIR           use this prefix for installing the Tools [/usr/local]
+  --prefix=DIR           use this prefix for installing the ScummVM Tools [/usr/local]
   --bindir=DIR           directory to install the tool binaries in [PREFIX/bin]
+  --datadir=DIR          directory to install the GUI tool media files in [PREFIX/share]
   --mandir=DIR           directory to install the manpage in [PREFIX/share/man]
   --libdir=DIR           directory to install the plugins in [PREFIX/lib]
 
@@ -396,6 +397,9 @@ for ac_option in $@; do
 		;;
 	--bindir=*)
 		_bindir=`echo $ac_option | cut -d '=' -f 2`
+		;;
+	--datadir=*)
+		_datadir=`echo $ac_option | cut -d '=' -f 2`
 		;;
 	--mandir=*)
 		_mandir=`echo $ac_option | cut -d '=' -f 2`
@@ -1081,9 +1085,11 @@ add_to_config_mk_if_yes "$_wxwidgets" 'USE_WXWIDGETS = 1'
 # Figure out installation directories
 #
 test -z "$_bindir" && _bindir="$_prefix/bin"
+test -z "$_datadir" && _datadir="$_prefix/share"
 test -z "$_mandir" && _mandir="$_prefix/share/man"
 test -z "$_libdir" && _libdir="$_prefix/lib"
 
+_def_media_path='#define APP_MEDIA_PATH "'$_datadir'"'
 
 #
 # Do CXXFLAGS now we know the compiler version
@@ -1131,6 +1137,9 @@ cat > config.h << EOF
 
 $_config_h_data
 
+/* paths */
+$_def_media_path
+
 /* Data types */
 typedef unsigned $type_1_byte byte;
 typedef unsigned int uint;
@@ -1176,6 +1185,7 @@ EXEEXT := $HOSTEXEEXT
 
 PREFIX := $_prefix
 BINDIR := $_bindir
+DATADIR := $_datadir
 MANDIR := $_mandir
 LIBDIR := $_libdir
 
