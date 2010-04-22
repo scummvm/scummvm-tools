@@ -113,10 +113,31 @@ cc_check() {
 	echo >> "$TMPLOG"
 	echo "$CXX $TMPC -o $TMPO$HOSTEXEEXT $@" >> "$TMPLOG"
 	rm -f "$TMPO$HOSTEXEEXT"
-	( $CXX $CXXFLAGS "$TMPC" -o "$TMPO$HOSTEXEEXT" "$@" ) >> "$TMPLOG" 2>&1
+	( $CXX $LDFLAGS $CXXFLAGS "$TMPC" -o "$TMPO$HOSTEXEEXT" "$@" ) >> "$TMPLOG" 2>&1
 	TMP="$?"
 	echo >> "$TMPLOG"
 	return "$TMP"
+}
+
+cc_check_define() {
+cat > $TMPC << EOF
+int main(void) {
+	#ifndef $1
+	syntax error
+	#endif
+	return 0;
+}
+EOF
+	cc_check -c
+	return $?
+}
+
+gcc_get_define() {
+	# Note: The AmigaOS compiler doesn't like the "-" input file, so a real file
+	# is used instead
+	touch $TMPC
+	$CXX -dM -E $TMPC | fgrep "$1" | head -n1 | cut -d ' ' -f 3-
+	rm -f $TMPC
 }
 
 #
@@ -494,9 +515,28 @@ LD=$CXX
 echocheck "compiler version"
 
 have_gcc=no
-cxx_version=`( $CXX -dumpversion ) 2>&1`
-if test "$?" -gt 0; then
-	# TODO: Big scary warning about unsupported Compilers
+cc_check_define __GNUC__ && have_gcc=yes
+
+if test "$have_gcc" = yes; then
+	add_line_to_config_mk 'HAVE_GCC = 1'
+	_cxx_major=`gcc_get_define __GNUC__`
+	_cxx_minor=`gcc_get_define __GNUC_MINOR__`
+	cxx_version="`( $CXX -dumpversion ) 2>&1`"
+
+	if test -n "`gcc_get_define __clang__`"; then
+		add_line_to_config_mk 'HAVE_CLANG = 1'
+	fi
+
+	if test "$_cxx_major" -eq 2 && test "$_cxx_minor" -ge 95 || \
+	   test "$_cxx_major" -gt 2 ; then
+		cxx_version="$cxx_version, ok"
+		cxx_verc_fail=no
+	else
+		cxx_version="$cxx_version, bad"
+		cxx_verc_fail=yes
+	fi
+else
+	# TODO: Big scary warning about unsupported compilers
 	cxx_version=`( $CXX -version ) 2>&1`
 	if test "$?" -eq 0; then
 		cxx_version="`echo "${cxx_version}" | sed -ne 's/^.*[^0-9]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*$/\1/gp'`"
@@ -510,46 +550,14 @@ if test "$?" -gt 0; then
 		cxx_verc_fail=yes
 		echo found non-gcc compiler version ${cxx_version}
 	fi
-else
-	add_line_to_config_mk 'HAVE_GCC = 1'
-	have_gcc=yes
-fi
-
-if test "$have_gcc" = yes; then
-	case $cxx_version in
-		2.95.[2-9]|2.95.[2-9][-.]*|3.[0-9]|3.[0-9].[0-9]|3.[0-9].[0-9][-.]*|4.[0-9]|4.[0-9].[0-9]|4.[0-9].[0-9][-.]*)
-			_cxx_major=`echo $cxx_version | cut -d '.' -f 1`
-			_cxx_minor=`echo $cxx_version | cut -d '.' -f 2`
-			cxx_version="$cxx_version, ok"
-			cxx_verc_fail=no
-			;;
-		# whacky beos version strings
-		2.9-beos-991026*|2.9-beos-000224*)
-			_cxx_major=2
-			_cxx_minor=95
-			cxx_version="$cxx_version, ok"
-			cxx_verc_fail=no
-			;;
-		3_4)
-			_cxx_major=3
-			_cxx_minor=4
-			;;
-		'not found')
-			cxx_verc_fail=yes
-			;;
-		*)
-			cxx_version="$cxx_version, bad"
-			cxx_verc_fail=yes
-			;;
-	esac
-else
 	case $_host_os in
 		irix*)
 			case $cxx_version in
 				7.4.4*)
-					# We just assume this is SGI MipsPRO
+					# We just assume this is SGI MIPSPro
 					_cxx_major=7
 					_cxx_minor=4
+					cxx_verc_fail=no
 					add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MDupdate "$(*D)/$(DEPDIR)/$(*F).d"'
 					add_line_to_config_mk '-include Makedepend'
 					;;
@@ -799,7 +807,7 @@ add_to_config_mk_if_yes "$_verbose_build" 'VERBOSE_BUILD = 1'
 cat > $TMPC << EOF
 int main(void) { return 0; }
 EOF
-cc_check $LDFLAGS $CXXFLAGS -lm && LDFLAGS="$LDFLAGS -lm"
+cc_check -lm && LDFLAGS="$LDFLAGS -lm"
 
 #
 # Check for Ogg Vorbis
@@ -811,7 +819,7 @@ if test "$_vorbis" = auto ; then
 #include <vorbis/codec.h>
 int main(void) { vorbis_packet_blocksize(0,0); return 0; }
 EOF
-	cc_check $LDFLAGS $CXXFLAGS $OGG_CFLAGS $OGG_LIBS $VORBIS_CFLAGS $VORBIS_LIBS \
+	cc_check $OGG_CFLAGS $OGG_LIBS $VORBIS_CFLAGS $VORBIS_LIBS \
 		-lvorbisfile -lvorbis -logg && _vorbis=yes
 fi
 if test "$_vorbis" = yes ; then
@@ -834,7 +842,7 @@ if test "$_tremor" = auto ; then
 #include <tremor/ivorbiscodec.h>
 int main(void) { vorbis_info_init(0); return 0; }
 EOF
-	cc_check $LDFLAGS $CXXFLAGS $TREMOR_CFLAGS $TREMOR_LIBS -lvorbisienc && \
+	cc_check $TREMOR_CFLAGS $TREMOR_LIBS -lvorbisienc && \
 	_tremor=yes
 fi
 if test "$_tremor" = yes && test "$_vorbis" = no; then
@@ -862,10 +870,10 @@ if test "$_flac" = auto ; then
 int main(void) { return FLAC__STREAM_SYNC_LEN >> 30; /* guaranteed to be 0 */ }
 EOF
 	if test "$_vorbis" = yes ; then
-		cc_check $LDFLAGS $CXXFLAGS $FLAC_CFLAGS $FLAC_LIBS $OGG_CFLAGS $OGG_LIBS \
+		cc_check $FLAC_CFLAGS $FLAC_LIBS $OGG_CFLAGS $OGG_LIBS \
 			-lFLAC -logg && _flac=yes
 	else
-		cc_check $LDFLAGS $CXXFLAGS $FLAC_CFLAGS $FLAC_LIBS \
+		cc_check $FLAC_CFLAGS $FLAC_LIBS \
 			-lFLAC && _flac=yes
 	fi
 fi
@@ -893,7 +901,7 @@ if test "$_mad" = auto ; then
 #include <mad.h>
 int main(void) { return 0; }
 EOF
-	cc_check $LDFLAGS $CXXFLAGS $MAD_CFLAGS $MAD_LIBS -lmad && _mad=yes
+	cc_check $MAD_CFLAGS $MAD_LIBS -lmad && _mad=yes
 fi
 if test "$_mad" = yes ; then
 	_def_mad='#define USE_MAD'
@@ -921,7 +929,7 @@ int main(void) {
 #endif
 }
 EOF
-	cc_check $LDFLAGS $CXXFLAGS $PNG_CFLAGS $PNG_LIBS -lpng && _png=yes
+	cc_check $PNG_CFLAGS $PNG_LIBS -lpng && _png=yes
 fi
 if test "$_png" = yes ; then
 	_def_png='#define USE_PNG'
@@ -944,7 +952,7 @@ if test "$_zlib" = auto ; then
 #include <zlib.h>
 int main(void) { return strcmp(ZLIB_VERSION, zlibVersion()); }
 EOF
-	cc_check $LDFLAGS $CXXFLAGS $ZLIB_CFLAGS $ZLIB_LIBS -lz && _zlib=yes
+	cc_check $ZLIB_CFLAGS $ZLIB_LIBS -lz && _zlib=yes
 fi
 if test "$_zlib" = yes ; then
 	_def_zlib='#define USE_ZLIB'
@@ -992,7 +1000,7 @@ int main(int, char **) {
 	return 0;
 }
 EOF
-	cc_check $LDFLAGS $CXXFLAGS && _iconv=yes
+	cc_check && _iconv=yes
 fi
 
 create_iconv_test() {
@@ -1012,11 +1020,11 @@ if test "$_iconv" = yes ; then
 
 	needs_iconvlib='auto'
 	create_iconv_test
-	cc_check $LDFLAGS $CXXFLAGS -liconv && needs_iconvlib='yes'
+	cc_check -liconv && needs_iconvlib='yes'
 	# We do check linking without -liconv here too, just in case
 	# it would fail otherwise too
 	create_iconv_test
-	cc_check $LDFLAGS $CXXFLAGS && needs_iconvlib='no'
+	cc_check && needs_iconvlib='no'
 
 	if test "$needs_iconvlib" = auto ; then
 		_iconv=no
@@ -1041,7 +1049,7 @@ int main(int argc, char **argv) {
 	return 0;
 }
 EOF
-		cc_check $LDFLAGS $CXXFLAGS $_iconvlibs && uses_const=yes
+		cc_check $_iconvlibs && uses_const=yes
 
 		if test "$uses_const" = yes ; then
 			echo "iconv_t, const char **, size_t *, char **, size_t *"
@@ -1102,7 +1110,7 @@ bool FooApp::OnInit() {
     return true;
 }
 EOF
-	cc_check $LDFLAGS $CXXFLAGS $_wxincludes $_wxlibs && has_wx_gui_dev=yes
+	cc_check $_wxincludes $_wxlibs && has_wx_gui_dev=yes
 
 	if test "$has_wx_gui_dev" = no ; then
 		_wxincludes=""
@@ -1143,10 +1151,11 @@ if test "$have_gcc" = yes ; then
 			;;
 		esac
 		add_line_to_config_mk 'HAVE_GCC3 = 1'
-		add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -Wp,-MMD,"$(*D)/$(DEPDIR)/$(*F).d",-MQ,"$@",-MP'
+		add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MMD -MF "$(*D)/$(DEPDIR)/$(*F).d" -MQ "$@" -MP'
 	fi;
 
-	if test "$_cxx_major" -ge "4" && test "$_cxx_minor" -ge "3" ; then
+	if test "$_cxx_major" -eq 4 && test "$_cxx_minor" -ge 3 || \
+	   test "$_cxx_major" -gt 4 ; then
 		CXXFLAGS="$CXXFLAGS -Wno-empty-body"
 	else
 		CXXFLAGS="$CXXFLAGS -Wconversion"
