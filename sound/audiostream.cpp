@@ -69,7 +69,7 @@ protected:
 	const int _rate;
 	const byte *_origPtr;
 
-	inline bool eosIntern() const	{ return _ptr >= _end; };
+	inline bool eosIntern() const	{ return _ptr >= _end; }
 public:
 	LinearMemoryStream(int rate, const byte *ptr, uint32 len, uint32 loopOffset, uint32 loopLen, bool autoFreeMemory)
 		: _ptr(ptr), _end(ptr+len), _loopPtr(0), _loopEnd(0), _rate(rate) {

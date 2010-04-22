@@ -68,7 +68,7 @@ private:
 
 public:
 	ADPCMInputStream(Common::File *stream, uint32 size, typesADPCM type, int rate, int channels = 2, uint32 blockAlign = 0);
-	~ADPCMInputStream() {};
+	~ADPCMInputStream() {}
 
 	int readBuffer(int16 *buffer, const int numSamples);
 	int readBufferOKI(int16 *buffer, const int numSamples);
