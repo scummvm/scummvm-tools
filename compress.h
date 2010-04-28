@@ -30,6 +30,7 @@ enum {
 	/* These are the defaults parameters for the Lame invocation */
 	minBitrDef	= 24,
 	maxBitrDef	= 64,
+	targetBitrDef = 32,
 	algqualDef	= 2,
 	vbrqualDef	= 4,
 

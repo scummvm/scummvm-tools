@@ -45,6 +45,7 @@
 struct lameparams {
 	uint32 minBitr;
 	uint32 maxBitr;
+	uint32 targetBitr;
 	bool abr;
 	uint32 algqual;
 	uint32 vbrqual;
@@ -72,7 +73,7 @@ struct rawtype {
 	uint8 bitsPerSample;
 };
 
-lameparams encparms = { minBitrDef, maxBitrDef, false, algqualDef, vbrqualDef, 0, "lame" };
+lameparams encparms = { minBitrDef, maxBitrDef, targetBitrDef, false, algqualDef, vbrqualDef, 0, "lame" };
 oggencparams oggparms = { -1, -1, -1, (float)oggqualDef, 0 };
 flaccparams flacparms = { flacCompressDef, flacBlocksizeDef, false, false };
 rawtype	rawAudioType = { false, false, 8 };
@@ -141,9 +142,11 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 		}
 
 		if (encparms.abr)
-			tmp += sprintf(tmp, "--abr %d ", encparms.minBitr);
-		else
+			tmp += sprintf(tmp, "--abr %d ", encparms.targetBitr);
+		else {
 			tmp += sprintf(tmp, "--vbr-new -b %d ", encparms.minBitr);
+			tmp += sprintf(tmp, "-B %d ", encparms.maxBitr);
+		}
 
 		/* Explicitly specify a target sample rate, to work around a bug (?)
 		* in newer lame versions (>= 3.95) which causes it to malfunction
@@ -162,7 +165,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 
 		tmp += sprintf(tmp, "-q %d ", encparms.algqual);
 		tmp += sprintf(tmp, "-V %d ", encparms.vbrqual);
-		tmp += sprintf(tmp, "-B %d ", encparms.maxBitr);
+
 		tmp += sprintf(tmp, "\"%s\" \"%s\" ", inname, outname);
 
 		err = spawnSubprocess(fbuf) != 0;
@@ -794,7 +797,13 @@ void CompressionTool::setMp3MpegQuality(const std::string& arg) {
 }
 
 void CompressionTool::setMp3ABRBitrate(const std::string& arg) {
-	setMp3VBRMinBitrate(arg);
+	encparms.minBitr = atoi(arg.c_str());
+	
+	if (encparms.targetBitr == 0 && arg != "0")
+		throw ToolException("Minimum bitrate (-b) must be a number.");
+	
+	if (encparms.targetBitr < 8 || encparms.targetBitr > 160)
+		throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
 }
 
 void CompressionTool::setMp3VBRMinBitrate(const std::string& arg) {
@@ -802,6 +811,9 @@ void CompressionTool::setMp3VBRMinBitrate(const std::string& arg) {
 	
 	if (encparms.minBitr == 0 && arg != "0")
 		throw ToolException("Minimum bitrate (-b) must be a number.");
+
+	if ((encparms.minBitr % 8) != 0)
+		encparms.maxBitr -= encparms.minBitr % 8;
 	
 	if (encparms.minBitr < 8 || encparms.minBitr > 160)
 		throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
@@ -1114,11 +1126,11 @@ std::string CompressionTool::getHelp() const {
 	if (_supportedFormats & AUDIO_MP3) {
 		os << "\nMP3 mode params:\n";
 		os << " --lame-path <path> Path to the lame excutable to use (default: lame)\n";
-		os << " -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" << minBitrDef << "%d)\n";
-		os << " -B <rate>    <rate> is the maximum VBR/ABR bitrate (default:%" << maxBitrDef << ")\n";
+		os << " -b <rate>    <rate> is the target bitrate(ABR)/minimal bitrate(VBR) (default:" << targetBitrDef << " for ABR and " << minBitrDef << " for VBR)\n";
+		os << " -B <rate>    <rate> is the maximum VBR bitrate (default:" << maxBitrDef << ")\n";
 		os << " --vbr        LAME uses the VBR mode (default)\n";
 		os << " --abr        LAME uses the ABR mode\n";
-		os << " -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:" << vbrqualDef << "%d)\n";
+		os << " -V <value>   specifies the value (0 - 9) of VBR quality (0=best) (default:" << vbrqualDef << ")\n";
 		os << " -q <value>   specifies the MPEG algorithm quality (0-9; 0=best) (default:" << algqualDef << ")\n";
 		os << " --silent     the output of LAME is hidden (default:disabled)\n";
 	}
