@@ -9,7 +9,7 @@ For a more comprehensive changelog for the latest experimental SVN code, see:
  - Do not give a maximum bitrate to lame when encoding to ABR MP3 since the lame
    documentation says "this is NOT RECOMMENDED".
 
-1.1.1 (????-??-??)
+1.1.1 (2010-05-02)
  First tools version to contain a NEWS file.
 
  - Improve the way the images are loaded for the tools GUI. It increases the chances of success. 
