@@ -1,7 +1,7 @@
 For a more comprehensive changelog for the latest experimental SVN code, see:
         http://scummvm.svn.sourceforge.net/viewvc/scummvm/tools/trunk/?view=log
 
-1.1.1 (????-??-??)
+1.1.1 (2010-05-02)
  First tools version to contain a NEWS file.
 
  - Improve the way the images are loaded for the tools GUI. It increases the chances of success. 
