@@ -25,7 +25,9 @@
 #include <string.h>
 #include <zlib.h>
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #include "compress_scumm_san.h"
 #include "common/endian.h"
