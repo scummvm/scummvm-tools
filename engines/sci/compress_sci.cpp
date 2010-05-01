@@ -387,6 +387,8 @@ void CompressSci::execute() {
 		_output.writeUint32LE(_outputOffset);
 		// Seek to end of file
 		_output.seek(0, SEEK_END);
+
+		updateProgress(resourceNo, resourceCount);
 	}
 
 	/* And some clean-up :-) */

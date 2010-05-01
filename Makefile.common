@@ -35,6 +35,7 @@ MODULE_DIRS += \
 	engines/queen/ \
 	engines/saga/ \
 	engines/scumm/ \
+	engines/sci/ \
 	engines/sword1/ \
 	engines/sword2/ \
 	engines/tinsel/ \
@@ -200,6 +201,7 @@ tools_OBJS := \
 	engines/scumm/compress_scumm_bun.o \
 	engines/scumm/compress_scumm_san.o \
 	engines/scumm/compress_scumm_sou.o \
+	engines/sci/compress_sci.o \
 	engines/sword1/compress_sword1.o \
 	engines/sword2/compress_sword2.o \
 	engines/touche/compress_touche.o \
