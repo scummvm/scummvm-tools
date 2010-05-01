@@ -216,6 +216,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engines\tinsel\compress_sci.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\tinsel\compress_sci.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engines\scumm\compress_scumm_bun.cpp"
 				>
 			</File>
@@ -435,6 +443,14 @@
 			</File>
 			<File
 				RelativePath="..\..\tools.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\version.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\version.h"
 				>
 			</File>
 			<File

@@ -243,6 +243,14 @@
 				RelativePath="..\..\util.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\version.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\version.h"
+				>
+			</File>
 			<Filter
 				Name="utils"
 				>
@@ -353,6 +361,14 @@
 			</File>
 			<File
 				RelativePath="..\..\compress_saga.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\compress_sci.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\compress_sci.h"
 				>
 			</File>
 			<File
