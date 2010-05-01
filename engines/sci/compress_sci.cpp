@@ -90,6 +90,11 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 		// see above
 		_input.read_throwsOnError(&buffer[6], 8);
 		dataSize = READ_LE_UINT32(buffer + 9);
+		// HACK: LSL6 resource.aud has a SOL that specifies incorrect dataSize, we fix it here
+		if ((_inputOffset == 0x619bf07) && (dataSize == 0x1dd78))
+			dataSize--;
+		if ((_inputOffset == 0x101DFBC5) && (dataSize == 0x1cfc1))
+			dataSize--;
 		_inputEndOffset = _inputOffset + 14 + dataSize;
 		return kSciResourceDataTypeSOL;
 	}
@@ -339,6 +344,7 @@ void CompressSci::execute() {
 
 	int resourceCount = 0;
 	do {
+		print("offset %lx\n", _inputOffset);
 		recognizedDataType = detectData(header, false);
 		if (!recognizedDataType)
 			error("Unsupported data at offset %lx", _inputOffset);
