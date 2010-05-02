@@ -69,6 +69,14 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 	byte buffer[20];
 	uint32 dataSize;
 	memcpy(&buffer, header, 6);
+	if ((memcmp(buffer + 1, "RIFF", 4) == 0) || (memcmp(buffer + 1, "\x8d\x0bSOL", 4) == 0)) {
+		// Fixup for pharkas resource.sfx, several WAVE files contain a size thats not right (-1 byte)
+		for (int i = 0; i < 5; i++)
+			buffer[i] = buffer[i + 1];
+		_input.read_throwsOnError(&buffer[5], 1);
+		_inputOffset++;
+		warning("WAVE resource position adjusted at %lx\n", _inputOffset);
+	}
 	if (memcmp(buffer, "RIFF", 4) == 0) {
 		// WAVE files begin with
 		// "RIFF" [size of following data:DWORD]
@@ -344,18 +352,22 @@ void CompressSci::execute() {
 
 	int resourceCount = 0;
 	do {
-		print("offset %lx\n", _inputOffset);
 		recognizedDataType = detectData(header, false);
 		if (!recognizedDataType)
 			error("Unsupported data at offset %lx", _inputOffset);
 		_input.seek(_inputEndOffset, SEEK_SET);
 		_inputOffset = _inputEndOffset;
-		if (_inputOffset == _inputSize)
+		// We abort even, if file position is one below size because of pharkas resource.sfx
+		if (_inputOffset >= _inputSize - 1)
 			break;
 
 		resourceCount++;
 		_input.read_throwsOnError(&header, 6);
 	} while (true);
+
+	// This case happens on pharkas resource.sfx
+	if (_inputOffset != _inputSize)
+		warning("resource file has additional byte before end-of-file\n");
 
 	print("Valid sci audio resource file. Found %d resources", resourceCount);
 
