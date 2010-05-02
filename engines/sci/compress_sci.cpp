@@ -38,11 +38,12 @@
 // data-format of resource.aud/resource.sfx:
 //  just multiple SOL-Audio/WAVE files appended to each other
 //  SCI1.1 also have resource id and headersize PER resource entry (but in WAVE resources)
-//  we can NOT just read in resource.aud, because at least in kq6 there is garbage data inside as well. And because
-//  of 
 
-//  those are accessed directly by offset. We need to add an additional offset to offset mapping table right at the
-//   start of the file. We also include the compression type as first 4 bytes
+//  at least kq6 resource.aud contains several raw lipsync resources w/o a real sync resource before that. Identifying those
+//   raw lipsync resources isn't possible, because there is no header at all.
+
+//  The resource data is accessed directly by offset referenced inside a map resource. That's why we need to add an additional
+//   offset to offset mapping table right at the start of the file. We also include the compression type as first 4 bytes
 
 // This code CURRENTLY DOES NOT SUPPORT SCI2.1+ GAMES! In those games the current code will actually destroy the content of
 //  the samples, because SCI32 used a different scheme for decoding. I don't know yet how to detect SCI32 games easily
@@ -116,11 +117,12 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 		// sync resource, we expect SOL audio with a resourceid afterwards
 		searchForward = 10000;
 	}
-	// We didn't find anything useful, though this may be a valid file after all - kq6 resource.aud contains garbage data
+	// We didn't find anything useful, though this may be a valid file after all - kq6 resource.aud contains "raw-data"
+	//  lip-sync data w/o the actual sync data
 	if (!searchForward) {
 		searchForward = 2048;
 		if (!compressMode)
-			warning("possibly garbage found at offset %lx\n", _input.pos());
+			warning("possibly raw lipsync data found at offset %lx\n", _input.pos());
 		noSignature = true;
 	}
 
@@ -131,7 +133,7 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 	while (true) {
 		if (syncPos == (searchForward - 5)) {
 			if (noSignature)
-				error("no SOL audio after garbage data at %lx", originalOffset);
+				error("no SOL audio after possible raw lipsync data at %lx", originalOffset);
 			else
 				error("no SOL audio after sync resource at %lx", originalOffset);
 		}
@@ -143,15 +145,8 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 		}
 		syncPos++;
 	}
-	if (!noSignature) {
-		_inputEndOffset = _inputOffset + 6 + syncPos;
-		return kSciResourceTypeTypeSync;
-	}
-	// We skipped garbage, so skip that and call us again so that SOL data gets actually seen
-	_input.seek(-searchForward + syncPos, SEEK_CUR);
-	_inputOffset = _input.pos();
-	_input.read_throwsOnError(header, 6);
-	return detectData(header, compressMode);
+	_inputEndOffset = _inputOffset + 6 + syncPos;
+	return kSciResourceTypeTypeSync;
 }
 
 static const uint16 tableDPCM16[128] = {
