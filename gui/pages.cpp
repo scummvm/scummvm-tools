@@ -264,8 +264,8 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 
 	sizer->AddSpacer(20);
 
-	wxStaticText *text = new wxStaticText(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, wxT("ToolText"));
-	sizer->Add(text);
+	wxStaticText *text = new wxStaticText(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE, wxT("ToolText"));
+	sizer->Add(text, wxFIXED_MINSIZE);
 
 	SetAlignedSizer(panel, sizer);
 
