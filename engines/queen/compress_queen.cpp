@@ -21,9 +21,6 @@
  */
 
 #include <string.h>
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
 
 #include "common/util.h"
 #include "compress.h"

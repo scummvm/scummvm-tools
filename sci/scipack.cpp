@@ -30,9 +30,6 @@
 #include <resource.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-#endif
 
 #define COPY_BLOCK_SIZE 512
 

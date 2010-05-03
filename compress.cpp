@@ -25,9 +25,6 @@
 #include <string.h>
 #include <sstream>
 #include <stdio.h>
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
