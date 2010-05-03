@@ -448,6 +448,9 @@ class ProcessPage : public WizardPage {
 	wxTextCtrl *_outwin;
 	/** Gauge showing progress */
 	wxGauge *_gauge;
+	/** Labels */
+	wxStaticText *_processingText;
+	wxStaticText *_finishText;
 	/** The thread which the tool is run in */
 	ProcessToolThread *_thread;
 	/** The structure to exchange output between thread & gui */

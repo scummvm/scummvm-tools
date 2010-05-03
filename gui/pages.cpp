@@ -192,6 +192,7 @@ void IntroPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->setLineLabel(wxT("ScummVM Tools"));
 
 	buttons->showNavigation(false);
+	buttons->enableCancel(true);
 
 	WizardPage::updateButtons(panel, buttons);
 }
@@ -1268,7 +1269,8 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 
 	sizer->AddSpacer(15);
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Processing data...")), wxSizerFlags().Expand().Border(wxLEFT, 20));
+	_processingText = new wxStaticText(panel, wxID_ANY, wxT("Processing data..."));
+	sizer->Add(_processingText, wxSizerFlags().Expand().Border(wxLEFT, 20));
 
 	_outwin = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize,
 		wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("OutputWindow"));
@@ -1277,6 +1279,9 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 	_gauge = new wxGauge(panel, wxID_ANY, _output.total, wxDefaultPosition, wxDefaultSize,
 		wxGA_HORIZONTAL, wxDefaultValidator, wxT("ProgressBar"));
 	sizer->Add(_gauge, wxSizerFlags(0).Expand().Border(wxBOTTOM | wxLEFT | wxRIGHT, 10));
+	
+	_finishText = new wxStaticText(panel, wxID_ANY, wxString());
+	sizer->Add(_finishText, wxSizerFlags().Expand().Border(wxLEFT, 20));
 
 	panel->SetSizer(sizer);
 
@@ -1365,6 +1370,14 @@ bool ProcessPage::onIdle(wxPanel *panel) {
 		// Update UI
 		if (_topframe)
 			updateButtons(panel, _topframe->_buttons);
+		_processingText->SetLabel(wxString());
+		if (_success) {
+			_finishText->SetOwnForegroundColour(wxColour(0, 200, 0));
+			_finishText->SetLabel(wxT("Tool completed successfully"));
+		} else {
+			_finishText->SetOwnForegroundColour(wxColour(200, 0, 0));
+			_finishText->SetLabel(wxT("Tool ended with errors"));
+		}
 		return false;
 	}
 
@@ -1514,6 +1527,11 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 	displayOut->SetValue(true);
 	sizer->Add(displayOut);
 
+	wxCheckBox *processOther = new wxCheckBox(panel, wxID_ANY, wxT("Process another file"), wxDefaultPosition, wxDefaultSize,
+		0, wxDefaultValidator, wxT("ProcessOther"));
+	processOther->SetValue(false);
+	sizer->Add(processOther);
+
 	SetAlignedSizer(panel, sizer);
 
 	return panel;
@@ -1531,7 +1549,12 @@ void FinishPage::onNext(wxWindow *panel) {
 #else
 #endif
 	}
-	_topframe->Close(true);
+
+	wxCheckBox *restart = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("ProcessOther")));
+	if (restart->GetValue())
+		switchPage(new IntroPage(_configuration));
+	else
+		_topframe->Close(true);
 }
 
 wxString FinishPage::getHelp() {
@@ -1541,6 +1564,7 @@ wxString FinishPage::getHelp() {
 void FinishPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->enablePrevious(false);
 	buttons->showFinish(true);
+	buttons->enableCancel(false);
 
 	WizardPage::updateButtons(panel, buttons);
 }
@@ -1564,18 +1588,28 @@ wxWindow *FailurePage::CreatePanel(wxWindow *parent) {
 		wxT("The execution of the tool failed. You can try running the wizard again and ensure that the file paths are accurate.")),
 		wxSizerFlags(1).Expand());
 
+	wxCheckBox *processOther = new wxCheckBox(panel, wxID_ANY, wxT("Restart the wizard"), wxDefaultPosition, wxDefaultSize,
+		0, wxDefaultValidator, wxT("ProcessOther"));
+	processOther->SetValue(false);
+	sizer->Add(processOther);
+
 	SetAlignedSizer(panel, sizer);
 
 	return panel;
 }
 
 void FailurePage::onNext(wxWindow *panel) {
-	_topframe->Close(true);
+	wxCheckBox *restart = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("ProcessOther")));
+	if (restart->GetValue())
+		switchPage(new IntroPage(_configuration));
+	else
+		_topframe->Close(true);
 }
 
 void FailurePage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->enablePrevious(false);
 	buttons->showFinish(true);
+	buttons->enableCancel(false);
 
 	WizardPage::updateButtons(panel, buttons);
 }

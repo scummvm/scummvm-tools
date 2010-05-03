@@ -460,6 +460,10 @@ void WizardButtons::enablePrevious(bool enable) {
 	_prev->Enable(enable);
 }
 
+void WizardButtons::enableCancel(bool enable) {
+	_cancel->Enable(enable);
+}
+
 void WizardButtons::showFinish(bool show) {
 	if (show)
 		_next->SetLabel(wxT("Finish!"));

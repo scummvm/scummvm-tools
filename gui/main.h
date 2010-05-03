@@ -170,6 +170,10 @@ public:
 	 */
 	void enablePrevious(bool enable);
 
+	/**
+	 * Enables the cancel button.
+	 */
+	void enableCancel(bool enable);
 
 	/**
 	 * Display the previous/next button.
