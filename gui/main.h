@@ -77,14 +77,21 @@ public:
 	 *                 and this page displayed in it's stead.
 	 */
 	void switchPage(WizardPage *nextPage) {
-		switchPage(nextPage, false);}
+		switchPage(nextPage, NextPage);}
 
 	/**
 	 * Switches back page to the previous page
 	 * The current page is destroyed.
 	 */
 	void switchToPreviousPage() {
-		switchPage(NULL, true);}
+		switchPage(NULL, PreviousPage);}
+
+	/**
+	 * Switches to the first page, the stack of old pages is emptied
+	 * and the current pag is destroyed.
+	 */
+	void switchToFirstPage() {
+		switchPage(NULL, FirstPage);}
 
 	/**
 	 * Get help text of this window
@@ -116,7 +123,8 @@ public:
 	/** The button pane */
 	WizardButtons *_buttons;
 private:
-	void switchPage(WizardPage *nextPage, bool moveback);
+	enum SwitchToPage { NextPage, PreviousPage, FirstPage };
+	void switchPage(WizardPage *nextPage, SwitchToPage page);
 
 	wxPanel *_wizardpane;
 

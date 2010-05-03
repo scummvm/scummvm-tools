@@ -258,7 +258,7 @@ void ScummToolsFrame::CreateMenuBar() {
 	SetMenuBar(menubar);
 }
 
-void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
+void ScummToolsFrame::switchPage(WizardPage *next, SwitchToPage page) {
 	// Associate us with the new page
 	if (next)
 		next->SetScummFrame(this);
@@ -269,12 +269,23 @@ void ScummToolsFrame::switchPage(WizardPage *next, bool moveback) {
 	if (oldPanel)
 		_pages.back()->save(oldPanel);
 
-	if (moveback) {
-		// Don't save the old page (which is ontop of the stack already)
-		delete _pages.back();
-		_pages.pop_back();
-	} else {
+	switch (page) {
+	case FirstPage:
+		while (_pages.size() > 1) {
+			delete _pages.back();
+			_pages.pop_back();
+			
+		}
+		break;
+	case PreviousPage:
+		if (_pages.size() > 1) {
+			delete _pages.back();
+			_pages.pop_back();
+		}
+		break;
+	case NextPage:
 		_pages.push_back(next);
+		break;
 	}
 
 	if (oldPanel)

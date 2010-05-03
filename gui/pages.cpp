@@ -1552,7 +1552,7 @@ void FinishPage::onNext(wxWindow *panel) {
 
 	wxCheckBox *restart = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("ProcessOther")));
 	if (restart->GetValue())
-		switchPage(new IntroPage(_configuration));
+		_topframe->switchToFirstPage();
 	else
 		_topframe->Close(true);
 }
@@ -1601,7 +1601,7 @@ wxWindow *FailurePage::CreatePanel(wxWindow *parent) {
 void FailurePage::onNext(wxWindow *panel) {
 	wxCheckBox *restart = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("ProcessOther")));
 	if (restart->GetValue())
-		switchPage(new IntroPage(_configuration));
+		_topframe->switchToFirstPage();
 	else
 		_topframe->Close(true);
 }
