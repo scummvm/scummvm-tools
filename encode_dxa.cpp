@@ -647,6 +647,7 @@ int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsign
 	png_infop info_ptr;
 	int number_of_passes;
 	png_bytep *row_pointers;
+	png_size_t rowbytes;
 
 	Common::File fp(filename, "rb");
 
@@ -671,10 +672,10 @@ int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsign
 
 	png_read_info(png_ptr, info_ptr);
 
-	width = info_ptr->width;
-	height = info_ptr->height;
-	color_type = info_ptr->color_type;
-	bit_depth = info_ptr->bit_depth;
+	width = png_get_image_width(png_ptr, info_ptr);
+	height = png_get_image_height(png_ptr, info_ptr);
+	color_type = png_get_color_type(png_ptr, info_ptr);
+	bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 
 	if (color_type != PNG_COLOR_TYPE_PALETTE) {
 		palette = NULL;
@@ -688,15 +689,16 @@ int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsign
 	//if (setjmp(png_jmpbuf(png_ptr)))
 	//	return 1;
 
+	rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
 	for (int y=0; y<height; y++)
-		row_pointers[y] = (png_byte*) malloc(info_ptr->rowbytes);
+		row_pointers[y] = (png_byte*) malloc(rowbytes);
 
 	png_read_image(png_ptr, row_pointers);
 
 	image = new unsigned char[width * height];
 	for (int y=0; y<height; y++)
-		memcpy(&image[y*width], row_pointers[y], info_ptr->rowbytes);
+		memcpy(&image[y*width], row_pointers[y], rowbytes);
 
 	for (int y=0; y<height; y++)
 		free(row_pointers[y]);
