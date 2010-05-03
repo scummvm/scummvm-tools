@@ -108,7 +108,7 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 	if (!_inputOffset)
 		error("Input file doesn't seem to be a valid sci audio resource file");
 
-	int searchForward = 0;
+	uint32 searchForward = 0;
 	bool noSignature = false;
 	if (memcmp(buffer, "\x8e\x00", 2) == 0) {
 		// sync resource, we expect SOL audio with a resourceid afterwards
@@ -128,7 +128,7 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 	uint32 syncPos = 0;
 	_input.read_throwsOnError(&syncBuffer, searchForward);
 	while (true) {
-		if (syncPos == (searchForward - 5)) {
+		if (syncPos + 5 == searchForward) {
 			if (noSignature)
 				error("no SOL audio after possible raw lipsync data at %lx", originalOffset);
 			else
