@@ -41,6 +41,7 @@ CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(na
 
 	_shorthelp = "Used to compress the .sou data files.";
 	_helptext = "\nUsage: " + getName() + " [mode] [mode params] monster.sou\n";
+	_supportsProgressBar = true;
 }
 
 void CompressScummSou::end_of_file() {
@@ -135,6 +136,8 @@ bool CompressScummSou::get_part() {
 
 	_output_idx.writeUint32BE(tot_size);
 
+	updateProgress(_input.pos(), _file_size);
+
 	return true;
 }
 
@@ -162,6 +165,8 @@ void CompressScummSou::execute() {
 	_input.open(inpath, "rb");
 	_output_idx.open(TEMP_IDX, "wb");
 	_output_snd.open(TEMP_DAT, "wb");
+	
+	_file_size = _input.size();
 
 	/* Get the 'SOU ....' header */
 	_input.read_throwsOnError(buf, 8);

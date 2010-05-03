@@ -33,6 +33,7 @@ public:
 
 protected:
 	Common::File _input, _output_idx, _output_snd;
+	int _file_size;
 
 	std::string getOutputName() const;
 	void end_of_file();
