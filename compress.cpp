@@ -872,9 +872,6 @@ void CompressionTool::setOggMinBitrate(const std::string& arg) {
 
 	if (oggparms.minBitr == 0 && arg != "0")
 		throw ToolException("Minimum bitrate (-m) must be a number.");
-
-	if ((oggparms.minBitr % 8) != 0)
-		oggparms.minBitr -= oggparms.minBitr % 8;
 	
 	if (oggparms.minBitr < 8 || oggparms.minBitr > 160)
 		throw ToolException("Minimum bitrate out of bounds (-m), must be between 8 and 160.");
@@ -886,9 +883,6 @@ void CompressionTool::setOggAvgBitrate(const std::string& arg) {
 	if (oggparms.nominalBitr == 0 && arg != "0")
 		throw ToolException("Nominal bitrate (-b) must be a number.");
 
-	if ((oggparms.nominalBitr % 8) != 0)
-		oggparms.nominalBitr -= oggparms.nominalBitr % 8;
-
 	if (oggparms.nominalBitr < 8 || oggparms.nominalBitr > 160)
 		throw ToolException("Nominal bitrate out of bounds (-b), must be between 8 and 160.");
 }
@@ -898,9 +892,6 @@ void CompressionTool::setOggMaxBitrate(const std::string& arg) {
 
 	if (oggparms.maxBitr == 0 && arg != "0")
 		throw ToolException("Maximum bitrate (-M) must be a number.");
-
-	if ((oggparms.maxBitr % 8) != 0)
-		oggparms.maxBitr -= oggparms.maxBitr % 8;
 
 	if (oggparms.maxBitr < 8 || oggparms.maxBitr > 160)
 		throw ToolException("Maximum bitrate out of bounds (-M), must be between 8 and 160.");
