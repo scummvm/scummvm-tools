@@ -492,7 +492,7 @@ public:
 
 	wxString getHelp();
 
-	void onNext(wxWindow *panel);
+	bool onCancel(wxWindow *panel);
 
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };
@@ -508,7 +508,7 @@ public:
 
 	wxWindow *CreatePanel(wxWindow *parent);
 
-	void onNext(wxWindow *panel);
+	bool onCancel(wxWindow *panel);
 
 	void updateButtons(wxWindow *panel, WizardButtons *buttons);
 };

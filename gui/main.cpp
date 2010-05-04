@@ -399,7 +399,7 @@ WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext, Configura
 
 	sizer->AddSpacer(10);
 
-	_prefs= new wxButton(this, ID_ADVANCED, wxT("Default Settings"));
+	_prefs= new wxButton(this, ID_ADVANCED, wxT("Settings"));
 	_prefs->SetSize(80, -1);
 	sizer->Add(_prefs, wxSizerFlags().Left().ReserveSpaceEvenIfHidden());
 
@@ -471,15 +471,11 @@ void WizardButtons::enablePrevious(bool enable) {
 	_prev->Enable(enable);
 }
 
-void WizardButtons::enableCancel(bool enable) {
-	_cancel->Enable(enable);
-}
-
 void WizardButtons::showFinish(bool show) {
 	if (show)
-		_next->SetLabel(wxT("Finish!"));
+		_cancel->SetLabel(wxT("Finish!"));
 	else
-		_next->SetLabel(wxT("Next >"));
+		_cancel->SetLabel(wxT("Cancel"));
 }
 
 void WizardButtons::showAbort(bool show) {

@@ -192,7 +192,6 @@ void IntroPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 	buttons->setLineLabel(wxT("ScummVM Tools"));
 
 	buttons->showNavigation(false);
-	buttons->enableCancel(true);
 
 	WizardPage::updateButtons(panel, buttons);
 }
@@ -1526,6 +1525,8 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 		0, wxDefaultValidator, wxT("DisplayOutput"));
 	displayOut->SetValue(true);
 	sizer->Add(displayOut);
+	
+	sizer->AddSpacer(10);
 
 	wxCheckBox *processOther = new wxCheckBox(panel, wxID_ANY, wxT("Process another file"), wxDefaultPosition, wxDefaultSize,
 		0, wxDefaultValidator, wxT("ProcessOther"));
@@ -1537,7 +1538,8 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 	return panel;
 }
 
-void FinishPage::onNext(wxWindow *panel) {
+bool FinishPage::onCancel(wxWindow *panel) {
+	// On that page, that's the Finish button
 	wxCheckBox *display = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("DisplayOutput")));
 	if (display->GetValue()) {
 		// There is no standard way to do this
@@ -1551,10 +1553,13 @@ void FinishPage::onNext(wxWindow *panel) {
 	}
 
 	wxCheckBox *restart = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("ProcessOther")));
-	if (restart->GetValue())
+	if (restart->GetValue()) {
 		_topframe->switchToFirstPage();
-	else
+		return false;
+	} else {
 		_topframe->Close(true);
+		return true;
+	}
 }
 
 wxString FinishPage::getHelp() {
@@ -1562,9 +1567,8 @@ wxString FinishPage::getHelp() {
 }
 
 void FinishPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
-	buttons->enablePrevious(false);
+	buttons->showNavigation(false);
 	buttons->showFinish(true);
-	buttons->enableCancel(false);
 
 	WizardPage::updateButtons(panel, buttons);
 }
@@ -1598,18 +1602,21 @@ wxWindow *FailurePage::CreatePanel(wxWindow *parent) {
 	return panel;
 }
 
-void FailurePage::onNext(wxWindow *panel) {
+bool FailurePage::onCancel(wxWindow *panel) {
+	// On that page, that's the Finish button
 	wxCheckBox *restart = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("ProcessOther")));
-	if (restart->GetValue())
+	if (restart->GetValue()) {
 		_topframe->switchToFirstPage();
-	else
+		return false;
+	} else {
 		_topframe->Close(true);
+		return true;
+	}
 }
 
 void FailurePage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
-	buttons->enablePrevious(false);
+	buttons->showNavigation(false);
 	buttons->showFinish(true);
-	buttons->enableCancel(false);
 
 	WizardPage::updateButtons(panel, buttons);
 }
