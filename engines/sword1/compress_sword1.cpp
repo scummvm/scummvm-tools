@@ -740,7 +740,7 @@ CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, 
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress the Broken Sword 1 data files.";
+	_shorthelp = "Used to compress Broken Sword 1 data files.";
 	_helptext = "\nUsage: " + getName() + " [mode] [mode params] [-o outputdir] [only] <inputdir>\n"
 		"only can be either:\n"
 		" --speech-only  only encode speech clusters\n"

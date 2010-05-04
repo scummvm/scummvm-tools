@@ -98,7 +98,7 @@ CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name, TO
 	input.format = "queen.1";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress Flight of the Amazon Queen data files. Output filename is " + std::string(FINAL_OUT) + " .";
+	_shorthelp = "Used to compress Flight of the Amazon Queen data files.";
 	_helptext = "\nUsage: " + getName() + " [mode] [mode params] [-o outputdir] <inputfile (queen.1)>\n\t" + _shorthelp + "\n";
 }
 

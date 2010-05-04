@@ -58,7 +58,7 @@ CompressSci::CompressSci(const std::string &name) : CompressionTool(name, TOOLTY
 
 	_outputToDirectory = false;
 
-	_shorthelp = "Used to compress sierra resource.aud/resource.sfx files. (NOT SCI32 compatible!)";
+	_shorthelp = "Used to compress Sierra resource.aud/resource.sfx files. (NOT SCI32 compatible!)";
 	_helptext = "\nUsage: " + getName() + " [mode-params] [-o outputname] <inputname>\n";
 }
 

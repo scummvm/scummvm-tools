@@ -39,7 +39,7 @@ CompressScummSou::CompressScummSou(const std::string &name) : CompressionTool(na
 	input.format = "*.sou";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress the .sou data files.";
+	_shorthelp = "Used to compress .sou files of SCUMM games.";
 	_helptext = "\nUsage: " + getName() + " [mode] [mode params] monster.sou\n";
 	_supportsProgressBar = true;
 }

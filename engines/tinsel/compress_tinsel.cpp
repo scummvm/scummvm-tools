@@ -60,7 +60,7 @@ CompressTinsel::CompressTinsel(const std::string &name) : CompressionTool(name, 
 	input2.format = "*.idx";
 	_inputPaths.push_back(input2);
 
-	_shorthelp = "Used to compress tinsel .smp files.";
+	_shorthelp = "Used to compress Tinsel .smp files.";
 	_helptext = "\nUsage: " + getName() + " [mode-params] [-o outputname] <infile.smp> <infile.idx>\n";
 }
 

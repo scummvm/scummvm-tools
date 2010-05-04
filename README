@@ -203,7 +203,7 @@ Compression Tools:
                 - The unsupported early DOS demo of Inherit the Earth
 
         compress_scumm_bun
-                Used to the compress '.bun' music/voice files with MP3, Vorbis
+                Used to compress '.bun' music/voice files with MP3, Vorbis
                 or FLAC.
 
                 Example of usage:

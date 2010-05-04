@@ -34,7 +34,7 @@ ExtractAgos::ExtractAgos(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTI
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to extract Simon the Sorcer and Feeble Files data files.";
+	_shorthelp = "Used to extract Simon the Sorcerer and Feeble Files data files.";
 	_helptext = "\nUsage: " + getName() + " [-o outputname] infilename\n" + _shorthelp + "\n";
 }
 

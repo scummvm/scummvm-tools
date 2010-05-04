@@ -1079,7 +1079,7 @@ CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(na
 	input.format = "*.bun";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress the .bun data files from The Curse of Monkey Island games.";
+	_shorthelp = "Used to compress .bun data files from The Curse of Monkey Island.";
 	_helptext = "\nUsage: " + getName() + " [mode] [mode-params] [-o outputfile = inputfile.bun] <inputfile>\n";
 }
 
