@@ -895,7 +895,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		}
 
 		sprintf(tmpPath, "%s%s_reg%03d.wav", dir, filename, l);
-		unlink(tmpPath);
+		Common::removeFile(tmpPath);
 
 		int32 startPos = output.pos();
 		switch (_format) {
@@ -923,7 +923,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		byte *tmpBuf = (byte *)malloc(size);
 		cmpFile.read_throwsOnError(tmpBuf, size);
 		cmpFile.close();
-		unlink(tmpPath);
+		Common::removeFile(tmpPath);
 
 		output.write(tmpBuf, size);
 		free(tmpBuf);

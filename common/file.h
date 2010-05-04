@@ -392,6 +392,15 @@ protected:
 	uint8 _xormode;
 };
 
+
+/**
+ * Remove the specified file.
+ * Currently this simply call unlink() internally,
+ * but by using this wrapper we have an easier time
+ * staying compatible with Windows.
+ */
+int removeFile(const char *path);
+
 } // End of namespace Common
 
 

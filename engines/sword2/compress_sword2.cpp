@@ -203,12 +203,12 @@ void CompressSword2::execute() {
 
 	output.close();
 
-	unlink(TEMP_DAT);
-	unlink(TEMP_IDX);
-	unlink(TEMP_MP3);
-	unlink(TEMP_OGG);
-	unlink(TEMP_FLAC);
-	unlink(TEMP_WAV);
+	Common::removeFile(TEMP_DAT);
+	Common::removeFile(TEMP_IDX);
+	Common::removeFile(TEMP_MP3);
+	Common::removeFile(TEMP_OGG);
+	Common::removeFile(TEMP_FLAC);
+	Common::removeFile(TEMP_WAV);
 }
 
 #ifdef STANDALONE_MAIN

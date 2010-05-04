@@ -405,8 +405,8 @@ void CompressSci::execute() {
 	}
 
 	/* And some clean-up :-) */
-	unlink(TEMP_RAW);
-	unlink(TEMP_ENC);
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(TEMP_ENC);
 }
 
 

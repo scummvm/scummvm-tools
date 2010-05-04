@@ -168,8 +168,8 @@ void CompressQueen::createFinalFile(Common::Filename outPath) {
 	fromFileToFile(inData, outFinal, dataSize);
 
 	/* Cleanup */
-	unlink(TEMP_TBL);
-	unlink(TEMP_DAT);
+	Common::removeFile(TEMP_TBL);
+	Common::removeFile(TEMP_DAT);
 }
 
 void CompressQueen::execute() {
@@ -275,8 +275,8 @@ void CompressQueen::execute() {
 			compFile.close();
 
 			/* Delete temporary files */
-			unlink(TEMP_SB);
-			unlink(tempEncoded);
+			Common::removeFile(TEMP_SB);
+			Common::removeFile(tempEncoded);
 		} else {
 			/* Non .SB file */
 			bool patched = false;

@@ -304,7 +304,7 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 			byte *tmpBuf = (byte *)malloc(fileSize);
 			_audioTracks[l].file.read_throwsOnError(tmpBuf, fileSize);
 			_audioTracks[l].file.close();
-			unlink(filename);
+			Common::removeFile(filename);
 
 			byte *wavBuf = (byte *)malloc(fileSize);
 			memset(wavBuf, 0, fileSize);
@@ -760,7 +760,7 @@ skip:
 		else
 			encodeSanWaveWithLame(tmpPath);
 		tmpPath += ".raw";
-		unlink(tmpPath.c_str());
+		Common::removeFile(tmpPath.c_str());
 	}
 
 	input.close();

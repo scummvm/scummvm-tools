@@ -24,6 +24,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
+#ifndef _MSC_VER
+#include <unistd.h>	// for unlink()
+#endif
+
 
 namespace Common {
 
@@ -484,6 +488,10 @@ uint32 File::size() const {
 	sz = ftell(_file);
 	fseek(_file, p, SEEK_SET);
 	return sz;
+}
+
+int removeFile(const char *path) {
+	return unlink(path);
 }
 
 } // End of namespace Common

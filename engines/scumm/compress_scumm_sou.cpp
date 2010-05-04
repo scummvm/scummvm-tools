@@ -69,10 +69,10 @@ void CompressScummSou::end_of_file() {
 	_input.close();
 
 	/* And some clean-up :-) */
-	unlink(TEMP_IDX);
-	unlink(TEMP_DAT);
-	unlink(TEMP_RAW);
-	unlink(tempEncoded);
+	Common::removeFile(TEMP_IDX);
+	Common::removeFile(TEMP_DAT);
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(tempEncoded);
 }
 
 void CompressScummSou::append_byte(int size, char buf[]) {

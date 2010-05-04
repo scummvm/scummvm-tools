@@ -688,7 +688,7 @@ void CompressionTool::extractAndEncodeAIFF(const char *inName, const char *outNa
 	encodeAudio(TEMP_RAW, true, sampleRate, outName, compmode);
 
 	// Delete temporary file
-	unlink(TEMP_RAW);
+	Common::removeFile(TEMP_RAW);
 }
 
 void CompressionTool::extractAndEncodeVOC(const char *outName, Common::File &input, AudioFormat compMode) {

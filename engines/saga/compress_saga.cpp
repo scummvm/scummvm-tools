@@ -430,8 +430,8 @@ void CompressSaga::sagaEncode(Common::Filename *inpath, Common::Filename *outpat
 	free(outputTable);
 
 	// Cleanup
-	unlink(TEMP_RAW);
-	unlink(tempEncoded);
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(tempEncoded);
 
 	print("Done!\n");
 }

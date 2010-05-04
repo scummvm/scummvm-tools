@@ -412,9 +412,9 @@ void CompressTucker::compress_sound_files(const Common::Filename *inpath, const 
 	output.close();
 
 	/* cleanup */
-	unlink(TEMP_WAV);
-	unlink(TEMP_RAW);
-	unlink(tempEncoded);
+	Common::removeFile(TEMP_WAV);
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(tempEncoded);
 
 	print("Done.\n");
 }

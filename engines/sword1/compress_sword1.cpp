@@ -522,8 +522,8 @@ void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common
 		print("Converting CD %d...\n", i);
 		convertClu(clu, cl3);
 	}
-	unlink(TEMP_RAW);
-	unlink(_audioOuputFilename.c_str());
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(_audioOuputFilename.c_str());
 }
 
 void CompressSword1::compressMusic(const Common::Filename *inpath, const Common::Filename *outpath) {
@@ -535,7 +535,7 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 	try {
 		Common::File outf(outName, "wb");
 		outf.close();
-		unlink(outName);
+		Common::removeFile(outName);
 	} catch(Common::FileException& err) {
 		_useOutputMusicSubdir = false;
 		print("Cannot create files in %s/MUSIC/; will try in %s/\n", outpath->getPath().c_str(), outpath->getPath().c_str());
