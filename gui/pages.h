@@ -323,6 +323,17 @@ public:
 	 * @param panel The panel to operate on
 	 */
 	void updateFields(wxWindow *panel);
+
+private:
+	wxFlexGridSizer* _gridSizer;
+	wxStaticText* _vbrMinBitrateLabel;
+	wxChoice* _vbrMinBitrate;
+	wxStaticText* _vbrMaxBitrateLabel;
+	wxChoice* _vbrMaxBitrate;
+	wxStaticText* _vbrQualityLabel;
+	wxChoice* _vbrQuality;
+	wxStaticText* _abrAvgBitrateLabel;
+	wxChoice* _abrAvgBitrate;
 };
 
 /**

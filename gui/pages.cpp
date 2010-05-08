@@ -862,14 +862,6 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxWindow *panel = WizardPage::CreatePanel(parent);
 	
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-	
-	// Add a ScrolledWindow in that panel as there is a lot of options
-	// and there might not be enough place to display them all.
-	wxScrolledWindow *scroll = new wxScrolledWindow(panel);
-	scroll->FitInside();
-	scroll->SetScrollRate(10, 10);
-	
-	sizer->Add(scroll, 1, wxEXPAND | wxALL);
 
 	/*
 	"\nMP3 mode params:\n"
@@ -884,36 +876,36 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	*/
 
 	// Grid
-	wxFlexGridSizer *gridSizer = new wxFlexGridSizer(7, 2, 10, 25);
-	gridSizer->AddGrowableCol(1);
+	_gridSizer = new wxFlexGridSizer(7, 2, 10, 25);
+	_gridSizer->AddGrowableCol(1);
 
 	// Create output selection
-	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Lame executable:")));
+	_gridSizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Lame executable:")));
 
 	wxFilePickerCtrl *lamePicker = new wxFilePickerCtrl(
-			scroll, wxID_ANY, _configuration.outputPath, wxT("Select lame executable"),
+			panel, wxID_ANY, _configuration.outputPath, wxT("Select lame executable"),
 			wxT("lame"),
 			wxDefaultPosition, wxSize(250, -1),
 			wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator,
 			wxT("LamePath")
 		);
 		
-	gridSizer->Add(lamePicker, wxSizerFlags().Expand());
+	_gridSizer->Add(lamePicker, wxSizerFlags().Expand());
 
 	// Type of compression
-	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Compression Type:")));
+	_gridSizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Compression Type:")));
 
-	wxRadioButton *abrButton = new wxRadioButton(scroll, wxID_ANY, wxT("ABR"),
+	wxRadioButton *abrButton = new wxRadioButton(panel, wxID_ANY, wxT("ABR"),
 		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("ABR"));
 
 	wxSizer *radioSizer = new wxBoxSizer(wxHORIZONTAL);
 	radioSizer->Add(abrButton);
 
-	wxRadioButton *vbrButton = new wxRadioButton(scroll, wxID_ANY, wxT("VBR"),
+	wxRadioButton *vbrButton = new wxRadioButton(panel, wxID_ANY, wxT("VBR"),
 		wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("VBR"));
 	radioSizer->Add(vbrButton);
 
-	gridSizer->Add(radioSizer, wxSizerFlags().Expand());
+	_gridSizer->Add(radioSizer, wxSizerFlags().Expand());
 
 	// Bitrates
 	const int possibleBitrateCount = 160 / 8;
@@ -922,28 +914,31 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 		possibleBitrates[i] << (i+1)*8;
 	}
 
-	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Minimum Bitrate:")));
+	_vbrMinBitrateLabel = new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:"));
+	_gridSizer->Add(_vbrMinBitrateLabel);
 
-	wxChoice *vbrMinBitrate = new wxChoice(
-		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+	_vbrMinBitrate = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
-	gridSizer->Add(vbrMinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	_gridSizer->Add(_vbrMinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 
-	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Maximum Bitrate:")));
+	_vbrMaxBitrateLabel = new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:"));
+	_gridSizer->Add(_vbrMaxBitrateLabel);
 
-	wxChoice *vbrMaxBitrate = new wxChoice(
-		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+	_vbrMaxBitrate = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
-	gridSizer->Add(vbrMaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	_gridSizer->Add(_vbrMaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 
-	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("Average Bitrate:")));
+	_abrAvgBitrateLabel = new wxStaticText(panel, wxID_ANY, wxT("Average Bitrate:"));
+	_gridSizer->Add(_abrAvgBitrateLabel);
 
-	wxChoice *abrAvgBitrate = new wxChoice(
-		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+	_abrAvgBitrate = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("AverageBitrate"));
-	gridSizer->Add(abrAvgBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	_gridSizer->Add(_abrAvgBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	abrButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsMp3Page::onChangeCompressionType), NULL, this);
 	vbrButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsMp3Page::onChangeCompressionType), NULL, this);
@@ -955,23 +950,24 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 		possibleQualities[i] << i;
 	}
 
-	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("VBR Quality:")));
+	_vbrQualityLabel = new wxStaticText(panel, wxID_ANY, wxT("VBR Quality:"));
+	_gridSizer->Add(_vbrQualityLabel);
 
-	wxChoice *vbrQuality = new wxChoice(
-		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+	_vbrQuality = new wxChoice(
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("VBRQuality"));
-	gridSizer->Add(vbrQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	_gridSizer->Add(_vbrQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 
-	gridSizer->Add(new wxStaticText(scroll, wxID_ANY, wxT("MPEG Quality:")));
+	_gridSizer->Add(new wxStaticText(panel, wxID_ANY, wxT("MPEG Quality:")));
 
 	wxChoice *mpegQuality = new wxChoice(
-		scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("MpegQuality"));
-	gridSizer->Add(mpegQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	_gridSizer->Add(mpegQuality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	// Finish the window
-	scroll->SetSizer(gridSizer);
+	sizer->Add(_gridSizer, wxSizerFlags().Expand());
 	SetAlignedSizer(panel, sizer);
 
 
@@ -981,11 +977,11 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 		abrButton->SetValue(true);
 	else
 		vbrButton->SetValue(true);
-	vbrMinBitrate->SetStringSelection(_configuration.mp3VBRMinBitrate);
-	vbrMaxBitrate->SetStringSelection(_configuration.mp3VBRMaxBitrate);
-	abrAvgBitrate->SetStringSelection(_configuration.mp3ABRBitrate);
-	vbrQuality   ->SetStringSelection(_configuration.mp3VBRQuality);
-	mpegQuality  ->SetStringSelection(_configuration.mp3MpegQuality);
+	_vbrMinBitrate->SetStringSelection(_configuration.mp3VBRMinBitrate);
+	_vbrMaxBitrate->SetStringSelection(_configuration.mp3VBRMaxBitrate);
+	_abrAvgBitrate->SetStringSelection(_configuration.mp3ABRBitrate);
+	_vbrQuality   ->SetStringSelection(_configuration.mp3VBRQuality);
+	mpegQuality   ->SetStringSelection(_configuration.mp3MpegQuality);
 
 	updateFields(panel);
 
@@ -996,20 +992,14 @@ void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
 	wxFilePickerCtrl *lamePath = static_cast<wxFilePickerCtrl *>(panel->FindWindowByName(wxT("LamePath")));
 	
 	wxRadioButton *abr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("ABR")));
-//	wxRadioButton *vbr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("VBR")));
-
-	wxChoice *vbrMinBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MinimumBitrate")));
-	wxChoice *vbrMaxBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MaximumBitrate")));
-	wxChoice *abrAvgBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("AverageBitrate")));
-	wxChoice *vbrQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("VBRQuality")));
 	wxChoice *mpegQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MpegQuality")));
 
 	_configuration.mp3LamePath      = lamePath->GetPath();
-	_configuration.mp3VBRMinBitrate = vbrMinBitrate->GetStringSelection();
-	_configuration.mp3VBRMaxBitrate = vbrMaxBitrate->GetStringSelection();
-	_configuration.mp3ABRBitrate    = abrAvgBitrate->GetStringSelection();
-	_configuration.mp3VBRQuality    = vbrQuality   ->GetStringSelection();
-	_configuration.mp3MpegQuality   = mpegQuality  ->GetStringSelection();
+	_configuration.mp3VBRMinBitrate = _vbrMinBitrate->GetStringSelection();
+	_configuration.mp3VBRMaxBitrate = _vbrMaxBitrate->GetStringSelection();
+	_configuration.mp3ABRBitrate    = _abrAvgBitrate->GetStringSelection();
+	_configuration.mp3VBRQuality    = _vbrQuality   ->GetStringSelection();
+	_configuration.mp3MpegQuality   = mpegQuality   ->GetStringSelection();
 	if (abr->GetValue())
 		_configuration.mp3CompressionType = wxT("ABR");
 	else
@@ -1018,18 +1008,18 @@ void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
 
 void ChooseAudioOptionsMp3Page::updateFields(wxWindow *panel) {
 	wxRadioButton *abr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("ABR")));
-	//wxRadioButton *vbr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("VBR")));
-	wxChoice *vbrMinBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MinimumBitrate")));
-	wxChoice *vbrMaxBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MaximumBitrate")));
-	wxChoice *abrAvgBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("AverageBitrate")));
-	wxChoice *vbrQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("VBRQuality")));
-	//wxChoice *mpegQuality =  static_cast<wxChoice *>(panel->FindWindowByName(wxT("MpegQuality")));
 
-	vbrMinBitrate->Enable(!abr->GetValue());
-	vbrMaxBitrate->Enable(!abr->GetValue());
-	vbrQuality->Enable(!abr->GetValue());
-
-	abrAvgBitrate->Enable(abr->GetValue());
+	bool isAbrSelected = abr->GetValue();
+	_gridSizer->Show(_abrAvgBitrate,       isAbrSelected);
+	_gridSizer->Show(_abrAvgBitrateLabel,  isAbrSelected);
+	_gridSizer->Show(_vbrMinBitrate,      !isAbrSelected);
+	_gridSizer->Show(_vbrMinBitrateLabel, !isAbrSelected);
+	_gridSizer->Show(_vbrMaxBitrate,      !isAbrSelected);
+	_gridSizer->Show(_vbrMaxBitrateLabel, !isAbrSelected);
+	_gridSizer->Show(_vbrQuality,         !isAbrSelected);
+	_gridSizer->Show(_vbrQualityLabel,    !isAbrSelected);
+	
+	_gridSizer->Layout();
 }
 
 void ChooseAudioOptionsMp3Page::onChangeCompressionType(wxCommandEvent &evt) {

@@ -28,9 +28,6 @@
 
 enum {
 	/* These are the defaults parameters for the Lame invocation */
-	minBitrDef	= 24,
-	maxBitrDef	= 64,
-	targetBitrDef = 32,
 	algqualDef	= 2,
 	vbrqualDef	= 4,
 
@@ -93,9 +90,11 @@ public:
 	void setMp3LamePath(const std::string&);
 	void setMp3CompressionType(const std::string&);
 	void setMp3MpegQuality(const std::string&);
-	void setMp3ABRBitrate(const std::string&);
-	void setMp3VBRMinBitrate(const std::string&);
-	void setMp3VBRMaxBitrate(const std::string&);
+	void setMp3TargetBitrate(const std::string&);
+	void setMp3MinBitrate(const std::string&);
+	void setMp3MaxBitrate(const std::string&);
+	void unsetMp3MinBitrate();
+	void unsetMp3MaxBitrate();
 	void setMp3VBRQuality(const std::string&);
 
 	// flac
