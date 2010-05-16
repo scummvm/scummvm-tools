@@ -384,9 +384,9 @@ void File::scanString(char *result) {
 	fscanf(_file, "%s", result);
 }
 
-void File::writeChar(int i) {
+void File::writeChar(char i) {
 	if (!_file)
-		throw FileException("File  is not open");
+		throw FileException("File is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
 		throw FileException("Tried to write to a file opened in read mode (" + _name.getFullPath() + ")");
 
