@@ -301,7 +301,7 @@ public:
 	/**
 	 * Writes a single character (equivalent of fputc).
 	 */
-	void writeChar(int c);
+	void writeChar(char c);
 	/**
 	 * Writes a single byte to the file.
 	 * @throws FileException if file is not open / if write failed.
