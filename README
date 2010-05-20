@@ -128,12 +128,6 @@ Extraction Tools:
                 Example of usage:
                 ./scummvm-tools-cli --tool extract_scumm_mac [-o outputdir] <infile>
 
-        extract_t7g_mac
-                Extract data files from the The 7th Guest Macintosh data file.
-
-                Example of usage:
-                ./scummvm-tools-cli --tool extract_t7g_mac [-o outputdir] <infile>
-
         extract_zak_c64
                 Extracts data files from the Commodore 64 version of Zak
                 McKracken.

@@ -218,7 +218,6 @@ tools_OBJS := \
 	engines/scumm/extract_mm_nes.o \
 	engines/parallaction/extract_parallaction.o \
 	engines/scumm/extract_scumm_mac.o \
-	engines/groovie/extract_t7g_mac.o \
 	engines/scumm/extract_zak_c64.o \
 	engines/kyra/kyra_pak.o \
 	engines/kyra/kyra_ins.o \

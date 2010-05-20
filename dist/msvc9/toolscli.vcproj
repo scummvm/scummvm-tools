@@ -384,14 +384,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\engines\groovie\extract_t7g_mac.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\engines\groovie\extract_t7g_mac.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\engines\scumm\extract_zak_c64.cpp"
 				>
 			</File>
