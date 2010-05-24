@@ -58,7 +58,8 @@ TARGETS := \
 	extract_mohawk$(EXEEXT) \
 	construct_mohawk$(EXEEXT) \
 	degob$(EXEEXT) \
-	scummvm-tools-cli$(EXEEXT)
+	scummvm-tools-cli$(EXEEXT) \
+	decompiler$(EXEEXT)
 
 ifdef USE_FREETYPE
 ifdef USE_ICONV
@@ -116,7 +117,8 @@ PROGRAMS = \
 	create_sjisfnt \
 	scummvm-tools \
 	scummvm-tools-cli \
-	sword2_clue
+	sword2_clue \
+	decompiler
 
 
 decine_OBJS := engines/cine/decine.o
@@ -255,6 +257,12 @@ scummvm-tools-cli_OBJS := \
 	$(tools_OBJS)
 scummvm-tools-cli_LIBS := $(LIBS)
 
+decompiler_OBJS := \
+	decompiler/decompiler.o \
+	common/file.o
+
+decompiler_LIBS := \
+	-lboost_program_options	
 
 # Make base/version.o depend on all other object files. This way if anything is
 # changed, it causes version.cpp to be recompiled. This in turn ensures that
