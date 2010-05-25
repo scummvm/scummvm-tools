@@ -1,12 +1,34 @@
-#include <iostream>
+/* ScummVM Tools
+* Copyright (C) 2010 The ScummVM project
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
 
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+*
+* $URL$
+* $Id$
+*
+*/
+
+#include <iostream>
 #include <boost/program_options.hpp>
+
+#include "objectFactory.h"
 
 using namespace std;
 using namespace boost::program_options;
 
 int main(int argc, char** argv) {
-
 	options_description visible("Options");
 	visible.add_options()
 		("help", "Produce this help message.")
@@ -35,7 +57,8 @@ int main(int argc, char** argv) {
 	}
 
 	if (vm.count("list")) {
-		cout << "TODO" << "\n";
+		//TODO
+		cout << "Listing of engines is not yet implemented." << "\n";
 		return 0;
 	}
 
@@ -47,6 +70,8 @@ int main(int argc, char** argv) {
 	}
 
 	cout << "Input file is " << vm["inputfile"].as<string>() << "\n";
+
+	//TODO: Process file
 
 	return 0;
 }

@@ -20,29 +20,8 @@
 *
 */
 
-#ifndef DEC_DISASSEMBLER_H
-#define DEC_DISASSEMBLER_H
+#include "disassembler.h"
 
-#include <vector>
-
-#include "instruction.h"
-#include "common/file.h"
-
-class Disassembler {
-protected:
-	Common::File f; ///<Used to perform file I/O.
-
-public:
-	/**
-	 * Open a file for disassembly.		
-	 * @param filename 
-	 */
-	void open(char *filename);
-
-	/**
-	 * Disassembles a file.
-	 */
-	virtual std::vector<Instruction> disassemble() = 0;
-};
-
-#endif
+void Disassembler::open(char *filename) {
+	f.open(filename);
+}
