@@ -22,6 +22,49 @@
 
 #include "disassembler.h"
 
-void Disassembler::open(char *filename) {
-	f.open(filename);
+void Disassembler::open(const char *filename) {
+	_f.open(filename, "rb");
+}
+
+void Disassembler::dumpDisassembly(const char *filename) {
+	Common::File _output;
+	_output.open(filename, "w");
+
+	char* buf;
+	int length;
+
+	for (size_t i = 0; i < _insts.size(); i++)
+	{
+		Instruction inst = _insts[i];
+		length = sprintf(buf, "%08x: %s ",inst._address, inst._name.c_str());
+		for (size_t j = 0; j < inst._params.size(); j++)
+		{
+			Parameter p = inst._params[j];
+			if (j != 0)
+				length += sprintf(&buf[length], ", ");
+			switch(p._type)
+			{
+				case kSByte:
+					length += sprintf(&buf[length], "%d", p._sbyte);
+					break;
+				case kByte:
+					length += sprintf(&buf[length], "%u", p._byte);
+					break;					
+				case kShort:
+					length += sprintf(&buf[length], "%d", p._short);
+					break;					
+				case kUShort:
+					length += sprintf(&buf[length], "%u", p._ushort);
+					break;					
+				case kInt:
+					length += sprintf(&buf[length], "%d", p._int);
+					break;					
+				case kUInt:
+					length += sprintf(&buf[length], "%u", p._uint);
+					break;					
+			}
+		}
+		buf[length] = '\n';
+		_output.write(buf, length + 1);
+	}
 }

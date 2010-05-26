@@ -23,6 +23,7 @@
 #ifndef DEC_INSTRUCTION_H
 #define DEC_INSTRUCTION_H
 
+#include <string>
 #include <vector>
 
 #include "common/scummsys.h"
@@ -74,7 +75,7 @@ struct Parameter {
 struct Instruction {
 	uint32 _address; ///<The instruction address.
 	int16 _stackChange; ///<How much this instruction changes the stack pointer by.
-	char *_name; ///<The instruction name (opcode name).
+	std::string _name; ///<The instruction name (opcode name).
 	InstType _type; ///<The instruction type.
 	std::vector<Parameter> _params; ///<Array of parameters used for the instruction.
 };

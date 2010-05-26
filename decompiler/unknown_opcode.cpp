@@ -20,40 +20,16 @@
 *
 */
 
-#ifndef DEC_DISASSEMBLER_H
-#define DEC_DISASSEMBLER_H
-
-#include <vector>
-
-#include "instruction.h"
-#include "common/file.h"
 #include "unknown_opcode.h"
 
-class Disassembler {
-protected:
-	Common::File _f; ///<Used to perform file I/O.
-	std::vector<Instruction> _insts; ///<Container for disassembled instructions.
-	uint32 _addressBase; ///<Base address where the script starts.		
+UnknownOpcodeException::UnknownOpcodeException(uint32 address, uint8 opcode)
+{
+	_address = address;
+	_opcode = opcode;
+}
 
-public:
-	virtual ~Disassembler() {};
-
-	/**
-	 * Open a file for disassembly.		
-	 * @param filename The file to disassemble. 
-	 */
-	void open(const char *filename);
-
-	/**
-	 * Disassembles a file.
-	 */
-	virtual std::vector<Instruction> disassemble() = 0;
-
-	/**
-	 * Outputs the disassembly to a file.
-	 * @param filename The file to output the disassembly to.
-	 */
-	virtual void dumpDisassembly(const char *filename);
-};
-
-#endif
+const char* UnknownOpcodeException::what() throw()
+{
+	sprintf(_buf, "Unknown opcode (address: %08x, opcode: %02x)", _address, _opcode);
+	return _buf;
+}

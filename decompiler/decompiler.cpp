@@ -25,53 +25,80 @@
 
 #include "objectFactory.h"
 
-using namespace std;
-using namespace boost::program_options;
+#include "disassembler.h"
+
+namespace po = boost::program_options;
+
+#define ENGINE(id, description, disasmClass) engines[std::string(id)] = description; disassemblerFactory.addEntry<disasmClass>(std::string(id));
 
 int main(int argc, char** argv) {
-	options_description visible("Options");
-	visible.add_options()
-		("help", "Produce this help message.")
-		("engine", value<string>(), "Engine the script originates from.")
-		("list", "List the supported engines.");
+	try	{
+		std::map<std::string, std::string> engines;
+		ObjectFactory<Disassembler> disassemblerFactory;
 
-	options_description args("");
-	args.add(visible).add_options()
-		("inputfile", value<string>(), "Input file");
+		po::options_description visible("Options");
+		visible.add_options()
+			("help", "Produce this help message.")
+			("engine", po::value<std::string>(), "Engine the script originates from.")
+			("list", "List the supported engines.")
+			("dump-disassembly", po::value<std::string>(), "Dump the disassembly to a specified file.");
 
-	positional_options_description filename;
-	filename.add("inputfile", -1);	
+		po::options_description args("");
+		args.add(visible).add_options()
+			("input-file", po::value<std::string>(), "Input file");
 
-	variables_map vm;
-	try {
-		store(command_line_parser(argc, argv).options(args).positional(filename).run(), vm);
-		notify(vm);    
+		po::positional_options_description fileArg;
+		fileArg.add("input-file", -1);	
+
+		po::variables_map vm;
+		try {
+			po::store(po::command_line_parser(argc, argv).options(args).positional(fileArg).run(), vm);
+			po::notify(vm);    
+		} catch (std::exception& e) {
+			std::cout << e.what();
+		}
+	
+		if (vm.count("list")) {
+			std::cout << "Available engines:" << "\n";
+
+			std::map<std::string, std::string>::iterator it;
+			for (it = engines.begin(); it != engines.end(); it++)
+				std::cout << (*it).first << " " << (*it).second << "\n";
+		
+			return 0;
+		}
+
+		if (vm.count("help") || !vm.count("input-file")) {
+			std::cout << "Usage: " << argv[0] << " [option...] file" << "\n";
+			std::cout << args << "\n";
+			return 1;
+		}
+	
+		if (!vm.count("engine")) {
+			std::cout << "Engine must be specified." << "\n";
+			return 2;
+		} else if (engines.find(vm["engine"].as<std::string>()) == engines.end()) {
+			std::cout << "Unknown engine." << "\n";
+			return 2;
+		}
+
+		std::string engine = vm["engine"].as<std::string>();
+		std::string inputFile = vm["input-file"].as<std::string>();
+
+		//TODO: Process file
+		Disassembler* disassembler = disassemblerFactory.create(engine);
+		disassembler->open(inputFile.c_str());
+
+		std::vector<Instruction> insts = disassembler->disassemble();
+		if (vm.count("dump-disassembly")) {
+			disassembler->dumpDisassembly(vm["dump-disassembly"].as<std::string>().c_str());
+		}
+
+		delete disassembler;
 	} catch (std::exception& e) {
 		std::cout << e.what();
+		return 3;
 	}
-	
-	if (vm.count("help") || !vm.count("inputfile")) {
-		cout << "Usage: " << argv[0] << " [option...] file" << endl << endl;
-		cout << args << "\n";
-		return 1;
-	}
-
-	if (vm.count("list")) {
-		//TODO
-		cout << "Listing of engines is not yet implemented." << "\n";
-		return 0;
-	}
-
-	if (!vm.count("engine")) {
-		cout << "Engine must be specified." << "\n";
-		return 2;
-	} else {
-		cout << "Engine selected: " <<	vm["engine"].as<string>() << "\n";
-	}
-
-	cout << "Input file is " << vm["inputfile"].as<string>() << "\n";
-
-	//TODO: Process file
 
 	return 0;
 }

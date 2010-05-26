@@ -20,40 +20,33 @@
 *
 */
 
-#ifndef DEC_DISASSEMBLER_H
-#define DEC_DISASSEMBLER_H
+#ifndef DEC_UNKNOWN_OPCODE_H
+#define DEC_UNKNOWN_OPCODE_H
 
-#include <vector>
+#include <exception>
 
-#include "instruction.h"
-#include "common/file.h"
-#include "unknown_opcode.h"
+#include "common/scummsys.h"
 
-class Disassembler {
-protected:
-	Common::File _f; ///<Used to perform file I/O.
-	std::vector<Instruction> _insts; ///<Container for disassembled instructions.
-	uint32 _addressBase; ///<Base address where the script starts.		
-
-public:
-	virtual ~Disassembler() {};
+/**
+ * Exception representing an unknown opcode.
+ */
+class UnknownOpcodeException : public std::exception
+{
+	uint32 _address; ///<Address where the invalid opcode was found.
+	uint8 _opcode; ///<The value of the invalid opcode.
+	char _buf[255];	///<Buffer for formatting the error message.
 
 	/**
-	 * Open a file for disassembly.		
-	 * @param filename The file to disassemble. 
+	 * Constructor for UnknownOpcodeException.
+	 * @param address Address where the invalid opcode was found.
+	 * @param opcode The value of the invalid opcode.
 	 */
-	void open(const char *filename);
+	UnknownOpcodeException(uint32 address, uint8 opcode);
 
 	/**
-	 * Disassembles a file.
+	 * Description of the exception.
 	 */
-	virtual std::vector<Instruction> disassemble() = 0;
-
-	/**
-	 * Outputs the disassembly to a file.
-	 * @param filename The file to output the disassembly to.
-	 */
-	virtual void dumpDisassembly(const char *filename);
+	virtual const char* what() throw();
 };
 
 #endif

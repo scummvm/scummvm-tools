@@ -46,12 +46,13 @@ private:
 	typedef BaseType *(*CreateFunc)(); ///<Function pointer to the object creation function.
 	std::map<std::string, CreateFunc> _registry; ///<Map from an identifier to a creation function.
 
+public:
 	/**
 	 * Register a new entry.
 	 * @param name The name to register the class under.
 	 */
 	template<typename Type>
-	void addEntry(std::string& name)	{
+	void addEntry(std::string name) {
 		_registry[name] = &createObject<BaseType, Type>;
 	}
 
