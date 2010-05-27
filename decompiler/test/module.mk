@@ -17,7 +17,7 @@ TEST_LIBS    := \
 #
 TEST_FLAGS   := --runner=StdioPrinter
 TEST_CFLAGS  := -I$(srcdir)/decompiler/test/cxxtest
-TEST_LDFLAGS := $(decompile_LIBS)
+TEST_LDFLAGS := $(decompile_LIBS) $(LDFLAGS)
 
 ifdef HAVE_GCC3
 # In test/common/str.h, we test a zero length format string. This causes GCC
