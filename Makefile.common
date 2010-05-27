@@ -20,7 +20,7 @@ all:
 
 # HACK: Until we get proper module support, add these "module dirs" to
 # get the dependency tracking code working.
-MODULE_DIRS := ./ common/ gui/ sound/
+MODULE_DIRS := ./ common/ gui/ sound/ decompiler/
 
 MODULE_DIRS += \
 	engines/agos/ \
@@ -264,7 +264,7 @@ decompile_OBJS := \
 	decompiler/unknown_opcode.o
 
 decompile_LIBS := \
-	-lboost_program_options	
+	-lboost_program_options
 
 # Decompiler tests
 -include decompiler/test/module.mk
