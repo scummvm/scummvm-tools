@@ -20,7 +20,11 @@ all:
 
 # HACK: Until we get proper module support, add these "module dirs" to
 # get the dependency tracking code working.
-MODULE_DIRS := ./ common/ gui/ sound/ decompiler/
+MODULE_DIRS := ./ common/ gui/ sound/ 
+
+MODULE_DIRS += \
+	decompiler/ \
+	decompiler/test/disassembler/
 
 MODULE_DIRS += \
 	engines/agos/ \
