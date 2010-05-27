@@ -45,7 +45,8 @@ protected:
 #define LAST_INST (_insts[_insts.size()-1])
 
 #define START_OPCODES \
-	while (_f.pos() != _f.size()) { \
+	_address = _addressBase; \
+	while (_f.pos() != (int)_f.size()) { \
 		uint8 opcode = _f.readByte(); \
 		switch (opcode) {
 #define END_OPCODES \

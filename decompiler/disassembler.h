@@ -39,6 +39,7 @@ protected:
 	uint32 _addressBase; ///<Base address where the script starts.		
 
 public:
+	Disassembler();
 	virtual ~Disassembler() {}
 
 	/**

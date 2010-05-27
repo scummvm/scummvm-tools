@@ -22,6 +22,10 @@
 
 #include "disassembler.h"
 
+Disassembler::Disassembler() {
+	_addressBase = 0;
+}
+
 void Disassembler::open(const char *filename) {
 	_f.open(filename, "rb");
 }
