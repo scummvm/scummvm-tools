@@ -28,8 +28,7 @@
 /**
  * Simple disassembler acting as a base for instruction sets only consisting of simple instructions (opcode params...).
  */
-class SimpleDisassembler : public Disassembler
-{
+class SimpleDisassembler : public Disassembler {
 protected:
 	uint32 _address; ///<Variable to maintain the current address.
 
@@ -43,10 +42,10 @@ protected:
 
 #define INC_ADDR _address++;
 #define ADD_INST _insts.push_back(Instruction());
-#define LAST_INST (_insts[insts.size()-1])
+#define LAST_INST (_insts[_insts.size()-1])
 
 #define START_OPCODES \
-	while (!_f.eos()) { \
+	while (_f.pos() != _f.size()) { \
 		uint8 opcode = _f.readByte(); \
 		switch (opcode) {
 #define END_OPCODES \
@@ -65,12 +64,12 @@ protected:
 		LAST_INST._stackChange = stackChange; \
 		LAST_INST._name = std::string(name); \
 		LAST_INST._type = category; \
-		readParams(LAST_INST, params); \
+		readParams(&LAST_INST, (char*)params); \
 		break;
 
 #define START_SUBOPCODE(val) \
 	OPCODE_BASE(val) \
-		uint8 opcode = _f.readByte(); \
+		opcode = _f.readByte(); \
 		switch (opcode) {
 #define END_SUBOPCODE \
 		default: \

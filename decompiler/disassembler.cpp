@@ -30,7 +30,7 @@ void Disassembler::dumpDisassembly(const char *filename) {
 	Common::File _output;
 	_output.open(filename, "w");
 
-	char* buf;
+	char buf[1024];
 	int length;
 
 	for (size_t i = 0; i < _insts.size(); i++)
@@ -49,19 +49,22 @@ void Disassembler::dumpDisassembly(const char *filename) {
 					break;
 				case kByte:
 					length += sprintf(&buf[length], "%u", p._byte);
-					break;					
+					break;
 				case kShort:
 					length += sprintf(&buf[length], "%d", p._short);
-					break;					
+					break;
 				case kUShort:
 					length += sprintf(&buf[length], "%u", p._ushort);
-					break;					
+					break;
 				case kInt:
 					length += sprintf(&buf[length], "%d", p._int);
-					break;					
+					break;
 				case kUInt:
 					length += sprintf(&buf[length], "%u", p._uint);
-					break;					
+					break;
+				case kFloat:
+					length += sprintf(&buf[length], "%f", p._float);
+					break;
 			}
 		}
 		buf[length] = '\n';

@@ -32,26 +32,30 @@
  * Enumeration for categorizing the different kinds of instructions.
  */
 enum InstType { 
-	kArithmetic,
-	kBoolean,
-	kComparison,
-	kCondJump,
-	kJump,
-	kLoad,
-	kSpecial,
-	kStore
+	kArithmetic, ///<Arithmetic instruction (+, -, *, etc.).
+	kBoolean, ///<Boolean instruction (AND, OR, etc.).
+	kCall, ///<Regular function call.
+	kComparison, ///<Comparison instruction.
+	kCondJump, ///<Conditional jump.
+	kJump, ///<Unconditional jump.
+	kLoad, ///<Load value to stack.
+	kReturn, ///<Return from regular function call.
+	kSpecial, ///<Special functions.
+	kStack, ///<Stack allocation or deallocation (altering stack pointer).
+	kStore ///<Store value from stack in memory. 
 };
 
 /**
  * Enumeration for categorizing the different kinds of parameters.
  */
 enum ParamType {
-	kSByte,
-	kByte,
-	kShort,
-	kUShort,
-	kInt,
-	kUInt
+	kSByte, ///<Signed 8-bit integer.
+	kByte, ///<Unsigned 8-bit integer.
+	kShort, ///<Signed 16-bit integer.
+	kUShort, ///<Unsigned 16-bit integer.
+	kInt, ///<Signed 32-bit integer.
+	kUInt, ///<Unsigned 32-bit integer.
+	kFloat ///<Single-precision IEEE 754 floating-point value.
 };
 
 /**
@@ -66,6 +70,7 @@ struct Parameter {
 		uint16 _ushort;
 		int32 _int;
 		uint32 _uint;
+		float _float;
 	}; ///<Value of the parameter.
 };
 

@@ -29,6 +29,9 @@
 #include "common/file.h"
 #include "unknown_opcode.h"
 
+/**
+ * Base class for disassemblers.
+ */
 class Disassembler {
 protected:
 	Common::File _f; ///<Used to perform file I/O.
@@ -36,7 +39,7 @@ protected:
 	uint32 _addressBase; ///<Base address where the script starts.		
 
 public:
-	virtual ~Disassembler() {};
+	virtual ~Disassembler() {}
 
 	/**
 	 * Open a file for disassembly.		

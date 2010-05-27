@@ -42,7 +42,6 @@ MODULE_DIRS += \
 	engines/touche/ \
 	engines/tucker/
 
-
 # TODO: This file should be restructured and much of it moved
 # to module.mk style files.
 
@@ -266,6 +265,9 @@ decompile_OBJS := \
 
 decompile_LIBS := \
 	-lboost_program_options	
+
+# Decompiler tests
+-include decompiler/test/module.mk
 
 # Make base/version.o depend on all other object files. This way if anything is
 # changed, it causes version.cpp to be recompiled. This in turn ensures that

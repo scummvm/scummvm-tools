@@ -20,34 +20,13 @@
 *
 */
 
-#ifndef DEC_UNKNOWN_OPCODE_H
-#define DEC_UNKNOWN_OPCODE_H
+#ifndef DEC_TEST_DISASM_PASC_H
+#define DEC_TEST_DISASM_PASC_H
 
-#include <exception>
+#include "decompiler/simple_disassembler.h"
 
-#include "common/scummsys.h"
-
-/**
- * Exception representing an unknown opcode.
- */
-class UnknownOpcodeException : public std::exception
-{
-	uint32 _address; ///<Address where the invalid opcode was found.
-	uint8 _opcode; ///<The value of the invalid opcode.
-	char _buf[255];	///<Buffer for formatting the error message.
-
+class PasCDisassembler : public SimpleDisassembler {
 public:
-	/**
-	 * Constructor for UnknownOpcodeException.
-	 * @param address Address where the invalid opcode was found.
-	 * @param opcode The value of the invalid opcode.
-	 */
-	UnknownOpcodeException(uint32 address, uint8 opcode);
-
-	/**
-	 * Description of the exception.
-	 */
-	virtual const char* what() throw();
+	virtual std::vector<Instruction> disassemble();
 };
-
 #endif
