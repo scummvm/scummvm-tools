@@ -28,7 +28,7 @@
 class DisassemblerTestSuite : public CxxTest::TestSuite {
 public:
 	void testDisassembly() {
-		try	{
+		try {
 			PasCDisassembler p;
 			p.open("decompiler/test/hanoi20.pasb");
 			std::vector<Instruction> insts = p.disassemble();
@@ -40,7 +40,7 @@ public:
 		} catch (UnknownOpcodeException &uoe) {
 			printf("Exception message: %s\n",uoe.what());
 			TS_ASSERT(false);
-		}	catch (std::exception &ex) {
+		} catch (std::exception &ex) {
 			printf("Exception message: %s\n",ex.what());
 			TS_ASSERT(false);
 		}
