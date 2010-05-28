@@ -24,6 +24,7 @@ MODULE_DIRS := ./ common/ gui/ sound/
 
 MODULE_DIRS += \
 	decompiler/ \
+	decompiler/scummv6 \
 	decompiler/test/disassembler/
 
 MODULE_DIRS += \
@@ -265,7 +266,8 @@ decompile_OBJS := \
 	decompiler/decompiler.o \
 	decompiler/disassembler.o \
 	decompiler/simple_disassembler.o \
-	decompiler/unknown_opcode.o
+	decompiler/unknown_opcode.o \
+	decompiler/scummv6/disassembler.o
 
 decompile_LIBS := \
 	-lboost_program_options

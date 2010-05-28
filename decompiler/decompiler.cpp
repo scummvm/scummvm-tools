@@ -26,6 +26,7 @@
 #include "objectFactory.h"
 
 #include "disassembler.h"
+#include "scummv6/disassembler.h"
 
 namespace po = boost::program_options;
 
@@ -35,6 +36,8 @@ int main(int argc, char** argv) {
 	try	{
 		std::map<std::string, std::string> engines;
 		ObjectFactory<Disassembler> disassemblerFactory;
+
+		ENGINE("scummv6", "SCUMM v6", ScummV6Disassembler);
 
 		po::options_description visible("Options");
 		visible.add_options()
