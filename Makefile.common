@@ -24,7 +24,7 @@ MODULE_DIRS := ./ common/ gui/ sound/
 
 MODULE_DIRS += \
 	decompiler/ \
-	decompiler/scummv6 \
+	decompiler/scummv6/ \
 	decompiler/test/disassembler/
 
 MODULE_DIRS += \
