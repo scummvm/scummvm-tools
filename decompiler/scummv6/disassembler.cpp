@@ -26,8 +26,7 @@
 
 std::vector<Instruction> ScummV6Disassembler::disassemble() {
 	std::string blockName;
-	for (int i = 0; i < 4; i++)
-	{
+	for (int i = 0; i < 4; i++) {
 		blockName += _f.readChar();
 	}
 	if (blockName == "SCRP") {
@@ -47,7 +46,7 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 		_f.seek(8,SEEK_SET);
 		std::cout << "Offset table:\n";
 		uint8 verb = _f.readByte();
-		while (verb != 0)	{
+		while (verb != 0) {
 			printf("%02x - %04x", verb, _f.readUint16LE());
 		}
 	}
