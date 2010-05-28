@@ -57,6 +57,7 @@ protected:
 	}
 
 #define OPCODE_BASE(val) case val:
+#define OPCODE_END break;
 
 #define OPCODE(val, name, category, stackChange, params) \
 	OPCODE_BASE(val)\
@@ -66,7 +67,7 @@ protected:
 		LAST_INST._name = std::string(name); \
 		LAST_INST._type = category; \
 		readParams(&LAST_INST, (char*)params); \
-		break;
+		OPCODE_END;
 
 #define START_SUBOPCODE(val) \
 	OPCODE_BASE(val) \
@@ -77,6 +78,6 @@ protected:
 			throw UnknownOpcodeException(_address, opcode);\
 		} \
 		INC_ADDR; \
-		break;
+		OPCODE_END;
 
 #endif
