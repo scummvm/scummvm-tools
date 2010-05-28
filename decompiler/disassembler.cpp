@@ -20,6 +20,8 @@
 *
 */
 
+#include <boost/format.hpp>
+
 #include "disassembler.h"
 
 Disassembler::Disassembler() {
@@ -31,41 +33,37 @@ void Disassembler::open(const char *filename) {
 }
 
 void Disassembler::dumpDisassembly(std::ostream &output) {
-	char buf[1024];
-	int length;
-
 	for (size_t i = 0; i < _insts.size(); i++) {
 		Instruction inst = _insts[i];
-		length = sprintf(buf, "%08x: %s ", inst._address, inst._name.c_str());
+		output << boost::format("%08x: %s ") % inst._address % inst._name;
 		for (size_t j = 0; j < inst._params.size(); j++) {
 			Parameter p = inst._params[j];
 			if (j != 0)
-				length += sprintf(&buf[length], ", ");
+				output << ", ";
 			switch(p._type) {
 				case kSByte:
-					length += sprintf(&buf[length], "%d", p._sbyte);
+					output << p._sbyte;
 					break;
 				case kByte:
-					length += sprintf(&buf[length], "%u", p._byte);
+					output << p._byte;
 					break;
 				case kShort:
-					length += sprintf(&buf[length], "%d", p._short);
+					output << p._short;
 					break;
 				case kUShort:
-					length += sprintf(&buf[length], "%u", p._ushort);
+					output << p._ushort;
 					break;
 				case kInt:
-					length += sprintf(&buf[length], "%d", p._int);
+					output << p._int;
 					break;
 				case kUInt:
-					length += sprintf(&buf[length], "%u", p._uint);
+					output << p._uint;
 					break;
 				case kFloat:
-					length += sprintf(&buf[length], "%f", p._float);
+					output << p._float;
 					break;
 			}
 		}
-		length += sprintf(&buf[length], "\n");
-		output << buf;
+		output << "\n";
 	}
 }
