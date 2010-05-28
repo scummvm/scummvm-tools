@@ -37,17 +37,14 @@ void Disassembler::dumpDisassembly(const char *filename) {
 	char buf[1024];
 	int length;
 
-	for (size_t i = 0; i < _insts.size(); i++)
-	{
+	for (size_t i = 0; i < _insts.size(); i++) {
 		Instruction inst = _insts[i];
 		length = sprintf(buf, "%08x: %s ",inst._address, inst._name.c_str());
-		for (size_t j = 0; j < inst._params.size(); j++)
-		{
+		for (size_t j = 0; j < inst._params.size(); j++) {
 			Parameter p = inst._params[j];
 			if (j != 0)
 				length += sprintf(&buf[length], ", ");
-			switch(p._type)
-			{
+			switch(p._type) {
 				case kSByte:
 					length += sprintf(&buf[length], "%d", p._sbyte);
 					break;

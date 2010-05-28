@@ -76,7 +76,7 @@ void SimpleDisassembler::readParams(Instruction *inst, char *typeString) {
 			p._uint = _f.readUint32BE();
 			_address += 4;
 			break;
-		// Common::File doesn't have readFloat methods, but since the valueis stored in a union, we just need to read the right bytes into memory.
+		// Common::File doesn't have readFloat methods, but since the value is stored in a union, we just need to read the right bytes into memory.
 		case 'f': //Single-precision float, little-endian
 			p._type = kFloat;
 			p._uint = _f.readUint32LE();

@@ -22,14 +22,12 @@
 
 #include "unknown_opcode.h"
 
-UnknownOpcodeException::UnknownOpcodeException(uint32 address, uint8 opcode)
-{
+UnknownOpcodeException::UnknownOpcodeException(uint32 address, uint8 opcode) {
 	_address = address;
 	_opcode = opcode;
 }
 
-const char* UnknownOpcodeException::what() throw()
-{
+const char* UnknownOpcodeException::what() throw() {
 	sprintf(_buf, "Unknown opcode (address: %08x, opcode: %02x)", _address, _opcode);
 	return _buf;
 }

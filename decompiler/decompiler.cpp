@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 			("input-file", po::value<std::string>(), "Input file");
 
 		po::positional_options_description fileArg;
-		fileArg.add("input-file", -1);	
+		fileArg.add("input-file", -1);
 
 		po::variables_map vm;
 		try {

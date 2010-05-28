@@ -31,7 +31,7 @@
 /**
  * Enumeration for categorizing the different kinds of instructions.
  */
-enum InstType { 
+enum InstType {
 	kArithmetic, ///<Arithmetic instruction (+, -, *, etc.).
 	kBoolean, ///<Boolean instruction (AND, OR, etc.).
 	kCall, ///<Regular function call.
@@ -42,7 +42,7 @@ enum InstType {
 	kReturn, ///<Return from regular function call.
 	kSpecial, ///<Special functions.
 	kStack, ///<Stack allocation or deallocation (altering stack pointer).
-	kStore ///<Store value from stack in memory. 
+	kStore ///<Store value from stack in memory.
 };
 
 /**
@@ -62,7 +62,7 @@ enum ParamType {
  * Structure for representing a parameter.
  */
 struct Parameter {
-  ParamType _type; ///<Type of the parameter.
+	ParamType _type; ///<Type of the parameter.
 	union {
 		int8 _sbyte;
 		uint8 _byte;

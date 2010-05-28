@@ -37,7 +37,7 @@ protected:
 	 * @param inst Pointer to the instruction to associate the parameters with.
 	 * @param typeString NUL-terminated string describing the type of each parameter.
 	 */
-	void readParams(Instruction *inst, char *typeString);
+	virtual void readParams(Instruction *inst, char *typeString);
 };
 
 #define INC_ADDR _address++;
