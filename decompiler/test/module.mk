@@ -10,6 +10,7 @@ TEST_LIBS    := \
 	common/file.o\
 	decompiler/disassembler.o \
 	decompiler/simple_disassembler.o \
+	decompiler/scummv6/disassembler.o \
 	decompiler/test/disassembler/pasc.o \
 	decompiler/test/disassembler/subopcode.o	\
 	decompiler/unknown_opcode.o \
