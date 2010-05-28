@@ -31,19 +31,19 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 	}
 	if (blockName == "SCRP") {
 		std::cout << "Input is global script\n";
-		_f.seek(8,SEEK_SET);
+		_f.seek(8, SEEK_SET);
 	} else if (blockName == "LSCR") {
 		std::cout << "Input is local script\n";
-		_f.seek(9,SEEK_SET);
+		_f.seek(9, SEEK_SET);
 	} else if (blockName == "ENCD") {
 		std::cout << "Input is room entry script\n";
-		_f.seek(8,SEEK_SET);
+		_f.seek(8, SEEK_SET);
 	} else if (blockName == "EXCD") {
 		std::cout << "Input is room exit script\n";
-		_f.seek(8,SEEK_SET);
+		_f.seek(8, SEEK_SET);
 	} else if (blockName == "VERB") {
 		std::cout << "Input is object script\n";
-		_f.seek(8,SEEK_SET);
+		_f.seek(8, SEEK_SET);
 		std::cout << "Offset table:\n";
 		uint8 verb = _f.readByte();
 		while (verb != 0) {

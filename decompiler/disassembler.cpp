@@ -39,7 +39,7 @@ void Disassembler::dumpDisassembly(const char *filename) {
 
 	for (size_t i = 0; i < _insts.size(); i++) {
 		Instruction inst = _insts[i];
-		length = sprintf(buf, "%08x: %s ",inst._address, inst._name.c_str());
+		length = sprintf(buf, "%08x: %s ", inst._address, inst._name.c_str());
 		for (size_t j = 0; j < inst._params.size(); j++) {
 			Parameter p = inst._params[j];
 			if (j != 0)
