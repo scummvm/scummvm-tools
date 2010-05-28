@@ -97,10 +97,10 @@ int main(int argc, char** argv) {
 
 		std::vector<Instruction> insts = disassembler->disassemble();
 		if (vm.count("dump-disassembly")) {
-			std::streambuf * buf; 
+			std::streambuf *buf; 
 			std::ofstream of; 
  
-			if(vm["dump-disassembly"].as<std::string>() != "") { 
+			if (vm["dump-disassembly"].as<std::string>() != "") { 
 				of.open(vm["dump-disassembly"].as<std::string>().c_str()); 
 				buf = of.rdbuf(); 
 			} else { 
