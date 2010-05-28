@@ -23,6 +23,7 @@
 #ifndef DEC_DISASSEMBLER_H
 #define DEC_DISASSEMBLER_H
 
+#include <iostream>
 #include <vector>
 
 #include "instruction.h"
@@ -57,7 +58,6 @@ public:
 	 * Outputs the disassembly to a file.
 	 * @param filename The file to output the disassembly to.
 	 */
-	virtual void dumpDisassembly(const char *filename);
+	virtual void dumpDisassembly(std::ostream &output);
 };
-
 #endif

@@ -30,10 +30,7 @@ void Disassembler::open(const char *filename) {
 	_f.open(filename, "rb");
 }
 
-void Disassembler::dumpDisassembly(const char *filename) {
-	Common::File _output;
-	_output.open(filename, "w");
-
+void Disassembler::dumpDisassembly(std::ostream &output) {
 	char buf[1024];
 	int length;
 
@@ -68,7 +65,7 @@ void Disassembler::dumpDisassembly(const char *filename) {
 					break;
 			}
 		}
-		buf[length] = '\n';
-		_output.write(buf, length + 1);
+		length += sprintf(&buf[length], "\n");
+		output << buf;
 	}
 }

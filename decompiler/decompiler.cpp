@@ -20,6 +20,7 @@
 *
 */
 
+#include <fstream>
 #include <iostream>
 #include <boost/program_options.hpp>
 
@@ -41,10 +42,10 @@ int main(int argc, char** argv) {
 
 		po::options_description visible("Options");
 		visible.add_options()
-			("help", "Produce this help message.")
-			("engine", po::value<std::string>(), "Engine the script originates from.")
-			("list", "List the supported engines.")
-			("dump-disassembly", po::value<std::string>(), "Dump the disassembly to a specified file.");
+			("help,?", "Produce this help message.")
+			("engine,e", po::value<std::string>(), "Engine the script originates from.")
+			("list,l", "List the supported engines.")
+			("dump-disassembly,d", po::value<std::string>()->implicit_value(""), "Dump the disassembly to a file. Leave out filename to output to stdout.");
 
 		po::options_description args("");
 		args.add(visible).add_options()
@@ -55,6 +56,7 @@ int main(int argc, char** argv) {
 
 		po::variables_map vm;
 		try {
+			//FIXME: If specified as the last parameter before the input file name, -d currently requires a filename to specified. -d must be specified earlier than that if outputting to stdout.
 			po::store(po::command_line_parser(argc, argv).options(args).positional(fileArg).run(), vm);
 			po::notify(vm);    
 		} catch (std::exception& e) {
@@ -73,7 +75,8 @@ int main(int argc, char** argv) {
 
 		if (vm.count("help") || !vm.count("input-file")) {
 			std::cout << "Usage: " << argv[0] << " [option...] file" << "\n";
-			std::cout << args << "\n";
+			std::cout << visible << "\n";
+			std::cout << "Note: If outputting to stdout, -d must NOT be specified immediately before the input file.\n";
 			return 1;
 		}
 	
@@ -94,7 +97,17 @@ int main(int argc, char** argv) {
 
 		std::vector<Instruction> insts = disassembler->disassemble();
 		if (vm.count("dump-disassembly")) {
-			disassembler->dumpDisassembly(vm["dump-disassembly"].as<std::string>().c_str());
+			std::streambuf * buf; 
+			std::ofstream of; 
+ 
+			if(vm["dump-disassembly"].as<std::string>() != "") { 
+				of.open(vm["dump-disassembly"].as<std::string>().c_str()); 
+				buf = of.rdbuf(); 
+			} else { 
+				buf = std::cout.rdbuf(); 
+			} 
+ 			std::ostream out(buf); 
+			disassembler->dumpDisassembly(out);
 		}
 
 		delete disassembler;
