@@ -120,7 +120,21 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 			OPCODE(0xD6, "cursorCmd_Transparent", kSpecial, -1, "");
 		END_SUBOPCODE;
 		OPCODE(0x6C, "breakHere", kSpecial, 0, "");
+		OPCODE(0x6D, "ifClassOfIs", kSpecial, 0, ""); //Variable stack arguments
 	END_OPCODES;
 
 	return _insts;
+}
+
+void ScummV6Disassembler::readParameter(Parameter *p, char type)
+{
+	switch (type)
+	{
+		case 'c': //Character string
+			//TODO
+			break;
+		default: //Defer handling to parent implementation
+			SimpleDisassembler::readParameter(p, type);
+			break;
+	}
 }

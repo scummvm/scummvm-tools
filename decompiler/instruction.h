@@ -25,6 +25,7 @@
 
 #include <string>
 #include <vector>
+#include <boost/variant.hpp>
 
 #include "common/scummsys.h"
 
@@ -55,7 +56,7 @@ enum ParamType {
 	kUShort, ///<Unsigned 16-bit integer.
 	kInt, ///<Signed 32-bit integer.
 	kUInt, ///<Unsigned 32-bit integer.
-	kFloat ///<Single-precision IEEE 754 floating-point value.
+	kString ///<Text string.
 };
 
 /**
@@ -63,15 +64,10 @@ enum ParamType {
  */
 struct Parameter {
 	ParamType _type; ///<Type of the parameter.
-	union {
-		int8 _sbyte;
-		uint8 _byte;
-		int16 _short;
-		uint16 _ushort;
-		int32 _int;
-		uint32 _uint;
-		float _float;
-	}; ///<Value of the parameter.
+	boost::variant<int32, uint32, std::string> _value; ///<Value of the parameter.
+	int32 getSigned() { return boost::get<int32>(_value); }
+	uint32 getUnsigned() { return boost::get<uint32>(_value); }
+	std::string getString() { return boost::get<std::string>(_value); }
 };
 
 /**

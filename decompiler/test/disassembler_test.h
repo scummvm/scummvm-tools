@@ -37,7 +37,7 @@ public:
 			TS_ASSERT(insts[0]._name == "PUSH");
 			TS_ASSERT(insts[0]._stackChange == 0);
 			TS_ASSERT(insts[0]._params[0]._type == kInt);
-			TS_ASSERT(insts[0]._params[0]._uint == 0x60);
+			TS_ASSERT(insts[0]._params[0].getSigned() == 0x60);
 		} catch (UnknownOpcodeException &uoe) {
 			printf("Exception message: %s\n", uoe.what());
 			TS_ASSERT(false);
@@ -79,15 +79,15 @@ public:
 			s.open("decompiler/test/script-15.dmp");
 			std::vector<Instruction> insts = s.disassemble();
 			TS_ASSERT(insts.size() == 11);
-			TS_ASSERT(insts[0]._address == 0 && insts[0]._name == "pushWordVar" && insts[0]._params[0]._ushort == 16384);
-			TS_ASSERT(insts[1]._address == 3 && insts[1]._name == "writeWordVar" && insts[1]._params[0]._ushort == 197);
-			TS_ASSERT(insts[2]._address == 6 && insts[2]._name == "pushWord" && insts[2]._params[0]._ushort == 0);
-			TS_ASSERT(insts[3]._address == 9 && insts[3]._name == "pushWord" && insts[3]._params[0]._ushort == 11);
-			TS_ASSERT(insts[4]._address == 12 && insts[4]._name == "pushWord" && insts[4]._params[0]._ushort == 0);
+			TS_ASSERT(insts[0]._address == 0 && insts[0]._name == "pushWordVar" && insts[0]._params[0].getUnsigned() == 16384);
+			TS_ASSERT(insts[1]._address == 3 && insts[1]._name == "writeWordVar" && insts[1]._params[0].getUnsigned() == 197);
+			TS_ASSERT(insts[2]._address == 6 && insts[2]._name == "pushWord" && insts[2]._params[0].getUnsigned() == 0);
+			TS_ASSERT(insts[3]._address == 9 && insts[3]._name == "pushWord" && insts[3]._params[0].getUnsigned() == 11);
+			TS_ASSERT(insts[4]._address == 12 && insts[4]._name == "pushWord" && insts[4]._params[0].getUnsigned() == 0);
 			TS_ASSERT(insts[5]._address == 15 && insts[5]._name == "startScript");
-			TS_ASSERT(insts[6]._address == 16 && insts[6]._name == "pushWord" && insts[6]._params[0]._ushort == 0);
-			TS_ASSERT(insts[7]._address == 19 && insts[7]._name == "pushWord" && insts[7]._params[0]._ushort == 14);
-			TS_ASSERT(insts[8]._address == 22 && insts[8]._name == "pushWord" && insts[8]._params[0]._ushort == 0);
+			TS_ASSERT(insts[6]._address == 16 && insts[6]._name == "pushWord" && insts[6]._params[0].getUnsigned() == 0);
+			TS_ASSERT(insts[7]._address == 19 && insts[7]._name == "pushWord" && insts[7]._params[0].getUnsigned() == 14);
+			TS_ASSERT(insts[8]._address == 22 && insts[8]._name == "pushWord" && insts[8]._params[0].getUnsigned() == 0);
 			TS_ASSERT(insts[9]._address == 25 && insts[9]._name == "startScript");
 			TS_ASSERT(insts[10]._address == 26 && insts[10]._name == "stopObjectCodeB");
 		} catch (...) {
@@ -103,10 +103,10 @@ public:
 			s.open("decompiler/test/script-31.dmp");
 			std::vector<Instruction> insts = s.disassemble();
 			TS_ASSERT(insts.size() == 5);
-			TS_ASSERT(insts[0]._address == 0 && insts[0]._name == "pushWord" && insts[0]._params[0]._ushort == 0);
-			TS_ASSERT(insts[1]._address == 3 && insts[1]._name == "writeWordVar" && insts[1]._params[0]._ushort == 180);
-			TS_ASSERT(insts[2]._address == 6 && insts[2]._name == "pushWord" && insts[2]._params[0]._ushort == 0);
-			TS_ASSERT(insts[3]._address == 9 && insts[3]._name == "writeWordVar" && insts[3]._params[0]._ushort == 181);
+			TS_ASSERT(insts[0]._address == 0 && insts[0]._name == "pushWord" && insts[0]._params[0].getUnsigned() == 0);
+			TS_ASSERT(insts[1]._address == 3 && insts[1]._name == "writeWordVar" && insts[1]._params[0].getUnsigned() == 180);
+			TS_ASSERT(insts[2]._address == 6 && insts[2]._name == "pushWord" && insts[2]._params[0].getUnsigned() == 0);
+			TS_ASSERT(insts[3]._address == 9 && insts[3]._name == "writeWordVar" && insts[3]._params[0].getUnsigned() == 181);
 			TS_ASSERT(insts[4]._address == 12 && insts[4]._name == "stopObjectCodeB");
 		} catch (...) {
 			TS_ASSERT(false);
@@ -121,14 +121,14 @@ public:
 			s.open("decompiler/test/script-33.dmp");
 			std::vector<Instruction> insts = s.disassemble();
 			TS_ASSERT(insts.size() == 10);
-			TS_ASSERT(insts[0]._address == 0 && insts[0]._name == "pushWord" && insts[0]._params[0]._ushort == 0);
-			TS_ASSERT(insts[1]._address == 3 && insts[1]._name == "writeWordVar" && insts[1]._params[0]._ushort == 71);
-			TS_ASSERT(insts[2]._address == 6 && insts[2]._name == "pushWordVar" && insts[2]._params[0]._ushort == 177);
-			TS_ASSERT(insts[3]._address == 9 && insts[3]._name == "writeWordVar" && insts[3]._params[0]._ushort == 173);
-			TS_ASSERT(insts[4]._address == 12 && insts[4]._name == "pushWord" && insts[4]._params[0]._ushort == 874);
-			TS_ASSERT(insts[5]._address == 15 && insts[5]._name == "writeWordVar" && insts[5]._params[0]._ushort == 177);
-			TS_ASSERT(insts[6]._address == 18 && insts[6]._name == "pushWordVar" && insts[6]._params[0]._ushort == 177);
-			TS_ASSERT(insts[7]._address == 21 && insts[7]._name == "pushWord" && insts[7]._params[0]._ushort == 93);
+			TS_ASSERT(insts[0]._address == 0 && insts[0]._name == "pushWord" && insts[0]._params[0].getUnsigned() == 0);
+			TS_ASSERT(insts[1]._address == 3 && insts[1]._name == "writeWordVar" && insts[1]._params[0].getUnsigned() == 71);
+			TS_ASSERT(insts[2]._address == 6 && insts[2]._name == "pushWordVar" && insts[2]._params[0].getUnsigned() == 177);
+			TS_ASSERT(insts[3]._address == 9 && insts[3]._name == "writeWordVar" && insts[3]._params[0].getUnsigned() == 173);
+			TS_ASSERT(insts[4]._address == 12 && insts[4]._name == "pushWord" && insts[4]._params[0].getUnsigned() == 874);
+			TS_ASSERT(insts[5]._address == 15 && insts[5]._name == "writeWordVar" && insts[5]._params[0].getUnsigned() == 177);
+			TS_ASSERT(insts[6]._address == 18 && insts[6]._name == "pushWordVar" && insts[6]._params[0].getUnsigned() == 177);
+			TS_ASSERT(insts[7]._address == 21 && insts[7]._name == "pushWord" && insts[7]._params[0].getUnsigned() == 93);
 			TS_ASSERT(insts[8]._address == 24 && insts[8]._name == "cursorCmd_Image");
 			TS_ASSERT(insts[9]._address == 26 && insts[9]._name == "stopObjectCodeB");
 		} catch (...) {

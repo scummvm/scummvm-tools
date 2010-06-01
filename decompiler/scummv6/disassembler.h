@@ -30,7 +30,9 @@
  */
 class ScummV6Disassembler : public SimpleDisassembler {
 public:
-	virtual std::vector<Instruction> disassemble();
+	std::vector<Instruction> disassemble();
+
+	void readParameter(Parameter *p, char type);
 };
 
 #endif

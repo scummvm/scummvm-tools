@@ -40,29 +40,7 @@ void Disassembler::dumpDisassembly(std::ostream &output) {
 			Parameter p = inst._params[j];
 			if (j != 0)
 				output << ", ";
-			switch(p._type) {
-				case kSByte:
-					output << p._sbyte;
-					break;
-				case kByte:
-					output << p._byte;
-					break;
-				case kShort:
-					output << p._short;
-					break;
-				case kUShort:
-					output << p._ushort;
-					break;
-				case kInt:
-					output << p._int;
-					break;
-				case kUInt:
-					output << p._uint;
-					break;
-				case kFloat:
-					output << p._float;
-					break;
-			}
+			output << p._value;
 		}
 		output << "\n";
 	}
