@@ -21,6 +21,7 @@
  */
 
 #include <iostream>
+#include <sstream>
 
 #include "disassembler.h"
 
@@ -126,15 +127,85 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 	return _insts;
 }
 
-void ScummV6Disassembler::readParameter(Parameter *p, char type)
-{
-	switch (type)
-	{
-		case 'c': //Character string
-			//TODO
-			break;
-		default: //Defer handling to parent implementation
-			SimpleDisassembler::readParameter(p, type);
-			break;
+void ScummV6Disassembler::readParameter(Parameter *p, char type) {
+	switch (type)	{
+	case 'c': //Character string
+		{
+		byte cmd;
+		bool inStr = false;
+		std::stringstream s;
+		while ((cmd = _f.readByte()) != 0) {
+			if (cmd == 0xFF || cmd == 0xFE) {
+				if (inStr) {
+					s << '"';
+					inStr = false;
+				}
+				cmd = _f.readByte();
+				switch (cmd) {
+				case 1:
+					s << ":newline:";
+					_address += 2;
+					break;
+				case 2:
+					s << ":keeptext:";
+					_address += 2;
+					break;
+				case 3:
+					s << ":wait:";
+					_address += 2;
+					break;
+				case 4:		// addIntToStack
+				case 5:		// addVerbToStack
+				case 6:		// addNameToStack
+				case 7:		// addStringToStack
+					{
+					uint16 var = _f.readUint16LE();
+					//TODO: Clean output similar to descumm
+					s << ":addToStack=" << var << ":";
+					_address += 4;
+					}
+					break;
+				case 9:
+					s << ":startanim=" << _f.readUint16LE() << ":";
+					_address += 4;
+					break;
+				case 10:
+					s << ":sound:";
+					_f.seek(14, SEEK_CUR);
+					_address += 16;
+					break;
+				case 12:
+					s << ":setcolor=" << _f.readUint16LE() << ":";
+					_address += 4;
+					break;
+				case 13:
+					s << ":unk2=" << _f.readUint16LE() << ":";
+					_address += 4;
+					break;
+				case 14:
+					s << ":setfont=" << _f.readUint16LE() << ":";
+					_address += 4;
+					break;
+				default:
+					s << ":unk" << cmd << "=" << _f.readUint16LE() << ":";
+					_address += 4;
+					break;
+				}
+			} else {
+				if (!inStr) {
+					s << '"';
+					inStr = true;
+				}
+				s << cmd;
+				_address++;
+			}
+		}
+		p->_type = kString;
+		p->_value = s.str();
+		}
+		break;
+	default: //Defer handling to parent implementation
+		SimpleDisassembler::readParameter(p, type);
+		break;
 	}
 }
