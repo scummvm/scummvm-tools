@@ -47,7 +47,7 @@ public:
 	/**
 	 * Description of the exception.
 	 */
-	virtual const char* what() throw();
+	virtual const char *what() throw();
 };
 
 #endif
