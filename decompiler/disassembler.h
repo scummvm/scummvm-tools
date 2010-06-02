@@ -35,9 +35,9 @@
  */
 class Disassembler {
 protected:
-	Common::File _f; ///<Used to perform file I/O.
-	std::vector<Instruction> _insts; ///<Container for disassembled instructions.
-	uint32 _addressBase; ///<Base address where the script starts.
+	Common::File _f;                 ///< Used to perform file I/O.
+	std::vector<Instruction> _insts; ///< Container for disassembled instructions.
+	uint32 _addressBase;             ///< Base address where the script starts.
 
 public:
 	Disassembler();
@@ -45,6 +45,7 @@ public:
 
 	/**
 	 * Open a file for disassembly.
+	 *
 	 * @param filename The file to disassemble.
 	 */
 	void open(const char *filename);
@@ -56,6 +57,7 @@ public:
 
 	/**
 	 * Outputs the disassembly to a file.
+	 *
 	 * @param filename The file to output the disassembly to.
 	 */
 	virtual void dumpDisassembly(std::ostream &output);

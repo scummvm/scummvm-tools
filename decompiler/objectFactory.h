@@ -50,6 +50,7 @@ private:
 public:
 	/**
 	 * Register a new entry.
+	 *
 	 * @param name The name to register the class under.
 	 */
 	template<typename Type>
@@ -59,6 +60,7 @@ public:
 
 	/**
 	 * Creates an instance of some registered class.
+	 *
 	 * @param name The name associated with the desired class.
 	 * @return NULL if the name is not registered, else an instance of the associated class.
 	 */

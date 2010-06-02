@@ -33,38 +33,39 @@
  * Enumeration for categorizing the different kinds of instructions.
  */
 enum InstType {
-	kArithmetic, ///<Arithmetic instruction (+, -, *, etc.).
-	kBoolean, ///<Boolean instruction (AND, OR, etc.).
-	kCall, ///<Regular function call.
-	kComparison, ///<Comparison instruction.
-	kCondJump, ///<Conditional jump.
-	kJump, ///<Unconditional jump.
-	kLoad, ///<Load value to stack.
-	kReturn, ///<Return from regular function call.
-	kSpecial, ///<Special functions.
-	kStack, ///<Stack allocation or deallocation (altering stack pointer).
-	kStore ///<Store value from stack in memory.
+	kArithmetic, ///< Arithmetic instruction (+, -, *, etc.).
+	kBoolean,    ///< Boolean instruction (AND, OR, etc.).
+	kCall,       ///< Regular function call.
+	kComparison, ///< Comparison instruction.
+	kCondJump,   ///< Conditional jump.
+	kJump,       ///< Unconditional jump.
+	kLoad,       ///< Load value to stack.
+	kReturn,     ///< Return from regular function call.
+	kSpecial,    ///< Special functions.
+	kStack,      ///< Stack allocation or deallocation (altering stack pointer).
+	kStore       ///< Store value from stack in memory.
 };
 
 /**
  * Enumeration for categorizing the different kinds of parameters.
  */
 enum ParamType {
-	kSByte, ///<Signed 8-bit integer.
-	kByte, ///<Unsigned 8-bit integer.
-	kShort, ///<Signed 16-bit integer.
-	kUShort, ///<Unsigned 16-bit integer.
-	kInt, ///<Signed 32-bit integer.
-	kUInt, ///<Unsigned 32-bit integer.
-	kString ///<Text string.
+	kSByte,  ///< Signed 8-bit integer.
+	kByte,   ///< Unsigned 8-bit integer.
+	kShort,  ///< Signed 16-bit integer.
+	kUShort, ///< Unsigned 16-bit integer.
+	kInt,    ///< Signed 32-bit integer.
+	kUInt,   ///< Unsigned 32-bit integer.
+	kString  ///< Text string.
 };
 
 /**
  * Structure for representing a parameter.
  */
 struct Parameter {
-	ParamType _type; ///<Type of the parameter.
-	boost::variant<int32, uint32, std::string> _value; ///<Value of the parameter.
+	ParamType _type;                                   ///< Type of the parameter.
+	boost::variant<int32, uint32, std::string> _value; ///< Value of the parameter.
+
 	int32 getSigned() const { return boost::get<int32>(_value); }
 	uint32 getUnsigned() const { return boost::get<uint32>(_value); }
 	std::string getString() const { return boost::get<std::string>(_value); }
@@ -74,11 +75,11 @@ struct Parameter {
  * Structure for representing an instruction.
  */
 struct Instruction {
-	uint32 _address; ///<The instruction address.
-	int16 _stackChange; ///<How much this instruction changes the stack pointer by.
-	std::string _name; ///<The instruction name (opcode name).
-	InstType _type; ///<The instruction type.
-	std::vector<Parameter> _params; ///<Array of parameters used for the instruction.
+	uint32 _address;                ///< The instruction address.
+	int16 _stackChange;             ///< How much this instruction changes the stack pointer by.
+	std::string _name;              ///< The instruction name (opcode name).
+	InstType _type;                 ///< The instruction type.
+	std::vector<Parameter> _params; ///< Array of parameters used for the instruction.
 };
 
 #endif

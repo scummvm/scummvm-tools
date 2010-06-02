@@ -30,10 +30,11 @@
  */
 class SimpleDisassembler : public Disassembler {
 protected:
-	uint32 _address; ///<Variable to maintain the current address.
+	uint32 _address; ///< Variable to maintain the current address.
 
 	/**
 	 * Read parameters and associate them with an instruction.
+	 *
 	 * @param inst Pointer to the instruction to associate the parameters with.
 	 * @param typeString NUL-terminated string describing the type of each parameter.
 	 */
@@ -41,6 +42,7 @@ protected:
 
 	/**
 	 * Reads data for a single parameter.
+	 *
 	 * @param p Pointer to the destination Parameter structure.
 	 * @param type Character describing the type of the parameter.
 	 */
