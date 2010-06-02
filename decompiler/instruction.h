@@ -65,9 +65,9 @@ enum ParamType {
 struct Parameter {
 	ParamType _type; ///<Type of the parameter.
 	boost::variant<int32, uint32, std::string> _value; ///<Value of the parameter.
-	int32 getSigned() { return boost::get<int32>(_value); }
-	uint32 getUnsigned() { return boost::get<uint32>(_value); }
-	std::string getString() { return boost::get<std::string>(_value); }
+	int32 getSigned() const { return boost::get<int32>(_value); }
+	uint32 getUnsigned() const { return boost::get<uint32>(_value); }
+	std::string getString() const { return boost::get<std::string>(_value); }
 };
 
 /**

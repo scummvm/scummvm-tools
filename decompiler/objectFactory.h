@@ -44,7 +44,8 @@ class ObjectFactory {
 private:
 
 	typedef BaseType *(*CreateFunc)(); ///<Function pointer to the object creation function.
-	std::map<std::string, CreateFunc> _registry; ///<Map from an identifier to a creation function.
+	typedef std::map<std::string, CreateFunc> RegistryMap;
+	RegistryMap _registry; ///<Map from an identifier to a creation function.
 
 public:
 	/**
@@ -61,10 +62,11 @@ public:
 	 * @param name The name associated with the desired class.
 	 * @return NULL if the name is not registered, else an instance of the associated class.
 	 */
-	BaseType *create(std::string name) {
-		if (_registry.find(name) == _registry.end())
+	BaseType *create(std::string name) const {
+		typename RegistryMap::const_iterator entry = _registry.find(name);
+		if (entry == _registry.end())
 			return NULL;
-		return _registry[name]();
+		return (entry->second)();
 	}
 };
 
