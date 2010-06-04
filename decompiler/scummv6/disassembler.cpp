@@ -48,7 +48,8 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 		std::cout << "Offset table:\n";
 		uint8 verb = _f.readByte();
 		while (verb != 0) {
-			printf("%02x - %04x", verb, _f.readUint16LE());
+			printf("%02x - %04x\n", verb, _f.readUint16LE());
+			verb = _f.readByte();
 		}
 	}
 	
@@ -75,7 +76,7 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 		OPCODE(0x17, "div", kArithmetic, -1, "");
 		OPCODE(0x18, "land", kBoolean, -1, "");
 		OPCODE(0x19, "lor", kBoolean, -1, "");
-		OPCODE(0x1A, "kill", kStack, -1, "");
+		OPCODE(0x1A, "pop", kStack, -1, "");
 		OPCODE(0x42, "writeByteVar", kStore, -1, "B");
 		OPCODE(0x43, "writeWordVar", kStore, -1, "w");
 		OPCODE(0x46, "byteArrayWrite", kStore, -2, "B");
@@ -267,7 +268,155 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 		OPCODE(0xA2, "getActorElevation", kSpecial, 0, "");
 		OPCODE(0xA3, "getVerbEntrypoint", kSpecial, -1, "");
 		START_SUBOPCODE(0xA4); //arrayOps
+			OPCODE(0xCD, "arrayOp_assignString", kSpecial, -1, "wc");
+			OPCODE(0xD0, "arrayOp_assignIntList", kSpecial, 0, "w"); //Variable stack arguments
+			OPCODE(0xD4, "arrayOp_assign2DimList", kSpecial, 0, "w"); //Variable stack arguments
 		END_SUBOPCODE;
+		START_SUBOPCODE(0xA5); //saveRestoreVerbs
+			OPCODE(0x8D, "srVerb_saveVerbs", kSpecial, -3, "");
+			OPCODE(0x8E, "srVerb_restoreVerbs", kSpecial, -3, "");
+			OPCODE(0x8F, "srVerb_deleteVerbs", kSpecial, -3, "");
+		END_SUBOPCODE;
+		OPCODE(0xA6, "drawBox", kSpecial, -5, "");
+		OPCODE(0xA7, "pop", kStack, -1, "");
+		OPCODE(0xA8, "getActorWidth", kSpecial, 0, "");
+		START_SUBOPCODE(0xA9); //wait
+			OPCODE(0xA8, "waitForActor", kSpecial, -1, "w");
+			OPCODE(0xA9, "waitForMessage", kSpecial, 0, "");
+			OPCODE(0xAA, "waitForCamera", kSpecial, 0, "");
+			OPCODE(0xAB, "waitForSentence", kSpecial, 0, "");
+			OPCODE(0xE2, "waitUntilActorDrawn", kSpecial, -1, "w");
+			OPCODE(0xE8, "waitUntilActorTurned", kSpecial, -1, "w");
+		END_SUBOPCODE;
+		OPCODE(0xAA, "getActorScaleX", kSpecial, 0, "");
+		OPCODE(0xAB, "getActorAnimCounter", kSpecial, 0, "");
+		OPCODE(0xAC, "soundKludge", kSpecial, 0, ""); //Variable stack arguments
+		OPCODE(0xAD, "isAnyOf", kSpecial, 0, ""); //Variable stack arguments
+		START_SUBOPCODE(0xAE); //systemOps
+			OPCODE(0x9E, "systemOp_restartGame", kSpecial, 0, "");
+			OPCODE(0x9F, "systemOp_pauseGame", kSpecial, 0, "");
+			OPCODE(0xA0, "systemOp_shutDown", kSpecial, 0, "");
+		END_SUBOPCODE;
+		OPCODE(0xAF, "isActorInBox", kSpecial, -1, "");
+		OPCODE(0xB0, "delay", kSpecial, -1, "");
+		OPCODE(0xB1, "delaySeconds", kSpecial, -1, "");
+		OPCODE(0xB2, "delayMinutes", kSpecial, -1, "");
+		OPCODE(0xB3, "stopSentence", kSpecial, 0, "");
+		START_SUBOPCODE(0xB4); //printLine
+			OPCODE(0x41, "printLineXY", kSpecial, -2, "");
+			OPCODE(0x42, "printLineColor", kSpecial, -1, "");
+			OPCODE(0x43, "printLineRight", kSpecial, -1, "");
+			OPCODE(0x45, "printLineCenter", kSpecial, 0, "");
+			OPCODE(0x47, "printLineLeft", kSpecial, 0, "");
+			OPCODE(0x48, "printLineOverhead", kSpecial, 0, "");
+			OPCODE(0x4A, "printLineMumble", kSpecial, 0, "");
+			OPCODE(0x4B, "printLineMsg", kSpecial, 0, "c");
+			OPCODE(0xFE, "printLineBegin", kSpecial, 0, "");
+			OPCODE(0xFF, "printLineEnd", kSpecial, 0, "");
+		END_SUBOPCODE;
+		START_SUBOPCODE(0xB5); //printText
+			OPCODE(0x41, "printTextXY", kSpecial, -2, "");
+			OPCODE(0x42, "printTextColor", kSpecial, -1, "");
+			OPCODE(0x43, "printTextRight", kSpecial, -1, "");
+			OPCODE(0x45, "printTextCenter", kSpecial, 0, "");
+			OPCODE(0x47, "printTextLeft", kSpecial, 0, "");
+			OPCODE(0x48, "printTextOverhead", kSpecial, 0, "");
+			OPCODE(0x4A, "printTextMumble", kSpecial, 0, "");
+			OPCODE(0x4B, "printTextMsg", kSpecial, 0, "c");
+			OPCODE(0xFE, "printTextBegin", kSpecial, 0, "");
+			OPCODE(0xFF, "printTextEnd", kSpecial, 0, "");
+		END_SUBOPCODE;
+		START_SUBOPCODE(0xB6); //printDebug
+			OPCODE(0x41, "printDebugXY", kSpecial, -2, "");
+			OPCODE(0x42, "printDebugColor", kSpecial, -1, "");
+			OPCODE(0x43, "printDebugRight", kSpecial, -1, "");
+			OPCODE(0x45, "printDebugCenter", kSpecial, 0, "");
+			OPCODE(0x47, "printDebugLeft", kSpecial, 0, "");
+			OPCODE(0x48, "printDebugOverhead", kSpecial, 0, "");
+			OPCODE(0x4A, "printDebugMumble", kSpecial, 0, "");
+			OPCODE(0x4B, "printDebugMsg", kSpecial, 0, "c");
+			OPCODE(0xFE, "printDebugBegin", kSpecial, 0, "");
+			OPCODE(0xFF, "printDebugEnd", kSpecial, 0, "");
+		END_SUBOPCODE;
+		START_SUBOPCODE(0xB7); //printSystem
+			OPCODE(0x41, "printSystemXY", kSpecial, -2, "");
+			OPCODE(0x42, "printSystemColor", kSpecial, -1, "");
+			OPCODE(0x43, "printSystemRight", kSpecial, -1, "");
+			OPCODE(0x45, "printSystemCenter", kSpecial, 0, "");
+			OPCODE(0x47, "printSystemLeft", kSpecial, 0, "");
+			OPCODE(0x48, "printSystemOverhead", kSpecial, 0, "");
+			OPCODE(0x4A, "printSystemMumble", kSpecial, 0, "");
+			OPCODE(0x4B, "printSystemMsg", kSpecial, 0, "c");
+			OPCODE(0xFE, "printSystemBegin", kSpecial, 0, "");
+			OPCODE(0xFF, "printSystemEnd", kSpecial, 0, "");
+		END_SUBOPCODE;
+		START_SUBOPCODE(0xB8); //printActor
+			OPCODE(0x41, "printActorXY", kSpecial, -2, "");
+			OPCODE(0x42, "printActorColor", kSpecial, -1, "");
+			OPCODE(0x43, "printActorRight", kSpecial, -1, "");
+			OPCODE(0x45, "printActorCenter", kSpecial, 0, "");
+			OPCODE(0x47, "printActorLeft", kSpecial, 0, "");
+			OPCODE(0x48, "printActorOverhead", kSpecial, 0, "");
+			OPCODE(0x4A, "printActorMumble", kSpecial, 0, "");
+			OPCODE(0x4B, "printActorMsg", kSpecial, 0, "c");
+			OPCODE(0xFE, "printActorBegin", kSpecial, -1, "");
+			OPCODE(0xFF, "printActorEnd", kSpecial, 0, "");
+		END_SUBOPCODE;
+		START_SUBOPCODE(0xB9); //printEgo
+			OPCODE(0x41, "printEgoXY", kSpecial, -2, "");
+			OPCODE(0x42, "printEgoColor", kSpecial, -1, "");
+			OPCODE(0x43, "printEgoRight", kSpecial, -1, "");
+			OPCODE(0x45, "printEgoCenter", kSpecial, 0, "");
+			OPCODE(0x47, "printEgoLeft", kSpecial, 0, "");
+			OPCODE(0x48, "printEgoOverhead", kSpecial, 0, "");
+			OPCODE(0x4A, "printEgoMumble", kSpecial, 0, "");
+			OPCODE(0x4B, "printEgoMsg", kSpecial, 0, "c");
+			OPCODE(0xFE, "printEgoBegin", kSpecial, 0, "");
+			OPCODE(0xFF, "printEgoEnd", kSpecial, 0, "");
+		END_SUBOPCODE;
+		OPCODE(0xBA, "talkActor", kSpecial, -1, "c");
+		OPCODE(0xBB, "talkEgo", kSpecial, 0, "c");
+		START_SUBOPCODE(0xBC); //dimArray
+			OPCODE(0xC7, "dimArrayInt", kSpecial, -1, "w");
+			OPCODE(0xC8, "dimArrayBit", kSpecial, -1, "w");
+			OPCODE(0xC9, "dimArrayNibble", kSpecial, -1, "w");
+			OPCODE(0xCA, "dimArrayByte", kSpecial, -1, "w");
+			OPCODE(0xCB, "dimArrayString", kSpecial, -1, "w");
+			OPCODE(0xCC, "dimArray_nukeArray", kSpecial, 0, "w");
+		END_SUBOPCODE;
+		OPCODE(0xBE, "startObjectQuick", kSpecial, 0, ""); //Variable stack arguments
+		OPCODE(0xBF, "startScriptQuick2", kSpecial, 0, ""); //Variable stack arguments
+		START_SUBOPCODE(0xC0); //dim2DimArray
+			OPCODE(0xC7, "dim2DimArrayInt", kSpecial, -2, "w");
+			OPCODE(0xC8, "dim2DimArrayBit", kSpecial, -2, "w");
+			OPCODE(0xC9, "dim2DimArrayNibble", kSpecial, -2, "w");
+			OPCODE(0xCA, "dim2DimArrayByte", kSpecial, -2, "w");
+			OPCODE(0xCB, "dim2DimArrayString", kSpecial, -2, "w");
+		END_SUBOPCODE;
+		OPCODE(0xC4, "abs", kArithmetic, 0, "");
+		OPCODE(0xC5, "getDistObjObj", kSpecial, -1, "");
+		OPCODE(0xC6, "getDistObjPt", kSpecial, -2, "");
+		OPCODE(0xC7, "getDistPtPt", kSpecial, -3, "");
+		OPCODE(0xC8, "kernelGetFunctions", kSpecial, 0, ""); //Variable stack arguments
+		OPCODE(0xC9, "kernelSetFunctions", kSpecial, 0, ""); //Variable stack arguments
+		OPCODE(0xCA, "delayFrames", kSpecial, -1, "");
+		OPCODE(0xCB, "pickOneOf", kSpecial, 0, ""); //Variable stack arguments
+		OPCODE(0xCC, "pickOneOfDefault", kSpecial, 0, ""); //Variable stack arguments
+		OPCODE(0xCD, "stampObject", kSpecial, -4, "");
+		OPCODE(0xD0, "getDateTime", kSpecial, 0, "");
+		OPCODE(0xD1, "stopTalking", kSpecial, 0, "");
+		OPCODE(0xD2, "getAnimateVariable", kSpecial, -1, "");
+		OPCODE(0xD4, "shuffle", kSpecial, -2, "w");
+		OPCODE(0xD5, "jumpToScript", kSpecial, 0, ""); //Variable stack arguments
+		OPCODE(0xD6, "band", kBoolean, -1, "");
+		OPCODE(0xD7, "bor", kBoolean, -1, "");
+		OPCODE(0xD8, "isRoomScriptRunning", kSpecial, 0, "");
+		OPCODE(0xDD, "findAllObjects", kSpecial, 0, "");
+		OPCODE(0xE1, "getPixel", kSpecial, -1, "");
+		OPCODE(0xE3, "pickVarRandom", kSpecial, 0, ""); //Variable stack arguments
+		OPCODE(0xE4, "setBoxSet", kSpecial, -1, "");
+		OPCODE(0xEC, "getActorLayer", kSpecial, 0, "");
+		OPCODE(0xED, "getObjectNewDir", kSpecial, 0, "");
 	END_OPCODES;
 
 	return _insts;
@@ -346,6 +495,8 @@ void ScummV6Disassembler::readParameter(Parameter *p, char type) {
 				_address++;
 			}
 		}
+		if (inStr)
+			s << '"';
 		p->_type = kString;
 		p->_value = s.str();
 		}
