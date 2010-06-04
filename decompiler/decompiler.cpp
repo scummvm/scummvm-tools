@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 
 		delete disassembler;
 	} catch (std::exception& e) {
-		std::cout << e.what();
+		std::cout << "ERROR: " << e.what();
 		return 3;
 	}
 
