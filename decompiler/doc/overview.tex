@@ -1,0 +1,18 @@
+\section{Overview}
+The decompilation process consists of a few different steps:
+
+\begin{itemize}
+\item Disassembly
+\item Code flow analysis
+\item Code generation
+\end{itemize}
+
+Of these steps, the code flow analysis is engine-independent, while disassembly and code generation require engine-specific code.
+
+\subsection{Limitations}
+The decompiler is targeted for stack-based instruction sets, and may contain assumptions to that effect. If you want to add an engine which does not use a stack-based instruction set, parts of this documentation may not apply, and additional work to the generic parts may be necessary.
+
+\subsection{Adding a new engine}
+In order to make the decompiler use the code you write to decompile code for some engine, it must be registered in the program. To do so, use the \verb+ENGINE+ macro defined in \verb+decompiler.cpp+, and add your own use of the macro near the existing registrations.
+
+This macro takes 3 parameters: the engine ID, a description of the engine, and the name of the class used to disassemble the scripts. The ID is entered by the user to signify the engine where the script originates from, and the description is a descriptive text which will be shown when the user requests a list of the supported engines.

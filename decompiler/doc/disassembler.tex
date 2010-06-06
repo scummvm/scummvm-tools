@@ -1,0 +1,232 @@
+\section{Disassembler}
+
+The purpose of the disassembler is to read instructions from a script file and convert them to a common, machine-readable form for further analysis.
+
+\subsection{Instructions}
+Instructions are represented using the \verb+Instruction+ struct.
+
+\begin{C++}
+\begin{lstlisting}
+struct Instruction {
+	uint32 _address;
+	int16 _stackChange;
+	std::string _name;
+	InstType _type;
+	std::vector<Parameter> _params;
+};
+\end{lstlisting}
+\end{C++}
+
+Each member of this struct has a specific purpose:
+\begin{itemize}
+\item \verb+_address+ stores the absolute memory address where this instruction would be loaded into memory.
+\item \verb+_stackChange+ stores the net change of executing this instruction - for example, if the instruction pushes a byte on to the stack, this should be set to 1. This is used to determine when each statement ends. The count can be in any unit you wish - bytes, words, bits - as long as the same unit is used for all instructions. This means that if your stack only works with 16-bit elements, pushing an 8-bit value and pushing a 16-bit value should have the same net effect on the stack.
+\item \verb+_name+ contains the name of the instruction. You will use this during code generation.
+\item \verb+_type+ represent the type of instruction. See Section~\vref{sec:insttype} for details.
+\item \verb+_params+ contains the parameters given to the instruction - for example, if you have the instruction \verb+PUSH 1+, there would be one parameter, with the value of 1. See Section~\vref{sec:parameter} for details on the Parameter type.
+\end{itemize}
+
+If some instructions do not have a fixed effect on the stack--that is, the instruction name alone does not determine the effect on the stack--set the field to some easily recognizable value when doing the disassembly. You can then determine the correct value in a post-processing step after the code flow analysis.
+
+\subsection{Instruction types}
+\label{sec:insttype}
+The instruction type is a generalization of the different kinds of instructions.
+
+This is particularly important during code flow analysis; since this part is engine-independent, the analysis must have some way of distinguishing the different types of instructions. Additionally, this information can be used during code generation to generalize the recognition of constructs--for example, the code generated for addition and the code generated for multiplication will generally be identical, with the exception of that single arithmetic instruction doing the work.
+
+Most of the types are self-explanatory, with the exception of \verb+kSpecial+. \verb+kSpecial+ should be used for all "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
+
+\subsection{Parameters}
+\label{sec:parameter}
+Parameters are stored using a tagged union - one field (\verb+_type+) tells you which data type is being stored, and another field (\verb+_value+) stores the actual value.
+
+Three convenience methods are provided to extract the value, \verb+getSigned+, \verb+getUnsigned+ and \verb+getString+. Please note: if an incorrect method is called, an exception is thrown.
+
+If you need to store different types than those already allowed, add the new type to the list of type parameters for the \verb+_value+ field and add another enumeration value to \verb+ParamType+. You should make the new type \emph{output streamable}--that is, allow it to be used like \verb+std::cout << value+. This allows the value to be output directly to an output stream regardless of its type.
+
+Note: When storing 8 or 16-bit unsigned values in the \verb+_value+ field, cast them to an \verb+uint32+ when doing the assignment, or you will not be able to extract the value using \verb+getUnsigned+. This is a limitation caused by the automatic type conversion algorithm used by C++.
+
+\subsection{The Disassembler class}
+All disassemblers must inherit, directly or indirectly, from the \verb+Disassembler+ class. This is an abstract class describing which methods you must implement.
+
+\begin{C++}
+\begin{lstlisting}
+class Disassembler {
+protected:
+	Common::File _f;
+	std::vector<Instruction> _insts;
+	uint32 _addressBase;
+
+public:
+	Disassembler();
+	virtual ~Disassembler() {}
+	void open(const char *filename);
+	virtual std::vector<Instruction> disassemble() = 0;
+	virtual void dumpDisassembly(std::ostream &output);
+};
+\end{lstlisting}
+\end{C++}
+
+\verb+_f+ represents the file you will be reading from. The file is opened using the \verb+open+ function.
+
+\verb+_insts+ is an \verb+std::vector+ storing each instructions. Whenever you have read an instruction fully, add it here.
+
+\verb+_addressBase+ is provided as a convenience if your engine does not consider the first instruction to be located at address 0. Assign the expected base address to this field, and make sure that the addresses you assign to the instructions are relative to this base address. This is mainly useful if your engine supports jumps or other references to absolute addresses in the script; if only relative jumps are used, the base address will not be relevant.
+
+\verb+disassemble+ is the primary function of the disassembler, as this is where you perform the actual disassembly.
+
+Finally, \verb+dumpDisassembly+ is used to output the instructions in a human-readable format to a file or stdout after disassembly. A default implementation is provided, but you can override it if it is not suitable for your particular engine.
+
+\subsection{The SimpleDisassembler class}
+To simplify the development of disassemblers, another base class is provided for instruction sets where instructions are of the format \verb+opcode [params]+, with opcode and  parameters are stored in distinct bytes.
+
+\verb+SimpleDisassembler+ defines a number of macros which you can use for writing your disassembler, and provides a framework for reading instruction parameters.
+
+Following is a guide on how to implement a disassembler using this class as its base class. The instruction set used for this example is described in Table~\vref{tbl:simple_disasm_example}. While not a very useful instruction set, it covers many different aspects.
+
+\begin{table}[!hpbt]
+\centering
+\begin{tabular}{c | c | c}
+Instruction & Parameters & Description \\
+\hline
+\verb+PUSH+ (0x00) & uint8 & Pushes byte onto the stack.\\
+\verb+POP+ (0x01) & &  Pops a byte from the stack. \\
+\verb+PUSH2+ (0x02) & int16 & Pushes value onto the stack.\\
+\verb+POP2+ (0x03) & &  Pops two bytes from the stack. \\
+\verb+PRINT+ (0x80) & C string & Prints string to standard output. \\
+\verb+HALT+ (0xFF 0x00) & & Stops the machine.
+\end{tabular}
+\caption{Instruction set used in the SimpleDisassembler example.}
+\label{tbl:simple_disasm_example}
+\end{table}
+
+For the purpose of this example, our instruction set will use little-endian values, and uses byte elements for the stack (so \verb+POP+ changes the stack pointer by 1 and \verb+POP2+ changes it by 2).
+
+\subsubsection{Opcode recognition}
+The first thing to do in the \verb+disassemble+ method is to read past any header which may be present in your script file. In this case, we will assume there aren't any.
+
+You must place your opcodes between two macros, \verb+START_OPCODES+ and \verb+END_OPCODES+. These two macros define the looping required to read one byte at a time.
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+To define an opcode, use the \verb+OPCODE+ macro. This macro takes 5 parameters: the opcode value, the name of the instruction, the type of instruction, the net effect on the stack, and a string describing the parameters that are part of the instruction. We'll start by implementing the \verb+POP+ and \verb+POP2+ opcodes:
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+	OPCODE(0x01, "POP", kStack, -1, "");
+	OPCODE(0x03, "POP2", kStack, -2, "");
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+\subsubsection{Parameter reading}
+\verb+PUSH+, \verb+PUSH2+ and \verb+PRINT+ all take parameters as part of the instruction. To read these, you must specify them as part of the parameter string, using one character per parameter. The types understood by default are specified in Table~\vref{tbl:paramtypes}.
+
+\begin{table}[!hpbt]
+\centering
+\begin{tabular}{c | c}
+Character & Type \\
+\hline
+b & Signed 8-bit integer. \\
+B & Unsigned 8-bit integer. \\
+s & Signed 16-bit byte, little-endian. \\
+S & Signed 16-bit byte, big-endian. \\
+w & Unsigned 16-bit byte, little-endian. \\
+W & Unsigned 16-bit byte, big-endian. \\
+i & Signed 32-bit byte, little-endian. \\
+I & Signed 32-bit byte, big-endian. \\
+d & Unsigned 32-bit byte, little-endian. \\
+D & Unsigned 32-bit byte, big-endian. \\
+\end{tabular}
+\caption{Type specifications recognized by SimpleDisassembler.}
+\label{tbl:paramtypes}
+\end{table}
+
+To help you remember these meanings, little-endian values are encoded using lower case ("small letters", i.e. little), while big-endian values are encoded using upper case ("big" letters). The exception here is a single byte, since endianness has no effect for individual bytes. Here, the mnemonic is that an unsigned byte ("B") has a larger maximum value. For the other letters, "s" was used because it's the first letter in "short", which is usually a 16-bit signed value in C. Similarly, "i" is short for "int". "w" and "d" come from the terms "word" and "dword", which are used for 16-bit and 32-bit unsigned types on an x86 platform.
+
+Note, however, that strings are not supported by default. To add reading of the string type, you can override the \verb+readParameter+ function to add your own types:
+
+\begin{C++}
+\begin{lstlisting}
+	switch (type)	{
+	case 'c': //Character string
+		{
+		byte cmd;
+		bool inStr = false;
+		std::stringstream s;
+		while ((cmd = _f.readByte()) != 0) {
+			s << cmd;
+			_address++;
+		}
+		s << '"';
+		p->_type = kString;
+		p->_value = s.str();
+		}
+		break;
+	default: //Defer handling to parent implementation
+		SimpleDisassembler::readParameter(p, type);
+		break;
+	}
+\end{lstlisting}
+\end{C++}
+
+Note that you will have to increment the \verb+_address+ variable manually when you read a byte. This variable is used to determine the address of the instruction, and must be kept in sync with your progress reading the file.
+
+Now, we can add all three opcodes to the list:
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+	OPCODE(0x00, "PUSH", kStack, 1, "B");
+	OPCODE(0x01, "POP", kStack, -1, "");
+	OPCODE(0x02, "PUSH", kStack, 1, "w");
+	OPCODE(0x03, "POP2", kStack, -2, "");
+	OPCODE(0x80, "PRINT", kSpecial, 0, "c");
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+\subsubsection{Multi-byte opcodes}
+There's only one opcode left to add, \verb+HALT+. This one is a bit trickier, because it uses multiple bytes for the opcode - and the \verb+OPCODE+ macro only works for one byte at a time.
+
+To solve this, you can define \emph{subopcodes}. By defining 0xFF as the start of a multi-byte opcode, we can then specify 0x00 as representing a \verb+HALT+ instruction when it follows 0xFF.
+
+Defining 0xFF is easily done using the \verb+START_SUBOPCODE+ macro. After that, specify the opcodes for this following byte, and finish the subopcode declarations with \verb+END_SUBOPCODE+.
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+	OPCODE(0x00, "PUSH", kStack, 1, "B");
+	OPCODE(0x01, "POP", kStack, -1, "");
+	OPCODE(0x02, "PUSH", kStack, 1, "w");
+	OPCODE(0x03, "POP2", kStack, -2, "");
+	OPCODE(0x80, "PRINT", kSpecial, 0, "c");
+	START_SUBOPCODE(0xFF);
+		OPCODE(0x00, "HALT", kSpecial, 0, "");
+	END_SUBOPCODE;
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+Subopcodes can be nested if the instruction set requires it.
+
+\subsubsection{Advanced opcode handling}
+If you have one or two opcodes that don't quite fit into the framework provided, you can define your own specialized handling for these opcodes.
+
+Instead of using the \verb+OPCODE+ macro, put your code between \verb+OPCODE_BASE+ and \verb+OPCODE_END+. For example, if your opcode has the value 0x40, you would use this:
+
+\begin{C++}
+\begin{lstlisting}
+OPCODE_BASE(0x40);
+	//Your code here
+OPCODE_END;
+\end{lstlisting}
+\end{C++}
+
+For your convenience, a few additional macros are available: \verb+ADD_INST+, which adds an empty instruction to the vector, and \verb+LAST_INST+ which retrieves the last instruction in the vector. Additionally, you can use \verb+INC_ADDR+ as a shorthand for incrementing the address variable by 1, but note that you should \emph{not} increment the address for the original opcode - this is handled by the other macros.

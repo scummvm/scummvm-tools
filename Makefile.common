@@ -275,6 +275,10 @@ decompile_LIBS := \
 # Decompiler tests
 -include decompiler/test/module.mk
 
+# Decompiler documentation
+doc:
+	make -C decompiler/doc all
+
 # Make base/version.o depend on all other object files. This way if anything is
 # changed, it causes version.cpp to be recompiled. This in turn ensures that
 # the build date in gScummVMBuildDate is correct.
