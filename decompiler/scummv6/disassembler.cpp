@@ -91,8 +91,8 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 		OPCODE(0x57, "wordVarDec", kArithmetic, 0, "w");
 		OPCODE(0x5A, "byteArrayDec", kArithmetic, -1, "B");
 		OPCODE(0x5B, "wordArrayDec", kArithmetic, -1, "w");
-		OPCODE(0x5C, "jumpTrue", kCondJump, -1, "w");
-		OPCODE(0x5D, "jumpFalse", kCondJump, -1, "w");
+		OPCODE(0x5C, "jumpTrue", kCondJumpRel, -1, "w");
+		OPCODE(0x5D, "jumpFalse", kCondJumpRel, -1, "w");
 		OPCODE(0x5E, "startScript", kSpecial, -255, ""); //Variable stack arguments
 		OPCODE(0x5F, "startScriptQuick", kSpecial, -255, ""); //Variable stack arguments
 		OPCODE(0x60, "startObject", kSpecial, -255, ""); //Variable stack arguments
@@ -128,7 +128,7 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 		OPCODE(0x70, "setState", kSpecial, -2, "");
 		OPCODE(0x71, "setOwner", kSpecial, -2, "");
 		OPCODE(0x72, "getOwner", kSpecial, 0, "");
-		OPCODE(0x73, "jump", kJump, 0, "w");
+		OPCODE(0x73, "jump", kJumpRel, 0, "w");
 		OPCODE(0x74, "startSound", kSpecial, -1, "");
 		OPCODE(0x75, "stopSound", kSpecial, -1, "");
 		OPCODE(0x76, "startMusic", kSpecial, -1, "");

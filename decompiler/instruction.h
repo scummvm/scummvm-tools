@@ -33,17 +33,19 @@
  * Enumeration for categorizing the different kinds of instructions.
  */
 enum InstType {
-	kArithmetic, ///< Arithmetic instruction (+, -, *, etc.).
-	kBoolean,    ///< Boolean instruction (AND, OR, etc.).
-	kCall,       ///< Regular function call.
-	kComparison, ///< Comparison instruction.
-	kCondJump,   ///< Conditional jump.
-	kJump,       ///< Unconditional jump.
-	kLoad,       ///< Load value to stack.
-	kReturn,     ///< Return from regular function call.
-	kSpecial,    ///< Special functions.
-	kStack,      ///< Stack allocation or deallocation (altering stack pointer).
-	kStore       ///< Store value from stack in memory.
+	kArithmetic,  ///< Arithmetic instruction (+, -, *, etc.).
+	kBoolean,     ///< Boolean instruction (AND, OR, etc.).
+	kCall,        ///< Regular function call.
+	kComparison,  ///< Comparison instruction.
+	kCondJump,    ///< Conditional jump (absolute address).
+	kCondJumpRel, ///< Conditional jump (relative address).
+	kJump,        ///< Unconditional jump (absolute address).
+	kJumpRel,     ///< Unconditional jump (relative address).
+	kLoad,        ///< Load value to stack.
+	kReturn,      ///< Return from regular function call.
+	kSpecial,     ///< Special functions.
+	kStack,       ///< Stack allocation or deallocation (altering stack pointer).
+	kStore        ///< Store value from stack in memory.
 };
 
 /**
