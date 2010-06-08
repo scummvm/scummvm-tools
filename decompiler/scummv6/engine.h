@@ -26,12 +26,16 @@
 #include "../engine.h"
 
 namespace Scumm {
-	namespace v6 {
-		class Engine : public ::Engine {
-		public:
-			::Disassembler *getDisassembler();
-		};
-	}
-}
+
+namespace v6 {
+
+class Engine : public ::Engine {
+public:
+	::Disassembler *getDisassembler();
+};
+
+} //End of namespace Scumm::v6
+
+} //End of namespace Scumm
 
 #endif

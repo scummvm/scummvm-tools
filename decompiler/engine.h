@@ -27,7 +27,7 @@
 
 class Engine {
 public:
-	virtual Disassembler* getDisassembler() = 0;
+	virtual Disassembler *getDisassembler() = 0;
 };
 
 #endif

@@ -33,14 +33,14 @@ void Disassembler::open(const char *filename) {
 }
 
 void Disassembler::dumpDisassembly(std::ostream &output) {
-	for (size_t i = 0; i < _insts.size(); i++) {
-		Instruction inst = _insts[i];
-		output << boost::format("%08x: %s ") % inst._address % inst._name;
-		for (size_t j = 0; j < inst._params.size(); j++) {
-			Parameter p = inst._params[j];
-			if (j != 0)
+	std::vector<Instruction>::iterator inst;
+	for (inst = _insts.begin(); inst != _insts.end(); ++inst) {
+		output << boost::format("%08x: %s ") % inst->_address % inst->_name;
+		std::vector<Parameter>::iterator param;
+		for (param = inst->_params.begin(); param != inst->_params.end(); ++param) {
+			if (param != inst->_params.begin())
 				output << ", ";
-			output << p._value;
+			output << param->_value;
 		}
 		output << "\n";
 	}
