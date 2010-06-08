@@ -25,7 +25,7 @@
 
 #include "disassembler.h"
 
-std::vector<Instruction> ScummV6Disassembler::disassemble() {
+std::vector<Instruction> Scumm::v6::Disassembler::disassemble() {
 	std::string blockName;
 	for (int i = 0; i < 4; i++) {
 		blockName += _f.readChar();
@@ -422,7 +422,7 @@ std::vector<Instruction> ScummV6Disassembler::disassemble() {
 	return _insts;
 }
 
-void ScummV6Disassembler::readParameter(Parameter *p, char type) {
+void Scumm::v6::Disassembler::readParameter(Parameter *p, char type) {
 	switch (type)	{
 	case 'c': //Character string
 		{

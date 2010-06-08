@@ -20,23 +20,9 @@
  *
  */
 
-#ifndef DEC_SCUMMV6_DISASM_H
-#define DEC_SCUMMV6_DISASM_H
+#include "engine.h"
+#include "disassembler.h"
 
-#include "decompiler/simple_disassembler.h"
-
-namespace Scumm {
-	namespace v6 {
-		/**
-		 * Disassembler for SCUMMv6.
-		 */
-		class Disassembler : public SimpleDisassembler {
-		public:
-			std::vector<Instruction> disassemble();
-
-			void readParameter(Parameter *p, char type);
-		};
-	}
+::Disassembler *Scumm::v6::Engine::getDisassembler() {
+	return new Disassembler();
 }
-
-#endif

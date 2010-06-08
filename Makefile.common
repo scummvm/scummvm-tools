@@ -267,7 +267,8 @@ decompile_OBJS := \
 	decompiler/disassembler.o \
 	decompiler/simple_disassembler.o \
 	decompiler/unknown_opcode.o \
-	decompiler/scummv6/disassembler.o
+	decompiler/scummv6/disassembler.o \
+	decompiler/scummv6/engine.o
 
 decompile_LIBS := \
 	-lboost_program_options

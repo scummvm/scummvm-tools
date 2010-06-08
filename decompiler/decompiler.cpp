@@ -27,18 +27,20 @@
 #include "objectFactory.h"
 
 #include "disassembler.h"
-#include "scummv6/disassembler.h"
+#include "engine.h"
+
+#include "scummv6/engine.h"
 
 namespace po = boost::program_options;
 
-#define ENGINE(id, description, disasmClass) engines[std::string(id)] = description; disassemblerFactory.addEntry<disasmClass>(std::string(id));
+#define ENGINE(id, description, engineClass) engines[std::string(id)] = description; engineFactory.addEntry<engineClass>(std::string(id));
 
 int main(int argc, char** argv) {
 	try	{
 		std::map<std::string, std::string> engines;
-		ObjectFactory<Disassembler> disassemblerFactory;
+		ObjectFactory<Engine> engineFactory;
 
-		ENGINE("scummv6", "SCUMM v6", ScummV6Disassembler);
+		ENGINE("scummv6", "SCUMM v6", Scumm::v6::Engine);
 
 		po::options_description visible("Options");
 		visible.add_options()
@@ -88,11 +90,11 @@ int main(int argc, char** argv) {
 			return 2;
 		}
 
-		std::string engine = vm["engine"].as<std::string>();
+		Engine *engine = engineFactory.create(vm["engine"].as<std::string>());
 		std::string inputFile = vm["input-file"].as<std::string>();
 
 		//TODO: Process file
-		Disassembler* disassembler = disassemblerFactory.create(engine);
+		Disassembler *disassembler = engine->getDisassembler();
 		disassembler->open(inputFile.c_str());
 
 		std::vector<Instruction> insts = disassembler->disassemble();

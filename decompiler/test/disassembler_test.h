@@ -75,7 +75,7 @@ public:
 	//1ab08298c9c8fb4c77953756989c7449 *script-15.dmp
 	void testScummv6DisassemblerScript15() {
 		try {
-			ScummV6Disassembler s;
+			Scumm::v6::Disassembler s;
 			s.open("decompiler/test/script-15.dmp");
 			std::vector<Instruction> insts = s.disassemble();
 			TS_ASSERT(insts.size() == 11);
@@ -99,7 +99,7 @@ public:
 	//f75f7ce110f378735d449f8eeb4a68e5 *script-31.dmp
 	void testScummv6DisassemblerScript31() {
 		try {
-			ScummV6Disassembler s;
+			Scumm::v6::Disassembler s;
 			s.open("decompiler/test/script-31.dmp");
 			std::vector<Instruction> insts = s.disassemble();
 			TS_ASSERT(insts.size() == 5);
@@ -117,7 +117,7 @@ public:
 	//9f09418bf34abbdec0ec54f388d8dca4 *script-33.dmp
 	void testScummv6DisassemblerScript33() {
 		try {
-			ScummV6Disassembler s;
+			Scumm::v6::Disassembler s;
 			s.open("decompiler/test/script-33.dmp");
 			std::vector<Instruction> insts = s.disassemble();
 			TS_ASSERT(insts.size() == 10);
