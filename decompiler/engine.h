@@ -29,7 +29,7 @@ class Engine {
 public:
 	virtual ~Engine() {}
 
-	virtual Disassembler *getDisassembler() = 0;
+	virtual Disassembler *getDisassembler() const = 0;
 };
 
 #endif

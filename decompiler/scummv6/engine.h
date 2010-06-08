@@ -31,7 +31,7 @@ namespace v6 {
 
 class Engine : public ::Engine {
 public:
-	::Disassembler *getDisassembler();
+	::Disassembler *getDisassembler() const;
 };
 
 } //End of namespace Scumm::v6

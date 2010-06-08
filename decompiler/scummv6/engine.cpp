@@ -23,6 +23,6 @@
 #include "engine.h"
 #include "disassembler.h"
 
-::Disassembler *Scumm::v6::Engine::getDisassembler() {
+::Disassembler *Scumm::v6::Engine::getDisassembler() const {
 	return new Disassembler();
 }

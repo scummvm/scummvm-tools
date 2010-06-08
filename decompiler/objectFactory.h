@@ -54,7 +54,7 @@ public:
 	 * @param name The name to register the class under.
 	 */
 	template<typename Type>
-	void addEntry(std::string name) {
+	void addEntry(const std::string &name) {
 		_registry[name] = &createObject<BaseType, Type>;
 	}
 
@@ -64,7 +64,7 @@ public:
 	 * @param name The name associated with the desired class.
 	 * @return NULL if the name is not registered, else an instance of the associated class.
 	 */
-	BaseType *create(std::string name) const {
+	BaseType *create(const std::string &name) const {
 		typename RegistryMap::const_iterator entry = _registry.find(name);
 		if (entry == _registry.end())
 			return NULL;
