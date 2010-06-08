@@ -32,7 +32,7 @@ void Disassembler::open(const char *filename) {
 	_f.open(filename, "rb");
 }
 
-void Disassembler::dumpDisassembly(std::ostream &output) {
+void Disassembler::doDumpDisassembly(std::ostream &output) {
 	std::vector<Instruction>::iterator inst;
 	for (inst = _insts.begin(); inst != _insts.end(); ++inst) {
 		output << boost::format("%08x: %s ") % inst->_address % inst->_name;
@@ -44,4 +44,16 @@ void Disassembler::dumpDisassembly(std::ostream &output) {
 		}
 		output << "\n";
 	}
+}
+
+const std::vector<Instruction> &Disassembler::disassemble() {
+	if (_insts.empty())
+		doDisassemble();
+	return _insts;
+}
+
+void Disassembler::dumpDisassembly(std::ostream &output) {
+	if (_insts.empty())
+		doDisassemble();
+	doDumpDisassembly(output);
 }

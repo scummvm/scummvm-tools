@@ -39,6 +39,18 @@ protected:
 	std::vector<Instruction> _insts; ///< Container for disassembled instructions.
 	uint32 _addressBase;             ///< Base address where the script starts.
 
+	/**
+	 * Performs disassembly.
+	 */
+	virtual void doDisassemble() = 0;
+
+	/**
+	 * Outputs the disassembled code.
+	 *
+	 * @param output The std::ostream to output to.
+	 */
+	virtual void doDumpDisassembly(std::ostream &output);
+
 public:
 	Disassembler();
 	virtual ~Disassembler() {}
@@ -51,15 +63,17 @@ public:
 	void open(const char *filename);
 
 	/**
-	 * Disassembles a file.
+	 * Request disassembled instructions.
+	 *
+	 * @return An std::vector containing the disassembled instructions.
 	 */
-	virtual std::vector<Instruction> disassemble() = 0;
+	const std::vector<Instruction> &disassemble();
 
 	/**
-	 * Outputs the disassembly to a file.
+	 * Outputs the disassembled code. Disassembles code if this has not already been done.
 	 *
-	 * @param filename The file to output the disassembly to.
+	 * @param output The std::ostream to output to.
 	 */
-	virtual void dumpDisassembly(std::ostream &output);
+	void dumpDisassembly(std::ostream &output);
 };
 #endif

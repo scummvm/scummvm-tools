@@ -25,7 +25,7 @@
 
 #include "disassembler.h"
 
-std::vector<Instruction> Scumm::v6::Disassembler::disassemble() {
+void Scumm::v6::Disassembler::doDisassemble() {
 	std::string blockName;
 	for (int i = 0; i < 4; i++) {
 		blockName += _f.readChar();
@@ -418,8 +418,6 @@ std::vector<Instruction> Scumm::v6::Disassembler::disassemble() {
 		OPCODE(0xEC, "getActorLayer", kSpecial, 0, "");
 		OPCODE(0xED, "getObjectNewDir", kSpecial, 0, "");
 	END_OPCODES;
-
-	return _insts;
 }
 
 void Scumm::v6::Disassembler::readParameter(Parameter *p, char type) {

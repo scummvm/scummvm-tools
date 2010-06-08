@@ -27,6 +27,6 @@
 
 class SubOpcodeDisassembler : public SimpleDisassembler {
 public:
-	virtual std::vector<Instruction> disassemble();
+	virtual void doDisassemble();
 };
 #endif

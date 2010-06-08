@@ -34,7 +34,7 @@ namespace v6 {
  */
 class Disassembler : public SimpleDisassembler {
 public:
-	std::vector<Instruction> disassemble();
+	void doDisassemble();
 
 	void readParameter(Parameter *p, char type);
 };

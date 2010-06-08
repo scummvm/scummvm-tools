@@ -22,7 +22,7 @@
 
 #include "pasc.h"
 
-std::vector<Instruction> PasCDisassembler::disassemble() {
+void PasCDisassembler::doDisassemble() {
 	START_OPCODES;
 		//Basic machine operations
 		OPCODE(0x00, "PUSH", kStack, 0, "i");
@@ -126,6 +126,4 @@ std::vector<Instruction> PasCDisassembler::disassemble() {
 		OPCODE(0xD8, "BLOAD [SB]", kLoad, -5, "");
 		OPCODE(0xD9, "BLOAD", kLoad, -5, "");
 	END_OPCODES;
-
-	return _insts;
 }

@@ -22,12 +22,10 @@
 
 #include "subopcode.h"
 
-std::vector<Instruction> SubOpcodeDisassembler::disassemble() {
+void SubOpcodeDisassembler::doDisassemble() {
 	START_OPCODES;
 		START_SUBOPCODE(0xFF)
 			OPCODE(0xFF, "FOO", kSpecial, 0, "");
 		END_SUBOPCODE
 	END_OPCODES;
-
-	return _insts;
 }
