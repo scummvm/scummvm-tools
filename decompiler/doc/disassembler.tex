@@ -47,7 +47,7 @@ If you need to store different types than those already allowed, add the new typ
 Note: When storing 8 or 16-bit unsigned values in the \verb+_value+ field, cast them to an \verb+uint32+ when doing the assignment, or you will not be able to extract the value using \verb+getUnsigned+. This is a limitation caused by the automatic type conversion algorithm used by C++.
 
 \subsection{The Disassembler class}
-All disassemblers must inherit, directly or indirectly, from the \verb+Disassembler+ class. This is an abstract class describing which methods you must implement.
+All disassemblers must inherit, directly or indirectly, from the \verb+Disassembler+ class. This is an abstract class providing an interface for disassemblers.
 
 \begin{C++}
 \begin{lstlisting}
@@ -57,28 +57,34 @@ protected:
 	std::vector<Instruction> _insts;
 	uint32 _addressBase;
 
+	virtual void doDisassemble() = 0;
+	virtual void doDumpDisassembly(std::ostream &output);
+
 public:
 	Disassembler();
 	virtual ~Disassembler() {}
+
 	void open(const char *filename);
-	virtual std::vector<Instruction> disassemble() = 0;
-	virtual void dumpDisassembly(std::ostream &output);
+	const std::vector<Instruction> &disassemble();
+	void dumpDisassembly(std::ostream &output);
 };
 \end{lstlisting}
 \end{C++}
 
 \verb+_f+ represents the file you will be reading from. The file is opened using the \verb+open+ function.
 
-\verb+_insts+ is an \verb+std::vector+ storing each instructions. Whenever you have read an instruction fully, add it here.
+\verb+_insts+ is an \verb+std::vector+ storing the instructions. Whenever you have read an instruction fully, add it here.
 
-\verb+_addressBase+ is provided as a convenience if your engine does not consider the first instruction to be located at address 0. Assign the expected base address to this field, and make sure that the addresses you assign to the instructions are relative to this base address. This is mainly useful if your engine supports jumps or other references to absolute addresses in the script; if only relative jumps are used, the base address will not be relevant.
+\verb+_addressBase+ is provided as a convenience if your engine does not consider the first instruction to be located at address 0. Assign the expected base address to this field, and make sure that the addresses you assign to the instructions are relative to this base address. This is mainly useful if your engine supports jumps or other references to absolute addresses in the script; if only relative addresses are used, the base address will not be relevant.
 
-\verb+disassemble+ is the primary function of the disassembler, as this is where you perform the actual disassembly.
+\verb+doDisassemble+ is the method used to perform the actual disassembly, so this method must be implemented by all disassemblers.
 
-Finally, \verb+dumpDisassembly+ is used to output the instructions in a human-readable format to a file or stdout after disassembly. A default implementation is provided, but you can override it if it is not suitable for your particular engine.
+\verb+disassemble+ simply calls the \verb+doDisassemble+ method to perform the disassembly (if necessary), and returns \verb+_insts+ to the calling methtod.
+
+Finally, \verb+dumpDisassembly+ is used to output the instructions in a human-readable format to a file or stdout, performing a disassembly first if required, and then calls \verb+doDumpDisassembly+ to perform the actual output. A default implementation is provided for \verb+doDumpDisassembly+, but you can override it if the standard output format is not suitable for your particular engine.
 
 \subsection{The SimpleDisassembler class}
-To simplify the development of disassemblers, another base class is provided for instruction sets where instructions are of the format \verb+opcode [params]+, with opcode and  parameters are stored in distinct bytes.
+To simplify the development of disassemblers, another base class is provided for instruction sets where instructions are of the format \verb+opcode [params]+, with opcode and parameters stored in distinct bytes.
 
 \verb+SimpleDisassembler+ defines a number of macros which you can use for writing your disassembler, and provides a framework for reading instruction parameters.
 
@@ -103,7 +109,7 @@ Instruction & Parameters & Description \\
 For the purpose of this example, our instruction set will use little-endian values, and uses byte elements for the stack (so \verb+POP+ changes the stack pointer by 1 and \verb+POP2+ changes it by 2).
 
 \subsubsection{Opcode recognition}
-The first thing to do in the \verb+disassemble+ method is to read past any header which may be present in your script file. In this case, we will assume there aren't any.
+The first thing to do in the \verb+doDisassemble+ method is to read past any header which may be present in your script file. In this case, we will assume there aren't any.
 
 You must place your opcodes between two macros, \verb+START_OPCODES+ and \verb+END_OPCODES+. These two macros define the looping required to read one byte at a time.
 
@@ -229,4 +235,4 @@ OPCODE_END;
 \end{lstlisting}
 \end{C++}
 
-For your convenience, a few additional macros are available: \verb+ADD_INST+, which adds an empty instruction to the vector, and \verb+LAST_INST+ which retrieves the last instruction in the vector. Additionally, you can use \verb+INC_ADDR+ as a shorthand for incrementing the address variable by 1, but note that you should \emph{not} increment the address for the original opcode - this is handled by the other macros.
+For your convenience, a few additional macros are available: \verb+ADD_INST+, which adds an empty instruction to the vector, and \verb+LAST_INST+ which retrieves the last instruction in the vector. Additionally, you can use \verb+INC_ADDR+ as a shorthand for incrementing the address variable by 1, but note that you should \emph{not} increment the address for the opcode itself - this is handled by the other macros.

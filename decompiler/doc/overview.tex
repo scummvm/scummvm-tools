@@ -12,7 +12,14 @@ Of these steps, the code flow analysis is engine-independent, while disassembly 
 \subsection{Limitations}
 The decompiler is targeted for stack-based instruction sets, and may contain assumptions to that effect. If you want to add an engine which does not use a stack-based instruction set, parts of this documentation may not apply, and additional work to the generic parts may be necessary.
 
+\subsection{The Engine class}
+The \verb+Engine+ class represent a single engine. It works as a factory for the engine-specific classes required for each step of the process.
+
+As a minimum, engines must be provide a disassembler and a code generator. All other steps are optional, but you can implement them for additional processing.
+
+If you need to store metadata about the script, you can add the necessary fields to your engine class and store the information there, as the same instance will be used throughout the decompilation process.
+
 \subsection{Adding a new engine}
 In order to make the decompiler use the code you write to decompile code for some engine, it must be registered in the program. To do so, use the \verb+ENGINE+ macro defined in \verb+decompiler.cpp+, and add your own use of the macro near the existing registrations.
 
-This macro takes 3 parameters: the engine ID, a description of the engine, and the name of the class used to disassemble the scripts. The ID is entered by the user to signify the engine where the script originates from, and the description is a descriptive text which will be shown when the user requests a list of the supported engines.
+This macro takes 3 parameters: the engine ID, a description of the engine, and the name of the \verb+Engine+ subclass used to create the classes used for the various steps of the process. The ID is entered by the user to signify the engine where the script originates from, and the description is a descriptive text which will be shown when the user requests a list of the supported engines.
