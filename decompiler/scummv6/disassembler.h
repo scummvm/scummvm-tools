@@ -37,6 +37,8 @@ public:
 	void doDisassemble();
 
 	void readParameter(Parameter *p, char type);
+
+	void fixStackEffect(InstIterator &it, int popBefore, int popAfter, int pushTotal);
 };
 
 } //End of namespace Scumm::v6

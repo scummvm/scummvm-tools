@@ -26,6 +26,7 @@
 
 Disassembler::Disassembler() {
 	_addressBase = 0;
+	_disassemblyDone = false;
 }
 
 void Disassembler::open(const char *filename) {
@@ -33,27 +34,29 @@ void Disassembler::open(const char *filename) {
 }
 
 void Disassembler::doDumpDisassembly(std::ostream &output) {
-	std::vector<Instruction>::iterator inst;
+	InstIterator inst;
 	for (inst = _insts.begin(); inst != _insts.end(); ++inst) {
-		output << boost::format("%08x: %s ") % inst->_address % inst->_name;
+		output << boost::format("%08x: %s") % inst->_address % inst->_name;
 		std::vector<Parameter>::iterator param;
 		for (param = inst->_params.begin(); param != inst->_params.end(); ++param) {
 			if (param != inst->_params.begin())
-				output << ", ";
-			output << param->_value;
+				output << ",";
+			output << " " << param->_value;
 		}
-		output << "\n";
+		output << boost::format(" (%d)") % inst->_stackChange << "\n";
 	}
 }
 
 const std::vector<Instruction> &Disassembler::disassemble() {
-	if (_insts.empty())
+	if (_disassemblyDone)
 		doDisassemble();
+	_disassemblyDone = true;
 	return _insts;
 }
 
 void Disassembler::dumpDisassembly(std::ostream &output) {
-	if (_insts.empty())
+	if (_disassemblyDone)
 		doDisassemble();
+	_disassemblyDone = true;
 	doDumpDisassembly(output);
 }

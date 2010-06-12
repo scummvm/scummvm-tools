@@ -30,6 +30,8 @@
 #include "common/file.h"
 #include "unknown_opcode.h"
 
+typedef std::vector<Instruction>::iterator InstIterator;
+
 /**
  * Base class for disassemblers.
  */
@@ -38,6 +40,7 @@ protected:
 	Common::File _f;                 ///< Used to perform file I/O.
 	std::vector<Instruction> _insts; ///< Container for disassembled instructions.
 	uint32 _addressBase;             ///< Base address where the script starts.
+	bool _disassemblyDone;            ///< Indicates whether or not disassembly has already been performed.
 
 	/**
 	 * Performs disassembly.

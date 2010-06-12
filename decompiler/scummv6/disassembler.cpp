@@ -93,9 +93,9 @@ void Scumm::v6::Disassembler::doDisassemble() {
 		OPCODE(0x5B, "wordArrayDec", kArithmetic, -1, "s");
 		OPCODE(0x5C, "jumpTrue", kCondJumpRel, -1, "s");
 		OPCODE(0x5D, "jumpFalse", kCondJumpRel, -1, "s");
-		OPCODE(0x5E, "startScript", kSpecial, -255, ""); //Variable stack arguments
-		OPCODE(0x5F, "startScriptQuick", kSpecial, -255, ""); //Variable stack arguments
-		OPCODE(0x60, "startObject", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0x5E, "startScript", kSpecial, 0x1020, ""); //Variable stack arguments
+		OPCODE(0x5F, "startScriptQuick", kSpecial, 0x1010, ""); //Variable stack arguments
+		OPCODE(0x60, "startObject", kSpecial, 0x1030, ""); //Variable stack arguments
 		OPCODE(0x61, "drawObject", kSpecial, -2, "");
 		OPCODE(0x62, "drawObjectAt", kSpecial, -3, "");
 		OPCODE(0x63, "drawBlastObject", kSpecial, 0, "");
@@ -103,7 +103,7 @@ void Scumm::v6::Disassembler::doDisassemble() {
 		OPCODE(0x65, "stopObjectCodeA", kSpecial, 0, "");
 		OPCODE(0x66, "stopObjectCodeB", kSpecial, 0, "");
 		OPCODE(0x67, "endCutscene", kSpecial, 0, "");
-		OPCODE(0x68, "beginCutscene", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0x68, "beginCutscene", kSpecial, 0x1000, ""); //Variable stack arguments
 		OPCODE(0x69, "stopMusic", kSpecial, 0, "");
 		OPCODE(0x6A, "freezeUnfreeze", kSpecial, -1, "");
 		START_SUBOPCODE(0x6B); //cursorCommand
@@ -118,12 +118,12 @@ void Scumm::v6::Disassembler::doDisassemble() {
 			OPCODE(0x99, "cursorCmd_Image", kSpecial, -2, "");
 			OPCODE(0x9A, "cursorCmd_Hotspot", kSpecial, -2, "");
 			OPCODE(0x9C, "cursorCmd_CharsetSet", kSpecial, -1, "");
-			OPCODE(0x9D, "cursorCmd_CharsetColor", kSpecial, -255, ""); //Variable stack arguments
+			OPCODE(0x9D, "cursorCmd_CharsetColors", kSpecial, 0x1000, ""); //Variable stack arguments
 			OPCODE(0xD6, "cursorCmd_Transparent", kSpecial, -1, "");
 		END_SUBOPCODE;
 		OPCODE(0x6C, "breakHere", kSpecial, 0, "");
-		OPCODE(0x6D, "ifClassOfIs", kSpecial, -255, ""); //Variable stack arguments
-		OPCODE(0x6E, "setClass", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0x6D, "ifClassOfIs", kSpecial, 0x1011, ""); //Variable stack arguments
+		OPCODE(0x6E, "setClass", kSpecial, 0x1010, ""); //Variable stack arguments
 		OPCODE(0x6F, "getState", kSpecial, 0, "");
 		OPCODE(0x70, "setState", kSpecial, -2, "");
 		OPCODE(0x71, "setOwner", kSpecial, -2, "");
@@ -164,7 +164,7 @@ void Scumm::v6::Disassembler::doDisassemble() {
 		OPCODE(0x96, "endOverride", kSpecial, 0, "");
 		OPCODE(0x97, "setObjectName", kSpecial, -1, "c");
 		OPCODE(0x98, "isSoundRunning", kSpecial, 0, "");
-		OPCODE(0x99, "setBoxFlags", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0x99, "setBoxFlags", kSpecial, 0x1100, ""); //Variable stack arguments
 		OPCODE(0x9A, "createBoxMatrix", kSpecial, 0, "");
 		START_SUBOPCODE(0x9B); //resourceRoutines
 			OPCODE(0x64, "resRoutine_loadScript", kSpecial, -1, "");
@@ -206,7 +206,7 @@ void Scumm::v6::Disassembler::doDisassemble() {
 		START_SUBOPCODE(0x9D); //actorOps
 			OPCODE(0x4C, "actorOp_setCostume", kSpecial, -1, "");
 			OPCODE(0x4D, "actorOp_setWalkSpeed", kSpecial, -2, "");
-			OPCODE(0x4E, "actorOp_setSound", kSpecial, -255, ""); //Variable stack arguments
+			OPCODE(0x4E, "actorOp_setSound", kSpecial, 0x1000, ""); //Variable stack arguments
 			OPCODE(0x4F, "actorOp_setWalkFrame", kSpecial, -1, "");
 			OPCODE(0x50, "actorOp_setTalkFrame", kSpecial, -2, "");
 			OPCODE(0x51, "actorOp_setStandFrame", kSpecial, -1, "");
@@ -264,13 +264,13 @@ void Scumm::v6::Disassembler::doDisassemble() {
 		END_SUBOPCODE;
 		OPCODE(0x9F, "getActorFromXY", kSpecial, -1, "");
 		OPCODE(0xA0, "findObject", kSpecial, -1, "");
-		OPCODE(0xA1, "pseudoRoom", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0xA1, "pseudoRoom", kSpecial, 0x1010, ""); //Variable stack arguments
 		OPCODE(0xA2, "getActorElevation", kSpecial, 0, "");
 		OPCODE(0xA3, "getVerbEntrypoint", kSpecial, -1, "");
 		START_SUBOPCODE(0xA4); //arrayOps
 			OPCODE(0xCD, "arrayOp_assignString", kSpecial, -1, "sc");
-			OPCODE(0xD0, "arrayOp_assignIntList", kSpecial, -255, "s"); //Variable stack arguments
-			OPCODE(0xD4, "arrayOp_assign2DimList", kSpecial, -255, "s"); //Variable stack arguments
+			OPCODE(0xD0, "arrayOp_assignIntList", kSpecial, 0x1100, "s"); //Variable stack arguments
+			OPCODE(0xD4, "arrayOp_assign2DimList", kSpecial, 0x1100, "s"); //Variable stack arguments
 		END_SUBOPCODE;
 		START_SUBOPCODE(0xA5); //saveRestoreVerbs
 			OPCODE(0x8D, "srVerb_saveVerbs", kSpecial, -3, "");
@@ -290,8 +290,8 @@ void Scumm::v6::Disassembler::doDisassemble() {
 		END_SUBOPCODE;
 		OPCODE(0xAA, "getActorScaleX", kSpecial, 0, "");
 		OPCODE(0xAB, "getActorAnimCounter", kSpecial, 0, "");
-		OPCODE(0xAC, "soundKludge", kSpecial, -255, ""); //Variable stack arguments
-		OPCODE(0xAD, "isAnyOf", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0xAC, "soundKludge", kSpecial, 0x1000, ""); //Variable stack arguments
+		OPCODE(0xAD, "isAnyOf", kSpecial, 0x1011, ""); //Variable stack arguments
 		START_SUBOPCODE(0xAE); //systemOps
 			OPCODE(0x9E, "systemOp_restartGame", kSpecial, 0, "");
 			OPCODE(0x9F, "systemOp_pauseGame", kSpecial, 0, "");
@@ -384,8 +384,8 @@ void Scumm::v6::Disassembler::doDisassemble() {
 			OPCODE(0xCB, "dimArrayString", kSpecial, -1, "s");
 			OPCODE(0xCC, "dimArray_nukeArray", kSpecial, 0, "s");
 		END_SUBOPCODE;
-		OPCODE(0xBE, "startObjectQuick", kSpecial, -255, ""); //Variable stack arguments
-		OPCODE(0xBF, "startScriptQuick2", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0xBE, "startObjectQuick", kSpecial, 0x1020, ""); //Variable stack arguments
+		OPCODE(0xBF, "startScriptQuick2", kSpecial, 0x1010, ""); //Variable stack arguments
 		START_SUBOPCODE(0xC0); //dim2DimArray
 			OPCODE(0xC7, "dim2DimArrayInt", kSpecial, -2, "s");
 			OPCODE(0xC8, "dim2DimArrayBit", kSpecial, -2, "s");
@@ -400,24 +400,38 @@ void Scumm::v6::Disassembler::doDisassemble() {
 		OPCODE(0xC8, "kernelGetFunctions", kSpecial, -255, ""); //Variable stack arguments
 		OPCODE(0xC9, "kernelSetFunctions", kSpecial, -255, ""); //Variable stack arguments
 		OPCODE(0xCA, "delayFrames", kSpecial, -1, "");
-		OPCODE(0xCB, "pickOneOf", kSpecial, -255, ""); //Variable stack arguments
-		OPCODE(0xCC, "pickOneOfDefault", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0xCB, "pickOneOf", kSpecial, 0x1011, ""); //Variable stack arguments
+		OPCODE(0xCC, "pickOneOfDefault", kSpecial, 0x111, ""); //Variable stack arguments
 		OPCODE(0xCD, "stampObject", kSpecial, -4, "");
 		OPCODE(0xD0, "getDateTime", kSpecial, 0, "");
 		OPCODE(0xD1, "stopTalking", kSpecial, 0, "");
 		OPCODE(0xD2, "getAnimateVariable", kSpecial, -1, "");
 		OPCODE(0xD4, "shuffle", kSpecial, -2, "s");
-		OPCODE(0xD5, "jumpToScript", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0xD5, "jumpToScript", kSpecial, 0x1020, ""); //Variable stack arguments
 		OPCODE(0xD6, "band", kBoolean, -1, "");
 		OPCODE(0xD7, "bor", kBoolean, -1, "");
 		OPCODE(0xD8, "isRoomScriptRunning", kSpecial, 0, "");
 		OPCODE(0xDD, "findAllObjects", kSpecial, 0, "");
 		OPCODE(0xE1, "getPixel", kSpecial, -1, "");
-		OPCODE(0xE3, "pickVarRandom", kSpecial, -255, ""); //Variable stack arguments
+		OPCODE(0xE3, "pickVarRandom", kSpecial, 0x1001, "s"); //Variable stack arguments
 		OPCODE(0xE4, "setBoxSet", kSpecial, -1, "");
 		OPCODE(0xEC, "getActorLayer", kSpecial, 0, "");
 		OPCODE(0xED, "getObjectNewDir", kSpecial, 0, "");
 	END_OPCODES;
+
+	InstIterator it;
+	for (it = _insts.begin(); it != _insts.end(); ++it)
+		if (it->_stackChange >= 0x1000)
+			fixStackEffect(it, (it->_stackChange >> 8) & 0xF, (it->_stackChange >> 4) & 0xF, it->_stackChange & 0xF);
+}
+
+void Scumm::v6::Disassembler::fixStackEffect(InstIterator &it, int popBefore, int popAfter, int pushTotal) {
+	it->_stackChange = -popBefore - popAfter + pushTotal;
+	InstIterator it2 = it;
+	for (--it2; popBefore != 0; --it2)
+		if (it2->_type == kLoad)
+			--popBefore;
+	it->_stackChange -= it2->_params[0].getSigned();
 }
 
 void Scumm::v6::Disassembler::readParameter(Parameter *p, char type) {
