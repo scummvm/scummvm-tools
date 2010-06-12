@@ -34,10 +34,17 @@ namespace v6 {
  */
 class Disassembler : public SimpleDisassembler {
 public:
-	void doDisassemble();
+	void doDisassemble() throw(UnknownOpcodeException);
 
 	void readParameter(Parameter *p, char type);
 
+	/**
+	 * Determines the actual stack effect of an opcode with a variable stack effect.
+	 * @param it Iterator pointing to the instruction to be fixed.
+	 * @param popBefore Number of pops prior to the variable-length list.
+	 * @param popAfter Number of pops after the variable-length list.
+	 * @param pushTotal Number of values pushed from the instruction.
+	 */
 	void fixStackEffect(InstIterator &it, int popBefore, int popAfter, int pushTotal);
 };
 

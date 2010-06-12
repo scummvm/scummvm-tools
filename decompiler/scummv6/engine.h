@@ -29,6 +29,9 @@ namespace Scumm {
 
 namespace v6 {
 
+/**
+ * SCUMMv6 engine.
+ */
 class Engine : public ::Engine {
 public:
 	::Disassembler *getDisassembler() const;

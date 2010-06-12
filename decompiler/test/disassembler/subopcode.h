@@ -27,6 +27,6 @@
 
 class SubOpcodeDisassembler : public SimpleDisassembler {
 public:
-	virtual void doDisassemble();
+	void doDisassemble() throw(UnknownOpcodeException);
 };
 #endif

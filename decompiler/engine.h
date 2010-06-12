@@ -25,10 +25,17 @@
 
 #include "disassembler.h"
 
+/**
+ * Base class for engines.
+ */
 class Engine {
 public:
 	virtual ~Engine() {}
 
+	/**
+	 * Retrieve the disassembler for the engine.
+	 * @return Pointer to a Disassembler for the engine.
+	 */
 	virtual Disassembler *getDisassembler() const = 0;
 };
 

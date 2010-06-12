@@ -22,7 +22,7 @@
 
 #include "pasc.h"
 
-void PasCDisassembler::doDisassemble() {
+void PasCDisassembler::doDisassemble() throw(UnknownOpcodeException) {
 	START_OPCODES;
 		//Basic machine operations
 		OPCODE(0x00, "PUSH", kStack, 0, "i");

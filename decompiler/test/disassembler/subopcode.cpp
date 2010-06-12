@@ -22,7 +22,7 @@
 
 #include "subopcode.h"
 
-void SubOpcodeDisassembler::doDisassemble() {
+void SubOpcodeDisassembler::doDisassemble() throw(UnknownOpcodeException) {
 	START_OPCODES;
 		START_SUBOPCODE(0xFF)
 			OPCODE(0xFF, "FOO", kSpecial, 0, "");

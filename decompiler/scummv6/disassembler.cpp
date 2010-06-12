@@ -25,7 +25,7 @@
 
 #include "disassembler.h"
 
-void Scumm::v6::Disassembler::doDisassemble() {
+void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 	std::string blockName;
 	for (int i = 0; i < 4; i++) {
 		blockName += _f.readChar();
@@ -435,9 +435,8 @@ void Scumm::v6::Disassembler::fixStackEffect(InstIterator &it, int popBefore, in
 }
 
 void Scumm::v6::Disassembler::readParameter(Parameter *p, char type) {
-	switch (type)	{
-	case 'c': //Character string
-		{
+	switch (type) {
+	case 'c': { //Character string
 		byte cmd;
 		bool inStr = false;
 		std::stringstream s;
@@ -464,8 +463,7 @@ void Scumm::v6::Disassembler::readParameter(Parameter *p, char type) {
 				case 4:		// addIntToStack
 				case 5:		// addVerbToStack
 				case 6:		// addNameToStack
-				case 7:		// addStringToStack
-					{
+				case 7: {	// addStringToStack
 					uint16 var = _f.readUint16LE();
 					//TODO: Clean output similar to descumm
 					s << ":addToStack=" << var << ":";

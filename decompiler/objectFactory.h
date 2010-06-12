@@ -43,9 +43,9 @@ template<typename BaseType>
 class ObjectFactory {
 private:
 
-	typedef BaseType *(*CreateFunc)(); ///<Function pointer to the object creation function.
-	typedef std::map<std::string, CreateFunc> RegistryMap;
-	RegistryMap _registry; ///<Map from an identifier to a creation function.
+	typedef BaseType *(*CreateFunc)();                     ///<Function pointer to the object creation function.
+	typedef std::map<std::string, CreateFunc> RegistryMap; ///<Type used to store registered entries.
+	RegistryMap _registry;                                 ///<Map from an identifier to a creation function.
 
 public:
 	/**

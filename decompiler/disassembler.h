@@ -40,12 +40,13 @@ protected:
 	Common::File _f;                 ///< Used to perform file I/O.
 	std::vector<Instruction> _insts; ///< Container for disassembled instructions.
 	uint32 _addressBase;             ///< Base address where the script starts.
-	bool _disassemblyDone;            ///< Indicates whether or not disassembly has already been performed.
+	bool _disassemblyDone;           ///< Indicates whether or not disassembly has already been performed.
 
 	/**
 	 * Performs disassembly.
+	 * @throws UnknownOpcodeException on unknown opcode.
 	 */
-	virtual void doDisassemble() = 0;
+	virtual void doDisassemble() throw(UnknownOpcodeException) = 0;
 
 	/**
 	 * Outputs the disassembled code.

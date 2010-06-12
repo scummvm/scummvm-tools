@@ -68,8 +68,25 @@ struct Parameter {
 	ParamType _type;                                   ///< Type of the parameter.
 	boost::variant<int32, uint32, std::string> _value; ///< Value of the parameter.
 
+	/**
+	 * Gets an int32 stored in the _value variant.
+	 * @return The int32 stored in the _value variant.
+	 * @throws boost::bad_get if the variant is not storing an int32.
+	 */
 	int32 getSigned() const { return boost::get<int32>(_value); }
+
+	/**
+	 * Gets an uint32 stored in the _value variant.
+	 * @return The uint32 stored in the _value variant.
+	 * @throws boost::bad_get if the variant is not storing an uint32.
+	 */
 	uint32 getUnsigned() const { return boost::get<uint32>(_value); }
+
+	/**
+	 * Gets an std::string stored in the _value variant.
+	 * @return The std::string stored in the _value variant.
+	 * @throws boost::bad_get if the variant is not storing an std::string.
+	 */
 	std::string getString() const { return boost::get<std::string>(_value); }
 };
 
