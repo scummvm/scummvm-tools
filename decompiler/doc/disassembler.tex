@@ -56,6 +56,7 @@ protected:
 	Common::File _f;
 	std::vector<Instruction> _insts;
 	uint32 _addressBase;
+	bool _disassemblyDone;
 
 	virtual void doDisassemble() = 0;
 	virtual void doDumpDisassembly(std::ostream &output);
@@ -76,6 +77,8 @@ public:
 \verb+_insts+ is an \verb+std::vector+ storing the instructions. Whenever you have read an instruction fully, add it here.
 
 \verb+_addressBase+ is provided as a convenience if your engine does not consider the first instruction to be located at address 0. Assign the expected base address to this field, and make sure that the addresses you assign to the instructions are relative to this base address. This is mainly useful if your engine supports jumps or other references to absolute addresses in the script; if only relative addresses are used, the base address will not be relevant.
+
+\verb+_disassemblyDone+ is used to represent whether or not disassembly has already been performed. This is set automatically by \verb+disassemble+ and  \verb+dumpDisassembly+.
 
 \verb+doDisassemble+ is the method used to perform the actual disassembly, so this method must be implemented by all disassemblers.
 
