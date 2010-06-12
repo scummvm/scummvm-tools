@@ -267,6 +267,7 @@ decompile_OBJS := \
 	decompiler/disassembler.o \
 	decompiler/simple_disassembler.o \
 	decompiler/unknown_opcode.o \
+	decompiler/control_flow.o \
 	decompiler/scummv6/disassembler.o \
 	decompiler/scummv6/engine.o
 

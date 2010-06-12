@@ -30,8 +30,6 @@
 #include "common/file.h"
 #include "unknown_opcode.h"
 
-typedef std::vector<Instruction>::iterator InstIterator;
-
 /**
  * Base class for disassemblers.
  */

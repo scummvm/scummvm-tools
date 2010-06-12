@@ -101,4 +101,6 @@ struct Instruction {
 	std::vector<Parameter> _params; ///< Array of parameters used for the instruction.
 };
 
+typedef std::vector<Instruction>::iterator InstIterator;
+
 #endif
