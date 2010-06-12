@@ -48,14 +48,14 @@ void Disassembler::doDumpDisassembly(std::ostream &output) {
 }
 
 const std::vector<Instruction> &Disassembler::disassemble() {
-	if (_disassemblyDone)
+	if (!_disassemblyDone)
 		doDisassemble();
 	_disassemblyDone = true;
 	return _insts;
 }
 
 void Disassembler::dumpDisassembly(std::ostream &output) {
-	if (_disassemblyDone)
+	if (!_disassemblyDone)
 		doDisassemble();
 	_disassemblyDone = true;
 	doDumpDisassembly(output);
