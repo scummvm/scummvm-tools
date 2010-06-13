@@ -30,7 +30,7 @@
  */
 class ControlFlow {
 private:
-	Graph g; ///< The control flow graph.
+	Graph _g; ///< The control flow graph.
 
 public:
 	/**

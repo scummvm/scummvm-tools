@@ -27,11 +27,11 @@ ControlFlow::ControlFlow(std::vector<Instruction> &insts) {
 
 	std::map<uint32, GraphVertex> addrMap;
 	for (InstIterator it = insts.begin(); it != insts.end(); ++it) {
-		GraphVertex cur = boost::add_vertex(g);
-		boost::put(boost::vertex_name, g, cur, Group(it, it));
+		GraphVertex cur = boost::add_vertex(_g);
+		boost::put(boost::vertex_name, _g, cur, Group(it, it));
 
 		if (it != insts.begin())
-			boost::add_edge(last, cur, g);
+			boost::add_edge(last, cur, _g);
 		last = cur;
 	}
 }
@@ -40,5 +40,5 @@ void ControlFlow::createGroups() {
 }
 
 const Graph &ControlFlow::analyze() {
-	return g;
+	return _g;
 }
