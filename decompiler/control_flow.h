@@ -25,9 +25,13 @@
 
 #include "graph.h"
 
+/**
+ * Class for doing code flow analysis.
+ */
 class ControlFlow {
 private:
 	Graph g; ///< The control flow graph.
+
 public:
 	/**
 	 * Constructor for the control flow graph.

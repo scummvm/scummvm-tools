@@ -26,8 +26,7 @@ ControlFlow::ControlFlow(std::vector<Instruction> &insts) {
 	GraphVertex last;
 
 	std::map<uint32, GraphVertex> addrMap;
-	for (InstIterator it = insts.begin(); it != insts.end(); ++it)
-	{
+	for (InstIterator it = insts.begin(); it != insts.end(); ++it) {
 		GraphVertex cur = boost::add_vertex(g);
 		boost::put(boost::vertex_name, g, cur, Group(it, it));
 

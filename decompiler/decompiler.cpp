@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
 		delete disassembler;
 
 		//Control flow analysis
-		ControlFlow* cf = new ControlFlow(insts);
+		ControlFlow *cf = new ControlFlow(insts);
 		Graph g = cf->analyze();
 
 		if (vm.count("dump-graph")) {
