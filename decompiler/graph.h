@@ -65,7 +65,17 @@ struct Group {
 			for (param = inst->_params.begin(); param != inst->_params.end(); ++param) {
 				if (param != inst->_params.begin())
 					output << ",";
-				output << " " << param->_value;
+				output << " ";
+				if (param->_type != kString)
+					output << param->_value;
+				else {
+					std::string s = param->getString();
+					for (std::string::iterator it = s.begin(); it != s.end(); ++it)
+						if (*it == '"')
+							output << "\\\"";
+						else
+							output << *it;
+				}
 			}
 			output << "\\n";			
 		} while (inst++ != group._end);
