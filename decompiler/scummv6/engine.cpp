@@ -26,3 +26,16 @@
 ::Disassembler *Scumm::v6::Engine::getDisassembler() const {
 	return new Disassembler();
 }
+
+uint32 Scumm::v6::Engine::getDestAddress(InstIterator it) const {
+	switch(it->_type) {
+	case kJump:
+	case kCondJump:
+		return it->_params[0].getUnsigned();
+	case kJumpRel:
+	case kCondJumpRel:
+		return it->_params[0].getSigned() + it->_address + 3;
+	default:
+		return 0;
+	}
+}

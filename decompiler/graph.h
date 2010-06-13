@@ -79,4 +79,18 @@ typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, G
 typedef Graph::vertex_descriptor GraphVertex; ///< Type representing a vertex in the graph
 typedef Graph::edge_descriptor GraphEdge; ///< Type representing an edge in the graph
 
+/**
+ * Type used to set properties for dot output.
+ */
+struct GraphProperties {
+
+	/**
+	 * Called by write_graphviz from Boost.Graph to print properties of the graph.
+	 * @param out The std::ostream write_graphviz is writing to.
+	 */
+	void operator()(std::ostream& out) const {
+		out << "node [shape=box]" << std::endl;
+	}
+};
+
 #endif

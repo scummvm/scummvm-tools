@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
 		delete disassembler;
 
 		//Control flow analysis
-		ControlFlow *cf = new ControlFlow(insts);
+		ControlFlow *cf = new ControlFlow(insts, engine);
 		Graph g = cf->analyze();
 
 		if (vm.count("dump-graph")) {
@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
 				buf = std::cout.rdbuf(); 
 			} 
  			std::ostream out(buf); 
-			boost::write_graphviz(out, g, boost::make_label_writer(get(boost::vertex_name, g)));
+			boost::write_graphviz(out, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::default_writer(), GraphProperties());
 		}
 
 		delete cf;

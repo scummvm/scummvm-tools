@@ -22,17 +22,36 @@
 
 #include "control_flow.h"
 
-ControlFlow::ControlFlow(std::vector<Instruction> &insts) {
+#include <cstdio>
+
+ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) {
+	_engine = engine;
 	GraphVertex last;
+	bool addEdge = false;
 
 	std::map<uint32, GraphVertex> addrMap;
 	for (InstIterator it = insts.begin(); it != insts.end(); ++it) {
 		GraphVertex cur = boost::add_vertex(_g);
+		addrMap[it->_address] = cur;
 		boost::put(boost::vertex_name, _g, cur, Group(it, it));
 
-		if (it != insts.begin())
+		if (addEdge)
 			boost::add_edge(last, cur, _g);
 		last = cur;
+		addEdge = (it->_type != kJump && it->_type != kJumpRel);
+	}
+
+	for (InstIterator it = insts.begin(); it != insts.end(); ++it) {
+		switch(it->_type) {
+		case kJump:
+		case kCondJump:
+		case kJumpRel:
+		case kCondJumpRel:
+			boost::add_edge(addrMap[it->_address], addrMap[_engine->getDestAddress(it)], _g);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
