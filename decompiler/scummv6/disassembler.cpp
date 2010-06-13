@@ -505,6 +505,7 @@ void Scumm::v6::Disassembler::readParameter(Parameter *p, char type) {
 				_address++;
 			}
 		}
+		_address++;
 		if (inStr)
 			s << '"';
 		p->_type = kString;
