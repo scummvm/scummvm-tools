@@ -141,12 +141,12 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE(0x7D, "walkActorToObj", kSpecial, -3, "");
 		OPCODE(0x7E, "walkActorTo", kSpecial, -3, "");
 		OPCODE(0x7F, "putActorAtXY", kSpecial, -4, "");
-		OPCODE(0x80, "putActorAtObject", kSpecial, -2, "");
+		OPCODE(0x80, "putActorAtObject", kSpecial, -3, "");
 		OPCODE(0x81, "faceActor", kSpecial, -2, "");
 		OPCODE(0x82, "animateActor", kSpecial, -2, "");
 		OPCODE(0x83, "doSentence", kSpecial, -4, "");
-		OPCODE(0x84, "pickupObject", kSpecial, -1, "");
-		OPCODE(0x85, "loadRoomWithEgo", kSpecial, -3, "");
+		OPCODE(0x84, "pickupObject", kSpecial, -2, "");
+		OPCODE(0x85, "loadRoomWithEgo", kSpecial, -4, "");
 		OPCODE(0x87, "getRandomNumber", kSpecial, 0, "");
 		OPCODE(0x88, "getRandomNumberRange", kSpecial, -1, "");
 		OPCODE(0x8A, "getActorMoving", kSpecial, 0, "");
@@ -185,7 +185,7 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			OPCODE(0x73, "resRoutine_unlockRoom", kSpecial, -1, "");
 			OPCODE(0x75, "resRoutine_loadCharset", kSpecial, -1, "");
 			OPCODE(0x76, "resRoutine_nukeCharset", kSpecial, -1, "");
-			OPCODE(0x77, "resRoutine_loadFlObject", kSpecial, -1, "");
+			OPCODE(0x77, "resRoutine_loadFlObject", kSpecial, -2, "");
 		END_SUBOPCODE;
 		START_SUBOPCODE(0x9C); //roomOps
 			OPCODE(0xAC, "roomOp_roomScroll", kSpecial, -2, "");
