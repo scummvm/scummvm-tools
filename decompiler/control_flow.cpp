@@ -22,18 +22,26 @@
 
 #include "control_flow.h"
 
-#include <cstdio>
+#include <iostream>
+#include <stack>
+#include <boost/format.hpp>
 
-ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) {
+#define PUT(vertex, group) boost::put(boost::vertex_name, _g, vertex, group);
+#define PUT_ID(vertex, id) boost::put(boost::vertex_index, _g, vertex, id);
+#define GET(vertex) (boost::get(boost::vertex_name, _g, vertex))
+
+ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) : _insts(insts) {
 	_engine = engine;
 	GraphVertex last;
 	bool addEdge = false;
+	int id = 0;
 
-	std::map<uint32, GraphVertex> addrMap;
 	for (InstIterator it = insts.begin(); it != insts.end(); ++it) {
 		GraphVertex cur = boost::add_vertex(_g);
-		addrMap[it->_address] = cur;
-		boost::put(boost::vertex_name, _g, cur, Group(it, it));
+		_addrMap[it->_address] = cur;
+		PUT(cur, Group(it, it));
+		PUT_ID(cur, id);
+		id++;
 
 		if (addEdge)
 			boost::add_edge(last, cur, _g);
@@ -47,7 +55,7 @@ ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) {
 		case kCondJump:
 		case kJumpRel:
 		case kCondJumpRel:
-			boost::add_edge(addrMap[it->_address], addrMap[_engine->getDestAddress(it)], _g);
+			boost::add_edge(find(it), find(_engine->getDestAddress(it)), _g);
 			break;
 		default:
 			break;
@@ -55,7 +63,93 @@ ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) {
 	}
 }
 
+GraphVertex ControlFlow::find(Instruction inst) {
+	return _addrMap[inst._address];
+}
+
+GraphVertex ControlFlow::find(InstIterator it) {
+	return _addrMap[it->_address];
+}
+
+GraphVertex ControlFlow::find(uint32 address) {
+	std::map<uint32, GraphVertex>::iterator it = _addrMap.find(address);
+	if (it == _addrMap.end())
+		std::cerr << "Request for instruction at unknown address" << boost::format("0x%08x") % address;
+	return it->second;
+}
+
+void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
+	//Update property
+	Group gr1 = GET(g1);
+	Group gr2 = GET(g2);
+	gr1._end = gr2._end;
+	PUT(g1, gr1);
+
+	//Update address map
+	InstIterator it = gr2._start;
+	do {
+		_addrMap[it->_address] = g1;
+		++it;
+	} while (gr2._start != gr2._end && it != gr2._end);
+
+	//Add outgoing edges from g2
+	EdgeRange r = boost::out_edges(g2, _g);
+	for (OutEdgeIterator e = r.first; e != r.second; e++) {
+		boost::add_edge(g1, boost::target(*e, _g), _g);
+	}
+	
+	//Remove edges to/from g2
+	boost::clear_vertex(g2, _g);
+	//Remove vertex	
+	boost::remove_vertex(g2, _g);
+}
+
 void ControlFlow::createGroups() {
+	InstIterator curInst, nextInst;
+	nextInst = _insts.begin();
+	nextInst++;
+	int stackLevel = 0;
+	int expectedStackLevel = 0;
+	std::stack<uint32> s;
+	for (curInst = _insts.begin(); nextInst != _insts.end(); curInst++, nextInst++) {
+		GraphVertex cur = find(curInst);
+		GraphVertex next = find(nextInst);
+
+		if (in_degree(cur, _g) == 0 && out_degree(cur, _g) == 0)
+			continue;
+
+		//Check if we go below our expected stack level
+		if (stackLevel == expectedStackLevel && curInst->_stackChange < 0) {
+			expectedStackLevel = s.top();
+			s.pop();
+		}
+
+		stackLevel += curInst->_stackChange;
+
+		// Group ends after a jump
+		if (curInst->_type == kJump || curInst->_type == kJumpRel || curInst->_type == kCondJump || curInst->_type == kCondJumpRel) {
+			if (stackLevel != expectedStackLevel) {
+				s.push(expectedStackLevel);
+				expectedStackLevel = stackLevel;
+			}
+			continue;
+		}
+
+		// Group ends before target of a jump
+		if (in_degree(next, _g) != 1) {
+			if (stackLevel != expectedStackLevel) {
+				s.push(expectedStackLevel);
+				expectedStackLevel = stackLevel;
+			}
+			continue;
+		}
+
+		// Group ends when stack is balanced, unless just before conditional jump
+		if (stackLevel == expectedStackLevel && nextInst->_type != kCondJump && nextInst->_type != kCondJumpRel) {
+			continue;
+		}
+		merge(cur, next);
+	}
 }
 
 const Graph &ControlFlow::analyze() {

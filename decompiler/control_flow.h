@@ -31,8 +31,35 @@
  */
 class ControlFlow {
 private:
-	Graph _g;        ///< The control flow graph.
-	Engine *_engine; ///< Pointer to the Engine used for the script.
+	Graph _g;                               ///< The control flow graph.
+	Engine *_engine;                        ///< Pointer to the Engine used for the script.
+	std::vector<Instruction> &_insts;       ///< The instructions being analyzed
+	std::map<uint32, GraphVertex> _addrMap; ///< Map between addresses and vertices.
+
+	/**
+	 * Find a graph vertex through an instruction.
+	 * @param inst The instruction to find the vertex for.
+	 */
+	GraphVertex find(Instruction inst);
+
+	/**
+	 * Find a graph vertex through an instruction iterator.
+	 * @param it The iterator to find the vertex for.
+	 */
+	GraphVertex find(InstIterator it);
+
+	/**
+	 * Find a graph vertex through an address.
+	 * @param address The address to find the vertex for.
+	 */
+	GraphVertex find(uint32 address);
+
+	/**
+	 * Merge two graph vertices. g2 will be merged into g1.
+	 * @param g1 The first vertex to merge.
+	 * @param g2 The second vertex to merge.
+	 */
+	void merge(GraphVertex g1, GraphVertex g2);
 
 public:
 	/**

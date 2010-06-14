@@ -26,6 +26,7 @@
 #include "instruction.h"
 
 #include <ostream>
+#include <utility>
 
 #include <boost/format.hpp>
 
@@ -83,11 +84,14 @@ struct Group {
 	}
 };
 
-typedef boost::property<boost::vertex_name_t, Group> GroupProperty; ///< Type representing properties containing a Group
-
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, GroupProperty> Graph; ///< Type used for the code flow graph
-typedef Graph::vertex_descriptor GraphVertex; ///< Type representing a vertex in the graph
-typedef Graph::edge_descriptor GraphEdge; ///< Type representing an edge in the graph
+typedef boost::property<boost::vertex_name_t, Group> GroupProperty;                                    ///< Type representing properties containing a Group.
+typedef boost::property<boost::vertex_index_t, int, GroupProperty> GraphProperty;                      ///< Type representing properties containing an index, followed by a GroupProperty.
+typedef boost::adjacency_list<boost::vecS, boost::listS, boost::bidirectionalS, GraphProperty> Graph; ///< Type used for the code flow graph.
+typedef Graph::vertex_descriptor GraphVertex;                                                          ///< Type representing a vertex in the graph.
+typedef Graph::edge_descriptor GraphEdge;                                                              ///< Type representing an edge in the graph.
+typedef Graph::out_edge_iterator OutEdgeIterator;                                                      ///< Type representing an iterator for outgoing edges.
+typedef Graph::in_edge_iterator InEdgeIterator;                                                        ///< Type representing an iterator for ingoing edges.
+typedef std::pair<OutEdgeIterator, OutEdgeIterator> EdgeRange;                                         ///< Type representing a range of edges from boost::out_edges.
 
 /**
  * Type used to set properties for dot output.

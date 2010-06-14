@@ -120,6 +120,7 @@ int main(int argc, char** argv) {
 
 		//Control flow analysis
 		ControlFlow *cf = new ControlFlow(insts, engine);
+		cf->createGroups();
 		Graph g = cf->analyze();
 
 		if (vm.count("dump-graph")) {
