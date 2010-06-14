@@ -61,6 +61,13 @@ private:
 	 */
 	void merge(GraphVertex g1, GraphVertex g2);
 
+	/**
+	 * Set the stack level for all instructions, using depth-first search.
+	 * @param g The GraphVertex to search from.
+	 * @param level The stack level when g is reached.
+	 */
+	void setStackLevel(GraphVertex g, int level);
+
 public:
 	/**
 	 * Constructor for the control flow graph.

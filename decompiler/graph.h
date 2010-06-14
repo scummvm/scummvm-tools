@@ -39,8 +39,13 @@
 struct Group {
 	InstIterator _start; ///< First instruction in the group.
 	InstIterator _end;   ///< Last instruction in the group.
+	int _stackLevel;     ///< Level of the stack upon entry.
 
-	Group() {}
+	/**
+	 * Parameterless constructor for Group. Required for use with STL and Boost.
+	 * Should not be called manually.
+	 */
+	Group() { _stackLevel = -1; }
 
 	/**
 	 * Constructor for Group.
@@ -50,6 +55,7 @@ struct Group {
 	Group(InstIterator start, InstIterator end) {
 		_start = start;
 		_end = end;
+		_stackLevel = -1;
 	}
 
 	/**

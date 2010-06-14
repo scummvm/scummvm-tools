@@ -43,7 +43,7 @@ void Disassembler::doDumpDisassembly(std::ostream &output) {
 				output << ",";
 			output << " " << param->_value;
 		}
-		output << "\n";
+		output << boost::format(" (%d)") % inst->_stackChange << "\n";	
 	}
 }
 

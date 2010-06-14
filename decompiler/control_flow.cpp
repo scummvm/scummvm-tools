@@ -104,7 +104,24 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 	boost::remove_vertex(g2, _g);
 }
 
+void ControlFlow::setStackLevel(GraphVertex g, int level) {
+	Group gr = GET(g);
+	if (gr._stackLevel != -1)
+		return;
+	gr._stackLevel = level;
+	PUT(g, gr)
+
+	if (boost::out_degree(g, _g) == 0)
+		return;
+
+	EdgeRange r = boost::out_edges(g, _g);
+	for (OutEdgeIterator e = r.first; e != r.second; e++) {
+		setStackLevel(boost::target(*e, _g), level + gr._start->_stackChange);
+	}
+}
+
 void ControlFlow::createGroups() {
+	setStackLevel(find(_insts.begin()), 0);
 	InstIterator curInst, nextInst;
 	nextInst = _insts.begin();
 	nextInst++;
@@ -117,37 +134,41 @@ void ControlFlow::createGroups() {
 
 		if (in_degree(cur, _g) == 0 && out_degree(cur, _g) == 0)
 			continue;
+		Group grCur = GET(cur);
+		Group grNext = GET(next);
+		expectedStackLevel = grCur._stackLevel;
 
-		//Check if we go below our expected stack level
-		if (stackLevel == expectedStackLevel && curInst->_stackChange < 0) {
-			expectedStackLevel = s.top();
-			s.pop();
-		}
+		if (expectedStackLevel > grNext._stackLevel)
+			expectedStackLevel = grNext._stackLevel;
 
 		stackLevel += curInst->_stackChange;
 
-		// Group ends after a jump
+		//Group ends after a jump
 		if (curInst->_type == kJump || curInst->_type == kJumpRel || curInst->_type == kCondJump || curInst->_type == kCondJumpRel) {
-			if (stackLevel != expectedStackLevel) {
+/*			if (stackLevel != expectedStackLevel) {
 				s.push(expectedStackLevel);
 				expectedStackLevel = stackLevel;
-			}
+			}*/
+			stackLevel = grNext._stackLevel;
 			continue;
 		}
 
-		// Group ends before target of a jump
+		//Group ends before target of a jump
 		if (in_degree(next, _g) != 1) {
-			if (stackLevel != expectedStackLevel) {
+/*			if (stackLevel != expectedStackLevel) {
 				s.push(expectedStackLevel);
 				expectedStackLevel = stackLevel;
-			}
+			}*/
+			stackLevel = grNext._stackLevel;
 			continue;
 		}
 
-		// Group ends when stack is balanced, unless just before conditional jump
+		//Group ends when stack is balanced, unless just before conditional jump
 		if (stackLevel == expectedStackLevel && nextInst->_type != kCondJump && nextInst->_type != kCondJumpRel) {
 			continue;
 		}
+
+		//All checks passed, merge groups
 		merge(cur, next);
 	}
 }
