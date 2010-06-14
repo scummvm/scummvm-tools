@@ -78,7 +78,7 @@ struct Group {
 							output << *it;
 				}
 			}
-			output << "\\n";			
+			output << boost::format(" (%d)") % inst->_stackChange << "\\n";	
 		} while (inst++ != group._end);
 		return output;
 	}

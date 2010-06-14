@@ -431,7 +431,7 @@ void Scumm::v6::Disassembler::fixStackEffect(InstIterator &it, int popBefore, in
 	for (--it2; popBefore != 0; --it2)
 		if (it2->_type == kLoad)
 			--popBefore;
-	it->_stackChange -= it2->_params[0].getSigned();
+	it->_stackChange -= it2->_params[0].getSigned() + 1;
 }
 
 void Scumm::v6::Disassembler::readParameter(Parameter *p, char type) {
