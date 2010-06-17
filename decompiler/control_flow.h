@@ -37,38 +37,44 @@ private:
 	std::map<uint32, GraphVertex> _addrMap; ///< Map between addresses and vertices.
 
 	/**
-	 * Find a graph vertex through an instruction.
+	 * Finds a graph vertex through an instruction.
 	 * @param inst The instruction to find the vertex for.
 	 */
 	GraphVertex find(Instruction inst);
 
 	/**
-	 * Find a graph vertex through an instruction iterator.
+	 * Finds a graph vertex through an instruction iterator.
 	 * @param it The iterator to find the vertex for.
 	 */
 	GraphVertex find(InstIterator it);
 
 	/**
-	 * Find a graph vertex through an address.
+	 * Finds a graph vertex through an address.
 	 * @param address The address to find the vertex for.
 	 */
 	GraphVertex find(uint32 address);
 
 	/**
-	 * Merge two graph vertices. g2 will be merged into g1.
+	 * Merges two graph vertices. g2 will be merged into g1.
 	 * @param g1 The first vertex to merge.
 	 * @param g2 The second vertex to merge.
 	 */
 	void merge(GraphVertex g1, GraphVertex g2);
 
 	/**
-	 * Set the stack level for all instructions, using depth-first search.
+	 * Sets the stack level for all instructions, using depth-first search.
 	 * @param g The GraphVertex to search from.
 	 * @param level The stack level when g is reached.
 	 */
 	void setStackLevel(GraphVertex g, int level);
 
 public:
+	/**
+	 * Gets the current control flow graph.
+	 * @returns The current control flow graph.
+	 */
+	const Graph &getGraph() { return _g; };
+
 	/**
 	 * Constructor for the control flow graph.
 	 * @param insts std::vector containing the instructions to analyze control flow for.

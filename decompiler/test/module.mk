@@ -8,9 +8,11 @@
 TESTS        := $(srcdir)/decompiler/test/*.h
 TEST_LIBS    := \
 	common/file.o\
+	decompiler/control_flow.o \
 	decompiler/disassembler.o \
 	decompiler/simple_disassembler.o \
 	decompiler/scummv6/disassembler.o \
+	decompiler/scummv6/engine.o \
 	decompiler/test/disassembler/pasc.o \
 	decompiler/test/disassembler/subopcode.o	\
 	decompiler/unknown_opcode.o \
