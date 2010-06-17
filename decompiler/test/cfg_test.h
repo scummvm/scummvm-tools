@@ -33,12 +33,12 @@
 class CFGTestSuite : public CxxTest::TestSuite {
 public:
 	void testUnreachable() {
-		Scumm::v6::Engine* engine = new Scumm::v6::Engine();
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
 		Disassembler *d = engine->getDisassembler();
 		d->open("decompiler/test/unreachable.dmp");
 		std::vector<Instruction> insts = d->disassemble();
 		delete d;
-		ControlFlow* c = new ControlFlow(insts, engine);
+		ControlFlow *c = new ControlFlow(insts, engine);
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 4);
 		std::pair<VertexIterator, VertexIterator> range = boost::vertices(g);
@@ -61,12 +61,12 @@ public:
 	};
 
 	void testBranching() {
-		Scumm::v6::Engine* engine = new Scumm::v6::Engine();
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
 		Disassembler *d = engine->getDisassembler();
 		d->open("decompiler/test/branches.dmp");
 		std::vector<Instruction> insts = d->disassemble();
 		delete d;
-		ControlFlow* c = new ControlFlow(insts, engine);
+		ControlFlow *c = new ControlFlow(insts, engine);
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 4);
 		std::pair<VertexIterator, VertexIterator> range = boost::vertices(g);
@@ -89,12 +89,12 @@ public:
 	}
 
 	void testGrouping() {
-		Scumm::v6::Engine* engine = new Scumm::v6::Engine();
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
 		Disassembler *d = engine->getDisassembler();
 		d->open("decompiler/test/branches.dmp");
 		std::vector<Instruction> insts = d->disassemble();
 		delete d;
-		ControlFlow* c = new ControlFlow(insts, engine);
+		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 3);
