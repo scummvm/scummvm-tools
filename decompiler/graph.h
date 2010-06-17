@@ -66,7 +66,7 @@ struct Group {
 	 * @param group  The Group to output.
 	 * @return The std::ostream used for output.
 	 */
-	friend std::ostream& operator<< (std::ostream &output, Group &group) {
+	friend std::ostream &operator<< (std::ostream &output, Group &group) {
 		InstIterator inst = group._start;
 		do {
 			output << boost::format("%08x: %s") % inst->_address % inst->_name;
