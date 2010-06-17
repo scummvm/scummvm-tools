@@ -70,6 +70,7 @@ struct Parameter {
 
 	/**
 	 * Gets an int32 stored in the _value variant.
+	 *
 	 * @return The int32 stored in the _value variant.
 	 * @throws boost::bad_get if the variant is not storing an int32.
 	 */
@@ -77,6 +78,7 @@ struct Parameter {
 
 	/**
 	 * Gets an uint32 stored in the _value variant.
+	 *
 	 * @return The uint32 stored in the _value variant.
 	 * @throws boost::bad_get if the variant is not storing an uint32.
 	 */
@@ -84,6 +86,7 @@ struct Parameter {
 
 	/**
 	 * Gets an std::string stored in the _value variant.
+	 *
 	 * @return The std::string stored in the _value variant.
 	 * @throws boost::bad_get if the variant is not storing an std::string.
 	 */
@@ -101,6 +104,9 @@ struct Instruction {
 	std::vector<Parameter> _params; ///< Array of parameters used for the instruction.
 };
 
+/**
+ * Type representing an iterator over Instructions.
+ */
 typedef std::vector<Instruction>::iterator InstIterator;
 
 #endif

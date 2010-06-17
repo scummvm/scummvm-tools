@@ -34,12 +34,14 @@ public:
 
 	/**
 	 * Retrieve the disassembler for the engine.
+	 *
 	 * @return Pointer to a Disassembler for the engine.
 	 */
 	virtual Disassembler *getDisassembler() const = 0;
 
 	/**
 	 * Decode a jump-instruction to get the destination address.
+	 *
 	 * @param it Iterator pointing to the instruction to decode.
 	 */
 	virtual uint32 getDestAddress(InstIterator it) const = 0;

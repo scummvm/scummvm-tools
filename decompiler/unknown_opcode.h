@@ -40,7 +40,7 @@ public:
 	 * Constructor for UnknownOpcodeException.
 	 *
 	 * @param address Address where the invalid opcode was found.
-	 * @param opcode The value of the invalid opcode.
+	 * @param opcode  The value of the invalid opcode.
 	 */
 	UnknownOpcodeException(uint32 address, uint8 opcode);
 

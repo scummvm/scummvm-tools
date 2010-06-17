@@ -139,8 +139,7 @@ public:
 	//This test requires room-9-202.dmp from Sam & Max: Hit The Road.
 	//f010dc659264674a2b6da298acd0b88b *room-9-202.dmp
 	void testScummv6StackChangeFixRoom9202() {
-		try
-		{
+		try {
 			Scumm::v6::Disassembler s;
 			s.open("decompiler/test/room-9-202.dmp");
 			std::vector<Instruction> insts = s.disassemble();
@@ -155,8 +154,7 @@ public:
 	//This test requires script-30.dmp from Sam & Max: Hit The Road.
 	//6e48faca13e1f6df9341567608962744 *script-30.dmp
 	void testScummv6StackChangeFixScript30() {
-		try
-		{
+		try {
 			Scumm::v6::Disassembler s;
 			s.open("decompiler/test/script-30.dmp");
 			std::vector<Instruction> insts = s.disassemble();

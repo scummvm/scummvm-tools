@@ -49,8 +49,9 @@ struct Group {
 
 	/**
 	 * Constructor for Group.
+	 *
 	 * @param start First instruction in the group.
-	 * @param end Last instruction in the group.
+	 * @param end   Last instruction in the group.
 	 */
 	Group(InstIterator start, InstIterator end) {
 		_start = start;
@@ -60,8 +61,9 @@ struct Group {
 
 	/**
 	 * Output a group to an std::ostream as a graphviz label.
+	 *
 	 * @param output The std::ostream to output to.
-	 * @param group The Group to output.
+	 * @param group  The Group to output.
 	 * @return The std::ostream used for output.
 	 */
 	friend std::ostream& operator<< (std::ostream &output, Group &group) {
@@ -90,15 +92,50 @@ struct Group {
 	}
 };
 
-typedef boost::property<boost::vertex_name_t, Group> GroupProperty;                                   ///< Type representing properties containing a Group.
-typedef boost::property<boost::vertex_index_t, int, GroupProperty> GraphProperty;                     ///< Type representing properties containing an index, followed by a GroupProperty.
-typedef boost::adjacency_list<boost::vecS, boost::listS, boost::bidirectionalS, GraphProperty> Graph; ///< Type used for the code flow graph.
-typedef Graph::vertex_descriptor GraphVertex;                                                         ///< Type representing a vertex in the graph.
-typedef Graph::vertex_iterator VertexIterator;                                                        ///< Type representing an iterator for vertices.
-typedef Graph::edge_descriptor GraphEdge;                                                             ///< Type representing an edge in the graph.
-typedef Graph::out_edge_iterator OutEdgeIterator;                                                     ///< Type representing an iterator for outgoing edges.
-typedef Graph::in_edge_iterator InEdgeIterator;                                                       ///< Type representing an iterator for ingoing edges.
-typedef std::pair<OutEdgeIterator, OutEdgeIterator> EdgeRange;                                        ///< Type representing a range of edges from boost::out_edges.
+/**
+ * Type representing properties containing a Group.
+ */
+typedef boost::property<boost::vertex_name_t, Group> GroupProperty;
+
+/**
+ * Type representing properties containing an index, followed by a GroupProperty.
+ */
+typedef boost::property<boost::vertex_index_t, int, GroupProperty> GraphProperty;
+
+/**
+ * Type used for the code flow graph.
+ */
+typedef boost::adjacency_list<boost::vecS, boost::listS, boost::bidirectionalS, GraphProperty> Graph;
+
+/**
+ * Type representing a vertex in the graph.
+ */
+typedef Graph::vertex_descriptor GraphVertex;
+
+/**
+ * Type representing an iterator for vertices.
+ */
+typedef Graph::vertex_iterator VertexIterator;
+
+/**
+ * Type representing an edge in the graph.
+ */
+typedef Graph::edge_descriptor GraphEdge;
+
+/**
+ * Type representing an iterator for outgoing edges.
+ */
+typedef Graph::out_edge_iterator OutEdgeIterator;
+
+/**
+ * Type representing an iterator for ingoing edges.
+ */
+typedef Graph::in_edge_iterator InEdgeIterator;
+
+/**
+ * Type representing a range of edges from boost::out_edges.
+ */
+typedef std::pair<OutEdgeIterator, OutEdgeIterator> EdgeRange;
 
 /**
  * Type used to set properties for dot output.
@@ -107,6 +144,7 @@ struct GraphProperties {
 
 	/**
 	 * Called by write_graphviz from Boost.Graph to print properties of the graph.
+	 *
 	 * @param out The std::ostream write_graphviz is writing to.
 	 */
 	void operator()(std::ostream& out) const {

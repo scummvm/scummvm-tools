@@ -42,6 +42,7 @@ protected:
 
 	/**
 	 * Performs disassembly.
+	 *
 	 * @throws UnknownOpcodeException on unknown opcode.
 	 */
 	virtual void doDisassemble() throw(UnknownOpcodeException) = 0;

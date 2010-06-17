@@ -38,24 +38,28 @@ private:
 
 	/**
 	 * Finds a graph vertex through an instruction.
+	 *
 	 * @param inst The instruction to find the vertex for.
 	 */
 	GraphVertex find(Instruction inst);
 
 	/**
 	 * Finds a graph vertex through an instruction iterator.
+	 *
 	 * @param it The iterator to find the vertex for.
 	 */
 	GraphVertex find(InstIterator it);
 
 	/**
 	 * Finds a graph vertex through an address.
+	 *
 	 * @param address The address to find the vertex for.
 	 */
 	GraphVertex find(uint32 address);
 
 	/**
 	 * Merges two graph vertices. g2 will be merged into g1.
+	 *
 	 * @param g1 The first vertex to merge.
 	 * @param g2 The second vertex to merge.
 	 */
@@ -63,7 +67,8 @@ private:
 
 	/**
 	 * Sets the stack level for all instructions, using depth-first search.
-	 * @param g The GraphVertex to search from.
+	 *
+	 * @param g     The GraphVertex to search from.
 	 * @param level The stack level when g is reached.
 	 */
 	void setStackLevel(GraphVertex g, int level);
@@ -71,13 +76,15 @@ private:
 public:
 	/**
 	 * Gets the current control flow graph.
+	 *
 	 * @returns The current control flow graph.
 	 */
 	const Graph &getGraph() { return _g; };
 
 	/**
 	 * Constructor for the control flow graph.
-	 * @param insts std::vector containing the instructions to analyze control flow for.
+	 *
+	 * @param insts  std::vector containing the instructions to analyze control flow for.
 	 * @param engine Pointer to the Engine used for the script.
 	 */
 	ControlFlow(std::vector<Instruction> &insts, Engine *engine);
@@ -89,6 +96,8 @@ public:
 
 	/**
 	 * Performs control flow analysis.
+	 *
+	 * @returns The control flow graph after analysis.
 	 */
 	const Graph &analyze();
 };

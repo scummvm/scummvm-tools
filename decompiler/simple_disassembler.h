@@ -35,7 +35,7 @@ protected:
 	/**
 	 * Read parameters and associate them with an instruction.
 	 *
-	 * @param inst Pointer to the instruction to associate the parameters with.
+	 * @param inst       Pointer to the instruction to associate the parameters with.
 	 * @param typeString NUL-terminated string describing the type of each parameter.
 	 */
 	void readParams(Instruction *inst, char *typeString);
@@ -43,7 +43,7 @@ protected:
 	/**
 	 * Reads data for a single parameter.
 	 *
-	 * @param p Pointer to the destination Parameter structure.
+	 * @param p    Pointer to the destination Parameter structure.
 	 * @param type Character describing the type of the parameter.
 	 */
 	virtual void readParameter(Parameter *p, char type);
