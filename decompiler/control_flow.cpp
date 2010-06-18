@@ -106,8 +106,11 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 
 void ControlFlow::setStackLevel(GraphVertex g, int level) {
 	Group gr = GET(g);
-	if (gr._stackLevel != -1)
+	if (gr._stackLevel != -1) {
+		if (gr._stackLevel != level)
+			std::cerr << boost::format("WARNING: Inconsistency in expected stack level for instruction at address 0x%08x (current: %d, requested: %d)\n") % gr._start->_address % gr._stackLevel % level;
 		return;
+	}
 	gr._stackLevel = level;
 	PUT(g, gr)
 
