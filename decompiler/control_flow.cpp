@@ -97,10 +97,10 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 	for (OutEdgeIterator e = r.first; e != r.second; e++) {
 		boost::add_edge(g1, boost::target(*e, _g), _g);
 	}
-	
+
 	//Remove edges to/from g2
 	boost::clear_vertex(g2, _g);
-	//Remove vertex	
+	//Remove vertex
 	boost::remove_vertex(g2, _g);
 }
 
