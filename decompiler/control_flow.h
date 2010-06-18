@@ -79,7 +79,7 @@ public:
 	 *
 	 * @returns The current control flow graph.
 	 */
-	const Graph &getGraph() { return _g; };
+	const Graph &getGraph() const { return _g; };
 
 	/**
 	 * Constructor for the control flow graph.
