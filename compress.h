@@ -60,6 +60,12 @@ enum AudioFormat {
 	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
 };
 
+enum CompressionType {
+	CBR,
+	ABR,
+	VBR
+};
+
 const char *audio_extensions(AudioFormat format);
 int compression_format(AudioFormat format);
 
@@ -89,6 +95,7 @@ public:
 	// mp3 settings
 	void setMp3LamePath(const std::string&);
 	void setMp3CompressionType(const std::string&);
+	void setMp3CompressionType(CompressionType);
 	void setMp3MpegQuality(const std::string&);
 	void setMp3TargetBitrate(const std::string&);
 	void setMp3MinBitrate(const std::string&);
