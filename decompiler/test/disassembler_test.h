@@ -71,8 +71,8 @@ public:
 		}
 	}
 
-	//This test requires script-15.dmp from Sam & Max: Hit The Road.
-	//1ab08298c9c8fb4c77953756989c7449 *script-15.dmp
+	// This test requires script-15.dmp from Sam & Max: Hit The Road.
+	// 1ab08298c9c8fb4c77953756989c7449 *script-15.dmp
 	void testScummv6DisassemblerScript15() {
 		try {
 			Scumm::v6::Disassembler s;
@@ -95,8 +95,8 @@ public:
 		}
 	}
 
-	//This test requires script-31.dmp from Sam & Max: Hit The Road.
-	//f75f7ce110f378735d449f8eeb4a68e5 *script-31.dmp
+	// This test requires script-31.dmp from Sam & Max: Hit The Road.
+	// f75f7ce110f378735d449f8eeb4a68e5 *script-31.dmp
 	void testScummv6DisassemblerScript31() {
 		try {
 			Scumm::v6::Disassembler s;
@@ -113,8 +113,8 @@ public:
 		}
 	}
 
-	//This test requires script-33.dmp from Sam & Max: Hit The Road.
-	//9f09418bf34abbdec0ec54f388d8dca4 *script-33.dmp
+	// This test requires script-33.dmp from Sam & Max: Hit The Road.
+	// 9f09418bf34abbdec0ec54f388d8dca4 *script-33.dmp
 	void testScummv6DisassemblerScript33() {
 		try {
 			Scumm::v6::Disassembler s;
@@ -136,8 +136,8 @@ public:
 		}
 	}
 
-	//This test requires room-9-202.dmp from Sam & Max: Hit The Road.
-	//f010dc659264674a2b6da298acd0b88b *room-9-202.dmp
+	// This test requires room-9-202.dmp from Sam & Max: Hit The Road.
+	// f010dc659264674a2b6da298acd0b88b *room-9-202.dmp
 	void testScummv6StackChangeFixRoom9202() {
 		try {
 			Scumm::v6::Disassembler s;
@@ -151,8 +151,8 @@ public:
 		}
 	}
 	
-	//This test requires script-30.dmp from Sam & Max: Hit The Road.
-	//6e48faca13e1f6df9341567608962744 *script-30.dmp
+	// This test requires script-30.dmp from Sam & Max: Hit The Road.
+	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	void testScummv6StackChangeFixScript30() {
 		try {
 			Scumm::v6::Disassembler s;

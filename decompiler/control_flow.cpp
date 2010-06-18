@@ -79,28 +79,28 @@ GraphVertex ControlFlow::find(uint32 address) {
 }
 
 void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
-	//Update property
+	// Update property
 	Group gr1 = GET(g1);
 	Group gr2 = GET(g2);
 	gr1._end = gr2._end;
 	PUT(g1, gr1);
 
-	//Update address map
+	// Update address map
 	InstIterator it = gr2._start;
 	do {
 		_addrMap[it->_address] = g1;
 		++it;
 	} while (gr2._start != gr2._end && it != gr2._end);
 
-	//Add outgoing edges from g2
+	// Add outgoing edges from g2
 	EdgeRange r = boost::out_edges(g2, _g);
 	for (OutEdgeIterator e = r.first; e != r.second; e++) {
 		boost::add_edge(g1, boost::target(*e, _g), _g);
 	}
 
-	//Remove edges to/from g2
+	// Remove edges to/from g2
 	boost::clear_vertex(g2, _g);
-	//Remove vertex
+	// Remove vertex
 	boost::remove_vertex(g2, _g);
 }
 
@@ -143,7 +143,7 @@ void ControlFlow::createGroups() {
 
 		stackLevel += curInst->_stackChange;
 
-		//Group ends after a jump
+		// Group ends after a jump
 		if (curInst->_type == kJump || curInst->_type == kJumpRel || curInst->_type == kCondJump || curInst->_type == kCondJumpRel) {
 /*			if (stackLevel != expectedStackLevel) {
 				s.push(expectedStackLevel);
@@ -153,7 +153,7 @@ void ControlFlow::createGroups() {
 			continue;
 		}
 
-		//Group ends before target of a jump
+		// Group ends before target of a jump
 		if (in_degree(next, _g) != 1) {
 /*			if (stackLevel != expectedStackLevel) {
 				s.push(expectedStackLevel);
@@ -163,12 +163,12 @@ void ControlFlow::createGroups() {
 			continue;
 		}
 
-		//Group ends when stack is balanced, unless just before conditional jump
+		// Group ends when stack is balanced, unless just before conditional jump
 		if (stackLevel == expectedStackLevel && nextInst->_type != kCondJump && nextInst->_type != kCondJumpRel) {
 			continue;
 		}
 
-		//All checks passed, merge groups
+		// All checks passed, merge groups
 		merge(cur, next);
 	}
 }

@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 
 		po::variables_map vm;
 		try {
-			//FIXME: If specified as the last parameter before the input file name, -d currently requires a filename to specified. -d must be specified earlier than that if outputting to stdout.
+			// FIXME: If specified as the last parameter before the input file name, -d currently requires a filename to specified. -d must be specified earlier than that if outputting to stdout.
 			po::store(po::command_line_parser(argc, argv).options(args).positional(fileArg).run(), vm);
 			po::notify(vm);    
 		} catch (std::exception& e) {
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 		Engine *engine = engineFactory.create(vm["engine"].as<std::string>());
 		std::string inputFile = vm["input-file"].as<std::string>();
 
-		//Disassembly
+		// Disassembly
 		Disassembler *disassembler = engine->getDisassembler();
 		disassembler->open(inputFile.c_str());
 
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
 
 		delete disassembler;
 
-		//Control flow analysis
+		// Control flow analysis
 		ControlFlow *cf = new ControlFlow(insts, engine);
 		cf->createGroups();
 		Graph g = cf->analyze();
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
 
 		delete cf;
 
-		//TODO: Code generation
+		// TODO: Code generation
 	} catch (std::exception& e) {
 		std::cerr << "ERROR: " << e.what() << "\n";
 		return 3;
