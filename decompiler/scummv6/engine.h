@@ -38,8 +38,8 @@ public:
 	uint32 getDestAddress(InstIterator it) const;
 };
 
-} //End of namespace Scumm::v6
+} // End of namespace v6
 
-} //End of namespace Scumm
+} // End of namespace Scumm
 
 #endif

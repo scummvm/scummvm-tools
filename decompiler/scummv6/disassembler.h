@@ -49,8 +49,8 @@ public:
 	void fixStackEffect(InstIterator &it, int popBefore, int popAfter, int pushTotal);
 };
 
-} //End of namespace Scumm::v6
+} // End of namespace v6
 
-} //End of namespace Scumm
+} // End of namespace Scumm
 
 #endif
