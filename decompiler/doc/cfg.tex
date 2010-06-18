@@ -1,0 +1,20 @@
+\section{Control flow analysis}
+
+The control flow analysis is a multi-step process:
+
+\begin{itemize}
+\item Create a graph with one instruction per vertex, and edges going from instructions to their possible successors
+\item Do a depth-first search to determine the expected stack level at each vertex
+\item Merge vertices to form groups
+\item Perform analysis on vertices
+\end{itemize}
+
+Groups are formed according to these rules:
+\begin{itemize}
+\item If the next instruction is a jump, end the group here.
+\item If the next instruction has multiple predecessors, end the group here.
+\item If the current instruction brings the stack to a lower level than the start of the current group, make the new level the expected stack level (to support clean-up after control structures).
+\item If the current instruction brings the stack level to the same as the start of the current group, end the group here.
+\end{itemize}
+
+\fxnote{Describe the actual analysis in more detail.}
