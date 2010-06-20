@@ -7,9 +7,9 @@ For a more comprehensive changelog for the latest experimental SVN code, see:
  - Respect $BINDIR when installing (similar to ScummVM).
  - Fix bug #2983010: GUI Tools builds even if optioned out.
  - Change the behavior of the CLI flags for MP3 encoding.
- - Add option to process another files at the end of a process.
+ - Add option to process other files at the end of a process.
  - Improve visual feedback after a process has finished. It should now be clear that
-   it has finished and wether it was a success or not.
+   it has finished and whether it was a success or not.
 
 1.1.1 (2010-05-02)
  First tools version to contain a NEWS file.
