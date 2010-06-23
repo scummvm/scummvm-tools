@@ -58,6 +58,7 @@ TARGETS := \
 	extract_mohawk$(EXEEXT) \
 	construct_mohawk$(EXEEXT) \
 	degob$(EXEEXT) \
+	gob_loadcalc$(EXEEXT) \
 	scummvm-tools-cli$(EXEEXT)
 
 ifdef USE_FREETYPE
@@ -111,6 +112,7 @@ PROGRAMS = \
 	descumm \
 	desword2 \
 	degob \
+	gob_loadcalc \
 	extract_mohawk \
 	construct_mohawk \
 	create_sjisfnt \
@@ -166,6 +168,9 @@ degob_OBJS := \
 	version.o \
 	$(UTILS)
 
+gob_loadcalc_OBJS := \
+	engines/gob/gob_loadcalc.o
+
 extract_mohawk_OBJS := \
 	engines/mohawk/archive.o \
 	engines/mohawk/extract_mohawk.o \
@@ -178,7 +183,7 @@ extract_mohawk_OBJS := \
 
 construct_mohawk_OBJS := \
 	engines/mohawk/construct_mohawk.o \
-	$(UTILS)	
+	$(UTILS)
 
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
 create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)
