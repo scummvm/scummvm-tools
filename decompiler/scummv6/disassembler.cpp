@@ -23,6 +23,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <boost/format.hpp>
+
 #include "disassembler.h"
 
 void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
@@ -31,24 +33,24 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		blockName += _f.readChar();
 	}
 	if (blockName == "SCRP") {
-		std::cout << "Input is global script\n";
+		std::clog << "Input is global script\n";
 		_f.seek(8, SEEK_SET);
 	} else if (blockName == "LSCR") {
-		std::cout << "Input is local script\n";
+		std::clog << "Input is local script\n";
 		_f.seek(9, SEEK_SET);
 	} else if (blockName == "ENCD") {
-		std::cout << "Input is room entry script\n";
+		std::clog << "Input is room entry script\n";
 		_f.seek(8, SEEK_SET);
 	} else if (blockName == "EXCD") {
-		std::cout << "Input is room exit script\n";
+		std::clog << "Input is room exit script\n";
 		_f.seek(8, SEEK_SET);
 	} else if (blockName == "VERB") {
-		std::cout << "Input is object script\n";
+		std::clog << "Input is object script\n";
 		_f.seek(8, SEEK_SET);
-		std::cout << "Offset table:\n";
+		std::clog << "Offset table:\n";
 		uint8 verb = _f.readByte();
 		while (verb != 0) {
-			printf("%02x - %04x\n", verb, _f.readUint16LE());
+			std::clog << boost::format("%02x - %04x\n") % verb % _f.readUint16LE();
 			verb = _f.readByte();
 		}
 	}
