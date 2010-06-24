@@ -1,0 +1,7 @@
+do:
+wordVarInc 123
+pushWord 42
+pushWordVar 123
+eq
+jumpTrue do
+stopObjectCodeA
