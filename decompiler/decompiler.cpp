@@ -51,7 +51,8 @@ int main(int argc, char** argv) {
 			("engine,e", po::value<std::string>(), "Engine the script originates from.")
 			("list,l", "List the supported engines.")
 			("dump-disassembly,d", po::value<std::string>()->implicit_value(""), "Dump the disassembly to a file. Leave out filename to output to stdout.")
-			("dump-graph,g", po::value<std::string>()->implicit_value(""), "Output the control flow graph in dot format to a file. Leave out filename to output to stdout.");
+			("dump-graph,g", po::value<std::string>()->implicit_value(""), "Output the control flow graph in dot format to a file. Leave out filename to output to stdout.")
+			("only-disassembly,o", "Stops after disassembly. Implies -d.");
 
 		po::options_description args("");
 		args.add(visible).add_options()
@@ -114,6 +115,13 @@ int main(int argc, char** argv) {
 			} 
  			std::ostream out(buf); 
 			disassembler->dumpDisassembly(out);
+		}
+
+		if (vm.count("only-disassembly")) {
+			if (!vm.count("dump-disassembly")) {
+				disassembler->dumpDisassembly(std::cout);
+			}
+			return 0;
 		}
 
 		delete disassembler;
