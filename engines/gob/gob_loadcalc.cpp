@@ -25,35 +25,35 @@
 #include <stdlib.h>
 #include <string.h>
 
-void print_usage(void) {
+void printUsage(void) {
 	printf("Usage : ./gob-loadcalc [Level/Screen = 0 to 23] [Health = 0 to 10]\n");
 }
 
-const char base_codes[24][6] = {
-	"GAGEA", /*  0 = Level  3 */
-	"BULBE", /*  1 = Level  7 */
-	"CANON", /*  2 = Level  4 */
-	"TOTOD", /*  3 = Level  2 */
-	"DRUID", /*  4 = Level  5 */
-	"FOUDR", /*  5 = Level  6 */
-	"GATEA", /*  6 = Level  9 */
-	"HAHAH", /*  7 = Level  8 */
-	"HIHIH", /*  8 = ???? - Unknown Screen with Watchdog Outside Wizard's House */
-	"JONAS", /*  9 = Level 10 */
-	"FLUTE", /* 10 = Level 11 */
-	"DROIT", /* 11 = Level 12 */
-	"BANJO", /* 12 = Level 13 */
-	"CUBEN", /* 13 = Level 14 */
-	"RALER", /* 14 = Level 15 */
-	"RATOP", /* 15 = Level 16 */
-	"GOBLI", /* 16 = Level 17 */
-	"IIINS", /* 17 = Level 18 */
-	"LEMEI", /* 18 = Level 19 */
-	"LLEUR", /* 19 = Level 20 */
-	"JEUDE", /* 20 = ???? - Unknown Screen Outside Castle with Catapult */
-	"ROLED", /* 21 = Level 21 */
-	"ETOUT", /* 22 = Level  1 */
-	"LESTP"  /* 23 = ???? - Start Screen With Palette Scramble */
+const char baseCodes[24][6] = {
+	"GAGEA", //  0 = Level  2
+	"BULBE", //  1 = Level  6
+	"CANON", //  2 = Level  3
+	"TOTOD", //  3 = Level  1
+	"DRUID", //  4 = Level  4
+	"FOUDR", //  5 = Level  5
+	"GATEA", //  6 = Level  8
+	"HAHAH", //  7 = Level  7
+	"HIHIH", //  8 = Level  9
+	"JONAS", //  9 = Level 10
+	"FLUTE", // 10 = Level 11
+	"DROIT", // 11 = Level 12
+	"BANJO", // 12 = Level 13
+	"CUBEN", // 13 = Level 14
+	"RALER", // 14 = Level 15
+	"RATOP", // 15 = Level 16
+	"GOBLI", // 16 = Level 17
+	"IIINS", // 17 = Level 18
+	"LEMEI", // 18 = Level 19
+	"LLEUR", // 19 = Level 20
+	"JEUDE", // 20 = Level 21
+	"ROLED", // 21 = Level 22
+	"ETOUT", // 22 = Level  0
+	"LESTP"  // 23 = Level  0 - Bad Start Screen With Palette Scramble
 };
 
 int main(int argc, char *argv[]) {
@@ -65,17 +65,17 @@ int main(int argc, char *argv[]) {
 		code[i] = '\0';
 
 	if (argc != 3) {
-		print_usage();
+		printUsage();
 		return EXIT_FAILURE;
 	} else {
 		level = atoi(argv[1]);
 		if (level < 0 || level > 23) {
-			print_usage();
+			printUsage();
 			return EXIT_FAILURE;
 		}
 		health = atoi(argv[2]);
 		if (health < 0 || health > 10) {
-			print_usage();
+			printUsage();
 			return EXIT_FAILURE;
 		}
 	}
@@ -83,12 +83,40 @@ int main(int argc, char *argv[]) {
 	printf("Level: %d\n", level);
 	printf("Health: %d\n", health);
 
-	strncpy(code, base_codes[level], 5*sizeof(char));
+	// Convert Level to offset in baseCodes
+	switch (level) {
+		case 0:
+			level = 22;
+			break;
+		case 1:
+			level = 3;
+			break;
+		case 2:
+			level = 0;
+			break;
+		case 6:
+			level = 1;
+			break;
+		case 8:
+			level = 6;
+			break;
+		case 4:
+		case 5:
+		case 7:
+		case 23:
+			// level unchanged
+			break;
+		default:
+			level -= 1;
+			break;
+	}
 
-	/* Used by Load to determine Level */
+	strncpy(code, baseCodes[level], 5*sizeof(char));
+
+	// Used by Load to determine Level
 	code[5] = level + 'A';
 
-	/* Adjust Code for Health */
+	// Adjust Code for Health
 	for (i = 0; i < 5; i++) {
 		if (health >= 2) {
 			code[i] += 2;
@@ -99,7 +127,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	/* Calculate Checksum Character */
+	// Calculate Checksum Character
 	temp = 0;
 	for (i = 0; i < 6; i++)
 		temp += code[i];
