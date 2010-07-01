@@ -113,4 +113,16 @@ public:
 		TS_ASSERT(gr->_start->_address == 6);
 		TS_ASSERT(boost::in_degree(*it, g) == 2 && boost::out_degree(*it, g) == 0);
 	}
+
+	void testShortCircuitDetection() {
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Disassembler *d = engine->getDisassembler();
+		d->open("decompiler/test/short-circuit.dmp");
+		std::vector<Instruction> insts = d->disassemble();
+		delete d;
+		ControlFlow *c = new ControlFlow(insts, engine);
+		c->createGroups();
+		Graph g = c->getGraph();
+		TS_ASSERT(boost::num_vertices(g) == 3);
+	}
 };
