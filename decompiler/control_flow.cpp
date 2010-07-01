@@ -180,7 +180,7 @@ void ControlFlow::createGroups() {
 }
 
 void ControlFlow::detectShortCircuit() {
-  InstIterator lastInst = _insts.end();
+	InstIterator lastInst = _insts.end();
 	--lastInst;
 	GraphVertex cur = find(lastInst);
 	Group *gr = GET(cur);
