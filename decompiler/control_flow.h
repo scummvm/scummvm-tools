@@ -41,7 +41,7 @@ private:
 	 *
 	 * @param inst The instruction to find the vertex for.
 	 */
-	GraphVertex find(Instruction inst);
+	GraphVertex find(const Instruction &inst);
 
 	/**
 	 * Finds a graph vertex through an instruction iterator.

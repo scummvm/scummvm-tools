@@ -105,8 +105,7 @@ public:
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 3);
 		std::pair<VertexIterator, VertexIterator> range = boost::vertices(g);
-		for (VertexIterator it = range.first; it != range.second; ++it)
-		{
+		for (VertexIterator it = range.first; it != range.second; ++it) {
 			Group *gr = GET(*it);
 			switch (gr->_start->_address) {
 			case 0:
