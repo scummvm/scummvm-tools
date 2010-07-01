@@ -48,7 +48,7 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		std::clog << "Input is object script\n";
 		_f.seek(8, SEEK_SET);
 		std::clog << "Offset table:\n";
-		uint8 verb = _f.readByte();
+		uint32 verb = _f.readByte();
 		while (verb != 0) {
 			std::clog << boost::format("%02x - %04x\n") % verb % _f.readUint16LE();
 			verb = _f.readByte();
