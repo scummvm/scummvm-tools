@@ -100,6 +100,12 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 		boost::add_edge(g1, boost::target(*e, _g), _g);
 	}
 
+	// Update _next pointer
+	gr1->_next = gr2->_next;
+	if (gr2->_next != NULL)
+		gr2->_next->_prev = gr2->_prev;
+
+
 	// Remove edges to/from g2
 	boost::clear_vertex(g2, _g);
 	// Remove vertex
@@ -175,6 +181,44 @@ void ControlFlow::createGroups() {
 
 		// All checks passed, merge groups
 		merge(cur, next);
+	}
+
+	// Short-circuit analysis
+	GraphVertex cur = find(curInst);
+	Group *gr = GET(cur);
+	while (gr->_prev != NULL) {
+		bool doMerge = false;
+		if ((gr->_end->_type == kCondJump || gr->_end->_type == kCondJumpRel) && (gr->_prev->_end->_type == kCondJump || gr->_prev->_end->_type == kCondJumpRel)) {
+			doMerge = true;
+			cur = find(gr->_start);
+			GraphVertex prev = find(gr->_prev->_start);
+			EdgeRange rCur = boost::out_edges(cur, _g);
+			GraphVertex gJump, gSeq;			
+
+			//Find possible target vertices
+			for (OutEdgeIterator it = rCur.first; it != rCur.second; it++) {
+				GraphVertex target = boost::target(*it, _g);
+				Group *targetGroup = GET(target);
+				if (_engine->getDestAddress(gr->_end) == targetGroup->_start->_address)
+					gJump = target;
+				else
+					gSeq = target;
+			}
+
+			//Check if vertex would add new targets - if yes, don't merge
+			EdgeRange rPrev = boost::out_edges(prev, _g);
+			for (OutEdgeIterator it = rPrev.first; it != rPrev.second; it++) {
+				GraphVertex target = boost::target(*it, _g);
+				if (target != gJump && target != gSeq && target != cur)
+					doMerge = false;
+			}
+			if (doMerge) {
+				gr = gr->_prev;				
+				merge(prev, cur);
+				continue;
+			}
+		}
+		gr = gr->_prev;
 	}
 }
 

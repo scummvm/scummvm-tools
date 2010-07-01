@@ -54,6 +54,7 @@ struct Group {
 	int _stackLevel;     ///< Level of the stack upon entry.
 	GroupType _type;     ///< Type of the group.
 	Group *_prev;        ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
+	Group *_next;        ///< Pointer to the next group, when ordered by address.
 	
 	/**
 	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
@@ -75,6 +76,10 @@ struct Group {
 		_end = end;
 		_stackLevel = -1;
 		_type = kNormal;
+		_prev = prev;
+		if (_prev != NULL)
+			_prev->_next = this;
+		_next = NULL;
 	}
 
 	/**
@@ -84,8 +89,8 @@ struct Group {
 	 * @param group  The Group to output.
 	 * @return The std::ostream used for output.
 	 */
-	friend std::ostream &operator<<(std::ostream &output, Group &group) {
-		InstIterator inst = group._start;
+	friend std::ostream &operator<<(std::ostream &output, Group *group) {
+		InstIterator inst = group->_start;
 		do {
 			output << boost::format("%08x: %s") % inst->_address % inst->_name;
 			std::vector<Parameter>::iterator param;
@@ -105,7 +110,7 @@ struct Group {
 				}
 			}
 			output << boost::format(" (%d)") % inst->_stackChange << "\\n";
-		} while (inst++ != group._end);
+		} while (inst++ != group->_end);
 		return output;
 	}
 };
