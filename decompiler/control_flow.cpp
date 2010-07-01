@@ -157,20 +157,12 @@ void ControlFlow::createGroups() {
 
 		// Group ends after a jump
 		if (curInst->_type == kJump || curInst->_type == kJumpRel || curInst->_type == kCondJump || curInst->_type == kCondJumpRel) {
-/*			if (stackLevel != expectedStackLevel) {
-				s.push(expectedStackLevel);
-				expectedStackLevel = stackLevel;
-			}*/
 			stackLevel = grNext->_stackLevel;
 			continue;
 		}
 
 		// Group ends before target of a jump
 		if (in_degree(next, _g) != 1) {
-/*			if (stackLevel != expectedStackLevel) {
-				s.push(expectedStackLevel);
-				expectedStackLevel = stackLevel;
-			}*/
 			stackLevel = grNext->_stackLevel;
 			continue;
 		}
@@ -184,8 +176,13 @@ void ControlFlow::createGroups() {
 		merge(cur, next);
 	}
 
-	// Short-circuit analysis
-	GraphVertex cur = find(curInst);
+	detectShortCircuit();
+}
+
+void ControlFlow::detectShortCircuit() {
+  InstIterator lastInst = _insts.end();
+	--lastInst;
+	GraphVertex cur = find(lastInst);
 	Group *gr = GET(cur);
 	while (gr->_prev != NULL) {
 		bool doMerge = false;
@@ -207,6 +204,7 @@ void ControlFlow::createGroups() {
 				GraphVertex target = boost::target(*it, _g);
 				doMerge &= (std::find(succs.begin(), succs.end(), target) != succs.end() || target == cur);
 			}
+
 			if (doMerge) {
 				gr = gr->_prev;
 				merge(prev, cur);

@@ -95,6 +95,11 @@ public:
 	void createGroups();
 
 	/**
+	 * Merged groups that are part of the same short-circuited condition check.
+	 */
+	void detectShortCircuit();
+
+	/**
 	 * Performs control flow analysis.
 	 *
 	 * @returns The control flow graph after analysis.
