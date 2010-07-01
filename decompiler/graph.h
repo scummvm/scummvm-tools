@@ -34,29 +34,47 @@
 #include <boost/graph/adjacency_list.hpp>
 
 /**
+ * Enumeration representing the different kinds of groups.
+ */
+enum GroupType {
+	kNormal,      ///< Normal group.
+	kWhileCond,   ///< Group is the condition check for a while-loop.
+	kDoWhileCond, ///< Group is the condition check for a do-while-loop.
+	kIfCond,      ///< Group is the condition check for an if.
+	kBreak,       ///< Group is a break.
+	kContinue     ///< Group is a continue.
+};
+
+/**
  * Structure representing a group of instructions.
  */
 struct Group {
 	InstIterator _start; ///< First instruction in the group.
 	InstIterator _end;   ///< Last instruction in the group.
 	int _stackLevel;     ///< Level of the stack upon entry.
-
+	GroupType _type;     ///< Type of the group.
+	Group *_prev;        ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
+	
 	/**
-	 * Parameterless constructor for Group. Required for use with STL and Boost.
-	 * Should not be called manually.
+	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
 	 */
-	Group() { _stackLevel = -1; }
+	Group() { 
+		_stackLevel = -1;
+		_type = kNormal;
+	}
 
 	/**
 	 * Constructor for Group.
 	 *
 	 * @param start First instruction in the group.
 	 * @param end   Last instruction in the group.
+	 * @param prev  Pointer to the previous group, when ordered by address.
 	 */
-	Group(InstIterator start, InstIterator end) {
+	Group(InstIterator start, InstIterator end, Group *prev) {
 		_start = start;
 		_end = end;
 		_stackLevel = -1;
+		_type = kNormal;
 	}
 
 	/**
@@ -93,9 +111,9 @@ struct Group {
 };
 
 /**
- * Type representing properties containing a Group.
+ * Type representing properties containing a pointer to a Group.
  */
-typedef boost::property<boost::vertex_name_t, Group> GroupProperty;
+typedef boost::property<boost::vertex_name_t, Group*> GroupProperty;
 
 /**
  * Type representing properties containing an index, followed by a GroupProperty.

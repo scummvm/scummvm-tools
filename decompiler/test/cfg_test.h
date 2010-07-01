@@ -43,20 +43,20 @@ public:
 		TS_ASSERT(boost::num_vertices(g) == 4);
 		std::pair<VertexIterator, VertexIterator> range = boost::vertices(g);
 		VertexIterator it = range.first;
-		Group gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 0);
+		Group *gr = GET(*it);
+		TS_ASSERT(gr->_start->_address == 0);
 		TS_ASSERT(boost::in_degree(*it, g) == 0 && boost::out_degree(*it, g) == 1);
 		++it;
 		gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 2);
+		TS_ASSERT(gr->_start->_address == 2);
 		TS_ASSERT(boost::in_degree(*it, g) == 1 && boost::out_degree(*it, g) == 1);
 		++it;
 		gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 5);
+		TS_ASSERT(gr->_start->_address == 5);
 		TS_ASSERT(boost::in_degree(*it, g) == 0 && boost::out_degree(*it, g) == 1);
 		++it;
 		gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 6);
+		TS_ASSERT(gr->_start->_address == 6);
 		TS_ASSERT(boost::in_degree(*it, g) == 2 && boost::out_degree(*it, g) == 0);
 	};
 
@@ -71,20 +71,20 @@ public:
 		TS_ASSERT(boost::num_vertices(g) == 4);
 		std::pair<VertexIterator, VertexIterator> range = boost::vertices(g);
 		VertexIterator it = range.first;
-		Group gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 0);
+		Group *gr = GET(*it);
+		TS_ASSERT(gr->_start->_address == 0);
 		TS_ASSERT(boost::in_degree(*it, g) == 0 && boost::out_degree(*it, g) == 1);
 		++it;
 		gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 2);
+		TS_ASSERT(gr->_start->_address == 2);
 		TS_ASSERT(boost::in_degree(*it, g) == 1 && boost::out_degree(*it, g) == 2);
 		++it;
 		gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 5);
+		TS_ASSERT(gr->_start->_address == 5);
 		TS_ASSERT(boost::in_degree(*it, g) == 1 && boost::out_degree(*it, g) == 1);
 		++it;
 		gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 6);
+		TS_ASSERT(gr->_start->_address == 6);
 		TS_ASSERT(boost::in_degree(*it, g) == 2 && boost::out_degree(*it, g) == 0);
 	}
 
@@ -100,17 +100,17 @@ public:
 		TS_ASSERT(boost::num_vertices(g) == 3);
 		std::pair<VertexIterator, VertexIterator> range = boost::vertices(g);
 		VertexIterator it = range.first;
-		Group gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 0);
-		TS_ASSERT(gr._end->_address == 2);		
+		Group *gr = GET(*it);
+		TS_ASSERT(gr->_start->_address == 0);
+		TS_ASSERT(gr->_end->_address == 2);		
 		TS_ASSERT(boost::in_degree(*it, g) == 0 && boost::out_degree(*it, g) == 2);
 		++it;
 		gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 5);
+		TS_ASSERT(gr->_start->_address == 5);
 		TS_ASSERT(boost::in_degree(*it, g) == 1 && boost::out_degree(*it, g) == 1);
 		++it;
 		gr = GET(*it);
-		TS_ASSERT(gr._start->_address == 6);
+		TS_ASSERT(gr->_start->_address == 6);
 		TS_ASSERT(boost::in_degree(*it, g) == 2 && boost::out_degree(*it, g) == 0);
 	}
 };

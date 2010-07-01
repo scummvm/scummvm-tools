@@ -35,11 +35,12 @@ ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) : _ins
 	GraphVertex last;
 	bool addEdge = false;
 	int id = 0;
+	Group *prev = NULL;
 
 	for (InstIterator it = insts.begin(); it != insts.end(); ++it) {
 		GraphVertex cur = boost::add_vertex(_g);
 		_addrMap[it->_address] = cur;
-		PUT(cur, Group(it, it));
+		PUT(cur, new Group(it, it, prev));
 		PUT_ID(cur, id);
 		id++;
 
@@ -47,6 +48,7 @@ ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) : _ins
 			boost::add_edge(last, cur, _g);
 		last = cur;
 		addEdge = (it->_type != kJump && it->_type != kJumpRel);
+		prev = GET(cur);
 	}
 
 	for (InstIterator it = insts.begin(); it != insts.end(); ++it) {
@@ -80,17 +82,17 @@ GraphVertex ControlFlow::find(uint32 address) {
 
 void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 	// Update property
-	Group gr1 = GET(g1);
-	Group gr2 = GET(g2);
-	gr1._end = gr2._end;
+	Group *gr1 = GET(g1);
+	Group *gr2 = GET(g2);
+	gr1->_end = gr2->_end;
 	PUT(g1, gr1);
 
 	// Update address map
-	InstIterator it = gr2._start;
+	InstIterator it = gr2->_start;
 	do {
 		_addrMap[it->_address] = g1;
 		++it;
-	} while (gr2._start != gr2._end && it != gr2._end);
+	} while (gr2->_start != gr2->_end && it != gr2->_end);
 
 	// Add outgoing edges from g2
 	EdgeRange r = boost::out_edges(g2, _g);
@@ -105,13 +107,13 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 }
 
 void ControlFlow::setStackLevel(GraphVertex g, int level) {
-	Group gr = GET(g);
-	if (gr._stackLevel != -1) {
-		if (gr._stackLevel != level)
-			std::cerr << boost::format("WARNING: Inconsistency in expected stack level for instruction at address 0x%08x (current: %d, requested: %d)\n") % gr._start->_address % gr._stackLevel % level;
+	Group *gr = GET(g);
+	if (gr->_stackLevel != -1) {
+		if (gr->_stackLevel != level)
+			std::cerr << boost::format("WARNING: Inconsistency in expected stack level for instruction at address 0x%08x (current: %d, requested: %d)\n") % gr->_start->_address % gr->_stackLevel % level;
 		return;
 	}
-	gr._stackLevel = level;
+	gr->_stackLevel = level;
 	PUT(g, gr)
 
 	if (boost::out_degree(g, _g) == 0)
@@ -119,7 +121,7 @@ void ControlFlow::setStackLevel(GraphVertex g, int level) {
 
 	EdgeRange r = boost::out_edges(g, _g);
 	for (OutEdgeIterator e = r.first; e != r.second; e++) {
-		setStackLevel(boost::target(*e, _g), level + gr._start->_stackChange);
+		setStackLevel(boost::target(*e, _g), level + gr->_start->_stackChange);
 	}
 }
 
@@ -137,12 +139,12 @@ void ControlFlow::createGroups() {
 
 		if (in_degree(cur, _g) == 0 && out_degree(cur, _g) == 0)
 			continue;
-		Group grCur = GET(cur);
-		Group grNext = GET(next);
-		expectedStackLevel = grCur._stackLevel;
+		Group *grCur = GET(cur);
+		Group *grNext = GET(next);
+		expectedStackLevel = grCur->_stackLevel;
 
-		if (expectedStackLevel > grNext._stackLevel)
-			expectedStackLevel = grNext._stackLevel;
+		if (expectedStackLevel > grNext->_stackLevel)
+			expectedStackLevel = grNext->_stackLevel;
 
 		stackLevel += curInst->_stackChange;
 
@@ -152,7 +154,7 @@ void ControlFlow::createGroups() {
 				s.push(expectedStackLevel);
 				expectedStackLevel = stackLevel;
 			}*/
-			stackLevel = grNext._stackLevel;
+			stackLevel = grNext->_stackLevel;
 			continue;
 		}
 
@@ -162,7 +164,7 @@ void ControlFlow::createGroups() {
 				s.push(expectedStackLevel);
 				expectedStackLevel = stackLevel;
 			}*/
-			stackLevel = grNext._stackLevel;
+			stackLevel = grNext->_stackLevel;
 			continue;
 		}
 
@@ -177,5 +179,6 @@ void ControlFlow::createGroups() {
 }
 
 const Graph &ControlFlow::analyze() {
+
 	return _g;
 }
