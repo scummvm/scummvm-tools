@@ -113,7 +113,7 @@ struct Group {
 /**
  * Type representing properties containing a pointer to a Group.
  */
-typedef boost::property<boost::vertex_name_t, Group*> GroupProperty;
+typedef boost::property<boost::vertex_name_t, Group *> GroupProperty;
 
 /**
  * Type representing properties containing an index, followed by a GroupProperty.
