@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
 			disassembler->dumpDisassembly(out);
 		}
 
-		if (vm.count("only-disassembly")) {
+		if (vm.count("only-disassembly") || insts.empty()) {
 			if (!vm.count("dump-disassembly")) {
 				disassembler->dumpDisassembly(std::cout);
 			}
