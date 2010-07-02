@@ -128,7 +128,7 @@ typedef boost::property<boost::vertex_index_t, int, GroupProperty> GraphProperty
 /**
  * Type used for the code flow graph.
  */
-typedef boost::adjacency_list<boost::vecS, boost::listS, boost::bidirectionalS, GraphProperty> Graph;
+typedef boost::adjacency_list<boost::setS, boost::listS, boost::bidirectionalS, GraphProperty> Graph;
 
 /**
  * Type representing a vertex in the graph.
