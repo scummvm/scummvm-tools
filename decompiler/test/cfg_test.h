@@ -61,6 +61,8 @@ public:
 				TS_ASSERT(false);
 			}
 		}
+		delete c;
+		delete engine;
 	};
 
 	void testBranching() {
@@ -92,6 +94,8 @@ public:
 				TS_ASSERT(false);
 			}
 		}
+		delete c;
+		delete engine;
 	}
 
 	void testGrouping() {
@@ -123,6 +127,8 @@ public:
 				break;
 			}
 		}
+		delete c;
+		delete engine;
 	}
 
 	void testShortCircuitDetection() {
@@ -135,6 +141,8 @@ public:
 		c->createGroups();
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 3);
+		delete c;
+		delete engine;
 	}
 
 	void testWhileDetection() {
@@ -152,6 +160,8 @@ public:
 			if (gr->_start->_address == 0)
 				TS_ASSERT(gr->_type == kWhileCond);
 		}
+		delete c;
+		delete engine;
 	}
 
 	void testDoWhileDetection() {
@@ -169,5 +179,105 @@ public:
 			if (gr->_start->_address == 3)
 				TS_ASSERT(gr->_type == kDoWhileCond);
 		}
+		delete c;
+		delete engine;
+	}
+
+	void testBreakDetection() {
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Disassembler *d = engine->getDisassembler();
+		d->open("decompiler/test/break-while.dmp");
+		std::vector<Instruction> insts = d->disassemble();
+		delete d;
+		ControlFlow *c = new ControlFlow(insts, engine);
+		c->createGroups();
+		Graph g = c->analyze();
+		VertexRange range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0x14)
+				TS_ASSERT(gr->_type == kBreak);
+		}
+		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/break-do-while.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0xA)
+				TS_ASSERT(gr->_type == kBreak);
+		}
+		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/break-do-while2.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0xD)
+				TS_ASSERT(gr->_type == kBreak);
+		}
+		delete c;
+		delete engine;
+	}
+
+	void testContinueDetection() {
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Disassembler *d = engine->getDisassembler();
+		d->open("decompiler/test/continue-while.dmp");
+		std::vector<Instruction> insts = d->disassemble();
+		delete d;
+		ControlFlow *c = new ControlFlow(insts, engine);
+		c->createGroups();
+		Graph g = c->analyze();
+		VertexRange range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0x14)
+				TS_ASSERT(gr->_type == kContinue);
+		}
+		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/continue-do-while.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0xA)
+				TS_ASSERT(gr->_type == kContinue);
+		}
+		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/continue-do-while2.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0xD)
+				TS_ASSERT(gr->_type == kContinue);
+		}
+		delete c;
+		delete engine;
 	}
 };

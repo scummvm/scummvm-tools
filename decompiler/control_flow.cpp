@@ -229,13 +229,13 @@ void ControlFlow::detectWhile() {
 	VertexRange vr = boost::vertices(_g);
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		Group *gr = GET(*v);
-		// Block ends with conditional jump and has not yet been determined
+		// Undetermined block that ends with conditional jump
 		if (out_degree(*v, _g) == 2 && gr->_type == kNormal) {
 			InEdgeRange ier = boost::in_edges(*v, _g);
 			for (InEdgeIterator e = ier.first; e != ier.second; ++e) {
 				Group *sourceGr = GET(boost::source(*e, _g));
-				// Block has ingoing edge from later in the code
-				if (sourceGr->_start->_address > gr->_start->_address)
+				// Block has ingoing edge from block later in the code that isn't a do-while condition
+				if (sourceGr->_start->_address > gr->_start->_address && sourceGr->_type != kDoWhileCond)
 					gr->_type = kWhileCond;
 			}
 		}
@@ -246,7 +246,7 @@ void ControlFlow::detectDoWhile() {
 	VertexRange vr = boost::vertices(_g);
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		Group *gr = GET(*v);
-		// Block has not yet been determined and ends with conditional jump...
+		// Undetermined block that ends with conditional jump...
 		if (out_degree(*v, _g) == 2 && gr->_type == kNormal) {
 			OutEdgeRange oer = boost::out_edges(*v, _g);
 			for (OutEdgeIterator e = oer.first; e != oer.second; ++e) {
@@ -260,9 +260,44 @@ void ControlFlow::detectDoWhile() {
 }
 
 void ControlFlow::detectBreak() {
+	VertexRange vr = boost::vertices(_g);
+	for (VertexIterator v = vr.first; v != vr.second; ++v) {
+		Group *gr = GET(*v);
+		// Unconditional jump...
+		if ((gr->_end->_type == kJump || gr->_end->_type == kJumpRel) && out_degree(*v, _g) == 1) {
+			OutEdgeIterator oe = boost::out_edges(*v, _g).first;
+			GraphVertex target = boost::target(*oe, _g);
+			Group *targetGr = GET(target);			
+			// ...to somewhere later in the code...
+			if (gr->_start->_address >= targetGr->_start->_address)
+				continue;
+			InEdgeRange ier = boost::in_edges(target, _g);
+			for (InEdgeIterator ie = ier.first; ie != ier.second; ++ie) {
+				Group *sourceGr = GET(boost::source(*ie, _g));
+				// ...to block immediately after a do-while condition, or to jump target of a while condition
+				if ((targetGr->_prev == sourceGr && sourceGr->_type == kDoWhileCond) || sourceGr->_type == kWhileCond) {
+					gr->_type = kBreak;
+				}
+			}
+		}
+	}
 }
 
 void ControlFlow::detectContinue() {
+	VertexRange vr = boost::vertices(_g);
+	for (VertexIterator v = vr.first; v != vr.second; ++v) {
+		Group *gr = GET(*v);
+		// Undetermined block with unconditional jump...
+		if (gr->_type == kNormal && (gr->_end->_type == kJump || gr->_end->_type == kJumpRel) && out_degree(*v, _g) == 1) {
+			OutEdgeIterator oe = boost::out_edges(*v, _g).first;
+			GraphVertex target = boost::target(*oe, _g);
+			Group *targetGr = GET(target);
+			// ...to a while or do-while condition
+			if (targetGr->_type == kWhileCond || targetGr->_type == kDoWhileCond) {
+				gr->_type = kContinue;
+			}
+		}
+	}
 }
 
 void ControlFlow::detectIf() {
