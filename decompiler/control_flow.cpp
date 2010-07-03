@@ -97,7 +97,7 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 	} while (gr2->_start != gr2->_end && it != gr2->_end);
 
 	// Add outgoing edges from g2
-	EdgeRange r = boost::out_edges(g2, _g);
+	OutEdgeRange r = boost::out_edges(g2, _g);
 	for (OutEdgeIterator e = r.first; e != r.second; ++e) {
 		boost::add_edge(g1, boost::target(*e, _g), _g);
 	}
@@ -126,7 +126,7 @@ void ControlFlow::setStackLevel(GraphVertex g, int level) {
 	if (boost::out_degree(g, _g) == 0)
 		return;
 
-	EdgeRange r = boost::out_edges(g, _g);
+	OutEdgeRange r = boost::out_edges(g, _g);
 	for (OutEdgeIterator e = r.first; e != r.second; ++e) {
 		setStackLevel(boost::target(*e, _g), level + gr->_start->_stackChange);
 	}
@@ -188,18 +188,19 @@ void ControlFlow::detectShortCircuit() {
 		bool doMerge = false;
 		cur = find(gr->_start);
 		GraphVertex prev = find(gr->_prev->_start);
+		// Block is candidate for short-circuit merging if it and the preceding block both end with conditional jumps
 		if (out_degree(cur, _g) == 2 && out_degree(prev, _g) == 2) {
 			doMerge = true;
-			EdgeRange rCur = boost::out_edges(cur, _g);
+			OutEdgeRange rCur = boost::out_edges(cur, _g);
 			std::vector<GraphVertex> succs;
 
-			//Find possible target vertices
+			// Find possible target vertices
 			for (OutEdgeIterator it = rCur.first; it != rCur.second; ++it) {
 				succs.push_back(boost::target(*it, _g));
 			}
 
-			//Check if vertex would add new targets - if yes, don't merge
-			EdgeRange rPrev = boost::out_edges(prev, _g);
+			// Check if vertex would add new targets - if yes, don't merge
+			OutEdgeRange rPrev = boost::out_edges(prev, _g);
 			for (OutEdgeIterator it = rPrev.first; it != rPrev.second; ++it) {
 				GraphVertex target = boost::target(*it, _g);
 				doMerge &= (std::find(succs.begin(), succs.end(), target) != succs.end() || target == cur);
@@ -228,10 +229,12 @@ void ControlFlow::detectWhile() {
 	VertexRange vr = boost::vertices(_g);
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		Group *gr = GET(*v);
+		// Block ends with conditional jump and has not yet been determined
 		if (out_degree(*v, _g) == 2 && gr->_type == kNormal) {
 			InEdgeRange ier = boost::in_edges(*v, _g);
 			for (InEdgeIterator e = ier.first; e != ier.second; ++e) {
 				Group *sourceGr = GET(boost::source(*e, _g));
+				// Block has ingoing edge from later in the code
 				if (sourceGr->_start->_address > gr->_start->_address)
 					gr->_type = kWhileCond;
 			}

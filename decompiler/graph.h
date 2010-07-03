@@ -189,7 +189,7 @@ typedef std::pair<VertexIterator, VertexIterator> VertexRange;
 /**
  * Type representing a range of edges from boost::out_edges.
  */
-typedef std::pair<OutEdgeIterator, OutEdgeIterator> EdgeRange;
+typedef std::pair<OutEdgeIterator, OutEdgeIterator> OutEdgeRange;
 
 /**
  * Type representing a range of edges from boost::in_edges.
