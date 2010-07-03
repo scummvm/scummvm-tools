@@ -92,24 +92,24 @@ struct Group {
 	friend std::ostream &operator<<(std::ostream &output, Group *group) {
 		output << "Block type: ";
 		switch(group->_type) {
-			case kNormal:
-				output << "Normal";
-				break;
-			case kWhileCond:
-				output << "While condition";
-				break;
-			case kDoWhileCond:
-				output << "Do-while condition";
-				break;
-			case kIfCond:
-				output << "If condition";
-				break;
-			case kBreak:
-				output << "Break";
-				break;
-			case kContinue:
-				output << "Continue";
-				break;
+		case kNormal:
+			output << "Normal";
+			break;
+		case kWhileCond:
+			output << "While condition";
+			break;
+		case kDoWhileCond:
+			output << "Do-while condition";
+			break;
+		case kIfCond:
+			output << "If condition";
+			break;
+		case kBreak:
+			output << "Break";
+			break;
+		case kContinue:
+			output << "Continue";
+			break;
 		}
 		output << "\\n";
 		InstIterator inst = group->_start;
