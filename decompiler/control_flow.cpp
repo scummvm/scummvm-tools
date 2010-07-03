@@ -232,12 +232,15 @@ void ControlFlow::detectWhile() {
 		// Undetermined block that ends with conditional jump
 		if (out_degree(*v, _g) == 2 && gr->_type == kNormal) {
 			InEdgeRange ier = boost::in_edges(*v, _g);
+			bool isWhile = false;
 			for (InEdgeIterator e = ier.first; e != ier.second; ++e) {
 				Group *sourceGr = GET(boost::source(*e, _g));
 				// Block has ingoing edge from block later in the code that isn't a do-while condition
 				if (sourceGr->_start->_address > gr->_start->_address && sourceGr->_type != kDoWhileCond)
-					gr->_type = kWhileCond;
+					isWhile = true;
 			}
+			if (isWhile)
+				gr->_type = kWhileCond;
 		}
 	}
 }
@@ -301,5 +304,35 @@ void ControlFlow::detectContinue() {
 }
 
 void ControlFlow::detectIf() {
-}
+	VertexRange vr = boost::vertices(_g);
+	for (VertexIterator v = vr.first; v != vr.second; ++v) {
+		Group *gr = GET(*v);
+		// if: Undetermined block with conditional jump
+		if (gr->_type == kNormal && out_degree(*v, _g) == 2) {
+			gr->_type = kIfCond;
 
+			OutEdgeRange oer = boost::out_edges(*v, _g);
+			GraphVertex target;
+			uint32 maxAddress = 0;
+			Group *targetGr;
+			// Find jump target
+			for (OutEdgeIterator oe = oer.first; oe != oer.second; ++oe) {
+				targetGr = GET(boost::target(*oe, _g));
+				if (targetGr->_start->_address > maxAddress) {
+					target = boost::target(*oe, _g);
+					maxAddress = targetGr->_start->_address;
+				}
+			}
+			targetGr = GET(target);
+			// else: Jump target of if immediately preceded by an unconditional jump...
+			if (targetGr->_prev->_end->_type != kJump && targetGr->_prev->_end->_type != kJumpRel)
+				continue;
+			// ...to later in the code
+			OutEdgeIterator toe = boost::out_edges(find(targetGr->_prev->_start->_address), _g).first;
+			Group *targetTargetGr = GET(boost::target(*toe, _g));
+			if (targetTargetGr->_start->_address > targetGr->_prev->_end->_address) {
+				targetGr->_else = true;
+			}
+		}
+	}
+}

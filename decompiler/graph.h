@@ -53,7 +53,7 @@ struct Group {
 	InstIterator _end;   ///< Last instruction in the group.
 	int _stackLevel;     ///< Level of the stack upon entry.
 	GroupType _type;     ///< Type of the group.
-	bool _else;          ///< Group is start of an else.
+	bool _else;          ///< Group is start of an else block.
 	Group *_prev;        ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
 	Group *_next;        ///< Pointer to the next group, when ordered by address.
 	
