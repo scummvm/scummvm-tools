@@ -3,9 +3,10 @@ pushWord 18
 pushWordVar 321
 eq
 jumpTrue postContinue
-jump do
+jump while
 postContinue:
 wordVarInc 123
+while:
 pushWord 42
 pushWordVar 123
 eq
