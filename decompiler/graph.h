@@ -172,6 +172,8 @@ struct GraphProperties {
 	 */
 	void operator()(std::ostream& out) const {
 		out << "node [shape=box]" << std::endl;
+		out << "XXX [shape=none, label=\"\", height=0]" << std::endl;
+		out << "XXX -> 0" << std::endl;
 	}
 };
 
