@@ -117,11 +117,6 @@ public:
 	void detectDoWhile();
 
 	/**
-	 * Detects if and else blocks.
-	 */
-	void detectIf();
-
-	/**
 	 * Detects break statements.
 	 */
 	void detectBreak();
@@ -130,6 +125,11 @@ public:
 	 * Detects continue statements.
 	 */
 	void detectContinue();
+
+	/**
+	 * Detects if and else blocks.
+	 */
+	void detectIf();
 };
 
 #endif

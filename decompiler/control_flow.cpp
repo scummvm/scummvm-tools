@@ -219,9 +219,9 @@ void ControlFlow::detectShortCircuit() {
 const Graph &ControlFlow::analyze() {
 	detectDoWhile();
 	detectWhile();
-	detectIf();
 	detectBreak();
 	detectContinue();
+	detectIf();	
 	return _g;
 }
 
@@ -259,11 +259,12 @@ void ControlFlow::detectDoWhile() {
 	}
 }
 
-void ControlFlow::detectIf() {
-}
-
 void ControlFlow::detectBreak() {
 }
 
 void ControlFlow::detectContinue() {
 }
+
+void ControlFlow::detectIf() {
+}
+
