@@ -243,6 +243,20 @@ void ControlFlow::detectWhile() {
 }
 
 void ControlFlow::detectDoWhile() {
+	VertexRange vr = boost::vertices(_g);
+	for (VertexIterator v = vr.first; v != vr.second; ++v) {
+		Group *gr = GET(*v);
+		// Block has not yet been determined and ends with conditional jump...
+		if (out_degree(*v, _g) == 2 && gr->_type == kNormal) {
+			OutEdgeRange oer = boost::out_edges(*v, _g);
+			for (OutEdgeIterator e = oer.first; e != oer.second; ++e) {
+				Group *targetGr = GET(boost::target(*e, _g));
+				// ...to earlier in code
+				if (targetGr->_start->_address < gr->_start->_address)
+					gr->_type = kDoWhileCond;
+			}
+		}
+	}
 }
 
 void ControlFlow::detectIf() {

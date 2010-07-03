@@ -153,4 +153,21 @@ public:
 				TS_ASSERT(gr->_type == kWhileCond);
 		}
 	}
+
+	void testDoWhileDetection() {
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Disassembler *d = engine->getDisassembler();
+		d->open("decompiler/test/while.dmp");
+		std::vector<Instruction> insts = d->disassemble();
+		delete d;
+		ControlFlow *c = new ControlFlow(insts, engine);
+		c->createGroups();
+		Graph g = c->analyze();
+		VertexRange range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 3)
+				TS_ASSERT(gr->_type == kDoWhileCond);
+		}
+	}
 };
