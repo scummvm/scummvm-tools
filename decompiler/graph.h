@@ -53,6 +53,7 @@ struct Group {
 	InstIterator _end;   ///< Last instruction in the group.
 	int _stackLevel;     ///< Level of the stack upon entry.
 	GroupType _type;     ///< Type of the group.
+	bool _else;          ///< Group is start of an else.
 	Group *_prev;        ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
 	Group *_next;        ///< Pointer to the next group, when ordered by address.
 	
@@ -77,6 +78,7 @@ struct Group {
 		_stackLevel = -1;
 		_type = kNormal;
 		_prev = prev;
+		_else = false;
 		if (_prev != NULL)
 			_prev->_next = this;
 		_next = NULL;
@@ -112,6 +114,8 @@ struct Group {
 			break;
 		}
 		output << "\\n";
+		if (group->_else)
+			output << "Start of else\\n";
 		InstIterator inst = group->_start;
 		do {
 			output << boost::format("%08x: %s") % inst->_address % inst->_name;
@@ -178,9 +182,19 @@ typedef Graph::out_edge_iterator OutEdgeIterator;
 typedef Graph::in_edge_iterator InEdgeIterator;
 
 /**
+ * Type representing a range of vertices from boost::vertices.
+ */
+typedef std::pair<VertexIterator, VertexIterator> VertexRange;
+
+/**
  * Type representing a range of edges from boost::out_edges.
  */
 typedef std::pair<OutEdgeIterator, OutEdgeIterator> EdgeRange;
+
+/**
+ * Type representing a range of edges from boost::in_edges.
+ */
+typedef std::pair<InEdgeIterator, InEdgeIterator> InEdgeRange;
 
 /**
  * Type used to set properties for dot output.

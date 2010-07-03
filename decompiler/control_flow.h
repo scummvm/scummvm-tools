@@ -105,6 +105,31 @@ public:
 	 * @returns The control flow graph after analysis.
 	 */
 	const Graph &analyze();
+
+	/**
+	 * Detects while blocks.
+	 */
+	void detectWhile();
+
+	/**
+	 * Detects do-while blocks.
+	 */
+	void detectDoWhile();
+
+	/**
+	 * Detects if and else blocks.
+	 */
+	void detectIf();
+
+	/**
+	 * Detects break statements.
+	 */
+	void detectBreak();
+
+	/**
+	 * Detects continue statements.
+	 */
+	void detectContinue();
 };
 
 #endif

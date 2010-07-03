@@ -41,7 +41,7 @@ public:
 		ControlFlow *c = new ControlFlow(insts, engine);
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 4);
-		std::pair<VertexIterator, VertexIterator> range = boost::vertices(g);
+		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			Group *gr = GET(*it);
 			switch (gr->_start->_address) {
@@ -72,7 +72,7 @@ public:
 		ControlFlow *c = new ControlFlow(insts, engine);
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 4);
-		std::pair<VertexIterator, VertexIterator> range = boost::vertices(g);
+		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			Group *gr = GET(*it);
 			switch (gr->_start->_address) {
@@ -104,7 +104,7 @@ public:
 		c->createGroups();
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 3);
-		std::pair<VertexIterator, VertexIterator> range = boost::vertices(g);
+		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			Group *gr = GET(*it);
 			switch (gr->_start->_address) {
@@ -135,5 +135,22 @@ public:
 		c->createGroups();
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 3);
+	}
+
+	void testWhileDetection() {
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Disassembler *d = engine->getDisassembler();
+		d->open("decompiler/test/while.dmp");
+		std::vector<Instruction> insts = d->disassemble();
+		delete d;
+		ControlFlow *c = new ControlFlow(insts, engine);
+		c->createGroups();
+		Graph g = c->analyze();
+		VertexRange range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0)
+				TS_ASSERT(gr->_type == kWhileCond);
+		}
 	}
 };

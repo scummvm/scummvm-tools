@@ -216,6 +216,37 @@ void ControlFlow::detectShortCircuit() {
 }
 
 const Graph &ControlFlow::analyze() {
-
+	detectDoWhile();
+	detectWhile();
+	detectIf();
+	detectBreak();
+	detectContinue();
 	return _g;
+}
+
+void ControlFlow::detectWhile() {
+	VertexRange vr = boost::vertices(_g);
+	for (VertexIterator v = vr.first; v != vr.second; ++v) {
+		Group *gr = GET(*v);
+		if (out_degree(*v, _g) == 2 && gr->_type == kNormal) {
+			InEdgeRange ier = boost::in_edges(*v, _g);
+			for (InEdgeIterator e = ier.first; e != ier.second; ++e) {
+				Group *sourceGr = GET(boost::source(*e, _g));
+				if (sourceGr->_start->_address > gr->_start->_address)
+					gr->_type = kWhileCond;
+			}
+		}
+	}
+}
+
+void ControlFlow::detectDoWhile() {
+}
+
+void ControlFlow::detectIf() {
+}
+
+void ControlFlow::detectBreak() {
+}
+
+void ControlFlow::detectContinue() {
 }
