@@ -327,11 +327,15 @@ void ControlFlow::detectIf() {
 			// else: Jump target of if immediately preceded by an unconditional jump...
 			if (targetGr->_prev->_end->_type != kJump && targetGr->_prev->_end->_type != kJumpRel)
 				continue;
+			// ...which is not a continue...
+			if (targetGr->_prev->_type == kContinue)
+				continue;
 			// ...to later in the code
 			OutEdgeIterator toe = boost::out_edges(find(targetGr->_prev->_start->_address), _g).first;
 			Group *targetTargetGr = GET(boost::target(*toe, _g));
 			if (targetTargetGr->_start->_address > targetGr->_prev->_end->_address) {
-				targetGr->_else = true;
+				targetGr->_startElse = true;
+				targetTargetGr->_prev->_endElse = true;
 			}
 		}
 	}

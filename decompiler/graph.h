@@ -53,7 +53,8 @@ struct Group {
 	InstIterator _end;   ///< Last instruction in the group.
 	int _stackLevel;     ///< Level of the stack upon entry.
 	GroupType _type;     ///< Type of the group.
-	bool _else;          ///< Group is start of an else block.
+	bool _startElse;     ///< Group is start of an else block.
+	bool _endElse;       ///< Group is end of an else block.
 	Group *_prev;        ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
 	Group *_next;        ///< Pointer to the next group, when ordered by address.
 	
@@ -78,7 +79,8 @@ struct Group {
 		_stackLevel = -1;
 		_type = kNormal;
 		_prev = prev;
-		_else = false;
+		_startElse = false;
+		_endElse = false;
 		if (_prev != NULL)
 			_prev->_next = this;
 		_next = NULL;
@@ -114,8 +116,10 @@ struct Group {
 			break;
 		}
 		output << "\\n";
-		if (group->_else)
+		if (group->_startElse)
 			output << "Start of else\\n";
+		if (group->_endElse)
+			output << "End of else\\n";
 		InstIterator inst = group->_start;
 		do {
 			output << boost::format("%08x: %s") % inst->_address % inst->_name;
