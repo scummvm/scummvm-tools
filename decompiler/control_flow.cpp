@@ -295,8 +295,17 @@ void ControlFlow::detectContinue() {
 			OutEdgeIterator oe = boost::out_edges(*v, _g).first;
 			GraphVertex target = boost::target(*oe, _g);
 			Group *targetGr = GET(target);
-			// ...to a while or do-while condition
+			// ...to a while or do-while condition...
 			if (targetGr->_type == kWhileCond || targetGr->_type == kDoWhileCond) {
+				// ...unless it is targeting a while condition...
+				if (targetGr->_type == kWhileCond) {
+					OutEdgeRange toer = boost::out_edges(target, _g);
+					for (OutEdgeIterator toe = toer.first; toe != toe.second; ++toe) {
+						// which jumps to the next sequential group
+						if (GET(boost::target(*toe, _g)) == targetGr->_next)
+							continue;
+					}
+				}
 				gr->_type = kContinue;
 			}
 		}
@@ -327,8 +336,8 @@ void ControlFlow::detectIf() {
 			// else: Jump target of if immediately preceded by an unconditional jump...
 			if (targetGr->_prev->_end->_type != kJump && targetGr->_prev->_end->_type != kJumpRel)
 				continue;
-			// ...which is not a continue...
-			if (targetGr->_prev->_type == kContinue)
+			// ...which is not a break or a continue...
+			if (targetGr->_prev->_type == kContinue || targetGr->_prev->_type == kBreak)
 				continue;
 			// ...to later in the code
 			OutEdgeIterator toe = boost::out_edges(find(targetGr->_prev->_start->_address), _g).first;
