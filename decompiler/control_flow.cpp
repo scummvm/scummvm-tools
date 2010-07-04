@@ -279,7 +279,42 @@ void ControlFlow::detectBreak() {
 				Group *sourceGr = GET(boost::source(*ie, _g));
 				// ...to block immediately after a do-while condition, or to jump target of a while condition
 				if ((targetGr->_prev == sourceGr && sourceGr->_type == kDoWhileCond) || sourceGr->_type == kWhileCond) {
-					gr->_type = kBreak;
+					Group *from, *to, *cursor;
+
+					if (sourceGr->_type == kDoWhileCond) {
+						to = targetGr->_prev;
+						from = gr;
+					}	else {
+						to = gr;
+						from = sourceGr->_next;
+					}
+
+					GroupType ogt = (targetGr->_type == kDoWhileCond ? kWhileCond : kDoWhileCond);
+					bool isBreak = true;
+					// Verify that destination deals with innermost while/do-while
+					for (cursor = from; cursor->_next != NULL && cursor != to; cursor = cursor->_next) {
+						if (cursor->_type == sourceGr->_type) {
+							OutEdgeRange oerValidate = boost::out_edges(find(cursor->_start), _g);
+							for (OutEdgeIterator oeValidate = oerValidate.first; oeValidate != oerValidate.second; oeValidate++) {
+								GraphVertex vValidate = boost::target(*oeValidate, _g);
+								Group *gValidate = GET(vValidate);
+								// For all other loops of same type found in range, all targets must fall within that range
+								if (gValidate->_start->_address < from->_start->_address || gValidate->_start->_address > to->_start->_address )
+									isBreak = false;
+
+								InEdgeRange ierValidate = boost::in_edges(vValidate, _g);
+								for (InEdgeIterator ieValidate = ierValidate.first; ieValidate != ierValidate.second; ieValidate++) {
+									Group *igValidate = GET(boost::source(*ieValidate, _g));
+									// All loops of other type going into range must be placed within range
+									if (igValidate->_type == ogt && (igValidate->_start->_address < from->_start->_address || igValidate->_start->_address > to->_start->_address ))
+										isBreak = false;
+								}
+							}
+						}
+					}
+
+					if (isBreak)
+						gr->_type = kBreak;
 				}
 			}
 		}
@@ -300,13 +335,48 @@ void ControlFlow::detectContinue() {
 				// ...unless it is targeting a while condition...
 				if (targetGr->_type == kWhileCond) {
 					OutEdgeRange toer = boost::out_edges(target, _g);
-					for (OutEdgeIterator toe = toer.first; toe != toe.second; ++toe) {
+					for (OutEdgeIterator toe = toer.first; toe != toer.second; ++toe) {
 						// which jumps to the next sequential group
 						if (GET(boost::target(*toe, _g)) == targetGr->_next)
 							continue;
 					}
 				}
-				gr->_type = kContinue;
+				Group *from, *to, *cursor;
+
+				if (targetGr->_type == kDoWhileCond) {
+					to = targetGr;
+					from = gr;
+				}	else {
+					to = gr;
+					from = targetGr->_next;
+				}
+
+				GroupType ogt = (targetGr->_type == kDoWhileCond ? kWhileCond : kDoWhileCond);
+				bool isContinue = true;
+				// Verify that destination deals with innermost while/do-while
+				for (cursor = from; cursor->_next != NULL && cursor != to; cursor = cursor->_next) {
+					if (cursor->_type == targetGr->_type) {
+						OutEdgeRange oerValidate = boost::out_edges(find(cursor->_start), _g);
+						for (OutEdgeIterator oeValidate = oerValidate.first; oeValidate != oerValidate.second; oeValidate++) {
+							GraphVertex vValidate = boost::target(*oeValidate, _g);
+							Group *gValidate = GET(vValidate);
+							// For all other loops of same type found in range, all targets must fall within that range
+							if (gValidate->_start->_address < from->_start->_address || gValidate->_start->_address > to->_start->_address )
+								isContinue = false;
+
+							InEdgeRange ierValidate = boost::in_edges(vValidate, _g);
+							for (InEdgeIterator ieValidate = ierValidate.first; ieValidate != ierValidate.second; ieValidate++) {
+								Group *igValidate = GET(boost::source(*ieValidate, _g));
+								// All loops of other type going into range must be placed within range
+								if (igValidate->_type == ogt && (igValidate->_start->_address < from->_start->_address || igValidate->_start->_address > to->_start->_address ))
+									isContinue = false;
+							}
+						}
+					}
+				}
+	
+				if (isContinue)
+					gr->_type = kContinue;
 			}
 		}
 	}
