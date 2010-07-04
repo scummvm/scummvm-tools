@@ -279,41 +279,7 @@ void ControlFlow::detectBreak() {
 				Group *sourceGr = GET(boost::source(*ie, _g));
 				// ...to block immediately after a do-while condition, or to jump target of a while condition
 				if ((targetGr->_prev == sourceGr && sourceGr->_type == kDoWhileCond) || sourceGr->_type == kWhileCond) {
-					Group *from, *to, *cursor;
-
-					if (sourceGr->_type == kDoWhileCond) {
-						to = targetGr->_prev;
-						from = gr;
-					}	else {
-						to = gr;
-						from = sourceGr->_next;
-					}
-
-					GroupType ogt = (targetGr->_type == kDoWhileCond ? kWhileCond : kDoWhileCond);
-					bool isBreak = true;
-					// Verify that destination deals with innermost while/do-while
-					for (cursor = from; cursor->_next != NULL && cursor != to; cursor = cursor->_next) {
-						if (cursor->_type == sourceGr->_type) {
-							OutEdgeRange oerValidate = boost::out_edges(find(cursor->_start), _g);
-							for (OutEdgeIterator oeValidate = oerValidate.first; oeValidate != oerValidate.second; oeValidate++) {
-								GraphVertex vValidate = boost::target(*oeValidate, _g);
-								Group *gValidate = GET(vValidate);
-								// For all other loops of same type found in range, all targets must fall within that range
-								if (gValidate->_start->_address < from->_start->_address || gValidate->_start->_address > to->_start->_address )
-									isBreak = false;
-
-								InEdgeRange ierValidate = boost::in_edges(vValidate, _g);
-								for (InEdgeIterator ieValidate = ierValidate.first; ieValidate != ierValidate.second; ieValidate++) {
-									Group *igValidate = GET(boost::source(*ieValidate, _g));
-									// All loops of other type going into range must be placed within range
-									if (igValidate->_type == ogt && (igValidate->_start->_address < from->_start->_address || igValidate->_start->_address > to->_start->_address ))
-										isBreak = false;
-								}
-							}
-						}
-					}
-
-					if (isBreak)
+					if (validateBreakOrContinue(gr, sourceGr))
 						gr->_type = kBreak;
 				}
 			}
@@ -342,44 +308,48 @@ void ControlFlow::detectContinue() {
 							isContinue = false;
 					}
 				}
-				Group *from, *to, *cursor;
-
-				if (targetGr->_type == kDoWhileCond) {
-					to = targetGr;
-					from = gr;
-				}	else {
-					to = gr;
-					from = targetGr->_next;
-				}
-
-				GroupType ogt = (targetGr->_type == kDoWhileCond ? kWhileCond : kDoWhileCond);
-				// Verify that destination deals with innermost while/do-while
-				for (cursor = from; cursor->_next != NULL && cursor != to; cursor = cursor->_next) {
-					if (cursor->_type == targetGr->_type) {
-						OutEdgeRange oerValidate = boost::out_edges(find(cursor->_start), _g);
-						for (OutEdgeIterator oeValidate = oerValidate.first; oeValidate != oerValidate.second; oeValidate++) {
-							GraphVertex vValidate = boost::target(*oeValidate, _g);
-							Group *gValidate = GET(vValidate);
-							// For all other loops of same type found in range, all targets must fall within that range
-							if (gValidate->_start->_address < from->_start->_address || gValidate->_start->_address > to->_start->_address )
-								isContinue = false;
-
-							InEdgeRange ierValidate = boost::in_edges(vValidate, _g);
-							for (InEdgeIterator ieValidate = ierValidate.first; ieValidate != ierValidate.second; ieValidate++) {
-								Group *igValidate = GET(boost::source(*ieValidate, _g));
-								// All loops of other type going into range must be placed within range
-								if (igValidate->_type == ogt && (igValidate->_start->_address < from->_start->_address || igValidate->_start->_address > to->_start->_address ))
-									isContinue = false;
-							}
-						}
-					}
-				}
 	
-				if (isContinue)
+				if (isContinue && validateBreakOrContinue(gr, targetGr))
 					gr->_type = kContinue;
 			}
 		}
 	}
+}
+
+bool ControlFlow::validateBreakOrContinue(Group *gr, Group *condGr) {
+	Group *from, *to, *cursor;
+
+	if (condGr->_type == kDoWhileCond) {
+		to = condGr;
+		from = gr;
+	}	else {
+		to = gr;
+		from = condGr->_next;
+	}
+
+	GroupType ogt = (condGr->_type == kDoWhileCond ? kWhileCond : kDoWhileCond);
+	// Verify that destination deals with innermost while/do-while
+	for (cursor = from; cursor->_next != NULL && cursor != to; cursor = cursor->_next) {
+		if (cursor->_type == condGr->_type) {
+			OutEdgeRange oerValidate = boost::out_edges(find(cursor->_start), _g);
+			for (OutEdgeIterator oeValidate = oerValidate.first; oeValidate != oerValidate.second; oeValidate++) {
+				GraphVertex vValidate = boost::target(*oeValidate, _g);
+				Group *gValidate = GET(vValidate);
+				// For all other loops of same type found in range, all targets must fall within that range
+				if (gValidate->_start->_address < from->_start->_address || gValidate->_start->_address > to->_start->_address )
+					return false;
+
+				InEdgeRange ierValidate = boost::in_edges(vValidate, _g);
+				for (InEdgeIterator ieValidate = ierValidate.first; ieValidate != ierValidate.second; ieValidate++) {
+					Group *igValidate = GET(boost::source(*ieValidate, _g));
+					// All loops of other type going into range must be placed within range
+					if (igValidate->_type == ogt && (igValidate->_start->_address < from->_start->_address || igValidate->_start->_address > to->_start->_address ))
+					return false;
+				}
+			}
+		}
+	}
+	return true;
 }
 
 void ControlFlow::detectIf() {

@@ -127,6 +127,15 @@ public:
 	void detectContinue();
 
 	/**
+	 * Checks if a candidate break/continue goes to the closest loop.
+	 *
+	 * @param gr     The group containing the candidate break/continue.
+	 * @param condGr The group containing the respective loop condition.
+	 * @returns True if the validation succeeded, false if it did not.
+	 */
+	bool validateBreakOrContinue(Group *gr, Group *targetGr);
+
+	/**
 	 * Detects if and else blocks.
 	 */
 	void detectIf();
