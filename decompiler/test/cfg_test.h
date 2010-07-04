@@ -246,6 +246,8 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0x14)
 				TS_ASSERT(gr->_type == kContinue);
+			if (gr->_start->_address == 0x1a)
+				TS_ASSERT(gr->_type == kNormal);
 		}
 		delete c;
 
