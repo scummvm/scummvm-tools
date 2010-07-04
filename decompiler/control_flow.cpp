@@ -332,13 +332,14 @@ void ControlFlow::detectContinue() {
 			Group *targetGr = GET(target);
 			// ...to a while or do-while condition...
 			if (targetGr->_type == kWhileCond || targetGr->_type == kDoWhileCond) {
+				bool isContinue = true;
 				// ...unless it is targeting a while condition...
 				if (targetGr->_type == kWhileCond) {
 					OutEdgeRange toer = boost::out_edges(target, _g);
 					for (OutEdgeIterator toe = toer.first; toe != toer.second; ++toe) {
-						// which jumps to the next sequential group
-						if (GET(boost::target(*toe, _g)) == targetGr->_next)
-							continue;
+						// ...which jumps to the next sequential group
+						if (GET(boost::target(*toe, _g)) == gr->_next)
+							isContinue = false;
 					}
 				}
 				Group *from, *to, *cursor;
@@ -352,7 +353,6 @@ void ControlFlow::detectContinue() {
 				}
 
 				GroupType ogt = (targetGr->_type == kDoWhileCond ? kWhileCond : kDoWhileCond);
-				bool isContinue = true;
 				// Verify that destination deals with innermost while/do-while
 				for (cursor = from; cursor->_next != NULL && cursor != to; cursor = cursor->_next) {
 					if (cursor->_type == targetGr->_type) {
