@@ -361,4 +361,167 @@ public:
 		delete c;
 		delete engine;
 	}
+
+	void testNestedLoops() {
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Disassembler *d = engine->getDisassembler();
+		d->open("decompiler/test/do-while-in-while.dmp");
+		std::vector<Instruction> insts = d->disassemble();
+		delete d;
+		ControlFlow *c = new ControlFlow(insts, engine);
+		c->createGroups();
+		Graph g = c->analyze();
+		VertexRange range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0x0)
+				TS_ASSERT(gr->_type == kWhileCond);
+			if (gr->_start->_address == 0xd)
+				TS_ASSERT(gr->_type == kDoWhileCond);
+		}
+		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/nested-do-while.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0x6)
+				TS_ASSERT(gr->_type == kDoWhileCond);
+			if (gr->_start->_address == 0x10)
+				TS_ASSERT(gr->_type == kDoWhileCond);
+		}
+		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/nested-while.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0x0)
+				TS_ASSERT(gr->_type == kWhileCond);
+			if (gr->_start->_address == 0xa)
+				TS_ASSERT(gr->_type == kWhileCond);
+		}
+		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/nested-while2.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0x0)
+				TS_ASSERT(gr->_type == kWhileCond);
+			if (gr->_start->_address == 0xd)
+				TS_ASSERT(gr->_type == kWhileCond);
+		}
+		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/while-in-do-while.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0x0)
+				TS_ASSERT(gr->_type == kWhileCond);
+			if (gr->_start->_address == 0x10)
+				TS_ASSERT(gr->_type == kDoWhileCond);
+		}
+		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/while-in-do-while2.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			if (gr->_start->_address == 0x3)
+				TS_ASSERT(gr->_type == kWhileCond);
+			if (gr->_start->_address == 0x13)
+				TS_ASSERT(gr->_type == kDoWhileCond);
+		}
+		delete c;
+
+		delete engine;
+	}
+
+	// This test requires script-30.dmp from Sam & Max: Hit The Road.
+	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
+	void testSamAndMaxScript30() {
+		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Disassembler *d = engine->getDisassembler();
+		d->open("decompiler/test/script-30.dmp");
+		std::vector<Instruction> insts = d->disassemble();
+		delete d;
+		ControlFlow *c = new ControlFlow(insts, engine);
+		c->createGroups();
+		Graph g = c->analyze();
+		VertexRange range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			Group *gr = GET(*it);
+			switch (gr->_start->_address) {
+			case 0x6:
+				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(!gr->_startElse);
+				TS_ASSERT(!gr->_endElse);
+				break;
+			case 0x19:
+			case 0x3A:
+			case 0x4F:
+			case 0x68:
+			case 0x75:
+			case 0x92:
+				TS_ASSERT(gr->_type == kIfCond);
+				TS_ASSERT(!gr->_startElse);
+				TS_ASSERT(!gr->_endElse);
+				break;
+			case 0x8B:
+				TS_ASSERT(gr->_type == kNormal);
+				TS_ASSERT(gr->_startElse);
+				TS_ASSERT(gr->_endElse);
+				break;
+			case 0x91:
+				TS_ASSERT(gr->_type == kNormal);
+				TS_ASSERT(gr->_startElse);
+				TS_ASSERT(!gr->_endElse);
+				break;
+			case 0xA6:
+				TS_ASSERT(gr->_type == kNormal);
+				TS_ASSERT(!gr->_startElse);
+				TS_ASSERT(gr->_endElse);
+				break;
+			default:
+				TS_ASSERT(gr->_type == kNormal);
+				TS_ASSERT(!gr->_startElse);
+				TS_ASSERT(!gr->_endElse);
+				break;
+			}
+		}
+		delete c;
+		delete engine;
+	}
 };
