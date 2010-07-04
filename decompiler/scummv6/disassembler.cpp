@@ -33,24 +33,24 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		blockName += _f.readChar();
 	}
 	if (blockName == "SCRP") {
-		std::clog << "Input is global script\n";
+		//std::clog << "Input is global script\n";
 		_f.seek(8, SEEK_SET);
 	} else if (blockName == "LSCR") {
-		std::clog << "Input is local script\n";
+		//std::clog << "Input is local script\n";
 		_f.seek(9, SEEK_SET);
 	} else if (blockName == "ENCD") {
-		std::clog << "Input is room entry script\n";
+		//std::clog << "Input is room entry script\n";
 		_f.seek(8, SEEK_SET);
 	} else if (blockName == "EXCD") {
-		std::clog << "Input is room exit script\n";
+		//std::clog << "Input is room exit script\n";
 		_f.seek(8, SEEK_SET);
 	} else if (blockName == "VERB") {
-		std::clog << "Input is object script\n";
+		//std::clog << "Input is object script\n";
 		_f.seek(8, SEEK_SET);
-		std::clog << "Offset table:\n";
+		//std::clog << "Offset table:\n";
 		uint32 verb = _f.readByte();
 		while (verb != 0) {
-			std::clog << boost::format("%02x - %04x\n") % verb % _f.readUint16LE();
+			//std::clog << boost::format("%02x - %04x\n") % verb % _f.readUint16LE();
 			verb = _f.readByte();
 		}
 	}
