@@ -1,0 +1,22 @@
+while (var123 == 18) {
+	while (var321 == 42) {
+		var321++;
+	}
+}
+
+while:
+pushWord 18
+pushWordVar 123
+eq
+jumpTrue postWhile
+while2:
+pushWord 42
+pushWordVar 321
+eq
+jumpTrue postWhile2
+wordVarInc 321
+jump while2
+postWhile2:
+jump while
+postWhile:
+stopObjectCodeA
