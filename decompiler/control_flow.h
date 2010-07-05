@@ -73,38 +73,10 @@ private:
 	 */
 	void setStackLevel(GraphVertex g, int level);
 
-public:
-	/**
-	 * Gets the current control flow graph.
-	 *
-	 * @returns The current control flow graph.
-	 */
-	const Graph &getGraph() const { return _g; };
-
-	/**
-	 * Constructor for the control flow graph.
-	 *
-	 * @param insts  std::vector containing the instructions to analyze control flow for.
-	 * @param engine Pointer to the Engine used for the script.
-	 */
-	ControlFlow(std::vector<Instruction> &insts, Engine *engine);
-
-	/**
-	 * Creates groups suitable for a stack-based machine.
-	 */
-	void createGroups();
-
 	/**
 	 * Merged groups that are part of the same short-circuited condition check.
 	 */
 	void detectShortCircuit();
-
-	/**
-	 * Performs control flow analysis.
-	 *
-	 * @returns The control flow graph after analysis.
-	 */
-	const Graph &analyze();
 
 	/**
 	 * Detects while blocks.
@@ -139,6 +111,34 @@ public:
 	 * Detects if and else blocks.
 	 */
 	void detectIf();
+
+public:
+	/**
+	 * Gets the current control flow graph.
+	 *
+	 * @returns The current control flow graph.
+	 */
+	const Graph &getGraph() const { return _g; };
+
+	/**
+	 * Constructor for the control flow graph.
+	 *
+	 * @param insts  std::vector containing the instructions to analyze control flow for.
+	 * @param engine Pointer to the Engine used for the script.
+	 */
+	ControlFlow(std::vector<Instruction> &insts, Engine *engine);
+
+	/**
+	 * Creates groups suitable for a stack-based machine.
+	 */
+	void createGroups();
+
+	/**
+	 * Performs control flow analysis.
+	 *
+	 * @returns The control flow graph after analysis.
+	 */
+	const Graph &analyze();
 };
 
 #endif
