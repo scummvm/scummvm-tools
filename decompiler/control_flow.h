@@ -80,6 +80,7 @@ private:
 
 	/**
 	 * Detects while blocks.
+	 * Do-while detection must be completed before running this method.
 	 */
 	void detectWhile();
 
@@ -90,11 +91,13 @@ private:
 
 	/**
 	 * Detects break statements.
+	 * Do-while and while detection must be completed before running this method.
 	 */
 	void detectBreak();
 
 	/**
 	 * Detects continue statements.
+	 * Do-while and while detection must be completed before running this method.
 	 */
 	void detectContinue();
 
@@ -109,6 +112,7 @@ private:
 
 	/**
 	 * Detects if and else blocks.
+	 * Must be performed after break and continue detection.
 	 */
 	void detectIf();
 
@@ -130,11 +134,14 @@ public:
 
 	/**
 	 * Creates groups suitable for a stack-based machine.
+	 * Before group creation, the expected stack level for each instruction is determined.
+	 * After group creation, short-circuit detection is applied to the groups.
 	 */
 	void createGroups();
 
 	/**
 	 * Performs control flow analysis.
+	 * The constructs are detected in the following order: do-while, while, break, continue, if/else.
 	 *
 	 * @returns The control flow graph after analysis.
 	 */

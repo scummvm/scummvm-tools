@@ -51,12 +51,12 @@ enum GroupType {
 struct Group {
 	ConstInstIterator _start; ///< First instruction in the group.
 	ConstInstIterator _end;   ///< Last instruction in the group.
-	int _stackLevel;     ///< Level of the stack upon entry.
-	GroupType _type;     ///< Type of the group.
-	bool _startElse;     ///< Group is start of an else block.
-	bool _endElse;       ///< Group is end of an else block.
-	Group *_prev;        ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
-	Group *_next;        ///< Pointer to the next group, when ordered by address.
+	int _stackLevel;          ///< Level of the stack upon entry.
+	GroupType _type;          ///< Type of the group.
+	bool _startElse;          ///< Group is start of an else block.
+	bool _endElse;            ///< Group is end of an else block.
+	Group *_prev;             ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
+	Group *_next;             ///< Pointer to the next group, when ordered by address.
 	
 	/**
 	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
