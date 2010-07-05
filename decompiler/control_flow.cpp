@@ -32,14 +32,14 @@
 #define PUT_ID(vertex, id) boost::put(boost::vertex_index, _g, vertex, id);
 #define GET(vertex) (boost::get(boost::vertex_name, _g, vertex))
 
-ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) : _insts(insts) {
+ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) : _insts(insts) {
 	_engine = engine;
 	GraphVertex last;
 	bool addEdge = false;
 	int id = 0;
 	Group *prev = NULL;
 
-	for (InstIterator it = insts.begin(); it != insts.end(); ++it) {
+	for (ConstInstIterator it = insts.begin(); it != insts.end(); ++it) {
 		GraphVertex cur = boost::add_vertex(_g);
 		_addrMap[it->_address] = cur;
 		PUT(cur, new Group(it, it, prev));
@@ -53,7 +53,7 @@ ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) : _ins
 		prev = GET(cur);
 	}
 
-	for (InstIterator it = insts.begin(); it != insts.end(); ++it) {
+	for (ConstInstIterator it = insts.begin(); it != insts.end(); ++it) {
 		switch(it->_type) {
 		case kJump:
 		case kCondJump:
@@ -71,7 +71,7 @@ GraphVertex ControlFlow::find(const Instruction &inst) {
 	return _addrMap[inst._address];
 }
 
-GraphVertex ControlFlow::find(InstIterator it) {
+GraphVertex ControlFlow::find(ConstInstIterator it) {
 	return _addrMap[it->_address];
 }
 
@@ -90,7 +90,7 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 	PUT(g1, gr1);
 
 	// Update address map
-	InstIterator it = gr2->_start;
+	ConstInstIterator it = gr2->_start;
 	do {
 		_addrMap[it->_address] = g1;
 		++it;
@@ -135,8 +135,10 @@ void ControlFlow::setStackLevel(GraphVertex g, int level) {
 }
 
 void ControlFlow::createGroups() {
+	if (GET(find(_insts.begin()))->_stackLevel != -1)
+		return;
 	setStackLevel(find(_insts.begin()), 0);
-	InstIterator curInst, nextInst;
+	ConstInstIterator curInst, nextInst;
 	nextInst = _insts.begin();
 	nextInst++;
 	int stackLevel = 0;
@@ -182,7 +184,7 @@ void ControlFlow::createGroups() {
 }
 
 void ControlFlow::detectShortCircuit() {
-	InstIterator lastInst = _insts.end();
+	ConstInstIterator lastInst = _insts.end();
 	--lastInst;
 	GraphVertex cur = find(lastInst);
 	Group *gr = GET(cur);

@@ -109,4 +109,9 @@ struct Instruction {
  */
 typedef std::vector<Instruction>::iterator InstIterator;
 
+/**
+ * Type representing a const_iterator over Instructions.
+ */
+typedef std::vector<Instruction>::const_iterator ConstInstIterator;
+
 #endif

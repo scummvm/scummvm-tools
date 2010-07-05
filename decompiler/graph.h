@@ -49,8 +49,8 @@ enum GroupType {
  * Structure representing a group of instructions.
  */
 struct Group {
-	InstIterator _start; ///< First instruction in the group.
-	InstIterator _end;   ///< Last instruction in the group.
+	ConstInstIterator _start; ///< First instruction in the group.
+	ConstInstIterator _end;   ///< Last instruction in the group.
 	int _stackLevel;     ///< Level of the stack upon entry.
 	GroupType _type;     ///< Type of the group.
 	bool _startElse;     ///< Group is start of an else block.
@@ -73,7 +73,7 @@ struct Group {
 	 * @param end   Last instruction in the group.
 	 * @param prev  Pointer to the previous group, when ordered by address.
 	 */
-	Group(InstIterator start, InstIterator end, Group *prev) {
+	Group(ConstInstIterator start, ConstInstIterator end, Group *prev) {
 		_start = start;
 		_end = end;
 		_stackLevel = -1;
@@ -120,10 +120,10 @@ struct Group {
 			output << "Start of else\\n";
 		if (group->_endElse)
 			output << "End of else\\n";
-		InstIterator inst = group->_start;
+		ConstInstIterator inst = group->_start;
 		do {
 			output << boost::format("%08x: %s") % inst->_address % inst->_name;
-			std::vector<Parameter>::iterator param;
+			std::vector<Parameter>::const_iterator param;
 			for (param = inst->_params.begin(); param != inst->_params.end(); ++param) {
 				if (param != inst->_params.begin())
 					output << ",";

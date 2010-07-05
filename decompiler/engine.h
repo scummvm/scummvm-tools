@@ -44,7 +44,7 @@ public:
 	 *
 	 * @param it Iterator pointing to the instruction to decode.
 	 */
-	virtual uint32 getDestAddress(InstIterator it) const = 0;
+	virtual uint32 getDestAddress(ConstInstIterator it) const = 0;
 };
 
 #endif

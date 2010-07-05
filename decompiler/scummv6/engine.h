@@ -35,7 +35,7 @@ namespace v6 {
 class Engine : public ::Engine {
 public:
 	::Disassembler *getDisassembler() const;
-	uint32 getDestAddress(InstIterator it) const;
+	uint32 getDestAddress(ConstInstIterator it) const;
 };
 
 } // End of namespace v6

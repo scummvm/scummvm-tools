@@ -33,7 +33,7 @@ class ControlFlow {
 private:
 	Graph _g;                               ///< The control flow graph.
 	Engine *_engine;                        ///< Pointer to the Engine used for the script.
-	std::vector<Instruction> &_insts;       ///< The instructions being analyzed
+	const std::vector<Instruction> &_insts; ///< The instructions being analyzed
 	std::map<uint32, GraphVertex> _addrMap; ///< Map between addresses and vertices.
 
 	/**
@@ -48,7 +48,7 @@ private:
 	 *
 	 * @param it The iterator to find the vertex for.
 	 */
-	GraphVertex find(InstIterator it);
+	GraphVertex find(ConstInstIterator it);
 
 	/**
 	 * Finds a graph vertex through an address.
@@ -126,7 +126,7 @@ public:
 	 * @param insts  std::vector containing the instructions to analyze control flow for.
 	 * @param engine Pointer to the Engine used for the script.
 	 */
-	ControlFlow(std::vector<Instruction> &insts, Engine *engine);
+	ControlFlow(const std::vector<Instruction> &insts, Engine *engine);
 
 	/**
 	 * Creates groups suitable for a stack-based machine.

@@ -27,7 +27,7 @@
 	return new Disassembler();
 }
 
-uint32 Scumm::v6::Engine::getDestAddress(InstIterator it) const {
+uint32 Scumm::v6::Engine::getDestAddress(ConstInstIterator it) const {
 	switch(it->_type) {
 	case kJump:
 	case kCondJump:
