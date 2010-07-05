@@ -152,9 +152,6 @@ int main(int argc, char** argv) {
 		// TODO: Code generation
 		
 		// Free memory		
-		VertexRange vr = boost::vertices(g);
-		for (VertexIterator v = vr.first; v != vr.second; ++v)
-			delete boost::get(boost::vertex_name, g, *v);
 		delete engine;
 	} catch (std::exception& e) {
 		std::cerr << "ERROR: " << e.what() << "\n";

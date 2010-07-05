@@ -33,6 +33,8 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
 
+#include <boost/intrusive_ptr.hpp>
+
 /**
  * Enumeration representing the different kinds of groups.
  */
@@ -45,26 +47,41 @@ enum GroupType {
 	kContinue     ///< Group is a continue.
 };
 
+struct Group;
+
+/**
+ * Pointer to a Group.
+ */
+typedef boost::intrusive_ptr<Group> GroupPtr;
+
+namespace boost {
+	inline void intrusive_ptr_add_ref(Group *p);
+	inline void intrusive_ptr_release(Group *p);
+}
+
 /**
  * Structure representing a group of instructions.
  */
 struct Group {
-	ConstInstIterator _start; ///< First instruction in the group.
-	ConstInstIterator _end;   ///< Last instruction in the group.
-	int _stackLevel;          ///< Level of the stack upon entry.
-	GroupType _type;          ///< Type of the group.
-	bool _startElse;          ///< Group is start of an else block.
-	bool _endElse;            ///< Group is end of an else block.
+private:
+  long _refCount;	///< Reference count used for boost::intrusive_ptr.
+  friend void ::boost::intrusive_ptr_add_ref(Group *p);
+  friend void ::boost::intrusive_ptr_release(Group *p);
+
+public:	
+	ConstInstIterator _start;   ///< First instruction in the group.
+	ConstInstIterator _end;     ///< Last instruction in the group.
+	int _stackLevel;            ///< Level of the stack upon entry.
+	GroupType _type;            ///< Type of the group.
+	bool _startElse;            ///< Group is start of an else block.
+	bool _endElse;              ///< Group is end of an else block.
 	Group *_prev;             ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
 	Group *_next;             ///< Pointer to the next group, when ordered by address.
-	
+
 	/**
 	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
 	 */
-	Group() { 
-		_stackLevel = -1;
-		_type = kNormal;
-	}
+	Group() : _refCount(0), _stackLevel(-1), _type(kNormal) { }
 
 	/**
 	 * Constructor for Group.
@@ -73,12 +90,12 @@ struct Group {
 	 * @param end   Last instruction in the group.
 	 * @param prev  Pointer to the previous group, when ordered by address.
 	 */
-	Group(ConstInstIterator start, ConstInstIterator end, Group *prev) {
+	Group(ConstInstIterator start, ConstInstIterator end, GroupPtr prev) : _refCount(0) {
 		_start = start;
 		_end = end;
 		_stackLevel = -1;
 		_type = kNormal;
-		_prev = prev;
+		_prev = prev.get();
 		_startElse = false;
 		_endElse = false;
 		if (_prev != NULL)
@@ -93,7 +110,7 @@ struct Group {
 	 * @param group  The Group to output.
 	 * @return The std::ostream used for output.
 	 */
-	friend std::ostream &operator<<(std::ostream &output, Group *group) {
+	friend std::ostream &operator<<(std::ostream &output, GroupPtr group) {
 		output << "Block type: ";
 		switch(group->_type) {
 		case kNormal:
@@ -145,10 +162,27 @@ struct Group {
 	}
 };
 
+namespace boost {
+	/**
+	 * Add a reference to a pointer.
+	 */
+	inline void intrusive_ptr_add_ref(Group *p) {
+		++(p->_refCount);
+	}
+
+	/**
+	 * Remove a reference from a pointer.
+	 */
+	inline void intrusive_ptr_release(Group *p) {
+		if (--(p->_refCount) == 0)
+			delete p;
+	}
+}
+
 /**
  * Type representing properties containing a pointer to a Group.
  */
-typedef boost::property<boost::vertex_name_t, Group *> GroupProperty;
+typedef boost::property<boost::vertex_name_t, GroupPtr> GroupProperty;
 
 /**
  * Type representing properties containing an index, followed by a GroupProperty.

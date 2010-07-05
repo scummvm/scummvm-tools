@@ -108,7 +108,7 @@ private:
 	 * @param condGr The group containing the respective loop condition.
 	 * @returns True if the validation succeeded, false if it did not.
 	 */
-	bool validateBreakOrContinue(Group *gr, Group *targetGr);
+	bool validateBreakOrContinue(GroupPtr gr, GroupPtr targetGr);
 
 	/**
 	 * Detects if and else blocks.
