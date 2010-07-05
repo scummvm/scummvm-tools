@@ -66,13 +66,3 @@ All remaining conditional jumps are flagged as \verb+if+s. If the instruction im
 Currently, only unconditional jumps are supported for \verb+break+ and \verb+continue+; however, for code of the form \verb+if (...) break;+ or \verb+if (...) continue;+, it is an obvious optimization to use the \verb+break+/\verb+continue+ jump as the conditional jump for the \verb+if+ condition check. Since \verb+if+s are found last, it should be possible to simply check unmarked conditional jumps as well and see if they meet the other criteria for a \verb+break+/\verb+continue+, although there might be some false positives for an if that stretches to the end of the loop it is placed in.
 
 It is currently assumed that all conditional jumps in \verb+if+ condition checks go to a later place in the code. If optimized continue statements are used in a while (as described above), this will cause the analysis to be incorrect.
-
-Groups are currently stored as raw pointers. Due to implementation details over how Boost.Graph handles properties, these groups must be manually deallocated when the graph goes out of scope, or they will cause a memory leak. The groups can be reclaimed using the following piece of code:
-\begin{C++}
-\begin{lstlisting}
-VertexRange vr = boost::vertices(g);
-for (VertexIterator v = vr.first; v != vr.second; ++v)
-	delete boost::get(boost::vertex_name, g, *v);
-\end{lstlisting}
-\end{C++}
-Eventually, they should probably be changed to smart pointers, so the memory management is handled automatically.
