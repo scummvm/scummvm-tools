@@ -60,6 +60,7 @@ public:
 			default:
 				TS_ASSERT(false);
 			}
+			delete gr;
 		}
 		delete c;
 		delete engine;
@@ -93,6 +94,7 @@ public:
 			default:
 				TS_ASSERT(false);
 			}
+			delete gr;
 		}
 		delete c;
 		delete engine;
@@ -126,6 +128,7 @@ public:
 				TS_ASSERT(false);
 				break;
 			}
+			delete gr;
 		}
 		delete c;
 		delete engine;
@@ -141,6 +144,9 @@ public:
 		c->createGroups();
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 3);
+		VertexRange vr = boost::vertices(g);
+		for(VertexIterator v = vr.first; v != vr.second; ++v)
+			delete boost::get(boost::vertex_name, g, *v);
 		delete c;
 		delete engine;
 	}
@@ -159,6 +165,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0)
 				TS_ASSERT(gr->_type == kWhileCond);
+			delete gr;
 		}
 		delete c;
 		delete engine;
@@ -178,6 +185,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 3)
 				TS_ASSERT(gr->_type == kDoWhileCond);
+			delete gr;
 		}
 		delete c;
 		delete engine;
@@ -197,6 +205,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0x14)
 				TS_ASSERT(gr->_type == kBreak);
+			delete gr;
 		}
 		delete c;
 
@@ -212,6 +221,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0xA)
 				TS_ASSERT(gr->_type == kBreak);
+			delete gr;
 		}
 		delete c;
 
@@ -227,6 +237,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0xD)
 				TS_ASSERT(gr->_type == kBreak);
+			delete gr;
 		}
 		delete c;
 		delete engine;
@@ -248,6 +259,7 @@ public:
 				TS_ASSERT(gr->_type == kContinue);
 			if (gr->_start->_address == 0x1a)
 				TS_ASSERT(gr->_type == kNormal);
+			delete gr;
 		}
 		delete c;
 
@@ -263,6 +275,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0xA)
 				TS_ASSERT(gr->_type == kContinue);
+			delete gr;
 		}
 		delete c;
 
@@ -278,6 +291,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0xD)
 				TS_ASSERT(gr->_type == kContinue);
+			delete gr;
 		}
 		delete c;
 		delete engine;
@@ -297,6 +311,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0x0)
 				TS_ASSERT(gr->_type == kIfCond);
+			delete gr;
 		}
 		delete c;
 
@@ -312,6 +327,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0x0)
 				TS_ASSERT(gr->_type == kIfCond);
+			delete gr;
 		}
 		delete c;
 
@@ -327,6 +343,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0x3)
 				TS_ASSERT(gr->_type == kIfCond);
+			delete gr;
 		}
 		delete c;
 
@@ -342,6 +359,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0x0)
 				TS_ASSERT(gr->_type == kIfCond);
+			delete gr;
 		}
 		delete c;
 
@@ -357,6 +375,7 @@ public:
 			Group *gr = GET(*it);
 			if (gr->_start->_address == 0x3)
 				TS_ASSERT(gr->_type == kIfCond);
+			delete gr;
 		}
 		delete c;
 		delete engine;
@@ -378,6 +397,7 @@ public:
 				TS_ASSERT(gr->_type == kWhileCond);
 			if (gr->_start->_address == 0xd)
 				TS_ASSERT(gr->_type == kDoWhileCond);
+			delete gr;
 		}
 		delete c;
 
@@ -395,6 +415,7 @@ public:
 				TS_ASSERT(gr->_type == kDoWhileCond);
 			if (gr->_start->_address == 0x10)
 				TS_ASSERT(gr->_type == kDoWhileCond);
+			delete gr;
 		}
 		delete c;
 
@@ -412,6 +433,7 @@ public:
 				TS_ASSERT(gr->_type == kWhileCond);
 			if (gr->_start->_address == 0xa)
 				TS_ASSERT(gr->_type == kWhileCond);
+			delete gr;
 		}
 		delete c;
 
@@ -429,6 +451,7 @@ public:
 				TS_ASSERT(gr->_type == kWhileCond);
 			if (gr->_start->_address == 0xd)
 				TS_ASSERT(gr->_type == kWhileCond);
+			delete gr;
 		}
 		delete c;
 
@@ -446,6 +469,7 @@ public:
 				TS_ASSERT(gr->_type == kWhileCond);
 			if (gr->_start->_address == 0x10)
 				TS_ASSERT(gr->_type == kDoWhileCond);
+			delete gr;
 		}
 		delete c;
 
@@ -463,6 +487,7 @@ public:
 				TS_ASSERT(gr->_type == kWhileCond);
 			if (gr->_start->_address == 0x13)
 				TS_ASSERT(gr->_type == kDoWhileCond);
+			delete gr;
 		}
 		delete c;
 
@@ -520,6 +545,7 @@ public:
 				TS_ASSERT(!gr->_endElse);
 				break;
 			}
+			delete gr;
 		}
 		delete c;
 		delete engine;

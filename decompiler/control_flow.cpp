@@ -67,6 +67,8 @@ ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) : _ins
 	}
 }
 
+
+
 GraphVertex ControlFlow::find(const Instruction &inst) {
 	return _addrMap[inst._address];
 }
@@ -111,6 +113,8 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 	boost::clear_vertex(g2, _g);
 	// Remove vertex
 	boost::remove_vertex(g2, _g);
+	// Delete old group
+	delete gr2;
 }
 
 void ControlFlow::setStackLevel(GraphVertex g, int level) {
