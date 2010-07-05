@@ -332,7 +332,7 @@ bool ControlFlow::validateBreakOrContinue(Group *gr, Group *condGr) {
 	for (cursor = from; cursor->_next != NULL && cursor != to; cursor = cursor->_next) {
 		if (cursor->_type == condGr->_type) {
 			OutEdgeRange oerValidate = boost::out_edges(find(cursor->_start), _g);
-			for (OutEdgeIterator oeValidate = oerValidate.first; oeValidate != oerValidate.second; oeValidate++) {
+			for (OutEdgeIterator oeValidate = oerValidate.first; oeValidate != oerValidate.second; ++oeValidate) {
 				GraphVertex vValidate = boost::target(*oeValidate, _g);
 				Group *gValidate = GET(vValidate);
 				// For all other loops of same type found in range, all targets must fall within that range
@@ -340,7 +340,7 @@ bool ControlFlow::validateBreakOrContinue(Group *gr, Group *condGr) {
 					return false;
 
 				InEdgeRange ierValidate = boost::in_edges(vValidate, _g);
-				for (InEdgeIterator ieValidate = ierValidate.first; ieValidate != ierValidate.second; ieValidate++) {
+				for (InEdgeIterator ieValidate = ierValidate.first; ieValidate != ierValidate.second; ++ieValidate) {
 					Group *igValidate = GET(boost::source(*ieValidate, _g));
 					// All loops of other type going into range must be placed within range
 					if (igValidate->_type == ogt && (igValidate->_start->_address < from->_start->_address || igValidate->_start->_address > to->_start->_address ))
