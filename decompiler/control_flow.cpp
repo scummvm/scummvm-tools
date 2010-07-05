@@ -67,8 +67,6 @@ ControlFlow::ControlFlow(std::vector<Instruction> &insts, Engine *engine) : _ins
 	}
 }
 
-
-
 GraphVertex ControlFlow::find(const Instruction &inst) {
 	return _addrMap[inst._address];
 }
