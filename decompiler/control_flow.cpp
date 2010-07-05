@@ -266,8 +266,8 @@ void ControlFlow::detectBreak() {
 	VertexRange vr = boost::vertices(_g);
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		Group *gr = GET(*v);
-		// Unconditional jump...
-		if ((gr->_end->_type == kJump || gr->_end->_type == kJumpRel) && out_degree(*v, _g) == 1) {
+		// Undetermined block with unconditional jump...
+		if (gr->_type == kNormal && (gr->_end->_type == kJump || gr->_end->_type == kJumpRel) && out_degree(*v, _g) == 1) {
 			OutEdgeIterator oe = boost::out_edges(*v, _g).first;
 			GraphVertex target = boost::target(*oe, _g);
 			Group *targetGr = GET(target);			
