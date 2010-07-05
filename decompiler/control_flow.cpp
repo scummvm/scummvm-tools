@@ -388,7 +388,7 @@ void ControlFlow::detectIf() {
 			GroupPtr targetTargetGr = GET(boost::target(*toe, _g));
 			if (targetTargetGr->_start->_address > targetGr->_prev->_end->_address) {
 				targetGr->_startElse = true;
-				targetTargetGr->_prev->_endElse = true;
+				targetTargetGr->_prev->_endElse = targetGr.get();
 			}
 		}
 	}

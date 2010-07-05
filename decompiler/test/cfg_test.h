@@ -502,7 +502,7 @@ public:
 			case 0x8B:
 				TS_ASSERT(gr->_type == kNormal);
 				TS_ASSERT(gr->_startElse);
-				TS_ASSERT(gr->_endElse);
+				TS_ASSERT(gr->_endElse->_start->_address == 0x8B);
 				break;
 			case 0x91:
 				TS_ASSERT(gr->_type == kNormal);
@@ -512,7 +512,7 @@ public:
 			case 0xA6:
 				TS_ASSERT(gr->_type == kNormal);
 				TS_ASSERT(!gr->_startElse);
-				TS_ASSERT(gr->_endElse);
+				TS_ASSERT(gr->_endElse->_start->_address == 0x91);
 				break;
 			default:
 				TS_ASSERT(gr->_type == kNormal);

@@ -69,12 +69,12 @@ private:
   friend void ::boost::intrusive_ptr_release(Group *p);
 
 public:	
-	ConstInstIterator _start;   ///< First instruction in the group.
-	ConstInstIterator _end;     ///< Last instruction in the group.
-	int _stackLevel;            ///< Level of the stack upon entry.
-	GroupType _type;            ///< Type of the group.
-	bool _startElse;            ///< Group is start of an else block.
-	bool _endElse;              ///< Group is end of an else block.
+	ConstInstIterator _start; ///< First instruction in the group.
+	ConstInstIterator _end;   ///< Last instruction in the group.
+	int _stackLevel;          ///< Level of the stack upon entry.
+	GroupType _type;          ///< Type of the group.
+	bool _startElse;          ///< Group is start of an else block.
+	Group *_endElse;          ///< Group is end of an else block.
 	Group *_prev;             ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
 	Group *_next;             ///< Pointer to the next group, when ordered by address.
 
@@ -97,7 +97,7 @@ public:
 		_type = kNormal;
 		_prev = prev.get();
 		_startElse = false;
-		_endElse = false;
+		_endElse = NULL;
 		if (_prev != NULL)
 			_prev->_next = this;
 		_next = NULL;
@@ -111,7 +111,7 @@ public:
 	 * @return The std::ostream used for output.
 	 */
 	friend std::ostream &operator<<(std::ostream &output, GroupPtr group) {
-		output << "Block type: ";
+		output << "{Block type: ";
 		switch(group->_type) {
 		case kNormal:
 			output << "Normal";
@@ -136,7 +136,8 @@ public:
 		if (group->_startElse)
 			output << "Start of else\\n";
 		if (group->_endElse)
-			output << "End of else\\n";
+			output << boost::format("End of else at %08x\\n") % group->_endElse->_start->_address;
+		output << "|";
 		ConstInstIterator inst = group->_start;
 		do {
 			output << boost::format("%08x: %s") % inst->_address % inst->_name;
@@ -152,12 +153,19 @@ public:
 					for (std::string::iterator it = s.begin(); it != s.end(); ++it)
 						if (*it == '"')
 							output << "\\\"";
+						else if (*it == '|')
+							output << "\\|";
+						else if (*it == '{')
+							output << "\\{";
+						else if (*it == '}')
+							output << "\\}";
 						else
 							output << *it;
 				}
 			}
 			output << boost::format(" (%d)") % inst->_stackChange << "\\n";
 		} while (inst++ != group->_end);
+		output << "}";
 		return output;
 	}
 };
@@ -245,7 +253,7 @@ struct GraphProperties {
 	 * @param out The std::ostream write_graphviz is writing to.
 	 */
 	void operator()(std::ostream& out) const {
-		out << "node [shape=box]" << std::endl;
+		out << "node [shape=record]" << std::endl;
 		out << "XXX [shape=none, label=\"\", height=0]" << std::endl;
 		out << "XXX -> 0" << std::endl;
 	}
