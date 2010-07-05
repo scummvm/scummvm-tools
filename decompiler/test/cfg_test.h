@@ -145,7 +145,7 @@ public:
 		Graph g = c->getGraph();
 		TS_ASSERT(boost::num_vertices(g) == 3);
 		VertexRange vr = boost::vertices(g);
-		for(VertexIterator v = vr.first; v != vr.second; ++v)
+		for (VertexIterator v = vr.first; v != vr.second; ++v)
 			delete boost::get(boost::vertex_name, g, *v);
 		delete c;
 		delete engine;
