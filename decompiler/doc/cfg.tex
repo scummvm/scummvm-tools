@@ -9,7 +9,10 @@ The control flow analysis is a multi-step process:
 \item Perform analysis on vertices
 \end{itemize}
 
-Groups are formed according to these rules:
+The first step is handled in the constructor, while the two next steps are handled by the \verb+createGroups()+ method. The last step is handled by the \verb+analyze+ method.
+
+\subsection{Group generation}
+Groups are initially formed according to these rules:
 \begin{itemize}
 \item If the next instruction is a jump, end the group here.
 \item If the next instruction has multiple predecessors, end the group here.
@@ -17,4 +20,59 @@ Groups are formed according to these rules:
 \item If the current instruction brings the stack level to the same as the start of the current group, end the group here.
 \end{itemize}
 
-\fxnote{Describe the actual analysis in more detail.}
+Prior to applying these rules, a depth-first search is performed to calculate the expected stack level at each instruction. If multiple paths are found to the same instruction, a warning will be output if the expected stack level from each path differs.
+
+\subsection{Short-circuit detection}
+As part of the group generation, the decompiler can combine multiple, consecutive groups if it detects them as being part of a single condition check that are merely split up due to short-circuiting.
+
+The rules used to detect if two consecutive groups $A$ and $B$ are oart of the same short-circuited check are as follows:
+\begin{itemize}
+\item Both group $A$ and $B$ end with a conditional jump (they have two possible successors each)
+\item For each outgoing edge from A, the edge must either go to B, or to a successor of B - in other words, merging may not add any new successors. More formally, $\text{succ}(A) \subseteq \{B\} \cup \text{succ}(B)$ , where $\text{succ}(X)$ is the set of possible successors for the group $X$.
+\end{itemize}
+
+\subsection{Construct detection}
+After the groups have been created, we then analyze the groups to find the various kind of control flow constructs. The constructs are detected in multiple steps, with one construct per step, in the following order:
+\begin{itemize}
+\item \verb+do-while+
+\item \verb+while+
+\item \verb+break+
+\item \verb+continue+
+\item \verb+if-else+
+\end{itemize}
+
+Each of these five constructs are marked using a \verb+GroupType+ member of the \verb+Group+ type, while \verb+else+ blocks are flagged using two booleans, \verb+_startElse+ and \verb+_endElse+. If \verb+_startElse+ is true, then an \verb+else+ block starts with this group, and should be output prior to the code in this group. If \verb+_endElse+ is true, an \verb+else+ block ends with this group, and the end should be output after the code in this group.
+
+Once a group has been flagged as being some construct, it is skipped for the other constructs.
+
+The criteria used for each construct are as follows:
+
+\paragraph{Do-while detection}
+Group must end with a conditional jump (i.e., have two outgoing edges). Jump must go to an earlier place in the code.
+
+\paragraph{While detection}
+Group must end with conditional jump. Block must have an ingoing edge from some group later in the code, unless that edge comes from a do-while condition (in which case it's assumed to be an \verb+if+ instead).
+
+\paragraph{Break detection}
+Unconditional jump to some place later in the code. That place must either be the group immediately after a \verb+do-while+ condition, or the jump target of a \verb+while+ condition. Additionally, the jump is verified to go to the appropriate loop (so it doesn't exit multiple loops at once).
+
+\paragraph{Continue detection}
+Unconditional jump to a \verb+while+ or \verb+do-while+ condition, unless it is targeting a \verb+while+ condition which jumps to the next sequential group (in which case it is merely the end of the \verb+while+-loop). Just as with \verb+break+s, the jump is verified to go to the appropriate loop.
+
+\paragraph{If-else detection}
+All remaining conditional jumps are flagged as \verb+if+s. If the instruction immediately before the target of the conditional jump is an unconditional jump, but not a \verb+break+ or a \verb+continue+, an \verb+else+ is detected to begin at the jump target of the conditional jump in the \verb+if+. The \verb+else+ is set to end at the group immediately before the target of the unconditional jump.
+
+\subsection{Limitations}
+Currently, only unconditional jumps are supported for \verb+break+ and \verb+continue+; however, for code of the form \verb+if (...) break;+ or \verb+if (...) continue;+, it is an obvious optimization to use the \verb+break+/\verb+continue+ jump as the conditional jump for the \verb+if+ condition check. Since \verb+if+s are found last, it should be possible to simply check unmarked conditional jumps as well and see if they meet the other criteria for a \verb+break+/\verb+continue+, although there might be some false positives for an if that stretches to the end of the loop it is placed in.
+
+It is currently assumed that all conditional jumps in \verb+if+ condition checks go to a later place in the code. If optimized continue statements are used in a while (as described above), this will cause the analysis to be incorrect.
+
+Groups are currently stored as raw pointers. Due to implementation details over how Boost.Graph handles properties, these groups must be manually deallocated when the graph goes out of scope, or they will cause a memory leak. The groups can be reclaimed using the following piece of code:
+\begin{C++}
+\begin{lstlisting}
+VertexRange vr = boost::vertices(g);
+for (VertexIterator v = vr.first; v != vr.second; ++v)
+	delete boost::get(boost::vertex_name, g, *v);
+\end{lstlisting}
+\end{C++}
+Eventually, they should probably be changed to smart pointers, so the memory management is handled automatically.
