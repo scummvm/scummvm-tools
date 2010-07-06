@@ -29,8 +29,10 @@
 #include <boost/format.hpp>
 
 #define PUT(vertex, group) boost::put(boost::vertex_name, _g, vertex, group);
+#define PUT_EDGE(edge, isJump) boost::put(boost::edge_attribute, _g, edge, isJump);
 #define PUT_ID(vertex, id) boost::put(boost::vertex_index, _g, vertex, id);
 #define GET(vertex) (boost::get(boost::vertex_name, _g, vertex))
+#define GET_EDGE(edge) (boost::get(boost::edge_attribute, _g, edge))
 
 ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) : _insts(insts) {
 	_engine = engine;
@@ -46,8 +48,10 @@ ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) 
 		PUT_ID(cur, id);
 		id++;
 
-		if (addEdge)
-			boost::add_edge(last, cur, _g);
+		if (addEdge) {
+			GraphEdge e = boost::add_edge(last, cur, _g).first;
+			PUT_EDGE(e, false);
+		}
 		last = cur;
 		addEdge = (it->_type != kJump && it->_type != kJumpRel);
 		prev = GET(cur);
@@ -58,9 +62,11 @@ ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) 
 		case kJump:
 		case kCondJump:
 		case kJumpRel:
-		case kCondJumpRel:
-			boost::add_edge(find(it), find(_engine->getDestAddress(it)), _g);
+		case kCondJumpRel: {
+			GraphEdge e = boost::add_edge(find(it), find(_engine->getDestAddress(it)), _g).first;
+			PUT_EDGE(e, true);
 			break;
+			}
 		default:
 			break;
 		}
@@ -99,7 +105,8 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 	// Add outgoing edges from g2
 	OutEdgeRange r = boost::out_edges(g2, _g);
 	for (OutEdgeIterator e = r.first; e != r.second; ++e) {
-		boost::add_edge(g1, boost::target(*e, _g), _g);
+		GraphEdge newE = boost::add_edge(g1, boost::target(*e, _g), _g).first;
+		PUT_EDGE(newE, GET_EDGE(*e));
 	}
 
 	// Update _next pointer
@@ -111,8 +118,6 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 	boost::clear_vertex(g2, _g);
 	// Remove vertex
 	boost::remove_vertex(g2, _g);
-	// Delete old group
-	//delete gr2;
 }
 
 void ControlFlow::setStackLevel(GraphVertex g, int level) {

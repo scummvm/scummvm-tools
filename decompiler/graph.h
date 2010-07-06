@@ -32,6 +32,7 @@
 
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/graphviz.hpp>
 
 #include <boost/intrusive_ptr.hpp>
 
@@ -57,7 +58,7 @@ typedef boost::intrusive_ptr<Group> GroupPtr;
 namespace boost {
 	inline void intrusive_ptr_add_ref(Group *p);
 	inline void intrusive_ptr_release(Group *p);
-}
+} // End of namespace boost
 
 /**
  * Structure representing a group of instructions.
@@ -198,9 +199,89 @@ typedef boost::property<boost::vertex_name_t, GroupPtr> GroupProperty;
 typedef boost::property<boost::vertex_index_t, int, GroupProperty> GraphProperty;
 
 /**
+ * Structure representing whether or not an edge is a jump.
+ */ 
+struct IsJump {
+	bool _isJump; ///< Whether or not the edge is a jump.
+
+	/**
+	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
+	 */
+	IsJump() { _isJump = false; };
+
+	/**
+	 * Constructor for IsJump.
+	 *
+	 * @param isJump Whether or not the edge is a jump.
+	 */
+	IsJump(bool isJump) : _isJump(isJump) {};
+
+	/**
+	 * Output edge information to an std::ostream as a graphviz edge property.
+	 *
+	 * @param output The std::ostream to output to.
+	 * @param isJump The IsJump to output.
+	 * @return The std::ostream used for output.
+	 */
+	friend std::ostream &operator<<(std::ostream &output, IsJump isJump) {
+		if (isJump._isJump)
+			output << "empty";
+		else
+			output << "normal";
+		return output;
+	}
+};
+
+namespace boost {
+
+/**
+ * Property writer for the isJump property.
+ */
+template <class Name>
+class arrowheadWriter {
+public:
+
+	/**
+	 * Constructor for arrowheadWriter.
+	 *
+	 * @param _name The name of the attribute to use.
+	 */
+	arrowheadWriter(Name _name) : name(_name) {}
+
+	/**
+	 * Outputs the arrowhead edge property.
+	 *
+	 * @param out The std::ostream to output to.
+	 * @param v   The vertex or edge to output the attribute for.
+	 */
+	template <class VertexOrEdge>
+	void operator()(std::ostream& out, const VertexOrEdge& v) const {
+		out << "[arrowhead=\"" << get(name, v) << "\"]";
+	}
+private:
+	Name name;
+};
+
+/**
+ * Creates an arrowhead property writer.
+ *
+ * @param _name The name of the attribute to use.
+ */
+template <class Name>
+inline arrowheadWriter<Name>
+makeArrowheadWriter(Name n) {
+	return arrowheadWriter<Name>(n);
+}
+
+} // End of namespace boost
+
+
+typedef boost::property<boost::edge_attribute_t, IsJump> EdgeProperty;
+
+/**
  * Type used for the code flow graph.
  */
-typedef boost::adjacency_list<boost::setS, boost::listS, boost::bidirectionalS, GraphProperty> Graph;
+typedef boost::adjacency_list<boost::setS, boost::listS, boost::bidirectionalS, GraphProperty, EdgeProperty> Graph;
 
 /**
  * Type representing a vertex in the graph.

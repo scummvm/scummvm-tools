@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
 				buf = std::cout.rdbuf(); 
 			} 
  			std::ostream out(buf); 
-			boost::write_graphviz(out, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::default_writer(), GraphProperties());
+			boost::write_graphviz(out, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties());
 		}
 
 		delete cf;
