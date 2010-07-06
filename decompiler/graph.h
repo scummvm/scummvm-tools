@@ -66,8 +66,8 @@ namespace boost {
 struct Group {
 private:
   long _refCount;	///< Reference count used for boost::intrusive_ptr.
-  friend void ::boost::intrusive_ptr_add_ref(Group *p);
-  friend void ::boost::intrusive_ptr_release(Group *p);
+  friend void ::boost::intrusive_ptr_add_ref(Group *p); ///< Allow access by reference counting methods in boost namespace.
+  friend void ::boost::intrusive_ptr_release(Group *p); ///< Allow access by reference counting methods in boost namespace.
 
 public:	
 	ConstInstIterator _start; ///< First instruction in the group.
@@ -259,7 +259,7 @@ public:
 		out << "[arrowhead=\"" << get(name, v) << "\"]";
 	}
 private:
-	Name name;
+	Name name; ///< The name of the attribute to use.
 };
 
 /**
