@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
 		
 		// Free memory		
 		delete engine;
-	} catch (std::exception& e) {
+	} catch (std::exception &e) {
 		std::cerr << "ERROR: " << e.what() << "\n";
 		return 3;
 	}
