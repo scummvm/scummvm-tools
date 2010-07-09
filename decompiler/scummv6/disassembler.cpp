@@ -50,7 +50,7 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		//std::clog << "Offset table:\n";
 		uint32 verb = _f.readByte();
 		while (verb != 0) {
-			//std::clog << boost::format("%02x - %04x\n") % verb % _f.readUint16LE();
+			/*std::clog << boost::format("%02x - %04x\n") % verb %*/ _f.readUint16LE();
 			verb = _f.readByte();
 		}
 	}
