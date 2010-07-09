@@ -153,9 +153,12 @@ int main(int argc, char** argv) {
 		
 		// Free memory		
 		delete engine;
-	} catch (std::exception &e) {
+	} catch (UnknownOpcodeException &e) {
 		std::cerr << "ERROR: " << e.what() << "\n";
 		return 3;
+	} catch (std::exception &e) {
+		std::cerr << "ERROR: " << e.what() << "\n";
+		return 4;
 	}
 
 	return 0;
