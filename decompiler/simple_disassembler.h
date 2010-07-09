@@ -56,6 +56,7 @@ protected:
 #define START_OPCODES \
 	_address = _addressBase; \
 	while (_f.pos() != (int)_f.size()) { \
+		uint32 full_opcode = 0; \
 		uint8 opcode = _f.readByte(); \
 		switch (opcode) {
 #define END_OPCODES \
@@ -65,12 +66,16 @@ protected:
 		INC_ADDR; \
 	}
 
-#define OPCODE_BASE(val) case val:
+#define OPCODE_BASE(val) \
+	case val: \
+		full_opcode = (full_opcode << 8) + val;
+
 #define OPCODE_END break;
 
 #define OPCODE(val, name, category, stackChange, params) \
 	OPCODE_BASE(val)\
 		ADD_INST; \
+		LAST_INST._opcode = full_opcode; \
 		LAST_INST._address = _address; \
 		LAST_INST._stackChange = stackChange; \
 		LAST_INST._name = std::string(name); \

@@ -19,6 +19,7 @@ struct Instruction {
 
 Each member of this struct has a specific purpose:
 \begin{itemize}
+\item \verb+_opcode+ is used to store the numeric opcode associated with the instruction. This is not used by the decompiler itself, but is for your reference during later parts of the decompilation process. Note that this field is declared as a 32-bit integer; if you need more than 4 bytes for your opcodes, you'll need to figure out which bytes you want to store if you want to use this field.
 \item \verb+_address+ stores the absolute memory address where this instruction would be loaded into memory.
 \item \verb+_stackChange+ stores the net change of executing this instruction - for example, if the instruction pushes a byte on to the stack, this should be set to 1. This is used to determine when each statement ends. The count can be in any unit you wish - bytes, words, bits - as long as the same unit is used for all instructions. This means that if your stack only works with 16-bit elements, pushing an 8-bit value and pushing a 16-bit value should have the same net effect on the stack.
 \item \verb+_name+ contains the name of the instruction. You will use this during code generation.
@@ -134,6 +135,8 @@ END_OPCODES;
 \end{lstlisting}
 \end{C++}
 
+The \verb+OPCODE+ macro automatically stores the full opcode in the \verb+_opcode+ field of the generated \verb+Instruction+.
+
 \subsubsection{Parameter reading}
 \verb+PUSH+, \verb+PUSH2+ and \verb+PRINT+ all take parameters as part of the instruction. To read these, you must specify them as part of the parameter string, using one character per parameter. The types understood by default are specified in Table~\vref{tbl:paramtypes}.
 
@@ -223,7 +226,7 @@ END_OPCODES;
 \end{lstlisting}
 \end{C++}
 
-Subopcodes can be nested if the instruction set requires it.
+Subopcodes can be nested if the instruction set requires it. For subopcodes, the \verb+_opcode+ field stores the bytes in the order they appear in the file - i.e., the HALT instruction would have the opcode value 0xFF00. If the opcodes are longer than 4 bytes, only the last 4 bytes will be stored.
 
 \subsubsection{Advanced opcode handling}
 If you have one or two opcodes that don't quite fit into the framework provided, you can define your own specialized handling for these opcodes.
@@ -237,5 +240,7 @@ OPCODE_BASE(0x40);
 OPCODE_END;
 \end{lstlisting}
 \end{C++}
+
+\verb+OPCODE_BASE+ automatically keeps track of the current opcode value. You can access \verb+full_opcode+ to get the current full opcode.
 
 For your convenience, a few additional macros are available: \verb+ADD_INST+, which adds an empty instruction to the vector, and \verb+LAST_INST+ which retrieves the last instruction in the vector. Additionally, you can use \verb+INC_ADDR+ as a shorthand for incrementing the address variable by 1, but note that you should \emph{not} increment the address for the opcode itself - this is handled by the other macros.

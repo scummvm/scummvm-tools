@@ -97,6 +97,7 @@ struct Parameter {
  * Structure for representing an instruction.
  */
 struct Instruction {
+	uint32 _opcode;                 ///< The instruction opcode.
 	uint32 _address;                ///< The instruction address.
 	int16 _stackChange;             ///< How much this instruction changes the stack pointer by.
 	std::string _name;              ///< The instruction name (opcode name).
