@@ -78,6 +78,7 @@ _png=auto
 _wxwidgets=auto
 _freetype=auto
 _iconv=auto
+_boost=auto
 _endian=unknown
 _need_memalign=no
 # Default option behaviour yes/no
@@ -321,6 +322,9 @@ Optional Libraries:
 
   --disable-freetype       disable freetype (Japanese font) support [autodetect]
 
+  --with-boost-prefix      Prefix where Boost is installed (optional)
+  --disable-boost          disable Boost support [autodetect]
+
 Some influential environment variables:
   LDFLAGS        linker flags, e.g. -L<lib dir> if you have libraries in a
                  nonstandard directory <lib dir>
@@ -354,6 +358,8 @@ for ac_option in $@; do
 	--disable-freetype)       _freetype=no    ;;
 	--enable-iconv)           _iconv=yes      ;;
 	--disable-iconv)          _iconv=no       ;;
+	--enable-boost)           _boost=yes      ;;
+	--disable-boost)          _boost=no       ;;
 	--enable-verbose-build)   _verbose_build=yes ;;
 	--with-ogg-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
@@ -393,6 +399,11 @@ for ac_option in $@; do
 	--with-wx-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
 		_wxpath="$arg:$arg/bin"
+		;;
+	--with-boost-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		BOOST_CFLAGS="-I$arg/include"
+		BOOST_LIBS="-L$arg/lib"
 		;;
 	--enable-debug)
 		_debug_build=yes
@@ -987,6 +998,33 @@ else
 fi
 add_to_config_mk_if_yes "$_freetype" 'USE_FREETYPE = 1'
 echo "$freetype_version"
+
+#
+# Check for Boost
+#
+echocheck "Boost => 1.32.0"
+if test "$_boost" = auto ; then
+	_boost=no
+	cat > $TMPC << EOF
+#include <iostream>
+#include <boost/version.hpp>
+int main(void) { if (BOOST_VERSION < 103200) return 1; return 0; }
+EOF
+	cc_check $BOOST_CFLAGS $BOOST_LIBS && _boost=yes
+fi
+echo "$_boost"
+
+if test "$_boost" = yes ; then
+	_boost=no
+	echo_n "Checking whether Boost.ProgramOptions has been compiled... "
+	cat > $TMPC << EOF
+#include <boost/program_options.hpp>
+int main(void) { boost::program_options::options_description generic("Generic options"); return 0; }
+EOF
+	cc_check $BOOST_CFLAGS $BOOST_LIBS -lboost_program_options && _boost=yes
+	add_to_config_mk_if_yes "$_boost" 'USE_BOOST = 1'
+	echo "$_boost"
+fi	
 
 #
 # Check for iconv

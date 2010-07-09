@@ -22,10 +22,12 @@ all:
 # get the dependency tracking code working.
 MODULE_DIRS := ./ common/ gui/ sound/ 
 
+ifdef USE_BOOST
 MODULE_DIRS += \
 	decompiler/ \
 	decompiler/scummv6/ \
 	decompiler/test/disassembler/
+endif
 
 MODULE_DIRS += \
 	engines/agos/ \
@@ -62,8 +64,12 @@ TARGETS := \
 	extract_mohawk$(EXEEXT) \
 	construct_mohawk$(EXEEXT) \
 	degob$(EXEEXT) \
-	scummvm-tools-cli$(EXEEXT) \
+	scummvm-tools-cli$(EXEEXT)
+
+ifdef USE_BOOST
+TARGETS += \
 	decompile$(EXEEXT)
+endif
 
 ifdef USE_FREETYPE
 ifdef USE_ICONV
@@ -261,6 +267,7 @@ scummvm-tools-cli_OBJS := \
 	$(tools_OBJS)
 scummvm-tools-cli_LIBS := $(LIBS)
 
+ifdef USE_BOOST
 decompile_OBJS := \
 	common/file.o \
 	decompiler/decompiler.o \
@@ -276,6 +283,7 @@ decompile_LIBS := \
 
 # Decompiler tests
 -include decompiler/test/module.mk
+endif
 
 # Decompiler documentation
 doc:
