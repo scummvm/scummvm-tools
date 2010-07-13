@@ -26,11 +26,11 @@
 
 static int dupindex = 0;
 
-StackEntry *StackEntry::dup(std::ostream &output) {
+EntryPtr StackEntry::dup(std::ostream &output) {
 	if (_type == seDup)
-		return new DupEntry(*(DupEntry *)this);
+		return this;
 
-	StackEntry* dupEntry = new DupEntry(++dupindex);
+	EntryPtr dupEntry = new DupEntry(++dupindex);
 	output << this << " = " << dupEntry;
 	return dupEntry;
 }

@@ -24,6 +24,9 @@
 
 #include <ostream>
 #include <stack>
+#include <utility>
+
+#include <boost/intrusive_ptr.hpp>
 
 #ifndef DEC_CODEGEN_H
 #define DEC_CODEGEN_H
@@ -38,14 +41,36 @@ const StackEntryType seBinOp = 2;
 const StackEntryType seUnaryOp = 3;
 const StackEntryType seDup = 4;
 
+class StackEntry;
+
+/**
+ * Pointer to a Group.
+ */
+typedef boost::intrusive_ptr<StackEntry> EntryPtr;
+
+namespace boost {
+	inline void intrusive_ptr_add_ref(StackEntry *p);
+	inline void intrusive_ptr_release(StackEntry *p);
+} // End of namespace boost
+
 /**
  * Base class for stack entries.
  */
 class StackEntry {
+private:
+	long _refCount; ///< Reference count used for boost::intrusive_ptr.
+  friend void ::boost::intrusive_ptr_add_ref(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
+  friend void ::boost::intrusive_ptr_release(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
+	
 public:
 	StackEntryType _type;
 
-	virtual ~StackEntry() {}
+	/**
+	 * Parameterless constructor for Group.
+	 */
+	StackEntry() : _refCount(0) { }
+
+	virtual ~StackEntry() { }
 
 	/**
 	 * Print the stack entry to an std::ostream.
@@ -61,19 +86,38 @@ public:
 	 * @param output The std::ostream to output to.
 	 * @return A StackEntry corresponding to a duplicate of this entry.
 	 */
-	virtual StackEntry *dup(std::ostream &output);
+	virtual EntryPtr dup(std::ostream &output);
 	
 	/**
 	 * Output a stack entry to an std::ostream.
 	 *
 	 * @param output The std::ostream to output to.
-	 * @param entry  The StackEntry to output.
+	 * @param entry  Reference counted pointer to the StackEntry to output.
 	 * @return The std::ostream used for output.
 	 */
-	friend std::ostream &operator<<(std::ostream &output, StackEntry *entry) {
+	friend std::ostream &operator<<(std::ostream &output, EntryPtr entry) {
 		return entry->print(output);
 	}
 };
+
+
+namespace boost {
+	/**
+	 * Add a reference to a pointer to a StackEntry.
+	 */
+	inline void intrusive_ptr_add_ref(StackEntry *p) {
+		++(p->_refCount);
+	}
+
+	/**
+	 * Remove a reference from a pointer to a StackEntry.
+	 */
+	inline void intrusive_ptr_release(StackEntry *p) {
+		if (--(p->_refCount) == 0)
+			delete p;
+	}
+}
+
 
 /**
  * Stack entry containing an integer.
@@ -113,7 +157,7 @@ public:
 		return output;
 	}
 
-	virtual StackEntry *dup() { return new IntEntry(_val, _isSigned); }
+	virtual EntryPtr dup() { return new IntEntry(_val, _isSigned); }
 };
 
 /**
@@ -141,8 +185,8 @@ public:
  */
 class BinaryOpEntry : public StackEntry {
 private:
-	StackEntry *_lhs; ///< Stack entry representing the left side of the operator.
-	StackEntry *_rhs; ///< Stack entry representing the right side of the operator.
+	EntryPtr _lhs; ///< Stack entry representing the left side of the operator.
+	EntryPtr _rhs; ///< Stack entry representing the right side of the operator.
 	std::string _op;  ///< The operator for this entry.
 
 public:
@@ -153,7 +197,7 @@ public:
 	 * @param rhs Stack entry representing the right side of the operator.
 	 * @param op The operator for this entry.
 	 */
-	BinaryOpEntry(StackEntry *lhs, StackEntry *rhs, std::string op) : _lhs(lhs), _rhs(rhs), _op(op) {
+	BinaryOpEntry(EntryPtr lhs, EntryPtr rhs, std::string op) : _lhs(lhs), _rhs(rhs), _op(op) {
 		_type = seBinOp;
 	}
 
@@ -165,7 +209,7 @@ public:
  */
 class UnaryOpEntry : public StackEntry {
 private:
-	StackEntry *_operand; ///< The operand the operation is performed on.
+	EntryPtr _operand; ///< The operand the operation is performed on.
 	std::string _op;      ///< The operator for this entry.
 
 public:
@@ -175,7 +219,7 @@ public:
 	 * @param operand Stack entry representing the operand of the operation.
 	 * @param op The operator for this entry.
 	 */
-	UnaryOpEntry(StackEntry *operand, std::string op) : _operand(operand), _op(op) {
+	UnaryOpEntry(EntryPtr operand, std::string op) : _operand(operand), _op(op) {
 		_type = seUnaryOp;
 	}
 
@@ -202,6 +246,11 @@ public:
 };
 
 /**
+ * Type representing a stack.
+ */
+typedef std::stack<EntryPtr> Stack;
+
+/**
  * Base class for code generators.
  */
 class CodeGenerator {
@@ -218,6 +267,7 @@ private:
 
 protected:
 	std::ostream &_output; ///< The std::ostream to output the code to.
+	Stack _stack;          ///< The stack currently being processed.
 
 	/**
 	 * Processes an instruction.
