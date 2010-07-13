@@ -22,6 +22,7 @@
 
 #include "engine.h"
 #include "disassembler.h"
+#include "codegen.h"
 
 ::Disassembler *Scumm::v6::Engine::getDisassembler() const {
 	return new Disassembler();
@@ -38,4 +39,8 @@ uint32 Scumm::v6::Engine::getDestAddress(ConstInstIterator it) const {
 	default:
 		return 0;
 	}
+}
+
+::CodeGenerator *Scumm::v6::Engine::getCodeGenerator(std::ostream &output) {
+	return new CodeGenerator(this, output);
 }

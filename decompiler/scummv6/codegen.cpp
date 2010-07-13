@@ -20,41 +20,8 @@
  *
  */
 
-#ifndef ENGINE_H
-#define ENGINE_H
-
-#include "disassembler.h"
 #include "codegen.h"
 
-/**
- * Base class for engines.
- */
-class Engine {
-public:
-	virtual ~Engine() {}
-
-	/**
-	 * Retrieve the disassembler for the engine.
-	 *
-	 * @return Pointer to a Disassembler for the engine.
-	 */
-	virtual Disassembler *getDisassembler() const = 0;
-
-	/**
-	 * Decode a jump instruction to get the destination address.
-	 *
-	 * @param it Iterator pointing to the instruction to decode.
-	 * @return The destination address of the jump instruction
-	 */
-	virtual uint32 getDestAddress(ConstInstIterator it) const = 0;
-
-	/**
-	 * Retrieve the code generator for the engine.
-	 *
-	 * @param output The std::ostream to output the code to.
-	 * @return Pointer to a CodeGenerator for the engine.
-	 */
-	virtual CodeGenerator *getCodeGenerator(std::ostream &output) = 0;
-};
-
-#endif
+void Scumm::v6::CodeGenerator::processInst(Instruction inst) {
+	// TODO
+}

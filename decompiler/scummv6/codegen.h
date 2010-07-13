@@ -20,41 +20,27 @@
  *
  */
 
-#ifndef ENGINE_H
-#define ENGINE_H
+#ifndef SCUMM_V6_CODEGEN_H
+#define SCUMM_V6_CODEGEN_H
 
-#include "disassembler.h"
-#include "codegen.h"
+#include "../codegen.h"
+
+namespace Scumm {
+
+namespace v6 {
 
 /**
- * Base class for engines.
+ * SCUMMv6 code generator.
  */
-class Engine {
+class CodeGenerator : public ::CodeGenerator {
 public:
-	virtual ~Engine() {}
-
-	/**
-	 * Retrieve the disassembler for the engine.
-	 *
-	 * @return Pointer to a Disassembler for the engine.
-	 */
-	virtual Disassembler *getDisassembler() const = 0;
-
-	/**
-	 * Decode a jump instruction to get the destination address.
-	 *
-	 * @param it Iterator pointing to the instruction to decode.
-	 * @return The destination address of the jump instruction
-	 */
-	virtual uint32 getDestAddress(ConstInstIterator it) const = 0;
-
-	/**
-	 * Retrieve the code generator for the engine.
-	 *
-	 * @param output The std::ostream to output the code to.
-	 * @return Pointer to a CodeGenerator for the engine.
-	 */
-	virtual CodeGenerator *getCodeGenerator(std::ostream &output) = 0;
+	CodeGenerator(Engine *engine, std::ostream &output) : ::CodeGenerator(engine, output) {}
+protected:
+	void processInst(Instruction inst);
 };
+
+} // End of namespace v6
+
+} // End of namespace Scumm
 
 #endif

@@ -24,12 +24,23 @@
 
 #include <iostream>
 
-CodeGenerator::CodeGenerator(Engine *engine, const Graph &g) {
-	_engine = engine;
-	_g = g;
+static int dupindex = 0;
+
+StackEntry *StackEntry::dup(std::ostream &output) {
+	if (_type == seDup)
+		return new DupEntry(*(DupEntry *)this);
+
+	StackEntry* dupEntry = new DupEntry(++dupindex);
+	output << this << " = " << dupEntry;
+	return dupEntry;
 }
 
-void CodeGenerator::generate() {
+CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output) : _output(output) {
+	_engine = engine;
+}
+
+void CodeGenerator::generate(const Graph &g) {
+	_g = g;
 	// TODO
 }
 
