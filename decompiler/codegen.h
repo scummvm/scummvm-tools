@@ -63,12 +63,14 @@ private:
 	friend void ::boost::intrusive_ptr_release(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
 
 public:
-	StackEntryType _type;
+	const StackEntryType _type;
 
 	/**
-	 * Parameterless constructor for Group.
+	 * Constructor for StackEntry.
+	 *
+	 * @param type The StackEntryType of the StackEntry.
 	 */
-	StackEntry() : _refCount(0) { }
+	StackEntry(StackEntryType type) : _refCount(0), _type(type) { }
 
 	virtual ~StackEntry() { }
 
@@ -102,6 +104,7 @@ public:
 
 
 namespace boost {
+
 /**
  * Add a reference to a pointer to a StackEntry.
  */
@@ -116,6 +119,7 @@ inline void intrusive_ptr_release(StackEntry *p) {
 	if (--(p->_refCount) == 0)
 		delete p;
 }
+
 } // End of namespace boost
 
 
@@ -124,8 +128,8 @@ inline void intrusive_ptr_release(StackEntry *p) {
  */
 class IntEntry : public StackEntry {
 private:
-	int32 _val;     ///< The value of the integer.
-	bool _isSigned; ///< True if the value is signed, false if it's not.
+	const int32 _val;     ///< The value of the integer.
+	const bool _isSigned; ///< True if the value is signed, false if it's not.
 
 public:
 	/**
@@ -134,8 +138,7 @@ public:
 	 * @param val The value contained in the stack entry.
 	 * @param isSigned Whether or not the value is signed. This will affect output.
 	 */
-	IntEntry(int32 val, bool isSigned) : _val(val), _isSigned(isSigned) {
-		_type = seInt;
+	IntEntry(int32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) {
 	}
 
 	/**
@@ -144,9 +147,7 @@ public:
 	 * @param val The value contained in the stack entry.
 	 * @param isSigned Whether or not the value is signed. This will affect output.
 	 */
-	IntEntry(uint32 val, bool isSigned) : _isSigned(isSigned) {
-		_val = (int32)val;
-		_type = seInt;
+	IntEntry(uint32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) {
 	}
 
 	virtual std::ostream &print(std::ostream &output) const {
@@ -167,7 +168,7 @@ public:
  */
 class VarEntry : public StackEntry {
 private:
-	std::string _varName; ///< The name of the variable.
+	const std::string _varName; ///< The name of the variable.
 
 public:
 	/**
@@ -175,9 +176,7 @@ public:
 	 *
 	 * @param varName The name of the variable.
 	 */
-	VarEntry(std::string varName) : _varName(varName) {
-		_type = seVar;
-	};
+	VarEntry(std::string varName) : StackEntry(seVar), _varName(varName) { }
 
 	virtual std::ostream &print(std::ostream &output) const {
 		return output << _varName;
@@ -189,9 +188,9 @@ public:
  */
 class BinaryOpEntry : public StackEntry {
 private:
-	EntryPtr _lhs; ///< Stack entry representing the left side of the operator.
-	EntryPtr _rhs; ///< Stack entry representing the right side of the operator.
-	std::string _op;  ///< The operator for this entry.
+	const EntryPtr _lhs; ///< Stack entry representing the left side of the operator.
+	const EntryPtr _rhs; ///< Stack entry representing the right side of the operator.
+	const std::string _op;  ///< The operator for this entry.
 
 public:
 	/**
@@ -201,8 +200,8 @@ public:
 	 * @param rhs Stack entry representing the right side of the operator.
 	 * @param op The operator for this entry.
 	 */
-	BinaryOpEntry(EntryPtr lhs, EntryPtr rhs, std::string op) : _lhs(lhs), _rhs(rhs), _op(op) {
-		_type = seBinOp;
+	BinaryOpEntry(EntryPtr lhs, EntryPtr rhs, std::string op) : 
+		StackEntry(seBinOp), _lhs(lhs), _rhs(rhs), _op(op) {
 	}
 
 	virtual std::ostream &print(std::ostream &output) const {
@@ -215,8 +214,8 @@ public:
  */
 class UnaryOpEntry : public StackEntry {
 private:
-	EntryPtr _operand; ///< The operand the operation is performed on.
-	std::string _op;      ///< The operator for this entry.
+	const EntryPtr _operand; ///< The operand the operation is performed on.
+	const std::string _op;      ///< The operator for this entry.
 
 public:
 	/**
@@ -225,9 +224,8 @@ public:
 	 * @param operand Stack entry representing the operand of the operation.
 	 * @param op The operator for this entry.
 	 */
-	UnaryOpEntry(EntryPtr operand, std::string op) : _operand(operand), _op(op) {
-		_type = seUnaryOp;
-	}
+	UnaryOpEntry(EntryPtr operand, std::string op) : 
+		StackEntry(seUnaryOp), _operand(operand), _op(op) { }
 
 	virtual std::ostream &print(std::ostream &output) const {
 		return output << _op << _operand;
@@ -239,7 +237,7 @@ public:
  */
 class DupEntry : public StackEntry {
 private:
-	int _idx; ///< Index to distinguish multiple duplicated entries.
+	const int _idx; ///< Index to distinguish multiple duplicated entries.
 
 public:
 	/**
@@ -247,9 +245,8 @@ public:
 	 *
 	 * @param idx Index to distinguish multiple duplicated entries.
 	 */
-	DupEntry(int idx) : _idx(idx) {
-		_type = seDup;
-	}
+	DupEntry(int idx) : StackEntry(seDup), _idx(idx) { }
+
 	virtual std::ostream &print(std::ostream &output) const {
 		return output << "dup[" << _idx << "]";
 	}
