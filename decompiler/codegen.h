@@ -49,8 +49,8 @@ class StackEntry;
 typedef boost::intrusive_ptr<StackEntry> EntryPtr;
 
 namespace boost {
-	inline void intrusive_ptr_add_ref(StackEntry *p);
-	inline void intrusive_ptr_release(StackEntry *p);
+inline void intrusive_ptr_add_ref(StackEntry *p);
+inline void intrusive_ptr_release(StackEntry *p);
 } // End of namespace boost
 
 /**
@@ -59,9 +59,9 @@ namespace boost {
 class StackEntry {
 private:
 	long _refCount; ///< Reference count used for boost::intrusive_ptr.
-  friend void ::boost::intrusive_ptr_add_ref(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
-  friend void ::boost::intrusive_ptr_release(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
-	
+	friend void ::boost::intrusive_ptr_add_ref(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
+	friend void ::boost::intrusive_ptr_release(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
+
 public:
 	StackEntryType _type;
 
@@ -87,7 +87,7 @@ public:
 	 * @return A StackEntry corresponding to a duplicate of this entry.
 	 */
 	virtual EntryPtr dup(std::ostream &output);
-	
+
 	/**
 	 * Output a stack entry to an std::ostream.
 	 *
@@ -102,21 +102,21 @@ public:
 
 
 namespace boost {
-	/**
-	 * Add a reference to a pointer to a StackEntry.
-	 */
-	inline void intrusive_ptr_add_ref(StackEntry *p) {
-		++(p->_refCount);
-	}
-
-	/**
-	 * Remove a reference from a pointer to a StackEntry.
-	 */
-	inline void intrusive_ptr_release(StackEntry *p) {
-		if (--(p->_refCount) == 0)
-			delete p;
-	}
+/**
+ * Add a reference to a pointer to a StackEntry.
+ */
+inline void intrusive_ptr_add_ref(StackEntry *p) {
+	++(p->_refCount);
 }
+
+/**
+ * Remove a reference from a pointer to a StackEntry.
+ */
+inline void intrusive_ptr_release(StackEntry *p) {
+	if (--(p->_refCount) == 0)
+		delete p;
+}
+} // End of namespace boost
 
 
 /**
@@ -147,7 +147,7 @@ public:
 	IntEntry(uint32 val, bool isSigned) : _isSigned(isSigned) {
 		_val = (int32)val;
 		_type = seInt;
-	}	
+	}
 
 	virtual std::ostream &print(std::ostream &output) const {
 		if (_isSigned)
@@ -157,7 +157,9 @@ public:
 		return output;
 	}
 
-	virtual EntryPtr dup() { return new IntEntry(_val, _isSigned); }
+	virtual EntryPtr dup() {
+		return new IntEntry(_val, _isSigned);
+	}
 };
 
 /**
@@ -177,7 +179,9 @@ public:
 		_type = seVar;
 	};
 
-	virtual std::ostream &print(std::ostream &output) const { return output << _varName; }
+	virtual std::ostream &print(std::ostream &output) const {
+		return output << _varName;
+	}
 };
 
 /**
@@ -190,7 +194,7 @@ private:
 	std::string _op;  ///< The operator for this entry.
 
 public:
-	/** 
+	/**
 	 * Constructor for BinaryOpEntry.
 	 *
 	 * @param lhs Stack entry representing the left side of the operator.
@@ -201,7 +205,9 @@ public:
 		_type = seBinOp;
 	}
 
-	virtual std::ostream &print(std::ostream &output) const { return output << _lhs << " " << _op << " " << _rhs; }
+	virtual std::ostream &print(std::ostream &output) const {
+		return output << "(" << _lhs << " " << _op << " " << _rhs << ")";
+	}
 };
 
 /**
@@ -223,7 +229,9 @@ public:
 		_type = seUnaryOp;
 	}
 
-	virtual std::ostream &print(std::ostream &output) const { return output << _op << _operand; }
+	virtual std::ostream &print(std::ostream &output) const {
+		return output << _op << _operand;
+	}
 };
 
 /**
@@ -242,7 +250,9 @@ public:
 	DupEntry(int idx) : _idx(idx) {
 		_type = seDup;
 	}
-	virtual std::ostream &print(std::ostream &output) const { return output << "dup[" << _idx << "]"; }
+	virtual std::ostream &print(std::ostream &output) const {
+		return output << "dup[" << _idx << "]";
+	}
 };
 
 /**
@@ -283,14 +293,14 @@ public:
 	 * Constructor for CodeGenerator.
 	 *
 	 * @param engine Pointer to the Engine used for the script.
- 	 * @param output The std::ostream to output the code to.
+	 * @param output The std::ostream to output the code to.
 	 */
 	CodeGenerator(Engine *engine, std::ostream &output);
 
 	/**
 	 * Generates code from the provided graph and outputs it to stdout.
 	 *
- 	 * @param g The annotated graph of the script.
+	 * @param g The annotated graph of the script.
 	 */
 	void generate(const Graph &g);
 };

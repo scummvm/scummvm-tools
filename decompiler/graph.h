@@ -56,8 +56,8 @@ struct Group;
 typedef boost::intrusive_ptr<Group> GroupPtr;
 
 namespace boost {
-	inline void intrusive_ptr_add_ref(Group *p);
-	inline void intrusive_ptr_release(Group *p);
+inline void intrusive_ptr_add_ref(Group *p);
+inline void intrusive_ptr_release(Group *p);
 } // End of namespace boost
 
 /**
@@ -172,20 +172,20 @@ public:
 };
 
 namespace boost {
-	/**
-	 * Add a reference to a pointer.
-	 */
-	inline void intrusive_ptr_add_ref(Group *p) {
-		++(p->_refCount);
-	}
+/**
+ * Add a reference to a pointer.
+ */
+inline void intrusive_ptr_add_ref(Group *p) {
+	++(p->_refCount);
+}
 
-	/**
-	 * Remove a reference from a pointer.
-	 */
-	inline void intrusive_ptr_release(Group *p) {
-		if (--(p->_refCount) == 0)
-			delete p;
-	}
+/**
+ * Remove a reference from a pointer.
+ */
+inline void intrusive_ptr_release(Group *p) {
+	if (--(p->_refCount) == 0)
+		delete p;
+}
 }
 
 /**
