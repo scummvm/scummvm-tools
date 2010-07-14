@@ -55,6 +55,141 @@ struct Group;
  */
 typedef boost::intrusive_ptr<Group> GroupPtr;
 
+
+/**
+ * Type representing properties containing a pointer to a Group.
+ */
+typedef boost::property<boost::vertex_name_t, GroupPtr> GroupProperty;
+
+/**
+ * Type representing properties containing an index, followed by a GroupProperty.
+ */
+typedef boost::property<boost::vertex_index_t, int, GroupProperty> GraphProperty;
+
+/**
+ * Structure representing whether or not an edge is a jump.
+ */ 
+struct IsJump {
+	bool _isJump; ///< Whether or not the edge is a jump.
+
+	/**
+	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
+	 */
+	IsJump() { _isJump = false; };
+
+	/**
+	 * Constructor for IsJump.
+	 *
+	 * @param isJump Whether or not the edge is a jump.
+	 */
+	IsJump(bool isJump) : _isJump(isJump) {};
+
+	/**
+	 * Output edge information to an std::ostream as a graphviz edge property.
+	 *
+	 * @param output The std::ostream to output to.
+	 * @param isJump The IsJump to output.
+	 * @return The std::ostream used for output.
+	 */
+	friend std::ostream &operator<<(std::ostream &output, IsJump isJump) {
+		if (isJump._isJump)
+			output << "empty";
+		else
+			output << "normal";
+		return output;
+	}
+};
+
+namespace boost {
+
+/**
+ * Property writer for the isJump property.
+ */
+template <class Name>
+class arrowheadWriter {
+public:
+
+	/**
+	 * Constructor for arrowheadWriter.
+	 *
+	 * @param _name The name of the attribute to use.
+	 */
+	arrowheadWriter(Name _name) : name(_name) {}
+
+	/**
+	 * Outputs the arrowhead edge property.
+	 *
+	 * @param out The std::ostream to output to.
+	 * @param v   The vertex or edge to output the attribute for.
+	 */
+	template <class VertexOrEdge>
+	void operator()(std::ostream& out, const VertexOrEdge& v) const {
+		out << "[arrowhead=\"" << get(name, v) << "\"]";
+	}
+private:
+	Name name; ///< The name of the attribute to use.
+};
+
+/**
+ * Creates an arrowhead property writer.
+ *
+ * @param _name The name of the attribute to use.
+ */
+template <class Name>
+inline arrowheadWriter<Name>
+makeArrowheadWriter(Name n) {
+	return arrowheadWriter<Name>(n);
+}
+
+} // End of namespace boost
+
+typedef boost::property<boost::edge_attribute_t, IsJump> EdgeProperty;
+
+/**
+ * Type used for the code flow graph.
+ */
+typedef boost::adjacency_list<boost::setS, boost::listS, boost::bidirectionalS, GraphProperty, EdgeProperty> Graph;
+
+/**
+ * Type representing a vertex in the graph.
+ */
+typedef Graph::vertex_descriptor GraphVertex;
+
+/**
+ * Type representing an iterator for vertices.
+ */
+typedef Graph::vertex_iterator VertexIterator;
+
+/**
+ * Type representing an edge in the graph.
+ */
+typedef Graph::edge_descriptor GraphEdge;
+
+/**
+ * Type representing an iterator for outgoing edges.
+ */
+typedef Graph::out_edge_iterator OutEdgeIterator;
+
+/**
+ * Type representing an iterator for ingoing edges.
+ */
+typedef Graph::in_edge_iterator InEdgeIterator;
+
+/**
+ * Type representing a range of vertices from boost::vertices.
+ */
+typedef std::pair<VertexIterator, VertexIterator> VertexRange;
+
+/**
+ * Type representing a range of edges from boost::out_edges.
+ */
+typedef std::pair<OutEdgeIterator, OutEdgeIterator> OutEdgeRange;
+
+/**
+ * Type representing a range of edges from boost::in_edges.
+ */
+typedef std::pair<InEdgeIterator, InEdgeIterator> InEdgeRange;
+
 namespace boost {
 inline void intrusive_ptr_add_ref(Group *p);
 inline void intrusive_ptr_release(Group *p);
@@ -69,7 +204,8 @@ private:
   friend void ::boost::intrusive_ptr_add_ref(Group *p); ///< Allow access by reference counting methods in boost namespace.
   friend void ::boost::intrusive_ptr_release(Group *p); ///< Allow access by reference counting methods in boost namespace.
 
-public:	
+public:
+	GraphVertex _vertex;      ///< Vertex the group belongs to.
 	ConstInstIterator _start; ///< First instruction in the group.
 	ConstInstIterator _end;   ///< Last instruction in the group.
 	int _stackLevel;          ///< Level of the stack upon entry.
@@ -87,11 +223,13 @@ public:
 	/**
 	 * Constructor for Group.
 	 *
+	 * @param v     The vertex the group belongs to.
 	 * @param start First instruction in the group.
 	 * @param end   Last instruction in the group.
 	 * @param prev  Pointer to the previous group, when ordered by address.
 	 */
-	Group(ConstInstIterator start, ConstInstIterator end, GroupPtr prev) : _refCount(0) {
+	Group(GraphVertex v, ConstInstIterator start, ConstInstIterator end, GroupPtr prev) : _refCount(0) {
+		_vertex = v;
 		_start = start;
 		_end = end;
 		_stackLevel = -1;
@@ -187,141 +325,6 @@ inline void intrusive_ptr_release(Group *p) {
 		delete p;
 }
 }
-
-/**
- * Type representing properties containing a pointer to a Group.
- */
-typedef boost::property<boost::vertex_name_t, GroupPtr> GroupProperty;
-
-/**
- * Type representing properties containing an index, followed by a GroupProperty.
- */
-typedef boost::property<boost::vertex_index_t, int, GroupProperty> GraphProperty;
-
-/**
- * Structure representing whether or not an edge is a jump.
- */ 
-struct IsJump {
-	bool _isJump; ///< Whether or not the edge is a jump.
-
-	/**
-	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
-	 */
-	IsJump() { _isJump = false; };
-
-	/**
-	 * Constructor for IsJump.
-	 *
-	 * @param isJump Whether or not the edge is a jump.
-	 */
-	IsJump(bool isJump) : _isJump(isJump) {};
-
-	/**
-	 * Output edge information to an std::ostream as a graphviz edge property.
-	 *
-	 * @param output The std::ostream to output to.
-	 * @param isJump The IsJump to output.
-	 * @return The std::ostream used for output.
-	 */
-	friend std::ostream &operator<<(std::ostream &output, IsJump isJump) {
-		if (isJump._isJump)
-			output << "empty";
-		else
-			output << "normal";
-		return output;
-	}
-};
-
-namespace boost {
-
-/**
- * Property writer for the isJump property.
- */
-template <class Name>
-class arrowheadWriter {
-public:
-
-	/**
-	 * Constructor for arrowheadWriter.
-	 *
-	 * @param _name The name of the attribute to use.
-	 */
-	arrowheadWriter(Name _name) : name(_name) {}
-
-	/**
-	 * Outputs the arrowhead edge property.
-	 *
-	 * @param out The std::ostream to output to.
-	 * @param v   The vertex or edge to output the attribute for.
-	 */
-	template <class VertexOrEdge>
-	void operator()(std::ostream& out, const VertexOrEdge& v) const {
-		out << "[arrowhead=\"" << get(name, v) << "\"]";
-	}
-private:
-	Name name; ///< The name of the attribute to use.
-};
-
-/**
- * Creates an arrowhead property writer.
- *
- * @param _name The name of the attribute to use.
- */
-template <class Name>
-inline arrowheadWriter<Name>
-makeArrowheadWriter(Name n) {
-	return arrowheadWriter<Name>(n);
-}
-
-} // End of namespace boost
-
-
-typedef boost::property<boost::edge_attribute_t, IsJump> EdgeProperty;
-
-/**
- * Type used for the code flow graph.
- */
-typedef boost::adjacency_list<boost::setS, boost::listS, boost::bidirectionalS, GraphProperty, EdgeProperty> Graph;
-
-/**
- * Type representing a vertex in the graph.
- */
-typedef Graph::vertex_descriptor GraphVertex;
-
-/**
- * Type representing an iterator for vertices.
- */
-typedef Graph::vertex_iterator VertexIterator;
-
-/**
- * Type representing an edge in the graph.
- */
-typedef Graph::edge_descriptor GraphEdge;
-
-/**
- * Type representing an iterator for outgoing edges.
- */
-typedef Graph::out_edge_iterator OutEdgeIterator;
-
-/**
- * Type representing an iterator for ingoing edges.
- */
-typedef Graph::in_edge_iterator InEdgeIterator;
-
-/**
- * Type representing a range of vertices from boost::vertices.
- */
-typedef std::pair<VertexIterator, VertexIterator> VertexRange;
-
-/**
- * Type representing a range of edges from boost::out_edges.
- */
-typedef std::pair<OutEdgeIterator, OutEdgeIterator> OutEdgeRange;
-
-/**
- * Type representing a range of edges from boost::in_edges.
- */
-typedef std::pair<InEdgeIterator, InEdgeIterator> InEdgeRange;
 
 /**
  * Type used to set properties for dot output.

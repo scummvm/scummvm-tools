@@ -44,7 +44,7 @@ ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) 
 	for (ConstInstIterator it = insts.begin(); it != insts.end(); ++it) {
 		GraphVertex cur = boost::add_vertex(_g);
 		_addrMap[it->_address] = cur;
-		PUT(cur, new Group(it, it, prev));
+		PUT(cur, new Group(cur, it, it, prev));
 		PUT_ID(cur, id);
 		id++;
 
