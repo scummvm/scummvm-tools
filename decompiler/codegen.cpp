@@ -50,8 +50,6 @@ typedef std::pair<GraphVertex, Stack> DFSEntry;
 void CodeGenerator::generate(const Graph &g) {
 	_g = g;
 
-	std::cout << boost::format("Got %d vertices.\n") % boost::num_vertices(_g);
-
 	// Find entry point
 	// FIXME: For simplicity, we simply treat the first group as the entry point, because that's how SCUMM works.
 	// This should be changed later to allow for functions etc.
@@ -70,7 +68,6 @@ void CodeGenerator::generate(const Graph &g) {
 	while (!dfsStack.empty()) {
 		DFSEntry e = dfsStack.top();
 		GroupPtr tmp = GET(e.first);
-		std::cout << boost::format("Found instruction at 0x%08x\n") % tmp->_start->_address;
 		dfsStack.pop();
 		_stack = e.second;
 		GraphVertex v = e.first;
@@ -89,9 +86,5 @@ void CodeGenerator::generate(const Graph &g) {
 }
 
 void CodeGenerator::process(GraphVertex v) {
-	GroupPtr p = GET(v);
-	std::cout << boost::format("Processing instruction at 0x%08x\n") % p->_start->_address;
-	std::cout << boost::format("Processing instruction at 0x%08x\n") % p->_end->_address;	
-//	std::cout << "Processing instruction...\n";
 	// TODO
 }
