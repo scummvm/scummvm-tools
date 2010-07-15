@@ -147,15 +147,13 @@ int main(int argc, char** argv) {
 			boost::write_graphviz(out, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties());
 		}
 
-		delete cf;
-
 		// Code generation
 		CodeGenerator *cg = engine->getCodeGenerator(std::cout);
 		cg->generate(g);
-
-		delete cg;
-		
+	
 		// Free memory		
+		delete cf;
+		delete cg;
 		delete engine;
 	} catch (UnknownOpcodeException &e) {
 		std::cerr << "ERROR: " << e.what() << "\n";
