@@ -55,7 +55,6 @@ struct Group;
  */
 typedef boost::intrusive_ptr<Group> GroupPtr;
 
-
 /**
  * Type representing properties containing a pointer to a Group.
  */

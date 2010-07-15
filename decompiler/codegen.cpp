@@ -23,6 +23,12 @@
 #include "codegen.h"
 
 #include <iostream>
+#include <set>
+
+#include <boost/format.hpp>
+
+#define GET(vertex) (boost::get(boost::vertex_name, _g, vertex))
+#define GET_EDGE(edge) (boost::get(boost::edge_attribute, _g, edge))
 
 static int dupindex = 0;
 
@@ -39,11 +45,53 @@ CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output) : _output(out
 	_engine = engine;
 }
 
+typedef std::pair<GraphVertex, Stack> DFSEntry;
+
 void CodeGenerator::generate(const Graph &g) {
 	_g = g;
-	// TODO
+
+	std::cout << boost::format("Got %d vertices.\n") % boost::num_vertices(_g);
+
+	// Find entry point
+	// FIXME: For simplicity, we simply treat the first group as the entry point, because that's how SCUMM works.
+	// This should be changed later to allow for functions etc.
+	VertexRange vr = boost::vertices(_g);
+	GraphVertex entryPoint = *(vr.first);
+	GroupPtr p = GET(entryPoint);
+	while (p->_prev != NULL)
+		p = p->_prev;
+	entryPoint = p->_vertex;
+
+	// DFS from entry point to process each vertex
+	std::stack<DFSEntry> dfsStack;
+	std::set<GraphVertex> seen;
+	dfsStack.push(DFSEntry(entryPoint, Stack()));
+	seen.insert(entryPoint);
+	while (!dfsStack.empty()) {
+		DFSEntry e = dfsStack.top();
+		GroupPtr tmp = GET(e.first);
+		std::cout << boost::format("Found instruction at 0x%08x\n") % tmp->_start->_address;
+		dfsStack.pop();
+		_stack = e.second;
+		GraphVertex v = e.first;
+		process(v);
+		OutEdgeRange r = boost::out_edges(v, _g);
+		for (OutEdgeIterator i = r.first; i != r.second; i++) {
+			GraphVertex target = boost::target(*i, _g);
+			if (seen.find(target) == seen.end()) {
+				dfsStack.push(DFSEntry(target, _stack));
+				seen.insert(target);
+			}
+		}
+	}
+
+	// TODO: Print output
 }
 
 void CodeGenerator::process(GraphVertex v) {
+	GroupPtr p = GET(v);
+	std::cout << boost::format("Processing instruction at 0x%08x\n") % p->_start->_address;
+	std::cout << boost::format("Processing instruction at 0x%08x\n") % p->_end->_address;	
+//	std::cout << "Processing instruction...\n";
 	// TODO
 }

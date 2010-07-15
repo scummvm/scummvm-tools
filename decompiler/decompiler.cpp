@@ -149,7 +149,11 @@ int main(int argc, char** argv) {
 
 		delete cf;
 
-		// TODO: Code generation
+		// Code generation
+		CodeGenerator *cg = engine->getCodeGenerator(std::cout);
+		cg->generate(g);
+
+		delete cg;
 		
 		// Free memory		
 		delete engine;
