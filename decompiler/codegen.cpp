@@ -94,7 +94,7 @@ void CodeGenerator::generate(const Graph &g) {
 
 	// Print output
 	p = GET(entryPoint);
-	while (p->_next != NULL) {
+	while (p != NULL) {
 		for (std::vector<std::string>::iterator it = p->_code.begin(); it != p->_code.end(); ++it)
 			_output << *it << std::endl;
 		p = p->_next;
@@ -130,6 +130,7 @@ void CodeGenerator::process(GraphVertex v) {
 			break;
 		}
 		default:
+			std::cout << boost::format("Processing instruction at address %0X\n") % it->_address;
 			processInst(*it);
 		}
 	} while (it++ != _curGroup->_end);
