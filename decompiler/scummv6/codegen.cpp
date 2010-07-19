@@ -73,6 +73,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 			case 0x4B:
 				break;
 		}
+		break;
 	default:
 		{
 			std::stringstream s;

@@ -52,6 +52,7 @@ std::string CodeGenerator::indentString(std::string s) {
 
 CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output) : _output(output) {
 	_engine = engine;
+	_indentLevel = 0;
 }
 
 typedef std::pair<GraphVertex, Stack> DFSEntry;
