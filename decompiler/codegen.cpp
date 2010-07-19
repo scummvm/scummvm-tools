@@ -73,7 +73,7 @@ void CodeGenerator::generate(const Graph &g) {
 		GraphVertex v = e.first;
 		process(v);
 		OutEdgeRange r = boost::out_edges(v, _g);
-		for (OutEdgeIterator i = r.first; i != r.second; i++) {
+		for (OutEdgeIterator i = r.first; i != r.second; ++i) {
 			GraphVertex target = boost::target(*i, _g);
 			if (seen.find(target) == seen.end()) {
 				dfsStack.push(DFSEntry(target, _stack));
@@ -82,7 +82,13 @@ void CodeGenerator::generate(const Graph &g) {
 		}
 	}
 
-	// TODO: Print output
+	// Print output
+	p = GET(entryPoint);
+	while (p->_next != NULL) {
+		for (std::vector<std::string>::iterator it = p->_code.begin(); it != p->_code.end(); ++it)
+			_output << *it << std::endl;
+		p = p->_next;
+	}
 }
 
 void CodeGenerator::process(GraphVertex v) {

@@ -27,6 +27,7 @@
 
 #include <ostream>
 #include <utility>
+#include <vector>
 
 #include <boost/format.hpp>
 
@@ -204,15 +205,16 @@ private:
   friend void ::boost::intrusive_ptr_release(Group *p); ///< Allow access by reference counting methods in boost namespace.
 
 public:
-	GraphVertex _vertex;      ///< Vertex the group belongs to.
-	ConstInstIterator _start; ///< First instruction in the group.
-	ConstInstIterator _end;   ///< Last instruction in the group.
-	int _stackLevel;          ///< Level of the stack upon entry.
-	GroupType _type;          ///< Type of the group.
-	bool _startElse;          ///< Group is start of an else block.
-	Group *_endElse;          ///< Group is end of an else block.
-	Group *_prev;             ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
-	Group *_next;             ///< Pointer to the next group, when ordered by address.
+	GraphVertex _vertex;            ///< Vertex the group belongs to.
+	ConstInstIterator _start;       ///< First instruction in the group.
+	ConstInstIterator _end;         ///< Last instruction in the group.
+	int _stackLevel;                ///< Level of the stack upon entry.
+	GroupType _type;                ///< Type of the group.
+	bool _startElse;                ///< Group is start of an else block.
+	Group *_endElse;                ///< Group is end of an else block.
+	Group *_prev;                   ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
+	Group *_next;                   ///< Pointer to the next group, when ordered by address.
+	std::vector<std::string> _code; ///< Container for decompiled lines of code.
 
 	/**
 	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
