@@ -37,8 +37,17 @@ EntryPtr StackEntry::dup(std::ostream &output) {
 		return this;
 
 	EntryPtr dupEntry = new DupEntry(++dupindex);
-	output << this << " = " << dupEntry;
+	output << dupEntry << " = " << this;
 	return dupEntry;
+}
+
+std::string CodeGenerator::indentString(std::string s) {
+	std::stringstream stream;
+	std::string indent(kIndentAmount, ' ');
+	for (uint i = 0; i < _indentLevel; i++)
+		stream << indent;
+	stream << s;
+	return stream.str();
 }
 
 CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output) : _output(output) {
@@ -91,6 +100,36 @@ void CodeGenerator::generate(const Graph &g) {
 	}
 }
 
+void CodeGenerator::addOutputLine(std::string s) {
+	_curGroup->_code.push_back(indentString(s));
+}
+
+void CodeGenerator::writeAssignment(EntryPtr dst, EntryPtr src) {
+	std::stringstream s;
+	s << dst << " = " << src << ";";
+	addOutputLine(s.str());
+}
+
 void CodeGenerator::process(GraphVertex v) {
-	// TODO
+	// TODO: Add keyword output
+	_curGroup = GET(v);
+	ConstInstIterator it = _curGroup->_start;
+	do {
+		switch (it->_type) {
+		// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
+		case kDup:
+		{
+			std::stringstream s;
+			EntryPtr p = _stack.top()->dup(s);
+			if (s.str().length() > 0)
+				addOutputLine(s.str());
+			_stack.pop();
+			_stack.push(p);
+			_stack.push(p);
+			break;
+		}
+		default:
+			processInst(*it);
+		}
+	} while (++it != _curGroup->_end);
 }

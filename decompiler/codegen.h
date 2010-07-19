@@ -102,7 +102,6 @@ public:
 	}
 };
 
-
 namespace boost {
 
 /**
@@ -121,7 +120,6 @@ inline void intrusive_ptr_release(StackEntry *p) {
 }
 
 } // End of namespace boost
-
 
 /**
  * Stack entry containing an integer.
@@ -257,6 +255,8 @@ public:
  */
 typedef std::stack<EntryPtr> Stack;
 
+const int kIndentAmount = 2; ///< How many spaces to use for each indent.
+
 /**
  * Base class for code generators.
  */
@@ -275,13 +275,38 @@ private:
 protected:
 	std::ostream &_output; ///< The std::ostream to output the code to.
 	Stack _stack;          ///< The stack currently being processed.
+	uint _indentLevel;     ///< Indentation level.
+	GroupPtr _curGroup;    ///< Pointer to the group currently being processed.
 
 	/**
 	 * Processes an instruction.
 	 *
 	 * @param inst The instruction to process.
 	 */
-	virtual void processInst(Instruction inst) = 0;
+	virtual void processInst(const Instruction inst) = 0;
+
+	/**
+	 * Indents a string according to the current indentation level.
+	 *
+	 * @param s The string to indent.
+	 * @result The indented string.
+	 */
+	std::string indentString(std::string s);
+
+	/**
+	 * Indents a line and adds it to the current group.
+	 *
+	 * @param s The string to add.
+	 */
+	void addOutputLine(std::string s);
+
+	/**
+	 * Generate an assignment statement.
+	 *
+	 * @param dst The variable being assigned to.
+	 * @param src The value being assigned.
+	 */
+	void writeAssignment(EntryPtr dst, EntryPtr src);
 
 public:
 	virtual ~CodeGenerator() {};

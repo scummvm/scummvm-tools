@@ -33,10 +33,18 @@ namespace v6 {
  * SCUMMv6 code generator.
  */
 class CodeGenerator : public ::CodeGenerator {
+private:
+	/**
+	 * Decode a variable ID to a name.
+	 *
+	 * @param varID The ID to decode.
+	 * @return The decoded variable name.
+	 */
+	std::string decodeVarName(uint16 varID);
 public:
 	CodeGenerator(Engine *engine, std::ostream &output) : ::CodeGenerator(engine, output) {}
 protected:
-	void processInst(Instruction inst);
+	void processInst(const Instruction inst);
 };
 
 } // End of namespace v6
