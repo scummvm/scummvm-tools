@@ -131,5 +131,5 @@ void CodeGenerator::process(GraphVertex v) {
 		default:
 			processInst(*it);
 		}
-	} while (++it != _curGroup->_end);
+	} while (it++ != _curGroup->_end);
 }
