@@ -41,23 +41,23 @@ void PasCDisassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE(0x16, "JAGT", kCondJump, 0, "d");
 
 		//Boolean operations
-		OPCODE(0x20, "OR", kBoolean, -1, "");
-		OPCODE(0x21, "AND", kBoolean, -1, "");
-		OPCODE(0x22, "XOR", kBoolean, -1, "");
-		OPCODE(0x23, "NOT", kBoolean, -1, "");
+		OPCODE(0x20, "OR", kBinaryOp, -1, "");
+		OPCODE(0x21, "AND", kBinaryOp, -1, "");
+		OPCODE(0x22, "XOR", kBinaryOp, -1, "");
+		OPCODE(0x23, "NOT", kUnaryOp, -1, "");
 
 		//Padding instructions (smaller integer -> larger integer)
 		OPCODE(0x30, "SPAD", kSpecial, 0, "B");
 		OPCODE(0x31, "UPAD", kSpecial, 0, "B");
 
 		//32-bit operations
-		OPCODE(0x80, "IADD", kArithmetic, -4, "");
-		OPCODE(0x81, "ISUB", kArithmetic, -4, "");
-		OPCODE(0x82, "IMULT", kArithmetic, -4, "");
-		OPCODE(0x83, "IDIV", kArithmetic, -4, "");
-		OPCODE(0x84, "IMOD", kArithmetic, -4, "");
-		OPCODE(0x85, "ISHL", kArithmetic, -4, "");
-		OPCODE(0x86, "ISHR", kArithmetic, -4, "");
+		OPCODE(0x80, "IADD", kBinaryOp, -4, "");
+		OPCODE(0x81, "ISUB", kBinaryOp, -4, "");
+		OPCODE(0x82, "IMULT", kBinaryOp, -4, "");
+		OPCODE(0x83, "IDIV", kBinaryOp, -4, "");
+		OPCODE(0x84, "IMOD", kBinaryOp, -4, "");
+		OPCODE(0x85, "ISHL", kBinaryOp, -4, "");
+		OPCODE(0x86, "ISHR", kBinaryOp, -4, "");
 		OPCODE(0x87, "ISTOREA [SB]", kStore, -4, "i");
 		OPCODE(0x88, "ISTOREL [SB]", kStore, 0, "ii");
 		OPCODE(0x89, "ILOADA [SB]", kLoad, 4, "i");
@@ -76,13 +76,13 @@ void PasCDisassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE(0x99, "ILOAD", kLoad, -8, "");
 
 		//16-bit operations
-		OPCODE(0xA0, "SADD", kArithmetic, -2, "");
-		OPCODE(0xA1, "SSUB", kArithmetic, -2, "");
-		OPCODE(0xA2, "SMULT", kArithmetic, -2, "");
-		OPCODE(0xA3, "SDIV", kArithmetic, -2, "");
-		OPCODE(0xA4, "SMOD", kArithmetic, -2, "");
-		OPCODE(0xA5, "SSHL", kArithmetic, -2, "");
-		OPCODE(0xA6, "SSHR", kArithmetic, -2, "");
+		OPCODE(0xA0, "SADD", kBinaryOp, -2, "");
+		OPCODE(0xA1, "SSUB", kBinaryOp, -2, "");
+		OPCODE(0xA2, "SMULT", kBinaryOp, -2, "");
+		OPCODE(0xA3, "SDIV", kBinaryOp, -2, "");
+		OPCODE(0xA4, "SMOD", kBinaryOp, -2, "");
+		OPCODE(0xA5, "SSHL", kBinaryOp, -2, "");
+		OPCODE(0xA6, "SSHR", kBinaryOp, -2, "");
 		OPCODE(0xA7, "SSTOREA [SB]", kStore, -2, "i");
 		OPCODE(0xA8, "SSTOREL [SB]", kStore, 0, "is");
 		OPCODE(0xA9, "SLOADA [SB]", kLoad, 2, "i");
@@ -101,13 +101,13 @@ void PasCDisassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE(0xB9, "SLOAD", kLoad, -6, "");		
 
 		//8-bit operations
-		OPCODE(0xC0, "BADD", kArithmetic, -1, "");
-		OPCODE(0xC1, "BSUB", kArithmetic, -1, "");
-		OPCODE(0xC2, "BMULT", kArithmetic, -1, "");
-		OPCODE(0xC3, "BDIV", kArithmetic, -1, "");
-		OPCODE(0xC4, "BMOD", kArithmetic, -1, "");
-		OPCODE(0xC5, "BSHL", kArithmetic, -1, "");
-		OPCODE(0xC6, "BSHR", kArithmetic, -1, "");
+		OPCODE(0xC0, "BADD", kBinaryOp, -1, "");
+		OPCODE(0xC1, "BSUB", kBinaryOp, -1, "");
+		OPCODE(0xC2, "BMULT", kBinaryOp, -1, "");
+		OPCODE(0xC3, "BDIV", kBinaryOp, -1, "");
+		OPCODE(0xC4, "BMOD", kBinaryOp, -1, "");
+		OPCODE(0xC5, "BSHL", kBinaryOp, -1, "");
+		OPCODE(0xC6, "BSHR", kBinaryOp, -1, "");
 		OPCODE(0xC7, "BSTOREA [SB]", kStore, -1, "i");
 		OPCODE(0xC8, "BSTOREL [SB]", kStore, 0, "iB");
 		OPCODE(0xC9, "BLOADA [SB]", kLoad, 1, "i");

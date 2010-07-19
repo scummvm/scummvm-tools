@@ -33,19 +33,20 @@
  * Enumeration for categorizing the different kinds of instructions.
  */
 enum InstType {
-	kArithmetic,  ///< Arithmetic instruction (+, -, *, etc.).
-	kBoolean,     ///< Boolean instruction (AND, OR, etc.).
+	kBinaryOp,    ///< Binary operation (e.g. +, &&, etc.), EXCLUDING comparisons.
 	kCall,        ///< Regular function call.
-	kComparison,  ///< Comparison instruction.
+	kComparison,  ///< Comparison instruction (==, !=, etc.)
 	kCondJump,    ///< Conditional jump (absolute address).
 	kCondJumpRel, ///< Conditional jump (relative address).
+	kDup,         ///< Instruction duplicates the most recent stack entry.
 	kJump,        ///< Unconditional jump (absolute address).
 	kJumpRel,     ///< Unconditional jump (relative address).
 	kLoad,        ///< Load value to stack.
 	kReturn,      ///< Return from regular function call.
 	kSpecial,     ///< Special functions.
 	kStack,       ///< Stack allocation or deallocation (altering stack pointer).
-	kStore        ///< Store value from stack in memory.
+	kStore,       ///< Store value from stack in memory.
+	kUnaryOp      ///< Unary operation (e.g. !)
 };
 
 /**
@@ -103,6 +104,7 @@ struct Instruction {
 	std::string _name;              ///< The instruction name (opcode name).
 	InstType _type;                 ///< The instruction type.
 	std::vector<Parameter> _params; ///< Array of parameters used for the instruction.
+	std::string _operator;          ///< If instruction represents an operator, use this to contain the operator in question.
 };
 
 /**

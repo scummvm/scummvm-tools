@@ -72,16 +72,23 @@ protected:
 
 #define OPCODE_END break;
 
-#define OPCODE(val, name, category, stackChange, params) \
-	OPCODE_BASE(val)\
+#define OPCODE_BODY(name, category, stackChange, params, op) \
 		ADD_INST; \
 		LAST_INST._opcode = full_opcode; \
 		LAST_INST._address = _address; \
 		LAST_INST._stackChange = stackChange; \
 		LAST_INST._name = std::string(name); \
 		LAST_INST._type = category; \
+		LAST_INST._operator = op; \
 		readParams(&LAST_INST, (char*)params); \
+
+#define OPCODE_OP(val, name, category, stackChange, params, op) \
+	OPCODE_BASE(val)\
+		OPCODE_BODY(name, category, stackChange, params, op)\
 		OPCODE_END;
+
+#define OPCODE(val, name, category, stackChange, params) \
+	OPCODE_OP(val, name, category, stackChange, params, "")
 
 #define START_SUBOPCODE(val) \
 	OPCODE_BASE(val) \
