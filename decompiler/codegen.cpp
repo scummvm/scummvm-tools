@@ -130,7 +130,6 @@ void CodeGenerator::process(GraphVertex v) {
 			break;
 		}
 		default:
-			std::cout << boost::format("Processing instruction at address %0X\n") % it->_address;
 			processInst(*it);
 		}
 	} while (it++ != _curGroup->_end);
