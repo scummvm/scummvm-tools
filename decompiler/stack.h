@@ -46,7 +46,7 @@ public:
 	 *
 	 * @param item The item to push.
 	 */
-	void push(T item) { _stack.push_back(item); }
+	void push(const T &item) { _stack.push_back(item); }
 
 	/**
 	 * Pop an item from the stack and return it.
@@ -64,7 +64,14 @@ public:
 	 *
 	 * @return The topmost item on the stack.
 	 */
-	T peek() { return _stack.back(); }
+	T &peek() { return _stack.back(); }
+
+	/**
+	 * Return the topmost item on the stack without removing it.
+	 *
+	 * @return The topmost item on the stack.
+	 */
+	const T &peek() const { return _stack.back(); }
 };
 
 #endif
