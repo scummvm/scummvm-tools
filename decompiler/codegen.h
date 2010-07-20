@@ -21,9 +21,9 @@
  */
 
 #include "graph.h"
+#include "stack.h"
 
 #include <ostream>
-#include <stack>
 #include <utility>
 
 #include <boost/intrusive_ptr.hpp>
@@ -198,7 +198,7 @@ public:
 	 * @param rhs Stack entry representing the right side of the operator.
 	 * @param op The operator for this entry.
 	 */
-	BinaryOpEntry(EntryPtr lhs, EntryPtr rhs, std::string op) : 
+	BinaryOpEntry(EntryPtr lhs, EntryPtr rhs, std::string op) :
 		StackEntry(seBinOp), _lhs(lhs), _rhs(rhs), _op(op) {
 	}
 
@@ -253,7 +253,7 @@ public:
 /**
  * Type representing a stack.
  */
-typedef std::stack<EntryPtr> Stack;
+typedef Stack<EntryPtr> EntryStack;
 
 const int kIndentAmount = 2; ///< How many spaces to use for each indent.
 
@@ -274,7 +274,7 @@ private:
 
 protected:
 	std::ostream &_output; ///< The std::ostream to output the code to.
-	Stack _stack;          ///< The stack currently being processed.
+	EntryStack _stack;     ///< The stack currently being processed.
 	uint _indentLevel;     ///< Indentation level.
 	GroupPtr _curGroup;    ///< Pointer to the group currently being processed.
 

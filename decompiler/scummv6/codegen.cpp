@@ -60,8 +60,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 			case 0x43:
 			{
 				EntryPtr p = new VarEntry(decodeVarName(inst._params[0].getUnsigned()));
-				writeAssignment(p, _stack.top());
-				_stack.pop();
+				writeAssignment(p, _stack.pop());
 				break;
 			}
 			case 0x46:

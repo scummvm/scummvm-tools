@@ -55,7 +55,7 @@ CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output) : _output(out
 	_indentLevel = 0;
 }
 
-typedef std::pair<GraphVertex, Stack> DFSEntry;
+typedef std::pair<GraphVertex, EntryStack> DFSEntry;
 
 void CodeGenerator::generate(const Graph &g) {
 	_g = g;
@@ -71,14 +71,13 @@ void CodeGenerator::generate(const Graph &g) {
 	entryPoint = p->_vertex;
 
 	// DFS from entry point to process each vertex
-	std::stack<DFSEntry> dfsStack;
+	Stack<DFSEntry> dfsStack;
 	std::set<GraphVertex> seen;
-	dfsStack.push(DFSEntry(entryPoint, Stack()));
+	dfsStack.push(DFSEntry(entryPoint, EntryStack()));
 	seen.insert(entryPoint);
 	while (!dfsStack.empty()) {
-		DFSEntry e = dfsStack.top();
+		DFSEntry e = dfsStack.pop();
 		GroupPtr tmp = GET(e.first);
-		dfsStack.pop();
 		_stack = e.second;
 		GraphVertex v = e.first;
 		process(v);
@@ -121,10 +120,9 @@ void CodeGenerator::process(GraphVertex v) {
 		case kDup:
 		{
 			std::stringstream s;
-			EntryPtr p = _stack.top()->dup(s);
+			EntryPtr p = _stack.pop()->dup(s);
 			if (s.str().length() > 0)
 				addOutputLine(s.str());
-			_stack.pop();
 			_stack.push(p);
 			_stack.push(p);
 			break;
