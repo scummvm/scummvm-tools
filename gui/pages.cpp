@@ -132,25 +132,25 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 		wxT("Welcome to the ScummVM extraction and compression utility.\nWhat do you want to do?")));
 
 	sizer->AddSpacer(15);
-	
+
 	wxFlexGridSizer *buttonSizer = new wxFlexGridSizer(2, 3, 10, 25);
 	buttonSizer->SetFlexibleDirection(wxVERTICAL);
-	
+
 	// Compress button
 	wxButton *compressButton = new wxButton(panel, ID_COMPRESS, wxT("Compress"));
 	buttonSizer->Add(compressButton, wxSizerFlags().Expand());
 	compressButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickCompress), NULL, this);
-	
+
 	// Extract button
 	wxButton *extractButton = new wxButton(panel, ID_EXTRACT, wxT("Extract"));
 	buttonSizer->Add(extractButton, wxSizerFlags().Expand());
 	extractButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickExtract), NULL, this);
-	
+
 	// Advanced button
 	wxButton *advancedButton = new wxButton(panel, ID_ADVANCED, wxT("Advanced"));
 	buttonSizer->Add(advancedButton, wxSizerFlags().Expand());
 	advancedButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(IntroPage::onClickAdvanced), NULL, this);
-	
+
 	// Compress Label
 	wxStaticText *compressLabel = new wxStaticText(
 			panel, wxID_ANY,
@@ -159,7 +159,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 		);
 	compressLabel->Wrap(110);
 	buttonSizer->Add(compressLabel, wxSizerFlags().Align(wxALIGN_CENTER_HORIZONTAL));
-	
+
 	// Extract Label
 	wxStaticText *extractLabel = new wxStaticText(
 			panel, wxID_ANY,
@@ -168,7 +168,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 		);
 	extractLabel->Wrap(110);
 	buttonSizer->Add(extractLabel, wxSizerFlags().Align(wxALIGN_CENTER_HORIZONTAL));
-	
+
 	// Advanced Label
 	wxStaticText *advancedLabel = new wxStaticText(
 			panel, wxID_ANY,
@@ -177,7 +177,7 @@ wxWindow *IntroPage::CreatePanel(wxWindow *parent) {
 		);
 	advancedLabel->Wrap(110);
 	buttonSizer->Add(advancedLabel, wxSizerFlags().Align(wxALIGN_CENTER_HORIZONTAL));
-	
+
 	sizer->Add(buttonSizer);
 	SetAlignedSizer(panel, sizer);
 
@@ -824,7 +824,7 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 		else if (format->GetStringSelection() == wxT("MP3"))
 			switchPage(new ChooseAudioOptionsMp3Page(_configuration));
 	} else {
-		
+
 		// For MP3 we check if the lame path is valid otherwise we let the choice
 		// tp the user to either change the audio format or to go to the MP3
 		// options page (to set the lame path).
@@ -833,12 +833,12 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 			!Configuration::isLamePathValid(_configuration.mp3LamePath)
 		) {
 			wxMessageDialog *msgDialog = new wxMessageDialog(
-					NULL, 
+					NULL,
 					wxT("The lame executable could not be found. It is needed to compress files to MP3. "
 						"You can either proceed to the advanced audio settings page and give the path to lame "
 						"or you can select another audio format to compress to.\n\n"
 						"Do you want to proceed to the advanced audio settings page?"),
-					wxT("lame not found"), 
+					wxT("lame not found"),
 					wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION
 				);
 			int retval = msgDialog->ShowModal();
@@ -846,7 +846,7 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 				switchPage(new ChooseAudioOptionsMp3Page(_configuration));
 			return;
 		}
-		
+
 		switchPage(new ProcessPage(_configuration));
 	}
 }
@@ -860,7 +860,7 @@ ChooseAudioOptionsMp3Page::ChooseAudioOptionsMp3Page(Configuration &config)
 
 wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 	wxWindow *panel = WizardPage::CreatePanel(parent);
-	
+
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
 	/*
@@ -889,7 +889,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 			wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator,
 			wxT("LamePath")
 		);
-		
+
 	_gridSizer->Add(lamePicker, wxSizerFlags().Expand());
 
 	// Type of compression
@@ -990,7 +990,7 @@ wxWindow *ChooseAudioOptionsMp3Page::CreatePanel(wxWindow *parent) {
 
 void ChooseAudioOptionsMp3Page::save(wxWindow *panel) {
 	wxFilePickerCtrl *lamePath = static_cast<wxFilePickerCtrl *>(panel->FindWindowByName(wxT("LamePath")));
-	
+
 	wxRadioButton *abr = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("ABR")));
 	wxChoice *mpegQuality = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MpegQuality")));
 
@@ -1018,7 +1018,7 @@ void ChooseAudioOptionsMp3Page::updateFields(wxWindow *panel) {
 	_gridSizer->Show(_vbrMaxBitrateLabel, !isAbrSelected);
 	_gridSizer->Show(_vbrQuality,         !isAbrSelected);
 	_gridSizer->Show(_vbrQualityLabel,    !isAbrSelected);
-	
+
 	_gridSizer->Layout();
 }
 
@@ -1035,17 +1035,17 @@ void ChooseAudioOptionsMp3Page::onNext(wxWindow *panel) {
 	wxFilePickerCtrl *lamePath = static_cast<wxFilePickerCtrl *>(panel->FindWindowByName(wxT("LamePath")));
 	if (!Configuration::isLamePathValid(lamePath->GetPath())) {
 		wxMessageDialog *msgDialog = new wxMessageDialog(
-				NULL, 
+				NULL,
 				wxT("The lame executable could not be found. It is needed to compress files to MP3. "
 				    "If you want to use MP3 compression you need to select a valid lame executable. "
 					"Otherwise you can go back to the audio format selection and select another format."),
-				wxT("lame not found"), 
+				wxT("lame not found"),
 				wxOK | wxICON_EXCLAMATION
 			);
 		msgDialog->ShowModal();
 		return;
 	}
-	
+
 	switchPage(new ProcessPage(_configuration));
 }
 
@@ -1268,7 +1268,7 @@ wxWindow *ProcessPage::CreatePanel(wxWindow *parent) {
 	_gauge = new wxGauge(panel, wxID_ANY, _output.total, wxDefaultPosition, wxDefaultSize,
 		wxGA_HORIZONTAL, wxDefaultValidator, wxT("ProgressBar"));
 	sizer->Add(_gauge, wxSizerFlags(0).Expand().Border(wxBOTTOM | wxLEFT | wxRIGHT, 10));
-	
+
 	_finishText = new wxStaticText(panel, wxID_ANY, wxString());
 	sizer->Add(_finishText, wxSizerFlags().Expand().Border(wxLEFT, 20));
 
@@ -1515,7 +1515,7 @@ wxWindow *FinishPage::CreatePanel(wxWindow *parent) {
 		0, wxDefaultValidator, wxT("DisplayOutput"));
 	displayOut->SetValue(true);
 	sizer->Add(displayOut);
-	
+
 	sizer->AddSpacer(10);
 
 	wxCheckBox *processOther = new wxCheckBox(panel, wxID_ANY, wxT("Process another file"), wxDefaultPosition, wxDefaultSize,

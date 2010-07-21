@@ -487,7 +487,7 @@ void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common
 				continue;
 			}
 		}
-		
+
 		switch (_format) {
 		case AUDIO_MP3:
 			sprintf(outFileName, "SPEECH%d.%s", i, "CL3");
@@ -501,7 +501,7 @@ void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common
 		default:
 			error("Unknown encoding method");
 		}
-		
+
 		// Try opening in SPEECH sub-directory
 		sprintf(outName, "%s/SPEECH/%s", outpath->getPath().c_str(), outFileName);
 		try {
@@ -529,7 +529,7 @@ void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common
 void CompressSword1::compressMusic(const Common::Filename *inpath, const Common::Filename *outpath) {
 	int i;
 	char inName[256], outName[256], inFileName[12], outFileName[12];
-	
+
 	// check if output music directory exist and if we can create files in it
 	sprintf(outName, "%s/MUSIC/compress_sword1_test_file", outpath->getPath().c_str());
 	try {
@@ -544,7 +544,7 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 	for (i = 0; i < TOTAL_TUNES; i++) {
 		// Update the progress bar, we add 2 if we compress speech to, for those files
 		updateProgress(i, TOTAL_TUNES +(_compSpeech? 2 : 0));
-		
+
 		// Get name of input file
 		if (!_macVersion)
 			sprintf(inFileName, "%s.WAV", musicNames[i].fileName);
@@ -584,7 +584,7 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 		default:
 			error("Unknown encoding method");
 		}
-		
+
 		if (_useOutputMusicSubdir)
 			sprintf(outName, "%s/MUSIC/%s", outpath->getPath().c_str(), outFileName);
 		else
@@ -647,7 +647,7 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 	 We detect if we have a PC or Mac version with the music files (WAV for PC and AIF for Mac).
 	 If we have the Mac version or if we don't check the music files, an heuristic will be used
 	 when first accessing the speech file to detect if it is little endian or big endian */
-	 
+
 	if (checkMusic) {
 		for (i = 0; i < 20; i++) { /* Check the first 20 music files */
 			// Check WAV file
@@ -664,7 +664,7 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 			// Then try at root of input directory
 			sprintf(fileName, "%s/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
 			testFile = fopen(fileName, "rb");
-			
+
 			if (testFile) {
 				musicFound = true;
 				fclose(testFile);
@@ -687,7 +687,7 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 			// Then try at root of input directory
 			sprintf(fileName, "%s/%s.AIF", inpath->getPath().c_str(), musicNames[i].fileName);
 			testFile = fopen(fileName, "rb");
-			
+
 			if (testFile) {
 				musicFound = true;
 				_macVersion = true;
@@ -695,7 +695,7 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 				fclose(testFile);
 				break;
 			}
-			
+
 		}
 
 		if (!musicFound) {

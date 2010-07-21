@@ -169,13 +169,13 @@ public:
 		  _eos(false) {
 		assert(parentStream);
 	}
-	
+
 	~SubReadStream() {
 		if (_disposeParentStream) delete _parentStream;
 	}
 
 	virtual bool eos() const { return _eos; }
-	
+
 	virtual uint32 read(void *dataPtr, uint32 dataSize) {
 		if (dataSize > _end - _pos) {
 			dataSize = _end - _pos;
@@ -209,7 +209,7 @@ public:
 		_parentStream->seek(_pos);
 		_eos = false;
 	}
-	
+
 	virtual uint32 pos() const { return _pos - _begin; }
 	virtual uint32 size() const { return _end - _begin; }
 	virtual bool eos() const { return _parentStream->eos(); }

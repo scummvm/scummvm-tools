@@ -9,10 +9,10 @@ Quest for Glory II: Trial by Fire (QfG2)
 Christmas greeting card 1990 (CC1990)
 
 The magic number (84 00) is left out, offset 0 is directly after these two
-bytes. 
+bytes.
 
 If you examine a SCI01 sound resource use "sciunpack --without-header" to
-get the pointers within the file correct for your hex viewer. 
+get the pointers within the file correct for your hex viewer.
 
 DESCRIPTION
 -----------
@@ -20,7 +20,7 @@ DESCRIPTION
 The SCI01 sound resource consists of a number of track lists and the
 tracks themselves. There is one track list for (almost) every piece of
 sound hardware supported by the game. Each track either contains track
-data for one specific channel or a digital sample. 
+data for one specific channel or a digital sample.
 
 SCI1 resources are the same, except that sample chunks are no longer
 allowed (since they are now separate resources).
@@ -112,7 +112,7 @@ allowed (since they are now separate resources).
     This chunk begins with a 2 byte header. The low nibble of the
     first byte indicates the channel number. The high nibble controls
     certain aspects of (dynamic) track channel/hardware channel mapping.
-    
+
     The second byte tells us how many notes will be
     playing simultaneously in the channel. From the third byte onward
     is the MIDI track data which looks just like normal SCI0 MIDI
@@ -128,7 +128,7 @@ offset  data description
  0001     00 Track list continuation
  0002     00 Same hardware device
  0003   003F Data Chunk pointer (Little Endian)
- 0005   0013 Data Chunk length (LE)  
+ 0005   0013 Data Chunk length (LE)
  0007     00 Track list continuation
  0008     00 Same hardware device
  0009   006A Data Chunk pointer (LE)
@@ -176,7 +176,7 @@ offset  data description
  0041        MIDI Track data like SCI0
  0052     02 MIDI Track channel 2
  0053     02 Two notes playing on track
- 0054        MIDI Track data like SCI0 
+ 0054        MIDI Track data like SCI0
  006A	  03 MIDI Track channel 3
  006B	  01 One note playing on track
  006C	     MIDI Track data like SCI0
@@ -195,7 +195,7 @@ reported.
 
 Absolute cues are generally stored in the signal selector, and
 cumulative cues are generally stored in the dataInc selector, with
-some interesting twists: 
+some interesting twists:
 
 1. The server's record of the absolute cue value is reset as part of
    UPDATE_CUES.

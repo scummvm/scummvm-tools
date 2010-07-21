@@ -165,7 +165,7 @@ void CompressScummSou::execute() {
 	_input.open(inpath, "rb");
 	_output_idx.open(TEMP_IDX, "wb");
 	_output_snd.open(TEMP_DAT, "wb");
-	
+
 	_file_size = _input.size();
 
 	/* Get the 'SOU ....' header */

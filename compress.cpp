@@ -802,27 +802,27 @@ void CompressionTool::setMp3CompressionType(CompressionType type) {
 
 void CompressionTool::setMp3MpegQuality(const std::string& arg) {
 	lameparms.algqual = atoi(arg.c_str());
-	
+
 	if (lameparms.algqual == 0 && arg != "0")
 		throw ToolException("Quality (-q) must be a number.");
-	
+
 	if (lameparms.algqual > 9)
 		throw ToolException("Quality (-q) out of bounds, must be between 0 and 9.");
 }
 
 void CompressionTool::setMp3TargetBitrate(const std::string& arg) {
 	lameparms.targetBitr = atoi(arg.c_str());
-	
+
 	if (lameparms.targetBitr == 0 && arg != "0")
 		throw ToolException("Target bitrate must be a number.");
-	
+
 	if (lameparms.targetBitr < 8 || lameparms.targetBitr > 160)
 		throw ToolException("Target bitrate out of bounds, must be between 8 and 160.");
 }
 
 void CompressionTool::setMp3MinBitrate(const std::string& arg) {
 	lameparms.minBitr = atoi(arg.c_str());
-	
+
 	if (lameparms.minBitr == 0 && arg != "0")
 		throw ToolException("Minimum bitrate (-b) must be a number.");
 
@@ -830,14 +830,14 @@ void CompressionTool::setMp3MinBitrate(const std::string& arg) {
 		lameparms.minBitr -= lameparms.minBitr % 8;
 	if (lameparms.minBitr > 64 && (lameparms.minBitr % 16) != 0)
 		lameparms.minBitr -= lameparms.minBitr % 16;
-	
+
 	if (lameparms.minBitr < 8 || lameparms.minBitr > 160)
 		throw ToolException("Minimum bitrate out of bounds (-b), must be between 8 and 160.");
 }
 
 void CompressionTool::setMp3MaxBitrate(const std::string& arg) {
 	lameparms.maxBitr = atoi(arg.c_str());
-	
+
 	if (lameparms.maxBitr == 0 && arg != "0")
 		throw ToolException("Maximum bitrate (-B) must be a number.");
 
@@ -867,13 +867,13 @@ void CompressionTool::setMp3VBRQuality(const std::string& arg) {
 // flac
 void CompressionTool::setFlacCompressionLevel(const std::string& arg) {
 	flacparms.compressionLevel = atoi(arg.c_str());
-	
+
 	if (flacparms.compressionLevel == 0 && arg != "0")
 		throw ToolException("FLAC compression level must be a number.");
 
 	if (flacparms.compressionLevel < 0 || flacparms.compressionLevel > 8)
 		throw ToolException("FLAC compression level ot of bounds, must be between 0 and 8.");
-		
+
 }
 
 void CompressionTool::setFlacBlockSize(const std::string& arg) {
@@ -886,10 +886,10 @@ void CompressionTool::setFlacBlockSize(const std::string& arg) {
 // vorbis
 void CompressionTool::setOggQuality(const std::string& arg) {
 	oggparms.quality = (float)atoi(arg.c_str());
-	
+
 	if (oggparms.quality == 0. && arg != "0")
 		throw ToolException("Quality (-q) must be a number.");
-	
+
 	if (oggparms.quality < 0. || oggparms.quality > 10.)
 		throw ToolException("Quality out of bounds (-q), must be between 0 and 10.");
 }
@@ -899,14 +899,14 @@ void CompressionTool::setOggMinBitrate(const std::string& arg) {
 
 	if (oggparms.minBitr == 0 && arg != "0")
 		throw ToolException("Minimum bitrate (-m) must be a number.");
-	
+
 	if (oggparms.minBitr < 8 || oggparms.minBitr > 160)
 		throw ToolException("Minimum bitrate out of bounds (-m), must be between 8 and 160.");
 }
 
 void CompressionTool::setOggAvgBitrate(const std::string& arg) {
 	oggparms.nominalBitr = atoi(arg.c_str());
-	
+
 	if (oggparms.nominalBitr == 0 && arg != "0")
 		throw ToolException("Nominal bitrate (-b) must be a number.");
 
@@ -943,7 +943,7 @@ bool CompressionTool::processMp3Parms() {
 			lameparms.type = CBR;
 			setMp3TargetBitrate(_arguments.front());
 			_arguments.pop_front();
-			
+
 		} else if (arg == "--lame-path") {
 			if (_arguments.empty())
 				throw ToolException("Could not parse command line options, expected value after --lame-path");

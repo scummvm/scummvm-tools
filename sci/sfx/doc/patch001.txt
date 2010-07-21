@@ -17,12 +17,12 @@ Offset Size Type Description
  0x016  20       ASCII String for MT-32 Display (" CAMELOT, CAMELOT!  ")
  0x02a  20       ASCII String for MT-32 Display ("Ham & Jam & SpamAlot")
  0x03e   2  word MT-32 Master Volume
- 0x040   1       Index in Predefined reverb settings at 0x04c (0-10) 
+ 0x040   1       Index in Predefined reverb settings at 0x04c (0-10)
  0x041  11       MT-32 SysEx block setting reverb
                  (last 3 bytes are dummies)
  0x04c   3       Predefined reverb setting #1 (Mode, Time, Level)
    :     :       :
- 0x06a   3       Predefined reverb setting #11 
+ 0x06a   3       Predefined reverb setting #11
  0x06d   8       MT-32 Patch Memory #1 (see Patch Memory description below)
    :     :       :
  0x1e5   8       MT-32 Patch Memory #48
@@ -31,7 +31,7 @@ Offset Size Type Description
 
 
   Patch Memory description
-  
+
   Offset Description
   --------------------------------------------------------------------
    0x00  Timbre Group (0 = Bank A, 1 = Bank B, 2 = Memory, 3 = Rythm)
@@ -46,7 +46,7 @@ Offset Size Type Description
 
    Mapping MT-32 to GM instruments is done with Timbre Group and
    Timbre Number.
-   
+
    Instrument 0-63:   Bank A, 0-63
    Instrument 64-127: Bank B, 0-63
 
@@ -62,7 +62,7 @@ Offset Size Type Description
 
 
   Timbre Memory description
-   
+
   Offset Size Description
   -----------------------------------------------------------------------
    0x00   10  Timbre Name (ASCII String)
@@ -86,14 +86,14 @@ Offset Size Description
    System Area - Partial Reserve, offset relative to 0x370 + n * 246
 
 Offset Size Description
----------------------------------------------------     
+---------------------------------------------------
  0x000   2  0xdc 0xba (if this this is not present
                        this block is non existent)
  0x002   4  Rythm Setup for Key #24 (see below)
-   :     :  :     
+   :     :  :
  0x0fe   4  Rythm Setup for Key #87
  0x102   9  System Area - Partial Reserve
----------------------------------------------------     
+---------------------------------------------------
 
   Rythm Setup description
   See http://members.xoom.com/_XMCM/TomLewandowski/lapc1.txt

@@ -14,7 +14,7 @@ For a more comprehensive changelog for the latest experimental SVN code, see:
 1.1.1 (2010-05-02)
  First tools version to contain a NEWS file.
 
- - Improve the way the images are loaded for the tools GUI. It increases the chances of success. 
+ - Improve the way the images are loaded for the tools GUI. It increases the chances of success.
  - Fix bug #2984217: "Tools: The media directory is not intalled".
  - Fix bug #2905473: "GUI Tools: cannot use lame with compress_scumm_sou".
  - Patch #2982306: "set MP3 ABR bit rate in GUI Tools".

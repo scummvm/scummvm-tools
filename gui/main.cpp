@@ -274,7 +274,7 @@ void ScummToolsFrame::switchPage(WizardPage *next, SwitchToPage page) {
 		while (_pages.size() > 1) {
 			delete _pages.back();
 			_pages.pop_back();
-			
+
 		}
 		break;
 	case PreviousPage:
