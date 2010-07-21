@@ -223,7 +223,7 @@ public:
 	 * @param operand Stack entry representing the operand of the operation.
 	 * @param op The operator for this entry.
 	 */
-	UnaryOpEntry(EntryPtr operand, std::string op) : 
+	UnaryOpEntry(EntryPtr operand, std::string op) :
 		StackEntry(seUnaryOp), _operand(operand), _op(op) { }
 
 	virtual std::ostream &print(std::ostream &output) const {
