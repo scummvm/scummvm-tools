@@ -168,7 +168,7 @@ void CodeGenerator::process(GraphVertex v) {
 					s << "while (" << _stack.pop() << ") {";
 					break;
 				case kDoWhileCond:
-					s << "while (" << _stack.pop() << ")";
+					s << "} while (" << _stack.pop() << ")";
 					break;
 				}
 				addOutputLine(s.str());
