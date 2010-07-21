@@ -94,6 +94,30 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 				break;
 		}
 		break;
+	case kUnaryOp:
+		switch (inst._opcode) {
+		case 0x0D: // not
+			_stack.push(new UnaryOpEntry(_stack.pop(), inst._operator));
+			break;
+		case 0x4E: // byteVarInc
+		case 0x4F: // wordVarInc
+		case 0x56: // byteVarDec
+		case 0x57: // wordVarDec
+			{
+				std::stringstream s;
+				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._operator);
+				s << p;
+				addOutputLine(s.str());
+				break;
+			}
+		case 0x52: // byteArrayInc
+		case 0x53: // wordArrayInc
+		case 0x5A: // byteArrayDec
+		case 0x5B: // wordArrayDec
+			// TODO
+			break;
+		}
+		break;
 	default:
 		{
 			std::stringstream s;
