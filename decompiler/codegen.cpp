@@ -138,7 +138,6 @@ void CodeGenerator::process(GraphVertex v) {
 			break;
 		default:
 			break;
-			}
 		}
 	}
 
