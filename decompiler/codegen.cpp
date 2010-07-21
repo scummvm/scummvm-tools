@@ -37,7 +37,7 @@ EntryPtr StackEntry::dup(std::ostream &output) {
 		return this;
 
 	EntryPtr dupEntry = new DupEntry(++dupindex);
-	output << dupEntry << " = " << this;
+	output << dupEntry << " = " << (EntryPtr)this;
 	return dupEntry;
 }
 
@@ -92,6 +92,7 @@ void CodeGenerator::generate(const Graph &g) {
 	}
 
 	// Print output
+	// TODO: Proper indenting, terminate if/whiles, start do/whiles
 	p = GET(entryPoint);
 	while (p != NULL) {
 		for (std::vector<std::string>::iterator it = p->_code.begin(); it != p->_code.end(); ++it)
