@@ -76,8 +76,8 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE_OP(0x15, "sub", kBinaryOp, -1, "", "-");
 		OPCODE_OP(0x16, "mul", kBinaryOp, -1, "", "*");
 		OPCODE_OP(0x17, "div", kBinaryOp, -1, "", "/");
-		OPCODE_OP(0x18, "land", kBinaryOp, -1, "", "&");
-		OPCODE_OP(0x19, "lor", kBinaryOp, -1, "", "|");
+		OPCODE_OP(0x18, "land", kBinaryOp, -1, "", "&&");
+		OPCODE_OP(0x19, "lor", kBinaryOp, -1, "", "||");
 		OPCODE(0x1A, "pop", kStack, -1, "");
 		OPCODE(0x42, "writeByteVar", kStore, -1, "B");
 		OPCODE(0x43, "writeWordVar", kStore, -1, "w");
@@ -410,8 +410,8 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE(0xD2, "getAnimateVariable", kSpecial, -1, "");
 		OPCODE(0xD4, "shuffle", kSpecial, -2, "w");
 		OPCODE(0xD5, "jumpToScript", kSpecial, 0x1020, ""); // Variable stack arguments
-		OPCODE_OP(0xD6, "band", kBinaryOp, -1, "", "&&");
-		OPCODE_OP(0xD7, "bor", kBinaryOp, -1, "", "||");
+		OPCODE_OP(0xD6, "band", kBinaryOp, -1, "", "&");
+		OPCODE_OP(0xD7, "bor", kBinaryOp, -1, "", "|");
 		OPCODE(0xD8, "isRoomScriptRunning", kSpecial, 0, "");
 		OPCODE(0xDD, "findAllObjects", kSpecial, 0, "");
 		OPCODE(0xE1, "getPixel", kSpecial, -1, "");
