@@ -73,11 +73,32 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 				break;
 		}
 		break;
+	case kBinaryOp:
+	case kComparison:
+	{
+		EntryPtr rhs = _stack.pop();
+		EntryPtr lhs = _stack.pop();
+		_stack.push(new BinaryOpEntry(lhs, rhs, inst._operator));
+		break;
+	}
+	case kCondJumpRel:
+		switch (_curGroup->_type) {
+			case kIfCond:
+			case kWhileCond:
+				if (inst._opcode == 0x5C) // jumpTrue
+					_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
+				break;
+			case kDoWhileCond:
+				if (inst._opcode == 0x5D) // jumpFalse
+					_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
+				break;
+		}
+		break;
 	default:
 		{
 			std::stringstream s;
 			s << boost::format("Unknown opcode %X at address %08X") % inst._opcode % inst._address;
-			_curGroup->_code.push_back(indentString(s.str()));
+			addOutputLine(s.str());
 			break;
 		}
 	}
