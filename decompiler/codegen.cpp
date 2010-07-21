@@ -102,7 +102,7 @@ void CodeGenerator::generate(const Graph &g) {
 }
 
 void CodeGenerator::addOutputLine(std::string s) {
-	_curGroup->_code.push_back(indentString(s));
+	_curGroup->_code.push_back(s);
 }
 
 void CodeGenerator::writeAssignment(EntryPtr dst, EntryPtr src) {
@@ -112,8 +112,33 @@ void CodeGenerator::writeAssignment(EntryPtr dst, EntryPtr src) {
 }
 
 void CodeGenerator::process(GraphVertex v) {
-	// TODO: Add keyword output
 	_curGroup = GET(v);
+
+	// Check if we should add else start or end
+	if (_curGroup->_startElse)
+		addOutputLine("} else {");
+	else {
+		// Check ingoing edges to see if we want to add any extra output
+		InEdgeRange ier = boost::in_edges(v, _g);
+		for (InEdgeIterator ie = ier.first; ie != ier.second; ++ie) {
+			GraphVertex in = boost::source(*ie, _g);
+			GroupPtr inGroup = GET(in);
+			if (inGroup == _curGroup->_prev)
+				continue;
+			switch (inGroup->_type) {
+			case kDoWhileCond:
+				addOutputLine("do {");
+				break;
+			case kWhileCond:
+			case kIfCond:
+				addOutputLine("}");
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
 	ConstInstIterator it = _curGroup->_start;
 	do {
 		switch (it->_type) {
@@ -151,4 +176,7 @@ void CodeGenerator::process(GraphVertex v) {
 				processInst(*it);
 		}
 	} while (it++ != _curGroup->_end);
+
+	if (_curGroup->_endElse != NULL)
+		addOutputLine("}");
 }

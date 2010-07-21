@@ -262,7 +262,7 @@ typedef std::deque<EntryPtr> ArrayIdxType;
 class ArrayEntry : public StackEntry {
 private:
 	const std::string _arrayName; ///< The name of the array.
-	ArrayIdxType _idxs;  ///< std::deque of stack entries representing the indexes used (left-to-right).
+	ArrayIdxType _idxs;           ///< std::deque of stack entries representing the indexes used (left-to-right).
 
 public:
 	/**
@@ -325,9 +325,9 @@ protected:
 	std::string indentString(std::string s);
 
 	/**
-	 * Indents a line and adds it to the current group.
+	 * Adds a line of code to the current group.
 	 *
-	 * @param s The string to add.
+	 * @param s The line to add.
 	 */
 	void addOutputLine(std::string s);
 
