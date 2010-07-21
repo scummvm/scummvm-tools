@@ -143,7 +143,9 @@ void CodeGenerator::process(GraphVertex v) {
 
 	ConstInstIterator it = _curGroup->_start;
 	do {
-		switch (it->_type) {
+		if (it->_codeGenData.find("\xC0" == 0))
+			processInst(*it);
+		else switch (it->_type) {
 		// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
 		case kDup:
 			{

@@ -104,7 +104,7 @@ struct Instruction {
 	std::string _name;              ///< The instruction name (opcode name).
 	InstType _type;                 ///< The instruction type.
 	std::vector<Parameter> _params; ///< Array of parameters used for the instruction.
-	std::string _codeGenData;       ///< String containing metadata for code generation. See the extended documentation for details.
+	std::string _codeGenData;       ///< String containing metadata for code generation. Start with 0xC0 to force custom handling. See the extended documentation for details.
 };
 
 /**
