@@ -92,7 +92,7 @@ void CodeGenerator::generate(const Graph &g) {
 	}
 
 	// Print output
-	// TODO: Proper indenting, terminate if/whiles, start do/whiles
+	// TODO: Proper indenting
 	p = GET(entryPoint);
 	while (p != NULL) {
 		for (std::vector<std::string>::iterator it = p->_code.begin(); it != p->_code.end(); ++it)
@@ -114,27 +114,30 @@ void CodeGenerator::writeAssignment(EntryPtr dst, EntryPtr src) {
 void CodeGenerator::process(GraphVertex v) {
 	_curGroup = GET(v);
 
-	// Check if we should add else start or end
+	// Check if we should add else start
 	if (_curGroup->_startElse)
 		addOutputLine("} else {");
-	else {
-		// Check ingoing edges to see if we want to add any extra output
-		InEdgeRange ier = boost::in_edges(v, _g);
-		for (InEdgeIterator ie = ier.first; ie != ier.second; ++ie) {
-			GraphVertex in = boost::source(*ie, _g);
-			GroupPtr inGroup = GET(in);
-			if (inGroup == _curGroup->_prev)
-				continue;
-			switch (inGroup->_type) {
-			case kDoWhileCond:
-				addOutputLine("do {");
-				break;
-			case kWhileCond:
-			case kIfCond:
+
+	// Check ingoing edges to see if we want to add any extra output
+	InEdgeRange ier = boost::in_edges(v, _g);
+	for (InEdgeIterator ie = ier.first; ie != ier.second; ++ie) {
+		GraphVertex in = boost::source(*ie, _g);
+		GroupPtr inGroup = GET(in);
+		if (inGroup == _curGroup->_prev)
+			continue;
+		switch (inGroup->_type) {
+		case kDoWhileCond:
+			addOutputLine("do {");
+			break;
+		case kIfCond:
+			if (!_curGroup->_startElse)
 				addOutputLine("}");
-				break;
-			default:
-				break;
+			break;
+		case kWhileCond:
+			addOutputLine("}");
+			break;
+		default:
+			break;
 			}
 		}
 	}
@@ -177,6 +180,7 @@ void CodeGenerator::process(GraphVertex v) {
 		}
 	} while (it++ != _curGroup->_end);
 
+	// Add else end if necessary
 	if (_curGroup->_endElse != NULL)
 		addOutputLine("}");
 }
