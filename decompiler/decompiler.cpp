@@ -52,7 +52,8 @@ int main(int argc, char** argv) {
 			("list,l", "List the supported engines.")
 			("dump-disassembly,d", po::value<std::string>()->implicit_value(""), "Dump the disassembly to a file. Leave out filename to output to stdout.")
 			("dump-graph,g", po::value<std::string>()->implicit_value(""), "Output the control flow graph in dot format to a file. Leave out filename to output to stdout.")
-			("only-disassembly,o", "Stops after disassembly. Implies -d.");
+			("only-disassembly,D", "Stops after disassembly. Implies -d.")
+			("only-graph,G", "Stops after control flow graph has been generated. Implies -g.");
 
 		po::options_description args("");
 		args.add(visible).add_options()
@@ -65,18 +66,18 @@ int main(int argc, char** argv) {
 		try {
 			// FIXME: If specified as the last parameter before the input file name, -d currently requires a filename to specified. -d must be specified earlier than that if outputting to stdout.
 			po::store(po::command_line_parser(argc, argv).options(args).positional(fileArg).run(), vm);
-			po::notify(vm);    
+			po::notify(vm);
 		} catch (std::exception& e) {
 			std::cout << e.what();
 		}
-	
+
 		if (vm.count("list")) {
 			std::cout << "Available engines:" << "\n";
 
 			std::map<std::string, std::string>::iterator it;
 			for (it = engines.begin(); it != engines.end(); it++)
 				std::cout << (*it).first << " " << (*it).second << "\n";
-		
+
 			return 0;
 		}
 
@@ -86,7 +87,7 @@ int main(int argc, char** argv) {
 			std::cout << "Note: If outputting to stdout, -d or -g must NOT be specified immediately before the input file.\n";
 			return 1;
 		}
-	
+
 		if (!vm.count("engine")) {
 			std::cout << "Engine must be specified." << "\n";
 			return 2;
@@ -104,16 +105,16 @@ int main(int argc, char** argv) {
 
 		std::vector<Instruction> insts = disassembler->disassemble();
 		if (vm.count("dump-disassembly")) {
-			std::streambuf *buf; 
-			std::ofstream of; 
- 
-			if (vm["dump-disassembly"].as<std::string>() != "") { 
-				of.open(vm["dump-disassembly"].as<std::string>().c_str()); 
-				buf = of.rdbuf(); 
-			} else { 
-				buf = std::cout.rdbuf(); 
-			} 
- 			std::ostream out(buf); 
+			std::streambuf *buf;
+			std::ofstream of;
+
+			if (vm["dump-disassembly"].as<std::string>() != "") {
+				of.open(vm["dump-disassembly"].as<std::string>().c_str());
+				buf = of.rdbuf();
+			} else {
+				buf = std::cout.rdbuf();
+			}
+			std::ostream out(buf);
 			disassembler->dumpDisassembly(out);
 		}
 
@@ -134,24 +135,33 @@ int main(int argc, char** argv) {
 		Graph g = cf->analyze();
 
 		if (vm.count("dump-graph")) {
-			std::streambuf *buf; 
-			std::ofstream of; 
- 
-			if (vm["dump-graph"].as<std::string>() != "") { 
-				of.open(vm["dump-graph"].as<std::string>().c_str()); 
-				buf = of.rdbuf(); 
-			} else { 
-				buf = std::cout.rdbuf(); 
-			} 
- 			std::ostream out(buf); 
+			std::streambuf *buf;
+			std::ofstream of;
+
+			if (vm["dump-graph"].as<std::string>() != "") {
+				of.open(vm["dump-graph"].as<std::string>().c_str());
+				buf = of.rdbuf();
+			} else {
+				buf = std::cout.rdbuf();
+			}
+			std::ostream out(buf);
 			boost::write_graphviz(out, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties());
+		}
+
+		if (vm.count("only-graph")) {
+			if (!vm.count("dump-graph")) {
+				boost::write_graphviz(std::cout, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties());
+			}
+			delete cf;
+			delete engine;
+			return 0;
 		}
 
 		// Code generation
 		CodeGenerator *cg = engine->getCodeGenerator(std::cout);
 		cg->generate(g);
-	
-		// Free memory		
+
+		// Free memory
 		delete cf;
 		delete cg;
 		delete engine;
