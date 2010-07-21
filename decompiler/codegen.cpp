@@ -143,7 +143,7 @@ void CodeGenerator::process(GraphVertex v) {
 
 	ConstInstIterator it = _curGroup->_start;
 	do {
-		if (it->_codeGenData.find("\xC0" == 0))
+		if (it->_codeGenData.length() > 0 && it->_codeGenData.find("\xC0") == 0)
 			processInst(*it);
 		else {
 			switch (it->_type) {
@@ -158,6 +158,14 @@ void CodeGenerator::process(GraphVertex v) {
 					_stack.push(p);
 					break;
 				}
+			case kBinaryOp:
+			case kComparison:
+			{
+				EntryPtr rhs = _stack.pop();
+				EntryPtr lhs = _stack.pop();
+				_stack.push(new BinaryOpEntry(lhs, rhs, it->_codeGenData));
+				break;
+			}
 			case kCondJump:
 			case kCondJumpRel:
 				{
@@ -180,8 +188,9 @@ void CodeGenerator::process(GraphVertex v) {
 					addOutputLine(s.str());
 				}
 				break;
-				default:
-					processInst(*it);
+			default:
+				processInst(*it);
+				break;
 			}
 		}
 	} while (it++ != _curGroup->_end);
