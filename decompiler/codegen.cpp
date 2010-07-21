@@ -145,39 +145,41 @@ void CodeGenerator::process(GraphVertex v) {
 	do {
 		if (it->_codeGenData.find("\xC0" == 0))
 			processInst(*it);
-		else switch (it->_type) {
-		// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
-		case kDup:
-			{
-				std::stringstream s;
-				EntryPtr p = _stack.pop()->dup(s);
-				if (s.str().length() > 0)
-					addOutputLine(s.str());
-				_stack.push(p);
-				_stack.push(p);
-				break;
-			}
-		case kCondJump:
-		case kCondJumpRel:
-			{
-				processInst(*it);
-				std::stringstream s;
-				switch (_curGroup->_type) {
-				case kIfCond:
-					s << "if (" << _stack.pop() << ") {";
-					break;
-				case kWhileCond:
-					s << "while (" << _stack.pop() << ") {";
-					break;
-				case kDoWhileCond:
-					s << "} while (" << _stack.pop() << ")";
+		else {
+			switch (it->_type) {
+			// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
+			case kDup:
+				{
+					std::stringstream s;
+					EntryPtr p = _stack.pop()->dup(s);
+					if (s.str().length() > 0)
+						addOutputLine(s.str());
+					_stack.push(p);
+					_stack.push(p);
 					break;
 				}
-				addOutputLine(s.str());
+			case kCondJump:
+			case kCondJumpRel:
+				{
+					processInst(*it);
+					std::stringstream s;
+					switch (_curGroup->_type) {
+					case kIfCond:
+						s << "if (" << _stack.pop() << ") {";
+						break;
+					case kWhileCond:
+						s << "while (" << _stack.pop() << ") {";
+						break;
+					case kDoWhileCond:
+						s << "} while (" << _stack.pop() << ")";
+						break;
+					}
+					addOutputLine(s.str());
+				}
+				break;
+				default:
+					processInst(*it);
 			}
-			break;
-			default:
-				processInst(*it);
 		}
 	} while (it++ != _curGroup->_end);
 
