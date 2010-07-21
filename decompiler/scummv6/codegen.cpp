@@ -95,39 +95,28 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		// Only two opcodes in SCUMMv6, 0x1A and 0xA7: both are single item pop
 		_stack.pop();
 		break;
-	case kBinaryOp:
-	case kComparison:
-	{
-		EntryPtr rhs = _stack.pop();
-		EntryPtr lhs = _stack.pop();
-		_stack.push(new BinaryOpEntry(lhs, rhs, inst._codeGenData));
-		break;
-	}
 	case kCondJumpRel:
 		switch (_curGroup->_type) {
-			case kIfCond:
-			case kWhileCond:
-				if (inst._opcode == 0x5C) // jumpTrue
-					_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
+		case kIfCond:
+		case kWhileCond:
+			if (inst._opcode == 0x5C) // jumpTrue
+				_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
+			break;
+		case kDoWhileCond:
+			if (inst._opcode == 0x5D) // jumpFalse
+				_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
+			break;
+		default:
+			{
+				std::stringstream s;
+				s << boost::format("Couldn't handle conditional jump at address %08X") % inst._address;
+				addOutputLine(s.str());
 				break;
-			case kDoWhileCond:
-				if (inst._opcode == 0x5D) // jumpFalse
-					_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
-				break;
-			default:
-				{
-					std::stringstream s;
-					s << boost::format("Couldn't handle conditional jump at address %08X") % inst._address;
-					addOutputLine(s.str());
-					break;
-				}
+			}
 		}
 		break;
 	case kUnaryOp:
 		switch (inst._opcode) {
-		case 0x0D: // not
-			_stack.push(new UnaryOpEntry(_stack.pop(), inst._codeGenData));
-			break;
 		case 0x4E: // byteVarInc
 		case 0x4F: // wordVarInc
 		case 0x56: // byteVarDec

@@ -159,8 +159,13 @@ void CodeGenerator::process(GraphVertex v) {
 					_stack.push(p);
 					break;
 				}
+			case kUnaryOp:
+				//TODO: Allow operator to be placed on either side of operand
+				_stack.push(new UnaryOpEntry(_stack.pop(), inst._codeGenData));
+				break;
 			case kBinaryOp:
 			case kComparison:
+				//TODO: Allow specification of order in which operands appear on stack
 			{
 				EntryPtr rhs = _stack.pop();
 				EntryPtr lhs = _stack.pop();
