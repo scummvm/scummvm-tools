@@ -188,6 +188,15 @@ void CodeGenerator::process(GraphVertex v) {
 					addOutputLine(s.str());
 				}
 				break;
+			case kSpecial:
+				{
+					std::stringstream s;
+					s << it->_name << "(";
+					// TODO: Process metadata
+					s << ")";
+					addOutputLine(s.str());
+					break;
+				}
 			default:
 				processInst(*it);
 				break;
