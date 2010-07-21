@@ -91,6 +91,10 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 			}
 		}
 		break;
+	case kStack:
+		// Only two opcodes in SCUMMv6, 0x1A and 0xA7: both are single item pop
+		_stack.pop();
+		break;
 	case kBinaryOp:
 	case kComparison:
 	{
@@ -110,6 +114,13 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 				if (inst._opcode == 0x5D) // jumpFalse
 					_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
 				break;
+			default:
+				{
+					std::stringstream s;
+					s << boost::format("Couldn't handle conditional jump at address %08X") % inst._address;
+					addOutputLine(s.str());
+					break;
+				}
 		}
 		break;
 	case kUnaryOp:
