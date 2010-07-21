@@ -82,13 +82,13 @@ protected:
 		LAST_INST._codeGenData = codeGenData; \
 		readParams(&LAST_INST, (char*)params); \
 
-#define OPCODE_OP(val, name, category, stackChange, params, codeGenData) \
+#define OPCODE_MD(val, name, category, stackChange, params, codeGenData) \
 	OPCODE_BASE(val)\
 		OPCODE_BODY(name, category, stackChange, params, codeGenData)\
 		OPCODE_END;
 
 #define OPCODE(val, name, category, stackChange, params) \
-	OPCODE_OP(val, name, category, stackChange, params, "")
+	OPCODE_MD(val, name, category, stackChange, params, "")
 
 #define START_SUBOPCODE(val) \
 	OPCODE_BASE(val) \

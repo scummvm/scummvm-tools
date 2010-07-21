@@ -54,7 +54,7 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			verb = _f.readByte();
 		}
 	}
-	
+
 	START_OPCODES;
 		OPCODE(0x00, "pushByte", kLoad, 1, "B");
 		OPCODE(0x01, "pushWord", kLoad, 1, "s");
@@ -65,19 +65,19 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE(0x0A, "byteArrayIndexedRead", kLoad, -1, "B");
 		OPCODE(0x0B, "wordArrayIndexedRead", kLoad, -1, "w");
 		OPCODE(0x0C, "dup", kDup, 1, "");
-		OPCODE_OP(0x0D, "not", kUnaryOp, 0, "", "!");
-		OPCODE_OP(0x0E, "eq", kComparison, -1, "", "==");
-		OPCODE_OP(0x0F, "neq", kComparison, -1, "", "!=");
-		OPCODE_OP(0x10, "gt", kComparison, -1, "", ">");
-		OPCODE_OP(0x11, "lt", kComparison, -1, "", "<");
-		OPCODE_OP(0x12, "le", kComparison, -1, "", "<=");
-		OPCODE_OP(0x13, "ge", kComparison, -1, "", ">=");
-		OPCODE_OP(0x14, "add", kBinaryOp, -1, "", "+");
-		OPCODE_OP(0x15, "sub", kBinaryOp, -1, "", "-");
-		OPCODE_OP(0x16, "mul", kBinaryOp, -1, "", "*");
-		OPCODE_OP(0x17, "div", kBinaryOp, -1, "", "/");
-		OPCODE_OP(0x18, "land", kBinaryOp, -1, "", "&&");
-		OPCODE_OP(0x19, "lor", kBinaryOp, -1, "", "||");
+		OPCODE_MD(0x0D, "not", kUnaryOp, 0, "", "!");
+		OPCODE_MD(0x0E, "eq", kComparison, -1, "", "==");
+		OPCODE_MD(0x0F, "neq", kComparison, -1, "", "!=");
+		OPCODE_MD(0x10, "gt", kComparison, -1, "", ">");
+		OPCODE_MD(0x11, "lt", kComparison, -1, "", "<");
+		OPCODE_MD(0x12, "le", kComparison, -1, "", "<=");
+		OPCODE_MD(0x13, "ge", kComparison, -1, "", ">=");
+		OPCODE_MD(0x14, "add", kBinaryOp, -1, "", "+");
+		OPCODE_MD(0x15, "sub", kBinaryOp, -1, "", "-");
+		OPCODE_MD(0x16, "mul", kBinaryOp, -1, "", "*");
+		OPCODE_MD(0x17, "div", kBinaryOp, -1, "", "/");
+		OPCODE_MD(0x18, "land", kBinaryOp, -1, "", "&&");
+		OPCODE_MD(0x19, "lor", kBinaryOp, -1, "", "||");
 		OPCODE(0x1A, "pop", kStack, -1, "");
 		OPCODE(0x42, "writeByteVar", kStore, -1, "B");
 		OPCODE(0x43, "writeWordVar", kStore, -1, "w");
@@ -85,14 +85,14 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE(0x47, "wordArrayWrite", kStore, -2, "w");
 		OPCODE(0x4A, "byteArrayIndexedWrite", kStore, -3, "B");
 		OPCODE(0x4B, "wordArrayIndexedWrite", kStore, -3, "w");
-		OPCODE_OP(0x4E, "byteVarInc", kUnaryOp, 0, "B", "++");
-		OPCODE_OP(0x4F, "wordVarInc", kUnaryOp, 0, "w", "++");
-		OPCODE_OP(0x52, "byteArrayInc", kUnaryOp, -1, "B", "++");
-		OPCODE_OP(0x53, "wordArrayInc", kUnaryOp, -1, "w", "++");
-		OPCODE_OP(0x56, "byteVarDec", kUnaryOp, 0, "B", "--");
-		OPCODE_OP(0x57, "wordVarDec", kUnaryOp, 0, "w", "--");
-		OPCODE_OP(0x5A, "byteArrayDec", kUnaryOp, -1, "B", "--");
-		OPCODE_OP(0x5B, "wordArrayDec", kUnaryOp, -1, "w", "--");
+		OPCODE_MD(0x4E, "byteVarInc", kUnaryOp, 0, "B", "++");
+		OPCODE_MD(0x4F, "wordVarInc", kUnaryOp, 0, "w", "++");
+		OPCODE_MD(0x52, "byteArrayInc", kUnaryOp, -1, "B", "++");
+		OPCODE_MD(0x53, "wordArrayInc", kUnaryOp, -1, "w", "++");
+		OPCODE_MD(0x56, "byteVarDec", kUnaryOp, 0, "B", "--");
+		OPCODE_MD(0x57, "wordVarDec", kUnaryOp, 0, "w", "--");
+		OPCODE_MD(0x5A, "byteArrayDec", kUnaryOp, -1, "B", "--");
+		OPCODE_MD(0x5B, "wordArrayDec", kUnaryOp, -1, "w", "--");
 		OPCODE(0x5C, "jumpTrue", kCondJumpRel, -1, "s");
 		OPCODE(0x5D, "jumpFalse", kCondJumpRel, -1, "s");
 		OPCODE(0x5E, "startScript", kSpecial, 0x1020, ""); // Variable stack arguments
@@ -410,8 +410,8 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE(0xD2, "getAnimateVariable", kSpecial, -1, "");
 		OPCODE(0xD4, "shuffle", kSpecial, -2, "w");
 		OPCODE(0xD5, "jumpToScript", kSpecial, 0x1020, ""); // Variable stack arguments
-		OPCODE_OP(0xD6, "band", kBinaryOp, -1, "", "&");
-		OPCODE_OP(0xD7, "bor", kBinaryOp, -1, "", "|");
+		OPCODE_MD(0xD6, "band", kBinaryOp, -1, "", "&");
+		OPCODE_MD(0xD7, "bor", kBinaryOp, -1, "", "|");
 		OPCODE(0xD8, "isRoomScriptRunning", kSpecial, 0, "");
 		OPCODE(0xDD, "findAllObjects", kSpecial, 0, "");
 		OPCODE(0xE1, "getPixel", kSpecial, -1, "");
