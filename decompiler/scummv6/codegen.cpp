@@ -96,7 +96,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 	{
 		EntryPtr rhs = _stack.pop();
 		EntryPtr lhs = _stack.pop();
-		_stack.push(new BinaryOpEntry(lhs, rhs, inst._operator));
+		_stack.push(new BinaryOpEntry(lhs, rhs, inst._codeGenData));
 		break;
 	}
 	case kCondJumpRel:
@@ -115,7 +115,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 	case kUnaryOp:
 		switch (inst._opcode) {
 		case 0x0D: // not
-			_stack.push(new UnaryOpEntry(_stack.pop(), inst._operator));
+			_stack.push(new UnaryOpEntry(_stack.pop(), inst._codeGenData));
 			break;
 		case 0x4E: // byteVarInc
 		case 0x4F: // wordVarInc
@@ -123,7 +123,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		case 0x57: // wordVarDec
 			{
 				std::stringstream s;
-				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._operator);
+				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData);
 				s << p;
 				addOutputLine(s.str());
 				break;
@@ -136,7 +136,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 				std::stringstream s;
 				ArrayIdxType idxs;
 				idxs.push_front(_stack.pop());
-				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._operator);
+				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData);
 				s << p;
 				addOutputLine(s.str());
 				break;
