@@ -21,6 +21,7 @@
  */
 
 #include "codegen.h"
+#include "engine.h"
 
 #include <iostream>
 #include <set>
@@ -188,6 +189,22 @@ void CodeGenerator::process(GraphVertex v) {
 					addOutputLine(s.str());
 				}
 				break;
+			case kJump:
+			case kJumpRel:
+				switch (_curGroup->_type) {
+				case kBreak:
+					addOutputLine("break;");
+					break;
+				case kContinue:
+					addOutputLine("continue;");
+					break;
+				default:
+					{
+						std::stringstream s;
+						s << boost::format("goto %X") % _engine->getDestAddress(it);
+					}
+					break;
+				}
 			case kSpecial:
 				{
 					std::stringstream s;
