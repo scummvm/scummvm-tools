@@ -41,36 +41,54 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 			_stack.push(new VarEntry(decodeVarName(inst._params[0].getUnsigned())));
 			break;
 		case 0x06: // byteArrayRead
-			// TODO
-			break;
 		case 0x07: // wordArrayRead
-			// TODO
-			break;
+			{
+				ArrayIdxType idxs;
+				idxs.push_front(_stack.pop());
+				_stack.push(new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs));
+				break;
+			}
 		case 0x0A: // byteArrayIndexedRead
-			// TODO
-			break;
 		case 0x0B: // wordArrayIndexedRead
-			// TODO
-			break;
+			{
+				ArrayIdxType idxs;
+				idxs.push_front(_stack.pop());
+				idxs.push_front(_stack.pop());
+				_stack.push(new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs));
+				break;
+			}
 		}
 		break;
 	case kStore:
 		switch (inst._opcode) {
-			case 0x42:
-			case 0x43:
+			case 0x42: // writeByteVar
+			case 0x43: // writeWordVar
 			{
 				EntryPtr p = new VarEntry(decodeVarName(inst._params[0].getUnsigned()));
 				writeAssignment(p, _stack.pop());
 				break;
 			}
-			case 0x46:
+			case 0x46: // byteArrayWrite
+			case 0x47: // wordArrayWrite
+			{
+				EntryPtr value = _stack.pop();
+				ArrayIdxType idxs;
+				idxs.push_back(_stack.pop());
+				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+				writeAssignment(p, value);
 				break;
-			case 0x47:
+			}
+			case 0x4A: // byteArrayIndexedWrite
+			case 0x4B: // wordArrayIndexedWrite
+			{
+				EntryPtr value = _stack.pop();
+				ArrayIdxType idxs;
+				idxs.push_front(_stack.pop());
+				idxs.push_front(_stack.pop());
+				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+				writeAssignment(p, value);
 				break;
-			case 0x4A:
-				break;
-			case 0x4B:
-				break;
+			}
 		}
 		break;
 	case kBinaryOp:
@@ -114,7 +132,15 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		case 0x53: // wordArrayInc
 		case 0x5A: // byteArrayDec
 		case 0x5B: // wordArrayDec
-			// TODO
+			{
+				std::stringstream s;
+				ArrayIdxType idxs;
+				idxs.push_front(_stack.pop());
+				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._operator);
+				s << p;
+				addOutputLine(s.str());
+				break;
+			}
 			break;
 		}
 		break;
@@ -296,12 +322,19 @@ const char *var_names[] = {
 	NULL,
 };
 
+const char *Scumm::v6::CodeGenerator::getVarName(uint16 varID) {
+	if (varID >= sizeof(var_names) / sizeof(var_names[0]))
+		return NULL;
+	return var_names[varID];
+}
+
 std::string Scumm::v6::CodeGenerator::decodeVarName(uint16 varID) {
 	std::stringstream s;
 	if (!(varID & 0xF000)) {
 		uint16 var = varID & 0xFFF;
-		if (var < (sizeof(var_names) / sizeof(var_names[0])) && var_names[var] != NULL)
-			return var_names[var];
+		const char* varName = getVarName(var);
+		if (varName	 != NULL)
+			return varName;
 		else
 			s << boost::format("var%d") % (varID & 0xFFF);
 	} else if (varID & 0x8000) {
@@ -311,5 +344,14 @@ std::string Scumm::v6::CodeGenerator::decodeVarName(uint16 varID) {
 	} else {
 		s << boost::format("?var?%d") % varID;
 	}
+	return s.str();
+}
+
+std::string Scumm::v6::CodeGenerator::decodeArrayName(uint16 arrID) {
+	std::stringstream s;
+	const char* varName;
+	if (!(arrID & 0xF000) && (varName = getVarName(arrID & 0xFFF)) != NULL)
+		return varName;
+	s << boost::format("array%d") % arrID;
 	return s.str();
 }

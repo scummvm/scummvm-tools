@@ -40,6 +40,7 @@ const StackEntryType seVar = 1;
 const StackEntryType seBinOp = 2;
 const StackEntryType seUnaryOp = 3;
 const StackEntryType seDup = 4;
+const StackEntryType seArray = 5;
 
 class StackEntry;
 
@@ -247,6 +248,36 @@ public:
 
 	virtual std::ostream &print(std::ostream &output) const {
 		return output << "dup[" << _idx << "]";
+	}
+};
+
+/**
+ * Type representing index list for an array.
+ */
+typedef std::deque<EntryPtr> ArrayIdxType;
+
+/**
+ * Stack entry representing array access.
+ */
+class ArrayEntry : public StackEntry {
+private:
+	const std::string _arrayName; ///< The name of the array.
+	ArrayIdxType _idxs;  ///< std::deque of stack entries representing the indexes used (left-to-right).
+
+public:
+	/**
+	 * Constructor for ArrayEntry.
+	 *
+	 * @param arrayName The name of the array.
+	 * @param idxs std::deque of stack entries representing the indexes used (left-to-right).
+	 */
+	ArrayEntry(std::string arrayName, std::deque<EntryPtr> idxs) : StackEntry(seArray), _arrayName(arrayName), _idxs(idxs) { }
+
+	virtual std::ostream &print(std::ostream &output) const {
+		output << _arrayName;
+		for (ArrayIdxType::const_iterator i = _idxs.begin(); i != _idxs.end(); ++i)
+			output << "[" << *i << "]";
+		return output;
 	}
 };
 

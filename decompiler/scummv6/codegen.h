@@ -35,12 +35,28 @@ namespace v6 {
 class CodeGenerator : public ::CodeGenerator {
 private:
 	/**
+	 * Get the name associated with a variable ID.
+	 *
+	 * @param varID The ID to get the name for.
+	 * @return Pointer to char array containing the name of the variable, or NULL if no name exists.
+	 */
+	const char *getVarName(uint16 varID);
+
+	/**
 	 * Decode a variable ID to a name.
 	 *
 	 * @param varID The ID to decode.
 	 * @return The decoded variable name.
 	 */
 	std::string decodeVarName(uint16 varID);
+
+	/**
+	 * Decode an array ID to a name.
+	 *
+	 * @param arrID The ID to decode.
+	 * @return The decoded array name.
+	 */
+	std::string decodeArrayName(uint16 arrID);
 public:
 	CodeGenerator(Engine *engine, std::ostream &output) : ::CodeGenerator(engine, output) {}
 protected:
