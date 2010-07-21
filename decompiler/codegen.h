@@ -157,7 +157,7 @@ public:
 		return output;
 	}
 
-	virtual EntryPtr dup() {
+	virtual EntryPtr dup(std::ostream &output) {
 		return new IntEntry(_val, _isSigned);
 	}
 };
