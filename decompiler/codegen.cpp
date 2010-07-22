@@ -144,7 +144,7 @@ void CodeGenerator::process(GraphVertex v) {
 
 	ConstInstIterator it = _curGroup->_start;
 	do {
-		if (it->_codeGenData.length() > 0 && it->_codeGenData.find("\xC0") == 0)
+		if (it->_codeGenData.find("\xC0") == 0)
 			processInst(*it);
 		else {
 			switch (it->_type) {
@@ -161,7 +161,7 @@ void CodeGenerator::process(GraphVertex v) {
 				}
 			case kUnaryOp:
 				//TODO: Allow operator to be placed on either side of operand
-				_stack.push(new UnaryOpEntry(_stack.pop(), inst._codeGenData));
+				_stack.push(new UnaryOpEntry(_stack.pop(), it->_codeGenData));
 				break;
 			case kBinaryOp:
 			case kComparison:

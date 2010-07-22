@@ -57,6 +57,13 @@ private:
 	 * @return The decoded array name.
 	 */
 	std::string decodeArrayName(uint16 arrID);
+
+	/**
+	 * Creates a ListEntry from the stack.
+	 *
+	 * @return The ListEntry created from the stack.
+	 */
+	EntryPtr createListEntry();
 public:
 	CodeGenerator(Engine *engine, std::ostream &output) : ::CodeGenerator(engine, output) {}
 protected:

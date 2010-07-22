@@ -41,6 +41,8 @@ const StackEntryType seBinOp = 2;
 const StackEntryType seUnaryOp = 3;
 const StackEntryType seDup = 4;
 const StackEntryType seArray = 5;
+const StackEntryType seString = 6;
+const StackEntryType seList = 7;
 
 class StackEntry;
 
@@ -254,7 +256,7 @@ public:
 /**
  * Type representing index list for an array.
  */
-typedef std::deque<EntryPtr> ArrayIdxType;
+typedef std::deque<EntryPtr> EntryList;
 
 /**
  * Stack entry representing array access.
@@ -262,7 +264,7 @@ typedef std::deque<EntryPtr> ArrayIdxType;
 class ArrayEntry : public StackEntry {
 private:
 	const std::string _arrayName; ///< The name of the array.
-	ArrayIdxType _idxs;           ///< std::deque of stack entries representing the indexes used (left-to-right).
+	EntryList _idxs;              ///< std::deque of stack entries representing the indexes used (left-to-right).
 
 public:
 	/**
@@ -275,8 +277,45 @@ public:
 
 	virtual std::ostream &print(std::ostream &output) const {
 		output << _arrayName;
-		for (ArrayIdxType::const_iterator i = _idxs.begin(); i != _idxs.end(); ++i)
+		for (EntryList::const_iterator i = _idxs.begin(); i != _idxs.end(); ++i)
 			output << "[" << *i << "]";
+		return output;
+	}
+};
+
+/**
+ * Entry containing a string.
+ */
+class StringEntry : public StackEntry {
+private:
+	const std::string _str; ///< The string in the entry.
+
+public:
+	StringEntry(std::string str) : StackEntry(seString), _str(str) { }
+
+	virtual std::ostream &print(std::ostream &output) const {
+		return output << _str;
+	}
+};
+
+/**
+ * Entry representing a list.
+ */
+class ListEntry : public StackEntry {
+private:
+	const EntryList _items; ///< Vector containing the list items.
+
+public:
+	ListEntry(EntryList items) : StackEntry(seList), _items(items) { }
+
+	virtual std::ostream &print(std::ostream &output) const {
+		output << "[";
+		for (EntryList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
+			if (i != _items.begin())
+				output << ", ";
+			output << *i;
+		}
+		output << "]";
 		return output;
 	}
 };

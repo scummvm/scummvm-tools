@@ -22,6 +22,18 @@
 
 #include "codegen.h"
 
+EntryPtr Scumm::v6::CodeGenerator::createListEntry() {
+	EntryList list;
+	EntryPtr countEntry = _stack.pop();
+	std::stringstream s;
+	s << countEntry;
+	int count = atoi(s.str().c_str());
+	for (int i = 0; i < count; i++) {
+		list.push_front(_stack.pop());
+	}
+	return new ListEntry(list);
+}
+
 void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 	// TODO
 
@@ -31,10 +43,10 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 	case kLoad:
 		switch (inst._opcode) {
 		case 0x00: // pushByte
-			_stack.push(new IntEntry(inst._params[0].getUnsigned(), true));
+			_stack.push(new IntEntry(inst._params[0].getUnsigned(), false));
 			break;
 		case 0x01: // pushWord
-			_stack.push(new IntEntry(inst._params[0].getSigned(), false));
+			_stack.push(new IntEntry(inst._params[0].getSigned(), true));
 			break;
 		case 0x02: // pushByteVar
 		case 0x03: // pushWordVar
@@ -43,7 +55,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		case 0x06: // byteArrayRead
 		case 0x07: // wordArrayRead
 			{
-				ArrayIdxType idxs;
+				EntryList idxs;
 				idxs.push_front(_stack.pop());
 				_stack.push(new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs));
 				break;
@@ -51,7 +63,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		case 0x0A: // byteArrayIndexedRead
 		case 0x0B: // wordArrayIndexedRead
 			{
-				ArrayIdxType idxs;
+				EntryList idxs;
 				idxs.push_front(_stack.pop());
 				idxs.push_front(_stack.pop());
 				_stack.push(new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs));
@@ -63,32 +75,39 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		switch (inst._opcode) {
 			case 0x42: // writeByteVar
 			case 0x43: // writeWordVar
-			{
-				EntryPtr p = new VarEntry(decodeVarName(inst._params[0].getUnsigned()));
-				writeAssignment(p, _stack.pop());
+				{
+					EntryPtr p = new VarEntry(decodeVarName(inst._params[0].getUnsigned()));
+					writeAssignment(p, _stack.pop());
+				}
 				break;
-			}
 			case 0x46: // byteArrayWrite
 			case 0x47: // wordArrayWrite
-			{
-				EntryPtr value = _stack.pop();
-				ArrayIdxType idxs;
-				idxs.push_back(_stack.pop());
-				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
-				writeAssignment(p, value);
+				{
+					EntryPtr value = _stack.pop();
+					EntryList idxs;
+					idxs.push_back(_stack.pop());
+					EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+					writeAssignment(p, value);
+				}
 				break;
-			}
 			case 0x4A: // byteArrayIndexedWrite
 			case 0x4B: // wordArrayIndexedWrite
-			{
-				EntryPtr value = _stack.pop();
-				ArrayIdxType idxs;
-				idxs.push_front(_stack.pop());
-				idxs.push_front(_stack.pop());
-				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
-				writeAssignment(p, value);
+				{
+					EntryPtr value = _stack.pop();
+					EntryList idxs;
+					idxs.push_front(_stack.pop());
+					idxs.push_front(_stack.pop());
+					EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+					writeAssignment(p, value);
+				}
 				break;
-			}
+			default:
+				{
+					std::stringstream s;
+					s << boost::format("Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+					addOutputLine(s.str());
+				}
+				break;
 		}
 		break;
 	case kStack:
@@ -111,8 +130,8 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 				std::stringstream s;
 				s << boost::format("Couldn't handle conditional jump at address %08X") % inst._address;
 				addOutputLine(s.str());
-				break;
 			}
+			break;
 		}
 		break;
 	case kUnaryOp:
@@ -126,20 +145,67 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData);
 				s << p;
 				addOutputLine(s.str());
-				break;
 			}
+			break;
 		case 0x52: // byteArrayInc
 		case 0x53: // wordArrayInc
 		case 0x5A: // byteArrayDec
 		case 0x5B: // wordArrayDec
 			{
 				std::stringstream s;
-				ArrayIdxType idxs;
+				EntryList idxs;
 				idxs.push_front(_stack.pop());
 				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData);
 				s << p;
 				addOutputLine(s.str());
-				break;
+			}
+			break;
+		default:
+			{
+				std::stringstream s;
+				s << boost::format("Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+				addOutputLine(s.str());
+			}
+			break;
+		}
+		break;
+	case kSpecial:
+		switch (inst._opcode) {
+		case 0xA4CD: // arrayOp_assignString
+			{
+				EntryPtr value = new StringEntry(inst._params[1].getString());
+				EntryList idxs;
+				idxs.push_front(_stack.pop());
+				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+				writeAssignment(p, value);
+			}
+			break;
+		case 0xA4D0: // arrayOp_assignIntList
+			{
+				EntryList idxs;
+				idxs.push_front(_stack.pop());
+				EntryPtr value = createListEntry();
+				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+				writeAssignment(p, value);
+			}
+
+			break;
+		case 0xA4D4: // arrayOp_assign2DimList
+			{
+				EntryList idxs;
+				idxs.push_front(_stack.pop());
+				EntryPtr value = createListEntry();
+				idxs.push_front(_stack.pop());
+				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+				writeAssignment(p, value);
+			}
+
+			break;
+		default:
+			{
+				std::stringstream s;
+				s << boost::format("Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+				addOutputLine(s.str());
 			}
 			break;
 		}
@@ -149,8 +215,8 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 			std::stringstream s;
 			s << boost::format("Unknown opcode %X at address %08X") % inst._opcode % inst._address;
 			addOutputLine(s.str());
-			break;
 		}
+		break;
 	}
 }
 
