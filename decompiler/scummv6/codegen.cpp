@@ -142,7 +142,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		case 0x57: // wordVarDec
 			{
 				std::stringstream s;
-				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData);
+				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData.substr(1));
 				s << p;
 				addOutputLine(s.str());
 			}
@@ -155,7 +155,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 				std::stringstream s;
 				EntryList idxs;
 				idxs.push_front(_stack.pop());
-				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData);
+				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData.substr(1));
 				s << p;
 				addOutputLine(s.str());
 			}

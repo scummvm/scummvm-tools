@@ -205,8 +205,11 @@ void CodeGenerator::process(GraphVertex v) {
 					break;
 				default:
 					{
+						uint32 dest = _engine->getDestAddress(it);
+						if (dest == _curGroup->_next->_start->_address)
+							continue;
 						std::stringstream s;
-						s << boost::format("goto %X") % _engine->getDestAddress(it);
+						s << boost::format("goto %X") % dest;
 					}
 					break;
 				}
