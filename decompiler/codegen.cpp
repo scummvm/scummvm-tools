@@ -220,6 +220,7 @@ void CodeGenerator::process(GraphVertex v) {
 					}
 					break;
 				}
+				break;
 			case kSpecial:
 				{
 					std::stringstream s;
