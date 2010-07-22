@@ -44,10 +44,7 @@ EntryPtr StackEntry::dup(std::ostream &output) {
 
 std::string CodeGenerator::indentString(std::string s) {
 	std::stringstream stream;
-	std::string indent(kIndentAmount, ' ');
-	for (uint i = 0; i < _indentLevel; i++)
-		stream << indent;
-	stream << s;
+	stream << std::string(kIndentAmount * _indentLevel, ' ') << s;
 	return stream.str();
 }
 
@@ -103,7 +100,11 @@ void CodeGenerator::generate(const Graph &g) {
 }
 
 void CodeGenerator::addOutputLine(std::string s) {
-	_curGroup->_code.push_back(s);
+	std::stringstream stream;
+	stream << boost::format("%08X: ") % _curGroup->_start->_address;
+//	stream << indentString(s);
+	stream << s;
+	_curGroup->_code.push_back(stream.str());
 }
 
 void CodeGenerator::writeAssignment(EntryPtr dst, EntryPtr src) {
@@ -116,7 +117,7 @@ void CodeGenerator::process(GraphVertex v) {
 	_curGroup = GET(v);
 
 	// Check if we should add else start
-	if (_curGroup->_startElse)
+	if (_curGroup->_startElse && _curGroup->_type != kIfCond)
 		addOutputLine("} else {");
 
 	// Check ingoing edges to see if we want to add any extra output
@@ -179,6 +180,11 @@ void CodeGenerator::process(GraphVertex v) {
 					std::stringstream s;
 					switch (_curGroup->_type) {
 					case kIfCond:
+						if (_curGroup->_startElse)
+						{
+							_indentLevel--;
+							s << "} else ";
+						}
 						s << "if (" << _stack.pop() << ") {";
 						break;
 					case kWhileCond:
@@ -206,10 +212,11 @@ void CodeGenerator::process(GraphVertex v) {
 				default:
 					{
 						uint32 dest = _engine->getDestAddress(it);
-						if (dest == _curGroup->_next->_start->_address)
-							continue;
-						std::stringstream s;
-						s << boost::format("goto %X") % dest;
+						if (dest != _curGroup->_next->_start->_address) {
+							std::stringstream s;
+							s << boost::format("goto %X") % dest;
+							addOutputLine(s.str());
+						}
 					}
 					break;
 				}
