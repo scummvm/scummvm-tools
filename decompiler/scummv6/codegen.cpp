@@ -37,8 +37,10 @@ EntryPtr Scumm::v6::CodeGenerator::createListEntry() {
 void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 	// TODO
 
-	// This is just to keep some order in this code and have related opcodes near each other.
-	// It's not strictly necessary, because we can just look directly at the opcode, but this should be easier to read.
+	// This is just to keep some order in this code and have related
+	// opcodes near each other. It's not strictly necessary, because we
+	// can just look directly at the opcode, but this should be easier
+	// to read.
 	switch (inst._type) {
 	case kLoad:
 		switch (inst._opcode) {
@@ -416,7 +418,7 @@ std::string Scumm::v6::CodeGenerator::decodeVarName(uint16 varID) {
 
 std::string Scumm::v6::CodeGenerator::decodeArrayName(uint16 arrID) {
 	std::stringstream s;
-	const char* varName;
+	const char *varName;
 	if (!(arrID & 0xF000) && (varName = getVarName(arrID & 0xFFF)) != NULL)
 		return varName;
 	s << boost::format("array%d") % arrID;

@@ -180,8 +180,7 @@ void CodeGenerator::process(GraphVertex v) {
 					std::stringstream s;
 					switch (_curGroup->_type) {
 					case kIfCond:
-						if (_curGroup->_startElse)
-						{
+						if (_curGroup->_startElse) {
 							_indentLevel--;
 							s << "} else ";
 						}
