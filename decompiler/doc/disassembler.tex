@@ -1,5 +1,4 @@
 \section{Disassembler}
-\fixme{To accomodate the code generation, things have changed a bit here; new fields, a few new macros, stuff like that. It's also quite possible that more metadata may be required for the instructions, to reduce the amount of code required in the code generator.}
 The purpose of the disassembler is to read instructions from a script file and convert them to a common, machine-readable form for further analysis.
 
 \subsection{Instructions}
@@ -8,11 +7,13 @@ Instructions are represented using the \verb+Instruction+ struct.
 \begin{C++}
 \begin{lstlisting}
 struct Instruction {
+	uint32 _opcode;
 	uint32 _address;
 	int16 _stackChange;
 	std::string _name;
 	InstType _type;
 	std::vector<Parameter> _params;
+	std::string _codeGenData;
 };
 \end{lstlisting}
 \end{C++}
@@ -25,6 +26,7 @@ Each member of this struct has a specific purpose:
 \item \verb+_name+ contains the name of the instruction. You will use this during code generation.
 \item \verb+_type+ represent the type of instruction. See Section~\vref{sec:insttype} for details.
 \item \verb+_params+ contains the parameters given to the instruction - for example, if you have the instruction \verb+PUSH 1+, there would be one parameter, with the value of 1. See Section~\vref{sec:parameter} for details on the Parameter type.
+\item \verb+_codeGenData+ stores metadata to be used during code generation. For details, see Section~\vref{sec:codegen}.
 \end{itemize}
 
 If some instructions do not have a fixed effect on the stack--that is, the instruction name alone does not determine the effect on the stack--set the field to some easily recognizable value when doing the disassembly. You can then determine the correct value in a post-processing step after the code flow analysis.
@@ -35,7 +37,7 @@ The instruction type is a generalization of the different kinds of instructions.
 
 This is particularly important during code flow analysis; since this part is engine-independent, the analysis must have some way of distinguishing the different types of instructions. Additionally, this information can be used during code generation to generalize the recognition of constructs--for example, the code generated for addition and the code generated for multiplication will generally be identical, with the exception of that single arithmetic instruction doing the work.
 
-Most of the types are self-explanatory, with the exception of \verb+kSpecial+. \verb+kSpecial+ should be used for all "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
+Most of the types are self-explanatory, with the possible exception of \verb+kSpecial+. \verb+kSpecial+ should be used for all "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
 
 \subsection{Parameters}
 \label{sec:parameter}
@@ -160,9 +162,9 @@ D & Unsigned 32-bit byte, big-endian. \\
 \label{tbl:paramtypes}
 \end{table}
 
-To help you remember these meanings, little-endian values are encoded using lower case ("small letters", i.e. little), while big-endian values are encoded using upper case ("big" letters). The exception here is a single byte, since endianness has no effect for individual bytes. Here, the mnemonic is that an unsigned byte ("B") has a larger maximum value. For the other letters, "s" was used because it's the first letter in "short", which is usually a 16-bit signed value in C. Similarly, "i" is short for "int". "w" and "d" come from the terms "word" and "dword", which are used for 16-bit and 32-bit unsigned types on an x86 platform.
+To help you remember these meanings, little-endian values are encoded using lower case ("small letters", i.e. little), while big-endian values are encoded using upper case ("big" letters). The exception here is a single byte, since endianness has no effect for individual bytes. Here, the mnemonic is that an unsigned byte ("B") has a larger maximum value. For the other letters, "s" was used because it's the first letter in "short", which is usually a 16-bit signed value in C. Similarly, "i" is short for "int". "w" and "d" come from the terms "word" and "dword", which are terms for 16-bit and 32-bit unsigned types on an x86 platform.
 
-Note, however, that strings are not supported by default. To add reading of the string type, you can override the \verb+readParameter+ function to add your own types:
+Note that strings are not supported by default. To add reading of a string type, you can override the \verb+readParameter+ function to add your own types:
 
 \begin{C++}
 \begin{lstlisting}
@@ -228,6 +230,23 @@ END_OPCODES;
 
 Subopcodes can be nested if the instruction set requires it. For subopcodes, the \verb+_opcode+ field stores the bytes in the order they appear in the file - i.e., the HALT instruction would have the opcode value 0xFF00. If the opcodes are longer than 4 bytes, only the last 4 bytes will be stored.
 
+\subsubsection{Code generation metadata}
+For each opcode, you will need to replicate its semantics during code generation. To assist you in generalizing your code, you can use the \verb+OPCODE_MD+ macro to add metadata to the instruction, which is then available during code generation.
+
+For example, if you have an opcode for addition, you can store the addition operator as a string in the metadata field, and have that put to use during code generation to avoid having to check the opcode for each instruction of that type.
+
+The arguments for the \verb+OPCODE_MD+ are the same as those for \verb+OPCODE+, but with an extra parameter at the end for the metadata.
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+	OPCODE_MD(0x14, "add", kBinaryOp, -1, "", "+");
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+For details, see Section~\vref{sec:codegen}.
+
 \subsubsection{Advanced opcode handling}
 If you have one or two opcodes that don't quite fit into the framework provided, you can define your own specialized handling for these opcodes.
 
@@ -241,6 +260,6 @@ OPCODE_END;
 \end{lstlisting}
 \end{C++}
 
-\verb+OPCODE_BASE+ automatically keeps track of the current opcode value. You can access \verb+full_opcode+ to get the current full opcode.
+\verb+OPCODE_BASE+ automatically keeps track of the current opcode value. You can access \verb+full_opcode+ to get the current full opcode. Alternatively, you can use the \verb+OPCODE_BODY+ macro to use the standard behavior for opcodes, and then follow that with your own implementation. The \verb+OPCODE_BODY+ macro takes the same arguments as the \verb+OPCODE_MD+ macro.
 
 For your convenience, a few additional macros are available: \verb+ADD_INST+, which adds an empty instruction to the vector, and \verb+LAST_INST+ which retrieves the last instruction in the vector. Additionally, you can use \verb+INC_ADDR+ as a shorthand for incrementing the address variable by 1, but note that you should \emph{not} increment the address for the opcode itself - this is handled by the other macros.
