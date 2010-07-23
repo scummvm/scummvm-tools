@@ -146,7 +146,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 			{
 				std::stringstream s;
 				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData.substr(1));
-				s << p;
+				s << p << ";";
 				addOutputLine(s.str());
 			}
 			break;
@@ -159,7 +159,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 				EntryList idxs;
 				idxs.push_front(_stack.pop());
 				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData.substr(1));
-				s << p;
+				s << p << ";";
 				addOutputLine(s.str());
 			}
 			break;
