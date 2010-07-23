@@ -213,10 +213,31 @@ void CodeGenerator::process(GraphVertex v) {
 					break;
 				default:
 					{
-						uint32 dest = _engine->getDestAddress(it);
-						if (dest != _curGroup->_next->_start->_address) {
+						bool printJump = true;
+						OutEdgeRange r = boost::out_edges(v, _g);
+						for (OutEdgeIterator e = r.first; e != r.second && printJump; ++e) {
+							// Don't output jump to next vertex
+							if (boost::target(*e, _g) == _curGroup->_next->_vertex) {
+								printJump = false;
+								break;
+							}
+
+							// Don't output jump if next vertex starts an else block
+							if (_curGroup->_next->_startElse) {
+								printJump = false;
+								break;
+							}
+
+							OutEdgeRange targetR = boost::out_edges(boost::target(*e, _g), _g);
+							for (OutEdgeIterator targetE = targetR.first; targetE != targetR.second; ++targetE) {
+								// Don't output jump to while loop that has jump to next vertex
+								if (boost::target(*targetE, _g) == _curGroup->_next->_vertex)
+									printJump = false;
+							}
+						}
+						if (printJump) {
 							std::stringstream s;
-							s << boost::format("jump %X") % dest;
+							s << boost::format("jump %X;") % _engine->getDestAddress(it);
 							addOutputLine(s.str());
 						}
 					}
