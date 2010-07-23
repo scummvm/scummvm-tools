@@ -399,8 +399,8 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE_MD(0xC5, "getDistObjObj", kSpecial, -1, "", "rpp");
 		OPCODE_MD(0xC6, "getDistObjPt", kSpecial, -2, "", "rppp");
 		OPCODE_MD(0xC7, "getDistPtPt", kSpecial, -3, "", "rpppp");
-		OPCODE_MD(0xC8, "kernelGetFunctions", kSpecial, -255, "", "l"); // Variable stack arguments
-		OPCODE_MD(0xC9, "kernelSetFunctions", kSpecial, -255, "", "l"); // Variable stack arguments
+		OPCODE_MD(0xC8, "kernelGetFunctions", kSpecial, 0x1000, "", "l"); // Variable stack arguments
+		OPCODE_MD(0xC9, "kernelSetFunctions", kSpecial, 0x1000, "", "l"); // Variable stack arguments
 		OPCODE_MD(0xCA, "delayFrames", kSpecial, -1, "", "p");
 		OPCODE_MD(0xCB, "pickOneOf", kSpecial, 0x1011, "", "rlp"); // Variable stack arguments
 		OPCODE_MD(0xCC, "pickOneOfDefault", kSpecial, 0x111, "", "rplp"); // Variable stack arguments
