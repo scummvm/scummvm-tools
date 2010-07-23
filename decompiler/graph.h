@@ -196,6 +196,28 @@ inline void intrusive_ptr_release(Group *p);
 } // End of namespace boost
 
 /**
+ * Structure representing a line of code.
+ */
+struct CodeLine {
+	std::string _line;    ///< The line of code.
+	bool _unindentBefore; ///< Whether or not to add an indentation level before outputting the line.
+	bool _indentAfter;    ///< Whether or not to remove an indentation level after outputting the line.
+
+	/**
+	 * Constructor for CodeLine.
+	 *
+	 * @param s The line of code.
+	 * @param unindentBefore Whether or not to remove an indentation level before the line. Defaults to false.
+	 * @param indentAfter Whether or not to add an indentation level after the line. Defaults to false.
+	 */
+	CodeLine(const std::string& line, bool unindentBefore, bool indentAfter) {
+		_line = line;
+		_unindentBefore = unindentBefore;
+		_indentAfter = indentAfter;
+	}
+};
+
+/**
  * Structure representing a group of instructions.
  */
 struct Group {
@@ -205,16 +227,16 @@ private:
   friend void ::boost::intrusive_ptr_release(Group *p); ///< Allow access by reference counting methods in boost namespace.
 
 public:
-	GraphVertex _vertex;            ///< Vertex the group belongs to.
-	ConstInstIterator _start;       ///< First instruction in the group.
-	ConstInstIterator _end;         ///< Last instruction in the group.
-	int _stackLevel;                ///< Level of the stack upon entry.
-	GroupType _type;                ///< Type of the group.
-	bool _startElse;                ///< Group is start of an else block.
-	Group *_endElse;                ///< Group is end of an else block.
-	Group *_prev;                   ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
-	Group *_next;                   ///< Pointer to the next group, when ordered by address.
-	std::vector<std::string> _code; ///< Container for decompiled lines of code.
+	GraphVertex _vertex;         ///< Vertex the group belongs to.
+	ConstInstIterator _start;    ///< First instruction in the group.
+	ConstInstIterator _end;      ///< Last instruction in the group.
+	int _stackLevel;             ///< Level of the stack upon entry.
+	GroupType _type;             ///< Type of the group.
+	bool _startElse;             ///< Group is start of an else block.
+	Group *_endElse;             ///< Group is end of an else block.
+	Group *_prev;                ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
+	Group *_next;                ///< Pointer to the next group, when ordered by address.
+	std::vector<CodeLine> _code; ///< Container for decompiled lines of code.
 
 	/**
 	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.

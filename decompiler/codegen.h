@@ -418,8 +418,10 @@ protected:
 	 * Adds a line of code to the current group.
 	 *
 	 * @param s The line to add.
+	 * @param unindentBefore Whether or not to remove an indentation level before the line. Defaults to false.
+	 * @param indentAfter Whether or not to add an indentation level after the line. Defaults to false.
 	 */
-	void addOutputLine(std::string s);
+	void addOutputLine(std::string s, bool unindentBefore = false, bool indentAfter = false);
 
 	/**
 	 * Generate an assignment statement.

@@ -93,18 +93,19 @@ void CodeGenerator::generate(const Graph &g) {
 	// TODO: Proper indenting
 	p = GET(entryPoint);
 	while (p != NULL) {
-		for (std::vector<std::string>::iterator it = p->_code.begin(); it != p->_code.end(); ++it)
-			_output << *it << std::endl;
+		for (std::vector<CodeLine>::iterator it = p->_code.begin(); it != p->_code.end(); ++it) {
+			if (it->_unindentBefore)
+				_indentLevel--;
+			_output << boost::format("%08X: %s") % p->_start->_address % indentString(it->_line) << std::endl;
+			if (it->_indentAfter)
+				_indentLevel++;
+		}
 		p = p->_next;
 	}
 }
 
-void CodeGenerator::addOutputLine(std::string s) {
-	std::stringstream stream;
-	stream << boost::format("%08X: ") % _curGroup->_start->_address;
-//	stream << indentString(s);
-	stream << s;
-	_curGroup->_code.push_back(stream.str());
+void CodeGenerator::addOutputLine(std::string s, bool unindentBefore, bool indentAfter) {
+	_curGroup->_code.push_back(CodeLine(s, unindentBefore, indentAfter));
 }
 
 void CodeGenerator::writeAssignment(EntryPtr dst, EntryPtr src) {
@@ -118,7 +119,7 @@ void CodeGenerator::process(GraphVertex v) {
 
 	// Check if we should add else start
 	if (_curGroup->_startElse && _curGroup->_type != kIfCond)
-		addOutputLine("} else {");
+		addOutputLine("} else {", true, true);
 
 	// Check ingoing edges to see if we want to add any extra output
 	InEdgeRange ier = boost::in_edges(v, _g);
@@ -129,14 +130,14 @@ void CodeGenerator::process(GraphVertex v) {
 			continue;
 		switch (inGroup->_type) {
 		case kDoWhileCond:
-			addOutputLine("do {");
+			addOutputLine("do {", false, true);
 			break;
 		case kIfCond:
 			if (!_curGroup->_startElse)
-				addOutputLine("}");
+				addOutputLine("}", true, false);
 			break;
 		case kWhileCond:
-			addOutputLine("}");
+			addOutputLine("}", true, false);
 			break;
 		default:
 			break;
@@ -188,18 +189,19 @@ void CodeGenerator::process(GraphVertex v) {
 							s << "} else ";
 						}
 						s << "if (" << _stack.pop() << ") {";
+						addOutputLine(s.str(), _curGroup->_startElse, true);
 						break;
 					case kWhileCond:
 						s << "while (" << _stack.pop() << ") {";
+						addOutputLine(s.str(), false, true);
 						break;
 					case kDoWhileCond:
 						s << "} while (" << _stack.pop() << ")";
+						addOutputLine(s.str(), true, false);
 						break;
 					default:
-						processInst(*it);
 						break;
 					}
-					addOutputLine(s.str());
 				}
 				break;
 			case kJump:
@@ -268,7 +270,7 @@ void CodeGenerator::process(GraphVertex v) {
 
 	// Add else end if necessary
 	if (_curGroup->_endElse != NULL && (_curGroup->_endElse->_type != kIfCond || !_curGroup->_endElse->_startElse))
-		addOutputLine("}");
+		addOutputLine("}", true, false);
 }
 
 void CodeGenerator::addArg(EntryPtr p) {
