@@ -38,7 +38,7 @@ EntryPtr StackEntry::dup(std::ostream &output) {
 		return this;
 
 	EntryPtr dupEntry = new DupEntry(++dupindex);
-	output << dupEntry << " = " << (EntryPtr)this;
+	output << dupEntry << " = " << (EntryPtr)this << ";";
 	return dupEntry;
 }
 
@@ -222,11 +222,17 @@ void CodeGenerator::process(GraphVertex v) {
 				break;
 			case kSpecial:
 				{
-					std::stringstream s;
-					s << it->_name << "(";
-					// TODO: Process metadata
-					s << ")";
-					addOutputLine(s.str());
+					_argList.clear();
+					bool returnsValue = (it->_codeGenData.find("r") == 0);
+					std::string metadata = (!returnsValue ? it->_codeGenData : it->_codeGenData.substr(1) );
+					for (size_t i = 0; i < metadata.length(); i++)
+						processSpecialMetadata(*it, metadata[i]);
+					_stack.push(new CallEntry(it->_name, _argList));
+					if (!returnsValue) {
+						std::stringstream stream;
+						stream << _stack.pop() << ";";
+						addOutputLine(stream.str());
+					}
 					break;
 				}
 			default:
@@ -239,4 +245,16 @@ void CodeGenerator::process(GraphVertex v) {
 	// Add else end if necessary
 	if (_curGroup->_endElse != NULL)
 		addOutputLine("}");
+}
+
+void CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
+	// TODO: Allow subclasses to decide if they want push_front or push_back.
+	switch (c) {
+		case 'p':
+			_argList.push_front(_stack.pop());
+			break;
+		default:
+			std::cerr << boost::format("Unknown character in metadata: %c\n") % c ;
+			break;
+	}
 }

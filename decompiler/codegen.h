@@ -43,6 +43,7 @@ const StackEntryType seDup = 4;
 const StackEntryType seArray = 5;
 const StackEntryType seString = 6;
 const StackEntryType seList = 7;
+const StackEntryType seCall = 8;
 
 class StackEntry;
 
@@ -66,7 +67,7 @@ private:
 	friend void ::boost::intrusive_ptr_release(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
 
 public:
-	const StackEntryType _type;
+	const StackEntryType _type; ///< Type of the stack entry.
 
 	/**
 	 * Constructor for StackEntry.
@@ -264,7 +265,7 @@ typedef std::deque<EntryPtr> EntryList;
 class ArrayEntry : public StackEntry {
 private:
 	const std::string _arrayName; ///< The name of the array.
-	EntryList _idxs;              ///< std::deque of stack entries representing the indexes used (left-to-right).
+	const EntryList _idxs;              ///< std::deque of stack entries representing the indexes used (left-to-right).
 
 public:
 	/**
@@ -291,6 +292,11 @@ private:
 	const std::string _str; ///< The string in the entry.
 
 public:
+	/**
+	 * Constructor for StringEntry.
+	 *
+	 * @param str The string in the entry.
+	 */
 	StringEntry(std::string str) : StackEntry(seString), _str(str) { }
 
 	virtual std::ostream &print(std::ostream &output) const {
@@ -306,6 +312,11 @@ private:
 	const EntryList _items; ///< Vector containing the list items.
 
 public:
+	/**
+	 * Constructor for ListEntry.
+	 *
+	 * @param items The items stored in the list.
+	 */
 	ListEntry(EntryList items) : StackEntry(seList), _items(items) { }
 
 	virtual std::ostream &print(std::ostream &output) const {
@@ -316,6 +327,35 @@ public:
 			output << *i;
 		}
 		output << "]";
+		return output;
+	}
+};
+
+/**
+ * Stack entry representing a function call.
+ */
+class CallEntry : public StackEntry {
+private:
+	const std::string _funcName; ///< The name of the function.
+	const EntryList _args;       ///< std::deque of stack entries representing the arguments used (stored left-to-right).
+
+public:
+	/**
+	 * Constructor for CallEntry.
+	 *
+	 * @param funcName The name of the function.
+	 * @param args std::deque of stack entries representing the arguments used.
+	 */
+	CallEntry(std::string funcName, EntryList args) : StackEntry(seCall), _funcName(funcName), _args(args) { }
+
+	virtual std::ostream &print(std::ostream &output) const {
+		output << _funcName << "(";
+		for (EntryList::const_iterator i = _args.begin(); i != _args.end(); ++i) {
+			if (i != _args.begin())
+				output << ", ";
+			output << *i;
+		}
+		output << ")";
 		return output;
 	}
 };
@@ -347,6 +387,7 @@ protected:
 	EntryStack _stack;     ///< The stack currently being processed.
 	uint _indentLevel;     ///< Indentation level.
 	GroupPtr _curGroup;    ///< Pointer to the group currently being processed.
+	EntryList _argList;    ///< Storage for lists of arguments to be built when processing function calls.
 
 	/**
 	 * Processes an instruction.
@@ -377,6 +418,14 @@ protected:
 	 * @param src The value being assigned.
 	 */
 	void writeAssignment(EntryPtr dst, EntryPtr src);
+
+	/**
+	 * Process a single character of metadata.
+	 *
+	 * @param it The instruction being processed.
+	 * @param c The character signifying the action to be taken.
+	 */
+	virtual void processSpecialMetadata(const Instruction inst, char c);
 
 public:
 	virtual ~CodeGenerator() {};
