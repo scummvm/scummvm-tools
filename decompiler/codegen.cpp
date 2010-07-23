@@ -267,7 +267,7 @@ void CodeGenerator::process(GraphVertex v) {
 	} while (it++ != _curGroup->_end);
 
 	// Add else end if necessary
-	if (_curGroup->_endElse != NULL)
+	if (_curGroup->_endElse != NULL && (_curGroup->_endElse->_type != kIfCond || !_curGroup->_endElse->_startElse))
 		addOutputLine("}");
 }
 
