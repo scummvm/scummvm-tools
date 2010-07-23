@@ -429,7 +429,7 @@ void Scumm::v6::CodeGenerator::processSpecialMetadata(const Instruction inst, ch
 	switch (c) {
 		// All of these meanings are taken from descumm.
 		case 'l':
-			_argList.push_front(createListEntry());
+			addArg(createListEntry());
 			break;
 		// No SCUMMv6 opcodes using these types have more than one parameter, so it's safe to assume it's the first parameter we want.
 		case 'w':
@@ -438,11 +438,11 @@ void Scumm::v6::CodeGenerator::processSpecialMetadata(const Instruction inst, ch
 			switch (inst._params[0]._type) {
 			case kSByte:
 			case kShort:
-				_argList.push_front(new IntEntry(inst._params[0].getSigned(), false));
+				addArg(new IntEntry(inst._params[0].getSigned(), false));
 				break;
 			case kByte:
 			case kUShort:
-				_argList.push_front(new IntEntry(inst._params[0].getUnsigned(), false));
+				addArg(new IntEntry(inst._params[0].getUnsigned(), false));
 				break;
 			default:
 				std::cerr << boost::format("Unexpected type for parameter 0 @ %08X while processing metadata character %c") % inst._address % c;
@@ -450,14 +450,14 @@ void Scumm::v6::CodeGenerator::processSpecialMetadata(const Instruction inst, ch
 			}
 			break;
 		case 'v':
-			_argList.push_front(new VarEntry(decodeVarName(inst._params[0].getUnsigned())));
+			addArg(new VarEntry(decodeVarName(inst._params[0].getUnsigned())));
 			break;
 		case 's':
-			_argList.push_front(new StringEntry(inst._params[0].getString()));
+			addArg(new StringEntry(inst._params[0].getString()));
 			break;
 		case 'z':
-			_argList.push_front(_stack.pop());
-			_argList.push_front(_stack.pop());
+			addArg(_stack.pop());
+			addArg(_stack.pop());
 			break;
 		default:
 			::CodeGenerator::processSpecialMetadata(inst, c);

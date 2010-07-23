@@ -368,12 +368,22 @@ typedef Stack<EntryPtr> EntryStack;
 const int kIndentAmount = 2; ///< How many spaces to use for each indent.
 
 /**
+ * Enumeration for the different argument/operand orderings.
+ */
+enum ArgOrder {
+	kFIFO, ///< First argument is pushed to stack first.
+	kLIFO  ///< First argument is pushed to stack last.
+};
+
+/**
  * Base class for code generators.
  */
 class CodeGenerator {
 private:
-	Engine *_engine; ///< Pointer to the Engine used for the script.
-	Graph _g;        ///< The annotated graph of the script.
+	Engine *_engine;           ///< Pointer to the Engine used for the script.
+	Graph _g;                  ///< The annotated graph of the script.
+	const ArgOrder _binOrder;  ///< Order of operands for binary operations.
+	const ArgOrder _callOrder; ///< Order of operands for call arguments.
 
 	/**
 	 * Processes a GraphVertex.
@@ -427,6 +437,13 @@ protected:
 	 */
 	virtual void processSpecialMetadata(const Instruction inst, char c);
 
+	/**
+	 * Add an argument to the argument list.
+	 *
+	 * @param p The argument to add.
+	 */
+	void addArg(EntryPtr p);
+
 public:
 	virtual ~CodeGenerator() {};
 
@@ -435,8 +452,10 @@ public:
 	 *
 	 * @param engine Pointer to the Engine used for the script.
 	 * @param output The std::ostream to output the code to.
+	 * @param binOrder Order of arguments for binary operators.
+	 * @param callOrder Order of arguments for function calls.
 	 */
-	CodeGenerator(Engine *engine, std::ostream &output);
+	CodeGenerator(Engine *engine, std::ostream &output, ArgOrder binOrder, ArgOrder callOrder);
 
 	/**
 	 * Generates code from the provided graph and outputs it to stdout.

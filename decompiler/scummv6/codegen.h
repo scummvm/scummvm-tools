@@ -71,7 +71,7 @@ public:
 	 * @param engine Pointer to the Engine used for the script.
 	 * @param output The std::ostream to output the code to.
 	 */
-	CodeGenerator(Engine *engine, std::ostream &output) : ::CodeGenerator(engine, output) {}
+	CodeGenerator(Engine *engine, std::ostream &output) : ::CodeGenerator(engine, output, kFIFO, kFIFO) {}
 protected:
 	void processInst(const Instruction inst);
 	virtual void processSpecialMetadata(const Instruction inst, char c);

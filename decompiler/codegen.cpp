@@ -48,7 +48,7 @@ std::string CodeGenerator::indentString(std::string s) {
 	return stream.str();
 }
 
-CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output) : _output(output) {
+CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output, ArgOrder binOrder, ArgOrder callOrder) : _output(output), _binOrder(binOrder), _callOrder(callOrder) {
 	_engine = engine;
 	_indentLevel = 0;
 }
@@ -168,9 +168,12 @@ void CodeGenerator::process(GraphVertex v) {
 			case kComparison:
 				//TODO: Allow specification of order in which operands appear on stack
 			{
-				EntryPtr rhs = _stack.pop();
-				EntryPtr lhs = _stack.pop();
-				_stack.push(new BinaryOpEntry(lhs, rhs, it->_codeGenData));
+				EntryPtr op1 = _stack.pop();
+				EntryPtr op2 = _stack.pop();
+				if (_binOrder == kFIFO)
+					_stack.push(new BinaryOpEntry(op2, op1, it->_codeGenData));
+				else if (_binOrder == kLIFO)
+					_stack.push(new BinaryOpEntry(op1, op2, it->_codeGenData));
 				break;
 			}
 			case kCondJump:
@@ -213,7 +216,7 @@ void CodeGenerator::process(GraphVertex v) {
 						uint32 dest = _engine->getDestAddress(it);
 						if (dest != _curGroup->_next->_start->_address) {
 							std::stringstream s;
-							s << boost::format("goto %X") % dest;
+							s << boost::format("jump %X") % dest;
 							addOutputLine(s.str());
 						}
 					}
@@ -247,11 +250,17 @@ void CodeGenerator::process(GraphVertex v) {
 		addOutputLine("}");
 }
 
+void CodeGenerator::addArg(EntryPtr p) {
+	if (_callOrder == kFIFO)
+		_argList.push_front(p);
+	else if (_callOrder == kLIFO)
+		_argList.push_back(p);
+}
+
 void CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
-	// TODO: Allow subclasses to decide if they want push_front or push_back.
 	switch (c) {
 		case 'p':
-			_argList.push_front(_stack.pop());
+			addArg(_stack.pop());
 			break;
 		default:
 			std::cerr << boost::format("Unknown character in metadata: %c\n") % c ;
