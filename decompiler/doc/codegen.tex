@@ -1,2 +1,114 @@
 \section{Code generation}
 \label{sec:codegen}
+
+Having detected all of the various control flow constructs in the previous phase, it's now time to put that information to use and generate some code from the instructions.
+
+Code generation is implemented as a two-step process:
+\begin{itemize}
+\item First, a DFS is performed to process all reachable groups. During this processing, the code for that group is generated.
+\item Next, the groups are iterated over sequentially, and the generated code is output.
+\end{itemize}
+
+\subsection{Group processing}
+During processing of a group, the instructions in the group are processed one at a time. Certain kinds of instructions can be handled by generic code, while others must be handled by engine-specific code in the \verb+processInst+ method of your subclass.
+
+If you need to access information about the group currently being processed, use the member variable \verb+_curGroup+.
+
+\subsection{The stack and stack entries}
+When generating the code, a stack is used to represent the state of the system. When data is pushed on the stack, a stack entry describing how that data was created is added; when data is popped, a stack entry describing the popped data is removed.
+
+To manipulate the stack, use the \verb+push+ and \verb+pop+ methods to push or pop stack entries. Unlike the STL stack, \verb+pop+ returns the value being popped from the stack, so you don't have to first get the top element and then pop it afterwards, but you can still call the \verb+peek+ method if you just want to look at the topmost element without removing it. Additionally, it has an \verb+empty+ method to check if the stack is empty.
+
+When working with entries, you should use the \verb+EntryPtr+ type. This wraps the entry in a \verb+boost::intrusive_ptr+ to free the associated memory when it is no longer referenced.
+
+Some stack entries contain references to an arbitrary number of stack entries. This is handled using an STL \verb+deque+, typedef'ed as \verb+EntryList+.
+
+Stack entries can be categorized into 9 different types:
+
+\paragraph{Integers (IntEntry)}
+Integers can use up to 32-bits, and be signed or unsigned. When creating an integer, you must specify its value and whether or not it is signed.
+\paragraph{Variables (VarEntry)}
+Variables are stored as a simple string. Subclasses must implement their own logic to determine a suitable variable name when given a reference.
+
+\paragraph{Binary operations (BinaryOpEntry)}
+Binary operations stores the two stack entries used as operands, and a string containing the operator. Parenthesis are automatically added around all binary operations to preserve the proper evaluation order.
+
+\paragraph{Unary operations (UnaryOpEntry)}
+Just like binary operations, except on a single operand is stored.
+
+\paragraph{Duplicated entries (DupEntry)}
+Stores an index to distinguish between multiple duplicated entries. This index is automatically assigned and determined when calling the \verb+dup+ function to duplicate a stack entry.
+
+\paragraph{Array entries (ArrayEntry)}
+Array entries are stored as a simple string containing the name of the array, and an EntryList of stack entries used as the indices, with the first element in the EntryList being output as the first index.
+
+\paragraph{Strings (StringEntry)}
+A string is stored as... well, a string. You have to supply your own quotes.
+
+\paragraph{Lists (ListEntry)}
+A list is stored using an EntryList to contain the stack entries in the list. Elements are output left-to-right, such that the first element in the EntryList will be output as the first element in the list.
+
+\paragraph{Function calls (CallEntry)}
+Function calls have the same underlying storage types as an array entry, but the output is formatted like a function call instead of an array access.
+
+Each entry type knows how to output itself to an \verb+std::ostream+ supplied as a paraemter to the \verb+print+ function, and the common base class \verb+StackEntry+ also overloads the \verb+<<+ operator so any stack entry can be streamed directly to an output stream using that function.
+
+\subsection{Outputting code}
+When processing certain kinds of instructions, you will probably want to create a line of code as part of the output. To do that, call \verb+addOutputLine+ with a string containing the code you wish to output as an argument. This will then be associated with the group being processed.
+
+If your line of code deals with control flow, you will probably want to do something about the indentation. You can supply two extra boolean arguments to \verb+addOutputLine+ to state that the indentation should be decreased before outputting this line, and/or that the indentation should be increased for lines output after this line. If you leave out these arguments, no extra indentation is added.
+
+Note: This indent handling is currently considered a temporary solution until there's time to implement something better. It may be replaced with a different form of indentation handling at a later time.
+
+You will usually need to output assignments at some point. For that, you can use the \verb+writeAssignment+ method to generate an assignment statement. \verb+writeAssignment+ takes two parameters, the first being the stack entry representing the left-hand side of the assignment operator, and the second being the stack entry representing the right-hand side of the operator.
+
+\subsection{Default instruction handling and instruction metadata}
+When disassembling, you can store metadata for a given instruction to be used during code generation.
+
+Default handling exists for a number of instruction types, described below. If the default handling doesn't work for a particular instruction, you can force the instruction to process by your engine specific code by placing the hexadecimal byte 0xC0 at the start of the metadata string. This character was chosen for two reasons: it is unlikely to be used as a byte in a script, and the byte is invalid in UTF-8, avoiding potential encoding conflicts. Note that if you do this, it is your own responsibility to strip off that character during processing.
+
+\paragraph{kDup}
+The topmost stack entry is popped, and two duplicated copies are pushed to the stack. If the entry being duplicated was not already a duplicate, an assignment will be output to assign the original stack entry to a special dup variable, to show that the original entry isn't being recalculated.
+
+\paragraph{kUnaryOp}
+The topmost stack entry is popped, and a \verb+UnaryOpEntry+ is created and pushed to the stack, using the codegen metadata as the operator, and the previously popped entry as the operand. Note: currently, a \verb+UnaryOpEntry+ only supports placing the operator on the left side of the operand.
+
+\paragraph{kBinaryOp and kComparison}
+The two topmost stack entries are popped, and a BinaryOpEntry is created and pushed to the stack, using the codegen metadata as the operator and the previously popped entries as the operands. The order of the operands is determined by the value of the field \verb+_binOrder+, as described in Section~\vref{sec:argOrder}.
+
+\paragraph{kCondJump and kCondJumpRel}
+The instruction is sent for processing in the engine-specific \verb+processInst+ method, so you can add any information provided by the specific opcode. The information on the stack is then read by the default code, and an if, while or do-while condition is output using the topmost stack entry.
+
+\paragraph{kJump and kJumpRel}
+If the current group has been detected as a break or a continue, a break or continue statement is output. Otherwise, the jump is analyzed and output unless it is a jump back to the condition of a while-loop that ends there, or it is determined that the jump is unnecessary due to an else block following immediately after.
+
+\paragraph{kSpecial}
+The metadata is treated similar to parameter specifications in \verb+SimpleDisassembler+ (see Section~\vref{sec:simpledisasm}). If the specification string starts with the character \verb+r+, this signifies that the call returns a value, and processing starts at the next character.
+For each character in the metadata string, \verb+processSpecialMetadata+ is called with the instruction being processed, and the current metadata character to be handled. The default implementation only understands the character \verb+p+, which pops an argument from the stack and adds it to the argument list.
+Once the metadata string has been processed fully, then an entry representing the function call is pushed to the stack if the call returns a value. Otherwise, the call is added to the output.
+
+You can override the \verb+processSpecialMetadata+ method to add your own specification characters, just like you would override \verb+readParameter+ in \verb+SimpleDisassembler+. Use the \verb+addArg+ method to add arguments.
+
+Due to the conflict with the specification of a return value, it is recommended that you do not adopt \verb+r+ as a metadata character.
+
+\paragraph{Other types}
+No default handling exists for types other than those mentioned above. These instructions will be sent to the \verb+processInst+ method of your subclass, where you must handle them appropriately. This includes types like kLoad and kStore.
+
+\subsection{Order of arguments}
+\label{sec:argOrder}
+The generic handling of binary operators (kBinaryOp, kComparison) and magic functions (kSpecial) can be configured to display their arguments using FIFO or LIFO - respecitvely, the first and the last entry to be pushed onto the stack is used as the first (leftmost) argument. This is set as part of the constructor for the \verb+CodeGenerator+ class, using the enumeration values \verb+kFIFO+ and \verb+kLIFO+.
+
+To provide an example, consider the following sequence of instructions:
+
+\begin{bytecode}
+\begin{lstlisting}
+PUSH a
+PUSH b
+SUB
+\end{lstlisting}
+\end{bytecode}
+
+This can mean two different things, either \verb+a - b+ or \verb+b - a+, depending on the order in which the operands should be evaluated. For the former, choose FIFO ordering, for the latter, choose LIFO.
+
+For arguments to function calls, the same principle applies. You can use the \verb+addArg+ method to add an argument to the call currently being processed, using the chosen ordering. In general, you might not know which value is more correct; unless you have reason to believe otherwise, you should simply use the same ordering as for binary operators.
+

@@ -90,6 +90,7 @@ public:
 Finally, \verb+dumpDisassembly+ is used to output the instructions in a human-readable format to a file or stdout, performing a disassembly first if required, and then calls \verb+doDumpDisassembly+ to perform the actual output. A default implementation is provided for \verb+doDumpDisassembly+, but you can override it if the standard output format is not suitable for your particular engine.
 
 \subsection{The SimpleDisassembler class}
+\label{sec:simpledisasm}
 To simplify the development of disassemblers, another base class is provided for instruction sets where instructions are of the format \verb+opcode [params]+, with opcode and parameters stored in distinct bytes.
 
 \verb+SimpleDisassembler+ defines a number of macros which you can use for writing your disassembler, and provides a framework for reading instruction parameters.
