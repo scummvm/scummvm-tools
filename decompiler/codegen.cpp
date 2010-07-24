@@ -167,16 +167,15 @@ void CodeGenerator::process(GraphVertex v) {
 				break;
 			case kBinaryOp:
 			case kComparison:
-				//TODO: Allow specification of order in which operands appear on stack
-			{
-				EntryPtr op1 = _stack.pop();
-				EntryPtr op2 = _stack.pop();
-				if (_binOrder == kFIFO)
-					_stack.push(new BinaryOpEntry(op2, op1, it->_codeGenData));
-				else if (_binOrder == kLIFO)
-					_stack.push(new BinaryOpEntry(op1, op2, it->_codeGenData));
-				break;
-			}
+				{
+					EntryPtr op1 = _stack.pop();
+					EntryPtr op2 = _stack.pop();
+					if (_binOrder == kFIFO)
+						_stack.push(new BinaryOpEntry(op2, op1, it->_codeGenData));
+					else if (_binOrder == kLIFO)
+						_stack.push(new BinaryOpEntry(op1, op2, it->_codeGenData));
+					break;
+				}
 			case kCondJump:
 			case kCondJumpRel:
 				{

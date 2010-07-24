@@ -230,7 +230,7 @@ public:
 		StackEntry(seUnaryOp), _operand(operand), _op(op) { }
 
 	virtual std::ostream &print(std::ostream &output) const {
-		return output << _op << _operand;
+		return output << _op << "(" << _operand << ")";
 	}
 };
 
@@ -265,7 +265,7 @@ typedef std::deque<EntryPtr> EntryList;
 class ArrayEntry : public StackEntry {
 private:
 	const std::string _arrayName; ///< The name of the array.
-	const EntryList _idxs;              ///< std::deque of stack entries representing the indexes used (left-to-right).
+	const EntryList _idxs;        ///< std::deque of stack entries representing the indexes used (left-to-right).
 
 public:
 	/**
