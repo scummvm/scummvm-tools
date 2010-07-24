@@ -391,7 +391,7 @@ void ControlFlow::detectIf() {
 			// ...to later in the code
 			OutEdgeIterator toe = boost::out_edges(find(targetGr->_prev->_start->_address), _g).first;
 			GroupPtr targetTargetGr = GET(boost::target(*toe, _g));
-			if (targetTargetGr->_start->_address > targetGr->_prev->_end->_address) {
+			if (targetTargetGr->_start->_address > targetGr->_end->_address) {
 				targetGr->_startElse = true;
 				targetTargetGr->_prev->_endElse = targetGr.get();
 			}
