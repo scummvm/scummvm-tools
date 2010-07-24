@@ -245,7 +245,6 @@ void CodeGenerator::process(GraphVertex v) {
 					switch (_curGroup->_type) {
 					case kIfCond:
 						if (_curGroup->_startElse) {
-							_indentLevel--;
 							s << "} else ";
 						}
 						s << "if (" << _stack.pop() << ") {";
