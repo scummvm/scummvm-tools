@@ -33,17 +33,17 @@
 
 class Engine;
 
-typedef int StackEntryType;
-
-const StackEntryType seInt = 0;
-const StackEntryType seVar = 1;
-const StackEntryType seBinOp = 2;
-const StackEntryType seUnaryOp = 3;
-const StackEntryType seDup = 4;
-const StackEntryType seArray = 5;
-const StackEntryType seString = 6;
-const StackEntryType seList = 7;
-const StackEntryType seCall = 8;
+enum StackEntryType {
+	seInt,
+	seVar,
+	seBinOp,
+	seUnaryOp,
+	seDup,
+	seArray,
+	seString,
+	seList,
+	seCall
+};
 
 class StackEntry;
 
@@ -140,8 +140,7 @@ public:
 	 * @param val The value contained in the stack entry.
 	 * @param isSigned Whether or not the value is signed. This will affect output.
 	 */
-	IntEntry(int32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) {
-	}
+	IntEntry(int32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) { }
 
 	/**
 	 * Constructor for IntEntry.
@@ -149,20 +148,11 @@ public:
 	 * @param val The value contained in the stack entry.
 	 * @param isSigned Whether or not the value is signed. This will affect output.
 	 */
-	IntEntry(uint32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) {
-	}
+	IntEntry(uint32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) { }
 
-	virtual std::ostream &print(std::ostream &output) const {
-		if (_isSigned)
-			output << _val;
-		else
-			output << (uint32)_val;
-		return output;
-	}
+	virtual std::ostream &print(std::ostream &output) const;
 
-	virtual EntryPtr dup(std::ostream &output) {
-		return new IntEntry(_val, _isSigned);
-	}
+	virtual EntryPtr dup(std::ostream &output);
 };
 
 /**
@@ -180,9 +170,7 @@ public:
 	 */
 	VarEntry(std::string varName) : StackEntry(seVar), _varName(varName) { }
 
-	virtual std::ostream &print(std::ostream &output) const {
-		return output << _varName;
-	}
+	virtual std::ostream &print(std::ostream &output) const;
 };
 
 /**
@@ -190,9 +178,9 @@ public:
  */
 class BinaryOpEntry : public StackEntry {
 private:
-	const EntryPtr _lhs; ///< Stack entry representing the left side of the operator.
-	const EntryPtr _rhs; ///< Stack entry representing the right side of the operator.
-	const std::string _op;  ///< The operator for this entry.
+	const EntryPtr _lhs;   ///< Stack entry representing the left side of the operator.
+	const EntryPtr _rhs;   ///< Stack entry representing the right side of the operator.
+	const std::string _op; ///< The operator for this entry.
 
 public:
 	/**
@@ -203,12 +191,9 @@ public:
 	 * @param op The operator for this entry.
 	 */
 	BinaryOpEntry(EntryPtr lhs, EntryPtr rhs, std::string op) :
-		StackEntry(seBinOp), _lhs(lhs), _rhs(rhs), _op(op) {
-	}
+		StackEntry(seBinOp), _lhs(lhs), _rhs(rhs), _op(op) { }
 
-	virtual std::ostream &print(std::ostream &output) const {
-		return output << "(" << _lhs << " " << _op << " " << _rhs << ")";
-	}
+	virtual std::ostream &print(std::ostream &output) const;
 };
 
 /**
@@ -217,7 +202,7 @@ public:
 class UnaryOpEntry : public StackEntry {
 private:
 	const EntryPtr _operand; ///< The operand the operation is performed on.
-	const std::string _op;      ///< The operator for this entry.
+	const std::string _op;   ///< The operator for this entry.
 
 public:
 	/**
@@ -229,9 +214,7 @@ public:
 	UnaryOpEntry(EntryPtr operand, std::string op) :
 		StackEntry(seUnaryOp), _operand(operand), _op(op) { }
 
-	virtual std::ostream &print(std::ostream &output) const {
-		return output << _op << "(" << _operand << ")";
-	}
+	virtual std::ostream &print(std::ostream &output) const;
 };
 
 /**
@@ -249,9 +232,7 @@ public:
 	 */
 	DupEntry(int idx) : StackEntry(seDup), _idx(idx) { }
 
-	virtual std::ostream &print(std::ostream &output) const {
-		return output << "dup[" << _idx << "]";
-	}
+	virtual std::ostream &print(std::ostream &output) const;
 };
 
 /**
@@ -276,12 +257,7 @@ public:
 	 */
 	ArrayEntry(std::string arrayName, std::deque<EntryPtr> idxs) : StackEntry(seArray), _arrayName(arrayName), _idxs(idxs) { }
 
-	virtual std::ostream &print(std::ostream &output) const {
-		output << _arrayName;
-		for (EntryList::const_iterator i = _idxs.begin(); i != _idxs.end(); ++i)
-			output << "[" << *i << "]";
-		return output;
-	}
+	virtual std::ostream &print(std::ostream &output) const;
 };
 
 /**
@@ -299,9 +275,7 @@ public:
 	 */
 	StringEntry(std::string str) : StackEntry(seString), _str(str) { }
 
-	virtual std::ostream &print(std::ostream &output) const {
-		return output << _str;
-	}
+	virtual std::ostream &print(std::ostream &output) const;
 };
 
 /**
@@ -319,16 +293,7 @@ public:
 	 */
 	ListEntry(EntryList items) : StackEntry(seList), _items(items) { }
 
-	virtual std::ostream &print(std::ostream &output) const {
-		output << "[";
-		for (EntryList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
-			if (i != _items.begin())
-				output << ", ";
-			output << *i;
-		}
-		output << "]";
-		return output;
-	}
+	virtual std::ostream &print(std::ostream &output) const;
 };
 
 /**
@@ -348,16 +313,7 @@ public:
 	 */
 	CallEntry(std::string funcName, EntryList args) : StackEntry(seCall), _funcName(funcName), _args(args) { }
 
-	virtual std::ostream &print(std::ostream &output) const {
-		output << _funcName << "(";
-		for (EntryList::const_iterator i = _args.begin(); i != _args.end(); ++i) {
-			if (i != _args.begin())
-				output << ", ";
-			output << *i;
-		}
-		output << ")";
-		return output;
-	}
+	virtual std::ostream &print(std::ostream &output) const;
 };
 
 /**
@@ -447,7 +403,7 @@ protected:
 	void addArg(EntryPtr p);
 
 public:
-	virtual ~CodeGenerator() {};
+	virtual ~CodeGenerator() { }
 
 	/**
 	 * Constructor for CodeGenerator.

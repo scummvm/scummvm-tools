@@ -33,6 +33,63 @@
 
 static int dupindex = 0;
 
+std::ostream &IntEntry::print(std::ostream &output) const {
+	if (_isSigned)
+		output << _val;
+	else
+		output << (uint32)_val;
+	return output;
+}
+
+std::ostream &VarEntry::print(std::ostream &output) const {
+	return output << _varName;
+}
+
+std::ostream &BinaryOpEntry::print(std::ostream &output) const {
+	return output << "(" << _lhs << " " << _op << " " << _rhs << ")";
+}
+
+std::ostream &UnaryOpEntry::print(std::ostream &output) const {
+	return output << _op << "(" << _operand << ")";
+}
+
+std::ostream &DupEntry::print(std::ostream &output) const {
+	return output << "dup[" << _idx << "]";
+}
+
+std::ostream &ArrayEntry::print(std::ostream &output) const {
+	output << _arrayName;
+	for (EntryList::const_iterator i = _idxs.begin(); i != _idxs.end(); ++i)
+		output << "[" << *i << "]";
+	return output;
+}
+
+std::ostream &StringEntry::print(std::ostream &output) const {
+	return output << _str;
+}
+
+std::ostream &ListEntry::print(std::ostream &output) const {
+	output << "[";
+	for (EntryList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
+		if (i != _items.begin())
+			output << ", ";
+		output << *i;
+	}
+	output << "]";
+	return output;
+}
+
+std::ostream &CallEntry::print(std::ostream &output) const {
+	output << _funcName << "(";
+	for (EntryList::const_iterator i = _args.begin(); i != _args.end(); ++i) {
+		if (i != _args.begin())
+			output << ", ";
+		output << *i;
+	}
+	output << ")";
+	return output;
+}
+
 EntryPtr StackEntry::dup(std::ostream &output) {
 	if (_type == seDup)
 		return this;
@@ -40,6 +97,10 @@ EntryPtr StackEntry::dup(std::ostream &output) {
 	EntryPtr dupEntry = new DupEntry(++dupindex);
 	output << dupEntry << " = " << (EntryPtr)this << ";";
 	return dupEntry;
+}
+
+EntryPtr IntEntry::dup(std::ostream &output) {
+	return new IntEntry(_val, _isSigned);
 }
 
 std::string CodeGenerator::indentString(std::string s) {
