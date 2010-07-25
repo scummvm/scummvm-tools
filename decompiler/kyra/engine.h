@@ -35,6 +35,8 @@ public:
 	::Disassembler *getDisassembler() const;
 	uint32 getDestAddress(ConstInstIterator it) const;
 	::CodeGenerator *getCodeGenerator(std::ostream &output);
+	bool supportsCodeFlow() { return false; }
+	bool supportsCodeGen() { return false; }
 };
 
 } // End of namespace KYRA

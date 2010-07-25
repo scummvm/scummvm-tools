@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 			disassembler->dumpDisassembly(out);
 		}
 
-		if (vm.count("only-disassembly") || insts.empty()) {
+		if (!engine->supportsCodeFlow() || vm.count("only-disassembly") || insts.empty()) {
 			if (!vm.count("dump-disassembly")) {
 				disassembler->dumpDisassembly(std::cout);
 			}
@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
 			boost::write_graphviz(out, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties());
 		}
 
-		if (vm.count("only-graph")) {
+		if (!engine->supportsCodeGen() || vm.count("only-graph")) {
 			if (!vm.count("dump-graph")) {
 				boost::write_graphviz(std::cout, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties());
 			}

@@ -55,6 +55,20 @@ public:
 	 * @return Pointer to a CodeGenerator for the engine.
 	 */
 	virtual CodeGenerator *getCodeGenerator(std::ostream &output) = 0;
+
+	/**
+	 * Whether or not code flow analysis is supported for this engine.
+	 *
+	 * @return True if supported, false if not. If false is returned, code flow analysis should not take place, and -D should be implied.
+	 */
+	virtual bool supportsCodeFlow() { return true; }
+
+	/**
+	 * Whether or not code generation is supported for this engine.
+	 *
+	 * @return True if supported, false if not. If false is returned, code generation should not take place, and -G should be implied.
+	 */
+	virtual bool supportsCodeGen() { return true; }
 };
 
 #endif
