@@ -58,6 +58,7 @@ protected:
 	while (_f.pos() != (int)_f.size()) { \
 		uint32 full_opcode = 0; \
 		uint8 opcode = _f.readByte(); \
+		std::string opcodePrefix; \
 		switch (opcode) {
 #define END_OPCODES \
 		default: \
@@ -77,7 +78,7 @@ protected:
 		LAST_INST._opcode = full_opcode; \
 		LAST_INST._address = _address; \
 		LAST_INST._stackChange = stackChange; \
-		LAST_INST._name = std::string(name); \
+		LAST_INST._name = opcodePrefix + std::string(name); \
 		LAST_INST._type = category; \
 		LAST_INST._codeGenData = codeGenData; \
 		readParams(&LAST_INST, (char*)params); \
@@ -90,6 +91,11 @@ protected:
 #define OPCODE(val, name, category, stackChange, params) \
 	OPCODE_MD(val, name, category, stackChange, params, "")
 
+#define START_SUBOPCODE_WITH_PREFIX(val,prefix) \
+	OPCODE_BASE(val) \
+		opcodePrefix = prefix + std::string("."); \
+		opcode = _f.readByte(); \
+		switch (opcode) {
 #define START_SUBOPCODE(val) \
 	OPCODE_BASE(val) \
 		opcode = _f.readByte(); \
