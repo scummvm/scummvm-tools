@@ -54,7 +54,7 @@ std::ostream &UnaryOpEntry::print(std::ostream &output) const {
 }
 
 std::ostream &DupEntry::print(std::ostream &output) const {
-	return output << "dup[" << _idx << "]";
+	return output << "temp" << _idx;
 }
 
 std::ostream &ArrayEntry::print(std::ostream &output) const {
