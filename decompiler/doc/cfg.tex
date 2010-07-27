@@ -62,6 +62,9 @@ Unconditional jump to a \verb+while+ or \verb+do-while+ condition, unless it is 
 \paragraph{If-else detection}
 All remaining conditional jumps are flagged as \verb+if+s. If the instruction immediately before the target of the conditional jump is an unconditional jump, but not a \verb+break+ or a \verb+continue+, an \verb+else+ is detected to begin at the jump target of the conditional jump in the \verb+if+. The \verb+else+ is set to end at the group immediately before the target of the unconditional jump.
 
+\subsection{Graph output}
+The graph can be output in DOT format by using the -g switch. In the graph, arrows on edges will be hollow if the edge is a jump, and filled if the edge represents the usual sequential order.
+
 \subsection{Limitations}
 Currently, only unconditional jumps are supported for \verb+break+ and \verb+continue+; however, for code of the form \verb+if (...) break;+ or \verb+if (...) continue;+, it is an obvious optimization to use the \verb+break+/\verb+continue+ jump as the conditional jump for the \verb+if+ condition check. Since \verb+if+s are found last, it should be possible to simply check unmarked conditional jumps as well and see if they meet the other criteria for a \verb+break+/\verb+continue+, although there might be some false positives for an if that stretches to the end of the loop it is placed in.
 
