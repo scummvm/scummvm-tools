@@ -359,6 +359,23 @@ public:
 				TS_ASSERT(gr->_type == kIfCond);
 		}
 		delete c;
+
+		d = engine->getDisassembler();
+		d->open("decompiler/test/if-no-else.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		range = boost::vertices(g);
+		for (VertexIterator it = range.first; it != range.second; ++it) {
+			GroupPtr gr = GET(*it);
+			if (gr->_start->_address == 0x0)
+				TS_ASSERT(gr->_type == kIfCond);
+			TS_ASSERT(!gr->_startElse);
+		}
+
+		delete c;
 		delete engine;
 	}
 

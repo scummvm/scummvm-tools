@@ -1,0 +1,9 @@
+pushWord 42
+pushWordVar 123
+eq
+jumpTrue postIf
+wordVarDec 123
+jump postIf
+postIf:
+wordVarDec 123
+stopObjectCodeA
