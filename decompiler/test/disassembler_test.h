@@ -201,7 +201,7 @@ public:
 			TS_ASSERT(insts[7]._params[0].getSigned() == 93);
 			TS_ASSERT(insts[8]._address == 24);
 			TS_ASSERT(insts[8]._opcode == 0x6B99);
-			TS_ASSERT(insts[8]._name == "cursorCmd_Image");
+			TS_ASSERT(insts[8]._name == "cursorCommand.setCursorImg");
 			TS_ASSERT(insts[9]._address == 26);
 			TS_ASSERT(insts[9]._opcode == 0x66);
 			TS_ASSERT(insts[9]._name == "stopObjectCodeB");
@@ -224,7 +224,7 @@ public:
 			TS_ASSERT(false);
 		}
 	}
-	
+
 	// This test requires script-30.dmp from Sam & Max: Hit The Road.
 	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	void testScummv6StackChangeFixScript30() {
