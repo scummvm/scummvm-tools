@@ -1,0 +1,10 @@
+pushWord 42
+pushWordVar 123
+eq
+jumpTrue postIf
+wordVarDec 123
+jump postElse
+postIf:
+wordVarInc 123
+postElse:
+stopObjectCodeA
