@@ -34,7 +34,7 @@ namespace v6 {
  */
 class Engine : public ::Engine {
 public:
-	::Disassembler *getDisassembler() const;
+	::Disassembler *getDisassembler();
 	uint32 getDestAddress(ConstInstIterator it) const;
 	::CodeGenerator *getCodeGenerator(std::ostream &output);
 };

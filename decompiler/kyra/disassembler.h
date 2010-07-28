@@ -28,27 +28,42 @@
 
 typedef uint32 IFF_ID;
 
+/**
+ * Container for a chunk from an IFF file.
+ */
 struct IFFChunk {
 public:
-	IFF_ID _chunkType;
-	uint32 _size;
-	uint8 *_data;
+	IFF_ID _chunkType; ///< Type of chunk, as specified by its magic number in the IFF file.
+	uint32 _size;      ///< The size of the chunk contents.
+	uint8 *_data;      ///< Pointer to the data in the chunk.
 
+	/**
+	 * Default constructor for IFFChunk.
+	 */
 	IFFChunk();
 };
 
 namespace Kyra {
+
+class Engine;
 
 /**
  * Disassembler for KYRA.
  */
 class Disassembler : public ::Disassembler {
 private:
-	IFF_ID _formType;    ///< File type as listed in the IFF formatted file.
-	IFFChunk _textChunk; ///< Contents of the TEXT chunk.
-	IFFChunk _ordrChunk; ///< Contents of the ORDR chunk.
-  IFFChunk _dataChunk; ///< Contents of the DATA chunk.
+	IFF_ID _formType;      ///< File type as listed in the IFF formatted file.
+	IFFChunk _textChunk;   ///< Contents of the TEXT chunk.
+	IFFChunk _ordrChunk;   ///< Contents of the ORDR chunk.
+  IFFChunk _dataChunk;   ///< Contents of the DATA chunk.
+	Engine *_engine; ///< Pointer to the Kyra::Engine used for this script.
 public:
+	/**
+	 * Constructor for Disassembler.
+	 *
+	 * @param engine Pointer to the Kyra::Engine used for this script.
+	 */
+	Disassembler(Engine *engine);
 	~Disassembler();
 	void doDisassemble() throw(UnknownOpcodeException);
 };

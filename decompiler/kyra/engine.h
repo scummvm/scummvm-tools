@@ -25,6 +25,9 @@
 
 #include "decompiler/engine.h"
 
+#include <string>
+#include <vector>
+
 namespace Kyra {
 
 /**
@@ -32,11 +35,13 @@ namespace Kyra {
  */
 class Engine : public ::Engine {
 public:
-	::Disassembler *getDisassembler() const;
+	::Disassembler *getDisassembler();
 	uint32 getDestAddress(ConstInstIterator it) const;
 	::CodeGenerator *getCodeGenerator(std::ostream &output);
 	bool supportsCodeFlow() { return false; }
 	bool supportsCodeGen() { return false; }
+
+	std::vector<std::string> _textStrings;
 };
 
 } // End of namespace KYRA

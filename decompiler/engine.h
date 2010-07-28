@@ -38,7 +38,7 @@ public:
 	 *
 	 * @return Pointer to a Disassembler for the engine.
 	 */
-	virtual Disassembler *getDisassembler() const = 0;
+	virtual Disassembler *getDisassembler() = 0;
 
 	/**
 	 * Decode a jump instruction to get the destination address.

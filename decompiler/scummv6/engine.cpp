@@ -24,7 +24,7 @@
 #include "disassembler.h"
 #include "codegen.h"
 
-::Disassembler *Scumm::v6::Engine::getDisassembler() const {
+::Disassembler *Scumm::v6::Engine::getDisassembler() {
 	return new Disassembler();
 }
 

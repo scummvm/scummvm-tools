@@ -21,11 +21,15 @@
  */
 
 #include "disassembler.h"
+#include "engine.h"
 #include <iostream>
 #include <boost/format.hpp>
 
 IFFChunk::IFFChunk() {
 	_data = NULL;
+}
+
+Kyra::Disassembler::Disassembler(Engine *engine) : _engine(engine) {
 }
 
 Kyra::Disassembler::~Disassembler() {
@@ -52,7 +56,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		return;
 	}
 
-	// Read chunks
+	// Read chunks into memory
 	do {
 		IFFChunk temp;
 		temp._chunkType = _f.readUint32BE();
@@ -74,9 +78,25 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			delete [] temp._data;
 			return;
 		}
-		if (temp._size % 2 != 0) // skip padding byte
+		if (temp._size % 2 != 0) // Skip padding byte
 			_f.readByte();
 	} while (_f.pos() != (int)_f.size());
+
+	// Extract strings from TEXT chunk
+	uint16 minTextOffset = 0xFFFF;
+	for (uint16 i = 0; i < _textChunk._size / 2; ++i) {
+		if (minTextOffset > READ_BE_UINT16(&((uint16 *)_textChunk._data)[i])) {
+			minTextOffset = READ_BE_UINT16(&((uint16 *)_textChunk._data)[i]);
+		}
+		if (minTextOffset <= i*2)
+			break;
+	}
+	uint16 numStrings = minTextOffset / 2;
+#define posString(x) (char*)&_textChunk._data[READ_BE_UINT16(&((uint16 *)_textChunk._data)[(x)])]
+	for (uint16 i = 0; i < numStrings; ++i) {
+		_engine->_textStrings.push_back(posString(i));
+	}
+#undef posString
 
 	// Disassemble
 	// TODO
