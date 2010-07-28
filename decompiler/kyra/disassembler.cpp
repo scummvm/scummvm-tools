@@ -30,11 +30,11 @@ IFFChunk::IFFChunk() {
 
 Kyra::Disassembler::~Disassembler() {
 	if (_textChunk._data)
-		delete [] _textChunk._data;
+		delete[] _textChunk._data;
 	if (_ordrChunk._data)
-		delete [] _ordrChunk._data;
+		delete[] _ordrChunk._data;
 	if (_dataChunk._data)
-		delete [] _dataChunk._data;
+		delete[] _dataChunk._data;
 }
 
 void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
@@ -47,7 +47,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 	}
 	_f.readUint32BE(); // Skip file length
 	_formType = _f.readUint32BE();
-	if (_formType != MKID_BE('EMC2')) {
+	f (_formType != MKID_BE('EMC2')) {
 		std::cerr << boost::format("ERROR: Unexpected file type 0x%08X (expected 0x%08X)!\n") % _formType % MKID_BE('EMC2');
 		return;
 	}
@@ -58,7 +58,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		temp._chunkType = _f.readUint32BE();
 		temp._size = _f.readUint32BE();
 		temp._data = new uint8[temp._size];
-		_f.read_throwsOnError(&temp._data, temp._size);
+		_f.read_throwsOnError(temp._data, temp._size);
 		switch (temp._chunkType) {
 		case MKID_BE('TEXT'):
 			_textChunk = temp;
