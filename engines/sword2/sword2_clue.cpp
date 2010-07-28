@@ -21,9 +21,9 @@
  *
  */
 
-#include <gtk/gtk.h>
+#include "common/util.h"
 
-#include "util.h"
+#include <gtk/gtk.h>
 
 // The following cluster files are - to some extent - understood:
 //

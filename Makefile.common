@@ -49,29 +49,40 @@ MODULE_DIRS += \
 
 #######################################################################
 
-TARGETS := \
-	decine$(EXEEXT) \
-	dekyra$(EXEEXT) \
-	deriven$(EXEEXT) \
-	descumm$(EXEEXT) \
-	desword2$(EXEEXT) \
-	extract_mohawk$(EXEEXT) \
-	construct_mohawk$(EXEEXT) \
-	degob$(EXEEXT) \
-	gob_loadcalc$(EXEEXT) \
-	scummvm-tools-cli$(EXEEXT)
+PROGRAMS = \
+	decine \
+	dekyra \
+	deriven \
+	descumm \
+	desword2 \
+	degob \
+	gob_loadcalc \
+	extract_mohawk \
+	construct_mohawk \
+	scummvm-tools-cli
+
 
 ifdef USE_FREETYPE
 ifdef USE_ICONV
-TARGETS += \
-	create_sjisfnt$(EXEEXT)
+PROGRAMS += \
+	create_sjisfnt
 endif
 endif
 
 ifdef USE_WXWIDGETS
-TARGETS += \
-	scummvm-tools$(EXEEXT)
+PROGRAMS += \
+	scummvm-tools
 endif
+
+# TODO: We don't currently set USE_GTK in configure, so the user would have
+# to manually specify it
+ifdef USE_GTK
+PROGRAMS += \
+	sword2_clue
+endif
+
+# Generate list of tool binaries
+TARGETS := $(addsuffix $(EXEEXT),$(PROGRAMS))
 
 UTILS := \
 	common/file.o \
@@ -104,21 +115,6 @@ bundle: scummvm-tools$(EXEEXT)
 	cp scummvm-tools$(EXEEXT) $(bundle_name)/Contents/MacOS/
 
 
-
-PROGRAMS = \
-	decine \
-	dekyra \
-	deriven \
-	descumm \
-	desword2 \
-	degob \
-	gob_loadcalc \
-	extract_mohawk \
-	construct_mohawk \
-	create_sjisfnt \
-	scummvm-tools \
-	scummvm-tools-cli \
-	sword2_clue
 
 
 decine_OBJS := engines/cine/decine.o
@@ -194,7 +190,7 @@ create_sjisfnt.o: CPPFLAGS+=$(FREETYPEINCLUDES) $(ICONVCFLAGS)
 sword2_clue_OBJS := engines/sword2/sword2_clue.o
 sword2_clue_LIBS := `pkg-config --libs gtk+-2.0`
 # Set custom build flags
-sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
+engines/sword2/sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
 
 
 tools_OBJS := \
