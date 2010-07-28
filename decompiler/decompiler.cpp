@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 
 		po::options_description visible("Options");
 		visible.add_options()
-			("help,?", "Produce this help message.")
+			("help,h", "Produce this help message.")
 			("engine,e", po::value<std::string>(), "Engine the script originates from.")
 			("list,l", "List the supported engines.")
 			("dump-disassembly,d", po::value<std::string>()->implicit_value(""), "Dump the disassembly to a file. Leave out filename to output to stdout.")
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 			po::store(po::command_line_parser(argc, argv).options(args).positional(fileArg).run(), vm);
 			po::notify(vm);
 		} catch (std::exception& e) {
-			std::cout << e.what();
+			std::cout << e.what() << std::endl;
 		}
 
 		if (vm.count("list")) {
