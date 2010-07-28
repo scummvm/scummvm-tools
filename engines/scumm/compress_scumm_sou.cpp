@@ -93,7 +93,7 @@ bool CompressScummSou::get_part() {
 		/* Scan for the VCTL header */
 		_input.read_throwsOnError(buf, 4);
 		/* The demo (snmdemo) and floppy version of Sam & Max use VTTL */
-		while (memcmp(buf, "VCTL", 4)&&memcmp(buf, "VTTL", 4)) {
+		while (memcmp(buf, "VCTL", 4) && memcmp(buf, "VTTL", 4)) {
 			pos++;
 			append_byte(4, buf);
 		}
@@ -109,6 +109,9 @@ bool CompressScummSou::get_part() {
 	_output_idx.writeUint32BE((uint32)pos);
 	_output_idx.writeUint32BE((uint32)_output_snd.pos());
 	_output_idx.writeUint32BE(tags);
+	// FIXME/TODO: Copying "tags" bytes one by one is
+	// inefficient; should use a buffer (say, "buf") to copy
+	// larger amounts at a time.
 	while (tags > 0) {
 		_output_snd.writeChar(_input.readChar());
 		tags--;
@@ -175,7 +178,7 @@ void CompressScummSou::execute() {
 	}
 
 	while (get_part())
-		(void)0;// Do nothing
+		;	// Do nothing
 	end_of_file();
 }
 
