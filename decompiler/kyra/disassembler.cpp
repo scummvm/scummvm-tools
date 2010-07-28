@@ -47,7 +47,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 	}
 	_f.readUint32BE(); // Skip file length
 	_formType = _f.readUint32BE();
-	f (_formType != MKID_BE('EMC2')) {
+	if (_formType != MKID_BE('EMC2')) {
 		std::cerr << boost::format("ERROR: Unexpected file type 0x%08X (expected 0x%08X)!\n") % _formType % MKID_BE('EMC2');
 		return;
 	}
