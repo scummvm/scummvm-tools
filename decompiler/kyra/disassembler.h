@@ -24,6 +24,18 @@
 #define DEC_KYRA_DISASM_H
 
 #include "decompiler/disassembler.h"
+#include "common/endian.h"
+
+typedef uint32 IFF_ID;
+
+struct IFFChunk {
+public:
+	IFF_ID _chunkType;
+	uint32 _size;
+	uint8 *_data;
+
+	IFFChunk();
+};
 
 namespace Kyra {
 
@@ -31,12 +43,16 @@ namespace Kyra {
  * Disassembler for KYRA.
  */
 class Disassembler : public ::Disassembler {
+private:
+	IFF_ID _formType;    ///< File type as listed in the IFF formatted file.
+	IFFChunk _textChunk; ///< Contents of the TEXT chunk.
+	IFFChunk _ordrChunk; ///< Contents of the ORDR chunk.
+  IFFChunk _dataChunk; ///< Contents of the DATA chunk.
 public:
+	~Disassembler();
 	void doDisassemble() throw(UnknownOpcodeException);
 };
 
 } // End of namespace Kyra
 
 #endif
-
-
