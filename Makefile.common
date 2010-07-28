@@ -26,7 +26,8 @@ ifdef USE_BOOST
 MODULE_DIRS += \
 	decompiler/ \
 	decompiler/scummv6/ \
-	decompiler/test/disassembler/
+	decompiler/kyra/ \
+	decompiler/test/disassembler
 endif
 
 MODULE_DIRS += \
