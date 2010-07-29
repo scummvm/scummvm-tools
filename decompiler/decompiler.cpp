@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 		std::map<std::string, std::string> engines;
 		ObjectFactory<Engine> engineFactory;
 
-		ENGINE("kyra", "Kyrandia", Kyra::Engine);
+		ENGINE("kyra2", "Legend of Kyrandia: Hand of Fate", Kyra::Engine);
 		ENGINE("scummv6", "SCUMM v6", Scumm::v6::Engine);
 
 		po::options_description visible("Options");
