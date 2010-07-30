@@ -28,8 +28,7 @@
 }
 
 uint32 Kyra::Engine::getDestAddress(ConstInstIterator it) const {
-	// TODO
-	return 0;
+	return it->_params[0].getSigned();
 }
 
 ::CodeGenerator *Kyra::Engine::getCodeGenerator(std::ostream &output) {
