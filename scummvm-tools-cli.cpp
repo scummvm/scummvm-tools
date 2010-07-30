@@ -77,7 +77,7 @@ int ToolsCLI::run(int argc, char *argv[]) {
 					return 2;
 				}
 			}
-			std::cout << std::endl << "Unknown help topic '" << arguments[1] << "'" << std::endl;
+			std::cout << std::endl << "Unknown help topic '" << arguments[0] << "'" << std::endl;
 		}
 		printHelp(argv[0]);
 		return 2;
