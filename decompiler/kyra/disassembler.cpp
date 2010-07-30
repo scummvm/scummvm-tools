@@ -43,8 +43,8 @@ static FunctionData kyra2FuncDesc[] = {
 	{ "getCharacterScene", "" },
 	// 0x08
 	{ "setSceneComment", "" },
-	{ "", "" },
-	{ "", "" },
+	{ "unk09", "" },
+	{ "unk0A", "" },
 	{ "setCharacterAnimFrame", "" },
 	// 0x0c
 	{ "setCharacterFacingOverwrite", "" },
@@ -55,7 +55,7 @@ static FunctionData kyra2FuncDesc[] = {
 	{ "soundFadeOut", "" },
 	{ "showChapterMessage", "" },
 	{ "restoreTalkTextMessageBkgd", "" },
-	{ "", "" },
+	{ "unk13", "" },
 	// 0x14
 	{ "wsaClose", "" },
 	{ "backUpScreen", "" },
@@ -70,8 +70,7 @@ static FunctionData kyra2FuncDesc[] = {
 	{ "addItemToInventory", "" },
 	{ "drawShape", "" },
 	{ "addItemToCurScene", "" },
-	{ "dummy1F", "" },	// the original used this opcode to limit the mouse range temporary,
-						// since that is of no use and not really important we just use a dummy here
+	{ "limitMouseRange", "" },
 	// 0x20
 	{ "checkForItem", "" },
 	{ "loadSoundFile", "" },
@@ -94,7 +93,7 @@ static FunctionData kyra2FuncDesc[] = {
 	{ "setMousePos", "" },
 	// 0x30
 	{ "showMouse", "" },
-	{ "", "" },
+	{ "unk31", "" },
 	{ "wipeDownMouseItem", "" },
 	{ "getElapsedSecs", "" },
 	// 0x34
@@ -128,7 +127,7 @@ static FunctionData kyra2FuncDesc[] = {
 	{ "setSceneAnimPos2", "" },
 	{ "update", "" },
 	// 0x4c
-	{ "", "" },
+	{ "unk4c", "" },
 	{ "fadeScenePal", "" },
 	{ "dummy4E", "" },
 	{ "dummy4F", "" },
@@ -149,7 +148,7 @@ static FunctionData kyra2FuncDesc[] = {
 	{ "blockInWalkableRegion", "" },
 	// 0x5c
 	{ "blockOutWalkableRegion", "" },
-	{ "", "" },
+	{ "unk5d", "" },
 	{ "setCauldronState", "" },
 	{ "showItemString", "" },
 	// 0x60
@@ -160,11 +159,11 @@ static FunctionData kyra2FuncDesc[] = {
 	// 0x64
 	{ "setRunFlag", "" },
 	{ "showLetter", "" },
-	{ "", "" },
+	{ "unk66", "" },
 	{ "fillRect", "" },
 	// 0x68
-	{ "", "" },
-	{ "", "" },
+	{ "unk68", "" },
+	{ "unk69", "" },
 	{ "playFireflyScore", "" },
 	{ "waitForConfirmationClick", "" },
 	// 0x6c
@@ -513,5 +512,10 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 #undef OPCODE_MD
 #undef LAST_INST
 #undef ADD_INST
+
+		// Function detection
+		// Find candidate entry points
+
+		// Determine function end point
 	}
 }
