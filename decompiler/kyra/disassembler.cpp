@@ -368,6 +368,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		// TOOD: Add metadata where applicable
 		switch(opcode) {
 		case 0:
+			parameter *=2;
 			OPCODE("jumpTo", kJump, 0, true);
 			break;
 		case 1:
@@ -420,12 +421,14 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			OPCODE("subSP", kStack, parameter, true);
 			break;
 		case 14:
+			parameter = (uint8)parameter;
 			if ((uint16)parameter >= sizeof(kyra2FuncDesc) / sizeof(kyra2FuncDesc[0]) || kyra2FuncDesc[parameter]._name.length() == 0) {
 				// Error: unknown function
 			}
 			OPCODE_MD(kyra2FuncDesc[parameter]._name, kSpecial, 0, false, kyra2FuncDesc[parameter]._metadata)
 			break;
 		case 15:
+			parameter *=2;
 			OPCODE("ifNotJmp", kCondJump, -1, true);
 			break;
 		case 16:
