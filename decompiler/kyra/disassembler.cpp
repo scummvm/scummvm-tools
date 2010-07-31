@@ -577,6 +577,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		}
 	}
 
+	// Add metadata to newly found functions
 	for (FuncMap::iterator it = _engine->_functions.begin(); it != _engine->_functions.end(); ++it) {
 		std::stringstream s;
 		s << boost::format("sub0x%X") % it->second._startIt->_address;
@@ -599,5 +600,13 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			_engine->_functions[funcAddrs[i]] = Function(addrMap[funcAddrs[i]], _insts.end());
 		else
 			_engine->_functions[funcAddrs[i]] = Function(addrMap[funcAddrs[i]], addrMap[funcAddrs[i+1]]);
+	}
+
+	// Correct jumps to functions so they're treated as calls
+	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it) {
+		if (it->_type == kJump || it->_type == kCondJump) {
+			if (_engine->_functions.find(it->_address) != _engine->_functions.end())
+				it->_type = kCall;
+		}
 	}
 }
