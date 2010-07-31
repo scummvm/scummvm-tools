@@ -164,6 +164,11 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE_MD(0x94, "getVerbFromXY", kSpecial, -1, "", "rpp");
 		OPCODE_BASE(0x95)
 			OPCODE_BODY("beginOverride", kSpecial, 0, "", "");
+			// FIXME/TODO: beginOverride skips the following jump - that jump is instead to a "finally" handler
+			// To simulate this, we simply skip the jump instruction, so the sequential order appears the same.
+			// Semantically, it would probably be more correct to model this as a conditional jump,
+			// but since precious little time remains of GSoC and that might not play very nice with the rest of the code,
+			// this is the simplest way to handle the issue right now. Eventually, it should probably be fixed more properly.
 			_f.seek(3, SEEK_CUR);
 			_address += 3;
 			OPCODE_END;
