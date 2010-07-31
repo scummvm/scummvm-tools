@@ -26,6 +26,45 @@
 #include "disassembler.h"
 #include "codegen.h"
 
+#include <set>
+
+/**
+ * Structure representing a function.
+ */
+struct Function {
+public:
+	InstIterator _startIt; ///< Iterator to of the first instruction in the function, if available.
+	InstIterator _endIt;   ///< Iterator to the instruction immediately after the function, similar to end() on STL containers, if available.
+	std::string _name;     ///< Function name.
+	GraphVertex _v;        ///< Graph vertex for the entry point to the function.
+	uint32 _args;          ///< Number of arguments to the function.
+	bool retVal;           ///< Whether or not the function returns a value.
+	std::string _metadata; ///< Metadata for code generation.
+
+	/**
+	 * Parameterless constructor for Function. Required for use with STL, should not be called manually.
+	 */
+	Function() {
+	}
+
+	/**
+	 * Constructor for Function.
+	 *
+
+	 * @param startIt Index of the first instruction in the function.
+	 * @param endIt Index of the instruction immediately after the function, similar to end() on STL containers.
+	 */
+	Function(InstIterator startIt, InstIterator endIt) : _startIt(startIt), _endIt(endIt) {
+	}
+
+	/**
+	 * Operator overload for <. Used for storage in an std::set.
+	 */
+	bool operator<(const Function &f) const {
+		return _startIt->_address < f._startIt->_address;
+	}
+};
+
 /**
  * Base class for engines.
  */
@@ -69,6 +108,8 @@ public:
 	 * @return True if supported, false if not. If false is returned, code generation should not take place, and -G should be implied.
 	 */
 	virtual bool supportsCodeGen() { return true; }
+
+	std::set<Function> _functions; ///< Functions in the current script.
 };
 
 #endif

@@ -22,6 +22,8 @@
 
 #include "disassembler.h"
 #include "engine.h"
+
+#include <algorithm>
 #include <iostream>
 #include <boost/format.hpp>
 
@@ -254,6 +256,7 @@ static FunctionData kyra2FuncDesc[] = {
 };
 
 IFFChunk::IFFChunk() {
+	_size = 0;
 	_data = NULL;
 }
 
@@ -319,14 +322,38 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		if (minTextOffset <= i*2)
 			break;
 	}
-	uint16 numStrings = minTextOffset / 2;
+
+	if (minTextOffset != 0xFFFF) {
+		uint16 numStrings = minTextOffset / 2;
 #define posString(x) (char*)&_textChunk._data[READ_BE_UINT16(&((uint16 *)_textChunk._data)[(x)])]
-	for (uint16 i = 0; i < numStrings; ++i) {
-		_engine->_textStrings.push_back(posString(i));
-	}
+		for (uint16 i = 0; i < numStrings; ++i) {
+			_engine->_textStrings.push_back(posString(i));
+		}
 #undef posString
+	}
+
+	uint16 minFuncAddr = 0xFFFF;
+	// Extract function entry points from ORDR chunk
+	std::vector<uint16> funcAddrs;
+	for (size_t i = 0; i < _ordrChunk._size / 2; ++i) {
+		uint16 addr = READ_BE_UINT16(&((uint16 *)_ordrChunk._data)[i]);
+
+		if (addr == (uint16)-1)
+			continue;
+
+		addr <<= 1;
+
+		if (minFuncAddr > addr) {
+			minFuncAddr = addr;
+		}
+
+		funcAddrs.push_back(addr);
+	}
 
 	// Disassemble
+	std::set<uint16> jumpTargets;
+	// Map from addresses to instructions
+	std::map<uint16, InstIterator> addrMap;
 	uint16 numInsts = _dataChunk._size / 2;
 	for (uint16 i = 0; i < numInsts; ++i) {
 		uint16 address = i*2;
@@ -346,7 +373,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			parameter = 0;
 		}
 
-#define ADD_INST _insts.push_back(Instruction());
+#define ADD_INST addrMap[address] = _insts.insert(_insts.end(), Instruction());
 #define LAST_INST (_insts[_insts.size()-1])
 #define OPCODE_MD(name, category, stackChange, hasParam, codeGenData) \
 		ADD_INST; \
@@ -368,6 +395,8 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		switch(opcode) {
 		case 0:
 			parameter *=2;
+			if (parameter < minFuncAddr)
+				jumpTargets.insert(_insts.size());
 			OPCODE("jumpTo", kJump, 0, true);
 			break;
 		case 1:
@@ -377,7 +406,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			if (parameter == 0) {
 				OPCODE("pushRet", kLoad, 1, false);
 			} else if (parameter == 1) {
-				OPCODE("pushPos", kSpecial, 2, false); // Sets up function call?
+				OPCODE("pushPos", kSpecial, 2, false); // Sets up function call
 			} else {
 				// Error: invalid parameter halts execution
 			}
@@ -399,7 +428,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			if (parameter == 0) {
 				OPCODE("popRet", kStore, -1, false);
 			} else if (parameter == 1) {
-				OPCODE("popPos", kSpecial, -2, false); // Returns from function call?
+				OPCODE("popPos", kReturn, -2, false); // Returns from function call
 			} else {
 				// Error: invalid parameter halts execution
 			}
@@ -428,6 +457,8 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			break;
 		case 15:
 			parameter *=2;
+			if (parameter < minFuncAddr)
+				jumpTargets.insert(_insts.size());
 			OPCODE("ifNotJmp", kCondJump, -1, true);
 			break;
 		case 16:
@@ -450,22 +481,22 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 					OPCODE_MD("eval_bor", kBinaryOp, -1, false, "||");
 					break;
 				case 2:
-					OPCODE_MD("eval_eq", kBinaryOp, -1, false, "==");
+					OPCODE_MD("eval_eq", kComparison, -1, false, "==");
 					break;
 				case 3:
-					OPCODE_MD("eval_neq", kBinaryOp, -1, false, "!=");
+					OPCODE_MD("eval_neq", kComparison, -1, false, "!=");
 					break;
 				case 4:
-					OPCODE_MD("eval_leq", kBinaryOp, -1, false, "<=");
+					OPCODE_MD("eval_leq", kComparison, -1, false, "<=");
 					break;
 				case 5:
-					OPCODE_MD("eval_lt", kBinaryOp, -1, false, "<");
+					OPCODE_MD("eval_lt", kComparison, -1, false, "<");
 					break;
 				case 6:
-					OPCODE_MD("eval_geq", kBinaryOp, -1, false, ">=");
+					OPCODE_MD("eval_geq", kComparison, -1, false, ">=");
 					break;
 				case 7:
-					OPCODE_MD("eval_gt", kBinaryOp, -1, false, ">");
+					OPCODE_MD("eval_gt", kComparison, -1, false, ">");
 					break;
 				case 8:
 					OPCODE_MD("eval_add", kBinaryOp, -1, false, "+");
@@ -503,7 +534,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			}
 			break;
 		case 18:
-			OPCODE("setRetAndJmp", kSpecial, -2, false); // Returns from function call?
+			OPCODE("setRetAndJmp", kSpecial, -2, false);
 			break;
 		default:
 			throw UnknownOpcodeException(i*2, code);
@@ -512,10 +543,41 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 #undef OPCODE_MD
 #undef LAST_INST
 #undef ADD_INST
+	}
 
-		// Function detection
-		// Find candidate entry points
+	std::sort(funcAddrs.begin(), funcAddrs.end());
+	//Create ranges from entry points
+	for (size_t i = 0; i < funcAddrs.size(); i++) {
+		if (i == funcAddrs.size() - 1) // Last function
+			_engine->_functions.insert(Function(addrMap[funcAddrs[i]], _insts.end()));
+		else
+			_engine->_functions.insert(Function(addrMap[funcAddrs[i]], addrMap[funcAddrs[i+1]]));
+	}
 
+	// Function detection
+	uint16 nextFunc = 0;
+	// Process candidate entry points
+	for (std::set<uint16>::iterator it = jumpTargets.begin(); it != jumpTargets.end(); ++it) {
+		// If candidate was already placed inside a function, skip it
+		if (_insts[*it]._address < nextFunc)
+			continue;
 		// Determine function end point
+		bool lastWasPop = false;
+
+		for (int i = *it ; _insts[i]._address < minFuncAddr; i++) {
+			if (_insts[i]._address < *it)
+				continue;
+			// Kyra2 sometimes has an addSP instruction between the two popPos instrucitons, so we ignore those
+			if (_insts[i]._name.compare("addSP") == 0)
+					continue;
+
+			if (lastWasPop && _insts[i]._name.compare("popPos") == 0) {
+				_engine->_functions.insert(Function(addrMap[_insts[*it]._address], addrMap[_insts[i]._address]));
+				nextFunc = _insts[i]._address;
+				break;
+			}
+
+			lastWasPop = (_insts[i]._name.compare("popPos") == 0);
+		}
 	}
 }
