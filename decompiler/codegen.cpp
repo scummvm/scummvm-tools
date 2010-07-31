@@ -179,7 +179,7 @@ void CodeGenerator::process(GraphVertex v) {
 	_curGroup = GET(v);
 
 	// Check if we should add else start
-	if (_curGroup->_startElse && _curGroup->_type != kIfCond)
+	if (_curGroup->_startElse)
 		addOutputLine("} else {", true, true);
 
 	// Check ingoing edges to see if we want to add any extra output
@@ -244,11 +244,13 @@ void CodeGenerator::process(GraphVertex v) {
 					std::stringstream s;
 					switch (_curGroup->_type) {
 					case kIfCond:
-						if (_curGroup->_startElse) {
+						if (_curGroup->_startElse && _curGroup->_code.size() == 1) {
+							_curGroup->_code.clear();
+							_curGroup->_coalescedElse = true;
 							s << "} else ";
 						}
 						s << "if (" << _stack.pop() << ") {";
-						addOutputLine(s.str(), _curGroup->_startElse, true);
+						addOutputLine(s.str(), _curGroup->_coalescedElse, true);
 						break;
 					case kWhileCond:
 						s << "while (" << _stack.pop() << ") {";
@@ -328,7 +330,7 @@ void CodeGenerator::process(GraphVertex v) {
 	} while (it++ != _curGroup->_end);
 
 	// Add else end if necessary
-	if (_curGroup->_endElse != NULL && (_curGroup->_endElse->_type != kIfCond || !_curGroup->_endElse->_startElse))
+	if (_curGroup->_endElse != NULL && !_curGroup->_endElse->_coalescedElse)
 		addOutputLine("}", true, false);
 }
 

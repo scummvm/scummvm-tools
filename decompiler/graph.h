@@ -237,6 +237,7 @@ public:
 	Group *_prev;                ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
 	Group *_next;                ///< Pointer to the next group, when ordered by address.
 	std::vector<CodeLine> _code; ///< Container for decompiled lines of code.
+	bool _coalescedElse;         ///< True if an else starting has been coalesced with another block (e.g. "else if"). If true, an else starting here should not be closed explicitly, but left to the other block.
 
 	/**
 	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
@@ -263,6 +264,7 @@ public:
 		if (_prev != NULL)
 			_prev->_next = this;
 		_next = NULL;
+		_coalescedElse = false;
 	}
 
 	/**
