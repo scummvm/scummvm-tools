@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <boost/format.hpp>
 
 struct FunctionData {
@@ -545,15 +546,6 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 #undef ADD_INST
 	}
 
-	std::sort(funcAddrs.begin(), funcAddrs.end());
-	//Create ranges from entry points
-	for (size_t i = 0; i < funcAddrs.size(); i++) {
-		if (i == funcAddrs.size() - 1) // Last function
-			_engine->_functions.insert(Function(addrMap[funcAddrs[i]], _insts.end()));
-		else
-			_engine->_functions.insert(Function(addrMap[funcAddrs[i]], addrMap[funcAddrs[i+1]]));
-	}
-
 	// Function detection
 	uint16 nextFunc = 0;
 	// Process candidate entry points
@@ -572,12 +564,36 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 					continue;
 
 			if (lastWasPop && _insts[i]._name.compare("popPos") == 0) {
-				_engine->_functions.insert(Function(addrMap[_insts[*it]._address], addrMap[_insts[i]._address]));
+				_engine->_functions[_insts[*it]._address] = Function(addrMap[_insts[*it]._address], addrMap[_insts[i]._address]);
 				nextFunc = _insts[i]._address;
 				break;
 			}
 
 			lastWasPop = (_insts[i]._name.compare("popPos") == 0);
 		}
+	}
+
+	for (FuncMap::iterator it = _engine->_functions.begin(); it != _engine->_functions.end(); ++it) {
+		std::stringstream s;
+		s << boost::format("sub0x%X") % it->second._startIt->_address;
+		int maxArg = 0;
+		for (InstIterator instIt = it->second._startIt; instIt != it->second._endIt; ++instIt) {
+			if (instIt->_name.compare("pushBPAdd") == 0) {
+				if (maxArg < instIt->_params[0].getSigned()) {
+					maxArg = instIt->_params[0].getSigned();
+				}
+			}
+		}
+		it->second._args = maxArg;
+		it->second._retVal = true;
+	}
+
+	std::sort(funcAddrs.begin(), funcAddrs.end());
+	//Create ranges from entry points
+	for (size_t i = 0; i < funcAddrs.size(); i++) {
+		if (i == funcAddrs.size() - 1) // Last function
+			_engine->_functions[funcAddrs[i]] = Function(addrMap[funcAddrs[i]], _insts.end());
+		else
+			_engine->_functions[funcAddrs[i]] = Function(addrMap[funcAddrs[i]], addrMap[funcAddrs[i+1]]);
 	}
 }

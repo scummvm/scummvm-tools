@@ -38,7 +38,7 @@ public:
 	std::string _name;     ///< Function name.
 	GraphVertex _v;        ///< Graph vertex for the entry point to the function.
 	uint32 _args;          ///< Number of arguments to the function.
-	bool retVal;           ///< Whether or not the function returns a value.
+	bool _retVal;           ///< Whether or not the function returns a value.
 	std::string _metadata; ///< Metadata for code generation.
 
 	/**
@@ -56,14 +56,12 @@ public:
 	 */
 	Function(InstIterator startIt, InstIterator endIt) : _startIt(startIt), _endIt(endIt) {
 	}
-
-	/**
-	 * Operator overload for <. Used for storage in an std::set.
-	 */
-	bool operator<(const Function &f) const {
-		return _startIt->_address < f._startIt->_address;
-	}
 };
+
+/**
+ * Type representing a map of functions, indexed by starting address.
+ */
+typedef std::map<uint32, Function> FuncMap;
 
 /**
  * Base class for engines.
@@ -109,7 +107,7 @@ public:
 	 */
 	virtual bool supportsCodeGen() { return true; }
 
-	std::set<Function> _functions; ///< Functions in the current script.
+	FuncMap _functions; ///< Map to functions in the current script, indexed by starting address.
 };
 
 #endif
