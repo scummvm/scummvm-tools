@@ -353,8 +353,6 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 
 	// Disassemble
 	std::set<uint16> jumpTargets;
-	// Map from addresses to instructions
-	std::map<uint16, InstIterator> addrMap;
 	uint16 numInsts = _dataChunk._size / 2;
 	for (uint16 i = 0; i < numInsts; ++i) {
 		uint16 address = i*2;
@@ -374,7 +372,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			parameter = 0;
 		}
 
-#define ADD_INST addrMap[address] = _insts.insert(_insts.end(), Instruction());
+#define ADD_INST _insts.insert(_insts.end(), Instruction());
 #define LAST_INST (_insts[_insts.size()-1])
 #define OPCODE_MD(name, category, stackChange, hasParam, codeGenData) \
 		ADD_INST; \
@@ -545,6 +543,12 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 #undef LAST_INST
 #undef ADD_INST
 	}
+
+	// Map from addresses to instructions
+	std::map<uint16, InstIterator> addrMap;
+
+	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it)
+		addrMap[it->_address] = it;
 
 	// Function detection
 	uint16 nextFunc = 0;

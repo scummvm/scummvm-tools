@@ -38,7 +38,7 @@ public:
 	std::string _name;     ///< Function name.
 	GraphVertex _v;        ///< Graph vertex for the entry point to the function.
 	uint32 _args;          ///< Number of arguments to the function.
-	bool _retVal;           ///< Whether or not the function returns a value.
+	bool _retVal;          ///< Whether or not the function returns a value.
 	std::string _metadata; ///< Metadata for code generation.
 
 	/**
