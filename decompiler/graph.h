@@ -311,7 +311,7 @@ public:
 					output << ",";
 				output << " ";
 				if (param->_type != kString) {
-					if (inst->_type == kCondJump || inst->_type == kCondJumpRel || inst->_type == kJump || inst->_type == kJumpRel) {
+					if (inst->_type == kCondJump || inst->_type == kCondJumpRel || inst->_type == kJump || inst->_type == kJumpRel || inst->_type == kCall) {
 						switch (param->_type) {
 						case kSByte:
 						case kShort:

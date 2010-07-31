@@ -41,7 +41,7 @@ void Disassembler::doDumpDisassembly(std::ostream &output) {
 		for (param = inst->_params.begin(); param != inst->_params.end(); ++param) {
 			if (param != inst->_params.begin())
 				output << ",";
-			if (inst->_type == kCondJump || inst->_type == kCondJumpRel || inst->_type == kJump || inst->_type == kJumpRel) {
+			if (inst->_type == kCondJump || inst->_type == kCondJumpRel || inst->_type == kJump || inst->_type == kJumpRel || inst->_type == kCall) {
 				switch (param->_type) {
 				case kSByte:
 				case kShort:
