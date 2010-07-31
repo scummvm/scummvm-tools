@@ -162,7 +162,11 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE_MD(0x92, "findInventory", kSpecial, -1, "", "rpp");
 		OPCODE_MD(0x93, "getInventoryCount", kSpecial, 0, "", "rp");
 		OPCODE_MD(0x94, "getVerbFromXY", kSpecial, -1, "", "rpp");
-		OPCODE(0x95, "beginOverride", kSpecial, 0, "");
+		OPCODE_BASE(0x95)
+			OPCODE_BODY("beginOverride", kSpecial, 0, "", "");
+			_f.seek(3, SEEK_CUR);
+			_address += 3;
+			OPCODE_END;
 		OPCODE(0x96, "endOverride", kSpecial, 0, "");
 		OPCODE_MD(0x97, "setObjectName", kSpecial, -1, "c", "ps");
 		OPCODE_MD(0x98, "isSoundRunning", kSpecial, 0, "", "rp");
