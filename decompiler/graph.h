@@ -308,9 +308,26 @@ public:
 				if (param != inst->_params.begin())
 					output << ",";
 				output << " ";
-				if (param->_type != kString)
-					output << param->_value;
-				else {
+				if (param->_type != kString) {
+					if (inst->_type == kCondJump || inst->_type == kCondJumpRel || inst->_type == kJump || inst->_type == kJumpRel) {
+						switch (param->_type) {
+						case kSByte:
+						case kShort:
+						case kInt:
+							output << boost::format(" 0x%X") % param->getSigned();
+							break;
+						case kByte:
+						case kUShort:
+						case kUInt:
+							output << boost::format(" 0x%X") % param->getUnsigned();
+							break;
+						default:
+							output << " " << param->_value;
+							break;
+						}
+					} else
+						output << " " << param->_value;
+				} else {
 					std::string s = param->getString();
 					for (std::string::iterator it = s.begin(); it != s.end(); ++it)
 						if (*it == '"')
