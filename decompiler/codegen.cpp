@@ -187,7 +187,7 @@ void CodeGenerator::process(GraphVertex v) {
 	for (InEdgeIterator ie = ier.first; ie != ier.second; ++ie) {
 		GraphVertex in = boost::source(*ie, _g);
 		GroupPtr inGroup = GET(in);
-		if (inGroup == _curGroup->_prev)
+		if (!boost::get(boost::edge_attribute, _g, *ie)._isJump)
 			continue;
 		switch (inGroup->_type) {
 		case kDoWhileCond:

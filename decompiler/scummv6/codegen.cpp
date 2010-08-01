@@ -115,7 +115,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 	case kStack:
 		// Only two opcodes in SCUMMv6, 0x1A and 0xA7: both are single item pop
 		_stack.pop();
-		addOutputLine("// pop();");
+		//addOutputLine("// pop();");
 		break;
 	case kCondJumpRel:
 		switch (_curGroup->_type) {
