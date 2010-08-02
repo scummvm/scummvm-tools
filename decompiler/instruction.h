@@ -25,6 +25,7 @@
 
 #include <string>
 #include <vector>
+#include <boost/format.hpp>
 #include <boost/variant.hpp>
 
 #include "common/scummsys.h"
@@ -105,6 +106,35 @@ struct Instruction {
 	InstType _type;                 ///< The instruction type.
 	std::vector<Parameter> _params; ///< Array of parameters used for the instruction.
 	std::string _codeGenData;       ///< String containing metadata for code generation. Start with 0xC0 to force custom handling. See the extended documentation for details.
+
+	friend std::ostream &operator<<(std::ostream &output, const Instruction &inst) {
+		output << boost::format("%08x: %s") % inst._address % inst._name;
+		std::vector<Parameter>::const_iterator param;
+		for (param = inst._params.begin(); param != inst._params.end(); ++param) {
+			if (param != inst._params.begin())
+				output << ",";
+			if (inst._type == kCondJump || inst._type == kCondJumpRel || inst._type == kJump || inst._type == kJumpRel || inst._type == kCall) {
+				switch (param->_type) {
+				case kSByte:
+				case kShort:
+				case kInt:
+					output << boost::format(" 0x%X") % param->getSigned();
+					break;
+				case kByte:
+				case kUShort:
+				case kUInt:
+					output << boost::format(" 0x%X") % param->getUnsigned();
+					break;
+				default:
+					output << " " << param->_value;
+					break;
+				}
+			} else
+				output << " " << param->_value;
+		}
+		output << boost::format(" (%d)") % inst._stackChange << "\n";
+		return output;
+	}
 };
 
 /**

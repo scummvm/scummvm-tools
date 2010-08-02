@@ -306,6 +306,7 @@ public:
 			break;
 		}
 		output << "\\n";
+		output << "Expected stack level: " << group->_stackLevel << "\\n";
 		if (group->_startElse)
 			output << "Start of else\\n";
 		for (ElseEndIterator it = group->_endElse.begin(); it != group->_endElse.end(); ++it) {

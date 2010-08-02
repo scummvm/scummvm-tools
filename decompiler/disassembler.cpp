@@ -20,8 +20,6 @@
  *
  */
 
-#include <boost/format.hpp>
-
 #include "disassembler.h"
 
 Disassembler::Disassembler() {
@@ -36,31 +34,7 @@ void Disassembler::open(const char *filename) {
 void Disassembler::doDumpDisassembly(std::ostream &output) {
 	InstIterator inst;
 	for (inst = _insts.begin(); inst != _insts.end(); ++inst) {
-		output << boost::format("%08x: %s") % inst->_address % inst->_name;
-		std::vector<Parameter>::iterator param;
-		for (param = inst->_params.begin(); param != inst->_params.end(); ++param) {
-			if (param != inst->_params.begin())
-				output << ",";
-			if (inst->_type == kCondJump || inst->_type == kCondJumpRel || inst->_type == kJump || inst->_type == kJumpRel || inst->_type == kCall) {
-				switch (param->_type) {
-				case kSByte:
-				case kShort:
-				case kInt:
-					output << boost::format(" 0x%X") % param->getSigned();
-					break;
-				case kByte:
-				case kUShort:
-				case kUInt:
-					output << boost::format(" 0x%X") % param->getUnsigned();
-					break;
-				default:
-					output << " " << param->_value;
-					break;
-				}
-			} else
-				output << " " << param->_value;
-		}
-		output << boost::format(" (%d)") % inst->_stackChange << "\n";
+		output << *inst;
 	}
 }
 

@@ -128,7 +128,6 @@ void ControlFlow::setStackLevel(GraphVertex g, int level) {
 		return;
 	}
 	gr->_stackLevel = level;
-	PUT(g, gr)
 
 	if (boost::out_degree(g, _g) == 0)
 		return;
@@ -159,7 +158,7 @@ void ControlFlow::createGroups() {
 		GroupPtr grNext = GET(next);
 		expectedStackLevel = grCur->_stackLevel;
 
-		if (expectedStackLevel > grNext->_stackLevel)
+		if (expectedStackLevel > grNext->_stackLevel && grNext->_stackLevel >= 0)
 			expectedStackLevel = grNext->_stackLevel;
 
 		grCur->_stackLevel = expectedStackLevel;

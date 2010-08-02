@@ -55,7 +55,8 @@ int main(int argc, char** argv) {
 			("dump-disassembly,d", po::value<std::string>()->implicit_value(""), "Dump the disassembly to a file. Leave out filename to output to stdout.")
 			("dump-graph,g", po::value<std::string>()->implicit_value(""), "Output the control flow graph in dot format to a file. Leave out filename to output to stdout.")
 			("only-disassembly,D", "Stops after disassembly. Implies -d.")
-			("only-graph,G", "Stops after control flow graph has been generated. Implies -g.");
+			("only-graph,G", "Stops after control flow graph has been generated. Implies -g.")
+			("show-unreachable,u", "Show the address and contents of unreachable groups in the script.");
 
 		po::options_description args("");
 		args.add(visible).add_options()
@@ -162,6 +163,33 @@ int main(int argc, char** argv) {
 		// Code generation
 		CodeGenerator *cg = engine->getCodeGenerator(std::cout);
 		cg->generate(g);
+
+		if (vm.count("show-unreachable")) {
+			std::vector<GroupPtr> unreachable;
+			VertexRange vr = boost::vertices(g);
+			for (VertexIterator v = vr.first; v != vr.second; ++v)
+			{
+				GroupPtr gr = boost::get(boost::vertex_name, g, *v);
+				if (gr->_stackLevel == -1)
+					unreachable.push_back(gr);
+			}
+			if (!unreachable.empty()) {
+				for (size_t i = 0; i < unreachable.size(); i++) {
+					if (i == 0) {
+						if (unreachable.size() == 1)
+							std::cout << boost::format("\n%d unreachable group detected.\n") % unreachable.size();
+						else
+							std::cout << boost::format("\n%d unreachable groups detected.\n") % unreachable.size();
+					}
+					std::cout << "Group " << (i+1) << ":\n";
+					ConstInstIterator inst = unreachable[i]->_start;
+					do {
+						std::cout << *inst;
+					} while (inst++ != unreachable[i]->_end);
+					std::cout << "----------\n";
+				}
+			}
+		}
 
 		// Free memory
 		delete cf;
