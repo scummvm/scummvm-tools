@@ -23,6 +23,7 @@
 #include "codegen.h"
 #include "engine.h"
 
+#include <algorithm>
 #include <iostream>
 #include <set>
 
@@ -248,9 +249,18 @@ void CodeGenerator::process(GraphVertex v) {
 					switch (_curGroup->_type) {
 					case kIfCond:
 						if (_curGroup->_startElse && _curGroup->_code.size() == 1) {
-							_curGroup->_code.clear();
-							_curGroup->_coalescedElse = true;
-							s << "} else ";
+							OutEdgeRange oer = boost::out_edges(v, _g);
+							bool coalesceElse = false;
+							for (OutEdgeIterator oe = oer.first; oe != oer.second; ++oe) {
+								GroupPtr oGr = GET(boost::target(*oe, _g))->_prev;
+								if (std::find(oGr->_endElse.begin(), oGr->_endElse.end(), _curGroup.get()) != oGr->_endElse.end())
+									coalesceElse = true;
+							}
+							if (coalesceElse) {
+								_curGroup->_code.clear();
+								_curGroup->_coalescedElse = true;
+								s << "} else ";
+							}
 						}
 						s << "if (" << _stack.pop() << ") {";
 						addOutputLine(s.str(), _curGroup->_coalescedElse, true);
@@ -333,7 +343,7 @@ void CodeGenerator::process(GraphVertex v) {
 	} while (it++ != _curGroup->_end);
 
 	// Add else end if necessary
-	for(ElseEndIterator elseIt = _curGroup->_endElse.begin(); elseIt != _curGroup->_endElse.end(); ++elseIt)
+	for (ElseEndIterator elseIt = _curGroup->_endElse.begin(); elseIt != _curGroup->_endElse.end(); ++elseIt)
 	{
 		if (!(*elseIt)->_coalescedElse)
 			addOutputLine("}", true, false);
