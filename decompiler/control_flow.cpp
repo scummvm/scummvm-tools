@@ -427,6 +427,7 @@ void ControlFlow::detectElse() {
 }
 
 bool ControlFlow::validateElseBlock(GroupPtr ifGroup, GroupPtr start, GroupPtr end) {
+	std::cerr << boost::format("Validating else blockfor 0x%08X: 0x%08X to 0x%08X\n") % ifGroup->_start->_address % start->_start->_address % end->_start->_address;
 	for (GroupPtr cursor = start; cursor != end; cursor = cursor->_next) {
 		if (cursor->_type == kIfCond || cursor->_type == kWhileCond || cursor->_type == kDoWhileCond) {
 			// Validate outgoing edges of conditions
@@ -440,8 +441,8 @@ bool ControlFlow::validateElseBlock(GroupPtr ifGroup, GroupPtr start, GroupPtr e
 			}
 		}
 
-		// If group ends an else, that else must start inside the range
-		for(ElseEndIterator it = cursor->_endElse.begin(); it != cursor->_endElse.end(); ++it)
+		// If previous group ends an else, that else must start inside the range
+		for (ElseEndIterator it = cursor->_prev->_endElse.begin(); it != cursor->_prev->_endElse.end(); ++it)
 		{
 			if ((*it)->_start->_address < start->_start->_address)
 				return false;
