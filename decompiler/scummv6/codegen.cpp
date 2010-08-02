@@ -438,7 +438,7 @@ void Scumm::v6::CodeGenerator::processSpecialMetadata(const Instruction inst, ch
 			switch (inst._params[0]._type) {
 			case kSByte:
 			case kShort:
-				addArg(new IntEntry(inst._params[0].getSigned(), false));
+				addArg(new IntEntry(inst._params[0].getSigned(), true));
 				break;
 			case kByte:
 			case kUShort:
