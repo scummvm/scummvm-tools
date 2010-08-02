@@ -308,8 +308,7 @@ public:
 		output << "\\n";
 		if (group->_startElse)
 			output << "Start of else\\n";
-		for (ElseEndIterator it = group->_endElse.begin(); it != group->_endElse.end(); ++it)
-		{
+		for (ElseEndIterator it = group->_endElse.begin(); it != group->_endElse.end(); ++it) {
 			output << boost::format("End of else at %08x\\n") % (*it)->_start->_address;
 		}
 		output << "|";
