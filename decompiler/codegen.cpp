@@ -35,7 +35,7 @@ static int dupindex = 0;
 
 std::ostream &IntEntry::print(std::ostream &output) const {
 	if (_isSigned)
-		output << _val;
+		output << (int32)_val;
 	else
 		output << (uint32)_val;
 	return output;
@@ -155,7 +155,7 @@ void CodeGenerator::generate(const Graph &g) {
 	p = GET(entryPoint);
 	while (p != NULL) {
 		for (std::vector<CodeLine>::iterator it = p->_code.begin(); it != p->_code.end(); ++it) {
-			if (it->_unindentBefore && _indentLevel != 0)
+			if (it->_unindentBefore /*&& _indentLevel != 0*/)
 				_indentLevel--;
 			_output << boost::format("%08X: %s") % p->_start->_address % indentString(it->_line) << std::endl;
 			if (it->_indentAfter)
@@ -163,6 +163,9 @@ void CodeGenerator::generate(const Graph &g) {
 		}
 		p = p->_next;
 	}
+
+	if (_indentLevel != 0)
+		std::cerr << "WARNING: Indent level ended at " << _indentLevel << std::endl;
 }
 
 void CodeGenerator::addOutputLine(std::string s, bool unindentBefore, bool indentAfter) {
@@ -187,7 +190,7 @@ void CodeGenerator::process(GraphVertex v) {
 	for (InEdgeIterator ie = ier.first; ie != ier.second; ++ie) {
 		GraphVertex in = boost::source(*ie, _g);
 		GroupPtr inGroup = GET(in);
-		if (!boost::get(boost::edge_attribute, _g, *ie)._isJump)
+		if (!boost::get(boost::edge_attribute, _g, *ie)._isJump || inGroup->_stackLevel == -1)
 			continue;
 		switch (inGroup->_type) {
 		case kDoWhileCond:
@@ -330,8 +333,11 @@ void CodeGenerator::process(GraphVertex v) {
 	} while (it++ != _curGroup->_end);
 
 	// Add else end if necessary
-	if (_curGroup->_endElse != NULL && !_curGroup->_endElse->_coalescedElse)
-		addOutputLine("}", true, false);
+	for(ElseEndIterator elseIt = _curGroup->_endElse.begin(); elseIt != _curGroup->_endElse.end(); ++elseIt)
+	{
+		if (!(*elseIt)->_coalescedElse)
+			addOutputLine("}", true, false);
+	}
 }
 
 void CodeGenerator::addArg(EntryPtr p) {
@@ -347,7 +353,7 @@ void CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
 			addArg(_stack.pop());
 			break;
 		default:
-			std::cerr << boost::format("Unknown character in metadata: %c\n") % c ;
+			std::cerr << boost::format("WARNING: Unknown character in metadata: %c\n") % c ;
 			break;
 	}
 }

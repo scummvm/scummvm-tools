@@ -111,10 +111,26 @@ private:
 	bool validateBreakOrContinue(GroupPtr gr, GroupPtr condGr);
 
 	/**
-	 * Detects if and else blocks.
+	 * Detects if blocks.
 	 * Must be performed after break and continue detection.
 	 */
 	void detectIf();
+
+	/**
+	 * Detects else blocks.
+	 * Must be performed after if detection.
+	 */
+	void detectElse();
+
+	/**
+	 * Checks if a candidate else block will cross block boundaries.
+	 *
+	 * @param ifGroup The group containing the if this else candidate is associated with.
+	 * @param start   The group containing the start of the else.
+	 * @param end     The group immediately after the group ending the else.
+	 * @returns True if the validation succeeded, false if it did not.
+	 */
+	bool validateElseBlock(GroupPtr ifGroup, GroupPtr start, GroupPtr end);
 
 public:
 	/**

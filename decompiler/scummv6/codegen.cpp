@@ -106,7 +106,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 			default:
 				{
 					std::stringstream s;
-					s << boost::format("Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+					s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
 					addOutputLine(s.str());
 				}
 				break;
@@ -131,7 +131,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		default:
 			{
 				std::stringstream s;
-				s << boost::format("Couldn't handle conditional jump at address %08X") % inst._address;
+				s << boost::format("WARNING: Couldn't handle conditional jump at address %08X") % inst._address;
 				addOutputLine(s.str());
 			}
 			break;
@@ -166,7 +166,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		default:
 			{
 				std::stringstream s;
-				s << boost::format("Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+				s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
 				addOutputLine(s.str());
 			}
 			break;
@@ -207,7 +207,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 		default:
 			{
 				std::stringstream s;
-				s << boost::format("Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+				s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
 				addOutputLine(s.str());
 			}
 			break;
@@ -216,7 +216,7 @@ void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
 	default:
 		{
 			std::stringstream s;
-			s << boost::format("Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+			s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
 			addOutputLine(s.str());
 		}
 		break;
@@ -445,7 +445,7 @@ void Scumm::v6::CodeGenerator::processSpecialMetadata(const Instruction inst, ch
 				addArg(new IntEntry(inst._params[0].getUnsigned(), false));
 				break;
 			default:
-				std::cerr << boost::format("Unexpected type for parameter 0 @ %08X while processing metadata character %c") % inst._address % c;
+				std::cerr << boost::format("WARNING: Unexpected type for parameter 0 @ %08X while processing metadata character %c") % inst._address % c;
 				break;
 			}
 			break;

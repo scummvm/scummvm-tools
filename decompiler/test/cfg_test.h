@@ -376,7 +376,7 @@ public:
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x10) {
 				TS_ASSERT(gr->_startElse);
-				TS_ASSERT(gr->_endElse == gr);
+				TS_ASSERT(gr->_endElse.size() == 1 && gr->_endElse[0] == gr);
 			}
 		}
 		delete c;
@@ -525,37 +525,38 @@ public:
 			case 0x6:
 				TS_ASSERT(gr->_type == kWhileCond);
 				TS_ASSERT(!gr->_startElse);
-				TS_ASSERT(!gr->_endElse);
+				TS_ASSERT(gr->_endElse.empty());
 				break;
 			case 0x19:
 			case 0x3A:
 			case 0x4F:
 			case 0x68:
+			case 0x74: // Allow inclusion of the pop instruction immediately before
 			case 0x75:
 			case 0x92:
 				TS_ASSERT(gr->_type == kIfCond);
 				TS_ASSERT(!gr->_startElse);
-				TS_ASSERT(!gr->_endElse);
+				TS_ASSERT(gr->_endElse.empty());
 				break;
 			case 0x8B:
 				TS_ASSERT(gr->_type == kNormal);
 				TS_ASSERT(gr->_startElse);
-				TS_ASSERT(gr->_endElse && gr->_endElse->_start->_address == 0x8B);
+				TS_ASSERT(gr->_endElse.size() == 1 && gr->_endElse[0]->_start->_address == 0x8B);
 				break;
 			case 0x91:
-				TS_ASSERT(gr->_type == kNormal);
+				TS_ASSERT(gr->_type == kNormal ||  gr->_type == kIfCond); // Allow inclusion of the pop instruction immediately before
 				TS_ASSERT(gr->_startElse);
-				TS_ASSERT(!gr->_endElse);
+				TS_ASSERT(gr->_endElse.empty());
 				break;
 			case 0xA6:
 				TS_ASSERT(gr->_type == kNormal);
 				TS_ASSERT(!gr->_startElse);
-				TS_ASSERT(gr->_endElse && gr->_endElse->_start->_address == 0x91);
+				TS_ASSERT(gr->_endElse.size() == 1 && gr->_endElse[0]->_start->_address == 0x91);
 				break;
 			default:
 				TS_ASSERT(gr->_type == kNormal);
 				TS_ASSERT(!gr->_startElse);
-				TS_ASSERT(!gr->_endElse);
+				TS_ASSERT(gr->_endElse.empty());
 				break;
 			}
 		}

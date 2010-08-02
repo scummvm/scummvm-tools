@@ -218,6 +218,16 @@ struct CodeLine {
 };
 
 /**
+ * Weak references to groups ending else blocks.
+ */
+typedef std::vector<Group *> ElseEnds;
+
+/**
+ * Iterator type for ElseEnds
+ */
+typedef ElseEnds::iterator ElseEndIterator;
+
+/**
  * Structure representing a group of instructions.
  */
 struct Group {
@@ -233,7 +243,7 @@ public:
 	int _stackLevel;             ///< Level of the stack upon entry.
 	GroupType _type;             ///< Type of the group.
 	bool _startElse;             ///< Group is start of an else block.
-	Group *_endElse;             ///< Group is end of an else block.
+	ElseEnds _endElse;           ///< Group is end of an else block.
 	Group *_prev;                ///< Pointer to the previous group, when ordered by address. Used for short-circuit analysis.
 	Group *_next;                ///< Pointer to the next group, when ordered by address.
 	std::vector<CodeLine> _code; ///< Container for decompiled lines of code.
@@ -260,7 +270,6 @@ public:
 		_type = kNormal;
 		_prev = prev.get();
 		_startElse = false;
-		_endElse = NULL;
 		if (_prev != NULL)
 			_prev->_next = this;
 		_next = NULL;
@@ -299,8 +308,10 @@ public:
 		output << "\\n";
 		if (group->_startElse)
 			output << "Start of else\\n";
-		if (group->_endElse)
-			output << boost::format("End of else at %08x\\n") % group->_endElse->_start->_address;
+		for(ElseEndIterator it = group->_endElse.begin(); it != group->_endElse.end(); ++it)
+		{
+			output << boost::format("End of else at %08x\\n") % (*it)->_start->_address;
+		}
 		output << "|";
 		ConstInstIterator inst = group->_start;
 		do {
