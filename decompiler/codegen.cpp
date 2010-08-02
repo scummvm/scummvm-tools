@@ -313,7 +313,7 @@ void CodeGenerator::process(GraphVertex v) {
 						}
 						if (printJump) {
 							std::stringstream s;
-							s << boost::format("jump %X;") % _engine->getDestAddress(it);
+							s << boost::format("jump 0x%X;") % _engine->getDestAddress(it);
 							addOutputLine(s.str());
 						}
 					}
