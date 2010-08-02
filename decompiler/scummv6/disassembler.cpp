@@ -370,7 +370,7 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			OPCODE(0x48, "overhead", kSpecial, 0, "");
 			OPCODE(0x4A, "mumble", kSpecial, 0, "");
 			OPCODE_MD(0x4B, "msg", kSpecial, 0, "c", "s");
-			OPCODE(0xFE, "begin", kSpecial, 0, "");
+			OPCODE_MD(0xFE, "begin", kSpecial, -1, "", "p");
 			OPCODE(0xFF, "end", kSpecial, 0, "");
 		END_SUBOPCODE;
 		START_SUBOPCODE_WITH_PREFIX(0xB9, "printEgo");
