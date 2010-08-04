@@ -180,7 +180,7 @@ void ControlFlow::createGroups() {
 			continue;
 
 		expectedStackLevel = grCur->_stackLevel;
-		if (expectedStackLevel > grNext->_stackLevel)
+		if (expectedStackLevel > grNext->_stackLevel && grNext->_stackLevel != -1)
 			expectedStackLevel = grNext->_stackLevel;
 
 		grCur->_stackLevel = expectedStackLevel;
