@@ -410,7 +410,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			if (parameter == 0) {
 				OPCODE("pushRet", kLoad, 1, false, false);
 			} else if (parameter == 1) {
-				OPCODE("pushPos", kSpecial, 2, false, false); // Sets up function call
+				OPCODE("pushPos", kSpecial, 0, false, false); // Sets up function call
 			} else {
 				// Error: invalid parameter halts execution
 			}
@@ -438,13 +438,13 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			}
 			break;
 		case 9:
-			OPCODE("popVar", kStore, 1, true, true);
+			OPCODE("popVar", kStore, -1, true, true);
 			break;
 		case 10:
-			OPCODE("popBPNeg", kStore, 1, true, true);
+			OPCODE("popBPNeg", kStore, -1, true, true);
 			break;
 		case 11:
-			OPCODE("popBPAdd", kStore, 1, true, true);
+			OPCODE("popBPAdd", kStore, -1, true, true);
 			break;
 		case 12:
 			OPCODE("addSP", kStack, -parameter, true, true);
