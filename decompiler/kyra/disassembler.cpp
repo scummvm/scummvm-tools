@@ -570,12 +570,12 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 //				continue;
 			// Kyra2 sometimes has an addSP instruction between the two popPos instrucitons, so we ignore those
 			if (_insts[i]._name.compare("addSP") == 0)
-					continue;
+				continue;
 
-			if (lastWasPop && _insts[i]._name.compare("popPos") == 0) {
-				_engine->_functions[_insts[nextFunc]._address] = Function(addrMap[_insts[nextFunc]._address], addrMap[_insts[i]._address]);
+			if ((lastWasPop && _insts[i]._name.compare("popPos") == 0) || _insts[i+1]._address == minFuncAddr) {
+				_engine->_functions[_insts[nextFunc]._address] = Function(addrMap[_insts[nextFunc]._address], addrMap[_insts[i+1]._address]);
 				nextFunc = i+1;
-				break;
+//				break;
 			}
 
 			lastWasPop = (_insts[i]._name.compare("popPos") == 0);
@@ -584,6 +584,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 
 	// Add metadata to newly found functions
 	for (FuncMap::iterator it = _engine->_functions.begin(); it != _engine->_functions.end(); ++it) {
+		std::clog << boost::format("Processing function at 0x%08X\n") % it->first;
 		std::stringstream s;
 		s << boost::format("sub0x%X") % it->second._startIt->_address;
 		int maxArg = 0;
