@@ -199,12 +199,13 @@ public:
 		delete engine;
 	}
 
-	// This test requires script-48.dmp from Sam & Max: Hit The Road.
+	// This test requires script-30 and script-48.dmp from Sam & Max: Hit The Road.
+	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	// afd7dc5d377894b3b9d0504927adf1b1 *script-48.dmp
 	void testCoalescing() {
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
 		Disassembler *d = engine->getDisassembler();
-		d->open("decompiler/test/script-48.dmp");
+		d->open("decompiler/test/script-30.dmp");
 		std::vector<Instruction> insts = d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
@@ -220,12 +221,39 @@ public:
 		while (gr->_prev != NULL)
 			gr = gr->_prev;
 		// Find vertex to test
-		while (gr->_start->_address != 0x1A3)
+		while (gr->_start->_address != 0x91)
 			gr = gr->_next;
 
-		TS_ASSERT(gr->_code.size() == 3);
+		TS_ASSERT(gr->_code.size() == 2);
 		TS_ASSERT(removeSpaces(gr->_code[0]._line).compare("}else{") == 0);
-		TS_ASSERT(removeSpaces(gr->_code[2]._line).substr(0, 2).compare("if") == 0);
+		TS_ASSERT(removeSpaces(gr->_code[1]._line).substr(0, 2).compare("if") == 0);
+
+		delete cg;
+		delete c;
+		delete engine;
+
+		engine = new Scumm::v6::Engine();
+		d = engine->getDisassembler();
+		d->open("decompiler/test/script-48.dmp");
+		insts = d->disassemble();
+		delete d;
+		c = new ControlFlow(insts, engine);
+		c->createGroups();
+		g = c->analyze();
+		cg = engine->getCodeGenerator(ns);
+		cg->generate(g);
+
+		v = boost::vertices(g).first;
+		gr = GET(*v);
+		// Find first node
+		while (gr->_prev != NULL)
+			gr = gr->_prev;
+		// Find vertex to test
+		while (gr->_start->_address != 0x191)
+			gr = gr->_next;
+
+		TS_ASSERT(gr->_code.size() == 1);
+		TS_ASSERT(removeSpaces(gr->_code[0]._line).substr(0, 7).compare("}elseif") == 0);
 
 		delete cg;
 		delete c;

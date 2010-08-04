@@ -199,7 +199,9 @@ public:
 				TS_ASSERT(gr->_type == kBreak);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/break-do-while.dmp");
 		insts = d->disassemble();
@@ -214,7 +216,9 @@ public:
 				TS_ASSERT(gr->_type == kBreak);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/break-do-while2.dmp");
 		insts = d->disassemble();
@@ -250,7 +254,9 @@ public:
 				TS_ASSERT(gr->_type == kNormal);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/continue-do-while.dmp");
 		insts = d->disassemble();
@@ -265,7 +271,9 @@ public:
 				TS_ASSERT(gr->_type == kContinue);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/continue-do-while2.dmp");
 		insts = d->disassemble();
@@ -299,7 +307,9 @@ public:
 				TS_ASSERT(gr->_type == kIfCond);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/break-do-while.dmp");
 		insts = d->disassemble();
@@ -314,7 +324,9 @@ public:
 				TS_ASSERT(gr->_type == kIfCond);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/break-do-while2.dmp");
 		insts = d->disassemble();
@@ -329,7 +341,9 @@ public:
 				TS_ASSERT(gr->_type == kIfCond);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/continue-do-while.dmp");
 		insts = d->disassemble();
@@ -344,7 +358,9 @@ public:
 				TS_ASSERT(gr->_type == kIfCond);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/continue-do-while2.dmp");
 		insts = d->disassemble();
@@ -380,7 +396,9 @@ public:
 			}
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/if-no-else.dmp");
 		insts = d->disassemble();
@@ -418,7 +436,9 @@ public:
 				TS_ASSERT(gr->_type == kDoWhileCond);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/nested-do-while.dmp");
 		insts = d->disassemble();
@@ -435,7 +455,9 @@ public:
 				TS_ASSERT(gr->_type == kDoWhileCond);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/nested-while.dmp");
 		insts = d->disassemble();
@@ -452,7 +474,9 @@ public:
 				TS_ASSERT(gr->_type == kWhileCond);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/nested-while2.dmp");
 		insts = d->disassemble();
@@ -469,7 +493,9 @@ public:
 				TS_ASSERT(gr->_type == kWhileCond);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/while-in-do-while.dmp");
 		insts = d->disassemble();
@@ -486,7 +512,9 @@ public:
 				TS_ASSERT(gr->_type == kDoWhileCond);
 		}
 		delete c;
+		delete engine;
 
+		engine = new Scumm::v6::Engine();
 		d = engine->getDisassembler();
 		d->open("decompiler/test/while-in-do-while2.dmp");
 		insts = d->disassemble();
@@ -503,7 +531,6 @@ public:
 				TS_ASSERT(gr->_type == kDoWhileCond);
 		}
 		delete c;
-
 		delete engine;
 	}
 
