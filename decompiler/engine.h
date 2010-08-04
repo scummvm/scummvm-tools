@@ -33,8 +33,8 @@
  */
 struct Function {
 public:
-	InstIterator _startIt; ///< Iterator to of the first instruction in the function, if available.
-	InstIterator _endIt;   ///< Iterator to the instruction immediately after the function, similar to end() on STL containers, if available.
+	ConstInstIterator _startIt; ///< Iterator to of the first instruction in the function, if available.
+	ConstInstIterator _endIt;   ///< Iterator to the instruction immediately after the function, similar to end() on STL containers, if available.
 	std::string _name;     ///< Function name.
 	GraphVertex _v;        ///< Graph vertex for the entry point to the function.
 	uint32 _args;          ///< Number of arguments to the function.
@@ -54,7 +54,7 @@ public:
 	 * @param startIt Index of the first instruction in the function.
 	 * @param endIt Index of the instruction immediately after the function, similar to end() on STL containers.
 	 */
-	Function(InstIterator startIt, InstIterator endIt) : _startIt(startIt), _endIt(endIt) {
+	Function(ConstInstIterator startIt, ConstInstIterator endIt) : _startIt(startIt), _endIt(endIt) {
 	}
 };
 

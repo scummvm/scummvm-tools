@@ -36,11 +36,12 @@
 
 ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) : _insts(insts) {
 	_engine = engine;
-	GraphVertex last;
-	bool addEdge = false;
-	int id = 0;
-	GroupPtr prev = NULL;
 
+	if (engine->_functions.empty())
+		engine->_functions[insts.begin()->_address] = Function(insts.begin(), insts.end());
+
+	GroupPtr prev = NULL;
+	int id = 0;
 	for (ConstInstIterator it = insts.begin(); it != insts.end(); ++it) {
 		GraphVertex cur = boost::add_vertex(_g);
 		_addrMap[it->_address] = cur;
@@ -48,13 +49,31 @@ ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) 
 		PUT_ID(cur, id);
 		id++;
 
+		if (_engine->_functions.find(it->_address) != _engine->_functions.end())
+			_engine->_functions[it->_address]._v = cur;
+
+		prev = GET(cur);
+	}
+
+	FuncMap::iterator fn;
+	GraphVertex last;
+	bool addEdge = false;
+	prev = NULL;
+	for (ConstInstIterator it = insts.begin(); it != insts.end(); ++it) {
+		if (_engine->_functions.find(it->_address) != _engine->_functions.end()) {
+			addEdge = false;
+		}
+
+		GraphVertex cur = find(it);
 		if (addEdge) {
 			GraphEdge e = boost::add_edge(last, cur, _g).first;
 			PUT_EDGE(e, false);
 		}
+
 		last = cur;
-		addEdge = (it->_type != kJump && it->_type != kJumpRel);
+		addEdge = (it->_type != kJump && it->_type != kJumpRel && it->_type != kReturn);
 		prev = GET(cur);
+
 	}
 
 	for (ConstInstIterator it = insts.begin(); it != insts.end(); ++it) {
@@ -139,9 +158,10 @@ void ControlFlow::setStackLevel(GraphVertex g, int level) {
 }
 
 void ControlFlow::createGroups() {
-	if (GET(find(_insts.begin()))->_stackLevel != -1)
+	if (GET(_engine->_functions.begin()->second._v)->_stackLevel != -1)
 		return;
-	setStackLevel(find(_insts.begin()), 0);
+	for (FuncMap::iterator fn = _engine->_functions.begin(); fn != _engine->_functions.end(); ++fn)
+		setStackLevel(fn->second._v, 0);
 	ConstInstIterator curInst, nextInst;
 	nextInst = _insts.begin();
 	nextInst++;
@@ -152,13 +172,15 @@ void ControlFlow::createGroups() {
 		GraphVertex cur = find(curInst);
 		GraphVertex next = find(nextInst);
 
-		if (in_degree(cur, _g) == 0 && out_degree(cur, _g) == 0)
-			continue;
 		GroupPtr grCur = GET(cur);
 		GroupPtr grNext = GET(next);
-		expectedStackLevel = grCur->_stackLevel;
 
-		if (expectedStackLevel > grNext->_stackLevel && grNext->_stackLevel >= 0)
+		// Don't process unreachable code
+		if (grCur->_stackLevel == -1)
+			continue;
+
+		expectedStackLevel = grCur->_stackLevel;
+		if (expectedStackLevel > grNext->_stackLevel)
 			expectedStackLevel = grNext->_stackLevel;
 
 		grCur->_stackLevel = expectedStackLevel;
@@ -170,6 +192,10 @@ void ControlFlow::createGroups() {
 			stackLevel = grNext->_stackLevel;
 			continue;
 		}
+
+		// Group ends with a return
+		if (curInst->_type == kReturn)
+			continue;
 
 		// Group ends before target of a jump
 		if (in_degree(next, _g) != 1) {

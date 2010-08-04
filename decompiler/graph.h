@@ -379,21 +379,32 @@ inline void intrusive_ptr_release(Group *p) {
 }
 }
 
+class Engine;
+
 /**
  * Type used to set properties for dot output.
  */
 struct GraphProperties {
+private:
+	Engine *_engine; ///< Pointer to the engine containing function information for the script.
+	const Graph &_g; ///< Const reference to the graph for the script.
+
+public:
+	/**
+	 * Constructor for GraphProperties.
+	 *
+	 * @param engine Pointer to the engine containing function information for the script.
+	 * @param g Const reference to the graph for the script.
+	 */
+	GraphProperties(Engine *engine, const Graph &g) : _engine(engine), _g(g) {
+	}
 
 	/**
 	 * Called by write_graphviz from Boost.Graph to print properties of the graph.
 	 *
 	 * @param out The std::ostream write_graphviz is writing to.
 	 */
-	void operator()(std::ostream& out) const {
-		out << "node [shape=record]" << std::endl;
-		out << "XXX [shape=none, label=\"\", height=0]" << std::endl;
-		out << "XXX -> 0" << std::endl;
-	}
+	void operator()(std::ostream& out) const;
 };
 
 #endif

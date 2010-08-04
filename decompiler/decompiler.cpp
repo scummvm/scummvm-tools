@@ -148,12 +148,12 @@ int main(int argc, char** argv) {
 				buf = std::cout.rdbuf();
 			}
 			std::ostream out(buf);
-			boost::write_graphviz(out, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties());
+			boost::write_graphviz(out, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties(engine, g));
 		}
 
 		if (!engine->supportsCodeGen() || vm.count("only-graph")) {
 			if (!vm.count("dump-graph")) {
-				boost::write_graphviz(std::cout, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties());
+				boost::write_graphviz(std::cout, g, boost::make_label_writer(get(boost::vertex_name, g)), boost::makeArrowheadWriter(get(boost::edge_attribute, g)), GraphProperties(engine, g));
 			}
 			delete cf;
 			delete engine;
