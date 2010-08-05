@@ -163,6 +163,9 @@ void ControlFlow::detectFunctions() {
 		GraphVertex v = find(it);
 		GroupPtr gr = GET(v);
 
+		if (_engine->_functions.find(it->_address) != _engine->_functions.end())
+			continue;
+
 		InEdgeRange ier = boost::in_edges(v, _g);
 		bool isEntryPoint = true;
 		for (InEdgeIterator e = ier.first; e != ier.second; ++e) {
