@@ -38,7 +38,7 @@
 ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) : _insts(insts) {
 	_engine = engine;
 
-	if (engine->_functions.empty())
+	if (engine->_functions.empty() && !_engine->detectMoreFuncs())
 		engine->_functions[insts.begin()->_address] = Function(insts.begin(), insts.end());
 
 	GroupPtr prev = NULL;
