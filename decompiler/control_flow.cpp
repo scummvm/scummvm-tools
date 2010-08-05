@@ -159,20 +159,9 @@ void ControlFlow::setStackLevel(GraphVertex g, int level) {
 }
 
 void ControlFlow::detectFunctions() {
-	uint32 nextFunc = 0;
 	for (ConstInstIterator it = _insts.begin(); it != _insts.end(); ++it) {
 		GraphVertex v = find(it);
 		GroupPtr gr = GET(v);
-
-		// If this is already a function, skip it
-		if (_engine->_functions.find(gr->_start->_address) != _engine->_functions.end()) {
-			nextFunc = _engine->_functions[gr->_start->_address]._endIt->_address;
-			continue;
-		}
-
-		// If a function has already been found here, skip it
-		if (gr->_start->_address < nextFunc)
-			continue;
 
 		InEdgeRange ier = boost::in_edges(v, _g);
 		bool isEntryPoint = true;
@@ -204,14 +193,14 @@ void ControlFlow::detectFunctions() {
 			}
 
 			ConstInstIterator endInst;
-			if (endPoint->_next)
+			if (endPoint->_next) {
 				endInst = endPoint->_next->_start;
-			else
+			} else {
 				endInst = _insts.end();
+			}
 			Function f(gr->_start, endInst);
 			f._v = find(it);
 			_engine->_functions[gr->_start->_address] = f;
-			nextFunc = endInst->_address;
 		}
 	}
 }
