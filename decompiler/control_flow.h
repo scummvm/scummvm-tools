@@ -156,6 +156,11 @@ public:
 	void createGroups();
 
 	/**
+	 * Auto-detects functions from unreachable code.
+	 */
+	void detectFunctions();
+
+	/**
 	 * Performs control flow analysis.
 	 * The constructs are detected in the following order: do-while, while, break, continue, if/else.
 	 *

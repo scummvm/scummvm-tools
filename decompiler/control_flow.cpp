@@ -21,10 +21,11 @@
  */
 
 #include "control_flow.h"
+#include "stack.h"
 
 #include <algorithm>
 #include <iostream>
-#include <stack>
+#include <set>
 
 #include <boost/format.hpp>
 
@@ -157,9 +158,72 @@ void ControlFlow::setStackLevel(GraphVertex g, int level) {
 	}
 }
 
+void ControlFlow::detectFunctions() {
+	uint32 nextFunc = 0;
+	for (ConstInstIterator it = _insts.begin(); it != _insts.end(); ++it) {
+		GraphVertex v = find(it);
+		GroupPtr gr = GET(v);
+
+		// If this is already a function, skip it
+		if (_engine->_functions.find(gr->_start->_address) != _engine->_functions.end()) {
+			nextFunc = _engine->_functions[gr->_start->_address]._endIt->_address;
+			continue;
+		}
+
+		// If a function has already been found here, skip it
+		if (gr->_start->_address < nextFunc)
+			continue;
+
+		InEdgeRange ier = boost::in_edges(v, _g);
+		bool isEntryPoint = true;
+		for (InEdgeIterator e = ier.first; e != ier.second; ++e) {
+			// If an ingoing edge exists from earlier in the code, this is not a function entry point
+			if (GET(boost::source(*e, _g))->_start->_address < gr->_start->_address)
+				isEntryPoint = false;
+		}
+
+		if (isEntryPoint) {
+			// Detect end point
+			Stack<GraphVertex> stack;
+			std::set<GraphVertex> seen;
+			stack.push(v);
+			GroupPtr endPoint = gr;
+			while (!stack.empty()) {
+				v = stack.pop();
+				GroupPtr tmp = GET(v);
+				if (tmp->_start->_address > endPoint->_start->_address)
+					endPoint = tmp;
+				OutEdgeRange r = boost::out_edges(v, _g);
+				for (OutEdgeIterator i = r.first; i != r.second; ++i) {
+					GraphVertex target = boost::target(*i, _g);
+					if (seen.find(target) == seen.end()) {
+						stack.push(target);
+						seen.insert(target);
+					}
+				}
+			}
+
+			ConstInstIterator endInst;
+			if (endPoint->_next)
+				endInst = endPoint->_next->_start;
+			else
+				endInst = _insts.end();
+			Function f(gr->_start, endInst);
+			f._v = find(it);
+			_engine->_functions[gr->_start->_address] = f;
+			nextFunc = endInst->_address;
+		}
+	}
+}
+
 void ControlFlow::createGroups() {
 	if (GET(_engine->_functions.begin()->second._v)->_stackLevel != -1)
 		return;
+
+	// Detect more functions
+	if (_engine->detectMoreFuncs())
+		detectFunctions();
+
 	for (FuncMap::iterator fn = _engine->_functions.begin(); fn != _engine->_functions.end(); ++fn)
 		setStackLevel(fn->second._v, 0);
 	ConstInstIterator curInst, nextInst;
@@ -167,7 +231,7 @@ void ControlFlow::createGroups() {
 	nextInst++;
 	int stackLevel = 0;
 	int expectedStackLevel = 0;
-	std::stack<uint32> s;
+	//std::stack<uint32> s;
 	for (curInst = _insts.begin(); nextInst != _insts.end(); ++curInst, ++nextInst) {
 		GraphVertex cur = find(curInst);
 		GraphVertex next = find(nextInst);

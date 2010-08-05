@@ -555,36 +555,8 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it)
 		addrMap[it->_address] = it;
 
-	// Function detection
-	uint16 nextFunc = 0;
-	// Process candidate entry points
-/*	for (std::set<uint16>::iterator it = jumpTargets.begin(); it != jumpTargets.end(); ++it) {
-		// If candidate was already placed inside a function, skip it
-		if (_insts[*it]._address < nextFunc)
-			continue;
-*/		// Determine function end point
-		bool lastWasPop = false;
-
-		for (int i = 0 ; _insts[i]._address < minFuncAddr; i++) {
-//			if (_insts[i]._address < *it)
-//				continue;
-			// Kyra2 sometimes has an addSP instruction between the two popPos instrucitons, so we ignore those
-			if (_insts[i]._name.compare("addSP") == 0)
-				continue;
-
-			if ((lastWasPop && _insts[i]._name.compare("popPos") == 0) || _insts[i+1]._address == minFuncAddr) {
-				_engine->_functions[_insts[nextFunc]._address] = Function(addrMap[_insts[nextFunc]._address], addrMap[_insts[i+1]._address]);
-				nextFunc = i+1;
-//				break;
-			}
-
-			lastWasPop = (_insts[i]._name.compare("popPos") == 0);
-		}
-//	}
-
 	// Add metadata to newly found functions
 	for (FuncMap::iterator it = _engine->_functions.begin(); it != _engine->_functions.end(); ++it) {
-		std::clog << boost::format("Processing function at 0x%08X\n") % it->first;
 		std::stringstream s;
 		s << boost::format("sub0x%X") % it->second._startIt->_address;
 		int maxArg = 0;
@@ -609,12 +581,13 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 	}
 
 	// Correct jumps to functions so they're treated as calls
+	bool lastWasPushPos = false;
 	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it) {
 		if (it->_type == kJump || it->_type == kCondJump) {
-			if (_engine->_functions.find(it->_params[0].getUnsigned()) != _engine->_functions.end()) {
+			if (lastWasPushPos || _engine->_functions.find(it->_params[0].getUnsigned()) != _engine->_functions.end()) {
 				it->_type = kCall;
-				std::clog << boost::format("Changed instruction at 0x%08X to call\n") % it->_address;
 			}
 		}
+		lastWasPushPos = (it->_name.compare("pushPos") == 0);
 	}
 }

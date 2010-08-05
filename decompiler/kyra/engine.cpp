@@ -35,3 +35,7 @@ uint32 Kyra::Engine::getDestAddress(ConstInstIterator it) const {
 	// TODO
 	return NULL;
 }
+
+bool Kyra::Engine::detectMoreFuncs() {
+	return true;
+}

@@ -39,6 +39,7 @@ public:
 	uint32 getDestAddress(ConstInstIterator it) const;
 	::CodeGenerator *getCodeGenerator(std::ostream &output);
 	bool supportsCodeGen() { return false; }
+	bool detectMoreFuncs();
 
 	std::vector<std::string> _textStrings;
 };

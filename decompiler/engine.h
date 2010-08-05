@@ -107,6 +107,15 @@ public:
 	 */
 	virtual bool supportsCodeGen() { return true; }
 
+	/**
+	 * Whether or not additional functions should be looked for during CFG analysis.
+	 * Code that was normally unreachable will be treated as starting a new function.
+	 * Note: You will need a post-processing step to add the necessary metadata to the functions.
+	 *
+	 * @return True if yes, false if no.
+	 */
+	virtual bool detectMoreFuncs() { return false; }
+
 	FuncMap _functions; ///< Map to functions in the current script, indexed by starting address.
 };
 
