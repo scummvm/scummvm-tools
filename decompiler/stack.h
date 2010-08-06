@@ -46,7 +46,7 @@ public:
 	 *
 	 * @param item The item to push.
 	 */
-	void push(const T &item) { _stack.push_back(item); }
+	void push(const T &item) { _stack.push_front(item); }
 
 	/**
 	 * Pop an item from the stack and return it.
@@ -54,8 +54,8 @@ public:
 	 * @return The value popped from the stack.
 	 */
 	T pop() {
-		T retval = _stack.back();
-		_stack.pop_back();
+		T retval = _stack.front();
+		_stack.pop_front();
 		return retval;
 	}
 
@@ -64,14 +64,30 @@ public:
 	 *
 	 * @return The topmost item on the stack.
 	 */
-	T &peek() { return _stack.back(); }
+	T &peek() { return _stack.front(); }
 
 	/**
 	 * Return the topmost item on the stack without removing it.
 	 *
 	 * @return The topmost item on the stack.
 	 */
-	const T &peek() const { return _stack.back(); }
+	const T &peek() const { return _stack.front(); }
+
+	/**
+	 * Return the item on the specificed stack position without removing it.
+	 *
+	 * @param pos The number of items to skip on the stack.
+	 * @return The desired item from the stack.
+	 */
+	T &peekPos(size_t pos) { return _stack.at(pos); }
+
+	/**
+	 * Return the item on the specificed stack position without removing it.
+	 *
+	 * @param pos The number of items to skip on the stack.
+	 * @return The desired item from the stack.
+	 */
+	const T &peekPos(size_t pos) const { return _stack.at(pos); }
 };
 
 #endif
