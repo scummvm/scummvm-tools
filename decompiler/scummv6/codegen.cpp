@@ -35,8 +35,6 @@ EntryPtr Scumm::v6::CodeGenerator::createListEntry() {
 }
 
 void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
-	// TODO
-
 	// This is just to keep some order in this code and have related
 	// opcodes near each other. It's not strictly necessary, because we
 	// can just look directly at the opcode, but this should be easier
