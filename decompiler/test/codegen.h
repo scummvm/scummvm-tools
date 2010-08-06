@@ -72,10 +72,11 @@ typedef std::vector<std::string>::iterator CodeIterator;
 class CodeGenTestSuite : public CxxTest::TestSuite {
 public:
 	void testContinue() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -115,10 +116,11 @@ public:
 	}
 
 	void testBreak() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-while.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -158,10 +160,11 @@ public:
 	}
 
 	void testElse() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if-else.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -203,10 +206,11 @@ public:
 	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	// afd7dc5d377894b3b9d0504927adf1b1 *script-48.dmp
 	void testCoalescing() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/script-30.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -232,10 +236,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/script-48.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();

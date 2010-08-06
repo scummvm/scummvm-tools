@@ -35,10 +35,10 @@
  */
 class Disassembler {
 protected:
-	Common::File _f;                 ///< Used to perform file I/O.
-	std::vector<Instruction> _insts; ///< Container for disassembled instructions.
-	uint32 _addressBase;             ///< Base address where the script starts.
-	bool _disassemblyDone;           ///< Indicates whether or not disassembly has already been performed.
+	Common::File _f;                  ///< Used to perform file I/O.
+	std::vector<Instruction>& _insts; ///< Container for disassembled instructions.
+	uint32 _addressBase;              ///< Base address where the script starts.
+	bool _disassemblyDone;            ///< Indicates whether or not disassembly has already been performed.
 
 	/**
 	 * Performs disassembly.
@@ -55,7 +55,7 @@ protected:
 	virtual void doDumpDisassembly(std::ostream &output);
 
 public:
-	Disassembler();
+	Disassembler(std::vector<Instruction> &insts);
 	virtual ~Disassembler() {}
 
 	/**
@@ -70,7 +70,7 @@ public:
 	 *
 	 * @return An std::vector containing the disassembled instructions.
 	 */
-	const std::vector<Instruction> &disassemble();
+	void disassemble();
 
 	/**
 	 * Outputs the disassembled code. Disassembles code if this has not already been done.

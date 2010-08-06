@@ -27,6 +27,7 @@
 
 class PasCDisassembler : public SimpleDisassembler {
 public:
+	PasCDisassembler(std::vector<Instruction> &insts);
 	void doDisassemble() throw(UnknownOpcodeException);
 };
 #endif

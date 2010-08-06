@@ -27,6 +27,9 @@
 
 #include "disassembler.h"
 
+Scumm::v6::Disassembler::Disassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
+}
+
 void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 	std::string blockName;
 	for (int i = 0; i < 4; i++) {

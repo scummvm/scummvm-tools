@@ -22,6 +22,9 @@
 
 #include "pasc.h"
 
+PasCDisassembler::PasCDisassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
+}
+
 void PasCDisassembler::doDisassemble() throw(UnknownOpcodeException) {
 	START_OPCODES;
 		//Basic machine operations

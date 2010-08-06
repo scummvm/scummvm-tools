@@ -23,8 +23,8 @@
 #include "engine.h"
 #include "disassembler.h"
 
-::Disassembler *Kyra::Engine::getDisassembler() {
-	return new Disassembler(this);
+::Disassembler *Kyra::Engine::getDisassembler(std::vector<Instruction> &insts) {
+	return new Disassembler(this, insts);
 }
 
 uint32 Kyra::Engine::getDestAddress(ConstInstIterator it) const {

@@ -24,8 +24,8 @@
 #include "disassembler.h"
 #include "codegen.h"
 
-::Disassembler *Scumm::v6::Engine::getDisassembler() {
-	return new Disassembler();
+::Disassembler *Scumm::v6::Engine::getDisassembler(std::vector<Instruction> &insts) {
+	return new Disassembler(insts);
 }
 
 uint32 Scumm::v6::Engine::getDestAddress(ConstInstIterator it) const {

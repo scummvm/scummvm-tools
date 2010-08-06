@@ -130,7 +130,7 @@ static FunctionData kyra2FuncDesc[] = {
 	{ "setSceneAnimPos2", "" },
 	{ "update", "" },
 	// 0x4c
-	{ "unk4c", "" },
+	{ "unk4C", "" },
 	{ "fadeScenePal", "" },
 	{ "dummy4E", "" },
 	{ "dummy4F", "" },
@@ -151,7 +151,7 @@ static FunctionData kyra2FuncDesc[] = {
 	{ "blockInWalkableRegion", "" },
 	// 0x5c
 	{ "blockOutWalkableRegion", "" },
-	{ "unk5d", "" },
+	{ "unk5D", "" },
 	{ "setCauldronState", "" },
 	{ "showItemString", "" },
 	// 0x60
@@ -261,7 +261,7 @@ IFFChunk::IFFChunk() {
 	_data = NULL;
 }
 
-Kyra::Disassembler::Disassembler(Engine *engine) : ::Disassembler(), _engine(engine) {
+Kyra::Disassembler::Disassembler(Engine *engine, std::vector<Instruction> &insts) : ::Disassembler(insts), _engine(engine) {
 }
 
 Kyra::Disassembler::~Disassembler() {
@@ -342,6 +342,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		if (addr == (uint16)-1)
 			continue;
 
+		addr++;
 		addr <<= 1;
 
 		if (minFuncAddr > addr) {

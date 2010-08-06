@@ -30,9 +30,10 @@ class DisassemblerTestSuite : public CxxTest::TestSuite {
 public:
 	void testDisassembly() {
 		try {
-			PasCDisassembler p;
+			std::vector<Instruction> insts;
+			PasCDisassembler p(insts);
 			p.open("decompiler/test/hanoi20.pasb");
-			std::vector<Instruction> insts = p.disassemble();
+			p.disassemble();
 			TS_ASSERT(insts[0]._address == 0);
 			TS_ASSERT(insts[0]._opcode == 0x00);
 			TS_ASSERT(insts[0]._name == "PUSH");
@@ -50,9 +51,10 @@ public:
 
 	void testSubOpcodeDisassembly() {
 		try {
-			SubOpcodeDisassembler s;
+			std::vector<Instruction> insts;
+			SubOpcodeDisassembler s(insts);
 			s.open("decompiler/test/subopcode_test.bin");
-			std::vector<Instruction> insts = s.disassemble();
+			s.disassemble();
 			TS_ASSERT(insts[0]._name == "FOO");
 			TS_ASSERT(insts[0]._opcode == 0xFFFF);
 		} catch (...) {
@@ -62,7 +64,8 @@ public:
 
 	void testUnknownOpcodeException() {
 		try {
-			SubOpcodeDisassembler s;
+			std::vector<Instruction> insts;
+			SubOpcodeDisassembler s(insts);
 			s.open("decompiler/test/unknownopcode_test.bin");
 			s.disassemble();
 			TS_ASSERT(false);
@@ -77,9 +80,10 @@ public:
 	// 1ab08298c9c8fb4c77953756989c7449 *script-15.dmp
 	void testScummv6DisassemblerScript15() {
 		try {
-			Scumm::v6::Disassembler s;
+			std::vector<Instruction> insts;
+			Scumm::v6::Disassembler s(insts);
 			s.open("decompiler/test/script-15.dmp");
-			std::vector<Instruction> insts = s.disassemble();
+			s.disassemble();
 			TS_ASSERT(insts.size() == 11);
 			TS_ASSERT(insts[0]._address == 0);
 			TS_ASSERT(insts[0]._opcode == 0x03);
@@ -131,9 +135,10 @@ public:
 	// f75f7ce110f378735d449f8eeb4a68e5 *script-31.dmp
 	void testScummv6DisassemblerScript31() {
 		try {
-			Scumm::v6::Disassembler s;
+			std::vector<Instruction> insts;
+			Scumm::v6::Disassembler s(insts);
 			s.open("decompiler/test/script-31.dmp");
-			std::vector<Instruction> insts = s.disassemble();
+			s.disassemble();
 			TS_ASSERT(insts.size() == 5);
 			TS_ASSERT(insts[0]._address == 0);
 			TS_ASSERT(insts[0]._opcode == 0x01);
@@ -163,9 +168,10 @@ public:
 	// 9f09418bf34abbdec0ec54f388d8dca4 *script-33.dmp
 	void testScummv6DisassemblerScript33() {
 		try {
-			Scumm::v6::Disassembler s;
+			std::vector<Instruction> insts;
+			Scumm::v6::Disassembler s(insts);
 			s.open("decompiler/test/script-33.dmp");
-			std::vector<Instruction> insts = s.disassemble();
+			s.disassemble();
 			TS_ASSERT(insts.size() == 10);
 			TS_ASSERT(insts[0]._address == 0);
 			TS_ASSERT(insts[0]._opcode == 0x01);
@@ -214,9 +220,10 @@ public:
 	// f010dc659264674a2b6da298acd0b88b *room-9-202.dmp
 	void testScummv6StackChangeFixRoom9202() {
 		try {
-			Scumm::v6::Disassembler s;
+			std::vector<Instruction> insts;
+			Scumm::v6::Disassembler s(insts);
 			s.open("decompiler/test/room-9-202.dmp");
-			std::vector<Instruction> insts = s.disassemble();
+			s.disassemble();
 			InstIterator it = insts.end();
 			it -= 8;
 			TS_ASSERT(it->_stackChange == -3);
@@ -229,9 +236,10 @@ public:
 	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	void testScummv6StackChangeFixScript30() {
 		try {
-			Scumm::v6::Disassembler s;
+			std::vector<Instruction> insts;
+			Scumm::v6::Disassembler s(insts);
 			s.open("decompiler/test/script-30.dmp");
-			std::vector<Instruction> insts = s.disassemble();
+			s.disassemble();
 			InstIterator it = insts.end();
 			it -= 3;
 			TS_ASSERT(it->_stackChange == -6);

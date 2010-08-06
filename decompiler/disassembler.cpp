@@ -22,7 +22,7 @@
 
 #include "disassembler.h"
 
-Disassembler::Disassembler() {
+Disassembler::Disassembler(std::vector<Instruction> &insts) : _insts(insts) {
 	_addressBase = 0;
 	_disassemblyDone = false;
 }
@@ -38,11 +38,10 @@ void Disassembler::doDumpDisassembly(std::ostream &output) {
 	}
 }
 
-const std::vector<Instruction> &Disassembler::disassemble() {
+void Disassembler::disassemble() {
 	if (!_disassemblyDone)
 		doDisassemble();
 	_disassemblyDone = true;
-	return _insts;
 }
 
 void Disassembler::dumpDisassembly(std::ostream &output) {

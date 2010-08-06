@@ -34,6 +34,8 @@ namespace v6 {
  */
 class Disassembler : public SimpleDisassembler {
 public:
+	Disassembler(std::vector<Instruction> &insts);
+
 	void doDisassemble() throw(UnknownOpcodeException);
 
 	void readParameter(Parameter *p, char type);

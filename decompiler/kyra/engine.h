@@ -35,7 +35,7 @@ namespace Kyra {
  */
 class Engine : public ::Engine {
 public:
-	::Disassembler *getDisassembler();
+	::Disassembler *getDisassembler(std::vector<Instruction> &insts);
 	uint32 getDestAddress(ConstInstIterator it) const;
 	::CodeGenerator *getCodeGenerator(std::ostream &output);
 	bool supportsCodeGen() { return false; }

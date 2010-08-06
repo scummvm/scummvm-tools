@@ -22,6 +22,9 @@
 
 #include "subopcode.h"
 
+SubOpcodeDisassembler::SubOpcodeDisassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
+}
+
 void SubOpcodeDisassembler::doDisassemble() throw(UnknownOpcodeException) {
 	START_OPCODES;
 		START_SUBOPCODE(0xFF)

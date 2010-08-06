@@ -47,6 +47,9 @@ protected:
 	 * @param type Character describing the type of the parameter.
 	 */
 	virtual void readParameter(Parameter *p, char type);
+
+public:
+	SimpleDisassembler(std::vector<Instruction> &insts);
 };
 
 #define INC_ADDR _address++;

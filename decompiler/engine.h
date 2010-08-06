@@ -35,11 +35,11 @@ struct Function {
 public:
 	ConstInstIterator _startIt; ///< Iterator to of the first instruction in the function, if available.
 	ConstInstIterator _endIt;   ///< Iterator to the instruction immediately after the function, similar to end() on STL containers, if available.
-	std::string _name;     ///< Function name.
-	GraphVertex _v;        ///< Graph vertex for the entry point to the function.
-	uint32 _args;          ///< Number of arguments to the function.
-	bool _retVal;          ///< Whether or not the function returns a value.
-	std::string _metadata; ///< Metadata for code generation.
+	std::string _name;          ///< Function name.
+	GraphVertex _v;             ///< Graph vertex for the entry point to the function.
+	uint32 _args;               ///< Number of arguments to the function.
+	bool _retVal;               ///< Whether or not the function returns a value.
+	std::string _metadata;      ///< Metadata for code generation.
 
 	/**
 	 * Parameterless constructor for Function. Required for use with STL, should not be called manually.
@@ -73,9 +73,10 @@ public:
 	/**
 	 * Retrieve the disassembler for the engine.
 	 *
+	 * @param Reference to the std::vector to place the Instructions in.
 	 * @return Pointer to a Disassembler for the engine.
 	 */
-	virtual Disassembler *getDisassembler() = 0;
+	virtual Disassembler *getDisassembler(std::vector<Instruction> &insts) = 0;
 
 	/**
 	 * Decode a jump instruction to get the destination address.

@@ -33,10 +33,11 @@
 class CFGTestSuite : public CxxTest::TestSuite {
 public:
 	void testUnreachable() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/unreachable.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		Graph g = c->getGraph();
@@ -66,10 +67,11 @@ public:
 	};
 
 	void testBranching() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/branches.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		Graph g = c->getGraph();
@@ -99,10 +101,11 @@ public:
 	}
 
 	void testGrouping() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/branches.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -113,7 +116,7 @@ public:
 			GroupPtr gr = GET(*it);
 			switch (gr->_start->_address) {
 			case 0:
-				TS_ASSERT(gr->_end->_address == 2);		
+				TS_ASSERT(gr->_end->_address == 2);
 				TS_ASSERT(boost::in_degree(*it, g) == 0 && boost::out_degree(*it, g) == 2);
 				break;
 			case 5:
@@ -132,10 +135,11 @@ public:
 	}
 
 	void testShortCircuitDetection() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/short-circuit.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -146,10 +150,11 @@ public:
 	}
 
 	void testWhileDetection() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -165,10 +170,11 @@ public:
 	}
 
 	void testDoWhileDetection() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -184,10 +190,11 @@ public:
 	}
 
 	void testBreakDetection() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-while.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -201,10 +208,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-do-while.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -218,10 +226,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-do-while2.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -237,10 +246,11 @@ public:
 	}
 
 	void testContinueDetection() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-while.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -256,10 +266,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -273,10 +284,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while2.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -292,10 +304,11 @@ public:
 	}
 
 	void testIfDetection() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -309,10 +322,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-do-while.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -326,10 +340,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-do-while2.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -343,10 +358,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -360,10 +376,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while2.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -379,10 +396,11 @@ public:
 	}
 
 	void testElseDetection() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if-else.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -398,10 +416,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if-no-else.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -419,10 +438,11 @@ public:
 	}
 
 	void testNestedLoops() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/do-while-in-while.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -438,10 +458,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/nested-do-while.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -457,10 +478,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/nested-while.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -476,10 +498,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/nested-while2.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -495,10 +518,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while-in-do-while.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -514,10 +538,11 @@ public:
 		delete c;
 		delete engine;
 
+		insts.clear();
 		engine = new Scumm::v6::Engine();
-		d = engine->getDisassembler();
+		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while-in-do-while2.dmp");
-		insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -537,10 +562,11 @@ public:
 	// This test requires script-30.dmp from Sam & Max: Hit The Road.
 	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	void testSamAndMaxScript30() {
+		std::vector<Instruction> insts;
 		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
-		Disassembler *d = engine->getDisassembler();
+		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/script-30.dmp");
-		std::vector<Instruction> insts = d->disassemble();
+		d->disassemble();
 		delete d;
 		ControlFlow *c = new ControlFlow(insts, engine);
 		c->createGroups();
@@ -571,7 +597,7 @@ public:
 				TS_ASSERT(gr->_endElse.size() == 1 && gr->_endElse[0]->_start->_address == 0x8B);
 				break;
 			case 0x91:
-				TS_ASSERT(gr->_type == kNormal ||  gr->_type == kIfCond); // Allow inclusion of the pop instruction immediately before
+				TS_ASSERT(gr->_type == kNormal || gr->_type == kIfCond); // Allow inclusion of the pop instruction immediately before
 				TS_ASSERT(gr->_startElse);
 				TS_ASSERT(gr->_endElse.empty());
 				break;

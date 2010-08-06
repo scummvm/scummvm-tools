@@ -27,6 +27,7 @@
 
 class SubOpcodeDisassembler : public SimpleDisassembler {
 public:
+	SubOpcodeDisassembler(std::vector<Instruction> &insts);
 	void doDisassemble() throw(UnknownOpcodeException);
 };
 #endif

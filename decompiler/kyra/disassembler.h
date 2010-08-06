@@ -63,7 +63,7 @@ public:
 	 *
 	 * @param engine Pointer to the Kyra::Engine used for this script.
 	 */
-	Disassembler(Engine *engine);
+	Disassembler(Engine *engine, std::vector<Instruction> &insts);
 	~Disassembler();
 	void doDisassemble() throw(UnknownOpcodeException);
 };

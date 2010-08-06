@@ -103,10 +103,11 @@ int main(int argc, char** argv) {
 		std::string inputFile = vm["input-file"].as<std::string>();
 
 		// Disassembly
-		Disassembler *disassembler = engine->getDisassembler();
+		std::vector<Instruction> insts;
+		Disassembler *disassembler = engine->getDisassembler(insts);
 		disassembler->open(inputFile.c_str());
 
-		std::vector<Instruction> insts = disassembler->disassemble();
+		disassembler->disassemble();
 		if (vm.count("dump-disassembly")) {
 			std::streambuf *buf;
 			std::ofstream of;
