@@ -23,6 +23,10 @@
 #include "engine.h"
 #include "disassembler.h"
 
+#include <iostream>
+#include <sstream>
+#include <boost/format.hpp>
+
 ::Disassembler *Kyra::Engine::getDisassembler(std::vector<Instruction> &insts) {
 	return new Disassembler(this, insts);
 }
@@ -34,6 +38,24 @@ uint32 Kyra::Engine::getDestAddress(ConstInstIterator it) const {
 ::CodeGenerator *Kyra::Engine::getCodeGenerator(std::ostream &output) {
 	// TODO
 	return NULL;
+}
+
+void Kyra::Engine::postCFG(std::vector<Instruction> &insts, Graph g) {
+	// Add metadata to functions
+	for (FuncMap::iterator it = _functions.begin(); it != _functions.end(); ++it) {
+		std::stringstream s;
+		s << boost::format("sub0x%X") % it->second._startIt->_address;
+		int maxArg = 0;
+		for (ConstInstIterator instIt = it->second._startIt; instIt != it->second._endIt; ++instIt) {
+			if (instIt->_name.compare("pushBPAdd") == 0) {
+				if (maxArg < instIt->_params[0].getSigned()) {
+					maxArg = instIt->_params[0].getSigned();
+				}
+			}
+		}
+		it->second._args = maxArg;
+		it->second._retVal = true;
+	}
 }
 
 bool Kyra::Engine::detectMoreFuncs() {

@@ -161,6 +161,9 @@ int main(int argc, char** argv) {
 			return 0;
 		}
 
+		// Post-processing of CFG
+		engine->postCFG(insts, g);
+
 		// Code generation
 		CodeGenerator *cg = engine->getCodeGenerator(std::cout);
 		cg->generate(g);

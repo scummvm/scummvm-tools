@@ -38,6 +38,7 @@ public:
 	::Disassembler *getDisassembler(std::vector<Instruction> &insts);
 	uint32 getDestAddress(ConstInstIterator it) const;
 	::CodeGenerator *getCodeGenerator(std::ostream &output);
+	void postCFG(std::vector<Instruction> &insts, Graph g);
 	bool supportsCodeGen() { return false; }
 	bool detectMoreFuncs();
 

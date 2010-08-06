@@ -23,9 +23,7 @@
 #include "disassembler.h"
 #include "engine.h"
 
-#include <algorithm>
-#include <iostream>
-#include <sstream>
+//#include <algorithm>
 #include <boost/format.hpp>
 
 struct FunctionData {
@@ -555,22 +553,6 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 
 	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it)
 		addrMap[it->_address] = it;
-
-	// Add metadata to newly found functions
-	for (FuncMap::iterator it = _engine->_functions.begin(); it != _engine->_functions.end(); ++it) {
-		std::stringstream s;
-		s << boost::format("sub0x%X") % it->second._startIt->_address;
-		int maxArg = 0;
-		for (ConstInstIterator instIt = it->second._startIt; instIt != it->second._endIt; ++instIt) {
-			if (instIt->_name.compare("pushBPAdd") == 0) {
-				if (maxArg < instIt->_params[0].getSigned()) {
-					maxArg = instIt->_params[0].getSigned();
-				}
-			}
-		}
-		it->second._args = maxArg;
-		it->second._retVal = true;
-	}
 
 	std::sort(funcAddrs.begin(), funcAddrs.end());
 	//Create ranges from entry points

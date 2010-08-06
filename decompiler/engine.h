@@ -73,7 +73,7 @@ public:
 	/**
 	 * Retrieve the disassembler for the engine.
 	 *
-	 * @param Reference to the std::vector to place the Instructions in.
+	 * @param insts Reference to the std::vector to place the Instructions in.
 	 * @return Pointer to a Disassembler for the engine.
 	 */
 	virtual Disassembler *getDisassembler(std::vector<Instruction> &insts) = 0;
@@ -93,6 +93,13 @@ public:
 	 * @return Pointer to a CodeGenerator for the engine.
 	 */
 	virtual CodeGenerator *getCodeGenerator(std::ostream &output) = 0;
+
+	/**
+	 * Post-processing step after CFG analysis.
+	 * @param insts Reference to the std::vector to place the Instructions in.
+	 * @param g Graph generated from the CFG analysis.
+	 */
+	virtual void postCFG(std::vector<Instruction> &insts, Graph g) { }
 
 	/**
 	 * Whether or not code flow analysis is supported for this engine.
