@@ -427,40 +427,40 @@ std::string Scumm::v6::CodeGenerator::decodeArrayName(uint16 arrID) {
 
 void Scumm::v6::CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
 	switch (c) {
-		// All of these meanings are taken from descumm.
-		case 'l':
-			addArg(createListEntry());
+	// All of these meanings are taken from descumm.
+	case 'l':
+		addArg(createListEntry());
+		break;
+	// No SCUMMv6 opcodes using these types have more than one parameter, so it's safe to assume it's the first parameter we want.
+	case 'w':
+	case 'j':
+	case 'i':
+		switch (inst._params[0]._type) {
+		case kSByte:
+		case kShort:
+			addArg(new IntEntry(inst._params[0].getSigned(), true));
 			break;
-		// No SCUMMv6 opcodes using these types have more than one parameter, so it's safe to assume it's the first parameter we want.
-		case 'w':
-		case 'j':
-		case 'i':
-			switch (inst._params[0]._type) {
-			case kSByte:
-			case kShort:
-				addArg(new IntEntry(inst._params[0].getSigned(), true));
-				break;
-			case kByte:
-			case kUShort:
-				addArg(new IntEntry(inst._params[0].getUnsigned(), false));
-				break;
-			default:
-				std::cerr << boost::format("WARNING: Unexpected type for parameter 0 @ %08X while processing metadata character %c") % inst._address % c;
-				break;
-			}
-			break;
-		case 'v':
-			addArg(new VarEntry(decodeVarName(inst._params[0].getUnsigned())));
-			break;
-		case 's':
-			addArg(new StringEntry(inst._params[0].getString()));
-			break;
-		case 'z':
-			addArg(_stack.pop());
-			addArg(_stack.pop());
+		case kByte:
+		case kUShort:
+			addArg(new IntEntry(inst._params[0].getUnsigned(), false));
 			break;
 		default:
-			::CodeGenerator::processSpecialMetadata(inst, c);
+			std::cerr << boost::format("WARNING: Unexpected type for parameter 0 @ %08X while processing metadata character %c") % inst._address % c;
 			break;
+		}
+		break;
+	case 'v':
+		addArg(new VarEntry(decodeVarName(inst._params[0].getUnsigned())));
+		break;
+	case 's':
+		addArg(new StringEntry(inst._params[0].getString()));
+		break;
+	case 'z':
+		addArg(_stack.pop());
+		addArg(_stack.pop());
+		break;
+	default:
+		::CodeGenerator::processSpecialMetadata(inst, c);
+		break;
 	}
 }
