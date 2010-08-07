@@ -79,7 +79,11 @@ public:
 	 * @param pos The number of items to skip on the stack.
 	 * @return The desired item from the stack.
 	 */
-	T &peekPos(size_t pos) { return _stack.at(pos); }
+	T &peekPos(size_t pos) {
+		if (pos >= _stack.size())
+			std::cerr << "WARNING: Looking outside stack\n";
+		return _stack.at(pos);
+	}
 
 	/**
 	 * Return the item on the specificed stack position without removing it.
@@ -87,7 +91,11 @@ public:
 	 * @param pos The number of items to skip on the stack.
 	 * @return The desired item from the stack.
 	 */
-	const T &peekPos(size_t pos) const { return _stack.at(pos); }
+	const T &peekPos(size_t pos) const {
+		if (pos >= _stack.size())
+			std::cerr << "WARNING: Looking outside stack\n";
+		return _stack.at(pos);
+	}
 };
 
 #endif

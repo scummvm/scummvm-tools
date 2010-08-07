@@ -33,6 +33,8 @@
 
 class Engine;
 
+class Function;
+
 enum StackEntryType {
 	seInt,
 	seVar,
@@ -149,6 +151,10 @@ public:
 	 * @param isSigned Whether or not the value is signed. This will affect output.
 	 */
 	IntEntry(uint32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) { }
+
+	int32 getValue();
+
+	bool getSigned();
 
 	virtual std::ostream &print(std::ostream &output) const;
 
@@ -336,7 +342,6 @@ enum ArgOrder {
  */
 class CodeGenerator {
 private:
-	Engine *_engine;           ///< Pointer to the Engine used for the script.
 	Graph _g;                  ///< The annotated graph of the script.
 	const ArgOrder _binOrder;  ///< Order of operands for binary operations.
 	const ArgOrder _callOrder; ///< Order of operands for call arguments.
@@ -349,6 +354,7 @@ private:
 	void process(GraphVertex v);
 
 protected:
+	Engine *_engine;       ///< Pointer to the Engine used for the script.
 	std::ostream &_output; ///< The std::ostream to output the code to.
 	EntryStack _stack;     ///< The stack currently being processed.
 	uint _indentLevel;     ///< Indentation level.
@@ -401,6 +407,13 @@ protected:
 	 * @param p The argument to add.
 	 */
 	void addArg(EntryPtr p);
+
+	/**
+	 * Construct the signature for a function.
+	 *
+	 * @param func Reference to the function to construct the signature for.
+	 */
+	virtual std::string constructFuncSignature(const Function &func);
 
 public:
 	virtual ~CodeGenerator() { }

@@ -22,6 +22,7 @@
 
 #include "engine.h"
 #include "disassembler.h"
+#include "codegen.h"
 
 #include <iostream>
 #include <sstream>
@@ -36,15 +37,15 @@ uint32 Kyra::Engine::getDestAddress(ConstInstIterator it) const {
 }
 
 ::CodeGenerator *Kyra::Engine::getCodeGenerator(std::ostream &output) {
-	// TODO
-	return NULL;
+	return new CodeGenerator(this, output);
 }
 
 void Kyra::Engine::postCFG(std::vector<Instruction> &insts, Graph g) {
 	// Add metadata to functions
 	for (FuncMap::iterator it = _functions.begin(); it != _functions.end(); ++it) {
 		std::stringstream s;
-		s << boost::format("sub0x%X") % it->second._startIt->_address;
+		s << it->second._name << boost::format("sub0x%X") % it->second._startIt->_address;
+		it->second._name = s.str();
 		int maxArg = 0;
 		for (ConstInstIterator instIt = it->second._startIt; instIt != it->second._endIt; ++instIt) {
 			if (instIt->_name.compare("pushBPAdd") == 0) {
@@ -55,6 +56,9 @@ void Kyra::Engine::postCFG(std::vector<Instruction> &insts, Graph g) {
 		}
 		it->second._args = maxArg;
 		it->second._retVal = true;
+		std::stringstream md;
+		md << "0" << std::string(maxArg, 'p');
+		it->second._metadata = md.str();
 	}
 }
 

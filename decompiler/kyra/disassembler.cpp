@@ -33,225 +33,225 @@ struct FunctionData {
 
 static FunctionData kyra2FuncDesc[] = {
 	// 0x00
-	{ "o2_setCharacterFacingRefresh", "0ppp" },
-	{ "o2_setCharacterPos", "0ppp" },
-	{ "o2_defineObject", "0pspppp" },
-	{ "o2_refreshCharacter", "0pppp" },
+	{ "o2_setCharacterFacingRefresh", "\xC0r0ppp" },
+	{ "o2_setCharacterPos", "\xC0r0ppp" },
+	{ "o2_defineObject", "\xC0r0pspppp" },
+	{ "o2_refreshCharacter", "\xC0r0pppp" },
 	// 0x04
-	{ "o2_getCharacterX", "" },
-	{ "o2_getCharacterY", "" },
-	{ "o2_getCharacterFacing", "" },
-	{ "o2_getCharacterScene", "" },
+	{ "o2_getCharacterX", "\xC0r" },
+	{ "o2_getCharacterY", "\xC0r" },
+	{ "o2_getCharacterFacing", "\xC0r" },
+	{ "o2_getCharacterScene", "\xC0r" },
 	// 0x08
-	{ "o2_setSceneComment", "0s" },
-	{ "unk09", "0p" },
-	{ "unk0A", "0p" },
-	{ "o2_setCharacterAnimFrame", "0ppp" },
+	{ "o2_setSceneComment", "\xC0r0s" },
+	{ "unk09", "\xC0r0p" },
+	{ "unk0A", "\xC0r0p" },
+	{ "o2_setCharacterAnimFrame", "\xC0r0ppp" },
 	// 0x0c
-	{ "o2_setCharacterFacingOverwrite", "0p" },
-	{ "o2_trySceneChange", "0pppp" },
-	{ "o2_moveCharacter", "0ppp" },
-	{ "o2_customCharacterChat", "0spppp" },
+	{ "o2_setCharacterFacingOverwrite", "\xC0r0p" },
+	{ "o2_trySceneChange", "\xC0r0pppp" },
+	{ "o2_moveCharacter", "\xC0r0ppp" },
+	{ "o2_customCharacterChat", "\xC0r0spppp" },
 	// 0x10
-	{ "o2_soundFadeOut", "" },
-	{ "o2_showChapterMessage", "0pp" },
-	{ "o2_restoreTalkTextMessageBkgd", "" },
-	{ "o2_printString", "0spppp" },
+	{ "o2_soundFadeOut", "\xC0r" },
+	{ "o2_showChapterMessage", "\xC0r0pp" },
+	{ "o2_restoreTalkTextMessageBkgd", "\xC0r" },
+	{ "o2_printString", "\xC0r0spppp" },
 	// 0x14
-	{ "o2_wsaClose", "0p" },
-	{ "o2_backUpScreen", "0p" },
-	{ "o2_restoreScreen", "0p" },
-	{ "o2_displayWsaFrame", "0ppppppppp" },
+	{ "o2_wsaClose", "\xC0r0p" },
+	{ "o2_backUpScreen", "\xC0r0p" },
+	{ "o2_restoreScreen", "\xC0r0p" },
+	{ "o2_displayWsaFrame", "\xC0r0ppppppppp" },
 	// 0x18
-	{ "o2_displayWsaSequentialFramesLooping", "0pppppppp" },
-	{ "o2_wsaOpen", "0sp" },
-	{ "o2_displayWsaSequentialFrames", "0ppppppp" },
-	{ "o2_displayWsaSequence", "0pppppp" },
+	{ "o2_displayWsaSequentialFramesLooping", "\xC0r0pppppppp" },
+	{ "o2_wsaOpen", "\xC0r0sp" },
+	{ "o2_displayWsaSequentialFrames", "\xC0r0ppppppp" },
+	{ "o2_displayWsaSequence", "\xC0r0pppppp" },
 	// 0x1c
-	{ "o2_addItemToInventory", "0ppp" },
-	{ "o2_drawShape", "0ppppp" },
-	{ "o2_addItemToCurScene", "0ppp" },
-	{ "o2_limitMouseRange", "0pppp" },
+	{ "o2_addItemToInventory", "\xC0r0ppp" },
+	{ "o2_drawShape", "\xC0r0ppppp" },
+	{ "o2_addItemToCurScene", "\xC0r0ppp" },
+	{ "o2_limitMouseRange", "\xC0r0pppp" },
 	// 0x20
-	{ "o2_checkForItem", "0pp" },
-	{ "o2_loadSoundFile", "0p" },
-	{ "o2_removeSlotFromInventory", "0p" },
-	{ "o2_defineItem", "0pppp" },
+	{ "o2_checkForItem", "\xC0r0pp" },
+	{ "o2_loadSoundFile", "\xC0r0p" },
+	{ "o2_removeSlotFromInventory", "\xC0r0p" },
+	{ "o2_defineItem", "\xC0r0pppp" },
 	// 0x24
-	{ "o2_removeItemFromInventory", "0p" },
-	{ "o2_countItemInInventory", "0pp" },
-	{ "o2_countItemsInScene", "0p" },
-	{ "o1_queryGameFlag", "0p" },
+	{ "o2_removeItemFromInventory", "\xC0r0p" },
+	{ "o2_countItemInInventory", "\xC0r0pp" },
+	{ "o2_countItemsInScene", "\xC0r0p" },
+	{ "o1_queryGameFlag", "\xC0r0p" },
 	// 0x28
-	{ "o1_resetGameFlag", "0p" },
-	{ "o1_setGameFlag", "0p" },
-	{ "o1_setHandItem", "0p" },
-	{ "o1_removeHandItem", "" },
+	{ "o1_resetGameFlag", "\xC0r0p" },
+	{ "o1_setGameFlag", "\xC0r0p" },
+	{ "o1_setHandItem", "\xC0r0p" },
+	{ "o1_removeHandItem", "\xC0r" },
 	// 0x2c
-	{ "o1_getMouseState", "" },
-	{ "o1_hideMouse", "" },
-	{ "o2_addSpecialExit", "0ppppp" },
-	{ "o1_setMousePos", "0pp" },
+	{ "o1_getMouseState", "\xC0r" },
+	{ "o1_hideMouse", "\xC0r" },
+	{ "o2_addSpecialExit", "\xC0r0ppppp" },
+	{ "o1_setMousePos", "\xC0r0pp" },
 	// 0x30
-	{ "o1_showMouse", "" },
-	{ "o2_drawBox", "0ppppp" },
-	{ "o2_wipeDownMouseItem", "0ppp" },
-	{ "o2_getElapsedSecs", "" },
+	{ "o1_showMouse", "\xC0r" },
+	{ "o2_drawBox", "\xC0r0ppppp" },
+	{ "o2_wipeDownMouseItem", "\xC0r0ppp" },
+	{ "o2_getElapsedSecs", "\xC0r" },
 	// 0x34
-	{ "o2_getTimerDelay", "0p" },
-	{ "o1_playSoundEffect", "0p" },
-	{ "o2_delaySecs", "0p" },
-	{ "o2_delay", "0pp" },
+	{ "o2_getTimerDelay", "\xC0r0p" },
+	{ "o1_playSoundEffect", "\xC0r0p" },
+	{ "o2_delaySecs", "\xC0r0p" },
+	{ "o2_delay", "\xC0r0pp" },
 	// 0x38
-	{ "o2_dummy38", "" },
-	{ "o2_setTimerDelay", "0pp" },
-	{ "o2_setScaleTableItem", "0pp" },
-	{ "o2_setDrawLayerTableItem", "0pp" },
+	{ "o2_dummy38", "\xC0r" },
+	{ "o2_setTimerDelay", "\xC0r0pp" },
+	{ "o2_setScaleTableItem", "\xC0r0pp" },
+	{ "o2_setDrawLayerTableItem", "\xC0r0pp" },
 	// 0x3c
-	{ "o2_setCharPalEntry", "0pp" },
-	{ "o2_loadZShapes", "0p" },
-	{ "o2_drawSceneShape", "0pppp" },
-	{ "o2_drawSceneShapeOnPage", "0ppppp" },
+	{ "o2_setCharPalEntry", "\xC0r0pp" },
+	{ "o2_loadZShapes", "\xC0r0p" },
+	{ "o2_drawSceneShape", "\xC0r0pppp" },
+	{ "o2_drawSceneShapeOnPage", "\xC0r0ppppp" },
 	// 0x40
-	{ "o2_disableAnimObject", "0p" },
-	{ "o2_enableAnimObject", "0p" },
-	{ "o2_dummy42", "" },
-	{ "o2_loadPalette384", "0s" },
+	{ "o2_disableAnimObject", "\xC0r0p" },
+	{ "o2_enableAnimObject", "\xC0r0p" },
+	{ "o2_dummy42", "\xC0r" },
+	{ "o2_loadPalette384", "\xC0r0s" },
 	// 0x44
-	{ "o2_setPalette384", "" },
-	{ "o2_restoreBackBuffer", "0p" },
-	{ "o2_backUpInventoryGfx", "" },
-	{ "o2_disableSceneAnim", "0p" },
+	{ "o2_setPalette384", "\xC0r" },
+	{ "o2_restoreBackBuffer", "\xC0r0p" },
+	{ "o2_backUpInventoryGfx", "\xC0r" },
+	{ "o2_disableSceneAnim", "\xC0r0p" },
 	// 0x48
-	{ "o2_enableSceneAnim", "0p" },
-	{ "o2_restoreInventoryGfx", "" },
-	{ "o2_setSceneAnimPos2", "0ppp" },
-	{ "o2_update", "0p" },
+	{ "o2_enableSceneAnim", "\xC0r0p" },
+	{ "o2_restoreInventoryGfx", "\xC0r" },
+	{ "o2_setSceneAnimPos2", "\xC0r0ppp" },
+	{ "o2_update", "\xC0r0p" },
 	// 0x4c
-	{ "unk4C_palFade?", "0pp" },
-	{ "o2_fadeScenePal", "0pp" },
-	{ "o2_dummy4E", "" },
-	{ "o2_dummy4F", "" },
+	{ "unk4C_palFade?", "\xC0r0pp" },
+	{ "o2_fadeScenePal", "\xC0r0pp" },
+	{ "o2_dummy4E", "\xC0r" },
+	{ "o2_dummy4F", "\xC0r" },
 	// 0x50
-	{ "o2_enterNewScene", "0ppppp" },
-	{ "o2_switchScene", "0p" },
-	{ "o2_getShapeFlag1", "0pp" },
-	{ "o2_setPathfinderFlag", "0p" },
+	{ "o2_enterNewScene", "\xC0r0ppppp" },
+	{ "o2_switchScene", "\xC0r0p" },
+	{ "o2_getShapeFlag1", "\xC0r0pp" },
+	{ "o2_setPathfinderFlag", "\xC0r0p" },
 	// 0x54
-	{ "o2_getSceneExitToFacing", "0pp" },
-	{ "o2_setLayerFlag", "0p" },
-	{ "o2_setZanthiaPos", "0pp" },
-	{ "o2_loadMusicTrack", "0p" },
+	{ "o2_getSceneExitToFacing", "\xC0r0pp" },
+	{ "o2_setLayerFlag", "\xC0r0p" },
+	{ "o2_setZanthiaPos", "\xC0r0pp" },
+	{ "o2_loadMusicTrack", "\xC0r0p" },
 	// 0x58
-	{ "o1_playWanderScoreViaMap", "0pp" },
-	{ "o1_playSoundEffect", "0p" },
-	{ "o2_setSceneAnimPos", "0ppp" },
-	{ "o1_blockInWalkableRegion", "0pppp" },
+	{ "o1_playWanderScoreViaMap", "\xC0r0pp" },
+	{ "o1_playSoundEffect", "\xC0r0p" },
+	{ "o2_setSceneAnimPos", "\xC0r0ppp" },
+	{ "o1_blockInWalkableRegion", "\xC0r0pppp" },
 	// 0x5c
-	{ "o1_blockOutWalkableRegion", "0pppp" },
-	{ "unk5D", "0ppppp" },
-	{ "o2_setCauldronState", "0pp" },
-	{ "o2_showItemString", "0pp" },
+	{ "o1_blockOutWalkableRegion", "\xC0r0pppp" },
+	{ "unk5D", "\xC0r0ppppp" },
+	{ "o2_setCauldronState", "\xC0r0pp" },
+	{ "o2_showItemString", "\xC0r0pp" },
 	// 0x60
-	{ "o1_getRand", "0pp" },
-	{ "o2_isAnySoundPlaying", "" },
-	{ "o1_setDeathHandler", "0p" },
-	{ "o2_setDrawNoShapeFlag", "0p" },
+	{ "o1_getRand", "\xC0r0pp" },
+	{ "o2_isAnySoundPlaying", "\xC0r" },
+	{ "o1_setDeathHandler", "\xC0r0p" },
+	{ "o2_setDrawNoShapeFlag", "\xC0r0p" },
 	// 0x64
-	{ "o2_setRunFlag", "0p" },
-	{ "o2_showLetter", "0p" },
-	{ "o1_shakeScreen", "0pp" },
-	{ "o1_fillRect", "0pppppp" },
+	{ "o2_setRunFlag", "\xC0r0p" },
+	{ "o2_showLetter", "\xC0r0p" },
+	{ "o1_shakeScreen", "\xC0r0pp" },
+	{ "o1_fillRect", "\xC0r0pppppp" },
 	// 0x68
-	{ "o2_getKey", "" },
-	{ "unk69", "0pppp" },
-	{ "o2_playFireflyScore", "" },
-	{ "o2_waitForConfirmationClick", "0p" },
+	{ "o2_getKey", "\xC0r" },
+	{ "unk69", "\xC0r0pppp" },
+	{ "o2_playFireflyScore", "\xC0r" },
+	{ "o2_waitForConfirmationClick", "\xC0r0p" },
 	// 0x6c
-	{ "o2_encodeShape", "0ppppp" },
-	{ "o2_defineRoomEntrance", "0ppp" },
-	{ "o2_runAnimationScript", "0sppp" },
-	{ "o2_setSpecialSceneScriptRunTime", "0pp" },
+	{ "o2_encodeShape", "\xC0r0ppppp" },
+	{ "o2_defineRoomEntrance", "\xC0r0ppp" },
+	{ "o2_runAnimationScript", "\xC0r0sppp" },
+	{ "o2_setSpecialSceneScriptRunTime", "\xC0r0pp" },
 	// 0x70
-	{ "o2_defineSceneAnim", "0pppppppppppps" },
-	{ "o2_updateSceneAnim", "pp" },
-	{ "o2_updateSceneAnim", "pp" },
-	{ "o2_addToSceneAnimPosAndUpdate", "0ppp" },
+	{ "o2_defineSceneAnim", "\xC0r0pppppppppppps" },
+	{ "o2_updateSceneAnim", "\xC0r0pp" },
+	{ "o2_updateSceneAnim", "\xC0r0pp" },
+	{ "o2_addToSceneAnimPosAndUpdate", "\xC0r0ppp" },
 	// 0x74
-	{ "o2_useItemOnMainChar", "" },
-	{ "o2_startDialogue", "0p" },
-	{ "o2_randomSceneChat", "" },
-	{ "o2_setDlgIndex", "0p" },
+	{ "o2_useItemOnMainChar", "\xC0r" },
+	{ "o2_startDialogue", "\xC0r0p" },
+	{ "o2_randomSceneChat", "\xC0r" },
+	{ "o2_setDlgIndex", "\xC0r0p" },
 	// 0x78
-	{ "o2_getDlgIndex", "" },
-	{ "o2_defineScene", "0pspppppp" },
-	{ "o2_addCauldronStateTableEntry", "0pp" },
-	{ "o2_setCountDown", "0p" },
+	{ "o2_getDlgIndex", "\xC0r" },
+	{ "o2_defineScene", "\xC0r0pspppppp" },
+	{ "o2_addCauldronStateTableEntry", "\xC0r0pp" },
+	{ "o2_setCountDown", "\xC0r0p" },
 	// 0x7c
-	{ "o2_getCountDown", "" },
-	{ "o2_dummy7D", "" },
-	{ "o2_dummy7E", "" },
-	{ "o2_pressColorKey", "0p" },
+	{ "o2_getCountDown", "\xC0r" },
+	{ "o2_dummy7D", "\xC0r" },
+	{ "o2_dummy7E", "\xC0r" },
+	{ "o2_pressColorKey", "\xC0r0p" },
 	// 0x80
-	{ "o2_objectChat", "0sp" },
-	{ "o2_changeChapter", "0pp" },
-	{ "o2_getColorCodeFlag1", "" },
-	{ "o2_setColorCodeFlag1", "0p" },
+	{ "o2_objectChat", "\xC0r0sp" },
+	{ "o2_changeChapter", "\xC0r0pp" },
+	{ "o2_getColorCodeFlag1", "\xC0r" },
+	{ "o2_setColorCodeFlag1", "\xC0r0p" },
 	// 0x84
-	{ "o2_getColorCodeFlag2", "" },
-	{ "o2_setColorCodeFlag2", "0p" },
-	{ "o2_getColorCodeValue", "0p" },
-	{ "o2_setColorCodeValue", "0pp" },
+	{ "o2_getColorCodeFlag2", "\xC0r" },
+	{ "o2_setColorCodeFlag2", "\xC0r0p" },
+	{ "o2_getColorCodeValue", "\xC0r0p" },
+	{ "o2_setColorCodeValue", "\xC0r0pp" },
 	// 0x88
-	{ "o2_countItemInstances", "0p" },
-	{ "o2_removeItemFromScene", "0pp" },
-	{ "o2_initObject", "0p" },
-	{ "o2_npcChat", "0spp" }, // FIXME: Non-talkie metadata; talkie opcode is 0spp
+	{ "o2_countItemInstances", "\xC0r0p" },
+	{ "o2_removeItemFromScene", "\xC0r0pp" },
+	{ "o2_initObject", "\xC0r0p" },
+	{ "o2_npcChat", "\xC0r0spp" }, // FIXME: Non-talkie metadata; talkie opcode is 0spp
 	// 0x8c
-	{ "o2_deinitObject", "0p" },
-	{ "o2_playTimSequence", "0s" },
-	{ "o2_makeBookOrCauldronAppear", "0p" },
-	{ "o2_setSpecialSceneScriptState", "0p" },
+	{ "o2_deinitObject", "\xC0r0p" },
+	{ "o2_playTimSequence", "\xC0r0s" },
+	{ "o2_makeBookOrCauldronAppear", "\xC0r0p" },
+	{ "o2_setSpecialSceneScriptState", "\xC0r0p" },
 	// 0x90
-	{ "o2_clearSpecialSceneScriptState", "0p" },
-	{ "o2_querySpecialSceneScriptState", "0p" },
-	{ "o2_resetInputColorCode", "" },
-	{ "o2_setHiddenItemsEntry", "0pp" },
+	{ "o2_clearSpecialSceneScriptState", "\xC0r0p" },
+	{ "o2_querySpecialSceneScriptState", "\xC0r0p" },
+	{ "o2_resetInputColorCode", "\xC0r" },
+	{ "o2_setHiddenItemsEntry", "\xC0r0pp" },
 	// 0x94
-	{ "o2_getHiddenItemsEntry", "0p" },
-	{ "o2_mushroomEffect", "" },
-	{ "o2_wsaClose", "0p" },
-	{ "o2_meanWhileScene", "0p" },
+	{ "o2_getHiddenItemsEntry", "\xC0r0p" },
+	{ "o2_mushroomEffect", "\xC0r" },
+	{ "o2_wsaClose", "\xC0r0p" },
+	{ "o2_meanWhileScene", "\xC0r0p" },
 	// 0x98
-	{ "o2_customChat", "0spp" },
-	{ "o2_customChatFinish", "" },
-	{ "o2_setupSceneAnimation", "0pppppppppppps" },
-	{ "o2_stopSceneAnimation", "0pp" },
+	{ "o2_customChat", "\xC0r0spp" },
+	{ "o2_customChatFinish", "\xC0r" },
+	{ "o2_setupSceneAnimation", "\xC0r0pppppppppppps" },
+	{ "o2_stopSceneAnimation", "\xC0r0pp" },
 	// 0x9c
-	{ "o2_disableTimer", "0p" },
-	{ "o2_enableTimer", "0p" },
-	{ "o2_setTimerCountdown", "0pp" },
-	{ "o2_processPaletteIndex", "0pppppp" },
+	{ "o2_disableTimer", "\xC0r0p" },
+	{ "o2_enableTimer", "\xC0r0p" },
+	{ "o2_setTimerCountdown", "\xC0r0pp" },
+	{ "o2_processPaletteIndex", "\xC0r0pppppp" },
 	// 0xa0
-	{ "o2_updateTwoSceneAnims", "0pppp" },
-	{ "o2_getRainbowRoomData", "0p" },
-	{ "o2_drawSceneShapeEx", "0pppp" },
-	{ "o2_midiSoundFadeout", "" },
+	{ "o2_updateTwoSceneAnims", "\xC0r0pppp" },
+	{ "o2_getRainbowRoomData", "\xC0r0p" },
+	{ "o2_drawSceneShapeEx", "\xC0r0pppp" },
+	{ "o2_midiSoundFadeout", "\xC0r" },
 	// 0xa4
-	{ "o2_getSfxDriver", "" },
-	{ "o2_getVocSupport", "" },
-	{ "o2_getMusicDriver", "" },
-	{ "o2_setVocHigh", "0p" },
+	{ "o2_getSfxDriver", "\xC0r" },
+	{ "o2_getVocSupport", "\xC0r" },
+	{ "o2_getMusicDriver", "\xC0r" },
+	{ "o2_setVocHigh", "\xC0r0p" },
 	// 0xa8
-	{ "o2_getVocHigh", "" },
-	{ "o2_zanthiaChat", "0sp" },
-	{ "o2_isVoiceEnabled", "" },
-	{ "o2_isVoicePlaying", "" },
+	{ "o2_getVocHigh", "\xC0r" },
+	{ "o2_zanthiaChat", "\xC0r0sp" },
+	{ "o2_isVoiceEnabled", "\xC0r" },
+	{ "o2_isVoicePlaying", "\xC0r" },
 	// 0xac
-	{ "o2_stopVoicePlaying", "" },
-	{ "o2_getGameLanguage", "" },
-	{ "o2_demoFinale", "" },
-	{ "o2_dummyAF", "" }
+	{ "o2_stopVoicePlaying", "\xC0r" },
+	{ "o2_getGameLanguage", "\xC0r" },
+	{ "o2_demoFinale", "\xC0r" },
+	{ "o2_dummyAF", "\xC0r" }
 };
 
 IFFChunk::IFFChunk() {
@@ -326,7 +326,9 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		uint16 numStrings = minTextOffset / 2;
 #define posString(x) (char*)&_textChunk._data[READ_BE_UINT16(&((uint16 *)_textChunk._data)[(x)])]
 		for (uint16 i = 0; i < numStrings; ++i) {
-			_engine->_textStrings.push_back(posString(i));
+			std::stringstream s;
+			s << "\"" << posString(i) << "\"";
+			_engine->_textStrings.push_back(s.str());
 		}
 #undef posString
 	}
@@ -466,7 +468,7 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			break;
 		case 16:
 			if (parameter == 0) {
-				OPCODE_MD("boolCast", kUnaryOp, 0, false, false, "(bool)");
+				OPCODE_MD("boolNegate", kUnaryOp, 0, false, false, "!");
 			} else if (parameter == 1) {
 				OPCODE_MD("arithmeticNegate", kUnaryOp, 0, false, false,"-");
 			} else if (parameter == 2) {
@@ -555,12 +557,10 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		addrMap[it->_address] = it;
 
 	std::sort(funcAddrs.begin(), funcAddrs.end());
-	//Create ranges from entry points
+	// We only have the entry points, but the end points are not known, so create placeholder function entries
 	for (size_t i = 0; i < funcAddrs.size(); i++) {
-		if (i == funcAddrs.size() - 1) // Last function
-			_engine->_functions[funcAddrs[i]] = Function(addrMap[funcAddrs[i]], _insts.end());
-		else
-			_engine->_functions[funcAddrs[i]] = Function(addrMap[funcAddrs[i]], addrMap[funcAddrs[i+1]]);
+		_engine->_functions[funcAddrs[i]] = Function(addrMap[funcAddrs[i]], addrMap[funcAddrs[i]]);
+		_engine->_functions[funcAddrs[i]]._name = "global_";
 	}
 
 	// Correct jumps to functions so they're treated as calls
@@ -574,3 +574,4 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		lastWasPushPos = (it->_name.compare("pushPos") == 0);
 	}
 }
+

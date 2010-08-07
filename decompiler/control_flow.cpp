@@ -168,10 +168,16 @@ void ControlFlow::detectFunctions() {
 			continue;
 
 		bool functionExists = false;
+		bool detectEndPoint = false;
 		for (FuncMap::iterator fn = _engine->_functions.begin(); fn != _engine->_functions.end(); ++fn) {
 			if (fn->first == it->_address) {
-				if (fn->second._endIt == _insts.end())
+				if (fn->second._endIt == _insts.end()) {
 					return;
+				}
+				if (fn->second._startIt == fn->second._endIt) {
+					detectEndPoint = true;
+					break;
+				}
 				nextFunc = fn->second._endIt->_address;
 				functionExists = true;
 			}
@@ -180,12 +186,14 @@ void ControlFlow::detectFunctions() {
 		if (functionExists)
 			continue;
 
-		InEdgeRange ier = boost::in_edges(v, _g);
 		bool isEntryPoint = true;
-		for (InEdgeIterator e = ier.first; e != ier.second; ++e) {
-			// If an ingoing edge exists from earlier in the code, this is not a function entry point
-			if (GET(boost::source(*e, _g))->_start->_address < gr->_start->_address)
-				isEntryPoint = false;
+		if (!detectEndPoint) {
+			InEdgeRange ier = boost::in_edges(v, _g);
+			for (InEdgeIterator e = ier.first; e != ier.second; ++e) {
+				// If an ingoing edge exists from earlier in the code, this is not a function entry point
+				if (GET(boost::source(*e, _g))->_start->_address < gr->_start->_address)
+					isEntryPoint = false;
+			}
 		}
 
 		if (isEntryPoint) {
@@ -216,7 +224,14 @@ void ControlFlow::detectFunctions() {
 			} else {
 				endInst = _insts.end();
 			}
-			Function f(gr->_start, endInst);
+			Function f;
+			if (detectEndPoint) {
+				f = _engine->_functions[gr->_start->_address];
+				f._endIt = endInst;
+			} else {
+				f = Function(gr->_start, endInst);
+				f._name = "auto_";
+			}
 			f._v = find(it);
 			_engine->_functions[gr->_start->_address] = f;
 			if (!endPoint->_next)

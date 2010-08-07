@@ -20,30 +20,33 @@
  *
  */
 
-#ifndef KYRA_ENGINE_H
-#define KYRA_ENGINE_H
+#ifndef DEC_KYRA_CODEGEN_H
+#define DEC_KYRA_CODEGEN_H
 
-#include "decompiler/engine.h"
-
-#include <string>
-#include <vector>
+#include "../codegen.h"
 
 namespace Kyra {
 
 /**
- * KYRA engine.
+ * KYRA code generator.
  */
-class Engine : public ::Engine {
+class CodeGenerator : public ::CodeGenerator {
+private:
+	int _stackOffset; ///< Running count of where in the stack to look for the next argument.
 public:
-	::Disassembler *getDisassembler(std::vector<Instruction> &insts);
-	uint32 getDestAddress(ConstInstIterator it) const;
-	::CodeGenerator *getCodeGenerator(std::ostream &output);
-	void postCFG(std::vector<Instruction> &insts, Graph g);
-	bool detectMoreFuncs();
-
-	std::vector<std::string> _textStrings;
+	/**
+	 * Constructor for Kyra::CodeGenerator.
+	 *
+	 * @param engine Pointer to the Engine used for the script.
+	 * @param output The std::ostream to output the code to.
+	 */
+	CodeGenerator(Engine *engine, std::ostream &output) : ::CodeGenerator(engine, output, kLIFO, kLIFO) {}
+protected:
+	void processInst(const Instruction inst);
+	virtual void processSpecialMetadata(const Instruction inst, char c);
+	std::string constructFuncSignature(const Function &func);
 };
 
-} // End of namespace KYRA
+} // End of namespace Kyra
 
 #endif

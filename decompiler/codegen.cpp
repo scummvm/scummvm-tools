@@ -34,6 +34,14 @@
 
 static int dupindex = 0;
 
+int32 IntEntry::getValue() {
+	return _val;
+}
+
+bool IntEntry::getSigned() {
+	return _isSigned;
+}
+
 std::ostream &IntEntry::print(std::ostream &output) const {
 	if (_isSigned)
 		output << (int32)_val;
@@ -104,6 +112,10 @@ EntryPtr IntEntry::dup(std::ostream &output) {
 	return new IntEntry(_val, _isSigned);
 }
 
+std::string CodeGenerator::constructFuncSignature(const Function &func) {
+	return "";
+}
+
 std::string CodeGenerator::indentString(std::string s) {
 	std::stringstream stream;
 	stream << std::string(kIndentAmount * _indentLevel, ' ') << s;
@@ -120,53 +132,68 @@ typedef std::pair<GraphVertex, EntryStack> DFSEntry;
 void CodeGenerator::generate(const Graph &g) {
 	_g = g;
 
-	// Find entry point
-	// FIXME: For simplicity, we simply treat the first group as the entry point, because that's how SCUMM works.
-	// This should be changed later to allow for functions etc.
-	VertexRange vr = boost::vertices(_g);
-	GraphVertex entryPoint = *(vr.first);
-	GroupPtr p = GET(entryPoint);
-	while (p->_prev != NULL)
-		p = p->_prev;
-	entryPoint = p->_vertex;
+	for (FuncMap::iterator fn = _engine->_functions.begin(); fn != _engine->_functions.end(); ++fn)
+	{
+		_indentLevel = 0;
+		while (!_stack.empty())
+			_stack.pop();
+		GraphVertex entryPoint = fn->second._v;
+		std::string funcSignature = constructFuncSignature(fn->second);
+		bool printFuncSignature = !funcSignature.empty();
+		if (printFuncSignature) {
+			_curGroup = GET(entryPoint);
+			if (!(fn == _engine->_functions.begin()))
+				addOutputLine("");
+			addOutputLine(funcSignature, false, true);
+		}
 
-	// DFS from entry point to process each vertex
-	Stack<DFSEntry> dfsStack;
-	std::set<GraphVertex> seen;
-	dfsStack.push(DFSEntry(entryPoint, EntryStack()));
-	seen.insert(entryPoint);
-	while (!dfsStack.empty()) {
-		DFSEntry e = dfsStack.pop();
-		GroupPtr tmp = GET(e.first);
-		_stack = e.second;
-		GraphVertex v = e.first;
-		process(v);
-		OutEdgeRange r = boost::out_edges(v, _g);
-		for (OutEdgeIterator i = r.first; i != r.second; ++i) {
-			GraphVertex target = boost::target(*i, _g);
-			if (seen.find(target) == seen.end()) {
-				dfsStack.push(DFSEntry(target, _stack));
-				seen.insert(target);
+		GroupPtr lastGroup = GET(entryPoint);
+
+		// DFS from entry point to process each vertex
+		Stack<DFSEntry> dfsStack;
+		std::set<GraphVertex> seen;
+		dfsStack.push(DFSEntry(entryPoint, EntryStack()));
+		seen.insert(entryPoint);
+		while (!dfsStack.empty()) {
+			DFSEntry e = dfsStack.pop();
+			GroupPtr tmp = GET(e.first);
+			if (tmp->_start->_address > lastGroup->_start->_address)
+				lastGroup = tmp;
+			_stack = e.second;
+			GraphVertex v = e.first;
+			process(v);
+			OutEdgeRange r = boost::out_edges(v, _g);
+			for (OutEdgeIterator i = r.first; i != r.second; ++i) {
+				GraphVertex target = boost::target(*i, _g);
+				if (seen.find(target) == seen.end()) {
+					dfsStack.push(DFSEntry(target, _stack));
+					seen.insert(target);
+				}
 			}
 		}
-	}
 
-	// Print output
-	// TODO: Proper indenting
-	p = GET(entryPoint);
-	while (p != NULL) {
-		for (std::vector<CodeLine>::iterator it = p->_code.begin(); it != p->_code.end(); ++it) {
-			if (it->_unindentBefore /*&& _indentLevel != 0*/)
-				_indentLevel--;
-			_output << boost::format("%08X: %s") % p->_start->_address % indentString(it->_line) << std::endl;
-			if (it->_indentAfter)
-				_indentLevel++;
+		if (printFuncSignature) {
+			_curGroup = lastGroup;
+			addOutputLine("}", true, false);
 		}
-		p = p->_next;
-	}
 
-	if (_indentLevel != 0)
-		std::cerr << "WARNING: Indent level ended at " << _indentLevel << std::endl;
+		// Print output
+		// TODO: Proper indenting
+		GroupPtr p = GET(entryPoint);
+		while (p != NULL) {
+			for (std::vector<CodeLine>::iterator it = p->_code.begin(); it != p->_code.end(); ++it) {
+				if (it->_unindentBefore /*&& _indentLevel != 0*/)
+					_indentLevel--;
+				_output << boost::format("%08X: %s") % p->_start->_address % indentString(it->_line) << std::endl;
+				if (it->_indentAfter)
+					_indentLevel++;
+			}
+			p = p->_next;
+		}
+
+		if (_indentLevel != 0)
+			std::cerr << boost::format("WARNING: Indent level for function at %d ended at %d\n") % fn->first % _indentLevel;
+	}
 }
 
 void CodeGenerator::addOutputLine(std::string s, bool unindentBefore, bool indentAfter) {
@@ -320,11 +347,15 @@ void CodeGenerator::process(GraphVertex v) {
 					break;
 				}
 				break;
+			case kReturn:
+				// TODO: Allow specification of return value as part of return statement
+				addOutputLine("return;");
+				break;
 			case kSpecial:
 				{
 					_argList.clear();
 					bool returnsValue = (it->_codeGenData.find("r") == 0);
-					std::string metadata = (!returnsValue ? it->_codeGenData : it->_codeGenData.substr(1) );
+					std::string metadata = (!returnsValue ? it->_codeGenData : it->_codeGenData.substr(1));
 					for (size_t i = 0; i < metadata.length(); i++)
 						processSpecialMetadata(*it, metadata[i]);
 					_stack.push(new CallEntry(it->_name, _argList));
