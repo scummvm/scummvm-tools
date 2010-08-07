@@ -34,7 +34,7 @@
 struct Function {
 public:
 	ConstInstIterator _startIt; ///< Iterator to of the first instruction in the function, if available.
-	ConstInstIterator _endIt;   ///< Iterator to the instruction immediately after the function, similar to end() on STL containers, if available.
+	ConstInstIterator _endIt;   ///< Iterator to the instruction immediately after the function, similar to end() on STL containers. If _endIt == _startIt, the function endpoint is assumed to be unknown.
 	std::string _name;          ///< Function name.
 	GraphVertex _v;             ///< Graph vertex for the entry point to the function.
 	uint32 _args;               ///< Number of arguments to the function.
