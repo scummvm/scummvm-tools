@@ -206,7 +206,7 @@ static FunctionData kyra2FuncDesc[] = {
 	{ "o2_countItemInstances", "\xC0r0p" },
 	{ "o2_removeItemFromScene", "\xC0r0pp" },
 	{ "o2_initObject", "\xC0r0p" },
-	{ "o2_npcChat", "\xC0r0spp" }, // FIXME: Non-talkie metadata; talkie opcode is 0spp
+	{ "o2_npcChat", "\xC0r0spp" }, // FIXME: Talkie metadata; non-talkie opcode uses 0sp
 	// 0x8c
 	{ "o2_deinitObject", "\xC0r0p" },
 	{ "o2_playTimSequence", "\xC0r0s" },
