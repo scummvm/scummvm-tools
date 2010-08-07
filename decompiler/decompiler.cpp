@@ -56,7 +56,8 @@ int main(int argc, char** argv) {
 			("dump-graph,g", po::value<std::string>()->implicit_value(""), "Output the control flow graph in dot format to a file. Leave out filename to output to stdout.")
 			("only-disassembly,D", "Stops after disassembly. Implies -d.")
 			("only-graph,G", "Stops after control flow graph has been generated. Implies -g.")
-			("show-unreachable,u", "Show the address and contents of unreachable groups in the script.");
+			("show-unreachable,u", "Show the address and contents of unreachable groups in the script.")
+			("is-talkie,t", "Tell the engine that the script is from a talkie version (default is no). Not all engines require this information.");
 
 		po::options_description args("");
 		args.add(visible).add_options()
@@ -100,6 +101,7 @@ int main(int argc, char** argv) {
 		}
 
 		Engine *engine = engineFactory.create(vm["engine"].as<std::string>());
+		engine->_isTalkie = (bool)(vm.count("is-talkie"));
 		std::string inputFile = vm["input-file"].as<std::string>();
 
 		// Disassembly

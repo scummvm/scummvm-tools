@@ -43,6 +43,16 @@ public:
 	IFFChunk();
 };
 
+struct FunctionData {
+  std::string _name;
+	std::string _metadata;
+
+	FunctionData() {
+	}
+
+	FunctionData(std::string name, std::string metadata);
+};
+
 namespace Kyra {
 
 class Engine;
@@ -56,7 +66,14 @@ private:
 	IFFChunk _textChunk;   ///< Contents of the TEXT chunk.
 	IFFChunk _ordrChunk;   ///< Contents of the ORDR chunk.
   IFFChunk _dataChunk;   ///< Contents of the DATA chunk.
-	Engine *_engine; ///< Pointer to the Kyra::Engine used for this script.
+	Engine *_engine;       ///< Pointer to the Kyra::Engine used for this script.
+	uint32 _funcCount;
+  FunctionData *_funcs;  ///< Array of function data.
+
+	/**
+	 * Sets up function data for Kyra2 functions.
+	 */
+	void setupKyra2Funcs();
 public:
 	/**
 	 * Constructor for Disassembler.

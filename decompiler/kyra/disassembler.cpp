@@ -23,236 +23,241 @@
 #include "disassembler.h"
 #include "engine.h"
 
-//#include <algorithm>
 #include <boost/format.hpp>
 
-struct FunctionData {
-  std::string _name;
-	std::string _metadata;
-};
+FunctionData::FunctionData(std::string name, std::string metadata)
+{
+	_name = name;
+	_metadata = metadata;
+}
 
-static FunctionData kyra2FuncDesc[] = {
+void Kyra::Disassembler::setupKyra2Funcs() {
+	_funcCount = 176;
+	_funcs = new FunctionData[_funcCount];
+	int i = 0;
+#define FUNC(name, metadata) _funcs[i++] = FunctionData(name, metadata);
 	// 0x00
-	{ "o2_setCharacterFacingRefresh", "\xC0r0ppp" },
-	{ "o2_setCharacterPos", "\xC0r0ppp" },
-	{ "o2_defineObject", "\xC0r0pspppp" },
-	{ "o2_refreshCharacter", "\xC0r0pppp" },
+	FUNC("o2_setCharacterFacingRefresh", "\xC0r0ppp");
+	FUNC("o2_setCharacterPos", "\xC0r0ppp");
+	FUNC("o2_defineObject", "\xC0r0pspppp");
+	FUNC("o2_refreshCharacter", "\xC0r0pppp");
 	// 0x04
-	{ "o2_getCharacterX", "\xC0r" },
-	{ "o2_getCharacterY", "\xC0r" },
-	{ "o2_getCharacterFacing", "\xC0r" },
-	{ "o2_getCharacterScene", "\xC0r" },
+	FUNC("o2_getCharacterX", "\xC0r");
+	FUNC("o2_getCharacterY", "\xC0r");
+	FUNC("o2_getCharacterFacing", "\xC0r");
+	FUNC("o2_getCharacterScene", "\xC0r");
 	// 0x08
-	{ "o2_setSceneComment", "\xC0r0s" },
-	{ "unk09", "\xC0r0p" },
-	{ "unk0A", "\xC0r0p" },
-	{ "o2_setCharacterAnimFrame", "\xC0r0ppp" },
+	FUNC("o2_setSceneComment", "\xC0r0s");
+	FUNC("unk09", "\xC0r0p");
+	FUNC("unk0A", "\xC0r0p");
+	FUNC("o2_setCharacterAnimFrame", "\xC0r0ppp");
 	// 0x0c
-	{ "o2_setCharacterFacingOverwrite", "\xC0r0p" },
-	{ "o2_trySceneChange", "\xC0r0pppp" },
-	{ "o2_moveCharacter", "\xC0r0ppp" },
-	{ "o2_customCharacterChat", "\xC0r0spppp" },
+	FUNC("o2_setCharacterFacingOverwrite", "\xC0r0p");
+	FUNC("o2_trySceneChange", "\xC0r0pppp");
+	FUNC("o2_moveCharacter", "\xC0r0ppp");
+	FUNC("o2_customCharacterChat", "\xC0r0spppp");
 	// 0x10
-	{ "o2_soundFadeOut", "\xC0r" },
-	{ "o2_showChapterMessage", "\xC0r0pp" },
-	{ "o2_restoreTalkTextMessageBkgd", "\xC0r" },
-	{ "o2_printString", "\xC0r0spppp" },
+	FUNC("o2_soundFadeOut", "\xC0r");
+	FUNC("o2_showChapterMessage", "\xC0r0pp");
+	FUNC("o2_restoreTalkTextMessageBkgd", "\xC0r");
+	FUNC("o2_printString", "\xC0r0spppp");
 	// 0x14
-	{ "o2_wsaClose", "\xC0r0p" },
-	{ "o2_backUpScreen", "\xC0r0p" },
-	{ "o2_restoreScreen", "\xC0r0p" },
-	{ "o2_displayWsaFrame", "\xC0r0ppppppppp" },
+	FUNC("o2_wsaClose", "\xC0r0p");
+	FUNC("o2_backUpScreen", "\xC0r0p");
+	FUNC("o2_restoreScreen", "\xC0r0p");
+	FUNC("o2_displayWsaFrame", "\xC0r0ppppppppp");
 	// 0x18
-	{ "o2_displayWsaSequentialFramesLooping", "\xC0r0pppppppp" },
-	{ "o2_wsaOpen", "\xC0r0sp" },
-	{ "o2_displayWsaSequentialFrames", "\xC0r0ppppppp" },
-	{ "o2_displayWsaSequence", "\xC0r0pppppp" },
+	FUNC("o2_displayWsaSequentialFramesLooping", "\xC0r0pppppppp");
+	FUNC("o2_wsaOpen", "\xC0r0sp");
+	FUNC("o2_displayWsaSequentialFrames", "\xC0r0ppppppp");
+	FUNC("o2_displayWsaSequence", "\xC0r0pppppp");
 	// 0x1c
-	{ "o2_addItemToInventory", "\xC0r0ppp" },
-	{ "o2_drawShape", "\xC0r0ppppp" },
-	{ "o2_addItemToCurScene", "\xC0r0ppp" },
-	{ "o2_limitMouseRange", "\xC0r0pppp" },
+	FUNC("o2_addItemToInventory", "\xC0r0ppp");
+	FUNC("o2_drawShape", "\xC0r0ppppp");
+	FUNC("o2_addItemToCurScene", "\xC0r0ppp");
+	FUNC("o2_limitMouseRange", "\xC0r0pppp");
 	// 0x20
-	{ "o2_checkForItem", "\xC0r0pp" },
-	{ "o2_loadSoundFile", "\xC0r0p" },
-	{ "o2_removeSlotFromInventory", "\xC0r0p" },
-	{ "o2_defineItem", "\xC0r0pppp" },
+	FUNC("o2_checkForItem", "\xC0r0pp");
+	FUNC("o2_loadSoundFile", "\xC0r0p");
+	FUNC("o2_removeSlotFromInventory", "\xC0r0p");
+	FUNC("o2_defineItem", "\xC0r0pppp");
 	// 0x24
-	{ "o2_removeItemFromInventory", "\xC0r0p" },
-	{ "o2_countItemInInventory", "\xC0r0pp" },
-	{ "o2_countItemsInScene", "\xC0r0p" },
-	{ "o1_queryGameFlag", "\xC0r0p" },
+	FUNC("o2_removeItemFromInventory", "\xC0r0p");
+	FUNC("o2_countItemInInventory", "\xC0r0pp");
+	FUNC("o2_countItemsInScene", "\xC0r0p");
+	FUNC("o1_queryGameFlag", "\xC0r0p");
 	// 0x28
-	{ "o1_resetGameFlag", "\xC0r0p" },
-	{ "o1_setGameFlag", "\xC0r0p" },
-	{ "o1_setHandItem", "\xC0r0p" },
-	{ "o1_removeHandItem", "\xC0r" },
+	FUNC("o1_resetGameFlag", "\xC0r0p");
+	FUNC("o1_setGameFlag", "\xC0r0p");
+	FUNC("o1_setHandItem", "\xC0r0p");
+	FUNC("o1_removeHandItem", "\xC0r");
 	// 0x2c
-	{ "o1_getMouseState", "\xC0r" },
-	{ "o1_hideMouse", "\xC0r" },
-	{ "o2_addSpecialExit", "\xC0r0ppppp" },
-	{ "o1_setMousePos", "\xC0r0pp" },
+	FUNC("o1_getMouseState", "\xC0r");
+	FUNC("o1_hideMouse", "\xC0r");
+	FUNC("o2_addSpecialExit", "\xC0r0ppppp");
+	FUNC("o1_setMousePos", "\xC0r0pp");
 	// 0x30
-	{ "o1_showMouse", "\xC0r" },
-	{ "o2_drawBox", "\xC0r0ppppp" },
-	{ "o2_wipeDownMouseItem", "\xC0r0ppp" },
-	{ "o2_getElapsedSecs", "\xC0r" },
+	FUNC("o1_showMouse", "\xC0r");
+	FUNC("o2_drawBox", "\xC0r0ppppp");
+	FUNC("o2_wipeDownMouseItem", "\xC0r0ppp");
+	FUNC("o2_getElapsedSecs", "\xC0r");
 	// 0x34
-	{ "o2_getTimerDelay", "\xC0r0p" },
-	{ "o1_playSoundEffect", "\xC0r0p" },
-	{ "o2_delaySecs", "\xC0r0p" },
-	{ "o2_delay", "\xC0r0pp" },
+	FUNC("o2_getTimerDelay", "\xC0r0p");
+	FUNC("o1_playSoundEffect", "\xC0r0p");
+	FUNC("o2_delaySecs", "\xC0r0p");
+	FUNC("o2_delay", "\xC0r0pp");
 	// 0x38
-	{ "o2_dummy38", "\xC0r" },
-	{ "o2_setTimerDelay", "\xC0r0pp" },
-	{ "o2_setScaleTableItem", "\xC0r0pp" },
-	{ "o2_setDrawLayerTableItem", "\xC0r0pp" },
+	FUNC("o2_dummy38", "\xC0r");
+	FUNC("o2_setTimerDelay", "\xC0r0pp");
+	FUNC("o2_setScaleTableItem", "\xC0r0pp");
+	FUNC("o2_setDrawLayerTableItem", "\xC0r0pp");
 	// 0x3c
-	{ "o2_setCharPalEntry", "\xC0r0pp" },
-	{ "o2_loadZShapes", "\xC0r0p" },
-	{ "o2_drawSceneShape", "\xC0r0pppp" },
-	{ "o2_drawSceneShapeOnPage", "\xC0r0ppppp" },
+	FUNC("o2_setCharPalEntry", "\xC0r0pp");
+	FUNC("o2_loadZShapes", "\xC0r0p");
+	FUNC("o2_drawSceneShape", "\xC0r0pppp");
+	FUNC("o2_drawSceneShapeOnPage", "\xC0r0ppppp");
 	// 0x40
-	{ "o2_disableAnimObject", "\xC0r0p" },
-	{ "o2_enableAnimObject", "\xC0r0p" },
-	{ "o2_dummy42", "\xC0r" },
-	{ "o2_loadPalette384", "\xC0r0s" },
+	FUNC("o2_disableAnimObject", "\xC0r0p");
+	FUNC("o2_enableAnimObject", "\xC0r0p");
+	FUNC("o2_dummy42", "\xC0r");
+	FUNC("o2_loadPalette384", "\xC0r0s");
 	// 0x44
-	{ "o2_setPalette384", "\xC0r" },
-	{ "o2_restoreBackBuffer", "\xC0r0p" },
-	{ "o2_backUpInventoryGfx", "\xC0r" },
-	{ "o2_disableSceneAnim", "\xC0r0p" },
+	FUNC("o2_setPalette384", "\xC0r");
+	FUNC("o2_restoreBackBuffer", "\xC0r0p");
+	FUNC("o2_backUpInventoryGfx", "\xC0r");
+	FUNC("o2_disableSceneAnim", "\xC0r0p");
 	// 0x48
-	{ "o2_enableSceneAnim", "\xC0r0p" },
-	{ "o2_restoreInventoryGfx", "\xC0r" },
-	{ "o2_setSceneAnimPos2", "\xC0r0ppp" },
-	{ "o2_update", "\xC0r0p" },
+	FUNC("o2_enableSceneAnim", "\xC0r0p");
+	FUNC("o2_restoreInventoryGfx", "\xC0r");
+	FUNC("o2_setSceneAnimPos2", "\xC0r0ppp");
+	FUNC("o2_update", "\xC0r0p");
 	// 0x4c
-	{ "unk4C_palFade?", "\xC0r0pp" },
-	{ "o2_fadeScenePal", "\xC0r0pp" },
-	{ "o2_dummy4E", "\xC0r" },
-	{ "o2_dummy4F", "\xC0r" },
+	FUNC("unk4C_palFade?", "\xC0r0pp");
+	FUNC("o2_fadeScenePal", "\xC0r0pp");
+	FUNC("o2_dummy4E", "\xC0r");
+	FUNC("o2_dummy4F", "\xC0r");
 	// 0x50
-	{ "o2_enterNewScene", "\xC0r0ppppp" },
-	{ "o2_switchScene", "\xC0r0p" },
-	{ "o2_getShapeFlag1", "\xC0r0pp" },
-	{ "o2_setPathfinderFlag", "\xC0r0p" },
+	FUNC("o2_enterNewScene", "\xC0r0ppppp");
+	FUNC("o2_switchScene", "\xC0r0p");
+	FUNC("o2_getShapeFlag1", "\xC0r0pp");
+	FUNC("o2_setPathfinderFlag", "\xC0r0p");
 	// 0x54
-	{ "o2_getSceneExitToFacing", "\xC0r0pp" },
-	{ "o2_setLayerFlag", "\xC0r0p" },
-	{ "o2_setZanthiaPos", "\xC0r0pp" },
-	{ "o2_loadMusicTrack", "\xC0r0p" },
+	FUNC("o2_getSceneExitToFacing", "\xC0r0pp");
+	FUNC("o2_setLayerFlag", "\xC0r0p");
+	FUNC("o2_setZanthiaPos", "\xC0r0pp");
+	FUNC("o2_loadMusicTrack", "\xC0r0p");
 	// 0x58
-	{ "o1_playWanderScoreViaMap", "\xC0r0pp" },
-	{ "o1_playSoundEffect", "\xC0r0p" },
-	{ "o2_setSceneAnimPos", "\xC0r0ppp" },
-	{ "o1_blockInWalkableRegion", "\xC0r0pppp" },
+	FUNC("o1_playWanderScoreViaMap", "\xC0r0pp");
+	FUNC("o1_playSoundEffect", "\xC0r0p");
+	FUNC("o2_setSceneAnimPos", "\xC0r0ppp");
+	FUNC("o1_blockInWalkableRegion", "\xC0r0pppp");
 	// 0x5c
-	{ "o1_blockOutWalkableRegion", "\xC0r0pppp" },
-	{ "unk5D", "\xC0r0ppppp" },
-	{ "o2_setCauldronState", "\xC0r0pp" },
-	{ "o2_showItemString", "\xC0r0pp" },
+	FUNC("o1_blockOutWalkableRegion", "\xC0r0pppp");
+	FUNC("unk5D", "\xC0r0ppppp");
+	FUNC("o2_setCauldronState", "\xC0r0pp");
+	FUNC("o2_showItemString", "\xC0r0pp");
 	// 0x60
-	{ "o1_getRand", "\xC0r0pp" },
-	{ "o2_isAnySoundPlaying", "\xC0r" },
-	{ "o1_setDeathHandler", "\xC0r0p" },
-	{ "o2_setDrawNoShapeFlag", "\xC0r0p" },
+	FUNC("o1_getRand", "\xC0r0pp");
+	FUNC("o2_isAnySoundPlaying", "\xC0r");
+	FUNC("o1_setDeathHandler", "\xC0r0p");
+	FUNC("o2_setDrawNoShapeFlag", "\xC0r0p");
 	// 0x64
-	{ "o2_setRunFlag", "\xC0r0p" },
-	{ "o2_showLetter", "\xC0r0p" },
-	{ "o1_shakeScreen", "\xC0r0pp" },
-	{ "o1_fillRect", "\xC0r0pppppp" },
+	FUNC("o2_setRunFlag", "\xC0r0p");
+	FUNC("o2_showLetter", "\xC0r0p");
+	FUNC("o1_shakeScreen", "\xC0r0pp");
+	FUNC("o1_fillRect", "\xC0r0pppppp");
 	// 0x68
-	{ "o2_getKey", "\xC0r" },
-	{ "unk69", "\xC0r0pppp" },
-	{ "o2_playFireflyScore", "\xC0r" },
-	{ "o2_waitForConfirmationClick", "\xC0r0p" },
+	FUNC("o2_getKey", "\xC0r");
+	FUNC("unk69", "\xC0r0pppp");
+	FUNC("o2_playFireflyScore", "\xC0r");
+	FUNC("o2_waitForConfirmationClick", "\xC0r0p");
 	// 0x6c
-	{ "o2_encodeShape", "\xC0r0ppppp" },
-	{ "o2_defineRoomEntrance", "\xC0r0ppp" },
-	{ "o2_runAnimationScript", "\xC0r0sppp" },
-	{ "o2_setSpecialSceneScriptRunTime", "\xC0r0pp" },
+	FUNC("o2_encodeShape", "\xC0r0ppppp");
+	FUNC("o2_defineRoomEntrance", "\xC0r0ppp");
+	FUNC("o2_runAnimationScript", "\xC0r0sppp");
+	FUNC("o2_setSpecialSceneScriptRunTime", "\xC0r0pp");
 	// 0x70
-	{ "o2_defineSceneAnim", "\xC0r0pppppppppppps" },
-	{ "o2_updateSceneAnim", "\xC0r0pp" },
-	{ "o2_updateSceneAnim", "\xC0r0pp" },
-	{ "o2_addToSceneAnimPosAndUpdate", "\xC0r0ppp" },
+	FUNC("o2_defineSceneAnim", "\xC0r0pppppppppppps");
+	FUNC("o2_updateSceneAnim", "\xC0r0pp");
+	FUNC("o2_updateSceneAnim", "\xC0r0pp");
+	FUNC("o2_addToSceneAnimPosAndUpdate", "\xC0r0ppp");
 	// 0x74
-	{ "o2_useItemOnMainChar", "\xC0r" },
-	{ "o2_startDialogue", "\xC0r0p" },
-	{ "o2_randomSceneChat", "\xC0r" },
-	{ "o2_setDlgIndex", "\xC0r0p" },
+	FUNC("o2_useItemOnMainChar", "\xC0r");
+	FUNC("o2_startDialogue", "\xC0r0p");
+	FUNC("o2_randomSceneChat", "\xC0r");
+	FUNC("o2_setDlgIndex", "\xC0r0p");
 	// 0x78
-	{ "o2_getDlgIndex", "\xC0r" },
-	{ "o2_defineScene", "\xC0r0pspppppp" },
-	{ "o2_addCauldronStateTableEntry", "\xC0r0pp" },
-	{ "o2_setCountDown", "\xC0r0p" },
+	FUNC("o2_getDlgIndex", "\xC0r");
+	FUNC("o2_defineScene", "\xC0r0pspppppp");
+	FUNC("o2_addCauldronStateTableEntry", "\xC0r0pp");
+	FUNC("o2_setCountDown", "\xC0r0p");
 	// 0x7c
-	{ "o2_getCountDown", "\xC0r" },
-	{ "o2_dummy7D", "\xC0r" },
-	{ "o2_dummy7E", "\xC0r" },
-	{ "o2_pressColorKey", "\xC0r0p" },
+	FUNC("o2_getCountDown", "\xC0r");
+	FUNC("o2_dummy7D", "\xC0r");
+	FUNC("o2_dummy7E", "\xC0r");
+	FUNC("o2_pressColorKey", "\xC0r0p");
 	// 0x80
-	{ "o2_objectChat", "\xC0r0sp" },
-	{ "o2_changeChapter", "\xC0r0pp" },
-	{ "o2_getColorCodeFlag1", "\xC0r" },
-	{ "o2_setColorCodeFlag1", "\xC0r0p" },
+	FUNC("o2_objectChat", "\xC0r0sp");
+	FUNC("o2_changeChapter", "\xC0r0pp");
+	FUNC("o2_getColorCodeFlag1", "\xC0r");
+	FUNC("o2_setColorCodeFlag1", "\xC0r0p");
 	// 0x84
-	{ "o2_getColorCodeFlag2", "\xC0r" },
-	{ "o2_setColorCodeFlag2", "\xC0r0p" },
-	{ "o2_getColorCodeValue", "\xC0r0p" },
-	{ "o2_setColorCodeValue", "\xC0r0pp" },
+	FUNC("o2_getColorCodeFlag2", "\xC0r");
+	FUNC("o2_setColorCodeFlag2", "\xC0r0p");
+	FUNC("o2_getColorCodeValue", "\xC0r0p");
+	FUNC("o2_setColorCodeValue", "\xC0r0pp");
 	// 0x88
-	{ "o2_countItemInstances", "\xC0r0p" },
-	{ "o2_removeItemFromScene", "\xC0r0pp" },
-	{ "o2_initObject", "\xC0r0p" },
-	{ "o2_npcChat", "\xC0r0spp" }, // FIXME: Talkie metadata; non-talkie opcode uses 0sp
+	FUNC("o2_countItemInstances", "\xC0r0p");
+	FUNC("o2_removeItemFromScene", "\xC0r0pp");
+	FUNC("o2_initObject", "\xC0r0p");
+	FUNC("o2_npcChat", (_engine->_isTalkie ? "\xC0r0spp": "\xC0r0sp"));
 	// 0x8c
-	{ "o2_deinitObject", "\xC0r0p" },
-	{ "o2_playTimSequence", "\xC0r0s" },
-	{ "o2_makeBookOrCauldronAppear", "\xC0r0p" },
-	{ "o2_setSpecialSceneScriptState", "\xC0r0p" },
+	FUNC("o2_deinitObject", "\xC0r0p");
+	FUNC("o2_playTimSequence", "\xC0r0s");
+	FUNC("o2_makeBookOrCauldronAppear", "\xC0r0p");
+	FUNC("o2_setSpecialSceneScriptState", "\xC0r0p");
 	// 0x90
-	{ "o2_clearSpecialSceneScriptState", "\xC0r0p" },
-	{ "o2_querySpecialSceneScriptState", "\xC0r0p" },
-	{ "o2_resetInputColorCode", "\xC0r" },
-	{ "o2_setHiddenItemsEntry", "\xC0r0pp" },
+	FUNC("o2_clearSpecialSceneScriptState", "\xC0r0p");
+	FUNC("o2_querySpecialSceneScriptState", "\xC0r0p");
+	FUNC("o2_resetInputColorCode", "\xC0r");
+	FUNC("o2_setHiddenItemsEntry", "\xC0r0pp");
 	// 0x94
-	{ "o2_getHiddenItemsEntry", "\xC0r0p" },
-	{ "o2_mushroomEffect", "\xC0r" },
-	{ "o2_wsaClose", "\xC0r0p" },
-	{ "o2_meanWhileScene", "\xC0r0p" },
+	FUNC("o2_getHiddenItemsEntry", "\xC0r0p");
+	FUNC("o2_mushroomEffect", "\xC0r");
+	FUNC("o2_wsaClose", "\xC0r0p");
+	FUNC("o2_meanWhileScene", "\xC0r0p");
 	// 0x98
-	{ "o2_customChat", "\xC0r0spp" },
-	{ "o2_customChatFinish", "\xC0r" },
-	{ "o2_setupSceneAnimation", "\xC0r0pppppppppppps" },
-	{ "o2_stopSceneAnimation", "\xC0r0pp" },
+	FUNC("o2_customChat", "\xC0r0spp");
+	FUNC("o2_customChatFinish", "\xC0r");
+	FUNC("o2_setupSceneAnimation", "\xC0r0pppppppppppps");
+	FUNC("o2_stopSceneAnimation", "\xC0r0pp");
 	// 0x9c
-	{ "o2_disableTimer", "\xC0r0p" },
-	{ "o2_enableTimer", "\xC0r0p" },
-	{ "o2_setTimerCountdown", "\xC0r0pp" },
-	{ "o2_processPaletteIndex", "\xC0r0pppppp" },
+	FUNC("o2_disableTimer", "\xC0r0p");
+	FUNC("o2_enableTimer", "\xC0r0p");
+	FUNC("o2_setTimerCountdown", "\xC0r0pp");
+	FUNC("o2_processPaletteIndex", "\xC0r0pppppp");
 	// 0xa0
-	{ "o2_updateTwoSceneAnims", "\xC0r0pppp" },
-	{ "o2_getRainbowRoomData", "\xC0r0p" },
-	{ "o2_drawSceneShapeEx", "\xC0r0pppp" },
-	{ "o2_midiSoundFadeout", "\xC0r" },
+	FUNC("o2_updateTwoSceneAnims", "\xC0r0pppp");
+	FUNC("o2_getRainbowRoomData", "\xC0r0p");
+	FUNC("o2_drawSceneShapeEx", "\xC0r0pppp");
+	FUNC("o2_midiSoundFadeout", "\xC0r");
 	// 0xa4
-	{ "o2_getSfxDriver", "\xC0r" },
-	{ "o2_getVocSupport", "\xC0r" },
-	{ "o2_getMusicDriver", "\xC0r" },
-	{ "o2_setVocHigh", "\xC0r0p" },
+	FUNC("o2_getSfxDriver", "\xC0r");
+	FUNC("o2_getVocSupport", "\xC0r");
+	FUNC("o2_getMusicDriver", "\xC0r");
+	FUNC("o2_setVocHigh", "\xC0r0p");
 	// 0xa8
-	{ "o2_getVocHigh", "\xC0r" },
-	{ "o2_zanthiaChat", "\xC0r0sp" },
-	{ "o2_isVoiceEnabled", "\xC0r" },
-	{ "o2_isVoicePlaying", "\xC0r" },
+	FUNC("o2_getVocHigh", "\xC0r");
+	FUNC("o2_zanthiaChat", "\xC0r0sp");
+	FUNC("o2_isVoiceEnabled", "\xC0r");
+	FUNC("o2_isVoicePlaying", "\xC0r");
 	// 0xac
-	{ "o2_stopVoicePlaying", "\xC0r" },
-	{ "o2_getGameLanguage", "\xC0r" },
-	{ "o2_demoFinale", "\xC0r" },
-	{ "o2_dummyAF", "\xC0r" }
-};
+	FUNC("o2_stopVoicePlaying", "\xC0r");
+	FUNC("o2_getGameLanguage", "\xC0r");
+	FUNC("o2_demoFinale", "\xC0r");
+	FUNC("o2_dummyAF", "\xC0r" );
+#undef FUNC
+}
 
 IFFChunk::IFFChunk() {
 	_size = 0;
@@ -260,6 +265,7 @@ IFFChunk::IFFChunk() {
 }
 
 Kyra::Disassembler::Disassembler(Engine *engine, std::vector<Instruction> &insts) : ::Disassembler(insts), _engine(engine) {
+	setupKyra2Funcs();
 }
 
 Kyra::Disassembler::~Disassembler() {
@@ -269,6 +275,7 @@ Kyra::Disassembler::~Disassembler() {
 		delete[] _ordrChunk._data;
 	if (_dataChunk._data)
 		delete[] _dataChunk._data;
+	delete[] _funcs;
 }
 
 void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
@@ -396,7 +403,6 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 		}
 #define OPCODE(name, category, stackChange, hasParam, isSigned) OPCODE_MD(name, category, stackChange, hasParam, isSigned, "");
 
-		// TOOD: Add metadata where applicable
 		switch(opcode) {
 		case 0:
 			parameter *= 2;
@@ -455,10 +461,10 @@ void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			break;
 		case 14:
 			parameter = (uint8)parameter;
-			if ((uint16)parameter >= sizeof(kyra2FuncDesc) / sizeof(kyra2FuncDesc[0]) || kyra2FuncDesc[parameter]._name.length() == 0) {
+			if ((uint16)parameter >= _funcCount || _funcs[parameter]._name.length() == 0) {
 				// Error: unknown function
 			}
-			OPCODE_MD(kyra2FuncDesc[parameter]._name, kSpecial, 0, false, false, kyra2FuncDesc[parameter]._metadata)
+			OPCODE_MD(_funcs[parameter]._name, kSpecial, 0, false, false, _funcs[parameter]._metadata)
 			break;
 		case 15:
 			parameter *= 2;

@@ -125,6 +125,8 @@ public:
 	virtual bool detectMoreFuncs() { return false; }
 
 	FuncMap _functions; ///< Map to functions in the current script, indexed by starting address.
+
+	bool _isTalkie; ///< Whether or not the script is from a talkie version of the game.
 };
 
 #endif
