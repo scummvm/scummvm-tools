@@ -47,7 +47,7 @@ public:
  * Container for data on built-in functions.
  */
 struct FunctionData {
-  std::string _name;     ///< The name of the function.
+	std::string _name;     ///< The name of the function.
 	std::string _metadata; ///< Metadata for the function.
 
 	/**
@@ -77,10 +77,10 @@ private:
 	IFF_ID _formType;     ///< File type as listed in the IFF formatted file.
 	IFFChunk _textChunk;  ///< Contents of the TEXT chunk.
 	IFFChunk _ordrChunk;  ///< Contents of the ORDR chunk.
-  IFFChunk _dataChunk;  ///< Contents of the DATA chunk.
+	IFFChunk _dataChunk;  ///< Contents of the DATA chunk.
 	Engine *_engine;      ///< Pointer to the Kyra::Engine used for this script.
 	uint32 _funcCount;    ///< Number of functions in the _funcs array.
-  FunctionData *_funcs; ///< Array of function data.
+	FunctionData *_funcs; ///< Array of function data.
 
 	/**
 	 * Sets up function data for Kyra2 functions.
