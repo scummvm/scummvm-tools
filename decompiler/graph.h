@@ -206,7 +206,7 @@ struct CodeLine {
 	/**
 	 * Constructor for CodeLine.
 	 *
-	 * @param s The line of code.
+	 * @param line The line of code.
 	 * @param unindentBefore Whether or not to remove an indentation level before the line. Defaults to false.
 	 * @param indentAfter Whether or not to add an indentation level after the line. Defaults to false.
 	 */

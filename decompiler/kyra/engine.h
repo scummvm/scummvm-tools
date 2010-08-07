@@ -41,7 +41,7 @@ public:
 	void postCFG(std::vector<Instruction> &insts, Graph g);
 	bool detectMoreFuncs();
 
-	std::vector<std::string> _textStrings;
+	std::vector<std::string> _textStrings; ///< Container for strings from the TEXT chunk.
 };
 
 } // End of namespace KYRA

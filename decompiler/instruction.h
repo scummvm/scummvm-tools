@@ -107,6 +107,13 @@ struct Instruction {
 	std::vector<Parameter> _params; ///< Array of parameters used for the instruction.
 	std::string _codeGenData;       ///< String containing metadata for code generation. Start with 0xC0 to force custom handling. See the extended documentation for details.
 
+	/**
+	 * Operator overload to output a vector to a std::ostream.
+	 *
+	 * @param output The std::ostream to output to.
+	 * @param inst   The Instruction to output.
+	 * @return The std::ostream used for output.
+	 */
 	friend std::ostream &operator<<(std::ostream &output, const Instruction &inst) {
 		output << boost::format("%08x: %s") % inst._address % inst._name;
 		std::vector<Parameter>::const_iterator param;

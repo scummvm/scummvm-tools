@@ -55,6 +55,11 @@ protected:
 	virtual void doDumpDisassembly(std::ostream &output);
 
 public:
+	/**
+	 * Constructor for Disassembler.
+	 *
+	 * @param insts Reference to the vector in which disassembled instructions should be placed.
+	 */
 	Disassembler(std::vector<Instruction> &insts);
 	virtual ~Disassembler() {}
 

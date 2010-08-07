@@ -43,13 +43,25 @@ public:
 	IFFChunk();
 };
 
+/**
+ * Container for data on built-in functions.
+ */
 struct FunctionData {
-  std::string _name;
-	std::string _metadata;
+  std::string _name;     ///< The name of the function.
+	std::string _metadata; ///< Metadata for the function.
 
+	/**
+	 * Parameterless constructor for FunctionData. Used for new[].
+	 */
 	FunctionData() {
 	}
 
+	/**
+	 * Constructor for FunctionData.
+	 *
+	 * @param name The name of the function.
+	 * @param metadata Metadata for the function.
+	 */
 	FunctionData(std::string name, std::string metadata);
 };
 
@@ -62,13 +74,13 @@ class Engine;
  */
 class Disassembler : public ::Disassembler {
 private:
-	IFF_ID _formType;      ///< File type as listed in the IFF formatted file.
-	IFFChunk _textChunk;   ///< Contents of the TEXT chunk.
-	IFFChunk _ordrChunk;   ///< Contents of the ORDR chunk.
-  IFFChunk _dataChunk;   ///< Contents of the DATA chunk.
-	Engine *_engine;       ///< Pointer to the Kyra::Engine used for this script.
-	uint32 _funcCount;
-  FunctionData *_funcs;  ///< Array of function data.
+	IFF_ID _formType;     ///< File type as listed in the IFF formatted file.
+	IFFChunk _textChunk;  ///< Contents of the TEXT chunk.
+	IFFChunk _ordrChunk;  ///< Contents of the ORDR chunk.
+  IFFChunk _dataChunk;  ///< Contents of the DATA chunk.
+	Engine *_engine;      ///< Pointer to the Kyra::Engine used for this script.
+	uint32 _funcCount;    ///< Number of functions in the _funcs array.
+  FunctionData *_funcs; ///< Array of function data.
 
 	/**
 	 * Sets up function data for Kyra2 functions.
@@ -79,6 +91,7 @@ public:
 	 * Constructor for Disassembler.
 	 *
 	 * @param engine Pointer to the Kyra::Engine used for this script.
+	 * @param insts Reference to the vector in which disassembled instructions should be placed.
 	 */
 	Disassembler(Engine *engine, std::vector<Instruction> &insts);
 	~Disassembler();

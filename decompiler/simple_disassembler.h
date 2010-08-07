@@ -49,6 +49,11 @@ protected:
 	virtual void readParameter(Parameter *p, char type);
 
 public:
+	/**
+	 * Constructor for SimpleDisassembler.
+	 *
+	 * @param insts Reference to the vector in which disassembled instructions should be placed.
+	 */
 	SimpleDisassembler(std::vector<Instruction> &insts);
 };
 

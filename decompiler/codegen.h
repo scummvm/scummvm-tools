@@ -152,8 +152,18 @@ public:
 	 */
 	IntEntry(uint32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) { }
 
+	/**
+	 * Gets the value associated with the IntEntry.
+	 *
+	 * @return The value associated with the IntEntry.
+	 */
 	int32 getValue();
 
+	/**
+	 * Returns whether or not the integer is signed.
+	 *
+	 * @return True if the value is signed, false if it's not.
+	 */
 	bool getSigned();
 
 	virtual std::ostream &print(std::ostream &output) const;
@@ -396,7 +406,7 @@ protected:
 	/**
 	 * Process a single character of metadata.
 	 *
-	 * @param it The instruction being processed.
+	 * @param inst The instruction being processed.
 	 * @param c The character signifying the action to be taken.
 	 */
 	virtual void processSpecialMetadata(const Instruction inst, char c);
