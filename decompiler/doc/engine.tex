@@ -24,6 +24,8 @@ Additional methods you can override are:
 \item \verb+postCFG+, which is a post-processing step called after control flow analysis. If you override \verb+detectMoreFuncs+ to return true, you must also override this function to process any newly found functions. A default implementation which does nothing is already provided in case you don't need to do any post-processing.
 \end{itemize}
 
+It's important to realize that you don't necessarily need to implement a completely new code generator and disassembler for every engine; for variations on the same engine, you can reuse the existing classes and simply send in any extra information required. In particular, code generators are likely to be reusable without change for different versions of the same engine - e.g., the Kyra2 code generator will likely work for all Kyra games.
+
 \subsection{Game information}
 For some engines, it's not enough to know the engine; some instructions may differ in behavior between talkie or non-talkie versions, while others may require different behavior for different platforms.
 
