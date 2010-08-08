@@ -224,7 +224,7 @@ ExtractCruisePC::ExtractCruisePC(const std::string &name) : Tool(name, TOOLTYPE_
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Extract data files from the PC version of CRuise for a Corpse.";
+	_shorthelp = "Extract data files from the PC version of Cruise for a Corpse.";
 	_helptext = "Usage: " + _name + " [-o outputdir] <infile>\n" + _shorthelp + "\n";
 }
 

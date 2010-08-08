@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
 
 	// Open the file as a Mohawk archive
 	MohawkArchive *mohawkArchive = MohawkArchive::createMohawkArchive(new Common::File(file));
-	
+
 	if (!mohawkArchive) {
 		printf("\'%s\' is not a valid Mohawk archive\n", argv[archiveArg]);
 		fclose(file);

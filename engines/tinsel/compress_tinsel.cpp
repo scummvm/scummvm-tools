@@ -60,7 +60,7 @@ CompressTinsel::CompressTinsel(const std::string &name) : CompressionTool(name, 
 	input2.format = "*.idx";
 	_inputPaths.push_back(input2);
 
-	_shorthelp = "Used to compress tinsel .smp files.";
+	_shorthelp = "Used to compress Tinsel .smp files.";
 	_helptext = "\nUsage: " + getName() + " [mode-params] [-o outputname] <infile.smp> <infile.idx>\n";
 }
 
@@ -73,7 +73,7 @@ void CompressTinsel::convertTinselRawSample (uint32 sampleSize) {
 
 	print("Assuming DW1 sample being 8-bit raw...\n");
 
-	unlink(TEMP_RAW); unlink(TEMP_ENC);
+	Common::removeFile(TEMP_RAW); Common::removeFile(TEMP_ENC);
 	curFileHandle.open(TEMP_RAW, "wb");
 	copyLeft = sampleSize;
 	while (copyLeft > 0) {
@@ -224,8 +224,8 @@ void CompressTinsel::convertTinselADPCMSample (uint32 sampleSize) {
 		chunkPos = (chunkPos + 1) % 4;
 	}
 
-	unlink(TEMP_RAW);
-	unlink(TEMP_ENC);
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(TEMP_ENC);
 
 	curFileHandle.open(TEMP_RAW, "wb");
 	curFileHandle.write(outBuffer, decodedCount*2);
@@ -268,10 +268,10 @@ void CompressTinsel::execute() {
 	_input_idx.open(inpath_idx, "rb");
 	_input_smp.open(inpath_smp, "rb");
 
-	unlink(TEMP_IDX);
+	Common::removeFile(TEMP_IDX);
 	_output_idx.open(TEMP_IDX, "wb");
 
-	unlink(TEMP_SMP);
+	Common::removeFile(TEMP_SMP);
 	_output_smp.open(TEMP_SMP, "wb");
 
 	_input_idx.seek(0, SEEK_END);
@@ -330,8 +330,8 @@ void CompressTinsel::execute() {
 	}
 
 	/* And some clean-up :-) */
-	unlink(TEMP_RAW);
-	unlink(TEMP_ENC);
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(TEMP_ENC);
 }
 
 

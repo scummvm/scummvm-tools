@@ -895,7 +895,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		}
 
 		sprintf(tmpPath, "%s%s_reg%03d.wav", dir, filename, l);
-		unlink(tmpPath);
+		Common::removeFile(tmpPath);
 
 		int32 startPos = output.pos();
 		switch (_format) {
@@ -923,7 +923,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		byte *tmpBuf = (byte *)malloc(size);
 		cmpFile.read_throwsOnError(tmpBuf, size);
 		cmpFile.close();
-		unlink(tmpPath);
+		Common::removeFile(tmpPath);
 
 		output.write(tmpBuf, size);
 		free(tmpBuf);
@@ -1079,7 +1079,7 @@ CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(na
 	input.format = "*.bun";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress the .bun data files from The Curse of Monkey Island games.";
+	_shorthelp = "Used to compress .bun data files from The Curse of Monkey Island.";
 	_helptext = "\nUsage: " + getName() + " [mode] [mode-params] [-o outputfile = inputfile.bun] <inputfile>\n";
 }
 

@@ -183,7 +183,7 @@ class MohawkArchive {
 public:
 	MohawkArchive();
 	virtual ~MohawkArchive() { close(); }
-	
+
 	// Detect new/old Mohawk archive format. Return NULL if the file is neither.
 	static MohawkArchive *createMohawkArchive(Common::SeekableReadStream *stream);
 

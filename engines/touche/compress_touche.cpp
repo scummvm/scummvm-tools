@@ -22,9 +22,6 @@
 
 #include <string.h>
 #include <stdio.h>
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
 
 #include "compress.h"
 #include "compress_touche.h"
@@ -176,8 +173,8 @@ void CompressTouche::compress_sound_data(Common::Filename *inpath, Common::Filen
 	output.close();
 
 	/* cleanup */
-	unlink(TEMP_RAW);
-	unlink(tempEncoded);
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(tempEncoded);
 
 	print("Done.\n");
 }

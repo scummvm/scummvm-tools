@@ -28,9 +28,6 @@
 
 enum {
 	/* These are the defaults parameters for the Lame invocation */
-	minBitrDef	= 24,
-	maxBitrDef	= 64,
-	targetBitrDef = 32,
 	algqualDef	= 2,
 	vbrqualDef	= 4,
 
@@ -63,6 +60,12 @@ enum AudioFormat {
 	AUDIO_ALL = AUDIO_VORBIS | AUDIO_FLAC | AUDIO_MP3
 };
 
+enum CompressionType {
+	CBR,
+	ABR,
+	VBR
+};
+
 const char *audio_extensions(AudioFormat format);
 int compression_format(AudioFormat format);
 
@@ -92,10 +95,13 @@ public:
 	// mp3 settings
 	void setMp3LamePath(const std::string&);
 	void setMp3CompressionType(const std::string&);
+	void setMp3CompressionType(CompressionType);
 	void setMp3MpegQuality(const std::string&);
-	void setMp3ABRBitrate(const std::string&);
-	void setMp3VBRMinBitrate(const std::string&);
-	void setMp3VBRMaxBitrate(const std::string&);
+	void setMp3TargetBitrate(const std::string&);
+	void setMp3MinBitrate(const std::string&);
+	void setMp3MaxBitrate(const std::string&);
+	void unsetMp3MinBitrate();
+	void unsetMp3MaxBitrate();
 	void setMp3VBRQuality(const std::string&);
 
 	// flac

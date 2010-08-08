@@ -314,7 +314,7 @@ void PAKFile::generateLinkEntry() {
 
 	addFile("LINKLIST", "LINKLIST.TMP");
 
-	unlink("LINKLIST.TMP");
+	Common::removeFile("LINKLIST.TMP");
 	delete[] linkList;
 }
 

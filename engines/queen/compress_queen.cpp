@@ -98,7 +98,7 @@ CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name, TO
 	input.format = "queen.1";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress Flight of the Amazon Queen data files. Output filename is " + std::string(FINAL_OUT) + " .";
+	_shorthelp = "Used to compress Flight of the Amazon Queen data files.";
 	_helptext = "\nUsage: " + getName() + " [mode] [mode params] [-o outputdir] <inputfile (queen.1)>\n\t" + _shorthelp + "\n";
 }
 
@@ -168,8 +168,8 @@ void CompressQueen::createFinalFile(Common::Filename outPath) {
 	fromFileToFile(inData, outFinal, dataSize);
 
 	/* Cleanup */
-	unlink(TEMP_TBL);
-	unlink(TEMP_DAT);
+	Common::removeFile(TEMP_TBL);
+	Common::removeFile(TEMP_DAT);
 }
 
 void CompressQueen::execute() {
@@ -275,8 +275,8 @@ void CompressQueen::execute() {
 			compFile.close();
 
 			/* Delete temporary files */
-			unlink(TEMP_SB);
-			unlink(tempEncoded);
+			Common::removeFile(TEMP_SB);
+			Common::removeFile(tempEncoded);
 		} else {
 			/* Non .SB file */
 			bool patched = false;

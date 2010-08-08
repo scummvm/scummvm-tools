@@ -99,9 +99,9 @@ void CompressKyra::process(Common::Filename *infile, Common::Filename *outfile) 
 
 		output.addFile(outputName.getFullPath().c_str(), tempEncoded);
 
-		unlink(TEMPFILE);
-		unlink(TEMP_RAW);
-		unlink(tempEncoded);
+		Common::removeFile(TEMPFILE);
+		Common::removeFile(TEMP_RAW);
+		Common::removeFile(tempEncoded);
 	}
 
 	if (output.getFileList())
@@ -285,7 +285,7 @@ void CompressKyra::compressAUDFile(Common::File &input, const char *outfile) {
 
 	encodeAudio(TEMP_RAW, true, header.freq, outfile, _format);
 
-	unlink(TEMP_RAW);
+	Common::removeFile(TEMP_RAW);
 }
 
 struct CompressKyra::DuplicatedFile {
@@ -345,7 +345,7 @@ void CompressKyra::processKyra3(Common::Filename *infile, Common::Filename *outf
 
 				output.addFile(outname, outname);
 
-				unlink(outname);
+				Common::removeFile(outname);
 
 				input.seek(pos, SEEK_SET);
 			}

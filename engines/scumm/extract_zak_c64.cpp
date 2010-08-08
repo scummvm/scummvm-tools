@@ -143,8 +143,12 @@ void ExtractZakC64::execute() {
 		input->seek((SectorOffset[room_tracks_c64[i]] + room_sectors_c64[i]) * 256, SEEK_SET);
 
 		for (j = 0; j < ResourcesPerFile[i]; j++) {
-			unsigned short len = input->readUint16LE();
-			output.writeUint16LE(len);
+			unsigned short len;
+
+			do {
+				len = input->readUint16LE();
+				output.writeUint16LE(len);
+			} while (len == 0xffff);
 
 			for (len -= 2; len > 0; len--) {
 				output.writeByte(input->readByte());

@@ -301,7 +301,7 @@ public:
 	/**
 	 * Writes a single character (equivalent of fputc).
 	 */
-	void writeChar(int c);
+	void writeChar(char c);
 	/**
 	 * Writes a single byte to the file.
 	 * @throws FileException if file is not open / if write failed.
@@ -391,6 +391,15 @@ protected:
 	/** xor with this value while reading/writing (default 0), does not work for "read"/"write", only for byte operations. */
 	uint8 _xormode;
 };
+
+
+/**
+ * Remove the specified file.
+ * Currently this simply call unlink() internally,
+ * but by using this wrapper we have an easier time
+ * staying compatible with Windows.
+ */
+int removeFile(const char *path);
 
 } // End of namespace Common
 

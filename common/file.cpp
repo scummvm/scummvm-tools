@@ -24,6 +24,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
+#ifndef _MSC_VER
+#include <unistd.h>	// for unlink()
+#endif
+
 
 namespace Common {
 
@@ -380,9 +384,9 @@ void File::scanString(char *result) {
 	fscanf(_file, "%s", result);
 }
 
-void File::writeChar(int i) {
+void File::writeChar(char i) {
 	if (!_file)
-		throw FileException("File  is not open");
+		throw FileException("File is not open");
 	if ((_mode & FILEMODE_WRITE) == 0)
 		throw FileException("Tried to write to a file opened in read mode (" + _name.getFullPath() + ")");
 
@@ -484,6 +488,10 @@ uint32 File::size() const {
 	sz = ftell(_file);
 	fseek(_file, p, SEEK_SET);
 	return sz;
+}
+
+int removeFile(const char *path) {
+	return unlink(path);
 }
 
 } // End of namespace Common

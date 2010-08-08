@@ -50,7 +50,7 @@ CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name, 
 	input.format = "/";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress the tucker data files.";
+	_shorthelp = "Used to compress the Bud Tucker data files.";
 	_helptext = "\nUsage: " + getName() + " [mode params] [-o outputdir] inputdir\n";
 }
 
@@ -412,9 +412,9 @@ void CompressTucker::compress_sound_files(const Common::Filename *inpath, const 
 	output.close();
 
 	/* cleanup */
-	unlink(TEMP_WAV);
-	unlink(TEMP_RAW);
-	unlink(tempEncoded);
+	Common::removeFile(TEMP_WAV);
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(tempEncoded);
 
 	print("Done.\n");
 }

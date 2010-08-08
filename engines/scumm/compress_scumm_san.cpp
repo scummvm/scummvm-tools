@@ -304,7 +304,7 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 			byte *tmpBuf = (byte *)malloc(fileSize);
 			_audioTracks[l].file.read_throwsOnError(tmpBuf, fileSize);
 			_audioTracks[l].file.close();
-			unlink(filename);
+			Common::removeFile(filename);
 
 			byte *wavBuf = (byte *)malloc(fileSize);
 			memset(wavBuf, 0, fileSize);
@@ -541,7 +541,7 @@ CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(na
 	input.format = "*.san";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Used to compress the .san smush files.";
+	_shorthelp = "Used to compress .san files found in the later SCUMM games.";
 	// TODO: Feature set seems more limited than what kCompressionAudioHelp contains
 	_helptext = "\nUsage: " + getName() + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n";
 }
@@ -760,7 +760,7 @@ skip:
 		else
 			encodeSanWaveWithLame(tmpPath);
 		tmpPath += ".raw";
-		unlink(tmpPath.c_str());
+		Common::removeFile(tmpPath.c_str());
 	}
 
 	input.close();

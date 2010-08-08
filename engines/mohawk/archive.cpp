@@ -76,10 +76,10 @@ void MohawkArchive::open(Common::SeekableReadStream *stream) {
 		error ("Could not find tag \'RSRC\'");
 
 	_rsrc.version = _mhk->readUint16BE();
-	
+
 	if (_rsrc.version != 0x100)
 		error("Unsupported Mohawk resource version %d.%d", (_rsrc.version >> 8) & 0xff, _rsrc.version & 0xff);
-	
+
 	_rsrc.compaction = _mhk->readUint16BE(); // Only used in creation, not in reading
 	_rsrc.filesize = _mhk->readUint32BE();
 	_rsrc.abs_offset = _mhk->readUint32BE();
@@ -412,9 +412,9 @@ MohawkOutputStream LivingBooksArchive_v1::getNextFile() {
 
 MohawkArchive *MohawkArchive::createMohawkArchive(Common::SeekableReadStream *stream) {
 	uint32 headerTag = stream->readUint32BE();
-	
+
 	MohawkArchive *mohawkArchive = 0;
-	
+
 	if (headerTag == ID_MHWK) {
 		stream->readUint32BE(); // File size, ignore
 		headerTag = stream->readUint32BE();
@@ -426,7 +426,7 @@ MohawkArchive *MohawkArchive::createMohawkArchive(Common::SeekableReadStream *st
 		// Assume the Living Books v1 archive format
 		mohawkArchive = new LivingBooksArchive_v1();
 	}
-	
+
 	stream->seek(0);
 
 	if (mohawkArchive)

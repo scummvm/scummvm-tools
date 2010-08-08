@@ -55,7 +55,6 @@
 #include "engines/scumm/extract_mm_nes.h"
 #include "engines/parallaction/extract_parallaction.h"
 #include "engines/scumm/extract_scumm_mac.h"
-#include "engines/groovie/extract_t7g_mac.h"
 #include "engines/scumm/extract_zak_c64.h"
 
 Tools::Tools() {
@@ -90,7 +89,6 @@ Tools::Tools() {
 	_tools.push_back(new ExtractMMNes());
 	_tools.push_back(new ExtractParallaction());
 	_tools.push_back(new ExtractScummMac());
-	_tools.push_back(new ExtractT7GMac());
 	_tools.push_back(new ExtractZakC64());
 }
 

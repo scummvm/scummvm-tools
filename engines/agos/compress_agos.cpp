@@ -37,7 +37,7 @@ CompressAgos::CompressAgos(const std::string &name) : CompressionTool(name, TOOL
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Compresses Simon the Sorcer and Feeble Files data files.";
+	_shorthelp = "Compresses Simon the Sorcerer and Feeble Files data files.";
 	_helptext = "\nUsage: " + getName() + " [mode params] [-o outfile] [--mac] <infile>\n";
 }
 
@@ -64,11 +64,11 @@ void CompressAgos::end() {
 	outputFile.close();
 
 	/* And some clean-up :-) */
-	unlink(TEMP_IDX);
-	unlink(TEMP_DAT);
-	unlink(TEMP_RAW);
-	unlink(tempEncoded);
-	unlink(TEMP_WAV);
+	Common::removeFile(TEMP_IDX);
+	Common::removeFile(TEMP_DAT);
+	Common::removeFile(TEMP_RAW);
+	Common::removeFile(tempEncoded);
+	Common::removeFile(TEMP_WAV);
 }
 
 
