@@ -5,24 +5,45 @@ The control flow analysis is a multi-step process:
 \begin{itemize}
 \item Create a graph with one instruction per vertex, and edges going from instructions to their possible successors
 \item Do a depth-first search to determine the expected stack level at each vertex
+\item Optionally detect functions
 \item Merge vertices to form groups
 \item Perform analysis on vertices
 \end{itemize}
 
-The first step is handled in the constructor, while the two next steps are handled by the \verb+createGroups()+ method. The last step is handled by the \verb+analyze+ method.
+Calls to in-script functions are not represented with edges in the graph. This is done to keep functions separate from one another, so if your engine uses a jump as part of calling functions, you need to make sure you've given that particular jump the type kCall.
+
+The first step is handled in the constructor, while the next three steps are handled by the \verb+createGroups()+ method. The last step is handled by the \verb+analyze+ method.
+
+\subsection{Function detection}
+\label{sec:autofunc}
+Prior to grouping, the control flow can be used to detect new functions. This detection is automatically activated if the Engine method \verb+detectMoreFuncs+ returns true.
+
+When function detection is enabled, unreachable blocks of code will be treated as functions, unless the presumed entry point is located within the range of another function. The end point of the function will then be the last instruction reachable from the entry point.
+
+Functions detected this way will be given the name \verb+auto_+. You can use this as a prefix to the actual name to signify that the function may not actually be a function, or you can ignore it and just replace it with the name you'd normally use.
+
+You can also have the function detection determine the end point of an existing function. To do so, \verb+_endIt+ must be the same as \verb+_startIt+ for that function. In this case, only the end point will be changed within the function; the name will stay the same.
+
+Note that the control flow analysis has no way of determining an appropriate name, number of arguments, return value, or metadata. You'll have to fill that in yourself using \verb+postCFG+ in the engine.
+
+If this step is not enabled, and no functions have been defined before the control flow analysis is started, there will still be added a single function covering the entire script. This is done to avoid having a special case in the code, and it will not affect the output of your script in any way.
 
 \subsection{Group generation}
 Groups are initially formed according to these rules:
 \begin{itemize}
-\item If the next instruction is a jump, end the group here.
+\item If the next instruction is a jump or a return, end the group here.
 \item If the next instruction has multiple predecessors, end the group here.
 \item If the current instruction brings the stack to a lower level than the start of the current group, make the new level the expected stack level (to support clean-up after control structures).
-\item If the current instruction brings the stack level to the same as the start of the current group, end the group here.
+\item If the current instruction brings the stack level to the same as the start of the current group, and at least one instruction with a stack effect >= 0 exists in the group, end the group here.
 \end{itemize}
+
+Unreachable code will not be processed in the group generation, but will remain as individual instructions.
 
 Prior to applying these rules, a depth-first search is performed to calculate the expected stack level at each instruction. If multiple paths are found to the same instruction, a warning will be output if the expected stack level from each path differs.
 
 \subsection{Short-circuit detection}
+\emph{NOTE: This feature is currently disabled.}
+
 As part of the group generation, the decompiler can combine multiple, consecutive groups if it detects them as being part of a single condition check that are merely split up due to short-circuiting.
 
 The rules used to detect if two consecutive groups $A$ and $B$ are oart of the same short-circuited check are as follows:
@@ -38,7 +59,8 @@ After the groups have been created, we then analyze the groups to find the vario
 \item \verb+while+
 \item \verb+break+
 \item \verb+continue+
-\item \verb+if-else+
+\item \verb+if+
+\item \verb+else+
 \end{itemize}
 
 Each of these five constructs are marked using a \verb+GroupType+ member of the \verb+Group+ type, while \verb+else+ blocks are flagged using two booleans, \verb+_startElse+ and \verb+_endElse+. If \verb+_startElse+ is true, then an \verb+else+ block starts with this group, and should be output prior to the code in this group. If \verb+_endElse+ is true, an \verb+else+ block ends with this group, and the end should be output after the code in this group.
@@ -59,13 +81,16 @@ Unconditional jump to some place later in the code. That place must either be th
 \paragraph{Continue detection}
 Unconditional jump to a \verb+while+ or \verb+do-while+ condition, unless it is targeting a \verb+while+ condition which jumps to the next sequential group (in which case it is merely the end of the \verb+while+-loop). Just as with \verb+break+s, the jump is verified to go to the appropriate loop.
 
-\paragraph{If-else detection}
-All remaining conditional jumps are flagged as \verb+if+s. If the instruction immediately before the target of the conditional jump is an unconditional jump, but not a \verb+break+ or a \verb+continue+, an \verb+else+ is detected to begin at the jump target of the conditional jump in the \verb+if+. The \verb+else+ is set to end at the group immediately before the target of the unconditional jump.
+\paragraph{If detection}
+All unflagged conditional jumps are flagged as \verb+if+s.
+
+\paragraph{Else detection}
+All \verb+if+s are processed to see if they may have an \verb+else+ attached. If the jump target of an \verb+if+ is immediately preceded by an unconditional jump, which is neither a break or a continue, and that jump goes to later in the code, this signifies a possible \verb+else+ block, starting with the jump target of the if condition and ending with the group immediately before the target of the jump immediately before the jump target of the if condition. To avoid false positives, this block is then validated to not cross block boundaries. If the check passes, the \verb+else+ block data is added to the graph.
 
 \subsection{Graph output}
-The graph can be output in DOT format by using the -g switch. In the graph, arrows on edges will be hollow if the edge is a jump, and filled if the edge represents the usual sequential order.
+The graph can be output in DOT format by using the \verb+-g+ switch. In the graph, arrows on edges will be hollow if the edge is a jump, and filled if the edge represents the usual sequential order.
 
 \subsection{Limitations}
-Currently, only unconditional jumps are supported for \verb+break+ and \verb+continue+; however, for code of the form \verb+if (...) break;+ or \verb+if (...) continue;+, it is an obvious optimization to use the \verb+break+/\verb+continue+ jump as the conditional jump for the \verb+if+ condition check. Since \verb+if+s are found last, it should be possible to simply check unmarked conditional jumps as well and see if they meet the other criteria for a \verb+break+/\verb+continue+, although there might be some false positives for an if that stretches to the end of the loop it is placed in.
+Currently, only unconditional jumps are supported for \verb+break+ and \verb+continue+; however, for code of the form \verb+if (...) break;+ or \verb+if (...) continue;+, it is a pretty straight-forward optimization to use the \verb+break+/\verb+continue+ jump as the conditional jump for the \verb+if+ condition check. Since \verb+if+s are found last, it should be possible to simply check unmarked conditional jumps as well and see if they meet the other criteria for a \verb+break+/\verb+continue+, although there might be some false positives for an if that stretches to the end of the loop it is placed in.
 
 It is currently assumed that all conditional jumps in \verb+if+ condition checks go to a later place in the code. If optimized continue statements are used in a while (as described above), this will cause the analysis to be incorrect.

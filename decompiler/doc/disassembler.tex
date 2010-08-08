@@ -23,7 +23,7 @@ Each member of this struct has a specific purpose:
 \item \verb+_opcode+ is used to store the numeric opcode associated with the instruction. This is not used by the decompiler itself, but is for your reference during later parts of the decompilation process. Note that this field is declared as a 32-bit integer; if you need more than 4 bytes for your opcodes, you'll need to figure out which bytes you want to store if you want to use this field.
 \item \verb+_address+ stores the absolute memory address where this instruction would be loaded into memory.
 \item \verb+_stackChange+ stores the net change of executing this instruction - for example, if the instruction pushes a byte on to the stack, this should be set to 1. This is used to determine when each statement ends. The count can be in any unit you wish - bytes, words, bits - as long as the same unit is used for all instructions. This means that if your stack only works with 16-bit elements, pushing an 8-bit value and pushing a 16-bit value should have the same net effect on the stack.
-\item \verb+_name+ contains the name of the instruction. You will use this during code generation.
+\item \verb+_name+ contains the name of the instruction. This is mainly for use during code generation.
 \item \verb+_type+ represent the type of instruction. See Section~\vref{sec:insttype} for details.
 \item \verb+_params+ contains the parameters given to the instruction - for example, if you have the instruction \verb+PUSH 1+, there would be one parameter, with the value of 1. See Section~\vref{sec:parameter} for details on the Parameter type.
 \item \verb+_codeGenData+ stores metadata to be used during code generation. For details, see Section~\vref{sec:codegen}.
@@ -85,7 +85,7 @@ public:
 
 \verb+doDisassemble+ is the method used to perform the actual disassembly, so this method must be implemented by all disassemblers.
 
-\verb+disassemble+ simply calls the \verb+doDisassemble+ method to perform the disassembly (if necessary), and returns \verb+_insts+ to the calling methtod.
+\verb+disassemble+ simply calls the \verb+doDisassemble+ method to perform the disassembly (if necessary), and returns \verb+_insts+ to the calling method.
 
 Finally, \verb+dumpDisassembly+ is used to output the instructions in a human-readable format to a file or stdout, performing a disassembly first if required, and then calls \verb+doDumpDisassembly+ to perform the actual output. A default implementation is provided for \verb+doDumpDisassembly+, but you can override it if the standard output format is not suitable for your particular engine.
 
@@ -231,6 +231,8 @@ END_OPCODES;
 
 Subopcodes can be nested if the instruction set requires it. For subopcodes, the \verb+_opcode+ field stores the bytes in the order they appear in the file - i.e., the HALT instruction would have the opcode value 0xFF00. If the opcodes are longer than 4 bytes, only the last 4 bytes will be stored.
 
+If all opcodes in a group of subopcodes share a prefix, you can use the \verb+START_SUBOPCODE_WITH_PREFIX+ macro instead of \verb+START_SUBOPCODE+. This macro takes an additional string parameter containing the full prefix to use for the opcodes associated with this subopcode. The prefix is not propagated if you nest subopcodes, only the nearest prefix is used.
+
 \subsubsection{Code generation metadata}
 For each opcode, you will need to replicate its semantics during code generation. To assist you in generalizing your code, you can use the \verb+OPCODE_MD+ macro to add metadata to the instruction, which is then available during code generation.
 
@@ -261,6 +263,6 @@ OPCODE_END;
 \end{lstlisting}
 \end{C++}
 
-\verb+OPCODE_BASE+ automatically keeps track of the current opcode value. You can access \verb+full_opcode+ to get the current full opcode. Alternatively, you can use the \verb+OPCODE_BODY+ macro to use the standard behavior for opcodes, and then follow that with your own implementation. The \verb+OPCODE_BODY+ macro takes the same arguments as the \verb+OPCODE_MD+ macro.
+\verb+OPCODE_BASE+ automatically keeps track of the current opcode value. You can access \verb+full_opcode+ to get the current full opcode. Alternatively, you can use the \verb+OPCODE_BODY+ macro to use the standard behavior for opcodes, and then follow that with the additional code you want. The \verb+OPCODE_BODY+ macro takes the same arguments as the \verb+OPCODE_MD+ macro.
 
 For your convenience, a few additional macros are available: \verb+ADD_INST+, which adds an empty instruction to the vector, and \verb+LAST_INST+ which retrieves the last instruction in the vector. Additionally, you can use \verb+INC_ADDR+ as a shorthand for incrementing the address variable by 1, but note that you should \emph{not} increment the address for the opcode itself - this is handled by the other macros.

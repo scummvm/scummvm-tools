@@ -9,17 +9,23 @@ The decompilation process consists of a few different steps:
 
 Of these steps, the code flow analysis is engine-independent, while disassembly and code generation require engine-specific code.
 
+\subsection{Reading guide}
+Names used in code are written in a \verb+monospaced typewriter font+.
+
+Actual code snippets have basic syntax highlighting on a light gray background, and lines are numbered, like below:
+
+\begin{C++}
+\begin{lstlisting}
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+	printf("Hello world!");
+	return 0;
+}
+\end{lstlisting}
+\end{C++}
+
+In this document, the terms \emph{control flow analysis} and \emph{code flow analysis} are used interchangably.
+
 \subsection{Limitations}
-The decompiler is targeted for stack-based instruction sets, and may contain assumptions to that effect. If you want to add an engine which does not use a stack-based instruction set, parts of this documentation may not apply, and additional work to the generic parts may be necessary.
-
-\subsection{The Engine class}
-The \verb+Engine+ class represent a single engine. It works as a factory for the engine-specific classes required for each step of the process.
-
-As a minimum, engines must be provide a disassembler and a code generator. All other steps are optional, but you can implement them for additional processing.
-
-If you need to store metadata about the script, you can add the necessary fields to your engine class and store the information there, as the same instance will be used throughout the decompilation process.
-
-\subsection{Adding a new engine}
-In order to make the decompiler use the code you write to decompile code for some engine, it must be registered in the program. To do so, use the \verb+ENGINE+ macro defined in \verb+decompiler.cpp+, and add your own use of the macro near the existing registrations.
-
-This macro takes 3 parameters: the engine ID, a description of the engine, and the name of the \verb+Engine+ subclass used to create the classes used for the various steps of the process. The ID is entered by the user to signify the engine where the script originates from, and the description is a descriptive text which will be shown when the user requests a list of the supported engines.
+The decompiler is targeted for stack-based instruction sets, and may contain assumptions to that effect. If you want to add an engine which does not use a stack-based instruction set, parts of this document may not apply directly, and additional work to the generic parts may be necessary.
