@@ -511,8 +511,7 @@ void ControlFlow::detectElse() {
 	VertexRange vr = boost::vertices(_g);
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		GroupPtr gr = GET(*v);
-		// if: Undetermined block with conditional jump
-		if (gr->_type == kIfCond && (gr->_end->_type == kCondJump || gr->_end->_type == kCondJumpRel)) {
+		if (gr->_type == kIfCond) {
 			OutEdgeRange oer = boost::out_edges(*v, _g);
 			GraphVertex target;
 			uint32 maxAddress = 0;
