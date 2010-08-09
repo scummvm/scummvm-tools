@@ -12,19 +12,19 @@ The control flow analysis is a multi-step process:
 
 Calls to in-script functions are not represented with edges in the graph. This is done to keep functions separate from one another, so if your engine uses a jump as part of calling functions, you need to make sure you have given that particular jump the type kCall.
 
-The first step is handled in the constructor, while the next three steps are handled by the \verb+createGroups()+ method. The last step is handled by the \verb+analyze+ method.
+The first step is handled in the constructor, while the next three steps are handled by the \code{createGroups()} method. The last step is handled by the \code{analyze} method.
 
 \subsection{Function detection}
 \label{sec:autofunc}
-Prior to grouping, the control flow can be used to detect new functions. This detection is automatically activated if the Engine method \verb+detectMoreFuncs+ returns true.
+Prior to grouping, the control flow can be used to detect new functions. This detection is automatically activated if the Engine method \code{detectMoreFuncs} returns true.
 
 When function detection is enabled, unreachable blocks of code will be treated as functions, unless the presumed entry point is located within the range of another function. The end point of the function will then be the last instruction reachable from the entry point.
 
-Functions detected this way will be given the name \verb+auto_+. You can use this as a prefix to the actual name to signify that the function may not actually be a function, or you can ignore it and just replace it with the name you would normally use.
+Functions detected this way will be given the name \code{auto\_}. You can use this as a prefix to the actual name to signify that the function may not actually be a function, or you can ignore it and just replace it with the name you would normally use.
 
-You can also have the function detection determine the end point of an existing function. To do so, \verb+_endIt+ must be the same as \verb+_startIt+ for that function. In this case, only the end point will be changed within the function; the name will stay the same.
+You can also have the function detection determine the end point of an existing function. To do so, \code{\_endIt} must be the same as \code{\_startIt} for that function. In this case, only the end point will be changed within the function; the name will stay the same.
 
-Note that the control flow analysis has no way of determining an appropriate name, number of arguments, return value, or metadata. You will have to fill that in yourself using \verb+postCFG+ in the engine.
+Note that the control flow analysis has no way of determining an appropriate name, number of arguments, return value, or metadata. You will have to fill that in yourself using \code{postCFG} in the engine.
 
 If this step is not enabled, and no functions have been defined before the control flow analysis is started, there will still be added a single function covering the entire script. This is done to avoid having a special case in the code, and it will not affect the output of your script in any way.
 
@@ -55,15 +55,15 @@ The rules used to detect if two consecutive groups $A$ and $B$ are oart of the s
 \subsection{Construct detection}
 After the groups have been created, we then analyze the groups to find the various kind of control flow constructs. The constructs are detected in multiple steps, with one construct per step, in the following order:
 \begin{itemize}
-\item \verb+do-while+
-\item \verb+while+
-\item \verb+break+
-\item \verb+continue+
-\item \verb+if+
-\item \verb+else+
+\item \code{do-while}
+\item \code{while}
+\item \code{break}
+\item \code{continue}
+\item \code{if}
+\item \code{else}
 \end{itemize}
 
-Each of these five constructs are marked using a \verb+GroupType+ member of the \verb+Group+ type, while \verb+else+ blocks are flagged using two booleans, \verb+_startElse+ and \verb+_endElse+. If \verb+_startElse+ is true, then an \verb+else+ block starts with this group, and should be output prior to the code in this group. If \verb+_endElse+ is true, an \verb+else+ block ends with this group, and the end should be output after the code in this group.
+Each of these five constructs are marked using a \code{GroupType} member of the \code{Group} type, while \code{else} blocks are flagged using two booleans, \code{\_startElse} and \code{\_endElse}. If \code{\_startElse} is true, then an \code{else} block starts with this group, and should be output prior to the code in this group. If \code{\_endElse} is true, an \code{else} block ends with this group, and the end should be output after the code in this group.
 
 Once a group has been flagged as being some construct, it is skipped for the other constructs.
 
@@ -73,24 +73,24 @@ The criteria used for each construct are as follows:
 Group must end with a conditional jump (i.e., have two outgoing edges). Jump must go to an earlier place in the code.
 
 \paragraph{While detection}
-Group must end with conditional jump. Block must have an ingoing edge from some group later in the code, unless that edge comes from a do-while condition (in which case it is assumed to be an \verb+if+ instead).
+Group must end with conditional jump. Block must have an ingoing edge from some group later in the code, unless that edge comes from a do-while condition (in which case it is assumed to be an \code{if} instead).
 
 \paragraph{Break detection}
-Unconditional jump to some place later in the code. That place must either be the group immediately after a \verb+do-while+ condition, or the jump target of a \verb+while+ condition. Additionally, the jump is verified to go to the appropriate loop (so it does not exit multiple loops at once).
+Unconditional jump to some place later in the code. That place must either be the group immediately after a \code{do-while} condition, or the jump target of a \code{while} condition. Additionally, the jump is verified to go to the appropriate loop (so it does not exit multiple loops at once).
 
 \paragraph{Continue detection}
-Unconditional jump to a \verb+while+ or \verb+do-while+ condition, unless it is targeting a \verb+while+ condition which jumps to the next sequential group (in which case it is merely the end of the \verb+while+-loop). Just as with \verb+break+s, the jump is verified to go to the appropriate loop.
+Unconditional jump to a \code{while} or \code{do-while} condition, unless it is targeting a \code{while} condition which jumps to the next sequential group (in which case it is merely the end of the \code{while}-loop). Just as with \code{break}s, the jump is verified to go to the appropriate loop.
 
 \paragraph{If detection}
-All unflagged conditional jumps are flagged as \verb+if+s.
+All unflagged conditional jumps are flagged as \code{if}s.
 
 \paragraph{Else detection}
-All \verb+if+s are processed to see if they may have an \verb+else+ attached. If the jump target of an \verb+if+ is immediately preceded by an unconditional jump, which is neither a break or a continue, and that jump goes to later in the code, this signifies a possible \verb+else+ block, starting with the jump target of the if condition and ending with the group immediately before the target of the jump immediately before the jump target of the if condition. To avoid false positives, this block is then validated to not cross block boundaries. If the check passes, the \verb+else+ block data is added to the graph.
+All \code{if}s are processed to see if they may have an \code{else} attached. If the jump target of an \code{if} is immediately preceded by an unconditional jump, which is neither a break or a continue, and that jump goes to later in the code, this signifies a possible \code{else} block, starting with the jump target of the if condition and ending with the group immediately before the target of the jump immediately before the jump target of the if condition. To avoid false positives, this block is then validated to not cross block boundaries. If the check passes, the \code{else} block data is added to the graph.
 
 \subsection{Graph output}
-The graph can be output in DOT format by using the \verb+-g+ switch. In the graph, arrows on edges will be hollow if the edge is a jump, and filled if the edge represents the usual sequential order.
+The graph can be output in DOT format by using the \code{-g} switch. In the graph, arrows on edges will be hollow if the edge is a jump, and filled if the edge represents the usual sequential order.
 
 \subsection{Limitations}
-Currently, only unconditional jumps are supported for \verb+break+ and \verb+continue+; however, for code of the form \verb+if (...) break;+ or \verb+if (...) continue;+, it is a pretty straight-forward optimization to use the \verb+break+/\verb+continue+ jump as the conditional jump for the \verb+if+ condition check. Since \verb+if+s are found last, it should be possible to simply check unmarked conditional jumps as well and see if they meet the other criteria for a \verb+break+/\verb+continue+, although there might be some false positives for an if that stretches to the end of the loop it is placed in.
+Currently, only unconditional jumps are supported for \code{break} and \code{continue}; however, for code of the form \code{if (...) break;} or \code{if (...) continue;}, it is a pretty straight-forward optimization to use the \code{break}/\code{continue} jump as the conditional jump for the \code{if} condition check. Since \code{if}s are found last, it should be possible to simply check unmarked conditional jumps as well and see if they meet the other criteria for a \code{break}/\code{continue}, although there might be some false positives for an if that stretches to the end of the loop it is placed in.
 
-It is currently assumed that all conditional jumps in \verb+if+ condition checks go to a later place in the code. If optimized continue statements are used in a while (as described above), this will cause the analysis to be incorrect.
+t is currently assumed that all conditional jumps in \code{if} condition checks go to a later place in the code. If optimized continue statements are used in a while (as described above), this will cause the analysis to be incorrect.

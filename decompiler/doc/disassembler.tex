@@ -3,7 +3,7 @@
 The purpose of the disassembler is to read instructions from a script file and convert them to a common, machine-readable form for further analysis.
 
 \subsection{Instructions}
-Instructions are represented using the \verb+Instruction+ struct.
+Instructions are represented using the \code{Instruction} struct.
 
 \begin{C++}
 \begin{lstlisting}
@@ -21,13 +21,13 @@ struct Instruction {
 
 Each member of this struct has a specific purpose:
 \begin{itemize}
-\item \verb+_opcode+ is used to store the numeric opcode associated with the instruction. This is not used by the decompiler itself, but is for your reference during later parts of the decompilation process. Note that this field is declared as a 32-bit integer; if you need more than 4 bytes for your opcodes, you will need to figure out which bytes you want to store if you want to use this field.
-\item \verb+_address+ stores the absolute memory address where this instruction would be loaded into memory.
-\item \verb+_stackChange+ stores the net change of executing this instruction - for example, if the instruction pushes a byte on to the stack, this should be set to 1. This is used to determine when each statement ends. The count can be in any unit you wish - bytes, words, bits - as long as the same unit is used for all instructions. This means that if your stack only works with 16-bit elements, pushing an 8-bit value and pushing a 16-bit value should have the same net effect on the stack.
-\item \verb+_name+ contains the name of the instruction. This is mainly for use during code generation.
-\item \verb+_type+ represent the type of instruction. See Section~\vref{sec:insttype} for details.
-\item \verb+_params+ contains the parameters given to the instruction - for example, if you have the instruction \verb+PUSH 1+, there would be one parameter, with the value of 1. See Section~\vref{sec:parameter} for details on the Parameter type.
-\item \verb+_codeGenData+ stores metadata to be used during code generation. For details, see Section~\vref{sec:codegen}.
+\item \code{\_opcode} is used to store the numeric opcode associated with the instruction. This is not used by the decompiler itself, but is for your reference during later parts of the decompilation process. Note that this field is declared as a 32-bit integer; if you need more than 4 bytes for your opcodes, you will need to figure out which bytes you want to store if you want to use this field.
+\item \code{\_address} stores the absolute memory address where this instruction would be loaded into memory.
+\item \code{\_stackChange} stores the net change of executing this instruction - for example, if the instruction pushes a byte on to the stack, this should be set to 1. This is used to determine when each statement ends. The count can be in any unit you wish - bytes, words, bits - as long as the same unit is used for all instructions. This means that if your stack only works with 16-bit elements, pushing an 8-bit value and pushing a 16-bit value should have the same net effect on the stack.
+\item \code{\_name} contains the name of the instruction. This is mainly for use during code generation.
+\item \code{\_type} represent the type of instruction. See Section~\vref{sec:insttype} for details.
+\item \code{\_params} contains the parameters given to the instruction - for example, if you have the instruction \code{PUSH 1}, there would be one parameter, with the value of 1. See Section~\vref{sec:parameter} for details on the Parameter type.
+\item \code{\_codeGenData} stores metadata to be used during code generation. For details, see Section~\vref{sec:codegen}.
 \end{itemize}
 
 If some instructions do not have a fixed effect on the stack--that is, the instruction name alone does not determine the effect on the stack--set the field to some easily recognizable value when doing the disassembly. You can then determine the correct value in a post-processing step after the code flow analysis.
@@ -38,22 +38,22 @@ The instruction type is a generalization of the different kinds of instructions.
 
 This is particularly important during code flow analysis; since this part is engine-independent, the analysis must have some way of distinguishing the different types of instructions. Additionally, this information can be used during code generation to generalize the recognition of constructs--for example, the code generated for addition and the code generated for multiplication will generally be identical, with the exception of that single arithmetic instruction doing the work.
 
-Most of the types are self-explanatory, with the possible exception of \verb+kSpecial+. \verb+kSpecial+ should be used for all "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
+Most of the types are self-explanatory, with the possible exception of \code{kSpecial}. \code{kSpecial} should be used for all "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
 
 \subsection{Parameters}
 \label{sec:parameter}
-Parameters are stored using a tagged union - one field (\verb+_type+) tells you which data type is being stored, and another field (\verb+_value+) stores the actual value.
+Parameters are stored using a tagged union - one field (\code{\_type}) tells you which data type is being stored, and another field (\code{\_value}) stores the actual value.
 
-Three convenience methods are provided to extract the value, \verb+getSigned+, \verb+getUnsigned+ and \verb+getString+. Please note: if an incorrect method is called, an exception is thrown.
+Three convenience methods are provided to extract the value, \code{getSigned}, \code{getUnsigned} and \code{getString}. Please note: if an incorrect method is called, an exception is thrown.
 
 Although there are only 3 get methods, there are 7 different parameter types. This additional distinction is intended for you to use as you see fit, in case it is useful as metadata somewhere in your engine-specific code.
 
-If you need to store different types than those already allowed, add the new type to the list of type parameters for the \verb+_value+ field and add another enumeration value to \verb+ParamType+. You should make the new type \emph{output streamable}--that is, allow it to be used like \verb+std::cout << value+. This allows the value to be output directly to an output stream regardless of its type.
+If you need to store different types than those already allowed, add the new type to the list of type parameters for the \code{\_value} field and add another enumeration value to \code{ParamType}. You should make the new type \emph{output streamable}--that is, allow it to be used like \code{std::cout << value}. This allows the value to be output directly to an output stream regardless of its type.
 
-Note: When storing 8 or 16-bit unsigned values in the \verb+_value+ field, cast them to an \verb+uint32+ when doing the assignment, or you will not be able to extract the value using \verb+getUnsigned+. This is a limitation caused by the automatic type conversion algorithm used by C++.
+Note: When storing 8 or 16-bit unsigned values in the \code{\_value} field, cast them to an \code{uint32} when doing the assignment, or you will not be able to extract the value using \code{getUnsigned}. This is a limitation caused by the automatic type conversion algorithm used by C++.
 
 \subsection{The Disassembler class}
-All disassemblers must inherit, directly or indirectly, from the \verb+Disassembler+ class. This is an abstract class providing an interface for disassemblers.
+All disassemblers must inherit, directly or indirectly, from the \code{Disassembler} class. This is an abstract class providing an interface for disassemblers.
 
 \begin{C++}
 \begin{lstlisting}
@@ -78,25 +78,25 @@ public:
 \end{lstlisting}
 \end{C++}
 
-\verb+_f+ represents the file you will be reading from. The file is opened using the \verb+open+ function.
+\code{\_f} represents the file you will be reading from. The file is opened using the \code{open} function.
 
-\verb+_insts+ is an \verb+std::vector+ storing the instructions. Whenever you have read an instruction fully, add it here.
+\code{\_insts} is an \code{std::vector} storing the instructions. Whenever you have read an instruction fully, add it here.
 
-\verb+_addressBase+ is provided as a convenience if your engine does not consider the first instruction to be located at address 0. Assign the expected base address to this field, and make sure that the addresses you assign to the instructions are relative to this base address. This is mainly useful if your engine supports jumps or other references to absolute addresses in the script; if only relative addresses are used, the base address will not be relevant.
+\code{\_addressBase} is provided as a convenience if your engine does not consider the first instruction to be located at address 0. Assign the expected base address to this field, and make sure that the addresses you assign to the instructions are relative to this base address. This is mainly useful if your engine supports jumps or other references to absolute addresses in the script; if only relative addresses are used, the base address will not be relevant.
 
-\verb+_disassemblyDone+ is used to represent whether or not disassembly has already been performed. This is set automatically by \verb+disassemble+ and  \verb+dumpDisassembly+.
+\code{\_disassemblyDone} is used to represent whether or not disassembly has already been performed. This is set automatically by \code{disassemble} and  \code{dumpDisassembly}.
 
-\verb+doDisassemble+ is the method used to perform the actual disassembly, so this method must be implemented by all disassemblers.
+\code{doDisassemble} is the method used to perform the actual disassembly, so this method must be implemented by all disassemblers.
 
-\verb+disassemble+ simply calls the \verb+doDisassemble+ method to perform the disassembly (if necessary), and returns \verb+_insts+ to the calling method.
+\code{disassemble} simply calls the \code{doDisassemble} method to perform the disassembly (if necessary), and returns \code{\_insts} to the calling method.
 
-Finally, \verb+dumpDisassembly+ is used to output the instructions in a human-readable format to a file or stdout, performing a disassembly first if required, and then calls \verb+doDumpDisassembly+ to perform the actual output. A default implementation is provided for \verb+doDumpDisassembly+, but you can override it if the standard output format is not suitable for your particular engine.
+Finally, \code{dumpDisassembly} is used to output the instructions in a human-readable format to a file or stdout, performing a disassembly first if required, and then calls \code{doDumpDisassembly} to perform the actual output. A default implementation is provided for \code{doDumpDisassembly}, but you can override it if the standard output format is not suitable for your particular engine.
 
 \subsection{The SimpleDisassembler class}
 \label{sec:simpledisasm}
-To simplify the development of disassemblers, another base class is provided for instruction sets where instructions are of the format \verb+opcode [params]+, with opcode and parameters stored in distinct bytes.
+To simplify the development of disassemblers, another base class is provided for instruction sets where instructions are of the format \code{opcode [params]}, with opcode and parameters stored in distinct bytes.
 
-\verb+SimpleDisassembler+ defines a number of macros which you can use for writing your disassembler, and provides a framework for reading instruction parameters.
+\code{SimpleDisassembler} defines a number of macros which you can use for writing your disassembler, and provides a framework for reading instruction parameters.
 
 Following is a guide on how to implement a disassembler using this class as its base class. The instruction set used for this example is described in Table~\vref{tbl:simple_disasm_example}. While not a very useful instruction set, it covers many different aspects.
 
@@ -105,23 +105,23 @@ Following is a guide on how to implement a disassembler using this class as its 
 \begin{tabular}{c | c | c}
 Instruction & Parameters & Description \\
 \hline
-\verb+PUSH+ (0x00) & uint8 & Pushes byte onto the stack.\\
-\verb+POP+ (0x01) & &  Pops a byte from the stack. \\
-\verb+PUSH2+ (0x02) & int16 & Pushes value onto the stack.\\
-\verb+POP2+ (0x03) & &  Pops two bytes from the stack. \\
-\verb+PRINT+ (0x80) & C string & Prints string to standard output. \\
-\verb+HALT+ (0xFF 0x00) & & Stops the machine.
+\code{PUSH} (0x00) & uint8 & Pushes byte onto the stack.\\
+\code{POP} (0x01) & &  Pops a byte from the stack. \\
+\code{PUSH2} (0x02) & int16 & Pushes value onto the stack.\\
+\code{POP2} (0x03) & &  Pops two bytes from the stack. \\
+\code{PRINT} (0x80) & C string & Prints string to standard output. \\
+\code{HALT} (0xFF 0x00) & & Stops the machine.
 \end{tabular}
 \caption{Instruction set used in the SimpleDisassembler example.}
 \label{tbl:simple_disasm_example}
 \end{table}
 
-For the purpose of this example, our instruction set will use little-endian values, and uses byte elements for the stack (so \verb+POP+ changes the stack pointer by 1 and \verb+POP2+ changes it by 2).
+For the purpose of this example, our instruction set will use little-endian values, and uses byte elements for the stack (so \code{POP} changes the stack pointer by 1 and \code{POP2} changes it by 2).
 
 \subsubsection{Opcode recognition}
-The first thing to do in the \verb+doDisassemble+ method is to read past any header which may be present in your script file. We will assume that our bytecode files do not have a header.
+The first thing to do in the \code{doDisassemble} method is to read past any header which may be present in your script file. We will assume that our bytecode files do not have a header.
 
-You must place your opcodes between two macros, \verb+START_OPCODES+ and \verb+END_OPCODES+. These two macros define the looping required to read one byte at a time.
+You must place your opcodes between two macros, \code{START\_OPCODES} and \code{END\_OPCODES}. These two macros define the looping required to read one byte at a time.
 
 \begin{C++}
 \begin{lstlisting}
@@ -130,7 +130,7 @@ END_OPCODES;
 \end{lstlisting}
 \end{C++}
 
-To define an opcode, use the \verb+OPCODE+ macro. This macro takes 5 parameters: the opcode value, the name of the instruction, the type of instruction, the net effect on the stack, and a string describing the parameters that are part of the instruction. We will start by implementing the \verb+POP+ and \verb+POP2+ opcodes:
+To define an opcode, use the \code{OPCODE} macro. This macro takes 5 parameters: the opcode value, the name of the instruction, the type of instruction, the net effect on the stack, and a string describing the parameters that are part of the instruction. We will start by implementing the \code{POP} and \code{POP2} opcodes:
 
 \begin{C++}
 \begin{lstlisting}
@@ -141,10 +141,10 @@ END_OPCODES;
 \end{lstlisting}
 \end{C++}
 
-The \verb+OPCODE+ macro automatically stores the full opcode in the \verb+_opcode+ field of the generated \verb+Instruction+.
+The \code{OPCODE} macro automatically stores the full opcode in the \code{\_opcode} field of the generated \code{Instruction}.
 
 \subsubsection{Parameter reading}
-\verb+PUSH+, \verb+PUSH2+ and \verb+PRINT+ all take parameters as part of the instruction. To read these, you must specify them as part of the parameter string, using one character per parameter. The types understood by default are specified in Table~\vref{tbl:paramtypes}.
+\code{PUSH}, \code{PUSH2} and \code{PRINT} all take parameters as part of the instruction. To read these, you must specify them as part of the parameter string, using one character per parameter. The types understood by default are specified in Table~\vref{tbl:paramtypes}.
 
 \begin{table}[!hpbt]
 \centering
@@ -168,7 +168,7 @@ D & Unsigned 32-bit byte, big-endian. \\
 
 To help you remember these meanings, little-endian values are encoded using lower case ("small letters", i.e. little), while big-endian values are encoded using upper case ("big" letters). The exception here is a single byte, since endianness has no effect for individual bytes. Here, the mnemonic is that an unsigned byte ("B") has a larger maximum value. For the other letters, "s" was used because it is the first letter in "short", which is usually a 16-bit signed value in C. Similarly, "i" is short for "int". "w" and "d" come from the terms "word" and "dword", which are terms for 16-bit and 32-bit unsigned types on an x86 platform.
 
-Note that strings are not supported by default. To add reading of a string type, you can override the \verb+readParameter+ function to add your own types:
+Note that strings are not supported by default. To add reading of a string type, you can override the \code{readParameter} function to add your own types:
 
 \begin{C++}
 \begin{lstlisting}
@@ -180,7 +180,7 @@ Note that strings are not supported by default. To add reading of a string type,
 		std::stringstream s;
 		while ((cmd = _f.readByte()) != 0) {
 			s << cmd;
-			_address++;
+			_address}};
 		}
 		s << '"';
 		p->_type = kString;
@@ -194,7 +194,7 @@ Note that strings are not supported by default. To add reading of a string type,
 \end{lstlisting}
 \end{C++}
 
-Note that you will have to increment the \verb+_address+ variable manually when you read a byte. This variable is used to determine the address of the instruction, and must be kept in sync with your progress reading the file.
+Note that you will have to increment the \code{\_address} variable manually when you read a byte. This variable is used to determine the address of the instruction, and must be kept in sync with your progress reading the file.
 
 Now, we can add all three opcodes to the list:
 
@@ -211,11 +211,11 @@ END_OPCODES;
 \end{C++}
 
 \subsubsection{Multi-byte opcodes}
-There is only one opcode left to add, \verb+HALT+. This one is a bit trickier, because it uses multiple bytes for the opcode - and the \verb+OPCODE+ macro only works for one byte at a time.
+There is only one opcode left to add, \code{HALT}. This one is a bit trickier, because it uses multiple bytes for the opcode - and the \code{OPCODE} macro only works for one byte at a time.
 
-To solve this, you can define \emph{subopcodes}. By defining 0xFF as the start of a multi-byte opcode, we can then specify 0x00 as representing a \verb+HALT+ instruction when it follows 0xFF.
+To solve this, you can define \emph{subopcodes}. By defining 0xFF as the start of a multi-byte opcode, we can then specify 0x00 as representing a \code{HALT} instruction when it follows 0xFF.
 
-Defining 0xFF is easily done using the \verb+START_SUBOPCODE+ macro. After that, specify the opcodes for this following byte, and finish the subopcode declarations with \verb+END_SUBOPCODE+.
+Defining 0xFF is easily done using the \code{START\_SUBOPCODE} macro. After that, specify the opcodes for this following byte, and finish the subopcode declarations with \code{END\_SUBOPCODE}.
 
 \begin{C++}
 \begin{lstlisting}
@@ -232,21 +232,21 @@ END_OPCODES;
 \end{lstlisting}
 \end{C++}
 
-Subopcodes can be nested if the instruction set requires it. For subopcodes, the \verb+_opcode+ field stores the bytes in the order they appear in the file - i.e., the HALT instruction would have the opcode value 0xFF00. If the opcodes are longer than 4 bytes, only the last 4 bytes will be stored.
+Subopcodes can be nested if the instruction set requires it. For subopcodes, the \code{\_opcode} field stores the bytes in the order they appear in the file - i.e., the HALT instruction would have the opcode value 0xFF00. If the opcodes are longer than 4 bytes, only the last 4 bytes will be stored.
 
-If all opcodes in a group of subopcodes share a prefix, you can use the \verb+START_SUBOPCODE_WITH_PREFIX+ macro instead of \verb+START_SUBOPCODE+. This macro takes an additional string parameter containing the full prefix to use for the opcodes associated with this subopcode. The prefix is not propagated if you nest subopcodes, only the nearest prefix is used.
+If all opcodes in a group of subopcodes share a prefix, you can use the \code{START\_SUBOPCODE\_WITH\_PREFIX} macro instead of \code{START\_SUBOPCODE}. This macro takes an additional string parameter containing the full prefix to use for the opcodes associated with this subopcode. The prefix is not propagated if you nest subopcodes, only the nearest prefix is used.
 
 \subsubsection{Code generation metadata}
-For each opcode, you will need to replicate its semantics during code generation. To assist you in generalizing your code, you can use the \verb+OPCODE_MD+ macro to add metadata to the instruction, which is then available during code generation.
+For each opcode, you will need to replicate its semantics during code generation. To assist you in generalizing your code, you can use the \code{OPCODE\_MD} macro to add metadata to the instruction, which is then available during code generation.
 
 For example, if you have an opcode for addition, you can store the addition operator as a string in the metadata field, and have that put to use during code generation to avoid having to check the opcode for each instruction of that type.
 
-The arguments for the \verb+OPCODE_MD+ are the same as those for \verb+OPCODE+, but with an extra parameter at the end for the metadata.
+The arguments for the \code{OPCODE\_MD} are the same as those for \code{OPCODE}, but with an extra parameter at the end for the metadata.
 
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE_MD(0x14, "add", kBinaryOp, -1, "", "+");
+	OPCODE_MD(0x14, "add", kBinaryOp, -1, "", "}");
 END_OPCODES;
 \end{lstlisting}
 \end{C++}
@@ -256,7 +256,7 @@ For details, see Section~\vref{sec:codegen}.
 \subsubsection{Advanced opcode handling}
 If you have one or two opcodes that do not quite fit into the framework provided, you can define your own specialized handling for these opcodes.
 
-Instead of using the \verb+OPCODE+ macro, put your code between \verb+OPCODE_BASE+ and \verb+OPCODE_END+. For example, if your opcode has the value 0x40, you would use this:
+Instead of using the \code{OPCODE} macro, put your code between \code{OPCODE\_BASE} and \code{OPCODE\_END}. For example, if your opcode has the value 0x40, you would use this:
 
 \begin{C++}
 \begin{lstlisting}
@@ -266,6 +266,6 @@ OPCODE_END;
 \end{lstlisting}
 \end{C++}
 
-\verb+OPCODE_BASE+ automatically keeps track of the current opcode value. You can access \verb+full_opcode+ to get the current full opcode. Alternatively, you can use the \verb+OPCODE_BODY+ macro to use the standard behavior for opcodes, and then follow that with the additional code you want. The \verb+OPCODE_BODY+ macro takes the same arguments as the \verb+OPCODE_MD+ macro.
+\code{OPCODE\_BASE} automatically keeps track of the current opcode value. You can access \code{full\_opcode} to get the current full opcode. Alternatively, you can use the \code{OPCODE\_BODY} macro to use the standard behavior for opcodes, and then follow that with the additional code you want. The \code{OPCODE\_BODY} macro takes the same arguments as the \code{OPCODE\_MD} macro.
 
-For your convenience, a few additional macros are available: \verb+ADD_INST+, which adds an empty instruction to the vector, and \verb+LAST_INST+ which retrieves the last instruction in the vector. Additionally, you can use \verb+INC_ADDR+ as a shorthand for incrementing the address variable by 1, but note that you should \emph{not} increment the address for the opcode itself - this is handled by the other macros.
+For your convenience, a few additional macros are available: \code{ADD\_INST}, which adds an empty instruction to the vector, and \code{LAST\_INST} which retrieves the last instruction in the vector. Additionally, you can use \code{INC\_ADDR} as a shorthand for incrementing the address variable by 1, but note that you should \emph{not} increment the address for the opcode itself - this is handled by the other macros.

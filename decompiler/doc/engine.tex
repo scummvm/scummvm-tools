@@ -1,27 +1,27 @@
 \section{Engine}
-The \verb+Engine+ class represent a single engine. It works as a factory for the engine-specific classes required for each step of the process.
+The \code{Engine} class represent a single engine. It works as a factory for the engine-specific classes required for each step of the process.
 
 As a minimum, engines must provide a disassembler and a code generator. All other steps are optional, but you can implement them for additional processing.
 
 If you need to store metadata about the script, you can add the necessary fields to your engine class and store the information there, as the same instance will be used throughout the decompilation process.
 
 \subsection{Adding a new engine}
-In order to make the decompiler use the code you write to decompile code for some engine, it must be registered in the program. To do so, include the header file for your engine in \verb+decompiler.cpp+, and use the \verb+ENGINE+ macro defined there to register your engine with the program.
+In order to make the decompiler use the code you write to decompile code for some engine, it must be registered in the program. To do so, include the header file for your engine in \code{decompiler.cpp}, and use the \code{ENGINE} macro defined there to register your engine with the program.
 
-This macro takes 3 parameters: the engine ID, a description of the engine, and the name of the \verb+Engine+ subclass used to create the classes used for the various steps of the process. The ID is entered by the user to signify the engine where the script originates from, and the description is a descriptive text which will be shown when the user requests a list of the supported engines. In general, you should place the files for your engine in a folder with the same name as the engine ID you use.
+This macro takes 3 parameters: the engine ID, a description of the engine, and the name of the \code{Engine} subclass used to create the classes used for the various steps of the process. The ID is entered by the user to signify the engine where the script originates from, and the description is a descriptive text which will be shown when the user requests a list of the supported engines. In general, you should place the files for your engine in a folder with the same name as the engine ID you use.
 
-The methods you need to implement in your \verb+Engine+ subclass are:
+The methods you need to implement in your \code{Engine} subclass are:
 \begin{itemize}
-\item \verb+getDisassembler+, which takes a reference to the instruction vector to use for storage and creates a disassembler object and returns it. For more on disassemblers, see Section~\vref{sec:disassembler}.
-\item \verb+getCodeGenerator+, which takes a reference to the \verb+std::ostream+ to output the code to and creates a code generator object and returns it. For more on code generators, see Section~\vref{sec:codegen}.
-\item \verb+getDestAddress+, which takes a const iterator to a jump instruction as a parameter and returns the address the instruction will jump to if the jump is taken. Unless you do differently in your engine-specific code, this function will only receive jumps as input, so if you can take a shortcut based on that, you are allowed to do that.
+\item \code{getDisassembler}, which takes a reference to the instruction vector to use for storage and creates a disassembler object and returns it. For more on disassemblers, see Section~\vref{sec:disassembler}.
+\item \code{getCodeGenerator}, which takes a reference to the \code{std::ostream} to output the code to and creates a code generator object and returns it. For more on code generators, see Section~\vref{sec:codegen}.
+\item \code{getDestAddress}, which takes a const iterator to a jump instruction as a parameter and returns the address the instruction will jump to if the jump is taken. Unless you do differently in your engine-specific code, this function will only receive jumps as input, so if you can take a shortcut based on that, you are allowed to do that.
 \end{itemize}
 
 Additional methods you can override are:
 \begin{itemize}
-\item \verb+supportsCodeFlow+ and \verb+supportsCodeGen+, which can be used to stop the decompiler from going any further after disassembly or code flow analysis, respectively. This is helpful when working on a brand new engine, so you can take one step at a time without having to remember to use the right command-line switch. If you do not override these methods, the decompiler will go through all steps.
-\item \verb+detectMoreFuncs+ allows you to tell the control flow analysis to automatically detect functions based on reachability. See Section~\vref{sec:autofunc} for details. By default, this is turned off; engines must opt-in to this feature.
-\item \verb+postCFG+, which is a post-processing step called after control flow analysis. If you override \verb+detectMoreFuncs+ to return true, you must also override this function to process any newly found functions. A default implementation which does nothing is already provided in case you do not need to do any post-processing.
+\item \code{supportsCodeFlow} and \code{supportsCodeGen}, which can be used to stop the decompiler from going any further after disassembly or code flow analysis, respectively. This is helpful when working on a brand new engine, so you can take one step at a time without having to remember to use the right command-line switch. If you do not override these methods, the decompiler will go through all steps.
+\item \code{detectMoreFuncs} allows you to tell the control flow analysis to automatically detect functions based on reachability. See Section~\vref{sec:autofunc} for details. By default, this is turned off; engines must opt-in to this feature.
+\item \code{postCFG}, which is a post-processing step called after control flow analysis. If you override \code{detectMoreFuncs} to return true, you must also override this function to process any newly found functions. A default implementation which does nothing is already provided in case you do not need to do any post-processing.
 \end{itemize}
 
 It is important to realize that you do not necessarily need to implement a completely new code generator and disassembler for every engine; for variations on the same engine, you can reuse the existing classes and simply send in any extra information required. In particular, code generators are likely to be reusable without change for different versions of the same engine - e.g., the Kyra2 code generator will likely work for all Kyra games.
@@ -29,7 +29,7 @@ It is important to realize that you do not necessarily need to implement a compl
 \subsection{Game information}
 For some engines, it may not be enough to know the engine; some instructions may differ in behavior between different games or variants of a game, for example between talkie or non-talkie versions, or between versions for different platforms.
 
-The \verb+Engine+ class contains a field \verb+_isTalkie+ which is set to true if the user passed in the \verb+-t+ switch on the command line. You can check this flag in your engine-specific code if necessary.
+The \code{Engine} class contains a field \code{\_isTalkie} which is set to true if the user passed in the \code{-t} switch on the command line. You can check this flag in your engine-specific code if necessary.
 
 In the interest of user friendliness, if the necessary data exists directly in the script file itself, you should use that instead of requiring additional switches to be passed.
 
@@ -38,7 +38,7 @@ Note that, at the time of writing, there is no field containing platform informa
 \subsection{Functions}
 Some engines allow multiple functions in a single script file. Each function must be analyzed separately, but in order to do that, it is of course necessary to know where the functions start and end, and when it is time to actually generate some code, you will want to know a bit about the function as well.
 
-This information is stored in the engine, as a \verb+std::map+ of \verb+Function+s, in the field \verb+ _functions+.
+This information is stored in the engine, as a \code{std::map} of \code{Function}s, in the field \code{\_functions}.
 
 \begin{C++}
 \begin{lstlisting}
@@ -57,13 +57,13 @@ public:
 
 Each member of this struct has a specific purpose:
 \begin{itemize}
-\item \verb+_startIt+ is a const iterator pointing to the first instruction in the function, i.e. the entry point.
-\item \verb+_endIt+ is a const iterator pointing to the instruction immediately after the last instruction, similar to \verb+end()+ on STL collections.
-\item \verb+_name+ is the name of the functions.
-\item \verb+_v+ is the GraphVertex containing the entry point. This will be automatically assigned in the control flow analysis.
-\item \verb+_args+ is the number of arguments for the function. This is present as a convenience; usually, you will not know the names of the arguments in the function, so you can store the number of them here and use this during code generation to generate a method signature containing some default parameter names.
-\item \verb+_retVal+ should be true if your method returns a value, and false if it does not. Again, this is for your own convenience, to make it easier to handle calls.
-\item \verb+_metadata+ contains metadata about the function, so you know how to handle the arguments when the function is being called. It is up to you how you want to use this.
+\item \code{\_startIt} is a const iterator pointing to the first instruction in the function, i.e. the entry point.
+\item \code{\_endIt} is a const iterator pointing to the instruction immediately after the last instruction, similar to \code{end()} on STL collections.
+\item \code{\_name} is the name of the functions.
+\item \code{\_v} is the GraphVertex containing the entry point. This will be automatically assigned in the control flow analysis.
+\item \code{\_args} is the number of arguments for the function. This is present as a convenience; usually, you will not know the names of the arguments in the function, so you can store the number of them here and use this during code generation to generate a method signature containing some default parameter names.
+\item \code{\_retVal} should be true if your method returns a value, and false if it does not. Again, this is for your own convenience, to make it easier to handle calls.
+\item \code{\_metadata} contains metadata about the function, so you know how to handle the arguments when the function is being called. It is up to you how you want to use this.
 \end{itemize}
 
 When you add a function to the map, you must use the address of the first instruction as the key.
