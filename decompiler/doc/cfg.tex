@@ -10,7 +10,7 @@ The control flow analysis is a multi-step process:
 \item Perform analysis on vertices
 \end{itemize}
 
-Calls to in-script functions are not represented with edges in the graph. This is done to keep functions separate from one another, so if your engine uses a jump as part of calling functions, you need to make sure you've given that particular jump the type kCall.
+Calls to in-script functions are not represented with edges in the graph. This is done to keep functions separate from one another, so if your engine uses a jump as part of calling functions, you need to make sure you have given that particular jump the type kCall.
 
 The first step is handled in the constructor, while the next three steps are handled by the \verb+createGroups()+ method. The last step is handled by the \verb+analyze+ method.
 
@@ -20,11 +20,11 @@ Prior to grouping, the control flow can be used to detect new functions. This de
 
 When function detection is enabled, unreachable blocks of code will be treated as functions, unless the presumed entry point is located within the range of another function. The end point of the function will then be the last instruction reachable from the entry point.
 
-Functions detected this way will be given the name \verb+auto_+. You can use this as a prefix to the actual name to signify that the function may not actually be a function, or you can ignore it and just replace it with the name you'd normally use.
+Functions detected this way will be given the name \verb+auto_+. You can use this as a prefix to the actual name to signify that the function may not actually be a function, or you can ignore it and just replace it with the name you would normally use.
 
 You can also have the function detection determine the end point of an existing function. To do so, \verb+_endIt+ must be the same as \verb+_startIt+ for that function. In this case, only the end point will be changed within the function; the name will stay the same.
 
-Note that the control flow analysis has no way of determining an appropriate name, number of arguments, return value, or metadata. You'll have to fill that in yourself using \verb+postCFG+ in the engine.
+Note that the control flow analysis has no way of determining an appropriate name, number of arguments, return value, or metadata. You will have to fill that in yourself using \verb+postCFG+ in the engine.
 
 If this step is not enabled, and no functions have been defined before the control flow analysis is started, there will still be added a single function covering the entire script. This is done to avoid having a special case in the code, and it will not affect the output of your script in any way.
 
@@ -73,10 +73,10 @@ The criteria used for each construct are as follows:
 Group must end with a conditional jump (i.e., have two outgoing edges). Jump must go to an earlier place in the code.
 
 \paragraph{While detection}
-Group must end with conditional jump. Block must have an ingoing edge from some group later in the code, unless that edge comes from a do-while condition (in which case it's assumed to be an \verb+if+ instead).
+Group must end with conditional jump. Block must have an ingoing edge from some group later in the code, unless that edge comes from a do-while condition (in which case it is assumed to be an \verb+if+ instead).
 
 \paragraph{Break detection}
-Unconditional jump to some place later in the code. That place must either be the group immediately after a \verb+do-while+ condition, or the jump target of a \verb+while+ condition. Additionally, the jump is verified to go to the appropriate loop (so it doesn't exit multiple loops at once).
+Unconditional jump to some place later in the code. That place must either be the group immediately after a \verb+do-while+ condition, or the jump target of a \verb+while+ condition. Additionally, the jump is verified to go to the appropriate loop (so it does not exit multiple loops at once).
 
 \paragraph{Continue detection}
 Unconditional jump to a \verb+while+ or \verb+do-while+ condition, unless it is targeting a \verb+while+ condition which jumps to the next sequential group (in which case it is merely the end of the \verb+while+-loop). Just as with \verb+break+s, the jump is verified to go to the appropriate loop.

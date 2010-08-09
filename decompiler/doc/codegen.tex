@@ -1,7 +1,7 @@
 \section{Code generation}
 \label{sec:codegen}
 
-Having detected all of the various control flow constructs in the previous phase, it's now time to put that information to use and generate some code from the instructions.
+Having detected all of the various control flow constructs in the previous phase, it is now time to put that information to use and generate some code from the instructions.
 
 Code generation is implemented as a two-step process:
 \begin{itemize}
@@ -26,7 +26,7 @@ If you need to access information about the group currently being processed, use
 \subsection{The stack and stack entries}
 When generating the code, a stack is used to represent the state of the system. When data is pushed on the stack, a stack entry describing how that data was created is added; when data is popped, a stack entry describing the popped data is removed.
 
-To manipulate the stack, use the \verb+push+ and \verb+pop+ methods to push or pop stack entries. Unlike the STL stack, \verb+pop+ returns the value being popped from the stack, so you don't have to first get the top element and then pop it afterwards, but you can still call the \verb+peek+ method if you just want to look at the topmost element without removing it. Additionally, it has an \verb+empty+ method to check if the stack is empty.
+To manipulate the stack, use the \verb+push+ and \verb+pop+ methods to push or pop stack entries. Unlike the STL stack, \verb+pop+ returns the value being popped from the stack, so you do not have to first get the top element and then pop it afterwards, but you can still call the \verb+peek+ method if you just want to look at the topmost element without removing it. Additionally, it has an \verb+empty+ method to check if the stack is empty.
 
 Some engines require you to look further down the stack than just the topmost element. You can use the \verb+peekPos+ method to retrieve an element at an arbitrary position in the stack. This method takes an integer containing the number of stack entries to skip, i.e. passing the value 0 will give you the topmost element, while passing the value 2 will give you the third value on the stack.
 
@@ -72,17 +72,17 @@ When processing certain kinds of instructions, you will probably want to create 
 
 If your line of code deals with control flow, you will probably want to do something about the indentation. You can supply two extra boolean arguments to \verb+addOutputLine+ to state that the indentation should be decreased before outputting this line, and/or that the indentation should be increased for lines output after this line. If you leave out these arguments, no extra indentation is added.
 
-Note: This indent handling is currently considered a temporary solution until there's time to implement something better. It may be replaced with a different form of indentation handling at a later time.
+Note: This indent handling is currently considered a temporary solution until there is time to implement something better. It may be replaced with a different form of indentation handling at a later time.
 
 You will usually need to output assignments at some point. For that, you can use the \verb+writeAssignment+ method to generate an assignment statement. \verb+writeAssignment+ takes two parameters, the first being the stack entry representing the left-hand side of the assignment operator, and the second being the stack entry representing the right-hand side of the operator.
 
 \subsection{Default instruction handling and instruction metadata}
 When disassembling, you can store metadata for a given instruction to be used during code generation.
 
-Default handling exists for a number of instruction types, described below. If the default handling doesn't work for a particular instruction, you can force the instruction to process by your engine specific code by placing the hexadecimal byte 0xC0 at the start of the metadata string. This character was chosen for two reasons: it is unlikely to be used as a byte in a script, and the byte is invalid in UTF-8, avoiding potential encoding conflicts. Note that if you do this, it is your own responsibility to strip off that character during processing.
+Default handling exists for a number of instruction types, described below. If the default handling does not work for a particular instruction, you can force the instruction to process by your engine specific code by placing the hexadecimal byte 0xC0 at the start of the metadata string. This character was chosen for two reasons: it is unlikely to be used as a byte in a script, and the byte is invalid in UTF-8, avoiding potential encoding conflicts. Note that if you do this, it is your own responsibility to strip off that character during processing.
 
 \paragraph{kDup}
-The topmost stack entry is popped, and two duplicated copies are pushed to the stack. If the entry being duplicated was not already a duplicate, an assignment will be output to assign the original stack entry to a special dup variable, to show that the original entry isn't being recalculated.
+The topmost stack entry is popped, and two duplicated copies are pushed to the stack. If the entry being duplicated was not already a duplicate, an assignment will be output to assign the original stack entry to a special dup variable, to show that the original entry is not being recalculated.
 
 \paragraph{kUnaryOp}
 The topmost stack entry is popped, and a \verb+UnaryOpEntry+ is created and pushed to the stack, using the codegen metadata as the operator, and the previously popped entry as the operand. Note: currently, a \verb+UnaryOpEntry+ only supports placing the operator on the left side of the operand.

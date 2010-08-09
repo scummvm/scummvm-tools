@@ -1,4 +1,4 @@
-latexcmd=latex
+latexcmd=pdflatex
 document=doc
 dvi2ps=dvips
 ps2pdf=ps2pdf
@@ -13,6 +13,4 @@ all:
 	$(index) $(document)
 	$(latexcmd) $(document)
 	$(latexcmd) $(document)
-	$(dvi2ps) $(document).dvi
-	$(ps2pdf) $(document).ps
 	-$(RM) $(cleanfiles)

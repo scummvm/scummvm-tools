@@ -1,4 +1,5 @@
 \section{Disassembler}
+\label{sec:disassembler}
 The purpose of the disassembler is to read instructions from a script file and convert them to a common, machine-readable form for further analysis.
 
 \subsection{Instructions}
@@ -20,7 +21,7 @@ struct Instruction {
 
 Each member of this struct has a specific purpose:
 \begin{itemize}
-\item \verb+_opcode+ is used to store the numeric opcode associated with the instruction. This is not used by the decompiler itself, but is for your reference during later parts of the decompilation process. Note that this field is declared as a 32-bit integer; if you need more than 4 bytes for your opcodes, you'll need to figure out which bytes you want to store if you want to use this field.
+\item \verb+_opcode+ is used to store the numeric opcode associated with the instruction. This is not used by the decompiler itself, but is for your reference during later parts of the decompilation process. Note that this field is declared as a 32-bit integer; if you need more than 4 bytes for your opcodes, you will need to figure out which bytes you want to store if you want to use this field.
 \item \verb+_address+ stores the absolute memory address where this instruction would be loaded into memory.
 \item \verb+_stackChange+ stores the net change of executing this instruction - for example, if the instruction pushes a byte on to the stack, this should be set to 1. This is used to determine when each statement ends. The count can be in any unit you wish - bytes, words, bits - as long as the same unit is used for all instructions. This means that if your stack only works with 16-bit elements, pushing an 8-bit value and pushing a 16-bit value should have the same net effect on the stack.
 \item \verb+_name+ contains the name of the instruction. This is mainly for use during code generation.
@@ -44,6 +45,8 @@ Most of the types are self-explanatory, with the possible exception of \verb+kSp
 Parameters are stored using a tagged union - one field (\verb+_type+) tells you which data type is being stored, and another field (\verb+_value+) stores the actual value.
 
 Three convenience methods are provided to extract the value, \verb+getSigned+, \verb+getUnsigned+ and \verb+getString+. Please note: if an incorrect method is called, an exception is thrown.
+
+Although there are only 3 get methods, there are 7 different parameter types. This additional distinction is intended for you to use as you see fit, in case it is useful as metadata somewhere in your engine-specific code.
 
 If you need to store different types than those already allowed, add the new type to the list of type parameters for the \verb+_value+ field and add another enumeration value to \verb+ParamType+. You should make the new type \emph{output streamable}--that is, allow it to be used like \verb+std::cout << value+. This allows the value to be output directly to an output stream regardless of its type.
 
@@ -116,7 +119,7 @@ Instruction & Parameters & Description \\
 For the purpose of this example, our instruction set will use little-endian values, and uses byte elements for the stack (so \verb+POP+ changes the stack pointer by 1 and \verb+POP2+ changes it by 2).
 
 \subsubsection{Opcode recognition}
-The first thing to do in the \verb+doDisassemble+ method is to read past any header which may be present in your script file. In this case, we will assume there aren't any.
+The first thing to do in the \verb+doDisassemble+ method is to read past any header which may be present in your script file. We will assume that our bytecode files do not have a header.
 
 You must place your opcodes between two macros, \verb+START_OPCODES+ and \verb+END_OPCODES+. These two macros define the looping required to read one byte at a time.
 
@@ -127,7 +130,7 @@ END_OPCODES;
 \end{lstlisting}
 \end{C++}
 
-To define an opcode, use the \verb+OPCODE+ macro. This macro takes 5 parameters: the opcode value, the name of the instruction, the type of instruction, the net effect on the stack, and a string describing the parameters that are part of the instruction. We'll start by implementing the \verb+POP+ and \verb+POP2+ opcodes:
+To define an opcode, use the \verb+OPCODE+ macro. This macro takes 5 parameters: the opcode value, the name of the instruction, the type of instruction, the net effect on the stack, and a string describing the parameters that are part of the instruction. We will start by implementing the \verb+POP+ and \verb+POP2+ opcodes:
 
 \begin{C++}
 \begin{lstlisting}
@@ -163,7 +166,7 @@ D & Unsigned 32-bit byte, big-endian. \\
 \label{tbl:paramtypes}
 \end{table}
 
-To help you remember these meanings, little-endian values are encoded using lower case ("small letters", i.e. little), while big-endian values are encoded using upper case ("big" letters). The exception here is a single byte, since endianness has no effect for individual bytes. Here, the mnemonic is that an unsigned byte ("B") has a larger maximum value. For the other letters, "s" was used because it's the first letter in "short", which is usually a 16-bit signed value in C. Similarly, "i" is short for "int". "w" and "d" come from the terms "word" and "dword", which are terms for 16-bit and 32-bit unsigned types on an x86 platform.
+To help you remember these meanings, little-endian values are encoded using lower case ("small letters", i.e. little), while big-endian values are encoded using upper case ("big" letters). The exception here is a single byte, since endianness has no effect for individual bytes. Here, the mnemonic is that an unsigned byte ("B") has a larger maximum value. For the other letters, "s" was used because it is the first letter in "short", which is usually a 16-bit signed value in C. Similarly, "i" is short for "int". "w" and "d" come from the terms "word" and "dword", which are terms for 16-bit and 32-bit unsigned types on an x86 platform.
 
 Note that strings are not supported by default. To add reading of a string type, you can override the \verb+readParameter+ function to add your own types:
 
@@ -208,7 +211,7 @@ END_OPCODES;
 \end{C++}
 
 \subsubsection{Multi-byte opcodes}
-There's only one opcode left to add, \verb+HALT+. This one is a bit trickier, because it uses multiple bytes for the opcode - and the \verb+OPCODE+ macro only works for one byte at a time.
+There is only one opcode left to add, \verb+HALT+. This one is a bit trickier, because it uses multiple bytes for the opcode - and the \verb+OPCODE+ macro only works for one byte at a time.
 
 To solve this, you can define \emph{subopcodes}. By defining 0xFF as the start of a multi-byte opcode, we can then specify 0x00 as representing a \verb+HALT+ instruction when it follows 0xFF.
 
@@ -251,7 +254,7 @@ END_OPCODES;
 For details, see Section~\vref{sec:codegen}.
 
 \subsubsection{Advanced opcode handling}
-If you have one or two opcodes that don't quite fit into the framework provided, you can define your own specialized handling for these opcodes.
+If you have one or two opcodes that do not quite fit into the framework provided, you can define your own specialized handling for these opcodes.
 
 Instead of using the \verb+OPCODE+ macro, put your code between \verb+OPCODE_BASE+ and \verb+OPCODE_END+. For example, if your opcode has the value 0x40, you would use this:
 
