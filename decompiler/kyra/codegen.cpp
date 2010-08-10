@@ -40,7 +40,9 @@ void Kyra::CodeGenerator::processInst(const Instruction inst) {
 	case kLoad:
 		switch (inst._opcode) {
 		case 2:
-			_stack.push(new VarEntry("retval"));
+			// If something has been called previously in this group, don't output retval variable
+			if (inst._address <= findFirstCall()._address)
+				_stack.push(new VarEntry("retval"));
 			break;
 		case 3:
 		case 4:
@@ -141,7 +143,10 @@ void Kyra::CodeGenerator::processInst(const Instruction inst) {
 			for (size_t i = 0; i < f._metadata.length(); i++)
 				processSpecialMetadata(inst, f._metadata[i]);
 			_stack.push(new CallEntry(f._name, _argList));
-			if (!f._retVal) {
+			// Leave call on stack if this is a condition, or other calls follow in same group
+			if (_curGroup->_type == kIfCond || _curGroup->_type == kWhileCond || _curGroup->_type == kDoWhileCond || inst._address != findLastCall()._address) {
+				break;
+			}	else if (!f._retVal) {
 				std::stringstream stream;
 				stream << _stack.pop() << ";";
 				addOutputLine(stream.str());
@@ -153,7 +158,7 @@ void Kyra::CodeGenerator::processInst(const Instruction inst) {
 		}
 	case kSpecial:
 		{
-			if (inst._opcode == 2)
+			if (inst._opcode != 14)
 				return;
 			_argList.clear();
 			bool returnsValue = (inst._codeGenData.find("r") == 1);
@@ -161,7 +166,10 @@ void Kyra::CodeGenerator::processInst(const Instruction inst) {
 			for (size_t i = 0; i < metadata.length(); i++)
 				processSpecialMetadata(inst, metadata[i]);
 			_stack.push(new CallEntry(inst._name, _argList));
-			if (!returnsValue) {
+			// Leave call on stack if this is a condition, or other calls follow in same group
+			if (_curGroup->_type == kIfCond || _curGroup->_type == kWhileCond || _curGroup->_type == kDoWhileCond || inst._address != findLastCall()._address) {
+				break;
+			}	else if (!returnsValue) {
 				std::stringstream stream;
 				stream << _stack.pop() << ";";
 				addOutputLine(stream.str());
@@ -179,6 +187,26 @@ void Kyra::CodeGenerator::processInst(const Instruction inst) {
 		}
 		break;
 	}
+}
+
+const Instruction &Kyra::CodeGenerator::findFirstCall() {
+	ConstInstIterator it = _curGroup->_start;
+	do {
+		if (it->_type == kCall || (it->_type == kSpecial && it->_opcode == 14))
+			return *it;
+	} while (it++ != _curGroup->_end);
+
+	return *_curGroup->_start;
+}
+
+const Instruction &Kyra::CodeGenerator::findLastCall() {
+	ConstInstIterator it = _curGroup->_end;
+	do {
+		if (it->_type == kCall || (it->_type == kSpecial && it->_opcode == 14))
+			return *it;
+	} while (it-- != _curGroup->_start);
+
+	return *_curGroup->_end;
 }
 
 void Kyra::CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {

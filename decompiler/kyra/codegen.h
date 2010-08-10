@@ -33,6 +33,24 @@ namespace Kyra {
 class CodeGenerator : public ::CodeGenerator {
 private:
 	int _stackOffset; ///< Running count of where in the stack to look for the next argument.
+
+	/**
+	 * Finds the first call instruction in the current group and returns it.
+	 * The call may either be a kCall or kSpecial.
+	 * Used to check whether retVal should be output by pushRet.
+	 *
+	 * @return The first call instruction in the current group. If no calls are found, returns the first instruction.
+	 */
+	const Instruction &findFirstCall();
+
+	/**
+	 * Finds the last call instruction in the current group and returns it.
+	 * The call may either be a kCall or kSpecial.
+	 * Used to check whether retVal should be output by calls.
+	 *
+	 * @return The last call instruction in the current group. If no calls are found, returns the last instruction.
+	 */
+	const Instruction &findLastCall();
 public:
 	/**
 	 * Constructor for Kyra::CodeGenerator.
