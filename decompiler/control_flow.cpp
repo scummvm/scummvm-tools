@@ -140,21 +140,31 @@ void ControlFlow::merge(GraphVertex g1, GraphVertex g2) {
 	boost::remove_vertex(g2, _g);
 }
 
+typedef std::pair<GraphVertex, int> LevelEntry;
+
 void ControlFlow::setStackLevel(GraphVertex g, int level) {
-	GroupPtr gr = GET(g);
-	if (gr->_stackLevel != -1) {
-		if (gr->_stackLevel != level)
-			std::cerr << boost::format("WARNING: Inconsistency in expected stack level for instruction at address 0x%08x (current: %d, requested: %d)\n") % gr->_start->_address % gr->_stackLevel % level;
-		return;
-	}
-	gr->_stackLevel = level;
+	Stack<LevelEntry> levelStack;
+	std::set<GraphVertex> seen;
+	levelStack.push(LevelEntry(g, level));
+	seen.insert(g);
+	while (!levelStack.empty()) {
+		LevelEntry e = levelStack.pop();
+		GroupPtr gr = GET(e.first);
+		if (gr->_stackLevel != -1) {
+			if (gr->_stackLevel != e.second)
+				std::cerr << boost::format("WARNING: Inconsistency in expected stack level for instruction at address 0x%08x (current: %d, requested: %d)\n") % gr->_start->_address % gr->_stackLevel % e.second;
+			continue;
+		}
+		gr->_stackLevel = e.second;
 
-	if (boost::out_degree(g, _g) == 0)
-		return;
-
-	OutEdgeRange r = boost::out_edges(g, _g);
-	for (OutEdgeIterator e = r.first; e != r.second; ++e) {
-		setStackLevel(boost::target(*e, _g), level + gr->_start->_stackChange);
+		OutEdgeRange r = boost::out_edges(e.first, _g);
+		for (OutEdgeIterator oe = r.first; oe != r.second; ++oe) {
+			GraphVertex target = boost::target(*oe, _g);
+			if (seen.find(target) == seen.end()) {
+				levelStack.push(LevelEntry(target, e.second + gr->_start->_stackChange));
+				seen.insert(target);
+			}
+		}
 	}
 }
 
