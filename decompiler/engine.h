@@ -106,14 +106,14 @@ public:
 	 *
 	 * @return True if supported, false if not. If false is returned, code flow analysis should not take place, and -D should be implied.
 	 */
-	virtual bool supportsCodeFlow() { return true; }
+	virtual bool supportsCodeFlow() const { return true; }
 
 	/**
 	 * Whether or not code generation is supported for this engine.
 	 *
 	 * @return True if supported, false if not. If false is returned, code generation should not take place, and -G should be implied.
 	 */
-	virtual bool supportsCodeGen() { return true; }
+	virtual bool supportsCodeGen() const { return true; }
 
 	/**
 	 * Whether or not additional functions should be looked for during CFG analysis.
@@ -122,7 +122,7 @@ public:
 	 *
 	 * @return True if yes, false if no.
 	 */
-	virtual bool detectMoreFuncs() { return false; }
+	virtual bool detectMoreFuncs() const { return false; }
 
 	FuncMap _functions; ///< Map to functions in the current script, indexed by starting address.
 
