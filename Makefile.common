@@ -238,9 +238,9 @@ decompile_OBJS := \
 	decompiler/scummv6/disassembler.o \
 	decompiler/scummv6/engine.o \
 	decompiler/scummv6/codegen.o \
-	decompiler/kyra2/disassembler.o \
-	decompiler/kyra2/engine.o \
-	decompiler/kyra2/codegen.o
+	decompiler/kyra/disassembler.o \
+	decompiler/kyra/engine.o \
+	decompiler/kyra/codegen.o
 
 decompile_LIBS := \
 	-lboost_program_options

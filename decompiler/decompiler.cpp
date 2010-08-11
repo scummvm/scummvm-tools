@@ -27,7 +27,7 @@
 
 #include "control_flow.h"
 
-#include "kyra2/engine.h"
+#include "kyra/engine.h"
 #include "scummv6/engine.h"
 
 #include <fstream>
