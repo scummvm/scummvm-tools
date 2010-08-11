@@ -25,7 +25,7 @@
 PasCDisassembler::PasCDisassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
 }
 
-void PasCDisassembler::doDisassemble() throw(UnknownOpcodeException) {
+void PasCDisassembler::doDisassemble() throw(std::exception) {
 	START_OPCODES;
 		//Basic machine operations
 		OPCODE(0x00, "PUSH", kStack, 0, "i");

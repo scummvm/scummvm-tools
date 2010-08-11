@@ -36,7 +36,7 @@ class Scummv6Disassembler : public SimpleDisassembler {
 public:
 	Scummv6Disassembler(std::vector<Instruction> &insts);
 
-	void doDisassemble() throw(UnknownOpcodeException);
+	void doDisassemble() throw(std::exception);
 
 	void readParameter(Parameter *p, char type);
 

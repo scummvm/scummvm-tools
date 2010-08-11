@@ -45,9 +45,9 @@ protected:
 	/**
 	 * Performs disassembly.
 	 *
-	 * @throws UnknownOpcodeException on unknown opcode.
+	 * @throws UnknownOpcodeException on unknown opcode. May throw std::exception on other failures.
 	 */
-	virtual void doDisassemble() throw(UnknownOpcodeException) = 0;
+	virtual void doDisassemble() throw(std::exception) = 0;
 
 	/**
 	 * Outputs the disassembled code.

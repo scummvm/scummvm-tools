@@ -25,7 +25,7 @@
 SubOpcodeDisassembler::SubOpcodeDisassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
 }
 
-void SubOpcodeDisassembler::doDisassemble() throw(UnknownOpcodeException) {
+void SubOpcodeDisassembler::doDisassemble() throw(std::exception) {
 	START_OPCODES;
 		START_SUBOPCODE(0xFF)
 			OPCODE(0xFF, "FOO", kSpecial, 0, "");

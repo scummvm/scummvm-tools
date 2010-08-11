@@ -278,7 +278,7 @@ Kyra::Kyra2Disassembler::~Kyra2Disassembler() {
 	delete[] _funcs;
 }
 
-void Kyra::Kyra2Disassembler::doDisassemble() throw(UnknownOpcodeException) {
+void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 	// Load data
 	IFF_ID id;
 	id = _f.readUint32BE();

@@ -95,7 +95,7 @@ public:
 	 */
 	Kyra2Disassembler(Kyra2Engine *engine, std::vector<Instruction> &insts);
 	~Kyra2Disassembler();
-	void doDisassemble() throw(UnknownOpcodeException);
+	void doDisassemble() throw(std::exception);
 };
 
 } // End of namespace Kyra

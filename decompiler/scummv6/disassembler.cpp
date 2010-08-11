@@ -30,7 +30,7 @@
 Scumm::v6::Scummv6Disassembler::Scummv6Disassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
 }
 
-void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(UnknownOpcodeException) {
+void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 	std::string blockName;
 	for (int i = 0; i < 4; i++) {
 		blockName += _f.readChar();
