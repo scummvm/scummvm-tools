@@ -243,7 +243,7 @@ decompile_OBJS := \
 	decompiler/kyra/codegen.o
 
 decompile_LIBS := \
-	-lboost_program_options
+	-lboost_program_options$(BOOST_SUFFIX)
 
 # Decompiler tests
 -include decompiler/test/module.mk

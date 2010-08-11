@@ -322,7 +322,7 @@ Optional Libraries:
 
   --disable-freetype       disable freetype (Japanese font) support [autodetect]
 
-  --with-boost-prefix      Prefix where Boost is installed (optional)
+  --with-boost-prefix=DIR  Prefix where Boost is installed (optional)
   --disable-boost          disable Boost support [autodetect]
 
 Some influential environment variables:
@@ -1022,9 +1022,16 @@ if test "$_boost" = yes ; then
 int main(void) { boost::program_options::options_description generic("Generic options"); return 0; }
 EOF
 	cc_check $BOOST_CFLAGS $BOOST_LIBS -lboost_program_options && _boost=yes
+	add_to_config_mk_if_yes "$_boost" 'BOOST_SUFFIX = '
+
+	# If not working without suffix, try -mt suffix
+	if test "$_boost" = no ; then
+		cc_check $BOOST_CFLAGS $BOOST_LIBS -lboost_program_options-mt && _boost=yes
+		add_to_config_mk_if_yes "$_boost" 'BOOST_SUFFIX = -mt'
+	fi
 	add_to_config_mk_if_yes "$_boost" 'USE_BOOST = 1'
 	echo "$_boost"
-fi	
+fi
 
 #
 # Check for iconv
