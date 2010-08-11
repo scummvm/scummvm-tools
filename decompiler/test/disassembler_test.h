@@ -25,6 +25,7 @@
 #include "disassembler/pasc.h"
 #include "disassembler/subopcode.h"
 #include "decompiler/scummv6/disassembler.h"
+#include "decompiler/kyra/engine.h"
 
 class DisassemblerTestSuite : public CxxTest::TestSuite {
 public:
@@ -243,6 +244,35 @@ public:
 			InstIterator it = insts.end();
 			it -= 3;
 			TS_ASSERT(it->_stackChange == -6);
+		} catch (...) {
+			TS_ASSERT(false);
+		}
+	}
+
+	// This test requires _START04.EMC from the CD demo of
+	// Legend of Kyrandia: Hand of Fate, found in MISC_EMC.PAK.
+	// ba2821ac6da96394ce0af75a3cbe48eb *_START04.EMC
+	void testKyra2Start04() {
+		try {
+			std::vector<Instruction> insts;
+			Kyra::Kyra2Engine engine;
+			Disassembler* s = engine.getDisassembler(insts);
+			s->open("decompiler/test/_START04.EMC");
+			s->disassemble();
+
+			TS_ASSERT(insts.size() == 481);
+
+			//These scripts are far too big to check all instructions, so we just check a few different ones
+			TS_ASSERT(insts[16]._address == 0x20);
+			TS_ASSERT(insts[16]._opcode == 15);
+			TS_ASSERT(insts[16]._name == "ifNotJmp");
+			TS_ASSERT(insts[16]._stackChange == -1);
+			TS_ASSERT(insts[38]._address == 0x54);
+			TS_ASSERT(insts[38]._opcode == 14);
+			TS_ASSERT(insts[38]._name == "o1_setHandItem");
+			TS_ASSERT(insts[38]._stackChange == 0);
+
+			delete s;
 		} catch (...) {
 			TS_ASSERT(false);
 		}

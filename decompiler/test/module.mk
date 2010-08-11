@@ -15,6 +15,9 @@ TEST_LIBS    := \
 	decompiler/scummv6/disassembler.o \
 	decompiler/scummv6/codegen.o \
 	decompiler/scummv6/engine.o \
+	decompiler/kyra/disassembler.o \
+	decompiler/kyra/codegen.o \
+	decompiler/kyra/engine.o \
 	decompiler/test/disassembler/pasc.o \
 	decompiler/test/disassembler/subopcode.o	\
 	decompiler/unknown_opcode.o \

@@ -26,6 +26,7 @@
 #include "decompiler/disassembler.h"
 #include "decompiler/graph.h"
 #include "decompiler/scummv6/engine.h"
+#include "decompiler/kyra/engine.h"
 
 #include <vector>
 #define GET(vertex) (boost::get(boost::vertex_name, g, vertex))
@@ -613,6 +614,53 @@ public:
 				break;
 			}
 		}
+		delete c;
+		delete engine;
+	}
+
+	void testFunctionDetection() {
+		std::vector<Instruction> insts;
+		Kyra::Kyra2Engine *engine = new Kyra::Kyra2Engine();
+		Disassembler *d = engine->getDisassembler(insts);
+		d->open("decompiler/test/_START04.EMC");
+		d->disassemble();
+		delete d;
+		ControlFlow *c = new ControlFlow(insts, engine);
+		c->createGroups();
+		Graph g = c->analyze();
+		TS_ASSERT(engine->_functions.size() == 15);
+		FuncMap::iterator it = engine->_functions.begin();
+		TS_ASSERT(it->first == 0x0);
+		++it;
+		TS_ASSERT(it->first == 0x7E);
+		++it;
+		TS_ASSERT(it->first == 0xFC);
+		++it;
+		TS_ASSERT(it->first == 0x100);
+		++it;
+		TS_ASSERT(it->first == 0x1F4);
+		++it;
+		TS_ASSERT(it->first == 0x1F8);
+		++it;
+		TS_ASSERT(it->first == 0x276);
+		++it;
+		TS_ASSERT(it->first == 0x278);
+		++it;
+		TS_ASSERT(it->first == 0x2DE);
+		++it;
+		TS_ASSERT(it->first == 0x2E0);
+		++it;
+		TS_ASSERT(it->first == 0x30C);
+		++it;
+		TS_ASSERT(it->first == 0x30E);
+		++it;
+		TS_ASSERT(it->first == 0x33A);
+		++it;
+		TS_ASSERT(it->first == 0x33C);
+		++it;
+		TS_ASSERT(it->first == 0x33E);
+		++it;
+
 		delete c;
 		delete engine;
 	}
