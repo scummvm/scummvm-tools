@@ -73,7 +73,7 @@ class CodeGenTestSuite : public CxxTest::TestSuite {
 public:
 	void testContinue() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while.dmp");
 		d->disassemble();
@@ -117,7 +117,7 @@ public:
 
 	void testBreak() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-while.dmp");
 		d->disassemble();
@@ -161,7 +161,7 @@ public:
 
 	void testElse() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if-else.dmp");
 		d->disassemble();
@@ -207,7 +207,7 @@ public:
 	// afd7dc5d377894b3b9d0504927adf1b1 *script-48.dmp
 	void testCoalescing() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/script-30.dmp");
 		d->disassemble();
@@ -237,7 +237,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/script-48.dmp");
 		d->disassemble();

@@ -24,11 +24,11 @@
 #include "disassembler.h"
 #include "codegen.h"
 
-::Disassembler *Scumm::v6::Engine::getDisassembler(std::vector<Instruction> &insts) {
-	return new Disassembler(insts);
+::Disassembler *Scumm::v6::Scummv6Engine::getDisassembler(std::vector<Instruction> &insts) {
+	return new Scummv6Disassembler(insts);
 }
 
-uint32 Scumm::v6::Engine::getDestAddress(ConstInstIterator it) const {
+uint32 Scumm::v6::Scummv6Engine::getDestAddress(ConstInstIterator it) const {
 	switch(it->_type) {
 	case kJump:
 	case kCondJump:
@@ -41,6 +41,6 @@ uint32 Scumm::v6::Engine::getDestAddress(ConstInstIterator it) const {
 	}
 }
 
-::CodeGenerator *Scumm::v6::Engine::getCodeGenerator(std::ostream &output) {
-	return new CodeGenerator(this, output);
+::CodeGenerator *Scumm::v6::Scummv6Engine::getCodeGenerator(std::ostream &output) {
+	return new Scummv6CodeGenerator(this, output);
 }

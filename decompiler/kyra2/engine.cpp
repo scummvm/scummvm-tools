@@ -28,19 +28,19 @@
 #include <sstream>
 #include <boost/format.hpp>
 
-::Disassembler *Kyra::Engine::getDisassembler(std::vector<Instruction> &insts) {
-	return new Disassembler(this, insts);
+::Disassembler *Kyra::Kyra2Engine::getDisassembler(std::vector<Instruction> &insts) {
+	return new Kyra2Disassembler(this, insts);
 }
 
-uint32 Kyra::Engine::getDestAddress(ConstInstIterator it) const {
+uint32 Kyra::Kyra2Engine::getDestAddress(ConstInstIterator it) const {
 	return it->_params[0].getUnsigned();
 }
 
-::CodeGenerator *Kyra::Engine::getCodeGenerator(std::ostream &output) {
-	return new CodeGenerator(this, output);
+::CodeGenerator *Kyra::Kyra2Engine::getCodeGenerator(std::ostream &output) {
+	return new Kyra2CodeGenerator(this, output);
 }
 
-void Kyra::Engine::postCFG(std::vector<Instruction> &insts, Graph g) {
+void Kyra::Kyra2Engine::postCFG(std::vector<Instruction> &insts, Graph g) {
 	// Add metadata to functions
 	for (FuncMap::iterator it = _functions.begin(); it != _functions.end(); ++it) {
 		std::stringstream s;
@@ -62,6 +62,6 @@ void Kyra::Engine::postCFG(std::vector<Instruction> &insts, Graph g) {
 	}
 }
 
-bool Kyra::Engine::detectMoreFuncs() {
+bool Kyra::Kyra2Engine::detectMoreFuncs() {
 	return true;
 }

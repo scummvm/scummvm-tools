@@ -23,7 +23,7 @@
 #include "codegen.h"
 #include "engine.h"
 
-std::string Kyra::CodeGenerator::constructFuncSignature(const Function &func) {
+std::string Kyra::Kyra2CodeGenerator::constructFuncSignature(const Function &func) {
 	std::stringstream s;
 	s << func._name << "(";
 	for (uint32 i = 0; i != func._args; ++i) {
@@ -35,7 +35,7 @@ std::string Kyra::CodeGenerator::constructFuncSignature(const Function &func) {
 	return s.str();
 }
 
-void Kyra::CodeGenerator::processInst(const Instruction inst) {
+void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 	switch (inst._type) {
 	case kLoad:
 		switch (inst._opcode) {
@@ -189,7 +189,7 @@ void Kyra::CodeGenerator::processInst(const Instruction inst) {
 	}
 }
 
-const Instruction &Kyra::CodeGenerator::findFirstCall() {
+const Instruction &Kyra::Kyra2CodeGenerator::findFirstCall() {
 	ConstInstIterator it = _curGroup->_start;
 	do {
 		if (it->_type == kCall || (it->_type == kSpecial && it->_opcode == 14))
@@ -199,7 +199,7 @@ const Instruction &Kyra::CodeGenerator::findFirstCall() {
 	return *_curGroup->_start;
 }
 
-const Instruction &Kyra::CodeGenerator::findLastCall() {
+const Instruction &Kyra::Kyra2CodeGenerator::findLastCall() {
 	ConstInstIterator it = _curGroup->_end;
 	do {
 		if (it->_type == kCall || (it->_type == kSpecial && it->_opcode == 14))
@@ -209,7 +209,7 @@ const Instruction &Kyra::CodeGenerator::findLastCall() {
 	return *_curGroup->_end;
 }
 
-void Kyra::CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
+void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
 	switch (c) {
 	case '0':
 		_stackOffset = 0;
@@ -222,7 +222,7 @@ void Kyra::CodeGenerator::processSpecialMetadata(const Instruction inst, char c)
 			EntryPtr p = _stack.peekPos(_stackOffset++);
 			if (p->_type == seInt) {
 				IntEntry *ie = (IntEntry *)p.get();
-				addArg(new StringEntry(((Kyra::Engine *)_engine)->_textStrings[ie->getValue()]));
+				addArg(new StringEntry(((Kyra::Kyra2Engine *)_engine)->_textStrings[ie->getValue()]));
 			} else {
 				EntryList idxs;
 				idxs.push_front(p);

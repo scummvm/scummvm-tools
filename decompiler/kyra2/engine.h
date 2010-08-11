@@ -33,7 +33,7 @@ namespace Kyra {
 /**
  * KYRA engine.
  */
-class Engine : public ::Engine {
+class Kyra2Engine : public ::Engine {
 public:
 	::Disassembler *getDisassembler(std::vector<Instruction> &insts);
 	uint32 getDestAddress(ConstInstIterator it) const;
@@ -44,6 +44,6 @@ public:
 	std::vector<std::string> _textStrings; ///< Container for strings from the TEXT chunk.
 };
 
-} // End of namespace KYRA
+} // End of namespace Kyra
 
 #endif

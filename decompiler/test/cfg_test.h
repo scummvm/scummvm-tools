@@ -34,7 +34,7 @@ class CFGTestSuite : public CxxTest::TestSuite {
 public:
 	void testUnreachable() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/unreachable.dmp");
 		d->disassemble();
@@ -68,7 +68,7 @@ public:
 
 	void testBranching() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/branches.dmp");
 		d->disassemble();
@@ -102,7 +102,7 @@ public:
 
 	void testGrouping() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/branches.dmp");
 		d->disassemble();
@@ -136,7 +136,7 @@ public:
 
 	void testShortCircuitDetection() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/short-circuit.dmp");
 		d->disassemble();
@@ -151,7 +151,7 @@ public:
 
 	void testWhileDetection() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while.dmp");
 		d->disassemble();
@@ -171,7 +171,7 @@ public:
 
 	void testDoWhileDetection() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while.dmp");
 		d->disassemble();
@@ -191,7 +191,7 @@ public:
 
 	void testBreakDetection() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-while.dmp");
 		d->disassemble();
@@ -209,7 +209,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-do-while.dmp");
 		d->disassemble();
@@ -227,7 +227,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-do-while2.dmp");
 		d->disassemble();
@@ -247,7 +247,7 @@ public:
 
 	void testContinueDetection() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-while.dmp");
 		d->disassemble();
@@ -267,7 +267,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while.dmp");
 		d->disassemble();
@@ -285,7 +285,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while2.dmp");
 		d->disassemble();
@@ -305,7 +305,7 @@ public:
 
 	void testIfDetection() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if.dmp");
 		d->disassemble();
@@ -323,7 +323,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-do-while.dmp");
 		d->disassemble();
@@ -341,7 +341,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-do-while2.dmp");
 		d->disassemble();
@@ -359,7 +359,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while.dmp");
 		d->disassemble();
@@ -377,7 +377,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while2.dmp");
 		d->disassemble();
@@ -397,7 +397,7 @@ public:
 
 	void testElseDetection() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if-else.dmp");
 		d->disassemble();
@@ -417,7 +417,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if-no-else.dmp");
 		d->disassemble();
@@ -439,7 +439,7 @@ public:
 
 	void testNestedLoops() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/do-while-in-while.dmp");
 		d->disassemble();
@@ -459,7 +459,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/nested-do-while.dmp");
 		d->disassemble();
@@ -479,7 +479,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/nested-while.dmp");
 		d->disassemble();
@@ -499,7 +499,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/nested-while2.dmp");
 		d->disassemble();
@@ -519,7 +519,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while-in-do-while.dmp");
 		d->disassemble();
@@ -539,7 +539,7 @@ public:
 		delete engine;
 
 		insts.clear();
-		engine = new Scumm::v6::Engine();
+		engine = new Scumm::v6::Scummv6Engine();
 		d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while-in-do-while2.dmp");
 		d->disassemble();
@@ -563,7 +563,7 @@ public:
 	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	void testSamAndMaxScript30() {
 		std::vector<Instruction> insts;
-		Scumm::v6::Engine *engine = new Scumm::v6::Engine();
+		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/script-30.dmp");
 		d->disassemble();

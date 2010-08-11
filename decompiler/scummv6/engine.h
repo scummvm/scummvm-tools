@@ -32,7 +32,7 @@ namespace v6 {
 /**
  * SCUMMv6 engine.
  */
-class Engine : public ::Engine {
+class Scummv6Engine : public ::Engine {
 public:
 	::Disassembler *getDisassembler(std::vector<Instruction> &insts);
 	uint32 getDestAddress(ConstInstIterator it) const;

@@ -67,18 +67,18 @@ struct FunctionData {
 
 namespace Kyra {
 
-class Engine;
+class Kyra2Engine;
 
 /**
  * Disassembler for KYRA.
  */
-class Disassembler : public ::Disassembler {
+class Kyra2Disassembler : public ::Disassembler {
 private:
 	IFF_ID _formType;     ///< File type as listed in the IFF formatted file.
 	IFFChunk _textChunk;  ///< Contents of the TEXT chunk.
 	IFFChunk _ordrChunk;  ///< Contents of the ORDR chunk.
 	IFFChunk _dataChunk;  ///< Contents of the DATA chunk.
-	Engine *_engine;      ///< Pointer to the Kyra::Engine used for this script.
+	Kyra2Engine *_engine; ///< Pointer to the Kyra::Kyra2Engine used for this script.
 	uint32 _funcCount;    ///< Number of functions in the _funcs array.
 	FunctionData *_funcs; ///< Array of function data.
 
@@ -88,13 +88,13 @@ private:
 	void setupKyra2Funcs();
 public:
 	/**
-	 * Constructor for Disassembler.
+	 * Constructor for Kyra2Disassembler.
 	 *
-	 * @param engine Pointer to the Kyra::Engine used for this script.
+	 * @param engine Pointer to the Kyra::Kyra2Engine used for this script.
 	 * @param insts Reference to the vector in which disassembled instructions should be placed.
 	 */
-	Disassembler(Engine *engine, std::vector<Instruction> &insts);
-	~Disassembler();
+	Kyra2Disassembler(Kyra2Engine *engine, std::vector<Instruction> &insts);
+	~Kyra2Disassembler();
 	void doDisassemble() throw(UnknownOpcodeException);
 };
 

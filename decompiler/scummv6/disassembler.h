@@ -32,9 +32,9 @@ namespace v6 {
 /**
  * Disassembler for SCUMMv6.
  */
-class Disassembler : public SimpleDisassembler {
+class Scummv6Disassembler : public SimpleDisassembler {
 public:
-	Disassembler(std::vector<Instruction> &insts);
+	Scummv6Disassembler(std::vector<Instruction> &insts);
 
 	void doDisassemble() throw(UnknownOpcodeException);
 

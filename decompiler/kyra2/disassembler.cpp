@@ -31,7 +31,7 @@ FunctionData::FunctionData(std::string name, std::string metadata)
 	_metadata = metadata;
 }
 
-void Kyra::Disassembler::setupKyra2Funcs() {
+void Kyra::Kyra2Disassembler::setupKyra2Funcs() {
 	_funcCount = 176;
 	_funcs = new FunctionData[_funcCount];
 	int i = 0;
@@ -264,11 +264,11 @@ IFFChunk::IFFChunk() {
 	_data = NULL;
 }
 
-Kyra::Disassembler::Disassembler(Engine *engine, std::vector<Instruction> &insts) : ::Disassembler(insts), _engine(engine) {
+Kyra::Kyra2Disassembler::Kyra2Disassembler(Kyra2Engine *engine, std::vector<Instruction> &insts) : ::Disassembler(insts), _engine(engine) {
 	setupKyra2Funcs();
 }
 
-Kyra::Disassembler::~Disassembler() {
+Kyra::Kyra2Disassembler::~Kyra2Disassembler() {
 	if (_textChunk._data)
 		delete[] _textChunk._data;
 	if (_ordrChunk._data)
@@ -278,7 +278,7 @@ Kyra::Disassembler::~Disassembler() {
 	delete[] _funcs;
 }
 
-void Kyra::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
+void Kyra::Kyra2Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 	// Load data
 	IFF_ID id;
 	id = _f.readUint32BE();

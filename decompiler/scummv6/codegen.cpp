@@ -22,7 +22,7 @@
 
 #include "codegen.h"
 
-EntryPtr Scumm::v6::CodeGenerator::createListEntry() {
+EntryPtr Scumm::v6::Scummv6CodeGenerator::createListEntry() {
 	EntryList list;
 	EntryPtr countEntry = _stack.pop();
 	std::stringstream s;
@@ -34,7 +34,7 @@ EntryPtr Scumm::v6::CodeGenerator::createListEntry() {
 	return new ListEntry(list);
 }
 
-void Scumm::v6::CodeGenerator::processInst(const Instruction inst) {
+void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 	// This is just to keep some order in this code and have related
 	// opcodes near each other. It's not strictly necessary, because we
 	// can just look directly at the opcode, but this should be easier
@@ -389,13 +389,13 @@ const char *var_names[] = {
 	NULL,
 };
 
-const char *Scumm::v6::CodeGenerator::getVarName(uint16 varID) {
+const char *Scumm::v6::Scummv6CodeGenerator::getVarName(uint16 varID) {
 	if (varID >= sizeof(var_names) / sizeof(var_names[0]))
 		return NULL;
 	return var_names[varID];
 }
 
-std::string Scumm::v6::CodeGenerator::decodeVarName(uint16 varID) {
+std::string Scumm::v6::Scummv6CodeGenerator::decodeVarName(uint16 varID) {
 	std::stringstream s;
 	if (!(varID & 0xF000)) {
 		uint16 var = varID & 0xFFF;
@@ -414,7 +414,7 @@ std::string Scumm::v6::CodeGenerator::decodeVarName(uint16 varID) {
 	return s.str();
 }
 
-std::string Scumm::v6::CodeGenerator::decodeArrayName(uint16 arrID) {
+std::string Scumm::v6::Scummv6CodeGenerator::decodeArrayName(uint16 arrID) {
 	std::stringstream s;
 	const char *varName;
 	if (!(arrID & 0xF000) && (varName = getVarName(arrID & 0xFFF)) != NULL)
@@ -423,7 +423,7 @@ std::string Scumm::v6::CodeGenerator::decodeArrayName(uint16 arrID) {
 	return s.str();
 }
 
-void Scumm::v6::CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
+void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
 	switch (c) {
 	// All of these meanings are taken from descumm.
 	case 'l':

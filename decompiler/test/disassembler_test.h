@@ -81,7 +81,7 @@ public:
 	void testScummv6DisassemblerScript15() {
 		try {
 			std::vector<Instruction> insts;
-			Scumm::v6::Disassembler s(insts);
+			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-15.dmp");
 			s.disassemble();
 			TS_ASSERT(insts.size() == 11);
@@ -136,7 +136,7 @@ public:
 	void testScummv6DisassemblerScript31() {
 		try {
 			std::vector<Instruction> insts;
-			Scumm::v6::Disassembler s(insts);
+			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-31.dmp");
 			s.disassemble();
 			TS_ASSERT(insts.size() == 5);
@@ -169,7 +169,7 @@ public:
 	void testScummv6DisassemblerScript33() {
 		try {
 			std::vector<Instruction> insts;
-			Scumm::v6::Disassembler s(insts);
+			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-33.dmp");
 			s.disassemble();
 			TS_ASSERT(insts.size() == 10);
@@ -221,7 +221,7 @@ public:
 	void testScummv6StackChangeFixRoom9202() {
 		try {
 			std::vector<Instruction> insts;
-			Scumm::v6::Disassembler s(insts);
+			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/room-9-202.dmp");
 			s.disassemble();
 			InstIterator it = insts.end();
@@ -237,7 +237,7 @@ public:
 	void testScummv6StackChangeFixScript30() {
 		try {
 			std::vector<Instruction> insts;
-			Scumm::v6::Disassembler s(insts);
+			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-30.dmp");
 			s.disassemble();
 			InstIterator it = insts.end();

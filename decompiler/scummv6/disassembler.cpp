@@ -27,10 +27,10 @@
 
 #include "disassembler.h"
 
-Scumm::v6::Disassembler::Disassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
+Scumm::v6::Scummv6Disassembler::Scummv6Disassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
 }
 
-void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
+void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 	std::string blockName;
 	for (int i = 0; i < 4; i++) {
 		blockName += _f.readChar();
@@ -439,7 +439,7 @@ void Scumm::v6::Disassembler::doDisassemble() throw(UnknownOpcodeException) {
 			fixStackEffect(it, (it->_stackChange >> 8) & 0xF, (it->_stackChange >> 4) & 0xF, it->_stackChange & 0xF);
 }
 
-void Scumm::v6::Disassembler::fixStackEffect(InstIterator &it, int popBefore, int popAfter, int pushTotal) {
+void Scumm::v6::Scummv6Disassembler::fixStackEffect(InstIterator &it, int popBefore, int popAfter, int pushTotal) {
 	it->_stackChange = -popBefore - popAfter + pushTotal;
 	InstIterator it2 = it;
 	for (--it2; popBefore != 0; --it2)
@@ -448,7 +448,7 @@ void Scumm::v6::Disassembler::fixStackEffect(InstIterator &it, int popBefore, in
 	it->_stackChange -= it2->_params[0].getSigned() + 1;
 }
 
-void Scumm::v6::Disassembler::readParameter(Parameter *p, char type) {
+void Scumm::v6::Scummv6Disassembler::readParameter(Parameter *p, char type) {
 	switch (type) {
 	case 'c': { // Character string
 		byte cmd;

@@ -27,7 +27,7 @@
 
 #include "control_flow.h"
 
-#include "kyra/engine.h"
+#include "kyra2/engine.h"
 #include "scummv6/engine.h"
 
 #include <fstream>
@@ -44,8 +44,8 @@ int main(int argc, char** argv) {
 		std::map<std::string, std::string> engines;
 		ObjectFactory<Engine> engineFactory;
 
-		ENGINE("kyra2", "Legend of Kyrandia: Hand of Fate", Kyra::Engine);
-		ENGINE("scummv6", "SCUMM v6", Scumm::v6::Engine);
+		ENGINE("kyra2", "Legend of Kyrandia: Hand of Fate", Kyra::Kyra2Engine);
+		ENGINE("scummv6", "SCUMM v6", Scumm::v6::Scummv6Engine);
 
 		po::options_description visible("Options");
 		visible.add_options()
