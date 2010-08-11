@@ -56,6 +56,10 @@ void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 			/*std::clog << boost::format("%02x - %04x\n") % verb %*/ _f.readUint16LE();
 			verb = _f.readByte();
 		}
+	} else {
+		std::stringstream s;
+		s << "Unknown block name " << blockName;
+		throw std::runtime_error(s.str());
 	}
 
 	START_OPCODES;

@@ -283,14 +283,16 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 	IFF_ID id;
 	id = _f.readUint32BE();
 	if (id != MKID_BE('FORM')) {
-		std::cerr << boost::format("ERROR: Unexpected IFF magic number 0x%08X (expected 0x%08X)!\n") % id % MKID_BE('FORM');
-		return;
+		std::stringstream s;
+		s << boost::format("Unexpected IFF magic number 0x%08X (expected 0x%08X)!") % id % MKID_BE('FORM');
+		throw std::runtime_error(s.str());
 	}
 	_f.readUint32BE(); // Skip file length
 	_formType = _f.readUint32BE();
 	if (_formType != MKID_BE('EMC2')) {
-		std::cerr << boost::format("ERROR: Unexpected file type 0x%08X (expected 0x%08X)!\n") % _formType % MKID_BE('EMC2');
-		return;
+		std::stringstream s;
+		s << boost::format("Unexpected file type 0x%08X (expected 0x%08X)!") % _formType % MKID_BE('EMC2');
+		throw std::runtime_error(s.str());
 	}
 
 	// Read chunks into memory
@@ -311,13 +313,19 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			_dataChunk = temp;
 			break;
 		default:
-			std::cerr << boost::format("ERROR: Unexpected chunk type 0x%08X!\n") % temp._chunkType;
+			std::stringstream s;
+			s << boost::format("Unexpected chunk type 0x%08X!") % temp._chunkType;
 			delete [] temp._data;
-			return;
+			throw std::runtime_error(s.str());
 		}
 		if (temp._size % 2 != 0) // Skip padding byte
 			_f.readByte();
 	} while (_f.pos() != (int)_f.size());
+
+	if (_ordrChunk._data == NULL)
+		throw std::runtime_error("Missing ORDR chunk");
+	if (_dataChunk._data == NULL)
+		throw std::runtime_error("Missing DATA chunk");
 
 	// Extract strings from TEXT chunk
 	uint16 minTextOffset = 0xFFFF;
@@ -420,6 +428,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 				OPCODE_MD("pushPos", kSpecial, 0, false, false, "\xC0"); // Sets up function call
 			} else {
 				// Error: invalid parameter halts execution
+				throw UnknownOpcodeException(address, opcode);
 			}
 			break;
 		case 3:
@@ -442,6 +451,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 				OPCODE("popPos", kReturn, 0, false, false); // Returns from function call
 			} else {
 				// Error: invalid parameter halts execution
+				throw UnknownOpcodeException(address, opcode);
 			}
 			break;
 		case 9:
@@ -463,6 +473,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			parameter = (uint8)parameter;
 			if ((uint16)parameter >= _funcCount || _funcs[parameter]._name.length() == 0) {
 				// Error: unknown function
+				throw UnknownOpcodeException(address, opcode);
 			}
 			OPCODE_MD(_funcs[parameter]._name, kSpecial, 0, false, false, _funcs[parameter]._metadata)
 			break;
@@ -481,6 +492,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 				OPCODE_MD("bitwiseNegate", kUnaryOp, 0, false, false, "~");
 			} else {
 				// Error: invalid parameter halts execution
+				throw UnknownOpcodeException(address, opcode);
 			}
 			break;
 		case 17:
@@ -540,7 +552,8 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 					OPCODE_MD("eval_xor", kBinaryOp, -1, false, false, "^");
 					break;
 				default:
-					// Error: Invalid parameter
+					// Error: invalid parameter halts execution
+					throw UnknownOpcodeException(address, opcode);
 					break;
 			}
 			break;
