@@ -279,8 +279,10 @@ void ControlFlow::createGroups() {
 		}
 
 		expectedStackLevel = grCur->_stackLevel;
-		if (expectedStackLevel > grNext->_stackLevel && grNext->_stackLevel >= 0)
+		if (expectedStackLevel > grNext->_stackLevel && grNext->_stackLevel >= 0) {
 			expectedStackLevel = grNext->_stackLevel;
+			grCur->_stackLevel = expectedStackLevel;
+		}
 
 		stackLevel += curInst->_stackChange;
 
