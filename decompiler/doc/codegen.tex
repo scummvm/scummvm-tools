@@ -79,7 +79,7 @@ You will usually need to output assignments at some point. For that, you can use
 \subsection{Default instruction handling and instruction metadata}
 When disassembling, you can store metadata for a given instruction to be used during code generation.
 
-Default handling exists for a number of instruction types, described below. If the default handling does not work for a particular instruction, you can force the instruction to process by your engine specific code by placing the hexadecimal byte 0xC0 at the start of the metadata string. This character was chosen for two reasons: it is unlikely to be used as a byte in a script, and the byte is invalid in UTF-8, avoiding potential encoding conflicts. Note that if you do this, it is your own responsibility to strip off that character during processing.
+Default handling exists for a number of instruction types, described below. If the default handling does not work for a particular instruction, you can force the instruction to be processed by your engine-specific \code{processInst} by placing the hexadecimal byte 0xC0 at the start of the metadata string. This character was chosen for two reasons: it is unlikely to be used as a byte in a script, and the byte is invalid in UTF-8, avoiding potential encoding conflicts. Note that if you do this, it is your own responsibility to strip off that character during processing.
 
 \paragraph{kDup}
 The topmost stack entry is popped, and two duplicated copies are pushed to the stack. If the entry being duplicated was not already a duplicate, an assignment will be output to assign the original stack entry to a special dup variable, to show that the original entry is not being recalculated.
@@ -91,7 +91,7 @@ The topmost stack entry is popped, and a \code{UnaryOpEntry} is created and push
 The two topmost stack entries are popped, and a BinaryOpEntry is created and pushed to the stack, using the codegen metadata as the operator and the previously popped entries as the operands. The order of the operands is determined by the value of the field \code{\_binOrder}, as described in Section~\vref{sec:argOrder}.
 
 \paragraph{kCondJump and kCondJumpRel}
-The instruction is sent for processing in the engine-specific \code{processInst} method, so you can add any information provided by the specific opcode. The information on the stack is then read by the default code, and an if, while or do-while condition is output using the topmost stack entry.
+The instruction is first sent for processing in the engine-specific \code{processInst} method, so you can add any information provided by the specific opcode. The information on the stack is then read by the default code, and an if, while or do-while condition is output using the topmost stack entry.
 
 \paragraph{kJump and kJumpRel}
 If the current group has been detected as a break or a continue, a break or continue statement is output. Otherwise, the jump is analyzed and output unless it is a jump back to the condition of a while-loop that ends there, or it is determined that the jump is unnecessary due to an else block following immediately after.

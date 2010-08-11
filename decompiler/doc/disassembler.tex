@@ -60,19 +60,18 @@ All disassemblers must inherit, directly or indirectly, from the \code{Disassemb
 class Disassembler {
 protected:
 	Common::File _f;
-	std::vector<Instruction> _insts;
+	std::vector<Instruction> &_insts;
 	uint32 _addressBase;
-	bool _disassemblyDone;
 
-	virtual void doDisassemble() = 0;
+	virtual void doDisassemble() throw(UnknownOpcodeException) = 0;
 	virtual void doDumpDisassembly(std::ostream &output);
 
 public:
-	Disassembler();
+	Disassembler(std::vector<Instruction> &insts);
 	virtual ~Disassembler() {}
 
 	void open(const char *filename);
-	const std::vector<Instruction> &disassemble();
+	void disassemble();
 	void dumpDisassembly(std::ostream &output);
 };
 \end{lstlisting}
@@ -80,15 +79,13 @@ public:
 
 \code{\_f} represents the file you will be reading from. The file is opened using the \code{open} function.
 
-\code{\_insts} is an \code{std::vector} storing the instructions. Whenever you have read an instruction fully, add it here.
+\code{\_insts} is a reference to an \code{std::vector} storing the instructions, passed in via the constructor. Whenever you have read an instruction fully, add it here.
 
 \code{\_addressBase} is provided as a convenience if your engine does not consider the first instruction to be located at address 0. Assign the expected base address to this field, and make sure that the addresses you assign to the instructions are relative to this base address. This is mainly useful if your engine supports jumps or other references to absolute addresses in the script; if only relative addresses are used, the base address will not be relevant.
 
-\code{\_disassemblyDone} is used to represent whether or not disassembly has already been performed. This is set automatically by \code{disassemble} and  \code{dumpDisassembly}.
-
 \code{doDisassemble} is the method used to perform the actual disassembly, so this method must be implemented by all disassemblers.
 
-\code{disassemble} simply calls the \code{doDisassemble} method to perform the disassembly (if necessary), and returns \code{\_insts} to the calling method.
+\code{disassemble} simply calls the \code{doDisassemble} method to perform the disassembly. The result is cached, so if this method is called twice, \code{doDisassemble} will only be called the first time.
 
 Finally, \code{dumpDisassembly} is used to output the instructions in a human-readable format to a file or stdout, performing a disassembly first if required, and then calls \code{doDumpDisassembly} to perform the actual output. A default implementation is provided for \code{doDumpDisassembly}, but you can override it if the standard output format is not suitable for your particular engine.
 
@@ -246,7 +243,7 @@ The arguments for the \code{OPCODE\_MD} are the same as those for \code{OPCODE},
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE_MD(0x14, "add", kBinaryOp, -1, "", "}");
+	OPCODE_MD(0x14, "add", kBinaryOp, -1, "", "+");
 END_OPCODES;
 \end{lstlisting}
 \end{C++}

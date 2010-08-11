@@ -34,7 +34,7 @@ Groups are initially formed according to these rules:
 \item If the next instruction is a jump or a return, end the group here.
 \item If the next instruction has multiple predecessors, end the group here.
 \item If the current instruction brings the stack to a lower level than the start of the current group, make the new level the expected stack level (to support clean-up after control structures).
-\item If the current instruction brings the stack level to the same as the start of the current group, and at least one instruction with a stack effect >= 0 exists in the group, end the group here.
+\item If the current instruction brings the stack level to the same as the start of the current group, and at least one instruction with a non-negative stack effect exists in the group, end the group here.
 \end{itemize}
 
 Unreachable code will not be processed in the group generation, but will remain as individual instructions.
