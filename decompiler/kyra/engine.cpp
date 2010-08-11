@@ -62,6 +62,6 @@ void Kyra::Kyra2Engine::postCFG(std::vector<Instruction> &insts, Graph g) {
 	}
 }
 
-bool Kyra::Kyra2Engine::detectMoreFuncs() {
+bool Kyra::Kyra2Engine::detectMoreFuncs() const {
 	return true;
 }

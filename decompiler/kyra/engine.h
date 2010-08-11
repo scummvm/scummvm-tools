@@ -39,7 +39,7 @@ public:
 	uint32 getDestAddress(ConstInstIterator it) const;
 	::CodeGenerator *getCodeGenerator(std::ostream &output);
 	void postCFG(std::vector<Instruction> &insts, Graph g);
-	bool detectMoreFuncs();
+	bool detectMoreFuncs() const;
 
 	std::vector<std::string> _textStrings; ///< Container for strings from the TEXT chunk.
 };
