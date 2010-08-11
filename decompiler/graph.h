@@ -68,7 +68,7 @@ typedef boost::property<boost::vertex_index_t, int, GroupProperty> GraphProperty
 
 /**
  * Structure representing whether or not an edge is a jump.
- */ 
+ */
 struct IsJump {
 	bool _isJump; ///< Whether or not the edge is a jump.
 

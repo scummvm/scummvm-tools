@@ -30,7 +30,7 @@ void PasCDisassembler::doDisassemble() throw(UnknownOpcodeException) {
 		//Basic machine operations
 		OPCODE(0x00, "PUSH", kStack, 0, "i");
 		OPCODE(0x01, "POP",	kStack, 0, "i");
-		OPCODE(0x02, "CALL", kCall, 0, "d"); 
+		OPCODE(0x02, "CALL", kCall, 0, "d");
 		OPCODE(0x03, "RETURN", kReturn, 0, "");
 		OPCODE(0x04, "HALT", kSpecial, 0, "");
 
@@ -101,7 +101,7 @@ void PasCDisassembler::doDisassemble() throw(UnknownOpcodeException) {
 		OPCODE(0xB6, "SSTORE [SB]", kStore, -6, "");
 		OPCODE(0xB7, "SSTORE", kStore, -6, "");
 		OPCODE(0xB8, "SLOAD [SB]", kLoad, -6, "");
-		OPCODE(0xB9, "SLOAD", kLoad, -6, "");		
+		OPCODE(0xB9, "SLOAD", kLoad, -6, "");
 
 		//8-bit operations
 		OPCODE(0xC0, "BADD", kBinaryOp, -1, "");
