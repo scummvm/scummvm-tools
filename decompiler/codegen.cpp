@@ -181,8 +181,10 @@ void CodeGenerator::generate(const Graph &g) {
 		GroupPtr p = GET(entryPoint);
 		while (p != NULL) {
 			for (std::vector<CodeLine>::iterator it = p->_code.begin(); it != p->_code.end(); ++it) {
-				if (it->_unindentBefore)
+				if (it->_unindentBefore) {
+					assert(_indentLevel > 0);
 					_indentLevel--;
+				}
 				_output << boost::format("%08X: %s") % p->_start->_address % indentString(it->_line) << std::endl;
 				if (it->_indentAfter)
 					_indentLevel++;
