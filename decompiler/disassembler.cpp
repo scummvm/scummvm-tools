@@ -38,7 +38,7 @@ void Disassembler::doDumpDisassembly(std::ostream &output) {
 }
 
 void Disassembler::disassemble() {
-	if (insts.empty()) {
+	if (_insts.empty()) {
 		_f.seek(0, SEEK_SET);
 		doDisassemble();
 	}
