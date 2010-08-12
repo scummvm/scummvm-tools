@@ -222,6 +222,7 @@ class UnaryOpEntry : public StackEntry {
 private:
 	const EntryPtr _operand; ///< The operand the operation is performed on.
 	const std::string _op;   ///< The operator for this entry.
+	const bool _isPostfix;   ///< Whether or not the operator should be postfixed to the operand.
 
 public:
 	/**
@@ -229,9 +230,10 @@ public:
 	 *
 	 * @param operand Stack entry representing the operand of the operation.
 	 * @param op The operator for this entry.
+	 * @param isPostfix Whether or not the operator should be postfixed to the operand.
 	 */
-	UnaryOpEntry(EntryPtr operand, std::string op) :
-		StackEntry(seUnaryOp), _operand(operand), _op(op) { }
+	UnaryOpEntry(EntryPtr operand, std::string op, bool isPostfix) :
+		StackEntry(seUnaryOp), _operand(operand), _op(op), _isPostfix(isPostfix) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
 };
@@ -377,8 +379,8 @@ protected:
 	/**
 	 * Processes an instruction in an engine-specific manner.
 	 * Called by process() to preprocess conditional jumps, process instructions
-	 * where engine-specific handling is explicitly requested, or the type is not
-	 * one of kBinaryOp, kDup, kJump(Rel), kReturn, kSpecial, or kUnaryOp.
+	 * where engine-specific handling is explicitly requested, or the type is not one
+	 * of kBinaryOp, kDup, kJump(Rel), kReturn, kSpecial, kUnaryOpPre, or kUnaryOpPost.
 	 *
 	 * @param inst The instruction to process.
 	 */

@@ -485,11 +485,11 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			break;
 		case 16:
 			if (parameter == 0) {
-				OPCODE_MD("boolNegate", kUnaryOp, 0, false, false, "!");
+				OPCODE_MD("boolNegate", kUnaryOpPre, 0, false, false, "!");
 			} else if (parameter == 1) {
-				OPCODE_MD("arithmeticNegate", kUnaryOp, 0, false, false,"-");
+				OPCODE_MD("arithmeticNegate", kUnaryOpPre, 0, false, false,"-");
 			} else if (parameter == 2) {
-				OPCODE_MD("bitwiseNegate", kUnaryOp, 0, false, false, "~");
+				OPCODE_MD("bitwiseNegate", kUnaryOpPre, 0, false, false, "~");
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);

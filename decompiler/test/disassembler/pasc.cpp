@@ -47,7 +47,7 @@ void PasCDisassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0x20, "OR", kBinaryOp, -1, "");
 		OPCODE(0x21, "AND", kBinaryOp, -1, "");
 		OPCODE(0x22, "XOR", kBinaryOp, -1, "");
-		OPCODE(0x23, "NOT", kUnaryOp, -1, "");
+		OPCODE(0x23, "NOT", kUnaryOpPre, -1, "");
 
 		//Padding instructions (smaller integer -> larger integer)
 		OPCODE(0x30, "SPAD", kSpecial, 0, "B");

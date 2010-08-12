@@ -120,11 +120,11 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 		case kIfCond:
 		case kWhileCond:
 			if (inst._opcode == 0x5C) // jumpTrue
-				_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
+				_stack.push(new UnaryOpEntry(_stack.pop(), "!", false));
 			break;
 		case kDoWhileCond:
 			if (inst._opcode == 0x5D) // jumpFalse
-				_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
+				_stack.push(new UnaryOpEntry(_stack.pop(), "!", false));
 			break;
 		default:
 			{
@@ -135,7 +135,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 			break;
 		}
 		break;
-	case kUnaryOp:
+	case kUnaryOpPost:
 		switch (inst._opcode) {
 		case 0x4E: // byteVarInc
 		case 0x4F: // wordVarInc
@@ -143,7 +143,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 		case 0x57: // wordVarDec
 			{
 				std::stringstream s;
-				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData.substr(1));
+				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData.substr(1), true);
 				s << p << ";";
 				addOutputLine(s.str());
 			}
@@ -156,7 +156,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 				std::stringstream s;
 				EntryList idxs;
 				idxs.push_front(_stack.pop());
-				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData.substr(1));
+				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData.substr(1), true);
 				s << p << ";";
 				addOutputLine(s.str());
 			}

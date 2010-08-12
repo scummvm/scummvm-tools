@@ -72,7 +72,7 @@ void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0x0A, "byteArrayIndexedRead", kLoad, -1, "B");
 		OPCODE(0x0B, "wordArrayIndexedRead", kLoad, -1, "w");
 		OPCODE(0x0C, "dup", kDup, 1, "");
-		OPCODE_MD(0x0D, "not", kUnaryOp, 0, "", "!");
+		OPCODE_MD(0x0D, "not", kUnaryOpPre, 0, "", "!");
 		OPCODE_MD(0x0E, "eq", kBinaryOp, -1, "", "==");
 		OPCODE_MD(0x0F, "neq", kBinaryOp, -1, "", "!=");
 		OPCODE_MD(0x10, "gt", kBinaryOp, -1, "", ">");
@@ -92,14 +92,14 @@ void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0x47, "wordArrayWrite", kStore, -2, "w");
 		OPCODE(0x4A, "byteArrayIndexedWrite", kStore, -3, "B");
 		OPCODE(0x4B, "wordArrayIndexedWrite", kStore, -3, "w");
-		OPCODE_MD(0x4E, "byteVarInc", kUnaryOp, 0, "B", "\xC0++");
-		OPCODE_MD(0x4F, "wordVarInc", kUnaryOp, 0, "w", "\xC0++");
-		OPCODE_MD(0x52, "byteArrayInc", kUnaryOp, -1, "B", "\xC0++");
-		OPCODE_MD(0x53, "wordArrayInc", kUnaryOp, -1, "w", "\xC0++");
-		OPCODE_MD(0x56, "byteVarDec", kUnaryOp, 0, "B", "\xC0--");
-		OPCODE_MD(0x57, "wordVarDec", kUnaryOp, 0, "w", "\xC0--");
-		OPCODE_MD(0x5A, "byteArrayDec", kUnaryOp, -1, "B", "\xC0--");
-		OPCODE_MD(0x5B, "wordArrayDec", kUnaryOp, -1, "w", "\xC0--");
+		OPCODE_MD(0x4E, "byteVarInc", kUnaryOpPost, 0, "B", "\xC0++");
+		OPCODE_MD(0x4F, "wordVarInc", kUnaryOpPost, 0, "w", "\xC0++");
+		OPCODE_MD(0x52, "byteArrayInc", kUnaryOpPost, -1, "B", "\xC0++");
+		OPCODE_MD(0x53, "wordArrayInc", kUnaryOpPost, -1, "w", "\xC0++");
+		OPCODE_MD(0x56, "byteVarDec", kUnaryOpPost, 0, "B", "\xC0--");
+		OPCODE_MD(0x57, "wordVarDec", kUnaryOpPost, 0, "w", "\xC0--");
+		OPCODE_MD(0x5A, "byteArrayDec", kUnaryOpPost, -1, "B", "\xC0--");
+		OPCODE_MD(0x5B, "wordArrayDec", kUnaryOpPost, -1, "w", "\xC0--");
 		OPCODE(0x5C, "jumpTrue", kCondJumpRel, -1, "s");
 		OPCODE(0x5D, "jumpFalse", kCondJumpRel, -1, "s");
 		OPCODE_MD(0x5E, "startScript", kSpecial, 0x1020, "", "lpp"); // Variable stack arguments

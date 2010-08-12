@@ -92,7 +92,7 @@ public:
 		expected.push_back("if(!((18 == var321))) {");
 		expected.push_back("continue;");
 		expected.push_back("}");
-		expected.push_back("--(VAR_CHARSET_MASK);");
+		expected.push_back("(VAR_CHARSET_MASK)--;");
 		expected.push_back("} while ((42 == VAR_CHARSET_MASK))");
 		expected.push_back("stopObjectCodeA();");
 		GroupPtr gr = GET(*v);
@@ -136,7 +136,7 @@ public:
 		expected.push_back("if (!((18 == var321))) {");
 		expected.push_back("break;");
 		expected.push_back("}");
-		expected.push_back("--(VAR_CHARSET_MASK);");
+		expected.push_back("(VAR_CHARSET_MASK)--;");
 		expected.push_back("}");
 		expected.push_back("stopObjectCodeA();");
 		GroupPtr gr = GET(*v);
@@ -177,9 +177,9 @@ public:
 		VertexIterator v = boost::vertices(g).first;
 		std::vector<std::string> output, expected;
 		expected.push_back("if (!((42 == VAR_CHARSET_MASK))) {");
-		expected.push_back("--(VAR_CHARSET_MASK);");
+		expected.push_back("(VAR_CHARSET_MASK)--;");
 		expected.push_back("} else {");
-		expected.push_back("++(VAR_CHARSET_MASK);");
+		expected.push_back("(VAR_CHARSET_MASK)++;");
 		expected.push_back("}");
 		expected.push_back("stopObjectCodeA();");
 		GroupPtr gr = GET(*v);

@@ -59,7 +59,10 @@ std::ostream &BinaryOpEntry::print(std::ostream &output) const {
 }
 
 std::ostream &UnaryOpEntry::print(std::ostream &output) const {
-	return output << _op << "(" << _operand << ")";
+	if (_isPostfix)
+		return output << "(" << _operand << ")" << _op;
+	else
+		return output << _op << "(" << _operand << ")";
 }
 
 std::ostream &DupEntry::print(std::ostream &output) const {
@@ -254,9 +257,9 @@ void CodeGenerator::process(GraphVertex v) {
 					_stack.push(p);
 					break;
 				}
-			case kUnaryOp:
-				//TODO: Allow operator to be placed on either side of operand
-				_stack.push(new UnaryOpEntry(_stack.pop(), it->_codeGenData));
+			case kUnaryOpPre:
+			case kUnaryOpPost:
+				_stack.push(new UnaryOpEntry(_stack.pop(), it->_codeGenData, it->_type == kUnaryOpPost));
 				break;
 			case kBinaryOp:
 				{

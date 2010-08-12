@@ -46,7 +46,8 @@ enum InstType {
 	kSpecial,     ///< Special functions.
 	kStack,       ///< Stack allocation or deallocation (altering stack pointer).
 	kStore,       ///< Store value from stack in memory.
-	kUnaryOp      ///< Unary operation (e.g. !)
+	kUnaryOpPre,  ///< Unary operation (e.g. !) with operator placed before the operator.
+	kUnaryOpPost  ///< Unary operation with operator placed after the operator.
 };
 
 /**

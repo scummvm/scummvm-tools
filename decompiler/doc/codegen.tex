@@ -84,8 +84,8 @@ Default handling exists for a number of instruction types, described below. If t
 \paragraph{kDup}
 The topmost stack entry is popped, and two duplicated copies are pushed to the stack. If the entry being duplicated was not already a duplicate, an assignment will be output to assign the original stack entry to a special dup variable, to show that the original entry is not being recalculated.
 
-\paragraph{kUnaryOp}
-The topmost stack entry is popped, and a \code{UnaryOpEntry} is created and pushed to the stack, using the codegen metadata as the operator, and the previously popped entry as the operand. Note: currently, a \code{UnaryOpEntry} only supports placing the operator on the left side of the operand.
+\paragraph{kUnaryOpPre/kUnaryOpPost}
+The topmost stack entry is popped, and a \code{UnaryOpEntry} is created and pushed to the stack, using the codegen metadata as the operator, and the previously popped entry as the operand. The exact type determines whether the operator is pre- or postfixed to the operand.
 
 \paragraph{kBinaryOp}
 The two topmost stack entries are popped, and a BinaryOpEntry is created and pushed to the stack, using the codegen metadata as the operator and the previously popped entries as the operands. The order of the operands is determined by the value of the field \code{\_binOrder}, as described in Section~\vref{sec:argOrder}.

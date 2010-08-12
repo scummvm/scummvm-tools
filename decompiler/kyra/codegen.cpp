@@ -125,7 +125,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 		case kWhileCond:
 			break;
 		case kDoWhileCond:
-			_stack.push(new UnaryOpEntry(_stack.pop(), "!"));
+			_stack.push(new UnaryOpEntry(_stack.pop(), "!", false));
 			break;
 		default:
 			{
