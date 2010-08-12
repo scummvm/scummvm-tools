@@ -69,6 +69,10 @@ struct Parameter {
 	ParamType _type;                                   ///< Type of the parameter.
 	boost::variant<int32, uint32, std::string> _value; ///< Value of the parameter.
 
+	Parameter() {}
+	Parameter(ParamType type, boost::variant<int32, uint32, std::string> value)
+		: _type(type), _value(value) {}
+
 	/**
 	 * Gets an int32 stored in the _value variant.
 	 *
@@ -100,11 +104,15 @@ struct Parameter {
 struct Instruction {
 	uint32 _opcode;                 ///< The instruction opcode.
 	uint32 _address;                ///< The instruction address.
-	int16 _stackChange;             ///< How much this instruction changes the stack pointer by.
 	std::string _name;              ///< The instruction name (opcode name).
 	InstType _type;                 ///< The instruction type.
+	int16 _stackChange;             ///< How much this instruction changes the stack pointer by.
 	std::vector<Parameter> _params; ///< Array of parameters used for the instruction.
 	std::string _codeGenData;       ///< String containing metadata for code generation. Start with 0xC0 to force custom handling. See the extended documentation for details.
+
+	Instruction(uint32 opcode = 0, uint32 address = 0,
+			std::string name = "", InstType type = kSpecial, int16 stackChange = 0) :
+		_opcode(opcode), _address(address), _name(name), _type(type), _stackChange(stackChange) {}
 
 	/**
 	 * Operator overload to output a vector to a std::ostream.
