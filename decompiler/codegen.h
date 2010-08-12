@@ -414,8 +414,9 @@ protected:
 	 *
 	 * @param inst The instruction being processed.
 	 * @param c The character signifying the action to be taken.
+	 * @param pos The position at which c occurred in the metadata.
 	 */
-	virtual void processSpecialMetadata(const Instruction inst, char c);
+	virtual void processSpecialMetadata(const Instruction &inst, char c, int pos);
 
 	/**
 	 * Add an argument to the argument list.

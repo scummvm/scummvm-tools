@@ -141,7 +141,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 			_argList.clear();
 			Function f = _engine->_functions.find(inst._params[0].getUnsigned())->second;
 			for (size_t i = 0; i < f._metadata.length(); i++)
-				processSpecialMetadata(inst, f._metadata[i]);
+				processSpecialMetadata(inst, f._metadata[i], i);
 			_stack.push(new CallEntry(f._name, _argList));
 			// Leave call on stack if this is a condition, or other calls follow in same group
 			if (_curGroup->_type == kIfCond || _curGroup->_type == kWhileCond || _curGroup->_type == kDoWhileCond || inst._address != findLastCall()._address) {
@@ -164,7 +164,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 			bool returnsValue = (inst._codeGenData.find("r") == 1);
 			std::string metadata = (!returnsValue ? inst._codeGenData.substr(1) : inst._codeGenData.substr(2));
 			for (size_t i = 0; i < metadata.length(); i++)
-				processSpecialMetadata(inst, metadata[i]);
+				processSpecialMetadata(inst, metadata[i], i);
 			_stack.push(new CallEntry(inst._name, _argList));
 			// Leave call on stack if this is a condition, or other calls follow in same group
 			if (_curGroup->_type == kIfCond || _curGroup->_type == kWhileCond || _curGroup->_type == kDoWhileCond || inst._address != findLastCall()._address) {
@@ -209,7 +209,7 @@ const Instruction &Kyra::Kyra2CodeGenerator::findLastCall() {
 	return *_curGroup->_end;
 }
 
-void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
+void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
 	switch (c) {
 	case '0':
 		_stackOffset = 0;
@@ -231,7 +231,7 @@ void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const Instruction inst, ch
 		}
 		break;
 	default:
-		CodeGenerator::processSpecialMetadata(inst, c);
+		CodeGenerator::processSpecialMetadata(inst, c, pos);
 		break;
 	}
 }

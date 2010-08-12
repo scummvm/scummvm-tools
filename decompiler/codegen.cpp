@@ -355,7 +355,7 @@ void CodeGenerator::process(GraphVertex v) {
 					bool returnsValue = (it->_codeGenData.find("r") == 0);
 					std::string metadata = (!returnsValue ? it->_codeGenData : it->_codeGenData.substr(1));
 					for (size_t i = 0; i < metadata.length(); i++)
-						processSpecialMetadata(*it, metadata[i]);
+						processSpecialMetadata(*it, metadata[i], i);
 					_stack.push(new CallEntry(it->_name, _argList));
 					if (!returnsValue) {
 						std::stringstream stream;
@@ -386,7 +386,7 @@ void CodeGenerator::addArg(EntryPtr p) {
 		_argList.push_back(p);
 }
 
-void CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
+void CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
 	switch (c) {
 		case 'p':
 			addArg(_stack.pop());

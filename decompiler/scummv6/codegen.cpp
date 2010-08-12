@@ -423,7 +423,7 @@ std::string Scumm::v6::Scummv6CodeGenerator::decodeArrayName(uint16 arrID) {
 	return s.str();
 }
 
-void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const Instruction inst, char c) {
+void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
 	switch (c) {
 	// All of these meanings are taken from descumm.
 	case 'l':
@@ -458,7 +458,7 @@ void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const Instruction i
 		addArg(_stack.pop());
 		break;
 	default:
-		CodeGenerator::processSpecialMetadata(inst, c);
+		CodeGenerator::processSpecialMetadata(inst, c, pos);
 		break;
 	}
 }

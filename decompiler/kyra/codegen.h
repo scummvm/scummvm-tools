@@ -61,7 +61,7 @@ public:
 	Kyra2CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kLIFO, kLIFO) {}
 protected:
 	void processInst(const Instruction inst);
-	virtual void processSpecialMetadata(const Instruction inst, char c);
+	virtual void processSpecialMetadata(const Instruction &inst, char c, int pos);
 	std::string constructFuncSignature(const Function &func);
 };
 
