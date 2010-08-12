@@ -24,7 +24,6 @@
 
 Disassembler::Disassembler(std::vector<Instruction> &insts) : _insts(insts) {
 	_addressBase = 0;
-	_disassemblyDone = false;
 }
 
 void Disassembler::open(const char *filename) {
@@ -39,14 +38,13 @@ void Disassembler::doDumpDisassembly(std::ostream &output) {
 }
 
 void Disassembler::disassemble() {
-	if (!_disassemblyDone)
+	if (insts.empty()) {
+		_f.seek(0, SEEK_SET);
 		doDisassemble();
-	_disassemblyDone = true;
+	}
 }
 
 void Disassembler::dumpDisassembly(std::ostream &output) {
-	if (!_disassemblyDone)
-		doDisassemble();
-	_disassemblyDone = true;
+	disassemble();
 	doDumpDisassembly(output);
 }

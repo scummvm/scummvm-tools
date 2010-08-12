@@ -34,9 +34,6 @@
  * Base class for disassemblers.
  */
 class Disassembler {
-private:
-	bool _disassemblyDone;            ///< Indicates whether or not disassembly has already been performed.
-
 protected:
 	Common::File _f;                  ///< Used to perform file I/O.
 	std::vector<Instruction> &_insts; ///< Container for disassembled instructions.
