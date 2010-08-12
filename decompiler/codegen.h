@@ -35,16 +35,19 @@ class Engine;
 
 class Function;
 
+/**
+ * Types of stack entries.
+ */
 enum StackEntryType {
-	seInt,
-	seVar,
-	seBinOp,
-	seUnaryOp,
-	seDup,
-	seArray,
-	seString,
-	seList,
-	seCall
+	seInt,     ///< Integer
+	seVar,     ///< Variable
+	seBinOp,   ///< Binary operation
+	seUnaryOp, ///< Unary operation
+	seDup,     ///< Duplicated entry
+	seArray,   ///< Array access
+	seString,  ///< String
+	seList,    ///< List
+	seCall     ///< Function call
 };
 
 class StackEntry;

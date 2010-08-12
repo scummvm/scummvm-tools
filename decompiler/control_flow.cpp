@@ -38,11 +38,14 @@
 ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) : _insts(insts) {
 	_engine = engine;
 
+	// Automatically add a function if we're not supposed to look for more functions and no functions are defined
+	// This avoids a special case for when no real functions exist in the script
 	if (engine->_functions.empty() && !_engine->detectMoreFuncs())
 		engine->_functions[insts.begin()->_address] = Function(insts.begin(), insts.end());
 
 	GroupPtr prev = NULL;
 	int id = 0;
+	// Create vertices
 	for (ConstInstIterator it = insts.begin(); it != insts.end(); ++it) {
 		GraphVertex cur = boost::add_vertex(_g);
 		_addrMap[it->_address] = cur;
@@ -50,12 +53,14 @@ ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) 
 		PUT_ID(cur, id);
 		id++;
 
+		// Add reference to vertex if function starts here
 		if (_engine->_functions.find(it->_address) != _engine->_functions.end())
 			_engine->_functions[it->_address]._v = cur;
 
 		prev = GET(cur);
 	}
 
+	// Add regular edges
 	FuncMap::iterator fn;
 	GraphVertex last;
 	bool addEdge = false;
@@ -77,6 +82,7 @@ ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) 
 
 	}
 
+	// Add jump edges
 	for (ConstInstIterator it = insts.begin(); it != insts.end(); ++it) {
 		switch(it->_type) {
 		case kJump:
@@ -185,6 +191,7 @@ void ControlFlow::detectFunctions() {
 					return;
 				}
 				if (fn->second._startIt == fn->second._endIt) {
+					// We already know this is an entry point, we only need to detect the end point
 					detectEndPoint = true;
 					break;
 				}
@@ -279,13 +286,16 @@ void ControlFlow::createGroups() {
 		}
 
 		expectedStackLevel = grCur->_stackLevel;
+		// If expected stack level decreases in next vertex, then use next vertex level as expected level
 		if (expectedStackLevel > grNext->_stackLevel && grNext->_stackLevel >= 0) {
 			expectedStackLevel = grNext->_stackLevel;
+			// Also set the stack level of the current group to remember that we expect it to be lower
 			grCur->_stackLevel = expectedStackLevel;
 		}
 
 		stackLevel += curInst->_stackChange;
 
+		// For stack operations, the new stack level becomes the expected stack level starting from the next group
 		if (curInst->_type == kStack) {
 			expectedStackLevel = stackLevel;
 			grNext->_stackLevel = stackLevel;

@@ -323,6 +323,7 @@ public:
 				output << " ";
 				if (param->_type != kString) {
 					if (inst->_type == kCondJump || inst->_type == kCondJumpRel || inst->_type == kJump || inst->_type == kJumpRel || inst->_type == kCall) {
+						// Output numerical arguments to jumps in hexadecimal
 						switch (param->_type) {
 						case kSByte:
 						case kShort:
@@ -363,6 +364,7 @@ public:
 };
 
 namespace boost {
+
 /**
  * Add a reference to a pointer.
  */
@@ -377,7 +379,8 @@ inline void intrusive_ptr_release(Group *p) {
 	if (--(p->_refCount) == 0)
 		delete p;
 }
-}
+
+} // End of namespace boost
 
 class Engine;
 
