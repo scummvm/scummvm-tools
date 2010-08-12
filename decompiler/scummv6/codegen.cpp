@@ -458,7 +458,7 @@ void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const Instruction i
 		addArg(_stack.pop());
 		break;
 	default:
-		::CodeGenerator::processSpecialMetadata(inst, c);
+		CodeGenerator::processSpecialMetadata(inst, c);
 		break;
 	}
 }

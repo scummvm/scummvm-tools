@@ -32,7 +32,7 @@ namespace v6 {
 /**
  * SCUMMv6 code generator.
  */
-class Scummv6CodeGenerator : public ::CodeGenerator {
+class Scummv6CodeGenerator : public CodeGenerator {
 private:
 	/**
 	 * Get the name associated with a variable ID.
@@ -71,7 +71,7 @@ public:
 	 * @param engine Pointer to the Engine used for the script.
 	 * @param output The std::ostream to output the code to.
 	 */
-	Scummv6CodeGenerator(Engine *engine, std::ostream &output) : ::CodeGenerator(engine, output, kFIFO, kFIFO) {}
+	Scummv6CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kFIFO, kFIFO) {}
 protected:
 	void processInst(const Instruction inst);
 	virtual void processSpecialMetadata(const Instruction inst, char c);

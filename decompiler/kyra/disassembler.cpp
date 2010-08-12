@@ -264,7 +264,7 @@ IFFChunk::IFFChunk() {
 	_data = NULL;
 }
 
-Kyra::Kyra2Disassembler::Kyra2Disassembler(Kyra2Engine *engine, std::vector<Instruction> &insts) : ::Disassembler(insts), _engine(engine) {
+Kyra::Kyra2Disassembler::Kyra2Disassembler(Kyra2Engine *engine, std::vector<Instruction> &insts) : Disassembler(insts), _engine(engine) {
 	setupKyra2Funcs();
 }
 

@@ -27,7 +27,7 @@
 
 #include "disassembler.h"
 
-Scumm::v6::Scummv6Disassembler::Scummv6Disassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
+Scumm::v6::Scummv6Disassembler::Scummv6Disassembler(std::vector<Instruction> &insts) : SimpleDisassembler(insts) {
 }
 
 void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {

@@ -28,7 +28,7 @@
 #include <sstream>
 #include <boost/format.hpp>
 
-::Disassembler *Kyra::Kyra2Engine::getDisassembler(std::vector<Instruction> &insts) {
+Disassembler *Kyra::Kyra2Engine::getDisassembler(std::vector<Instruction> &insts) {
 	return new Kyra2Disassembler(this, insts);
 }
 
@@ -36,7 +36,7 @@ uint32 Kyra::Kyra2Engine::getDestAddress(ConstInstIterator it) const {
 	return it->_params[0].getUnsigned();
 }
 
-::CodeGenerator *Kyra::Kyra2Engine::getCodeGenerator(std::ostream &output) {
+CodeGenerator *Kyra::Kyra2Engine::getCodeGenerator(std::ostream &output) {
 	return new Kyra2CodeGenerator(this, output);
 }
 

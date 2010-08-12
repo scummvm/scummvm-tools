@@ -32,11 +32,11 @@ namespace v6 {
 /**
  * SCUMMv6 engine.
  */
-class Scummv6Engine : public ::Engine {
+class Scummv6Engine : public Engine {
 public:
-	::Disassembler *getDisassembler(std::vector<Instruction> &insts);
+	Disassembler *getDisassembler(std::vector<Instruction> &insts);
 	uint32 getDestAddress(ConstInstIterator it) const;
-	::CodeGenerator *getCodeGenerator(std::ostream &output);
+	CodeGenerator *getCodeGenerator(std::ostream &output);
 };
 
 } // End of namespace v6

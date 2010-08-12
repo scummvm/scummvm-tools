@@ -231,7 +231,7 @@ void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const Instruction inst, ch
 		}
 		break;
 	default:
-		::CodeGenerator::processSpecialMetadata(inst, c);
+		CodeGenerator::processSpecialMetadata(inst, c);
 		break;
 	}
 }

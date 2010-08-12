@@ -72,7 +72,7 @@ class Kyra2Engine;
 /**
  * Disassembler for KYRA.
  */
-class Kyra2Disassembler : public ::Disassembler {
+class Kyra2Disassembler : public Disassembler {
 private:
 	IFF_ID _formType;     ///< File type as listed in the IFF formatted file.
 	IFFChunk _textChunk;  ///< Contents of the TEXT chunk.

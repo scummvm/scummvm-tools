@@ -30,7 +30,7 @@ namespace Kyra {
 /**
  * KYRA code generator.
  */
-class Kyra2CodeGenerator : public ::CodeGenerator {
+class Kyra2CodeGenerator : public CodeGenerator {
 private:
 	int _stackOffset; ///< Running count of where in the stack to look for the next argument.
 
@@ -58,7 +58,7 @@ public:
 	 * @param engine Pointer to the Engine used for the script.
 	 * @param output The std::ostream to output the code to.
 	 */
-	Kyra2CodeGenerator(Engine *engine, std::ostream &output) : ::CodeGenerator(engine, output, kLIFO, kLIFO) {}
+	Kyra2CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kLIFO, kLIFO) {}
 protected:
 	void processInst(const Instruction inst);
 	virtual void processSpecialMetadata(const Instruction inst, char c);

@@ -33,11 +33,11 @@ namespace Kyra {
 /**
  * KYRA engine.
  */
-class Kyra2Engine : public ::Engine {
+class Kyra2Engine : public Engine {
 public:
-	::Disassembler *getDisassembler(std::vector<Instruction> &insts);
+	Disassembler *getDisassembler(std::vector<Instruction> &insts);
 	uint32 getDestAddress(ConstInstIterator it) const;
-	::CodeGenerator *getCodeGenerator(std::ostream &output);
+	CodeGenerator *getCodeGenerator(std::ostream &output);
 	void postCFG(std::vector<Instruction> &insts, Graph g);
 	bool detectMoreFuncs() const;
 
