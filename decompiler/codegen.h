@@ -372,7 +372,10 @@ protected:
 	EntryList _argList;    ///< Storage for lists of arguments to be built when processing function calls.
 
 	/**
-	 * Processes an instruction.
+	 * Processes an instruction in an engine-specific manner.
+	 * Called by process() to preprocess conditional jumps, process instructions
+	 * where engine-specific handling is explicitly requested, or the type is not
+	 * one of kBinaryOp, kDup, kJump(Rel), kReturn, kSpecial, or kUnaryOp.
 	 *
 	 * @param inst The instruction to process.
 	 */
