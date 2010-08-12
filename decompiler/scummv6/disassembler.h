@@ -34,6 +34,11 @@ namespace v6 {
  */
 class Scummv6Disassembler : public SimpleDisassembler {
 public:
+	/**
+	 * Constructor for Scummv6Disassembler.
+	 *
+	 * @param insts Reference to the vector in which disassembled instructions should be placed.
+	 */
 	Scummv6Disassembler(std::vector<Instruction> &insts);
 
 	void doDisassemble() throw(std::exception);
