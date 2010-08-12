@@ -34,9 +34,8 @@
  * Enumeration for categorizing the different kinds of instructions.
  */
 enum InstType {
-	kBinaryOp,    ///< Binary operation (e.g. +, &&, etc.), EXCLUDING comparisons.
+	kBinaryOp,    ///< Binary operation (e.g. +, &&, etc.), including comparisons.
 	kCall,        ///< Regular function call.
-	kComparison,  ///< Comparison instruction (==, !=, etc.)
 	kCondJump,    ///< Conditional jump (absolute address).
 	kCondJumpRel, ///< Conditional jump (relative address).
 	kDup,         ///< Instruction duplicates the most recent stack entry.

@@ -258,7 +258,6 @@ void CodeGenerator::process(GraphVertex v) {
 				_stack.push(new UnaryOpEntry(_stack.pop(), it->_codeGenData));
 				break;
 			case kBinaryOp:
-			case kComparison:
 				{
 					EntryPtr op1 = _stack.pop();
 					EntryPtr op2 = _stack.pop();

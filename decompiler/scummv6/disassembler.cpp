@@ -73,12 +73,12 @@ void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0x0B, "wordArrayIndexedRead", kLoad, -1, "w");
 		OPCODE(0x0C, "dup", kDup, 1, "");
 		OPCODE_MD(0x0D, "not", kUnaryOp, 0, "", "!");
-		OPCODE_MD(0x0E, "eq", kComparison, -1, "", "==");
-		OPCODE_MD(0x0F, "neq", kComparison, -1, "", "!=");
-		OPCODE_MD(0x10, "gt", kComparison, -1, "", ">");
-		OPCODE_MD(0x11, "lt", kComparison, -1, "", "<");
-		OPCODE_MD(0x12, "le", kComparison, -1, "", "<=");
-		OPCODE_MD(0x13, "ge", kComparison, -1, "", ">=");
+		OPCODE_MD(0x0E, "eq", kBinaryOp, -1, "", "==");
+		OPCODE_MD(0x0F, "neq", kBinaryOp, -1, "", "!=");
+		OPCODE_MD(0x10, "gt", kBinaryOp, -1, "", ">");
+		OPCODE_MD(0x11, "lt", kBinaryOp, -1, "", "<");
+		OPCODE_MD(0x12, "le", kBinaryOp, -1, "", "<=");
+		OPCODE_MD(0x13, "ge", kBinaryOp, -1, "", ">=");
 		OPCODE_MD(0x14, "add", kBinaryOp, -1, "", "+");
 		OPCODE_MD(0x15, "sub", kBinaryOp, -1, "", "-");
 		OPCODE_MD(0x16, "mul", kBinaryOp, -1, "", "*");

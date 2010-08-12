@@ -504,22 +504,22 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 					OPCODE_MD("eval_bor", kBinaryOp, -1, false, false, "||");
 					break;
 				case 2:
-					OPCODE_MD("eval_eq", kComparison, -1, false, false, "==");
+					OPCODE_MD("eval_eq", kBinaryOp, -1, false, false, "==");
 					break;
 				case 3:
-					OPCODE_MD("eval_neq", kComparison, -1, false, false, "!=");
+					OPCODE_MD("eval_neq", kBinaryOp, -1, false, false, "!=");
 					break;
 				case 4:
-					OPCODE_MD("eval_leq", kComparison, -1, false, false, "<=");
+					OPCODE_MD("eval_leq", kBinaryOp, -1, false, false, "<=");
 					break;
 				case 5:
-					OPCODE_MD("eval_lt", kComparison, -1, false, false, "<");
+					OPCODE_MD("eval_lt", kBinaryOp, -1, false, false, "<");
 					break;
 				case 6:
-					OPCODE_MD("eval_geq", kComparison, -1, false, false, ">=");
+					OPCODE_MD("eval_geq", kBinaryOp, -1, false, false, ">=");
 					break;
 				case 7:
-					OPCODE_MD("eval_gt", kComparison, -1, false, false, ">");
+					OPCODE_MD("eval_gt", kBinaryOp, -1, false, false, ">");
 					break;
 				case 8:
 					OPCODE_MD("eval_add", kBinaryOp, -1, false, false, "+");

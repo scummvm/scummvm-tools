@@ -68,8 +68,8 @@ void PasCDisassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0x8B, "ISTOREL", kStore, 0, "di");
 		OPCODE(0x8C, "ILOADA", kLoad, 4, "d");
 		OPCODE(0x8D, "ILOADL", kLoad, 0, "i");
-		OPCODE(0x8E, "ICMP", kComparison, -8, "");
-		OPCODE(0x8F, "UICMP", kComparison, -8, "");
+		OPCODE(0x8E, "ICMP", kBinaryOp, -8, "");
+		OPCODE(0x8F, "UICMP", kBinaryOp, -8, "");
 		OPCODE(0x90, "IDUP", kLoad, 4, "");
 		OPCODE(0x91, "IPRINT", kSpecial, -4, "");
 		OPCODE(0x92, "UIPRINT", kSpecial, -4, "");
@@ -93,8 +93,8 @@ void PasCDisassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0xAB, "SSTOREL", kStore, 0, "ds");
 		OPCODE(0xAC, "SLOADA", kLoad, 2, "d");
 		OPCODE(0xAD, "SLOADL", kLoad, 0, "s");
-		OPCODE(0xAE, "SCMP", kComparison, -4, "");
-		OPCODE(0xAF, "USCMP", kComparison, -4, "");
+		OPCODE(0xAE, "SCMP", kBinaryOp, -4, "");
+		OPCODE(0xAF, "USCMP", kBinaryOp, -4, "");
 		OPCODE(0xB0, "SDUP", kLoad, 2, "");
 		OPCODE(0xB1, "SPRINT", kSpecial, -2, "");
 		OPCODE(0xB2, "USPRINT", kSpecial, -2, "");
@@ -118,8 +118,8 @@ void PasCDisassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0xCB, "BSTOREL", kStore, 0, "dB");
 		OPCODE(0xCC, "BLOADA", kLoad, 1, "d");
 		OPCODE(0xCD, "BLOADL", kLoad, 0, "B");
-		OPCODE(0xCE, "SBCMP", kComparison, -2, "");
-		OPCODE(0xCF, "BCMP", kComparison, -2, "");
+		OPCODE(0xCE, "SBCMP", kBinaryOp, -2, "");
+		OPCODE(0xCF, "BCMP", kBinaryOp, -2, "");
 		OPCODE(0xD0, "BDUP", kLoad, 1, "");
 		OPCODE(0xD1, "SBPRINT", kSpecial, -1, "");
 		OPCODE(0xD2, "BPRINT", kSpecial, -1, "");
