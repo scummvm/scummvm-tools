@@ -87,7 +87,7 @@ The topmost stack entry is popped, and two duplicated copies are pushed to the s
 \paragraph{kUnaryOp}
 The topmost stack entry is popped, and a \code{UnaryOpEntry} is created and pushed to the stack, using the codegen metadata as the operator, and the previously popped entry as the operand. Note: currently, a \code{UnaryOpEntry} only supports placing the operator on the left side of the operand.
 
-\paragraph{kBinaryOp and kComparison}
+\paragraph{kBinaryOp}
 The two topmost stack entries are popped, and a BinaryOpEntry is created and pushed to the stack, using the codegen metadata as the operator and the previously popped entries as the operands. The order of the operands is determined by the value of the field \code{\_binOrder}, as described in Section~\vref{sec:argOrder}.
 
 \paragraph{kCondJump and kCondJumpRel}
@@ -117,7 +117,7 @@ Note that this also includes \code{kCall}. Although many engines might want to h
 
 \subsection{Order of arguments}
 \label{sec:argOrder}
-The generic handling of binary operators (kBinaryOp, kComparison) and magic functions (kSpecial) can be configured to display their arguments using FIFO or LIFO - respectively, the first and the last entry to be pushed onto the stack is used as the first (leftmost) argument. This is set as part of the constructor for the \code{CodeGenerator} class, using the enumeration values \code{kFIFO} and \code{kLIFO}.
+The generic handling of binary operators (kBinaryOp) and magic functions (kSpecial) can be configured to display their arguments using FIFO or LIFO - respectively, the first and the last entry to be pushed onto the stack is used as the first (leftmost) argument. This is set as part of the constructor for the \code{CodeGenerator} class, using the enumeration values \code{kFIFO} and \code{kLIFO}.
 
 To provide an example, consider the following sequence of instructions:
 
