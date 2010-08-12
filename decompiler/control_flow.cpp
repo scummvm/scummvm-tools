@@ -258,7 +258,7 @@ void ControlFlow::detectFunctions() {
 }
 
 void ControlFlow::createGroups() {
-	if (GET(_engine->_functions.begin()->second._v)->_stackLevel != -1)
+	if (!_engine->_functions.empty() && GET(_engine->_functions.begin()->second._v)->_stackLevel != -1)
 		return;
 
 	// Detect more functions
