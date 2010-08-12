@@ -337,6 +337,10 @@ void ControlFlow::createGroups() {
 		merge(cur, next);
 	}
 
+	// FIXME: The short-circuit detection is disabled because short-circuited groups require some special handling
+	// in the code generation. It's not entirely clear how to handle it properly, though: you need to deduce which
+	// effect is created by the conditional jumps in the middle of a block, which seems to get fairly complex when
+	// you have multiple groups that are merged by the short-circuit detection.
 	//detectShortCircuit();
 }
 
