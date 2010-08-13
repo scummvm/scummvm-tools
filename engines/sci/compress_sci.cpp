@@ -363,6 +363,9 @@ void CompressSci::execute() {
 
 	print("Valid sci audio resource file. Found %d resources", resourceCount);
 
+	if (outfile.empty())
+		error("please specify an output file");
+
 	// Now write basic output file header
 	_output.open(outfile, "wb");
 	// Compression ID
