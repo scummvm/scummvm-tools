@@ -34,33 +34,33 @@
  * Enumeration for categorizing the different kinds of instructions.
  */
 enum InstType {
-	kBinaryOp,    ///< Binary operation (e.g. +, &&, etc.), including comparisons.
-	kCall,        ///< Regular function call.
-	kCondJump,    ///< Conditional jump (absolute address).
-	kCondJumpRel, ///< Conditional jump (relative address).
-	kDup,         ///< Instruction duplicates the most recent stack entry.
-	kJump,        ///< Unconditional jump (absolute address).
-	kJumpRel,     ///< Unconditional jump (relative address).
-	kLoad,        ///< Load value to stack.
-	kReturn,      ///< Return from regular function call.
-	kSpecial,     ///< Special functions.
-	kStack,       ///< Stack allocation or deallocation (altering stack pointer).
-	kStore,       ///< Store value from stack in memory.
-	kUnaryOpPre,  ///< Unary operation (e.g. !) with operator placed before the operator.
-	kUnaryOpPost  ///< Unary operation with operator placed after the operator.
+	kBinaryOpInstType,    ///< Binary operation (e.g. +, &&, etc.), including comparisons.
+	kCallInstType,        ///< Regular function call.
+	kCondJumpInstType,    ///< Conditional jump (absolute address).
+	kCondJumpRelInstType, ///< Conditional jump (relative address).
+	kDupInstType,         ///< Instruction duplicates the most recent stack entry.
+	kJumpInstType,        ///< Unconditional jump (absolute address).
+	kJumpRelInstType,     ///< Unconditional jump (relative address).
+	kLoadInstType,        ///< Load value to stack.
+	kReturnInstType,      ///< Return from regular function call.
+	kSpecialCallInstType,     ///< Special functions.
+	kStackInstType,       ///< Stack allocation or deallocation (altering stack pointer).
+	kStoreInstType,       ///< Store value from stack in memory.
+	kUnaryOpPreInstType,  ///< Unary operation (e.g. !) with operator placed before the operator.
+	kUnaryOpPostInstType  ///< Unary operation with operator placed after the operator.
 };
 
 /**
  * Enumeration for categorizing the different kinds of parameters.
  */
 enum ParamType {
-	kSByte,  ///< Signed 8-bit integer.
-	kByte,   ///< Unsigned 8-bit integer.
-	kShort,  ///< Signed 16-bit integer.
-	kUShort, ///< Unsigned 16-bit integer.
-	kInt,    ///< Signed 32-bit integer.
-	kUInt,   ///< Unsigned 32-bit integer.
-	kString  ///< Text string.
+	kSByteParamType,  ///< Signed 8-bit integer.
+	kByteParamType,   ///< Unsigned 8-bit integer.
+	kShortParamType,  ///< Signed 16-bit integer.
+	kUShortParamType, ///< Unsigned 16-bit integer.
+	kIntParamType,    ///< Signed 32-bit integer.
+	kUIntParamType,   ///< Unsigned 32-bit integer.
+	kStringParamType  ///< Text string.
 };
 
 /**
@@ -112,7 +112,7 @@ struct Instruction {
 	std::string _codeGenData;       ///< String containing metadata for code generation. See the extended documentation for details.
 
 	Instruction(uint32 opcode = 0, uint32 address = 0,
-			std::string name = "", InstType type = kSpecial, int16 stackChange = 0) :
+			std::string name = "", InstType type = kSpecialCallInstType, int16 stackChange = 0) :
 		_opcode(opcode), _address(address), _name(name), _type(type), _stackChange(stackChange) {}
 
 	/**
@@ -128,17 +128,17 @@ struct Instruction {
 		for (param = inst._params.begin(); param != inst._params.end(); ++param) {
 			if (param != inst._params.begin())
 				output << ",";
-			if (inst._type == kCondJump || inst._type == kCondJumpRel || inst._type == kJump || inst._type == kJumpRel || inst._type == kCall) {
+			if (inst._type == kCondJumpInstType || inst._type == kCondJumpRelInstType || inst._type == kJumpInstType || inst._type == kJumpRelInstType || inst._type == kCallInstType) {
 				// Output numerical arguments to jumps in hexadecimal
 				switch (param->_type) {
-				case kSByte:
-				case kShort:
-				case kInt:
+				case kSByteParamType:
+				case kShortParamType:
+				case kIntParamType:
 					output << boost::format(" 0x%X") % param->getSigned();
 					break;
-				case kByte:
-				case kUShort:
-				case kUInt:
+				case kByteParamType:
+				case kUShortParamType:
+				case kUIntParamType:
 					output << boost::format(" 0x%X") % param->getUnsigned();
 					break;
 				default:

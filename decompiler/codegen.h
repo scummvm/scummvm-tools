@@ -39,15 +39,15 @@ class Function;
  * Types of stack entries.
  */
 enum StackEntryType {
-	seInt,     ///< Integer
-	seVar,     ///< Variable
-	seBinOp,   ///< Binary operation
-	seUnaryOp, ///< Unary operation
-	seDup,     ///< Duplicated entry
-	seArray,   ///< Array access
-	seString,  ///< String
-	seList,    ///< List
-	seCall     ///< Function call
+	kIntStackEntry,     ///< Integer
+	kVarStackEntry,     ///< Variable
+	kBinOpStackEntry,   ///< Binary operation
+	kUnaryOpStackEntry, ///< Unary operation
+	kDupStackEntry,     ///< Duplicated entry
+	kArrayStackEntry,   ///< Array access
+	kStringStackEntry,  ///< String
+	kListStackEntry,    ///< List
+	kCallStackEntry     ///< Function call
 };
 
 class StackEntry;
@@ -145,7 +145,7 @@ public:
 	 * @param val The value contained in the stack entry.
 	 * @param isSigned Whether or not the value is signed. This will affect output.
 	 */
-	IntEntry(int32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) { }
+	IntEntry(int32 val, bool isSigned) : StackEntry(kIntStackEntry), _val(val), _isSigned(isSigned) { }
 
 	/**
 	 * Constructor for IntEntry.
@@ -153,7 +153,7 @@ public:
 	 * @param val The value contained in the stack entry.
 	 * @param isSigned Whether or not the value is signed. This will affect output.
 	 */
-	IntEntry(uint32 val, bool isSigned) : StackEntry(seInt), _val(val), _isSigned(isSigned) { }
+	IntEntry(uint32 val, bool isSigned) : StackEntry(kIntStackEntry), _val(val), _isSigned(isSigned) { }
 
 	/**
 	 * Gets the value associated with the IntEntry.
@@ -187,7 +187,7 @@ public:
 	 *
 	 * @param varName The name of the variable.
 	 */
-	VarEntry(std::string varName) : StackEntry(seVar), _varName(varName) { }
+	VarEntry(std::string varName) : StackEntry(kVarStackEntry), _varName(varName) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
 };
@@ -210,7 +210,7 @@ public:
 	 * @param op The operator for this entry.
 	 */
 	BinaryOpEntry(EntryPtr lhs, EntryPtr rhs, std::string op) :
-		StackEntry(seBinOp), _lhs(lhs), _rhs(rhs), _op(op) { }
+		StackEntry(kBinOpStackEntry), _lhs(lhs), _rhs(rhs), _op(op) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
 };
@@ -233,7 +233,7 @@ public:
 	 * @param isPostfix Whether or not the operator should be postfixed to the operand.
 	 */
 	UnaryOpEntry(EntryPtr operand, std::string op, bool isPostfix) :
-		StackEntry(seUnaryOp), _operand(operand), _op(op), _isPostfix(isPostfix) { }
+		StackEntry(kUnaryOpStackEntry), _operand(operand), _op(op), _isPostfix(isPostfix) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
 };
@@ -251,7 +251,7 @@ public:
 	 *
 	 * @param idx Index to distinguish multiple duplicated entries.
 	 */
-	DupEntry(int idx) : StackEntry(seDup), _idx(idx) { }
+	DupEntry(int idx) : StackEntry(kDupStackEntry), _idx(idx) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
 };
@@ -276,7 +276,7 @@ public:
 	 * @param arrayName The name of the array.
 	 * @param idxs std::deque of stack entries representing the indexes used (left-to-right).
 	 */
-	ArrayEntry(std::string arrayName, std::deque<EntryPtr> idxs) : StackEntry(seArray), _arrayName(arrayName), _idxs(idxs) { }
+	ArrayEntry(std::string arrayName, std::deque<EntryPtr> idxs) : StackEntry(kArrayStackEntry), _arrayName(arrayName), _idxs(idxs) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
 };
@@ -294,7 +294,7 @@ public:
 	 *
 	 * @param str The string in the entry.
 	 */
-	StringEntry(std::string str) : StackEntry(seString), _str(str) { }
+	StringEntry(std::string str) : StackEntry(kStringStackEntry), _str(str) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
 };
@@ -312,7 +312,7 @@ public:
 	 *
 	 * @param items The items stored in the list.
 	 */
-	ListEntry(EntryList items) : StackEntry(seList), _items(items) { }
+	ListEntry(EntryList items) : StackEntry(kListStackEntry), _items(items) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
 };
@@ -332,7 +332,7 @@ public:
 	 * @param funcName The name of the function.
 	 * @param args std::deque of stack entries representing the arguments used.
 	 */
-	CallEntry(std::string funcName, EntryList args) : StackEntry(seCall), _funcName(funcName), _args(args) { }
+	CallEntry(std::string funcName, EntryList args) : StackEntry(kCallStackEntry), _funcName(funcName), _args(args) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
 };
@@ -348,8 +348,8 @@ const int kIndentAmount = 2; ///< How many spaces to use for each indent.
  * Enumeration for the different argument/operand orderings.
  */
 enum ArgOrder {
-	kFIFO, ///< First argument is pushed to stack first.
-	kLIFO  ///< First argument is pushed to stack last.
+	kFIFOArgOrder, ///< First argument is pushed to stack first.
+	kLIFOArgOrder  ///< First argument is pushed to stack last.
 };
 
 /**

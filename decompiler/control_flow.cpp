@@ -77,7 +77,7 @@ ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) 
 		}
 
 		last = cur;
-		addEdge = (it->_type != kJump && it->_type != kJumpRel && it->_type != kReturn);
+		addEdge = (it->_type != kJumpInstType && it->_type != kJumpRelInstType && it->_type != kReturnInstType);
 		prev = GET(cur);
 
 	}
@@ -85,10 +85,10 @@ ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) 
 	// Add jump edges
 	for (ConstInstIterator it = insts.begin(); it != insts.end(); ++it) {
 		switch(it->_type) {
-		case kJump:
-		case kCondJump:
-		case kJumpRel:
-		case kCondJumpRel: {
+		case kJumpInstType:
+		case kCondJumpInstType:
+		case kJumpRelInstType:
+		case kCondJumpRelInstType: {
 			GraphEdge e = boost::add_edge(find(it), find(_engine->getDestAddress(it)), _g).first;
 			PUT_EDGE(e, true);
 			break;
@@ -296,19 +296,19 @@ void ControlFlow::createGroups() {
 		stackLevel += curInst->_stackChange;
 
 		// For stack operations, the new stack level becomes the expected stack level starting from the next group
-		if (curInst->_type == kStack) {
+		if (curInst->_type == kStackInstType) {
 			expectedStackLevel = stackLevel;
 			grNext->_stackLevel = stackLevel;
 		}
 
 		// Group ends after a jump
-		if (curInst->_type == kJump || curInst->_type == kJumpRel || curInst->_type == kCondJump || curInst->_type == kCondJumpRel) {
+		if (curInst->_type == kJumpInstType || curInst->_type == kJumpRelInstType || curInst->_type == kCondJumpInstType || curInst->_type == kCondJumpRelInstType) {
 			stackLevel = grNext->_stackLevel;
 			continue;
 		}
 
 		// Group ends with a return
-		if (curInst->_type == kReturn) {
+		if (curInst->_type == kReturnInstType) {
 			stackLevel = grNext->_stackLevel;
 			continue;
 		}
@@ -329,7 +329,7 @@ void ControlFlow::createGroups() {
 		} while (grCur->_start != grCur->_end && it != grCur->_end);
 
 		// Group ends when stack is balanced, unless just before conditional jump
-		if (stackLevel == expectedStackLevel && !forceMerge && nextInst->_type != kCondJump && nextInst->_type != kCondJumpRel) {
+		if (stackLevel == expectedStackLevel && !forceMerge && nextInst->_type != kCondJumpInstType && nextInst->_type != kCondJumpRelInstType) {
 			continue;
 		}
 
@@ -396,17 +396,17 @@ void ControlFlow::detectWhile() {
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		GroupPtr gr = GET(*v);
 		// Undetermined block that ends with conditional jump
-		if (out_degree(*v, _g) == 2 && gr->_type == kNormal) {
+		if (out_degree(*v, _g) == 2 && gr->_type == kNormalGroupType) {
 			InEdgeRange ier = boost::in_edges(*v, _g);
 			bool isWhile = false;
 			for (InEdgeIterator e = ier.first; e != ier.second; ++e) {
 				GroupPtr sourceGr = GET(boost::source(*e, _g));
 				// Block has ingoing edge from block later in the code that isn't a do-while condition
-				if (sourceGr->_start->_address > gr->_start->_address && sourceGr->_type != kDoWhileCond)
+				if (sourceGr->_start->_address > gr->_start->_address && sourceGr->_type != kDoWhileCondGroupType)
 					isWhile = true;
 			}
 			if (isWhile)
-				gr->_type = kWhileCond;
+				gr->_type = kWhileCondGroupType;
 		}
 	}
 }
@@ -416,13 +416,13 @@ void ControlFlow::detectDoWhile() {
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		GroupPtr gr = GET(*v);
 		// Undetermined block that ends with conditional jump...
-		if (out_degree(*v, _g) == 2 && gr->_type == kNormal) {
+		if (out_degree(*v, _g) == 2 && gr->_type == kNormalGroupType) {
 			OutEdgeRange oer = boost::out_edges(*v, _g);
 			for (OutEdgeIterator e = oer.first; e != oer.second; ++e) {
 				GroupPtr targetGr = GET(boost::target(*e, _g));
 				// ...to earlier in code
 				if (targetGr->_start->_address < gr->_start->_address)
-					gr->_type = kDoWhileCond;
+					gr->_type = kDoWhileCondGroupType;
 			}
 		}
 	}
@@ -433,7 +433,7 @@ void ControlFlow::detectBreak() {
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		GroupPtr gr = GET(*v);
 		// Undetermined block with unconditional jump...
-		if (gr->_type == kNormal && (gr->_end->_type == kJump || gr->_end->_type == kJumpRel) && out_degree(*v, _g) == 1) {
+		if (gr->_type == kNormalGroupType && (gr->_end->_type == kJumpInstType || gr->_end->_type == kJumpRelInstType) && out_degree(*v, _g) == 1) {
 			OutEdgeIterator oe = boost::out_edges(*v, _g).first;
 			GraphVertex target = boost::target(*oe, _g);
 			GroupPtr targetGr = GET(target);
@@ -444,9 +444,9 @@ void ControlFlow::detectBreak() {
 			for (InEdgeIterator ie = ier.first; ie != ier.second; ++ie) {
 				GroupPtr sourceGr = GET(boost::source(*ie, _g));
 				// ...to block immediately after a do-while condition, or to jump target of a while condition
-				if ((targetGr->_prev == sourceGr && sourceGr->_type == kDoWhileCond) || sourceGr->_type == kWhileCond) {
+				if ((targetGr->_prev == sourceGr && sourceGr->_type == kDoWhileCondGroupType) || sourceGr->_type == kWhileCondGroupType) {
 					if (validateBreakOrContinue(gr, sourceGr))
-						gr->_type = kBreak;
+						gr->_type = kBreakGroupType;
 				}
 			}
 		}
@@ -458,19 +458,19 @@ void ControlFlow::detectContinue() {
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		GroupPtr gr = GET(*v);
 		// Undetermined block with unconditional jump...
-		if (gr->_type == kNormal && (gr->_end->_type == kJump || gr->_end->_type == kJumpRel) && out_degree(*v, _g) == 1) {
+		if (gr->_type == kNormalGroupType && (gr->_end->_type == kJumpInstType || gr->_end->_type == kJumpRelInstType) && out_degree(*v, _g) == 1) {
 			OutEdgeIterator oe = boost::out_edges(*v, _g).first;
 			GraphVertex target = boost::target(*oe, _g);
 			GroupPtr targetGr = GET(target);
 			// ...to a while or do-while condition...
-			if (targetGr->_type == kWhileCond || targetGr->_type == kDoWhileCond) {
+			if (targetGr->_type == kWhileCondGroupType || targetGr->_type == kDoWhileCondGroupType) {
 				bool isContinue = true;
 				// ...unless...
 				OutEdgeRange toer = boost::out_edges(target, _g);
 				bool afterJumpTargets = true;
 				for (OutEdgeIterator toe = toer.first; toe != toer.second; ++toe) {
 					// ...it is targeting a while condition which jumps to the next sequential group
-					if (targetGr->_type == kWhileCond && GET(boost::target(*toe, _g)) == gr->_next)
+					if (targetGr->_type == kWhileCondGroupType && GET(boost::target(*toe, _g)) == gr->_next)
 						isContinue = false;
 					// ...or the instruction is placed after all jump targets from condition
 					if (GET(boost::target(*toe, _g))->_start->_address > gr->_start->_address)
@@ -480,7 +480,7 @@ void ControlFlow::detectContinue() {
 					isContinue = false;
 
 				if (isContinue && validateBreakOrContinue(gr, targetGr))
-					gr->_type = kContinue;
+					gr->_type = kContinueGroupType;
 			}
 		}
 	}
@@ -489,7 +489,7 @@ void ControlFlow::detectContinue() {
 bool ControlFlow::validateBreakOrContinue(GroupPtr gr, GroupPtr condGr) {
 	GroupPtr from, to, cursor;
 
-	if (condGr->_type == kDoWhileCond) {
+	if (condGr->_type == kDoWhileCondGroupType) {
 		to = condGr;
 		from = gr;
 	}	else {
@@ -497,7 +497,7 @@ bool ControlFlow::validateBreakOrContinue(GroupPtr gr, GroupPtr condGr) {
 		from = condGr->_next;
 	}
 
-	GroupType ogt = (condGr->_type == kDoWhileCond ? kWhileCond : kDoWhileCond);
+	GroupType ogt = (condGr->_type == kDoWhileCondGroupType ? kWhileCondGroupType : kDoWhileCondGroupType);
 	// Verify that destination deals with innermost while/do-while
 	for (cursor = from; cursor->_next != NULL && cursor != to; cursor = cursor->_next) {
 		if (cursor->_type == condGr->_type) {
@@ -527,8 +527,8 @@ void ControlFlow::detectIf() {
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		GroupPtr gr = GET(*v);
 		// if: Undetermined block with conditional jump
-		if (gr->_type == kNormal && (gr->_end->_type == kCondJump || gr->_end->_type == kCondJumpRel)) {
-			gr->_type = kIfCond;
+		if (gr->_type == kNormalGroupType && (gr->_end->_type == kCondJumpInstType || gr->_end->_type == kCondJumpRelInstType)) {
+			gr->_type = kIfCondGroupType;
 		}
 	}
 }
@@ -537,7 +537,7 @@ void ControlFlow::detectElse() {
 	VertexRange vr = boost::vertices(_g);
 	for (VertexIterator v = vr.first; v != vr.second; ++v) {
 		GroupPtr gr = GET(*v);
-		if (gr->_type == kIfCond) {
+		if (gr->_type == kIfCondGroupType) {
 			OutEdgeRange oer = boost::out_edges(*v, _g);
 			GraphVertex target;
 			uint32 maxAddress = 0;
@@ -552,10 +552,10 @@ void ControlFlow::detectElse() {
 			}
 			targetGr = GET(target);
 			// else: Jump target of if immediately preceded by an unconditional jump...
-			if (targetGr->_prev->_end->_type != kJump && targetGr->_prev->_end->_type != kJumpRel)
+			if (targetGr->_prev->_end->_type != kJumpInstType && targetGr->_prev->_end->_type != kJumpRelInstType)
 				continue;
 			// ...which is not a break or a continue...
-			if (targetGr->_prev->_type == kContinue || targetGr->_prev->_type == kBreak)
+			if (targetGr->_prev->_type == kContinueGroupType || targetGr->_prev->_type == kBreakGroupType)
 				continue;
 			// ...to later in the code
 			OutEdgeIterator toe = boost::out_edges(find(targetGr->_prev->_start->_address), _g).first;
@@ -572,7 +572,7 @@ void ControlFlow::detectElse() {
 
 bool ControlFlow::validateElseBlock(GroupPtr ifGroup, GroupPtr start, GroupPtr end) {
 	for (GroupPtr cursor = start; cursor != end; cursor = cursor->_next) {
-		if (cursor->_type == kIfCond || cursor->_type == kWhileCond || cursor->_type == kDoWhileCond) {
+		if (cursor->_type == kIfCondGroupType || cursor->_type == kWhileCondGroupType || cursor->_type == kDoWhileCondGroupType) {
 			// Validate outgoing edges of conditions
 			OutEdgeRange oer = boost::out_edges(find(cursor->_start), _g);
 			for (OutEdgeIterator oe = oer.first; oe != oer.second; ++oe) {
@@ -592,7 +592,7 @@ bool ControlFlow::validateElseBlock(GroupPtr ifGroup, GroupPtr start, GroupPtr e
 		}
 
 		// Unless group is a simple unconditional jump...
-		if (cursor->_start->_type == kJump || cursor->_start->_type == kJumpRel)
+		if (cursor->_start->_type == kJumpInstType || cursor->_start->_type == kJumpRelInstType)
 			continue;
 
 		// ...validate ingoing edges
@@ -602,11 +602,11 @@ bool ControlFlow::validateElseBlock(GroupPtr ifGroup, GroupPtr start, GroupPtr e
 			GroupPtr sourceGr = GET(source);
 
 			// Edges going to conditions...
-			if (sourceGr->_type == kIfCond || sourceGr->_type == kWhileCond || sourceGr->_type == kDoWhileCond) {
+			if (sourceGr->_type == kIfCondGroupType || sourceGr->_type == kWhileCondGroupType || sourceGr->_type == kDoWhileCondGroupType) {
 				// ...must not come from outside the range [start, end]...
 				if (start->_start->_address > sourceGr->_start->_address || sourceGr->_start->_address > end->_start->_address) {
 					// ...unless source is simple unconditional jump...
-					if (sourceGr->_start->_type == kJump || sourceGr->_start->_type == kJumpRel)
+					if (sourceGr->_start->_type == kJumpInstType || sourceGr->_start->_type == kJumpRelInstType)
 						continue;
 					// ...or the edge is from the if condition associated with this else
 					if (ifGroup == sourceGr)

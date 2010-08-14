@@ -71,7 +71,7 @@ public:
 	 * @param engine Pointer to the Engine used for the script.
 	 * @param output The std::ostream to output the code to.
 	 */
-	Scummv6CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kFIFO, kFIFO) {}
+	Scummv6CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kFIFOArgOrder, kFIFOArgOrder) {}
 protected:
 	void processInst(const Instruction inst);
 	virtual void processSpecialMetadata(const Instruction &inst, char c, int pos);

@@ -34,7 +34,7 @@ class Kyra2CodeGenerator : public CodeGenerator {
 private:
 	/**
 	 * Finds the first call instruction in the current group and returns it.
-	 * The call may either be a kCall or kSpecial.
+	 * The call may either be a kCallInstType or kSpecialCallInstType.
 	 * Used to check whether retVal should be output by pushRet.
 	 *
 	 * @return The first call instruction in the current group. If no calls are found, returns the first instruction.
@@ -43,7 +43,7 @@ private:
 
 	/**
 	 * Finds the last call instruction in the current group and returns it.
-	 * The call may either be a kCall or kSpecial.
+	 * The call may either be a kCallInstType or kSpecialCallInstType.
 	 * Used to check whether retVal should be output by calls.
 	 *
 	 * @return The last call instruction in the current group. If no calls are found, returns the last instruction.
@@ -56,7 +56,7 @@ public:
 	 * @param engine Pointer to the Engine used for the script.
 	 * @param output The std::ostream to output the code to.
 	 */
-	Kyra2CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kLIFO, kLIFO) {}
+	Kyra2CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kLIFOArgOrder, kLIFOArgOrder) {}
 protected:
 	void processInst(const Instruction inst);
 	virtual void processSpecialMetadata(const Instruction &inst, char c, int pos);

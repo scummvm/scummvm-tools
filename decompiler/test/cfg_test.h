@@ -164,7 +164,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0)
-				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(gr->_type == kWhileCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -184,7 +184,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 3)
-				TS_ASSERT(gr->_type == kDoWhileCond);
+				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -204,7 +204,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x14)
-				TS_ASSERT(gr->_type == kBreak);
+				TS_ASSERT(gr->_type == kBreakGroupType);
 		}
 		delete c;
 		delete engine;
@@ -222,7 +222,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0xA)
-				TS_ASSERT(gr->_type == kBreak);
+				TS_ASSERT(gr->_type == kBreakGroupType);
 		}
 		delete c;
 		delete engine;
@@ -240,7 +240,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0xD)
-				TS_ASSERT(gr->_type == kBreak);
+				TS_ASSERT(gr->_type == kBreakGroupType);
 		}
 		delete c;
 		delete engine;
@@ -260,9 +260,9 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x14)
-				TS_ASSERT(gr->_type == kContinue);
+				TS_ASSERT(gr->_type == kContinueGroupType);
 			if (gr->_start->_address == 0x1a)
-				TS_ASSERT(gr->_type == kNormal);
+				TS_ASSERT(gr->_type == kNormalGroupType);
 		}
 		delete c;
 		delete engine;
@@ -280,7 +280,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0xA)
-				TS_ASSERT(gr->_type == kContinue);
+				TS_ASSERT(gr->_type == kContinueGroupType);
 		}
 		delete c;
 		delete engine;
@@ -298,7 +298,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0xD)
-				TS_ASSERT(gr->_type == kContinue);
+				TS_ASSERT(gr->_type == kContinueGroupType);
 		}
 		delete c;
 		delete engine;
@@ -318,7 +318,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x0)
-				TS_ASSERT(gr->_type == kIfCond);
+				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -336,7 +336,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x0)
-				TS_ASSERT(gr->_type == kIfCond);
+				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -354,7 +354,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x3)
-				TS_ASSERT(gr->_type == kIfCond);
+				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -372,7 +372,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x0)
-				TS_ASSERT(gr->_type == kIfCond);
+				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -390,7 +390,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x3)
-				TS_ASSERT(gr->_type == kIfCond);
+				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -430,7 +430,7 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x0)
-				TS_ASSERT(gr->_type == kIfCond);
+				TS_ASSERT(gr->_type == kIfCondGroupType);
 			TS_ASSERT(!gr->_startElse);
 		}
 
@@ -452,9 +452,9 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x0)
-				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(gr->_type == kWhileCondGroupType);
 			if (gr->_start->_address == 0xd)
-				TS_ASSERT(gr->_type == kDoWhileCond);
+				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -472,9 +472,9 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x6)
-				TS_ASSERT(gr->_type == kDoWhileCond);
+				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 			if (gr->_start->_address == 0x10)
-				TS_ASSERT(gr->_type == kDoWhileCond);
+				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -492,9 +492,9 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x0)
-				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(gr->_type == kWhileCondGroupType);
 			if (gr->_start->_address == 0xa)
-				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(gr->_type == kWhileCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -512,9 +512,9 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x0)
-				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(gr->_type == kWhileCondGroupType);
 			if (gr->_start->_address == 0xd)
-				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(gr->_type == kWhileCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -532,9 +532,9 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x0)
-				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(gr->_type == kWhileCondGroupType);
 			if (gr->_start->_address == 0x10)
-				TS_ASSERT(gr->_type == kDoWhileCond);
+				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -552,9 +552,9 @@ public:
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
 			if (gr->_start->_address == 0x3)
-				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(gr->_type == kWhileCondGroupType);
 			if (gr->_start->_address == 0x13)
-				TS_ASSERT(gr->_type == kDoWhileCond);
+				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
 		delete engine;
@@ -577,7 +577,7 @@ public:
 			GroupPtr gr = GET(*it);
 			switch (gr->_start->_address) {
 			case 0x6:
-				TS_ASSERT(gr->_type == kWhileCond);
+				TS_ASSERT(gr->_type == kWhileCondGroupType);
 				TS_ASSERT(!gr->_startElse);
 				TS_ASSERT(gr->_endElse.empty());
 				break;
@@ -588,27 +588,27 @@ public:
 			case 0x74: // Allow inclusion of the pop instruction immediately before
 			case 0x75:
 			case 0x92:
-				TS_ASSERT(gr->_type == kIfCond);
+				TS_ASSERT(gr->_type == kIfCondGroupType);
 				TS_ASSERT(!gr->_startElse);
 				TS_ASSERT(gr->_endElse.empty());
 				break;
 			case 0x8B:
-				TS_ASSERT(gr->_type == kNormal);
+				TS_ASSERT(gr->_type == kNormalGroupType);
 				TS_ASSERT(gr->_startElse);
 				TS_ASSERT(gr->_endElse.size() == 1 && gr->_endElse[0]->_start->_address == 0x8B);
 				break;
 			case 0x91:
-				TS_ASSERT(gr->_type == kNormal || gr->_type == kIfCond); // Allow inclusion of the pop instruction immediately before
+				TS_ASSERT(gr->_type == kNormalGroupType || gr->_type == kIfCondGroupType); // Allow inclusion of the pop instruction immediately before
 				TS_ASSERT(gr->_startElse);
 				TS_ASSERT(gr->_endElse.empty());
 				break;
 			case 0xA6:
-				TS_ASSERT(gr->_type == kNormal);
+				TS_ASSERT(gr->_type == kNormalGroupType);
 				TS_ASSERT(!gr->_startElse);
 				TS_ASSERT(gr->_endElse.size() == 1 && gr->_endElse[0]->_start->_address == 0x91);
 				break;
 			default:
-				TS_ASSERT(gr->_type == kNormal);
+				TS_ASSERT(gr->_type == kNormalGroupType);
 				TS_ASSERT(!gr->_startElse);
 				TS_ASSERT(gr->_endElse.empty());
 				break;

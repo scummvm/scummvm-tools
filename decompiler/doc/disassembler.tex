@@ -38,7 +38,7 @@ The instruction type is a generalization of the different kinds of instructions.
 
 This is particularly important during code flow analysis; since this part is engine-independent, the analysis must have some way of distinguishing the different types of instructions. Additionally, this information can be used during code generation to generalize the recognition of constructs--for example, the code generated for addition and the code generated for multiplication will generally be identical, with the exception of that single arithmetic instruction doing the work.
 
-Most of the types are self-explanatory, with the possible exception of \code{kSpecial}. \code{kSpecial} should be used for all "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
+Most of the types are self-explanatory, with the possible exception of \code{kSpecialCallInstType}. \code{kSpecialCallInstType} should be used for all "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
 
 During code generation, some instruction types have a pre-defined handling, while others must be handled on your own. It is possible to override the default handling for any or all opcodes if you wish. For details, see Section~\vref{sec:codegen}.
 
@@ -134,8 +134,8 @@ To define an opcode, use the \code{OPCODE} macro. This macro takes 5 parameters:
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE(0x01, "POP", kStack, -1, "");
-	OPCODE(0x03, "POP2", kStack, -2, "");
+	OPCODE(0x01, "POP", kStackInstType, -1, "");
+	OPCODE(0x03, "POP2", kStackInstType, -2, "");
 END_OPCODES;
 \end{lstlisting}
 \end{C++}
@@ -182,7 +182,7 @@ Note that strings are not supported by default. To add reading of a string type,
 			_address}};
 		}
 		s << '"';
-		p->_type = kString;
+		p->_type = kStringParamType;
 		p->_value = s.str();
 		}
 		break;
@@ -200,11 +200,11 @@ Now, we can add all three opcodes to the list:
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE(0x00, "PUSH", kStack, 1, "B");
-	OPCODE(0x01, "POP", kStack, -1, "");
-	OPCODE(0x02, "PUSH", kStack, 1, "w");
-	OPCODE(0x03, "POP2", kStack, -2, "");
-	OPCODE(0x80, "PRINT", kSpecial, 0, "c");
+	OPCODE(0x00, "PUSH", kStackInstType, 1, "B");
+	OPCODE(0x01, "POP", kStackInstType, -1, "");
+	OPCODE(0x02, "PUSH", kStackInstType, 1, "w");
+	OPCODE(0x03, "POP2", kStackInstType, -2, "");
+	OPCODE(0x80, "PRINT", kSpecialCallInstType, 0, "c");
 END_OPCODES;
 \end{lstlisting}
 \end{C++}
@@ -219,13 +219,13 @@ Defining 0xFF is easily done using the \code{START\_SUBOPCODE} macro. After that
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE(0x00, "PUSH", kStack, 1, "B");
-	OPCODE(0x01, "POP", kStack, -1, "");
-	OPCODE(0x02, "PUSH", kStack, 1, "w");
-	OPCODE(0x03, "POP2", kStack, -2, "");
-	OPCODE(0x80, "PRINT", kSpecial, 0, "c");
+	OPCODE(0x00, "PUSH", kStackInstType, 1, "B");
+	OPCODE(0x01, "POP", kStackInstType, -1, "");
+	OPCODE(0x02, "PUSH", kStackInstType, 1, "w");
+	OPCODE(0x03, "POP2", kStackInstType, -2, "");
+	OPCODE(0x80, "PRINT", kSpecialCallInstType, 0, "c");
 	START_SUBOPCODE(0xFF);
-		OPCODE(0x00, "HALT", kSpecial, 0, "");
+		OPCODE(0x00, "HALT", kSpecialCallInstType, 0, "");
 	END_SUBOPCODE;
 END_OPCODES;
 \end{lstlisting}
@@ -245,7 +245,7 @@ The arguments for the \code{OPCODE\_MD} are the same as those for \code{OPCODE},
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE_MD(0x14, "add", kBinaryOp, -1, "", "+");
+	OPCODE_MD(0x14, "add", kBinaryOpInstType, -1, "", "+");
 END_OPCODES;
 \end{lstlisting}
 \end{C++}

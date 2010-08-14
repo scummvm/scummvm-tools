@@ -41,12 +41,12 @@
  * Enumeration representing the different kinds of groups.
  */
 enum GroupType {
-	kNormal,      ///< Normal group.
-	kWhileCond,   ///< Group is the condition check for a while-loop.
-	kDoWhileCond, ///< Group is the condition check for a do-while-loop.
-	kIfCond,      ///< Group is the condition check for an if.
-	kBreak,       ///< Group is a break.
-	kContinue     ///< Group is a continue.
+	kNormalGroupType,      ///< Normal group.
+	kWhileCondGroupType,   ///< Group is the condition check for a while-loop.
+	kDoWhileCondGroupType, ///< Group is the condition check for a do-while-loop.
+	kIfCondGroupType,      ///< Group is the condition check for an if.
+	kBreakGroupType,       ///< Group is a break.
+	kContinueGroupType     ///< Group is a continue.
 };
 
 struct Group;
@@ -252,7 +252,7 @@ public:
 	/**
 	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
 	 */
-	Group() : _refCount(0), _stackLevel(-1), _type(kNormal) { }
+	Group() : _refCount(0), _stackLevel(-1), _type(kNormalGroupType) { }
 
 	/**
 	 * Constructor for Group.
@@ -267,7 +267,7 @@ public:
 		_start = start;
 		_end = end;
 		_stackLevel = -1;
-		_type = kNormal;
+		_type = kNormalGroupType;
 		_prev = prev.get();
 		_startElse = false;
 		if (_prev != NULL)
@@ -286,22 +286,22 @@ public:
 	friend std::ostream &operator<<(std::ostream &output, GroupPtr group) {
 		output << "{Block type: ";
 		switch(group->_type) {
-		case kNormal:
+		case kNormalGroupType:
 			output << "Normal";
 			break;
-		case kWhileCond:
+		case kWhileCondGroupType:
 			output << "While condition";
 			break;
-		case kDoWhileCond:
+		case kDoWhileCondGroupType:
 			output << "Do-while condition";
 			break;
-		case kIfCond:
+		case kIfCondGroupType:
 			output << "If condition";
 			break;
-		case kBreak:
+		case kBreakGroupType:
 			output << "Break";
 			break;
-		case kContinue:
+		case kContinueGroupType:
 			output << "Continue";
 			break;
 		}
@@ -321,18 +321,18 @@ public:
 				if (param != inst->_params.begin())
 					output << ",";
 				output << " ";
-				if (param->_type != kString) {
-					if (inst->_type == kCondJump || inst->_type == kCondJumpRel || inst->_type == kJump || inst->_type == kJumpRel || inst->_type == kCall) {
+				if (param->_type != kStringParamType) {
+					if (inst->_type == kCondJumpInstType || inst->_type == kCondJumpRelInstType || inst->_type == kJumpInstType || inst->_type == kJumpRelInstType || inst->_type == kCallInstType) {
 						// Output numerical arguments to jumps in hexadecimal
 						switch (param->_type) {
-						case kSByte:
-						case kShort:
-						case kInt:
+						case kSByteParamType:
+						case kShortParamType:
+						case kIntParamType:
 							output << boost::format(" 0x%X") % param->getSigned();
 							break;
-						case kByte:
-						case kUShort:
-						case kUInt:
+						case kByteParamType:
+						case kUShortParamType:
+						case kUIntParamType:
 							output << boost::format(" 0x%X") % param->getUnsigned();
 							break;
 						default:

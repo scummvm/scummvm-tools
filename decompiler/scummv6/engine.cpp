@@ -30,8 +30,8 @@ Disassembler *Scumm::v6::Scummv6Engine::getDisassembler(std::vector<Instruction>
 
 uint32 Scumm::v6::Scummv6Engine::getDestAddress(const Instruction &inst) const {
 	switch(inst._type) {
-	case kJumpRel:
-	case kCondJumpRel:
+	case kJumpRelInstType:
+	case kCondJumpRelInstType:
 		return inst._params[0].getSigned() + inst._address + 3;
 	default:
 		return 0;

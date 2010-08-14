@@ -27,6 +27,10 @@
 #include <iostream>
 #include <set>
 
+
+
+
+
 #include <boost/format.hpp>
 
 #define GET(vertex) (boost::get(boost::vertex_name, _g, vertex))
@@ -103,7 +107,7 @@ std::ostream &CallEntry::print(std::ostream &output) const {
 }
 
 EntryPtr StackEntry::dup(std::ostream &output) {
-	if (_type == seDup)
+	if (_type == kDupStackEntry)
 		return this;
 
 	EntryPtr dupEntry = new DupEntry(++dupindex);
@@ -111,13 +115,34 @@ EntryPtr StackEntry::dup(std::ostream &output) {
 	return dupEntry;
 }
 
+
 EntryPtr IntEntry::dup(std::ostream &output) {
 	return new IntEntry(_val, _isSigned);
 }
 
+
 std::string CodeGenerator::constructFuncSignature(const Function &func) {
 	return "";
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 std::string CodeGenerator::indentString(std::string s) {
 	std::stringstream stream;
@@ -125,15 +150,43 @@ std::string CodeGenerator::indentString(std::string s) {
 	return stream.str();
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output, ArgOrder binOrder, ArgOrder callOrder) : _output(output), _binOrder(binOrder), _callOrder(callOrder) {
 	_engine = engine;
 	_indentLevel = 0;
 }
 
+
+
+
+
+
+
 typedef std::pair<GraphVertex, EntryStack> DFSEntry;
+
+
+
 
 void CodeGenerator::generate(const Graph &g) {
 	_g = g;
+
+
+
+
+
+
+
 
 	for (FuncMap::iterator fn = _engine->_functions.begin(); fn != _engine->_functions.end(); ++fn)
 	{
@@ -150,7 +203,22 @@ void CodeGenerator::generate(const Graph &g) {
 			addOutputLine(funcSignature, false, true);
 		}
 
+
+
+
+
+
+
+
 		GroupPtr lastGroup = GET(entryPoint);
+
+
+
+
+
+
+
+
 
 		// DFS from entry point to process each vertex
 		Stack<DFSEntry> dfsStack;
@@ -175,10 +243,25 @@ void CodeGenerator::generate(const Graph &g) {
 			}
 		}
 
+
+
+
+
+
+
+
+
+
+
+
 		if (printFuncSignature) {
 			_curGroup = lastGroup;
 			addOutputLine("}", true, false);
 		}
+
+
+
+
 
 		// Print output
 		GroupPtr p = GET(entryPoint);
@@ -187,6 +270,33 @@ void CodeGenerator::generate(const Graph &g) {
 				if (it->_unindentBefore) {
 					assert(_indentLevel > 0);
 					_indentLevel--;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 				}
 				_output << boost::format("%08X: %s") % p->_start->_address % indentString(it->_line) << std::endl;
 				if (it->_indentAfter)
@@ -226,18 +336,19 @@ void CodeGenerator::process(GraphVertex v) {
 		if (!boost::get(boost::edge_attribute, _g, *ie)._isJump || inGroup->_stackLevel == -1)
 			continue;
 		switch (inGroup->_type) {
-		case kDoWhileCond:
+		case kDoWhileCondGroupType:
 			addOutputLine("do {", false, true);
 			break;
-		case kIfCond:
+		case kIfCondGroupType:
 			if (!_curGroup->_startElse)
 				addOutputLine("}", true, false);
 			break;
-		case kWhileCond:
+		case kWhileCondGroupType:
 			addOutputLine("}", true, false);
 			break;
 		default:
 			break;
+
 		}
 	}
 
@@ -250,13 +361,15 @@ void CodeGenerator::process(GraphVertex v) {
 	for (ElseEndIterator elseIt = _curGroup->_endElse.begin(); elseIt != _curGroup->_endElse.end(); ++elseIt) {
 		if (!(*elseIt)->_coalescedElse)
 			addOutputLine("}", true, false);
+
+
 	}
 }
 
 void CodeGenerator::processInst(const Instruction inst) {
 	switch (inst._type) {
 		// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
-	case kDup:
+	case kDupInstType:
 		{
 			std::stringstream s;
 			EntryPtr p = _stack.pop()->dup(s);
@@ -266,26 +379,26 @@ void CodeGenerator::processInst(const Instruction inst) {
 			_stack.push(p);
 			break;
 		}
-	case kUnaryOpPre:
-	case kUnaryOpPost:
-		_stack.push(new UnaryOpEntry(_stack.pop(), inst._codeGenData, inst._type == kUnaryOpPost));
+	case kUnaryOpPreInstType:
+	case kUnaryOpPostInstType:
+		_stack.push(new UnaryOpEntry(_stack.pop(), inst._codeGenData, inst._type == kUnaryOpPostInstType));
 		break;
-	case kBinaryOp:
+	case kBinaryOpInstType:
 		{
 			EntryPtr op1 = _stack.pop();
 			EntryPtr op2 = _stack.pop();
-			if (_binOrder == kFIFO)
+			if (_binOrder == kFIFOArgOrder)
 				_stack.push(new BinaryOpEntry(op2, op1, inst._codeGenData));
-			else if (_binOrder == kLIFO)
+			else if (_binOrder == kLIFOArgOrder)
 				_stack.push(new BinaryOpEntry(op1, op2, inst._codeGenData));
 			break;
 		}
-	case kCondJump:
-	case kCondJumpRel:
+	case kCondJumpInstType:
+	case kCondJumpRelInstType:
 		{
 			std::stringstream s;
 			switch (_curGroup->_type) {
-			case kIfCond:
+			case kIfCondGroupType:
 				if (_curGroup->_startElse && _curGroup->_code.size() == 1) {
 					OutEdgeRange oer = boost::out_edges(_curVertex, _g);
 					bool coalesceElse = false;
@@ -303,11 +416,11 @@ void CodeGenerator::processInst(const Instruction inst) {
 				s << "if (" << _stack.pop() << ") {";
 				addOutputLine(s.str(), _curGroup->_coalescedElse, true);
 				break;
-			case kWhileCond:
+			case kWhileCondGroupType:
 				s << "while (" << _stack.pop() << ") {";
 				addOutputLine(s.str(), false, true);
 				break;
-			case kDoWhileCond:
+			case kDoWhileCondGroupType:
 				s << "} while (" << _stack.pop() << ")";
 				addOutputLine(s.str(), true, false);
 				break;
@@ -316,13 +429,13 @@ void CodeGenerator::processInst(const Instruction inst) {
 			}
 		}
 		break;
-	case kJump:
-	case kJumpRel:
+	case kJumpInstType:
+	case kJumpRelInstType:
 		switch (_curGroup->_type) {
-		case kBreak:
+		case kBreakGroupType:
 			addOutputLine("break;");
 			break;
-		case kContinue:
+		case kContinueGroupType:
 			addOutputLine("continue;");
 			break;
 		default:
@@ -342,6 +455,7 @@ void CodeGenerator::processInst(const Instruction inst) {
 						break;
 					}
 
+
 					OutEdgeRange targetR = boost::out_edges(boost::target(*e, _g), _g);
 					for (OutEdgeIterator targetE = targetR.first; targetE != targetR.second; ++targetE) {
 						// Don't output jump to while loop that has jump to next vertex
@@ -358,11 +472,11 @@ void CodeGenerator::processInst(const Instruction inst) {
 			break;
 		}
 		break;
-	case kReturn:
+	case kReturnInstType:
 		// TODO: Allow specification of return value as part of return statement
 		addOutputLine("return;");
 		break;
-	case kSpecial:
+	case kSpecialCallInstType:
 		{
 			_argList.clear();
 			bool returnsValue = (inst._codeGenData.find("r") == 0);
@@ -387,12 +501,20 @@ void CodeGenerator::processInst(const Instruction inst) {
 	}
 }
 
+
+
+
+
 void CodeGenerator::addArg(EntryPtr p) {
-	if (_callOrder == kFIFO)
+	if (_callOrder == kFIFOArgOrder)
 		_argList.push_front(p);
-	else if (_callOrder == kLIFO)
+	else if (_callOrder == kLIFOArgOrder)
 		_argList.push_back(p);
 }
+
+
+
+
 
 void CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
 	switch (c) {
@@ -404,3 +526,4 @@ void CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int 
 			break;
 	}
 }
+

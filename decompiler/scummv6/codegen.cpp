@@ -40,7 +40,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 	// can just look directly at the opcode, but this should be easier
 	// to read.
 	switch (inst._type) {
-	case kLoad:
+	case kLoadInstType:
 		switch (inst._opcode) {
 		case 0x00: // pushByte
 			_stack.push(new IntEntry(inst._params[0].getUnsigned(), false));
@@ -71,7 +71,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 			}
 		}
 		break;
-	case kStore:
+	case kStoreInstType:
 		switch (inst._opcode) {
 			case 0x42: // writeByteVar
 			case 0x43: // writeWordVar
@@ -110,19 +110,19 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 				break;
 		}
 		break;
-	case kStack:
+	case kStackInstType:
 		// Only two opcodes in SCUMMv6, 0x1A and 0xA7: both are single item pop
 		_stack.pop();
 		//addOutputLine("// pop();");
 		break;
-	case kCondJumpRel:
+	case kCondJumpRelInstType:
 		switch (_curGroup->_type) {
-		case kIfCond:
-		case kWhileCond:
+		case kIfCondGroupType:
+		case kWhileCondGroupType:
 			if (inst._opcode == 0x5C) // jumpTrue
 				_stack.push(new UnaryOpEntry(_stack.pop(), "!", false));
 			break;
-		case kDoWhileCond:
+		case kDoWhileCondGroupType:
 			if (inst._opcode == 0x5D) // jumpFalse
 				_stack.push(new UnaryOpEntry(_stack.pop(), "!", false));
 			break;
@@ -136,7 +136,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 		}
 		CodeGenerator::processInst(inst);
 		break;
-	case kUnaryOpPost:
+	case kUnaryOpPostInstType:
 		switch (inst._opcode) {
 		case 0x4E: // byteVarInc
 		case 0x4F: // wordVarInc
@@ -167,7 +167,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 			break;
 		}
 		break;
-	case kSpecial:
+	case kSpecialCallInstType:
 		switch (inst._opcode) {
 		case 0xA4CD: // arrayOp_assignString
 			{
@@ -423,12 +423,12 @@ void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const Instruction &
 	case 'j':
 	case 'i':
 		switch (inst._params[0]._type) {
-		case kSByte:
-		case kShort:
+		case kSByteParamType:
+		case kShortParamType:
 			addArg(new IntEntry(inst._params[0].getSigned(), true));
 			break;
-		case kByte:
-		case kUShort:
+		case kByteParamType:
+		case kUShortParamType:
 			addArg(new IntEntry(inst._params[0].getUnsigned(), false));
 			break;
 		default:

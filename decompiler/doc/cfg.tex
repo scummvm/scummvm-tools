@@ -10,7 +10,7 @@ The control flow analysis is a multi-step process:
 \item Perform analysis on vertices
 \end{itemize}
 
-Calls to in-script functions are not represented with edges in the graph. This is done to keep functions separate from one another, so if your engine uses a jump as part of calling functions, you need to make sure you have given that particular jump the type kCall.
+Calls to in-script functions are not represented with edges in the graph. This is done to keep functions separate from one another, so if your engine uses a jump as part of calling functions, you need to make sure you have given that particular jump the type kCallInstType.
 
 The first step is handled in the constructor, while the next three steps are handled by the \code{createGroups()} method. The last step is handled by the \code{analyze} method.
 

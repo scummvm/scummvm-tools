@@ -37,7 +37,7 @@ std::string Kyra::Kyra2CodeGenerator::constructFuncSignature(const Function &fun
 
 void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 	switch (inst._type) {
-	case kLoad:
+	case kLoadInstType:
 		switch (inst._opcode) {
 		case 2:
 			// If something has been called previously in this group, don't output retval variable
@@ -71,7 +71,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 			break;
 		}
 		break;
-	case kStore:
+	case kStoreInstType:
 		switch (inst._opcode) {
 		case 8:
 			{
@@ -105,7 +105,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 			break;
 		}
 		break;
-	case kStack:
+	case kStackInstType:
 		if (inst._opcode == 12) {
 			for (int i = inst._params[0].getSigned(); i != 0; --i) {
 				if (!_stack.empty())
@@ -119,12 +119,12 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 			}
 		}
 		break;
-	case kCondJump:
+	case kCondJumpInstType:
 		switch (_curGroup->_type) {
-		case kIfCond:
-		case kWhileCond:
+		case kIfCondGroupType:
+		case kWhileCondGroupType:
 			break;
-		case kDoWhileCond:
+		case kDoWhileCondGroupType:
 			_stack.push(new UnaryOpEntry(_stack.pop(), "!", false));
 			break;
 		default:
@@ -137,7 +137,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 		}
 		CodeGenerator::processInst(inst);
 		break;
-	case kCall:
+	case kCallInstType:
 		{
 			_argList.clear();
 			Function f = _engine->_functions.find(inst._params[0].getUnsigned())->second;
@@ -145,7 +145,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 				processSpecialMetadata(inst, f._metadata[i], i);
 			_stack.push(new CallEntry(f._name, _argList));
 			// Leave call on stack if this is a condition, or other calls follow in same group
-			if (_curGroup->_type == kIfCond || _curGroup->_type == kWhileCond || _curGroup->_type == kDoWhileCond || inst._address != findLastCall()._address) {
+			if (_curGroup->_type == kIfCondGroupType || _curGroup->_type == kWhileCondGroupType || _curGroup->_type == kDoWhileCondGroupType || inst._address != findLastCall()._address) {
 				break;
 			}	else if (!f._retVal) {
 				std::stringstream stream;
@@ -157,7 +157,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 			}
 			break;
 		}
-	case kSpecial:
+	case kSpecialCallInstType:
 		{
 			if (inst._opcode != 14)
 				return;
@@ -168,7 +168,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 				processSpecialMetadata(inst, metadata[i], i);
 			_stack.push(new CallEntry(inst._name, _argList));
 			// Leave call on stack if this is a condition, or other calls follow in same group
-			if (_curGroup->_type == kIfCond || _curGroup->_type == kWhileCond || _curGroup->_type == kDoWhileCond || inst._address != findLastCall()._address) {
+			if (_curGroup->_type == kIfCondGroupType || _curGroup->_type == kWhileCondGroupType || _curGroup->_type == kDoWhileCondGroupType || inst._address != findLastCall()._address) {
 				break;
 			}	else if (!returnsValue) {
 				std::stringstream stream;
@@ -189,7 +189,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 const Instruction &Kyra::Kyra2CodeGenerator::findFirstCall() {
 	ConstInstIterator it = _curGroup->_start;
 	do {
-		if (it->_type == kCall || (it->_type == kSpecial && it->_opcode == 14))
+		if (it->_type == kCallInstType || (it->_type == kSpecialCallInstType && it->_opcode == 14))
 			return *it;
 	} while (it++ != _curGroup->_end);
 
@@ -199,7 +199,7 @@ const Instruction &Kyra::Kyra2CodeGenerator::findFirstCall() {
 const Instruction &Kyra::Kyra2CodeGenerator::findLastCall() {
 	ConstInstIterator it = _curGroup->_end;
 	do {
-		if (it->_type == kCall || (it->_type == kSpecial && it->_opcode == 14))
+		if (it->_type == kCallInstType || (it->_type == kSpecialCallInstType && it->_opcode == 14))
 			return *it;
 	} while (it-- != _curGroup->_start);
 
@@ -214,7 +214,7 @@ void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const Instruction &inst, c
 	case 's':
 		{
 			EntryPtr p = _stack.peekPos(pos);
-			if (p->_type == seInt) {
+			if (p->_type == kIntStackEntry) {
 				IntEntry *ie = (IntEntry *)p.get();
 				addArg(new StringEntry(((Kyra::Kyra2Engine *)_engine)->_textStrings[ie->getValue()]));
 			} else {

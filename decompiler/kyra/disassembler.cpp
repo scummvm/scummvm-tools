@@ -401,10 +401,10 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 		if (hasParam) { \
 			Parameter p; \
 			if (isSigned) { \
-				p._type = kShort; \
+				p._type = kShortParamType; \
 				p._value = parameter; \
 			} else { \
-				p._type = kUShort; \
+				p._type = kUShortParamType; \
 				p._value = (uint32)parameter; \
 			} \
 			LAST_INST._params.push_back(p);\
@@ -416,16 +416,16 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			parameter *= 2;
 			if (parameter < minFuncAddr)
 				jumpTargets.insert(_insts.size());
-			OPCODE("jumpTo", kJump, 0, true, false);
+			OPCODE("jumpTo", kJumpInstType, 0, true, false);
 			break;
 		case 1:
-			OPCODE("setRetValue", kStore, 0, true, true);
+			OPCODE("setRetValue", kStoreInstType, 0, true, true);
 			break;
 		case 2:
 			if (parameter == 0) {
-				OPCODE("pushRet", kLoad, 1, false, false);
+				OPCODE("pushRet", kLoadInstType, 1, false, false);
 			} else if (parameter == 1) {
-				OPCODE("pushPos", kSpecial, 0, false, false); // Sets up function call
+				OPCODE("pushPos", kSpecialCallInstType, 0, false, false); // Sets up function call
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);
@@ -433,41 +433,41 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			break;
 		case 3:
 		case 4:
-			OPCODE("push", kLoad, 1, true, true);
+			OPCODE("push", kLoadInstType, 1, true, true);
 			break;
 		case 5:
-			OPCODE("pushVar", kLoad, 1, true, true);
+			OPCODE("pushVar", kLoadInstType, 1, true, true);
 			break;
 		case 6:
-			OPCODE("pushBPNeg", kLoad, 1, true, true);
+			OPCODE("pushBPNeg", kLoadInstType, 1, true, true);
 			break;
 		case 7:
-			OPCODE("pushBPAdd", kLoad, 1, true, true);
+			OPCODE("pushBPAdd", kLoadInstType, 1, true, true);
 			break;
 		case 8:
 			if (parameter == 0) {
-				OPCODE("popRet", kStore, -1, false, false);
+				OPCODE("popRet", kStoreInstType, -1, false, false);
 			} else if (parameter == 1) {
-				OPCODE("popPos", kReturn, 0, false, false); // Returns from function call
+				OPCODE("popPos", kReturnInstType, 0, false, false); // Returns from function call
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);
 			}
 			break;
 		case 9:
-			OPCODE("popVar", kStore, -1, true, true);
+			OPCODE("popVar", kStoreInstType, -1, true, true);
 			break;
 		case 10:
-			OPCODE("popBPNeg", kStore, -1, true, true);
+			OPCODE("popBPNeg", kStoreInstType, -1, true, true);
 			break;
 		case 11:
-			OPCODE("popBPAdd", kStore, -1, true, true);
+			OPCODE("popBPAdd", kStoreInstType, -1, true, true);
 			break;
 		case 12:
-			OPCODE("addSP", kStack, -parameter, true, true);
+			OPCODE("addSP", kStackInstType, -parameter, true, true);
 			break;
 		case 13:
-			OPCODE("subSP", kStack, parameter, true, true);
+			OPCODE("subSP", kStackInstType, parameter, true, true);
 			break;
 		case 14:
 			parameter = (uint8)parameter;
@@ -475,21 +475,21 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 				// Error: unknown function
 				throw UnknownOpcodeException(address, opcode);
 			}
-			OPCODE_MD(_funcs[parameter]._name, kSpecial, 0, false, false, _funcs[parameter]._metadata)
+			OPCODE_MD(_funcs[parameter]._name, kSpecialCallInstType, 0, false, false, _funcs[parameter]._metadata)
 			break;
 		case 15:
 			parameter *= 2;
 			if (parameter < minFuncAddr)
 				jumpTargets.insert(_insts.size());
-			OPCODE("ifNotJmp", kCondJump, -1, true, false);
+			OPCODE("ifNotJmp", kCondJumpInstType, -1, true, false);
 			break;
 		case 16:
 			if (parameter == 0) {
-				OPCODE_MD("boolNegate", kUnaryOpPre, 0, false, false, "!");
+				OPCODE_MD("boolNegate", kUnaryOpPreInstType, 0, false, false, "!");
 			} else if (parameter == 1) {
-				OPCODE_MD("arithmeticNegate", kUnaryOpPre, 0, false, false,"-");
+				OPCODE_MD("arithmeticNegate", kUnaryOpPreInstType, 0, false, false,"-");
 			} else if (parameter == 2) {
-				OPCODE_MD("bitwiseNegate", kUnaryOpPre, 0, false, false, "~");
+				OPCODE_MD("bitwiseNegate", kUnaryOpPreInstType, 0, false, false, "~");
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);
@@ -498,58 +498,58 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 		case 17:
 			switch (parameter) {
 				case 0:
-					OPCODE_MD("eval_band", kBinaryOp, -1, false, false, "&&");
+					OPCODE_MD("eval_band", kBinaryOpInstType, -1, false, false, "&&");
 					break;
 				case 1:
-					OPCODE_MD("eval_bor", kBinaryOp, -1, false, false, "||");
+					OPCODE_MD("eval_bor", kBinaryOpInstType, -1, false, false, "||");
 					break;
 				case 2:
-					OPCODE_MD("eval_eq", kBinaryOp, -1, false, false, "==");
+					OPCODE_MD("eval_eq", kBinaryOpInstType, -1, false, false, "==");
 					break;
 				case 3:
-					OPCODE_MD("eval_neq", kBinaryOp, -1, false, false, "!=");
+					OPCODE_MD("eval_neq", kBinaryOpInstType, -1, false, false, "!=");
 					break;
 				case 4:
-					OPCODE_MD("eval_leq", kBinaryOp, -1, false, false, "<=");
+					OPCODE_MD("eval_leq", kBinaryOpInstType, -1, false, false, "<=");
 					break;
 				case 5:
-					OPCODE_MD("eval_lt", kBinaryOp, -1, false, false, "<");
+					OPCODE_MD("eval_lt", kBinaryOpInstType, -1, false, false, "<");
 					break;
 				case 6:
-					OPCODE_MD("eval_geq", kBinaryOp, -1, false, false, ">=");
+					OPCODE_MD("eval_geq", kBinaryOpInstType, -1, false, false, ">=");
 					break;
 				case 7:
-					OPCODE_MD("eval_gt", kBinaryOp, -1, false, false, ">");
+					OPCODE_MD("eval_gt", kBinaryOpInstType, -1, false, false, ">");
 					break;
 				case 8:
-					OPCODE_MD("eval_add", kBinaryOp, -1, false, false, "+");
+					OPCODE_MD("eval_add", kBinaryOpInstType, -1, false, false, "+");
 					break;
 				case 9:
-					OPCODE_MD("eval_sub", kBinaryOp, -1, false, false, "-");
+					OPCODE_MD("eval_sub", kBinaryOpInstType, -1, false, false, "-");
 					break;
 				case 10:
-					OPCODE_MD("eval_mult", kBinaryOp, -1, false, false, "*");
+					OPCODE_MD("eval_mult", kBinaryOpInstType, -1, false, false, "*");
 					break;
 				case 11:
-					OPCODE_MD("eval_div", kBinaryOp, -1, false, false, "/");
+					OPCODE_MD("eval_div", kBinaryOpInstType, -1, false, false, "/");
 					break;
 				case 12:
-					OPCODE_MD("eval_shr", kBinaryOp, -1, false, false, ">>");
+					OPCODE_MD("eval_shr", kBinaryOpInstType, -1, false, false, ">>");
 					break;
 				case 13:
-					OPCODE_MD("eval_shl", kBinaryOp, -1, false, false, "<<");
+					OPCODE_MD("eval_shl", kBinaryOpInstType, -1, false, false, "<<");
 					break;
 				case 14:
-					OPCODE_MD("eval_land", kBinaryOp, -1, false, false, "&");
+					OPCODE_MD("eval_land", kBinaryOpInstType, -1, false, false, "&");
 					break;
 				case 15:
-					OPCODE_MD("eval_lor", kBinaryOp, -1, false, false, "|");
+					OPCODE_MD("eval_lor", kBinaryOpInstType, -1, false, false, "|");
 					break;
 				case 16:
-					OPCODE_MD("eval_mod", kBinaryOp, -1, false, false, "%");
+					OPCODE_MD("eval_mod", kBinaryOpInstType, -1, false, false, "%");
 					break;
 				case 17:
-					OPCODE_MD("eval_xor", kBinaryOp, -1, false, false, "^");
+					OPCODE_MD("eval_xor", kBinaryOpInstType, -1, false, false, "^");
 					break;
 				default:
 					// Error: invalid parameter halts execution
@@ -558,7 +558,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			}
 			break;
 		case 18:
-			OPCODE("setRetAndJmp", kSpecial, -2, false, false);
+			OPCODE("setRetAndJmp", kSpecialCallInstType, -2, false, false);
 			break;
 		default:
 			throw UnknownOpcodeException(i*2, code);
@@ -585,9 +585,9 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 	// Correct jumps to functions so they're treated as calls
 	bool lastWasPushPos = false;
 	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it) {
-		if (it->_type == kJump || it->_type == kCondJump) {
+		if (it->_type == kJumpInstType || it->_type == kCondJumpInstType) {
 			if (lastWasPushPos || _engine->_functions.find(it->_params[0].getUnsigned()) != _engine->_functions.end()) {
-				it->_type = kCall;
+				it->_type = kCallInstType;
 			}
 		}
 		lastWasPushPos = (it->_name.compare("pushPos") == 0);

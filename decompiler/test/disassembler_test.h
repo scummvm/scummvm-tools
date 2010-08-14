@@ -39,7 +39,7 @@ public:
 			TS_ASSERT(insts[0]._opcode == 0x00);
 			TS_ASSERT(insts[0]._name == "PUSH");
 			TS_ASSERT(insts[0]._stackChange == 0);
-			TS_ASSERT(insts[0]._params[0]._type == kInt);
+			TS_ASSERT(insts[0]._params[0]._type == kIntParamType);
 			TS_ASSERT(insts[0]._params[0].getSigned() == 0x60);
 		} catch (UnknownOpcodeException &uoe) {
 			printf("Exception message: %s\n", uoe.what());

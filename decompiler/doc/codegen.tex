@@ -80,27 +80,27 @@ You will usually need to output assignments at some point. For that, you can use
 When disassembling, you can store metadata for a given instruction to be used during code generation.
 
 Default handling exists for a number of instruction types, described below. To get the default handling, simply call the base class implementation of \code{processInst} from your code.
-\paragraph{kDup}
+\paragraph{kDupInstType}
 The topmost stack entry is popped, and two duplicated copies are pushed to the stack. If the entry being duplicated was not already a duplicate, an assignment will be output to assign the original stack entry to a special dup variable, to show that the original entry is not being recalculated.
 
-\paragraph{kUnaryOpPre/kUnaryOpPost}
+\paragraph{kUnaryOpPreInstType/kUnaryOpPostInstType}
 The topmost stack entry is popped, and a \code{UnaryOpEntry} is created and pushed to the stack, using the codegen metadata as the operator, and the previously popped entry as the operand. The exact type determines whether the operator is pre- or postfixed to the operand.
 
-\paragraph{kBinaryOp}
+\paragraph{kBinaryOpInstType}
 The two topmost stack entries are popped, and a BinaryOpEntry is created and pushed to the stack, using the codegen metadata as the operator and the previously popped entries as the operands. The order of the operands is determined by the value of the field \code{\_binOrder}, as described in Section~\vref{sec:argOrder}.
 
-\paragraph{kCondJump and kCondJumpRel}
+\paragraph{kCondJumpInstType and kCondJumpRelInstType}
 The information on the stack is then read, and an if, while or do-while condition is output using the topmost stack entry. In general, you will want to call the base class method after handling one of these opcodes.
 
-\paragraph{kJump and kJumpRel}
+\paragraph{kJumpInstType and kJumpRelInstType}
 If the current group has been detected as a break or a continue, a break or continue statement is output. Otherwise, the jump is analyzed and output unless it is a jump back to the condition of a while-loop that ends there, or it is determined that the jump is unnecessary due to an else block following immediately after.
 
-\paragraph{kReturn}
+\paragraph{kReturnInstType}
 This simply adds a line \code{return;} to the output.
 
 \emph{Note:} The default handling does not currently allow specifying a return value as part of the statement, as in \code{return 0;}. You will have to handle that yourself.
 
-\paragraph{kSpecial}
+\paragraph{kSpecialCallInstType}
 The metadata is treated similar to parameter specifications in \code{SimpleDisassembler} (see Section~\vref{sec:simpledisasm}). If the specification string starts with the character \code{r}, this signifies that the call returns a value, and processing starts at the next character.
 For each character in the metadata string, \code{processSpecialMetadata} is called with the instruction being processed, and the current metadata character to be handled. The default implementation only understands the character \code{p}, which pops an argument from the stack and adds it to the argument list.
 Once the metadata string has been processed fully, then an entry representing the function call is pushed to the stack if the call returns a value. Otherwise, the call is added to the output.
@@ -110,13 +110,13 @@ You can override the \code{processSpecialMetadata} method to add your own specif
 Due to the conflict with the specification of a return value, it is recommended that you do not adopt \code{r} as a metadata character.
 
 \paragraph{Other types}
-No default handling exists for types other than those mentioned above, so you must handle them yourself in the \code{processInst} method of your subclass. This includes types like \code{kLoad} and \code{kStore}.
+No default handling exists for types other than those mentioned above, so you must handle them yourself in the \code{processInst} method of your subclass. This includes types like \code{kLoadInstType} and \code{kStoreInstType}.
 
-Note that this also includes \code{kCall}. Although many engines might want to handle this in a manner similar to \code{kSpecial} opcodes, this is left to the engine-specific code so they can fully make sense of the metadata they choose to add to the function.
+Note that this also includes \code{kCallInstType}. Although many engines might want to handle this in a manner similar to \code{kSpecialCallInstType} opcodes, this is left to the engine-specific code so they can fully make sense of the metadata they choose to add to the function.
 
 \subsection{Order of arguments}
 \label{sec:argOrder}
-The generic handling of binary operators (kBinaryOp) and magic functions (kSpecial) can be configured to display their arguments using FIFO or LIFO - respectively, the first and the last entry to be pushed onto the stack is used as the first (leftmost) argument. This is set as part of the constructor for the \code{CodeGenerator} class, using the enumeration values \code{kFIFO} and \code{kLIFO}.
+The generic handling of binary operators (kBinaryOpInstType) and magic functions (kSpecialCallInstType) can be configured to display their arguments using FIFO or LIFO - respectively, the first and the last entry to be pushed onto the stack is used as the first (leftmost) argument. This is set as part of the constructor for the \code{CodeGenerator} class, using the enumeration values \code{kFIFOArgOrder} and \code{kLIFOArgOrder}.
 
 To provide an example, consider the following sequence of instructions:
 
