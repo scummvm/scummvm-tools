@@ -377,8 +377,7 @@ void CodeGenerator::process(GraphVertex v) {
 	} while (it++ != _curGroup->_end);
 
 	// Add else end if necessary
-	for (ElseEndIterator elseIt = _curGroup->_endElse.begin(); elseIt != _curGroup->_endElse.end(); ++elseIt)
-	{
+	for (ElseEndIterator elseIt = _curGroup->_endElse.begin(); elseIt != _curGroup->_endElse.end(); ++elseIt) {
 		if (!(*elseIt)->_coalescedElse)
 			addOutputLine("}", true, false);
 	}
