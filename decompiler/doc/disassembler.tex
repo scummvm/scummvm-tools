@@ -40,6 +40,8 @@ This is particularly important during code flow analysis; since this part is eng
 
 Most of the types are self-explanatory, with the possible exception of \code{kSpecial}. \code{kSpecial} should be used for all "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
 
+During code generation, some instruction types have a pre-defined handling, while others must be handled on your own. It is possible to override the default handling for any or all opcodes if you wish. For details, see Section~\vref{sec:codegen}.
+
 \subsection{Parameters}
 \label{sec:parameter}
 Parameters are stored using a tagged union - one field (\code{\_type}) tells you which data type is being stored, and another field (\code{\_value}) stores the actual value.
