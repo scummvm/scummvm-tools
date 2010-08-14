@@ -133,8 +133,9 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 				s << boost::format("WARNING: Couldn't handle conditional jump at address %08X") % inst._address;
 				addOutputLine(s.str());
 			}
-			break;
+			return;
 		}
+		CodeGenerator::processInst(inst);
 		break;
 	case kCall:
 		{
@@ -161,8 +162,8 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 			if (inst._opcode != 14)
 				return;
 			_argList.clear();
-			bool returnsValue = (inst._codeGenData.find("r") == 1);
-			std::string metadata = (!returnsValue ? inst._codeGenData.substr(1) : inst._codeGenData.substr(2));
+			bool returnsValue = (inst._codeGenData.find("r") == 0);
+			std::string metadata = (!returnsValue ? inst._codeGenData : inst._codeGenData.substr(1));
 			for (size_t i = 0; i < metadata.length(); i++)
 				processSpecialMetadata(inst, metadata[i], i);
 			_stack.push(new CallEntry(inst._name, _argList));
@@ -180,11 +181,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 			break;
 		}
 	default:
-		{
-			std::stringstream s;
-			s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
-			addOutputLine(s.str());
-		}
+		CodeGenerator::processInst(inst);	
 		break;
 	}
 }
@@ -211,15 +208,12 @@ const Instruction &Kyra::Kyra2CodeGenerator::findLastCall() {
 
 void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
 	switch (c) {
-	case '0':
-		_stackOffset = 0;
-		break;
 	case 'p':
-		addArg(_stack.peekPos(_stackOffset++));
+		addArg(_stack.peekPos(pos));
 		break;
 	case 's':
 		{
-			EntryPtr p = _stack.peekPos(_stackOffset++);
+			EntryPtr p = _stack.peekPos(pos);
 			if (p->_type == seInt) {
 				IntEntry *ie = (IntEntry *)p.get();
 				addArg(new StringEntry(((Kyra::Kyra2Engine *)_engine)->_textStrings[ie->getValue()]));

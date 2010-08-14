@@ -48,7 +48,7 @@ Variables are stored as a simple string. Subclasses of \code{CodeGenerator} must
 Binary operations stores the two stack entries used as operands, and a string containing the operator. Parenthesis are automatically added around all binary operations to preserve the proper evaluation order.
 
 \paragraph{Unary operations (UnaryOpEntry)}
-Just like binary operations, except only a single operand is stored. Note: Currently, the operator will always be output on the left side of the operand.
+Just like binary operations, except only a single operand is stored. The operator can be placed before (prefix) or after (postfix) the operand.
 
 \paragraph{Duplicated entries (DupEntry)}
 Stores an index to distinguish between multiple duplicated entries. This index is automatically assigned and determined when calling the \code{dup} function to duplicate a stack entry.
@@ -79,8 +79,7 @@ You will usually need to output assignments at some point. For that, you can use
 \subsection{Default instruction handling and instruction metadata}
 When disassembling, you can store metadata for a given instruction to be used during code generation.
 
-Default handling exists for a number of instruction types, described below. If the default handling does not work for a particular instruction, you can force the instruction to be processed by your engine-specific \code{processInst} by placing the hexadecimal byte 0xC0 at the start of the metadata string. This character was chosen for two reasons: it is unlikely to be used as a byte in a script, and the byte is invalid in UTF-8, avoiding potential encoding conflicts. Note that if you do this, it is your own responsibility to strip off that character during processing.
-
+Default handling exists for a number of instruction types, described below. To get the default handling, simply call the base class implementation of \code{processInst} from your code.
 \paragraph{kDup}
 The topmost stack entry is popped, and two duplicated copies are pushed to the stack. If the entry being duplicated was not already a duplicate, an assignment will be output to assign the original stack entry to a special dup variable, to show that the original entry is not being recalculated.
 
@@ -91,7 +90,7 @@ The topmost stack entry is popped, and a \code{UnaryOpEntry} is created and push
 The two topmost stack entries are popped, and a BinaryOpEntry is created and pushed to the stack, using the codegen metadata as the operator and the previously popped entries as the operands. The order of the operands is determined by the value of the field \code{\_binOrder}, as described in Section~\vref{sec:argOrder}.
 
 \paragraph{kCondJump and kCondJumpRel}
-The instruction is first sent for processing in the engine-specific \code{processInst} method, so you can add any information provided by the specific opcode. The information on the stack is then read by the default code, and an if, while or do-while condition is output using the topmost stack entry.
+The information on the stack is then read, and an if, while or do-while condition is output using the topmost stack entry. In general, you will want to call the base class method after handling one of these opcodes.
 
 \paragraph{kJump and kJumpRel}
 If the current group has been detected as a break or a continue, a break or continue statement is output. Otherwise, the jump is analyzed and output unless it is a jump back to the condition of a while-loop that ends there, or it is determined that the jump is unnecessary due to an else block following immediately after.
@@ -99,7 +98,7 @@ If the current group has been detected as a break or a continue, a break or cont
 \paragraph{kReturn}
 This simply adds a line \code{return;} to the output.
 
-\emph{Note:} The default handling does not currently allow specifying a return value as part of the statement, as in \code{return 0;}.
+\emph{Note:} The default handling does not currently allow specifying a return value as part of the statement, as in \code{return 0;}. You will have to handle that yourself.
 
 \paragraph{kSpecial}
 The metadata is treated similar to parameter specifications in \code{SimpleDisassembler} (see Section~\vref{sec:simpledisasm}). If the specification string starts with the character \code{r}, this signifies that the call returns a value, and processing starts at the next character.
@@ -111,9 +110,9 @@ You can override the \code{processSpecialMetadata} method to add your own specif
 Due to the conflict with the specification of a return value, it is recommended that you do not adopt \code{r} as a metadata character.
 
 \paragraph{Other types}
-No default handling exists for types other than those mentioned above. These instructions will be sent to the \code{processInst} method of your subclass, where you must handle them appropriately. This includes types like \code{kLoad} and \code{kStore}.
+No default handling exists for types other than those mentioned above, so you must handle them yourself in the \code{processInst} method of your subclass. This includes types like \code{kLoad} and \code{kStore}.
 
-Note that this also includes \code{kCall}. Although many engines might want to handle this in a manner similar to kSpecial opcodes, this is left to the engine-specific code so they can fully make sense of the metadata they choose to add to the function.
+Note that this also includes \code{kCall}. Although many engines might want to handle this in a manner similar to \code{kSpecial} opcodes, this is left to the engine-specific code so they can fully make sense of the metadata they choose to add to the function.
 
 \subsection{Order of arguments}
 \label{sec:argOrder}

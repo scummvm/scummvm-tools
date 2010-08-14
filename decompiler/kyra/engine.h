@@ -36,7 +36,7 @@ namespace Kyra {
 class Kyra2Engine : public Engine {
 public:
 	Disassembler *getDisassembler(std::vector<Instruction> &insts);
-	uint32 getDestAddress(ConstInstIterator it) const;
+	uint32 getDestAddress(const Instruction &inst) const;
 	CodeGenerator *getCodeGenerator(std::ostream &output);
 	void postCFG(std::vector<Instruction> &insts, Graph g);
 	bool detectMoreFuncs() const;

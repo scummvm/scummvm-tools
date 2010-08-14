@@ -81,10 +81,18 @@ public:
 	/**
 	 * Decode a jump instruction to get the destination address.
 	 *
-	 * @param it Iterator pointing to the instruction to decode.
-	 * @return The destination address of the jump instruction
+	 * @param inst Instruction to decode.
+	 * @return The destination address of the jump instruction.
 	 */
-	virtual uint32 getDestAddress(ConstInstIterator it) const = 0;
+	virtual uint32 getDestAddress(const Instruction &inst) const = 0;
+
+	/**
+	 * Decode a jump instruction to get the destination address.
+	 *
+	 * @param it Iterator pointing to the instruction to decode.
+	 * @return The destination address of the jump instruction.
+	 */
+	uint32 getDestAddress(ConstInstIterator it) const;
 
 	/**
 	 * Retrieve the code generator for the engine.

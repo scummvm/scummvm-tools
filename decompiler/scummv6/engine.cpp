@@ -28,14 +28,11 @@ Disassembler *Scumm::v6::Scummv6Engine::getDisassembler(std::vector<Instruction>
 	return new Scummv6Disassembler(insts);
 }
 
-uint32 Scumm::v6::Scummv6Engine::getDestAddress(ConstInstIterator it) const {
-	switch(it->_type) {
-	case kJump:
-	case kCondJump:
-		return it->_params[0].getUnsigned();
+uint32 Scumm::v6::Scummv6Engine::getDestAddress(const Instruction &inst) const {
+	switch(inst._type) {
 	case kJumpRel:
 	case kCondJumpRel:
-		return it->_params[0].getSigned() + it->_address + 3;
+		return inst._params[0].getSigned() + inst._address + 3;
 	default:
 		return 0;
 	}

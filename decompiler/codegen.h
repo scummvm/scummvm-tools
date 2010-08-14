@@ -369,18 +369,18 @@ private:
 	void process(GraphVertex v);
 
 protected:
-	Engine *_engine;       ///< Pointer to the Engine used for the script.
-	std::ostream &_output; ///< The std::ostream to output the code to.
-	EntryStack _stack;     ///< The stack currently being processed.
-	uint _indentLevel;     ///< Indentation level.
-	GroupPtr _curGroup;    ///< Pointer to the group currently being processed.
-	EntryList _argList;    ///< Storage for lists of arguments to be built when processing function calls.
+	Engine *_engine;        ///< Pointer to the Engine used for the script.
+	std::ostream &_output;  ///< The std::ostream to output the code to.
+	EntryStack _stack;      ///< The stack currently being processed.
+	uint _indentLevel;      ///< Indentation level.
+	GraphVertex _curVertex; ///< Graph vertex currently being processed.
+	GroupPtr _curGroup;     ///< Pointer to the group currently being processed.
+	EntryList _argList;     ///< Storage for lists of arguments to be built when processing function calls.
 
 	/**
-	 * Processes an instruction in an engine-specific manner.
-	 * Called by process() to preprocess conditional jumps, process instructions
-	 * where engine-specific handling is explicitly requested, or the type is not one
-	 * of kBinaryOp, kDup, kJump(Rel), kReturn, kSpecial, kUnaryOpPre, or kUnaryOpPost.
+	 * Processes an instruction. Called by process() for each instruction.
+	 * Call the base class implementation for opcodes you cannot handle yourself,
+	 * or where the base class implementation is preferable.
 	 *
 	 * @param inst The instruction to process.
 	 */

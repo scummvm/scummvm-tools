@@ -32,8 +32,6 @@ namespace Kyra {
  */
 class Kyra2CodeGenerator : public CodeGenerator {
 private:
-	int _stackOffset; ///< Running count of where in the stack to look for the next argument.
-
 	/**
 	 * Finds the first call instruction in the current group and returns it.
 	 * The call may either be a kCall or kSpecial.

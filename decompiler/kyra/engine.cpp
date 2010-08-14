@@ -32,8 +32,8 @@ Disassembler *Kyra::Kyra2Engine::getDisassembler(std::vector<Instruction> &insts
 	return new Kyra2Disassembler(this, insts);
 }
 
-uint32 Kyra::Kyra2Engine::getDestAddress(ConstInstIterator it) const {
-	return it->_params[0].getUnsigned();
+uint32 Kyra::Kyra2Engine::getDestAddress(const Instruction &inst) const {
+	return inst._params[0].getUnsigned();
 }
 
 CodeGenerator *Kyra::Kyra2Engine::getCodeGenerator(std::ostream &output) {
@@ -56,9 +56,7 @@ void Kyra::Kyra2Engine::postCFG(std::vector<Instruction> &insts, Graph g) {
 		}
 		it->second._args = maxArg;
 		it->second._retVal = true;
-		std::stringstream md;
-		md << "0" << std::string(maxArg, 'p');
-		it->second._metadata = md.str();
+		it->second._metadata = std::string(maxArg, 'p');
 	}
 }
 

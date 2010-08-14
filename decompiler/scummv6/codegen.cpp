@@ -132,8 +132,9 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 				s << boost::format("WARNING: Couldn't handle conditional jump at address %08X") % inst._address;
 				addOutputLine(s.str());
 			}
-			break;
+			return;
 		}
+		CodeGenerator::processInst(inst);
 		break;
 	case kUnaryOpPost:
 		switch (inst._opcode) {
@@ -143,7 +144,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 		case 0x57: // wordVarDec
 			{
 				std::stringstream s;
-				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData.substr(1), true);
+				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData, true);
 				s << p << ";";
 				addOutputLine(s.str());
 			}
@@ -156,17 +157,13 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 				std::stringstream s;
 				EntryList idxs;
 				idxs.push_front(_stack.pop());
-				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData.substr(1), true);
+				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData, true);
 				s << p << ";";
 				addOutputLine(s.str());
 			}
 			break;
 		default:
-			{
-				std::stringstream s;
-				s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
-				addOutputLine(s.str());
-			}
+			CodeGenerator::processInst(inst);
 			break;
 		}
 		break;
@@ -203,20 +200,12 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 
 			break;
 		default:
-			{
-				std::stringstream s;
-				s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
-				addOutputLine(s.str());
-			}
+			CodeGenerator::processInst(inst);
 			break;
 		}
 		break;
 	default:
-		{
-			std::stringstream s;
-			s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
-			addOutputLine(s.str());
-		}
+		CodeGenerator::processInst(inst);
 		break;
 	}
 }

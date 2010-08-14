@@ -211,6 +211,7 @@ void CodeGenerator::writeAssignment(EntryPtr dst, EntryPtr src) {
 }
 
 void CodeGenerator::process(GraphVertex v) {
+	_curVertex = v;
 	_curGroup = GET(v);
 
 	// Check if we should add else start
@@ -242,144 +243,147 @@ void CodeGenerator::process(GraphVertex v) {
 
 	ConstInstIterator it = _curGroup->_start;
 	do {
-		if (it->_codeGenData.find("\xC0") == 0)
-			processInst(*it);
-		else {
-			switch (it->_type) {
-			// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
-			case kDup:
-				{
-					std::stringstream s;
-					EntryPtr p = _stack.pop()->dup(s);
-					if (s.str().length() > 0)
-						addOutputLine(s.str());
-					_stack.push(p);
-					_stack.push(p);
-					break;
-				}
-			case kUnaryOpPre:
-			case kUnaryOpPost:
-				_stack.push(new UnaryOpEntry(_stack.pop(), it->_codeGenData, it->_type == kUnaryOpPost));
-				break;
-			case kBinaryOp:
-				{
-					EntryPtr op1 = _stack.pop();
-					EntryPtr op2 = _stack.pop();
-					if (_binOrder == kFIFO)
-						_stack.push(new BinaryOpEntry(op2, op1, it->_codeGenData));
-					else if (_binOrder == kLIFO)
-						_stack.push(new BinaryOpEntry(op1, op2, it->_codeGenData));
-					break;
-				}
-			case kCondJump:
-			case kCondJumpRel:
-				{
-					processInst(*it);
-					std::stringstream s;
-					switch (_curGroup->_type) {
-					case kIfCond:
-						if (_curGroup->_startElse && _curGroup->_code.size() == 1) {
-							OutEdgeRange oer = boost::out_edges(v, _g);
-							bool coalesceElse = false;
-							for (OutEdgeIterator oe = oer.first; oe != oer.second; ++oe) {
-								GroupPtr oGr = GET(boost::target(*oe, _g))->_prev;
-								if (std::find(oGr->_endElse.begin(), oGr->_endElse.end(), _curGroup.get()) != oGr->_endElse.end())
-									coalesceElse = true;
-							}
-							if (coalesceElse) {
-								_curGroup->_code.clear();
-								_curGroup->_coalescedElse = true;
-								s << "} else ";
-							}
-						}
-						s << "if (" << _stack.pop() << ") {";
-						addOutputLine(s.str(), _curGroup->_coalescedElse, true);
-						break;
-					case kWhileCond:
-						s << "while (" << _stack.pop() << ") {";
-						addOutputLine(s.str(), false, true);
-						break;
-					case kDoWhileCond:
-						s << "} while (" << _stack.pop() << ")";
-						addOutputLine(s.str(), true, false);
-						break;
-					default:
-						break;
-					}
-				}
-				break;
-			case kJump:
-			case kJumpRel:
-				switch (_curGroup->_type) {
-				case kBreak:
-					addOutputLine("break;");
-					break;
-				case kContinue:
-					addOutputLine("continue;");
-					break;
-				default:
-					{
-						bool printJump = true;
-						OutEdgeRange r = boost::out_edges(v, _g);
-						for (OutEdgeIterator e = r.first; e != r.second && printJump; ++e) {
-							// Don't output jump to next vertex
-							if (boost::target(*e, _g) == _curGroup->_next->_vertex) {
-								printJump = false;
-								break;
-							}
-
-							// Don't output jump if next vertex starts an else block
-							if (_curGroup->_next->_startElse) {
-								printJump = false;
-								break;
-							}
-
-							OutEdgeRange targetR = boost::out_edges(boost::target(*e, _g), _g);
-							for (OutEdgeIterator targetE = targetR.first; targetE != targetR.second; ++targetE) {
-								// Don't output jump to while loop that has jump to next vertex
-								if (boost::target(*targetE, _g) == _curGroup->_next->_vertex)
-									printJump = false;
-							}
-						}
-						if (printJump) {
-							std::stringstream s;
-							s << boost::format("jump 0x%X;") % _engine->getDestAddress(it);
-							addOutputLine(s.str());
-						}
-					}
-					break;
-				}
-				break;
-			case kReturn:
-				// TODO: Allow specification of return value as part of return statement
-				addOutputLine("return;");
-				break;
-			case kSpecial:
-				{
-					_argList.clear();
-					bool returnsValue = (it->_codeGenData.find("r") == 0);
-					std::string metadata = (!returnsValue ? it->_codeGenData : it->_codeGenData.substr(1));
-					for (size_t i = 0; i < metadata.length(); i++)
-						processSpecialMetadata(*it, metadata[i], i);
-					_stack.push(new CallEntry(it->_name, _argList));
-					if (!returnsValue) {
-						std::stringstream stream;
-						stream << _stack.pop() << ";";
-						addOutputLine(stream.str());
-					}
-					break;
-				}
-			default:
-				processInst(*it);
-				break;
-			}
-		}
+		processInst(*it);
 	} while (it++ != _curGroup->_end);
 
 	// Add else end if necessary
 	for (ElseEndIterator elseIt = _curGroup->_endElse.begin(); elseIt != _curGroup->_endElse.end(); ++elseIt) {
 		if (!(*elseIt)->_coalescedElse)
 			addOutputLine("}", true, false);
+	}
+}
+
+void CodeGenerator::processInst(const Instruction inst) {
+	switch (inst._type) {
+		// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
+	case kDup:
+		{
+			std::stringstream s;
+			EntryPtr p = _stack.pop()->dup(s);
+			if (s.str().length() > 0)
+				addOutputLine(s.str());
+			_stack.push(p);
+			_stack.push(p);
+			break;
+		}
+	case kUnaryOpPre:
+	case kUnaryOpPost:
+		_stack.push(new UnaryOpEntry(_stack.pop(), inst._codeGenData, inst._type == kUnaryOpPost));
+		break;
+	case kBinaryOp:
+		{
+			EntryPtr op1 = _stack.pop();
+			EntryPtr op2 = _stack.pop();
+			if (_binOrder == kFIFO)
+				_stack.push(new BinaryOpEntry(op2, op1, inst._codeGenData));
+			else if (_binOrder == kLIFO)
+				_stack.push(new BinaryOpEntry(op1, op2, inst._codeGenData));
+			break;
+		}
+	case kCondJump:
+	case kCondJumpRel:
+		{
+			std::stringstream s;
+			switch (_curGroup->_type) {
+			case kIfCond:
+				if (_curGroup->_startElse && _curGroup->_code.size() == 1) {
+					OutEdgeRange oer = boost::out_edges(_curVertex, _g);
+					bool coalesceElse = false;
+					for (OutEdgeIterator oe = oer.first; oe != oer.second; ++oe) {
+						GroupPtr oGr = GET(boost::target(*oe, _g))->_prev;
+						if (std::find(oGr->_endElse.begin(), oGr->_endElse.end(), _curGroup.get()) != oGr->_endElse.end())
+							coalesceElse = true;
+					}
+					if (coalesceElse) {
+						_curGroup->_code.clear();
+						_curGroup->_coalescedElse = true;
+						s << "} else ";
+					}
+				}
+				s << "if (" << _stack.pop() << ") {";
+				addOutputLine(s.str(), _curGroup->_coalescedElse, true);
+				break;
+			case kWhileCond:
+				s << "while (" << _stack.pop() << ") {";
+				addOutputLine(s.str(), false, true);
+				break;
+			case kDoWhileCond:
+				s << "} while (" << _stack.pop() << ")";
+				addOutputLine(s.str(), true, false);
+				break;
+			default:
+				break;
+			}
+		}
+		break;
+	case kJump:
+	case kJumpRel:
+		switch (_curGroup->_type) {
+		case kBreak:
+			addOutputLine("break;");
+			break;
+		case kContinue:
+			addOutputLine("continue;");
+			break;
+		default:
+			{
+				bool printJump = true;
+				OutEdgeRange r = boost::out_edges(_curVertex, _g);
+				for (OutEdgeIterator e = r.first; e != r.second && printJump; ++e) {
+					// Don't output jump to next vertex
+					if (boost::target(*e, _g) == _curGroup->_next->_vertex) {
+						printJump = false;
+						break;
+					}
+
+					// Don't output jump if next vertex starts an else block
+					if (_curGroup->_next->_startElse) {
+						printJump = false;
+						break;
+					}
+
+					OutEdgeRange targetR = boost::out_edges(boost::target(*e, _g), _g);
+					for (OutEdgeIterator targetE = targetR.first; targetE != targetR.second; ++targetE) {
+						// Don't output jump to while loop that has jump to next vertex
+						if (boost::target(*targetE, _g) == _curGroup->_next->_vertex)
+							printJump = false;
+					}
+				}
+				if (printJump) {
+					std::stringstream s;
+					s << boost::format("jump 0x%X;") % _engine->getDestAddress(inst);
+					addOutputLine(s.str());
+				}
+			}
+			break;
+		}
+		break;
+	case kReturn:
+		// TODO: Allow specification of return value as part of return statement
+		addOutputLine("return;");
+		break;
+	case kSpecial:
+		{
+			_argList.clear();
+			bool returnsValue = (inst._codeGenData.find("r") == 0);
+			std::string metadata = (!returnsValue ? inst._codeGenData : inst._codeGenData.substr(1));
+			for (size_t i = 0; i < metadata.length(); i++)
+				processSpecialMetadata(inst, metadata[i], i);
+			_stack.push(new CallEntry(inst._name, _argList));
+			if (!returnsValue) {
+				std::stringstream stream;
+				stream << _stack.pop() << ";";
+				addOutputLine(stream.str());
+			}
+			break;
+		}
+	default:
+		{
+			std::stringstream s;
+			s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+			addOutputLine(s.str());
+		}
+		break;
 	}
 }
 

@@ -231,6 +231,7 @@ decompile_OBJS := \
 	decompiler/decompiler.o \
 	decompiler/disassembler.o \
 	decompiler/simple_disassembler.o \
+	decompiler/engine.o \
 	decompiler/unknown_opcode.o \
 	decompiler/graph.o \
 	decompiler/control_flow.o \

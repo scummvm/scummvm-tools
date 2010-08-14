@@ -11,6 +11,7 @@ TEST_LIBS    := \
 	decompiler/codegen.o \
 	decompiler/control_flow.o \
 	decompiler/disassembler.o \
+	decompiler/engine.o \
 	decompiler/simple_disassembler.o \
 	decompiler/scummv6/disassembler.o \
 	decompiler/scummv6/codegen.o \

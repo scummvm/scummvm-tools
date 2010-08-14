@@ -92,14 +92,14 @@ void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0x47, "wordArrayWrite", kStore, -2, "w");
 		OPCODE(0x4A, "byteArrayIndexedWrite", kStore, -3, "B");
 		OPCODE(0x4B, "wordArrayIndexedWrite", kStore, -3, "w");
-		OPCODE_MD(0x4E, "byteVarInc", kUnaryOpPost, 0, "B", "\xC0++");
-		OPCODE_MD(0x4F, "wordVarInc", kUnaryOpPost, 0, "w", "\xC0++");
-		OPCODE_MD(0x52, "byteArrayInc", kUnaryOpPost, -1, "B", "\xC0++");
-		OPCODE_MD(0x53, "wordArrayInc", kUnaryOpPost, -1, "w", "\xC0++");
-		OPCODE_MD(0x56, "byteVarDec", kUnaryOpPost, 0, "B", "\xC0--");
-		OPCODE_MD(0x57, "wordVarDec", kUnaryOpPost, 0, "w", "\xC0--");
-		OPCODE_MD(0x5A, "byteArrayDec", kUnaryOpPost, -1, "B", "\xC0--");
-		OPCODE_MD(0x5B, "wordArrayDec", kUnaryOpPost, -1, "w", "\xC0--");
+		OPCODE_MD(0x4E, "byteVarInc", kUnaryOpPost, 0, "B", "++");
+		OPCODE_MD(0x4F, "wordVarInc", kUnaryOpPost, 0, "w", "++");
+		OPCODE_MD(0x52, "byteArrayInc", kUnaryOpPost, -1, "B", "++");
+		OPCODE_MD(0x53, "wordArrayInc", kUnaryOpPost, -1, "w", "++");
+		OPCODE_MD(0x56, "byteVarDec", kUnaryOpPost, 0, "B", "--");
+		OPCODE_MD(0x57, "wordVarDec", kUnaryOpPost, 0, "w", "--");
+		OPCODE_MD(0x5A, "byteArrayDec", kUnaryOpPost, -1, "B", "--");
+		OPCODE_MD(0x5B, "wordArrayDec", kUnaryOpPost, -1, "w", "--");
 		OPCODE(0x5C, "jumpTrue", kCondJumpRel, -1, "s");
 		OPCODE(0x5D, "jumpFalse", kCondJumpRel, -1, "s");
 		OPCODE_MD(0x5E, "startScript", kSpecial, 0x1020, "", "lpp"); // Variable stack arguments
@@ -286,9 +286,9 @@ void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 		OPCODE_MD(0xA2, "getActorElevation", kSpecial, 0, "", "rp");
 		OPCODE_MD(0xA3, "getVerbEntrypoint", kSpecial, -1, "", "rpp");
 		START_SUBOPCODE_WITH_PREFIX(0xA4, "arrayOps");
-			OPCODE_MD(0xCD, "assignString", kSpecial, -1, "wc", "\xC0");
-			OPCODE_MD(0xD0, "assignIntList", kSpecial, 0x1100, "w", "\xC0"); // Variable stack arguments
-			OPCODE_MD(0xD4, "assign2DimList", kSpecial, 0x1100, "w", "\xC0"); // Variable stack arguments
+			OPCODE_MD(0xCD, "assignString", kSpecial, -1, "wc", "");
+			OPCODE_MD(0xD0, "assignIntList", kSpecial, 0x1100, "w", ""); // Variable stack arguments
+			OPCODE_MD(0xD4, "assign2DimList", kSpecial, 0x1100, "w", ""); // Variable stack arguments
 		END_SUBOPCODE;
 		START_SUBOPCODE_WITH_PREFIX(0xA5, "saveRestoreVerbs");
 			OPCODE_MD(0x8D, "saveVerbs", kSpecial, -3, "", "ppp");
