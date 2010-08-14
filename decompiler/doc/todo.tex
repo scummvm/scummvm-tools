@@ -27,6 +27,8 @@ Currently the short-circuit detection is disabled because it requires some extra
 \subsection{Reduce number of parentheses}
 Right now, the decompiler is completely paranoid about parentheses, inserting them pretty much anywhere it can get away with it. This should be improved, so we reduce the number of them; e.g. by checking the type of operands and only adding parentheses if the operand type can cause problems.
 
+Similarly, we should probably look into negated expressions to let the decompiler automatically rework what would be \code{!(a == b)} to \code{a != b}. This would also help decrease the number of parentheses.
+
 \subsection{Refactor design}
 While a decompiler is almost by nature going to be somewhat complex, the current design might be a little too complex in a few places.
 
