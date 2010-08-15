@@ -26,11 +26,6 @@
 #include <algorithm>
 #include <iostream>
 #include <set>
-
-
-
-
-
 #include <boost/format.hpp>
 
 #define GET(vertex) (boost::get(boost::vertex_name, _g, vertex))
@@ -115,34 +110,13 @@ EntryPtr StackEntry::dup(std::ostream &output) {
 	return dupEntry;
 }
 
-
 EntryPtr IntEntry::dup(std::ostream &output) {
 	return new IntEntry(_val, _isSigned);
 }
 
-
 std::string CodeGenerator::constructFuncSignature(const Function &func) {
 	return "";
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 std::string CodeGenerator::indentString(std::string s) {
 	std::stringstream stream;
@@ -150,33 +124,12 @@ std::string CodeGenerator::indentString(std::string s) {
 	return stream.str();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output, ArgOrder binOrder, ArgOrder callOrder) : _output(output), _binOrder(binOrder), _callOrder(callOrder) {
 	_engine = engine;
 	_indentLevel = 0;
 }
 
-
-
-
-
-
-
 typedef std::pair<GraphVertex, EntryStack> DFSEntry;
-
-
-
 
 void CodeGenerator::generate(const Graph &g) {
 	_g = g;
@@ -501,20 +454,12 @@ void CodeGenerator::processInst(const Instruction inst) {
 	}
 }
 
-
-
-
-
 void CodeGenerator::addArg(EntryPtr p) {
 	if (_callOrder == kFIFOArgOrder)
 		_argList.push_front(p);
 	else if (_callOrder == kLIFOArgOrder)
 		_argList.push_back(p);
 }
-
-
-
-
 
 void CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
 	switch (c) {
@@ -526,4 +471,3 @@ void CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int 
 			break;
 	}
 }
-
