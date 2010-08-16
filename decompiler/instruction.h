@@ -43,7 +43,7 @@ enum InstType {
 	kJumpRelInstType,     ///< Unconditional jump (relative address).
 	kLoadInstType,        ///< Load value to stack.
 	kReturnInstType,      ///< Return from regular function call.
-	kSpecialCallInstType,     ///< Special functions.
+	kSpecialCallInstType, ///< Special functions.
 	kStackInstType,       ///< Stack allocation or deallocation (altering stack pointer).
 	kStoreInstType,       ///< Store value from stack in memory.
 	kUnaryOpPreInstType,  ///< Unary operation (e.g. !) with operator placed before the operator.
