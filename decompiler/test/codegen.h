@@ -268,6 +268,7 @@ public:
 
 	// This test requires _START04.EMC from the CD demo of
 	// Legend of Kyrandia: Hand of Fate, found in MISC_EMC.PAK.
+	// Extract using extract_kyra from the scummvm-tools-cli bundle.
 	// ba2821ac6da96394ce0af75a3cbe48eb *_START04.EMC
 	void testKyra2Start04CodeGen() {
 		std::vector<Instruction> insts;
