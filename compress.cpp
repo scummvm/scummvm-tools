@@ -372,7 +372,7 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 		} else {
 			int result = 0;
 
-			/* Quality input is 1 - 10, function takes -0.1 through 1.0 */
+			/* Quality input is -1 - 10, function takes -0.1 through 1.0 */
 			result = vorbis_encode_setup_vbr(&vi, numChannels, samplerate, oggparms.quality * 0.1f);
 
 			if (result == OV_EFAULT) {
@@ -885,13 +885,13 @@ void CompressionTool::setFlacBlockSize(const std::string& arg) {
 
 // vorbis
 void CompressionTool::setOggQuality(const std::string& arg) {
-	oggparms.quality = (float)atoi(arg.c_str());
+	oggparms.quality = (float)atof(arg.c_str());
 
 	if (oggparms.quality == 0. && arg != "0")
 		throw ToolException("Quality (-q) must be a number.");
 
-	if (oggparms.quality < 0. || oggparms.quality > 10.)
-		throw ToolException("Quality out of bounds (-q), must be between 0 and 10.");
+	if (oggparms.quality < -1.f || oggparms.quality > 10.f)
+		throw ToolException("Quality out of bounds (-q), must be between -1 and 10.");
 }
 
 void CompressionTool::setOggMinBitrate(const std::string& arg) {
@@ -1169,7 +1169,7 @@ std::string CompressionTool::getHelp() const {
 		os << " -b <rate>    <rate> is the nominal bitrate (default:unset)\n";
 		os << " -m <rate>    <rate> is the minimum bitrate (default:unset)\n";
 		os << " -M <rate>    <rate> is the maximum bitrate (default:unset)\n";
-		os << " -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:" << oggqualDef << ")\n";
+		os << " -q <value>   specifies the value (-1 - 10) of VBR quality (10=best) (default:" << oggqualDef << ")\n";
 		os << " --silent     the output of oggenc is hidden (default:disabled)\n";
 	}
 
