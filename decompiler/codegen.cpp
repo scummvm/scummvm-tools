@@ -286,8 +286,10 @@ void CodeGenerator::process(GraphVertex v) {
 	for (InEdgeIterator ie = ier.first; ie != ier.second; ++ie) {
 		GraphVertex in = boost::source(*ie, _g);
 		GroupPtr inGroup = GET(in);
+
 		if (!boost::get(boost::edge_attribute, _g, *ie)._isJump || inGroup->_stackLevel == -1)
 			continue;
+
 		switch (inGroup->_type) {
 		case kDoWhileCondGroupType:
 			addOutputLine("do {", false, true);
@@ -301,7 +303,6 @@ void CodeGenerator::process(GraphVertex v) {
 			break;
 		default:
 			break;
-
 		}
 	}
 
@@ -314,14 +315,12 @@ void CodeGenerator::process(GraphVertex v) {
 	for (ElseEndIterator elseIt = _curGroup->_endElse.begin(); elseIt != _curGroup->_endElse.end(); ++elseIt) {
 		if (!(*elseIt)->_coalescedElse)
 			addOutputLine("}", true, false);
-
-
 	}
 }
 
 void CodeGenerator::processInst(const Instruction inst) {
 	switch (inst._type) {
-		// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
+	// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
 	case kDupInstType:
 		{
 			std::stringstream s;
@@ -463,11 +462,12 @@ void CodeGenerator::addArg(EntryPtr p) {
 
 void CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
 	switch (c) {
-		case 'p':
-			addArg(_stack.pop());
-			break;
-		default:
-			std::cerr << boost::format("WARNING: Unknown character in metadata: %c\n") % c ;
-			break;
+	case 'p':
+		addArg(_stack.pop());
+		break;
+	default:
+		std::cerr << boost::format("WARNING: Unknown character in metadata: %c\n") % c ;
+		break;
 	}
 }
+

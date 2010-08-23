@@ -384,7 +384,7 @@ protected:
 	 *
 	 * @param inst The instruction to process.
 	 */
-	virtual void processInst(const Instruction inst) = 0;
+	virtual void processInst(const Instruction inst);
 
 	/**
 	 * Indents a string according to the current indentation level.
