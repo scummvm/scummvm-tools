@@ -134,15 +134,7 @@ typedef std::pair<GraphVertex, EntryStack> DFSEntry;
 void CodeGenerator::generate(const Graph &g) {
 	_g = g;
 
-
-
-
-
-
-
-
-	for (FuncMap::iterator fn = _engine->_functions.begin(); fn != _engine->_functions.end(); ++fn)
-	{
+	for (FuncMap::iterator fn = _engine->_functions.begin(); fn != _engine->_functions.end(); ++fn) {
 		_indentLevel = 0;
 		while (!_stack.empty())
 			_stack.pop();
@@ -156,22 +148,7 @@ void CodeGenerator::generate(const Graph &g) {
 			addOutputLine(funcSignature, false, true);
 		}
 
-
-
-
-
-
-
-
 		GroupPtr lastGroup = GET(entryPoint);
-
-
-
-
-
-
-
-
 
 		// DFS from entry point to process each vertex
 		Stack<DFSEntry> dfsStack;
@@ -196,25 +173,10 @@ void CodeGenerator::generate(const Graph &g) {
 			}
 		}
 
-
-
-
-
-
-
-
-
-
-
-
 		if (printFuncSignature) {
 			_curGroup = lastGroup;
 			addOutputLine("}", true, false);
 		}
-
-
-
-
 
 		// Print output
 		GroupPtr p = GET(entryPoint);
@@ -223,33 +185,6 @@ void CodeGenerator::generate(const Graph &g) {
 				if (it->_unindentBefore) {
 					assert(_indentLevel > 0);
 					_indentLevel--;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 				}
 				_output << boost::format("%08X: %s") % p->_start->_address % indentString(it->_line) << std::endl;
 				if (it->_indentAfter)
