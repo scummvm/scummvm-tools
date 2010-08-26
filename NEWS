@@ -2,6 +2,8 @@ For a more comprehensive changelog for the latest experimental SVN code, see:
         http://scummvm.svn.sourceforge.net/viewvc/scummvm/tools/trunk/?view=log
 
 1.2.0 (????-??-??)
+ - Add extract_fascination_cd tool for extracting STK archives from a mode1/2048
+   Fascination CD image.
  - Fix bug #2984225: "Tools: configure should check if libwxgtk2.8-dev is installed".
  - Add version information to tools.
  - Respect $BINDIR when installing (similar to ScummVM).
