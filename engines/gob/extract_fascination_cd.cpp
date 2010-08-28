@@ -35,7 +35,7 @@ struct STKFile {
 	const char *stkFilename;
 	const char *firstEntryName;	
 } static const stkFile[] = {
-	{ "disk0.stk", "INTRO1.TOT" },
+	{ "intro.stk", "INTRO1.TOT" },
 	{ "disk1.stk", "DOUCHE.TOT" },
 	{ "disk2.stk", "PLANQUE.TOT" },
 	{ "disk3.stk", "MELANGE.TOT" },
