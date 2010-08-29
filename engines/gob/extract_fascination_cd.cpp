@@ -33,12 +33,13 @@ enum {
 
 struct STKFile {
 	const char *stkFilename;
-	const char *firstEntryName;	
-} static const stkFile[] = {
-	{ "intro.stk", "INTRO1.TOT" },
-	{ "disk1.stk", "DOUCHE.TOT" },
-	{ "disk2.stk", "PLANQUE.TOT" },
-	{ "disk3.stk", "MELANGE.TOT" },
+	const char *firstEntryName;
+	bool  extracted;
+} static stkFile[] = {
+	{ "intro.stk", "INTRO1.TOT", false },
+	{ "disk1.stk", "DOUCHE.TOT", false },
+	{ "disk2.stk", "PLANQUE.TOT", false },
+	{ "disk3.stk", "MELANGE.TOT", false },
 };
 
 
@@ -63,6 +64,10 @@ void ExtractFascinationCD::execute(void) {
 	// Sanity check the file size
 	if (fileSize > (16 * 1024 * 1024)) {
 		error("'%s' is too large to be a Fascination mode1/2048 ISO", _inputPaths[0].path.c_str());
+	}
+
+	if (fileSize < (8 * 1024 * 1024)) {
+		error("'%s' is too small to be a Fascination mode1/2048 ISO", _inputPaths[0].path.c_str());
 	}
 
 	if (fileSize % 2048) {
@@ -101,6 +106,7 @@ void ExtractFascinationCD::execute(void) {
 				assert(output.isOpen());
 				output.write(stkFileStart, stkEntrySize);
 				output.close();
+				stkFile[i].extracted = true;
 
 				curPos += stkEntrySize;
 			}
@@ -109,6 +115,11 @@ void ExtractFascinationCD::execute(void) {
 		}
 	}
 	
+	for (int i = 0; i < ARRAYSIZE(stkFile); i++) {
+		if (!stkFile[i].extracted)
+			error("A problem occurred: '%s' has NOT been extracted", stkFile[i].stkFilename);
+	}
+
 	delete[] data;
 }
 
