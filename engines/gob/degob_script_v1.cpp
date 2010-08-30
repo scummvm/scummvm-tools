@@ -753,7 +753,7 @@ void Script_v1::o1_callSub(FuncParams &params) {
 		if (offset >= 128)
 			addFuncOffset(offset);
 	} else if (peekUint8() == 2)
-		print("o1_collisionsBlock(%d);\n", offset);
+		print("_hotspots->evaluate()(%d);\n", offset);
 	else
 		print("<Unknown block type %d (%d)>\n", peekUint8(), offset);
 

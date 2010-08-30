@@ -392,7 +392,7 @@ void Script_Fascin::setupOpcodes() {
 		{OPCODEF(o1_whileDo), {PARAM_NONE}},
 		/* 08 */
 		{OPCODEF(o1_if), {PARAM_NONE}},
-		{OPCODEF(o1_assign), {PARAM_NONE}},
+		{OPCODEF(o2_assign), {PARAM_NONE}},
 		{OPCODEF(o1_loadSpriteToPos), {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 0C */
