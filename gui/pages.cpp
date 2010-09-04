@@ -377,7 +377,7 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 	sizer->Add(new wxStaticText(panel, wxID_ANY,
 		wxT("Select an input file, if you have two input files (CD1 and CD2), ")
 		wxT("you will be queried for the other file later.")
-		wxT("You can also drag & drop a file on this window.")
+		wxT("You can also drag && drop a file on this window.")
 		),
 		wxSizerFlags(1).Expand());
 
