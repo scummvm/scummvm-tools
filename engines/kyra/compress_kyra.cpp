@@ -55,6 +55,9 @@ void CompressKyra::execute() {
 	Common::Filename &outpath = _outputPath;
 	outpath.setFullName(inpath.getFullName());
 
+	if (outpath.hasExtension("AUD"))
+		outpath.setExtension("");
+
 	if (inpath == outpath)
 		error("Infile and outfile cannot be the same file");
 
