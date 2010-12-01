@@ -275,10 +275,10 @@ Compression Tools:
                 required to play the game under ScummVM.
 
                 Example of usage:
-                ./scummvm-tools-cli --tool compress_touche [mode params] [-o outputfile] <infile>
+                ./scummvm-tools-cli --tool compress_touche [mode params] [-o outputfile] <inputdir>
 
-                Default outpufile is infile with modified extension (depends
-                on compression method).
+                Default outpufile is TOUCHE.* (depends on compression method).
+                Files in the input folder should be in uppercase.
 
         compress_tucker
                 Used to compress .wav files from FX/MUSIC/SPEECH directories
