@@ -353,8 +353,8 @@ void LivingBooksArchive_v1::open(Common::SeekableReadStream *stream) {
 			for (uint16 j = 0; j < _types[i].resTable.resources; j++) {
 				_types[i].resTable.entries[j].id = _mhk->readUint16LE();
 				_types[i].resTable.entries[j].offset = _mhk->readUint32LE();
-				_types[i].resTable.entries[j].size = _mhk->readUint16LE();
-				_mhk->readUint32LE(); // Unknown (always 0?)
+				_types[i].resTable.entries[j].size = _mhk->readUint32LE();
+				_mhk->readUint16LE(); // Unknown (always 0?)
 
 				debug (4, "Entry[%02x]: ID = %04x (%d)\tOffset = %08x, Size = %08x", j, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].offset, _types[i].resTable.entries[j].size);
 			}
@@ -424,8 +424,6 @@ MohawkArchive *MohawkArchive::createMohawkArchive(Common::SeekableReadStream *st
 		headerTag = stream->readUint32BE();
 		if (headerTag == ID_RSRC)
 			mohawkArchive = new MohawkArchive();
-	} else if (headerTag == ID_LBRC) {
-		printf("Detected Living Books v2 archive - not yet supported!\n");
 	} else if (headerTag == 6 || SWAP_BYTES_32(headerTag) == 6) {
 		// Assume the Living Books v1 archive format
 		mohawkArchive = new LivingBooksArchive_v1();
