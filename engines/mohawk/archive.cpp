@@ -217,12 +217,13 @@ MohawkOutputStream MohawkArchive::getRawData(uint32 tag, uint16 id) {
 	// We need to do this because of the way Mohawk is set up (this is much more "proper"
 	// than passing _mhk at the right offset). We may want to do that in the future, though.
 	if (_types[typeIndex].tag == ID_TMOV) {
-		if (fileTableIndex == _fileTableAmount)
+		if (fileTableIndex == _fileTableAmount - 1)
 			output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _mhk->size());
 		else
 			output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _fileTable[fileTableIndex + 1].offset);
 	} else
 		output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _fileTable[fileTableIndex].offset + _fileTable[fileTableIndex].dataSize);
+
 	output.tag = tag;
 	output.id = id;
 	output.index = fileTableIndex;
@@ -255,9 +256,12 @@ MohawkOutputStream MohawkArchive::getNextFile() {
 
 	// For some unknown reason, all tMOV resources have incorrect sizes. We correct this by getting the differences between offsets.
 	uint32 dataSize = 0;
-	if (_types[_curExType].tag == ID_TMOV)
-		dataSize = _fileTable[fileTableIndex + 1].offset - _fileTable[fileTableIndex].offset;
-	else
+	if (_types[_curExType].tag == ID_TMOV) {
+		if (fileTableIndex == _fileTableAmount - 1)
+			dataSize = _mhk->size() - _fileTable[fileTableIndex].offset;
+		else
+			dataSize = _fileTable[fileTableIndex + 1].offset - _fileTable[fileTableIndex].offset;
+	} else
 		dataSize = _fileTable[fileTableIndex].dataSize;
 
 	output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _fileTable[fileTableIndex].offset + dataSize, false);
