@@ -21,6 +21,7 @@
  */
 
 #include "graph.h"
+#include "refcounted.h"
 #include "stack.h"
 
 #include <ostream>
@@ -57,20 +58,10 @@ class StackEntry;
  */
 typedef boost::intrusive_ptr<StackEntry> EntryPtr;
 
-namespace boost {
-inline void intrusive_ptr_add_ref(StackEntry *p);
-inline void intrusive_ptr_release(StackEntry *p);
-} // End of namespace boost
-
 /**
  * Base class for stack entries.
  */
-class StackEntry {
-private:
-	long _refCount; ///< Reference count used for boost::intrusive_ptr.
-	friend void ::boost::intrusive_ptr_add_ref(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
-	friend void ::boost::intrusive_ptr_release(StackEntry *p); ///< Allow access by reference counting methods in boost namespace.
-
+class StackEntry : public RefCounted {
 public:
 	const StackEntryType _type; ///< Type of the stack entry.
 
@@ -79,7 +70,7 @@ public:
 	 *
 	 * @param type The StackEntryType of the StackEntry.
 	 */
-	StackEntry(StackEntryType type) : _refCount(0), _type(type) { }
+	StackEntry(StackEntryType type) : _type(type) { }
 
 	virtual ~StackEntry() { }
 
@@ -110,25 +101,6 @@ public:
 		return entry->print(output);
 	}
 };
-
-namespace boost {
-
-/**
- * Add a reference to a pointer to a StackEntry.
- */
-inline void intrusive_ptr_add_ref(StackEntry *p) {
-	++(p->_refCount);
-}
-
-/**
- * Remove a reference from a pointer to a StackEntry.
- */
-inline void intrusive_ptr_release(StackEntry *p) {
-	if (--(p->_refCount) == 0)
-		delete p;
-}
-
-} // End of namespace boost
 
 /**
  * Stack entry containing an integer.

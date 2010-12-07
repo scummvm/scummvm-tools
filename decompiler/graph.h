@@ -24,6 +24,7 @@
 #define DEC_GRAPH_H
 
 #include "instruction.h"
+#include "refcounted.h"
 
 #include <ostream>
 #include <utility>
@@ -190,11 +191,6 @@ typedef std::pair<OutEdgeIterator, OutEdgeIterator> OutEdgeRange;
  */
 typedef std::pair<InEdgeIterator, InEdgeIterator> InEdgeRange;
 
-namespace boost {
-inline void intrusive_ptr_add_ref(Group *p);
-inline void intrusive_ptr_release(Group *p);
-} // End of namespace boost
-
 /**
  * Structure representing a line of code.
  */
@@ -230,12 +226,7 @@ typedef ElseEnds::iterator ElseEndIterator;
 /**
  * Structure representing a group of instructions.
  */
-struct Group {
-private:
-  long _refCount;	///< Reference count used for boost::intrusive_ptr.
-  friend void ::boost::intrusive_ptr_add_ref(Group *p); ///< Allow access by reference counting methods in boost namespace.
-  friend void ::boost::intrusive_ptr_release(Group *p); ///< Allow access by reference counting methods in boost namespace.
-
+struct Group : public RefCounted {
 public:
 	GraphVertex _vertex;         ///< Vertex the group belongs to.
 	ConstInstIterator _start;    ///< First instruction in the group.
@@ -252,7 +243,7 @@ public:
 	/**
 	 * Parameterless constructor for Group. Required for use with STL and Boost, should not be called manually.
 	 */
-	Group() : _refCount(0), _stackLevel(-1), _type(kNormalGroupType) { }
+	Group() : _stackLevel(-1), _type(kNormalGroupType) { }
 
 	/**
 	 * Constructor for Group.
@@ -262,7 +253,7 @@ public:
 	 * @param end   Last instruction in the group.
 	 * @param prev  Pointer to the previous group, when ordered by address.
 	 */
-	Group(GraphVertex v, ConstInstIterator start, ConstInstIterator end, GroupPtr prev) : _refCount(0) {
+	Group(GraphVertex v, ConstInstIterator start, ConstInstIterator end, GroupPtr prev) {
 		_vertex = v;
 		_start = start;
 		_end = end;
@@ -362,25 +353,6 @@ public:
 		return output;
 	}
 };
-
-namespace boost {
-
-/**
- * Add a reference to a pointer.
- */
-inline void intrusive_ptr_add_ref(Group *p) {
-	++(p->_refCount);
-}
-
-/**
- * Remove a reference from a pointer.
- */
-inline void intrusive_ptr_release(Group *p) {
-	if (--(p->_refCount) == 0)
-		delete p;
-}
-
-} // End of namespace boost
 
 class Engine;
 
