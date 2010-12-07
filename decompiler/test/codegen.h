@@ -288,7 +288,7 @@ public:
 		VertexIterator v = boost::vertices(g).first;
 		std::vector<std::string> output, expected;
 		expected.push_back("auto_sub0x278(param1, param2, param3, param4) {");
-		expected.push_back("if (((param4 < var2) && ((param2 > var2) && ((param3 < var1) && (param1 > var1))))) {");
+		expected.push_back("if (((((var1 > param1) && (var1 < param3)) && (var2 > param2)) && (var2 < param4))) {");
 		expected.push_back("retval = o1_queryGameFlag(3);");
 		expected.push_back("if (retval) {");
 		expected.push_back("retval = o2_drawBox(param1, param2, param3, param4, 199);");
