@@ -35,10 +35,10 @@ protected:
 	/**
 	 * Read parameters and associate them with an instruction.
 	 *
-	 * @param inst       Pointer to the instruction to associate the parameters with.
+	 * @param inst       The instruction to associate the parameters with.
 	 * @param typeString NUL-terminated string describing the type of each parameter.
 	 */
-	void readParams(Instruction *inst, char *typeString);
+	void readParams(Instruction &inst, const char *typeString);
 
 	/**
 	 * Reads data for a single parameter.
@@ -59,7 +59,7 @@ public:
 
 #define INC_ADDR _address++;
 #define ADD_INST _insts.push_back(Instruction());
-#define LAST_INST (_insts[_insts.size()-1])
+#define LAST_INST (_insts.back())
 
 #define START_OPCODES \
 	_address = _addressBase; \
@@ -89,7 +89,7 @@ public:
 		LAST_INST._name = opcodePrefix + std::string(name); \
 		LAST_INST._type = category; \
 		LAST_INST._codeGenData = codeGenData; \
-		readParams(&LAST_INST, (char*)params); \
+		readParams(LAST_INST, params); \
 
 #define OPCODE_MD(val, name, category, stackChange, params, codeGenData) \
 	OPCODE_BASE(val)\

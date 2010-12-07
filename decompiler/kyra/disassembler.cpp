@@ -389,7 +389,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 		}
 
 #define ADD_INST _insts.insert(_insts.end(), Instruction());
-#define LAST_INST (_insts[_insts.size()-1])
+#define LAST_INST (_insts.back())
 #define OPCODE_MD(name, category, stackChange, hasParam, isSigned, codeGenData) \
 		ADD_INST; \
 		LAST_INST._opcode = opcode; \

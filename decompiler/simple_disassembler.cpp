@@ -25,11 +25,11 @@
 SimpleDisassembler::SimpleDisassembler(std::vector<Instruction> &insts) : Disassembler(insts) {
 }
 
-void SimpleDisassembler::readParams(Instruction *inst, char *typeString) {
+void SimpleDisassembler::readParams(Instruction &inst, const char *typeString) {
 	while (*typeString) {
 		Parameter p;
 		readParameter(&p, *typeString);
-		inst->_params.push_back(p);
+		inst._params.push_back(p);
 		typeString++;
 	}
 }
