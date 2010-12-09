@@ -93,7 +93,7 @@ public:
 	 * @param engine Pointer to the Kyra::Kyra2Engine used for this script.
 	 * @param insts Reference to the vector in which disassembled instructions should be placed.
 	 */
-	Kyra2Disassembler(Kyra2Engine *engine, std::vector<Instruction> &insts);
+	Kyra2Disassembler(Kyra2Engine *engine, InstVec &insts);
 	~Kyra2Disassembler();
 	void doDisassemble() throw(std::exception);
 };

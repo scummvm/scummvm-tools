@@ -36,7 +36,7 @@
 class Disassembler {
 protected:
 	Common::File _f;                  ///< Used to perform file I/O.
-	std::vector<Instruction> &_insts; ///< Container for disassembled instructions.
+	InstVec &_insts;                  ///< Container for disassembled instructions.
 	uint32 _addressBase;              ///< Base address where the script starts.
 
 	/**
@@ -59,7 +59,7 @@ public:
 	 *
 	 * @param insts Reference to the vector in which disassembled instructions should be placed.
 	 */
-	Disassembler(std::vector<Instruction> &insts);
+	Disassembler(InstVec &insts);
 	virtual ~Disassembler() {}
 
 	/**

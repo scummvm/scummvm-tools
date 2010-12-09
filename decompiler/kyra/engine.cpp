@@ -28,7 +28,7 @@
 #include <sstream>
 #include <boost/format.hpp>
 
-Disassembler *Kyra::Kyra2Engine::getDisassembler(std::vector<Instruction> &insts) {
+Disassembler *Kyra::Kyra2Engine::getDisassembler(InstVec &insts) {
 	return new Kyra2Disassembler(this, insts);
 }
 
@@ -40,7 +40,7 @@ CodeGenerator *Kyra::Kyra2Engine::getCodeGenerator(std::ostream &output) {
 	return new Kyra2CodeGenerator(this, output);
 }
 
-void Kyra::Kyra2Engine::postCFG(std::vector<Instruction> &insts, Graph g) {
+void Kyra::Kyra2Engine::postCFG(InstVec &insts, Graph g) {
 	// Add metadata to functions
 	for (FuncMap::iterator it = _functions.begin(); it != _functions.end(); ++it) {
 		std::stringstream s;

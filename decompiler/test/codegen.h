@@ -73,7 +73,7 @@ typedef std::vector<std::string>::iterator CodeIterator;
 class CodeGenTestSuite : public CxxTest::TestSuite {
 public:
 	void testContinue() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-do-while.dmp");
@@ -117,7 +117,7 @@ public:
 	}
 
 	void testBreak() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-while.dmp");
@@ -161,7 +161,7 @@ public:
 	}
 
 	void testElse() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if-else.dmp");
@@ -207,7 +207,7 @@ public:
 	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	// afd7dc5d377894b3b9d0504927adf1b1 *script-48.dmp
 	void testCoalescing() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/script-30.dmp");
@@ -271,7 +271,7 @@ public:
 	// Extract using extract_kyra from the scummvm-tools-cli bundle.
 	// ba2821ac6da96394ce0af75a3cbe48eb *_START04.EMC
 	void testKyra2Start04CodeGen() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Kyra::Kyra2Engine *engine = new Kyra::Kyra2Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/_START04.EMC");

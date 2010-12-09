@@ -31,7 +31,7 @@ class DisassemblerTestSuite : public CxxTest::TestSuite {
 public:
 	void testDisassembly() {
 		try {
-			std::vector<Instruction> insts;
+			InstVec insts;
 			PasCDisassembler p(insts);
 			p.open("decompiler/test/hanoi20.pasb");
 			p.disassemble();
@@ -52,7 +52,7 @@ public:
 
 	void testSubOpcodeDisassembly() {
 		try {
-			std::vector<Instruction> insts;
+			InstVec insts;
 			SubOpcodeDisassembler s(insts);
 			s.open("decompiler/test/subopcode_test.bin");
 			s.disassemble();
@@ -65,7 +65,7 @@ public:
 
 	void testUnknownOpcodeException() {
 		try {
-			std::vector<Instruction> insts;
+			InstVec insts;
 			SubOpcodeDisassembler s(insts);
 			s.open("decompiler/test/unknownopcode_test.bin");
 			s.disassemble();
@@ -81,7 +81,7 @@ public:
 	// 1ab08298c9c8fb4c77953756989c7449 *script-15.dmp
 	void testScummv6DisassemblerScript15() {
 		try {
-			std::vector<Instruction> insts;
+			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-15.dmp");
 			s.disassemble();
@@ -136,7 +136,7 @@ public:
 	// f75f7ce110f378735d449f8eeb4a68e5 *script-31.dmp
 	void testScummv6DisassemblerScript31() {
 		try {
-			std::vector<Instruction> insts;
+			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-31.dmp");
 			s.disassemble();
@@ -169,7 +169,7 @@ public:
 	// 9f09418bf34abbdec0ec54f388d8dca4 *script-33.dmp
 	void testScummv6DisassemblerScript33() {
 		try {
-			std::vector<Instruction> insts;
+			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-33.dmp");
 			s.disassemble();
@@ -221,7 +221,7 @@ public:
 	// f010dc659264674a2b6da298acd0b88b *room-9-202.dmp
 	void testScummv6StackChangeFixRoom9202() {
 		try {
-			std::vector<Instruction> insts;
+			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/room-9-202.dmp");
 			s.disassemble();
@@ -237,7 +237,7 @@ public:
 	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	void testScummv6StackChangeFixScript30() {
 		try {
-			std::vector<Instruction> insts;
+			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-30.dmp");
 			s.disassemble();
@@ -255,7 +255,7 @@ public:
 	// ba2821ac6da96394ce0af75a3cbe48eb *_START04.EMC
 	void testKyra2Start04() {
 		try {
-			std::vector<Instruction> insts;
+			InstVec insts;
 			Kyra::Kyra2Engine engine;
 			Disassembler* s = engine.getDisassembler(insts);
 			s->open("decompiler/test/_START04.EMC");

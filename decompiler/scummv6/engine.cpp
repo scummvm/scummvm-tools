@@ -24,7 +24,7 @@
 #include "disassembler.h"
 #include "codegen.h"
 
-Disassembler *Scumm::v6::Scummv6Engine::getDisassembler(std::vector<Instruction> &insts) {
+Disassembler *Scumm::v6::Scummv6Engine::getDisassembler(InstVec &insts) {
 	return new Scummv6Disassembler(insts);
 }
 

@@ -22,7 +22,7 @@
 
 #include "subopcode.h"
 
-SubOpcodeDisassembler::SubOpcodeDisassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
+SubOpcodeDisassembler::SubOpcodeDisassembler(InstVec &insts) : ::SimpleDisassembler(insts) {
 }
 
 void SubOpcodeDisassembler::doDisassemble() throw(std::exception) {

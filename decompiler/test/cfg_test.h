@@ -34,7 +34,7 @@
 class CFGTestSuite : public CxxTest::TestSuite {
 public:
 	void testUnreachable() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/unreachable.dmp");
@@ -68,7 +68,7 @@ public:
 	};
 
 	void testBranching() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/branches.dmp");
@@ -102,7 +102,7 @@ public:
 	}
 
 	void testGrouping() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/branches.dmp");
@@ -136,7 +136,7 @@ public:
 	}
 
 	void testShortCircuitDetection() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/short-circuit.dmp");
@@ -151,7 +151,7 @@ public:
 	}
 
 	void testWhileDetection() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while.dmp");
@@ -171,7 +171,7 @@ public:
 	}
 
 	void testDoWhileDetection() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/while.dmp");
@@ -191,7 +191,7 @@ public:
 	}
 
 	void testBreakDetection() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/break-while.dmp");
@@ -247,7 +247,7 @@ public:
 	}
 
 	void testContinueDetection() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/continue-while.dmp");
@@ -305,7 +305,7 @@ public:
 	}
 
 	void testIfDetection() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if.dmp");
@@ -397,7 +397,7 @@ public:
 	}
 
 	void testElseDetection() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/if-else.dmp");
@@ -439,7 +439,7 @@ public:
 	}
 
 	void testNestedLoops() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/do-while-in-while.dmp");
@@ -563,7 +563,7 @@ public:
 	// This test requires script-30.dmp from Sam & Max: Hit The Road.
 	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	void testSamAndMaxScript30() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Scumm::v6::Scummv6Engine *engine = new Scumm::v6::Scummv6Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/script-30.dmp");
@@ -623,7 +623,7 @@ public:
 	// Extract using extract_kyra from the scummvm-tools-cli bundle.
 	// ba2821ac6da96394ce0af75a3cbe48eb *_START04.EMC
 	void testFunctionDetection() {
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Kyra::Kyra2Engine *engine = new Kyra::Kyra2Engine();
 		Disassembler *d = engine->getDisassembler(insts);
 		d->open("decompiler/test/_START04.EMC");

@@ -27,7 +27,7 @@
 
 class PasCDisassembler : public SimpleDisassembler {
 public:
-	PasCDisassembler(std::vector<Instruction> &insts);
+	PasCDisassembler(InstVec &insts);
 	void doDisassemble() throw(std::exception);
 };
 #endif

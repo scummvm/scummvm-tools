@@ -62,14 +62,14 @@ All disassemblers must inherit, directly or indirectly, from the \code{Disassemb
 class Disassembler {
 protected:
 	Common::File _f;
-	std::vector<Instruction> &_insts;
+	InstVec &_insts;
 	uint32 _addressBase;
 
 	virtual void doDisassemble() throw(std::exception) = 0;
 	virtual void doDumpDisassembly(std::ostream &output);
 
 public:
-	Disassembler(std::vector<Instruction> &insts);
+	Disassembler(InstVec &insts);
 	virtual ~Disassembler() {}
 
 	void open(const char *filename);

@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 		std::string inputFile = vm["input-file"].as<std::string>();
 
 		// Disassembly
-		std::vector<Instruction> insts;
+		InstVec insts;
 		Disassembler *disassembler = engine->getDisassembler(insts);
 		disassembler->open(inputFile.c_str());
 

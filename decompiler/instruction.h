@@ -154,13 +154,18 @@ struct Instruction {
 };
 
 /**
+ * Type representing a vector of Instructions.
+ */
+typedef std::vector<Instruction> InstVec;
+
+/**
  * Type representing an iterator over Instructions.
  */
-typedef std::vector<Instruction>::iterator InstIterator;
+typedef InstVec::iterator InstIterator;
 
 /**
  * Type representing a const_iterator over Instructions.
  */
-typedef std::vector<Instruction>::const_iterator ConstInstIterator;
+typedef InstVec::const_iterator ConstInstIterator;
 
 #endif

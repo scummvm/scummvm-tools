@@ -22,7 +22,7 @@
 
 #include "disassembler.h"
 
-Disassembler::Disassembler(std::vector<Instruction> &insts) : _insts(insts) {
+Disassembler::Disassembler(InstVec &insts) : _insts(insts) {
 	_addressBase = 0;
 }
 

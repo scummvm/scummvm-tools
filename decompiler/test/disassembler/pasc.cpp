@@ -22,7 +22,7 @@
 
 #include "pasc.h"
 
-PasCDisassembler::PasCDisassembler(std::vector<Instruction> &insts) : ::SimpleDisassembler(insts) {
+PasCDisassembler::PasCDisassembler(InstVec &insts) : ::SimpleDisassembler(insts) {
 }
 
 void PasCDisassembler::doDisassemble() throw(std::exception) {

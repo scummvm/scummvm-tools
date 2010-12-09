@@ -76,7 +76,7 @@ public:
 	 * @param insts Reference to the std::vector to place the Instructions in.
 	 * @return Pointer to a Disassembler for the engine.
 	 */
-	virtual Disassembler *getDisassembler(std::vector<Instruction> &insts) = 0;
+	virtual Disassembler *getDisassembler(InstVec &insts) = 0;
 
 	/**
 	 * Decode a jump instruction to get the destination address.
@@ -107,7 +107,7 @@ public:
 	 * @param insts Reference to the std::vector to place the Instructions in.
 	 * @param g Graph generated from the CFG analysis.
 	 */
-	virtual void postCFG(std::vector<Instruction> &insts, Graph g) { }
+	virtual void postCFG(InstVec &insts, Graph g) { }
 
 	/**
 	 * Whether or not code flow analysis is supported for this engine.

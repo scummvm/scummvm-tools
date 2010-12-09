@@ -39,7 +39,7 @@ public:
 	 *
 	 * @param insts Reference to the vector in which disassembled instructions should be placed.
 	 */
-	Scummv6Disassembler(std::vector<Instruction> &insts);
+	Scummv6Disassembler(InstVec &insts);
 
 	void doDisassemble() throw(std::exception);
 

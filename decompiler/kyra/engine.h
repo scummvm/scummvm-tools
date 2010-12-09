@@ -35,10 +35,10 @@ namespace Kyra {
  */
 class Kyra2Engine : public Engine {
 public:
-	Disassembler *getDisassembler(std::vector<Instruction> &insts);
+	Disassembler *getDisassembler(InstVec &insts);
 	uint32 getDestAddress(const Instruction &inst) const;
 	CodeGenerator *getCodeGenerator(std::ostream &output);
-	void postCFG(std::vector<Instruction> &insts, Graph g);
+	void postCFG(InstVec &insts, Graph g);
 	bool detectMoreFuncs() const;
 
 	std::vector<std::string> _textStrings; ///< Container for strings from the TEXT chunk.

@@ -35,7 +35,7 @@
 #define GET(vertex) (boost::get(boost::vertex_name, _g, vertex))
 #define GET_EDGE(edge) (boost::get(boost::edge_attribute, _g, edge))
 
-ControlFlow::ControlFlow(const std::vector<Instruction> &insts, Engine *engine) : _insts(insts) {
+ControlFlow::ControlFlow(const InstVec &insts, Engine *engine) : _insts(insts) {
 	_engine = engine;
 
 	// Automatically add a function if we're not supposed to look for more functions and no functions are defined

@@ -54,7 +54,7 @@ public:
 	 *
 	 * @param insts Reference to the vector in which disassembled instructions should be placed.
 	 */
-	SimpleDisassembler(std::vector<Instruction> &insts);
+	SimpleDisassembler(InstVec &insts);
 };
 
 #define INC_ADDR _address++;

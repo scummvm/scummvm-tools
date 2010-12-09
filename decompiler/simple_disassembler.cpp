@@ -22,7 +22,7 @@
 
 #include "simple_disassembler.h"
 
-SimpleDisassembler::SimpleDisassembler(std::vector<Instruction> &insts) : Disassembler(insts) {
+SimpleDisassembler::SimpleDisassembler(InstVec &insts) : Disassembler(insts) {
 }
 
 void SimpleDisassembler::readParams(Instruction &inst, const char *typeString) {
