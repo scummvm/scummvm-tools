@@ -21,8 +21,8 @@
  */
 
 #include "graph.h"
-#include "refcounted.h"
 #include "stack.h"
+#include "value.h"
 
 #include <ostream>
 #include <utility>
@@ -37,282 +37,9 @@ class Engine;
 class Function;
 
 /**
- * Types of stack entries.
- */
-enum StackEntryType {
-	kIntStackEntry,     ///< Integer
-	kVarStackEntry,     ///< Variable
-	kBinOpStackEntry,   ///< Binary operation
-	kUnaryOpStackEntry, ///< Unary operation
-	kDupStackEntry,     ///< Duplicated entry
-	kArrayStackEntry,   ///< Array access
-	kStringStackEntry,  ///< String
-	kListStackEntry,    ///< List
-	kCallStackEntry     ///< Function call
-};
-
-class StackEntry;
-
-/**
- * Pointer to a Group.
- */
-typedef boost::intrusive_ptr<StackEntry> EntryPtr;
-
-/**
- * Base class for stack entries.
- */
-class StackEntry : public RefCounted {
-public:
-	const StackEntryType _type; ///< Type of the stack entry.
-
-	/**
-	 * Constructor for StackEntry.
-	 *
-	 * @param type The StackEntryType of the StackEntry.
-	 */
-	StackEntry(StackEntryType type) : _type(type) { }
-
-	virtual ~StackEntry() { }
-
-	/**
-	 * Print the stack entry to an std::ostream.
-	 *
-	 * @param output The std::ostream to write to.
-	 * @return The std::ostream used for output.
-	 */
-	virtual std::ostream &print(std::ostream &output) const = 0;
-
-	/**
-	 * Duplicates a stack entry.
-	 *
-	 * @param output The std::ostream to output to.
-	 * @return A StackEntry corresponding to a duplicate of this entry.
-	 */
-	virtual EntryPtr dup(std::ostream &output);
-
-	/**
-	 * Output a stack entry to an std::ostream.
-	 *
-	 * @param output The std::ostream to output to.
-	 * @param entry  Reference counted pointer to the StackEntry to output.
-	 * @return The std::ostream used for output.
-	 */
-	friend std::ostream &operator<<(std::ostream &output, EntryPtr entry) {
-		return entry->print(output);
-	}
-};
-
-/**
- * Stack entry containing an integer.
- */
-class IntEntry : public StackEntry {
-private:
-	const int32 _val;     ///< The value of the integer.
-	const bool _isSigned; ///< True if the value is signed, false if it's not.
-
-public:
-	/**
-	 * Constructor for IntEntry.
-	 *
-	 * @param val The value contained in the stack entry.
-	 * @param isSigned Whether or not the value is signed. This will affect output.
-	 */
-	IntEntry(int32 val, bool isSigned) : StackEntry(kIntStackEntry), _val(val), _isSigned(isSigned) { }
-
-	/**
-	 * Constructor for IntEntry.
-	 *
-	 * @param val The value contained in the stack entry.
-	 * @param isSigned Whether or not the value is signed. This will affect output.
-	 */
-	IntEntry(uint32 val, bool isSigned) : StackEntry(kIntStackEntry), _val(val), _isSigned(isSigned) { }
-
-	/**
-	 * Gets the value associated with the IntEntry.
-	 *
-	 * @return The value associated with the IntEntry.
-	 */
-	int32 getValue();
-
-	/**
-	 * Returns whether or not the integer is signed.
-	 *
-	 * @return True if the value is signed, false if it's not.
-	 */
-	bool getSigned();
-
-	virtual std::ostream &print(std::ostream &output) const;
-
-	virtual EntryPtr dup(std::ostream &output);
-};
-
-/**
- * Stack entry containing a variable.
- */
-class VarEntry : public StackEntry {
-private:
-	const std::string _varName; ///< The name of the variable.
-
-public:
-	/**
-	 * Constructor for VarEntry.
-	 *
-	 * @param varName The name of the variable.
-	 */
-	VarEntry(std::string varName) : StackEntry(kVarStackEntry), _varName(varName) { }
-
-	virtual std::ostream &print(std::ostream &output) const;
-};
-
-/**
- * Stack entry containing a binary operation performed on two stack entries.
- */
-class BinaryOpEntry : public StackEntry {
-private:
-	const EntryPtr _lhs;   ///< Stack entry representing the left side of the operator.
-	const EntryPtr _rhs;   ///< Stack entry representing the right side of the operator.
-	const std::string _op; ///< The operator for this entry.
-
-public:
-	/**
-	 * Constructor for BinaryOpEntry.
-	 *
-	 * @param lhs Stack entry representing the left side of the operator.
-	 * @param rhs Stack entry representing the right side of the operator.
-	 * @param op The operator for this entry.
-	 */
-	BinaryOpEntry(EntryPtr lhs, EntryPtr rhs, std::string op) :
-		StackEntry(kBinOpStackEntry), _lhs(lhs), _rhs(rhs), _op(op) { }
-
-	virtual std::ostream &print(std::ostream &output) const;
-};
-
-/**
- * Stack entry containing a unary operation performed on a single stack entry.
- */
-class UnaryOpEntry : public StackEntry {
-private:
-	const EntryPtr _operand; ///< The operand the operation is performed on.
-	const std::string _op;   ///< The operator for this entry.
-	const bool _isPostfix;   ///< Whether or not the operator should be postfixed to the operand.
-
-public:
-	/**
-	 * Constructor for UnaryOpEntry.
-	 *
-	 * @param operand Stack entry representing the operand of the operation.
-	 * @param op The operator for this entry.
-	 * @param isPostfix Whether or not the operator should be postfixed to the operand.
-	 */
-	UnaryOpEntry(EntryPtr operand, std::string op, bool isPostfix) :
-		StackEntry(kUnaryOpStackEntry), _operand(operand), _op(op), _isPostfix(isPostfix) { }
-
-	virtual std::ostream &print(std::ostream &output) const;
-};
-
-/**
- * Duplicated stack entry.
- */
-class DupEntry : public StackEntry {
-private:
-	const int _idx; ///< Index to distinguish multiple duplicated entries.
-
-public:
-	/**
-	 * Constructor for DupEntry.
-	 *
-	 * @param idx Index to distinguish multiple duplicated entries.
-	 */
-	DupEntry(int idx) : StackEntry(kDupStackEntry), _idx(idx) { }
-
-	virtual std::ostream &print(std::ostream &output) const;
-};
-
-/**
- * Type representing index list for an array.
- */
-typedef std::deque<EntryPtr> EntryList;
-
-/**
- * Stack entry representing array access.
- */
-class ArrayEntry : public StackEntry {
-private:
-	const std::string _arrayName; ///< The name of the array.
-	const EntryList _idxs;        ///< std::deque of stack entries representing the indexes used (left-to-right).
-
-public:
-	/**
-	 * Constructor for ArrayEntry.
-	 *
-	 * @param arrayName The name of the array.
-	 * @param idxs std::deque of stack entries representing the indexes used (left-to-right).
-	 */
-	ArrayEntry(std::string arrayName, std::deque<EntryPtr> idxs) : StackEntry(kArrayStackEntry), _arrayName(arrayName), _idxs(idxs) { }
-
-	virtual std::ostream &print(std::ostream &output) const;
-};
-
-/**
- * Entry containing a string.
- */
-class StringEntry : public StackEntry {
-private:
-	const std::string _str; ///< The string in the entry.
-
-public:
-	/**
-	 * Constructor for StringEntry.
-	 *
-	 * @param str The string in the entry.
-	 */
-	StringEntry(std::string str) : StackEntry(kStringStackEntry), _str(str) { }
-
-	virtual std::ostream &print(std::ostream &output) const;
-};
-
-/**
- * Entry representing a list.
- */
-class ListEntry : public StackEntry {
-private:
-	const EntryList _items; ///< Vector containing the list items.
-
-public:
-	/**
-	 * Constructor for ListEntry.
-	 *
-	 * @param items The items stored in the list.
-	 */
-	ListEntry(EntryList items) : StackEntry(kListStackEntry), _items(items) { }
-
-	virtual std::ostream &print(std::ostream &output) const;
-};
-
-/**
- * Stack entry representing a function call.
- */
-class CallEntry : public StackEntry {
-private:
-	const std::string _funcName; ///< The name of the function.
-	const EntryList _args;       ///< std::deque of stack entries representing the arguments used (stored left-to-right).
-
-public:
-	/**
-	 * Constructor for CallEntry.
-	 *
-	 * @param funcName The name of the function.
-	 * @param args std::deque of stack entries representing the arguments used.
-	 */
-	CallEntry(std::string funcName, EntryList args) : StackEntry(kCallStackEntry), _funcName(funcName), _args(args) { }
-
-	virtual std::ostream &print(std::ostream &output) const;
-};
-
-/**
  * Type representing a stack.
  */
-typedef Stack<EntryPtr> EntryStack;
+typedef Stack<ValuePtr> ValueStack;
 
 const int kIndentAmount = 2; ///< How many spaces to use for each indent.
 
@@ -343,11 +70,11 @@ private:
 protected:
 	Engine *_engine;        ///< Pointer to the Engine used for the script.
 	std::ostream &_output;  ///< The std::ostream to output the code to.
-	EntryStack _stack;      ///< The stack currently being processed.
+	ValueStack _stack;      ///< The stack currently being processed.
 	uint _indentLevel;      ///< Indentation level.
 	GraphVertex _curVertex; ///< Graph vertex currently being processed.
 	GroupPtr _curGroup;     ///< Pointer to the group currently being processed.
-	EntryList _argList;     ///< Storage for lists of arguments to be built when processing function calls.
+	ValueList _argList;     ///< Storage for lists of arguments to be built when processing function calls.
 
 	/**
 	 * Processes an instruction. Called by process() for each instruction.
@@ -381,7 +108,7 @@ protected:
 	 * @param dst The variable being assigned to.
 	 * @param src The value being assigned.
 	 */
-	void writeAssignment(EntryPtr dst, EntryPtr src);
+	void writeAssignment(ValuePtr dst, ValuePtr src);
 
 	/**
 	 * Process a single character of metadata.
@@ -397,7 +124,7 @@ protected:
 	 *
 	 * @param p The argument to add.
 	 */
-	void addArg(EntryPtr p);
+	void addArg(ValuePtr p);
 
 	/**
 	 * Construct the signature for a function.

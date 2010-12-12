@@ -13,6 +13,7 @@ TEST_LIBS    := \
 	decompiler/disassembler.o \
 	decompiler/engine.o \
 	decompiler/simple_disassembler.o \
+	decompiler/value.o \
 	decompiler/scummv6/disassembler.o \
 	decompiler/scummv6/codegen.o \
 	decompiler/scummv6/engine.o \

@@ -29,6 +29,21 @@ namespace Scumm {
 
 namespace v6 {
 
+class ListValue : public Value {
+protected:
+	const ValueList _items; ///< The list items.
+
+public:
+	/**
+	 * Constructor for ListValue.
+	 *
+	 * @param items The list items, stored left-to-right.
+	 */
+	ListValue(ValueList items) : _items(items) { }
+
+	virtual std::ostream &print(std::ostream &output) const;
+};
+
 /**
  * SCUMMv6 code generator.
  */
@@ -59,11 +74,11 @@ private:
 	std::string decodeArrayName(uint16 arrID);
 
 	/**
-	 * Creates a ListEntry from the stack.
+	 * Creates a ListValue from the stack.
 	 *
-	 * @return The ListEntry created from the stack.
+	 * @return The ListValue created from the stack.
 	 */
-	EntryPtr createListEntry();
+	ValuePtr createListValue();
 public:
 	/**
 	 * Constructor for Scumm::v6::CodeGenerator.

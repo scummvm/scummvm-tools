@@ -229,6 +229,7 @@ ifdef USE_BOOST
 decompile_OBJS := \
 	common/file.o \
 	decompiler/decompiler.o \
+	decompiler/value.o \
 	decompiler/disassembler.o \
 	decompiler/simple_disassembler.o \
 	decompiler/engine.o \

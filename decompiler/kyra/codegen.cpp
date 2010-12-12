@@ -42,31 +42,31 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 		case 2:
 			// If something has been called previously in this group, don't output retval variable
 			if (inst->_address <= findFirstCall()->_address)
-				_stack.push(new VarEntry("retval"));
+				_stack.push(new VarValue("retval"));
 			break;
 		case 3:
 		case 4:
-			_stack.push(new IntEntry(inst->_params[0].getSigned(), true));
+			_stack.push(new IntValue(inst->_params[0].getSigned(), true));
 			break;
 		case 5:
 			{
 				std::stringstream s;
 				s << boost::format("var%d") % inst->_params[0].getSigned();
-				_stack.push(new VarEntry(s.str()));
+				_stack.push(new VarValue(s.str()));
 			}
 			break;
 		case 6:
 			{
 				std::stringstream s;
 				s << boost::format("localvar%d") % inst->_params[0].getSigned();
-				_stack.push(new VarEntry(s.str()));
+				_stack.push(new VarValue(s.str()));
 			}
 			break;
 		case 7:
 			{
 				std::stringstream s;
 				s << boost::format("param%d") % inst->_params[0].getSigned();
-				_stack.push(new VarEntry(s.str()));
+				_stack.push(new VarValue(s.str()));
 			}
 			break;
 		}
@@ -75,7 +75,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 		switch (inst->_opcode) {
 		case 8:
 			{
-				EntryPtr p = new VarEntry("retval");
+				ValuePtr p = new VarValue("retval");
 				writeAssignment(p, _stack.pop());
 			}
 			break;
@@ -83,7 +83,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 			{
 				std::stringstream s;
 				s << boost::format("var%d") % inst->_params[0].getSigned();
-				EntryPtr p = new VarEntry(s.str());
+				ValuePtr p = new VarValue(s.str());
 				writeAssignment(p, _stack.pop());
 			}
 			break;
@@ -91,7 +91,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 			{
 				std::stringstream s;
 				s << boost::format("localvar%d") % inst->_params[0].getSigned();
-				EntryPtr p = new VarEntry(s.str());
+				ValuePtr p = new VarValue(s.str());
 				writeAssignment(p, _stack.pop());
 			}
 			break;
@@ -99,7 +99,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 			{
 				std::stringstream s;
 				s << boost::format("param%d") % inst->_params[0].getSigned();
-				EntryPtr p = new VarEntry(s.str());
+				ValuePtr p = new VarValue(s.str());
 				writeAssignment(p, _stack.pop());
 			}
 			break;
@@ -115,26 +115,12 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 			for (int i = 0; i != inst->_params[0].getSigned(); ++i) {
 				std::stringstream s;
 				s << boost::format("localvar%d") % i;
-				_stack.push(new VarEntry(s.str()));
+				_stack.push(new VarValue(s.str()));
 			}
 		}
 		break;
 	case kCondJumpInstType:
-		switch (_curGroup->_type) {
-		case kIfCondGroupType:
-		case kWhileCondGroupType:
-			break;
-		case kDoWhileCondGroupType:
-			_stack.push(new UnaryOpEntry(_stack.pop(), "!", false));
-			break;
-		default:
-			{
-				std::stringstream s;
-				s << boost::format("WARNING: Couldn't handle conditional jump at address %08X") % inst->_address;
-				addOutputLine(s.str());
-			}
-			return;
-		}
+		_stack.push(_stack.pop()->negate());
 		CodeGenerator::processInst(inst);
 		break;
 	case kCallInstType:
@@ -143,7 +129,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 			Function f = _engine->_functions.find(inst->_params[0].getUnsigned())->second;
 			for (size_t i = 0; i < f._metadata.length(); i++)
 				processSpecialMetadata(inst, f._metadata[i], i);
-			_stack.push(new CallEntry(f._name, _argList));
+			_stack.push(new CallValue(f._name, _argList));
 			// Leave call on stack if this is a condition, or other calls follow in same group
 			if (_curGroup->_type == kIfCondGroupType || _curGroup->_type == kWhileCondGroupType || _curGroup->_type == kDoWhileCondGroupType || inst->_address != findLastCall()->_address) {
 				break;
@@ -152,7 +138,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 				stream << _stack.pop() << ";";
 				addOutputLine(stream.str());
 			} else {
-				EntryPtr p = new VarEntry("retval");
+				ValuePtr p = new VarValue("retval");
 				writeAssignment(p, _stack.pop());
 			}
 			break;
@@ -166,7 +152,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 			std::string metadata = (!returnsValue ? inst->_codeGenData : inst->_codeGenData.substr(1));
 			for (size_t i = 0; i < metadata.length(); i++)
 				processSpecialMetadata(inst, metadata[i], i);
-			_stack.push(new CallEntry(inst->_name, _argList));
+			_stack.push(new CallValue(inst->_name, _argList));
 			// Leave call on stack if this is a condition, or other calls follow in same group
 			if (_curGroup->_type == kIfCondGroupType || _curGroup->_type == kWhileCondGroupType || _curGroup->_type == kDoWhileCondGroupType || inst->_address != findLastCall()->_address) {
 				break;
@@ -175,7 +161,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 				stream << _stack.pop() << ";";
 				addOutputLine(stream.str());
 			} else {
-				EntryPtr p = new VarEntry("retval");
+				ValuePtr p = new VarValue("retval");
 				writeAssignment(p, _stack.pop());
 			}
 			break;
@@ -213,14 +199,13 @@ void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const InstPtr inst, char c
 		break;
 	case 's':
 		{
-			EntryPtr p = _stack.peekPos(pos);
-			if (p->_type == kIntStackEntry) {
-				IntEntry *ie = (IntEntry *)p.get();
-				addArg(new StringEntry(((Kyra::Kyra2Engine *)_engine)->_textStrings[ie->getValue()]));
+			ValuePtr p = _stack.peekPos(pos);
+			if (p->isInteger()) {
+				addArg(new StringValue(((Kyra::Kyra2Engine *)_engine)->_textStrings[p->getUnsigned()]));
 			} else {
-				EntryList idxs;
+				ValueList idxs;
 				idxs.push_front(p);
-				addArg(new ArrayEntry("strings", idxs));
+				addArg(new ArrayValue("strings", idxs));
 			}
 		}
 		break;

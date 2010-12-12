@@ -31,89 +31,6 @@
 #define GET(vertex) (boost::get(boost::vertex_name, _g, vertex))
 #define GET_EDGE(edge) (boost::get(boost::edge_attribute, _g, edge))
 
-static int dupindex = 0;
-
-int32 IntEntry::getValue() {
-	return _val;
-}
-
-bool IntEntry::getSigned() {
-	return _isSigned;
-}
-
-std::ostream &IntEntry::print(std::ostream &output) const {
-	if (_isSigned)
-		output << (int32)_val;
-	else
-		output << (uint32)_val;
-	return output;
-}
-
-std::ostream &VarEntry::print(std::ostream &output) const {
-	return output << _varName;
-}
-
-std::ostream &BinaryOpEntry::print(std::ostream &output) const {
-	return output << "(" << _lhs << " " << _op << " " << _rhs << ")";
-}
-
-std::ostream &UnaryOpEntry::print(std::ostream &output) const {
-	if (_isPostfix)
-		return output << "(" << _operand << ")" << _op;
-	else
-		return output << _op << "(" << _operand << ")";
-}
-
-std::ostream &DupEntry::print(std::ostream &output) const {
-	return output << "temp" << _idx;
-}
-
-std::ostream &ArrayEntry::print(std::ostream &output) const {
-	output << _arrayName;
-	for (EntryList::const_iterator i = _idxs.begin(); i != _idxs.end(); ++i)
-		output << "[" << *i << "]";
-	return output;
-}
-
-std::ostream &StringEntry::print(std::ostream &output) const {
-	return output << _str;
-}
-
-std::ostream &ListEntry::print(std::ostream &output) const {
-	output << "[";
-	for (EntryList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
-		if (i != _items.begin())
-			output << ", ";
-		output << *i;
-	}
-	output << "]";
-	return output;
-}
-
-std::ostream &CallEntry::print(std::ostream &output) const {
-	output << _funcName << "(";
-	for (EntryList::const_iterator i = _args.begin(); i != _args.end(); ++i) {
-		if (i != _args.begin())
-			output << ", ";
-		output << *i;
-	}
-	output << ")";
-	return output;
-}
-
-EntryPtr StackEntry::dup(std::ostream &output) {
-	if (_type == kDupStackEntry)
-		return this;
-
-	EntryPtr dupEntry = new DupEntry(++dupindex);
-	output << dupEntry << " = " << (EntryPtr)this << ";";
-	return dupEntry;
-}
-
-EntryPtr IntEntry::dup(std::ostream &output) {
-	return new IntEntry(_val, _isSigned);
-}
-
 std::string CodeGenerator::constructFuncSignature(const Function &func) {
 	return "";
 }
@@ -129,7 +46,7 @@ CodeGenerator::CodeGenerator(Engine *engine, std::ostream &output, ArgOrder binO
 	_indentLevel = 0;
 }
 
-typedef std::pair<GraphVertex, EntryStack> DFSEntry;
+typedef std::pair<GraphVertex, ValueStack> DFSEntry;
 
 void CodeGenerator::generate(const Graph &g) {
 	_g = g;
@@ -153,7 +70,7 @@ void CodeGenerator::generate(const Graph &g) {
 		// DFS from entry point to process each vertex
 		Stack<DFSEntry> dfsStack;
 		std::set<GraphVertex> seen;
-		dfsStack.push(DFSEntry(entryPoint, EntryStack()));
+		dfsStack.push(DFSEntry(entryPoint, ValueStack()));
 		seen.insert(entryPoint);
 		while (!dfsStack.empty()) {
 			DFSEntry e = dfsStack.pop();
@@ -202,7 +119,7 @@ void CodeGenerator::addOutputLine(std::string s, bool unindentBefore, bool inden
 	_curGroup->_code.push_back(CodeLine(s, unindentBefore, indentAfter));
 }
 
-void CodeGenerator::writeAssignment(EntryPtr dst, EntryPtr src) {
+void CodeGenerator::writeAssignment(ValuePtr dst, ValuePtr src) {
 	std::stringstream s;
 	s << dst << " = " << src << ";";
 	addOutputLine(s.str());
@@ -259,7 +176,7 @@ void CodeGenerator::processInst(const InstPtr inst) {
 	case kDupInstType:
 		{
 			std::stringstream s;
-			EntryPtr p = _stack.pop()->dup(s);
+			ValuePtr p = _stack.pop()->dup(s);
 			if (s.str().length() > 0)
 				addOutputLine(s.str());
 			_stack.push(p);
@@ -268,16 +185,16 @@ void CodeGenerator::processInst(const InstPtr inst) {
 		}
 	case kUnaryOpPreInstType:
 	case kUnaryOpPostInstType:
-		_stack.push(new UnaryOpEntry(_stack.pop(), inst->_codeGenData, inst->_type == kUnaryOpPostInstType));
+		_stack.push(new UnaryOpValue(_stack.pop(), inst->_codeGenData, inst->_type == kUnaryOpPostInstType));
 		break;
 	case kBinaryOpInstType:
 		{
-			EntryPtr op1 = _stack.pop();
-			EntryPtr op2 = _stack.pop();
+			ValuePtr op1 = _stack.pop();
+			ValuePtr op2 = _stack.pop();
 			if (_binOrder == kFIFOArgOrder)
-				_stack.push(new BinaryOpEntry(op2, op1, inst->_codeGenData));
+				_stack.push(new BinaryOpValue(op2, op1, inst->_codeGenData));
 			else if (_binOrder == kLIFOArgOrder)
-				_stack.push(new BinaryOpEntry(op1, op2, inst->_codeGenData));
+				_stack.push(new BinaryOpValue(op1, op2, inst->_codeGenData));
 			break;
 		}
 	case kCondJumpInstType:
@@ -300,11 +217,11 @@ void CodeGenerator::processInst(const InstPtr inst) {
 						s << "} else ";
 					}
 				}
-				s << "if (" << _stack.pop() << ") {";
+				s << "if (" << _stack.pop()->negate() << ") {";
 				addOutputLine(s.str(), _curGroup->_coalescedElse, true);
 				break;
 			case kWhileCondGroupType:
-				s << "while (" << _stack.pop() << ") {";
+				s << "while (" << _stack.pop()->negate() << ") {";
 				addOutputLine(s.str(), false, true);
 				break;
 			case kDoWhileCondGroupType:
@@ -370,7 +287,7 @@ void CodeGenerator::processInst(const InstPtr inst) {
 			std::string metadata = (!returnsValue ? inst->_codeGenData : inst->_codeGenData.substr(1));
 			for (size_t i = 0; i < metadata.length(); i++)
 				processSpecialMetadata(inst, metadata[i], i);
-			_stack.push(new CallEntry(inst->_name, _argList));
+			_stack.push(new CallValue(inst->_name, _argList));
 			if (!returnsValue) {
 				std::stringstream stream;
 				stream << _stack.pop() << ";";
@@ -388,7 +305,7 @@ void CodeGenerator::processInst(const InstPtr inst) {
 	}
 }
 
-void CodeGenerator::addArg(EntryPtr p) {
+void CodeGenerator::addArg(ValuePtr p) {
 	if (_callOrder == kFIFOArgOrder)
 		_argList.push_front(p);
 	else if (_callOrder == kLIFOArgOrder)
