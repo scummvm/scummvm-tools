@@ -34,30 +34,30 @@ EntryPtr Scumm::v6::Scummv6CodeGenerator::createListEntry() {
 	return new ListEntry(list);
 }
 
-void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
+void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 	// This is just to keep some order in this code and have related
 	// opcodes near each other. It's not strictly necessary, because we
 	// can just look directly at the opcode, but this should be easier
 	// to read.
-	switch (inst._type) {
+	switch (inst->_type) {
 	case kLoadInstType:
-		switch (inst._opcode) {
+		switch (inst->_opcode) {
 		case 0x00: // pushByte
-			_stack.push(new IntEntry(inst._params[0].getUnsigned(), false));
+			_stack.push(new IntEntry(inst->_params[0].getUnsigned(), false));
 			break;
 		case 0x01: // pushWord
-			_stack.push(new IntEntry(inst._params[0].getSigned(), true));
+			_stack.push(new IntEntry(inst->_params[0].getSigned(), true));
 			break;
 		case 0x02: // pushByteVar
 		case 0x03: // pushWordVar
-			_stack.push(new VarEntry(decodeVarName(inst._params[0].getUnsigned())));
+			_stack.push(new VarEntry(decodeVarName(inst->_params[0].getUnsigned())));
 			break;
 		case 0x06: // byteArrayRead
 		case 0x07: // wordArrayRead
 			{
 				EntryList idxs;
 				idxs.push_front(_stack.pop());
-				_stack.push(new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs));
+				_stack.push(new ArrayEntry(decodeArrayName(inst->_params[0].getUnsigned()), idxs));
 				break;
 			}
 		case 0x0A: // byteArrayIndexedRead
@@ -66,17 +66,17 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 				EntryList idxs;
 				idxs.push_front(_stack.pop());
 				idxs.push_front(_stack.pop());
-				_stack.push(new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs));
+				_stack.push(new ArrayEntry(decodeArrayName(inst->_params[0].getUnsigned()), idxs));
 				break;
 			}
 		}
 		break;
 	case kStoreInstType:
-		switch (inst._opcode) {
+		switch (inst->_opcode) {
 			case 0x42: // writeByteVar
 			case 0x43: // writeWordVar
 				{
-					EntryPtr p = new VarEntry(decodeVarName(inst._params[0].getUnsigned()));
+					EntryPtr p = new VarEntry(decodeVarName(inst->_params[0].getUnsigned()));
 					writeAssignment(p, _stack.pop());
 				}
 				break;
@@ -86,7 +86,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 					EntryPtr value = _stack.pop();
 					EntryList idxs;
 					idxs.push_back(_stack.pop());
-					EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+					EntryPtr p = new ArrayEntry(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
 					writeAssignment(p, value);
 				}
 				break;
@@ -97,14 +97,14 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 					EntryList idxs;
 					idxs.push_front(_stack.pop());
 					idxs.push_front(_stack.pop());
-					EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+					EntryPtr p = new ArrayEntry(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
 					writeAssignment(p, value);
 				}
 				break;
 			default:
 				{
 					std::stringstream s;
-					s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+					s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst->_opcode % inst->_address;
 					addOutputLine(s.str());
 				}
 				break;
@@ -119,17 +119,17 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 		switch (_curGroup->_type) {
 		case kIfCondGroupType:
 		case kWhileCondGroupType:
-			if (inst._opcode == 0x5C) // jumpTrue
+			if (inst->_opcode == 0x5C) // jumpTrue
 				_stack.push(new UnaryOpEntry(_stack.pop(), "!", false));
 			break;
 		case kDoWhileCondGroupType:
-			if (inst._opcode == 0x5D) // jumpFalse
+			if (inst->_opcode == 0x5D) // jumpFalse
 				_stack.push(new UnaryOpEntry(_stack.pop(), "!", false));
 			break;
 		default:
 			{
 				std::stringstream s;
-				s << boost::format("WARNING: Couldn't handle conditional jump at address %08X") % inst._address;
+				s << boost::format("WARNING: Couldn't handle conditional jump at address %08X") % inst->_address;
 				addOutputLine(s.str());
 			}
 			return;
@@ -137,14 +137,14 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 		CodeGenerator::processInst(inst);
 		break;
 	case kUnaryOpPostInstType:
-		switch (inst._opcode) {
+		switch (inst->_opcode) {
 		case 0x4E: // byteVarInc
 		case 0x4F: // wordVarInc
 		case 0x56: // byteVarDec
 		case 0x57: // wordVarDec
 			{
 				std::stringstream s;
-				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst._params[0].getUnsigned())), inst._codeGenData, true);
+				EntryPtr p = new UnaryOpEntry(new VarEntry(decodeVarName(inst->_params[0].getUnsigned())), inst->_codeGenData, true);
 				s << p << ";";
 				addOutputLine(s.str());
 			}
@@ -157,7 +157,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 				std::stringstream s;
 				EntryList idxs;
 				idxs.push_front(_stack.pop());
-				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst._params[0].getUnsigned()), idxs), inst._codeGenData, true);
+				EntryPtr p = new UnaryOpEntry(new ArrayEntry(decodeVarName(inst->_params[0].getUnsigned()), idxs), inst->_codeGenData, true);
 				s << p << ";";
 				addOutputLine(s.str());
 			}
@@ -168,13 +168,13 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 		}
 		break;
 	case kSpecialCallInstType:
-		switch (inst._opcode) {
+		switch (inst->_opcode) {
 		case 0xA4CD: // arrayOp_assignString
 			{
-				EntryPtr value = new StringEntry(inst._params[1].getString());
+				EntryPtr value = new StringEntry(inst->_params[1].getString());
 				EntryList idxs;
 				idxs.push_front(_stack.pop());
-				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+				EntryPtr p = new ArrayEntry(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
 				writeAssignment(p, value);
 			}
 			break;
@@ -183,7 +183,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 				EntryList idxs;
 				idxs.push_front(_stack.pop());
 				EntryPtr value = createListEntry();
-				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+				EntryPtr p = new ArrayEntry(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
 				writeAssignment(p, value);
 			}
 
@@ -194,7 +194,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const Instruction inst) {
 				idxs.push_front(_stack.pop());
 				EntryPtr value = createListEntry();
 				idxs.push_front(_stack.pop());
-				EntryPtr p = new ArrayEntry(decodeArrayName(inst._params[0].getUnsigned()), idxs);
+				EntryPtr p = new ArrayEntry(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
 				writeAssignment(p, value);
 			}
 
@@ -412,7 +412,7 @@ std::string Scumm::v6::Scummv6CodeGenerator::decodeArrayName(uint16 arrID) {
 	return s.str();
 }
 
-void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
+void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const InstPtr inst, char c, int pos) {
 	switch (c) {
 	// All of these meanings are taken from descumm.
 	case 'l':
@@ -422,25 +422,25 @@ void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const Instruction &
 	case 'w':
 	case 'j':
 	case 'i':
-		switch (inst._params[0]._type) {
+		switch (inst->_params[0]._type) {
 		case kSByteParamType:
 		case kShortParamType:
-			addArg(new IntEntry(inst._params[0].getSigned(), true));
+			addArg(new IntEntry(inst->_params[0].getSigned(), true));
 			break;
 		case kByteParamType:
 		case kUShortParamType:
-			addArg(new IntEntry(inst._params[0].getUnsigned(), false));
+			addArg(new IntEntry(inst->_params[0].getUnsigned(), false));
 			break;
 		default:
-			std::cerr << boost::format("WARNING: Unexpected type for parameter 0 @ %08X while processing metadata character %c") % inst._address % c;
+			std::cerr << boost::format("WARNING: Unexpected type for parameter 0 @ %08X while processing metadata character %c") % inst->_address % c;
 			break;
 		}
 		break;
 	case 'v':
-		addArg(new VarEntry(decodeVarName(inst._params[0].getUnsigned())));
+		addArg(new VarEntry(decodeVarName(inst->_params[0].getUnsigned())));
 		break;
 	case 's':
-		addArg(new StringEntry(inst._params[0].getString()));
+		addArg(new StringEntry(inst->_params[0].getString()));
 		break;
 	case 'z':
 		addArg(_stack.pop());

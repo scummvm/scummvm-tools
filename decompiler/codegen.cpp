@@ -158,7 +158,7 @@ void CodeGenerator::generate(const Graph &g) {
 		while (!dfsStack.empty()) {
 			DFSEntry e = dfsStack.pop();
 			GroupPtr tmp = GET(e.first);
-			if (tmp->_start->_address > lastGroup->_start->_address)
+			if ((*tmp->_start)->_address > (*lastGroup->_start)->_address)
 				lastGroup = tmp;
 			_stack = e.second;
 			GraphVertex v = e.first;
@@ -186,7 +186,7 @@ void CodeGenerator::generate(const Graph &g) {
 					assert(_indentLevel > 0);
 					_indentLevel--;
 				}
-				_output << boost::format("%08X: %s") % p->_start->_address % indentString(it->_line) << std::endl;
+				_output << boost::format("%08X: %s") % (*p->_start)->_address % indentString(it->_line) << std::endl;
 				if (it->_indentAfter)
 					_indentLevel++;
 			}
@@ -253,8 +253,8 @@ void CodeGenerator::process(GraphVertex v) {
 	}
 }
 
-void CodeGenerator::processInst(const Instruction inst) {
-	switch (inst._type) {
+void CodeGenerator::processInst(const InstPtr inst) {
+	switch (inst->_type) {
 	// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
 	case kDupInstType:
 		{
@@ -268,16 +268,16 @@ void CodeGenerator::processInst(const Instruction inst) {
 		}
 	case kUnaryOpPreInstType:
 	case kUnaryOpPostInstType:
-		_stack.push(new UnaryOpEntry(_stack.pop(), inst._codeGenData, inst._type == kUnaryOpPostInstType));
+		_stack.push(new UnaryOpEntry(_stack.pop(), inst->_codeGenData, inst->_type == kUnaryOpPostInstType));
 		break;
 	case kBinaryOpInstType:
 		{
 			EntryPtr op1 = _stack.pop();
 			EntryPtr op2 = _stack.pop();
 			if (_binOrder == kFIFOArgOrder)
-				_stack.push(new BinaryOpEntry(op2, op1, inst._codeGenData));
+				_stack.push(new BinaryOpEntry(op2, op1, inst->_codeGenData));
 			else if (_binOrder == kLIFOArgOrder)
-				_stack.push(new BinaryOpEntry(op1, op2, inst._codeGenData));
+				_stack.push(new BinaryOpEntry(op1, op2, inst->_codeGenData));
 			break;
 		}
 	case kCondJumpInstType:
@@ -366,11 +366,11 @@ void CodeGenerator::processInst(const Instruction inst) {
 	case kSpecialCallInstType:
 		{
 			_argList.clear();
-			bool returnsValue = (inst._codeGenData.find("r") == 0);
-			std::string metadata = (!returnsValue ? inst._codeGenData : inst._codeGenData.substr(1));
+			bool returnsValue = (inst->_codeGenData.find("r") == 0);
+			std::string metadata = (!returnsValue ? inst->_codeGenData : inst->_codeGenData.substr(1));
 			for (size_t i = 0; i < metadata.length(); i++)
 				processSpecialMetadata(inst, metadata[i], i);
-			_stack.push(new CallEntry(inst._name, _argList));
+			_stack.push(new CallEntry(inst->_name, _argList));
 			if (!returnsValue) {
 				std::stringstream stream;
 				stream << _stack.pop() << ";";
@@ -381,7 +381,7 @@ void CodeGenerator::processInst(const Instruction inst) {
 	default:
 		{
 			std::stringstream s;
-			s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst._opcode % inst._address;
+			s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst->_opcode % inst->_address;
 			addOutputLine(s.str());
 		}
 		break;
@@ -395,7 +395,7 @@ void CodeGenerator::addArg(EntryPtr p) {
 		_argList.push_back(p);
 }
 
-void CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
+void CodeGenerator::processSpecialMetadata(const InstPtr inst, char c, int pos) {
 	switch (c) {
 	case 'p':
 		addArg(_stack.pop());

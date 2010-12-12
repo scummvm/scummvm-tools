@@ -46,7 +46,7 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			switch (gr->_start->_address) {
+			switch ((*gr->_start)->_address) {
 			case 0:
 				TS_ASSERT(boost::in_degree(*it, g) == 0 && boost::out_degree(*it, g) == 1);
 				break;
@@ -80,7 +80,7 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			switch (gr->_start->_address) {
+			switch ((*gr->_start)->_address) {
 			case 0:
 				TS_ASSERT(boost::in_degree(*it, g) == 0 && boost::out_degree(*it, g) == 1);
 				break;
@@ -115,9 +115,9 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			switch (gr->_start->_address) {
+			switch ((*gr->_start)->_address) {
 			case 0:
-				TS_ASSERT(gr->_end->_address == 2);
+				TS_ASSERT((*gr->_end)->_address == 2);
 				TS_ASSERT(boost::in_degree(*it, g) == 0 && boost::out_degree(*it, g) == 2);
 				break;
 			case 5:
@@ -163,7 +163,7 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0)
+			if ((*gr->_start)->_address == 0)
 				TS_ASSERT(gr->_type == kWhileCondGroupType);
 		}
 		delete c;
@@ -183,7 +183,7 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 3)
+			if ((*gr->_start)->_address == 3)
 				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
@@ -203,7 +203,7 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x14)
+			if ((*gr->_start)->_address == 0x14)
 				TS_ASSERT(gr->_type == kBreakGroupType);
 		}
 		delete c;
@@ -221,7 +221,7 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0xA)
+			if ((*gr->_start)->_address == 0xA)
 				TS_ASSERT(gr->_type == kBreakGroupType);
 		}
 		delete c;
@@ -239,7 +239,7 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0xD)
+			if ((*gr->_start)->_address == 0xD)
 				TS_ASSERT(gr->_type == kBreakGroupType);
 		}
 		delete c;
@@ -259,9 +259,9 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x14)
+			if ((*gr->_start)->_address == 0x14)
 				TS_ASSERT(gr->_type == kContinueGroupType);
-			if (gr->_start->_address == 0x1a)
+			if ((*gr->_start)->_address == 0x1a)
 				TS_ASSERT(gr->_type == kNormalGroupType);
 		}
 		delete c;
@@ -279,7 +279,7 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0xA)
+			if ((*gr->_start)->_address == 0xA)
 				TS_ASSERT(gr->_type == kContinueGroupType);
 		}
 		delete c;
@@ -297,7 +297,7 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0xD)
+			if ((*gr->_start)->_address == 0xD)
 				TS_ASSERT(gr->_type == kContinueGroupType);
 		}
 		delete c;
@@ -317,7 +317,7 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x0)
+			if ((*gr->_start)->_address == 0x0)
 				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
@@ -335,7 +335,7 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x0)
+			if ((*gr->_start)->_address == 0x0)
 				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
@@ -353,7 +353,7 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x3)
+			if ((*gr->_start)->_address == 0x3)
 				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
@@ -371,7 +371,7 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x0)
+			if ((*gr->_start)->_address == 0x0)
 				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
@@ -389,7 +389,7 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x3)
+			if ((*gr->_start)->_address == 0x3)
 				TS_ASSERT(gr->_type == kIfCondGroupType);
 		}
 		delete c;
@@ -409,7 +409,7 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x10) {
+			if ((*gr->_start)->_address == 0x10) {
 				TS_ASSERT(gr->_startElse);
 				TS_ASSERT(gr->_endElse.size() == 1 && gr->_endElse[0] == gr);
 			}
@@ -429,7 +429,7 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x0)
+			if ((*gr->_start)->_address == 0x0)
 				TS_ASSERT(gr->_type == kIfCondGroupType);
 			TS_ASSERT(!gr->_startElse);
 		}
@@ -451,9 +451,9 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x0)
+			if ((*gr->_start)->_address == 0x0)
 				TS_ASSERT(gr->_type == kWhileCondGroupType);
-			if (gr->_start->_address == 0xd)
+			if ((*gr->_start)->_address == 0xd)
 				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
@@ -471,9 +471,9 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x6)
+			if ((*gr->_start)->_address == 0x6)
 				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
-			if (gr->_start->_address == 0x10)
+			if ((*gr->_start)->_address == 0x10)
 				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
@@ -491,9 +491,9 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x0)
+			if ((*gr->_start)->_address == 0x0)
 				TS_ASSERT(gr->_type == kWhileCondGroupType);
-			if (gr->_start->_address == 0xa)
+			if ((*gr->_start)->_address == 0xa)
 				TS_ASSERT(gr->_type == kWhileCondGroupType);
 		}
 		delete c;
@@ -511,9 +511,9 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x0)
+			if ((*gr->_start)->_address == 0x0)
 				TS_ASSERT(gr->_type == kWhileCondGroupType);
-			if (gr->_start->_address == 0xd)
+			if ((*gr->_start)->_address == 0xd)
 				TS_ASSERT(gr->_type == kWhileCondGroupType);
 		}
 		delete c;
@@ -531,9 +531,9 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x0)
+			if ((*gr->_start)->_address == 0x0)
 				TS_ASSERT(gr->_type == kWhileCondGroupType);
-			if (gr->_start->_address == 0x10)
+			if ((*gr->_start)->_address == 0x10)
 				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
@@ -551,9 +551,9 @@ public:
 		range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			if (gr->_start->_address == 0x3)
+			if ((*gr->_start)->_address == 0x3)
 				TS_ASSERT(gr->_type == kWhileCondGroupType);
-			if (gr->_start->_address == 0x13)
+			if ((*gr->_start)->_address == 0x13)
 				TS_ASSERT(gr->_type == kDoWhileCondGroupType);
 		}
 		delete c;
@@ -575,7 +575,7 @@ public:
 		VertexRange range = boost::vertices(g);
 		for (VertexIterator it = range.first; it != range.second; ++it) {
 			GroupPtr gr = GET(*it);
-			switch (gr->_start->_address) {
+			switch ((*gr->_start)->_address) {
 			case 0x6:
 				TS_ASSERT(gr->_type == kWhileCondGroupType);
 				TS_ASSERT(!gr->_startElse);
@@ -595,7 +595,7 @@ public:
 			case 0x8B:
 				TS_ASSERT(gr->_type == kNormalGroupType);
 				TS_ASSERT(gr->_startElse);
-				TS_ASSERT(gr->_endElse.size() == 1 && gr->_endElse[0]->_start->_address == 0x8B);
+				TS_ASSERT(gr->_endElse.size() == 1 && (*gr->_endElse[0]->_start)->_address == 0x8B);
 				break;
 			case 0x91:
 				TS_ASSERT(gr->_type == kNormalGroupType || gr->_type == kIfCondGroupType); // Allow inclusion of the pop instruction immediately before
@@ -605,7 +605,7 @@ public:
 			case 0xA6:
 				TS_ASSERT(gr->_type == kNormalGroupType);
 				TS_ASSERT(!gr->_startElse);
-				TS_ASSERT(gr->_endElse.size() == 1 && gr->_endElse[0]->_start->_address == 0x91);
+				TS_ASSERT(gr->_endElse.size() == 1 && (*gr->_endElse[0]->_start)->_address == 0x91);
 				break;
 			default:
 				TS_ASSERT(gr->_type == kNormalGroupType);

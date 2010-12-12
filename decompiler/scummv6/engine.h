@@ -35,7 +35,7 @@ namespace v6 {
 class Scummv6Engine : public Engine {
 public:
 	Disassembler *getDisassembler(InstVec &insts);
-	uint32 getDestAddress(const Instruction &inst) const;
+	uint32 getDestAddress(const InstPtr inst) const;
 	CodeGenerator *getCodeGenerator(std::ostream &output);
 };
 

@@ -388,16 +388,16 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			parameter = 0;
 		}
 
-#define ADD_INST _insts.insert(_insts.end(), Instruction());
+#define ADD_INST _insts.insert(_insts.end(), new Instruction());
 #define LAST_INST (_insts.back())
 #define OPCODE_MD(name, category, stackChange, hasParam, isSigned, codeGenData) \
 		ADD_INST; \
-		LAST_INST._opcode = opcode; \
-		LAST_INST._address = address; \
-		LAST_INST._stackChange = stackChange; \
-		LAST_INST._name = name; \
-		LAST_INST._type = category; \
-		LAST_INST._codeGenData = codeGenData; \
+		LAST_INST->_opcode = opcode; \
+		LAST_INST->_address = address; \
+		LAST_INST->_stackChange = stackChange; \
+		LAST_INST->_name = name; \
+		LAST_INST->_type = category; \
+		LAST_INST->_codeGenData = codeGenData; \
 		if (hasParam) { \
 			Parameter p; \
 			if (isSigned) { \
@@ -407,7 +407,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 				p._type = kUShortParamType; \
 				p._value = (uint32)parameter; \
 			} \
-			LAST_INST._params.push_back(p);\
+			LAST_INST->_params.push_back(p);\
 		}
 #define OPCODE(name, category, stackChange, hasParam, isSigned) OPCODE_MD(name, category, stackChange, hasParam, isSigned, "");
 
@@ -573,7 +573,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 	std::map<uint16, InstIterator> addrMap;
 
 	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it)
-		addrMap[it->_address] = it;
+		addrMap[(*it)->_address] = it;
 
 	std::sort(funcAddrs.begin(), funcAddrs.end());
 	// We only have the entry points, but the end points are not known, so create placeholder function entries
@@ -585,12 +585,12 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 	// Correct jumps to functions so they're treated as calls
 	bool lastWasPushPos = false;
 	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it) {
-		if (it->_type == kJumpInstType || it->_type == kCondJumpInstType) {
-			if (lastWasPushPos || _engine->_functions.find(it->_params[0].getUnsigned()) != _engine->_functions.end()) {
-				it->_type = kCallInstType;
+		if ((*it)->_type == kJumpInstType || (*it)->_type == kCondJumpInstType) {
+			if (lastWasPushPos || _engine->_functions.find((*it)->_params[0].getUnsigned()) != _engine->_functions.end()) {
+				(*it)->_type = kCallInstType;
 			}
 		}
-		lastWasPushPos = (it->_name.compare("pushPos") == 0);
+		lastWasPushPos = ((*it)->_name.compare("pushPos") == 0);
 	}
 }
 

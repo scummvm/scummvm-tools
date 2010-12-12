@@ -439,17 +439,17 @@ void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 
 	InstIterator it;
 	for (it = _insts.begin(); it != _insts.end(); ++it)
-		if (it->_stackChange >= 0x1000)
-			fixStackEffect(it, (it->_stackChange >> 8) & 0xF, (it->_stackChange >> 4) & 0xF, it->_stackChange & 0xF);
+		if ((*it)->_stackChange >= 0x1000)
+			fixStackEffect(it, ((*it)->_stackChange >> 8) & 0xF, ((*it)->_stackChange >> 4) & 0xF, (*it)->_stackChange & 0xF);
 }
 
 void Scumm::v6::Scummv6Disassembler::fixStackEffect(InstIterator &it, int popBefore, int popAfter, int pushTotal) {
-	it->_stackChange = -popBefore - popAfter + pushTotal;
+	(*it)->_stackChange = -popBefore - popAfter + pushTotal;
 	InstIterator it2 = it;
 	for (--it2; popBefore != 0; --it2)
-		if (it2->_type == kLoadInstType)
+		if ((*it2)->_type == kLoadInstType)
 			--popBefore;
-	it->_stackChange -= it2->_params[0].getSigned() + 1;
+	(*it)->_stackChange -= (*it2)->_params[0].getSigned() + 1;
 }
 
 void Scumm::v6::Scummv6Disassembler::readParameter(Parameter *p, char type) {

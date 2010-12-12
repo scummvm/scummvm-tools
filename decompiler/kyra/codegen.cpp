@@ -35,44 +35,44 @@ std::string Kyra::Kyra2CodeGenerator::constructFuncSignature(const Function &fun
 	return s.str();
 }
 
-void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
-	switch (inst._type) {
+void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
+	switch (inst->_type) {
 	case kLoadInstType:
-		switch (inst._opcode) {
+		switch (inst->_opcode) {
 		case 2:
 			// If something has been called previously in this group, don't output retval variable
-			if (inst._address <= findFirstCall()._address)
+			if (inst->_address <= findFirstCall()->_address)
 				_stack.push(new VarEntry("retval"));
 			break;
 		case 3:
 		case 4:
-			_stack.push(new IntEntry(inst._params[0].getSigned(), true));
+			_stack.push(new IntEntry(inst->_params[0].getSigned(), true));
 			break;
 		case 5:
 			{
 				std::stringstream s;
-				s << boost::format("var%d") % inst._params[0].getSigned();
+				s << boost::format("var%d") % inst->_params[0].getSigned();
 				_stack.push(new VarEntry(s.str()));
 			}
 			break;
 		case 6:
 			{
 				std::stringstream s;
-				s << boost::format("localvar%d") % inst._params[0].getSigned();
+				s << boost::format("localvar%d") % inst->_params[0].getSigned();
 				_stack.push(new VarEntry(s.str()));
 			}
 			break;
 		case 7:
 			{
 				std::stringstream s;
-				s << boost::format("param%d") % inst._params[0].getSigned();
+				s << boost::format("param%d") % inst->_params[0].getSigned();
 				_stack.push(new VarEntry(s.str()));
 			}
 			break;
 		}
 		break;
 	case kStoreInstType:
-		switch (inst._opcode) {
+		switch (inst->_opcode) {
 		case 8:
 			{
 				EntryPtr p = new VarEntry("retval");
@@ -82,7 +82,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 		case 9:
 			{
 				std::stringstream s;
-				s << boost::format("var%d") % inst._params[0].getSigned();
+				s << boost::format("var%d") % inst->_params[0].getSigned();
 				EntryPtr p = new VarEntry(s.str());
 				writeAssignment(p, _stack.pop());
 			}
@@ -90,7 +90,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 		case 10:
 			{
 				std::stringstream s;
-				s << boost::format("localvar%d") % inst._params[0].getSigned();
+				s << boost::format("localvar%d") % inst->_params[0].getSigned();
 				EntryPtr p = new VarEntry(s.str());
 				writeAssignment(p, _stack.pop());
 			}
@@ -98,7 +98,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 		case 11:
 			{
 				std::stringstream s;
-				s << boost::format("param%d") % inst._params[0].getSigned();
+				s << boost::format("param%d") % inst->_params[0].getSigned();
 				EntryPtr p = new VarEntry(s.str());
 				writeAssignment(p, _stack.pop());
 			}
@@ -106,13 +106,13 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 		}
 		break;
 	case kStackInstType:
-		if (inst._opcode == 12) {
-			for (int i = inst._params[0].getSigned(); i != 0; --i) {
+		if (inst->_opcode == 12) {
+			for (int i = inst->_params[0].getSigned(); i != 0; --i) {
 				if (!_stack.empty())
 					_stack.pop();
 			}
-		} else if (inst._opcode == 13) {
-			for (int i = 0; i != inst._params[0].getSigned(); ++i) {
+		} else if (inst->_opcode == 13) {
+			for (int i = 0; i != inst->_params[0].getSigned(); ++i) {
 				std::stringstream s;
 				s << boost::format("localvar%d") % i;
 				_stack.push(new VarEntry(s.str()));
@@ -130,7 +130,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 		default:
 			{
 				std::stringstream s;
-				s << boost::format("WARNING: Couldn't handle conditional jump at address %08X") % inst._address;
+				s << boost::format("WARNING: Couldn't handle conditional jump at address %08X") % inst->_address;
 				addOutputLine(s.str());
 			}
 			return;
@@ -140,12 +140,12 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 	case kCallInstType:
 		{
 			_argList.clear();
-			Function f = _engine->_functions.find(inst._params[0].getUnsigned())->second;
+			Function f = _engine->_functions.find(inst->_params[0].getUnsigned())->second;
 			for (size_t i = 0; i < f._metadata.length(); i++)
 				processSpecialMetadata(inst, f._metadata[i], i);
 			_stack.push(new CallEntry(f._name, _argList));
 			// Leave call on stack if this is a condition, or other calls follow in same group
-			if (_curGroup->_type == kIfCondGroupType || _curGroup->_type == kWhileCondGroupType || _curGroup->_type == kDoWhileCondGroupType || inst._address != findLastCall()._address) {
+			if (_curGroup->_type == kIfCondGroupType || _curGroup->_type == kWhileCondGroupType || _curGroup->_type == kDoWhileCondGroupType || inst->_address != findLastCall()->_address) {
 				break;
 			}	else if (!f._retVal) {
 				std::stringstream stream;
@@ -159,16 +159,16 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 		}
 	case kSpecialCallInstType:
 		{
-			if (inst._opcode != 14)
+			if (inst->_opcode != 14)
 				return;
 			_argList.clear();
-			bool returnsValue = (inst._codeGenData.find("r") == 0);
-			std::string metadata = (!returnsValue ? inst._codeGenData : inst._codeGenData.substr(1));
+			bool returnsValue = (inst->_codeGenData.find("r") == 0);
+			std::string metadata = (!returnsValue ? inst->_codeGenData : inst->_codeGenData.substr(1));
 			for (size_t i = 0; i < metadata.length(); i++)
 				processSpecialMetadata(inst, metadata[i], i);
-			_stack.push(new CallEntry(inst._name, _argList));
+			_stack.push(new CallEntry(inst->_name, _argList));
 			// Leave call on stack if this is a condition, or other calls follow in same group
-			if (_curGroup->_type == kIfCondGroupType || _curGroup->_type == kWhileCondGroupType || _curGroup->_type == kDoWhileCondGroupType || inst._address != findLastCall()._address) {
+			if (_curGroup->_type == kIfCondGroupType || _curGroup->_type == kWhileCondGroupType || _curGroup->_type == kDoWhileCondGroupType || inst->_address != findLastCall()->_address) {
 				break;
 			}	else if (!returnsValue) {
 				std::stringstream stream;
@@ -181,32 +181,32 @@ void Kyra::Kyra2CodeGenerator::processInst(const Instruction inst) {
 			break;
 		}
 	default:
-		CodeGenerator::processInst(inst);	
+		CodeGenerator::processInst(inst);
 		break;
 	}
 }
 
-const Instruction &Kyra::Kyra2CodeGenerator::findFirstCall() {
+const InstPtr Kyra::Kyra2CodeGenerator::findFirstCall() {
 	ConstInstIterator it = _curGroup->_start;
 	do {
-		if (it->_type == kCallInstType || (it->_type == kSpecialCallInstType && it->_opcode == 14))
+		if ((*it)->_type == kCallInstType || ((*it)->_type == kSpecialCallInstType && (*it)->_opcode == 14))
 			return *it;
 	} while (it++ != _curGroup->_end);
 
 	return *_curGroup->_start;
 }
 
-const Instruction &Kyra::Kyra2CodeGenerator::findLastCall() {
+const InstPtr Kyra::Kyra2CodeGenerator::findLastCall() {
 	ConstInstIterator it = _curGroup->_end;
 	do {
-		if (it->_type == kCallInstType || (it->_type == kSpecialCallInstType && it->_opcode == 14))
+		if ((*it)->_type == kCallInstType || ((*it)->_type == kSpecialCallInstType && (*it)->_opcode == 14))
 			return *it;
 	} while (it-- != _curGroup->_start);
 
 	return *_curGroup->_end;
 }
 
-void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const Instruction &inst, char c, int pos) {
+void Kyra::Kyra2CodeGenerator::processSpecialMetadata(const InstPtr inst, char c, int pos) {
 	switch (c) {
 	case 'p':
 		addArg(_stack.peekPos(pos));

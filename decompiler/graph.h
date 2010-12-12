@@ -301,19 +301,19 @@ public:
 		if (group->_startElse)
 			output << "Start of else\\n";
 		for (ElseEndIterator it = group->_endElse.begin(); it != group->_endElse.end(); ++it) {
-			output << boost::format("End of else at %08x\\n") % (*it)->_start->_address;
+			output << boost::format("End of else at %08x\\n") % (*(*it)->_start)->_address;
 		}
 		output << "|";
 		ConstInstIterator inst = group->_start;
 		do {
-			output << boost::format("%08x: %s") % inst->_address % inst->_name;
+			output << boost::format("%08x: %s") % (*inst)->_address % (*inst)->_name;
 			std::vector<Parameter>::const_iterator param;
-			for (param = inst->_params.begin(); param != inst->_params.end(); ++param) {
-				if (param != inst->_params.begin())
+			for (param = (*inst)->_params.begin(); param != (*inst)->_params.end(); ++param) {
+				if (param != (*inst)->_params.begin())
 					output << ",";
 				output << " ";
 				if (param->_type != kStringParamType) {
-					if (inst->_type == kCondJumpInstType || inst->_type == kCondJumpRelInstType || inst->_type == kJumpInstType || inst->_type == kJumpRelInstType || inst->_type == kCallInstType) {
+					if ((*inst)->_type == kCondJumpInstType || (*inst)->_type == kCondJumpRelInstType || (*inst)->_type == kJumpInstType || (*inst)->_type == kJumpRelInstType || (*inst)->_type == kCallInstType) {
 						// Output numerical arguments to jumps in hexadecimal
 						switch (param->_type) {
 						case kSByteParamType:
@@ -347,7 +347,7 @@ public:
 							output << *it;
 				}
 			}
-			output << boost::format(" (%d)") % inst->_stackChange << "\\n";
+			output << boost::format(" (%d)") % (*inst)->_stackChange << "\\n";
 		} while (inst++ != group->_end);
 		output << "}";
 		return output;

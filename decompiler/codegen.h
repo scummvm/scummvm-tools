@@ -356,7 +356,7 @@ protected:
 	 *
 	 * @param inst The instruction to process.
 	 */
-	virtual void processInst(const Instruction inst);
+	virtual void processInst(const InstPtr inst);
 
 	/**
 	 * Indents a string according to the current indentation level.
@@ -390,7 +390,7 @@ protected:
 	 * @param c The character signifying the action to be taken.
 	 * @param pos The position at which c occurred in the metadata.
 	 */
-	virtual void processSpecialMetadata(const Instruction &inst, char c, int pos);
+	virtual void processSpecialMetadata(const InstPtr inst, char c, int pos);
 
 	/**
 	 * Add an argument to the argument list.

@@ -73,8 +73,8 @@ public:
 	 */
 	Scummv6CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kFIFOArgOrder, kFIFOArgOrder) {}
 protected:
-	void processInst(const Instruction inst);
-	virtual void processSpecialMetadata(const Instruction &inst, char c, int pos);
+	void processInst(const InstPtr inst);
+	virtual void processSpecialMetadata(const InstPtr inst, char c, int pos);
 };
 
 } // End of namespace v6

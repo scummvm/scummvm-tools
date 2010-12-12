@@ -39,7 +39,7 @@ private:
 	 *
 	 * @return The first call instruction in the current group. If no calls are found, returns the first instruction.
 	 */
-	const Instruction &findFirstCall();
+	const InstPtr findFirstCall();
 
 	/**
 	 * Finds the last call instruction in the current group and returns it.
@@ -48,7 +48,7 @@ private:
 	 *
 	 * @return The last call instruction in the current group. If no calls are found, returns the last instruction.
 	 */
-	const Instruction &findLastCall();
+	const InstPtr findLastCall();
 public:
 	/**
 	 * Constructor for Kyra2CodeGenerator.
@@ -58,8 +58,8 @@ public:
 	 */
 	Kyra2CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kFIFOArgOrder, kLIFOArgOrder) {}
 protected:
-	void processInst(const Instruction inst);
-	virtual void processSpecialMetadata(const Instruction &inst, char c, int pos);
+	void processInst(const InstPtr inst);
+	virtual void processSpecialMetadata(const InstPtr inst, char c, int pos);
 	std::string constructFuncSignature(const Function &func);
 };
 

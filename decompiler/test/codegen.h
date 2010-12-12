@@ -226,7 +226,7 @@ public:
 		while (gr->_prev != NULL)
 			gr = gr->_prev;
 		// Find vertex to test
-		while (gr->_start->_address != 0x91)
+		while ((*gr->_start)->_address != 0x91)
 			gr = gr->_next;
 
 		TS_ASSERT(gr->_code.size() == 2);
@@ -255,7 +255,7 @@ public:
 		while (gr->_prev != NULL)
 			gr = gr->_prev;
 		// Find vertex to test
-		while (gr->_start->_address != 0x191)
+		while ((*gr->_start)->_address != 0x191)
 			gr = gr->_next;
 
 		TS_ASSERT(gr->_code.size() == 1);
@@ -310,11 +310,11 @@ public:
 			gr = gr->_prev;
 
 		// Find right starting node
-		while (gr->_start->_address != 0x278)
+		while ((*gr->_start)->_address != 0x278)
 			gr = gr->_next;
 
 		// Copy out all lines of code from function
-		while (gr->_start->_address <= 0x2DC) {
+		while ((*gr->_start)->_address <= 0x2DC) {
 			for (std::vector<CodeLine>::iterator it = gr->_code.begin(); it != gr->_code.end(); ++it) {
 				if (it->_line.compare("") != 0)
 					output.push_back(it->_line);

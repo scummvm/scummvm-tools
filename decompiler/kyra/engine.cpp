@@ -32,8 +32,8 @@ Disassembler *Kyra::Kyra2Engine::getDisassembler(InstVec &insts) {
 	return new Kyra2Disassembler(this, insts);
 }
 
-uint32 Kyra::Kyra2Engine::getDestAddress(const Instruction &inst) const {
-	return inst._params[0].getUnsigned();
+uint32 Kyra::Kyra2Engine::getDestAddress(const InstPtr inst) const {
+	return inst->_params[0].getUnsigned();
 }
 
 CodeGenerator *Kyra::Kyra2Engine::getCodeGenerator(std::ostream &output) {
@@ -44,13 +44,13 @@ void Kyra::Kyra2Engine::postCFG(InstVec &insts, Graph g) {
 	// Add metadata to functions
 	for (FuncMap::iterator it = _functions.begin(); it != _functions.end(); ++it) {
 		std::stringstream s;
-		s << it->second._name << boost::format("sub0x%X") % it->second._startIt->_address;
+		s << it->second._name << boost::format("sub0x%X") % (*it->second._startIt)->_address;
 		it->second._name = s.str();
 		int maxArg = 0;
 		for (ConstInstIterator instIt = it->second._startIt; instIt != it->second._endIt; ++instIt) {
-			if (instIt->_name.compare("pushBPAdd") == 0) {
-				if (maxArg < instIt->_params[0].getSigned()) {
-					maxArg = instIt->_params[0].getSigned();
+			if ((*instIt)->_name.compare("pushBPAdd") == 0) {
+				if (maxArg < (*instIt)->_params[0].getSigned()) {
+					maxArg = (*instIt)->_params[0].getSigned();
 				}
 			}
 		}

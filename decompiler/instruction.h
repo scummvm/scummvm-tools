@@ -26,9 +26,11 @@
 #include <string>
 #include <vector>
 #include <boost/format.hpp>
+#include <boost/intrusive_ptr.hpp>
 #include <boost/variant.hpp>
 
 #include "common/scummsys.h"
+#include "refcounted.h"
 
 /**
  * Enumeration for categorizing the different kinds of instructions.
@@ -102,7 +104,7 @@ struct Parameter {
 /**
  * Structure for representing an instruction.
  */
-struct Instruction {
+struct Instruction : public RefCounted {
 	uint32 _opcode;                 ///< The instruction opcode.
 	uint32 _address;                ///< The instruction address.
 	std::string _name;              ///< The instruction name (opcode name).
@@ -116,7 +118,18 @@ struct Instruction {
 		_opcode(opcode), _address(address), _name(name), _type(type), _stackChange(stackChange) {}
 
 	/**
-	 * Operator overload to output a vector to a std::ostream.
+	 * Operator overload to output an Instruction to a std::ostream.
+	 *
+	 * @param output The std::ostream to output to.
+	 * @param inst   The Instruction to output.
+	 * @return The std::ostream used for output.
+	 */
+	friend std::ostream &operator<<(std::ostream &output, const Instruction *inst) {
+		return output << *inst;
+	}
+
+	/**
+	 * Operator overload to output an Instruction to a std::ostream.
 	 *
 	 * @param output The std::ostream to output to.
 	 * @param inst   The Instruction to output.
@@ -154,17 +167,22 @@ struct Instruction {
 };
 
 /**
- * Type representing a vector of Instructions.
+ * Pointer to an Instruction.
  */
-typedef std::vector<Instruction> InstVec;
+typedef boost::intrusive_ptr<Instruction> InstPtr;
 
 /**
- * Type representing an iterator over Instructions.
+ * Type representing a vector of InstPtrs.
+ */
+typedef std::vector<InstPtr> InstVec;
+
+/**
+ * Type representing an iterator over InstPtrs.
  */
 typedef InstVec::iterator InstIterator;
 
 /**
- * Type representing a const_iterator over Instructions.
+ * Type representing a const_iterator over InstPtrs.
  */
 typedef InstVec::const_iterator ConstInstIterator;
 
