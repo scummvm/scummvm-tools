@@ -42,7 +42,7 @@ namespace po = boost::program_options;
 int main(int argc, char** argv) {
 	try	{
 		std::map<std::string, std::string> engines;
-		ObjectFactory<Engine> engineFactory;
+		ObjectFactory<std::string, Engine> engineFactory;
 
 		ENGINE("kyra2", "Legend of Kyrandia: Hand of Fate", Kyra::Kyra2Engine);
 		ENGINE("scummv6", "SCUMM v6", Scumm::v6::Scummv6Engine);

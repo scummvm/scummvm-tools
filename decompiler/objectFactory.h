@@ -39,7 +39,7 @@ BaseType *createObject() {
 /**
  * Generic factory for a class and its subclasses.
  */
-template<typename BaseType>
+template<typename KeyType, typename BaseType>
 class ObjectFactory {
 private:
 
@@ -51,7 +51,7 @@ private:
 	/**
 	 * Type used to store registered entries.
 	 */
-	typedef std::map<std::string, CreateFunc> RegistryMap;
+	typedef std::map<KeyType, CreateFunc> RegistryMap;
 
 	RegistryMap _registry; ///<Map from an identifier to a creation function.
 
@@ -59,21 +59,21 @@ public:
 	/**
 	 * Register a new entry.
 	 *
-	 * @param name The name to register the class under.
+	 * @param key The key to register the class under.
 	 */
 	template<typename Type>
-	void addEntry(const std::string &name) {
-		_registry[name] = &createObject<BaseType, Type>;
+	void addEntry(const KeyType &key) {
+		_registry[key] = &createObject<BaseType, Type>;
 	}
 
 	/**
 	 * Creates an instance of some registered class.
 	 *
-	 * @param name The name associated with the desired class.
+	 * @param key The key associated with the desired class.
 	 * @return NULL if the name is not registered, else an instance of the associated class.
 	 */
-	BaseType *create(const std::string &name) const {
-		typename RegistryMap::const_iterator entry = _registry.find(name);
+	BaseType *create(const KeyType &key) const {
+		typename RegistryMap::const_iterator entry = _registry.find(key);
 		if (entry == _registry.end())
 			return NULL;
 		return (entry->second)();
