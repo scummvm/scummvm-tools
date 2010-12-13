@@ -100,8 +100,8 @@ void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 		OPCODE_MD(0x57, "wordVarDec", kUnaryOpPostInstType, 0, "w", "--");
 		OPCODE_MD(0x5A, "byteArrayDec", kUnaryOpPostInstType, -1, "B", "--");
 		OPCODE_MD(0x5B, "wordArrayDec", kUnaryOpPostInstType, -1, "w", "--");
-		OPCODE(0x5C, "jumpTrue", kCondJumpRelInstType, -1, "s");
-		OPCODE(0x5D, "jumpFalse", kCondJumpRelInstType, -1, "s");
+		OPCODE(0x5C, "jumpTrue", kCondJumpRelInstType, -1, "a");
+		OPCODE(0x5D, "jumpFalse", kCondJumpRelInstType, -1, "a");
 		OPCODE_MD(0x5E, "startScript", kSpecialCallInstType, 0x1020, "", "lpp"); // Variable stack arguments
 		OPCODE_MD(0x5F, "startScriptQuick", kSpecialCallInstType, 0x1010, "", "lp"); // Variable stack arguments
 		OPCODE_MD(0x60, "startObject", kSpecialCallInstType, 0x1030, "", "lppp"); // Variable stack arguments
@@ -137,7 +137,7 @@ void Scumm::v6::Scummv6Disassembler::doDisassemble() throw(std::exception) {
 		OPCODE_MD(0x70, "setState", kSpecialCallInstType, -2, "", "pp");
 		OPCODE_MD(0x71, "setOwner", kSpecialCallInstType, -2, "", "pp");
 		OPCODE_MD(0x72, "getOwner", kSpecialCallInstType, 0, "", "rp");
-		OPCODE(0x73, "jump", kJumpRelInstType, 0, "s");
+		OPCODE(0x73, "jump", kJumpRelInstType, 0, "a");
 		OPCODE_MD(0x74, "startSound", kSpecialCallInstType, -1, "", "p");
 		OPCODE_MD(0x75, "stopSound", kSpecialCallInstType, -1, "", "p");
 		OPCODE_MD(0x76, "startMusic", kSpecialCallInstType, -1, "", "p");
@@ -449,11 +449,16 @@ void Scumm::v6::Scummv6Disassembler::fixStackEffect(InstIterator &it, int popBef
 	for (--it2; popBefore != 0; --it2)
 		if ((*it2)->_type == kLoadInstType)
 			--popBefore;
-	(*it)->_stackChange -= (*it2)->_params[0].getSigned() + 1;
+	(*it)->_stackChange -= (*it2)->_params[0]->getSigned() + 1;
 }
 
-void Scumm::v6::Scummv6Disassembler::readParameter(Parameter *p, char type) {
+ValuePtr Scumm::v6::Scummv6Disassembler::readParameter(InstPtr inst, char type) {
+	ValuePtr retval = NULL;
 	switch (type) {
+	case 'a':
+		retval = new RelAddressValue(inst->_address + 3, _f.readSint16LE());
+		_address += 2;
+		break;
 	case 'c': { // Character string
 		byte cmd;
 		bool inStr = false;
@@ -526,12 +531,12 @@ void Scumm::v6::Scummv6Disassembler::readParameter(Parameter *p, char type) {
 		_address++;
 		if (inStr)
 			s << '"';
-		p->_type = kStringParamType;
-		p->_value = s.str();
+		retval = new Scummv6StringValue(s.str());
 		}
 		break;
 	default: // Defer handling to parent implementation
-		SimpleDisassembler::readParameter(p, type);
+		retval = SimpleDisassembler::readParameter(inst, type);
 		break;
 	}
+	return retval;
 }

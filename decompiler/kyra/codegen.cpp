@@ -46,26 +46,26 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 			break;
 		case 3:
 		case 4:
-			_stack.push(new IntValue(inst->_params[0].getSigned(), true));
+			_stack.push(inst->_params[0]);
 			break;
 		case 5:
 			{
 				std::stringstream s;
-				s << boost::format("var%d") % inst->_params[0].getSigned();
+				s << boost::format("var%d") % inst->_params[0]->getSigned();
 				_stack.push(new VarValue(s.str()));
 			}
 			break;
 		case 6:
 			{
 				std::stringstream s;
-				s << boost::format("localvar%d") % inst->_params[0].getSigned();
+				s << boost::format("localvar%d") % inst->_params[0]->getSigned();
 				_stack.push(new VarValue(s.str()));
 			}
 			break;
 		case 7:
 			{
 				std::stringstream s;
-				s << boost::format("param%d") % inst->_params[0].getSigned();
+				s << boost::format("param%d") % inst->_params[0]->getSigned();
 				_stack.push(new VarValue(s.str()));
 			}
 			break;
@@ -82,7 +82,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 		case 9:
 			{
 				std::stringstream s;
-				s << boost::format("var%d") % inst->_params[0].getSigned();
+				s << boost::format("var%d") % inst->_params[0]->getSigned();
 				ValuePtr p = new VarValue(s.str());
 				writeAssignment(p, _stack.pop());
 			}
@@ -90,7 +90,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 		case 10:
 			{
 				std::stringstream s;
-				s << boost::format("localvar%d") % inst->_params[0].getSigned();
+				s << boost::format("localvar%d") % inst->_params[0]->getSigned();
 				ValuePtr p = new VarValue(s.str());
 				writeAssignment(p, _stack.pop());
 			}
@@ -98,7 +98,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 		case 11:
 			{
 				std::stringstream s;
-				s << boost::format("param%d") % inst->_params[0].getSigned();
+				s << boost::format("param%d") % inst->_params[0]->getSigned();
 				ValuePtr p = new VarValue(s.str());
 				writeAssignment(p, _stack.pop());
 			}
@@ -107,12 +107,12 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 		break;
 	case kStackInstType:
 		if (inst->_opcode == 12) {
-			for (int i = inst->_params[0].getSigned(); i != 0; --i) {
+			for (int i = inst->_params[0]->getSigned(); i != 0; --i) {
 				if (!_stack.empty())
 					_stack.pop();
 			}
 		} else if (inst->_opcode == 13) {
-			for (int i = 0; i != inst->_params[0].getSigned(); ++i) {
+			for (int i = 0; i != inst->_params[0]->getSigned(); ++i) {
 				std::stringstream s;
 				s << boost::format("localvar%d") % i;
 				_stack.push(new VarValue(s.str()));
@@ -126,7 +126,7 @@ void Kyra::Kyra2CodeGenerator::processInst(const InstPtr inst) {
 	case kCallInstType:
 		{
 			_argList.clear();
-			Function f = _engine->_functions.find(inst->_params[0].getUnsigned())->second;
+			Function f = _engine->_functions.find(inst->_params[0]->getUnsigned())->second;
 			for (size_t i = 0; i < f._metadata.length(); i++)
 				processSpecialMetadata(inst, f._metadata[i], i);
 			_stack.push(new CallValue(f._name, _argList));

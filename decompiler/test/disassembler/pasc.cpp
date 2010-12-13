@@ -35,13 +35,13 @@ void PasCDisassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0x04, "HALT", kSpecialCallInstType, 0, "");
 
 		//Jumps
-		OPCODE(0x10, "JUMP", kJumpInstType, 0, "d");
-		OPCODE(0x11, "JEQ", kCondJumpInstType, 0, "d");
-		OPCODE(0x12, "JAEQ", kCondJumpInstType, 0, "d");
-		OPCODE(0x13, "JGT", kCondJumpInstType, 0, "d");
-		OPCODE(0x14, "JLT", kCondJumpInstType, 0, "d");
-		OPCODE(0x15, "JALT", kCondJumpInstType, 0, "d");
-		OPCODE(0x16, "JAGT", kCondJumpInstType, 0, "d");
+		OPCODE(0x10, "JUMP", kJumpInstType, 0, "a");
+		OPCODE(0x11, "JEQ", kCondJumpInstType, 0, "a");
+		OPCODE(0x12, "JAEQ", kCondJumpInstType, 0, "a");
+		OPCODE(0x13, "JGT", kCondJumpInstType, 0, "a");
+		OPCODE(0x14, "JLT", kCondJumpInstType, 0, "a");
+		OPCODE(0x15, "JALT", kCondJumpInstType, 0, "a");
+		OPCODE(0x16, "JAGT", kCondJumpInstType, 0, "a");
 
 		//Boolean operations
 		OPCODE(0x20, "OR", kBinaryOpInstType, -1, "");
@@ -129,4 +129,18 @@ void PasCDisassembler::doDisassemble() throw(std::exception) {
 		OPCODE(0xD8, "BLOAD [SB]", kLoadInstType, -5, "");
 		OPCODE(0xD9, "BLOAD", kLoadInstType, -5, "");
 	END_OPCODES;
+}
+
+ValuePtr PasCDisassembler::readParameter(InstPtr inst, char type) {
+	ValuePtr retval = NULL;
+	switch (type) {
+	case 'a':
+		retval = new AddressValue(_f.readUint32LE());
+		_address += 4;
+		break;
+	default: // Defer handling to parent implementation
+		retval = SimpleDisassembler::readParameter(inst, type);
+		break;
+	}
+	return retval;
 }

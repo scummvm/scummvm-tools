@@ -24,10 +24,23 @@
 #define SCUMM_V6_ENGINE_H
 
 #include "../engine.h"
+#include "../value.h"
 
 namespace Scumm {
 
 namespace v6 {
+
+class Scummv6StringValue : public StringValue {
+public:
+	/**
+	 * Constructor for Scummv6StringValue.
+	 *
+	 * @param str The string value.
+	 */
+	Scummv6StringValue(std::string str) : StringValue(str) { }
+
+	virtual std::ostream &print(std::ostream &output) const;
+};
 
 /**
  * SCUMMv6 engine.

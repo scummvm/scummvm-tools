@@ -54,21 +54,19 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 	case kLoadInstType:
 		switch (inst->_opcode) {
 		case 0x00: // pushByte
-			_stack.push(new IntValue(inst->_params[0].getUnsigned(), false));
-			break;
 		case 0x01: // pushWord
-			_stack.push(new IntValue(inst->_params[0].getSigned(), true));
+			_stack.push(inst->_params[0]);
 			break;
 		case 0x02: // pushByteVar
 		case 0x03: // pushWordVar
-			_stack.push(new VarValue(decodeVarName(inst->_params[0].getUnsigned())));
+			_stack.push(new VarValue(decodeVarName(inst->_params[0]->getUnsigned())));
 			break;
 		case 0x06: // byteArrayRead
 		case 0x07: // wordArrayRead
 			{
 				ValueList idxs;
 				idxs.push_front(_stack.pop());
-				_stack.push(new ArrayValue(decodeArrayName(inst->_params[0].getUnsigned()), idxs));
+				_stack.push(new ArrayValue(decodeArrayName(inst->_params[0]->getUnsigned()), idxs));
 				break;
 			}
 		case 0x0A: // byteArrayIndexedRead
@@ -77,7 +75,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 				ValueList idxs;
 				idxs.push_front(_stack.pop());
 				idxs.push_front(_stack.pop());
-				_stack.push(new ArrayValue(decodeArrayName(inst->_params[0].getUnsigned()), idxs));
+				_stack.push(new ArrayValue(decodeArrayName(inst->_params[0]->getUnsigned()), idxs));
 				break;
 			}
 		}
@@ -87,7 +85,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 			case 0x42: // writeByteVar
 			case 0x43: // writeWordVar
 				{
-					ValuePtr p = new VarValue(decodeVarName(inst->_params[0].getUnsigned()));
+					ValuePtr p = new VarValue(decodeVarName(inst->_params[0]->getUnsigned()));
 					writeAssignment(p, _stack.pop());
 				}
 				break;
@@ -97,7 +95,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 					ValuePtr value = _stack.pop();
 					ValueList idxs;
 					idxs.push_back(_stack.pop());
-					ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
+					ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0]->getUnsigned()), idxs);
 					writeAssignment(p, value);
 				}
 				break;
@@ -108,7 +106,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 					ValueList idxs;
 					idxs.push_front(_stack.pop());
 					idxs.push_front(_stack.pop());
-					ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
+					ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0]->getUnsigned()), idxs);
 					writeAssignment(p, value);
 				}
 				break;
@@ -139,7 +137,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 		case 0x57: // wordVarDec
 			{
 				std::stringstream s;
-				ValuePtr p = new UnaryOpValue(new VarValue(decodeVarName(inst->_params[0].getUnsigned())), inst->_codeGenData, true);
+				ValuePtr p = new UnaryOpValue(new VarValue(decodeVarName(inst->_params[0]->getUnsigned())), inst->_codeGenData, true);
 				s << p << ";";
 				addOutputLine(s.str());
 			}
@@ -152,7 +150,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 				std::stringstream s;
 				ValueList idxs;
 				idxs.push_front(_stack.pop());
-				ValuePtr p = new UnaryOpValue(new ArrayValue(decodeVarName(inst->_params[0].getUnsigned()), idxs), inst->_codeGenData, true);
+				ValuePtr p = new UnaryOpValue(new ArrayValue(decodeVarName(inst->_params[0]->getUnsigned()), idxs), inst->_codeGenData, true);
 				s << p << ";";
 				addOutputLine(s.str());
 			}
@@ -166,10 +164,10 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 		switch (inst->_opcode) {
 		case 0xA4CD: // arrayOp_assignString
 			{
-				ValuePtr value = new StringValue(inst->_params[1].getString());
+				ValuePtr value = new StringValue(inst->_params[1]->getString());
 				ValueList idxs;
 				idxs.push_front(_stack.pop());
-				ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
+				ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0]->getUnsigned()), idxs);
 				writeAssignment(p, value);
 			}
 			break;
@@ -178,7 +176,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 				ValueList idxs;
 				idxs.push_front(_stack.pop());
 				ValuePtr value = createListValue();
-				ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
+				ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0]->getUnsigned()), idxs);
 				writeAssignment(p, value);
 			}
 
@@ -189,7 +187,7 @@ void Scumm::v6::Scummv6CodeGenerator::processInst(const InstPtr inst) {
 				idxs.push_front(_stack.pop());
 				ValuePtr value = createListValue();
 				idxs.push_front(_stack.pop());
-				ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0].getUnsigned()), idxs);
+				ValuePtr p = new ArrayValue(decodeArrayName(inst->_params[0]->getUnsigned()), idxs);
 				writeAssignment(p, value);
 			}
 
@@ -417,25 +415,12 @@ void Scumm::v6::Scummv6CodeGenerator::processSpecialMetadata(const InstPtr inst,
 	case 'w':
 	case 'j':
 	case 'i':
-		switch (inst->_params[0]._type) {
-		case kSByteParamType:
-		case kShortParamType:
-			addArg(new IntValue(inst->_params[0].getSigned(), true));
-			break;
-		case kByteParamType:
-		case kUShortParamType:
-			addArg(new IntValue(inst->_params[0].getUnsigned(), false));
-			break;
-		default:
-			std::cerr << boost::format("WARNING: Unexpected type for parameter 0 @ %08X while processing metadata character %c") % inst->_address % c;
-			break;
-		}
-		break;
+		addArg(inst->_params[0]);
 	case 'v':
-		addArg(new VarValue(decodeVarName(inst->_params[0].getUnsigned())));
+		addArg(new VarValue(decodeVarName(inst->_params[0]->getUnsigned())));
 		break;
 	case 's':
-		addArg(new StringValue(inst->_params[0].getString()));
+		addArg(inst->_params[0]);
 		break;
 	case 'z':
 		addArg(_stack.pop());

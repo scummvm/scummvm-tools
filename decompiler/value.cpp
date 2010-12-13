@@ -23,6 +23,7 @@
 #include "value.h"
 
 #include <boost/format.hpp>
+#include <sstream>
 
 static int dupindex = 0;
 
@@ -54,6 +55,12 @@ ValuePtr Value::dup(std::ostream &output) {
 
 ValuePtr Value::negate() throw(WrongTypeException) {
 	return new NegatedValue(this);
+}
+
+std::string Value::getString() const {
+	std::stringstream s;
+	print(s);
+	return s.str();
 }
 
 bool IntValue::isInteger() {
@@ -97,7 +104,7 @@ ValuePtr AddressValue::dup(std::ostream &output) {
 }
 
 std::ostream &AddressValue::print(std::ostream &output) const {
-	return output << boost::format("0x%x") % _val;
+	return output << boost::format("0x%X") % _val;
 }
 
 bool RelAddressValue::isAddress() {
@@ -114,8 +121,8 @@ ValuePtr RelAddressValue::dup(std::ostream &output) {
 
 std::ostream &RelAddressValue::print(std::ostream &output) const {
 	if (_val < 0)
-		return output << boost::format("-0x%x") % -_val;
-	return output << boost::format("+0x%x") % _val;
+		return output << boost::format("-0x%X") % -_val;
+	return output << boost::format("+0x%X") % _val;
 }
 
 ValuePtr DupValue::dup(std::ostream &output) {

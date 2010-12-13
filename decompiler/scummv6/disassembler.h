@@ -24,6 +24,7 @@
 #define DEC_SCUMMV6_DISASM_H
 
 #include "decompiler/simple_disassembler.h"
+#include "engine.h"
 
 namespace Scumm {
 
@@ -43,7 +44,7 @@ public:
 
 	void doDisassemble() throw(std::exception);
 
-	void readParameter(Parameter *p, char type);
+	ValuePtr readParameter(InstPtr inst, char type);
 
 	/**
 	 * Determines the actual stack effect of an opcode with a variable stack effect.

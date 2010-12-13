@@ -307,45 +307,23 @@ public:
 		ConstInstIterator inst = group->_start;
 		do {
 			output << boost::format("%08x: %s") % (*inst)->_address % (*inst)->_name;
-			std::vector<Parameter>::const_iterator param;
+			std::vector<ValuePtr>::const_iterator param;
 			for (param = (*inst)->_params.begin(); param != (*inst)->_params.end(); ++param) {
 				if (param != (*inst)->_params.begin())
 					output << ",";
 				output << " ";
-				if (param->_type != kStringParamType) {
-					if ((*inst)->_type == kCondJumpInstType || (*inst)->_type == kCondJumpRelInstType || (*inst)->_type == kJumpInstType || (*inst)->_type == kJumpRelInstType || (*inst)->_type == kCallInstType) {
-						// Output numerical arguments to jumps in hexadecimal
-						switch (param->_type) {
-						case kSByteParamType:
-						case kShortParamType:
-						case kIntParamType:
-							output << boost::format(" 0x%X") % param->getSigned();
-							break;
-						case kByteParamType:
-						case kUShortParamType:
-						case kUIntParamType:
-							output << boost::format(" 0x%X") % param->getUnsigned();
-							break;
-						default:
-							output << " " << param->_value;
-							break;
-						}
-					} else
-						output << " " << param->_value;
-				} else {
-					std::string s = param->getString();
-					for (std::string::iterator it = s.begin(); it != s.end(); ++it)
-						if (*it == '"')
-							output << "\\\"";
-						else if (*it == '|')
-							output << "\\|";
-						else if (*it == '{')
-							output << "\\{";
-						else if (*it == '}')
-							output << "\\}";
-						else
-							output << *it;
-				}
+				std::string s = (*param)->getString();
+				for (std::string::iterator it = s.begin(); it != s.end(); ++it)
+					if (*it == '"')
+						output << "\\\"";
+					else if (*it == '|')
+						output << "\\|";
+					else if (*it == '{')
+						output << "\\{";
+					else if (*it == '}')
+						output << "\\}";
+					else
+						output << *it;
 			}
 			output << boost::format(" (%d)") % (*inst)->_stackChange << "\\n";
 		} while (inst++ != group->_end);

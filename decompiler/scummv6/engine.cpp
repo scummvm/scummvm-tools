@@ -24,6 +24,10 @@
 #include "disassembler.h"
 #include "codegen.h"
 
+std::ostream &Scumm::v6::Scummv6StringValue::print(std::ostream &output) const {
+	return output << _str;
+}
+
 Disassembler *Scumm::v6::Scummv6Engine::getDisassembler(InstVec &insts) {
 	return new Scummv6Disassembler(insts);
 }
@@ -32,7 +36,7 @@ uint32 Scumm::v6::Scummv6Engine::getDestAddress(const InstPtr inst) const {
 	switch(inst->_type) {
 	case kJumpRelInstType:
 	case kCondJumpRelInstType:
-		return inst->_params[0].getSigned() + inst->_address + 3;
+		return inst->_params[0]->getUnsigned();
 	default:
 		return 0;
 	}

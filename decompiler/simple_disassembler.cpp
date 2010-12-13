@@ -27,64 +27,54 @@ SimpleDisassembler::SimpleDisassembler(InstVec &insts) : Disassembler(insts) {
 
 void SimpleDisassembler::readParams(InstPtr inst, const char *typeString) {
 	while (*typeString) {
-		Parameter p;
-		readParameter(&p, *typeString);
-		inst->_params.push_back(p);
+		inst->_params.push_back(readParameter(inst, *typeString));
 		typeString++;
 	}
 }
 
-void SimpleDisassembler::readParameter(Parameter *p, char type) {
+ValuePtr SimpleDisassembler::readParameter(InstPtr inst, char type) {
+	ValuePtr retval = NULL;
 	switch (type) {
 	case 'b': // signed byte
-		p->_type = kSByteParamType;
-		p->_value = _f.readChar();
+		retval = new IntValue(_f.readChar(), true);
 		_address++;
 		break;
 	case 'B': // unsigned byte
-		p->_type = kByteParamType;
-		p->_value = (uint32)_f.readByte();
+		retval = new IntValue((uint32)_f.readByte(), false);
 		_address++;
 		break;
 	case 's': // 16-bit signed integer (short), little-endian
-		p->_type = kShortParamType;
-		p->_value = _f.readSint16LE();
+		retval = new IntValue(_f.readSint16LE(), true);
 		_address += 2;
 		break;
 	case 'S': // 16-bit signed integer (short), big-endian
-		p->_type = kShortParamType;
-		p->_value = _f.readSint16BE();
+		retval = new IntValue(_f.readSint16BE(), true);
 		_address += 2;
 		break;
 	case 'w': // 16-bit unsigned integer (word), little-endian
-		p->_type = kUShortParamType;
-		p->_value = (uint32)_f.readUint16LE();
+		retval = new IntValue((uint32)_f.readUint16LE(), false);
 		_address += 2;
 		break;
 	case 'W': // 16-bit unsigned integer (word), big-endian
-		p->_type = kUShortParamType;
-		p->_value = (uint32)_f.readUint16BE();
+		retval = new IntValue((uint32)_f.readUint16BE(), false);
 		_address += 2;
 		break;
 	case 'i': // 32-bit signed integer (int), little-endian
-		p->_type = kIntParamType;
-		p->_value = _f.readSint32LE();
+		retval = new IntValue(_f.readSint32LE(), true);
 		_address += 4;
 		break;
 	case 'I': // 32-bit signed integer (int), big-endian
-		p->_type = kIntParamType;
-		p->_value = _f.readSint32BE();
+		retval = new IntValue(_f.readSint32BE(), true);
 		_address += 4;
 		break;
 	case 'd': // 32-bit unsigned integer (dword), little-endian
-		p->_type = kUIntParamType;
-		p->_value = _f.readUint32LE();
+		retval = new IntValue(_f.readUint32LE(), false);
 		_address += 4;
 		break;
 	case 'D': // 32-bit unsigned integer (dword), big-endian
-		p->_type = kUIntParamType;
-		p->_value = _f.readUint32BE();
+		retval = new IntValue(_f.readUint32BE(), false);
 		_address += 4;
 		break;
 	}
+	return retval;
 }

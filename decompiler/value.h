@@ -104,6 +104,13 @@ class Value : public RefCounted {
 	virtual std::ostream &print(std::ostream &output) const = 0;
 
 	/**
+	 * Retrieves the string representation of the value.
+	 *
+	 * @return The string representation of the value.
+	 */
+	std::string getString() const;
+
+	/**
 	 * Duplicates a value.
 	 *
 	 * @param output The std::ostream to output any necessary assignment to.
@@ -171,7 +178,7 @@ public:
  * Value containing an absolute address.
  */
 class AddressValue : public IntValue {
-protected:
+public:
 	/**
 	 * Constructor for AddressValue.
 	 */

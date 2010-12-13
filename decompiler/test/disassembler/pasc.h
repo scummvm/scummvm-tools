@@ -29,5 +29,6 @@ class PasCDisassembler : public SimpleDisassembler {
 public:
 	PasCDisassembler(InstVec &insts);
 	void doDisassemble() throw(std::exception);
+	ValuePtr readParameter(InstPtr inst, char type);
 };
 #endif

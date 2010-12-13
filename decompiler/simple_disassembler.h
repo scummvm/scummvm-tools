@@ -43,10 +43,11 @@ protected:
 	/**
 	 * Reads data for a single parameter.
 	 *
-	 * @param p    Pointer to the destination Parameter structure.
+	 * @param inst The instruction the parameter will belong to. Used for reference in parameter reading.
 	 * @param type Character describing the type of the parameter.
+	 * @return The read data as a ValuePtr.
 	 */
-	virtual void readParameter(Parameter *p, char type);
+	virtual ValuePtr readParameter(InstPtr inst, char type);
 
 public:
 	/**
