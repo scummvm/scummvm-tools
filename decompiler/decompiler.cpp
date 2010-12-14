@@ -43,7 +43,7 @@ namespace po = boost::program_options;
 #define ENGINE(id, description, engineClass) engines[std::string(id)] = description; engineFactory.addEntry<engineClass>(std::string(id));
 
 int main(int argc, char** argv) {
-	try	{
+	try {
 		std::map<std::string, std::string> engines;
 		ObjectFactory<std::string, Engine> engineFactory;
 

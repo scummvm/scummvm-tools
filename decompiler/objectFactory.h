@@ -53,7 +53,7 @@ private:
 	 */
 	typedef std::map<KeyType, CreateFunc> RegistryMap;
 
-	RegistryMap _registry; ///<Map from an identifier to a creation function.
+	RegistryMap _registry; ///< Map from an identifier to a creation function.
 
 public:
 	/**

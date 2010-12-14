@@ -293,7 +293,7 @@ public:
  */
 class ArrayValue : public VarValue {
 protected:
-		const ValueList _idxs; ///< std::deque of values representing the indexes used (left-to-right).
+	const ValueList _idxs; ///< std::deque of values representing the indexes used (left-to-right).
 
 public:
 	/**

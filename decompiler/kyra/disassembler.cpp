@@ -25,8 +25,7 @@
 
 #include <boost/format.hpp>
 
-FunctionData::FunctionData(std::string name, std::string metadata)
-{
+FunctionData::FunctionData(std::string name, std::string metadata) {
 	_name = name;
 	_metadata = metadata;
 }
@@ -346,7 +345,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 
 	if (minTextOffset != 0xFFFF) {
 		uint16 numStrings = minTextOffset / 2;
-#define posString(x) (char*)&_textChunk._data[READ_BE_UINT16(&((uint16 *)_textChunk._data)[(x)])]
+#define posString(x) (char *)&_textChunk._data[READ_BE_UINT16(&((uint16 *)_textChunk._data)[(x)])]
 		for (uint16 i = 0; i < numStrings; ++i) {
 			std::stringstream s;
 			s << "\"" << posString(i) << "\"";
@@ -503,71 +502,71 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			break;
 		case 17:
 			switch (parameter) {
-				case 0:
-					OPCODE_MD("eval_band", kBinaryOpInst, -1, false, false, false, "&&");
-					break;
-				case 1:
-					OPCODE_MD("eval_bor", kBinaryOpInst, -1, false, false, false, "||");
-					break;
-				case 2:
-					OPCODE_MD("eval_eq", kBinaryOpInst, -1, false, false, false, "==");
-					break;
-				case 3:
-					OPCODE_MD("eval_neq", kBinaryOpInst, -1, false, false, false, "!=");
-					break;
-				case 4:
-					OPCODE_MD("eval_leq", kBinaryOpInst, -1, false, false, false, "<=");
-					break;
-				case 5:
-					OPCODE_MD("eval_lt", kBinaryOpInst, -1, false, false, false, "<");
-					break;
-				case 6:
-					OPCODE_MD("eval_geq", kBinaryOpInst, -1, false, false, false, ">=");
-					break;
-				case 7:
-					OPCODE_MD("eval_gt", kBinaryOpInst, -1, false, false, false, ">");
-					break;
-				case 8:
-					OPCODE_MD("eval_add", kBinaryOpInst, -1, false, false, false, "+");
-					break;
-				case 9:
-					OPCODE_MD("eval_sub", kBinaryOpInst, -1, false, false, false, "-");
-					break;
-				case 10:
-					OPCODE_MD("eval_mult", kBinaryOpInst, -1, false, false, false, "*");
-					break;
-				case 11:
-					OPCODE_MD("eval_div", kBinaryOpInst, -1, false, false, false, "/");
-					break;
-				case 12:
-					OPCODE_MD("eval_shr", kBinaryOpInst, -1, false, false, false, ">>");
-					break;
-				case 13:
-					OPCODE_MD("eval_shl", kBinaryOpInst, -1, false, false, false, "<<");
-					break;
-				case 14:
-					OPCODE_MD("eval_land", kBinaryOpInst, -1, false, false, false, "&");
-					break;
-				case 15:
-					OPCODE_MD("eval_lor", kBinaryOpInst, -1, false, false, false, "|");
-					break;
-				case 16:
-					OPCODE_MD("eval_mod", kBinaryOpInst, -1, false, false, false, "%");
-					break;
-				case 17:
-					OPCODE_MD("eval_xor", kBinaryOpInst, -1, false, false, false, "^");
-					break;
-				default:
-					// Error: invalid parameter halts execution
-					throw UnknownOpcodeException(address, opcode);
-					break;
+			case 0:
+				OPCODE_MD("eval_band", kBinaryOpInst, -1, false, false, false, "&&");
+				break;
+			case 1:
+				OPCODE_MD("eval_bor", kBinaryOpInst, -1, false, false, false, "||");
+				break;
+			case 2:
+				OPCODE_MD("eval_eq", kBinaryOpInst, -1, false, false, false, "==");
+				break;
+			case 3:
+				OPCODE_MD("eval_neq", kBinaryOpInst, -1, false, false, false, "!=");
+				break;
+			case 4:
+				OPCODE_MD("eval_leq", kBinaryOpInst, -1, false, false, false, "<=");
+				break;
+			case 5:
+				OPCODE_MD("eval_lt", kBinaryOpInst, -1, false, false, false, "<");
+				break;
+			case 6:
+				OPCODE_MD("eval_geq", kBinaryOpInst, -1, false, false, false, ">=");
+				break;
+			case 7:
+				OPCODE_MD("eval_gt", kBinaryOpInst, -1, false, false, false, ">");
+				break;
+			case 8:
+				OPCODE_MD("eval_add", kBinaryOpInst, -1, false, false, false, "+");
+				break;
+			case 9:
+				OPCODE_MD("eval_sub", kBinaryOpInst, -1, false, false, false, "-");
+				break;
+			case 10:
+				OPCODE_MD("eval_mult", kBinaryOpInst, -1, false, false, false, "*");
+				break;
+			case 11:
+				OPCODE_MD("eval_div", kBinaryOpInst, -1, false, false, false, "/");
+				break;
+			case 12:
+				OPCODE_MD("eval_shr", kBinaryOpInst, -1, false, false, false, ">>");
+				break;
+			case 13:
+				OPCODE_MD("eval_shl", kBinaryOpInst, -1, false, false, false, "<<");
+				break;
+			case 14:
+				OPCODE_MD("eval_land", kBinaryOpInst, -1, false, false, false, "&");
+				break;
+			case 15:
+				OPCODE_MD("eval_lor", kBinaryOpInst, -1, false, false, false, "|");
+				break;
+			case 16:
+				OPCODE_MD("eval_mod", kBinaryOpInst, -1, false, false, false, "%");
+				break;
+			case 17:
+				OPCODE_MD("eval_xor", kBinaryOpInst, -1, false, false, false, "^");
+				break;
+			default:
+				// Error: invalid parameter halts execution
+				throw UnknownOpcodeException(address, opcode);
+				break;
 			}
 			break;
 		case 18:
 			OPCODE("setRetAndJmp", kKernelCallInst, -2, false, false, false);
 			break;
 		default:
-			throw UnknownOpcodeException(i*2, code);
+			throw UnknownOpcodeException(i * 2, code);
 		}
 #undef OPCODE
 #undef OPCODE_MD
@@ -606,4 +605,3 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 		lastWasPushPos = ((*it)->_name.compare("pushPos") == 0);
 	}
 }
-

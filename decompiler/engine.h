@@ -52,7 +52,6 @@ public:
 	/**
 	 * Constructor for Function.
 	 *
-
 	 * @param startIt Index of the first instruction in the function.
 	 * @param endIt Index of the instruction immediately after the function, similar to end() on STL containers.
 	 */

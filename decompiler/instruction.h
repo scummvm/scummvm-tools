@@ -92,16 +92,16 @@ public:
 
 	virtual std::ostream &print(std::ostream &output) const;
 
-  virtual bool isJump() const;
-  virtual bool isCondJump() const;
-  virtual bool isUncondJump() const;
-  virtual bool isStackOp() const;
+	virtual bool isJump() const;
+	virtual bool isCondJump() const;
+	virtual bool isUncondJump() const;
+	virtual bool isStackOp() const;
 	virtual bool isFuncCall() const;
 	virtual bool isReturn() const;
 	virtual bool isKernelCall() const;
 	virtual bool isLoad() const;
 	virtual bool isStore() const;
-  virtual uint32 getDestAddress() const;
+	virtual uint32 getDestAddress() const;
 
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) = 0;
 

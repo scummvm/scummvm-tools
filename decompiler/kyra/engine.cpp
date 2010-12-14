@@ -66,7 +66,7 @@ void Kyra::Kyra2Engine::getVariants(std::vector<std::string> &variants) const {
 }
 
 void Kyra::Kyra2LoadInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
-	Kyra2CodeGenerator* cg = (Kyra2CodeGenerator *)codeGen;
+	Kyra2CodeGenerator *cg = (Kyra2CodeGenerator *)codeGen;
 	switch (_opcode) {
 	case 2:
 		// If something has been called previously in this group, don't output retval variable
@@ -102,7 +102,7 @@ void Kyra::Kyra2LoadInstruction::processInst(ValueStack &stack, Engine *engine, 
 }
 
 void Kyra::Kyra2StoreInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
-	Kyra2CodeGenerator* cg = (Kyra2CodeGenerator *)codeGen;
+	Kyra2CodeGenerator *cg = (Kyra2CodeGenerator *)codeGen;
 	switch (_opcode) {
 	case 8:
 		{
@@ -165,7 +165,7 @@ uint32 Kyra::Kyra2UncondJumpInstruction::getDestAddress() const {
 }
 
 void Kyra::Kyra2CallInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
-	Kyra2CodeGenerator* cg = (Kyra2CodeGenerator *)codeGen;
+	Kyra2CodeGenerator *cg = (Kyra2CodeGenerator *)codeGen;
 	cg->_argList.clear();
 	Function f = engine->_functions.find(_params[0]->getUnsigned())->second;
 	for (size_t i = 0; i < f._metadata.length(); i++)
@@ -185,7 +185,7 @@ void Kyra::Kyra2CallInstruction::processInst(ValueStack &stack, Engine *engine, 
 }
 
 void Kyra::Kyra2KernelCallInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
-	Kyra2CodeGenerator* cg = (Kyra2CodeGenerator *)codeGen;
+	Kyra2CodeGenerator *cg = (Kyra2CodeGenerator *)codeGen;
 	if (_opcode != 14)
 		return;
 	cg->_argList.clear();
@@ -197,7 +197,7 @@ void Kyra::Kyra2KernelCallInstruction::processInst(ValueStack &stack, Engine *en
 	// Leave call on stack if this is a condition, or other calls follow in same group
 	if (cg->_curGroup->_type == kIfCondGroupType || cg->_curGroup->_type == kWhileCondGroupType || cg->_curGroup->_type == kDoWhileCondGroupType || _address != cg->findLastCall()->_address) {
 		return;
-	}	else if (!returnsValue) {
+	} else if (!returnsValue) {
 		std::stringstream stream;
 		stream << stack.pop() << ";";
 		cg->addOutputLine(stream.str());
