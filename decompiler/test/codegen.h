@@ -89,11 +89,11 @@ public:
 		VertexIterator v = boost::vertices(g).first;
 		std::vector<std::string> output, expected;
 		expected.push_back("do{");
-		expected.push_back("if(!((18 == var321))) {");
+		expected.push_back("if(18 != var321) {");
 		expected.push_back("continue;");
 		expected.push_back("}");
-		expected.push_back("(VAR_CHARSET_MASK)--;");
-		expected.push_back("} while ((42 == VAR_CHARSET_MASK))");
+		expected.push_back("VAR_CHARSET_MASK--;");
+		expected.push_back("} while (42 == VAR_CHARSET_MASK)");
 		expected.push_back("stopObjectCodeA();");
 		GroupPtr gr = GET(*v);
 		// Find first node
@@ -132,11 +132,11 @@ public:
 
 		VertexIterator v = boost::vertices(g).first;
 		std::vector<std::string> output, expected;
-		expected.push_back("while (!((42 == VAR_CHARSET_MASK))) {");
-		expected.push_back("if (!((18 == var321))) {");
+		expected.push_back("while (42 != VAR_CHARSET_MASK) {");
+		expected.push_back("if (18 != var321) {");
 		expected.push_back("break;");
 		expected.push_back("}");
-		expected.push_back("(VAR_CHARSET_MASK)--;");
+		expected.push_back("VAR_CHARSET_MASK--;");
 		expected.push_back("}");
 		expected.push_back("stopObjectCodeA();");
 		GroupPtr gr = GET(*v);
@@ -176,10 +176,10 @@ public:
 
 		VertexIterator v = boost::vertices(g).first;
 		std::vector<std::string> output, expected;
-		expected.push_back("if (!((42 == VAR_CHARSET_MASK))) {");
-		expected.push_back("(VAR_CHARSET_MASK)--;");
+		expected.push_back("if (42 != VAR_CHARSET_MASK) {");
+		expected.push_back("VAR_CHARSET_MASK--;");
 		expected.push_back("} else {");
-		expected.push_back("(VAR_CHARSET_MASK)++;");
+		expected.push_back("VAR_CHARSET_MASK++;");
 		expected.push_back("}");
 		expected.push_back("stopObjectCodeA();");
 		GroupPtr gr = GET(*v);
@@ -288,7 +288,7 @@ public:
 		VertexIterator v = boost::vertices(g).first;
 		std::vector<std::string> output, expected;
 		expected.push_back("auto_sub0x278(param1, param2, param3, param4) {");
-		expected.push_back("if (((((var1 > param1) && (var1 < param3)) && (var2 > param2)) && (var2 < param4))) {");
+		expected.push_back("if (var1 > param1 && var1 < param3 && var2 > param2 && var2 < param4) {");
 		expected.push_back("retval = o1_queryGameFlag(3);");
 		expected.push_back("if (retval) {");
 		expected.push_back("retval = o2_drawBox(param1, param2, param3, param4, 199);");

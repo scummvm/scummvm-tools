@@ -23,9 +23,43 @@
 #include "value.h"
 
 #include <boost/format.hpp>
+#include <map>
 #include <sstream>
+#include <string>
 
 static int dupindex = 0;
+static std::map<std::string, int> binaryOpPrecedence;
+static std::map<std::string, std::string> negateMap;
+
+void initPrecedence() {
+	binaryOpPrecedence["||"] = kLogicalOrPrecedence;
+	binaryOpPrecedence["&&"] = kLogicalAndPrecedence;
+	binaryOpPrecedence["|"] = kBitwiseOrPrecedence;
+	binaryOpPrecedence["^"] = kBitwiseXorPrecedence;
+	binaryOpPrecedence["&"] = kBitwiseAndPrecedence;
+	binaryOpPrecedence["=="] = kEqualityOpPrecedence;
+	binaryOpPrecedence["!="] = kEqualityOpPrecedence;
+	binaryOpPrecedence["<"] = kRelationOpPrecedence;
+	binaryOpPrecedence["<="] = kRelationOpPrecedence;
+	binaryOpPrecedence[">="] = kRelationOpPrecedence;
+	binaryOpPrecedence[">"] = kRelationOpPrecedence;
+	binaryOpPrecedence["<<"] = kShiftOpPrecedence;
+	binaryOpPrecedence[">>"] = kShiftOpPrecedence;
+	binaryOpPrecedence["+"] = kAddOpPrecedence;
+	binaryOpPrecedence["-"] = kAddOpPrecedence;
+	binaryOpPrecedence["*"] = kMultOpPrecedence;
+	binaryOpPrecedence["/"] = kMultOpPrecedence;
+	binaryOpPrecedence["%"] = kMultOpPrecedence;
+}
+
+void initNegateMap() {
+	negateMap["=="] = "!=";
+	negateMap["!="] = "==";
+	negateMap["<"] = ">=";
+	negateMap["<="] = ">";
+	negateMap[">="] = "<";
+	negateMap[">"] = "<=";
+}
 
 bool Value::isInteger() {
 	return false;
@@ -61,6 +95,10 @@ std::string Value::getString() const {
 	std::stringstream s;
 	print(s);
 	return s.str();
+}
+
+int Value::precedence() const {
+	return kNoPrecedence;
 }
 
 bool IntValue::isInteger() {
@@ -149,14 +187,47 @@ std::ostream &ArrayValue::print(std::ostream &output) const {
 }
 
 std::ostream &BinaryOpValue::print(std::ostream &output) const {
-	return output << "(" << _lhs << " " << _op << " " << _rhs << ")";
+	if (_lhs->precedence() > precedence())
+		output <<  "(" << _lhs << ")";
+	else
+		output << _lhs;
+	output << " " << _op << " ";
+	if (_rhs->precedence() > precedence())
+		output << "(" << _rhs << ")";
+	else
+		output << _rhs;
+	return output;
+}
+
+int BinaryOpValue::precedence() const {
+	if (binaryOpPrecedence.empty())
+		initPrecedence();
+	return binaryOpPrecedence[_op];
+}
+
+ValuePtr BinaryOpValue::negate() throw(WrongTypeException) {
+	if (negateMap.empty())
+		initNegateMap();
+	if (negateMap.find(_op) == negateMap.end())
+		return Value::negate();
+	else
+		return new BinaryOpValue(_lhs, _rhs, negateMap[_op]);
 }
 
 std::ostream &UnaryOpValue::print(std::ostream &output) const {
-	if (_isPostfix)
-		return output << "(" << _operand << ")" << _op;
+	if (!_isPostfix)
+		output << _op;
+	if (_operand->precedence() > precedence())
+		output << "(" << _operand << ")";
 	else
-		return output << _op << "(" << _operand << ")";
+		output << _operand;
+	if (_isPostfix)
+		output << _op;
+	return output;
+}
+
+int UnaryOpValue::precedence() const {
+	return kUnaryOpPrecedence;
 }
 
 ValuePtr NegatedValue::negate() throw(WrongTypeException) {

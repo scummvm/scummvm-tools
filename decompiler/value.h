@@ -36,6 +36,19 @@
 
 class Value;
 
+const int kNoPrecedence = 0;          ///< Precedence value for individual values with no operations.
+const int kUnaryOpPrecedence = 1;     ///< Precedence value for a unary operation. (!, -, ~, etc.)
+const int kMultOpPrecedence = 2;      ///< Precedence value for multiplication, division, modulus (*, /, %)
+const int kAddOpPrecedence = 3;       ///< Precedence value for addition and subtraction (+, -)
+const int kShiftOpPrecedence = 4;     ///< precedence value for bit shifting (<<, >>)
+const int kRelationOpPrecedence = 5;  ///< Precedence value for relative comparison (<, <=, >=, >)
+const int kEqualityOpPrecedence = 6;  ///< Precedence value for equality comparisons (==, !=)
+const int kBitwiseAndPrecedence = 7;  ///< Precedence value for bitwise AND (&)
+const int kBitwiseXorPrecedence = 8;  ///< Precedence value for bitwise XOR (^)
+const int kBitwiseOrPrecedence = 9;   ///< Precedence value for bitwise OR (|)
+const int kLogicalAndPrecedence = 10; ///< Precedence value for logical AND (&&)
+const int kLogicalOrPrecedence = 11;  ///< Precedence value for logical OR (||)
+
 /**
  * Pointer to a Value.
  */
@@ -55,7 +68,7 @@ typedef Stack<ValuePtr> ValueStack;
  * Class representing a value (stack entry, parameter, etc.)
  */
 class Value : public RefCounted {
-	public:
+public:
 	virtual ~Value() { }
 
 	/**
@@ -126,6 +139,14 @@ class Value : public RefCounted {
 	 * @throws WrongTypeException if negation is not possible.
 	 */
 	virtual ValuePtr negate() throw(WrongTypeException);
+
+	/**
+	 * Operator precedence for this value.
+	 * Lower values bind stronger, i.e. they are resolved earlier.
+	 * In other words, if an operand has a higher precedence value than the
+	 * operator, parentheses are not required for that operand.
+	 */
+	virtual int precedence() const;
 
 	/**
 	 * Output a value to an std::ostream.
@@ -306,6 +327,10 @@ public:
 	BinaryOpValue(ValuePtr lhs, ValuePtr rhs, std::string op) : _lhs(lhs), _rhs(rhs), _op(op) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
+
+	virtual ValuePtr negate() throw(WrongTypeException);
+
+	virtual int precedence() const;
 };
 
 /**
@@ -329,6 +354,8 @@ public:
 		_operand(operand), _op(op), _isPostfix(isPostfix) { }
 
 	virtual std::ostream &print(std::ostream &output) const;
+
+	virtual int precedence() const;
 };
 
 /**
