@@ -307,30 +307,25 @@ public:
 		output << "|";
 		ConstInstIterator inst = group->_start;
 		do {
-			output << boost::format("%08x: %s") % (*inst)->_address % (*inst)->_name;
-			std::vector<ValuePtr>::const_iterator param;
-			for (param = (*inst)->_params.begin(); param != (*inst)->_params.end(); ++param) {
-				if (param != (*inst)->_params.begin())
-					output << ",";
-				output << " ";
-				if (BOOST_VERSION >= 104500)
-					output << *param;
-				else {
-					std::string s = (*param)->getString();
-					for (std::string::iterator it = s.begin(); it != s.end(); ++it)
-						if (*it == '"')
-							output << "\\\"";
-						else if (*it == '|')
-							output << "\\|";
-						else if (*it == '{')
-							output << "\\{";
-						else if (*it == '}')
-							output << "\\}";
-						else
-							output << *it;
-				}
+			std::stringstream stream;
+			stream << *inst;
+			if (BOOST_VERSION >= 104500)
+				output << stream.str();
+			else {
+				std::string s = stream.str();
+				for (std::string::iterator it = s.begin(); it != s.end(); ++it)
+					if (*it == '"')
+						output << "\\\"";
+					else if (*it == '|')
+						output << "\\|";
+					else if (*it == '{')
+						output << "\\{";
+					else if (*it == '}')
+						output << "\\}";
+					else
+						output << *it;
 			}
-			output << boost::format(" (%d)") % (*inst)->_stackChange << "\\n";
+			output << "\\n";
 		} while (inst++ != group->_end);
 		output << "}";
 		return output;

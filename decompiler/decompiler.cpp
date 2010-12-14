@@ -24,6 +24,7 @@
 
 #include "disassembler.h"
 #include "engine.h"
+#include "instruction.h"
 
 #include "control_flow.h"
 
@@ -60,7 +61,8 @@ int main(int argc, char** argv) {
 			("only-disassembly,D", "Stops after disassembly. Implies -d.")
 			("only-graph,G", "Stops after control flow graph has been generated. Implies -g.")
 			("show-unreachable,u", "Show the address and contents of unreachable groups in the script.")
-			("variant,v", po::value<std::string>()->default_value(""), "Tell the engine that the script is from a specific variant. To see a list of variants supported by a specific engine, use the -h option and the -e option together.");
+			("variant,v", po::value<std::string>()->default_value(""), "Tell the engine that the script is from a specific variant. To see a list of variants supported by a specific engine, use the -h option and the -e option together.")
+			("no-stack-effect,s", "Leave out the stack effect when printing raw instructions.");
 
 		po::options_description args("");
 		args.add(visible).add_options()
@@ -116,6 +118,10 @@ int main(int argc, char** argv) {
 		} else if (engines.find(vm["engine"].as<std::string>()) == engines.end()) {
 			std::cout << "Unknown engine.\n";
 			return 2;
+		}
+
+		if (vm.count("no-stack-effect")) {
+			setOutputStackEffect(false);
 		}
 
 		Engine *engine = engineFactory.create(vm["engine"].as<std::string>());

@@ -38,6 +38,11 @@ class CodeGenerator;
 class Engine;
 
 /**
+ * Changes whether or not to output the stack effect for an instruction.
+ */
+void setOutputStackEffect(bool value);
+
+/**
  * Constants for categorizing the different kinds of instructions.
  */
 const int kBinaryOpInst = 0;     ///< Binary operation (e.g. +, &&, etc.), including comparisons.

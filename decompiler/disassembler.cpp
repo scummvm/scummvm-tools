@@ -40,7 +40,7 @@ void Disassembler::open(const char *filename) {
 void Disassembler::doDumpDisassembly(std::ostream &output) {
 	InstIterator inst;
 	for (inst = _insts.begin(); inst != _insts.end(); ++inst) {
-		output << *inst;
+		output << *inst << "\n";
 	}
 }
 

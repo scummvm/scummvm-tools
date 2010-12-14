@@ -24,6 +24,12 @@
 #include "codegen.h"
 #include "engine.h"
 
+bool outputStackEffect = true;
+
+void setOutputStackEffect(bool value) {
+	outputStackEffect = value;
+}
+
 bool Instruction::isJump() const {
 	return false;
 }
@@ -72,7 +78,8 @@ std::ostream &Instruction::print(std::ostream &output) const {
 			output << ",";
 		output << " " << *param;
 	}
-	output << boost::format(" (%d)") % _stackChange << "\n";
+	if (outputStackEffect)
+		output << boost::format(" (%d)") % _stackChange;
 	return output;
 }
 
