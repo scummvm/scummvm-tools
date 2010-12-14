@@ -171,70 +171,40 @@ void CodeGenerator::process(GraphVertex v) {
 }
 
 void CodeGenerator::processInst(const InstPtr inst) {
-	switch (inst->_type) {
-	// We handle plain dups here because their behavior should be identical across instruction sets and this prevents implementation error.
-	case kDupInstType:
-		{
-			std::stringstream s;
-			ValuePtr p = _stack.pop()->dup(s);
-			if (s.str().length() > 0)
-				addOutputLine(s.str());
-			_stack.push(p);
-			_stack.push(p);
-			break;
-		}
-	case kUnaryOpPreInstType:
-	case kUnaryOpPostInstType:
-		_stack.push(new UnaryOpValue(_stack.pop(), inst->_codeGenData, inst->_type == kUnaryOpPostInstType));
-		break;
-	case kBinaryOpInstType:
-		{
-			ValuePtr op1 = _stack.pop();
-			ValuePtr op2 = _stack.pop();
-			if (_binOrder == kFIFOArgOrder)
-				_stack.push(new BinaryOpValue(op2, op1, inst->_codeGenData));
-			else if (_binOrder == kLIFOArgOrder)
-				_stack.push(new BinaryOpValue(op1, op2, inst->_codeGenData));
-			break;
-		}
-	case kCondJumpInstType:
-	case kCondJumpRelInstType:
-		{
-			std::stringstream s;
-			switch (_curGroup->_type) {
-			case kIfCondGroupType:
-				if (_curGroup->_startElse && _curGroup->_code.size() == 1) {
-					OutEdgeRange oer = boost::out_edges(_curVertex, _g);
-					bool coalesceElse = false;
-					for (OutEdgeIterator oe = oer.first; oe != oer.second; ++oe) {
-						GroupPtr oGr = GET(boost::target(*oe, _g))->_prev;
-						if (std::find(oGr->_endElse.begin(), oGr->_endElse.end(), _curGroup.get()) != oGr->_endElse.end())
-							coalesceElse = true;
-					}
-					if (coalesceElse) {
-						_curGroup->_code.clear();
-						_curGroup->_coalescedElse = true;
-						s << "} else ";
-					}
+	inst->processInst(_stack, _engine, this);
+	if (inst->isCondJump()) {
+		std::stringstream s;
+		switch (_curGroup->_type) {
+		case kIfCondGroupType:
+			if (_curGroup->_startElse && _curGroup->_code.size() == 1) {
+				OutEdgeRange oer = boost::out_edges(_curVertex, _g);
+				bool coalesceElse = false;
+				for (OutEdgeIterator oe = oer.first; oe != oer.second; ++oe) {
+					GroupPtr oGr = GET(boost::target(*oe, _g))->_prev;
+					if (std::find(oGr->_endElse.begin(), oGr->_endElse.end(), _curGroup.get()) != oGr->_endElse.end())
+						coalesceElse = true;
 				}
-				s << "if (" << _stack.pop()->negate() << ") {";
-				addOutputLine(s.str(), _curGroup->_coalescedElse, true);
-				break;
-			case kWhileCondGroupType:
-				s << "while (" << _stack.pop()->negate() << ") {";
-				addOutputLine(s.str(), false, true);
-				break;
-			case kDoWhileCondGroupType:
-				s << "} while (" << _stack.pop() << ")";
-				addOutputLine(s.str(), true, false);
-				break;
-			default:
-				break;
+				if (coalesceElse) {
+					_curGroup->_code.clear();
+					_curGroup->_coalescedElse = true;
+					s << "} else ";
+				}
 			}
+			s << "if (" << _stack.pop()->negate() << ") {";
+			addOutputLine(s.str(), _curGroup->_coalescedElse, true);
+			break;
+		case kWhileCondGroupType:
+			s << "while (" << _stack.pop()->negate() << ") {";
+			addOutputLine(s.str(), false, true);
+			break;
+		case kDoWhileCondGroupType:
+			s << "} while (" << _stack.pop() << ")";
+			addOutputLine(s.str(), true, false);
+			break;
+		default:
+			break;
 		}
-		break;
-	case kJumpInstType:
-	case kJumpRelInstType:
+	} else if (inst->isUncondJump()) {
 		switch (_curGroup->_type) {
 		case kBreakGroupType:
 			addOutputLine("break;");
@@ -269,39 +239,12 @@ void CodeGenerator::processInst(const InstPtr inst) {
 				}
 				if (printJump) {
 					std::stringstream s;
-					s << boost::format("jump 0x%X;") % _engine->getDestAddress(inst);
+					s << boost::format("jump 0x%X;") % inst->getDestAddress();
 					addOutputLine(s.str());
 				}
 			}
 			break;
 		}
-		break;
-	case kReturnInstType:
-		// TODO: Allow specification of return value as part of return statement
-		addOutputLine("return;");
-		break;
-	case kSpecialCallInstType:
-		{
-			_argList.clear();
-			bool returnsValue = (inst->_codeGenData.find("r") == 0);
-			std::string metadata = (!returnsValue ? inst->_codeGenData : inst->_codeGenData.substr(1));
-			for (size_t i = 0; i < metadata.length(); i++)
-				processSpecialMetadata(inst, metadata[i], i);
-			_stack.push(new CallValue(inst->_name, _argList));
-			if (!returnsValue) {
-				std::stringstream stream;
-				stream << _stack.pop() << ";";
-				addOutputLine(stream.str());
-			}
-			break;
-		}
-	default:
-		{
-			std::stringstream s;
-			s << boost::format("WARNING: Unknown opcode %X at address %08X") % inst->_opcode % inst->_address;
-			addOutputLine(s.str());
-		}
-		break;
 	}
 }
 

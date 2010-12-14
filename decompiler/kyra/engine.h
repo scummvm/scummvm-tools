@@ -36,12 +36,47 @@ namespace Kyra {
 class Kyra2Engine : public Engine {
 public:
 	Disassembler *getDisassembler(InstVec &insts);
-	uint32 getDestAddress(const InstPtr inst) const;
 	CodeGenerator *getCodeGenerator(std::ostream &output);
 	void postCFG(InstVec &insts, Graph g);
 	bool detectMoreFuncs() const;
 
 	std::vector<std::string> _textStrings; ///< Container for strings from the TEXT chunk.
+};
+
+class Kyra2LoadInstruction : public LoadInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+class Kyra2StoreInstruction : public StoreInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+class Kyra2StackInstruction : public StackInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+class Kyra2CondJumpInstruction : public CondJumpInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+	virtual uint32 getDestAddress() const;
+};
+
+class Kyra2UncondJumpInstruction : public UncondJumpInstruction {
+public:
+	virtual uint32 getDestAddress() const;
+};
+
+class Kyra2CallInstruction : public CallInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+class Kyra2KernelCallInstruction : public KernelCallInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
 } // End of namespace Kyra

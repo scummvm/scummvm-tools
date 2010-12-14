@@ -81,14 +81,6 @@ public:
 	/**
 	 * Decode a jump instruction to get the destination address.
 	 *
-	 * @param inst Instruction to decode.
-	 * @return The destination address of the jump instruction.
-	 */
-	virtual uint32 getDestAddress(const InstPtr inst) const = 0;
-
-	/**
-	 * Decode a jump instruction to get the destination address.
-	 *
 	 * @param it Iterator pointing to the instruction to decode.
 	 * @return The destination address of the jump instruction.
 	 */

@@ -28,7 +28,7 @@ SubOpcodeDisassembler::SubOpcodeDisassembler(InstVec &insts) : ::SimpleDisassemb
 void SubOpcodeDisassembler::doDisassemble() throw(std::exception) {
 	START_OPCODES;
 		START_SUBOPCODE(0xFF)
-			OPCODE(0xFF, "FOO", kSpecialCallInstType, 0, "");
+			OPCODE(0xFF, "FOO", kKernelCallInst, 0, "");
 		END_SUBOPCODE
 	END_OPCODES;
 }

@@ -230,9 +230,9 @@ decompile_OBJS := \
 	common/file.o \
 	decompiler/decompiler.o \
 	decompiler/value.o \
+	decompiler/instruction.o \
 	decompiler/disassembler.o \
 	decompiler/simple_disassembler.o \
-	decompiler/engine.o \
 	decompiler/unknown_opcode.o \
 	decompiler/graph.o \
 	decompiler/control_flow.o \

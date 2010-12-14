@@ -21,7 +21,6 @@
  */
 
 #include "graph.h"
-#include "stack.h"
 #include "value.h"
 
 #include <ostream>
@@ -35,11 +34,6 @@
 class Engine;
 
 class Function;
-
-/**
- * Type representing a stack.
- */
-typedef Stack<ValuePtr> ValueStack;
 
 const int kIndentAmount = 2; ///< How many spaces to use for each indent.
 
@@ -57,8 +51,6 @@ enum ArgOrder {
 class CodeGenerator {
 private:
 	Graph _g;                  ///< The annotated graph of the script.
-	const ArgOrder _binOrder;  ///< Order of operands for binary operations.
-	const ArgOrder _callOrder; ///< Order of operands for call arguments.
 
 	/**
 	 * Processes a GraphVertex.
@@ -73,8 +65,6 @@ protected:
 	ValueStack _stack;      ///< The stack currently being processed.
 	uint _indentLevel;      ///< Indentation level.
 	GraphVertex _curVertex; ///< Graph vertex currently being processed.
-	GroupPtr _curGroup;     ///< Pointer to the group currently being processed.
-	ValueList _argList;     ///< Storage for lists of arguments to be built when processing function calls.
 
 	/**
 	 * Processes an instruction. Called by process() for each instruction.
@@ -83,7 +73,7 @@ protected:
 	 *
 	 * @param inst The instruction to process.
 	 */
-	virtual void processInst(const InstPtr inst);
+	void processInst(const InstPtr inst);
 
 	/**
 	 * Indents a string according to the current indentation level.
@@ -92,6 +82,38 @@ protected:
 	 * @result The indented string.
 	 */
 	std::string indentString(std::string s);
+
+	/**
+	 * Construct the signature for a function.
+	 *
+	 * @param func Reference to the function to construct the signature for.
+	 */
+	virtual std::string constructFuncSignature(const Function &func);
+
+public:
+	const ArgOrder _binOrder;  ///< Order of operands for binary operations.
+	const ArgOrder _callOrder; ///< Order of operands for call arguments.
+	ValueList _argList;        ///< Storage for lists of arguments to be built when processing function calls.
+	GroupPtr _curGroup;     ///< Pointer to the group currently being processed.
+
+	virtual ~CodeGenerator() { }
+
+	/**
+	 * Constructor for CodeGenerator.
+	 *
+	 * @param engine Pointer to the Engine used for the script.
+	 * @param output The std::ostream to output the code to.
+	 * @param binOrder Order of arguments for binary operators.
+	 * @param callOrder Order of arguments for function calls.
+	 */
+	CodeGenerator(Engine *engine, std::ostream &output, ArgOrder binOrder, ArgOrder callOrder);
+
+	/**
+	 * Generates code from the provided graph and outputs it to stdout.
+	 *
+	 * @param g The annotated graph of the script.
+	 */
+	void generate(const Graph &g);
 
 	/**
 	 * Adds a line of code to the current group.
@@ -111,6 +133,13 @@ protected:
 	void writeAssignment(ValuePtr dst, ValuePtr src);
 
 	/**
+	 * Add an argument to the argument list.
+	 *
+	 * @param p The argument to add.
+	 */
+	void addArg(ValuePtr p);
+
+	/**
 	 * Process a single character of metadata.
 	 *
 	 * @param inst The instruction being processed.
@@ -119,39 +148,6 @@ protected:
 	 */
 	virtual void processSpecialMetadata(const InstPtr inst, char c, int pos);
 
-	/**
-	 * Add an argument to the argument list.
-	 *
-	 * @param p The argument to add.
-	 */
-	void addArg(ValuePtr p);
-
-	/**
-	 * Construct the signature for a function.
-	 *
-	 * @param func Reference to the function to construct the signature for.
-	 */
-	virtual std::string constructFuncSignature(const Function &func);
-
-public:
-	virtual ~CodeGenerator() { }
-
-	/**
-	 * Constructor for CodeGenerator.
-	 *
-	 * @param engine Pointer to the Engine used for the script.
-	 * @param output The std::ostream to output the code to.
-	 * @param binOrder Order of arguments for binary operators.
-	 * @param callOrder Order of arguments for function calls.
-	 */
-	CodeGenerator(Engine *engine, std::ostream &output, ArgOrder binOrder, ArgOrder callOrder);
-
-	/**
-	 * Generates code from the provided graph and outputs it to stdout.
-	 *
-	 * @param g The annotated graph of the script.
-	 */
-	void generate(const Graph &g);
 };
 
 #endif

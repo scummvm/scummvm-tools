@@ -32,42 +32,52 @@
 #include "common/scummsys.h"
 #include "refcounted.h"
 #include "value.h"
+#include "wrongtype.h"
+
+class CodeGenerator;
+class Engine;
 
 /**
- * Enumeration for categorizing the different kinds of instructions.
+ * Constants for categorizing the different kinds of instructions.
  */
-enum InstType {
-	kBinaryOpInstType,    ///< Binary operation (e.g. +, &&, etc.), including comparisons.
-	kCallInstType,        ///< Regular function call.
-	kCondJumpInstType,    ///< Conditional jump (absolute address).
-	kCondJumpRelInstType, ///< Conditional jump (relative address).
-	kDupInstType,         ///< Instruction duplicates the most recent stack entry.
-	kJumpInstType,        ///< Unconditional jump (absolute address).
-	kJumpRelInstType,     ///< Unconditional jump (relative address).
-	kLoadInstType,        ///< Load value to stack.
-	kReturnInstType,      ///< Return from regular function call.
-	kSpecialCallInstType, ///< Special functions.
-	kStackInstType,       ///< Stack allocation or deallocation (altering stack pointer).
-	kStoreInstType,       ///< Store value from stack in memory.
-	kUnaryOpPreInstType,  ///< Unary operation (e.g. !) with operator placed before the operator.
-	kUnaryOpPostInstType  ///< Unary operation with operator placed after the operator.
-};
+const int kBinaryOpInst = 0;     ///< Binary operation (e.g. +, &&, etc.), including comparisons.
+const int kBoolNegateInst = 1;   ///< Boolean negation.
+const int kCallInst = 2;         ///< Regular function call.
+const int kCondJumpInst = 3;     ///< Conditional jump.
+const int kDupInst = 4;          ///< Instruction duplicates the most recent stack entry.
+const int kJumpInst = 5;         ///< Unconditional jump.
+const int kKernelCallInst = 6;   ///< Kernel functions.
+const int kLoadInst = 7;         ///< Load value to stack.
+const int kReturnInst = 8;       ///< Return from regular function call.
+const int kStackInst = 9;        ///< Stack allocation or deallocation (altering stack pointer)
+const int kStoreInst = 10;       ///< Store value from stack in memory.
+const int kUnaryOpPreInst = 11;  ///< Unary operation (e.g. !) with operator placed before the operator.
+const int kUnaryOpPostInst = 12; ///< Unary operation with operator placed after the operator.
+
+const int kFirstCustomInst = kUnaryOpPostInst + 1; ///< First unused key. Add your custom type keys starting with this value.
+
+struct Instruction;
+
+/**
+ * Pointer to an Instruction.
+ */
+typedef boost::intrusive_ptr<Instruction> InstPtr;
 
 /**
  * Structure for representing an instruction.
  */
 struct Instruction : public RefCounted {
+public:
 	uint32 _opcode;                 ///< The instruction opcode.
 	uint32 _address;                ///< The instruction address.
 	std::string _name;              ///< The instruction name (opcode name).
-	InstType _type;                 ///< The instruction type.
 	int16 _stackChange;             ///< How much this instruction changes the stack pointer by.
 	std::vector<ValuePtr> _params;  ///< Array of parameters used for the instruction.
 	std::string _codeGenData;       ///< String containing metadata for code generation. See the extended documentation for details.
 
 	Instruction(uint32 opcode = 0, uint32 address = 0,
-			std::string name = "", InstType type = kSpecialCallInstType, int16 stackChange = 0) :
-		_opcode(opcode), _address(address), _name(name), _type(type), _stackChange(stackChange) {}
+			std::string name = "", int16 stackChange = 0) :
+		_opcode(opcode), _address(address), _name(name), _stackChange(stackChange) {}
 
 	/**
 	 * Operator overload to output an Instruction to a std::ostream.
@@ -77,33 +87,98 @@ struct Instruction : public RefCounted {
 	 * @return The std::ostream used for output.
 	 */
 	friend std::ostream &operator<<(std::ostream &output, const Instruction *inst) {
-		return output << *inst;
+		return inst->print(output);
 	}
 
-	/**
-	 * Operator overload to output an Instruction to a std::ostream.
-	 *
-	 * @param output The std::ostream to output to.
-	 * @param inst   The Instruction to output.
-	 * @return The std::ostream used for output.
-	 */
-	friend std::ostream &operator<<(std::ostream &output, const Instruction &inst) {
-		output << boost::format("%08x: %s") % inst._address % inst._name;
-		std::vector<ValuePtr>::const_iterator param;
-		for (param = inst._params.begin(); param != inst._params.end(); ++param) {
-			if (param != inst._params.begin())
-				output << ",";
-			output << " " << *param;
-		}
-		output << boost::format(" (%d)") % inst._stackChange << "\n";
-		return output;
-	}
+	virtual std::ostream &print(std::ostream &output) const;
+
+  virtual bool isJump() const;
+  virtual bool isCondJump() const;
+  virtual bool isUncondJump() const;
+  virtual bool isStackOp() const;
+	virtual bool isFuncCall() const;
+	virtual bool isReturn() const;
+	virtual bool isKernelCall() const;
+	virtual bool isLoad() const;
+	virtual bool isStore() const;
+  virtual uint32 getDestAddress() const;
+
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) = 0;
+
 };
 
-/**
- * Pointer to an Instruction.
- */
-typedef boost::intrusive_ptr<Instruction> InstPtr;
+struct JumpInstruction : public Instruction {
+public:
+	virtual bool isJump() const;
+};
+
+struct CondJumpInstruction : public JumpInstruction {
+public:
+	virtual bool isCondJump() const;
+};
+
+struct UncondJumpInstruction : public JumpInstruction {
+public:
+	virtual bool isUncondJump() const;
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+struct StackInstruction : public Instruction {
+public:
+	virtual bool isStackOp() const;
+};
+
+struct CallInstruction : public Instruction {
+public:
+	virtual bool isFuncCall() const;
+};
+
+struct LoadInstruction : public Instruction {
+public:
+	virtual bool isLoad() const;
+};
+
+struct StoreInstruction : public Instruction {
+public:
+	virtual bool isStore() const;
+};
+
+struct DupInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+struct BoolNegateInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+struct BinaryOpInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+struct ReturnInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+	virtual bool isReturn() const;
+};
+
+struct UnaryOpPrefixInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+struct UnaryOpPostfixInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+struct KernelCallInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+	virtual bool isKernelCall() const;
+};
 
 /**
  * Type representing a vector of InstPtrs.

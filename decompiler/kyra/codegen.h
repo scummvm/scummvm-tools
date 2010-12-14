@@ -31,24 +31,6 @@ namespace Kyra {
  * KYRA code generator.
  */
 class Kyra2CodeGenerator : public CodeGenerator {
-private:
-	/**
-	 * Finds the first call instruction in the current group and returns it.
-	 * The call may either be a kCallInstType or kSpecialCallInstType.
-	 * Used to check whether retVal should be output by pushRet.
-	 *
-	 * @return The first call instruction in the current group. If no calls are found, returns the first instruction.
-	 */
-	const InstPtr findFirstCall();
-
-	/**
-	 * Finds the last call instruction in the current group and returns it.
-	 * The call may either be a kCallInstType or kSpecialCallInstType.
-	 * Used to check whether retVal should be output by calls.
-	 *
-	 * @return The last call instruction in the current group. If no calls are found, returns the last instruction.
-	 */
-	const InstPtr findLastCall();
 public:
 	/**
 	 * Constructor for Kyra2CodeGenerator.
@@ -57,9 +39,28 @@ public:
 	 * @param output The std::ostream to output the code to.
 	 */
 	Kyra2CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kFIFOArgOrder, kLIFOArgOrder) {}
-protected:
-	void processInst(const InstPtr inst);
+
+	/**
+	 * Finds the first call instruction in the current group and returns it.
+	 * The call may either be a kCallInst or kKernelCallInst.
+	 * Used to check whether retVal should be output by pushRet.
+	 *
+	 * @return The first call instruction in the current group. If no calls are found, returns the first instruction.
+	 */
+	const InstPtr findFirstCall();
+
+	/**
+	 * Finds the last call instruction in the current group and returns it.
+	 * The call may either be a kCallInst or kKernelCallInst.
+	 * Used to check whether retVal should be output by calls.
+	 *
+	 * @return The last call instruction in the current group. If no calls are found, returns the last instruction.
+	 */
+	const InstPtr findLastCall();
+
 	virtual void processSpecialMetadata(const InstPtr inst, char c, int pos);
+
+protected:
 	std::string constructFuncSignature(const Function &func);
 };
 

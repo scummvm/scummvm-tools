@@ -31,12 +31,8 @@
 
 #include "common/scummsys.h"
 #include "refcounted.h"
-
-/**
- * Exception signalling that an operation was performed on a Value that doesn't support the operation.
- */
-class WrongTypeException : public std::exception {
-};
+#include "stack.h"
+#include "wrongtype.h"
 
 class Value;
 
@@ -49,6 +45,11 @@ typedef boost::intrusive_ptr<Value> ValuePtr;
  * Type representing a list of values, e.g. for indexes used to access an array.
  */
 typedef std::deque<ValuePtr> ValueList;
+
+/**
+ * Type representing a stack.
+ */
+typedef Stack<ValuePtr> ValueStack;
 
 /**
  * Class representing a value (stack entry, parameter, etc.)
@@ -133,7 +134,7 @@ class Value : public RefCounted {
 	 * @param value  Reference counted pointer to the value to output.
 	 * @return The std::ostream used for output.
 	 */
-	friend std::ostream &operator<<(std::ostream &output, ValuePtr value) {
+	friend std::ostream &operator<<(std::ostream &output, Value *value) {
 		return value->print(output);
 	}
 

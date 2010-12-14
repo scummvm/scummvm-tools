@@ -29,15 +29,17 @@
 #include "instruction.h"
 #include "common/file.h"
 #include "unknown_opcode.h"
+#include "objectFactory.h"
 
 /**
  * Base class for disassemblers.
  */
 class Disassembler {
 protected:
-	Common::File _f;                  ///< Used to perform file I/O.
-	InstVec &_insts;                  ///< Container for disassembled instructions.
-	uint32 _addressBase;              ///< Base address where the script starts.
+	Common::File _f;                              ///< Used to perform file I/O.
+	InstVec &_insts;                              ///< Container for disassembled instructions.
+	uint32 _addressBase;                          ///< Base address where the script starts.
+	ObjectFactory<int, Instruction> _instFactory; ///< Factory for Instruction and subclasses
 
 	/**
 	 * Performs disassembly.

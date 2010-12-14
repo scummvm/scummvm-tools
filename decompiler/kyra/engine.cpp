@@ -32,10 +32,6 @@ Disassembler *Kyra::Kyra2Engine::getDisassembler(InstVec &insts) {
 	return new Kyra2Disassembler(this, insts);
 }
 
-uint32 Kyra::Kyra2Engine::getDestAddress(const InstPtr inst) const {
-	return inst->_params[0]->getUnsigned();
-}
-
 CodeGenerator *Kyra::Kyra2Engine::getCodeGenerator(std::ostream &output) {
 	return new Kyra2CodeGenerator(this, output);
 }
@@ -62,4 +58,146 @@ void Kyra::Kyra2Engine::postCFG(InstVec &insts, Graph g) {
 
 bool Kyra::Kyra2Engine::detectMoreFuncs() const {
 	return true;
+}
+
+void Kyra::Kyra2LoadInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
+	Kyra2CodeGenerator* cg = (Kyra2CodeGenerator *)codeGen;
+	switch (_opcode) {
+	case 2:
+		// If something has been called previously in this group, don't output retval variable
+		if (_address <= cg->findFirstCall()->_address)
+			stack.push(new VarValue("retval"));
+		break;
+	case 3:
+	case 4:
+		stack.push(_params[0]);
+		break;
+	case 5:
+		{
+			std::stringstream s;
+			s << boost::format("var%d") % _params[0]->getSigned();
+			stack.push(new VarValue(s.str()));
+		}
+		break;
+	case 6:
+		{
+			std::stringstream s;
+			s << boost::format("localvar%d") % _params[0]->getSigned();
+			stack.push(new VarValue(s.str()));
+		}
+		break;
+	case 7:
+		{
+			std::stringstream s;
+			s << boost::format("param%d") % _params[0]->getSigned();
+			stack.push(new VarValue(s.str()));
+		}
+		break;
+	}
+}
+
+void Kyra::Kyra2StoreInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
+	Kyra2CodeGenerator* cg = (Kyra2CodeGenerator *)codeGen;
+	switch (_opcode) {
+	case 8:
+		{
+			ValuePtr p = new VarValue("retval");
+			cg->writeAssignment(p, stack.pop());
+		}
+		break;
+	case 9:
+		{
+			std::stringstream s;
+			s << boost::format("var%d") % _params[0]->getSigned();
+			ValuePtr p = new VarValue(s.str());
+			cg->writeAssignment(p, stack.pop());
+		}
+		break;
+	case 10:
+		{
+			std::stringstream s;
+			s << boost::format("localvar%d") % _params[0]->getSigned();
+			ValuePtr p = new VarValue(s.str());
+			cg->writeAssignment(p, stack.pop());
+		}
+		break;
+	case 11:
+		{
+			std::stringstream s;
+			s << boost::format("param%d") % _params[0]->getSigned();
+			ValuePtr p = new VarValue(s.str());
+			cg->writeAssignment(p, stack.pop());
+		}
+		break;
+	}
+}
+
+void Kyra::Kyra2StackInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
+	if (_opcode == 12) {
+		for (int i = _params[0]->getSigned(); i != 0; --i) {
+			if (!stack.empty())
+				stack.pop();
+		}
+	} else if (_opcode == 13) {
+		for (int i = 0; i != _params[0]->getSigned(); ++i) {
+			std::stringstream s;
+			s << boost::format("localvar%d") % i;
+			stack.push(new VarValue(s.str()));
+		}
+	}
+}
+
+void Kyra::Kyra2CondJumpInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
+	stack.push(stack.pop()->negate());
+}
+
+uint32 Kyra::Kyra2CondJumpInstruction::getDestAddress() const {
+	return _params[0]->getUnsigned();
+}
+
+uint32 Kyra::Kyra2UncondJumpInstruction::getDestAddress() const {
+	return _params[0]->getUnsigned();
+}
+
+void Kyra::Kyra2CallInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
+	Kyra2CodeGenerator* cg = (Kyra2CodeGenerator *)codeGen;
+	cg->_argList.clear();
+	Function f = engine->_functions.find(_params[0]->getUnsigned())->second;
+	for (size_t i = 0; i < f._metadata.length(); i++)
+		cg->processSpecialMetadata(this, f._metadata[i], i);
+	stack.push(new CallValue(f._name, cg->_argList));
+	// Leave call on stack if this is a condition, or other calls follow in same group
+	if (cg->_curGroup->_type == kIfCondGroupType || cg->_curGroup->_type == kWhileCondGroupType || cg->_curGroup->_type == kDoWhileCondGroupType || _address != cg->findLastCall()->_address) {
+		return;
+	}	else if (!f._retVal) {
+		std::stringstream stream;
+		stream << stack.pop() << ";";
+		cg->addOutputLine(stream.str());
+	} else {
+		ValuePtr p = new VarValue("retval");
+		cg->writeAssignment(p, stack.pop());
+	}
+}
+
+void Kyra::Kyra2KernelCallInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
+	Kyra2CodeGenerator* cg = (Kyra2CodeGenerator *)codeGen;
+	if (_opcode != 14)
+		return;
+	cg->_argList.clear();
+	bool returnsValue = (_codeGenData.find("r") == 0);
+	std::string metadata = (!returnsValue ? _codeGenData : _codeGenData.substr(1));
+	for (size_t i = 0; i < metadata.length(); i++)
+		cg->processSpecialMetadata(this, metadata[i], i);
+	stack.push(new CallValue(_name, cg->_argList));
+	// Leave call on stack if this is a condition, or other calls follow in same group
+	if (cg->_curGroup->_type == kIfCondGroupType || cg->_curGroup->_type == kWhileCondGroupType || cg->_curGroup->_type == kDoWhileCondGroupType || _address != cg->findLastCall()->_address) {
+		return;
+	}	else if (!returnsValue) {
+		std::stringstream stream;
+		stream << stack.pop() << ";";
+		cg->addOutputLine(stream.str());
+	} else {
+		ValuePtr p = new VarValue("retval");
+		cg->writeAssignment(p, stack.pop());
+	}
 }

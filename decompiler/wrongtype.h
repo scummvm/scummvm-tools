@@ -20,8 +20,13 @@
  *
  */
 
-#include "engine.h"
+#ifndef WRONGTYPE_H
+#define WRONGTYPE_H
 
-uint32 Engine::getDestAddress(ConstInstIterator it) const {
-	return getDestAddress(*it);
-}
+/**
+ * Exception signalling that an operation was performed on a Value that doesn't support the operation.
+ */
+class WrongTypeException : public std::exception {
+};
+
+#endif

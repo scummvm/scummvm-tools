@@ -266,6 +266,13 @@ IFFChunk::IFFChunk() {
 
 Kyra::Kyra2Disassembler::Kyra2Disassembler(Kyra2Engine *engine, InstVec &insts) : Disassembler(insts), _engine(engine) {
 	setupKyra2Funcs();
+	_instFactory.addEntry<Kyra2CallInstruction>(kCallInst);
+	_instFactory.addEntry<Kyra2CondJumpInstruction>(kCondJumpInst);
+	_instFactory.addEntry<Kyra2UncondJumpInstruction>(kJumpInst);
+	_instFactory.addEntry<Kyra2KernelCallInstruction>(kKernelCallInst);
+	_instFactory.addEntry<Kyra2LoadInstruction>(kLoadInst);
+	_instFactory.addEntry<Kyra2StackInstruction>(kStackInst);
+	_instFactory.addEntry<Kyra2StoreInstruction>(kStoreInst);
 }
 
 Kyra::Kyra2Disassembler::~Kyra2Disassembler() {
@@ -388,15 +395,14 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			parameter = 0;
 		}
 
-#define ADD_INST _insts.insert(_insts.end(), new Instruction());
+#define ADD_INST(category) _insts.push_back(_instFactory.create(category));
 #define LAST_INST (_insts.back())
 #define OPCODE_MD(name, category, stackChange, hasParam, isSigned, isAddress, codeGenData) \
-		ADD_INST; \
+		ADD_INST(category); \
 		LAST_INST->_opcode = opcode; \
 		LAST_INST->_address = address; \
 		LAST_INST->_stackChange = stackChange; \
 		LAST_INST->_name = name; \
-		LAST_INST->_type = category; \
 		LAST_INST->_codeGenData = codeGenData; \
 		if (hasParam) { \
 			ValuePtr p; \
@@ -416,16 +422,16 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			parameter *= 2;
 			if (parameter < minFuncAddr)
 				jumpTargets.insert(_insts.size());
-			OPCODE("jumpTo", kJumpInstType, 0, true, false, true);
+			OPCODE("jumpTo", kJumpInst, 0, true, false, true);
 			break;
 		case 1:
-			OPCODE("setRetValue", kStoreInstType, 0, true, true, false);
+			OPCODE("setRetValue", kStoreInst, 0, true, true, false);
 			break;
 		case 2:
 			if (parameter == 0) {
-				OPCODE("pushRet", kLoadInstType, 1, false, false, false);
+				OPCODE("pushRet", kLoadInst, 1, false, false, false);
 			} else if (parameter == 1) {
-				OPCODE("pushPos", kSpecialCallInstType, 0, false, false, false); // Sets up function call
+				OPCODE("pushPos", kKernelCallInst, 0, false, false, false); // Sets up function call
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);
@@ -433,41 +439,41 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			break;
 		case 3:
 		case 4:
-			OPCODE("push", kLoadInstType, 1, true, true, false);
+			OPCODE("push", kLoadInst, 1, true, true, false);
 			break;
 		case 5:
-			OPCODE("pushVar", kLoadInstType, 1, true, true, false);
+			OPCODE("pushVar", kLoadInst, 1, true, true, false);
 			break;
 		case 6:
-			OPCODE("pushBPNeg", kLoadInstType, 1, true, true, false);
+			OPCODE("pushBPNeg", kLoadInst, 1, true, true, false);
 			break;
 		case 7:
-			OPCODE("pushBPAdd", kLoadInstType, 1, true, true, false);
+			OPCODE("pushBPAdd", kLoadInst, 1, true, true, false);
 			break;
 		case 8:
 			if (parameter == 0) {
-				OPCODE("popRet", kStoreInstType, -1, false, false, false);
+				OPCODE("popRet", kStoreInst, -1, false, false, false);
 			} else if (parameter == 1) {
-				OPCODE("popPos", kReturnInstType, 0, false, false, false); // Returns from function call
+				OPCODE("popPos", kReturnInst, 0, false, false, false); // Returns from function call
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);
 			}
 			break;
 		case 9:
-			OPCODE("popVar", kStoreInstType, -1, true, true, false);
+			OPCODE("popVar", kStoreInst, -1, true, true, false);
 			break;
 		case 10:
-			OPCODE("popBPNeg", kStoreInstType, -1, true, true, false);
+			OPCODE("popBPNeg", kStoreInst, -1, true, true, false);
 			break;
 		case 11:
-			OPCODE("popBPAdd", kStoreInstType, -1, true, true, false);
+			OPCODE("popBPAdd", kStoreInst, -1, true, true, false);
 			break;
 		case 12:
-			OPCODE("addSP", kStackInstType, -parameter, true, true, false);
+			OPCODE("addSP", kStackInst, -parameter, true, true, false);
 			break;
 		case 13:
-			OPCODE("subSP", kStackInstType, parameter, true, true, false);
+			OPCODE("subSP", kStackInst, parameter, true, true, false);
 			break;
 		case 14:
 			parameter = (uint8)parameter;
@@ -475,21 +481,21 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 				// Error: unknown function
 				throw UnknownOpcodeException(address, opcode);
 			}
-			OPCODE_MD(_funcs[parameter]._name, kSpecialCallInstType, 0, false, false, false, _funcs[parameter]._metadata)
+			OPCODE_MD(_funcs[parameter]._name, kKernelCallInst, 0, false, false, false, _funcs[parameter]._metadata)
 			break;
 		case 15:
 			parameter *= 2;
 			if (parameter < minFuncAddr)
 				jumpTargets.insert(_insts.size());
-			OPCODE("ifNotJmp", kCondJumpInstType, -1, true, false, true);
+			OPCODE("ifNotJmp", kCondJumpInst, -1, true, false, true);
 			break;
 		case 16:
 			if (parameter == 0) {
-				OPCODE_MD("boolNegate", kUnaryOpPreInstType, 0, false, false, false, "!");
+				OPCODE("boolNegate", kBoolNegateInst, 0, false, false, false);
 			} else if (parameter == 1) {
-				OPCODE_MD("arithmeticNegate", kUnaryOpPreInstType, 0, false, false, false,"-");
+				OPCODE_MD("arithmeticNegate", kUnaryOpPreInst, 0, false, false, false,"-");
 			} else if (parameter == 2) {
-				OPCODE_MD("bitwiseNegate", kUnaryOpPreInstType, 0, false, false, false, "~");
+				OPCODE_MD("bitwiseNegate", kUnaryOpPreInst, 0, false, false, false, "~");
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);
@@ -498,58 +504,58 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 		case 17:
 			switch (parameter) {
 				case 0:
-					OPCODE_MD("eval_band", kBinaryOpInstType, -1, false, false, false, "&&");
+					OPCODE_MD("eval_band", kBinaryOpInst, -1, false, false, false, "&&");
 					break;
 				case 1:
-					OPCODE_MD("eval_bor", kBinaryOpInstType, -1, false, false, false, "||");
+					OPCODE_MD("eval_bor", kBinaryOpInst, -1, false, false, false, "||");
 					break;
 				case 2:
-					OPCODE_MD("eval_eq", kBinaryOpInstType, -1, false, false, false, "==");
+					OPCODE_MD("eval_eq", kBinaryOpInst, -1, false, false, false, "==");
 					break;
 				case 3:
-					OPCODE_MD("eval_neq", kBinaryOpInstType, -1, false, false, false, "!=");
+					OPCODE_MD("eval_neq", kBinaryOpInst, -1, false, false, false, "!=");
 					break;
 				case 4:
-					OPCODE_MD("eval_leq", kBinaryOpInstType, -1, false, false, false, "<=");
+					OPCODE_MD("eval_leq", kBinaryOpInst, -1, false, false, false, "<=");
 					break;
 				case 5:
-					OPCODE_MD("eval_lt", kBinaryOpInstType, -1, false, false, false, "<");
+					OPCODE_MD("eval_lt", kBinaryOpInst, -1, false, false, false, "<");
 					break;
 				case 6:
-					OPCODE_MD("eval_geq", kBinaryOpInstType, -1, false, false, false, ">=");
+					OPCODE_MD("eval_geq", kBinaryOpInst, -1, false, false, false, ">=");
 					break;
 				case 7:
-					OPCODE_MD("eval_gt", kBinaryOpInstType, -1, false, false, false, ">");
+					OPCODE_MD("eval_gt", kBinaryOpInst, -1, false, false, false, ">");
 					break;
 				case 8:
-					OPCODE_MD("eval_add", kBinaryOpInstType, -1, false, false, false, "+");
+					OPCODE_MD("eval_add", kBinaryOpInst, -1, false, false, false, "+");
 					break;
 				case 9:
-					OPCODE_MD("eval_sub", kBinaryOpInstType, -1, false, false, false, "-");
+					OPCODE_MD("eval_sub", kBinaryOpInst, -1, false, false, false, "-");
 					break;
 				case 10:
-					OPCODE_MD("eval_mult", kBinaryOpInstType, -1, false, false, false, "*");
+					OPCODE_MD("eval_mult", kBinaryOpInst, -1, false, false, false, "*");
 					break;
 				case 11:
-					OPCODE_MD("eval_div", kBinaryOpInstType, -1, false, false, false, "/");
+					OPCODE_MD("eval_div", kBinaryOpInst, -1, false, false, false, "/");
 					break;
 				case 12:
-					OPCODE_MD("eval_shr", kBinaryOpInstType, -1, false, false, false, ">>");
+					OPCODE_MD("eval_shr", kBinaryOpInst, -1, false, false, false, ">>");
 					break;
 				case 13:
-					OPCODE_MD("eval_shl", kBinaryOpInstType, -1, false, false, false, "<<");
+					OPCODE_MD("eval_shl", kBinaryOpInst, -1, false, false, false, "<<");
 					break;
 				case 14:
-					OPCODE_MD("eval_land", kBinaryOpInstType, -1, false, false, false, "&");
+					OPCODE_MD("eval_land", kBinaryOpInst, -1, false, false, false, "&");
 					break;
 				case 15:
-					OPCODE_MD("eval_lor", kBinaryOpInstType, -1, false, false, false, "|");
+					OPCODE_MD("eval_lor", kBinaryOpInst, -1, false, false, false, "|");
 					break;
 				case 16:
-					OPCODE_MD("eval_mod", kBinaryOpInstType, -1, false, false, false, "%");
+					OPCODE_MD("eval_mod", kBinaryOpInst, -1, false, false, false, "%");
 					break;
 				case 17:
-					OPCODE_MD("eval_xor", kBinaryOpInstType, -1, false, false, false, "^");
+					OPCODE_MD("eval_xor", kBinaryOpInst, -1, false, false, false, "^");
 					break;
 				default:
 					// Error: invalid parameter halts execution
@@ -558,7 +564,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			}
 			break;
 		case 18:
-			OPCODE("setRetAndJmp", kSpecialCallInstType, -2, false, false, false);
+			OPCODE("setRetAndJmp", kKernelCallInst, -2, false, false, false);
 			break;
 		default:
 			throw UnknownOpcodeException(i*2, code);
@@ -585,9 +591,16 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 	// Correct jumps to functions so they're treated as calls
 	bool lastWasPushPos = false;
 	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it) {
-		if ((*it)->_type == kJumpInstType || (*it)->_type == kCondJumpInstType) {
+		if ((*it)->isJump()) {
 			if (lastWasPushPos || _engine->_functions.find((*it)->_params[0]->getUnsigned()) != _engine->_functions.end()) {
-				(*it)->_type = kCallInstType;
+				InstPtr p = _instFactory.create(kCallInst);
+				p->_opcode = (*it)->_opcode;
+				p->_address = (*it)->_address;
+				p->_stackChange = (*it)->_stackChange;
+				p->_name = (*it)->_name;
+				p->_codeGenData = (*it)->_codeGenData;
+				p->_params = (*it)->_params;
+				*it = p;
 			}
 		}
 		lastWasPushPos = ((*it)->_name.compare("pushPos") == 0);

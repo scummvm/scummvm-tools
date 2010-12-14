@@ -59,7 +59,7 @@ public:
 };
 
 #define INC_ADDR _address++;
-#define ADD_INST _insts.push_back(new Instruction());
+#define ADD_INST(category) _insts.push_back(_instFactory.create(category));
 #define LAST_INST (_insts.back())
 
 #define START_OPCODES \
@@ -83,12 +83,11 @@ public:
 #define OPCODE_END break;
 
 #define OPCODE_BODY(name, category, stackChange, params, codeGenData) \
-		ADD_INST; \
+		ADD_INST(category); \
 		LAST_INST->_opcode = full_opcode; \
 		LAST_INST->_address = _address; \
 		LAST_INST->_stackChange = stackChange; \
 		LAST_INST->_name = opcodePrefix + std::string(name); \
-		LAST_INST->_type = category; \
 		LAST_INST->_codeGenData = codeGenData; \
 		readParams(LAST_INST, params); \
 

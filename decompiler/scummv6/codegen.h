@@ -48,7 +48,15 @@ public:
  * SCUMMv6 code generator.
  */
 class Scummv6CodeGenerator : public CodeGenerator {
-private:
+public:
+	/**
+	 * Constructor for Scumm::v6::CodeGenerator.
+	 *
+	 * @param engine Pointer to the Engine used for the script.
+	 * @param output The std::ostream to output the code to.
+	 */
+	Scummv6CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kFIFOArgOrder, kFIFOArgOrder) {}
+
 	/**
 	 * Get the name associated with a variable ID.
 	 *
@@ -79,16 +87,7 @@ private:
 	 * @return The ListValue created from the stack.
 	 */
 	ValuePtr createListValue();
-public:
-	/**
-	 * Constructor for Scumm::v6::CodeGenerator.
-	 *
-	 * @param engine Pointer to the Engine used for the script.
-	 * @param output The std::ostream to output the code to.
-	 */
-	Scummv6CodeGenerator(Engine *engine, std::ostream &output) : CodeGenerator(engine, output, kFIFOArgOrder, kFIFOArgOrder) {}
-protected:
-	void processInst(const InstPtr inst);
+
 	virtual void processSpecialMetadata(const InstPtr inst, char c, int pos);
 };
 

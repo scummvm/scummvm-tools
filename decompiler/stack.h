@@ -24,6 +24,7 @@
 #define DEC_STACK_H
 
 #include <deque>
+#include <iostream>
 
 /**
  * Stack class based on a deque.

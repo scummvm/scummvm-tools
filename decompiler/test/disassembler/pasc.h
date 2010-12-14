@@ -31,4 +31,10 @@ public:
 	void doDisassemble() throw(std::exception);
 	ValuePtr readParameter(InstPtr inst, char type);
 };
+
+class PasCFakeInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {}
+};
+
 #endif

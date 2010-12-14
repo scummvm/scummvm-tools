@@ -24,11 +24,25 @@
 #define SCUMM_V6_ENGINE_H
 
 #include "../engine.h"
+#include "../instruction.h"
 #include "../value.h"
 
 namespace Scumm {
 
 namespace v6 {
+
+const int kArrayOpInst = kFirstCustomInst;
+const int kIncDecInst = kFirstCustomInst + 1;
+
+/**
+ * SCUMMv6 engine.
+ */
+class Scummv6Engine : public Engine {
+public:
+	Disassembler *getDisassembler(InstVec &insts);
+	uint32 getDestAddress(const InstPtr inst) const;
+	CodeGenerator *getCodeGenerator(std::ostream &output);
+};
 
 class Scummv6StringValue : public StringValue {
 public:
@@ -42,14 +56,40 @@ public:
 	virtual std::ostream &print(std::ostream &output) const;
 };
 
-/**
- * SCUMMv6 engine.
- */
-class Scummv6Engine : public Engine {
+class Scummv6LoadInstruction : public LoadInstruction {
 public:
-	Disassembler *getDisassembler(InstVec &insts);
-	uint32 getDestAddress(const InstPtr inst) const;
-	CodeGenerator *getCodeGenerator(std::ostream &output);
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+class Scummv6StoreInstruction : public StoreInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+class Scummv6StackInstruction : public StackInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+class Scummv6CondJumpInstruction : public CondJumpInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+	virtual uint32 getDestAddress() const;
+};
+
+class Scummv6JumpInstruction : public UncondJumpInstruction {
+public:
+	virtual uint32 getDestAddress() const;
+};
+
+class Scummv6IncDecInstruction : public UnaryOpPostfixInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+class Scummv6ArrayOpInstruction : public StoreInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
 } // End of namespace v6
