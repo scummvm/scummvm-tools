@@ -31,6 +31,7 @@
 #include <vector>
 
 #include <boost/format.hpp>
+#include <boost/version.hpp>
 
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -312,18 +313,22 @@ public:
 				if (param != (*inst)->_params.begin())
 					output << ",";
 				output << " ";
-				std::string s = (*param)->getString();
-				for (std::string::iterator it = s.begin(); it != s.end(); ++it)
-					if (*it == '"')
-						output << "\\\"";
-					else if (*it == '|')
-						output << "\\|";
-					else if (*it == '{')
-						output << "\\{";
-					else if (*it == '}')
-						output << "\\}";
-					else
-						output << *it;
+				if (BOOST_VERSION >= 104500)
+					output << *param;
+				else {
+					std::string s = (*param)->getString();
+					for (std::string::iterator it = s.begin(); it != s.end(); ++it)
+						if (*it == '"')
+							output << "\\\"";
+						else if (*it == '|')
+							output << "\\|";
+						else if (*it == '{')
+							output << "\\{";
+						else if (*it == '}')
+							output << "\\}";
+						else
+							output << *it;
+				}
 			}
 			output << boost::format(" (%d)") % (*inst)->_stackChange << "\\n";
 		} while (inst++ != group->_end);
