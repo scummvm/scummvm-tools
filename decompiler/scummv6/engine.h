@@ -40,10 +40,12 @@ const int kIncDecInst = kFirstCustomInst + 1;
 class Scummv6Engine : public Engine {
 public:
 	Disassembler *getDisassembler(InstVec &insts);
-	uint32 getDestAddress(const InstPtr inst) const;
 	CodeGenerator *getCodeGenerator(std::ostream &output);
 };
 
+/**
+ * SCUMM v6 string value.
+ */
 class Scummv6StringValue : public StringValue {
 public:
 	/**
@@ -56,37 +58,58 @@ public:
 	virtual std::ostream &print(std::ostream &output) const;
 };
 
+/**
+ * SCUMM v6 load instruction.
+ */
 class Scummv6LoadInstruction : public LoadInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * SCUMM v6 store instruction.
+ */
 class Scummv6StoreInstruction : public StoreInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * SCUMM v6 stack operation.
+ */
 class Scummv6StackInstruction : public StackInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * SCUMM v6 conditional jump.
+ */
 class Scummv6CondJumpInstruction : public CondJumpInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 	virtual uint32 getDestAddress() const;
 };
 
+/**
+ * SCUMM v6 unconditional jump.
+ */
 class Scummv6JumpInstruction : public UncondJumpInstruction {
 public:
 	virtual uint32 getDestAddress() const;
 };
 
+/**
+ * SCUMM v6 variable increment/decrement.
+ */
 class Scummv6IncDecInstruction : public UnaryOpPostfixInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * SCUMM v6 array operation.
+ */
 class Scummv6ArrayOpInstruction : public StoreInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);

@@ -29,6 +29,9 @@ namespace Scumm {
 
 namespace v6 {
 
+/**
+ * SCUMM v6 list value.
+ */
 class ListValue : public Value {
 protected:
 	const ValueList _items; ///< The list items.

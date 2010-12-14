@@ -52,10 +52,10 @@ const int kCondJumpInst = 3;     ///< Conditional jump.
 const int kDupInst = 4;          ///< Instruction duplicates the most recent stack entry.
 const int kJumpInst = 5;         ///< Unconditional jump.
 const int kKernelCallInst = 6;   ///< Kernel functions.
-const int kLoadInst = 7;         ///< Load value to stack.
+const int kLoadInst = 7;         ///< Load value from memory.
 const int kReturnInst = 8;       ///< Return from regular function call.
 const int kStackInst = 9;        ///< Stack allocation or deallocation (altering stack pointer)
-const int kStoreInst = 10;       ///< Store value from stack in memory.
+const int kStoreInst = 10;       ///< Store value in memory.
 const int kUnaryOpPreInst = 11;  ///< Unary operation (e.g. !) with operator placed before the operator.
 const int kUnaryOpPostInst = 12; ///< Unary operation with operator placed after the operator.
 
@@ -80,10 +80,6 @@ public:
 	std::vector<ValuePtr> _params;  ///< Array of parameters used for the instruction.
 	std::string _codeGenData;       ///< String containing metadata for code generation. See the extended documentation for details.
 
-	Instruction(uint32 opcode = 0, uint32 address = 0,
-			std::string name = "", int16 stackChange = 0) :
-		_opcode(opcode), _address(address), _name(name), _stackChange(stackChange) {}
-
 	/**
 	 * Operator overload to output an Instruction to a std::ostream.
 	 *
@@ -95,90 +91,207 @@ public:
 		return inst->print(output);
 	}
 
+	/**
+	 * Print the instruction to an std::ostream.
+	 *
+	 * @param output The std::ostream to write to.
+	 * @return The std::ostream used for output.
+	 */
 	virtual std::ostream &print(std::ostream &output) const;
 
+	/**
+	 * Returns whether or not the instruction is a jump of some sort.
+	 *
+	 * @return True if the instruction is a jump, otherwise false.
+	 */
 	virtual bool isJump() const;
+
+	/**
+	 * Returns whether or not the instruction is a conditional jump.
+	 *
+	 * @return True if the instruction is a conditional jump, otherwise false.
+	 */
 	virtual bool isCondJump() const;
+
+	/**
+	 * Returns whether or not the instruction is an unconditional jump.
+	 *
+	 * @return True if the instruction is an unconditional jump, otherwise false.
+	 */
 	virtual bool isUncondJump() const;
+
+	/**
+	 * Returns whether or not the instruction is a stack operation.
+	 *
+	 * @return True if the instruction is a stack operation, otherwise false.
+	 */
 	virtual bool isStackOp() const;
+
+	/**
+	 * Returns whether or not the instruction is a call to a script function.
+	 *
+	 * @return True if the instruction is a script function call, otherwise false.
+	 */
 	virtual bool isFuncCall() const;
+
+	/**
+	 * Returns whether or not the instruction is a return statement.
+	 *
+	 * @return True if the instruction is a return statement, otherwise false.
+	 */
 	virtual bool isReturn() const;
+
+	/**
+	 * Returns whether or not the instruction is a call to a kernel function.
+	 *
+	 * @return True if the instruction is a kernel function call, otherwise false.
+	 */
 	virtual bool isKernelCall() const;
+
+	/**
+	 * Returns whether or not the instruction is a load operation.
+	 *
+	 * @return True if the instruction is a load operation, otherwise false.
+	 */
 	virtual bool isLoad() const;
+
+	/**
+	 * Returns whether or not the instruction is a store operation.
+	 *
+	 * @return True if the instruction is a load operation, otherwise false.
+	 *//**
+ * Instruction performing a stack operation.
+ */
 	virtual bool isStore() const;
+
+	/**
+	 * Returns the destination address of a jump instruction.
+	 *
+	 * @return Destination address of a jump instruction.
+	 * @throws WrongTypeException if instruction is not a jump.
+	 */
 	virtual uint32 getDestAddress() const;
 
+	/**
+	 * Process an instruction for code generation.
+	 *
+	 * @param stack The current stack.
+	 * @param engine Pointer to the Engine used for code generation.
+	 * @param codeGen Pointer to the CodeGenerator used for code generation.
+	 */
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) = 0;
 
 };
 
+/**
+ * Instruction performing a jump.
+ */
 struct JumpInstruction : public Instruction {
 public:
 	virtual bool isJump() const;
 };
 
+/**
+ * Instruction performing a conditional jump.
+ */
 struct CondJumpInstruction : public JumpInstruction {
 public:
 	virtual bool isCondJump() const;
 };
 
+/**
+ * Instruction performing an unconditional jump.
+ */
 struct UncondJumpInstruction : public JumpInstruction {
 public:
 	virtual bool isUncondJump() const;
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Instruction performing a stack operation.
+ */
 struct StackInstruction : public Instruction {
 public:
 	virtual bool isStackOp() const;
 };
 
+/**
+ * Instruction performing a script function call.
+ */
 struct CallInstruction : public Instruction {
 public:
 	virtual bool isFuncCall() const;
 };
 
+/**
+ * Instruction which loads data from memory.
+ */
 struct LoadInstruction : public Instruction {
 public:
 	virtual bool isLoad() const;
 };
 
+/**
+ * Instruction which stores data to memory.
+ */
 struct StoreInstruction : public Instruction {
 public:
 	virtual bool isStore() const;
 };
 
+/**
+ * Instruction duplicating the topmost stack value.
+ */
 struct DupInstruction : public Instruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Instruction performing boolean negation.
+ */
 struct BoolNegateInstruction : public Instruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Instruction performing a binary operation.
+ */
 struct BinaryOpInstruction : public Instruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Instruction which returns from a function.
+ */
 struct ReturnInstruction : public Instruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 	virtual bool isReturn() const;
 };
 
+/**
+ * Instruction performing a unary operation, with a prefixed operator.
+ */
 struct UnaryOpPrefixInstruction : public Instruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Instruction performing a unary operation, with a postfixed operator.
+ */
 struct UnaryOpPostfixInstruction : public Instruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Instruction performing a kernel function call.
+ */
 struct KernelCallInstruction : public Instruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);

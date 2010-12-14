@@ -110,7 +110,7 @@ public:
 	virtual uint32 getUnsigned() throw(WrongTypeException);
 
 	/**
-	 * Print the stack entry to an std::ostream.
+	 * Print the value to an std::ostream.
 	 *
 	 * @param output The std::ostream to write to.
 	 * @return The std::ostream used for output.
@@ -203,6 +203,8 @@ class AddressValue : public IntValue {
 public:
 	/**
 	 * Constructor for AddressValue.
+	 *
+	 * @param addr The absolute address represented by the value.
 	 */
 	AddressValue(uint32 addr) : IntValue(addr, false) { }
 
@@ -222,6 +224,12 @@ protected:
 	const uint32 _baseaddr; ///< The base address for the offset.
 
 public:
+	/**
+	 * Constructor for AddressValue.
+	 *
+	 * @param baseaddr The base address for the offset.
+	 * @param offset The relative offset to the base address.
+	 */
 	RelAddressValue(uint32 baseaddr, int32 offset) : IntValue(offset, true), _baseaddr(baseaddr) { };
 
 	bool isAddress();
@@ -349,6 +357,7 @@ public:
 	 *
 	 * @param operand Value representing the operand of the operation.
 	 * @param op The operator for this value.
+	 * @param isPostfix Whether or not the operator should be postfixed to the operand.
 	 */
 	UnaryOpValue(ValuePtr operand, std::string op, bool isPostfix) :
 		_operand(operand), _op(op), _isPostfix(isPostfix) { }
@@ -363,6 +372,11 @@ public:
  */
 class NegatedValue : public UnaryOpValue {
 public:
+	/**
+	 * Constructor for NegatedValue.
+	 *
+	 * @param val The value to negate.
+	 */
 	NegatedValue(ValuePtr val) : UnaryOpValue(val, "!", false) { }
 	virtual ValuePtr negate() throw(WrongTypeException);
 };

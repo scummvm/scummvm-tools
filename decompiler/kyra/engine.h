@@ -44,37 +44,58 @@ public:
 	std::vector<std::string> _textStrings; ///< Container for strings from the TEXT chunk.
 };
 
+/**
+ * Kyra2 load instruction.
+ */
 class Kyra2LoadInstruction : public LoadInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Kyra2 store instruction.
+ */
 class Kyra2StoreInstruction : public StoreInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Kyra2 stack operation.
+ */
 class Kyra2StackInstruction : public StackInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Kyra2 conditional jump.
+ */
 class Kyra2CondJumpInstruction : public CondJumpInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 	virtual uint32 getDestAddress() const;
 };
 
+/**
+ * Kyra2 unconditional jump.
+ */
 class Kyra2UncondJumpInstruction : public UncondJumpInstruction {
 public:
 	virtual uint32 getDestAddress() const;
 };
 
+/**
+ * Kyra2 script function call.
+ */
 class Kyra2CallInstruction : public CallInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Kyra2 kernel function call.
+ */
 class Kyra2KernelCallInstruction : public KernelCallInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
