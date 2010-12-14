@@ -681,7 +681,7 @@ char *do_tok(char *buf, const char *text, int args) {
 	} else {
 		if (!(args & ANOLASTPAREN)) {
 		buf = strecpy(buf, ")");
-	}
+		}
 		if (!(args & ANOENDSEMICOLON) && buf[(strlen(buf) - 1)] != ';') {
 			buf = strecpy(buf, ";");
 		}
@@ -1934,10 +1934,10 @@ void next_line_V12(char *buf) {
 	case 0xF9:{
 			buf = strecpy(buf, "doSentence(");
 			if (!(opcode & 0x80) && *g_scriptCurPos == 0xFC) {
-				strcpy(buf, "STOP)");
+				strcpy(buf, "STOP);");
 				g_scriptCurPos++;
 			} else if (!(opcode & 0x80) && *g_scriptCurPos == 0xFB) {
-				strcpy(buf, "RESET)");
+				strcpy(buf, "RESET);");
 				g_scriptCurPos++;
 			} else {
 				do_tok(buf, "",
@@ -2313,7 +2313,7 @@ void next_line_V12(char *buf) {
 			int i;
 			char first = 1;
 
-			buf = do_tok(buf, "setVarRange", A1V | ANOLASTPAREN);
+			buf = do_tok(buf, "setVarRange", A1V | ANOLASTPAREN | ANOENDSEMICOLON);
 			i = get_byte();
 
 			buf += sprintf(buf, ",%d,[", i);
@@ -3284,7 +3284,7 @@ void next_line_V345(char *buf) {
 			buf = strecpy(buf, "doSentence(");
 			// FIXME: this is not exactly what ScummVM does...
 			if (!(opcode & 0x80) && (*g_scriptCurPos == 0xFE)) {
-				strcpy(buf, "STOP)");
+				strcpy(buf, "STOP);");
 				g_scriptCurPos++;
 			} else {
 				do_tok(buf, "",
@@ -3367,7 +3367,7 @@ void next_line_V345(char *buf) {
 	case 0xFF:
 		buf =
 			do_tok(buf, "drawBox",
-						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) | ANOLASTPAREN);
+						 ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) | ANOLASTPAREN | ANOENDSEMICOLON);
 		opcode = get_byte();
 		do_tok(buf, NULL,
 					 ASTARTCOMMA | ANOFIRSTPAREN | ((opcode & 0x80) ? A1V : A1W) |
@@ -3510,7 +3510,7 @@ void next_line_V345(char *buf) {
 			int i;
 			char first = 1;
 
-			buf = do_tok(buf, "setVarRange", A1V | ANOLASTPAREN);
+			buf = do_tok(buf, "setVarRange", A1V | ANOLASTPAREN | ANOENDSEMICOLON);
 			i = get_byte();
 
 			buf += sprintf(buf, ",%d,[", i);
