@@ -39,6 +39,7 @@ public:
 	CodeGenerator *getCodeGenerator(std::ostream &output);
 	void postCFG(InstVec &insts, Graph g);
 	bool detectMoreFuncs() const;
+	void getVariants(std::vector<std::string> &variants) const;
 
 	std::vector<std::string> _textStrings; ///< Container for strings from the TEXT chunk.
 };

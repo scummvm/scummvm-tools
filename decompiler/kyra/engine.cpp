@@ -60,6 +60,11 @@ bool Kyra::Kyra2Engine::detectMoreFuncs() const {
 	return true;
 }
 
+void Kyra::Kyra2Engine::getVariants(std::vector<std::string> &variants) const {
+	variants.push_back("kyra2");
+	variants.push_back("kyra2-talkie");
+}
+
 void Kyra::Kyra2LoadInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
 	Kyra2CodeGenerator* cg = (Kyra2CodeGenerator *)codeGen;
 	switch (_opcode) {

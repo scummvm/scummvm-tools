@@ -32,6 +32,9 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 #include <boost/program_options.hpp>
 #include <boost/graph/graphviz.hpp>
 
@@ -57,7 +60,7 @@ int main(int argc, char** argv) {
 			("only-disassembly,D", "Stops after disassembly. Implies -d.")
 			("only-graph,G", "Stops after control flow graph has been generated. Implies -g.")
 			("show-unreachable,u", "Show the address and contents of unreachable groups in the script.")
-			("is-talkie,t", "Tell the engine that the script is from a talkie version (default is no). Not all engines require this information.");
+			("variant,v", po::value<std::string>()->default_value(""), "Tell the engine that the script is from a specific variant. To see a list of variants supported by a specific engine, use the -h option and the -e option together.");
 
 		po::options_description args("");
 		args.add(visible).add_options()
@@ -88,20 +91,35 @@ int main(int argc, char** argv) {
 		if (vm.count("help") || !vm.count("input-file")) {
 			std::cout << "Usage: " << argv[0] << " [option...] file" << "\n";
 			std::cout << visible << "\n";
+			if (vm.count("engine") && engines.find(vm["engine"].as<std::string>()) != engines.end()) {
+				Engine *engine = engineFactory.create(vm["engine"].as<std::string>());
+				std::vector<std::string> variants;
+				engine->getVariants(variants);
+				if (variants.empty()) {
+					std::cout << engines[vm["engine"].as<std::string>()] << " does not use variants.\n";
+				} else {
+					std::cout << "Supported variants for " << engines[vm["engine"].as<std::string>()] << ":\n";
+					for (std::vector<std::string>::iterator i = variants.begin(); i != variants.end(); ++i) {
+						std::cout << "  " << *i << "\n";
+					}
+				}
+				delete engine;
+				std::cout << "\n";
+			}
 			std::cout << "Note: If outputting to stdout, -d or -g must NOT be specified immediately before the input file.\n";
 			return 1;
 		}
 
 		if (!vm.count("engine")) {
-			std::cout << "Engine must be specified." << "\n";
+			std::cout << "Engine must be specified.\n";
 			return 2;
 		} else if (engines.find(vm["engine"].as<std::string>()) == engines.end()) {
-			std::cout << "Unknown engine." << "\n";
+			std::cout << "Unknown engine.\n";
 			return 2;
 		}
 
 		Engine *engine = engineFactory.create(vm["engine"].as<std::string>());
-		engine->_isTalkie = (bool)(vm.count("is-talkie"));
+		engine->_variant = vm["variant"].as<std::string>();
 		std::string inputFile = vm["input-file"].as<std::string>();
 
 		// Disassembly

@@ -27,6 +27,8 @@
 #include "codegen.h"
 
 #include <set>
+#include <string>
+#include <vector>
 
 /**
  * Structure representing a function.
@@ -126,7 +128,15 @@ public:
 
 	FuncMap _functions; ///< Map to functions in the current script, indexed by starting address.
 
-	bool _isTalkie; ///< Whether or not the script is from a talkie version of the game.
+	/**
+	 * Fill a vector with the names of all variants supported for this engine.
+	 * If variants are not used by this engine, leave the vector empty (default implementation).
+	 *
+	 * @param variants Vector to add the supported variants to.
+	 */
+	virtual void getVariants(std::vector<std::string> &variants) const { };
+
+	std::string _variant; ///< Engine variant to use for the script.
 };
 
 #endif

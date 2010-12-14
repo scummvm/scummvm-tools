@@ -210,7 +210,7 @@ void Kyra::Kyra2Disassembler::setupKyra2Funcs() {
 	FUNC("o2_countItemInstances", "rp");
 	FUNC("o2_removeItemFromScene", "rpp");
 	FUNC("o2_initObject", "rp");
-	FUNC("o2_npcChat", (_engine->_isTalkie ? "rspp": "rsp"));
+	FUNC("o2_npcChat", (_engine->_variant.find("talkie") != std::string::npos ? "rspp": "rsp"));
 	// 0x8c
 	FUNC("o2_deinitObject", "rp");
 	FUNC("o2_playTimSequence", "rs");
