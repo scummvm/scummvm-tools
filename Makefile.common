@@ -27,11 +27,11 @@ all:
 
 PROGRAMS = \
 	decine \
+	degob \
 	dekyra \
 	deriven \
 	descumm \
 	desword2 \
-	degob \
 	gob_loadcalc \
 	extract_mohawk \
 	construct_mohawk \
@@ -89,36 +89,6 @@ bundle: scummvm-tools$(EXEEXT)
 
 decine_OBJS := engines/cine/decine.o
 
-dekyra_OBJS := \
-	engines/kyra/dekyra.o \
-	engines/kyra/dekyra_v1.o \
-	$(UTILS)
-
-deriven_OBJS := \
-	engines/mohawk/archive.o \
-	engines/mohawk/deriven.o \
-	common/hashmap.o \
-	common/memorypool.o \
-	common/str.o \
-	engines/mohawk/utils/file.o \
-	common/md5.o \
-	common/util.o
-
-descumm_OBJS := \
-	engines/scumm/descumm-tool.o \
-	engines/scumm/descumm.o \
-	engines/scumm/descumm6.o \
-	engines/scumm/descumm-common.o \
-	tool.o \
-	version.o \
-	$(UTILS)
-
-desword2_OBJS := \
-	engines/sword2/desword2.o \
-	tool.o \
-	version.o \
-	$(UTILS)
-
 degob_OBJS := \
 	engines/gob/degob.o \
 	engines/gob/degob_script.o \
@@ -134,17 +104,47 @@ degob_OBJS := \
 	version.o \
 	$(UTILS)
 
+dekyra_OBJS := \
+	engines/kyra/dekyra.o \
+	engines/kyra/dekyra_v1.o \
+	$(UTILS)
+
+deriven_OBJS := \
+	engines/mohawk/archive.o \
+	engines/mohawk/deriven.o \
+	engines/mohawk/utils/file.o \
+	common/hashmap.o \
+	common/md5.o \
+	common/memorypool.o \
+	common/str.o \
+	common/util.o
+
+descumm_OBJS := \
+	engines/scumm/descumm.o \
+	engines/scumm/descumm6.o \
+	engines/scumm/descumm-common.o \
+	engines/scumm/descumm-tool.o \
+	tool.o \
+	version.o \
+	$(UTILS)
+
+desword2_OBJS := \
+	engines/sword2/desword2.o \
+	tool.o \
+	version.o \
+	$(UTILS)
+
 gob_loadcalc_OBJS := \
 	engines/gob/gob_loadcalc.o
 
 extract_mohawk_OBJS := \
 	engines/mohawk/archive.o \
 	engines/mohawk/extract_mohawk.o \
+	engines/mohawk/utils/file.o \
 	common/hashmap.o \
+	common/md5.o \
 	common/memorypool.o \
 	common/str.o \
-	engines/mohawk/utils/file.o \
-	common/md5.o \
 	common/util.o
 
 construct_mohawk_OBJS := \
@@ -169,29 +169,29 @@ tools_OBJS := \
 	engines/kyra/compress_kyra.o \
 	engines/queen/compress_queen.o \
 	engines/saga/compress_saga.o \
+	engines/sci/compress_sci.o \
 	engines/scumm/compress_scumm_bun.o \
 	engines/scumm/compress_scumm_san.o \
 	engines/scumm/compress_scumm_sou.o \
-	engines/sci/compress_sci.o \
 	engines/sword1/compress_sword1.o \
 	engines/sword2/compress_sword2.o \
+	engines/tinsel/compress_tinsel.o \
 	engines/touche/compress_touche.o \
 	engines/tucker/compress_tucker.o \
-	engines/tinsel/compress_tinsel.o \
 	engines/agos/extract_agos.o \
 	engines/cine/extract_cine.o \
 	engines/cruise/extract_cruise_pc.o \
 	engines/gob/extract_gob_stk.o \
 	engines/kyra/extract_kyra.o \
+	engines/parallaction/extract_parallaction.o \
 	engines/scumm/extract_loom_tg16.o \
 	engines/scumm/extract_mm_apple.o \
 	engines/scumm/extract_mm_c64.o \
 	engines/scumm/extract_mm_nes.o \
-	engines/parallaction/extract_parallaction.o \
 	engines/scumm/extract_scumm_mac.o \
 	engines/scumm/extract_zak_c64.o \
-	engines/kyra/kyra_pak.o \
 	engines/kyra/kyra_ins.o \
+	engines/kyra/kyra_pak.o \
 	compress.o \
 	tool.o \
 	tools.o \
@@ -204,10 +204,10 @@ tools_OBJS += \
 endif
 
 scummvm-tools_OBJS := \
-	gui/main.o \
 	gui/configuration.o \
-	gui/pages.o \
 	gui/gui_tools.o \
+	gui/main.o \
+	gui/pages.o \
 	$(tools_OBJS)
 scummvm-tools_LIBS := $(WXLIBS) $(LIBS)
 
@@ -228,21 +228,21 @@ scummvm-tools-cli_LIBS := $(LIBS)
 ifdef USE_BOOST
 decompile_OBJS := \
 	common/file.o \
+	decompiler/codegen.o \
+	decompiler/control_flow.o \
 	decompiler/decompiler.o \
-	decompiler/value.o \
-	decompiler/instruction.o \
 	decompiler/disassembler.o \
+	decompiler/graph.o \
+	decompiler/instruction.o \
 	decompiler/simple_disassembler.o \
 	decompiler/unknown_opcode.o \
-	decompiler/graph.o \
-	decompiler/control_flow.o \
-	decompiler/codegen.o \
-	decompiler/scummv6/disassembler.o \
-	decompiler/scummv6/engine.o \
-	decompiler/scummv6/codegen.o \
+	decompiler/value.o \
+	decompiler/kyra/codegen.o \
 	decompiler/kyra/disassembler.o \
 	decompiler/kyra/engine.o \
-	decompiler/kyra/codegen.o
+	decompiler/scummv6/codegen.o \
+	decompiler/scummv6/disassembler.o \
+	decompiler/scummv6/engine.o
 
 decompile_LIBS := \
 	-lboost_program_options$(BOOST_SUFFIX)
