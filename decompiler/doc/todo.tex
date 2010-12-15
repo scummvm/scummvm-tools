@@ -14,25 +14,13 @@ Classifying as an enhancement since it appears this optimization is not used in 
 
 As far as I have been able to tell, this optimization really is not used in Kyra, so this will have to be deferred until we have an engine which needs it.
 
-\subsection{Engine-specific arguments}
-It would be good to replace the current --is-talkie flag and make this engine-specific so it is clear what is supported where. Simliar things may be needed for other engines, e.g. a platform switch for Kyra1.
-
-One way to do this is to parse arguments in two passes; one for the generic arguments and one for arguments specific to the specified engine. The engine will then have to pass some information to us so we can use Boost.ProgramOptions to do the actual parsing.
-
-For help texts, we can require that if an engine is specified when using -h, we output the help text for that specific engine. This will avoid output from engines other than the one the user is looking for.
-
 \subsection{Re-enable short-circuit detection}
 Currently the short-circuit detection is disabled because it requires some extra handling in code generation which is not there yet (you have to analyze each jump more closely).
 
-\subsection{Reduce number of parentheses}
-Right now, the decompiler is completely paranoid about parentheses, inserting them pretty much anywhere it can get away with it. This should be improved, so we reduce the number of them; e.g. by checking the type of operands and only adding parentheses if the operand type can cause problems.
+\subsection{Refactor CFG design}
+The CFG anaylsis, while certainly functional, is not entirely pretty right now.
 
-Similarly, we should probably look into negated expressions to let the decompiler automatically rework what would be \code{!(a == b)} to \code{a != b}. This would also help decrease the number of parentheses.
-
-\subsection{Refactor design}
-While a decompiler is almost by nature going to be somewhat complex, the current design might be a little too complex in a few places.
-
-When time permits, it would be a good idea to take another look at the design and see if and where improvements can be made.
+It would be a good idea to go over this and see if it can be made better somehow, e.g. by incorporating more of the syntax as nodes in the graph. This might also make it easier to get short-circuiting working correctly.
 
 \subsection{Refactor disassemblers to accept a SeekableReadStream}
 It would be desirable if disassemblers accepted a \code{Common::SeekableReadStream} instead of a \code{Common::File}, for easier integration with other tools and possibly ScummVM itself.
@@ -43,3 +31,8 @@ This is very much an *optional* task, and only to be done near the end, if time 
 
 \subsection{SCUMM: Rewrite jump 0 at end of script to infinite loop}
 Several SCUMM scripts end with a jump 0, making them infinite loops. It would be nice if this could be expressed accordingly, but this does not appear to be a trivial task; some jump 0s in a script could be expressed as a continue, others cannot.
+
+\subsection{Proper getCondition method on Value}
+For now, it is assumed that conditional jumps leave their condition on the stack, so this can be retrieved by the generic code generation code. For non-stack-based engines, it would be a bit nicer if they could just give us a condition to use in an if/while/do-while, instead of currently requiring that the value is on the top of the stack.
+
+A very simple way to do this would be to simply define a getCondition on Value that takes the same parameters as processInst, with a default implementation that just calls processInst and pops and returns the top value from the stack - this means no changes would be required to exisiting engines, and new engines can override this method as they see fit.

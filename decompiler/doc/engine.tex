@@ -14,7 +14,6 @@ The methods you need to implement in your \code{Engine} subclass are:
 \begin{itemize}
 \item \code{getDisassembler}, which takes a reference to the instruction vector to use for storage and creates a disassembler object and returns it. For more on disassemblers, see Section~\vref{sec:disassembler}.
 \item \code{getCodeGenerator}, which takes a reference to the \code{std::ostream} to output the code to and creates a code generator object and returns it. For more on code generators, see Section~\vref{sec:codegen}.
-\item \code{getDestAddress}, which takes a const iterator to a jump instruction as a parameter and returns the address the instruction will jump to if the jump is taken. Unless you do differently in your engine-specific code, this function will only receive jumps as input, so if you can take a shortcut based on that, you are allowed to do that.
 \end{itemize}
 
 Additional methods you can override are:
@@ -24,16 +23,15 @@ Additional methods you can override are:
 \item \code{postCFG}, which is a post-processing step called after control flow analysis. If you override \code{detectMoreFuncs} to return true, you must also override this function to process any newly found functions. A default implementation which does nothing is already provided in case you do not need to do any post-processing.
 \end{itemize}
 
+Additionally, if your engine is not stack-based, you may not wish to see the stack effect when reviewing the disassembly or code flow graph. You can disable this by calling \code{setOutputStackEffect(false)} from e.g. your Engine constructor. The method is defined in instruction.h, which you will have to include.
+
 It is important to realize that you do not necessarily need to implement a completely new code generator and disassembler for every engine; for variations on the same engine, you can reuse the existing classes and simply send in any extra information required. In particular, code generators are likely to be reusable without change for different versions of the same engine - e.g., the Kyra2 code generator will likely work for all Kyra games.
 
-\subsection{Game information}
-For some engines, it may not be enough to know the engine; some instructions may differ in behavior between different games or variants of a game, for example between talkie or non-talkie versions, or between versions for different platforms.
+For this purpose, the user may optionally specify an \emph{engine variant}, which is a string that will be passed to your Engine. If you make use of this feature, you should also override \code{getVariants} to specify which variants your engine supports. This list will be displayed to the user if they specify an engine while using the \code{-h} option.
 
-The \code{Engine} class contains a field \code{\_isTalkie} which is set to true if the user passed in the \code{-t} switch on the command line. You can check this flag in your engine-specific code if necessary.
+Note that the variant sent into your engine is not validated against your list of supported variants. This keeps the variant logic flexible, and allows you to implement your own fallback logic for unknown variant strings.
 
-In the interest of user friendliness, if the necessary data exists directly in the script file itself, you should use that instead of requiring additional switches to be passed.
-
-Note that, at the time of writing, there is no field containing platform information; this must be handled by implementing another engine which passes in relevant information to engine-specific classes.
+If you can auto-detect the variant from the script file, you should prefer this approach over asking the user to specify the variant.
 
 \subsection{Functions}
 Some engines allow multiple functions in a single script file. Each function must be analyzed separately, but in order to do that, it is of course necessary to know where the functions start and end, and when it is time to actually generate some code, you will want to know a bit about the function as well.
