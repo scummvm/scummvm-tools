@@ -158,10 +158,8 @@ public:
 	/**
 	 * Returns whether or not the instruction is a store operation.
 	 *
-	 * @return True if the instruction is a load operation, otherwise false.
-	 *//**
- * Instruction performing a stack operation.
- */
+	 * @return True if the instruction is a store operation, otherwise false.
+	 */
 	virtual bool isStore() const;
 
 	/**
