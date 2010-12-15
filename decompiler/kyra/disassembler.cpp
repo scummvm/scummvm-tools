@@ -348,7 +348,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 #define posString(x) (char *)&_textChunk._data[READ_BE_UINT16(&((uint16 *)_textChunk._data)[(x)])]
 		for (uint16 i = 0; i < numStrings; ++i) {
 			std::stringstream s;
-			s << "\"" << posString(i) << "\"";
+			s << posString(i);
 			_engine->_textStrings.push_back(s.str());
 		}
 #undef posString
