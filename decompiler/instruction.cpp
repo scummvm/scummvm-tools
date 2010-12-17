@@ -70,6 +70,15 @@ uint32 Instruction::getDestAddress() const {
 	throw WrongTypeException();
 }
 
+void Instruction::copy(InstPtr other) {
+	_opcode = other->_opcode;
+	_address = other->_address;
+	_stackChange = other->_stackChange;
+	_name = other->_name;
+	_codeGenData = other->_codeGenData;
+	_params = other->_params;
+}
+
 std::ostream &Instruction::print(std::ostream &output) const {
 	output << boost::format("%08x: %s") % _address % _name;
 	std::vector<ValuePtr>::const_iterator param;

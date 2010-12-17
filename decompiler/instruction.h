@@ -178,6 +178,12 @@ public:
 	 */
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) = 0;
 
+	/**
+	 * Copies base data from another instruction.
+	 *
+	 * @param other The instruction to copy from.
+	 */
+	void copy(InstPtr other);
 };
 
 /**

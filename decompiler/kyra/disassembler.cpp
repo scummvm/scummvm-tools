@@ -593,12 +593,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 		if ((*it)->isJump()) {
 			if (lastWasPushPos || _engine->_functions.find((*it)->_params[0]->getUnsigned()) != _engine->_functions.end()) {
 				InstPtr p = _instFactory.create(kCallInst);
-				p->_opcode = (*it)->_opcode;
-				p->_address = (*it)->_address;
-				p->_stackChange = (*it)->_stackChange;
-				p->_name = (*it)->_name;
-				p->_codeGenData = (*it)->_codeGenData;
-				p->_params = (*it)->_params;
+				p->copy(*it);
 				*it = p;
 			}
 		}
