@@ -27,7 +27,6 @@
 #include <vector>
 #include <boost/format.hpp>
 #include <boost/intrusive_ptr.hpp>
-#include <boost/variant.hpp>
 
 #include "common/scummsys.h"
 #include "refcounted.h"
