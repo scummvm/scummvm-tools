@@ -568,50 +568,6 @@ char *get_list(char *buf) {
 	return strecpy(buf, "]");
 }
 
-char *putascii(char *buf, int i) {
-	if (i > 31 && i < 128) {
-		// non-printable chars are escaped by backslashes as so: "\x00"
-		// backslashes and quote marks are escaped like so: "\\" "\""
-		if (i == '\\' || i == '"') {
-			buf[0] = '\\';
-			buf++;
-		}
-		buf[0] = i;
-		buf[1] = 0;
-		return buf + 1;
-	}
-	return buf + sprintf(buf, "\\x%.2X", i);
-}
-
-char *get_ascii(char *buf) {
-	int i;
-
-	buf = strecpy(buf, "\"");
-
-	do {
-		i = get_byte();
-		if (!i)
-			break;
-		buf = putascii(buf, i);
-		if (i == 255) {
-			i = get_byte();
-			buf = putascii(buf, i);
-
-			// Workaround for a script bug in Indy3
-			if (i == 46 && g_options.scriptVersion == 3 && g_options.IndyFlag)
-				continue;
-
-			if (i != 1 && i != 2 && i != 3 && i != 8) {
-				buf = putascii(buf, get_byte());
-				buf = putascii(buf, get_byte());
-			}
-		}
-	} while (1);
-
-	return strecpy(buf, "\"");
-}
-
-
 
 char *add_a_tok(char *buf, int type) {
 	switch (type) {
@@ -628,11 +584,11 @@ char *add_a_tok(char *buf, int type) {
 		buf = get_list(buf);
 		break;
 	case TOK_ASCII:
-		buf = get_ascii(buf);
+		buf = get_string(buf);
 		break;
 	case TOK_CHAR:
 		error("this code seems to be dead");
-		buf = putascii(buf, get_byte());
+		buf = put_ascii(buf, get_byte());
 		break;
 	}
 	return buf;
@@ -955,7 +911,7 @@ void do_load_code_to_string(char *buf, byte opcode) {
 	buf = strchr(strcpy(buf, "PutCodeInString("), 0);
 	buf = get_var_or_byte(buf, opcode & 0x80);
 	buf = strchr(strcpy(buf, ", "), 0);
-	buf = get_ascii(buf);
+	buf = get_string(buf);
 	strcpy(buf, ");");
 }
 
@@ -1477,7 +1433,7 @@ void do_print_ego(char *buf, byte opcode) {
 			break;
 		case 0xF:{
 				buf = strecpy(buf, "Text(");
-				buf = get_ascii(buf);
+				buf = get_string(buf);
 				buf = strecpy(buf, ")");
 			}
 			goto exit_proc;
@@ -3674,7 +3630,7 @@ void next_line_V345(char *buf) {
 					break;
 				case 0x03:
 					buf += sprintf(buf, ", Open(");
-					buf = get_ascii(buf);
+					buf = get_string(buf);
 					buf += sprintf(buf, ")");
 					break;
 				case 0x04:

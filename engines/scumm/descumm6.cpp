@@ -1063,6 +1063,11 @@ StackEnt *se_get_list() {
 	return new ListStackEnt(pop());
 }
 
+char *get_var6(char *buf) {
+	VarStackEnt tmp(get_word());
+	return tmp.asText(buf);
+}
+
 void invalidop(const char *cmd, int op) {
 	if (cmd)
 		error("Unknown opcode %s:0x%x (stack count %d)", cmd, op, num_stack);
@@ -1159,71 +1164,10 @@ void addVar(char *output, int i, int val) {
 	delete se;
 }
 
-StackEnt *se_get_string() {
-	byte cmd;
-	char buf[1024];
-	char *e = buf;
-	bool in = false;
-	int i;
 
-	while ((cmd = get_byte()) != 0) {
-		if (cmd == 0xFF || cmd == 0xFE) {
-			if (in) {
-				*e++ = '"';
-				in = false;
-			}
-			i = get_byte();
-			switch (i) {
-			case 1:
-				e += sprintf(e, ":newline:");
-				break;
-			case 2:
-				e += sprintf(e, ":keeptext:");
-				break;
-			case 3:
-				e += sprintf(e, ":wait:");
-				break;
-			case 4:		// addIntToStack
-			case 5:		// addVerbToStack
-			case 6:		// addNameToStack
-			case 7:		// addStringToStack
-				{
-				VarStackEnt tmp(get_word());
-				e += sprintf(e, ":");
-				e = tmp.asText(e);
-				e += sprintf(e, ":");
-				}
-				break;
-			case 9:
-				e += sprintf(e, ":startanim=%d:", get_word());
-				break;
-			case 10:
-				e += sprintf(e, ":sound:");
-				g_scriptCurPos += 14;
-				break;
-			case 14:
-				e += sprintf(e, ":setfont=%d:", get_word());
-				break;
-			case 12:
-				e += sprintf(e, ":setcolor=%d:", get_word());
-				break;
-			case 13:
-				e += sprintf(e, ":unk2=%d:", get_word());
-				break;
-			default:
-				e += sprintf(e, ":unk%d=%d:", i, get_word());
-			}
-		} else {
-			if (!in) {
-				*e++ = '"';
-				in = true;
-			}
-			*e++ = cmd;
-		}
-	}
-	if (in)
-		*e++ = '"';
-	*e = 0;
+StackEnt *se_get_string() {
+	char buf[1024];
+	get_string(buf); // ignore returned value
 	return se_complex(buf);
 }
 
