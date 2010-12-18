@@ -134,6 +134,22 @@ desword2_OBJS := \
 	version.o \
 	$(UTILS)
 
+degob_OBJS := \
+	engines/gob/degob.o \
+	engines/gob/degob_script.o \
+	engines/gob/degob_script_v1.o \
+	engines/gob/degob_script_v2.o \
+	engines/gob/degob_script_v3.o \
+	engines/gob/degob_script_v4.o \
+	engines/gob/degob_script_v5.o \
+	engines/gob/degob_script_v6.o \
+	engines/gob/degob_script_bargon.o \
+	engines/gob/degob_script_fascin.o \
+	engines/gob/degob_script_geisha.o \
+	tool.o \
+	version.o \
+	$(UTILS)
+
 gob_loadcalc_OBJS := \
 	engines/gob/gob_loadcalc.o
 
@@ -166,6 +182,7 @@ engines/sword2/sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
 tools_OBJS := \
 	engines/agos/compress_agos.o \
 	engines/gob/compress_gob.o \
+	engines/gob/extract_fascination_cd.o \
 	engines/kyra/compress_kyra.o \
 	engines/queen/compress_queen.o \
 	engines/saga/compress_saga.o \

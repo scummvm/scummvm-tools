@@ -307,6 +307,44 @@ protected:
 	void o2_handleGoblins(FuncParams &params);
 };
 
+class Script_Geisha : public Script_v1 {
+public:
+	Script_Geisha(byte *totData, uint32 totSize, ExtTable *extTable = 0);
+	virtual ~Script_Geisha();
+
+protected:
+	typedef void (Script_Geisha::*OpcodeDrawProcGeisha)(FuncParams &);
+	typedef void (Script_Geisha::*OpcodeFuncProcGeisha)(FuncParams &);
+	typedef void (Script_Geisha::*OpcodeGoblinProcGeisha)(FuncParams &);
+	struct OpcodeDrawEntryGeisha {
+		FuncType type;
+		OpcodeDrawProcGeisha proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeFuncEntryGeisha {
+		FuncType type;
+		OpcodeFuncProcGeisha proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeGoblinEntryGeisha {
+		FuncType type;
+		OpcodeGoblinProcGeisha proc;
+		const char *desc;
+		const Param params[16];
+	};
+	const OpcodeDrawEntryGeisha *_opcodesDrawGeisha;
+	const OpcodeFuncEntryGeisha *_opcodesFuncGeisha;
+	const OpcodeGoblinEntryGeisha *_opcodesGoblinGeisha;
+	static const int _goblinFuncLookUp[][2];
+
+	virtual void setupOpcodes();
+	virtual void drawOpcode(byte i, FuncParams &params);
+	virtual void funcOpcode(byte i, byte j, FuncParams &params);
+	virtual void goblinOpcode(int i, FuncParams &params);
+};
+
 class Script_Bargon : public Script_v2 {
 public:
 	Script_Bargon(byte *totData, uint32 totSize, ExtTable *extTable = 0);

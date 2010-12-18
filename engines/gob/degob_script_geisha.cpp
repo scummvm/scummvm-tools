@@ -24,11 +24,11 @@
 #include "common/endian.h"
 #include "common/util.h"
 
-#define OPCODET(x) _OPCODET(Script_v1, x)
-#define OPCODEF(x) _OPCODEF(Script_v1, x)
-#define OPCODEB(x) _OPCODEB(Script_v1, x)
+#define OPCODET(x) _OPCODET(Script_Geisha, x)
+#define OPCODEF(x) _OPCODEF(Script_Geisha, x)
+#define OPCODEB(x) _OPCODEB(Script_Geisha, x)
 
-const int Script_v1::_goblinFuncLookUp[][2] = {
+const int Script_Geisha::_goblinFuncLookUp[][2] = {
 	{1, 0},
 	{2, 1},
 	{3, 2},
@@ -103,17 +103,17 @@ const int Script_v1::_goblinFuncLookUp[][2] = {
 	{39, 71}
 };
 
-Script_v1::Script_v1(byte *totData, uint32 totSize, ExtTable *extTable) :
-	Script(totData, totSize, extTable) {
+Script_Geisha::Script_Geisha(byte *totData, uint32 totSize, ExtTable *extTable) :
+	Script_v1(totData, totSize, extTable) {
 
 	setupOpcodes();
 }
 
-Script_v1::~Script_v1() {
+Script_Geisha::~Script_Geisha() {
 }
 
-void Script_v1::setupOpcodes() {
-	static const OpcodeDrawEntryV1 opcodesDraw[256] = {
+void Script_Geisha::setupOpcodes() {
+	static const OpcodeDrawEntryGeisha opcodesDraw[256] = {
 		/* 00 */
 		{OPCODEF(o1_loadMult), {PARAM_NONE}},
 		{OPCODET(o1_playMult), {PARAM_UINT16}},
@@ -436,7 +436,7 @@ void Script_v1::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 	};
 
-	static const OpcodeFuncEntryV1 opcodesFunc[80] = {
+	static const OpcodeFuncEntryGeisha opcodesFunc[80] = {
 		/* 00 */
 		{OPCODEF(o1_callSub), {PARAM_NONE}},
 		{OPCODEF(o1_callSub), {PARAM_NONE}},
@@ -510,7 +510,7 @@ void Script_v1::setupOpcodes() {
 		/* 38 */
 		{OPCODET(o1_playSound), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o1_stopSound), {PARAM_EXPR}},
-		{OPCODEF(o1_loadSound), {PARAM_NONE}},
+		{OPCODET(oGeisha_loadSound), {PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o1_freeSoundSlot), {PARAM_EXPR}},
 		/* 3C */
 		{OPCODET(o1_waitEndPlay), {PARAM_NONE}},
@@ -539,137 +539,57 @@ void Script_v1::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryV1 opcodesGoblin[72] = {
+	static const OpcodeGoblinEntryGeisha opcodesGoblin[8] = {
 		/* 00 */
-		{OPCODET(o1_setState), {PARAM_GOB}},
-		{OPCODET(o1_setCurFrame), {PARAM_GOB}},
-		{OPCODET(o1_setNextState), {PARAM_GOB}},
-		{OPCODET(o1_setMultState), {PARAM_GOB}},
+		{OPCODET(oGeisha_OG_0), {PARAM_INT16, PARAM_INT16, PARAM_INT16, PARAM_INT16}},
+		{OPCODET(oGeisha_OG_1), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
+		{OPCODET(oGeisha_loadGeisha), {PARAM_GOB}},
+		{OPCODET(oGeisha_adlibPlay), {PARAM_GOB}},
 		/* 04 */
-		{OPCODET(o1_setOrder), {PARAM_GOB}},
-		{OPCODET(o1_setActionStartState), {PARAM_GOB}},
-		{OPCODET(o1_setCurLookDir), {PARAM_GOB}},
-		{OPCODET(o1_setType), {PARAM_GOB}},
-		/* 08 */
-		{OPCODET(o1_setNoTick), {PARAM_GOB}},
-		{OPCODET(o1_setPickable), {PARAM_GOB}},
-		{OPCODET(o1_setXPos), {PARAM_GOB}},
-		{OPCODET(o1_setYPos), {PARAM_GOB}},
-		/* 0C */
-		{OPCODET(o1_setDoAnim), {PARAM_GOB}},
-		{OPCODET(o1_setRelaxTime), {PARAM_GOB}},
-		{OPCODET(o1_setMaxTick), {PARAM_GOB}},
-		{OPCODET(o1_getState), {PARAM_GOB}},
-		/* 10 */
-		{OPCODET(o1_getCurFrame), {PARAM_GOB}},
-		{OPCODET(o1_getNextState), {PARAM_GOB}},
-		{OPCODET(o1_getMultState), {PARAM_GOB}},
-		{OPCODET(o1_getOrder), {PARAM_GOB}},
-		/* 14 */
-		{OPCODET(o1_getActionStartState), {PARAM_GOB}},
-		{OPCODET(o1_getCurLookDir), {PARAM_GOB}},
-		{OPCODET(o1_getType), {PARAM_GOB}},
-		{OPCODET(o1_getNoTick), {PARAM_GOB}},
-		/* 18 */
-		{OPCODET(o1_getPickable), {PARAM_GOB}},
-		{OPCODET(o1_getObjMaxFrame), {PARAM_GOB}},
-		{OPCODET(o1_getXPos), {PARAM_GOB}},
-		{OPCODET(o1_getYPos), {PARAM_GOB}},
-		/* 1C */
-		{OPCODET(o1_getDoAnim), {PARAM_GOB}},
-		{OPCODET(o1_getRelaxTime), {PARAM_GOB}},
-		{OPCODET(o1_getMaxTick), {PARAM_GOB}},
-		{OPCODET(o1_manipulateMap), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		/* 20 */
-		{OPCODET(o1_getItem), {PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_manipulateMapIndirect), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_getItemIndirect), {PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_setPassMap), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		/* 24 */
-		{OPCODET(o1_setGoblinPosH), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_getGoblinPosXH), {PARAM_INT16}},
-		{OPCODET(o1_getGoblinPosYH), {PARAM_INT16}},
-		{OPCODET(o1_setGoblinMultState), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		/* 28 */
-		{OPCODET(o1_setGoblinUnk14), {PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_setItemIdInPocket), {PARAM_INT16}},
-		{OPCODET(o1_setItemIndInPocket), {PARAM_INT16}},
-		{OPCODET(o1_getItemIdInPocket), {PARAM_NONE}},
-		/* 2C */
-		{OPCODET(o1_getItemIndInPocket), {PARAM_NONE}},
-		{OPCODET(o1_setItemPos), {PARAM_NONE}},
-		{OPCODET(o1_setGoblinPos), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_setGoblinState), {PARAM_INT16, PARAM_INT16}},
-		/* 30 */
-		{OPCODET(o1_setGoblinStateRedraw), {PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_decRelaxTime), {PARAM_INT16}},
-		{OPCODET(o1_getGoblinPosX), {PARAM_INT16}},
-		{OPCODET(o1_getGoblinPosY), {PARAM_INT16}},
-		/* 34 */
-		{OPCODET(o1_clearPathExistence), {PARAM_NONE}},
-		{OPCODET(o1_setGoblinVisible), {PARAM_INT16}},
-		{OPCODET(o1_setGoblinInvisible), {PARAM_INT16}},
-		{OPCODET(o1_getObjectIntersect), {PARAM_INT16, PARAM_INT16}},
-		/* 38 */
-		{OPCODET(o1_getGoblinIntersect), {PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_setItemPos), {PARAM_INT16, PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_loadObjects), {PARAM_INT16}},
-		{OPCODET(o1_freeObjects), {PARAM_NONE}},
-		/* 3C */
-		{OPCODET(o1_animateObjects), {PARAM_NONE}},
-		{OPCODET(o1_drawObjects), {PARAM_NONE}},
-		{OPCODET(o1_loadMap), {PARAM_NONE}},
-		{OPCODET(o1_moveGoblin), {PARAM_INT16, PARAM_INT16}},
-		/* 40 */
-		{OPCODET(o1_switchGoblin), {PARAM_NONE}},
-		{OPCODET(o1_loadGoblin), {PARAM_NONE}},
-		{OPCODET(o1_writeTreatItem), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_moveGoblin0), {PARAM_NONE}},
-		/* 44 */
-		{OPCODET(o1_setGoblinTarget), {PARAM_INT16}},
-		{OPCODET(o1_setGoblinObjectsPos), {PARAM_INT16, PARAM_INT16}},
-		{OPCODET(o1_initGoblin), {PARAM_NONE}},
-		{OPCODEF(o1_dummy), {PARAM_NONE}}
+		{OPCODET(oGeisha_adlibStop), {PARAM_GOB}},
+		{OPCODET(oGeisha_OG_NOP), {PARAM_GOB}},
+		{OPCODET(oGeisha_OG_6), {PARAM_GOB}},
+		{OPCODET(oGeisha_OG_7), {PARAM_GOB}},
 	};
 
-	_opcodesDrawV1 = opcodesDraw;
-	_opcodesFuncV1 = opcodesFunc;
-	_opcodesGoblinV1 = opcodesGoblin;
+	_opcodesDrawGeisha = opcodesDraw;
+	_opcodesFuncGeisha = opcodesFunc;
+	_opcodesGoblinGeisha = opcodesGoblin;
 }
 
-void Script_v1::drawOpcode(byte i, FuncParams &params) {
-	FuncType type = _opcodesDrawV1[i].type;
-	params.desc = _opcodesDrawV1[i].desc;
-	OpcodeDrawProcV1 op = _opcodesDrawV1[i].proc;
+void Script_Geisha::drawOpcode(byte i, FuncParams &params) {
+	FuncType type = _opcodesDrawGeisha[i].type;
+	params.desc = _opcodesDrawGeisha[i].desc;
+	OpcodeDrawProcGeisha op = _opcodesDrawGeisha[i].proc;
 
 	if (type == TYPE_NONE)
 		error("No such opcodeDraw: %d", i);
 	if ((type == TYPE_TEXTDESC) || (type == TYPE_BOTHDESC))
-		printFuncDesc(params, _opcodesDrawV1[i].params);
+		printFuncDesc(params, _opcodesDrawGeisha[i].params);
 	if ((type == TYPE_FUNCDESC) || (type == TYPE_BOTHDESC))
 		(this->*op)(params);
 }
 
-void Script_v1::funcOpcode(byte i, byte j, FuncParams &params) {
+void Script_Geisha::funcOpcode(byte i, byte j, FuncParams &params) {
 	int n = i*16 + j;
 	FuncType type = TYPE_NONE;
-	OpcodeFuncProcV1 op = 0;
+	OpcodeFuncProcGeisha op = 0;
 
 	if ((i <= 4) && (j <= 15)) {
-		op = _opcodesFuncV1[n].proc;
-		params.desc = _opcodesFuncV1[n].desc;
-		type = _opcodesFuncV1[n].type;
+		op = _opcodesFuncGeisha[n].proc;
+		params.desc = _opcodesFuncGeisha[n].desc;
+		type = _opcodesFuncGeisha[n].type;
 	}
 
 	if (type == TYPE_NONE)
 		error("No such opcodeFunc: %d.%d", i, j);
 	if ((type == TYPE_TEXTDESC) || (type == TYPE_BOTHDESC))
-		printFuncDesc(params, _opcodesFuncV1[n].params);
+		printFuncDesc(params, _opcodesFuncGeisha[n].params);
 	if ((type == TYPE_FUNCDESC) || (type == TYPE_BOTHDESC))
 		(this->*op)(params);
 }
 
-void Script_v1::goblinOpcode(int i, FuncParams &params) {
+void Script_Geisha::goblinOpcode(int i, FuncParams &params) {
 	int n = -1;
 	for (int j = 0; j < ARRAYSIZE(_goblinFuncLookUp); j++)
 		if (_goblinFuncLookUp[j][0] == i) {
@@ -678,18 +598,18 @@ void Script_v1::goblinOpcode(int i, FuncParams &params) {
 		}
 
 	FuncType type = TYPE_NONE;
-	OpcodeGoblinProcV1 op = 0;
+	OpcodeGoblinProcGeisha op = 0;
 
 	if (n >= 0) {
-		op = _opcodesGoblinV1[n].proc;
-		params.desc = _opcodesGoblinV1[n].desc;
-		type = _opcodesGoblinV1[n].type;
+		op = _opcodesGoblinGeisha[n].proc;
+		params.desc = _opcodesGoblinGeisha[n].desc;
+		type = _opcodesGoblinGeisha[n].type;
 	}
 
 	if (type == TYPE_NONE)
 		error("No such opcodeGoblin: %d (%d)", i, n);
 	if ((type == TYPE_TEXTDESC) || (type == TYPE_BOTHDESC)) {
-		const Param *param = _opcodesGoblinV1[n].params;
+		const Param *param = _opcodesGoblinGeisha[n].params;
 		if (*param == PARAM_GOB)
 			printFuncDesc(params);
 		else
@@ -699,442 +619,3 @@ void Script_v1::goblinOpcode(int i, FuncParams &params) {
 		(this->*op)(params);
 }
 
-void Script_v1::o1_drawOperations(FuncParams &params) {
-	drawOpcode(readUint8(), params);
-}
-
-void Script_v1::o1_goblinFunc(FuncParams &params) {
-	FuncParams gobParams;
-	bool objDescSet = false;
-	int16 cmd;
-
-	gobParams.extraData = 0;
-	gobParams.objIndex = -1;
-
-	cmd = (int16) readUint16();
-	skip(2);
-
-	if ((cmd > 0) && (cmd < 17)) {
-		objDescSet = true;
-		gobParams.objIndex = (int16) readUint16();
-		gobParams.extraData = (int16) readUint16();
-	}
-
-	if ((cmd > 90) && (cmd < 107)) {
-		objDescSet = true;
-		gobParams.objIndex = (int16) readUint16();
-		gobParams.extraData = (int16) readUint16();
-		cmd -= 90;
-	}
-
-	if ((cmd > 110) && (cmd < 128)) {
-		objDescSet = true;
-		gobParams.objIndex = (int16) readUint16();
-		cmd -= 90;
-	} else if ((cmd > 20) && (cmd < 38)) {
-		objDescSet = true;
-		gobParams.objIndex = (int16) readUint16();
-	}
-
-	goblinOpcode(cmd, gobParams);
-}
-
-void Script_v1::o1_callSub(FuncParams &params) {
-	uint16 offset = readUint16();
-
-	printIndent();
-
-	uint32 pos = getPos();
-
-	seek(offset);
-
-	if (peekUint8() == 1) {
-		print("sub_%d();\n", offset);
-		if (offset >= 128)
-			addFuncOffset(offset);
-	} else if (peekUint8() == 2)
-		print("_hotspots->evaluate()(%d);\n", offset);
-	else
-		print("<Unknown block type %d (%d)>\n", peekUint8(), offset);
-
-	seek(pos);
-}
-
-void Script_v1::o1_switch(FuncParams &params) {
-	uint32 nextPos;
-	int16 len;
-
-	printIndent();
-	print("switch (%s) {\n", readVarIndex().c_str());
-
-	len = (int8) readUint8();
-	while (len != -5) {
-		for (int16 i = 0; i < len; i++) {
-			printIndent();
-			print("case %s:\n", readExpr().c_str());
-		}
-
-		incIndent();
-
-		nextPos = getPos() + getBlockSize();
-
-		funcBlock(0);
-
-		seek(nextPos);
-
-		printIndent();
-		print("break;\n");
-
-		decIndent();
-
-		len = (int8) readUint8();
-	}
-
-	if ((peekUint8() >> 4) == 4) {
-		printIndent();
-		print("default:\n");
-		incIndent();
-
-		skip(1);
-		nextPos = getPos() + getBlockSize();
-
-		funcBlock(0);
-
-		seek(nextPos);
-
-		printIndent();
-		print("break;\n");
-
-		decIndent();
-	}
-
-	printIndent();
-	print("}\n");
-}
-
-void Script_v1::o1_repeatUntil(FuncParams &params) {
-	uint32 nextPos = getPos() + getBlockSize() + 1;
-
-	printIndent();
-	print("repeat {\n");
-	incIndent();
-
-	funcBlock(1);
-
-	seek(nextPos);
-
-	decIndent();
-	printIndent();
-	print("} until (%s);\n", readExpr().c_str());
-}
-
-void Script_v1::o1_whileDo(FuncParams &params) {
-	printIndent();
-	print("while (%s) {\n", readExpr().c_str());
-	incIndent();
-
-	uint32 nextPos = getPos() + getBlockSize();
-
-	funcBlock(1);
-
-	seek(nextPos);
-
-	decIndent();
-	printIndent();
-	print("}\n");
-}
-
-void Script_v1::o1_if(FuncParams &params) {
-	printIndent();
-	print("if (%s) {\n", readExpr().c_str());
-	incIndent();
-
-	uint32 nextPos = getPos() + getBlockSize();
-
-	funcBlock(0);
-
-	seek(nextPos);
-
-	if ((readUint8() >> 4) == 12) {
-		decIndent();
-		printIndent();
-		print("} else {\n");
-		incIndent();
-
-		nextPos = getPos() + getBlockSize();
-
-		funcBlock(0);
-
-		seek(nextPos);
-	}
-
-	decIndent();
-	printIndent();
-	print("}\n");
-}
-
-void Script_v1::o1_return(FuncParams &params) {
-	printIndent();
-	print("return;\n");
-}
-
-void Script_v1::o1_returnTo(FuncParams &params) {
-	printIndent();
-	print("return;\n");
-}
-
-void Script_v1::o1_setcmdCount(FuncParams &params) {
-	params.cmdCount = readUint8();
-	params.counter = 0;
-}
-
-void Script_v1::o1_assign(FuncParams &params) {
-	printIndent();
-	std::string varIndex = readVarIndex();
-	std::string expr = readExpr();
-
-	print("%s = %s;\n", varIndex.c_str(), expr.c_str());
-}
-
-void Script_v1::o1_palLoad(FuncParams &params) {
-	byte cmd = readUint8();
-
-	startFunc(params);
-	print("%d, %d", (cmd & 0x80) != 0, cmd & 0x7F);
-	endFunc();
-
-	switch (cmd & 0x7F) {
-	case 48:
-		skip(48);
-		break;
-
-	case 49:
-		skip(18);
-		break;
-
-	case 50:
-		skip(16);
-		break;
-
-	case 51:
-		skip(2);
-		break;
-
-	case 52:
-		skip(48);
-		break;
-
-	case 53:
-		skip(2);
-		break;
-
-	case 61:
-		skip(4);
-		break;
-	}
-}
-
-void Script_v1::o1_loadSpriteToPos(FuncParams &params) {
-	startFunc(params);
-	print("%d, ", (int16) readUint16());
-	print("%s, ", readExpr().c_str());
-	print("%s, ", readExpr().c_str());
-	uint8 tDest = readUint8();
-	print("%d, %d", tDest & 1, ((int8) (tDest >> 1)) - 1);
-	endFunc();
-
-	skip(1);
-}
-
-void Script_v1::o1_printText(FuncParams &params) {
-	startFunc(params);
-	print("%s, ", readExpr().c_str());
-	print("%s, ", readExpr().c_str());
-	print("%s, ", readExpr().c_str());
-	print("%s, ", readExpr().c_str());
-	print("%s", readExpr().c_str());
-
-	do {
-		print(", \"");
-		for (int i = 0; (((char) (peekUint8())) != '.') && (peekUint8() != 200); i++)
-			print("%c", (char) readUint8());
-
-		if (peekUint8() != 200) {
-			skip(1);
-
-			print("\", ");
-			switch (peekUint8()) {
-			case 16:
-			case 17:
-			case 18:
-			case 23:
-			case 24:
-			case 25:
-			case 26:
-			case 27:
-			case 28:
-				print("%s", readVarIndex().c_str());
-				break;
-			}
-			skip(1);
-		} else
-			print("\"");
-
-	} while (peekUint8() != 200);
-
-	endFunc();
-
-	skip(1);
-}
-
-void Script_v1::o1_loadTot(FuncParams &params) {
-	startFunc(params);
-
-	int8 size = (int8) readUint8();
-	if ((size & 0x80) == 0) {
-		for (int i = 0; i < size; i++)
-			print("%c", (char) readUint8());
-	} else
-		print("%s", readExpr().c_str());
-	print(".tot");
-
-	endFunc();
-}
-
-void Script_v1::o1_loadSound(FuncParams &params) {
-	int16 id;
-
-	startFunc(params);
-	print("%s, ", readExpr().c_str());
-	id = readUint16();
-	print("%d", id);
-	if (id == -1) {
-		print(", %s", peekString());
-		skip(9);
-	}
-	endFunc();
-}
-
-void Script_v1::o1_loadMult(FuncParams &params) {
-	uint16 id = readUint16();
-
-	startFunc(params);
-	print("%d", id);
-	endFunc();
-
-	if (!_extTable)
-		error("EXT file needed");
-
-	uint32 size;
-	byte *extData = _extTable->getItem(id - 30000, size);
-	byte *data = extData;
-
-	int32 count1, count2;
-
-	count1 = ((int8) data[0]) + 1;
-	count2 = ((int8) data[1]) + 1;
-	data += 2;
-	// Statics
-	for (int i = 0; i < count1; i++, data += 14) {
-		int16 sSize;
-
-		readExpr();
-		sSize = (int16) readUint16();
-		skip(sSize * 2);
-		sSize = (int16) readUint16();
-		skip(2 + sSize * 8);
-	}
-	// Anims
-	for (int i = 0; i < count2; i++, data += 14) {
-		readExpr();
-		int16 sSize = (int16) readUint16();
-		skip(2 + sSize * 8);
-	}
-
-	// FPS
-	data += 2;
-
-	// StaticKeys
-	count1 = (int16) READ_LE_UINT16(data);
-	data += 2 + count1 * 4;
-
-	// AnimKeys
-	for (int i = 0; i < 4; i++) {
-		count1 = (int16) READ_LE_UINT16(data);
-		data += 2 + count1 * 10;
-	}
-
-	// fadePal
-	data += 5 * 16 * 3;
-
-	// palFadeKeys
-	count1 = (int16) READ_LE_UINT16(data);
-	data += 2 + count1 * 7;
-
-	// palKeys
-	count1 = (int16) READ_LE_UINT16(data);
-	data += 2 + count1 * 80;
-
-	// textKeys
-	count1 = (int16) READ_LE_UINT16(data);
-	data += 2 + count1 * 28;
-
-	// soundKeys
-	count1 = (int16) READ_LE_UINT16(data);
-	data += 2;
-	for (int i = 0; i < count1; i++, data += 36) {
-		int16 cmd = (int16) READ_LE_UINT16(data + 2);
-
-		if ((cmd == 1) || (cmd == 4))
-			skip(2);
-		else if (cmd == 3)
-			skip(6);
-		else if (cmd == 5)
-			skip(((int16) READ_LE_UINT16(data + 4)) * 2);
-	}
-
-	delete[] extData;
-}
-
-void Script_v1::o1_loadAnim(FuncParams &params) {
-	int16 sSize;
-
-	startFunc(params);
-	print("%s, ", readExpr().c_str());
-	sSize = (int16) readUint16();
-	print("%d, %d", sSize, readUint16());
-	endFunc();
-
-	skip(sSize * 8);
-}
-
-void Script_v1::o1_loadStatic(FuncParams &params) {
-	int16 sSize1, sSize2;
-
-	startFunc(params);
-	print("%s, ", readExpr().c_str());
-	sSize1 = (int16) readUint16();
-	skip(sSize1 * 2);
-	sSize2 = (int16) readUint16();
-	print("%d, %d, %d", sSize1, sSize2, readUint16());
-	endFunc();
-
-	skip(sSize2 * 8);
-}
-
-void Script_v1::o1_loadMultObject(FuncParams &params) {
-	startFunc(params);
-	print("%s, ", readExpr().c_str());
-	print("%s, ", readExpr().c_str());
-	print("%s", readExpr().c_str());
-	endFunc();
-
-	for (int i = 0; i < 11; i++)
-		readExpr();
-}
-
-void Script_v1::o1_dummy(FuncParams &params) {
-	seek((uint32) -2, SEEK_CUR);
-	uint16 size = readUint16();
-	skip(size * 2);
-}

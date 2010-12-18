@@ -31,7 +31,6 @@
 // Main FourCC's
 #define ID_MHWK MKID_BE('MHWK') // Main FourCC
 #define ID_RSRC MKID_BE('RSRC') // Resource Directory Tag
-#define ID_LBRC MKID_BE('LBRC') // Living Books v2 FourCC
 
 // Myst Resource FourCC's
 #define ID_CLRC MKID_BE('CLRC') // Cursor Hotspots
@@ -236,11 +235,11 @@ public:
 	LivingBooksArchive_v1() : MohawkArchive() {}
 	~LivingBooksArchive_v1() {}
 
-	void open(Common::SeekableReadStream *stream);
+	virtual void open(Common::SeekableReadStream *stream);
 	MohawkOutputStream getRawData(uint32 tag, uint16 id);
 	MohawkOutputStream getNextFile();
 
-private:
+protected:
 	struct OldType {
 		uint32 tag;
 		uint16 resource_table_offset;
@@ -267,6 +266,13 @@ private:
 				return i;
 		return -1;	// not found
 	}
+};
+
+class CSWorldDeluxeArchive : public LivingBooksArchive_v1 {
+public:
+	CSWorldDeluxeArchive() : LivingBooksArchive_v1() {}
+	~CSWorldDeluxeArchive() {}
+	void open(Common::SeekableReadStream *stream);
 };
 
 #endif

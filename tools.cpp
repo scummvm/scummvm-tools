@@ -48,6 +48,7 @@
 #include "engines/cine/extract_cine.h"
 #include "engines/cruise/extract_cruise_pc.h"
 #include "engines/gob/extract_gob_stk.h"
+#include "engines/gob/extract_fascination_cd.h"
 #include "engines/kyra/extract_kyra.h"
 #include "engines/scumm/extract_loom_tg16.h"
 #include "engines/scumm/extract_mm_apple.h"
@@ -82,6 +83,7 @@ Tools::Tools() {
 	_tools.push_back(new ExtractCine());
 	_tools.push_back(new ExtractCruisePC());
 	_tools.push_back(new ExtractGobStk());
+	_tools.push_back(new ExtractFascinationCD());
 	_tools.push_back(new ExtractKyra());
 	_tools.push_back(new ExtractLoomTG16());
 	_tools.push_back(new ExtractMMApple());

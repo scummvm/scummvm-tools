@@ -160,6 +160,9 @@ extern int currentOpcodeBlockStart;
 
 extern void outputLine(const char *buf, int curoffs, int opcode, int indent);
 
+extern char *put_ascii(char *buf, int i);
+extern char *get_string(char *buf);
+
 extern char *strecpy(char *buf, const char *src);
 extern int get_curoffs();
 extern int get_byte();

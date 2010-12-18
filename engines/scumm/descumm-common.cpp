@@ -242,3 +242,127 @@ void writePendingElse() {
 		pendingElse = false;
 	}
 }
+
+char *put_ascii(char *buf, int i) {
+	if (i > 31 && i < 128) {
+		// non-printable chars are escaped by backslashes as so: "\x00"
+		// backslashes and quote marks are escaped like so: "\\" "\""
+		if (i == '\\' || i == '"') {
+			buf[0] = '\\';
+			buf++;
+		}
+		buf[0] = i;
+		buf[1] = 0;
+		return buf + 1;
+	}
+	return buf + sprintf(buf, "\\x%.2X", i);
+}
+
+extern char *get_var(char *buf);
+extern char *get_var6(char *buf);
+
+char *get_string(char *buf) {
+	byte cmd;
+	char *e = buf;
+	bool in = false;
+	bool in_function = false;
+	int i;
+
+	while ((cmd = get_byte()) != 0) {
+		if (cmd == 0xFF || cmd == 0xFE) {
+			if (in) {
+				e += sprintf(e, "\" + ");
+				in = false;
+			}
+			in_function = true;
+			i = get_byte();
+			switch (i) {
+			case 1: // newline
+				e += sprintf(e, "newline()");
+				break;
+			case 2:
+				e += sprintf(e, "keepText()");
+				break;
+			case 3:
+				e += sprintf(e, "wait()");
+				break;
+			case 4:		// addIntToStack
+				e += sprintf(e, "getInt(");
+				goto addVarToStack;
+			case 5:		// addVerbToStack
+				e += sprintf(e, "getVerb(");
+				goto addVarToStack;
+			case 6:		// addNameToStack
+				e += sprintf(e, "getName(");
+				goto addVarToStack;
+			case 7:		// addStringToStack
+				e += sprintf(e, "getString(");
+			addVarToStack:
+				if (g_options.scriptVersion >= 6)  {
+					e = get_var6(e);
+				} else {
+					e = get_var(e);
+				}
+				e += sprintf(e, ")");
+				break;
+			case 9:
+				e += sprintf(e, "startAnim(%d)", get_word());
+				break;
+			case 10:
+				e += sprintf(e, "sound(");
+				// positions 2, 3, 6, 7 are the offset in MONSTER.SOU (LE).
+				// positions 10, 11, 14, 15 are the VCTL block size (LE).
+				{
+					// show the voice's position in the MONSTER.SOU
+				    int p = 0;
+				    p += get_word();
+				    g_scriptCurPos += 2; // skip the next "0xFF 0x0A"
+				    p += get_word() << 2;
+				    e += sprintf(e, "0x%X, ", p);
+
+				    g_scriptCurPos += 2; // skip the next "0xFF 0x0A"
+
+				    // show the size of the VCTL chunk/lip-synch tags
+				    p = 0;
+				    p += get_word();
+				    g_scriptCurPos += 2; // skip the next "0xFF 0x0A"
+				    p += get_word() << 2;
+				    e += sprintf(e, "0x%X)", p);
+				}
+				break;
+			case 12:
+				e += sprintf(e, "setColor(%d)", get_word());
+				break;
+			case 13: // was unk2
+				e += sprintf(e, "unknown13(%d)", get_word());
+				break;
+			case 14:
+				e += sprintf(e, "setFont(%d)", get_word());
+				break;
+			case 32: // Workaround for a script bug in Indy3
+			case 46: // Workaround for a script bug in Indy3
+				if (g_options.scriptVersion == 3 && g_options.IndyFlag) {
+					buf += sprintf(buf, "\\x%.2X", 0xE1); // should output German "sz" in-game.
+					continue;
+				}
+				// fall-through
+			default:
+				e += sprintf(e, "unknown%d(%d)", i, get_word());
+			}
+		} else {
+			if (in_function) {
+				e += sprintf(e, " + ");
+				in_function = false;
+			}
+			if (!in) {
+				*e++ = '"';
+				in = true;
+			}
+			e = put_ascii(e, cmd);
+		}
+	}
+	if (in)
+		*e++ = '"';
+	*e = 0;
+	return e;
+}

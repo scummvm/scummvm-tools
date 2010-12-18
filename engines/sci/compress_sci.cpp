@@ -361,7 +361,7 @@ void CompressSci::execute() {
 	if (_inputOffset != _inputSize)
 		warning("resource file has additional byte before end-of-file\n");
 
-	print("Valid sci audio resource file. Found %d resources", resourceCount);
+	print("Valid sci audio resource file. Found %d resources\n", resourceCount);
 
 	if (outfile.empty())
 		error("please specify an output file");

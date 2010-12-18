@@ -217,12 +217,13 @@ MohawkOutputStream MohawkArchive::getRawData(uint32 tag, uint16 id) {
 	// We need to do this because of the way Mohawk is set up (this is much more "proper"
 	// than passing _mhk at the right offset). We may want to do that in the future, though.
 	if (_types[typeIndex].tag == ID_TMOV) {
-		if (fileTableIndex == _fileTableAmount)
+		if (fileTableIndex == _fileTableAmount - 1)
 			output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _mhk->size());
 		else
 			output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _fileTable[fileTableIndex + 1].offset);
 	} else
 		output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _fileTable[fileTableIndex].offset + _fileTable[fileTableIndex].dataSize);
+
 	output.tag = tag;
 	output.id = id;
 	output.index = fileTableIndex;
@@ -255,9 +256,12 @@ MohawkOutputStream MohawkArchive::getNextFile() {
 
 	// For some unknown reason, all tMOV resources have incorrect sizes. We correct this by getting the differences between offsets.
 	uint32 dataSize = 0;
-	if (_types[_curExType].tag == ID_TMOV)
-		dataSize = _fileTable[fileTableIndex + 1].offset - _fileTable[fileTableIndex].offset;
-	else
+	if (_types[_curExType].tag == ID_TMOV) {
+		if (fileTableIndex == _fileTableAmount - 1)
+			dataSize = _mhk->size() - _fileTable[fileTableIndex].offset;
+		else
+			dataSize = _fileTable[fileTableIndex + 1].offset - _fileTable[fileTableIndex].offset;
+	} else
 		dataSize = _fileTable[fileTableIndex].dataSize;
 
 	output.stream = new Common::SeekableSubReadStream(_mhk, _fileTable[fileTableIndex].offset, _fileTable[fileTableIndex].offset + dataSize, false);
@@ -349,8 +353,8 @@ void LivingBooksArchive_v1::open(Common::SeekableReadStream *stream) {
 			for (uint16 j = 0; j < _types[i].resTable.resources; j++) {
 				_types[i].resTable.entries[j].id = _mhk->readUint16LE();
 				_types[i].resTable.entries[j].offset = _mhk->readUint32LE();
-				_types[i].resTable.entries[j].size = _mhk->readUint16LE();
-				_mhk->readUint32LE(); // Unknown (always 0?)
+				_types[i].resTable.entries[j].size = _mhk->readUint32LE();
+				_mhk->readUint16LE(); // Unknown (always 0?)
 
 				debug (4, "Entry[%02x]: ID = %04x (%d)\tOffset = %08x, Size = %08x", j, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].offset, _types[i].resTable.entries[j].size);
 			}
@@ -410,6 +414,50 @@ MohawkOutputStream LivingBooksArchive_v1::getNextFile() {
 	return output;
 }
 
+void CSWorldDeluxeArchive::open(Common::SeekableReadStream *stream) {
+	close();
+	_mhk = stream;
+
+	// CSWorld Deluxe uses another similar format, but with less features
+	// then the next archive version. There is no possibility for a name
+	// table here and is the simplest of the three formats.
+
+	uint32 typeTableOffset = _mhk->readUint32LE();
+
+	_mhk->seek(typeTableOffset);
+
+	_typeTable.resource_types = _mhk->readUint16LE();
+	_types = new OldType[_typeTable.resource_types];
+
+	debug (0, "CSWorld Deluxe File: Number of Resource Types = %04x", _typeTable.resource_types);
+
+	for (uint16 i = 0; i < _typeTable.resource_types; i++) {
+		_types[i].tag = _mhk->readUint32LE();
+		_types[i].resource_table_offset = _mhk->readUint16LE();
+
+		debug (3, "Type[%02d]: Tag = \'%s\'  ResTable Offset = %04x", i, tag2str(_types[i].tag), _types[i].resource_table_offset);
+
+		uint32 oldPos = _mhk->pos();
+
+		// Resource Table/File Table
+		_mhk->seek(_types[i].resource_table_offset + typeTableOffset);
+		_types[i].resTable.resources = _mhk->readUint16LE();
+		_types[i].resTable.entries = new OldType::ResourceTable::Entries[_types[i].resTable.resources];
+
+		for (uint16 j = 0; j < _types[i].resTable.resources; j++) {
+			_types[i].resTable.entries[j].id = _mhk->readUint16LE();
+			_types[i].resTable.entries[j].offset = _mhk->readUint32LE() + 1; // Need to add one to the offset!
+			_types[i].resTable.entries[j].size = (_mhk->readUint32LE() & 0xfffff); // Seems only the bottom 20 bits are valid (top two bytes might be flags?)
+			_mhk->readByte(); // Unknown (always 0?)
+
+			debug (4, "Entry[%02x]: ID = %04x (%d)\tOffset = %08x, Size = %08x", j, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].id, _types[i].resTable.entries[j].offset, _types[i].resTable.entries[j].size);
+		}
+
+		_mhk->seek(oldPos);
+		debug (3, "\n");
+	}
+}
+
 MohawkArchive *MohawkArchive::createMohawkArchive(Common::SeekableReadStream *stream) {
 	uint32 headerTag = stream->readUint32BE();
 
@@ -420,11 +468,31 @@ MohawkArchive *MohawkArchive::createMohawkArchive(Common::SeekableReadStream *st
 		headerTag = stream->readUint32BE();
 		if (headerTag == ID_RSRC)
 			mohawkArchive = new MohawkArchive();
-	} else if (headerTag == ID_LBRC) {
-		printf("Detected Living Books v2 archive - not yet supported!\n");
 	} else if (headerTag == 6 || SWAP_BYTES_32(headerTag) == 6) {
 		// Assume the Living Books v1 archive format
 		mohawkArchive = new LivingBooksArchive_v1();
+	} else {
+		headerTag = SWAP_BYTES_32(headerTag);
+		// Use a simple heuristic for testing if it's a CSWorld Deluxe file
+		if (headerTag + 2 < stream->size()) {
+			stream->seek(headerTag);
+			uint16 typeCount = stream->readUint16LE();
+
+			if (typeCount * 6 + stream->pos() < stream->size()) {
+				bool isDeluxeArchive = true;
+
+				for (uint16 i = 0; i < typeCount; i++) {
+					stream->readUint32LE(); // Ignore tag
+					if (stream->readUint16LE() + headerTag >= stream->size()) {
+						isDeluxeArchive = false;
+						break;
+					}
+				}
+	
+				if (isDeluxeArchive)
+					mohawkArchive = new CSWorldDeluxeArchive();
+			}
+		}
 	}
 
 	stream->seek(0);

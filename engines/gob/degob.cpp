@@ -123,6 +123,7 @@ void printHelp(const char *bin) {
 	printf("	Woodruff - The Bizarre Adventures of Woodruff and the Schnibble\n");
 	printf("	Dynasty  - The Last Dynasty\n");
 	printf("	Urban    - Urban Runner\n");
+	printf("	Geisha   - Geisha\n");
 }
 
 int getVersion(const char *verStr) {
@@ -146,6 +147,8 @@ int getVersion(const char *verStr) {
 		return 8;
 	else if (!scumm_stricmp(verStr, "Urban"))
 		return 9;
+	else if (!scumm_stricmp(verStr, "Geisha"))
+		return 10;
 
 	return -1;
 }
@@ -192,6 +195,9 @@ Script *initScript(byte *totData, uint32 totSize, ExtTable *extTable, int versio
 			break;
 		case 9:
 			return new Script_v6(totData, totSize, extTable);
+			break;
+		case 10:
+			return new Script_Geisha(totData, totSize, extTable);
 			break;
 	}
 	return 0;
