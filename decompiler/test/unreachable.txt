@@ -1,0 +1,5 @@
+waitForMessage
+goto lbl_0x6
+stopObjectCodeA
+lbl_0x6:
+stopObjectCodeA

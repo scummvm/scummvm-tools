@@ -1,0 +1,142 @@
+\section{Code generation}
+\label{sec:codegen}
+
+Having detected all of the various control flow constructs in the previous phase, it is now time to put that information to use and generate some code from the instructions.
+
+Code generation is implemented as a two-step process:
+\begin{itemize}
+\item First, a DFS is performed to process all reachable groups. During this processing, the code for that group is generated.
+\item Next, the groups are iterated over sequentially, and the generated code is output.
+\end{itemize}
+
+This process is repeated for each function.
+
+\subsection{Function signature}
+For each function in the script, the \code{constructFuncSignature} method is called. By default, this will return the empty string, and this will cause the code to be output "freely", i.e. without anything surrounding it. If a non-empty string is returned, a \code{\}} will be added after all of the code in the function.
+
+If your engine uses methods, you will want to override this method to output your own signature.
+
+\emph{Note:} You must currently include a \code{\{} at the end of your signature.
+
+\subsection{Group processing}
+During processing of a group, the instructions in the group are processed one at a time. This is done by calling \code{processInst} on each instruction. This method should emulate the effect of the instruction, and, if the instruction corresponds to a statement, call \code{addOutputLine} on the code generator to add this statement as a line of code.
+
+If you need to access information about the group currently being processed, use the member variable \code{\_curGroup} on the code generator.
+
+\subsection{The stack and stack entries}
+\label{sec:stackvalues}
+When generating the code, a stack is used to represent the state of the system. When data is pushed on the stack, a \code{Value} describing how that data was created is added; when data is popped, a \code{Value} describing the popped data is removed.
+
+To manipulate the stack, use the \code{push} and \code{pop} methods to push or pop values. Unlike the STL stack, \code{pop} returns the value being popped from the stack, so you do not have to first get the top element and then pop it afterwards, but you can still call the \code{peek} method if you just want to look at the topmost element without removing it. Additionally, it has an \code{empty} method to check if the stack is empty.
+
+Some engines require you to look further down the stack than just the topmost element. You can use the \code{peekPos} method to retrieve an element at an arbitrary position in the stack. This method takes an integer containing the number of stack entries to skip, i.e. passing the value 0 will give you the topmost element, while passing the value 2 will give you the third value on the stack.
+
+\emph{Note:} \code{peekPos} accesses the underlying STL container (\code{std::deque}) using the \code{at} function, which will throw an exception if the stack does not contain enough elements.
+
+When working with values, you should use the \code{ValuePtr} type. This wraps the entry in a \code{boost::intrusive\_ptr} to free the associated memory when it is no longer referenced.
+
+Some value types contain references to an arbitrary number of values. This can be handled using an STL \code{deque}, typedef'ed as \code{ValueList}.
+
+The following value types are predefined:
+
+\paragraph{Integers (IntValue)}
+Integers can use up to 32-bits, and be signed or unsigned. When creating an integer, you must specify its value and whether or not it is signed. This also contains additional methods to extract the value and signedness of the value, which may be of use in some situations.
+
+\paragraph{Addresses (AddressValue/RelAddressValue)}
+Addresses are implemented as a specialization of IntValue. When output to a string, hexadecimal notation is used instead of decimal, and for relative addresses, the sign is prefixed and the absolute offset value is used instead (i.e., -1 is shown as \code{-0x1} instead of \code{0xFFFFFFFF}).
+
+Absolute addresses cannot be retrieved using \code{getSigned}, while relative addresses will return the offset with this method. To get the absolute address associated with either of these values, call \code{getUnsigned}.
+
+\paragraph{Variables (VarValue)}
+Variables are stored as a simple string. Subclasses of \code{CodeGenerator} must implement their own logic to determine a suitable variable name when given a reference.
+
+\paragraph{Binary operations (BinaryOpValue)}
+Binary operations stores the two stack entries used as operands, and a string containing the operator. Parentheses are added if the operator precedence requires it.
+
+\paragraph{Unary operations (UnaryOpValue)}
+Just like binary operations, except only a single operand is stored. The operator can be placed before (prefix) or after (postfix) the operand.
+
+\paragraph{Duplicated entries (DupValue)}
+Stores an index to distinguish between multiple duplicated entries. This index is automatically assigned and determined when calling the \code{dup} function to duplicate a stack entry.
+
+\paragraph{Array entries (ArrayValue)}
+Array entries are stored as a simple string containing the name of the array, and an EntryList of stack entries used as the indices, with the first element in the ValueList being output as the first index.
+
+\paragraph{Strings (StringValue)}
+A string is stored as... well, a string. The default implementation automatically surrounds the string with quotes.
+
+\paragraph{Negated values (NegatedValue)}
+\code{NegatedValue} represents an expression of the form \code{!value}, i.e. boolean negation. This type is used to ensure that \code{value->negate()->negate()} does not actually perform double negation, but simply uses the original value.
+
+\paragraph{Function calls (CallValue)}
+Function calls have the same underlying storage types as an array entry, but the output is formatted like a function call instead of an array access.
+
+Each entry type knows how to output itself to an \code{std::ostream} supplied as a parameter to the \code{print} function, and the common base class \code{StackEntry} also overloads the \code{<<} operator so any stack entry can be streamed directly to an output stream using that function.
+
+\subsection{Outputting code}
+When processing certain kinds of instructions, you will probably want to create a line of code as part of the output. To do that, call \code{addOutputLine} with a string containing the code you wish to output as an argument. This will then be associated with the group being processed.
+
+If your line of code deals with specialized control flow, you will probably want to do something about the indentation. You can supply two extra boolean arguments to \code{addOutputLine} to state that the indentation should be decreased before outputting this line, and/or that the indentation should be increased for lines output after this line. If you leave out these arguments, no extra indentation is added.
+
+Note: By default, if, while and do-while statements detected in the control flow graph are automatically output after processing the conditional jump. To fill in the condition, the topmost stack value is used.
+
+Note: This indent handling is currently considered a temporary solution until there is time to implement something better. It may be replaced with a different form of indentation handling at a later time.
+
+You will usually need to output assignments at some point. For that, you can use the \code{writeAssignment} method to generate an assignment statement. \code{writeAssignment} takes two parameters, the first being the Value representing the left-hand side of the assignment operator, and the second being the Value representing the right-hand side of the operator.
+
+\subsection{Default instruction handling and instruction metadata}
+Default handling exists for a number of instruction types, described below. See also Section~\vref{sec:instructions} which discusses instructions in more detail.
+\paragraph{kDupInst}
+The topmost stack entry is popped, and two duplicated copies are pushed to the stack. If the entry being duplicated was not already a duplicate, an assignment will be output to assign the original stack entry to a special dup variable, to show that the original entry is not being recalculated.
+
+\paragraph{kUnaryOpPreInst/kUnaryOpPostInst}
+The topmost stack entry is popped, and a \code{UnaryOpEntry} is created and pushed to the stack, using the codegen metadata as the operator, and the previously popped entry as the operand. The exact type determines whether the operator is pre- or postfixed to the operand.
+
+\paragraph{kBinaryOpInst}
+The two topmost stack entries are popped, and a BinaryOpEntry is created and pushed to the stack, using the codegen metadata as the operator and the previously popped entries as the operands. The order of the operands is determined by the value of the field \code{\_binOrder}, as described in Section~\vref{sec:argOrder}.
+
+\paragraph{kReturnInst}
+This simply adds a line \code{return;} to the output.
+
+\emph{Note:} The default handling does not currently allow specifying a return value as part of the statement, as in \code{return 0;}. You will have to handle that yourself using a subclass.
+
+\paragraph{kKernelCallInst}
+The metadata is treated similar to parameter specifications in \code{SimpleDisassembler} (see Section~\vref{sec:simpledisasm}). If the specification string starts with the character \code{r}, this signifies that the call returns a value, and processing starts at the next character.
+For each character in the metadata string, \code{processSpecialMetadata} is called with the instruction being processed, and the current metadata character to be handled. The default implementation only understands the character \code{p}, which pops an argument from the stack and adds it to the argument list.
+Once the metadata string has been processed fully, then an entry representing the function call is pushed to the stack if the call returns a value. Otherwise, the call is added to the output.
+
+You can override the \code{processSpecialMetadata} method to add your own specification characters, just like you would override \code{readParameter} in \code{SimpleDisassembler}. Use the \code{addArg} method to add arguments.
+
+Due to the conflict with the specification of a return value, it is recommended that you do not adopt \code{r} as a metadata character unless you provide your own \code{processInst} implementation for this purpose.
+
+In addition, certain instruction types trigger additional generic behavior:
+\paragraph{Conditional jumps}
+After processing the conditional jump, an if, while or do-while condition is output using the topmost stack entry as the condition. The condition is automatically negated for if and while conditons, so you only need to consider what the instruction itself does. If the jump is taken when the checked condition is false (e.g. a \code{jumpFalse} instruction), you must remember to negate the value representing the condition.
+
+\paragraph{Unconditional jumps}
+After processing the instruction, if the current group has been detected as a break or a continue, a break or continue statement is output. Otherwise, the jump is analyzed and output unless it is a jump back to the condition of a while-loop that ends there, or it is determined that the jump is unnecessary due to an else block following immediately after. A default, empty implementation of \code{processInst} is provided for this type.
+
+\paragraph{Other types}
+No default handling exists for types other than those mentioned above, so you must handle them yourself by creating new Instruction subclasses.
+
+Note that this also includes \code{kCallInst}. Although many engines might want to handle this in a manner similar to \code{kKernelCallInst} opcodes, this is left to the engine-specific code so they can fully make sense of the metadata they choose to add to the function.
+
+\subsection{Order of arguments}
+\label{sec:argOrder}
+The generic handling of binary operators (kBinaryOpInst) and kernel functions (kKernelCallInst) can be configured to display their arguments using FIFO or LIFO - respectively, the first and the last entry to be pushed onto the stack is used as the first (leftmost) argument. This is set as part of the constructor for the \code{CodeGenerator} class, using the enumeration values \code{kFIFOArgOrder} and \code{kLIFOArgOrder}.
+
+To provide an example, consider the following sequence of instructions:
+
+\begin{bytecode}
+\begin{lstlisting}
+PUSH a
+PUSH b
+SUB
+\end{lstlisting}
+\end{bytecode}
+
+This can mean two different things, either \code{a - b} or \code{b - a}, depending on the order in which the operands should be evaluated. For the former, choose FIFO ordering, for the latter, choose LIFO.
+
+For arguments to function calls, the same principle applies. You can use the \code{addArg} method to add an argument to the call currently being processed, using the chosen ordering.
+
+In general, you might not know which ordering is more correct for function arguments; unless you have reason to believe otherwise, simply use the same ordering as for binary operators.

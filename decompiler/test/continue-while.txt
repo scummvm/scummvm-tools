@@ -1,0 +1,15 @@
+while:
+pushWord 42
+pushWordVar 123
+eq
+jumpTrue postWhile
+pushWord 18
+pushWordVar 321
+eq
+jumpTrue postContinue
+jump while
+postContinue:
+wordVarInc 123
+jump while
+postWhile:
+stopObjectCodeA

@@ -1,0 +1,324 @@
+\section{Disassembler}
+\label{sec:disassembler}
+The purpose of the disassembler is to read instructions from a script file and convert them to a common, machine-readable form for further analysis.
+
+\subsection{Instructions}
+\label{sec:instructions}
+Instructions are represented using a type hierarchy, with the \code{Instruction} struct as the base type.
+
+\begin{C++}
+\begin{lstlisting}
+struct Instruction : public RefCounted {
+	uint32 _opcode;
+	uint32 _address;
+	int16 _stackChange;
+	std::string _name;
+	std::vector<ValuePtr> _params;
+	std::string _codeGenData;
+
+	friend std::ostream &operator<<(std::ostream &output, const Instruction *inst);
+	virtual std::ostream &print(std::ostream &output) const;
+	virtual bool isJump() const;
+	virtual bool isCondJump() const;
+	virtual bool isUncondJump() const;
+	virtual bool isStackOp() const;
+	virtual bool isFuncCall() const;
+	virtual bool isReturn() const;
+	virtual bool isKernelCall() const;
+	virtual bool isLoad() const;
+	virtual bool isStore() const;
+	virtual uint32 getDestAddress() const;
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) = 0;
+};
+\end{lstlisting}
+\end{C++}
+
+Each member of this struct has a specific purpose:
+\begin{itemize}
+\item \code{\_opcode} is used to store the numeric opcode associated with the instruction. This is not used by the decompiler itself, but is for your reference during later parts of the decompilation process. Note that this field is declared as a 32-bit integer; if you need more than 4 bytes for your opcodes, you will need to figure out which bytes you want to store if you want to use this field.
+\item \code{\_address} stores the absolute memory address where this instruction would be loaded into memory.
+\item \code{\_stackChange} stores the net change of executing this instruction - for example, if the instruction pushes a byte on to the stack, this should be set to 1. This is used to determine when each statement ends. The count can be in any unit you wish - bytes, words, bits - as long as the same unit is used for all instructions. This means that if your stack only works with 16-bit elements, pushing an 8-bit value and pushing a 16-bit value should have the same net effect on the stack.
+\item \code{\_name} contains the name of the instruction. This is mainly for use during code generation.
+\item \code{\_params} contains the parameters given to the instruction - for example, if you have the instruction \code{PUSH 1}, there would be one parameter, with the value of 1. See Section~\vref{sec:parameter} for details on the Value type.
+\item \code{\_codeGenData} stores metadata to be used during code generation. For details, see Section~\vref{sec:codegen}.
+\end{itemize}
+
+If some instructions do not have a fixed effect on the stack--that is, the instruction name alone does not determine the effect on the stack--set the field to some easily recognizable value when doing the disassembly. You will, however, have to determine the exact stack effect after disassembling the script, as the code flow analysis depends on this information to be accurate.
+
+\subsection{Instruction types}
+\label{sec:insttype}
+As mentioned previously, the different instructions are represented using a type hierarchy. This allows you to independently specify how each kind of instruction should be handled, while abstracting away the engine-specific information to allow for generic analysis.
+
+This is particularly important during code flow analysis; since this part is completely engine-independent, the analysis must have some way of distinguishing the different types of instructions. For that purpose, a number of \code{is*} methods are defined which specify whether the instruction satisfies some specific purpose.
+
+Each of the predefined instruction types have a class associated with it to make it simpler to add functionality to a specific type of instructions, as specified in Table~\vref{tbl:insttypes}.
+
+\begin{table}
+\centering
+\begin{tabular}{|m{3.2cm}|m{5cm}|p{3.2cm}|}
+\hline
+\textbf{Type} & \textbf{Base class} & \textbf{Purpose} \\
+\hline
+\code{kBinaryOpInst} & \code{BinaryOpInstruction} & Binary operations (+, *, ==, etc.) \\\hline
+\code{kBoolNegateInst} & \code{BoolNegateInstruction} & Boolean negation \\\hline
+\code{kCallInst} & \code{CallInstruction} & Script function call \\\hline
+\code{kCondJumpInst} & \code{CondJumpInstruction} & Conditional jumps \\\hline
+\code{kDupInst} & \code{DupInstruction} & Duplicate stack entry \\\hline
+\code{kJumpInst} & \code{UncondJumpInstruction} & Unconditional jumps \\\hline
+\code{kKernelCallInst} & \code{KernelCallInstruction} & Kernel function call \\\hline
+\code{kLoadInst} & \code{LoadInstruction} & Load from memory \\\hline
+\code{kReturnInst} & \code{ReturnInstruction} & Function return \\\hline
+\code{kStackInst} & \code{StackInstruction} & Stack allocation or deallocation \\\hline
+\code{kStoreInst} & \code{StoreInstruction} & Store to memory \\\hline
+\code{kUnaryOpPreInst} & \code{UnaryOpPrefixInstruction} & Unary operation, prefixed operator \\\hline
+\code{kUnaryOpPostInst} & \code{UnaryOpPostfixInstruction} & Unary operation, postfixed operator \\\hline
+\end{tabular}
+\caption{Predefined instruction types}
+\label{tbl:insttypes}
+\end{table}
+
+Where deemed appropriate, some of the base classes contain a default implementation of \code{processInst}. You can create a new subclass for each of these types and override this method to change their functionality.
+
+\code{getDestAddress} is implemented on jump instructions to allow the generic code to find the target of a jump. You must create subclassses for your jump instructions which override this method.
+
+Most of the types are self-explanatory, with the possible exception of \code{kKernelCallInst}. \code{kKernelCallInst} should be used for "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
+
+When disassembling, you will need to create an instance of the correct instruction type for each of your instructions. For this purpose, \code{Disassembler} defines a factory \code{\_instFactory} where you can register your classes with an integer key. To do this, call \code{\_instFactory.addEntry<Type>(key)} in the constructor for your Disassemlber, where \code{Type} is the name of the type to register, and \code{key} is an integer key. To create an instance of the appropriate type, simply call \code{\_instFactory.create} with your key.
+
+In a few cases, you may not know which instruction type is correct. For example, in Kyra, the same opcode is used for unconditional jumps and script function calls, but the correct type depends on other instructions. You can handle this is by creating a new Instruction type which can work as both, depending on a flag you declare in your type, and set once you can correctly determine the type. Note that since \code{InstPtr} is not a raw pointer, you must first convert it to one before you can cast it to the pointer type of your choice. This can be done by calling \code{inst.get()}, where \code{inst} is your \code{InstPtr}.
+
+By default, only some of the instruction types are registered automatically; for other types, you will have to register your own classes since it is not possible to fully define them in a generic fashion. The pre-registered types are \code{kBinaryOpInst}, \code{kBoolNegateInst}, \code{kDupInst}, \code{kKernelCallInst}, \code{kReturnInst}, \code{kUnaryOpPreInst} and \code{kUnaryOpPostInst}, but you can substitute any or all of these by registering your own type with the same key.
+
+For some engines, you will need to go beyond the existing types to implement very special behavior. In those cases, simply define a \code{const int} and give it a value to be able to use this as a new key. Use the value \code{kFirstCustomInst} for your first custom instruction type, and continue from there for new keys, as this will prevent conflict with future instruction types.
+
+When at all possible, you should inherit from one of the more specific types, rather than inheriting directly from \code{Instruction}.
+
+\subsection{Parameters and values}
+\label{sec:parameter}
+Instruction parameters are stored using a hierarchy of \code{Value} types. Several types are predefined in \code{value.h}, and you can declare new types if you need to (e.g. a list of values).
+
+\code{Value} types are also used during code generation, so you can reuse your parameter values directly.
+
+All \code{Value} types must define a \code{print} function which prints themselves to a \code{std::ostream}. This is used not only for code generation, but also for disassembly and control flow output.
+
+For direct values, you should also override the \code{dup} function to create a copy of your class. The default implementation is tailored for values that represent expressions, and will therefore output an assignment to show that the result of an expression is being duplicated.
+
+For more details, see Section~\vref{sec:stackvalues}, where Values are discussed wrt. code generation, and a list of predefined value types is given.
+
+\subsection{The Disassembler class}
+All disassemblers must inherit, directly or indirectly, from the \code{Disassembler} class. This is an abstract class providing an interface for disassemblers.
+
+\begin{C++}
+\begin{lstlisting}
+class Disassembler {
+protected:
+	Common::File _f;
+	InstVec &_insts;
+	uint32 _addressBase;
+	ObjectFactory<int, Instruction> _instFactory;
+
+	virtual void doDisassemble() throw(std::exception) = 0;
+	virtual void doDumpDisassembly(std::ostream &output);
+
+public:
+	Disassembler(InstVec &insts);
+	virtual ~Disassembler() {}
+
+	void open(const char *filename);
+	void disassemble();
+	void dumpDisassembly(std::ostream &output);
+};
+\end{lstlisting}
+\end{C++}
+
+\code{\_f} represents the file you will be reading from. The file is opened using the \code{open} function.
+
+\code{\_insts} is a reference to an \code{std::vector} storing the instructions, passed in via the constructor. Whenever you have read an instruction fully, add it here.
+
+\code{\_addressBase} is provided as a convenience if your engine does not consider the first instruction to be located at address 0. Assign the expected base address to this field, and make sure that the addresses you assign to the instructions are relative to this base address. This is mainly useful if your engine supports jumps or other references to absolute addresses in the script; if only relative addresses are used, the base address will not be relevant.
+
+\code{\_instFactory} is the factory used to create the appropriate Instruction subclasses. For details, see Section~\vref{sec:insttype}.
+
+\code{doDisassemble} is the method used to perform the actual disassembly, so this method must be implemented by all disassemblers.
+
+\code{disassemble} simply calls the \code{doDisassemble} method to perform the disassembly. The result is cached, so if this method is called twice, it won't perform disassembly again.
+
+Finally, \code{dumpDisassembly} is used to output the instructions in a human-readable format to a file or stdout, performing a disassembly first if required, and then calls \code{doDumpDisassembly} to perform the actual output. \code{doDumpDisassembly} simply outputs each instruction in turn, using the printing function associated with each instruction. If you want to customize the way instructions are output, you should ideally create new Instruction subclasses and override their printing function, as the same format is used when dumping a code flow graph, but if you just want to prepend or append some additional information to the dump, you can override this method to do so.
+
+\subsection{The SimpleDisassembler class}
+\label{sec:simpledisasm}
+To simplify the development of disassemblers, another base class is provided for instruction sets where instructions are of the format \code{opcode [params]}, with opcode and parameters stored in distinct bytes.
+
+\code{SimpleDisassembler} defines a number of macros which you can use for writing your disassembler, and provides a framework for reading instruction parameters.
+
+Following is a guide on how to implement a disassembler using this class as its base class. The instruction set used for this example is described in Table~\vref{tbl:simple_disasm_example}. While not a very useful instruction set, it covers many different aspects.
+
+\begin{table}[!hpbt]
+\centering
+\begin{tabular}{c | c | c}
+Instruction & Parameters & Description \\
+\hline
+\code{PUSH} (0x00) & uint8 & Pushes byte onto the stack.\\
+\code{POP} (0x01) & &  Pops a byte from the stack. \\
+\code{PUSH2} (0x02) & int16 & Pushes two bytes onto the stack.\\
+\code{POP2} (0x03) & &  Pops two bytes from the stack. \\
+\code{PRINT} (0x80) & C string & Prints string to standard output. \\
+\code{HALT} (0xFF 0x00) & & Stops the machine.
+\end{tabular}
+\caption{Instruction set used in the SimpleDisassembler example.}
+\label{tbl:simple_disasm_example}
+\end{table}
+
+For the purpose of this example, our instruction set will use little-endian values, and uses byte elements for the stack (so \code{POP} changes the stack pointer by 1 and \code{POP2} changes it by 2).
+
+\subsubsection{Opcode recognition}
+The first thing to do in the \code{doDisassemble} method is to read past any header which may be present in your script file. We will assume that our bytecode files do not have a header.
+
+You must place your opcodes between two macros, \code{START\_OPCODES} and \code{END\_OPCODES}. These two macros define the looping required to read one byte at a time.
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+To define an opcode, use the \code{OPCODE} macro. This macro takes 5 parameters: the opcode value, the name of the instruction, the key associated with the specific type of instruction, the net effect on the stack, and a string describing the parameters that are part of the instruction. We will start by implementing the \code{POP} and \code{POP2} opcodes:
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+	OPCODE(0x01, "POP", kStackInst, -1, "");
+	OPCODE(0x03, "POP2", kStackInst, -2, "");
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+The \code{OPCODE} macro automatically stores the full opcode in the \code{\_opcode} field of the generated \code{Instruction}.
+
+\subsubsection{Parameter reading}
+\code{PUSH}, \code{PUSH2} and \code{PRINT} all take parameters as part of the instruction. To read these, you must specify them as part of the parameter string, using one character per parameter. The types understood by default are specified in Table~\vref{tbl:paramtypes}.
+
+\begin{table}[!hpbt]
+\centering
+\begin{tabular}{c | c}
+Character & Type \\
+\hline
+b & Signed 8-bit integer. \\
+B & Unsigned 8-bit integer. \\
+s & Signed 16-bit byte, little-endian. \\
+S & Signed 16-bit byte, big-endian. \\
+w & Unsigned 16-bit byte, little-endian. \\
+W & Unsigned 16-bit byte, big-endian. \\
+i & Signed 32-bit byte, little-endian. \\
+I & Signed 32-bit byte, big-endian. \\
+d & Unsigned 32-bit byte, little-endian. \\
+D & Unsigned 32-bit byte, big-endian. \\
+\end{tabular}
+\caption{Type specifications recognized by SimpleDisassembler.}
+\label{tbl:paramtypes}
+\end{table}
+
+To help you remember these meanings, little-endian values are encoded using lower case ("small letters", i.e. little), while big-endian values are encoded using upper case ("big" letters). The exception here is a single byte, since endianness has no effect for individual bytes. Here, the mnemonic is that an unsigned byte ("B") has a larger maximum value. For the other letters, "s" was used because it is the first letter in "short", which is usually a 16-bit signed value in C. Similarly, "i" is short for "int". "w" and "d" come from the terms "word" and "dword", which are terms for 16-bit and 32-bit unsigned types on the x86 platform.
+
+Note that strings are not supported by default. To add reading of a string type, you can override the \code{readParameter} function to add your own types:
+
+\begin{C++}
+\begin{lstlisting}
+	switch (type)	{
+	case 'c': //Character string
+		{
+		byte cmd;
+		bool inStr = false;
+		std::stringstream s;
+		while ((cmd = _f.readByte()) != 0) {
+			s << cmd;
+			_address}};
+		}
+		s << '"';
+		p->_type = kStringParamType;
+		p->_value = s.str();
+		}
+		break;
+	default: //Defer handling to parent implementation
+		SimpleDisassembler::readParameter(p, type);
+		break;
+	}
+\end{lstlisting}
+\end{C++}
+
+Note that you will have to increment the \code{\_address} variable manually when you read a byte. This variable is used to determine the address of the instruction, and must be kept in sync with your progress reading the file.
+
+Now, we can add all three opcodes to the list:
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+	OPCODE(0x00, "PUSH", kStackInst, 1, "B");
+	OPCODE(0x01, "POP", kStackInst, -1, "");
+	OPCODE(0x02, "PUSH", kStackInst, 1, "w");
+	OPCODE(0x03, "POP2", kStackInst, -2, "");
+	OPCODE(0x80, "PRINT", kKernelCallInst, 0, "c");
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+\subsubsection{Multi-byte opcodes}
+There is only one opcode left to add, \code{HALT}. This one is a bit trickier, because it uses multiple bytes for the opcode - and the \code{OPCODE} macro only works for one byte at a time.
+
+To solve this, you can define \emph{subopcodes}. By defining 0xFF as the start of a multi-byte opcode, we can then specify 0x00 as representing a \code{HALT} instruction when it follows 0xFF.
+
+Defining 0xFF is easily done using the \code{START\_SUBOPCODE} macro. After that, specify the opcodes for this following byte, and finish the subopcode declarations with \code{END\_SUBOPCODE}.
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+	OPCODE(0x00, "PUSH", kStackInst, 1, "B");
+	OPCODE(0x01, "POP", kStackInst, -1, "");
+	OPCODE(0x02, "PUSH", kStackInst, 1, "w");
+	OPCODE(0x03, "POP2", kStackInst, -2, "");
+	OPCODE(0x80, "PRINT", kKernelCallInst, 0, "c");
+	START_SUBOPCODE(0xFF);
+		OPCODE(0x00, "HALT", kKernelCallInst, 0, "");
+	END_SUBOPCODE;
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+Subopcodes can be nested if the instruction set requires it. For subopcodes, the \code{\_opcode} field stores the bytes in the order they appear in the file - i.e., the HALT instruction would have the opcode value 0xFF00. If the opcodes are longer than 4 bytes, only the last 4 bytes will be stored.
+
+If all opcodes in a group of subopcodes share a prefix, you can use the \code{START\_SUBOPCODE\_WITH\_PREFIX} macro instead of \code{START\_SUBOPCODE}. This macro takes an additional string parameter containing the full prefix to use for the opcodes associated with this subopcode. The prefix is not propagated if you nest subopcodes, only the nearest prefix is used.
+
+\subsubsection{Code generation metadata}
+For each opcode, you will need to replicate its semantics during code generation. To assist you in generalizing your code, you can use the \code{OPCODE\_MD} macro to add metadata to the instruction, which is then available during code generation.
+
+For example, if you have an opcode for addition, you can store the addition operator as a string in the metadata field, and have that put to use during code generation to avoid having to check the opcode for each instruction of that type.
+
+The arguments for the \code{OPCODE\_MD} are the same as those for \code{OPCODE}, but with an extra parameter at the end for the metadata.
+
+\begin{C++}
+\begin{lstlisting}
+START_OPCODES;
+	OPCODE_MD(0x14, "add", kBinaryOpInst, -1, "", "+");
+END_OPCODES;
+\end{lstlisting}
+\end{C++}
+
+For details, see Section~\vref{sec:codegen}.
+
+\subsubsection{Advanced opcode handling}
+If you have one or two opcodes that do not quite fit into the framework provided, you can define your own specialized handling for these opcodes.
+
+Instead of using the \code{OPCODE} macro, put your code between \code{OPCODE\_BASE} and \code{OPCODE\_END}. For example, if your opcode has the value 0x40, you would use this:
+
+\begin{C++}
+\begin{lstlisting}
+OPCODE_BASE(0x40);
+	//Your code here
+OPCODE_END;
+\end{lstlisting}
+\end{C++}
+
+\code{OPCODE\_BASE} automatically keeps track of the current opcode value. You can access \code{full\_opcode} to get the current full opcode. Alternatively, you can use the \code{OPCODE\_BODY} macro to use the standard behavior for opcodes, and then follow that with the additional code you want. The \code{OPCODE\_BODY} macro takes the same arguments as the \code{OPCODE\_MD} macro.
+
+For your convenience, a few additional macros are available: \code{ADD\_INST}, which adds an empty instruction of the provided type to the vector, and \code{LAST\_INST} which retrieves the last instruction in the vector. Additionally, you can use \code{INC\_ADDR} as a shorthand for incrementing the address variable by 1, but note that you should \emph{not} increment the address for the opcode itself - this is handled by the other macros.

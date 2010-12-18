@@ -1,0 +1,38 @@
+\section{To-do list}
+During the course of developing the decompiler, various ideas have been considered for implementation in the decompiler, but not all of them could be implemented within the given timeframe.
+
+Following is a description of known issues and enhancements that would be nice to see in the decompiler at some point in time.
+
+Note that the order of the issues is not necessarily indicative of the priority that should be given to each issue.
+
+\subsection{Allow conditional jumps to be used for break/continue}
+Currently, only unconditional jumps are allowed for break/continue. However, where the code is similar to \code{if (...) break;}, it is a simple and obvious optimization to not output an unconditional jump and just make the proper address the target of the conditional jump from the if.
+
+Support for this should be added to the analysis. Should be doable by also checking destinations of unmarked conditional jumps, since ifs are marked after breaks and continues - so simply add that to the initial filter and make sure we process the right (non-sequential) target vertex.
+
+Classifying as an enhancement since it appears this optimization is not used in SCUMMv6 (there is an if (...) break in tentacle/room-13-206, but the break is a separate jump). Not sure if KYRA uses it - a cursory scan of the KYRA2 demo suggests that it could use an optimization, as I found only 1 occurence of a c1\_ifNotJmp immediately followed by a c1\_jump (skull\textbackslash skull.emc, 0x0578) - but it did not look like a loop. That, however, does not prove that KYRA actually uses the optimization - it could simply be that such a piece of code was never used.
+
+As far as I have been able to tell, this optimization really is not used in Kyra, so this will have to be deferred until we have an engine which needs it.
+
+\subsection{Re-enable short-circuit detection}
+Currently the short-circuit detection is disabled because it requires some extra handling in code generation which is not there yet (you have to analyze each jump more closely).
+
+\subsection{Refactor CFG design}
+The CFG anaylsis, while certainly functional, is not entirely pretty right now.
+
+It would be a good idea to go over this and see if it can be made better somehow, e.g. by incorporating more of the syntax as nodes in the graph. This might also make it easier to get short-circuiting working correctly.
+
+\subsection{Refactor disassemblers to accept a SeekableReadStream}
+It would be desirable if disassemblers accepted a \code{Common::SeekableReadStream} instead of a \code{Common::File}, for easier integration with other tools and possibly ScummVM itself.
+
+Unfortunately, streams do not currently exist in the tools repository. To get around this, it should be enough to move over \code{ReadStream}, \code{WriteStream}, and \code{SeekableReadStream} to begin with, and make \code{Common::File} subclass from the required streams.
+
+This is very much an *optional* task, and only to be done near the end, if time permits - it is not really within the scope of the project, and it would be fairly easy to make the switch after GSoC.
+
+\subsection{SCUMM: Rewrite jump 0 at end of script to infinite loop}
+Several SCUMM scripts end with a jump 0, making them infinite loops. It would be nice if this could be expressed accordingly, but this does not appear to be a trivial task; some jump 0s in a script could be expressed as a continue, others cannot.
+
+\subsection{Proper getCondition method on Value}
+For now, it is assumed that conditional jumps leave their condition on the stack, so this can be retrieved by the generic code generation code. For non-stack-based engines, it would be a bit nicer if they could just give us a condition to use in an if/while/do-while, instead of currently requiring that the value is on the top of the stack.
+
+A very simple way to do this would be to simply define a getCondition on Value that takes the same parameters as processInst, with a default implementation that just calls processInst and pops and returns the top value from the stack - this means no changes would be required to exisiting engines, and new engines can override this method as they see fit.

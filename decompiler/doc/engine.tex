@@ -1,0 +1,69 @@
+\newpage\section{Engine}
+The \code{Engine} class represent a single engine. It works as a factory for the engine-specific classes required for each step of the process.
+
+As a minimum, engines must provide a disassembler and a code generator. All other steps are optional, but you can implement them for additional processing.
+
+If you need to store metadata about the script, you can add the necessary fields to your engine class and store the information there, as the same instance will be used throughout the decompilation process.
+
+\subsection{Adding a new engine}
+In order to make the decompiler use the code you write to decompile code for some engine, it must be registered in the program. To do so, include the header file for your engine in \code{decompiler.cpp}, and use the \code{ENGINE} macro defined there to register your engine with the program.
+
+This macro takes 3 parameters: the engine ID, a description of the engine, and the name of the \code{Engine} subclass used to create the classes used for the various steps of the process. The ID is entered by the user to signify the engine where the script originates from, and the description is a descriptive text which will be shown when the user requests a list of the supported engines. In general, you should place the files for your engine in a folder with the same name as the engine ID you use.
+
+The methods you need to implement in your \code{Engine} subclass are:
+\begin{itemize}
+\item \code{getDisassembler}, which takes a reference to the instruction vector to use for storage and creates a disassembler object and returns it. For more on disassemblers, see Section~\vref{sec:disassembler}.
+\item \code{getCodeGenerator}, which takes a reference to the \code{std::ostream} to output the code to and creates a code generator object and returns it. For more on code generators, see Section~\vref{sec:codegen}.
+\end{itemize}
+
+Additional methods you can override are:
+\begin{itemize}
+\item \code{supportsCodeFlow} and \code{supportsCodeGen}, which can be used to stop the decompiler from going any further after disassembly or code flow analysis, respectively. This is helpful when working on a brand new engine, so you can take one step at a time without having to remember to use the right command-line switch. If you do not override these methods, the decompiler will go through all steps.
+\item \code{detectMoreFuncs} allows you to tell the control flow analysis to automatically detect functions based on reachability. See Section~\vref{sec:autofunc} for details. By default, this is turned off; engines must opt-in to this feature.
+\item \code{postCFG}, which is a post-processing step called after control flow analysis. If you override \code{detectMoreFuncs} to return true, you must also override this function to process any newly found functions. A default implementation which does nothing is already provided in case you do not need to do any post-processing.
+\end{itemize}
+
+Additionally, if your engine is not stack-based, you may not wish to see the stack effect when reviewing the disassembly or code flow graph. You can disable this by calling \code{setOutputStackEffect(false)} from e.g. your Engine constructor. The method is defined in instruction.h, which you will have to include.
+
+It is important to realize that you do not necessarily need to implement a completely new code generator and disassembler for every engine; for variations on the same engine, you can reuse the existing classes and simply send in any extra information required. In particular, code generators are likely to be reusable without change for different versions of the same engine - e.g., the Kyra2 code generator will likely work for all Kyra games.
+
+For this purpose, the user may optionally specify an \emph{engine variant}, which is a string that will be passed to your Engine. If you make use of this feature, you should also override \code{getVariants} to specify which variants your engine supports. This list will be displayed to the user if they specify an engine while using the \code{-h} option.
+
+Note that the variant sent into your engine is not validated against your list of supported variants. This keeps the variant logic flexible, and allows you to implement your own fallback logic for unknown variant strings.
+
+If you can auto-detect the variant from the script file, you should prefer this approach over asking the user to specify the variant.
+
+\subsection{Functions}
+Some engines allow multiple functions in a single script file. Each function must be analyzed separately, but in order to do that, it is of course necessary to know where the functions start and end, and when it is time to actually generate some code, you will want to know a bit about the function as well.
+
+This information is stored in the engine, as a \code{std::map} of \code{Function}s, in the field \code{\_functions}.
+
+\begin{C++}
+\begin{lstlisting}
+struct Function {
+public:
+	ConstInstIterator _startIt;
+	ConstInstIterator _endIt;
+	std::string _name;
+	GraphVertex _v;
+	uint32 _args;
+	bool _retVal;
+	std::string _metadata;
+};
+\end{lstlisting}
+\end{C++}
+
+Each member of this struct has a specific purpose:
+\begin{itemize}
+\item \code{\_startIt} is a const iterator pointing to the first instruction in the function, i.e. the entry point.
+\item \code{\_endIt} is a const iterator pointing to the instruction immediately after the last instruction, similar to \code{end()} on STL collections.
+\item \code{\_name} is the name of the functions.
+\item \code{\_v} is the GraphVertex containing the entry point. This will be automatically assigned in the control flow analysis.
+\item \code{\_args} is the number of arguments for the function. This is present as a convenience; usually, you will not know the names of the arguments in the function, so you can store the number of them here and use this during code generation to generate a method signature containing some default parameter names.
+\item \code{\_retVal} should be true if your method returns a value, and false if it does not. Again, this is for your own convenience, to make it easier to handle calls.
+\item \code{\_metadata} contains metadata about the function, so you know how to handle the arguments when the function is being called. It is up to you how you want to use this.
+\end{itemize}
+
+When you add a function to the map, you must use the address of the first instruction as the key.
+
+Sometimes, you do not know where all of the functions begin or end. In that case, the control flow analysis can analyze the code for you and automatically detect missing functions or unknown end points. See Section~\vref{sec:autofunc} for details.

@@ -1,0 +1,123 @@
+\documentclass[a4paper,11pt,english]{article}
+
+\usepackage[english]{babel} % English hypenations
+%If hypernations errors add correct hypernation to this file
+\IfFileExists{hyphens.tex}
+{
+  \input{hyphens.tex}
+}{}
+% Alter some LaTeX defaults for better treatment of figures:
+    % See p.105 of "TeX Unbound" for suggested values.
+    % See pp. 199-200 of Lamport's "LaTeX" book for details.
+    %   General parameters, for ALL pages:
+    \renewcommand{\topfraction}{0.9}	% max fraction of floats at top
+    \renewcommand{\bottomfraction}{0.8}	% max fraction of floats at bottom
+    %   Parameters for TEXT pages (not float pages):
+    \setcounter{topnumber}{2}
+    \setcounter{bottomnumber}{2}
+    \setcounter{totalnumber}{4}     % 2 may work better
+    \setcounter{dbltopnumber}{2}    % for 2-column pages
+    \renewcommand{\dbltopfraction}{0.9}	% fit big float above 2-col. text
+    \renewcommand{\textfraction}{0.07}	% allow minimal text w. figs
+    %   Parameters for FLOAT pages (not text pages):
+    \renewcommand{\floatpagefraction}{0.7}	% require fuller float pages
+	% N.B.: floatpagefraction MUST be less than topfraction !!
+    \renewcommand{\dblfloatpagefraction}{0.7}	% require fuller float pages
+
+	% remember to use [htp] or [htpb] for placement
+\usepackage{lmodern} % Use vector font
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc} % UTF8
+\usepackage[T1]{fontenc}
+\usepackage[dvips]{graphicx} % dvi-output
+%\usepackage[round]{natbib}
+\usepackage{makeidx}				% For index
+\makeindex									% For index
+%\usepackage{graphicx}
+\usepackage[chatter]{rotating}
+\usepackage[usenames]{color}
+\usepackage{amsmath, amssymb}
+\usepackage{float} % For better float-support
+\usepackage{varioref}		% Better citation (includes page)
+\usepackage{hyperref}
+%\labelformat{equation}{(#1)}	% Correct equation references !!DOESN'T WORK ATM!!
+\usepackage{verbatim}
+\usepackage{array}
+
+% Listings, for writing code
+\usepackage{listings}
+
+\usepackage[draft]{fixme}
+
+\definecolor{MyMaroon}{cmyk}{0,0.87,0.68,0.32} % PANTONE 201
+\definecolor{grey}{rgb}{0.95,0.95,0.95}
+\newenvironment{C++}{
+  \lstset{
+    language=C++,
+		defaultdialect=GNU,
+		extendedchars=true,
+		inputencoding=utf8x,
+		escapeinside={(*@}{@*)},
+    basicstyle=\footnotesize\sf,
+    tabsize=4,
+    tab=$\to$,
+    float=tbph,
+    numbers=left,
+    breaklines,
+    showtabs=false,
+    showspaces=false,
+    showstringspaces=false,
+    keywordstyle=\color{blue}\textbf,
+		stringstyle=\color{MyMaroon},
+    captionpos=b,
+    mathescape={true},
+		columns=fullflexible,
+%    escapechar = |,
+    backgroundcolor=\color{grey},
+%    aboveskip=\bigskipamount,
+  }
+}{}
+
+\newenvironment{bytecode}{
+  \lstset{
+    language=,
+%		defaultdialect=x86masm,
+		extendedchars=true,
+		inputencoding=utf8x,
+		escapeinside={(*@}{@*)},
+    basicstyle=\footnotesize\sf,
+    tabsize=4,
+    tab=$\to$,
+    float=tbph,
+    numbers=left,
+    breaklines,
+    showtabs=false,
+    showspaces=false,
+    showstringspaces=false,
+    keywordstyle=\color{blue}\textbf,
+		stringstyle=\color{Maroon},
+    captionpos=b,
+    mathescape={true},
+		columns=fullflexible,
+%    escapechar = |,
+    backgroundcolor=\color{grey},
+%    aboveskip=\bigskipamount,
+  }
+}{}
+
+% Table stuff
+%\usepackage{tabls}
+\usepackage{longtable}
+\makeatletter
+\setlength{\belowcaptionskip}{6pt}
+\makeatother
+
+\newcommand\T{\rule{0pt}{2.6ex}}
+\newcommand\B{\rule[-1.4ex]{0pt}{0pt}}
+
+%\setlength{\parindent}{0mm}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\numberwithin{figure}{section}
+\numberwithin{table}{section}

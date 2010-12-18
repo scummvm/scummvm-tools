@@ -1,0 +1,20 @@
+do {
+	var123++;
+	do {
+		var321++;
+	} while (var321 == 42)
+} while (var123 == 18)
+
+do:
+wordVarInc 123
+do2:
+wordVarInc 321
+pushWord 42
+pushWordVar 321
+eq
+jumpTrue do2
+pushWord 18
+pushWordVar 123
+eq
+jumpTrue do
+stopObjectCodeA

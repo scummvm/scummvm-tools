@@ -1,0 +1,15 @@
+do:
+wordVarInc 321
+pushWord 18
+pushWordVar 321
+eq
+jumpTrue postBreak
+jump postDo
+postBreak:
+wordVarInc 123
+pushWord 42
+pushWordVar 123
+eq
+jumpTrue do
+postDo:
+stopObjectCodeA
