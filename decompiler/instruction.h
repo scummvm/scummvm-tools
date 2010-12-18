@@ -177,21 +177,12 @@ public:
 	 * @param codeGen Pointer to the CodeGenerator used for code generation.
 	 */
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) = 0;
-
-	/**
-	 * Copies base data from another instruction.
-	 *
-	 * @param other The instruction to copy from.
-	 */
-	void copy(InstPtr other);
 };
 
 /**
  * Instruction performing a jump.
  */
 struct JumpInstruction : public Instruction {
-public:
-	virtual bool isJump() const;
 };
 
 /**

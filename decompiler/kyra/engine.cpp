@@ -160,27 +160,37 @@ uint32 Kyra::Kyra2CondJumpInstruction::getDestAddress() const {
 	return _params[0]->getUnsigned();
 }
 
+bool Kyra::Kyra2UncondJumpInstruction::isFuncCall() const {
+	return _isCall;
+}
+
+bool Kyra::Kyra2UncondJumpInstruction::isUncondJump() const {
+	return !_isCall;
+}
+
 uint32 Kyra::Kyra2UncondJumpInstruction::getDestAddress() const {
 	return _params[0]->getUnsigned();
 }
 
-void Kyra::Kyra2CallInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
-	Kyra2CodeGenerator *cg = (Kyra2CodeGenerator *)codeGen;
-	cg->_argList.clear();
-	Function f = engine->_functions.find(_params[0]->getUnsigned())->second;
-	for (size_t i = 0; i < f._metadata.length(); i++)
-		cg->processSpecialMetadata(this, f._metadata[i], i);
-	stack.push(new CallValue(f._name, cg->_argList));
-	// Leave call on stack if this is a condition, or other calls follow in same group
-	if (cg->_curGroup->_type == kIfCondGroupType || cg->_curGroup->_type == kWhileCondGroupType || cg->_curGroup->_type == kDoWhileCondGroupType || _address != cg->findLastCall()->_address) {
-		return;
-	}	else if (!f._retVal) {
-		std::stringstream stream;
-		stream << stack.pop() << ";";
-		cg->addOutputLine(stream.str());
-	} else {
-		ValuePtr p = new VarValue("retval");
-		cg->writeAssignment(p, stack.pop());
+void Kyra::Kyra2UncondJumpInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
+	if (_isCall) {
+		Kyra2CodeGenerator *cg = (Kyra2CodeGenerator *)codeGen;
+		cg->_argList.clear();
+		Function f = engine->_functions.find(_params[0]->getUnsigned())->second;
+		for (size_t i = 0; i < f._metadata.length(); i++)
+			cg->processSpecialMetadata(this, f._metadata[i], i);
+		stack.push(new CallValue(f._name, cg->_argList));
+		// Leave call on stack if this is a condition, or other calls follow in same group
+		if (cg->_curGroup->_type == kIfCondGroupType || cg->_curGroup->_type == kWhileCondGroupType || cg->_curGroup->_type == kDoWhileCondGroupType || _address != cg->findLastCall()->_address) {
+			return;
+		}	else if (!f._retVal) {
+			std::stringstream stream;
+			stream << stack.pop() << ";";
+			cg->addOutputLine(stream.str());
+		} else {
+			ValuePtr p = new VarValue("retval");
+			cg->writeAssignment(p, stack.pop());
+		}
 	}
 }
 

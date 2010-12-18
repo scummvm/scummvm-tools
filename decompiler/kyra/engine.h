@@ -82,14 +82,15 @@ public:
  */
 class Kyra2UncondJumpInstruction : public UncondJumpInstruction {
 public:
-	virtual uint32 getDestAddress() const;
-};
+	bool _isCall;  ///< Whether or not this is really a call to a script function.
 
-/**
- * Kyra2 script function call.
- */
-class Kyra2CallInstruction : public CallInstruction {
-public:
+	/**
+	 * Constructor for Kyra2UncondJumpInstruction.
+	 */
+	Kyra2UncondJumpInstruction() : _isCall(false) { };
+	virtual bool isFuncCall() const;
+	virtual bool isUncondJump() const;
+	virtual uint32 getDestAddress() const;
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 

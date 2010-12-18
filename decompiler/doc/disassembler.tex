@@ -29,7 +29,6 @@ struct Instruction : public RefCounted {
 	virtual bool isStore() const;
 	virtual uint32 getDestAddress() const;
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) = 0;
-	void copy(InstPtr other);
 };
 \end{lstlisting}
 \end{C++}
@@ -86,7 +85,7 @@ Most of the types are self-explanatory, with the possible exception of \code{kKe
 
 When disassembling, you will need to create an instance of the correct instruction type for each of your instructions. For this purpose, \code{Disassembler} defines a factory \code{\_instFactory} where you can register your classes with an integer key. To do this, call \code{\_instFactory.addEntry<Type>(key)} in the constructor for your Disassemlber, where \code{Type} is the name of the type to register, and \code{key} is an integer key. To create an instance of the appropriate type, simply call \code{\_instFactory.create} with your key.
 
-In a few cases, you may not know which instruction type is correct. For example, in Kyra, the same opcode is used for unconditional jumps and script function calls, but the correct type cannot be determined before all of the instructions have been disassembled. In such a case, you will have to correct the instruction before moving on to the code flow analysis. Once you have created the correct instruction type, you can use the \code{copy} method to copy the base fields from the incorrect instruction.
+In a few cases, you may not know which instruction type is correct. For example, in Kyra, the same opcode is used for unconditional jumps and script function calls, but the correct type depends on other instructions. You can handle this is by creating a new Instruction type which can work as both, depending on a flag you declare in your type, and set once you can correctly determine the type. Note that since \code{InstPtr} is not a raw pointer, you must first convert it to one before you can cast it to the pointer type of your choice. This can be done by calling \code{inst.get()}, where \code{inst} is your \code{InstPtr}.
 
 By default, only some of the instruction types are registered automatically; for other types, you will have to register your own classes since it is not possible to fully define them in a generic fashion. The pre-registered types are \code{kBinaryOpInst}, \code{kBoolNegateInst}, \code{kDupInst}, \code{kKernelCallInst}, \code{kReturnInst}, \code{kUnaryOpPreInst} and \code{kUnaryOpPostInst}, but you can substitute any or all of these by registering your own type with the same key.
 

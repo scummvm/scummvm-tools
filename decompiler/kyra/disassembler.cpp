@@ -265,7 +265,6 @@ IFFChunk::IFFChunk() {
 
 Kyra::Kyra2Disassembler::Kyra2Disassembler(Kyra2Engine *engine, InstVec &insts) : Disassembler(insts), _engine(engine) {
 	setupKyra2Funcs();
-	_instFactory.addEntry<Kyra2CallInstruction>(kCallInst);
 	_instFactory.addEntry<Kyra2CondJumpInstruction>(kCondJumpInst);
 	_instFactory.addEntry<Kyra2UncondJumpInstruction>(kJumpInst);
 	_instFactory.addEntry<Kyra2KernelCallInstruction>(kKernelCallInst);
@@ -592,9 +591,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 	for (InstIterator it = _insts.begin(); it != _insts.end(); ++it) {
 		if ((*it)->isJump()) {
 			if (lastWasPushPos || _engine->_functions.find((*it)->_params[0]->getUnsigned()) != _engine->_functions.end()) {
-				InstPtr p = _instFactory.create(kCallInst);
-				p->copy(*it);
-				*it = p;
+				((Kyra2UncondJumpInstruction *) (*it).get())->_isCall = true;
 			}
 		}
 		lastWasPushPos = ((*it)->_name.compare("pushPos") == 0);
