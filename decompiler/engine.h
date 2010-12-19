@@ -80,14 +80,6 @@ public:
 	virtual Disassembler *getDisassembler(InstVec &insts) = 0;
 
 	/**
-	 * Decode a jump instruction to get the destination address.
-	 *
-	 * @param it Iterator pointing to the instruction to decode.
-	 * @return The destination address of the jump instruction.
-	 */
-	uint32 getDestAddress(ConstInstIterator it) const;
-
-	/**
 	 * Retrieve the code generator for the engine.
 	 *
 	 * @param output The std::ostream to output the code to.
