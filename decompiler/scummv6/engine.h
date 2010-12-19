@@ -102,7 +102,7 @@ public:
 /**
  * SCUMM v6 variable increment/decrement.
  */
-class Scummv6IncDecInstruction : public UnaryOpPostfixInstruction {
+class Scummv6IncDecInstruction : public UnaryOpPostfixStackInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };

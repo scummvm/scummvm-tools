@@ -238,22 +238,54 @@ public:
  * Instruction duplicating the topmost stack value.
  */
 struct DupInstruction : public Instruction {
-public:
-	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
 /**
  * Instruction performing boolean negation.
  */
 struct BoolNegateInstruction : public Instruction {
-public:
-	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
 /**
  * Instruction performing a binary operation.
  */
 struct BinaryOpInstruction : public Instruction {
+};
+
+/**
+ * Instruction performing a unary operation.
+ */
+struct UnaryOpInstruction : public Instruction {
+};
+
+/**
+ * Instruction performing a kernel function call.
+ */
+struct KernelCallInstruction : public Instruction {
+public:
+	virtual bool isKernelCall() const;
+};
+
+/**
+ * Default implementation for stack-based instruction duplicating the topmost stack value.
+ */
+struct DupStackInstruction : public DupInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+/**
+ * Default implementation for stack-based instruction performing boolean negation.
+ */
+struct BoolNegateStackInstruction : public BoolNegateInstruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
+/**
+ * Default implementation for stack-based instruction performing a binary operation.
+ */
+struct BinaryOpStackInstruction : public BinaryOpInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
@@ -268,28 +300,27 @@ public:
 };
 
 /**
- * Instruction performing a unary operation, with a prefixed operator.
+ * Default implementation for stack-based instruction performing a unary operation, with a prefixed operator.
  */
-struct UnaryOpPrefixInstruction : public Instruction {
+struct UnaryOpPrefixStackInstruction : public UnaryOpInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
 /**
- * Instruction performing a unary operation, with a postfixed operator.
+ * Default implementation for stack-based instruction performing a unary operation, with a postfixed operator.
  */
-struct UnaryOpPostfixInstruction : public Instruction {
+struct UnaryOpPostfixStackInstruction : public UnaryOpInstruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
 /**
- * Instruction performing a kernel function call.
+ * Default implementation for stack-based instruction performing a kernel function call.
  */
-struct KernelCallInstruction : public Instruction {
+struct KernelCallStackInstruction : public Instruction {
 public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
-	virtual bool isKernelCall() const;
 };
 
 /**
