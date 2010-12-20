@@ -102,7 +102,7 @@ GraphVertex ControlFlow::find(ConstInstIterator it) {
 GraphVertex ControlFlow::find(uint32 address) {
 	std::map<uint32, GraphVertex>::iterator it = _addrMap.find(address);
 	if (it == _addrMap.end())
-		std::cerr << "Request for instruction at unknown address" << boost::format("0x%08x") % address;
+		std::cerr << "Request for instruction at unknown address " << boost::format("0x%08x") % address << std::endl;
 	return it->second;
 }
 
