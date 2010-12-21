@@ -51,16 +51,12 @@ public:
 	}
 
 	void testSubOpcodeDisassembly() {
-		try {
 			InstVec insts;
 			SubOpcodeDisassembler s(insts);
 			s.open("decompiler/test/subopcode_test.bin");
 			s.disassemble();
 			TS_ASSERT(insts[0]->_name == "FOO");
 			TS_ASSERT(insts[0]->_opcode == 0xFFFF);
-		} catch (...) {
-			TS_ASSERT(false);
-		}
 	}
 
 	void testUnknownOpcodeException() {
@@ -72,15 +68,12 @@ public:
 			TS_ASSERT(false);
 		} catch (UnknownOpcodeException) {
 			TS_ASSERT(true);
-		} catch (...) {
-			TS_ASSERT(false);
 		}
 	}
 
 	// This test requires script-15.dmp from Sam & Max: Hit The Road.
 	// 1ab08298c9c8fb4c77953756989c7449 *script-15.dmp
 	void testScummv6DisassemblerScript15() {
-		try {
 			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-15.dmp");
@@ -127,15 +120,11 @@ public:
 			TS_ASSERT(insts[10]->_address == 26);
 			TS_ASSERT(insts[10]->_opcode == 0x66);
 			TS_ASSERT(insts[10]->_name == "stopObjectCodeB");
-		} catch (...) {
-			TS_ASSERT(false);
-		}
 	}
 
 	// This test requires script-31.dmp from Sam & Max: Hit The Road.
 	// f75f7ce110f378735d449f8eeb4a68e5 *script-31.dmp
 	void testScummv6DisassemblerScript31() {
-		try {
 			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-31.dmp");
@@ -160,15 +149,11 @@ public:
 			TS_ASSERT(insts[4]->_address == 12);
 			TS_ASSERT(insts[4]->_opcode == 0x66);
 			TS_ASSERT(insts[4]->_name == "stopObjectCodeB");
-		} catch (...) {
-			TS_ASSERT(false);
-		}
 	}
 
 	// This test requires script-33.dmp from Sam & Max: Hit The Road.
 	// 9f09418bf34abbdec0ec54f388d8dca4 *script-33.dmp
 	void testScummv6DisassemblerScript33() {
-		try {
 			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-33.dmp");
@@ -212,15 +197,11 @@ public:
 			TS_ASSERT(insts[9]->_address == 26);
 			TS_ASSERT(insts[9]->_opcode == 0x66);
 			TS_ASSERT(insts[9]->_name == "stopObjectCodeB");
-		} catch (...) {
-			TS_ASSERT(false);
-		}
 	}
 
 	// This test requires room-9-202.dmp from Sam & Max: Hit The Road.
 	// f010dc659264674a2b6da298acd0b88b *room-9-202.dmp
 	void testScummv6StackChangeFixRoom9202() {
-		try {
 			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/room-9-202.dmp");
@@ -228,15 +209,11 @@ public:
 			InstIterator it = insts.end();
 			it -= 8;
 			TS_ASSERT((*it)->_stackChange == -3);
-		} catch (...) {
-			TS_ASSERT(false);
-		}
 	}
 
 	// This test requires script-30.dmp from Sam & Max: Hit The Road.
 	// 6e48faca13e1f6df9341567608962744 *script-30.dmp
 	void testScummv6StackChangeFixScript30() {
-		try {
 			InstVec insts;
 			Scumm::v6::Scummv6Disassembler s(insts);
 			s.open("decompiler/test/script-30.dmp");
@@ -244,9 +221,6 @@ public:
 			InstIterator it = insts.end();
 			it -= 3;
 			TS_ASSERT((*it)->_stackChange == -6);
-		} catch (...) {
-			TS_ASSERT(false);
-		}
 	}
 
 	// This test requires _START04.EMC from the CD demo of
@@ -254,7 +228,6 @@ public:
 	// Extract using extract_kyra from the scummvm-tools-cli bundle.
 	// ba2821ac6da96394ce0af75a3cbe48eb *_START04.EMC
 	void testKyra2Start04() {
-		try {
 			InstVec insts;
 			Kyra::Kyra2Engine engine;
 			Disassembler* s = engine.getDisassembler(insts);
@@ -274,8 +247,5 @@ public:
 			TS_ASSERT(insts[38]->_stackChange == 0);
 
 			delete s;
-		} catch (...) {
-			TS_ASSERT(false);
-		}
 	}
 };
