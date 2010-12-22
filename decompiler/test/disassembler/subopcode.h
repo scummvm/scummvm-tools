@@ -30,4 +30,10 @@ public:
 	SubOpcodeDisassembler(InstVec &insts);
 	void doDisassemble() throw(std::exception);
 };
+
+class SubOpcodeFakeInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {}
+};
+
 #endif

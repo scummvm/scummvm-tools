@@ -38,7 +38,7 @@ std::string Kyra::Kyra2CodeGenerator::constructFuncSignature(const Function &fun
 const InstPtr Kyra::Kyra2CodeGenerator::findFirstCall() {
 	ConstInstIterator it = _curGroup->_start;
 	do {
-		if ((*it)->isFuncCall() || ((*it)->isKernelCall() && (*it)->_opcode == 14))
+		if ((*it)->isFuncCall() || (*it)->isKernelCall())
 			return *it;
 	} while (it++ != _curGroup->_end);
 
@@ -48,7 +48,7 @@ const InstPtr Kyra::Kyra2CodeGenerator::findFirstCall() {
 const InstPtr Kyra::Kyra2CodeGenerator::findLastCall() {
 	ConstInstIterator it = _curGroup->_end;
 	do {
-		if ((*it)->isFuncCall() || ((*it)->isKernelCall() && (*it)->_opcode == 14))
+		if ((*it)->isFuncCall() || (*it)->isKernelCall())
 			return *it;
 	} while (it-- != _curGroup->_start);
 

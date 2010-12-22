@@ -265,12 +265,6 @@ IFFChunk::IFFChunk() {
 
 Kyra::Kyra2Disassembler::Kyra2Disassembler(Kyra2Engine *engine, InstVec &insts) : Disassembler(insts), _engine(engine) {
 	setupKyra2Funcs();
-	_instFactory.addEntry<Kyra2CondJumpInstruction>(kCondJumpInst);
-	_instFactory.addEntry<Kyra2UncondJumpInstruction>(kJumpInst);
-	_instFactory.addEntry<Kyra2KernelCallInstruction>(kKernelCallInst);
-	_instFactory.addEntry<Kyra2LoadInstruction>(kLoadInst);
-	_instFactory.addEntry<Kyra2StackInstruction>(kStackInst);
-	_instFactory.addEntry<Kyra2StoreInstruction>(kStoreInst);
 }
 
 Kyra::Kyra2Disassembler::~Kyra2Disassembler() {
@@ -393,10 +387,10 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			parameter = 0;
 		}
 
-#define ADD_INST(category) _insts.push_back(_instFactory.create(category));
+#define ADD_INST(type) _insts.push_back(new type());
 #define LAST_INST (_insts.back())
-#define OPCODE_MD(name, category, stackChange, hasParam, isSigned, isAddress, codeGenData) \
-		ADD_INST(category); \
+#define OPCODE_MD(name, type, stackChange, hasParam, isSigned, isAddress, codeGenData) \
+		ADD_INST(type); \
 		LAST_INST->_opcode = opcode; \
 		LAST_INST->_address = address; \
 		LAST_INST->_stackChange = stackChange; \
@@ -413,23 +407,23 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			} \
 			LAST_INST->_params.push_back(p);\
 		}
-#define OPCODE(name, category, stackChange, hasParam, isSigned, isAddress) OPCODE_MD(name, category, stackChange, hasParam, isSigned, isAddress, "");
+#define OPCODE(name, type, stackChange, hasParam, isSigned, isAddress) OPCODE_MD(name, type, stackChange, hasParam, isSigned, isAddress, "");
 
 		switch(opcode) {
 		case 0:
 			parameter *= 2;
 			if (parameter < minFuncAddr)
 				jumpTargets.insert(_insts.size());
-			OPCODE("jumpTo", kJumpInst, 0, true, false, true);
+			OPCODE("jumpTo", Kyra2UncondJumpInstruction, 0, true, false, true);
 			break;
 		case 1:
-			OPCODE("setRetValue", kStoreInst, 0, true, true, false);
+			OPCODE("setRetValue", Kyra2StoreInstruction, 0, true, true, false);
 			break;
 		case 2:
 			if (parameter == 0) {
-				OPCODE("pushRet", kLoadInst, 1, false, false, false);
+				OPCODE("pushRet", Kyra2LoadInstruction, 1, false, false, false);
 			} else if (parameter == 1) {
-				OPCODE("pushPos", kKernelCallInst, 0, false, false, false); // Sets up function call
+				OPCODE("pushPos", Kyra2NoOutputInstruction, 0, false, false, false); // Sets up function call
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);
@@ -437,41 +431,41 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			break;
 		case 3:
 		case 4:
-			OPCODE("push", kLoadInst, 1, true, true, false);
+			OPCODE("push", Kyra2LoadInstruction, 1, true, true, false);
 			break;
 		case 5:
-			OPCODE("pushVar", kLoadInst, 1, true, true, false);
+			OPCODE("pushVar", Kyra2LoadInstruction, 1, true, true, false);
 			break;
 		case 6:
-			OPCODE("pushBPNeg", kLoadInst, 1, true, true, false);
+			OPCODE("pushBPNeg", Kyra2LoadInstruction, 1, true, true, false);
 			break;
 		case 7:
-			OPCODE("pushBPAdd", kLoadInst, 1, true, true, false);
+			OPCODE("pushBPAdd", Kyra2LoadInstruction, 1, true, true, false);
 			break;
 		case 8:
 			if (parameter == 0) {
-				OPCODE("popRet", kStoreInst, -1, false, false, false);
+				OPCODE("popRet", Kyra2StoreInstruction, -1, false, false, false);
 			} else if (parameter == 1) {
-				OPCODE("popPos", kReturnInst, 0, false, false, false); // Returns from function call
+				OPCODE("popPos", ReturnInstruction, 0, false, false, false); // Returns from function call
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);
 			}
 			break;
 		case 9:
-			OPCODE("popVar", kStoreInst, -1, true, true, false);
+			OPCODE("popVar", Kyra2StoreInstruction, -1, true, true, false);
 			break;
 		case 10:
-			OPCODE("popBPNeg", kStoreInst, -1, true, true, false);
+			OPCODE("popBPNeg", Kyra2StoreInstruction, -1, true, true, false);
 			break;
 		case 11:
-			OPCODE("popBPAdd", kStoreInst, -1, true, true, false);
+			OPCODE("popBPAdd", Kyra2StoreInstruction, -1, true, true, false);
 			break;
 		case 12:
-			OPCODE("addSP", kStackInst, -parameter, true, true, false);
+			OPCODE("addSP", Kyra2StackInstruction, -parameter, true, true, false);
 			break;
 		case 13:
-			OPCODE("subSP", kStackInst, parameter, true, true, false);
+			OPCODE("subSP", Kyra2StackInstruction, parameter, true, true, false);
 			break;
 		case 14:
 			parameter = (uint8)parameter;
@@ -479,21 +473,21 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 				// Error: unknown function
 				throw UnknownOpcodeException(address, opcode);
 			}
-			OPCODE_MD(_funcs[parameter]._name, kKernelCallInst, 0, false, false, false, _funcs[parameter]._metadata)
+			OPCODE_MD(_funcs[parameter]._name, Kyra2KernelCallInstruction, 0, false, false, false, _funcs[parameter]._metadata)
 			break;
 		case 15:
 			parameter *= 2;
 			if (parameter < minFuncAddr)
 				jumpTargets.insert(_insts.size());
-			OPCODE("ifNotJmp", kCondJumpInst, -1, true, false, true);
+			OPCODE("ifNotJmp", Kyra2CondJumpInstruction, -1, true, false, true);
 			break;
 		case 16:
 			if (parameter == 0) {
-				OPCODE("boolNegate", kBoolNegateInst, 0, false, false, false);
+				OPCODE("boolNegate", BoolNegateStackInstruction, 0, false, false, false);
 			} else if (parameter == 1) {
-				OPCODE_MD("arithmeticNegate", kUnaryOpPreInst, 0, false, false, false,"-");
+				OPCODE_MD("arithmeticNegate", UnaryOpPrefixStackInstruction, 0, false, false, false,"-");
 			} else if (parameter == 2) {
-				OPCODE_MD("bitwiseNegate", kUnaryOpPreInst, 0, false, false, false, "~");
+				OPCODE_MD("bitwiseNegate", UnaryOpPrefixStackInstruction, 0, false, false, false, "~");
 			} else {
 				// Error: invalid parameter halts execution
 				throw UnknownOpcodeException(address, opcode);
@@ -502,58 +496,58 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 		case 17:
 			switch (parameter) {
 			case 0:
-				OPCODE_MD("eval_band", kBinaryOpInst, -1, false, false, false, "&&");
+				OPCODE_MD("eval_band", BinaryOpStackInstruction, -1, false, false, false, "&&");
 				break;
 			case 1:
-				OPCODE_MD("eval_bor", kBinaryOpInst, -1, false, false, false, "||");
+				OPCODE_MD("eval_bor", BinaryOpStackInstruction, -1, false, false, false, "||");
 				break;
 			case 2:
-				OPCODE_MD("eval_eq", kBinaryOpInst, -1, false, false, false, "==");
+				OPCODE_MD("eval_eq", BinaryOpStackInstruction, -1, false, false, false, "==");
 				break;
 			case 3:
-				OPCODE_MD("eval_neq", kBinaryOpInst, -1, false, false, false, "!=");
+				OPCODE_MD("eval_neq", BinaryOpStackInstruction, -1, false, false, false, "!=");
 				break;
 			case 4:
-				OPCODE_MD("eval_leq", kBinaryOpInst, -1, false, false, false, "<=");
+				OPCODE_MD("eval_leq", BinaryOpStackInstruction, -1, false, false, false, "<=");
 				break;
 			case 5:
-				OPCODE_MD("eval_lt", kBinaryOpInst, -1, false, false, false, "<");
+				OPCODE_MD("eval_lt", BinaryOpStackInstruction, -1, false, false, false, "<");
 				break;
 			case 6:
-				OPCODE_MD("eval_geq", kBinaryOpInst, -1, false, false, false, ">=");
+				OPCODE_MD("eval_geq", BinaryOpStackInstruction, -1, false, false, false, ">=");
 				break;
 			case 7:
-				OPCODE_MD("eval_gt", kBinaryOpInst, -1, false, false, false, ">");
+				OPCODE_MD("eval_gt", BinaryOpStackInstruction, -1, false, false, false, ">");
 				break;
 			case 8:
-				OPCODE_MD("eval_add", kBinaryOpInst, -1, false, false, false, "+");
+				OPCODE_MD("eval_add", BinaryOpStackInstruction, -1, false, false, false, "+");
 				break;
 			case 9:
-				OPCODE_MD("eval_sub", kBinaryOpInst, -1, false, false, false, "-");
+				OPCODE_MD("eval_sub", BinaryOpStackInstruction, -1, false, false, false, "-");
 				break;
 			case 10:
-				OPCODE_MD("eval_mult", kBinaryOpInst, -1, false, false, false, "*");
+				OPCODE_MD("eval_mult", BinaryOpStackInstruction, -1, false, false, false, "*");
 				break;
 			case 11:
-				OPCODE_MD("eval_div", kBinaryOpInst, -1, false, false, false, "/");
+				OPCODE_MD("eval_div", BinaryOpStackInstruction, -1, false, false, false, "/");
 				break;
 			case 12:
-				OPCODE_MD("eval_shr", kBinaryOpInst, -1, false, false, false, ">>");
+				OPCODE_MD("eval_shr", BinaryOpStackInstruction, -1, false, false, false, ">>");
 				break;
 			case 13:
-				OPCODE_MD("eval_shl", kBinaryOpInst, -1, false, false, false, "<<");
+				OPCODE_MD("eval_shl", BinaryOpStackInstruction, -1, false, false, false, "<<");
 				break;
 			case 14:
-				OPCODE_MD("eval_land", kBinaryOpInst, -1, false, false, false, "&");
+				OPCODE_MD("eval_land", BinaryOpStackInstruction, -1, false, false, false, "&");
 				break;
 			case 15:
-				OPCODE_MD("eval_lor", kBinaryOpInst, -1, false, false, false, "|");
+				OPCODE_MD("eval_lor", BinaryOpStackInstruction, -1, false, false, false, "|");
 				break;
 			case 16:
-				OPCODE_MD("eval_mod", kBinaryOpInst, -1, false, false, false, "%");
+				OPCODE_MD("eval_mod", BinaryOpStackInstruction, -1, false, false, false, "%");
 				break;
 			case 17:
-				OPCODE_MD("eval_xor", kBinaryOpInst, -1, false, false, false, "^");
+				OPCODE_MD("eval_xor", BinaryOpStackInstruction, -1, false, false, false, "^");
 				break;
 			default:
 				// Error: invalid parameter halts execution
@@ -562,7 +556,8 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 			}
 			break;
 		case 18:
-			OPCODE("setRetAndJmp", kKernelCallInst, -2, false, false, false);
+			//We don't have any examples of this, so this is not handled yet.
+			OPCODE("setRetAndJmp", Kyra2NoOutputInstruction, -2, false, false, false);
 			break;
 		default:
 			throw UnknownOpcodeException(i * 2, code);

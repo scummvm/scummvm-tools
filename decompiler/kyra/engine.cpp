@@ -202,8 +202,6 @@ void Kyra::Kyra2UncondJumpInstruction::processInst(ValueStack &stack, Engine *en
 
 void Kyra::Kyra2KernelCallInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
 	Kyra2CodeGenerator *cg = (Kyra2CodeGenerator *)codeGen;
-	if (_opcode != 14)
-		return;
 	cg->_argList.clear();
 	bool returnsValue = (_codeGenData.find("r") == 0);
 	std::string metadata = (!returnsValue ? _codeGenData : _codeGenData.substr(1));
@@ -221,4 +219,7 @@ void Kyra::Kyra2KernelCallInstruction::processInst(ValueStack &stack, Engine *en
 		ValuePtr p = new VarValue("retval");
 		cg->writeAssignment(p, stack.pop());
 	}
+}
+
+void Kyra::Kyra2NoOutputInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
 }

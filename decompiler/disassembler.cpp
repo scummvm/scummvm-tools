@@ -24,13 +24,6 @@
 
 Disassembler::Disassembler(InstVec &insts) : _insts(insts) {
 	_addressBase = 0;
-	_instFactory.addEntry<BinaryOpStackInstruction>(kBinaryOpInst);
-	_instFactory.addEntry<BoolNegateStackInstruction>(kBoolNegateInst);
-	_instFactory.addEntry<DupStackInstruction>(kDupInst);
-	_instFactory.addEntry<KernelCallStackInstruction>(kKernelCallInst);
-	_instFactory.addEntry<ReturnInstruction>(kReturnInst);
-	_instFactory.addEntry<UnaryOpPrefixStackInstruction>(kUnaryOpPreInst);
-	_instFactory.addEntry<UnaryOpPostfixStackInstruction>(kUnaryOpPostInst);
 }
 
 void Disassembler::open(const char *filename) {

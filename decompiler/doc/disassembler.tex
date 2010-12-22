@@ -51,45 +51,39 @@ As mentioned previously, the different instructions are represented using a type
 
 This is particularly important during code flow analysis; since this part is completely engine-independent, the analysis must have some way of distinguishing the different types of instructions. For that purpose, a number of \code{is*} methods are defined which specify whether the instruction satisfies some specific purpose.
 
-Each of the predefined instruction types have a class associated with it to make it simpler to add functionality to a specific type of instructions, as specified in Table~\vref{tbl:insttypes}.
+Each of the predefined instruction types have a class associated with it to make it simpler to add functionality to a specific class of instructions, as specified in Table~\vref{tbl:insttypes}.
 
 \begin{table}
 \centering
-\begin{tabular}{|m{3.2cm}|m{5cm}|p{3.2cm}|}
+\begin{tabular}{|m{5cm}|p{3.2cm}|}
 \hline
-\textbf{Type} & \textbf{Base class} & \textbf{Purpose} \\
+\textbf{Base class} & \textbf{Purpose} \\
 \hline
-\code{kBinaryOpInst} & \code{BinaryOpInstruction} & Binary operations (+, *, ==, etc.) \\\hline
-\code{kBoolNegateInst} & \code{BoolNegateInstruction} & Boolean negation \\\hline
-\code{kCallInst} & \code{CallInstruction} & Script function call \\\hline
-\code{kCondJumpInst} & \code{CondJumpInstruction} & Conditional jumps \\\hline
-\code{kDupInst} & \code{DupInstruction} & Duplicate stack entry \\\hline
-\code{kJumpInst} & \code{UncondJumpInstruction} & Unconditional jumps \\\hline
-\code{kKernelCallInst} & \code{KernelCallInstruction} & Kernel function call \\\hline
-\code{kLoadInst} & \code{LoadInstruction} & Load from memory \\\hline
-\code{kReturnInst} & \code{ReturnInstruction} & Function return \\\hline
-\code{kStackInst} & \code{StackInstruction} & Stack allocation or deallocation \\\hline
-\code{kStoreInst} & \code{StoreInstruction} & Store to memory \\\hline
-\code{kUnaryOpPreInst} & \code{UnaryOpPrefixInstruction} & Unary operation, prefixed operator \\\hline
-\code{kUnaryOpPostInst} & \code{UnaryOpPostfixInstruction} & Unary operation, postfixed operator \\\hline
+\code{BinaryOpInstruction} & Binary operations (+, *, ==, etc.) \\\hline
+\code{BoolNegateInstruction} & Boolean negation \\\hline
+\code{CallInstruction} & Script function call \\\hline
+\code{CondJumpInstruction} & Conditional jumps \\\hline
+\code{DupInstruction} & Duplicate stack entry \\\hline
+\code{UncondJumpInstruction} & Unconditional jumps \\\hline
+\code{KernelCallInstruction} & Kernel function call \\\hline
+\code{LoadInstruction} & Load from memory \\\hline
+\code{ReturnInstruction} & Function return \\\hline
+\code{StackInstruction} & Stack allocation or deallocation \\\hline
+\code{StoreInstruction} & Store to memory \\\hline
+\code{UnaryOpPrefixInstruction} & Unary operation, prefixed operator \\\hline
+\code{UnaryOpPostfixInstruction} & Unary operation, postfixed operator \\\hline
 \end{tabular}
 \caption{Predefined instruction types}
 \label{tbl:insttypes}
 \end{table}
 
-Where deemed appropriate, some of the base classes contain a default implementation of \code{processInst}. You can create a new subclass for each of these types and override this method to change their functionality.
+For some of these, an extra type exists which contains a default implementation of \code{processInst}, assuming a sensible default implementation exists. The default implementations are found in \code{BinaryOpStackInstruction}, \code{BoolNegateStackInstruction}, \code{DupStackInstruction}, \code{KernelCallStackInstruction}, \code{ReturnInstruction}, \code{UnarayOpPrefixStackInstruction}, \code{UnaryOpPostfixStackInstruction}, \code{UncondJumpInstruction}. Most of these are targeted at stack-based engines, but if your engine doesn't work with these, you can always create your own class with your own implementation of \code{processInst}.
 
-\code{getDestAddress} is implemented on jump instructions to allow the generic code to find the target of a jump. You must create subclassses for your jump instructions which override this method.
+\code{getDestAddress} must be implemented on jump instructions to allow the generic code to find the target of a jump. You must create subclassses for your jump instructions which override this method.
 
-Most of the types are self-explanatory, with the possible exception of \code{kKernelCallInst}. \code{kKernelCallInst} should be used for "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
-
-When disassembling, you will need to create an instance of the correct instruction type for each of your instructions. For this purpose, \code{Disassembler} defines a factory \code{\_instFactory} where you can register your classes with an integer key. To do this, call \code{\_instFactory.addEntry<Type>(key)} in the constructor for your Disassemlber, where \code{Type} is the name of the type to register, and \code{key} is an integer key. To create an instance of the appropriate type, simply call \code{\_instFactory.create} with your key.
+Most of the types are self-explanatory, with the possible exception of \code{KernelCallInstruction}. \code{KernelCallInstruction} should be used for "magic functions"--opcodes that perform some function specific to the engine, like playing a sound, drawing a graphic, or saving the game.
 
 In a few cases, you may not know which instruction type is correct. For example, in Kyra, the same opcode is used for unconditional jumps and script function calls, but the correct type depends on other instructions. You can handle this is by creating a new Instruction type which can work as both, depending on a flag you declare in your type, and set once you can correctly determine the type. Note that since \code{InstPtr} is not a raw pointer, you must first convert it to one before you can cast it to the pointer type of your choice. This can be done by calling \code{inst.get()}, where \code{inst} is your \code{InstPtr}.
-
-By default, only some of the instruction types are registered automatically; for other types, you will have to register your own classes since it is not possible to fully define them in a generic fashion. The pre-registered types are \code{kBinaryOpInst}, \code{kBoolNegateInst}, \code{kDupInst}, \code{kKernelCallInst}, \code{kReturnInst}, \code{kUnaryOpPreInst} and \code{kUnaryOpPostInst}, but you can substitute any or all of these by registering your own type with the same key.
-
-For some engines, you will need to go beyond the existing types to implement very special behavior. In those cases, simply define a \code{const int} and give it a value to be able to use this as a new key. Use the value \code{kFirstCustomInst} for your first custom instruction type, and continue from there for new keys, as this will prevent conflict with future instruction types.
 
 When at all possible, you should inherit from one of the more specific types, rather than inheriting directly from \code{Instruction}.
 
@@ -115,7 +109,6 @@ protected:
 	Common::File _f;
 	InstVec &_insts;
 	uint32 _addressBase;
-	ObjectFactory<int, Instruction> _instFactory;
 
 	virtual void doDisassemble() throw(std::exception) = 0;
 	virtual void doDumpDisassembly(std::ostream &output);
@@ -136,8 +129,6 @@ public:
 \code{\_insts} is a reference to an \code{std::vector} storing the instructions, passed in via the constructor. Whenever you have read an instruction fully, add it here.
 
 \code{\_addressBase} is provided as a convenience if your engine does not consider the first instruction to be located at address 0. Assign the expected base address to this field, and make sure that the addresses you assign to the instructions are relative to this base address. This is mainly useful if your engine supports jumps or other references to absolute addresses in the script; if only relative addresses are used, the base address will not be relevant.
-
-\code{\_instFactory} is the factory used to create the appropriate Instruction subclasses. For details, see Section~\vref{sec:insttype}.
 
 \code{doDisassemble} is the method used to perform the actual disassembly, so this method must be implemented by all disassemblers.
 
@@ -183,13 +174,13 @@ END_OPCODES;
 \end{lstlisting}
 \end{C++}
 
-To define an opcode, use the \code{OPCODE} macro. This macro takes 5 parameters: the opcode value, the name of the instruction, the key associated with the specific type of instruction, the net effect on the stack, and a string describing the parameters that are part of the instruction. We will start by implementing the \code{POP} and \code{POP2} opcodes:
+To define an opcode, use the \code{OPCODE} macro. This macro takes 5 parameters: the opcode value, the name of the instruction, the name of the Instruction type to use, the net effect on the stack, and a string describing the parameters that are part of the instruction. We will start by implementing the \code{POP} and \code{POP2} opcodes:
 
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE(0x01, "POP", kStackInst, -1, "");
-	OPCODE(0x03, "POP2", kStackInst, -2, "");
+	OPCODE(0x01, "POP", MyStackInstruction, -1, "");
+	OPCODE(0x03, "POP2", MyStackInstruction, -2, "");
 END_OPCODES;
 \end{lstlisting}
 \end{C++}
@@ -254,11 +245,11 @@ Now, we can add all three opcodes to the list:
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE(0x00, "PUSH", kStackInst, 1, "B");
-	OPCODE(0x01, "POP", kStackInst, -1, "");
-	OPCODE(0x02, "PUSH", kStackInst, 1, "w");
-	OPCODE(0x03, "POP2", kStackInst, -2, "");
-	OPCODE(0x80, "PRINT", kKernelCallInst, 0, "c");
+	OPCODE(0x00, "PUSH", MyStackInstruction, 1, "B");
+	OPCODE(0x01, "POP", MyStackInstruction, -1, "");
+	OPCODE(0x02, "PUSH", MyStackInstruction, 1, "w");
+	OPCODE(0x03, "POP2", MyStackInstruction, -2, "");
+	OPCODE(0x80, "PRINT", KernelCallStackInstruction, 0, "c");
 END_OPCODES;
 \end{lstlisting}
 \end{C++}
@@ -273,13 +264,13 @@ Defining 0xFF is easily done using the \code{START\_SUBOPCODE} macro. After that
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE(0x00, "PUSH", kStackInst, 1, "B");
-	OPCODE(0x01, "POP", kStackInst, -1, "");
-	OPCODE(0x02, "PUSH", kStackInst, 1, "w");
-	OPCODE(0x03, "POP2", kStackInst, -2, "");
-	OPCODE(0x80, "PRINT", kKernelCallInst, 0, "c");
+	OPCODE(0x00, "PUSH", MyStackInstruction, 1, "B");
+	OPCODE(0x01, "POP", MyStackInstruction, -1, "");
+	OPCODE(0x02, "PUSH", MyStackInstruction, 1, "w");
+	OPCODE(0x03, "POP2", MyStackInstruction, -2, "");
+	OPCODE(0x80, "PRINT", KernelCallStackInstruction, 0, "c");
 	START_SUBOPCODE(0xFF);
-		OPCODE(0x00, "HALT", kKernelCallInst, 0, "");
+		OPCODE(0x00, "HALT", KernelCallStackInstruction, 0, "");
 	END_SUBOPCODE;
 END_OPCODES;
 \end{lstlisting}
@@ -299,7 +290,7 @@ The arguments for the \code{OPCODE\_MD} are the same as those for \code{OPCODE},
 \begin{C++}
 \begin{lstlisting}
 START_OPCODES;
-	OPCODE_MD(0x14, "add", kBinaryOpInst, -1, "", "+");
+	OPCODE_MD(0x14, "add", BinaryOpStackInstruction, -1, "", "+");
 END_OPCODES;
 \end{lstlisting}
 \end{C++}

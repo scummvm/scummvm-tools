@@ -102,6 +102,14 @@ public:
 	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
 };
 
+/**
+ * Kyra2 instruction with no output.
+ */
+class Kyra2NoOutputInstruction : public Instruction {
+public:
+	virtual void processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen);
+};
+
 } // End of namespace Kyra
 
 #endif

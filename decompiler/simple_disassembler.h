@@ -59,7 +59,7 @@ public:
 };
 
 #define INC_ADDR _address++;
-#define ADD_INST(category) _insts.push_back(_instFactory.create(category));
+#define ADD_INST(category) _insts.push_back(new category());
 #define LAST_INST (_insts.back())
 
 #define START_OPCODES \

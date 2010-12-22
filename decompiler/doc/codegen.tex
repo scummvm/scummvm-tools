@@ -86,21 +86,21 @@ You will usually need to output assignments at some point. For that, you can use
 
 \subsection{Default instruction handling and instruction metadata}
 Default handling exists for a number of instruction types, described below. See also Section~\vref{sec:instructions} which discusses instructions in more detail.
-\paragraph{kDupInst}
+\paragraph{DupStackInstruction}
 The topmost stack entry is popped, and two duplicated copies are pushed to the stack. If the entry being duplicated was not already a duplicate, an assignment will be output to assign the original stack entry to a special dup variable, to show that the original entry is not being recalculated.
 
-\paragraph{kUnaryOpPreInst/kUnaryOpPostInst}
+\paragraph{UnaryOpPrefixStackInstruction/UnaryOpPostfixStackInstruction}
 The topmost stack entry is popped, and a \code{UnaryOpEntry} is created and pushed to the stack, using the codegen metadata as the operator, and the previously popped entry as the operand. The exact type determines whether the operator is pre- or postfixed to the operand.
 
-\paragraph{kBinaryOpInst}
+\paragraph{BinaryOpStackInstruction}
 The two topmost stack entries are popped, and a BinaryOpEntry is created and pushed to the stack, using the codegen metadata as the operator and the previously popped entries as the operands. The order of the operands is determined by the value of the field \code{\_binOrder}, as described in Section~\vref{sec:argOrder}.
 
-\paragraph{kReturnInst}
+\paragraph{ReturnInstruction}
 This simply adds a line \code{return;} to the output.
 
 \emph{Note:} The default handling does not currently allow specifying a return value as part of the statement, as in \code{return 0;}. You will have to handle that yourself using a subclass.
 
-\paragraph{kKernelCallInst}
+\paragraph{KernelCallStackInstruction}
 The metadata is treated similar to parameter specifications in \code{SimpleDisassembler} (see Section~\vref{sec:simpledisasm}). If the specification string starts with the character \code{r}, this signifies that the call returns a value, and processing starts at the next character.
 For each character in the metadata string, \code{processSpecialMetadata} is called with the instruction being processed, and the current metadata character to be handled. The default implementation only understands the character \code{p}, which pops an argument from the stack and adds it to the argument list.
 Once the metadata string has been processed fully, then an entry representing the function call is pushed to the stack if the call returns a value. Otherwise, the call is added to the output.
@@ -108,6 +108,9 @@ Once the metadata string has been processed fully, then an entry representing th
 You can override the \code{processSpecialMetadata} method to add your own specification characters, just like you would override \code{readParameter} in \code{SimpleDisassembler}. Use the \code{addArg} method to add arguments.
 
 Due to the conflict with the specification of a return value, it is recommended that you do not adopt \code{r} as a metadata character unless you provide your own \code{processInst} implementation for this purpose.
+
+\paragraph{UncondJumpInstruction}
+Nothing is output, as this should already be handled by the generic code.
 
 In addition, certain instruction types trigger additional generic behavior:
 \paragraph{Conditional jumps}
@@ -119,11 +122,11 @@ After processing the instruction, if the current group has been detected as a br
 \paragraph{Other types}
 No default handling exists for types other than those mentioned above, so you must handle them yourself by creating new Instruction subclasses.
 
-Note that this also includes \code{kCallInst}. Although many engines might want to handle this in a manner similar to \code{kKernelCallInst} opcodes, this is left to the engine-specific code so they can fully make sense of the metadata they choose to add to the function.
+Note that this also includes \code{CallInstruction}. Although many engines might want to handle this in a manner similar to \code{KernelCallInstruction} opcodes, this is left to the engine-specific code so they can fully make sense of the metadata they choose to add to the function.
 
 \subsection{Order of arguments}
 \label{sec:argOrder}
-The generic handling of binary operators (kBinaryOpInst) and kernel functions (kKernelCallInst) can be configured to display their arguments using FIFO or LIFO - respectively, the first and the last entry to be pushed onto the stack is used as the first (leftmost) argument. This is set as part of the constructor for the \code{CodeGenerator} class, using the enumeration values \code{kFIFOArgOrder} and \code{kLIFOArgOrder}.
+The generic handling of binary operators (\code{BinaryOpStackInstruction}) and kernel functions (\code{KernelCallStackInstruction}) can be configured to display their arguments using FIFO or LIFO - respectively, the first and the last entry to be pushed onto the stack is used as the first (leftmost) argument. This is set as part of the constructor for the \code{CodeGenerator} class, using the enumeration values \code{kFIFOArgOrder} and \code{kLIFOArgOrder}.
 
 To provide an example, consider the following sequence of instructions:
 
