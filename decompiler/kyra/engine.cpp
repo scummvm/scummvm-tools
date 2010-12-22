@@ -104,6 +104,12 @@ void Kyra::Kyra2LoadInstruction::processInst(ValueStack &stack, Engine *engine, 
 void Kyra::Kyra2StoreInstruction::processInst(ValueStack &stack, Engine *engine, CodeGenerator *codeGen) {
 	Kyra2CodeGenerator *cg = (Kyra2CodeGenerator *)codeGen;
 	switch (_opcode) {
+	case 1:
+		{
+			ValuePtr p = new VarValue("retval");
+			cg->writeAssignment(p, _params[0]);
+		}
+		break;
 	case 8:
 		{
 			ValuePtr p = new VarValue("retval");
