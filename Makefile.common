@@ -254,6 +254,8 @@ decompile_OBJS := \
 	decompiler/simple_disassembler.o \
 	decompiler/unknown_opcode.o \
 	decompiler/value.o \
+	decompiler/groovie/disassembler.o \
+	decompiler/groovie/engine.o \
 	decompiler/kyra/codegen.o \
 	decompiler/kyra/disassembler.o \
 	decompiler/kyra/engine.o \

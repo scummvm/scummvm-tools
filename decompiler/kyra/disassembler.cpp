@@ -370,7 +370,7 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 	std::set<uint16> jumpTargets;
 	uint16 numInsts = _dataChunk._size / 2;
 	for (uint16 i = 0; i < numInsts; ++i) {
-		uint16 address = i*2;
+		uint16 address = i * 2;
 		uint16 code = READ_BE_UINT16(&((uint16 *)_dataChunk._data)[i]);
 		int16 opcode = (code >> 8) & 0x1F;
 		int16 parameter;
