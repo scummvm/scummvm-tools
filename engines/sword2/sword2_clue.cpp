@@ -21,6 +21,7 @@
  *
  */
 
+#include "common/file.h"
 #include "common/util.h"
 
 #include <gtk/gtk.h>
@@ -266,7 +267,7 @@ int main(int argc, char *argv[]) {
 	uint32 res_sizes[14];
 	int i;
 
-	FILE *in;
+	Common::File in;
 	uint32 index_pos;
 	uint32 pos, len;
 
@@ -277,8 +278,8 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	in = fopen(argv[1], "rb");
-	if (!in) {
+	in.open(argv[1], "rb");
+	if (!in.isOpen()) {
 		printf("Couldn't open %s for reading\n", argv[1]);
 		return EXIT_FAILURE;
 	}
@@ -312,8 +313,8 @@ int main(int argc, char *argv[]) {
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store), compare_items, NULL, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
 
-	index_pos = readUint32LE(in);
-	fseek(in, index_pos, SEEK_SET);
+	index_pos = in.readUint32LE();
+	in.seek(index_pos, SEEK_SET);
 
 	for (;;) {
 		GtkTreeIter iter;
@@ -322,23 +323,24 @@ int main(int argc, char *argv[]) {
 		gchar name[34];
 		gchar *size;
 
-		pos = readUint32LE(in);
-		len = readUint32LE(in);
-
-		if (pos == EOF || len == EOF)
+		try {
+			pos = in.readUint32LE();
+			len = in.readUint32LE();
+		} catch (...) {
 			break;
+		}
 
 		size = make_size(len);
 
-		index_pos = ftell(in);
+		index_pos = in.pos();
 
-		fseek(in, pos, SEEK_SET);
+		in.seek(pos, SEEK_SET);
 
-		type = readByte(in);
-		readByte(in);				/* compType	*/
-		readUint32LE(in);			/* compSize	*/
-		readUint32LE(in);			/* decompSize	*/
-		fread(name, sizeof(name), 1, in);
+		type = in.readByte();
+		in.readByte();				/* compType	*/
+		in.readUint32LE();			/* compSize	*/
+		in.readUint32LE();			/* decompSize	*/
+		in.read_noThrow(name, sizeof(name));
 
 		/*
 		 * We need to convert from Latin-1 to UTF-8. Otherwise the text
@@ -368,10 +370,10 @@ int main(int argc, char *argv[]) {
 			POSITION_COLUMN, pos,
 			LENGTH_COLUMN, len);
 
-		fseek(in, index_pos, SEEK_SET);
+		in.seek(index_pos, SEEK_SET);
 	}
 
-	fclose(in);
+	in.close();
 
 	for (i = 0; i < ARRAYSIZE(res_counts); i++) {
 		if (res_counts[i]) {

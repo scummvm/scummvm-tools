@@ -173,7 +173,7 @@ create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)
 create_sjisfnt.o: CPPFLAGS+=$(FREETYPEINCLUDES) $(ICONVCFLAGS)
 
 
-sword2_clue_OBJS := engines/sword2/sword2_clue.o
+sword2_clue_OBJS := engines/sword2/sword2_clue.o common/file.o
 sword2_clue_LIBS := `pkg-config --libs gtk+-2.0`
 # Set custom build flags
 engines/sword2/sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
