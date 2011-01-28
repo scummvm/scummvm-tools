@@ -132,8 +132,21 @@ void outputMohawkStream(MohawkOutputStream output, bool doConversion, bool fileT
 	if (fileTableFlags)
 		sprintf(strBuf + strlen(strBuf), "%02x_", output.flags);
 	sprintf(strBuf + strlen(strBuf), "%s_%d", tag2str(output.tag), output.id);
-	if (!output.name.empty())
+	if (!output.name.empty()) {
+		for (uint i = 0; i < output.name.size(); i++) {
+			//printf("DEBUG: i: %d output.name[i]: %c\n", i, output.name[i]);
+			if (output.name[i] == '\\') {
+				//printf("\tPadded \ at %d with %c\n", i, '\\');
+				output.name.insertChar('\\', i);
+				i++;
+			}
+			if (output.name[i] == '/') {
+				//printf("\tReplaced / at %d with %c\n", i, '\\');
+				output.name.setChar('\\', i);
+			}
+		}
 		sprintf(strBuf + strlen(strBuf), "_%s", output.name.c_str());
+	}
 	output.name = strBuf;
 
 	if (doConversion) {
