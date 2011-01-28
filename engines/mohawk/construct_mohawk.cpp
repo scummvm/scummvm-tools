@@ -490,8 +490,22 @@ int main(int argc, char *argv[]) {
 		printf("resourceId : %d\n", resourceId);
 
 		Common::String resourceName;
-		if (resourceFilename[nameStart] == '_')
-			resourceName = Common::String(resourceFilename+nameStart+1, strlen(resourceFilename));
+		if (resourceFilename[nameStart] == '_') {
+			resourceName = Common::String(resourceFilename+nameStart+1, resourceFilename+strlen(resourceFilename));
+
+			for (uint j = 0; j < resourceName.size(); j++) {
+				//printf("DEBUG: j: %d resourceName[j]: %c\n", j, resourceName[j]);
+				if (resourceName[j] == '\\') {
+					if (j+1 < resourceName.size() && resourceName[j+1] == '\\') {
+						//printf("\tUnpadded \ at %d\n", j);
+						resourceName.deleteChar(j);
+					} else {
+						//printf("\tReplaced \ at %d with %c\n", j, '/');
+						resourceName.setChar('/', j);
+					}
+				}
+			}
+		}
 		printf("resourceName : \"%s\"\n", resourceName.c_str());
 
 		Common::File *resourceIn = new Common::File(resourceFile, "rb");
