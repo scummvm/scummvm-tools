@@ -128,6 +128,15 @@ public:
 	virtual void getVariants(std::vector<std::string> &variants) const { };
 
 	std::string _variant; ///< Engine variant to use for the script.
+
+	/**
+	 * Whether or not to use "pure" grouping during code flow analysis.
+	 * With pure grouping, code flow analysis only looks at branches when merging.
+	 * This method may be more appropriate for non-stack-based engines.
+	 *
+	 * @return True if pure grouping should be used, false if not.
+	 */
+	virtual bool usePureGrouping() const { return false; }
 };
 
 #endif

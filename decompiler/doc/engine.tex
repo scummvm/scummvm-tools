@@ -6,6 +6,7 @@ As a minimum, engines must provide a disassembler and a code generator. All othe
 If you need to store metadata about the script, you can add the necessary fields to your engine class and store the information there, as the same instance will be used throughout the decompilation process.
 
 \subsection{Adding a new engine}
+\label{sec:addingengine}
 In order to make the decompiler use the code you write to decompile code for some engine, it must be registered in the program. To do so, include the header file for your engine in \code{decompiler.cpp}, and use the \code{ENGINE} macro defined there to register your engine with the program.
 
 This macro takes 3 parameters: the engine ID, a description of the engine, and the name of the \code{Engine} subclass used to create the classes used for the various steps of the process. The ID is entered by the user to signify the engine where the script originates from, and the description is a descriptive text which will be shown when the user requests a list of the supported engines. In general, you should place the files for your engine in a folder with the same name as the engine ID you use.
@@ -21,11 +22,12 @@ Additional methods you can override are:
 \item \code{supportsCodeFlow} and \code{supportsCodeGen}, which can be used to stop the decompiler from going any further after disassembly or code flow analysis, respectively. This is helpful when working on a brand new engine, so you can take one step at a time without having to remember to use the right command-line switch. If you do not override these methods, the decompiler will go through all steps.
 \item \code{detectMoreFuncs} allows you to tell the control flow analysis to automatically detect functions based on reachability. See Section~\vref{sec:autofunc} for details. By default, this is turned off; engines must opt-in to this feature.
 \item \code{postCFG}, which is a post-processing step called after control flow analysis. If you override \code{detectMoreFuncs} to return true, you must also override this function to process any newly found functions. A default implementation which does nothing is already provided in case you do not need to do any post-processing.
+\item \code{usePureGrouping} is used to toggle ``pure'' grouping. In pure grouping, stack levels are ignored during group generation in the control flow analysis. By default, this is turned off. See Section~\vref{sec:groupgen} for details.
 \end{itemize}
 
 Additionally, if your engine is not stack-based, you may not wish to see the stack effect when reviewing the disassembly or code flow graph. You can disable this by calling \code{setOutputStackEffect(false)} from e.g. your Engine constructor. The method is defined in instruction.h, which you will have to include.
 
-It is important to realize that you do not necessarily need to implement a completely new code generator and disassembler for every engine; for variations on the same engine, you can reuse the existing classes and simply send in any extra information required. In particular, code generators are likely to be reusable without change for different versions of the same engine - e.g., the Kyra2 code generator will likely work for all Kyra games.
+It is important to realize that you do not necessarily need to implement a completely new code generator and disassembler for every engine; for variations on the same engine, you can reuse the existing classes and simply send in any extra information required. In particular, code generators are likely to be reusable without change for different versions of the same engine -- e.g., the Kyra2 code generator will likely work for all Kyra games.
 
 For this purpose, the user may optionally specify an \emph{engine variant}, which is a string that will be passed to your Engine. If you make use of this feature, you should also override \code{getVariants} to specify which variants your engine supports. This list will be displayed to the user if they specify an engine while using the \code{-h} option.
 

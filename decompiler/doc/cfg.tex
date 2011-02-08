@@ -29,6 +29,7 @@ Note that the control flow analysis has no way of determining an appropriate nam
 If this step is not enabled, and no functions have been defined before the control flow analysis is started, there will still be added a single function covering the entire script. This is done to avoid having a special case in the code, and it will not affect the output of your script in any way.
 
 \subsection{Group generation}
+\label{sec:groupgen}
 Groups are initially formed according to these rules:
 \begin{itemize}
 \item If the next instruction is a jump or a return, end the group here.
@@ -37,9 +38,13 @@ Groups are initially formed according to these rules:
 \item If the current instruction brings the stack level to the same as the start of the current group, and at least one instruction with a non-negative stack effect exists in the group, end the group here.
 \end{itemize}
 
-Unreachable code will not be processed in the group generation, but will remain as individual instructions.
+The final two rules are based on a property of stack-based engines: when the stack becomes balanced, as defined by these two rules, this indicates that the current group corresponds to a single line of code. This property of the groups can be helpful when performing code generation, since it adds some context -- e.g., conditions are placed in a group of their own.
+
+However, this only works for stack-based engines; for a non-stack-based engine, each instruction ends up in a group of its own, which is particularly bad for visualization of the code flow, since dot tends to choke on the large amount of vertices resulting from this. For this reason, engines are able to request \emph{pure grouping} via the virtual \code{usePureGrouping} method, mentioned in Section~\vref{sec:addingengine}. In pure grouping, only the first two rules are applied, creating the minimum number of groups for any grouping algorithm.
 
 Prior to applying these rules, a depth-first search is performed to calculate the expected stack level at each instruction. If multiple paths are found to the same instruction, a warning will be output if the expected stack level from each path differs.
+
+Unreachable code will not be processed during the group generation, but will remain as individual instructions.
 
 \subsection{Short-circuit detection}
 \emph{NOTE: This feature is currently disabled.}
@@ -49,7 +54,7 @@ As part of the group generation, the decompiler can combine multiple, consecutiv
 The rules used to detect if two consecutive groups $A$ and $B$ are oart of the same short-circuited check are as follows:
 \begin{itemize}
 \item Both group $A$ and $B$ end with a conditional jump (they have two possible successors each)
-\item For each outgoing edge from A, the edge must either go to B, or to a successor of B - in other words, merging may not add any new successors. More formally, $\text{succ}(A) \subseteq \{B\} \cup \text{succ}(B)$ , where $\text{succ}(X)$ is the set of possible successors for the group $X$.
+\item For each outgoing edge from A, the edge must either go to B, or to a successor of B -- in other words, merging may not add any new successors. More formally, $\text{succ}(A) \subseteq \{B\} \cup \text{succ}(B)$, where $\text{succ}(X)$ is the set of possible successors for the group $X$.
 \end{itemize}
 
 \subsection{Construct detection}

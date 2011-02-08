@@ -311,18 +311,21 @@ void ControlFlow::createGroups() {
 			continue;
 		}
 
-		// If group has no instructions with stack effect >= 0, don't merge on balanced stack
-		bool forceMerge = true;
-		ConstInstIterator it = grCur->_start;
-		do {
-			if ((*it)->_stackChange >= 0)
-				forceMerge = false;
-			++it;
-		} while (grCur->_start != grCur->_end && it != grCur->_end);
+		// This part is only relevant if we use the stack level.
+		if (!_engine->usePureGrouping()) {
+			// If group has no instructions with stack effect >= 0, don't merge on balanced stack
+			bool forceMerge = true;
+			ConstInstIterator it = grCur->_start;
+			do {
+				if ((*it)->_stackChange >= 0)
+					forceMerge = false;
+				++it;
+			} while (grCur->_start != grCur->_end && it != grCur->_end);
 
-		// Group ends when stack is balanced, unless just before conditional jump
-		if (stackLevel == expectedStackLevel && !forceMerge && !(*nextInst)->isCondJump()) {
-			continue;
+			// Group ends when stack is balanced, unless just before conditional jump
+			if (stackLevel == expectedStackLevel && !forceMerge && !(*nextInst)->isCondJump()) {
+				continue;
+			}
 		}
 
 		// All checks passed, merge groups
