@@ -8,7 +8,7 @@ namespace CxxTest
     TestDescription::~TestDescription() {}
     SuiteDescription::~SuiteDescription() {}
     WorldDescription::~WorldDescription() {}
-    
+
     //
     // Convert total tests to string
     //
@@ -53,6 +53,6 @@ namespace CxxTest
         return s;
     }
 #endif // _CXXTEST_FACTOR
-};
+}
 
 #endif // __cxxtest__Descriptions_cpp__
