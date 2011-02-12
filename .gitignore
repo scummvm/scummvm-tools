@@ -1,0 +1,27 @@
+*.o
+.deps
+
+/.gdb_history
+/construct_mohawk
+/create_sjisfnt
+/decine
+/decompile
+/degob
+/dekyra
+/deriven
+/descumm
+/desword2
+/extract_mohawk
+/gob_loadcalc
+/ScummVM Tools.app
+/scummvm-tools
+/scummvm-tools-cli
+/config.mk
+/config.h
+/config.log
+
+/decompiler/doc/doc.pdf
+
+/decompiler/test/runner
+/decompiler/test/runner.cpp
+/decompiler/test/*.dSYM
