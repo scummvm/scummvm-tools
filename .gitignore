@@ -1,5 +1,9 @@
+*.exe
 *.o
 .deps
+*~
+*.swp
+*.swo
 
 /.gdb_history
 /construct_mohawk
