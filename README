@@ -281,11 +281,18 @@ Compression Tools:
                 Files in the input folder should be in uppercase.
 
         compress_tucker
-                Used to compress .wav files from FX/MUSIC/SPEECH directories
-                to a single file named TUCKER.SOx
+                Used to compress sound and speech files from AUDIO/FX/MUSIC/SPEECH
+                directories to a single file named TUCKER.SO3 (MP3), TUCKER.SOG
+                (Vorbis) or TUCKER.SOF (FLAC).
 
-                Once compressed, the 3 directories aren't required to play
+                Once compressed, the four directories are not required to play
                 the game under ScummVM.
+
+                Example of usage:
+                ./scummvm-tools-cli --tool compress_tucker [mode params] [-o outputfile] <inputdir>
+
+                Default outpufile is TUCKER.SOx (depends on compression method).
+                Files in the input folder should be in uppercase.
 
 Script Tools:
         decine
