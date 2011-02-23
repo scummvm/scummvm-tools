@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <png.h>
+#include <zlib.h>
 
 #include "encode_dxa.h"
 #include "common/endian.h"

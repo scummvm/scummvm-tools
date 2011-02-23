@@ -24,12 +24,25 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
-#ifndef _MSC_VER
-#include <sys/types.h>
 #include <sys/stat.h>   // for stat()
+#include <sys/types.h>
+#ifndef _MSC_VER
 #include <unistd.h>	// for unlink()
+#else
+
+// Add a definition for S_IFDIR for MSVC
+#ifndef S_ISDIR
+#ifndef S_IFDIR
+#ifndef _S_IFDIR
+#define S_IFDIR		(-1)
+#else
+#define S_IFDIR		_S_IFDIR
+#endif
+#endif
+#define S_ISDIR(m)	(((m)&S_IFDIR)==S_IFDIR)
 #endif
 
+#endif
 
 namespace Common {
 
