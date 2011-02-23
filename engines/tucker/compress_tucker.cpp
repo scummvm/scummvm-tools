@@ -107,24 +107,14 @@ static SoundDirectory sound_directory_table[SOUND_TYPES_COUNT] = {
 
 uint32 CompressTucker::compress_sounds_directory(const Common::Filename *inpath, const Common::Filename *outpath, Common::File &output, const struct SoundDirectory *dir) {
 	char filepath[1024];
-	char *filename;
-	//struct stat s;
-	int i, pos;
+	int i, pos, len;
 	uint32 current_offset;
 	Common::File input;
 
 	assert(dir->count <= ARRAYSIZE(temp_table));
 
 	// We can't use setFullName since dir->name can contain '/'
-	snprintf(filepath, sizeof(filepath), "%s/%s", inpath->getPath().c_str(), dir->name);
-	/* stat is NOT standard C, but rather a POSIX call and fails under MSVC
-	 * this could be factored out to Common::Filename::isDirectory ?
-	if (stat(filepath, &s) != 0 || !S_ISDIR(s.st_mode)) {
-		error("Cannot stat directory '%s'", filepath);
-	}
-	*/
-	strcat(filepath, "/");
-	filename = filepath + strlen(filepath);
+	len = snprintf(filepath, sizeof(filepath), "%s/%s/", inpath->getPath().c_str(), dir->name);
 
 	pos = output.pos();
 
@@ -138,7 +128,7 @@ uint32 CompressTucker::compress_sounds_directory(const Common::Filename *inpath,
 	current_offset = 0;
 	for (i = 0; i < dir->count; ++i) {
 		temp_table[i].offset = current_offset;
-		sprintf(filename, dir->fmt, i);
+		snprintf(&filepath[len], sizeof(filepath) - len, dir->fmt, i);
 		try {
 			input.open(filepath, "rb");
 			temp_table[i].size = compress_file_wav(input, output);
@@ -321,7 +311,7 @@ uint32 CompressTucker::compress_audio_directory(const Common::Filename *inpath, 
 	current_offset = 0;
 	for (i = 0; i < count; ++i) {
 		temp_table[i].offset = current_offset;
-		sprintf(filepath, "%s/AUDIO/%s", inpath->getPath().c_str(), audio_files_list[i]);
+		snprintf(filepath, sizeof(filepath), "%s/AUDIO/%s", inpath->getPath().c_str(), audio_files_list[i]);
 
 		try {
 			Common::File input(filepath, "rb");
@@ -362,7 +352,7 @@ void CompressTucker::compress_sound_files(const Common::Filename *inpath, const 
 	uint32 current_offset;
 	uint32 sound_directory_size[SOUND_TYPES_COUNT];
 	uint32 audio_directory_size;
-	const uint16 flags = HEADER_FLAG_AUDIO_INTRO;
+	static const uint16 flags = HEADER_FLAG_AUDIO_INTRO;
 
 	Common::File output(*outpath, "wb");
 
@@ -419,10 +409,20 @@ void CompressTucker::compress_sound_files(const Common::Filename *inpath, const 
 	print("Done.\n");
 }
 
+static const char *inputDirs[] = { "AUDIO", "FX", "MUSIC", "SPEECH", 0 };
 
 void CompressTucker::execute() {
 	Common::Filename inpath(_inputPaths[0].path);
 	Common::Filename &outpath = _outputPath;
+
+	// Ensure necessary directories are present
+	for (int i = 0; inputDirs[i]; ++i) {
+		char path[1024];
+		snprintf(path, sizeof(path), "%s/%s", inpath.getPath().c_str(), inputDirs[i]);
+		if (!Common::isDirectory(path)) {
+			error("Missing input directory '%s'", path);
+		}
+	}
 
 	// Default out is same as in directory, file names differ by extension
 	if (outpath.empty()) {

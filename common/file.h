@@ -401,6 +401,12 @@ protected:
  */
 int removeFile(const char *path);
 
+/**
+ * Test if the specified path is a directory.
+ * This is just a wrapper around stat/S_ISDIR.
+ */
+bool isDirectory(const char *path);
+
 } // End of namespace Common
 
 

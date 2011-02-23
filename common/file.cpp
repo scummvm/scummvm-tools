@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <assert.h>
 #ifndef _MSC_VER
+#include <sys/types.h>
+#include <sys/stat.h>   // for stat()
 #include <unistd.h>	// for unlink()
 #endif
 
@@ -492,6 +494,11 @@ uint32 File::size() const {
 
 int removeFile(const char *path) {
 	return unlink(path);
+}
+
+bool isDirectory(const char *path) {
+	struct stat st;
+	return stat(path, &st) == 0 && S_ISDIR(st.st_mode);
 }
 
 } // End of namespace Common
