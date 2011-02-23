@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{54BB26F4-16F1-4522-B6F8-E189D6921497}</ProjectGuid>
+    <RootNamespace>toolsgui</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <DisableSpecificWarnings>4068;4100;4103;4127;4244;4250;4310;4351;4512;4702;4706;4800;4996;6204;6211;6385;6386;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>zlib.lib;libpng.lib;ogg_static.lib;vorbis_static.lib;vorbisenc_static.lib;libFLAC_static.lib;comctl32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <DisableSpecificWarnings>4068;4100;4103;4127;4244;4250;4310;4351;4512;4702;4706;4800;4996;6204;6211;6385;6386;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>zlib.lib;libpng.lib;ogg_static.lib;vorbis_static.lib;vorbisenc_static.lib;libFLAC_static.lib;comctl32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\gui\configuration.h" />
+    <ClInclude Include="..\..\gui\gui_tools.h" />
+    <ClInclude Include="..\..\gui\main.h" />
+    <ClInclude Include="..\..\gui\pages.h" />
+    <ClInclude Include="..\..\compress.h" />
+    <ClInclude Include="..\..\kyra_ins.h" />
+    <ClInclude Include="..\..\kyra_pak.h" />
+    <ClInclude Include="..\..\tool.h" />
+    <ClInclude Include="..\..\tools.h" />
+    <ClInclude Include="..\..\util.h" />
+    <ClInclude Include="..\..\version.h" />
+    <ClInclude Include="..\..\utils\adpcm.h" />
+    <ClInclude Include="..\..\utils\audiostream.h" />
+    <ClInclude Include="..\..\utils\file.h" />
+    <ClInclude Include="..\..\utils\md5.h" />
+    <ClInclude Include="..\..\utils\pack-end.h" />
+    <ClInclude Include="..\..\utils\pack-start.h" />
+    <ClInclude Include="..\..\utils\stream.h" />
+    <ClInclude Include="..\..\utils\util.h" />
+    <ClInclude Include="..\..\utils\voc.h" />
+    <ClInclude Include="..\..\utils\wave.h" />
+    <ClInclude Include="..\..\compress_agos.h" />
+    <ClInclude Include="..\..\compress_gob.h" />
+    <ClInclude Include="..\..\compress_kyra.h" />
+    <ClInclude Include="..\..\compress_queen.h" />
+    <ClInclude Include="..\..\compress_saga.h" />
+    <ClInclude Include="..\..\compress_sci.h" />
+    <ClInclude Include="..\..\compress_scumm_bun.h" />
+    <ClInclude Include="..\..\compress_scumm_san.h" />
+    <ClInclude Include="..\..\compress_scumm_sou.h" />
+    <ClInclude Include="..\..\compress_sword1.h" />
+    <ClInclude Include="..\..\compress_sword2.h" />
+    <ClInclude Include="..\..\compress_tinsel.h" />
+    <ClInclude Include="..\..\compress_touche.h" />
+    <ClInclude Include="..\..\compress_tucker.h" />
+    <ClInclude Include="..\..\encode_dxa.h" />
+    <ClInclude Include="..\..\extract_agos.h" />
+    <ClInclude Include="..\..\extract_cine.h" />
+    <ClInclude Include="..\..\extract_gob_stk.h" />
+    <ClInclude Include="..\..\extract_kyra.h" />
+    <ClInclude Include="..\..\extract_loom_tg16.h" />
+    <ClInclude Include="..\..\extract_mm_apple.h" />
+    <ClInclude Include="..\..\extract_mm_c64.h" />
+    <ClInclude Include="..\..\extract_mm_nes.h" />
+    <ClInclude Include="..\..\extract_parallaction.h" />
+    <ClInclude Include="..\..\extract_scumm_mac.h" />
+    <ClInclude Include="..\..\extract_zak_c64.h" />
+    <ClInclude Include="resource_gui.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\gui\gui_tools.cpp" />
+    <ClCompile Include="..\..\gui\main.cpp" />
+    <ClCompile Include="..\..\gui\pages.cpp" />
+    <ClCompile Include="..\..\compress.cpp" />
+    <ClCompile Include="..\..\kyra_ins.cpp" />
+    <ClCompile Include="..\..\kyra_pak.cpp" />
+    <ClCompile Include="..\..\tool.cpp" />
+    <ClCompile Include="..\..\tools.cpp" />
+    <ClCompile Include="..\..\util.cpp" />
+    <ClCompile Include="..\..\version.cpp" />
+    <ClCompile Include="..\..\utils\adpcm.cpp" />
+    <ClCompile Include="..\..\utils\audiostream.cpp" />
+    <ClCompile Include="..\..\utils\file.cpp" />
+    <ClCompile Include="..\..\utils\md5.cpp" />
+    <ClCompile Include="..\..\utils\voc.cpp" />
+    <ClCompile Include="..\..\utils\wave.cpp" />
+    <ClCompile Include="..\..\compress_agos.cpp" />
+    <ClCompile Include="..\..\compress_gob.cpp" />
+    <ClCompile Include="..\..\compress_kyra.cpp" />
+    <ClCompile Include="..\..\compress_queen.cpp" />
+    <ClCompile Include="..\..\compress_saga.cpp" />
+    <ClCompile Include="..\..\compress_sci.cpp" />
+    <ClCompile Include="..\..\compress_scumm_bun.cpp" />
+    <ClCompile Include="..\..\compress_scumm_san.cpp" />
+    <ClCompile Include="..\..\compress_scumm_sou.cpp" />
+    <ClCompile Include="..\..\compress_sword1.cpp" />
+    <ClCompile Include="..\..\compress_sword2.cpp" />
+    <ClCompile Include="..\..\compress_tinsel.cpp" />
+    <ClCompile Include="..\..\compress_touche.cpp" />
+    <ClCompile Include="..\..\compress_tucker.cpp" />
+    <ClCompile Include="..\..\encode_dxa.cpp" />
+    <ClCompile Include="..\..\example_tool.cpp" />
+    <ClCompile Include="..\..\extract_agos.cpp" />
+    <ClCompile Include="..\..\extract_cine.cpp" />
+    <ClCompile Include="..\..\extract_gob_stk.cpp" />
+    <ClCompile Include="..\..\extract_kyra.cpp" />
+    <ClCompile Include="..\..\extract_loom_tg16.cpp" />
+    <ClCompile Include="..\..\extract_mm_apple.cpp" />
+    <ClCompile Include="..\..\extract_mm_c64.cpp" />
+    <ClCompile Include="..\..\extract_mm_nes.cpp" />
+    <ClCompile Include="..\..\extract_parallaction.cpp" />
+    <ClCompile Include="..\..\extract_scumm_mac.cpp" />
+    <ClCompile Include="..\..\extract_zak_c64.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\gui\media\scummvmtools.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="toolsgui.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

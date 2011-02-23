@@ -1,0 +1,301 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="tools">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="util">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="util\utils">
+      <UniqueIdentifier>{98b1ca57-3745-4a70-86a1-2fa07592255c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cli">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\engines\agos\compress_agos.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\gob\compress_gob.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\kyra\compress_kyra.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\queen\compress_queen.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\saga\compress_saga.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\sci\compress_sci.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\scumm\compress_scumm_bun.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\scumm\compress_scumm_san.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\scumm\compress_scumm_sou.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\sword1\compress_sword1.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\sword2\compress_sword2.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\tinsel\compress_tinsel.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\touche\compress_touche.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\tucker\compress_tucker.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\encode_dxa.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\agos\extract_agos.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\cine\extract_cine.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\cruise\extract_cruise_pc.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\gob\extract_gob_stk.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\kyra\extract_kyra.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\scumm\extract_loom_tg16.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\scumm\extract_mm_apple.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\scumm\extract_mm_c64.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\scumm\extract_mm_nes.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\parallaction\extract_parallaction.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\scumm\extract_scumm_mac.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\scumm\extract_zak_c64.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\compress.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\kyra\kyra_ins.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\kyra\kyra_pak.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tool.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\version.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\util.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\adpcm.cpp">
+      <Filter>util\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\audiostream.cpp">
+      <Filter>util\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\file.cpp">
+      <Filter>util\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\md5.cpp">
+      <Filter>util\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\voc.cpp">
+      <Filter>util\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\wave.cpp">
+      <Filter>util\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\main_cli.cpp">
+      <Filter>cli</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\scummvm-tools-cli.cpp">
+      <Filter>cli</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\gob\extract_fascination_cd.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\engines\agos\compress_agos.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\gob\compress_gob.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\kyra\compress_kyra.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\queen\compress_queen.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\saga\compress_saga.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\sci\compress_sci.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\scumm\compress_scumm_bun.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\scumm\compress_scumm_san.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\scumm\compress_scumm_sou.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\sword1\compress_sword1.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\sword2\compress_sword2.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\tinsel\compress_tinsel.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\touche\compress_touche.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\tucker\compress_tucker.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\encode_dxa.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\agos\extract_agos.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\cine\extract_cine.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\cruise\extract_cruise_pc.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\gob\extract_gob_stk.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\kyra\extract_kyra.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\scumm\extract_loom_tg16.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\scumm\extract_mm_apple.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\scumm\extract_mm_c64.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\scumm\extract_mm_nes.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\parallaction\extract_parallaction.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\scumm\extract_scumm_mac.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\scumm\extract_zak_c64.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\compress.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\kyra\kyra_ins.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\kyra\kyra_pak.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tool.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\version.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\util.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\adpcm.h">
+      <Filter>util\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\audiostream.h">
+      <Filter>util\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\file.h">
+      <Filter>util\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\md5.h">
+      <Filter>util\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\pack-end.h">
+      <Filter>util\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\pack-start.h">
+      <Filter>util\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\stream.h">
+      <Filter>util\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\voc.h">
+      <Filter>util\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\wave.h">
+      <Filter>util\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scummvm-tools-cli.h">
+      <Filter>cli</Filter>
+    </ClInclude>
+    <ClInclude Include="resource_cli.h">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\gob\extract_fascination_cd.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\gui\media\scummvmtools.ico">
+      <Filter>cli</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="toolscli.rc">
+      <Filter>cli</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

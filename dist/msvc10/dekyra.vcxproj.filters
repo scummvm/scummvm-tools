@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="utils">
+      <UniqueIdentifier>{e592205c-4592-4672-b209-6162669cff4a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\sound\adpcm.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\audiostream.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\file.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\md5.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\voc.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\wave.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\kyra\dekyra.cpp" />
+    <ClCompile Include="..\..\engines\kyra\dekyra_v1.cpp" />
+    <ClCompile Include="..\..\common\util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\sound\adpcm.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\audiostream.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\file.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\md5.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\pack-end.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\pack-start.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\util.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\voc.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\wave.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\kyra\dekyra.h" />
+  </ItemGroup>
+</Project>

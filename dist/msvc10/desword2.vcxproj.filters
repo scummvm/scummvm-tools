@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="utils">
+      <UniqueIdentifier>{784670a9-e56f-4fc7-a3d6-72ef6fe2bbb4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\sound\adpcm.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\audiostream.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\file.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\md5.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\voc.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sound\wave.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\sword2\desword2.cpp" />
+    <ClCompile Include="..\..\common\util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\sound\adpcm.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\audiostream.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\file.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\md5.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\pack-end.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\pack-start.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\util.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\voc.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sound\wave.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
