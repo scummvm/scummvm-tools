@@ -33,7 +33,7 @@ static const char *opcode_names[] = {
 	NO_OP,
 	"drawBitmap",
 	"switchCard",
-	"playSound_Mix",
+	"playScriptSLST",
 	// 0x04 (4 decimal)
 	"playSound",
 	NO_OP,
@@ -45,7 +45,7 @@ static const char *opcode_names[] = {
 	"disableHotspot",
 	NO_OP,
 	// 0x0C (12 decimal)
-	"clearSLST",
+	"stopSound",
 	"changeCursor",
 	"delay",
 	NO_OP,
@@ -70,14 +70,14 @@ static const char *opcode_names[] = {
 	NO_OP,
 	"enableMovie",
 	// 0x20 (32 decimal)
+	"playMovieBlocking",
 	"playMovie",
-	"playMovieBg",
 	"stopMovie",
 	NO_OP,
 	// 0x24 (36 decimal)
 	"unk_36",						// Unknown
 	"fadeAmbientSounds",
-	"complexPlayMovie",
+	"storeMovieOpcode",
 	"activatePLST",
 	// 0x28 (40 decimal)
 	"activateSLST",
@@ -87,8 +87,7 @@ static const char *opcode_names[] = {
 	// 0x2C (44 decimal)
 	"activateFLST",
 	"zipMode",
-	"activateMLST",
-	"activateSLSTWithVolume"
+	"activateMLST"
 };
 
 void printUsage(const char *appName) {
