@@ -366,6 +366,25 @@ public:
 	void onNext(wxWindow *panel);
 
 	void save(wxWindow *panel);
+	
+	/**
+	 * Handles clicks on the radio buttons for Quality / Nominal bitrate
+	 */
+	void onChangeTargetType(wxCommandEvent &evt);
+	
+	/**
+	 * Enables/Disables the different fields depending on ABR/VBR setting
+	 *
+	 * @param panel The panel to operate on
+	 */
+	void updateFields(wxWindow *panel);
+	
+private:
+	wxFlexGridSizer* _gridSizer;
+	wxStaticText* _qualityFactorLabel;
+	wxChoice* _qualityFactor;
+	wxStaticText* _nominalBitrateLabel;
+	wxChoice* _nominalBitrate;
 };
 
 

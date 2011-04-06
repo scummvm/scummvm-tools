@@ -113,6 +113,9 @@ public:
 	void setOggMinBitrate(const std::string&);
 	void setOggAvgBitrate(const std::string&);
 	void setOggMaxBitrate(const std::string&);
+	void unsetOggMinBitrate();
+	void unsetOggMaxBitrate();
+
 
 public:
 	bool processMp3Parms();

@@ -52,11 +52,12 @@ Configuration::Configuration() {
 	flacCompressionLevel = wxT("8");
 	flacBlockSize = wxT("1152");
 
-	// flac params
+	// ogg params
+	useOggQuality = true;
 	oggQuality = wxT("3");
-	oggMinBitrate = wxT("24");
+	oggMinBitrate = wxT("None");
 	oggAvgBitrate = wxT("24");
-	oggMaxBitrate = wxT("64");
+	oggMaxBitrate = wxT("None");
 
 }
 
@@ -82,6 +83,7 @@ void Configuration::load() {
 	filecnf->Read(wxT("flacBlockSize"), &flacBlockSize, flacBlockSize);
 
 	// flac params
+	filecnf->Read(wxT("useOggQuality"), &useOggQuality, useOggQuality);
 	filecnf->Read(wxT("oggQuality"), &oggQuality, oggQuality);
 	filecnf->Read(wxT("oggMinBitrate"), &oggMinBitrate, oggMinBitrate);
 	filecnf->Read(wxT("oggAvgBitrate"), &oggAvgBitrate, oggAvgBitrate);
@@ -111,6 +113,7 @@ void Configuration::save(bool all) {
 		filecnf->Write(wxT("flacBlockSize"), flacBlockSize);
 
 		// flac params
+		filecnf->Write(wxT("useOggQuality"), useOggQuality);
 		filecnf->Write(wxT("oggQuality"), oggQuality);
 		filecnf->Write(wxT("oggMinBitrate"), oggMinBitrate);
 		filecnf->Write(wxT("oggAvgBitrate"), oggAvgBitrate);

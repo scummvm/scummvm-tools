@@ -104,6 +104,7 @@ struct Configuration {
 	wxString flacBlockSize;
 
 	// flac
+	bool useOggQuality;
 	wxString oggQuality;
 	wxString oggMinBitrate;
 	wxString oggAvgBitrate;

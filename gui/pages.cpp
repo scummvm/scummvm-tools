@@ -1146,8 +1146,9 @@ ChooseAudioOptionsVorbisPage::ChooseAudioOptionsVorbisPage(Configuration &config
 
 wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	wxWindow *panel = WizardPage::CreatePanel(parent);
-
-
+	
+	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+	
 	/* Vorbis mode params
 	" -b <rate>    <rate> is the nominal bitrate (default:unset)\n" \
 	" -m <rate>    <rate> is the minimum bitrate (default:unset)\n" \
@@ -1155,39 +1156,30 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	" -q <value>   specifies the value (0 - 10) of VBR quality (10=best) (default:" oggqualDef_str ")\n" \
 	" --silent     the output of oggenc is hidden (default:disabled)\n" \
 	*/
+	
+	
+	// Grid
+	_gridSizer = new wxFlexGridSizer(5, 2, 10, 25);
+	_gridSizer->AddGrowableCol(1);
+	
+	
+	// Compression target type
+	_gridSizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Target Type:")));
+	
+	wxRadioButton *qualityButton = new wxRadioButton(
+													 panel, wxID_ANY, wxT("Quality Factor"),
+													 wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("Quality"));
+	
+	wxSizer *radioSizer = new wxBoxSizer(wxHORIZONTAL);
+	radioSizer->Add(qualityButton);
+	
+	wxRadioButton *bitrateButton = new wxRadioButton(
+													 panel, wxID_ANY, wxT("Nominal Bitrate"),
+													 wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("Bitrate"));
+	radioSizer->Add(bitrateButton);
+	
+	_gridSizer->Add(radioSizer, wxSizerFlags().Expand());
 
-	wxFlexGridSizer *sizer = new wxFlexGridSizer(4, 2, 10, 25);
-	sizer->AddGrowableCol(1);
-
-	// Bitrates
-	const int possibleBitrateCount = 160 / 8;
-	wxString possibleBitrates[possibleBitrateCount + 1];
-	for (int i = 0; i <= possibleBitrateCount; ++i) {
-		possibleBitrates[i] << (i+1)*8;
-	}
-
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:")));
-
-	wxChoice *MinBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
-	sizer->Add(MinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
-
-
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Nominal Bitrate:")));
-
-	wxChoice *AvgBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("NominalBitrate"));
-	sizer->Add(AvgBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
-
-
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
-
-	wxChoice *MaxBitrate = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-		possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
-	sizer->Add(MaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
 	// Quality
 	const int possibleQualityCount = 11;
@@ -1195,37 +1187,102 @@ wxWindow *ChooseAudioOptionsVorbisPage::CreatePanel(wxWindow *parent) {
 	for (int i = 0; i <= possibleQualityCount; ++i) {
 		possibleQualities[i] << i;
 	}
+	
+	_qualityFactorLabel = new wxStaticText(panel, wxID_ANY, wxT("Quality:"));
+	_gridSizer->Add(_qualityFactorLabel);
+	
+	_qualityFactor = new wxChoice(
+								  panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+								  possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("QualityFactor"));
+	_gridSizer->Add(_qualityFactor, wxSizerFlags().Expand().Border(wxRIGHT, 100));
 
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Quality:")));
 
-	wxChoice *quality = new wxChoice(
-		panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-		possibleQualityCount, possibleQualities, 0, wxDefaultValidator, wxT("Quality"));
-	sizer->Add(quality, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	// Bitrates
+	const int possibleBitrateCount = 160 / 8;
+	wxString possibleBitrates[possibleBitrateCount];
+	wxString possibleMinMaxBitrates[possibleBitrateCount + 1];
+	possibleMinMaxBitrates[0] = wxT("None");
+	for (int i = 0; i < possibleBitrateCount; ++i) {
+		possibleBitrates[i] << (i+1)*8;
+		possibleMinMaxBitrates[i+1] << (i+1)*8;
+	}
+	
+	_nominalBitrateLabel = new wxStaticText(panel, wxID_ANY, wxT("Nominal Bitrate:"));
+	_gridSizer->Add(_nominalBitrateLabel);
+
+	_nominalBitrate = new wxChoice(
+								   panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+								   possibleBitrateCount, possibleBitrates, 0, wxDefaultValidator, wxT("NominalBitrate"));
+	_gridSizer->Add(_nominalBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+
+
+	_gridSizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Minimum Bitrate:")));
+	
+	wxChoice *MinBitrate = new wxChoice(
+										panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+										possibleBitrateCount+1, possibleMinMaxBitrates, 0, wxDefaultValidator, wxT("MinimumBitrate"));
+	_gridSizer->Add(MinBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	
+	
+	_gridSizer->Add(new wxStaticText(panel, wxID_ANY, wxT("Maximum Bitrate:")));
+
+	wxChoice *MaxBitrate = new wxChoice(
+										panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+										possibleBitrateCount+1, possibleMinMaxBitrates, 0, wxDefaultValidator, wxT("MaximumBitrate"));
+	_gridSizer->Add(MaxBitrate, wxSizerFlags().Expand().Border(wxRIGHT, 100));
+	
+
+	qualityButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsVorbisPage::onChangeTargetType), NULL, this);
+	bitrateButton->Connect(wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(ChooseAudioOptionsVorbisPage::onChangeTargetType), NULL, this);
+
 
 	// Finish the window
+	sizer->Add(_gridSizer, wxSizerFlags().Expand());
 	SetAlignedSizer(panel, sizer);
-
 
 	// Load settings
 	MinBitrate->SetStringSelection(_configuration.oggMinBitrate);
-	AvgBitrate->SetStringSelection(_configuration.oggAvgBitrate);
 	MaxBitrate->SetStringSelection(_configuration.oggMaxBitrate);
-	quality   ->SetStringSelection(_configuration.oggQuality);
+	_qualityFactor->SetStringSelection(_configuration.oggQuality);
+	_nominalBitrate->SetStringSelection(_configuration.oggAvgBitrate);
+	if (_configuration.useOggQuality)
+		qualityButton->SetValue(true);
+	else
+		bitrateButton->SetValue(true);
+	
+	updateFields(panel);
 
 	return panel;
 }
 
 void ChooseAudioOptionsVorbisPage::save(wxWindow *panel) {
-	wxChoice *minBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MinimumBitrate")));
-	wxChoice *avgBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("NominalBitrate")));
-	wxChoice *maxBitrate = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MaximumBitrate")));
-	wxChoice *quality    = static_cast<wxChoice *>(panel->FindWindowByName(wxT("Quality")));
+	wxRadioButton *quality  = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("Quality")));
+	wxChoice *minBitrate    = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MinimumBitrate")));
+	wxChoice *maxBitrate    = static_cast<wxChoice *>(panel->FindWindowByName(wxT("MaximumBitrate")));
 
+	_configuration.useOggQuality = quality->GetValue();
 	_configuration.oggMinBitrate = minBitrate->GetStringSelection();
-	_configuration.oggAvgBitrate = avgBitrate->GetStringSelection();
+	_configuration.oggAvgBitrate = _nominalBitrate->GetStringSelection();
 	_configuration.oggMaxBitrate = maxBitrate->GetStringSelection();
-	_configuration.oggQuality    = quality   ->GetStringSelection();
+	_configuration.oggQuality    = _qualityFactor->GetStringSelection();
+}
+
+void ChooseAudioOptionsVorbisPage::updateFields(wxWindow *panel) {
+	wxRadioButton *quality = static_cast<wxRadioButton *>(panel->FindWindowByName(wxT("Quality")));
+	
+	bool isQualitySelected = quality->GetValue();
+	_gridSizer->Show(_qualityFactor,        isQualitySelected);
+	_gridSizer->Show(_qualityFactorLabel,   isQualitySelected);
+	_gridSizer->Show(_nominalBitrate,      !isQualitySelected);
+	_gridSizer->Show(_nominalBitrateLabel, !isQualitySelected);
+	
+	_gridSizer->Layout();
+}
+
+void ChooseAudioOptionsVorbisPage::onChangeTargetType(wxCommandEvent &evt) {
+	wxRadioButton *btn = static_cast<wxRadioButton *>(evt.GetEventObject());
+	wxWindow *parent = btn->GetParent();
+	updateFields(parent);
 }
 
 void ChooseAudioOptionsVorbisPage::onNext(wxWindow *panel) {

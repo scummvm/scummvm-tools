@@ -164,10 +164,18 @@ void ToolGUI::run(const Configuration &conf) const {
 		compression->setFlacBlockSize       ( (const char *)conf.flacBlockSize.mb_str()        );
 
 		// vorbis
-		compression->setOggQuality    ( (const char *)conf.oggQuality.mb_str()    );
-		compression->setOggMinBitrate ( (const char *)conf.oggMinBitrate.mb_str() );
-		compression->setOggAvgBitrate ( (const char *)conf.oggAvgBitrate.mb_str() );
-		compression->setOggMaxBitrate ( (const char *)conf.oggMaxBitrate.mb_str() );
+		if (conf.useOggQuality)
+			compression->setOggQuality    ( (const char *)conf.oggQuality.mb_str()    );
+		else
+			compression->setOggAvgBitrate ( (const char *)conf.oggAvgBitrate.mb_str() );
+		if (conf.oggMinBitrate == wxT("None"))
+			compression->unsetOggMinBitrate();
+		else
+			compression->setOggMinBitrate ( (const char *)conf.oggMinBitrate.mb_str() );
+		if (conf.oggMaxBitrate == wxT("None"))
+			compression->unsetOggMaxBitrate();
+		else
+			compression->setOggMaxBitrate ( (const char *)conf.oggMaxBitrate.mb_str() );
 	}
 
 	_backend->run();

@@ -892,6 +892,9 @@ void CompressionTool::setOggQuality(const std::string& arg) {
 
 	if (oggparms.quality < -1.f || oggparms.quality > 10.f)
 		throw ToolException("Quality out of bounds (-q), must be between -1 and 10.");
+	
+	// Also unset nominal bitrate so that quality is used
+	oggparms.nominalBitr = -1;
 }
 
 void CompressionTool::setOggMinBitrate(const std::string& arg) {
@@ -922,6 +925,14 @@ void CompressionTool::setOggMaxBitrate(const std::string& arg) {
 
 	if (oggparms.maxBitr < 8 || oggparms.maxBitr > 160)
 		throw ToolException("Maximum bitrate out of bounds (-M), must be between 8 and 160.");
+}
+
+void CompressionTool::unsetOggMinBitrate() {
+	oggparms.minBitr = -1;
+}
+
+void CompressionTool::unsetOggMaxBitrate() {
+	oggparms.maxBitr = -1;
 }
 
 bool CompressionTool::processMp3Parms() {
