@@ -8,7 +8,7 @@
 #ifndef lualib_h
 #define lualib_h
 
-#include "lua.h"
+#include <tools/lua/lua.h>
 
 
 void lua_iolibopen   (void);

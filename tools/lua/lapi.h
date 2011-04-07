@@ -8,8 +8,8 @@
 #define lapi_h
 
 
-#include "lua.h"
-#include "lobject.h"
+#include <tools/lua/lua.h>
+#include <tools/lua/lobject.h>
 
 
 TObject *luaA_Address (lua_Object o);

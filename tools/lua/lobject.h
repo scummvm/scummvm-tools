@@ -10,11 +10,11 @@
 
 #include <limits.h>
 
-#include "lua.h"
+#include <tools/lua/lua.h>
 
 
 #ifdef DEBUG
-#include "lauxlib.h"
+#include <tools/lua/lauxlib.h>
 #define LUA_INTERNALERROR(s)	\
 	luaL_verror("INTERNAL ERROR - %s [%s:%d]",(s),__FILE__,__LINE__)
 #define LUA_ASSERT(c,s) { if (!(c)) LUA_INTERNALERROR(s); }

@@ -7,9 +7,9 @@
 
 #include <stdio.h>
 
-#include "lauxlib.h"
-#include "lmem.h"
-#include "lstate.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lstate.h>
 
 
 /*-------------------------------------------------------

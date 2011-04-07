@@ -6,8 +6,8 @@
 
 #include <stdlib.h>
 
-#include "lobject.h"
-#include "lua.h"
+#include <tools/lua/lobject.h>
+#include <tools/lua/lua.h>
 
 
 char *luaO_typenames[] = { /* ORDER LUA_T */

@@ -6,12 +6,12 @@
 
 #include <stdlib.h>
 
-#include "lauxlib.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lstate.h"
-#include "ltable.h"
-#include "lua.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lobject.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/ltable.h>
+#include <tools/lua/lua.h>
 
 
 #define gcsize(n)	(1+(n/16))

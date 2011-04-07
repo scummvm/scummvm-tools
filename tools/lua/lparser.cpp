@@ -8,18 +8,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "lauxlib.h"
-#include "ldo.h"
-#include "lfunc.h"
-#include "llex.h"
-#include "lmem.h"
-#include "lopcodes.h"
-#include "lparser.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "lua.h"
-#include "luadebug.h"
-#include "lzio.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/ldo.h>
+#include <tools/lua/lfunc.h>
+#include <tools/lua/llex.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lopcodes.h>
+#include <tools/lua/lparser.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/lstring.h>
+#include <tools/lua/lua.h>
+#include <tools/lua/luadebug.h>
+#include <tools/lua/lzio.h>
 
 
 /* for limit numbers in error messages */

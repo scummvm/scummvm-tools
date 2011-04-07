@@ -6,18 +6,18 @@
 
 
 #include <stdlib.h>
-#include "lbuiltin.h"
-#include "ldo.h"
-#include "lauxlib.h"
-#include "lfunc.h"
-#include "lgc.h"
-#include "llex.h"
-#include "lmem.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "ltable.h"
-#include "ltask.h"
-#include "ltm.h"
+#include <tools/lua/lbuiltin.h>
+#include <tools/lua/ldo.h>
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/lfunc.h>
+#include <tools/lua/lgc.h>
+#include <tools/lua/llex.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/lstring.h>
+#include <tools/lua/ltable.h>
+#include <tools/lua/ltask.h>
+#include <tools/lua/ltm.h>
 
 
 lua_State *lua_state = NULL;

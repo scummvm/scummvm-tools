@@ -10,21 +10,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ldo.h"
-#include "lfunc.h"
-#include "lgc.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lopcodes.h"
-#include "lparser.h"
-#include "lstate.h"
-#include "ltask.h"
-#include "ltm.h"
-#include "lua.h"
-#include "luadebug.h"
-#include "lundump.h"
-#include "lvm.h"
-#include "lzio.h"
+#include <tools/lua/ldo.h>
+#include <tools/lua/lfunc.h>
+#include <tools/lua/lgc.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lobject.h>
+#include <tools/lua/lopcodes.h>
+#include <tools/lua/lparser.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/ltask.h>
+#include <tools/lua/ltm.h>
+#include <tools/lua/lua.h>
+#include <tools/lua/luadebug.h>
+#include <tools/lua/lundump.h>
+#include <tools/lua/lvm.h>
+#include <tools/lua/lzio.h>
 
 
 

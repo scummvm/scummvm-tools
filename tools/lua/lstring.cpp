@@ -8,11 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lmem.h"
-#include "lobject.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "lua.h"
+#include <tools/lua/lmem.h>
+#include <tools/lua/lobject.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/lstring.h>
+#include <tools/lua/lua.h>
 
 
 

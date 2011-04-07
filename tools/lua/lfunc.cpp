@@ -7,9 +7,9 @@
 
 #include <stdlib.h>
 
-#include "lfunc.h"
-#include "lmem.h"
-#include "lstate.h"
+#include <tools/lua/lfunc.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lstate.h>
 
 #define gcsizeproto(p)	5  /* approximate "weight" for a prototype */
 #define gcsizeclosure(c) 1  /* approximate "weight" for a closure */

@@ -8,20 +8,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lapi.h"
-#include "lauxlib.h"
-#include "ldo.h"
-#include "lfunc.h"
-#include "lgc.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "ltable.h"
-#include "ltm.h"
-#include "lua.h"
-#include "luadebug.h"
-#include "lvm.h"
+#include <tools/lua/lapi.h>
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/ldo.h>
+#include <tools/lua/lfunc.h>
+#include <tools/lua/lgc.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lobject.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/lstring.h>
+#include <tools/lua/ltable.h>
+#include <tools/lua/ltm.h>
+#include <tools/lua/lua.h>
+#include <tools/lua/luadebug.h>
+#include <tools/lua/lvm.h>
 
 
 char lua_ident[] = "$Lua: " LUA_VERSION " " LUA_COPYRIGHT " $\n"

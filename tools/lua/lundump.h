@@ -7,8 +7,8 @@
 #ifndef lundump_h
 #define lundump_h
 
-#include "lobject.h"
-#include "lzio.h"
+#include <tools/lua/lobject.h>
+#include <tools/lua/lzio.h>
 
 TProtoFunc* luaU_undump1(ZIO* Z);	/* load one chunk */
 

@@ -9,7 +9,7 @@
 #define auxlib_h
 
 
-#include "lua.h"
+#include <tools/lua/lua.h>
 
 
 struct luaL_reg {

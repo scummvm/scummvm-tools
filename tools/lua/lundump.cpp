@@ -7,11 +7,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "lauxlib.h"
-#include "lfunc.h"
-#include "lmem.h"
-#include "lstring.h"
-#include "lundump.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/lfunc.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lstring.h>
+#include <tools/lua/lundump.h>
 
 #define	LoadBlock(b,size,Z)	ezread(Z,b,size)
 #define	LoadNative(t,Z)		LoadBlock(&t,sizeof(t),Z)

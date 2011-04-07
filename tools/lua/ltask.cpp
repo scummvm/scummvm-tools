@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <search.h>
 
-#include "ltask.h"
-#include "lauxlib.h"
-#include "lmem.h"
-#include "ldo.h"
-#include "lvm.h"
+#include <tools/lua/ltask.h>
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/ldo.h>
+#include <tools/lua/lvm.h>
 
 void pause_scripts (void) {
 	struct lua_Task *t;

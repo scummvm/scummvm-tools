@@ -14,10 +14,10 @@
 ** Any function declared here could be written as an application
 ** function. With care, these functions can be used by other libraries.
 */
-#include "lauxlib.h"
-#include "lua.h"
-#include "luadebug.h"
-#include "lmem.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/lua.h>
+#include <tools/lua/luadebug.h>
+#include <tools/lua/lmem.h>
 
 
 int luaL_findstring (char *name, char *list[]) {

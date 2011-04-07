@@ -7,7 +7,7 @@
 #ifndef ltable_h
 #define ltable_h
 
-#include "lobject.h"
+#include <tools/lua/lobject.h>
 
 
 #define node(t,i)       (&(t)->node[i])

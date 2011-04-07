@@ -9,8 +9,8 @@
 
 #include <setjmp.h>
 
-#include "lobject.h"
-#include "lua.h"
+#include <tools/lua/lobject.h>
+#include <tools/lua/lua.h>
 
 
 #define MAX_C_BLOCKS 10

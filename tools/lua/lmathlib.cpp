@@ -8,9 +8,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "lauxlib.h"
-#include "lua.h"
-#include "lualib.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/lua.h>
+#include <tools/lua/lualib.h>
 
 #ifdef M_PI
 #define PI                      M_PI

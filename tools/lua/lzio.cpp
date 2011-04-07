@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lzio.h"
+#include <tools/lua/lzio.h>
 
 
 

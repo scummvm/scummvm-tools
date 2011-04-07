@@ -8,7 +8,7 @@
 #define lstring_h
 
 
-#include "lobject.h"
+#include <tools/lua/lobject.h>
 
 
 void luaS_init (void);

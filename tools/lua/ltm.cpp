@@ -9,11 +9,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lauxlib.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lstate.h"
-#include "ltm.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lobject.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/ltm.h>
 
 
 char *luaT_eventname[] = {  /* ORDER IM */
@@ -178,7 +178,7 @@ char *luaT_travtagmethods (int (*fn)(TObject *))
 */
 #ifdef LUA_COMPAT2_5
 
-#include "lapi.h"
+#include <tools/lua/lapi.h>
 
 void errorFB (void)
 {

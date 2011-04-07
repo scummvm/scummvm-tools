@@ -11,10 +11,10 @@
 #include <string.h>
 #include <time.h>
 
-#include "lauxlib.h"
-#include "lua.h"
-#include "luadebug.h"
-#include "lualib.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/lua.h>
+#include <tools/lua/luadebug.h>
+#include <tools/lua/lualib.h>
 
 
 #ifndef OLD_ANSI

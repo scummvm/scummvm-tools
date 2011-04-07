@@ -8,8 +8,8 @@
 #define ldo_h
 
 
-#include "lobject.h"
-#include "lstate.h"
+#include <tools/lua/lobject.h>
+#include <tools/lua/lstate.h>
 
 
 #define MULT_RET        255

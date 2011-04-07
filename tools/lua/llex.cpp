@@ -8,15 +8,15 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "lauxlib.h"
-#include "llex.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lparser.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "luadebug.h"
-#include "lzio.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/llex.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lobject.h>
+#include <tools/lua/lparser.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/lstring.h>
+#include <tools/lua/luadebug.h>
+#include <tools/lua/lzio.h>
 
 
 

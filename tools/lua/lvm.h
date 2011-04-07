@@ -8,8 +8,8 @@
 #define lvm_h
 
 
-#include "ldo.h"
-#include "lobject.h"
+#include <tools/lua/ldo.h>
+#include <tools/lua/lobject.h>
 
 
 #define tonumber(o) ((ttype(o) != LUA_T_NUMBER) && (luaV_tonumber(o) != 0))

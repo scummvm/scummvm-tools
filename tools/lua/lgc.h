@@ -8,7 +8,7 @@
 #define lgc_h
 
 
-#include "lobject.h"
+#include <tools/lua/lobject.h>
 
 
 void luaC_checkGC (void);

@@ -8,18 +8,18 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lauxlib.h"
-#include "ldo.h"
-#include "lfunc.h"
-#include "lgc.h"
-#include "lmem.h"
-#include "lopcodes.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "ltable.h"
-#include "ltm.h"
-#include "luadebug.h"
-#include "lvm.h"
+#include <tools/lua/lauxlib.h>
+#include <tools/lua/ldo.h>
+#include <tools/lua/lfunc.h>
+#include <tools/lua/lgc.h>
+#include <tools/lua/lmem.h>
+#include <tools/lua/lopcodes.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/lstring.h>
+#include <tools/lua/ltable.h>
+#include <tools/lua/ltm.h>
+#include <tools/lua/luadebug.h>
+#include <tools/lua/lvm.h>
 
 #ifdef OLD_ANSI
 #define strcoll(a,b)	strcmp(a,b)

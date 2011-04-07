@@ -8,7 +8,7 @@
 #define lfunc_h
 
 
-#include "lobject.h"
+#include <tools/lua/lobject.h>
 
 
 

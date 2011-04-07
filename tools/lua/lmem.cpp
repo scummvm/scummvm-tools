@@ -7,9 +7,9 @@
 
 #include <stdlib.h>
 
-#include "lmem.h"
-#include "lstate.h"
-#include "lua.h"
+#include <tools/lua/lmem.h>
+#include <tools/lua/lstate.h>
+#include <tools/lua/lua.h>
 
 
 

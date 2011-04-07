@@ -7,8 +7,8 @@
 #ifndef lparser_h
 #define lparser_h
 
-#include "lobject.h"
-#include "lzio.h"
+#include <tools/lua/lobject.h>
+#include <tools/lua/lzio.h>
 
 
 void luaY_codedebugline (int line);

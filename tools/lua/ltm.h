@@ -8,8 +8,8 @@
 #define ltm_h
 
 
-#include "lobject.h"
-#include "lstate.h"
+#include <tools/lua/lobject.h>
+#include <tools/lua/lstate.h>
 
 /*
 * WARNING: if you change the order of this enumeration,
