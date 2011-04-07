@@ -1,0 +1,147 @@
+# This file is used by Makefile and declares common build rules,
+# a list of common object files etc.
+#
+# $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/Makefile.common $
+# $Id: Makefile.common 1635 2010-01-21 19:25:03Z aquadran $
+
+######################################################################
+# The default build target: just build the residual executable
+######################################################################
+
+all: build
+
+
+######################################################################
+# Module settings
+######################################################################
+
+MODULES := tools $(MODULES)
+
+# After the game specific modules follow the shared modules
+MODULES += \
+	tools/lua
+#	common \
+
+######################################################################
+# The build rules follow - normally you should have no need to
+# touch whatever comes after here.
+######################################################################
+
+# Concat DEFINES and INCLUDES to form the CPPFLAGS
+CPPFLAGS := $(DEFINES) $(INCLUDES)
+
+# Include the build instructions for all modules
+-include $(addprefix $(srcdir)/, $(addsuffix /module.mk,$(MODULES)))
+
+# Depdir information
+DEPDIRS = $(addsuffix $(DEPDIR),$(MODULE_DIRS))
+DEPFILES =
+
+# Replace regular output with quiet messages
+ifneq ($(findstring $(MAKEFLAGS),s),s)
+ifneq ($(VERBOSE_BUILD),1)
+ifneq ($(VERBOSE_BUILD),yes)
+QUIET_CXX    = @echo '   ' C++ '    ' $@;
+QUIET_AS     = @echo '   ' AS '     ' $@;
+QUIET_NASM   = @echo '   ' NASM '   ' $@;
+QUIET_AR     = @echo '   ' AR '     ' $@;
+QUIET_RANLIB = @echo '   ' RANLIB ' ' $@;
+QUIET_PLUGIN = @echo '   ' PLUGIN ' ' $@;
+QUIET_LINK   = @echo '   ' LINK '   ' $@;
+QUIET        = @
+endif
+endif
+endif
+
+build: $(OBJS) $(MODULES)
+
+distclean: clean
+	$(RM) config.h config.mk config.log
+
+clean:
+	$(RM_REC) $(DEPDIRS)
+	$(RM) $(OBJS) $(EXECUTABLE)
+
+
+#
+# The build rules for object files.
+#
+
+ifdef CXX_UPDATE_DEP_FLAG
+
+# Build rule for C++ files. Makes use of CXX_UPDATE_DEP_FLAG for advanced
+# dependency tracking.
+%.o: %.cpp
+	$(QUIET)$(MKDIR) $(*D)/$(DEPDIR)
+	$(QUIET_CXX)$(CXX) $(CXX_UPDATE_DEP_FLAG) $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+
+
+# Build rules for Objective-C and Objective-C++ files. Strictly speaking, this is for OS X only.
+%.o: %.mm
+	$(QUIET)$(MKDIR) $(*D)/$(DEPDIR)
+	$(QUIET_CXX)$(CXX) $(CXX_UPDATE_DEP_FLAG) $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+
+%.o: %.m
+	$(QUIET)$(MKDIR) $(*D)/$(DEPDIR)
+	$(QUIET_CXX)$(CXX) $(CXX_UPDATE_DEP_FLAG) $(OBJCFLAGS) -c $(<) -o $*.o
+
+else
+
+# Dumb compile rule, for C++ compilers that don't allow dependency tracking or
+# where it is broken (such as GCC 2.95).
+.cpp.o:
+	$(QUIET_CXX)$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(<) -o $*.o
+
+endif
+
+# Build rule for assembler files
+%.o: %.s
+	$(QUIET)$(MKDIR) $(*D)
+	$(QUIET_AS)$(AS) $(ASFLAGS) $(<) -o $*.o
+
+# Build rule for assembler files with preprocessing
+%.o: %.S
+	$(QUIET)$(MKDIR) $(*D)/$(DEPDIR)
+	$(QUIET_AS)$(CXX) $(CXX_UPDATE_DEP_FLAG) $(ASFLAGS) -c $(<) -o $*.o
+
+ifdef HAVE_NASM
+# Build rule for NASM assembler files
+%.o: %.asm
+	$(QUIET)$(MKDIR) $(*D)
+	$(QUIET_NASM)$(NASM) -O1 $(NASMFLAGS) -g -o $*.o $(<)
+endif
+
+# Include the dependency tracking files.
+-include $(wildcard $(addsuffix /*.d,$(DEPDIRS)))
+
+# Mark *.d files and most *.mk files as PHONY. This stops make from trying to
+# recreate them (which it can't), and in particular from looking for potential
+# source files. This can save quite a bit of disk access time.
+.PHONY: $(wildcard $(addsuffix /*.d,$(DEPDIRS))) $(addprefix $(srcdir)/, $(addsuffix /module.mk,$(MODULES))) \
+	$(srcdir)/$(port_mk) $(srcdir)/rules.mk
+
+
+######################################################################
+# Distribution settings
+######################################################################
+
+DISTNAME := residual-tools
+DISTDIR := dist
+
+$(DISTDIR)/$(DISTNAME).tar.gz: $(VERFILE)
+	cd $(DISTDIR); tar zcf $(DISTNAME).tar.gz $(DISTNAME)
+
+$(DISTDIR)/$(DISTNAME).tar.bz2: $(VERFILE)
+	cd $(DISTDIR); tar jcf $(DISTNAME).tar.bz2 $(DISTNAME)
+
+$(DISTDIR)/$(DISTNAME).zip: $(VERFILE)
+	cd $(DISTDIR); zip -qr9 $(DISTNAME).zip $(DISTNAME)
+
+dist-src: \
+	$(DISTDIR)/$(DISTNAME).tar.gz \
+	$(DISTDIR)/$(DISTNAME).tar.bz2 \
+	$(DISTDIR)/$(DISTNAME).zip
+	@#RPM-src?
+	@#DEB-src?
+
+.PHONY: all clean distclean dist-src
