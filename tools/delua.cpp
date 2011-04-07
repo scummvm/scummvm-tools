@@ -23,10 +23,10 @@
  *
  */
 
-#include "tools/lua/lua.h"
-#include "tools/lua/lundump.h"
-#include "tools/lua/lopcodes.h"
-#include "tools/lua/lzio.h"
+#include <tools/lua/lua.h>
+#include <tools/lua/lundump.h>
+#include <tools/lua/lopcodes.h>
+#include <tools/lua/lzio.h>
 
 #include <stdio.h>
 #include <stdlib.h>
