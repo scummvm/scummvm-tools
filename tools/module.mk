@@ -42,7 +42,7 @@ clean-tools:
 tools/delua$(EXEEXT): $(srcdir)/tools/delua.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -Wall \
-	-L$(srcdir)/common -L$(srcdir)/tools/lua -llua -o $@ $<
+	-L$(srcdir)/common -Ltools/lua -llua -o $@ $<
 
 tools/mat2ppm$(EXEEXT): $(srcdir)/tools/mat2ppm.cpp
 	$(MKDIR) tools/$(DEPDIR)
