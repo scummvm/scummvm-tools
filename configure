@@ -305,6 +305,7 @@ for ac_option in $@; do
 	--enable-mad)             _mad=yes        ;;
 	--disable-mad)            _mad=no         ;;
 
+	--enable-verbose-build)   _verbose_build=yes ;;
 	--with-ogg-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
 		OGG_CFLAGS="-I$arg/include"
