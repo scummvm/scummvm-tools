@@ -372,12 +372,6 @@ for ac_option in $@; do
 	--libdir=*)
 		_libdir=`echo $ac_option | cut -d '=' -f 2`
 		;;
-	--enable-*)
-		engine_enable `echo $ac_option | cut -d '-' -f 4-`
-		;;
-	--disable-*)
-		engine_disable `echo $ac_option | cut -d '-' -f 4-`
-		;;
 	*)
 		option_error
 		;;
