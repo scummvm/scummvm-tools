@@ -80,7 +80,7 @@ bundle: scummvm-tools$(EXEEXT)
 	mkdir -p $(bundle_name)/Contents/MacOS
 	mkdir -p $(bundle_name)/Contents/Resources
 	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
-	cp $(srcdir)/dist/macosx/Info.plist $(bundle_name)/Contents/
+	cp $(srcdir)/dists/macosx/Info.plist $(bundle_name)/Contents/
 	cp $(srcdir)/gui/media/*.* $(bundle_name)/Contents/Resources
 	cp scummvm-tools$(EXEEXT) $(bundle_name)/Contents/MacOS/
 
