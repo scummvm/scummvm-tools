@@ -1,5 +1,5 @@
 /*
-** $Id$
+** $Id: lualib.h 905 2008-07-20 21:08:22Z aquadran $
 ** Lua standard libraries
 ** See Copyright Notice in lua.h
 */
@@ -8,7 +8,7 @@
 #ifndef lualib_h
 #define lualib_h
 
-#include <tools/lua/lua.h>
+#include "lua.h"
 
 
 void lua_iolibopen   (void);
@@ -28,7 +28,7 @@ void lua_mathlibopen (void);
 
 /* Auxiliary functions (private) */
 
-int luaI_singlematch (int c, char *p, char **ep);
+int32 luaI_singlematch (int32 c, const char *p, const char **ep);
 
 #endif
 

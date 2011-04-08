@@ -1,5 +1,5 @@
 /*
-** $Id$
+** $Id: lua.h 922 2008-07-25 22:21:04Z aquadran $
 ** Lua - An Extensible Extension Language
 ** TeCGraf: Grupo de Tecnologia em Computacao Grafica, PUC-Rio, Brazil
 ** e-mail: lua@tecgraf.puc-rio.br
@@ -7,6 +7,7 @@
 ** See Copyright Notice at the end of this file
 */
 
+#include "common/sys.h"
 
 #ifndef lua_h
 #define lua_h
@@ -15,25 +16,38 @@
 #define LUA_COPYRIGHT	"Copyright (C) 1994-1998 TeCGraf, PUC-Rio"
 #define LUA_AUTHORS 	"W. Celes, R. Ierusalimschy & L. H. de Figueiredo"
 
-
 #define LUA_NOOBJECT  0
 
 #define LUA_ANYTAG    (-1)
 
-typedef void (*lua_CFunction) (void);
-typedef unsigned int lua_Object;
+typedef void (*lua_CFunction)(void);
+typedef uint32 lua_Object;
 
 typedef struct lua_State lua_State;
 extern lua_State *lua_state;
 
-typedef void (*SaveRestoreFunc)(void *, int);
-typedef int (*SaveRestoreCallback)(int, int, SaveRestoreFunc);
+struct PointerId {
+	uint32	low;
+	uint32	hi;
+};
 
-extern SaveRestoreCallback saveCallback;
-extern SaveRestoreCallback restoreCallback;
+PointerId makeIdFromPointer(void *ptr);
+void *makePointerFromId(PointerId ptr);
 
-void lua_Save(SaveRestoreFunc);
-void lua_Restore(SaveRestoreFunc);
+typedef void (*SaveStream)(void *, int32);
+typedef void (*SaveSint32)(int32);
+typedef void (*SaveUint32)(uint32);
+typedef void (*RestoreStream)(void *, int32);
+typedef int32 (*RestoreSint32)();
+typedef uint32 (*RestoreUint32)();
+typedef PointerId (*SaveCallback)(int32, PointerId, SaveSint32);
+typedef PointerId (*RestoreCallback)(int32, PointerId, RestoreSint32);
+
+extern SaveCallback saveCallbackPtr;
+extern RestoreCallback restoreCallbackPtr;
+
+void lua_Save(SaveStream, SaveSint32, SaveUint32);
+void lua_Restore(RestoreStream, RestoreSint32, RestoreUint32);
 
 void lua_removelibslists(void);
 
@@ -41,74 +55,74 @@ void	       lua_open			(void);
 void           lua_close		(void);
 lua_State      *lua_setstate		(lua_State *st);
 
-lua_Object     lua_settagmethod	(int tag, char *event); /* In: new method */
-lua_Object     lua_gettagmethod	(int tag, char *event);
+lua_Object     lua_settagmethod	(int32 tag, const char *event); /* In: new method */
+lua_Object     lua_gettagmethod	(int32 tag, const char *event);
 lua_Object     lua_seterrormethod (void);  /* In: new method */
 
-int            lua_newtag		(void);
-int            lua_copytagmethods	(int tagto, int tagfrom);
-void           lua_settag		(int tag); /* In: object */
+int32            lua_newtag		(void);
+int32            lua_copytagmethods	(int32 tagto, int32 tagfrom);
+void           lua_settag		(int32 tag); /* In: object */
 
-void           lua_error		(char *s);
-int            lua_dofile 		(char *filename); /* Out: returns */
-int            lua_dostring 		(char *string); /* Out: returns */
-int            lua_dobuffer		(char *buff, int size, char *name);
+void           lua_error		(const char *s);
+int32            lua_dofile 		(const char *filename); /* Out: returns */
+int32            lua_dostring 		(const char *string); /* Out: returns */
+int32            lua_dobuffer		(const char *buff, int32 size, const char *name);
 					  /* Out: returns */
-int            lua_callfunction		(lua_Object f);
+int32            lua_callfunction		(lua_Object f);
 					  /* In: parameters; Out: returns */
 
 void	       lua_beginblock		(void);
 void	       lua_endblock		(void);
 
-lua_Object     lua_lua2C 		(int number);
+lua_Object     lua_lua2C 		(int32 number);
 #define	       lua_getparam(_)		lua_lua2C(_)
 #define	       lua_getresult(_)		lua_lua2C(_)
 
-int            lua_isnil                (lua_Object object);
-int            lua_istable              (lua_Object object);
-int            lua_isuserdata           (lua_Object object);
-int            lua_iscfunction          (lua_Object object);
-int            lua_isnumber             (lua_Object object);
-int            lua_isstring             (lua_Object object);
-int            lua_isfunction           (lua_Object object);
+int32            lua_isnil                (lua_Object object);
+int32            lua_istable              (lua_Object object);
+int32            lua_isuserdata           (lua_Object object);
+int32            lua_iscfunction          (lua_Object object);
+int32            lua_isnumber             (lua_Object object);
+int32            lua_isstring             (lua_Object object);
+int32            lua_isfunction           (lua_Object object);
 
 double         lua_getnumber 		(lua_Object object);
-char          *lua_getstring 		(lua_Object object);
-long           lua_strlen 		(lua_Object object);
+const char          *lua_getstring 		(lua_Object object);
+int32           lua_strlen 		(lua_Object object);
 lua_CFunction  lua_getcfunction 	(lua_Object object);
 void	      *lua_getuserdata		(lua_Object object);
 
 
 void 	       lua_pushnil 		(void);
 void           lua_pushnumber 		(double n);
-void           lua_pushlstring		(char *s, long len);
-void           lua_pushstring 		(char *s);
-void           lua_pushcclosure		(lua_CFunction fn, int n);
-void           lua_pushusertag          (void *u, int tag);
+void           lua_pushlstring		(const char *s, int32 len);
+void           lua_pushstring 		(const char *s);
+void           lua_pushcclosure		(lua_CFunction fn, int32 n);
+void           lua_pushusertag          (void *u, int32 tag);
 void           lua_pushobject       	(lua_Object object);
 
 lua_Object     lua_pop			(void);
 
-lua_Object     lua_getglobal 		(char *name);
-lua_Object     lua_rawgetglobal		(char *name);
-void           lua_setglobal		(char *name); /* In: value */
-void           lua_rawsetglobal		(char *name); /* In: value */
+lua_Object     lua_getglobal 		(const char *name);
+lua_Object     lua_rawgetglobal		(const char *name);
+void           lua_setglobal		(const char *name); /* In: value */
+void           lua_rawsetglobal		(const char *name); /* In: value */
 
 void           lua_settable	(void); /* In: table, index, value */
 void           lua_rawsettable	(void); /* In: table, index, value */
 lua_Object     lua_gettable 		(void); /* In: table, index */
 lua_Object     lua_rawgettable		(void); /* In: table, index */
 
-int            lua_tag			(lua_Object object);
+int32            lua_tag			(lua_Object object);
 
 
-int            lua_ref			(int lock); /* In: value */
-lua_Object     lua_getref		(int ref);
-void	       lua_unref		(int ref);
+int32            lua_ref			(int32 lock); /* In: value */
+lua_Object     lua_getref		(int32 ref);
+void	       lua_unref		(int32 ref);
 
 lua_Object     lua_createtable		(void);
 
-long	       lua_collectgarbage	(long limit);
+int32	       lua_collectgarbage	(int32 limit);
 
 void	       lua_runtasks		(void);
 
@@ -117,13 +131,13 @@ void current_script (void);
 /* =============================================================== */
 /* some useful macros/derived functions */
 
-int     (lua_call) (char *name);
+int32     (lua_call) (char *name);
 #define lua_call(name)		lua_callfunction(lua_getglobal(name))
 
-void    (lua_pushref) (int ref);
+void    (lua_pushref) (int32 ref);
 #define lua_pushref(ref)	lua_pushobject(lua_getref(ref))
 
-int     (lua_refobject) (lua_Object o, int l);
+int32     (lua_refobject) (lua_Object o, int32 l);
 #define lua_refobject(o,l)	(lua_pushobject(o), lua_ref(l))
 
 void    (lua_register) (char *n, lua_CFunction f);
@@ -135,7 +149,7 @@ void    (lua_pushuserdata) (void *u);
 void    (lua_pushcfunction) (lua_CFunction f);
 #define lua_pushcfunction(f)	lua_pushcclosure(f, 0)
 
-int     (lua_clonetag) (int t);
+int32     (lua_clonetag) (int32 t);
 #define lua_clonetag(t)		lua_copytagmethods(lua_newtag(), (t))
 
 
@@ -177,23 +191,23 @@ lua_Object     lua_setfallback		(char *event, lua_CFunction fallback);
 
 /******************************************************************************
 * Copyright (c) 1994-1998 TeCGraf, PUC-Rio.  All rights reserved.
-* 
+*
 * Permission is hereby granted, without written agreement and without license
 * or royalty fees, to use, copy, modify, and distribute this software and its
 * documentation for any purpose, including commercial applications, subject to
 * the following conditions:
-* 
+*
 *  - The above copyright notice and this permission notice shall appear in all
 *    copies or substantial portions of this software.
-* 
+*
 *  - The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software in a
 *    product, an acknowledgment in the product documentation would be greatly
 *    appreciated (but it is not required).
-* 
+*
 *  - Altered source versions must be plainly marked as such, and must not be
 *    misrepresented as being the original software.
-*    
+*
 * The authors specifically disclaim any warranties, including, but not limited
 * to, the implied warranties of merchantability and fitness for a particular
 * purpose.  The software provided hereunder is on an "as is" basis, and the
@@ -202,7 +216,7 @@ lua_Object     lua_setfallback		(char *event, lua_CFunction fallback);
 * authors be held liable to any party for direct, indirect, special,
 * incidental, or consequential damages arising out of the use of this software
 * and its documentation.
-* 
+*
 * The Lua language and this implementation have been entirely designed and
 * written by Waldemar Celes Filho, Roberto Ierusalimschy and
 * Luiz Henrique de Figueiredo at TeCGraf, PUC-Rio.

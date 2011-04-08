@@ -1,5 +1,5 @@
 /*
-** $Id$
+** $Id: lundump.h 692 2006-02-09 23:57:31Z fingolfin $
 ** load pre-compiled Lua chunks
 ** See Copyright Notice in lua.h
 */
@@ -7,8 +7,8 @@
 #ifndef lundump_h
 #define lundump_h
 
-#include <tools/lua/lobject.h>
-#include <tools/lua/lzio.h>
+#include "lobject.h"
+#include "lzio.h"
 
 TProtoFunc* luaU_undump1(ZIO* Z);	/* load one chunk */
 

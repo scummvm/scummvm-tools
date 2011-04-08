@@ -1,26 +1,23 @@
 /*
-** $Id$
+** $Id: llex.cpp 940 2008-07-26 19:30:44Z aquadran $
 ** Lexical Analizer
 ** See Copyright Notice in lua.h
 */
 
 
-#include <ctype.h>
-#include <string.h>
-
-#include <tools/lua/lauxlib.h>
-#include <tools/lua/llex.h>
-#include <tools/lua/lmem.h>
-#include <tools/lua/lobject.h>
-#include <tools/lua/lparser.h>
-#include <tools/lua/lstate.h>
-#include <tools/lua/lstring.h>
-#include <tools/lua/luadebug.h>
-#include <tools/lua/lzio.h>
+#include "lauxlib.h"
+#include "llex.h"
+#include "lmem.h"
+#include "lobject.h"
+#include "lparser.h"
+#include "lstate.h"
+#include "lstring.h"
+#include "luadebug.h"
+#include "lzio.h"
 
 
 
-int lua_debug=0;
+int32 lua_debug=0;
 
 
 #define next(LS) (LS->current = zgetc(LS->lex_z))
@@ -30,14 +27,14 @@ int lua_debug=0;
 #define save_and_next(LS)  (save(LS->current), next(LS))
 
 
-char *reserved [] = {"and", "do", "else", "elseif", "end", "function",
+const char *reserved [] = {"and", "do", "else", "elseif", "end", "function",
     "if", "local", "nil", "not", "or", "repeat", "return", "then",
     "until", "while"};
 
 
 void luaX_init (void)
 {
-  unsigned int i;
+  uint32 i;
   for (i=0; i<(sizeof(reserved)/sizeof(reserved[0])); i++) {
     TaggedString *ts = luaS_new(reserved[i]);
     ts->head.marked = FIRST_RESERVED+i;  /* reserved word  (always > 255) */
@@ -45,7 +42,7 @@ void luaX_init (void)
 }
 
 
-void luaX_syntaxerror (LexState *ls, char *s, char *token) {
+void luaX_syntaxerror (LexState *ls, const char *s, const char *token) {
   if (token[0] == 0)
     token = "<eof>";
   luaL_verror("%.100s;\n  last token read: `%.50s' at line %d in chunk `%.50s'",
@@ -53,13 +50,13 @@ void luaX_syntaxerror (LexState *ls, char *s, char *token) {
 }
 
 
-void luaX_error (LexState *ls, char *s) {
+void luaX_error (LexState *ls, const char *s) {
   save(0);
   luaX_syntaxerror(ls, s, luaL_buffer());
 }
 
 
-void luaX_token2str (LexState * /*ls*/, int token, char *s) {
+void luaX_token2str (LexState * /*ls*/, int32 token, char *s) {
   if (token < 255) {
     s[0] = token;
     s[1] = 0;
@@ -69,16 +66,16 @@ void luaX_token2str (LexState * /*ls*/, int token, char *s) {
 }
 
 
-static void luaX_invalidchar (LexState *ls, int c) {
+static void luaX_invalidchar (LexState *ls, int32 c) {
   char buff[10];
-  sprintf(buff, "0x%X", c);
+  sprintf(buff, "0x%X", (int)c);
   luaX_syntaxerror(ls, "invalid control char", buff);
 }
 
 
 static void firstline (LexState *LS)
 {
-  int c = zgetc(LS->lex_z);
+  int32 c = zgetc(LS->lex_z);
   if (c == '#')
     while ((c=zgetc(LS->lex_z)) != '\n' && c != EOZ) /* skip first line */;
   zungetc(LS->lex_z);
@@ -115,12 +112,12 @@ static void skipspace (LexState *LS)
 }
 
 
-static int checkcond (LexState *LS, char *buff)
+static int32 checkcond (LexState *LS, char *buff)
 {
-  static char *opts[] = {"nil", "1", NULL};
-  int i = luaL_findstring(buff, opts);
+  static const char *opts[] = {"nil", "1", NULL};
+  int32 i = luaL_findstring(buff, opts);
   if (i >= 0) return i;
-  else if (isalpha((unsigned char)buff[0]) || buff[0] == '_')
+  else if (isalpha((byte)buff[0]) || buff[0] == '_')
     return luaS_globaldefined(buff);
   else {
     luaX_syntaxerror(LS, "invalid $if condition", buff);
@@ -131,7 +128,7 @@ static int checkcond (LexState *LS, char *buff)
 
 static void readname (LexState *LS, char *buff)
 {
-  int i = 0;
+  int32 i = 0;
   skipspace(LS);
   while (isalnum(LS->current) || LS->current == '_') {
     if (i >= PRAGMASIZE) {
@@ -162,14 +159,14 @@ static void ifskip (LexState *LS)
 
 static void inclinenumber (LexState *LS)
 {
-  static char *pragmas [] =
+  static const char *pragmas [] =
     {"debug", "nodebug", "endinput", "end", "ifnot", "if", "else", NULL};
   next(LS);  /* skip '\n' */
   ++LS->linenumber;
   if (LS->current == '$') {  /* is a pragma? */
     char buff[PRAGMASIZE+1];
-    int ifnot = 0;
-    int skip = LS->ifstate[LS->iflevel].skip;
+    int32 ifnot = 0;
+    int32 skip = LS->ifstate[LS->iflevel].skip;
     next(LS);  /* skip $ */
     readname(LS, buff);
     switch (luaL_findstring(buff, pragmas)) {
@@ -231,9 +228,9 @@ static void inclinenumber (LexState *LS)
 
 
 
-static int read_long_string (LexState *LS)
+static int32 read_long_string (LexState *LS)
 {
-  int cont = 0;
+  int32 cont = 0;
   while (1) {
     switch (LS->current) {
       case EOZ:
@@ -269,7 +266,7 @@ static int read_long_string (LexState *LS)
 }
 
 
-int luaX_lex (LexState *LS) {
+int32 luaX_lex (LexState *LS) {
   double a;
   luaL_resetbuffer();
   while (1) {
@@ -320,7 +317,7 @@ int luaX_lex (LexState *LS) {
 
       case '"':
       case '\'': {
-        int del = LS->current;
+        int32 del = LS->current;
         save_and_next(LS);
         while (LS->current != del) {
           switch (LS->current) {
@@ -341,8 +338,8 @@ int luaX_lex (LexState *LS) {
                 case '\n': save('\n'); inclinenumber(LS); break;
                 default : {
                   if (isdigit(LS->current)) {
-                    int c = 0;
-                    int i = 0;
+                    int32 c = 0;
+                    int32 i = 0;
                     do {
                       c = 10*c + (LS->current-'0');
                       next(LS);
@@ -410,8 +407,8 @@ int luaX_lex (LexState *LS) {
             save_and_next(LS);
           }
           if (toupper(LS->current) == 'E') {
-	    int e = 0;
-	    int neg;
+	    int32 e = 0;
+	    int32 neg;
 	    double ea;
             save_and_next(LS);
 	    neg = (LS->current=='-');
@@ -439,7 +436,7 @@ int luaX_lex (LexState *LS) {
 
       default:
         if (LS->current != '_' && !isalpha(LS->current)) {
-          int c = LS->current;
+          int32 c = LS->current;
           if (iscntrl(c))
             luaX_invalidchar(LS, c);
           save_and_next(LS);

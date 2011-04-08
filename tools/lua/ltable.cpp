@@ -1,17 +1,17 @@
 /*
-** $Id$
+** $Id: ltable.cpp 905 2008-07-20 21:08:22Z aquadran $
 ** Lua tables (hash)
 ** See Copyright Notice in lua.h
 */
 
 #include <stdlib.h>
 
-#include <tools/lua/lauxlib.h>
-#include <tools/lua/lmem.h>
-#include <tools/lua/lobject.h>
-#include <tools/lua/lstate.h>
-#include <tools/lua/ltable.h>
-#include <tools/lua/lua.h>
+#include "lauxlib.h"
+#include "lmem.h"
+#include "lobject.h"
+#include "lstate.h"
+#include "ltable.h"
+#include "lua.h"
 
 
 #define gcsize(n)	(1+(n/16))
@@ -29,19 +29,44 @@
 static long int hashindex (TObject *ref)
 {
   long int h;
+  switch (ttype(ref)) {
+    case LUA_T_NUMBER:
+      h = (long int)nvalue(ref);
+      break;
+    case LUA_T_STRING: case LUA_T_USERDATA:
+      h = (IntPoint)tsvalue(ref);
+      break;
+    case LUA_T_ARRAY:
+      h = (IntPoint)avalue(ref);
+      break;
+    case LUA_T_PROTO:
+      h = (IntPoint)tfvalue(ref);
+      break;
+    case LUA_T_CPROTO:
+      h = (IntPoint)fvalue(ref);
+      break;
+    case LUA_T_CLOSURE:
+      h = (IntPoint)clvalue(ref);
+      break;
+    case LUA_T_TASK:
+      h = (long int)nvalue(ref);
+      break;
+    default:
+      lua_error("unexpected type to index table");
       h = 0;  /* to avoid warnings */
+  }
   return (h >= 0 ? h : -(h+1));
 }
 
 
-int present (Hash *t, TObject *key)
+int32 present (Hash *t, TObject *key)
 {
-  int tsize = nhash(t);
+  int32 tsize = nhash(t);
   long int h = hashindex(key);
-  int h1 = h%tsize;
+  int32 h1 = h%tsize;
   TObject *rf = ref(node(t, h1));
   if (ttype(rf) != LUA_T_NIL && !luaO_equalObj(key, rf)) {
-    int h2 = h%(tsize-2) + 1;
+    int32 h2 = h%(tsize-2) + 1;
     do {
       h1 += h2;
       if (h1 >= tsize) h1 -= tsize;
@@ -55,10 +80,10 @@ int present (Hash *t, TObject *key)
 /*
 ** Alloc a vector node
 */
-Node *hashnodecreate (int nhash)
+Node *hashnodecreate (int32 nhash)
 {
   Node *v = luaM_newvector(nhash, Node);
-  int i;
+  int32 i;
   for (i=0; i<nhash; i++)
     ttype(ref(&v[i])) = LUA_T_NIL;
   return v;
@@ -85,10 +110,10 @@ void luaH_free (Hash *frees)
 }
 
 
-Hash *luaH_new (int nhash)
+Hash *luaH_new (int32 nhash)
 {
   Hash *t = luaM_new(Hash);
-  nhash = luaO_redimension((int)((float)nhash/REHASH_LIMIT));
+  nhash = luaO_redimension((int32)((float)nhash/REHASH_LIMIT));
   nodevector(t) = hashnodecreate(nhash);
   nhash(t) = nhash;
   nuse(t) = 0;
@@ -99,12 +124,12 @@ Hash *luaH_new (int nhash)
 }
 
 
-static int newsize (Hash *t)
+static int32 newsize (Hash *t)
 {
   Node *v = t->node;
-  int size = nhash(t);
-  int realuse = 0;
-  int i;
+  int32 size = nhash(t);
+  int32 realuse = 0;
+  int32 i;
   for (i=0; i<size; i++) {
     if (ttype(ref(v+i)) != LUA_T_NIL && ttype(val(v+i)) != LUA_T_NIL)
       realuse++;
@@ -117,10 +142,10 @@ static int newsize (Hash *t)
 
 static void rehash (Hash *t)
 {
-  int nold = nhash(t);
+  int32 nold = nhash(t);
   Node *vold = nodevector(t);
-  int nnew = newsize(t);
-  int i;
+  int32 nnew = newsize(t);
+  int32 i;
   nodevector(t) = hashnodecreate(nnew);
   nhash(t) = nnew;
   for (i=0; i<nold; i++) {
@@ -138,7 +163,7 @@ static void rehash (Hash *t)
 */
 TObject *luaH_get (Hash *t, TObject *ref)
 {
- int h = present(t, ref);
+ int32 h = present(t, ref);
  if (ttype(ref(node(t, h))) != LUA_T_NIL) return val(node(t, h));
  else return NULL;
 }
@@ -164,10 +189,10 @@ TObject *luaH_set (Hash *t, TObject *ref)
 }
 
 
-static Node *hashnext (Hash *t, int i)
+static Node *hashnext (Hash *t, int32 i)
 {
   Node *n;
-  int tsize = nhash(t);
+  int32 tsize = nhash(t);
   if (i >= tsize)
     return NULL;
   n = node(t, i);
@@ -185,7 +210,7 @@ Node *luaH_next (TObject *o, TObject *r)
   if (ttype(r) == LUA_T_NIL)
     return hashnext(t, 0);
   else {
-    int i = present(t, r);
+    int32 i = present(t, r);
     Node *n = node(t, i);
     luaL_arg_check(ttype(ref(n))!=LUA_T_NIL && ttype(val(n))!=LUA_T_NIL,
                    2, "key not found");
