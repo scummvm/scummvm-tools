@@ -15,12 +15,11 @@ all: build
 # Module settings
 ######################################################################
 
-MODULES := tools $(MODULES)
+MODULES := tools/lua tools $(MODULES)
 
 # After the game specific modules follow the shared modules
-MODULES += \
-	tools/lua
-#	common \
+MODULES += 
+#	common
 
 ######################################################################
 # The build rules follow - normally you should have no need to
@@ -53,7 +52,7 @@ endif
 endif
 endif
 
-build: $(OBJS) $(MODULES)
+build: dirs $(OBJS) $(MODULES)
 
 distclean: clean
 	$(RM) config.h config.mk config.log
