@@ -1,22 +1,21 @@
 /*
-** $Id$
+** $Id: lfunc.cpp 905 2008-07-20 21:08:22Z aquadran $
 ** Auxiliary functions to manipulate prototypes and closures
 ** See Copyright Notice in lua.h
 */
 
 
-#include <stdlib.h>
 
-#include <tools/lua/lfunc.h>
-#include <tools/lua/lmem.h>
-#include <tools/lua/lstate.h>
+#include "lfunc.h"
+#include "lmem.h"
+#include "lstate.h"
 
 #define gcsizeproto(p)	5  /* approximate "weight" for a prototype */
 #define gcsizeclosure(c) 1  /* approximate "weight" for a closure */
 
 
 
-Closure *luaF_newclosure (int nelems)
+Closure *luaF_newclosure (int32 nelems)
 {
   Closure *c = (Closure *)luaM_malloc(sizeof(Closure)+nelems*sizeof(TObject));
   luaO_insertlist(&(L->rootcl), (GCnode *)c);
@@ -77,9 +76,9 @@ void luaF_freeclosure (Closure *l)
 ** Look for n-th local variable at line "line" in function "func".
 ** Returns NULL if not found.
 */
-char *luaF_getlocalname (TProtoFunc *func, int local_number, int line)
+char *luaF_getlocalname (TProtoFunc *func, int32 local_number, int32 line)
 {
-  int count = 0;
+  int32 count = 0;
   char *varname = NULL;
   LocVar *lv = func->locvars;
   if (lv == NULL)

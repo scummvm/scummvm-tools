@@ -1,26 +1,21 @@
 /*
-** $Id$
+** $Id: lmathlib.cpp 935 2008-07-26 18:11:55Z aquadran $
 ** Lua standard mathematical library
 ** See Copyright Notice in lua.h
 */
 
 
-#include <stdlib.h>
-#include <math.h>
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
 
-#include <tools/lua/lauxlib.h>
-#include <tools/lua/lua.h>
-#include <tools/lua/lualib.h>
-
-#ifdef M_PI
-#define PI                      M_PI
-#else
-#define PI          ((double)3.14159265358979323846)
+#ifndef LOCAL_PI
+#define LOCAL_PI          (3.14159265358979323846)
 #endif
 
 
-#define FROMRAD(a) ((a)*(180.0/PI))
-#define TORAD(a)    ((a)*(PI/180.0))
+#define FROMRAD(a) ((a)*(180.0/LOCAL_PI))
+#define TORAD(a)    ((a)*(LOCAL_PI/180.0))
 
 
 static void math_abs (void)
@@ -107,12 +102,12 @@ static void math_exp (void)
 
 static void math_deg (void)
 {
-  lua_pushnumber(luaL_check_number(1)*(180.0/PI));
+  lua_pushnumber(luaL_check_number(1)*(180.0/LOCAL_PI));
 }
 
 static void math_rad (void)
 {
-  lua_pushnumber(luaL_check_number(1)*(PI/180.0));
+  lua_pushnumber(luaL_check_number(1)*(LOCAL_PI/180.0));
 }
 
 static void math_frexp (void) {
@@ -122,14 +117,14 @@ static void math_frexp (void) {
 }
 
 static void math_ldexp (void) {
-  lua_pushnumber(ldexp(luaL_check_number(1), (int)luaL_check_number(2)));
+  lua_pushnumber(ldexp(luaL_check_number(1), (int32)luaL_check_number(2)));
 }
 
 
 
 static void math_min (void)
 {
-  int i = 1;
+  int32 i = 1;
   double dmin = luaL_check_number(i);
   while (lua_getparam(++i) != LUA_NOOBJECT) {
     double d = luaL_check_number(i);
@@ -142,7 +137,7 @@ static void math_min (void)
 
 static void math_max (void)
 {
-  int i = 1;
+  int32 i = 1;
   double dmax = luaL_check_number(i);
   while (lua_getparam(++i) != LUA_NOOBJECT) {
     double d = luaL_check_number(i);
@@ -162,7 +157,7 @@ static void math_random (void)
   if (l == 0)
     lua_pushnumber(r);
   else
-    lua_pushnumber((int)(r*l)+1);
+    lua_pushnumber((int32)(r*l)+1);
 }
 
 
@@ -213,6 +208,6 @@ void lua_mathlibopen (void)
   lua_pushcfunction(math_pow);
   lua_pushnumber(0);  /* to get its tag */
   lua_settagmethod(lua_tag(lua_pop()), "pow");
-  lua_pushnumber(PI); lua_setglobal("PI");
+  lua_pushnumber(LOCAL_PI); lua_setglobal("PI");
 }
 

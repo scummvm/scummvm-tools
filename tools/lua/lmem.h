@@ -1,11 +1,13 @@
 /*
-** $Id$
+** $Id: lmem.h 907 2008-07-20 21:22:53Z drmccoy $
 ** Interface to Memory Manager
 ** See Copyright Notice in lua.h
 */
 
 #ifndef lmem_h
 #define lmem_h
+
+#include "common/sys.h"
 
 
 #ifndef NULL
@@ -20,9 +22,9 @@
 #define tableEM  "table overflow"
 #define memEM "not enough memory"
 
-void *luaM_realloc (void *oldblock, unsigned long size);
-int luaM_growaux (void **block, unsigned long nelems, int size,
-                       char *errormsg, unsigned long limit);
+void *luaM_realloc (void *oldblock, int32 size);
+int32 luaM_growaux (void **block, int32 nelems, int32 size,
+                       const char *errormsg, int32 limit);
 
 #define luaM_free(b)	free((b))
 #define luaM_malloc(t)	malloc((t))
@@ -34,8 +36,8 @@ int luaM_growaux (void **block, unsigned long nelems, int size,
 
 
 #ifdef DEBUG
-extern unsigned long numblocks;
-extern unsigned long totalmem;
+extern int32 numblocks;
+extern int32 totalmem;
 #endif
 
 

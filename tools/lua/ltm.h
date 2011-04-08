@@ -1,5 +1,5 @@
 /*
-** $Id$
+** $Id: ltm.h 905 2008-07-20 21:08:22Z aquadran $
 ** Tag methods
 ** See Copyright Notice in lua.h
 */
@@ -8,8 +8,8 @@
 #define ltm_h
 
 
-#include <tools/lua/lobject.h>
-#include <tools/lua/lstate.h>
+#include "lobject.h"
+#include "lstate.h"
 
 /*
 * WARNING: if you change the order of this enumeration,
@@ -35,7 +35,7 @@ typedef enum {
   IM_GC,
   IM_FUNCTION
 } eIMS;
-typedef int IMS;
+typedef int32 IMS;
 
 #define IM_N 18
 
@@ -48,15 +48,15 @@ struct IM {
 #define luaT_getim(tag,event) (&L->IMtable[-(tag)].int_method[event])
 #define luaT_getimbyObj(o,e)  (luaT_getim(luaT_efectivetag(o),(e)))
 
-extern char *luaT_eventname[];
+extern const char *luaT_eventname[];
 
 
 void luaT_init (void);
-void luaT_realtag (int tag);
-int luaT_efectivetag (TObject *o);
-void luaT_settagmethod (int t, char *event, TObject *func);
-TObject *luaT_gettagmethod (int t, char *event);
-char *luaT_travtagmethods (int (*fn)(TObject *));
+void luaT_realtag (int32 tag);
+int32 luaT_efectivetag (TObject *o);
+void luaT_settagmethod (int32 t, const char *event, TObject *func);
+TObject *luaT_gettagmethod (int32 t, const char *event);
+const char *luaT_travtagmethods (int32 (*fn)(TObject *));
 
 void luaT_setfallback (void);  /* only if LUA_COMPAT2_5 */
 

@@ -1,18 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <search.h>
 
-#include <tools/lua/ltask.h>
-#include <tools/lua/lauxlib.h>
-#include <tools/lua/lmem.h>
-#include <tools/lua/ldo.h>
-#include <tools/lua/lvm.h>
+#include "ltask.h"
+#include "lauxlib.h"
+#include "lmem.h"
+#include "ldo.h"
+#include "lvm.h"
 
 void pause_scripts (void) {
 	struct lua_Task *t;
 
 	for (t = L->root_task->next; t != NULL; t = t->next) {
-		if (t->Tstate != DONE)
+		if ((L->curr_task != t) && (t->Tstate != DONE))
 			t->Tstate = PAUSE;
 	}
 }
@@ -21,7 +20,7 @@ void unpause_scripts (void) {
 	struct lua_Task *t;
 
 	for (t = L->root_task->next; t != NULL; t = t->next) {
-		if (t->Tstate == PAUSE)
+		if ((L->curr_task != t) && (t->Tstate != DONE))
 			t->Tstate = YIELD;
 	}
 }
@@ -33,6 +32,11 @@ void start_script (void) {
 	f = L->stack.stack + L->Cstack.lua2C;
 	if (ttype(f) == LUA_T_CLOSURE)
 		f = &clvalue(f)->consts[0];
+	// Start nothing? start_script gets called in this fashion
+	// by the scene in the scrimshaw parlor, if we just return
+	// immediately the game proceeds ok.
+	if (ttype(f) == LUA_T_NIL)
+		return;
 	if (ttype(f) != LUA_T_PROTO)
 		lua_error("can only start_script with a Lua function");
 
@@ -40,7 +44,7 @@ void start_script (void) {
 	new_task = luaI_newtask();
 
 	/* Put the function and arguments onto the new task's stack */
-	for (int i = 0; i < old_task->Cstack.num; i++) {
+	for (int32 i = 0; i < old_task->Cstack.num; i++) {
 		*(L->stack.top) = *(old_task->stack.stack + old_task->Cstack.lua2C + i);
 		incr_top;
 	}
@@ -67,7 +71,7 @@ void start_script (void) {
 void stop_script (void) {
 	struct lua_Task *prev, *t;
 	TObject *f = L->stack.stack + L->Cstack.lua2C;
-	int match;
+	int32 match = 0;
 
 	if ((f == LUA_NOOBJECT) || (ttype(f) != LUA_T_CLOSURE && ttype(f) != LUA_T_PROTO && ttype(f) != LUA_T_TASK))
 		lua_error("Bad argument to stop_script");
@@ -82,7 +86,7 @@ void stop_script (void) {
 			match = (ttype(t->stack.stack) == LUA_T_PMARK && tfvalue(t->stack.stack) == tfvalue(f));
 			break;
 		case LUA_T_TASK:
-			match = (t->id == (int)nvalue(f));
+			match = (t->id == (int32)nvalue(f));
 			break;
 		default:  /* Shut up gcc */
 			break;
@@ -106,7 +110,7 @@ void stop_script (void) {
 }
 
 void next_script (void) {
-	struct lua_Task *t, *prev;
+	struct lua_Task *t = NULL, *prev;
 	TObject *f = L->stack.stack + L->Cstack.lua2C;
 
 	if (f == LUA_NOOBJECT)
@@ -116,7 +120,7 @@ void next_script (void) {
 	if (ttype(f) == LUA_T_NIL) {
 		t = L->root_task;
 	} else if (ttype(f) == LUA_T_TASK) {
-		int taskId = (int)nvalue(f);
+		int32 taskId = (int32)nvalue(f);
 		for (t = L->root_task->next; t != NULL; t = t->next) {
 			if (t->id == taskId)
 				break;
@@ -146,24 +150,24 @@ void identify_script (void) {
 		lua_error("Bad argument to identify_script");
 	}
 
-        int taskId = (int)nvalue(f);
+	int32 taskId = (int32)nvalue(f);
 	for (t = L->root_task->next; t != NULL; t = t->next) {
-                if (t->id == taskId)
-                	break;
-        }
+		if (t->id == taskId)
+			break;
+	}
 
-        if ((t == NULL) || (t->Tstate == DONE)) {
-                ttype(L->stack.top) = LUA_T_NIL;
-        } else {
-                *L->stack.top = *t->stack.stack;
-        }
-        incr_top;
+	if ((t == NULL) || (t->Tstate == DONE)) {
+			ttype(L->stack.top) = LUA_T_NIL;
+	} else {
+		*L->stack.top = *t->stack.stack;
+	}
+	incr_top;
 }
 
 void find_script (void) {
-	struct lua_Task *t, *foundTask = NULL;
+	struct lua_Task *t = NULL, *foundTask = NULL;
 	TObject *f = L->stack.stack + L->Cstack.lua2C;
-	int countTasks = 0, taskId;
+	int32 countTasks = 0, taskId;
 
 	switch (ttype(f)) {
 	case LUA_T_CLOSURE:
@@ -185,7 +189,7 @@ void find_script (void) {
 		t = foundTask;
 		break;
 	case LUA_T_TASK:
-		taskId = (int)nvalue(f);
+		taskId = (int32)nvalue(f);
 		for (t = L->root_task->next; t != NULL; t = t->next) {
 			if ((t->id == taskId) && (t->Tstate != DONE)) {
 				ttype(L->stack.top) = LUA_T_TASK;
@@ -242,9 +246,12 @@ void lua_runtasks (void) {
 
 	prev = L->root_task;
 	while ((t = prev->next) != NULL) {
-		if (t->Tstate == PAUSE)
-			continue;
 		luaI_switchtask(t);
+		// Tstate is not available until after switching tasks
+		if (t->Tstate == PAUSE) {
+			prev = t;
+			continue;
+		}
 		L->errorJmp = &myErrorJmp;
 		L->Tstate = RUN;
 		if (setjmp(myErrorJmp) == 0) {
@@ -256,7 +263,17 @@ void lua_runtasks (void) {
 			L->Tstate = DONE;
 		}
 		L->errorJmp = NULL;
-		if (L->Tstate == DONE) { /* Remove from list of active tasks */
+		prev = t;
+	}
+	// Free the completed tasks
+	// This MUST occur after all the tasks have been run (not during)
+	// or else when one task is freed right after another the task
+	// execution gets hosed.  Test Case: Switching between tw.set and
+	// tb.set in Rubacava causes a crash without this.
+	prev = L->root_task;
+	while ((t = prev->next) != NULL) {
+		luaI_switchtask(t);
+		if (L->Tstate == DONE) { // Remove from list of active tasks
 			luaI_switchtask(old_task);
 			prev->next = t->next;
 			t->next = NULL;

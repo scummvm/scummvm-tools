@@ -1,10 +1,10 @@
 #ifndef ltask_h
 #define ltask_h
 
-#include <tools/lua/lua.h>
-#include <tools/lua/lstate.h>
+#include "lua.h"
+#include "lstate.h"
 
-extern int task_tag;
+extern int32 task_tag;
 
 void start_script (void);
 void stop_script (void);

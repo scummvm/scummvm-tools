@@ -1,29 +1,24 @@
 /*
-** $Id$
+** $Id: lbuiltin.cpp 905 2008-07-20 21:08:22Z aquadran $
 ** Built-in functions
 ** See Copyright Notice in lua.h
 */
 
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <tools/lua/lapi.h>
-#include <tools/lua/lauxlib.h>
-#include <tools/lua/lbuiltin.h>
-#include <tools/lua/ldo.h>
-#include <tools/lua/lfunc.h>
-#include <tools/lua/lmem.h>
-#include <tools/lua/lobject.h>
-#include <tools/lua/lstate.h>
-#include <tools/lua/lstring.h>
-#include <tools/lua/ltable.h>
-#include <tools/lua/ltask.h>
-#include <tools/lua/ltm.h>
-#include <tools/lua/lua.h>
-#include <tools/lua/lundump.h>
+#include "lapi.h"
+#include "lauxlib.h"
+#include "lbuiltin.h"
+#include "ldo.h"
+#include "lfunc.h"
+#include "lmem.h"
+#include "lobject.h"
+#include "lstate.h"
+#include "lstring.h"
+#include "ltable.h"
+#include "ltask.h"
+#include "ltm.h"
+#include "lua.h"
+#include "lundump.h"
 
 
 
@@ -100,7 +95,7 @@ static void foreach (void)
 {
   TObject t = *luaA_Address(luaL_tablearg(1));
   TObject f = *luaA_Address(luaL_functionarg(2));
-  int i;
+  int32 i;
   for (i=0; i<avalue(&t)->nhash; i++) {
     Node *nd = &(avalue(&t)->node[i]);
     if (ttype(ref(nd)) != LUA_T_NIL && ttype(val(nd)) != LUA_T_NIL) {
@@ -118,8 +113,8 @@ static void foreach (void)
 
 static void internaldostring (void)
 {
-  long l;
-  char *s = luaL_check_lstr(1, &l);
+  int32 l;
+  const char *s = luaL_check_lstr(1, &l);
   if (*s == ID_CHUNK)
     lua_error("`dostring' cannot run pre-compiled code");
   if (lua_dobuffer(s, l, luaL_opt_string(2, NULL)) == 0)
@@ -130,7 +125,7 @@ static void internaldostring (void)
 
 static void internaldofile (void)
 {
-  char *fname = luaL_opt_string(1, NULL);
+  const char *fname = luaL_opt_string(1, NULL);
   if (lua_dofile(fname) == 0)
     if (luaA_passresults() == 0)
       lua_pushuserdata(NULL);  /* at least one result to signal no errors */
@@ -185,7 +180,7 @@ static void to_string (void) {
 static void luaI_print (void) {
   TaggedString *ts = luaS_new("tostring");
   lua_Object obj;
-  int i = 1;
+  int32 i = 1;
   while ((obj = lua_getparam(i++)) != LUA_NOOBJECT) {
     luaA_pushobject(&ts->u.s.globalval);
     lua_pushobject(obj);
@@ -209,19 +204,20 @@ static void luaI_type (void)
 
 static void tonumber (void)
 {
-  int base = (int)luaL_opt_number(2, 10);
+  int32 base = (int32)luaL_opt_number(2, 10);
   if (base == 10) {  /* standard conversion */
     lua_Object o = lua_getparam(1);
     if (lua_isnumber(o))
       lua_pushnumber(lua_getnumber(o));
   }
   else {
-    char *s = luaL_check_string(1);
-    unsigned long n;
+    const char *s = luaL_check_string(1);
+	char *e;
+    int32 n;
     luaL_arg_check(0 <= base && base <= 36, 2, "base out of range");
-    n = strtol(s, &s, base);
-    while (isspace(*s)) s++;  /* skip trailing spaces */
-    if (*s) lua_pushnil();  /* invalid format: return nil */
+    n = (int32)strtol(s, &e, base);
+    while (isspace(*e)) e++;  /* skip trailing spaces */
+    if (*e) lua_pushnil();  /* invalid format: return nil */
     else lua_pushnumber(n);
   }
 }
@@ -243,7 +239,7 @@ static void luaI_assert (void)
 
 static void setglobal (void)
 {
-  char *n = luaL_check_string(1);
+  const char *n = luaL_check_string(1);
   lua_Object value = luaL_nonnullarg(2);
   lua_pushobject(value);
   lua_setglobal(n);
@@ -252,7 +248,7 @@ static void setglobal (void)
 
 static void rawsetglobal (void)
 {
-  char *n = luaL_check_string(1);
+  const char *n = luaL_check_string(1);
   lua_Object value = luaL_nonnullarg(2);
   lua_pushobject(value);
   lua_rawsetglobal(n);
@@ -275,22 +271,22 @@ static void luatag (void)
 }
 
 
-static int getnarg (lua_Object table)
+static int32 getnarg (lua_Object table)
 {
   lua_Object temp;
   /* temp = table.n */
   lua_pushobject(table); lua_pushstring("n"); temp = lua_rawgettable();
-  return (lua_isnumber(temp) ? (int)lua_getnumber(temp) : MAX_INT);
+  return (lua_isnumber(temp) ? (int32)lua_getnumber(temp) : MAX_INT);
 }
 
 static void luaI_call (void)
 {
   lua_Object f = luaL_nonnullarg(1);
   lua_Object arg = luaL_tablearg(2);
-  char *options = luaL_opt_string(3, "");
+  const char *options = luaL_opt_string(3, "");
   lua_Object err = lua_getparam(4);
-  int narg = getnarg(arg);
-  int i, status;
+  int32 narg = getnarg(arg);
+  int32 i, status;
   if (err != LUA_NOOBJECT) {  /* set new error method */
     lua_pushobject(err);
     err = lua_seterrormethod();
@@ -330,7 +326,7 @@ static void settag (void)
 {
   lua_Object o = luaL_tablearg(1);
   lua_pushobject(o);
-  lua_settag((int)luaL_check_number(2));
+  lua_settag((int32)luaL_check_number(2));
   lua_pushobject(o);  /* returns first argument */
 }
 
@@ -343,8 +339,8 @@ static void newtag (void)
 
 static void copytagmethods (void)
 {
-  lua_pushnumber(lua_copytagmethods((int)luaL_check_number(1),
-                                    (int)luaL_check_number(2)));
+  lua_pushnumber(lua_copytagmethods((int32)luaL_check_number(1),
+                                    (int32)luaL_check_number(2)));
 }
 
 
@@ -369,14 +365,14 @@ static void settagmethod (void)
 {
   lua_Object nf = luaL_nonnullarg(3);
   lua_pushobject(nf);
-  lua_pushobject(lua_settagmethod((int)luaL_check_number(1),
+  lua_pushobject(lua_settagmethod((int32)luaL_check_number(1),
                                   luaL_check_string(2)));
 }
 
 
 static void gettagmethod (void)
 {
-  lua_pushobject(lua_gettagmethod((int)luaL_check_number(1),
+  lua_pushobject(lua_gettagmethod((int32)luaL_check_number(1),
                                   luaL_check_string(2)));
 }
 
@@ -391,7 +387,7 @@ static void seterrormethod (void)
 
 static void luaI_collectgarbage (void)
 {
-  lua_pushnumber(lua_collectgarbage((long int)luaL_opt_number(1, 0)));
+  lua_pushnumber(lua_collectgarbage((int32)luaL_opt_number(1, 0)));
 }
 
 
@@ -414,7 +410,7 @@ static void countlist (void)
   char *s = luaL_check_string(1);
   GCnode *l = (s[0]=='t') ? L->roottable.next : (s[0]=='c') ? L->rootcl.next :
               (s[0]=='p') ? L->rootproto.next : L->rootglobal.next;
-  int i=0;
+  int32 i=0;
   while (l) {
     i++;
     l = l->next;
@@ -428,7 +424,7 @@ static void testC (void)
 #define getnum(s)	((*s++) - '0')
 #define getname(s)	(nome[0] = *s++, nome)
 
-  static int locks[10];
+  static int32 locks[10];
   lua_Object reg[10];
   char nome[2];
   char *s = luaL_check_string(1);
@@ -446,16 +442,16 @@ static void testC (void)
                   break;
                 }
       case 'P': reg[getnum(s)] = lua_pop(); break;
-      case 'g': { int n=getnum(s); reg[n]=lua_getglobal(getname(s)); break; }
-      case 'G': { int n = getnum(s);
+      case 'g': { int32 n=getnum(s); reg[n]=lua_getglobal(getname(s)); break; }
+      case 'G': { int32 n = getnum(s);
                   reg[n] = lua_rawgetglobal(getname(s));
                   break;
                 }
       case 'l': locks[getnum(s)] = lua_ref(1); break;
       case 'L': locks[getnum(s)] = lua_ref(0); break;
-      case 'r': { int n=getnum(s); reg[n]=lua_getref(locks[getnum(s)]); break; }
+      case 'r': { int32 n=getnum(s); reg[n]=lua_getref(locks[getnum(s)]); break; }
       case 'u': lua_unref(locks[getnum(s)]); break;
-      case 'p': { int n = getnum(s); reg[n] = lua_getparam(getnum(s)); break; }
+      case 'p': { int32 n = getnum(s); reg[n] = lua_getparam(getnum(s)); break; }
       case '=': lua_setglobal(getname(s)); break;
       case 's': lua_pushstring(getname(s)); break;
       case 'o': lua_pushobject(reg[getnum(s)]); break;
