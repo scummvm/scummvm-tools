@@ -608,6 +608,12 @@ wxWindow *ChooseOutPage::CreatePanel(wxWindow *parent) {
 	// some help perhaps?
 	sizer->Add(new wxStaticText(panel, wxID_ANY,
 		wxT("Select an output directory (using tool ") + _configuration.selectedTool->getName() + wxT(").\n\n") +
+		// FIXME: The following should *NOT* be shown to the user, but rather addressed by
+		// us developers!
+		// Indeed, either always ask for an output dir; or if that is not possible, then at least
+		// show an appropriate hint text depending on whether the user has to select a directory
+		// or something else.
+		// FIXME: Be consistent "directories" vs "folders", pick one.
 		wxT("Note: Some tools display file picker here, this should perhaps be changed to always ") +
 		wxT("be directory output, since often don't want to name the output file.)")
 		),
