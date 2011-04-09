@@ -211,7 +211,7 @@ static int res_write(struct mspack_file *file, void *buffer, int bytes) {
 	return -1;
 }
 
-static void res_msg(struct mspack_file *file, char *format, ...) {
+static void res_msg(struct mspack_file *file, const char *format, ...) {
 	va_list ap;
 
 	if (file)

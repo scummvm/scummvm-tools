@@ -60,7 +60,7 @@ struct mspack_system {
 	      int mode);
   off_t (*tell)(struct mspack_file *file);
   void (*message)(struct mspack_file *file,
-		  char *format,
+		  const char *format,
 		  ...);
   void * (*alloc)(struct mspack_system *self,
 		  size_t bytes);
