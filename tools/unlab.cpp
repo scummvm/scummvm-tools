@@ -28,11 +28,16 @@
 #include <stdint.h>
 #include <string.h>
 
+
+#define GT_GRIM 1
+#define GT_EMI 2
+
 struct lab_header {
 	uint32_t magic;
 	uint32_t magic2;
 	uint32_t num_entries;
 	uint32_t string_table_size;
+	uint32_t string_table_offset;
 };
 
 struct lab_entry {
@@ -58,7 +63,15 @@ int main(int argc, char **argv) {
 	char *str_table;
 	uint32_t i;
 	off_t offset;
-
+	uint8_t g_type;
+	
+	if(argc > 2 && !strcmp(argv[2],"EMI"))
+		g_type = GT_EMI;
+	else
+		g_type = GT_GRIM;
+	
+	printf("g_type: %d",g_type);
+	
 	infile = fopen(argv[1], "rb");
 	if (infile == 0) {
 		printf("can't open source file: %s\n", argv[1]);
@@ -67,22 +80,45 @@ int main(int argc, char **argv) {
 
 	fread(&head.magic, 1, 4, infile);
 	fread(&head.magic2, 1, 4, infile);
-	uint32_t num, s_size;
+	uint32_t num, s_size, s_offset;
 	fread(&num, 1, 4, infile);
 	fread(&s_size, 1, 4, infile);
+	if(g_type == GT_EMI)
+		fread(&s_offset,1,4,infile);
 	head.num_entries = READ_LE_UINT32(&num);
 	head.string_table_size = READ_LE_UINT32(&s_size);
 	if (0 != memcmp(&head.magic, "LABN", 4)) {
 		printf("There is no LABN header in source file\n");
 		exit(1);
 	}
-
+	
 	entries = (struct lab_entry *)malloc(head.num_entries * sizeof(struct lab_entry));
-	fread(entries, 1, head.num_entries * sizeof(struct lab_entry), infile);
-
 	str_table = (char *)malloc(head.string_table_size);
-	fread(str_table, 1, head.string_table_size, infile);
-
+	// Grim-stuff
+	if(g_type == GT_GRIM){
+		fread(entries, 1, head.num_entries * sizeof(struct lab_entry), infile);
+		
+		fread(str_table, 1, head.string_table_size, infile);
+	}
+	// EMI-stuff
+	else if(g_type == GT_EMI){
+		// EMI has a string-table-offset
+		head.string_table_offset = READ_LE_UINT32(&s_offset) - 0x13d0f;
+		// Find the string-table
+		fseek(infile, head.string_table_offset, SEEK_SET);
+		// Read the entire string table into str-table
+		fread(str_table, 1, head.string_table_size, infile);
+		fseek(infile, 20, SEEK_SET);
+		
+		// Decrypt the string table
+		uint32_t j;
+		for (j = 0; j < head.string_table_size; j++)
+			if (str_table[j] != 0)
+				str_table[j] ^= 0x96;
+		fread(entries, 1, head.num_entries * sizeof(struct lab_entry), infile);
+		
+	}
+	
 	for (i = 0; i < head.num_entries; i++) {
 		outfile = fopen(str_table + READ_LE_UINT32(&entries[i].fname_offset), "wb");
 		offset = READ_LE_UINT32(&entries[i].start);
@@ -91,8 +127,9 @@ int main(int argc, char **argv) {
 		fread(buf, 1, READ_LE_UINT32(&entries[i].size), infile);
 		fwrite(buf, 1, READ_LE_UINT32(&entries[i].size), outfile);
 		fclose(outfile);
+		
 	}
-
+		
 	fclose(infile);
 	return 0;
 }
