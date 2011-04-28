@@ -1,0 +1,33 @@
+int number of setups
+
+each setup {
+	a padded 128 byte string
+	an unknown integer
+	the null terminated name of the tile file
+	some floats assumed to be in this order {
+		position vector
+		interest vector
+		roll
+		fov
+		nclip
+		fclip
+	}
+}
+int number of lights
+each light {
+	100 bytes that is curently unknown
+}
+
+int number of sectors
+each sector {
+	int number of vertecies
+	number of vertecies in vectors
+	int name length (includes null termination)
+	the name of the sector
+	int the id
+	bool visible
+	int type
+	int unknown, but tells how many extra bits there are
+	unknown*4 bytes of stuff
+	float the height
+}
