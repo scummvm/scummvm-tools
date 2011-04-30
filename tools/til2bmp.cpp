@@ -5,40 +5,41 @@
 #include <cassert>
 #include <sys/types.h>
 #include <sstream>
+#include <stdint.h>
 
 
 struct BMPHeader{
-	uint size;
-	uint reserved;
-	uint offset;
-	uint headerSize;
+	uint32_t size;
+	uint32_t reserved;
+	uint32_t offset;
+	uint32_t headerSize;
 	int32_t width;
 	int32_t height;
-	uint nplanesbpp;
-	uint compress_type;
-	uint bmp_bytesz;
+	uint32_t nplanesbpp;
+	uint32_t compress_type;
+	uint32_t bmp_bytesz;
 	int32_t hres;
 	int32_t vres;
-	uint ncolors;
-	uint nimpcolors;
+	uint32_t ncolors;
+	uint32_t nimpcolors;
 };
 
-Bytef *decompress(Bytef *in, int size, uint &outsize);
+Bytef *decompress(Bytef *in, int size, uint32_t &outsize);
 
 class LucasBitMap{
 public:
 	char *data;
-	inline uint size(){	return height*width*bpp; }
-	uint width, height, bpp;
+	inline uint32_t size(){	return height*width*bpp; }
+	uint32_t width, height, bpp;
 	~LucasBitMap(){ delete[] data; }
 	LucasBitMap() : data(0), width(0), height(0), bpp(4){}
-	LucasBitMap(char* data, uint width, uint height,uint bpp=4, bool copy=true);
+	LucasBitMap(char* data, uint32_t width, uint32_t height,uint32_t bpp=4, bool copy=true);
 	void MakeNewData(){ data = new char[size()]; }
 	void BGR2RGB();
 	void WriteBMP(const char* name);
 };
 
-LucasBitMap::LucasBitMap(char* data, uint width, uint height,uint bpp, bool copy)  : width(width), height(height), bpp(bpp), data(data){
+LucasBitMap::LucasBitMap(char* data, uint32_t width, uint32_t height,uint32_t bpp, bool copy)  : width(width), height(height), bpp(bpp), data(data){
 	if(data==0)
 		MakeNewData();
 	else if(copy){
@@ -71,8 +72,8 @@ void LucasBitMap::WriteBMP(const char* name){
 }
 
 void LucasBitMap::BGR2RGB(){
-	uint end = size();
-	for(uint i = 0; i < end; i += 4){
+	uint32_t end = size();
+	for(uint32_t i = 0; i < end; i += 4){
 		char temp = data[i+2];
 		data[i+2] = data[i];
 		data[i] = temp;
@@ -130,15 +131,15 @@ LucasBitMap* MakeFullPicture(LucasBitMap** bits){
 	return fullImage;
 }
 
-void ProcessFile(const char *_data, uint size, std::string name){
+void ProcessFile(const char *_data, uint32_t size, std::string name){
 	std::stringstream til;
-	uint outsize = 0;
+	uint32_t outsize = 0;
 	Bytef *data = decompress((Bytef *)_data, size, outsize);
 	if(!data)
 		return;
 	til.write((const char *)data, outsize);
 	delete[] data;
-	uint id, bmoffset, rects, b, c;
+	uint32_t id, bmoffset, rects, b, c;
 	
 	til.read((char *)&id, 4);
 	til.read((char *)&bmoffset, 4);
@@ -148,14 +149,14 @@ void ProcessFile(const char *_data, uint size, std::string name){
 	
 	til.seekg(bmoffset+128, std::ios::beg);
 	
-	uint width = 0, height = 0;
+	uint32_t width = 0, height = 0;
 	
 	LucasBitMap **allTheData = new LucasBitMap*[5];
 	
-	for (uint i = 0; i < 5; ++i) {
+	for (uint32_t i = 0; i < 5; ++i) {
 		til.read((char *)&width, 4);
 		til.read((char *)&height, 4);
-		uint size = width*height*4;
+		uint32_t size = width*height*4;
 		char *data = new char[size];
 		
 		til.read(data, size);
@@ -166,13 +167,17 @@ void ProcessFile(const char *_data, uint size, std::string name){
 	LucasBitMap* bit = MakeFullPicture(allTheData);
 	bit->WriteBMP(name.c_str());
 	
+	for (uint32_t i = 0; i < 5; ++i) {
+		delete allTheData[i];
+	}
+
 	delete bit;
 	delete[] allTheData;
 }
 
 
-Bytef *decompress(Bytef *in, int size, uint &outsize){
-	const uint block = 8*1024*1024; 
+Bytef *decompress(Bytef *in, int size, uint32_t &outsize){
+	const uint32_t block = 8*1024*1024; 
 	Bytef *dest = new Bytef[block]; // 8 MiB ought to be enough.
 	
 	int success = 0;
@@ -214,6 +219,7 @@ int main(int argc, char **argv){
 	std::fstream file(argv[1], std::fstream::in|std::fstream::binary);
 	if (!file.is_open()) {
 		std::cout << "Could not open file" << std::endl;
+		return 0;
 	}
 	
 	std::string outname = argv[1];
