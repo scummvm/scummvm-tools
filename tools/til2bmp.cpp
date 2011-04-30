@@ -3,6 +3,7 @@
 #include <string>
 #include <zlib.h>
 #include <cassert>
+#include <sstream>
 
 typedef unsigned int uint;
 
@@ -24,13 +25,14 @@ struct BMPHeader
 	unsigned int nimpcolors;
 };
 
+Bytef *decompress(Bytef *in, int size, int &outsize);
 
 class LucasBitMap
 {
 private:
 	inline uint size(){	return height*width*bpp; }
 public:
-	char* data;
+	char *data;
 	unsigned int width, height, bpp;
 	~LucasBitMap();
 	LucasBitMap() : data(0), width(0), height(0), bpp(4){}
@@ -47,7 +49,7 @@ public:
 
 LucasBitMap::~LucasBitMap()
 {
-	delete data;
+	delete[] data;
 }
 
 LucasBitMap::LucasBitMap(char* data, uint width, uint height,uint bpp)
@@ -56,13 +58,13 @@ LucasBitMap::LucasBitMap(char* data, uint width, uint height,uint bpp)
 	this->height = height;
 	this->bpp = bpp;
 	MakeNewData();
-	memcpy(this->data,data,width*height*bpp);
+	memcpy(this->data, data, size());
 }
 
 
 void LucasBitMap::MakeNewData() // If it needs deletion, please do that before
 {
-	data = new char[width*height*bpp];
+	data = new char[size()];
 }
 
 void LucasBitMap::WriteBMP(std::string name)
@@ -97,7 +99,8 @@ void LucasBitMap::AdjustHeight(int newHeight)
 	UpsideDown();
 	height = newHeight;
 	char *newData = new char[size()];
-	memcpy(newData,data,size());
+	memcpy(newData, data, size());
+	delete[] data;
 	data = newData;
 	UpsideDown();
 }
@@ -105,9 +108,9 @@ void LucasBitMap::AdjustHeight(int newHeight)
 void LucasBitMap::BGR2RGB()
 {
 	int end = size();
-	for(int i=0;i<end;i+=4)
+	for(int i = 0; i < end; i += 4)
 	{
-		int temp = data[i+2];
+		char temp = data[i+2];
 		data[i+2] = data[i];
 		data[i] = temp;
 	}
@@ -122,14 +125,14 @@ void LucasBitMap::UpsideDown()
 {
 	unsigned lineLength = width*4;
 	char* fixedData = new char[size()];
-	for(int i=0;i<height;i++)
+	for(uint i = 0; i < height; i++)
 	{
 		char* to = GetLine(i,fixedData, width);
 		char* from = GetLine(height-i-1,data, width);
 		memcpy(to,from,lineLength);
 	}
-	memcpy(data,fixedData,size());
-	delete fixedData;
+	memcpy(data, fixedData, size());
+	delete[] fixedData;
 }
 
 void LucasBitMap::AddToRightOfThis(LucasBitMap* bitmap)
@@ -139,7 +142,7 @@ void LucasBitMap::AddToRightOfThis(LucasBitMap* bitmap)
 	int newSize = size() + bitmap->size();
 	char* dest = new char[newSize];
 	int newWidth = bitmap->width+width;
-	for(int i=0; i < height; i++)
+	for(uint i = 0; i < height; i++)
 	{
 		char *part1 = GetLine(i,data,width);
 		char *part2 = GetLine(i,bitmap->data,bitmap->width);
@@ -147,10 +150,11 @@ void LucasBitMap::AddToRightOfThis(LucasBitMap* bitmap)
 		memcpy(to,part1,width*4);
 		memcpy(to+width*4,part2,bitmap->width*4);
 	}
-	delete data;
+	delete[] data;
 	width+=bitmap->width;
 	MakeNewData();
 	memcpy(data,dest,newSize);
+	delete[] dest;
 }
 
 void LucasBitMap::AddBelowThis(LucasBitMap* bitmap)
@@ -160,7 +164,7 @@ void LucasBitMap::AddBelowThis(LucasBitMap* bitmap)
 	int newSize = size() + bitmap->size();
 	char* dest = new char[newSize];
 
-	for(int i=0; i < bitmap->height; i++)
+	for(uint i = 0; i < bitmap->height; i++)
 	{
 		char* from = GetLine(i,bitmap->data,width);
 		char* to = GetLine(i,dest,width);
@@ -168,16 +172,17 @@ void LucasBitMap::AddBelowThis(LucasBitMap* bitmap)
 	}	
 
 	char *lowerFrom = dest + bitmap->size();
-	for(int i=0; i < height; i++)
+	for(uint i=0; i < height; i++)
 	{
 		char *from = GetLine(i,data,width);
 		char *to = GetLine(i,lowerFrom,width);
 		memcpy(to,from,width*4);
 	}		
-	delete data;
+	delete[] data;
 	height+=bitmap->height;
 	MakeNewData();
 	memcpy(data,dest,newSize);
+	delete[] dest;
 }
 
 LucasBitMap* LucasBitMap::GetSubImage(int start, int end)
@@ -186,7 +191,7 @@ LucasBitMap* LucasBitMap::GetSubImage(int start, int end)
 	dest->width = end-start;
 	dest->height = height;
 	dest->MakeNewData();
-	for(int i=0;i<height;i++)
+	for(uint i = 0; i < height; i++)
 	{
 		char* from = GetLine(i,data,width);
 		char* to = GetLine(i,dest->data,dest->width);
@@ -196,7 +201,7 @@ LucasBitMap* LucasBitMap::GetSubImage(int start, int end)
 }
 
 
-void MakeTheBiggerPicture(LucasBitMap** bits, int numPieces, std::string name)
+void MakeTheBiggerPicture(LucasBitMap** bits, std::string name)
 {
 	// Get the parts that belong in the rightmost 128 pixels of the screen
 	// They are in tile 3, half each.
@@ -221,34 +226,37 @@ void MakeTheBiggerPicture(LucasBitMap** bits, int numPieces, std::string name)
 	bits[0]->AddBelowThis(bits[3]);
 	delete bits[3];
 
-	std::string filename = name;
-	bits[0]->WriteBMP(filename.c_str());
+	bits[0]->WriteBMP(name.c_str());
 	delete bits[0];
 
 }
 
-void ProcessFile(std::fstream &til, std::string name)
+void ProcessFile(const char *_data, int size, std::string name)
 {
+	std::stringstream til;
+	int outsize = 0;
+	Bytef *data = decompress((Bytef *)_data, size, outsize);
+	til.write((const char *)data, outsize);
+	delete[] data;
 	int id, bmoffset, rects, b, c;
+
 	til.read((char *)&id, 4);
 	til.read((char *)&bmoffset, 4);
 	til.read((char *)&rects, 4);
 	til.read((char *)&b, 4);
 	til.read((char *)&c, 4);
 	
-	til.seekg(bmoffset+128, std::ios_base::beg);
+	til.seekg(bmoffset+128, std::ios::beg);
 	
 	int width = 0, height = 0;
 	
 	LucasBitMap **allTheData = new LucasBitMap*[5];
 	int *sizes = new int[5];
-	for (int i = 0; i < 6; ++i) {
+	for (int i = 0; i < 5; ++i) {
 		til.read((char *)&width, 4);
 		til.read((char *)&height, 4);
 		unsigned int size = width*height*4;
 		char *data = new char[size];
-		char name2[32];
-		sprintf(name2, "%d.bmp", i);
 		
 		til.read(data, size);
 		
@@ -257,74 +265,68 @@ void ProcessFile(std::fstream &til, std::string name)
 		allTheData[i]->UpsideDown();
 
 		sizes[i] = size;
-		allTheData[i]->WriteBMP(name2);
-		delete data;
+		delete[] data;
 	}
-	MakeTheBiggerPicture(allTheData,5, name);
-	
+	MakeTheBiggerPicture(allTheData, name);
+	delete[] sizes;
+	delete[] allTheData;
 }
 
-// Borrows heavily from zLibs HowTo-guide.
-std::string decompress(std::string filename)
+
+Bytef *decompress(Bytef *in, int size, int &outsize)
 {
-	Bytef* buf;
-	FILE* f;
-	std::string outfileName = filename + std::string(".bmp");
-	std::cout << "Opening : " << filename << std::endl;
-	f = fopen(filename.c_str(),"rb");
-	fseek(f,0,SEEK_END);
-	uint size = ftell(f);
 	const unsigned int block = 8192*1024; 
-	buf = new unsigned char[block];
-	fseek(f,0,SEEK_SET);
-	
-	char* test= new char[5];
-	test[5]='\0';
-	fread(test,1,4,f);
-	fseek(f,0,SEEK_SET);
-	
-	if(strcmp(test,"TIL0"))
-	{
-			
-		int success = 0;
-		z_stream_s zStream;
-		zStream.next_in = Z_NULL;
-		zStream.avail_in = 0;
-		zStream.zalloc = Z_NULL;
-		zStream.zfree = Z_NULL;
-		zStream.opaque = Z_NULL;
+	int success = 0;
+	z_stream_s zStream;
+	zStream.next_in = Z_NULL;
+	zStream.avail_in = 0;
+	zStream.zalloc = Z_NULL;
+	zStream.zfree = Z_NULL;
+	zStream.opaque = Z_NULL;
 
-		FILE* of = fopen(outfileName.c_str(),"wb");
-		
-		success = inflateInit2(&zStream, 16+MAX_WBITS);
 
-		unsigned char* dest = new unsigned char[block]; // Please don't tell me we have larger compression-ratios than this;
-												//do{
-		zStream.avail_in = fread(buf,1,block,f);
-		zStream.next_in = buf;
+	success = inflateInit2(&zStream, 16+MAX_WBITS);
+
+	Bytef *dest = new Bytef[block]; // Please don't tell me we have larger compression-ratios than this;
+
+	zStream.avail_in = size;
+	zStream.next_in = in;
 			
-		zStream.avail_out = block;
-		zStream.next_out = dest;
+	zStream.avail_out = block;
+	zStream.next_out = dest;
 				
-		success = inflate(&zStream, Z_NO_FLUSH);
+	success = inflate(&zStream, Z_NO_FLUSH);
+
+	outsize = zStream.total_out;
 					
-		int wroteNum = fwrite(dest,1,block-zStream.avail_out,of);
 				
-		if(success != Z_STREAM_END)
-			std::cout << "Oops, more than 8 MiB needed\n";
-		return outfileName;
+	if(success != Z_STREAM_END) {
+		std::cout << "Oops, more than 8 MiB needed\n";
+		return 0;
 	}
-	else
-		return filename;
+	return dest;
 }
+
 int main(int argc, char **argv)
 {
-	std::string outfileName = decompress(argv[1]);
-		
-	std::fstream file(outfileName.c_str(), std::fstream::in|std::fstream::binary);
+	if (argc < 2) {
+		std::cout << "No Argument" << std::endl;
+		return 0;
+	}
+	std::fstream file(argv[1], std::fstream::in|std::fstream::binary);
 	if (!file.is_open()) {
 		std::cout << "Could not open file" << std::endl;
 	}
-	ProcessFile(file,outfileName);
+	std::string outname = argv[1];
+	outname += ".bmp";
+	file.seekg(0, std::ios::end);
+	int end = (int)file.tellg();
+	file.seekg(0, std::ios::beg);
+	char *data = new char[end];
+	file.read(data, end);
 	file.close();
+	
+	ProcessFile(data, end, outname);
+
+	delete[] data;
 }
