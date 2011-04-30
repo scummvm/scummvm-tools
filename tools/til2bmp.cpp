@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <zlib.h>
+#include <cassert>
 
 typedef unsigned int uint;
 
@@ -41,7 +42,7 @@ public:
 	void AddToRightOfThis(LucasBitMap* bitmap);
 	void AddBelowThis(LucasBitMap* bitmap);
 	LucasBitMap* GetSubImage(int start, int end);
-	void WriteBMP(const char *name);
+	void WriteBMP(std::string name);
 };
 
 LucasBitMap::~LucasBitMap()
@@ -64,9 +65,10 @@ void LucasBitMap::MakeNewData() // If it needs deletion, please do that before
 	data = new char[width*height*bpp];
 }
 
-void LucasBitMap::WriteBMP(const char *name)
+void LucasBitMap::WriteBMP(std::string name)
 {
-	std::fstream file(name, std::fstream::out | std::fstream::binary);
+	std::cout << "WriteBMP("<<name<<")\n";
+	std::fstream file(name.c_str(), std::fstream::out | std::fstream::binary);
 	BMPHeader header;
 	int size = width*height*4;
 	//header.bm = 19778;
@@ -219,13 +221,13 @@ void MakeTheBiggerPicture(LucasBitMap** bits, int numPieces, std::string name)
 	bits[0]->AddBelowThis(bits[3]);
 	delete bits[3];
 
-	std::string filename = name+".bmp";
+	std::string filename = name;
 	bits[0]->WriteBMP(filename.c_str());
 	delete bits[0];
 
 }
 
-void ProcessFile(std::fstream &til, const char* name)
+void ProcessFile(std::fstream &til, std::string name)
 {
 	int id, bmoffset, rects, b, c;
 	til.read((char *)&id, 4);
@@ -245,9 +247,9 @@ void ProcessFile(std::fstream &til, const char* name)
 		til.read((char *)&height, 4);
 		unsigned int size = width*height*4;
 		char *data = new char[size];
-		char name[32];
-		sprintf(name, "%d.bmp", i);
-
+		char name2[32];
+		sprintf(name2, "%d.bmp", i);
+		
 		til.read(data, size);
 		
 		allTheData[i] = new LucasBitMap(data, width, height);
@@ -255,19 +257,74 @@ void ProcessFile(std::fstream &til, const char* name)
 		allTheData[i]->UpsideDown();
 
 		sizes[i] = size;
-		allTheData[i]->WriteBMP(name);
+		allTheData[i]->WriteBMP(name2);
 		delete data;
 	}
 	MakeTheBiggerPicture(allTheData,5, name);
 	
 }
 
+// Borrows heavily from zLibs HowTo-guide.
+std::string decompress(std::string filename)
+{
+	Bytef* buf;
+	FILE* f;
+	std::string outfileName = filename + std::string(".bmp");
+	std::cout << "Opening : " << filename << std::endl;
+	f = fopen(filename.c_str(),"rb");
+	fseek(f,0,SEEK_END);
+	uint size = ftell(f);
+	const unsigned int block = 8192*1024; 
+	buf = new unsigned char[block];
+	fseek(f,0,SEEK_SET);
+	
+	char* test= new char[5];
+	test[5]='\0';
+	fread(test,1,4,f);
+	fseek(f,0,SEEK_SET);
+	
+	if(strcmp(test,"TIL0"))
+	{
+			
+		int success = 0;
+		z_stream_s zStream;
+		zStream.next_in = Z_NULL;
+		zStream.avail_in = 0;
+		zStream.zalloc = Z_NULL;
+		zStream.zfree = Z_NULL;
+		zStream.opaque = Z_NULL;
+
+		FILE* of = fopen(outfileName.c_str(),"wb");
+		
+		success = inflateInit2(&zStream, 16+MAX_WBITS);
+
+		unsigned char* dest = new unsigned char[block]; // Please don't tell me we have larger compression-ratios than this;
+												//do{
+		zStream.avail_in = fread(buf,1,block,f);
+		zStream.next_in = buf;
+			
+		zStream.avail_out = block;
+		zStream.next_out = dest;
+				
+		success = inflate(&zStream, Z_NO_FLUSH);
+					
+		int wroteNum = fwrite(dest,1,block-zStream.avail_out,of);
+				
+		if(success != Z_STREAM_END)
+			std::cout << "Oops, more than 8 MiB needed\n";
+		return outfileName;
+	}
+	else
+		return filename;
+}
 int main(int argc, char **argv)
 {
-	std::fstream file(argv[1], std::fstream::in|std::fstream::binary);
+	std::string outfileName = decompress(argv[1]);
+		
+	std::fstream file(outfileName.c_str(), std::fstream::in|std::fstream::binary);
 	if (!file.is_open()) {
 		std::cout << "Could not open file" << std::endl;
 	}
-	ProcessFile(file,argv[1]);
+	ProcessFile(file,outfileName);
 	file.close();
 }
