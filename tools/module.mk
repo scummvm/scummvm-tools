@@ -39,7 +39,7 @@ clean-tools:
 # Build rules for the tools
 #
 
-tools/delua$(EXEEXT): tools/delua.o
+tools/delua$(EXEEXT): $(srcdir)/tools/delua.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
 	-L$(srcdir)/common -Ltools/lua -o $@ $< -llua

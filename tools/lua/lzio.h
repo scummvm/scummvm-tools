@@ -8,7 +8,7 @@
 #ifndef lzio_h
 #define lzio_h
 
-#include <common/sys.h>
+#include "common/scummsys.h"
 
 
 

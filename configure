@@ -862,12 +862,12 @@ fi
 #
 case $_endian in
 	big)
-		add_line_to_config_h '/* #define SYSTEM_LITTLE_ENDIAN */'
-		add_line_to_config_h '#define SYSTEM_BIG_ENDIAN'
+		add_line_to_config_h '/* #define SCUMM_LITTLE_ENDIAN */'
+		add_line_to_config_h '#define SCUMM_BIG_ENDIAN'
 		;;
 	little)
-		add_line_to_config_h '#define SYSTEM_LITTLE_ENDIAN'
-		add_line_to_config_h '/* #define SYSTEM_BIG_ENDIAN */'
+		add_line_to_config_h '#define SCUMM_LITTLE_ENDIAN'
+		add_line_to_config_h '/* #define SCUMM_BIG_ENDIAN */'
 		;;
 	*)
 		exit 1
@@ -876,7 +876,7 @@ esac
 
 add_to_config_h_if_yes $_have_x86 '#define HAVE_X86'
 
-add_to_config_h_if_yes $_need_memalign '#define SYSTEM_NEED_ALIGNMENT'
+add_to_config_h_if_yes $_need_memalign '#define SCUMM_NEED_ALIGNMENT'
 
 #
 # Check whether to enable a verbose build
