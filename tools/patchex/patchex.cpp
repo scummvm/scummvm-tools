@@ -267,7 +267,7 @@ void extract_cabinet(char *filename, unsigned int lenght) {
 	int count;
 
 	original_executable = res_open(&res_system, filename, MSPACK_SYS_OPEN_READ);
-	destination_cabinet = res_open(&res_system, "gfupd101.cab", MSPACK_SYS_OPEN_WRITE);
+	destination_cabinet = res_open(&res_system, "original.cab", MSPACK_SYS_OPEN_WRITE);
 	
 	buffer = res_alloc(NULL, BUFFER_SIZE);
 	copied_bytes = 0;
@@ -277,22 +277,14 @@ void extract_cabinet(char *filename, unsigned int lenght) {
 		res_write(destination_cabinet, buffer, count);
 		copied_bytes  += count;
 	}
-	printf("Update cabinet extracted as gfupd101.cab.\n");
+	printf("Update cabinet extracted as original.cab.\n");
 
 	res_free(buffer);
 	res_close(original_executable);
 	res_close(destination_cabinet);
 }
 
-char *filter_none(struct mscabd_file *file) {
-	char *filename;
-
-	filename = (char *)malloc(strlen(file->filename) + 1);
-	strcpy(filename, file->filename);
-	return filename;
-}
-
-char *filter_localised(struct mscabd_file *file) {
+char *file_filter(struct mscabd_file *file) {
 	char *filename, file_lang[3];
 
 	filename = (char *)malloc(strlen(file->filename) + 1);
@@ -303,13 +295,13 @@ char *filter_localised(struct mscabd_file *file) {
 		return NULL;
 }
 
-void extract_files(struct mscab_decompressor *cabd, struct mscabd_cabinet *cab, char *(* filter) (struct mscabd_file *)) {
+void extract_files(struct mscab_decompressor *cabd, struct mscabd_cabinet *cab) {
 	unsigned int files_extracted = 0;
 	struct mscabd_file *file;
 	char *filename;
 
 	for (file = cab->files; file; file = file->next) {
-		if ((filename = filter(file))) {
+		if ((filename = file_filter(file))) {
 			if (cabd->extract(cabd, file, filename) != MSPACK_ERR_OK) {
 				printf("Extract error on %s!\n", file->filename);
 				continue;
@@ -334,13 +326,13 @@ int main(int argc, char *argv[]) {
 
 	// Argument checks and usage display
 	if (argc != 3) {
-		printf("Usage: patchex gfupd101.exe LanguageCode/SpecialAction\n");
+		printf("Usage: patchex PATCH_EXECUTABLE LANGUAGE\n");
+		printf("Extract update files of game update from PATCH_EXECUTABLE (e.g. gfupd101.exe) in a specified LANGUAGE.\n");
+		printf("Please be sure that the update contains this language.\n");
 		printf("Available languages:\n");
 		for (i = 0; kLanguages_code[i]; i++)
 			printf("-%s (%s)\n", kLanguages_ext[i], kLanguages_code[i]);
-		printf("Special actions:\n");
-		printf("- ALL: Extracts all files with their original names.\n");
-		printf("- CABINET: Extracts only the cabinet\n");
+		printf("Alternately original archive could be extracted as original.cab with CABINET keyword insted of language.\n");
 		exit(1);
 	}
 
@@ -349,12 +341,6 @@ int main(int argc, char *argv[]) {
 	if (strcasecmp("CABINET", argv[2]) == 0) {
 		printf("Cabinet extraction selected\n");
 		action = CABINET_ACTION;
-	}
-
-	// All languages check
-	if (strcasecmp("ALL", argv[2]) == 0) {
-		printf("All languages selected\n");
-		action = ALL_LANGUAGES_ACTION;
 	}
 
 	// Language check
@@ -368,7 +354,7 @@ int main(int argc, char *argv[]) {
 
 	// Unknown action
 	if (action == UNKNOWN_ACTION) {
-		printf("Unknown language or action!\n");
+		printf("Unknown language!\n");
 		exit(1);
 	}
 
@@ -378,14 +364,8 @@ int main(int argc, char *argv[]) {
 		if ((cab = cabd->open(cabd, argv[1])) != MSPACK_ERR_OK) {
 			if (action == CABINET_ACTION)
 				extract_cabinet(argv[1], cab->length);
-			else {
-				switch (action) {
-					case ALL_LANGUAGES_ACTION:	filter = &filter_none;		break;
-					case LOCALISED_ACTION:		filter = &filter_localised;	break;
-					default: printf("Internal error!\n"); exit(1);			break;
-				}
-				extract_files(cabd, cab, filter);
-			}
+			else if (action == LOCALISED_ACTION)
+				extract_files(cabd, cab);
 			cabd->close(cabd, cab);
 		} else
 			printf("Unable to open %s!\n", argv[1]);
