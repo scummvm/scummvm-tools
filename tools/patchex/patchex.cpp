@@ -52,9 +52,8 @@ const char *kLanguages_code[] = {  "US", "FR", "GE", "IT", "PT", "SP",  NULL };
 #define RAND_A			(0x343FD)
 #define RAND_B			(0x269EC3)
 #define CODE_TABLE_SIZE		(0x100)
-#define CONTAINER_OFFSET	(0x1C000)
-#define CABINET_OFFSET		(CONTAINER_OFFSET + 8)
 #define CONTAINER_MAGIC		"1CNT"
+#define CABINET_MAGIC			"MSCF"
 
 #define BUFFER_SIZE 		102400
 char lang[3];
@@ -77,6 +76,7 @@ struct mspack_file_p {
 	FILE *fh;
 	const char *name;
 	uint16 *CodeTable;
+	off_t cabinet_offset;
 };
 
 uint16 *create_dec_table(uint32 key) {
@@ -99,6 +99,7 @@ static struct mspack_file *res_open(struct mspack_system *handle, const char *fi
 	struct mspack_file_p *fh;
 	const char *fmode;
 	uint32 magic, key;
+	uint8 count;
 	
 	switch (mode) {
 		case MSPACK_SYS_OPEN_READ:   fmode = "rb";  break;
@@ -121,13 +122,26 @@ static struct mspack_file *res_open(struct mspack_system *handle, const char *fi
 	if (mode != MSPACK_SYS_OPEN_READ)
 		return (struct mspack_file *)fh;
 
-	handle->seek((struct mspack_file *)fh, (off_t)CONTAINER_OFFSET, MSPACK_SYS_SEEK_START);
-	uint8 count = handle->read((struct mspack_file *) fh, &magic, 4);
-	
-	if (count == 4 && memcmp(&magic, CONTAINER_MAGIC, 4) == 0) {
-		handle->read((struct mspack_file *)fh, &key, 4);
-		key = READ_LE_UINT32(&key);
-		fh->CodeTable = create_dec_table(key);
+	//Search for data
+	while(!feof(fh->fh)) {
+		//Check for content signature
+		count = handle->read((struct mspack_file *) fh, &magic, 4);
+		if (count == 4 && memcmp(&magic, CONTAINER_MAGIC, 4) == 0) {
+			handle->read((struct mspack_file *)fh, &key, 4);
+			key = READ_LE_UINT32(&key);
+			fh->CodeTable = create_dec_table(key);
+			fh->cabinet_offset = ftell(fh->fh);
+
+			//Check for cabinet signature
+			count = handle->read((struct mspack_file *) fh, &magic, 4);
+			if (count == 4 && memcmp(&magic, CABINET_MAGIC, 4) == 0) {
+				break;
+			} else {
+				free(fh->CodeTable);
+				fh->CodeTable = NULL;
+				continue;
+			}
+		}
 	}
 
 	handle->seek((struct mspack_file *)fh, (off_t) 0, MSPACK_SYS_SEEK_START);
@@ -154,7 +168,7 @@ static int res_seek(struct mspack_file *file, off_t offset, int mode) {
 		case MSPACK_SYS_SEEK_START:
 			mode = SEEK_SET;
 			if (handle->CodeTable)
-				offset += (CONTAINER_OFFSET + 8);
+				offset += handle->cabinet_offset;
 			break;
 		case MSPACK_SYS_SEEK_CUR:   mode = SEEK_CUR; break;
 		case MSPACK_SYS_SEEK_END:   mode = SEEK_END; break;
@@ -171,7 +185,7 @@ static off_t res_tell(struct mspack_file *file) {
 	if (handle) {
 		off_t offset = ftell(handle->fh);
 		if (handle->CodeTable)
-			offset -= CABINET_OFFSET;
+			offset -= handle->cabinet_offset;
 		return offset;
 	} else
 		return 0;
