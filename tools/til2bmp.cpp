@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <sstream>
 #include <stdint.h>
-
+//#include "common/endian.h"
 
 struct BMPHeader{
 	uint32_t size;
@@ -28,23 +28,23 @@ Bytef *decompress(Bytef *in, int size, uint32_t &outsize);
 
 class LucasBitMap{
 public:
-	char *data;
-	inline uint32_t size(){	return height*width*bpp; }
-	uint32_t width, height, bpp;
-	~LucasBitMap(){ delete[] data; }
-	LucasBitMap() : data(0), width(0), height(0), bpp(4){}
+	char *_data;
+	inline uint32_t size(){	return _height*_width*_bpp; }
+	uint32_t _width, _height, _bpp;
+	~LucasBitMap(){ delete[] _data; }
+	LucasBitMap() : _data(0), _width(0), _height(0), _bpp(4){}
 	LucasBitMap(char* data, uint32_t width, uint32_t height,uint32_t bpp=4, bool copy=true);
-	void MakeNewData(){ data = new char[size()]; }
+	void MakeNewData(){ _data = new char[size()]; }
 	void BGR2RGB();
 	void WriteBMP(const char* name);
 };
 
-LucasBitMap::LucasBitMap(char* data, uint32_t width, uint32_t height,uint32_t bpp, bool copy)  : width(width), height(height), bpp(bpp), data(data){
+LucasBitMap::LucasBitMap(char* data, uint32_t width, uint32_t height,uint32_t bpp, bool copy)  : _data(data), _width(width), _height(height), _bpp(bpp){
 	if(data==0)
 		MakeNewData();
 	else if(copy){
 		MakeNewData();
-		memcpy(this->data, data, size());
+		memcpy(_data, data, size());
 	}
 }
 
@@ -55,8 +55,8 @@ void LucasBitMap::WriteBMP(const char* name){
 	file.write((char *)&bm, 2);
 	header.size = size()+54;
 	header.reserved = 0;
-	header.width = width;
-	header.height = height;
+	header.width = _width;
+	header.height = _height;
 	header.offset = 54;
 	header.headerSize = 40;
 	header.nplanesbpp = 2097153;
@@ -67,21 +67,21 @@ void LucasBitMap::WriteBMP(const char* name){
 	header.ncolors = 0;
 	header.nimpcolors = 0;
 	file.write((char *)&header, sizeof(BMPHeader));
-	file.write(data, size());
+	file.write(_data, size());
 	file.close();
 }
 
 void LucasBitMap::BGR2RGB(){
 	uint32_t end = size();
 	for(uint32_t i = 0; i < end; i += 4){
-		char temp = data[i+2];
-		data[i+2] = data[i];
-		data[i] = temp;
+		char temp = _data[i+2];
+		_data[i+2] = _data[i];
+		_data[i] = temp;
 	}
 }
 
 char* GetLine(int lineNum, LucasBitMap* bit){
-	return bit->data + (lineNum*(bit->width*4));
+	return bit->_data + (lineNum*(bit->_width*4));
 }
 
 char* GetLine(int lineNum, char* data, unsigned int width){
@@ -92,7 +92,9 @@ char* GetLine(int lineNum, char* data, unsigned int width){
 LucasBitMap* MakeFullPicture(LucasBitMap** bits){
 	LucasBitMap* fullImage = new LucasBitMap(0,640,480);
 	
-	char* target = fullImage->data;
+	const int tWidth = 256*bits[0]->_bpp; // All of them should have the same bpp. (32)
+	
+	char* target = fullImage->_data;
 	for(int i=0;i<256;i++){
 		/* This can be modified to actually use the last 32 lines.
 		 * We simply put the lower half on line 223 and down to line 32, 
@@ -102,28 +104,28 @@ LucasBitMap* MakeFullPicture(LucasBitMap** bits){
 		if(i<224){ // Skip blank space
 			target=GetLine(223-i,fullImage);
 			
-			memcpy(target,GetLine(i,bits[3]),256*4);
-			target += bits[3]->width*4;
+			memcpy(target,GetLine(i,bits[3]),tWidth);
+			target += bits[3]->_width*4;
 			
-			memcpy(target,GetLine(i,bits[4]),256*4);
-			target += bits[4]->width*4;
+			memcpy(target,GetLine(i,bits[4]),tWidth);
+			target += bits[4]->_width*4;
 			
-			memcpy(target,GetLine(i,bits[2])+128*4,128*4);
-			target += 4*bits[2]->width/2;
+			memcpy(target,GetLine(i,bits[2])+128*4,tWidth);
+			target += 4*bits[2]->_width/2;
 		}
 		
 		// Top half of course
 		
 		target = GetLine(479-i,fullImage);
 		
-		memcpy(target,GetLine(i,bits[0]),256*4);
-		target += bits[0]->width*4;
+		memcpy(target,GetLine(i,bits[0]),tWidth);
+		target += bits[0]->_width*4;
 		
-		memcpy(target,GetLine(i,bits[1]),256*4);
-		target += bits[1]->width*4;
+		memcpy(target,GetLine(i,bits[1]),tWidth);
+		target += bits[1]->_width*4;
 		
 		memcpy(target,GetLine(i,bits[2]),128*4);
-		target += 4*bits[2]->width/2;		  
+		target += 4*bits[2]->_width/2;		  
 	}
 	
 	fullImage->BGR2RGB();
