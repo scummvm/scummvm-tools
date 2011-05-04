@@ -87,7 +87,7 @@ uint16 *create_dec_table(uint32 key) {
 	unsigned int i;
 
 	value = key;
-	dectable = (uint16 *)malloc( CODE_TABLE_SIZE * 2);
+	dectable = (uint16 *)malloc(CODE_TABLE_SIZE * 2);
 
 	for (i = 0; i < CODE_TABLE_SIZE; i++) {
 		value = RAND_A * value + RAND_B;
@@ -292,9 +292,12 @@ char *file_filter(const struct mscabd_file *file) {
 
 	filename_size = strlen(file->filename);
 
-	//Skip executables
+	//Skip executables and libries
 	char *ext = file->filename + (filename_size - 3);
-	if (strcasecmp(ext, "exe") == 0 || strcasecmp(ext, "dll") == 0) {
+	if (strcasecmp(ext, "exe") == 0 ||
+		  strcasecmp(ext, "dll") == 0 ||
+		  strcasecmp(ext, "flt") == 0 ||
+		  strcasecmp(ext, "asi") == 0) {
 		return NULL;
 	}
 
@@ -368,7 +371,7 @@ int main(int argc, char *argv[]) {
 
 	// Actions check
 	// Cabinet check
-	if (strcasecmp("CABINET", argv[2]) == 0) {
+	if (strncasecmp("CABINET", argv[2], strlen(argv[2])) == 0) {
 		printf("Cabinet extraction selected\n");
 		action = CABINET_ACTION;
 	}
