@@ -115,9 +115,9 @@ cc_check() {
 	echo "$CXX $TMPC -o $TMPO$HOSTEXEEXT $@" >> "$TMPLOG"
 	rm -f "$TMPO$HOSTEXEEXT"
 	( $CXX $CXXFLAGS "$TMPC" -o "$TMPO$HOSTEXEEXT" "$@" ) >> "$TMPLOG" 2>&1
-	TMP="$?"
+	TMPR="$?"
 	echo >> "$TMPLOG"
-	return "$TMP"
+	return "$TMPR"
 }
 
 #
@@ -648,27 +648,27 @@ EOF
 #
 echo_n "Type with 1 byte... "
 type_1_byte=`find_type_with_size 1`
-TMP="$?"
+TMPR="$?"
 echo "$type_1_byte"
-test $TMP -eq 0 || exit 1	# check exit code of subshell
+test $TMPR -eq 0 || exit 1	# check exit code of subshell
 
 echo_n "Type with 2 bytes... "
 type_2_byte=`find_type_with_size 2`
-TMP="$?"
+TMPR="$?"
 echo "$type_2_byte"
-test $TMP -eq 0 || exit 1	# check exit code of subshell
+test $TMPR -eq 0 || exit 1	# check exit code of subshell
 
 echo_n "Type with 4 bytes... "
 type_4_byte=`find_type_with_size 4`
-TMP="$?"
+TMPR="$?"
 echo "$type_4_byte"
-test $TMP -eq 0 || exit 1	# check exit code of subshell
+test $TMPR -eq 0 || exit 1	# check exit code of subshell
 
 echo_n "Type with 8 bytes... "
 type_8_byte=`find_type_with_size 8`
-TMP="$?"
+TMPR="$?"
 echo "$type_8_byte"
-if test $TMP -eq 0; then
+if test $TMPR -eq 0; then
 	_def_64bit_type_signed="typedef signed $type_8_byte int64;"
 	_def_64bit_type_unsigned="typedef unsigned $type_8_byte uint64;"
 fi
@@ -746,7 +746,6 @@ case $_host_os in
 	mingw*)
 		DEFINES="$DEFINES -DWIN32 -D__USE_MINGW_ANSI_STDIO=0"
 		LIBS="$LIBS -lmingw32 -lwinmm"
-		OBJS="$OBJS residualico.o"
 		;;
 	cygwin*)
 		echo ERROR: Cygwin building is not supported by ScummVM anymore. Consider using MinGW.
