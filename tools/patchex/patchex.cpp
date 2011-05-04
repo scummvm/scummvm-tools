@@ -41,12 +41,14 @@
 #include "tools/patchex/mspack.h"
 
 // Command line actions
-enum act { UNKNOWN_ACTION, CABINET_ACTION, ALL_LANGUAGES_ACTION, LOCALISED_ACTION};
+enum act { UNKNOWN_ACTION, CABINET_ACTION, LOCALISED_ACTION};
 
 // Languages codes
-#define LANG_ALL "@@"
+#define LANG_ALL1 "@@"
+#define LANG_ALL2 "Common"
 const char *kLanguages_ext[] = { "English", "French", "German", "Italian", "Portuguese", "Spanish", NULL};
-const char *kLanguages_code[] = {  "US", "FR", "GE", "IT", "PT", "SP",  NULL };
+const char *kLanguages_code1[] = { "US", "FR", "GE", "IT", "PT", "SP",  NULL };
+const char *kLanguages_code2[] = { "Eng", "Fra", "Deu", "Ita", "Brz", "Esp",  NULL };
 
 // Extraction constans
 #define RAND_A			(0x343FD)
@@ -56,7 +58,7 @@ const char *kLanguages_code[] = {  "US", "FR", "GE", "IT", "PT", "SP",  NULL };
 #define CABINET_MAGIC			"MSCF"
 
 #define BUFFER_SIZE 		102400
-char lang[3];
+unsigned int lang;
 
 // Some useful type and function
 typedef unsigned char byte;
@@ -284,15 +286,43 @@ void extract_cabinet(char *filename, unsigned int lenght) {
 	res_close(destination_cabinet);
 }
 
-char *file_filter(struct mscabd_file *file) {
-	char *filename, file_lang[3];
+char *file_filter(const struct mscabd_file *file) {
+	char *filename;
+	unsigned int filename_size;
 
-	filename = (char *)malloc(strlen(file->filename) + 1);
-	sscanf(file->filename, "%2s_%s",file_lang, filename);
-	if (strcmp(file_lang, lang) == 0 || strcmp(file_lang, LANG_ALL) == 0)
-		return filename;
-	else
+	filename_size = strlen(file->filename);
+
+	//Skip executables
+	char *ext = file->filename + (filename_size - 3);
+	if (strcasecmp(ext, "exe") == 0 || strcasecmp(ext, "dll") == 0) {
 		return NULL;
+	}
+
+	filename = (char *)malloc(filename_size + 1);
+
+	//Old-style localization (Grimfandango)
+	if (filename_size > 3 &&  file->filename[2] == '_') {
+		char file_lang[3];
+		sscanf(file->filename, "%2s_%s",file_lang, filename);
+		if (strcmp(file_lang, kLanguages_code1[lang]) == 0 || strcmp(file_lang, LANG_ALL1) == 0)
+			return filename;
+	}
+
+	//Folder-style localization (EMI)
+	unsigned int lcode_size_com, lcode_size_loc;
+	lcode_size_com = strlen(LANG_ALL2);
+	lcode_size_loc = strlen(kLanguages_code2[lang]);
+	if ((filename_size > lcode_size_com && strncmp(file->filename, LANG_ALL2, lcode_size_com - 1) == 0) ||
+	    (filename_size > lcode_size_loc && strncmp(file->filename, kLanguages_code2[lang], lcode_size_loc) == 0) ) {
+		char *fn = rindex(file->filename, '\\') + 1;
+		if (fn != NULL) {
+			strcpy(filename, fn);
+			return filename;
+		}
+	}
+
+	free(filename);
+	return NULL;
 }
 
 void extract_files(struct mscab_decompressor *cabd, struct mscabd_cabinet *cab) {
@@ -312,7 +342,7 @@ void extract_files(struct mscab_decompressor *cabd, struct mscabd_cabinet *cab) 
 		}
 	}
 
-	printf("%d file extracted.\n", files_extracted);
+	printf("%d file(s) extracted.\n", files_extracted);
 }
 
 int main(int argc, char *argv[]) {
@@ -330,8 +360,8 @@ int main(int argc, char *argv[]) {
 		printf("Extract update files of game update from PATCH_EXECUTABLE (e.g. gfupd101.exe) in a specified LANGUAGE.\n");
 		printf("Please be sure that the update contains this language.\n");
 		printf("Available languages:\n");
-		for (i = 0; kLanguages_code[i]; i++)
-			printf("-%s (%s)\n", kLanguages_ext[i], kLanguages_code[i]);
+		for (i = 0; kLanguages_code1[i]; i++)
+			printf("- %s\n", kLanguages_ext[i]);
 		printf("Alternately original archive could be extracted as original.cab with CABINET keyword insted of language.\n");
 		exit(1);
 	}
@@ -344,10 +374,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Language check
-	for(i = 0; kLanguages_code[i]; i++)
-		if (strcasecmp(kLanguages_code[i], argv[2]) == 0 || strcasecmp(kLanguages_ext[i], argv[2]) == 0) {
+	for(i = 0; kLanguages_code1[i]; i++)
+		if (strncasecmp(kLanguages_ext[i], argv[2], strlen(argv[2])) == 0) {
 			printf("%s selected.\n", kLanguages_ext[i]);
-			strcpy(lang, kLanguages_code[i]);
+			lang = i;
 			action = LOCALISED_ACTION;
 			break;
 		}
