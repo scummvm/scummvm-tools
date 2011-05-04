@@ -1,0 +1,19 @@
+
+*.a
+*.o
+*.exe
+
+.deps
+/config.h
+/config.log
+/config.mk
+/.cproject
+/.project
+/.settings
+
+#Ignore thumbnails created by Windows
+Thumbs.db
+
+#Ignore default Visual Studio build folders
+[Dd]ebug/
+[Rr]elease/
