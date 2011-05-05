@@ -252,11 +252,11 @@ static int zip_read_lens(struct mszipd_stream *zip) {
   }
 
   i = lit_codes;
-  zip->sys->copy(&lens[0], &zip->LITERAL_len[0], i);
+  memcpy(&zip->LITERAL_len[0], &lens[0], i);
   while (i < MSZIP_LITERAL_MAXSYMBOLS) zip->LITERAL_len[i++] = 0;
 
   i = dist_codes;
-  zip->sys->copy(&lens[lit_codes], &zip->DISTANCE_len[0], i);
+  memcpy(&zip->DISTANCE_len[0], &lens[lit_codes], i);
   while (i < MSZIP_DISTANCE_MAXSYMBOLS) zip->DISTANCE_len[i++] = 0;
 
   STORE_BITS;
@@ -314,7 +314,7 @@ static int inflate(struct mszipd_stream *zip) {
 	if (this_run > (MSZIP_FRAME_SIZE - zip->window_posn))
 	  this_run = MSZIP_FRAME_SIZE - zip->window_posn;
 
-	zip->sys->copy(i_ptr, &zip->window[zip->window_posn], this_run);
+	memcpy(&zip->window[zip->window_posn], i_ptr, this_run);
 	zip->window_posn += this_run;
 	i_ptr    += this_run;
 	length   -= this_run;
@@ -457,13 +457,13 @@ struct mszipd_stream *mszipd_init(struct mspack_system *system,
   input_buffer_size = (input_buffer_size + 1) & -2;
   if (!input_buffer_size) return NULL;
 
-  if (!(zip = (mszipd_stream *)system->alloc(system, sizeof(struct mszipd_stream)))) {
+  if (!(zip = (mszipd_stream *)malloc(sizeof(struct mszipd_stream)))) {
     return NULL;
   }
 
-  zip->inbuf  = (unsigned char *)system->alloc(system, (size_t) input_buffer_size);
+  zip->inbuf  = (unsigned char *)malloc((size_t) input_buffer_size);
   if (!zip->inbuf) {
-    system->free(zip);
+    free(zip);
     return NULL;
   }
 
@@ -520,7 +520,7 @@ int mszipd_decompress(struct mszipd_stream *zip, off_t out_bytes) {
     STORE_BITS;
     if ((error = inflate(zip))) {
       if (zip->repair_mode) {
-	zip->sys->message(NULL, "MSZIP error, %u bytes of data lost.",
+	fprintf(stderr, "MSZIP error, %u bytes of data lost.",
 			  MSZIP_FRAME_SIZE - zip->bytes_output);
 	for (i = zip->bytes_output; i < MSZIP_FRAME_SIZE; i++) {
 	  zip->window[i] = '\0';
@@ -556,7 +556,7 @@ void mszipd_free(struct mszipd_stream *zip) {
   struct mspack_system *sys;
   if (zip) {
     sys = zip->sys;
-    sys->free(zip->inbuf);
-    sys->free(zip);
+    free(zip->inbuf);
+    free(zip);
   }
 }

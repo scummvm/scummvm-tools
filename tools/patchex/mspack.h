@@ -59,15 +59,6 @@ struct mspack_system {
 	      off_t offset,
 	      int mode);
   off_t (*tell)(struct mspack_file *file);
-  void (*message)(struct mspack_file *file,
-		  const char *format,
-		  ...);
-  void * (*alloc)(struct mspack_system *self,
-		  size_t bytes);
-  void (*free)(void *ptr);
-  void (*copy)(void *src,
-	       void *dest,
-	       size_t bytes);
   void *null_ptr;
 };
 

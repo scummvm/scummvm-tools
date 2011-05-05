@@ -74,7 +74,7 @@ struct mscab_decompressor *
 {
   struct mscab_decompressor_p *handle = NULL;
 
-  if ((handle = (mscab_decompressor_p *)sys->alloc(sys, sizeof(struct mscab_decompressor_p)))) {
+  if ((handle = (mscab_decompressor_p *)malloc(sizeof(struct mscab_decompressor_p)))) {
     handle->base.open       = &cabd_open;
     handle->base.close      = &cabd_close;
     handle->base.extract    = &cabd_extract;
@@ -97,9 +97,9 @@ void mspack_destroy_cab_decompressor(struct mscab_decompressor *base) {
     cabd_free_decomp(handle);
     if (handle->d) {
       if (handle->d->infh) sys->close(handle->d->infh);
-      sys->free(handle->d);
+      free(handle->d);
     }
-    sys->free(handle);
+    free(handle);
   }
 }
 
@@ -116,7 +116,7 @@ static struct mscabd_cabinet *cabd_open(struct mscab_decompressor *base,
   sys = handle->system;
 
   if ((fh = sys->open(sys, filename, MSPACK_SYS_OPEN_READ))) {
-    if ((cab = (mscabd_cabinet_p *)sys->alloc(sys, sizeof(struct mscabd_cabinet_p)))) {
+    if ((cab = (mscabd_cabinet_p *)malloc(sizeof(struct mscabd_cabinet_p)))) {
       cab->base.filename = filename;
       error = cabd_read_headers(sys, fh, cab, (off_t) 0, 0);
       if (error) {
@@ -155,8 +155,8 @@ static void cabd_close(struct mscab_decompressor *base,
     /* free files */
     for (fi = origcab->files; fi; fi = nfi) {
       nfi = fi->next;
-      sys->free(fi->filename);
-      sys->free(fi);
+      free(fi->filename);
+      free(fi);
     }
 
     for (fol = origcab->folders; fol; fol = nfol) {
@@ -165,37 +165,37 @@ static void cabd_close(struct mscab_decompressor *base,
       if (handle->d && (handle->d->folder == (struct mscabd_folder_p *) fol)) {
 	if (handle->d->infh) sys->close(handle->d->infh);
 	cabd_free_decomp(handle);
-	sys->free(handle->d);
+	free(handle->d);
 	handle->d = NULL;
       }
 
       for (dat = ((struct mscabd_folder_p *)fol)->data.next; dat; dat = ndat) {
 	ndat = dat->next;
-	sys->free(dat);
+	free(dat);
       }
-      sys->free(fol);
+      free(fol);
     }
 
     for (cab = origcab; cab; cab = ncab) {
       ncab = cab->prevcab;
-      sys->free(cab->prevname);
-      sys->free(cab->nextname);
-      sys->free(cab->previnfo);
-      sys->free(cab->nextinfo);
-      if (cab != origcab) sys->free(cab);
+      free(cab->prevname);
+      free(cab->nextname);
+      free(cab->previnfo);
+      free(cab->nextinfo);
+      if (cab != origcab) free(cab);
     }
 
     for (cab = origcab->nextcab; cab; cab = ncab) {
       ncab = cab->nextcab;
-      sys->free(cab->prevname);
-      sys->free(cab->nextname);
-      sys->free(cab->previnfo);
-      sys->free(cab->nextinfo);
-      sys->free(cab);
+      free(cab->prevname);
+      free(cab->nextname);
+      free(cab->previnfo);
+      free(cab->nextinfo);
+      free(cab);
     }
 
     cab = origcab->next;
-    sys->free(origcab);
+    free(origcab);
 
     origcab = cab;
   }
@@ -238,18 +238,18 @@ static int cabd_read_headers(struct mspack_system *sys,
 
   num_folders = EndGetI16(&buf[cfhead_NumFolders]);
   if (num_folders == 0) {
-    if (!quiet) sys->message(fh, "no folders in cabinet.");
+    if (!quiet) fprintf(stderr, "no folders in cabinet.");
     return MSPACK_ERR_DATAFORMAT;
   }
 
   num_files = EndGetI16(&buf[cfhead_NumFiles]);
   if (num_files == 0) {
-    if (!quiet) sys->message(fh, "no files in cabinet.");
+    if (!quiet) fprintf(stderr, "no files in cabinet.");
     return MSPACK_ERR_DATAFORMAT;
   }
 
   if ((buf[cfhead_MajorVersion] != 1) && (buf[cfhead_MinorVersion] != 3)) {
-    if (!quiet) sys->message(fh, "WARNING; cabinet version is not 1.3");
+    if (!quiet) fprintf(stderr, "WARNING; cabinet version is not 1.3");
   }
 
   cab->base.flags = EndGetI16(&buf[cfhead_Flags]);
@@ -262,7 +262,7 @@ static int cabd_read_headers(struct mspack_system *sys,
     cab->block_resv       = buf[cfheadext_DataReserved];
 
     if (cab->base.header_resv > 60000) {
-      if (!quiet) sys->message(fh, "WARNING; reserved header > 60000.");
+      if (!quiet) fprintf(stderr, "WARNING; reserved header > 60000.");
     }
 
     if (cab->base.header_resv) {
@@ -297,7 +297,7 @@ static int cabd_read_headers(struct mspack_system *sys,
       }
     }
 
-    if (!(fol = (struct mscabd_folder_p *)sys->alloc(sys, sizeof(struct mscabd_folder_p)))) {
+    if (!(fol = (struct mscabd_folder_p *)malloc(sizeof(struct mscabd_folder_p)))) {
       return MSPACK_ERR_NOMEMORY;
     }
     fol->base.next       = NULL;
@@ -320,7 +320,7 @@ static int cabd_read_headers(struct mspack_system *sys,
       return MSPACK_ERR_READ;
     }
 
-    if (!(file = (struct mscabd_file *)sys->alloc(sys, sizeof(struct mscabd_file)))) {
+    if (!(file = (struct mscabd_file *)malloc(sizeof(struct mscabd_file)))) {
       return MSPACK_ERR_NOMEMORY;
     }
 
@@ -336,7 +336,7 @@ static int cabd_read_headers(struct mspack_system *sys,
       file->folder = ifol;
 
       if (!ifol) {
-	sys->free(file);
+	free(file);
 	return MSPACK_ERR_DATAFORMAT;
       }
     }
@@ -374,7 +374,7 @@ static int cabd_read_headers(struct mspack_system *sys,
 
     file->filename = cabd_read_string(sys, fh, cab, &x);
     if (x) { 
-      sys->free(file);
+      free(file);
       return x;
     }
 
@@ -409,12 +409,12 @@ static char *cabd_read_string(struct mspack_system *sys,
     return NULL;
   }
 
-  if (!(str = (char *)sys->alloc(sys, len))) {
+  if (!(str = (char *)malloc(len))) {
     *error = MSPACK_ERR_NOMEMORY;
     return NULL;
   }
 
-  sys->copy(&buf[0], str, len);
+  memcpy(str, &buf[0], len);
   *error = MSPACK_ERR_OK;
   return str;
 }
@@ -437,13 +437,13 @@ static int cabd_extract(struct mscab_decompressor *base,
   if ((!fol) || (fol->merge_prev) ||
       (((file->offset + file->length) / CAB_BLOCKMAX) > fol->base.num_blocks))
   {
-    sys->message(NULL, "ERROR; file \"%s\" cannot be extracted, "
+    fprintf(stderr, "ERROR; file \"%s\" cannot be extracted, "
 		 "cabinet set is incomplete.", file->filename);
     return handle->error = MSPACK_ERR_DATAFORMAT;
   }
 
   if (!handle->d) {
-    handle->d = (mscabd_decompress_state *)sys->alloc(sys, sizeof(struct mscabd_decompress_state));
+    handle->d = (mscabd_decompress_state *)malloc(sizeof(struct mscabd_decompress_state));
     if (!handle->d) return handle->error = MSPACK_ERR_NOMEMORY;
     handle->d->folder     = NULL;
     handle->d->data       = NULL;
@@ -556,7 +556,7 @@ static int cabd_sys_read(struct mspack_file *file, void *buffer, int bytes) {
 
     if (avail) {
       if (avail > todo) avail = todo;
-      sys->copy(handle->d->i_ptr, buf, (size_t) avail);
+      memcpy(buf, handle->d->i_ptr, (size_t) avail);
       handle->d->i_ptr += avail;
       buf  += avail;
       todo -= avail;
@@ -573,8 +573,7 @@ static int cabd_sys_read(struct mspack_file *file, void *buffer, int bytes) {
       if (handle->d->block >= handle->d->folder->base.num_blocks) {
       } else {
 	if (outlen != CAB_BLOCKMAX) {
-	  handle->system->message(handle->d->infh,
-				"WARNING; non-maximal data block");
+	  fprintf(stderr, "WARNING; non-maximal data block");
 	}
       }
     }
@@ -630,7 +629,7 @@ static int cabd_sys_read_block(struct mspack_system *sys,
       unsigned int sum2 = cabd_checksum(d->i_end, (unsigned int) len, 0);
       if (cabd_checksum(&hdr[4], 4, sum2) != cksum) {
 	if (!ignore_cksum) return MSPACK_ERR_CHECKSUM;
-	sys->message(d->infh, "WARNING; bad block checksum found");
+	fprintf(stderr, "WARNING; bad block checksum found");
       }
     }
 

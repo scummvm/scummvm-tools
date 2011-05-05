@@ -227,39 +227,9 @@ static int res_write(struct mspack_file *file, void *buffer, int bytes) {
 	return -1;
 }
 
-static void res_msg(struct mspack_file *file, const char *format, ...) {
-	va_list ap;
-
-	if (file)
-		fprintf(stderr, "%s: ", ((struct mspack_file_p *)file)->name);
-	va_start(ap, format);
-	vfprintf(stderr, format, ap);
-	va_end(ap);
-	fputc((int) '\n', stderr);
-	fflush(stderr);
-}
-
-static void *res_alloc(struct mspack_system *, size_t bytes) {
-	void *memory;
-	memory = malloc(bytes);
-	if (memory == NULL) {
-		printf("Insufficient memory!\n");
-		exit(1);
-	} else
-		return memory;
-}
-
-static void res_free(void *buffer) {
-	free(buffer);
-}
-
-static void res_copy(void *src, void *dest, size_t bytes) {
-	memcpy(dest, src, bytes);
-}
-
 static struct mspack_system res_system = {
 	&res_open, &res_close, &res_read,  &res_write, &res_seek,
-	&res_tell, &res_msg, &res_alloc, &res_free, &res_copy, NULL
+	&res_tell, NULL
 };
 
 void extract_cabinet(char *filename, unsigned int lenght) {
@@ -271,7 +241,7 @@ void extract_cabinet(char *filename, unsigned int lenght) {
 	original_executable = res_open(&res_system, filename, MSPACK_SYS_OPEN_READ);
 	destination_cabinet = res_open(&res_system, "original.cab", MSPACK_SYS_OPEN_WRITE);
 	
-	buffer = res_alloc(NULL, BUFFER_SIZE);
+	buffer = malloc(BUFFER_SIZE);
 	copied_bytes = 0;
 
 	while (copied_bytes < lenght) {
@@ -281,7 +251,7 @@ void extract_cabinet(char *filename, unsigned int lenght) {
 	}
 	printf("Update cabinet extracted as original.cab.\n");
 
-	res_free(buffer);
+	free(buffer);
 	res_close(original_executable);
 	res_close(destination_cabinet);
 }
