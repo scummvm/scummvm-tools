@@ -15,6 +15,7 @@ TOOLS := \
 	tools/imc2wav$(EXEEXT) \
 	tools/int2flt$(EXEEXT) \
 	tools/set2fig$(EXEEXT) \
+	tools/til2bmp$(EXEEXT) \
 	tools/unlab$(EXEEXT) \
 	tools/vima$(EXEEXT) \
 	tools/patchex/patchex$(EXEEXT)
@@ -63,6 +64,10 @@ tools/int2flt$(EXEEXT): $(srcdir)/tools/int2flt.cpp
 tools/set2fig$(EXEEXT): $(srcdir)/tools/set2fig.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) -Wall -o $@ $<
+
+tools/til2bmp$(EXEEXT): $(srcdir)/tools/til2bmp.cpp
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) -Wall -lz -I. -o $@ $<
 
 tools/unlab$(EXEEXT): $(srcdir)/tools/unlab.cpp
 	$(MKDIR) tools/$(DEPDIR)
