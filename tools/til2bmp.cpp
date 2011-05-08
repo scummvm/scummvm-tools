@@ -23,9 +23,7 @@ The current implementation also has a few limitation w.r.t. if there should be T
 Also, I _THINK_ that it should work on Big-Endian-systems now, but I haven't gotten around to testing that yet.
 
 Usage:
-til2bmp <filename> [PS2]
-
-By default, windows-style 32-bit will try to be extracted, use PS2-flag for 16-bit operation.
+til2bmp <filename> 
 
 somaen.
 */
@@ -93,7 +91,7 @@ void LucasBitMap::MoreBits(){
 			// Blue
 				blue = (byte2)&31; 
 				blue = blue << 3 | blue >> 2;
-				// Some more magic to stretch the values TODO
+			// Some more magic to stretch the values 
 				*to = red;
 				to++;
 				*to = green;
@@ -213,7 +211,7 @@ LucasBitMap* MakeFullPicture(LucasBitMap** bits){
 	return fullImage;
 }
 
-void ProcessFile(const char *_data, uint32_t size, std::string name, bool ps2=false){
+void ProcessFile(const char *_data, uint32_t size, std::string name){
 	std::stringstream til;
 	uint32_t outsize = 0, bpp = 4;
 	Bytef *data = decompress((Bytef *)_data, size, outsize);
@@ -221,12 +219,8 @@ void ProcessFile(const char *_data, uint32_t size, std::string name, bool ps2=fa
 		return;
 	til.write((const char *)data, outsize);
 	delete[] data;
-	uint32_t id, bmoffset, rects, b, c;
-	
-	if(ps2){
-		printf("PS2 Mode\n");
-		bpp = 2;
-	}
+	uint32_t id, bmoffset, rects, b, c, numImages;
+
 	til.read((char *)&id, 4);
 	FROM_LE_32(id);
 	til.read((char *)&bmoffset, 4);
@@ -237,9 +231,25 @@ void ProcessFile(const char *_data, uint32_t size, std::string name, bool ps2=fa
 	FROM_LE_32(b);
 	til.read((char *)&c, 4);
 	FROM_LE_32(c);
-	
+
+// We want to actually read numImages and bpp
+	til.seekg(bmoffset+16,std::ios::beg);
+	til.read((char*)&numImages, 4);
+	FROM_LE_32(numImages);
+
+	if(numImages < 5){
+		printf("This tile has less than 5 tiles, I don't know how to parse it\n");
+	}
+
+	til.seekg(16,std::ios::cur);
+	til.read((char*) &bpp, 4);
+	FROM_LE_32(bpp);
+	bpp = bpp/8;
+
+	printf("Detected %d bpp\n",bpp*8);
+
 	til.seekg(bmoffset+128, std::ios::beg);
-	
+
 	uint32_t width = 0, height = 0;
 	
 	LucasBitMap **allTheData = new LucasBitMap*[5];
@@ -330,7 +340,7 @@ int main(int argc, char **argv){
 	char *data = new char[end];
 	file.read(data, end);
 	file.close();
-	ProcessFile(data, end, outname,ps2);
+	ProcessFile(data, end, outname);
 	
 	delete[] data;
 }
