@@ -62,19 +62,25 @@ int main(int argc, char **argv) {
 	struct lab_entry *entries;
 	char *str_table;
 	uint32_t i;
-	off_t offset;
+	uint32_t offset;
 	uint8_t g_type;
-	
-	if(argc > 2 && !strcmp(argv[2],"EMI"))
+
+	if (argc < 2) {
+		printf("No file specified\n");
+		exit(1);
+	}
+
+	if(argc > 2 && !strcmp(argv[2], "EMI")) {
+		printf("Opening file with EMI format.\n");
 		g_type = GT_EMI;
-	else
+	} else {
+		printf("Opening file with GRIM format.\n");
 		g_type = GT_GRIM;
-	
-	printf("g_type: %d",g_type);
-	
+	}
+
 	infile = fopen(argv[1], "rb");
 	if (infile == 0) {
-		printf("can't open source file: %s\n", argv[1]);
+		printf("Can not open source file: %s\n", argv[1]);
 		exit(1);
 	}
 
@@ -91,17 +97,19 @@ int main(int argc, char **argv) {
 		printf("There is no LABN header in source file\n");
 		exit(1);
 	}
-	
+
 	entries = (struct lab_entry *)malloc(head.num_entries * sizeof(struct lab_entry));
 	str_table = (char *)malloc(head.string_table_size);
-	// Grim-stuff
-	if(g_type == GT_GRIM){
-		fread(entries, 1, head.num_entries * sizeof(struct lab_entry), infile);
-		
-		fread(str_table, 1, head.string_table_size, infile);
+	if (!str_table || !entries) {
+		printf("Could not allocate memory\n");
+		exit(1);
 	}
-	// EMI-stuff
-	else if(g_type == GT_EMI){
+	// Grim-stuff
+	if(g_type == GT_GRIM) {
+		fread(entries, 1, head.num_entries * sizeof(struct lab_entry), infile);
+
+		fread(str_table, 1, head.string_table_size, infile);
+	} else if(g_type == GT_EMI) { // EMI-stuff
 		// EMI has a string-table-offset
 		head.string_table_offset = READ_LE_UINT32(&s_offset) - 0x13d0f;
 		// Find the string-table
@@ -109,27 +117,52 @@ int main(int argc, char **argv) {
 		// Read the entire string table into str-table
 		fread(str_table, 1, head.string_table_size, infile);
 		fseek(infile, 20, SEEK_SET);
-		
+
 		// Decrypt the string table
 		uint32_t j;
 		for (j = 0; j < head.string_table_size; j++)
 			if (str_table[j] != 0)
 				str_table[j] ^= 0x96;
 		fread(entries, 1, head.num_entries * sizeof(struct lab_entry), infile);
-		
+
 	}
-	
+	// allocate a 1mb buffer to start with
+	uint32_t bufSize = 1024*1024;
+	char *buf = (char *)malloc(bufSize);
+	if (!buf) {
+		printf("Could not allocate memory\n");
+		exit(1);
+	}
 	for (i = 0; i < head.num_entries; i++) {
-		outfile = fopen(str_table + READ_LE_UINT32(&entries[i].fname_offset), "wb");
+		const char *fname = str_table + READ_LE_UINT32(&entries[i].fname_offset);
+		outfile = fopen(fname, "wb");
+		if (!outfile) {
+			printf("Could not open file: %s\n", fname);
+			continue;
+		}
 		offset = READ_LE_UINT32(&entries[i].start);
-		char *buf = (char *)malloc(READ_LE_UINT32(&entries[i].size));
+		uint32_t size = READ_LE_UINT32(&entries[i].size);
+		if (bufSize < size) {
+			bufSize = size;
+			char *newBuf = (char *)realloc(buf, bufSize);
+			if (!newBuf) {
+				printf("Could not reallocate memory\n");
+				exit(1);
+			} else {
+				buf = newBuf;
+			}
+		}
+
 		fseek(infile, offset, SEEK_SET);
 		fread(buf, 1, READ_LE_UINT32(&entries[i].size), infile);
 		fwrite(buf, 1, READ_LE_UINT32(&entries[i].size), outfile);
 		fclose(outfile);
-		
+
 	}
-		
+	free(buf);
+	free(entries);
+	free(str_table);
+
 	fclose(infile);
 	return 0;
 }
