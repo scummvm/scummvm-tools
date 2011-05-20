@@ -1,3 +1,23 @@
+/* Residual - A 3D game interpreter
+*
+* Residual is the legal property of its developers, whose names
+* are too numerous to list here. Please refer to the AUTHORS
+* file distributed with this source distribution.
+
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+*
+* $URL:
+* $Id:
+*
+*/
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -81,15 +101,15 @@ void LucasBitMap::MoreBits(){
 				char byte1 = _data[i*_width*_bpp+j*2+1];
 			// Probably Alpha, then 555.
 			// Red
-				red = (byte1>>2)&31;
+				red = (byte1 >> 2) & 31;
 				red = red << 3 | red >> 2;
 			// Green
-				char green1 = (byte1&3);
-				char green2 = (((byte2)>>5)&7);
+				char green1 = (byte1 & 3);
+				char green2 = (((byte2) >> 5) & 7);
 				char green3 = green1 << 3 | green2;
 				green = green3 << 3 | green3 >> 2 ;
 			// Blue
-				blue = (byte2)&31; 
+				blue = (byte2) & 31;
 				blue = blue << 3 | blue >> 2;
 			// Some more magic to stretch the values 
 				*to = red;
@@ -104,12 +124,12 @@ void LucasBitMap::MoreBits(){
 		}
 		delete _data;
 		_data = newData;
-		_bpp=4;
+		_bpp = 4;
 	}
 }
 
 LucasBitMap::LucasBitMap(char* data, uint32_t width, uint32_t height,uint32_t bpp, bool copy)  : _data(data), _width(width), _height(height), _bpp(bpp){
-	if(data==0)
+	if(data == 0)
 		MakeNewData();
 	else if(copy){
 		MakeNewData();
@@ -122,15 +142,15 @@ void LucasBitMap::WriteBMP(const char* name){
 	BMPHeader header;
 	unsigned short bm = TO_LE_16(19778);
 	file.write((char*)&bm, 2);
-	header.size = TO_LE_32(size()+54);
+	header.size = TO_LE_32(size() + 54);
 	header.reserved = TO_LE_32(0);
 	header.width = TO_LE_32(_width);
 	header.height = TO_LE_32(_height);
 	header.offset = TO_LE_32(54);
 	header.headerSize = TO_LE_32(40);
-if(_bpp==4)
+if(_bpp == 4)
 	header.nplanesbpp = TO_LE_32(2097153);
-else if(_bpp==2)
+else if(_bpp == 2)
 	header.nplanesbpp = TO_LE_32(1048577);
 	header.compress_type = TO_LE_32(0);
 	header.bmp_bytesz = TO_LE_32(0);
@@ -144,11 +164,11 @@ else if(_bpp==2)
 }
 
 void LucasBitMap::BGR2RGB(){
-	if(_bpp==4){
+	if(_bpp == 4){
 		uint32_t end = size();
 		for(uint32_t i = 0; i < end; i += 4){
-			char temp = _data[i+2];
-			_data[i+2] = _data[i];
+			char temp = _data[i + 2];
+			_data[i + 2] = _data[i];
 			_data[i] = temp;
 		}
 	}else if(_bpp==2){
@@ -158,52 +178,52 @@ void LucasBitMap::BGR2RGB(){
 
 char* GetLine(int lineNum, LucasBitMap* bit){
 	int bpp = bit->_bpp;
-	return bit->_data + (lineNum*(bit->_width*bpp));
+	return bit->_data + (lineNum*(bit->_width * bpp));
 }
 
 char* GetLine(int lineNum, char* data, unsigned int width,int bpp){
-	return data + (lineNum*(width*bpp));
+	return data + (lineNum * (width * bpp));
 }
 
 // Expects 5 LucasBitmaps, and returns a LucasBitmap untiled.
 LucasBitMap* MakeFullPicture(LucasBitMap** bits){
-	LucasBitMap* fullImage = new LucasBitMap(0,640,480,bits[0]->_bpp);
+	LucasBitMap* fullImage = new LucasBitMap(0, 640, 480, bits[0]->_bpp);
 	
-	const int tWidth = 256*bits[0]->_bpp; // All of them should have the same bpp. (32)
+	const int tWidth = 256 * bits[0]->_bpp; // All of them should have the same bpp. (32)
 	int bpp = bits[0]->_bpp;
 	
 	char* target = fullImage->_data;
-	for(int i=0;i<256;i++){
+	for(int i = 0;i < 256;i++){
 		/* This can be modified to actually use the last 32 lines.
 		 * We simply put the lower half on line 223 and down to line 32, 
 		 * then skip the last 32.
 		 * While the upper half is put on line 479 and down to line 224.
 		 */
-		if(i<224){ // Skip blank space
-			target=GetLine(223-i,fullImage);
+		if(i < 224){ // Skip blank space
+			target = GetLine(223 - i,fullImage);
 			
-			memcpy(target,GetLine(i,bits[3]),tWidth);
-			target += bits[3]->_width*bpp;
+			memcpy(target, GetLine(i, bits[3]), tWidth);
+			target += bits[3]->_width * bpp;
 		
-			memcpy(target,GetLine(i,bits[4]),tWidth);
-			target += bits[4]->_width*bpp;
+			memcpy(target, GetLine(i, bits[4]), tWidth);
+			target += bits[4]->_width * bpp;
 			
 			memcpy(target,GetLine(i,bits[2])+128*bpp,128*bpp);
-			target += bpp*bits[2]->_width/2;
+			target += bpp * bits[2]->_width / 2;
 		}
 		
 		// Top half of course
 		
-		target = GetLine(479-i,fullImage);
+		target = GetLine(479-i, fullImage);
 		
-		memcpy(target,GetLine(i,bits[0]),tWidth);
-		target += bits[0]->_width*bpp;
+		memcpy(target, GetLine(i, bits[0]), tWidth);
+		target += bits[0]->_width * bpp;
 		
-		memcpy(target,GetLine(i,bits[1]),tWidth);
-		target += bits[1]->_width*bpp;
+		memcpy(target, GetLine(i, bits[1]), tWidth);
+		target += bits[1]->_width * bpp;
 		
-		memcpy(target,GetLine(i,bits[2]),128*bpp);
-		target += bpp*bits[2]->_width/2;
+		memcpy(target,GetLine(i, bits[2]), 128 * bpp);
+		target += bpp * bits[2]->_width / 2;
 		
 	}
 	fullImage->BGR2RGB();
@@ -233,7 +253,7 @@ void ProcessFile(const char *_data, uint32_t size, std::string name){
 	FROM_LE_32(c);
 
 // We want to actually read numImages and bpp
-	til.seekg(bmoffset+16,std::ios::beg);
+	til.seekg(bmoffset + 16,std::ios::beg);
 	til.read((char*)&numImages, 4);
 	FROM_LE_32(numImages);
 
@@ -244,11 +264,11 @@ void ProcessFile(const char *_data, uint32_t size, std::string name){
 	til.seekg(16,std::ios::cur);
 	til.read((char*) &bpp, 4);
 	FROM_LE_32(bpp);
-	bpp = bpp/8;
+	bpp = bpp / 8;
 
 	printf("Detected %d bpp\n",bpp*8);
 
-	til.seekg(bmoffset+128, std::ios::beg);
+	til.seekg(bmoffset + 128, std::ios::beg);
 
 	uint32_t width = 0, height = 0;
 	
@@ -266,7 +286,6 @@ void ProcessFile(const char *_data, uint32_t size, std::string name){
 		til.read(data, size);
 		
 		allTheData[i] = new LucasBitMap(data, width, height,bpp,false);
-//		allTheData[i]->WriteBMP(outnamet);	
 	}
 	LucasBitMap* bit = MakeFullPicture(allTheData);
 	bit->WriteBMP(name.c_str());
@@ -281,7 +300,7 @@ void ProcessFile(const char *_data, uint32_t size, std::string name){
 
 
 Bytef *decompress(Bytef *in, int size, uint32_t &outsize){
-	const uint32_t block = 8*1024*1024; 
+	const uint32_t block = 8 * 1024 * 1024;
 	Bytef *dest = new Bytef[block]; // 8 MiB ought to be enough.
 	
 	int success = 0;
@@ -294,7 +313,7 @@ Bytef *decompress(Bytef *in, int size, uint32_t &outsize){
 	zStream.opaque = Z_NULL;
 	
 	success = inflateInit2(&zStream, 16+MAX_WBITS);
-	if(success!=Z_OK){
+	if(success != Z_OK){
 		std::cout << "ZLIB failed to initialize\n";
 		return 0;
 	}
@@ -322,7 +341,7 @@ int main(int argc, char **argv){
 	}
 	// Cheap fix to support PS2
 	bool ps2=false;
-	if(argc>2)
+	if(argc > 2)
 		ps2 = true;
 	
 	std::fstream file(argv[1], std::fstream::in|std::fstream::binary);

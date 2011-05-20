@@ -14,6 +14,7 @@ TOOLS := \
 	tools/delua$(EXEEXT) \
 	tools/imc2wav$(EXEEXT) \
 	tools/int2flt$(EXEEXT) \
+	tools/meshb2obj$(EXEEXT) \
 	tools/set2fig$(EXEEXT) \
 	tools/til2bmp$(EXEEXT) \
 	tools/unlab$(EXEEXT) \
@@ -61,13 +62,19 @@ tools/int2flt$(EXEEXT): $(srcdir)/tools/int2flt.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) -Wall -o $@ $<
 
+tools/meshb2obj$(EXEEXT): $(srcdir)/tools/meshb2obj.cpp
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
+	-L$(srcdir)/common -o $@ $<
+	
 tools/set2fig$(EXEEXT): $(srcdir)/tools/set2fig.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) -Wall -o $@ $<
 
 tools/til2bmp$(EXEEXT): $(srcdir)/tools/til2bmp.cpp
 	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -lz -I. -o $@ $<
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
+	-L$(srcdir)/common -lz -o $@ $< 
 
 tools/unlab$(EXEEXT): $(srcdir)/tools/unlab.cpp
 	$(MKDIR) tools/$(DEPDIR)
