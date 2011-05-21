@@ -47,6 +47,7 @@
 #include "engines/agos/extract_agos.h"
 #include "engines/cine/extract_cine.h"
 #include "engines/cruise/extract_cruise_pc.h"
+#include "engines/agi/extract_ddpg.h"
 #include "engines/gob/extract_gob_stk.h"
 #include "engines/gob/extract_fascination_cd.h"
 #include "engines/kyra/extract_kyra.h"
@@ -82,6 +83,7 @@ Tools::Tools() {
 	_tools.push_back(new ExtractAgos());
 	_tools.push_back(new ExtractCine());
 	_tools.push_back(new ExtractCruisePC());
+	_tools.push_back(new ExtractDDPG());
 	_tools.push_back(new ExtractGobStk());
 	_tools.push_back(new ExtractFascinationCD());
 	_tools.push_back(new ExtractKyra());
