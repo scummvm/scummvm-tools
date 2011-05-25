@@ -29,7 +29,7 @@
 #define LOGDIR_MAX	43
 
 #define PICDIR		offset(180) + 5
-#define PICDIR_MAX	25
+#define PICDIR_MAX	30
 
 #define VIEWDIR		offset(189) + 5
 #define VIEWDIR_MAX	171
