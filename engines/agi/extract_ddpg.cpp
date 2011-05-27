@@ -65,7 +65,7 @@ void ExtractDDPG::execute() {
 	Common::File in(inpath, "rb");
 	Common::File out(outpath, "wb");
 
-	if (in.size() != 40 * 2 * 9 * 512)
+	if (in.size() != 40 * 2 * 9 * 512) // tracks * sides * sectors * sector size = 368640
 		error("This is not a disk image!");
 
 	// Extract LOGIC files
