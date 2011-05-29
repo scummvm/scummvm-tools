@@ -349,11 +349,11 @@ void CompressSci::execute() {
 			error("Unsupported data at offset %lx", _inputOffset);
 		_input.seek(_inputEndOffset, SEEK_SET);
 		_inputOffset = _inputEndOffset;
+		resourceCount++;
 		// We abort even, if file position is one below size because of pharkas resource.sfx
 		if (_inputOffset >= _inputSize - 1)
 			break;
 
-		resourceCount++;
 		_input.read_throwsOnError(&header, 6);
 	} while (true);
 
