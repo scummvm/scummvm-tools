@@ -103,4 +103,5 @@ win32dist:   all
 	cp *.bat $(WIN32PATH)/tools
 	cp COPYING $(WIN32PATH)/tools/COPYING.txt
 	cp README $(WIN32PATH)/tools/README.txt
+	cp NEWS $(WIN32PATH)/tools/NEWS.txt
 	u2d $(WIN32PATH)/tools/*.txt
