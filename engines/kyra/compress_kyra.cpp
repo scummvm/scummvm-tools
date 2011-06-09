@@ -98,7 +98,11 @@ void CompressKyra::process(Common::Filename *infile, Common::Filename *outfile) 
 		extractAndEncodeVOC(TEMP_RAW, tempFile, _format);
 		tempFile.close();
 
-		outputName.setExtension(audio_extensions(_format));
+		std::string ext = outputName.getExtension();
+		if (!ext.compare("VOC") || !ext.compare("voc") || !ext.compare("Voc"))
+			outputName.setExtension(audio_extensions(_format));
+		else
+			outputName.addExtension(audio_extensions(_format));
 
 		output.addFile(outputName.getFullPath().c_str(), tempEncoded);
 
