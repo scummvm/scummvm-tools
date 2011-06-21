@@ -238,8 +238,7 @@ Section "ScummVM" SecMain
 	File "${build_dir}\gob_loadcalc.exe"
 	File "${build_dir}\scummvm-tools.exe"
 	File "${build_dir}\scummvm-tools-cli.exe"
-	File "${build_dir}\mingwm10.dll"
-	
+
 	# Media
 	SetOutPath $INSTDIR\media
 	File "${media_dir}\detaillogo.jpg"
@@ -298,8 +297,7 @@ Section -un.Main SecUninstall
 	Delete /REBOOTOK $INSTDIR\gob_loadcalc.exe"
 	Delete /REBOOTOK $INSTDIR\scummvm-tools.exe"
 	Delete /REBOOTOK $INSTDIR\scummvm-tools-cli.exe"
-	Delete /REBOOTOK $INSTDIR\mingwm10.dll"
-	
+
 	Delete /REBOOTOK $INSTDIR\media\detaillogo.jpg"
 	Delete /REBOOTOK $INSTDIR\media\logo.jpg"
 	Delete /REBOOTOK $INSTDIR\media\tile.gif"
