@@ -214,7 +214,7 @@
 
 	#define PLUGIN_EXPORT __declspec(dllexport)
 
-#elif defined(UNIX)
+#elif defined(POSIX)
 
 	#define scumm_stricmp strcasecmp
 	#define scumm_strnicmp strncasecmp

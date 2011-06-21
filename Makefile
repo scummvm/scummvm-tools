@@ -26,23 +26,24 @@ NO_MAIN     := -DEXPORT_MAIN
 -include config.mk
 
 ifeq "$(HAVE_GCC)" "1"
-	# Additional warnings
 	CXXFLAGS:= -Wall $(CXXFLAGS)
 	# Turn off some annoying and not-so-useful warnings
 	CXXFLAGS+= -Wno-long-long -Wno-multichar -Wno-unknown-pragmas -Wno-reorder
 	# Enable even more warnings...
-	#CXXFLAGS+= -pedantic	# -pedantic is too pedantic, at least on Mac OS X
-	CXXFLAGS+= -Wpointer-arith -Wcast-align
-	CXXFLAGS+= -Wshadow -Wimplicit -Wundef -Wnon-virtual-dtor -Wwrite-strings
+	CXXFLAGS+= -Wpointer-arith -Wcast-qual
+	CXXFLAGS+= -Wshadow -Wnon-virtual-dtor -Wwrite-strings
 
-	# Enable checking of pointers returned by "new"
+	# Currently we disable this gcc flag, since it will also warn in cases,
+	# where using GCC_PRINTF (means: __attribute__((format(printf, x, y))))
+	# is not possible, thus it would fail compiliation with -Werror without
+	# being helpful.
+	#CXXFLAGS+= -Wmissing-format-attribute
+
+ifneq "$(HAVE_CLANG)" "1"
+	# enable checking of pointers returned by "new", but only when we do not
+	# build with clang
 	CXXFLAGS+= -fcheck-new
-
-	# There is a nice extra warning that flags variables that are potentially
-	# used before being initialized. Very handy to catch a certain kind of
-	# bugs. Unfortunately, it only works when optimizations are turned on,
-	# which is why we normally don't use it.
-	#CXXFLAGS+= -O -Wuninitialized
+endif
 endif
 
 ifeq "$(HAVE_CLANG)" "1"
