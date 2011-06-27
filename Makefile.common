@@ -400,15 +400,14 @@ ifeq ($(origin VER_REV), undefined)
 # Are there uncommitted changes? (describe --dirty is only available since 1.6.6)
 VER_DIRTY := $(shell cd $(srcdir); git update-index --refresh --unmerged 1>/dev/null 2>&1; git diff-index --quiet HEAD || echo "-dirty")
 # Get the working copy base revision
-VER_REV := $(shell cd $(srcdir); git describe --match desc/\* | cut -d '-' -f 2-)$(VER_DIRTY)
+VER_REV := $(shell cd $(srcdir); git describe | cut -d '-' -f 2-)$(VER_DIRTY)
 endif
 else
 GITROOT := git://github.com/scummvm/scummvm-tools.git
 endif
 
-# Define the Subversion revision if available, either autodetected or
-# specified by the user, but only for base/version.cpp.
+# Define the Git revision if available, either autodetected or
+# specified by the user, but only for version.cpp.
 ifneq ($(origin VER_REV), undefined)
-base/version.o: CXXFLAGS:=$(CXXFLAGS) -DSCUMMVM_REVISION=\"$(VER_REV)\"
+version.o: CXXFLAGS:=$(CXXFLAGS) -DSCUMMVM_TOOLS_REVISION=\"$(VER_REV)\"
 endif
-
