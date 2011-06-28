@@ -28,6 +28,7 @@
 
 #include "encode_dxa.h"
 #include "common/endian.h"
+#include "common/str.h"
 
 const uint32 typeDEXA = 0x41584544;
 const uint32 typeFRAM = 0x4d415246;
@@ -584,12 +585,16 @@ void EncodeDXA::execute() {
 
 	uint8 *image = NULL;
 	uint8 *palette = NULL;
-	int framenum = 0;
-
-	print("Encoding video...");
 
 	char fullname[1024];
 	strcpy(fullname, inpath.getFullPath().c_str());
+
+	// Check starting frame (binkconv starts at 0, ffmpeg starts at 1)
+	int framenum = 0;
+	if (!Common::Filename(Common::String::printf("%s%04d.png", fullname, framenum).c_str()).exists())
+		framenum++;
+
+	print("Encoding video...");
 	for (int f = 0; f < frames; f++) {
 		char strbuf[1024];
 		if (frames > 999)
