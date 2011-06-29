@@ -81,40 +81,49 @@ else
 endif
 
 # Special target to create a win32 tools snapshot binary
-WIN32PATH=build
-
-# Special target to prepare data files for distribution / installer creation
-win32data:
-	mkdir -p $(srcdir)/$(WIN32PATH)
-	cp $(srcdir)/COPYING          $(srcdir)/$(WIN32PATH)
-	cp $(srcdir)/NEWS             $(srcdir)/$(WIN32PATH)
-	cp $(srcdir)/README           $(srcdir)/$(WIN32PATH)
-	unix2dos $(srcdir)/$(WIN32PATH)/*.*
-	$(STRIP) decine.exe             -o $(srcdir)/$(WIN32PATH)/decine.exe
-	$(STRIP) degob.exe              -o $(srcdir)/$(WIN32PATH)/degob.exe
-	$(STRIP) dekyra.exe             -o $(srcdir)/$(WIN32PATH)/dekyra.exe
-	$(STRIP) deriven.exe            -o $(srcdir)/$(WIN32PATH)/deriven.exe
-	$(STRIP) descumm.exe            -o $(srcdir)/$(WIN32PATH)/descumm.exe
-	$(STRIP) desword2.exe           -o $(srcdir)/$(WIN32PATH)/desword2.exe
-	$(STRIP) extract_mohawk.exe     -o $(srcdir)/$(WIN32PATH)/extract_mohawk.exe
-	$(STRIP) construct_mohawk.exe   -o $(srcdir)/$(WIN32PATH)/construct_mohawk.exe
-	$(STRIP) gob_loadcalc.exe       -o $(srcdir)/$(WIN32PATH)/gob_loadcalc.exe
-	$(STRIP) scummvm-tools.exe      -o $(srcdir)/$(WIN32PATH)/scummvm-tools.exe
-	$(STRIP) scummvm-tools-cli.exe  -o $(srcdir)/$(WIN32PATH)/scummvm-tools-cli.exe
-
-# Special target to create a win32 snapshot binary (for Inno Setup)
-win32dist: all win32data 
-	mkdir -p $(srcdir)/$(WIN32PATH)/tools
-	mv $(srcdir)/$(WIN32PATH)/*.* $(srcdir)/$(WIN32PATH)/tools/
-	cp $(srcdir)/*.bat $(srcdir)/$(WIN32PATH)/tools
-	mkdir -p $(srcdir)/$(WIN32PATH)/tools/media
-	cp $(srcdir)/gui/media/detaillogo.jpg  $(srcdir)/$(WIN32PATH)/tools/media/
-	cp $(srcdir)/gui/media/logo.jpg        $(srcdir)/$(WIN32PATH)/tools/media/
-	cp $(srcdir)/gui/media/tile.gif        $(srcdir)/$(WIN32PATH)/tools/media/
-	mv $(srcdir)/$(WIN32PATH)/COPYING      $(srcdir)/$(WIN32PATH)/tools/COPYING.txt
-	mv $(srcdir)/$(WIN32PATH)/README       $(srcdir)/$(WIN32PATH)/tools/README.txt
-	mv $(srcdir)/$(WIN32PATH)/NEWS         $(srcdir)/$(WIN32PATH)/tools/NEWS.txt
+WIN32PATH=c:/scummvm
+win32dist:   all
+	mkdir -p $(WIN32PATH)
+	mkdir -p $(WIN32PATH)/tools
+	mkdir -p $(WIN32PATH)/tools/media
+	cp gui/media/detaillogo.jpg $(WIN32PATH)/tools/media/
+	cp gui/media/logo.jpg $(WIN32PATH)/tools/media/
+	cp gui/media/tile.gif $(WIN32PATH)/tools/media/
+	$(STRIP) decine.exe -o $(WIN32PATH)/tools/decine.exe
+	$(STRIP) degob.exe -o $(WIN32PATH)/tools/degob.exe
+	$(STRIP) dekyra.exe -o $(WIN32PATH)/tools/dekyra.exe
+	$(STRIP) deriven.exe -o $(WIN32PATH)/tools/deriven.exe
+	$(STRIP) descumm.exe -o $(WIN32PATH)/tools/descumm.exe
+	$(STRIP) desword2.exe -o $(WIN32PATH)/tools/desword2.exe
+	$(STRIP) extract_mohawk.exe -o $(WIN32PATH)/tools/extract_mohawk.exe
+	$(STRIP) construct_mohawk.exe -o $(WIN32PATH)/tools/construct_mohawk.exe
+	$(STRIP) gob_loadcalc.exe -o $(WIN32PATH)/tools/gob_loadcalc.exe
+	$(STRIP) scummvm-tools.exe -o $(WIN32PATH)/tools/scummvm-tools.exe
+	$(STRIP) scummvm-tools-cli.exe -o $(WIN32PATH)/tools/scummvm-tools-cli.exe
+	cp *.bat $(WIN32PATH)/tools
+	cp COPYING $(WIN32PATH)/tools/COPYING.txt
+	cp README $(WIN32PATH)/tools/README.txt
+	cp NEWS $(WIN32PATH)/tools/NEWS.txt
+	cp dists/win32/ScummVM?Tools.iss $(WIN32PATH)
+	unix2dos $(WIN32PATH)/tools/*.txt
 
 # Special target to create a win32 NSIS installer
-win32setup: win32data all
-	makensis -V2 -Dtop_srcdir="../.." -Dtext_dir="../../$(WIN32PATH)" -Dbuild_dir="../../$(WIN32PATH)" $(srcdir)/dists/nsis/scummvm-tools.nsi
+WIN32BUILD=build
+win32setup: all
+	mkdir -p $(srcdir)/$(WIN32BUILD)
+	cp $(srcdir)/COPYING          $(srcdir)/$(WIN32BUILD)
+	cp $(srcdir)/NEWS             $(srcdir)/$(WIN32BUILD)
+	cp $(srcdir)/README           $(srcdir)/$(WIN32BUILD)
+	unix2dos $(srcdir)/$(WIN32BUILD)/*.*
+	$(STRIP) decine.exe             -o $(srcdir)/$(WIN32BUILD)/decine.exe
+	$(STRIP) degob.exe              -o $(srcdir)/$(WIN32BUILD)/degob.exe
+	$(STRIP) dekyra.exe             -o $(srcdir)/$(WIN32BUILD)/dekyra.exe
+	$(STRIP) deriven.exe            -o $(srcdir)/$(WIN32BUILD)/deriven.exe
+	$(STRIP) descumm.exe            -o $(srcdir)/$(WIN32BUILD)/descumm.exe
+	$(STRIP) desword2.exe           -o $(srcdir)/$(WIN32BUILD)/desword2.exe
+	$(STRIP) extract_mohawk.exe     -o $(srcdir)/$(WIN32BUILD)/extract_mohawk.exe
+	$(STRIP) construct_mohawk.exe   -o $(srcdir)/$(WIN32BUILD)/construct_mohawk.exe
+	$(STRIP) gob_loadcalc.exe       -o $(srcdir)/$(WIN32BUILD)/gob_loadcalc.exe
+	$(STRIP) scummvm-tools.exe      -o $(srcdir)/$(WIN32BUILD)/scummvm-tools.exe
+	$(STRIP) scummvm-tools-cli.exe  -o $(srcdir)/$(WIN32BUILD)/scummvm-tools-cli.exe
+	makensis -V2 -Dtop_srcdir="../.." -Dtext_dir="../../$(WIN32BUILD)" -Dbuild_dir="../../$(WIN32BUILD)" $(srcdir)/dists/nsis/scummvm-tools.nsi
