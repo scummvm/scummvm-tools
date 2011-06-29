@@ -103,7 +103,7 @@ win32data:
 	$(STRIP) scummvm-tools-cli.exe  -o $(srcdir)/$(WIN32PATH)/scummvm-tools-cli.exe
 
 # Special target to create a win32 snapshot binary (for Inno Setup)
-win32dist: win32data all
+win32dist: all win32data 
 	mkdir -p $(srcdir)/$(WIN32PATH)/tools
 	mv $(srcdir)/$(WIN32PATH)/*.* $(srcdir)/$(WIN32PATH)/tools/
 	cp $(srcdir)/*.bat $(srcdir)/$(WIN32PATH)/tools
