@@ -1,7 +1,7 @@
 [Setup]
 AppName=ScummVM Tools
 AppCopyright=2011
-AppVerName=ScummVM Tools 1.3.0
+AppVerName=ScummVM Tools Git
 DefaultDirName={pf}\ScummVM\tools
 DefaultGroupName=ScummVM Tools
 AllowNoIcons=true
@@ -9,7 +9,7 @@ AlwaysUsePersonalGroup=false
 EnableDirDoesntExistWarning=false
 Compression=lzma
 OutputDir=C:\ScummVM
-OutputBaseFilename=scummvm-tools-1.3.0-win32
+OutputBaseFilename=scummvm-tools-win32
 DisableStartupPrompt=true
 AppendDefaultDirName=false
 SolidCompression=true
@@ -17,7 +17,8 @@ DirExistsWarning=no
 
 [Files]
 Source: "tools\construct_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\COPYING.txt"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "tools\decine.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "tools\convert_dxa.bat"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\decine.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\degob.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\dekyra.exe"; DestDir: "{app}"; Flags: ignoreversion 
@@ -43,3 +44,4 @@ Name: "{group}\{cm:UninstallProgram, ScummVM Tools}"; Filename: "{uninstallexe}"
 Name: "{group}\ScummVM Tools"; Filename: "{app}\scummvm-tools.exe"; WorkingDir: "{app}"; Comment: "scummvm-tools"; 
 Name: {group}\Copying; Filename: {app}\COPYING.txt; WorkingDir: {app}; Comment: COPYING; Flags: createonlyiffileexists
 Name: {group}\News; Filename: {app}\NEWS.txt; WorkingDir: {app}; Comment: NEWS; Flags: createonlyiffileexists
+Name: {group}\Readme; Filename: {app}\README.txt; WorkingDir: {app}; Comment: README; Flags: createonlyiffileexists
