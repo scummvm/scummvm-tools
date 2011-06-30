@@ -84,6 +84,7 @@ endif
 WIN32PATH=c:/scummvm
 win32dist:   all
 	mkdir -p $(WIN32PATH)
+	mkdir -p $(WIN32PATH)/graphics
 	mkdir -p $(WIN32PATH)/tools
 	mkdir -p $(WIN32PATH)/tools/media
 	cp gui/media/detaillogo.jpg $(WIN32PATH)/tools/media/
@@ -104,6 +105,8 @@ win32dist:   all
 	cp COPYING $(WIN32PATH)/tools/COPYING.txt
 	cp README $(WIN32PATH)/tools/README.txt
 	cp NEWS $(WIN32PATH)/tools/NEWS.txt
+	cp dists/win32/graphics/left.bmp $(WIN32PATH)/graphics
+	cp dists/win32/graphics/scummvm-install.ico $(WIN32PATH)/graphics
 	cp dists/win32/ScummVM?Tools.iss $(WIN32PATH)
 	unix2dos $(WIN32PATH)/tools/*.txt
 
@@ -126,4 +129,4 @@ win32setup: all
 	$(STRIP) gob_loadcalc.exe       -o $(srcdir)/$(WIN32BUILD)/gob_loadcalc.exe
 	$(STRIP) scummvm-tools.exe      -o $(srcdir)/$(WIN32BUILD)/scummvm-tools.exe
 	$(STRIP) scummvm-tools-cli.exe  -o $(srcdir)/$(WIN32BUILD)/scummvm-tools-cli.exe
-	makensis -V2 -Dtop_srcdir="../.." -Dtext_dir="../../$(WIN32BUILD)" -Dbuild_dir="../../$(WIN32BUILD)" $(srcdir)/dists/nsis/scummvm-tools.nsi
+	makensis -V2 -Dtop_srcdir="../.." -Dtext_dir="../../$(WIN32BUILD)" -Dbuild_dir="../../$(WIN32BUILD)" $(srcdir)/dists/win32/scummvm-tools.nsi
