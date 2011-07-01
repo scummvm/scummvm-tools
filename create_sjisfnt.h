@@ -40,6 +40,12 @@ void deinitSJIStoUTF32Conversion();
 uint32 convertSJIStoUTF32(uint8 fB, uint8 sB);
 
 struct Glyph {
+	Glyph();
+	Glyph(const Glyph &r);
+	~Glyph();
+
+	Glyph &operator=(const Glyph &r);
+
 	uint8 fB, sB;
 
 	int xOffset;
@@ -50,15 +56,14 @@ struct Glyph {
 
 	int pitch;
 	uint8 *plainData;
+
+	bool checkSize(const int maxW, const int maxH) const;
+
+	void convertChar8x16(uint8 *dst) const;
+	void convertChar16x16(uint8 *dst) const;
 };
 
-bool checkGlyphSize(const Glyph &g, const int maxW, const int maxH);
-
-void convertChar8x16(uint8 *dst, const Glyph &g);
-void convertChar16x16(uint8 *dst, const Glyph &g);
-
 typedef std::list<Glyph> GlyphList;
-void freeGlyphlist(GlyphList &list);
 
 class TrueTypeFont {
 public:

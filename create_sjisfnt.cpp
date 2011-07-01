@@ -110,8 +110,8 @@ int main(int argc, char *argv[]) {
 		// Substract our minimum y offset
 		i->yOffset -= minYOffset;
 
-		if ((isASCII(i->fB) && !checkGlyphSize(*i, 8, 16)) ||
-			(!isASCII(i->fB) && !checkGlyphSize(*i, 16, 16))) {
+		if ((isASCII(i->fB) && !i->checkSize(8, 16)) ||
+			(!isASCII(i->fB) && !i->checkSize(16, 16))) {
 			for (GlyphList::iterator j = glyphs.begin(); j != glyphs.end(); ++j)
 				delete[] j->plainData;
 
@@ -124,17 +124,14 @@ int main(int argc, char *argv[]) {
 	const int sjis8x16DataSize = chars8x16 * 16;
 	uint8 *sjis8x16FontData = new uint8[sjis8x16DataSize];
 
-	if (!sjis8x16FontData) {
-		freeGlyphlist(glyphs);
+	if (!sjis8x16FontData)
 		error("Out of memory");
-	}
 
 	const int sjis16x16DataSize = chars16x16 * 32;
 	uint8 *sjis16x16FontData = new uint8[sjis16x16DataSize];
 
 	if (!sjis16x16FontData) {
 		delete[] sjis8x16FontData;
-		freeGlyphlist(glyphs);
 		error("Out of memory");
 	}
 
@@ -145,23 +142,15 @@ int main(int argc, char *argv[]) {
 		if (isASCII(i->fB)) {
 			int chunk = mapASCIItoChunk(i->fB);
 
-			if (chunk != -1) {
-				uint8 *dst = sjis8x16FontData + chunk * 16;
-				dst += i->yOffset;
-				convertChar8x16(dst, *i);
-			}
+			if (chunk != -1)
+				i->convertChar8x16(sjis8x16FontData + chunk * 16);
 		} else {
 			int chunk = mapSJIStoChunk(i->fB, i->sB);
 
-			if (chunk != -1) {
-				uint8 *dst = sjis16x16FontData + chunk * 32;
-				dst += i->yOffset * 2;
-				convertChar16x16(dst, *i);
-			}
+			if (chunk != -1)
+				i->convertChar16x16(sjis16x16FontData + chunk * 32);
 		}
 	}
-
-	freeGlyphlist(glyphs);
 
 	Common::File sjisFont(out, "wb");
 	if (sjisFont.isOpen()) {
@@ -191,12 +180,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	return 0;
-}
-
-void freeGlyphlist(GlyphList &list) {
-	for (GlyphList::iterator i = list.begin(); i != list.end(); ++i)
-		delete[] i->plainData;
-	list.clear();
 }
 
 bool isASCII(uint8 fB) {
@@ -290,13 +273,6 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 		return READ_LE_UINT32(outBuf + 4);
 	else
 		return ret;
-}
-
-bool checkGlyphSize(const Glyph &g, const int maxW, const int maxH) {
-	if (g.yOffset < 0 || g.yOffset + g.height > maxH ||
-		g.xOffset > maxW || g.xOffset + g.width > maxW)
-		return false;
-	return true;
 }
 
 TrueTypeFont::TrueTypeFont()
@@ -433,21 +409,58 @@ bool TrueTypeFont::renderGlyph(uint32 unicode, Glyph &glyph) {
 	return true;
 }
 
-// TODO: merge these two
+Glyph::Glyph()
+	: fB(0), sB(0), xOffset(0), yOffset(0), height(0), width(0), pitch(0),
+	  plainData(0) {
+}
 
-void convertChar8x16(uint8 *dst, const Glyph &g) {
-	const uint8 *src = g.plainData;
+Glyph::Glyph(const Glyph &r)
+	: fB(r.fB), sB(r.sB), xOffset(r.xOffset), yOffset(r.yOffset),
+	  height(r.height), width(r.width), pitch(r.pitch), plainData(0) {
+	plainData = new uint8[height * pitch];
+	memcpy(plainData, r.plainData, height * pitch);
+}
 
-	assert(g.width + g.xOffset <= 8);
+Glyph::~Glyph() {
+	delete[] plainData;
+}
 
-	for (int y = 0; y < g.height; ++y) {
-		uint8 mask = 1 << (7 - g.xOffset);
+Glyph &Glyph::operator=(const Glyph &r) {
+	delete[] plainData;
+
+	fB = r.fB;
+	sB = r.sB;
+	xOffset = r.xOffset;
+	yOffset = r.yOffset;
+	height = r.height;
+	width = r.width;
+	pitch = r.pitch;
+
+	plainData = new uint8[height * pitch];
+	memcpy(plainData, r.plainData, height * pitch);
+
+	return *this;
+}
+
+bool Glyph::checkSize(const int maxW, const int maxH) const {
+	if (yOffset < 0 || yOffset + height > maxH ||
+		xOffset < 0 || xOffset + width > maxW)
+		return false;
+	return true;
+}
+
+void Glyph::convertChar8x16(uint8 *dst) const {
+	const uint8 *src = plainData;
+	dst += yOffset;
+
+	for (int y = 0; y < height; ++y) {
+		uint8 mask = 1 << (7 - xOffset);
 
 		const uint8 *curSrc = src;
 
 		uint8 line = 0;
 		uint8 d = 0;
-		for (int x = 0; x < g.width; ++x) {
+		for (int x = 0; x < width; ++x) {
 			if (x == 0)
 				d = *curSrc++;
 
@@ -459,21 +472,22 @@ void convertChar8x16(uint8 *dst, const Glyph &g) {
 		}
 
 		*dst++ = line;
-		src += g.pitch;
+		src += pitch;
 	}
 }
 
-void convertChar16x16(uint8 *dst, const Glyph &g) {
-	const uint8 *src = g.plainData;
+void Glyph::convertChar16x16(uint8 *dst) const {
+	const uint8 *src = plainData;
+	dst += yOffset * 2;
 
-	for (int y = 0; y < g.height; ++y) {
-		uint16 mask = 1 << (15 - g.xOffset);
+	for (int y = 0; y < height; ++y) {
+		uint16 mask = 1 << (15 - xOffset);
 
 		const uint8 *curSrc = src;
 
 		uint16 line = 0;
 		uint8 d = 0;
-		for (int x = 0; x < g.width; ++x) {
+		for (int x = 0; x < width; ++x) {
 			if (x == 0 || x == 8)
 				d = *curSrc++;
 
@@ -485,7 +499,7 @@ void convertChar16x16(uint8 *dst, const Glyph &g) {
 		}
 
 		WRITE_BE_UINT16(dst, line); dst += 2;
-		src += g.pitch;
+		src += pitch;
 	}
 }
 
