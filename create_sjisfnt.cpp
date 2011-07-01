@@ -31,9 +31,6 @@
 #include <assert.h>
 #include <errno.h>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
 int main(int argc, char *argv[]) {
 	if (argc < 2 || argc > 3) {
 		printf("Usage:\n\t%s <input ttf font> [outfile]\n", argv[0]);
@@ -54,20 +51,22 @@ int main(int argc, char *argv[]) {
 
 	atexit(deinitSJIStoUTF32Conversion);
 
-	if (!initFreeType(font)) {
+	TrueTypeFont *ttf = new TrueTypeFont();
+	if (!ttf->load(font)) {
+		delete ttf;
 		error("Could not initialize FreeType library.");
 		return -1;
 	}
-
-	atexit(deinitFreeType);
 
 	GlyphList glyphs;
 	int chars8x16 = 0;
 	int chars16x16 = 0;
 
 	// ASCII chars will be rendererd as 8x16
-	if (!setGlyphSize(8, 16))
+	if (!ttf->setSize(8, 16)) {
+		delete ttf;
 		return -1;
+	}
 
 	for (uint8 fB = 0x00; fB <= 0xDF; ++fB) {
 		if (mapASCIItoChunk(fB) == -1)
@@ -76,12 +75,13 @@ int main(int argc, char *argv[]) {
 		++chars8x16;
 
 		Glyph data;
-		if (drawGlyph(fB, 0, data))
+		if (ttf->renderGlyph(fB, 0, data))
 			glyphs.push_back(data);
 	}
 
 	// The two byte SJIS chars will be rendered as 16x16
-	if (!setGlyphSize(16, 16)) {
+	if (!ttf->setSize(16, 16)) {
+		delete ttf;
 		freeGlyphlist(glyphs);
 		return -1;
 	}
@@ -97,10 +97,13 @@ int main(int argc, char *argv[]) {
 			++chars16x16;
 
 			Glyph data;
-			if (drawGlyph(fB, sB, data))
+			if (ttf->renderGlyph(fB, sB, data))
 				glyphs.push_back(data);
 		}
 	}
+
+	delete ttf;
+	ttf = 0;
 
 	// Post process all chars, so that xOffset is at least 0
 	int minXOffset = 0;
@@ -146,10 +149,16 @@ int main(int argc, char *argv[]) {
 	const int sjis8x16DataSize = chars8x16 * 16;
 	uint8 *sjis8x16FontData = new uint8[sjis8x16DataSize];
 
+	if (!sjis8x16FontData) {
+		freeGlyphlist(glyphs);
+		error("Out of memory");
+	}
+
 	const int sjis16x16DataSize = chars16x16 * 32;
 	uint8 *sjis16x16FontData = new uint8[sjis16x16DataSize];
 
 	if (!sjis16x16FontData) {
+		delete[] sjis8x16FontData;
 		freeGlyphlist(glyphs);
 		error("Out of memory");
 	}
@@ -308,26 +317,36 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 		return ret;
 }
 
-FT_Library ft = NULL;
-FT_Face sjisFont = NULL;
+bool checkGlyphSize(const Glyph &g, const int baseLine, const int maxW, const int maxH) {
+	if (baseLine - g.yOffset < 0 || baseLine - g.yOffset + g.height > (maxH + 1) ||
+		g.xOffset > (maxW - 1) || g.xOffset + g.width > (maxW + 1))
+		return false;
+	return true;
+}
 
-bool initFreeType(const char *font) {
-	FT_Error err = FT_Init_FreeType(&ft);
+TrueTypeFont::TrueTypeFont()
+	: _library(0), _sjisFont(0) {
+}
+
+TrueTypeFont::~TrueTypeFont() {
+	FT_Done_Face(_sjisFont);
+	FT_Done_FreeType(_library);
+}
+
+bool TrueTypeFont::load(const char *font) {
+	FT_Error err = FT_Init_FreeType(&_library);
 	if (err) {
 		warning("Could not initialize FreeType2 library.");
 		return false;
 	}
 
-	err = FT_New_Face(ft, font, 0, &sjisFont);
+	err = FT_New_Face(_library, font, 0, &_sjisFont);
 	if (err) {
 		warning("Could not load font '%s'", font);
 		return false;
 	}
 
-	if (!setGlyphSize(16, 16))
-		return false;
-
-	err = FT_Select_Charmap(sjisFont, FT_ENCODING_UNICODE);
+	err = FT_Select_Charmap(_sjisFont, FT_ENCODING_UNICODE);
 	if (err) {
 		warning("Could not select unicode charmap.");
 		return false;
@@ -336,29 +355,17 @@ bool initFreeType(const char *font) {
 	return true;
 }
 
-void deinitFreeType() {
-	FT_Done_Face(sjisFont);
-	FT_Done_FreeType(ft);
-}
-
-bool setGlyphSize(int width, int height) {
-	FT_Error err = FT_Set_Pixel_Sizes(sjisFont, width, height);
+bool TrueTypeFont::setSize(int width, int height) {
+	FT_Error err = FT_Set_Pixel_Sizes(_sjisFont, width, height);
 	if (err) {
-		warning("Could not initialize font for %dx%d outout.", width, height);
+		warning("Could not initialize font for %dx%d output.", width, height);
 		return false;
 	}
 
 	return true;
 }
 
-bool checkGlyphSize(const Glyph &g, const int baseLine, const int maxW, const int maxH) {
-	if (baseLine - g.yOffset < 0 || baseLine - g.yOffset + g.height > (maxH + 1) ||
-		g.xOffset > (maxW - 1) || g.xOffset + g.width > (maxW + 1))
-		return false;
-	return true;
-}
-
-bool drawGlyph(uint8 fB, uint8 sB, Glyph &glyph) {
+bool TrueTypeFont::renderGlyph(uint8 fB, uint8 sB, Glyph &glyph) {
 	uint32 utf32 = convertSJIStoUTF32(fB, sB);
 	if (utf32 == (uint32)-1) {
 		// For now we disable that warning, since iconv will fail for all reserved,
@@ -374,7 +381,7 @@ bool drawGlyph(uint8 fB, uint8 sB, Glyph &glyph) {
 
 	glyph.fB = fB;
 	glyph.sB = sB;
-	if (!drawGlyph(utf32, glyph)) {
+	if (!renderGlyph(utf32, glyph)) {
 		warning("Could not render glyph: %.2X %.2X", fB, sB);
 		return false;
 	}
@@ -382,23 +389,23 @@ bool drawGlyph(uint8 fB, uint8 sB, Glyph &glyph) {
 	return true;
 }
 
-bool drawGlyph(uint32 unicode, Glyph &glyph) {
-	uint32 index = FT_Get_Char_Index(sjisFont, unicode);
+bool TrueTypeFont::renderGlyph(uint32 unicode, Glyph &glyph) {
+	uint32 index = FT_Get_Char_Index(_sjisFont, unicode);
 	if (!index)
 		return false;
 
-	FT_Error err = FT_Load_Glyph(sjisFont, index, FT_LOAD_MONOCHROME | FT_LOAD_NO_HINTING);
+	FT_Error err = FT_Load_Glyph(_sjisFont, index, FT_LOAD_MONOCHROME | FT_LOAD_NO_HINTING);
 	if (err)
 		return false;
 
-	err = FT_Render_Glyph(sjisFont->glyph, FT_RENDER_MODE_MONO);
+	err = FT_Render_Glyph(_sjisFont->glyph, FT_RENDER_MODE_MONO);
 	if (err)
 		return false;
 
-	const FT_Bitmap &bitmap = sjisFont->glyph->bitmap;
+	const FT_Bitmap &bitmap = _sjisFont->glyph->bitmap;
 
-	glyph.yOffset = sjisFont->glyph->bitmap_top;
-	glyph.xOffset = sjisFont->glyph->bitmap_left;
+	glyph.yOffset = _sjisFont->glyph->bitmap_top;
+	glyph.xOffset = _sjisFont->glyph->bitmap_left;
 	glyph.height = bitmap.rows;
 	glyph.width = bitmap.width;
 	glyph.pitch = bitmap.pitch;

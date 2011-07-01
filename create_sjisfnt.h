@@ -27,6 +27,9 @@
 
 #include <list>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 bool isASCII(uint8 fB);
 
 int mapASCIItoChunk(uint8 fB);
@@ -35,9 +38,6 @@ int mapSJIStoChunk(uint8 fB, uint8 sB);
 bool initSJIStoUTF32Conversion();
 void deinitSJIStoUTF32Conversion();
 uint32 convertSJIStoUTF32(uint8 fB, uint8 sB);
-
-bool initFreeType(const char *font);
-void deinitFreeType();
 
 struct Glyph {
 	uint8 fB, sB;
@@ -51,17 +51,30 @@ struct Glyph {
 	uint8 *plainData;
 };
 
-bool setGlyphSize(int width, int height);
 bool checkGlyphSize(const Glyph &g, const int baseLine, const int maxW, const int maxH);
-
-bool drawGlyph(uint8 fB, uint8 sB, Glyph &glyph);
-bool drawGlyph(uint32 unicode, Glyph &glyph);
 
 void convertChar8x16(uint8 *dst, const Glyph &g);
 void convertChar16x16(uint8 *dst, const Glyph &g);
 
 typedef std::list<Glyph> GlyphList;
 void freeGlyphlist(GlyphList &list);
+
+class TrueTypeFont {
+public:
+	TrueTypeFont();
+	~TrueTypeFont();
+
+	bool load(const char *filename);
+
+	bool setSize(int width, int height);
+
+	bool renderGlyph(uint8 fb, uint8 sB, Glyph &glyph);
+private:
+	bool renderGlyph(uint32 unicode, Glyph &glyph);
+
+	FT_Library _library;
+	FT_Face _sjisFont;
+};
 
 #endif
 
