@@ -71,22 +71,42 @@ int main(int argc, char *argv[]) {
 	ttf->renderASCIIGlyphs(glyphs, chars8x16);
 	ttf->renderKANJIGlyphs(glyphs, chars16x16);
 
+	if (!ttf->setSize(12)) {
+		delete ttf;
+		error("Could not setup font '%s' to size 12", font);
+		return -1;
+	}
+
+	GlyphList pceGlyphs;
+	int chars12x12 = 0;
+	ttf->renderKANJIGlyphs(pceGlyphs, chars12x12);
+
 	delete ttf;
 	ttf = 0;
 
 	fixYOffset(glyphs);
+	fixYOffset(pceGlyphs);
 
-	// Check whether we have an character which does not fit within the boundaries6
+	// Check whether we have a character which does not fit within the boundaries
 	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
 		if (i->pitch == 0)
 			continue;
 
 		if ((isASCII(i->fB) && !i->checkSize(8, 16)) ||
 			(!isASCII(i->fB) && !i->checkSize(16, 16))) {
-			for (GlyphList::iterator j = glyphs.begin(); j != glyphs.end(); ++j)
-				delete[] j->plainData;
-
 			error("Could not fit glyph for %.2X %.2X top: %d bottom: %d, left: %d right: %d, xOffset: %d, yOffset: %d, width: %d, height: %d",
+				   i->fB, i->sB, i->yOffset, i->yOffset + i->height, i->xOffset, i->xOffset + i->width,
+				   i->xOffset, i->yOffset, i->width, i->height);
+		}
+	}
+
+	// Check whether we have a character which does not fit within the boundaries
+	for (GlyphList::const_iterator i = pceGlyphs.begin(); i != pceGlyphs.end(); ++i) {
+		if (i->pitch == 0)
+			continue;
+
+		if (!isASCII(i->fB) && !i->checkSize(12, 12)) {
+			error("Could not fit pce glyph for %.2X %.2X top: %d bottom: %d, left: %d right: %d, xOffset: %d, yOffset: %d, width: %d, height: %d",
 				   i->fB, i->sB, i->yOffset, i->yOffset + i->height, i->xOffset, i->xOffset + i->width,
 				   i->xOffset, i->yOffset, i->width, i->height);
 		}
@@ -106,8 +126,18 @@ int main(int argc, char *argv[]) {
 		error("Out of memory");
 	}
 
+	const int sjis12x12DataSize = chars12x12 * 24;
+	uint8 *sjis12x12FontData = new uint8[sjis16x16DataSize];
+
+	if (!sjis12x12FontData) {
+		delete[] sjis8x16FontData;
+		delete[] sjis16x16FontData;
+		error("Out of memory");
+	}
+
 	memset(sjis8x16FontData, 0, sjis8x16DataSize);
 	memset(sjis16x16FontData, 0, sjis16x16DataSize);
+	memset(sjis12x12FontData, 0, sjis12x12DataSize);
 
 	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
 		if (isASCII(i->fB)) {
@@ -123,6 +153,13 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	for (GlyphList::const_iterator i = pceGlyphs.begin(), end = pceGlyphs.end(); i != end; ++i) {
+		int chunk = mapSJIStoChunk(i->fB, i->sB);
+
+		if (chunk != -1)
+			i->convertChar16x16(sjis12x12FontData + chunk * 24);
+	}
+
 	Common::File sjisFont(out, "wb");
 	if (sjisFont.isOpen()) {
 		// Write our magic bytes
@@ -130,23 +167,27 @@ int main(int argc, char *argv[]) {
 		sjisFont.writeUint32BE(MKID_BE('SJIS'));
 
 		// Write version
-		sjisFont.writeUint32BE(0x00000002);
+		sjisFont.writeUint32BE(0x00000003);
 
 		// Write character count
 		sjisFont.writeUint16BE(chars16x16);
 		sjisFont.writeUint16BE(chars8x16);
+		sjisFont.writeUint16BE(chars12x12);
 
 		sjisFont.write(sjis16x16FontData, sjis16x16DataSize);
 		sjisFont.write(sjis8x16FontData, sjis8x16DataSize);
+		sjisFont.write(sjis12x12FontData, sjis12x12DataSize);
 
 		delete[] sjis8x16FontData;
 		delete[] sjis16x16FontData;
+		delete[] sjis12x12FontData;
 
 		if (sjisFont.err())
 			error("Error while writing to font file: '%s'", out);
 	} else {
 		delete[] sjis8x16FontData;
 		delete[] sjis16x16FontData;
+		delete[] sjis12x12FontData;
 		error("Could not open file '%s' for writing", out);
 	}
 
