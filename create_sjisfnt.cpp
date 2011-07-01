@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 	atexit(deinitSJIStoUTF32Conversion);
 
 	TrueTypeFont *ttf = new TrueTypeFont();
-	if (!ttf->load(font)) {
+	if (!ttf->load(font, 16)) {
 		delete ttf;
 		error("Could not initialize FreeType library.");
 		return -1;
@@ -61,12 +61,6 @@ int main(int argc, char *argv[]) {
 	GlyphList glyphs;
 	int chars8x16 = 0;
 	int chars16x16 = 0;
-
-	// ASCII chars will be rendererd as 8x16
-	if (!ttf->setSize(8, 16)) {
-		delete ttf;
-		return -1;
-	}
 
 	for (uint8 fB = 0x00; fB <= 0xDF; ++fB) {
 		if (mapASCIItoChunk(fB) == -1)
@@ -77,13 +71,6 @@ int main(int argc, char *argv[]) {
 		Glyph data;
 		if (ttf->renderGlyph(fB, 0, data))
 			glyphs.push_back(data);
-	}
-
-	// The two byte SJIS chars will be rendered as 16x16
-	if (!ttf->setSize(16, 16)) {
-		delete ttf;
-		freeGlyphlist(glyphs);
-		return -1;
 	}
 
 	for (uint8 fB = 0x81; fB <= 0xEF; ++fB) {
@@ -105,44 +92,32 @@ int main(int argc, char *argv[]) {
 	delete ttf;
 	ttf = 0;
 
-	// Post process all chars, so that xOffset is at least 0
-	int minXOffset = 0;
-	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i)
-		minXOffset = std::min(minXOffset, i->xOffset);
-
-	minXOffset = abs(minXOffset);
-
-	for (GlyphList::iterator i = glyphs.begin(); i != glyphs.end(); ++i)
-		i->xOffset += minXOffset;
-
-	// Calculate the base line for the font. The possible range is [0, 15].
-	// TODO: This logic might need some more tinkering, it's pretty hacky right now.
-	int baseLine = 0;
-	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
-		int bL = 0;
-
-		// Try to center the glyph vertically
-		if (i->height + i->yOffset <= 16)
-			bL = i->yOffset + (16 - (i->height + i->yOffset)) / 2;
-
-		bL = std::min(bL, 15);
-
-		baseLine = std::max(baseLine, bL);
-	}
-
-	// Check whether we have an character which does not fit within the boundaries6
+	// We try to find the minimum y offset here so we can substract it to make it 0 in the end.
+	// We need to do this, since otherwise the characters will take up too much vertical space.
+	int minYOffset = 16;
 	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
 		if (i->pitch == 0)
 			continue;
 
-		if ((isASCII(i->fB) && !checkGlyphSize(*i, baseLine, 8, 16)) ||
-			(!isASCII(i->fB) && !checkGlyphSize(*i, baseLine, 16, 16))) {
+		minYOffset = std::min(minYOffset, i->yOffset);
+	}
+
+	// Check whether we have an character which does not fit within the boundaries6
+	for (GlyphList::iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
+		if (i->pitch == 0)
+			continue;
+
+		// Substract our minimum y offset
+		i->yOffset -= minYOffset;
+
+		if ((isASCII(i->fB) && !checkGlyphSize(*i, 8, 16)) ||
+			(!isASCII(i->fB) && !checkGlyphSize(*i, 16, 16))) {
 			for (GlyphList::iterator j = glyphs.begin(); j != glyphs.end(); ++j)
 				delete[] j->plainData;
 
-			error("Could not fit glyph for %.2X %.2X top: %d bottom: %d, left: %d right: %d, xOffset: %d, yOffset: %d, width: %d, height: %d, baseLine: %d",
-				   i->fB, i->sB, baseLine - i->yOffset, baseLine - i->yOffset + i->height, i->xOffset, i->xOffset + i->width,
-				   i->xOffset, i->yOffset, i->width, i->height, baseLine);
+			error("Could not fit glyph for %.2X %.2X top: %d bottom: %d, left: %d right: %d, xOffset: %d, yOffset: %d, width: %d, height: %d",
+				   i->fB, i->sB, i->yOffset, i->yOffset + i->height, i->xOffset, i->xOffset + i->width,
+				   i->xOffset, i->yOffset, i->width, i->height);
 		}
 	}
 
@@ -172,7 +147,7 @@ int main(int argc, char *argv[]) {
 
 			if (chunk != -1) {
 				uint8 *dst = sjis8x16FontData + chunk * 16;
-				dst += (baseLine - i->yOffset);
+				dst += i->yOffset;
 				convertChar8x16(dst, *i);
 			}
 		} else {
@@ -180,7 +155,7 @@ int main(int argc, char *argv[]) {
 
 			if (chunk != -1) {
 				uint8 *dst = sjis16x16FontData + chunk * 32;
-				dst += (baseLine - i->yOffset) * 2;
+				dst += i->yOffset * 2;
 				convertChar16x16(dst, *i);
 			}
 		}
@@ -317,15 +292,15 @@ uint32 convertSJIStoUTF32(uint8 fB, uint8 sB) {
 		return ret;
 }
 
-bool checkGlyphSize(const Glyph &g, const int baseLine, const int maxW, const int maxH) {
-	if (baseLine - g.yOffset < 0 || baseLine - g.yOffset + g.height > (maxH + 1) ||
-		g.xOffset > (maxW - 1) || g.xOffset + g.width > (maxW + 1))
+bool checkGlyphSize(const Glyph &g, const int maxW, const int maxH) {
+	if (g.yOffset < 0 || g.yOffset + g.height > maxH ||
+		g.xOffset > maxW || g.xOffset + g.width > maxW)
 		return false;
 	return true;
 }
 
 TrueTypeFont::TrueTypeFont()
-	: _library(0), _sjisFont(0) {
+	: _library(0), _sjisFont(0), _ascent(0), _descent(0), _width(0), _height(0) {
 }
 
 TrueTypeFont::~TrueTypeFont() {
@@ -333,7 +308,15 @@ TrueTypeFont::~TrueTypeFont() {
 	FT_Done_FreeType(_library);
 }
 
-bool TrueTypeFont::load(const char *font) {
+inline int ftFloor26_6(FT_Pos x) {
+	return x / 64;
+}
+
+inline int ftCeil26_6(FT_Pos x) {
+	return (x + 63) / 64;
+}
+
+bool TrueTypeFont::load(const char *font, int height) {
 	FT_Error err = FT_Init_FreeType(&_library);
 	if (err) {
 		warning("Could not initialize FreeType2 library.");
@@ -352,15 +335,23 @@ bool TrueTypeFont::load(const char *font) {
 		return false;
 	}
 
-	return true;
-}
-
-bool TrueTypeFont::setSize(int width, int height) {
-	FT_Error err = FT_Set_Pixel_Sizes(_sjisFont, width, height);
-	if (err) {
-		warning("Could not initialize font for %dx%d output.", width, height);
+	if (!FT_IS_SCALABLE(_sjisFont)) {
+		warning("Font '%s' is not scalable", font);
 		return false;
 	}
+
+	err = FT_Set_Char_Size(_sjisFont, 0, height * 64, 0, 0);
+	if (err) {
+		warning("Could not initialize font for height %d", height);
+		return false;
+	}
+
+	FT_Fixed yScale = _sjisFont->size->metrics.y_scale;
+	_ascent = ftCeil26_6(FT_MulFix(_sjisFont->ascender, yScale));
+	_descent = ftCeil26_6(FT_MulFix(_sjisFont->descender, yScale));
+
+	_width = ftCeil26_6(FT_MulFix(_sjisFont->max_advance_width, _sjisFont->size->metrics.x_scale));
+	_height = _ascent - _descent + 1;
 
 	return true;
 }
@@ -402,10 +393,18 @@ bool TrueTypeFont::renderGlyph(uint32 unicode, Glyph &glyph) {
 	if (err)
 		return false;
 
+	FT_Glyph_Metrics &metrics = _sjisFont->glyph->metrics;
+
+	glyph.xOffset = ftFloor26_6(metrics.horiBearingX);
+	glyph.yOffset = _ascent - ftFloor26_6(metrics.horiBearingY);
+
+	// In case we got a negative xMin we adjust that, this might make some
+	// characters give a odd layout though.
+	if (glyph.xOffset < 0)
+		glyph.xOffset = 0;
+
 	const FT_Bitmap &bitmap = _sjisFont->glyph->bitmap;
 
-	glyph.yOffset = _sjisFont->glyph->bitmap_top;
-	glyph.xOffset = _sjisFont->glyph->bitmap_left;
 	glyph.height = bitmap.rows;
 	glyph.width = bitmap.width;
 	glyph.pitch = bitmap.pitch;

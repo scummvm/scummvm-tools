@@ -44,6 +44,7 @@ struct Glyph {
 
 	int xOffset;
 	int yOffset;
+
 	int height;
 	int width;
 
@@ -51,7 +52,7 @@ struct Glyph {
 	uint8 *plainData;
 };
 
-bool checkGlyphSize(const Glyph &g, const int baseLine, const int maxW, const int maxH);
+bool checkGlyphSize(const Glyph &g, const int maxW, const int maxH);
 
 void convertChar8x16(uint8 *dst, const Glyph &g);
 void convertChar16x16(uint8 *dst, const Glyph &g);
@@ -64,16 +65,16 @@ public:
 	TrueTypeFont();
 	~TrueTypeFont();
 
-	bool load(const char *filename);
-
-	bool setSize(int width, int height);
-
+	bool load(const char *filename, int height);
 	bool renderGlyph(uint8 fb, uint8 sB, Glyph &glyph);
 private:
 	bool renderGlyph(uint32 unicode, Glyph &glyph);
 
 	FT_Library _library;
 	FT_Face _sjisFont;
+
+	int _ascent, _descent;
+	int _width, _height;
 };
 
 #endif
