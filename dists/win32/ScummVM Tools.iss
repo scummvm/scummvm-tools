@@ -1,7 +1,11 @@
 [Setup]
-AppName=ScummVM Tools
 AppCopyright=2011
+AppName=ScummVM Tools
 AppVerName=ScummVM Tools Git
+AppPublisher=The ScummVM Team
+AppPublisherURL=http://www.scummvm.org/
+AppSupportURL=http://www.scummvm.org/
+AppUpdatesURL=http://www.scummvm.org/
 DefaultDirName={pf}\ScummVM\tools
 DefaultGroupName=ScummVM Tools
 AllowNoIcons=true
@@ -29,7 +33,6 @@ Source: "tools\descumm.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "tools\desword2.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\extract_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\gob_loadcalc.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\mingwm10.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\NEWS.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "tools\README.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
 Source: "tools\scummvm-tools.exe"; DestDir: "{app}"; Flags: ignoreversion 
