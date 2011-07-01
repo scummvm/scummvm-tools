@@ -18,68 +18,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
+
+#include "create_sjisfnt.h"
+
+#include "common/endian.h"
+#include "common/file.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <iconv.h>
-#include <list>
 #include <assert.h>
 #include <errno.h>
 
-#include "common/endian.h"
-#include "common/file.h"
-#include "common/util.h"
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
-namespace {
-
-bool isASCII(uint8 fB);
-
-int mapASCIItoChunk(uint8 fB);
-int mapSJIStoChunk(uint8 fB, uint8 sB);
-
-bool initSJIStoUTF32Conversion();
-void deinitSJIStoUTF32Conversion();
-uint32 convertSJIStoUTF32(uint8 fB, uint8 sB);
-
-bool initFreeType(const char *font);
-void deinitFreeType();
-
-struct Glyph {
-	uint8 fB, sB;
-
-	int xOffset;
-	int yOffset;
-	int height;
-	int width;
-
-	int pitch;
-	uint8 *plainData;
-};
-
-bool setGlyphSize(int width, int height);
-bool checkGlyphSize(const Glyph &g, const int baseLine, const int maxW, const int maxH);
-
-bool drawGlyph(uint8 fB, uint8 sB, Glyph &glyph);
-bool drawGlyph(uint32 unicode, Glyph &glyph);
-
-void convertChar8x16(uint8 *dst, const Glyph &g);
-void convertChar16x16(uint8 *dst, const Glyph &g);
-
-typedef std::list<Glyph> GlyphList;
-void freeGlyphlist(GlyphList &list) {
-	for (GlyphList::iterator i = list.begin(); i != list.end(); ++i)
-		delete[] i->plainData;
-	list.clear();
-}
-
-} // end of anonymous namespace
 
 int main(int argc, char *argv[]) {
 	if (argc < 2 || argc > 3) {
@@ -111,13 +64,6 @@ int main(int argc, char *argv[]) {
 	GlyphList glyphs;
 	int chars8x16 = 0;
 	int chars16x16 = 0;
-
-	// FIXME: It seems some ttf fonts will only render invalid data,
-	// when FreeType2 is asked to provide 8x16 glyphs. "sazanami-mincho.ttf"
-	// is such a case. When we will render them in the default 16x16 setting
-	// all ASCII chars will be rendered correctly and still fit within 8x16.
-	// Some fonts might require special setup as 8x16 though.
-	// We should try to find some proper way of detecting and handling this.
 
 	// ASCII chars will be rendererd as 8x16
 	if (!setGlyphSize(8, 16))
@@ -263,7 +209,11 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-namespace {
+void freeGlyphlist(GlyphList &list) {
+	for (GlyphList::iterator i = list.begin(); i != list.end(); ++i)
+		delete[] i->plainData;
+	list.clear();
+}
 
 bool isASCII(uint8 fB) {
 	return (mapASCIItoChunk(fB) != -1);
@@ -532,6 +482,4 @@ void convertChar16x16(uint8 *dst, const Glyph &g) {
 		src += g.pitch;
 	}
 }
-
-} // end of anonymous namespace
 
