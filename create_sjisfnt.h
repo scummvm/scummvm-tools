@@ -64,15 +64,21 @@ struct Glyph {
 };
 
 typedef std::list<Glyph> GlyphList;
+void fixYOffset(GlyphList &glyphs);
 
 class TrueTypeFont {
 public:
 	TrueTypeFont();
 	~TrueTypeFont();
 
-	bool load(const char *filename, int height);
-	bool renderGlyph(uint8 fb, uint8 sB, Glyph &glyph);
+	bool load(const char *filename);
+	bool setSize(int height);
+
+	void renderASCIIGlyphs(GlyphList &glyphs, int &count);
+	void renderKANJIGlyphs(GlyphList &glyphs, int &count);
+
 private:
+	bool renderGlyph(uint8 fb, uint8 sB, Glyph &glyph);
 	bool renderGlyph(uint32 unicode, Glyph &glyph);
 
 	FT_Library _library;

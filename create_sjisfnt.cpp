@@ -52,9 +52,15 @@ int main(int argc, char *argv[]) {
 	atexit(deinitSJIStoUTF32Conversion);
 
 	TrueTypeFont *ttf = new TrueTypeFont();
-	if (!ttf->load(font, 16)) {
+	if (!ttf->load(font)) {
 		delete ttf;
 		error("Could not initialize FreeType library.");
+		return -1;
+	}
+
+	if (!ttf->setSize(16)) {
+		delete ttf;
+		error("Could not setup font '%s' to size 16", font);
 		return -1;
 	}
 
@@ -62,53 +68,18 @@ int main(int argc, char *argv[]) {
 	int chars8x16 = 0;
 	int chars16x16 = 0;
 
-	for (uint8 fB = 0x00; fB <= 0xDF; ++fB) {
-		if (mapASCIItoChunk(fB) == -1)
-			continue;
-
-		++chars8x16;
-
-		Glyph data;
-		if (ttf->renderGlyph(fB, 0, data))
-			glyphs.push_back(data);
-	}
-
-	for (uint8 fB = 0x81; fB <= 0xEF; ++fB) {
-		if (mapSJIStoChunk(fB, 0x40) == -1)
-			continue;
-
-		for (uint8 sB = 0x40; sB <= 0xFC; ++sB) {
-			if (mapSJIStoChunk(fB, sB) == -1)
-				continue;
-
-			++chars16x16;
-
-			Glyph data;
-			if (ttf->renderGlyph(fB, sB, data))
-				glyphs.push_back(data);
-		}
-	}
+	ttf->renderASCIIGlyphs(glyphs, chars8x16);
+	ttf->renderKANJIGlyphs(glyphs, chars16x16);
 
 	delete ttf;
 	ttf = 0;
 
-	// We try to find the minimum y offset here so we can substract it to make it 0 in the end.
-	// We need to do this, since otherwise the characters will take up too much vertical space.
-	int minYOffset = 16;
+	fixYOffset(glyphs);
+
+	// Check whether we have an character which does not fit within the boundaries6
 	for (GlyphList::const_iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
 		if (i->pitch == 0)
 			continue;
-
-		minYOffset = std::min(minYOffset, i->yOffset);
-	}
-
-	// Check whether we have an character which does not fit within the boundaries6
-	for (GlyphList::iterator i = glyphs.begin(); i != glyphs.end(); ++i) {
-		if (i->pitch == 0)
-			continue;
-
-		// Substract our minimum y offset
-		i->yOffset -= minYOffset;
 
 		if ((isASCII(i->fB) && !i->checkSize(8, 16)) ||
 			(!isASCII(i->fB) && !i->checkSize(16, 16))) {
@@ -292,7 +263,7 @@ inline int ftCeil26_6(FT_Pos x) {
 	return (x + 63) / 64;
 }
 
-bool TrueTypeFont::load(const char *font, int height) {
+bool TrueTypeFont::load(const char *font) {
 	FT_Error err = FT_Init_FreeType(&_library);
 	if (err) {
 		warning("Could not initialize FreeType2 library.");
@@ -316,8 +287,11 @@ bool TrueTypeFont::load(const char *font, int height) {
 		return false;
 	}
 
-	err = FT_Set_Char_Size(_sjisFont, 0, height * 64, 0, 0);
-	if (err) {
+	return true;
+}
+
+bool TrueTypeFont::setSize(int height) {
+	if (FT_Set_Char_Size(_sjisFont, 0, height * 64, 0, 0)) {
 		warning("Could not initialize font for height %d", height);
 		return false;
 	}
@@ -330,6 +304,41 @@ bool TrueTypeFont::load(const char *font, int height) {
 	_height = _ascent - _descent + 1;
 
 	return true;
+}
+
+void TrueTypeFont::renderASCIIGlyphs(GlyphList &glyphs, int &count) {
+	count = 0;
+
+	for (uint8 fB = 0x00; fB <= 0xDF; ++fB) {
+		if (mapASCIItoChunk(fB) == -1)
+			continue;
+
+		++count;
+
+		Glyph data;
+		if (renderGlyph(fB, 0, data))
+			glyphs.push_back(data);
+	}
+}
+
+void TrueTypeFont::renderKANJIGlyphs(GlyphList &glyphs, int &count) {
+	count = 0;
+
+	for (uint8 fB = 0x81; fB <= 0xEF; ++fB) {
+		if (mapSJIStoChunk(fB, 0x40) == -1)
+			continue;
+
+		for (uint8 sB = 0x40; sB <= 0xFC; ++sB) {
+			if (mapSJIStoChunk(fB, sB) == -1)
+				continue;
+
+			++count;
+
+			Glyph data;
+			if (renderGlyph(fB, sB, data))
+				glyphs.push_back(data);
+		}
+	}
 }
 
 bool TrueTypeFont::renderGlyph(uint8 fB, uint8 sB, Glyph &glyph) {
@@ -385,6 +394,10 @@ bool TrueTypeFont::renderGlyph(uint32 unicode, Glyph &glyph) {
 	glyph.width = bitmap.width;
 	glyph.pitch = bitmap.pitch;
 	glyph.plainData = 0;
+
+	// We only accept monochrome characters.
+	if (bitmap.pixel_mode != FT_PIXEL_MODE_MONO)
+		return false;
 
 	if (glyph.height) {
 		glyph.plainData = new uint8[glyph.height * abs(glyph.pitch)];
@@ -500,6 +513,27 @@ void Glyph::convertChar16x16(uint8 *dst) const {
 
 		WRITE_BE_UINT16(dst, line); dst += 2;
 		src += pitch;
+	}
+}
+
+void fixYOffset(GlyphList &glyphs) {
+	// We try to find the minimum y offset here so we can substract it to make it 0 in the end.
+	// We need to do this, since otherwise the characters will take up too much vertical space.
+	int minYOffset = 0xFFFF;
+
+	for (GlyphList::const_iterator i = glyphs.begin(), end = glyphs.end(); i != end; ++i) {
+		if (i->pitch == 0)
+			continue;
+
+		minYOffset = std::min(minYOffset, i->yOffset);
+	}
+
+	// Adapt all glyphs
+	for (GlyphList::iterator i = glyphs.begin(), end = glyphs.end(); i != end; ++i) {
+		if (i->pitch == 0)
+			continue;
+
+		i->yOffset -= minYOffset;
 	}
 }
 
