@@ -242,20 +242,20 @@ void ProcessFile(const char *_data, uint32_t size, std::string name){
 	uint32_t id, bmoffset, rects, b, c, numImages;
 
 	til.read((char *)&id, 4);
-	FROM_LE_32(id);
+	id = FROM_LE_32(id);
 	til.read((char *)&bmoffset, 4);
-	FROM_LE_32(bmoffset);
+	bmoffset = FROM_LE_32(bmoffset);
 	til.read((char *)&rects, 4);
-	FROM_LE_32(rects);
+	rects = FROM_LE_32(rects);
 	til.read((char *)&b, 4);
-	FROM_LE_32(b);
+	b = FROM_LE_32(b);
 	til.read((char *)&c, 4);
-	FROM_LE_32(c);
+	c = FROM_LE_32(c);
 
 // We want to actually read numImages and bpp
 	til.seekg(bmoffset + 16,std::ios::beg);
 	til.read((char*)&numImages, 4);
-	FROM_LE_32(numImages);
+	numImages = FROM_LE_32(numImages);
 
 	if(numImages < 5){
 		printf("This tile has less than 5 tiles, I don't know how to parse it\n");
@@ -263,7 +263,7 @@ void ProcessFile(const char *_data, uint32_t size, std::string name){
 
 	til.seekg(16,std::ios::cur);
 	til.read((char*) &bpp, 4);
-	FROM_LE_32(bpp);
+	bpp = FROM_LE_32(bpp);
 	bpp = bpp / 8;
 
 	printf("Detected %d bpp\n",bpp*8);
@@ -276,9 +276,9 @@ void ProcessFile(const char *_data, uint32_t size, std::string name){
 	
 	for (uint32_t i = 0; i < 5; ++i) {
 		til.read((char *)&width, 4);
-		FROM_LE_32(width);
+		width = FROM_LE_32(width);
 		til.read((char *)&height, 4);
-		FROM_LE_32(height);
+		height = FROM_LE_32(height);
 		uint32_t size = width*height*bpp;
 		char *data = new char[size];
 		char *outnamet = new char[64];
