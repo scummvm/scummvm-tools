@@ -35,7 +35,7 @@ FILE *inLab = NULL, *outLab = NULL;
 
 bool copyLab(long lenght = 0) {
 	void *buffer;
-	long copied_bytes, count;
+	long copied_bytes, count, remBytes;
 	
 	if (lenght == 0) {
 		fseek(inLab, 0L, SEEK_END);
@@ -47,7 +47,8 @@ bool copyLab(long lenght = 0) {
 	fseek(inLab, 0, SEEK_SET);
 
 	while (copied_bytes < lenght) {
-		count = (long)fread(buffer, 1, BUFFER_SIZE, inLab);
+		remBytes = lenght - copied_bytes;
+		count = (long)fread(buffer, 1, (remBytes < BUFFER_SIZE) ? remBytes : BUFFER_SIZE, inLab);
 		fwrite(buffer, count, 1, outLab);
 		copied_bytes += count;
 		if(ferror(inLab) != 0 || ferror(outLab) != 0) {
