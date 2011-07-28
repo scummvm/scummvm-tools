@@ -39,40 +39,22 @@
 #include <sys/types.h>
 
 #include "tools/patchex/mspack.h"
-
-// Command line actions
-enum act { UNKNOWN_ACTION, CABINET_ACTION, LOCALISED_ACTION};
+#include "common/endian.h"
 
 // Languages codes
-#define LANG_ALL1 "@@"
-#define LANG_ALL2 "Common"
+#define LANG_ALL "@@"
 const char *kLanguages_ext[] = { "English", "French", "German", "Italian", "Portuguese", "Spanish", NULL};
-const char *kLanguages_code1[] = { "US", "FR", "GE", "IT", "PT", "SP",  NULL };
-const char *kLanguages_code2[] = { "Eng", "Fra", "Deu", "Ita", "Brz", "Esp",  NULL };
+const char *kLanguages_code[] = { "US", "FR", "GE", "IT", "PT", "SP",  NULL };
 
 // Extraction constans
-#define RAND_A			(0x343FD)
-#define RAND_B			(0x269EC3)
+#define RAND_A				(0x343FD)
+#define RAND_B				(0x269EC3)
 #define CODE_TABLE_SIZE		(0x100)
-#define CONTAINER_MAGIC		"1CNT"
-#define CABINET_MAGIC			"MSCF"
 
 #define BUFFER_SIZE 		102400
-unsigned int lang;
-
-// Some useful type and function
-typedef unsigned char byte;
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-typedef signed char int8;
-typedef signed short int16;
-typedef signed int int32;
-
-uint32 READ_LE_UINT32(const void *ptr) {
-	const uint8 *b = (const uint8 *)ptr;
-	return (b[3] << 24) + (b[2] << 16) + (b[1] << 8) + (b[0]);
-}
+int lang = -1;
+struct mscab_decompressor *cabd = NULL;
+struct mscabd_cabinet *cab = NULL;
 
 struct mspack_file_p {
 	FILE *fh;
@@ -100,7 +82,8 @@ uint16 *create_dec_table(uint32 key) {
 static struct mspack_file *res_open(struct mspack_system *handle, const char *filename, int mode) {
 	struct mspack_file_p *fh;
 	const char *fmode;
-	uint32 magic, key;
+	char magic[4];
+	uint32 key;
 	uint8 count;
 	
 	switch (mode) {
@@ -127,16 +110,16 @@ static struct mspack_file *res_open(struct mspack_system *handle, const char *fi
 	//Search for data
 	while(!feof(fh->fh)) {
 		//Check for content signature
-		count = handle->read((struct mspack_file *) fh, &magic, 4);
-		if (count == 4 && memcmp(&magic, CONTAINER_MAGIC, 4) == 0) {
+		count = handle->read((struct mspack_file *) fh, magic, 4);
+		if (count == 4 && READ_BE_UINT32(magic) == MKTAG('1','C','N','T')) {
 			handle->read((struct mspack_file *)fh, &key, 4);
 			key = READ_LE_UINT32(&key);
 			fh->CodeTable = create_dec_table(key);
 			fh->cabinet_offset = ftell(fh->fh);
 
 			//Check for cabinet signature
-			count = handle->read((struct mspack_file *) fh, &magic, 4);
-			if (count == 4 && memcmp(&magic, CABINET_MAGIC, 4) == 0) {
+			count = handle->read((struct mspack_file *) fh, magic, 4);
+			if (count == 4 && READ_BE_UINT32(magic) == MKTAG('M','S','C','F')) {
 				break;
 			} else {
 				free(fh->CodeTable);
@@ -235,8 +218,8 @@ static struct mspack_system res_system = {
 void extract_cabinet(char *filename, unsigned int lenght) {
 	struct mspack_file *original_executable, *destination_cabinet;
 	void *buffer;
-	unsigned int copied_bytes;
-	int count;
+	unsigned int copied_bytes, remBytes;
+	int count, writeResult;
 
 	original_executable = res_open(&res_system, filename, MSPACK_SYS_OPEN_READ);
 	destination_cabinet = res_open(&res_system, "original.cab", MSPACK_SYS_OPEN_WRITE);
@@ -245,9 +228,17 @@ void extract_cabinet(char *filename, unsigned int lenght) {
 	copied_bytes = 0;
 
 	while (copied_bytes < lenght) {
-		count = res_read(original_executable, buffer, BUFFER_SIZE);
-		res_write(destination_cabinet, buffer, count);
+		remBytes = lenght - copied_bytes;
+		count = res_read(original_executable, buffer, (remBytes < BUFFER_SIZE) ? remBytes : BUFFER_SIZE);
+		writeResult = res_write(destination_cabinet, buffer, count);
 		copied_bytes  += count;
+		if (count < 0 || writeResult < 0) {
+			printf("I/O Error!\n");
+			free(buffer);
+			res_close(original_executable);
+			res_close(destination_cabinet);
+			exit(1);
+		}
 	}
 	printf("Update cabinet extracted as original.cab.\n");
 
@@ -262,7 +253,9 @@ char *file_filter(const struct mscabd_file *file) {
 
 	filename_size = strlen(file->filename);
 
-	//Skip executables and libries
+	/*Skip executables and libraries
+	 * These files are useless for Residual and a proper extraction of these
+	 * requires sub-folder support, so it isn't implemented. */
 	char *ext = file->filename + (filename_size - 3);
 	if (strcasecmp(ext, "exe") == 0 ||
 		  strcasecmp(ext, "dll") == 0 ||
@@ -273,27 +266,29 @@ char *file_filter(const struct mscabd_file *file) {
 
 	filename = (char *)malloc(filename_size + 1);
 
+	/*Folder-style localization (EMI). Because EMI updates aren't multi-language,
+	 * every file is extracted (except for Win's binaries). Subfolders are ignored.*/
+	char *fn = strchr(file->filename, '\\');
+	if (fn != NULL && fn[0] != 0) {
+		strcpy(filename, fn + 1);
+		return filename;
+	}
+
 	//Old-style localization (Grimfandango)
+	if (lang == -1) {
+		printf("No language specified or unknown language!\n");
+		free(filename);
+		exit(1);
+	}
+
 	if (filename_size > 3 &&  file->filename[2] == '_') {
 		char file_lang[3];
 		sscanf(file->filename, "%2s_%s",file_lang, filename);
-		if (strcmp(file_lang, kLanguages_code1[lang]) == 0 || strcmp(file_lang, LANG_ALL1) == 0)
+		if (strcmp(file_lang, kLanguages_code[lang]) == 0 || strcmp(file_lang, LANG_ALL) == 0)
 			return filename;
 	}
 
-	//Folder-style localization (EMI)
-	unsigned int lcode_size_com, lcode_size_loc;
-	lcode_size_com = strlen(LANG_ALL2);
-	lcode_size_loc = strlen(kLanguages_code2[lang]);
-	if ((filename_size > lcode_size_com && strncmp(file->filename, LANG_ALL2, lcode_size_com - 1) == 0) ||
-	    (filename_size > lcode_size_loc && strncmp(file->filename, kLanguages_code2[lang], lcode_size_loc) == 0) ) {
-		char *fn = rindex(file->filename, '\\') + 1;
-		if (fn != NULL) {
-			strcpy(filename, fn);
-			return filename;
-		}
-	}
-
+	//Cleanup
 	free(filename);
 	return NULL;
 }
@@ -307,6 +302,7 @@ void extract_files(struct mscab_decompressor *cabd, struct mscabd_cabinet *cab) 
 		if ((filename = file_filter(file))) {
 			if (cabd->extract(cabd, file, filename) != MSPACK_ERR_OK) {
 				printf("Extract error on %s!\n", file->filename);
+				free(filename);
 				continue;
 			}
 			printf("%s extracted as %s\n", file->filename, filename);
@@ -318,65 +314,70 @@ void extract_files(struct mscab_decompressor *cabd, struct mscabd_cabinet *cab) 
 	printf("%d file(s) extracted.\n", files_extracted);
 }
 
-int main(int argc, char *argv[]) {
-	struct mscab_decompressor *cabd;
-	struct mscabd_cabinet *cab;
-	int i;
-	enum act action;
-	char *(*filter) (struct mscabd_file *);
+void cleanup() {
+	if (cabd) {
+		if (cab)
+			cabd->close(cabd, cab);
+		mspack_destroy_cab_decompressor(cabd);
+	}
+}
 
-	action = UNKNOWN_ACTION;
+int main(int argc, char *argv[]) {
+	int i;
+	unsigned int length;
+	bool wholeCabinet = false;
 
 	// Argument checks and usage display
-	if (argc != 3) {
-		printf("Usage: patchex PATCH_EXECUTABLE LANGUAGE\n");
-		printf("Extract update files of game update from PATCH_EXECUTABLE (e.g. gfupd101.exe) in a specified LANGUAGE.\n");
-		printf("Please be sure that the update contains this language.\n");
+	if (argc < 2) {
+		printf("Usage: patchex PATCH_EXECUTABLE [LANGUAGE]\n\n");
+		printf("Extract update files of game update from PATCH_EXECUTABLE\n");
+		printf("-For GrimFandango (gfupd101.exe) you must specify a language,\n");
+		printf("-For Monkey Island (MonkeyUpdate[_LANG].exe) this parameter is ignored,\n");
+		printf("please select the update executable according to your version.\n");
 		printf("Available languages:\n");
-		for (i = 0; kLanguages_code1[i]; i++)
+		for (i = 0; kLanguages_code[i]; i++)
 			printf("- %s\n", kLanguages_ext[i]);
-		printf("Alternately original archive could be extracted as original.cab with CABINET keyword insted of language.\n");
+		printf("Alternately original archive could be extracted as original.cab with CABINET keyword instead of language.\n");
 		exit(1);
 	}
 
-	// Actions check
-	// Cabinet check
-	if (strncasecmp("CABINET", argv[2], strlen(argv[2])) == 0) {
-		printf("Cabinet extraction selected\n");
-		action = CABINET_ACTION;
-	}
-
-	// Language check
-	for(i = 0; kLanguages_code1[i]; i++)
-		if (strncasecmp(kLanguages_ext[i], argv[2], strlen(argv[2])) == 0) {
-			printf("%s selected.\n", kLanguages_ext[i]);
-			lang = i;
-			action = LOCALISED_ACTION;
-			break;
+	if (argc == 3) {
+		// Cabinet check
+		if (strncasecmp("CABINET", argv[2], strlen(argv[2])) == 0) {
+			printf("Cabinet extraction selected\n");
+			wholeCabinet = true;
 		}
 
-	// Unknown action
-	if (action == UNKNOWN_ACTION) {
-		printf("Unknown language!\n");
-		exit(1);
+		// Language check
+		for(i = 0; kLanguages_code[i]; i++)
+			if (strncasecmp(kLanguages_ext[i], argv[2], strlen(argv[2])) == 0) {
+				printf("%s selected.\n", kLanguages_ext[i]);
+				lang = i;
+				break;
+			}
 	}
 
-
-	// Extraction !
-	if ((cabd = mspack_create_cab_decompressor(&res_system)) != MSPACK_ERR_OK) {
-		if ((cab = cabd->open(cabd, argv[1])) != MSPACK_ERR_OK) {
-			if (action == CABINET_ACTION)
-				extract_cabinet(argv[1], cab->length);
-			else if (action == LOCALISED_ACTION)
-				extract_files(cabd, cab);
-			cabd->close(cabd, cab);
-		} else
-			printf("Unable to open %s!\n", argv[1]);
-		mspack_destroy_cab_decompressor(cabd);
-	} else {
+	//Initializations
+	atexit(cleanup);
+	if ((cabd = mspack_create_cab_decompressor(&res_system)) == NULL) {
 		printf("Internal error!\n");
 		exit(1);
 	}
+
+	cab = cabd->open(cabd, argv[1]);
+	if (cabd->last_error(cabd) != MSPACK_ERR_OK) {
+		printf("Unable to open %s!\n", argv[1]);
+		exit(1);
+	}
+
+	//Extraction !
+	if (wholeCabinet) {
+		length = cab->length;
+		cabd->close(cabd, cab);
+		cab = NULL;
+		extract_cabinet(argv[1], length);
+	} else
+		extract_files(cabd, cab);
 
 	return 0;
 }
