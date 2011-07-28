@@ -19,6 +19,7 @@ TOOLS := \
 	tools/til2bmp$(EXEEXT) \
 	tools/unlab$(EXEEXT) \
 	tools/vima$(EXEEXT) \
+	tools/labcopy$(EXEEXT) \
 	tools/patchex/patchex$(EXEEXT)
 
 # below not added as it depends for ppm, bpm library
@@ -83,6 +84,11 @@ tools/unlab$(EXEEXT): $(srcdir)/tools/unlab.cpp
 tools/vima$(EXEEXT): $(srcdir)/tools/vima.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) -Wall -o $@ $<
+
+tools/labcopy$(EXEEXT): $(srcdir)/tools/labcopy.cpp
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -Wall \
+	-L$(srcdir)/common -o $@ $<
 
 tools/patchex/patchex$(EXEEXT): tools/patchex/patchex.o tools/patchex/mszipd.o tools/patchex/cabd.o
 	$(MKDIR) tools/patchex/$(DEPDIR)
