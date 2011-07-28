@@ -90,16 +90,18 @@ int main(int argc, char **argv) {
 		file.read((char *)&z, 4);
 		std::cout << "vn " << x << " " << y << " " << z << std::endl;
 	}
-	
+	file.seekg(numVertices * 12,ios::cur);
 	// Actually, this file has 6*4*numVertices floats in this block.
 	std::cout<<"usemtl (null)"<<std::endl;
 	// And then another block of unknowns
 	// Faces
 	// The head of this section needs quite a bit of rechecking
-	file.seekg(36335);
+	int numFaces = 0;
+	file.read((char *) &numFaces, 4);
+	file.seekg(8,ios::cur);
 	int faceLength = 0;
-	for(int j = 0;j < numTextures + 1; j++){
-		file.read((char*)&faceLength, 4);
+	for(int j = 0;j < numFaces; j++){
+		file.read((char*)&faceLength,4);
 		short x = 0, y = 0, z = 0;
 		cout << "g " << j << endl;
 		for (int i = 0; i < faceLength; i+=3) {
