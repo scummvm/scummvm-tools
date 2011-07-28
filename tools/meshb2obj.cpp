@@ -29,11 +29,11 @@ int main(int argc, char **argv) {
 		std::cout << "Error: filename not specified" << std::endl;
 		return 0;
 	}
-	std::string filename=argv[1];
+	std::string filename = argv[1];
 	
 	std::fstream file(filename.c_str(), std::ios::in | std::ios::binary);
 	
-	if (!file.is_open()){
+	if (!file.is_open()) {
 		std::cout << "Unable to open file " << filename << std::endl;
 		return 0;
 	}
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 	file.read((char*)&numTextures, 4);
 	
 	char **texNames = new char*[numTextures];
-	for(int i=0;i<numTextures; i++){
+	for(int i = 0;i < numTextures; i++) {
 		file.read((char*)&strLength, 4);
 		texNames[i] = new char[strLength];
 		file.read(texNames[i], strLength);
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
  */
 	
 	// Should create an empty mtl
-	std::cout << "mtllib quit.mtl" << std::endl << "o Arrow"<< std::endl;
+	std::cout << "mtllib quit.mtl" << std::endl << "o Arrow" << std::endl;
 	// Vertices
 	//	file.seekg(283);
 	int numVertices;
@@ -90,19 +90,21 @@ int main(int argc, char **argv) {
 		file.read((char *)&z, 4);
 		std::cout << "vn " << x << " " << y << " " << z << std::endl;
 	}
-	
+	file.seekg(numVertices * 12, ios::cur);
 	// Actually, this file has 6*4*numVertices floats in this block.
-	std::cout<<"usemtl (null)"<<std::endl;
+	std::cout << "usemtl (null)"<< std::endl;
 	// And then another block of unknowns
 	// Faces
 	// The head of this section needs quite a bit of rechecking
-	file.seekg(36335);
+	int numFaces = 0;
+	file.read((char *) &numFaces, 4);
+	file.seekg(8, ios::cur);
 	int faceLength = 0;
-	for(int j = 0;j < numTextures + 1; j++){
+	for(int j = 0;j < numFaces; j++){
 		file.read((char*)&faceLength, 4);
 		short x = 0, y = 0, z = 0;
 		cout << "g " << j << endl;
-		for (int i = 0; i < faceLength; i+=3) {
+		for (int i = 0; i < faceLength; i += 3) {
 			file.read((char *)&x, 2);
 			file.read((char *)&y, 2);
 			file.read((char *)&z, 2);
