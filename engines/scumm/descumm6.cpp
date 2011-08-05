@@ -1519,7 +1519,7 @@ void next_line_HE_V100(char *output) {
 
 	case 0x03:
 		ext(output, "x" "sortArray\0"
-				"\x86pppppw|sort,");
+				"\x86pppppv|sort,");
 		break;
 	case 0x04:
 		switch (get_byte()) {
@@ -1660,22 +1660,22 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0x1E:
 		ext(output, "x" "dim2dimArray\0"
-				"\x29ppw|bit,"
-				"\x2Appw|int,"
-				"\x2Bppw|dword,"
-				"\x2Cppw|nibble,"
-				"\x2Dppw|byte,"
-				"\x4Dppw|string");
+				"\x29ppv|bit,"
+				"\x2Appv|int,"
+				"\x2Bppv|dword,"
+				"\x2Cppv|nibble,"
+				"\x2Dppv|byte,"
+				"\x4Dppv|string");
 		break;
 	case 0x1F:
 		ext(output, "x" "dimArray\0"
-				"\x29pw|bit,"
-				"\x2Apw|int,"
-				"\x2Bpw|dword,"
-				"\x2Cpw|nibble,"
-				"\x2Dpw|byte,"
-				"\x4Dpw|string,"
-				"\x87w|nukeArray");
+				"\x29pv|bit,"
+				"\x2Apv|int,"
+				"\x2Bpv|dword,"
+				"\x2Cpv|nibble,"
+				"\x2Dpv|byte,"
+				"\x4Dpv|string,"
+				"\x87v|nukeArray");
 		break;
 	case 0x20:
 		se_a = pop();
@@ -1900,18 +1900,18 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0x47:
 		ext(output, "x" "dim2dim2Array\0"
-				"\x29pppppw|bit,"
-				"\x2Apppppw|int,"
-				"\x2Bpppppw|dword,"
-				"\x2Cpppppw|nibble,"
-				"\x2Dpppppw|byte,"
-				"\x4Dpppppw|string");
+				"\x29pppppv|bit,"
+				"\x2Apppppv|int,"
+				"\x2Bpppppv|dword,"
+				"\x2Cpppppv|nibble,"
+				"\x2Dpppppv|byte,"
+				"\x4Dpppppv|string");
 		break;
 	case 0x49:
 		ext(output, "x" "redim2dimArray\0"
-				"\x2Appppw|int,"
-				"\x2Bppppw|dword,"
-				"\x2Dppppw|byte");
+				"\x2Appppv|int,"
+				"\x2Bppppv|dword,"
+				"\x2Dppppv|byte");
 		break;
 	case 0x4A:
 		push(se_oper(pop(), isZero));
@@ -1996,9 +1996,9 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0x64:
 		ext(output, "x" "redimArray\0"
-				"\x2Appw|int,"
-				"\x2Bppw|dword,"
-				"\x2Dppw|byte");
+				"\x2Appv|int,"
+				"\x2Bppv|dword,"
+				"\x2Dppv|byte");
 		break;
 	case 0x65:
 		ext(output, "hh|renameFile");
@@ -2360,13 +2360,13 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0xB5:
 		ext(output, "rx" "getArrayDimSize\0"
-				"\x1w|dim1size,"
-				"\x2w|dim2size,"
-				"\x3w|dim1size,"
-				"\x4w|dim1start,"
-				"\x5w|dim1end,"
-				"\x6w|dim2start,"
-				"\x7w|dim2end");
+				"\x1v|dim1size,"
+				"\x2v|dim2size,"
+				"\x3v|dim1size,"
+				"\x4v|dim1start,"
+				"\x5v|dim1end,"
+				"\x6v|dim2start,"
+				"\x7v|dim2end");
 		break;
 	case 0xB6:
 		ext(output, "rx" "isResourceLoaded\0"
@@ -3013,25 +3013,25 @@ void next_line_HE_V72(char *output) {
 		break;
 	case 0x37: // HE90+
 		ext(output, "x" "dim2dim2Array\0"
-				"\x2pppppw|bit,"
-				"\x3pppppw|nibble,"
-				"\x4pppppw|byte,"
-				"\x5pppppw|int,"
-				"\x6pppppw|dword,"
-				"\x7pppppw|string");
+				"\x2pppppv|bit,"
+				"\x3pppppv|nibble,"
+				"\x4pppppv|byte,"
+				"\x5pppppv|int,"
+				"\x6pppppv|dword,"
+				"\x7pppppv|string");
 		break;
 	case 0x38: // HE90+
 		ext(output, "x" "redim2dimArray\0"
-				"\x4ppppw|byte,"
-				"\x5ppppw|int,"
-				"\x6ppppw|dword");
+				"\x4ppppv|byte,"
+				"\x5ppppv|int,"
+				"\x6ppppv|dword");
 		break;
 	case 0x39: // HE90+
 		ext(output, "rwwpppppppp|getLinesIntersectionPoint");
 		break;
 	case 0x3A: // HE90+
 		ext(output, "x" "sortArray\0"
-				"\x81pppppw|sort,");
+				"\x81pppppv|sort,");
 		break;
 	case 0x43:
 		writeVar(output, get_word(), pop());
@@ -3149,13 +3149,13 @@ void next_line_HE_V72(char *output) {
 		break;
 	case 0x63:
 		ext(output, "rx" "getArrayDimSize\0"
-				"\x1w|dim1size,"
-				"\x2w|dim2size,"
-				"\x3w|dim1size,"
-				"\x4w|dim1start,"
-				"\x5w|dim1end,"
-				"\x6w|dim2start,"
-				"\x7w|dim2end,");
+				"\x1v|dim1size,"
+				"\x2v|dim2size,"
+				"\x3v|dim1size,"
+				"\x4v|dim1start,"
+				"\x5v|dim1end,"
+				"\x6v|dim2start,"
+				"\x7v|dim2end,");
 		break;
 	case 0x64:
 		ext(output, "r|getNumFreeArrays");
@@ -3670,13 +3670,13 @@ void next_line_HE_V72(char *output) {
 		break;
 	case 0xBC:
 		ext(output, "x" "dimArray\0"
-				"\x2pw|bit,"
-				"\x3pw|nibble,"
-				"\x4pw|byte,"
-				"\x5pw|int,"
-				"\x6pw|dword,"
-				"\x7pw|string,"
-				"\xCCw|nukeArray");
+				"\x2pv|bit,"
+				"\x3pv|nibble,"
+				"\x4pv|byte,"
+				"\x5pv|int,"
+				"\x6pv|dword,"
+				"\x7pv|string,"
+				"\xCCv|nukeArray");
 		break;
 	case 0xBD:
 		ext(output, "|stopObjectCode");
@@ -3695,12 +3695,12 @@ void next_line_HE_V72(char *output) {
 		break;
 	case 0xC0:
 		ext(output, "x" "dim2dimArray\0"
-				"\x2ppw|bit,"
-				"\x3ppw|nibble,"
-				"\x4ppw|byte,"
-				"\x5ppw|int,"
-				"\x6ppw|dword,"
-				"\x7ppw|string");
+				"\x2ppv|bit,"
+				"\x3ppv|nibble,"
+				"\x4ppv|byte,"
+				"\x5ppv|int,"
+				"\x6ppv|dword,"
+				"\x7ppv|string");
 		break;
 	case 0xC1:
 		ext(output, "hp|traceStatus");
@@ -3836,9 +3836,9 @@ void next_line_HE_V72(char *output) {
 		break;
 	case 0xEA:
 		ext(output, "x" "redimArray\0"
-				"\x4ppw|byte,"
-				"\x5ppw|int,"
-				"\x6ppw|dword");
+				"\x4ppv|byte,"
+				"\x5ppv|int,"
+				"\x6ppv|dword");
 		break;
 	case 0xEB:
 		ext(output, "rp|readFilePos");
@@ -5537,8 +5537,8 @@ void next_line_V67(char *output) {
 	case 0xEA:
 		if (g_options.heVersion)
 			ext(output, "x" "redimArray\0"
-					"\xC7ppw|int,"
-					"\xCAppw|byte");
+					"\xC7ppv|int,"
+					"\xCAppv|byte");
 		else
 			invalidop(NULL, code);
 		break;
