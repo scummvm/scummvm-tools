@@ -1236,7 +1236,7 @@ void ext(char *output, const char *fmt) {
 	byte cmd, extcmd;
 	const char *extstr = NULL;
 	const char *prep = NULL;
-	StackEnt *args[10];
+	StackEnt *args[20];
 	int numArgs = 0;
 	char *e = (char *)output;
 
@@ -1548,8 +1548,12 @@ void next_line_HE_V100(char *output) {
 			ext(output, "lppppv|writeListIntoArray");
 			break;
 		case 131:
-			// TODO: Add support for writeRangeIntoArray
-			ext(output, "ppppppv|writeRangeIntoArray");
+			// TODO: Add support for copyArray
+			ext(output, "ppppvppppv|copyArray");
+			break;
+		case 132:
+			// TODO: Add support for math operations
+			ext(output, "pppppppppppppvvv|mathOpsInArray");
 			break;
 		case 133:
 			// TODO: Add support for writeRangeIntoArray
