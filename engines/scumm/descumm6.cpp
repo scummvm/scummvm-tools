@@ -1544,36 +1544,16 @@ void next_line_HE_V100(char *output) {
 			writeArray(output, get_word(), NULL, se_a, se_b);
 			break;
 		case 130:
-			// TODO
-			se_get_list();
-			pop();
-			pop();
-			pop();
-			pop();
-			get_word();
+			// TODO: Add support for writeListIntoArray
+			ext(output, "lppppv|writeListIntoArray");
 			break;
 		case 131:
-			// TODO
-			pop();
-			pop();
-			pop();
-			pop();
-			get_word();
-			pop();
-			pop();
-			pop();
-			pop();
-			get_word();
+			// TODO: Add support for writeRangeIntoArray
+			ext(output, "ppppppv|writeRangeIntoArray");
 			break;
 		case 133:
-			// TODO
-			pop();
-			pop();
-			pop();
-			pop();
-			pop();
-			pop();
-			get_word();
+			// TODO: Add support for writeRangeIntoArray
+			ext(output, "ppppppv|writeRangeIntoArray");
 			break;
 		}
 		break;
@@ -3514,36 +3494,16 @@ void next_line_HE_V72(char *output) {
 			writeArray(output, get_word(), NULL, se_a, se_a);
 			break;
 		case 126:
-			// TODO
-			se_get_list();
-			pop();
-			pop();
-			pop();
-			pop();
-			get_word();
+			// TODO: Add support for writeListIntoArray
+			ext(output, "lppppv|writeListIntoArray");
 			break;
 		case 127:
-			// TODO
-			pop();
-			pop();
-			pop();
-			pop();
-			get_word();
-			pop();
-			pop();
-			pop();
-			pop();
-			get_word();
+			// TODO: Add support for copyArray
+			ext(output, "ppppvppppv|copyArray");
 			break;
 		case 128:
-			// TODO
-			pop();
-			pop();
-			pop();
-			pop();
-			pop();
-			pop();
-			get_word();
+			// TODO: Add support for writeRangeIntoArray
+			ext(output, "ppppppv|writeRangeIntoArray");
 			break;
 		case 194:
 			se_get_list();
