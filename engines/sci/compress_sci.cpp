@@ -67,11 +67,18 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 	byte buffer[20];
 	uint32 dataSize;
 	memcpy(&buffer, header, 6);
-	if ((memcmp(buffer + 1, "RIFF", 4) == 0) || (memcmp(buffer + 1, "\x8d\x0bSOL", 4) == 0)) {
-		// Fixup for pharkas resource.sfx, several WAVE files contain a size thats not right (-1 byte)
-		for (int i = 0; i < 5; i++)
+	// Fixup for pharkas resource.sfx, several WAVE files contain a size thats not right (-1 byte)
+	int offset = 0;
+	if (memcmp(buffer + 1, "RIFF", 4) == 0) {
+		offset = 5;
+	} else if ((memcmp(buffer + 1, "\x8d\x0bSOL\x00", 6) == 0) || 
+					(memcmp(buffer + 1, "\x8d\x0cSOL\x00", 6) == 0)) {
+		offset = 7;
+	}
+	if (offset) {
+		for (int i = 0; i < offset; i++)
 			buffer[i] = buffer[i + 1];
-		_input.read_throwsOnError(&buffer[5], 1);
+		_input.read_throwsOnError(&buffer[offset], 1);
 		_inputOffset++;
 		warning("WAVE resource position adjusted at %lx\n", _inputOffset);
 	}
