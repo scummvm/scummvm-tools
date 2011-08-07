@@ -58,14 +58,20 @@ CompressSci::CompressSci(const std::string &name) : CompressionTool(name, TOOLTY
 
 	_outputToDirectory = false;
 
-	_shorthelp = "Used to compress Sierra resource.aud/resource.sfx files. (NOT SCI32 compatible!)";
+	_shorthelp = "Used to compress Sierra resource.aud/.sfx and AUDIO001.002 files. (NOT SCI32 compatible!)";
 	_helptext = "\nUsage: " + getName() + " [mode-params] [-o outputname] <inputname>\n";
 }
 
 // header is first 6 bytes read from file
 SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
-	byte buffer[20];
 	uint32 dataSize;
+	if (_rawAudio) {
+		// File is a raw audio file
+		dataSize = _rawAudioMap[_inputOffset];
+		_inputEndOffset = _inputOffset + dataSize;
+		return kSciResourceDataTypeRaw;
+	}
+	byte buffer[20];
 	memcpy(&buffer, header, 6);
 	// Fixup for pharkas resource.sfx, several WAVE files contain a size thats not right (-1 byte)
 	int offset = 0;
@@ -227,7 +233,6 @@ static void deDPCM8(byte *soundBuf, byte *inputBuf, uint32 n) {
 void CompressSci::compressData(SciResourceDataType dataType) {
 	int orgDataSize = _inputEndOffset - _inputOffset;
 	int newDataSize = 0;
-	byte *orgData = new byte[orgDataSize];
 	byte *newData = 0;
 
 	int sampleRate = 0;
@@ -236,9 +241,6 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 	bool sampleIsStereo = false;
 	uint8 sampleBits = 8;
 	byte sampleFlags = 0;
-
-	if (!orgData)
-		error("malloc error");
 
 	switch (dataType) {
 	case kSciResourceDataTypeWAVE:
@@ -288,12 +290,23 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 		}
 		break;
 	}
+	case kSciResourceDataTypeRaw:
+		sampleRate = 11025;
+		// No headers so just use the original data as sample data
+		sampleDataSize = orgDataSize;
+		sampleData = new byte[sampleDataSize];
+		if (!sampleData)
+			error("malloc error");
+		_input.read_throwsOnError(sampleData, sampleDataSize);
+		break;
 	case kSciResourceTypeTypeSync:
 		print("SYNC found at %lx\n", _inputOffset);
 		// Simply copy original data over
-		_input.read_throwsOnError(orgData, orgDataSize);
-		newData = orgData;
 		newDataSize = orgDataSize;
+		newData = new byte[newDataSize];
+		if (!newData)
+			error("malloc error");
+		_input.read_throwsOnError(newData, newDataSize);
 		break;
 	default:
 		error("Unsupported datatype");
@@ -312,15 +325,37 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 		Common::File tempfileEnc(TEMP_ENC, "rb");
 		newDataSize = tempfileEnc.size();
 		newData = new byte[newDataSize];
+		if (!newData)
+			error("malloc error");
 		tempfileEnc.read_throwsOnError(newData, newDataSize);
 		tempfileEnc.close();
 	}
 
 	_output.write(newData, newDataSize);
+	delete[] newData;
+}
 
-	if ((newData) && (newData != orgData))
-		delete[] newData;
-	delete[] orgData;
+uint CompressSci::parseRawAudioMap() {
+	Common::Filename mapFileName = _inputPaths[0].path;
+	// Assume the map is in the same dir as the resource file
+	// and is called AUDIO001.MAP
+	mapFileName.setFullName("AUDIO001.MAP");
+	warning("Trying %s as resource map\n", mapFileName.getFullPath().data());
+	Common::File mapFile;
+	mapFile.open(mapFileName, "rb");
+	// Ten byte entries, the last one is fake
+	uint32 numEntries = (mapFile.size() / 10) - 1;
+	uint32 offset = 0;
+	for (uint32 i = 0; i < numEntries; i++) {
+		// shouldn't reach the fake entry but break if we do
+		if (mapFile.readUint16LE() == 0xffff) 
+			break;
+		// mask out the resource volume number
+		offset = mapFile.readUint32LE() & 0x0fffffff;
+		_rawAudioMap[offset] = mapFile.readUint32LE();
+	}
+	mapFile.close();
+	return _rawAudioMap.size();
 }
 
 void CompressSci::execute() {
@@ -330,12 +365,9 @@ void CompressSci::execute() {
 
 	_input.open(infile, "rb");
 	_inputSize = _input.size();
+	_rawAudio = false;
 
 	// First find out how many samples are in this file
-	//  We only support SOL audio and WAVE
-	//  We can't support games that use "raw" audio (would have to walk through audio map for those, which would
-	//   complicate this code - all talkie games that use this (kq5) don't use much space anyway, so not supporting
-	//   those isn't a big issue
 
 	_input.seek(0, SEEK_SET);
 	byte header[6];
@@ -350,19 +382,25 @@ void CompressSci::execute() {
 		error("This resource file is already FLAC-compressed, aborting...\n");
 
 	int resourceCount = 0;
-	do {
-		recognizedDataType = detectData(header, false);
-		if (!recognizedDataType)
-			error("Unsupported data at offset %lx", _inputOffset);
-		_input.seek(_inputEndOffset, SEEK_SET);
-		_inputOffset = _inputEndOffset;
-		resourceCount++;
-		// We abort even, if file position is one below size because of pharkas resource.sfx
-		if (_inputOffset >= _inputSize - 1)
-			break;
+	if (_input.size() == 0x05C9B000 or _input.size() == 0x0160E000) {
+		warning("Size matches KQ5 or Jones in the Fast Lane audio file, assuming raw audio\n");
+		_rawAudio = true;
+		resourceCount = parseRawAudioMap();
+	} else {
+		do {
+			recognizedDataType = detectData(header, false);
+			if (!recognizedDataType)
+				error("Unsupported data at offset %lx", _inputOffset);
+			_input.seek(_inputEndOffset, SEEK_SET);
+			_inputOffset = _inputEndOffset;
+			resourceCount++;
+			// We abort even, if file position is one below size because of pharkas resource.sfx
+			if (_inputOffset >= _inputSize - 1)
+				break;
 
-		_input.read_throwsOnError(&header, 6);
-	} while (true);
+			_input.read_throwsOnError(&header, 6);
+		} while (true);
+	}
 
 	// This case happens on pharkas resource.sfx
 	if (_inputOffset != _inputSize)
@@ -400,6 +438,10 @@ void CompressSci::execute() {
 		assert(recognizedDataType);
 		_input.seek(_inputOffset, SEEK_SET);
 		compressData(recognizedDataType);
+
+		// raw files are 0-padded to 2048 bytes
+		if (_rawAudio and _inputEndOffset % 2048)
+			_inputEndOffset = (((_inputEndOffset >> 11) + 1) << 11) & 0xffffffff;
 
 		// Seek inputfile to the end of the data
 		_input.seek(_inputEndOffset, SEEK_SET);
