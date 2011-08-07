@@ -2142,10 +2142,13 @@ void next_line_HE_V100(char *output) {
 		writeVar(output, get_word(), pop());
 		break;
 	case 0x85:
-		writeArray(output, get_word(), NULL, pop(), pop());
+		se_a = pop();
+		writeArray(output, get_word(), NULL, pop(), se_a);
 		break;
 	case 0x86:
-		writeArray(output, get_word(), pop(), pop(), pop());
+		se_a = pop();
+		se_b = pop();
+		writeArray(output, get_word(), pop(), se_b, se_a);
 		break;
 	case 0x87:
 		se_a = pop();
@@ -3042,7 +3045,8 @@ void next_line_HE_V72(char *output) {
 		ext(output, "rh|getFileSize");
 		break;
 	case 0x47:
-		writeArray(output, get_word(), NULL, pop(), pop());
+		se_a = pop();
+		writeArray(output, get_word(), NULL, pop(), se_a);
 		break;
 	case 0x48: // HE80+
 		ext(output, "rp|stringToInt");
@@ -3054,7 +3058,9 @@ void next_line_HE_V72(char *output) {
 		ext(output, "p|localizeArrayToRoom");
 		break;
 	case 0x4B:
-		writeArray(output, get_word(), pop(), pop(), pop());
+		se_a = pop();
+		se_b = pop();
+		writeArray(output, get_word(), pop(), se_b, se_a);
 		break;
 	case 0x4D: // HE80+
 		ext(output, "rx" "readConfigFile\0"
@@ -4620,16 +4626,22 @@ void next_line_V67(char *output) {
 		writeVar(output, get_word(), pop());
 		break;
 	case 0x46:
-		writeArray(output, get_byte(), NULL, pop(), pop());
+		se_a = pop();
+		writeArray(output, get_byte(), NULL, pop(), se_a);
 		break;
 	case 0x47:
-		writeArray(output, get_word(), NULL, pop(), pop());
+		se_a = pop();
+		writeArray(output, get_word(), NULL, pop(), se_a);
 		break;
 	case 0x4A:
-		writeArray(output, get_byte(), pop(), pop(), pop());
+		se_a = pop();
+		se_b = pop();
+		writeArray(output, get_byte(), pop(), se_b, se_a);
 		break;
 	case 0x4B:
-		writeArray(output, get_word(), pop(), pop(), pop());
+		se_a = pop();
+		se_b = pop();
+		writeArray(output, get_word(), pop(), se_b, se_a);
 		break;
 	case 0x4E:
 		addVar(output, get_byte(), 1);
