@@ -345,8 +345,8 @@ const char *var_names72[] = {
 	"VAR_MOUSE_X",
 	/* 16 */
 	"VAR_MOUSE_Y",
-	NULL,
-	NULL,
+	"VAR_LEFTBTN_HOLD",
+	"VAR_RIGHTBTN_HOLD",
 	"VAR_CURSORSTATE",
 	/* 20 */
 	"VAR_USERPUT",
@@ -391,7 +391,7 @@ const char *var_names72[] = {
 	/* 52 */
 	"VAR_SOUND_CHANNEL",
 	NULL,
-	NULL,
+	"VAR_SOUND_ENABLED",
 	NULL,
 	/* 56 */
 	"VAR_NUM_SOUND_CHANNELS",
