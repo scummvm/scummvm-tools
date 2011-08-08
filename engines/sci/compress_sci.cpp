@@ -110,9 +110,9 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 		_input.read_throwsOnError(&buffer[6], 8);
 		dataSize = READ_LE_UINT32(buffer + 9);
 		// HACK: LSL6 resource.aud has a SOL that specifies incorrect dataSize, we fix it here
-		if ((_inputOffset == 0x619bf07) && (dataSize == 0x1dd78))
+		if ((_inputOffset == 102350599) && (dataSize == 122232))
 			dataSize--;
-		if ((_inputOffset == 0x101DFBC5) && (dataSize == 0x1cfc1))
+		if ((_inputOffset == 270400453) && (dataSize == 118721))
 			dataSize--;
 		_inputEndOffset = _inputOffset + 14 + dataSize;
 		return kSciResourceDataTypeSOL;
@@ -249,8 +249,6 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 			error("Unable to read WAV at offset %lx", _inputOffset);
 
 		sampleData = new byte[sampleDataSize];
-		if (!sampleData)
-			error("malloc error");
 		_input.read_throwsOnError(sampleData, sampleDataSize);
 		if (sampleFlags & Audio::Mixer::FLAG_16BITS)
 			sampleBits = 16;
@@ -268,8 +266,6 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 			_input.readByte();
 		// Now we read SOL datastream
 		sampleData = new byte[sampleDataSize];
-		if (!sampleData)
-			error("malloc error");
 		_input.read_throwsOnError(sampleData, sampleDataSize);
 
 		bool dataUnsigned = false;
@@ -295,8 +291,6 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 		// No headers so just use the original data as sample data
 		sampleDataSize = orgDataSize;
 		sampleData = new byte[sampleDataSize];
-		if (!sampleData)
-			error("malloc error");
 		_input.read_throwsOnError(sampleData, sampleDataSize);
 		break;
 	case kSciResourceTypeTypeSync:
@@ -304,8 +298,6 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 		// Simply copy original data over
 		newDataSize = orgDataSize;
 		newData = new byte[newDataSize];
-		if (!newData)
-			error("malloc error");
 		_input.read_throwsOnError(newData, newDataSize);
 		break;
 	default:
@@ -325,8 +317,6 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 		Common::File tempfileEnc(TEMP_ENC, "rb");
 		newDataSize = tempfileEnc.size();
 		newData = new byte[newDataSize];
-		if (!newData)
-			error("malloc error");
 		tempfileEnc.read_throwsOnError(newData, newDataSize);
 		tempfileEnc.close();
 	}
@@ -340,16 +330,12 @@ uint CompressSci::parseRawAudioMap() {
 	// Assume the map is in the same dir as the resource file
 	// and is called AUDIO001.MAP
 	mapFileName.setFullName("AUDIO001.MAP");
-	warning("Trying %s as resource map\n", mapFileName.getFullPath().data());
+	print("Trying %s as resource map\n", mapFileName.getFullPath().data());
 	Common::File mapFile;
 	mapFile.open(mapFileName, "rb");
-	// Ten byte entries, the last one is fake
-	uint32 numEntries = (mapFile.size() / 10) - 1;
 	uint32 offset = 0;
-	for (uint32 i = 0; i < numEntries; i++) {
-		// shouldn't reach the fake entry but break if we do
-		if (mapFile.readUint16LE() == 0xffff) 
-			break;
+	// Ten byte entries, the last is fake, stop when it's reached
+	while (mapFile.readUint16LE() != 0xffff) {
 		// mask out the resource volume number
 		offset = mapFile.readUint32LE() & 0x0fffffff;
 		_rawAudioMap[offset] = mapFile.readUint32LE();
@@ -382,8 +368,8 @@ void CompressSci::execute() {
 		error("This resource file is already FLAC-compressed, aborting...\n");
 
 	int resourceCount = 0;
-	if (_input.size() == 0x05C9B000 or _input.size() == 0x0160E000) {
-		warning("Size matches KQ5 or Jones in the Fast Lane audio file, assuming raw audio\n");
+	if (_input.size() == 97103872 || _input.size() == 23126016) {
+		print("Size matches KQ5 or Jones in the Fast Lane audio file, assuming raw audio\n");
 		_rawAudio = true;
 		resourceCount = parseRawAudioMap();
 	} else {
@@ -440,8 +426,8 @@ void CompressSci::execute() {
 		compressData(recognizedDataType);
 
 		// raw files are 0-padded to 2048 bytes
-		if (_rawAudio and _inputEndOffset % 2048)
-			_inputEndOffset = (((_inputEndOffset >> 11) + 1) << 11) & 0xffffffff;
+		if (_rawAudio)
+			_inputEndOffset = (((_inputEndOffset - 1) >> 11) + 1) << 11;
 
 		// Seek inputfile to the end of the data
 		_input.seek(_inputEndOffset, SEEK_SET);
