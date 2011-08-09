@@ -430,7 +430,7 @@ const char *var_names72[] = {
 	NULL,
 	/* 84 */
 	"VAR_SOUNDCODE_TMR",
-	NULL,
+	"VAR_DEBUG_ENABLED",
 	"VAR_KEY_STATE",
 	NULL,
 	/* 88 */
@@ -471,7 +471,7 @@ const char *var_names72[] = {
 	/* 116 */
 	"VAR_U32_ARRAY_UNK",
 	"VAR_WIZ_TCOLOR",
-	NULL,
+	"VAR_SMACKER_ENABLED",
 	NULL,
 	/* 120 */
 	"VAR_RESERVED_SOUND_CHANNELS",
@@ -488,6 +488,21 @@ const char *var_names72[] = {
 	NULL,
 	"VAR_NUM_PALETTES",
 	"VAR_NUM_UNK",
+	/* 132 */
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	/* 136 */
+	NULL,
+	NULL,
+	NULL,
+	"VAR_SET_SPRITE_DIFF",
+	/* 140 */
+	"VAR_BINK_ENABLED",
+	NULL,
+	NULL,
+	NULL,
 };
 
 const char *var_names6[] = {
