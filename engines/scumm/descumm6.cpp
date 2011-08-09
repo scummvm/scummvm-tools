@@ -211,6 +211,10 @@ public:
 		else if(g_options.scriptVersion < 8 && !(_idx & 0xF000) &&
 			(s = getVarName(_idx & 0xFFF)) != NULL)
 			where += sprintf(where, "%s[",s);
+		else if(g_options.scriptVersion < 8 && g_options.heVersion >= 80 && (_idx & 0x8000))
+			where += sprintf(where, "roomarray%d[", _idx & 0xfff);
+		else if(g_options.scriptVersion < 8 && (_idx & 0x4000))
+			where += sprintf(where, "localarray%d[", _idx & 0xfff);
 		else
 			where += sprintf(where, "array%d[", _idx);
 
