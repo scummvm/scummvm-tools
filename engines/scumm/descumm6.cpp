@@ -1190,7 +1190,7 @@ StackEnt *se_get_string() {
 	return se_complex(buf);
 }
 
-int _stringLength;
+int _stringLength = 1;
 byte _stringBuffer[4096];
 
 void getScriptString() {
