@@ -22,10 +22,19 @@
 
 #define FILETOOLS_H
 
+#include <fstream>
+#include <string>
+#include <sstream>
+
 struct Vector3d {
 	float x;
 	float y;
 	float z;
+	std::string toString() {
+		std::stringstream ss;
+		ss << x << " " << y << " " << z;
+		return ss.str();
+	}
 };
 
 std::string readString(std::fstream& file) {
