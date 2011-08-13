@@ -15,6 +15,8 @@ TOOLS := \
 	tools/imc2wav$(EXEEXT) \
 	tools/int2flt$(EXEEXT) \
 	tools/meshb2obj$(EXEEXT) \
+	tools/sklb2txt$(EXEEXT) \
+	tools/animb2txt$(EXEEXT) \
 	tools/set2fig$(EXEEXT) \
 	tools/til2bmp$(EXEEXT) \
 	tools/unlab$(EXEEXT) \
@@ -63,16 +65,26 @@ tools/int2flt$(EXEEXT): $(srcdir)/tools/int2flt.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) -Wall -o $@ $<
 
-tools/meshb2obj$(EXEEXT): $(srcdir)/tools/meshb2obj.cpp
+tools/meshb2obj$(EXEEXT): $(srcdir)/tools/emi/meshb2obj.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
 	-L$(srcdir)/common -o $@ $<
-	
+
+tools/animb2txt$(EXEEXT): $(srcdir)/tools/emi/animb2txt.cpp
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
+	-L$(srcdir)/common -o $@ $<
+
+tools/sklb2txt$(EXEEXT): $(srcdir)/tools/emi/sklb2txt.cpp
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
+	-L$(srcdir)/common -o $@ $<
+
 tools/set2fig$(EXEEXT): $(srcdir)/tools/set2fig.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) -Wall -o $@ $<
 
-tools/til2bmp$(EXEEXT): $(srcdir)/tools/til2bmp.cpp
+tools/til2bmp$(EXEEXT): $(srcdir)/tools/emi/til2bmp.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
 	-L$(srcdir)/common -lz -o $@ $< 
