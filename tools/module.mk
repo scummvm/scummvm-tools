@@ -17,6 +17,7 @@ TOOLS := \
 	tools/meshb2obj$(EXEEXT) \
 	tools/sklb2txt$(EXEEXT) \
 	tools/animb2txt$(EXEEXT) \
+	tools/setb2set$(EXEEXT) \
 	tools/set2fig$(EXEEXT) \
 	tools/til2bmp$(EXEEXT) \
 	tools/unlab$(EXEEXT) \
@@ -71,6 +72,11 @@ tools/meshb2obj$(EXEEXT): $(srcdir)/tools/emi/meshb2obj.cpp
 	-L$(srcdir)/common -o $@ $<
 
 tools/animb2txt$(EXEEXT): $(srcdir)/tools/emi/animb2txt.cpp
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
+	-L$(srcdir)/common -o $@ $<
+
+tools/setb2set$(EXEEXT): $(srcdir)/tools/emi/setb2set.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
 	-L$(srcdir)/common -o $@ $<
