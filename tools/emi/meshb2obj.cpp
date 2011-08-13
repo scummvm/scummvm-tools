@@ -137,11 +137,14 @@ int main(int argc, char **argv) {
 		int unknownVal = 0;
 		int boneDatanum;
 		float boneDataWgt;
+		int vertex = 0;
 		for(int i = 0;i < numBoneData; i++) {
 			unknownVal = readInt(file);
 			boneDatanum = readInt(file);
 			boneDataWgt = readFloat(file);
-			std::cout << "# BoneData: Unknown: " << unknownVal << " boneNum: "
+			if(unknownVal)
+				vertex++;
+			std::cout << "# BoneData: Vertex: " << vertex << " boneNum: "
 				<< boneDatanum << " weight: " << boneDataWgt << std::endl;
 		}
 	}

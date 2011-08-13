@@ -15,6 +15,8 @@ TOOLS := \
 	tools/imc2wav$(EXEEXT) \
 	tools/int2flt$(EXEEXT) \
 	tools/meshb2obj$(EXEEXT) \
+	tools/sklb2txt$(EXEEXT) \
+	tools/animb2txt$(EXEEXT) \
 	tools/set2fig$(EXEEXT) \
 	tools/til2bmp$(EXEEXT) \
 	tools/unlab$(EXEEXT) \

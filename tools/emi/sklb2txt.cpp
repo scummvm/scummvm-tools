@@ -19,13 +19,12 @@ int main(int argc, char **argv) {
 		std::cout << "Unable to open file " << filename << std::endl;
 		return 0;
 	}
-	int strLength = 0;
 	int numBones = readInt(file);
 	
 	char boneString[32];
 	char parentString[32];
-	
-	float x = 0, y = 0, z = 0, angle = 0;
+
+	float angle = 0;
 	// Bones are listed in the same order as in the meshb.
 	Vector3d *vec = 0;
 	for(int i=0;i<numBones;i++) {

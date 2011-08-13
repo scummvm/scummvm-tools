@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
 	std::string animName = readString(file);
 	float duration = readFloat(file);
 	int bones = readInt(file);
+	std::cout << "animName: " << animName << " duration: " << duration << " bones: " << bones << std::endl;
 	float time = 0.0f;
 	Vector3d *vec3d;
 	for (int i = 0; i < bones; i++) {
@@ -59,5 +60,7 @@ int main(int argc, char **argv) {
 		if (operation == 3 || operation == 4) {
 			time = readFloat(file);
 		}
+		std::cout << "Bone: " << i << " Operation: " << operation << " Unknown1: " << unknown1 <<
+			" Unknown2: " << unknown2 << " numKeyframes: " << numKeyframes << std::endl;
 	}
 }
