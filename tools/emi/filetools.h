@@ -37,6 +37,18 @@ struct Vector3d {
 	}
 };
 
+struct Vector4d {
+	float x;
+	float y;
+	float z;
+	float w;
+	std::string toString() {
+		std::stringstream ss;
+		ss << x << " " << y << " " << z << " " << w;
+		return ss.str();
+	}
+};
+
 std::string readString(std::fstream& file) {
 	int strLength = 0;
 	file.read((char*)&strLength, 4);
@@ -56,8 +68,14 @@ float readFloat(std::fstream& file) {
 }
 
 int readInt(std::fstream& file) {
-	int retVal = 0.0f;
+	int retVal = 0;
 	file.read((char*)&retVal, 4);
+	return retVal;
+}
+
+int readByte(std::fstream& file) {
+	char retVal = 0;
+	file.read((char*)&retVal, 1);
 	return retVal;
 }
 
@@ -67,6 +85,15 @@ Vector3d *readVector3d(std::fstream& file) {
 	vec3d->y = readFloat(file);
 	vec3d->z = readFloat(file);
 	return vec3d;
+}
+
+Vector4d *readVector4d(std::fstream& file) {
+	Vector4d *vec4d = new Vector4d();
+	vec4d->x = readFloat(file);
+	vec4d->y = readFloat(file);
+	vec4d->z = readFloat(file);
+	vec4d->w = readFloat(file);
+	return vec4d;
 }
 
 #endif

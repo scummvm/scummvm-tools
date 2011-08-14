@@ -40,16 +40,29 @@ int main(int argc, char **argv) {
 	
 	std::string nameString = readString(file);
 	// Unknown vector3d
-	
+	Vector4d *vec4d;
+	Vector3d *vec3d;
 	// Then a list of textures 48 bytes later
-	
-	file.seekg(48, std::ios::cur);
+	vec4d = readVector4d(file);
+	std::cout << "# Spheredata: " << vec4d->toString() << std::endl;
+	delete vec4d;
+	vec3d = readVector3d(file);
+	std::cout << "# Boxdata: " << vec3d->toString();
+	delete vec3d;
+	vec3d = readVector3d(file);
+	std::cout << vec3d->toString() << std::endl;
+	delete vec3d;
+
+	int numTexSets = readInt(file);
+	int setType = readInt(file);
+	std::cout << "# NumTexSets: " << numTexSets << " setType: " << setType << std::endl;
 	int numTextures = readInt(file);
 	
 	std::string *texNames = new std::string[numTextures];
 	for(int i = 0;i < numTextures; i++) {
 		texNames[i] = readString(file);
-		// Every texname seems to be followed by 4 0-bytes
+		// Every texname seems to be followed by 4 0-bytes (Ref mk1.mesh,
+		// this is intentional)
 		file.seekg(4, std::ios::cur);
 	}
 	for(int i = 0;i < numTextures;i++){
@@ -67,8 +80,8 @@ int main(int argc, char **argv) {
 	int numVertices = readInt(file);
 	std::cout << "#File has " << numVertices << " Vertices" << std::endl;
 	
-	float x = 0, y = 0, z = 0;
-	
+	float x = 0, y = 0;
+	int r = 0, g = 0, b = 0, a = 0;	
 	// Vertices
 	Vector3d *vec;
 	for (int i = 0; i < numVertices; ++i) {
@@ -83,11 +96,18 @@ int main(int argc, char **argv) {
 		delete vec;
 	}
 	// Color map-data, dunno how to interpret them right now.
-	file.seekg(numVertices * 4, std::ios::cur);
+	for (int i = 0; i < numVertices; ++i) {
+		r = readByte(file);
+		g = readByte(file);
+		b = readByte(file);
+		a = readByte(file);
+		std::cout << "# R: " << r << " G: " << g << " B: " << b << " A: " << a << std::endl;
+	}
+	// Texture-vertices
 	for (int i = 0; i < numVertices; ++i) {
 		file.read((char *)&x, 4);
 		file.read((char *)&y, 4);
-		std::cout << "vt " << x << " " << y << " " << z << std::endl;
+		std::cout << "vt " << x << " " << y << std::endl;
 	}
 	
 	std::cout << "usemtl (null)"<< std::endl;
