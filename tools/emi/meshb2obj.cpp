@@ -39,10 +39,10 @@ int main(int argc, char **argv) {
 	int strLength = 0;
 	
 	std::string nameString = readString(file);
-	// Unknown vector3d
+	
 	Vector4d *vec4d;
 	Vector3d *vec3d;
-	// Then a list of textures 48 bytes later
+	
 	vec4d = readVector4d(file);
 	std::cout << "# Spheredata: " << vec4d->toString() << std::endl;
 	delete vec4d;
@@ -70,9 +70,6 @@ int main(int argc, char **argv) {
 	}
 	// 4 unknown bytes - usually with value 19
 	file.seekg(4, std::ios::cur);
-/*
- *	 Then follows the weird padding.
- */
 	
 	// Should create an empty mtl
 	std::cout << "mtllib quit.mtl" << std::endl << "o Arrow" << std::endl;
@@ -83,17 +80,16 @@ int main(int argc, char **argv) {
 	float x = 0, y = 0;
 	int r = 0, g = 0, b = 0, a = 0;	
 	// Vertices
-	Vector3d *vec;
 	for (int i = 0; i < numVertices; ++i) {
-		vec = readVector3d(file);
-		std::cout << "v " << vec->x << " " << vec->y << " " << vec->z << std::endl;
-		delete vec;
+		vec3d = readVector3d(file);
+		std::cout << "v " << vec3d->x << " " << vec3d->y << " " << vec3d->z << std::endl;
+		delete vec3d;
 	}
 	// Vertex-normals
 	for (int i = 0; i < numVertices; ++i) {
-		vec = readVector3d(file);
-		std::cout << "vn " << vec->x << " " << vec->y << " " << vec->z << std::endl;
-		delete vec;
+		vec3d = readVector3d(file);
+		std::cout << "vn " << vec3d->x << " " << vec3d->y << " " << vec3d->z << std::endl;
+		delete vec3d;
 	}
 	// Color map-data, dunno how to interpret them right now.
 	for (int i = 0; i < numVertices; ++i) {
