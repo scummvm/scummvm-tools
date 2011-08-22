@@ -46,21 +46,31 @@ int main(int argc, char **argv) {
 	std::cout << "animName: " << animName << " duration: " << duration << " bones: " << bones << std::endl;
 	float time = 0.0f;
 	Vector3d *vec3d;
+	Vector4d *vec4d;
 	for (int i = 0; i < bones; i++) {
 		std::string boneName = readString(file);
 		int operation = readInt(file);
 		int unknown1 = readInt(file);
 		int unknown2 = readInt(file);
 		int numKeyframes = readInt(file);
-		if (operation == 3) { // Translation
-			vec3d = readVector3d(file);
-		} else if (operation == 4) { // Rotation
-			
-		}
-		if (operation == 3 || operation == 4) {
-			time = readFloat(file);
-		}
-		std::cout << "Bone: " << i << " Operation: " << operation << " Unknown1: " << unknown1 <<
+		std::cout << "Bone: " << boneName << " Operation: " << operation << " Unknown1: " << unknown1 <<
 			" Unknown2: " << unknown2 << " numKeyframes: " << numKeyframes << std::endl;
+
+		if (operation == 3) { // Translation
+			for(int i = 0; i < numKeyframes; i++) {
+				time = readFloat(file);
+				vec3d = readVector3d(file);
+				std::cout << "Time : " << time << " Vector: " << vec3d->toString() << std::endl;
+				delete vec3d;
+			}
+		} else if (operation == 4) { // Rotation
+			for(int i = 0; i < numKeyframes; i++) {
+				time = readFloat(file);
+				vec4d = readVector4d(file);
+				std::cout << "Time : " << time << " Vector: " << vec4d->toString() << std::endl;
+				delete vec4d;
+			}		
+		}
+
 	}
 }
