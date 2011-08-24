@@ -24,12 +24,14 @@
 #define COMPRESS_SCI_H
 
 #include "compress.h"
+#include <map>
 
 enum SciResourceDataType {
 	kSciResourceDataTypeUnknown	= 0,
 	kSciResourceDataTypeWAVE	= 1,
 	kSciResourceDataTypeSOL		= 2,
-	kSciResourceTypeTypeSync	= 3
+	kSciResourceTypeTypeSync	= 3,
+	kSciResourceDataTypeRaw		= 4
 };
 
 class CompressSci : public CompressionTool {
@@ -41,12 +43,15 @@ public:
 protected:
 	SciResourceDataType detectData(byte *header, bool compressMode);
 	void compressData(SciResourceDataType dataType);
+	uint parseRawAudioMap();
 
 	Common::File _input, _output;
 	int _inputOffset;
 	int _inputEndOffset;
 	int _inputSize;
 	int _outputOffset;
+	bool _rawAudio;
+	std::map<uint32,uint32> _rawAudioMap;
 };
 
 #endif
