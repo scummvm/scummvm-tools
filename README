@@ -196,6 +196,22 @@ Compression Tools:
                   *.bin files)
                 - The unsupported early DOS demo of Inherit the Earth
 
+        compress_sci
+                Used to compress Sierra resource.aud/.sfx and AUDIO001.002
+                audio files with MP3, Vorbis or FLAC. This tool is NOT
+                compatible with the newer SCI32 games yet.
+
+                Example of usage:
+                ./scummvm-tools-cli --tool compress_sci [mode params] -o outputfile <infile>
+
+                The name of the output file is required. Use a temporary name,
+                and after the tool finishes compressing it, replace the original
+                uncompressed file with the compressed one. So, if for example
+                your original audio resource file is resource.aud, you can use
+                a temporary name like resource.tmp. Then, move the original
+                resource.aud file elsewhere and rename resource.tmp to
+                resource.aud.
+
         compress_scumm_bun
                 Used to compress '.bun' music/voice files with MP3, Vorbis
                 or FLAC.
