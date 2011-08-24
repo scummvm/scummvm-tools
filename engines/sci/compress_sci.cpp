@@ -442,7 +442,7 @@ void CompressSci::execute() {
 		updateProgress(resourceNo, resourceCount);
 	}
 
-	/* And some clean-up :-) */
+	// And some clean-up :-)
 	Common::removeFile(TEMP_RAW);
 	Common::removeFile(TEMP_ENC);
 }
