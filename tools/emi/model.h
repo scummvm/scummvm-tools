@@ -23,6 +23,8 @@
 
 #include <string>
 #include <stdint.h>
+#include <map>
+#include <vector>
 
 struct Colormap {
 	unsigned char r, g, b, a;
@@ -59,12 +61,81 @@ public:
 	void render();
 };
 
+class Keyframe {
+public:
+	float _time;
+	Vector3d *_vec3d;
+	Vector4d *_vec4d;
+};
+
+class KeyframeList {
+public:
+	Keyframe *_frames;
+	int _numFrames;
+	float _time;
+	int _operation;
+	KeyframeList(int num, int op) : _numFrames(num), _operation(op) {
+		_frames = new Keyframe[_numFrames];
+	}
+};
+
+class Bone {
+	std::string _name;
+	Bone *_parent;
+	Bone *_child;
+	Bone *_sibling;
+	Vector3d *_pos;
+	Vector3d *_rot;
+	float _angle;
+	std::vector<int> _verts;
+	std::vector<float> _wgts;
+	KeyframeList *_keyframes;
+public:
+	Bone() : _parent(0), _child(0), _sibling(0), _angle(0.0f), _keyframes(0) {}
+	void addParent(Bone *node);
+	void addChild(Bone *node);
+	void addSibling(Bone *node);
+	bool hasSibling(Bone *node);
+	bool hasChild(Bone *node);
+	void setName(std::string name) { _name = name; }
+	void setPos(Vector3d *pos) { _pos = pos; }
+	void setRot(Vector3d *rot) { _rot = rot; }
+	void setAngle(float angle) { _angle = angle; }
+	void addVertex(int num, float wgt);
+	void setKeyFrames(KeyframeList* keyframes) { _keyframes = keyframes; }
+
+	std::string getName() { return _name; }
+};
+
+class Animation {
+public:
+	std::string _name;
+	float _timelen;
+	int _numBones;
+	int _numKeyFrames;
+	std::vector<Bone*> _bones;
+};
+
 class Mesh {
 	int _numVertices;
 	Vector3d *_vertices;
 	Vector3d *_normals;
 	Colormap *_colorMap;
 	Vector2d *_texVerts;
+
+	uint32_t _numFaces;
+	MeshFace *_faces;
+	uint32_t _numTextures;
+	std::string *_texNames;
+	Material *_mats;
+
+	Bone *_bones;
+	int _numBones;
+	std::map<std::string, Bone*> _boneMap;
+
+	Animation *_anim;
+
+	Lab *_lab;
 
 	// Stuff I dont know how to use:
 	Vector4d *_sphereData;
@@ -73,17 +144,13 @@ class Mesh {
 	int _numTexSets;
 	int _setType;
 
-	uint32_t _numFaces;
-	MeshFace *_faces;
-	uint32_t _numTextures;
-	std::string *_texNames;
-	Material *_mats;
-	Lab *_lab;
 public:
 	Mesh() { _lab = 0; }
 	void setLab(Lab *lab) { _lab = lab; }
 	void setTex(int index) { _mats[index].bindTexture(); }
 	void loadMesh(std::string fileName);
+	void loadSkeleton(std::string filename);
+	void loadAnimation(std::string filename);
 	void prepare();
 	void render();
 };

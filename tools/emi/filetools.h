@@ -71,18 +71,6 @@ struct Vector4d {
 	}
 };
 
-std::string readString(std::istream& file) {
-	int strLength = 0;
-	file.read((char*)&strLength, 4);
-	char* readString = new char[strLength];
-	file.read(readString, strLength);
-	
-	std::string retVal(readString);
-	delete readString;
-	
-	return retVal;
-}
-
 float readFloat(std::istream& file) {
 	float retVal = 0.0f;
 	file.read((char*)&retVal, 4);
@@ -107,7 +95,27 @@ int readByte(std::istream& file) {
 	return retVal;
 }
 
-Vector2d *readVector2d(std::istream& file, int count=1) {
+std::string readString(std::istream& file) {
+	int strLength = 0;
+	file.read((char*)&strLength, 4);
+	char* readString = new char[strLength];
+	file.read(readString, strLength);
+
+	std::string retVal(readString);
+	delete readString;
+
+	return retVal;
+}
+
+std::string readCString(std::istream &file, int len) {
+	char *str = new char[len];
+	file.read(str, len);
+	std::string retVal = std::string(str);
+	delete[] str;
+	return retVal;
+}
+
+Vector2d *readVector2d(std::istream& file, int count = 1) {
 	Vector2d *vec2d = new Vector2d[count];
 	for (int i = 0; i < count; i++) {
 		vec2d[i].x = readFloat(file);
@@ -116,7 +124,7 @@ Vector2d *readVector2d(std::istream& file, int count=1) {
 	return vec2d;
 }
 
-Vector3d *readVector3d(std::istream& file, int count=1) {
+Vector3d *readVector3d(std::istream& file, int count = 1) {
 	Vector3d *vec3d = new Vector3d[count];
 	for (int i = 0; i < count; i++) {
 		vec3d[i].x = readFloat(file);

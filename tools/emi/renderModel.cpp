@@ -35,10 +35,10 @@ using namespace std;
 
 /*
  * Model-viewer for EMI, usage:
- * renderModel [labName] [mesh-name]
+ * renderModel [labName] [mesh-name] [skel-name]
  *
  * If no labName is specified, then all files will be searched for
- * in the current working directory.
+ * in the current working directory. (and no skeleton will be loaded)
  *
  * This is quite possibly not endian-safe yet, and requires GLFW for
  * rendering. (And is thus not built by default)
@@ -147,6 +147,51 @@ istream *getFile(string filename, Lab* lab) {
 	}
 }
 
+bool Bone::hasChild(Bone *node) {
+	if (!_child)
+		return false;
+	if (_child == node)
+		return true;
+	else
+		return _child->hasSibling(node);
+}
+
+bool Bone::hasSibling(Bone *node) {
+	if (!_sibling)
+		return false;
+	if (_sibling == node)
+		return true;
+	else
+		return _sibling->hasSibling(node);
+}
+
+void Bone::addChild(Bone *node) {
+	if (!_child) {
+		_child = node;
+		_child->addParent(this);
+	} else {
+		_child->addSibling(node);
+	}
+}
+
+void Bone::addSibling(Bone *node) {
+	if (!_sibling) {
+		_sibling = node;
+		_sibling->addParent(this);
+	} else {
+		_sibling->addSibling(node);
+	}
+}
+
+void Bone::addParent(Bone *node) {
+	_parent = node;
+}
+
+void Bone::addVertex(int num, float wgt) {
+	_verts.push_back(num);
+	_verts.push_back(wgt);
+}
+
 void Material::bindTexture(int index) {
 	glBindTexture(GL_TEXTURE_2D, _texIDs[index]);
 	glEnable(GL_TEXTURE_2D);
@@ -222,6 +267,34 @@ void Material::loadTGATexture(string filename) {
 	delete newData;
 }
 
+void MeshFace::loadFace(std::istream *file) {
+	_flags = readInt(*file);
+	_hasTexture = readInt(*file);
+	if(_hasTexture > 1) {
+		cout << "We have this many textures: " <<  _hasTexture << endl;
+	}
+	if(_hasTexture)
+		_texID = readInt(*file);
+	_faceLength = readInt(*file);
+	short x = 0, y = 0, z = 0;
+	_indexes = new Vector3<int>[_faceLength];
+
+	for (int i = 0; i < _faceLength; i += 3) {
+		file->read((char *)&x, 2);
+		file->read((char *)&y, 2);
+		file->read((char *)&z, 2);
+		_indexes[i].setVal(x,y,z);
+	}
+}
+
+void MeshFace::render() {
+	if(_hasTexture) {
+		_parent->setTex(_texID);
+	}
+	glDrawElements(GL_TRIANGLES, _faceLength * 3, GL_UNSIGNED_INT, _indexes);
+}
+
+
 void Mesh::loadMesh(string filename) {
 	std::istream *file = getFile(filename, _lab);
 
@@ -282,33 +355,122 @@ void Mesh::loadMesh(string filename) {
 
 	int hasBones = 0;
 	file->read((char*)&hasBones, 4);
-/* Add bones later when everything else works.
+
 	if (hasBones == 1) {
-		int numBones = readInt(file);
-		char **boneNames = new char*[numBones];
-		for(int i = 0;i < numBones; i++) {
-			file.read((char*)&strLength, 4);
-			boneNames[i] = new char[strLength];
-			file.read(boneNames[i], strLength);
-			std::cout << "# BoneName " << boneNames[i] << std::endl;
+		_numBones = readInt(*file);
+		_bones = new Bone[_numBones];
+		for(int i = 0;i < _numBones; i++) {
+			_bones[i].setName(readString(*file));
+			_boneMap[_bones[i].getName()] = _bones + i;
 		}
 
-		int numBoneData = readInt(file);
+		int numBoneData = readInt(*file);
 		int unknownVal = 0;
 		int boneDatanum;
 		float boneDataWgt;
 		int vertex = 0;
 		for(int i = 0;i < numBoneData; i++) {
-			unknownVal = readInt(file);
-			boneDatanum = readInt(file);
-			boneDataWgt = readFloat(file);
+			unknownVal = readInt(*file);
+			boneDatanum = readInt(*file);
+			boneDataWgt = readFloat(*file);
 			if(unknownVal)
 				vertex++;
-			std::cout << "# BoneData: Vertex: " << vertex << " boneNum: "
-				<< boneDatanum << " weight: " << boneDataWgt << std::endl;
+			_bones[boneDatanum].addVertex(vertex, boneDataWgt);
 		}
-	}*/
+	}
 	delete file;
+}
+
+void Mesh::loadSkeleton(std::string filename) {
+	std::istream *file = getFile(filename, _lab);
+
+	int numBones = readInt(*file);
+
+	string boneName;
+	string parentName;
+	Bone *bone;
+	Bone *parent;
+	float angle = 0.0f;
+	// Bones are listed in the same order as in the meshb.
+	Vector3d *vec = 0;
+	for(int i = 0;i < numBones; i++) {
+		boneName = readCString(*file,32);
+		parentName = readCString(*file,32);
+
+		bone = _boneMap[boneName];
+
+
+	/*	for (int j = 0; j < _numBones; j++) {
+			if (_bones[j].getName() == boneName) {
+				bone = _bones + j;
+				break;
+			}
+		}*/
+		if (parentName != "no_parent") {
+		/*	for (int j = 0; j < _numBones; j++) {
+				if (_bones[j].getName() == parentName) {
+					parent = _bones + j;
+					break;
+				}
+			}*/
+			parent = _boneMap[parentName];
+
+			assert(parent != 0);
+			assert(bone != 0);
+
+			if (!parent->hasChild(bone))
+				parent->addChild(bone);
+		}
+		bone->setPos(readVector3d(*file));
+		bone->setRot(readVector3d(*file));
+		bone->setAngle(readFloat(*file));
+	}
+}
+
+void Mesh::loadAnimation(std::string filename) {
+	std::istream *file = getFile(filename, _lab);
+
+	_anim = new Animation();
+	_anim->_name = readString(*file);
+
+
+	_anim->_timelen = readFloat(*file);
+	_anim->_numBones = readInt(*file);
+	std::cout << "animName: " << _anim->_name << " duration: " << _anim->_timelen << " bones: " << _anim->_numBones << std::endl;
+	float time = 0.0f;
+
+	KeyframeList *keyList;
+	Keyframe *key;
+	Bone *bone;
+
+	for (int i = 0; i < _anim->_numBones; i++) {
+		std::string boneName = readString(*file);
+		int operation = readInt(*file);
+		int unknown1 = readInt(*file);
+		int unknown2 = readInt(*file);
+		int numKeyframes = readInt(*file);
+
+		bone = _boneMap[boneName];
+		keyList = new KeyframeList(numKeyframes, operation);
+
+		std::cout << "Bone: " << boneName << " Operation: " << operation << " Unknown1: " << unknown1 <<
+			" Unknown2: " << unknown2 << " numKeyframes: " << numKeyframes << std::endl;
+
+		if (operation == 3) { // Translation
+			for(int i = 0; i < numKeyframes; i++) {
+				key = keyList->_frames + i;
+				key->_time = readFloat(*file);
+				key->_vec3d = readVector3d(*file);
+			}
+		} else if (operation == 4) { // Rotation
+			for(int i = 0; i < numKeyframes; i++) {
+				key = keyList->_frames + i;
+				key->_time = readFloat(*file);
+				key->_vec4d = readVector4d(*file);
+			}
+		}
+
+	}
 }
 
 void Mesh::prepare() {
@@ -317,13 +479,6 @@ void Mesh::prepare() {
 		_mats[i].setLab(_lab);
 		_mats[i].loadTexture(_texNames[i]);
 	}
-}
-
-void MeshFace::render() {
-	if(_hasTexture) {
-		_parent->setTex(_texID);
-	}
-	glDrawElements(GL_TRIANGLES, _faceLength * 3, GL_UNSIGNED_INT, _indexes);
 }
 
 void Mesh::render() {
@@ -345,26 +500,6 @@ void Mesh::render() {
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
-}
-
-void MeshFace::loadFace(std::istream *file) {
-	_flags = readInt(*file);
-	_hasTexture = readInt(*file);
-	if(_hasTexture > 1) {
-		cout << "We have this many textures: " <<  _hasTexture << endl;
-	}
-	if(_hasTexture)
-		_texID = readInt(*file);
-	_faceLength = readInt(*file);
-	short x = 0, y = 0, z = 0;
-	_indexes = new Vector3<int>[_faceLength];
-
-	for (int i = 0; i < _faceLength; i += 3) {
-		file->read((char *)&x, 2);
-		file->read((char *)&y, 2);
-		file->read((char *)&z, 2);
-		_indexes[i].setVal(x,y,z);
-	}
 }
 
 void renderInit() {
@@ -397,7 +532,12 @@ int main(int argc, char **argv) {
 		m.loadMesh(argv[2]);
 	} else {
 		m.loadMesh(argv[1]);
+	} if (argc > 3) {
+		m.loadSkeleton(argv[3]);
+	} if (argc > 4) {
+		m.loadAnimation(argv[4]);
 	}
+
 	glfwInit();
 	glfwOpenWindow(1024, 768, 8, 8, 8, 8, 8, 8, GLFW_WINDOW);
 	m.prepare();
