@@ -484,7 +484,7 @@ void Script_Geisha::setupOpcodes() {
 		{OPCODET(o1_speakerOff), {PARAM_NONE}},
 		/* 24 */
 		{OPCODET(o1_putPixel), {PARAM_INT16, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
-		{OPCODEF(o1_goblinFunc), {PARAM_NONE}},
+		{OPCODEF(oGeisha_goblinFunc), {PARAM_NONE}},
 		{OPCODET(o1_createSprite), {PARAM_INT16, PARAM_INT16, PARAM_INT16, PARAM_INT16}},
 		{OPCODET(o1_freeSprite), {PARAM_INT16}},
 		/* 28 */
@@ -541,15 +541,15 @@ void Script_Geisha::setupOpcodes() {
 
 	static const OpcodeGoblinEntryGeisha opcodesGoblin[8] = {
 		/* 00 */
-		{OPCODET(oGeisha_OG_0), {PARAM_INT16, PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		{OPCODET(oGeisha_OG_1), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
-		{OPCODET(oGeisha_loadGeisha), {PARAM_GOB}},
-		{OPCODET(oGeisha_adlibPlay), {PARAM_GOB}},
+		{OPCODET(oGeisha_gamePenetration), {PARAM_INT16, PARAM_INT16, PARAM_INT16, PARAM_INT16}},
+		{OPCODET(oGeisha_gameDiving), {PARAM_INT16, PARAM_INT16, PARAM_INT16}},
+		{OPCODET(oGeisha_loadTitleMusic), {PARAM_GOB}},
+		{OPCODET(oGeisha_playMusic), {PARAM_GOB}},
 		/* 04 */
-		{OPCODET(oGeisha_adlibStop), {PARAM_GOB}},
-		{OPCODET(oGeisha_OG_NOP), {PARAM_GOB}},
-		{OPCODET(oGeisha_OG_6), {PARAM_GOB}},
-		{OPCODET(oGeisha_OG_7), {PARAM_GOB}},
+		{OPCODET(oGeisha_stopMusic), {PARAM_GOB}},
+		{OPCODET(oGeisha_NOP), {PARAM_GOB}},
+		{OPCODET(oGeisha_caress1), {PARAM_GOB}},
+		{OPCODET(oGeisha_caress2), {PARAM_GOB}},
 	};
 
 	_opcodesDrawGeisha = opcodesDraw;
@@ -619,3 +619,17 @@ void Script_Geisha::goblinOpcode(int i, FuncParams &params) {
 		(this->*op)(params);
 }
 
+void Script_Geisha::oGeisha_goblinFunc(FuncParams &params) {
+	FuncParams gobParams;
+	int16 cmd;
+
+	gobParams.extraData = 0;
+	gobParams.objIndex = -1;
+
+	cmd = (int16) readUint16();
+
+	if ((cmd >= 0) && (cmd < 8) && (cmd != 5))
+		skip(2);
+
+	goblinOpcode(cmd, gobParams);
+}

@@ -343,6 +343,8 @@ protected:
 	virtual void drawOpcode(byte i, FuncParams &params);
 	virtual void funcOpcode(byte i, byte j, FuncParams &params);
 	virtual void goblinOpcode(int i, FuncParams &params);
+
+	void oGeisha_goblinFunc(FuncParams &params);
 };
 
 class Script_Bargon : public Script_v2 {
