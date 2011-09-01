@@ -14,6 +14,7 @@ TOOLS := \
 	tools/delua$(EXEEXT) \
 	tools/imc2wav$(EXEEXT) \
 	tools/int2flt$(EXEEXT) \
+	tools/cosb2cos$(EXEEXT) \
 	tools/meshb2obj$(EXEEXT) \
 	tools/sklb2txt$(EXEEXT) \
 	tools/animb2txt$(EXEEXT) \
@@ -65,6 +66,11 @@ tools/imc2wav$(EXEEXT): $(srcdir)/tools/imc2wav.cpp
 tools/int2flt$(EXEEXT): $(srcdir)/tools/int2flt.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) -Wall -o $@ $<
+
+tools/cosb2cos$(EXEEXT): $(srcdir)/tools/emi/cosb2cos.cpp
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
+	-L$(srcdir)/common -o $@ $<
 
 tools/meshb2obj$(EXEEXT): $(srcdir)/tools/emi/meshb2obj.cpp
 	$(MKDIR) tools/$(DEPDIR)
