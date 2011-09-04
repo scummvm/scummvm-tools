@@ -1,4 +1,3 @@
-#ifndef FILETOOLS_H
 /* Residual - A 3D game interpreter
 *
 * Residual is the legal property of its developers, whose names
@@ -19,12 +18,13 @@
 *
 */
 
-
+#ifndef FILETOOLS_H
 #define FILETOOLS_H
 
 #include <fstream>
 #include <string>
 #include <sstream>
+#include "common/endian.h"
 
 template<typename T>
 struct Vector3 {
@@ -74,19 +74,20 @@ struct Vector4d {
 float readFloat(std::istream& file) {
 	float retVal = 0.0f;
 	file.read((char*)&retVal, 4);
+	retVal = get_float((char *) &retVal);
 	return retVal;
 }
 
 int readInt(std::istream& file) {
 	int retVal = 0;
 	file.read((char*)&retVal, 4);
-	return retVal;
+	return FROM_LE_32(retVal);
 }
 
 short readShort(std::istream& file) {
 	short retVal = 0;
 	file.read((char*)&retVal, 2);
-	return retVal;
+	return FROM_LE_16(retVal);
 }
 
 int readByte(std::istream& file) {
@@ -96,8 +97,7 @@ int readByte(std::istream& file) {
 }
 
 std::string readString(std::istream& file) {
-	int strLength = 0;
-	file.read((char*)&strLength, 4);
+	int strLength = readInt(file);
 	char* readString = new char[strLength];
 	file.read(readString, strLength);
 
