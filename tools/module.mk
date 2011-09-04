@@ -39,6 +39,7 @@ tools: $(TOOLS)
 
 clean-tools:
 	-$(RM) $(TOOLS)
+	-$(RM) tools/emi/*.o
 	-$(RM) tools/patchex/*.o
 	-$(RM) -r tools/patchex/.deps
 
@@ -72,10 +73,10 @@ tools/cosb2cos$(EXEEXT): $(srcdir)/tools/emi/cosb2cos.cpp
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
 	-L$(srcdir)/common -o $@ $<
 
-tools/meshb2obj$(EXEEXT): $(srcdir)/tools/emi/meshb2obj.cpp
+tools/meshb2obj$(EXEEXT): $(srcdir)/tools/emi/meshb2obj.o $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common -o $@ $<
+	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
 
 tools/animb2txt$(EXEEXT): $(srcdir)/tools/emi/animb2txt.cpp
 	$(MKDIR) tools/$(DEPDIR)
