@@ -11,6 +11,7 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include "lab.h"
 
 using namespace std;
 
@@ -343,17 +344,28 @@ string Set::ToString()
 int main(int argc, char** argv){
 	if (argc < 2)
 		return 0;
-	char* buf;
-	FILE* f;
-
-	f = fopen(argv[1],"rb");
-	fseek(f,0,SEEK_END);
-	uint32 size = ftell(f);
-	buf = new char[size];
-	fseek(f,0,SEEK_SET);
-
-	int result = fread(buf,1,size,f);
-	assert(result==size);
+	Lab *lab = NULL;
+	std::string filename;
+	int length = 0;
+	
+	if (argc > 2) {
+		lab = new Lab(argv[1]);
+		filename = argv[2];
+	} else {
+		filename = argv[1];
+	}
+	
+	std::istream *file = getFile(filename, lab, length);
+	
+	if (!file) {
+		std::cout << "Could not open file" << std::endl;
+		return 0;
+	}
+	
+	char *buf = new char[length];
+	file->read(buf, length);
+	delete file;
+	
 	Data *data = new Data(buf);
 	Set* ourSet = new Set(data);
 	delete data;

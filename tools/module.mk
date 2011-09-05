@@ -83,10 +83,10 @@ tools/animb2txt$(EXEEXT): $(srcdir)/tools/emi/animb2txt.cpp
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
 	-L$(srcdir)/common -o $@ $<
 
-tools/setb2set$(EXEEXT): $(srcdir)/tools/emi/setb2set.cpp
+tools/setb2set$(EXEEXT): $(srcdir)/tools/emi/setb2set.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common -o $@ $<
+	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
 
 tools/sklb2txt$(EXEEXT): $(srcdir)/tools/emi/sklb2txt.cpp
 	$(MKDIR) tools/$(DEPDIR)
