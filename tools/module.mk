@@ -78,10 +78,10 @@ tools/meshb2obj$(EXEEXT): $(srcdir)/tools/emi/meshb2obj.o $(srcdir)/tools/emi/la
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
 	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
 
-tools/animb2txt$(EXEEXT): $(srcdir)/tools/emi/animb2txt.cpp
+tools/animb2txt$(EXEEXT): $(srcdir)/tools/emi/animb2txt.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common -o $@ $<
+	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
 
 tools/setb2set$(EXEEXT): $(srcdir)/tools/emi/setb2set.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
