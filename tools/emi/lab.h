@@ -68,8 +68,11 @@ public:
 	}
 
 	std::istream *getFile(std::string filename);
+	int getIndex(std::string filename);
+	int getLength(std::string filename);
 };
 
 std::istream *getFile(std::string filename, Lab* lab);
+std::istream *getFile(std::string filename, Lab* lab, int& length);
 
 #endif

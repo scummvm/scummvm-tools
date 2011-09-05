@@ -97,10 +97,10 @@ tools/set2fig$(EXEEXT): $(srcdir)/tools/set2fig.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) -Wall -o $@ $<
 
-tools/til2bmp$(EXEEXT): $(srcdir)/tools/emi/til2bmp.cpp
+tools/til2bmp$(EXEEXT): $(srcdir)/tools/emi/til2bmp.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common -lz -o $@ $< 
+	-L$(srcdir)/common tools/emi/lab.o -lz -o $@ $< 
 
 tools/unlab$(EXEEXT): $(srcdir)/tools/unlab.cpp
 	$(MKDIR) tools/$(DEPDIR)

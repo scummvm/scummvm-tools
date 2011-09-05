@@ -29,6 +29,7 @@
 #include <cstdio>
 #include <cstring>
 #include "common/endian.h"
+#include "lab.h"
 
 /*
 This tool converts EMI-TILEs into BMP-files, and supports both the format used in the Windows
@@ -336,30 +337,35 @@ Bytef *decompress(Bytef *in, int size, uint32_t &outsize){
 int main(int argc, char **argv){
 	if (argc < 2) {
 		std::cout << "No Argument" << std::endl;
-		std::cout << "Usage: til2bmp <filename> [PS2]" << std::endl;
+		std::cout << "Usage: til2bmp [labfilename] <filename>" << std::endl;
 		return 0;
 	}
-	// Cheap fix to support PS2
-	bool ps2=false;
-	if(argc > 2)
-		ps2 = true;
 	
-	std::fstream file(argv[1], std::fstream::in|std::fstream::binary);
-	if (!file.is_open()) {
+	Lab *lab = NULL;
+	std::string filename;
+	int length = 0;
+	
+	if (argc > 2) {
+		lab = new Lab(argv[1]);
+		filename = argv[2];
+	} else {
+		filename = argv[1];
+	}
+	
+	std::istream *file = getFile(filename, lab, length);
+	
+	if (!file) {
 		std::cout << "Could not open file" << std::endl;
 		return 0;
 	}
 	
-	std::string outname = argv[1];
+	std::string outname = filename;
 	outname += ".bmp";
 	
-	file.seekg(0, std::ios::end);
-	int end = (int)file.tellg();
-	file.seekg(0, std::ios::beg);
-	char *data = new char[end];
-	file.read(data, end);
-	file.close();
-	ProcessFile(data, end, outname);
+	char *data = new char[length];
+	file->read(data, length);
+	delete file;
+	ProcessFile(data, length, outname);
 	
 	delete[] data;
 }

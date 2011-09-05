@@ -91,11 +91,7 @@ void Lab::Load(std::string filename) {
 	}
 }
 
-std::istream* Lab::getFile(std::string filename) {
-	if (!buf) {
-		printf("Could not allocate memory\n");
-		exit(1);
-	}
+int Lab::getIndex(std::string filename) {
 	for (i = 0; i < head.num_entries; i++) {
 		const char *fname = str_table + READ_LE_UINT32(&entries[i].fname_offset);
 		std::string test = std::string(fname);
@@ -103,25 +99,47 @@ std::istream* Lab::getFile(std::string filename) {
 			continue;
 		else
 		{
-			offset = READ_LE_UINT32(&entries[i].start);
-			uint32_t size = READ_LE_UINT32(&entries[i].size);
-			if (bufSize < size) {
-				bufSize = size;
-				char *newBuf = (char *)realloc(buf, bufSize);
-				if (!newBuf) {
-					printf("Could not reallocate memory\n");
-					exit(1);
-				} else {
-					buf = newBuf;
-				}
-			}
-			std::fstream *stream;
-			stream = new std::fstream(_filename.c_str(), std::ios::in | std::ios::binary);
-			stream->seekg(offset, std::ios::beg);
-			return stream;
+			return i;
 		}
 	}
+	return -1;
+}
+
+std::istream* Lab::getFile(std::string filename) {
+	if (!buf) {
+		printf("Could not allocate memory\n");
+		exit(1);
+	}
+	int index = getIndex(filename);
+	if (index == -1) {
+		return NULL;
+	} else {
+		offset = READ_LE_UINT32(&entries[i].start);
+		uint32_t size = READ_LE_UINT32(&entries[i].size);
+		if (bufSize < size) {
+			bufSize = size;
+			char *newBuf = (char *)realloc(buf, bufSize);
+			if (!newBuf) {
+				printf("Could not reallocate memory\n");
+				exit(1);
+			} else {
+				buf = newBuf;
+			}
+		}
+		std::fstream *stream;
+		stream = new std::fstream(_filename.c_str(), std::ios::in | std::ios::binary);
+		stream->seekg(offset, std::ios::beg);
+		return stream;
+	}
+	
 	return NULL;
+}
+
+int Lab::getLength(std::string filename) {
+	int index = getIndex(filename);
+	if (index == -1)
+		return 0;
+	return entries[i].size;
 }
 
 std::istream *getFile(std::string filename, Lab* lab) {
@@ -135,6 +153,25 @@ std::istream *getFile(std::string filename, Lab* lab) {
 			std::cout << "Unable to open file " << filename << std::endl;
 			return 0;
 		}
+		return stream;
+	}
+}
+
+std::istream *getFile(std::string filename, Lab* lab, int& length) {
+	std::istream *stream;
+	if (lab) {
+		length = lab->getLength(filename);
+		return lab->getFile(filename);
+	} else {
+		stream = new std::fstream(filename.c_str(), std::ios::in | std::ios::binary);
+		
+		if (!((std::fstream*)stream)->is_open()) {
+			std::cout << "Unable to open file " << filename << std::endl;
+			return 0;
+		}
+		stream->seekg(0, std::ios::end);
+		length = (int)stream->tellg();
+		stream->seekg(0, std::ios::beg);
 		return stream;
 	}
 }
