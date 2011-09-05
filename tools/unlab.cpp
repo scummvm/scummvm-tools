@@ -70,14 +70,6 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	if(argc > 2 && !strcmp(argv[2], "EMI")) {
-		printf("Opening file with EMI format.\n");
-		g_type = GT_EMI;
-	} else {
-		printf("Opening file with GRIM format.\n");
-		g_type = GT_GRIM;
-	}
-
 	infile = fopen(argv[1], "rb");
 	if (infile == 0) {
 		printf("Can not open source file: %s\n", argv[1]);
@@ -89,8 +81,16 @@ int main(int argc, char **argv) {
 	uint32_t num, s_size, s_offset;
 	fread(&num, 1, 4, infile);
 	fread(&s_size, 1, 4, infile);
-	if(g_type == GT_EMI)
-		fread(&s_offset,1,4,infile);
+	
+	uint32_t typeTest = 0;
+	fread(&typeTest,1,4,infile); 
+	if (typeTest == 0) { // First entry of the table has offset 0 for Grim
+		g_type = GT_GRIM;
+		fseek(infile, -4, SEEK_CUR);
+	} else { // EMI has an offset instead.
+		s_offset = typeTest;
+		g_type = GT_EMI;
+	}
 	head.num_entries = READ_LE_UINT32(&num);
 	head.string_table_size = READ_LE_UINT32(&s_size);
 	if (0 != memcmp(&head.magic, "LABN", 4)) {
