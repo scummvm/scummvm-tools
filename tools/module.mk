@@ -88,10 +88,10 @@ tools/setb2set$(EXEEXT): $(srcdir)/tools/emi/setb2set.cpp $(srcdir)/tools/emi/la
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
 	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
 
-tools/sklb2txt$(EXEEXT): $(srcdir)/tools/emi/sklb2txt.cpp
+tools/sklb2txt$(EXEEXT): $(srcdir)/tools/emi/sklb2txt.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common -o $@ $<
+	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
 
 tools/set2fig$(EXEEXT): $(srcdir)/tools/set2fig.cpp
 	$(MKDIR) tools/$(DEPDIR)
