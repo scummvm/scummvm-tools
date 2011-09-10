@@ -15,8 +15,6 @@
 
 using namespace std;
 
-typedef int uint32;
-
 enum SectorType {
 	NoneType = 0,
 	WalkType = 0x1000,
