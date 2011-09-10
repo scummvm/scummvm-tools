@@ -21,6 +21,7 @@
 #ifndef LAB_H
 #define LAB_H
 
+#include "config.h"
 #include <string>
 #include <iostream>
 
@@ -28,26 +29,26 @@
 #define GT_EMI 2
 
 struct lab_header {
-	uint32_t magic;
-	uint32_t magic2;
-	uint32_t num_entries;
-	uint32_t string_table_size;
-	uint32_t string_table_offset;
+	uint32 magic;
+	uint32 magic2;
+	uint32 num_entries;
+	uint32 string_table_size;
+	uint32 string_table_offset;
 };
 
 struct lab_entry {
-	uint32_t fname_offset;
-	uint32_t start;
-	uint32_t size;
-	uint32_t reserved;
+	uint32 fname_offset;
+	uint32 start;
+	uint32 size;
+	uint32 reserved;
 };
 
 class Lab {
 	std::string _filename;
-	uint8_t g_type;
-	uint32_t i;
-	uint32_t offset;
-	uint32_t bufSize;
+	uint8 g_type;
+	uint32 i;
+	uint32 offset;
+	uint32 bufSize;
 	lab_header head;
 	lab_entry *entries;
 	char *buf;

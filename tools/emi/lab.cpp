@@ -28,13 +28,13 @@
 #include "lab.h"
 
 // TODO: Use common/endian for this
-uint16_t READ_LE_UINT16(const void *ptr) {
-	const uint8_t *b = (const uint8_t *)ptr;
+uint16 READ_LE_UINT16(const void *ptr) {
+	const uint8 *b = (const uint8 *)ptr;
 	return (b[1] << 8) + b[0];
 }
 
-uint32_t READ_LE_UINT32(const void *ptr) {
-	const uint8_t *b = (const uint8_t *)ptr;
+uint32 READ_LE_UINT32(const void *ptr) {
+	const uint8 *b = (const uint8 *)ptr;
 	return (b[3] << 24) + (b[2] << 16) + (b[1] << 8) + (b[0]);
 }
 
@@ -49,7 +49,7 @@ void Lab::Load(std::string filename) {
 	
 	fread(&head.magic, 1, 4, infile);
 	fread(&head.magic2, 1, 4, infile);
-	uint32_t num, s_size, s_offset;
+	uint32 num, s_size, s_offset;
 	fread(&num, 1, 4, infile);
 	fread(&s_size, 1, 4, infile);
 	if(g_type == GT_EMI)
@@ -83,7 +83,7 @@ void Lab::Load(std::string filename) {
 		fseek(infile, 20, SEEK_SET);
 		
 		// Decrypt the string table
-		uint32_t j;
+		uint32 j;
 		for (j = 0; j < head.string_table_size; j++)
 			if (str_table[j] != 0)
 				str_table[j] ^= 0x96;
@@ -115,7 +115,7 @@ std::istream* Lab::getFile(std::string filename) {
 		return NULL;
 	} else {
 		offset = READ_LE_UINT32(&entries[i].start);
-		uint32_t size = READ_LE_UINT32(&entries[i].size);
+		uint32 size = READ_LE_UINT32(&entries[i].size);
 		if (bufSize < size) {
 			bufSize = size;
 			char *newBuf = (char *)realloc(buf, bufSize);
