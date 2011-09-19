@@ -33,9 +33,10 @@
 #define BUFFER_SIZE 		102400
 FILE *inLab = NULL, *outLab = NULL;
 
-bool copyLab(long lenght = 0) {
+int copyLab(long lenght = 0) {
 	void *buffer;
-	long copied_bytes, count, remBytes;
+	long copied_bytes, count, bytesToRead, pos;
+	int retCod = 0;
 	
 	if (lenght == 0) {
 		fseek(inLab, 0L, SEEK_END);
@@ -47,18 +48,29 @@ bool copyLab(long lenght = 0) {
 	fseek(inLab, 0, SEEK_SET);
 
 	while (copied_bytes < lenght) {
-		remBytes = lenght - copied_bytes;
-		count = (long)fread(buffer, 1, (remBytes < BUFFER_SIZE) ? remBytes : BUFFER_SIZE, inLab);
+		bytesToRead = (lenght - copied_bytes < BUFFER_SIZE) ? lenght - copied_bytes : BUFFER_SIZE;
+		pos = ftell(inLab);
+		count = (long)fread(buffer, 1, bytesToRead, inLab);
+
+		//If we get an input error, we skip this block
+		if(ferror(inLab) != 0) {
+			clearerr(inLab);
+			fseek(inLab, pos + bytesToRead, SEEK_SET);
+			count = bytesToRead;
+			memset (buffer, 0, BUFFER_SIZE);
+			retCod = 1;
+		}
+
 		fwrite(buffer, count, 1, outLab);
 		copied_bytes += count;
-		if(ferror(inLab) != 0 || ferror(outLab) != 0) {
+		if(ferror(outLab) != 0) {
 			free(buffer);
-			return false;
+			return -1;
 		}
 	}
 
 	free(buffer);
-	return true;
+	return retCod;
 }
 
 long getLabSize() {
@@ -95,6 +107,7 @@ void cleanup() {
 
 int main(int argc, char *argv[]) {
 	long labSize;
+	int retCod;
 	
 	atexit(cleanup);
 	
@@ -126,11 +139,18 @@ int main(int argc, char *argv[]) {
 	}
 
 	//Lab copying
-	if (!copyLab(labSize)) {
-		printf("I/O error!\n");
-		return 1;
+	retCod = copyLab(labSize);
+	switch(retCod) {
+		case 0:
+			printf("%s successfully copied to %s.\n", argv[1], argv[2]);
+			return 0;
+		case 1:
+			printf("%s copied to %s, but with some read errors.\n", argv[1], argv[2]);
+			printf("On some version (e.g. the German one) this is due to copy-protection\n");
+			printf("and this message can be safely ignored. Otherwise check your disk.\n");
+			return 0;
+		case -1:
+			printf("Output error!\n");
+			return 1;
 	}
-
-	printf("%s successfully copied to %s.\n", argv[1], argv[2]);
-	return 0;
 }
