@@ -25,6 +25,7 @@ WizardImageFile=graphics\left.bmp
 Source: "tools\construct_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\convert_dxa.bat"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\COPYING.txt"; DestDir: "{app}"; Flags: ignoreversion  
+Source: "tools\create_sjisfnt.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\decine.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\degob.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\dekyra.exe"; DestDir: "{app}"; Flags: ignoreversion 

@@ -90,6 +90,8 @@ win32dist:   all
 	cp gui/media/detaillogo.jpg $(WIN32PATH)/tools/media/
 	cp gui/media/logo.jpg $(WIN32PATH)/tools/media/
 	cp gui/media/tile.gif $(WIN32PATH)/tools/media/
+	$(STRIP) construct_mohawk.exe -o $(WIN32PATH)/tools/construct_mohawk.exe
+	$(STRIP) create_sjisfnt.exe -o $(WIN32PATH)/tools/create_sjisfnt.exe
 	$(STRIP) decine.exe -o $(WIN32PATH)/tools/decine.exe
 	$(STRIP) degob.exe -o $(WIN32PATH)/tools/degob.exe
 	$(STRIP) dekyra.exe -o $(WIN32PATH)/tools/dekyra.exe
@@ -97,7 +99,6 @@ win32dist:   all
 	$(STRIP) descumm.exe -o $(WIN32PATH)/tools/descumm.exe
 	$(STRIP) desword2.exe -o $(WIN32PATH)/tools/desword2.exe
 	$(STRIP) extract_mohawk.exe -o $(WIN32PATH)/tools/extract_mohawk.exe
-	$(STRIP) construct_mohawk.exe -o $(WIN32PATH)/tools/construct_mohawk.exe
 	$(STRIP) gob_loadcalc.exe -o $(WIN32PATH)/tools/gob_loadcalc.exe
 	$(STRIP) scummvm-tools.exe -o $(WIN32PATH)/tools/scummvm-tools.exe
 	$(STRIP) scummvm-tools-cli.exe -o $(WIN32PATH)/tools/scummvm-tools-cli.exe
@@ -118,6 +119,8 @@ win32setup: all
 	cp $(srcdir)/NEWS             $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/README           $(srcdir)/$(WIN32BUILD)
 	unix2dos $(srcdir)/$(WIN32BUILD)/*.*
+	$(STRIP) construct_mohawk.exe   -o $(srcdir)/$(WIN32BUILD)/construct_mohawk.exe
+	$(STRIP) create_sjisfnt.exe     -o $(srcdir)/$(WIN32BUILD)/create_sjisfnt.exe
 	$(STRIP) decine.exe             -o $(srcdir)/$(WIN32BUILD)/decine.exe
 	$(STRIP) degob.exe              -o $(srcdir)/$(WIN32BUILD)/degob.exe
 	$(STRIP) dekyra.exe             -o $(srcdir)/$(WIN32BUILD)/dekyra.exe
@@ -125,7 +128,6 @@ win32setup: all
 	$(STRIP) descumm.exe            -o $(srcdir)/$(WIN32BUILD)/descumm.exe
 	$(STRIP) desword2.exe           -o $(srcdir)/$(WIN32BUILD)/desword2.exe
 	$(STRIP) extract_mohawk.exe     -o $(srcdir)/$(WIN32BUILD)/extract_mohawk.exe
-	$(STRIP) construct_mohawk.exe   -o $(srcdir)/$(WIN32BUILD)/construct_mohawk.exe
 	$(STRIP) gob_loadcalc.exe       -o $(srcdir)/$(WIN32BUILD)/gob_loadcalc.exe
 	$(STRIP) scummvm-tools.exe      -o $(srcdir)/$(WIN32BUILD)/scummvm-tools.exe
 	$(STRIP) scummvm-tools-cli.exe  -o $(srcdir)/$(WIN32BUILD)/scummvm-tools-cli.exe
