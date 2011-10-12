@@ -30,85 +30,100 @@
 #include <cstring>
 #include "common/endian.h"
 
-#define BUFFER_SIZE 		102400
+#define BUFFER_SIZE 		0x100000
 FILE *inLab = NULL, *outLab = NULL;
+void *buffer = NULL;
 
-int copyLab(long lenght = 0) {
-	void *buffer;
-	long copied_bytes, count, bytesToRead, pos;
-	int retCod = 0;
-	
-	if (lenght == 0) {
-		fseek(inLab, 0L, SEEK_END);
-		lenght = ftell(inLab);
-	}
+struct lab_entry {
+	uint32 fname_offset;
+	uint32 start;
+	uint32 size;
+	uint32 reserved;
+};
 
-	buffer = malloc(BUFFER_SIZE);
+
+bool copyFile(uint32 offset, uint32 lenght) {
+	uint32 copied_bytes, count, bytesToRead;
+
 	copied_bytes = 0;
-	fseek(inLab, 0, SEEK_SET);
+	fseek(inLab, offset, SEEK_SET);
+	fseek(outLab, offset, SEEK_SET);
 
 	while (copied_bytes < lenght) {
 		bytesToRead = (lenght - copied_bytes < BUFFER_SIZE) ? lenght - copied_bytes : BUFFER_SIZE;
-		pos = ftell(inLab);
-		count = (long)fread(buffer, 1, bytesToRead, inLab);
-
-		//If we get an input error, we skip this block
-		if(ferror(inLab) != 0) {
-			clearerr(inLab);
-			fseek(inLab, pos + bytesToRead, SEEK_SET);
-			count = bytesToRead;
-			memset (buffer, 0, BUFFER_SIZE);
-			retCod = 1;
-		}
-
+		count = (uint32)fread(buffer, 1, bytesToRead, inLab);
 		fwrite(buffer, count, 1, outLab);
 		copied_bytes += count;
-		if(ferror(outLab) != 0) {
-			free(buffer);
-			return -1;
-		}
+		if(ferror(inLab) != 0 || ferror(outLab) != 0)
+			return false;
 	}
 
-	free(buffer);
-	return retCod;
+	return true;
 }
 
-long getLabSize() {
-	long total_size = 0;
-	char header[16], binary_entry[16];
-	int num_entries, string_table_size;
+bool copyLab() {
+	char header[16];
+	uint32 num_entries, string_table_size;
+	char *string_table;
+	lab_entry *lab_entries;
 
+	//Read and parse header
 	fseek(inLab, 0, SEEK_SET);
-
 	fread(header, 16, 1, inLab);
-	if (READ_BE_UINT32(header) != MKTAG('L','A','B','N')) 
-		return -1;
+	if (READ_BE_UINT32(header) != MKTAG('L','A','B','N')) {
+		printf("This isn't a valid .lab file!\n");
+		exit(1);
+	}
 
 	num_entries = READ_LE_UINT32(header + 8);
 	string_table_size = READ_LE_UINT32(header + 12);
 
-	total_size = 16 + num_entries * 16 + string_table_size;
-
-	for (int i = 0; i < num_entries; i++) {
-		fread(binary_entry, 16, 1, inLab);
-		total_size += READ_LE_UINT32(binary_entry + 8);
-	}
+	//Read files entries
+	lab_entries = (lab_entry *)calloc(sizeof(lab_entry), num_entries);
+	fread(lab_entries, 1, num_entries * sizeof(struct lab_entry), inLab);
 	
-	return total_size;
+	//Read string table
+	string_table = (char *)malloc(string_table_size);
+	fread(string_table, 1, string_table_size, inLab);
+
+	//Write out new lab
+	fwrite(header, 16, 1, outLab);
+	fwrite(lab_entries, sizeof(struct lab_entry), num_entries, outLab);
+	fwrite(string_table, string_table_size, 1, outLab);
+
+	//Check for errors
+	if(ferror(inLab) != 0 || ferror(outLab) != 0) {
+		free(lab_entries);
+		free(string_table);
+		return false;
+	}
+
+	//Copy the files, except cp_0_intha.bm
+	for (uint32 i = 0; i < num_entries; i++)
+		if(strcmp(string_table + READ_LE_UINT32(&lab_entries[i].fname_offset), "cp_0_intha.bm") != 0)
+			if (!copyFile(lab_entries[i].start, lab_entries[i].size)) {
+				free(lab_entries);
+				free(string_table);
+				return false;
+			}
+
+	free(lab_entries);
+	free(string_table);
+	return true;
 }
 
 void cleanup() {
 	if (inLab)
 		fclose(inLab);
-	
+
 	if (outLab)
 		fclose(outLab);
+
+	if (buffer)
+		free(buffer);
 }
 
 int main(int argc, char *argv[]) {
-	long labSize;
-	int retCod;
-	
 	atexit(cleanup);
 	
 	//Argument checks and usage display
@@ -131,26 +146,17 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	//Get the correct lab size
-	labSize = getLabSize();
-	if (labSize < 0) {
-		printf("%s isn't a valid .lab file!\n", argv[1]);
+	buffer = malloc(BUFFER_SIZE);
+	if (!buffer) {
+		printf("Unable to allocate memory!\n");
 		return 1;
 	}
 
-	//Lab copying
-	retCod = copyLab(labSize);
-	switch(retCod) {
-		case 0:
-			printf("%s successfully copied to %s.\n", argv[1], argv[2]);
-			return 0;
-		case 1:
-			printf("%s copied to %s, but with some read errors.\n", argv[1], argv[2]);
-			printf("On some version (e.g. the German one) this is due to copy-protection\n");
-			printf("and this message can be safely ignored. Otherwise check your disk.\n");
-			return 0;
-		case -1:
-			printf("Output error!\n");
-			return 1;
+	if (!copyLab()) {
+		printf("I/O error!\n");
+		return 1;
 	}
+
+	printf("%s successfully copied to %s.\n", argv[1], argv[2]);
+	return 0;
 }
