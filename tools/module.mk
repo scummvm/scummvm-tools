@@ -22,6 +22,7 @@ TOOLS := \
 	tools/set2fig$(EXEEXT) \
 	tools/til2bmp$(EXEEXT) \
 	tools/unlab$(EXEEXT) \
+	tools/mklab$(EXEEXT) \
 	tools/vima$(EXEEXT) \
 	tools/labcopy$(EXEEXT) \
 	tools/patchex/patchex$(EXEEXT)
@@ -100,9 +101,13 @@ tools/set2fig$(EXEEXT): $(srcdir)/tools/set2fig.cpp
 tools/til2bmp$(EXEEXT): $(srcdir)/tools/emi/til2bmp.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -lz -o $@ $< 
+	-L$(srcdir)/common tools/emi/lab.o -lz -o $@ $<
 
 tools/unlab$(EXEEXT): $(srcdir)/tools/unlab.cpp
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) -Wall -o $@ $<
+
+tools/mklab$(EXEEXT): $(srcdir)/tools/mklab.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) -Wall -o $@ $<
 
