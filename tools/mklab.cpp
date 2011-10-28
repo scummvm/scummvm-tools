@@ -64,13 +64,13 @@ void WRITE_LE_UINT32(void *ptr, uint32_t value) {
 	b[3] = (uint8_t)(value >> 24);
 }
 
-void write(FILE *file, uint16_t value) {
+void writeUint16(FILE *file, uint16_t value) {
 	char v[2];
 	WRITE_LE_UINT16(&v, value);
 	fwrite(&v, 1, 2, file);
 }
 
-void write(FILE *file, uint32_t value) {
+void writeUint32(FILE *file, uint32_t value) {
 	char v[4];
 	WRITE_LE_UINT32(&v, value);
 	fwrite(&v, 1, 4, file);
@@ -186,15 +186,15 @@ int main(int argc, char **argv) {
 
 	fwrite("LABN", 1, 4, outfile);
 	fwrite("    ", 1, 4, outfile); //version
-	write(outfile, head.num_entries);
-	write(outfile, head.string_table_size);
+	writeUint32(outfile, head.num_entries);
+	writeUint32(outfile, head.string_table_size);
 
 	if (g_type == GT_GRIM) {
 		uint32_t s_offset = 0; // First entry of the table has offset 0 for Grim
 		fwrite(&s_offset, 1, 4, outfile);
 		fseek(outfile, -4, SEEK_CUR);
 	} else { // EMI has an offset instead.
-		write(outfile, 20 + head.num_entries * sizeof(lab_entry) + 0x13d0f);
+		writeUint32(outfile, 20 + head.num_entries * sizeof(lab_entry) + 0x13d0f);
 	}
 
 	fwrite(entries, 1, head.num_entries * sizeof(lab_entry), outfile);
