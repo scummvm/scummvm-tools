@@ -80,6 +80,13 @@ else
 	$(error You need to run $(srcdir)/configure before you can run make. Check $(srcdir)/configure --help for a list of parameters)
 endif
 
+#
+# Windows specific
+#
+
+scummvmtoolswinres.o: $(srcdir)/gui/media/scummvmtools.ico $(srcdir)/dists/scummvmtools.rc
+	$(QUIET_WINDRES)$(WINDRES) -DHAVE_CONFIG_H $(WINDRESFLAGS) $(DEFINES) -I. -I$(srcdir) $(srcdir)/dists/scummvmtools.rc scummvmtoolswinres.o
+
 # Special target to create a win32 tools snapshot binary
 WIN32PATH=c:/scummvm
 win32dist:   all

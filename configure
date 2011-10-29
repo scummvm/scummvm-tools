@@ -87,6 +87,7 @@ _verbose_build=no
 _ranlib=ranlib
 _strip=strip
 _ar="ar cru"
+_windres=windres
 _wxconfig=wx-config
 _wxpath="$PATH"
 _prefix=/usr/local
@@ -855,7 +856,7 @@ case $_host_os in
 		DEFINES="$DEFINES -D__USE_MINGW_ANSI_STDIO=0"
 		LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++"
 		LIBS="$LIBS -lmingw32 -lwinmm"
-		OBJS="$OBJS scummvmwinres.o"
+		OBJS="$OBJS scummvmtoolswinres.o"
 		add_line_to_config_mk 'WIN32 = 1'
 		;;
 	mint*)

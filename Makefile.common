@@ -225,7 +225,8 @@ scummvm-tools_OBJS := \
 	gui/gui_tools.o \
 	gui/main.o \
 	gui/pages.o \
-	$(tools_OBJS)
+	$(tools_OBJS) \
+	$(OBJS)
 scummvm-tools_LIBS := $(WXLIBS) $(LIBS)
 
 # Set custom build flags for various files
@@ -299,6 +300,7 @@ QUIET_CXX    = @echo '   ' C++ '    ' $@;
 QUIET_AR     = @echo '   ' AR '     ' $@;
 QUIET_RANLIB = @echo '   ' RANLIB ' ' $@;
 QUIET_LINK   = @echo '   ' LINK '   ' $(1);
+QUIET_WINDRES = @echo '   ' WINDRES '' $@;
 QUIET        = @
 endif
 endif
