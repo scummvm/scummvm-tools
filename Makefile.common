@@ -33,6 +33,7 @@ PROGRAMS = \
 	descumm \
 	desword2 \
 	gob_loadcalc \
+	compress_cge \
 	extract_mohawk \
 	construct_mohawk \
 	scummvm-tools-cli
@@ -152,6 +153,9 @@ degob_OBJS := \
 
 gob_loadcalc_OBJS := \
 	engines/gob/gob_loadcalc.o
+
+compress_cge_OBJS := \
+	engines/cge/compress_cge.o
 
 extract_mohawk_OBJS := \
 	engines/mohawk/archive.o \
