@@ -6,6 +6,7 @@
 *.swo
 
 /.gdb_history
+/compress_cge
 /construct_mohawk
 /create_sjisfnt
 /decine
