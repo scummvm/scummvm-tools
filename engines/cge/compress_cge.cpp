@@ -132,11 +132,11 @@ static void pack() {
 
 	// Open vol cat and dat files for writing
 	if ((volCat = fopen("vol.cat", "wb")) == NULL) {
-		printf("FATAL: Unable to create vol.cat");
+		printf("FATAL: Unable to create vol.cat\n");
 		exit(0);
 	}
 	if ((volDat = fopen("vol.dat", "wb")) == NULL) {
-		printf("FATAL: Unable to create vol.dat");
+		printf("FATAL: Unable to create vol.dat\n");
 		exit(0);
 	}
 
@@ -184,7 +184,7 @@ static void pack() {
 			// Open the file and get the size
 			fIn = fopen(fname, "rb");
 			if (!fIn) {
-				printf("FATAL: Error opening %s", fname);
+				printf("FATAL: Error opening %s\n", fname);
 				exit(-1);
 			}
 			fseek(fIn, 0, SEEK_END);
