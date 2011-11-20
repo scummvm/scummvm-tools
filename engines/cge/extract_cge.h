@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef __COMPRESS_CGE_H
-#define __COMPRESS_CGE_H
+#ifndef EXTRACT_CGE_H
+#define EXTRACT_CGE_H
 
 typedef unsigned char byte;
 typedef unsigned char uint8;
