@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "compress_cge.h"
+#include "extract_cge.h"
 
 #define BUFFER_SIZE 8192
 #define SEED        0xA5

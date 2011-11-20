@@ -6,7 +6,6 @@
 *.swo
 
 /.gdb_history
-/compress_cge
 /construct_mohawk
 /create_sjisfnt
 /decine
@@ -16,6 +15,7 @@
 /deriven
 /descumm
 /desword2
+/extract_cge
 /extract_mohawk
 /gob_loadcalc
 /ScummVM Tools.app
