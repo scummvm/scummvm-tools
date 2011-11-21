@@ -110,6 +110,8 @@
     <ClCompile Include="..\..\engines\tucker\compress_tucker.cpp" />
     <ClCompile Include="..\..\encode_dxa.cpp" />
     <ClCompile Include="..\..\engines\agos\extract_agos.cpp" />
+    <ClCompile Include="..\..\engines\cge\extract_cge.cpp" />
+    <ClCompile Include="..\..\engines\cge\pack_cge.cpp" />
     <ClCompile Include="..\..\engines\cine\extract_cine.cpp" />
     <ClCompile Include="..\..\engines\cruise\extract_cruise_pc.cpp" />
     <ClCompile Include="..\..\engines\gob\extract_gob_stk.cpp" />
@@ -155,6 +157,8 @@
     <ClInclude Include="..\..\engines\tucker\compress_tucker.h" />
     <ClInclude Include="..\..\encode_dxa.h" />
     <ClInclude Include="..\..\engines\agos\extract_agos.h" />
+    <ClInclude Include="..\..\engines\cge\extract_cge.h" />
+    <ClInclude Include="..\..\engines\cge\pack_cge.h" />
     <ClInclude Include="..\..\engines\cine\extract_cine.h" />
     <ClInclude Include="..\..\engines\cruise\extract_cruise_pc.h" />
     <ClInclude Include="..\..\engines\gob\extract_gob_stk.h" />

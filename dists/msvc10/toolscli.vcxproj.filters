@@ -66,6 +66,12 @@
     <ClCompile Include="..\..\engines\agos\extract_agos.cpp">
       <Filter>tools</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\engines\cge\extract_cge.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\cge\pack_cge.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\engines\cine\extract_cine.cpp">
       <Filter>tools</Filter>
     </ClCompile>
@@ -195,6 +201,12 @@
       <Filter>tools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\engines\agos\extract_agos.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\cge\extract_cge.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\cge\pack_cge.h">
       <Filter>tools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\engines\cine\extract_cine.h">

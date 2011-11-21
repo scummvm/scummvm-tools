@@ -125,6 +125,8 @@
     <ClInclude Include="..\..\compress_tucker.h" />
     <ClInclude Include="..\..\encode_dxa.h" />
     <ClInclude Include="..\..\extract_agos.h" />
+    <ClInclude Include="..\..\extract_cge.h" />
+    <ClInclude Include="..\..\pack_cge.h" />
     <ClInclude Include="..\..\extract_cine.h" />
     <ClInclude Include="..\..\extract_gob_stk.h" />
     <ClInclude Include="..\..\extract_kyra.h" />
@@ -171,6 +173,8 @@
     <ClCompile Include="..\..\encode_dxa.cpp" />
     <ClCompile Include="..\..\example_tool.cpp" />
     <ClCompile Include="..\..\extract_agos.cpp" />
+    <ClCompile Include="..\..\extract_cge.cpp" />
+    <ClCompile Include="..\..\pack_cge.cpp" />
     <ClCompile Include="..\..\extract_cine.cpp" />
     <ClCompile Include="..\..\extract_gob_stk.cpp" />
     <ClCompile Include="..\..\extract_kyra.cpp" />

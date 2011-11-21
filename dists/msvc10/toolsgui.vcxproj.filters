@@ -126,6 +126,12 @@
     <ClInclude Include="..\..\extract_agos.h">
       <Filter>tools</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\extract_cge.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pack_cge.h">
+      <Filter>tools</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\extract_cine.h">
       <Filter>tools</Filter>
     </ClInclude>
@@ -256,6 +262,12 @@
       <Filter>tools</Filter>
     </ClCompile>
     <ClCompile Include="..\..\extract_agos.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\extract_cge.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pack_cge.cpp">
       <Filter>tools</Filter>
     </ClCompile>
     <ClCompile Include="..\..\extract_cine.cpp">

@@ -303,6 +303,22 @@
 				RelativePath="..\..\engines\agos\extract_agos.h"
 				>
 			</File>
+                        <File
+                                RelativePath="..\..\engines\cge\extract_cge.cpp"
+                                >
+                        </File>
+                        <File
+                                RelativePath="..\..\engines\cge\extract_cge.h"
+                                >
+                        </File>
+                        <File
+                                RelativePath="..\..\engines\cge\pack_cge.cpp"
+                                >
+                        </File>
+                        <File
+                                RelativePath="..\..\engines\cge\pack_cge.h"
+                                >
+                        </File>
 			<File
 				RelativePath="..\..\engines\cine\extract_cine.cpp"
 				>

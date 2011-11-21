@@ -455,6 +455,14 @@
 				RelativePath="..\..\extract_agos.h"
 				>
 			</File>
+                        <File
+                                RelativePath="..\..\extract_cge.cpp"
+                                >
+                        </File>
+                        <File
+                                RelativePath="..\..\extract_cge.h"
+                                >
+                        </File>
 			<File
 				RelativePath="..\..\extract_cine.cpp"
 				>
