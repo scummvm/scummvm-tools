@@ -35,7 +35,7 @@
 
 PackCge::PackCge(const std::string &name) : Tool(name, TOOLTYPE_UNKNOWN) {
 	ToolInput input;
-	input.format = "*";
+	input.format = "/";
 	input.file = false;
 	_inputPaths.push_back(input);
 	
