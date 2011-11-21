@@ -45,6 +45,8 @@
 #endif
 
 #include "engines/agos/extract_agos.h"
+#include "engines/cge/extract_cge.h"
+#include "engines/cge/pack_cge.h"
 #include "engines/cine/extract_cine.h"
 #include "engines/cruise/extract_cruise_pc.h"
 #include "engines/gob/extract_gob_stk.h"
@@ -80,6 +82,8 @@ Tools::Tools() {
 #endif
 
 	_tools.push_back(new ExtractAgos());
+	_tools.push_back(new ExtractCge());
+	_tools.push_back(new PackCge());
 	_tools.push_back(new ExtractCine());
 	_tools.push_back(new ExtractCruisePC());
 	_tools.push_back(new ExtractGobStk());

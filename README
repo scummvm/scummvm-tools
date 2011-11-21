@@ -52,6 +52,16 @@ Extraction Tools:
                 Example of usage:
                 ./scummvm-tools-cli --tool extract_agos <infile 1> ... <infile n>
 
+        extract_cge
+                Unpack Soltys game data files.
+                Example of usage:
+                ./scummvm-tools-cli --tool extract_cge [-o outputdir] vol.dat vol.cat
+
+        pack_cge
+               Pack Soltys game data files.
+               Example of usage:
+                ./scummvm-tools-cli --tool pack_cge [-o outputdir] <inputdir>
+
         extract_cine
                 Unpacks Delphine's Cinematique engine's archive files.
                 Should work at least with Future Wars and Operation Stealth.

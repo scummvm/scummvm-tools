@@ -20,20 +20,20 @@
  *
  */
 
-#ifndef EXTRACT_CGE_H
-#define EXTRACT_CGE_H
+#ifndef PACK_CGE_H
+#define PACK_CGE_H
 
 #include "tool.h"
 
-class ExtractCge : public Tool {
+class PackCge : public Tool {
 public:
-	ExtractCge(const std::string &name = "extract_cge");
+	PackCge(const std::string &name = "pack_cge");
 	
 	virtual void execute();
 	
 protected:
-	void readData(Common::File &f, byte *buff, int size);
-	void unpack();
+	void writeData(Common::File &f, byte *buff, int size);
+	void pack();
 };
 
 #endif
