@@ -34,6 +34,7 @@ my @subs_files = qw(
 	internal_version.h
 	dists/macosx/Info.plist
 	dists/nsis/scummvm-tools.nsi
+	dists/scummvmtools.rc
 	);
 
 my %subs = (
