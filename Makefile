@@ -105,7 +105,6 @@ win32dist:   all
 	$(STRIP) deriven.exe -o $(WIN32PATH)/tools/deriven.exe
 	$(STRIP) descumm.exe -o $(WIN32PATH)/tools/descumm.exe
 	$(STRIP) desword2.exe -o $(WIN32PATH)/tools/desword2.exe
-	$(STRIP) extract_cge.exe -o $(WIN32PATH)/tools/extract_cge.exe
 	$(STRIP) extract_mohawk.exe -o $(WIN32PATH)/tools/extract_mohawk.exe
 	$(STRIP) gob_loadcalc.exe -o $(WIN32PATH)/tools/gob_loadcalc.exe
 	$(STRIP) scummvm-tools.exe -o $(WIN32PATH)/tools/scummvm-tools.exe
