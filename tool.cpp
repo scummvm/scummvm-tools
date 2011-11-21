@@ -98,9 +98,8 @@ int Tool::run(const std::deque<std::string> &args) {
 			// Append '/' to input if it's not already done
 			// TODO: We need a way to detect a proper directory here!
 			size_t s = in.size();
-			if (in[s-1] == '/' || in[s-1] == '\\') {
-				in[s] = '/';
-				in[s+1] = '\0';
+			if (in[s-1] != '/' && in[s-1] != '\\') {
+				in.append("/");
 			}
 		}
 
