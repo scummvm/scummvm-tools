@@ -200,6 +200,8 @@ protected:
 	virtual void parseAudioArguments();
 	virtual void setTempFileName();
 	void parseOutputArguments();
+	
+	InspectionMatch inspectInput(const Common::Filename &filename, const std::string& format);
 
 	/** Parses the arguments only this tool takes. */
 	virtual void parseExtraArguments();

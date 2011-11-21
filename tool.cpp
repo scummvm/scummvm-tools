@@ -90,24 +90,46 @@ int Tool::run(const std::deque<std::string> &args) {
 		return -2;
 	}
 
-	// Read input files from CLI
-	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
+	// Read input files from CLI and match them to expected input.
+	// First make sure the all the input paths are unset 
+	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter)
+		iter->path.clear();
+	// Then match the remaining arguments with the input paths.
+	int nbExpectedInputs = _inputPaths.size();
+	for (int i = 0 ; i < nbExpectedInputs ; ++i) {
 		std::string in = _arguments.front();
 		_arguments.pop_front();
-		if (!iter->file) {
-			// Append '/' to input if it's not already done
-			// TODO: We need a way to detect a proper directory here!
-			size_t s = in.size();
-			if (in[s-1] != '/' && in[s-1] != '\\') {
-				in.append("/");
+		int bestMatchIndex = -1;
+		InspectionMatch bestMatch = IMATCH_AWFUL;
+		for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
+			if (!iter->path.empty())
+				continue;
+			InspectionMatch match = inspectInput(in, iter->file ? iter->format : std::string("/"));
+			if (match == IMATCH_PERFECT) {
+				bestMatch = IMATCH_PERFECT;
+				bestMatchIndex = (iter - _inputPaths.begin());
+				break;
+			} else if (bestMatch == IMATCH_AWFUL && match == IMATCH_POSSIBLE) {
+				bestMatch = IMATCH_POSSIBLE;
+				bestMatchIndex = (iter - _inputPaths.begin());
 			}
 		}
-
-		iter->path = in;
+		if (bestMatch == IMATCH_AWFUL) {
+			print("Unexpected input file '%s'!\n", in.c_str());
+			return -2;
+		}
+		if (!_inputPaths[bestMatchIndex].file) {
+			// Append '/' to input if it's not already done
+			size_t s = in.size();
+			if (in[s-1] != '/' && in[s-1] != '\\') {
+				in += '/';
+			}
+		}
+		_inputPaths[bestMatchIndex].path = in;
 	}
 
 	// We should have parsed all arguments by now
-	if (_inputPaths.size() < _arguments.size()) {
+	if (!_arguments.empty()) {
 		std::ostringstream os;
 		os << "Too many inputs files ( ";
 		while (!_arguments.empty()) {
@@ -156,36 +178,50 @@ void Tool::run() {
 }
 
 InspectionMatch Tool::inspectInput(const Common::Filename &filename) {
+	InspectionMatch bestMatch = IMATCH_AWFUL;
 	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
-		std::string p = iter->format;
-		if (p == "/") {
-			// TODO
-			// Directory, we don't handle this yet, don't display at all
-			return IMATCH_AWFUL;
-		}
-
-		Common::Filename cmp_filename = p;
-
-		if (cmp_filename.getName() == "*") {
-			if (cmp_filename.getExtension() == "*")
-				// Match anything!
-				return IMATCH_POSSIBLE;
-			else if (scumm_stricmp(cmp_filename.getExtension().c_str(), filename.getExtension().c_str()) == 0)
-				// Extensions are the same
-				return IMATCH_PERFECT;
-		} else {
-			// Match on filename
-			if (cmp_filename.getName() == filename.getName()) {
-				if (cmp_filename.getExtension() == "*")
-					return IMATCH_PERFECT;
-				else if (scumm_stricmp(cmp_filename.getExtension().c_str(), filename.getExtension().c_str()) == 0)
-					// Filenames are identical
-					return IMATCH_PERFECT;
-			}
-		}
+		InspectionMatch match = inspectInput(filename, iter->file ? iter->format : std::string("/"));
+		if (match == IMATCH_PERFECT)
+			return IMATCH_PERFECT;
+		else if (match == IMATCH_POSSIBLE)
+			bestMatch = match;
 	}
 
 	// Didn't match any of our inputs
+	return bestMatch;
+}
+
+InspectionMatch Tool::inspectInput(const Common::Filename &filename, const std::string& format) {
+	// Case were we expect a directory
+	if (format == "/") {
+		if (filename.directory())
+			return IMATCH_POSSIBLE;
+		return IMATCH_AWFUL;
+	}
+
+	// We expect a file.
+	// First check this is not a directory.
+	if (filename.directory())
+		return IMATCH_AWFUL;
+	
+	Common::Filename cmp_filename = format;
+	if (cmp_filename.getName() == "*") {
+		if (cmp_filename.getExtension() == "*")
+			// Match anything!
+			return IMATCH_POSSIBLE;
+		else if (scumm_stricmp(cmp_filename.getExtension().c_str(), filename.getExtension().c_str()) == 0)
+			// Extensions are the same
+			return IMATCH_PERFECT;
+	} else {
+		// Match on filename
+		if (cmp_filename.getName() == filename.getName()) {
+			if (cmp_filename.getExtension() == "*")
+				return IMATCH_PERFECT;
+			else if (scumm_stricmp(cmp_filename.getExtension().c_str(), filename.getExtension().c_str()) == 0)
+				// Filenames are identical
+				return IMATCH_PERFECT;
+		}
+	}
 	return IMATCH_AWFUL;
 }
 
