@@ -50,8 +50,14 @@ namespace Common {
 Filename::Filename() {
 }
 Filename::Filename(const char *path) : _path(path) {
+	// If this is a directory append '/' at the end if needed.
+	if (!_path.empty() && _path[_path.size() - 1] != '/' && _path[_path.size() - 1] != '\\' && isDirectory(_path.c_str()))
+		_path += '/';
 }
 Filename::Filename(std::string path) : _path(path) {
+	// If this is a directory append '/' at the end if needed.
+	if (!_path.empty() && _path[_path.size() - 1] != '/' && _path[_path.size() - 1] != '\\' && isDirectory(_path.c_str()))
+		_path += '/';
 }
 
 Filename::Filename(const Filename& filename) : _path(filename._path) {
@@ -64,6 +70,9 @@ Filename& Filename::operator=(const Filename& filename) {
 
 void Filename::setFullPath(const std::string &path) {
 	_path = path;
+	// If this is a directory append '/' at the end if needed.
+	if (!_path.empty() && _path[_path.size() - 1] != '/' && _path[_path.size() - 1] != '\\' && isDirectory(_path.c_str()))
+		_path += '/';
 }
 
 void Filename::setFullName(const std::string &newname) {
