@@ -58,27 +58,13 @@ void ExtractCge::unpack() {
 	print("Unpacking...\n");
 
 	BtPage btPage;
-
-	Common::File volCat, volDat;
-	Common::Filename inPath1(_inputPaths[0].path);
-	Common::Filename inPath2(_inputPaths[1].path);
-	if (scumm_stricmp(inPath1.getName().c_str(), "vol") != 0 || scumm_stricmp(inPath2.getName().c_str(), "vol") != 0) {
-		error("Wrong input file names.\n");
-	}
-	if (inPath1.hasExtension("cat") && inPath2.hasExtension("dat")) {
-		volCat.open(inPath1, "rb");
-		volDat.open(inPath2, "rb");
-	} else if (inPath1.hasExtension("dat") && inPath2.hasExtension("cat")) {
-		volCat.open(inPath2, "rb");
-		volDat.open(inPath1, "rb");
-	} else {
-		error("Wrong input file names.\n");
-	}
-
+	
+	Common::File volCat(_inputPaths[0].path, "rb");
 	if (!volCat.isOpen()) {
 		error("Unable to open vol.cat\n");
 	}
 
+	Common::File volDat(_inputPaths[1].path, "rb");
 	if (!volDat.isOpen()) {
 		error("Unable to open vol.dat\n");
 	}
