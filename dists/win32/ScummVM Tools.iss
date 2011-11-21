@@ -32,6 +32,7 @@ Source: "tools\dekyra.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "tools\deriven.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\descumm.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\desword2.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "tools\extract_cge.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\extract_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\gob_loadcalc.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\NEWS.txt"; DestDir: "{app}"; Flags: ignoreversion
