@@ -741,10 +741,11 @@ CompressSword1::CompressSword1(const std::string &name) : CompressionTool(name, 
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress Broken Sword 1 data files.";
-	_helptext = "\nUsage: " + getName() + " [mode] [mode params] [-o outputdir] [only] <inputdir>\n"
+	_helptext = "\nUsage: " + getName() + " [mode] [mode params] [-o outputdir] [only] <inputfile>\n"
 		"only can be either:\n"
 		" --speech-only  only encode speech clusters\n"
-		" --music-only   only encode music files\n";
+		" --music-only   only encode music files\n\n"
+		"<inputfile> can match one of 'swordres.rif', *.clu or *.clm\n";
 }
 
 void CompressSword1::parseExtraArguments() {
