@@ -41,7 +41,7 @@ ExtractCge::ExtractCge(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION
 	_outputToDirectory = true;
 
 	_shorthelp = "Used to extract Soltys data files.";
-	_helptext = "\nUsage: " + getName() + " [-o /path/to/output/dir/] /path/to/vol.dat /path/to/vol.cat\n";
+	_helptext = "\nUsage: " + getName() + " [-o /path/to/output/dir/] <vol.dat> <vol.cat>\n";
 }
 
 void ExtractCge::execute() {
@@ -58,7 +58,7 @@ void ExtractCge::unpack() {
 	print("Unpacking...\n");
 
 	BtPage btPage;
-	
+
 	Common::File volCat(_inputPaths[0].path, "rb");
 	if (!volCat.isOpen()) {
 		error("Unable to open vol.cat\n");
