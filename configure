@@ -745,6 +745,7 @@ case $_host_os in
 		;;
 	mingw*)
 		DEFINES="$DEFINES -DWIN32 -D__USE_MINGW_ANSI_STDIO=0"
+		LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++"
 		LIBS="$LIBS -lmingw32 -lwinmm"
 		;;
 	cygwin*)

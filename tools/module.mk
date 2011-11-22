@@ -51,77 +51,77 @@ clean-tools:
 tools/delua$(EXEEXT): $(srcdir)/tools/delua.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common -Ltools/lua -o $@ $< -llua
+	-L$(srcdir)/common -Ltools/lua -o $@ $< $(LDFLAGS) -llua
 
 tools/mat2ppm$(EXEEXT): $(srcdir)/tools/mat2ppm.cpp
 	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -lppm -o $@ $<
+	$(CXX) $(CFLAGS) -Wall -lppm -o $@ $< $(LDFLAGS)
 
 tools/bmtoppm$(EXEEXT): $(srcdir)/tools/bmtoppm.cpp
 	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -lppm -lpbm -o $@ $<
+	$(CXX) $(CFLAGS) -Wall -lppm -lpbm -o $@ $< $(LDFLAGS)
 
 tools/imc2wav$(EXEEXT): $(srcdir)/tools/imc2wav.cpp
 	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $<
+	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
 
 tools/int2flt$(EXEEXT): $(srcdir)/tools/int2flt.cpp
 	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $<
+	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
 
 tools/cosb2cos$(EXEEXT): $(srcdir)/tools/emi/cosb2cos.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common -o $@ $<
+	-L$(srcdir)/common -o $@ $< $(LDFLAGS)
 
 tools/meshb2obj$(EXEEXT): $(srcdir)/tools/emi/meshb2obj.o $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
+	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS)
 
 tools/animb2txt$(EXEEXT): $(srcdir)/tools/emi/animb2txt.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
+	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS)
 
 tools/setb2set$(EXEEXT): $(srcdir)/tools/emi/setb2set.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
+	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS)
 
 tools/sklb2txt$(EXEEXT): $(srcdir)/tools/emi/sklb2txt.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -o $@ $<
+	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS)
 
 tools/set2fig$(EXEEXT): $(srcdir)/tools/set2fig.cpp
 	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $<
+	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
 
 tools/til2bmp$(EXEEXT): $(srcdir)/tools/emi/til2bmp.cpp $(srcdir)/tools/emi/lab.o
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -lz -o $@ $<
+	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS) -lz
 
 tools/unlab$(EXEEXT): $(srcdir)/tools/unlab.cpp
 	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $<
+	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
 
 tools/mklab$(EXEEXT): $(srcdir)/tools/mklab.cpp
 	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $<
+	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
 
 tools/vima$(EXEEXT): $(srcdir)/tools/vima.cpp
 	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $<
+	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
 
 tools/labcopy$(EXEEXT): $(srcdir)/tools/labcopy.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -Wall \
-	-L$(srcdir)/common -o $@ $<
+	-L$(srcdir)/common -o $@ $< $(LDFLAGS)
 
 tools/patchex/patchex$(EXEEXT): tools/patchex/patchex.o tools/patchex/mszipd.o tools/patchex/cabd.o
 	$(MKDIR) tools/patchex/$(DEPDIR)
-	$(CXX) $(CFLAGS) tools/patchex/mszipd.o tools/patchex/cabd.o -Wall -o $@ $<
+	$(CXX) $(CFLAGS) tools/patchex/mszipd.o tools/patchex/cabd.o -Wall -o $@ $< $(LDFLAGS)
 
 .PHONY: clean-tools tools
