@@ -48,6 +48,7 @@ CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name, 
 
 	ToolInput input;
 	input.format = "/";
+	input.file = false;
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress the Bud Tucker data files.";
@@ -311,7 +312,7 @@ uint32 CompressTucker::compress_audio_directory(const Common::Filename *inpath, 
 	current_offset = 0;
 	for (i = 0; i < count; ++i) {
 		temp_table[i].offset = current_offset;
-		snprintf(filepath, sizeof(filepath), "%s/AUDIO/%s", inpath->getPath().c_str(), audio_files_list[i]);
+		snprintf(filepath, sizeof(filepath), "%sAUDIO/%s", inpath->getPath().c_str(), audio_files_list[i]);
 
 		try {
 			Common::File input(filepath, "rb");
@@ -329,7 +330,7 @@ uint32 CompressTucker::compress_audio_directory(const Common::Filename *inpath, 
 				break;
 			}
 		} catch (...) {
-			warning("Can't open file '%s'", filepath);
+			warning("Can't open file '%s'\n", filepath);
 			temp_table[i].size = 0;
 		}
 
@@ -418,9 +419,9 @@ void CompressTucker::execute() {
 	// Ensure necessary directories are present
 	for (int i = 0; inputDirs[i]; ++i) {
 		char path[1024];
-		snprintf(path, sizeof(path), "%s/%s", inpath.getPath().c_str(), inputDirs[i]);
+		snprintf(path, sizeof(path), "%s%s", inpath.getPath().c_str(), inputDirs[i]);
 		if (!Common::isDirectory(path)) {
-			error("Missing input directory '%s'", path);
+			error("Missing input directory '%s'\n", path);
 		}
 	}
 
