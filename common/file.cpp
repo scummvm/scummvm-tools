@@ -24,6 +24,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
+#include <deque>
+#include <algorithm>
 #include <sys/stat.h>   // for stat()
 #include <sys/types.h>
 #ifndef _MSC_VER
@@ -111,6 +113,10 @@ bool Filename::exists() const {
 	// This fails if we don't have permission to read the file
 	// but in most cases, that's the same thing for us.
 	FILE *f = fopen(_path.c_str(), "r");
+	if (!f) {
+		std::string fixedPath = fixPathCase(_path);
+		f = fopen(_path.c_str(), "r");
+	}
 	if (f) {
 		fclose(f);
 		return true;
@@ -236,6 +242,10 @@ void File::open(const Filename &filepath, const char *mode) {
 	close();
 
 	_file = fopen(filepath.getFullPath().c_str(), mode);
+	if (!_file) {
+		std::string fixedPath = fixPathCase(filepath.getFullPath());
+		_file = fopen(fixedPath.c_str(), mode);
+	}
 
 	FileMode m = FILEMODE_READ;
 	do {
@@ -520,7 +530,68 @@ int removeFile(const char *path) {
 
 bool isDirectory(const char *path) {
 	struct stat st;
-	return stat(path, &st) == 0 && S_ISDIR(st.st_mode);
+	if (stat(path, &st) == 0) {
+		return S_ISDIR(st.st_mode);
+	}
+	// Try to fix the case
+	std::string fixedPath = fixPathCase(path);
+	return stat(fixedPath.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
+}
+	
+std::string fixPathCase(const std::string& originalPath) {
+	std::string result = originalPath;
+	std::deque<std::string> parts;
+	struct stat st;
+
+	// Remove the last part of the path until we get to a path that exists
+	while (stat(result.c_str(), &st) != 0) {
+		size_t slash = result.rfind('/', result.size() - 2);
+		if (slash == std::string::npos)
+			slash = result.rfind('\\', result.size() - 2);
+		if (slash == std::string::npos) {
+			parts.push_back(result);
+			result.clear();
+			break;
+		} else {
+			parts.push_back(result.substr(slash + 1));
+			result.erase(slash + 1);
+			if (slash == 0)
+				break;
+		}
+	}
+
+	// Reconstruct the path by changing the case
+	while (!parts.empty()) {
+		std::string directory = parts.back();
+		// Try first original case, then all lower case and finally all upper case
+		std::string path = result + directory;
+		if (stat(path.c_str(), &st) == 0) {
+			result = path;
+		} else {
+			std::transform(directory.begin(), directory.end(), directory.begin(), ::tolower);
+			path = result + directory;
+			if (stat(path.c_str(), &st) == 0) {
+				result = path;
+			} else {
+				std::transform(directory.begin(), directory.end(), directory.begin(), ::toupper);
+				path = result + directory;
+				if (stat(path.c_str(), &st) == 0) {
+					result = path;
+				} else {
+					// Does not exists whatever the case used.
+					// Add back all the remaining parts and return.
+					while (!parts.empty()) {
+						result += parts.back();
+						parts.pop_back();
+					}
+					return result;
+				}
+			}
+		}
+		parts.pop_back();
+	}
+
+	return result;
 }
 
 } // End of namespace Common

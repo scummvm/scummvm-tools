@@ -407,6 +407,13 @@ int removeFile(const char *path);
  */
 bool isDirectory(const char *path);
 
+/**
+ * Transform the given path into an existing path if possible
+ * by changing the case of each path element to either the
+ * original case, all lower case or all upper case.
+ */
+std::string fixPathCase(const std::string& originalPath);
+
 } // End of namespace Common
 
 
