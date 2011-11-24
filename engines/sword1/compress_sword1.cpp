@@ -605,7 +605,6 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 
 void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Common::Filename *inpath) {
 	int i;
-	FILE *testFile;
 	char fileName[256];
 	bool speechFound = false, musicFound = false;
 
@@ -613,21 +612,15 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 		for (i = 1; i <= 2; i++) {
 			// Try first in SPEECH sub-directory
 			sprintf(fileName, "%s/SPEECH/SPEECH%d.CLU", inpath->getPath().c_str(), i);
-			testFile = fopen(fileName, "rb");
-
-			if (testFile){
+			if (Common::Filename(fileName).exists()){
 				speechFound = true;
-				fclose(testFile);
 				break;
 			}
 
 			// Then try at the root of the input directory
 			sprintf(fileName, "%s/SPEECH%d.CLU", inpath->getPath().c_str(), i);
-			testFile = fopen(fileName, "rb");
-
-			if (testFile){
+			if (Common::Filename(fileName).exists()){
 				speechFound = true;
-				fclose(testFile);
 				break;
 			}
 		}
@@ -653,46 +646,34 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 			// Check WAV file
 			// Try first in MUSIC sub-directory
 			sprintf(fileName, "%s/MUSIC/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
-			testFile = fopen(fileName, "rb");
-
-			if (testFile) {
+			if (Common::Filename(fileName).exists()) {
 				musicFound = true;
-				fclose(testFile);
 				break;
 			}
 
 			// Then try at root of input directory
 			sprintf(fileName, "%s/%s.WAV", inpath->getPath().c_str(), musicNames[i].fileName);
-			testFile = fopen(fileName, "rb");
-
-			if (testFile) {
+			if (Common::Filename(fileName).exists()) {
 				musicFound = true;
-				fclose(testFile);
 				break;
 			}
 
 			// Check AIF file
 			// Try first in MUSIC sub-directory
 			sprintf(fileName, "%s/MUSIC/%s.AIF", inpath->getPath().c_str(), musicNames[i].fileName);
-			testFile = fopen(fileName, "rb");
-
-			if (testFile) {
+			if (Common::Filename(fileName).exists()) {
 				musicFound = true;
 				_macVersion = true;
 				_speechEndianness = UnknownEndian;
-				fclose(testFile);
 				break;
 			}
 
 			// Then try at root of input directory
 			sprintf(fileName, "%s/%s.AIF", inpath->getPath().c_str(), musicNames[i].fileName);
-			testFile = fopen(fileName, "rb");
-
-			if (testFile) {
+			if (Common::Filename(fileName).exists()) {
 				musicFound = true;
 				_macVersion = true;
 				_speechEndianness = UnknownEndian;
-				fclose(testFile);
 				break;
 			}
 
