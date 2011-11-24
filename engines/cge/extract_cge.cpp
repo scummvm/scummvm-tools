@@ -55,18 +55,18 @@ void ExtractCge::readData(Common::File &f, byte *buff, int size) {
 }
 
 void ExtractCge::unpack() {
-	print("Unpacking...\n");
+	print("Unpacking...");
 
 	BtPage btPage;
 
 	Common::File volCat(_inputPaths[0].path, "rb");
 	if (!volCat.isOpen()) {
-		error("Unable to open vol.cat\n");
+		error("Unable to open vol.cat");
 	}
 
 	Common::File volDat(_inputPaths[1].path, "rb");
 	if (!volDat.isOpen()) {
-		error("Unable to open vol.dat\n");
+		error("Unable to open vol.dat");
 	}
 
 	// We always need to setup default output path, since there is no obligation to specify it
@@ -76,7 +76,7 @@ void ExtractCge::unpack() {
 	_outputPath.setFullName("files.txt");
 	Common::File fFiles(_outputPath, "w");
 	if (!fFiles.isOpen()) {
-		error("Unable to create files.txt\n");
+		error("Unable to create files.txt");
 	}
 
 	// Get in a list of pages individual files will be on

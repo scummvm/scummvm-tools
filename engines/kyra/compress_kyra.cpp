@@ -114,7 +114,7 @@ void CompressKyra::process(Common::Filename *infile, Common::Filename *outfile) 
 	if (output.getFileList())
 		output.saveFile(outfile->getFullPath().c_str());
 	else
-		print("file '%s' doesn't contain any .voc files\n", infile->getFullPath().c_str());
+		print("file '%s' doesn't contain any .voc files", infile->getFullPath().c_str());
 }
 
 // Kyra3 specifc code
@@ -282,7 +282,7 @@ void CompressKyra::compressAUDFile(Common::File &input, const char *outfile) {
 	header.size = input.readUint32LE();
 	header.flags = input.readByte();
 	header.type = input.readByte();
-	//print("%d Hz, %d bytes, type %d (%08X)\n", header.freq, header.size, header.type, header.flags);
+	//print("%d Hz, %d bytes, type %d (%08X)", header.freq, header.size, header.type, header.flags);
 
 	Common::File output(TEMP_RAW, "wb");
 

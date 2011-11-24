@@ -88,7 +88,7 @@ void ExtractMMApple::execute() {
 	Common::File output(outpath, "wb");
 	// All output should be xored
 	output.setXorMode(0xFF);
-	print("Creating 00.LFL...\n");
+	print("Creating 00.LFL...");
 
 	/* write signature */
 	output.writeUint16LE(signature);
@@ -143,7 +143,7 @@ void ExtractMMApple::execute() {
 		outpath.setFullName(fname);
 		output.open(outpath, "wb");
 
-		print("Creating %s...\n", fname);
+		print("Creating %s...", fname);
 		input->seek((SectorOffset[room_tracks_apple[i]] + room_sectors_apple[i]) * 256, SEEK_SET);
 
 		for (j = 0; j < ResourcesPerFile[i]; j++) {

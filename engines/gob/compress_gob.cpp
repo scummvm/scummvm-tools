@@ -128,7 +128,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(Common::File &gobConf, Common::Fi
 	else if (signature != confSTK10)
 		error("Unknown format signature %s", signature.c_str());
 
-	print("Checking duplicate files\n");
+	print("Checking duplicate files");
 
 // All the other reads concern file + compression flag
 	gobConf.scanString(buffer);
@@ -157,7 +157,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(Common::File &gobConf, Common::Fi
 // If files are identical, use the same compressed chunk instead of re-compressing the same thing
 					curChunk->packed = 2;
 					curChunk->replChunk = parseChunk;
-					print("Identical files : %s %s (%d bytes)\n", curChunk->name, parseChunk->name, curChunk->realSize);
+					print("Identical files : %s %s (%d bytes)", curChunk->name, parseChunk->name, curChunk->realSize);
 					break;
 				}
 			}
@@ -212,7 +212,7 @@ void CompressGob::writeBody(Common::Filename *inpath, Common::File &stk, Chunk *
 		src.open(*inpath, "rb");
 
 		if (curChunk->packed == 2)
-			print("Identical file %12s\t(compressed size %d bytes)\n", curChunk->name, curChunk->replChunk->size);
+			print("Identical file %12s\t(compressed size %d bytes)", curChunk->name, curChunk->replChunk->size);
 
 		curChunk->offset = stk.pos();
 		if (curChunk->packed == 1) {
@@ -224,14 +224,14 @@ void CompressGob::writeBody(Common::Filename *inpath, Common::File &stk, Chunk *
 				stk.seek(curChunk->offset, SEEK_SET);
 				src.rewind();
 			} else
-				print("Compressing %12s\t%d -> %d bytes\n", curChunk->name, curChunk->realSize, curChunk->size);
+				print("Compressing %12s\t%d -> %d bytes", curChunk->name, curChunk->realSize, curChunk->size);
 
 		}
 
 		if (curChunk->packed == 0) {
 			tmpSize = 0;
 			curChunk->size = writeBodyStoreFile(stk, src);
-			print("Storing %12s\t%d bytes\n", curChunk->name, curChunk->size);
+			print("Storing %12s\t%d bytes", curChunk->name, curChunk->size);
 		}
 		curChunk = curChunk->next;
 	}

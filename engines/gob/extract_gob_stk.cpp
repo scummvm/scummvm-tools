@@ -88,7 +88,7 @@ void ExtractGobStk::execute() {
 	stk.read_throwsOnError(signature, 6);
 
 	if (strncmp(signature, "STK2.1", 6) == 0) {
-		print("Signature of new STK format (STK 2.1) detected in file \"%s\"\n", inpath.getFullPath().c_str());
+		print("Signature of new STK format (STK 2.1) detected in file \"%s\"", inpath.getFullPath().c_str());
 		gobConf.print("%s\n", confSTK21);
 		readChunkListV2(stk, gobConf);
 	} else {
@@ -97,7 +97,7 @@ void ExtractGobStk::execute() {
 		readChunkList(stk, gobConf);
 	}
 
-	print("config file created: %s\n", _outputPath.getFullPath().c_str());
+	print("config file created: %s", _outputPath.getFullPath().c_str());
 
 	extractChunks(_outputPath, stk);
 }
@@ -262,7 +262,7 @@ void ExtractGobStk::extractChunks(Common::Filename &outpath, Common::File &stk) 
 	byte *unpackedData = NULL;
 
 	while (curChunk != 0) {
-		print("Extracting \"%s\"\n", curChunk->name);
+		print("Extracting \"%s\"", curChunk->name);
 
 		outpath.setFullName(curChunk->name);
 		Common::File chunkFile(outpath, "wb");

@@ -58,7 +58,7 @@ void PackCge::writeData(Common::File &f, byte *buff, int size) {
 
 void PackCge::pack() {
 	BtPage btPage;
-	print("Packing...\n");
+	print("Packing...");
 	
 	Common::Filename inPath(_inputPaths[0].path);
 
@@ -68,7 +68,7 @@ void PackCge::pack() {
 	inPath.setFullName("files.txt");
 	Common::File fIn(inPath, "r");
 	if (!fIn.isOpen()) {
-		error("Unable to open %s\n", inPath.getFullPath().c_str());
+		error("Unable to open %s", inPath.getFullPath().c_str());
 	}
 
 	while (!fIn.eos()) {
@@ -85,12 +85,12 @@ void PackCge::pack() {
 	_outputPath.setFullName("vol.cat");
 	Common::File volCat(_outputPath, "wb");
 	if (!volCat.isOpen()) {
-		error("Unable to create %s\n", _outputPath.getFullPath().c_str());
+		error("Unable to create %s", _outputPath.getFullPath().c_str());
 	}
 	_outputPath.setFullName("vol.dat");
 	Common::File volDat(_outputPath, "wb");
 	if (!volDat.isOpen()) {
-		error("Unable to create %s\n", _outputPath.getFullPath().c_str());
+		error("Unable to create %s", _outputPath.getFullPath().c_str());
 	}
 
 	/* Build the index page */
@@ -138,7 +138,7 @@ void PackCge::pack() {
 			inPath.setFullName(fname);
 			fIn.open(inPath, "rb");
 			if (!fIn.isOpen()) {
-				error("Error opening %s\n", inPath.getFullPath().c_str());
+				error("Error opening %s", inPath.getFullPath().c_str());
 			}
 			int fileSize = fIn.size();
 			fIn.seek(0, SEEK_SET);

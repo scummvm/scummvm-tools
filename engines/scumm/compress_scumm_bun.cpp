@@ -1160,7 +1160,7 @@ void CompressScummBun::execute() {
 
 	free(_bundleTable);
 
-	print("compression done.\n");
+	print("compression done.");
 }
 
 #ifdef STANDALONE_MAIN

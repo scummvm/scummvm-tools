@@ -113,11 +113,11 @@ uint32 CompressAgos::get_sound(uint32 offset) {
 
 	_input.read_throwsOnError(buf, 8);
 	if (!memcmp(buf, "Creative", 8)) {
-		print("VOC found (pos = %d) :\n", offset);
+		print("VOC found (pos = %d) :", offset);
 		_input.seek(18, SEEK_CUR);
 		extractAndEncodeVOC(TEMP_RAW, _input, _format);
 	} else if (!memcmp(buf, "RIFF", 4)) {
-		print("WAV found (pos = %d) :\n", offset);
+		print("WAV found (pos = %d) :", offset);
 		extractAndEncodeWAV(TEMP_WAV, _input, _format);
 	} else {
 		error("Unexpected data at offset: %d", offset);

@@ -231,7 +231,7 @@ void CompressQueen::execute() {
 		_entry.offset = inputTbl.readUint32BE();
 		_entry.size = inputTbl.readUint32BE();
 
-		print("Processing entry: %s\n", _entry.filename);
+		print("Processing entry: %s", _entry.filename);
 		inputData.seek(_entry.offset, SEEK_SET);
 
 		if (_versionExtra.compression && strstr(_entry.filename, ".SB")) { /* Do we want to compress? */
@@ -253,7 +253,7 @@ void CompressQueen::execute() {
 				headerSize = SB_HEADER_SIZE_V110;
 				break;
 			default:
-				warning("Unhandled SB file version %d, defaulting to 104\n", sbVersion);
+				warning("Unhandled SB file version %d, defaulting to 104", sbVersion);
 				headerSize = SB_HEADER_SIZE_V104;
 				break;
 			}
@@ -292,7 +292,7 @@ void CompressQueen::execute() {
 
 					if (fpPatch.isOpen()) {
 						_entry.size = fpPatch.size();
-						print("Patching entry, new size = %d bytes\n", _entry.size);
+						print("Patching entry, new size = %d bytes", _entry.size);
 						fromFileToFile(fpPatch, outputData, _entry.size);
 						fpPatch.close();
 						patched = true;

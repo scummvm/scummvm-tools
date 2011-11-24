@@ -222,7 +222,7 @@ void ExtractCine::unpackFile(Common::File &file) {
 		} else {
 			print("ok");
 		}
-		print(", packedSize %u unpackedSize %u\n", packedSize, unpackedSize);
+		print(", packedSize %u unpackedSize %u", packedSize, unpackedSize);
 		file.seek(savedPos, SEEK_SET);
 	}
 }
@@ -280,14 +280,14 @@ void ExtractCine::unpackAllResourceFiles(const Common::Filename &filename) {
 
 	unsigned int resourceFilesCount = READ_BE_UINT16(&buf[0]);
 	unsigned int entrySize = READ_BE_UINT16(&buf[2]);
-	print("--- Unpacking all %d resource files from 'vol.cnf' (entrySize = %d):\n", resourceFilesCount, entrySize);
+	print("--- Unpacking all %d resource files from 'vol.cnf' (entrySize = %d):", resourceFilesCount, entrySize);
 	char resourceFileName[9];
 	for (unsigned int i = 0; i < resourceFilesCount; ++i) {
 		memcpy(resourceFileName, &buf[4 + i * entrySize], 8);
 		resourceFileName[8] = 0;
 
 		Common::File fpResFile(resourceFileName, "rb");
-		print("--- Unpacking resource file %s:\n", resourceFileName);
+		print("--- Unpacking resource file %s:", resourceFileName);
 		unpackFile(fpResFile);
 	}
 

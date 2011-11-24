@@ -84,7 +84,7 @@ void ExtractZakC64::execute() {
 	outpath.setFullName("00.LFL");
 	Common::File output(outpath, "wb");
 	output.setXorMode(0xFF);
-	print("Creating 00.LFL...\n");
+	print("Creating 00.LFL...");
 
 	/* write signature */
 	output.writeUint16LE(signature);
@@ -139,7 +139,7 @@ void ExtractZakC64::execute() {
 		outpath.setFullName(fname);
 		output.open(outpath, "wb");
 
-		print("Creating %s...\n", fname);
+		print("Creating %s...", fname);
 		input->seek((SectorOffset[room_tracks_c64[i]] + room_sectors_c64[i]) * 256, SEEK_SET);
 
 		for (j = 0; j < ResourcesPerFile[i]; j++) {
@@ -158,7 +158,7 @@ void ExtractZakC64::execute() {
 		input->rewind();
 	}
 
-	print("All done!\n");
+	print("All done!");
 }
 
 #ifdef STANDALONE_MAIN

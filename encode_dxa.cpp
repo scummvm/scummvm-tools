@@ -572,7 +572,7 @@ void EncodeDXA::execute() {
 	// read some data from the Bink or Smacker file.
 	readVideoInfo(&inpath, width, height, framerate, frames, scaleMode);
 
-	print("Width = %d, Height = %d, Framerate = %d, Frames = %d\n",
+	print("Width = %d, Height = %d, Framerate = %d, Frames = %d",
 		   width, height, framerate, frames);
 
 	// create the encoder object
@@ -640,7 +640,7 @@ void EncodeDXA::execute() {
 		}
 	}
 
-	print("Encoding video...100%% (%d of %d)\n", frames, frames);
+	print("Encoding video...100%% (%d of %d)", frames, frames);
 }
 
 int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsigned char *&palette, int &width, int &height) {

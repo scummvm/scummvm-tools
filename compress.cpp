@@ -312,7 +312,7 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 
 void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode) {
 
-	print(" - len=%ld, ch=%d, rate=%d, %dbits\n", length, (rawAudioType.isStereo ? 2 : 1), samplerate, rawAudioType.bitsPerSample);
+	print(" - len=%ld, ch=%d, rate=%d, %dbits", length, (rawAudioType.isStereo ? 2 : 1), samplerate, rawAudioType.bitsPerSample);
 
 #ifdef USE_VORBIS
 	if (compmode == AUDIO_VORBIS) {
@@ -510,9 +510,9 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 		vorbis_info_clear(&vi);
 
 		if (!oggparms.silent) {
-			print("\nDone encoding file \"%s\"\n", outname);
-			print("\n\tFile length:  %dm %ds\n", (int)(totalSamples / samplerate / 60), (totalSamples / samplerate % 60));
-			print("\tAverage bitrate: %.1f kb/s\n\n", (8.0 * (double)totalBytes / 1000.0) / ((double)totalSamples / (double)samplerate));
+			print("\nDone encoding file \"%s\"", outname);
+			print("\n\tFile length:  %dm %ds", (int)(totalSamples / samplerate / 60), (totalSamples / samplerate % 60));
+			print("\tAverage bitrate: %.1f kb/s\n", (8.0 * (double)totalBytes / 1000.0) / ((double)totalSamples / (double)samplerate));
 		}
 	}
 #endif
@@ -544,7 +544,7 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 		}
 
 		if (!flacparms.silent) {
-			print("Encoding to\n         \"%s\"\nat compression level %d using blocksize %d\n\n", outname, flacparms.compressionLevel, flacparms.blocksize);
+			print("Encoding to\n         \"%s\"\nat compression level %d using blocksize %d\n", outname, flacparms.compressionLevel, flacparms.blocksize);
 		}
 
 		encoder = FLAC__stream_encoder_new();
@@ -562,7 +562,7 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 
 		if (initStatus != FLAC__STREAM_ENCODER_INIT_STATUS_OK) {
 			char buf[2048];
-			sprintf(buf, "Error in FLAC encoder. (check the parameters)\nExact error was:%s\n", FLAC__StreamEncoderInitStatusString[initStatus]);
+			sprintf(buf, "Error in FLAC encoder. (check the parameters)\nExact error was:%s", FLAC__StreamEncoderInitStatusString[initStatus]);
 			free(flacData);
 			throw ToolException(buf);
 		} else {
@@ -575,8 +575,8 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 		free(flacData);
 
 		if (!flacparms.silent) {
-			print("\nDone encoding file \"%s\"\n", outname);
-			print("\n\tFile length:  %dm %ds\n\n", (int)(samplesPerChannel / samplerate / 60), (samplesPerChannel / samplerate % 60));
+			print("\nDone encoding file \"%s\"", outname);
+			print("\n\tFile length:  %dm %ds\n", (int)(samplesPerChannel / samplerate / 60), (samplesPerChannel / samplerate % 60));
 		}
 	}
 #endif
@@ -724,7 +724,7 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, Common::File &inp
 		}
 
 		/* Sound Data */
-		print(" Sound Data\n");
+		print(" Sound Data");
 		length = input.readChar();
 		length |= input.readChar() << 8;
 		length |= input.readChar() << 16;
@@ -746,9 +746,9 @@ void CompressionTool::extractAndEncodeVOC(const char *outName, Common::File &inp
 			input.readUint32LE();
 		}
 
-		print(" - length = %d\n", length);
-		print(" - sample rate = %d (%02x)\n", real_samplerate, sample_rate);
-		print(" - compression = %s (%02x)\n",
+		print(" - length = %d", length);
+		print(" - sample rate = %d (%02x)", real_samplerate, sample_rate);
+		print(" - compression = %s (%02x)",
 			   (comp ==	   0 ? "8bits"   :
 				(comp ==   1 ? "4bits"   :
 				 (comp ==  2 ? "2.6bits" :

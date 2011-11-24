@@ -143,11 +143,11 @@ bool CompressSaga::detectFile(const Common::Filename *infile) {
 	char md5str[32+1];
 
 	Common::md5_file(infile->getFullPath().c_str(), md5sum, FILE_MD5_BYTES);
-	print("Input file name: %s\n", infile->getFullPath().c_str());
+	print("Input file name: %s", infile->getFullPath().c_str());
 	for (j = 0; j < 16; j++) {
 		sprintf(md5str + j*2, "%02x", (int)md5sum[j]);
 	}
-	print("md5: %s\n", md5str);
+	print("md5: %s", md5str);
 
 	for (i = 0; i < gamesCount; i++) {
 		for (j = 0; j < gameDescriptions[i].filesCount; j++) {
@@ -158,7 +158,7 @@ bool CompressSaga::detectFile(const Common::Filename *infile) {
 					_currentGameDescription = &gameDescriptions[i];
 					_currentFileDescription = &_currentGameDescription->filesDescriptions[j];
 
-					print("Matched game: Inherit the Earth: Quest for the Orb\n");
+					print("Matched game: Inherit the Earth: Quest for the Orb");
 					return true;
 				}
 			} else {			// IHNM
@@ -169,13 +169,13 @@ bool CompressSaga::detectFile(const Common::Filename *infile) {
 					_currentGameDescription = &gameDescriptions[i];
 					_currentFileDescription = &_currentGameDescription->filesDescriptions[j];
 
-					print("Matched game: I Have No Mouth, and I Must Scream\n");
+					print("Matched game: I Have No Mouth, and I Must Scream");
 					return true;
 				}
 			}
 		}
 	}
-	print("Unsupported file\n");
+	print("Unsupported file");
 	return false;
 }
 
@@ -348,7 +348,7 @@ void CompressSaga::sagaEncode(Common::Filename *inpath, Common::Filename *outpat
 
 	inputFile.open(*inpath, "rb");
 	inputFileSize = inputFile.size();
-	print("Filesize: %ul\n", inputFileSize);
+	print("Filesize: %ul", inputFileSize);
 	/*
 	 * At the end of the resource file there are 2 values: one points to the
 	 * beginning of the resource table the other gives the number of
@@ -364,7 +364,7 @@ void CompressSaga::sagaEncode(Common::Filename *inpath, Common::Filename *outpat
 		resTableCount = inputFile.readUint32BE();
 	}
 
-	print("Table offset: %ul\nnumber of records: %ul\n", resTableOffset, resTableCount);
+	print("Table offset: %ul\nnumber of records: %ul", resTableOffset, resTableCount);
 	if (resTableOffset != inputFileSize - RSC_TABLEINFO_SIZE - RSC_TABLEENTRY_SIZE * resTableCount) {
 		error("Something's wrong with your resource file");
 	}
@@ -385,7 +385,7 @@ void CompressSaga::sagaEncode(Common::Filename *inpath, Common::Filename *outpat
 			inputTable[i].size = inputFile.readUint32BE();
 		}
 
-		print("Record: %ul, offset: %ul, size: %ul\n", i, inputTable[i].offset, inputTable[i].size);
+		print("Record: %ul, offset: %ul, size: %ul", i, inputTable[i].offset, inputTable[i].size);
 
 		if ((inputTable[i].offset > inputFileSize) ||
 			(inputTable[i].offset + inputTable[i].size > inputFileSize)) {
@@ -433,7 +433,7 @@ void CompressSaga::sagaEncode(Common::Filename *inpath, Common::Filename *outpat
 	Common::removeFile(TEMP_RAW);
 	Common::removeFile(tempEncoded);
 
-	print("Done!\n");
+	print("Done!");
 }
 
 void CompressSaga::execute() {

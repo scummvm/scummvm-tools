@@ -161,7 +161,7 @@ void CompressScummSan::flushTracks(int frame) {
 void CompressScummSan::prepareForMixing(const std::string &outputDir, const std::string &inputFilename) {
 	char filename[200];
 
-	print("Decompressing tracks files...\n");
+	print("Decompressing tracks files...");
 	for (int l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
 			_audioTracks[l].file.close();
@@ -289,12 +289,12 @@ void CompressScummSan::mixing(const std::string &outputDir, const std::string &i
 		error("Unsupported fps value %d", fps);
 	}
 
-	print("Creating silent wav file...\n");
+	print("Creating silent wav file...");
 	for (l = 0; l < frameAudioSize * frames; l++) {
 		wavFile.writeByte(0);
 	}
 
-	print("Mixing tracks into wav file...\n");
+	print("Mixing tracks into wav file...");
 	for (l = 0; l < COMPRESS_SCUMM_SAN_MAX_TRACKS; l++) {
 		if (_audioTracks[l].used) {
 			char filename[200];
@@ -632,13 +632,13 @@ void CompressScummSan::execute() {
 	int fps = 0;
 	uint32 inputSize = input.size();
 
-	print("Frames: %d\n", nbframes);
+	print("Frames: %d", nbframes);
 
 	for (l = 0; l < nbframes; l++) {
 		// Compression takes place in this loops, which takes the most time by far
 		updateProgress(l, nbframes);
 
-		print("frame: %d\n", l);
+		print("frame: %d", l);
 		bool first_fobj = true;
 		uint32 tag = input.readUint32BE(); // chunk tag
 		assert(tag == 'FRME');
@@ -730,7 +730,7 @@ skip:
 
 				// Some files have garbage at the end
 				if ((uint32)(size + input.pos()) > inputSize) {
-					print("Skipping rest of the file (%d bytes)\n", inputSize - input.pos());
+					print("Skipping rest of the file (%d bytes)", inputSize - input.pos());
 					break;
 				}
 
@@ -765,7 +765,7 @@ skip:
 
 	input.close();
 
-	print("Fixing frames header...\n");
+	print("Fixing frames header...");
 	int32 sumDiff = 0;
 	for (l = 0; l < nbframes; l++) {
 		int32 diff = 0;
@@ -783,15 +783,15 @@ skip:
 		if (diff != 0)
 			output.writeUint32BE(frameInfo[l].frameSize - diff);
 	}
-	print("done.\n");
+	print("done.");
 
-	print("Fixing anim header...\n");
+	print("Fixing anim header...");
 	output.seek(4, SEEK_SET);
 	output.writeUint32BE(animChunkSize - sumDiff);
-	print("done.\n");
+	print("done.");
 
 	if (flu_in.isOpen()) {
-		print("Fixing flu offsets...\n");
+		print("Fixing flu offsets...");
 		int fsize = flu_in.size();
 		for (int k = 0; k < fsize; k++) {
 			flu_out.writeByte(flu_in.readByte());
@@ -800,12 +800,12 @@ skip:
 		for (l = 0; l < nbframes; l++) {
 			flu_out.writeUint32LE(frameInfo[l].offsetOutput - 4);
 		}
-		print("done.\n");
+		print("done.");
 	}
 
 	free(frameInfo);
 
-	print("compression done.\n");
+	print("compression done.");
 }
 
 #ifdef STANDALONE_MAIN

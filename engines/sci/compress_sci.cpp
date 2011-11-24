@@ -86,7 +86,7 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 			buffer[i] = buffer[i + 1];
 		_input.read_throwsOnError(&buffer[offset], 1);
 		_inputOffset++;
-		warning("WAVE resource position adjusted at %lx\n", _inputOffset);
+		warning("WAVE resource position adjusted at %lx", _inputOffset);
 	}
 	if (memcmp(buffer, "RIFF", 4) == 0) {
 		// WAVE files begin with
@@ -132,7 +132,7 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 	if (!searchForward) {
 		searchForward = 2048;
 		if (!compressMode)
-			warning("possibly raw lipsync data found at offset %lx\n", _input.pos());
+			warning("possibly raw lipsync data found at offset %lx", _input.pos());
 		noSignature = true;
 	}
 
@@ -244,7 +244,7 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 
 	switch (dataType) {
 	case kSciResourceDataTypeWAVE:
-		print("WAVE found\n");
+		print("WAVE found");
 		if (!Audio::loadWAVFromStream(_input, sampleDataSize, sampleRate, sampleFlags))
 			error("Unable to read WAV at offset %lx", _inputOffset);
 
@@ -294,7 +294,7 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 		_input.read_throwsOnError(sampleData, sampleDataSize);
 		break;
 	case kSciResourceTypeTypeSync:
-		print("SYNC found at %lx\n", _inputOffset);
+		print("SYNC found at %lx", _inputOffset);
 		// Simply copy original data over
 		newDataSize = orgDataSize;
 		newData = new byte[newDataSize];
@@ -330,7 +330,7 @@ uint CompressSci::parseRawAudioMap() {
 	// Assume the map is in the same dir as the resource file
 	// and is called AUDIO001.MAP
 	mapFileName.setFullName("AUDIO001.MAP");
-	print("Trying %s as resource map\n", mapFileName.getFullPath().data());
+	print("Trying %s as resource map", mapFileName.getFullPath().data());
 	Common::File mapFile;
 	mapFile.open(mapFileName, "rb");
 	uint32 offset = 0;
@@ -361,15 +361,15 @@ void CompressSci::execute() {
 	_inputOffset = 0;
 	_input.read_throwsOnError(&header, 6);
 	if (memcmp(header, "MP3 ", 4) == 0)
-		error("This resource file is already MP3-compressed, aborting...\n");
+		error("This resource file is already MP3-compressed, aborting...");
 	if (memcmp(header, "OGG ", 4) == 0)
-		error("This resource file is already OGG-compressed, aborting...\n");
+		error("This resource file is already OGG-compressed, aborting...");
 	if (memcmp(header, "FLAC", 4) == 0)
-		error("This resource file is already FLAC-compressed, aborting...\n");
+		error("This resource file is already FLAC-compressed, aborting...");
 
 	int resourceCount = 0;
 	if (_input.size() == 97103872 || _input.size() == 23126016) {
-		print("Size matches KQ5 or Jones in the Fast Lane audio file, assuming raw audio\n");
+		print("Size matches KQ5 or Jones in the Fast Lane audio file, assuming raw audio");
 		_rawAudio = true;
 		resourceCount = parseRawAudioMap();
 	} else {
@@ -390,9 +390,9 @@ void CompressSci::execute() {
 
 	// This case happens on pharkas resource.sfx
 	if (_inputOffset != _inputSize)
-		warning("resource file has additional byte before end-of-file\n");
+		warning("resource file has additional byte before end-of-file");
 
-	print("Valid sci audio resource file. Found %d resources\n", resourceCount);
+	print("Valid sci audio resource file. Found %d resources", resourceCount);
 
 	if (outfile.empty())
 		error("please specify an output file");

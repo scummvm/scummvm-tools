@@ -239,10 +239,10 @@ void ExtractCruisePC::execute() {
 	if (!stream.readHeader(&hdr)) {
 		error("Invalid file signature");
 	}
-	print("Output filename '%s'\n", hdr.name);
-	print("Date %02d/%02d/%04d\n", hdr.creationDate & 31, (hdr.creationDate >> 5) & 15, ((hdr.creationDate >> 9) & 127) + 1980);
-	print("Time %02d:%02d:%02d\n", (hdr.creationTime >> 11) & 31, (hdr.creationTime >> 5) & 63, (hdr.creationTime & 31) << 1);
-	print("Size %d (uncompressed %d)\n", hdr.compressedSize, hdr.uncompressedSize);
+	print("Output filename '%s'", hdr.name);
+	print("Date %02d/%02d/%04d", hdr.creationDate & 31, (hdr.creationDate >> 5) & 15, ((hdr.creationDate >> 9) & 127) + 1980);
+	print("Time %02d:%02d:%02d", (hdr.creationTime >> 11) & 31, (hdr.creationTime >> 5) & 63, (hdr.creationTime & 31) << 1);
+	print("Size %d (uncompressed %d)", hdr.compressedSize, hdr.uncompressedSize);
 
 	_outputPath.setFullName(hdr.name);
 	Common::File output(_outputPath, "wb");
@@ -250,9 +250,9 @@ void ExtractCruisePC::execute() {
 	Disk1Decoder d(&stream, &output, hdr.uncompressedSize);
 	print("Decompressing...");
 	if (d.decode()) {
-		print("Ok\n");
+		print("Ok");
 	} else {
-		print("Error\n");
+		print("Error");
 	}
 }
 

@@ -58,7 +58,7 @@ void ExtractAgos::execute() {
 		} else {
 			free(x);
 			free(out);
-			error("%s: decrunch error\n", infilename.getFullPath().c_str());
+			error("%s: decrunch error", infilename.getFullPath().c_str());
 		}
 	}
 }

@@ -330,7 +330,7 @@ uint32 CompressTucker::compress_audio_directory(const Common::Filename *inpath, 
 				break;
 			}
 		} catch (...) {
-			warning("Can't open file '%s'\n", filepath);
+			warning("Can't open file '%s'", filepath);
 			temp_table[i].size = 0;
 		}
 
@@ -374,16 +374,16 @@ void CompressTucker::compress_sound_files(const Common::Filename *inpath, const 
 	for (i = 0; i < SOUND_TYPES_COUNT; ++i) {
 		updateProgress(i, SOUND_TYPES_COUNT + 1);
 
-		print("Processing directory '%s'...\n", sound_directory_table[i].name);
+		print("Processing directory '%s'...", sound_directory_table[i].name);
 		sound_directory_size[i] = compress_sounds_directory(inpath, outpath, output, &sound_directory_table[i]);
-		print("Done (%d bytes)\n", sound_directory_size[i]);
+		print("Done (%d bytes)", sound_directory_size[i]);
 	}
 	if (flags & HEADER_FLAG_AUDIO_INTRO) {
 		updateProgress(1, 1);
 
-		print("Processing directory 'audio'...\n");
+		print("Processing directory 'audio'...");
 		audio_directory_size = compress_audio_directory(inpath, outpath, output);
-		print("Done (%d bytes)\n", audio_directory_size);
+		print("Done (%d bytes)", audio_directory_size);
 	}
 
 	/* fix sound types offsets/counts */
@@ -407,7 +407,7 @@ void CompressTucker::compress_sound_files(const Common::Filename *inpath, const 
 	Common::removeFile(TEMP_RAW);
 	Common::removeFile(tempEncoded);
 
-	print("Done.\n");
+	print("Done.");
 }
 
 static const char *inputDirs[] = { "AUDIO", "FX", "MUSIC", "SPEECH", 0 };
@@ -421,7 +421,7 @@ void CompressTucker::execute() {
 		char path[1024];
 		snprintf(path, sizeof(path), "%s%s", inpath.getPath().c_str(), inputDirs[i]);
 		if (!Common::isDirectory(path)) {
-			error("Missing input directory '%s'\n", path);
+			error("Missing input directory '%s'", path);
 		}
 	}
 

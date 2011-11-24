@@ -432,14 +432,14 @@ void CompressSword1::convertClu(Common::File &clu, Common::File &cl3) {
 	sampleIndex = cowHeader + numRooms + 1;
 	/* This points to the sample index table. 8 bytes each (4 bytes size and then 4 bytes file index) */
 
-	print("converting %d samples\n", numSamples);
+	print("converting %d samples", numSamples);
 
 	for (cnt = 0; cnt < numSamples; cnt++) {
 		if (sampleIndex[cnt << 1] | sampleIndex[(cnt << 1) | 1]) {
-			print("sample %5d: \n", cnt);
+			print("sample %5d: ", cnt);
 			smpData = (uint8*)uncompressSpeech(clu, sampleIndex[cnt << 1] + headerSize, sampleIndex[(cnt << 1) | 1], &smpSize);
 			if ((!smpData) || (!smpSize))
-				error("unable to handle speech sample %d!\n", cnt);
+				error("unable to handle speech sample %d!", cnt);
 
 			mp3Data = convertData(smpData, smpSize, &mp3Size);
 			cl3Index[cnt << 1] = cl3.pos();
@@ -450,7 +450,7 @@ void CompressSword1::convertClu(Common::File &clu, Common::File &cl3) {
 			free(mp3Data);
 		} else {
 			cl3Index[cnt << 1] = cl3Index[(cnt << 1) | 1] = 0;
-			print("sample %5d: skipped\n", cnt);
+			print("sample %5d: skipped", cnt);
 		}
 	}
 	cl3.seek((numRooms + 2) * 4, SEEK_SET);	/* Now write the sample index into the CL3 file */
@@ -482,8 +482,8 @@ void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common
 			try {
 				clu.open(cluName, "rb");
 			} catch (Common::FileException &) {
-				print("Unable to open \"SPEECH%d.CLU\".\n", i);
-				print("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".\n", i, i);
+				print("Unable to open \"SPEECH%d.CLU\".", i);
+				print("Please copy the \"SPEECH.CLU\" from CD %d\nand rename it to \"SPEECH%d.CLU\".", i, i);
 				continue;
 			}
 		}
@@ -508,18 +508,18 @@ void CompressSword1::compressSpeech(const Common::Filename *inpath, const Common
 			cl3.open(outName, "wb");
 		} catch (Common::FileException &) {
 			// Try opening at root of output directory
-			print("Unable to create file \"%s\".\n", outName);
+			print("Unable to create file \"%s\".", outName);
 			sprintf(outName, "%s/%s", outpath->getPath().c_str(), outFileName);
-			print("Trying \"%s\".\n", outName);
+			print("Trying \"%s\".", outName);
 			try {
 				cl3.open(outName, "wb");
 			} catch (Common::FileException &) {
-				print("Unable to create file \"%s\".\n", outName);
-				print("Please make sure you've got write permission in this directory or its \"MUSIC\" sub-directory.\n");
+				print("Unable to create file \"%s\".", outName);
+				print("Please make sure you've got write permission in this directory or its \"MUSIC\" sub-directory.");
 				continue;
 			}
 		}
-		print("Converting CD %d...\n", i);
+		print("Converting CD %d...", i);
 		convertClu(clu, cl3);
 	}
 	Common::removeFile(TEMP_RAW);
@@ -538,7 +538,7 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 		Common::removeFile(outName);
 	} catch(Common::FileException& err) {
 		_useOutputMusicSubdir = false;
-		print("Cannot create files in %s/MUSIC/; will try in %s/\n", outpath->getPath().c_str(), outpath->getPath().c_str());
+		print("Cannot create files in %s/MUSIC/; will try in %s/", outpath->getPath().c_str(), outpath->getPath().c_str());
 	}
 
 	for (i = 0; i < TOTAL_TUNES; i++) {
@@ -561,11 +561,11 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 			// Try at root of input directory
 			print(err.what());
 			sprintf(inName, "%s/%s", inpath->getPath().c_str(), inFileName);
-			print(", trying %s\n", inName);
+			print(", trying %s", inName);
 			try {
 				inf.open(inName, "rb");
 			} catch (Common::FileException& err2) {
-				print("%s\n", err2.what());
+				print("%s", err2.what());
 				continue;
 			}
 		}
@@ -590,7 +590,7 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 		else
 			sprintf(outName, "%s/%s", outpath->getPath().c_str(), outFileName);
 
-		print("encoding file (%3d/%d) %s -> %s\n", i + 1, TOTAL_TUNES, musicNames[i].fileName, outName);
+		print("encoding file (%3d/%d) %s -> %s", i + 1, TOTAL_TUNES, musicNames[i].fileName, outName);
 
 		try {
 			if (!_macVersion)
@@ -598,7 +598,7 @@ void CompressSword1::compressMusic(const Common::Filename *inpath, const Common:
 			else
 				extractAndEncodeAIFF(inName, outName, _format);
 		} catch (Common::FileException& err) {
-			print("%s\n", err.what());
+			print("%s", err.what());
 		}
 	}
 }
@@ -633,12 +633,12 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 		}
 
 		if (!speechFound) {
-			print("Unable to find speech files.\n");
-			print("Please copy the SPEECH.CLU files from Broken Sword CD1 and CD2\n");
-			print("into the game directory on your disk or into a \"SPEECH\" subdirectory\n");
-			print("and rename them to SPEECH1.CLU and SPEECH2.CLU\n\n");
-			print("If your OS is case-sensitive, make sure the filenames\n");
-			print("and directorynames are all upper-case.\n\n");
+			print("Unable to find speech files.");
+			print("Please copy the SPEECH.CLU files from Broken Sword CD1 and CD2");
+			print("into the game directory on your disk or into a \"SPEECH\" subdirectory");
+			print("and rename them to SPEECH1.CLU and SPEECH2.CLU\n");
+			print("If your OS is case-sensitive, make sure the filenames");
+			print("and directorynames are all upper-case.\n");
 		}
 	}
 
@@ -699,11 +699,11 @@ void CompressSword1::checkFilesExist(bool checkSpeech, bool checkMusic, const Co
 		}
 
 		if (!musicFound) {
-			print("Unable to find music files.\n");
-			print("Please copy the music files from Broken Sword CD1 and CD2\n");
-			print("into the game directory on your disk or into a \"MUSIC\" subdirectory.\n");
-			print("If your OS is case-sensitive, make sure the filenames\n");
-			print("and directorynames are all upper-case.\n");
+			print("Unable to find music files.");
+			print("Please copy the music files from Broken Sword CD1 and CD2");
+			print("into the game directory on your disk or into a \"MUSIC\" subdirectory.");
+			print("If your OS is case-sensitive, make sure the filenames");
+			print("and directorynames are all upper-case.");
 		}
 	} else {
 		_speechEndianness = UnknownEndian;

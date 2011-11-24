@@ -167,7 +167,7 @@ void CompressionExample::execute() {
 
 		// Print can also throw an AbortException
 		// Do NOT use printf or anything else that outputs to standard output, as it will not display in the GUI.
-		print("Outputted file %d of %d\n", i, total_files);
+		print("Outputted file %d of %d", i, total_files);
 	}
 
 	// We indicate success by not throwing any exceptions during the execution

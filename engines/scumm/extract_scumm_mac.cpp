@@ -116,11 +116,11 @@ void ExtractScummMac::execute() {
 
 		if (j == 0x20) {
 			file_name[0x1f] = 0;
-			warning("\'%s\'. file name not null terminated.\n", file_name);
-			print("data file \'%s\' may be not a file extract_scumm_mac can extract.\n", inpath.getFullPath().c_str());
+			warning("\'%s\'. file name not null terminated.", file_name);
+			print("data file \'%s\' may be not a file extract_scumm_mac can extract.", inpath.getFullPath().c_str());
 		}
 
-		print(", saving as \'%s\'\n", file_name);
+		print(", saving as \'%s\'", file_name);
 
 		/* Consistency check. make sure the file data is in the file */
 		if (file_off + file_len > data_file_len) {

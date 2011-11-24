@@ -151,7 +151,7 @@ void Archive::open(const char *filename, bool smallArchive) {
 
 	_numSlots = i;
 
-	_tool.print("%i files found in %i slots (%i empty)\n", _numFiles, _numSlots, _numSlots - _numFiles);
+	_tool.print("%i files found in %i slots (%i empty)", _numFiles, _numSlots, _numSlots - _numFiles);
 
 	_file.seek(_numSlots * ARCHIVE_FILENAME_LEN + ARCHIVE_HEADER_SIZE, SEEK_SET);
 

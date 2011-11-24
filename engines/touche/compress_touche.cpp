@@ -87,7 +87,7 @@ uint32 CompressTouche::compress_sound_data_file(uint32 current_offset, Common::F
 				error("Invalid VOC data found");
 			}
 
-			print("VOC found (pos = %d) :\n", offs_table[i]);
+			print("VOC found (pos = %d) :", offs_table[i]);
 			input.seek(18, SEEK_CUR);
 			extractAndEncodeVOC(TEMP_RAW, input, _format);
 
@@ -143,7 +143,7 @@ void CompressTouche::compress_sound_data(Common::Filename *inpath, Common::Filen
 	offsets_table[0] = current_offset;
 	current_offset = compress_sound_data_file(current_offset, output, input, input_OBJ_offs, input_OBJ_size, OBJ_HDR_LEN);
 	input.close();
-	print("Processed '%s'.\n", inpath->getFullPath().c_str());
+	print("Processed '%s'.", inpath->getFullPath().c_str());
 
 	/* process Vxx files */
 	for (i = 1; i < MAX_OFFSETS; ++i) {
@@ -158,9 +158,9 @@ void CompressTouche::compress_sound_data(Common::Filename *inpath, Common::Filen
 			offsets_table[i] = current_offset;
 			current_offset = compress_sound_data_file(current_offset, output, input, input_Vxx_offs, input_Vxx_size, Vxx_HDR_LEN);
 			input.close();
-			print("Processed '%s'.\n", inpath->getFullPath().c_str());
+			print("Processed '%s'.", inpath->getFullPath().c_str());
 		} catch (...) {
-			//print("Skipping '%s'.\n", inpath->getFullPath().c_str());
+			//print("Skipping '%s'.", inpath->getFullPath().c_str());
 		}
 	}
 
@@ -176,7 +176,7 @@ void CompressTouche::compress_sound_data(Common::Filename *inpath, Common::Filen
 	Common::removeFile(TEMP_RAW);
 	Common::removeFile(tempEncoded);
 
-	print("Done.\n");
+	print("Done.");
 }
 
 void CompressTouche::execute() {

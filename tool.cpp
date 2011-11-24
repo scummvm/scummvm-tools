@@ -48,7 +48,7 @@ Tool::Tool(const std::string &name, ToolType type) {
 
 	_abort = false;
 
-	_helptext = "\nUsage: tool [-o outputname] <infile>\n";
+	_helptext = "\nUsage: tool [-o outputname] <infile>";
 }
 
 Tool::~Tool() {
@@ -80,13 +80,13 @@ int Tool::run(const std::deque<std::string> &args) {
 	parseExtraArguments();
 
 	if (!_arguments.empty() && _arguments.front()[0] == '-') {
-		std::string s = "Possibly ignored option " + _arguments.front() + ".\n";
+		std::string s = "Possibly ignored option " + _arguments.front() + ".";
 		print(s);
 	}
 
 	// Make sure we have enough input files.
 	if (_arguments.size() < _inputPaths.size()) {
-		print("Too few input files!\n");
+		print("Too few input files!");
 		return -2;
 	}
 
@@ -115,7 +115,7 @@ int Tool::run(const std::deque<std::string> &args) {
 			}
 		}
 		if (bestMatch == IMATCH_AWFUL) {
-			print("Unexpected input file '%s'!\n", in.c_str());
+			print("Unexpected input file '%s'!", in.c_str());
 			return -2;
 		}
 		if (!_inputPaths[bestMatchIndex].file) {
@@ -136,7 +136,7 @@ int Tool::run(const std::deque<std::string> &args) {
 			os << "'" << _arguments.front() << "' ";
 			_arguments.pop_front();
 		}
-		os << ")\n";
+		os << ")";
 		print(os.str());
 		return -2;
 	}
@@ -152,7 +152,7 @@ int Tool::run(const std::deque<std::string> &args) {
 		run();
 	} catch(ToolException &err) {
 		const char *what = err.what();
-		print("Fatal Error : %s\n", what);
+		print("Fatal Error : %s", what);
 		return err._retcode;
 	}
 	return 0;
@@ -258,7 +258,7 @@ void Tool::error(const char *format, ...) {
 	vsnprintf(buf, 4096, format, va);
 	va_end(va);
 
-	throw ToolException(buf);
+	throw ToolException(std::string(buf) + "\n");
 }
 
 void Tool::warning(const char *format, ...) {
@@ -269,7 +269,7 @@ void Tool::warning(const char *format, ...) {
 	vsnprintf(buf, 4096, format, va);
 	va_end(va);
 
-	_internalPrint(_print_udata, (std::string("Warning: ") + buf).c_str());
+	_internalPrint(_print_udata, (std::string("Warning: ") + buf + "\n").c_str());
 }
 
 void Tool::print(const char *format, ...) {
@@ -280,7 +280,7 @@ void Tool::print(const char *format, ...) {
 	vsnprintf(buf, 4096, format, va);
 	va_end(va);
 
-	_internalPrint(_print_udata, buf);
+	_internalPrint(_print_udata, (std::string(buf)  + "\n").c_str());
 
 	// We notify of progress here
 	// This way, almost all tools will be able to exit gracefully (as they print stuff)
@@ -288,7 +288,7 @@ void Tool::print(const char *format, ...) {
 }
 
 void Tool::print(const std::string &msg) {
-	_internalPrint(_print_udata, msg.c_str());
+	_internalPrint(_print_udata, (msg + "\n").c_str());
 
 	// We notify of progress here
 	// This way, almost all tools will be able to exit gracefully (as they print stuff)

@@ -1200,7 +1200,7 @@ void ExtractMMNES::dump_resource (Common::File &input, const char *fn_template, 
 	char fname[256];
 	sprintf(fname, fn_template, num);
 	Common::File output(fname, "wb");
-	print("Extracting resource to %s\n", fname);
+	print("Extracting resource to %s", fname);
 	extract_resource(input, output, res, type);
 }
 #endif /* MAKE_LFLS */
@@ -1263,37 +1263,37 @@ void ExtractMMNes::execute() {
 	switch (CRC) {
 	case 0x0D9F5BD1:
 		ROMset = ROMSET_USA;
-		print("ROM contents verified as Maniac Mansion (USA)\n");
+		print("ROM contents verified as Maniac Mansion (USA)");
 		break;
 	case 0xF59CFC3D:
 		ROMset = ROMSET_EUROPE;
-		print("ROM contents verified as Maniac Mansion (Europe)\n");
+		print("ROM contents verified as Maniac Mansion (Europe)");
 		break;
 	case 0x3F2BDA65:
 		ROMset = ROMSET_SWEDEN;
-		print("ROM contents verified as Maniac Mansion (Sweden)\n");
+		print("ROM contents verified as Maniac Mansion (Sweden)");
 		break;
 	case 0xF4B70BFE:
 		ROMset = ROMSET_FRANCE;
-		print("ROM contents verified as Maniac Mansion (France)\n");
+		print("ROM contents verified as Maniac Mansion (France)");
 		break;
 	case 0x60EA98A0:
 		ROMset = ROMSET_GERMANY;
-		print("ROM contents verified as Maniac Mansion (Germany)\n");
+		print("ROM contents verified as Maniac Mansion (Germany)");
 		break;
 	case 0xF5B2AFCA:
 		ROMset = ROMSET_SPAIN;
-		print("ROM contents verified as Maniac Mansion (Spain)\n");
+		print("ROM contents verified as Maniac Mansion (Spain)");
 		break;
 	case 0xDC529482:
 		ROMset = ROMSET_ITALY;
-		print("ROM contents verified as Maniac Mansion (Italy)\n");
+		print("ROM contents verified as Maniac Mansion (Italy)");
 		break;
 	case 0x3DA2085E:
-		error("Maniac Mansion (Japan) is not supported\n");
+		error("Maniac Mansion (Japan) is not supported");
 		break;
 	default:
-		error("ROM contents not recognized (%08X)\n", CRC);
+		error("ROM contents not recognized (%08X)", CRC);
 		break;
 	}
 
@@ -1310,7 +1310,7 @@ void ExtractMMNes::execute() {
 #ifdef MAKE_LFLS
 		output.setXorMode(0xFF);
 #endif
-		print("Creating %s...\n", fname);
+		print("Creating %s...", fname);
 
 		for (j = 0; lfl->entries[j].type != NULL; j++) {
 			const struct t_lflentry *entry = &lfl->entries[j];
@@ -1381,7 +1381,7 @@ void ExtractMMNes::execute() {
 #ifdef MAKE_LFLS
 	output.setXorMode(0xFF);
 #endif
-	print("Creating 00.LFL...\n");
+	print("Creating 00.LFL...");
 
 	output.writeUint16LE(0x4643);
 	extract_resource(input, output, &res_globdata.langs[ROMset][0], res_globdata.type);
@@ -1412,7 +1412,7 @@ void ExtractMMNes::execute() {
 	for (i = 0; i < 2; i++)
 		dump_resource(input, "sproffs-%d.dmp", i, &res_sproffs.langs[ROMset][i], res_sproffs.type);
 #endif	/* MAKE_LFLS */
-	print("All done!\n");
+	print("All done!");
 }
 
 #ifdef STANDALONE_MAIN
