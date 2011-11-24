@@ -1,7 +1,7 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
-1.4.0 (????-??-??)
+1.4.0 (2011-11-11)
  - Updated the compress_sci tool to add support for compressing the AUDIO001.002
    audio files of the CD versions of King's Quest 5 and Jones in the Fast Lane.
    
