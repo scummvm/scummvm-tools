@@ -314,6 +314,7 @@ void ChooseToolPage::onNext(wxWindow *panel) {
 
 void ChooseToolPage::onPrevious(wxWindow *panel) {
 	_configuration.selectedTool = NULL;
+	WizardPage::onPrevious(panel);
 }
 
 void ChooseToolPage::onChangeTool(wxCommandEvent &evt) {
@@ -470,6 +471,7 @@ void ChooseInPage::onNext(wxWindow *panel) {
 
 void ChooseInPage::onPrevious(wxWindow *panel) {
 	_configuration.inputFilePaths.clear();
+	ChooseIOPage::onPrevious(panel);
 }
 
 wxString ChooseInPage::getHelp() {
