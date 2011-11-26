@@ -55,7 +55,7 @@ Extraction Tools:
         extract_cge
                 Unpack Soltys game data files.
                 Example of usage:
-                ./scummvm-tools-cli --tool extract_cge [-o outputdir] vol.dat vol.cat
+                ./scummvm-tools-cli --tool extract_cge [-o outputdir] <inputfile>
 
         pack_cge
                Pack Soltys game data files.
