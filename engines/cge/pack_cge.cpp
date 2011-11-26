@@ -33,7 +33,7 @@
 //   - Use output directory instead of current directory
 //   - Use input directory instead of current directory
 
-PackCge::PackCge(const std::string &name) : Tool(name, TOOLTYPE_UNKNOWN) {
+PackCge::PackCge(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION/*TOOLTYPE_UNKNOWN*/) {
 	ToolInput input;
 	input.format = "/";
 	input.file = false;
@@ -49,6 +49,18 @@ void PackCge::execute() {
 	pack();
 }
 
+InspectionMatch PackCge::inspectInput(const Common::Filename &filename) {
+	// Check that this is a directory
+	if (!filename.directory())
+		return IMATCH_AWFUL;
+
+	// Check that it contains a files.txt file
+	Common::Filename file = filename;
+	file.setFullName("files.txt");
+	if (file.exists())
+		return IMATCH_PERFECT;
+	return IMATCH_AWFUL;
+}
 
 void PackCge::writeData(Common::File &f, byte *buff, int size) {
 	for (int i = 0; i < size; ++i)
