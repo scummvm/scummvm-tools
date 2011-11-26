@@ -30,22 +30,29 @@
 #define SEED        0xA5
 
 ExtractCge::ExtractCge(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
-	ToolInput input1;
-	input1.format = "vol.cat";
-	_inputPaths.push_back(input1);
-	
-	ToolInput input2;
-	input2.format = "vol.dat";
-	_inputPaths.push_back(input2);
+	ToolInput input;
+	input.format = "vol.*";
+	_inputPaths.push_back(input);
 		
 	_outputToDirectory = true;
 
 	_shorthelp = "Used to extract Soltys data files.";
-	_helptext = "\nUsage: " + getName() + " [-o /path/to/output/dir/] <vol.dat> <vol.cat>\n";
+	_helptext = "\nUsage: " + getName() + " [-o /path/to/output/dir/] <inputfile>\n";
 }
 
 void ExtractCge::execute() {
 	unpack();
+}
+
+InspectionMatch ExtractCge::inspectInput(const Common::Filename &filename) {
+	// Accept either 'vol.cat' or 'vol.dat'
+	std::string file = filename.getFullName();
+	if (
+		scumm_stricmp(file.c_str(), "vol.dat") == 0 ||
+		scumm_stricmp(file.c_str(), "vol.cat") == 0
+	)
+		return IMATCH_PERFECT;
+	return IMATCH_AWFUL;
 }
 
 void ExtractCge::readData(Common::File &f, byte *buff, int size) {
@@ -59,12 +66,15 @@ void ExtractCge::unpack() {
 
 	BtPage btPage;
 
-	Common::File volCat(_inputPaths[0].path, "rb");
+	Common::Filename filename = _inputPaths[0].path;
+	filename.setFullName("vol.cat");
+	Common::File volCat(filename, "rb");
 	if (!volCat.isOpen()) {
 		error("Unable to open vol.cat");
 	}
 
-	Common::File volDat(_inputPaths[1].path, "rb");
+	filename.setFullName("vol.dat");
+	Common::File volDat(filename, "rb");
 	if (!volDat.isOpen()) {
 		error("Unable to open vol.dat");
 	}

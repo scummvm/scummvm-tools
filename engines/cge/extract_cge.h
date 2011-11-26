@@ -31,6 +31,8 @@ public:
 	
 	virtual void execute();
 	
+	virtual InspectionMatch inspectInput(const Common::Filename &filename);
+	
 protected:
 	void readData(Common::File &f, byte *buff, int size);
 	void unpack();
