@@ -90,7 +90,8 @@ public:
 
 	/**
 	 * Returns true if the file appears to be a valid input to this tool.
-	 * Default implementation always return true.
+	 * Default implementation checks the name versus the expected inputs
+	 * format.
 	 *
 	 * @param filename The file to inspect
 	 */
