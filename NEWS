@@ -2,12 +2,13 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
 1.5.0 (????-??-??)
+ - Add two tools to extract and repackage the Soltys game data.
  - Fix bug #3093138: "compress_tucker with ScummVM CLI Tools not working".
  - Fix various issues on case sensitive systems when looking for input files
    (e.g. in compress_tucker or compress_sword1 the sub-directories and input
    files needed to be all uppercase).
- - Fix handling of input argument in scummvm-tools-cli for tools that expect
-   a directory to be given (and not a file).
+ - Improve tool detection and inputs handling for tools that require multiple
+   input files or an input directory (in both the GUI and command line).
 
 1.4.0 (2011-11-11)
  - Updated the compress_sci tool to add support for compressing the AUDIO001.002
