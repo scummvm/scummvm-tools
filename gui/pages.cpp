@@ -304,9 +304,7 @@ wxString ChooseToolPage::getHelp() {
 void ChooseToolPage::onNext(wxWindow *panel) {
 	const ToolGUI *tool = g_tools.get(static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection());
 
-	if (_configuration.advanced)
-		switchPage(new ChooseInPage(_configuration));
-	else if (tool && tool->getInputList().size() > 1)
+	if (_configuration.advanced || (tool && tool->getInputList().size() > _configuration.inputFilePaths.size()))
 		switchPage(new ChooseExtraInPage(_configuration));
 	else
 		switchPage(new ChooseOutPage(_configuration));
