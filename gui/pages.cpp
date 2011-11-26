@@ -469,7 +469,7 @@ void ChooseInPage::onNext(wxWindow *panel) {
 }
 
 void ChooseInPage::onPrevious(wxWindow *panel) {
-	_configuration.inputFilePaths.clear();	
+	_configuration.inputFilePaths.clear();
 }
 
 wxString ChooseInPage::getHelp() {
@@ -505,24 +505,29 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 	sizer->Add(new wxStaticText(panel, wxID_ANY, tool.getHelp()));
 
 	sizer->AddSpacer(10);
+	
+	// Work out which files are already set
+	tool._backend->clearInputPaths();
+	wxArrayString filelist = _configuration.inputFilePaths;
+	for (unsigned int i = 0 ; i < filelist.size() ; ++i)
+		tool._backend->addInputPath((const char *)filelist[i].mb_str());
 
 	// Create input selection
 	wxSizer *inputbox = new wxBoxSizer(wxHORIZONTAL);
 	wxStaticBoxSizer *inputsizer = new wxStaticBoxSizer(wxVERTICAL, panel, wxT("Input files"));
 
-	int i = 1;
 	const ToolInputs &inputs = tool.getInputList();
-	wxASSERT_MSG(inputs.size() > 1, wxT("Extra input page should not display with only one input"));
 
-	for (ToolInputs::const_iterator iter = inputs.begin() + 1; iter != inputs.end(); ++iter) {
+	int i = 0;
+	for (ToolInputs::const_iterator iter = inputs.begin(); iter != inputs.end(); ++iter, ++i) {
 		const ToolInput &input = *iter;
 
 		wxString windowName = wxT("InputPicker");
 		windowName << i;
 
 		wxString inputFile;
-		if (_configuration.inputFilePaths.size() > (size_t)i)
-			inputFile = _configuration.inputFilePaths[i];
+		if (!input.path.empty())
+			inputFile = wxString(input.path.c_str(), wxConvFile);
 
 		if (input.file) {
 			inputsizer->Add(new wxFilePickerCtrl(
@@ -542,7 +547,6 @@ wxWindow *ChooseExtraInPage::CreatePanel(wxWindow *parent) {
 			panel->Connect(wxEVT_COMMAND_DIRPICKER_CHANGED, wxFileDirPickerEventHandler(ChooseIOPage::onSelectFile), NULL, this);
 
 		}
-		++i;
 	}
 	inputbox->Add(inputsizer, wxSizerFlags(2).Expand());
 	inputbox->Add(20, 20, 1, wxEXPAND);
@@ -566,14 +570,12 @@ void ChooseExtraInPage::save(wxWindow *panel) {
 
 	const ToolGUI &tool = *_configuration.selectedTool;
 
-	// Remove all additional inputs
-	wxArrayString filelist = _configuration.inputFilePaths;
-	if (filelist.size() > 1)
-		filelist.erase(filelist.begin() + 1, filelist.end());
+	// Remove all inputs
+	_configuration.inputFilePaths.clear();
 
-	int i = 1;
+	int i = 0;
 	ToolInputs inputs = tool.getInputList();
-	for (ToolInputs::const_iterator iter = inputs.begin(); iter != inputs.end(); ++iter) {
+	for (ToolInputs::const_iterator iter = inputs.begin(); iter != inputs.end(); ++iter, ++i) {
 		wxString windowName = wxT("InputPicker");
 		windowName << i;
 
@@ -584,13 +586,11 @@ void ChooseExtraInPage::save(wxWindow *panel) {
 			_configuration.inputFilePaths.Add(inDirWindow ->GetPath());
 		if (inFileWindow)
 			_configuration.inputFilePaths.Add(inFileWindow->GetPath());
-
-		++i;
 	}
 }
 
 wxString ChooseExtraInPage::getHelp() {
-	return wxT("Select any additional input files (usually extra disks) for this tool.");
+	return wxT("Select all input files or directories for this tool.");
 }
 
 void ChooseExtraInPage::onNext(wxWindow *panel) {
