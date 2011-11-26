@@ -62,7 +62,7 @@ wxArrayString ToolsGUI::getToolList(ToolType tt) const {
 }
 
 wxArrayString ToolsGUI::getToolList(const Common::Filename &filename, ToolType tt) const {
-	ToolList choices = inspectInput(filename, tt);
+	ToolList choices = inspectInput(filename, tt, true);
 	wxArrayString l;
 
 	for (ToolList::const_iterator tool = choices.begin(); tool != choices.end(); ++tool)

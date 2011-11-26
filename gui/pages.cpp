@@ -283,6 +283,18 @@ wxWindow *ChooseToolPage::CreatePanel(wxWindow *parent) {
 void ChooseToolPage::save(wxWindow *panel) {
 	_configuration.selectedTool =
 		g_tools.get(static_cast<wxChoice *>(panel->FindWindowByName(wxT("ToolSelection")))->GetStringSelection());
+	
+	// Check if we should strip the input file names.
+	if (_configuration.selectedTool != NULL) {
+		wxArrayString filelist = _configuration.inputFilePaths;
+		for (unsigned int i = 0 ; i < filelist.size() ; ++i) {
+			Common::Filename filename = (const char *)filelist[i].mb_str();
+			Common::Filename dirname = filename.getPath();
+			if (_configuration.selectedTool->_backend->inspectInput(filename) == IMATCH_AWFUL &&
+				_configuration.selectedTool->_backend->inspectInput(dirname) != IMATCH_AWFUL)
+				_configuration.inputFilePaths[i] = wxString(dirname.getFullPath().c_str(), wxConvFile);
+		}
+	}
 }
 
 wxString ChooseToolPage::getHelp() {
@@ -298,6 +310,10 @@ void ChooseToolPage::onNext(wxWindow *panel) {
 		switchPage(new ChooseExtraInPage(_configuration));
 	else
 		switchPage(new ChooseOutPage(_configuration));
+}
+
+void ChooseToolPage::onPrevious(wxWindow *panel) {
+	_configuration.selectedTool = NULL;
 }
 
 void ChooseToolPage::onChangeTool(wxCommandEvent &evt) {
@@ -384,7 +400,8 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 	sizer->AddSpacer(10);
 
 
-	//if (input._file) {
+	// Always ask for a file here. When checking the input it will also check the
+	// directory for tools that expect a directory as input.
 	wxSizer *pickersizer = new wxBoxSizer(wxHORIZONTAL);
 
 	wxFilePickerCtrl *picker = new wxFilePickerCtrl(
@@ -402,18 +419,6 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 
 	sizer->Add(pickersizer, wxSizerFlags().Expand());
 	sizer->AddSpacer(30);
-	/*
-	// TODO: There is no way to select directory input, yet
-	} else {
-		inputbox->Add(new wxDirPickerCtrl(
-				panel, wxID_ANY, wxEmptyString, wxT("Select a folder"),
-				wxDefaultPosition, wxDefaultSize,
-				wxFLP_USE_TEXTCTRL | wxFLP_OPEN, wxDefaultValidator,
-				wxT("InputPicker")),
-			wxSizerFlags().Expand());
-
-	}
-	*/
 
 	SetAlignedSizer(panel, sizer);
 
@@ -423,26 +428,25 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 void ChooseInPage::save(wxWindow *panel) {
 	_configuration.inputFilePaths.clear();
 
-	wxDirPickerCtrl *inDirWindow = dynamic_cast<wxDirPickerCtrl *>(panel->FindWindowByName(wxT("InputPicker")));
 	wxFilePickerCtrl *inFileWindow = dynamic_cast<wxFilePickerCtrl *>(panel->FindWindowByName(wxT("InputPicker")));
+	Common::Filename filename = (const char *)inFileWindow ->GetPath().mb_str();
 
-	if (inDirWindow)
-		_configuration.inputFilePaths.Add(inDirWindow ->GetPath());
-	if (inFileWindow)
-		_configuration.inputFilePaths.Add(inFileWindow->GetPath());
+	// Check if we should strip the file name.
+	// We do it only if the tools is known and it expects a directory as input.
+	if (_configuration.selectedTool != NULL) {
+		Common::Filename dirname = filename.getPath();
+		if (_configuration.selectedTool->_backend->inspectInput(filename) == IMATCH_AWFUL &&
+			_configuration.selectedTool->_backend->inspectInput(dirname) != IMATCH_AWFUL)
+			filename = dirname;
+	}
+	
+	_configuration.inputFilePaths.Add(wxString(filename.getFullPath().c_str(), wxConvFile));
 }
 
 void ChooseInPage::onNext(wxWindow *panel) {
-
-	wxDirPickerCtrl *inDirWindow = dynamic_cast<wxDirPickerCtrl *>(panel->FindWindowByName(wxT("InputPicker")));
 	wxFilePickerCtrl *inFileWindow = dynamic_cast<wxFilePickerCtrl *>(panel->FindWindowByName(wxT("InputPicker")));
 
-	Common::Filename filename;
-
-	if (inDirWindow)
-		filename = (const char *)inDirWindow ->GetPath().mb_str();
-	if (inFileWindow)
-		filename = (const char *)inFileWindow ->GetPath().mb_str();
+	Common::Filename filename = (const char *)inFileWindow ->GetPath().mb_str();
 
 	if (_configuration.advanced) {
 		if (_configuration.selectedTool->getInputList().size() > 1)
@@ -462,6 +466,10 @@ void ChooseInPage::onNext(wxWindow *panel) {
 			switchPage(new ChooseToolPage(_configuration, ls));
 		}
 	}
+}
+
+void ChooseInPage::onPrevious(wxWindow *panel) {
+	_configuration.inputFilePaths.clear();	
 }
 
 wxString ChooseInPage::getHelp() {
@@ -1607,6 +1615,8 @@ bool FinishPage::onCancel(wxWindow *panel) {
 
 	wxCheckBox *restart = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("ProcessOther")));
 	if (restart->GetValue()) {
+		_configuration.selectedTool = NULL;
+		_configuration.inputFilePaths.clear();
 		_topframe->switchToFirstPage();
 		return false;
 	} else {
@@ -1659,6 +1669,8 @@ bool FailurePage::onCancel(wxWindow *panel) {
 	// On that page, that's the Finish button
 	wxCheckBox *restart = static_cast<wxCheckBox *>(panel->FindWindowByName(wxT("ProcessOther")));
 	if (restart->GetValue()) {
+		_configuration.selectedTool = NULL;
+		_configuration.inputFilePaths.clear();
 		_topframe->switchToFirstPage();
 		return false;
 	} else {

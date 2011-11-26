@@ -179,6 +179,7 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
+	void onPrevious(wxWindow *panel);
 
 	void save(wxWindow *panel);
 
@@ -216,6 +217,7 @@ public:
 	wxWindow *CreatePanel(wxWindow *parent);
 
 	void onNext(wxWindow *panel);
+	void onPrevious(wxWindow *panel);
 
 	wxString getHelp();
 

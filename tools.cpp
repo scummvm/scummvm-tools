@@ -103,18 +103,23 @@ Tools::~Tools() {
 		delete *iter;
 }
 
-Tools::ToolList Tools::inspectInput(const Common::Filename &filename, ToolType type) const {
+Tools::ToolList Tools::inspectInput(const Common::Filename &filename, ToolType type, bool check_directory) const {
 	ToolList perfect_choices;
 	ToolList good_choices;
 	ToolList awful_choices;
+	
+	Common::Filename dirname;
+	if (check_directory && !filename.directory())
+		dirname = filename.getPath();
 
 	for (ToolList::const_iterator tool = _tools.begin(); tool != _tools.end(); ++tool) {
 		if (type == TOOLTYPE_ALL || (*tool)->getType() == type) {
-			InspectionMatch m = (*tool)->inspectInput(filename);
+			InspectionMatch fm = (*tool)->inspectInput(filename);
+			InspectionMatch dm = dirname.empty() ? IMATCH_AWFUL : (*tool)->inspectInput(dirname);
 
-			if (m == IMATCH_PERFECT)
+			if (fm == IMATCH_PERFECT || dm == IMATCH_PERFECT)
 				perfect_choices.push_back(*tool);
-			else if (m == IMATCH_POSSIBLE)
+			else if (fm == IMATCH_POSSIBLE || dm == IMATCH_POSSIBLE)
 				good_choices.push_back(*tool);
 			else
 				awful_choices.push_back(*tool);

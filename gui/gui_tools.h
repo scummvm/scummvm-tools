@@ -161,7 +161,7 @@ public:
 	 *
 	 * @param filename The path to the file to inspect
 	 * @param tt Only check tools of this type
-	 * @return Returns all tools might be able to handle the file
+	 * @return Returns all tools might be able to handle the file or the directory containing that file
 	 */
 	wxArrayString getToolList(const Common::Filename &filename, ToolType tt = TOOLTYPE_ALL) const;
 
