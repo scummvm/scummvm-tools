@@ -99,33 +99,10 @@ int Tool::run(const std::deque<std::string> &args) {
 	for (int i = 0 ; i < nbExpectedInputs ; ++i) {
 		std::string in = _arguments.front();
 		_arguments.pop_front();
-		int bestMatchIndex = -1;
-		InspectionMatch bestMatch = IMATCH_AWFUL;
-		for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
-			if (!iter->path.empty())
-				continue;
-			InspectionMatch match = inspectInput(in, iter->file ? iter->format : std::string("/"));
-			if (match == IMATCH_PERFECT) {
-				bestMatch = IMATCH_PERFECT;
-				bestMatchIndex = (iter - _inputPaths.begin());
-				break;
-			} else if (bestMatch == IMATCH_AWFUL && match == IMATCH_POSSIBLE) {
-				bestMatch = IMATCH_POSSIBLE;
-				bestMatchIndex = (iter - _inputPaths.begin());
-			}
-		}
-		if (bestMatch == IMATCH_AWFUL) {
+		if (!addInputPath(in)) {
 			print("Unexpected input file '%s'!", in.c_str());
 			return -2;
 		}
-		if (!_inputPaths[bestMatchIndex].file) {
-			// Append '/' to input if it's not already done
-			size_t s = in.size();
-			if (in[s-1] != '/' && in[s-1] != '\\') {
-				in += '/';
-			}
-		}
-		_inputPaths[bestMatchIndex].path = in;
 	}
 
 	// We should have parsed all arguments by now
@@ -156,6 +133,36 @@ int Tool::run(const std::deque<std::string> &args) {
 		return err._retcode;
 	}
 	return 0;
+}
+
+bool Tool::addInputPath(const std::string& in) {
+	int bestMatchIndex = -1;
+	InspectionMatch bestMatch = IMATCH_AWFUL;
+	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
+		if (!iter->path.empty())
+			continue;
+		InspectionMatch match = inspectInput(in, iter->file ? iter->format : std::string("/"));
+		if (match == IMATCH_PERFECT) {
+			bestMatch = IMATCH_PERFECT;
+			bestMatchIndex = (iter - _inputPaths.begin());
+			break;
+		} else if (bestMatch == IMATCH_AWFUL && match == IMATCH_POSSIBLE) {
+			bestMatch = IMATCH_POSSIBLE;
+			bestMatchIndex = (iter - _inputPaths.begin());
+		}
+	}
+	if (bestMatch == IMATCH_AWFUL) {
+		return false;
+	}
+	_inputPaths[bestMatchIndex].path = in;
+	if (!_inputPaths[bestMatchIndex].file) {
+		// Append '/' to input if it's not already done
+		size_t s = in.size();
+		if (in[s-1] != '/' && in[s-1] != '\\') {
+			_inputPaths[bestMatchIndex].path += '/';
+		}
+	}
+	return true;
 }
 
 void Tool::run() {
