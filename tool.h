@@ -95,7 +95,7 @@ public:
 	 * @param filename The file to inspect
 	 */
 	virtual InspectionMatch inspectInput(const Common::Filename &filename);
-	
+
 	/**
 	 * Check the given input path against the expected inputs that have not
 	 * yet been provided. If it finds a match the input is stored and the
@@ -104,6 +104,14 @@ public:
 	 * @param inputPath Input directory of file to store.
 	 */
 	bool addInputPath(const std::string& inputPath);
+
+	/**
+	 * Clear the input paths previously given by calls to addInputPath()
+	 * If you run the same tools multiple times with different inputs you
+	 * will need to call this before giving the inputs for the second run
+	 * (and each additional run thereafter).
+	 */
+	void clearInputPaths();
 
 	/**
 	 * Aborts executing of the tool, can be called from another thread.

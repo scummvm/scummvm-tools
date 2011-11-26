@@ -136,11 +136,16 @@ bool ToolGUI::outputToDirectory() const {
 }
 
 void ToolGUI::run(const Configuration &conf) const {
-	size_t i = 0;
-	for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter, ++i) {
+	// Set the input paths
+	_backend->clearInputPaths();
+	if (conf.inputFilePaths.size() < _backend->_inputPaths.size())
+		_backend->error("Too few input files!");
+	for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter) {
 		if (!_backend->addInputPath(std::string(iter->mb_str())))
 			_backend->error("Unexpected input file '%s'!", (const char*)iter->mb_str());
 	}
+		
+	// Set the output path
 	_backend->_outputPath = std::string(conf.outputPath.mb_str());
 
 	CompressionTool *compression = dynamic_cast<CompressionTool *>(_backend);

@@ -92,8 +92,7 @@ int Tool::run(const std::deque<std::string> &args) {
 
 	// Read input files from CLI and match them to expected input.
 	// First make sure the all the input paths are unset 
-	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter)
-		iter->path.clear();
+	clearInputPaths();
 	// Then match the remaining arguments with the input paths.
 	int nbExpectedInputs = _inputPaths.size();
 	for (int i = 0 ; i < nbExpectedInputs ; ++i) {
@@ -133,6 +132,11 @@ int Tool::run(const std::deque<std::string> &args) {
 		return err._retcode;
 	}
 	return 0;
+}
+
+void Tool::clearInputPaths() {
+	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter)
+			iter->path.clear();
 }
 
 bool Tool::addInputPath(const std::string& in) {
