@@ -351,7 +351,7 @@ void ChooseIOPage::updateButtons(wxWindow *panel, WizardButtons *buttons) {
 
 	const ToolGUI *tool = _configuration.selectedTool;
 	if (tool && !picker) {
-		for (size_t i = 1; i < tool->getInputList().size(); ++i) {
+		for (size_t i = 0; i < tool->getInputList().size(); ++i) {
 			wxString name(wxT("InputPicker"));
 			name << i;
 			picker = panel->FindWindowByName(name);
