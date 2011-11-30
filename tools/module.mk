@@ -25,6 +25,7 @@ TOOLS := \
 	tools/mklab$(EXEEXT) \
 	tools/vima$(EXEEXT) \
 	tools/labcopy$(EXEEXT) \
+	tools/luac/luac$(EXEEXT) \
 	tools/patchex/patchex$(EXEEXT)
 
 # below not added as it depends for ppm, bpm library
@@ -43,6 +44,8 @@ clean-tools:
 	-$(RM) tools/emi/*.o
 	-$(RM) tools/patchex/*.o
 	-$(RM) -r tools/patchex/.deps
+	-$(RM) -r tools/luac/*.o
+	-$(RM) -r tools/luac/.deps
 
 #
 # Build rules for the tools
@@ -52,6 +55,17 @@ tools/delua$(EXEEXT): $(srcdir)/tools/delua.cpp
 	$(MKDIR) tools/$(DEPDIR)
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
 	-L$(srcdir)/common -Ltools/lua -o $@ $< $(LDFLAGS) -llua
+
+#g++ -DHAVE_CONFIG_H -DUNIX -I. -I./tools/luac  -I ./tools/lua   -c -o tools/luac/print.o tools/luac/print.c
+
+tools/luac/luac$(EXEEXT):
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/dump.o tools/luac/dump.c
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/luac.o tools/luac/luac.c
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/opcode.o tools/luac/opcode.c
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/opt.o tools/luac/opt.c
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/print.o tools/luac/print.c
+	$(MKDIR) tools/luac/$(DEPDIR)
+	$(CXX) $(CFLAGS) tools/luac/dump.o tools/luac/luac.o tools/luac/opcode.o tools/luac/opt.o tools/luac/print.o -Wall -L$(srcdir)/tools/lua -llua -o $@ $< $(LDFLAGS)
 
 tools/mat2ppm$(EXEEXT): $(srcdir)/tools/mat2ppm.cpp
 	$(MKDIR) tools/$(DEPDIR)
