@@ -117,6 +117,12 @@ bool CompressScummSou::get_part() {
 		tags--;
 	}
 
+	/* The German Sam & Max MONSTER.SOU seems to have a VCTL without an
+	 * associated SOU entry at the end (Bug ID 3280674). 
+	 */
+	if (_input.pos() == _file_size)
+		return false;
+
 	_input.read_throwsOnError(buf, 8);
 	if (!memcmp(buf, "Creative", 8))
 		_input.seek(18, SEEK_CUR);

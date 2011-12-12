@@ -4,6 +4,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 1.5.0 (????-??-??)
  - Add two tools to extract and repackage the Soltys game data.
  - Fix bug #3093138: "compress_tucker with ScummVM CLI Tools not working".
+ - Fix bug #3280674: "ScummTools do not compress monster.sou of german fdd-version"
  - Fix various issues on case sensitive systems when looking for input files
    (e.g. in compress_tucker or compress_sword1 the sub-directories and input
    files needed to be all uppercase).
