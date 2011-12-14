@@ -18,8 +18,8 @@ extern void DumpChunk(TProtoFunc* Main, FILE* D);
 extern void PrintChunk(TProtoFunc* Main);
 extern void OptChunk(TProtoFunc* Main);
 
-static FILE* efopen(char* name, const char* mode);
-static void doit(int undump, char* filename);
+static FILE* efopen(const char* name, const char* mode);
+static void doit(int undump, const char* filename);
 
 static int listing=0;			/* list bytecodes? */
 static int debugging=0;			/* debug? */
@@ -54,7 +54,7 @@ static void usage(void)
 
 int main(int argc, char* argv[])
 {
- char* d=OUTPUT;			/* output file name */
+ const char* d = OUTPUT;			/* output file name */
  int i;
  lua_open();
  for (i=1; i<argc; i++)
@@ -153,26 +153,29 @@ static void do_undump(ZIO* z)
  }
 }
 
-static void doit(int undump, char* filename)
-{
- FILE* f;
- ZIO z;
- if (filename==NULL)
- {
-  f=stdin; filename="(stdin)";
- }
- else
- {
-  f=efopen(filename, undump ? "rb" : "r");
- }
- zFopen(&z,f,filename);
- if (verbose) fprintf(stderr,"%s\n",filename);
- if (undump) do_undump(&z); else do_compile(&z);
- if (f!=stdin) fclose(f);
+static void doit(int undump, const char* filename) {
+	FILE* f;
+	ZIO z;
+	char *fn;
+	if (filename==NULL) {
+		fn = (char *)"(stdin)";
+		f = stdin;
+	} else {
+		fn = (char *)filename;
+		f = efopen(fn, undump ? "rb" : "r");
+	}
+	zFopen(&z,f,fn);
+	if (verbose)
+		fprintf(stderr,"%s\n",fn);
+	if (undump)
+		do_undump(&z);
+	else
+		do_compile(&z);
+	if (f != stdin)
+		fclose(f);
 }
 
-static FILE* efopen(char* name, const char* mode)
-{
+static FILE* efopen(const char* name, const char* mode) {
  FILE* f=fopen(name,mode);
  if (f==NULL)
  {

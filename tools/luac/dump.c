@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "luac.h"
-#include "common/endian.h"
 
 #define NotWord(x)		((unsigned short)x!=x)
 #define DumpBlock(b,size,D)	fwrite(b,size,1,D)

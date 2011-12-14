@@ -6,15 +6,14 @@
 
 #include "luac.h"
 
-static Opcode Info[]=			/* ORDER lopcodes.h */
+static const Opcode Info[]=			/* ORDER lopcodes.h */
 {
 #include "opcode.h"
 };
 
 #define NOPCODES	(sizeof(Info)/sizeof(Info[0]))
 
-int OpcodeInfo(TProtoFunc* tf, Byte* p, Opcode* I, char* xFILE, int xLINE)
-{
+int OpcodeInfo(TProtoFunc* tf, Byte* p, Opcode* I, const char* xFILE, int xLINE) {
  Opcode OP;
  Byte* code=tf->code;
  int op=*p;
@@ -65,9 +64,9 @@ int OpcodeInfo(TProtoFunc* tf, Byte* p, Opcode* I, char* xFILE, int xLINE)
    OP.arg=p[1];
    OP.arg2=p[2];
   }
-  else if (OP.size==2) OP.arg=p[1];
-  else if (OP.size>=3) OP.arg=(p[1]<<8)+p[2];
-  if (op==SETLISTW) OP.arg2=p[3];
+  else if (OP.size == 2) OP.arg = p[1];
+  else if (OP.size >= 3) OP.arg = READ_LE_UINT16(p + 1);
+  if (op == SETLISTW) OP.arg2 = p[3];
  }
  *I=OP;
  return OP.size;
