@@ -1,8 +1,5 @@
 ###############################################
 # Common build rules, used by the sub modules and their module.mk files
-#
-# $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/rules.mk $
-# $Id: rules.mk 1566 2009-08-22 18:06:11Z salty-horse $
 ###############################################
 
 

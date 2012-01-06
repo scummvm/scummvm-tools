@@ -13,9 +13,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  *
- * $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/tools/patchex/mspack.h $
- * $Id: mspack.h 1359 2009-05-26 14:04:08Z aquadran $
- *
  */
 
 /* libmspack -- a library for working with Microsoft compression formats.

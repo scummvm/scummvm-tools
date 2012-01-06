@@ -1,11 +1,9 @@
 # This file is used by Makefile and declares common build rules,
 # a list of common object files etc.
 #
-# $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/Makefile.common $
-# $Id: Makefile.common 1635 2010-01-21 19:25:03Z aquadran $
 
 ######################################################################
-# The default build target: just build the residual executable
+# The default build target: just build the residualvm executable
 ######################################################################
 
 all: build
@@ -124,7 +122,7 @@ endif
 # Distribution settings
 ######################################################################
 
-DISTNAME := residual-tools
+DISTNAME := residualvm-tools
 DISTDIR := dist
 
 $(DISTDIR)/$(DISTNAME).tar.gz: $(VERFILE)

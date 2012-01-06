@@ -13,15 +13,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  *
- * $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/tools/patchex/patchex.cpp $
- * $Id: patchex.cpp 1475 2009-06-18 14:12:27Z aquadran $
- *
  */
 
 /* Patch extractor
  * (C) 2008 Andrea Corna
  * 
- * This source code is adopted and striped for Residual project.
+ * This source code is adopted and striped for ResidualVM project.
  *
  * res_system functions are taken from system.c written by Stuart Caie
  * from libmspack (http://www.cabextract.org.uk/libmspack/).
@@ -254,7 +251,7 @@ char *file_filter(const struct mscabd_file *file) {
 	filename_size = strlen(file->filename);
 
 	/*Skip executables and libraries
-	 * These files are useless for Residual and a proper extraction of these
+	 * These files are useless for ResidualVM and a proper extraction of these
 	 * requires sub-folder support, so it isn't implemented. */
 	char *ext = file->filename + (filename_size - 3);
 	if (strcasecmp(ext, "exe") == 0 ||

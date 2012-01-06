@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# configure -- custom configure script for Residual.
+# configure -- custom configure script for ResidualVM.
 #
 # Residual is the legal property of its developers, whose names
 # are too numerous to list here. Please refer to the AUTHORS
@@ -20,8 +20,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/configure $
-# $Id: configure 1650 2010-01-24 08:26:36Z aquadran $
 
 # Save the current environment variables for next runs
 SAVED_CONFIGFLAGS=$@
@@ -85,8 +83,8 @@ _strip=strip
 _ar="ar cru"
 _as="as"
 _windres=windres
-_win32path="C:/residual-tools"
-_aos4path="Games:Residual-tools"
+_win32path="C:/residualvm-tools"
+_aos4path="Games:ResidualVM-tools"
 _staticlibpath=/sw
 _prefix=/usr/local
 # For cross compiling
@@ -101,9 +99,9 @@ _port_mk="ports.mk"
 
 # Determine a tmp file name, using mktemp(1) when available.
 if type mktemp > /dev/null 2>&1 ; then
-	TMPO=`mktemp /tmp/residual-conf.XXXXXXXXXX`
+	TMPO=`mktemp /tmp/residualvm-conf.XXXXXXXXXX`
 else
-	TMPO=./residual-conf
+	TMPO=./residualvm-conf
 fi
 TMPC=${TMPO}.cpp
 TMPLOG=config.log
@@ -245,8 +243,8 @@ Configuration:
   -h, --help             display this help and exit
 
 Installation directories:
-  --prefix=DIR           use this prefix for installing Residual [/usr/local]
-  --bindir=DIR           directory to install the residual binary in [PREFIX/bin]
+  --prefix=DIR           use this prefix for installing ResidualVM [/usr/local]
+  --bindir=DIR           directory to install the residualvm binary in [PREFIX/bin]
   --mandir=DIR           directory to install the manpage in [PREFIX/share/man]
   --datadir=DIR          directory to install the data files in [PREFIX/share]
   --libdir=DIR           directory to install the plugins in [PREFIX/lib]
@@ -749,7 +747,7 @@ case $_host_os in
 		LIBS="$LIBS -lmingw32 -lwinmm"
 		;;
 	cygwin*)
-		echo ERROR: Cygwin building is not supported by ScummVM anymore. Consider using MinGW.
+		echo ERROR: Cygwin building is not supported by ResidualVM anymore. Consider using MinGW.
 		exit 1
 		;;
 	os2-emx*)

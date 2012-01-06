@@ -18,9 +18,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  *
- * $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/tools/int2flt.cpp $
- * $Id: int2flt.cpp 1359 2009-05-26 14:04:08Z aquadran $
- *
  */
 
 #include <stdio.h>

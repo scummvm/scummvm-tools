@@ -1,5 +1,3 @@
-# $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/tools/module.mk $
-# $Id: module.mk 1426 2009-05-31 08:59:56Z aquadran $
 
 MODULE := tools
 

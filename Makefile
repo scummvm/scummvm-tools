@@ -1,5 +1,3 @@
-# $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/Makefile $
-# $Id: Makefile 1595 2009-10-05 08:50:25Z aquadran $
 
 #######################################################################
 # Default compilation parameters. Normally don't edit these           #
@@ -61,7 +59,7 @@ ZIP     ?= zip -q
 # Misc stuff - you should never have to edit this                     #
 #######################################################################
 
-EXECUTABLE  := residual$(EXEEXT)
+EXECUTABLE  := residualvm$(EXEEXT)
 
 include $(srcdir)/Makefile.common
 

@@ -18,9 +18,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  *
- * $URL: https://residual.svn.sourceforge.net/svnroot/residual/residual/trunk/tools/imc2wav.cpp $
- * $Id: imc2wav.cpp 1375 2009-05-27 07:35:32Z aquadran $
- *
  */
 
 #include <cstdio>
