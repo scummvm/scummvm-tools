@@ -37,6 +37,8 @@
 #include <list>
 #include <set>
 
+#define NOP	255
+
 // Provide debug.cpp functions which don't call SDL_Quit.
 void warning(const char *fmt, ...) {
   fprintf(stderr, "WARNING: ");
@@ -63,23 +65,20 @@ void decompile(std::ostream &os, TProtoFunc *tf, std::string indent_str,
 	       Expression **upvals, int num_upvals);
 
 std::string localname(TProtoFunc *tf, int n) {
-  LocVar *l = tf->locvars;
-  if (l != NULL)
-    for (int i = 0; i < n; i++, l++)
-      if (l->varname == NULL) {
-	l = NULL;
-	break;
-      }
-  if (l != NULL)
-    return l->varname->str;
-  else {
-    std::ostringstream s;
-    if (n < tf->code[1])
-      s << "arg" << n + 1;
-    else
-      s << "local" << n - tf->code[1] + 1;
-    return s.str();
-  }
+	LocVar *l = tf->locvars;
+
+	if (l != NULL) {
+		for (int i = 0; i < n && l->line != -1; ++i, ++l);
+
+		if (l->varname != NULL)
+			return l->varname->str;
+	}
+	std::ostringstream s;
+	if (n < tf->code[1])
+		s << "arg" << n + 1;
+	else
+		s << "local" << n - tf->code[1] + 1;
+	return s.str();
 }
 
 class Expression {
@@ -538,6 +537,13 @@ int instr_lens[] = {
   1, 1				// POP0,1
 };
 
+int get_instr_len(Byte opc) {
+	if (opc == NOP)
+		return 1;
+	else
+		return instr_lens[opc];
+}
+
 bool Decompiler::is_expr_opc(Byte opc) {
   if (opc >= PUSHNIL && opc <= CREATEARRAYW)
     return true;
@@ -560,7 +566,7 @@ void Decompiler::get_else_part(Byte *start, Byte *&if_part_end,
   else_part_end = NULL;
 
   for (Byte *instr_scan = start; instr_scan < if_part_end;
-       instr_scan += instr_lens[*instr_scan])
+       instr_scan += get_instr_len(*instr_scan))
     last_instr = instr_scan;
   if (last_instr != NULL &&
       (*last_instr == JMP || *last_instr == JMPW)) {
@@ -580,7 +586,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
   std::map<Byte *, Byte *> rev_iffupjmp_map;
 
   for (Byte *scan = start; end == NULL || scan < end;
-       scan += instr_lens[*scan]) {
+       scan += get_instr_len(*scan)) {
     if (*scan == IFFUPJMP)
       rev_iffupjmp_map[scan + 2 - scan[1]] = scan;
     else if (*scan == IFFUPJMPW)
@@ -627,7 +633,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
       Decompiler indented_dc = *this;
       indented_dc.indent_str += std::string(4, ' ');
       indented_dc.break_pos = rev_iffupjmp_map[start];
-      indented_dc.break_pos += instr_lens[*indented_dc.break_pos];
+      indented_dc.break_pos += get_instr_len(*indented_dc.break_pos);
       indented_dc.decompileRange(start, rev_iffupjmp_map[start]);
 
       Expression *e = stk->top(); stk->pop();
@@ -1023,7 +1029,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
 	// otherwise, must be the start of a while statement
 	Byte *while_cond_end;
 	for (while_cond_end = dest; end == NULL || while_cond_end < end;
-	     while_cond_end += instr_lens[*while_cond_end])
+	     while_cond_end += get_instr_len(*while_cond_end))
 	  if (*while_cond_end == IFTUPJMP || *while_cond_end == IFTUPJMPW)
 	    break;
 	if (end != NULL && while_cond_end >= end) {
@@ -1042,7 +1048,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
 	// decompile the while body
 	Decompiler indented_dc = *this;
 	indented_dc.indent_str += std::string(4, ' ');
-	indented_dc.break_pos = while_cond_end + instr_lens[*while_cond_end];
+	indented_dc.break_pos = while_cond_end + get_instr_len(*while_cond_end);
 	indented_dc.decompileRange(start, dest);
 
 	*os << indent_str << "end\n";
@@ -1084,7 +1090,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
 	  Byte *instr_scan = start;
 	  while (is_expr_opc(*instr_scan) &&
 		 (end == NULL || instr_scan < else_part_end))
-	    instr_scan += instr_lens[*instr_scan];
+	    instr_scan += get_instr_len(*instr_scan);
 	  if ((end == NULL || instr_scan < else_part_end) &&
 	      (*instr_scan == IFFJMP || *instr_scan == IFFJMPW)) {
 	    // OK, first line will be if, check if it will go all
@@ -1226,6 +1232,8 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
 	delete stk->top(); stk->pop();
       }
       break;
+	case NOP:
+		break;
 
     default:
       *os << indent_str << "error: unrecognized opcode "
