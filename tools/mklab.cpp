@@ -89,6 +89,76 @@ void help() {
 	exit(0);
 }
 
+static char *appendPath(const char *name, const char *dir) {
+	int namelen = strlen(name);
+	int dirlen = strlen(dir);
+	char *path = (char *)malloc(namelen + dirlen + 2);
+	strcpy(path, dir);
+	path[dirlen] = '/';
+	strcpy(path + dirlen + 1, name);
+	return path;
+}
+
+static void countFiles(lab_header *head, DIR *dir, const char *dirname, int additionalLen) {
+	struct dirent *dirfile;
+	while ((dirfile = readdir(dir))) {
+		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, ".."))
+			continue;
+
+		if (dirfile->d_type == S_IFDIR) {
+			char *d = appendPath(dirfile->d_name, dirname);
+			DIR *subdir = opendir(d);
+			countFiles(head, subdir, d, additionalLen + strlen(dirfile->d_name) + 1);
+			free(d);
+			closedir(subdir);
+		} else {
+			++head->num_entries;
+			head->string_table_size += strlen(dirfile->d_name) + 1 + additionalLen;
+		}
+	}
+}
+
+static void createEntries(DIR *dir, lab_entry *entries, char *str_table, const char *dirname, uint32_t &offset) {
+	static uint32_t num_entry = 0;
+	static uint32_t name_offset = 0;
+	static char *str_offset = str_table;
+	struct dirent *dirfile;
+	while ((dirfile = readdir(dir))) {
+		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, ".."))
+			continue;
+
+		if (dirfile->d_type == S_IFDIR) {
+			char *d = appendPath(dirfile->d_name, dirname);
+			DIR *subdir = opendir(d);
+			createEntries(subdir, entries, str_table, d, offset);
+			free(d);
+			closedir(subdir);
+		} else {
+			lab_entry &entry = entries[num_entry++];
+
+			WRITE_LE_UINT32(&entry.fname_offset, name_offset);
+			WRITE_LE_UINT32(&entry.start, offset);
+			entry.reserved = 0; //What is this??
+
+			char *path = appendPath(dirfile->d_name, dirname);
+			char *name = strchr(path, '/') + 1;
+			strcpy(str_offset, name);
+			str_offset[strlen(name)] = 0;
+			name_offset += strlen(name) + 1;
+			str_offset = str_table + name_offset;
+
+			struct stat st;
+			stat(path, &st);
+
+			// 		printf("entry of file %s, at offset %d and of size %d\n", path, offset, st.st_size);
+			free(path);
+
+			offset += st.st_size;
+			WRITE_LE_UINT32(&entry.size, st.st_size);
+		}
+	}
+}
+
 int main(int argc, char **argv) {
 	if (argc > 1 && !strcmp(argv[1], "--help")) {
 		help();
@@ -113,24 +183,19 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	lab_header head;
-
 	DIR *dir = opendir(dirname);
 	if (dir == 0) {
-		printf("Can not open source dir: %s\n", argv[1]);
+		printf("Can not open source dir: %s\n", dirname);
 		exit(2);
 	}
 
+	lab_header head;
+
 	head.num_entries = 0;
 	head.string_table_size = 0;
-	struct dirent *dirfile;
-	while ((dirfile = readdir(dir))) {
-		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, ".."))
-			continue;
 
-		++head.num_entries;
-		head.string_table_size += strlen(dirfile->d_name) + 1;
-	}
+	countFiles(&head, dir, dirname, 0);
+
 // 	printf("%d files, string table of size %d\n", head.num_entries, head.string_table_size);
 
 	lab_entry *entries = (lab_entry *)malloc(head.num_entries * sizeof(lab_entry));
@@ -140,52 +205,27 @@ int main(int argc, char **argv) {
 		exit(3);
 	}
 
-	uint32_t offset = 16 + head.num_entries * sizeof(lab_entry) + head.string_table_size + 16;
-	uint32_t num_entry = 0;
-	uint32_t name_offset = 0;
-	char *str_offset = str_table;
 	rewinddir(dir);
-	while ((dirfile = readdir(dir))) {
-		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, ".."))
-			continue;
+	uint32_t offset = 16 + head.num_entries * sizeof(lab_entry) + head.string_table_size + 16;
+	createEntries(dir, entries, str_table, dirname, offset);
 
-		lab_entry &entry = entries[num_entry++];
-
-		WRITE_LE_UINT32(&entry.fname_offset, name_offset);
-		WRITE_LE_UINT32(&entry.start, offset);
-		entry.reserved = 0; //What is this??
-
-		strcpy(str_offset, dirfile->d_name);
-		str_offset[strlen(dirfile->d_name)] = 0;
-		name_offset += strlen(dirfile->d_name) + 1;
-		str_offset = str_table + name_offset;
-
-		char *path = (char *)malloc(strlen(dirfile->d_name) + strlen(dirname) + 2);
-		strcpy(path, dirname);
-		path[strlen(dirname)] = '/';
-		strcpy(path + strlen(dirname) + 1, dirfile->d_name);
-
-		struct stat st;
-		stat(path, &st);
-
-		// 		printf("entry of file %s, at offset %d and of size %d\n", path, offset, st.st_size);
-		free(path);
-
-		offset += st.st_size;
-		WRITE_LE_UINT32(&entry.size, st.st_size);
-	}
 	closedir(dir);
 
 	// Open the output file after we've finished with the dir, so that we're sure
 	// we don't include the lab into itself if it was asked to be created into the same dir.
 	FILE *outfile = fopen(out, "wb");
 	if (!outfile) {
-		printf("Could not open file %s for writing\n", argv[2]);
+		printf("Could not open file %s for writing\n", out);
 		exit(2);
 	}
 
 	fwrite("LABN", 1, 4, outfile);
-	fwrite("    ", 1, 4, outfile); //version
+	if (g_type == GT_GRIM) {
+		fwrite("    ", 1, 4, outfile); //version
+	} else {
+		//EMI expects this as the version number.
+		fwrite("\x00\x00\x01\x00", 1, 4, outfile);
+	}
 	writeUint32(outfile, head.num_entries);
 	writeUint32(outfile, head.string_table_size);
 
@@ -208,24 +248,34 @@ int main(int argc, char **argv) {
 				s[j] = str_table[j] ^ 0x96;
 		}
 		fwrite(s, 1, head.string_table_size, outfile);
+		free(s);
 	}
+
+	uint32_t bufsize = 1024*1024;
+	char *buf = (char *)malloc(bufsize);
 
 	for (uint32_t i = 0; i < head.num_entries; ++i) {
 		lab_entry &entry = entries[i];
 		const char *fname = str_table + READ_LE_UINT32(&entry.fname_offset);
 
-		char *path = (char *)malloc(strlen(fname) + strlen(dirname) + 2);
-		strcpy(path, dirname);
-		path[strlen(dirname)] = '/';
-		strcpy(path + strlen(dirname) + 1, fname);
+		char *path = appendPath(fname, dirname);
 
 		FILE *file = fopen(path, "rb");
 		free(path);
 
-		offset = READ_LE_UINT32(&entry.start);
+		uint32_t offset = READ_LE_UINT32(&entry.start);
 		uint32_t size = READ_LE_UINT32(&entry.size);
 
-		char *buf = (char *)malloc(size);
+		if (size > bufsize) {
+			char *newbuf = (char *)realloc(buf, size);
+			if (!newbuf) {
+				free(buf);
+				printf("Could not allocate memory\n");
+				exit(3);
+			}
+			bufsize = size;
+			buf = newbuf;
+		}
 
 // 		printf("writing file %s, at offset %d and of size %d\n", fname, offset, size);
 
@@ -233,11 +283,11 @@ int main(int argc, char **argv) {
 		fseek(outfile, offset, SEEK_SET);
 		fwrite(buf, 1, size, outfile);
 
-		free(buf);
 		fclose(file);
 	}
 
 	fclose(outfile);
+	free(buf);
 	free(entries);
 	free(str_table);
 

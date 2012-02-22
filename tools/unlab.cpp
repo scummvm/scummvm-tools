@@ -25,6 +25,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 #define GT_GRIM 1
 #define GT_EMI 2
@@ -51,6 +55,17 @@ uint16_t READ_LE_UINT16(const void *ptr) {
 uint32_t READ_LE_UINT32(const void *ptr) {
 	const uint8_t *b = (const uint8_t *)ptr;
 	return (b[3] << 24) + (b[2] << 16) + (b[1] << 8) + (b[0]);
+}
+
+static void createDirectoryStructure(char *name) {
+#ifdef WIN32
+	char *dir = strrchr(name, '\\');
+	if (dir) {
+		dir[0] = 0;
+		CreateDirectory(name, NULL);
+		dir[0] = '\\';
+	}
+#endif
 }
 
 int main(int argc, char **argv) {
@@ -80,7 +95,7 @@ int main(int argc, char **argv) {
 	fread(&s_size, 1, 4, infile);
 	
 	uint32_t typeTest = 0;
-	fread(&typeTest,1,4,infile); 
+	fread(&typeTest, 1, 4, infile);
 	if (typeTest == 0) { // First entry of the table has offset 0 for Grim
 		g_type = GT_GRIM;
 		fseek(infile, -4, SEEK_CUR);
@@ -131,7 +146,8 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	for (i = 0; i < head.num_entries; i++) {
-		const char *fname = str_table + READ_LE_UINT32(&entries[i].fname_offset);
+		char *fname = str_table + READ_LE_UINT32(&entries[i].fname_offset);
+		createDirectoryStructure(fname);
 		outfile = fopen(fname, "wb");
 		if (!outfile) {
 			printf("Could not open file: %s\n", fname);
