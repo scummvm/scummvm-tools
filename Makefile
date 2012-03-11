@@ -23,8 +23,8 @@ ifeq "$(HAVE_GCC)" "1"
 	# Turn off some annoying and not-so-useful warnings
 	CXXFLAGS+= -Wno-long-long -Wno-multichar -Wno-unknown-pragmas -Wno-reorder
 	# Enable even more warnings...
-	CXXFLAGS+= -Wpointer-arith -Wcast-qual -Wcast-align
-	CXXFLAGS+= -Wshadow -Wimplicit -Wnon-virtual-dtor -Wwrite-strings
+	CXXFLAGS+= -Wpointer-arith -Wcast-qual
+	CXXFLAGS+= -Wshadow -Wnon-virtual-dtor -Wwrite-strings
 
 	# Currently we disable this gcc flag, since it will also warn in cases,
 	# where using GCC_PRINTF (means: __attribute__((format(printf, x, y))))
@@ -32,14 +32,25 @@ ifeq "$(HAVE_GCC)" "1"
 	# being helpful.
 	#CXXFLAGS+= -Wmissing-format-attribute
 
-	# Disable RTTI and exceptions, and enabled checking of pointers returned by "new"
-	CXXFLAGS+= -fno-exceptions -fcheck-new
+	# Disable exceptions, ResidualVM use RTTI:
+	CXXFLAGS+= -fno-exceptions
 
-	# There is a nice extra warning that flags variables that are potentially
-	# used before being initialized. Very handy to catch a certain kind of
-	# bugs. Unfortunately, it only works when optimizations are turned on,
-	# which is why we normally don't use it.
-	#CXXFLAGS+= -O -Wuninitialized
+ifneq "$(HAVE_CLANG)" "1"
+	# enable checking of pointers returned by "new", but only when we do not
+	# build with clang
+	CXXFLAGS+= -fcheck-new
+endif
+endif
+
+ifeq "$(HAVE_CLANG)" "1"
+	CXXFLAGS+= -Wno-conversion -Wno-shorten-64-to-32 -Wno-sign-compare -Wno-four-char-constants
+endif
+
+ifeq "$(HAVE_ICC)" "1"
+	# Disable some warnings:
+	#  161: unrecognized #pragma
+	# 1899: multicharacter character literal (potential portability problem)
+	CXXFLAGS+= -diag-disable 161,1899
 endif
 
 #######################################################################
@@ -59,7 +70,7 @@ ZIP     ?= zip -q
 # Misc stuff - you should never have to edit this                     #
 #######################################################################
 
-EXECUTABLE  := residualvm$(EXEEXT)
+EXECUTABLE  := $(EXEPRE)residualvm$(EXEEXT)
 
 include $(srcdir)/Makefile.common
 
@@ -79,4 +90,3 @@ endif
 ifneq ($(origin port_mk), undefined)
 include $(srcdir)/$(port_mk)
 endif
-
