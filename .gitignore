@@ -3,6 +3,24 @@
 *.o
 *.exe
 
+animb2txt
+bmtoppm
+cosb2cos
+delua
+imc2wav
+int2flt
+labcopy
+meshb2obj
+mklab
+set2fig
+setb2set
+sklb2txt
+til2bmp
+unlab
+vima
+luac
+patchex
+
 .deps
 /config.h
 /config.log
