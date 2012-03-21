@@ -54,6 +54,11 @@ PROGRAMS += \
 	scummvm-tools
 endif
 
+ifdef MACOSX
+PROGRAMS += \
+	pegasus_save_types
+endif
+
 # TODO: We don't currently set USE_GTK in configure, so the user would have
 # to manually specify it
 ifdef USE_GTK
@@ -166,6 +171,11 @@ extract_mohawk_OBJS := \
 construct_mohawk_OBJS := \
 	engines/mohawk/construct_mohawk.o \
 	$(UTILS)
+
+pegasus_save_types_OBJS := \
+	engines/pegasus/pegasus_save_types.o \
+	$(UTILS)
+pegasus_save_types_LIBS := -framework CoreServices
 
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
 create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)
