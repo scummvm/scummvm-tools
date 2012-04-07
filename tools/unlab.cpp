@@ -81,19 +81,24 @@ int main(int argc, char **argv) {
 		printf("No file specified\n");
 		exit(1);
 	}
+	const char *filename = argv[1];
 
-	infile = fopen(argv[1], "rb");
+	infile = fopen(filename, "rb");
 	if (infile == 0) {
-		printf("Can not open source file: %s\n", argv[1]);
+		printf("Can not open source file: %s\n", filename);
 		exit(1);
 	}
+
+	fseek(infile, 0, SEEK_END);
+	int filesize = ftell(infile);
+	fseek(infile, 0, SEEK_SET);
 
 	fread(&head.magic, 1, 4, infile);
 	fread(&head.magic2, 1, 4, infile);
 	uint32_t num, s_size, s_offset;
 	fread(&num, 1, 4, infile);
 	fread(&s_size, 1, 4, infile);
-	
+
 	uint32_t typeTest = 0;
 	fread(&typeTest, 1, 4, infile);
 	if (typeTest == 0) { // First entry of the table has offset 0 for Grim
@@ -147,14 +152,21 @@ int main(int argc, char **argv) {
 	}
 	for (i = 0; i < head.num_entries; i++) {
 		char *fname = str_table + READ_LE_UINT32(&entries[i].fname_offset);
+
+		offset = READ_LE_UINT32(&entries[i].start);
+		uint32_t size = READ_LE_UINT32(&entries[i].size);
+
+		if (offset + size > filesize) {
+			printf("File \"%s\" past the end of lab \"%s\". Your game files may be corrupt.", fname, filename);
+			break;
+		}
+
 		createDirectoryStructure(fname);
 		outfile = fopen(fname, "wb");
 		if (!outfile) {
 			printf("Could not open file: %s\n", fname);
 			continue;
 		}
-		offset = READ_LE_UINT32(&entries[i].start);
-		uint32_t size = READ_LE_UINT32(&entries[i].size);
 		if (bufSize < size) {
 			bufSize = size;
 			char *newBuf = (char *)realloc(buf, bufSize);
