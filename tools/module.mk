@@ -24,7 +24,9 @@ TOOLS := \
 	tools/vima$(EXEEXT) \
 	tools/labcopy$(EXEEXT) \
 	tools/luac/luac$(EXEEXT) \
-	tools/patchex/patchex$(EXEEXT)
+	tools/patchex/patchex$(EXEEXT) \
+	tools/diffr$(EXEEXT) \
+	tools/patchr$(EXEEXT)
 
 # below not added as it depends for ppm, bpm library
 #	tools/mat2ppm$(EXEEXT)
@@ -48,6 +50,16 @@ clean-tools:
 #
 # Build rules for the tools
 #
+
+tools/diffr$(EXEEXT): $(srcdir)/tools/diffr.cpp $(srcdir)/common/md5.o $(srcdir)/common/zlib.o
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
+	-L$(srcdir)/common $(srcdir)/common/md5.o  $(srcdir)/common/zlib.o -lz -o $@ $< $(LDFLAGS)
+
+tools/patchr$(EXEEXT): $(srcdir)/tools/patchr.cpp $(srcdir)/common/md5.o $(srcdir)/common/zlib.o
+	$(MKDIR) tools/$(DEPDIR)
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
+	-L$(srcdir)/common $(srcdir)/common/md5.o  $(srcdir)/common/zlib.o -lz -o $@ $< $(LDFLAGS)
 
 tools/delua$(EXEEXT): $(srcdir)/tools/delua.cpp
 	$(MKDIR) tools/$(DEPDIR)
