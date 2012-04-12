@@ -1251,6 +1251,9 @@ void decompile(std::ostream &os, TProtoFunc *tf, std::string indent_str,
   std::ostringstream first_time;
   std::multiset<Byte *> loc_vars;
 
+  //set the maximum precision, in order to avoid round errors with float numbers
+  os.precision(8);
+
   // First, do a preliminary pass to see where local variables are defined
   Decompiler dc;
   dc.os = &first_time;
