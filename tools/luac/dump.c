@@ -27,12 +27,9 @@ static void DumpLong(long i, FILE* D) {
 /* LUA_NUMBER */
 /* assumes sizeof(long)==4 and sizeof(float)==4 (IEEE) */
 static void DumpFloat(float f, FILE* D) {
-	byte *fdata = (byte *)(&f);
-
-	fputc(fdata[3],D);
-	fputc(fdata[2],D);
-	fputc(fdata[1],D);
-	fputc(fdata[0],D);
+	byte out[4];
+	WRITE_LE_UINT32(out, *(uint32*)(&f));
+	DumpBlock(out, 4, D);
 }
 
 static void DumpCode(TProtoFunc* tf, FILE* D) {
