@@ -17,7 +17,9 @@
 extern void DumpChunk(TProtoFunc* Main, FILE* D);
 extern void PrintChunk(TProtoFunc* Main);
 extern void OptChunk(TProtoFunc* Main);
+extern void rebase(TProtoFunc* Main, TProtoFunc* base);
 
+static void load_base_script(const char* fname);
 static FILE* efopen(const char* name, const char* mode);
 static void doit(int undump, const char* filename);
 
@@ -29,11 +31,12 @@ static int optimizing=0;		/* optimize? */
 static int parsing=0;			/* parse only? */
 static int verbose=0;			/* tell user what is done */
 static FILE* D;				/* output file */
+static TProtoFunc *bs = NULL;
 
 static void usage(void)
 {
  fprintf(stderr,"usage: "
- "luac [-c | -u] [-D name] [-d] [-l] [-o output] [-O] [-p] [-q] [-v] [-V] [files]\n"
+ "luac [-c | -u] [-D name] [-d] [-l] [-o output] [-O] [-p] [-q] [-v] [-V] [-b base] [files]\n"
  " -c\tcompile (default)\n"
  " -u\tundump\n"
  " -d\tgenerate debugging information\n"
@@ -45,6 +48,7 @@ static void usage(void)
  " -q\tquiet (default for -c)\n"
  " -v\tshow version information\n"
  " -V\tverbose\n"
+ " -b\tused the specified script as base for compiling (useful for patch, see diffr manual)\n"
  " -\tcompile \"stdin\"\n"
  );
  exit(1);
@@ -55,6 +59,7 @@ static void usage(void)
 int main(int argc, char* argv[])
 {
  const char* d = OUTPUT;			/* output file name */
+ const char* base_s = NULL;			/* base script file name */
  int i;
  lua_open();
  for (i=1; i<argc; i++)
@@ -78,6 +83,8 @@ int main(int argc, char* argv[])
    debugging=1;
   else if (IS("-l"))			/* list */
    listing=1;
+  else if (IS("-b"))			/* base script */
+   base_s=argv[++i];
   else if (IS("-o"))			/* output file */
    d=argv[++i];
   else if (IS("-O"))			/* optimize */
@@ -105,30 +112,44 @@ int main(int argc, char* argv[])
  --i;					/* fake new argv[0] */
  argc-=i;
  argv+=i;
- if (dumping || parsing)
- {
-  if (argc<2) usage();
-  if (dumping)
-  {
-   for (i=1; i<argc; i++)		/* play safe with output file */
-    if (IS(d)) luaL_verror("will not overwrite input file \"%s\"",d);
-   D=efopen(d,"wb");			/* must open in binary mode */
-#if ID_NUMBER==ID_NATIVE
-   if (verbose) fprintf(stderr,"luac: warning: "
-	"saving numbers in native format. file may not be portable.\n");
-#endif
-  }
-  for (i=1; i<argc; i++) doit(0,IS("-")? NULL : argv[i]);
-  if (dumping) fclose(D);
- }
- if (undumping)
- {
-  if (argc<2)
-   doit(1,OUTPUT);
-  else
-   for (i=1; i<argc; i++) doit(1,IS("-")? NULL : argv[i]);
- }
- return 0;
+
+	if (dumping || parsing) {
+		if (argc < 2)
+			usage();
+
+		if (dumping) {
+			for (i = 1; i < argc; i++)		/* play safe with output file */
+				if (IS(d))
+					luaL_verror("will not overwrite input file \"%s\"",d);
+			D = efopen(d,"wb");			/* must open in binary mode */
+		}
+
+		if (dumping && base_s != NULL)
+			load_base_script(base_s);
+
+		for (i = 1; i < argc; i++)
+			doit(0, IS("-")? NULL : argv[i]);
+		if (dumping)
+			fclose(D);
+	}
+
+	if (undumping) {
+		if (argc < 2)
+			doit(1, OUTPUT);
+		else
+		for (i = 1; i < argc; i++)
+			doit(1,IS("-")? NULL : argv[i]);
+	}
+	return 0;
+}
+
+static void load_base_script(const char* fname) {
+	FILE* f;
+	ZIO z;
+	f = efopen(fname, "rb");
+	zFopen(&z,f,fname);
+	bs = luaU_undump1(&z);
+	fclose(f);
 }
 
 static void do_compile(ZIO* z)
@@ -137,6 +158,7 @@ static void do_compile(ZIO* z)
  if (optimizing) lua_debug=0;		/* set debugging before parsing */
  if (debugging)  lua_debug=1;
  Main=luaY_parser(z);
+ if (bs) rebase(Main, bs);
  if (optimizing) OptChunk(Main);
  if (listing) PrintChunk(Main);
  if (dumping) DumpChunk(Main,D);
