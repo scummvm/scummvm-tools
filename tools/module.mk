@@ -62,8 +62,9 @@ tools/luac/luac$(EXEEXT):
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/opcode.o tools/luac/opcode.c
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/opt.o tools/luac/opt.c
 	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/print.o tools/luac/print.c
+	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/rebase.o tools/luac/rebase.c
 	$(MKDIR) tools/luac/$(DEPDIR)
-	$(CXX) $(CFLAGS) tools/luac/dump.o tools/luac/luac.o tools/luac/opcode.o tools/luac/opt.o tools/luac/print.o -Wall -L$(srcdir)/tools/lua -llua -o $@ $< $(LDFLAGS)
+	$(CXX) $(CFLAGS) tools/luac/dump.o tools/luac/luac.o tools/luac/opcode.o tools/luac/opt.o tools/luac/print.o tools/luac/rebase.o -Wall -L$(srcdir)/tools/lua -llua -o $@ $< $(LDFLAGS)
 
 tools/mat2ppm$(EXEEXT): $(srcdir)/tools/mat2ppm.cpp
 	$(MKDIR) tools/$(DEPDIR)
