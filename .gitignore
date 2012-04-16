@@ -1,4 +1,7 @@
 
+*~
+.*.swp
+.*.swo
 *.a
 *.o
 *.exe
@@ -18,8 +21,8 @@ sklb2txt
 til2bmp
 unlab
 vima
-luac
-patchex
+tools/luac/luac
+tools/patchex/patchex
 
 .deps
 /config.h
