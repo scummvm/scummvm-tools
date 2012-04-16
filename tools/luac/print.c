@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include "luac.h"
 
-#ifdef DEBUG
 void PrintConstant1(TProtoFunc* tf, int i)
 {
  TObject* o=tf->consts+i;
@@ -19,13 +18,13 @@ void PrintConstant1(TProtoFunc* tf, int i)
   switch (ttype(o))
   {
    case LUA_T_NUMBER:
-	 printf("N " NUMBER_FMT "\n",nvalue(o));	/* LUA_NUMBER */
+	 printf("N\t" NUMBER_FMT "\n", nvalue(o));	/* LUA_NUMBER */
 	 break;
    case LUA_T_STRING:
-	 printf("S %p\t\"%s\"\n",(void*)tsvalue(o),svalue(o));
+	 printf("S\t\"%s\"\n", svalue(o));
 	 break;
    case LUA_T_PROTO:
-	 printf("F %p\n",(void*)tfvalue(o));
+	 printf("F\n");
 	 break;
    default:				/* cannot happen */
 	 printf("? %d\n",ttype(o)); 
@@ -39,7 +38,6 @@ static void PrintConstants(TProtoFunc* tf)
  printf("constants (%d):\n",n);
  for (i=0; i<n; i++) PrintConstant1(tf,i);
 }
-#endif
 
 static void PrintConstant(TProtoFunc* tf, int i)
 {
@@ -57,7 +55,7 @@ static void PrintConstant(TProtoFunc* tf, int i)
 	printf("\"%s\"",svalue(o));
 	break;
    case LUA_T_PROTO:
-	printf("function at %p",(void*)tfvalue(o));
+	printf("function");
 	break;
    case LUA_T_NIL:
 	printf("(nil)");
@@ -185,8 +183,8 @@ static void PrintHeader(TProtoFunc* tf, TProtoFunc* Main, int at)
   printf("\nmain of \"%s\" (%d bytes at %p)\n",fileName(tf),size,(void*)tf);
  else if (Main)
  {
-  printf("\nfunction defined at \"%s\":%d (%d bytes at %p); used at ",
-	fileName(tf),tf->lineDefined,size,(void*)tf);
+  printf("\nfunction defined at \"%s\":%d (%d bytes); used at ",
+	fileName(tf),tf->lineDefined,size);
   if (IsMain(Main))
    printf("main");
   else
@@ -221,9 +219,7 @@ static void PrintFunction(TProtoFunc* tf, TProtoFunc* Main, int at)
  PrintHeader(tf,Main,at);
  PrintLocals(tf);
  PrintCode(tf);
-#ifdef DEBUG
  PrintConstants(tf);
-#endif
  PrintFunctions(tf);
 }
 
