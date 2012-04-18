@@ -141,7 +141,7 @@ static void createEntries(DIR *dir, lab_entry *entries, char *str_table, const c
 			entry.reserved = 0; //What is this??
 
 			char *path = appendPath(dirfile->d_name, dirname);
-			char *name = strchr(path, '/') + 1;
+			char *name = strrchr(path, '/') + 1;
 			strcpy(str_offset, name);
 			str_offset[strlen(name)] = 0;
 			name_offset += strlen(name) + 1;
