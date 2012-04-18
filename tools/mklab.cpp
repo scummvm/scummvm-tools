@@ -141,7 +141,7 @@ static void createEntries(DIR *dir, lab_entry *entries, char *str_table, const c
 			entry.reserved = 0; //What is this??
 
 			char *path = appendPath(dirfile->d_name, dirname);
-			char *name = strchr(path, '/') + 1;
+			char *name = strrchr(path, '/') + 1;
 			strcpy(str_offset, name);
 			str_offset[strlen(name)] = 0;
 			name_offset += strlen(name) + 1;
@@ -220,12 +220,7 @@ int main(int argc, char **argv) {
 	}
 
 	fwrite("LABN", 1, 4, outfile);
-	if (g_type == GT_GRIM) {
-		fwrite("    ", 1, 4, outfile); //version
-	} else {
-		//EMI expects this as the version number.
-		fwrite("\x00\x00\x01\x00", 1, 4, outfile);
-	}
+	fwrite("\x00\x00\x01\x00", 1, 4, outfile); //version
 	writeUint32(outfile, head.num_entries);
 	writeUint32(outfile, head.string_table_size);
 
