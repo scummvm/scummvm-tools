@@ -43,18 +43,12 @@ int OpcodeInfo(TProtoFunc* tf, Byte* p, Opcode* I, const char* xFILE, int xLINE)
    OP.arg=op;
   }
  }
- else if (op==NOP)
+ else if (op>=NOPCODES)
  {
   OP.name="NOP";
   OP.size=1;
   OP.op=NOP;
   OP.op_class=NOP;
- }
- else if (op>=NOPCODES)			/* cannot happen */
- {
-  luaL_verror("internal error at %s:%d: bad opcode %d at %d in tf=%p",
-	xFILE, xLINE,op,(int)(p-code),tf);
-  return 0;
  }
  else
  {

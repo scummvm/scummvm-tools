@@ -37,8 +37,6 @@
 #include <list>
 #include <set>
 
-#define NOP	255
-
 // Provide debug.cpp functions which don't call SDL_Quit.
 void warning(const char *fmt, ...) {
   fprintf(stderr, "WARNING: ");
@@ -538,7 +536,7 @@ int instr_lens[] = {
 };
 
 int get_instr_len(Byte opc) {
-	if (opc == NOP)
+	if (opc > sizeof(instr_lens)/sizeof(int))
 		return 1;
 	else
 		return instr_lens[opc];
@@ -1232,13 +1230,10 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
 	delete stk->top(); stk->pop();
       }
       break;
-	case NOP:
-		break;
 
+    //Nop
     default:
-      *os << indent_str << "error: unrecognized opcode "
-	  << int(opc) << std::endl;
-      return;
+      break;
     }
   }
 }
