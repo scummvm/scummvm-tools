@@ -1459,6 +1459,15 @@ void jumpif(char *output, StackEnt *se, bool negate) {
 	sprintf(e, ") jump %x", to);
 }
 
+void dup_n() {
+	push(se_int(get_word()));
+	ListStackEnt *list = (ListStackEnt *)se_get_list();
+
+	for (int i = 0; i < 2; i++)
+		for (int j = 0; j < list->_size; j++)
+			push(list->_list[j]);
+}
+
 
 #define PRINT_V100HE(name)           \
 	do {                          \
@@ -1716,6 +1725,9 @@ void next_line_HE_V100(char *output) {
 		se_a = dup(output, pop());
 		push(se_a);
 		push(se_a);
+		break;
+	case 0x29:
+		dup_n();
 		break;
 	case 0x2A:
 		ext(output, "|endCutscene");
@@ -2676,6 +2688,9 @@ void next_line_HE_V72(char *output) {
 		break;
 	case 0x7:
 		push(se_array(get_word(), NULL, pop()));
+		break;
+	case 0xA: // HE90+
+		dup_n();
 		break;
 	case 0xB:
 		se_a = pop();
