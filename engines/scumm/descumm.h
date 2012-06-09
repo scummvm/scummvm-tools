@@ -86,7 +86,7 @@ struct Block {
 	bool isWhile;			// Set to true if we think this jump is part of a while loop
 };
 
-typedef FixedStack<Block, 256> BlockStack;
+typedef FixedStack<Block, 512> BlockStack;
 
 extern BlockStack g_blockStack;
 
