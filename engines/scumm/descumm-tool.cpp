@@ -401,7 +401,7 @@ int main(int argc, char *argv[]) {
 			next_line_V345(outputLineBuffer);
 			break;
 		case 6:
-			if (g_options.heVersion == 100)
+			if (g_options.heVersion >= 100)
 				next_line_HE_V100(outputLineBuffer);
 			else if (g_options.heVersion >= 72)
 				next_line_HE_V72(outputLineBuffer);

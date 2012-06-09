@@ -2333,12 +2333,29 @@ void next_line_HE_V100(char *output) {
 		ext(output, "rp|cos");
 		break;
 	case 0xA8:
-		ext(output, "x" "debugInput\0"
-				"\x0h|case0,"
-				"\x1Ap|case26,"
-				"\x1Bh|case27,"
-				"\x50h|case80,"
-				"\x5Ch|case92");
+		// Backyard Baseball 2003 / Basketball / Football 2002
+		if (g_options.heVersion == 101) {
+			ext(output, "rh|debugInput");
+		} else {
+		// All other games
+			switch (get_byte()) {
+			case 0:
+				ext(output, "h|debugInput: case 0");
+				break;
+			case 26:
+				ext(output, "p|debugInput: case 26");
+				break;
+			case 27:
+				ext(output, "h|debugInput: case 27");
+				break;
+			case 80:
+				ext(output, "h|debugInput: case 80");
+				break;
+			case 92:
+				ext(output, "r|debugInput: case 92");
+				break;
+			}
+		}
 		break;
 	case 0xA9:
 		ext(output, "rh|getFileSize");
