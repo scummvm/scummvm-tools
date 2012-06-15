@@ -3216,12 +3216,15 @@ void next_line_HE_V72(char *output) {
 	case 0x69:
 		if (g_options.heVersion >= 80) {
 			ext(output, "x" "windowOps\0"
-					"\x39p|case25,"
-					"\x3Ap|case26,"
-					"\x3Fp|case31,"
-					"\xD9|case185,"
-					"\xF3h|case211,"
-					"\xFF|case223");
+					"\x2Cpp|case44,"
+					"\x39p|case57,"
+					"\x3Ap|case58,"
+					"\x3Bp|case59,"
+					"\x3Fp|case63,"
+					"\x41pp|case65,"
+					"\xD9|case217,"
+					"\xF3h|case243,"
+					"\xFF|case255");
 		} else {
 			ext(output, "|stopMusic");
 		}
@@ -3565,6 +3568,10 @@ void next_line_HE_V72(char *output) {
 		case 128:
 			// TODO: Add support for writeRangeIntoArray
 			ext(output, "ppppppv|writeRangeIntoArray");
+			break;
+		case 138:
+			// TODO: Add support for math operations
+			ext(output, "pppppppppppppvvv|mathOpsInArray");
 			break;
 		case 194:
 			se_get_list();
