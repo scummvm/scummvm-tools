@@ -113,17 +113,18 @@ void printHelp(const char *bin) {
 	printf("Usage: %s <version> <file.tot> [-o <offset>] [<file.ext>] [<commun.ext>]\n\n", bin);
 	printf("The disassembled script will be written to stdout.\n\n");
 	printf("Supported versions:\n");
-	printf("	Gob1     - Gobliiins 1\n");
-	printf("	Gob2     - Gobliins 2\n");
-	printf("	Gob3     - Goblins 3\n");
-	printf("	Ween     - Ween: The Prophecy\n");
-	printf("	Bargon   - Bargon Attack\n");
-	printf("	Fascin   - Fascination\n");
-	printf("	Lost     - Lost in Time\n");
-	printf("	Woodruff - The Bizarre Adventures of Woodruff and the Schnibble\n");
-	printf("	Dynasty  - The Last Dynasty\n");
-	printf("	Urban    - Urban Runner\n");
-	printf("	Geisha   - Geisha\n");
+	printf("	Gob1      - Gobliiins 1\n");
+	printf("	Gob2      - Gobliins 2\n");
+	printf("	Gob3      - Goblins 3\n");
+	printf("	Ween      - Ween: The Prophecy\n");
+	printf("	Bargon    - Bargon Attack\n");
+	printf("	Fascin    - Fascination\n");
+	printf("	Lost      - Lost in Time\n");
+	printf("	Woodruff  - The Bizarre Adventures of Woodruff and the Schnibble\n");
+	printf("	Dynasty   - The Last Dynasty\n");
+	printf("	Urban     - Urban Runner\n");
+	printf("	Geisha    - Geisha\n");
+	printf("	LittleRed - Once Upon A Time: Little Red Riding Hood\n");
 }
 
 int getVersion(const char *verStr) {
@@ -149,6 +150,8 @@ int getVersion(const char *verStr) {
 		return 9;
 	else if (!scumm_stricmp(verStr, "Geisha"))
 		return 10;
+	else if (!scumm_stricmp(verStr, "LittleRed"))
+		return 11;
 
 	return -1;
 }
@@ -198,6 +201,9 @@ Script *initScript(byte *totData, uint32 totSize, ExtTable *extTable, int versio
 			break;
 		case 10:
 			return new Script_Geisha(totData, totSize, extTable);
+			break;
+		case 11:
+			return new Script_LittleRed(totData, totSize, extTable);
 			break;
 	}
 	return 0;

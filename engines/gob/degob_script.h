@@ -423,6 +423,44 @@ protected:
 	virtual void goblinOpcode(int i, FuncParams &params);
 };
 
+class Script_LittleRed : public Script_v2 {
+public:
+	Script_LittleRed(byte *totData, uint32 totSize, ExtTable *extTable = 0);
+	virtual ~Script_LittleRed();
+
+protected:
+	typedef void (Script_LittleRed::*OpcodeDrawProcLittleRed)(FuncParams &);
+	typedef void (Script_LittleRed::*OpcodeFuncProcLittleRed)(FuncParams &);
+	typedef void (Script_LittleRed::*OpcodeGoblinProcLittleRed)(FuncParams &);
+	struct OpcodeDrawEntryLittleRed {
+		FuncType type;
+		OpcodeDrawProcLittleRed proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeFuncEntryLittleRed {
+		FuncType type;
+		OpcodeFuncProcLittleRed proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeGoblinEntryLittleRed {
+		FuncType type;
+		OpcodeGoblinProcLittleRed proc;
+		const char *desc;
+		const Param params[16];
+	};
+	const OpcodeDrawEntryLittleRed *_opcodesDrawLittleRed;
+	const OpcodeFuncEntryLittleRed *_opcodesFuncLittleRed;
+	const OpcodeGoblinEntryLittleRed *_opcodesGoblinLittleRed;
+	static const int _goblinFuncLookUp[][2];
+
+	virtual void setupOpcodes();
+	virtual void drawOpcode(byte i, FuncParams &params);
+	virtual void funcOpcode(byte i, byte j, FuncParams &params);
+	virtual void goblinOpcode(int i, FuncParams &params);
+};
+
 class Script_v3 : public Script_v2 {
 public:
 	Script_v3(byte *totData, uint32 totSize, ExtTable *extTable = 0);

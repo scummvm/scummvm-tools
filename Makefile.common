@@ -100,6 +100,7 @@ degob_OBJS := \
 	engines/gob/degob_script_v6.o \
 	engines/gob/degob_script_bargon.o \
 	engines/gob/degob_script_fascin.o \
+	engines/gob/degob_script_littlered.o \
 	tool.o \
 	version.o \
 	$(UTILS)
@@ -146,6 +147,7 @@ degob_OBJS := \
 	engines/gob/degob_script_bargon.o \
 	engines/gob/degob_script_fascin.o \
 	engines/gob/degob_script_geisha.o \
+	engines/gob/degob_script_littlered.o \
 	tool.o \
 	version.o \
 	$(UTILS)
