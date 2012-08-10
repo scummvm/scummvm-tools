@@ -121,7 +121,7 @@ public:
       return false;
     for (int i = 0; i < text->u.s.len; i++) {
       char c = text->str[i];
-      if ((! isalnum(text->str[0])) && c != '_')
+      if ((! isalnum(c)) && c != '_')
 	return false;
     }
     return true;
