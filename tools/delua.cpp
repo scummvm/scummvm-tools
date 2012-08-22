@@ -141,7 +141,7 @@ public:
 	os << special_text[i];
       }
       else if (! isprint(c))
-	os << "\\" << int(c >> 6) << int((c >> 3) & 7) << int(c & 7);
+	os << "\\" << std::dec << (unsigned int)(c);
       else
 	os << c;
     }
