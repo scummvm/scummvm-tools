@@ -228,7 +228,7 @@ public:
   ~FuncCallExpr() {
     for (int i = 0; i < num_args; i++)
       delete args[i];
-    delete args;
+    delete[] args;
     delete func;
   }
 };
@@ -623,6 +623,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
       if (v == NULL || v->name != "nil")
 	*os << " = " << *def;
       *os << std::endl;
+	  delete def;
     }
 
     if (rev_iffupjmp_map.find(start) != rev_iffupjmp_map.end()) {
