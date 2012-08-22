@@ -388,11 +388,12 @@ void Decompiler::do_multi_assign(Byte *&start) {
 
     case SETTABLE:
       start++;			// assume offset is correct
-    case SETTABLE0:
-      results.push(new IndexExpr(start, NULL, NULL));
       num_tables++;
       // this needs stuff from farther up the stack, wait until
       // it's available
+
+    case SETTABLE0:
+      results.push(new IndexExpr(start, NULL, NULL));
       break;
 
     default:
