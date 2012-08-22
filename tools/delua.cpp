@@ -182,7 +182,7 @@ public:
   IndexExpr(Byte *p, Expression *tbl, Expression *i)
     : Expression(p), table(tbl), index(i) { }
   Expression *table, *index;
-  void print(std::ostream &os) const {
+  virtual void print(std::ostream &os) const {
     table->print(os);
     StringExpr *field = dynamic_cast<StringExpr *>(index);
     if (field != NULL && field->validIdentifier())
@@ -190,16 +190,36 @@ public:
     else
       os << "[" << *index << "]";
   }
+
   ~IndexExpr() {
     delete table;
     delete index;
   }
 };
 
+class DotIndexExpr : public IndexExpr {
+public:
+  DotIndexExpr(Byte *p, Expression *tbl, Expression *i) : IndexExpr(p, tbl, i) { }
+  virtual void print(std::ostream &os) const {
+    table->print(os);
+    StringExpr *field = dynamic_cast<StringExpr *>(index);
+    os << "." << field->text->str;
+  }
+};
+
+class BracketsIndexExpr : public IndexExpr {
+public:
+  BracketsIndexExpr(Byte *p, Expression *tbl, Expression *i) : IndexExpr(p, tbl, i) { }
+  virtual void print(std::ostream &os) const {
+    table->print(os);
+    os << "[" << *index << "]";
+  }
+};
+
 class SelfExpr : public IndexExpr {
 public:
   SelfExpr(Byte *p, Expression *tbl, StringExpr *i) : IndexExpr(p, tbl, i) { }
-  void print(std::ostream &os) const {
+  virtual void print(std::ostream &os) const {
     StringExpr *field = static_cast<StringExpr *>(index);
     os << *table << ":" << field->text->str;
   }
@@ -778,7 +798,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
 	Expression *index = stk->top(); stk->pop();
 	Expression *table = stk->top(); stk->pop();
 
-	stk->push(new IndexExpr(start, table, index));
+	stk->push(new BracketsIndexExpr(start, table, index));
       }
       break;
 
@@ -803,7 +823,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
     getdotted:
       {
 	Expression *tbl = stk->top(); stk->pop();
-	stk->push(new IndexExpr(start, tbl, new StringExpr
+	stk->push(new DotIndexExpr(start, tbl, new StringExpr
 				(start, tsvalue(tf->consts + aux))));
       }
       break;
