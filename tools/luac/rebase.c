@@ -48,8 +48,13 @@ void uniform_const_list(TProtoFunc* func, TProtoFunc* base) {
 			continue;
 
 		for (j = 0; j < func->nconsts; ++j)
-			if (cmp(&base->consts[i], &func->consts[j]))
+			if (cmp(&base->consts[i], &func->consts[j])) {
+				//Set the value of numbers to the value of base functions
+				//since they could be sligthly differents (rounding errors)
+				if (ttype(&base->consts[i]) == LUA_T_NUMBER)
+					nvalue(&func->consts[j]) = nvalue(&base->consts[i]);
 				break;
+			}
 
 		if (j == func->nconsts) { //Const not found, re-add it
 			if (func->nconsts + 1 >= max_const)
@@ -210,9 +215,20 @@ bool cmp(const TObject *a, const TObject *b) {
 	if (ttype(a) == LUA_T_PROTO)
 		return true;
 
-	if (ttype(a) == LUA_T_NUMBER)
-		if (nvalue(a) == nvalue(b))
+	if (ttype(a) == LUA_T_NUMBER) {
+		//A simple fp comparision
+		double diff, fa, fb, largest;
+
+		diff = fabs(nvalue(a) - nvalue(b));
+		fa = fabs(nvalue(a));
+		fb = fabs(nvalue(b));
+		largest = (fb > fa) ? fb : fa;
+
+		if (diff <= largest * 1e-5)		//Ten parts in a million should be enough
 			return true;
+		else
+			return false;
+	}
 
 	if (ttype(a) == LUA_T_STRING)
 		if (strncmp(svalue(a), svalue(b), tsvalue(a)->u.s.len) == 0)
