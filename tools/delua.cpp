@@ -1331,6 +1331,11 @@ int main(int argc, char *argv[]) {
   TProtoFunc *tf = luaU_undump1(&z);
   fclose(f);
 
+  if (tf == NULL) {
+    fprintf(stderr, "%s isn't a valid lua script\n", filename);
+    exit(1);
+  }
+
   decompile(std::cout, tf, "", NULL, 0);
 
   lua_close();
