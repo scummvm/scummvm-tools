@@ -113,6 +113,9 @@ public:
   StringExpr(Byte *p, TaggedString *txt) : Expression(p), text(txt) { }
   TaggedString *text;
   bool validIdentifier() const {
+    static const char *reserved [] = {"and", "do", "else", "elseif", "end", "function",
+      "if", "local", "nil", "not", "or", "repeat", "return", "then",
+      "until", "while"};	//Taken from llex.cpp
     if (text->u.s.len == 0)
       return false;
     if (isdigit(text->str[0]))
@@ -124,6 +127,9 @@ public:
       if ((! isalnum(c)) && c != '_')
 	return false;
     }
+	for (unsigned int i = 0; i < (sizeof(reserved) / sizeof(reserved[0])); i++)
+		if (strncmp(text->str, reserved[i], text->u.s.len) == 0)
+			return false;
     return true;
   }
   void print(std::ostream &os) const {
