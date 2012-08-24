@@ -651,6 +651,8 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
 	*os << " = " << *def;
       *os << std::endl;
 	  delete def;
+
+      local_var_defs->erase(start);
     }
 
     if (rev_iffupjmp_map.find(start) != rev_iffupjmp_map.end()) {
