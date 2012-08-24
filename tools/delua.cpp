@@ -1000,7 +1000,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
       break;
 
     case CONCOP:
-      do_binary_op(start, 2, false, "..");
+      do_binary_op(start, 2, false, " .. ");
       break;
 
     case MINUSOP:
