@@ -38,7 +38,8 @@ void rebase(TProtoFunc* func, TProtoFunc* base) {
 }
 
 void uniform_const_list(TProtoFunc* func, TProtoFunc* base) {
-	int i, j, k;
+	int i, j, k, j0;
+	j0 = 0;
 
 	//Part1: Add back the deleted constant into the new function
 	int max_const = func->nconsts;
@@ -47,8 +48,10 @@ void uniform_const_list(TProtoFunc* func, TProtoFunc* base) {
 		if (ttype(&base->consts[i]) == LUA_T_PROTO)
 			continue;
 
-		for (j = 0; j < func->nconsts; ++j)
+		for (j = j0; j < func->nconsts; ++j)
 			if (cmp(&base->consts[i], &func->consts[j])) {
+				j0 = j + 1;
+
 				//Set the value of numbers to the value of base functions
 				//since they could be sligthly differents (rounding errors)
 				if (ttype(&base->consts[i]) == LUA_T_NUMBER)
