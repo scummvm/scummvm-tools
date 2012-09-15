@@ -33,7 +33,7 @@ print "Setting version to '$VERSION'\n";
 my @subs_files = qw(
 	internal_version.h
 	dists/macosx/Info.plist
-	dists/nsis/scummvm-tools.nsi
+	dists/win32/scummvm-tools.nsi
 	dists/scummvmtools.rc
 	);
 
