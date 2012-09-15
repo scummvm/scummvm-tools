@@ -25,11 +25,7 @@
 
 #include <algorithm>
 
-/* this makes extract_scumm_mac convert extracted file names to lower case */
-#define CHANGECASE
-
 ExtractScummMac::ExtractScummMac(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
-
 	ToolInput input;
 	input.format = "*.*";
 	_inputPaths.push_back(input);
@@ -50,96 +46,60 @@ InspectionMatch ExtractScummMac::inspectInput(const Common::Filename &filename) 
 }
 
 void ExtractScummMac::execute() {
-	unsigned long file_record_off, file_record_len;
-	unsigned long file_off, file_len;
-	unsigned long data_file_len;
-	char file_name[0x20];
-	char *buf;
-	unsigned long i;
-	int j;
+	Common::Filename inPath(_inputPaths[0].path);
+	Common::Filename outPath(_outputPath);
 
-	Common::Filename inpath(_inputPaths[0].path);
-	Common::Filename outpath(_outputPath);
+	if (outPath.empty())
+		outPath.setFullPath("./");
 
-	if (outpath.empty())
-		outpath.setFullPath("./");
+	Common::File ifp(inPath, "rb");
 
-	Common::File ifp(inpath, "rb");
+	// Get the length of the data file to use for consistency checks
+	uint32 dataFileLength = ifp.size();
 
-	/* Get the length of the data file to use for consistency checks */
-	data_file_len = ifp.size();
+	// Read offset and length to the file records
+	uint32 fileRecordOffset = ifp.readUint32BE();
+	uint32 fileRecordLength = ifp.readUint32BE();
 
-	/* Read offset and length to the file records */
-	file_record_off = ifp.readUint32BE();
-	file_record_len = ifp.readUint32BE();
+	// Do a quick check to make sure the offset and length are good
+	if (fileRecordOffset + fileRecordLength > dataFileLength)
+		error("File records out of bounds");
 
-	/* Do a quick check to make sure the offset and length are good */
-	if (file_record_off + file_record_len > data_file_len) {
-		error("\'%s\'. file records out of bounds.", inpath.getFullPath().c_str());
-	}
+	// Do a little consistancy check on fileRecordLength
+	if (fileRecordLength % 0x28)
+		error("File record length not multiple of 40");
 
-	/* Do a little consistancy check on file_record_length */
-	if (file_record_len % 0x28) {
-		error("\'%s\'. file record length not multiple of 40.", inpath.getFullPath().c_str());
-	}
+	// Extract the files
+	for (uint32 i = 0; i < fileRecordLength; i += 0x28) {
+		// read a file record
+		ifp.seek(fileRecordOffset + i, SEEK_SET);
 
-	/* Extract the files */
-	for (i = 0; i < file_record_len; i += 0x28) {
-		/* read a file record */
-		ifp.seek(file_record_off + i, SEEK_SET);
+		uint32 fileOffset = ifp.readUint32BE();
+		uint32 fileLength = ifp.readUint32BE();
 
-		file_off = ifp.readUint32BE();
-		file_len = ifp.readUint32BE();
-		ifp.read_throwsOnError(file_name, 0x20);
+		char fileName[0x21];
+		ifp.read_throwsOnError(fileName, 0x20);
+		fileName[0x20] = 0;
 
-		if (!file_name[0])
-			error("\'%s\'. file has no name.", inpath.getFullPath().c_str());
+		if (!fileName[0])
+			error("File has no name");
 
-		print("extracting \'%s\'", file_name);
+		print("Extracting %s...", fileName);
 
-		/* For convenience compatibility with scummvm (and case sensitive
-		 * file systems) change the file name to lowercase.
-		 *
-		 * if i ever add the ability to pass flags on the command
-		 * line, i will make this optional, but i really don't
-		 * see the point to bothering
-		 */
-		for (j = 0; j < 0x20; j++) {
-			if (!file_name[j]) {
-				break;
-			}
+		// Consistency check. make sure the file data is in the file
+		if (fileOffset + fileLength > dataFileLength)
+			error("File out of bounds");
 
-#ifdef CHANGECASE
-			file_name[j] = tolower(file_name[j]);
-#endif
-		}
+		// Write a file
+		ifp.seek(fileOffset, SEEK_SET);
 
-		if (j == 0x20) {
-			file_name[0x1f] = 0;
-			warning("\'%s\'. file name not null terminated.", file_name);
-			print("data file \'%s\' may be not a file extract_scumm_mac can extract.", inpath.getFullPath().c_str());
-		}
+		outPath.setFullName(fileName);
+		Common::File ofp(outPath, "wb");
 
-		print(", saving as \'%s\'", file_name);
-
-		/* Consistency check. make sure the file data is in the file */
-		if (file_off + file_len > data_file_len) {
-			error("\'%s\'. file out of bounds.", inpath.getFullPath().c_str());
-		}
-
-		/* Write a file */
-		ifp.seek(file_off, SEEK_SET);
-
-		outpath.setFullName(file_name);
-		Common::File ofp(outpath, "wb");
-
-		if (!(buf = (char *)malloc(file_len))) {
-			error("Could not allocate %ld bytes of memory.", file_len);
-		}
-
-		ifp.read_throwsOnError(buf, file_len);
-		ofp.write(buf, file_len);
-		free(buf);
+		byte *buf = new byte[fileLength];
+		ifp.read_throwsOnError(buf, fileLength);
+		ofp.write(buf, fileLength);
+		delete[] buf;
 	}
 }
 
