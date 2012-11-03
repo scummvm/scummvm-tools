@@ -25,10 +25,8 @@
 
 class RefCounted;
 
-namespace boost {
 inline void intrusive_ptr_add_ref(RefCounted *p);
 inline void intrusive_ptr_release(RefCounted *p);
-} // End of namespace boost
 
 /**
  * Provides a base implementation of reference counting for use with boost::intrusive_ptr.
@@ -36,15 +34,13 @@ inline void intrusive_ptr_release(RefCounted *p);
 class RefCounted {
 private:
 	long _refCount; ///< Reference count used for boost::intrusive_ptr.
-	friend void ::boost::intrusive_ptr_add_ref(RefCounted *p); ///< Allow access by reference counting methods in boost namespace.
-	friend void ::boost::intrusive_ptr_release(RefCounted *p); ///< Allow access by reference counting methods in boost namespace.
+	friend void ::intrusive_ptr_add_ref(RefCounted *p); ///< Allow access by reference counting methods.
+	friend void ::intrusive_ptr_release(RefCounted *p); ///< Allow access by reference counting methods.
 
 protected:
 	RefCounted() : _refCount(0) { }
 	virtual ~RefCounted() { }
 };
-
-namespace boost {
 
 /**
  * Add a reference to a pointer.
@@ -60,7 +56,5 @@ inline void intrusive_ptr_release(RefCounted *p) {
 	if (--(p->_refCount) == 0)
 		delete p;
 }
-
-} // End of namespace boost
 
 #endif
