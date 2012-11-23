@@ -98,12 +98,8 @@ _freetypelibs=""
 
 _srcdir=`dirname $0`
 
-# Determine a tmp file name, using mktemp(1) when available.
-if type mktemp > /dev/null 2>&1 ; then
-	TMPO=`mktemp /tmp/scummvm-conf.XXXXXXXXXX`
-else
-	TMPO=./scummvm-tools-conf
-fi
+# Use temp files in the build directory
+TMPO=./scummvm-tools-conf
 TMPC=${TMPO}.cpp
 TMPLOG=config.log
 
