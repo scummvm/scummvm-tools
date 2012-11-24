@@ -453,6 +453,7 @@ for ac_option in $@; do
 	--enable-profiling)
 		CXXFLAGS="$CXXFLAGS -pg"
 		LDFLAGS="$LDFLAGS -pg"
+		;;
 	--host=*)
 		_host=`echo $ac_option | cut -d '=' -f 2`
 		;;
