@@ -62,6 +62,7 @@ get_var() {
 	eval echo \$${1}
 }
 
+_srcdir=`dirname $0`
 
 #
 # Default settings
@@ -87,6 +88,7 @@ _verbose_build=no
 _ranlib=ranlib
 _strip=strip
 _ar="ar cru"
+_as="as"
 _windres=windres
 _wxconfig=wx-config
 _wxpath="$PATH"
@@ -96,7 +98,12 @@ _wxlibs=""
 _freetypeincludes=""
 _freetypelibs=""
 
-_srcdir=`dirname $0`
+# For cross compiling
+_host=""
+_host_cpu=""
+_host_vendor=""
+_host_os=""
+_host_alias=""
 
 # Use temp files in the build directory
 TMPO=./scummvm-tools-conf
@@ -310,6 +317,9 @@ Installation directories:
   --mandir=DIR           directory to install the manpage in [PREFIX/share/man]
   --libdir=DIR           directory to install the plugins in [PREFIX/lib]
 
+Special configuration feature:
+  --host=HOST             cross-compile to target HOST (arm-linux, ...)
+
 Optional Features:
   --disable-debug          disable building with debugging symbols
   --enable-Werror          treat warnings as errors
@@ -443,6 +453,8 @@ for ac_option in $@; do
 	--enable-profiling)
 		CXXFLAGS="$CXXFLAGS -pg"
 		LDFLAGS="$LDFLAGS -pg"
+	--host=*)
+		_host=`echo $ac_option | cut -d '=' -f 2`
 		;;
 	--prefix=*)
 		_prefix=`echo $ac_option | cut -d '=' -f 2`
@@ -469,10 +481,196 @@ guessed_host=`$_srcdir/config.guess`
 get_system_exe_extension $guessed_host
 NATIVEEXEEXT=$_exeext
 
-_host_cpu=`echo $guessed_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\1/'`
-_host_vendor=`echo $guessed_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
-_host_os=`echo $guessed_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
-_host_alias="$_host_cpu-$_host_os"
+case $_host in
+android | android-v7a)
+	_host_os=android
+	_host_cpu=arm
+	_host_alias=arm-linux-androideabi
+	;;
+arm-riscos)
+	_host_os=riscos
+	_host_cpu=arm
+	;;
+bada)
+	_host_os=bada
+	if test "$_debug_build" = yes; then
+		_host_cpu=i686
+		_host_alias=i686-mingw32
+	else
+		_host_cpu=arm
+		_host_alias=arm-samsung-nucleuseabi
+	fi
+	;;
+caanoo)
+	_host_os=gph-linux
+	_host_cpu=arm
+	_host_alias=arm-none-linux-gnueabi
+	;;
+dingux)
+	_host_os=linux
+	_host_cpu=mipsel
+	_host_alias=mipsel-linux
+	;;
+dreamcast)
+	_host_os=dreamcast
+	_host_cpu=sh
+	_host_alias=sh-elf
+	CXXFLAGS="$CXXFLAGS -ml -m4-single-only"
+	LDFLAGS="$LDFLAGS -ml -m4-single-only"
+	;;
+ds)
+	_host_os=ds
+	_host_cpu=arm
+	_host_alias=arm-eabi
+	;;
+gamecube)
+	_host_os=gamecube
+	_host_cpu=ppc
+	_host_alias=powerpc-gekko
+	;;
+gp2x)
+	_host_os=gph-linux
+	_host_cpu=arm
+	_host_alias=arm-open2x-linux
+	;;
+gp2xwiz)
+	_host_os=gph-linux
+	_host_cpu=arm
+	_host_alias=arm-open2x-linux
+	;;
+i586-mingw32msvc)
+	_host_os=mingw32msvc
+	_host_cpu=i586
+	;;
+iphone)
+	_host_os=iphone
+	_host_cpu=arm
+	_host_alias=arm-apple-darwin9
+	;;
+linupy)
+	_host_os=linux
+	_host_cpu=arm
+	;;
+maemo)
+	_host_os=maemo
+	_host_cpu=arm
+	_host_alias=arm-linux
+
+	# The prefix is always the same on Maemo so we hardcode the default
+	# here. It is still possible to define a custom prefix which is
+	# needed when packaging the app with a user-specific app ID.
+	test "x$prefix" = xNONE && prefix=/opt/scummvm
+	# Maemo apps are installed into app-specific directories. The
+	# default directory structure of ScummVM makes no sense here so we
+	# hardcode Maemo specific directories here.
+	datarootdir='${prefix}/share'
+	datadir=/opt/scummvm/share
+	docdir='${datarootdir}/doc/scummvm'
+	;;
+motoezx)
+	_host_os=linux
+	_host_cpu=arm
+	_host_alias=arm-linux-gnu
+	;;
+motomagx)
+	_host_os=linux
+	_host_cpu=arm
+	_host_alias=arm-linux-gnueabi
+	;;
+n64)
+	_host_os=n64
+	_host_cpu=mips
+	_host_alias=mips64
+	;;
+neuros)
+	_host_os=linux
+	_host_cpu=arm
+	;;
+openpandora)
+	_host_os=linux
+	_host_cpu=arm
+	_host_alias=arm-angstrom-linux-gnueabi
+	;;
+ppc-amigaos)
+	_host_os=amigaos
+	_host_cpu=ppc
+	;;
+ps2)
+	_host_os=ps2
+	_host_cpu=mips64r5900el
+	_host_alias=ee
+	;;
+ps3)
+	_host_os=ps3
+	_host_cpu=ppc
+	_host_alias=powerpc64-ps3-elf
+
+	# The prefix is always the same on PS3 so we hardcode the default
+	# here. It is still possible to define a custom prefix which is
+	# needed when packaging the app with a user-specific app ID.
+	test "x$prefix" = xNONE && prefix=/dev_hdd0/game/SCUM12000/USRDIR
+	# PS3 apps are installed into app-specific directories. The
+	# default directory structure of ScummVM makes no sense here so we
+	# hardcode PS3 specific directories here.
+	datarootdir='${prefix}/data'
+	datadir='${datarootdir}'
+	docdir='${prefix}/doc'
+	;;
+psp)
+	_host_os=psp
+	_host_cpu=mipsallegrexel
+	_host_alias=psp
+	;;
+samsungtv)
+	_host_os=linux
+	_host_cpu=arm
+	_host_alias=arm-linux-gnueabi
+	;;
+webos)
+	_host_os=webos
+	_host_cpu=arm
+	_host_alias=arm-none-linux-gnueabi
+	# The prefix is always the same on WebOS so we hardcode the default
+	# here. It is still possible to define a custom prefix which is
+	# needed when packaging the app with a user-specific app ID.
+	test "x$prefix" = xNONE && prefix=/media/cryptofs/apps/usr/palm/applications/org.scummvm.scummvm
+	# WebOS apps are installed into app-specific directories. The
+	# default directory structure of ScummVM makes no sense here so we
+	# hardcode WebOS specific directories here.
+	datarootdir='${prefix}/data'
+	datadir='${datarootdir}'
+	docdir='${prefix}/doc'
+	;;
+wii)
+	_host_os=wii
+	_host_cpu=ppc
+	_host_alias=powerpc-gekko
+	;;
+wince)
+	_host_os=wince
+	_host_cpu=arm
+	_host_alias=arm-mingw32ce
+	;;
+*)
+	if test -n "$_host"; then
+		guessed_host=`$_srcdir/config.sub $_host`
+	fi
+	_host_cpu=`echo $guessed_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\1/'`
+	_host_vendor=`echo $guessed_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
+	_host_os=`echo $guessed_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
+	;;
+esac
+
+if test -z "$_host_alias"; then
+	_host_alias="$_host_cpu-$_host_os"
+else
+	# if _host_alias was set, default to the standard GNU tools
+	_ranlib=$_host_alias-ranlib
+	_strip=$_host_alias-strip
+	_ar="$_host_alias-ar cru"
+	_as="$_host_alias-as"
+	_windres=$_host_alias-windres
+fi
 
 #
 # Determine extra build flags for debug and/or release builds
@@ -832,6 +1030,28 @@ case $_host_os in
 		DEFINES="$DEFINES -DMACOSX"
 		LIBS="$LIBS -framework AudioUnit -framework AudioToolbox -framework Carbon -framework CoreMIDI"
 		add_line_to_config_mk 'MACOSX = 1'
+
+		# Now we may have MacPorts or Fink installed
+		# Which put libraries and headers in non-standard places
+		# Checking them here
+
+		# MacPorts
+		# There is no way to get the prefix, so implementing a hack here
+		macport_version=`port version 2>/dev/null`
+		if test "$?" -eq 0; then
+			macport_version="`echo "${macport_version}" | sed -ne 's/Version: \([0-9]\.[0-9]\.[0-9]\)/\1/gp'`"
+			echo_n "You seem to be running MacPorts version ${macport_version}..."
+
+			macport_prefix=`which port`
+			# strip off /bin/port from /opt/local/bin/port
+			macport_prefix=`dirname ${macport_prefix}`
+			macport_prefix=`dirname ${macport_prefix}`
+
+			echo "adding ${macport_prefix} to paths"
+
+			LDFLAGS="-L${macport_prefix}/lib $LDFLAGS"
+			CXXFLAGS="-I${macport_prefix}/include $CXXFLAGS"
+		fi
 		;;
 	freebsd*)
 		LDFLAGS="$LDFLAGS -L/usr/local/lib"
@@ -874,6 +1094,51 @@ case $_host_os in
 		LIBS="$LIBS -lnsl -lsocket"
 		;;
 esac
+
+if test -n "$_host"; then
+	# Cross-compiling mode - add your target here if needed
+	echo "Cross-compiling to $_host"
+	case "$_host" in
+		arm-linux|arm*-linux-gnueabi|arm-*-linux)
+			;;
+		arm-riscos|linupy)
+			DEFINES="$DEFINES -DLINUPY"
+			;;
+		*darwin*)
+			_ranlib=$_host-ranlib
+			_strip=$_host-strip
+			;;
+		m68k-atari-mint)
+			DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
+			_ranlib=m68k-atari-mint-ranlib
+			_ar="m68k-atari-mint-ar cru"
+			;;
+		*mingw32*)
+			_windres=$_host-windres
+			_ar="$_host-ar cru"
+			_ranlib=$_host-ranlib
+			;;
+		mips-sgi*)
+			LDFLAGS="$LDFLAGS -static-libgcc"
+			LIBS="$LIBS -laudio"
+			;;
+		ppc-amigaos)
+			# Only static builds link successfully on buildbot
+			LDFLAGS=`echo $LDFLAGS | sed 's/-use-dynld//'`
+			LDFLAGS="$LDFLAGS -static"
+
+			# toolchain binaries prefixed by host
+			_ranlib=$_host-ranlib
+			_strip=$_host-strip
+			_ar="$_host-ar cru"
+			_as="$_host-as"
+			_windres=$_host-windres
+			;;
+		*)
+			echo "WARNING: Unknown target, continuing with auto-detected values"
+			;;
+	esac
+fi
 
 #
 # Determine whether host is POSIX compliant, or at least POSIX
