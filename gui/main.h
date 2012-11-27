@@ -115,8 +115,6 @@ public:
 	void onMenuAbout(wxCommandEvent &evt);
 	void onMenuExit(wxCommandEvent &evt);
 
-
-
 	/** The state of the wizard so far */
 	Configuration _configuration;
 
@@ -125,10 +123,13 @@ public:
 private:
 	enum SwitchToPage { NextPage, PreviousPage, FirstPage };
 	void switchPage(WizardPage *nextPage, SwitchToPage page);
+    
+	void destroyOldPanels(wxIdleEvent &evt);
 
 	wxPanel *_wizardpane;
 
 	std::vector<WizardPage *> _pages;
+	std::vector<wxWindow *> _oldPanels;
 
 	DECLARE_EVENT_TABLE()
 };

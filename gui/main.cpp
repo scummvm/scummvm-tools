@@ -226,6 +226,9 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	_buttons = new WizardButtons(main, linetext, _configuration);
 	sizer->Add(_buttons, wxSizerFlags().Border().Center().Expand());
 
+	// Delete old panels on idle event
+	Connect(wxEVT_IDLE, wxIdleEventHandler(ScummToolsFrame::destroyOldPanels), NULL, this);
+
 	main->SetSizer(sizer);
 }
 
@@ -235,6 +238,9 @@ ScummToolsFrame::~ScummToolsFrame() {
 	_configuration.save(false);
 
 	for (std::vector<WizardPage *>::iterator iter = _pages.begin(); iter != _pages.end(); ++iter)
+		delete *iter;
+
+	for (std::vector<wxWindow *>::iterator iter = _oldPanels.begin(); iter != _oldPanels.end(); ++iter)
 		delete *iter;
 }
 
@@ -288,9 +294,15 @@ void ScummToolsFrame::switchPage(WizardPage *next, SwitchToPage page) {
 		break;
 	}
 
-	if (oldPanel)
+	if (oldPanel) {
 		// Destroy the old page
-		oldPanel->Destroy();
+		// oldPanel->Destroy();
+		// We have an issue here for the intro page. This is called from the event handler of buttons on the panel
+		// (the Compress, Extract or Advanced button). So we cannot delete the oldPanel now (that would cause a crash).
+		// Instead we hide the panel and it will be deleted later (on the next Idel Event).
+		oldPanel->Hide();
+		_oldPanels.push_back(oldPanel);
+	}
 
 	wxWindow *newPanel = _pages.back()->CreatePanel(_wizardpane);
 
@@ -304,6 +316,13 @@ void ScummToolsFrame::switchPage(WizardPage *next, SwitchToPage page) {
 	_buttons->reset();
 	_buttons->showPrevious(_pages.size() > 1);
 	_buttons->setPage(_pages.back(), newPanel);
+}
+
+void ScummToolsFrame::destroyOldPanels(wxIdleEvent &) {
+	while (!_oldPanels.empty()) {
+		delete _oldPanels.back();
+		_oldPanels.pop_back();
+	}
 }
 
 wxString ScummToolsFrame::GetHelpText() {
