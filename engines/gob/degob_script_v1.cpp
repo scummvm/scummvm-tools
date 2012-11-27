@@ -705,7 +705,7 @@ void Script_v1::o1_drawOperations(FuncParams &params) {
 
 void Script_v1::o1_goblinFunc(FuncParams &params) {
 	FuncParams gobParams;
-	bool objDescSet = false;
+	//bool objDescSet = false;
 	int16 cmd;
 
 	gobParams.extraData = 0;
@@ -715,24 +715,24 @@ void Script_v1::o1_goblinFunc(FuncParams &params) {
 	skip(2);
 
 	if ((cmd > 0) && (cmd < 17)) {
-		objDescSet = true;
+		//objDescSet = true;
 		gobParams.objIndex = (int16) readUint16();
 		gobParams.extraData = (int16) readUint16();
 	}
 
 	if ((cmd > 90) && (cmd < 107)) {
-		objDescSet = true;
+		//objDescSet = true;
 		gobParams.objIndex = (int16) readUint16();
 		gobParams.extraData = (int16) readUint16();
 		cmd -= 90;
 	}
 
 	if ((cmd > 110) && (cmd < 128)) {
-		objDescSet = true;
+		//objDescSet = true;
 		gobParams.objIndex = (int16) readUint16();
 		cmd -= 90;
 	} else if ((cmd > 20) && (cmd < 38)) {
-		objDescSet = true;
+		//objDescSet = true;
 		gobParams.objIndex = (int16) readUint16();
 	}
 

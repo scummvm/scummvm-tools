@@ -499,7 +499,7 @@ int32 CompressScummBun::decompressCodec(int32 codec, byte *comp_input, byte *com
 			int32 destPos;
 			int16 firstWord;
 			byte initialTablePos[MAX_CHANNELS] = {0, 0};
-			int32 initialimcTableEntry[MAX_CHANNELS] = {7, 7};
+			//int32 initialimcTableEntry[MAX_CHANNELS] = {7, 7};
 			int32 initialOutputWord[MAX_CHANNELS] = {0, 0};
 			int32 totalBitOffset, curTablePos, outputWord;
 			byte *dst;
@@ -539,7 +539,7 @@ int32 CompressScummBun::decompressCodec(int32 codec, byte *comp_input, byte *com
 				for (i = 0; i < channels; i++) {
 					initialTablePos[i] = *src;
 					src += 1;
-					initialimcTableEntry[i] = READ_BE_UINT32(src);
+					/*initialimcTableEntry[i] =*/ READ_BE_UINT32(src);
 					src += 4;
 					initialOutputWord[i] = READ_BE_UINT32(src);
 					src += 4;

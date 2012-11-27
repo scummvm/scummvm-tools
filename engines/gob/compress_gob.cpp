@@ -205,7 +205,6 @@ void CompressGob::writeEmptyHeader(Common::File &stk, uint16 chunkCount) {
 void CompressGob::writeBody(Common::Filename *inpath, Common::File &stk, Chunk *chunks) {
 	Chunk *curChunk = chunks;
 	Common::File src;
-	uint32 tmpSize;
 
 	while (curChunk) {
 		inpath->setFullName(curChunk->name);
@@ -229,7 +228,6 @@ void CompressGob::writeBody(Common::Filename *inpath, Common::File &stk, Chunk *
 		}
 
 		if (curChunk->packed == 0) {
-			tmpSize = 0;
 			curChunk->size = writeBodyStoreFile(stk, src);
 			print("Storing %12s\t%d bytes", curChunk->name, curChunk->size);
 		}
