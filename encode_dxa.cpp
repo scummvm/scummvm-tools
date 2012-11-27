@@ -647,11 +647,9 @@ int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsign
 	png_byte header[8];
 
 	png_byte color_type;
-	png_byte bit_depth;
 
 	png_structp png_ptr;
 	png_infop info_ptr;
-	int number_of_passes;
 	png_bytep *row_pointers;
 	png_size_t rowbytes;
 
@@ -681,14 +679,14 @@ int EncodeDXA::read_png_file(const char* filename, unsigned char *&image, unsign
 	width = png_get_image_width(png_ptr, info_ptr);
 	height = png_get_image_height(png_ptr, info_ptr);
 	color_type = png_get_color_type(png_ptr, info_ptr);
-	bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+	/*png_byte bit_depth =*/ png_get_bit_depth(png_ptr, info_ptr);
 
 	if (color_type != PNG_COLOR_TYPE_PALETTE) {
 		palette = NULL;
 		return 2;
 	}
 
-	number_of_passes = png_set_interlace_handling(png_ptr);
+	/*int number_of_passes =*/ png_set_interlace_handling(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
 
 	// read file

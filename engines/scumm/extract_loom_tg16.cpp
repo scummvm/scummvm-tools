@@ -699,7 +699,7 @@ void ExtractLoomTG16::extract_resource(Common::File &input, Common::File &output
 	uint16 j;
 #endif
 	uint32 i, rlen;
-	uint8 junk, rtype, rid;
+	uint8 junk = 0, rtype = 0, rid = 0;
 
 	if (res == NULL)
 		error("extract_resource - no resource specified");
@@ -986,6 +986,7 @@ void ExtractLoomTG16::extract_resource(Common::File &input, Common::File &output
 	default:
 		warning("extract_resource - unknown resource type %d specified", res->type);
 	}
+	print("Unknown/unused fields: junk=%d, rtype=%d, rid=%d", junk, rtype, rid);
 }
 
 #ifdef MAKE_LFLS
