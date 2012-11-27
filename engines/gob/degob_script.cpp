@@ -182,7 +182,7 @@ byte *ExtTable::unpack(const byte *packedData, uint32 &size) const {
 Script::Script(byte *totData, uint32 totSize, ExtTable *extTable) :
 	_totData(totData), _ptr(totData), _totSize(totSize), _extTable(extTable) {
 
-	assert((totData > 0) && (totSize > 128));
+	assert(totData && (totSize > 128));
 
 	_indent = 0;
 

@@ -759,10 +759,10 @@ void ExtractLoomTG16::extract_resource(Common::File &input, Common::File &output
 			write_cword(output, 'OR', &rlen); // RO - Room
 
 			uint16 slen;
-			uint8 stype;
+			//uint8 stype;
 
 			slen = read_cword(input, &i) - 3;
-			stype = read_cbyte(input, &i);
+			/*stype =*/ read_cbyte(input, &i);
 
 			write_clong(output, slen + 6, &rlen);
 			write_cword(output, 'AP', &rlen); // PA - palettes
@@ -775,7 +775,7 @@ void ExtractLoomTG16::extract_resource(Common::File &input, Common::File &output
 				write_cbyte(output, read_cbyte(input, &i), &rlen);
 
 			slen = read_cword(input, &i) - 3;
-			stype = read_cbyte(input, &i);
+			/*stype =*/ read_cbyte(input, &i);
 
 			write_clong(output, slen + 6, &rlen);
 			write_cword(output, 'LT', &rlen); // TL - tiles

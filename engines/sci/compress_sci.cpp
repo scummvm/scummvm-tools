@@ -268,11 +268,11 @@ void CompressSci::compressData(SciResourceDataType dataType) {
 		sampleData = new byte[sampleDataSize];
 		_input.read_throwsOnError(sampleData, sampleDataSize);
 
-		bool dataUnsigned = false;
+		//bool dataUnsigned = false;
 		if (sampleFlags & 0x04)
 			sampleBits = 16;
-		if (sampleFlags & 0x08)
-			dataUnsigned = true;
+		//if (sampleFlags & 0x08)
+		//	dataUnsigned = true;
 		if (sampleFlags & 0x01) {
 			// SOL datastream is compressed, we need to uncompress it
 			byte *uncompressedData = new byte[sampleDataSize * 2];
