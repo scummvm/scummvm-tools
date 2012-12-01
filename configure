@@ -84,6 +84,7 @@ _need_memalign=no
 _debug_build=auto
 _release_build=auto
 _verbose_build=no
+_enable_prof=no
 # Default commands
 _ranlib=ranlib
 _strip=strip
@@ -332,7 +333,9 @@ Special configuration feature:
 Optional Features:
   --disable-debug          disable building with debugging symbols
   --enable-Werror          treat warnings as errors
-  --enable-verbose-build   enable regular echoing of commands during build process
+  --enable-profiling       enable profiling
+  --enable-verbose-build   enable regular echoing of commands during build
+                           process
 
 Optional Libraries:
   --with-ogg-prefix=DIR    Prefix where libogg is installed (optional)
@@ -460,8 +463,7 @@ for ac_option in $@; do
 		_release_build=no
 		;;
 	--enable-profiling)
-		CXXFLAGS="$CXXFLAGS -pg"
-		LDFLAGS="$LDFLAGS -pg"
+		_enable_prof=yes
 		;;
 	--host=*)
 		_host=`echo $ac_option | cut -d '=' -f 2`
@@ -1547,6 +1549,15 @@ test -z "$_bindir" && _bindir="$_prefix/bin"
 test -z "$_datadir" && _datadir="$_prefix/share"
 test -z "$_mandir" && _mandir="$_prefix/share/man"
 test -z "$_libdir" && _libdir="$_prefix/lib"
+
+#
+# Set variables for profiling.
+# We need to do it here to prevent mess-ups with the tests e.g. on the PSP
+#
+if test "$_enable_prof" = yes ; then
+	CXXFLAGS="$CXXFLAGS -pg"
+	LDFLAGS="$LDFLAGS -pg"
+fi
 
 _def_media_path='#define APP_MEDIA_PATH "'$_datadir'"'
 
