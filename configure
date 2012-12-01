@@ -263,6 +263,15 @@ find_wxconfig() {
 #
 get_system_exe_extension() {
 	case $1 in
+	arm-riscos)
+		_exeext=",ff8"
+		;;
+	dreamcast | ds | gamecube | n64 | ps2 | psp | wii)
+		_exeext=".elf"
+		;;
+	gph-linux)
+		_exeext=".gph"
+		;;
 	mingw* | *os2-emx | wince)
 		_exeext=".exe"
 		;;
@@ -695,7 +704,18 @@ fi
 #
 get_system_exe_extension $_host_os
 HOSTEXEEXT=$_exeext
-SEPARATOR=":"
+
+#
+# Determine separator used for $PATH
+#
+case $_host_os in
+os2-emx*)
+	SEPARATOR=";"
+	;;
+*)
+	SEPARATOR=":"
+	;;
+esac
 
 #
 # Determine the C++ compiler
