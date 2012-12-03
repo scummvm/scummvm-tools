@@ -98,8 +98,15 @@ win32dist:   all
 	cp gui/media/logo.jpg $(WIN32PATH)/tools/media/
 	cp gui/media/tile.gif $(WIN32PATH)/tools/media/
 	$(STRIP) construct_mohawk$(EXEEXT) -o $(WIN32PATH)/tools/construct_mohawk$(EXEEXT)
-	$(STRIP) create_sjisfnt$(EXEEXT) -o $(WIN32PATH)/tools/create_sjisfnt$(EXEEXT)
+	ifeq "$(USE_FREETYPE)" "1"
+		ifeq "$(USE_ICONV)" "1"
+			$(STRIP) create_sjisfnt$(EXEEXT) -o $(WIN32PATH)/tools/create_sjisfnt$(EXEEXT)
+		endif
+	endif
 	$(STRIP) decine$(EXEEXT) -o $(WIN32PATH)/tools/decine$(EXEEXT)
+	ifeq "$(USE_BOOST)" "1"
+		$(STRIP) decompile$(EXEEXT) -o $(WIN32PATH)/tools/decompile$(EXEEXT)
+	endif
 	$(STRIP) degob$(EXEEXT) -o $(WIN32PATH)/tools/degob$(EXEEXT)
 	$(STRIP) dekyra$(EXEEXT) -o $(WIN32PATH)/tools/dekyra$(EXEEXT)
 	$(STRIP) deriven$(EXEEXT) -o $(WIN32PATH)/tools/deriven$(EXEEXT)
@@ -107,7 +114,9 @@ win32dist:   all
 	$(STRIP) desword2$(EXEEXT) -o $(WIN32PATH)/tools/desword2$(EXEEXT)
 	$(STRIP) extract_mohawk$(EXEEXT) -o $(WIN32PATH)/tools/extract_mohawk$(EXEEXT)
 	$(STRIP) gob_loadcalc$(EXEEXT) -o $(WIN32PATH)/tools/gob_loadcalc$(EXEEXT)
-	$(STRIP) scummvm-tools$(EXEEXT) -o $(WIN32PATH)/tools/scummvm-tools$(EXEEXT)
+	ifeq "$(USE_WXWIDGETS)" "1"
+		$(STRIP) scummvm-tools$(EXEEXT) -o $(WIN32PATH)/tools/scummvm-tools$(EXEEXT)
+	endif
 	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(WIN32PATH)/tools/scummvm-tools-cli$(EXEEXT)
 	cp *.bat $(WIN32PATH)/tools
 	cp COPYING $(WIN32PATH)/tools/COPYING.txt
@@ -127,8 +136,15 @@ win32setup: all
 	cp $(srcdir)/README           $(srcdir)/$(WIN32BUILD)
 	unix2dos $(srcdir)/$(WIN32BUILD)/*.*
 	$(STRIP) construct_mohawk$(EXEEXT)   -o $(srcdir)/$(WIN32BUILD)/construct_mohawk$(EXEEXT)
-	$(STRIP) create_sjisfnt$(EXEEXT)     -o $(srcdir)/$(WIN32BUILD)/create_sjisfnt$(EXEEXT)
+	ifeq "$(USE_FREETYPE)" "1"
+		ifeq "$(USE_ICONV)" "1"
+			$(STRIP) create_sjisfnt$(EXEEXT)     -o $(srcdir)/$(WIN32BUILD)/create_sjisfnt$(EXEEXT)
+		endif
+	endif
 	$(STRIP) decine$(EXEEXT)             -o $(srcdir)/$(WIN32BUILD)/decine$(EXEEXT)
+	ifeq "$(USE_BOOST)" "1"
+		$(STRIP) decompile$(EXEEXT)          -o $(srcdir)/$(WIN32BUILD)/decompile$(EXEEXT)
+	endif
 	$(STRIP) degob$(EXEEXT)              -o $(srcdir)/$(WIN32BUILD)/degob$(EXEEXT)
 	$(STRIP) dekyra$(EXEEXT)             -o $(srcdir)/$(WIN32BUILD)/dekyra$(EXEEXT)
 	$(STRIP) deriven$(EXEEXT)            -o $(srcdir)/$(WIN32BUILD)/deriven$(EXEEXT)
@@ -136,7 +152,9 @@ win32setup: all
 	$(STRIP) desword2$(EXEEXT)           -o $(srcdir)/$(WIN32BUILD)/desword2$(EXEEXT)
 	$(STRIP) extract_mohawk$(EXEEXT)     -o $(srcdir)/$(WIN32BUILD)/extract_mohawk$(EXEEXT)
 	$(STRIP) gob_loadcalc$(EXEEXT)       -o $(srcdir)/$(WIN32BUILD)/gob_loadcalc$(EXEEXT)
-	$(STRIP) scummvm-tools$(EXEEXT)      -o $(srcdir)/$(WIN32BUILD)/scummvm-tools$(EXEEXT)
+	ifeq "$(USE_WXWIDGETS)" "1"
+		$(STRIP) scummvm-tools$(EXEEXT)      -o $(srcdir)/$(WIN32BUILD)/scummvm-tools$(EXEEXT)
+	endif
 	$(STRIP) scummvm-tools-cli$(EXEEXT)  -o $(srcdir)/$(WIN32BUILD)/scummvm-tools-cli$(EXEEXT)
 	makensis -V2 -Dtop_srcdir="../.." -Dtext_dir="../../$(WIN32BUILD)" -Dbuild_dir="../../$(WIN32BUILD)" $(srcdir)/dists/win32/scummvm-tools.nsi
 
@@ -154,8 +172,15 @@ aos4dist: all
 	cp $(srcdir)/gui/media/logo.jpg $(AOS4PATH)/tools/media/
 	cp $(srcdir)/gui/media/tile.gif $(AOS4PATH)/tools/media/
 	$(STRIP) construct_mohawk$(EXEEXT) -o $(AOS4PATH)/tools/construct_mohawk$(EXEEXT)
-	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AOS4PATH)/tools/create_sjisfnt$(EXEEXT)
+	ifeq "$(USE_FREETYPE)" "1"
+		ifeq "$(USE_ICONV)" "1"
+			$(STRIP) create_sjisfnt$(EXEEXT) -o $(AOS4PATH)/tools/create_sjisfnt$(EXEEXT)
+		endif
+	endif
 	$(STRIP) decine$(EXEEXT) -o $(AOS4PATH)/tools/decine$(EXEEXT)
+	ifeq "$(USE_BOOST)" "1"
+		$(STRIP) decompile$(EXEEXT) -o $(AOS4PATH)/tools/decompile$(EXEEXT)
+	endif
 	$(STRIP) degob$(EXEEXT) -o $(AOS4PATH)/tools/degob$(EXEEXT)
 	$(STRIP) dekyra$(EXEEXT) -o $(AOS4PATH)/tools/dekyra$(EXEEXT)
 	$(STRIP) deriven$(EXEEXT) -o $(AOS4PATH)/tools/deriven$(EXEEXT)
@@ -163,9 +188,11 @@ aos4dist: all
 	$(STRIP) desword2$(EXEEXT) -o $(AOS4PATH)/tools/desword2$(EXEEXT)
 	$(STRIP) extract_mohawk$(EXEEXT) -o $(AOS4PATH)/tools/extract_mohawk$(EXEEXT)
 	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AOS4PATH)/tools/gob_loadcalc$(EXEEXT)
-	$(STRIP) scummvm-tools$(EXEEXT) -o $(AOS4PATH)/tools/scummvm-tools$(EXEEXT)
+	ifeq "$(USE_WXWIDGETS)" "1"
+		$(STRIP) scummvm-tools$(EXEEXT) -o $(AOS4PATH)/tools/scummvm-tools$(EXEEXT)
+	endif
 	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AOS4PATH)/tools/scummvm-tools-cli$(EXEEXT)
-	#cp ${srcdir}/icons/scummvm.info $(AOS4PATH)/$(EXECUTABLE).info
+	#cp ${srcdir}/icons/scummvm-tools.info $(AOS4PATH)/scummvm-tools.info
 	cp $(srcdir)/COPYING $(AOS4PATH)/tools/COPYING.txt
 	cp $(srcdir)/README $(AOS4PATH)/tools/README.txt
 	cp $(srcdir)/NEWS $(AOS4PATH)/tools/NEWS.txt
