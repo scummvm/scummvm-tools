@@ -139,3 +139,33 @@ win32setup: all
 	$(STRIP) scummvm-tools.exe      -o $(srcdir)/$(WIN32BUILD)/scummvm-tools.exe
 	$(STRIP) scummvm-tools-cli.exe  -o $(srcdir)/$(WIN32BUILD)/scummvm-tools-cli.exe
 	makensis -V2 -Dtop_srcdir="../.." -Dtext_dir="../../$(WIN32BUILD)" -Dbuild_dir="../../$(WIN32BUILD)" $(srcdir)/dists/win32/scummvm-tools.nsi
+
+#
+# AmigaOS specific
+#
+
+# Special target to create an AmigaOS snapshot installation
+aos4dist: all
+	mkdir -p $(AOS4PATH)
+	mkdir -p $(AOS4PATH)/graphics
+	mkdir -p $(AOS4PATH)/tools
+	mkdir -p $(AOS4PATH)/tools/media
+	cp gui/media/detaillogo.jpg $(AOS4PATH)/tools/media/
+	cp gui/media/logo.jpg $(AOS4PATH)/tools/media/
+	cp gui/media/tile.gif $(AOS4PATH)/tools/media/
+	$(STRIP) construct_mohawk.exe -o $(AOS4PATH)/tools/construct_mohawk.exe
+	$(STRIP) create_sjisfnt.exe -o $(AOS4PATH)/tools/create_sjisfnt.exe
+	$(STRIP) decine.exe -o $(AOS4PATH)/tools/decine.exe
+	$(STRIP) degob.exe -o $(AOS4PATH)/tools/degob.exe
+	$(STRIP) dekyra.exe -o $(AOS4PATH)/tools/dekyra.exe
+	$(STRIP) deriven.exe -o $(AOS4PATH)/tools/deriven.exe
+	$(STRIP) descumm.exe -o $(AOS4PATH)/tools/descumm.exe
+	$(STRIP) desword2.exe -o $(AOS4PATH)/tools/desword2.exe
+	$(STRIP) extract_mohawk.exe -o $(AOS4PATH)/tools/extract_mohawk.exe
+	$(STRIP) gob_loadcalc.exe -o $(AOS4PATH)/tools/gob_loadcalc.exe
+	$(STRIP) scummvm-tools.exe -o $(AOS4PATH)/tools/scummvm-tools.exe
+	$(STRIP) scummvm-tools-cli.exe -o $(AOS4PATH)/tools/scummvm-tools-cli.exe
+	#cp ${srcdir}/icons/scummvm.info $(AOS4PATH)/$(EXECUTABLE).info
+	cp COPYING $(AOS4PATH)/tools/COPYING.txt
+	cp README $(AOS4PATH)/tools/README.txt
+	cp NEWS $(AOS4PATH)/tools/NEWS.txt
