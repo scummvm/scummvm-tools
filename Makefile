@@ -80,6 +80,18 @@ else
 	$(error You need to run $(srcdir)/configure before you can run make. Check $(srcdir)/configure --help for a list of parameters)
 endif
 
+# Special target to create a application wrapper for Mac OS X
+bundle_name = ScummVM\ Tools.app
+bundle: scummvm-tools$(EXEEXT)
+	mkdir -p $(bundle_name)
+	mkdir -p $(bundle_name)/Contents
+	mkdir -p $(bundle_name)/Contents/MacOS
+	mkdir -p $(bundle_name)/Contents/Resources
+	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
+	cp $(srcdir)/dists/macosx/Info.plist $(bundle_name)/Contents/
+	cp $(srcdir)/gui/media/*.* $(bundle_name)/Contents/Resources
+	cp scummvm-tools$(EXEEXT) $(bundle_name)/Contents/MacOS/
+
 #
 # Windows specific
 #
