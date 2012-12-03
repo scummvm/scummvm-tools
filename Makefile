@@ -150,9 +150,9 @@ aos4dist: all
 	mkdir -p $(AOS4PATH)/graphics
 	mkdir -p $(AOS4PATH)/tools
 	mkdir -p $(AOS4PATH)/tools/media
-	cp gui/media/detaillogo.jpg $(AOS4PATH)/tools/media/
-	cp gui/media/logo.jpg $(AOS4PATH)/tools/media/
-	cp gui/media/tile.gif $(AOS4PATH)/tools/media/
+	cp $(srcdir)/gui/media/detaillogo.jpg $(AOS4PATH)/tools/media/
+	cp $(srcdir)/gui/media/logo.jpg $(AOS4PATH)/tools/media/
+	cp $(srcdir)/gui/media/tile.gif $(AOS4PATH)/tools/media/
 	$(STRIP) construct_mohawk.exe -o $(AOS4PATH)/tools/construct_mohawk.exe
 	$(STRIP) create_sjisfnt.exe -o $(AOS4PATH)/tools/create_sjisfnt.exe
 	$(STRIP) decine.exe -o $(AOS4PATH)/tools/decine.exe
@@ -166,6 +166,6 @@ aos4dist: all
 	$(STRIP) scummvm-tools.exe -o $(AOS4PATH)/tools/scummvm-tools.exe
 	$(STRIP) scummvm-tools-cli.exe -o $(AOS4PATH)/tools/scummvm-tools-cli.exe
 	#cp ${srcdir}/icons/scummvm.info $(AOS4PATH)/$(EXECUTABLE).info
-	cp COPYING $(AOS4PATH)/tools/COPYING.txt
-	cp README $(AOS4PATH)/tools/README.txt
-	cp NEWS $(AOS4PATH)/tools/NEWS.txt
+	cp $(srcdir)/COPYING $(AOS4PATH)/tools/COPYING.txt
+	cp $(srcdir)/README $(AOS4PATH)/tools/README.txt
+	cp $(srcdir)/NEWS $(AOS4PATH)/tools/NEWS.txt
