@@ -97,18 +97,18 @@ win32dist:   all
 	cp gui/media/detaillogo.jpg $(WIN32PATH)/tools/media/
 	cp gui/media/logo.jpg $(WIN32PATH)/tools/media/
 	cp gui/media/tile.gif $(WIN32PATH)/tools/media/
-	$(STRIP) construct_mohawk.exe -o $(WIN32PATH)/tools/construct_mohawk.exe
-	$(STRIP) create_sjisfnt.exe -o $(WIN32PATH)/tools/create_sjisfnt.exe
-	$(STRIP) decine.exe -o $(WIN32PATH)/tools/decine.exe
-	$(STRIP) degob.exe -o $(WIN32PATH)/tools/degob.exe
-	$(STRIP) dekyra.exe -o $(WIN32PATH)/tools/dekyra.exe
-	$(STRIP) deriven.exe -o $(WIN32PATH)/tools/deriven.exe
-	$(STRIP) descumm.exe -o $(WIN32PATH)/tools/descumm.exe
-	$(STRIP) desword2.exe -o $(WIN32PATH)/tools/desword2.exe
-	$(STRIP) extract_mohawk.exe -o $(WIN32PATH)/tools/extract_mohawk.exe
-	$(STRIP) gob_loadcalc.exe -o $(WIN32PATH)/tools/gob_loadcalc.exe
-	$(STRIP) scummvm-tools.exe -o $(WIN32PATH)/tools/scummvm-tools.exe
-	$(STRIP) scummvm-tools-cli.exe -o $(WIN32PATH)/tools/scummvm-tools-cli.exe
+	$(STRIP) construct_mohawk$(EXEEXT) -o $(WIN32PATH)/tools/construct_mohawk$(EXEEXT)
+	$(STRIP) create_sjisfnt$(EXEEXT) -o $(WIN32PATH)/tools/create_sjisfnt$(EXEEXT)
+	$(STRIP) decine$(EXEEXT) -o $(WIN32PATH)/tools/decine$(EXEEXT)
+	$(STRIP) degob$(EXEEXT) -o $(WIN32PATH)/tools/degob$(EXEEXT)
+	$(STRIP) dekyra$(EXEEXT) -o $(WIN32PATH)/tools/dekyra$(EXEEXT)
+	$(STRIP) deriven$(EXEEXT) -o $(WIN32PATH)/tools/deriven$(EXEEXT)
+	$(STRIP) descumm$(EXEEXT) -o $(WIN32PATH)/tools/descumm$(EXEEXT)
+	$(STRIP) desword2$(EXEEXT) -o $(WIN32PATH)/tools/desword2$(EXEEXT)
+	$(STRIP) extract_mohawk$(EXEEXT) -o $(WIN32PATH)/tools/extract_mohawk$(EXEEXT)
+	$(STRIP) gob_loadcalc$(EXEEXT) -o $(WIN32PATH)/tools/gob_loadcalc$(EXEEXT)
+	$(STRIP) scummvm-tools$(EXEEXT) -o $(WIN32PATH)/tools/scummvm-tools$(EXEEXT)
+	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(WIN32PATH)/tools/scummvm-tools-cli$(EXEEXT)
 	cp *.bat $(WIN32PATH)/tools
 	cp COPYING $(WIN32PATH)/tools/COPYING.txt
 	cp README $(WIN32PATH)/tools/README.txt
@@ -126,18 +126,18 @@ win32setup: all
 	cp $(srcdir)/NEWS             $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/README           $(srcdir)/$(WIN32BUILD)
 	unix2dos $(srcdir)/$(WIN32BUILD)/*.*
-	$(STRIP) construct_mohawk.exe   -o $(srcdir)/$(WIN32BUILD)/construct_mohawk.exe
-	$(STRIP) create_sjisfnt.exe     -o $(srcdir)/$(WIN32BUILD)/create_sjisfnt.exe
-	$(STRIP) decine.exe             -o $(srcdir)/$(WIN32BUILD)/decine.exe
-	$(STRIP) degob.exe              -o $(srcdir)/$(WIN32BUILD)/degob.exe
-	$(STRIP) dekyra.exe             -o $(srcdir)/$(WIN32BUILD)/dekyra.exe
-	$(STRIP) deriven.exe            -o $(srcdir)/$(WIN32BUILD)/deriven.exe
-	$(STRIP) descumm.exe            -o $(srcdir)/$(WIN32BUILD)/descumm.exe
-	$(STRIP) desword2.exe           -o $(srcdir)/$(WIN32BUILD)/desword2.exe
-	$(STRIP) extract_mohawk.exe     -o $(srcdir)/$(WIN32BUILD)/extract_mohawk.exe
-	$(STRIP) gob_loadcalc.exe       -o $(srcdir)/$(WIN32BUILD)/gob_loadcalc.exe
-	$(STRIP) scummvm-tools.exe      -o $(srcdir)/$(WIN32BUILD)/scummvm-tools.exe
-	$(STRIP) scummvm-tools-cli.exe  -o $(srcdir)/$(WIN32BUILD)/scummvm-tools-cli.exe
+	$(STRIP) construct_mohawk$(EXEEXT)   -o $(srcdir)/$(WIN32BUILD)/construct_mohawk$(EXEEXT)
+	$(STRIP) create_sjisfnt$(EXEEXT)     -o $(srcdir)/$(WIN32BUILD)/create_sjisfnt$(EXEEXT)
+	$(STRIP) decine$(EXEEXT)             -o $(srcdir)/$(WIN32BUILD)/decine$(EXEEXT)
+	$(STRIP) degob$(EXEEXT)              -o $(srcdir)/$(WIN32BUILD)/degob$(EXEEXT)
+	$(STRIP) dekyra$(EXEEXT)             -o $(srcdir)/$(WIN32BUILD)/dekyra$(EXEEXT)
+	$(STRIP) deriven$(EXEEXT)            -o $(srcdir)/$(WIN32BUILD)/deriven$(EXEEXT)
+	$(STRIP) descumm$(EXEEXT)            -o $(srcdir)/$(WIN32BUILD)/descumm$(EXEEXT)
+	$(STRIP) desword2$(EXEEXT)           -o $(srcdir)/$(WIN32BUILD)/desword2$(EXEEXT)
+	$(STRIP) extract_mohawk$(EXEEXT)     -o $(srcdir)/$(WIN32BUILD)/extract_mohawk$(EXEEXT)
+	$(STRIP) gob_loadcalc$(EXEEXT)       -o $(srcdir)/$(WIN32BUILD)/gob_loadcalc$(EXEEXT)
+	$(STRIP) scummvm-tools$(EXEEXT)      -o $(srcdir)/$(WIN32BUILD)/scummvm-tools$(EXEEXT)
+	$(STRIP) scummvm-tools-cli$(EXEEXT)  -o $(srcdir)/$(WIN32BUILD)/scummvm-tools-cli$(EXEEXT)
 	makensis -V2 -Dtop_srcdir="../.." -Dtext_dir="../../$(WIN32BUILD)" -Dbuild_dir="../../$(WIN32BUILD)" $(srcdir)/dists/win32/scummvm-tools.nsi
 
 #
@@ -153,18 +153,18 @@ aos4dist: all
 	cp $(srcdir)/gui/media/detaillogo.jpg $(AOS4PATH)/tools/media/
 	cp $(srcdir)/gui/media/logo.jpg $(AOS4PATH)/tools/media/
 	cp $(srcdir)/gui/media/tile.gif $(AOS4PATH)/tools/media/
-	$(STRIP) construct_mohawk.exe -o $(AOS4PATH)/tools/construct_mohawk.exe
-	$(STRIP) create_sjisfnt.exe -o $(AOS4PATH)/tools/create_sjisfnt.exe
-	$(STRIP) decine.exe -o $(AOS4PATH)/tools/decine.exe
-	$(STRIP) degob.exe -o $(AOS4PATH)/tools/degob.exe
-	$(STRIP) dekyra.exe -o $(AOS4PATH)/tools/dekyra.exe
-	$(STRIP) deriven.exe -o $(AOS4PATH)/tools/deriven.exe
-	$(STRIP) descumm.exe -o $(AOS4PATH)/tools/descumm.exe
-	$(STRIP) desword2.exe -o $(AOS4PATH)/tools/desword2.exe
-	$(STRIP) extract_mohawk.exe -o $(AOS4PATH)/tools/extract_mohawk.exe
-	$(STRIP) gob_loadcalc.exe -o $(AOS4PATH)/tools/gob_loadcalc.exe
-	$(STRIP) scummvm-tools.exe -o $(AOS4PATH)/tools/scummvm-tools.exe
-	$(STRIP) scummvm-tools-cli.exe -o $(AOS4PATH)/tools/scummvm-tools-cli.exe
+	$(STRIP) construct_mohawk$(EXEEXT) -o $(AOS4PATH)/tools/construct_mohawk$(EXEEXT)
+	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AOS4PATH)/tools/create_sjisfnt$(EXEEXT)
+	$(STRIP) decine$(EXEEXT) -o $(AOS4PATH)/tools/decine$(EXEEXT)
+	$(STRIP) degob$(EXEEXT) -o $(AOS4PATH)/tools/degob$(EXEEXT)
+	$(STRIP) dekyra$(EXEEXT) -o $(AOS4PATH)/tools/dekyra$(EXEEXT)
+	$(STRIP) deriven$(EXEEXT) -o $(AOS4PATH)/tools/deriven$(EXEEXT)
+	$(STRIP) descumm$(EXEEXT) -o $(AOS4PATH)/tools/descumm$(EXEEXT)
+	$(STRIP) desword2$(EXEEXT) -o $(AOS4PATH)/tools/desword2$(EXEEXT)
+	$(STRIP) extract_mohawk$(EXEEXT) -o $(AOS4PATH)/tools/extract_mohawk$(EXEEXT)
+	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AOS4PATH)/tools/gob_loadcalc$(EXEEXT)
+	$(STRIP) scummvm-tools$(EXEEXT) -o $(AOS4PATH)/tools/scummvm-tools$(EXEEXT)
+	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AOS4PATH)/tools/scummvm-tools-cli$(EXEEXT)
 	#cp ${srcdir}/icons/scummvm.info $(AOS4PATH)/$(EXECUTABLE).info
 	cp $(srcdir)/COPYING $(AOS4PATH)/tools/COPYING.txt
 	cp $(srcdir)/README $(AOS4PATH)/tools/README.txt
