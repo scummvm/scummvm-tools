@@ -3,6 +3,44 @@
 #
 ###############################################
 
+ifdef TOOL
+
+# Copy the list of objects to a new variable. The name of the new variable
+# contains the module name, a trick we use so we can keep multiple different
+# module object lists, one for each module.
+TOOL_OBJS-$(TOOL) := $(addprefix $(MODULE)/, $(TOOL_OBJS))
+
+# Add all involved directories to the MODULE_DIRS list
+MODULE_DIRS += $(sort $(dir $(TOOL_OBJS-$(TOOL))))
+
+LDFLAGS_$(TOOL)$(EXEEXT) := $(TOOL_LDFLAGS)
+
+$(MODULE)/$(TOOL)$(EXEEXT): $(TOOL_OBJS-$(TOOL))
+	$(QUIET_CXX)$(CXX) $(LDFLAGS) $+ $(LDFLAGS_$(@F)) -o $(@F)
+
+$(TOOL): $(TOOL_DEPS) $(MODULE)/$(TOOL)$(EXEEXT)
+
+tools: $(MAKE)
+
+clean: clean-$(TOOL)
+clean-$(TOOL): clean-% :
+	-$(RM) $(TOOL_OBJS-$*) $(TOOL-$*) $(TOOL)$(EXEEXT)
+
+dist-clean: dist-clean/$(TOOL)
+dist-clean/$(TOOL): dist-clean/% : clean-%
+	-$(RM) $(@F)$(EXEEXT)
+
+.PHONY: clean-$(TOOL) $(TOOL)
+
+# Reset TOOL_* vars
+TOOL:=
+TOOL_DEPS:=
+TOOL_LDFLAGS:=
+
+else
+
+#############################################################
+
 
 # Copy the list of objects to a new variable. The name of the new variable
 # contains the module name, a trick we use so we can keep multiple different
@@ -13,28 +51,6 @@ MODULE_OBJS-$(MODULE) := $(addprefix $(MODULE)/, $(MODULE_OBJS))
 MODULE_DIRS += $(sort $(dir $(MODULE_OBJS-$(MODULE))))
 
 
-
-ifdef TOOL_EXECUTABLE
-################################################
-# Build rule for (tool) executables.
-# TODO: Refactor this, so that even our master executable can use this rule?
-################################################
-TOOL-$(MODULE) := $(MODULE)/$(TOOL_EXECUTABLE)$(EXEEXT)
-$(TOOL-$(MODULE)): $(MODULE_OBJS-$(MODULE)) $(TOOL_DEPS)
-	$(QUIET_CXX)$(CXX) $(LDFLAGS) $+ -o $@
-
-# Reset TOOL_* vars
-TOOL_EXECUTABLE:=
-TOOL_DEPS:=
-
-# Add to "devtools" target
-devtools: $(TOOL-$(MODULE))
-
-# Pseudo target for comfort, allows for "make devtools/skycpt", etc.
-$(MODULE): $(TOOL-$(MODULE))
-clean-devtools: clean-$(MODULE)
-
-else
 ifdef PLUGIN
 ################################################
 # Build rule for dynamic (loadable) plugins
@@ -76,7 +92,6 @@ $(MODULE_LIB-$(MODULE)): $(MODULE_OBJS-$(MODULE))
 $(MODULE): $(MODULE_LIB-$(MODULE))
 
 endif # PLUGIN
-endif # TOOL_EXECUTABLE
 
 ###############################################
 # Clean target, removes all object files. This looks a bit hackish, as we have to
@@ -88,3 +103,5 @@ clean-$(MODULE): clean-% :
 	-$(RM) $(MODULE_OBJS-$*) $(MODULE_LIB-$*) $(PLUGIN-$*) $(TOOL-$*)
 
 .PHONY: clean-$(MODULE) $(MODULE)
+
+endif # TOOL

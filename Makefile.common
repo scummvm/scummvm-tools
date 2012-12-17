@@ -13,11 +13,7 @@ all: build
 # Module settings
 ######################################################################
 
-MODULES := tools/lua tools $(MODULES)
-
-# After the game specific modules follow the shared modules
-MODULES += 
-#	common
+MODULES := common tools/lua tools/luac tools $(MODULES)
 
 ######################################################################
 # The build rules follow - normally you should have no need to
@@ -26,6 +22,7 @@ MODULES +=
 
 # Concat DEFINES and INCLUDES to form the CPPFLAGS
 CPPFLAGS := $(DEFINES) $(INCLUDES)
+LDFLAGS += $(addprefix "-L", $(MODULES))
 
 # Include the build instructions for all modules
 -include $(addprefix $(srcdir)/, $(addsuffix /module.mk,$(MODULES)))
@@ -59,6 +56,9 @@ QUIET         = @
 endif
 endif
 endif
+
+dirs:
+	$(QUIET)$(MKDIR) $(MODULE_DIRS)
 
 build: dirs $(OBJS) $(MODULES)
 

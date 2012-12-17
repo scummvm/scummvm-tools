@@ -1,152 +1,119 @@
 
 MODULE := tools
 
-MODULE_DIRS += \
-	tools/
-
 #######################################################################
 # Tools directory
 #######################################################################
 
-TOOLS := \
-	tools/delua$(EXEEXT) \
-	tools/imc2wav$(EXEEXT) \
-	tools/int2flt$(EXEEXT) \
-	tools/cosb2cos$(EXEEXT) \
-	tools/meshb2obj$(EXEEXT) \
-	tools/sklb2txt$(EXEEXT) \
-	tools/animb2txt$(EXEEXT) \
-	tools/setb2set$(EXEEXT) \
-	tools/set2fig$(EXEEXT) \
-	tools/til2bmp$(EXEEXT) \
-	tools/unlab$(EXEEXT) \
-	tools/mklab$(EXEEXT) \
-	tools/vima$(EXEEXT) \
-	tools/labcopy$(EXEEXT) \
-	tools/luac/luac$(EXEEXT) \
-	tools/patchex/patchex$(EXEEXT) \
-	tools/diffr$(EXEEXT) \
-	tools/patchr$(EXEEXT)
+MAKE := \
+	delua \
+	imc2wav \
+	int2flt \
+	cosb2cos \
+	meshb2obj \
+	sklb2txt \
+	animb2txt \
+	setb2set \
+	set2fig \
+	til2bmp \
+	unlab \
+	mklab \
+	vima \
+	labcopy \
+	luac \
+	patchex \
+	diffr \
+	patchr
 
-# below not added as it depends for ppm, bpm library
-#	tools/mat2ppm$(EXEEXT)
-#	tools/bm2ppm$(EXEEXT)
+# 	these below are not added because they depend on the ppm and bpm libraries
+#	mat2ppm
+#	bm2ppm
 
-# Make sure the 'all' / 'clean' targets build/clean the tools, too
-#all:
-clean: clean-tools
-
-# Main target
-tools: $(TOOLS)
-
-clean-tools:
-	-$(RM) $(TOOLS)
-	-$(RM) tools/emi/*.o
-	-$(RM) tools/patchex/*.o
-	-$(RM) -r tools/patchex/.deps
-	-$(RM) -r tools/luac/*.o
-	-$(RM) -r tools/luac/.deps
 
 #
 # Build rules for the tools
 #
 
-tools/diffr$(EXEEXT): $(srcdir)/tools/diffr.cpp $(srcdir)/common/md5.o $(srcdir)/common/zlib.o
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common $(srcdir)/common/md5.o  $(srcdir)/common/zlib.o -lz -o $@ $< $(LDFLAGS)
+TOOL := diffr
+TOOL_OBJS := diffr.o
+TOOL_LDFLAGS := -lz -lcommon
+include $(srcdir)/rules.mk
 
-tools/patchr$(EXEEXT): $(srcdir)/tools/patchr.cpp $(srcdir)/common/md5.o $(srcdir)/common/zlib.o
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common $(srcdir)/common/md5.o  $(srcdir)/common/zlib.o -lz -o $@ $< $(LDFLAGS)
+TOOL := patchr
+TOOL_OBJS := patchr.o
+TOOL_LDFLAGS := -lz -lcommon
+include $(srcdir)/rules.mk
 
-tools/delua$(EXEEXT): $(srcdir)/tools/delua.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common -Ltools/lua -o $@ $< $(LDFLAGS) -llua
+TOOL := delua
+TOOL_OBJS := delua.o
+TOOL_LDFLAGS := -Ltools/lua -llua
+include $(srcdir)/rules.mk
 
-#g++ -DHAVE_CONFIG_H -DUNIX -I. -I./tools/luac  -I ./tools/lua   -c -o tools/luac/print.o tools/luac/print.c
+TOOL := mat2ppm
+TOOL_OBJS := mat2ppm.o
+TOOL_LDFLAGS := -lppm -lpbm
+include $(srcdir)/rules.mk
 
-tools/luac/luac$(EXEEXT):
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/dump.o tools/luac/dump.c
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/luac.o tools/luac/luac.c
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/opcode.o tools/luac/opcode.c
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/opt.o tools/luac/opt.c
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/print.o tools/luac/print.c
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I$(srcdir)/tools/lua -c -o tools/luac/rebase.o tools/luac/rebase.c
-	$(MKDIR) tools/luac/$(DEPDIR)
-	$(CXX) $(CFLAGS) tools/luac/dump.o tools/luac/luac.o tools/luac/opcode.o tools/luac/opt.o tools/luac/print.o tools/luac/rebase.o -Wall -L$(srcdir)/tools/lua -llua -o $@ $< $(LDFLAGS)
+TOOL := bmtoppm
+TOOL_OBJS := bmtoppm.o
+TOOL_LDFLAGS := -lppm -lpbm
+include $(srcdir)/rules.mk
 
-tools/mat2ppm$(EXEEXT): $(srcdir)/tools/mat2ppm.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -lppm -o $@ $< $(LDFLAGS)
+TOOL := imc2wav
+TOOL_OBJS := imc2wav.o
+include $(srcdir)/rules.mk
 
-tools/bmtoppm$(EXEEXT): $(srcdir)/tools/bmtoppm.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -lppm -lpbm -o $@ $< $(LDFLAGS)
+TOOL := int2flt
+TOOL_OBJS := int2flt.o
+include $(srcdir)/rules.mk
 
-tools/imc2wav$(EXEEXT): $(srcdir)/tools/imc2wav.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
+TOOL := cosb2cos
+TOOL_OBJS := emi/cosb2cos.o
+include $(srcdir)/rules.mk
 
-tools/int2flt$(EXEEXT): $(srcdir)/tools/int2flt.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
+TOOL := meshb2obj
+TOOL_OBJS := emi/meshb2obj.o emi/lab.o
+include $(srcdir)/rules.mk
 
-tools/cosb2cos$(EXEEXT): $(srcdir)/tools/emi/cosb2cos.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common -o $@ $< $(LDFLAGS)
+TOOL := animb2txt
+TOOL_OBJS := emi/animb2txt.o emi/lab.o
+include $(srcdir)/rules.mk
 
-tools/meshb2obj$(EXEEXT): $(srcdir)/tools/emi/meshb2obj.o $(srcdir)/tools/emi/lab.o
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS)
+TOOL := setb2set
+TOOL_OBJS := emi/setb2set.o emi/lab.o
+include $(srcdir)/rules.mk
 
-tools/animb2txt$(EXEEXT): $(srcdir)/tools/emi/animb2txt.cpp $(srcdir)/tools/emi/lab.o
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS)
+TOOL := sklb2txt
+TOOL_OBJS := emi/sklb2txt.o emi/lab.o
+include $(srcdir)/rules.mk
 
-tools/setb2set$(EXEEXT): $(srcdir)/tools/emi/setb2set.cpp $(srcdir)/tools/emi/lab.o
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS)
+TOOL := set2fig
+TOOL_OBJS := set2fig.o
+include $(srcdir)/rules.mk
 
-tools/sklb2txt$(EXEEXT): $(srcdir)/tools/emi/sklb2txt.cpp $(srcdir)/tools/emi/lab.o
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS)
+TOOL := til2bmp
+TOOL_OBJS := emi/til2bmp.o emi/lab.o
+TOOL_LDFLAGS := -lz
+include $(srcdir)/rules.mk
 
-tools/set2fig$(EXEEXT): $(srcdir)/tools/set2fig.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
+TOOL := unlab
+TOOL_OBJS := unlab.o
+include $(srcdir)/rules.mk
 
-tools/til2bmp$(EXEEXT): $(srcdir)/tools/emi/til2bmp.cpp $(srcdir)/tools/emi/lab.o
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -I. -Wall \
-	-L$(srcdir)/common tools/emi/lab.o -o $@ $< $(LDFLAGS) -lz
+TOOL := mklab
+TOOL_OBJS := mklab.o
+include $(srcdir)/rules.mk
 
-tools/unlab$(EXEEXT): $(srcdir)/tools/unlab.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
+TOOL := vima
+TOOL_OBJS := vima.o
+include $(srcdir)/rules.mk
 
-tools/mklab$(EXEEXT): $(srcdir)/tools/mklab.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
+TOOL := labcopy
+TOOL_OBJS := labcopy.o
+include $(srcdir)/rules.mk
 
-tools/vima$(EXEEXT): $(srcdir)/tools/vima.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) -Wall -o $@ $< $(LDFLAGS)
-
-tools/labcopy$(EXEEXT): $(srcdir)/tools/labcopy.cpp
-	$(MKDIR) tools/$(DEPDIR)
-	$(CXX) $(CFLAGS) $(DEFINES) -DHAVE_CONFIG_H -I$(srcdir) -Wall \
-	-L$(srcdir)/common -o $@ $< $(LDFLAGS)
-
-tools/patchex/patchex$(EXEEXT): tools/patchex/patchex.o tools/patchex/mszipd.o tools/patchex/cabd.o
-	$(MKDIR) tools/patchex/$(DEPDIR)
-	$(CXX) $(CFLAGS) tools/patchex/mszipd.o tools/patchex/cabd.o -Wall -o $@ $< $(LDFLAGS)
+TOOL := patchex
+TOOL_OBJS := patchex/patchex.o patchex/mszipd.o patchex/cabd.o
+include $(srcdir)/rules.mk
 
 .PHONY: clean-tools tools

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "luac.h"
-#include "lmem.h"
-#include "lstring.h"
+#include "tools/lua/lmem.h"
+#include "tools/lua/lstring.h"
 
 static const Opcode Info[]=			/* ORDER lopcodes.h */
 {
