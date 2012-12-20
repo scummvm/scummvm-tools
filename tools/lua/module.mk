@@ -26,7 +26,3 @@ MODULE_OBJS := \
 
 # Include common rules
 include $(srcdir)/rules.mk
-
-dirs:
-	$(QUIET)$(MKDIR) tools/lua
-	$(QUIET)$(MKDIR) tools/patchex

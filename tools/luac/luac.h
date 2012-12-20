@@ -4,12 +4,12 @@
 ** See Copyright Notice in lua.h
 */
 
-#include "lauxlib.h"
-#include "lfunc.h"
-#include "lobject.h"
-#include "lopcodes.h"
-#include "lstring.h"
-#include "lundump.h"
+#include "tools/lua/lauxlib.h"
+#include "tools/lua/lfunc.h"
+#include "tools/lua/lobject.h"
+#include "tools/lua/lopcodes.h"
+#include "tools/lua/lstring.h"
+#include "tools/lua/lundump.h"
 #include "common/endian.h"
 
 typedef struct
