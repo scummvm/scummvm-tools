@@ -64,14 +64,14 @@ int main(int argc, char **argv) {
 			" Unknown2: " << unknown2 << " numKeyframes: " << numKeyframes << std::endl;
 
 		if (operation == 3) { // Translation
-			for(int j = 0; i < numKeyframes; i++) {
+			for(int j = 0; j < numKeyframes; j++) {
 				time = readFloat(*file);
 				vec3d = readVector3d(*file);
 				std::cout << "Time : " << time << " Vector: " << vec3d->toString() << std::endl;
 				delete vec3d;
 			}
 		} else if (operation == 4) { // Rotation
-			for(int j = 0; i < numKeyframes; i++) {
+			for(int j = 0; j < numKeyframes; j++) {
 				time = readFloat(*file);
 				vec4d = readVector4d(*file);
 				std::cout << "Time : " << time << " Vector: " << vec4d->toString() << std::endl;
