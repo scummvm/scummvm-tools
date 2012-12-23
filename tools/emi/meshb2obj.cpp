@@ -131,13 +131,13 @@ int main(int argc, char **argv) {
 		faceLength = readInt(*file);
 		std::cout << "#Face-header: flags: " << flags << " hasTexture: " << hasTexture
 			<< " texId: " << texID << " faceLength: " << faceLength << std::endl;
-		short x = 0, y = 0, z = 0;
+		short xCoord = 0, yCoord = 0, zCoord = 0;
 		std::cout << "g " << j << std::endl;
 		for (int i = 0; i < faceLength; i += 3) {
-			x = readShort(*file) + 1;
-			y = readShort(*file) + 1;
-			z = readShort(*file) + 1;
-			std::cout << "f " << x << "//" << x << " " << y << "//" << y << " " << z << "//" << z <<  std::endl;
+			xCoord = readShort(*file) + 1;
+			yCoord = readShort(*file) + 1;
+			zCoord = readShort(*file) + 1;
+			std::cout << "f " << xCoord << "//" << xCoord << " " << yCoord << "//" << yCoord << " " << zCoord << "//" << zCoord <<  std::endl;
 		}
 	}
 	int hasBones = readInt(*file);

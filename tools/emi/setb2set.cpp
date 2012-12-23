@@ -92,6 +92,7 @@ void Data::Skip(int val)
 struct Section {
 public:
 	Section(Data *data);
+	virtual ~Section() {};
 	//virtual uint32 load() = 0;
 	virtual string ToString() = 0;
 protected:

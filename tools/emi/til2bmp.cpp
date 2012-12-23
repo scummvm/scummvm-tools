@@ -277,13 +277,13 @@ void ProcessFile(const char *_data, uint32_t size, std::string name){
 		width = FROM_LE_32(width);
 		til.read((char *)&height, 4);
 		height = FROM_LE_32(height);
-		uint32_t size = width*height*bpp;
-		char *data = new char[size];
+		uint32_t dataSize = width*height*bpp;
+		char *imageData = new char[dataSize];
 		char *outnamet = new char[64];
 		sprintf(outnamet,"%d.bmp",i);
-		til.read(data, size);
+		til.read(imageData, dataSize);
 		
-		allTheData[i] = new LucasBitMap(data, width, height,bpp,false);
+		allTheData[i] = new LucasBitMap(imageData, width, height,bpp,false);
 	}
 	LucasBitMap* bit = MakeFullPicture(allTheData);
 	bit->WriteBMP(name.c_str());
