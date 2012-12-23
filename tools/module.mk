@@ -36,12 +36,12 @@ MAKE := \
 
 TOOL := diffr
 TOOL_OBJS := diffr.o
-TOOL_LDFLAGS := -lz -lcommon
+TOOL_LDFLAGS := -lcommon -lz
 include $(srcdir)/rules.mk
 
 TOOL := patchr
 TOOL_OBJS := patchr.o
-TOOL_LDFLAGS := -lz -lcommon
+TOOL_LDFLAGS := -lcommon -lz
 include $(srcdir)/rules.mk
 
 TOOL := delua
