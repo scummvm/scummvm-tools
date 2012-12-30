@@ -23,7 +23,8 @@ MAKE := \
 	luac \
 	patchex \
 	diffr \
-	patchr
+	patchr \
+	bm2bmp
 
 # 	these below are not added because they depend on the ppm and bpm libraries
 #	mat2ppm
@@ -114,6 +115,10 @@ include $(srcdir)/rules.mk
 
 TOOL := patchex
 TOOL_OBJS := patchex/patchex.o patchex/mszipd.o patchex/cabd.o
+include $(srcdir)/rules.mk
+
+TOOL := bm2bmp
+TOOL_OBJS := bm2bmp.o lab.o
 include $(srcdir)/rules.mk
 
 .PHONY: clean-tools tools
