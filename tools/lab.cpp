@@ -36,8 +36,6 @@ uint32 READ_LE_UINT32(const void *ptr) {
 }
 
 void Lab::Load(std::string filename) {
-	g_type = GT_EMI; // FIXME, detect game-type properly.
-	
 	infile = fopen(filename.c_str(), "rb");
 	if (infile == 0) {
 		std::cout << "Can not open source file: " << filename << std::endl;
@@ -49,8 +47,17 @@ void Lab::Load(std::string filename) {
 	uint32 num, s_size, s_offset;
 	fread(&num, 1, 4, infile);
 	fread(&s_size, 1, 4, infile);
-	if(g_type == GT_EMI)
-		fread(&s_offset,1,4,infile);
+
+	uint32 typeTest = 0;
+	fread(&typeTest, 1, 4, infile);
+	if (typeTest == 0) { // First entry of the table has offset 0 for Grim
+		g_type = GT_GRIM;
+		fseek(infile, -4, SEEK_CUR);
+	} else { // EMI has an offset instead.
+		s_offset = typeTest;
+		g_type = GT_EMI;
+	}
+
 	head.num_entries = READ_LE_UINT32(&num);
 	head.string_table_size = READ_LE_UINT32(&s_size);
 	if (0 != memcmp(&head.magic, "LABN", 4)) {

@@ -72,19 +72,19 @@ TOOL_OBJS := emi/cosb2cos.o
 include $(srcdir)/rules.mk
 
 TOOL := meshb2obj
-TOOL_OBJS := emi/meshb2obj.o emi/lab.o
+TOOL_OBJS := emi/meshb2obj.o lab.o
 include $(srcdir)/rules.mk
 
 TOOL := animb2txt
-TOOL_OBJS := emi/animb2txt.o emi/lab.o
+TOOL_OBJS := emi/animb2txt.o lab.o
 include $(srcdir)/rules.mk
 
 TOOL := setb2set
-TOOL_OBJS := emi/setb2set.o emi/lab.o
+TOOL_OBJS := emi/setb2set.o lab.o
 include $(srcdir)/rules.mk
 
 TOOL := sklb2txt
-TOOL_OBJS := emi/sklb2txt.o emi/lab.o
+TOOL_OBJS := emi/sklb2txt.o lab.o
 include $(srcdir)/rules.mk
 
 TOOL := set2fig
@@ -92,7 +92,7 @@ TOOL_OBJS := set2fig.o
 include $(srcdir)/rules.mk
 
 TOOL := til2bmp
-TOOL_OBJS := emi/til2bmp.o emi/lab.o
+TOOL_OBJS := emi/til2bmp.o lab.o
 TOOL_LDFLAGS := -lz
 include $(srcdir)/rules.mk
 

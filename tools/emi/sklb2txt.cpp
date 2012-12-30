@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 #include "filetools.h"
-#include "lab.h"
+#include "tools/lab.h"
 // Based on Benjamin Haischs work on sklb-files.
 
 using namespace std;

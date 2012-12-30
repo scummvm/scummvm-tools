@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstring>
 #include "common/endian.h"
-#include "lab.h"
+#include "tools/lab.h"
 
 /*
 This tool converts EMI-TILEs into BMP-files, and supports both the format used in the Windows

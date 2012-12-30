@@ -21,7 +21,7 @@
 #include <string>
 #include <iostream>
 #include "filetools.h"
-#include "lab.h"
+#include "tools/lab.h"
 
 using namespace std;
 

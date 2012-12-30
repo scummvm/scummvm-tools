@@ -11,7 +11,7 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include "lab.h"
+#include "tools/lab.h"
 
 using namespace std;
 
