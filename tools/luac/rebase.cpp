@@ -116,11 +116,57 @@ void rec_bytecode(TProtoFunc* func, int* inst) {
 
 	Byte* p = func->code;
 
-	//Change const index
+	//Load opcodes in a more descriptive structure
 	i = 0;
-	newsize = 0;
-	while (1) {
+	do
 		p += INFO(func, p, &opcode_list[i]);
+	while (opcode_list[i++].op != ENDCODE);
+	luaM_free(func->code);
+	func->code = NULL;
+
+	//For jump instructions, calculate the number of
+	//instructions to skip/rewind, from the number of
+	//bytes to skip/rewind. The result is improperly
+	//stored in op.arg2, since it's a unused field.
+	for (i = 0; opcode_list[i].op != ENDCODE; ++i) {
+		Opcode &op = opcode_list[i];
+		int bytesToSkip, instToSkip, bytesToRewind, instToRewind, j;
+
+		switch (op.op_class) {
+		//Forward jump
+		case ONTJMP:
+		case ONFJMP:
+		case JMP:
+		case IFFJMP:
+			bytesToSkip = op.arg;
+			instToSkip = 0;
+			j = i;
+			while (bytesToSkip > 0) {
+				instToSkip++;
+				bytesToSkip -= opcode_list[++j].size;
+			}
+			assert(bytesToSkip == 0);
+			op.arg2 = instToSkip;
+			break;
+
+		//Backwards jump
+		case IFTUPJMP:
+		case IFFUPJMP:
+			bytesToRewind = op.arg;
+			instToRewind = 0;
+			j = i;
+			while (bytesToRewind > 0) {
+				bytesToRewind -= opcode_list[j--].size;
+				instToRewind++;
+			}
+			assert(bytesToRewind == 0);
+			op.arg2 = instToRewind;
+			break;
+		}
+	}
+
+	//Change const index
+	for (i = 0; opcode_list[i].op != ENDCODE; ++i) {
 		Opcode &op = opcode_list[i];
 
 		//Change const index, if needed
@@ -133,14 +179,73 @@ void rec_bytecode(TProtoFunc* func, int* inst) {
 				op.arg = inst[op.arg];
 				fix_op(&op);
 			}
-
-		newsize += op.size;
-		++i;
-		if (op.op == ENDCODE)
-			break;
 	}
 
-	luaM_free(func->code);
+	//Recalculate the number of bytes to jump
+	bool expJmp;
+	do {
+		expJmp = false;
+
+		for (i = 0; opcode_list[i].op != ENDCODE; ++i) {
+			Opcode &op = opcode_list[i];
+			int bytesToSkip, instToSkip, bytesToRewind, instToRewind, j;
+
+
+			switch (op.op_class) {
+			//Forward jump
+			case ONTJMP:
+			case ONFJMP:
+			case JMP:
+			case IFFJMP:
+				bytesToSkip = 0;
+				instToSkip = op.arg2;
+				j = i;
+				while (instToSkip > 0) {
+					instToSkip--;
+					bytesToSkip += opcode_list[++j].size;
+				}
+				assert(instToSkip == 0);
+				op.arg = bytesToSkip;
+				break;
+
+			//Backwards jump
+			case IFTUPJMP:
+			case IFFUPJMP:
+				bytesToRewind = 0;
+				instToRewind = op.arg2;
+				j = i;
+				while (instToRewind > 0) {
+					bytesToRewind += opcode_list[j--].size;
+					instToRewind--;
+				}
+				assert(instToRewind == 0);
+				op.arg = bytesToRewind;
+				break;
+
+			default:
+				continue;
+			}
+
+			//Expand JMPs to JMPWs, if needed.
+			//It set also the expJmp flag, in order
+			//to make another cycle, since this
+			//action changed again the code size
+			if (op.size == 2 && op.arg > 255) {
+				op.op++;
+				op.size++;
+				expJmp = true;
+			}
+		}
+	} while (expJmp);
+
+	//Calculate the size of new bytecode and
+	//alloc the space for it
+	i = 0;
+	newsize = 0;
+	do
+		newsize += opcode_list[i].size;
+	while (opcode_list[i++].op != ENDCODE);
+
 	Byte *code = (Byte*)luaM_malloc(newsize);
 	func->code = code;
 
