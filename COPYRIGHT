@@ -1,5 +1,8 @@
 ResidualVM
-Copyright (C) 2003-2012 by the following:
+Copyright (C) 2003-2013 by the following:
+
+Some of the code in this project was originally LGPL v2.1 (or later)
+but is used as GPL v2 (or later) starting from 19 Dec 2012.
 
 If you have contributed to this project then you deserve to be on this
 list.  Contact us (see: AUTHORS) and we'll add you.
@@ -14,7 +17,10 @@ Giulio Camuffo
 Marcus Comstedt
 Andrea Corna
 Jonathan Gray
+Tobias Gunkel
+Azamat H. Hackimov
 Vincent Hamm
+Dries Harnie
 Sven Hesse
 Matthew Hoops
 Erich Hoover
@@ -39,9 +45,8 @@ Lionel Ulmer
 Joni Vahamaki
 JenniBee
 
-
 ScummVM
-Copyright (C) 2001-2012 by the following:
+Copyright (C) 2001-2013 by the following:
 
 If you have contributed to this project then you deserve to be on this
 list.  Contact us (see: AUTHORS) and we'll add you.

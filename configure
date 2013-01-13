@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-# configure -- custom configure script for ScummVM.
+# configure -- custom configure script for ResidualVM.
 #
-# ScummVM is the legal property of its developers, whose names
+# ResidualVM is the legal property of its developers, whose names
 # are too numerous to list here. Please refer to the COPYRIGHT
 # file distributed with this source distribution.
 #
