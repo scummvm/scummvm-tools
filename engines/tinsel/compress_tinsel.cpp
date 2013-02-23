@@ -274,6 +274,20 @@ void CompressTinsel::execute() {
 	Common::removeFile(TEMP_SMP);
 	_output_smp.open(TEMP_SMP, "wb");
 
+	switch (_format) {
+ 	case AUDIO_MP3:
+		_output_smp.writeUint32BE(MKID_BE('MP3 '));
+		break;
+	case AUDIO_VORBIS:
+		_output_smp.writeUint32BE(MKID_BE('OGG '));
+		break;
+	case AUDIO_FLAC:
+		_output_idx.writeUint32BE(MKID_BE('FLAC'));
+		break;
+	default:
+		throw ToolException("Unknown audio format!");
+	}
+
 	_input_idx.seek(0, SEEK_END);
 	indexCount = _input_idx.pos() / sizeof(uint32);
 	_input_idx.seek(0, SEEK_SET);
