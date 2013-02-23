@@ -42,8 +42,6 @@
 //  raw-data as samples and DiscWorld 2 uses ADPCM 6-bit encoded data as samples. We suppose that we will need to do ADPCM
 //  decoding on all multi-sample data.
 
-// We also copy over the first 5000 bytes of the .smp file, because otherwise we would trash ScummVM detection.
-
 #define TEMP_IDX "compressed.idx"
 #define TEMP_SMP "compressed.smp"
 #define TEMP_RAW "tempfile.raw"
