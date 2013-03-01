@@ -110,7 +110,10 @@ wxString ToolGUI::getName() const {
 }
 
 wxString ToolGUI::getHelp() const {
-	return wxString(_backend->getHelp().c_str(), wxConvUTF8);
+	// Here we want the single line help from the tool, not the extended
+	// help CompressionTool might for example give (and which would not
+	// fit in the window).
+	return wxString(_backend->Tool::getHelp().c_str(), wxConvUTF8);
 }
 
 wxString ToolGUI::getShortHelp() const {

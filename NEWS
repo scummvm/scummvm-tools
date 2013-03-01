@@ -15,6 +15,9 @@ For a more comprehensive changelog of the latest experimental code, see:
    the .idx file. This ensures that no sound starts at offset 0, since that is
    interpreted as the sound missing. This fixes the first line of speech when
    Rincewind wakes up at the beginning of Discworld 1.
+ - Fix too long help string for compression tools in the extra input file
+   selection which made the file selection impossible because the widgets
+   were outside the window.
 
 1.4.0 (2011-11-11)
  - Updated the compress_sci tool to add support for compressing the AUDIO001.002
