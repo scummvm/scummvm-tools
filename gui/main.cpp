@@ -226,9 +226,6 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	_buttons = new WizardButtons(main, linetext, _configuration);
 	sizer->Add(_buttons, wxSizerFlags().Border().Center().Expand());
 
-	// Delete old panels on idle event
-	Connect(wxEVT_IDLE, wxIdleEventHandler(ScummToolsFrame::destroyOldPanels), NULL, this);
-
 	main->SetSizer(sizer);
 }
 
@@ -318,7 +315,7 @@ void ScummToolsFrame::switchPage(WizardPage *next, SwitchToPage page) {
 	_buttons->setPage(_pages.back(), newPanel);
 }
 
-void ScummToolsFrame::destroyOldPanels(wxIdleEvent &) {
+void ScummToolsFrame::destroyOldPanels() {
 	while (!_oldPanels.empty()) {
 		delete _oldPanels.back();
 		_oldPanels.pop_back();
@@ -375,6 +372,8 @@ void ScummToolsFrame::onMenuExit(wxCommandEvent &evt) {
 }
 
 void ScummToolsFrame::onIdle(wxIdleEvent &evt) {
+	// Delete old panels on idle event
+	destroyOldPanels();
 	if (_pages.back()->onIdle(dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page"))))) {
 		// We want more!
 		evt.RequestMore(true);

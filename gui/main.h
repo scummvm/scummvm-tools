@@ -124,7 +124,7 @@ private:
 	enum SwitchToPage { NextPage, PreviousPage, FirstPage };
 	void switchPage(WizardPage *nextPage, SwitchToPage page);
     
-	void destroyOldPanels(wxIdleEvent &evt);
+	void destroyOldPanels();
 
 	wxPanel *_wizardpane;
 
