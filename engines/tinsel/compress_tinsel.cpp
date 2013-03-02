@@ -263,14 +263,22 @@ void CompressTinsel::execute() {
 	Common::Filename inpath_smp = _inputPaths[0].path;
 	Common::Filename inpath_idx = _inputPaths[1].path;
 
+	Common::Filename &outpath = _outputPath;
+	if (outpath.empty())
+		outpath = inpath_smp.getPath();
+
 	_input_idx.open(inpath_idx, "rb");
 	_input_smp.open(inpath_smp, "rb");
 
-	Common::removeFile(TEMP_IDX);
-	_output_idx.open(TEMP_IDX, "wb");
+	Common::Filename outpath_idx = outpath;
+	outpath_idx.setFullName(TEMP_IDX);
+	Common::removeFile(outpath_idx.getFullPath().c_str());
+	_output_idx.open(outpath_idx, "wb");
 
-	Common::removeFile(TEMP_SMP);
-	_output_smp.open(TEMP_SMP, "wb");
+	Common::Filename outpath_smp = outpath;
+	outpath_smp.setFullName(TEMP_SMP);
+	Common::removeFile(outpath_smp.getFullPath().c_str());
+	_output_smp.open(outpath_smp, "wb");
 
 	switch (_format) {
  	case AUDIO_MP3:
