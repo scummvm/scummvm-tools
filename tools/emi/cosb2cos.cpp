@@ -23,6 +23,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include "filetools.h"
 
@@ -160,6 +161,36 @@ struct Costume {
 		std::cout << "\tnumkeys: x\n";
 		// TODO
 	}
+
+	void printChore(const char *choreName) {
+		for (int i = 0; i < _numChores; i++) {
+			if (_chores[i]._choreName == choreName) {
+				std::cout << "Chore " << choreName << " (" << _chores[i]._numTracks << " tracks) ";
+				if (_chores[i]._length == 1000)
+					std::cout << "(instant)";
+				else
+					std::cout << 1000.0 * _chores[i]._length << " ms";
+
+				std::cout << std::endl;
+				for (int t = 0; t < _chores[i]._numTracks; t++) {
+					ChoreTrack &track = _chores[i]._tracks[t];
+					std::string &tag = track._tag;
+					std::string &data = track._trackName;
+					std::cout << "Track " << t << ": tag " << tag << ", data [" << data << "]" << std::endl;
+
+					for (int k = 0; k < track._numKeys; k++) {
+						TrackKey &tk = track._keys[k];
+						std::cout << "\t";
+						std::cout << std::right << std::setw(5);
+						std::cout << (1000.0 * tk._time) << " ms";
+						std::cout << "\t" << tk._value << std::endl;
+					}
+				}
+				return;
+			}
+		}
+		std::cout << "Error: chore " << choreName << " not found!" << std::endl;
+	}
 };
 
 int main(int argc, char **argv) {
@@ -178,6 +209,10 @@ int main(int argc, char **argv) {
 	
 	Costume c;
 	c.readFromFile(file);
-	c.print();
+	if (argc == 2) {
+		c.print();
+	} else {
+		c.printChore(argv[2]);
+	}
 	
 }
