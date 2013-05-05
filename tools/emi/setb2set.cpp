@@ -21,6 +21,7 @@
  */
 
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -133,6 +134,7 @@ private:
 	float height;
 	int numVertices; // byte;
 	float* vertices; // 3 * numVertices.
+	float normal[3];
 	bool visible;
 };
 
@@ -155,6 +157,29 @@ Sector::Sector(Data *data) : Section(data)
 	int skip = data->GetInt();
 	data->Skip(skip*4);
 	height = data->GetFloat();
+
+	float cross1[3], cross2[3];
+	cross1[0] = vertices[3] - vertices[0];
+	cross1[1] = vertices[4] - vertices[1];
+	cross1[2] = vertices[5] - vertices[2];
+
+	int x = 3 * (numVertices - 1);
+	cross2[0] = vertices[x+0] - vertices[0];
+	cross2[1] = vertices[x+1] - vertices[1];
+	cross2[2] = vertices[x+2] - vertices[2];
+
+	float &nx = normal[0];
+	float &ny = normal[1];
+	float &nz = normal[2];
+	nx = cross1[1] * cross2[2] - cross2[1] * cross1[2];
+	ny = cross1[0] * cross2[2] - cross2[0] * cross1[2];
+	nz = cross1[0] * cross2[1] - cross2[0] * cross1[1];
+
+	float norm = nx * nx + ny * ny + nz * nz;
+	norm = ::sqrt(norm);
+	nx /= norm;
+	ny /= norm;
+	nz /= norm;
 }
 
 string Sector::ToString()
@@ -191,6 +216,7 @@ string Sector::ToString()
 	ss << endl;
 	ss << "\theight\t" << height << endl;
 	ss << "\tnumvertices\t" << numVertices << endl;
+	ss << "\tnormal\t\t\t" << normal[0] << "\t" << normal[1] << "\t" << normal[2] << endl;
 	ss << "\tvertices:\t\t";
 	for (int i = 0; i < numVertices*3; i+=3) {
 		if (i != 0)
