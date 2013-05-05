@@ -7,14 +7,19 @@
 *.exe
 
 animb2txt
+bm2bmp
 bmtoppm
 cosb2cos
 delua
+diffr
 imc2wav
 int2flt
 labcopy
+luac
 meshb2obj
 mklab
+patchex
+patchr
 set2fig
 setb2set
 sklb2txt
