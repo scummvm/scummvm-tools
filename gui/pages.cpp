@@ -848,10 +848,10 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 		) {
 			wxMessageDialog *msgDialog = new wxMessageDialog(
 					NULL,
-					wxT("The lame executable could not be found. It is needed to compress files to MP3. "
-						"You can either proceed to the advanced audio settings page and give the path to lame "
-						"or you can select another audio format to compress to.\n\n"
-						"Do you want to proceed to the advanced audio settings page?"),
+					wxT("The lame executable could not be found. It is needed to compress files to MP3. ")
+						wxT("You can either proceed to the advanced audio settings page and give the path to lame ")
+						wxT("or you can select another audio format to compress to.\n\n")
+						wxT("Do you want to proceed to the advanced audio settings page?"),
 					wxT("lame not found"),
 					wxYES_NO | wxNO_DEFAULT | wxICON_EXCLAMATION
 				);
@@ -1050,9 +1050,9 @@ void ChooseAudioOptionsMp3Page::onNext(wxWindow *panel) {
 	if (!Configuration::isLamePathValid(lamePath->GetPath())) {
 		wxMessageDialog *msgDialog = new wxMessageDialog(
 				NULL,
-				wxT("The lame executable could not be found. It is needed to compress files to MP3. "
-				    "If you want to use MP3 compression you need to select a valid lame executable. "
-					"Otherwise you can go back to the audio format selection and select another format."),
+				wxT("The lame executable could not be found. It is needed to compress files to MP3. ")
+					wxT("If you want to use MP3 compression you need to select a valid lame executable. ")
+					wxT("Otherwise you can go back to the audio format selection and select another format."),
 				wxT("lame not found"),
 				wxOK | wxICON_EXCLAMATION
 			);
