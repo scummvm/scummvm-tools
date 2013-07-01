@@ -40,8 +40,13 @@ int ToolsCLI::run(int argc, char *argv[]) {
 		return 2;
 	}
 
+// If using Solaris Studio
+#if defined(__sun) && !defined(__GNUC__)
+	std::deque<std::string> arguments; for (int i = 1; i < argc; i++) arguments.push_back(argv[i]);
+#else
 	std::deque<std::string> arguments(argv, argv + argc);
 	arguments.pop_front(); // Pop our own name
+#endif
 
 	ToolType type = TOOLTYPE_ALL;
 
