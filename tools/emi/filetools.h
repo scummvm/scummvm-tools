@@ -73,34 +73,34 @@ struct Vector4d {
 	}
 };
 
-float readFloat(std::istream& file) {
+float readFloat(std::istream &file) {
 	float retVal = 0.0f;
-	file.read((char*)&retVal, 4);
+	file.read((char *)&retVal, 4);
 	retVal = get_float((char *) &retVal);
 	return retVal;
 }
 
-int readInt(std::istream& file) {
+int readInt(std::istream &file) {
 	int retVal = 0;
-	file.read((char*)&retVal, 4);
+	file.read((char *)&retVal, 4);
 	return FROM_LE_32(retVal);
 }
 
-short readShort(std::istream& file) {
+short readShort(std::istream &file) {
 	short retVal = 0;
-	file.read((char*)&retVal, 2);
+	file.read((char *)&retVal, 2);
 	return FROM_LE_16(retVal);
 }
 
-int readByte(std::istream& file) {
+int readByte(std::istream &file) {
 	char retVal = 0;
-	file.read((char*)&retVal, 1);
+	file.read((char *)&retVal, 1);
 	return retVal;
 }
 
-std::string readString(std::istream& file) {
+std::string readString(std::istream &file) {
 	int strLength = readInt(file);
-	char* readString = new char[strLength];
+	char *readString = new char[strLength];
 	file.read(readString, strLength);
 
 	std::string retVal(readString);
@@ -117,7 +117,7 @@ std::string readCString(std::istream &file, int len) {
 	return retVal;
 }
 
-Vector2d *readVector2d(std::istream& file, int count = 1) {
+Vector2d *readVector2d(std::istream &file, int count = 1) {
 	Vector2d *vec2d = new Vector2d[count];
 	for (int i = 0; i < count; i++) {
 		vec2d[i].x = readFloat(file);
@@ -126,7 +126,7 @@ Vector2d *readVector2d(std::istream& file, int count = 1) {
 	return vec2d;
 }
 
-Vector3d *readVector3d(std::istream& file, int count = 1) {
+Vector3d *readVector3d(std::istream &file, int count = 1) {
 	Vector3d *vec3d = new Vector3d[count];
 	for (int i = 0; i < count; i++) {
 		vec3d[i].x = readFloat(file);
@@ -136,7 +136,7 @@ Vector3d *readVector3d(std::istream& file, int count = 1) {
 	return vec3d;
 }
 
-Vector4d *readVector4d(std::istream& file) {
+Vector4d *readVector4d(std::istream &file) {
 	Vector4d *vec4d = new Vector4d();
 	vec4d->x = readFloat(file);
 	vec4d->y = readFloat(file);
