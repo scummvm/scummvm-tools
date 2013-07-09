@@ -147,6 +147,7 @@ Vector4d *readVector4d(std::istream &file) {
 //TODO: Endianness
 class SeekableReadStream {
 public:
+	virtual ~SeekableReadStream() {}
 	virtual uint32 readUint32() = 0;
 	virtual void read(void *target, uint32 length) = 0;
 	virtual void seek(int offset, int whence = SEEK_SET) = 0;
@@ -158,7 +159,7 @@ class MemoryReadStream : public SeekableReadStream {
 	uint32 _length;
 public:
 	MemoryReadStream(byte *data, uint32 length) : _data(data), _length(length), _pos(0) {}
-	~MemoryReadStream() {
+	virtual ~MemoryReadStream() {
 		delete[] _data;
 	}
 
