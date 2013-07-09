@@ -144,5 +144,52 @@ Vector4d *readVector4d(std::istream& file) {
 	vec4d->w = readFloat(file);
 	return vec4d;
 }
+//TODO: Endianness
+class SeekableReadStream {
+public:
+	virtual uint32 readUint32() = 0;
+	virtual void read(void *target, uint32 length) = 0;
+	virtual void seek(int offset, int whence = SEEK_SET) = 0;
+};
+
+class MemoryReadStream : public SeekableReadStream {
+	byte *_data;
+	uint32 _pos;
+	uint32 _length;
+public:
+	MemoryReadStream(byte *data, uint32 length) : _data(data), _length(length), _pos(0) {}
+	~MemoryReadStream() {
+		delete[] _data;
+	}
+
+	uint32 readUint32() {
+		if (_pos + 4 > _length) {
+			std::cout << "ERROR: Crossed end of stream" << std::endl;
+			return 0;
+		}
+		uint32 result = 0;
+		uint32 *temp = (uint32 *)(_data + _pos);
+		result = *temp;
+		_pos += 4;
+		return result;
+	}
+	void read(void *target, uint32 length) {
+		memcpy(target, _data + _pos, length);
+		_pos += length;
+	}
+	void seek(int offset, int whence = SEEK_SET) {
+		switch (whence) {
+		case SEEK_SET:
+			_pos = offset;
+			break;
+		case SEEK_CUR:
+			_pos += offset;
+			break;
+		case SEEK_END:
+			std::cout << "ERROR: SEEK_END not implemented yet" << std::endl;
+			break;
+		}
+	}
+};
 
 #endif
