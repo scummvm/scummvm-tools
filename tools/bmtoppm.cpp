@@ -47,8 +47,8 @@ void read_header(FILE *in, int *codec, int *num_images, int *format) {
 
 	read_LEint32(in);
 	*num_images = read_LEint32(in);
-	read_LEint32(in);		/* ignore x offset */
-	read_LEint32(in);		/* ignore y offset */
+	read_LEint32(in);       /* ignore x offset */
+	read_LEint32(in);       /* ignore y offset */
 	read_LEint32(in);
 	*format = read_LEint32(in);
 	fseek(in, 128, SEEK_SET);
@@ -84,9 +84,9 @@ void read_data_codec3(FILE *in, int size, unsigned char *result) {
 	})
 
 	for (;;) {
-		if (GET_BIT == 1)
+		if (GET_BIT == 1) {
 			*result++ = *data_ptr++;
-		else {
+		} else {
 			if (GET_BIT == 0) {
 				len = GET_BIT * 2;
 				len += GET_BIT;
@@ -122,14 +122,15 @@ void write_img(pixel **img, const char *fname, int img_num, int width, int heigh
 	FILE *out;
 
 	basename = strrchr(fname, '/');
-	if (basename != NULL)
+	if (basename != NULL) {
 		basename++;
-	else
+	} else {
 		basename = fname;
+	}
 	strcpy(newname, basename);
-	if (strlen(newname) > 3 && strcasecmp(newname + strlen(newname) - 3, ".bm") == 0)
+	if (strlen(newname) > 3 && strcasecmp(newname + strlen(newname) - 3, ".bm") == 0) {
 		newname[strlen(newname) - 3] = '\0';
-	else if (strlen(newname) > 4 && strcasecmp(newname + strlen(newname) - 4, ".zbm") == 0) {
+	} else if (strlen(newname) > 4 && strcasecmp(newname + strlen(newname) - 4, ".zbm") == 0) {
 		newname[strlen(newname) - 4] = '\0';
 		strcat(newname, "_z");
 	}
@@ -162,7 +163,7 @@ pixel **toimg_fmt1(const unsigned char *data, int width, int height) {
 			PPM_ASSIGN(result[y][x], r, g, b);
 			data += 2;
 		}
-		return result;
+	return result;
 }
 
 pixel **toimg_fmt5(const unsigned char *data, int width, int height) {
@@ -178,7 +179,7 @@ pixel **toimg_fmt5(const unsigned char *data, int width, int height) {
 			PPM_ASSIGN(result[y][x], gray, gray, gray);
 			data += 2;
 		}
-		return result;
+	return result;
 }
 
 void process_file(const char *fname) {
@@ -201,9 +202,9 @@ void process_file(const char *fname) {
 		height = read_LEint32(in);
 		data = malloc(width * height * 2);
 
-		if (codec == 0)
+		if (codec == 0) {
 			read_data_codec0(in, width, height, data);
-		else if (codec == 3) {
+		} else if (codec == 3) {
 			size = read_LEint32(in);
 			read_data_codec3(in, size, data);
 		} else {
@@ -233,7 +234,8 @@ int main(int argc, char **argv) {
 	int i;
 
 	ppm_init(&argc, argv);
-	for (i = 1; i < argc; i++)
+	for (i = 1; i < argc; i++) {
 		process_file(argv[i]);
+	}
 	return 0;
 }

@@ -30,9 +30,10 @@
 std::vector<std::string> g_tag;
 
 std::string getTag(std::string str) {
-	if (str.at(0) != '!')
+	if (str.at(0) != '!') {
 		std::cout << "Erroneous Tag\n";
-	std::string tag = str.substr(1,4);
+	}
+	std::string tag = str.substr(1, 4);
 	return tag;
 }
 
@@ -43,8 +44,9 @@ std::string getCompName(std::string str) {
 void pushtag(std::string tag) {
 	std::vector<std::string>::iterator it;
 	for (it = g_tag.begin(); it != g_tag.end(); it++) {
-		if (*it == tag)
+		if (*it == tag) {
 			return;
+		}
 	}
 	g_tag.push_back(tag);
 }
@@ -66,7 +68,7 @@ struct ChoreTrack {
 	int _parentID;
 	int _numKeys;
 	TrackKey *_keys;
-	
+
 	void readFromFile(std::istream &file) {
 		// Split this into tag & name later.
 		_trackName = readString(file);
@@ -75,16 +77,16 @@ struct ChoreTrack {
 		_hash = readInt(file);
 		_parentID = readInt(file);
 		_numKeys = readInt(file);
-		
+
 		pushtag(_tag);
-		
+
 		_keys = new TrackKey[_numKeys];
 		for (int k = 0; k < _numKeys; k++) {
 			_keys[k].readFromFile(file);
 		}
 	}
 	void printComponent(int &count) {
-		std::cout << count << "\t" << _tag << "\t" << _hash << "\t" <<_parentID << "\t" << _trackName << std::endl;
+		std::cout << count << "\t" << _tag << "\t" << _hash << "\t" << _parentID << "\t" << _trackName << std::endl;
 	}
 };
 
@@ -93,25 +95,25 @@ struct Chore {
 	float _length;
 	int _numTracks;
 	ChoreTrack *_tracks;
-	
+
 	void readFromFile(std::istream &file) {
 		_choreName = readString(file);
-		_length = readFloat(file); 
+		_length = readFloat(file);
 		_numTracks = readInt(file);
 		_tracks = new ChoreTrack[_numTracks];
-		
+
 		for (int j = 0; j < _numTracks; j++) {
 			_tracks[j].readFromFile(file);
 		}
 	}
-	
+
 	void printComponents(int &count) {
 		for (int i = 0; i < _numTracks; i++) {
 			_tracks[i].printComponent(count);
 			count++;
 		}
 	}
-	
+
 	void print(int count) {
 		std::cout << count << "\t" << _length << "\t" << _numTracks << "\t" << _choreName << std::endl;
 	}
@@ -120,12 +122,12 @@ struct Chore {
 struct Costume {
 	int _numChores;
 	Chore *_chores;
-	
+
 	void readFromFile(std::istream &file) {
 		_numChores = readInt(file);
-		
+
 		_chores = new Chore[_numChores];
-		
+
 		for (int i = 0; i < _numChores; i++) {
 			_chores[i].readFromFile(file);
 		}
@@ -137,13 +139,13 @@ struct Costume {
 		std::cout << "\tnumtags " << g_tag.size() << std::endl;
 		int i = 0;
 		std::vector<std::string>::iterator it = g_tag.begin();
-		for(; it != g_tag.end(); it++) {
+		for (; it != g_tag.end(); it++) {
 			std::cout << i++ << "\t" << *it << std::endl;
 		}
 		std::cout << std::endl;
 		std::cout << "section: components\n";
 		std::cout << "\tnumcomponents: x\n";
-		
+
 		int count = 0;
 		for (int i = 0; i < _numChores; i++) {
 			_chores[i].printComponents(count);
@@ -166,10 +168,11 @@ struct Costume {
 		for (int i = 0; i < _numChores; i++) {
 			if (_chores[i]._choreName == choreName) {
 				std::cout << "Chore " << choreName << " (" << _chores[i]._numTracks << " tracks) ";
-				if (_chores[i]._length == 1000)
+				if (_chores[i]._length == 1000) {
 					std::cout << "(instant)";
-				else
+				} else {
 					std::cout << 1000.0 * _chores[i]._length << " ms";
+				}
 
 				std::cout << std::endl;
 				for (int t = 0; t < _chores[i]._numTracks; t++) {
@@ -194,19 +197,19 @@ struct Costume {
 };
 
 int main(int argc, char **argv) {
-	if(argc < 2){
+	if (argc < 2) {
 		std::cout << "Error: filename not specified" << std::endl;
 		return 0;
 	}
 	std::string filename = argv[1];
-	
+
 	std::fstream file(filename.c_str(), std::ios::in | std::ios::binary);
-	
+
 	if (!file.is_open()) {
 		std::cout << "Unable to open file " << filename << std::endl;
 		return 0;
 	}
-	
+
 	Costume c;
 	c.readFromFile(file);
 	if (argc == 2) {
@@ -214,5 +217,5 @@ int main(int argc, char **argv) {
 	} else {
 		c.printChore(argv[2]);
 	}
-	
+
 }

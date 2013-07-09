@@ -122,11 +122,11 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	// Grim-stuff
-	if(g_type == GT_GRIM) {
+	if (g_type == GT_GRIM) {
 		fread(entries, 1, head.num_entries * sizeof(struct lab_entry), infile);
 
 		fread(str_table, 1, head.string_table_size, infile);
-	} else if(g_type == GT_EMI) { // EMI-stuff
+	} else if (g_type == GT_EMI) { // EMI-stuff
 		// EMI has a string-table-offset
 		head.string_table_offset = READ_LE_UINT32(&s_offset) - 0x13d0f;
 		// Find the string-table
@@ -138,13 +138,14 @@ int main(int argc, char **argv) {
 		// Decrypt the string table
 		uint32_t j;
 		for (j = 0; j < head.string_table_size; j++)
-			if (str_table[j] != 0)
+			if (str_table[j] != 0) {
 				str_table[j] ^= 0x96;
+			}
 		fread(entries, 1, head.num_entries * sizeof(struct lab_entry), infile);
 
 	}
 	// allocate a 1mb buffer to start with
-	uint32_t bufSize = 1024*1024;
+	uint32_t bufSize = 1024 * 1024;
 	char *buf = (char *)malloc(bufSize);
 	if (!buf) {
 		printf("Could not allocate memory\n");

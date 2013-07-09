@@ -46,7 +46,7 @@ void Lab::Load(std::string filename) {
 		std::cout << "Can not open source file: " << filename << std::endl;
 		exit(1);
 	}
-	
+
 	fread(&head.magic, 1, 4, infile);
 	fread(&head.magic2, 1, 4, infile);
 	uint32 num, s_size, s_offset;
@@ -69,7 +69,7 @@ void Lab::Load(std::string filename) {
 		std::cout << "There is no LABN header in source lab-file\n";
 		exit(1);
 	}
-	
+
 	entries = new lab_entry[head.num_entries];
 	str_table = new char[head.string_table_size];
 	if (!str_table || !entries) {
@@ -77,12 +77,12 @@ void Lab::Load(std::string filename) {
 		exit(1);
 	}
 	// Grim-stuff
-	if(g_type == GT_GRIM) {
+	if (g_type == GT_GRIM) {
 		fread(entries, 1, head.num_entries * sizeof(lab_entry), infile);
-		
+
 		fread(str_table, 1, head.string_table_size, infile);
-		
-	} else if(g_type == GT_EMI) { // EMI-stuff
+
+	} else if (g_type == GT_EMI) { // EMI-stuff
 		// EMI has a string-table-offset
 		head.string_table_offset = READ_LE_UINT32(&s_offset) - 0x13d0f;
 		// Find the string-table
@@ -90,12 +90,13 @@ void Lab::Load(std::string filename) {
 		// Read the entire string table into str-table
 		fread(str_table, 1, head.string_table_size, infile);
 		fseek(infile, 20, SEEK_SET);
-		
+
 		// Decrypt the string table
 		uint32 j;
 		for (j = 0; j < head.string_table_size; j++)
-			if (str_table[j] != 0)
+			if (str_table[j] != 0) {
 				str_table[j] ^= 0x96;
+			}
 		fread(entries, 1, head.num_entries * sizeof(lab_entry), infile);
 	}
 }
@@ -104,17 +105,16 @@ int Lab::getIndex(std::string filename) {
 	for (i = 0; i < head.num_entries; i++) {
 		const char *fname = str_table + READ_LE_UINT32(&entries[i].fname_offset);
 		std::string test = std::string(fname);
-		if (test != filename)
+		if (test != filename) {
 			continue;
-		else
-		{
+		} else {
 			return i;
 		}
 	}
 	return -1;
 }
 
-std::istream* Lab::getFile(std::string filename) {
+std::istream *Lab::getFile(std::string filename) {
 	if (!buf) {
 		printf("Could not allocate memory\n");
 		exit(1);
@@ -140,25 +140,26 @@ std::istream* Lab::getFile(std::string filename) {
 		stream->seekg(offset, std::ios::beg);
 		return stream;
 	}
-	
+
 	return NULL;
 }
 
 int Lab::getLength(std::string filename) {
 	int index = getIndex(filename);
-	if (index == -1)
+	if (index == -1) {
 		return 0;
+	}
 	return entries[i].size;
 }
 
-std::istream *getFile(std::string filename, Lab* lab) {
+std::istream *getFile(std::string filename, Lab *lab) {
 	std::istream *stream;
 	if (lab) {
 		return lab->getFile(filename);
 	} else {
 		stream = new std::fstream(filename.c_str(), std::ios::in | std::ios::binary);
-		
-		if (!((std::fstream*)stream)->is_open()) {
+
+		if (!((std::fstream *)stream)->is_open()) {
 			std::cout << "Unable to open file " << filename << std::endl;
 			return 0;
 		}
@@ -166,15 +167,15 @@ std::istream *getFile(std::string filename, Lab* lab) {
 	}
 }
 
-std::istream *getFile(std::string filename, Lab* lab, int& length) {
+std::istream *getFile(std::string filename, Lab *lab, int &length) {
 	std::istream *stream;
 	if (lab) {
 		length = lab->getLength(filename);
 		return lab->getFile(filename);
 	} else {
 		stream = new std::fstream(filename.c_str(), std::ios::in | std::ios::binary);
-		
-		if (!((std::fstream*)stream)->is_open()) {
+
+		if (!((std::fstream *)stream)->is_open()) {
 			std::cout << "Unable to open file " << filename << std::endl;
 			return 0;
 		}

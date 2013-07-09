@@ -102,8 +102,9 @@ static char *appendPath(const char *name, const char *dir) {
 static void countFiles(lab_header *head, DIR *dir, const char *dirname, int additionalLen) {
 	struct dirent *dirfile;
 	while ((dirfile = readdir(dir))) {
-		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, ".."))
+		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, "..")) {
 			continue;
+		}
 
 		if (dirfile->d_type == S_IFDIR) {
 			char *d = appendPath(dirfile->d_name, dirname);
@@ -124,8 +125,9 @@ static void createEntries(DIR *dir, lab_entry *entries, char *str_table, const c
 	static char *str_offset = str_table;
 	struct dirent *dirfile;
 	while ((dirfile = readdir(dir))) {
-		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, ".."))
+		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, "..")) {
 			continue;
+		}
 
 		if (dirfile->d_type == S_IFDIR) {
 			char *d = appendPath(dirfile->d_name, dirname);
@@ -150,7 +152,7 @@ static void createEntries(DIR *dir, lab_entry *entries, char *str_table, const c
 			struct stat st;
 			stat(path, &st);
 
-			// 		printf("entry of file %s, at offset %d and of size %d\n", path, offset, st.st_size);
+			//      printf("entry of file %s, at offset %d and of size %d\n", path, offset, st.st_size);
 			free(path);
 
 			offset += st.st_size;
@@ -196,7 +198,7 @@ int main(int argc, char **argv) {
 
 	countFiles(&head, dir, dirname, 0);
 
-// 	printf("%d files, string table of size %d\n", head.num_entries, head.string_table_size);
+//  printf("%d files, string table of size %d\n", head.num_entries, head.string_table_size);
 
 	lab_entry *entries = (lab_entry *)malloc(head.num_entries * sizeof(lab_entry));
 	char *str_table = (char *)malloc(head.string_table_size);
@@ -239,14 +241,15 @@ int main(int argc, char **argv) {
 		char *s = (char *)malloc(head.string_table_size);
 		memset(s, 0, head.string_table_size);
 		for (uint32_t j = 0; j < head.string_table_size; j++) {
-			if (str_table[j] != 0)
+			if (str_table[j] != 0) {
 				s[j] = str_table[j] ^ 0x96;
+			}
 		}
 		fwrite(s, 1, head.string_table_size, outfile);
 		free(s);
 	}
 
-	uint32_t bufsize = 1024*1024;
+	uint32_t bufsize = 1024 * 1024;
 	char *buf = (char *)malloc(bufsize);
 
 	for (uint32_t i = 0; i < head.num_entries; ++i) {
@@ -272,7 +275,7 @@ int main(int argc, char **argv) {
 			buf = newbuf;
 		}
 
-// 		printf("writing file %s, at offset %d and of size %d\n", fname, offset, size);
+//      printf("writing file %s, at offset %d and of size %d\n", fname, offset, size);
 
 		fread(buf, 1, size, file);
 		fseek(outfile, offset, SEEK_SET);

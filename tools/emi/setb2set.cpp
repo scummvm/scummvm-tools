@@ -42,7 +42,7 @@ enum SectorType {
 };
 
 
-enum LightType{
+enum LightType {
 	omni,
 	direct
 };
@@ -60,49 +60,42 @@ private:
 	const char *buf;
 };
 
-Data::Data(const char *data)
-{
+Data::Data(const char *data) {
 	buf = data;
 }
 
-float Data::GetFloat()
-{
+float Data::GetFloat() {
 	float retVal = *(float *) buf;
 	buf += 4;
 	return retVal;
 }
 
-int Data::GetInt()
-{
+int Data::GetInt() {
 	int retVal = *(int *) buf;
 	buf += 4;
 	return retVal;
 }
 
-bool Data::GetBool()
-{
+bool Data::GetBool() {
 	bool retVal = *(bool *) buf;
 	buf += 1;
 	return retVal;
 }
 
-string Data::GetString(int length)
-{
+string Data::GetString(int length) {
 	//kind of a hack
 	string s = string(buf);
 	buf += length;
 	return s;
 }
 
-string Data::GetNullTerminatedString()
-{
+string Data::GetNullTerminatedString() {
 	string s = string(buf);
-	buf += s.length()+1;
+	buf += s.length() + 1;
 	return s;
 }
 
-void Data::Skip(int val)
-{
+void Data::Skip(int val) {
 	buf += val;
 }
 
@@ -116,13 +109,11 @@ protected:
 	Data *data;
 };
 
-Section::Section(Data *data)
-{
+Section::Section(Data *data) {
 	this->data = data;
 }
 
-class Sector : public Section
-{
+class Sector : public Section {
 public:
 	Sector(Data *data);
 
@@ -133,20 +124,18 @@ private:
 	SectorType type;
 	float height;
 	int numVertices; // byte;
-	float* vertices; // 3 * numVertices.
+	float *vertices; // 3 * numVertices.
 	float normal[3];
 	bool visible;
 };
 
-Sector::Sector(Data *data) : Section(data)
-{
+Sector::Sector(Data *data) : Section(data) {
 	numVertices = data->GetInt();
-	vertices = new float[3*numVertices];
-	for(int i=0; i < numVertices; i++)
-	{
-		vertices[0+3*i] = data->GetFloat();
-		vertices[1+3*i] = data->GetFloat();
-		vertices[2+3*i] = data->GetFloat();
+	vertices = new float[3 * numVertices];
+	for (int i = 0; i < numVertices; i++) {
+		vertices[0 + 3 * i] = data->GetFloat();
+		vertices[1 + 3 * i] = data->GetFloat();
+		vertices[2 + 3 * i] = data->GetFloat();
 	}
 	int nameLength = data->GetInt();
 
@@ -155,7 +144,7 @@ Sector::Sector(Data *data) : Section(data)
 	visible = data->GetBool();
 	type = (SectorType)data->GetInt();
 	int skip = data->GetInt();
-	data->Skip(skip*4);
+	data->Skip(skip * 4);
 	height = data->GetFloat();
 
 	float cross1[3], cross2[3];
@@ -164,9 +153,9 @@ Sector::Sector(Data *data) : Section(data)
 	cross1[2] = vertices[5] - vertices[2];
 
 	int x = 3 * (numVertices - 1);
-	cross2[0] = vertices[x+0] - vertices[0];
-	cross2[1] = vertices[x+1] - vertices[1];
-	cross2[2] = vertices[x+2] - vertices[2];
+	cross2[0] = vertices[x + 0] - vertices[0];
+	cross2[1] = vertices[x + 1] - vertices[1];
+	cross2[2] = vertices[x + 2] - vertices[2];
 
 	float &nx = normal[0];
 	float &ny = normal[1];
@@ -182,11 +171,10 @@ Sector::Sector(Data *data) : Section(data)
 	nz /= norm;
 }
 
-string Sector::ToString()
-{
+string Sector::ToString() {
 	stringstream ss;
 	ss.precision(6);
-	ss.setf(ios::fixed,ios::floatfield);
+	ss.setf(ios::fixed, ios::floatfield);
 	ss << "\tsector\t" << name << endl;
 	ss << "\tID\t" << ID << endl;
 	ss << "\ttype\t";
@@ -209,26 +197,27 @@ string Sector::ToString()
 	};
 	ss << endl;
 	ss << "\tdefault visibility\t";
-	if (visible)
+	if (visible) {
 		ss << "visible";
-	else
+	} else {
 		ss << "invisible";
+	}
 	ss << endl;
 	ss << "\theight\t" << height << endl;
 	ss << "\tnumvertices\t" << numVertices << endl;
 	ss << "\tnormal\t\t\t" << normal[0] << "\t" << normal[1] << "\t" << normal[2] << endl;
 	ss << "\tvertices:\t\t";
-	for (int i = 0; i < numVertices*3; i+=3) {
-		if (i != 0)
+	for (int i = 0; i < numVertices * 3; i += 3) {
+		if (i != 0) {
 			ss << "\t\t\t\t";
-		ss << vertices[i] << "\t" << vertices[i+1] << "\t" << vertices[i+2] << endl;
+		}
+		ss << vertices[i] << "\t" << vertices[i + 1] << "\t" << vertices[i + 2] << endl;
 	}
 
 	return ss.str();
 }
 
-class Setup : public Section
-{
+class Setup : public Section {
 public:
 	Setup(Data *data);
 
@@ -238,16 +227,15 @@ private:
 	string tile;
 	string background;
 	string zbuffer;
-	float* position;
-	float* interest;
+	float *position;
+	float *interest;
 	float roll;
 	float fov;
 	float nclip;
 	float fclip;
 };
 
-Setup::Setup(Data *data) : Section(data)
-{
+Setup::Setup(Data *data) : Section(data) {
 	name = data->GetString(128); // Parse a string really
 
 	// Skip an unknown number
@@ -274,11 +262,10 @@ Setup::Setup(Data *data) : Section(data)
 	fclip = data->GetFloat();
 }
 
-string Setup::ToString()
-{
+string Setup::ToString() {
 	stringstream ss;
 	ss.precision(6);
-	ss.setf(ios::fixed,ios::floatfield);
+	ss.setf(ios::fixed, ios::floatfield);
 	ss << "\tname\t" << name << endl;
 	// background
 	// zbuffer
@@ -292,8 +279,7 @@ string Setup::ToString()
 	return ss.str();
 }
 
-class Light : public Section
-{
+class Light : public Section {
 public:
 	Light(Data *data);
 	virtual string ToString();
@@ -301,22 +287,20 @@ public:
 private:
 	string name;
 	LightType type;
-	float* position;
-	float* direction;
+	float *position;
+	float *direction;
 	float intensity;
 	float umbraangla;
 	float penumbraangle;
-	int* color; // Byte
+	int *color; // Byte
 
 };
 
-Light::Light(Data *data) : Section(data)
-{
+Light::Light(Data *data) : Section(data) {
 	data->Skip(100);
 }
 
-string Light::ToString()
-{
+string Light::ToString() {
 	return "";
 }
 
@@ -336,79 +320,78 @@ private:
 	vector<Section *> sectors;
 };
 
-Set::Set(Data *data)
-{
+Set::Set(Data *data) {
 	numSetups = data->GetInt();
 	setups.reserve(numSetups);
-	for(uint32 i = 0; i < numSetups; i++) {
+	for (uint32 i = 0; i < numSetups; i++) {
 		setups.push_back(new Setup(data));
 	}
 
 	numLights = data->GetInt();
 	lights.reserve(numLights);
-	for(uint32 i = 0; i < numLights; i++) {
+	for (uint32 i = 0; i < numLights; i++) {
 		lights.push_back(new Light(data));
 	}
 
 	numSectors = data->GetInt();
 	sectors.reserve(numSectors);
-	for(uint32 i = 0; i < numSectors; i++) {
+	for (uint32 i = 0; i < numSectors; i++) {
 		sectors.push_back(new Sector(data));
 	}
 }
-string Set::ToString()
-{
+string Set::ToString() {
 	stringstream ss;
 	// colormaps
 	ss << "section: colormaps" << endl; // we don't have any.
 	// setups
 	ss << "section: setups" << endl;
-	vector<Section*>::iterator it;
+	vector<Section *>::iterator it;
 	ss << "\tnumsetups " << setups.size() << endl;
-	for(it = setups.begin(); it != setups.end(); ++it) {
+	for (it = setups.begin(); it != setups.end(); ++it) {
 		ss << (*it)->ToString() << endl << endl;
 	}
 
 	// lights
 	ss << "section: lights" << endl;
 	ss << "\tnumlights 0" << endl;
-	for(it = lights.begin();it!=lights.end();it++) {
+	for (it = lights.begin(); it != lights.end(); it++) {
 		ss << (*it)->ToString() << endl << endl;
 	}
 	// sectors
 	ss << "section: sectors\n";
-	for(it = sectors.begin(); it != sectors.end();it++) {
+	for (it = sectors.begin(); it != sectors.end(); it++) {
 		ss << (*it)->ToString() << endl << endl;
 	}
 	return ss.str();
 }
-int main(int argc, char** argv){
-	if (argc < 2)
+int main(int argc, char **argv) {
+	if (argc < 2) {
 		return 0;
+	}
 	Lab *lab = NULL;
 	std::string filename;
 	int length = 0;
-	
+
 	if (argc > 2) {
 		lab = new Lab(argv[1]);
 		filename = argv[2];
 	} else {
 		filename = argv[1];
 	}
-	
+
 	std::istream *file = getFile(filename, lab, length);
-	
+
 	if (!file) {
 		std::cout << "Could not open file" << std::endl;
 		return 0;
 	}
-	
+
 	char *buf = new char[length];
 	file->read(buf, length);
 	delete file;
-	
+
 	Data *data = new Data(buf);
-	Set* ourSet = new Set(data);
+	Set *ourSet = new Set(data);
 	delete data;
 	delete buf;
 	cout << ourSet->ToString();

@@ -33,7 +33,7 @@
 #include <cstring>
 #include "common/endian.h"
 
-#define BUFFER_SIZE 		0x100000
+#define BUFFER_SIZE         0x100000
 FILE *inLab = NULL, *outLab = NULL;
 void *buffer = NULL;
 
@@ -57,8 +57,9 @@ bool copyFile(uint32 offset, uint32 lenght) {
 		count = (uint32)fread(buffer, 1, bytesToRead, inLab);
 		fwrite(buffer, count, 1, outLab);
 		copied_bytes += count;
-		if(ferror(inLab) != 0 || ferror(outLab) != 0)
+		if (ferror(inLab) != 0 || ferror(outLab) != 0) {
 			return false;
+		}
 	}
 
 	return true;
@@ -84,7 +85,7 @@ bool copyLab() {
 	//Read files entries
 	lab_entries = (lab_entry *)calloc(sizeof(lab_entry), num_entries);
 	fread(lab_entries, 1, num_entries * sizeof(struct lab_entry), inLab);
-	
+
 	//Read string table
 	string_table = (char *)malloc(string_table_size);
 	fread(string_table, 1, string_table_size, inLab);
@@ -95,7 +96,7 @@ bool copyLab() {
 	fwrite(string_table, string_table_size, 1, outLab);
 
 	//Check for errors
-	if(ferror(inLab) != 0 || ferror(outLab) != 0) {
+	if (ferror(inLab) != 0 || ferror(outLab) != 0) {
 		free(lab_entries);
 		free(string_table);
 		return false;
@@ -103,7 +104,7 @@ bool copyLab() {
 
 	//Copy the files, except cp_0_intha.bm
 	for (uint32 i = 0; i < num_entries; i++)
-		if(strcmp(string_table + READ_LE_UINT32(&lab_entries[i].fname_offset), "cp_0_intha.bm") != 0)
+		if (strcmp(string_table + READ_LE_UINT32(&lab_entries[i].fname_offset), "cp_0_intha.bm") != 0)
 			if (!copyFile(lab_entries[i].start, lab_entries[i].size)) {
 				free(lab_entries);
 				free(string_table);
@@ -116,26 +117,29 @@ bool copyLab() {
 }
 
 void cleanup() {
-	if (inLab)
+	if (inLab) {
 		fclose(inLab);
+	}
 
-	if (outLab)
+	if (outLab) {
 		fclose(outLab);
+	}
 
-	if (buffer)
+	if (buffer) {
 		free(buffer);
+	}
 }
 
 int main(int argc, char *argv[]) {
 	atexit(cleanup);
-	
+
 	//Argument checks and usage display
 	if (argc != 3) {
 		printf("Usage: labcopy original.lab destination.lab\n");
 		printf("Copy original.lab from Grimfandango cd with illegal-toc protection.\n");
 		return 1;
 	}
-	
+
 	//Files opening
 	inLab = fopen(argv[1], "rb");
 	if (!inLab) {

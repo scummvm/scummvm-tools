@@ -75,18 +75,26 @@ static void split(int32 *I, int32 *V, int32 start, int32 len, int32 h) {
 					j++;
 				};
 			};
-			for (i = 0; i < j; i++) V[I[k + i]] = k + j - 1;
-			if (j == 1) I[k] = -1;
+			for (i = 0; i < j; i++) {
+				V[I[k + i]] = k + j - 1;
+			}
+			if (j == 1) {
+				I[k] = -1;
+			}
 		};
 		return;
 	};
 
-	x = V[I[start + len/2] + h];
+	x = V[I[start + len / 2] + h];
 	jj = 0;
 	kk = 0;
 	for (i = start; i < start + len; i++) {
-		if (V[I[i] + h] < x) jj++;
-		if (V[I[i] + h] == x) kk++;
+		if (V[I[i] + h] < x) {
+			jj++;
+		}
+		if (V[I[i] + h] == x) {
+			kk++;
+		}
 	};
 	jj += start;
 	kk += jj;
@@ -121,29 +129,51 @@ static void split(int32 *I, int32 *V, int32 start, int32 len, int32 h) {
 		};
 	};
 
-	if (jj > start) split(I, V, start, jj - start, h);
+	if (jj > start) {
+		split(I, V, start, jj - start, h);
+	}
 
-	for (i = 0; i < kk - jj; i++) V[I[jj + i]] = kk - 1;
-	if (jj == kk - 1) I[jj] = -1;
+	for (i = 0; i < kk - jj; i++) {
+		V[I[jj + i]] = kk - 1;
+	}
+	if (jj == kk - 1) {
+		I[jj] = -1;
+	}
 
-	if (start + len > kk) split(I, V, kk, start + len - kk, h);
+	if (start + len > kk) {
+		split(I, V, kk, start + len - kk, h);
+	}
 }
 
 static void qsufsort(int32 *I, int32 *V, byte *old, int32 oldsize) {
 	int32 buckets[256];
 	int32 i, h, len;
 
-	for (i = 0; i < 256; i++) buckets[i] = 0;
-	for (i = 0; i < oldsize; i++) buckets[old[i]]++;
-	for (i = 1; i < 256; i++) buckets[i] += buckets[i-1];
-	for (i = 255; i > 0; i--) buckets[i] = buckets[i-1];
+	for (i = 0; i < 256; i++) {
+		buckets[i] = 0;
+	}
+	for (i = 0; i < oldsize; i++) {
+		buckets[old[i]]++;
+	}
+	for (i = 1; i < 256; i++) {
+		buckets[i] += buckets[i - 1];
+	}
+	for (i = 255; i > 0; i--) {
+		buckets[i] = buckets[i - 1];
+	}
 	buckets[0] = 0;
 
-	for (i = 0; i < oldsize; i++) I[++buckets[old[i]]] = i;
+	for (i = 0; i < oldsize; i++) {
+		I[++buckets[old[i]]] = i;
+	}
 	I[0] = oldsize;
-	for (i = 0; i < oldsize; i++) V[i] = buckets[old[i]];
+	for (i = 0; i < oldsize; i++) {
+		V[i] = buckets[old[i]];
+	}
 	V[oldsize] = 0;
-	for (i = 1; i < 256; i++) if (buckets[i] == buckets[i-1] + 1) I[buckets[i]] = -1;
+	for (i = 1; i < 256; i++) if (buckets[i] == buckets[i - 1] + 1) {
+			I[buckets[i]] = -1;
+		}
 	I[0] = -1;
 
 	for (h = 1; I[0] != -(oldsize + 1); h += h) {
@@ -153,32 +183,38 @@ static void qsufsort(int32 *I, int32 *V, byte *old, int32 oldsize) {
 				len -= I[i];
 				i -= I[i];
 			} else {
-				if (len) I[i-len] = -len;
+				if (len) {
+					I[i - len] = -len;
+				}
 				len = V[I[i]] + 1 - i;
 				split(I, V, i, len, h);
 				i += len;
 				len = 0;
 			};
 		};
-		if (len) I[i-len] = -len;
+		if (len) {
+			I[i - len] = -len;
+		}
 	};
 
-	for (i = 0; i < oldsize + 1; i++)
+	for (i = 0; i < oldsize + 1; i++) {
 		I[V[i]] = i;
+	}
 }
 
 static int32 matchlen(byte *old, int32 oldsize, byte *new_block, int32 new_size) {
 	int32 i;
 
 	for (i = 0; (i < oldsize) && (i < new_size); i++)
-		if (old[i] != new_block[i])
+		if (old[i] != new_block[i]) {
 			break;
+		}
 
 	return i;
 }
 
 static int32 search(int32 *I, byte *old, int32 oldsize,
-                    byte *new_block, int32 newsize, int32 st, int32 en, int32 *pos) {
+					byte *new_block, int32 newsize, int32 st, int32 en, int32 *pos) {
 	int32 x, y;
 
 	if (en - st < 2) {
@@ -220,7 +256,7 @@ arguments parse_args(int argc, char *argv[]) {
 	arg.mix = false;
 
 	int c;
-	while ((c = getopt (argc, argv, "nm")) != -1)
+	while ((c = getopt(argc, argv, "nm")) != -1)
 		switch (c) {
 		case 'n':
 			arg.comp_ctrl = false;
@@ -232,7 +268,7 @@ arguments parse_args(int argc, char *argv[]) {
 			show_usage(argv[0]);
 			exit(0);
 		default:
-			fprintf (stderr, "Internal error\n");
+			fprintf(stderr, "Internal error\n");
 			exit(1);
 		}
 
@@ -270,10 +306,12 @@ int main(int argc, char *argv[]) {
 	args = parse_args(argc, argv);
 
 	//Set flags
-	if (args.mix)
+	if (args.mix) {
 		flags |= 1 << 0;
-	if (args.comp_ctrl)
+	}
+	if (args.comp_ctrl) {
 		flags |= 1 << 1;
+	}
 
 	/* Allocate oldsize+1 bytes instead of oldsize bytes to ensure
 	    that we never try to alloc zero elements and get a NULL pointer */
@@ -291,7 +329,7 @@ int main(int argc, char *argv[]) {
 		std::cerr << "Unable to allocate memory" << std::endl;
 		return 1;
 	}
-	in.read((char*)old, oldsize);
+	in.read((char *)old, oldsize);
 	if (in.fail()) {
 		std::cerr << "Unable to read from " << args.oldfile << std::endl;
 		return 1;
@@ -321,7 +359,7 @@ int main(int argc, char *argv[]) {
 		std::cerr << "Unable to allocate memory" << std::endl;
 		return 1;
 	}
-	in.read((char*)new_block, newsize);
+	in.read((char *)new_block, newsize);
 	if (in.fail()) {
 		std::cerr << "Unable to read from " << args.newfile << std::endl;
 		return 1;
@@ -351,16 +389,16 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	memcpy(header, "PATR", 4);							//Signature
-	WRITE_LE_UINT16(header + 4, 2);						//Version major
-	WRITE_LE_UINT16(header + 6, 0);						//Version minor
-	WRITE_LE_UINT32(header + 8, flags);					//flags
-	Common::md5_file(args.oldfile, header + 12, 5000);	//Md5sum
-	WRITE_LE_UINT32(header + 28, oldsize);				//oldsize
-	WRITE_LE_UINT32(header + 32, newsize);				//newsize
-	//WRITE_LE_UINT32(header + 36, 0);					//ctrl compressed size
-	//WRITE_LE_UINT32(header + 40, 0);					//diff compressed size
-	//WRITE_LE_UINT32(header + 44, 0);					//extra compressed size
+	memcpy(header, "PATR", 4);                          //Signature
+	WRITE_LE_UINT16(header + 4, 2);                     //Version major
+	WRITE_LE_UINT16(header + 6, 0);                     //Version minor
+	WRITE_LE_UINT32(header + 8, flags);                 //flags
+	Common::md5_file(args.oldfile, header + 12, 5000);  //Md5sum
+	WRITE_LE_UINT32(header + 28, oldsize);              //oldsize
+	WRITE_LE_UINT32(header + 32, newsize);              //newsize
+	//WRITE_LE_UINT32(header + 36, 0);                  //ctrl compressed size
+	//WRITE_LE_UINT32(header + 40, 0);                  //diff compressed size
+	//WRITE_LE_UINT32(header + 44, 0);                  //extra compressed size
 	patch.write((char *)header, 48);
 	if (patch.bad()) {
 		std::cerr << "Write error on " << args.patchfile << std::endl;
@@ -369,8 +407,9 @@ int main(int argc, char *argv[]) {
 
 	/* Compute the differences, writing ctrl as we go */
 	GZipWriteStream *ctrlBlock;
-	if (args.comp_ctrl)
+	if (args.comp_ctrl) {
 		ctrlBlock = new GZipWriteStream(&patch);
+	}
 
 	scan = 0;
 	len = 0;
@@ -382,19 +421,23 @@ int main(int argc, char *argv[]) {
 
 		for (scsc = scan += len; scan < newsize; scan++) {
 			len = search(I, old, oldsize, new_block + scan, newsize - scan,
-			             0, oldsize, &pos);
+						 0, oldsize, &pos);
 
 			for (; scsc < scan + len; scsc++)
 				if ((scsc + lastoffset < oldsize) &&
-				        (old[scsc + lastoffset] == new_block[scsc]))
+						(old[scsc + lastoffset] == new_block[scsc])) {
 					oldscore++;
+				}
 
 			if (((len == oldscore) && (len != 0)) ||
-			        (len > oldscore + 8)) break;
+					(len > oldscore + 8)) {
+				break;
+			}
 
 			if ((scan + lastoffset < oldsize) &&
-			        (old[scan + lastoffset] == new_block[scan]))
+					(old[scan + lastoffset] == new_block[scan])) {
 				oldscore--;
+			}
 		};
 
 		if ((len != oldscore) || (scan == newsize)) {
@@ -402,7 +445,9 @@ int main(int argc, char *argv[]) {
 			Sf = 0;
 			lenf = 0;
 			for (i = 0; (lastscan + i < scan) && (lastpos + i < oldsize);) {
-				if (old[lastpos + i] == new_block[lastscan + i]) s++;
+				if (old[lastpos + i] == new_block[lastscan + i]) {
+					s++;
+				}
 				i++;
 				if (s * 2 - i > Sf * 2 - lenf) {
 					Sf = s;
@@ -415,7 +460,9 @@ int main(int argc, char *argv[]) {
 				s = 0;
 				Sb = 0;
 				for (i = 1; (scan >= lastscan + i) && (pos >= i); i++) {
-					if (old[pos - i] == new_block[scan - i]) s++;
+					if (old[pos - i] == new_block[scan - i]) {
+						s++;
+					}
 					if (s * 2 - i > Sb * 2 - lenb) {
 						Sb = s;
 						lenb = i;
@@ -430,9 +477,13 @@ int main(int argc, char *argv[]) {
 				lens = 0;
 				for (i = 0; i < overlap; i++) {
 					if (new_block[lastscan + lenf - overlap + i] ==
-					        old[lastpos + lenf - overlap + i]) s++;
+							old[lastpos + lenf - overlap + i]) {
+						s++;
+					}
 					if (new_block[scan - lenb + i] ==
-					        old[pos - lenb + i]) s--;
+							old[pos - lenb + i]) {
+						s--;
+					}
 					if (s > Ss) {
 						Ss = s;
 						lens = i + 1;
@@ -443,17 +494,20 @@ int main(int argc, char *argv[]) {
 				lenb -= lens;
 			};
 
-			for (i = 0; i < lenf; i++)
+			for (i = 0; i < lenf; i++) {
 				db[dblen + i] = new_block[lastscan + i] ^ old[lastpos + i];
+			}
 			dblen += lenf;
 
 			if (!args.mix) {
-				for (i = 0; i < (scan - lenb) - (lastscan + lenf); i++)
+				for (i = 0; i < (scan - lenb) - (lastscan + lenf); i++) {
 					eb[eblen + i] = new_block[lastscan + lenf + i];
+				}
 				eblen += (scan - lenb) - (lastscan + lenf);
 			} else {
-				for (i = 0; i < (scan - lenb) - (lastscan + lenf); i++)
+				for (i = 0; i < (scan - lenb) - (lastscan + lenf); i++) {
 					db[dblen + i] = new_block[lastscan + lenf + i];
+				}
 				dblen += (scan - lenb) - (lastscan + lenf);
 			}
 
@@ -464,8 +518,9 @@ int main(int argc, char *argv[]) {
 					std::cerr << "Write error on " << args.patchfile << std::endl;
 					return 1;
 				}
-			} else
-				patch.write((char*)buf, 4);
+			} else {
+				patch.write((char *)buf, 4);
+			}
 
 
 			WRITE_LE_UINT32(buf, (scan - lenb) - (lastscan + lenf));
@@ -475,8 +530,9 @@ int main(int argc, char *argv[]) {
 					std::cerr << "Write error on " << args.patchfile << std::endl;
 					return 1;
 				}
-			} else
-				patch.write((char*)buf, 4);
+			} else {
+				patch.write((char *)buf, 4);
+			}
 
 			WRITE_LE_UINT32(buf, int32((pos - lenb) - (lastpos + lenf)));
 			if (args.comp_ctrl) {
@@ -485,16 +541,18 @@ int main(int argc, char *argv[]) {
 					std::cerr << "Write error on " << args.patchfile << std::endl;
 					return 1;
 				}
-			} else
-				patch.write((char*)buf, 4);
+			} else {
+				patch.write((char *)buf, 4);
+			}
 
 			lastscan = scan - lenb;
 			lastpos = pos - lenb;
 			lastoffset = pos - scan;
 		};
 	};
-	if (args.comp_ctrl)
+	if (args.comp_ctrl) {
 		delete ctrlBlock;
+	}
 
 	/* Compute size of ctrl data (compressed or not)*/
 	if ((len = patch.tellp()) == -1) {
@@ -538,9 +596,9 @@ int main(int argc, char *argv[]) {
 		WRITE_LE_UINT32(header + 44, newsize2 - newsize);
 
 		delete[] eb;
-	}
-	else
+	} else {
 		WRITE_LE_UINT32(header + 44, 0);
+	}
 
 	/* Seek to the beginning, write the header, and close the file */
 	patch.seekp(0, std::ios::beg);

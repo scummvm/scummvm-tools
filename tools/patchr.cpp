@@ -26,7 +26,7 @@
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted providing that the following conditions 
+ * modification, are permitted providing that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
@@ -75,8 +75,9 @@ void free_memory() {
 void show_header_info(uint8 *header) {
 	printf("PatchR v%d.%d\n", READ_LE_UINT16(header + 4), READ_LE_UINT16(header + 6));
 	printf("Md5: ");
-	for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < 16; ++i) {
 		printf("%x", *(header + 12 + i));
+	}
 	printf("\n");
 
 	uint32 flags = READ_LE_UINT32(header + 8);
@@ -109,7 +110,7 @@ arguments parse_args(int argc, char *argv[]) {
 	arg.show_info = false;
 
 	int c;
-	while ((c = getopt (argc, argv, "a")) != -1)
+	while ((c = getopt(argc, argv, "a")) != -1)
 		switch (c) {
 		case 'a':
 			arg.show_info = true;
@@ -118,7 +119,7 @@ arguments parse_args(int argc, char *argv[]) {
 			show_usage(argv[0]);
 			exit(0);
 		default:
-			fprintf (stderr, "Internal error\n");
+			fprintf(stderr, "Internal error\n");
 			exit(1);
 		}
 
@@ -134,7 +135,7 @@ arguments parse_args(int argc, char *argv[]) {
 	return arg;
 }
 
-int main(int argc,char * argv[]) {
+int main(int argc, char *argv[]) {
 	uint32 oldsize, newsize;
 	uint32 zctrllen, zdatalen, zextralen;
 	uint8 header[48], buf[4];
@@ -177,14 +178,14 @@ int main(int argc,char * argv[]) {
 	}
 
 	/* Read header */
-	patch.read((char*)header, 48);
+	patch.read((char *)header, 48);
 	if (patch.eof() || patch.bad() || patch.fail()) {
 		std::cerr << "Corrupt patch\n";
 		return 1;
 	}
 
 	/* Check for appropriate signature */
-	if (READ_BE_UINT32(header) != MKTAG('P','A','T','R')) {
+	if (READ_BE_UINT32(header) != MKTAG('P', 'A', 'T', 'R')) {
 		std::cerr << "Corrupt patch\n";
 		return 1;
 	}
@@ -214,20 +215,23 @@ int main(int argc,char * argv[]) {
 	zextralen = READ_LE_UINT32(header + 44);
 
 	patch.close();
-	if (args.show_info)
+	if (args.show_info) {
 		show_header_info(header);
+	}
 
 	// Open the compressed sub-streams
 	//Check if the ctrl is compressed
 	ctrlStream.seekg(48, std::ios::beg);
-	if (comp_ctrl)
+	if (comp_ctrl) {
 		ctrlDec = new GZipReadStream(&ctrlStream, 48, zctrllen);
+	}
 
 	diffDec = new GZipReadStream(&diffStream, 48 + zctrllen, zdatalen);
-	if (mix)
+	if (mix) {
 		extraDec = diffDec;
-	else
+	} else {
 		extraDec = new GZipReadStream(&extraStream, 48 + zctrllen + zdatalen, zextralen);
+	}
 
 	old_block = new uint8[oldsize];
 	new_block = new byte[newsize];
@@ -235,25 +239,25 @@ int main(int argc,char * argv[]) {
 		std::cerr << "Not enough memory\n";
 		return 1;
 	}
-	
+
 	//Read the oldfile
 	oldfile.seekg(0, std::ios::beg);
-	oldfile.read((char*)old_block, oldsize);
+	oldfile.read((char *)old_block, oldsize);
 	oldfile.close();
 	if (oldfile.bad() || oldfile.fail()) {
 		std::cerr << "Input error\n";
 		return 1;
 	}
 
-	oldpos=0;
-	newpos=0;
-	while(newpos < newsize) {
+	oldpos = 0;
+	newpos = 0;
+	while (newpos < newsize) {
 		/* Read control data */
 		for (uint i = 0; i < 3; i++) {
-			if (comp_ctrl)
+			if (comp_ctrl) {
 				lenread = ctrlDec->read(buf, 4);
-			else {
-				ctrlStream.read((char*)buf, 4);
+			} else {
+				ctrlStream.read((char *)buf, 4);
 				lenread = ctrlStream.gcount();
 			}
 			if (lenread < 4) {
@@ -289,8 +293,9 @@ int main(int argc,char * argv[]) {
 					printf("\n");
 				} else {
 					uint pos = i;
-					while (i < ctrl[0] && *(new_block + newpos + i) == 0)
+					while (i < ctrl[0] && *(new_block + newpos + i) == 0) {
 						++i;
+					}
 					printf("COPY %d\n", i - pos);
 				}
 			}
@@ -298,8 +303,9 @@ int main(int argc,char * argv[]) {
 
 		/* Add old data to diff string */
 		for (uint i = 0; i < ctrl[0]; i++)
-			if ((oldpos + i >= 0) && (oldpos + i < oldsize))
+			if ((oldpos + i >= 0) && (oldpos + i < oldsize)) {
 				new_block[newpos + i] ^= old_block[oldpos + i];
+			}
 
 		/* Adjust pointers */
 		newpos += ctrl[0];
@@ -322,13 +328,15 @@ int main(int argc,char * argv[]) {
 		if (args.show_info) {
 			if (ctrl[1] > 0) {
 				printf("INSERT");
-				for (uint i = 0; i < ctrl[1]; i++)
+				for (uint i = 0; i < ctrl[1]; i++) {
 					printf(" %02x", *(new_block + newpos + i));
+				}
 				printf("\n");
 			}
 
-			if (ctrl[2] != 0)
+			if (ctrl[2] != 0) {
 				printf("JUMP %d\n", ctrl[2]);
+			}
 		}
 
 		/* Adjust pointers */
@@ -348,7 +356,7 @@ int main(int argc,char * argv[]) {
 		return 1;
 	}
 
-	newfile.write((char*)new_block, newsize);
+	newfile.write((char *)new_block, newsize);
 	if (patch.bad()) {
 		std::cerr << "Output error.\n";
 		return 1;

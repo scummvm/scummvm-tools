@@ -89,17 +89,18 @@ void Bitmap::toBMP(const std::string &fname) {
 		std::fstream file(name.str().c_str(), std::fstream::out | std::fstream::binary);
 		BMPHeader header;
 		unsigned short bm = TO_LE_16(19778);
-		file.write((char*)&bm, 2);
+		file.write((char *)&bm, 2);
 		header.size = TO_LE_32(size() + 54);
 		header.reserved = TO_LE_32(0);
 		header.width = TO_LE_32(_width);
 		header.height = TO_LE_32(_height);
 		header.offset = TO_LE_32(54);
 		header.headerSize = TO_LE_32(40);
-		if(_bpp == 32)
+		if (_bpp == 32) {
 			header.nplanesbpp = TO_LE_32(2097153);
-		else if(_bpp == 16)
+		} else if (_bpp == 16) {
 			header.nplanesbpp = TO_LE_32(1048577);
+		}
 		header.compress_type = TO_LE_32(0);
 		header.bmp_bytesz = TO_LE_32(0);
 		header.hres = TO_LE_32(2835);
@@ -116,21 +117,21 @@ void Bitmap::toBMP(const std::string &fname) {
 }
 
 #define GET_BIT do { bit = bitstr_value & 1; \
-bitstr_len--; \
-bitstr_value >>= 1; \
-if (bitstr_len == 0) { \
-	bitstr_value = READ_LE_UINT16(compressed); \
-	bitstr_len = 16; \
-	compressed += 2; \
-	} \
-} while (0)
+		bitstr_len--; \
+		bitstr_value >>= 1; \
+		if (bitstr_len == 0) { \
+			bitstr_value = READ_LE_UINT16(compressed); \
+			bitstr_len = 16; \
+			compressed += 2; \
+		} \
+	} while (0)
 
 static bool decompress_codec3(const char *compressed, char *result, int maxBytes) {
 	int bitstr_value = READ_LE_UINT16(compressed);
 	int bitstr_len = 16;
 	compressed += 2;
 	bool bit;
-	
+
 	int byteIndex = 0;
 	for (;;) {
 		GET_BIT;
@@ -138,12 +139,11 @@ static bool decompress_codec3(const char *compressed, char *result, int maxBytes
 			if (byteIndex >= maxBytes) {
 				printf("Buffer overflow when decoding image: decompress_codec3 walked past the input buffer!\n");
 				return false;
-			}
-			else
+			} else {
 				*result++ = *compressed++;
+			}
 			++byteIndex;
-		}
-		else {
+		} else {
 			GET_BIT;
 			int copy_len, copy_offset;
 			if (bit == 0) {
@@ -158,16 +158,16 @@ static bool decompress_codec3(const char *compressed, char *result, int maxBytes
 				compressed += 2;
 				if (copy_len == 3) {
 					copy_len = *(uint8 *)(compressed++) + 1;
-					if (copy_len == 1)
+					if (copy_len == 1) {
 						return true;
+					}
 				}
 			}
 			while (copy_len > 0) {
 				if (byteIndex >= maxBytes) {
 					printf("Buffer overflow when decoding image: decompress_codec3 walked past the input buffer!\n");
 					return false;
-				}
-				else {
+				} else {
 					assert(byteIndex + copy_offset >= 0);
 					assert(byteIndex + copy_offset < maxBytes);
 					*result = result[copy_offset];
@@ -222,8 +222,9 @@ Bitmap *Bitmap::load(const char *data, int len) {
 		} else if (codec == 3) {
 			int compressed_len = READ_LE_UINT32(data + pos);
 			bool success = decompress_codec3(data + pos + 4, b->_data[i], b->_bpp / 8 * b->_width * b->_height);
-			if (!success)
+			if (!success) {
 				printf(".. when loading image\n");
+			}
 			char *temp = new char[b->_bpp / 8 * b->_width * b->_height];
 			memcpy(temp, b->_data[i], b->_bpp / 8 * b->_width * b->_height);
 			delete[] b->_data[i];
@@ -233,7 +234,7 @@ Bitmap *Bitmap::load(const char *data, int len) {
 			printf("Unknown image codec in BitmapData ctor!\n");
 			return NULL;
 		}
-		
+
 #ifdef SCUMM_BIG_ENDIAN
 		for (int j = 0; j < b->_width * b->_height; ++j) {
 			((uint16 *)b->_data[i])[j] = SWAP_BYTES_16(((uint16 *)b->_data[i])[j]);

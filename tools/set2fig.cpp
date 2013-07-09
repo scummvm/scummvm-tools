@@ -33,14 +33,14 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	printf("#FIG 3.2\n"
-		"Landscape\n"
-		"Center\n"
-		"Metric\n"
-		"A4\n"
-		"100.00\n"
-		"Single\n"
-		"-2\n"
-		"1200 2\n");
+		   "Landscape\n"
+		   "Center\n"
+		   "Metric\n"
+		   "A4\n"
+		   "100.00\n"
+		   "Single\n"
+		   "-2\n"
+		   "1200 2\n");
 
 	FILE *in = fopen(argv[1], "r");
 	if (in == NULL) {
@@ -60,29 +60,32 @@ int main(int argc, char *argv[]) {
 
 		int id;
 		fscanf(in, " ID %d", &id);
-		if (numSectors < 0)
+		if (numSectors < 0) {
 			numSectors = id + 1;
+		}
 
 		char buf[256];
 		int color = 0;
 		fscanf(in, " type %256s", buf);
-		if (strcmp(buf, "walk") == 0)
+		if (strcmp(buf, "walk") == 0) {
 			color = 0;
-		else if (strcmp(buf, "funnel") == 0)
+		} else if (strcmp(buf, "funnel") == 0) {
 			color = 0;
-		else if (strcmp(buf, "camera") == 0)
+		} else if (strcmp(buf, "camera") == 0) {
 			color = 1;
-		else if (strcmp(buf, "special") == 0)
+		} else if (strcmp(buf, "special") == 0) {
 			color = 5;
-		else if (strcmp(buf, "chernobyl") == 0)
+		} else if (strcmp(buf, "chernobyl") == 0) {
 			color = 4;
+		}
 
 		int linetype = 0;
 		fscanf(in, " default visibility %256s", buf);
-		if (strcmp(buf, "visible") == 0)
+		if (strcmp(buf, "visible") == 0) {
 			linetype = 0;
-		else if (strcmp(buf, "invisible") == 0)
+		} else if (strcmp(buf, "invisible") == 0) {
 			linetype = 1;
+		}
 
 		float dummy;
 		fscanf(in, " height %f", &dummy);
@@ -95,7 +98,7 @@ int main(int argc, char *argv[]) {
 		float vertices[300];
 		fscanf(in, " vertices:");
 		for (int i = 0; i < numVertices; i++) {
-			fscanf(in, " %f %f %f", vertices + 3*i, vertices + (3 * i + 1), vertices + (3 * i + 2));
+			fscanf(in, " %f %f %f", vertices + 3 * i, vertices + (3 * i + 1), vertices + (3 * i + 2));
 			printf(" %d %d", (int) round(vertices[3 * i] * 1000), -(int)round(vertices[3 * i + 1] * 1000));
 		}
 		printf(" %d %d\n", (int) round(vertices[0] * 1000), -(int)round(vertices[1] * 1000));

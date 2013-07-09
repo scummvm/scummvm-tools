@@ -172,10 +172,11 @@ void decompressVima(byte *src, int16 *dest, int destLen, uint16 *destTable) {
 				bitPtr -= 8;
 			}
 
-			if (val & highBit)
+			if (val & highBit) {
 				val ^= highBit;
-			else
+			} else {
 				highBit = 0;
+			}
 
 			if (val == lowBits) {
 				outputWord = ((int16)(bits << bitPtr) & 0xffffff00);
@@ -186,16 +187,19 @@ void decompressVima(byte *src, int16 *dest, int destLen, uint16 *destTable) {
 				int index = (val << (7 - numBits)) | (currTablePos << 6);
 				int delta = destTable[index];
 
-				if (val)
+				if (val) {
 					delta += (imcTable1[currTablePos] >> (numBits - 1));
-				if (highBit)
+				}
+				if (highBit) {
 					delta = -delta;
+				}
 
 				outputWord += delta;
-				if (outputWord < -0x8000)
+				if (outputWord < -0x8000) {
 					outputWord = -0x8000;
-				else if (outputWord > 0x7fff)
+				} else if (outputWord > 0x7fff) {
 					outputWord = 0x7fff;
+				}
 			}
 
 			byte *b = (byte *)destPos;
@@ -205,10 +209,11 @@ void decompressVima(byte *src, int16 *dest, int destLen, uint16 *destTable) {
 
 			currTablePos += offsets[numBits - 2][val];
 
-			if (currTablePos < 0)
+			if (currTablePos < 0) {
 				currTablePos = 0;
-			else if (currTablePos > 88)
+			} else if (currTablePos > 88) {
 				currTablePos = 88;
+			}
 		}
 	}
 }
@@ -247,9 +252,9 @@ int main(int /* argc */, char *argv[]) {
 		sourceBuffer = new byte[compSize];
 		fread(sourceBuffer, 1, compSize, f);
 
-		if (strcmp(codecs + 5 * codec, "NULL") == 0)
+		if (strcmp(codecs + 5 * codec, "NULL") == 0) {
 			fwrite(sourceBuffer, 1, uncompSize, stdout);
-		else if (strcmp(codecs + 5 * codec, "VIMA") == 0) {
+		} else if (strcmp(codecs + 5 * codec, "VIMA") == 0) {
 			char *buffer = new char[uncompSize];
 			decompressVima(sourceBuffer, (int16 *)buffer, uncompSize, destTable);
 			fwrite(buffer, 1, uncompSize, stdout);

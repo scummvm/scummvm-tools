@@ -49,7 +49,9 @@ void read_cmp(const char *fname) {
 	}
 	fseek(cmp, 48, SEEK_SET);
 	for (i = 0; i < 256; i++) {
-		col[0] = getc(cmp); col[1] = getc(cmp); col[2] = getc(cmp);
+		col[0] = getc(cmp);
+		col[1] = getc(cmp);
+		col[2] = getc(cmp);
 		PPM_ASSIGN(cmap[i], col[0], col[1], col[2]);
 	}
 	fclose(cmp);
@@ -75,26 +77,28 @@ void write_img(FILE *f, const char *fname, int n, int num_img) {
 			img[y][x] = cmap[p];
 		}
 
-		basename = strrchr(fname, '/');
-		if (basename != NULL)
-			basename++;
-		else
-			basename = fname;
-		strcpy(newname, basename);
-		if (strlen(newname) > 4 &&
-			strcasecmp(newname + strlen(newname) - 4, ".mat") == 0)
-			newname[strlen(newname) - 4] = '\0';
-		sprintf(newname + strlen(newname), "_%d.ppm", n);
+	basename = strrchr(fname, '/');
+	if (basename != NULL) {
+		basename++;
+	} else {
+		basename = fname;
+	}
+	strcpy(newname, basename);
+	if (strlen(newname) > 4 &&
+			strcasecmp(newname + strlen(newname) - 4, ".mat") == 0) {
+		newname[strlen(newname) - 4] = '\0';
+	}
+	sprintf(newname + strlen(newname), "_%d.ppm", n);
 
-		out = fopen(newname, "wb");
-		if (out == NULL) {
-			perror(newname);
-			exit(1);
-		}
+	out = fopen(newname, "wb");
+	if (out == NULL) {
+		perror(newname);
+		exit(1);
+	}
 
-		ppm_writeppm(out, img, width, height, 255, 0);
-		ppm_freearray(img, height);
-		fclose(out);
+	ppm_writeppm(out, img, width, height, 255, 0);
+	ppm_freearray(img, height);
+	fclose(out);
 }
 
 void process_file(const char *fname) {
@@ -109,8 +113,9 @@ void process_file(const char *fname) {
 	}
 	fseek(in, 12, SEEK_SET);
 	num_img = read_LEint32(in);
-	for (i = 0; i < num_img; i++)
+	for (i = 0; i < num_img; i++) {
 		write_img(in, fname, i, num_img);
+	}
 	fclose(in);
 }
 
@@ -118,16 +123,18 @@ int main(int argc, char **argv) {
 	int i;
 
 	ppm_init(&argc, argv);
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < 256; i++) {
 		PPM_ASSIGN(cmap[i], i, i, i);
+	}
 
 	i = 1;
 	if (argc >= 3 && strncmp(argv[1], "-c", 2) == 0) {
 		read_cmp(argv[2]);
 		i = 3;
 	}
-	for (; i < argc; i++)
+	for (; i < argc; i++) {
 		process_file(argv[i]);
+	}
 
 	return 0;
 }

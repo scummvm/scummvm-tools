@@ -42,11 +42,11 @@ void write_le_uint16(unsigned short val) {
 
 int main() {
 	char block[1024];
-	fread(block, 8, 1, stdin);	// skip iMUS header
-	fread(block, 8, 1, stdin);	// read MAP header
+	fread(block, 8, 1, stdin);  // skip iMUS header
+	fread(block, 8, 1, stdin);  // read MAP header
 	int mapSize = get_be_uint32(block + 4);
 	int numBits = 16, rate = 22050, channels = 2;
-	for (int mapPos = 0; mapPos < mapSize; ) {
+	for (int mapPos = 0; mapPos < mapSize;) {
 		fread(block, 8, 1, stdin);
 		int blockSize = get_be_uint32(block + 4);
 		if (memcmp(block, "FRMT", 4) == 0) {
@@ -54,8 +54,9 @@ int main() {
 			numBits = get_be_uint32(block + 8);
 			rate = get_be_uint32(block + 12);
 			channels = get_be_uint32(block + 16);
-		} else
+		} else {
 			fread(block, blockSize, 1, stdin);
+		}
 		mapPos += (blockSize + 8);
 	}
 	fread(block, 8, 1, stdin);

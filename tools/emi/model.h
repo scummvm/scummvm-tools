@@ -115,7 +115,7 @@ public:
 	float _timelen;
 	int _numBones;
 	int _numKeyFrames;
-	std::vector<Bone*> _bones;
+	std::vector<Bone *> _bones;
 };
 
 class Mesh {
@@ -133,7 +133,7 @@ class Mesh {
 
 	Bone *_bones;
 	int _numBones;
-	std::map<std::string, Bone*> _boneMap;
+	std::map<std::string, Bone *> _boneMap;
 
 	Animation *_anim;
 

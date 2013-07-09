@@ -60,7 +60,7 @@ class Lab {
 public:
 	Lab(std::string filename) : _filename(filename) {
 		// allocate a 1mb buffer to start with
-		bufSize = 1024*1024;
+		bufSize = 1024 * 1024;
 		buf = (char *)malloc(bufSize);
 		Load(filename);
 	}
@@ -75,7 +75,7 @@ public:
 	int getLength(std::string filename);
 };
 
-std::istream *getFile(std::string filename, Lab* lab);
-std::istream *getFile(std::string filename, Lab* lab, int& length);
+std::istream *getFile(std::string filename, Lab *lab);
+std::istream *getFile(std::string filename, Lab *lab, int &length);
 
 #endif
