@@ -127,6 +127,8 @@ private:
 	float *vertices; // 3 * numVertices.
 	float normal[3];
 	bool visible;
+	int numSortPlanes;
+	int *sortPlanes;
 };
 
 Sector::Sector(Data *data) : Section(data) {
@@ -143,8 +145,10 @@ Sector::Sector(Data *data) : Section(data) {
 	ID = data->GetInt();
 	visible = data->GetBool();
 	type = (SectorType)data->GetInt();
-	int skip = data->GetInt();
-	data->Skip(skip * 4);
+	numSortPlanes = data->GetInt();
+	sortPlanes = new int[numSortPlanes];
+	for (int i = 0; i < numSortPlanes; ++i)
+		sortPlanes[i] = data->GetInt();
 	height = data->GetFloat();
 
 	float cross1[3], cross2[3];
@@ -205,6 +209,13 @@ string Sector::ToString() {
 	ss << endl;
 	ss << "\theight\t" << height << endl;
 	ss << "\tnumvertices\t" << numVertices << endl;
+	ss << "\tsortplanes\t" << numSortPlanes << "\t";
+	for (int i = 0; i < numSortPlanes; ++i) {
+		if (i != 0)
+			ss << ",";
+		ss << sortPlanes[i];
+	}
+	ss << endl;
 	ss << "\tnormal\t\t\t" << normal[0] << "\t" << normal[1] << "\t" << normal[2] << endl;
 	ss << "\tvertices:\t\t";
 	for (int i = 0; i < numVertices * 3; i += 3) {
