@@ -27,7 +27,7 @@
 #include <vector>
 #include "filetools.h"
 
-std::vector<std::string> g_tag;
+std::vector<std::string> *g_tag = 0;
 
 std::string getTag(std::string str) {
 	if (str.at(0) != '!') {
@@ -43,12 +43,12 @@ std::string getCompName(std::string str) {
 
 void pushtag(std::string tag) {
 	std::vector<std::string>::iterator it;
-	for (it = g_tag.begin(); it != g_tag.end(); it++) {
+	for (it = g_tag->begin(); it != g_tag->end(); it++) {
 		if (*it == tag) {
 			return;
 		}
 	}
-	g_tag.push_back(tag);
+	g_tag->push_back(tag);
 }
 
 struct TrackKey {
@@ -136,10 +136,10 @@ struct Costume {
 
 	void print() {
 		std::cout << "section: tags\n";
-		std::cout << "\tnumtags " << g_tag.size() << std::endl;
-		int i = 0;
-		std::vector<std::string>::iterator it = g_tag.begin();
-		for (; it != g_tag.end(); it++) {
+		std::cout << "\tnumtags " << g_tag->size() << std::endl;
+
+		std::vector<std::string>::iterator it = g_tag->begin();
+		for (int i = 0; it != g_tag->end(); it++) {
 			std::cout << i++ << "\t" << *it << std::endl;
 		}
 		std::cout << std::endl;
@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
 		std::cout << "Unable to open file " << filename << std::endl;
 		return 0;
 	}
-
+	g_tag = new std::vector<std::string>;
 	Costume c;
 	c.readFromFile(file);
 	if (argc == 2) {
@@ -217,5 +217,5 @@ int main(int argc, char **argv) {
 	} else {
 		c.printChore(argv[2]);
 	}
-
+	delete g_tag;
 }
