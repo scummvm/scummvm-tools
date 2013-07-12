@@ -28,17 +28,7 @@
 #include <fstream>
 #include <string>
 #include "lab.h"
-
-// TODO: Use common/endian for this
-uint16 READ_LE_UINT16(const void *ptr) {
-	const uint8 *b = (const uint8 *)ptr;
-	return (b[1] << 8) + b[0];
-}
-
-uint32 READ_LE_UINT32(const void *ptr) {
-	const uint8 *b = (const uint8 *)ptr;
-	return (b[3] << 24) + (b[2] << 16) + (b[1] << 8) + (b[0]);
-}
+#include "common/endian.h"
 
 void Lab::Load(std::string filename) {
 	infile = fopen(filename.c_str(), "rb");

@@ -23,7 +23,7 @@
 #ifndef LAB_H
 #define LAB_H
 
-#include "config.h"
+#include "common/endian.h"
 #include <string>
 #include <iostream>
 
