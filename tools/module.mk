@@ -98,7 +98,7 @@ TOOL_LDFLAGS := -lz
 include $(srcdir)/rules.mk
 
 TOOL := unlab
-TOOL_OBJS := unlab.o
+TOOL_OBJS := unlab.o lab.o
 include $(srcdir)/rules.mk
 
 TOOL := mklab
