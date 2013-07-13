@@ -48,7 +48,6 @@ struct lab_entry {
 class Lab {
 	std::string _filename;
 	uint8 g_type;
-	uint32 i;
 	uint32 offset;
 	uint32 bufSize;
 	lab_header head;
@@ -58,18 +57,12 @@ class Lab {
 	FILE *infile;
 	void Load(std::string filename);
 public:
-	Lab(std::string filename) : _filename(filename) {
-		// allocate a 1mb buffer to start with
-		bufSize = 1024 * 1024;
-		buf = (char *)malloc(bufSize);
-		Load(filename);
-	}
-	~Lab() {
-		free(buf);
-		delete[] str_table;
-		delete[] entries;
-	}
+	Lab(std::string filename);
+	~Lab();
 
+	int getNumEntries() { return head.num_entries; }
+
+	std::string getFileName(int index);
 	std::istream *getFile(std::string filename);
 	int getIndex(std::string filename);
 	int getLength(std::string filename);

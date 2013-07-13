@@ -27,8 +27,21 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include "lab.h"
 #include "common/endian.h"
+
+Lab::Lab(std::string filename) : _filename(filename) {
+	// allocate a 1mb buffer to start with
+	bufSize = 1024 * 1024;
+	buf = (char *)malloc(bufSize);
+	Load(filename);
+}
+Lab::~Lab() {
+	free(buf);
+	delete[] str_table;
+	delete[] entries;
+}
 
 void Lab::Load(std::string filename) {
 	infile = fopen(filename.c_str(), "rb");
@@ -92,7 +105,7 @@ void Lab::Load(std::string filename) {
 }
 
 int Lab::getIndex(std::string filename) {
-	for (i = 0; i < head.num_entries; i++) {
+	for (uint32 i = 0; i < head.num_entries; i++) {
 		const char *fname = str_table + READ_LE_UINT32(&entries[i].fname_offset);
 		std::string test = std::string(fname);
 		if (test != filename) {
@@ -104,6 +117,10 @@ int Lab::getIndex(std::string filename) {
 	return -1;
 }
 
+std::string Lab::getFileName(int index) {
+	return str_table + READ_LE_UINT32(&entries[index].fname_offset);
+}
+
 std::istream *Lab::getFile(std::string filename) {
 	if (!buf) {
 		printf("Could not allocate memory\n");
@@ -113,8 +130,8 @@ std::istream *Lab::getFile(std::string filename) {
 	if (index == -1) {
 		return NULL;
 	} else {
-		offset = READ_LE_UINT32(&entries[i].start);
-		uint32 size = READ_LE_UINT32(&entries[i].size);
+		offset = READ_LE_UINT32(&entries[index].start);
+		uint32 size = READ_LE_UINT32(&entries[index].size);
 		if (bufSize < size) {
 			bufSize = size;
 			char *newBuf = (char *)realloc(buf, bufSize);
@@ -125,10 +142,11 @@ std::istream *Lab::getFile(std::string filename) {
 				buf = newBuf;
 			}
 		}
-		std::fstream *stream;
-		stream = new std::fstream(_filename.c_str(), std::ios::in | std::ios::binary);
-		stream->seekg(offset, std::ios::beg);
-		return stream;
+		std::fstream stream(_filename.c_str(), std::ios::in | std::ios::binary);
+		stream.seekg(offset, std::ios::beg);
+		stream.read(buf, size);
+		std::istringstream *iss = new std::istringstream(std::string(buf, buf + size));
+		return iss;
 	}
 
 	return NULL;
@@ -139,7 +157,7 @@ int Lab::getLength(std::string filename) {
 	if (index == -1) {
 		return 0;
 	}
-	return entries[i].size;
+	return entries[index].size;
 }
 
 std::istream *getFile(std::string filename, Lab *lab) {
