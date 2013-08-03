@@ -46,8 +46,7 @@ TOOL_LDFLAGS := -lcommon -lz
 include $(srcdir)/rules.mk
 
 TOOL := delua
-TOOL_OBJS := delua.o
-TOOL_LDFLAGS := -Ltools/lua -llua
+TOOL_OBJS := delua.o lua/liblua.a
 include $(srcdir)/rules.mk
 
 TOOL := mat2ppm
