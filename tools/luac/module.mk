@@ -7,10 +7,10 @@ TOOL_OBJS := \
 	opt.o \
 	print.o \
 	rebase.o \
+	../lua/liblua.a
 
 TOOL := luac
 TOOL_DEPS := tools/lua
-TOOL_LDFLAGS := -Ltools/lua -llua
 
 MAKE := luac
 
