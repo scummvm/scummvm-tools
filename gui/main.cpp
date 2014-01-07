@@ -1,5 +1,8 @@
-/* main.cpp - Main entry point for the tool GUI
- * Copyright (C) 2009 The ScummVM project
+/* ScummVM Tools
+ *
+ * ScummVM Tools is the legal property of its developers, whose
+ * names are too numerous to list here. Please refer to the
+ * COPYRIGHT file distributed with this source distribution.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,6 +18,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
+/* Main entry point for the tool GUI */
 
 #include "wx/wxprec.h"
 

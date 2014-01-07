@@ -1,5 +1,8 @@
-/* compress_sci - resource.aud/resource.sfx compressor
- * Copyright (C) 2009 The ScummVM Team
+/* ScummVM Tools
+ *
+ * ScummVM Tools is the legal property of its developers, whose
+ * names are too numerous to list here. Please refer to the
+ * COPYRIGHT file distributed with this source distribution.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,6 +18,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
+/* resource.aud/resource.sfx compressor */
 
 #ifndef COMPRESS_SCI_H
 #define COMPRESS_SCI_H

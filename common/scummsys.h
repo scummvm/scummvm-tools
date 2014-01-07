@@ -1,5 +1,13 @@
 /* ScummVM Tools
- * Copyright (C) 2002-2009 The ScummVM project
+ *
+ * ScummVM Tools is the legal property of its developers, whose
+ * names are too numerous to list here. Please refer to the
+ * COPYRIGHT file distributed with this source distribution.
+ *
+ * Additionally this file is based on the ScummVM source code.
+ * Copyright information for the ScummVM source code is
+ * available in the COPYRIGHT file of the ScummVM source
+ * distribution.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
