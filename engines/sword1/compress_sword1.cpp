@@ -745,6 +745,21 @@ void CompressSword1::execute() {
 	Common::Filename inpath(_inputPaths[0].path);
 	Common::Filename &outpath = _outputPath;
 
+	// If the input path is in one of the usual sub-directory, take the parent directory.
+	std::string path = inpath.getPath();
+	if (!path.empty()) {
+		path.pop_back(); // remove slash at the end.
+		size_t slash = path.rfind('/');
+		if (slash == std::string::npos)
+			slash = path.rfind('\\');
+		if (slash != std::string::npos) {
+			std::string dirName = path.substr(slash + 1);
+			std::transform(dirName.begin(), dirName.end(), dirName.begin(), std::tolower);
+			if (dirName == "clusters" || dirName == "music" || dirName == "speech")
+				inpath.setFullPath(path.substr(0, slash + 1));
+		}
+	}
+
 	switch (_format) {
 	case AUDIO_MP3:
 		_audioOuputFilename = TEMP_MP3;
