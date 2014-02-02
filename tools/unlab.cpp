@@ -30,6 +30,8 @@
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#else
+#include <sys/stat.h>
 #endif
 
 #define GT_GRIM 1
@@ -42,6 +44,13 @@ static void createDirectoryStructure(std::string name) {
 		name.erase(pos);
 		createDirectoryStructure(name);
 		CreateDirectory(name.c_str(), NULL);
+	}
+#else
+	int pos = name.find_last_of("/");
+	if (pos != name.npos) {
+		name.erase(pos);
+		createDirectoryStructure(name);
+		mkdir(name.c_str(), 0755);
 	}
 #endif
 }
