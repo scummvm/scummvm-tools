@@ -4,6 +4,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 1.7.0 (XXXX-XX-XX)
  - Improve support for sub-directory structure in Broken Sword 1 (e.g. when the
    files are in the Clusters, Music and Speech sub-directories).
+ - Fix issue with output file name in compress_sword2 tool when specifying an
+   output directory (the output file name was empty with only an extension).
 
 1.6.0 (2013-05-31)
  - Fix crash when compiling with wxWidgets 2.9.

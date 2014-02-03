@@ -73,6 +73,8 @@ void CompressSword2::execute() {
 	if (outpath.empty())
 		// Extensions change between the in/out files, so we can use the same directory
 		outpath = inpath;
+	else if (outpath.directory())
+		outpath.setFullName(inpath.getFullName());
 
 	switch (_format) {
 	case AUDIO_MP3:
@@ -98,7 +100,7 @@ void CompressSword2::execute() {
 	totalSize = 12 * (indexSize + 1);
 
 	if (_input.readUint32BE() != 0xfff0fff0) {
-		error("This doesn't look like a cluster file");
+		error("This doesn't look like a music or speech cluster file");
 	}
 
 	_output_idx.open(TEMP_IDX, "wb");
