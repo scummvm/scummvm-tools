@@ -21,6 +21,7 @@
 
 /* Compress Broken Sword I sound clusters into MP3/Ogg Vorbis */
 
+#include <algorithm>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -754,7 +755,7 @@ void CompressSword1::execute() {
 			slash = path.rfind('\\');
 		if (slash != std::string::npos) {
 			std::string dirName = path.substr(slash + 1);
-			std::transform(dirName.begin(), dirName.end(), dirName.begin(), std::tolower);
+			std::transform(dirName.begin(), dirName.end(), dirName.begin(), tolower);
 			if (dirName == "clusters" || dirName == "music" || dirName == "speech")
 				inpath.setFullPath(path.substr(0, slash + 1));
 		}
