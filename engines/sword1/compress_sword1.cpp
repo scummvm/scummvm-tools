@@ -748,7 +748,7 @@ void CompressSword1::execute() {
 	// If the input path is in one of the usual sub-directory, take the parent directory.
 	std::string path = inpath.getPath();
 	if (!path.empty()) {
-		path.pop_back(); // remove slash at the end.
+		path.erase(path.size() - 1); // remove slash at the end.
 		size_t slash = path.rfind('/');
 		if (slash == std::string::npos)
 			slash = path.rfind('\\');
