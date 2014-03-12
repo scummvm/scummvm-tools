@@ -1517,6 +1517,9 @@ fi
 if test "$_wxwidgets" = yes ; then
 	_wxincludes="`$_wxconfig --prefix="$_wxpath" --cflags`"
 	_wxlibs="`$_wxconfig --prefix="$_wxpath" --libs`"
+	# Use the compiler specified by wx-config. This is needed on some systems to get a working executable.
+	CXX="`$_wxconfig --cxx`"
+	LD=$CXX
 
 echo_n "Checking for wxwidgets gui dev component... "
 	has_wx_gui_dev=no
