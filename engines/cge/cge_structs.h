@@ -29,14 +29,21 @@
 /**
  * The following defines are copied from the cge engine file btfile.h
  */
-#define kBtSize      1024
 #define kBtKeySize   13
 #define kBtLevel     2
+#define kBtPageSize  1024
+#define kBtPageSize2 2048
 
 struct CgeBtKeypack {
 	char _key[kBtKeySize];
 	uint32 _mark;
 	uint16 _size;
+};
+
+struct CgeBtKeypack2 {
+	char _key[kBtKeySize];
+	uint32 _mark;
+	uint32 _size;
 };
 
 struct CgeInner {
@@ -49,18 +56,27 @@ struct CgeHea {
 	uint16 _down;
 };
 
-#define CGE_INN_SIZE ((kBtSize - sizeof(CgeHea)) / sizeof(CgeInner))
-#define CGE_LEA_SIZE ((kBtSize - sizeof(CgeHea)) / sizeof(CgeBtKeypack))
-
 struct BtPage {
 	CgeHea _hea;
 	union {
 		// dummy filler to make proper size of union
-		uint8 _data[kBtSize - sizeof(CgeHea)];
+		uint8 _data[kBtPageSize - sizeof(CgeHea)];
 		// inner version of data: key + word-sized page link
-		CgeInner _inn[(kBtSize - sizeof(CgeHea)) / sizeof(CgeInner)];
+		CgeInner _inn[(kBtPageSize - sizeof(CgeHea)) / sizeof(CgeInner)];
 		// leaf version of data: key + all user data
-		CgeBtKeypack _lea[(kBtSize - sizeof(CgeHea)) / sizeof(CgeBtKeypack)];
+		CgeBtKeypack _lea[(kBtPageSize - sizeof(CgeHea)) / sizeof(CgeBtKeypack)];
+	};
+};
+
+struct BtPage2 {
+	CgeHea _hea;
+	union {
+		// dummy filler to make proper size of union
+		uint8 _data[kBtPageSize2 - sizeof(CgeHea)];
+		// inner version of data: key + word-sized page link
+		CgeInner _inn[(kBtPageSize2 - sizeof(CgeHea)) / sizeof(CgeInner)];
+		// leaf version of data: key + all user data
+		CgeBtKeypack2 _lea[(kBtPageSize2 - sizeof(CgeHea)) / sizeof(CgeBtKeypack2)];
 	};
 };
 

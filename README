@@ -53,12 +53,12 @@ Extraction Tools:
                 ./scummvm-tools-cli --tool extract_agos <infile 1> ... <infile n>
 
         extract_cge
-                Unpack Soltys game data files.
+                Unpack Soltys and Sfinx game data files.
                 Example of usage:
                 ./scummvm-tools-cli --tool extract_cge [-o outputdir] <inputfile>
 
         pack_cge
-               Pack Soltys game data files.
+               Pack Soltys and Sfinx game data files.
                Example of usage:
                 ./scummvm-tools-cli --tool pack_cge [-o outputdir] <inputdir>
 
