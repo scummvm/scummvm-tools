@@ -34,7 +34,10 @@ public:
 	
 protected:
 	void readData(Common::File &f, byte *buff, int size);
-	void unpack();
+	bool unpack();
+	void unpack2();
+
+	Common::File _volCat, _volDat, _fFiles;
 };
 
 #endif

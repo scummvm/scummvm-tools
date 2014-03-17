@@ -23,6 +23,9 @@
 #define PACK_CGE_H
 
 #include "tool.h"
+#include "cge_structs.h"
+
+#define MAX_FILES 6000
 
 class PackCge : public Tool {
 public:
@@ -35,6 +38,12 @@ public:
 protected:
 	void writeData(Common::File &f, byte *buff, int size);
 	void pack();
+	void pack2();
+
+	Common::Filename inPath;
+	Common::File _volCat, _volDat, _fIn;
+	int _leaSize, _fileCount;
+	char _files[MAX_FILES][kBtKeySize];
 };
 
 #endif
