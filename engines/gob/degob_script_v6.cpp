@@ -746,10 +746,10 @@ void Script_v6::o6_loadCursor(FuncParams &params) {
 void Script_v6::o6_assign(FuncParams &params) {
 	uint8 type = peekUint8();
 	uint16 var_0, var_4;
-	std::string varIndex = readVarIndex(&var_0, &var_4);
+	Common::String varIndex = readVarIndex(&var_0, &var_4);
 
 	if (var_0 != 0) {
-		std::string varIndex2;
+		Common::String varIndex2;
 		uint16 var_6;
 
 		uint32 savedPos = getPos();
@@ -784,12 +784,12 @@ void Script_v6::o6_assign(FuncParams &params) {
 		uint8 loopCount = readUint8();
 
 		for (uint16 i = 0; i < loopCount; i++) {
-			std::string expr = readExpr();
+			Common::String expr = readExpr();
 			printIndent();
 			print("%s[%d] = %s;\n", varIndex.c_str(), (type == 24) ? (i * 2) : i, expr.c_str());
 		}
 	} else {
-		std::string expr = readExpr();
+		Common::String expr = readExpr();
 
 		printIndent();
 		print("%s = %s;\n", varIndex.c_str(), expr.c_str());

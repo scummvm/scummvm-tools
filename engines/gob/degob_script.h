@@ -24,10 +24,10 @@
 #ifndef DEGOB_SCRIPT_H
 #define DEGOB_SCRIPT_H
 
-#include <string>
 #include <list>
 
 #include "common/scummsys.h"
+#include "common/str.h"
 
 #define _OPCODET(ver, x) TYPE_TEXTDESC, 0, #x
 #define _OPCODEF(ver, x) TYPE_FUNCDESC, &ver::x, #x
@@ -126,7 +126,7 @@ protected:
 	void print(const char *s, ...) const;
 	void printIndent() const;
 	void printLine(const char *s) const;
-	std::string printStr(const char *s, ...) const;
+	Common::String printStr(const char *s, ...) const;
 
 	void incIndent();
 	void decIndent();
@@ -142,8 +142,8 @@ protected:
 	const char *peekString() const;
 
 	void skipExpr(char stopToken = 99);
-	std::string readExpr(char stopToken = 99);
-	std::string readVarIndex(uint16 *arg_0 = 0, uint16 *arg_4 = 0);
+	Common::String readExpr(char stopToken = 99);
+	Common::String readVarIndex(uint16 *arg_0 = 0, uint16 *arg_4 = 0);
 
 	uint16 getBlockSize() const;
 

@@ -891,8 +891,8 @@ void Script_v1::o1_setcmdCount(FuncParams &params) {
 
 void Script_v1::o1_assign(FuncParams &params) {
 	printIndent();
-	std::string varIndex = readVarIndex();
-	std::string expr = readExpr();
+	Common::String varIndex = readVarIndex();
+	Common::String expr = readExpr();
 
 	print("%s = %s;\n", varIndex.c_str(), expr.c_str());
 }
