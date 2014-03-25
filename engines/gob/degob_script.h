@@ -24,10 +24,9 @@
 #ifndef DEGOB_SCRIPT_H
 #define DEGOB_SCRIPT_H
 
-#include <list>
-
 #include "common/scummsys.h"
 #include "common/str.h"
+#include "common/list.h"
 
 #define _OPCODET(ver, x) TYPE_TEXTDESC, 0, #x
 #define _OPCODEF(ver, x) TYPE_FUNCDESC, &ver::x, #x
@@ -170,7 +169,7 @@ private:
 protected:
 	ExtTable *_extTable;
 
-	std::list<uint32> _funcOffsets;
+	Common::List<uint32> _funcOffsets;
 
 	// Script properties
 	uint16 _start, _textCenter;
