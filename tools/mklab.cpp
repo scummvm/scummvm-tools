@@ -84,7 +84,7 @@ static void countFiles(std::vector<std::string> &files, lab_header *head, DIR *d
 			continue;
 		}
 
-		if (dirfile->d_type == S_IFDIR) {
+		if (dirfile->d_type == DT_DIR) {
 			std::string nextsub = subdirn;
 			nextsub += dirfile->d_name;
 			nextsub += "/";
@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
 
 		FILE *file = fopen(path.c_str(), "rb");
 
-		uint32_t offset = READ_LE_UINT32(&entry.start);
+		uint32_t file_offset = READ_LE_UINT32(&entry.start);
 		uint32_t size = READ_LE_UINT32(&entry.size);
 
 		if (size > bufsize) {
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
 
 
 		fread(buf, 1, size, file);
-		fseek(outfile, offset, SEEK_SET);
+		fseek(outfile, file_offset, SEEK_SET);
 		fwrite(buf, 1, size, outfile);
 
 		fclose(file);
