@@ -342,7 +342,7 @@ void renderLoop(GLFWwindow *window, Tile &t) {
 		glFlush();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		//usleep(5000);
+		usleep(5000);
 	}
 	glfwTerminate();
 }
