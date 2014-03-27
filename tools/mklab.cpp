@@ -26,43 +26,30 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include "common/endian.h"
+
+#include <vector>
+#include <string>
 
 
 #define GT_GRIM 1
 #define GT_EMI 2
 
-typedef struct {
+struct lab_header {
 	uint32_t magic;
 	uint32_t magic2;
 	uint32_t num_entries;
 	uint32_t string_table_size;
 	uint32_t string_table_offset;
-} lab_header;
+};
 
-typedef struct {
+struct lab_entry {
 	uint32_t fname_offset;
 	uint32_t start;
 	uint32_t size;
 	uint32_t reserved;
-} lab_entry;
+};
 
-uint32_t READ_LE_UINT32(const void *ptr) {
-	const uint8_t *b = (const uint8_t *)ptr;
-	return (b[3] << 24) + (b[2] << 16) + (b[1] << 8) + (b[0]);
-}
-
-void WRITE_LE_UINT16(void *ptr, uint16_t value) {
-	uint8_t *b = (uint8_t *)ptr;
-	b[0] = (uint8_t)(value >> 0);
-	b[1] = (uint8_t)(value >> 8);
-}
-void WRITE_LE_UINT32(void *ptr, uint32_t value) {
-	uint8_t *b = (uint8_t *)ptr;
-	b[0] = (uint8_t)(value >>  0);
-	b[1] = (uint8_t)(value >>  8);
-	b[2] = (uint8_t)(value >> 16);
-	b[3] = (uint8_t)(value >> 24);
-}
 
 void writeUint16(FILE *file, uint16_t value) {
 	char v[2];
@@ -89,17 +76,8 @@ void help() {
 	exit(0);
 }
 
-static char *appendPath(const char *name, const char *dir) {
-	int namelen = strlen(name);
-	int dirlen = strlen(dir);
-	char *path = (char *)malloc(namelen + dirlen + 2);
-	strcpy(path, dir);
-	path[dirlen] = '/';
-	strcpy(path + dirlen + 1, name);
-	return path;
-}
 
-static void countFiles(lab_header *head, DIR *dir, const char *dirname, int additionalLen) {
+static void countFiles(std::vector<std::string> &files, lab_header *head, DIR *dir, const std::string &d, std::string subdirn = "") {
 	struct dirent *dirfile;
 	while ((dirfile = readdir(dir))) {
 		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, "..")) {
@@ -107,57 +85,50 @@ static void countFiles(lab_header *head, DIR *dir, const char *dirname, int addi
 		}
 
 		if (dirfile->d_type == S_IFDIR) {
-			char *d = appendPath(dirfile->d_name, dirname);
-			DIR *subdir = opendir(d);
-			countFiles(head, subdir, d, additionalLen + strlen(dirfile->d_name) + 1);
-			free(d);
+			std::string nextsub = subdirn;
+			nextsub += dirfile->d_name;
+			nextsub += "/";
+			std::string subdirname = d + "/" + dirfile->d_name;
+			DIR *subdir = opendir(subdirname.c_str());
+			countFiles(files, head, subdir, subdirname, nextsub);
 			closedir(subdir);
 		} else {
-			++head->num_entries;
-			head->string_table_size += strlen(dirfile->d_name) + 1 + additionalLen;
+			std::string fname = subdirn + dirfile->d_name;
+			files.push_back(fname);
+			head->string_table_size += fname.length() + 1;
+			head->num_entries++;
 		}
 	}
 }
 
-static void createEntries(DIR *dir, lab_entry *entries, char *str_table, const char *dirname, uint32_t &offset) {
-	static uint32_t num_entry = 0;
-	static uint32_t name_offset = 0;
-	static char *str_offset = str_table;
-	struct dirent *dirfile;
-	while ((dirfile = readdir(dir))) {
-		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, "..")) {
-			continue;
-		}
 
-		if (dirfile->d_type == S_IFDIR) {
-			char *d = appendPath(dirfile->d_name, dirname);
-			DIR *subdir = opendir(d);
-			createEntries(subdir, entries, str_table, d, offset);
-			free(d);
-			closedir(subdir);
-		} else {
-			lab_entry &entry = entries[num_entry++];
 
-			WRITE_LE_UINT32(&entry.fname_offset, name_offset);
-			WRITE_LE_UINT32(&entry.start, offset);
-			entry.reserved = 0; //What is this??
+static void createEntries(const std::vector<std::string> &files, lab_entry *entries, char *str_table, uint32_t offset, const std::string &dirname) {
+	uint32_t name_offset = 0;
+	char *str_offset = str_table;
 
-			char *path = appendPath(dirfile->d_name, dirname);
-			char *name = strrchr(path, '/') + 1;
-			strcpy(str_offset, name);
-			str_offset[strlen(name)] = 0;
-			name_offset += strlen(name) + 1;
-			str_offset = str_table + name_offset;
+	uint size = files.size();
+	for (uint i = 0; i < size; ++i) {
+		lab_entry &entry = entries[i];
 
-			struct stat st;
-			stat(path, &st);
+		WRITE_LE_UINT32(&entry.fname_offset, name_offset);
+		WRITE_LE_UINT32(&entry.start, offset);
+		entry.reserved = 0; //What is this??
 
-			//      printf("entry of file %s, at offset %d and of size %d\n", path, offset, st.st_size);
-			free(path);
+		const std::string &name = files[i];
 
-			offset += st.st_size;
-			WRITE_LE_UINT32(&entry.size, st.st_size);
-		}
+		strcpy(str_offset, name.c_str());
+		str_offset[name.length()] = 0;
+		name_offset += name.length() + 1;
+		str_offset = str_table + name_offset;
+
+		std::string fullname = dirname + "/" + name;
+
+		struct stat st;
+		stat(fullname.c_str(), &st);
+
+		offset += st.st_size;
+		WRITE_LE_UINT32(&entry.size, st.st_size);
 	}
 }
 
@@ -196,22 +167,21 @@ int main(int argc, char **argv) {
 	head.num_entries = 0;
 	head.string_table_size = 0;
 
-	countFiles(&head, dir, dirname, 0);
+	std::vector<std::string> files;
+	countFiles(files, &head, dir, dirname);
+	closedir(dir);
 
-//  printf("%d files, string table of size %d\n", head.num_entries, head.string_table_size);
 
-	lab_entry *entries = (lab_entry *)malloc(head.num_entries * sizeof(lab_entry));
-	char *str_table = (char *)malloc(head.string_table_size);
+	lab_entry *entries = new lab_entry[head.num_entries];
+	char *str_table = new char[head.string_table_size];
 	if (!str_table || !entries) {
 		printf("Could not allocate memory\n");
 		exit(3);
 	}
 
-	rewinddir(dir);
 	uint32_t offset = 16 + head.num_entries * sizeof(lab_entry) + head.string_table_size + 16;
-	createEntries(dir, entries, str_table, dirname, offset);
+	createEntries(files, entries, str_table, offset, dirname);
 
-	closedir(dir);
 
 	// Open the output file after we've finished with the dir, so that we're sure
 	// we don't include the lab into itself if it was asked to be created into the same dir.
@@ -252,14 +222,14 @@ int main(int argc, char **argv) {
 	uint32_t bufsize = 1024 * 1024;
 	char *buf = (char *)malloc(bufsize);
 
-	for (uint32_t i = 0; i < head.num_entries; ++i) {
+	for (uint i = 0; i < files.size(); ++i) {
 		lab_entry &entry = entries[i];
-		const char *fname = str_table + READ_LE_UINT32(&entry.fname_offset);
+		std::string fname = files[i];
 
-		char *path = appendPath(fname, dirname);
+		std::string path = dirname;
+		path += "/" + fname;
 
-		FILE *file = fopen(path, "rb");
-		free(path);
+		FILE *file = fopen(path.c_str(), "rb");
 
 		uint32_t offset = READ_LE_UINT32(&entry.start);
 		uint32_t size = READ_LE_UINT32(&entry.size);
@@ -275,7 +245,6 @@ int main(int argc, char **argv) {
 			buf = newbuf;
 		}
 
-//      printf("writing file %s, at offset %d and of size %d\n", fname, offset, size);
 
 		fread(buf, 1, size, file);
 		fseek(outfile, offset, SEEK_SET);
@@ -286,8 +255,8 @@ int main(int argc, char **argv) {
 
 	fclose(outfile);
 	free(buf);
-	free(entries);
-	free(str_table);
+	delete[] entries;
+	delete[] str_table;
 
 	return 0;
 }
