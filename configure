@@ -21,6 +21,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 
+# NLS nuisances.
+LC_ALL=C
+export LC_ALL
+LANGUAGE=C
+export LANGUAGE
+
 # Save the current environment variables for next runs
 SAVED_CONFIGFLAGS=$@
 SAVED_LDFLAGS=$LDFLAGS
@@ -62,50 +68,67 @@ get_var() {
 	eval echo \$${1}
 }
 
+# Add a feature: id name settings-list
+add_feature() {
+	set_var _feature_${1}_name "${2}"
+	# This is a list of settings, where one must be "yes" for the feature to
+	# be enabled
+	set_var _feature_${1}_settings "${3}"
+}
+
+_srcdir=`dirname $0`
 #
 # Default settings
 #
-#ResidualVM defaults: mpeg2=auto, faad=no, opengles=no
-#mt32emu=no, translation=no
+#ResidualVM defaults: faad=no, opengles=no, tremor=no mt32emu=no, translation=no,
+# flac=no, seq_midi=no, snd_io=no, timidity=no fluidsynth=no, opengles2=no
+# eventrec=no, build_scalers=no, build_hq_scalers=no
 #
 # Default lib behaviour yes/no/auto
 _vorbis=auto
-_tremor=auto
+_tremor=no
 _tremolo=no
-_flac=auto
+_flac=no
 _mad=auto
 _alsa=auto
-_seq_midi=auto
-_timidity=auto
+_seq_midi=no
+_sndio=no
+_timidity=no
 _zlib=auto
-_sparkle=auto
-_png=no
 _mpeg2=auto
+_sparkle=auto
+_jpeg=auto
+_png=auto
 _theoradec=auto
 _faad=no
-_fluidsynth=auto
+_fluidsynth=no
 _opengl=auto
 _opengles=no
+_opengles2=no
+_opengl_shaders=no
 _readline=auto
 _freetype2=auto
-_taskbar=yes
+_taskbar=auto
 _updates=no
 _libunity=auto
-# Default option behaviour yes/no
+# Default option behavior yes/no
 _debug_build=auto
 _release_build=auto
 _optimizations=auto
+_use_cxx11=no
 _verbose_build=no
 _text_console=no
 _mt32emu=no
-_build_scalers=yes
-_build_hq_scalers=yes
+_build_scalers=no
+_build_hq_scalers=no
 _enable_prof=no
 _global_constructors=no
 _bink=yes
-# Default vkeybd/keymapper options
+_safedisc=no
+# Default vkeybd/keymapper/eventrec options
 _vkeybd=no
 _keymapper=no
+_eventrec=no
 # GUI translation options
 _translation=no
 # Default platform settings
@@ -126,10 +149,10 @@ _strip=strip
 _ar="ar cru"
 _as="as"
 _windres=windres
+_stagingpath="staging"
 _win32path="C:/residualvm-tools"
 _aos4path="Games:ResidualVM-tools"
-_stagingpath="staging"
-_staticlibpath=/sw
+_staticlibpath=
 _sdlconfig=sdl-config
 _freetypeconfig=freetype-config
 _sdlpath="$PATH"
@@ -144,6 +167,14 @@ _posix=no
 _endian=unknown
 _need_memalign=yes
 _have_x86=no
+
+# Add (virtual) features
+add_feature mad "MAD" "_mad"
+add_feature jpeg "JPEG" "_jpeg"
+add_feature png "PNG" "_png"
+add_feature theoradec "libtheoradec" "_theoradec"
+add_feature vorbis "Vorbis file support" "_vorbis _tremor"
+add_feature zlib "zlib" "_zlib"
 
 
 
@@ -171,7 +202,6 @@ _host_vendor=""
 _host_os=""
 _host_alias=""
 
-_srcdir=`dirname $0`
 _port_mk="ports.mk"
 
 # Use temp files in the build directory
@@ -185,7 +215,11 @@ cc_check_no_clean() {
 	echo >> "$TMPLOG"
 	echo "$CXX $LDFLAGS $CXXFLAGS $TMPC -o $TMPO$HOSTEXEEXT $@" >> "$TMPLOG"
 	rm -f "$TMPO$HOSTEXEEXT"
-	( $CXX $LDFLAGS $CXXFLAGS "$TMPC" -o "$TMPO$HOSTEXEEXT" "$@" ) >> "$TMPLOG" 2>&1
+	if test "-c" = "$*" ; then
+		( $CXX $CXXFLAGS "$TMPC" -o "$TMPO$HOSTEXEEXT" "$@" ) >> "$TMPLOG" 2>&1
+	else
+		( $CXX $LDFLAGS $CXXFLAGS "$TMPC" -o "$TMPO$HOSTEXEEXT" "$@" ) >> "$TMPLOG" 2>&1
+	fi
 	TMPR="$?"
 	echo "return code: $TMPR" >> "$TMPLOG"
 	echo >> "$TMPLOG"
@@ -339,9 +373,28 @@ Try \`$0 --help' for more information." >&2
 }
 
 #
+# Feature handling functions
+#
+
+# Get the name of the feature
+get_feature_name() {
+	get_var _feature_$1_name
+}
+
+# Check whether the feature is enabled
+get_feature_state() {
+	for i in `get_var _feature_$1_settings`; do
+		if test `get_var $i` = "yes"; then
+			echo "yes"
+			return
+		fi
+	done
+	echo "no"
+}
+#
 # Greet user
 #
-echo "Running Tools configure..."
+echo "Running ResidualVM Tools configure..."
 echo "Configure run on" `date` > $TMPLOG
 
 #
@@ -367,7 +420,6 @@ Usage: $0 [OPTIONS]...
 
 Configuration:
   -h, --help              display this help and exit
-  --backend=BACKEND       backend to build (sdl, null) [sdl]
 
 Installation directories:
   --prefix=PREFIX         install architecture-independent files in PREFIX
@@ -395,6 +447,7 @@ Special configuration feature:
   --host=HOST             cross-compile to target HOST (arm-linux, ...)
 
 Optional Features:
+  --enable-c++11           build as C++11 if the compiler allows that
   --disable-debug          disable building with debugging symbols
   --enable-Werror          treat warnings as errors
   --enable-release         enable building in release mode (this activates
@@ -422,7 +475,17 @@ Optional Libraries:
   --with-zlib-prefix=DIR   Prefix where zlib is installed (optional)
   --disable-zlib           disable zlib (compression) support [autodetect]
 
+  --with-mpeg2-prefix=DIR  Prefix where libmpeg2 is installed (optional)
+  --enable-mpeg2           enable mpeg2 codec for cutscenes [autodetect]
 
+  --with-jpeg-prefix=DIR   Prefix where libjpeg is installed (optional)
+  --disable-jpeg           disable JPEG decoder [autodetect]
+
+  --with-png-prefix=DIR    Prefix where libpng is installed (optional)
+  --disable-png            disable PNG decoder [autodetect]
+
+  --with-theoradec-prefix=DIR Prefix where libtheoradec is installed (optional)
+  --disable-theoradec      disable Theora decoder [autodetect]
 Some influential environment variables:
   LDFLAGS        linker flags, e.g. -L<lib dir> if you have libraries in a
                  nonstandard directory <lib dir>
@@ -449,6 +512,11 @@ for ac_option in $@; do
 	--enable-mad)             _mad=yes        ;;
 	--disable-mad)            _mad=no         ;;
 	--enable-verbose-build)   _verbose_build=yes ;;
+	--with-mpeg2-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		MPEG2_CFLAGS="-I$arg/include"
+		MPEG2_LIBS="-L$arg/lib"
+		;;
 	--with-ogg-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
 		OGG_CFLAGS="-I$arg/include"
@@ -474,10 +542,31 @@ for ac_option in $@; do
 		MAD_CFLAGS="-I$arg/include"
 		MAD_LIBS="-L$arg/lib"
 		;;
+	--with-jpeg-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		JPEG_CFLAGS="-I$arg/include"
+		JPEG_LIBS="-L$arg/lib"
+		;;
+	--with-png-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		PNG_CFLAGS="-I$arg/include"
+		PNG_LIBS="-L$arg/lib"
+		;;
+	--with-theoradec-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		THEORADEC_CFLAGS="-I$arg/include"
+		THEORADEC_LIBS="-L$arg/lib"
+		;;
 	--with-zlib-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
 		ZLIB_CFLAGS="-I$arg/include"
 		ZLIB_LIBS="-L$arg/lib"
+		;;
+	--enable-c++11)
+		_use_cxx11=yes
+		;;
+	--disable-c++11)
+		_use_cxx11=no
 		;;
 	--enable-debug)
 		_debug_build=yes
@@ -552,24 +641,24 @@ get_system_exe_extension $guessed_host
 NATIVEEXEEXT=$_exeext
 
 case $_host in
-android | android-v7a)
+android | android-arm | android-v7a | android-arm-v7a | ouya)
 	_host_os=android
 	_host_cpu=arm
 	_host_alias=arm-linux-androideabi
 	;;
+android-mips)
+	_host_os=android
+	_host_cpu=mipsel
+	_host_alias=mipsel-linux-android
+	;;
+android-x86)
+	_host_os=android
+	_host_cpu=i686
+	_host_alias=i686-linux-android
+	;;
 arm-riscos)
 	_host_os=riscos
 	_host_cpu=arm
-	;;
-bada)
-	_host_os=bada
-	if test "$_debug_build" = yes; then
-		_host_cpu=i686
-		_host_alias=i686-mingw32
-	else
-		_host_cpu=arm
-		_host_alias=arm-samsung-nucleuseabi
-	fi
 	;;
 caanoo)
 	_host_os=gph-linux
@@ -596,7 +685,7 @@ ds)
 gamecube)
 	_host_os=gamecube
 	_host_cpu=ppc
-	_host_alias=powerpc-gekko
+	_host_alias=powerpc-eabi
 	;;
 gp2x)
 	_host_os=gph-linux
@@ -696,6 +785,11 @@ samsungtv)
 	_host_cpu=arm
 	_host_alias=arm-linux-gnueabi
 	;;
+tizen)
+	_host_os=tizen
+	_host_cpu=arm
+	_host_alias=arm-linux-gnueabi
+	;;
 webos)
 	_host_os=webos
 	_host_cpu=arm
@@ -714,7 +808,7 @@ webos)
 wii)
 	_host_os=wii
 	_host_cpu=ppc
-	_host_alias=powerpc-gekko
+	_host_alias=powerpc-eabi
 	;;
 wince)
 	_host_os=wince
@@ -749,13 +843,8 @@ fi
 case $_host in
 caanoo | gp2x | gp2xwiz | openpandora | ps2)
 	if test "$_debug_build" = auto; then
-		# If you want to debug one of these platforms, use '--disable-release --enable-debug'
+		# If you want to debug one of these platforms, use '--disable-optimizations --enable-debug'
 		_debug_build=no
-	fi
-
-	if test "$_release_build" = auto; then
-		# Enable release build by default.
-		_release_build=yes
 	fi
 
 	if test "$_optimizations" = auto; then
@@ -766,8 +855,16 @@ caanoo | gp2x | gp2xwiz | openpandora | ps2)
 esac
 
 if test "$_debug_build" != no; then
-	# debug mode not explicitly disabled -> compile with -g
-	CXXFLAGS="$CXXFLAGS -g"
+	# debug mode not explicitly disabled -> compile with debug information
+	case $_host_os in
+	amigaos*)
+		# AmigaOS debugger uses plain stabs, with no gdb extensions.
+		CXXFLAGS="$CXXFLAGS -gstabs"
+	;;
+	*)
+		# Use the system default format for debug info.
+		CXXFLAGS="$CXXFLAGS -g"
+	esac
 fi
 
 if test "$_release_build" = yes; then
@@ -810,12 +907,6 @@ android)
 		exit 1
 	fi
 	;;
-bada)
-	if test -z "$BADA_SDK"; then
-		echo "Please set BADA_SDK in your environment. export BADA_SDK=<path to Bada SDK>"
-		exit 1
-	fi
-	;;
 ds | gamecube | wii)
 	if test -z "$DEVKITPRO"; then
 		echo "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to devkitPRO>"
@@ -839,6 +930,10 @@ ps3)
 		echo "Please set PS3DEV in your environment. export PS3DEV=<path to ps3 toolchain>"
 		exit 1
 	fi
+	if test -z "$PSL1GHT"; then
+		echo "Please set PSL1GHT in your environment. export PSL1GHT=<path to psl1ght>"
+		exit 1
+	fi
 	;;
 psp)
 	if test -z "$PSPDEV"; then
@@ -850,6 +945,12 @@ psp)
 	fi
 	if test -z "$PSPSDK"; then
 		echo "Please set PSPSDK in your environment. export PSPSDK=<path to psp sdk>"
+		exit 1
+	fi
+	;;
+tizen)
+	if test -z "$TIZEN_ROOTSTRAP"; then
+		echo "Please set TIZEN_ROOTSTRAP in your environment. export TIZEN_ROOTSTRAP=<path to Tizen SDK device profile>"
 		exit 1
 	fi
 	;;
@@ -885,7 +986,7 @@ EOF
 
 	if test -n "$_host"; then
 		# In cross-compiling mode, we cannot run the result
-		eval "$1 $CXXFLAGS $LDFLAGS -o $TMPO.o -c tmp_cxx_compiler.cpp" 2> /dev/null && cc_check_clean tmp_cxx_compiler.cpp
+		eval "$1 $CXXFLAGS -o $TMPO.o -c tmp_cxx_compiler.cpp" 2> /dev/null && cc_check_clean tmp_cxx_compiler.cpp
 	else
 		eval "$1 $CXXFLAGS $LDFLAGS -o $TMPO$HOSTEXEEXT tmp_cxx_compiler.cpp" 2> /dev/null && eval "$TMPO$HOSTEXEEXT 2> /dev/null" && cc_check_clean tmp_cxx_compiler.cpp
 	fi
@@ -1023,21 +1124,36 @@ if test "$cxx_verc_fail" = yes ; then
 fi
 
 #
+# Check whether the compiler supports C++11
+#
+have_cxx11=no
+cat > $TMPC << EOF
+int main(int argc, char *argv[]) { if (argv == nullptr) return -1; else return 0; }
+EOF
+cc_check -std=c++11 && have_cxx11=yes
+if test "$_use_cxx11" = "yes" ; then
+	_use_cxx11=$have_cxx11
+fi
+
+#
 # Setup compiler specific CXXFLAGS now that we know the compiler version.
 # Foremost, this means enabling various warnings.
 # In addition, we set CXX_UPDATE_DEP_FLAG for GCC >= 3.0 and for ICC.
 #
 if test "$have_gcc" = yes ; then
 	if test "$_cxx_major" -ge "3" ; then
-		case $_host_os in
-		# newlib-based system include files suppress non-C89 function
-		# declarations under __STRICT_ANSI__
-		amigaos* | android | bada | dreamcast | ds | gamecube | mingw* | n64 | psp | ps2 | ps3 | wii | wince )
-			;;
-		*)
-			CXXFLAGS="$CXXFLAGS -ansi"
-			;;
-		esac
+		# Try to use ANSI mode when C++11 is disabled.
+		if test "$_use_cxx11" = "no" ; then
+			case $_host_os in
+			# newlib-based system include files suppress non-C89 function
+			# declarations under __STRICT_ANSI__
+			amigaos* | android | dreamcast | ds | gamecube | mingw* | n64 | psp | ps2 | ps3 | tizen | wii | wince )
+				;;
+			*)
+				CXXFLAGS="$CXXFLAGS -ansi"
+				;;
+			esac
+		fi
 		CXXFLAGS="$CXXFLAGS -W -Wno-unused-parameter"
 		add_line_to_config_mk 'HAVE_GCC3 = 1'
 		add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MMD -MF "$(*D)/$(DEPDIR)/$(*F).d" -MQ "$@" -MP'
@@ -1053,17 +1169,27 @@ elif test "$have_icc" = yes ; then
 	add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MMD -MF "$(*D)/$(DEPDIR)/$(*F).d" -MQ "$@" -MP'
 fi;
 
+#
+# Update status about C++11 mode
+#
+echo_n "Building as C++11... "
+if test "$_use_cxx11" = "yes" ; then
+	CXXFLAGS="$CXXFLAGS -std=c++11"
+fi
+echo $_use_cxx11
+
 # By default, we add -pedantic to the CXXFLAGS to catch some potentially
 # non-portable constructs, like use of GNU extensions.
 # However, some platforms use GNU extensions in system header files, so
 # for these we must not use -pedantic.
 case $_host_os in
-android | gamecube | psp | wii | webos)
+android | gamecube | psp | tizen | wii | webos)
 	;;
 *)
 	# ICC does not support pedantic, while GCC and clang do.
 	if test "$have_icc" = no ; then
-		CXXFLAGS="$CXXFLAGS -pedantic"
+		# We *do* want the 'long long' extension.
+		CXXFLAGS="$CXXFLAGS -pedantic -Wno-long-long"
 	fi
 	;;
 esac
@@ -1121,7 +1247,7 @@ esac
 # Determine a data type with the given length
 #
 find_type_with_size() {
-	for datatype in int short char long "long long" unknown; do
+	for datatype in int short char long "long long" __int64 "long long int" unknown; do
 		cat > tmp_find_type_with_size.cpp << EOF
 typedef $datatype ac__type_sizeof_;
 int main() {
@@ -1232,7 +1358,7 @@ cc_check_clean tmp_find_type_with_size.cpp
 # for the smaller sizes.
 echo_n "Alignment required... "
 case $_host_cpu in
-	i[3-6]86 | x86_64 | ppc*)
+	i[3-6]86 | amd64 | x86_64 | ppc*)
 		# Unaligned access should work
 		_need_memalign=no
 		;;
@@ -1260,7 +1386,9 @@ case $_host_cpu in
 		define_in_config_if_yes yes 'USE_ARM_SOUND_ASM'
 		define_in_config_if_yes yes 'USE_ARM_SMUSH_ASM'
 		define_in_config_if_yes yes 'USE_ARM_GFX_ASM'
-		define_in_config_if_yes yes 'USE_ARM_COSTUME_ASM'
+		# FIXME: The following feature exhibits a bug during the intro scene of Indy 4
+		# (on Pandora and iPhone at least)
+		#define_in_config_if_yes yes 'USE_ARM_COSTUME_ASM'
 
 		DEFINES="$DEFINES -DARM_TARGET"
 		;;
@@ -1277,7 +1405,7 @@ case $_host_cpu in
 		echo "PowerPC"
 		DEFINES="$DEFINES -DPPC_TARGET"
 		;;
-	x86_64)
+	amd64 | x86_64)
 		echo "x86_64"
 		;;
 	*)
@@ -1293,28 +1421,65 @@ echo_n "Checking hosttype... "
 echo $_host_os
 case $_host_os in
 	amigaos*)
-		LDFLAGS="$LDFLAGS -use-dynld"
+		LDFLAGS="$LDFLAGS -use-dynld -Wl,--export-dynamic"
 		LDFLAGS="$LDFLAGS -L/sdk/local/newlib/lib"
 		# We have to use 'long' for our 4 byte typedef because AmigaOS already typedefs (u)int32
 		# as (unsigned) long, and consequently we'd get a compiler error otherwise.
 		type_4_byte='long'
+		# Supress format warnings as the long 4 byte causes noisy warnings.
+		CXXFLAGS="$CXXFLAGS -Wno-format"
 		add_line_to_config_mk 'AMIGAOS = 1'
 		;;
 	android)
 		case $_host in
-			android)
+			android | android-arm)
 				CXXFLAGS="$CXXFLAGS -march=armv5te"
 				CXXFLAGS="$CXXFLAGS -mtune=xscale"
 				CXXFLAGS="$CXXFLAGS -msoft-float"
+				ABI="armeabi"
+				# Platform version 9 is used by ResidualVM
+				ANDROID_PLATFORM=9
+				ANDROID_PLATFORM_ARCH="arm"
 				;;
-			android-v7a)
+			android-v7a | android-arm-v7a)
 				CXXFLAGS="$CXXFLAGS -march=armv7-a"
 				CXXFLAGS="$CXXFLAGS -mfloat-abi=softfp"
 				CXXFLAGS="$CXXFLAGS -mfpu=vfp"
 				LDFLAGS="$LDFLAGS -Wl,--fix-cortex-a8"
+				ABI="armeabi-v7a"
+				# Platform version 9 is used by ResidualVM
+				ANDROID_PLATFORM=9
+				ANDROID_PLATFORM_ARCH="arm"
+				;;
+			android-mips)
+				CXXFLAGS="$CXXFLAGS -march=mips32"
+				CXXFLAGS="$CXXFLAGS -mtune=mips32"
+				ABI="mips"
+				# Platform version 9 is needed as earlier versions of platform do not support this arch.
+				ANDROID_PLATFORM=9
+				ANDROID_PLATFORM_ARCH="mips"
+				;;
+			android-x86)
+				CXXFLAGS="$CXXFLAGS -march=i686"
+				CXXFLAGS="$CXXFLAGS -mtune=i686"
+				ABI="x86"
+				# Platform version 9 is needed as earlier versions of platform do not support this arch.
+				ANDROID_PLATFORM=9
+				ANDROID_PLATFORM_ARCH="x86"
+				;;
+			ouya)
+				CXXFLAGS="$CXXFLAGS -march=armv7-a"
+				CXXFLAGS="$CXXFLAGS -mtune=cortex-a9"
+				CXXFLAGS="$CXXFLAGS -mfloat-abi=softfp"
+				CXXFLAGS="$CXXFLAGS -mfpu=neon"
+				ABI="armeabi-v7a"
 				;;
 		esac
-		CXXFLAGS="$CXXFLAGS --sysroot=$ANDROID_NDK/platforms/android-4/arch-arm"
+
+		# Setup platform version and arch
+		CXXFLAGS="$CXXFLAGS --sysroot=$ANDROID_NDK/platforms/android-$ANDROID_PLATFORM/arch-$ANDROID_PLATFORM_ARCH"
+		LDFLAGS="$LDFLAGS --sysroot=$ANDROID_NDK/platforms/android-$ANDROID_PLATFORM/arch-$ANDROID_PLATFORM_ARCH"
+
 		CXXFLAGS="$CXXFLAGS -fpic"
 		CXXFLAGS="$CXXFLAGS -ffunction-sections"
 		CXXFLAGS="$CXXFLAGS -funwind-tables"
@@ -1327,28 +1492,27 @@ case $_host_os in
 		fi
 		CXXFLAGS="$CXXFLAGS -finline-limit=300"
 		_optimization_level=-Os
-		CXXFLAGS="$CXXFLAGS -mthumb-interwork"
-		# FIXME: Why is the following in CXXFLAGS and not in DEFINES? Change or document this.
-		CXXFLAGS="$CXXFLAGS -D__ARM_ARCH_5__"
-		CXXFLAGS="$CXXFLAGS -D__ARM_ARCH_5T__"
-		CXXFLAGS="$CXXFLAGS -D__ARM_ARCH_5E__"
-		CXXFLAGS="$CXXFLAGS -D__ARM_ARCH_5TE__"
-		# supress 'mangling of 'va_list' has changed in GCC 4.4'
+
+		if test "$_host" = android -o "$_host" = android-arm; then
+			CXXFLAGS="$CXXFLAGS -mthumb-interwork"
+			# FIXME: Why is the following in CXXFLAGS and not in DEFINES? Change or document this.
+			CXXFLAGS="$CXXFLAGS -D__ARM_ARCH_5__"
+			CXXFLAGS="$CXXFLAGS -D__ARM_ARCH_5T__"
+			CXXFLAGS="$CXXFLAGS -D__ARM_ARCH_5E__"
+			CXXFLAGS="$CXXFLAGS -D__ARM_ARCH_5TE__"
+		fi
+
+		# surpress 'mangling of 'va_list' has changed in GCC 4.4' warning
 		CXXFLAGS="$CXXFLAGS -Wno-psabi"
-		LDFLAGS="$LDFLAGS --sysroot=$ANDROID_NDK/platforms/android-4/arch-arm"
-		LDFLAGS="$LDFLAGS -mthumb-interwork"
+
+		if test "$_host" = android -o "$_host" = android-arm; then
+			LDFLAGS="$LDFLAGS -mthumb-interwork"
+		fi
+
+		LDFLAGS="$LDFLAGS -L$ANDROID_NDK/sources/cxx-stl/gnu-libstdc++/`$CXX -dumpversion`/libs/$ABI/"
+		LIBS="$LIBS -lsupc++"
 		add_line_to_config_mk "ANDROID_SDK = $ANDROID_SDK"
 		_seq_midi=no
-		;;
-	bada)
-		BADA_SDK_ROOT="`cygpath -m ${BADA_SDK}`"
-		add_line_to_config_mk "BADA_SDK = $BADA_SDK"
-		add_line_to_config_mk "BADA_SDK_ROOT = $BADA_SDK_ROOT"
-
-		# assume dependencies have been installed in cygwin's /usr/local
-		CYGWIN_USR_LOCAL="`cygpath -m /usr/local`"
-		LDFLAGS="$LDFLAGS -L${CYGWIN_USR_LOCAL}/lib"
-		CXXFLAGS="$CXXFLAGS -I${CYGWIN_USR_LOCAL}/include"
 		;;
 	beos*)
 		DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
@@ -1388,6 +1552,24 @@ case $_host_os in
 
 			LDFLAGS="-L${macport_prefix}/lib $LDFLAGS"
 			CXXFLAGS="-I${macport_prefix}/include $CXXFLAGS"
+			
+			if test -z "$_staticlibpath"; then
+				_staticlibpath=${macport_prefix}
+				echo "Set staticlib-prefix to ${_staticlibpath}"
+			fi
+		fi
+		# If _staticlibpath is not set yet try first /sw (fink) then /usr/local
+		# (the macports case is handled above).
+		if test -z "$_staticlibpath"; then
+			if test -d "/sw"; then
+				_staticlibpath=/sw
+				echo "Set staticlib-prefix to ${_staticlibpath}"
+			elif test -d "/usr/local"; then
+				_staticlibpath=/usr/local
+				echo "Set staticlib-prefix to ${_staticlibpath}"
+			else
+				echo "Could not determine prefix for static libraries"
+			fi
 		fi
 		;;
 	dreamcast)
@@ -1465,7 +1647,7 @@ case $_host_os in
 		# When not cross-compiling, enable large file support, but don't
 		# care if getconf doesn't exist or doesn't recognize LFS_CFLAGS.
 		if test -z "$_host"; then
-			CXXFLAGS="$CXXFLAGS $(getconf LFS_CFLAGS 2>/dev/null)"
+			CXXFLAGS="$CXXFLAGS `getconf LFS_CFLAGS 2>/dev/null`"
 		fi
 		;;
 	maemo)
@@ -1500,12 +1682,13 @@ case $_host_os in
 		DEFINES="$DEFINES -D__PLAYSTATION2__"
 		;;
 	ps3)
-		# Force use of SDL from the ps3 toolchain
+		# Force use of SDL and freetype from the ps3 toolchain
 		_sdlpath="$PS3DEV/portlibs/ppu:$PS3DEV/portlibs/ppu/bin"
+		_freetypepath="$PS3DEV/portlibs/ppu:$PS3DEV/portlibs/ppu/bin"
 
 		DEFINES="$DEFINES -DPLAYSTATION3"
-		CXXFLAGS="$CXXFLAGS -mcpu=cell -mminimal-toc -I$PS3DEV/psl1ght/ppu/include -I$PS3DEV/portlibs/ppu/include"
-		LDFLAGS="$LDFLAGS -L$PS3DEV/psl1ght/ppu/lib -L$PS3DEV/portlibs/ppu/lib"
+		CXXFLAGS="$CXXFLAGS -mcpu=cell -mminimal-toc -I$PSL1GHT/ppu/include -I$PS3DEV/portlibs/ppu/include"
+		LDFLAGS="$LDFLAGS -L$PSL1GHT/ppu/lib -L$PS3DEV/portlibs/ppu/lib"
 		add_line_to_config_mk 'PLAYSTATION3 = 1'
 		add_line_to_config_h "#define PREFIX \"${prefix}\""
 		;;
@@ -1525,6 +1708,12 @@ case $_host_os in
 		DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
 		# Needs -lbind -lsocket for the timidity MIDI driver
 		LIBS="$LIBS -lnsl -lsocket"
+		;;
+	tizen)
+		add_line_to_config_mk "TIZEN_ROOTSTRAP = $TIZEN_ROOTSTRAP"
+		LDFLAGS="$LDFLAGS --sysroot=${TIZEN_ROOTSTRAP}"
+		LDFLAGS="$LDFLAGS -L${TIZEN_LIBS}/lib"
+		CXXFLAGS="$CXXFLAGS -I${TIZEN_LIBS}/include"
 		;;
 	webos)
 		CXXFLAGS="$CXXFLAGS --sysroot=$WEBOS_PDK/arm-gcc/sysroot"
@@ -1586,7 +1775,7 @@ if test -n "$_host"; then
 	# Cross-compiling mode - add your target here if needed
 	echo "Cross-compiling to $_host"
 	case "$_host" in
-		android | android-v7a)
+		android | android-arm | android-v7a | android-arm-v7a | android-mips | android-x86 | ouya)
 			# we link a .so as default
 			LDFLAGS="$LDFLAGS -shared"
 			LDFLAGS="$LDFLAGS -Wl,-Bsymbolic,--no-undefined"
@@ -1604,32 +1793,11 @@ if test -n "$_host"; then
 		arm-riscos|linupy)
 			DEFINES="$DEFINES -DLINUPY"
 			;;
-		bada)
-			_unix=yes
-			_backend="bada"
-			_port_mk="backends/platform/bada/bada.mk"
-			if test "$_debug_build" = yes; then
-				_arm_asm=no
-			else
-				_arm_asm=yes
-			fi
-			_taskbar=no
-			_build_scalers=no
-			_seq_midi=no
-			_mt32emu=no
-			_timidity=no
-			_vkeybd=yes
-			;;
 		bfin*)
 			;;
 		caanoo)
-			# This uses the GPH backend.
-			DEFINES="$DEFINES -DGPH_DEVICE"
 			DEFINES="$DEFINES -DCAANOO"
-			DEFINES="$DEFINES -DREDUCE_MEMORY_USAGE"
-			if test "$_debug_build" = yes; then
-				DEFINES="$DEFINES -DGPH_DEBUG"
-			else
+			if test "$_debug_build" = no; then
 				# Use -O3 on the Caanoo for non-debug builds.
 				_optimization_level=-O3
 			fi
@@ -1658,6 +1826,9 @@ if test -n "$_host"; then
 			CXXFLAGS="$CXXFLAGS -mips32"
 			_backend="dingux"
 			_mt32emu=no
+			_optimization_level=-O3
+			# Disable alsa midi to get the port build on OpenDingux toolchain
+			_alsa=no 
 			_vkeybd=yes
 			_build_hq_scalers=no
 			_keymapper=no
@@ -1671,7 +1842,8 @@ if test -n "$_host"; then
 			DEFINES="$DEFINES -DDISABLE_DEFAULT_SAVEFILEMANAGER"
 			DEFINES="$DEFINES -DDISABLE_TEXT_CONSOLE"
 			DEFINES="$DEFINES -DDISABLE_COMMAND_LINE"
-			if test "$_release_build" = yes; then
+			# Enable serial debugging output only when --enable-debug is passed
+			if test "$_release_build" = yes -o "$_debug_build" != yes; then
 				DEFINES="$DEFINES -DNOSERIAL"
 			fi
 			_optimization_level=-O3
@@ -1679,6 +1851,8 @@ if test -n "$_host"; then
 			CXXFLAGS="$CXXFLAGS -fschedule-insns2"
 			CXXFLAGS="$CXXFLAGS -fomit-frame-pointer"
 			CXXFLAGS="$CXXFLAGS -fdelete-null-pointer-checks"
+			# no-delayed-branch is a workaround for GCC bug #42841 - "SH: Assembler complains pcrel too far."
+			CXXFLAGS="$CXXFLAGS -fno-delayed-branch"
 			_backend="dc"
 			_build_scalers=no
 			_mad=yes
@@ -1717,13 +1891,7 @@ if test -n "$_host"; then
 			add_line_to_config_h "#define USE_WII_DI"
 			;;
 		gp2x)
-			# This uses the GPH backend.
-			DEFINES="$DEFINES -DGPH_DEVICE"
 			DEFINES="$DEFINES -DGP2X"
-			DEFINES="$DEFINES -DREDUCE_MEMORY_USAGE"
-			if test "$_debug_build" = yes; then
-				DEFINES="$DEFINES -DGPH_DEBUG"
-			fi
 			CXXFLAGS="$CXXFLAGS -march=armv4t"
 			ASFLAGS="$ASFLAGS -mfloat-abi=soft"
 			LDFLAGS="$LDFLAGS -static"
@@ -1737,13 +1905,7 @@ if test -n "$_host"; then
 			_port_mk="backends/platform/gph/gp2x-bundle.mk"
 			;;
 		gp2xwiz)
-			# This uses the GPH backend.
-			DEFINES="$DEFINES -DGPH_DEVICE"
 			DEFINES="$DEFINES -DGP2XWIZ"
-			DEFINES="$DEFINES -DREDUCE_MEMORY_USAGE"
-			if test "$_debug_build" = yes; then
-				DEFINES="$DEFINES -DGPH_DEBUG"
-			fi
 			CXXFLAGS="$CXXFLAGS -mcpu=arm926ej-s"
 			CXXFLAGS="$CXXFLAGS -mtune=arm926ej-s"
 			ASFLAGS="$ASFLAGS -mfloat-abi=soft"
@@ -1758,9 +1920,12 @@ if test -n "$_host"; then
 			;;
 		iphone)
 			DEFINES="$DEFINES -DIPHONE"
+			ASFLAGS="$ASFLAGS -arch armv6"
 			_backend="iphone"
-			_build_hq_scalers=no
+			_build_scalers=no
+			_mt32emu=no
 			_seq_midi=no
+			_timidity=no
 			;;
 		m68k-atari-mint)
 			DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
@@ -1858,14 +2023,20 @@ if test -n "$_host"; then
 			DEFINES="$DEFINES -DREDUCE_MEMORY_USAGE"
 			if test "$_release_build" = no; then
 				DEFINES="$DEFINES -DOP_DEBUG"
-			else
-				# Use -O3 on the OpenPandora for non-debug builds.
+			fi
+
+			# Use -O3 on the OpenPandora for optimized builds.
+			if test "$_optimizations" = yes; then
 				_optimization_level=-O3
 			fi
+
+			define_in_config_if_yes yes 'USE_ARM_NEON_ASPECT_CORRECTOR'
 			CXXFLAGS="$CXXFLAGS -march=armv7-a"
 			CXXFLAGS="$CXXFLAGS -mtune=cortex-a8"
+			CXXFLAGS="$CXXFLAGS -mfloat-abi=softfp"
 			CXXFLAGS="$CXXFLAGS -mfpu=neon"
-			ASFLAGS="$ASFLAGS -mfloat-abi=soft"
+			CXXFLAGS="$CXXFLAGS -fsingle-precision-constant"
+			ASFLAGS="$ASFLAGS -mfloat-abi=softfp"
 			_backend="openpandora"
 			_build_hq_scalers=yes
 			_vkeybd=no
@@ -1874,6 +2045,16 @@ if test -n "$_host"; then
 			_port_mk="backends/platform/openpandora/op-bundle.mk"
 			;;
 		ppc-amigaos)
+			# Only static builds link successfully on buildbot
+			LDFLAGS=`echo $LDFLAGS | sed 's/-use-dynld//'`
+			LDFLAGS="$LDFLAGS -static"
+
+			# toolchain binaries prefixed by host
+			_ranlib=$_host-ranlib
+			_strip=$_host-strip
+			_ar="$_host-ar cru"
+			_as="$_host-as"
+			_windres=$_host-windres
 			;;
 		ps2)
 			DEFINES="$DEFINES -DDISABLE_TEXT_CONSOLE"
@@ -1926,6 +2107,17 @@ if test -n "$_host"; then
 			HOSTEXEEXT=".so"
 			_backend="samsungtv"
 			_mt32emu=no
+			_vkeybd=yes
+			;;
+		tizen)
+			_unix=yes
+			_backend="tizen"
+			_port_mk="backends/platform/tizen/tizen.mk"
+			_arm_asm=yes
+			_build_scalers=no
+			_seq_midi=no
+			_mt32emu=no
+			_timidity=no
 			_vkeybd=yes
 			;;
 		webos)
@@ -1981,7 +2173,7 @@ case $_host_os in
 	amigaos* | cygwin* | dreamcast | ds | gamecube | mingw* | n64 | ps2 | ps3 | psp | wii | wince)
 		_posix=no
 		;;
-	android | beos* | bsd* | darwin* | freebsd* | gph-linux | haiku* | hpux* | iphone | irix* | linux* | maemo | mint* | netbsd* | openbsd* | solaris* | sunos* | uclinux* | webos)
+	android | beos* | bsd* | darwin* | freebsd* | gnu* | gph-linux | haiku* | hpux* | iphone | irix*| k*bsd*-gnu* | linux* | maemo | mint* | netbsd* | openbsd* | solaris* | sunos* | uclinux* | webos)
 		_posix=yes
 		;;
 	os2-emx*)
@@ -2146,6 +2338,83 @@ define_in_config_if_yes "$_mad" 'USE_MAD'
 echo "$_mad"
 
 #
+#
+# Check for libjpeg
+#
+echocheck "libjpeg >= v6b"
+if test "$_jpeg" = auto ; then
+	_jpeg=no
+	cat > $TMPC << EOF
+#include <stdio.h>
+#include <jpeglib.h>
+int main(void) {
+#if JPEG_LIB_VERSION >= 62
+#else
+  syntax error
+#endif
+  return 0;
+}
+EOF
+	cc_check $JPEG_CFLAGS $JPEG_LIBS -ljpeg && _jpeg=yes
+fi
+if test "$_jpeg" = yes ; then
+	LIBS="$LIBS $JPEG_LIBS -ljpeg"
+	INCLUDES="$INCLUDES $JPEG_CFLAGS"
+fi
+define_in_config_if_yes "$_jpeg" 'USE_JPEG'
+echo "$_jpeg"
+
+#
+# Check for PNG
+#
+echocheck "PNG >= 1.2.8"
+if test "$_png" = auto ; then
+	_png=no
+	cat > $TMPC << EOF
+#include <png.h>
+int main(void) {
+#if PNG_LIBPNG_VER >= 10208
+#else
+  syntax error
+#endif
+  return 0;
+}
+EOF
+	cc_check $PNG_CFLAGS $PNG_LIBS -lpng -lz && _png=yes
+fi
+if test "$_png" = yes ; then
+	LIBS="$LIBS $PNG_LIBS -lpng -lz"
+	INCLUDES="$INCLUDES $PNG_CFLAGS"
+fi
+define_in_config_if_yes "$_png" 'USE_PNG'
+echo "$_png"
+
+#
+# Check for Theora Decoder
+#
+echocheck "libtheoradec >= 1.0"
+if test "$_vorbis" = no ; then
+	echo "skipping. no vorbis"
+	_theoradec=notsupported
+fi
+if test "$_theoradec" = auto ; then
+	_theoradec=no
+	cat > $TMPC << EOF
+#include <theora/theoradec.h>
+#include <vorbis/codec.h>
+int main(void) { th_ycbcr_buffer yuv; th_decode_ycbcr_out(NULL, yuv);  }
+EOF
+	cc_check $THEORADEC_CFLAGS $THEORADEC_LIBS -ltheoradec && _theoradec=yes
+fi
+if test "$_theoradec" = yes ; then
+	LIBS="$LIBS $THEORADEC_LIBS -ltheoradec"
+	INCLUDES="$INCLUDES $THEORADEC_CFLAGS"
+fi
+define_in_config_if_yes "$_theoradec" 'USE_THEORADEC'
+if test ! "$_theoradec" = notsupported ; then
+	echo "$_theoradec"
+fi
+
 # Check for ZLib
 #
 echocheck "zlib"
@@ -2166,12 +2435,64 @@ define_in_config_if_yes "$_zlib" 'USE_ZLIB'
 echo "$_zlib"
 
 #
+# Check for LibMPEG2
+#
+echocheck "libmpeg2 >= 0.4.0"
+if test "$_mpeg2" = auto ; then
+	_mpeg2=no
+	cat > $TMPC << EOF
+typedef signed $type_1_byte int8_t;
+typedef signed $type_2_byte int16_t;
+typedef signed $type_4_byte int32_t;
+
+typedef unsigned $type_1_byte uint8_t;
+typedef unsigned $type_2_byte uint16_t;
+typedef unsigned $type_4_byte uint32_t;
+
+extern "C" {
+#include <mpeg2dec/mpeg2.h>
+}
+
+int main(void) {
+	#if MPEG2_RELEASE < MPEG2_VERSION(0, 4, 0)
+	#error libmpeg2 version too low
+	#endif
+
+	/* mpeg2_state_t first appears in 0.4.0 */
+	mpeg2_state_t state;
+
+	return 0;
+}
+EOF
+
+	if test -n "$_host"; then
+		# don't execute while cross compiling
+		cc_check $MPEG2_CFLAGS $MPEG2_LIBS -lmpeg2 && _mpeg2=yes
+	else
+		cc_check_no_clean $MPEG2_CFLAGS $MPEG2_LIBS -lmpeg2 && $TMPO$HOSTEXEEXT && _mpeg2=yes
+		cc_check_clean
+	fi
+fi
+if test "$_mpeg2" = yes ; then
+	INCLUDES="$INCLUDES $MPEG2_CFLAGS"
+	LIBS="$LIBS $MPEG2_LIBS -lmpeg2"
+fi
+define_in_config_if_yes "$_mpeg2" 'USE_MPEG2'
+echo "$_mpeg2"
+
 # Figure out installation directories
 #
 test "x$prefix" = xNONE && prefix=/usr/local
 test "x$exec_prefix" = xNONE && exec_prefix='${prefix}'
 
-DEFINES="$DEFINES -DDATA_PATH=\\\"$datadir\\\""
+case $_host_os in
+	mingw*)
+		# Windows stores all the external data files in executable file.
+		;;
+	*)
+		DEFINES="$DEFINES -DDATA_PATH=\\\"$datadir\\\""
+		;;
+esac
 
 case $_backend in
 	openpandora)
@@ -2216,7 +2537,7 @@ case $_backend in
 		system_libs=''
 		for lib in $LIBS; do
 			case $lib in
-			-lz|-lm|-ldl)
+			-lz|-lm|-ldl|-landroid|-lGLESv1_CM|-lGLESv2) # ResidualVM specific
 				system_libs="$system_libs $lib"
 				;;
 			*)
@@ -2228,7 +2549,7 @@ case $_backend in
 		# -lgcc is carefully placed here - we want to catch
 		# all toolchain symbols in *our* libraries rather
 		# than pick up anything unhygenic from the Android libs.
-		LIBS="-Wl,-Bstatic $static_libs -Wl,-Bdynamic -lgcc $system_libs -llog -lGLESv1_CM"
+		LIBS="-Wl,-Bstatic $static_libs -Wl,-Bdynamic -lgcc $system_libs -llog -landroid" # ResidualVM removed: -lGLESv1_CM
 		;;
 	n64)
 		# Move some libs down here, otherwise some symbols requires by libvorbis aren't found

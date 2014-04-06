@@ -220,5 +220,8 @@ lua_Object     lua_setfallback		(char *event, lua_CFunction fallback);
 * The Lua language and this implementation have been entirely designed and
 * written by Waldemar Celes Filho, Roberto Ierusalimschy and
 * Luiz Henrique de Figueiredo at TeCGraf, PUC-Rio.
-* This implementation contains no third-party code.
+*
+* NOTE: This implementation of Lua contains additional code and
+* modifications added only for ResidualVM project.
+* Look into the source code file "Changelog" for more info.
 ******************************************************************************/

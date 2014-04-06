@@ -7,7 +7,7 @@ srcdir      ?= .
 
 DEFINES     := -DHAVE_CONFIG_H
 LDFLAGS     :=
-INCLUDES    := -I. -I$(srcdir) -I$(srcdir)/engines
+INCLUDES    := -I. -I$(srcdir)
 LIBS        :=
 OBJS        :=
 DEPDIR      := .deps
@@ -32,9 +32,6 @@ ifeq "$(HAVE_GCC)" "1"
 	# being helpful.
 	#CXXFLAGS+= -Wmissing-format-attribute
 
-	# Disable exceptions, ResidualVM use RTTI:
-	CXXFLAGS+= -fno-exceptions
-
 ifneq "$(HAVE_CLANG)" "1"
 	# enable checking of pointers returned by "new", but only when we do not
 	# build with clang
@@ -44,6 +41,11 @@ endif
 
 ifeq "$(HAVE_CLANG)" "1"
 	CXXFLAGS+= -Wno-conversion -Wno-shorten-64-to-32 -Wno-sign-compare -Wno-four-char-constants
+	# We use a anonymous nested type declaration in an anonymous union in
+	# common/str.h. This is no standard construct and clang warns about it.
+	# It works for all our target systems though, thus we simply disable that
+	# warning.
+	CXXFLAGS+= -Wno-nested-anon-types
 endif
 
 ifeq "$(HAVE_ICC)" "1"
