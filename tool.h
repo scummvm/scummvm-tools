@@ -242,6 +242,8 @@ protected:
 	bool _outputToDirectory;
 	/** If this tool can display output progress in percent. */
 	bool _supportsProgressBar;
+	/** If this tool can be run again on other files with the same extension **/
+	bool _supportsMultipleRuns;
 
 	/** Name of the tool. */
 	std::string _name;

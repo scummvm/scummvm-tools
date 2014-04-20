@@ -37,6 +37,7 @@ Tool::Tool(const std::string &name, ToolType type) {
 
 	_outputToDirectory = true;
 	_supportsProgressBar = false;
+	_supportsMultipleRuns = false;
 
 	_internalPrint = standardPrint;
 	_print_udata = NULL;

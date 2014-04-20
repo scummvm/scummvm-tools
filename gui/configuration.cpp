@@ -32,6 +32,8 @@ Configuration::Configuration() {
 	compressing = true;
 
 	selectedTool = NULL;
+	
+	multipleRuns = false;
 
 	selectedAudioFormat = AUDIO_VORBIS;
 	advancedAudioSettings = false;

@@ -36,6 +36,9 @@
 #include "../compress.h"
 #include "gui_tools.h"
 
+#include <wx/dir.h>
+#include <wx/filename.h>
+
 // Our global tools object, which holds all tools
 ToolsGUI g_tools;
 
@@ -139,19 +142,11 @@ bool ToolGUI::outputToDirectory() const {
 	return _backend->_outputToDirectory;
 }
 
-void ToolGUI::run(const Configuration &conf) const {
-	// Set the input paths
-	_backend->clearInputPaths();
-	if (conf.inputFilePaths.size() < _backend->_inputPaths.size())
-		_backend->error("Too few input files!");
-	for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter) {
-		if (!_backend->addInputPath(std::string(iter->mb_str())))
-			_backend->error("Unexpected input file '%s'!", (const char*)iter->mb_str());
-	}
-		
-	// Set the output path
-	_backend->_outputPath = std::string(conf.outputPath.mb_str());
+bool ToolGUI::supportsMultipleRuns() const {
+	return _backend->_supportsMultipleRuns;
+}
 
+void ToolGUI::run(const Configuration &conf) const {
 	CompressionTool *compression = dynamic_cast<CompressionTool *>(_backend);
 	if (compression) {
 		compression->_format               = conf.selectedAudioFormat;
@@ -189,5 +184,38 @@ void ToolGUI::run(const Configuration &conf) const {
 			compression->setOggMaxBitrate ( (const char *)conf.oggMaxBitrate.mb_str() );
 	}
 
-	_backend->run();
+	if (conf.multipleRuns && supportsMultipleRuns() && conf.inputFilePaths.size() == 1) {
+		// Run on all the files with the same extension as the given input file
+		wxFileName inputFile(conf.inputFilePaths[0]);
+		wxArrayString fileList;
+		if (wxDir::GetAllFiles(inputFile.GetPath(), &fileList, wxString::FromAscii("*.") + inputFile.GetExt(), wxDIR_FILES) == 0)
+			_backend->error("No input file found!");
+		for (wxArrayString::const_iterator iter = fileList.begin(); iter != fileList.end(); ++iter) {
+			// Reset the output path for each run in case it is changed by the tool
+			_backend->_outputPath = std::string(conf.outputPath.mb_str());
+
+			// Set the input paths
+			_backend->clearInputPaths();
+			if (!_backend->addInputPath(std::string(iter->mb_str()))) {
+				_backend->warning("Unexpected input file '%s'!", (const char*)iter->mb_str());
+				continue;
+			}
+
+			_backend->run();
+		}
+	} else {
+		// Set the output path
+		_backend->_outputPath = std::string(conf.outputPath.mb_str());
+
+		// Set the input paths
+		_backend->clearInputPaths();
+		if (conf.inputFilePaths.size() < _backend->_inputPaths.size())
+			_backend->error("Too few input files!");
+		for (wxArrayString::const_iterator iter = conf.inputFilePaths.begin(); iter != conf.inputFilePaths.end(); ++iter) {
+			if (!_backend->addInputPath(std::string(iter->mb_str())))
+				_backend->error("Unexpected input file '%s'!", (const char*)iter->mb_str());
+		}
+	
+		_backend->run();
+	}
 }

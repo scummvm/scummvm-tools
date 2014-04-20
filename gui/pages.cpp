@@ -418,6 +418,10 @@ wxWindow *ChooseInPage::CreatePanel(wxWindow *parent) {
 	pickersizer->Add(20, 20, 1, wxEXPAND);
 
 	sizer->Add(pickersizer, wxSizerFlags().Expand());
+	
+	wxCheckBox *multiRun = new wxCheckBox(panel, wxID_ANY, wxT("Run on all files with the same extension"),
+										  wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxT("MultipleRuns"));
+	sizer->Add(multiRun);
 	sizer->AddSpacer(30);
 
 	SetAlignedSizer(panel, sizer);
@@ -441,6 +445,9 @@ void ChooseInPage::save(wxWindow *panel) {
 	}
 	
 	_configuration.inputFilePaths.Add(wxString(filename.getFullPath().c_str(), wxConvFile));
+
+	wxCheckBox *multiRun = dynamic_cast<wxCheckBox *>(panel->FindWindowByName(wxT("MultipleRuns")));
+	_configuration.multipleRuns = multiRun->GetValue();
 }
 
 void ChooseInPage::onNext(wxWindow *panel) {
@@ -470,6 +477,7 @@ void ChooseInPage::onNext(wxWindow *panel) {
 
 void ChooseInPage::onPrevious(wxWindow *panel) {
 	_configuration.inputFilePaths.clear();
+	_configuration.multipleRuns = false;
 	ChooseIOPage::onPrevious(panel);
 }
 
@@ -1618,6 +1626,7 @@ bool FinishPage::onCancel(wxWindow *panel) {
 	if (restart->GetValue()) {
 		_configuration.selectedTool = NULL;
 		_configuration.inputFilePaths.clear();
+		_configuration.multipleRuns = false;
 		_topframe->switchToFirstPage();
 		return false;
 	} else {
@@ -1672,6 +1681,7 @@ bool FailurePage::onCancel(wxWindow *panel) {
 	if (restart->GetValue()) {
 		_configuration.selectedTool = NULL;
 		_configuration.inputFilePaths.clear();
+		_configuration.multipleRuns = false;
 		_topframe->switchToFirstPage();
 		return false;
 	} else {

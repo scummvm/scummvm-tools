@@ -109,6 +109,12 @@ public:
 	 * Returns true if the tool outputs to an entire directory, not a single file
 	 */
 	bool outputToDirectory() const;
+	
+	/**
+	 * Returns true if the tool can be run again on other files with the same
+	 * extension in the same directory.
+	 */
+	bool supportsMultipleRuns() const;
 
 	/**
 	 * Runs the actual tool, will throw errors if it fails

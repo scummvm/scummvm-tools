@@ -83,6 +83,8 @@ struct Configuration {
 	wxArrayString inputFilePaths;
 	/** Path to output to */
 	wxString outputPath;
+	/** run on all files with the same extension **/
+	bool multipleRuns;
 
 	/** Audio format selected */
 	AudioFormat selectedAudioFormat;
