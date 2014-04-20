@@ -537,6 +537,7 @@ CompressScummSan::CompressScummSan(const std::string &name) : CompressionTool(na
 
 	_supportedFormats = AudioFormat(AUDIO_MP3 | AUDIO_VORBIS);
 	_supportsProgressBar = true;
+	_supportsMultipleRuns = true;
 
 	ToolInput input;
 	input.format = "*.san";
