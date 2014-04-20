@@ -760,6 +760,7 @@ skip:
 			encodeSanWaveWithOgg(tmpPath);
 		else
 			encodeSanWaveWithLame(tmpPath);
+		_waveTmpFile.close();
 		tmpPath += ".raw";
 		Common::removeFile(tmpPath.c_str());
 	}

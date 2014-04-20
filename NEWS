@@ -6,6 +6,8 @@ For a more comprehensive changelog of the latest experimental code, see:
    files are in the Clusters, Music and Speech sub-directories).
  - Fix issue with output file name in compress_sword2 tool when specifying an
    output directory (the output file name was empty with only an extension).
+ - Fix issue when trying to use compress_scumm_san more than once in the GUI
+   tool.
 
 1.6.0 (2013-05-31)
  - Fix crash when compiling with wxWidgets 2.9.
