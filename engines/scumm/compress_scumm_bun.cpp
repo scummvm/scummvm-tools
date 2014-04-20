@@ -1075,6 +1075,7 @@ CompressScummBun::CompressScummBun(const std::string &name) : CompressionTool(na
 	_cbundleCurIndex = 0;
 
 	_supportsProgressBar = true;
+	_supportsMultipleRuns = true;
 
 	ToolInput input;
 	input.format = "*.bun";
