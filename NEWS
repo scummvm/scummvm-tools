@@ -2,7 +2,7 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
 1.7.0 (XXXX-XX-XX)
- - Add option to run the some of tools in the GUI  on all the files with the same
+ - Add option to run some of the tools in the GUI  on all the files with the same
    extension (e.g. run compress_scumm_san on all *.san files).
  - Improve support for sub-directory structure in Broken Sword 1 (e.g. when the
    files are in the Clusters, Music and Speech sub-directories).
