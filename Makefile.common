@@ -310,6 +310,8 @@ TARGETS := $(addsuffix $(EXEEXT),$(PROGRAMS))
 all: $(TARGETS)
 
 install: $(TARGETS)
+	$(INSTALL) -p -m 0755 -d $(DESTDIR)$(BINDIR)
+	$(INSTALL) -p -m 0755 -d $(DESTDIR)$(DATADIR)/scummvm-tools
 	for i in $^ ; do $(INSTALL) -p -m 0755 $$i $(DESTDIR)$(BINDIR) ; done
 	$(INSTALL) -m 0755 -d $(DESTDIR)$(DATADIR)/scummvm-tools
 	$(INSTALL) -p -m 0644 $(srcdir)/gui/media/*.* $(DESTDIR)$(DATADIR)/scummvm-tools
