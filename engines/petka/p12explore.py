@@ -64,6 +64,9 @@ class App(tkinter.Frame):
         self.sim = petka.Engine()
         self.sim.load_data(folder, "cp1251")
         self.sim.open_part(0, 0)
+        #self.sim.open_part(1, 0)
+        #self.sim.open_part(2, 0)
+        #self.sim.open_part(3, 0)
 
 def main():
     root = tkinter.Tk()

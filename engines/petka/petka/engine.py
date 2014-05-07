@@ -7,6 +7,11 @@ import struct
 
 from . import FileManager
 
+class ScrObject:
+    def __init__(self, idx, name):
+        self.idx = idx
+        self.name = name
+
 class Engine:
     def __init__(self):
         self.fman = None
@@ -63,24 +68,107 @@ class Engine:
                     self.start_chap = int(data["Chapter"]) - 1
             elif sect[:5] == "Part ":
                 self.parts.append(data)
-        # load BGS.INI
-        pf = self.fman.find_path("bgs.ini")
-        f = open(pf, "rb")
-        try:
-            self.bgs_ini = self.parse_ini(f)
-        finally:
-            f.close()
-        if "Settings" in self.bgs_ini:
-            if "StartRoom" in self.bgs_ini["Settings"]:
-                self.start_scene = self.bgs_ini["Settings"]["StartRoom"]
+        # std stores
+        self.fman.load_store("patch.str")
+        self.fman.load_store("main.str")
 
     def open_part(self, part, chap):
+        self.fman.unload_stores(1)
         pname = "Part {}".format(part)
         pcname = pname
         if chap:
             pcname += " Chapter {}".format(chap)
-        self.curr_path = self.parts_ini[pname]["CurrentPath"]
-        self.curr_speech = self.parts_ini[pname]["PathSpeech"]
-        self.curr_diskid = self.parts_ini[pname]["DiskID"]
+        ini = self.parts_ini[pname]
+        self.curr_path = ini["CurrentPath"]
+        self.curr_speech = ini["PathSpeech"]
+        self.curr_diskid = ini["DiskID"]
         
+        # load BGS.INI
+        self.bgs_ini = {}
+        self.start_scene = None
+        pf = self.fman.find_path(self.curr_path + "bgs.ini")
+        print(self.curr_path)
+        if pf:
+            f = open(pf, "rb")
+            try:
+                self.bgs_ini = self.parse_ini(f)
+            finally:
+                f.close()
+            if "Settings" in self.bgs_ini:
+                if "StartRoom" in self.bgs_ini["Settings"]:
+                    self.start_scene = self.bgs_ini["Settings"]["StartRoom"]
+        # load .STR
+        strs = ["Flics", "Background", "Wav", "Music", "SFX"]
+        for strf in strs:
+            pf = self.fman.find_path(self.curr_path + "bgs.ini")
+            if not pf: continue
+            if strf in ini:
+                self.fman.load_store(ini[strf], 1)
+        # load script
+        self.load_script()
         
+    def load_script(self):
+        self.objects = []
+        self.scenes = []
+        self.obj_idx = {}
+        self.scn_idx = {}
+
+        data = self.fman.read_data(self.curr_path + "script.dat")
+        num_obj, num_scn = struct.unpack_from("<II", data[:8])
+        off = 8
+        def read_rec(off):
+            obj_id, name_len = struct.unpack_from("<HI", data[off:off + 6])
+            off += 6
+            name = data[off:off + name_len].decode(self.enc)
+            off += name_len
+            num_act = struct.unpack_from("<I", data[off:off + 4])[0]
+            off += 4
+            acts = []
+            for i in range(num_act):
+                act_id, act_cond, act_arg, num_op = struct.unpack_from(\
+                    "<HBHI", data[off:off + 9])
+                off += 9
+                ops = []
+                for j in range(num_op):
+                    op = struct.unpack_from("<5H", data[off:off + 10])
+                    off += 10
+                    ops.append(op)
+                acts.append([act_id, act_cond, act_arg, ops])
+            rec = ScrObject(obj_id, name)
+            rec.acts = acts
+            return off, rec
+        
+        for i in range(num_obj):
+            off, obj = read_rec(off)
+            self.objects.append(obj)
+            self.obj_idx[obj.idx] = obj
+
+        for i in range(num_scn):
+            off, scn = read_rec(off)
+            self.scenes.append(scn)
+            self.scn_idx[scn.idx] = scn
+            
+        data = self.fman.read_data(self.curr_path + "backgrnd.bg")
+        num_rec = struct.unpack_from("<I", data[:4])[0]
+        off = 4
+        for i in range(num_rec):
+            scn_ref, num_ref = struct.unpack_from("<HI", data[off:off + 6])
+            off += 6
+            if scn_ref in self.scn_idx:
+                scn = self.scn_idx[scn_ref]    
+                scn.refs = []
+            else:
+                print("DEBUG: Scene ID = 0x{:x} not found".format(scn_ref))
+                scn = None
+            for j in range(num_ref):
+                ref = struct.unpack_from("<H5I", data[off:off + 22])
+                off += 22
+                if scn:
+                    if ref[0] in self.obj_idx:
+                        obj = self.obj_idx[ref[0]]
+                        scn.refs.append([obj] + list(ref[1:]))
+                    else:
+                        print("DEBUG: Object ID = 0x{:x} not found".\
+                            format(obj[0]))
+
+

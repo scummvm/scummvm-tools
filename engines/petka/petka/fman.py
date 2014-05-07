@@ -17,6 +17,7 @@ class FileManager:
         # search case insensive from root
         dpath = []
         npath = self.root
+        path = path.replace("\\", "/")
         for item in path.split("/"):
             if not item: continue
             ok = False
@@ -30,7 +31,7 @@ class FileManager:
         
         
     
-    def load_store(self, name):
+    def load_store(self, name, tag = 0):
         path = self.find_path(name)
         if path is None:
             print("DEBUG: Store \"{}\" not found".format(name))
@@ -56,15 +57,34 @@ class FileManager:
             index_table.append((data[1], data[2]))
         data = f.read().decode("ascii")
         for idx, fname in enumerate(data.split("\x00")):
-            if idx < index_len and fname not in self.strtable:
-                self.strtable[fname] = (len(self.strfd), ) + \
-                    tuple(index_table[idx])
+            if idx < index_len and fname.lower() not in self.strtable:
+                self.strtable[fname.lower()] = (len(self.strfd),) + index_table[idx]
         # add file descriptor
-        self.strfd.append((f, name))
+        self.strfd.append((f, name, tag))
         
+    def read_data(self, fname):
+        sf = fname.lower()
+        if sf in self.strtable:
+            fnum, st, ln = self.strtable[sf]
+            self.strfd[fnum][0].seek(st)
+            return self.strfd[fnum][0].read(ln)
+        else:
+            pf = self.find_path(fname)
+            if not pf:
+                print("DEBUG: Can't open file \"{}\"".format(fname))
+            # file in filesystem
+            f = open(pf, "rb")
+            try:
+                data = f.read()
+            finally:
+                f.close()
+            return data
+            
         
-    def unload_stores(self):
-        for fd, name in self.strfd:
+    def unload_stores(self, flt = None):
+        for fd, name, tag in self.strfd:
+            if flt is not None:
+                if tag != flt: continue
             try:
                 if fd: fd.close()
             except Exception as e:
