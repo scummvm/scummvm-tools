@@ -50,38 +50,45 @@ class Engine:
         self.enc = enc
         # load PARTS.INI
         pf = self.fman.find_path("parts.ini")
-        f = open(pf, "rb")
-        try:
-            self.parts_ini = self.parse_ini(f)
-        finally:
-            f.close()
-        if "All" in self.parts_ini:
-            if "Part" in self.parts_ini["All"]:
-                self.start_part = int(self.parts_ini["All"]["Part"])
-            if "Chapter" in self.parts_ini["All"]:
-                self.start_chap = int(self.parts_ini["All"]["Chapter"])
-        for sect, data in self.parts_ini.items():
-            if sect == "All":
-                if "Part" in data:
-                    self.start_part = int(data["Part"]) - 1
-                if "Chapter" in data:
-                    self.start_chap = int(data["Chapter"]) - 1
-            elif sect[:5] == "Part ":
-                self.parts.append(data)
+        if pf:
+            f = open(pf, "rb")
+            try:
+                self.parts_ini = self.parse_ini(f)
+            finally:
+                f.close()
+            for sect, data in self.parts_ini.items():
+                if sect == "All":
+                    if "Part" in data:
+                        self.start_part = int(data["Part"]) - 1
+                    if "Chapter" in data:
+                        self.start_chap = int(data["Chapter"]) - 1
+                elif sect[:5] == "Part ":
+                    self.parts.append(data)
+        else:
+            # load BGS.INI only (e.g. DEMO)
+            self.parts_ini = None
+            
         # std stores
         self.fman.load_store("patch.str")
         self.fman.load_store("main.str")
 
     def open_part(self, part, chap):
         self.fman.unload_stores(1)
-        pname = "Part {}".format(part)
-        pcname = pname
-        if chap:
-            pcname += " Chapter {}".format(chap)
-        ini = self.parts_ini[pname]
-        self.curr_path = ini["CurrentPath"]
-        self.curr_speech = ini["PathSpeech"]
-        self.curr_diskid = ini["DiskID"]
+        if self.parts_ini:
+            pname = "Part {}".format(part)
+            pcname = pname
+            if chap:
+                pcname += " Chapter {}".format(chap)
+            ini = self.parts_ini[pname]
+            self.curr_path = ini["CurrentPath"]
+            self.curr_speech = ini["PathSpeech"]
+            self.curr_diskid = ini["DiskID"]
+        else:
+            ini = {}
+            self.curr_path = ""
+            self.curr_speech = ""
+            self.curr_diskid = None
+
         
         # load BGS.INI
         self.bgs_ini = {}
@@ -170,5 +177,4 @@ class Engine:
                     else:
                         print("DEBUG: Object ID = 0x{:x} not found".\
                             format(obj[0]))
-
 
