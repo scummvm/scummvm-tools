@@ -5,7 +5,7 @@
 import os
 import struct
 
-from . import FileManager
+from .fman import FileManager
 
 class ScrObject:
     def __init__(self, idx, name):
@@ -120,7 +120,7 @@ class Engine:
         self.obj_idx = {}
         self.scn_idx = {}
 
-        data = self.fman.read_data(self.curr_path + "script.dat")
+        data = self.fman.read_file(self.curr_path + "script.dat")
         num_obj, num_scn = struct.unpack_from("<II", data[:8])
         off = 8
         def read_rec(off):
@@ -155,7 +155,7 @@ class Engine:
             self.scenes.append(scn)
             self.scn_idx[scn.idx] = scn
             
-        data = self.fman.read_data(self.curr_path + "backgrnd.bg")
+        data = self.fman.read_file(self.curr_path + "backgrnd.bg")
         num_rec = struct.unpack_from("<I", data[:4])[0]
         off = 4
         for i in range(num_rec):
@@ -165,16 +165,16 @@ class Engine:
                 scn = self.scn_idx[scn_ref]    
                 scn.refs = []
             else:
-                print("DEBUG: Scene ID = 0x{:x} not found".format(scn_ref))
-                scn = None
+                raise EngineError("DEBUG: Scene ID = 0x{:x} not found".\
+                    format(scn_ref))
+
             for j in range(num_ref):
                 ref = struct.unpack_from("<H5I", data[off:off + 22])
                 off += 22
-                if scn:
-                    if ref[0] in self.obj_idx:
-                        obj = self.obj_idx[ref[0]]
-                        scn.refs.append([obj] + list(ref[1:]))
-                    else:
-                        print("DEBUG: Object ID = 0x{:x} not found".\
-                            format(obj[0]))
+                if ref[0] in self.obj_idx:
+                    obj = self.obj_idx[ref[0]]
+                    scn.refs.append([obj] + list(ref[1:]))
+                else:
+                    raise EngineError("DEBUG: Object ID = 0x{:x} not found".\
+                        format(obj[0]))
 

@@ -5,6 +5,8 @@
 import os
 import struct
 
+from . import EngineError
+
 # manage files data
 class FileManager:
     def __init__(self, root):
@@ -41,7 +43,7 @@ class FileManager:
         # check magic string "StOR"
         magic = f.read(4)
         if magic != b"StOR":
-            print("DEBUG: Bad magic in \"{}\"".format(name))
+            raise EngineError("Bad magic in store \"{}\"".format(name))
             return
         # read index table ref
         temp = f.read(4)
@@ -55,20 +57,29 @@ class FileManager:
             temp = f.read(12) 
             data = struct.unpack_from("<III", temp)
             index_table.append((data[1], data[2]))
-        data = f.read().decode("ascii")
+        data = f.read().decode("latin-1")
         for idx, fname in enumerate(data.split("\x00")):
-            if idx < index_len and fname.lower() not in self.strtable:
-                self.strtable[fname.lower()] = (len(self.strfd),) + index_table[idx]
+            fname = fname.lower().replace("\\", "/")
+            if idx < index_len and fname not in self.strtable:
+                self.strtable[fname] = (len(self.strfd),) + \
+                    index_table[idx]
+            else:
+                if len(fname) > 0:
+                    raise EngineError("Extra file record \"{}\" in \"{}\"".\
+                        format(fname, name))
         # add file descriptor
         self.strfd.append((f, name, tag))
         
-    def read_data(self, fname):
-        sf = fname.lower()
+    def read_file(self, fname):
+        sf = fname.lower().replace("\\", "/")
         if sf in self.strtable:
             fnum, st, ln = self.strtable[sf]
+            print("Load file \"{}\" from store \"{}\"".\
+                format(fname, self.strfd[fnum][1]))
             self.strfd[fnum][0].seek(st)
             return self.strfd[fnum][0].read(ln)
         else:
+            print("Load file \"{}\" from filesystem".format(fname))
             pf = self.find_path(fname)
             if not pf:
                 print("DEBUG: Can't open file \"{}\"".format(fname))
@@ -82,9 +93,10 @@ class FileManager:
             
         
     def unload_stores(self, flt = None):
-        for fd, name, tag in self.strfd:
+        for idx, (fd, name, tag) in enumerate(self.strfd):
             if flt is not None:
                 if tag != flt: continue
+            print("DEBIG: Unload store \"{}\"".format(name))
             try:
                 if fd: fd.close()
             except Exception as e:
