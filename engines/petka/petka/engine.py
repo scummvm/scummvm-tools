@@ -4,6 +4,7 @@
 
 import os
 import struct
+import io
 
 from .fman import FileManager
 
@@ -44,6 +45,24 @@ class Engine:
             if len(kv) != 2: continue
             ini[curr_sect][kv[0].strip()] = kv[1].strip()
         return ini
+        
+    def parse_res(self, f):
+        res  = {}
+        resord = []
+        for line in f.readlines():
+            line = line.decode(self.enc).strip()
+            if len(line) == 0:
+                continue
+            pair = line.split("=", 1)
+            if len(pair) < 2:
+                continue
+            value = pair[1].strip()
+            if value[:1] == "=":
+                value = value[1:].strip()
+            res_id = int(pair[0].strip(), 10)
+            res[res_id] = value
+            resord.append(res_id)
+        return res, resord
         
     def load_data(self, folder, enc):
         self.fman = FileManager(folder)
@@ -177,4 +196,12 @@ class Engine:
                 else:
                     raise EngineError("DEBUG: Object ID = 0x{:x} not found".\
                         format(obj[0]))
+                        
+        data = self.fman.read_file(self.curr_path + "resource.qrc")
+        mems = io.BytesIO()
+        mems.write(data)
+        mems.seek(0)
+        self.res, self.resord = self.parse_res(mems)
+        
+        
 

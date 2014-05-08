@@ -26,6 +26,7 @@ class App(tkinter.Frame):
         self.last_width = 1
         self.last_height = 1
         self.need_update = False
+        self.curr_gui = []
         self.main_image = tkinter.PhotoImage(width = 1, height = 1)
         self.after_idle(self.on_first_display)
         
@@ -33,6 +34,10 @@ class App(tkinter.Frame):
         
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
         ttk.Style().configure("TLabel", padding = self.pad)
+        
+        # leftpanel
+        self.frm_left = ttk.Frame(self)
+        self.frm_left.pack(side = tkinter.LEFT, expand = 0, fill = tkinter.BOTH)
 
         # canvas
         self.frm_view = ttk.Frame(self)
@@ -219,7 +224,17 @@ class App(tkinter.Frame):
         return image                
 
     def update_gui(self, fn):
-        pass
+        # TODO: remove unused gui items
+        
+        if self.curr_mode == 100:
+            # list resources
+            lst = tkinter.Listbox(self.frm_left)
+            lst.pack(expand = 1, fill = tkinter.BOTH)
+            self.curr_gui.append(lst)
+            # fill
+            for res_id in self.sim.resord:
+                lst.insert(tkinter.END, "{} [{}]".format(self.sim.res[res_id],
+                    res_id))
 
     def on_open_data(self):
         # open data - select TODO
@@ -236,12 +251,13 @@ class App(tkinter.Frame):
         # load static image
         #for item in self.sim.fman.strtable:
         #    print(item)
-        bmpdata = self.sim.fman.read_file("MAIN/INTRFACE.BG/INSTHERO.BMP")
-        bmp = petka.BMPLoader()
-        bmp.load_data(bmpdata)
-        self.main_image = self.make_image(640, 480, bmp.rgb)
-        self.curr_width = 640
-        self.curr_height = 480
+        #bmpdata = self.sim.fman.read_file("MAIN/INTRFACE.BG/INSTHERO.BMP")
+        #bmp = petka.BMPLoader()
+        #bmp.load_data(bmpdata)
+        #self.main_image = self.make_image(640, 480, bmp.rgb)
+        #self.curr_width = 640
+        #self.curr_height = 480
+        self.curr_mode = 100
         #self.sim.open_part(1, 0)
         #self.sim.open_part(2, 0)
         #self.sim.open_part(3, 0)
