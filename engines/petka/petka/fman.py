@@ -93,12 +93,21 @@ class FileManager:
             
         
     def unload_stores(self, flt = None):
+        strfd = []
+        strtable = {}
         for idx, (fd, name, tag) in enumerate(self.strfd):
             if flt is not None:
-                if tag != flt: continue
-            print("DEBIG: Unload store \"{}\"".format(name))
+                if tag != flt: 
+                    for k, v in self.strtable:
+                        if v == idx:
+                            strtable[k] = len(strfd)
+                    strfd.append((fd, name, tag))
+                    continue
+            print("DEBUG: Unload store \"{}\"".format(name))
             try:
                 if fd: fd.close()
             except Exception as e:
                 print("DEBUG: Can't unload \"{}\":".format(name) + str(e))
-
+        self.strff = strfd
+        self.strtable = strtable
+        

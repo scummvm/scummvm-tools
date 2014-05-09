@@ -51,8 +51,7 @@ class BMPLoader:
 
         # read 2 zero bytes
         if data[off:off + 2] != b"\x00\x00":
-            raise EngineError("Magic zero bytes absent [{:02x},{:02x}]".\
-                format(data[off], data[off + 1]))
+            raise EngineError("Magic zero bytes absent or mismatch")
         off += 2
 
         if len(data) - off > 0:
