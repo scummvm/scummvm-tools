@@ -33,6 +33,7 @@ class Engine:
         # parse ini settings
         curr_sect = None
         ini = {}
+        ordersect = []
         for line in f.readlines():
             line = line.decode(self.enc).strip()
             if len(line) == 0: continue
@@ -40,10 +41,12 @@ class Engine:
             if line[:1] == "[" and line[-1:] == "]":
                 curr_sect = line[1:-1].strip()
                 ini[curr_sect] = {}
+                ordersect.append(curr_sect)
                 continue
             kv = line.split("=", 1)
             if len(kv) != 2: continue
             ini[curr_sect][kv[0].strip()] = kv[1].strip()
+        ini["__order__"] = ordersect
         return ini
         
     def parse_res(self, f):
@@ -75,14 +78,15 @@ class Engine:
                 self.parts_ini = self.parse_ini(f)
             finally:
                 f.close()
-            for sect, data in self.parts_ini.items():
+            for sect in self.parts_ini["__order__"]:
+                data = self.parts_ini[sect]
                 if sect == "All":
                     if "Part" in data:
                         self.start_part = int(data["Part"]) - 1
                     if "Chapter" in data:
                         self.start_chap = int(data["Chapter"]) - 1
                 elif sect[:5] == "Part ":
-                    self.parts.append(data)
+                    self.parts.append(sect)
         else:
             # load BGS.INI only (e.g. DEMO)
             self.parts_ini = None

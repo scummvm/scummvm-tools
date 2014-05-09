@@ -9,6 +9,8 @@ from . import EngineError
 class BMPLoader:
     def __init__(self):
         self.raw = None
+        self.width = 0
+        self.height = 0
         
     def load_data(self, data):
         # TODO: normal BMP, rle BMP
@@ -27,7 +29,9 @@ class BMPLoader:
         if pict[0] != 40:
             raise EngineError("Unsupported InfoHeader")
         pictw = pict[1]
+        self.width = pictw
         picth = pict[2]
+        self.height = picth
         
         # read data_offset - 40 - 6 bytes
         delta = data_offset - 40 - 6

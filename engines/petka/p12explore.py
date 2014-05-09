@@ -16,8 +16,6 @@ class App(tkinter.Frame):
         tkinter.Frame.__init__(self, master)
         master.title(APPNAME)
         self.pack(fill = tkinter.BOTH, expand = 1)
-        #self.createWidgets()
-        #self.createMenu()
         self.pad = None
         self.sim = None
         self.curr_mode = 0 
@@ -26,6 +24,9 @@ class App(tkinter.Frame):
         self.last_width = 1
         self.last_height = 1
         self.need_update = False
+        self.canv_view_w = 0
+        self.canv_view_h = 0
+        self.canv_view_fact = 1
         self.curr_gui = []
         self.main_image = tkinter.PhotoImage(width = 1, height = 1)
         self.after_idle(self.on_first_display)
@@ -35,13 +36,17 @@ class App(tkinter.Frame):
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
         ttk.Style().configure("TLabel", padding = self.pad)
         
+        # main paned
+        self.pan_main = ttk.PanedWindow(self, orient = tkinter.HORIZONTAL)
+        self.pan_main.pack(fill = tkinter.BOTH, expand = 1)
+        
         # leftpanel
-        self.frm_left = ttk.Frame(self)
-        self.frm_left.pack(side = tkinter.LEFT, expand = 0, fill = tkinter.BOTH)
+        self.frm_left = ttk.Frame(self.pan_main)
+        self.pan_main.add(self.frm_left)
 
         # canvas
-        self.frm_view = ttk.Frame(self)
-        self.frm_view.pack(side = tkinter.TOP, expand = 1, fill = tkinter.BOTH)
+        self.frm_view = ttk.Frame(self.pan_main)
+        self.pan_main.add(self.frm_view)
         self.frm_view.grid_rowconfigure(0, weight = 1)
         self.frm_view.grid_columnconfigure(0, weight = 1)
         self.scr_view_x = ttk.Scrollbar(self.frm_view, 
@@ -55,9 +60,6 @@ class App(tkinter.Frame):
             scrollregion = (0, 0, 50, 50),
             xscrollcommand = self.scr_view_x.set,
             yscrollcommand = self.scr_view_y.set)
-        self.canv_view_w = 0
-        self.canv_view_h = 0
-        self.canv_view_fact = 1
         self.canv_view.grid(row = 0, column = 0, \
             sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
         self.scr_view_x.config(command = self.canv_view.xview)
@@ -68,7 +70,7 @@ class App(tkinter.Frame):
         self.canv_view.bind('<ButtonPress-1>', self.on_mouse_view)
 
         self.update_after()
-        self.update_gui(None)
+        self.update_gui()
 
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
@@ -89,8 +91,12 @@ class App(tkinter.Frame):
         self.menubar.add_cascade(menu = self.menuedit,
                 label = "Edit")
         self.menuedit.add_command(
-                command = self.on_select_chapter,
-                label = "Select chapter")
+                command = self.on_list_parts,
+                label = "Select part")
+        self.menuedit.add_separator()
+        self.menuedit.add_command(
+                command = self.on_list_res,
+                label = "Resources")
 
     def update_after(self):
         if not self.need_update:
@@ -223,41 +229,106 @@ class App(tkinter.Frame):
             data = bytes(p))
         return image                
 
-    def update_gui(self, fn):
-        # TODO: remove unused gui items
+    def update_gui_add_left_listbox(self, text):
+        lab = tkinter.Label(self.frm_left, text = text)
+        lab.pack()
         
-        if self.curr_mode == 100:
+        frm_lb = ttk.Frame(self.frm_left)
+        frm_lb.pack(fill = tkinter.BOTH, expand = 1)
+        frm_lb.grid_rowconfigure(0, weight = 1)
+        frm_lb.grid_columnconfigure(0, weight = 1)
+        scr_lb_x = ttk.Scrollbar(frm_lb, orient = tkinter.HORIZONTAL)
+        scr_lb_x.grid(row = 1, column = 0, sticky = tkinter.E + tkinter.W)
+        scr_lb_y = ttk.Scrollbar(frm_lb)
+        scr_lb_y.grid(row = 0, column = 1, sticky = tkinter.N + tkinter.S)
+        lb = tkinter.Listbox(frm_lb,
+            xscrollcommand = scr_lb_x.set,
+            yscrollcommand = scr_lb_y.set)
+        lb.grid(row = 0, column = 0, \
+            sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
+        scr_lb_x.config(command = lb.xview)
+        scr_lb_y.config(command = lb.yview)
+        self.curr_gui.append(lambda:lb.grid_remove())
+        self.curr_gui.append(lambda:lab.pack_forget())
+        self.curr_gui.append(lambda:frm_lb.pack_forget())
+        lb.bind("<Double-Button-1>", self.on_left_listbox)
+        lb.bind("<Return>", self.on_left_listbox)
+        return lb
+
+    def update_gui(self):
+        # TODO: remove unused gui items
+        for item in self.curr_gui:
+            item()
+        
+        if self.curr_mode == 90:
+            # list parts
+            lb = self.update_gui_add_left_listbox("Parts")   
+            for part in self.sim.parts:
+                lb.insert(tkinter.END, part)
+            self.curr_lb = lb
+        elif self.curr_mode == 100:
             # list resources
-            lst = tkinter.Listbox(self.frm_left)
-            lst.pack(expand = 1, fill = tkinter.BOTH)
-            self.curr_gui.append(lst)
-            # fill
+            lb = self.update_gui_add_left_listbox("Resources")   
             for res_id in self.sim.resord:
-                lst.insert(tkinter.END, "{} [{}]".format(self.sim.res[res_id],
-                    res_id))
+                lb.insert(tkinter.END, "{} - {}".format(res_id, \
+                    self.sim.res[res_id]))
+            self.curr_lb = lb
+
+    def on_left_listbox(self, event):
+        if self.curr_mode == 90:
+            # parts
+            try:
+                part_id = self.curr_lb.curselection()[0]
+                part_id = int(part_id)
+            except:
+                pass
+            part_id = self.sim.parts[part_id]
+            # parse
+            pnum = part_id[5:]
+            cnum = pnum.split("Chapter", 1)
+            if len(cnum) > 1:
+                pnum = int(cnum[0].strip(), 10)
+                cnum = int(cnum[0].strip(), 10)
+            else:
+                cnum = 0
+            self.sim.open_part(pnum, cnum)
+            self.update_after()
+        elif self.curr_mode == 100:
+            # resources
+            try:
+                res_id = self.curr_lb.curselection()[0]
+                res_id = int(res_id)
+            except:
+                pass
+            res_id = self.sim.resord[res_id]
+            fn = self.sim.res[res_id]
+            if fn[-4:].lower() == ".bmp":
+                bmpdata = self.sim.fman.read_file(fn)
+                bmp = petka.BMPLoader()
+                bmp.load_data(bmpdata)
+                self.main_image = self.make_image(bmp.width, bmp.height, bmp.rgb)
+                self.curr_width = bmp.width
+                self.curr_height = bmp.height
+                self.update_after()
+            print(fn)
 
     def on_open_data(self):
         # open data - select TODO
         pass
         
-    def on_select_chapter(self):
-        # TODO
-        pass        
+    def on_list_parts(self):
+        self.curr_mode = 90
+        self.update_gui()
+
+    def on_list_res(self):
+        self.curr_mode = 100
+        self.update_gui()
         
     def open_data_from(self, folder):
         self.sim = petka.Engine()
         self.sim.load_data(folder, "cp1251")
         self.sim.open_part(0, 0)
-        # load static image
-        #for item in self.sim.fman.strtable:
-        #    print(item)
-        #bmpdata = self.sim.fman.read_file("MAIN/INTRFACE.BG/INSTHERO.BMP")
-        #bmp = petka.BMPLoader()
-        #bmp.load_data(bmpdata)
-        #self.main_image = self.make_image(640, 480, bmp.rgb)
-        #self.curr_width = 640
-        #self.curr_height = 480
-        self.curr_mode = 100
+        self.curr_mode = 90
         #self.sim.open_part(1, 0)
         #self.sim.open_part(2, 0)
         #self.sim.open_part(3, 0)
