@@ -18,7 +18,12 @@ class App(tkinter.Frame):
         self.pack(fill = tkinter.BOTH, expand = 1)
         self.pad = None
         self.sim = None
-        self.curr_mode = 0 
+        # gui
+        self.curr_mode = 0
+        self.curr_gui = []
+        self.curr_main = 0 # 0 - frame, 1 - canvas
+        self.last_main = -1
+        # canvas
         self.curr_width = 0
         self.curr_height = 0
         self.last_width = 1
@@ -27,7 +32,6 @@ class App(tkinter.Frame):
         self.canv_view_w = 0
         self.canv_view_h = 0
         self.canv_view_fact = 1
-        self.curr_gui = []
         self.main_image = tkinter.PhotoImage(width = 1, height = 1)
         self.after_idle(self.on_first_display)
         
@@ -60,14 +64,14 @@ class App(tkinter.Frame):
             scrollregion = (0, 0, 50, 50),
             xscrollcommand = self.scr_view_x.set,
             yscrollcommand = self.scr_view_y.set)
-        self.canv_view.grid(row = 0, column = 0, \
-            sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
         self.scr_view_x.config(command = self.canv_view.xview)
         self.scr_view_y.config(command = self.canv_view.yview)
         # don't forget
         #   canvas.config(scrollregion=(left, top, right, bottom))
         self.canv_view.bind('<Configure>', self.on_resize_view)
         self.canv_view.bind('<ButtonPress-1>', self.on_mouse_view)
+        # info panel
+        self.frm_info = ttk.Frame(self.frm_view)
 
         self.update_after()
         self.update_gui()
@@ -134,15 +138,12 @@ class App(tkinter.Frame):
 
     def update_canvas(self):
         # rebuild image
+        if self.curr_main != 1:
+            return
         c = self.canv_view
         c.delete(tkinter.ALL)
-
         if self.sim is None: return
-                    
-        #if (self.last_width != self.curr_width) or \
-        #   (self.last_height != self.curr_height):
-        #       self.build_image()
-        
+       
         # Preview image        
         #print("Update %d x %d" % (self.currWidth, self.currHeight))
         self.canv_image = self.main_image.copy()
@@ -256,7 +257,21 @@ class App(tkinter.Frame):
         return lb
 
     def update_gui(self):
-        # TODO: remove unused gui items
+        if self.last_main != self.curr_main:
+            if self.last_main == 0:
+                self.frm_info.grid_forget()
+            elif self.curr_main == 1:
+                self.canv_view.grid_forget()
+            self.last_main = self.curr_main
+            if self.curr_main == 0:
+                self.frm_info.grid(row = 0, column = 0, \
+                    sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
+                pass
+            elif self.curr_main == 1:
+                self.canv_view.grid(row = 0, column = 0, \
+                    sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
+            
+    
         for item in self.curr_gui:
             item()
         
@@ -266,6 +281,11 @@ class App(tkinter.Frame):
             for part in self.sim.parts:
                 lb.insert(tkinter.END, part)
             self.curr_lb = lb
+            
+            lab = ttk.Label(self.frm_info, text = "Select parts")
+            lab.pack()
+            
+            
         elif self.curr_mode == 100:
             # list resources
             lb = self.update_gui_add_left_listbox("Resources")   
@@ -318,10 +338,12 @@ class App(tkinter.Frame):
         
     def on_list_parts(self):
         self.curr_mode = 90
+        self.curr_main = 0
         self.update_gui()
 
     def on_list_res(self):
         self.curr_mode = 100
+        self.curr_main = 1
         self.update_gui()
         
     def open_data_from(self, folder):
