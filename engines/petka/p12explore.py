@@ -23,14 +23,11 @@ class App(tkinter.Frame):
         self.curr_gui = []
         self.curr_main = 0 # 0 - frame, 1 - canvas
         self.last_main = -1
+        self.curr_lb_acts = None
         # canvas
         self.curr_width = 0
         self.curr_height = 0
-        self.last_width = 1
-        self.last_height = 1
         self.need_update = False
-        self.canv_view_w = 0
-        self.canv_view_h = 0
         self.canv_view_fact = 1
         self.main_image = tkinter.PhotoImage(width = 1, height = 1)
         self.after_idle(self.on_first_display)
@@ -64,15 +61,15 @@ class App(tkinter.Frame):
             scrollregion = (0, 0, 50, 50),
             xscrollcommand = self.scr_view_x.set,
             yscrollcommand = self.scr_view_y.set)
+        self.canv_view.grid(row = 0, column = 0, \
+            sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
         self.scr_view_x.config(command = self.canv_view.xview)
         self.scr_view_y.config(command = self.canv_view.yview)
         # don't forget
         #   canvas.config(scrollregion=(left, top, right, bottom))
         self.canv_view.bind('<Configure>', self.on_resize_view)
         self.canv_view.bind('<ButtonPress-1>', self.on_mouse_view)
-        # info panel
-        self.frm_info = ttk.Frame(self.frm_view)
-
+        
         self.update_after()
         self.update_gui()
 
@@ -94,6 +91,10 @@ class App(tkinter.Frame):
         self.menuedit = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menuedit,
                 label = "Edit")
+        self.menuedit.add_command(
+                command = self.on_outline,
+                label = "Outline")
+        self.menuedit.add_separator()
         self.menuedit.add_command(
                 command = self.on_list_parts,
                 label = "Select part")
@@ -127,29 +128,39 @@ class App(tkinter.Frame):
         #self.currMode += 1
         #if self.currMode > 1:
         #    self.currMode = 0
-        self.last_width = -1
-        self.last_height = -1
         self.update_after()
         
     def on_resize_view(self, event):
-        self.canv_view_w = event.width
-        self.canv_view_h = event.height
+        if self.curr_main != 1:          
+            w = self.frm_info.winfo_reqwidth()
+            h = self.frm_info.winfo_reqheight()
+            if w != self.canv_view.winfo_width() or \
+                    h != self.canv_view.winfo_height():
+                self.canv_view.itemconfigure(self.frm_info_id, 
+                    width = w, height = h)
+            return
         self.update_after()
 
+    def on_resize_info(self, event):
+        w = self.frm_info.winfo_reqwidth()
+        h = self.frm_info.winfo_reqheight()
+        self.canv_view.config(scrollregion = (0, 0, w, h))
+        if w != self.canv_view.winfo_width() or \
+                h != self.canv_view.winfo_height():
+            self.canv_view.config(width = w, height = h)
+
     def update_canvas(self):
-        # rebuild image
-        if self.curr_main != 1:
+        if self.curr_main != 1:          
             return
+        # draw grahics
         c = self.canv_view
         c.delete(tkinter.ALL)
         if self.sim is None: return
-       
         # Preview image        
-        #print("Update %d x %d" % (self.currWidth, self.currHeight))
         self.canv_image = self.main_image.copy()
-        w = self.canv_view_w
-        h = self.canv_view_h
-        if (w == 0) and (h == 0): 
+        w = self.canv_view.winfo_width() 
+        h = self.canv_view.winfo_height()
+        if (w == 0) or (h == 0): 
             return
         
         scale = 0 #self.RadioGroupScale.get()
@@ -182,7 +193,6 @@ class App(tkinter.Frame):
 
         cw = max(pw, w)
         ch = max(ph, h)
-    
         c.config(scrollregion = (0, 0, cw - 2, ch - 2))
     
         if fact > 0:
@@ -192,16 +202,7 @@ class App(tkinter.Frame):
         self.canv_image_fact = fact
         #print("Place c %d %d, p %d %d" % (cw, ch, w, h))
         c.create_image(cw // 2, ch // 2, image = self.canv_image)
-
-    def build_image(self):
-        # rebuild main_image
-        width = self.curr_width
-        height = self.curr_height
-        self.last_width = width
-        self.last_height = height
-
-        return
-        
+       
     def make_image(self, width, height, data):
         # create P6
         phdr = ("P6\n{} {}\n255\n".format(width, height))
@@ -230,7 +231,7 @@ class App(tkinter.Frame):
             data = bytes(p))
         return image                
 
-    def update_gui_add_left_listbox(self, text):
+    def update_gui_add_left_listbox(self, text, acts = None):
         lab = tkinter.Label(self.frm_left, text = text)
         lab.pack()
         
@@ -254,28 +255,52 @@ class App(tkinter.Frame):
         self.curr_gui.append(lambda:frm_lb.pack_forget())
         lb.bind("<Double-Button-1>", self.on_left_listbox)
         lb.bind("<Return>", self.on_left_listbox)
+
+        self.curr_lb_acts = acts
+        if acts:
+            for name, cb in acts:
+                lb.insert(tkinter.END, name)
+        self.curr_lb = lb
         return lb
 
     def update_gui(self):
         if self.last_main != self.curr_main:
-            if self.last_main == 0:
-                self.frm_info.grid_forget()
-            elif self.curr_main == 1:
-                self.canv_view.grid_forget()
             self.last_main = self.curr_main
+            self.canv_view.delete(tkinter.ALL)
             if self.curr_main == 0:
-                self.frm_info.grid(row = 0, column = 0, \
-                    sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
-                pass
-            elif self.curr_main == 1:
-                self.canv_view.grid(row = 0, column = 0, \
-                    sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
-            
+                # info panel
+                self.frm_info = ttk.Frame(self.canv_view)
+                self.frm_info_id = self.canv_view.create_window(0, 0, 
+                    window = self.frm_info, anchor = tkinter.NW)
+                self.frm_info.bind('<Configure>', self.on_resize_info)
+            self.update_canvas()
     
         for item in self.curr_gui:
             item()
+
+        if self.curr_mode == 0:
+            if self.sim is None:
+                # open some data
+                acts = [
+                    ("Open data", self.on_open_data)
+                ]
+                lb = self.update_gui_add_left_listbox("Outline", acts)                
+                lab = ttk.Label(self.frm_info, \
+                    text = "Open data")
+                lab.pack()
+                self.curr_gui.append(lambda:lab.pack_forget())                
+            else:
+                acts = [
+                    ("Parts", self.on_list_parts),
+                    ("Resources", self.on_list_res),
+                ]
+                lb = self.update_gui_add_left_listbox("Outline", acts)                
+                lab = ttk.Label(self.frm_info, \
+                    text = "Select data type from outline")
+                lab.pack()
+                self.curr_gui.append(lambda:lab.pack_forget())
         
-        if self.curr_mode == 90:
+        elif self.curr_mode == 90:
             # list parts
             lb = self.update_gui_add_left_listbox("Parts")   
             for part in self.sim.parts:
@@ -284,8 +309,8 @@ class App(tkinter.Frame):
             
             lab = ttk.Label(self.frm_info, text = "Select parts")
             lab.pack()
-            
-            
+            self.curr_gui.append(lambda:lab.pack_forget())
+
         elif self.curr_mode == 100:
             # list resources
             lb = self.update_gui_add_left_listbox("Resources")   
@@ -295,7 +320,16 @@ class App(tkinter.Frame):
             self.curr_lb = lb
 
     def on_left_listbox(self, event):
-        if self.curr_mode == 90:
+        if self.curr_lb_acts:
+            try:
+                num = self.curr_lb.curselection()[0]
+                num = int(num)
+            except:
+                pass
+            act = self.curr_lb_acts[num]
+            if act[1]:
+                act[1]()
+        elif self.curr_mode == 90:
             # parts
             try:
                 part_id = self.curr_lb.curselection()[0]
@@ -336,6 +370,11 @@ class App(tkinter.Frame):
         # open data - select TODO
         pass
         
+    def on_outline(self):
+        self.curr_mode = 0
+        self.curr_main = 0
+        self.update_gui()
+        
     def on_list_parts(self):
         self.curr_mode = 90
         self.curr_main = 0
@@ -350,10 +389,6 @@ class App(tkinter.Frame):
         self.sim = petka.Engine()
         self.sim.load_data(folder, "cp1251")
         self.sim.open_part(0, 0)
-        self.curr_mode = 90
-        #self.sim.open_part(1, 0)
-        #self.sim.open_part(2, 0)
-        #self.sim.open_part(3, 0)
 
 def main():
     root = tkinter.Tk()
@@ -363,15 +398,8 @@ def main():
     else:
         fn = "."
     app.open_data_from(fn)
-    
     app.mainloop()
-    #fman = petka.FileManager(".")
-    #fman.load_store("patch.str")
-    #fman.load_store("main.str")
-    #for k, v in fman.strtable.items():
-    #    print(k, "=", v)
-    # cleanup
-    #fman.unload_stores()
+
     
 if __name__ == "__main__":
     main()
