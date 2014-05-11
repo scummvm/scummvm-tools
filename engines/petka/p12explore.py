@@ -102,6 +102,12 @@ class App(tkinter.Frame):
         self.menuedit.add_command(
                 command = self.on_list_res,
                 label = "Resources")
+        self.menuedit.add_command(
+                command = self.on_list_objs,
+                label = "Objects")
+        self.menuedit.add_command(
+                command = self.on_list_scenes,
+                label = "Scenes")
 
     def update_after(self):
         if not self.need_update:
@@ -290,22 +296,46 @@ class App(tkinter.Frame):
                 lab.pack()
                 self.curr_gui.append(lambda:lab.pack_forget())                
             else:
+                def tst_img():
+                    self.curr_main = 1
+                    self.main_image = tkinter.PhotoImage(\
+                        file = "img/splash.gif")
+                    self.curr_width = self.main_image.width()
+                    self.curr_height = self.main_image.height()
+                    self.update_gui()
+                def tst_info():
+                    self.curr_mode = 99
+                    self.curr_main = 0
+                    self.update_gui()
                 acts = [
                     ("Parts", self.on_list_parts),
                     ("Resources", self.on_list_res),
+                    ("Objects", self.on_list_objs),
+                    ("Scenes", self.on_list_scenes),
+                    ("-", None),
+                    ("Test image", tst_img),
+                    ("Test info", tst_info),
                 ]
                 lb = self.update_gui_add_left_listbox("Outline", acts)                
                 lab = ttk.Label(self.frm_info, \
                     text = "Select data type from outline")
                 lab.pack()
                 self.curr_gui.append(lambda:lab.pack_forget())
-        
+        elif self.curr_mode == 99:
+            acts = [
+                ("<- Back", self.on_outline)
+            
+            ]
+            lb = self.update_gui_add_left_listbox("Test info", acts)                
+            lab = ttk.Label(self.frm_info, \
+                text = "Text placed into looooooooooong string")
+            lab.pack()
+            self.curr_gui.append(lambda:lab.pack_forget())
         elif self.curr_mode == 90:
             # list parts
             lb = self.update_gui_add_left_listbox("Parts")   
             for part in self.sim.parts:
                 lb.insert(tkinter.END, part)
-            self.curr_lb = lb
             
             lab = ttk.Label(self.frm_info, text = "Select parts")
             lab.pack()
@@ -317,7 +347,16 @@ class App(tkinter.Frame):
             for res_id in self.sim.resord:
                 lb.insert(tkinter.END, "{} - {}".format(res_id, \
                     self.sim.res[res_id]))
-            self.curr_lb = lb
+        elif self.curr_mode == 101:
+            # list objects
+            lb = self.update_gui_add_left_listbox("Objects")   
+            for obj in self.sim.objects:
+                lb.insert(tkinter.END, "{} - {}".format(obj.idx, obj.name))
+        elif self.curr_mode == 102:
+            # list scenes
+            lb = self.update_gui_add_left_listbox("Scenes")   
+            for scn in self.sim.scenes:
+                lb.insert(tkinter.END, "{} - {}".format(scn.idx, scn.name))
 
     def on_left_listbox(self, event):
         if self.curr_lb_acts:
@@ -383,6 +422,16 @@ class App(tkinter.Frame):
     def on_list_res(self):
         self.curr_mode = 100
         self.curr_main = 1
+        self.update_gui()
+
+    def on_list_objs(self):
+        self.curr_mode = 101
+        self.curr_main = 0
+        self.update_gui()
+
+    def on_list_scenes(self):
+        self.curr_mode = 102
+        self.curr_main = 0
         self.update_gui()
         
     def open_data_from(self, folder):
