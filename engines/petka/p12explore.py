@@ -22,7 +22,6 @@ class App(tkinter.Frame):
         self.curr_mode = 0
         self.curr_gui = []
         self.curr_main = 0 # 0 - frame, 1 - canvas
-        self.last_main = -1
         self.curr_lb_acts = None
         # canvas
         self.curr_width = 0
@@ -36,6 +35,7 @@ class App(tkinter.Frame):
         
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
         ttk.Style().configure("TLabel", padding = self.pad)
+        ttk.Style().configure('Info.TFrame', background = 'white')
         
         # main paned
         self.pan_main = ttk.PanedWindow(self, orient = tkinter.HORIZONTAL)
@@ -58,6 +58,7 @@ class App(tkinter.Frame):
         self.scr_view_y.grid(row = 0, column = 1, sticky = \
             tkinter.N + tkinter.S)
         self.canv_view = tkinter.Canvas(self.frm_view, height = 150, 
+            bd = 0, highlightthickness = 0, bg = "white",
             scrollregion = (0, 0, 50, 50),
             xscrollcommand = self.scr_view_x.set,
             yscrollcommand = self.scr_view_y.set)
@@ -137,14 +138,13 @@ class App(tkinter.Frame):
         self.update_after()
         
     def on_resize_view(self, event):
-        if self.curr_main != 1:          
+        if self.curr_main == 0:          
             w = self.frm_info.winfo_reqwidth()
             h = self.frm_info.winfo_reqheight()
             if w != self.canv_view.winfo_width() or \
                     h != self.canv_view.winfo_height():
                 self.canv_view.itemconfigure(self.frm_info_id, 
                     width = w, height = h)
-            return
         self.update_after()
 
     def on_resize_info(self, event):
@@ -154,9 +154,10 @@ class App(tkinter.Frame):
         if w != self.canv_view.winfo_width() or \
                 h != self.canv_view.winfo_height():
             self.canv_view.config(width = w, height = h)
+        self.update_after()
 
     def update_canvas(self):
-        if self.curr_main != 1:          
+        if self.curr_main == 0:          
             return
         # draw grahics
         c = self.canv_view
@@ -268,21 +269,27 @@ class App(tkinter.Frame):
                 lb.insert(tkinter.END, name)
         self.curr_lb = lb
         return lb
+    
+    def update_gui_add_label(self, text):
+        lab = ttk.Label(self.frm_info, text = text)
+        lab.pack()
+        self.curr_gui.append(lambda:lab.pack_forget())                
 
     def update_gui(self):
-        if self.last_main != self.curr_main:
-            self.last_main = self.curr_main
-            self.canv_view.delete(tkinter.ALL)
-            if self.curr_main == 0:
-                # info panel
-                self.frm_info = ttk.Frame(self.canv_view)
-                self.frm_info_id = self.canv_view.create_window(0, 0, 
-                    window = self.frm_info, anchor = tkinter.NW)
-                self.frm_info.bind('<Configure>', self.on_resize_info)
-            self.update_canvas()
+        self.canv_view.delete(tkinter.ALL)
+        if self.curr_main == 0:
+            # info panel
+            self.frm_info = ttk.Frame(self.canv_view)
+            self.frm_info_id = self.canv_view.create_window(0, 0, 
+                window = self.frm_info, anchor = tkinter.NW)
+            self.frm_info.bind('<Configure>', self.on_resize_info)
+
+            self.canv_view.xview_moveto(0)
+            self.canv_view.yview_moveto(0)
     
         for item in self.curr_gui:
             item()
+        self.curr_gui = []
 
         if self.curr_mode == 0:
             if self.sim is None:
@@ -290,11 +297,8 @@ class App(tkinter.Frame):
                 acts = [
                     ("Open data", self.on_open_data)
                 ]
-                lb = self.update_gui_add_left_listbox("Outline", acts)                
-                lab = ttk.Label(self.frm_info, \
-                    text = "Open data")
-                lab.pack()
-                self.curr_gui.append(lambda:lab.pack_forget())                
+                self.update_gui_add_left_listbox("Outline", acts)                
+                self.update_gui_add_label("Open data")
             else:
                 def tst_img():
                     self.curr_main = 1
@@ -316,31 +320,20 @@ class App(tkinter.Frame):
                     ("Test image", tst_img),
                     ("Test info", tst_info),
                 ]
-                lb = self.update_gui_add_left_listbox("Outline", acts)                
-                lab = ttk.Label(self.frm_info, \
-                    text = "Select data type from outline")
-                lab.pack()
-                self.curr_gui.append(lambda:lab.pack_forget())
+                self.update_gui_add_left_listbox("Outline", acts)                
+                self.update_gui_add_label("Select data type from outline")
         elif self.curr_mode == 99:
             acts = [
                 ("<- Back", self.on_outline)
-            
             ]
-            lb = self.update_gui_add_left_listbox("Test info", acts)                
-            lab = ttk.Label(self.frm_info, \
-                text = "Text placed into looooooooooong string")
-            lab.pack()
-            self.curr_gui.append(lambda:lab.pack_forget())
+            self.update_gui_add_left_listbox("Test info", acts)                
+            self.update_gui_add_label("Text placed into looooooooooong string")
         elif self.curr_mode == 90:
             # list parts
             lb = self.update_gui_add_left_listbox("Parts")   
             for part in self.sim.parts:
                 lb.insert(tkinter.END, part)
-            
-            lab = ttk.Label(self.frm_info, text = "Select parts")
-            lab.pack()
-            self.curr_gui.append(lambda:lab.pack_forget())
-
+            self.update_gui_add_label("Select parts")
         elif self.curr_mode == 100:
             # list resources
             lb = self.update_gui_add_left_listbox("Resources")   
@@ -352,11 +345,15 @@ class App(tkinter.Frame):
             lb = self.update_gui_add_left_listbox("Objects")   
             for obj in self.sim.objects:
                 lb.insert(tkinter.END, "{} - {}".format(obj.idx, obj.name))
+            self.update_gui_add_label("Object info")
         elif self.curr_mode == 102:
             # list scenes
             lb = self.update_gui_add_left_listbox("Scenes")   
             for scn in self.sim.scenes:
                 lb.insert(tkinter.END, "{} - {}".format(scn.idx, scn.name))
+            self.update_gui_add_label("Scene info")
+
+        self.update_after()
 
     def on_left_listbox(self, event):
         if self.curr_lb_acts:
