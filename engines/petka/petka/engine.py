@@ -82,9 +82,9 @@ class Engine:
                 data = self.parts_ini[sect]
                 if sect == "All":
                     if "Part" in data:
-                        self.start_part = int(data["Part"]) - 1
+                        self.start_part = int(data["Part"])
                     if "Chapter" in data:
-                        self.start_chap = int(data["Chapter"]) - 1
+                        self.start_chap = int(data["Chapter"])
                 elif sect[:5] == "Part ":
                     self.parts.append(sect)
         else:
@@ -97,6 +97,8 @@ class Engine:
 
     def open_part(self, part, chap):
         self.fman.unload_stores(1)
+        self.curr_part = part
+        self.curr_chap = chap
         if self.parts_ini:
             pname = "Part {}".format(part)
             pcname = pname
@@ -106,18 +108,19 @@ class Engine:
             self.curr_path = ini["CurrentPath"]
             self.curr_speech = ini["PathSpeech"]
             self.curr_diskid = ini["DiskID"]
+            inic = self.parts_ini[pcname]
+            if "Chapter" in inic:
+                self.fman.load_store(inic["Chapter"], 1)
         else:
             ini = {}
             self.curr_path = ""
             self.curr_speech = ""
             self.curr_diskid = None
-
         
         # load BGS.INI
         self.bgs_ini = {}
         self.start_scene = None
         pf = self.fman.find_path(self.curr_path + "bgs.ini")
-        print(self.curr_path)
         if pf:
             f = open(pf, "rb")
             try:

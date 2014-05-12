@@ -35,7 +35,7 @@ class App(tkinter.Frame):
         
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
         ttk.Style().configure("TLabel", padding = self.pad)
-        ttk.Style().configure('Info.TFrame', background = 'white')
+        ttk.Style().configure('Info.TFrame', background = 'white', foreground = "black")
         
         # main paned
         self.pan_main = ttk.PanedWindow(self, orient = tkinter.HORIZONTAL)
@@ -58,7 +58,7 @@ class App(tkinter.Frame):
         self.scr_view_y.grid(row = 0, column = 1, sticky = \
             tkinter.N + tkinter.S)
         self.canv_view = tkinter.Canvas(self.frm_view, height = 150, 
-            bd = 0, highlightthickness = 0, bg = "white",
+            bd = 0, highlightthickness = 0, 
             scrollregion = (0, 0, 50, 50),
             xscrollcommand = self.scr_view_x.set,
             yscrollcommand = self.scr_view_y.set)
@@ -313,18 +313,19 @@ class App(tkinter.Frame):
                     self.update_gui()
                 acts = [
                     ("Parts", self.on_list_parts),
-                    ("Resources", self.on_list_res),
-                    ("Objects", self.on_list_objs),
-                    ("Scenes", self.on_list_scenes),
+                    ("Resources ({})".format(len(self.sim.res)), self.on_list_res),
+                    ("Objects ({})".format(len(self.sim.objects)), self.on_list_objs),
+                    ("Scenes ({})".format(len(self.sim.scenes)), self.on_list_scenes),
                     ("-", None),
                     ("Test image", tst_img),
                     ("Test info", tst_info),
                 ]
-                self.update_gui_add_left_listbox("Outline", acts)                
+                self.update_gui_add_left_listbox("Outline: part {} chapter {}".\
+                    format(self.sim.curr_part, self.sim.curr_chap), acts)                
                 self.update_gui_add_label("Select data type from outline")
         elif self.curr_mode == 99:
             acts = [
-                ("<- Back", self.on_outline)
+                ("<- outline", self.on_outline)
             ]
             self.update_gui_add_left_listbox("Test info", acts)                
             self.update_gui_add_label("Text placed into looooooooooong string")
@@ -334,6 +335,8 @@ class App(tkinter.Frame):
             for part in self.sim.parts:
                 lb.insert(tkinter.END, part)
             self.update_gui_add_label("Select parts")
+            self.update_gui_add_label("or goto outline")
+            
         elif self.curr_mode == 100:
             # list resources
             lb = self.update_gui_add_left_listbox("Resources")   
@@ -378,7 +381,7 @@ class App(tkinter.Frame):
             cnum = pnum.split("Chapter", 1)
             if len(cnum) > 1:
                 pnum = int(cnum[0].strip(), 10)
-                cnum = int(cnum[0].strip(), 10)
+                cnum = int(cnum[1].strip(), 10)
             else:
                 cnum = 0
             self.sim.open_part(pnum, cnum)

@@ -60,7 +60,6 @@ class FileManager:
             fname = fname.lower().replace("\\", "/")
             if idx < index_len and fname not in self.strtable:
                 self.strtable[fname] = (len(self.strfd),) + index_table[idx]
-                print("STORE:", fname)
             else:
                 if len(fname) > 0:
                     raise EngineError("Extra file record \"{}\" in \"{}\"".\
