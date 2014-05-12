@@ -307,6 +307,11 @@ class App(tkinter.Frame):
         self.curr_lb = lb
         return lb
     
+    def make_obj_cb(self, idx):
+        def cb():
+            self.open_object(idx)
+        return cb
+    
     def update_gui(self):
         self.canv_view.delete(tkinter.ALL)
         for item in self.curr_gui:
@@ -352,7 +357,8 @@ class App(tkinter.Frame):
                 def tst_info():
                     self.change_gui(0, 99)
                 acts = [
-                    ("Parts", self.on_list_parts),
+                    ("Parts ({})".format(len(self.sim.parts)), \
+                        self.on_list_parts),
                     ("Resources ({})".format(len(self.sim.res)), \
                         self.on_list_res),
                     ("Objects ({})".format(len(self.sim.objects)), \
@@ -417,59 +423,53 @@ class App(tkinter.Frame):
         self.update_info()
         self.update_after()
 
+    def insert_text(self, text, link = None):
+        if link:
+            self.text_view.insert(tkinter.INSERT, text, self.text_hl.add(link))
+        else:
+            self.text_view.insert(tkinter.INSERT, text)
+
     def update_info(self):
         def stdinfo():
             self.text_view.delete(0.0, tkinter.END)
-            self.text_view.insert(tkinter.INSERT, "<- Outline", \
-                self.text_hl.add(self.on_outline))
-            self.text_view.insert(tkinter.INSERT, "\n\n")
+            self.insert_text("<- Outline", self.on_outline)
+            self.insert_text("\n\n")
 
         self.text_hl.reset()
         if self.curr_mode == 0:
             self.text_view.delete(0.0, tkinter.END)
             if self.sim is None:
-                self.text_view.insert(tkinter.INSERT, "No data loaded")
-                self.text_view.insert(tkinter.INSERT, "Open data", \
-                    self.text_hl.add(self.on_open_data))
+                self.insert_text("No data loaded")
+                self.insert_text("Open data",self.on_open_data)
             else:
-                self.text_view.insert(tkinter.INSERT, \
-                    "Select type from outline")
+                self.insert_text("Select type from outline")
         elif self.curr_mode == 99:
             stdinfo()
             for i in range(100):
-                self.text_view.insert(tkinter.INSERT, \
-                    "Item {}\n".format(i))
+                self.insert_text("Item {}\n".format(i))
         elif self.curr_mode == 90:
             stdinfo()
-            self.text_view.insert(tkinter.INSERT, \
-                "Current: part {} chapter {}\n\n  Resources: ".\
+            self.insert_text("Current: part {} chapter {}\n\n  Resources: ".\
                     format(self.sim.curr_part, self.sim.curr_chap))
-            self.text_view.insert(tkinter.INSERT, "{}".\
-                format(len(self.sim.res)), \
-                self.text_hl.add(self.on_list_res))
-            self.text_view.insert(tkinter.INSERT, "\n  Objects:   ")
-            self.text_view.insert(tkinter.INSERT, "{}".\
-                format(len(self.sim.objects)), \
-                self.text_hl.add(self.on_list_objs))
-            self.text_view.insert(tkinter.INSERT, "\n  Scenes:    ")
-            self.text_view.insert(tkinter.INSERT, "{}".\
-                format(len(self.sim.scenes)), \
-                self.text_hl.add(self.on_list_scenes))
-            self.text_view.insert(tkinter.INSERT, "\n  Names:     ")
-            self.text_view.insert(tkinter.INSERT, "{}".\
-                format(len(self.sim.names)), \
-                self.text_hl.add(self.on_list_names))
-            self.text_view.insert(tkinter.INSERT, "\n  Invntr:    ")
-            self.text_view.insert(tkinter.INSERT, "{}".\
-                format(len(self.sim.invntr)), \
-                self.text_hl.add(self.on_list_invntr))
+            self.insert_text("{}".format(len(self.sim.res)), self.on_list_res)
+            self.insert_text("\n  Objects:   ")
+            self.insert_text("{}".format(len(self.sim.objects)), \
+                self.on_list_objs)
+            self.insert_text("\n  Scenes:    ")
+            self.insert_text("{}".format(len(self.sim.scenes)), \
+                self.on_list_scenes)
+            self.insert_text("\n  Names:     ")
+            self.insert_text("{}".format(len(self.sim.names)), \
+                self.on_list_names)
+            self.insert_text("\n  Invntr:    ")
+            self.insert_text("{}".format(len(self.sim.invntr)), \
+                self.on_list_invntr)
         elif self.curr_mode == 100:
             stdinfo()
-            self.text_view.insert(tkinter.INSERT, "Total: ")
-            self.text_view.insert(tkinter.INSERT, "{}".\
-                format(len(self.sim.res)), \
-                self.text_hl.add(lambda: self.change_gui(0, 100)))
-            self.text_view.insert(tkinter.INSERT, "\nFiletypes:\n")
+            self.insert_text("Total: ")
+            self.insert_text("{}".format(len(self.sim.res)), \
+                lambda: self.change_gui(0, 100))
+            self.insert_text("\nFiletypes:\n")
             fts = {}
             for res in self.sim.res.values():
                 fp = res.rfind(".")
@@ -479,14 +479,13 @@ class App(tkinter.Frame):
             ftk = list(fts.keys())
             ftk.sort()
             for ft in ftk:
-                self.text_view.insert(tkinter.INSERT, "  ")
+                self.insert_text("  ")
                 def make_cb(key):
                     def cb():
                         self.change_gui(0, 100, key)
                     return cb
-                self.text_view.insert(tkinter.INSERT, ft, \
-                    self.text_hl.add(make_cb(ft)))
-                self.text_view.insert(tkinter.INSERT, ": {}\n".format(fts[ft]))
+                self.insert_text(ft, make_cb(ft))
+                self.insert_text(": {}\n".format(fts[ft]))
                 
         elif self.curr_mode == 101:
             stdinfo()
@@ -542,30 +541,37 @@ class App(tkinter.Frame):
             return num
 
         def objinfo(tp, rec):
-            self.text_view.insert(tkinter.INSERT, \
-                ("Object" if tp else "Scene") + ":\n")
-            self.text_view.insert(tkinter.INSERT, \
-                "  Index:  {}\n  Name:   {}\n".format(rec.idx, rec.name))
+            self.insert_text(("Object" if tp else "Scene") + ":\n")
+            self.insert_text("  Index: {}\n  Name:  {}\n".\
+                format(rec.idx, rec.name))
             if rec.name in self.sim.names:
-                self.text_view.insert(tkinter.INSERT, "  ")
+                self.insert_text("  ")
                 def make_cb(key):
                     def cb():
                         self.open_name(key)
                     return cb
-                self.text_view.insert(tkinter.INSERT, "Alias", \
-                    self.text_hl.add(make_cb(rec.name)))
-                self.text_view.insert(tkinter.INSERT, \
-                    ":  {}\n".format(self.sim.names[rec.name]))
+                self.insert_text("Alias", make_cb(rec.name))
+                self.insert_text(":  {}\n".format(self.sim.names[rec.name]))
             if rec.name in self.sim.invntr:
-                self.text_view.insert(tkinter.INSERT, "  ")
+                self.insert_text("  ")
                 def make_cb(key):
                     def cb():
                         self.open_invntr(key)
                     return cb
-                self.text_view.insert(tkinter.INSERT, "Invntr", \
-                    self.text_hl.add(make_cb(rec.name)))
-                self.text_view.insert(tkinter.INSERT, \
-                    ": {}\n".format(self.sim.invntr[rec.name]))
+                self.insert_text("Invntr", make_cb(rec.name))
+                self.insert_text(": {}\n".format(self.sim.invntr[rec.name]))
+                    
+            if not tp:
+                if len(rec.refs) == 0:
+                    self.insert_text("\nNo references\n")
+                else:
+                    self.insert_text("\nReferences: {}\n".format(len(rec.refs)))
+                for idx, ref in enumerate(rec.refs):
+                    self.insert_text("  {}) ".format(idx))
+                    self.insert_text("obj_{}".format(ref[0].idx), \
+                        self.make_obj_cb(ref[0].idx))
+                    self.insert_text("\n".format(idx))
+                    
         if self.curr_lb_acts:
             act = self.curr_lb_acts[currsel()]
             if act[1]:
@@ -621,46 +627,36 @@ class App(tkinter.Frame):
             # names
             self.update_info()
             key = self.sim.namesord[currsel()]
-            self.text_view.insert(tkinter.INSERT, \
-                "Alias: {}\n".format(key))
-            self.text_view.insert(tkinter.INSERT, \
-                "Value: {}\n\n".format(self.sim.names[key]))
+            self.insert_text("Alias: {}\n".format(key))
+            self.insert_text("Value: {}\n\n".format(self.sim.names[key]))
             # search for objects
-            self.text_view.insert(tkinter.INSERT, \
-                "Applied for:")
+            self.insert_text("Applied for:")
             for obj in self.sim.objects:
                 if obj.name == key:
-                    self.text_view.insert(tkinter.INSERT, \
-                        "\n  ")
+                    self.insert_text("\n  ")
                     def make_cb(idx):
                         def cb():
                             self.open_object(idx)
                         return cb
-                    self.text_view.insert(tkinter.INSERT, \
-                        "{} - {}".format(obj.idx, obj.name), \
-                        self.text_hl.add(make_cb(obj.idx)))
+                    self.insert_text("{} - {}".format(obj.idx, obj.name), \
+                        make_cb(obj.idx))
         elif self.curr_mode == 104:
             # invntr
             self.update_info()
             key = self.sim.invntrord[currsel()]
-            self.text_view.insert(tkinter.INSERT, \
-                "Invntr: {}\n".format(key))
-            self.text_view.insert(tkinter.INSERT, \
-                "{}\n\n".format(self.sim.invntr[key]))
+            self.insert_text("Invntr: {}\n".format(key))
+            self.insert_text("{}\n\n".format(self.sim.invntr[key]))
             # search for objects
-            self.text_view.insert(tkinter.INSERT, \
-                "Applied for:")
+            self.insert_text("Applied for:")
             for obj in self.sim.objects:
                 if obj.name == key:
-                    self.text_view.insert(tkinter.INSERT, \
-                        "\n  ")
+                    self.insert_text("\n  ")
                     def make_cb(idx):
                         def cb():
                             self.open_object(idx)
                         return cb
-                    self.text_view.insert(tkinter.INSERT, \
-                        "{} - {}".format(obj.idx, obj.name), \
-                        self.text_hl.add(make_cb(obj.idx)))
+                    self.insert_text("{} - {}".format(obj.idx, obj.name), \
+                        make_cb(obj.idx))
 
     def on_open_data(self):
         # open data - select TODO

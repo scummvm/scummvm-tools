@@ -216,6 +216,7 @@ class Engine:
         f.close()
         
         self.names = {}
+        self.namesord = []
         fp = self.curr_path + "names.ini"
         if self.fman.exists(fp):
             f = self.fman.read_file_stream(fp)
@@ -225,6 +226,7 @@ class Engine:
             f.close()
 
         self.invntr = {}
+        self.invntrord = []
         fp = self.curr_path + "invntr.txt"
         if self.fman.exists(fp):
             f = self.fman.read_file_stream(fp)
