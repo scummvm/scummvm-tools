@@ -63,7 +63,10 @@ class App(tkinter.Frame):
         self.pad = None
         self.sim = None
         # gui
+        self.path_handler = {}
         self.curr_main = 0 # 0 - frame, 1 - canvas
+        self.curr_path = []
+        self.last_path = None
         self.curr_mode = 0
         self.curr_mode_sub = None
         self.curr_gui = []
@@ -118,8 +121,11 @@ class App(tkinter.Frame):
         self.text_hl = HyperlinkManager(self.text_view)
         self.text_view.bind('<Configure>', self.on_resize_view)
         
+        # bind path handlers
+        self.path_handler["parts"] = self.path_parts
+        
         self.update_after()
-        self.update_gui()
+        self.open_path([])
 
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
@@ -140,27 +146,27 @@ class App(tkinter.Frame):
         self.menubar.add_cascade(menu = self.menuedit,
                 label = "Edit")
         self.menuedit.add_command(
-                command = self.on_outline,
+                command = lambda: self.open_path([]),
                 label = "Outline")
         self.menuedit.add_separator()
         self.menuedit.add_command(
-                command = self.on_list_parts,
+                command = lambda: self.open_path(["parts"]),
                 label = "Select part")
         self.menuedit.add_separator()
         self.menuedit.add_command(
-                command = self.on_list_res,
+                command = lambda: self.open_path(["res"]),
                 label = "Resources")
         self.menuedit.add_command(
-                command = self.on_list_objs,
+                command = lambda: self.open_path(["objs"]),
                 label = "Objects")
         self.menuedit.add_command(
-                command = self.on_list_scenes,
+                command = lambda: self.open_path(["scenes"]),
                 label = "Scenes")
         self.menuedit.add_command(
-                command = self.on_list_names,
+                command = lambda: self.open_path(["names"]),
                 label = "Names")
         self.menuedit.add_command(
-                command = self.on_list_invntr,
+                command = lambda: self.open_path(["invntr"]),
                 label = "Invntr")
 
     def update_after(self):
@@ -185,13 +191,19 @@ class App(tkinter.Frame):
         self.master.destroy()
 
     def on_mouse_view(self, event):
-        #self.currMode += 1
-        #if self.currMode > 1:
-        #    self.currMode = 0
         self.update_after()
         
     def on_resize_view(self, event):
         self.update_after()
+ 
+    def open_path(self, path):
+        path = tuple(path)
+        print("DEBUG: Open", path)
+        self.curr_path = path
+        if len(path) > 0:
+            if path[0] in self.path_handler:
+                return self.path_handler[path[0]](path)
+        return self.path_default(path)
 
     def update_canvas(self):
         if self.curr_main == 0:          
@@ -275,10 +287,21 @@ class App(tkinter.Frame):
             data = bytes(p))
         return image                
 
-    def update_gui_add_left_listbox(self, text, acts = None):
+    def make_obj_cb(self, idx):
+        def cb():
+            self.open_object(idx)
+        return cb
+    
+    def update_gui(self, text = "<Undefined>"):
+        self.last_path = self.curr_path
+        self.canv_view.delete(tkinter.ALL)
+        # cleanup
+        for item in self.curr_gui:
+            item()
+        self.curr_gui = []
+        # left listbox
         lab = tkinter.Label(self.frm_left, text = text)
         lab.pack()
-        
         frm_lb = ttk.Frame(self.frm_left)
         frm_lb.pack(fill = tkinter.BOTH, expand = 1)
         frm_lb.grid_rowconfigure(0, weight = 1)
@@ -299,25 +322,10 @@ class App(tkinter.Frame):
         self.curr_gui.append(lambda:frm_lb.pack_forget())
         lb.bind("<Double-Button-1>", self.on_left_listbox)
         lb.bind("<Return>", self.on_left_listbox)
-
-        self.curr_lb_acts = acts
-        if acts:
-            for name, cb in acts:
-                lb.insert(tkinter.END, name)
+        # actions on listbox
         self.curr_lb = lb
-        return lb
-    
-    def make_obj_cb(self, idx):
-        def cb():
-            self.open_object(idx)
-        return cb
-    
-    def update_gui(self):
-        self.canv_view.delete(tkinter.ALL)
-        for item in self.curr_gui:
-            item()
-        self.curr_gui = []
-
+        self.curr_lb_acts = []
+        # main view
         if self.curr_main == 0:
             self.canv_view.grid_forget()
             self.text_view.grid(row = 0, column = 0, \
@@ -338,43 +346,11 @@ class App(tkinter.Frame):
             )
             self.scr_view_x.config(command = self.canv_view.xview)
             self.scr_view_y.config(command = self.canv_view.yview)
-
+        return
+        
+        
         if self.curr_mode == 0:
-            if self.sim is None:
-                # open some data
-                acts = [
-                    ("Open data", self.on_open_data)
-                ]
-                self.update_gui_add_left_listbox("Outline", acts)                
-            else:
-                def tst_img():
-                    self.curr_main = 1
-                    self.main_image = tkinter.PhotoImage(\
-                        file = "img/splash.gif")
-                    self.curr_width = self.main_image.width()
-                    self.curr_height = self.main_image.height()
-                    self.update_gui()
-                def tst_info():
-                    self.change_gui(0, 99)
-                acts = [
-                    ("Parts ({})".format(len(self.sim.parts)), \
-                        self.on_list_parts),
-                    ("Resources ({})".format(len(self.sim.res)), \
-                        self.on_list_res),
-                    ("Objects ({})".format(len(self.sim.objects)), \
-                        self.on_list_objs),
-                    ("Scenes ({})".format(len(self.sim.scenes)), \
-                        self.on_list_scenes),
-                    ("Names ({})".format(len(self.sim.names)), \
-                        self.on_list_names),
-                    ("Invntr ({})".format(len(self.sim.invntr)), \
-                        self.on_list_invntr),
-                    ("-", None),
-                    ("Test image", tst_img),
-                    ("Test info", tst_info),
-                ]
-                self.update_gui_add_left_listbox("Outline: part {} chapter {}".\
-                    format(self.sim.curr_part, self.sim.curr_chap), acts)                
+            pass
         elif self.curr_mode == 99:
             acts = [
                 ("<- outline", self.on_outline)
@@ -423,11 +399,26 @@ class App(tkinter.Frame):
         self.update_info()
         self.update_after()
 
+    def clear_text(self):
+        self.text_view.delete(0.0, tkinter.END)
+
     def insert_text(self, text, link = None):
         if link:
-            self.text_view.insert(tkinter.INSERT, text, self.text_hl.add(link))
+            if callable(link):
+                cb = link
+            else: 
+                def make_cb(path):
+                    def cb():
+                        return self.open_path(path)
+                    return cb
+                cb = make_cb(tuple(link))
+            self.text_view.insert(tkinter.INSERT, text, self.text_hl.add(cb))
         else:
             self.text_view.insert(tkinter.INSERT, text)
+
+    def insert_lb_act(self, name, act):
+        self.curr_lb_acts.append((name, act))
+        self.curr_lb.insert(tkinter.END, name)
 
     def update_info(self):
         def stdinfo():
@@ -449,21 +440,6 @@ class App(tkinter.Frame):
                 self.insert_text("Item {}\n".format(i))
         elif self.curr_mode == 90:
             stdinfo()
-            self.insert_text("Current: part {} chapter {}\n\n  Resources: ".\
-                    format(self.sim.curr_part, self.sim.curr_chap))
-            self.insert_text("{}".format(len(self.sim.res)), self.on_list_res)
-            self.insert_text("\n  Objects:   ")
-            self.insert_text("{}".format(len(self.sim.objects)), \
-                self.on_list_objs)
-            self.insert_text("\n  Scenes:    ")
-            self.insert_text("{}".format(len(self.sim.scenes)), \
-                self.on_list_scenes)
-            self.insert_text("\n  Names:     ")
-            self.insert_text("{}".format(len(self.sim.names)), \
-                self.on_list_names)
-            self.insert_text("\n  Invntr:    ")
-            self.insert_text("{}".format(len(self.sim.invntr)), \
-                self.on_list_invntr)
         elif self.curr_mode == 100:
             stdinfo()
             self.insert_text("Total: ")
@@ -575,26 +551,11 @@ class App(tkinter.Frame):
         if self.curr_lb_acts:
             act = self.curr_lb_acts[currsel()]
             if act[1]:
-                act[1]()
-        elif self.curr_mode == 90:
-            # parts
-            try:
-                part_id = self.curr_lb.curselection()[0]
-                part_id = int(part_id)
-            except:
-                pass
-            part_id = self.sim.parts[part_id]
-            # parse
-            pnum = part_id[5:]
-            cnum = pnum.split("Chapter", 1)
-            if len(cnum) > 1:
-                pnum = int(cnum[0].strip(), 10)
-                cnum = int(cnum[1].strip(), 10)
-            else:
-                cnum = 0
-            self.sim.open_part(pnum, cnum)
-            self.update_info()
-            self.update_after()
+                self.open_path(act[1])
+        return
+        
+        if self.curr_mode == 90:
+            pass
         elif self.curr_mode == 100:
             # resources
             try:
@@ -658,30 +619,82 @@ class App(tkinter.Frame):
                     self.insert_text("{} - {}".format(obj.idx, obj.name), \
                         make_cb(obj.idx))
 
+    def path_default(self, path):
+        self.curr_main = 0
+        self.update_gui("Outline")
+        self.clear_text()
+        if len(path) != 0:
+            spath = ""
+            for item in path:
+                spath += "/" + str(item)
+            self.insert_text("Path {} not found\n\n".format(spath))
+        self.insert_text("Select from outline\n")
+        if self.sim is not None:
+            def tst_img():
+                self.curr_main = 1
+                self.main_image = tkinter.PhotoImage(\
+                    file = "img/splash.gif")
+                self.curr_width = self.main_image.width()
+                self.curr_height = self.main_image.height()
+                self.update_gui()
+            def tst_info():
+                self.change_gui(0, 99)
+            acts = [
+                ("Parts ({})".format(len(self.sim.parts)), ["parts"]),
+                ("Resources ({})".format(len(self.sim.res)), ["res"]),
+                ("Objects ({})".format(len(self.sim.objects)), ["objs"]),
+                ("Scenes ({})".format(len(self.sim.scenes)), ["scenes"]),
+                ("Names ({})".format(len(self.sim.names)), ["names"]),
+                ("Invntr ({})".format(len(self.sim.invntr)), ["invntr"]),
+                ("-", None),
+                ("Test image", ["tst_image"]),
+                ("Test info", ["tst_info"]),
+            ]
+            for name, act in acts:
+                self.insert_lb_act(name, act)
+
+    def path_parts(self, path):
+        self.curr_main = 0
+        if len(self.last_path) == 0 or self.last_path[0] != "parts":
+            self.update_gui("Parts ({})".format(len(self.sim.parts)))
+            for idx, name in enumerate(self.sim.parts):
+                self.insert_lb_act(name, ["parts", idx])
+        # change                
+        if len(path) > 1:
+            # parts
+            try:
+                part_id = self.curr_lb.curselection()[0]
+                part_id = int(part_id)
+            except:
+                pass
+            part_id = self.sim.parts[part_id]
+            # parse
+            pnum = part_id[5:]
+            cnum = pnum.split("Chapter", 1)
+            if len(cnum) > 1:
+                pnum = int(cnum[0].strip(), 10)
+                cnum = int(cnum[1].strip(), 10)
+            else:
+                cnum = 0
+            self.sim.open_part(pnum, cnum)
+        # display
+        self.clear_text()
+        self.insert_text("Current: part {} chapter {}\n\n  Resources: ".\
+                format(self.sim.curr_part, self.sim.curr_chap))
+        self.insert_text("{}".format(len(self.sim.res)), ["res"])
+        self.insert_text("\n  Objects:   ")
+        self.insert_text("{}".format(len(self.sim.objects)), ["objs"])
+        self.insert_text("\n  Scenes:    ")
+        self.insert_text("{}".format(len(self.sim.scenes)), ["scenes"])
+        self.insert_text("\n  Names:     ")
+        self.insert_text("{}".format(len(self.sim.names)), ["names"])
+        self.insert_text("\n  Invntr:    ")
+        self.insert_text("{}".format(len(self.sim.invntr)), ["invntr"])
+            # 
+
     def on_open_data(self):
         # open data - select TODO
         pass
-        
-    def on_outline(self):
-        self.change_gui(0, 0)
-        
-    def on_list_parts(self):
-        self.change_gui(0, 90)
-
-    def on_list_res(self):
-        self.change_gui(0, 100)
-
-    def on_list_objs(self):
-        self.change_gui(0, 101)
-
-    def on_list_scenes(self):
-        self.change_gui(0, 102)
-
-    def on_list_names(self):
-        self.change_gui(0, 103)
-
-    def on_list_invntr(self):
-        self.change_gui(0, 104)
         
     def open_data_from(self, folder):
         self.sim = petka.Engine()
