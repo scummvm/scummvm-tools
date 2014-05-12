@@ -65,6 +65,7 @@ class App(tkinter.Frame):
         # gui
         self.curr_main = 0 # 0 - frame, 1 - canvas
         self.curr_mode = 0
+        self.curr_mode_sub = None
         self.curr_gui = []
         self.curr_lb_acts = None
         # canvas
@@ -380,10 +381,19 @@ class App(tkinter.Frame):
                 lb.insert(tkinter.END, part)
         elif self.curr_mode == 100:
             # list resources
-            lb = self.update_gui_add_left_listbox("Resources") 
-            for res_id in self.sim.resord:
-                lb.insert(tkinter.END, "{} - {}".format(res_id, \
-                    self.sim.res[res_id]))
+            if self.curr_mode_sub is None:
+                lb = self.update_gui_add_left_listbox("Resources") 
+                for res_id in self.sim.resord:
+                    lb.insert(tkinter.END, "{} - {}".format(res_id, \
+                        self.sim.res[res_id]))
+            else:
+                lb = self.update_gui_add_left_listbox("Resources: {}".\
+                    format(self.curr_mode_sub))
+                for res_id in self.sim.resord:
+                    if self.sim.res[res_id].upper().endswith\
+                        ("." + self.curr_mode_sub):
+                        lb.insert(tkinter.END, "{} - {}".format(res_id, \
+                            self.sim.res[res_id]))
         elif self.curr_mode == 101:
             # list objects
             lb = self.update_gui_add_left_listbox("Objects")
@@ -453,6 +463,31 @@ class App(tkinter.Frame):
             self.text_view.insert(tkinter.INSERT, "{}".\
                 format(len(self.sim.invntr)), \
                 self.text_hl.add(self.on_list_invntr))
+        elif self.curr_mode == 100:
+            stdinfo()
+            self.text_view.insert(tkinter.INSERT, "Total: ")
+            self.text_view.insert(tkinter.INSERT, "{}".\
+                format(len(self.sim.res)), \
+                self.text_hl.add(lambda: self.change_gui(0, 100)))
+            self.text_view.insert(tkinter.INSERT, "\nFiletypes:\n")
+            fts = {}
+            for res in self.sim.res.values():
+                fp = res.rfind(".")
+                if fp >= 0:
+                    ft = res[fp + 1:].upper()
+                    fts[ft] = fts.get(ft, 0) + 1
+            ftk = list(fts.keys())
+            ftk.sort()
+            for ft in ftk:
+                self.text_view.insert(tkinter.INSERT, "  ")
+                def make_cb(key):
+                    def cb():
+                        self.change_gui(0, 100, key)
+                    return cb
+                self.text_view.insert(tkinter.INSERT, ft, \
+                    self.text_hl.add(make_cb(ft)))
+                self.text_view.insert(tkinter.INSERT, ": {}\n".format(fts[ft]))
+                
         elif self.curr_mode == 101:
             stdinfo()
         elif self.curr_mode == 102:
@@ -491,9 +526,10 @@ class App(tkinter.Frame):
                 self.open_gui_elem(0, 104, idx)
                 break
                 
-    def change_gui(self, main, mode):
+    def change_gui(self, main, mode, sub = None):
         self.curr_main = main
         self.curr_mode = mode
+        self.curr_mode_sub = sub
         self.update_gui()
 
     def on_left_listbox(self, event):
@@ -557,19 +593,21 @@ class App(tkinter.Frame):
             # resources
             try:
                 res_id = self.curr_lb.curselection()[0]
+                res_id = self.curr_lb.get(res_id).split("-", 1)[0].strip()
                 res_id = int(res_id)
             except:
                 pass
-            res_id = self.sim.resord[res_id]
             fn = self.sim.res[res_id]
             if fn[-4:].lower() == ".bmp":
                 bmpdata = self.sim.fman.read_file(fn)
                 bmp = petka.BMPLoader()
                 bmp.load_data(bmpdata)
-                self.main_image = self.make_image(bmp.width, bmp.height, bmp.rgb)
+                self.main_image = \
+                    self.make_image(bmp.width, bmp.height, bmp.rgb)
                 self.curr_width = bmp.width
                 self.curr_height = bmp.height
-                self.update_after()
+                self.curr_main = 1
+                self.update_gui()
             print(fn)
         elif self.curr_mode == 101:
             # objects
