@@ -6,6 +6,7 @@
 import sys, os
 import tkinter
 from tkinter import ttk, font
+from idlelib.WidgetRedirector import WidgetRedirector
 
 import petka
 
@@ -42,6 +43,17 @@ class HyperlinkManager:
                 self.links[tag]()
                 return
 		
+		
+# thanx http://tkinter.unpythonic.net/wiki/ReadOnlyText
+class ReadOnlyText(tkinter.Text):
+    def __init__(self, *args, **kwargs):
+        tkinter.Text.__init__(self, *args, **kwargs)
+        self.redirector = WidgetRedirector(self)
+        self.insert = \
+            self.redirector.register("insert", lambda *args, **kw: "break")
+        self.delete = \
+            self.redirector.register("delete", lambda *args, **kw: "break")
+		
 class App(tkinter.Frame):
     def __init__(self, master):
         tkinter.Frame.__init__(self, master)
@@ -50,9 +62,9 @@ class App(tkinter.Frame):
         self.pad = None
         self.sim = None
         # gui
+        self.curr_main = 0 # 0 - frame, 1 - canvas
         self.curr_mode = 0
         self.curr_gui = []
-        self.curr_main = 0 # 0 - frame, 1 - canvas
         self.curr_lb_acts = None
         # canvas
         self.curr_width = 0
@@ -98,12 +110,11 @@ class App(tkinter.Frame):
         self.canv_view.bind('<ButtonPress-1>', self.on_mouse_view)
         
         # text
-        self.text_view = tkinter.Text(self.frm_view,
+        self.text_view = ReadOnlyText(self.frm_view,
             highlightthickness = 0,
             )
         self.text_hl = HyperlinkManager(self.text_view)
         self.text_view.bind('<Configure>', self.on_resize_view)
-        
         
         self.update_after()
         self.update_gui()
@@ -337,9 +348,7 @@ class App(tkinter.Frame):
                     self.curr_height = self.main_image.height()
                     self.update_gui()
                 def tst_info():
-                    self.curr_mode = 99
-                    self.curr_main = 0
-                    self.update_gui()
+                    self.change_gui(0, 99)
                 acts = [
                     ("Parts", self.on_list_parts),
                     ("Resources ({})".format(len(self.sim.res)), \
@@ -448,6 +457,42 @@ class App(tkinter.Frame):
             stdinfo()
         else:
             stdinfo()
+            
+    def open_gui_elem(self, main, mode, idx):
+        if self.curr_mode != mode:
+            self.change_gui(main, mode)
+        self.curr_lb.selection_set(idx)
+        self.curr_lb.see(idx)
+        self.on_left_listbox(None)
+            
+    def open_object(self, obj_id):
+        for idx, obj in enumerate(self.sim.objects):
+            if obj.idx == obj_id:
+                self.open_gui_elem(0, 101, idx)
+                break
+
+    def open_scene(self, scn_id):
+        for idx, obj in enumerate(self.sim.scenes):
+            if obj.idx == scn_id:
+                self.open_gui_elem(0, 102, idx)
+                break
+
+    def open_name(self, name_key):
+        for idx, key in enumerate(self.sim.namesord):
+            if key == name_key:
+                self.open_gui_elem(0, 103, idx)
+                break
+
+    def open_invntr(self, inv_key):
+        for idx, key in enumerate(self.sim.invntrord):
+            if key == inv_key:
+                self.open_gui_elem(0, 104, idx)
+                break
+                
+    def change_gui(self, main, mode):
+        self.curr_main = main
+        self.curr_mode = mode
+        self.update_gui()
 
     def on_left_listbox(self, event):
         def currsel():
@@ -464,12 +509,25 @@ class App(tkinter.Frame):
             self.text_view.insert(tkinter.INSERT, \
                 "  Index:  {}\n  Name:   {}\n".format(rec.idx, rec.name))
             if rec.name in self.sim.names:
+                self.text_view.insert(tkinter.INSERT, "  ")
+                def make_cb(key):
+                    def cb():
+                        self.open_name(key)
+                    return cb
+                self.text_view.insert(tkinter.INSERT, "Alias", \
+                    self.text_hl.add(make_cb(rec.name)))
                 self.text_view.insert(tkinter.INSERT, \
-                    "  Alias:  {}\n".format(self.sim.names[rec.name]))
+                    ":  {}\n".format(self.sim.names[rec.name]))
             if rec.name in self.sim.invntr:
+                self.text_view.insert(tkinter.INSERT, "  ")
+                def make_cb(key):
+                    def cb():
+                        self.open_invntr(key)
+                    return cb
+                self.text_view.insert(tkinter.INSERT, "Invntr", \
+                    self.text_hl.add(make_cb(rec.name)))
                 self.text_view.insert(tkinter.INSERT, \
-                    "  Invntr: {}\n".format(self.sim.invntr[rec.name]))
-                
+                    ": {}\n".format(self.sim.invntr[rec.name]))
         if self.curr_lb_acts:
             act = self.curr_lb_acts[currsel()]
             if act[1]:
@@ -524,9 +582,9 @@ class App(tkinter.Frame):
             self.update_info()
             key = self.sim.namesord[currsel()]
             self.text_view.insert(tkinter.INSERT, \
-                "Object: {}\n".format(key))
+                "Alias: {}\n".format(key))
             self.text_view.insert(tkinter.INSERT, \
-                "Alias:  {}\n\n".format(self.sim.names[key]))
+                "Value: {}\n\n".format(self.sim.names[key]))
             # search for objects
             self.text_view.insert(tkinter.INSERT, \
                 "Applied for:")
@@ -536,7 +594,7 @@ class App(tkinter.Frame):
                         "\n  ")
                     def make_cb(idx):
                         def cb():
-                            print("TODO: names obj", idx)
+                            self.open_object(idx)
                         return cb
                     self.text_view.insert(tkinter.INSERT, \
                         "{} - {}".format(obj.idx, obj.name), \
@@ -546,7 +604,7 @@ class App(tkinter.Frame):
             self.update_info()
             key = self.sim.invntrord[currsel()]
             self.text_view.insert(tkinter.INSERT, \
-                "Object: {}\n".format(key))
+                "Invntr: {}\n".format(key))
             self.text_view.insert(tkinter.INSERT, \
                 "{}\n\n".format(self.sim.invntr[key]))
             # search for objects
@@ -558,52 +616,36 @@ class App(tkinter.Frame):
                         "\n  ")
                     def make_cb(idx):
                         def cb():
-                            print("TODO: invntr obj", idx)
+                            self.open_object(idx)
                         return cb
                     self.text_view.insert(tkinter.INSERT, \
                         "{} - {}".format(obj.idx, obj.name), \
                         self.text_hl.add(make_cb(obj.idx)))
-                
-            
 
     def on_open_data(self):
         # open data - select TODO
         pass
         
     def on_outline(self):
-        self.curr_mode = 0
-        self.curr_main = 0
-        self.update_gui()
+        self.change_gui(0, 0)
         
     def on_list_parts(self):
-        self.curr_mode = 90
-        self.curr_main = 0
-        self.update_gui()
+            self.change_gui(0, 90)
 
     def on_list_res(self):
-        self.curr_mode = 100
-        self.curr_main = 1
-        self.update_gui()
+        self.change_gui(1, 100)
 
     def on_list_objs(self):
-        self.curr_mode = 101
-        self.curr_main = 0
-        self.update_gui()
+        self.change_gui(0, 101)
 
     def on_list_scenes(self):
-        self.curr_mode = 102
-        self.curr_main = 0
-        self.update_gui()
+        self.change_gui(0, 102)
 
     def on_list_names(self):
-        self.curr_mode = 103
-        self.curr_main = 0
-        self.update_gui()
+        self.change_gui(0, 103)
 
     def on_list_invntr(self):
-        self.curr_mode = 104
-        self.curr_main = 0
-        self.update_gui()
+        self.change_gui(0, 104)
         
     def open_data_from(self, folder):
         self.sim = petka.Engine()
