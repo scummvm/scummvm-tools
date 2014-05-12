@@ -75,8 +75,7 @@ class App(tkinter.Frame):
         # leftpanel
         self.frm_left = ttk.Frame(self.pan_main)
         self.pan_main.add(self.frm_left)
-
-        # canvas
+        # main view
         self.frm_view = ttk.Frame(self.pan_main)
         self.pan_main.add(self.frm_view)
         self.frm_view.grid_rowconfigure(0, weight = 1)
@@ -88,19 +87,23 @@ class App(tkinter.Frame):
         self.scr_view_y = ttk.Scrollbar(self.frm_view)
         self.scr_view_y.grid(row = 0, column = 1, sticky = \
             tkinter.N + tkinter.S)
+        # canvas
         self.canv_view = tkinter.Canvas(self.frm_view, height = 150, 
             bd = 0, highlightthickness = 0, 
             scrollregion = (0, 0, 50, 50),
-            xscrollcommand = self.scr_view_x.set,
-            yscrollcommand = self.scr_view_y.set)
-        self.canv_view.grid(row = 0, column = 0, \
-            sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
-        self.scr_view_x.config(command = self.canv_view.xview)
-        self.scr_view_y.config(command = self.canv_view.yview)
+            )
         # don't forget
         #   canvas.config(scrollregion=(left, top, right, bottom))
         self.canv_view.bind('<Configure>', self.on_resize_view)
         self.canv_view.bind('<ButtonPress-1>', self.on_mouse_view)
+        
+        # text
+        self.text_view = tkinter.Text(self.frm_view,
+            highlightthickness = 0,
+            )
+        self.text_hl = HyperlinkManager(self.text_view)
+        self.text_view.bind('<Configure>', self.on_resize_view)
+        
         
         self.update_after()
         self.update_gui()
@@ -169,22 +172,6 @@ class App(tkinter.Frame):
         self.update_after()
         
     def on_resize_view(self, event):
-        if self.curr_main == 0:          
-            w = self.frm_info.winfo_reqwidth()
-            h = self.frm_info.winfo_reqheight()
-            if w != self.canv_view.winfo_width() or \
-                    h != self.canv_view.winfo_height():
-                self.canv_view.itemconfigure(self.frm_info_id, 
-                    width = w, height = h)
-        self.update_after()
-
-    def on_resize_info(self, event):
-        w = self.frm_info.winfo_reqwidth()
-        h = self.frm_info.winfo_reqheight()
-        self.canv_view.config(scrollregion = (0, 0, w, h))
-        if w != self.canv_view.winfo_width() or \
-                h != self.canv_view.winfo_height():
-            self.canv_view.config(width = w, height = h)
         self.update_after()
 
     def update_canvas(self):
@@ -301,11 +288,6 @@ class App(tkinter.Frame):
         self.curr_lb = lb
         return lb
     
-    def update_gui_add_label(self, text):
-        lab = ttk.Label(self.frm_info, text = text)
-        lab.pack()
-        self.curr_gui.append(lambda:lab.pack_forget())                
-
     def update_gui(self):
         self.canv_view.delete(tkinter.ALL)
         for item in self.curr_gui:
@@ -313,18 +295,25 @@ class App(tkinter.Frame):
         self.curr_gui = []
 
         if self.curr_main == 0:
-            # info panel
-            self.frm_info = ttk.Frame(self.canv_view)
-            self.frm_info_id = self.canv_view.create_window(0, 0, 
-                window = self.frm_info, anchor = tkinter.NW)
-            self.frm_info.bind('<Configure>', self.on_resize_info)
-            self.canv_view.xview_moveto(0)
-            self.canv_view.yview_moveto(0)
-            # info data
-            self.frm_info_text = tkinter.Text(self.frm_info)
-            self.frm_info_hl = HyperlinkManager(self.frm_info_text)
-            self.frm_info_text.pack(expand = 1, fill = tkinter.BOTH)
-            self.curr_gui.append(lambda:self.frm_info_text.pack_forget())
+            self.canv_view.grid_forget()
+            self.text_view.grid(row = 0, column = 0, \
+                sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
+            self.text_view.configure(
+                xscrollcommand = self.scr_view_x.set,
+                yscrollcommand = self.scr_view_y.set
+            )
+            self.scr_view_x.config(command = self.text_view.xview)
+            self.scr_view_y.config(command = self.text_view.yview)
+        else:
+            self.text_view.grid_forget()
+            self.canv_view.grid(row = 0, column = 0, \
+                sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
+            self.canv_view.configure(
+                xscrollcommand = self.scr_view_x.set,
+                yscrollcommand = self.scr_view_y.set
+            )
+            self.scr_view_x.config(command = self.canv_view.xview)
+            self.scr_view_y.config(command = self.canv_view.yview)
 
         if self.curr_mode == 0:
             if self.sim is None:
@@ -333,7 +322,6 @@ class App(tkinter.Frame):
                     ("Open data", self.on_open_data)
                 ]
                 self.update_gui_add_left_listbox("Outline", acts)                
-                self.update_gui_add_label("Open data")
             else:
                 def tst_img():
                     self.curr_main = 1
@@ -357,13 +345,11 @@ class App(tkinter.Frame):
                 ]
                 self.update_gui_add_left_listbox("Outline: part {} chapter {}".\
                     format(self.sim.curr_part, self.sim.curr_chap), acts)                
-                self.update_gui_add_label("Select data type from outline")
         elif self.curr_mode == 99:
             acts = [
                 ("<- outline", self.on_outline)
             ]
             self.update_gui_add_left_listbox("Test info", acts)                
-            self.update_gui_add_label("Text placed into looooooooooong string")
         elif self.curr_mode == 90:
             # list parts
             lb = self.update_gui_add_left_listbox("Parts")   
@@ -380,55 +366,74 @@ class App(tkinter.Frame):
             lb = self.update_gui_add_left_listbox("Objects")   
             for obj in self.sim.objects:
                 lb.insert(tkinter.END, "{} - {}".format(obj.idx, obj.name))
-            self.update_gui_add_label("Object info")
         elif self.curr_mode == 102:
             # list scenes
             lb = self.update_gui_add_left_listbox("Scenes")   
             for scn in self.sim.scenes:
                 lb.insert(tkinter.END, "{} - {}".format(scn.idx, scn.name))
-            self.update_gui_add_label("Scene info")
         self.update_info()
         self.update_after()
 
     def update_info(self):
         def stdinfo():
-            self.frm_info_text.delete(0.0, tkinter.END)
-            self.frm_info_text.insert(tkinter.INSERT, "<- Outline", \
-                self.frm_info_hl.add(self.on_outline))
-            self.frm_info_text.insert(tkinter.INSERT, "\n\n")
-        if self.curr_mode == 99:
+            self.text_view.delete(0.0, tkinter.END)
+            self.text_view.insert(tkinter.INSERT, "<- Outline", \
+                self.text_hl.add(self.on_outline))
+            self.text_view.insert(tkinter.INSERT, "\n\n")
+           
+        if self.curr_mode == 0:
+            self.text_view.delete(0.0, tkinter.END)
+            if self.sim is None:
+                self.text_view.insert(tkinter.INSERT, "No data loaded")
+                self.text_view.insert(tkinter.INSERT, "Open data", \
+                    self.text_hl.add(self.on_open_data))
+            else:
+                self.text_view.insert(tkinter.INSERT, \
+                    "Select type from outline")
+        elif self.curr_mode == 99:
             stdinfo()
             for i in range(100):
-                self.frm_info_text.insert(tkinter.INSERT, "Item {}\n".format(i))
+                self.text_view.insert(tkinter.INSERT, \
+                    "Item {}\n".format(i))
         elif self.curr_mode == 90:
             stdinfo()
-            self.frm_info_text.insert(tkinter.INSERT, \
+            self.text_view.insert(tkinter.INSERT, \
                 "Current: part {} chapter {}\n\n  Resources: ".\
                     format(self.sim.curr_part, self.sim.curr_chap))
-            self.frm_info_text.insert(tkinter.INSERT, "{}".\
+            self.text_view.insert(tkinter.INSERT, "{}".\
                 format(len(self.sim.res)), \
-                self.frm_info_hl.add(self.on_list_res))
-            self.frm_info_text.insert(tkinter.INSERT, "\n  Objects:   ")
-            self.frm_info_text.insert(tkinter.INSERT, "{}".\
+                self.text_hl.add(self.on_list_res))
+            self.text_view.insert(tkinter.INSERT, "\n    Objects: ")
+            self.text_view.insert(tkinter.INSERT, "{}".\
                 format(len(self.sim.objects)), \
-                self.frm_info_hl.add(self.on_list_objs))
-            self.frm_info_text.insert(tkinter.INSERT, "\n  Scenes:    ")
-            self.frm_info_text.insert(tkinter.INSERT, "{}".\
+                self.text_hl.add(self.on_list_objs))
+            self.text_view.insert(tkinter.INSERT, "\n     Scenes: ")
+            self.text_view.insert(tkinter.INSERT, "{}".\
                 format(len(self.sim.scenes)), \
-                self.frm_info_hl.add(self.on_list_scenes))
+                self.text_hl.add(self.on_list_scenes))
         elif self.curr_mode == 101:
             stdinfo()
         elif self.curr_mode == 102:
             stdinfo()
+        else:
+            stdinfo()
 
     def on_left_listbox(self, event):
-        if self.curr_lb_acts:
+        def currsel():
             try:
                 num = self.curr_lb.curselection()[0]
                 num = int(num)
             except:
                 pass
-            act = self.curr_lb_acts[num]
+            return num
+
+        def objinfo(tp, rec):
+            self.text_view.insert(tkinter.INSERT, tp + "\n\n")
+            self.text_view.insert(tkinter.INSERT, \
+                "  Index: {}\n   Name: {}".format(rec.idx, rec.name))
+
+        if self.curr_lb_acts:
+            act = self.curr_lb_acts[currsel()]
             if act[1]:
                 act[1]()
         elif self.curr_mode == 90:
@@ -468,6 +473,14 @@ class App(tkinter.Frame):
                 self.curr_height = bmp.height
                 self.update_after()
             print(fn)
+        elif self.curr_mode == 101:
+            # objects
+            self.update_info()
+            objinfo("Object:", self.sim.objects[currsel()])
+        elif self.curr_mode == 102:
+            # scenes
+            self.update_info()
+            objinfo("Scene:", self.sim.scenes[currsel()])
 
     def on_open_data(self):
         # open data - select TODO
