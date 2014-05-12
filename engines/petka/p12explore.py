@@ -21,6 +21,7 @@ class HyperlinkManager:
         self.text.tag_bind("hyper", "<Leave>", self._leave)
         self.text.tag_bind("hyper", "<Button-1>", self._click)
         self.reset()
+
     def reset(self):
     	self.links = {}
 
@@ -374,33 +375,33 @@ class App(tkinter.Frame):
             self.update_gui_add_left_listbox("Test info", acts)                
         elif self.curr_mode == 90:
             # list parts
-            lb = self.update_gui_add_left_listbox("Parts")   
+            lb = self.update_gui_add_left_listbox("Parts")
             for part in self.sim.parts:
                 lb.insert(tkinter.END, part)
         elif self.curr_mode == 100:
             # list resources
-            lb = self.update_gui_add_left_listbox("Resources")   
+            lb = self.update_gui_add_left_listbox("Resources") 
             for res_id in self.sim.resord:
                 lb.insert(tkinter.END, "{} - {}".format(res_id, \
                     self.sim.res[res_id]))
         elif self.curr_mode == 101:
             # list objects
-            lb = self.update_gui_add_left_listbox("Objects")   
+            lb = self.update_gui_add_left_listbox("Objects")
             for obj in self.sim.objects:
                 lb.insert(tkinter.END, "{} - {}".format(obj.idx, obj.name))
         elif self.curr_mode == 102:
             # list scenes
-            lb = self.update_gui_add_left_listbox("Scenes")   
+            lb = self.update_gui_add_left_listbox("Scenes")
             for scn in self.sim.scenes:
                 lb.insert(tkinter.END, "{} - {}".format(scn.idx, scn.name))
         elif self.curr_mode == 103:
             # list names
-            lb = self.update_gui_add_left_listbox("Names")   
+            lb = self.update_gui_add_left_listbox("Names")
             for name in self.sim.namesord:
                 lb.insert(tkinter.END, "{}".format(name))
         elif self.curr_mode == 104:
             # list invntr
-            lb = self.update_gui_add_left_listbox("Invntr")   
+            lb = self.update_gui_add_left_listbox("Invntr")
             for name in self.sim.invntrord:
                 lb.insert(tkinter.END, "{}".format(name))
         self.update_info()
@@ -412,7 +413,8 @@ class App(tkinter.Frame):
             self.text_view.insert(tkinter.INSERT, "<- Outline", \
                 self.text_hl.add(self.on_outline))
             self.text_view.insert(tkinter.INSERT, "\n\n")
-           
+
+        self.text_hl.reset()
         if self.curr_mode == 0:
             self.text_view.delete(0.0, tkinter.END)
             if self.sim is None:
