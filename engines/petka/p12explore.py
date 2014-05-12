@@ -632,10 +632,10 @@ class App(tkinter.Frame):
         self.change_gui(0, 0)
         
     def on_list_parts(self):
-            self.change_gui(0, 90)
+        self.change_gui(0, 90)
 
     def on_list_res(self):
-        self.change_gui(1, 100)
+        self.change_gui(0, 100)
 
     def on_list_objs(self):
         self.change_gui(0, 101)
