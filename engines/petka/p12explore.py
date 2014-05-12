@@ -387,12 +387,12 @@ class App(tkinter.Frame):
         elif self.curr_mode == 103:
             # list names
             lb = self.update_gui_add_left_listbox("Names")   
-            for name in self.sim.names.keys():
+            for name in self.sim.namesord:
                 lb.insert(tkinter.END, "{}".format(name))
         elif self.curr_mode == 104:
             # list invntr
             lb = self.update_gui_add_left_listbox("Invntr")   
-            for name in self.sim.invntr.keys():
+            for name in self.sim.invntrord:
                 lb.insert(tkinter.END, "{}".format(name))
         self.update_info()
         self.update_after()
@@ -522,7 +522,7 @@ class App(tkinter.Frame):
         elif self.curr_mode == 103:
             # names
             self.update_info()
-            key = list(self.sim.names.keys())[currsel()]
+            key = self.sim.namesord[currsel()]
             self.text_view.insert(tkinter.INSERT, \
                 "Object: {}\n".format(key))
             self.text_view.insert(tkinter.INSERT, \
@@ -544,7 +544,7 @@ class App(tkinter.Frame):
         elif self.curr_mode == 104:
             # invntr
             self.update_info()
-            key = list(self.sim.invntr.keys())[currsel()]
+            key = self.sim.invntrord[currsel()]
             self.text_view.insert(tkinter.INSERT, \
                 "Object: {}\n".format(key))
             self.text_view.insert(tkinter.INSERT, \

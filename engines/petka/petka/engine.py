@@ -33,20 +33,27 @@ class Engine:
         # parse ini settings
         curr_sect = None
         ini = {}
-        ordersect = []
+        order_sect = []
+        orders = {}
         for line in f.readlines():
             line = line.decode(self.enc).strip()
             if len(line) == 0: continue
             if line[:1] == ";": continue
             if line[:1] == "[" and line[-1:] == "]":
+                if curr_sect is not None:
+                    orders[curr_sect] = order
                 curr_sect = line[1:-1].strip()
+                order_sect.append(curr_sect)
+                order = []
                 ini[curr_sect] = {}
-                ordersect.append(curr_sect)
                 continue
             kv = line.split("=", 1)
             if len(kv) != 2: continue
             ini[curr_sect][kv[0].strip()] = kv[1].strip()
-        ini["__order__"] = ordersect
+            order.append(kv[0].strip())
+        orders[curr_sect] = order
+        ini["__ordersect__"] = order_sect
+        ini["__order__"] = orders
         return ini
         
     def parse_res(self, f):
@@ -78,7 +85,7 @@ class Engine:
                 self.parts_ini = self.parse_ini(f)
             finally:
                 f.close()
-            for sect in self.parts_ini["__order__"]:
+            for sect in self.parts_ini["__ordersect__"]:
                 data = self.parts_ini[sect]
                 if sect == "All":
                     if "Part" in data:
@@ -212,14 +219,18 @@ class Engine:
         fp = self.curr_path + "names.ini"
         if self.fman.exists(fp):
             f = self.fman.read_file_stream(fp)
-            self.names = self.parse_ini(f)["all"]
+            ini = self.parse_ini(f)
+            self.names = ini["all"]
+            self.namesord = ini["__order__"]["all"]
             f.close()
 
         self.invntr = {}
         fp = self.curr_path + "invntr.txt"
         if self.fman.exists(fp):
             f = self.fman.read_file_stream(fp)
-            self.invntr = self.parse_ini(f)["ALL"]
+            ini = self.parse_ini(f)
+            self.invntr = ini["ALL"]
+            self.invntrord = ini["__order__"]["ALL"]
             f.close()
         
 
