@@ -14,34 +14,33 @@ APPNAME = "P1&2 Explorer"
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager:
     def __init__(self, text):
-	    self.text = text
-	    self.text.tag_config("hyper", foreground = "blue", underline = 1)
-	    self.text.tag_bind("hyper", "<Enter>", self._enter)
-	    self.text.tag_bind("hyper", "<Leave>", self._leave)
-	    self.text.tag_bind("hyper", "<Button-1>", self._click)
-	    self.reset()
-
+        self.text = text
+        self.text.tag_config("hyper", foreground = "blue", underline = 1)
+        self.text.tag_bind("hyper", "<Enter>", self._enter)
+        self.text.tag_bind("hyper", "<Leave>", self._leave)
+        self.text.tag_bind("hyper", "<Button-1>", self._click)
+        self.reset()
     def reset(self):
     	self.links = {}
 
     def add(self, action):
         # add an action to the manager.  returns tags to use in
         # associated text widget
-	    tag = "hyper-{}".format(len(self.links))
-	    self.links[tag] = action
-	    return "hyper", tag
+        tag = "hyper-{}".format(len(self.links))
+        self.links[tag] = action
+        return "hyper", tag
 
     def _enter(self, event):
-    	self.text.config(cursor = "hand2")
+        self.text.config(cursor = "hand2")
 
     def _leave(self, event):
-    	self.text.config(cursor = "")
+        self.text.config(cursor = "")
 
     def _click(self, event):
-	    for tag in self.text.tag_names(CURRENT):
-	        if tag[:6] == "hyper-":
-		        self.links[tag]()
-    		    return
+        for tag in self.text.tag_names(tkinter.CURRENT):
+            if tag[:6] == "hyper-":
+                self.links[tag]()
+                return
 		
 class App(tkinter.Frame):
     def __init__(self, master):
@@ -309,19 +308,23 @@ class App(tkinter.Frame):
 
     def update_gui(self):
         self.canv_view.delete(tkinter.ALL)
+        for item in self.curr_gui:
+            item()
+        self.curr_gui = []
+
         if self.curr_main == 0:
             # info panel
             self.frm_info = ttk.Frame(self.canv_view)
             self.frm_info_id = self.canv_view.create_window(0, 0, 
                 window = self.frm_info, anchor = tkinter.NW)
             self.frm_info.bind('<Configure>', self.on_resize_info)
-
             self.canv_view.xview_moveto(0)
             self.canv_view.yview_moveto(0)
-    
-        for item in self.curr_gui:
-            item()
-        self.curr_gui = []
+            # info data
+            self.frm_info_text = tkinter.Text(self.frm_info)
+            self.frm_info_hl = HyperlinkManager(self.frm_info_text)
+            self.frm_info_text.pack(expand = 1, fill = tkinter.BOTH)
+            self.curr_gui.append(lambda:self.frm_info_text.pack_forget())
 
         if self.curr_mode == 0:
             if self.sim is None:
@@ -366,9 +369,6 @@ class App(tkinter.Frame):
             lb = self.update_gui_add_left_listbox("Parts")   
             for part in self.sim.parts:
                 lb.insert(tkinter.END, part)
-            self.update_gui_add_label("Select parts")
-            self.update_gui_add_label("or goto outline")
-            
         elif self.curr_mode == 100:
             # list resources
             lb = self.update_gui_add_left_listbox("Resources")   
@@ -387,8 +387,39 @@ class App(tkinter.Frame):
             for scn in self.sim.scenes:
                 lb.insert(tkinter.END, "{} - {}".format(scn.idx, scn.name))
             self.update_gui_add_label("Scene info")
-
+        self.update_info()
         self.update_after()
+
+    def update_info(self):
+        def stdinfo():
+            self.frm_info_text.delete(0.0, tkinter.END)
+            self.frm_info_text.insert(tkinter.INSERT, "<- Outline", \
+                self.frm_info_hl.add(self.on_outline))
+            self.frm_info_text.insert(tkinter.INSERT, "\n\n")
+        if self.curr_mode == 99:
+            stdinfo()
+            for i in range(100):
+                self.frm_info_text.insert(tkinter.INSERT, "Item {}\n".format(i))
+        elif self.curr_mode == 90:
+            stdinfo()
+            self.frm_info_text.insert(tkinter.INSERT, \
+                "Current: part {} chapter {}\n\n  Resources: ".\
+                    format(self.sim.curr_part, self.sim.curr_chap))
+            self.frm_info_text.insert(tkinter.INSERT, "{}".\
+                format(len(self.sim.res)), \
+                self.frm_info_hl.add(self.on_list_res))
+            self.frm_info_text.insert(tkinter.INSERT, "\n  Objects:   ")
+            self.frm_info_text.insert(tkinter.INSERT, "{}".\
+                format(len(self.sim.objects)), \
+                self.frm_info_hl.add(self.on_list_objs))
+            self.frm_info_text.insert(tkinter.INSERT, "\n  Scenes:    ")
+            self.frm_info_text.insert(tkinter.INSERT, "{}".\
+                format(len(self.sim.scenes)), \
+                self.frm_info_hl.add(self.on_list_scenes))
+        elif self.curr_mode == 101:
+            stdinfo()
+        elif self.curr_mode == 102:
+            stdinfo()
 
     def on_left_listbox(self, event):
         if self.curr_lb_acts:
@@ -417,6 +448,7 @@ class App(tkinter.Frame):
             else:
                 cnum = 0
             self.sim.open_part(pnum, cnum)
+            self.update_info()
             self.update_after()
         elif self.curr_mode == 100:
             # resources
