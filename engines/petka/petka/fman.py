@@ -4,6 +4,7 @@
 
 import os
 import struct
+import io
 
 from . import EngineError
 
@@ -88,6 +89,19 @@ class FileManager:
                 f.close()
             return data
             
+    def read_file_stream(self, fname):
+        data = self.read_file(fname)
+        mems = io.BytesIO()
+        mems.write(data)
+        mems.seek(0)
+        return mems        
+            
+    def exists(self, fname):
+        sf = fname.lower().replace("\\", "/")
+        if sf in self.strtable:
+            return True
+        else:
+            return self.find_path(fname) is not None       
         
     def unload_stores(self, flt = None):
         strfd = []

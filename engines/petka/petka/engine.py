@@ -204,11 +204,22 @@ class Engine:
                     raise EngineError("DEBUG: Object ID = 0x{:x} not found".\
                         format(obj[0]))
                         
-        data = self.fman.read_file(self.curr_path + "resource.qrc")
-        mems = io.BytesIO()
-        mems.write(data)
-        mems.seek(0)
-        self.res, self.resord = self.parse_res(mems)
+        f = self.fman.read_file_stream(self.curr_path + "resource.qrc")
+        self.res, self.resord = self.parse_res(f)
+        f.close()
         
+        self.names = {}
+        fp = self.curr_path + "names.ini"
+        if self.fman.exists(fp):
+            f = self.fman.read_file_stream(fp)
+            self.names = self.parse_ini(f)["all"]
+            f.close()
+
+        self.invntr = {}
+        fp = self.curr_path + "invntr.txt"
+        if self.fman.exists(fp):
+            f = self.fman.read_file_stream(fp)
+            self.invntr = self.parse_ini(f)["ALL"]
+            f.close()
         
 

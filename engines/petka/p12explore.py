@@ -143,6 +143,12 @@ class App(tkinter.Frame):
         self.menuedit.add_command(
                 command = self.on_list_scenes,
                 label = "Scenes")
+        self.menuedit.add_command(
+                command = self.on_list_names,
+                label = "Names")
+        self.menuedit.add_command(
+                command = self.on_list_invntr,
+                label = "Invntr")
 
     def update_after(self):
         if not self.need_update:
@@ -336,9 +342,16 @@ class App(tkinter.Frame):
                     self.update_gui()
                 acts = [
                     ("Parts", self.on_list_parts),
-                    ("Resources ({})".format(len(self.sim.res)), self.on_list_res),
-                    ("Objects ({})".format(len(self.sim.objects)), self.on_list_objs),
-                    ("Scenes ({})".format(len(self.sim.scenes)), self.on_list_scenes),
+                    ("Resources ({})".format(len(self.sim.res)), \
+                        self.on_list_res),
+                    ("Objects ({})".format(len(self.sim.objects)), \
+                        self.on_list_objs),
+                    ("Scenes ({})".format(len(self.sim.scenes)), \
+                        self.on_list_scenes),
+                    ("Names ({})".format(len(self.sim.names)), \
+                        self.on_list_names),
+                    ("Invntr ({})".format(len(self.sim.invntr)), \
+                        self.on_list_invntr),
                     ("-", None),
                     ("Test image", tst_img),
                     ("Test info", tst_info),
@@ -371,6 +384,16 @@ class App(tkinter.Frame):
             lb = self.update_gui_add_left_listbox("Scenes")   
             for scn in self.sim.scenes:
                 lb.insert(tkinter.END, "{} - {}".format(scn.idx, scn.name))
+        elif self.curr_mode == 103:
+            # list names
+            lb = self.update_gui_add_left_listbox("Names")   
+            for name in self.sim.names.keys():
+                lb.insert(tkinter.END, "{}".format(name))
+        elif self.curr_mode == 104:
+            # list invntr
+            lb = self.update_gui_add_left_listbox("Invntr")   
+            for name in self.sim.invntr.keys():
+                lb.insert(tkinter.END, "{}".format(name))
         self.update_info()
         self.update_after()
 
@@ -403,14 +426,22 @@ class App(tkinter.Frame):
             self.text_view.insert(tkinter.INSERT, "{}".\
                 format(len(self.sim.res)), \
                 self.text_hl.add(self.on_list_res))
-            self.text_view.insert(tkinter.INSERT, "\n    Objects: ")
+            self.text_view.insert(tkinter.INSERT, "\n  Objects:   ")
             self.text_view.insert(tkinter.INSERT, "{}".\
                 format(len(self.sim.objects)), \
                 self.text_hl.add(self.on_list_objs))
-            self.text_view.insert(tkinter.INSERT, "\n     Scenes: ")
+            self.text_view.insert(tkinter.INSERT, "\n  Scenes:    ")
             self.text_view.insert(tkinter.INSERT, "{}".\
                 format(len(self.sim.scenes)), \
                 self.text_hl.add(self.on_list_scenes))
+            self.text_view.insert(tkinter.INSERT, "\n  Names:     ")
+            self.text_view.insert(tkinter.INSERT, "{}".\
+                format(len(self.sim.names)), \
+                self.text_hl.add(self.on_list_names))
+            self.text_view.insert(tkinter.INSERT, "\n  Invntr:    ")
+            self.text_view.insert(tkinter.INSERT, "{}".\
+                format(len(self.sim.invntr)), \
+                self.text_hl.add(self.on_list_invntr))
         elif self.curr_mode == 101:
             stdinfo()
         elif self.curr_mode == 102:
@@ -428,10 +459,17 @@ class App(tkinter.Frame):
             return num
 
         def objinfo(tp, rec):
-            self.text_view.insert(tkinter.INSERT, tp + "\n\n")
             self.text_view.insert(tkinter.INSERT, \
-                "  Index: {}\n   Name: {}".format(rec.idx, rec.name))
-
+                ("Object" if tp else "Scene") + ":\n")
+            self.text_view.insert(tkinter.INSERT, \
+                "  Index:  {}\n  Name:   {}\n".format(rec.idx, rec.name))
+            if rec.name in self.sim.names:
+                self.text_view.insert(tkinter.INSERT, \
+                    "  Alias:  {}\n".format(self.sim.names[rec.name]))
+            if rec.name in self.sim.invntr:
+                self.text_view.insert(tkinter.INSERT, \
+                    "  Invntr: {}\n".format(self.sim.invntr[rec.name]))
+                
         if self.curr_lb_acts:
             act = self.curr_lb_acts[currsel()]
             if act[1]:
@@ -476,11 +514,57 @@ class App(tkinter.Frame):
         elif self.curr_mode == 101:
             # objects
             self.update_info()
-            objinfo("Object:", self.sim.objects[currsel()])
+            objinfo(True, self.sim.objects[currsel()])
         elif self.curr_mode == 102:
             # scenes
             self.update_info()
-            objinfo("Scene:", self.sim.scenes[currsel()])
+            objinfo(False, self.sim.scenes[currsel()])
+        elif self.curr_mode == 103:
+            # names
+            self.update_info()
+            key = list(self.sim.names.keys())[currsel()]
+            self.text_view.insert(tkinter.INSERT, \
+                "Object: {}\n".format(key))
+            self.text_view.insert(tkinter.INSERT, \
+                "Alias:  {}\n\n".format(self.sim.names[key]))
+            # search for objects
+            self.text_view.insert(tkinter.INSERT, \
+                "Applied for:")
+            for obj in self.sim.objects:
+                if obj.name == key:
+                    self.text_view.insert(tkinter.INSERT, \
+                        "\n  ")
+                    def make_cb(idx):
+                        def cb():
+                            print("TODO: names obj", idx)
+                        return cb
+                    self.text_view.insert(tkinter.INSERT, \
+                        "{} - {}".format(obj.idx, obj.name), \
+                        self.text_hl.add(make_cb(obj.idx)))
+        elif self.curr_mode == 104:
+            # invntr
+            self.update_info()
+            key = list(self.sim.invntr.keys())[currsel()]
+            self.text_view.insert(tkinter.INSERT, \
+                "Object: {}\n".format(key))
+            self.text_view.insert(tkinter.INSERT, \
+                "{}\n\n".format(self.sim.invntr[key]))
+            # search for objects
+            self.text_view.insert(tkinter.INSERT, \
+                "Applied for:")
+            for obj in self.sim.objects:
+                if obj.name == key:
+                    self.text_view.insert(tkinter.INSERT, \
+                        "\n  ")
+                    def make_cb(idx):
+                        def cb():
+                            print("TODO: invntr obj", idx)
+                        return cb
+                    self.text_view.insert(tkinter.INSERT, \
+                        "{} - {}".format(obj.idx, obj.name), \
+                        self.text_hl.add(make_cb(obj.idx)))
+                
+            
 
     def on_open_data(self):
         # open data - select TODO
@@ -508,6 +592,16 @@ class App(tkinter.Frame):
 
     def on_list_scenes(self):
         self.curr_mode = 102
+        self.curr_main = 0
+        self.update_gui()
+
+    def on_list_names(self):
+        self.curr_mode = 103
+        self.curr_main = 0
+        self.update_gui()
+
+    def on_list_invntr(self):
+        self.curr_mode = 104
         self.curr_main = 0
         self.update_gui()
         
