@@ -30,8 +30,6 @@ class FileManager:
                 break
             if not ok: return None
         return npath
-        
-        
     
     def load_store(self, name, tag = 0):
         path = self.find_path(name)
@@ -61,8 +59,8 @@ class FileManager:
         for idx, fname in enumerate(data.split("\x00")):
             fname = fname.lower().replace("\\", "/")
             if idx < index_len and fname not in self.strtable:
-                self.strtable[fname] = (len(self.strfd),) + \
-                    index_table[idx]
+                self.strtable[fname] = (len(self.strfd),) + index_table[idx]
+                print("STORE:", fname)
             else:
                 if len(fname) > 0:
                     raise EngineError("Extra file record \"{}\" in \"{}\"".\
@@ -97,10 +95,10 @@ class FileManager:
         strtable = {}
         for idx, (fd, name, tag) in enumerate(self.strfd):
             if flt is not None:
-                if tag != flt: 
-                    for k, v in self.strtable:
-                        if v == idx:
-                            strtable[k] = len(strfd)
+                if tag != flt:
+                    for k, v in self.strtable.items():
+                        if v[0] == idx:
+                            strtable[k] = (len(strfd), v[1], v[2])
                     strfd.append((fd, name, tag))
                     continue
             print("DEBUG: Unload store \"{}\"".format(name))
@@ -108,6 +106,6 @@ class FileManager:
                 if fd: fd.close()
             except Exception as e:
                 print("DEBUG: Can't unload \"{}\":".format(name) + str(e))
-        self.strff = strfd
+        self.strfd = strfd
         self.strtable = strtable
         
