@@ -125,6 +125,8 @@ class App(tkinter.Frame):
         self.path_handler["parts"] = self.path_parts
         self.path_handler["objs"] = self.path_objs_scenes
         self.path_handler["scenes"] = self.path_objs_scenes
+        self.path_handler["names"] = self.path_names
+        self.path_handler["invntr"] = self.path_invntr
         
         self.update_after()
         self.open_path([])
@@ -464,11 +466,7 @@ class App(tkinter.Frame):
                     return cb
                 self.insert_text(ft, make_cb(ft))
                 self.insert_text(": {}\n".format(fts[ft]))
-                
-        elif self.curr_mode == 101:
-            stdinfo()
-        elif self.curr_mode == 102:
-            stdinfo()
+
         else:
             stdinfo()
 
@@ -521,48 +519,7 @@ class App(tkinter.Frame):
                 self.curr_main = 1
                 self.update_gui()
             print(fn)
-        elif self.curr_mode == 101:
-            # objects
-            self.update_info()
-            objinfo(True, self.sim.objects[currsel()])
-        elif self.curr_mode == 102:
-            # scenes
-            self.update_info()
-            objinfo(False, self.sim.scenes[currsel()])
-        elif self.curr_mode == 103:
-            # names
-            self.update_info()
-            key = self.sim.namesord[currsel()]
-            self.insert_text("Alias: {}\n".format(key))
-            self.insert_text("Value: {}\n\n".format(self.sim.names[key]))
-            # search for objects
-            self.insert_text("Applied for:")
-            for obj in self.sim.objects:
-                if obj.name == key:
-                    self.insert_text("\n  ")
-                    def make_cb(idx):
-                        def cb():
-                            self.open_object(idx)
-                        return cb
-                    self.insert_text("{} - {}".format(obj.idx, obj.name), \
-                        make_cb(obj.idx))
-        elif self.curr_mode == 104:
-            # invntr
-            self.update_info()
-            key = self.sim.invntrord[currsel()]
-            self.insert_text("Invntr: {}\n".format(key))
-            self.insert_text("{}\n\n".format(self.sim.invntr[key]))
-            # search for objects
-            self.insert_text("Applied for:")
-            for obj in self.sim.objects:
-                if obj.name == key:
-                    self.insert_text("\n  ")
-                    def make_cb(idx):
-                        def cb():
-                            self.open_object(idx)
-                        return cb
-                    self.insert_text("{} - {}".format(obj.idx, obj.name), \
-                        make_cb(obj.idx))
+
 
     def find_path_obj(self, obj_idx):
         for idx, rec in enumerate(self.sim.objects):
@@ -577,13 +534,13 @@ class App(tkinter.Frame):
         return ["no_scene", scn_idx]
         
     def find_path_name(self, key):
-        for idx, name in enumerate(self.sim.names):
+        for idx, name in enumerate(self.sim.namesord):
             if name == key:
                 return ["names", idx]
         return ["no_name", key]
 
     def find_path_invntr(self, key):
-        for idx, name in enumerate(self.sim.invntr):
+        for idx, name in enumerate(self.sim.invntrord):
             if name == key:
                 return ["invntr", idx]
         return ["no_invntr", key]
@@ -695,18 +652,83 @@ class App(tkinter.Frame):
                 self.insert_text("Invntr", self.find_path_invntr(rec.name))
                 self.insert_text(": {}\n".format(self.sim.invntr[rec.name]))
                     
-            if not isobj:
+            if isobj:
+                # search where object used
+                self.insert_text("\nUsed in:\n")
+                for scn in self.sim.scenes:
+                    for ref in scn.refs:
+                        if ref[0].idx == rec.idx:
+                            self.insert_text("  ")
+                            self.insert_text("{}".format(scn.idx), \
+                                self.find_path_scene(scn.idx))
+                            self.insert_text(" - {}\n".format(scn.name))
+                            break
+            else:
                 if len(rec.refs) == 0:
                     self.insert_text("\nNo references\n")
                 else:
                     self.insert_text("\nReferences: {}\n".format(len(rec.refs)))
                 for idx, ref in enumerate(rec.refs):
                     self.insert_text("  {}) ".format(idx))
-                    self.insert_text("obj_{}".format(ref[0].idx), \
+                    self.insert_text("{}".format(ref[0].idx), \
                         self.find_path_obj(ref[0].idx))
-                    self.insert_text("\n".format(idx))
+                    self.insert_text(" - {}\n".format(ref[0].name))
 
+    def path_names(self, path):
+        self.curr_main = 0
+        if len(self.last_path) == 0 or self.last_path[0] != "names":
+            self.update_gui("Names ({})".format(len(self.sim.names)))
+            for idx, name in enumerate(self.sim.namesord):
+                self.insert_lb_act(name, ["names", idx])
+        # change
+        name = None
+        if len(path) > 1:
+            # parts
+            self.select_lb_item(path[1])
+            name = self.sim.namesord[path[1]]
+        # display
+        self.clear_text()
+        if not name:
+            self.insert_text("Select name from list\n")
+        else:
+            # name info
+            self.insert_text("Alias: {}\n".format(name))
+            self.insert_text("Value: {}\n\n".format(self.sim.names[name]))
+            # search for objects
+            self.insert_text("Applied for:\n")
+            for idx, obj in enumerate(self.sim.objects):
+                if obj.name == name:
+                    self.insert_text("  ")
+                    self.insert_text("{}".format(obj.idx), ["objs", idx])
+                    self.insert_text(" - {}\n".format(obj.name))
 
+    def path_invntr(self, path):
+        self.curr_main = 0
+        if len(self.last_path) == 0 or self.last_path[0] != "invntr":
+            self.update_gui("Invntr ({})".format(len(self.sim.invntr)))
+            for idx, name in enumerate(self.sim.invntrord):
+                self.insert_lb_act(name, ["invntr", idx])
+        # change
+        name = None
+        if len(path) > 1:
+            # parts
+            self.select_lb_item(path[1])
+            name = self.sim.invntrord[path[1]]
+        # display
+        self.clear_text()
+        if not name:
+            self.insert_text("Select invntr from list\n")
+        else:
+            # invntr info
+            self.insert_text("Invntr: {}\n".format(name))
+            self.insert_text("{}\n\n".format(self.sim.invntr[name]))
+            # search for objects
+            self.insert_text("Applied for:\n")
+            for idx, obj in enumerate(self.sim.objects):
+                if obj.name == name:
+                    self.insert_text("  ")
+                    self.insert_text("{}".format(obj.idx), ["objs", idx])
+                    self.insert_text(" - {}\n".format(obj.name))
 
     def on_open_data(self):
         # open data - select TODO
