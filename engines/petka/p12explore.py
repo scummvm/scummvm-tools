@@ -139,7 +139,8 @@ class App(tkinter.Frame):
         self.path_handler["test"] = self.path_test
         
         self.update_after()
-        self.open_path(self.find_path_scene(36))
+        #self.open_path(self.find_path_scene(36))
+        self.open_path(["res", "flt", "BMP", 7])
 
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
@@ -533,7 +534,7 @@ class App(tkinter.Frame):
         elif path[1] == "all":
             return self.path_res_all(path)
         else:
-            return self.path_default()
+            return self.path_default(path)
             
             
         if self.last_path[:2] != path[:2]:

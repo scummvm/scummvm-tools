@@ -2,7 +2,7 @@
 
 # romiq.kh@gmail.com, 2014
 
-import array, struct
+import array, struct, io
 
 from . import EngineError
 
@@ -50,6 +50,7 @@ class BMPLoader:
 
         bsz = pictw * picth * 2
         picture_data = f.read(bsz)
+ 
         off += bsz
         if len(picture_data) != bsz:
             raise EngineError("Bitmap truncated, need {}, got {}".format(bsz, \
@@ -87,8 +88,20 @@ class BMPLoader:
         try:
             pw, ph, pd = self.load_data_int16(f)
             if Image:
-                
-                self.image = Image.frombytes("RGB;16", (pw, ph), pd, "bit", 16, 0, 0)
+                # reload fixed
+                f.seek(0)
+                d = io.BytesIO()
+                d.write(f.read(10))
+                data_off = struct.unpack("<I", f.read(4))[0]
+                d.write(struct.pack("<I", data_off - 1))
+                d.write(f.read(data_off - 14))
+                #fmt = "{}H".format(pw * ph)
+                #data = struct.unpack(">" + fmt, f.read(pw * ph * 2))
+                #d.write(struct.pack("<" + fmt, *data))
+                d.write(f.read(pw * ph * 2))
+                d.write(b"\xFF" * 10)
+                d.seek(0)
+                self.image = Image.open(d)
             else:
                 self.width = pw
                 self.height = ph
