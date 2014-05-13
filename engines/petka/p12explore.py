@@ -123,10 +123,12 @@ class App(tkinter.Frame):
         
         # bind path handlers
         self.path_handler["parts"] = self.path_parts
+        self.path_handler["res"] = self.path_res
         self.path_handler["objs"] = self.path_objs_scenes
         self.path_handler["scenes"] = self.path_objs_scenes
         self.path_handler["names"] = self.path_names
         self.path_handler["invntr"] = self.path_invntr
+        self.path_handler["test"] = self.path_test
         
         self.update_after()
         self.open_path([])
@@ -380,28 +382,6 @@ class App(tkinter.Frame):
                         ("." + self.curr_mode_sub):
                         lb.insert(tkinter.END, "{} - {}".format(res_id, \
                             self.sim.res[res_id]))
-        elif self.curr_mode == 101:
-            # list objects
-            lb = self.update_gui_add_left_listbox("Objects")
-            for obj in self.sim.objects:
-                lb.insert(tkinter.END, "{} - {}".format(obj.idx, obj.name))
-        elif self.curr_mode == 102:
-            # list scenes
-            lb = self.update_gui_add_left_listbox("Scenes")
-            for scn in self.sim.scenes:
-                lb.insert(tkinter.END, "{} - {}".format(scn.idx, scn.name))
-        elif self.curr_mode == 103:
-            # list names
-            lb = self.update_gui_add_left_listbox("Names")
-            for name in self.sim.namesord:
-                lb.insert(tkinter.END, "{}".format(name))
-        elif self.curr_mode == 104:
-            # list invntr
-            lb = self.update_gui_add_left_listbox("Invntr")
-            for name in self.sim.invntrord:
-                lb.insert(tkinter.END, "{}".format(name))
-        self.update_info()
-        self.update_after()
 
     def clear_text(self):
         self.text_view.delete(0.0, tkinter.END)
