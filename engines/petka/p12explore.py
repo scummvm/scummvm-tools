@@ -123,6 +123,8 @@ class App(tkinter.Frame):
         
         # bind path handlers
         self.path_handler["parts"] = self.path_parts
+        self.path_handler["objs"] = self.path_objs_scenes
+        self.path_handler["scenes"] = self.path_objs_scenes
         
         self.update_after()
         self.open_path([])
@@ -469,43 +471,16 @@ class App(tkinter.Frame):
             stdinfo()
         else:
             stdinfo()
-            
-    def open_gui_elem(self, main, mode, idx):
-        if self.curr_mode != mode:
-            self.change_gui(main, mode)
-        self.curr_lb.selection_set(idx)
-        self.curr_lb.see(idx)
-        self.on_left_listbox(None)
-            
-    def open_object(self, obj_id):
-        for idx, obj in enumerate(self.sim.objects):
-            if obj.idx == obj_id:
-                self.open_gui_elem(0, 101, idx)
-                break
 
-    def open_scene(self, scn_id):
-        for idx, obj in enumerate(self.sim.scenes):
-            if obj.idx == scn_id:
-                self.open_gui_elem(0, 102, idx)
-                break
-
-    def open_name(self, name_key):
-        for idx, key in enumerate(self.sim.namesord):
-            if key == name_key:
-                self.open_gui_elem(0, 103, idx)
-                break
-
-    def open_invntr(self, inv_key):
-        for idx, key in enumerate(self.sim.invntrord):
-            if key == inv_key:
-                self.open_gui_elem(0, 104, idx)
-                break
-                
-    def change_gui(self, main, mode, sub = None):
-        self.curr_main = main
-        self.curr_mode = mode
-        self.curr_mode_sub = sub
-        self.update_gui()
+    def select_lb_item(self, idx):
+        try:
+            num = self.curr_lb.curselection()[0]
+            num = int(num)
+        except:
+            num = -1
+        if idx != num:
+            self.curr_lb.selection_set(idx)
+            self.curr_lb.see(idx)
 
     def on_left_listbox(self, event):
         def currsel():
@@ -517,37 +492,7 @@ class App(tkinter.Frame):
             return num
 
         def objinfo(tp, rec):
-            self.insert_text(("Object" if tp else "Scene") + ":\n")
-            self.insert_text("  Index: {}\n  Name:  {}\n".\
-                format(rec.idx, rec.name))
-            if rec.name in self.sim.names:
-                self.insert_text("  ")
-                def make_cb(key):
-                    def cb():
-                        self.open_name(key)
-                    return cb
-                self.insert_text("Alias", make_cb(rec.name))
-                self.insert_text(":  {}\n".format(self.sim.names[rec.name]))
-            if rec.name in self.sim.invntr:
-                self.insert_text("  ")
-                def make_cb(key):
-                    def cb():
-                        self.open_invntr(key)
-                    return cb
-                self.insert_text("Invntr", make_cb(rec.name))
-                self.insert_text(": {}\n".format(self.sim.invntr[rec.name]))
-                    
-            if not tp:
-                if len(rec.refs) == 0:
-                    self.insert_text("\nNo references\n")
-                else:
-                    self.insert_text("\nReferences: {}\n".format(len(rec.refs)))
-                for idx, ref in enumerate(rec.refs):
-                    self.insert_text("  {}) ".format(idx))
-                    self.insert_text("obj_{}".format(ref[0].idx), \
-                        self.make_obj_cb(ref[0].idx))
-                    self.insert_text("\n".format(idx))
-                    
+            pass                    
         if self.curr_lb_acts:
             act = self.curr_lb_acts[currsel()]
             if act[1]:
@@ -619,6 +564,30 @@ class App(tkinter.Frame):
                     self.insert_text("{} - {}".format(obj.idx, obj.name), \
                         make_cb(obj.idx))
 
+    def find_path_obj(self, obj_idx):
+        for idx, rec in enumerate(self.sim.objects):
+            if rec.idx == obj_idx:
+                return ["objs", idx]
+        return ["no_obj", obj_idx]
+
+    def find_path_scene(self, scn_idx):
+        for idx, rec in enumerate(self.sim.scenes):
+            if rec.idx == scn_idx:
+                return ["scenes", idx]
+        return ["no_scene", scn_idx]
+        
+    def find_path_name(self, key):
+        for idx, name in enumerate(self.sim.names):
+            if name == key:
+                return ["names", idx]
+        return ["no_name", key]
+
+    def find_path_invntr(self, key):
+        for idx, name in enumerate(self.sim.invntr):
+            if name == key:
+                return ["invntr", idx]
+        return ["no_invntr", key]
+
     def path_default(self, path):
         self.curr_main = 0
         self.update_gui("Outline")
@@ -662,12 +631,8 @@ class App(tkinter.Frame):
         # change                
         if len(path) > 1:
             # parts
-            try:
-                part_id = self.curr_lb.curselection()[0]
-                part_id = int(part_id)
-            except:
-                pass
-            part_id = self.sim.parts[part_id]
+            self.select_lb_item(path[1])
+            part_id = self.sim.parts[path[1]]
             # parse
             pnum = part_id[5:]
             cnum = pnum.split("Chapter", 1)
@@ -690,7 +655,58 @@ class App(tkinter.Frame):
         self.insert_text("{}".format(len(self.sim.names)), ["names"])
         self.insert_text("\n  Invntr:    ")
         self.insert_text("{}".format(len(self.sim.invntr)), ["invntr"])
-            # 
+
+    def path_objs_scenes(self, path):
+        self.curr_main = 0
+        isobj = (self.curr_path[0] == "objs")
+        if isobj:
+            lst = self.sim.objects
+        else:
+            lst = self.sim.scenes
+        if len(self.last_path) == 0 or self.last_path[0] != self.curr_path[0]:
+            if isobj:
+                self.update_gui("Objects ({})".format(len(lst)))
+            else:
+                self.update_gui("Scenes ({})".format(len(lst)))
+            for idx, rec in enumerate(lst):
+                self.insert_lb_act("{} - {}".format(rec.idx, rec.name), \
+                    [self.curr_path[0], idx])
+        # change                
+        rec = None
+        if len(path) > 1:
+            # index
+            self.select_lb_item(path[1])
+            rec = lst[path[1]]
+        # display
+        self.clear_text()
+        if not rec:
+            self.insert_text("Select item from list\n")
+        else:
+            # record info
+            self.insert_text(("Object" if isobj else "Scene") + ":\n")
+            self.insert_text("  Index: {}\n  Name:  {}\n".\
+                format(rec.idx, rec.name))
+            if rec.name in self.sim.names:
+                self.insert_text("  ")
+                self.insert_text("Alias", self.find_path_name(rec.name))
+                self.insert_text(":  {}\n".format(self.sim.names[rec.name]))
+            if rec.name in self.sim.invntr:
+                self.insert_text("  ")
+                self.insert_text("Invntr", self.find_path_invntr(rec.name))
+                self.insert_text(": {}\n".format(self.sim.invntr[rec.name]))
+                    
+            if not isobj:
+                if len(rec.refs) == 0:
+                    self.insert_text("\nNo references\n")
+                else:
+                    self.insert_text("\nReferences: {}\n".format(len(rec.refs)))
+                for idx, ref in enumerate(rec.refs):
+                    self.insert_text("  {}) ".format(idx))
+                    self.insert_text("obj_{}".format(ref[0].idx), \
+                        self.find_path_obj(ref[0].idx))
+                    self.insert_text("\n".format(idx))
+
+
 
     def on_open_data(self):
         # open data - select TODO
