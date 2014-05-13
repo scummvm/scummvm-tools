@@ -6,13 +6,20 @@ import array, struct
 
 from . import EngineError
 
+try:
+    from PIL import Image
+except:
+    Image = None
+
 class BMPLoader:
     def __init__(self):
-        self.raw = None
+        self.rgb = None
+        self.image = None
         self.width = 0
         self.height = 0
+        self.imginfo = ""
         
-    def load_data(self, f):
+    def load_data_int(self, f):
         # TODO: normal BMP, rle BMP
         # check magic string "BM"
         temp = f.read(2)
@@ -74,4 +81,13 @@ class BMPLoader:
         for i in range(picth):
             off = (picth - i - 1) * pictw * 3
             self.rgb += rgb[off:off + pictw * 3]
+        
+        self.imginfo = "Internal BMP loader"
+        
+    def load_data(self, f):
+        try:
+            img = Image.open(f)
+        except:
+            f.seek(0)
+            self.load_data_int(f)
         
