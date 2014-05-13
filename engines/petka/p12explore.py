@@ -7,6 +7,7 @@ import sys, os
 import tkinter
 from tkinter import ttk, font
 from idlelib.WidgetRedirector import WidgetRedirector
+import traceback
 
 import petka
 
@@ -292,12 +293,7 @@ class App(tkinter.Frame):
         image = tkinter.PhotoImage(width = width, height = height, \
             data = bytes(p))
         return image                
-
-    def make_obj_cb(self, idx):
-        def cb():
-            self.open_object(idx)
-        return cb
-    
+   
     def update_gui(self, text = "<Undefined>"):
         self.last_path = self.curr_path
         # cleanup
@@ -379,52 +375,6 @@ class App(tkinter.Frame):
         self.curr_lb_acts.append((name, act))
         self.curr_lb.insert(tkinter.END, name)
 
-    def update_info(self):
-        def stdinfo():
-            self.text_view.delete(0.0, tkinter.END)
-            self.insert_text("<- Outline", self.on_outline)
-            self.insert_text("\n\n")
-
-        self.text_hl.reset()
-        if self.curr_mode == 0:
-            self.text_view.delete(0.0, tkinter.END)
-            if self.sim is None:
-                self.insert_text("No data loaded")
-                self.insert_text("Open data",self.on_open_data)
-            else:
-                self.insert_text("Select type from outline")
-        elif self.curr_mode == 99:
-            stdinfo()
-            for i in range(100):
-                self.insert_text("Item {}\n".format(i))
-        elif self.curr_mode == 90:
-            stdinfo()
-        elif self.curr_mode == 100:
-            stdinfo()
-            self.insert_text("Total: ")
-            self.insert_text("{}".format(len(self.sim.res)), \
-                lambda: self.change_gui(0, 100))
-            self.insert_text("\nFiletypes:\n")
-            fts = {}
-            for res in self.sim.res.values():
-                fp = res.rfind(".")
-                if fp >= 0:
-                    ft = res[fp + 1:].upper()
-                    fts[ft] = fts.get(ft, 0) + 1
-            ftk = list(fts.keys())
-            ftk.sort()
-            for ft in ftk:
-                self.insert_text("  ")
-                def make_cb(key):
-                    def cb():
-                        self.change_gui(0, 100, key)
-                    return cb
-                self.insert_text(ft, make_cb(ft))
-                self.insert_text(": {}\n".format(fts[ft]))
-
-        else:
-            stdinfo()
-
     def select_lb_item(self, idx):
         try:
             num = self.curr_lb.curselection()[0]
@@ -444,36 +394,10 @@ class App(tkinter.Frame):
                 pass
             return num
 
-        def objinfo(tp, rec):
-            pass                    
         if self.curr_lb_acts:
             act = self.curr_lb_acts[currsel()]
             if act[1] is not None:
                 self.open_path(act[1])
-        return
-        
-        if self.curr_mode == 90:
-            pass
-        elif self.curr_mode == 100:
-            # resources
-            try:
-                res_id = self.curr_lb.curselection()[0]
-                res_id = self.curr_lb.get(res_id).split("-", 1)[0].strip()
-                res_id = int(res_id)
-            except:
-                pass
-            fn = self.sim.res[res_id]
-            if fn[-4:].lower() == ".bmp":
-                bmpdata = self.sim.fman.read_file(fn)
-                bmp = petka.BMPLoader()
-                bmp.load_data(bmpdata)
-                self.main_image = \
-                    self.make_image(bmp.width, bmp.height, bmp.rgb)
-                self.curr_width = bmp.width
-                self.curr_height = bmp.height
-                self.curr_main = 1
-                self.update_gui()
-            print(fn)
 
 
     def find_path_obj(self, obj_idx):
@@ -527,7 +451,7 @@ class App(tkinter.Frame):
 
     def path_parts(self, path):
         self.switch_view(0)
-        if len(self.last_path) == 0 or self.last_path[0] != "parts":
+        if self.last_path[:1] != ("parts",):
             self.update_gui("Parts ({})".format(len(self.sim.parts)))
             for idx, name in enumerate(self.sim.parts):
                 self.insert_lb_act(name, ["parts", idx])
@@ -560,6 +484,31 @@ class App(tkinter.Frame):
         self.insert_text("{}".format(len(self.sim.invntr)), ["invntr"])
 
     def path_res(self, path):
+        # res - full list
+        # res/flt/<ext> - list by <ext>
+        # res/all/<id> - display res by id
+        if path == ("res",):
+            path = ("res", "all")
+        if path[1] == "flt":
+            return self.path_res_flt(path)
+        elif path[1] == "all":
+            return self.path_res_all(path)
+        else:
+            return self.path_default()
+            
+            
+        if self.last_path[:2] != path[:2]:
+            # 
+            self.switch_view(0)
+            self.update_gui("Resources: {}".format(path[2]))
+            for idx,res_id in self.sim.resord:
+                if self.sim.res[res_id].upper().endswith("." + path[2]):
+                    self.insert_lb_act("{} - {}".format(res_id))
+        
+        if len(self.last_path) == 0 or self.last_path[0] != "res":
+            for idx, name in enumerate(self.sim.invntrord):
+                self.insert_lb_act(name, ["invntr", idx])
+
         pass
         # list resources
         if self.curr_mode_sub is None:
@@ -576,6 +525,83 @@ class App(tkinter.Frame):
                     lb.insert(tkinter.END, "{} - {}".format(res_id, \
                         self.sim.res[res_id]))
 
+    def path_res_open(self, res_id):
+        fn = self.sim.res[res_id]
+        if fn[-4:].lower() == ".bmp":
+            try:
+                bmpdata = self.sim.fman.read_file(fn)
+                bmp = petka.BMPLoader()
+                bmp.load_data(bmpdata)
+                self.main_image = \
+                    self.make_image(bmp.width, bmp.height, bmp.rgb)
+                self.curr_width = bmp.width
+                self.curr_height = bmp.height
+                self.switch_view(1)
+                self.update_canvas()
+            except:
+                self.switch_view(0)
+                self.clear_text()
+                self.insert_text("Error loading {} - \"{}\" \n\n{}".\
+                    format(res_id, fn, traceback.format_exc()))
+        else:
+            self.switch_view(0)
+            self.clear_text()
+            self.insert_text("Resource {} - \"{}\" cannot be displayed\n".\
+                format(res_id, fn))
+
+    def path_res_status(self):
+        self.switch_view(0)
+        self.clear_text()
+        self.insert_text("Total: ")
+        self.insert_text("{}".format(len(self.sim.res)), ["res"])
+        self.insert_text("\nFiletypes:\n")
+        fts = {}
+        for res in self.sim.res.values():
+            fp = res.rfind(".")
+            if fp >= 0:
+                ft = res[fp + 1:].upper()
+                fts[ft] = fts.get(ft, 0) + 1
+        ftk = list(fts.keys())
+        ftk.sort()
+        for ft in ftk:
+            self.insert_text("  ")
+            self.insert_text(ft, ["res", "flt", ft])
+            self.insert_text(": {}\n".format(fts[ft]))
+
+    def path_res_all(self, path):
+        if self.last_path[:2] != ("res", "all",):
+            self.update_gui("Resources ({})".format(len(self.sim.res)))
+            for idx, res_id in enumerate(self.sim.resord):
+                    self.insert_lb_act("{} - {}".format(\
+                res_id, self.sim.res[res_id]), ["res", "all", idx])
+        # change                
+        if len(path) > 2:
+            # parts
+            self.select_lb_item(path[2])
+            res_id = self.sim.resord[path[2]]
+            self.path_res_open(res_id)
+        else:
+            self.path_res_status()
+
+    def path_res_flt(self, path):
+        lst = []
+        for idx, res_id in enumerate(self.sim.resord):
+            if self.sim.res[res_id].upper().endswith("." + path[2]):
+                lst.append(res_id)
+        if self.last_path[:3] != ("res", "flt", path[2]):
+            self.update_gui("Resources {} ({})".format(path[2], len(lst)))
+            for idx, res_id in enumerate(lst):
+                    self.insert_lb_act("{} - {}".format(\
+                res_id, self.sim.res[res_id]), ["res", "flt", path[2], idx])
+        # change                
+        if len(path) > 3:
+            # parts
+            self.select_lb_item(path[3])
+            res_id = lst[path[3]]
+            self.path_res_open(res_id)
+        else:
+            self.path_res_status()
+
     def path_objs_scenes(self, path):
         self.switch_view(0)
         isobj = (self.curr_path[0] == "objs")
@@ -583,7 +609,7 @@ class App(tkinter.Frame):
             lst = self.sim.objects
         else:
             lst = self.sim.scenes
-        if len(self.last_path) == 0 or self.last_path[0] != self.curr_path[0]:
+        if self.last_path[:1] != (self.curr_path[0],):
             if isobj:
                 self.update_gui("Objects ({})".format(len(lst)))
             else:
@@ -639,7 +665,7 @@ class App(tkinter.Frame):
 
     def path_names(self, path):
         self.switch_view(0)
-        if len(self.last_path) == 0 or self.last_path[0] != "names":
+        if self.last_path[:1] != ("names",):
             self.update_gui("Names ({})".format(len(self.sim.names)))
             for idx, name in enumerate(self.sim.namesord):
                 self.insert_lb_act(name, ["names", idx])
@@ -667,7 +693,7 @@ class App(tkinter.Frame):
 
     def path_invntr(self, path):
         self.switch_view(0)
-        if len(self.last_path) == 0 or self.last_path[0] != "invntr":
+        if self.last_path[:1] != ("invntr",):
             self.update_gui("Invntr ({})".format(len(self.sim.invntr)))
             for idx, name in enumerate(self.sim.invntrord):
                 self.insert_lb_act(name, ["invntr", idx])
@@ -694,6 +720,11 @@ class App(tkinter.Frame):
                     self.insert_text(" - {}\n".format(obj.name))
 
     def path_test(self, path):
+        self.update_gui("Test {}".format(path[1]))
+        self.insert_lb_act("Outline", [])
+        self.insert_lb_act("-", None)
+        for i in range(15):
+            self.insert_lb_act("{} #{}".format(path[1], i), path[:2] + (i,))
         if path[1] == "image":
             self.switch_view(1)
             self.main_image = tkinter.PhotoImage(\
@@ -702,13 +733,8 @@ class App(tkinter.Frame):
             self.curr_height = self.main_image.height()
         else:
             self.switch_view(0)
-        self.update_gui("Test {}".format(path[1]))
-        self.insert_lb_act("Outline", [])
-        self.insert_lb_act("-", None)
-        for i in range(15):
-            self.insert_lb_act("{} #{}".format(path[1], i), path[:2] + (i,))
-        if path[1] != "image":
             self.clear_text()
+            self.insert_text("Information panel for {}\n".format(path))
             for i in range(100):
                 self.insert_text("  Item {}\n".format(i))
 
