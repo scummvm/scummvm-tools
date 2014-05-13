@@ -89,19 +89,20 @@ class BMPLoader:
             pw, ph, pd = self.load_data_int16(f)
             if Image:
                 # reload fixed
-                f.seek(0)
-                d = io.BytesIO()
-                d.write(f.read(10))
-                data_off = struct.unpack("<I", f.read(4))[0]
-                d.write(struct.pack("<I", data_off - 1))
-                d.write(f.read(data_off - 14))
+                #f.seek(0)
+                #d = io.BytesIO()
+                #d.write(f.read(10))
+                #data_off = struct.unpack("<I", f.read(4))[0]
+                #d.write(struct.pack("<I", data_off - 1))
+                #d.write(f.read(data_off - 14))
                 #fmt = "{}H".format(pw * ph)
                 #data = struct.unpack(">" + fmt, f.read(pw * ph * 2))
                 #d.write(struct.pack("<" + fmt, *data))
-                d.write(f.read(pw * ph * 2))
-                d.write(b"\xFF" * 10)
-                d.seek(0)
-                self.image = Image.open(d)
+                #d.write(f.read(pw * ph * 2))
+                #d.write(b"\xFF" * 10)
+                #d.seek(0)
+                #self.image = Image.open(d)
+                self.image = Image.frombytes("RGB", (pw, ph), pd, "BGR;16") 
             else:
                 self.width = pw
                 self.height = ph
