@@ -64,7 +64,7 @@ class App(tkinter.Frame):
         self.sim = None
         # gui
         self.path_handler = {}
-        self.curr_main = 0 # 0 - frame, 1 - canvas
+        self.curr_main = -1 # 0 - frame, 1 - canvas
         self.curr_path = []
         self.last_path = None
         self.curr_mode = 0
@@ -300,7 +300,6 @@ class App(tkinter.Frame):
     
     def update_gui(self, text = "<Undefined>"):
         self.last_path = self.curr_path
-        self.canv_view.delete(tkinter.ALL)
         # cleanup
         for item in self.curr_gui:
             item()
@@ -331,8 +330,13 @@ class App(tkinter.Frame):
         # actions on listbox
         self.curr_lb = lb
         self.curr_lb_acts = []
+
+    def switch_view(self, main):
         # main view
-        if self.curr_main == 0:
+        if main == self.curr_main: return
+        self.curr_main = main
+        if main == 0:
+            self.canv_view.delete(tkinter.ALL)
             self.canv_view.grid_forget()
             self.text_view.grid(row = 0, column = 0, \
                 sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
@@ -343,6 +347,7 @@ class App(tkinter.Frame):
             self.scr_view_x.config(command = self.text_view.xview)
             self.scr_view_y.config(command = self.text_view.yview)
         else:
+            self.canv_view.delete(tkinter.ALL)
             self.text_view.grid_forget()
             self.canv_view.grid(row = 0, column = 0, \
                 sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
@@ -352,36 +357,6 @@ class App(tkinter.Frame):
             )
             self.scr_view_x.config(command = self.canv_view.xview)
             self.scr_view_y.config(command = self.canv_view.yview)
-        return
-        
-        
-        if self.curr_mode == 0:
-            pass
-        elif self.curr_mode == 99:
-            acts = [
-                ("<- outline", self.on_outline)
-            ]
-            self.update_gui_add_left_listbox("Test info", acts)                
-        elif self.curr_mode == 90:
-            # list parts
-            lb = self.update_gui_add_left_listbox("Parts")
-            for part in self.sim.parts:
-                lb.insert(tkinter.END, part)
-        elif self.curr_mode == 100:
-            # list resources
-            if self.curr_mode_sub is None:
-                lb = self.update_gui_add_left_listbox("Resources") 
-                for res_id in self.sim.resord:
-                    lb.insert(tkinter.END, "{} - {}".format(res_id, \
-                        self.sim.res[res_id]))
-            else:
-                lb = self.update_gui_add_left_listbox("Resources: {}".\
-                    format(self.curr_mode_sub))
-                for res_id in self.sim.resord:
-                    if self.sim.res[res_id].upper().endswith\
-                        ("." + self.curr_mode_sub):
-                        lb.insert(tkinter.END, "{} - {}".format(res_id, \
-                            self.sim.res[res_id]))
 
     def clear_text(self):
         self.text_view.delete(0.0, tkinter.END)
@@ -526,7 +501,7 @@ class App(tkinter.Frame):
         return ["no_invntr", key]
 
     def path_default(self, path):
-        self.curr_main = 0
+        self.switch_view(0)
         self.update_gui("Outline")
         self.clear_text()
         if len(path) != 0:
@@ -551,7 +526,7 @@ class App(tkinter.Frame):
                 self.insert_lb_act(name, act)
 
     def path_parts(self, path):
-        self.curr_main = 0
+        self.switch_view(0)
         if len(self.last_path) == 0 or self.last_path[0] != "parts":
             self.update_gui("Parts ({})".format(len(self.sim.parts)))
             for idx, name in enumerate(self.sim.parts):
@@ -586,9 +561,23 @@ class App(tkinter.Frame):
 
     def path_res(self, path):
         pass
+        # list resources
+        if self.curr_mode_sub is None:
+            lb = self.update_gui_add_left_listbox("Resources") 
+            for res_id in self.sim.resord:
+                lb.insert(tkinter.END, "{} - {}".format(res_id, \
+                    self.sim.res[res_id]))
+        else:
+            lb = self.update_gui_add_left_listbox("Resources: {}".\
+                format(self.curr_mode_sub))
+            for res_id in self.sim.resord:
+                if self.sim.res[res_id].upper().endswith\
+                    ("." + self.curr_mode_sub):
+                    lb.insert(tkinter.END, "{} - {}".format(res_id, \
+                        self.sim.res[res_id]))
 
     def path_objs_scenes(self, path):
-        self.curr_main = 0
+        self.switch_view(0)
         isobj = (self.curr_path[0] == "objs")
         if isobj:
             lst = self.sim.objects
@@ -649,7 +638,7 @@ class App(tkinter.Frame):
                     self.insert_text(" - {}\n".format(ref[0].name))
 
     def path_names(self, path):
-        self.curr_main = 0
+        self.switch_view(0)
         if len(self.last_path) == 0 or self.last_path[0] != "names":
             self.update_gui("Names ({})".format(len(self.sim.names)))
             for idx, name in enumerate(self.sim.namesord):
@@ -677,7 +666,7 @@ class App(tkinter.Frame):
                     self.insert_text(" - {}\n".format(obj.name))
 
     def path_invntr(self, path):
-        self.curr_main = 0
+        self.switch_view(0)
         if len(self.last_path) == 0 or self.last_path[0] != "invntr":
             self.update_gui("Invntr ({})".format(len(self.sim.invntr)))
             for idx, name in enumerate(self.sim.invntrord):
@@ -706,13 +695,13 @@ class App(tkinter.Frame):
 
     def path_test(self, path):
         if path[1] == "image":
-            self.curr_main = 1
+            self.switch_view(1)
             self.main_image = tkinter.PhotoImage(\
                 file = "img/splash.gif")
             self.curr_width = self.main_image.width()
             self.curr_height = self.main_image.height()
         else:
-            self.curr_main = 0
+            self.switch_view(0)
         self.update_gui("Test {}".format(path[1]))
         self.insert_lb_act("Outline", [])
         self.insert_lb_act("-", None)
@@ -722,7 +711,6 @@ class App(tkinter.Frame):
             self.clear_text()
             for i in range(100):
                 self.insert_text("  Item {}\n".format(i))
-
 
     def on_open_data(self):
         # open data - select TODO
