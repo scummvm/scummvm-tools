@@ -86,7 +86,7 @@ class BMPLoader:
         
     def load_data(self, f):
         try:
-            img = Image.open(f)
+            self.image = Image.open(f)
         except:
             f.seek(0)
             self.load_data_int(f)

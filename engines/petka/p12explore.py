@@ -9,6 +9,15 @@ from tkinter import ttk, font
 from idlelib.WidgetRedirector import WidgetRedirector
 import traceback
 
+try:
+    from PIL import Image
+except:
+    Image = None
+try:
+    from PIL import ImageTk
+except:
+    ImageTk = None
+
 import petka
 
 APPNAME = "P1&2 Explorer"
@@ -73,8 +82,6 @@ class App(tkinter.Frame):
         self.curr_gui = []
         self.curr_lb_acts = None
         # canvas
-        self.curr_width = 0
-        self.curr_height = 0
         self.need_update = False
         self.canv_view_fact = 1
         self.main_image = tkinter.PhotoImage(width = 1, height = 1)
@@ -219,54 +226,81 @@ class App(tkinter.Frame):
         c = self.canv_view
         c.delete(tkinter.ALL)
         if self.sim is None: return
-        # Preview image        
-        self.canv_image = self.main_image.copy()
+
         w = self.canv_view.winfo_width() 
         h = self.canv_view.winfo_height()
         if (w == 0) or (h == 0): 
             return
         
-        scale = 0 #self.RadioGroupScale.get()
-        if scale == 0: # Fit
-            try:
-                psc = w / h
-                isc = self.curr_width / self.curr_height
-                if psc < isc:
-                    if w > self.curr_width:
-                        fact = w // self.curr_width
-                    else:
-                        fact = -self.curr_width // w
-                else:
-                    if h > self.curr_height:
-                        fact = h // self.curr_height
-                    else:
-                        fact = -self.curr_height // h
-            except:
-                fact = 1
-        else:
-            fact = scale
+        scale = 0
 
-        # place on canvas
-        if fact > 0:
-            pw = self.curr_width * fact
-            ph = self.curr_height * fact
+        # Preview image
+        if not isinstance(self.main_image, tkinter.PhotoImage):
+            mw, mh = self.main_image.size
+            if scale == 0: # Fit
+                try:
+                    psc = w / h
+                    isc = mw / mh
+                    if psc < isc:
+                        fact = w / mw
+                    else:
+                        fact = h / mh
+                except:
+                    fact = 1.0
+            else:
+                fact = scale
+            pw = int(mw * fact)
+            ph = int(mh * fact)
+            img = self.main_image.resize((pw, ph))
+            self.canv_image = ImageTk.PhotoImage(img)
         else:
-            pw = self.curr_width // -fact
-            ph = self.curr_height // -fact
+            mw = self.main_image.width()
+            mh = self.main_image.height()
+            if scale == 0: # Fit
+                try:
+                    psc = w / h
+                    isc = mw / mh
+                    if psc < isc:
+                        if w > mw:
+                            fact = w // mw
+                        else:
+                            fact = -mw // w
+                    else:
+                        if h > mh:
+                            fact = h // mh
+                        else:
+                            fact = -mh // h
+                except:
+                    fact = 1
+            else:
+                fact = scale
+            self.canv_image = self.main_image.copy()
+            if fact > 0:
+                self.canv_image = self.canv_image.zoom(fact)
+            else:
+                self.canv_image = self.canv_image.subsample(-fact)
+            self.canv_image_fact = fact
+
+            # place on canvas
+            if fact > 0:
+                pw = mw * fact
+                ph = mh * fact
+            else:
+                pw = mw // -fact
+                ph = mh // -fact
 
         cw = max(pw, w)
         ch = max(ph, h)
         c.config(scrollregion = (0, 0, cw - 2, ch - 2))
-    
-        if fact > 0:
-            self.canv_image = self.canv_image.zoom(fact)
-        else:
-            self.canv_image = self.canv_image.subsample(-fact)
-        self.canv_image_fact = fact
         #print("Place c %d %d, p %d %d" % (cw, ch, w, h))
         c.create_image(cw // 2, ch // 2, image = self.canv_image)
        
-    def make_image(self, width, height, data):
+    def make_image(self, imgobj):
+        if imgobj.image is not None:
+            return imgobj.image
+        width = imgobj.width
+        height = imgobj.height
+        data = imgobj.rgb
         # create P6
         phdr = ("P6\n{} {}\n255\n".format(width, height))
         rawlen = width * height * 3 # RGB
@@ -538,9 +572,7 @@ class App(tkinter.Frame):
                 bmp = petka.BMPLoader()
                 bmp.load_data(bmpf)
                 self.main_image = \
-                    self.make_image(bmp.width, bmp.height, bmp.rgb)
-                self.curr_width = bmp.width
-                self.curr_height = bmp.height
+                    self.make_image(bmp)
                 self.switch_view(1)
                 self.update_canvas()
             except:
@@ -785,10 +817,7 @@ class App(tkinter.Frame):
             self.insert_lb_act("{} #{}".format(path[1], i), path[:2] + (i,))
         if path[1] == "image":
             self.switch_view(1)
-            self.main_image = tkinter.PhotoImage(\
-                file = "img/splash.gif")
-            self.curr_width = self.main_image.width()
-            self.curr_height = self.main_image.height()
+            self.main_image = tkinter.PhotoImage(file = "img/splash.gif")
         else:
             self.switch_view(0)
             self.clear_text()
