@@ -67,7 +67,7 @@ class App(tkinter.Frame):
         self.path_handler = {}
         self.curr_main = -1 # 0 - frame, 1 - canvas
         self.curr_path = []
-        self.last_path = None
+        self.last_path = [None]
         self.curr_mode = 0
         self.curr_mode_sub = None
         self.curr_gui = []
@@ -132,7 +132,7 @@ class App(tkinter.Frame):
         self.path_handler["test"] = self.path_test
         
         self.update_after()
-        self.open_path([])
+        self.open_path(self.find_path_scene(36))
 
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
@@ -399,6 +399,11 @@ class App(tkinter.Frame):
             if act[1] is not None:
                 self.open_path(act[1])
 
+    def find_path_res(self, res):
+        for idx, res_id in enumerate(self.sim.resord):
+            if res_id == res:
+                return ["res", "all", idx]
+        return ["no_res", res]
 
     def find_path_obj(self, obj_idx):
         for idx, rec in enumerate(self.sim.objects):
@@ -529,9 +534,9 @@ class App(tkinter.Frame):
         fn = self.sim.res[res_id]
         if fn[-4:].lower() == ".bmp":
             try:
-                bmpdata = self.sim.fman.read_file(fn)
+                bmpf = self.sim.fman.read_file_stream(fn)
                 bmp = petka.BMPLoader()
-                bmp.load_data(bmpdata)
+                bmp.load_data(bmpf)
                 self.main_image = \
                     self.make_image(bmp.width, bmp.height, bmp.rgb)
                 self.curr_width = bmp.width
@@ -543,6 +548,8 @@ class App(tkinter.Frame):
                 self.clear_text()
                 self.insert_text("Error loading {} - \"{}\" \n\n{}".\
                     format(res_id, fn, traceback.format_exc()))
+            finally:
+                bmpf.close()
         else:
             self.switch_view(0)
             self.clear_text()
@@ -640,7 +647,8 @@ class App(tkinter.Frame):
                 self.insert_text("  ")
                 self.insert_text("Invntr", self.find_path_invntr(rec.name))
                 self.insert_text(": {}\n".format(self.sim.invntr[rec.name]))
-                    
+
+            # references / backreferences                    
             if isobj:
                 # search where object used
                 self.insert_text("\nUsed in:\n")
@@ -661,7 +669,57 @@ class App(tkinter.Frame):
                     self.insert_text("  {}) ".format(idx))
                     self.insert_text("{}".format(ref[0].idx), \
                         self.find_path_obj(ref[0].idx))
-                    self.insert_text(" - {}\n".format(ref[0].name))
+                    msg = ""
+                    for arg in ref[1:]:
+                        msg += " "
+                        if arg < 10:
+                            msg += "{}".format(arg)
+                        elif arg == 0xffffffff:
+                            msg += "-1"
+                        else:
+                            msg += "0x{:X}".format(arg)
+                    self.insert_text(msg + " / {}\n".format(ref[0].name))
+
+            resused = []
+            self.insert_text("\nHandlers: {}\n".format(len(rec.acts)))
+            for idx, (act_id, act_cond, act_arg, ops) in enumerate(rec.acts):
+                msg = petka.OPCODES.get(act_id, ["OP_{:X}".format(act_id)])[0]
+                if act_cond != 0xff or act_arg != 0xffff:
+                    msg += " 0x{:02X} 0x{:04X}".format(act_cond, act_arg)
+                self.insert_text("  {}) on {}, ops: {}\n".format(\
+                    idx, msg, len(ops)))
+                for oidx, op in enumerate(ops):
+                    msg = petka.OPCODES.get(op[1], ["OP_{:X}".format(op[1])])[0]
+                    self.insert_text("    {}) {} ".format(oidx, msg))
+                    if op[0] == rec.idx:
+                        self.insert_text("THIS")
+                    else:
+                        self.insert_text("{}".format(op[0]), \
+                            self.find_path_obj(op[0]))
+                    msg = ""
+                    if op[2] != 0xffff:
+                        if op[2] not in resused and op[2] in self.sim.res:
+                            resused.append(op[2])
+                    for arg in op[2:]:
+                        msg += " "
+                        if arg < 10:
+                            msg += "{}".format(arg)
+                        elif arg == 0xffff:
+                            msg += "-1"
+                        else:
+                            msg += "0x{:X}".format(arg)
+                    self.insert_text("{}\n".format(msg))
+                    
+            if len(resused) > 0:
+                self.insert_text("\nUsed resources: {}\n".format(len(resused)))
+                for res_id in resused:
+                    self.insert_text("  ")
+                    self.insert_text("{}".format(res_id), \
+                        self.find_path_res(res_id))
+                    self.insert_text(" - {} (0x{:X})\n".\
+                        format(self.sim.res[res_id], res_id))
+                
+            
 
     def path_names(self, path):
         self.switch_view(0)
