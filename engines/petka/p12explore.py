@@ -473,7 +473,7 @@ class App(tkinter.Frame):
             pass                    
         if self.curr_lb_acts:
             act = self.curr_lb_acts[currsel()]
-            if act[1]:
+            if act[1] is not None:
                 self.open_path(act[1])
         return
         
@@ -536,15 +536,6 @@ class App(tkinter.Frame):
             self.insert_text("Path {} not found\n\n".format(spath))
         self.insert_text("Select from outline\n")
         if self.sim is not None:
-            def tst_img():
-                self.curr_main = 1
-                self.main_image = tkinter.PhotoImage(\
-                    file = "img/splash.gif")
-                self.curr_width = self.main_image.width()
-                self.curr_height = self.main_image.height()
-                self.update_gui()
-            def tst_info():
-                self.change_gui(0, 99)
             acts = [
                 ("Parts ({})".format(len(self.sim.parts)), ["parts"]),
                 ("Resources ({})".format(len(self.sim.res)), ["res"]),
@@ -553,8 +544,8 @@ class App(tkinter.Frame):
                 ("Names ({})".format(len(self.sim.names)), ["names"]),
                 ("Invntr ({})".format(len(self.sim.invntr)), ["invntr"]),
                 ("-", None),
-                ("Test image", ["tst_image"]),
-                ("Test info", ["tst_info"]),
+                ("Test image", ["test", "image"]),
+                ("Test info", ["test","info"]),
             ]
             for name, act in acts:
                 self.insert_lb_act(name, act)
@@ -592,6 +583,9 @@ class App(tkinter.Frame):
         self.insert_text("{}".format(len(self.sim.names)), ["names"])
         self.insert_text("\n  Invntr:    ")
         self.insert_text("{}".format(len(self.sim.invntr)), ["invntr"])
+
+    def path_res(self, path):
+        pass
 
     def path_objs_scenes(self, path):
         self.curr_main = 0
@@ -709,6 +703,26 @@ class App(tkinter.Frame):
                     self.insert_text("  ")
                     self.insert_text("{}".format(obj.idx), ["objs", idx])
                     self.insert_text(" - {}\n".format(obj.name))
+
+    def path_test(self, path):
+        if path[1] == "image":
+            self.curr_main = 1
+            self.main_image = tkinter.PhotoImage(\
+                file = "img/splash.gif")
+            self.curr_width = self.main_image.width()
+            self.curr_height = self.main_image.height()
+        else:
+            self.curr_main = 0
+        self.update_gui("Test {}".format(path[1]))
+        self.insert_lb_act("Outline", [])
+        self.insert_lb_act("-", None)
+        for i in range(15):
+            self.insert_lb_act("{} #{}".format(path[1], i), path[:2] + (i,))
+        if path[1] != "image":
+            self.clear_text()
+            for i in range(100):
+                self.insert_text("  Item {}\n".format(i))
+
 
     def on_open_data(self):
         # open data - select TODO
