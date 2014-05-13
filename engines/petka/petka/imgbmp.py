@@ -8,7 +8,7 @@ from . import EngineError
 
 try:
     from PIL import Image
-except:
+except ImportError:
     Image = None
 
 class BMPLoader:
@@ -17,10 +17,8 @@ class BMPLoader:
         self.image = None
         self.width = 0
         self.height = 0
-        self.imginfo = ""
         
-    def load_data_int(self, f):
-        # TODO: normal BMP, rle BMP
+    def load_data_int16(self, f):
         # check magic string "BM"
         temp = f.read(2)
         if temp != b"BM":
@@ -38,9 +36,7 @@ class BMPLoader:
         if pict[0] != 40:
             raise EngineError("Unsupported InfoHeader")
         pictw = pict[1]
-        self.width = pictw
         picth = pict[2]
-        self.height = picth
         
         # read data_offset - 40 - 6 bytes
         delta = data_offset - 40 - 6
@@ -68,26 +64,38 @@ class BMPLoader:
         if len(f.read()) > 0:
             raise EngineError("BMP read error, some data unparsed")
                 
+        return pictw, picth, picture_data
+        
+    def pixelswap16(self, pw, ph, pd):
         # convert 16 bit to 24
         b16arr = array.array("H") # unsigned short
-        b16arr.frombytes(picture_data)
+        b16arr.frombytes(pd)
         rgb = array.array("B")
         for b16 in b16arr:
             rgb.append((b16 >> 5) & 0b11111000)
             rgb.append((b16 << 5) & 0b11100000 | (b16 >> 11) & 0b00011100)
             rgb.append((b16 << 0) &0b11111000) 
         # Y-mirror
-        self.rgb = array.array("B")
-        for i in range(picth):
-            off = (picth - i - 1) * pictw * 3
-            self.rgb += rgb[off:off + pictw * 3]
+        newrgb = array.array("B")
+        for i in range(ph):
+            off = (ph - i - 1) * pw * 3
+            newrgb += rgb[off:off + pw * 3]
+        return newrgb
         
-        self.imginfo = "Internal BMP loader"
         
     def load_data(self, f):
         try:
-            self.image = Image.open(f)
+            pw, ph, pd = self.load_data_int16(f)
+            if Image:
+                
+                self.image = Image.frombytes("RGB;16", (pw, ph), pd, "bit", 16, 0, 0)
+            else:
+                self.width = pw
+                self.height = ph
+                self.rgb = self.pixelswap16(pw, ph, pd)
         except:
+            import traceback
+            traceback.print_exc()
             f.seek(0)
-            self.load_data_int(f)
-        
+            self.image = Image.open(f)
+            

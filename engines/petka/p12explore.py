@@ -11,11 +11,11 @@ import traceback
 
 try:
     from PIL import Image
-except:
+except ImportError:
     Image = None
 try:
     from PIL import ImageTk
-except:
+except ImportError:
     ImageTk = None
 
 import petka
