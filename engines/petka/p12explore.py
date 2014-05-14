@@ -671,7 +671,7 @@ class App(tkinter.Frame):
                         self.add_info("internal BMP loader\n  "\
                             "Mode: 16-bit\n  Size: {}x{}".\
                             format(bmp.width, bmp.height))
-                if fn[-4:].lower() == ".flc":
+                elif fn[-4:].lower() == ".flc":
                     self.add_info("<b>FLC animation</b>: ")
                 else:
                     self.add_info("No information availiable")
