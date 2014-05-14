@@ -22,6 +22,9 @@ import petka
 
 APPNAME = "P1&2 Explorer"
 
+def hlesc(value):
+    return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")
+
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager:
     def __init__(self, text):
@@ -30,6 +33,15 @@ class HyperlinkManager:
         self.text.tag_bind("hyper", "<Enter>", self._enter)
         self.text.tag_bind("hyper", "<Leave>", self._leave)
         self.text.tag_bind("hyper", "<Button-1>", self._click)
+        bold_font = font.Font(text, self.text.cget("font"))
+        bold_font.configure(weight = "bold")
+        self.text.tag_config("bold", font = bold_font)
+        italic_font = font.Font(text, self.text.cget("font"))
+        italic_font.configure(slant = "italic")
+        self.text.tag_config("italic", font = italic_font)
+        underline_font = font.Font(text, self.text.cget("font"))
+        underline_font.configure(underline = 1)
+        self.text.tag_config("underline", font = underline_font)
         self.reset()
 
     def reset(self):
@@ -140,7 +152,8 @@ class App(tkinter.Frame):
         self.path_handler["test"] = self.path_test
         
         self.update_after()
-        self.open_path(self.find_path_scene(36))
+        self.open_path("")
+        #self.open_path(self.find_path_scene(36))
         #self.open_path(["res", "flt", "BMP", 7])
 
     def create_menu(self):
@@ -212,7 +225,19 @@ class App(tkinter.Frame):
     def on_resize_view(self, event):
         self.update_after()
  
-    def open_path(self, path):
+    def open_path(self, loc):
+        if isinstance(loc, str):
+            path = []
+            if loc[:1] == "/":
+                loc = loc[1:]
+            if loc != "":
+                for item in loc.split("/"):
+                    try:
+                        path.append(int(item, 10))
+                    except:
+                        path.append(item)
+        else:
+            path = loc
         path = tuple(path)
         print("DEBUG: Open", path)
         self.curr_path = path
@@ -253,7 +278,7 @@ class App(tkinter.Frame):
                 fact = scale
             pw = int(mw * fact)
             ph = int(mh * fact)
-            img = self.main_image.resize((pw, ph))
+            img = self.main_image.resize((pw, ph), Image.ANTIALIAS)
             self.canv_image = ImageTk.PhotoImage(img)
         else:
             mw = self.main_image.width()
@@ -390,23 +415,60 @@ class App(tkinter.Frame):
             self.scr_view_x.config(command = self.canv_view.xview)
             self.scr_view_y.config(command = self.canv_view.yview)
 
-    def clear_text(self):
+    def clear_info(self):
         self.text_view.delete(0.0, tkinter.END)
 
-    def insert_text(self, text, link = None):
-        if link:
-            if callable(link):
-                cb = link
-            else: 
-                def make_cb(path):
-                    def cb():
-                        return self.open_path(path)
-                    return cb
-                cb = make_cb(tuple(link))
-            self.text_view.insert(tkinter.INSERT, text, self.text_hl.add(cb))
-        else:
-            self.text_view.insert(tkinter.INSERT, text)
-
+    def add_info(self, text):
+        mode = 0 # 0 - normal, 1 - tag
+        curr_tag = None
+        curr_text = ""
+        tags = []
+        esc = False
+        for ch in text:
+            if mode == 0:
+                if esc:
+                    curr_text += ch
+                    esc = False
+                else:
+                    if ch == "\\":
+                        esc = True
+                    elif ch == "<":
+                        mode = 1
+                        curr_tag = ""
+                    else:
+                        curr_text += ch
+            else:
+                if ch == ">":
+                    if len(curr_text) > 0:                    
+                        self.text_view.insert(tkinter.INSERT, curr_text, \
+                            tuple([x for x in tags for x in x]))
+                    if curr_tag[:7] == "a href=":
+                        ref = curr_tag[7:]
+                        if ref[:1] == "\"":
+                            ref = ref[1:]
+                        if ref[-1:] == "\"":
+                            ref = ref[:-1]
+                        def make_cb(path):
+                            def cb():
+                                return self.open_path(path)
+                            return cb
+                        tags.append(self.text_hl.add(make_cb(ref)))
+                    elif curr_tag == "b":
+                        tags.append(["bold"])
+                    elif curr_tag == "i":
+                        tags.append(["italic"])
+                    elif curr_tag == "u":
+                        tags.append(["underline"])
+                    elif curr_tag[:1] == "/":
+                        tags = tags[:-1]
+                    curr_text = ""
+                    mode = 0
+                else:
+                    curr_tag += ch
+        if len(curr_text) > 0:                    
+            self.text_view.insert(tkinter.INSERT, curr_text, \
+                tuple([x for x in tags for x in x]))
+        
     def insert_lb_act(self, name, act):
         self.curr_lb_acts.append((name, act))
         self.curr_lb.insert(tkinter.END, name)
@@ -440,52 +502,68 @@ class App(tkinter.Frame):
     def find_path_res(self, res):
         for idx, res_id in enumerate(self.sim.resord):
             if res_id == res:
-                return ["res", "all", idx]
-        return ["no_res", res]
+                return "/res/all/{}".format(idx)
+        return "/no_res/{}".format(res)
 
     def find_path_obj(self, obj_idx):
         for idx, rec in enumerate(self.sim.objects):
             if rec.idx == obj_idx:
-                return ["objs", idx]
-        return ["no_obj", obj_idx]
+                return "/objs/{}".format(idx)
+        return "/no_obj/{}".format(obj_idx)
 
     def find_path_scene(self, scn_idx):
         for idx, rec in enumerate(self.sim.scenes):
             if rec.idx == scn_idx:
-                return ["scenes", idx]
-        return ["no_scene", scn_idx]
+                return "/scenes/{}".format(idx)
+        return "/no_scene/{}".format(scn_idx)
 
     def find_path_obj_scene(self, rec_idx):
         for idx, rec in enumerate(self.sim.objects):
             if rec.idx == rec_idx:
-                return ["objs", idx]
+                return "/objs/{}".format(idx)
         for idx, rec in enumerate(self.sim.scenes):
             if rec.idx == rec_idx:
-                return ["scenes", idx]
-        return ["no_obj_scene", rec_idx]
+                return "/scenes/{}".format(idx)
+        return "/no_obj_scene/{}".format(rec_idx)
         
     def find_path_name(self, key):
         for idx, name in enumerate(self.sim.namesord):
             if name == key:
-                return ["names", idx]
-        return ["no_name", key]
+                return "/names/{}".format(idx)
+        return "/no_name/{}".format(key)
 
     def find_path_invntr(self, key):
         for idx, name in enumerate(self.sim.invntrord):
             if name == key:
-                return ["invntr", idx]
-        return ["no_invntr", key]
+                return "/invntr/{}".format(idx)
+        return "/no_invntr/{}".format(key)
+
+    def path_info_outline(self):
+        self.add_info("Current part {} chapter {}\n\n".\
+                format(self.sim.curr_part, self.sim.curr_chap))
+        self.add_info("  Resources: <a href=\"/res\">{}</a>\n".\
+            format(len(self.sim.res)))
+        self.add_info("  Objects:   <a href=\"/objs\">{}</a>\n".\
+            format(len(self.sim.objects)))
+        self.add_info("  Scenes:    <a href=\"/scenes\">{}</a>\n".\
+            format(len(self.sim.scenes)))
+        self.add_info("  Names:     <a href=\"/names\">{}</a>\n".\
+            format(len(self.sim.names)))
+        self.add_info("  Invntr:    <a href=\"/invntr\">{}</a>\n".\
+            format(len(self.sim.invntr)))
+    
 
     def path_default(self, path):
         self.switch_view(0)
         self.update_gui("Outline")
-        self.clear_text()
+        self.clear_info()
         if len(path) != 0:
             spath = ""
             for item in path:
                 spath += "/" + str(item)
-            self.insert_text("Path {} not found\n\n".format(spath))
-        self.insert_text("Select from outline\n")
+            self.add_info("Path {} not found\n\n".format(spath))
+        self.add_info("Select from <b>outline</b>\n\n")
+        self.path_info_outline()
         if self.sim is not None:
             acts = [
                 ("Parts ({})".format(len(self.sim.parts)), ["parts"]),
@@ -522,18 +600,9 @@ class App(tkinter.Frame):
                 cnum = 0
             self.sim.open_part(pnum, cnum)
         # display
-        self.clear_text()
-        self.insert_text("Current: part {} chapter {}\n\n  Resources: ".\
-                format(self.sim.curr_part, self.sim.curr_chap))
-        self.insert_text("{}".format(len(self.sim.res)), ["res"])
-        self.insert_text("\n  Objects:   ")
-        self.insert_text("{}".format(len(self.sim.objects)), ["objs"])
-        self.insert_text("\n  Scenes:    ")
-        self.insert_text("{}".format(len(self.sim.scenes)), ["scenes"])
-        self.insert_text("\n  Names:     ")
-        self.insert_text("{}".format(len(self.sim.names)), ["names"])
-        self.insert_text("\n  Invntr:    ")
-        self.insert_text("{}".format(len(self.sim.invntr)), ["invntr"])
+        self.clear_info()
+        self.add_info("Select <b>part</b>\n\n")
+        self.path_info_outline()
 
     def path_res(self, path):
         # res - full list
@@ -547,8 +616,7 @@ class App(tkinter.Frame):
             return self.path_res_all(path)
         else:
             return self.path_default(path)
-            
-            
+                        
         if self.last_path[:2] != path[:2]:
             # 
             self.switch_view(0)
@@ -561,7 +629,6 @@ class App(tkinter.Frame):
             for idx, name in enumerate(self.sim.invntrord):
                 self.insert_lb_act(name, ["invntr", idx])
 
-        pass
         # list resources
         if self.curr_mode_sub is None:
             lb = self.update_gui_add_left_listbox("Resources") 
@@ -590,23 +657,22 @@ class App(tkinter.Frame):
                 self.update_canvas()
             except:
                 self.switch_view(0)
-                self.clear_text()
-                self.insert_text("Error loading {} - \"{}\" \n\n{}".\
+                self.clear_info()
+                self.add_info("Error loading {} - \"{}\" \n\n{}".\
                     format(res_id, fn, traceback.format_exc()))
             finally:
                 bmpf.close()
         else:
             self.switch_view(0)
-            self.clear_text()
-            self.insert_text("Resource {} - \"{}\" cannot be displayed\n".\
+            self.clear_info()
+            self.add_info("Resource {} - \"{}\" cannot be displayed\n".\
                 format(res_id, fn))
 
     def path_res_status(self):
         self.switch_view(0)
-        self.clear_text()
-        self.insert_text("Total: ")
-        self.insert_text("{}".format(len(self.sim.res)), ["res"])
-        self.insert_text("\nFiletypes:\n")
+        self.clear_info()
+        self.add_info("<b>Resources</b>: <a href=\"/res\">{}</a>\nFiletypes:\n".format(\
+            len(self.sim.res)))
         fts = {}
         for res in self.sim.res.values():
             fp = res.rfind(".")
@@ -616,9 +682,8 @@ class App(tkinter.Frame):
         ftk = list(fts.keys())
         ftk.sort()
         for ft in ftk:
-            self.insert_text("  ")
-            self.insert_text(ft, ["res", "flt", ft])
-            self.insert_text(": {}\n".format(fts[ft]))
+            self.add_info("  <a href=\"/res/flt/{}\">{}</a>: {}\n".format(\
+                ft, ft, fts[ft]))
 
     def path_res_all(self, path):
         if self.last_path[:2] != ("res", "all",):
@@ -676,44 +741,44 @@ class App(tkinter.Frame):
             self.select_lb_item(path[1])
             rec = lst[path[1]]
         # display
-        self.clear_text()
+        self.clear_info()
         if not rec:
-            self.insert_text("Select item from list\n")
+            self.add_info("Select item from list\n")
         else:
             # record info
-            self.insert_text(("Object" if isobj else "Scene") + ":\n")
-            self.insert_text("  Index: {} (0x{:X})\n  Name:  {}\n".\
-                format(rec.idx, rec.idx, rec.name))
+            self.add_info(("<b>Object</b>" if isobj \
+                else "<b>Scene</b>") + ":\n")
+            self.add_info("  Index:  {} (0x{:X})\n  Name:   {}\n".\
+                format(rec.idx, rec.idx, hlesc(rec.name)))
             if rec.name in self.sim.names:
-                self.insert_text("  ")
-                self.insert_text("Alias", self.find_path_name(rec.name))
-                self.insert_text(":  {}\n".format(self.sim.names[rec.name]))
+                self.add_info("  <a href=\"{}\">Alias</a>:  {}\n".format(\
+                    self.find_path_name(rec.name), \
+                    hlesc(self.sim.names[rec.name])))
             if rec.name in self.sim.invntr:
-                self.insert_text("  ")
-                self.insert_text("Invntr", self.find_path_invntr(rec.name))
-                self.insert_text(": {}\n".format(self.sim.invntr[rec.name]))
+                self.add_info("  <a href=\"{}\">Invntr</a>: {}\n".format(\
+                    self.find_path_invntr(rec.name), \
+                    hlesc(self.sim.invntr[rec.name])))
 
             # references / backreferences                    
             if isobj:
                 # search where object used
-                self.insert_text("\nRefered by scenes:\n")
+                self.add_info("\n<b>Refered by scenes</b>:\n")
                 for scn in self.sim.scenes:
                     for ref in scn.refs:
                         if ref[0].idx == rec.idx:
-                            self.insert_text("  ")
-                            self.insert_text("{}".format(scn.idx), \
-                                self.find_path_scene(scn.idx))
-                            self.insert_text(" - {}\n".format(scn.name))
+                            self.add_info("  <a href=\"{}\">{}</a> (0x{:X}) "\
+                                "- {}\n".format(self.find_path_scene(scn.idx), \
+                                scn.idx, scn.idx, scn.name))
                             break
             else:
                 if len(rec.refs) == 0:
-                    self.insert_text("\nNo references\n")
+                    self.add_info("\nNo references\n")
                 else:
-                    self.insert_text("\nReferences: {}\n".format(len(rec.refs)))
+                    self.add_info("\n<b>References</b>: {}\n".\
+                        format(len(rec.refs)))
                 for idx, ref in enumerate(rec.refs):
-                    self.insert_text("  {}) ".format(idx))
-                    self.insert_text("{}".format(ref[0].idx), \
-                        self.find_path_obj(ref[0].idx))
+                    self.add_info("  {}) <a href=\"{}\">{}</a>".format(idx,\
+                        self.find_path_obj(ref[0].idx), ref[0].idx))
                     msg = ""
                     for arg in ref[1:]:
                         msg += " "
@@ -723,24 +788,24 @@ class App(tkinter.Frame):
                             msg += "-1"
                         else:
                             msg += "0x{:X}".format(arg)
-                    self.insert_text(msg + " / {}\n".format(ref[0].name))
+                    self.add_info(msg + " / {}\n".format(hlesc(ref[0].name)))
 
             resused = []
-            self.insert_text("\nHandlers: {}\n".format(len(rec.acts)))
+            self.add_info("\n<b>Handlers</b>: {}\n".format(len(rec.acts)))
             for idx, (act_id, act_cond, act_arg, ops) in enumerate(rec.acts):
                 msg = petka.OPCODES.get(act_id, ["OP_{:X}".format(act_id)])[0]
                 if act_cond != 0xff or act_arg != 0xffff:
                     msg += " 0x{:02X} 0x{:04X}".format(act_cond, act_arg)
-                self.insert_text("  {}) on {}, ops: {}\n".format(\
+                self.add_info("  {}) <u>on {}</u>, ops: {}\n".format(\
                     idx, msg, len(ops)))
                 for oidx, op in enumerate(ops):
                     msg = petka.OPCODES.get(op[1], ["OP_{:X}".format(op[1])])[0]
-                    self.insert_text("    {}) {} ".format(oidx, msg))
+                    self.add_info("    {}) {} ".format(oidx, msg))
                     if op[0] == rec.idx:
-                        self.insert_text("THIS")
+                        self.add_info("THIS")
                     else:
-                        self.insert_text("{}".format(op[0]), \
-                            self.find_path_obj_scene(op[0]))
+                        self.add_info("<a href=\"{}\">{}</a>".format(\
+                            self.find_path_obj_scene(op[0]), op[0]))
                     msg = ""
                     if op[2] != 0xffff:
                         if op[2] not in resused and op[2] in self.sim.res:
@@ -753,17 +818,15 @@ class App(tkinter.Frame):
                             msg += "-1"
                         else:
                             msg += "0x{:X}".format(arg)
-                    self.insert_text("{}\n".format(msg))
+                    self.add_info("{}\n".format(msg))
                     
             if len(resused) > 0:
-                self.insert_text("\nUsed resources: {}\n".format(len(resused)))
+                self.add_info("\n<b>Used resources</b>: {}\n".\
+                    format(len(resused)))
                 for res_id in resused:
-                    self.insert_text("  ")
-                    self.insert_text("{}".format(res_id), \
-                        self.find_path_res(res_id))
-                    self.insert_text(" (0x{:X}) - {}\n".\
-                        format(res_id, self.sim.res[res_id]))
-                
+                    self.add_info("  <a href=\"{}\">{}</a> (0x{:X}) - {}\n".\
+                        format(self.find_path_res(res_id), res_id, res_id, \
+                        hlesc(self.sim.res[res_id])))
             
 
     def path_names(self, path):
@@ -779,20 +842,20 @@ class App(tkinter.Frame):
             self.select_lb_item(path[1])
             name = self.sim.namesord[path[1]]
         # display
-        self.clear_text()
+        self.clear_info()
         if not name:
-            self.insert_text("Select name from list\n")
+            self.add_info("Select <b>name</b>\n")
         else:
             # name info
-            self.insert_text("Alias: {}\n".format(name))
-            self.insert_text("Value: {}\n\n".format(self.sim.names[name]))
+            self.add_info("<b>Alias</b>: {}\n".format(hlesc(name)))
+            self.add_info("Value: {}\n\n".format(self.sim.names[name]))
             # search for objects
-            self.insert_text("Applied for:\n")
+            self.add_info("<b>Applied for</b>:\n")
             for idx, obj in enumerate(self.sim.objects):
                 if obj.name == name:
-                    self.insert_text("  ")
-                    self.insert_text("{}".format(obj.idx), ["objs", idx])
-                    self.insert_text(" - {}\n".format(obj.name))
+                    self.add_info("  <a href=\"/objs/{}\">{}</a> (0x{:X}) "\
+                        "- {}\n".format(idx, obj.idx, obj.idx, \
+                        hlesc(obj.name)))
 
     def path_invntr(self, path):
         self.switch_view(0)
@@ -807,20 +870,20 @@ class App(tkinter.Frame):
             self.select_lb_item(path[1])
             name = self.sim.invntrord[path[1]]
         # display
-        self.clear_text()
+        self.clear_info()
         if not name:
-            self.insert_text("Select invntr from list\n")
+            self.add_info("Select <b>invntr</b>\n")
         else:
             # invntr info
-            self.insert_text("Invntr: {}\n".format(name))
-            self.insert_text("{}\n\n".format(self.sim.invntr[name]))
+            self.add_info("<b>Invntr</b>: {}\n".format(name))
+            self.add_info("{}\n\n".format(hlesc(self.sim.invntr[name])))
             # search for objects
-            self.insert_text("Applied for:\n")
+            self.add_info("<b>Applied for</b>:\n")
             for idx, obj in enumerate(self.sim.objects):
                 if obj.name == name:
-                    self.insert_text("  ")
-                    self.insert_text("{}".format(obj.idx), ["objs", idx])
-                    self.insert_text(" - {}\n".format(obj.name))
+                    self.add_info("  <a href=\"/objs/{}\">{}</a> (0x{:X}) "\
+                        "- {}\n".format(idx, obj.idx, obj.idx, \
+                        hlesc(obj.name)))
 
     def path_test(self, path):
         self.update_gui("Test {}".format(path[1]))
@@ -833,10 +896,10 @@ class App(tkinter.Frame):
             self.main_image = tkinter.PhotoImage(file = "img/splash.gif")
         else:
             self.switch_view(0)
-            self.clear_text()
-            self.insert_text("Information panel for {}\n".format(path))
+            self.clear_info()
+            self.add_info("Information panel for {}\n".format(path))
             for i in range(100):
-                self.insert_text("  Item {}\n".format(i))
+                self.add_info("  Item {}\n".format(i))
 
     def on_open_data(self):
         # open data - select TODO
