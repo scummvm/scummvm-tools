@@ -975,7 +975,7 @@ class App(tkinter.Frame):
                 if len(capt) > 25:
                     capt = capt[:25] + "|"
                 self.insert_lb_act("{} - {}".format(msg.idx, capt), \
-                    [self.curr_path[0], idx])
+                    ["msgs", idx])
         # change
         msg = None
         if len(path) > 1:
@@ -1001,21 +1001,34 @@ class App(tkinter.Frame):
         self.switch_view(0)
         if self.last_path[:1] != ("dlgs",):
             self.update_gui("Dialog groups ({})".format(len(self.sim.dlgs)))
-            for idx, dlg in enumerate(self.sim.dlgs):
-                self.insert_lb_act(name, ["dlgs", idx])
+            for idx, grp in enumerate(self.sim.dlgs):
+                self.insert_lb_act("{} (0x{:X})".format(grp.idx, grp.idx), \
+                    ["dlgs", idx])
         # change
-        name = None
+        grp = None
         if len(path) > 1:
             # parts
             self.select_lb_item(path[1])
-            dlg = self.sim.dlgs[path[1]]
+            grp = self.sim.dlgs[path[1]]
         # display
         self.clear_info()
-        if not name:
+        if not grp:
             self.add_info("Select <b>dialog group</b>\n")
         else:
-            # dlg info
-            self.add_info("<b>Dialog group</b>: {}\n".format(path[1]))
+            # grp info
+            self.add_info("<b>Dialog group</b>: {} (0x{:X})\n".format(\
+                grp.idx, grp.idx))
+            self.add_info("  arg1: {} (0x{:X})\n\n".format(grp.arg1, grp.arg1))
+            self.add_info("<b>Dialog sets<b>: {}\n".format(len(grp.sets)))
+            for idx, dlgset in enumerate(grp.sets):
+                self.add_info("  {}) <u>0x{:X} 0x{:X} 0x{:X}</u>, dlgs: {}\n".\
+                    format(idx, dlgset.arg1, dlgset.arg2, dlgset.arg3, \
+                        len(dlgset.dlgs)))
+                for didx, dlg in enumerate(dlgset.dlgs):
+                    self.add_info("    {}) 0x{:X} 0x{:X}, ops: {}\n".\
+                        format(didx, dlg.arg1, dlg.arg2, len(dlg.ops)))
+                
+            
 
     def path_test(self, path):
         self.update_gui("Test {}".format(path[1]))

@@ -83,6 +83,28 @@ class MsgObject:
         self.arg3 = arg3
         self.capt = None
 
+class DlgGrpObject:
+    def __init__(self, idx, num_sets, arg1):
+        self.idx = idx
+        self.num_sets = num_sets
+        self.arg1 = arg1
+        self.sets = None
+
+class DlgSetObject:
+    def __init__(self, num_dlgs, arg1, arg2, arg3):
+        self.num_dlgs = num_dlgs
+        self.arg1 = arg1
+        self.arg2 = arg2
+        self.arg3 = arg3
+        self.dlgs = None
+
+class DlgObject:
+    def __init__(self, op_start, arg1, arg2):
+        self.op_start = op_start
+        self.arg1 = arg1
+        self.arg2 = arg2
+        self.ops = None
+        
 class Engine:
     def __init__(self):
         self.fman = None
@@ -345,4 +367,36 @@ class Engine:
         fp = self.curr_path + "dialogue.fix"
         if self.fman.exists(fp):
             f = self.fman.read_file_stream(fp)
+            try:
+                temp = f.read(4)
+                num_grps = struct.unpack_from("<I", temp)[0]
+                for i in range(num_grps):
+                    temp = f.read(12)
+                    idx, num_sets, arg1 = struct.unpack_from("<III", temp)
+                    grp = DlgGrpObject(idx, num_sets, arg1)
+                    self.dlgs.append(grp)
+                for grp in self.dlgs:
+                    grp.sets = []
+                    for i in range(grp.num_sets):
+                        temp = f.read(16)
+                        arg1, num_dlgs, arg2, arg3 = \
+                            struct.unpack_from("<4I", temp)
+                        dlgset = DlgSetObject(num_dlgs, arg1, arg2, arg3)
+                        grp.sets.append(dlgset)
+                    for dlgset in grp.sets:
+                        dlgset.dlgs = []
+                        for i in range(dlgset.num_dlgs):
+                            temp = f.read(12)
+                            op_start, arg1, arg2 = \
+                                struct.unpack_from("<3I", temp)
+                            dlg = DlgObject(op_start, arg1, arg2)
+                            dlg.ops = []
+                            dlgset.dlgs.append(dlg)
+                temp = f.read(4)
+                num_ops = struct.unpack_from("<I", temp)[0]
+                for i in range(num_ops):
+                    temp = f.read(4)
+                    ref, arg, code  = struct.unpack_from("<HBB", temp)
+            finally:
+                f.close()
 
