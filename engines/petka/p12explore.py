@@ -616,42 +616,15 @@ class App(tkinter.Frame):
             return self.path_res_all(path)
         else:
             return self.path_default(path)
-                        
-        if self.last_path[:2] != path[:2]:
-            # 
-            self.switch_view(0)
-            self.update_gui("Resources: {}".format(path[2]))
-            for idx,res_id in self.sim.resord:
-                if self.sim.res[res_id].upper().endswith("." + path[2]):
-                    self.insert_lb_act("{} - {}".format(res_id))
-        
-        if len(self.last_path) == 0 or self.last_path[0] != "res":
-            for idx, name in enumerate(self.sim.invntrord):
-                self.insert_lb_act(name, ["invntr", idx])
 
-        # list resources
-        if self.curr_mode_sub is None:
-            lb = self.update_gui_add_left_listbox("Resources") 
-            for res_id in self.sim.resord:
-                lb.insert(tkinter.END, "{} - {}".format(res_id, \
-                    self.sim.res[res_id]))
-        else:
-            lb = self.update_gui_add_left_listbox("Resources: {}".\
-                format(self.curr_mode_sub))
-            for res_id in self.sim.resord:
-                if self.sim.res[res_id].upper().endswith\
-                    ("." + self.curr_mode_sub):
-                    lb.insert(tkinter.END, "{} - {}".format(res_id, \
-                        self.sim.res[res_id]))
-
-    def path_res_open(self, res_id, mode):
+    def path_res_open(self, pref, res_id, mode):
+        resref = "/" + "/".join([str(x) for x in pref])
         if len(mode) == 0:
             self.switch_view(0)
             fn = self.sim.res[res_id]
             self.clear_info()
             self.add_info("<b>Resource</b>: {} (0x{:X}) - \"{}\"\n\n".\
                 format(res_id, res_id, hlesc(fn)))
-            resref = self.find_path_res(res_id)
             self.add_info("<a href=\"{}/view\">View</a> "\
                 "<a href=\"{}/used\">Used by</a>\n\n".\
                 format(resref, resref))
@@ -685,10 +658,8 @@ class App(tkinter.Frame):
             self.switch_view(0)
             fn = self.sim.res[res_id]
             self.clear_info()
-            resref = self.find_path_res(res_id)
             self.add_info("<b>Resource</b>: <a href=\"{}\">{}</a> (0x{:X}) "\
                 "- \"{}\"\n\n".format(resref, res_id, res_id, hlesc(fn)))
-            
             def usedby(lst, tp):
                 for idx, rec in enumerate(lst):
                     ru = False
@@ -706,8 +677,7 @@ class App(tkinter.Frame):
             usedby(self.sim.objects, "objs")
             self.add_info("\n<b>Used by scenes</b>:\n")
             usedby(self.sim.scenes, "scenes")
-        
-        
+                
     def path_res_view(self, res_id):
         fn = self.sim.res[res_id]
         if fn[-4:].lower() == ".bmp":
@@ -760,7 +730,7 @@ class App(tkinter.Frame):
             # parts
             self.select_lb_item(path[2])
             res_id = self.sim.resord[path[2]]
-            self.path_res_open(res_id, path[3:])
+            self.path_res_open(path[:3], res_id, path[3:])
         else:
             self.path_res_status()
 
@@ -781,7 +751,7 @@ class App(tkinter.Frame):
             # parts
             self.select_lb_item(path[3] + 2)
             res_id = lst[path[3]]
-            self.path_res_open(res_id, path[4:])
+            self.path_res_open(path[:4], res_id, path[4:])
         else:
             self.path_res_status()
 
