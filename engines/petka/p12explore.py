@@ -903,11 +903,12 @@ class App(tkinter.Frame):
                         format(self.find_path_res(res_id), res_id, res_id, \
                         hlesc(self.sim.res[res_id])))
             
-            self.add_info("\n<b>Messages</b>:\n")
-            for msg in self.sim.msgs:
-                if msg.obj.idx != rec.idx: continue
-                self.add_info("  <a href=\"/msgs/{}\">{}</a> (0x{:X}) - {}\n".\
-                    format(msg.idx, msg.idx, msg.idx, hlesc(msg.capt)))
+            if isobj:
+                self.add_info("\n<b>Messages</b>:\n")
+                for msg in self.sim.msgs:
+                    if msg.obj.idx != rec.idx: continue
+                    self.add_info("  <a href=\"/msgs/{}\">{}</a> (0x{:X}) - {}\n".\
+                        format(msg.idx, msg.idx, msg.idx, hlesc(msg.capt)))
 
     def path_names(self, path):
         self.switch_view(0)
