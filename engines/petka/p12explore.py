@@ -644,7 +644,71 @@ class App(tkinter.Frame):
                     lb.insert(tkinter.END, "{} - {}".format(res_id, \
                         self.sim.res[res_id]))
 
-    def path_res_open(self, res_id):
+    def path_res_open(self, res_id, mode):
+        if len(mode) == 0:
+            self.switch_view(0)
+            fn = self.sim.res[res_id]
+            self.clear_info()
+            self.add_info("<b>Resource</b>: {} (0x{:X}) - \"{}\"\n\n".\
+                format(res_id, res_id, hlesc(fn)))
+            resref = self.find_path_res(res_id)
+            self.add_info("<a href=\"{}/view\">View</a> "\
+                "<a href=\"{}/used\">Used by</a>\n\n".\
+                format(resref, resref))
+            try:
+                if fn[-4:].lower() == ".bmp":
+                    self.add_info("<b>BMP image</b>: ")
+                    bmpf = self.sim.fman.read_file_stream(fn)
+                    bmp = petka.BMPLoader()
+                    bmp.load_info(bmpf)
+                    if bmp.image:
+                        # PIL
+                        self.add_info("Python Imaging\n")
+                        self.add_info("  Mode: {}\n  Size: {}x{}".\
+                            format(bmp.image.mode, \
+                                bmp.image.size[0], bmp.image.size[1]))
+                    else:    
+                        self.add_info("internal BMP loader\n  "\
+                            "Mode: 16-bit\n  Size: {}x{}".\
+                            format(bmp.width, bmp.height))
+                if fn[-4:].lower() == ".flc":
+                    self.add_info("<b>FLC animation</b>: ")
+                else:
+                    self.add_info("No information availiable")
+            except:
+                self.add_info("Error loading {} - \"{}\" \n\n{}".\
+                    format(res_id, hlesc(fn), hlesc(traceback.format_exc())))
+                    
+        elif mode[0] == "view":
+            self.path_res_view(res_id)
+        elif mode[0] == "used":
+            self.switch_view(0)
+            fn = self.sim.res[res_id]
+            self.clear_info()
+            resref = self.find_path_res(res_id)
+            self.add_info("<b>Resource</b>: <a href=\"{}\">{}</a> (0x{:X}) "\
+                "- \"{}\"\n\n".format(resref, res_id, res_id, hlesc(fn)))
+            
+            def usedby(lst, tp):
+                for idx, rec in enumerate(lst):
+                    ru = False
+                    for act_id, act_cond, act_arg, ops in rec.acts:
+                        if ru: break
+                        for op_id, op_code, op_res, op4, op5 in ops:
+                            if res_id == op_res:
+                                self.add_info("  <a href=\"/{}/{}\">{}</a> "\
+                                    "(0x{:X}) - {}\n".format(tp, idx, rec.idx, \
+                                        rec.idx, hlesc(rec.name)))
+                                ru = True
+                                break
+                            #print(op_id, op_code, op_res, op4, op5)
+            self.add_info("<b>Used by objects</b>:\n")
+            usedby(self.sim.objects, "objs")
+            self.add_info("\n<b>Used by scenes</b>:\n")
+            usedby(self.sim.scenes, "scenes")
+        
+        
+    def path_res_view(self, res_id):
         fn = self.sim.res[res_id]
         if fn[-4:].lower() == ".bmp":
             try:
@@ -659,20 +723,20 @@ class App(tkinter.Frame):
                 self.switch_view(0)
                 self.clear_info()
                 self.add_info("Error loading {} - \"{}\" \n\n{}".\
-                    format(res_id, fn, traceback.format_exc()))
+                    format(res_id, hlesc(fn), hlesc(traceback.format_exc())))
             finally:
                 bmpf.close()
         else:
             self.switch_view(0)
             self.clear_info()
             self.add_info("Resource {} - \"{}\" cannot be displayed\n".\
-                format(res_id, fn))
+                format(res_id, hlesc(fn)))
 
     def path_res_status(self):
         self.switch_view(0)
         self.clear_info()
-        self.add_info("<b>Resources</b>: <a href=\"/res\">{}</a>\nFiletypes:\n".format(\
-            len(self.sim.res)))
+        self.add_info("<b>Resources</b>: <a href=\"/res\">{}</a>\n"\
+            "Filetypes:\n".format(len(self.sim.res)))
         fts = {}
         for res in self.sim.res.values():
             fp = res.rfind(".")
@@ -696,7 +760,7 @@ class App(tkinter.Frame):
             # parts
             self.select_lb_item(path[2])
             res_id = self.sim.resord[path[2]]
-            self.path_res_open(res_id)
+            self.path_res_open(res_id, path[3:])
         else:
             self.path_res_status()
 
@@ -707,15 +771,17 @@ class App(tkinter.Frame):
                 lst.append(res_id)
         if self.last_path[:3] != ("res", "flt", path[2]):
             self.update_gui("Resources {} ({})".format(path[2], len(lst)))
+            self.insert_lb_act("All", "/res")
+            self.insert_lb_act("-", None)
             for idx, res_id in enumerate(lst):
                     self.insert_lb_act("{} - {}".format(\
                 res_id, self.sim.res[res_id]), ["res", "flt", path[2], idx])
         # change                
         if len(path) > 3:
             # parts
-            self.select_lb_item(path[3])
+            self.select_lb_item(path[3] + 2)
             res_id = lst[path[3]]
-            self.path_res_open(res_id)
+            self.path_res_open(res_id, path[4:])
         else:
             self.path_res_status()
 

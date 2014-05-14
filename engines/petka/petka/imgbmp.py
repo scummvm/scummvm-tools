@@ -99,7 +99,15 @@ class BMPLoader:
                 rgb[off + 1] = (b16 >> 3) & 0b11111100
                 rgb[off + 2] = (b16 >> 8) & 0b11111000
         return rgb
-        
+
+    def load_info(self, f):
+        try:
+            pw, ph, pd = self.load_data_int16(f)
+            self.width = pw
+            self.height = ph
+        except:
+            f.seek(0)
+            self.image = Image.open(f)
         
     def load_data(self, f):
         try:
