@@ -104,6 +104,13 @@ class DlgObject:
         self.arg1 = arg1
         self.arg2 = arg2
         self.ops = None
+
+class DlgOpObject:
+    def __init__(self, opcode, arg, ref):
+        self.opcode = opcode
+        self.arg = arg
+        self.ref = ref
+        self.msg = None
         
 class Engine:
     def __init__(self):
@@ -347,11 +354,7 @@ class Engine:
                     msg = MsgObject(len(self.msgs), \
                         wav.decode(self.enc).strip(), arg1, arg2, arg3)
                     # scan objects
-                    msg.obj = None
-                    for obj in self.objects:
-                        if obj.idx == arg1:
-                            msg.obj = obj
-                            break
+                    msg.obj = self.obj_idx.get(arg1, None)
                     if not msg.obj:
                         raise EngineError("DEBUG: Message ref = 0x{:x} not found".\
                         format(obj[0]))
@@ -363,6 +366,7 @@ class Engine:
                 f.close()
 
         self.dlgs = []
+        self.dlgops = []
         # DIALOGUES.FIX
         fp = self.curr_path + "dialogue.fix"
         if self.fman.exists(fp):
@@ -375,6 +379,7 @@ class Engine:
                     idx, num_sets, arg1 = struct.unpack_from("<III", temp)
                     grp = DlgGrpObject(idx, num_sets, arg1)
                     self.dlgs.append(grp)
+                opref = {}
                 for grp in self.dlgs:
                     grp.sets = []
                     for i in range(grp.num_sets):
@@ -389,14 +394,33 @@ class Engine:
                             temp = f.read(12)
                             op_start, arg1, arg2 = \
                                 struct.unpack_from("<3I", temp)
+                            if op_start in opref:
+                                raise EngineError(
+                                    "Multiple dialog opcodes reference")
                             dlg = DlgObject(op_start, arg1, arg2)
-                            dlg.ops = []
+                            opref[op_start] = dlg
+                            dlg.ops = None
                             dlgset.dlgs.append(dlg)
                 temp = f.read(4)
                 num_ops = struct.unpack_from("<I", temp)[0]
                 for i in range(num_ops):
                     temp = f.read(4)
                     ref, arg, code  = struct.unpack_from("<HBB", temp)
+                    dlgop = DlgOpObject(code, arg, ref)
+                    if ref < len(self.msgs):
+                        dlgop.msg = self.msgs[ref]
+                    self.dlgops.append(dlgop)
+                dlg = None
+                oparr = []
+                for idx, oprec in enumerate(self.dlgops):
+                    if idx in opref:
+                        if len(oparr) > 0:
+                            dlg.ops = oparr
+                            oparr = []
+                        dlg = opref[idx]
+                    oparr.append(oprec)    
+                if len(oparr) > 0:
+                    dlg.ops = oparr
             finally:
                 f.close()
 

@@ -1025,9 +1025,21 @@ class App(tkinter.Frame):
                     format(idx, dlgset.arg1, dlgset.arg2, dlgset.arg3, \
                         len(dlgset.dlgs)))
                 for didx, dlg in enumerate(dlgset.dlgs):
-                    self.add_info("    {}) 0x{:X} 0x{:X}, ops: {}\n".\
+                    self.add_info("    {}) <i>0x{:X} 0x{:X}</i>, ops: {}\n".\
                         format(didx, dlg.arg1, dlg.arg2, len(dlg.ops)))
-                
+                    for op in dlg.ops:
+                        cmt = ""
+                        opref = "0x{:X}".format(op.ref)
+                        opcode = "OP_{:02X}".format(op.opcode)
+                        if op.opcode == 7:
+                            opcode = "PLAY"
+                            if op.msg:
+                                opref = "<a href=\"/msgs/{}\">{}</a>".format(\
+                                    op.ref, op.ref)
+                                cmt = " / (0x{:X}) - {}".\
+                                    format(op.ref, hlesc(op.msg.capt))
+                        self.add_info("      {} 0x{:X} {}{}\n".\
+                            format(opcode, op.arg, opref, hlesc(cmt)))
             
 
     def path_test(self, path):
