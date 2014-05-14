@@ -139,8 +139,8 @@ class App(tkinter.Frame):
         self.path_handler["test"] = self.path_test
         
         self.update_after()
-        #self.open_path(self.find_path_scene(36))
-        self.open_path(["res", "flt", "BMP", 7])
+        self.open_path(self.find_path_scene(36))
+        #self.open_path(["res", "flt", "BMP", 7])
 
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
@@ -451,6 +451,15 @@ class App(tkinter.Frame):
             if rec.idx == scn_idx:
                 return ["scenes", idx]
         return ["no_scene", scn_idx]
+
+    def find_path_obj_scene(self, rec_idx):
+        for idx, rec in enumerate(self.sim.objects):
+            if rec.idx == rec_idx:
+                return ["objs", idx]
+        for idx, rec in enumerate(self.sim.scenes):
+            if rec.idx == rec_idx:
+                return ["scenes", idx]
+        return ["no_obj_scene", rec_idx]
         
     def find_path_name(self, key):
         for idx, name in enumerate(self.sim.namesord):
@@ -670,8 +679,8 @@ class App(tkinter.Frame):
         else:
             # record info
             self.insert_text(("Object" if isobj else "Scene") + ":\n")
-            self.insert_text("  Index: {}\n  Name:  {}\n".\
-                format(rec.idx, rec.name))
+            self.insert_text("  Index: {} (0x{:X})\n  Name:  {}\n".\
+                format(rec.idx, rec.idx, rec.name))
             if rec.name in self.sim.names:
                 self.insert_text("  ")
                 self.insert_text("Alias", self.find_path_name(rec.name))
@@ -728,7 +737,7 @@ class App(tkinter.Frame):
                         self.insert_text("THIS")
                     else:
                         self.insert_text("{}".format(op[0]), \
-                            self.find_path_obj(op[0]))
+                            self.find_path_obj_scene(op[0]))
                     msg = ""
                     if op[2] != 0xffff:
                         if op[2] not in resused and op[2] in self.sim.res:
@@ -749,8 +758,8 @@ class App(tkinter.Frame):
                     self.insert_text("  ")
                     self.insert_text("{}".format(res_id), \
                         self.find_path_res(res_id))
-                    self.insert_text(" - {} (0x{:X})\n".\
-                        format(self.sim.res[res_id], res_id))
+                    self.insert_text(" (0x{:X}) - {}\n".\
+                        format(res_id, self.sim.res[res_id]))
                 
             
 

@@ -57,13 +57,15 @@ class BMPLoader:
                 len(picture_data)))
 
         # read 2 zero bytes
-        temp = f.read(2)
-        if temp != b"\x00\x00":
-            raise EngineError("Magic zero bytes absent or mismatch")
-        off += 2
+        #temp = f.read(2)
+        #if temp != b"\x00\x00":
+        #    raise EngineError("Magic zero bytes absent or mismatch")
+        #off += 2
 
-        if len(f.read()) > 0:
-            raise EngineError("BMP read error, some data unparsed")
+        temp = f.read(2)
+        if len(temp) > 0:
+            if temp != b"\x00\x00":
+                raise EngineError("BMP read error, some data unparsed")
                 
         return pictw, picth, picture_data
         
@@ -71,17 +73,32 @@ class BMPLoader:
         # convert 16 bit to 24
         b16arr = array.array("H") # unsigned short
         b16arr.frombytes(pd)
-        rgb = array.array("B")
-        for b16 in b16arr:
-            rgb.append((b16 >> 5) & 0b11111000)
-            rgb.append((b16 << 5) & 0b11100000 | (b16 >> 11) & 0b00011100)
-            rgb.append((b16 << 0) &0b11111000) 
-        # Y-mirror
-        newrgb = array.array("B")
-        for i in range(ph):
-            off = (ph - i - 1) * pw * 3
-            newrgb += rgb[off:off + pw * 3]
-        return newrgb
+        b16arr.byteswap()
+        
+        #rgb = array.array("B")
+        #for b16 in b16arr:
+            #rgb.append((b16 >> 5) & 0b11111000)
+            #rgb.append((b16 << 5) & 0b11100000 | (b16 >> 11) & 0b00011100)
+            #rgb.append((b16 << 0) &0b11111000) 
+        #    rgb.append((b16 << 3) & 0b11111000)
+        #    rgb.append((b16 >> 3) & 0b11111100)
+        #    rgb.append((b16 >> 8) & 0b11111000)
+        ## Y-mirror
+        #newrgb = array.array("B")
+        #for i in range(ph):
+        #    off = (ph - i - 1) * pw * 3
+        #    newrgb += rgb[off:off + pw * 3]
+        #return newrgb
+        
+        rgb = array.array("B", [0] * pw * ph * 3)
+        for j in range(ph):
+            for i in range(pw):
+                off = (ph - j - 1) * pw * 3 + i * 3
+                b16 = b16arr[j * pw + i]
+                rgb[off] = (b16 << 3) & 0b11111000
+                rgb[off + 1] = (b16 >> 3) & 0b11111100
+                rgb[off + 2] = (b16 >> 8) & 0b11111000
+        return rgb
         
         
     def load_data(self, f):
@@ -102,7 +119,8 @@ class BMPLoader:
                 #d.write(b"\xFF" * 10)
                 #d.seek(0)
                 #self.image = Image.open(d)
-                self.image = Image.frombytes("RGB", (pw, ph), pd, "BGR;16") 
+                pd = self.pixelswap16(pw, ph, pd).tobytes()
+                self.image = Image.frombytes("RGB", (pw, ph), pd) 
             else:
                 self.width = pw
                 self.height = ph
