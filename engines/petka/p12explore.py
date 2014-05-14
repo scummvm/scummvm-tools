@@ -149,6 +149,8 @@ class App(tkinter.Frame):
         self.path_handler["scenes"] = self.path_objs_scenes
         self.path_handler["names"] = self.path_names
         self.path_handler["invntr"] = self.path_invntr
+        self.path_handler["msgs"] = self.path_msgs
+        self.path_handler["dlgs"] = self.path_dlgs
         self.path_handler["test"] = self.path_test
         
         self.update_after()
@@ -179,24 +181,30 @@ class App(tkinter.Frame):
                 label = "Outline")
         self.menuedit.add_separator()
         self.menuedit.add_command(
-                command = lambda: self.open_path(["parts"]),
+                command = lambda: self.open_path("/parts"),
                 label = "Select part")
         self.menuedit.add_separator()
         self.menuedit.add_command(
-                command = lambda: self.open_path(["res"]),
+                command = lambda: self.open_path("/res"),
                 label = "Resources")
         self.menuedit.add_command(
-                command = lambda: self.open_path(["objs"]),
+                command = lambda: self.open_path("/objs"),
                 label = "Objects")
         self.menuedit.add_command(
-                command = lambda: self.open_path(["scenes"]),
+                command = lambda: self.open_path("/scenes"),
                 label = "Scenes")
         self.menuedit.add_command(
-                command = lambda: self.open_path(["names"]),
+                command = lambda: self.open_path("/names"),
                 label = "Names")
         self.menuedit.add_command(
-                command = lambda: self.open_path(["invntr"]),
+                command = lambda: self.open_path("/invntr"),
                 label = "Invntr")
+        self.menuedit.add_command(
+                command = lambda: self.open_path("/msgs"),
+                label = "Messages")
+        self.menuedit.add_command(
+                command = lambda: self.open_path("/dlgs"),
+                label = "Dialog groups")
 
     def update_after(self):
         if not self.need_update:
@@ -541,16 +549,20 @@ class App(tkinter.Frame):
     def path_info_outline(self):
         self.add_info("Current part {} chapter {}\n\n".\
                 format(self.sim.curr_part, self.sim.curr_chap))
-        self.add_info("  Resources: <a href=\"/res\">{}</a>\n".\
+        self.add_info("  Resources:     <a href=\"/res\">{}</a>\n".\
             format(len(self.sim.res)))
-        self.add_info("  Objects:   <a href=\"/objs\">{}</a>\n".\
+        self.add_info("  Objects:       <a href=\"/objs\">{}</a>\n".\
             format(len(self.sim.objects)))
-        self.add_info("  Scenes:    <a href=\"/scenes\">{}</a>\n".\
+        self.add_info("  Scenes:        <a href=\"/scenes\">{}</a>\n".\
             format(len(self.sim.scenes)))
-        self.add_info("  Names:     <a href=\"/names\">{}</a>\n".\
+        self.add_info("  Names:         <a href=\"/names\">{}</a>\n".\
             format(len(self.sim.names)))
-        self.add_info("  Invntr:    <a href=\"/invntr\">{}</a>\n".\
+        self.add_info("  Invntr:        <a href=\"/invntr\">{}</a>\n".\
             format(len(self.sim.invntr)))
+        self.add_info("  Messages       <a href=\"/msgs\">{}</a>\n".\
+            format(len(self.sim.msgs)))
+        self.add_info("  Dialog groups: <a href=\"/dlgs\">{}</a>\n".\
+            format(len(self.sim.dlgs)))
     
 
     def path_default(self, path):
@@ -566,12 +578,14 @@ class App(tkinter.Frame):
         self.path_info_outline()
         if self.sim is not None:
             acts = [
-                ("Parts ({})".format(len(self.sim.parts)), ["parts"]),
-                ("Resources ({})".format(len(self.sim.res)), ["res"]),
-                ("Objects ({})".format(len(self.sim.objects)), ["objs"]),
-                ("Scenes ({})".format(len(self.sim.scenes)), ["scenes"]),
-                ("Names ({})".format(len(self.sim.names)), ["names"]),
-                ("Invntr ({})".format(len(self.sim.invntr)), ["invntr"]),
+                ("Parts ({})".format(len(self.sim.parts)), "/parts"),
+                ("Resources ({})".format(len(self.sim.res)), "/res"),
+                ("Objects ({})".format(len(self.sim.objects)), "/objs"),
+                ("Scenes ({})".format(len(self.sim.scenes)), "/scenes"),
+                ("Names ({})".format(len(self.sim.names)), "/names"),
+                ("Invntr ({})".format(len(self.sim.invntr)), "/invntr"),
+                ("Messages ({})".format(len(self.sim.msgs)), "/msgs"),
+                ("Dialog groups ({})".format(len(self.sim.dlgs)), "/dlgs"),
                 ("-", None),
                 ("Test image", ["test", "image"]),
                 ("Test info", ["test","info"]),
@@ -889,6 +903,11 @@ class App(tkinter.Frame):
                         format(self.find_path_res(res_id), res_id, res_id, \
                         hlesc(self.sim.res[res_id])))
             
+            self.add_info("\n<b>Messages</b>:\n")
+            for msg in self.sim.msgs:
+                if msg.obj.idx != rec.idx: continue
+                self.add_info("  <a href=\"/msgs/{}\">{}</a> (0x{:X}) - {}\n".\
+                    format(msg.idx, msg.idx, msg.idx, hlesc(msg.capt)))
 
     def path_names(self, path):
         self.switch_view(0)
@@ -946,6 +965,57 @@ class App(tkinter.Frame):
                         "- {}\n".format(idx, obj.idx, obj.idx, \
                         hlesc(obj.name)))
 
+    def path_msgs(self, path):
+        self.switch_view(0)
+        if self.last_path[:1] != ("msgs",):
+            self.update_gui("Messages ({})".format(len(self.sim.msgs)))
+            for idx, msg in enumerate(self.sim.msgs):
+                capt = msg.capt
+                if len(capt) > 25:
+                    capt = capt[:25] + "|"
+                self.insert_lb_act("{} - {}".format(msg.idx, capt), \
+                    [self.curr_path[0], idx])
+        # change
+        msg = None
+        if len(path) > 1:
+            # parts
+            self.select_lb_item(path[1])
+            msg = self.sim.msgs[path[1]]
+        # display
+        self.clear_info()
+        if not msg:
+            self.add_info("Select <b>message</b>\n")
+        else:
+            # msg info
+            self.add_info("<b>Message</b>: {}\n".format(path[1]))
+            self.add_info("  wav:    {}\n".format(msg.wav))
+            self.add_info("  object: <a href=\"{}\">{}</a> (0x{:X}) - {}\n".\
+                format(self.find_path_obj(msg.arg1), msg.arg1, msg.arg1, \
+                msg.obj.name))
+            self.add_info("  arg2:   {} (0x{:X})\n".format(msg.arg2, msg.arg2))
+            self.add_info("  arg3:   {} (0x{:X})\n".format(msg.arg3, msg.arg3))
+            self.add_info("\n{}".format(hlesc(msg.capt)))
+
+    def path_dlgs(self, path):
+        self.switch_view(0)
+        if self.last_path[:1] != ("dlgs",):
+            self.update_gui("Dialog groups ({})".format(len(self.sim.dlgs)))
+            for idx, dlg in enumerate(self.sim.dlgs):
+                self.insert_lb_act(name, ["dlgs", idx])
+        # change
+        name = None
+        if len(path) > 1:
+            # parts
+            self.select_lb_item(path[1])
+            dlg = self.sim.dlgs[path[1]]
+        # display
+        self.clear_info()
+        if not name:
+            self.add_info("Select <b>dialog group</b>\n")
+        else:
+            # dlg info
+            self.add_info("<b>Dialog group</b>: {}\n".format(path[1]))
+
     def path_test(self, path):
         self.update_gui("Test {}".format(path[1]))
         self.insert_lb_act("Outline", [])
@@ -969,7 +1039,7 @@ class App(tkinter.Frame):
     def open_data_from(self, folder):
         self.sim = petka.Engine()
         self.sim.load_data(folder, "cp1251")
-        self.sim.open_part(0, 0)
+        self.sim.open_part(1, 0)
 
 def main():
     root = tkinter.Tk()

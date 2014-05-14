@@ -74,6 +74,15 @@ class ScrObject:
         self.idx = idx
         self.name = name
 
+class MsgObject:
+    def __init__(self, idx, wav, arg1, arg2, arg3):
+        self.idx = idx
+        self.wav = wav
+        self.arg1 = arg1
+        self.arg2 = arg2
+        self.arg3 = arg3
+        self.capt = None
+
 class Engine:
     def __init__(self):
         self.fman = None
@@ -205,8 +214,12 @@ class Engine:
             if not pf: continue
             if strf in ini:
                 self.fman.load_store(ini[strf], 1)
-        # load script
+        # load script.dat, backgrnd.bg and resources.qrc
         self.load_script()
+        # load names & invntr
+        self.load_names()
+        # load dialogs
+        self.load_dialogs()
         
     def load_script(self):
         self.objects = []
@@ -269,13 +282,14 @@ class Engine:
                     obj = self.obj_idx[ref[0]]
                     scn.refs.append([obj] + list(ref[1:]))
                 else:
-                    raise EngineError("DEBUG: Object ID = 0x{:x} not found".\
+                    raise EngineError("DEBUG: Scene ref 0x{:x} not found".\
                         format(obj[0]))
                         
         f = self.fman.read_file_stream(self.curr_path + "resource.qrc")
         self.res, self.resord = self.parse_res(f)
         f.close()
         
+    def load_names(self):
         self.names = {}
         self.namesord = []
         fp = self.curr_path + "names.ini"
@@ -296,4 +310,39 @@ class Engine:
             self.invntrord = ini["__order__"]["ALL"]
             f.close()
         
+    def load_dialogs(self):
+        self.msgs = []
+        # DIALOGUES.LOD
+        fp = self.curr_path + "dialogue.lod"
+        if self.fman.exists(fp):
+            f = self.fman.read_file_stream(fp)
+            try:
+                temp = f.read(4)
+                num_msg = struct.unpack_from("<I", temp)[0]
+                for i in range(num_msg):
+                    temp = f.read(24)
+                    arg1, wav, arg2, arg3 = struct.unpack_from("<I12sII", temp)
+                    msg = MsgObject(len(self.msgs), \
+                        wav.decode(self.enc).strip(), arg1, arg2, arg3)
+                    # scan objects
+                    msg.obj = None
+                    for obj in self.objects:
+                        if obj.idx == arg1:
+                            msg.obj = obj
+                            break
+                    if not msg.obj:
+                        raise EngineError("DEBUG: Message ref = 0x{:x} not found".\
+                        format(obj[0]))
+                    self.msgs.append(msg)
+                for i, capt in enumerate(f.read().split(b"\x00")):
+                    if i < len(self.msgs):
+                        self.msgs[i].capt = capt.decode(self.enc)
+            finally:
+                f.close()
+
+        self.dlgs = []
+        # DIALOGUES.FIX
+        fp = self.curr_path + "dialogue.fix"
+        if self.fman.exists(fp):
+            f = self.fman.read_file_stream(fp)
 
