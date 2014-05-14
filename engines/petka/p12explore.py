@@ -91,7 +91,8 @@ class App(tkinter.Frame):
         
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
         ttk.Style().configure("TLabel", padding = self.pad)
-        ttk.Style().configure('Info.TFrame', background = 'white', foreground = "black")
+        ttk.Style().configure('Info.TFrame', background = 'white', \
+            foreground = "black")
         
         # main paned
         self.pan_main = ttk.PanedWindow(self, orient = tkinter.HORIZONTAL)
@@ -411,15 +412,17 @@ class App(tkinter.Frame):
         self.curr_lb.insert(tkinter.END, name)
 
     def select_lb_item(self, idx):
-        try:
-            num = self.curr_lb.curselection()[0]
-            num = int(num)
-        except:
-            num = -1
-        if idx != num:
+        idx = "{}".format(idx)
+        need = True
+        for sel in self.curr_lb.curselection():
+            if sel == idx:
+                need = False
+            else:
+                self.curr_lb.selection_clear(sel)
+        if need:
             self.curr_lb.selection_set(idx)
-            self.curr_lb.see(idx)
-
+        self.curr_lb.see(idx)
+            
     def on_left_listbox(self, event):
         def currsel():
             try:
@@ -693,7 +696,7 @@ class App(tkinter.Frame):
             # references / backreferences                    
             if isobj:
                 # search where object used
-                self.insert_text("\nUsed in:\n")
+                self.insert_text("\nRefered by scenes:\n")
                 for scn in self.sim.scenes:
                     for ref in scn.refs:
                         if ref[0].idx == rec.idx:
