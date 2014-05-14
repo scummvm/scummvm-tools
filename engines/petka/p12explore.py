@@ -641,11 +641,28 @@ class App(tkinter.Frame):
                             format(bmp.image.mode, \
                                 bmp.image.size[0], bmp.image.size[1]))
                     else:    
-                        self.add_info("internal BMP loader\n  "\
-                            "Mode: 16-bit\n  Size: {}x{}".\
+                        self.add_info("internal BMP loader\n"\
+                            "  Mode: 16-bit\n  Size: {}x{}".\
                             format(bmp.width, bmp.height))
                 elif fn[-4:].lower() == ".flc":
                     self.add_info("<b>FLC animation</b>: ")
+                    flcf = self.sim.fman.read_file_stream(fn)
+                    flc = petka.FLCLoader()
+                    flc.load_info(flcf)
+                    if flc.image:
+                        # PIL
+                        self.add_info("Python Imaging\n")
+                        self.add_info("  Mode:   {}\n  Size:   {}x{}\n"
+                            "  Frames: {}\n  Delay:  {}".\
+                            format(flc.image.mode, \
+                                flc.image.size[0], flc.image.size[1],
+                                flc.frame_num, flc.image.info["duration"]))
+                    else:    
+                        self.add_info("internal FLC loader\n  "\
+                            "  Mode:   P\n  Size:   {}x{}\n"\
+                            "  Frames: {}\nDelay: {}".\
+                            format(flc.width, flc.height, \
+                                flc.frame_num, flc.delay))
                 else:
                     self.add_info("No information availiable")
             except:
@@ -680,27 +697,35 @@ class App(tkinter.Frame):
                 
     def path_res_view(self, res_id):
         fn = self.sim.res[res_id]
-        if fn[-4:].lower() == ".bmp":
-            try:
-                bmpf = self.sim.fman.read_file_stream(fn)
+        try:
+            dataf = self.sim.fman.read_file_stream(fn)
+            if fn[-4:].lower() == ".bmp":
                 bmp = petka.BMPLoader()
-                bmp.load_data(bmpf)
+                bmp.load_data(dataf)
                 self.main_image = \
                     self.make_image(bmp)
                 self.switch_view(1)
                 self.update_canvas()
-            except:
+            elif fn[-4:].lower() == ".flc":
+                flcf = self.sim.fman.read_file_stream(fn)
+                flc = petka.FLCLoader()
+                flc.load_data(dataf)
+                self.main_image = \
+                    self.make_image(flc)
+                self.switch_view(1)
+                self.update_canvas()
+            else:
                 self.switch_view(0)
                 self.clear_info()
-                self.add_info("Error loading {} - \"{}\" \n\n{}".\
-                    format(res_id, hlesc(fn), hlesc(traceback.format_exc())))
-            finally:
-                bmpf.close()
-        else:
+                self.add_info("Resource {} - \"{}\" cannot be displayed\n".\
+                    format(res_id, hlesc(fn)))
+        except:
             self.switch_view(0)
             self.clear_info()
-            self.add_info("Resource {} - \"{}\" cannot be displayed\n".\
-                format(res_id, hlesc(fn)))
+            self.add_info("Error loading {} - \"{}\" \n\n{}".\
+                format(res_id, hlesc(fn), hlesc(traceback.format_exc())))
+        finally:
+            dataf.close()
 
     def path_res_status(self):
         self.switch_view(0)

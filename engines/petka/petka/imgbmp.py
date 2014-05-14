@@ -74,22 +74,6 @@ class BMPLoader:
         b16arr = array.array("H") # unsigned short
         b16arr.frombytes(pd)
         b16arr.byteswap()
-        
-        #rgb = array.array("B")
-        #for b16 in b16arr:
-            #rgb.append((b16 >> 5) & 0b11111000)
-            #rgb.append((b16 << 5) & 0b11100000 | (b16 >> 11) & 0b00011100)
-            #rgb.append((b16 << 0) &0b11111000) 
-        #    rgb.append((b16 << 3) & 0b11111000)
-        #    rgb.append((b16 >> 3) & 0b11111100)
-        #    rgb.append((b16 >> 8) & 0b11111000)
-        ## Y-mirror
-        #newrgb = array.array("B")
-        #for i in range(ph):
-        #    off = (ph - i - 1) * pw * 3
-        #    newrgb += rgb[off:off + pw * 3]
-        #return newrgb
-        
         rgb = array.array("B", [0] * pw * ph * 3)
         for j in range(ph):
             for i in range(pw):
@@ -113,20 +97,6 @@ class BMPLoader:
         try:
             pw, ph, pd = self.load_data_int16(f)
             if Image:
-                # reload fixed
-                #f.seek(0)
-                #d = io.BytesIO()
-                #d.write(f.read(10))
-                #data_off = struct.unpack("<I", f.read(4))[0]
-                #d.write(struct.pack("<I", data_off - 1))
-                #d.write(f.read(data_off - 14))
-                #fmt = "{}H".format(pw * ph)
-                #data = struct.unpack(">" + fmt, f.read(pw * ph * 2))
-                #d.write(struct.pack("<" + fmt, *data))
-                #d.write(f.read(pw * ph * 2))
-                #d.write(b"\xFF" * 10)
-                #d.seek(0)
-                #self.image = Image.open(d)
                 pd = self.pixelswap16(pw, ph, pd).tobytes()
                 self.image = Image.frombytes("RGB", (pw, ph), pd) 
             else:
