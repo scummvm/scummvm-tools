@@ -25,6 +25,10 @@ APPNAME = "P1&2 Explorer"
 def hlesc(value):
     return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")
 
+def fmt_opcode(opcode):
+    return petka.OPCODES.get(opcode, ["OP_{:X}".format(opcode)])[0]
+
+
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager:
     def __init__(self, text):
@@ -874,14 +878,13 @@ class App(tkinter.Frame):
             resused = []
             self.add_info("\n<b>Handlers</b>: {}\n".format(len(rec.acts)))
             for idx, (act_id, act_cond, act_arg, ops) in enumerate(rec.acts):
-                msg = petka.OPCODES.get(act_id, ["OP_{:X}".format(act_id)])[0]
+                msg = fmt_opcode(act_id)
                 if act_cond != 0xff or act_arg != 0xffff:
                     msg += " 0x{:02X} 0x{:04X}".format(act_cond, act_arg)
                 self.add_info("  {}) <u>on {}</u>, ops: {}\n".format(\
                     idx, msg, len(ops)))
                 for oidx, op in enumerate(ops):
-                    msg = petka.OPCODES.get(op[1], ["OP_{:X}".format(op[1])])[0]
-                    self.add_info("    {}) {} ".format(oidx, msg))
+                    self.add_info("    {}) {} ".format(oidx, fmt_opcode(op[1])))
                     if op[0] == rec.idx:
                         self.add_info("THIS")
                     else:
@@ -969,7 +972,7 @@ class App(tkinter.Frame):
             for idx, obj in enumerate(self.sim.objects):
                 if obj.name == name:
                     self.add_info("  <a href=\"/objs/{}\">{}</a> (0x{:X}) "\
-                        "- {}\n".format(idx, obj.idx, obj.idx, \
+                        "- {}\n".format(idx, obj.idx, obj.idx,
                         hlesc(obj.name)))
 
     def path_msgs(self, path):
@@ -980,7 +983,7 @@ class App(tkinter.Frame):
                 capt = msg.capt
                 if len(capt) > 25:
                     capt = capt[:25] + "|"
-                self.insert_lb_act("{} - {}".format(msg.idx, capt), \
+                self.insert_lb_act("{} - {}".format(msg.idx, capt),
                     ["msgs", idx])
         # change
         msg = None
@@ -997,8 +1000,8 @@ class App(tkinter.Frame):
             self.add_info("<b>Message</b>: {}\n".format(path[1]))
             self.add_info("  wav:    {}\n".format(msg.wav))
             self.add_info("  object: <a href=\"{}\">{}</a> (0x{:X}) - {}\n".\
-                format(self.find_path_obj(msg.arg1), msg.arg1, msg.arg1, \
-                msg.obj.name))
+                format(self.find_path_obj(msg.arg1), msg.arg1, msg.arg1,
+                    msg.obj.name))
             self.add_info("  arg2:   {} (0x{:X})\n".format(msg.arg2, msg.arg2))
             self.add_info("  arg3:   {} (0x{:X})\n".format(msg.arg3, msg.arg3))
             self.add_info("\n{}\n".format(hlesc(msg.capt)))
@@ -1021,7 +1024,7 @@ class App(tkinter.Frame):
         if self.last_path[:1] != ("dlgs",):
             self.update_gui("Dialog groups ({})".format(len(self.sim.dlgs)))
             for idx, grp in enumerate(self.sim.dlgs):
-                self.insert_lb_act("{} (0x{:X})".format(grp.idx, grp.idx), \
+                self.insert_lb_act("{} (0x{:X})".format(grp.idx, grp.idx),
                     ["dlgs", idx])
         # change
         grp = None
