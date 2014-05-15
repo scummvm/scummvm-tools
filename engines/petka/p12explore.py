@@ -561,7 +561,6 @@ class App(tkinter.Frame):
                 self.open_path(act[1])
 
     def on_back(self):
-        print("BACK", self.hist)
         if len(self.hist) > 1:
             np = self.hist[-2:-1][0]
             print(np[0])
@@ -571,7 +570,7 @@ class App(tkinter.Frame):
         
 
     def on_forward(self):
-        print("FORWARD")
+        print("FORWARD", self.histf)
 
     def find_path_res(self, res):
         for idx, res_id in enumerate(self.sim.resord):
