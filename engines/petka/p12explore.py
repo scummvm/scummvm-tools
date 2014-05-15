@@ -714,6 +714,8 @@ class App(tkinter.Frame):
             else:
                 cnum = 0
             self.sim.open_part(pnum, cnum)
+            self.hist = self.hist[-1:]
+            self.histf = []
         else:
             self.select_lb_item(None)
         # display
