@@ -47,8 +47,6 @@ class HyperlinkManager:
         italic_font = font.Font(text, self.text.cget("font"))
         italic_font.configure(slant = "italic")
         self.text.tag_config("italic", font = italic_font)
-        #underline_font = font.Font(text, self.text.cget("font"))
-        #underline_font.configure(underline = 1)
         self.text.tag_config("underline", underline = 1)
         self.reset()
 
@@ -97,10 +95,13 @@ class App(tkinter.Frame):
         self.curr_main = -1 # 0 - frame, 1 - canvas
         self.curr_path = []
         self.last_path = [None]
+        self.last_capt = ""
         self.curr_mode = 0
         self.curr_mode_sub = None
         self.curr_gui = []
         self.curr_lb_acts = None
+        self.hist = []
+        self.histf = []
         # canvas
         self.need_update = False
         self.canv_view_fact = 1
@@ -113,8 +114,21 @@ class App(tkinter.Frame):
         ttk.Style().configure("TLabel", padding = self.pad)
         ttk.Style().configure('Info.TFrame', background = 'white', \
             foreground = "black")
+
+        # toolbar
+        self.toolbar = ttk.Frame(self)
+        self.toolbar.pack(fill = tkinter.BOTH)
+        btns = [
+            ["Outline", lambda: self.open_path("")],
+            ["<-", self.on_back],
+            ["->", self.on_forward],
+        ]
+        for text, cmd in btns:
+            btn = ttk.Button(self.toolbar, text = text, \
+                style = "Tool.TButton", command = cmd)
+            btn.pack(side = tkinter.LEFT)
         
-        # main paned
+        # main panel
         self.pan_main = ttk.PanedWindow(self, orient = tkinter.HORIZONTAL)
         self.pan_main.pack(fill = tkinter.BOTH, expand = 1)
         
@@ -188,10 +202,6 @@ class App(tkinter.Frame):
         self.menubar.add_cascade(menu = self.menuedit,
                 label = "Edit")
         self.menuedit.add_command(
-                command = lambda: self.open_path([]),
-                label = "Outline")
-        self.menuedit.add_separator()
-        self.menuedit.add_command(
                 command = lambda: self.open_path("/parts"),
                 label = "Select part")
         self.menuedit.add_separator()
@@ -216,6 +226,24 @@ class App(tkinter.Frame):
         self.menuedit.add_command(
                 command = lambda: self.open_path("/dlgs"),
                 label = "Dialog groups")
+
+        self.menunav = tkinter.Menu(self.master, tearoff = 0)
+        self.menubar.add_cascade(menu = self.menunav,
+                label = "Navigation")
+        self.menunav.add_command(
+                command = self.on_back,
+                label = "Back")
+        self.menunav.add_command(
+                command = self.on_forward,
+                label = "Forward")
+        self.menunav.add_separator()
+        self.menunav.add_command(
+                command = lambda: self.open_path(""),
+                label = "Outline")
+        self.menunav.add_separator()
+        self.menunav.add_command(
+                command = lambda: self.open_path("/hist"),
+                label = "History")
 
         self.menuhelp = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menuhelp,
@@ -251,7 +279,7 @@ class App(tkinter.Frame):
     def on_resize_view(self, event):
         self.update_after()
  
-    def open_path(self, loc):
+    def open_path(self, loc, withhist = True):
         if isinstance(loc, str):
             path = []
             if loc[:1] == "/":
@@ -265,6 +293,12 @@ class App(tkinter.Frame):
         else:
             path = loc
         path = tuple(path)
+
+        if withhist:
+            self.hist.append([path])
+            self.histf = []
+            print(self.hist)
+
         print("DEBUG: Open", path)
         self.curr_path = path
         if len(path) > 0:
@@ -524,6 +558,19 @@ class App(tkinter.Frame):
             act = self.curr_lb_acts[currsel()]
             if act[1] is not None:
                 self.open_path(act[1])
+
+    def on_back(self):
+        print("BACK", self.hist)
+        if len(self.hist) > 1:
+            np = self.hist[-2:-1][0]
+            print(np[0])
+            self.hist = self.hist[:-1]
+            self.histf = [np] + self.histf
+            self.open_path(np[0], False)
+        
+
+    def on_forward(self):
+        print("FORWARD")
 
     def find_path_res(self, res):
         for idx, res_id in enumerate(self.sim.resord):
