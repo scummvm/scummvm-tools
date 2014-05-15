@@ -555,12 +555,12 @@ class App(tkinter.Frame):
         return self.fmt_hl_rec(self.sim.objects, "objs", obj_idx, full)
         
     def fmt_hl_scene(self, scn_idx, full = False):
-        return self.fmt_hl_rec(self.sim.scenes, "scene", scn_idx, full)
+        return self.fmt_hl_rec(self.sim.scenes, "scenes", scn_idx, full)
 
     def fmt_hl_obj_scene(self, rec_idx, full = False):
         if rec_idx in self.sim.obj_idx:
-            return self.fmt_hl_rec(self.sim.objects, "objs", obj_idx, full)
-        return self.fmt_hl_rec(self.sim.scenes, "scene", scn_idx, full)
+            return self.fmt_hl_rec(self.sim.objects, "objs", rec_idx, full)
+        return self.fmt_hl_rec(self.sim.scenes, "scenes", rec_idx, full)
         
     def find_path_name(self, key):
         for idx, name in enumerate(self.sim.namesord):
@@ -579,6 +579,9 @@ class App(tkinter.Frame):
             if grp.idx == grp_idx:
                 return "/dlgs/{}".format(idx)
         return "/no_dlgs/{}".format(grp_idx)
+
+    def fmt_hl_msg(self, obj_idx, full = False):
+        return self.fmt_hl_rec(self.sim.msgs, "msgs", obj_idx, full)
 
     def path_info_outline(self):
         self.add_info("Current part {} chapter {}\n\n".\
@@ -732,9 +735,8 @@ class App(tkinter.Frame):
                         if ru: break
                         for op_id, op_code, op_res, op4, op5 in ops:
                             if res_id == op_res:
-                                self.add_info("  <a href=\"/{}/{}\">{}</a> "\
-                                    "(0x{:X}) - {}\n".format(tp, idx, rec.idx, \
-                                        rec.idx, hlesc(rec.name)))
+                                self.add_info("  " + 
+                                    self.fmt_hl_obj_scene(rec.idx, True) + "\n")
                                 ru = True
                                 break
                             #print(op_id, op_code, op_res, op4, op5)
@@ -789,7 +791,7 @@ class App(tkinter.Frame):
         ftk = list(fts.keys())
         ftk.sort()
         for ft in ftk:
-            self.add_info("  <a href=\"/res/flt/{}\">{}</a>: {}\n".format(\
+            self.add_info("  <a href=\"/res/flt/{}\">{}</a>: {}\n".format(
                 ft, ft, fts[ft]))
 
     def path_res_all(self, path):
@@ -860,14 +862,13 @@ class App(tkinter.Frame):
             self.add_info("  Index:  {} (0x{:X})\n  Name:   {}\n".\
                 format(rec.idx, rec.idx, hlesc(rec.name)))
             if rec.name in self.sim.names:
-                self.add_info("  <a href=\"{}\">Alias</a>:  {}\n".format(\
-                    self.find_path_name(rec.name), \
-                    hlesc(self.sim.names[rec.name])))
+                self.add_info("  " + fmt_hl(self.find_path_name(rec.name), 
+                    "Alias") + ":  {}\n".format(
+                        hlesc(self.sim.names[rec.name])))
             if rec.name in self.sim.invntr:
-                self.add_info("  <a href=\"{}\">Invntr</a>: {}\n".format(\
-                    self.find_path_invntr(rec.name), \
-                    hlesc(self.sim.invntr[rec.name])))
-
+                self.add_info("  " + fmt_hl(self.find_path_name(rec.name), 
+                    "Invntr") + ": {}\n".format(
+                        hlesc(self.sim.invntr[rec.name])))
             # references / backreferences                    
             if isobj:
                 # search where object used
@@ -875,9 +876,8 @@ class App(tkinter.Frame):
                 for scn in self.sim.scenes:
                     for ref in scn.refs:
                         if ref[0].idx == rec.idx:
-                            self.add_info("  <a href=\"{}\">{}</a> (0x{:X}) "\
-                                "- {}\n".format(self.find_path_scene(scn.idx), \
-                                scn.idx, scn.idx, scn.name))
+                            self.add_info("  " + 
+                                self.fmt_hl_scene(scn.idx, True) + "\n")
                             break
             else:
                 if len(rec.refs) == 0:
@@ -886,8 +886,8 @@ class App(tkinter.Frame):
                     self.add_info("\n<b>References</b>: {}\n".\
                         format(len(rec.refs)))
                 for idx, ref in enumerate(rec.refs):
-                    self.add_info("  {}) <a href=\"{}\">{}</a>".format(idx,\
-                        self.find_path_obj(ref[0].idx), ref[0].idx))
+                    self.add_info("  {}) ".format(idx) + 
+                        self.fmt_hl_obj(ref[0].idx))
                     msg = ""
                     for arg in ref[1:]:
                         msg += " "
@@ -940,8 +940,7 @@ class App(tkinter.Frame):
                 self.add_info("\n<b>Messages</b>:\n")
                 for msg in self.sim.msgs:
                     if msg.obj.idx != rec.idx: continue
-                    self.add_info("  <a href=\"/msgs/{}\">{}</a> (0x{:X}) - {}\n".\
-                        format(msg.idx, msg.idx, msg.idx, hlesc(msg.capt)))
+                    self.add_info("  " + self.fmt_hl_msg(msg.idx, True) + "\n")
 
     def path_names(self, path):
         self.switch_view(0)
@@ -967,10 +966,7 @@ class App(tkinter.Frame):
             self.add_info("<b>Applied for</b>:\n")
             for idx, obj in enumerate(self.sim.objects):
                 if obj.name == name:
-                    self.add_info("  <a href=\"/objs/{}\">{}</a> (0x{:X}) "\
-                        "- {}\n".format(idx, obj.idx, obj.idx, \
-                        hlesc(obj.name)))
-
+                    self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
     def path_invntr(self, path):
         self.switch_view(0)
         if self.last_path[:1] != ("invntr",):
@@ -995,16 +991,14 @@ class App(tkinter.Frame):
             self.add_info("<b>Applied for</b>:\n")
             for idx, obj in enumerate(self.sim.objects):
                 if obj.name == name:
-                    self.add_info("  <a href=\"/objs/{}\">{}</a> (0x{:X}) "\
-                        "- {}\n".format(idx, obj.idx, obj.idx,
-                        hlesc(obj.name)))
+                    self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
 
     def path_msgs(self, path):
         self.switch_view(0)
         if self.last_path[:1] != ("msgs",):
             self.update_gui("Messages ({})".format(len(self.sim.msgs)))
             for idx, msg in enumerate(self.sim.msgs):
-                capt = msg.capt
+                capt = msg.name
                 if len(capt) > 25:
                     capt = capt[:25] + "|"
                 self.insert_lb_act("{} - {}".format(msg.idx, capt),
@@ -1028,12 +1022,12 @@ class App(tkinter.Frame):
                     msg.obj.name))
             self.add_info("  arg2:   {} (0x{:X})\n".format(msg.arg2, msg.arg2))
             self.add_info("  arg3:   {} (0x{:X})\n".format(msg.arg3, msg.arg3))
-            self.add_info("\n{}\n".format(hlesc(msg.capt)))
+            self.add_info("\n{}\n".format(hlesc(msg.name)))
 
             self.add_info("\n<b>Used by dialog groups</b>:\n")
             for grp in self.sim.dlgs:
-                for dlgset in grp.sets:
-                    for dlg in dlgset.dlgs:
+                for act in grp.acts:
+                    for dlg in act.dlgs:
                         for op in dlg.ops:
                             if not op.msg: continue
                             if op.msg.idx == msg.idx and op.opcode == 7:
@@ -1083,11 +1077,9 @@ class App(tkinter.Frame):
                             if op.msg:
                                 opref = "<a href=\"/msgs/{}\">{}</a>".format(
                                     op.ref, op.ref)
-                                objref = "<a href=\"{}\">{}</a>".format(
-                                    self.find_path_obj(op.msg.obj.idx),
-                                    op.msg.obj.idx)                                
+                                objref = self.fmt_hl_obj(op.msg.obj.idx)                                
                                 cmt = " / (0x{:X}) - {}, {}".\
-                                    format(op.ref, objref, hlesc(op.msg.capt))
+                                    format(op.ref, objref, hlesc(op.msg.name))
                         self.add_info("      {} 0x{:X} {}{}\n".\
                             format(opcode, op.arg, opref, cmt))
             

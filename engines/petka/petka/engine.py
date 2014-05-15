@@ -82,7 +82,7 @@ class MsgObject:
         self.arg1 = arg1
         self.arg2 = arg2
         self.arg3 = arg3
-        self.capt = None
+        self.name = None
 
 class DlgGrpObject:
     def __init__(self, idx, num_acts, arg1):
@@ -364,7 +364,7 @@ class Engine:
                     self.msgs.append(msg)
                 for i, capt in enumerate(f.read().split(b"\x00")):
                     if i < len(self.msgs):
-                        self.msgs[i].capt = capt.decode(self.enc)
+                        self.msgs[i].name = capt.decode(self.enc)
             finally:
                 f.close()
 
