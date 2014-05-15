@@ -534,17 +534,17 @@ class App(tkinter.Frame):
         self.curr_lb.insert(tkinter.END, name)
 
     def select_lb_item(self, idx):
-        idx = "{}".format(idx)
         need = (idx is not None)
+        idxs = "{}".format(idx)
         for sel in self.curr_lb.curselection():
-            if sel == idx:
+            if sel == idxs:
                 need = False
             else:
                 self.curr_lb.selection_clear(sel)
         if need:
-            self.curr_lb.selection_set(idx)
+            self.curr_lb.selection_set(idxs)
         if idx is not None:
-            self.curr_lb.see(idx)
+            self.curr_lb.see(idxs)
             
     def on_left_listbox(self, event):
         def currsel():
