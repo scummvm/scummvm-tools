@@ -297,7 +297,6 @@ class App(tkinter.Frame):
         if withhist:
             self.hist.append([path])
             self.histf = []
-            print(self.hist)
 
         print("DEBUG: Open", path)
         self.curr_path = path
@@ -563,14 +562,16 @@ class App(tkinter.Frame):
     def on_back(self):
         if len(self.hist) > 1:
             np = self.hist[-2:-1][0]
-            print(np[0])
+            self.histf = self.hist[-1:] + self.histf
             self.hist = self.hist[:-1]
-            self.histf = [np] + self.histf
             self.open_path(np[0], False)
-        
 
     def on_forward(self):
-        print("FORWARD", self.histf)
+        if len(self.histf) > 0:
+            np = self.histf[0]
+            self.histf = self.histf[1:]
+            self.hist.append(np)
+            self.open_path(np[0], False)
 
     def find_path_res(self, res):
         for idx, res_id in enumerate(self.sim.resord):
