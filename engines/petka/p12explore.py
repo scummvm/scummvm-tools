@@ -47,9 +47,9 @@ class HyperlinkManager:
         italic_font = font.Font(text, self.text.cget("font"))
         italic_font.configure(slant = "italic")
         self.text.tag_config("italic", font = italic_font)
-        underline_font = font.Font(text, self.text.cget("font"))
-        underline_font.configure(underline = 1)
-        self.text.tag_config("underline", font = underline_font)
+        #underline_font = font.Font(text, self.text.cget("font"))
+        #underline_font.configure(underline = 1)
+        self.text.tag_config("underline", underline = 1)
         self.reset()
 
     def reset(self):
