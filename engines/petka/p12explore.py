@@ -535,7 +535,7 @@ class App(tkinter.Frame):
 
     def select_lb_item(self, idx):
         idx = "{}".format(idx)
-        need = True
+        need = (idx is not None)
         for sel in self.curr_lb.curselection():
             if sel == idx:
                 need = False
@@ -543,7 +543,8 @@ class App(tkinter.Frame):
                 self.curr_lb.selection_clear(sel)
         if need:
             self.curr_lb.selection_set(idx)
-        self.curr_lb.see(idx)
+        if idx is not None:
+            self.curr_lb.see(idx)
             
     def on_left_listbox(self, event):
         def currsel():
@@ -713,6 +714,8 @@ class App(tkinter.Frame):
             else:
                 cnum = 0
             self.sim.open_part(pnum, cnum)
+        else:
+            self.select_lb_item(None)
         # display
         self.clear_info()
         self.add_info("Select <b>part</b>\n\n")
@@ -868,6 +871,7 @@ class App(tkinter.Frame):
             self.path_res_open(path[:3], res_id, path[3:])
         else:
             self.path_res_status()
+            self.select_lb_item(None)
 
     def path_res_flt(self, path):
         lst = []
@@ -889,6 +893,7 @@ class App(tkinter.Frame):
             self.path_res_open(path[:4], res_id, path[4:])
         else:
             self.path_res_status()
+            self.select_lb_item(None)
 
     def path_objs_scenes(self, path):
         self.switch_view(0)
@@ -911,6 +916,8 @@ class App(tkinter.Frame):
             # index
             self.select_lb_item(path[1])
             rec = lst[path[1]]
+        else:
+            self.select_lb_item(None)
         # display
         self.clear_info()
         if not rec:
@@ -1025,6 +1032,8 @@ class App(tkinter.Frame):
             # parts
             self.select_lb_item(path[1])
             name = self.sim.namesord[path[1]]
+        else:
+            self.select_lb_item(None)
         # display
         self.clear_info()
         if not name:
@@ -1081,6 +1090,8 @@ class App(tkinter.Frame):
             # parts
             self.select_lb_item(path[1])
             msg = self.sim.msgs[path[1]]
+        else:
+            self.select_lb_item(None)
         # display
         self.clear_info()
         if not msg:
@@ -1119,6 +1130,8 @@ class App(tkinter.Frame):
             # parts
             self.select_lb_item(path[1])
             grp = self.sim.dlgs[path[1]]
+        else:
+            self.select_lb_item(None)
         # display
         self.clear_info()
         if not grp:
