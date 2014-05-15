@@ -73,6 +73,7 @@ class ScrObject:
     def __init__(self, idx, name):
         self.idx = idx
         self.name = name
+        self.acts = None
 
 class MsgObject:
     def __init__(self, idx, wav, arg1, arg2, arg3):
@@ -88,14 +89,15 @@ class DlgGrpObject:
         self.idx = idx
         self.num_sets = num_sets
         self.arg1 = arg1
-        self.sets = None
+        self.acts = None
 
-class DlgSetObject:
-    def __init__(self, num_dlgs, arg1, arg2, arg3):
+class DlgActObject:
+    def __init__(self, num_dlgs, opcode, ref, arg1, arg2):
         self.num_dlgs = num_dlgs
+        self.opcode = opcode
+        self.ref = ref
         self.arg1 = arg1
         self.arg2 = arg2
-        self.arg3 = arg3
         self.dlgs = None
 
 class DlgObject:

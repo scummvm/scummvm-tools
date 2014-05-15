@@ -1041,7 +1041,7 @@ class App(tkinter.Frame):
             self.add_info("<b>Dialog group</b>: {} (0x{:X})\n".format(\
                 grp.idx, grp.idx))
             self.add_info("  arg1: {} (0x{:X})\n\n".format(grp.arg1, grp.arg1))
-            self.add_info("<b>Dialog sets<b>: {}\n".format(len(grp.sets)))
+            self.add_info("<b>Dialog handlers<b>: {}\n".format(len(grp.sets)))
             for idx, dlgset in enumerate(grp.sets):
                 self.add_info("  {}) <u>0x{:X} 0x{:X} 0x{:X}</u>, dlgs: {}\n".\
                     format(idx, dlgset.arg1, dlgset.arg2, dlgset.arg3, \
