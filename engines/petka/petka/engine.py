@@ -85,9 +85,9 @@ class MsgObject:
         self.capt = None
 
 class DlgGrpObject:
-    def __init__(self, idx, num_sets, arg1):
+    def __init__(self, idx, num_acts, arg1):
         self.idx = idx
-        self.num_sets = num_sets
+        self.num_acts = num_acts
         self.arg1 = arg1
         self.acts = None
 
@@ -99,6 +99,7 @@ class DlgActObject:
         self.arg1 = arg1
         self.arg2 = arg2
         self.dlgs = None
+        self.obj = None
 
 class DlgObject:
     def __init__(self, op_start, arg1, arg2):
@@ -378,21 +379,25 @@ class Engine:
                 num_grps = struct.unpack_from("<I", temp)[0]
                 for i in range(num_grps):
                     temp = f.read(12)
-                    idx, num_sets, arg1 = struct.unpack_from("<III", temp)
-                    grp = DlgGrpObject(idx, num_sets, arg1)
+                    idx, num_acts, arg1 = struct.unpack_from("<III", temp)
+                    grp = DlgGrpObject(idx, num_acts, arg1)
                     self.dlgs.append(grp)
                 opref = {}
                 for grp in self.dlgs:
-                    grp.sets = []
-                    for i in range(grp.num_sets):
+                    grp.acts = []
+                    for i in range(grp.num_acts):
                         temp = f.read(16)
-                        arg1, num_dlgs, arg2, arg3 = \
-                            struct.unpack_from("<4I", temp)
-                        dlgset = DlgSetObject(num_dlgs, arg1, arg2, arg3)
-                        grp.sets.append(dlgset)
-                    for dlgset in grp.sets:
-                        dlgset.dlgs = []
-                        for i in range(dlgset.num_dlgs):
+                        opcode, ref, num_dlgs, arg1, arg2 = \
+                            struct.unpack_from("<2H3I", temp)
+                        act = DlgActObject(num_dlgs, opcode, ref, arg1, arg2)
+                        if ref not in self.obj_idx:
+                            raise EngineError("Dialog group 0x{:x} refered "\
+                                "to unexisted object 0x{:x}".format(grp.idx, ref))
+                        act.obj = self.obj_idx[act.ref]
+                        grp.acts.append(act)
+                    for act in grp.acts:
+                        act.dlgs = []
+                        for i in range(act.num_dlgs):
                             temp = f.read(12)
                             op_start, arg1, arg2 = \
                                 struct.unpack_from("<3I", temp)
@@ -402,7 +407,7 @@ class Engine:
                             dlg = DlgObject(op_start, arg1, arg2)
                             opref[op_start] = dlg
                             dlg.ops = None
-                            dlgset.dlgs.append(dlg)
+                            act.dlgs.append(dlg)
                 temp = f.read(4)
                 num_ops = struct.unpack_from("<I", temp)[0]
                 for i in range(num_ops):

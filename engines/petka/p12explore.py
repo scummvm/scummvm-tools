@@ -26,7 +26,10 @@ def hlesc(value):
     return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")
 
 def fmt_opcode(opcode):
-    return petka.OPCODES.get(opcode, ["OP_{:X}".format(opcode)])[0]
+    return petka.OPCODES.get(opcode, ["OP{:04X}".format(opcode)])[0]
+
+def fmt_hl(loc, desc):
+    return "<a href=\"{}\">{}</a>".format(loc, desc)
 
 
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
@@ -158,9 +161,10 @@ class App(tkinter.Frame):
         self.path_handler["test"] = self.path_test
         
         self.update_after()
-        self.open_path("")
+        #self.open_path("")
         #self.open_path(self.find_path_scene(36))
         #self.open_path(["res", "flt", "BMP", 7])
+        self.open_path(["dlgs", 6])
 
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
@@ -537,6 +541,26 @@ class App(tkinter.Frame):
             if rec.idx == rec_idx:
                 return "/scenes/{}".format(idx)
         return "/no_obj_scene/{}".format(rec_idx)
+
+    def fmt_hl_rec(self, lst, pref, rec_idx, full = False):
+        for idx, rec in enumerate(lst):
+            if rec.idx == rec_idx:
+                fmt = fmt_hl("/{}/{}".format(pref, idx), str(rec_idx))
+                if full:
+                    fmt += " (0x{:X}) - {}".format(rec.idx, hlesc(rec.name))
+                return fmt
+        return "{} (0x{:X})".format(rec_idx, rec_idx)
+        
+    def fmt_hl_obj(self, obj_idx, full = False):
+        return self.fmt_hl_rec(self.sim.objects, "objs", obj_idx, full)
+        
+    def fmt_hl_scene(self, scn_idx, full = False):
+        return self.fmt_hl_rec(self.sim.scenes, "scene", scn_idx, full)
+
+    def fmt_hl_obj_scene(self, rec_idx, full = False):
+        if rec_idx in self.sim.obj_idx:
+            return self.fmt_hl_rec(self.sim.objects, "objs", obj_idx, full)
+        return self.fmt_hl_rec(self.sim.scenes, "scene", scn_idx, full)
         
     def find_path_name(self, key):
         for idx, name in enumerate(self.sim.namesord):
@@ -1041,12 +1065,13 @@ class App(tkinter.Frame):
             self.add_info("<b>Dialog group</b>: {} (0x{:X})\n".format(\
                 grp.idx, grp.idx))
             self.add_info("  arg1: {} (0x{:X})\n\n".format(grp.arg1, grp.arg1))
-            self.add_info("<b>Dialog handlers<b>: {}\n".format(len(grp.sets)))
-            for idx, dlgset in enumerate(grp.sets):
-                self.add_info("  {}) <u>0x{:X} 0x{:X} 0x{:X}</u>, dlgs: {}\n".\
-                    format(idx, dlgset.arg1, dlgset.arg2, dlgset.arg3, \
-                        len(dlgset.dlgs)))
-                for didx, dlg in enumerate(dlgset.dlgs):
+            self.add_info("<b>Dialog handlers<b>: {}\n".format(len(grp.acts)))
+            for idx, act in enumerate(grp.acts):
+                self.add_info("  {}) <u>on {} {} 0x{:X} 0x{:X}</u>, dlgs: "\
+                    "{} / {}\n".format(idx, fmt_opcode(act.opcode), 
+                        self.fmt_hl_obj(act.ref), act.arg1, act.arg2, \
+                        len(act.dlgs), self.fmt_hl_obj(act.ref, True)))
+                for didx, dlg in enumerate(act.dlgs):
                     self.add_info("    {}) <i>0x{:X} 0x{:X}</i>, ops: {}\n".\
                         format(didx, dlg.arg1, dlg.arg2, len(dlg.ops)))
                     for op in dlg.ops:
