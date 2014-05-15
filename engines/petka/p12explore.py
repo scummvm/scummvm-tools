@@ -546,6 +546,12 @@ class App(tkinter.Frame):
                 return "/invntr/{}".format(idx)
         return "/no_invntr/{}".format(key)
 
+    def find_path_dlggrp(self, grp_idx):
+        for idx, grp in enumerate(self.sim.dlgs):
+            if grp.idx == grp_idx:
+                return "/dlgs/{}".format(idx)
+        return "/no_dlgs/{}".format(grp_idx)
+
     def path_info_outline(self):
         self.add_info("Current part {} chapter {}\n\n".\
                 format(self.sim.curr_part, self.sim.curr_chap))
@@ -995,8 +1001,21 @@ class App(tkinter.Frame):
                 msg.obj.name))
             self.add_info("  arg2:   {} (0x{:X})\n".format(msg.arg2, msg.arg2))
             self.add_info("  arg3:   {} (0x{:X})\n".format(msg.arg3, msg.arg3))
-            self.add_info("\n{}".format(hlesc(msg.capt)))
+            self.add_info("\n{}\n".format(hlesc(msg.capt)))
 
+            self.add_info("\n<b>Used by dialog groups</b>:\n")
+            for grp in self.sim.dlgs:
+                for dlgset in grp.sets:
+                    for dlg in dlgset.dlgs:
+                        for op in dlg.ops:
+                            if not op.msg: continue
+                            if op.msg.idx == msg.idx and op.opcode == 7:
+                                self.add_info("  <a href=\"{}\">{}</a>\n".\
+                                    format(self.find_path_dlggrp(grp.idx), 
+                                        grp.idx))
+                                
+                
+                
     def path_dlgs(self, path):
         self.switch_view(0)
         if self.last_path[:1] != ("dlgs",):
@@ -1034,12 +1053,15 @@ class App(tkinter.Frame):
                         if op.opcode == 7:
                             opcode = "PLAY"
                             if op.msg:
-                                opref = "<a href=\"/msgs/{}\">{}</a>".format(\
+                                opref = "<a href=\"/msgs/{}\">{}</a>".format(
                                     op.ref, op.ref)
-                                cmt = " / (0x{:X}) - {}".\
-                                    format(op.ref, hlesc(op.msg.capt))
+                                objref = "<a href=\"{}\">{}</a>".format(
+                                    self.find_path_obj(op.msg.obj.idx),
+                                    op.msg.obj.idx)                                
+                                cmt = " / (0x{:X}) - {}, {}".\
+                                    format(op.ref, objref, hlesc(op.msg.capt))
                         self.add_info("      {} 0x{:X} {}{}\n".\
-                            format(opcode, op.arg, opref, hlesc(cmt)))
+                            format(opcode, op.arg, opref, cmt))
             
 
     def path_test(self, path):
