@@ -21,6 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
+VERSION = "v0.2 2014-05-15"
 
 def hlesc(value):
     return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")
@@ -159,12 +160,14 @@ class App(tkinter.Frame):
         self.path_handler["msgs"] = self.path_msgs
         self.path_handler["dlgs"] = self.path_dlgs
         self.path_handler["test"] = self.path_test
+        self.path_handler["about"] = self.path_about
         
         self.update_after()
-        #self.open_path("")
+        self.open_path("/about")
         #self.open_path(self.find_path_scene(36))
         #self.open_path(["res", "flt", "BMP", 7])
-        self.open_path(["dlgs", 6])
+        #self.open_path(["dlgs", 6])
+        #self.open_path(self.find_path_obj(448))
 
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
@@ -213,6 +216,13 @@ class App(tkinter.Frame):
         self.menuedit.add_command(
                 command = lambda: self.open_path("/dlgs"),
                 label = "Dialog groups")
+
+        self.menuhelp = tkinter.Menu(self.master, tearoff = 0)
+        self.menubar.add_cascade(menu = self.menuhelp,
+                label = "Help")
+        self.menuhelp.add_command(
+                command = lambda: self.open_path("/about"),
+                label = "About")
 
     def update_after(self):
         if not self.need_update:
@@ -547,7 +557,10 @@ class App(tkinter.Frame):
             if rec.idx == rec_idx:
                 fmt = fmt_hl("/{}/{}".format(pref, idx), str(rec_idx))
                 if full:
-                    fmt += " (0x{:X}) - {}".format(rec.idx, hlesc(rec.name))
+                    try:
+                        fmt += " (0x{:X}) - {}".format(rec.idx, hlesc(rec.name))
+                    except:
+                        fmt += " (0x{:X})".format(rec.idx)
                 return fmt
         return "{} (0x{:X})".format(rec_idx, rec_idx)
         
@@ -582,6 +595,9 @@ class App(tkinter.Frame):
 
     def fmt_hl_msg(self, obj_idx, full = False):
         return self.fmt_hl_rec(self.sim.msgs, "msgs", obj_idx, full)
+
+    def fmt_hl_dlg(self, grp_idx, full = False):
+        return self.fmt_hl_rec(self.sim.dlgs, "dlgs", grp_idx, full)
 
     def path_info_outline(self):
         self.add_info("Current part {} chapter {}\n\n".\
@@ -676,8 +692,7 @@ class App(tkinter.Frame):
             self.clear_info()
             self.add_info("<b>Resource</b>: {} (0x{:X}) - \"{}\"\n\n".\
                 format(res_id, res_id, hlesc(fn)))
-            self.add_info("<a href=\"{}/view\">View</a> "\
-                "<a href=\"{}/used\">Used by</a>\n\n".\
+            self.add_info("<a href=\"{}/view\">View</a>\n\n".\
                 format(resref, resref))
             try:
                 if fn[-4:].lower() == ".bmp":
@@ -716,19 +731,13 @@ class App(tkinter.Frame):
                                 flc.frame_num, flc.delay))
                 else:
                     self.add_info("No information availiable")
+
+
             except:
                 self.add_info("Error loading {} - \"{}\" \n\n{}".\
                     format(res_id, hlesc(fn), hlesc(traceback.format_exc())))
-                    
-        elif mode[0] == "view":
-            self.path_res_view(res_id)
-        elif mode[0] == "used":
-            self.switch_view(0)
-            fn = self.sim.res[res_id]
-            self.clear_info()
-            self.add_info("<b>Resource</b>: <a href=\"{}\">{}</a> (0x{:X}) "\
-                "- \"{}\"\n\n".format(resref, res_id, res_id, hlesc(fn)))
-            def usedby(lst, tp):
+
+            def usedby(lst):
                 for idx, rec in enumerate(lst):
                     ru = False
                     for act_id, act_cond, act_arg, ops in rec.acts:
@@ -740,10 +749,14 @@ class App(tkinter.Frame):
                                 ru = True
                                 break
                             #print(op_id, op_code, op_res, op4, op5)
-            self.add_info("<b>Used by objects</b>:\n")
-            usedby(self.sim.objects, "objs")
+
+            self.add_info("\n\n<b>Used by objects</b>:\n")
+            usedby(self.sim.objects)
             self.add_info("\n<b>Used by scenes</b>:\n")
-            usedby(self.sim.scenes, "scenes")
+            usedby(self.sim.scenes)
+                    
+        elif mode[0] == "view":
+            self.path_res_view(res_id)
                 
     def path_res_view(self, res_id):
         fn = self.sim.res[res_id]
@@ -900,6 +913,7 @@ class App(tkinter.Frame):
                     self.add_info(msg + " / {}\n".format(hlesc(ref[0].name)))
 
             resused = []
+            dlgused = []
             self.add_info("\n<b>Handlers</b>: {}\n".format(len(rec.acts)))
             for idx, (act_id, act_cond, act_arg, ops) in enumerate(rec.acts):
                 msg = fmt_opcode(act_id)
@@ -909,11 +923,12 @@ class App(tkinter.Frame):
                     idx, msg, len(ops)))
                 for oidx, op in enumerate(ops):
                     self.add_info("    {}) {} ".format(oidx, fmt_opcode(op[1])))
+                    cmt = ""
                     if op[0] == rec.idx:
                         self.add_info("THIS")
                     else:
-                        self.add_info("<a href=\"{}\">{}</a>".format(\
-                            self.find_path_obj_scene(op[0]), op[0]))
+                        self.add_info(self.fmt_hl_obj_scene(op[0]))
+                        cmt = " / " + self.fmt_hl_obj_scene(op[0], True)
                     msg = ""
                     if op[2] != 0xffff:
                         if op[2] not in resused and op[2] in self.sim.res:
@@ -926,7 +941,10 @@ class App(tkinter.Frame):
                             msg += "-1"
                         else:
                             msg += "0x{:X}".format(arg)
-                    self.add_info("{}\n".format(msg))
+                    self.add_info("{}{}\n".format(msg, cmt))
+                    if op[1] == 0x11: # DIALOG
+                        if op[0] not in dlgused:
+                            dlgused.append(op[0])
                     
             if len(resused) > 0:
                 self.add_info("\n<b>Used resources</b>: {}\n".\
@@ -935,6 +953,12 @@ class App(tkinter.Frame):
                     self.add_info("  <a href=\"{}\">{}</a> (0x{:X}) - {}\n".\
                         format(self.find_path_res(res_id), res_id, res_id, \
                         hlesc(self.sim.res[res_id])))
+
+            if len(dlgused) > 0:
+                self.add_info("\n<b>Used dialog groups</b>: {}\n".\
+                    format(len(dlgused)))
+                for grp_id in dlgused:
+                    self.add_info("  " + self.fmt_hl_dlg(grp_id, True)+ "\n")
             
             if isobj:
                 self.add_info("\n<b>Messages</b>:\n")
@@ -967,6 +991,7 @@ class App(tkinter.Frame):
             for idx, obj in enumerate(self.sim.objects):
                 if obj.name == name:
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
+                    
     def path_invntr(self, path):
         self.switch_view(0)
         if self.last_path[:1] != ("invntr",):
@@ -1031,11 +1056,8 @@ class App(tkinter.Frame):
                         for op in dlg.ops:
                             if not op.msg: continue
                             if op.msg.idx == msg.idx and op.opcode == 7:
-                                self.add_info("  <a href=\"{}\">{}</a>\n".\
-                                    format(self.find_path_dlggrp(grp.idx), 
-                                        grp.idx))
-                                
-                
+                                self.add_info("  " + 
+                                    self.fmt_hl_dlg(grp.idx, True) + "\n")
                 
     def path_dlgs(self, path):
         self.switch_view(0)
@@ -1070,18 +1092,36 @@ class App(tkinter.Frame):
                         format(didx, dlg.arg1, dlg.arg2, len(dlg.ops)))
                     for op in dlg.ops:
                         cmt = ""
-                        opref = "0x{:X}".format(op.ref)
-                        opcode = "OP_{:02X}".format(op.opcode)
+                        msgref = "0x{:X}".format(op.ref)
+                        opcode = "OP{:02X}".format(op.opcode)
                         if op.opcode == 7:
                             opcode = "PLAY"
                             if op.msg:
-                                opref = "<a href=\"/msgs/{}\">{}</a>".format(
-                                    op.ref, op.ref)
-                                objref = self.fmt_hl_obj(op.msg.obj.idx)                                
-                                cmt = " / (0x{:X}) - {}, {}".\
-                                    format(op.ref, objref, hlesc(op.msg.name))
+                                msgref = self.fmt_hl_msg(op.ref)
+                                objref = self.fmt_hl_obj(op.msg.obj.idx)
+                                cmt = " / obj={}, msg={}".\
+                                    format(objref, 
+                                        self.fmt_hl_msg(op.ref, True))
                         self.add_info("      {} 0x{:X} {}{}\n".\
-                            format(opcode, op.arg, opref, cmt))
+                            format(opcode, op.arg, msgref, cmt))
+
+            def usedby(lst):
+                for idx, rec in enumerate(lst):
+                    ru = False
+                    for act_id, act_cond, act_arg, ops in rec.acts:
+                        if ru: break
+                        for op_id, op_code, op_res, op4, op5 in ops:
+                            if op_code == 0x11 and op_id == grp.idx: # DIALOG 
+                                self.add_info("  " + 
+                                    self.fmt_hl_obj_scene(rec.idx, True) + "\n")
+                                ru = True
+                                break
+                            #print(op_id, op_code, op_res, op4, op5)
+
+            self.add_info("\n\n<b>Used by objects</b>:\n")
+            usedby(self.sim.objects)
+            self.add_info("\n<b>Used by scenes</b>:\n")
+            usedby(self.sim.scenes)
             
 
     def path_test(self, path):
@@ -1099,6 +1139,19 @@ class App(tkinter.Frame):
             self.add_info("Information panel for {}\n".format(path))
             for i in range(100):
                 self.add_info("  Item {}\n".format(i))
+
+    def path_about(self, path):
+        self.switch_view(0)
+        self.update_gui("About")
+        self.insert_lb_act("Outline", [])
+        self.clear_info()
+        self.add_info("Welcome to <b>Petka 1 & 2 resource explorer</b>\n\n")
+        self.add_info("  " + APPNAME + " " + VERSION + "\n")
+        self.add_info("  romiq.kh@gmail.com\n")
+        self.add_info("  https://bitbucket.org/romiq/p12simtran\n")
+        self.add_info("\n")
+        self.path_info_outline()
+
 
     def on_open_data(self):
         # open data - select TODO
