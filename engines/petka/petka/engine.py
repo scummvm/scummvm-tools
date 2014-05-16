@@ -7,6 +7,7 @@ import struct
 import io
 
 from .fman import FileManager
+from . import EngineError
 
 OPCODES = {
     1:  ("USE",         0),
@@ -259,7 +260,10 @@ class Engine:
         self.obj_idx = {}
         self.scn_idx = {}
 
-        data = self.fman.read_file(self.curr_path + "script.dat")
+        try:
+            data = self.fman.read_file(self.curr_path + "script.dat")
+        except:
+            raise EngineError("Can't open SCRIPT.DAT")
         num_obj, num_scn = struct.unpack_from("<II", data[:8])
         off = 8
         def read_rec(off):

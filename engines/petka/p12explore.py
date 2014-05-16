@@ -5,7 +5,7 @@
 
 import sys, os
 import tkinter
-from tkinter import ttk, font
+from tkinter import ttk, font, filedialog, messagebox
 from idlelib.WidgetRedirector import WidgetRedirector
 import traceback
 
@@ -21,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2 2014-05-15"
+VERSION = "v0.2 2014-05-16"
 
 def hlesc(value):
     return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")
@@ -120,13 +120,20 @@ class App(tkinter.Frame):
         self.toolbar.pack(fill = tkinter.BOTH)
         btns = [
             ["Outline", lambda: self.open_path("")],
+            [None, None],
             ["<-", self.on_back],
             ["->", self.on_forward],
         ]
         for text, cmd in btns:
+            if text is None:
+                frm = ttk.Frame(self.toolbar, width = self.pad, height = self.pad)
+                frm.pack(side = tkinter.LEFT)
+                continue            
             btn = ttk.Button(self.toolbar, text = text, \
                 style = "Tool.TButton", command = cmd)
             btn.pack(side = tkinter.LEFT)
+        frm = ttk.Frame(self.toolbar, width = self.pad, height = self.pad)
+        frm.pack(side = tkinter.LEFT)
         
         # main panel
         self.pan_main = ttk.PanedWindow(self, orient = tkinter.HORIZONTAL)
@@ -559,6 +566,21 @@ class App(tkinter.Frame):
             if act[1] is not None:
                 self.open_path(act[1])
 
+    def add_toolbtn(self, text, cmd):
+        if text is None:
+            frm = ttk.Frame(self.toolbar, width = self.pad, height = self.pad)
+            frm.pack(side = tkinter.LEFT)
+            self.curr_gui.append(lambda:frm.pack_forget())    
+            return
+        btn = ttk.Button(self.toolbar, text = text, \
+            style = "Tool.TButton", command = cmd)
+        btn.pack(side = tkinter.LEFT)
+        self.curr_gui.append(lambda:btn.pack_forget())    
+
+    def clear_hist(self):
+        self.hist = self.hist[-1:]
+        self.histf = []
+
     def on_back(self):
         if len(self.hist) > 1:
             np = self.hist[-2:-1][0]
@@ -648,6 +670,9 @@ class App(tkinter.Frame):
         return self.fmt_hl_rec(self.sim.dlgs, "dlgs", grp_idx, full)
 
     def path_info_outline(self):
+        if self.sim is None:
+            self.add_info("No data loaded. Open BGS.INI or SCRIPT.DAT first.")
+            return
         self.add_info("Current part {} chapter {}\n\n".\
                 format(self.sim.curr_part, self.sim.curr_chap))
         self.add_info("  Resources:     <a href=\"/res\">{}</a>\n".\
@@ -714,8 +739,7 @@ class App(tkinter.Frame):
             else:
                 cnum = 0
             self.sim.open_part(pnum, cnum)
-            self.hist = self.hist[-1:]
-            self.histf = []
+            self.clear_hist()
         else:
             self.select_lb_item(None)
         # display
@@ -784,7 +808,6 @@ class App(tkinter.Frame):
                 else:
                     self.add_info("No information availiable")
 
-
             except:
                 self.add_info("Error loading {} - \"{}\" \n\n{}".\
                     format(res_id, hlesc(fn), hlesc(traceback.format_exc())))
@@ -839,8 +862,10 @@ class App(tkinter.Frame):
             self.clear_info()
             self.add_info("Error loading {} - \"{}\" \n\n{}".\
                 format(res_id, hlesc(fn), hlesc(traceback.format_exc())))
+            dataf = None
         finally:
-            dataf.close()
+            if dataf:
+                dataf.close()
 
     def path_res_status(self):
         self.switch_view(0)
@@ -858,10 +883,18 @@ class App(tkinter.Frame):
         for ft in ftk:
             self.add_info("  <a href=\"/res/flt/{}\">{}</a>: {}\n".format(
                 ft, ft, fts[ft]))
+    
+    def on_path_res_info(self):
+        self.switch_view(0)
+        
+    def on_path_res_view(self):
+        self.switch_view(1)
 
     def path_res_all(self, path):
         if self.last_path[:2] != ("res", "all",):
             self.update_gui("Resources ({})".format(len(self.sim.res)))
+            #self.add_toolbtn("Info", self.on_path_res_info)
+            #self.add_toolbtn("View", self.on_path_res_view)
             for idx, res_id in enumerate(self.sim.resord):
                     self.insert_lb_act("{} - {}".format(\
                 res_id, self.sim.res[res_id]), ["res", "all", idx])
@@ -974,7 +1007,11 @@ class App(tkinter.Frame):
             for idx, (act_id, act_cond, act_arg, ops) in enumerate(rec.acts):
                 msg = fmt_opcode(act_id)
                 if act_cond != 0xff or act_arg != 0xffff:
-                    msg += " 0x{:02X} 0x{:04X}".format(act_cond, act_arg)
+                    if act_arg == rec.idx:
+                        act_arg = "THIS"
+                    else:
+                        act_arg = "0x:{:X}".format(act_arg)
+                    msg += " 0x{:02X} {}".format(act_cond, act_arg)
                 self.add_info("  {}) <u>on {}</u>, ops: {}\n".format(\
                     idx, msg, len(ops)))
                 for oidx, op in enumerate(ops):
@@ -1216,22 +1253,41 @@ class App(tkinter.Frame):
 
 
     def on_open_data(self):
-        # open data - select TODO
-        pass
+        ft = [\
+            ('all files', '.*')]
+        fn = filedialog.askopenfilename(parent = self, 
+            title = "Open BGS.INI or SCRIPT.DAT",
+            filetypes = ft,
+            initialdir = os.path.abspath(os.curdir))
+        if not fn: return
+        os.chdir(os.path.dirname(fn))
+        self.clear_hist()
+        if self.open_data_from(os.path.dirname(fn)):
+            self.open_path("")
+            self.clear_hist()
+        
         
     def open_data_from(self, folder):
-        self.sim = petka.Engine()
-        self.sim.load_data(folder, "cp1251")
-        self.sim.open_part(1, 0)
+        try:
+            self.sim = petka.Engine()
+            self.sim.load_data(folder, "cp1251")
+            self.sim.open_part(0, 0)
+            return True
+        except:
+            print("DEBUG: Error opening")
+            self.sim = None
+            self.switch_view(0)
+            self.update_gui("")
+            self.clear_info()
+            self.add_info("Error opening \"{}\" \n\n{}".\
+                format(hlesc(folder), hlesc(traceback.format_exc())))
+            self.clear_hist()
 
 def main():
     root = tkinter.Tk()
     app = App(master = root)
     if len(sys.argv) > 1:
-        fn = sys.argv[1]
-    else:
-        fn = "."
-    app.open_data_from(fn)
+        app.open_data_from(sys.argv[1])
     app.mainloop()
 
     
