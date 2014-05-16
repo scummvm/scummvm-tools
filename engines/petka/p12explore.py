@@ -21,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2 2014-05-16"
+VERSION = "v0.2a 2014-05-16"
 
 def hlesc(value):
     return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")

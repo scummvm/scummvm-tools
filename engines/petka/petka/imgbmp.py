@@ -104,8 +104,6 @@ class BMPLoader:
                 self.height = ph
                 self.rgb = self.pixelswap16(pw, ph, pd)
         except:
-            import traceback
-            traceback.print_exc()
             f.seek(0)
             self.image = Image.open(f)
             

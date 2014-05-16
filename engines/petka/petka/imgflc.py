@@ -11,6 +11,11 @@ try:
 except ImportError:
     Image = None
 
+try:
+    from PIL import FliImagePlugin
+except ImportError:
+    pass
+
 class FLCLoader:
     def __init__(self):
         self.rgb = None
