@@ -21,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2d 2014-05-16"
+VERSION = "v0.2e 2014-05-16"
 
 def hlesc(value):
     if value is None:
@@ -92,6 +92,12 @@ class App(tkinter.Frame):
         self.pack(fill = tkinter.BOTH, expand = 1)
         self.pad = None
         self.sim = None
+        # path
+        if hasattr(sys, 'frozen'):
+            self.app_path = sys.executable
+        else:
+            self.app_path = __file__
+        self.app_path = os.path.abspath(os.path.dirname(self.app_path))
         # gui
         self.path_handler = {}
         self.curr_main = -1 # 0 - frame, 1 - canvas
@@ -185,6 +191,7 @@ class App(tkinter.Frame):
         self.path_handler["test"] = self.path_test
         self.path_handler["about"] = self.path_about
         self.path_handler["support"] = self.path_support
+        self.path_handler["help"] = self.path_help
         
         self.update_after()
         self.open_path("/about")
@@ -259,11 +266,15 @@ class App(tkinter.Frame):
         self.menubar.add_cascade(menu = self.menuhelp,
                 label = "Help")
         self.menuhelp.add_command(
-                command = lambda: self.open_path("/about"),
-                label = "About")
+                command = lambda: self.open_path("/help/index"),
+                label = "Contents")
+        self.menuhelp.add_separator()
         self.menuhelp.add_command(
                 command = lambda: self.open_path("/support"),
                 label = "Support")
+        self.menuhelp.add_command(
+                command = lambda: self.open_path("/about"),
+                label = "About")
 
     def update_after(self):
         if not self.need_update:
@@ -1302,8 +1313,10 @@ class App(tkinter.Frame):
         self.clear_info()
         self.add_info("" + APPNAME + " " + VERSION + "\n")
         self.add_info("=" * 40 + "\n")
+        self.add_info("<b>App folder</b>:  {}\n".format(
+            hlesc(self.app_path)))
         self.add_info("<b>Game folder</b>: {}\n".format(
-            hlesc(self.sim.fman.root)))
+            hlesc(self.last_fn)))
         if self.sim is None:
             self.add_info("<i>Engine not initialized</i>\n")
         else:
@@ -1316,6 +1329,64 @@ class App(tkinter.Frame):
                 hlesc(self.sim.curr_diskid)))
             self.path_info_outline()
             
+    def path_help(self, path):
+        self.switch_view(0)
+
+        lfn = os.path.join(self.app_path, "help", "list")
+        hi = []
+        f = open(lfn, "rb")
+        try:
+            for item in f.readlines():
+                item = item.decode("UTF-8").strip()
+                if not item: continue
+                try:
+                    hf = open(os.path.join(self.app_path, 
+                        "help", item + ".txt"), "rb")
+                    try:
+                        for line in hf.readlines():
+                            line = line.decode("UTF-8").strip()                    
+                            break
+                    finally:
+                        hf.close()
+                except:
+                    line = item                    
+                hi.append([item, line])
+        finally:
+            f.close()
+
+        if self.last_path[:1] != ("help",):
+            self.update_gui("Help")
+            for item, line in hi:
+                self.insert_lb_act(line, ["help", item])
+            self.insert_lb_act("-", None)
+            self.insert_lb_act("Outline", [])
+
+        # change
+        if len(path) > 1:
+            # parts
+            for idx, (item, line) in enumerate(hi):
+                if item == path[1]:
+                    self.select_lb_item(idx)
+            self.clear_info()
+            hfn = os.path.join(self.app_path, "help", path[1] + ".txt")
+            try:
+                hf = open(hfn, "rb")
+                try:
+                    for idx, line in enumerate(hf.readlines()):
+                        line = line.decode("UTF-8").rstrip()                    
+                        if idx == 0:
+                            self.add_info("<b>" + line + "</b>\n")
+                        else:                                        
+                            self.add_info(line + "\n")
+                finally:
+                    hf.close()
+            except:
+                self.add_info("Error loading \"{}\" \n\n{}".\
+                    format(hlesc(hfn), hlesc(traceback.format_exc())))
+        else:
+            self.select_lb_item(None)
+
+        
 
     def on_open_data(self):
         ft = [\
