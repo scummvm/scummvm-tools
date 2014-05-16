@@ -24,6 +24,8 @@ APPNAME = "P1&2 Explorer"
 VERSION = "v0.2b 2014-05-16"
 
 def hlesc(value):
+    if value is None:
+        return "None"
     return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")
 
 def fmt_opcode(opcode):
