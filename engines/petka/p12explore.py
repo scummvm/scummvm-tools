@@ -21,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2a 2014-05-16"
+VERSION = "v0.2b 2014-05-16"
 
 def hlesc(value):
     return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")
@@ -95,7 +95,7 @@ class App(tkinter.Frame):
         self.curr_main = -1 # 0 - frame, 1 - canvas
         self.curr_path = []
         self.last_path = [None]
-        self.last_capt = ""
+        self.last_fn = ""
         self.curr_mode = 0
         self.curr_mode_sub = None
         self.curr_gui = []
@@ -182,6 +182,7 @@ class App(tkinter.Frame):
         self.path_handler["dlgs"] = self.path_dlgs
         self.path_handler["test"] = self.path_test
         self.path_handler["about"] = self.path_about
+        self.path_handler["support"] = self.path_support
         
         self.update_after()
         self.open_path("/about")
@@ -258,6 +259,9 @@ class App(tkinter.Frame):
         self.menuhelp.add_command(
                 command = lambda: self.open_path("/about"),
                 label = "About")
+        self.menuhelp.add_command(
+                command = lambda: self.open_path("/support"),
+                label = "Support")
 
     def update_after(self):
         if not self.need_update:
@@ -700,7 +704,8 @@ class App(tkinter.Frame):
             for item in path:
                 spath += "/" + str(item)
             self.add_info("Path {} not found\n\n".format(spath))
-        self.add_info("Select from <b>outline</b>\n\n")
+        if self.sim is not None:
+            self.add_info("Select from <b>outline</b>\n\n")
         self.path_info_outline()
         if self.sim is not None:
             acts = [
@@ -720,7 +725,8 @@ class App(tkinter.Frame):
                 self.insert_lb_act(name, act)
 
     def path_parts(self, path):
-        self.switch_view(0)
+        if self.sim is None:
+            return self.path_default([])
         if self.last_path[:1] != ("parts",):
             self.update_gui("Parts ({})".format(len(self.sim.parts)))
             for idx, name in enumerate(self.sim.parts):
@@ -751,6 +757,8 @@ class App(tkinter.Frame):
         # res - full list
         # res/flt/<ext> - list by <ext>
         # res/all/<id> - display res by id
+        if self.sim is None:
+            return self.path_default([])
         if path == ("res",):
             path = ("res", "all")
         if path[1] == "flt":
@@ -931,6 +939,8 @@ class App(tkinter.Frame):
             self.select_lb_item(None)
 
     def path_objs_scenes(self, path):
+        if self.sim is None:
+            return self.path_default([])
         self.switch_view(0)
         isobj = (self.curr_path[0] == "objs")
         if isobj:
@@ -1065,6 +1075,8 @@ class App(tkinter.Frame):
                     self.add_info("  " + self.fmt_hl_msg(msg.idx, True) + "\n")
 
     def path_names(self, path):
+        if self.sim is None:
+            return self.path_default([])
         self.switch_view(0)
         if self.last_path[:1] != ("names",):
             self.update_gui("Names ({})".format(len(self.sim.names)))
@@ -1093,6 +1105,8 @@ class App(tkinter.Frame):
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
                     
     def path_invntr(self, path):
+        if self.sim is None:
+            return self.path_default([])
         self.switch_view(0)
         if self.last_path[:1] != ("invntr",):
             self.update_gui("Invntr ({})".format(len(self.sim.invntr)))
@@ -1119,6 +1133,8 @@ class App(tkinter.Frame):
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
 
     def path_msgs(self, path):
+        if self.sim is None:
+            return self.path_default([])
         self.switch_view(0)
         if self.last_path[:1] != ("msgs",):
             self.update_gui("Messages ({})".format(len(self.sim.msgs)))
@@ -1162,6 +1178,8 @@ class App(tkinter.Frame):
                                     self.fmt_hl_dlg(grp.idx, True) + "\n")
                 
     def path_dlgs(self, path):
+        if self.sim is None:
+            return self.path_default([])
         self.switch_view(0)
         if self.last_path[:1] != ("dlgs",):
             self.update_gui("Dialog groups ({})".format(len(self.sim.dlgs)))
@@ -1256,6 +1274,26 @@ class App(tkinter.Frame):
         self.add_info("\n")
         self.path_info_outline()
 
+    def path_support(self, path):
+        self.switch_view(0)
+        self.update_gui("Support")
+        self.insert_lb_act("Outline", [])
+        self.clear_info()
+        self.add_info("" + APPNAME + " " + VERSION + "\n")
+        self.add_info("=" * 40 + "\n")
+        self.add_info("<b>Game folder</b>: {}\n".format(hlesc(self.last_fn)))
+        if self.sim is None:
+            self.add_info("<i>Engine not initialized</i>\n")
+        else:
+            self.add_info("<i>Engine works</i>\n\n")
+            self.add_info("  <b>Path</b>:    {}\n".format(
+                hlesc(self.sim.curr_path)))
+            self.add_info("  <b>Speech</b>:  {}\n".format(
+                hlesc(self.sim.curr_speech)))
+            self.add_info("  <b>Disk ID</b>: {}\n\n".format(
+                hlesc(self.sim.curr_diskid)))
+            self.path_info_outline()
+            
 
     def on_open_data(self):
         ft = [\
@@ -1273,6 +1311,7 @@ class App(tkinter.Frame):
         
         
     def open_data_from(self, folder):
+        self.last_fn = folder
         try:
             self.sim = petka.Engine()
             self.sim.load_data(folder, "cp1251")
