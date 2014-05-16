@@ -11,7 +11,7 @@ from . import EngineError
 # manage files data
 class FileManager:
     def __init__(self, root):
-        self.root = root
+        self.root = os.path.abspath(root)
     
         self.strfd = []
         self.strtable = {}

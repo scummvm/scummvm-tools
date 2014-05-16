@@ -21,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2c 2014-05-16"
+VERSION = "v0.2d 2014-05-16"
 
 def hlesc(value):
     if value is None:
@@ -444,7 +444,9 @@ class App(tkinter.Frame):
         scr_lb_x.grid(row = 1, column = 0, sticky = tkinter.E + tkinter.W)
         scr_lb_y = ttk.Scrollbar(frm_lb)
         scr_lb_y.grid(row = 0, column = 1, sticky = tkinter.N + tkinter.S)
+        frmlbpad = ttk.Frame(frm_lb, borderwidth = self.pad)
         lb = tkinter.Listbox(frm_lb,
+            highlightthickness = 0,
             xscrollcommand = scr_lb_x.set,
             yscrollcommand = scr_lb_y.set)
         lb.grid(row = 0, column = 0, \
@@ -543,7 +545,10 @@ class App(tkinter.Frame):
         
     def insert_lb_act(self, name, act):
         self.curr_lb_acts.append((name, act))
-        self.curr_lb.insert(tkinter.END, name)
+        if name == "-" and act is None:
+            self.curr_lb.insert(tkinter.END, "")
+        else:
+            self.curr_lb.insert(tkinter.END, " " + name)
 
     def select_lb_item(self, idx):
         need = (idx is not None)
@@ -677,7 +682,7 @@ class App(tkinter.Frame):
 
     def path_info_outline(self):
         if self.sim is None:
-            self.add_info("No data loaded. Open BGS.INI or SCRIPT.DAT first.")
+            self.add_info("No data loaded. Open PARTS.INI or SCRIPT.DAT first.")
             return
         self.add_info("Current part {} chapter {}\n\n".\
                 format(self.sim.curr_part, self.sim.curr_chap))
@@ -726,6 +731,7 @@ class App(tkinter.Frame):
             for name, act in acts:
                 self.insert_lb_act(name, act)
 
+
     def path_parts(self, path):
         if self.sim is None:
             return self.path_default([])
@@ -733,6 +739,19 @@ class App(tkinter.Frame):
             self.update_gui("Parts ({})".format(len(self.sim.parts)))
             for idx, name in enumerate(self.sim.parts):
                 self.insert_lb_act(name, ["parts", idx])
+            if len(self.sim.parts) == 0:
+                # Option to fix paths
+                def fix_paths():
+                    self.sim.curr_path = ""
+                    path = self.sim.fman.root
+                    while self.sim.curr_path == "":
+                       self.sim.curr_path = os.path.basename(path)
+                       path2 = os.path.dirname(path)
+                       if path2 == path: break
+                       path = path2
+                    path = self.sim.fman.root = path
+                    self.sim.curr_path += "\\"
+                self.add_toolbtn("Fix paths", fix_paths)
         # change                
         if len(path) > 1:
             # parts
@@ -1283,7 +1302,8 @@ class App(tkinter.Frame):
         self.clear_info()
         self.add_info("" + APPNAME + " " + VERSION + "\n")
         self.add_info("=" * 40 + "\n")
-        self.add_info("<b>Game folder</b>: {}\n".format(hlesc(self.last_fn)))
+        self.add_info("<b>Game folder</b>: {}\n".format(
+            hlesc(self.sim.fman.root)))
         if self.sim is None:
             self.add_info("<i>Engine not initialized</i>\n")
         else:
@@ -1301,7 +1321,7 @@ class App(tkinter.Frame):
         ft = [\
             ('all files', '.*')]
         fn = filedialog.askopenfilename(parent = self, 
-            title = "Open BGS.INI or SCRIPT.DAT",
+            title = "Open PARTS.INI or SCRIPT.DAT",
             filetypes = ft,
             initialdir = os.path.abspath(os.curdir))
         if not fn: return
