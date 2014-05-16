@@ -1004,16 +1004,21 @@ class App(tkinter.Frame):
             resused = []
             dlgused = []
             self.add_info("\n<b>Handlers</b>: {}\n".format(len(rec.acts)))
-            for idx, (act_id, act_cond, act_arg, ops) in enumerate(rec.acts):
-                msg = fmt_opcode(act_id)
-                if act_cond != 0xff or act_arg != 0xffff:
-                    if act_arg == rec.idx:
-                        act_arg = "THIS"
+            for idx, (act_op, act_status, act_ref, ops) in enumerate(rec.acts):
+                msg = fmt_opcode(act_op)
+                cmt = ""
+                if act_status != 0xff or act_ref != 0xffff:
+                    if act_ref == rec.idx:
+                        act_ref = "THIS"
                     else:
-                        act_arg = "0x:{:X}".format(act_arg)
-                    msg += " 0x{:02X} {}".format(act_cond, act_arg)
-                self.add_info("  {}) <u>on {}</u>, ops: {}\n".format(\
-                    idx, msg, len(ops)))
+                        if act_ref in self.sim.obj_idx:
+                            cmt = " / " + self.fmt_hl_obj(act_ref, True)
+                            act_ref = self.fmt_hl_obj(act_ref)
+                        else:
+                            act_ref = "0x{:X}".format(act_ref)
+                    msg += " 0x{:02X} {}".format(act_status, act_ref)
+                self.add_info("  {}) <u>on {}</u>, ops: {}{}\n".format(\
+                    idx, msg, len(ops), cmt))
                 for oidx, op in enumerate(ops):
                     self.add_info("    {}) {} ".format(oidx, fmt_opcode(op[1])))
                     cmt = ""
