@@ -130,6 +130,7 @@ class App(tkinter.Frame):
         self.toolbar.pack(fill = tkinter.BOTH)
         btns = [
             ["Outline", lambda: self.open_path("")],
+            ["Help", self.on_help],
             [None, None],
             ["<-", self.on_back],
             ["->", self.on_forward],
