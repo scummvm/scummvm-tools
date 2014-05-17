@@ -237,6 +237,9 @@ class App(tkinter.Frame):
                 command = lambda: self.open_path("/invntr"),
                 label = "Invntr")
         self.menuedit.add_command(
+                command = lambda: self.open_path("/casts"),
+                label = "Casts")
+        self.menuedit.add_command(
                 command = lambda: self.open_path("/msgs"),
                 label = "Messages")
         self.menuedit.add_command(
@@ -742,13 +745,9 @@ class App(tkinter.Frame):
             for name, act in acts:
                 self.insert_lb_act(name, act)
 
-    
-
     def path_parts(self, path):
         if self.sim is None:
             return self.path_default([])
-        def parsepart(part_id):
-            return pnum, cnum
 
         if self.last_path[:1] != ("parts",):
             self.update_gui("Parts ({})".format(len(self.sim.parts)))
@@ -775,22 +774,36 @@ class App(tkinter.Frame):
                     path = self.sim.fman.root = path
                     self.sim.curr_path += "\\"
                 self.add_toolbtn("Fix paths", fix_paths)
-        # change                
+
+        # change
+        part = None
         if len(path) > 1:
             # parts
             self.select_lb_item(path[1])
-            part_id = path[1]
-            part_id = part_id.split(".", 1)
-            pnum = int(part_id[0])
-            cnum = int(part_id[1])
-            self.sim.open_part(pnum, cnum)
-            self.clear_hist()
+            try:
+                part = path[1]
+                part = part.split(".", 1)
+                part[0] = int(part[0])
+                part[1] = int(part[1])
+            except:
+                part = None
+                pass
         else:
             self.select_lb_item(None)
         # display
         self.clear_info()
-        self.add_info("Select <b>part</b>\n\n")
-        self.path_info_outline()
+        if not part:
+            self.add_info("Select <b>part</b>\n\n")
+            self.path_info_outline()
+        else:
+            try:
+                self.clear_hist()
+                self.sim.open_part(part[0], part[1])
+                self.path_info_outline()
+            except:
+                self.add_info("Error open part {} chapter {} - \n\n{}".\
+                    format(part[0], part[1], hlesc(traceback.format_exc())))
+        
 
     def path_res(self, path):
         # res - full list
@@ -1208,14 +1221,15 @@ class App(tkinter.Frame):
         self.clear_info()
         if not msg:
             if len(path) > 1:
-                self.add_info("<b>MEssage</b> \"{}\" not found\n\n".format(
+                self.add_info("<b>Message</b> \"{}\" not found\n\n".format(
                     path[1]))
             self.add_info("Select <b>message</b> from list\n")
         else:
             # msg info
             self.add_info("<b>Message</b>: {}\n".format(path[1]))
             self.add_info("  wav:    {}\n".format(msg.wav))
-            self.add_info("  object: " + self.fmt_hl_obj(msg.obj.idx) + "\n")
+            self.add_info("  object: " + self.fmt_hl_obj(msg.obj.idx, True) + 
+                "\n")
             self.add_info("  arg2:   {} (0x{:X})\n".format(msg.arg2, msg.arg2))
             self.add_info("  arg3:   {} (0x{:X})\n".format(msg.arg3, msg.arg3))
             self.add_info("\n{}\n".format(hlesc(msg.name)))
@@ -1306,7 +1320,37 @@ class App(tkinter.Frame):
             usedby(self.sim.scenes)
             
     def path_casts(self, path):
-        pass
+        if self.sim is None:
+            return self.path_default([])
+        self.switch_view(0)
+        if self.last_path[:1] != ("casts",):
+            self.update_gui("Cast ({})".format(len(self.sim.casts)))
+            for idx, name in enumerate(self.sim.castsord):
+                self.insert_lb_act(name, ["casts", idx], idx)
+        # change
+        name = None
+        if len(path) > 1:
+            # parts
+            self.select_lb_item(path[1])
+            try:
+                name = self.sim.castsord[path[1]]
+            except:
+                pass
+        else:
+            self.select_lb_item(None)
+        # display
+        self.clear_info()
+        if not name:
+            self.add_info("Select <b>cast</b> from list\n")
+        else:
+            # name info
+            self.add_info("<b>Cast</b>: {}\n".format(hlesc(name)))
+            self.add_info("Value: {}\n\n".format(self.sim.casts[name]))
+            # search for objects
+            self.add_info("<b>Applied for</b>:\n")
+            for idx, obj in enumerate(self.sim.objects):
+                if obj.name == name:
+                    self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
         
     def path_test(self, path):
         self.update_gui("Test {}".format(path[1]))

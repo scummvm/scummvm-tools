@@ -358,7 +358,8 @@ class Engine:
         # bind casts to objects
         for cast in self.castsord:
             #print(cast)
-        
+            pass
+            
     def load_dialogs(self):
         self.msgs = []
         # DIALOGUES.LOD
