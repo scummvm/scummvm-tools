@@ -710,6 +710,8 @@ class App(tkinter.Frame):
             format(len(self.sim.names)))
         self.add_info("  Invntr:        <a href=\"/invntr\">{}</a>\n".\
             format(len(self.sim.invntr)))
+        self.add_info("  Casts:         <a href=\"/casts\">{}</a>\n".\
+            format(len(self.sim.casts)))
         self.add_info("  Messages       <a href=\"/msgs\">{}</a>\n".\
             format(len(self.sim.msgs)))
         self.add_info("  Dialog groups: <a href=\"/dlgs\">{}</a>\n".\
@@ -736,6 +738,7 @@ class App(tkinter.Frame):
                 ("Scenes ({})".format(len(self.sim.scenes)), "/scenes"),
                 ("Names ({})".format(len(self.sim.names)), "/names"),
                 ("Invntr ({})".format(len(self.sim.invntr)), "/invntr"),
+                ("Casts ({})".format(len(self.sim.casts)), "/casts"),
                 ("Messages ({})".format(len(self.sim.msgs)), "/msgs"),
                 ("Dialog groups ({})".format(len(self.sim.dlgs)), "/dlgs"),
                 ("-", None),
