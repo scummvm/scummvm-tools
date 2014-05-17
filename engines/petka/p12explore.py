@@ -610,6 +610,12 @@ class App(tkinter.Frame):
         self.hist = self.hist[-1:]
         self.histf = []
 
+    def on_help(self):
+        if len(self.curr_path) > 0:
+            self.open_path(["help", self.curr_path[0]])
+        else:
+            self.open_path(["help"])
+
     def on_back(self):
         if len(self.hist) > 1:
             np = self.hist[-2:-1][0]
