@@ -552,28 +552,7 @@ class App(tkinter.Frame):
                     mode = 0
                 else:
                     curr_tag += ch
-        if len(curr_text) > 0:                            lfn = os.path.join(self.app_path, "help", "list")
-        hi = []
-        f = open(lfn, "rb")
-        try:
-            for item in f.readlines():
-                item = item.decode("UTF-8").strip()
-                if not item: continue
-                try:
-                    hf = open(os.path.join(self.app_path, 
-                        "help", item + ".txt"), "rb")
-                    try:
-                        for line in hf.readlines():
-                            line = line.decode("UTF-8").strip()                    
-                            break
-                    finally:
-                        hf.close()
-                except:
-                    line = item                    
-                hi.append([item, line])
-        finally:
-            f.close()
-
+        if len(curr_text) > 0: 
             self.text_view.insert(tkinter.INSERT, curr_text, \
                 tuple([x for x in tags for x in x]))
         
@@ -670,39 +649,43 @@ class App(tkinter.Frame):
     #            return "/scenes/{}".format(idx)
     #    return "/no_obj_scene/{}".format(rec_idx)
 
-    def fmt_hl_rec(self, lst, pref, rec_idx, full = False):
-        for idx, rec in enumerate(lst):
-            if rec.idx == rec_idx:
-                fmt = fmt_hl("/{}/{}".format(pref, idx), str(rec_idx))
-                if full:
-                    try:
-                        fmt += " (0x{:X}) - {}".format(rec.idx, hlesc(rec.name))
-                    except:
-                        fmt += " (0x{:X})".format(rec.idx)
-                return fmt
-        return "{} (0x{:X})".format(rec_idx, rec_idx)
+    def fmt_hl_rec(self, lst, lst_idx, pref, rec_id, full = False):
+        if rec_id in lst_idx:
+            fmt = fmt_hl("/{}/{}".format(pref, rec_id), str(rec_id))
+            if full:
+                try:
+                    rec = lst[lst_idx[rec_id]]
+                    fmt += " (0x{:X}) - {}".format(rec_id, hlesc(rec.name))
+                except:
+                    fmt += " (0x{:X})".format(rec_id)
+            return fmt
+        return "{} (0x{:X})".format(rec_id, rec_id)
         
-    def fmt_hl_obj(self, obj_idx, full = False):
-        return self.fmt_hl_rec(self.sim.objects, "objs", obj_idx, full)
+    def fmt_hl_obj(self, obj_id, full = False):
+        return self.fmt_hl_rec(self.sim.objects, self.sim.obj_idx, "objs", 
+            obj_id, full)
         
-    def fmt_hl_scene(self, scn_idx, full = False):
-        return self.fmt_hl_rec(self.sim.scenes, "scenes", scn_idx, full)
+    def fmt_hl_scene(self, scn_id, full = False):
+        return self.fmt_hl_rec(self.sim.scenes, self.sim.scn_idx, "scenes", 
+            scn_id, full)
 
-    def fmt_hl_obj_scene(self, rec_idx, full = False):
-        if rec_idx in self.sim.obj_idx:
-            return self.fmt_hl_rec(self.sim.objects, "objs", rec_idx, full)
-        return self.fmt_hl_rec(self.sim.scenes, "scenes", rec_idx, full)
+    def fmt_hl_obj_scene(self, rec_id, full = False):
+        if rec_id in self.sim.obj_idx:
+            return self.fmt_hl_rec(self.sim.objects, self.sim.obj_idx, "objs", 
+                rec_id, full)
+        return self.fmt_hl_rec(self.sim.scenes, self.sim.scn_idx, "scenes", 
+            rec_id, full)
         
     def find_path_name(self, key):
-        for idx, name in enumerate(self.sim.namesord):
+        for name_id, name in enumerate(self.sim.namesord):
             if name == key:
-                return "/names/{}".format(idx)
+                return "/names/{}".format(name_id)
         return "/no_name/{}".format(key)
 
     def find_path_invntr(self, key):
-        for idx, name in enumerate(self.sim.invntrord):
+        for inv_id, name in enumerate(self.sim.invntrord):
             if name == key:
-                return "/invntr/{}".format(idx)
+                return "/invntr/{}".format(inv_id)
         return "/no_invntr/{}".format(key)
 
     #def find_path_dlggrp(self, grp_idx):
@@ -711,11 +694,16 @@ class App(tkinter.Frame):
     #            return "/dlgs/{}".format(idx)
     #    return "/no_dlgs/{}".format(grp_idx)
 
-    def fmt_hl_msg(self, obj_idx, full = False):
-        return self.fmt_hl_rec(self.sim.msgs, "msgs", obj_idx, full)
+    def fmt_hl_msg(self, msg_id, full = False):
+        msg_idx = []
+        if msg_id < len(self.sim.msgs):
+            msg_idx[msg_id] = self.sim.msgs[msg_id]
+        return self.fmt_hl_rec(self.sim.msgs, msg_idx, "msgs", 
+            msg_id, full)
 
-    def fmt_hl_dlg(self, grp_idx, full = False):
-        return self.fmt_hl_rec(self.sim.dlgs, "dlgs", grp_idx, full)
+    def fmt_hl_dlg(self, grp_id, full = False):
+        return self.fmt_hl_rec(self.sim.dlgs, self.sim.dlg_idx, "dlgs", 
+            grp_id, full)
 
     def path_info_outline(self):
         if self.sim is None:
@@ -1003,22 +991,24 @@ class App(tkinter.Frame):
         isobj = (self.curr_path[0] == "objs")
         if isobj:
             lst = self.sim.objects
+            lst_idx = self.sim.obj_idx
         else:
             lst = self.sim.scenes
+            lst_idx = self.sim.scn_idx
         if self.last_path[:1] != (self.curr_path[0],):
             if isobj:
                 self.update_gui("Objects ({})".format(len(lst)))
             else:
                 self.update_gui("Scenes ({})".format(len(lst)))
-            for idx, rec in enumerate(lst):
+            for rec in lst:
                 self.insert_lb_act("{} - {}".format(rec.idx, rec.name), \
-                    [self.curr_path[0], idx])
+                    [self.curr_path[0], rec.idx], rec.idx)
         # change                
         rec = None
         if len(path) > 1:
             # index
             self.select_lb_item(path[1])
-            rec = lst[path[1]]
+            rec = lst_idx[path[1]]
         else:
             self.select_lb_item(None)
         # display
