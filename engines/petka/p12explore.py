@@ -623,40 +623,13 @@ class App(tkinter.Frame):
             self.hist.append(np)
             self.open_path(np[0], False)
 
-    #def find_path_res(self, res):
-    #    for idx, res_id in enumerate(self.sim.resord):
-    #        if res_id == res:
-    #            return "/res/all/{}".format(idx)
-    #    return "/no_res/{}".format(res)
-
-    #def find_path_obj(self, obj_idx):
-    #    for idx, rec in enumerate(self.sim.objects):
-    #        if rec.idx == obj_idx:
-    #            return "/objs/{}".format(idx)
-    #    return "/no_obj/{}".format(obj_idx)
-
-    #def find_path_scene(self, scn_idx):
-    #    for idx, rec in enumerate(self.sim.scenes):
-    #        if rec.idx == scn_idx:
-    #            return "/scenes/{}".format(idx)
-    #    return "/no_scene/{}".format(scn_idx)
-
-    #def find_path_obj_scene(self, rec_idx):
-    #    for idx, rec in enumerate(self.sim.objects):
-    #        if rec.idx == rec_idx:
-    #            return "/objs/{}".format(idx)
-    #    for idx, rec in enumerate(self.sim.scenes):
-    #        if rec.idx == rec_idx:
-    #            return "/scenes/{}".format(idx)
-    #    return "/no_obj_scene/{}".format(rec_idx)
-
     def fmt_hl_rec(self, lst_idx, pref, rec_id, full = False):
         if rec_id in lst_idx:
             fmt = fmt_hl("/{}/{}".format(pref, rec_id), str(rec_id))
             if full:
                 try:
                     fmt += " (0x{:X}) - {}".format(rec_id, 
-                        lst_idx[rec_id].name)
+                        hlesc(lst_idx[rec_id].name))
                 except:
                     fmt += " (0x{:X})".format(rec_id)
             return fmt
@@ -1136,21 +1109,23 @@ class App(tkinter.Frame):
                     if msg.obj.idx != rec.idx: continue
                     self.add_info("  " + self.fmt_hl_msg(msg.idx, True) + "\n")
 
-    def path_names(self, path):
-        if self.sim is None:
-            return self.path_default([])
+    def path_std_items(self, path, level, guiname, guiitem, lst, lst_idx, 
+            lbmode, cb):
         self.switch_view(0)
-        if self.last_path[:1] != ("names",):
-            self.update_gui("Names ({})".format(len(self.sim.names)))
-            for idx, name in enumerate(self.sim.namesord):
-                self.insert_lb_act(name, ["names", idx], idx)
+        if self.last_path[:level] != path[:level]:
+            self.update_gui("{} ({})".format(guiname, len(lst)))
+            for idx, name in enumerate(lst_idx):
+                lb = name
+                if lbmode == 1:
+                    lb = "{} - {}".format(name, lst[name])
+                self.insert_lb_act(lb, path[:level] + tuple([idx]), idx)
         # change
         name = None
         if len(path) > 1:
-            # parts
+            # lb
             self.select_lb_item(path[1])
             try:
-                name = self.sim.namesord[path[1]]
+                name = lst_idx[path[1]]
             except:
                 pass
         else:
@@ -1158,44 +1133,54 @@ class App(tkinter.Frame):
         # display
         self.clear_info()
         if not name:
-            self.add_info("Select <b>name</b> from list\n")
+            self.add_info("Select <b>{}</b> from list\n".format(guiitem))
         else:
-            # name info
+            # info
+            cb(name)
+        
+
+    def path_names(self, path):
+        if self.sim is None:
+            return self.path_default([])
+        def info(name):
             self.add_info("<b>Alias</b>: {}\n".format(hlesc(name)))
             self.add_info("Value: {}\n\n".format(self.sim.names[name]))
             # search for objects
             self.add_info("<b>Applied for</b>:\n")
-            for idx, obj in enumerate(self.sim.objects):
+            for obj in self.sim.objects:
                 if obj.name == name:
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
-                    
+        return self.path_std_items(path, 1, "Names", "name", self.sim.names, 
+            self.sim.namesord, 0, info)
+                            
     def path_invntr(self, path):
         if self.sim is None:
             return self.path_default([])
-        self.switch_view(0)
-        if self.last_path[:1] != ("invntr",):
-            self.update_gui("Invntr ({})".format(len(self.sim.invntr)))
-            for idx, name in enumerate(self.sim.invntrord):
-                self.insert_lb_act(name, ["invntr", idx])
-        # change
-        name = None
-        if len(path) > 1:
-            # parts
-            self.select_lb_item(path[1])
-            name = self.sim.invntrord[path[1]]
-        # display
-        self.clear_info()
-        if not name:
-            self.add_info("Select <b>invntr</b>\n")
-        else:
-            # invntr info
-            self.add_info("<b>Invntr</b>: {}\n".format(name))
-            self.add_info("{}\n\n".format(hlesc(self.sim.invntr[name])))
+        def info(name):
+            self.add_info("<b>Invntr</b>: {}\n".format(hlesc(name)))
+            self.add_info("{}\n\n".format(self.sim.invntr[name]))
+            # search for objects
+            self.add_info("<b>Applied for</b>:\n")
+            for obj in self.sim.objects:
+                if obj.name == name:
+                    self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
+        return self.path_std_items(path, 1, "Invntr", "invntr", self.sim.invntr, 
+            self.sim.invntrord, 0, info)
+
+
+    def path_casts(self, path):
+        if self.sim is None:
+            return self.path_default([])
+        def info(name):
+            self.add_info("<b>Cast</b>: {}\n".format(hlesc(name)))
+            self.add_info("Value: {}\n\n".format(self.sim.casts[name]))
             # search for objects
             self.add_info("<b>Applied for</b>:\n")
             for idx, obj in enumerate(self.sim.objects):
                 if obj.name == name:
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
+        return self.path_std_items(path, 1, "Cast", "cast", self.sim.casts, 
+            self.sim.castsord, 0, info)
 
     def path_msgs(self, path):
         if self.sim is None:
@@ -1322,38 +1307,6 @@ class App(tkinter.Frame):
             self.add_info("\n<b>Used by scenes</b>:\n")
             usedby(self.sim.scenes)
             
-    def path_casts(self, path):
-        if self.sim is None:
-            return self.path_default([])
-        self.switch_view(0)
-        if self.last_path[:1] != ("casts",):
-            self.update_gui("Cast ({})".format(len(self.sim.casts)))
-            for idx, name in enumerate(self.sim.castsord):
-                self.insert_lb_act(name, ["casts", idx], idx)
-        # change
-        name = None
-        if len(path) > 1:
-            # parts
-            self.select_lb_item(path[1])
-            try:
-                name = self.sim.castsord[path[1]]
-            except:
-                pass
-        else:
-            self.select_lb_item(None)
-        # display
-        self.clear_info()
-        if not name:
-            self.add_info("Select <b>cast</b> from list\n")
-        else:
-            # name info
-            self.add_info("<b>Cast</b>: {}\n".format(hlesc(name)))
-            self.add_info("Value: {}\n\n".format(self.sim.casts[name]))
-            # search for objects
-            self.add_info("<b>Applied for</b>:\n")
-            for idx, obj in enumerate(self.sim.objects):
-                if obj.name == name:
-                    self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
         
     def path_test(self, path):
         self.update_gui("Test {}".format(path[1]))
