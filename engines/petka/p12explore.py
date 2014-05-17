@@ -98,6 +98,7 @@ class App(tkinter.Frame):
         else:
             self.app_path = __file__
         self.app_path = os.path.abspath(os.path.dirname(self.app_path))
+        self.start_path = "/about"
         # gui
         self.path_handler = {}
         self.curr_main = -1 # 0 - frame, 1 - canvas
@@ -195,11 +196,7 @@ class App(tkinter.Frame):
         self.path_handler["help"] = self.path_help
         
         self.update_after()
-        self.open_path("/about")
-        #self.open_path(self.find_path_scene(36))
-        #self.open_path(["res", "flt", "BMP", 7])
-        #self.open_path(["dlgs", 6])
-        #self.open_path(self.find_path_obj(448))
+        self.open_path(self.start_path)
 
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
@@ -649,32 +646,28 @@ class App(tkinter.Frame):
     #            return "/scenes/{}".format(idx)
     #    return "/no_obj_scene/{}".format(rec_idx)
 
-    def fmt_hl_rec(self, lst, lst_idx, pref, rec_id, full = False):
+    def fmt_hl_rec(self, lst_idx, pref, rec_id, full = False):
         if rec_id in lst_idx:
             fmt = fmt_hl("/{}/{}".format(pref, rec_id), str(rec_id))
             if full:
                 try:
-                    rec = lst[lst_idx[rec_id]]
-                    fmt += " (0x{:X}) - {}".format(rec_id, hlesc(rec.name))
+                    fmt += " (0x{:X}) - {}".format(rec_id, 
+                        lst_idx[rec_id].name)
                 except:
                     fmt += " (0x{:X})".format(rec_id)
             return fmt
         return "{} (0x{:X})".format(rec_id, rec_id)
         
     def fmt_hl_obj(self, obj_id, full = False):
-        return self.fmt_hl_rec(self.sim.objects, self.sim.obj_idx, "objs", 
-            obj_id, full)
+        return self.fmt_hl_rec(self.sim.obj_idx, "objs", obj_id, full)
         
     def fmt_hl_scene(self, scn_id, full = False):
-        return self.fmt_hl_rec(self.sim.scenes, self.sim.scn_idx, "scenes", 
-            scn_id, full)
+        return self.fmt_hl_rec(self.sim.scn_idx, "scenes", scn_id, full)
 
     def fmt_hl_obj_scene(self, rec_id, full = False):
         if rec_id in self.sim.obj_idx:
-            return self.fmt_hl_rec(self.sim.objects, self.sim.obj_idx, "objs", 
-                rec_id, full)
-        return self.fmt_hl_rec(self.sim.scenes, self.sim.scn_idx, "scenes", 
-            rec_id, full)
+            return self.fmt_hl_rec(self.sim.obj_idx, "objs", rec_id, full)
+        return self.fmt_hl_rec(self.sim.scn_idx, "scenes", rec_id, full)
         
     def find_path_name(self, key):
         for name_id, name in enumerate(self.sim.namesord):
@@ -688,22 +681,14 @@ class App(tkinter.Frame):
                 return "/invntr/{}".format(inv_id)
         return "/no_invntr/{}".format(key)
 
-    #def find_path_dlggrp(self, grp_idx):
-    #    for idx, grp in enumerate(self.sim.dlgs):
-    #        if grp.idx == grp_idx:
-    #            return "/dlgs/{}".format(idx)
-    #    return "/no_dlgs/{}".format(grp_idx)
-
     def fmt_hl_msg(self, msg_id, full = False):
-        msg_idx = []
+        msg_idx = {}
         if msg_id < len(self.sim.msgs):
             msg_idx[msg_id] = self.sim.msgs[msg_id]
-        return self.fmt_hl_rec(self.sim.msgs, msg_idx, "msgs", 
-            msg_id, full)
+        return self.fmt_hl_rec(msg_idx, "msgs", msg_id, full)
 
     def fmt_hl_dlg(self, grp_id, full = False):
-        return self.fmt_hl_rec(self.sim.dlgs, self.sim.dlg_idx, "dlgs", 
-            grp_id, full)
+        return self.fmt_hl_rec(self.sim.dlg_idx, "dlgs", grp_id, full)
 
     def path_info_outline(self):
         if self.sim is None:
@@ -760,10 +745,21 @@ class App(tkinter.Frame):
     def path_parts(self, path):
         if self.sim is None:
             return self.path_default([])
+        def parsepart(part_id):
+            return pnum, cnum
+
         if self.last_path[:1] != ("parts",):
             self.update_gui("Parts ({})".format(len(self.sim.parts)))
-            for idx, name in enumerate(self.sim.parts):
-                self.insert_lb_act(name, ["parts", idx])
+            for name in self.sim.parts:
+                pnum = name[5:]
+                cnum = pnum.split("Chapter", 1)
+                if len(cnum) > 1:
+                    pnum = int(cnum[0].strip(), 10)
+                    cnum = int(cnum[1].strip(), 10)
+                else:
+                    cnum = 0
+                part_id = "{}.{}".format(pnum, cnum)
+                self.insert_lb_act(name, ["parts", part_id], part_id)
             if len(self.sim.parts) == 0:
                 # Option to fix paths
                 def fix_paths():
@@ -781,15 +777,10 @@ class App(tkinter.Frame):
         if len(path) > 1:
             # parts
             self.select_lb_item(path[1])
-            part_id = self.sim.parts[path[1]]
-            # parse
-            pnum = part_id[5:]
-            cnum = pnum.split("Chapter", 1)
-            if len(cnum) > 1:
-                pnum = int(cnum[0].strip(), 10)
-                cnum = int(cnum[1].strip(), 10)
-            else:
-                cnum = 0
+            part_id = path[1]
+            part_id = part_id.split(".", 1)
+            pnum = int(part_id[0])
+            cnum = int(part_id[1])
             self.sim.open_part(pnum, cnum)
             self.clear_hist()
         else:
@@ -815,6 +806,12 @@ class App(tkinter.Frame):
             return self.path_default(path)
 
     def path_res_open(self, pref, res_id, mode):
+        if res_id not in self.sim.res:        
+            self.switch_view(0)
+            self.clear_info()
+            self.add_info("<b>Resource</b> \"{}\" not found\n".format(res_id))
+            return
+        self.select_lb_item(res_id)
         resref = "/" + "/".join([str(x) for x in pref])
         if len(mode) == 0:
             self.switch_view(0)
@@ -937,6 +934,7 @@ class App(tkinter.Frame):
         for ft in ftk:
             self.add_info("  <a href=\"/res/flt/{}\">{}</a>: {}\n".format(
                 ft, ft, fts[ft]))
+        self.select_lb_item(None)
     
     def on_path_res_info(self):
         self.switch_view(0)
@@ -945,22 +943,18 @@ class App(tkinter.Frame):
         self.switch_view(1)
 
     def path_res_all(self, path):
-        if self.last_path[:2] != ("res", "all",):
+        if self.last_path[:2] != ("res", "all",) and self.last_path != ("res",):
             self.update_gui("Resources ({})".format(len(self.sim.res)))
             #self.add_toolbtn("Info", self.on_path_res_info)
             #self.add_toolbtn("View", self.on_path_res_view)
-            for idx, res_id in enumerate(self.sim.resord):
+            for res_id in self.sim.resord:
                     self.insert_lb_act("{} - {}".format(\
-                res_id, self.sim.res[res_id]), ["res", "all", idx])
+                res_id, self.sim.res[res_id]), ["res", "all", res_id], res_id)
         # change                
         if len(path) > 2:
-            # parts
-            self.select_lb_item(path[2])
-            res_id = self.sim.resord[path[2]]
-            self.path_res_open(path[:3], res_id, path[3:])
+            self.path_res_open(path[:3], path[2], path[3:])
         else:
             self.path_res_status()
-            self.select_lb_item(None)
 
     def path_res_flt(self, path):
         lst = []
@@ -971,18 +965,15 @@ class App(tkinter.Frame):
             self.update_gui("Resources {} ({})".format(path[2], len(lst)))
             self.insert_lb_act("All", "/res")
             self.insert_lb_act("-", None)
-            for idx, res_id in enumerate(lst):
+            for res_id in lst:
                     self.insert_lb_act("{} - {}".format(\
-                res_id, self.sim.res[res_id]), ["res", "flt", path[2], idx])
+                res_id, self.sim.res[res_id]), ["res", "flt", path[2], res_id], 
+                    res_id)
         # change                
         if len(path) > 3:
-            # parts
-            self.select_lb_item(path[3] + 2)
-            res_id = lst[path[3]]
-            self.path_res_open(path[:4], res_id, path[4:])
+            self.path_res_open(path[:4], path[3], path[4:])
         else:
             self.path_res_status()
-            self.select_lb_item(None)
 
     def path_objs_scenes(self, path):
         if self.sim is None:
@@ -1008,12 +999,18 @@ class App(tkinter.Frame):
         if len(path) > 1:
             # index
             self.select_lb_item(path[1])
-            rec = lst_idx[path[1]]
+            try:
+                rec = lst_idx[path[1]]
+            except:
+                pass
         else:
             self.select_lb_item(None)
         # display
         self.clear_info()
         if not rec:
+            if len(path) > 1:
+                self.add_info("Item \"{}\" at <b>{}</b> not found\n\n".format(
+                    path[1], path[0]))
             self.add_info("Select item from list\n")
         else:
             # record info
@@ -1026,7 +1023,7 @@ class App(tkinter.Frame):
                     "Alias") + ":  {}\n".format(
                         hlesc(self.sim.names[rec.name])))
             if rec.name in self.sim.invntr:
-                self.add_info("  " + fmt_hl(self.find_path_name(rec.name), 
+                self.add_info("  " + fmt_hl(self.find_path_invntr(rec.name), 
                     "Invntr") + ": {}\n".format(
                         hlesc(self.sim.invntr[rec.name])))
             # references / backreferences                    
@@ -1106,10 +1103,9 @@ class App(tkinter.Frame):
                 self.add_info("\n<b>Used resources</b>: {}\n".\
                     format(len(resused)))
                 for res_id in resused:
-                    self.add_info("  <a href=\"{}\">{}</a> (0x{:X}) - {}\n".\
-                        format(self.find_path_res(res_id), res_id, res_id, \
-                        hlesc(self.sim.res[res_id])))
-
+                    self.add_info("  " + fmt_hl("/res/all/{}".format(res_id), 
+                        "{}".format(res_id)) + " (0x{:X}) - {}\n".format(res_id,
+                            hlesc(self.sim.res[res_id])))
             if len(dlgused) > 0:
                 self.add_info("\n<b>Used dialog groups</b>: {}\n".\
                     format(len(dlgused)))
@@ -1191,26 +1187,30 @@ class App(tkinter.Frame):
                 if len(capt) > 25:
                     capt = capt[:25] + "|"
                 self.insert_lb_act("{} - {}".format(msg.idx, capt),
-                    ["msgs", idx])
+                    ["msgs", idx], idx)
         # change
         msg = None
         if len(path) > 1:
-            # parts
+            # index
             self.select_lb_item(path[1])
-            msg = self.sim.msgs[path[1]]
+            try:
+                msg = self.sim.msgs[path[1]]
+            except:
+                pass
         else:
             self.select_lb_item(None)
         # display
         self.clear_info()
         if not msg:
-            self.add_info("Select <b>message</b>\n")
+            if len(path) > 1:
+                self.add_info("<b>MEssage</b> \"{}\" not found\n\n".format(
+                    path[1]))
+            self.add_info("Select <b>message</b> from list\n")
         else:
             # msg info
             self.add_info("<b>Message</b>: {}\n".format(path[1]))
             self.add_info("  wav:    {}\n".format(msg.wav))
-            self.add_info("  object: <a href=\"{}\">{}</a> (0x{:X}) - {}\n".\
-                format(self.find_path_obj(msg.arg1), msg.arg1, msg.arg1,
-                    msg.obj.name))
+            self.add_info("  object: " + self.fmt_hl_obj(msg.obj.idx) + "\n")
             self.add_info("  arg2:   {} (0x{:X})\n".format(msg.arg2, msg.arg2))
             self.add_info("  arg3:   {} (0x{:X})\n".format(msg.arg3, msg.arg3))
             self.add_info("\n{}\n".format(hlesc(msg.name)))
@@ -1231,21 +1231,28 @@ class App(tkinter.Frame):
         self.switch_view(0)
         if self.last_path[:1] != ("dlgs",):
             self.update_gui("Dialog groups ({})".format(len(self.sim.dlgs)))
-            for idx, grp in enumerate(self.sim.dlgs):
+            for grp in self.sim.dlgs:
                 self.insert_lb_act("{} (0x{:X})".format(grp.idx, grp.idx),
-                    ["dlgs", idx])
+                    ["dlgs", grp.idx], grp.idx)
+
         # change
         grp = None
         if len(path) > 1:
-            # parts
+            # index
             self.select_lb_item(path[1])
-            grp = self.sim.dlgs[path[1]]
+            try:
+                grp = self.sim.dlg_idx[path[1]]
+            except:
+                pass
         else:
             self.select_lb_item(None)
         # display
         self.clear_info()
         if not grp:
-            self.add_info("Select <b>dialog group</b>\n")
+            if len(path) > 1:
+                self.add_info("<b>Dialog</b> \"{}\" not found\n\n".format(
+                    path[1]))
+            self.add_info("Select <b>dialog group</b> from list\n")
         else:
             # grp info
             self.add_info("<b>Dialog group</b>: {} (0x{:X})\n".format(\
@@ -1435,6 +1442,8 @@ def main():
     app = App(master = root)
     if len(sys.argv) > 1:
         app.open_data_from(sys.argv[1])
+    if len(sys.argv) > 2:
+        app.start_path = sys.argv[2]
     app.mainloop()
 
     

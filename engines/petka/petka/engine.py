@@ -373,6 +373,7 @@ class Engine:
                 f.close()
 
         self.dlgs = []
+        self.dlg_idx = {}
         self.dlgops = []
         # DIALOGUES.FIX
         fp = self.curr_path + "dialogue.fix"
@@ -388,6 +389,7 @@ class Engine:
                     self.dlgs.append(grp)
                 opref = {}
                 for grp in self.dlgs:
+                    self.dlg_idx[grp.idx] = grp
                     grp.acts = []
                     for i in range(grp.num_acts):
                         temp = f.read(16)
