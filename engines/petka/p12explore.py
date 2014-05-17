@@ -108,6 +108,7 @@ class App(tkinter.Frame):
         self.curr_mode_sub = None
         self.curr_gui = []
         self.curr_lb_acts = None
+        self.curr_lb_idx = None
         self.hist = []
         self.histf = []
         # canvas
@@ -472,6 +473,7 @@ class App(tkinter.Frame):
         # actions on listbox
         self.curr_lb = lb
         self.curr_lb_acts = []
+        self.curr_lb_idx = {}
 
     def switch_view(self, main):
         # main view
@@ -550,18 +552,42 @@ class App(tkinter.Frame):
                     mode = 0
                 else:
                     curr_tag += ch
-        if len(curr_text) > 0:                    
+        if len(curr_text) > 0:                            lfn = os.path.join(self.app_path, "help", "list")
+        hi = []
+        f = open(lfn, "rb")
+        try:
+            for item in f.readlines():
+                item = item.decode("UTF-8").strip()
+                if not item: continue
+                try:
+                    hf = open(os.path.join(self.app_path, 
+                        "help", item + ".txt"), "rb")
+                    try:
+                        for line in hf.readlines():
+                            line = line.decode("UTF-8").strip()                    
+                            break
+                    finally:
+                        hf.close()
+                except:
+                    line = item                    
+                hi.append([item, line])
+        finally:
+            f.close()
+
             self.text_view.insert(tkinter.INSERT, curr_text, \
                 tuple([x for x in tags for x in x]))
         
-    def insert_lb_act(self, name, act):
+    def insert_lb_act(self, name, act, key = None):
+        if key is not None:
+            self.curr_lb_idx[key] = len(self.curr_lb_acts)
         self.curr_lb_acts.append((name, act))
         if name == "-" and act is None:
             self.curr_lb.insert(tkinter.END, "")
         else:
             self.curr_lb.insert(tkinter.END, " " + name)
 
-    def select_lb_item(self, idx):
+    def select_lb_item(self, key):
+        idx = self.curr_lb_idx.get(key, None)
         need = (idx is not None)
         idxs = "{}".format(idx)
         for sel in self.curr_lb.curselection():
@@ -617,32 +643,32 @@ class App(tkinter.Frame):
             self.hist.append(np)
             self.open_path(np[0], False)
 
-    def find_path_res(self, res):
-        for idx, res_id in enumerate(self.sim.resord):
-            if res_id == res:
-                return "/res/all/{}".format(idx)
-        return "/no_res/{}".format(res)
+    #def find_path_res(self, res):
+    #    for idx, res_id in enumerate(self.sim.resord):
+    #        if res_id == res:
+    #            return "/res/all/{}".format(idx)
+    #    return "/no_res/{}".format(res)
 
-    def find_path_obj(self, obj_idx):
-        for idx, rec in enumerate(self.sim.objects):
-            if rec.idx == obj_idx:
-                return "/objs/{}".format(idx)
-        return "/no_obj/{}".format(obj_idx)
+    #def find_path_obj(self, obj_idx):
+    #    for idx, rec in enumerate(self.sim.objects):
+    #        if rec.idx == obj_idx:
+    #            return "/objs/{}".format(idx)
+    #    return "/no_obj/{}".format(obj_idx)
 
-    def find_path_scene(self, scn_idx):
-        for idx, rec in enumerate(self.sim.scenes):
-            if rec.idx == scn_idx:
-                return "/scenes/{}".format(idx)
-        return "/no_scene/{}".format(scn_idx)
+    #def find_path_scene(self, scn_idx):
+    #    for idx, rec in enumerate(self.sim.scenes):
+    #        if rec.idx == scn_idx:
+    #            return "/scenes/{}".format(idx)
+    #    return "/no_scene/{}".format(scn_idx)
 
-    def find_path_obj_scene(self, rec_idx):
-        for idx, rec in enumerate(self.sim.objects):
-            if rec.idx == rec_idx:
-                return "/objs/{}".format(idx)
-        for idx, rec in enumerate(self.sim.scenes):
-            if rec.idx == rec_idx:
-                return "/scenes/{}".format(idx)
-        return "/no_obj_scene/{}".format(rec_idx)
+    #def find_path_obj_scene(self, rec_idx):
+    #    for idx, rec in enumerate(self.sim.objects):
+    #        if rec.idx == rec_idx:
+    #            return "/objs/{}".format(idx)
+    #    for idx, rec in enumerate(self.sim.scenes):
+    #        if rec.idx == rec_idx:
+    #            return "/scenes/{}".format(idx)
+    #    return "/no_obj_scene/{}".format(rec_idx)
 
     def fmt_hl_rec(self, lst, pref, rec_idx, full = False):
         for idx, rec in enumerate(lst):
@@ -679,11 +705,11 @@ class App(tkinter.Frame):
                 return "/invntr/{}".format(idx)
         return "/no_invntr/{}".format(key)
 
-    def find_path_dlggrp(self, grp_idx):
-        for idx, grp in enumerate(self.sim.dlgs):
-            if grp.idx == grp_idx:
-                return "/dlgs/{}".format(idx)
-        return "/no_dlgs/{}".format(grp_idx)
+    #def find_path_dlggrp(self, grp_idx):
+    #    for idx, grp in enumerate(self.sim.dlgs):
+    #        if grp.idx == grp_idx:
+    #            return "/dlgs/{}".format(idx)
+    #    return "/no_dlgs/{}".format(grp_idx)
 
     def fmt_hl_msg(self, obj_idx, full = False):
         return self.fmt_hl_rec(self.sim.msgs, "msgs", obj_idx, full)
@@ -1331,42 +1357,37 @@ class App(tkinter.Frame):
             
     def path_help(self, path):
         self.switch_view(0)
-
-        lfn = os.path.join(self.app_path, "help", "list")
-        hi = []
-        f = open(lfn, "rb")
-        try:
-            for item in f.readlines():
-                item = item.decode("UTF-8").strip()
-                if not item: continue
-                try:
-                    hf = open(os.path.join(self.app_path, 
-                        "help", item + ".txt"), "rb")
-                    try:
-                        for line in hf.readlines():
-                            line = line.decode("UTF-8").strip()                    
-                            break
-                    finally:
-                        hf.close()
-                except:
-                    line = item                    
-                hi.append([item, line])
-        finally:
-            f.close()
-
         if self.last_path[:1] != ("help",):
             self.update_gui("Help")
-            for item, line in hi:
-                self.insert_lb_act(line, ["help", item])
+            # build help index
+            lfn = os.path.join(self.app_path, "help", "list")
+            f = open(lfn, "rb")
+            try:
+                for item in f.readlines():
+                    item = item.decode("UTF-8").strip()
+                    if not item: continue
+                    try:
+                        hf = open(os.path.join(self.app_path, 
+                            "help", item + ".txt"), "rb")
+                        try:
+                            for line in hf.readlines():
+                                line = line.decode("UTF-8").strip()                    
+                                break
+                        finally:
+                            hf.close()
+                    except:
+                        line = item                    
+                    self.insert_lb_act(line, ["help", item], item)
+            finally:
+                f.close()
+
             self.insert_lb_act("-", None)
             self.insert_lb_act("Outline", [])
 
         # change
         if len(path) > 1:
             # parts
-            for idx, (item, line) in enumerate(hi):
-                if item == path[1]:
-                    self.select_lb_item(idx)
+            self.select_lb_item(path[1])
             self.clear_info()
             hfn = os.path.join(self.app_path, "help", path[1] + ".txt")
             try:
@@ -1385,7 +1406,6 @@ class App(tkinter.Frame):
                     format(hlesc(hfn), hlesc(traceback.format_exc())))
         else:
             self.select_lb_item(None)
-
         
 
     def on_open_data(self):
