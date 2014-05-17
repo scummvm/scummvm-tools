@@ -190,6 +190,7 @@ class App(tkinter.Frame):
         self.path_handler["invntr"] = self.path_invntr
         self.path_handler["msgs"] = self.path_msgs
         self.path_handler["dlgs"] = self.path_dlgs
+        self.path_handler["casts"] = self.path_casts
         self.path_handler["test"] = self.path_test
         self.path_handler["about"] = self.path_about
         self.path_handler["support"] = self.path_support
@@ -741,6 +742,7 @@ class App(tkinter.Frame):
             for name, act in acts:
                 self.insert_lb_act(name, act)
 
+    
 
     def path_parts(self, path):
         if self.sim is None:
@@ -1125,19 +1127,22 @@ class App(tkinter.Frame):
         if self.last_path[:1] != ("names",):
             self.update_gui("Names ({})".format(len(self.sim.names)))
             for idx, name in enumerate(self.sim.namesord):
-                self.insert_lb_act(name, ["names", idx])
+                self.insert_lb_act(name, ["names", idx], idx)
         # change
         name = None
         if len(path) > 1:
             # parts
             self.select_lb_item(path[1])
-            name = self.sim.namesord[path[1]]
+            try:
+                name = self.sim.namesord[path[1]]
+            except:
+                pass
         else:
             self.select_lb_item(None)
         # display
         self.clear_info()
         if not name:
-            self.add_info("Select <b>name</b>\n")
+            self.add_info("Select <b>name</b> from list\n")
         else:
             # name info
             self.add_info("<b>Alias</b>: {}\n".format(hlesc(name)))
@@ -1300,7 +1305,9 @@ class App(tkinter.Frame):
             self.add_info("\n<b>Used by scenes</b>:\n")
             usedby(self.sim.scenes)
             
-
+    def path_casts(self, path):
+        pass
+        
     def path_test(self, path):
         self.update_gui("Test {}".format(path[1]))
         self.insert_lb_act("Outline", [])

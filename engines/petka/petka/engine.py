@@ -345,6 +345,19 @@ class Engine:
             self.invntr = ini["ALL"]
             self.invntrord = ini["__order__"]["ALL"]
             f.close()
+
+        self.casts = {}
+        self.castsord = []
+        fp = self.curr_path + "cast.ini"
+        if self.fman.exists(fp):
+            f = self.fman.read_file_stream(fp)
+            ini = self.parse_ini(f)
+            self.casts = ini["all"]
+            self.castsord = ini["__order__"]["all"]
+            f.close()
+        # bind casts to objects
+        for cast in self.castsord:
+            #print(cast)
         
     def load_dialogs(self):
         self.msgs = []
