@@ -5,3 +5,21 @@
  * <a href="/help/changes">Что нового</a>
  * <a href="/help/faq">Часто задаваемые вопросы</a>
 
+Отображаемые разделы
+
+ * <a href="/help/parts">Выбор части</a>
+ * <a href="/help/res">Ресурсы</a>
+ * <a href="/help/objs">Объекты</a>
+ * <a href="/help/scenes">Сцены</a>
+ * <a href="/help/names">Отображаемные имена</a>
+ * <a href="/help/invntr">Инвентарь</a>
+ * <a href="/help/casts">Цвета предметов</a>
+ * <a href="/help/msgs">Собщения</a>
+ * <a href="/help/dlgs">Группы диалогов</a>
+
+Прочая информация
+
+ * <a href="/help/support">Информация для подержки</a>
+ * <a href="/help/info">Справочники</a>
+ * <a href="/help/about">О программе</a>
+

@@ -70,6 +70,13 @@ OPCODES = {
     63: ("TOMAP",       0),
 }
 
+DLGOPS = {
+    1:  ("BREAK",       0),
+    6:  ("RETURN",      0),
+    7:  ("PLAY",        1),
+    8:  ("CIRCLE",      3),
+}
+
 class ScrObject:
     def __init__(self, idx, name):
         self.idx = idx

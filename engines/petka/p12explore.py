@@ -196,6 +196,7 @@ class App(tkinter.Frame):
         self.path_handler["about"] = self.path_about
         self.path_handler["support"] = self.path_support
         self.path_handler["help"] = self.path_help
+        self.path_handler["info"] = self.path_info
         
         self.update_after()
         self.open_path(self.start_path)
@@ -275,6 +276,9 @@ class App(tkinter.Frame):
         self.menuhelp.add_command(
                 command = lambda: self.open_path("/support"),
                 label = "Support")
+        self.menuhelp.add_command(
+                command = lambda: self.open_path("/info"),
+                label = "Info")
         self.menuhelp.add_command(
                 command = lambda: self.open_path("/about"),
                 label = "About")
@@ -721,9 +725,9 @@ class App(tkinter.Frame):
                 ("Casts ({})".format(len(self.sim.casts)), "/casts"),
                 ("Messages ({})".format(len(self.sim.msgs)), "/msgs"),
                 ("Dialog groups ({})".format(len(self.sim.dlgs)), "/dlgs"),
-                ("-", None),
-                ("Test image", ["test", "image"]),
-                ("Test info", ["test","info"]),
+                #("-", None),
+                #("Test image", ["test", "image"]),
+                #("Test info", ["test","info"]),
             ]
             for name, act in acts:
                 self.insert_lb_act(name, act)
@@ -1145,7 +1149,6 @@ class App(tkinter.Frame):
             # info
             cb(name)
         
-
     def path_names(self, path):
         if self.sim is None:
             return self.path_default([])
@@ -1368,6 +1371,8 @@ class App(tkinter.Frame):
             
     def path_help(self, path):
         self.switch_view(0)
+        if path == ("help",):
+            path = ("help", "index")
         if self.last_path[:1] != ("help",):
             self.update_gui("Help")
             # build help index
@@ -1418,6 +1423,42 @@ class App(tkinter.Frame):
         else:
             self.select_lb_item(None)
         
+    def path_info(self, path):
+        self.switch_view(0)
+        if self.last_path[:1] != ("info",):
+            self.update_gui("Info")
+            self.insert_lb_act("Opcodes", ["info", "opcodes"], "opcodes")
+            self.insert_lb_act("Dialog opcodes", ["info", "dlgops"], "dlgops")
+        # change
+        name = None
+        if len(path) > 1:
+            # lb
+            self.select_lb_item(path[1])
+            name = path[1]
+        else:
+            self.select_lb_item(None)
+        # display
+        self.clear_info()
+        if not name:
+            self.add_info("Select <b>info</b> from list\n")
+        else:
+            # info
+            if name == "opcodes":
+                self.add_info("<b>Opcodes<b>\n\n")
+                k = list(petka.OPCODES.keys())
+                k.sort()
+                for key in k:
+                    self.add_info("  {} (0x{:X}) - {}\n".format(key, key,
+                        petka.OPCODES[key][0])) 
+            elif name == "dlgops":
+                self.add_info("<b>Dialog opcodes<b>\n\n")
+                k = list(petka.DLGOPS.keys())
+                k.sort()
+                for key in k:
+                    self.add_info("  {} (0x{:X}) - {}\n".format(key, key,
+                        petka.DLGOPS[key][0]))
+            else: 
+                self.add_info("Unknown data type \"{}\"\n".format(hlesc(name)))
 
     def on_open_data(self):
         ft = [\
