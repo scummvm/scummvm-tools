@@ -736,6 +736,7 @@ class App(tkinter.Frame):
         if self.sim is None:
             return self.path_default([])
 
+        self.switch_view(0)
         if self.last_path[:1] != ("parts",):
             self.update_gui("Parts ({})".format(len(self.sim.parts)))
             for name in self.sim.parts:

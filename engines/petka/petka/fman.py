@@ -67,6 +67,7 @@ class FileManager:
                         format(fname, name))
         # add file descriptor
         self.strfd.append((f, name, tag))
+        print("DEBUG: Loaded store \"{}\"".format(name))
         
     def read_file(self, fname):
         sf = fname.lower().replace("\\", "/")

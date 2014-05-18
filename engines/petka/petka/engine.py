@@ -250,8 +250,8 @@ class Engine:
         # load .STR
         strs = ["Flics", "Background", "Wav", "Music", "SFX"]
         for strf in strs:
-            pf = self.fman.find_path(self.curr_path + "bgs.ini")
-            if not pf: continue
+            #pf = self.fman.find_path(self.curr_path + "bgs.ini")
+            #if not pf: continue
             if strf in ini:
                 self.fman.load_store(ini[strf], 1)
         # load script.dat, backgrnd.bg and resources.qrc
