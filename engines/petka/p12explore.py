@@ -1312,6 +1312,7 @@ class App(tkinter.Frame):
                     if len(usedadr) > 0:
                         usedadr.append(dlg.op_start)
                     usedmenu = {}
+                    usedcase = {}
                     for oidx, op in enumerate(dlg.ops):
                         cmt = ""
                         opref = "0x{:X}".format(op.ref)
@@ -1319,7 +1320,15 @@ class App(tkinter.Frame):
                         if op.pos in usedadr:
                             self.add_info("      <i>label_{:X}:</i>\n".format(
                                 op.pos))
-                        if op.opcode == 2 or op.opcode == 8: # MENU or CIRCLE
+                        if op.opcode == 0x1: # BREAK
+                            if op.pos in usedcase:
+                                if len(usedadr) > 0:
+                                    cmt = " / end select <i>label_{:X}</i>, "\
+                                        "case=0x{:}".format(*usedcase[op.pos])
+                                else:
+                                    cmt = " / end select case=0x{:}".\
+                                        format(usedcase[op.pos][1])
+                        elif op.opcode == 0x2 or op.opcode == 0x8: # MENU or CIRCLE
                             cmt = " / select "
                             doarr = []
                             docurr = []
@@ -1328,9 +1337,10 @@ class App(tkinter.Frame):
                             menuactstart = None
                             for oidx2, op2 in enumerate(dlg.ops[oidx + 1:]):
                                 if op2.opcode == 0x1: # BREAK
+                                    usedcase[op2.pos] = (op.pos, len(doarr))
                                     doarr.append(docurr)
                                     skiptobrk = False
-                                    if len(doarr) == sellen:
+                                    if op.opcode == 0x8 and len(doarr) == sellen:
                                         menuactstart = oidx2 + oidx + 2
                                         break
                                     docurr = []
@@ -1351,8 +1361,8 @@ class App(tkinter.Frame):
                             op.opcode == 0x4: # GOTO or MENURET
                             opref = "<i>label_{:X}</i>".format(op.ref)
                             if op.pos in usedmenu:
-                                cmt = " / menu=<i>label_{:X}</i>, case=0x{:}".\
-                                    format(*usedmenu[op.pos])
+                                cmt = " / action menu=<i>label_{:X}</i>, "\
+                                    "case=0x{:}".format(*usedmenu[op.pos])
                         elif op.opcode == 0x7:
                             opcode = "PLAY"
                             if op.msg:
