@@ -8,7 +8,7 @@ import sys, os, struct
 # fine tuning.
 buildOptions = dict(packages = ["re", "io", "PIL", "traceback", "zlib", "gzip", "argparse", "struct", "binascii"], \
     excludes = ["_posixsubprocess"],
-    include_files = [],
+    include_files = ["help"],
     compressed = True, silent = True,\
     optimize = 2, copy_dependent_files = True, \
     create_shared_zip = True, include_in_shared_zip = True)
