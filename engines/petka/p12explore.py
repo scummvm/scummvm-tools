@@ -21,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2i 2014-05-16"
+VERSION = "v0.2j 2014-05-16"
 
 def hlesc(value):
     if value is None:
@@ -1189,12 +1189,34 @@ class App(tkinter.Frame):
                     format(len(dlgused)))
                 for grp_id in dlgused:
                     self.add_info("  " + self.fmt_hl_dlg(grp_id, True)+ "\n")
-            
+
+            # messages used by this object            
             if isobj:
-                self.add_info("\n<b>Messages</b>:\n")
+                wasmsg = False
                 for msg in self.sim.msgs:
                     if msg.obj.idx != rec.idx: continue
+                    if not wasmsg:
+                        self.add_info("\n<b>Messages</b>:\n")
+                        wasmsg = True
                     self.add_info("  " + self.fmt_hl_msg(msg.idx, True) + "\n")
+
+            # objects tan use this objects in TALK opcode
+            wasmsg = False
+            for obj2 in self.sim.objects:
+                for idx, (act_op, act_status, act_ref, ops) in \
+                        enumerate(obj2.acts):
+                    for oidx, op in enumerate(ops):
+                        if op[1] == 0xA and op[0] == rec.idx: # TALK
+                            if not wasmsg:
+                                self.add_info("\n<b>Used in TALK</b>:\n")
+                                wasmsg = True
+                            self.add_info("  " + self.fmt_hl_obj(obj2.idx) + 
+                              " on " + fmt_opcode(act_op) + 
+                              " #{}".format(idx) + fmt_cmt(" // " + 
+                              self.fmt_hl_obj(obj2.idx, True)) + "\n")
+                            #print(op)
+                            #print()
+            
 
     def path_std_items(self, path, level, guiname, guiitem, lst, lst_idx, 
             lbmode, cb):
@@ -1402,7 +1424,7 @@ class App(tkinter.Frame):
                                         "select case=0x{:}".\
                                         format(usedcase[op.pos][1]))
                         elif op.opcode == 0x2 or op.opcode == 0x8: # MENU or CIRCLE
-                            cmt = " / select "
+                            cmt = " // select "
                             doarr = []
                             docurr = []
                             sellen = op.ref % 0x100
