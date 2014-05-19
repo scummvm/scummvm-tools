@@ -21,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2g 2014-05-16"
+VERSION = "v0.2i 2014-05-16"
 
 def hlesc(value):
     if value is None:
@@ -106,6 +106,7 @@ class App(tkinter.Frame):
         self.path_handler = {}
         self.curr_main = -1 # 0 - frame, 1 - canvas
         self.curr_path = []
+        self.curr_help = ""
         self.last_path = [None]
         self.last_fn = ""
         self.curr_mode = 0
@@ -336,6 +337,8 @@ class App(tkinter.Frame):
         else:
             path = loc
         path = tuple(path)
+        while path[-1:] == ("",):
+            path = path[:-1]
 
         if withhist:
             self.hist.append([path])
@@ -343,6 +346,10 @@ class App(tkinter.Frame):
 
         print("DEBUG: Open", path)
         self.curr_path = path
+        if len(path) > 0:
+            self.curr_help = path[0]
+        else:
+            self.curr_help = ""
         if len(path) > 0:
             if path[0] in self.path_handler:
                 return self.path_handler[path[0]](path)
@@ -603,7 +610,7 @@ class App(tkinter.Frame):
                 num = self.curr_lb.curselection()[0]
                 num = int(num)
             except:
-                pass
+                return None
             return num
 
         if self.curr_lb_acts:
@@ -627,10 +634,7 @@ class App(tkinter.Frame):
         self.histf = []
 
     def on_help(self):
-        if len(self.curr_path) > 0:
-            self.open_path(["help", self.curr_path[0]])
-        else:
-            self.open_path(["help"])
+        self.open_path(["help", self.curr_help])
 
     def on_back(self):
         if len(self.hist) > 1:
@@ -821,6 +825,7 @@ class App(tkinter.Frame):
             return self.path_default(path)
 
     def path_res_open(self, pref, res_id, mode):
+        self.curr_help = "res_view"
         if res_id not in self.sim.res:        
             self.switch_view(0)
             self.clear_info()
