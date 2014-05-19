@@ -1340,8 +1340,9 @@ class App(tkinter.Frame):
                                     usedcase[op2.pos] = (op.pos, len(doarr))
                                     doarr.append(docurr)
                                     skiptobrk = False
-                                    if op.opcode == 0x8 and len(doarr) == sellen:
-                                        menuactstart = oidx2 + oidx + 2
+                                    if len(doarr) == sellen:
+                                        if op.opcode == 0x2:
+                                            menuactstart = oidx2 + oidx + 2
                                         break
                                     docurr = []
                                 elif op2.opcode == 0x7 and not skiptobrk: # PLAY
