@@ -21,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2e 2014-05-16"
+VERSION = "v0.2f 2014-05-16"
 
 def hlesc(value):
     if value is None:
@@ -30,6 +30,9 @@ def hlesc(value):
 
 def fmt_opcode(opcode):
     return petka.OPCODES.get(opcode, ["OP{:04X}".format(opcode)])[0]
+
+def fmt_dlgop(opcode):
+    return petka.DLGOPS.get(opcode, ["OP{:02X}".format(opcode)])[0]
 
 def fmt_hl(loc, desc):
     return "<a href=\"{}\">{}</a>".format(loc, desc)
@@ -1294,20 +1297,43 @@ class App(tkinter.Frame):
                 for didx, dlg in enumerate(act.dlgs):
                     self.add_info("    {}) <i>0x{:X} 0x{:X}</i>, ops: {}\n".\
                         format(didx, dlg.arg1, dlg.arg2, len(dlg.ops)))
-                    for op in dlg.ops:
+                    for oidx, op in enumerate(dlg.ops):
                         cmt = ""
-                        msgref = "0x{:X}".format(op.ref)
-                        opcode = "OP{:02X}".format(op.opcode)
-                        if op.opcode == 7:
+                        opref = "0x{:X}".format(op.ref)
+                        opcode = fmt_dlgop(op.opcode)
+                        if op.opcode == 0x7:
                             opcode = "PLAY"
                             if op.msg:
-                                msgref = self.fmt_hl_msg(op.ref)
+                                opref = self.fmt_hl_msg(op.ref)
                                 objref = self.fmt_hl_obj(op.msg.obj.idx)
                                 cmt = " / obj={}, msg={}".\
                                     format(objref, 
                                         self.fmt_hl_msg(op.ref, True))
+                        if op.opcode == 8:
+                            cmt = " / select from "
+                            doarr = []
+                            docurr = []
+                            skiptobrk = False
+                            for op2 in dlg.ops[oidx + 1:]:
+                                #cmt += fmt_dlgop(op2.opcode) + " "
+                                if op2.opcode == 0x1: # BREAK
+                                    doarr.append(docurr)
+                                    skiptobrk = False
+                                    if len(doarr) == op.ref:
+                                        break
+                                    docurr = []
+                                elif op2.opcode == 0x7 and not skiptobrk: # PLAY
+                                    docurr.append(self.fmt_hl_msg(op2.ref))
+                                else:
+                                    docurr = ["complex"]
+                                    
+                                    
+                            if len(doarr) < op.ref:
+                                cmt = " / circle select broken, required={}, "\
+                                    "got={}".format(op.ref, len(doarr))
+                            cmt += ",".join(["+".join(x) for x in doarr])
                         self.add_info("      {} 0x{:X} {}{}\n".\
-                            format(opcode, op.arg, msgref, cmt))
+                            format(opcode, op.arg, opref, cmt))
 
             def usedby(lst):
                 for idx, rec in enumerate(lst):
