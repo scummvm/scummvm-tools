@@ -40,7 +40,7 @@ def fmt_hl(loc, desc):
     return "<a href=\"{}\">{}</a>".format(loc, desc)
 
 def fmt_cmt(cmt):
-    return "<font color=\"#606060\">{}</font>".format(cmt)
+    return "<font color=\"#4d4d4d\">{}</font>".format(cmt)
 
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager:
@@ -62,6 +62,7 @@ class HyperlinkManager:
     def reset(self):
     	self.links = {}
     	self.colors = []
+    	self.bgs = []
 
     def add(self, action):
         # add an action to the manager.  returns tags to use in
@@ -75,6 +76,14 @@ class HyperlinkManager:
         if tag not in self.colors:
             self.colors.append(tag)
             self.text.tag_config(tag, foreground = color)
+            self.text.tag_raise("hyper")
+        return (tag,)
+
+    def bg(self, color):
+        tag = "bg-{}".format(color)
+        if tag not in self.bgs:
+            self.bgs.append(tag)
+            self.text.tag_config(tag, background = color)
             self.text.tag_raise("hyper")
         return (tag,)
 
@@ -585,6 +594,13 @@ class App(tkinter.Frame):
                         if ref[-1:] == "\"":
                             ref = ref[:-1]
                         tags.append(self.text_hl.color(ref))
+                    elif curr_tag[:8] == "font bg=":
+                        ref = curr_tag[8:]
+                        if ref[:1] == "\"":
+                            ref = ref[1:]
+                        if ref[-1:] == "\"":
+                            ref = ref[:-1]
+                        tags.append(self.text_hl.bg(ref))
                     elif curr_tag == "b":
                         tags.append(["bold"])
                     elif curr_tag == "i":
@@ -704,6 +720,12 @@ class App(tkinter.Frame):
             if name == key:
                 return "/invntr/{}".format(inv_id)
         return "/no_invntr/{}".format(key)
+
+    def find_path_cast(self, key):
+        for cast_id, name in enumerate(self.sim.castsord):
+            if name == key:
+                return "/casts/{}".format(cast_id)
+        return "/no_casts/{}".format(key)
 
     def fmt_hl_msg(self, msg_id, full = False):
         msg_idx = {}
@@ -1066,6 +1088,19 @@ class App(tkinter.Frame):
                 self.add_info("  " + fmt_hl(self.find_path_invntr(rec.name), 
                     "Invntr") + ": {}\n".format(
                         hlesc(self.sim.invntr[rec.name])))
+            if rec.cast:
+                bg = 0
+                r = rec.cast[0] 
+                g = rec.cast[1]
+                b = rec.cast[2]
+                if (r + g * 2 + b) // 3 < 160: 
+                    bg = 255
+                self.add_info("  " + fmt_hl(self.find_path_cast(rec.name), 
+                    "Cast") + ":   <font bg=\"#{bg:02x}{bg:02x}{bg:02x}\">"
+                    "<font color=\"#{r:02x}{g:02x}{b:02x}\">"\
+                    "<b> #{r:02x}{g:02x}{b:02x} </b></font></font>\n".\
+                    format(bg = bg, r = r, g = g, b = b))
+            
             # references / backreferences                    
             if isobj:
                 # search where object used
@@ -1224,7 +1259,19 @@ class App(tkinter.Frame):
             return self.path_default([])
         def info(name):
             self.add_info("<b>Cast</b>: {}\n".format(hlesc(name)))
-            self.add_info("Value: {}\n\n".format(self.sim.casts[name]))
+            self.add_info("Value: {}\n".format(self.sim.casts[name]))
+            try:
+                val = self.sim.casts[name].split(" ")
+                val = [x for x in val if x]
+                r = int(val[0])
+                g = int(val[1])
+                b = int(val[2])
+            except:
+                r, g, b = 0, 0, 0
+            hl = "<font bg=\"#{:02x}{:02x}{:02x}\">        </font>".\
+                format(r, g, b)
+            self.add_info("  " + hl + "\n")
+            self.add_info("  " + hl + "\n\n")
             # search for objects
             self.add_info("<b>Applied for</b>:\n")
             for idx, obj in enumerate(self.sim.objects):

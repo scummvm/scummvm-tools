@@ -85,6 +85,7 @@ class ScrObject:
         self.idx = idx
         self.name = name
         self.acts = None
+        self.cast = None
 
 class MsgObject:
     def __init__(self, idx, wav, arg1, arg2, arg3):
@@ -366,10 +367,20 @@ class Engine:
             self.casts = ini["all"]
             self.castsord = ini["__order__"]["all"]
             f.close()
+
         # bind casts to objects
-        for cast in self.castsord:
-            #print(cast)
-            pass
+        for obj in self.objects:
+            if obj.name in self.casts:
+                # parse color
+                try:
+                    val = self.casts[obj.name].split(" ")
+                    val = [x for x in val if x]
+                    r = int(val[0])
+                    g = int(val[1])
+                    b = int(val[2])
+                except:
+                    r, g, b = 255, 255, 255
+                obj.cast = (r, g, b)
             
     def load_dialogs(self):
         self.msgs = []

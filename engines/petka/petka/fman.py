@@ -63,7 +63,7 @@ class FileManager:
                 self.strtable[fname] = (len(self.strfd),) + index_table[idx]
             else:
                 if len(fname) > 0:
-                    raise EngineError("Extra file record \"{}\" in \"{}\"".\
+                    print("DEBUG:Extra file record \"{}\" in \"{}\"".\
                         format(fname, name))
         # add file descriptor
         self.strfd.append((f, name, tag))
