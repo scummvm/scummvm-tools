@@ -72,10 +72,12 @@ OPCODES = {
 
 DLGOPS = {
     1:  ("BREAK",       0),
-    2:  ("MENU",        2),
+    2:  ("MENU",        1),
+    3:  ("GOTO",        3),
+    4:  ("MENURET",     4),
     6:  ("RETURN",      0),
-    7:  ("PLAY",        1),
-    8:  ("CIRCLE",      3),
+    7:  ("PLAY",        5),
+    8:  ("CIRCLE",      6),
 }
 
 class ScrObject:

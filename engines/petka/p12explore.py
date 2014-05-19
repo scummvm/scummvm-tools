@@ -1302,11 +1302,58 @@ class App(tkinter.Frame):
                 for didx, dlg in enumerate(act.dlgs):
                     self.add_info("    {}) <i>0x{:X} 0x{:X}</i>, ops: {}\n".\
                         format(didx, dlg.arg1, dlg.arg2, len(dlg.ops)))
+                    # scan for used adreses
+                    usedadr = []
+                    for op in dlg.ops:
+                        if op.opcode == 0x3 or \
+                            op.opcode == 0x4: # GOTO or MENURET
+                            if op.ref not in usedadr:
+                                usedadr.append(op.ref)
+                    if len(usedadr) > 0:
+                        usedadr.append(dlg.op_start)
+                    usedmenu = {}
                     for oidx, op in enumerate(dlg.ops):
                         cmt = ""
                         opref = "0x{:X}".format(op.ref)
                         opcode = fmt_dlgop(op.opcode)
-                        if op.opcode == 0x7:
+                        if op.pos in usedadr:
+                            self.add_info("      <i>label_{:X}:</i>\n".format(
+                                op.pos))
+                        if op.opcode == 2 or op.opcode == 8: # MENU or CIRCLE
+                            cmt = " / select "
+                            doarr = []
+                            docurr = []
+                            sellen = op.ref % 0x100
+                            skiptobrk = False
+                            menuactstart = None
+                            for oidx2, op2 in enumerate(dlg.ops[oidx + 1:]):
+                                if op2.opcode == 0x1: # BREAK
+                                    doarr.append(docurr)
+                                    skiptobrk = False
+                                    if len(doarr) == sellen:
+                                        menuactstart = oidx2 + oidx + 2
+                                        break
+                                    docurr = []
+                                elif op2.opcode == 0x7 and not skiptobrk: # PLAY
+                                    docurr.append(self.fmt_hl_msg(op2.ref))
+                                else:
+                                    docurr = ["complex"]
+                            if len(doarr) < sellen:
+                                cmt = " / {} select broken, required={}, "\
+                                    "got={}".format(opcode, sellen, len(doarr))
+                            else:
+                                cmt += ",".join(["+".join(x) for x in doarr])
+                            if menuactstart is not None:
+                                for oidx2, op2 in enumerate(dlg.ops[\
+                                        menuactstart:menuactstart + sellen]):
+                                    usedmenu[op2.pos] = (op.pos, oidx2)
+                        elif op.opcode == 0x3 or \
+                            op.opcode == 0x4: # GOTO or MENURET
+                            opref = "<i>label_{:X}</i>".format(op.ref)
+                            if op.pos in usedmenu:
+                                cmt = " / menu=<i>label_{:X}</i>, case=0x{:}".\
+                                    format(*usedmenu[op.pos])
+                        elif op.opcode == 0x7:
                             opcode = "PLAY"
                             if op.msg:
                                 opref = self.fmt_hl_msg(op.ref)
@@ -1314,32 +1361,9 @@ class App(tkinter.Frame):
                                 cmt = " / obj={}, msg={}".\
                                     format(objref, 
                                         self.fmt_hl_msg(op.ref, True))
-                        elif op.opcode == 2 or op.opcode == 8: # MENU or CIRCLE
-                            cmt = " / select "
-                            doarr = []
-                            docurr = []
-                            sellen = op.ref % 0x100
-                            skiptobrk = False
-                            for op2 in dlg.ops[oidx + 1:]:
-                                if op2.opcode == 0x1: # BREAK
-                                    doarr.append(docurr)
-                                    skiptobrk = False
-                                    if len(doarr) == sellen:
-                                        break
-                                    docurr = []
-                                elif op2.opcode == 0x7 and not skiptobrk: # PLAY
-                                    docurr.append(self.fmt_hl_msg(op2.ref))
-                                else:
-                                    docurr = ["complex"]
-                                    
-                                    
-                            if len(doarr) < sellen:
-                                cmt = " / {} select broken, required={}, "\
-                                    "got={}".format(opcode, sellen, len(doarr))
-                            else:
-                                cmt += ",".join(["+".join(x) for x in doarr])
-                        self.add_info("      <i>{:04X}:</i> {} 0x{:X} {}{}\n".\
-                            format(op.pos, opcode, op.arg, opref, cmt))
+
+                        self.add_info("        {} 0x{:X} {}{}\n".\
+                            format(opcode, op.arg, opref, cmt))
 
             def usedby(lst):
                 for idx, rec in enumerate(lst):
