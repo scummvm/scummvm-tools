@@ -21,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2f 2014-05-16"
+VERSION = "v0.2g 2014-05-16"
 
 def hlesc(value):
     if value is None:
@@ -1309,17 +1309,17 @@ class App(tkinter.Frame):
                                 cmt = " / obj={}, msg={}".\
                                     format(objref, 
                                         self.fmt_hl_msg(op.ref, True))
-                        if op.opcode == 8:
-                            cmt = " / select from "
+                        elif op.opcode == 2 or op.opcode == 8: # MENU or CIRCLE
+                            cmt = " / select "
                             doarr = []
                             docurr = []
+                            sellen = op.ref % 0x100
                             skiptobrk = False
                             for op2 in dlg.ops[oidx + 1:]:
-                                #cmt += fmt_dlgop(op2.opcode) + " "
                                 if op2.opcode == 0x1: # BREAK
                                     doarr.append(docurr)
                                     skiptobrk = False
-                                    if len(doarr) == op.ref:
+                                    if len(doarr) == sellen:
                                         break
                                     docurr = []
                                 elif op2.opcode == 0x7 and not skiptobrk: # PLAY
@@ -1328,12 +1328,13 @@ class App(tkinter.Frame):
                                     docurr = ["complex"]
                                     
                                     
-                            if len(doarr) < op.ref:
-                                cmt = " / circle select broken, required={}, "\
-                                    "got={}".format(op.ref, len(doarr))
-                            cmt += ",".join(["+".join(x) for x in doarr])
-                        self.add_info("      {} 0x{:X} {}{}\n".\
-                            format(opcode, op.arg, opref, cmt))
+                            if len(doarr) < sellen:
+                                cmt = " / {} select broken, required={}, "\
+                                    "got={}".format(opcode, sellen, len(doarr))
+                            else:
+                                cmt += ",".join(["+".join(x) for x in doarr])
+                        self.add_info("      <i>{:04X}:</i> {} 0x{:X} {}{}\n".\
+                            format(op.pos, opcode, op.arg, opref, cmt))
 
             def usedby(lst):
                 for idx, rec in enumerate(lst):

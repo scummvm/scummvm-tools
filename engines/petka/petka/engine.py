@@ -72,6 +72,7 @@ OPCODES = {
 
 DLGOPS = {
     1:  ("BREAK",       0),
+    2:  ("MENU",        2),
     6:  ("RETURN",      0),
     7:  ("PLAY",        1),
     8:  ("CIRCLE",      3),
@@ -117,11 +118,12 @@ class DlgObject:
         self.ops = None
 
 class DlgOpObject:
-    def __init__(self, opcode, arg, ref):
+    def __init__(self, opcode, arg, ref, pos):
         self.opcode = opcode
         self.arg = arg
         self.ref = ref
         self.msg = None
+        self.pos = pos
         
 class Engine:
     def __init__(self):
@@ -437,10 +439,10 @@ class Engine:
                             act.dlgs.append(dlg)
                 temp = f.read(4)
                 num_ops = struct.unpack_from("<I", temp)[0]
-                for i in range(num_ops):
+                for oidx, i in enumerate(range(num_ops)):
                     temp = f.read(4)
                     ref, arg, code  = struct.unpack_from("<HBB", temp)
-                    dlgop = DlgOpObject(code, arg, ref)
+                    dlgop = DlgOpObject(code, arg, ref, oidx)
                     if ref < len(self.msgs):
                         dlgop.msg = self.msgs[ref]
                     self.dlgops.append(dlgop)
