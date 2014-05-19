@@ -1203,7 +1203,7 @@ class App(tkinter.Frame):
             oplst = {}
             # objects tan use this objects in TALK opcode
             wasmsg = False
-            for obj2 in self.sim.objects:
+            for obj2 in self.sim.objects + self.sim.scenes:
                 if obj2.idx == rec.idx: continue
                 for idx, (act_op, act_status, act_ref, ops) in \
                         enumerate(obj2.acts):
@@ -1220,10 +1220,10 @@ class App(tkinter.Frame):
                 if k not in oplst: continue
                 self.add_info("\n<b>Used in " + fmt_opcode(k) + "</b>:\n")
                 for oid, htp, hid in oplst[k]:
-                    self.add_info("  " + self.fmt_hl_obj(oid) + 
+                    self.add_info("  " + self.fmt_hl_obj_scene(oid) + 
                       " on " + fmt_opcode(htp) + 
                       " #{}".format(hid) + fmt_cmt(" // " + 
-                      self.fmt_hl_obj(oid, True)) + "\n")
+                      self.fmt_hl_obj_scene(oid, True)) + "\n")
 
     def path_std_items(self, path, level, guiname, guiitem, lst, lst_idx, 
             lbmode, cb):
