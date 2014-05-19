@@ -1200,23 +1200,30 @@ class App(tkinter.Frame):
                         wasmsg = True
                     self.add_info("  " + self.fmt_hl_msg(msg.idx, True) + "\n")
 
+            oplst = {}
             # objects tan use this objects in TALK opcode
             wasmsg = False
             for obj2 in self.sim.objects:
+                if obj2.idx == rec.idx: continue
                 for idx, (act_op, act_status, act_ref, ops) in \
                         enumerate(obj2.acts):
                     for oidx, op in enumerate(ops):
-                        if op[1] == 0xA and op[0] == rec.idx: # TALK
-                            if not wasmsg:
-                                self.add_info("\n<b>Used in TALK</b>:\n")
-                                wasmsg = True
-                            self.add_info("  " + self.fmt_hl_obj(obj2.idx) + 
-                              " on " + fmt_opcode(act_op) + 
-                              " #{}".format(idx) + fmt_cmt(" // " + 
-                              self.fmt_hl_obj(obj2.idx, True)) + "\n")
-                            #print(op)
-                            #print()
-            
+                        if op[0] == rec.idx:
+                            arr = oplst.get(op[1], [])
+                            arr.append((obj2.idx, act_op, idx))
+                            oplst[op[1]] = arr
+                            break
+
+            klst = list(petka.OPCODES.keys())
+            klst.sort()
+            for k in klst:
+                if k not in oplst: continue
+                self.add_info("\n<b>Used in " + fmt_opcode(k) + "</b>:\n")
+                for oid, htp, hid in oplst[k]:
+                    self.add_info("  " + self.fmt_hl_obj(oid) + 
+                      " on " + fmt_opcode(htp) + 
+                      " #{}".format(hid) + fmt_cmt(" // " + 
+                      self.fmt_hl_obj(oid, True)) + "\n")
 
     def path_std_items(self, path, level, guiname, guiitem, lst, lst_idx, 
             lbmode, cb):
