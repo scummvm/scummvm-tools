@@ -29,14 +29,18 @@ def hlesc(value):
     return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")
 
 def fmt_opcode(opcode):
-    return petka.OPCODES.get(opcode, ["OP{:04X}".format(opcode)])[0]
+    return petka.OPCODES.get(opcode, ["<font color=\"red\">OP{:04X}</font>".\
+        format(opcode)])[0]
 
 def fmt_dlgop(opcode):
-    return petka.DLGOPS.get(opcode, ["OP{:02X}".format(opcode)])[0]
+    return petka.DLGOPS.get(opcode, ["<font color=\"red\">OP{:02X}</font>".\
+        format(opcode)])[0]
 
 def fmt_hl(loc, desc):
     return "<a href=\"{}\">{}</a>".format(loc, desc)
 
+def fmt_cmt(cmt):
+    return "<font color=\"#606060\">{}</font>".format(cmt)
 
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager:
@@ -57,6 +61,7 @@ class HyperlinkManager:
 
     def reset(self):
     	self.links = {}
+    	self.colors = []
 
     def add(self, action):
         # add an action to the manager.  returns tags to use in
@@ -64,6 +69,14 @@ class HyperlinkManager:
         tag = "hyper-{}".format(len(self.links))
         self.links[tag] = action
         return "hyper", tag
+
+    def color(self, color):
+        tag = "color-{}".format(color)
+        if tag not in self.colors:
+            self.colors.append(tag)
+            self.text.tag_config(tag, foreground = color)
+            self.text.tag_raise("hyper")
+        return (tag,)
 
     def _enter(self, event):
         self.text.config(cursor = "hand2")
@@ -553,7 +566,7 @@ class App(tkinter.Frame):
                 if ch == ">":
                     if len(curr_text) > 0:                    
                         self.text_view.insert(tkinter.INSERT, curr_text, \
-                            tuple([x for x in tags for x in x]))
+                            tuple(reversed([x for x in tags for x in x])))
                     if curr_tag[:7] == "a href=":
                         ref = curr_tag[7:]
                         if ref[:1] == "\"":
@@ -565,6 +578,13 @@ class App(tkinter.Frame):
                                 return self.open_path(path)
                             return cb
                         tags.append(self.text_hl.add(make_cb(ref)))
+                    elif curr_tag[:11] == "font color=":
+                        ref = curr_tag[11:]
+                        if ref[:1] == "\"":
+                            ref = ref[1:]
+                        if ref[-1:] == "\"":
+                            ref = ref[:-1]
+                        tags.append(self.text_hl.color(ref))
                     elif curr_tag == "b":
                         tags.append(["bold"])
                     elif curr_tag == "i":
@@ -579,7 +599,7 @@ class App(tkinter.Frame):
                     curr_tag += ch
         if len(curr_text) > 0: 
             self.text_view.insert(tkinter.INSERT, curr_text, \
-                tuple([x for x in tags for x in x]))
+                tuple(reversed([x for x in tags for x in x])))
         
     def insert_lb_act(self, name, act, key = None):
         if key is not None:
@@ -1074,7 +1094,8 @@ class App(tkinter.Frame):
                             msg += "-1"
                         else:
                             msg += "0x{:X}".format(arg)
-                    self.add_info(msg + " / {}\n".format(hlesc(ref[0].name)))
+                    self.add_info(msg + fmt_cmt(" // " + self.fmt_hl_obj(
+                        ref[0].idx, True)) + "\n")
 
             resused = []
             dlgused = []
@@ -1087,7 +1108,8 @@ class App(tkinter.Frame):
                         act_ref = "THIS"
                     else:
                         if act_ref in self.sim.obj_idx:
-                            cmt = " / " + self.fmt_hl_obj(act_ref, True)
+                            cmt = fmt_cmt(" // " + self.fmt_hl_obj(act_ref, 
+                                True))
                             act_ref = self.fmt_hl_obj(act_ref)
                         else:
                             act_ref = "0x{:X}".format(act_ref)
@@ -1101,7 +1123,8 @@ class App(tkinter.Frame):
                         self.add_info("THIS")
                     else:
                         self.add_info(self.fmt_hl_obj_scene(op[0]))
-                        cmt = " / " + self.fmt_hl_obj_scene(op[0], True)
+                        cmt = fmt_cmt(" // " + self.fmt_hl_obj_scene(op[0], 
+                            True))
                     msg = ""
                     if op[2] != 0xffff:
                         if op[2] not in resused and op[2] in self.sim.res:
@@ -1296,9 +1319,10 @@ class App(tkinter.Frame):
             self.add_info("<b>Dialog handlers<b>: {}\n".format(len(grp.acts)))
             for idx, act in enumerate(grp.acts):
                 self.add_info("  {}) <u>on {} {} 0x{:X} 0x{:X}</u>, dlgs: "\
-                    "{} / {}\n".format(idx, fmt_opcode(act.opcode), 
+                    "{}{}\n".format(idx, fmt_opcode(act.opcode), 
                         self.fmt_hl_obj(act.ref), act.arg1, act.arg2, \
-                        len(act.dlgs), self.fmt_hl_obj(act.ref, True)))
+                        len(act.dlgs), fmt_cmt(" // " + 
+                            self.fmt_hl_obj(act.ref, True))))
                 for didx, dlg in enumerate(act.dlgs):
                     self.add_info("    {}) <i>0x{:X} 0x{:X}</i>, ops: {}\n".\
                         format(didx, dlg.arg1, dlg.arg2, len(dlg.ops)))
@@ -1323,11 +1347,13 @@ class App(tkinter.Frame):
                         if op.opcode == 0x1: # BREAK
                             if op.pos in usedcase:
                                 if len(usedadr) > 0:
-                                    cmt = " / end select <i>label_{:X}</i>, "\
-                                        "case=0x{:}".format(*usedcase[op.pos])
+                                    cmt = fmt_cmt(" // end select <i>"\
+                                        "label_{:X}</i>, case=0x{:}"\
+                                        "".format(*usedcase[op.pos]))
                                 else:
-                                    cmt = " / end select case=0x{:}".\
-                                        format(usedcase[op.pos][1])
+                                    cmt = fmt_cmt(" // end "\
+                                        "select case=0x{:}".\
+                                        format(usedcase[op.pos][1]))
                         elif op.opcode == 0x2 or op.opcode == 0x8: # MENU or CIRCLE
                             cmt = " / select "
                             doarr = []
@@ -1350,10 +1376,12 @@ class App(tkinter.Frame):
                                 else:
                                     docurr = ["complex"]
                             if len(doarr) < sellen:
-                                cmt = " / {} select broken, required={}, "\
-                                    "got={}".format(opcode, sellen, len(doarr))
+                                cmt = fmt_cmt(" // {} select broken, "\
+                                    "required={}, got={}".\
+                                    format(opcode, sellen, len(doarr)))
                             else:
                                 cmt += ",".join(["+".join(x) for x in doarr])
+                            cmt = fmt_cmt(cmt)
                             if menuactstart is not None:
                                 for oidx2, op2 in enumerate(dlg.ops[\
                                         menuactstart:menuactstart + sellen]):
@@ -1362,19 +1390,25 @@ class App(tkinter.Frame):
                             op.opcode == 0x4: # GOTO or MENURET
                             opref = "<i>label_{:X}</i>".format(op.ref)
                             if op.pos in usedmenu:
-                                cmt = " / action menu=<i>label_{:X}</i>, "\
-                                    "case=0x{:}".format(*usedmenu[op.pos])
+                                cmt = fmt_cmt(" // action menu=<i>"\
+                                    "label_{:X}</i>, case=0x{:}".\
+                                    format(*usedmenu[op.pos]))
                         elif op.opcode == 0x7:
                             opcode = "PLAY"
                             if op.msg:
                                 opref = self.fmt_hl_msg(op.ref)
                                 objref = self.fmt_hl_obj(op.msg.obj.idx)
-                                cmt = " / obj={}, msg={}".\
+                                cmt = fmt_cmt(" // obj={}, msg={}".\
                                     format(objref, 
-                                        self.fmt_hl_msg(op.ref, True))
-
-                        self.add_info("        {} 0x{:X} {}{}\n".\
-                            format(opcode, op.arg, opref, cmt))
+                                        self.fmt_hl_msg(op.ref, True)))
+                        
+                        oparg = " 0x{:X} ".format(op.arg)
+                        if (op.opcode == 0x1 or op.opcode == 0x6) and \
+                                op.arg == 0 and op.ref == 0:
+                            oparg = ""
+                            opref = ""
+                        self.add_info("        {}{}{}{}\n".\
+                            format(opcode, oparg, opref, cmt))
 
             def usedby(lst):
                 for idx, rec in enumerate(lst):
