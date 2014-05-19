@@ -19,6 +19,7 @@
 
 Прочая информация
 
+ * <a href="/help/cmdline">Аргументы коммандной строки</a>
  * <a href="/help/support">Информация для подержки</a>
  * <a href="/help/info">Справочники</a>
  * <a href="/help/about">О программе</a>

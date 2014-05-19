@@ -98,7 +98,7 @@ class App(tkinter.Frame):
         else:
             self.app_path = __file__
         self.app_path = os.path.abspath(os.path.dirname(self.app_path))
-        self.start_path = "/about"
+        self.start_act = []
         # gui
         self.path_handler = {}
         self.curr_main = -1 # 0 - frame, 1 - canvas
@@ -199,7 +199,16 @@ class App(tkinter.Frame):
         self.path_handler["info"] = self.path_info
         
         self.update_after()
-        self.open_path(self.start_path)
+        repath = "/about"
+        for cmd, arg in self.start_act:
+            if cmd == "load":
+                self.open_data_from(arg)
+                repath = "/"
+            elif cmd == "open":
+                self.open_path(arg)
+                repath = ""
+        if repath:
+            self.open_path(repath)
 
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
@@ -1497,9 +1506,9 @@ def main():
     root = tkinter.Tk()
     app = App(master = root)
     if len(sys.argv) > 1:
-        app.open_data_from(sys.argv[1])
-    if len(sys.argv) > 2:
-        app.start_path = sys.argv[2]
+        app.start_act.append(["load", sys.argv[1]])
+    for arg in sys.argv[2:]:
+        app.start_act.append(["open", arg])
     app.mainloop()
 
     
