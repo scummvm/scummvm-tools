@@ -4,6 +4,7 @@
 
  * <a href="/help/changes">Что нового</a>
  * <a href="/help/faq">Часто задаваемые вопросы</a>
+ * <a href="/help/license">Лицензии</a>
 
 Отображаемые разделы
 
