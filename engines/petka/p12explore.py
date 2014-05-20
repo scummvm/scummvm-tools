@@ -1514,12 +1514,40 @@ class App(tkinter.Frame):
         if path[1] == "image":
             self.switch_view(1)
             self.main_image = tkinter.PhotoImage(file = "img/splash.gif")
-        else:
+        elif path[1] == "info":
             self.switch_view(0)
             self.clear_info()
             self.add_info("Information panel for {}\n".format(path))
             for i in range(100):
                 self.add_info("  Item {}\n".format(i))
+        elif path[1] == "translate":
+            self.switch_view(0)
+            self.clear_info()
+            self.add_info("Save translation template\n    ")
+            def savepot():
+                f = open("save_{}.pot".format(self.sim.curr_part), "wb")
+                try:
+                    def saveitem(msgid, msgstr, msgctx):
+                        if msgctx:
+                            f.write("msgctx \"{}\"\n".format(hlesc(msgctx)).\
+                                encode("UTF-8"))
+                        f.write("msgid \"{}\"\n".format(hlesc(msgid)).\
+                            encode("UTF-8"))
+                        f.write("msgstr \"{}\"\n\n".format(hlesc(msgstr)).\
+                            encode("UTF-8"))
+                    # objects
+                    for obj in self.sim.objects:
+                        saveitem(obj.name, obj.name, "obj_{}".format(obj.idx))
+                    for scn in self.sim.scenes:
+                        saveitem(scn.name, scn.name, "scene_{}".format(scn.idx))
+                    
+                finally:
+                    f.close()
+            
+            btn = ttk.Button(self.text_view, text = "Save .POT", \
+                command = savepot)
+            self.text_view.window_create(tkinter.INSERT, window = btn)
+            
 
     def path_about(self, path):
         self.switch_view(0)
