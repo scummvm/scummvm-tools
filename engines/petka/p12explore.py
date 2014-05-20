@@ -9,6 +9,7 @@ from tkinter import ttk, font, filedialog, messagebox
 from idlelib.WidgetRedirector import WidgetRedirector
 import traceback
 
+# Image processing
 try:
     from PIL import Image
 except ImportError:
@@ -18,15 +19,24 @@ try:
 except ImportError:
     ImageTk = None
 
+# Translations
+try:
+    import polib
+except ImportError:
+    polib = None
+
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2k 2014-05-16"
+VERSION = "v0.2l 2014-05-20"
 
 def hlesc(value):
     if value is None:
         return "None"
     return value.replace("\\", "\\\\").replace("<", "\\<").replace(">", "\\>")
+
+def cesc(value):
+    return value.replace("\\", "\\\\").replace("\"", "\\\"")
 
 def fmt_opcode(opcode):
     return petka.OPCODES.get(opcode, ["<font color=\"red\">OP{:04X}</font>".\
@@ -142,6 +152,9 @@ class App(tkinter.Frame):
         self.need_update = False
         self.canv_view_fact = 1
         self.main_image = tkinter.PhotoImage(width = 1, height = 1)
+        # translation
+        self.tran = None
+        # add on_load handler
         self.after_idle(self.on_first_display)
         
     def create_widgets(self):
@@ -230,6 +243,8 @@ class App(tkinter.Frame):
             if cmd == "load":
                 self.open_data_from(arg)
                 repath = "/"
+            elif cmd == "tran":
+                self.open_tran_from(arg)
             elif cmd == "open":
                 self.open_path(arg)
                 repath = ""
@@ -300,6 +315,17 @@ class App(tkinter.Frame):
         self.menunav.add_command(
                 command = lambda: self.open_path("/hist"),
                 label = "History")
+
+        if polib:
+            menutran = tkinter.Menu(self.menubar, tearoff = 0)
+            self.menubar.add_cascade(menu = menutran,
+                    label = "Translation")
+            menutran.add_command(
+                    command = self.on_tran_save,
+                    label = "Save template (.pot)")
+            menutran.add_command(
+                    command = self.on_tran_load,
+                    label = "Load translation (.po)")
 
         self.menuhelp = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menuhelp,
@@ -686,28 +712,38 @@ class App(tkinter.Frame):
             self.hist.append(np)
             self.open_path(np[0], False)
 
-    def fmt_hl_rec(self, lst_idx, pref, rec_id, full = False):
+    def _t(self, value, tp):
+        if not self.tran: return value
+        if tp in self.tran:
+            if value in self.tran[tp]:
+                return self.tran[tp][value]
+        if value in self.tran["_"]:
+            return self.tran["_"][value]
+        return value
+
+    def fmt_hl_rec(self, lst_idx, pref, rec_id, full, tt):
         if rec_id in lst_idx:
             fmt = fmt_hl("/{}/{}".format(pref, rec_id), str(rec_id))
             if full:
                 try:
                     fmt += " (0x{:X}) - {}".format(rec_id, 
-                        hlesc(lst_idx[rec_id].name))
+                        hlesc(self._t(lst_idx[rec_id].name, tt)))
                 except:
                     fmt += " (0x{:X})".format(rec_id)
             return fmt
         return "{} (0x{:X})".format(rec_id, rec_id)
         
     def fmt_hl_obj(self, obj_id, full = False):
-        return self.fmt_hl_rec(self.sim.obj_idx, "objs", obj_id, full)
+        return self.fmt_hl_rec(self.sim.obj_idx, "objs", obj_id, full, "obj")
         
     def fmt_hl_scene(self, scn_id, full = False):
-        return self.fmt_hl_rec(self.sim.scn_idx, "scenes", scn_id, full)
+        return self.fmt_hl_rec(self.sim.scn_idx, "scenes", scn_id, full, "scn")
 
     def fmt_hl_obj_scene(self, rec_id, full = False):
         if rec_id in self.sim.obj_idx:
-            return self.fmt_hl_rec(self.sim.obj_idx, "objs", rec_id, full)
-        return self.fmt_hl_rec(self.sim.scn_idx, "scenes", rec_id, full)
+            return self.fmt_hl_rec(self.sim.obj_idx, "objs", rec_id,
+                full, "obj")
+        return self.fmt_hl_rec(self.sim.scn_idx, "scenes", rec_id, full, "scn")
         
     def find_path_name(self, key):
         for name_id, name in enumerate(self.sim.namesord):
@@ -731,10 +767,10 @@ class App(tkinter.Frame):
         msg_idx = {}
         if msg_id < len(self.sim.msgs):
             msg_idx[msg_id] = self.sim.msgs[msg_id]
-        return self.fmt_hl_rec(msg_idx, "msgs", msg_id, full)
+        return self.fmt_hl_rec(msg_idx, "msgs", msg_id, full, "msg")
 
     def fmt_hl_dlg(self, grp_id, full = False):
-        return self.fmt_hl_rec(self.sim.dlg_idx, "dlgs", grp_id, full)
+        return self.fmt_hl_rec(self.sim.dlg_idx, "dlgs", grp_id, full, "dlg")
 
     def path_info_outline(self):
         if self.sim is None:
@@ -1054,7 +1090,8 @@ class App(tkinter.Frame):
             else:
                 self.update_gui("Scenes ({})".format(len(lst)))
             for rec in lst:
-                self.insert_lb_act("{} - {}".format(rec.idx, rec.name), \
+                self.insert_lb_act("{} - {}".format(rec.idx, 
+                    self._t(rec.name, "obj" if isobj else "scn")),\
                     [self.curr_path[0], rec.idx], rec.idx)
         # change                
         rec = None
@@ -1078,16 +1115,28 @@ class App(tkinter.Frame):
             # record info
             self.add_info(("<b>Object</b>" if isobj \
                 else "<b>Scene</b>") + ":\n")
-            self.add_info("  Index:  {} (0x{:X})\n  Name:   {}\n".\
-                format(rec.idx, rec.idx, hlesc(rec.name)))
-            if rec.name in self.sim.names:
-                self.add_info("  " + fmt_hl(self.find_path_name(rec.name), 
-                    "Alias") + ":  {}\n".format(
-                        hlesc(self.sim.names[rec.name])))
-            if rec.name in self.sim.invntr:
-                self.add_info("  " + fmt_hl(self.find_path_invntr(rec.name), 
-                    "Invntr") + ": {}\n".format(
-                        hlesc(self.sim.invntr[rec.name])))
+            self.add_info("  Index:     {} (0x{:X})\n".format(rec.idx, rec.idx))
+            self.add_info("  Name:      {}\n".format(hlesc(rec.name)))
+            if self.tran:
+                self.add_info("  Name(t):   {}\n".\
+                    format(hlesc(self._t(rec.name, "obj" if isobj else "scn"))))
+                if rec.name in self.sim.names:
+                    self.add_info("  " + fmt_hl(self.find_path_name(rec.name), 
+                        "Alias") + "(t):  {}\n".format(
+                            hlesc(self._t(self.sim.names[rec.name], "obj"))))
+                if rec.name in self.sim.invntr:
+                    self.add_info("  " + fmt_hl(self.find_path_invntr(rec.name), 
+                        "Invntr") + "(t): {}\n".format(
+                            hlesc(self._t(self.sim.invntr[rec.name], "inv"))))
+            else:
+                if rec.name in self.sim.names:
+                    self.add_info("  " + fmt_hl(self.find_path_name(rec.name), 
+                        "Alias") + ":     {}\n".format(
+                            hlesc(self.sim.names[rec.name])))
+                if rec.name in self.sim.invntr:
+                    self.add_info("  " + fmt_hl(self.find_path_invntr(rec.name), 
+                        "Invntr") + ":    {}\n".format(
+                            hlesc(self.sim.invntr[rec.name])))
             if rec.cast:
                 bg = 0
                 r = rec.cast[0] 
@@ -1096,7 +1145,7 @@ class App(tkinter.Frame):
                 if (r + g * 2 + b) // 3 < 160: 
                     bg = 255
                 self.add_info("  " + fmt_hl(self.find_path_cast(rec.name), 
-                    "Cast") + ":   <font bg=\"#{bg:02x}{bg:02x}{bg:02x}\">"
+                    "Cast") + ":      <font bg=\"#{bg:02x}{bg:02x}{bg:02x}\">"
                     "<font color=\"#{r:02x}{g:02x}{b:02x}\">"\
                     "<b> #{r:02x}{g:02x}{b:02x} </b></font></font>\n".\
                     format(bg = bg, r = r, g = g, b = b))
@@ -1225,15 +1274,16 @@ class App(tkinter.Frame):
                       " #{}".format(hid) + fmt_cmt(" // " + 
                       self.fmt_hl_obj_scene(oid, True)) + "\n")
 
-    def path_std_items(self, path, level, guiname, guiitem, lst, lst_idx, 
+    def path_std_items(self, path, level, guiname, guiitem, tt, lst, lst_idx, 
             lbmode, cb):
         self.switch_view(0)
         if self.last_path[:level] != path[:level]:
             self.update_gui("{} ({})".format(guiname, len(lst)))
             for idx, name in enumerate(lst_idx):
-                lb = name
+                lb = self._t(name, tt)
                 if lbmode == 1:
-                    lb = "{} - {}".format(name, lst[name])
+                    print(name, )
+                    lb = "{} - {}".format(name, self._t(lst[name], tt))
                 self.insert_lb_act(lb, path[:level] + tuple([idx]), idx)
         # change
         name = None
@@ -1258,29 +1308,41 @@ class App(tkinter.Frame):
         if self.sim is None:
             return self.path_default([])
         def info(name):
-            self.add_info("<b>Alias</b>: {}\n".format(hlesc(name)))
-            self.add_info("Value: {}\n\n".format(self.sim.names[name]))
+            self.add_info("<b>Alias</b>:    {}\n".format(hlesc(name)))
+            if self.tran:
+                self.add_info("<b>Alias</b>(t): {}\n".\
+                    format(hlesc(self._t(name, "obj"))))
+            self.add_info("Value:    {}\n".format(self.sim.names[name]))
+            if self.tran:
+                self.add_info("Value(t): {}\n".\
+                    format(hlesc(self._t(self.sim.names[name], "name"))))
             # search for objects
-            self.add_info("<b>Applied for</b>:\n")
+            self.add_info("\n<b>Applied for</b>:\n")
             for obj in self.sim.objects:
                 if obj.name == name:
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
-        return self.path_std_items(path, 1, "Names", "name", self.sim.names, 
-            self.sim.namesord, 0, info)
+        return self.path_std_items(path, 1, "Names", "name", "obj", 
+            self.sim.names, self.sim.namesord, 0, info)
                             
     def path_invntr(self, path):
         if self.sim is None:
             return self.path_default([])
         def info(name):
-            self.add_info("<b>Invntr</b>: {}\n".format(hlesc(name)))
-            self.add_info("{}\n\n".format(self.sim.invntr[name]))
+            self.add_info("<b>Invntr</b>:    {}\n".format(hlesc(name)))
+            if self.tran:
+                self.add_info("<b>Invntr</b>(t): {}\n".\
+                    format(hlesc(self._t(name, "obj"))))
+            self.add_info("{}\n\n".format(hlesc(self.sim.invntr[name])))
+            if self.tran:
+                self.add_info("<i>Translated</i>\n{}\n\n".\
+                    format(hlesc(self._t(self.sim.invntr[name], "inv"))))
             # search for objects
             self.add_info("<b>Applied for</b>:\n")
             for obj in self.sim.objects:
                 if obj.name == name:
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
-        return self.path_std_items(path, 1, "Invntr", "invntr", self.sim.invntr, 
-            self.sim.invntrord, 0, info)
+        return self.path_std_items(path, 1, "Invntr", "invntr", "obj", 
+            self.sim.invntr, self.sim.invntrord, 0, info)
 
 
     def path_casts(self, path):
@@ -1306,8 +1368,8 @@ class App(tkinter.Frame):
             for idx, obj in enumerate(self.sim.objects):
                 if obj.name == name:
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
-        return self.path_std_items(path, 1, "Cast", "cast", self.sim.casts, 
-            self.sim.castsord, 0, info)
+        return self.path_std_items(path, 1, "Cast", "cast", "obj", 
+            self.sim.casts, self.sim.castsord, 0, info)
 
     def path_msgs(self, path):
         if self.sim is None:
@@ -1348,7 +1410,9 @@ class App(tkinter.Frame):
             self.add_info("  arg2:   {} (0x{:X})\n".format(msg.arg2, msg.arg2))
             self.add_info("  arg3:   {} (0x{:X})\n".format(msg.arg3, msg.arg3))
             self.add_info("\n{}\n".format(hlesc(msg.name)))
-
+            if self.tran:
+                self.add_info("\n<i>Translated:</i>\n{}\n".\
+                    format(hlesc(self._t(msg.name, "msg"))))
             self.add_info("\n<b>Used by dialog groups</b>:\n")
             for grp in self.sim.dlgs:
                 for act in grp.acts:
@@ -1503,7 +1567,6 @@ class App(tkinter.Frame):
             usedby(self.sim.objects)
             self.add_info("\n<b>Used by scenes</b>:\n")
             usedby(self.sim.scenes)
-            
         
     def path_test(self, path):
         self.update_gui("Test {}".format(path[1]))
@@ -1520,34 +1583,6 @@ class App(tkinter.Frame):
             self.add_info("Information panel for {}\n".format(path))
             for i in range(100):
                 self.add_info("  Item {}\n".format(i))
-        elif path[1] == "translate":
-            self.switch_view(0)
-            self.clear_info()
-            self.add_info("Save translation template\n    ")
-            def savepot():
-                f = open("save_{}.pot".format(self.sim.curr_part), "wb")
-                try:
-                    def saveitem(msgid, msgstr, msgctx):
-                        if msgctx:
-                            f.write("msgctx \"{}\"\n".format(hlesc(msgctx)).\
-                                encode("UTF-8"))
-                        f.write("msgid \"{}\"\n".format(hlesc(msgid)).\
-                            encode("UTF-8"))
-                        f.write("msgstr \"{}\"\n\n".format(hlesc(msgstr)).\
-                            encode("UTF-8"))
-                    # objects
-                    for obj in self.sim.objects:
-                        saveitem(obj.name, obj.name, "obj_{}".format(obj.idx))
-                    for scn in self.sim.scenes:
-                        saveitem(scn.name, scn.name, "scene_{}".format(scn.idx))
-                    
-                finally:
-                    f.close()
-            
-            btn = ttk.Button(self.text_view, text = "Save .POT", \
-                command = savepot)
-            self.text_view.window_create(tkinter.INSERT, window = btn)
-            
 
     def path_about(self, path):
         self.switch_view(0)
@@ -1572,10 +1607,20 @@ class App(tkinter.Frame):
             hlesc(self.app_path)))
         self.add_info("<b>Game folder</b>: {}\n".format(
             hlesc(self.last_fn)))
-        if self.sim is None:
-            self.add_info("<i>Engine not initialized</i>\n")
+        self.add_info("<b>Translation</b>: ")
+        if not polib:
+            self.add_info("<i><u>polib</u> not found</i>\n")
         else:
-            self.add_info("<i>Engine works</i>\n\n")
+            if not self.tran:
+                self.add_info("<i>no tranlation file</i>\n")
+            else:
+                self.add_info(hlesc(self.tran_fn) + "\n")
+                
+        self.add_info("<b>Engine</b>:      ")
+        if self.sim is None:
+            self.add_info("<i>not initialized</i>\n")
+        else:
+            self.add_info("<i>works</i>\n\n")
             self.add_info("  <b>Path</b>:    {}\n".format(
                 hlesc(self.sim.curr_path)))
             self.add_info("  <b>Speech</b>:  {}\n".format(
@@ -1689,10 +1734,10 @@ class App(tkinter.Frame):
             self.open_path("")
             self.clear_hist()
         
-        
     def open_data_from(self, folder):
         self.last_fn = folder
         try:
+            self.tran = None
             self.sim = petka.Engine()
             self.sim.load_data(folder, "cp1251")
             self.sim.open_part(0, 0)
@@ -1707,13 +1752,92 @@ class App(tkinter.Frame):
                 format(hlesc(folder), hlesc(traceback.format_exc())))
             self.clear_hist()
 
+    def on_tran_save(self):
+        # save dialog
+        fn = filedialog.asksaveasfilename(parent = self,
+            title = "Save translate template (.pot)",
+            filetypes = [('PO Template', ".pot"), ('all files', '.*')],
+            initialdir = os.path.abspath(os.curdir))
+        if not fn: return # save canceled
+        # save template
+        try:
+            po = polib.POFile()
+            po.metadata = {
+                'MIME-Version': '1.0',
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Content-Transfer-Encoding': '8bit',
+            }
+            used = []
+            def saveitem(text, cmt = None):
+                if text in used: return
+                used.append(text)
+                entry = polib.POEntry(
+                    msgid = text, msgstr = text, comment = cmt)
+                po.append(entry)                
+            for rec in self.sim.objects:
+                saveitem(rec.name, "obj_{}".format(rec.idx))
+            for rec in self.sim.scenes:
+                saveitem(rec.name, "scn_{}".format(rec.idx))
+            for idx, name in enumerate(self.sim.namesord):
+                saveitem(self.sim.names[name], 
+                    "name_{}, {}".format(idx, name))
+            for idx, name in enumerate(self.sim.invntrord):
+                saveitem(self.sim.invntr[name],
+                    "inv_{}, {}".format(idx, name))
+            for idx, msg in enumerate(self.sim.msgs):
+                saveitem(msg.name, 
+                    "msg_{}, {} - {}".format(idx, msg.obj.idx, msg.obj.name))
+            po.save(fn)
+        except:
+            self.switch_view(0)
+            self.clear_info()
+            self.add_info("Error saving \"{}\" \n\n{}".\
+                format(hlesc(fn), hlesc(traceback.format_exc())))
+
+    def on_tran_load(self):
+        ft = [\
+            ('PO files', '.po'),
+            ('all files', '.*')]
+        fn = filedialog.askopenfilename(parent = self, 
+            title = "Open translation for current part",
+            filetypes = ft,
+            initialdir = os.path.abspath(os.curdir))
+        if not fn: return
+        os.chdir(os.path.dirname(fn))
+        self.open_tran_from(fn)
+            
+    def open_tran_from(self, fn):
+        self.tran_fn = fn
+        try:
+            po = polib.pofile(fn)
+            self.tran = {"obj": {}, "scn": {}, "name": {}, "inv": {},
+              "msg": {}, "_": {}}
+            for tr in po.translated_entries():
+                if tr.comment:
+                    pref = tr.comment.split("_", 1)
+                    if pref[0] in self.tran:
+                        self.tran[pref[0]][tr.msgid] = tr.msgstr
+                    self.tran["_"][tr.msgid] = tr.msgstr
+        except:
+            self.switch_view(0)
+            self.clear_info()
+            self.add_info("Error opening \"{}\" \n\n{}".\
+                format(hlesc(fn), hlesc(traceback.format_exc())))
+
 def main():
     root = tkinter.Tk()
     app = App(master = root)
-    if len(sys.argv) > 1:
-        app.start_act.append(["load", sys.argv[1]])
-    for arg in sys.argv[2:]:
-        app.start_act.append(["open", arg])
+    argv = sys.argv[1:]
+    while len(argv) > 0:
+        if argv[0] == "-d": # open data
+            app.start_act.append(["load", argv[1]])
+            argv = argv[2:]
+        elif argv[0] == "-t": # open translation
+            app.start_act.append(["tran", argv[1]])
+            argv = argv[2:]
+        else:
+            app.start_act.append(["open", argv[0]])
+            argv = argv[1:]
     app.mainloop()
 
     
