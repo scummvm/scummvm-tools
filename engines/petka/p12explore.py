@@ -52,6 +52,15 @@ def fmt_hl(loc, desc):
 def fmt_cmt(cmt):
     return "<font color=\"#4d4d4d\">{}</font>".format(cmt)
 
+def fmt_arg(value):
+    if value < 10:
+        return "{}".format(value)
+    elif value == 0xffff:
+        return "-1"
+    else:
+        return "0x{:X}".format(value)
+    
+
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager:
     def __init__(self, text):
@@ -964,15 +973,14 @@ class App(tkinter.Frame):
             def usedby(lst):
                 for idx, rec in enumerate(lst):
                     ru = False
-                    for act_id, act_cond, act_arg, ops in rec.acts:
+                    for act in rec.acts:
                         if ru: break
-                        for op_id, op_code, op_res, op4, op5 in ops:
-                            if res_id == op_res:
+                        for op in ops:
+                            if res_id == op.op_arg1:
                                 self.add_info("  " + 
                                     self.fmt_hl_obj_scene(rec.idx, True) + "\n")
                                 ru = True
                                 break
-                            #print(op_id, op_code, op_res, op4, op5)
 
             self.add_info("\n\n<b>Used by objects</b>:\n")
             usedby(self.sim.objects)
@@ -1184,47 +1192,45 @@ class App(tkinter.Frame):
             resused = []
             dlgused = []
             self.add_info("\n<b>Handlers</b>: {}\n".format(len(rec.acts)))
-            for idx, (act_op, act_status, act_ref, ops) in enumerate(rec.acts):
-                msg = fmt_opcode(act_op)
+            for idx, act in enumerate(rec.acts):
+                msg = fmt_opcode(act.act_op)
                 cmt = ""
-                if act_status != 0xff or act_ref != 0xffff:
-                    if act_ref == rec.idx:
+                if act.act_status != 0xff or act.act_ref != 0xffff:
+                    act_ref = act.act_ref
+                    if act.act_ref == rec.idx:
                         act_ref = "THIS"
                     else:
-                        if act_ref in self.sim.obj_idx:
-                            cmt = fmt_cmt(" // " + self.fmt_hl_obj(act_ref, 
+                        if act.act_ref in self.sim.obj_idx:
+                            cmt = fmt_cmt(" // " + self.fmt_hl_obj(act.act_ref, 
                                 True))
-                            act_ref = self.fmt_hl_obj(act_ref)
+                            act_ref = self.fmt_hl_obj(act.act_ref)
                         else:
-                            act_ref = "0x{:X}".format(act_ref)
-                    msg += " 0x{:02X} {}".format(act_status, act_ref)
+                            act_ref = "0x{:X}".format(act.act_ref)
+                    msg += " 0x{:02X} {}".format(act.act_status, act_ref)
                 self.add_info("  {}) <u>on {}</u>, ops: {}{}\n".format(\
-                    idx, msg, len(ops), cmt))
-                for oidx, op in enumerate(ops):
-                    self.add_info("    {}) {} ".format(oidx, fmt_opcode(op[1])))
+                    idx, msg, len(act.ops), cmt))
+                for oidx, op in enumerate(act.ops):
+                    self.add_info("    {}) {} ".format(oidx, 
+                        fmt_opcode(op.op_code)))
                     cmt = ""
-                    if op[0] == rec.idx:
+                    if op.op_ref == rec.idx:
                         self.add_info("THIS")
                     else:
-                        self.add_info(self.fmt_hl_obj_scene(op[0]))
-                        cmt = fmt_cmt(" // " + self.fmt_hl_obj_scene(op[0], 
+                        self.add_info(self.fmt_hl_obj_scene(op.op_ref))
+                        cmt = fmt_cmt(" // " + self.fmt_hl_obj_scene(op.op_ref, 
                             True))
                     msg = ""
-                    if op[2] != 0xffff:
-                        if op[2] not in resused and op[2] in self.sim.res:
-                            resused.append(op[2])
-                    for arg in op[2:]:
-                        msg += " "
-                        if arg < 10:
-                            msg += "{}".format(arg)
-                        elif arg == 0xffff:
-                            msg += "-1"
-                        else:
-                            msg += "0x{:X}".format(arg)
+                    if op.op_arg1 != 0xffff:
+                        if op.op_arg1 not in resused and \
+                                op.op_arg1 in self.sim.res:
+                            resused.append(op.op_arg1)
+                    msg += " " + fmt_arg(op.op_arg1)
+                    msg += " " + fmt_arg(op.op_arg2)
+                    msg += " " + fmt_arg(op.op_arg3)
                     self.add_info("{}{}\n".format(msg, cmt))
-                    if op[1] == 0x11: # DIALOG
-                        if op[0] not in dlgused:
-                            dlgused.append(op[0])
+                    if op.op_code == 0x11: # DIALOG
+                        if op.op_ref not in dlgused:
+                            dlgused.append(op.op_ref)
                     
             if len(resused) > 0:
                 self.add_info("\n<b>Used resources</b>: {}\n".\
@@ -1254,13 +1260,13 @@ class App(tkinter.Frame):
             wasmsg = False
             for obj2 in self.sim.objects + self.sim.scenes:
                 if obj2.idx == rec.idx: continue
-                for idx, (act_op, act_status, act_ref, ops) in \
+                for idx, act in \
                         enumerate(obj2.acts):
-                    for oidx, op in enumerate(ops):
-                        if op[0] == rec.idx:
-                            arr = oplst.get(op[1], [])
-                            arr.append((obj2.idx, act_op, idx))
-                            oplst[op[1]] = arr
+                    for oidx, op in enumerate(act.ops):
+                        if op.op_ref == rec.idx:
+                            arr = oplst.get(op.op_code, [])
+                            arr.append((obj2.idx, act.act_op, idx))
+                            oplst[op.op_code] = arr
                             break
 
             klst = list(petka.OPCODES.keys())
@@ -1553,10 +1559,11 @@ class App(tkinter.Frame):
             def usedby(lst):
                 for idx, rec in enumerate(lst):
                     ru = False
-                    for act_id, act_cond, act_arg, ops in rec.acts:
+                    for act in rec.acts:
                         if ru: break
-                        for op_id, op_code, op_res, op4, op5 in ops:
-                            if op_code == 0x11 and op_id == grp.idx: # DIALOG 
+                        for op in act.ops:
+                            if op.op_code == 0x11 and \
+                                    op.op_ref == grp.idx: # DIALOG 
                                 self.add_info("  " + 
                                     self.fmt_hl_obj_scene(rec.idx, True) + "\n")
                                 ru = True
@@ -1750,7 +1757,7 @@ class App(tkinter.Frame):
             self.clear_info()
             self.add_info("Error opening \"{}\" \n\n{}".\
                 format(hlesc(folder), hlesc(traceback.format_exc())))
-            self.clear_hist()
+            #self.clear_hist()
 
     def on_tran_save(self):
         # save dialog

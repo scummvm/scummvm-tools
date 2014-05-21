@@ -84,14 +84,29 @@ class ScrObject:
     def __init__(self, idx, name):
         self.idx = idx
         self.name = name
-        self.acts = None
-        self.cast = None
+        self.acts = None # action hadlers
+        self.cast = None # object color (CASTS.INI)
+
+class ScrActObject:
+    def __init__(self, act_op, act_status, act_ref):
+        self.act_op = act_op         # handler: opcode filter
+        self.act_status = act_status # handler: status filter
+        self.act_ref = act_ref       # handler: object idx filter
+        self.ops = None              # operations
+
+class ScrOpObject:
+    def __init__(self, op_ref, op_code, op_arg1, op_arg2, op_arg3):
+        self.op_ref = op_ref # object idx
+        self.op_code = op_code # opcode
+        self.op_arg1 = op_arg1 # resource id, etc
+        self.op_arg2 = op_arg2
+        self.op_arg3 = op_arg3
 
 class MsgObject:
     def __init__(self, idx, wav, arg1, arg2, arg3):
         self.idx = idx
-        self.wav = wav
-        self.arg1 = arg1
+        self.wav = wav   # wav filename
+        self.arg1 = arg1 # reference to object
         self.arg2 = arg2
         self.arg3 = arg3
         self.name = None
@@ -99,34 +114,34 @@ class MsgObject:
 class DlgGrpObject:
     def __init__(self, idx, num_acts, arg1):
         self.idx = idx
-        self.num_acts = num_acts
+        self.num_acts = num_acts # store array length while loading
         self.arg1 = arg1
-        self.acts = None
+        self.acts = None # dialog handlers
 
 class DlgActObject:
     def __init__(self, num_dlgs, opcode, ref, arg1, arg2):
-        self.num_dlgs = num_dlgs
-        self.opcode = opcode
-        self.ref = ref
+        self.num_dlgs = num_dlgs # store array length while loading
+        self.opcode = opcode # handler: opcode filter
+        self.ref = ref       # handler: object idx filter
         self.arg1 = arg1
         self.arg2 = arg2
-        self.dlgs = None
-        self.obj = None
+        self.dlgs = None     # dialogs
+        self.obj = None      # handler object
 
 class DlgObject:
     def __init__(self, op_start, arg1, arg2):
-        self.op_start = op_start
+        self.op_start = op_start # start position
         self.arg1 = arg1
         self.arg2 = arg2
-        self.ops = None
+        self.ops = None          # operations list
 
 class DlgOpObject:
     def __init__(self, opcode, arg, ref, pos):
-        self.opcode = opcode
-        self.arg = arg
-        self.ref = ref
-        self.msg = None
-        self.pos = pos
+        self.opcode = opcode    # dialog opcode
+        self.arg = arg          # argument (ref, offset etc.)
+        self.ref = ref          # message idx
+        self.msg = None         # message
+        self.pos = pos          # position in opcodes list
         
 class Engine:
     def __init__(self):
@@ -287,15 +302,17 @@ class Engine:
             off += 4
             acts = []
             for i in range(num_act):
-                act_id, act_cond, act_arg, num_op = struct.unpack_from(\
+                act_op, act_status, act_ref, num_op = struct.unpack_from(\
                     "<HBHI", data[off:off + 9])
                 off += 9
-                ops = []
+                act = ScrActObject(act_op, act_status, act_ref)
+                act.ops = []
                 for j in range(num_op):
                     op = struct.unpack_from("<5H", data[off:off + 10])
                     off += 10
-                    ops.append(op)
-                acts.append([act_id, act_cond, act_arg, ops])
+                    op = ScrOpObject(*op)
+                    act.ops.append(op)
+                acts.append(act)
             rec = ScrObject(obj_id, name)
             rec.acts = acts
             return off, rec
