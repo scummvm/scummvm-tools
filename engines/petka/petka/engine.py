@@ -278,9 +278,25 @@ class Engine:
         self.load_script()
         # parse enter areas
         for scene in self.scenes:
+            scene.entareas = None
             if scene.name in self.bgs_ini:
-                print(self.bgs_ini[scene.name])
-
+                scene.entareas = []
+                for key in self.bgs_ini["__order__"][scene.name]:
+                    # search scene
+                    sf = None
+                    for scenefrom in self.scenes:
+                        if scenefrom.name == key:
+                            sf = scenefrom
+                            break
+                    value = self.bgs_ini[scene.name][key]
+                    # search objects
+                    oo = None
+                    for objon in self.objects:
+                        if objon.name == value:
+                            oo = objon
+                            break
+                    if sf and oo:
+                        scene.entareas.append((sf, oo))
         # load names & invntr
         self.load_names()
         # load dialogs

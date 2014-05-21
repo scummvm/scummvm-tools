@@ -1286,6 +1286,19 @@ class App(tkinter.Frame):
                       " #{}".format(hid) + fmt_cmt(" // " + 
                       self.fmt_hl_obj_scene(oid, True)) + "\n")
 
+            # enter areas
+            if not isobj and rec.entareas:
+                self.add_info("\n<b>Enter areas</b>: {}\n".format(
+                    len(rec.entareas)))
+                for sf, oo in rec.entareas:
+                    self.add_info("  <i>from</i>: {}\n".format(
+                        self.fmt_hl_scene(sf.idx, True)))
+                    self.add_info("    <i>on</i>: {}\n".format(
+                        self.fmt_hl_obj(oo.idx, True)))
+                
+                
+                
+
     def path_std_items(self, path, level, guiname, guiitem, tt, lst, lst_idx, 
             lbmode, cb):
         self.switch_view(0)
