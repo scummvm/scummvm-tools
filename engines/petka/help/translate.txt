@@ -14,10 +14,3 @@
 
 Если библиотека не установлена меню "Translate" отображаться не будет. 
 
-Для перевода в транслит необходима библиотека transliterate.
- 
- * https://pypi.python.org/pypi/transliterate
-
-Если библиотека не установлена пункт меню "Save transliterate template" 
-  отображаться не будет. 
-

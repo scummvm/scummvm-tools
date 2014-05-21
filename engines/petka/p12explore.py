@@ -25,15 +25,10 @@ try:
 except ImportError:
     polib = None
 
-try:
-    import transliterate
-except ImportError:
-    transliterate = None
-
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2l 2014-05-20"
+VERSION = "v0.2m 2014-05-21"
 
 def hlesc(value):
     if value is None:
@@ -43,19 +38,9 @@ def hlesc(value):
 def cesc(value):
     return value.replace("\\", "\\\\").replace("\"", "\\\"")
 
-def fmt_opcode(opcode):
-    return petka.OPCODES.get(opcode, ["<font color=\"red\">OP{:04X}</font>".\
-        format(opcode)])[0]
-
-def fmt_dlgop(opcode):
-    return petka.DLGOPS.get(opcode, ["<font color=\"red\">OP{:02X}</font>".\
-        format(opcode)])[0]
-
 def fmt_hl(loc, desc):
     return "<a href=\"{}\">{}</a>".format(loc, desc)
 
-def fmt_cmt(cmt):
-    return "<font color=\"#4d4d4d\">{}</font>".format(cmt)
 
 def fmt_arg(value):
     if value < 10:
@@ -65,7 +50,40 @@ def fmt_arg(value):
     else:
         return "0x{:X}".format(value)
     
-
+def translit(text):
+    ru = "абвгдеёзийклмнопрстуфхъыьэАБВГДЕЁЗИЙКЛМНОПРСТУФХЪЫЬЭ"
+    en = "abvgdeezijklmnoprstufh'y'eABVGDEEZIJKLMNOPRSTUFH'Y'Э"
+    sl = {
+        "ж": "zh",
+        "ц": "ts",
+        "ч": "ch",
+        "ш": "sh",
+        "щ": "sch",
+        "ю": "yu",
+        "я": "ya",
+        "Ж": "Zh",
+        "Ц": "Ts",
+        "Ч": "Ch",
+        "Ш": "Sh",
+        "Щ": "Sch",
+        "Ю": "Yu",
+        "Я": "Ya"
+    }
+    ret = ""
+    allcaps = True
+    for ch in text:
+        ps = ru.find(ch)
+        if ps > 0:
+            ret += en[ps]
+        elif ch in sl:
+            ret += sl[ch]
+        else:
+            ret += ch
+        allcaps = (allcaps and ch.upper() == ch)
+    if allcaps:
+        ret = ret.upper()
+    return ret
+    
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager:
     def __init__(self, text):
@@ -337,10 +355,9 @@ class App(tkinter.Frame):
             menutran.add_command(
                     command = self.on_tran_save,
                     label = "Save template (.pot)")
-            if transliterate:
-                menutran.add_command(
-                        command = self.on_tran_save_tlt,
-                        label = "Save transliterate template (.pot)")
+            menutran.add_command(
+                    command = self.on_tran_save_tlt,
+                    label = "Save transliterate template (.pot)")
             menutran.add_command(
                     command = self.on_tran_load,
                     label = "Load translation (.po)")
@@ -738,6 +755,17 @@ class App(tkinter.Frame):
         if value in self.tran["_"]:
             return self.tran["_"][value]
         return value
+
+    def fmt_opcode(self, opcode):
+        return petka.OPCODES.get(opcode, ["<font color=\"red\">OP{:04X}</font>".\
+            format(opcode)])[0]
+
+    def fmt_dlgop(self, opcode):
+        return petka.DLGOPS.get(opcode, ["<font color=\"red\">OP{:02X}</font>".\
+            format(opcode)])[0]
+
+    def fmt_cmt(self, cmt):
+        return "<font color=\"#4d4d4d\">{}</font>".format(cmt)
 
     def fmt_hl_rec(self, lst_idx, pref, rec_id, full, tt):
         if rec_id in lst_idx:
@@ -1201,14 +1229,14 @@ class App(tkinter.Frame):
                             msg += "-1"
                         else:
                             msg += "0x{:X}".format(arg)
-                    self.add_info(msg + fmt_cmt(" // " + self.fmt_hl_obj(
+                    self.add_info(msg + self.fmt_cmt(" // " + self.fmt_hl_obj(
                         ref[0].idx, True)) + "\n")
 
             resused = []
             dlgused = []
             self.add_info("\n<b>Handlers</b>: {}\n".format(len(rec.acts)))
             for idx, act in enumerate(rec.acts):
-                msg = fmt_opcode(act.act_op)
+                msg = self.fmt_opcode(act.act_op)
                 cmt = ""
                 if act.act_status != 0xff or act.act_ref != 0xffff:
                     act_ref = act.act_ref
@@ -1216,8 +1244,8 @@ class App(tkinter.Frame):
                         act_ref = "THIS"
                     else:
                         if act.act_ref in self.sim.obj_idx:
-                            cmt = fmt_cmt(" // " + self.fmt_hl_obj(act.act_ref, 
-                                True))
+                            cmt = self.fmt_cmt(" // " + self.fmt_hl_obj(
+                                act.act_ref, True))
                             act_ref = self.fmt_hl_obj(act.act_ref)
                         else:
                             act_ref = "0x{:X}".format(act.act_ref)
@@ -1226,14 +1254,14 @@ class App(tkinter.Frame):
                     idx, msg, len(act.ops), cmt))
                 for oidx, op in enumerate(act.ops):
                     self.add_info("    {}) {} ".format(oidx, 
-                        fmt_opcode(op.op_code)))
+                        self.fmt_opcode(op.op_code)))
                     cmt = ""
                     if op.op_ref == rec.idx:
                         self.add_info("THIS")
                     else:
                         self.add_info(self.fmt_hl_obj_scene(op.op_ref))
-                        cmt = fmt_cmt(" // " + self.fmt_hl_obj_scene(op.op_ref, 
-                            True))
+                        cmt = self.fmt_cmt(" // " + self.fmt_hl_obj_scene(
+                            op.op_ref, True))
                     msg = ""
                     if op.op_arg1 != 0xffff:
                         if op.op_arg1 not in resused and \
@@ -1288,11 +1316,11 @@ class App(tkinter.Frame):
             klst.sort()
             for k in klst:
                 if k not in oplst: continue
-                self.add_info("\n<b>Used in " + fmt_opcode(k) + "</b>:\n")
+                self.add_info("\n<b>Used in " + self.fmt_opcode(k) + "</b>:\n")
                 for oid, htp, hid in oplst[k]:
                     self.add_info("  " + self.fmt_hl_obj_scene(oid) + 
-                      " on " + fmt_opcode(htp) + 
-                      " #{}".format(hid) + fmt_cmt(" // " + 
+                      " on " + self.fmt_opcode(htp) + 
+                      " #{}".format(hid) + self.fmt_cmt(" // " + 
                       self.fmt_hl_obj_scene(oid, True)) + "\n")
 
             # enter areas
@@ -1496,9 +1524,9 @@ class App(tkinter.Frame):
             self.add_info("<b>Dialog handlers<b>: {}\n".format(len(grp.acts)))
             for idx, act in enumerate(grp.acts):
                 self.add_info("  {}) <u>on {} {} 0x{:X} 0x{:X}</u>, dlgs: "\
-                    "{}{}\n".format(idx, fmt_opcode(act.opcode), 
+                    "{}{}\n".format(idx, self.fmt_opcode(act.opcode), 
                         self.fmt_hl_obj(act.ref), act.arg1, act.arg2, \
-                        len(act.dlgs), fmt_cmt(" // " + 
+                        len(act.dlgs), self.fmt_cmt(" // " + 
                             self.fmt_hl_obj(act.ref, True))))
                 for didx, dlg in enumerate(act.dlgs):
                     self.add_info("    {}) <i>0x{:X} 0x{:X}</i>, ops: {}\n".\
@@ -1517,18 +1545,18 @@ class App(tkinter.Frame):
                     for oidx, op in enumerate(dlg.ops):
                         cmt = ""
                         opref = "0x{:X}".format(op.ref)
-                        opcode = fmt_dlgop(op.opcode)
+                        opcode = self.fmt_dlgop(op.opcode)
                         if op.pos in usedadr:
                             self.add_info("      <i>label_{:X}:</i>\n".format(
                                 op.pos))
                         if op.opcode == 0x1: # BREAK
                             if op.pos in usedcase:
                                 if len(usedadr) > 0:
-                                    cmt = fmt_cmt(" // end select <i>"\
+                                    cmt = self.fmt_cmt(" // end select <i>"\
                                         "label_{:X}</i>, case=0x{:}"\
                                         "".format(*usedcase[op.pos]))
                                 else:
-                                    cmt = fmt_cmt(" // end "\
+                                    cmt = self.fmt_cmt(" // end "\
                                         "select case=0x{:}".\
                                         format(usedcase[op.pos][1]))
                         elif op.opcode == 0x2 or op.opcode == 0x8: # MENU or CIRCLE
@@ -1553,12 +1581,12 @@ class App(tkinter.Frame):
                                 else:
                                     docurr = ["complex"]
                             if len(doarr) < sellen:
-                                cmt = fmt_cmt(" // {} select broken, "\
+                                cmt = " // {} select broken, "\
                                     "required={}, got={}".\
-                                    format(opcode, sellen, len(doarr)))
+                                    format(opcode, sellen, len(doarr))
                             else:
                                 cmt += ",".join(["+".join(x) for x in doarr])
-                            cmt = fmt_cmt(cmt)
+                            cmt = self.fmt_cmt(cmt)
                             if menuactstart is not None:
                                 for oidx2, op2 in enumerate(dlg.ops[\
                                         menuactstart:menuactstart + sellen]):
@@ -1567,7 +1595,7 @@ class App(tkinter.Frame):
                             op.opcode == 0x4: # GOTO or MENURET
                             opref = "<i>label_{:X}</i>".format(op.ref)
                             if op.pos in usedmenu:
-                                cmt = fmt_cmt(" // action menu=<i>"\
+                                cmt = self.fmt_cmt(" // action menu=<i>"\
                                     "label_{:X}</i>, case=0x{:}".\
                                     format(*usedmenu[op.pos]))
                         elif op.opcode == 0x7:
@@ -1575,7 +1603,7 @@ class App(tkinter.Frame):
                             if op.msg:
                                 opref = self.fmt_hl_msg(op.ref)
                                 objref = self.fmt_hl_obj(op.msg.obj.idx)
-                                cmt = fmt_cmt(" // obj={}, msg={}".\
+                                cmt = self.fmt_cmt(" // obj={}, msg={}".\
                                     format(objref, 
                                         self.fmt_hl_msg(op.ref, True)))
                         
@@ -1820,8 +1848,7 @@ class App(tkinter.Frame):
                 used.append(text)
                 ts = text
                 if tlt:
-                    ts = transliterate.utils.translit(text, "ru", \
-                        reversed = True)
+                    ts = translit(text)
                 entry = polib.POEntry(
                     msgid = text, msgstr = ts, comment = cmt)
                 po.append(entry)                
@@ -1876,6 +1903,8 @@ class App(tkinter.Frame):
                 format(hlesc(fn), hlesc(traceback.format_exc())))
 
 def main():
+    print(translit("ЛЕСНАЯ ДОРОГА"))
+    #return
     root = tkinter.Tk()
     app = App(master = root)
     argv = sys.argv[1:]
