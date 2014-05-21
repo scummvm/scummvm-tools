@@ -276,6 +276,11 @@ class Engine:
                 self.fman.load_store(ini[strf], 1)
         # load script.dat, backgrnd.bg and resources.qrc
         self.load_script()
+        # parse enter areas
+        for scene in self.scenes:
+            if scene.name in self.bgs_ini:
+                print(self.bgs_ini[scene.name])
+
         # load names & invntr
         self.load_names()
         # load dialogs
