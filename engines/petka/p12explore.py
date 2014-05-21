@@ -25,6 +25,11 @@ try:
 except ImportError:
     polib = None
 
+try:
+    import transliterate
+except ImportError:
+    transliterate = None
+
 import petka
 
 APPNAME = "P1&2 Explorer"
@@ -332,6 +337,10 @@ class App(tkinter.Frame):
             menutran.add_command(
                     command = self.on_tran_save,
                     label = "Save template (.pot)")
+            if transliterate:
+                menutran.add_command(
+                        command = self.on_tran_save_tlt,
+                        label = "Save transliterate template (.pot)")
             menutran.add_command(
                     command = self.on_tran_load,
                     label = "Load translation (.po)")
@@ -1374,8 +1383,11 @@ class App(tkinter.Frame):
         if self.sim is None:
             return self.path_default([])
         def info(name):
-            self.add_info("<b>Cast</b>: {}\n".format(hlesc(name)))
-            self.add_info("Value: {}\n".format(self.sim.casts[name]))
+            self.add_info("<b>Cast</b>:    {}\n".format(hlesc(name)))
+            if self.tran:
+                self.add_info("<b>Cast</b>(t): {}\n".\
+                    format(hlesc(self._t(name, "obj"))))
+            self.add_info("Value:    {}\n".format(self.sim.casts[name]))
             try:
                 val = self.sim.casts[name].split(" ")
                 val = [x for x in val if x]
@@ -1781,9 +1793,16 @@ class App(tkinter.Frame):
             #self.clear_hist()
 
     def on_tran_save(self):
+        self.on_tran_save_real()
+
+    def on_tran_save_tlt(self):
+        self.on_tran_save_real(True)
+        
+    def on_tran_save_real(self, tlt = False):
         # save dialog
         fn = filedialog.asksaveasfilename(parent = self,
-            title = "Save translate template (.pot)",
+            title = "Save translate template (.pot)" + 
+                " (transliterate)" if tlt else "",
             filetypes = [('PO Template', ".pot"), ('all files', '.*')],
             initialdir = os.path.abspath(os.curdir))
         if not fn: return # save canceled
@@ -1799,8 +1818,12 @@ class App(tkinter.Frame):
             def saveitem(text, cmt = None):
                 if text in used: return
                 used.append(text)
+                ts = text
+                if tlt:
+                    ts = transliterate.utils.translit(text, "ru", \
+                        reversed = True)
                 entry = polib.POEntry(
-                    msgid = text, msgstr = text, comment = cmt)
+                    msgid = text, msgstr = ts, comment = cmt)
                 po.append(entry)                
             for rec in self.sim.objects:
                 saveitem(rec.name, "obj_{}".format(rec.idx))

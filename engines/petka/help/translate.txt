@@ -3,12 +3,21 @@
 Для переводчиков программа может:
 
  * Создать шаблон для перевода в формате POT (Translation->Save template)
+ * Создать шаблон в транслите формате POT 
+   (Translation->Save transliterate template)
  * Загрузить перевод из файла PO (Translation->Save translation)
  * Покаывать перевод названий и текстов у всех объектов
- 
  
 Для работы этих функций необходима библиотека polib.
  
  * https://pypi.python.org/pypi/polib
 
-Если библиотека не установлена меню Translate отображаться не будет. 
+Если библиотека не установлена меню "Translate" отображаться не будет. 
+
+Для перевода в транслит необходима библиотека transliterate.
+ 
+ * https://pypi.python.org/pypi/transliterate
+
+Если библиотека не установлена пункт меню "Save transliterate template" 
+  отображаться не будет. 
+

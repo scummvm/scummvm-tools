@@ -15,8 +15,9 @@
  * Python (https://www.python.org/) - PSF LICENSE AGREEMENT
  * Pillow (https://pypi.python.org/pypi/Pillow/) - Apache License
  * polib (https://pypi.python.org/pypi/polib) - MIT
+ * transliterate (https://pypi.python.org/pypi/transliterate) - GPL 2.0/LGPL 2.1
  * cx_Freeze (http://cx-freeze.sourceforge.net/) - PSF LICENSE AGREEMENT
- 
+
 Copyright (c) 2014 romiq.kh@gmail.com
 
 Данная лицензия разрешает, безвозмездно, лицам, получившим копию данного 
