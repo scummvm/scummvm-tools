@@ -1903,8 +1903,6 @@ class App(tkinter.Frame):
                 format(hlesc(fn), hlesc(traceback.format_exc())))
 
 def main():
-    print(translit("ЛЕСНАЯ ДОРОГА"))
-    #return
     root = tkinter.Tk()
     app = App(master = root)
     argv = sys.argv[1:]
