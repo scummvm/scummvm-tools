@@ -803,6 +803,12 @@ class App(tkinter.Frame):
             format(len(self.sim.msgs)))
         self.add_info("  Dialog groups: <a href=\"/dlgs\">{}</a>\n".\
             format(len(self.sim.dlgs)))
+        scn = hlesc(self.sim.start_scene)
+        for scene in self.sim.scenes:
+            if scene.name == self.sim.start_scene:
+                scn = self.fmt_hl_scene(scene.idx, True)
+                break
+        self.add_info("  Start scene:   {}\n".format(scn))
     
 
     def path_default(self, path):
@@ -1628,11 +1634,13 @@ class App(tkinter.Frame):
             self.add_info("<i>not initialized</i>\n")
         else:
             self.add_info("<i>works</i>\n\n")
-            self.add_info("  <b>Path</b>:    {}\n".format(
+            self.add_info("  <b>Path</b>:       {}\n".format(
                 hlesc(self.sim.curr_path)))
-            self.add_info("  <b>Speech</b>:  {}\n".format(
+            self.add_info("  <b>Start</b>:      {}.{}\n".format(
+                self.sim.start_part, self.sim.start_chap))
+            self.add_info("  <b>Speech</b>:     {}\n".format(
                 hlesc(self.sim.curr_speech)))
-            self.add_info("  <b>Disk ID</b>: {}\n\n".format(
+            self.add_info("  <b>Disk ID</b>:    {}\n\n".format(
                 hlesc(self.sim.curr_diskid)))
             self.path_info_outline()
             

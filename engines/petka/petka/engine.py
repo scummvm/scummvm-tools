@@ -257,9 +257,9 @@ class Engine:
         # load BGS.INI
         self.bgs_ini = {}
         self.start_scene = None
-        pf = self.fman.find_path(self.curr_path + "bgs.ini")
-        if pf:
-            f = open(pf, "rb")
+        bgsfn = self.curr_path + "bgs.ini"
+        if self.fman.exists(bgsfn):
+            f = self.fman.read_file_stream(bgsfn)
             try:
                 self.bgs_ini = self.parse_ini(f)
             finally:
