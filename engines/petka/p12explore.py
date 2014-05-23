@@ -28,7 +28,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2n 2014-05-21"
+VERSION = "v0.2o 2014-05-23"
 
 def hlesc(value):
     if value is None:
@@ -1018,7 +1018,7 @@ class App(tkinter.Frame):
                     ru = False
                     for act in rec.acts:
                         if ru: break
-                        for op in ops:
+                        for op in act.ops:
                             if res_id == op.op_arg1:
                                 self.add_info("  " + 
                                     self.fmt_hl_obj_scene(rec.idx, True) + "\n")
