@@ -52,7 +52,7 @@ def fmt_arg(value):
     
 def translit(text):
     ru = "абвгдеёзийклмнопрстуфхъыьэАБВГДЕЁЗИЙКЛМНОПРСТУФХЪЫЬЭ"
-    en = "abvgdeezijklmnoprstufh'y'eABVGDEEZIJKLMNOPRSTUFH'Y'Э"
+    en = "abvgdeezijklmnoprstufh'y'eABVGDEEZIJKLMNOPRSTUFH'Y'E"
     sl = {
         "ж": "zh",
         "ц": "ts",
