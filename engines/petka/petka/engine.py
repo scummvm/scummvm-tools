@@ -160,6 +160,10 @@ class Engine:
         
     def init_empty(self, enc):
         self.enc = enc
+        self.objects = []
+        self.scenes = []
+        self.obj_idx = {}
+        self.scn_idx = {}
         
     def parse_ini(self, f):
         # parse ini settings
@@ -555,4 +559,32 @@ class Engine:
                     dlg.ops = oparr
             finally:
                 f.close()
+                
+    def write_script(self, f):
+        f.write(struct.pack("<II", len(self.objects), len(self.scenes)))
+
+        def write_rec(rec):
+            ename = rec.name.encode(self.enc)
+            f.write(struct.pack("<HI", rec.idx, len(ename)))
+            f.write(ename)
+            f.write(struct.pack("<I", len(rec.acts)))
+            for act in rec.acts:
+                f.write(struct.pack("<HBHI", act.act_op, act.act_status, 
+                    act.act_ref, len(act.ops)))
+                for op in act.ops:
+                    f.write(struct.pack("<5H", op.op_ref, op.op_code,
+                        op.op_arg1, op.op_arg2, op.op_arg3))
+        
+        for rec in self.objects + self.scenes:
+            write_rec(rec)
+        
+    def write_backgrnd(self, f):
+        lst = [scn for scn in self.scenes if scn.refs is not None]
+        f.write(struct.pack("<I", len(lst)))
+        for scn in lst:
+            f.write(struct.pack("<HI", scn.idx, len(scn.refs)))
+            for ref in scn.refs:
+                f.write(struct.pack("<H5I", ref[0].idx, ref[1], ref[2], 
+                    ref[3], ref[4], ref[5]))
+                
 
