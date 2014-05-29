@@ -158,6 +158,8 @@ class Engine:
         self.curr_speech = None
         self.curr_diskid = None
         
+    def init_empty(self, enc):
+        self.enc = enc
         
     def parse_ini(self, f):
         # parse ini settings
@@ -205,8 +207,8 @@ class Engine:
         return res, resord
         
     def load_data(self, folder, enc):
+        self.init_empty(enc)
         self.fman = FileManager(folder)
-        self.enc = enc
         # load PARTS.INI
         pf = self.fman.find_path("parts.ini")
         if pf:
@@ -302,16 +304,26 @@ class Engine:
         # load dialogs
         self.load_dialogs()
         
-    def load_script(self):
+    def load_script(self, scrname = None, bkgname = None, resname = None):
         self.objects = []
         self.scenes = []
         self.obj_idx = {}
         self.scn_idx = {}
-
-        try:
-            data = self.fman.read_file(self.curr_path + "script.dat")
-        except:
-            raise EngineError("Can't open SCRIPT.DAT")
+        
+        if scrname is None:
+            try:
+                data = self.fman.read_file(self.curr_path + "script.dat")
+            except:
+                raise EngineError("Can't open SCRIPT.DAT")
+        else:
+            try:
+                f = open(scrname, "rb")
+            except:
+                raise EngineError("Can't open SCRIPT.DAT")
+            try:
+                data = f.read()
+            finally:
+                f.close()
         num_obj, num_scn = struct.unpack_from("<II", data[:8])
         off = 8
         def read_rec(off):
@@ -348,8 +360,25 @@ class Engine:
             self.scenes.append(scn)
             self.scn_idx[scn.idx] = scn
             
-        data = self.fman.read_file(self.curr_path + "backgrnd.bg")
-        num_rec = struct.unpack_from("<I", data[:4])[0]
+        if bkgname is None:
+            try:    
+                data = self.fman.read_file(self.curr_path + "backgrnd.bg")
+            except:
+                data = None
+        else:
+            try:
+                f = open(bkgname, "rb")
+            except:
+                data = None
+            try:
+                data = f.read()
+            finally:
+                f.close()
+
+        if data:        
+            num_rec = struct.unpack_from("<I", data[:4])[0]
+        else:
+            num_rec = 0
         off = 4
         for i in range(num_rec):
             scn_ref, num_ref = struct.unpack_from("<HI", data[off:off + 6])
@@ -371,9 +400,25 @@ class Engine:
                     raise EngineError("DEBUG: Scene ref 0x{:x} not found".\
                         format(obj[0]))
                         
-        f = self.fman.read_file_stream(self.curr_path + "resource.qrc")
-        self.res, self.resord = self.parse_res(f)
-        f.close()
+        if resname is None:
+            try:
+                f = self.fman.read_file_stream(self.curr_path + "resource.qrc")
+            except:
+                f = None
+        else:
+            try:
+                f = open(resname, "rb")
+            except:
+                f = None
+        try:            
+            if f:            
+                self.res, self.resord = self.parse_res(f)
+            else:
+                self.res = {}
+                self.resord = []
+        finally:
+            if f:
+                f.close()
         
     def load_names(self):
         self.names = {}
