@@ -17,11 +17,14 @@ executables = [
     Executable('p12explore.py',
         base = 'Win32GUI',
         targetName = "p12explore.exe")
+    Executable('p12script.py',
+        base = 'Console',
+        targetName = "p12script.exe")
 ]
 
 setup(name='p12explore',
-      version = '0.2',
-      description = 'Petka 1&2 explorer',
+      version = '0.3',
+      description = 'Petka 1&2 utilities',
       author = "romiq.kh@gmail.com, https://bitbucket.org/romiq/p12simtran",
       options = dict(build_exe = buildOptions),
       executables = executables)

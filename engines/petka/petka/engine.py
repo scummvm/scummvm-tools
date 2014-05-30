@@ -469,12 +469,22 @@ class Engine:
                     r, g, b = 255, 255, 255
                 obj.cast = (r, g, b)
             
-    def load_dialogs(self):
+    def load_dialogs(self, fixname = None, lodname = None, noobjref = False):
         self.msgs = []
         # DIALOGUES.LOD
-        fp = self.curr_path + "dialogue.lod"
-        if self.fman.exists(fp):
-            f = self.fman.read_file_stream(fp)
+        
+        if lodname is None:
+            try:    
+                f = self.fman.read_file_stream(self.curr_path + "dialogue.lod")
+            except:
+                f = None
+        else:
+            try:
+                f = open(lodname, "rb")
+            except:
+                f = None
+
+        if f:
             try:
                 temp = f.read(4)
                 num_msg = struct.unpack_from("<I", temp)[0]
@@ -484,24 +494,35 @@ class Engine:
                     msg = MsgObject(len(self.msgs), \
                         wav.decode(self.enc).strip(), arg1, arg2, arg3)
                     # scan objects
-                    msg.obj = self.obj_idx.get(arg1, None)
-                    if not msg.obj:
-                        raise EngineError("DEBUG: Message ref = 0x{:x} not found".\
-                        format(obj[0]))
+                    if not noobjref:
+                        msg.obj = self.obj_idx.get(arg1, None)
+                        if not msg.obj:
+                            raise EngineError("DEBUG: Message ref = 0x{:x} not found".\
+                            format(arg1))
                     self.msgs.append(msg)
                 for i, capt in enumerate(f.read().split(b"\x00")):
                     if i < len(self.msgs):
                         self.msgs[i].name = capt.decode(self.enc)
             finally:
-                f.close()
+                if f:
+                    f.close()
 
         self.dlgs = []
         self.dlg_idx = {}
         self.dlgops = []
         # DIALOGUES.FIX
-        fp = self.curr_path + "dialogue.fix"
-        if self.fman.exists(fp):
-            f = self.fman.read_file_stream(fp)
+        if fixname is None:
+            try:    
+                f = self.fman.read_file_stream(self.curr_path + "dialogue.fix")
+            except:
+                f = None
+        else:
+            try:
+                f = open(fixname, "rb")
+            except:
+                f = None
+
+        if f:
             try:
                 temp = f.read(4)
                 num_grps = struct.unpack_from("<I", temp)[0]
@@ -519,10 +540,12 @@ class Engine:
                         opcode, ref, num_dlgs, arg1, arg2 = \
                             struct.unpack_from("<2H3I", temp)
                         act = DlgActObject(num_dlgs, opcode, ref, arg1, arg2)
-                        if ref not in self.obj_idx:
-                            raise EngineError("Dialog group 0x{:x} refered "\
-                                "to unexisted object 0x{:x}".format(grp.idx, ref))
-                        act.obj = self.obj_idx[act.ref]
+                        if not noobjref:
+                            if ref not in self.obj_idx:
+                                raise EngineError("Dialog group 0x{:x} refered "\
+                                    "to unexisted object 0x{:x}".format(
+                                    grp.idx, ref))
+                            act.obj = self.obj_idx[act.ref]
                         grp.acts.append(act)
                     for act in grp.acts:
                         act.dlgs = []
@@ -558,7 +581,8 @@ class Engine:
                 if len(oparr) > 0:
                     dlg.ops = oparr
             finally:
-                f.close()
+                if f:
+                    f.close()
                 
     def write_script(self, f):
         f.write(struct.pack("<II", len(self.objects), len(self.scenes)))

@@ -677,6 +677,133 @@ class P12Compiler:
             for res in pe.resord:
                 printres(res)
 
+    # =======================================================================
+    # decompile DIALOGUE.FIX
+    # =======================================================================
+    def pretty_print_dlg(self, fixname, stream, enc = None, verbose = False):
+        def pprint(msg):
+            if stream is None:
+                print(msg)
+            else:
+                stream.write((msg + "\n").encode(enc or "UTF-8"))
+
+        pe = petka.Engine()
+        pe.init_empty("cp1251")
+        lodname = find_in_folder(os.path.dirname(fixname), "dialogue.lod")
+        pe.load_dialogs(fixname, lodname, True)
+
+        pprint("# Decompile DIALOGUE \"{}\"".format(fixname))
+        pprint("# Version: {}".format(VERSION))
+        pprint("# Encoding: {}".format(enc))
+
+        for msg in pe.msgs:
+            pprint("# {} = 0x{:x}".format(msg.idx, msg.idx))
+            pprint("MSG msg_{} \"{}\" 0x{:x} 0x{:x} 0x{:x}".format(\
+                msg.idx, msg.wav, msg.arg1, msg.arg2, msg.arg3))
+            pprint(" \"{}\"".format(self.escstr(msg.name)))
+            pprint("")
+    
+        for gidx, grp in enumerate(pe.dlgs, 1):
+            pprint("# {} = 0x{:x}".format(gidx, gidx))
+            pprint("DLGGRP 0x{:x} {}".format(grp.idx, \
+                self.fmtnum32(grp.arg1)))
+            for sidx, act in enumerate(grp.acts, 1):
+                pprint("  ON {} 0x{:x} 0x{:x} 0x{:x} # {}".format(\
+                    self.fmtop(act.opcode), act.ref, act.arg1, 
+                        act.arg2, sidx))
+                # print code
+                for didx, dlg in enumerate(act.dlgs, 1):
+                    #print(bsrec)
+                    pprint("    DLG 0x{:x} 0x{:x} # {}".format(\
+                        dlg.arg1, dlg.arg2, didx))
+                    # scan used addr
+                    usedadr = []
+                    for op in dlg.ops:
+                        if op.opcode == 0x3 or \
+                            op.opcode == 0x4: # GOTO or MENURET
+                            if op.ref not in usedadr:
+                                usedadr.append(op.ref)
+                    if len(usedadr) > 0:
+                        usedadr.append(dlg.op_start)
+                    usedmenu = {}
+                    usedcase = {}
+                    for oidx, op in enumerate(dlg.ops):
+                        cmt = ""
+                        opref = "0x{:X}".format(op.ref)
+                        opcode = self.fmtdlgop(op.opcode)
+                        if op.pos in usedadr:
+                             pprint("      label_{:X}:\n".format(
+                                op.pos))
+                        if op.opcode == 0x1: # BREAK
+                            if op.pos in usedcase:
+                                if len(usedadr) > 0:
+                                    cmt = "# end select "\
+                                        "label_{:X}, case=0x{:}"\
+                                        "".format(*usedcase[op.pos])
+                                else:
+                                    cmt = "# end "\
+                                        "select case=0x{:}".\
+                                        format(usedcase[op.pos][1])
+                        elif op.opcode == 0x2 or op.opcode == 0x8: # MENU or CIRCLE
+                            cmt = "# select "
+                            doarr = []
+                            docurr = []
+                            sellen = op.ref % 0x100
+                            skiptobrk = False
+                            menuactstart = None
+                            for oidx2, op2 in enumerate(dlg.ops[oidx + 1:]):
+                                if op2.opcode == 0x1: # BREAK
+                                    usedcase[op2.pos] = (op.pos, len(doarr))
+                                    doarr.append(docurr)
+                                    skiptobrk = False
+                                    if len(doarr) == sellen:
+                                        if op.opcode == 0x2:
+                                            menuactstart = oidx2 + oidx + 2
+                                        break
+                                    docurr = []
+                                elif op2.opcode == 0x7 and not skiptobrk: # PLAY
+                                    docurr.append("msg_{}".format(op2.ref))
+                                else:
+                                    docurr = ["complex"]
+                            if len(doarr) < sellen:
+                                cmt = "# {} select broken, "\
+                                    "required={}, got={}".\
+                                    format(opcode, sellen, len(doarr))
+                            else:
+                                cmt += ",".join(["+".join(x) for x in doarr])
+                            if menuactstart is not None:
+                                for oidx2, op2 in enumerate(dlg.ops[\
+                                        menuactstart:menuactstart + sellen]):
+                                    usedmenu[op2.pos] = (op.pos, oidx2)
+                        elif op.opcode == 0x3 or \
+                            op.opcode == 0x4: # GOTO or MENURET
+                            opref = "label_{:X}".format(op.ref)
+                            if op.pos in usedmenu:
+                                cmt = "# action menu="\
+                                    "label_{:X}, case=0x{:}".\
+                                    format(*usedmenu[op.pos])
+                        elif op.opcode == 0x7:
+                            opcode = "PLAY"
+                            if op.msg:
+                                opref = "msg_{}".format(op.ref)
+                                if op.ref < len(pe.msgs):
+                                    cmt = "# {}".format(self.escstr(
+                                        pe.msgs[op.ref].name))
+                        oparg = " 0x{:X} ".format(op.arg)
+                        if (op.opcode == 0x1 or op.opcode == 0x6) and \
+                                op.arg == 0 and op.ref == 0:
+                            oparg = ""
+                            opref = ""
+                        if cmt and verbose:
+                            pprint("        " + cmt)
+                        pprint("        {}{}{}".\
+                            format(opcode, oparg, opref))
+                    pprint("    ENDDLG # {}".format(didx))
+                pprint("  ENDON # {}".format(sidx))
+            pprint("ENDDLGGRP # {}".format(gidx))
+            pprint("")
+
+
 # check if file already exists and flag for overwrite not set
 def ckeckoverwrite(fn, args):
     if os.path.exists(fn) and not args.fo:
@@ -751,6 +878,37 @@ def action_comp(args):
         print(e, file = sys.stderr)
     finally:
         f.close()
+
+def action_decd(args):
+    print("Decompile DIALOGUE.FIX file")
+    destpath = args.destpath
+    encoding = args.encoding
+    
+    if destpath:
+        if ckeckoverwrite(destpath, args): return -1
+        if checksame(args.sourcepath, "source", destpath, "destination"):
+            return -2
+        if not encoding:
+            encoding = "UTF-8"
+        
+    print("Input:\t{}".format(args.sourcepath))
+    print("Output:\t{}".format(destpath or "-"))
+    if destpath:
+        print("Enc:\t{}".format(encoding))
+    if args.verbose:
+        print("Flag verbose enabled")
+    
+    dcs = P12Compiler()
+    if destpath:
+        f = open(destpath, "wb")
+        try:
+            dcs.pretty_print_dlg(args.sourcepath, f, enc = encoding, \
+                verbose = args.verbose)
+        finally:
+            f.close()
+    else:
+        dcs.pretty_print_dlg(args.sourcepath, None, None, \
+                verbose = args.verbose)
 
 def internaltest(folder):
     # unpack testdata.7z
@@ -842,6 +1000,20 @@ def main():
     parser_comp.add_argument('sourcepath', help = "path to SOURCE.TXT file")
     parser_comp.add_argument('destfolder', help = "path to output folder")
     parser_comp.set_defaults(func = action_comp)
+
+    # decompiledialog - <dialogue.fix> [[--enc <encoding>] -o <decompiled.txt>]
+    parser_decd = subparsers.add_parser("decompiledialog", aliases = ['dd'], \
+        help = "decompile dialogue.fix")
+    parser_decd.add_argument('-fo', action = 'store_true', \
+        help = "force overwrite existing output file")
+    parser_decd.add_argument("-v", '--verbose', action = 'store_true', \
+        help = "enable more verbose comments")
+    parser_decd.add_argument('-o', action = 'store', dest = "destpath",\
+        help = "output path for decompiled (default: stdout)")
+    parser_decd.add_argument('-e', "--enc", action = 'store', \
+        dest = "encoding", help = "output encoding (default: UTF-8)")
+    parser_decd.add_argument('sourcepath', help = "path to DIALOGUE.FIX file")
+    parser_decd.set_defaults(func = action_decd)
 
     # version
     parser_version = subparsers.add_parser("version", help = "program version")
