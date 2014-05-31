@@ -43,8 +43,10 @@ enum SectorType {
 
 
 enum LightType {
-	omni,
-	direct
+	OmniType = 1,
+	SpotType = 2,
+	DirectType = 3,
+	AmbientType = 4
 };
 
 class Data {
@@ -106,11 +108,11 @@ public:
 	//virtual uint32 load() = 0;
 	virtual string ToString() = 0;
 protected:
-	Data *data;
+	Data *section_data;
 };
 
 Section::Section(Data *data) {
-	this->data = data;
+	this->section_data = data;
 }
 
 class Sector : public Section {
@@ -198,6 +200,9 @@ string Sector::ToString() {
 	case HotType:
 		ss << "hot";
 		break;
+	case NoneType:
+		ss << "unknown";
+		break;
 	};
 	ss << endl;
 	ss << "\tdefault visibility\t";
@@ -252,7 +257,6 @@ Setup::Setup(Data *data) : Section(data) {
 	// Skip an unknown number
 	int unknown = data->GetInt();
 
-
 	tile = data->GetNullTerminatedString();
 
 	position = new float[3];
@@ -301,18 +305,82 @@ private:
 	float *position;
 	float *direction;
 	float intensity;
-	float umbraangla;
-	float penumbraangle;
 	int *color; // Byte
+	float umbraangle;
+	float penumbraangle;
+	float focusdistance;
+	float spreaddistance;
 
 };
 
 Light::Light(Data *data) : Section(data) {
-	data->Skip(100);
+	name = data->GetString(32);	// 0x00
+
+	position = new float[3];	// 0x20
+	position[0] = data->GetFloat(); // X
+	position[1] = data->GetFloat(); // Y
+	position[2] = data->GetFloat(); // Z
+
+	direction = new float[3];	// 0x2C
+	direction[0] = data->GetFloat(); // X
+	direction[1] = data->GetFloat(); // Y
+	direction[2] = data->GetFloat(); // Z
+
+	intensity = data->GetFloat();	// 0x38
+
+	// Need to check the light type
+	type = (LightType)data->GetInt(); // 0x3C
+
+	float i = data->GetFloat();	// 0x40 // Unknown, definitely float
+	int j = data->GetInt(); 	// 0x44
+	if (j != 0) {
+		cout << "Warning j != 0!" << endl;
+	}
+
+	// Light color
+	color = new int[3];
+	color[0] = data->GetInt(); // R // 0x48
+	color[1] = data->GetInt(); // G // 0x4C
+	color[2] = data->GetInt(); // B // 0x50
+
+	// Not 100% on these names
+	focusdistance = data->GetFloat();	// 0x54
+	spreaddistance = data->GetFloat();	// 0x58
+	umbraangle = data->GetFloat();		// 0x5C // In radians
+	penumbraangle = data->GetFloat();	// 0x60 // In radians
 }
 
 string Light::ToString() {
-	return "";
+	stringstream ss;
+	ss.precision(6);
+	ss.setf(ios::fixed, ios::floatfield);
+	ss << "\tlight\t" << name << endl;
+	ss << "\ttype\t";
+	switch (type) {
+	case OmniType:
+		ss << "omni";
+		break;
+	case SpotType:
+		ss << "spot";
+		break;
+	case DirectType:
+		ss << "direct";
+		break;
+	case AmbientType:
+		ss << "ambient";
+		break;
+	default:
+		ss << "unknown: " << type;
+		break;
+	}
+	ss << endl;
+	ss << "\tposition\t" << position[0] << "\t" << position[1] << "\t" << position[2] << endl;
+	ss << "\tdirection\t" << direction[0] << "\t" << direction[1] << "\t" << direction[2] << endl;
+	ss << "\tintensity\t" << intensity << endl;
+	ss << "\tcolor\t" << color[0] << " " << color[1] << " " << color[2] << endl;
+	ss << "\tumbraangle\t" << umbraangle << endl;
+	ss << "\tpenumbraangle\t" << penumbraangle << endl;
+	return ss.str();
 }
 
 class Set {
@@ -356,25 +424,25 @@ string Set::ToString() {
 	ss << "section: colormaps" << endl; // we don't have any.
 	// setups
 	ss << "section: setups" << endl;
-	vector<Section *>::iterator it;
 	ss << "\tnumsetups " << setups.size() << endl;
-	for (it = setups.begin(); it != setups.end(); ++it) {
+	for (vector<Section *>::iterator it = setups.begin(); it != setups.end(); ++it) {
 		ss << (*it)->ToString() << endl << endl;
 	}
-
 	// lights
 	ss << "section: lights" << endl;
-	ss << "\tnumlights 0" << endl;
-	for (it = lights.begin(); it != lights.end(); it++) {
+	ss << "\tnumlights " << lights.size() << endl;
+	for (vector<Section *>::iterator it = lights.begin(); it != lights.end(); it++) {
 		ss << (*it)->ToString() << endl << endl;
 	}
 	// sectors
 	ss << "section: sectors\n";
-	for (it = sectors.begin(); it != sectors.end(); it++) {
+	ss << "\tnumsectors " << sectors.size() << endl;
+	for (vector<Section *>::iterator it = sectors.begin(); it != sectors.end(); it++) {
 		ss << (*it)->ToString() << endl << endl;
 	}
 	return ss.str();
 }
+
 int main(int argc, char **argv) {
 	if (argc < 2) {
 		return 0;
