@@ -1469,11 +1469,11 @@ class App(tkinter.Frame):
         else:
             # msg info
             self.add_info("<b>Message</b>: {}\n".format(path[1]))
-            self.add_info("  wav:    {}\n".format(msg.wav))
+            self.add_info("  wav:    {}\n".format(msg.msg_wav))
             self.add_info("  object: " + self.fmt_hl_obj(msg.obj.idx, True) + 
                 "\n")
-            self.add_info("  arg2:   {} (0x{:X})\n".format(msg.arg2, msg.arg2))
-            self.add_info("  arg3:   {} (0x{:X})\n".format(msg.arg3, msg.arg3))
+            self.add_info("  arg2:   {a} (0x{a:X})\n".format(a = msg.msg_arg2))
+            self.add_info("  arg3:   {a} (0x{a:X})\n".format(a = msg.msg_arg3))
             self.add_info("\n{}\n".format(hlesc(msg.name)))
             if self.tran:
                 self.add_info("\n<i>Translated:</i>\n{}\n".\
@@ -1520,7 +1520,7 @@ class App(tkinter.Frame):
             # grp info
             self.add_info("<b>Dialog group</b>: {} (0x{:X})\n".format(\
                 grp.idx, grp.idx))
-            self.add_info("  arg1: {} (0x{:X})\n\n".format(grp.arg1, grp.arg1))
+            self.add_info("  arg1: {a} (0x{a:X})\n\n".format(a = grp.grp_arg1))
             self.add_info("<b>Dialog handlers<b>: {}\n".format(len(grp.acts)))
             for idx, act in enumerate(grp.acts):
                 self.add_info("  {}) <u>on {} {} 0x{:X} 0x{:X}</u>, dlgs: "\

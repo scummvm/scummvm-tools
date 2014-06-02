@@ -112,15 +112,13 @@ class MsgObject:
         self.name = None
 
 class DlgGrpObject:
-    def __init__(self, idx, num_acts, arg1):
+    def __init__(self, idx, arg1):
         self.idx = idx
-        self.num_acts = num_acts # store array length while loading
-        self.arg1 = arg1
+        self.grp_arg1 = arg1
         self.acts = None # dialog handlers
 
 class DlgActObject:
-    def __init__(self, num_dlgs, opcode, ref, arg1, arg2):
-        self.num_dlgs = num_dlgs # store array length while loading
+    def __init__(self, opcode, ref, arg1, arg2):
         self.opcode = opcode # handler: opcode filter
         self.ref = ref       # handler: object idx filter
         self.arg1 = arg1
@@ -136,12 +134,11 @@ class DlgObject:
         self.ops = None          # operations list
 
 class DlgOpObject:
-    def __init__(self, opcode, arg, ref, pos):
+    def __init__(self, opcode, arg, ref):
         self.opcode = opcode    # dialog opcode
         self.arg = arg          # argument (ref, offset etc.)
         self.ref = ref          # message idx
         self.msg = None         # message
-        self.pos = pos          # position in opcodes list
         
 class Engine:
     def __init__(self):
@@ -533,7 +530,8 @@ class Engine:
                 for i in range(num_grps):
                     temp = f.read(12)
                     idx, num_acts, arg1 = struct.unpack_from("<III", temp)
-                    grp = DlgGrpObject(idx, num_acts, arg1)
+                    grp = DlgGrpObject(idx, arg1)
+                    grp.num_acts = num_acts
                     self.dlgs.append(grp)
                 opref = {}
                 for grp in self.dlgs:
@@ -543,7 +541,8 @@ class Engine:
                         temp = f.read(16)
                         opcode, ref, num_dlgs, arg1, arg2 = \
                             struct.unpack_from("<2H3I", temp)
-                        act = DlgActObject(num_dlgs, opcode, ref, arg1, arg2)
+                        act = DlgActObject(opcode, ref, arg1, arg2)
+                        act.num_dlgs = num_dlgs
                         if not noobjref:
                             if ref not in self.obj_idx:
                                 raise EngineError("Dialog group 0x{:x} refered "\
@@ -569,7 +568,8 @@ class Engine:
                 for oidx, i in enumerate(range(num_ops)):
                     temp = f.read(4)
                     ref, arg, code  = struct.unpack_from("<HBB", temp)
-                    dlgop = DlgOpObject(code, arg, ref, oidx)
+                    dlgop = DlgOpObject(code, arg, ref)
+                    dlgop.pos = oidx
                     if ref < len(self.msgs):
                         dlgop.msg = self.msgs[ref]
                     self.dlgops.append(dlgop)
@@ -627,4 +627,20 @@ class Engine:
         for msg in self.msgs:
             txt = msg.name.encode(self.enc)
             f.write(txt + b"\0")
+
+    def write_fix(self, f):
+        f.write(struct.pack("<I", len(self.dlgs)))
+        for grp in self.dlgs:
+            f.write(struct.pack("<3I", grp.idx, len(grp.acts), grp.grp_arg1))
+        for grp in self.dlgs:
+            for act in grp.acts:
+                f.write(struct.pack("<2H3I", act.opcode, act.ref, 
+                    len(act.dlgs), act.arg1, act.arg2))
+            for act in grp.acts:
+                for dlg in act.dlgs:
+                    f.write(struct.pack("<3I", dlg.op_start, dlg.arg1, 
+                        dlg.arg2))
+        f.write(struct.pack("<I", len(self.dlgops)))
+        for op in self.dlgops:
+            f.write(struct.pack("<H2B", op.ref, op.arg, op.opcode))
 

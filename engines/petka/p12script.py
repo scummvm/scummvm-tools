@@ -420,7 +420,7 @@ class P12Compiler:
                         act["lineno"])
                 else:
                     # get by ident
-                    self.checkident(act["sonref"], "ON object ref", \
+                    self.checkident(act["sonref"], "ON object ref",
                         act["lineno"])
                     sonref = self.getidentvalue(act["sonref"])
                 onrec = petka.engine.ScrActObject(act["son"], 
@@ -437,13 +437,13 @@ class P12Compiler:
                         opref = self.check16(opref, "OP object", op["lineno"])
                     else:
                         # get by ident
-                        self.checkident(op["obj_ref"], "OP object", \
+                        self.checkident(op["obj_ref"], "OP object",
                             op["lineno"])
                         opref = self.getidentvalue(op["obj_ref"])
                     # arguments
                     fmt = []
                     for i in range(3):
-                        fmt.append(("OP argument {}".format(i + 1), \
+                        fmt.append(("OP argument {}".format(i + 1),
                             self.check16, True))
                     argnum = self.convertargs(fmt, op["args"], op["lineno"])
                     oprec =  petka.engine.ScrOpObject(opref, op["opcode"], 
@@ -509,7 +509,7 @@ class P12Compiler:
     # =======================================================================
     # compile DIALOGUE.FIX
     # =======================================================================
-    def compile_dialog(self, source, destfolder, enc = None, \
+    def compile_dialog(self, source, destfolder, enc = None,
             st_fix = None, st_lod = None):
 
         pe = petka.Engine()
@@ -527,7 +527,7 @@ class P12Compiler:
         revDLGOPS = {}
         for ok, ov in petka.DLGOPS.items():
             revDLGOPS[ov[0]] = ok
-        self.reservedid = ["MSG", "DLG", "DLGGRP", "ON", "ENDDLG", \
+        self.reservedid = ["MSG", "DLG", "DLGGRP", "ON", "ENDDLG",
             "ENDDLGGRP", "ENDON"] + list(revDLGOPS.keys())
 
         # msg array
@@ -542,6 +542,8 @@ class P12Compiler:
         compactitem = None
         # current dlg
         compdlgitem = None
+        # dlgop count
+        compdlgops = 0
 
         for lineno, tokens in self.tokenizer(source, enc):
             if len(tokens) == 0:
@@ -563,7 +565,7 @@ class P12Compiler:
                         raise ScriptSyntaxError("Error at {}: bad filename "\
                             "in MSG \"{}\"".format(lineno, tokens[2]))
                     mode = 10
-                    compmsgitem = {"ident": tokens[1], "wav": tokens[2], \
+                    compmsgitem = {"ident": tokens[1], "wav": tokens[2],
                         "args": tokens[3:], "lineno": lineno}
                     compmsg.append(compmsgitem)
                 elif cmd == "DLGGRP":
@@ -575,7 +577,7 @@ class P12Compiler:
                             "syntax".format(lineno))
                     while len(tokens) < 3:
                         tokens.append("0")
-                    compgrpitem = {"grp_id": tokens[1], "arg": tokens[2], \
+                    compgrpitem = {"grp_id": tokens[1], "arg": tokens[2],
                         "acts": [], "lineno": lineno}
                 else:
                     raise ScriptSyntaxError("Error at {}: unknown syntax "\
@@ -631,7 +633,7 @@ class P12Compiler:
                             "syntax".format(lineno))
                     while len(tokens) < 3:
                         tokens.append("0")
-                    compdlgitem = {"args": tokens[1:], "dlgops": [], \
+                    compdlgitem = {"args": tokens[1:], "dlgops": [],
                         "lineno": lineno}
                 elif cmd == "ENDON" and len(tokens) == 1:
                     mode = 1
@@ -647,11 +649,11 @@ class P12Compiler:
                     compactitem["dlgs"].append(compdlgitem)
                     compdlgitem = None
                     mode = 2
-                elif cmd[-1:] == ":":
+                elif len(tokens) == 1 and cmd[-1:] == ":":
                     # label case
                     label = cmd[:-1]
-                    self.checkusedid(cmd[:-1], lineno)
-                    self.setidentvalue(cmd[:-1], len(compdlgitem["dlgops"]))
+                    self.checkusedid(tokens[0][:-1], lineno)
+                    self.setidentvalue(tokens[0][:-1], compdlgops)
                 else:
                     # check format
                     if len(tokens) < 1 or len(tokens) > 3:
@@ -670,7 +672,8 @@ class P12Compiler:
                                 "DLGOP \"{}\" in DLG".\
                                 format(lineno, cmd))
                         opcode = self.check8(opcode, "dlgopcode", lineno)
-                    compdlgitem["dlgops"].append({"opcode": opcode, \
+                    compdlgops += 1
+                    compdlgitem["dlgops"].append({"opcode": opcode,
                         "lineno": lineno, \
                         "msg_ref": tokens[2], "arg": tokens[1]})
             else:
@@ -708,6 +711,72 @@ class P12Compiler:
         print("DALOGUE.LOD saved: {} messages".\
             format(len(pe.msgs)))
 
+        for grp in compgrp:
+            fmt = [("DLGGRP number", self.check32, False),\
+                ("DLGGRP argument", self.check32, True)]
+            argnum = self.convertargs(fmt, [grp["grp_id"], grp["arg"]], \
+                grp["lineno"])
+            # build DLGGRP
+            grprec = petka.engine.DlgGrpObject(argnum[0], argnum[1])
+            grprec.acts = []
+            for act in grp["acts"]:
+                # act objref
+                if act["donref"].upper() == "THIS":
+                    donref = grprec.grp_id
+                else:
+                    donref = self.convertnum(act["donref"])
+                if donref is not None:
+                    # direct number
+                    donref = self.check16(donref, "ON object ref", 
+                        act["lineno"])
+                else:
+                    # get by ident
+                    self.checkident(act["donref"], "ON object ref",
+                        act["lineno"])
+                    donref = self.getidentvalue(act["donref"])
+                # act arguments
+                fmt = []
+                for i in range(2):
+                    fmt.append(("ON argument {}".format(i + 1),
+                        self.check32, True))
+                argnum = self.convertargs(fmt, act["args"], act["lineno"])
+                # build ON
+                actrec = petka.engine.DlgActObject(act["don"], donref,
+                    argnum[0], argnum[1])
+                actrec.dlgs = []
+                for dlg in act["dlgs"]:
+                    # dlg arguments
+                    fmt = []
+                    for i in range(2):
+                        fmt.append(("DLG argument {}".format(i + 1),
+                            self.check32, True))
+                    argnum = self.convertargs(fmt, dlg["args"], dlg["lineno"])
+                    # build DLG
+                    dlgrec = petka.engine.DlgObject(len(pe.dlgops), 
+                        argnum[0], argnum[1])
+                    for op in dlg["dlgops"]:
+                        fmt = [("DLGOP argument", self.check8, False),
+                            ("DLGOP ref", self.check16, True)]
+                        argnum = self.convertargs(fmt, [op["arg"],
+                            op["msg_ref"]], op["lineno"])
+                        oprec = petka.engine.DlgOpObject(op["opcode"],
+                            argnum[0], argnum[1])
+                        pe.dlgops.append(oprec)
+                    actrec.dlgs.append(dlgrec)
+                grprec.acts.append(actrec)
+            pe.dlgs.append(grprec)
+
+        if destfolder is not None:
+            f = open(os.path.join(destfolder, "dialogue.fix"), "wb")
+        else:
+            f = st_fix
+        try:
+            pe.write_fix(f)
+        finally:
+            if destfolder is not None:
+                f.close()
+        print("DALOGUE.FIX saved: {} groups, {} dialog opcodes".\
+            format(len(pe.dlgs), len(pe.dlgops)))
 
 
     # =======================================================================
@@ -911,7 +980,7 @@ class P12Compiler:
         for gidx, grp in enumerate(pe.dlgs, 1):
             pprint("# {} = 0x{:x}".format(gidx, gidx))
             pprint("DLGGRP 0x{:x} {}".format(grp.idx, \
-                self.fmtnum32(grp.arg1)))
+                self.fmtnum32(grp.grp_arg1)))
             for sidx, act in enumerate(grp.acts, 1):
                 pprint("  ON {} 0x{:x} 0x{:x} 0x{:x} # {}".format(\
                     self.fmtop(act.opcode), act.ref, act.arg1, 
@@ -937,7 +1006,7 @@ class P12Compiler:
                         opref = "0x{:X}".format(op.ref)
                         opcode = self.fmtdlgop(op.opcode)
                         if op.pos in usedadr:
-                             pprint("      label_{:X}:\n".format(
+                             pprint("      label_{:X}:".format(
                                 op.pos))
                         if op.opcode == 0x1: # BREAK
                             if op.pos in usedcase:
@@ -1206,7 +1275,7 @@ def internaltest(folder):
         if not compare(path, memfix):
             print("DIALOGUE.FIX - mismatch")
             break
-        if not compare(dcs.find_in_folder(testbase, "dialogue.lod"), memlod):
+        if not compare(find_in_folder(testbase, "dialogue.lod"), memlod):
             print("DIALOGUE.LOD - mismatch")
             break
 
