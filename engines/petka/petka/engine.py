@@ -105,10 +105,10 @@ class ScrOpObject:
 class MsgObject:
     def __init__(self, idx, wav, arg1, arg2, arg3):
         self.idx = idx
-        self.wav = wav   # wav filename
-        self.arg1 = arg1 # reference to object
-        self.arg2 = arg2
-        self.arg3 = arg3
+        self.msg_wav = wav   # wav filename
+        self.msg_arg1 = arg1 # reference to object
+        self.msg_arg2 = arg2
+        self.msg_arg3 = arg3
         self.name = None
 
 class DlgGrpObject:
@@ -164,7 +164,11 @@ class Engine:
         self.scenes = []
         self.obj_idx = {}
         self.scn_idx = {}
-        
+        self.msgs = []
+        self.dlgs = []
+        self.dlg_idx = {}
+        self.dlgops = []
+                
     def parse_ini(self, f):
         # parse ini settings
         curr_sect = None
@@ -611,4 +615,16 @@ class Engine:
                 f.write(struct.pack("<H5I", ref[0].idx, ref[1], ref[2], 
                     ref[3], ref[4], ref[5]))
                 
+
+    def write_lod(self, f):
+        f.write(struct.pack("<I", len(self.msgs)))
+        for msg in self.msgs:
+            wav = msg.msg_wav.encode(self.enc)
+            while len(wav) < 12:
+                wav += b"\0"
+            f.write(struct.pack("<I12sII", msg.msg_arg1, wav, msg.msg_arg2, 
+                msg.msg_arg3))
+        for msg in self.msgs:
+            txt = msg.name.encode(self.enc)
+            f.write(txt + b"\0")
 

@@ -505,6 +505,211 @@ class P12Compiler:
         print("SCRIPT.DAT saved: {} objects, {} scenes".\
             format(len(pe.objects), len(pe.scenes)))
 
+
+    # =======================================================================
+    # compile DIALOGUE.FIX
+    # =======================================================================
+    def compile_dialog(self, source, destfolder, enc = None, \
+            st_fix = None, st_lod = None):
+
+        pe = petka.Engine()
+        pe.init_empty("cp1251")
+
+        mode = 0 # 0 - common, 1 - grp, 2 - act, 3 - dlg
+                 # 10 - msg (autoreset to 0)
+                 
+        # used identificators
+        self.usedid = {}
+                   
+        revOPS = {}
+        for ok, ov in petka.OPCODES.items():
+            revOPS[ov[0]] = ok
+        revDLGOPS = {}
+        for ok, ov in petka.DLGOPS.items():
+            revDLGOPS[ov[0]] = ok
+        self.reservedid = ["MSG", "DLG", "DLGGRP", "ON", "ENDDLG", \
+            "ENDDLGGRP", "ENDON"] + list(revDLGOPS.keys())
+
+        # msg array
+        compmsg = []
+        # current msg
+        compmsgitem = None
+        # grp array
+        compgrp = []
+        # current grp
+        compgrpitem = None
+        # current act
+        compactitem = None
+        # current dlg
+        compdlgitem = None
+
+        for lineno, tokens in self.tokenizer(source, enc):
+            if len(tokens) == 0:
+                continue
+            if mode == 0:
+                # accept: MSG, DLGGRP
+                cmd = tokens[0].upper()
+                if cmd == "MSG":
+                    if len(tokens) < 3 or len(tokens) > 6:
+                        raise ScriptSyntaxError("Error at {}: unknown MSG "\
+                            "syntax".format(lineno))
+                    while len(tokens) < 6:
+                        tokens.append("0")
+                    # check ident
+                    self.checkusedid(tokens[1], lineno)    
+                    self.setidentvalue(tokens[1], len(compmsg))                
+                    # check wavfile name (1..12)
+                    if len(tokens[2]) < 1 or len(tokens[2]) > 12:
+                        raise ScriptSyntaxError("Error at {}: bad filename "\
+                            "in MSG \"{}\"".format(lineno, tokens[2]))
+                    mode = 10
+                    compmsgitem = {"ident": tokens[1], "wav": tokens[2], \
+                        "args": tokens[3:], "lineno": lineno}
+                    compmsg.append(compmsgitem)
+                elif cmd == "DLGGRP":
+                    # dlggrp
+                    mode = 1
+                    # check syntax
+                    if len(tokens) < 2 or len(tokens) > 3:
+                        raise ScriptSyntaxError("Error at {}: unknown DLGGRP "\
+                            "syntax".format(lineno))
+                    while len(tokens) < 3:
+                        tokens.append("0")
+                    compgrpitem = {"grp_id": tokens[1], "arg": tokens[2], \
+                        "acts": [], "lineno": lineno}
+                else:
+                    raise ScriptSyntaxError("Error at {}: unknown syntax "\
+                        "\"{}\"".format(lineno, cmd))
+            elif mode == 10:
+                # MSG, 2nd string, one token - msg for subtitle
+                if len(tokens) != 1:
+                    raise ScriptSyntaxError("Error at {}: MSG syntax error, "\
+                        "message required".format(lineno))
+                compmsgitem["msg"] = tokens[0]
+                compmsgitem = None
+                mode = 0
+            elif mode == 1:
+                # accept: ON, ENDDLGGRP
+                cmd = tokens[0].upper()
+                if cmd == "ON":
+                    # on
+                    mode = 2
+                    # check syntax
+                    if len(tokens) < 3 or len(tokens) > 5:
+                        raise ScriptSyntaxError("Error at {}: unknown ON "\
+                            "syntax".format(lineno))
+                    while len(tokens) < 5:
+                        tokens.append("0")
+                    if tokens[1] in revOPS:
+                        # opcode
+                        don = revOPS[tokens[1]]
+                    else:
+                        don = self.convertnum(tokens[1])
+                        if don is None:
+                            raise ScriptSyntaxError("Error at {}: unknown ON "\
+                                "OPREF ""\"{}\" in ON".\
+                                format(lineno, tokens[1]))
+                        don = self.check16(don, "ON opref", lineno)
+                    compactitem = {"don": don, "donref": tokens[2], 
+                        "args": tokens[3:], "dlgs": [], "lineno": lineno}
+                elif cmd == "ENDDLGGRP" and len(tokens) == 1:
+                    mode = 0
+                    compgrp.append(compgrpitem)
+                    compgrpitem = None
+                else:
+                    raise ScriptSyntaxError("Error at {}: unknown DLGGRP "\
+                        "syntax \"{}\"".format(lineno, cmd))
+            elif mode == 2:
+                # accept: DLG, ENDON
+                cmd = tokens[0].upper()
+                if cmd == "DLG":
+                    # dlg
+                    mode = 3
+                    # check syntax
+                    if len(tokens) < 1 or len(tokens) > 3:
+                        raise ScriptSyntaxError("Error at {}: unknown DLG "\
+                            "syntax".format(lineno))
+                    while len(tokens) < 3:
+                        tokens.append("0")
+                    compdlgitem = {"args": tokens[1:], "dlgops": [], \
+                        "lineno": lineno}
+                elif cmd == "ENDON" and len(tokens) == 1:
+                    mode = 1
+                    compgrpitem["acts"].append(compactitem)
+                    compactitem = None
+                else:
+                    raise ScriptSyntaxError("Error at {}: unknown ON "\
+                        "syntax \"{}\"".format(lineno, cmd))
+            elif mode == 3:
+                # dlgopcode or ENDDLG
+                cmd = tokens[0].upper()
+                if cmd == "ENDDLG" and len(tokens) == 1:
+                    compactitem["dlgs"].append(compdlgitem)
+                    compdlgitem = None
+                    mode = 2
+                elif cmd[-1:] == ":":
+                    # label case
+                    label = cmd[:-1]
+                    self.checkusedid(cmd[:-1], lineno)
+                    self.setidentvalue(cmd[:-1], len(compdlgitem["dlgops"]))
+                else:
+                    # check format
+                    if len(tokens) < 1 or len(tokens) > 3:
+                        raise ScriptSyntaxError("Error at {}: unknown DLGOP "\
+                            "syntax in DLG".format(lineno))
+                    while len(tokens) < 3:
+                        tokens.append("0")
+                    op = {}
+                    if cmd in revDLGOPS:
+                        # opcode
+                        opcode = revDLGOPS[cmd]
+                    else:
+                        opcode = self.convertnum(cmd)
+                        if opcode is None:
+                            raise ScriptSyntaxError("Error at {}: unknown "\
+                                "DLGOP \"{}\" in DLG".\
+                                format(lineno, cmd))
+                        opcode = self.check8(opcode, "dlgopcode", lineno)
+                    compdlgitem["dlgops"].append({"opcode": opcode, \
+                        "lineno": lineno, \
+                        "msg_ref": tokens[2], "arg": tokens[1]})
+            else:
+                raise ScriptSyntaxError("Error at {}: unknown parser mode {}".\
+                    format(lineno, mode))
+            
+        # check unclosed objects
+        if mode != 0:
+            raise ScriptSyntaxError("Error at {}: unfinished structure".\
+                format(lineno))
+
+        # second stage - MSG
+        for msg in compmsg:
+            # msg arguments
+            fmt = []
+            for i in range(3):
+                fmt.append(("MSG argument {}".format(i + 1), \
+                    self.check32, True))
+            argnum = self.convertargs(fmt, msg["args"], msg["lineno"])
+            # build MSGREC
+            msgrec = petka.engine.MsgObject(
+                len(pe.msgs), msg["wav"], argnum[0], argnum[1], argnum[2])
+            msgrec.name = msg["msg"]
+            pe.msgs.append(msgrec)
+
+        if destfolder is not None:
+            f = open(os.path.join(destfolder, "dialogue.lod"), "wb")
+        else:
+            f = st_lod
+        try:
+            pe.write_lod(f)
+        finally:
+            if destfolder is not None:
+                f.close()
+        print("DALOGUE.LOD saved: {} messages".\
+            format(len(pe.msgs)))
+
+
+
     # =======================================================================
     # decompile utils
     # =======================================================================
@@ -699,7 +904,7 @@ class P12Compiler:
         for msg in pe.msgs:
             pprint("# {} = 0x{:x}".format(msg.idx, msg.idx))
             pprint("MSG msg_{} \"{}\" 0x{:x} 0x{:x} 0x{:x}".format(\
-                msg.idx, msg.wav, msg.arg1, msg.arg2, msg.arg3))
+                msg.idx, msg.msg_wav, msg.msg_arg1, msg.msg_arg2, msg.msg_arg3))
             pprint(" \"{}\"".format(self.escstr(msg.name)))
             pprint("")
     
@@ -910,8 +1115,35 @@ def action_decd(args):
         dcs.pretty_print_dlg(args.sourcepath, None, None, \
                 verbose = args.verbose)
 
+def action_compd(args):
+    print("Compile DIALOGUE.FIX file")
+    print("Input:\t{}".format(args.sourcepath))
+    print("Output:\t{}".format(args.destfolder))
+    print("Enc:\t{}".format(args.encoding or "UTF-8"))
+
+    dcs = P12Compiler()
+    if os.path.exists(args.destfolder) and not args.fo:
+        cnt = 0
+        lst = ["dialogue.fix", "dialogue.lod"]
+        for item in lst:
+            if find_in_folder(args.destfolder, item, False):
+                print("Error: destination file \"{}\" already "\
+                    "exists, use -fo to overwrite".format(item))
+                return
+
+    if not os.path.exists(args.destfolder):
+        os.makedirs(args.destfolder)
+    f = open(args.sourcepath, "rb")
+    try:
+        dcs.compile_dialog(f, args.destfolder, args.encoding)
+    except ScriptSyntaxError as e:
+        if args.trace_error:
+            traceback.print_exc()
+        print(e, file = sys.stderr)
+    finally:
+        f.close()
+
 def internaltest(folder):
-    # unpack testdata.7z
     test_arr = [
       "p1demo",
       "p1-0", "p1-1", "p1-2", "p1-3",
@@ -951,6 +1183,31 @@ def internaltest(folder):
             break
         if not compare(find_in_folder(testbase, "backgrnd.bg"), membkg):
             print("BACKGRND.BG - mismatch")
+            break
+
+        # dialogue
+        dcs = P12Compiler()
+        path = find_in_folder(testbase, "dialogue.fix")
+        if not os.path.exists(path):
+            print("All ok - no dialogue")
+            continue
+            
+        mems = io.BytesIO()        
+        dcs.pretty_print_dlg(path, mems)
+        print("Decompiled dialogue:", mems.tell())
+        # compile back
+        memfix = io.BytesIO()
+        memlod = io.BytesIO()
+        mems.seek(0)
+        ndcs = P12Compiler()
+        ndcs.compile_dialog(mems, None, None, \
+            memfix, memlod)
+        # compare
+        if not compare(path, memfix):
+            print("DIALOGUE.FIX - mismatch")
+            break
+        if not compare(dcs.find_in_folder(testbase, "dialogue.lod"), memlod):
+            print("DIALOGUE.LOD - mismatch")
             break
 
         print("All ok")
@@ -1014,6 +1271,19 @@ def main():
         dest = "encoding", help = "output encoding (default: UTF-8)")
     parser_decd.add_argument('sourcepath', help = "path to DIALOGUE.FIX file")
     parser_decd.set_defaults(func = action_decd)
+
+    # compiledialog - <source.txt> <destination folder> [--enc <encoding>]
+    parser_compd = subparsers.add_parser("compiledialog", aliases = ['cd'], \
+        help = "compile dialogue.fix")
+    parser_compd.add_argument('-fo', action = 'store_true', \
+        help = "force overwrite existing output files")
+    parser_compd.add_argument('-e', "--enc", action = 'store', \
+        dest = "encoding", help = "output encoding (default: UTF-8)")
+    parser_compd.add_argument('-te', "--trace-error", action = 'store_true', \
+        help = "trace syntax error")
+    parser_compd.add_argument('sourcepath', help = "path to SOURCE.TXT file")
+    parser_compd.add_argument('destfolder', help = "path to output folder")
+    parser_compd.set_defaults(func = action_compd)
 
     # version
     parser_version = subparsers.add_parser("version", help = "program version")

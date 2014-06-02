@@ -6,7 +6,8 @@ import sys, os, struct
 
 # Dependencies are automatically detected, but it might need
 # fine tuning.
-buildOptions = dict(packages = ["re", "io", "PIL", "traceback", "zlib", "gzip", "argparse", "struct", "binascii"], \
+buildOptions = dict(packages = ["re", "io", "PIL", "traceback", "zlib", "gzip",
+        "argparse", "struct", "binascii"], \
     excludes = ["_posixsubprocess"],
     include_files = ["help"],
     compressed = True, silent = True,\
