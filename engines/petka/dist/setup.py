@@ -17,7 +17,7 @@ buildOptions = dict(packages = ["re", "io", "PIL", "traceback", "zlib", "gzip",
 executables = [
     Executable('p12explore.py',
         base = 'Win32GUI',
-        targetName = "p12explore.exe")
+        targetName = "p12explore.exe"),
     Executable('p12script.py',
         base = 'Console',
         targetName = "p12script.exe")
