@@ -28,7 +28,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.2o 2014-05-23"
+VERSION = "v0.3 2014-06-03"
 
 def hlesc(value):
     if value is None:
@@ -73,7 +73,7 @@ def translit(text):
     allcaps = True
     for ch in text:
         ps = ru.find(ch)
-        if ps > 0:
+        if ps >= 0:
             ret += en[ps]
         elif ch in sl:
             ret += sl[ch]
@@ -361,6 +361,13 @@ class App(tkinter.Frame):
             menutran.add_command(
                     command = self.on_tran_load,
                     label = "Load translation (.po)")
+            menutran.add_separator()
+            menutran.add_command(
+                    command = self.on_tran_save_lod,
+                    label = "Save DIALOGUE.LOD")
+            menutran.add_command(
+                    command = self.on_tran_save_names,
+                    label = "Save NAMES.INI")
 
         self.menuhelp = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menuhelp,
@@ -1444,8 +1451,10 @@ class App(tkinter.Frame):
             self.update_gui("Messages ({})".format(len(self.sim.msgs)))
             for idx, msg in enumerate(self.sim.msgs):
                 capt = msg.name
-                if len(capt) > 25:
-                    capt = capt[:25] + "|"
+                if self.tran:
+                    capt = self._t(msg.name, "msg")
+                if len(capt) > 40:
+                    capt = capt[:40] + "|"
                 self.insert_lb_act("{} - {}".format(msg.idx, capt),
                     ["msgs", idx], idx)
         # change
@@ -1901,6 +1910,70 @@ class App(tkinter.Frame):
             self.clear_info()
             self.add_info("Error opening \"{}\" \n\n{}".\
                 format(hlesc(fn), hlesc(traceback.format_exc())))
+
+    def on_tran_save_lod(self):
+        # save dialog
+        if not self.sim: return
+        if len(self.sim.msgs) == 0 or not self.tran:
+            self.switch_view(0)
+            self.clear_info()
+            self.add_info("No messages or translations loaded")
+            return        
+        fn = filedialog.asksaveasfilename(parent = self,
+            title = "Save DIALOGUE.LOD",
+            filetypes = [('DIALOGUE.LOD', ".lod"), ('all files', '.*')],
+            initialdir = os.path.abspath(os.curdir))
+        if not fn: return # save canceled
+        # save template
+        try:
+            sim2 = petka.Engine()
+            sim2.init_empty("cp1251")
+            for msg in self.sim.msgs:
+                nmsg = petka.engine.MsgObject(msg.idx, msg.msg_wav, 
+                    msg.msg_arg1, msg.msg_arg2, msg.msg_arg3)
+                nmsg.name = self._t(msg.name, "msg")
+                sim2.msgs.append(nmsg)
+            f = open(fn, "wb")
+            try:
+                sim2.write_lod(f)
+            finally:
+                f.close()
+        except:
+            self.switch_view(0)
+            self.clear_info()
+            self.add_info("Error saving \"{}\" \n\n{}".\
+                format(hlesc(fn), hlesc(traceback.format_exc())))
+
+    def on_tran_save_names(self):
+        # save dialog
+        if not self.sim: return
+        if len(self.sim.msgs) == 0 or not self.tran:
+            self.switch_view(0)
+            self.clear_info()
+            self.add_info("No messages or translations loaded")
+            return        
+        fn = filedialog.asksaveasfilename(parent = self,
+            title = "Save NAMES.INI",
+            filetypes = [('NAMES.INI', ".ini"), ('all files', '.*')],
+            initialdir = os.path.abspath(os.curdir))
+        if not fn: return # save canceled
+        # save template
+        try:
+            f = open(fn, "wb")
+            def write(msg):
+                f.write("{}\n".format(msg).encode("cp1251"))
+            try:
+                write("[all]")
+                for name in self.sim.namesord:
+                    write(name + "=" + self._t(self.sim.names[name], "name"))
+            finally:
+                f.close()
+        except:
+            self.switch_view(0)
+            self.clear_info()
+            self.add_info("Error saving \"{}\" \n\n{}".\
+                format(hlesc(fn), hlesc(traceback.format_exc())))
+
 
 def main():
     root = tkinter.Tk()

@@ -51,11 +51,14 @@ ENDON
 
 REF \<ссылка на объект\> [\<аргумент 1\> [\<аргумент 2\> [\<аргумент 3\> [\<аргумент 4\> [\<аргумент 5\>]]]]]
 
+Указывает на объект находящийся на сцене. Эти записи попадают в файл
+  BACKGRND.BG.
+
 Отсутствующие аргументы будут заменены на -1 (0xffffffff).
  
 <u>ZEROREF</u>
 
-Используется если запись в backgrnd.bg необходима, но ни один из объектов не 
+Используется если запись в BACKGRND.BG необходима, но ни один из объектов не 
 добавлен к сцене. Если у сцены уже были указаны REF использвание этого операнда 
 невозможно.
 
@@ -69,63 +72,63 @@ REF \<ссылка на объект\> [\<аргумент 1\> [\<аргумен
 
 Операции:
 
- * USE
- * SETPOS
- * GOTO
- * LOOK
- * SAY
- * TAKE
- * WALK
- * TALK
- * END
- * SET
- * SHOW
- * HIDE
- * DIALOG
- * ZBUFFER
- * TOTALINIT
- * ANIMATE
- * STATUS
- * ADDINV
- * DELINV
- * STOP
- * CURSOR
- * OBJECTUSE
- * ACTIVE
- * SAID
- * SETSEQ
- * ENDSEQ
- * CHECK
- * IF
- * DESCRIPTION
- * HALF
- * WALKTO
- * WALKVICH
- * INITBG
- * USERMSG
- * SYSTEM
- * SETZBUFFER
- * CONTINUE
- * MAP
- * PASSIVE
- * NOMAP
- * SETINV
- * BGSFX
- * MUSIC
- * IMAGE
- * STAND
- * ON
- * OFF
- * PLAY
- * LEAVEBG
- * SHAKE
- * SP
- * RANDOM
- * JUMP
- * JUMPVICH
- * PART
- * CHAPTER
- * AVI
- * TOMAP
+ *  1 - USE
+ *  2 - SETPOS
+ *  3 - GOTO
+ *  4 - LOOK
+ *  5 - SAY
+ *  6 - TAKE
+ *  9 - WALK
+ * 10 - TALK
+ * 11 - END
+ * 14 - SET
+ * 15 - SHOW
+ * 16 - HIDE
+ * 17 - DIALOG
+ * 18 - ZBUFFER
+ * 19 - TOTALINIT
+ * 20 - ANIMATE
+ * 21 - STATUS
+ * 22 - ADDINV
+ * 23 - DELINV
+ * 24 - STOP
+ * 25 - CURSOR
+ * 26 - OBJECTUSE
+ * 27 - ACTIVE
+ * 28 - SAID
+ * 29 - SETSEQ
+ * 30 - ENDSEQ
+ * 31 - CHECK
+ * 32 - IF
+ * 33 - DESCRIPTION
+ * 34 - HALF
+ * 36 - WALKTO
+ * 37 - WALKVICH
+ * 38 - INITBG
+ * 39 - USERMSG
+ * 40 - SYSTEM
+ * 41 - SETZBUFFER
+ * 42 - CONTINUE
+ * 43 - MAP
+ * 44 - PASSIVE
+ * 45 - NOMAP
+ * 46 - SETINV
+ * 47 - BGSFX
+ * 48 - MUSIC
+ * 49 - IMAGE
+ * 50 - STAND,
+ * 51 - ON
+ * 52 - OFF
+ * 53 - PLAY
+ * 54 - LEAVEBG
+ * 55 - SHAKE
+ * 56 - SP
+ * 57 - RANDOM
+ * 58 - JUMP
+ * 59 - JUMPVICH
+ * 60 - PART
+ * 61 - CHAPTER
+ * 62 - AVI
+ * 63 - TOMAP
  * число 0..0xffff
 
