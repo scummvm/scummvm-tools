@@ -1745,10 +1745,10 @@ class App(tkinter.Frame):
                     for oidx, op in enumerate(act.ops):
                         if op.op_code == opcode:
                             ops.append([rec.idx, aidx, oidx])
-            for gidx, grp in enumerate(self.sim.dlgs):
+            for grp in self.sim.dlgs:
                 for aidx, act in enumerate(grp.acts):
                     if act.opcode == opcode and act.ref not in dacts:
-                        dacts.append([act.ref, gidx, aidx])
+                        dacts.append([act.ref, grp.idx, aidx])
             # display
             if len(ops) == 0:
                 self.add_info("<i>Not used in scripts</i>\n\n")
@@ -1847,12 +1847,12 @@ class App(tkinter.Frame):
             self.add_info("<b>Dialog opcode {}</b>\n\n".format(
                 self.fmt_dlgop(opcode)))
             dls = []
-            for gidx, grp in enumerate(self.sim.dlgs):
+            for grp in self.sim.dlgs:
                 for aidx, act in enumerate(grp.acts):
                     for didx, dlg in enumerate(act.dlgs):
                         for oidx, op in enumerate(dlg.ops):
                             if op.opcode == opcode:
-                                dls.append([act.ref, gidx, aidx, didx, oidx])
+                                dls.append([act.ref, grp.idx, aidx, didx, oidx])
                             
 
             # display
