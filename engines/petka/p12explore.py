@@ -263,6 +263,8 @@ class App(tkinter.Frame):
         self.path_handler["msgs"] = self.path_msgs
         self.path_handler["dlgs"] = self.path_dlgs
         self.path_handler["casts"] = self.path_casts
+        self.path_handler["opcodes"] = self.path_opcodes
+        self.path_handler["dlgops"] = self.path_dlgops
         self.path_handler["test"] = self.path_test
         self.path_handler["about"] = self.path_about
         self.path_handler["support"] = self.path_support
@@ -329,6 +331,12 @@ class App(tkinter.Frame):
         self.menuedit.add_command(
                 command = lambda: self.open_path("/dlgs"),
                 label = "Dialog groups")
+        self.menuedit.add_command(
+                command = lambda: self.open_path("/opcodes"),
+                label = "Opcodes")
+        self.menuedit.add_command(
+                command = lambda: self.open_path("/dlgops"),
+                label = "Dialog opcodes")
 
         self.menunav = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menunav,
@@ -763,11 +771,16 @@ class App(tkinter.Frame):
             return self.tran["_"][value]
         return value
 
-    def fmt_opcode(self, opcode):
+    def fmt_opcode(self, opcode, nofmt = False):
+        if nofmt:
+            return petka.OPCODES.get(opcode, ["OP{:04X}".format(opcode)])[0]
         return petka.OPCODES.get(opcode, ["<font color=\"red\">OP{:04X}</font>".\
             format(opcode)])[0]
 
-    def fmt_dlgop(self, opcode):
+    def fmt_dlgop(self, opcode, nofmt = False):
+        if nofmt:
+            return petka.DLGOPS.get(opcode, ["OP{:02X}".\
+                format(opcode)])[0]
         return petka.DLGOPS.get(opcode, ["<font color=\"red\">OP{:02X}</font>".\
             format(opcode)])[0]
 
@@ -853,6 +866,9 @@ class App(tkinter.Frame):
                 scn = self.fmt_hl_scene(scene.idx, True)
                 break
         self.add_info("  Start scene:   {}\n".format(scn))
+        self.add_info("\n")
+        self.add_info("  <a href=\"/opcodes\">Opcodes</a>\n")
+        self.add_info("  <a href=\"/dlgops\">Dialog opcodes</a>\n")
     
 
     def path_default(self, path):
@@ -878,6 +894,8 @@ class App(tkinter.Frame):
                 ("Casts ({})".format(len(self.sim.casts)), "/casts"),
                 ("Messages ({})".format(len(self.sim.msgs)), "/msgs"),
                 ("Dialog groups ({})".format(len(self.sim.dlgs)), "/dlgs"),
+                ("Opcodes", "/opcodes"),
+                ("Dialog opcodes", "/dlgops"),
                 #("-", None),
                 #("Test image", ["test", "image"]),
                 #("Test info", ["test","info"]),
@@ -1413,7 +1431,6 @@ class App(tkinter.Frame):
         return self.path_std_items(path, 1, "Invntr", "invntr", "obj", 
             self.sim.invntr, self.sim.invntrord, 0, info)
 
-
     def path_casts(self, path):
         if self.sim is None:
             return self.path_default([])
@@ -1642,6 +1659,215 @@ class App(tkinter.Frame):
             usedby(self.sim.objects)
             self.add_info("\n<b>Used by scenes</b>:\n")
             usedby(self.sim.scenes)
+        
+    def path_opcodes(self, path):
+        if self.sim is None:
+            return self.path_default([])
+        self.switch_view(0)
+        keys = None
+        def keyslist():
+            opstat = {} # opcpdes count
+            acstat = {} # handlers count
+            dastat = {} # dialog handlers count
+            keys = list(petka.OPCODES.keys())
+            for rec in self.sim.objects + self.sim.scenes:
+                for act in rec.acts:
+                    acstat[act.act_op] = acstat.get(act.act_op, 0) + 1
+                    if act.act_op not in keys:
+                        keys.append(act.act_op)
+                    for op in act.ops:
+                        opstat[op.op_code] = opstat.get(op.op_code, 
+                            0) + 1
+                        if op.op_code not in keys:
+                            keys.append(op.op_code)
+            for grp in self.sim.dlgs:
+                for act in grp.acts:
+                    dastat[act.opcode] = dastat.get(act.opcode, 0) + 1
+                    if act.opcode not in keys:
+                        keys.append(act.opcode)
+            keys.sort()
+            return keys, opstat, acstat, dastat
+        if self.last_path[:1] != ("opcodes",):
+            # calc statistics
+            keys, opstat, acstat, dastat = keyslist()
+            self.update_gui("Opcodes ({})".format(len(keys)))
+            for key in keys:
+                self.insert_lb_act("{} - {}".format(key, self.fmt_opcode(key, 
+                    True)), ["opcodes", key], key)
+        # change
+        opcode = None
+        if len(path) > 1:
+            # index
+            self.select_lb_item(path[1])
+            try:
+                opcode = path[1]
+            except:
+                pass
+        else:
+            self.select_lb_item(None)
+        # display
+        self.clear_info()
+        if not opcode:
+            if len(path) > 1:
+                self.add_info("<b>Opcode </b> \"{}\" not found\n\n".format(
+                    path[1]))
+            self.add_info("<b>Opcodes</b>\n\n")
+            # display
+            if not keys:
+                keys, opstat, acstat, dastat = keyslist()
+            for key in keys:
+                opname = self.fmt_opcode(key)
+                msg = "  {:2} (0x{:02X})".format(key, key,
+                    opname)
+                mcnt = len(msg)
+                msg += " - {}".format(fmt_hl("/opcodes/{}".format(
+                    key), opname))
+                mcnt += len(self.fmt_opcode(key, True))    
+                while mcnt < 23:
+                    msg += " "
+                    mcnt += 1
+                msg += "{:4d}  {:4d}  {:4d}".format(
+                    opstat.get(key, 0),
+                    acstat.get(key, 0),
+                    dastat.get(key, 0))
+                self.add_info(msg + "\n")
+        else:
+            # grp info
+            self.add_info("<b>Opcode {}</b>\n\n".format(
+                self.fmt_opcode(opcode)))
+            ops = []
+            acts = []
+            dacts = []
+            for rec in self.sim.objects + self.sim.scenes:
+                for aidx, act in enumerate(rec.acts):
+                    if act.act_op == opcode:
+                        acts.append([rec.idx, aidx])
+                    for oidx, op in enumerate(act.ops):
+                        if op.op_code == opcode:
+                            ops.append([rec.idx, aidx, oidx])
+            for gidx, grp in enumerate(self.sim.dlgs):
+                for aidx, act in enumerate(grp.acts):
+                    if act.opcode == opcode and act.ref not in dacts:
+                        dacts.append([act.ref, gidx, aidx])
+            # display
+            if len(ops) == 0:
+                self.add_info("<i>Not used in scripts</i>\n\n")
+            else:            
+                self.add_info("<i>Used in scripts</i>: {}\n".format(len(ops)))
+                for idx, (obj_idx, aidx, oidx) in enumerate(ops):
+                    self.add_info("  {}) obj={}, act={}, op={} {}\n".format(
+                        idx, self.fmt_hl_obj_scene(obj_idx, False), aidx, oidx,
+                        self.fmt_cmt("// " + self.fmt_hl_obj_scene(obj_idx, 
+                        True))))
+                self.add_info("\n")  
+
+            if len(acts) == 0:
+                self.add_info("<i>Not used in handlers</i>\n\n")
+            else:            
+                self.add_info("<i>Used in handlers</i>: {}\n".format(len(acts)))
+                for idx, (obj_idx, aidx) in enumerate(acts):
+                    self.add_info("  {}) obj={}, act={} {}\n".format(
+                        idx, self.fmt_hl_obj_scene(obj_idx, False), aidx, 
+                        self.fmt_cmt("// " + self.fmt_hl_obj_scene(obj_idx, 
+                        True))))
+                self.add_info("\n")  
+
+            if len(dacts) == 0:
+                self.add_info("<i>Not used in dialog handlers</i>\n\n")
+            else:            
+                self.add_info("<i>Used in dialog handlers</i>: {}\n".format(
+                    len(dacts)))
+                for idx, (obj_idx, gidx, aidx) in enumerate(dacts):
+                    self.add_info("  {}) obj={}, group=<a href=\"/dlgs/{}\">{}"
+                        "</a>, act={} {}\n".format(
+                        idx, self.fmt_hl_obj_scene(obj_idx, False), gidx, gidx, 
+                        aidx, self.fmt_cmt("// " + self.fmt_hl_obj_scene(
+                        obj_idx, True))))
+                self.add_info("\n")  
+
+    def path_dlgops(self, path):
+        if self.sim is None:
+            return self.path_default([])
+        self.switch_view(0)
+        keys = None
+        def keyslist():
+            dlstat = {} # dialog opcodes count
+            keys = list(petka.DLGOPS.keys()) + [5, 9]
+            for grp in self.sim.dlgs:
+                for act in grp.acts:
+                    for dlg in act.dlgs:
+                        for op in dlg.ops:
+                            dlstat[op.opcode] = dlstat.get(op.opcode, 0) + 1
+                            if op.opcode not in keys:
+                                keys.append(op.opcode)
+            keys.sort()
+            return keys, dlstat
+        if self.last_path[:1] != ("dlgops",):
+            # calc statistics
+            keys, dlstat = keyslist()
+            self.update_gui("Dialog opcodes ({})".format(len(keys)))
+            for key in keys:
+                self.insert_lb_act("{} - {}".format(key, self.fmt_dlgop(key, 
+                    True)), ["dlgops", key], key)
+        # change
+        opcode = None
+        if len(path) > 1:
+            # index
+            self.select_lb_item(path[1])
+            try:
+                opcode = path[1]
+            except:
+                pass
+        else:
+            self.select_lb_item(None)
+        # display
+        self.clear_info()
+        if not opcode:
+            if len(path) > 1:
+                self.add_info("<b>Dialog opcode </b> \"{}\" not found\n\n".\
+                    format(path[1]))
+            self.add_info("<b>Dialog opcodes</b>\n\n")
+            # display
+            if not keys:
+                keys, dlstat = keyslist()
+            for key in keys:
+                opname = self.fmt_dlgop(key)
+                msg = "  {:2} (0x{:02X})".format(key, key, opname)
+                mcnt = len(msg)
+                msg += " - {}".format(fmt_hl("/dlgops/{}".format(
+                    key), opname))
+                mcnt += len(self.fmt_dlgop(key, True))    
+                while mcnt < 20:
+                    msg += " "
+                    mcnt += 1
+                msg += "{:4d}".format(dlstat.get(key, 0))
+                self.add_info(msg + "\n")
+        else:
+            # grp info
+            self.add_info("<b>Dialog opcode {}</b>\n\n".format(
+                self.fmt_dlgop(opcode)))
+            dls = []
+            for gidx, grp in enumerate(self.sim.dlgs):
+                for aidx, act in enumerate(grp.acts):
+                    for didx, dlg in enumerate(act.dlgs):
+                        for oidx, op in enumerate(dlg.ops):
+                            if op.opcode == opcode:
+                                dls.append([act.ref, gidx, aidx, didx, oidx])
+                            
+
+            # display
+            if len(dls) == 0:
+                self.add_info("<i>Not used in dialogs</i>\n\n")
+            else:            
+                self.add_info("<i>Used in dialogs</i>: {}\n".format(len(dls)))
+                for idx, (obj_idx, gidx, aidx, didx, oidx) in enumerate(dls):
+                    self.add_info("  {}) obj={}, group=<a href=\"/dlgs/{}\">{}"
+                        "</a>, act={}, dlg={}, op={} {}\n".format(
+                        idx, self.fmt_hl_obj_scene(obj_idx, False), gidx, gidx, 
+                        aidx, didx, oidx, self.fmt_cmt("// " + 
+                        self.fmt_hl_obj_scene(obj_idx, True))))
+                self.add_info("\n")  
+
         
     def path_test(self, path):
         self.update_gui("Test {}".format(path[1]))
