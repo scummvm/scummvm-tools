@@ -28,7 +28,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.3 2014-06-03"
+VERSION = "v0.3a 2014-06-06"
 
 def hlesc(value):
     if value is None:
@@ -1853,7 +1853,6 @@ class App(tkinter.Frame):
                         for oidx, op in enumerate(dlg.ops):
                             if op.opcode == opcode:
                                 dls.append([act.ref, grp.idx, aidx, didx, oidx])
-                            
 
             # display
             if len(dls) == 0:
