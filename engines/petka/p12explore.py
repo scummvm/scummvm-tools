@@ -28,7 +28,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.3a 2014-06-06"
+VERSION = "v0.3b 2014-06-10"
 
 def hlesc(value):
     if value is None:
