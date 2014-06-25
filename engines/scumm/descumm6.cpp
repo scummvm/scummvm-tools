@@ -2437,7 +2437,7 @@ void next_line_HE_V100(char *output) {
 	case 0xBA:
 		ext(output, "rx" "getWizData\0"
 				"\x14pppp|pixelColor,"
-				"\x1App|imageCount,"
+				"\x1Ap|imageCount,"
 				"\x21pppp|isPixelNonTransparentnumber,"
 				"\x27pp|height,"
 				"\x36ppp|block,"
@@ -2986,7 +2986,7 @@ void next_line_HE_V72(char *output) {
 				"\x1Fpp|imageSpotY,"
 				"\x20pp|width,"
 				"\x21pp|height,"
-				"\x24pp|imageCount,"
+				"\x24p|imageCount,"
 				"\x2Dpppp|isPixelNonTransparentnumber,"
 				"\x42pppp|pixelColor,"
 				"\x82pppppp|histogram,"
