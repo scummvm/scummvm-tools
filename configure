@@ -98,7 +98,7 @@ _wxincludes=""
 _wxlibs=""
 _freetypeincludes=""
 _freetypelibs=""
-_aos4path="Games:ScummVM-Tools"
+_amigaos4path="Games:ScummVM-Tools"
 
 # For cross compiling
 _host=""
@@ -1622,7 +1622,7 @@ ASFLAGS := $ASFLAGS
 WINDRES := $_windres
 WINDRESFLAGS := $WINDRESFLAGS
 WIN32PATH=$_win32path
-AOS4PATH=$_aos4path
+AMIGAOS4PATH=$_amigaos4path
 STATICLIBPATH=$_staticlibpath
 
 EXEEXT := $HOSTEXEEXT

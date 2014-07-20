@@ -173,35 +173,35 @@ endif
 
 # Special target to create an AmigaOS snapshot installation
 aos4dist: all
-	mkdir -p $(AOS4PATH)
-	mkdir -p $(AOS4PATH)/graphics
-	mkdir -p $(AOS4PATH)/tools
-	mkdir -p $(AOS4PATH)/tools/media
-	cp $(srcdir)/gui/media/detaillogo.jpg $(AOS4PATH)/tools/media/
-	cp $(srcdir)/gui/media/logo.jpg $(AOS4PATH)/tools/media/
-	cp $(srcdir)/gui/media/tile.gif $(AOS4PATH)/tools/media/
-	$(STRIP) construct_mohawk$(EXEEXT) -o $(AOS4PATH)/tools/construct_mohawk$(EXEEXT)
+	mkdir -p $(AMIGAOS4PATH)
+	mkdir -p $(AMIGAOS4PATH)/graphics
+	mkdir -p $(AMIGAOS4PATH)/tools
+	mkdir -p $(AMIGAOS4PATH)/tools/media
+	cp $(srcdir)/gui/media/detaillogo.jpg $(AMIGAOS4PATH)/tools/media/
+	cp $(srcdir)/gui/media/logo.jpg $(AMIGAOS4PATH)/tools/media/
+	cp $(srcdir)/gui/media/tile.gif $(AMIGAOS4PATH)/tools/media/
+	$(STRIP) construct_mohawk$(EXEEXT) -o $(AMIGAOS4PATH)/tools/construct_mohawk$(EXEEXT)
 ifeq "$(USE_FREETYPE)" "1"
 ifeq "$(USE_ICONV)" "1"
-	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AOS4PATH)/tools/create_sjisfnt$(EXEEXT)
+	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AMIGAOS4PATH)/tools/create_sjisfnt$(EXEEXT)
 endif
 endif
-	$(STRIP) decine$(EXEEXT) -o $(AOS4PATH)/tools/decine$(EXEEXT)
+	$(STRIP) decine$(EXEEXT) -o $(AMIGAOS4PATH)/tools/decine$(EXEEXT)
 ifeq "$(USE_BOOST)" "1"
-	$(STRIP) decompile$(EXEEXT) -o $(AOS4PATH)/tools/decompile$(EXEEXT)
+	$(STRIP) decompile$(EXEEXT) -o $(AMIGAOS4PATH)/tools/decompile$(EXEEXT)
 endif
-	$(STRIP) degob$(EXEEXT) -o $(AOS4PATH)/tools/degob$(EXEEXT)
-	$(STRIP) dekyra$(EXEEXT) -o $(AOS4PATH)/tools/dekyra$(EXEEXT)
-	$(STRIP) deriven$(EXEEXT) -o $(AOS4PATH)/tools/deriven$(EXEEXT)
-	$(STRIP) descumm$(EXEEXT) -o $(AOS4PATH)/tools/descumm$(EXEEXT)
-	$(STRIP) desword2$(EXEEXT) -o $(AOS4PATH)/tools/desword2$(EXEEXT)
-	$(STRIP) extract_mohawk$(EXEEXT) -o $(AOS4PATH)/tools/extract_mohawk$(EXEEXT)
-	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AOS4PATH)/tools/gob_loadcalc$(EXEEXT)
+	$(STRIP) degob$(EXEEXT) -o $(AMIGAOS4PATH)/tools/degob$(EXEEXT)
+	$(STRIP) dekyra$(EXEEXT) -o $(AMIGAOS4PATH)/tools/dekyra$(EXEEXT)
+	$(STRIP) deriven$(EXEEXT) -o $(AMIGAOS4PATH)/tools/deriven$(EXEEXT)
+	$(STRIP) descumm$(EXEEXT) -o $(AMIGAOS4PATH)/tools/descumm$(EXEEXT)
+	$(STRIP) desword2$(EXEEXT) -o $(AMIGAOS4PATH)/tools/desword2$(EXEEXT)
+	$(STRIP) extract_mohawk$(EXEEXT) -o $(AMIGAOS4PATH)/tools/extract_mohawk$(EXEEXT)
+	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AMIGAOS4PATH)/tools/gob_loadcalc$(EXEEXT)
 ifeq "$(USE_WXWIDGETS)" "1"
-	$(STRIP) scummvm-tools$(EXEEXT) -o $(AOS4PATH)/tools/scummvm-tools$(EXEEXT)
+	$(STRIP) scummvm-tools$(EXEEXT) -o $(AMIGAOS4PATH)/tools/scummvm-tools$(EXEEXT)
 endif
-	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AOS4PATH)/tools/scummvm-tools-cli$(EXEEXT)
-	#cp ${srcdir}/icons/scummvm-tools.info $(AOS4PATH)/scummvm-tools.info
-	cp $(srcdir)/COPYING $(AOS4PATH)/tools/COPYING.txt
-	cp $(srcdir)/README $(AOS4PATH)/tools/README.txt
-	cp $(srcdir)/NEWS $(AOS4PATH)/tools/NEWS.txt
+	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AMIGAOS4PATH)/tools/scummvm-tools-cli$(EXEEXT)
+	#cp ${srcdir}/icons/scummvm-tools.info $(AMIGAOS4PATH)/scummvm-tools.info
+	cp $(srcdir)/COPYING $(AMIGAOS4PATH)/tools/COPYING.txt
+	cp $(srcdir)/README $(AMIGAOS4PATH)/tools/README.txt
+	cp $(srcdir)/NEWS $(AMIGAOS4PATH)/tools/NEWS.txt
