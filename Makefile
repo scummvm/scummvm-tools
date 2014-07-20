@@ -172,7 +172,7 @@ endif
 #
 
 # Special target to create an AmigaOS snapshot installation
-aos4dist: all
+amigaos4dist: all
 	mkdir -p $(AMIGAOS4PATH)
 	mkdir -p $(AMIGAOS4PATH)/graphics
 	mkdir -p $(AMIGAOS4PATH)/tools
