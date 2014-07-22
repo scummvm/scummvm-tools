@@ -244,8 +244,7 @@ private:
 	string background;
 	string zbuffer;
 	float *position;
-	float *interest;
-	float roll;
+	float *rotationQuat;
 	float fov;
 	float nclip;
 	float fclip;
@@ -265,13 +264,13 @@ Setup::Setup(Data *data) : Section(data) {
 	position[1] = data->GetFloat();
 	position[2] = data->GetFloat();
 
-	interest = new float[3];
+	rotationQuat = new float[4];
 
-	interest[0] = data->GetFloat();
-	interest[1] = data->GetFloat();
-	interest[2] = data->GetFloat();
+	rotationQuat[0] = data->GetFloat();
+	rotationQuat[1] = data->GetFloat();
+	rotationQuat[2] = data->GetFloat();
+	rotationQuat[3] = data->GetFloat();
 
-	roll = data->GetFloat();
 	fov  = data->GetFloat();
 	nclip = data->GetFloat();
 	fclip = data->GetFloat();
@@ -285,8 +284,7 @@ string Setup::ToString() {
 	// background
 	// zbuffer
 	ss << "\tposition\t" << position[0] << "\t" << position[1] << "\t" << position[2] << endl;
-	ss << "\tinterest\t" << interest[0] << "\t" << interest[1] << "\t" << interest[2] << endl;
-	ss << "\troll\t" << roll << endl;
+	ss << "\trotationQuat\tX: " << rotationQuat[0] << "\tY: " << rotationQuat[1] << "\tZ: " << rotationQuat[2] << "\tW: " << rotationQuat[3] << "\t" << endl;
 	ss << "\tfov\t" << fov << endl;
 	ss << "\tnclip\t" << nclip << endl;
 	ss << "\tfclip\t" << fclip << endl;
