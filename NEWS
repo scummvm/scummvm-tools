@@ -1,6 +1,9 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
+1.8.0 (XXXX-XX-XX)
+ - Fix detection and decoding of BS1 big endian speech data in compress_sword1.
+
 1.7.0 (2014-07-21)
  - Add support for CGE 2 (Sfinx) in extract_cge and pack_cge tools.
  - Add option to run some of the tools in the GUI  on all the files with the same

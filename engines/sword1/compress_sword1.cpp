@@ -312,6 +312,33 @@ MusicFile musicNames[TOTAL_TUNES] = {
 };
 
 int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cSize, uint32 *returnSize) {
+	if (_speechEndianness == UnknownEndian) {
+		uint32 leSize, beSize;
+		_speechEndianness = LittleEndian;
+		int16* leData = uncompressSpeech(clu, idx, cSize, &leSize);
+		_speechEndianness = BigEndian;
+		int16* beData = uncompressSpeech(clu, idx, cSize, &beSize);
+		_speechEndianness = guessEndianness(leData, leSize / 2, beData, beSize / 2);
+		switch (_speechEndianness) {
+		case LittleEndian:
+			free(beData);
+			setRawAudioType(true, false, 16);
+			*returnSize = leSize;
+			return leData;
+		case BigEndian:
+			free(leData);
+			setRawAudioType(false, false, 16);
+			*returnSize = beSize;
+			return beData;
+		case UnknownEndian:
+			free(leData);
+			free(beData);
+			error("Sound::uncompressSpeech(): cannot determine data endianness");
+			*returnSize = 0;
+			return NULL;
+		}
+	}
+	
 	uint32 resSize, srcPos;
 	int16 *srcData, *dstData, *dstPos;
 	uint32 headerPos = 0;
@@ -330,7 +357,10 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 		dstPos = dstData;
 		cSize = (cSize - (headerPos + 8)) / 2;
 		while (srcPos < cSize) {
-			length = (int16)READ_LE_UINT16(srcData + srcPos);
+			if (_speechEndianness == LittleEndian)
+				length = (int16)READ_LE_UINT16(srcData + srcPos);
+			else
+				length = (int16)READ_BE_UINT16(srcData + srcPos);
 			srcPos++;
 			if (length < 0) {
 				length = -length;
@@ -345,8 +375,6 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 		}
 		free(fBuf);
 		*returnSize = resSize * 2;
-		if (_speechEndianness == UnknownEndian)
-			guessEndianness(dstData, length);
 		return dstData;
 	} else {
 		free(fBuf);
@@ -356,26 +384,44 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 	}
 }
 
-void CompressSword1::guessEndianness(int16 *data, int16 length) {
+CompressSword1::Endianness CompressSword1::guessEndianness(int16 *leData, uint32 leSize, int16 *beData, uint32 beSize) {
+	if (leData == NULL && beData == NULL)
+		return UnknownEndian;
+	else if (leData == NULL)
+		return BigEndian;
+	else if (beData == NULL)
+		return LittleEndian;
+	
 	// Compute average of difference between two consecutive samples for both the given
 	// data array and the byte swapped array.
-	double bs_diff_sum = 0., diff_sum = 0.;
+	uint32 length = leSize > beSize ? beSize : leSize;
 	if (length > 2000)
 		length = 2000;
+	double le_diff = endiannessHeuristicValue(leData, leSize, length, LittleEndian);
+	double be_diff = endiannessHeuristicValue(beData, beSize, length, BigEndian);
+	print("Speech endianness heuristic: average = %f for BE and %f for LE (%d samples)", be_diff, le_diff, length);
+	if (be_diff < le_diff)
+		return BigEndian;
+	else if (le_diff < be_diff)
+		return LittleEndian;
+	return UnknownEndian;
+}
 
-	int16 prev_bs_value = (int16)SWAP_16(*((uint16*)data));
-	for (int16 i = 1 ; i < length ; ++i) {
-		diff_sum += data[i] > data[i-1] ? data[i] - data[i-1] : data[i-1] - data[i];
-		int16 bs_value = (int16)SWAP_16(*((uint16*)(data + i)));
-		bs_diff_sum += bs_value > prev_bs_value ? bs_value - prev_bs_value : prev_bs_value - bs_value;
-		prev_bs_value = bs_value;
+double CompressSword1::endiannessHeuristicValue(int16* data, uint32 dataSize, uint32 maxSamples, Endianness dataEndianness) {
+	double diff_sum = 0.;
+	uint32 cpt = 0;
+	int16 prev_value = dataEndianness == BigEndian ? (int16)READ_BE_UINT16(data) : (int16)READ_LE_UINT16(data);
+	for (uint32 i = 1; i < dataSize && cpt < maxSamples; ++i) {
+		int16 value = dataEndianness == BigEndian ? (int16)READ_BE_UINT16(data + i) : (int16)READ_LE_UINT16(data + i);
+		if (value != prev_value) {
+			diff_sum += fabs((double)(value - prev_value));
+			++cpt;
+			prev_value = value;
+		}
 	}
-	// Set the little/big endian flags
-	if (diff_sum < bs_diff_sum)
-		_speechEndianness = LittleEndian;
-	else
-		_speechEndianness = BigEndian;
-	setRawAudioType(_speechEndianness == LittleEndian, false, 16);
+	if (cpt == 0)
+		return 50000.;
+	return diff_sum / cpt;
 }
 
 uint8 *CompressSword1::convertData(uint8 *rawData, uint32 rawSize, uint32 *resSize) {

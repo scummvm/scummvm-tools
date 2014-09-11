@@ -48,14 +48,16 @@ protected:
 	void compressSpeech(const Common::Filename *inpath, const Common::Filename *outpath);
 	void compressMusic(const Common::Filename *inpath, const Common::Filename *outpath);
 	void checkFilesExist(bool checkSpeech, bool checkMusic, const Common::Filename *inpath);
-	void guessEndianness(int16 *data, int16 length);
+
+	enum Endianness { BigEndian , LittleEndian , UnknownEndian } ;
+	Endianness guessEndianness(int16 *leData, uint32 leSize, int16 *beData, uint32 beSize);
+	double endiannessHeuristicValue(int16* data, uint32 dataSize, uint32 maxSamples, Endianness dataEndianness);
 
 private:
 	bool _useOutputMusicSubdir;
 
 	bool _macVersion;
 
-	enum Endianness { BigEndian , LittleEndian , UnknownEndian } ;
 	Endianness _speechEndianness;
 };
 
