@@ -31,6 +31,8 @@ public:
 	~ExtractGobStk();
 
 	virtual void execute();
+	
+	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 
 protected:
 	struct Chunk;

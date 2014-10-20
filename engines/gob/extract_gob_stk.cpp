@@ -46,7 +46,7 @@ ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 	_chunks = NULL;
 
 	ToolInput input;
-	input.format = "*.stk";
+	input.format = "*.*";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Extract the files from a Stick file used by 'gob' engine (.STK/.ITK/.LTK).";
@@ -55,6 +55,18 @@ ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 
 ExtractGobStk::~ExtractGobStk() {
 	delete _chunks;
+}
+
+InspectionMatch ExtractGobStk::inspectInput(const Common::Filename &filename) {
+	// Accept either any file with stk, itk or ltk extension
+	std::string ext = filename.getExtension();
+	if (
+		scumm_stricmp(ext.c_str(), "stk") == 0 ||
+		scumm_stricmp(ext.c_str(), "itk") == 0 ||
+		scumm_stricmp(ext.c_str(), "ltk") == 0
+		)
+		return IMATCH_PERFECT;
+	return IMATCH_AWFUL;
 }
 
 void ExtractGobStk::execute() {
