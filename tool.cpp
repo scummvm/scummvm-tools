@@ -142,6 +142,12 @@ void Tool::clearInputPaths() {
 }
 
 bool Tool::addInputPath(const std::string& in) {
+	// Check the input is acceptable. Usually this is done when calling inspectInput(filename, format),
+	// but inspectInput(filename) might be reimplemented to be more restrictive (especially when the
+	// format is "*.*").
+	if (inspectInput(in) == IMATCH_AWFUL)
+		return false;
+	// Now we know it matches. Look for the best match.
 	int bestMatchIndex = -1;
 	InspectionMatch bestMatch = IMATCH_AWFUL;
 	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
