@@ -53,6 +53,7 @@
 #include "engines/gob/extract_fascination_cd.h"
 #include "engines/kyra/extract_kyra.h"
 #include "engines/prince/extract_prince.h"
+#include "engines/prince/pack_prince.h"
 #include "engines/scumm/extract_loom_tg16.h"
 #include "engines/scumm/extract_mm_apple.h"
 #include "engines/scumm/extract_mm_c64.h"
@@ -91,6 +92,7 @@ Tools::Tools() {
 	_tools.push_back(new ExtractFascinationCD());
 	_tools.push_back(new ExtractKyra());
 	_tools.push_back(new ExtractPrince());
+	_tools.push_back(new PackPrince());
 	_tools.push_back(new ExtractLoomTG16());
 	_tools.push_back(new ExtractMMApple());
 	_tools.push_back(new ExtractMMC64());
