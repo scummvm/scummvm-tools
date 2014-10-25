@@ -55,8 +55,8 @@ protected:
 	void exportVariaTxt(FileData fileData);
 	void exportInvTxt(FileData fileData);
 	void exportTalkTxt(FileData fileData);
-	int talkTxtWithDialog(byte *talkTxt);
-	int talkTxtNoDialog(byte *talkTxt);
+	byte *talkTxtWithDialog(byte *talkTxt);
+	byte *talkTxtNoDialog(byte *talkTxt);
 	bool printSpecialDialogData(byte c);
 
 	Common::Array<FileEntry> _items;

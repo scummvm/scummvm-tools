@@ -80,8 +80,9 @@ void ExtractPrince::execute() {
 	}
 	_fFiles.print("mob.lst\nmob_name - exam text\n");
 	for (int loc = 1; loc <= kNumberOfLocations; loc++) {
+		_fFiles.print("%d.\n", loc);
+		// no databanks for loc 44 and 45
 		if (loc != 44 && loc != 45) {
-			_fFiles.print("\nLocation %d\n", loc);
 			std::string fullName = mainDir.getFullPath();
 			sprintf(pathBuffer, "%02d/databank.ptc", loc);
 			fullName += pathBuffer;
@@ -184,7 +185,6 @@ ExtractPrince::FileData ExtractPrince::loadFile(int itemIndex) {
 	return fileData;
 }
 
-// TODO - export offset/id of mob?
 void ExtractPrince::exportMobs(FileData fileData) {
 	if (fileData._fileTable != nullptr) {
 		const int kMobsStructSize = 32;
@@ -208,25 +208,40 @@ void ExtractPrince::exportMobs(FileData fileData) {
 				mobName += c;
 				namePointer++;
 			}
+			if (mobName.size()) {
+				_fFiles.print("%s - ", mobName.c_str());
+			}
 
 			byte *examPointer = fileData._fileTable + examTextOffset;
 			mobExamText.clear();
 			c = *examPointer;
-			examPointer++;
 			if (c) {
-				// TODO - add this in packing tool
-				//mobExamText += c;
-				do {
-					c = *examPointer;
-					c = correctPolishLetter(c);
-					if (c == 10) {
-						c = '|';
-					}
-					mobExamText += c;
+				examPointer++;
+				while ((c = *examPointer) != 255) {
+					mobExamText.clear();
+					do {
+						c = correctPolishLetter(c);
+						if (c == 10) {
+							c = '|';
+						}
+						mobExamText += c;
+						examPointer++;
+					} while ((c = *examPointer));
+					_fFiles.print("%s", mobExamText.c_str());
 					examPointer++;
-				} while (c != 255);
+					if (*examPointer == 254) {
+						_fFiles.print("*"); // show that there is pause before talking
+						examPointer++;
+					}
+					if (*examPointer == 1) {
+						_fFiles.print("+"); // show that there is next line of exam text
+						examPointer++;
+					}
+				};
 			}
-			_fFiles.print("%s - %s\n", mobName.c_str(), mobExamText.c_str());
+			if (mobName.size()) {
+				_fFiles.print("\n");
+			}
 			streamPos += kMobsStructSize;
 		}
 		free(fileData._fileTable);
@@ -254,6 +269,9 @@ void ExtractPrince::exportVariaTxt(FileData fileData) {
 			txtPointer++; // TODO -  remove this in packing tool
 			while ((c = *txtPointer)) {
 				c = correctPolishLetter(c);
+				if (c == 10) {
+					c = '|';
+				}
 				variaTxtString += c;
 				txtPointer++;
 			}
@@ -319,42 +337,67 @@ void ExtractPrince::exportTalkTxt(FileData fileData) {
 			error("Unable to create talktxt.txt");
 		}
 		_fFiles.print("talktxt.dat\n");
-		const int textOffset = 8000;
-		byte *talkTxt = fileData._fileTable + textOffset;
-		uint32 pos = 0;
-		int size;
-		while (pos + textOffset < fileData._size) {
-			if (*talkTxt == 0xFF) {
-				size = talkTxtWithDialog(talkTxt);
-				talkTxt += size;
-				pos += size;
-			} else {
-				size = talkTxtNoDialog(talkTxt);
-				talkTxt += size;
-				pos += size;
+
+		byte *setStringOffsets = fileData._fileTable;
+		const int kSetStringValues = 2000;
+		int setStringOffsetsArray[kSetStringValues];
+		int setStringIdArray[kSetStringValues];
+		for (int i = 0; i < kSetStringValues; i++) {
+			setStringOffsetsArray[i] = READ_LE_UINT32(setStringOffsets);
+			setStringIdArray[i] = 0;
+			setStringOffsets += 4;
+		}
+
+		int id = 1;
+		int diff = 0;
+		const int kTextOffset = 8000;
+		byte *talkTxt = fileData._fileTable + kTextOffset;
+		byte *endOfTalkTxt = fileData._fileTable + fileData._size;
+		while (talkTxt < endOfTalkTxt) {
+			diff = talkTxt - fileData._fileTable;
+			for (int i = 0; i < kSetStringValues; i++) {
+				if (setStringOffsetsArray[i] == diff) {
+					setStringIdArray[i] = id;
+				}
 			}
+			if (*talkTxt == 0xFF) {
+				talkTxt = talkTxtWithDialog(talkTxt);
+			} else {
+				talkTxt = talkTxtNoDialog(talkTxt);
+			}
+			id++;
 		}
 		free(fileData._fileTable);
 		_fFiles.close();
 		printf("talktxt.txt - done\n");
+
+		// Additional id data for texts
+		_outputPath.setFullName("talktxt_ids.txt");
+		_fFiles.open(_outputPath, "w");
+		if (!_fFiles.isOpen()) {
+			error("Unable to create talktxt_ids.txt");
+		}
+		_fFiles.print("talktxt_ids\n");
+		for (int i = 0; i < kSetStringValues; i++) {
+			_fFiles.print("%d\n", setStringIdArray[i]);
+		}
+		_fFiles.close();
+		printf("talktxt_ids.txt - done\n");
 	}
 }
 
-int ExtractPrince::talkTxtWithDialog(byte *talkTxt) {
+byte *ExtractPrince::talkTxtWithDialog(byte *talkTxt) {
 	byte *mainString;
 	byte *dialogBoxAddr[32];
 	byte *dialogOptAddr[32];
 	byte c;
 	std::string lineString;
-	int size = 0;
 
 	byte *stringCurrOff = talkTxt;
 	stringCurrOff++;
-	size++;
 	int32 adressOfFirstSequence = (int)READ_LE_UINT16(stringCurrOff);
 	mainString = talkTxt + adressOfFirstSequence;
 	stringCurrOff += 2;
-	size += 2;
 
 	for (int i = 0; i < 32; i++) {
 		dialogBoxAddr[i] = 0;
@@ -367,39 +410,32 @@ int ExtractPrince::talkTxtWithDialog(byte *talkTxt) {
 	int dialogBox = 0;
 	while ((off = (int)READ_LE_UINT16(stringCurrOff)) != -1) {
 		stringCurrOff += 2;
-		size += 2;
 		if (off) {
 			line = talkTxt + off;
+			dialogBoxAddr[dialogBox] = line;
+			dialogBox++;
 		}
-		dialogBoxAddr[dialogBox] = line;
-		dialogBox++;
 	}
 	stringCurrOff += 2;
-	size += 2;
 
 	int dialogOpt = 0;
 	while ((off = (int)READ_LE_UINT16(stringCurrOff)) != -1) {
 		stringCurrOff += 2;
-		size += 2;
 		if (off) {
 			line = talkTxt + off;
+			dialogOptAddr[dialogOpt] = line;
+			dialogOpt++;
 		}
-		dialogOptAddr[dialogOpt] = line;
-		dialogOpt++;
 	}
-	size += 2;
 
 	_fFiles.print("@DIALOGBOX_LINES:\n");
 	while ((c = *mainString) != 255) {
 		if (printSpecialDialogData(c)) {
 			mainString++;
-			size++;
-			_fFiles.print("%c\n", (*mainString) + 48);
+			_fFiles.print("%d\n", *mainString);
 		}
 		mainString++;
-		size++;
 	}
-	size++;
 	_fFiles.print("#END\n");
 			
 	for (int i = 0; i < dialogBox; i++) {
@@ -407,7 +443,6 @@ int ExtractPrince::talkTxtWithDialog(byte *talkTxt) {
 		while ((c = *dialogBoxAddr[i]) != 255) {
 			_fFiles.print("$%d\n", *dialogBoxAddr[i]);
 			dialogBoxAddr[i]++;
-			size++;
 			lineString.clear();
 			while ((c = *dialogBoxAddr[i])) {
 				c = correctPolishLetter(c);
@@ -415,51 +450,50 @@ int ExtractPrince::talkTxtWithDialog(byte *talkTxt) {
 					c = '|';
 				}
 				dialogBoxAddr[i]++;
-				size++;
 				lineString += c;
 			}
 			dialogBoxAddr[i]++;
-			size++;
 			_fFiles.print("%s\n", lineString.c_str());
 		}
-		size++;
 		_fFiles.print("#END\n");
 	}
 
 	for (int i = 0; i < dialogOpt; i++) {
 		_fFiles.print("@DIALOG_OPT %d\n", i);
+		byte lastC = 0;
 		while ((c = *dialogOptAddr[i]) != 255) {
-			if (printSpecialDialogData(c)) {
-				dialogOptAddr[i]++;
-				size++;
-				_fFiles.print("%c\n", (*dialogOptAddr[i]) + 48);
+			// WALKAROUND: fix for unnecessery '0' after PAUSE
+			// and double #HERO
+			if ((lastC != 254 || c != 0) && (lastC != 1 || c != 1)) {
+				if (printSpecialDialogData(c)) {
+					dialogOptAddr[i]++;
+					_fFiles.print("%d\n", *dialogOptAddr[i]);
+				}
 			}
+			lastC = c;
 			dialogOptAddr[i]++;
-			size++;
 		}
-		size++;
 		_fFiles.print("#END\n");
 	}
 	_fFiles.print("#ENDEND\n");
-	return size;
+	talkTxt = dialogOptAddr[dialogOpt - 1];
+	talkTxt++;
+	return talkTxt;
 }
 
-int ExtractPrince::talkTxtNoDialog(byte *talkTxt) {
+byte *ExtractPrince::talkTxtNoDialog(byte *talkTxt) {
 	byte c;
-	int size = 0;
 	_fFiles.print("@NORMAL_LINES:\n");
 	while ((c = *talkTxt) != 255) {
 		if (printSpecialDialogData(c)) {
 			talkTxt++;
-			size++;
-			_fFiles.print("%c\n", (*talkTxt) + 48);
+			_fFiles.print("%d\n", *talkTxt);
 		}
 		talkTxt++;
-		size++;
 	}
-	size++;
 	_fFiles.print("#END\n");
-	return size;
+	talkTxt++;
+	return talkTxt;
 }
 
 // Returns 'true' if next char is a value for 'enable option', 
