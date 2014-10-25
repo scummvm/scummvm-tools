@@ -56,6 +56,7 @@ protected:
 	void packMobs();
 	void packVariaTxt();
 	void packInvTxt();
+	void packCredits();
 	void packTalkTxt();
 	char correctPolishLetter(char c);
 	void talkTxtWithDialog();

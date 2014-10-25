@@ -68,6 +68,9 @@ void ExtractPrince::execute() {
 		if (!scumm_stricmp(_items[i]._name.c_str(), "talktxt.dat")) {
 			exportTalkTxt(loadFile(i));
 		}
+		if (!scumm_stricmp(_items[i]._name.c_str(), "credits.dat")) {
+			exportCredits(loadFile(i));
+		}
 	}
 	free(fileTable);
 	_databank.close();
@@ -326,6 +329,39 @@ void ExtractPrince::exportInvTxt(FileData fileData) {
 		free(fileData._fileTable);
 		_fFiles.close();
 		printf("invtxt.txt - done\n");
+	}
+}
+
+void ExtractPrince::exportCredits(FileData fileData) {
+	if (fileData._fileTable != nullptr) {
+		_outputPath.setFullName("credits.txt");
+		_fFiles.open(_outputPath, "w");
+		if (!_fFiles.isOpen()) {
+			error("Unable to create credits.txt");
+		}
+		_fFiles.print("credits.dat\n");
+		byte c;
+		byte lastC = 10;
+		byte *creditsTxt = fileData._fileTable;
+		byte *end = fileData._fileTable + fileData._size;
+		while (creditsTxt != end) {
+			c = *creditsTxt;
+			if (c == 10) {
+				_fFiles.print("@\n");
+			}
+			if (c != 13 && c != 10) {
+				c = correctPolishLetter(c);
+				_fFiles.print("%c", c);
+			}
+			if (lastC != 10 && c == 13) {
+				_fFiles.print("\n");
+			}
+			lastC = c;
+			creditsTxt++;
+		}
+		free(fileData._fileTable);
+		_fFiles.close();
+		printf("credits.txt - done\n");
 	}
 }
 

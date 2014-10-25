@@ -54,6 +54,7 @@ protected:
 	void exportMobs(FileData fileData);
 	void exportVariaTxt(FileData fileData);
 	void exportInvTxt(FileData fileData);
+	void exportCredits(FileData fileData);
 	void exportTalkTxt(FileData fileData);
 	byte *talkTxtWithDialog(byte *talkTxt);
 	byte *talkTxtNoDialog(byte *talkTxt);

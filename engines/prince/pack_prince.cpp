@@ -74,6 +74,14 @@ void PackPrince::execute() {
 	}
 	packMobs();
 	_databank.close();
+
+	mainDir.setFullName("credits.txt");
+	_databank.open(mainDir, "rb");
+	if (!_databank.isOpen()) {
+		error("Unable to open credits.txt");
+	}
+	packCredits();
+	_databank.close();
 }
 
 // TODO
@@ -266,6 +274,45 @@ void PackPrince::packInvTxt() {
 				_fFiles.writeByte(invTxtList[i]._examTxt[j]);
 			}
 			_fFiles.writeByte(0);
+		}
+	}
+	_fFiles.close();
+}
+
+void PackPrince::packCredits() {
+	_outputPath.setFullName("credits_translate.dat");
+	_fFiles.open(_outputPath, "wb");
+	if (!_fFiles.isOpen()) {
+		error("Unable to create credits_translate.dat");
+	}
+
+	// File size
+	uint32 fileSize = _databank.size();
+
+	// Header test
+	byte c;
+	std::string line;
+	while ((c = _databank.readByte()) != '\r') {
+		line += c;
+	}
+	if (line.compare("credits.dat")) {
+		error("Wrong header in credits.txt");
+	}
+	_databank.readByte(); // skip '\n'
+
+	while (1) {
+		c = _databank.readByte();
+		if (c != 13 && c != 10) {
+			if (c == '@') {
+				_fFiles.writeByte(13);
+				_fFiles.writeByte(10);
+			} else {
+				c = correctPolishLetter(c);
+				_fFiles.writeByte(c);
+			}
+		}
+		if (_databank.pos() == fileSize) {
+			break;
 		}
 	}
 	_fFiles.close();
