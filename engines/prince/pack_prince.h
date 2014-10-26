@@ -28,11 +28,9 @@
 class PackPrince : public Tool {
 public:
 	PackPrince(const std::string &name = "pack_prince");
-	
+
 	virtual void execute();
-	
-	virtual InspectionMatch inspectInput(const Common::Filename &filename);
-	
+
 protected:
 	struct FileEntry {
 		uint32 _offset;
@@ -53,7 +51,7 @@ protected:
 		std::string _examTxt;
 	};
 
-	struct TalkBeforeBox {
+	struct TalkTxt {
 		int _dialogData;
 		std::string _txt;
 	};

@@ -64,7 +64,7 @@ void PackPrince::execute() {
 		_fFiles.writeUint32LE(0); // and size of files
 	}
 
-	printf("Packing The Prince and the Coward text data... \n");
+	printf("Packing The Prince and the Coward text data...\n");
 
 	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("variatxt.txt");
@@ -76,6 +76,7 @@ void PackPrince::execute() {
 	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
 	fileNr++;
 	_databank.close();
+	printf("variatxt_translate.dat - done\n");
 
 	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("invtxt.txt");
@@ -87,6 +88,7 @@ void PackPrince::execute() {
 	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
 	fileNr++;
 	_databank.close();
+	printf("invtxt_translate.dat - done\n");
 
 	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("talktxt.txt");
@@ -98,6 +100,7 @@ void PackPrince::execute() {
 	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
 	fileNr++;
 	_databank.close();
+	printf("talktxt_translate.dat - done\n");
 
 	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("mob.txt");
@@ -109,6 +112,7 @@ void PackPrince::execute() {
 	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
 	fileNr++;
 	_databank.close();
+	printf("mob_translate.dat - done\n");
 
 	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("credits.txt");
@@ -120,25 +124,17 @@ void PackPrince::execute() {
 	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
 	fileNr++;
 	_databank.close();
+	printf("credits_translate.dat - done\n");
 
+	// Files offset and size setting
 	_fFiles.seek(posOfFilesInformation, SEEK_SET);
 	for (int i = 0; i < fileNr; i++) {
 		_fFiles.writeUint32LE(filesInfo[i]._offset);
 		_fFiles.writeUint32LE(filesInfo[i]._size);
 	}
 	_fFiles.close();
-}
-
-// TODO
-InspectionMatch PackPrince::inspectInput(const Common::Filename &filename) {
-	/*
-	std::string file = filename.getFullName();
-	if (scumm_stricmp(file.c_str(), "databank.ptc") == 0) {
-		return IMATCH_PERFECT;
-	}
-	return IMATCH_AWFUL;
-	*/
-	return IMATCH_PERFECT;
+	printf("All done!\n");
+	printf("File is created in %s\n", _outputPath.getFullPath().c_str());
 }
 
 void PackPrince::packVariaTxt() {
@@ -160,11 +156,11 @@ void PackPrince::packVariaTxt() {
 	_databank.readByte(); // skip '\n'
 	
 	// Loading to array:
-	const int variaTxtSize = 6000;
+	const int kVariaTxtSize = 6000;
 	Common::Array<VariaTxt> variaTxtList; // list of all txt
 	VariaTxt newVariaTxt; // temp varia txt
 	newVariaTxt._txt = "";
-	for (int i = 0; i < variaTxtSize; i++) {
+	for (int i = 0; i < kVariaTxtSize; i++) {
 		variaTxtList.push_back(newVariaTxt);
 	}
 
@@ -197,9 +193,9 @@ void PackPrince::packVariaTxt() {
 		}
 	}
 	
-	int textOffset = variaTxtSize * 4;
+	int textOffset = kVariaTxtSize * 4;
 	// Offset counting and packing:
-	for (int i = 0; i < variaTxtSize; i++) {
+	for (int i = 0; i < kVariaTxtSize; i++) {
 		if (variaTxtList[i]._txt.size()) {
 			_fFiles.writeUint32LE(textOffset);
 			textOffset += variaTxtList[i]._txt.size() + 3;
@@ -326,6 +322,7 @@ void PackPrince::packCredits() {
 	}
 	_databank.readByte(); // skip '\n'
 
+	// Packing:
 	while (1) {
 		c = _databank.readByte();
 		if (c != 13 && c != 10) {
@@ -395,7 +392,7 @@ void PackPrince::packTalkTxt() {
 	// Start pos of talkTxt file for later offset setting
 	int startTalkTxtPos = _fFiles.pos();
 	
-	// TODO - temp, to put main offsets here
+	// Making space for main offsets
 	for (int i = 0; i < kSetStringValues; i++) {
 		_fFiles.writeUint32LE(0);
 	}
@@ -447,12 +444,12 @@ void PackPrince::packTalkTxt() {
 void PackPrince::talkTxtWithDialog() {
 	byte c;
 	std::string line;
-	Common::Array<TalkBeforeBox> beforeDialogBoxArray;
-	Common::Array<Common::Array<TalkBeforeBox>> allDialogBoxesArray;
-	Common::Array<Common::Array<TalkBeforeBox>> allDialogOptionsArray;
+	Common::Array<TalkTxt> beforeDialogBoxArray;
+	Common::Array<Common::Array<TalkTxt>> allDialogBoxesArray;
+	Common::Array<Common::Array<TalkTxt>> allDialogOptionsArray;
 
 	// Intro talk before dialog box:
-	TalkBeforeBox tempTalkBeforeBox;
+	TalkTxt tempTalkBeforeBox;
 	while (1) {
 		// Special dialog data
 		line.clear();
@@ -495,8 +492,8 @@ void PackPrince::talkTxtWithDialog() {
 
 	// All dialog boxes:
 	int dbNr = 0;
-	Common::Array<TalkBeforeBox> tempDialogBoxArray;
-	TalkBeforeBox tempDialogBoxLine;
+	Common::Array<TalkTxt> tempDialogBoxArray;
+	TalkTxt tempDialogBoxLine;
 
 	while (1) {
 		// Check if @DIALOG_BOX
@@ -551,8 +548,8 @@ void PackPrince::talkTxtWithDialog() {
 
 	// All dialog options:
 	int dbOptNr = 0;
-	Common::Array<TalkBeforeBox> tempDialogOptionsArray;
-	TalkBeforeBox tempDialogOptionsLine;
+	Common::Array<TalkTxt> tempDialogOptionsArray;
+	TalkTxt tempDialogOptionsLine;
 
 	while (1) {
 		tempDialogOptionsArray.clear();
@@ -708,8 +705,8 @@ void PackPrince::talkTxtWithDialog() {
 void PackPrince::talkTxtNoDialog() {
 	byte c;
 	std::string line;
-	Common::Array<TalkBeforeBox> normalLinesArray;
-	TalkBeforeBox tempNormalLine;
+	Common::Array<TalkTxt> normalLinesArray;
+	TalkTxt tempNormalLine;
 	while (1) {
 		// Special dialog data
 		line.clear();

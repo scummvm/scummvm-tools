@@ -125,9 +125,6 @@ byte *ExtractPrince::openDatabank() {
 	uint32 fileTableOffset = _databank.readUint32LE() ^ 0x4D4F4B2D; // MOK-
 	uint32 fileTableSize = _databank.readUint32LE() ^ 0x534F4654; // SOFT
 
-	//printf("fileTableOffset : %08X\n", fileTableOffset);
-	//printf("fileTableSize: %08X\n", fileTableSize);
-
 	_databank.seek(fileTableOffset, SEEK_SET);
 
 	byte *fileTable = (byte *)malloc(fileTableSize);
@@ -141,7 +138,6 @@ byte *ExtractPrince::openDatabank() {
 		item._name = (const char *)fileItem;
 		item._offset = READ_LE_UINT32(fileItem + 24);
 		item._size = READ_LE_UINT32(fileItem + 28);
-		//printf("%12s %8X %d\n", (const char *)fileItem, item._offset, item._size);
 		_items.push_back(item);
 	}
 	return fileTable;
@@ -259,8 +255,8 @@ void ExtractPrince::exportVariaTxt(FileData fileData) {
 			error("Unable to create variatxt.txt");
 		}
 		_fFiles.print("variatxt.dat\nstringId. string\n");
-		const int variaTxtSize = 6000;
-		for (int stringId = 0; stringId < variaTxtSize; stringId++) {
+		const int kVariaTxtSize = 6000;
+		for (int stringId = 0; stringId < kVariaTxtSize; stringId++) {
 			uint32 stringOffset = READ_LE_UINT32(fileData._fileTable + stringId * 4);
 			if (stringOffset > fileData._size) {
 				assert(false);
@@ -269,7 +265,7 @@ void ExtractPrince::exportVariaTxt(FileData fileData) {
 			byte c;
 			byte *txtPointer = fileData._fileTable + stringOffset;
 			variaTxtString.clear();
-			txtPointer++; // TODO -  remove this in packing tool
+			txtPointer++;
 			while ((c = *txtPointer)) {
 				c = correctPolishLetter(c);
 				if (c == 10) {
