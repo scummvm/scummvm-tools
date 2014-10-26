@@ -41,47 +41,92 @@ void PackPrince::execute() {
 		_outputPath.setFullPath("./");
 	}
 
+	_outputPath.setFullName("prince_translation.dat");
+	_fFiles.open(_outputPath, "wb");
+	if (!_fFiles.isOpen()) {
+		error("Unable to create prince_translation.dat");
+	}
+
+	// Export names of files
+	_fFiles.print("variatxt_translate.dat\n");
+	_fFiles.print("invtxt_translate.dat\n");
+	_fFiles.print("talktxt_translate.dat\n");
+	_fFiles.print("mob_translate.dat\n");
+	_fFiles.print("credits_translate.dat\n");
+
+
+	// Export files infomation
+	int posOfFilesInformation = _fFiles.pos();
+	FileEntry filesInfo[5];
+	int fileNr = 0;
+	for (int i = 0; i < 5; i++) {
+		_fFiles.writeUint32LE(0); // place for files offsets
+		_fFiles.writeUint32LE(0); // and size of files
+	}
+
 	printf("Packing The Prince and the Coward text data... \n");
 
+	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("variatxt.txt");
 	_databank.open(mainDir, "rb");
 	if (!_databank.isOpen()) {
 		error("Unable to open variatxt.txt");
 	}
 	packVariaTxt();
+	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
+	fileNr++;
 	_databank.close();
 
+	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("invtxt.txt");
 	_databank.open(mainDir, "rb");
 	if (!_databank.isOpen()) {
 		error("Unable to open invtxt.txt");
 	}
 	packInvTxt();
+	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
+	fileNr++;
 	_databank.close();
 
+	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("talktxt.txt");
 	_databank.open(mainDir, "rb");
 	if (!_databank.isOpen()) {
 		error("Unable to open talktxt.txt");
 	}
 	packTalkTxt();
+	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
+	fileNr++;
 	_databank.close();
 
+	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("mob.txt");
 	_databank.open(mainDir, "rb");
 	if (!_databank.isOpen()) {
 		error("Unable to open mob.txt");
 	}
 	packMobs();
+	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
+	fileNr++;
 	_databank.close();
 
+	filesInfo[fileNr]._offset = _fFiles.pos();
 	mainDir.setFullName("credits.txt");
 	_databank.open(mainDir, "rb");
 	if (!_databank.isOpen()) {
 		error("Unable to open credits.txt");
 	}
 	packCredits();
+	filesInfo[fileNr]._size = _fFiles.pos() - filesInfo[fileNr]._offset;
+	fileNr++;
 	_databank.close();
+
+	_fFiles.seek(posOfFilesInformation, SEEK_SET);
+	for (int i = 0; i < fileNr; i++) {
+		_fFiles.writeUint32LE(filesInfo[i]._offset);
+		_fFiles.writeUint32LE(filesInfo[i]._size);
+	}
+	_fFiles.close();
 }
 
 // TODO
@@ -97,11 +142,6 @@ InspectionMatch PackPrince::inspectInput(const Common::Filename &filename) {
 }
 
 void PackPrince::packVariaTxt() {
-	_outputPath.setFullName("variatxt_translate.dat");
-	_fFiles.open(_outputPath, "wb");
-	if (!_fFiles.isOpen()) {
-		error("Unable to create variatxt_translate.dat");
-	}
 	// File size
 	uint32 fileSize = _databank.size();
 
@@ -177,16 +217,9 @@ void PackPrince::packVariaTxt() {
 			_fFiles.writeByte(255);
 		}
 	}
-	_fFiles.close();
 }
 
 void PackPrince::packInvTxt() {
-	_outputPath.setFullName("invtxt_translate.dat");
-	_fFiles.open(_outputPath, "wb");
-	if (!_fFiles.isOpen()) {
-		error("Unable to create invtxt_translate.dat");
-	}
-
 	// File size
 	uint32 fileSize = _databank.size();
 
@@ -276,16 +309,9 @@ void PackPrince::packInvTxt() {
 			_fFiles.writeByte(0);
 		}
 	}
-	_fFiles.close();
 }
 
 void PackPrince::packCredits() {
-	_outputPath.setFullName("credits_translate.dat");
-	_fFiles.open(_outputPath, "wb");
-	if (!_fFiles.isOpen()) {
-		error("Unable to create credits_translate.dat");
-	}
-
 	// File size
 	uint32 fileSize = _databank.size();
 
@@ -315,16 +341,9 @@ void PackPrince::packCredits() {
 			break;
 		}
 	}
-	_fFiles.close();
 }
 
 void PackPrince::packTalkTxt() {
-	_outputPath.setFullName("talktxt_translate.dat");
-	_fFiles.open(_outputPath, "wb");
-	if (!_fFiles.isOpen()) {
-		error("Unable to create talktxt_translate.dat");
-	}
-
 	// IDs array for first 2000 offsets calculation
 	const int kSetStringValues = 2000;
 	int setStringIdArray[kSetStringValues];
@@ -372,6 +391,9 @@ void PackPrince::packTalkTxt() {
 		error("Wrong header in talktxt.txt");
 	}
 	_databank.readByte(); // skip '\n'
+
+	// Start pos of talkTxt file for later offset setting
+	int startTalkTxtPos = _fFiles.pos();
 	
 	// TODO - temp, to put main offsets here
 	for (int i = 0; i < kSetStringValues; i++) {
@@ -393,7 +415,7 @@ void PackPrince::packTalkTxt() {
 
 		for (int i = 0; i < kSetStringValues; i++) {
 			if (id == setStringIdArray[i]) {
-				setStringOffsetsArray[i] = _fFiles.pos();
+				setStringOffsetsArray[i] = _fFiles.pos() - startTalkTxtPos;
 			}
 		}
 
@@ -409,14 +431,17 @@ void PackPrince::packTalkTxt() {
 			break;
 		}
 	}
+	// End of talkTxt file
+	int endTalkTxtPos = _fFiles.pos();
 
-	// Back to start of file for offsets setting
-	_fFiles.seek(0, SEEK_SET);
+	// Back to start of talkTxt file for offsets setting
+	_fFiles.seek(startTalkTxtPos, SEEK_SET);
 	for (int i = 0; i < kSetStringValues; i++) {
 		_fFiles.writeUint32LE(setStringOffsetsArray[i]);
 	}
 
-	_fFiles.close();
+	// Back to the end of talkTxt file
+	_fFiles.seek(endTalkTxtPos, SEEK_SET);
 }
 
 void PackPrince::talkTxtWithDialog() {
@@ -735,12 +760,6 @@ void PackPrince::talkTxtNoDialog() {
 }
 
 void PackPrince::packMobs() {
-	_outputPath.setFullName("mob_translate.dat");
-	_fFiles.open(_outputPath, "wb");
-	if (!_fFiles.isOpen()) {
-		error("Unable to create mob_translate.dat");
-	}
-
 	// File size
 	uint32 fileSize = _databank.size();
 
@@ -754,7 +773,7 @@ void PackPrince::packMobs() {
 		error("Wrong header in mob.txt");
 	}
 	_databank.readByte(); // skip '\n'
-	
+
 	// Skip comment until first location nr
 	while ((c = _databank.readByte()) != '\n');
 
@@ -861,7 +880,6 @@ void PackPrince::packMobs() {
 			_fFiles.writeByte(255);
 		}
 	}
-	_fFiles.close();
 }
 
 // Conversion from Windows-1250 to Mazovia

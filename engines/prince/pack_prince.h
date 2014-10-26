@@ -34,6 +34,11 @@ public:
 	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 	
 protected:
+	struct FileEntry {
+		uint32 _offset;
+		uint32 _size;
+	};
+
 	struct InvTxt {
 		std::string _name;
 		std::string _examTxt;
