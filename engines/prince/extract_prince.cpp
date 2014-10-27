@@ -58,6 +58,7 @@ void ExtractPrince::execute() {
 		error("Unable to open all/databank.ptc");
 	}
 	byte *fileTable = openDatabank();
+	bool mobsDE = false;
 	for (size_t i = 0; i < _items.size(); i++) {
 		if (!scumm_stricmp(_items[i]._name.c_str(), "variatxt.dat")) {
 			exportVariaTxt(loadFile(i));
@@ -71,45 +72,71 @@ void ExtractPrince::execute() {
 		if (!scumm_stricmp(_items[i]._name.c_str(), "credits.dat")) {
 			exportCredits(loadFile(i));
 		}
+		if (!scumm_stricmp(_items[i]._name.c_str(), "mob01.lst")) {
+			// For DE game data
+			mobsDE = true;
+			_outputPath.setFullName("mob.txt");
+			_fFiles.open(_outputPath, "w");
+			if (!_fFiles.isOpen()) {
+				error("Unable to create mob.txt");
+			}
+			_fFiles.print("mob.lst\nmob_name - exam text\n");
+			int loc = 0;
+			for (int j = 1; j <= kNumberOfLocations; j++) {
+				_fFiles.print("%d.\n", j);
+				// no databanks for loc 44 and 45
+				if (j != 44 && j != 45) {
+					exportMobs(loadFile(i + loc));
+					loc++;
+				}
+			}
+			printf("mob.txt - done\n");
+			printf("All done!\n");
+			free(pathBuffer);
+			_fFiles.close();
+		}
 	}
 	free(fileTable);
 	_databank.close();
 	_items.clear();
 
-	_outputPath.setFullName("mob.txt");
-	_fFiles.open(_outputPath, "w");
-	if (!_fFiles.isOpen()) {
-		error("Unable to create mob.txt");
-	}
-	_fFiles.print("mob.lst\nmob_name - exam text\n");
-	for (int loc = 1; loc <= kNumberOfLocations; loc++) {
-		_fFiles.print("%d.\n", loc);
-		// no databanks for loc 44 and 45
-		if (loc != 44 && loc != 45) {
-			std::string fullName = mainDir.getFullPath();
-			sprintf(pathBuffer, "%02d/databank.ptc", loc);
-			fullName += pathBuffer;
-			Common::Filename filename(fullName);
-			_databank.open(filename, "rb");
-			if (!_databank.isOpen()) {
-				_fFiles.close();
-				error("Unable to open %02d/databank.ptc", loc);
-			}
-			byte *fileTable = openDatabank();
-			for (size_t i = 0; i < _items.size(); i++) {
-				if (!scumm_stricmp(_items[i]._name.c_str(), "mob.lst")) {
-					exportMobs(loadFile(i));
-				}
-			}
-			free(fileTable);
-			_databank.close();
-			_items.clear();
+	// For PL game data
+	if (!mobsDE) {
+		_outputPath.setFullName("mob.txt");
+		_fFiles.open(_outputPath, "w");
+		if (!_fFiles.isOpen()) {
+			error("Unable to create mob.txt");
 		}
+		_fFiles.print("mob.lst\nmob_name - exam text\n");
+		for (int loc = 1; loc <= kNumberOfLocations; loc++) {
+			_fFiles.print("%d.\n", loc);
+			// no databanks for loc 44 and 45
+			if (loc != 44 && loc != 45) {
+				std::string fullName = mainDir.getFullPath();
+				sprintf(pathBuffer, "%02d/databank.ptc", loc);
+				fullName += pathBuffer;
+				Common::Filename filename(fullName);
+				_databank.open(filename, "rb");
+				if (!_databank.isOpen()) {
+					_fFiles.close();
+					error("Unable to open %02d/databank.ptc", loc);
+				}
+				byte *fileTable = openDatabank();
+				for (size_t i = 0; i < _items.size(); i++) {
+					if (!scumm_stricmp(_items[i]._name.c_str(), "mob.lst")) {
+						exportMobs(loadFile(i));
+					}
+				}
+				free(fileTable);
+				_databank.close();
+				_items.clear();
+			}
+		}
+		printf("mob.txt - done\n");
+		printf("All done!\n");
+		free(pathBuffer);
+		_fFiles.close();
 	}
-	printf("mob.txt - done\n");
-	printf("All done!\n");
-	free(pathBuffer);
-	_fFiles.close();
 }
 
 InspectionMatch ExtractPrince::inspectInput(const Common::Filename &filename) {
