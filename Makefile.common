@@ -197,6 +197,8 @@ tools_OBJS := \
 	engines/cruise/extract_cruise_pc.o \
 	engines/gob/extract_gob_stk.o \
 	engines/kyra/extract_kyra.o \
+	engines/prince/extract_prince.o \
+	engines/prince/pack_prince.o \
 	engines/parallaction/extract_parallaction.o \
 	engines/scumm/extract_loom_tg16.o \
 	engines/scumm/extract_mm_apple.o \

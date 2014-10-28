@@ -21,7 +21,7 @@
 
 #include <string.h>
 #include "pack_prince.h"
-#include "common\endian.h"
+#include "common/endian.h"
 
 PackPrince::PackPrince(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	ToolInput input;
@@ -139,7 +139,7 @@ void PackPrince::execute() {
 
 void PackPrince::packVariaTxt() {
 	// File size
-	uint32 fileSize = _databank.size();
+	uint fileSize = _databank.size();
 
 	// Header test
 	byte c;
@@ -188,7 +188,7 @@ void PackPrince::packVariaTxt() {
 
 		// Skip '\n' and test eof
 		_databank.readByte(); 
-		if (_databank.pos() == fileSize) {
+		if ((uint)_databank.pos() == fileSize) {
 			break;
 		}
 	}
@@ -217,7 +217,7 @@ void PackPrince::packVariaTxt() {
 
 void PackPrince::packInvTxt() {
 	// File size
-	uint32 fileSize = _databank.size();
+	uint fileSize = _databank.size();
 
 	// Header test
 	byte c;
@@ -253,7 +253,7 @@ void PackPrince::packInvTxt() {
 			c = correctPolishLetter(c); // temporary
 			newInvTxt._name += c;
 		}
-		newInvTxt._name.pop_back(); // remove first space
+		newInvTxt._name.erase(newInvTxt._name.size() - 1); // remove first space
 		_databank.readByte(); // skip second space
 
 		// Exam text:
@@ -270,7 +270,7 @@ void PackPrince::packInvTxt() {
 
 		// Skip '\n' and test eof
 		_databank.readByte(); 
-		if (_databank.pos() == fileSize) {
+		if ((uint)_databank.pos() == fileSize) {
 			break;
 		} else {
 			while ((c = _databank.readByte()) != ' '); // skip item nr, space and dot
@@ -280,7 +280,7 @@ void PackPrince::packInvTxt() {
 	
 	// Offset counting and packing:
 	int nameOffset = kItems * 4 * 2;
-	for (uint i = 0; i < kItems; i++) {
+	for (int i = 0; i < kItems; i++) {
 		if (invTxtList[i]._name.size()) {
 			int examTextOffset = nameOffset + invTxtList[i]._name.size() + 1;
 			_fFiles.writeUint32LE(nameOffset);
@@ -291,7 +291,7 @@ void PackPrince::packInvTxt() {
 			_fFiles.writeUint32LE(0);
 		}
 	}
-	for (uint32 i = 0; i < invTxtList.size(); i++) {
+	for (uint i = 0; i < invTxtList.size(); i++) {
 		if (invTxtList[i]._name.size()) {
 			// Names
 			for (uint j = 0; j < invTxtList[i]._name.size(); j++) {
@@ -309,7 +309,7 @@ void PackPrince::packInvTxt() {
 
 void PackPrince::packCredits() {
 	// File size
-	uint32 fileSize = _databank.size();
+	uint fileSize = _databank.size();
 
 	// Header test
 	byte c;
@@ -334,7 +334,7 @@ void PackPrince::packCredits() {
 				_fFiles.writeByte(c);
 			}
 		}
-		if (_databank.pos() == fileSize) {
+		if ((uint)_databank.pos() == fileSize) {
 			break;
 		}
 	}
@@ -377,7 +377,7 @@ void PackPrince::packTalkTxt() {
 
 	// Main file
 	// File size
-	uint32 fileSize = _databank.size();
+	uint fileSize = _databank.size();
 
 	// Header test
 	line.clear();
@@ -424,7 +424,7 @@ void PackPrince::packTalkTxt() {
 
 		id++;
 
-		if (_databank.pos() == fileSize) {
+		if ((uint)_databank.pos() == fileSize) {
 			break;
 		}
 	}
@@ -445,8 +445,8 @@ void PackPrince::talkTxtWithDialog() {
 	byte c;
 	std::string line;
 	Common::Array<TalkTxt> beforeDialogBoxArray;
-	Common::Array<Common::Array<TalkTxt>> allDialogBoxesArray;
-	Common::Array<Common::Array<TalkTxt>> allDialogOptionsArray;
+	Common::Array<Common::Array<TalkTxt> > allDialogBoxesArray;
+	Common::Array<Common::Array<TalkTxt> > allDialogOptionsArray;
 
 	// Intro talk before dialog box:
 	TalkTxt tempTalkBeforeBox;
@@ -758,7 +758,7 @@ void PackPrince::talkTxtNoDialog() {
 
 void PackPrince::packMobs() {
 	// File size
-	uint32 fileSize = _databank.size();
+	uint fileSize = _databank.size();
 
 	// Header test
 	byte c;
@@ -775,7 +775,7 @@ void PackPrince::packMobs() {
 	while ((c = _databank.readByte()) != '\n');
 
 	// Loading to an array:
-	Common::Array<Common::Array<Mob>> allLocations; // array of locations of all Mobs
+	Common::Array<Common::Array<Mob> > allLocations; // array of locations of all Mobs
 	Common::Array<Mob> tempLocation; // temp array of Mobs in one location
 	Mob newMob; // temp Mob
 	const int kLocations = 61; // max nr of location
@@ -806,7 +806,7 @@ void PackPrince::packMobs() {
 		}
 
 		// Test for eof
-		if (_databank.pos() == fileSize) {
+		if ((uint)_databank.pos() == fileSize) {
 			break;
 		}
 
@@ -824,7 +824,7 @@ void PackPrince::packMobs() {
 			c = correctPolishLetter(c); // temporary
 			newMob._name += c;
 		}
-		newMob._name.pop_back(); // remove first space
+		newMob._name.erase(newMob._name.size() - 1);  // remove first space
 		_databank.readByte(); // skip second space
 
 		// Exam text:
@@ -926,7 +926,7 @@ char PackPrince::correctPolishLetter(char c) {
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	ExtractCge cge(argv[0]);
-	return cge.run(argc, argv);
+	PackPrince prince(argv[0]);
+	return prince.run(argc, argv);
 }
 #endif

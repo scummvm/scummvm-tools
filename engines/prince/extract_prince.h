@@ -23,7 +23,7 @@
 #define EXTRACT_PRINCE_H
 
 #include "tool.h"
-#include "common\array.h"
+#include "common/array.h"
 
 class ExtractPrince : public Tool {
 public:

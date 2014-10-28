@@ -21,7 +21,7 @@
 
 #include <string.h>
 #include "extract_prince.h"
-#include "common\endian.h"
+#include "common/endian.h"
 
 struct FileData;
 
@@ -112,16 +112,16 @@ void ExtractPrince::execute() {
 			_fFiles.print("%d.\n", loc);
 			// no databanks for loc 44 and 45
 			if (loc != 44 && loc != 45) {
-				std::string fullName = mainDir.getFullPath();
+				fullName = mainDir.getFullPath();
 				sprintf(pathBuffer, "%02d/databank.ptc", loc);
 				fullName += pathBuffer;
-				Common::Filename filename(fullName);
+				filename = Common::Filename(fullName);
 				_databank.open(filename, "rb");
 				if (!_databank.isOpen()) {
 					_fFiles.close();
 					error("Unable to open %02d/databank.ptc", loc);
 				}
-				byte *fileTable = openDatabank();
+				fileTable = openDatabank();
 				for (size_t i = 0; i < _items.size(); i++) {
 					if (!scumm_stricmp(_items[i]._name.c_str(), "mob.lst")) {
 						exportMobs(loadFile(i));
@@ -182,7 +182,7 @@ void ExtractPrince::decrypt(byte *buffer, uint32 size) {
 
 ExtractPrince::FileData ExtractPrince::loadFile(int itemIndex) {
 	FileData fileData;
-	fileData._fileTable = nullptr;
+	fileData._fileTable = 0;
 	fileData._size = 0;
 
 	const FileEntry &entryHeader = _items[itemIndex];
@@ -212,7 +212,7 @@ ExtractPrince::FileData ExtractPrince::loadFile(int itemIndex) {
 }
 
 void ExtractPrince::exportMobs(FileData fileData) {
-	if (fileData._fileTable != nullptr) {
+	if (fileData._fileTable != 0) {
 		const int kMobsStructSize = 32;
 		const int kMobsTextOffsetsPos = 24;
 		int streamPos = 0;
@@ -275,7 +275,7 @@ void ExtractPrince::exportMobs(FileData fileData) {
 }
 
 void ExtractPrince::exportVariaTxt(FileData fileData) {
-	if (fileData._fileTable != nullptr) {
+	if (fileData._fileTable != 0) {
 		_outputPath.setFullName("variatxt.txt");
 		_fFiles.open(_outputPath, "w");
 		if (!_fFiles.isOpen()) {
@@ -312,7 +312,7 @@ void ExtractPrince::exportVariaTxt(FileData fileData) {
 }
 
 void ExtractPrince::exportInvTxt(FileData fileData) {
-	if (fileData._fileTable != nullptr) {
+	if (fileData._fileTable != 0) {
 		std::string itemName, itemExamText;
 		const int kItems = 100;
 		_outputPath.setFullName("invtxt.txt");
@@ -356,7 +356,7 @@ void ExtractPrince::exportInvTxt(FileData fileData) {
 }
 
 void ExtractPrince::exportCredits(FileData fileData) {
-	if (fileData._fileTable != nullptr) {
+	if (fileData._fileTable != 0) {
 		_outputPath.setFullName("credits.txt");
 		_fFiles.open(_outputPath, "w");
 		if (!_fFiles.isOpen()) {
@@ -389,7 +389,7 @@ void ExtractPrince::exportCredits(FileData fileData) {
 }
 
 void ExtractPrince::exportTalkTxt(FileData fileData) {
-	if (fileData._fileTable != nullptr) {
+	if (fileData._fileTable != 0) {
 		_outputPath.setFullName("talktxt.txt");
 		_fFiles.open(_outputPath, "w");
 		if (!_fFiles.isOpen()) {
@@ -464,7 +464,7 @@ byte *ExtractPrince::talkTxtWithDialog(byte *talkTxt) {
 	}
 
 	int16 off;
-	byte *line = nullptr;
+	byte *line = 0;
 
 	int dialogBox = 0;
 	while ((off = (int)READ_LE_UINT16(stringCurrOff)) != -1) {
@@ -788,7 +788,7 @@ int Decompressor::getBit() {
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	ExtractCge cge(argv[0]);
-	return cge.run(argc, argv);
+	ExtractPrince prince(argv[0]);
+	return prince.run(argc, argv);
 }
 #endif

@@ -23,7 +23,7 @@
 #define PACK_PRINCE_H
 
 #include "tool.h"
-#include "common\array.h"
+#include "common/array.h"
 
 class PackPrince : public Tool {
 public:
