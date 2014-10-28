@@ -97,6 +97,8 @@
     <ClCompile Include="..\..\engines\gob\compress_gob.cpp" />
     <ClCompile Include="..\..\engines\gob\extract_fascination_cd.cpp" />
     <ClCompile Include="..\..\engines\kyra\compress_kyra.cpp" />
+    <ClCompile Include="..\..\engines\prince\extract_prince.cpp" />
+    <ClCompile Include="..\..\engines\prince\pack_prince.cpp" />
     <ClCompile Include="..\..\engines\queen\compress_queen.cpp" />
     <ClCompile Include="..\..\engines\saga\compress_saga.cpp" />
     <ClCompile Include="..\..\engines\sci\compress_sci.cpp" />
@@ -144,6 +146,8 @@
     <ClInclude Include="..\..\engines\gob\compress_gob.h" />
     <ClInclude Include="..\..\engines\gob\extract_fascination_cd.h" />
     <ClInclude Include="..\..\engines\kyra\compress_kyra.h" />
+    <ClInclude Include="..\..\engines\prince\extract_prince.h" />
+    <ClInclude Include="..\..\engines\prince\pack_prince.h" />
     <ClInclude Include="..\..\engines\queen\compress_queen.h" />
     <ClInclude Include="..\..\engines\saga\compress_saga.h" />
     <ClInclude Include="..\..\engines\sci\compress_sci.h" />

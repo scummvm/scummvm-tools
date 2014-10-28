@@ -153,6 +153,12 @@
     <ClCompile Include="..\..\engines\gob\extract_fascination_cd.cpp">
       <Filter>tools</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\engines\prince\extract_prince.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\engines\prince\pack_prince.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\engines\agos\compress_agos.h">
@@ -297,6 +303,12 @@
       <Filter>util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\engines\gob\extract_fascination_cd.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\prince\extract_prince.h">
+      <Filter>tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\engines\prince\pack_prince.h">
       <Filter>tools</Filter>
     </ClInclude>
   </ItemGroup>
