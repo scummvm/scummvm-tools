@@ -2598,6 +2598,8 @@ void next_line_V0(char *buf) {
 		do_tok(buf, "loadRoomWithEgo", A1B | A2B);
 		break;
 	case 0x6E:
+		do_tok(buf, "screenPrepare", 0);
+		break;
 	case 0xEE:
 		//dummy
 		sprintf(buf, "dummy%.2X();", opcode);
