@@ -28,7 +28,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.3b 2014-06-10"
+VERSION = "v0.3c 2014-12-20"
 
 def hlesc(value):
     if value is None:
@@ -158,7 +158,7 @@ class App(tkinter.Frame):
         master.title(APPNAME)
         self.pack(fill = tkinter.BOTH, expand = 1)
         self.pad = None
-        self.sim = None
+        self.clear_data()
         # path
         if hasattr(sys, 'frozen'):
             self.app_path = sys.executable
@@ -184,13 +184,18 @@ class App(tkinter.Frame):
         self.need_update = False
         self.canv_view_fact = 1
         self.main_image = tkinter.PhotoImage(width = 1, height = 1)
-        # translation
-        self.tran = None
         # add on_load handler
         self.after_idle(self.on_first_display)
         
-    def create_widgets(self):
+    def clear_data(self):
+        self.sim = None
+        # store manager
+        self.strfm = None
+        # translation
+        self.tran = None
+    
         
+    def create_widgets(self):
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
         ttk.Style().configure("TLabel", padding = self.pad)
         ttk.Style().configure('Info.TFrame', background = 'white', \
@@ -270,12 +275,16 @@ class App(tkinter.Frame):
         self.path_handler["support"] = self.path_support
         self.path_handler["help"] = self.path_help
         self.path_handler["info"] = self.path_info
+        self.path_handler["strs"] = self.path_stores
         
         self.update_after()
         repath = "/about"
         for cmd, arg in self.start_act:
             if cmd == "load":
                 self.open_data_from(arg)
+                repath = "/"
+            elif cmd == "str":
+                self.open_str_from(arg)
                 repath = "/"
             elif cmd == "tran":
                 self.open_tran_from(arg)
@@ -295,6 +304,10 @@ class App(tkinter.Frame):
         self.menufile.add_command(
                 command = self.on_open_data,
                 label = "Open data...")
+        self.menufile.add_separator()
+        self.menufile.add_command(
+                command = self.on_open_str,
+                label = "Open STR...")
         self.menufile.add_separator()
         self.menufile.add_command(
                 command = self.on_exit,
@@ -337,6 +350,9 @@ class App(tkinter.Frame):
         self.menuedit.add_command(
                 command = lambda: self.open_path("/dlgops"),
                 label = "Dialog opcodes")
+        self.menuedit.add_command(
+                command = lambda: self.open_path("/strs"),
+                label = "Stores")
 
         self.menunav = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menunav,
@@ -839,37 +855,42 @@ class App(tkinter.Frame):
         return self.fmt_hl_rec(self.sim.dlg_idx, "dlgs", grp_id, full, "dlg")
 
     def path_info_outline(self):
-        if self.sim is None:
+        if self.sim is None and self.strfm is None:
             self.add_info("No data loaded. Open PARTS.INI or SCRIPT.DAT first.")
             return
-        self.add_info("Current part {} chapter {}\n\n".\
-                format(self.sim.curr_part, self.sim.curr_chap))
-        self.add_info("  Resources:     <a href=\"/res\">{}</a>\n".\
-            format(len(self.sim.res)))
-        self.add_info("  Objects:       <a href=\"/objs\">{}</a>\n".\
-            format(len(self.sim.objects)))
-        self.add_info("  Scenes:        <a href=\"/scenes\">{}</a>\n".\
-            format(len(self.sim.scenes)))
-        self.add_info("  Names:         <a href=\"/names\">{}</a>\n".\
-            format(len(self.sim.names)))
-        self.add_info("  Invntr:        <a href=\"/invntr\">{}</a>\n".\
-            format(len(self.sim.invntr)))
-        self.add_info("  Casts:         <a href=\"/casts\">{}</a>\n".\
-            format(len(self.sim.casts)))
-        self.add_info("  Messages       <a href=\"/msgs\">{}</a>\n".\
-            format(len(self.sim.msgs)))
-        self.add_info("  Dialog groups: <a href=\"/dlgs\">{}</a>\n".\
-            format(len(self.sim.dlgs)))
-        scn = hlesc(self.sim.start_scene)
-        for scene in self.sim.scenes:
-            if scene.name == self.sim.start_scene:
-                scn = self.fmt_hl_scene(scene.idx, True)
-                break
-        self.add_info("  Start scene:   {}\n".format(scn))
-        self.add_info("\n")
-        self.add_info("  <a href=\"/opcodes\">Opcodes</a>\n")
-        self.add_info("  <a href=\"/dlgops\">Dialog opcodes</a>\n")
-    
+        if self.sim:
+            self.add_info("Current part {} chapter {}\n\n".\
+                    format(self.sim.curr_part, self.sim.curr_chap))
+            self.add_info("  Resources:     <a href=\"/res\">{}</a>\n".\
+                format(len(self.sim.res)))
+            self.add_info("  Objects:       <a href=\"/objs\">{}</a>\n".\
+                format(len(self.sim.objects)))
+            self.add_info("  Scenes:        <a href=\"/scenes\">{}</a>\n".\
+                format(len(self.sim.scenes)))
+            self.add_info("  Names:         <a href=\"/names\">{}</a>\n".\
+                format(len(self.sim.names)))
+            self.add_info("  Invntr:        <a href=\"/invntr\">{}</a>\n".\
+                format(len(self.sim.invntr)))
+            self.add_info("  Casts:         <a href=\"/casts\">{}</a>\n".\
+                format(len(self.sim.casts)))
+            self.add_info("  Messages       <a href=\"/msgs\">{}</a>\n".\
+                format(len(self.sim.msgs)))
+            self.add_info("  Dialog groups: <a href=\"/dlgs\">{}</a>\n".\
+                format(len(self.sim.dlgs)))
+            scn = hlesc(self.sim.start_scene)
+            for scene in self.sim.scenes:
+                if scene.name == self.sim.start_scene:
+                    scn = self.fmt_hl_scene(scene.idx, True)
+                    break
+            self.add_info("  Start scene:   {}\n".format(scn))
+            self.add_info("\n")
+            self.add_info("  <a href=\"/opcodes\">Opcodes</a>\n")
+            self.add_info("  <a href=\"/dlgops\">Dialog opcodes</a>\n\n")
+
+        if self.strfm:
+            self.add_info("  Opened stores: <a href=\"/strs\">{}</a>\n".
+                format(len(self.strfm.strfd)))
+                
 
     def path_default(self, path):
         self.switch_view(0)
@@ -899,6 +920,12 @@ class App(tkinter.Frame):
                 #("-", None),
                 #("Test image", ["test", "image"]),
                 #("Test info", ["test","info"]),
+            ]
+            for name, act in acts:
+                self.insert_lb_act(name, act)
+        if self.strfm is not None:
+            acts = [
+                ("Stores ({})".format(len(self.strfm.strfd)), "/strs"),
             ]
             for name, act in acts:
                 self.insert_lb_act(name, act)
@@ -1867,6 +1894,39 @@ class App(tkinter.Frame):
                         self.fmt_hl_obj_scene(obj_idx, True))))
                 self.add_info("\n")  
 
+    def path_stores(self, path):
+        if self.strfm is None:
+            return self.path_default([])
+        self.switch_view(0)
+        keys = None
+        if self.last_path[:1] != ("strs",):
+            # calc statistics
+            self.update_gui("Stores ({})".format(len(self.strfm.strfd)))
+            for idx, st in enumerate(self.strfm.strfd):
+                self.insert_lb_act("{}".format(st[1]), ["strs", idx], idx)
+        # change
+        stid = None
+        if len(path) > 1:
+            # index
+            self.select_lb_item(path[1])
+            try:
+                stid = path[1]
+            except:
+                pass
+        else:
+            self.select_lb_item(None)
+        # display
+        self.clear_info()
+        if not stid:
+            self.add_info("<b>Stores</b>\n\n")
+            for idx, st in enumerate(self.strfm.strfd):
+                self.add_info("  {}) <a href=\"/strs/{}\">{}</a> - {}\n".format(
+                    idx + 1, idx, st[1], st[2]))
+        else:
+            self.add_info("<b>Store</b>: {}\n".format(self.strfm.strfd[stid][1]))
+            pass
+            
+        
         
     def path_test(self, path):
         self.update_gui("Test {}".format(path[1]))
@@ -2038,21 +2098,53 @@ class App(tkinter.Frame):
         
     def open_data_from(self, folder):
         self.last_fn = folder
+        self.clear_data()
         try:
-            self.tran = None
             self.sim = petka.Engine()
             self.sim.load_data(folder, "cp1251")
+            self.strfm = self.sim.fman
             self.sim.open_part(0, 0)
             return True
         except:
             print("DEBUG: Error opening")
-            self.sim = None
+            self.clear_data()
             self.switch_view(0)
             self.update_gui("")
             self.clear_info()
             self.add_info("Error opening \"{}\" \n\n{}".\
                 format(hlesc(folder), hlesc(traceback.format_exc())))
             #self.clear_hist()
+
+    def on_open_str(self):
+        ft = [\
+            ('STR files', '.STR'),
+            ('all files', '.*')]
+        fn = filedialog.askopenfilename(parent = self, 
+            title = "Open STR file",
+            filetypes = ft,
+            initialdir = os.path.abspath(os.curdir))
+        if not fn: return
+        os.chdir(os.path.dirname(fn))
+        self.clear_hist()
+        if self.open_str_from(fn):
+            self.open_path("")
+            self.clear_hist()
+
+    def open_str_from(self, fn):
+        self.last_fn = fn
+        self.clear_data()
+        try:
+            self.strfm = petka.FileManager(os.path.dirname(fn))
+            self.strfm.load_store(os.path.basename(fn))
+            return True
+        except:
+            print("DEBUG: Error opening")
+            self.clear_data()
+            self.switch_view(0)
+            self.update_gui("")
+            self.clear_info()
+            self.add_info("Error opening \"{}\" \n\n{}".\
+                format(hlesc(fn), hlesc(traceback.format_exc())))
 
     def on_tran_save(self):
         self.on_tran_save_real()
@@ -2207,6 +2299,9 @@ def main():
     while len(argv) > 0:
         if argv[0] == "-d": # open data
             app.start_act.append(["load", argv[1]])
+            argv = argv[2:]
+        elif argv[0] == "-s": # open str file
+            app.start_act.append(["str", argv[1]])
             argv = argv[2:]
         elif argv[0] == "-t": # open translation
             app.start_act.append(["tran", argv[1]])
