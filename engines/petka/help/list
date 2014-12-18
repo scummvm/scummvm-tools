@@ -12,6 +12,7 @@ casts
 msgs
 dlgs
 strs
+files
 translate
 cmdline
 support

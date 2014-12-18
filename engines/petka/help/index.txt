@@ -18,6 +18,8 @@
  * <a href="/help/msgs">Собщения</a>
  * <a href="/help/dlgs">Группы диалогов</a>
  * <a href="/help/strs">Хранилища</a>
+ * <a href="/help/files">Файлы</a>
+ 
 
 Прочая информация
 

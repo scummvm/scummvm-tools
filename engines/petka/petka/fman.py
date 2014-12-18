@@ -15,7 +15,8 @@ class FileManager:
     
         self.strfd = []
         self.strtable = {}
-    
+        self.strtableord = []
+   
     def find_path(self, path):
         # search case insensive from root
         dpath = []
@@ -56,17 +57,20 @@ class FileManager:
             temp = f.read(12) 
             data = struct.unpack_from("<III", temp)
             index_table.append((data[1], data[2]))
+        strlst = []
         data = f.read().decode("latin-1")
         for idx, fname in enumerate(data.split("\x00")):
             fname = fname.lower().replace("\\", "/")
             if idx < index_len and fname not in self.strtable:
                 self.strtable[fname] = (len(self.strfd),) + index_table[idx]
+                strlst.append((fname, len(self.strtableord)) + index_table[idx])
+                self.strtableord.append(fname)
             else:
                 if len(fname) > 0:
                     print("DEBUG:Extra file record \"{}\" in \"{}\"".\
                         format(fname, name))
         # add file descriptor
-        self.strfd.append((f, name, tag))
+        self.strfd.append((f, name, tag, strlst))
         print("DEBUG: Loaded store \"{}\"".format(name))
         
     def read_file(self, fname):
@@ -107,13 +111,15 @@ class FileManager:
     def unload_stores(self, flt = None):
         strfd = []
         strtable = {}
-        for idx, (fd, name, tag) in enumerate(self.strfd):
+        strtableord = []
+        for idx, (fd, name, tag, strlst) in enumerate(self.strfd):
             if flt is not None:
                 if tag != flt:
                     for k, v in self.strtable.items():
                         if v[0] == idx:
                             strtable[k] = (len(strfd), v[1], v[2])
-                    strfd.append((fd, name, tag))
+                            strtableord.append(k)
+                    strfd.append((fd, name, tag, strlst))
                     continue
             print("DEBUG: Unload store \"{}\"".format(name))
             try:
@@ -122,4 +128,6 @@ class FileManager:
                 print("DEBUG: Can't unload \"{}\":".format(name) + str(e))
         self.strfd = strfd
         self.strtable = strtable
+        self.strtableord = strtableord
+        
         
