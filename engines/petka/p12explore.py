@@ -28,7 +28,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.3c 2014-12-20"
+VERSION = "v0.3d 2014-12-20"
 
 def hlesc(value):
     if value is None:
@@ -1539,6 +1539,15 @@ class App(tkinter.Frame):
                 self.add_info("<b>Message</b> \"{}\" not found\n\n".format(
                     path[1]))
             self.add_info("Select <b>message</b> from list\n")
+            # wav
+            lst = []
+            for idx, msg in enumerate(self.sim.msgs):
+                lst.append((msg.msg_wav, idx, msg.name))
+            lst.sort()
+            self.add_info("\nWav files\n")
+            for wav, idx, capt in lst:
+                self.add_info("  <a href=\"/msgs/{}\">{}</a> - {}\n".format(
+                    idx, wav, capt))
         else:
             # msg info
             self.add_info("<b>Message</b>: {}\n".format(path[1]))
