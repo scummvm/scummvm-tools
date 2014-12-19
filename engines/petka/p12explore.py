@@ -28,7 +28,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.3d 2014-12-20"
+VERSION = "v0.3e 2014-12-20"
 
 def hlesc(value):
     if value is None:
@@ -1933,6 +1933,45 @@ class App(tkinter.Frame):
             self.update_gui("Stores ({})".format(len(self.strfm.strfd)))
             for idx, st in enumerate(self.strfm.strfd):
                 self.insert_lb_act("{}".format(st[1]), ["strs", idx], idx)
+            def ext_str():
+                stid = None
+                try:
+                    print(self.curr_path)
+                    stid = self.curr_path[1]
+                except:
+                    pass
+                if stid is None:
+                    self.clear_info()
+                    self.add_info("<b>Select store</b>\n")
+                    return
+                # extract to folder
+                sdir = filedialog.askdirectory(parent = self,
+                    title = "Select folder for extract", 
+                    initialdir = self.strfm.root, mustexist = True)
+                if not sdir: return
+                # extract store to sdir
+                fd, _, _, strlst = self.strfm.strfd[stid]
+                self.clear_info()
+                for fname, _, pos, ln in strlst:
+                    try:
+                        self.add_info("  \"{}\" - {} bytes\n".
+                            format(hlesc(fname), ln))
+                        np = sdir
+                        for elem in fname.split("/"):
+                            np = os.path.join(np, elem)
+                        # check folder
+                        bn = os.path.dirname(np)
+                        if not os.path.exists(bn):
+                            os.makedirs(bn)
+                        f = open(np, "wb")
+                        fd.seek(pos)
+                        f.write(fd.read(ln))
+                        f.close()
+                    except:
+                        self.add_info("Error extracting \"{}\" \n\n{}".\
+                            format(hlesc(fname), hlesc(traceback.format_exc())))
+                        return
+            self.add_toolbtn("Extract STR", ext_str)
         # change
         stid = None
         if len(path) > 1:
