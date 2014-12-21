@@ -174,11 +174,12 @@ class App(tkinter.Frame):
         self.last_path = [None]
         self.last_fn = ""
         self.curr_gui = []
-        self.curr_state = {}
+        self.curr_state = {} # local state for location group
         self.curr_lb_acts = None
         self.curr_lb_idx = None
         self.hist = []
         self.histf = []
+        self.gl_state = {} # global state until program exit
         # canvas
         self.need_update = False
         self.canv_view_fact = 1
@@ -381,8 +382,7 @@ class App(tkinter.Frame):
                 label = "Outline")
         self.menunav.add_separator()
         self.menunav.add_command(
-                command = lambda: self.open_path("/hist"),
-                label = "History")
+                command = self.show_hist, label = "History")
 
         if polib:
             menutran = tkinter.Menu(self.menubar, tearoff = 0)
@@ -912,6 +912,26 @@ class App(tkinter.Frame):
                 format(len(self.strfm.strfd)))
             self.add_info("  Files:         <a href=\"/files\">{}</a>\n".
                 format(len(self.strfm.strtable)))
+
+    def show_hist(self):
+        self.switch_view(0)
+        self.clear_info()
+        self.add_info("<b>History</b>\n\n")
+        def phist(h):
+            d = ""
+            for e in h:
+                d += "/{}".format(e)
+            return d
+        for idx, h in enumerate(self.hist[:-1]):
+            self.add_info(" {:5d}) {}\n".format(idx - len(self.hist) + 1, 
+                phist(h[0])))
+        self.add_info(" -----> {}\n".format(phist(self.curr_path)))
+        
+        for idx, h in enumerate(self.histf):
+            self.add_info(" {:5d}) {}\n".format(idx + 1, phist(h[0])))
+            
+        
+        
                 
     def path_default(self, path):
         self.switch_view(0)
@@ -2066,8 +2086,10 @@ class App(tkinter.Frame):
                 elif path[1] == "info":
                     self.switch_view(0)
                     self.add_info("Information panel for {}\n".format(path))
-                    self.add_info("Current mode {}\n".format(
+                    self.add_info("Local mode {}\n".format(
                         self.curr_state.get("mode", None)))
+                    self.add_info("Global mode {}\n".format(
+                        self.gl_state.get("mode", None)))
                     for i in range(100):
                         self.add_info("  Item {}\n".format(i))
             
@@ -2091,8 +2113,30 @@ class App(tkinter.Frame):
                 self.curr_state["btn1"].config(state = tkinter.NORMAL)
                 self.curr_state["btn2"].config(state = tkinter.DISABLED)
                 display_page()
+            def sw_gmode1():
+                print("Global Mode 1")
+                self.gl_state["test.info.mode"] = 0
+                self.curr_state["gbtn1"].config(state = tkinter.DISABLED)
+                self.curr_state["gbtn2"].config(state = tkinter.NORMAL)
+                display_page()
+            def sw_gmode2():
+                print("Global Mode 2")
+                self.gl_state["test.info.mode"] = 1
+                self.curr_state["gbtn1"].config(state = tkinter.NORMAL)
+                self.curr_state["gbtn2"].config(state = tkinter.DISABLED)
+                display_page()
             self.curr_state["btn1"] = self.add_toolbtn("Mode 1", sw_mode1)
             self.curr_state["btn2"] = self.add_toolbtn("Mode 2", sw_mode2)
+            # we store buttons in local state
+            st = self.gl_state.get("test.info.mode", 0)
+            b = self.add_toolbtn("Global Mode 1", sw_gmode1)
+            if st == 0:
+                b.config(state = tkinter.DISABLED)
+            self.curr_state["gbtn1"] = b
+            b = self.add_toolbtn("Global Mode 2", sw_gmode2)
+            if st == 1:
+                b.config(state = tkinter.DISABLED)
+            self.curr_state["gbtn2"] = b
 
         # change
         item = None
