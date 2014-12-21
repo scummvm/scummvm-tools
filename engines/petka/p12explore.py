@@ -173,9 +173,8 @@ class App(tkinter.Frame):
         self.curr_help = ""
         self.last_path = [None]
         self.last_fn = ""
-        self.curr_mode = 0
-        self.curr_mode_sub = None
         self.curr_gui = []
+        self.curr_state = {}
         self.curr_lb_acts = None
         self.curr_lb_idx = None
         self.hist = []
@@ -597,6 +596,7 @@ class App(tkinter.Frame):
         for item in self.curr_gui:
             item()
         self.curr_gui = []
+        self.curr_state = {} # save state across moves
         # left listbox
         lab = tkinter.Label(self.frm_left, text = text)
         lab.pack()
@@ -768,7 +768,9 @@ class App(tkinter.Frame):
         btn = ttk.Button(self.toolbar, text = text, \
             style = "Tool.TButton", command = cmd)
         btn.pack(side = tkinter.LEFT)
-        self.curr_gui.append(lambda:btn.pack_forget())    
+        self.curr_gui.append(lambda:btn.pack_forget())
+        return btn
+        
 
     def clear_hist(self):
         self.hist = self.hist[-1:]
@@ -1936,7 +1938,6 @@ class App(tkinter.Frame):
             def ext_str():
                 stid = None
                 try:
-                    print(self.curr_path)
                     stid = self.curr_path[1]
                 except:
                     pass
@@ -1968,7 +1969,7 @@ class App(tkinter.Frame):
                         f.write(fd.read(ln))
                         f.close()
                     except:
-                        self.add_info("Error extracting \"{}\" \n\n{}".\
+                        self.add_info("Error extracting \"{}\"\n\n{}".\
                             format(hlesc(fname), hlesc(traceback.format_exc())))
                         return
             self.add_toolbtn("Extract STR", ext_str)
@@ -2049,20 +2050,63 @@ class App(tkinter.Frame):
             
             
     def path_test(self, path):
-        self.update_gui("Test {}".format(path[1]))
-        self.insert_lb_act("Outline", [])
-        self.insert_lb_act("-", None)
-        for i in range(15):
-            self.insert_lb_act("{} #{}".format(path[1], i), path[:2] + (i,))
-        if path[1] == "image":
-            self.switch_view(1)
-            self.main_image = tkinter.PhotoImage(file = "img/splash.gif")
-        elif path[1] == "info":
-            self.switch_view(0)
+        def display_page():
+            item = None
+            path = self.curr_path
+            if len(path) > 2:
+                item = path[2]
             self.clear_info()
-            self.add_info("Information panel for {}\n".format(path))
-            for i in range(100):
-                self.add_info("  Item {}\n".format(i))
+            if item is None:
+                self.switch_view(0)
+                self.add_info("Select item " + path[1])
+            else:
+                if path[1] == "image":
+                    self.switch_view(1)
+                    self.main_image = tkinter.PhotoImage(file = "img/splash.gif")
+                elif path[1] == "info":
+                    self.switch_view(0)
+                    self.add_info("Information panel for {}\n".format(path))
+                    self.add_info("Current mode {}\n".format(
+                        self.curr_state.get("mode", None)))
+                    for i in range(100):
+                        self.add_info("  Item {}\n".format(i))
+            
+        if self.last_path[:1] != ("test",):
+            self.update_gui("Test {}".format(path[1]))
+            self.insert_lb_act("Outline", [])
+            self.insert_lb_act("-", None)
+            for i in range(15):
+                self.insert_lb_act("{} #{}".format(path[1], i), 
+                    path[:2] + (i,), i)
+            # create mode buttons
+            def sw_mode1():
+                print("Mode 1")
+                self.curr_state["mode"] = 1
+                self.curr_state["btn1"].config(state = tkinter.DISABLED)
+                self.curr_state["btn2"].config(state = tkinter.NORMAL)
+                display_page()
+            def sw_mode2():
+                print("Mode 2")
+                self.curr_state["mode"] = 2
+                self.curr_state["btn1"].config(state = tkinter.NORMAL)
+                self.curr_state["btn2"].config(state = tkinter.DISABLED)
+                display_page()
+            self.curr_state["btn1"] = self.add_toolbtn("Mode 1", sw_mode1)
+            self.curr_state["btn2"] = self.add_toolbtn("Mode 2", sw_mode2)
+
+        # change
+        item = None
+        if len(path) > 2:
+            # index
+            self.select_lb_item(path[2])
+            try:
+                item = path[2]
+            except:
+                pass
+        else:
+            self.select_lb_item(None)
+        # display
+        display_page()
 
     def path_about(self, path):
         self.switch_view(0)
