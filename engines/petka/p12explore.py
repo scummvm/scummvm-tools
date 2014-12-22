@@ -771,6 +771,11 @@ class App(tkinter.Frame):
         self.curr_gui.append(lambda:btn.pack_forget())
         return btn
         
+    def add_toollabel(self, text):
+        lab = ttk.Label(self.toolbar, text = text)
+        lab.pack(side = tkinter.LEFT)
+        self.curr_gui.append(lambda:lab.pack_forget())
+        return lab
 
     def clear_hist(self):
         self.hist = self.hist[-1:]
@@ -1617,13 +1622,14 @@ class App(tkinter.Frame):
             def stxt():
                 self.gl_state["msgs.sort"] = 2
                 upd_msgs()
-            b1 = self.add_toolbtn("Sort by wav", sfn)
-            b2 = self.add_toolbtn("Sort by order", sidx)
-            b3 = self.add_toolbtn("Sort by text", stxt)
+            self.add_toollabel("Sort by")
+            b1 = self.add_toolbtn("wav", sfn)
+            b2 = self.add_toolbtn("order", sidx)
+            b3 = self.add_toolbtn("text", stxt)
             self.curr_state["btnsort"] = [[b1, 0], [b2, 1], [b3, 2]]
         # change
         upd_msgs()
-                
+
     def path_dlgs(self, path):
         if self.sim is None:
             return self.path_default([])
@@ -1731,7 +1737,7 @@ class App(tkinter.Frame):
                             op.opcode == 0x4: # GOTO or MENURET
                             opref = "<i>label_{:X}</i>".format(op.ref)
                             if op.pos in usedmenu:
-                                cmt = self.fmt_cmt(" // action menu=<i>"\
+                                cmt = self.fmt_cmt(" // action menu=<i> "\
                                     "label_{:X}</i>, case=0x{:}".\
                                     format(*usedmenu[op.pos]))
                         elif op.opcode == 0x7:
