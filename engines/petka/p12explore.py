@@ -213,7 +213,8 @@ class App(tkinter.Frame):
         ]
         for text, cmd in btns:
             if text is None:
-                frm = ttk.Frame(self.toolbar, width = self.pad, height = self.pad)
+                frm = ttk.Frame(self.toolbar, width = self.pad, 
+                    height = self.pad)
                 frm.pack(side = tkinter.LEFT)
                 continue            
             btn = ttk.Button(self.toolbar, text = text, \
@@ -2068,6 +2069,85 @@ class App(tkinter.Frame):
     def path_files(self, path):
         if self.strfm is None:
             return self.path_default([])
+        def upd_files():
+            path = self.curr_path
+            fid = None
+            if len(path) > 1:
+                # index
+                self.select_lb_item(path[1])
+                try:
+                    fid = path[1]
+                except:
+                    pass
+            else:
+                self.select_lb_item(None)
+            self.clear_info()
+            if fid is None:
+                self.add_info("<b>Files</b>\n\n")
+                for idx, fn in enumerate(self.strfm.strtableord):
+                    stid, pos, ln = self.strfm.strtable[fn]
+                    self.add_info("  {}) <a href=\"/files/{}\">{}</a>\n".format(
+                        idx + 1, idx, hlesc(fn)))
+            else:
+                if fid >= len(self.strfm.strtable):
+                    self.add_info("<b>File</b> \"{}\" not found\n\n".\
+                        format(path[1]))
+                    return
+                fn = self.strfm.strtableord[fid]
+                stid, pos, ln = self.strfm.strtable[fn]
+
+                self.add_info("<b>File</b>: {}\n\n".format(fn))
+                self.add_info("  Store: <a href=\"/strs/{}\">{}</a>\n".format(
+                    stid, self.strfm.strfd[stid][1]))
+                self.add_info("  Pos: {} (0x{:x})\n  Len: {} (0x{:x})\n".format(
+                    pos, pos, ln, ln))
+                fnl = fn.lower().replace("\\", "/")
+                if self.sim:
+                    self.add_info("\n<b>Used in resources</b>:\n")
+                    for resid in self.sim.resord:
+                        resfn = self.sim.res[resid].lower().replace("\\", "/")
+                        if resfn == fnl:
+                            self.add_info("  {} - <a href=\"/res/all/{}\">"\
+                                "{}</a>\n".format(resid, resid, 
+                                hlesc(self.sim.res[resid])))
+                grp = [
+                    [".leg", ".off", ".msk", ".flc"],
+                    [".bmp", "cvx"]
+                ]
+                sg = None
+                for g in grp:
+                    if fnl[-4:] in g:
+                        sg = g
+                if sg:
+                    self.add_info("\n<b>Related file</b>:\n")
+                    rel = []
+                    for idx, fnm in enumerate(self.strfm.strtableord):
+                        fnml = fnm.lower().replace("\\", "/")
+                        if idx == fid: continue
+                        if fnml[:-4] == fnl[:-4] and fnml[-4:] in sg:
+                            self.add_info("  <a href=\"/files/{}\">{}</a>\n".
+                                format(idx, hlesc(fnm)))
+                # spec files
+                sfils = {
+                    "script.dat": ["/objs", "/scenes", "/opcodes"], 
+                    "background.bg": ["/objs", "/scenes", "/opcodes"], 
+                    "cast.ini": ["/casts"],
+                    "invntr.txt": ["/invntr"],
+                    "names.ini": ["/names"],
+                    "bgs.ini": ["/bgs"],
+                    "dialogue.fix": ["/dlgs", "/msgs", "/dlgops"],
+                    "dialogue.lod": ["/dlgs", "/msgs", "/dlgops"],
+                    "resource.qrc": ["/res"],
+                }
+                for k, v in sfils.items():
+                    if fnl.endswith(k):
+                        self.add_info("\n<b>Related info</b>:\n")
+                        for p in v:
+                            self.add_info("  {}\n".format(p))
+                        
+                
+                    
+            
         self.switch_view(0)
         keys = None
         if self.last_path[:1] != ("files",):
@@ -2075,38 +2155,7 @@ class App(tkinter.Frame):
             self.update_gui("Files ({})".format(len(self.strfm.strtable)))
             for idx, fn in enumerate(self.strfm.strtableord):
                 self.insert_lb_act(fn, ["files", idx], idx)
-        # change
-        fid = None
-        if len(path) > 1:
-            # index
-            self.select_lb_item(path[1])
-            try:
-                fid = path[1]
-            except:
-                pass
-        else:
-            self.select_lb_item(None)
-        # display
-        self.clear_info()
-        if fid is None:
-            self.add_info("<b>Files</b>\n\n")
-            for idx, fn in enumerate(self.strfm.strtableord):
-                stid, pos, ln = self.strfm.strtable[fn]
-                self.add_info("  {}) <a href=\"/files/{}\">{}</a>\n".format(
-                    idx + 1, idx, fn))
-        else:
-            if fid >= len(self.strfm.strtable):
-                self.add_info("<b>File</b> \"{}\" not found\n\n".\
-                    format(path[1]))
-                return
-            fn = self.strfm.strtableord[fid]
-            stid, pos, ln = self.strfm.strtable[fn]
-
-            self.add_info("<b>File</b>: {}\n\n".format(fn))
-            self.add_info("  Store: <a href=\"/strs/{}\">{}</a>\n".format(stid,
-                self.strfm.strfd[stid][1]))
-            self.add_info("  Pos: {} (0x{:x})\n  Len: {} (0x{:x})\n".format(
-                pos, pos, ln, ln))
+        upd_files()
             
             
     def path_test(self, path):
