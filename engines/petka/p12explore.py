@@ -1533,6 +1533,71 @@ class App(tkinter.Frame):
         if self.sim is None:
             return self.path_default([])
         self.switch_view(0)
+        def upd_msgs():
+            path = self.curr_path
+            msg = None
+            if len(path) > 1:
+                # index
+                self.select_lb_item(path[1])
+                try:
+                    msg = self.sim.msgs[path[1]]
+                except:
+                    pass
+            else:
+                self.select_lb_item(None)
+            # display
+            sm = self.gl_state.get("msgs.sort", 0)
+            if msg:
+                sm = -1
+            for btn, idx in self.curr_state["btnsort"]:
+                if idx != sm and sm != -1:
+                    btn.config(state = tkinter.NORMAL)
+                else:
+                    btn.config(state = tkinter.DISABLED)
+            self.clear_info()
+            if not msg:
+                if len(path) > 1:
+                    self.add_info("<b>Message</b> \"{}\" not found\n\n".format(
+                        path[1]))
+                self.add_info("Select <b>message</b> from list\n\n")
+                # wav
+                lst = []
+                for idx, msg in enumerate(self.sim.msgs):
+                    if sm == 0:
+                        k = msg.msg_wav
+                    elif sm == 1:
+                        k = idx
+                    else:
+                        k = msg.name
+                    lst.append((k, msg.msg_wav, idx, msg.name))
+                lst.sort()
+                for _, wav, idx, capt in lst:
+                    self.add_info("  <a href=\"/msgs/{}\">{}</a> - {}\n".
+                        format(idx, wav, capt))
+            else:
+                # msg info
+                self.add_info("<b>Message</b>: {}\n".format(path[1]))
+                self.add_info("  wav:    {}\n".format(msg.msg_wav))
+                self.add_info("  object: " + self.fmt_hl_obj(msg.obj.idx, 
+                    True) + "\n")
+                self.add_info("  arg2:   {a} (0x{a:X})\n".format(
+                    a = msg.msg_arg2))
+                self.add_info("  arg3:   {a} (0x{a:X})\n".format(
+                    a = msg.msg_arg3))
+                self.add_info("\n{}\n".format(hlesc(msg.name)))
+                if self.tran:
+                    self.add_info("\n<i>Translated:</i>\n{}\n".\
+                        format(hlesc(self._t(msg.name, "msg"))))
+                self.add_info("\n<b>Used by dialog groups</b>:\n")
+                for grp in self.sim.dlgs:
+                    for act in grp.acts:
+                        for dlg in act.dlgs:
+                            for op in dlg.ops:
+                                if not op.msg: continue
+                                if op.msg.idx == msg.idx and op.opcode == 7:
+                                    self.add_info("  " + 
+                                        self.fmt_hl_dlg(grp.idx, True) + "\n")
+        
         if self.last_path[:1] != ("msgs",):
             self.update_gui("Messages ({})".format(len(self.sim.msgs)))
             for idx, msg in enumerate(self.sim.msgs):
@@ -1543,54 +1608,21 @@ class App(tkinter.Frame):
                     capt = capt[:40] + "|"
                 self.insert_lb_act("{} - {}".format(msg.idx, capt),
                     ["msgs", idx], idx)
+            def sfn():
+                self.gl_state["msgs.sort"] = 0
+                upd_msgs()
+            def sidx():
+                self.gl_state["msgs.sort"] = 1
+                upd_msgs()
+            def stxt():
+                self.gl_state["msgs.sort"] = 2
+                upd_msgs()
+            b1 = self.add_toolbtn("Sort by wav", sfn)
+            b2 = self.add_toolbtn("Sort by order", sidx)
+            b3 = self.add_toolbtn("Sort by text", stxt)
+            self.curr_state["btnsort"] = [[b1, 0], [b2, 1], [b3, 2]]
         # change
-        msg = None
-        if len(path) > 1:
-            # index
-            self.select_lb_item(path[1])
-            try:
-                msg = self.sim.msgs[path[1]]
-            except:
-                pass
-        else:
-            self.select_lb_item(None)
-        # display
-        self.clear_info()
-        if not msg:
-            if len(path) > 1:
-                self.add_info("<b>Message</b> \"{}\" not found\n\n".format(
-                    path[1]))
-            self.add_info("Select <b>message</b> from list\n")
-            # wav
-            lst = []
-            for idx, msg in enumerate(self.sim.msgs):
-                lst.append((msg.msg_wav, idx, msg.name))
-            lst.sort()
-            self.add_info("\nWav files\n")
-            for wav, idx, capt in lst:
-                self.add_info("  <a href=\"/msgs/{}\">{}</a> - {}\n".format(
-                    idx, wav, capt))
-        else:
-            # msg info
-            self.add_info("<b>Message</b>: {}\n".format(path[1]))
-            self.add_info("  wav:    {}\n".format(msg.msg_wav))
-            self.add_info("  object: " + self.fmt_hl_obj(msg.obj.idx, True) + 
-                "\n")
-            self.add_info("  arg2:   {a} (0x{a:X})\n".format(a = msg.msg_arg2))
-            self.add_info("  arg3:   {a} (0x{a:X})\n".format(a = msg.msg_arg3))
-            self.add_info("\n{}\n".format(hlesc(msg.name)))
-            if self.tran:
-                self.add_info("\n<i>Translated:</i>\n{}\n".\
-                    format(hlesc(self._t(msg.name, "msg"))))
-            self.add_info("\n<b>Used by dialog groups</b>:\n")
-            for grp in self.sim.dlgs:
-                for act in grp.acts:
-                    for dlg in act.dlgs:
-                        for op in dlg.ops:
-                            if not op.msg: continue
-                            if op.msg.idx == msg.idx and op.opcode == 7:
-                                self.add_info("  " + 
-                                    self.fmt_hl_dlg(grp.idx, True) + "\n")
+        upd_msgs()
                 
     def path_dlgs(self, path):
         if self.sim is None:
@@ -1992,7 +2024,7 @@ class App(tkinter.Frame):
                         self.add_info("Error extracting \"{}\"\n\n{}".\
                             format(hlesc(fname), hlesc(traceback.format_exc())))
                         return
-            self.add_toolbtn("Extract STR", ext_str)
+            self.curr_state["btnext"] = self.add_toolbtn("Extract STR", ext_str)
         # change
         stid = None
         if len(path) > 1:
@@ -2006,6 +2038,7 @@ class App(tkinter.Frame):
             self.select_lb_item(None)
         # display
         self.clear_info()
+        self.curr_state["btnext"].config(state = tkinter.DISABLED)
         if stid is None:
             self.add_info("<b>Stores</b>\n\n")
             for idx, st in enumerate(self.strfm.strfd):
@@ -2016,6 +2049,7 @@ class App(tkinter.Frame):
                 self.add_info("<b>Store</b> \"{}\" not found\n\n".\
                     format(path[1]))
                 return
+            self.curr_state["btnext"].config(state = tkinter.NORMAL)
             _, name, tag, strlst = self.strfm.strfd[stid]
             self.add_info("<b>Store</b>: {}\n".format(name))
             self.add_info("  Files: <a href=\"/files\">{}</a>, Tag: {}\n\n".
