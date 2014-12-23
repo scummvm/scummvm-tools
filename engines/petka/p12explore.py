@@ -8,6 +8,7 @@ import tkinter
 from tkinter import ttk, font, filedialog, messagebox
 from idlelib.WidgetRedirector import WidgetRedirector
 import traceback
+import urllib.parse
 
 # Image processing
 try:
@@ -192,8 +193,7 @@ class App(tkinter.Frame):
         # store manager
         self.strfm = None
         # translation
-        self.tran = None
-    
+        self.tran = None   
         
     def create_widgets(self):
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
@@ -259,28 +259,51 @@ class App(tkinter.Frame):
         self.text_hl = HyperlinkManager(self.text_view)
         self.text_view.bind('<Configure>', self.on_resize_view)
         
-        # bind path handlers
-        self.path_handler["parts"] = self.path_parts
-        self.path_handler["res"] = self.path_res
-        self.path_handler["objs"] = self.path_objs_scenes
-        self.path_handler["scenes"] = self.path_objs_scenes
-        self.path_handler["names"] = self.path_names
-        self.path_handler["invntr"] = self.path_invntr
-        self.path_handler["msgs"] = self.path_msgs
-        self.path_handler["dlgs"] = self.path_dlgs
-        self.path_handler["casts"] = self.path_casts
-        self.path_handler["opcodes"] = self.path_opcodes
-        self.path_handler["dlgops"] = self.path_dlgops
-        self.path_handler["test"] = self.path_test
-        self.path_handler["about"] = self.path_about
-        self.path_handler["support"] = self.path_support
-        self.path_handler["help"] = self.path_help
-        self.path_handler["info"] = self.path_info
-        self.path_handler["strs"] = self.path_stores
-        self.path_handler["files"] = self.path_files
         
+        def desc_def(aname, name, lst = {}):
+            def desc(path):
+                if len(path) > 1:
+                    return "{} {}".format(name, lst.get(path[1], 
+                        "#{}".format(path[1])))
+                else:
+                    return aname
+            return desc
+        
+        # bind path handlers
+        self.path_handler["parts"] = [self.path_parts, self.desc_parts]
+        self.path_handler["res"] = [self.path_res, None] # TODO:
+        self.path_handler["objs"] = [self.path_objs_scenes,
+            desc_def("Objects", "Object")]
+        self.path_handler["scenes"] = [self.path_objs_scenes,
+            desc_def("Scenes", "Scene")]
+        self.path_handler["names"] = [self.path_names,
+            desc_def("Names", "Name")]
+        self.path_handler["invntr"] = [self.path_invntr,
+            desc_def("Invntrs", "Invntr")]
+        self.path_handler["msgs"] = [self.path_msgs,
+            desc_def("Messages", "Message")]
+        self.path_handler["dlgs"] = [self.path_dlgs,
+            desc_def("Dialog groups", "Dialog group")]
+        self.path_handler["casts"] = [self.path_casts,
+            desc_def("Casts", "Cast")]
+        self.path_handler["opcodes"] = [self.path_opcodes,
+            desc_def("Opcodes", "Opcode", 
+            {k:v[0] for k, v in petka.engine.OPCODES.items()})]
+        self.path_handler["dlgops"] = [self.path_dlgops,
+            desc_def("Dialog opcodes", "Dialog opcode",
+            {k:v[0] for k, v in petka.engine.DLGOPS.items()})]
+        self.path_handler["strs"] = [self.path_stores,
+            desc_def("Stores", "Store")]
+        self.path_handler["files"] = [self.path_files, self.desc_files]
+        self.path_handler["test"] = [self.path_test, "Tests"]
+        self.path_handler["about"] = [self.path_about, "About"]
+        self.path_handler["support"] = [self.path_support, "Support"]
+        self.path_handler["help"] = [self.path_help, self.desc_help]
+        self.path_handler["info"] = [self.path_info, "Information"]
+
         self.update_after()
         repath = "/about"
+        print(self.start_act)
         for cmd, arg in self.start_act:
             if cmd == "load":
                 if not self.open_data_from(arg):
@@ -297,15 +320,27 @@ class App(tkinter.Frame):
                     repath = ""
                     break
             elif cmd == "open":
+                repath = ""
                 if not self.open_path(arg):
+                    print("DEBUG: stop opening after " + arg)
                     repath = ""
                     break
-                else:
-                    repath = "/"
+        print("Loading end", repath)
         if repath:
             self.open_path(repath)
 
     def create_menu(self):
+        def mkmenupaths(parent, items):                
+            for n in items:
+                if n is None:
+                    parent.add_separator()
+                else:
+                    def cmd(n):
+                        return lambda: self.open_path(n)
+                    parent.add_command(
+                            command = cmd(n),
+                            label = self.desc_path(n))
+
         self.menubar = tkinter.Menu(self.master)
         self.master.configure(menu = self.menubar)
 
@@ -327,47 +362,12 @@ class App(tkinter.Frame):
         self.menuedit = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menuedit,
                 label = "Edit")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/parts"),
-                label = "Select part")
-        self.menuedit.add_separator()
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/res"),
-                label = "Resources")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/objs"),
-                label = "Objects")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/scenes"),
-                label = "Scenes")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/names"),
-                label = "Names")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/invntr"),
-                label = "Invntr")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/casts"),
-                label = "Casts")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/msgs"),
-                label = "Messages")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/dlgs"),
-                label = "Dialog groups")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/opcodes"),
-                label = "Opcodes")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/dlgops"),
-                label = "Dialog opcodes")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/strs"),
-                label = "Stores")
-        self.menuedit.add_command(
-                command = lambda: self.open_path("/files"),
-                label = "Files")
-
+                
+        editnav = ["/parts", None, "/res", "/objs", "/scenes", "/names", 
+            "/invntr", "/casts", "/msgs", "/dlgs", "/opcodes", "/dlgops", 
+            "/strs", "/files"]
+        mkmenupaths(self.menuedit, editnav)
+        
         self.menunav = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menunav,
                 label = "Navigation")
@@ -409,19 +409,8 @@ class App(tkinter.Frame):
         self.menuhelp = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menuhelp,
                 label = "Help")
-        self.menuhelp.add_command(
-                command = lambda: self.open_path("/help/index"),
-                label = "Contents")
-        self.menuhelp.add_separator()
-        self.menuhelp.add_command(
-                command = lambda: self.open_path("/support"),
-                label = "Support")
-        self.menuhelp.add_command(
-                command = lambda: self.open_path("/info"),
-                label = "Info")
-        self.menuhelp.add_command(
-                command = lambda: self.open_path("/about"),
-                label = "About")
+        helpnav = ["/help/index", None, "/support", "/info", "/about"]
+        mkmenupaths(self.menuhelp, helpnav)
 
     def update_after(self):
         if not self.need_update:
@@ -450,7 +439,7 @@ class App(tkinter.Frame):
     def on_resize_view(self, event):
         self.update_after()
  
-    def open_path(self, loc, withhist = True):
+    def parse_path(self, loc):
         if isinstance(loc, str):
             path = []
             if loc[:1] == "/":
@@ -466,11 +455,13 @@ class App(tkinter.Frame):
         path = tuple(path)
         while path[-1:] == ("",):
             path = path[:-1]
-
+        return path    
+ 
+    def open_path(self, loc, withhist = True):
+        path = self.parse_path(loc)        
         if withhist:
             self.hist.append([path])
             self.histf = []
-
         print("DEBUG: Open", path)
         self.curr_path = path
         if len(path) > 0:
@@ -479,8 +470,19 @@ class App(tkinter.Frame):
             self.curr_help = ""
         if len(path) > 0:
             if path[0] in self.path_handler:
-                return self.path_handler[path[0]](path)
+                return self.path_handler[path[0]][0](path)
         return self.path_default(path)
+
+    def desc_path(self, loc):
+        path = self.parse_path(loc)
+        if len(path) > 0:
+            if path[0] in self.path_handler:
+                desc = self.path_handler[path[0]][1]
+                if callable(desc):
+                    return desc(path)
+                elif desc:
+                    return desc
+        return self.desc_default(path)
 
     def update_canvas(self):
         if self.curr_main == 0:          
@@ -923,22 +925,22 @@ class App(tkinter.Frame):
         self.switch_view(0)
         self.clear_info()
         self.add_info("<b>History</b>\n\n")
-        def phist(h):
-            d = ""
-            for e in h:
-                d += "/{}".format(e)
-            return d
         for idx, h in enumerate(self.hist[:-1]):
             self.add_info(" {:5d}) {}\n".format(idx - len(self.hist) + 1, 
-                phist(h[0])))
-        self.add_info(" -----> {}\n".format(phist(self.curr_path)))
+                self.desc_path(h[0])))
+        self.add_info(" -----> {}\n".format(self.desc_path(self.curr_path)))
         
         for idx, h in enumerate(self.histf):
-            self.add_info(" {:5d}) {}\n".format(idx + 1, phist(h[0])))
-            
+            self.add_info(" {:5d}) {}\n".format(idx + 1, self.desc_path(h[0])))
         
+    def desc_default(self, path):
+        desc = ""
+        for item in path:
+            desc += "/{}".format(item)
+        if not desc:
+            desc = "Outline"
+        return desc
         
-                
     def path_default(self, path):
         self.switch_view(0)
         self.update_gui("Outline")
@@ -977,6 +979,22 @@ class App(tkinter.Frame):
             ]
             for name, act in acts:
                 self.insert_lb_act(name, act)
+        return True
+
+    def desc_parts(self, path):
+        # this part can be internationalized
+        if len(path) > 1:
+            try:
+                part = path[1]
+                part = part.split(".", 1)
+                part[0] = int(part[0])
+                part[1] = int(part[1])
+            except:
+                part = None
+                pass
+                return "Goto to unknown part {}".format(path[1])
+            return "Select part {} chapter {}".format(part[0], part[1])
+        return "Select part"
 
     def path_parts(self, path):
         if self.sim is None:
@@ -1037,6 +1055,8 @@ class App(tkinter.Frame):
             except:
                 self.add_info("Error open part {} chapter {} - \n\n{}".\
                     format(part[0], part[1], hlesc(traceback.format_exc())))
+                return False
+        return True
         
 
     def path_res(self, path):
@@ -1108,7 +1128,6 @@ class App(tkinter.Frame):
                                 flc.frame_num, flc.delay))
                 else:
                     self.add_info("No information availiable")
-
             except:
                 self.add_info("Error loading {} - \"{}\" \n\n{}".\
                     format(res_id, hlesc(fn), hlesc(traceback.format_exc())))
@@ -1129,9 +1148,12 @@ class App(tkinter.Frame):
             usedby(self.sim.objects)
             self.add_info("\n<b>Used by scenes</b>:\n")
             usedby(self.sim.scenes)
+            self.add_info("\nFile: {}\n".format(self.fmt_hl_file(fn)))
+            
                     
         elif mode[0] == "view":
             self.path_res_view(res_id)
+        return True
                 
     def path_res_view(self, res_id):
         fn = self.sim.res[res_id]
@@ -1166,6 +1188,7 @@ class App(tkinter.Frame):
         finally:
             if dataf:
                 dataf.close()
+        return True
 
     def path_res_status(self):
         self.switch_view(0)
@@ -1184,6 +1207,7 @@ class App(tkinter.Frame):
             self.add_info("  <a href=\"/res/flt/{}\">{}</a>: {}\n".format(
                 ft, ft, fts[ft]))
         self.select_lb_item(None)
+        return True
     
     def on_path_res_info(self):
         self.switch_view(0)
@@ -1201,9 +1225,9 @@ class App(tkinter.Frame):
                 res_id, self.sim.res[res_id]), ["res", "all", res_id], res_id)
         # change                
         if len(path) > 2:
-            self.path_res_open(path[:3], path[2], path[3:])
+            return self.path_res_open(path[:3], path[2], path[3:])
         else:
-            self.path_res_status()
+            return self.path_res_status()
 
     def path_res_flt(self, path):
         lst = []
@@ -1220,9 +1244,9 @@ class App(tkinter.Frame):
                     res_id)
         # change                
         if len(path) > 3:
-            self.path_res_open(path[:4], path[3], path[4:])
+            return self.path_res_open(path[:4], path[3], path[4:])
         else:
-            self.path_res_status()
+            return self.path_res_status()
 
     def path_objs_scenes(self, path):
         if self.sim is None:
@@ -1432,10 +1456,8 @@ class App(tkinter.Frame):
                         self.fmt_hl_scene(sf.idx, True)))
                     self.add_info("    <i>on</i>: {}\n".format(
                         self.fmt_hl_obj(oo.idx, True)))
+        return True
                 
-                
-                
-
     def path_std_items(self, path, level, guiname, guiitem, tt, lst, lst_idx, 
             lbmode, cb):
         self.switch_view(0)
@@ -1444,7 +1466,6 @@ class App(tkinter.Frame):
             for idx, name in enumerate(lst_idx):
                 lb = self._t(name, tt)
                 if lbmode == 1:
-                    print(name, )
                     lb = "{} - {}".format(name, self._t(lst[name], tt))
                 self.insert_lb_act(lb, path[:level] + tuple([idx]), idx)
         # change
@@ -1465,6 +1486,7 @@ class App(tkinter.Frame):
         else:
             # info
             cb(name)
+        return True
         
     def path_names(self, path):
         if self.sim is None:
@@ -1578,12 +1600,15 @@ class App(tkinter.Frame):
                     lst.append((k, msg.msg_wav, idx, msg.name))
                 lst.sort()
                 for _, wav, idx, capt in lst:
-                    self.add_info("  <a href=\"/msgs/{}\">{}</a> - {}\n".
-                        format(idx, wav, capt))
+                    self.add_info("  <a href=\"/msgs/{}\">{}</a> - {} - {}\n".
+                        format(idx, idx, self.fmt_hl_file("speech{}/{}".format(
+                            self.sim.curr_part, wav), wav), capt))
             else:
                 # msg info
                 self.add_info("<b>Message</b>: {}\n".format(path[1]))
-                self.add_info("  wav:    {}\n".format(msg.msg_wav))
+                self.add_info("  wav:    {}\n".
+                        format(self.fmt_hl_file("speech{}/{}".format(
+                            self.sim.curr_part, msg.msg_wav), msg.msg_wav)))
                 self.add_info("  object: " + self.fmt_hl_obj(msg.obj.idx, 
                     True) + "\n")
                 self.add_info("  arg2:   {a} (0x{a:X})\n".format(
@@ -1630,6 +1655,7 @@ class App(tkinter.Frame):
             self.curr_state["btnsort"] = [[b1, 0], [b2, 1], [b3, 2]]
         # change
         upd_msgs()
+        return True
 
     def path_dlgs(self, path):
         if self.sim is None:
@@ -1776,6 +1802,7 @@ class App(tkinter.Frame):
             usedby(self.sim.objects)
             self.add_info("\n<b>Used by scenes</b>:\n")
             usedby(self.sim.scenes)
+        return True
         
     def path_opcodes(self, path):
         if self.sim is None:
@@ -1901,6 +1928,7 @@ class App(tkinter.Frame):
                         aidx, self.fmt_cmt("// " + self.fmt_hl_obj_scene(
                         obj_idx, True))))
                 self.add_info("\n")  
+        return True
 
     def path_dlgops(self, path):
         if self.sim is None:
@@ -1970,7 +1998,6 @@ class App(tkinter.Frame):
                         for oidx, op in enumerate(dlg.ops):
                             if op.opcode == opcode:
                                 dls.append([act.ref, grp.idx, aidx, didx, oidx])
-
             # display
             if len(dls) == 0:
                 self.add_info("<i>Not used in dialogs</i>\n\n")
@@ -1983,7 +2010,14 @@ class App(tkinter.Frame):
                         aidx, didx, oidx, self.fmt_cmt("// " + 
                         self.fmt_hl_obj_scene(obj_idx, True))))
                 self.add_info("\n")  
+        return True
 
+    def fmt_hl_file(self, fn, capt = None):
+        fnl = fn.lower().replace("\\", "/")
+        capt = capt or fn
+        fid = urllib.parse.quote_plus(fnl)
+        return "<a href=\"/files/{}\">{}</a>".format(fid, hlesc(capt))                   
+        
     def path_stores(self, path):
         if self.strfm is None:
             return self.path_default([])
@@ -2049,8 +2083,8 @@ class App(tkinter.Frame):
         if stid is None:
             self.add_info("<b>Stores</b>\n\n")
             for idx, st in enumerate(self.strfm.strfd):
-                self.add_info("  {}) <a href=\"/strs/{}\">{}</a> - {}\n".format(
-                    idx + 1, idx, st[1], st[2]))
+                self.add_info("  {}) <a href=\"/strs/{}\">{}</a> (tag={})\n".
+                    format(idx + 1, idx, st[1], st[2]))
         else:
             if stid >= len(self.strfm.strfd):
                 self.add_info("<b>Store</b> \"{}\" not found\n\n".\
@@ -2061,10 +2095,17 @@ class App(tkinter.Frame):
             self.add_info("<b>Store</b>: {}\n".format(name))
             self.add_info("  Files: <a href=\"/files\">{}</a>, Tag: {}\n\n".
                 format(len(strlst), tag))
-            for idx, (fname, ford, pos, ln) in enumerate(strlst):
-                self.add_info("  {}) <a href=\"/files/{}\">{}</a> "
-                    "(pos={}, len={})\n".format(idx + 1, ford, fname, 
-                    pos, ln))
+            for idx, (fname, _, _, _) in enumerate(strlst):
+                self.add_info("  {}) {}\n".format(idx + 1, 
+                    self.fmt_hl_file(fname)))
+        return True
+
+    def desc_files(self, path):
+        # this part can be internationalized
+        if len(path) > 1:
+            fnl = urllib.parse.unquote(path[1])
+            return "File \"{}\"".format(fnl)
+        return "Files"
 
     def path_files(self, path):
         if self.strfm is None:
@@ -2073,89 +2114,124 @@ class App(tkinter.Frame):
             path = self.curr_path
             fid = None
             if len(path) > 1:
+                # normalize fn
+                fnl = urllib.parse.unquote(path[1]).replace("\\","/").lower()
+                fid = urllib.parse.quote_plus(fnl)
                 # index
-                self.select_lb_item(path[1])
-                try:
-                    fid = path[1]
-                except:
-                    pass
+                self.select_lb_item(fid)
             else:
                 self.select_lb_item(None)
             self.clear_info()
             if fid is None:
-                self.add_info("<b>Files</b>\n\n")
+                self.add_info("<b>Files in all stores</b>\n\n")
                 for idx, fn in enumerate(self.strfm.strtableord):
-                    stid, pos, ln = self.strfm.strtable[fn]
-                    self.add_info("  {}) <a href=\"/files/{}\">{}</a>\n".format(
-                        idx + 1, idx, hlesc(fn)))
+                    stid, _, _ = self.strfm.strtable[fn]
+                    self.add_info("  {}) {}\n".format(
+                        idx + 1, self.fmt_hl_file(fn)))
             else:
-                if fid >= len(self.strfm.strtable):
+                try:
+                    self.strfm.read_file(fnl)
+                except:
                     self.add_info("<b>File</b> \"{}\" not found\n\n".\
-                        format(path[1]))
+                        format(hlesc(fnl)))
                     return
-                fn = self.strfm.strtableord[fid]
-                stid, pos, ln = self.strfm.strtable[fn]
+                self.add_info("<b>File</b>: {}\n\n".format(fnl))
+                    
+                # search in loaded stores
+                if fnl in self.strfm.strtable:
+                    # in store
+                    stid, pos, ln = self.strfm.strtable[fnl]
+                    self.add_info("  Store: <a href=\"/strs/{}\">{}</a>\n".format(
+                        stid, self.strfm.strfd[stid][1]))
+                    self.add_info("  Pos: {} (0x{:x}), Len: {} (0x{:x})\n".format(
+                        pos, pos, ln, ln))
+                else:
+                    # on disk
+                    self.add_info("  Loaded from disk\n")
 
-                self.add_info("<b>File</b>: {}\n\n".format(fn))
-                self.add_info("  Store: <a href=\"/strs/{}\">{}</a>\n".format(
-                    stid, self.strfm.strfd[stid][1]))
-                self.add_info("  Pos: {} (0x{:x})\n  Len: {} (0x{:x})\n".format(
-                    pos, pos, ln, ln))
-                fnl = fn.lower().replace("\\", "/")
                 if self.sim:
-                    self.add_info("\n<b>Used in resources</b>:\n")
+                    wascapt = False
                     for resid in self.sim.resord:
                         resfn = self.sim.res[resid].lower().replace("\\", "/")
                         if resfn == fnl:
+                            if not wascapt:
+                                self.add_info("\n<b>Used in resources</b>:\n")
+                                wascapt = True
                             self.add_info("  {} - <a href=\"/res/all/{}\">"\
                                 "{}</a>\n".format(resid, resid, 
                                 hlesc(self.sim.res[resid])))
+                    wavpref = "speech{}/".format(self.sim.curr_part)
+                    if fnl[-4:] == ".wav" and fnl.startswith(wavpref):
+                        wascapt = False
+                        for idx, msg in enumerate(self.sim.msgs):
+                            if fnl == wavpref + msg.msg_wav.lower():
+                                if not wascapt:
+                                    self.add_info("\n<b>Used in messages</b>:"
+                                        "\n")
+                                    wascapt = True
+                                    self.add_info("  {}\n".format(
+                                        self.fmt_hl_msg(idx, True)))
+
                 grp = [
                     [".leg", ".off", ".msk", ".flc"],
-                    [".bmp", "cvx"]
+                    [".bmp", ".cvx"]
                 ]
                 sg = None
                 for g in grp:
                     if fnl[-4:] in g:
                         sg = g
                 if sg:
-                    self.add_info("\n<b>Related file</b>:\n")
+                    self.add_info("\n<b>Related file(s)</b>:\n")
                     rel = []
-                    for idx, fnm in enumerate(self.strfm.strtableord):
-                        fnml = fnm.lower().replace("\\", "/")
-                        if idx == fid: continue
-                        if fnml[:-4] == fnl[:-4] and fnml[-4:] in sg:
-                            self.add_info("  <a href=\"/files/{}\">{}</a>\n".
-                                format(idx, hlesc(fnm)))
-                # spec files
-                sfils = {
-                    "script.dat": ["/objs", "/scenes", "/opcodes"], 
-                    "background.bg": ["/objs", "/scenes", "/opcodes"], 
-                    "cast.ini": ["/casts"],
-                    "invntr.txt": ["/invntr"],
-                    "names.ini": ["/names"],
-                    "bgs.ini": ["/bgs"],
-                    "dialogue.fix": ["/dlgs", "/msgs", "/dlgops"],
-                    "dialogue.lod": ["/dlgs", "/msgs", "/dlgops"],
-                    "resource.qrc": ["/res"],
-                }
-                for k, v in sfils.items():
-                    if fnl.endswith(k):
-                        self.add_info("\n<b>Related info</b>:\n")
-                        for p in v:
-                            self.add_info("  {}\n".format(p))
+                    for ext in sg:
+                        if ext == fnl[-4:]: continue
+                        if self.strfm.exists(fnl[:-4] + ext):
+                            self.add_info("  {}\n".format(self.fmt_hl_file(
+                                fnl[:-4] + ext)))
+                # special files
+                fns = fnl.split("/")
+                last = ""
+                while len(fns) > 0:
+                    if fns[-1:] == [""]:
+                        continue
+                    last = fns[-1:][0]
+                    break
+                sa = None
+                if last in ["script.dat", "backgrnd.bg", "bgdata.dat", "bgedit.bg"]:
+                    sa = ["/objs", "/scenes", "/opcodes"]
+                if last == "cast.ini":
+                    sa = ["/objs", "/casts"]
+                if last == "names.ini":
+                    sa = ["/objs", "/names"]
+                if last == "invntr.txt":
+                    sa = ["/objs", "/invntr"]
+                if last == "bgs.ini":
+                    sa = ["/scenes", "/bgs"]
+                if last in ["dialogue.fix", "dialogue.lod"]:
+                    sa = ["/dlgs", "/msgs", "/dlgops"]
+                if last == "resource.qrc":
+                    sa = ["/res", "/files"]
+                if last == "parts.ini":
+                    sa = ["/parts"]
+                if last[:4] == "disk" and last[-3:] == ".id":
+                    sa = ["/parts"]
+                if sa:
+                    self.add_info("\n<b>See also</b>:\n")
+                    for p in sa:
+                        self.add_info("  <a href=\"{}\">{}</a>\n".format(p, 
+                            self.desc_path(p)))
                         
-                
-                    
-            
         self.switch_view(0)
         keys = None
         if self.last_path[:1] != ("files",):
             # calc statistics
             self.update_gui("Files ({})".format(len(self.strfm.strtable)))
             for idx, fn in enumerate(self.strfm.strtableord):
-                self.insert_lb_act(fn, ["files", idx], idx)
+                fnl = fn.lower().replace("\\", "/")
+                fnl = urllib.parse.quote_plus(fnl)
+                self.insert_lb_act(fn, ["files", fnl], fnl)
         upd_files()
+        return True
             
             
     def path_test(self, path):
@@ -2240,6 +2316,7 @@ class App(tkinter.Frame):
             self.select_lb_item(None)
         # display
         display_page()
+        return True
 
     def path_about(self, path):
         self.switch_view(0)
@@ -2252,6 +2329,7 @@ class App(tkinter.Frame):
         self.add_info("  https://bitbucket.org/romiq/p12simtran\n")
         self.add_info("\n")
         self.path_info_outline()
+        return True
 
     def path_support(self, path):
         self.switch_view(0)
@@ -2297,6 +2375,15 @@ class App(tkinter.Frame):
 
         if self.sim or self.strfm:
             self.path_info_outline()
+
+        return True
+            
+    def desc_help(self, path):
+        if path == ("help",):
+            path = ("help", "index")
+        if path == ("help", "index"):
+            return "Index"
+        return "Help for " + self.desc_path(path[1])
             
     def path_help(self, path):
         self.switch_view(0)
@@ -2351,6 +2438,8 @@ class App(tkinter.Frame):
                     format(hlesc(hfn), hlesc(traceback.format_exc())))
         else:
             self.select_lb_item(None)
+
+        return True
         
     def path_info(self, path):
         self.switch_view(0)
@@ -2388,6 +2477,8 @@ class App(tkinter.Frame):
                         petka.DLGOPS[key][0]))
             else: 
                 self.add_info("Unknown data type \"{}\"\n".format(hlesc(name)))
+
+        return True
 
     def on_open_data(self):
         ft = [\
@@ -2529,6 +2620,7 @@ class App(tkinter.Frame):
                     if pref[0] in self.tran:
                         self.tran[pref[0]][tr.msgid] = tr.msgstr
                     self.tran["_"][tr.msgid] = tr.msgstr
+            return True
         except:
             self.switch_view(0)
             self.clear_info()

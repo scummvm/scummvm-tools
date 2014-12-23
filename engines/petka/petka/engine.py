@@ -275,7 +275,7 @@ class Engine:
                 if "StartRoom" in self.bgs_ini["Settings"]:
                     self.start_scene = self.bgs_ini["Settings"]["StartRoom"]
         # load .STR
-        strs = ["Flics", "Background", "Wav", "Music", "SFX"]
+        strs = ["Flics", "Background", "Wav", "Music", "SFX", "Speech"]
         for strf in strs:
             #pf = self.fman.find_path(self.curr_path + "bgs.ini")
             #if not pf: continue
