@@ -1417,10 +1417,10 @@ class App(tkinter.Frame):
                             act_ref = "0x{:X}".format(act.act_ref)
                     msg += " 0x{:02X} {}".format(act.act_status, act_ref)
                 self.add_info(fmtra.format(idx, msg, len(act.ops), cmt))
-                fmtao = "    " + fmt_dec(len(act.ops)) + " {} "
+                fmtao = "    " + fmt_dec(len(act.ops)) + ")"
                 for oidx, op in enumerate(act.ops):
-                    self.add_info(fmtao.format(oidx, 
-                        self.fmt_opcode(op.op_code)))
+                    self.add_info(self.fmt_cmt(fmtao.format(oidx)))
+                    self.add_info(" " + self.fmt_opcode(op.op_code) + " ")
                     cmt = ""
                     if op.op_ref == rec.idx:
                         self.add_info("THIS")
