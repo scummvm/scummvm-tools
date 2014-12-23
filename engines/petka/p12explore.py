@@ -9,6 +9,7 @@ from tkinter import ttk, font, filedialog, messagebox
 from idlelib.WidgetRedirector import WidgetRedirector
 import traceback
 import urllib.parse
+import math
 
 # Image processing
 try:
@@ -50,6 +51,17 @@ def fmt_arg(value):
         return "-1"
     else:
         return "0x{:X}".format(value)
+    
+def fmt_dec(value, add = 0):
+    return "{{:{}}}".format(fmt_dec_len(value, add))
+        
+def fmt_dec_len(value, add = 0):
+    if value == 0:
+        d = 1
+    else:
+        d = int(math.log10(value)) + 1
+    d += add
+    return d
     
 def translit(text):
     ru = "абвгдеёзийклмнопрстуфхъыьэАБВГДЕЁЗИЙКЛМНОПРСТУФХЪЫЬЭ"
@@ -949,14 +961,17 @@ class App(tkinter.Frame):
         self.switch_view(0)
         self.clear_info()
         self.add_info("<b>History</b>\n\n")
+        sz = max(len(self.hist[:-1]), len(self.histf))
+        fmt = fmt_dec(sz, 1)
+        fmt = "  " + fmt + ") {}\n"
         for idx, h in enumerate(self.hist[:-1]):
-            self.add_info(" {:5d}) {}\n".format(idx - len(self.hist) + 1, 
+            self.add_info(fmt.format(idx - len(self.hist) + 1, 
                 self.desc_path(h[0])))
-        self.add_info(" -----> {}\n".format(self.desc_path(self.curr_path)))
-        
+        self.add_info(" {} {}\n".format("=" * fmt_dec_len(sz, 2) + ">", 
+            self.desc_path(self.curr_path)))
         for idx, h in enumerate(self.histf):
-            self.add_info(" {:5d}) {}\n".format(idx + 1, self.desc_path(h[0])))
-        
+            self.add_info(fmt.format(idx + 1, self.desc_path(h[0])))
+            
     def desc_default(self, path):
         desc = ""
         for item in path:
@@ -1365,8 +1380,9 @@ class App(tkinter.Frame):
                 else:
                     self.add_info("\n<b>References</b>: {}\n".\
                         format(len(rec.refs)))
+                fmtd = "  " + fmt_dec(len(rec.refs)) + ") "
                 for idx, ref in enumerate(rec.refs):
-                    self.add_info("  {}) ".format(idx) + 
+                    self.add_info(fmtd.format(idx) + 
                         self.fmt_hl_obj(ref[0].idx))
                     msg = ""
                     for arg in ref[1:]:
@@ -1383,6 +1399,8 @@ class App(tkinter.Frame):
             resused = []
             dlgused = []
             self.add_info("\n<b>Handlers</b>: {}\n".format(len(rec.acts)))
+            fmtra = "  " + fmt_dec(len(rec.acts)) + \
+                ") <u>on {}</u>, ops: {}{}\n"
             for idx, act in enumerate(rec.acts):
                 msg = self.fmt_opcode(act.act_op)
                 cmt = ""
@@ -1398,10 +1416,10 @@ class App(tkinter.Frame):
                         else:
                             act_ref = "0x{:X}".format(act.act_ref)
                     msg += " 0x{:02X} {}".format(act.act_status, act_ref)
-                self.add_info("  {}) <u>on {}</u>, ops: {}{}\n".format(\
-                    idx, msg, len(act.ops), cmt))
+                self.add_info(fmtra.format(idx, msg, len(act.ops), cmt))
+                fmtao = "    " + fmt_dec(len(act.ops)) + " {} "
                 for oidx, op in enumerate(act.ops):
-                    self.add_info("    {}) {} ".format(oidx, 
+                    self.add_info(fmtao.format(oidx, 
                         self.fmt_opcode(op.op_code)))
                     cmt = ""
                     if op.op_ref == rec.idx:
@@ -1699,15 +1717,18 @@ class App(tkinter.Frame):
                 grp.idx, grp.idx))
             self.add_info("  arg1: {a} (0x{a:X})\n\n".format(a = grp.grp_arg1))
             self.add_info("<b>Dialog handlers<b>: {}\n".format(len(grp.acts)))
+            fmtga = "  " + fmt_dec(len(grp.acts)) + \
+                ") <u>on {} {} 0x{:X} 0x{:X}</u>, dlgs: {}{}\n"
             for idx, act in enumerate(grp.acts):
-                self.add_info("  {}) <u>on {} {} 0x{:X} 0x{:X}</u>, dlgs: "\
-                    "{}{}\n".format(idx, self.fmt_opcode(act.opcode), 
+                self.add_info(fmtga.format(idx, self.fmt_opcode(act.opcode), 
                         self.fmt_hl_obj(act.ref), act.arg1, act.arg2, \
                         len(act.dlgs), self.fmt_cmt(" // " + 
                             self.fmt_hl_obj(act.ref, True))))
+                fmtad = "    " + fmt_dec(len(act.dlgs)) + \
+                    ") <i>0x{:X} 0x{:X}</i>, ops: {}\n"
                 for didx, dlg in enumerate(act.dlgs):
-                    self.add_info("    {}) <i>0x{:X} 0x{:X}</i>, ops: {}\n".\
-                        format(didx, dlg.arg1, dlg.arg2, len(dlg.ops)))
+                    self.add_info(fmtad.format(didx, dlg.arg1, dlg.arg2, 
+                        len(dlg.ops)))
                     # scan for used adreses
                     usedadr = []
                     for op in dlg.ops:
@@ -1906,8 +1927,10 @@ class App(tkinter.Frame):
                 self.add_info("<i>Not used in scripts</i>\n\n")
             else:            
                 self.add_info("<i>Used in scripts</i>: {}\n".format(len(ops)))
+                fmtops = "  " + fmt_dec(len(ops)) + \
+                    ") obj={}, act={}, op={} {}\n"
                 for idx, (obj_idx, aidx, oidx) in enumerate(ops):
-                    self.add_info("  {}) obj={}, act={}, op={} {}\n".format(
+                    self.add_info(fmtops.format(
                         idx, self.fmt_hl_obj_scene(obj_idx, False), aidx, oidx,
                         self.fmt_cmt("// " + self.fmt_hl_obj_scene(obj_idx, 
                         True))))
@@ -1917,8 +1940,10 @@ class App(tkinter.Frame):
                 self.add_info("<i>Not used in handlers</i>\n\n")
             else:            
                 self.add_info("<i>Used in handlers</i>: {}\n".format(len(acts)))
+                fmtacts = "  " + fmt_dec(len(acts)) + \
+                    ") obj={}, act={} {}\n"
                 for idx, (obj_idx, aidx) in enumerate(acts):
-                    self.add_info("  {}) obj={}, act={} {}\n".format(
+                    self.add_info(fmtacts.format(
                         idx, self.fmt_hl_obj_scene(obj_idx, False), aidx, 
                         self.fmt_cmt("// " + self.fmt_hl_obj_scene(obj_idx, 
                         True))))
@@ -1929,9 +1954,10 @@ class App(tkinter.Frame):
             else:            
                 self.add_info("<i>Used in dialog handlers</i>: {}\n".format(
                     len(dacts)))
+                fmtdacts = "  " + fmt_dec(len(dacts)) + \
+                    ") obj={}, group=<a href=\"/dlgs/{}\">{}</a>, act={} {}\n"
                 for idx, (obj_idx, gidx, aidx) in enumerate(dacts):
-                    self.add_info("  {}) obj={}, group=<a href=\"/dlgs/{}\">{}"
-                        "</a>, act={} {}\n".format(
+                    self.add_info(fmtdacts.format(
                         idx, self.fmt_hl_obj_scene(obj_idx, False), gidx, gidx, 
                         aidx, self.fmt_cmt("// " + self.fmt_hl_obj_scene(
                         obj_idx, True))))
@@ -2011,9 +2037,11 @@ class App(tkinter.Frame):
                 self.add_info("<i>Not used in dialogs</i>\n\n")
             else:            
                 self.add_info("<i>Used in dialogs</i>: {}\n".format(len(dls)))
+                fmtdls = "  " + fmt_dec(len(dacts)) + \
+                    ") obj={}, group=<a href=\"/dlgs/{}\">{}" + \
+                        "</a>, act={}, dlg={}, op={} {}\n"
                 for idx, (obj_idx, gidx, aidx, didx, oidx) in enumerate(dls):
-                    self.add_info("  {}) obj={}, group=<a href=\"/dlgs/{}\">{}"
-                        "</a>, act={}, dlg={}, op={} {}\n".format(
+                    self.add_info(fmtdls.format(
                         idx, self.fmt_hl_obj_scene(obj_idx, False), gidx, gidx, 
                         aidx, didx, oidx, self.fmt_cmt("// " + 
                         self.fmt_hl_obj_scene(obj_idx, True))))
@@ -2051,10 +2079,10 @@ class App(tkinter.Frame):
             self.curr_state["btnext"].config(state = tkinter.DISABLED)
             if stid is None:
                 self.add_info("<b>Stores</b>\n\n")
+                fmt = "  " + fmt_dec(len(self.strfm.strfd)) + \
+                    ") <a href=\"/strs/{}\">{}</a> (tag={})\n"
                 for idx, st in enumerate(self.strfm.strfd):
-                    self.add_info("  {}) <a href=\"/strs/{}\">{}</a>"
-                        " (tag={})\n".
-                        format(idx + 1, idx, st[1], st[2]))
+                    self.add_info(fmt.format(idx + 1, idx, st[1], st[2]))
             else:
                 if stid >= len(self.strfm.strfd):
                     self.add_info("<b>Store</b> \"{}\" not found\n\n".\
@@ -2076,8 +2104,9 @@ class App(tkinter.Frame):
                         k = fname.lower().replace("\\", "/")
                     lst.append((k, idx, fname))
                 lst.sort()
+                fmt = "  " + fmt_dec(len(lst)) + ") {}\n"
                 for _, idx, fname in lst:
-                    self.add_info("  {:5}) {}\n".format(idx + 1, 
+                    self.add_info(fmt.format(idx + 1, 
                         self.fmt_hl_file(fname)))
             
         self.switch_view(0)
@@ -2166,9 +2195,10 @@ class App(tkinter.Frame):
                         k = fn.lower().replace("\\", "/")
                     lst.append((k, idx, fn))
                 lst.sort()
+                fmt = "  " + fmt_dec(len(lst)) + ") {}\n"
                 for _, idx, fn in lst:
                     #stid, _, _ = self.strfm.strtable[fn]
-                    self.add_info("  {:5}) {}\n".format(
+                    self.add_info(fmt.format(
                         idx + 1, self.fmt_hl_file(fn)))
             else:
                 try:
