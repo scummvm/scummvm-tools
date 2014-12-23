@@ -780,6 +780,30 @@ class App(tkinter.Frame):
         self.curr_gui.append(lambda:lab.pack_forget())
         return lab
 
+    def add_toolgrp(self, label, glkey, items, cbupd):
+        def makecb(v, g):
+            def btncb():
+                self.gl_state[g] = v
+                cbupd()
+            return btncb
+        if label:
+            self.add_toollabel(label)
+        kl = list(items.keys())
+        kl.sort()
+        res = []
+        for k in kl:
+            b = self.add_toolbtn(items[k], makecb(k, glkey))
+            res.append([b, k])
+        return res
+
+    def upd_toolgrp(self, btns, state):
+        for btn, idx in btns:
+            if idx != state and state != -1:
+                btn.config(state = tkinter.NORMAL)
+            else:
+                btn.config(state = tkinter.DISABLED)
+    
+
     def clear_hist(self):
         self.hist = self.hist[-1:]
         self.histf = []
@@ -1577,11 +1601,7 @@ class App(tkinter.Frame):
             sm = self.gl_state.get("msgs.sort", 0)
             if msg:
                 sm = -1
-            for btn, idx in self.curr_state["btnsort"]:
-                if idx != sm and sm != -1:
-                    btn.config(state = tkinter.NORMAL)
-                else:
-                    btn.config(state = tkinter.DISABLED)
+            self.upd_toolgrp(self.curr_state["btnsort"], sm)
             self.clear_info()
             if not msg:
                 if len(path) > 1:
@@ -1639,20 +1659,8 @@ class App(tkinter.Frame):
                     capt = capt[:40] + "|"
                 self.insert_lb_act("{} - {}".format(msg.idx, capt),
                     ["msgs", idx], idx)
-            def sfn():
-                self.gl_state["msgs.sort"] = 0
-                upd_msgs()
-            def sidx():
-                self.gl_state["msgs.sort"] = 1
-                upd_msgs()
-            def stxt():
-                self.gl_state["msgs.sort"] = 2
-                upd_msgs()
-            self.add_toollabel("Sort by")
-            b1 = self.add_toolbtn("wav", sfn)
-            b2 = self.add_toolbtn("order", sidx)
-            b3 = self.add_toolbtn("text", stxt)
-            self.curr_state["btnsort"] = [[b1, 0], [b2, 1], [b3, 2]]
+            self.curr_state["btnsort"] = self.add_toolgrp("Sort by", 
+                "msgs.sort", {0: "wav", 1: "order", 2: "text"}, upd_msgs)
         # change
         upd_msgs()
         return True
@@ -2021,6 +2029,57 @@ class App(tkinter.Frame):
     def path_stores(self, path):
         if self.strfm is None:
             return self.path_default([])
+        def upd_strs():
+            path = self.curr_path
+            # change
+            stid = None
+            if len(path) > 1:
+                # index
+                self.select_lb_item(path[1])
+                try:
+                    stid = path[1]
+                except:
+                    pass
+            else:
+                self.select_lb_item(None)
+            # display
+            self.clear_info()
+            sm = self.gl_state.get("strs.sortfiles", 0)
+            if stid is None:
+                sm = -1
+            self.upd_toolgrp(self.curr_state["btnsort"], sm)
+            self.curr_state["btnext"].config(state = tkinter.DISABLED)
+            if stid is None:
+                self.add_info("<b>Stores</b>\n\n")
+                for idx, st in enumerate(self.strfm.strfd):
+                    self.add_info("  {}) <a href=\"/strs/{}\">{}</a>"
+                        " (tag={})\n".
+                        format(idx + 1, idx, st[1], st[2]))
+            else:
+                if stid >= len(self.strfm.strfd):
+                    self.add_info("<b>Store</b> \"{}\" not found\n\n".\
+                        format(path[1]))
+                    return
+                self.curr_state["btnext"].config(state = tkinter.NORMAL)
+                _, name, tag, strlst = self.strfm.strfd[stid]
+                self.add_info("<b>Store</b>: {}\n".format(name))
+                flnk = "{}".format(len(strlst))
+                if len(strlst):
+                    flnk = self.fmt_hl_file(strlst[0][0], flnk)
+                self.add_info("  Files: {}, Tag: {}\n\n".format(flnk, tag))
+                
+                lst = []
+                for idx, (fname, _, _, _) in enumerate(strlst):
+                    if sm == 0:
+                        k = idx
+                    else:
+                        k = fname.lower().replace("\\", "/")
+                    lst.append((k, idx, fname))
+                lst.sort()
+                for _, idx, fname in lst:
+                    self.add_info("  {:5}) {}\n".format(idx + 1, 
+                        self.fmt_hl_file(fname)))
+            
         self.switch_view(0)
         keys = None
         if self.last_path[:1] != ("strs",):
@@ -2066,38 +2125,9 @@ class App(tkinter.Frame):
                             format(hlesc(fname), hlesc(traceback.format_exc())))
                         return
             self.curr_state["btnext"] = self.add_toolbtn("Extract STR", ext_str)
-        # change
-        stid = None
-        if len(path) > 1:
-            # index
-            self.select_lb_item(path[1])
-            try:
-                stid = path[1]
-            except:
-                pass
-        else:
-            self.select_lb_item(None)
-        # display
-        self.clear_info()
-        self.curr_state["btnext"].config(state = tkinter.DISABLED)
-        if stid is None:
-            self.add_info("<b>Stores</b>\n\n")
-            for idx, st in enumerate(self.strfm.strfd):
-                self.add_info("  {}) <a href=\"/strs/{}\">{}</a> (tag={})\n".
-                    format(idx + 1, idx, st[1], st[2]))
-        else:
-            if stid >= len(self.strfm.strfd):
-                self.add_info("<b>Store</b> \"{}\" not found\n\n".\
-                    format(path[1]))
-                return
-            self.curr_state["btnext"].config(state = tkinter.NORMAL)
-            _, name, tag, strlst = self.strfm.strfd[stid]
-            self.add_info("<b>Store</b>: {}\n".format(name))
-            self.add_info("  Files: <a href=\"/files\">{}</a>, Tag: {}\n\n".
-                format(len(strlst), tag))
-            for idx, (fname, _, _, _) in enumerate(strlst):
-                self.add_info("  {}) {}\n".format(idx + 1, 
-                    self.fmt_hl_file(fname)))
+            self.curr_state["btnsort"] = self.add_toolgrp("Sort by", 
+                "strs.sortfiles", {0: "order", 1: "filename"}, upd_strs)
+        upd_strs()
         return True
 
     def desc_files(self, path):
@@ -2122,11 +2152,23 @@ class App(tkinter.Frame):
             else:
                 self.select_lb_item(None)
             self.clear_info()
+            sm = self.gl_state.get("files.sort", 0)
+            if fid is not None:
+                sm = -1
+            self.upd_toolgrp(self.curr_state["btnsort"], sm)
             if fid is None:
                 self.add_info("<b>Files in all stores</b>\n\n")
+                lst = []
                 for idx, fn in enumerate(self.strfm.strtableord):
-                    stid, _, _ = self.strfm.strtable[fn]
-                    self.add_info("  {}) {}\n".format(
+                    if sm == 0:
+                        k = idx
+                    else:
+                        k = fn.lower().replace("\\", "/")
+                    lst.append((k, idx, fn))
+                lst.sort()
+                for _, idx, fn in lst:
+                    #stid, _, _ = self.strfm.strtable[fn]
+                    self.add_info("  {:5}) {}\n".format(
                         idx + 1, self.fmt_hl_file(fn)))
             else:
                 try:
@@ -2230,6 +2272,8 @@ class App(tkinter.Frame):
                 fnl = fn.lower().replace("\\", "/")
                 fnl = urllib.parse.quote_plus(fnl)
                 self.insert_lb_act(fn, ["files", fnl], fnl)
+            self.curr_state["btnsort"] = self.add_toolgrp("Sort by", 
+                "files.sort", {0: "order", 1: "filename"}, upd_files)
         upd_files()
         return True
             
@@ -2241,6 +2285,10 @@ class App(tkinter.Frame):
             if len(path) > 2:
                 item = path[2]
             self.clear_info()
+            sm = self.gl_state.get("test.info.mode", 0)
+            if item is None:
+                sm = -1
+            self.upd_toolgrp(self.curr_state["gbtns"], sm)
             if item is None:
                 self.switch_view(0)
                 self.add_info("Select item " + path[1])
@@ -2254,7 +2302,7 @@ class App(tkinter.Frame):
                     self.add_info("Local mode {}\n".format(
                         self.curr_state.get("mode", None)))
                     self.add_info("Global mode {}\n".format(
-                        self.gl_state.get("mode", None)))
+                        self.gl_state.get("test.info.mode", None)))
                     for i in range(100):
                         self.add_info("  Item {}\n".format(i))
             
@@ -2278,30 +2326,11 @@ class App(tkinter.Frame):
                 self.curr_state["btn1"].config(state = tkinter.NORMAL)
                 self.curr_state["btn2"].config(state = tkinter.DISABLED)
                 display_page()
-            def sw_gmode1():
-                print("Global Mode 1")
-                self.gl_state["test.info.mode"] = 0
-                self.curr_state["gbtn1"].config(state = tkinter.DISABLED)
-                self.curr_state["gbtn2"].config(state = tkinter.NORMAL)
-                display_page()
-            def sw_gmode2():
-                print("Global Mode 2")
-                self.gl_state["test.info.mode"] = 1
-                self.curr_state["gbtn1"].config(state = tkinter.NORMAL)
-                self.curr_state["gbtn2"].config(state = tkinter.DISABLED)
-                display_page()
             self.curr_state["btn1"] = self.add_toolbtn("Mode 1", sw_mode1)
             self.curr_state["btn2"] = self.add_toolbtn("Mode 2", sw_mode2)
             # we store buttons in local state
-            st = self.gl_state.get("test.info.mode", 0)
-            b = self.add_toolbtn("Global Mode 1", sw_gmode1)
-            if st == 0:
-                b.config(state = tkinter.DISABLED)
-            self.curr_state["gbtn1"] = b
-            b = self.add_toolbtn("Global Mode 2", sw_gmode2)
-            if st == 1:
-                b.config(state = tkinter.DISABLED)
-            self.curr_state["gbtn2"] = b
+            self.curr_state["gbtns"] = self.add_toolgrp(None, "test.info.mode",
+                {0: "mode 1", 1: "mode 2", 2: "mode 3"}, display_page)
 
         # change
         item = None
