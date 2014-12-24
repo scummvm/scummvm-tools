@@ -45,7 +45,7 @@ def fmt_hl(loc, desc):
 
 def fmt_hl_len(loc, desc, ln):
     sz = max(ln - len(desc), 0)
-    return " "*sz + "<a href=\"{}\">{}</a>".format(loc, desc)
+    return " "*sz + fmt_hl(loc, desc)
 
 def fmt_arg(value):
     if value < 10:
@@ -931,26 +931,26 @@ class App(tkinter.Frame):
         if self.sim:
             self.add_info("Current part {} chapter {}\n\n".\
                     format(self.sim.curr_part, self.sim.curr_chap))
-            self.add_info("  Resources:     <a href=\"/res\">{}</a>\n".\
-                format(len(self.sim.res)))
-            self.add_info("  Objects:       <a href=\"/objs\">{}</a>\n".\
-                format(len(self.sim.objects)))
-            self.add_info("  Scenes:        <a href=\"/scenes\">{}</a>\n".\
-                format(len(self.sim.scenes)))
-            self.add_info("  Names:         <a href=\"/names\">{}</a>\n".\
-                format(len(self.sim.names)))
-            self.add_info("  Invntr:        <a href=\"/invntr\">{}</a>\n".\
-                format(len(self.sim.invntr)))
-            self.add_info("  Casts:         <a href=\"/casts\">{}</a>\n".\
-                format(len(self.sim.casts)))
-            self.add_info("  Messages       <a href=\"/msgs\">{}</a>\n".\
-                format(len(self.sim.msgs)))
-            self.add_info("  Dialog groups: <a href=\"/dlgs\">{}</a>\n".\
-                format(len(self.sim.dlgs)))
-            self.add_info("  Opened stores: <a href=\"/strs\">{}</a>\n".
-                format(len(self.strfm.strfd)))
-            self.add_info("  Files:         <a href=\"/files\">{}</a>\n".
-                format(len(self.strfm.strtable)))
+            self.add_info("  Resources:     " + fmt_hl("/res", 
+                len(self.sim.res)) + "\n")
+            self.add_info("  Objects:       " + fmt_hl("/objs", 
+                len(self.sim.objects)) + "\n")
+            self.add_info("  Scenes:        " + fmt_hl("/scenes", 
+                len(self.sim.scenes)) + "\n")
+            self.add_info("  Names:         " + fmt_hl("/names", 
+                len(self.sim.names)) + "\n")
+            self.add_info("  Invntr:        " + fmt_hl("/invntr", 
+                len(self.sim.invntr)) + "\n")
+            self.add_info("  Casts:         " + fmt_hl("/casts", 
+                len(self.sim.casts)) + "\n")
+            self.add_info("  Messages       " + fmt_hl("/msgs", 
+                len(self.sim.msgs)) + "\n")
+            self.add_info("  Dialog groups: " + fmt_hl("/dlgs", 
+                len(self.sim.dlgs)) + "\n")
+            self.add_info("  Opened stores: " + fmt_hl("strs", 
+                len(self.strfm.strfd)) + "\n")
+            self.add_info("  Files:         " + fmt_hl("/files", 
+                len(self.strfm.strtable)) + "\n")
             scn = hlesc(self.sim.start_scene)
             for scene in self.sim.scenes:
                 if scene.name == self.sim.start_scene:
@@ -958,15 +958,14 @@ class App(tkinter.Frame):
                     break
             self.add_info("  Start scene:   {}\n".format(scn))
             self.add_info("\n")
-            self.add_info("  <a href=\"/opcodes\">Opcodes</a>\n")
-            self.add_info("  <a href=\"/dlgops\">Dialog opcodes</a>\n\n")
-
+            self.add_info("  " + fmt_hl("/opcodes", "Opcodes") + "\n")
+            self.add_info("  " + fmt_hl("/dlgops", "Dialog opcodes") + "\n")
         elif self.strfm:
             self.add_info("Single store mode\n\n")
-            self.add_info("  Opened stores: <a href=\"/strs\">{}</a>\n".
-                format(len(self.strfm.strfd)))
-            self.add_info("  Files:         <a href=\"/files\">{}</a>\n".
-                format(len(self.strfm.strtable)))
+            self.add_info("  Opened stores: " + fmt_hl("/strs", 
+                len(self.strfm.strfd)) + "\n")
+            self.add_info("  Files:         " + fmt_hl("/files", 
+                len(self.strfm.strtable)) + "\n")
 
     def show_hist(self):
         self.switch_view(0)
@@ -1255,8 +1254,8 @@ class App(tkinter.Frame):
     def path_res_status(self):
         self.switch_view(0)
         self.clear_info()
-        self.add_info("<b>Resources</b>: <a href=\"/res\">{}</a>\n"\
-            "Filetypes:\n".format(len(self.sim.res)))
+        self.add_info("<b>Resources</b>: " + fmt_hl("/res", len(self.sim.res)) 
+            + "\nFiletypes:\n")
         fts = {}
         for res in self.sim.res.values():
             fp = res.rfind(".")
@@ -2323,8 +2322,8 @@ class App(tkinter.Frame):
                 if sa:
                     self.add_info("\n<b>See also</b>:\n")
                     for p in sa:
-                        self.add_info("  <a href=\"{}\">{}</a>\n".format(p, 
-                            self.desc_path(p)))
+                        self.add_info("  " + fmt_hl(p, self.desc_path(p)) 
+                            + "\n")
                         
                 if fnl[-4:] in [".leg", ".off"]:
                     legf = petka.LEGLoader()
