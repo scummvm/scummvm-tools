@@ -1136,7 +1136,7 @@ class App(tkinter.Frame):
             return self.path_default(path)
 
     def path_res_open(self, pref, res_id, mode):
-        self.curr_help = "res_view"
+        self.curr_help = "res_view" # help override 
         if res_id not in self.sim.res:        
             self.switch_view(0)
             self.clear_info()
@@ -1523,8 +1523,6 @@ class App(tkinter.Frame):
                 for sf, oo in rec.entareas:
                     self.add_info("  <i>from</i>: {}\n".format(
                         self.fmt_hl_scene(sf.idx, True)))
-                    # 
-                    print(rec.name)
                     self.add_info("    <i>on</i>: {}\n".format(
                         self.fmt_hl_obj(oo.idx, True)))
         return True
