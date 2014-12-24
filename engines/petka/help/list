@@ -11,6 +11,8 @@ invntr
 casts
 msgs
 dlgs
+opcodes
+dlgops
 strs
 files
 translate

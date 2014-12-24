@@ -30,7 +30,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.3e 2014-12-20"
+VERSION = "v0.3g 2014-12-27"
 
 def hlesc(value):
     if value is None:
@@ -43,6 +43,9 @@ def cesc(value):
 def fmt_hl(loc, desc):
     return "<a href=\"{}\">{}</a>".format(loc, desc)
 
+def fmt_hl_len(loc, desc, ln):
+    sz = max(ln - len(desc), 0)
+    return " "*sz + "<a href=\"{}\">{}</a>".format(loc, desc)
 
 def fmt_arg(value):
     if value < 10:
@@ -1509,6 +1512,11 @@ class App(tkinter.Frame):
                       " #{}".format(hid) + self.fmt_cmt(" // " + 
                       self.fmt_hl_obj_scene(oid, True)) + "\n")
 
+            # perspective
+            if not isobj and rec.persp:
+                self.add_info("\n<b>Perspective</b>:\n  {}, {}, {}, {}, {}\n".
+                    format(*rec.persp))
+                
             # enter areas
             if not isobj and rec.entareas:
                 self.add_info("\n<b>Enter areas</b>: {}\n".format(
@@ -1516,6 +1524,8 @@ class App(tkinter.Frame):
                 for sf, oo in rec.entareas:
                     self.add_info("  <i>from</i>: {}\n".format(
                         self.fmt_hl_scene(sf.idx, True)))
+                    # 
+                    print(rec.name)
                     self.add_info("    <i>on</i>: {}\n".format(
                         self.fmt_hl_obj(oo.idx, True)))
         return True
@@ -1657,10 +1667,13 @@ class App(tkinter.Frame):
                         k = msg.name
                     lst.append((k, msg.msg_wav, idx, msg.name))
                 lst.sort()
+                fmtlen = fmt_dec_len(len(lst))
                 for _, wav, idx, capt in lst:
-                    self.add_info("  <a href=\"/msgs/{}\">{}</a> - {} - {}\n".
-                        format(idx, idx, self.fmt_hl_file("speech{}/{}".format(
-                            self.sim.curr_part, wav), wav), capt))
+                    self.add_info("  " + fmt_hl_len("/msgs/{}".format(idx), 
+                        "{}".format(idx), fmtlen))
+                    self.add_info(" - {} - {}\n".format(
+                        self.fmt_hl_file("speech{}/{}".format(
+                        self.sim.curr_part, wav), wav), capt))
             else:
                 # msg info
                 self.add_info("<b>Message</b>: {}\n".format(path[1]))

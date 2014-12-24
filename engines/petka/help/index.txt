@@ -27,6 +27,8 @@
  * <a href="/help/casts">Цвета предметов</a>
  * <a href="/help/msgs">Собщения</a>
  * <a href="/help/dlgs">Группы диалогов</a>
+ * <a href="/help/opcodes">Байт-код</a>
+ * <a href="/help/dlgops">Байт-код дилогов</a>
  * <a href="/help/strs">Хранилища</a>
  * <a href="/help/files">Файлы</a>
  

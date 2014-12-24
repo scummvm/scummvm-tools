@@ -3,4 +3,19 @@
 На этой странице можно выбрать часть с которой будет в дальнейшем вестись 
 работа.
 
+Дополнительно:
+
+ * <a href="/help/objs">Объекты</a>
+ * <a href="/help/res">Ресурсы</a>
+ * <a href="/help/objs">Объекты</a>
+ * <a href="/help/scenes">Сцены</a>
+ * <a href="/help/names">Отображаемные имена</a>
+ * <a href="/help/invntr">Инвентарь</a>
+ * <a href="/help/casts">Цвета предметов</a>
+ * <a href="/help/msgs">Собщения</a>
+ * <a href="/help/dlgs">Группы диалогов</a>
+ * <a href="/help/opcodes">Байт-код</a>
+ * <a href="/help/dlgops">Байт-код дилогов</a>
+ * <a href="/help/strs">Хранилища</a>
+ * <a href="/help/files">Файлы</a>
 

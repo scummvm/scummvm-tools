@@ -277,25 +277,25 @@ class Engine:
         # load .STR
         strs = ["Flics", "Background", "Wav", "Music", "SFX", "Speech"]
         for strf in strs:
-            #pf = self.fman.find_path(self.curr_path + "bgs.ini")
-            #if not pf: continue
             if strf in ini:
                 self.fman.load_store(ini[strf], 1)
-        # load script.dat, backgrnd.bg and resources.qrc
+        # load script.dat, backgrnd.bg, resources.qrc, etc
         self.load_script()
-        # parse enter areas
+        # bgs.ini: parse enter areas and perspective
+        settings = self.bgs_ini.get("Settings", {})
         for scene in self.scenes:
             scene.entareas = None
+            areas = self.bgs_ini.get(scene.name, {})
             if scene.name in self.bgs_ini:
                 scene.entareas = []
-                for key in self.bgs_ini["__order__"][scene.name]:
+                for key in areas.keys():
                     # search scene
                     sf = None
                     for scenefrom in self.scenes:
                         if scenefrom.name == key:
                             sf = scenefrom
                             break
-                    value = self.bgs_ini[scene.name][key]
+                    value = areas[key]
                     # search objects
                     oo = None
                     for objon in self.objects:
@@ -304,6 +304,16 @@ class Engine:
                             break
                     if sf and oo:
                         scene.entareas.append((sf, oo))
+            # persp
+            persp = settings.get(scene.name, "")
+            persp = persp.split(" ")
+            persp = [x for x in persp if x]
+            try:
+                persp = [float(persp[0]), float(persp[1]),
+                    int(persp[2]), int(persp[3]), float(persp[4])]
+            except:
+                persp = None
+            scene.persp = persp
         # load names & invntr
         self.load_names()
         # load dialogs
