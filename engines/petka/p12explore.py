@@ -283,7 +283,7 @@ class App(tkinter.Frame):
         
         # bind path handlers
         self.path_handler["parts"] = [self.path_parts, self.desc_parts]
-        self.path_handler["res"] = [self.path_res, None] # TODO:
+        self.path_handler["res"] = [self.path_res, self.desc_res]
         self.path_handler["objs"] = [self.path_objs_scenes,
             desc_def("Objects", "Object")]
         self.path_handler["scenes"] = [self.path_objs_scenes,
@@ -315,7 +315,6 @@ class App(tkinter.Frame):
 
         self.update_after()
         repath = "/about"
-        print(self.start_act)
         for cmd, arg in self.start_act:
             if cmd == "load":
                 if not self.open_data_from(arg):
@@ -337,7 +336,6 @@ class App(tkinter.Frame):
                     print("DEBUG: stop opening after " + arg)
                     repath = ""
                     break
-        print("Loading end", repath)
         if repath:
             self.open_path(repath)
 
@@ -475,6 +473,16 @@ class App(tkinter.Frame):
             self.hist.append([path])
             self.histf = []
         print("DEBUG: Open", path)
+        # set title
+        capt = APPNAME
+        try:
+            if path == ("about",):
+                capt = APPNAME + " - " + VERSION
+            else:
+                capt = APPNAME + " - " + self.desc_path(path)
+        except:
+            pass
+        self.master.title(capt)
         self.curr_path = path
         if len(path) > 0:
             self.curr_help = path[0]
@@ -1097,6 +1105,18 @@ class App(tkinter.Frame):
                 return False
         return True
         
+    def desc_res(self, path):
+        if path == ("res",):
+            path = ("res", "all")
+        if path[1] == "flt":
+            if len(path) > 2:
+                return "Resource type {}".format(path[2])
+            return "Resources by type"
+        if path[1] == "all":
+            if len(path) > 2:
+                return "Resource {}".format(path[2])
+            return "Resources"
+        return self.path_default(path)
 
     def path_res(self, path):
         # res - full list
@@ -1839,7 +1859,7 @@ class App(tkinter.Frame):
         self.switch_view(0)
         keys = None
         def keyslist():
-            opstat = {} # opcpdes count
+            opstat = {} # opcodes count
             acstat = {} # handlers count
             dastat = {} # dialog handlers count
             keys = list(petka.OPCODES.keys())
@@ -2292,6 +2312,49 @@ class App(tkinter.Frame):
                     for p in sa:
                         self.add_info("  <a href=\"{}\">{}</a>\n".format(p, 
                             self.desc_path(p)))
+                        
+                if fnl[-4:] in [".leg", ".off"]:
+                    legf = petka.LEGLoader()
+                    legf.load_data(self.strfm.read_file_stream(fnl))
+                    self.add_info("\n<b>LEG/OFF data</b>: {} frame(s)\n".format(
+                        len(legf.coords)))
+                    fmt = "  " + fmt_dec(len(legf.coords)) + ") {}, {}\n"
+                    for idx, (x, y) in enumerate(legf.coords):
+                        self.add_info(fmt.format(idx + 1, x, y))
+                        
+                if fnl[-4:] == ".msk":
+                    mskf = petka.MSKLoader()
+                    mskf.load_data(self.strfm.read_file_stream(fnl))
+                    self.add_info("\n<b>MSK data</b>: {} record(s)\n".format(
+                        len(mskf.rects)))
+                    self.add_info("  bound: {}, {} - {}, {}\n".format(
+                        *mskf.bound))
+                    fmt = "  " + fmt_dec(len(mskf.rects)) + \
+                        ") stamp = {}, {} rect(s)\n"
+                    for idx, (stamp, rs) in enumerate(mskf.rects):
+                        self.add_info(fmt.format(idx + 1, stamp, len(rs)))
+                        fmtr = "    " + fmt_dec(len(rs)) + ") {}, {} - {}, {}\n"
+                        for idxr, r in enumerate(rs):
+                            self.add_info(fmtr.format(idxr + 1, *r))
+                        
+                if fnl[-4:] == ".flc":
+                    flcf = petka.FLCLoader()
+                    flcf.load_info(self.strfm.read_file_stream(fnl))
+                    if flcf.image:
+                        # PIL
+                        self.add_info("\n<b>FLC data</b> (pil)\n")
+                        self.add_info("  Mode:   {}\n  Size:   {}x{}\n"
+                            "  Frames: {}\n  Delay:  {}".\
+                            format(flcf.image.mode, \
+                                flcf.image.size[0], flcf.image.size[1],
+                                flcf.frame_num, flcf.image.info["duration"]))
+                    else:    
+                        self.add_info("\n<b>FLC data</b> (internal)\n")
+                        self.add_info("  Mode:   P\n  Size:   {}x{}\n"\
+                            "  Frames: {}\nDelay: {}".\
+                            format(flcf.width, flcf.height, \
+                                flcf.frame_num, flcf.delay))
+                    
                         
         self.switch_view(0)
         keys = None
