@@ -656,7 +656,10 @@ class App(tkinter.Frame):
     def switch_view(self, main):
         # main view
         if main == self.curr_main: return
+        last = self.curr_main
         self.curr_main = main
+        rw = None
+        rh = None
         if main == 0:
             self.canv_view.delete(tkinter.ALL)
             self.canv_view.grid_forget()
@@ -669,6 +672,10 @@ class App(tkinter.Frame):
             self.scr_view_x.config(command = self.text_view.xview)
             self.scr_view_y.config(command = self.text_view.yview)
         else:
+        
+            if last == 0:
+                rw = self.text_view.winfo_width()
+                rh = self.text_view.winfo_height()
             self.canv_view.delete(tkinter.ALL)
             self.text_view.grid_forget()
             self.canv_view.grid(row = 0, column = 0, \
@@ -679,6 +686,10 @@ class App(tkinter.Frame):
             )
             self.scr_view_x.config(command = self.canv_view.xview)
             self.scr_view_y.config(command = self.canv_view.yview)
+            if rh:
+                print(rh)
+                self.canv_view.height = rh
+                print(self.canv_view.winfo_height())
 
     def clear_info(self):
         self.text_view.delete(0.0, tkinter.END)
