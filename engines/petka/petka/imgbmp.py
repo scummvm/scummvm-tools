@@ -69,8 +69,8 @@ class BMPLoader:
                 
         return pictw, picth, picture_data
         
-    def pixelswap16(self, pw, ph, pd):
-        # convert 16 bit to 24
+    def pixelswap16ud(self, pw, ph, pd):
+        # convert 16 bit to 24 + vertical reverse
         b16arr = array.array("H") # unsigned short
         b16arr.frombytes(pd)
         b16arr.byteswap()
@@ -84,6 +84,21 @@ class BMPLoader:
                 rgb[off + 2] = (b16 >> 8) & 0b11111000
         return rgb
 
+    def pixelswap16(self, pw, ph, pd):
+        # convert 16 bit to 24
+        b16arr = array.array("H") # unsigned short
+        b16arr.frombytes(pd)
+        #b16arr.byteswap()
+        rgb = array.array("B", [0] * pw * ph * 3)
+        for j in range(ph):
+            for i in range(pw):
+                off = j * pw * 3 + i * 3
+                b16 = b16arr[j * pw + i]
+                rgb[off + 2] = (b16 << 3) & 0b11111000
+                rgb[off + 1] = (b16 >> 3) & 0b11111100
+                rgb[off + 0] = (b16 >> 8) & 0b11111000
+        return rgb
+
     def load_info(self, f):
         try:
             pw, ph, pd = self.load_data_int16(f)
@@ -93,11 +108,20 @@ class BMPLoader:
             f.seek(0)
             self.image = Image.open(f)
         
+    def load_raw(self, pw, ph, pd):
+        if Image:
+            pd = self.pixelswap16(pw, ph, pd).tobytes()
+            self.image = Image.frombytes("RGB", (pw, ph), pd) 
+        else:
+            self.width = pw
+            self.height = ph
+            self.rgb = self.pixelswap16(pw, ph, pd)
+        
     def load_data(self, f):
         try:
             pw, ph, pd = self.load_data_int16(f)
             if Image:
-                pd = self.pixelswap16(pw, ph, pd).tobytes()
+                pd = self.pixelswap16ud(pw, ph, pd).tobytes()
                 self.image = Image.frombytes("RGB", (pw, ph), pd) 
             else:
                 self.width = pw
@@ -106,4 +130,4 @@ class BMPLoader:
         except:
             f.seek(0)
             self.image = Image.open(f)
-            
+

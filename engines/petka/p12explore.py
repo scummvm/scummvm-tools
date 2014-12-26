@@ -156,8 +156,7 @@ class HyperlinkManager:
             if tag[:6] == "hyper-":
                 self.links[tag]()
                 return
-		
-		
+
 # thanx http://tkinter.unpythonic.net/wiki/ReadOnlyText
 class ReadOnlyText(tkinter.Text):
     def __init__(self, *args, **kwargs):
@@ -167,7 +166,7 @@ class ReadOnlyText(tkinter.Text):
             self.redirector.register("insert", lambda *args, **kw: "break")
         self.delete = \
             self.redirector.register("delete", lambda *args, **kw: "break")
-		
+
 class App(tkinter.Frame):
     def __init__(self, master):
         tkinter.Frame.__init__(self, master)
@@ -207,9 +206,11 @@ class App(tkinter.Frame):
         self.sim = None
         # store manager
         self.strfm = None
+        # save
+        self.save = None
         # translation
-        self.tran = None   
-        
+        self.tran = None
+           
     def create_widgets(self):
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
         ttk.Style().configure("TLabel", padding = self.pad)
@@ -310,6 +311,7 @@ class App(tkinter.Frame):
         self.path_handler["strs"] = [self.path_stores,
             desc_def("Stores", "Store")]
         self.path_handler["files"] = [self.path_files, self.desc_files]
+        self.path_handler["save"] = [self.path_save, "Save"]
         self.path_handler["test"] = [self.path_test, "Tests"]
         self.path_handler["about"] = [self.path_about, "About"]
         self.path_handler["support"] = [self.path_support, "Support"]
@@ -329,6 +331,12 @@ class App(tkinter.Frame):
                     break
                 else:
                     repath = "/strs"
+            elif cmd == "savedat":
+                if not self.open_savedat_from(arg):
+                    repath = ""
+                    break
+                else:
+                    repath = "/save"
             elif cmd == "tran":
                 if not self.open_tran_from(arg):
                     repath = ""
@@ -363,6 +371,9 @@ class App(tkinter.Frame):
         self.menufile.add_command(
                 command = self.on_open_data,
                 label = "Open data...")
+        self.menufile.add_command(
+                command = self.on_open_savedat,
+                label = "Open SAVEx.DAT...")
         self.menufile.add_separator()
         self.menufile.add_command(
                 command = self.on_open_str,
@@ -378,7 +389,7 @@ class App(tkinter.Frame):
                 
         editnav = ["/parts", None, "/res", "/objs", "/scenes", "/names", 
             "/invntr", "/casts", "/msgs", "/dlgs", "/opcodes", "/dlgops", 
-            "/strs", "/files"]
+            "/strs", "/files", "/save"]
         mkmenupaths(self.menuedit, editnav)
         
         self.menunav = tkinter.Menu(self.master, tearoff = 0)
@@ -977,6 +988,8 @@ class App(tkinter.Frame):
                 len(self.strfm.strfd)) + "\n")
             self.add_info("  Files:         " + fmt_hl("/files", 
                 len(self.strfm.strtable)) + "\n")
+        if self.save:
+            self.add_info("  " + fmt_hl("/save", "Save") + "\n")
 
     def show_hist(self):
         self.switch_view(0)
@@ -1036,6 +1049,13 @@ class App(tkinter.Frame):
             acts = [
                 ("Stores ({})".format(len(self.strfm.strfd)), "/strs"),
                 ("Files ({})".format(len(self.strfm.strtable)), "/files"),
+            ]
+            for name, act in acts:
+                self.insert_lb_act(name, act)
+
+        if self.save is not None:
+            acts = [
+                ("Save", "/save"),
             ]
             for name, act in acts:
                 self.insert_lb_act(name, act)
@@ -2375,7 +2395,6 @@ class App(tkinter.Frame):
                             "  Frames: {}\nDelay: {}".\
                             format(flcf.width, flcf.height, \
                                 flcf.frame_num, flcf.delay))
-                    
                         
         self.switch_view(0)
         keys = None
@@ -2389,6 +2408,43 @@ class App(tkinter.Frame):
             self.curr_state["btnsort"] = self.add_toolgrp("Sort by", 
                 "files.sort", {0: "order", 1: "filename"}, upd_files)
         upd_files()
+        return True
+
+    def path_save(self, path):
+        if self.sim is None:
+            return self.path_default([])
+            
+        def upd_save():
+            path = self.curr_path
+            fid = None
+            self.switch_view(0)
+            if self.save is None:
+                self.add_info("<b>Saved state:not loaded</b>\n\n")
+                
+            if path == ("save",):
+                path = ("save", "info")
+            if path[1] == "shot":
+                self.select_lb_item("shot")
+                self.main_image = \
+                    self.make_image(self.save.shot)
+                self.switch_view(1)
+                self.update_canvas()
+            elif path[1] == "info":
+                self.clear_info()
+                self.add_info("<b>Saved state:</b>\n\n")
+                self.add_info("  part:  {}, chapter {}\n".format(
+                    self.save.part, self.save.chap))
+                self.add_info("  stamp: " + hlesc(self.save.stamp) + "\n")
+                self.add_info("  scene: " + hlesc(self.save.scene) + "\n")
+            else:
+                self.select_lb_item("info")
+                        
+        if self.last_path[:1] != ("save",):
+            # calc statistics
+            self.update_gui("Save")
+            self.insert_lb_act("Info", ["save"], "info")
+            self.insert_lb_act("Screenshot", ["save", "shot"], "shot")
+        upd_save()
         return True
             
             
@@ -2515,6 +2571,12 @@ class App(tkinter.Frame):
             self.add_info("<i>works</i>\n\n")
             self.add_info("  <b>Path</b>: {}\n\n".format(
                 hlesc(self.strfm.root)))
+
+        self.add_info("<b>Saved state</b>: ")
+        if not self.strfm:
+            self.add_info("<i>not loaded</i>\n")
+        else:
+            self.add_info("<i>loaded</i>\n\n")
 
         if self.sim or self.strfm:
             self.path_info_outline()
@@ -2667,7 +2729,7 @@ class App(tkinter.Frame):
         os.chdir(os.path.dirname(fn))
         self.clear_hist()
         if self.open_str_from(fn):
-            self.open_path("")
+            self.open_path("/strs")
             self.clear_hist()
 
     def open_str_from(self, fn):
@@ -2680,6 +2742,49 @@ class App(tkinter.Frame):
         except:
             print("DEBUG: Error opening STR")
             self.clear_data()
+            self.switch_view(0)
+            self.update_gui("")
+            self.clear_info()
+            self.add_info("Error opening \"{}\" \n\n{}".\
+                format(hlesc(fn), hlesc(traceback.format_exc())))
+
+    def on_open_savedat(self):
+        ft = [\
+            ('Save files (*.dat)', '.DAT'),
+            ('all files', '.*')]
+        fn = filedialog.askopenfilename(parent = self, 
+            title = "Open SAVEx.DAT file",
+            filetypes = ft,
+            initialdir = os.path.abspath(os.curdir))
+        if not fn: return
+        os.chdir(os.path.dirname(osfn))
+        if self.open_savedat_from(fn):
+            self.open_path("/save")
+
+    def open_savedat_from(self, fn):
+        if self.sim is None:
+            self.switch_view(0)
+            self.update_gui("")
+            self.clear_info()
+            self.add_info("Open data before loading saves")  
+            return
+        self.save = None
+        try:
+            self.save = petka.SaveLoader("cp1251")
+            with open(fn, "rb") as f:
+                self.save.load_data(f, self.sim.curr_part, 
+                    len(self.sim.objects) + len(self.sim.scenes))
+                if self.save.part != self.sim.curr_part:
+                    # load
+                    print("DEBUG: change part {}".format(self.save.part))
+                    self.sim.open_part(self.save.part, 0)
+                    f.seek(0)
+                    self.save.load_data(f, self.sim.curr_part, 
+                        len(self.sim.objects) + len(self.sim.scenes))
+            return True
+        except:
+            print("DEBUG: Error opening SAVEx.DAT")
+            self.save = None
             self.switch_view(0)
             self.update_gui("")
             self.clear_info()
@@ -2844,6 +2949,9 @@ def main():
             argv = argv[2:]
         elif argv[0] == "-s": # open str file
             app.start_act.append(["str", argv[1]])
+            argv = argv[2:]
+        elif argv[0] == "-sd": # open savex.dat file
+            app.start_act.append(["savedat", argv[1]])
             argv = argv[2:]
         elif argv[0] == "-t": # open translation
             app.start_act.append(["tran", argv[1]])

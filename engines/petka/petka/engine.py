@@ -659,3 +659,6 @@ class Engine:
         for op in self.dlgops:
             f.write(struct.pack("<H2B", op.ref, op.arg, op.opcode))
 
+    def load_save(self, ls):
+        pass
+

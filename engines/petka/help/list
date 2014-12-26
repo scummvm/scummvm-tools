@@ -15,6 +15,7 @@ opcodes
 dlgops
 strs
 files
+save
 translate
 cmdline
 support
