@@ -261,19 +261,6 @@ class Engine:
             self.curr_speech = ""
             self.curr_diskid = None
         
-        # load BGS.INI
-        self.bgs_ini = {}
-        self.start_scene = None
-        bgsfn = self.curr_path + "bgs.ini"
-        if self.fman.exists(bgsfn):
-            f = self.fman.read_file_stream(bgsfn)
-            try:
-                self.bgs_ini = self.parse_ini(f)
-            finally:
-                f.close()
-            if "Settings" in self.bgs_ini:
-                if "StartRoom" in self.bgs_ini["Settings"]:
-                    self.start_scene = self.bgs_ini["Settings"]["StartRoom"]
         # load .STR
         strs = ["Flics", "Background", "Wav", "Music", "SFX", "Speech"]
         for strf in strs:
@@ -281,39 +268,8 @@ class Engine:
                 self.fman.load_store(ini[strf], 1)
         # load script.dat, backgrnd.bg, resources.qrc, etc
         self.load_script()
-        # bgs.ini: parse enter areas and perspective
-        settings = self.bgs_ini.get("Settings", {})
-        for scene in self.scenes:
-            scene.entareas = None
-            areas = self.bgs_ini.get(scene.name, {})
-            if scene.name in self.bgs_ini:
-                scene.entareas = []
-                for key in areas.keys():
-                    # search scene
-                    sf = None
-                    for scenefrom in self.scenes:
-                        if scenefrom.name == key:
-                            sf = scenefrom
-                            break
-                    value = areas[key]
-                    # search objects
-                    oo = None
-                    for objon in self.objects:
-                        if objon.name == value:
-                            oo = objon
-                            break
-                    if sf and oo:
-                        scene.entareas.append((sf, oo))
-            # persp
-            persp = settings.get(scene.name, "")
-            persp = persp.split(" ")
-            persp = [x for x in persp if x]
-            try:
-                persp = [float(persp[0]), float(persp[1]),
-                    int(persp[2]), int(persp[3]), float(persp[4])]
-            except:
-                persp = None
-            scene.persp = persp
+        # load persp & scenes enter points
+        self.load_bgs()
         # load names & invntr
         self.load_names()
         # load dialogs
@@ -479,6 +435,55 @@ class Engine:
                 except:
                     r, g, b = 255, 255, 255
                 obj.cast = (r, g, b)
+            
+    def load_bgs(self):
+        # load BGS.INI
+        self.bgs_ini = {}
+        self.start_scene = None
+        bgsfn = self.curr_path + "bgs.ini"
+        if self.fman.exists(bgsfn):
+            f = self.fman.read_file_stream(bgsfn)
+            try:
+                self.bgs_ini = self.parse_ini(f)
+            finally:
+                f.close()
+        
+        settings = self.bgs_ini.get("Settings", {})
+        self.start_scene = settings.get("StartRoom", None)
+
+        # bgs.ini: parse enter areas and perspective
+        for scene in self.scenes:
+            scene.entareas = None
+            areas = self.bgs_ini.get(scene.name, {})
+            if scene.name in self.bgs_ini:
+                scene.entareas = []
+                for key in areas.keys():
+                    # search scene
+                    sf = None
+                    for scenefrom in self.scenes:
+                        if scenefrom.name == key:
+                            sf = scenefrom
+                            break
+                    value = areas[key]
+                    # search objects
+                    oo = None
+                    for objon in self.objects:
+                        if objon.name == value:
+                            oo = objon
+                            break
+                    if sf and oo:
+                        scene.entareas.append((sf, oo))
+            # persp
+            persp = settings.get(scene.name, "")
+            persp = persp.split(" ")
+            persp = [x for x in persp if x]
+            try:
+                persp = [float(persp[0]), float(persp[1]),
+                    int(persp[2]), int(persp[3]), float(persp[4])]
+            except:
+                persp = None
+            scene.persp = persp
+    
             
     def load_dialogs(self, fixname = None, lodname = None, noobjref = False):
         self.msgs = []
