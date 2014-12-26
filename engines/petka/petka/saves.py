@@ -14,6 +14,7 @@ class SaveLoader:
         self.chap = None
         self.stamp = None
         self.enc = enc
+        self.objects = []
        
     def load_data(self, f, part, objnum):
         data = f.read(8)
@@ -21,15 +22,10 @@ class SaveLoader:
         if self.part != part: return
 
         # read date stamp, asciiz
-        stamp = b""
-        while len(stamp) < 30:
-            ch = f.read(1)
-            if ch == b"\x00": break
-            stamp += ch
+        stamp = f.read(30)
+        stamp = stamp.split(b"\x00")[0]
         self.stamp = stamp.decode(self.enc)
         print("Saved at", len(self.stamp), repr(self.stamp))
-        hz1 = f.read(max(0, 29 - len(stamp)))
-        #print("HZ1", hz1)
         
         # read screenshot
         sl = 108 * 81 * 2
@@ -64,16 +60,20 @@ class SaveLoader:
             s1 = readstr()
             s2 = readstr()
             data = f.read(33)
+            obj = {"name": s1, "alias": s2, "data": data}
+            recs = struct.unpack("<B8i", data)
+            obj["recs"] = recs
+            obj["res"] = recs[2]
+            self.objects.append(obj)
             #print(i, s1, s2)
             
-        
-        # scene
+        # invntr        
         data = f.read(4)
-        hz4len = struct.unpack("<I", data)[0]
-        data = f.read(hz4len * 2)
-        hz4 = struct.unpack("<{}H".format(hz4len), data)
-        print("HZ4", hz4)
+        invlen = struct.unpack("<I", data)[0]
+        data = f.read(invlen * 2)
+        self.invntr = struct.unpack("<{}H".format(invlen), data)
 
+        # scene
         self.scene = readstr()
         print("Scene:", self.scene)
         

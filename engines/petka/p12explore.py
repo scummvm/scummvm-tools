@@ -10,6 +10,7 @@ from idlelib.WidgetRedirector import WidgetRedirector
 import traceback
 import urllib.parse
 import math
+import binascii
 
 # Image processing
 try:
@@ -2419,7 +2420,8 @@ class App(tkinter.Frame):
             fid = None
             self.switch_view(0)
             if self.save is None:
-                self.add_info("<b>Saved state:not loaded</b>\n\n")
+                self.add_info("<b>Saved state</b>: not loaded\n\n")
+                return
                 
             if path == ("save",):
                 path = ("save", "info")
@@ -2436,6 +2438,40 @@ class App(tkinter.Frame):
                     self.save.part, self.save.chap))
                 self.add_info("  stamp: " + hlesc(self.save.stamp) + "\n")
                 self.add_info("  scene: " + hlesc(self.save.scene) + "\n")
+                
+                self.add_info("  invntr: {}\n".format(len(self.save.invntr)))
+                fmt = "    " + fmt_dec(len(self.save.invntr)) + ") "
+                for idx, inv in enumerate(self.save.invntr):
+                        self.add_info(fmt.format(idx + 1) + 
+                            self.fmt_hl_obj_scene(inv, True) + "\n")
+
+                self.add_info("\n  objects: {}\n".format(len(
+                    self.save.objects)))
+                fmt = "  " + fmt_dec(len(self.save.objects)) + ") \"{}\" {}\n"
+
+                for idx, obj in enumerate(self.save.objects):
+                    self.add_info(fmt.format(idx + 1, obj["name"], 
+                        obj["alias"]))
+                    fndobj = None
+                    for sobj in self.sim.objects + self.sim.scenes:
+                        if sobj.name == obj["name"]:
+                            fndobj = sobj
+                            break
+                    if fndobj:
+                        self.add_info("    " + 
+                            self.fmt_hl_obj_scene(fndobj.idx, True) + "\n")
+                    
+                    self.add_info("    {}, {}, {}, {}, {}, {}, {}, {}, {}\n".
+                        format(*obj["recs"]))
+                    if obj["res"] in self.sim.res:
+                        res_id = obj["res"]
+                        self.add_info("    " + fmt_hl("/res/all/{}".
+                            format(res_id), "{}".format(res_id)) + 
+                            " (0x{:X}) - {}\n".format(res_id,
+                            hlesc(self.sim.res[res_id])))
+
+                    
+                
             else:
                 self.select_lb_item("info")
                         
@@ -2573,8 +2609,8 @@ class App(tkinter.Frame):
                 hlesc(self.strfm.root)))
 
         self.add_info("<b>Saved state</b>: ")
-        if not self.strfm:
-            self.add_info("<i>not loaded</i>\n")
+        if not self.save:
+            self.add_info("<i>not loaded</i>\n\n")
         else:
             self.add_info("<i>loaded</i>\n\n")
 
@@ -2733,7 +2769,6 @@ class App(tkinter.Frame):
             self.clear_hist()
 
     def open_str_from(self, fn):
-        self.last_fn = fn
         self.clear_data()
         try:
             self.strfm = petka.FileManager(os.path.dirname(fn))
@@ -2757,7 +2792,7 @@ class App(tkinter.Frame):
             filetypes = ft,
             initialdir = os.path.abspath(os.curdir))
         if not fn: return
-        os.chdir(os.path.dirname(osfn))
+        os.chdir(os.path.dirname(os.path.dirname(fn)))
         if self.open_savedat_from(fn):
             self.open_path("/save")
 
