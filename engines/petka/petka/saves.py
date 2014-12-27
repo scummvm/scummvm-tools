@@ -25,7 +25,6 @@ class SaveLoader:
         stamp = f.read(30)
         stamp = stamp.split(b"\x00")[0]
         self.stamp = stamp.decode(self.enc)
-        print("Saved at", len(self.stamp), repr(self.stamp))
         
         # read screenshot
         sl = 108 * 81 * 2
@@ -35,18 +34,16 @@ class SaveLoader:
         self.shot = BMPLoader()
         self.shot.load_raw(108, 81, rgb)
                
-        print("RGB beg", binascii.hexlify(rgb[:8]))
-        print("RGB end", binascii.hexlify(rgb[-8:]))
-
         hz2 = f.read(216)
         if hz2 != b"\x00" * 216:
             print("HZ2", hz2) # all zeroes?
             raise EngineError("Bad SAVE error in HZ2 field")
             
-        #print("HZ2", hz2) # all zeroes?
         data = f.read(4)
         hz3 = struct.unpack("<I", data)[0]
-        print("HZ3", hz3)
+
+        if hz3 != objnum + 3:
+            raise EngineError("Bad SAVE objects number")
         
         def readstr():
             data = f.read(4)
@@ -55,7 +52,6 @@ class SaveLoader:
             #print("STR", strlen, data, s)
             return s.decode(self.enc)
         
-        print("Req", objnum)
         for i in range(objnum):
             s1 = readstr()
             s2 = readstr()
@@ -78,20 +74,22 @@ class SaveLoader:
         print("Scene:", self.scene)
         
         # char positions
+        data = f.read(16)
+        charpos = struct.unpack("<4I", data)
         
+        # arr hz5
+        data = f.read(4)
+        hz5len = struct.unpack("<I", data)[0]
+        hz5 = struct.unpack("<{}I".format(hz5len), f.read(hz5len * 4))
         
-        data = f.read()
-        print(len(data))
-        
-        items = struct.unpack("<{}I".format(len(data) // 4), data)
-        print(items[:20])
-        
-        # cursor and res-num (-13 and -14)
-        self.cursor = items[-12]
-        self.cursor_res = items[-13]
+        data = f.read(52)
+        self.cursor_res, self.cursor, hz6, c1res, c2res, *hz = \
+            struct.unpack("<13I", data)
         
         # charters: x, y, res
-        self.char1 = (items[0], items[1], items[-10])
-        self.char2 = (items[2], items[3], items[-9])
-        
+        self.char1 = (charpos[0], charpos[1], c1res)
+        self.char2 = (charpos[2], charpos[3], c2res)
+
+        if f.read():
+            raise EngineError("Bad SAVE length (extra data)")
 
