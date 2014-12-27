@@ -908,6 +908,14 @@ class App(tkinter.Frame):
             return fmt
         return "{} (0x{:X})".format(rec_id, rec_id)
         
+    def fmt_hl_res(self, resid, full = True):
+        if resid in self.sim.res:
+            lnk = fmt_hl("/res/all/{}".format(resid), resid)
+            if full:
+                lnk += " (0x{:X}) - {}".format(resid,
+                    hlesc(self.sim.res[resid]))
+            return lnk
+        
     def fmt_hl_obj(self, obj_id, full = False):
         return self.fmt_hl_rec(self.sim.obj_idx, "objs", obj_id, full, "obj")
         
@@ -947,6 +955,12 @@ class App(tkinter.Frame):
     def fmt_hl_dlg(self, grp_id, full = False):
         return self.fmt_hl_rec(self.sim.dlg_idx, "dlgs", grp_id, full, "dlg")
 
+    def fmt_hl_file(self, fn, capt = None):
+        fnl = fn.lower().replace("\\", "/")
+        capt = capt or fn
+        fid = urllib.parse.quote_plus(fnl)
+        return fmt_hl("/files/{}".format(fid), capt)
+        
     def path_info_outline(self):
         if self.sim is None and self.strfm is None:
             self.add_info("No data loaded. Open PARTS.INI or SCRIPT.DAT first.")
@@ -1499,9 +1513,7 @@ class App(tkinter.Frame):
                 self.add_info("\n<b>Used resources</b>: {}\n".\
                     format(len(resused)))
                 for res_id in resused:
-                    self.add_info("  " + fmt_hl("/res/all/{}".format(res_id), 
-                        "{}".format(res_id)) + " (0x{:X}) - {}\n".format(res_id,
-                            hlesc(self.sim.res[res_id])))
+                    self.add_info("  " + self.fmt_hl_res(res_id, True) + "\n")
             if len(dlgused) > 0:
                 self.add_info("\n<b>Used dialog groups</b>: {}\n".\
                     format(len(dlgused)))
@@ -2109,13 +2121,7 @@ class App(tkinter.Frame):
                         self.fmt_hl_obj_scene(obj_idx, True))))
                 self.add_info("\n")  
         return True
-
-    def fmt_hl_file(self, fn, capt = None):
-        fnl = fn.lower().replace("\\", "/")
-        capt = capt or fn
-        fid = urllib.parse.quote_plus(fnl)
-        return "<a href=\"/files/{}\">{}</a>".format(fid, hlesc(capt))                   
-        
+       
     def path_stores(self, path):
         if self.strfm is None:
             return self.path_default([])
@@ -2434,10 +2440,21 @@ class App(tkinter.Frame):
             elif path[1] == "info":
                 self.clear_info()
                 self.add_info("<b>Saved state:</b>\n\n")
-                self.add_info("  part:  {}, chapter {}\n".format(
+                self.add_info("  part:   {}, chapter {}\n".format(
                     self.save.part, self.save.chap))
-                self.add_info("  stamp: " + hlesc(self.save.stamp) + "\n")
-                self.add_info("  scene: " + hlesc(self.save.scene) + "\n")
+                self.add_info("  stamp:  " + hlesc(self.save.stamp) + "\n")
+                self.add_info("  scene:  " + hlesc(self.save.scene) + "\n")
+                self.add_info("  cursor: {} - {}\n".format(self.save.cursor,
+                    petka.ACTIONS.get(self.save.cursor, ["ACT{:2X}".format(
+                        self.save.cursor), 0])[0]))
+                self.add_info("    " + self.fmt_hl_res(self.save.cursor_res, 
+                    True) + "\n")
+                self.add_info("  char 1: {}, {} ".format(self.save.char1[0], 
+                    self.save.char1[1]) + self.fmt_hl_res(
+                    self.save.char1[2], True) + "\n")
+                self.add_info("  char 2: {}, {} ".format(self.save.char2[0], 
+                    self.save.char2[1]) + self.fmt_hl_res(
+                    self.save.char2[2], True) + "\n")
                 
                 self.add_info("  invntr: {}\n".format(len(self.save.invntr)))
                 fmt = "    " + fmt_dec(len(self.save.invntr)) + ") "
@@ -2460,17 +2477,11 @@ class App(tkinter.Frame):
                     if fndobj:
                         self.add_info("    " + 
                             self.fmt_hl_obj_scene(fndobj.idx, True) + "\n")
-                    
                     self.add_info("    {}, {}, {}, {}, {}, {}, {}, {}, {}\n".
                         format(*obj["recs"]))
                     if obj["res"] in self.sim.res:
-                        res_id = obj["res"]
-                        self.add_info("    " + fmt_hl("/res/all/{}".
-                            format(res_id), "{}".format(res_id)) + 
-                            " (0x{:X}) - {}\n".format(res_id,
-                            hlesc(self.sim.res[res_id])))
-
-                    
+                        self.add_info("    " + self.fmt_hl_res(obj["res"], 
+                            True) + "\n")
                 
             else:
                 self.select_lb_item("info")

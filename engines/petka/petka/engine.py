@@ -80,6 +80,14 @@ DLGOPS = {
     8:  ("CIRCLE",      6),
 }
 
+ACTIONS = {
+    0: ("VIEW",    5002),
+    1: ("GOTO",    5003),
+    2: ("USE",     5004),
+    3: ("TAKE",    5005),
+    4: ("TALK",    5006),
+}
+
 class ScrObject:
     def __init__(self, idx, name):
         self.idx = idx

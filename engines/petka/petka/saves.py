@@ -77,6 +77,21 @@ class SaveLoader:
         self.scene = readstr()
         print("Scene:", self.scene)
         
+        # char positions
+        
         
         data = f.read()
         print(len(data))
+        
+        items = struct.unpack("<{}I".format(len(data) // 4), data)
+        print(items[:20])
+        
+        # cursor and res-num (-13 and -14)
+        self.cursor = items[-12]
+        self.cursor_res = items[-13]
+        
+        # charters: x, y, res
+        self.char1 = (items[0], items[1], items[-10])
+        self.char2 = (items[2], items[3], items[-9])
+        
+
