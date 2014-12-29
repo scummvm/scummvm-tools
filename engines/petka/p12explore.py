@@ -188,7 +188,6 @@ class App(tkinter.Frame):
         self.curr_path = []
         self.curr_help = ""
         self.last_path = [None]
-        self.last_fn = ""
         self.curr_gui = []
         self.curr_state = {} # local state for location group
         self.curr_lb_acts = None
@@ -205,10 +204,12 @@ class App(tkinter.Frame):
         
     def clear_data(self):
         self.sim = None
+        self.last_fn = ""
         # store manager
         self.strfm = None
         # save
         self.save = None
+        self.last_savefn = ""
         # translation
         self.tran = None
            
@@ -2146,7 +2147,8 @@ class App(tkinter.Frame):
             self.upd_toolgrp(self.curr_state["btnsort"], sm)
             self.curr_state["btnext"].config(state = tkinter.DISABLED)
             if stid is None:
-                self.add_info("<b>Stores</b>\n\n")
+                self.add_info("<b>Store manager:</b> {}\n\n".format(
+                    self.strfm.root))
                 fmt = "  " + fmt_dec(len(self.strfm.strfd)) + \
                     ") <a href=\"/strs/{}\">{}</a> (tag={})\n"
                 for idx, st in enumerate(self.strfm.strfd):
@@ -2439,7 +2441,8 @@ class App(tkinter.Frame):
                 self.update_canvas()
             elif path[1] == "info":
                 self.clear_info()
-                self.add_info("<b>Saved state:</b>\n\n")
+                self.add_info("<b>Saved state:</b> {}\n\n".format(
+                    self.last_savefn))
                 self.add_info("  part:   {}, chapter {}\n".format(
                     self.save.part, self.save.chap))
                 self.add_info("  stamp:  " + hlesc(self.save.stamp) + "\n")
@@ -2482,6 +2485,18 @@ class App(tkinter.Frame):
                     if obj["res"] in self.sim.res:
                         self.add_info("    " + self.fmt_hl_res(obj["res"], 
                             True) + "\n")
+            elif path[1] in ["arr5", "arr6"]:
+                self.clear_info()
+                if path[1] == "arr5":
+                    arr = self.save.hz5
+                else:
+                    arr = self.save.hz
+                self.add_info("<b>Array {}:</b> len={}\n\n".format(
+                    path[1][3:], len(arr)))
+                fmt = "  " + fmt_dec(len(arr)) + ") {}\n"
+                for idx, val in enumerate(arr):
+                    self.add_info(fmt.format(idx + 1, hex(val)))
+                    
                 
             else:
                 self.select_lb_item("info")
@@ -2491,6 +2506,8 @@ class App(tkinter.Frame):
             self.update_gui("Save")
             self.insert_lb_act("Info", ["save"], "info")
             self.insert_lb_act("Screenshot", ["save", "shot"], "shot")
+            self.insert_lb_act("Array 5", ["save", "arr5"], "arr5")
+            self.insert_lb_act("Array 6", ["save", "arr6"], "arr6")
         upd_save()
         return True
             
@@ -2615,15 +2632,15 @@ class App(tkinter.Frame):
         if not self.strfm:
             self.add_info("<i>not initialized</i>\n")
         else:
-            self.add_info("<i>works</i>\n\n")
-            self.add_info("  <b>Path</b>: {}\n\n".format(
-                hlesc(self.strfm.root)))
+            self.add_info("<i>works</i>\n")
+            self.add_info("  path: {}\n\n".format(hlesc(self.strfm.root)))
 
         self.add_info("<b>Saved state</b>: ")
         if not self.save:
             self.add_info("<i>not loaded</i>\n\n")
         else:
-            self.add_info("<i>loaded</i>\n\n")
+            self.add_info("<i>loaded</i>\n")
+            self.add_info("  path: {}\n\n".format(hlesc(self.last_savefn)))
 
         if self.sim or self.strfm:
             self.path_info_outline()
@@ -2816,6 +2833,7 @@ class App(tkinter.Frame):
             return
         self.save = None
         try:
+            self.last_savefn = fn
             self.save = petka.SaveLoader("cp1251")
             with open(fn, "rb") as f:
                 self.save.load_data(f, self.sim.curr_part, 

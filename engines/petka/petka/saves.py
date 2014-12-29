@@ -71,7 +71,6 @@ class SaveLoader:
 
         # scene
         self.scene = readstr()
-        print("Scene:", self.scene)
         
         # char positions
         data = f.read(16)
@@ -80,10 +79,10 @@ class SaveLoader:
         # arr hz5
         data = f.read(4)
         hz5len = struct.unpack("<I", data)[0]
-        hz5 = struct.unpack("<{}I".format(hz5len), f.read(hz5len * 4))
+        self.hz5 = struct.unpack("<{}I".format(hz5len), f.read(hz5len * 4))
         
         data = f.read(52)
-        self.cursor_res, self.cursor, hz6, c1res, c2res, *hz = \
+        self.cursor_res, self.cursor, hz6, c1res, c2res, *self.hz = \
             struct.unpack("<13I", data)
         
         # charters: x, y, res
@@ -92,4 +91,6 @@ class SaveLoader:
 
         if f.read():
             raise EngineError("Bad SAVE length (extra data)")
+
+        print("HZ5", hz5len, hz5len / objnum, hz5len / hz3)
 
