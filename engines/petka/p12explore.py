@@ -31,7 +31,7 @@ except ImportError:
 import petka
 
 APPNAME = "P1&2 Explorer"
-VERSION = "v0.3g 2014-12-29"
+VERSION = "v0.3h 2015-01-12"
 
 def hlesc(value):
     if value is None:
@@ -2112,7 +2112,7 @@ class App(tkinter.Frame):
                 self.add_info("<i>Not used in dialogs</i>\n\n")
             else:            
                 self.add_info("<i>Used in dialogs</i>: {}\n".format(len(dls)))
-                fmtdls = "  " + fmt_dec(len(dacts)) + \
+                fmtdls = "  " + fmt_dec(len(dls)) + \
                     ") obj={}, group=<a href=\"/dlgs/{}\">{}" + \
                         "</a>, act={}, dlg={}, op={} {}\n"
                 for idx, (obj_idx, gidx, aidx, didx, oidx) in enumerate(dls):
