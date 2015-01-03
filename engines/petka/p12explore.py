@@ -2452,6 +2452,11 @@ class App(tkinter.Frame):
                         self.save.cursor), 0])[0]))
                 self.add_info("    " + self.fmt_hl_res(self.save.cursor_res, 
                     True) + "\n")
+                if self.save.cursor_obj == 0xffffffff:
+                    self.add_info("  object: <i>none</i>\n")
+                else:
+                    self.add_info("  object: " + self.fmt_hl_obj(
+                        self.save.cursor_obj, True) + "\n")
                 self.add_info("  char 1: {}, {} ".format(self.save.char1[0], 
                     self.save.char1[1]) + self.fmt_hl_res(
                     self.save.char1[2], True) + "\n")
@@ -2485,19 +2490,14 @@ class App(tkinter.Frame):
                     if obj["res"] in self.sim.res:
                         self.add_info("    " + self.fmt_hl_res(obj["res"], 
                             True) + "\n")
-            elif path[1] in ["arr5", "arr6"]:
+            elif path[1] == "dlgops":
                 self.clear_info()
-                if path[1] == "arr5":
-                    arr = self.save.hz5
-                else:
-                    arr = self.save.hz
-                self.add_info("<b>Array {}:</b> len={}\n\n".format(
-                    path[1][3:], len(arr)))
-                fmt = "  " + fmt_dec(len(arr)) + ") {}\n"
-                for idx, val in enumerate(arr):
-                    self.add_info(fmt.format(idx + 1, hex(val)))
-                    
-                
+                self.add_info("<b>Dialog opcodes:</b> len = {} (0x{:x})\n\n".
+                    format(len(self.save.dlgops), len(self.save.dlgops)))
+                fmt = "  " + fmt_dec(len(self.save.dlgops)) + ") {} {:02x} " +\
+                    "{:04x}\n"
+                for idx, (code, arg, ref) in enumerate(self.save.dlgops):
+                    self.add_info(fmt.format(idx + 1, self.fmt_dlgop(code), arg, ref))
             else:
                 self.select_lb_item("info")
                         
@@ -2506,8 +2506,7 @@ class App(tkinter.Frame):
             self.update_gui("Save")
             self.insert_lb_act("Info", ["save"], "info")
             self.insert_lb_act("Screenshot", ["save", "shot"], "shot")
-            self.insert_lb_act("Array 5", ["save", "arr5"], "arr5")
-            self.insert_lb_act("Array 6", ["save", "arr6"], "arr6")
+            self.insert_lb_act("Dialog opcodes", ["save", "dlgops"], "dlgops")
         upd_save()
         return True
             
@@ -2716,6 +2715,7 @@ class App(tkinter.Frame):
             self.update_gui("Info")
             self.insert_lb_act("Opcodes", ["info", "opcodes"], "opcodes")
             self.insert_lb_act("Dialog opcodes", ["info", "dlgops"], "dlgops")
+            self.insert_lb_act("Actions", ["info", "acts"], "acts")
         # change
         name = None
         if len(path) > 1:
@@ -2744,6 +2744,15 @@ class App(tkinter.Frame):
                 for key in k:
                     self.add_info("  {} (0x{:X}) - {}\n".format(key, key,
                         petka.DLGOPS[key][0]))
+            elif name == "acts":
+                self.add_info("<b>Actions<b>\n\n")
+                k = list(petka.ACTIONS.keys())
+                k.sort()
+                for key in k:
+                    self.add_info("  {} (0x{:X}) - {}\n".format(key, key,
+                        petka.ACTIONS[key][0]))
+                    self.add_info("    " + 
+                        self.fmt_hl_res(petka.ACTIONS[key][1]) + "\n")
             else: 
                 self.add_info("Unknown data type \"{}\"\n".format(hlesc(name)))
 

@@ -36,7 +36,6 @@ class SaveLoader:
                
         hz2 = f.read(216)
         if hz2 != b"\x00" * 216:
-            print("HZ2", hz2) # all zeroes?
             raise EngineError("Bad SAVE error in HZ2 field")
             
         data = f.read(4)
@@ -76,21 +75,28 @@ class SaveLoader:
         data = f.read(16)
         charpos = struct.unpack("<4I", data)
         
-        # arr hz5
+        # arr dialog opcodes
         data = f.read(4)
-        hz5len = struct.unpack("<I", data)[0]
-        self.hz5 = struct.unpack("<{}I".format(hz5len), f.read(hz5len * 4))
+        dlgoplen = struct.unpack("<I", data)[0]
+        self.dlgops = []
+        for _ in range(dlgoplen):
+            data = f.read(4)
+            ref, arg, code = struct.unpack_from("<HBB", data)
+            self.dlgops.append([code, arg, ref])
         
-        data = f.read(52)
-        self.cursor_res, self.cursor, hz6, c1res, c2res, *self.hz = \
-            struct.unpack("<13I", data)
-        
+        data = f.read(20)
+        self.cursor_res, self.cursor, self.cursor_obj, c1res, c2res = \
+            struct.unpack("<5I", data)
+
         # charters: x, y, res
         self.char1 = (charpos[0], charpos[1], c1res)
         self.char2 = (charpos[2], charpos[3], c2res)
 
+        hz7 = f.read(32)
+        if hz7 != b"\xff" * 32:
+            raise EngineError("Bad SAVE error in HZ7 field")
+
         if f.read():
             raise EngineError("Bad SAVE length (extra data)")
 
-        print("HZ5", hz5len, hz5len / objnum, hz5len / hz3)
 

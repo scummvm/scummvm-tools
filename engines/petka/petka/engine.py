@@ -86,6 +86,9 @@ ACTIONS = {
     2: ("USE",     5004),
     3: ("TAKE",    5005),
     4: ("TALK",    5006),
+    5: ("CHAPAY",  5007),
+    6: ("INVNTR",    -1),
+    
 }
 
 class ScrObject:
@@ -167,8 +170,8 @@ class Engine:
         self.enc = enc
         self.objects = []
         self.scenes = []
-        self.obj_idx = {}
-        self.scn_idx = {}
+        self.obj_idx = {} # id -> object
+        self.scn_idx = {} # id -> scene
         self.msgs = []
         self.dlgs = []
         self.dlg_idx = {}
@@ -590,7 +593,7 @@ class Engine:
                 num_ops = struct.unpack_from("<I", temp)[0]
                 for oidx, i in enumerate(range(num_ops)):
                     temp = f.read(4)
-                    ref, arg, code  = struct.unpack_from("<HBB", temp)
+                    ref, arg, code = struct.unpack_from("<HBB", temp)
                     dlgop = DlgOpObject(code, arg, ref)
                     dlgop.pos = oidx
                     if ref < len(self.msgs):
