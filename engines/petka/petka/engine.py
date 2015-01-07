@@ -113,6 +113,12 @@ class ScrOpObject:
         self.op_arg2 = op_arg2
         self.op_arg3 = op_arg3
 
+class ScrObjectState:
+    def __init__(self, obj):
+        self.obj = obj
+        self.state = 0
+        self.prop = [0] * 8
+
 class MsgObject:
     def __init__(self, idx, wav, arg1, arg2, arg3):
         self.idx = idx
@@ -150,6 +156,7 @@ class DlgOpObject:
         self.arg = arg          # argument (ref, offset etc.)
         self.ref = ref          # message idx
         self.msg = None         # message
+        self.pos = None
         
 class Engine:
     def __init__(self):
@@ -285,6 +292,15 @@ class Engine:
         self.load_names()
         # load dialogs
         self.load_dialogs()
+        
+        # current state
+        self.curr_scene = None
+        self.curr_obj = None
+        self.curr_dlg = None
+        self.curr_cursor = None
+        self.curr_char1 = None
+        self.curr_char2 = None
+        self.curr_invntr = None
         
     def load_script(self, scrname = None, bkgname = None, resname = None):
         self.objects = []
@@ -534,10 +550,10 @@ class Engine:
                 if f:
                     f.close()
 
+        # DIALOGUES.FIX
         self.dlgs = []
         self.dlg_idx = {}
         self.dlgops = []
-        # DIALOGUES.FIX
         if fixname is None:
             try:    
                 f = self.fman.read_file_stream(self.curr_path + "dialogue.fix")
@@ -670,6 +686,37 @@ class Engine:
         for op in self.dlgops:
             f.write(struct.pack("<H2B", op.ref, op.arg, op.opcode))
 
-    def load_save(self, ls):
+    def scene_to_id(self, name):
         pass
+
+    # create current state from initial state
+    def init_game(self):
+        self.curr_scene = self.scene_to_id(self.start_scene)
+        
+        self.curr_obj = []
+        for obj in self.objects + self.scenes:
+            state = ScrObjectState(obj)
+            self.curr_obj.append(state)
+            state.prop
+            
+        self.curr_dlg = []
+        for dlgop in self.dlgops:
+            dlgstate = DlgOpObject(dlgop.code, dlgop.arg, dlgop.ref)
+            dlgstate.pos = dlgop.pos
+            self.curr_dlg.append(dlgstate)
+        
+        self.curr_cursor = None
+        self.curr_char1 = None
+        self.curr_char2 = None
+        self.curr_invntr = []        
+
+    def load_save(self, ls):
+        self.curr_scene = self.scene_to_id(ls.scene)
+
+        self.curr_obj = None
+        self.curr_dlg = None
+        self.curr_cursor = None
+        self.curr_char1 = None
+        self.curr_char2 = None
+        self.curr_invntr = None
 

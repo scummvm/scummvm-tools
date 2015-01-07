@@ -10,7 +10,6 @@ from idlelib.WidgetRedirector import WidgetRedirector
 import traceback
 import urllib.parse
 import math
-import binascii
 
 # Image processing
 try:
