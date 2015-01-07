@@ -355,6 +355,7 @@ class Engine:
 
         for i in range(num_scn):
             off, scn = read_rec(off)
+            scn.refs = None
             self.scenes.append(scn)
             self.scn_idx[scn.idx] = scn
             

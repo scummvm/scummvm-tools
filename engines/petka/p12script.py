@@ -13,7 +13,7 @@ import petka
 import petka.engine
 
 APPNAME = "P1&2 Compiler and decompiler"
-VERSION = "v0.3 2014-06-01"
+VERSION = "v0.3h 2015-01-12"
 
 class ScriptSyntaxError(Exception): pass
 
@@ -462,6 +462,7 @@ class P12Compiler:
         num_bkg = 0
         for citem in compscene:
             scenerec = makerec(citem)
+            scenerec.refs = None
             pe.scenes.append(scenerec)
 
             if citem["ref"] is not None:
