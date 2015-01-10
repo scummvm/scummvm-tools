@@ -56,7 +56,7 @@ class SaveLoader:
             s2 = readstr()
             data = f.read(33)
             obj = {"name": s1, "alias": s2, "data": data}
-            recs = struct.unpack("<B8i", data)
+            recs = struct.unpack("<iB7i", data)
             obj["recs"] = recs
             obj["res"] = recs[2]
             self.objects.append(obj)

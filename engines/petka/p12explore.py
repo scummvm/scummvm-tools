@@ -2314,7 +2314,7 @@ class App(tkinter.Frame):
                                         self.fmt_hl_msg(idx, True)))
 
                 grp = [
-                    [".leg", ".off", ".msk", ".flc"],
+                    [".leg", ".off", ".msk", ".flc", ".ms2"],
                     [".bmp", ".cvx"]
                 ]
                 sg = None
