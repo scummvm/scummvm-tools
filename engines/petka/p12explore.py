@@ -10,6 +10,7 @@ from idlelib.WidgetRedirector import WidgetRedirector
 import traceback
 import urllib.parse
 import math
+import webbrowser
 
 # Image processing
 try:
@@ -29,8 +30,10 @@ except ImportError:
 
 import petka
 
-APPNAME = "P1&2 Explorer"
+APPNAME = "Petka Explorer"
 VERSION = "v0.3h 2015-01-12"
+HOME_URLS = ["http://petka-vich.com/petkaexplorer/", 
+            "https://bitbucket.org/romiq/p12simtran"]
 
 def hlesc(value):
     if value is None:
@@ -482,6 +485,13 @@ class App(tkinter.Frame):
             path = path[:-1]
         return path    
  
+    def open_http(self, path):
+        if path not in HOME_URLS:
+            if not messagebox.askokcancel(parent = self, title = "Visit URL?", 
+                message = "Would you like to open external URL:\n" + path + 
+                " ?"): return
+        webbrowser.open(path)
+ 
     def open_path(self, loc, withhist = True):
         path = self.parse_path(loc)        
         if withhist:
@@ -738,6 +748,8 @@ class App(tkinter.Frame):
                             ref = ref[:-1]
                         def make_cb(path):
                             def cb():
+                                if path[:5] == "http:" or path[:6] == "https:":
+                                    return self.open_http(path)
                                 return self.open_path(path)
                             return cb
                         tags.append(self.text_hl.add(make_cb(ref)))
@@ -1466,6 +1478,9 @@ class App(tkinter.Frame):
 
             resused = []
             dlgused = []
+            # check group with same id
+            if rec.idx in self.sim.dlg_idx:
+                dlgused.append(rec.idx)
             self.add_info("\n<b>Handlers</b>: {}\n".format(len(rec.acts)))
             fmtra = "  " + fmt_dec(len(rec.acts)) + \
                 ") <u>on {}</u>, ops: {}{}\n"
@@ -1531,7 +1546,7 @@ class App(tkinter.Frame):
                     self.add_info("  " + self.fmt_hl_msg(msg.idx, True) + "\n")
 
             oplst = {}
-            # objects tan use this objects in TALK opcode
+            # objects can use this objects in TALK opcode
             wasmsg = False
             for obj2 in self.sim.objects + self.sim.scenes:
                 if obj2.idx == rec.idx: continue
@@ -1887,24 +1902,34 @@ class App(tkinter.Frame):
                         self.add_info("        {}{}{}{}\n".\
                             format(opcode, oparg, opref, cmt))
 
-            def usedby(lst):
-                for idx, rec in enumerate(lst):
+            def usedby(lst, hl):
+                hdr = False
+                for rec in lst:
+                    if grp.idx == rec.idx:
+                        # linked object woth same id
+                        if not hdr:
+                            self.add_info(hl)
+                            hdr = True
+                        self.add_info("  linked " + 
+                            self.fmt_hl_obj_scene(rec.idx, True) + "\n")
+                        continue
                     ru = False
                     for act in rec.acts:
                         if ru: break
                         for op in act.ops:
                             if op.op_code == 0x11 and \
                                     op.op_ref == grp.idx: # DIALOG 
+                                if not hdr:
+                                    self.add_info(hl)
+                                    hdr = True
                                 self.add_info("  " + 
                                     self.fmt_hl_obj_scene(rec.idx, True) + "\n")
                                 ru = True
                                 break
                             #print(op_id, op_code, op_res, op4, op5)
 
-            self.add_info("\n\n<b>Used by objects</b>:\n")
-            usedby(self.sim.objects)
-            self.add_info("\n<b>Used by scenes</b>:\n")
-            usedby(self.sim.scenes)
+            usedby(self.sim.objects, "\n<b>Used by objects</b>:\n")
+            usedby(self.sim.scenes, "\n<b>Used by scenes</b>:\n")
         return True
         
     def path_opcodes(self, path):
@@ -2584,10 +2609,12 @@ class App(tkinter.Frame):
         self.update_gui("About")
         self.insert_lb_act("Outline", [])
         self.clear_info()
-        self.add_info("Welcome to <b>Petka 1 & 2 resource explorer</b>\n\n")
-        self.add_info("  " + APPNAME + " " + VERSION + "\n")
-        self.add_info("  romiq.kh@gmail.com\n")
-        self.add_info("  https://bitbucket.org/romiq/p12simtran\n")
+        self.add_info("Welcome to <b>Petka Explorer</b>\n")
+        self.add_info("  A resource explorer for Petka 1 and 2\n")
+        self.add_info("  " + APPNAME + " " + VERSION + ", ")
+        self.add_info("romiq.kh@gmail.com\n")
+        for u in HOME_URLS:
+          self.add_info("  " + fmt_hl(u, u) + "\n")
         self.add_info("\n")
         self.path_info_outline()
         return True
