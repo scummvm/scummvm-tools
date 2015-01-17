@@ -31,7 +31,7 @@ except ImportError:
 import petka
 
 APPNAME = "Petka Explorer"
-VERSION = "v0.3h 2015-01-12"
+VERSION = "v0.3i 2015-01-19"
 HOME_URLS = ["http://petka-vich.com/petkaexplorer/", 
             "https://bitbucket.org/romiq/p12simtran"]
 
@@ -1408,7 +1408,11 @@ class App(tkinter.Frame):
         else:
             # record info
             self.add_info(("<b>Object</b>" if isobj \
-                else "<b>Scene</b>") + ":\n")
+                else "<b>Scene</b>") + ":")
+            # check linked dialog
+            if rec.idx in self.sim.dlg_idx:
+                self.add_info(" (dialog " + self.fmt_hl_dlg(rec.idx) + ")")
+            self.add_info("\n")
             self.add_info("  Index:     {} (0x{:X})\n".format(rec.idx, rec.idx))
             self.add_info("  Name:      {}\n".format(hlesc(rec.name)))
             if self.tran:
@@ -1455,26 +1459,29 @@ class App(tkinter.Frame):
                                 self.fmt_hl_scene(scn.idx, True) + "\n")
                             break
             else:
-                if len(rec.refs) == 0:
+                if rec.refs is None:
                     self.add_info("\nNo references\n")
-                else:
-                    self.add_info("\n<b>References</b>: {}\n".\
-                        format(len(rec.refs)))
-                fmtd = "  " + fmt_dec(len(rec.refs)) + ") "
-                for idx, ref in enumerate(rec.refs):
-                    self.add_info(fmtd.format(idx) + 
-                        self.fmt_hl_obj(ref[0].idx))
-                    msg = ""
-                    for arg in ref[1:]:
-                        msg += " "
-                        if arg < 10:
-                            msg += "{}".format(arg)
-                        elif arg == 0xffffffff:
-                            msg += "-1"
-                        else:
-                            msg += "0x{:X}".format(arg)
-                    self.add_info(msg + self.fmt_cmt(" // " + self.fmt_hl_obj(
-                        ref[0].idx, True)) + "\n")
+                else: 
+                    if len(rec.refs) == 0:
+                        self.add_info("\nEmpty references\n")
+                    else:
+                        self.add_info("\n<b>References</b>: {}\n".\
+                            format(len(rec.refs)))
+                    fmtd = "  " + fmt_dec(len(rec.refs)) + ") "
+                    for idx, ref in enumerate(rec.refs):
+                        self.add_info(fmtd.format(idx) + 
+                            self.fmt_hl_obj(ref[0].idx))
+                        msg = ""
+                        for arg in ref[1:]:
+                            msg += " "
+                            if arg < 10:
+                                msg += "{}".format(arg)
+                            elif arg == 0xffffffff:
+                                msg += "-1"
+                            else:
+                                msg += "0x{:X}".format(arg)
+                        self.add_info(msg + self.fmt_cmt(" // " + 
+                            self.fmt_hl_obj(ref[0].idx, True)) + "\n")
 
             resused = []
             dlgused = []
@@ -1802,8 +1809,11 @@ class App(tkinter.Frame):
             self.add_info("Select <b>dialog group</b> from list\n")
         else:
             # grp info
-            self.add_info("<b>Dialog group</b>: {} (0x{:X})\n".format(\
+            self.add_info("<b>Dialog group</b>: {} (0x{:X})".format(\
                 grp.idx, grp.idx))
+            if grp.idx in self.sim.obj_idx:
+                self.add_info(" (object " + self.fmt_hl_obj(grp.idx) + ")")
+            self.add_info("\n")
             self.add_info("  arg1: {a} (0x{a:X})\n\n".format(a = grp.grp_arg1))
             self.add_info("<b>Dialog handlers<b>: {}\n".format(len(grp.acts)))
             fmtga = "  " + fmt_dec(len(grp.acts)) + \
