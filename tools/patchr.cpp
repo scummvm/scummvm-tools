@@ -303,7 +303,7 @@ int main(int argc, char *argv[]) {
 
 		/* Add old data to diff string */
 		for (uint i = 0; i < ctrl[0]; i++)
-			if ((oldpos + i >= 0) && (oldpos + i < oldsize)) {
+			if (oldpos + i < oldsize) {
 				new_block[newpos + i] ^= old_block[oldpos + i];
 			}
 

@@ -143,8 +143,8 @@ public:
     for (std::string::iterator i = str.begin(); i != str.end(); i++) {
       unsigned char c = *i;
       if (strchr(specials, c)) {
-	int i = strchr(specials, c) - specials;
-	os << special_text[i];
+	int index = strchr(specials, c) - specials;
+	os << special_text[index];
       }
       else if (! isprint(c))
 	os << "\\" << std::dec << (unsigned int)(c);

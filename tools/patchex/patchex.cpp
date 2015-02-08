@@ -295,14 +295,14 @@ char *file_filter(const struct mscabd_file *file) {
 	return NULL;
 }
 
-void extract_files(struct mscab_decompressor *cabd, struct mscabd_cabinet *cab) {
+void extract_files(struct mscab_decompressor *cabdec, struct mscabd_cabinet *cabinet) {
 	unsigned int files_extracted = 0;
 	struct mscabd_file *file;
 	char *filename;
 
-	for (file = cab->files; file; file = file->next) {
+	for (file = cabinet->files; file; file = file->next) {
 		if ((filename = file_filter(file))) {
-			if (cabd->extract(cabd, file, filename) != MSPACK_ERR_OK) {
+			if (cabdec->extract(cabdec, file, filename) != MSPACK_ERR_OK) {
 				printf("Extract error on %s!\n", file->filename);
 				free(filename);
 				continue;

@@ -114,7 +114,7 @@ static int8 *offsets[] = {
 static uint16 destTable[5786];
 byte *sourceBuffer;
 
-void vimaInit(uint16 *destTable) {
+void vimaInit() {
 	int destTableStartPos, incer;
 
 	for (destTableStartPos = 0, incer = 0; destTableStartPos < 64; destTableStartPos++, incer++) {
@@ -132,7 +132,7 @@ void vimaInit(uint16 *destTable) {
 	}
 }
 
-void decompressVima(byte *src, int16 *dest, int destLen, uint16 *destTable) {
+void decompressVima(byte *src, int16 *dest, int destLen) {
 	int numChannels = 1;
 	byte sBytes[2];
 	int16 sWords[2];
@@ -219,7 +219,7 @@ void decompressVima(byte *src, int16 *dest, int destLen, uint16 *destTable) {
 }
 
 int main(int /* argc */, char *argv[]) {
-	vimaInit(destTable);
+	vimaInit();
 
 	FILE *f = fopen(argv[1], "rb");
 	if (f == NULL) {
@@ -256,7 +256,7 @@ int main(int /* argc */, char *argv[]) {
 			fwrite(sourceBuffer, 1, uncompSize, stdout);
 		} else if (strcmp(codecs + 5 * codec, "VIMA") == 0) {
 			char *buffer = new char[uncompSize];
-			decompressVima(sourceBuffer, (int16 *)buffer, uncompSize, destTable);
+			decompressVima(sourceBuffer, (int16 *)buffer, uncompSize);
 			fwrite(buffer, 1, uncompSize, stdout);
 			delete[] buffer;
 		} else {

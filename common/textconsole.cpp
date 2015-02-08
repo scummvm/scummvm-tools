@@ -55,7 +55,7 @@ void warning(const char *s, ...) {
 
 	output = "WARNING: " + output + "!\n";
 
-	printf(output.c_str());
+	printf("%s", output.c_str());
 }
 
 #endif
@@ -86,7 +86,7 @@ void NORETURN_PRE error(const char *s, ...) {
 	buf_output[STRINGBUFLEN - 1] = '\0';
 	strcat(buf_output, "!\n");
 
-	printf(buf_output);
+	printf("%s", buf_output);
 
 	// If there is an error handler, invoke it now
 	if (Common::s_errorHandler)

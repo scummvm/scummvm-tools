@@ -78,18 +78,18 @@ int main(int argc, char **argv) {
 	Lab lab(filename);
 
 	for (int i = 0; i < lab.getNumEntries(); i++) {
-		std::string filename = lab.getFileName(i);
-		std::istream *infile = lab.getFile(filename);
-		filename = fixFilename(filename);
-		createDirectoryStructure(filename.c_str());
-		std::fstream outfile(filename.c_str(), std::ios::out | std::ios::binary);
+		std::string fname = lab.getFileName(i);
+		std::istream *infile = lab.getFile(fname);
+		fname = fixFilename(fname);
+		createDirectoryStructure(fname.c_str());
+		std::fstream outfile(fname.c_str(), std::ios::out | std::ios::binary);
 		if (!outfile.is_open()) {
-			printf("Could not open %s for writing\n", filename.c_str());
-			createDirectoryStructure(filename.c_str());
+			printf("Could not open %s for writing\n", fname.c_str());
+			createDirectoryStructure(fname.c_str());
 			continue;
 		}
 
-		printf("Extracting file %s\n", filename.c_str());
+		printf("Extracting file %s\n", fname.c_str());
 
 		outfile << infile->rdbuf();
 

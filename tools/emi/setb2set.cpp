@@ -254,7 +254,7 @@ Setup::Setup(Data *data) : Section(data) {
 	name = data->GetString(128); // Parse a string really
 
 	// Skip an unknown number
-	int unknown = data->GetInt();
+	data->GetInt();
 
 	tile = data->GetNullTerminatedString();
 
@@ -329,7 +329,7 @@ Light::Light(Data *data) : Section(data) {
 	// Need to check the light type
 	type = (LightType)data->GetInt(); // 0x3C
 
-	float i = data->GetFloat();	// 0x40 // Unknown, definitely float
+	data->GetFloat();	// 0x40 // Unknown, definitely float
 	int j = data->GetInt(); 	// 0x44
 	if (j != 0) {
 		cout << "Warning j != 0!" << endl;
@@ -385,10 +385,10 @@ class Set {
 public:
 	virtual string ToString();
 	Set(Data *data);
+	virtual ~Set() {}
 private:
 	string setName;
 	uint32 numSetups;
-	uint32 numColormaps;
 	uint32 numLights;
 	uint32 numSectors;
 	vector<Section *> setups;

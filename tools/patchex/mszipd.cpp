@@ -135,7 +135,7 @@ static int make_decode_table(unsigned int nsyms, unsigned int nbits,
   register unsigned char bit_num;
   unsigned int pos         = 0;
   unsigned int table_mask  = 1 << nbits;
-  unsigned int bit_mask    = table_mask >> 1;
+  unsigned int bmask    = table_mask >> 1;
 
   for (bit_num = 1; bit_num <= nbits; bit_num++) {
     for (sym = 0; sym < nsyms; sym++) {
@@ -144,12 +144,12 @@ static int make_decode_table(unsigned int nsyms, unsigned int nbits,
       fill = length[sym]; reverse = pos >> (nbits - fill); leaf = 0;
       do {leaf <<= 1; leaf |= reverse & 1; reverse >>= 1;} while (--fill);
 
-      if((pos += bit_mask) > table_mask) return 1;
+      if((pos += bmask) > table_mask) return 1;
 
-      fill = bit_mask; next_sym = 1 << bit_num;
+      fill = bmask; next_sym = 1 << bit_num;
       do { table[leaf] = sym; leaf += next_sym; } while (--fill);
     }
-    bit_mask >>= 1;
+    bmask >>= 1;
   }
 
   if (pos == table_mask) return 0;
@@ -164,7 +164,7 @@ static int make_decode_table(unsigned int nsyms, unsigned int nbits,
 
   pos <<= 16;
   table_mask <<= 16;
-  bit_mask = 1 << 15;
+  bmask = 1 << 15;
 
   for (bit_num = nbits+1; bit_num <= MSZIP_MAX_HUFFBITS; bit_num++) {
     for (sym = 0; sym < nsyms; sym++) {
@@ -183,9 +183,9 @@ static int make_decode_table(unsigned int nsyms, unsigned int nbits,
       }
       table[leaf] = sym;
 
-      if ((pos += bit_mask) > table_mask) return 1;
+      if ((pos += bmask) > table_mask) return 1;
     }
-    bit_mask >>= 1;
+    bmask >>= 1;
   }
 
   return (pos != table_mask) ? 1 : 0;

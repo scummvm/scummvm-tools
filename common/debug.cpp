@@ -113,7 +113,7 @@ static void debugHelper(const char *s, va_list va, bool caret = true) {
 	if (caret)
 		buf += '\n';
 
-	printf(buf.c_str());
+	printf("%s", buf.c_str());
 }
 
 void debug(const char *s, ...) {
