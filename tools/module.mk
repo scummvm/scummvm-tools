@@ -19,7 +19,6 @@ MAKE := \
 	unlab \
 	mklab \
 	vima \
-	labcopy \
 	luac \
 	patchex \
 	diffr \
