@@ -4,19 +4,13 @@
 # romiq.kh@gmail.com, 2015
 
 import sys, os
+import urllib.parse
 import tkinter
 from tkinter import filedialog, messagebox
 import traceback
-import webbrowser
 
 from tkguibrowser import TkBrowser, hlesc, cesc, fmt_hl, fmt_hl_len, fmt_arg, \
     fmt_dec, fmt_dec_len
-
-# Image processing
-try:
-    from PIL import Image
-except ImportError:
-    Image = None
 
 # Translations
 try:
@@ -27,7 +21,7 @@ except ImportError:
 import petka
 
 APPNAME = "Petka Explorer"
-VERSION = "v0.3i 2015-01-19"
+VERSION = "v0.4 2015-06-20"
 HOME_URLS = ["http://petka-vich.com/petkaexplorer/", 
             "https://bitbucket.org/romiq/p12simtran"]
     
@@ -164,8 +158,7 @@ class App(TkBrowser):
                     repath = ""
                     break
         if repath:
-            self.open_path(repath)
-        
+            self.open_path(repath)       
 
     def create_menu(self):
         super().create_menu()
@@ -251,23 +244,6 @@ class App(TkBrowser):
         mkmenupaths(self.menuhelp, helpnav)
 
 
-    def on_help(self):
-        self.open_path(["help", self.curr_help])
-
-    def on_back(self):
-        if len(self.hist) > 1:
-            np = self.hist[-2:-1][0]
-            self.histf = self.hist[-1:] + self.histf
-            self.hist = self.hist[:-1]
-            self.open_path(np[0], False)
-
-    def on_forward(self):
-        if len(self.histf) > 0:
-            np = self.histf[0]
-            self.histf = self.histf[1:]
-            self.hist.append(np)
-            self.open_path(np[0], False)
-
     def open_path(self, loc, withhist = True):
         res = super().open_path(loc, withhist)
         # set title
@@ -282,6 +258,8 @@ class App(TkBrowser):
         self.master.title(capt)
         return res
         
+    def on_help(self):
+        self.open_path(["help", self.curr_help])
 
     def _t(self, value, tp):
         if not self.tran: return value

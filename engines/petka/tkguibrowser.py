@@ -4,11 +4,16 @@
 # romiq.kh@gmail.com, 2015
 
 import math
-import urllib.parse
 
 import tkinter
 from tkinter import ttk, font, filedialog, messagebox
 from idlelib.WidgetRedirector import WidgetRedirector
+
+# Image processing
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 
 try:
     from PIL import ImageTk
@@ -166,6 +171,24 @@ class TkBrowser(tkinter.Frame):
         self.create_widgets()
         self.create_menu()
 
+    def on_help(self):
+        pass
+
+    def on_back(self):
+        if len(self.hist) > 1:
+            np = self.hist[-2:-1][0]
+            self.histf = self.hist[-1:] + self.histf
+            self.hist = self.hist[:-1]
+            self.open_path(np[0], False)
+
+    def on_forward(self):
+        if len(self.histf) > 0:
+            np = self.histf[0]
+            self.histf = self.histf[1:]
+            self.hist.append(np)
+            self.open_path(np[0], False)
+
+
     def create_widgets(self):
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
         ttk.Style().configure("TLabel", padding = self.pad)
@@ -296,12 +319,11 @@ class TkBrowser(tkinter.Frame):
         return self.desc_default(path)
 
     def update_canvas(self):
-        if self.curr_main == 0:          
+        if self.curr_main == 0:
             return
         # draw grahics
         c = self.canv_view
         c.delete(tkinter.ALL)
-        if self.sim is None: return
 
         w = self.canv_view.winfo_width() 
         h = self.canv_view.winfo_height()
@@ -627,8 +649,14 @@ class TkBrowser(tkinter.Frame):
             else:
                 btn.config(state = tkinter.DISABLED)
     
-
     def clear_hist(self):
         self.hist = self.hist[-1:]
         self.histf = []
+
+    def path_default(self, path):
+        self.switch_view(0)
+        self.clear_info()
+        self.add_info("Open path\n\n" + str(path))
+        
+        
 
