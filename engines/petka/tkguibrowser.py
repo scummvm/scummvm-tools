@@ -5,6 +5,7 @@
 
 import math
 import traceback
+from html.parser import HTMLParser
 
 import tkinter
 from tkinter import ttk, font, filedialog, messagebox
@@ -54,9 +55,9 @@ def fmt_dec_len(value, add = 0):
         d = int(math.log10(value)) + 1
     d += add
     return d
-
+        
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
-class HyperlinkManager:
+class HyperlinkManager(HTMLParser):
 
     def __init__(self, text):
         self.text = text
@@ -71,12 +72,17 @@ class HyperlinkManager:
         italic_font.configure(slant = "italic")
         self.text.tag_config("italic", font = italic_font)
         self.text.tag_config("underline", underline = 1)
+        self.parser = HTMLParser()
+        self.parser.handle_starttag = self.handle_starttag
+        self.parser.handle_endtag = self.handle_endtag
+        self.parser.handle_data = self.handle_data
         self.reset()
 
     def reset(self):
     	self.links = {}
     	self.colors = []
     	self.bgs = []
+    	self.colorbgs = []
 
     def add(self, action):
         # add an action to the manager.  returns tags to use in
@@ -101,6 +107,14 @@ class HyperlinkManager:
             self.text.tag_raise("hyper")
         return (tag,)
 
+    def colorbg(self, color, bg):
+        tag = "colorbg-{}".format(color, bg)
+        if tag not in self.colorbgs:
+            self.colorbgs.append(tag)
+            self.text.tag_config(tag, foreground = color, background = bg)
+            self.text.tag_raise("hyper")
+        return (tag,)
+
     def _enter(self, event):
         self.text.config(cursor = "hand2")
 
@@ -113,70 +127,46 @@ class HyperlinkManager:
                 self.links[tag]()
                 return
 
-    def add_markup(self, text, widget, handler):
-        mode = 0 # 0 - normal, 1 - tag
-        curr_tag = None
-        curr_text = ""
-        tags = []
-        esc = False
-        for ch in text:
-            if mode == 0:
-                if esc:
-                    curr_text += ch
-                    esc = False
-                else:
-                    if ch == "\\":
-                        esc = True
-                    elif ch == "<":
-                        mode = 1
-                        curr_tag = ""
-                    elif ch == "\n":
-                        curr_text += ch
-                        pass
-                    else:
-                        curr_text += ch
+    def handle_starttag(self, tag, attrs):
+        tagmap = {"b": "bold", "i": "italic", "u": "underline"}
+        if tag in tagmap:
+            self.parser_tags.append([tagmap[tag]])
+        elif tag == "a":
+            ref = ""
+            for k, v in attrs:
+                if k == "href":
+                    ref = v
+            self.parser_tags.append(self.add(self.parser_handler(ref)))
+        elif tag == "font":
+            color = ""
+            bg = ""
+            for k, v in attrs:
+                if k == "color":
+                    color = v
+                elif k == "bg":
+                    bg = v
+            if color and bg:
+                self.parser_tags.append(self.colorbg(color, bg))
+            elif bg:
+                self.parser_tags.append(self.bg(bg))
             else:
-                if ch == ">":
-                    if len(curr_text) > 0:                    
-                        widget.insert(tkinter.INSERT, curr_text, \
-                            tuple(reversed([x for x in tags for x in x])))
-                    if curr_tag[:7] == "a href=":
-                        ref = curr_tag[7:]
-                        if ref[:1] == "\"":
-                            ref = ref[1:]
-                        if ref[-1:] == "\"":
-                            ref = ref[:-1]
-                        tags.append(self.add(handler(ref)))
-                    elif curr_tag[:11] == "font color=":
-                        ref = curr_tag[11:]
-                        if ref[:1] == "\"":
-                            ref = ref[1:]
-                        if ref[-1:] == "\"":
-                            ref = ref[:-1]
-                        tags.append(self.color(ref))
-                    elif curr_tag[:8] == "font bg=":
-                        ref = curr_tag[8:]
-                        if ref[:1] == "\"":
-                            ref = ref[1:]
-                        if ref[-1:] == "\"":
-                            ref = ref[:-1]
-                        tags.append(self.bg(ref))
-                    elif curr_tag == "b":
-                        tags.append(["bold"])
-                    elif curr_tag == "i":
-                        tags.append(["italic"])
-                    elif curr_tag == "u":
-                        tags.append(["underline"])
-                    elif curr_tag[:1] == "/":
-                        tags = tags[:-1]
-                    curr_text = ""
-                    mode = 0
-                else:
-                    curr_tag += ch
-        if len(curr_text) > 0: 
-            widget.insert(tkinter.INSERT, curr_text, \
-                tuple(reversed([x for x in tags for x in x])))
+                self.parser_tags.append(self.color(color))
     
+    def handle_endtag(self, tag):
+        self.parser_tags = self.parser_tags[:-1]
+
+    def handle_data(self, data):
+        self.parser_widget.insert(tkinter.INSERT, data, \
+            tuple(reversed([x for x in self.parser_tags for x in x])))
+
+    def add_markup(self, text, widget, handler):
+        self.parser_tags = []
+        self.parser_widget = widget
+        self.parser_handler = handler
+        self.parser.reset()
+        self.parser.feed(text)
+        return
+
 
 # thanx http://tkinter.unpythonic.net/wiki/ReadOnlyText
 class ReadOnlyText(tkinter.Text):

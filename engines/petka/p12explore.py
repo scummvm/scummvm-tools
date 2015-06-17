@@ -8,6 +8,7 @@ import urllib.parse
 import tkinter
 from tkinter import filedialog, messagebox
 import traceback
+import webbrowser
 
 from tkguibrowser import TkBrowser, hlesc, cesc, fmt_hl, fmt_hl_len, fmt_arg, \
     fmt_dec, fmt_dec_len

@@ -68,7 +68,7 @@ class App(TkBrowser):
         self.add_info("\n\n<font color=\"#ff00FF\">This is multi-")
         self.add_info("line\ncolor</font> text\n")
 
-        self.add_info("\n<font bg=\"red\" color=\"white\"> White on red </font>\n")
+        self.add_info("\n<font bg=\"red\" color=\"white\"> <b>White</b> on <i>red</i> </font>\n")
 
         self.insert_lb_act("Testing", "/test")        
         return True        
