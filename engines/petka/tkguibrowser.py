@@ -4,6 +4,7 @@
 # romiq.kh@gmail.com, 2015
 
 import math
+import traceback
 
 import tkinter
 from tkinter import ttk, font, filedialog, messagebox
@@ -56,6 +57,7 @@ def fmt_dec_len(value, add = 0):
 
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager:
+
     def __init__(self, text):
         self.text = text
         self.text.tag_config("hyper", foreground = "blue", underline = 1)
@@ -111,8 +113,10 @@ class HyperlinkManager:
                 self.links[tag]()
                 return
 
+
 # thanx http://tkinter.unpythonic.net/wiki/ReadOnlyText
 class ReadOnlyText(tkinter.Text):
+
     def __init__(self, *args, **kwargs):
         tkinter.Text.__init__(self, *args, **kwargs)
         self.redirector = WidgetRedirector(self)
@@ -120,6 +124,7 @@ class ReadOnlyText(tkinter.Text):
             self.redirector.register("insert", lambda *args, **kw: "break")
         self.delete = \
             self.redirector.register("delete", lambda *args, **kw: "break")
+
 
 class TkBrowser(tkinter.Frame):
     def __init__(self, master):
@@ -284,29 +289,6 @@ class TkBrowser(tkinter.Frame):
             path = path[:-1]
         return path    
  
-    def open_http(self, path):
-        if path not in HOME_URLS:
-            if not messagebox.askokcancel(parent = self, title = "Visit URL?", 
-                message = "Would you like to open external URL:\n" + path + 
-                " ?"): return
-        webbrowser.open(path)
- 
-    def open_path(self, loc, withhist = True):
-        path = self.parse_path(loc)        
-        if withhist:
-            self.hist.append([path])
-            self.histf = []
-        print("DEBUG: Open", path)
-        self.curr_path = path
-        if len(path) > 0:
-            self.curr_help = path[0]
-        else:
-            self.curr_help = ""
-        if len(path) > 0:
-            if path[0] in self.path_handler:
-                return self.path_handler[path[0]][0](path)
-        return self.path_default(path)
-
     def desc_path(self, loc):
         path = self.parse_path(loc)
         if len(path) > 0:
@@ -504,6 +486,9 @@ class TkBrowser(tkinter.Frame):
     def clear_info(self):
         self.text_view.delete(0.0, tkinter.END)
 
+    def add_text(self, text):
+        self.text_view.insert(tkinter.INSERT, text)
+
     def add_info(self, text):
         mode = 0 # 0 - normal, 1 - tag
         curr_tag = None
@@ -653,10 +638,34 @@ class TkBrowser(tkinter.Frame):
         self.hist = self.hist[-1:]
         self.histf = []
 
+    def open_http(self, path):
+        messagebox.showinfo(parent = self, title = "URL", message = path)
+ 
+    def open_path(self, loc, withhist = True):
+        path = self.parse_path(loc)        
+        if withhist:
+            self.hist.append([path])
+            self.histf = []
+        print("DEBUG: Open", path)
+        self.curr_path = path
+        if len(path) > 0:
+            self.curr_help = path[0]
+        else:
+            self.curr_help = ""
+        try:
+            if len(path) > 0:
+                if path[0] in self.path_handler:
+                    return self.path_handler[path[0]][0](path)
+            return self.path_default(path)
+        except Exception:
+            self.switch_view(0)
+            self.add_text("\n" + "="*20 + "\n" + traceback.format_exc())
+            return True
+
     def path_default(self, path):
         self.switch_view(0)
         self.clear_info()
         self.add_info("Open path\n\n" + str(path))
-        
+        return True
         
 

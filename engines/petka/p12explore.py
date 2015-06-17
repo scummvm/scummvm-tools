@@ -58,11 +58,11 @@ def translit(text):
     if allcaps:
         ret = ret.upper()
     return ret
-    
 
 class App(TkBrowser):
+
     def __init__(self, master):
-        super().__init__(master)            
+        super().__init__(master)
                 
     def init_gui(self):
         self.master.title(APPNAME)
@@ -122,7 +122,6 @@ class App(TkBrowser):
             desc_def("Stores", "Store")]
         self.path_handler["files"] = [self.path_files, self.desc_files]
         self.path_handler["save"] = [self.path_save, "Save"]
-        self.path_handler["test"] = [self.path_test, "Tests"]
         self.path_handler["about"] = [self.path_about, "About"]
         self.path_handler["support"] = [self.path_support, "Support"]
         self.path_handler["help"] = [self.path_help, self.desc_help]
@@ -243,6 +242,12 @@ class App(TkBrowser):
         helpnav = ["/help/index", None, "/support", "/info", "/about"]
         mkmenupaths(self.menuhelp, helpnav)
 
+    def open_http(self, path):
+        if path not in HOME_URLS:
+            if not messagebox.askokcancel(parent = self, title = "Visit URL?", 
+                message = "Would you like to open external URL:\n" + path + 
+                " ?"): return
+        webbrowser.open(path)
 
     def open_path(self, loc, withhist = True):
         res = super().open_path(loc, withhist)
@@ -1920,76 +1925,6 @@ class App(TkBrowser):
             self.insert_lb_act("Screenshot", ["save", "shot"], "shot")
             self.insert_lb_act("Dialog opcodes", ["save", "dlgops"], "dlgops")
         upd_save()
-        return True
-            
-            
-    def path_test(self, path):
-        def display_page():
-            item = None
-            path = self.curr_path
-            if len(path) > 2:
-                item = path[2]
-            self.clear_info()
-            sm = self.gl_state.get("test.info.mode", 0)
-            if item is None:
-                sm = -1
-            self.upd_toolgrp(self.curr_state["gbtns"], sm)
-            if item is None:
-                self.switch_view(0)
-                self.add_info("Select item " + path[1])
-            else:
-                if path[1] == "image":
-                    self.switch_view(1)
-                    self.main_image = tkinter.PhotoImage(file = "img/splash.gif")
-                elif path[1] == "info":
-                    self.switch_view(0)
-                    self.add_info("Information panel for {}\n".format(path))
-                    self.add_info("Local mode {}\n".format(
-                        self.curr_state.get("mode", None)))
-                    self.add_info("Global mode {}\n".format(
-                        self.gl_state.get("test.info.mode", None)))
-                    for i in range(100):
-                        self.add_info("  Item {}\n".format(i))
-            
-        if self.last_path[:1] != ("test",):
-            self.update_gui("Test {}".format(path[1]))
-            self.insert_lb_act("Outline", [])
-            self.insert_lb_act("-", None)
-            for i in range(15):
-                self.insert_lb_act("{} #{}".format(path[1], i), 
-                    path[:2] + (i,), i)
-            # create mode buttons
-            def sw_mode1():
-                print("Mode 1")
-                self.curr_state["mode"] = 1
-                self.curr_state["btn1"].config(state = tkinter.DISABLED)
-                self.curr_state["btn2"].config(state = tkinter.NORMAL)
-                display_page()
-            def sw_mode2():
-                print("Mode 2")
-                self.curr_state["mode"] = 2
-                self.curr_state["btn1"].config(state = tkinter.NORMAL)
-                self.curr_state["btn2"].config(state = tkinter.DISABLED)
-                display_page()
-            self.curr_state["btn1"] = self.add_toolbtn("Mode 1", sw_mode1)
-            self.curr_state["btn2"] = self.add_toolbtn("Mode 2", sw_mode2)
-            # we store buttons in local state
-            self.curr_state["gbtns"] = self.add_toolgrp(None, "test.info.mode",
-                {0: "mode 1", 1: "mode 2", 2: "mode 3"}, display_page)
-
-        # change
-        item = None
-        if len(path) > 2:
-            # index
-            self.select_lb_item(path[2])
-            try:
-                item = path[2]
-            except:
-                pass
-        else:
-            self.select_lb_item(None)
-        # display
-        display_page()
         return True
 
     def path_about(self, path):
