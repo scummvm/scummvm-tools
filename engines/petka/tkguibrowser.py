@@ -113,6 +113,70 @@ class HyperlinkManager:
                 self.links[tag]()
                 return
 
+    def add_markup(self, text, widget, handler):
+        mode = 0 # 0 - normal, 1 - tag
+        curr_tag = None
+        curr_text = ""
+        tags = []
+        esc = False
+        for ch in text:
+            if mode == 0:
+                if esc:
+                    curr_text += ch
+                    esc = False
+                else:
+                    if ch == "\\":
+                        esc = True
+                    elif ch == "<":
+                        mode = 1
+                        curr_tag = ""
+                    elif ch == "\n":
+                        curr_text += ch
+                        pass
+                    else:
+                        curr_text += ch
+            else:
+                if ch == ">":
+                    if len(curr_text) > 0:                    
+                        widget.insert(tkinter.INSERT, curr_text, \
+                            tuple(reversed([x for x in tags for x in x])))
+                    if curr_tag[:7] == "a href=":
+                        ref = curr_tag[7:]
+                        if ref[:1] == "\"":
+                            ref = ref[1:]
+                        if ref[-1:] == "\"":
+                            ref = ref[:-1]
+                        tags.append(self.add(handler(ref)))
+                    elif curr_tag[:11] == "font color=":
+                        ref = curr_tag[11:]
+                        if ref[:1] == "\"":
+                            ref = ref[1:]
+                        if ref[-1:] == "\"":
+                            ref = ref[:-1]
+                        tags.append(self.color(ref))
+                    elif curr_tag[:8] == "font bg=":
+                        ref = curr_tag[8:]
+                        if ref[:1] == "\"":
+                            ref = ref[1:]
+                        if ref[-1:] == "\"":
+                            ref = ref[:-1]
+                        tags.append(self.bg(ref))
+                    elif curr_tag == "b":
+                        tags.append(["bold"])
+                    elif curr_tag == "i":
+                        tags.append(["italic"])
+                    elif curr_tag == "u":
+                        tags.append(["underline"])
+                    elif curr_tag[:1] == "/":
+                        tags = tags[:-1]
+                    curr_text = ""
+                    mode = 0
+                else:
+                    curr_tag += ch
+        if len(curr_text) > 0: 
+            widget.insert(tkinter.INSERT, curr_text, \
+                tuple(reversed([x for x in tags for x in x])))
+    
 
 # thanx http://tkinter.unpythonic.net/wiki/ReadOnlyText
 class ReadOnlyText(tkinter.Text):
@@ -194,7 +258,6 @@ class TkBrowser(tkinter.Frame):
             self.histf = self.histf[1:]
             self.hist.append(np)
             self.open_path(np[0], False)
-
 
     def create_widgets(self):
         ttk.Style().configure("Tool.TButton", width = -1) # minimal width
@@ -496,76 +559,14 @@ class TkBrowser(tkinter.Frame):
         
     def end_markup(self):
         if not self.curr_markup: return
-        mode = 0 # 0 - normal, 1 - tag
-        curr_tag = None
-        curr_text = ""
-        text = self.curr_markup
+        def make_cb(path):
+            def cb():
+                if path[:5] == "http:" or path[:6] == "https:":
+                    return self.open_http(path)
+                return self.open_path(path)
+            return cb
+        self.text_hl.add_markup(self.curr_markup, self.text_view, make_cb)
         self.curr_markup = ""
-        tags = []
-        esc = False
-        for ch in text:
-            if mode == 0:
-                if esc:
-                    curr_text += ch
-                    esc = False
-                else:
-                    if ch == "\\":
-                        esc = True
-                    elif ch == "<":
-                        mode = 1
-                        curr_tag = ""
-                    elif ch == "\n":
-                        curr_text += ch
-                        pass
-                    else:
-                        curr_text += ch
-            else:
-                if ch == ">":
-                    if len(curr_text) > 0:                    
-                        self.text_view.insert(tkinter.INSERT, curr_text, \
-                            tuple(reversed([x for x in tags for x in x])))
-                    if curr_tag[:7] == "a href=":
-                        ref = curr_tag[7:]
-                        if ref[:1] == "\"":
-                            ref = ref[1:]
-                        if ref[-1:] == "\"":
-                            ref = ref[:-1]
-                        def make_cb(path):
-                            def cb():
-                                if path[:5] == "http:" or path[:6] == "https:":
-                                    return self.open_http(path)
-                                return self.open_path(path)
-                            return cb
-                        tags.append(self.text_hl.add(make_cb(ref)))
-                    elif curr_tag[:11] == "font color=":
-                        ref = curr_tag[11:]
-                        if ref[:1] == "\"":
-                            ref = ref[1:]
-                        if ref[-1:] == "\"":
-                            ref = ref[:-1]
-                        tags.append(self.text_hl.color(ref))
-                    elif curr_tag[:8] == "font bg=":
-                        ref = curr_tag[8:]
-                        if ref[:1] == "\"":
-                            ref = ref[1:]
-                        if ref[-1:] == "\"":
-                            ref = ref[:-1]
-                        tags.append(self.text_hl.bg(ref))
-                    elif curr_tag == "b":
-                        tags.append(["bold"])
-                    elif curr_tag == "i":
-                        tags.append(["italic"])
-                    elif curr_tag == "u":
-                        tags.append(["underline"])
-                    elif curr_tag[:1] == "/":
-                        tags = tags[:-1]
-                    curr_text = ""
-                    mode = 0
-                else:
-                    curr_tag += ch
-        if len(curr_text) > 0: 
-            self.text_view.insert(tkinter.INSERT, curr_text, \
-                tuple(reversed([x for x in tags for x in x])))
         
     def insert_lb_act(self, name, act, key = None):
         if key is not None:
