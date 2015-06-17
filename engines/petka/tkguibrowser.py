@@ -127,6 +127,7 @@ class ReadOnlyText(tkinter.Text):
 
 
 class TkBrowser(tkinter.Frame):
+
     def __init__(self, master):
         tkinter.Frame.__init__(self, master)
         self.pack(fill = tkinter.BOTH, expand = 1)        
@@ -140,6 +141,7 @@ class TkBrowser(tkinter.Frame):
         self.last_path = [None]
         self.curr_gui = []
         self.curr_state = {} # local state for location group
+        self.curr_markup = "" # current unparsed markup data (unclosed tags, etc)
         self.curr_lb_acts = None
         self.curr_lb_idx = None
         self.hist = []
@@ -463,8 +465,7 @@ class TkBrowser(tkinter.Frame):
             )
             self.scr_view_x.config(command = self.text_view.xview)
             self.scr_view_y.config(command = self.text_view.yview)
-        else:
-        
+        else:        
             if last == 0:
                 rw = self.text_view.winfo_width()
                 rh = self.text_view.winfo_height()
@@ -487,12 +488,19 @@ class TkBrowser(tkinter.Frame):
         self.text_view.delete(0.0, tkinter.END)
 
     def add_text(self, text):
+        self.end_markup()
         self.text_view.insert(tkinter.INSERT, text)
 
     def add_info(self, text):
+        self.curr_markup += text
+        
+    def end_markup(self):
+        if not self.curr_markup: return
         mode = 0 # 0 - normal, 1 - tag
         curr_tag = None
         curr_text = ""
+        text = self.curr_markup
+        self.curr_markup = ""
         tags = []
         esc = False
         for ch in text:
@@ -506,6 +514,9 @@ class TkBrowser(tkinter.Frame):
                     elif ch == "<":
                         mode = 1
                         curr_tag = ""
+                    elif ch == "\n":
+                        curr_text += ch
+                        pass
                     else:
                         curr_text += ch
             else:
@@ -653,14 +664,15 @@ class TkBrowser(tkinter.Frame):
         else:
             self.curr_help = ""
         try:
-            if len(path) > 0:
-                if path[0] in self.path_handler:
-                    return self.path_handler[path[0]][0](path)
-            return self.path_default(path)
+            if len(path) > 0 and path[0] in self.path_handler:
+                res = self.path_handler[path[0]][0](path)
+            else:
+                res = self.path_default(path)
         except Exception:
             self.switch_view(0)
             self.add_text("\n" + "="*20 + "\n" + traceback.format_exc())
-            return True
+            res = True
+        self.end_markup()
 
     def path_default(self, path):
         self.switch_view(0)

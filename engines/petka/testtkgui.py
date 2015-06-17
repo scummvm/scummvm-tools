@@ -62,11 +62,11 @@ class App(TkBrowser):
         self.add_info("\n\n")
         self.add_info("<a href=\"http://example.com/test\">example.com</a>\n")
         self.add_info("\n\n<b>This is multi-")
-        self.add_info("line\nbold</b>\n")
+        self.add_info("line\nbold</b> text\n")
         self.add_info("\n\n<u>This is multi-")
-        self.add_info("line\nunderline</u>\n")       
+        self.add_info("line\nunderline</u> text\n")       
         self.add_info("\n\n<font color=\"#ff00FF\">This is multi-")
-        self.add_info("line\nunderline</u>\n")
+        self.add_info("line\ncolor</font> text\n")
 
         self.insert_lb_act("Testing", "/test")        
         return True        
