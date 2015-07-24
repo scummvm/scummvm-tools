@@ -157,6 +157,8 @@ class App(TkBrowser):
                     print("DEBUG: stop opening after " + arg)
                     repath = ""
                     break
+            elif cmd == "dump":
+                self.dump_pages(arg)
         if repath:
             self.open_path(repath)       
 
@@ -2361,6 +2363,144 @@ class App(TkBrowser):
             self.add_info("Error saving \"{}\" \n\n{}".\
                 format(hlesc(fn), hlesc(traceback.format_exc())))
 
+    def dump_pages(self, path):
+        print("Dumping pages")
+        import json
+        import urllib
+        
+        def normalize_link(dest):
+            self.dumpaddr = None
+            def open_path(path):
+                print("  catch " + path)
+                self.dumpaddr = path
+            if callable(dest):
+                # hook self.open_path
+                orig = self.open_path
+                self.open_path = open_path
+                try:
+                    dest()
+                    dest = self.dumpaddr
+                except Exception:
+                    traceback.print_exc()
+                    return
+                finally:
+                    self.open_path = orig
+            elif isinstance(dest, (list, tuple)):
+                dest = "/" + "/".join([str(x) for x in dest])
+            return dest            
+        
+        def normalize_link_html(dest, curr):
+            lnk = normalize_link(dest)
+            if lnk[:1] == "/":
+                lnk = lnk[1:]
+            rel = os.path.relpath(os.path.join(path, lnk), os.path.dirname(curr))
+            if rel == ".":
+                return rel
+            return rel + ".html"
+        
+        def save_data(fn, data, outline):
+            print("  save " + fn)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            # raw
+            with open(fn + ".dat", "wb") as f:
+                f.write(json.dumps(data, indent = 4).encode("UTF-8"))
+            # html
+            head = "<html><head><meta http-equiv=\"Content-Type\" " +\
+                "content=\"text/html; charset=utf-8\">\n</head>"
+            with open(fn + ".html", "w") as f:
+                f.write(head)
+                f.write("<body><table><tr><td width=\"20%\" valign=top>\n")
+
+                f.write("<ul>\n")
+                for name, act in outline:
+                    if act:
+                        f.write("<li><a href=\"%s\">%s</a></li>\n" % (
+                            normalize_link_html(act, fn), name))
+                    else:
+                        f.write("<li>%s</li>\n" % name)
+                f.write("</ul>\n")
+
+                f.write("</td><td valign=top>\n")
+
+                f.write("<pre>")
+                for tp, text, idx in self.text_view.dump("0.0", "end-1c"):
+                    if tp == "tagon":
+                        if text.startswith("hyper-"):
+                            lnk = normalize_link_html(self.text_hl.links[text], fn)
+                            f.write("<a href=\"%s\">" % lnk)
+                        elif text == "bold":
+                            f.write("<b>")
+                        elif text == "italic":
+                            f.write("<i>")
+                        elif text == "underline":
+                            f.write("<u>")
+                        if text.startswith("color-"):
+                            f.write("<font color=\"%s\">" % text[6:])
+                    if tp == "tagoff":
+                        if text.startswith("hyper-"):
+                            f.write("</a>")
+                        elif text == "bold":
+                            f.write("</b>")
+                        elif text == "italic":
+                            f.write("</i>")
+                        elif text == "underline":
+                            f.write("</u>")
+                        if text.startswith("color-"):
+                            f.write("</font>")
+                    elif tp == "text":
+                        f.write(text)
+                f.write("</pre>\n")
+
+                f.write("</td></tr><table>\n")
+                f.write("</body></html>\n")                
+                
+        def save_curr():
+            fn = "/".join([str(x) for x in self.curr_path])
+            fn = os.path.join(path, fn)
+            if not os.path.exists(os.path.dirname(fn)):
+                os.makedirs(os.path.dirname(fn))
+            save_data(fn, self.text_view.dump("0.0", "end-1c"), 
+                self.curr_lb_acts)
+            
+        parsed = []
+        queue = []
+        def addaddr(dest):
+            lnk = normalize_link(dest)
+            if lnk not in parsed + queue:
+                queue.append(lnk)
+                
+        def scan_page(dest):
+            print("  scan " + str(dest))
+            if dest.startswith("/parts/"): return # avoid changing part
+            if dest.startswith("/files/"): return # avoid too big files data
+            #if dest.startswith("/res/"): return 
+            if dest in parsed:
+                return
+            parsed.append(dest)
+            self.open_path(dest)
+            self.update()
+            if self.curr_main == 0:
+                save_curr()
+                # scan text contain
+                for tp, text, idx in self.text_view.dump("0.0", "end-1c"):
+                    if tp == "tagon" and text.startswith("hyper-"):
+                        addaddr(self.text_hl.links[text])
+                        #print(self.text_hl.links[text])
+            else:
+                pass
+            # scan from outline
+            for name, act in self.curr_lb_acts:
+                if act:
+                    addaddr(act)
+        queue.append("/")
+        queue.append("/help")
+        queue.append("/info")
+        while len(queue) > 0:
+            addr = queue[0]
+            queue = queue[1:]
+            scan_page(addr)
+            
 
 def main():
     root = tkinter.Tk()
@@ -2378,6 +2518,9 @@ def main():
             argv = argv[2:]
         elif argv[0] == "-t": # open translation
             app.start_act.append(["tran", argv[1]])
+            argv = argv[2:]
+        elif argv[0] == "-dump": # dump to folder
+            app.start_act.append(["dump", argv[1]])
             argv = argv[2:]
         else:
             app.start_act.append(["open", argv[0]])

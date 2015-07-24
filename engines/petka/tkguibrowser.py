@@ -108,7 +108,7 @@ class HyperlinkManager(HTMLParser):
         return (tag,)
 
     def colorbg(self, color, bg):
-        tag = "colorbg-{}".format(color, bg)
+        tag = "colorbg-{}|{}".format(color, bg)
         if tag not in self.colorbgs:
             self.colorbgs.append(tag)
             self.text.tag_config(tag, foreground = color, background = bg)
@@ -664,6 +664,7 @@ class TkBrowser(tkinter.Frame):
             self.add_text("\n" + "="*20 + "\n" + traceback.format_exc())
             res = True
         self.end_markup()
+        return res
 
     def path_default(self, path):
         self.switch_view(0)
