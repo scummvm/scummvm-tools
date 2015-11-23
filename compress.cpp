@@ -529,14 +529,12 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 
 		if (rawAudioType.bitsPerSample == 8) {
 			for (i = 0; i < samplesPerChannel * numChannels; i++) {
-				FLAC__uint8 *rawDataUnsigned;
-				rawDataUnsigned = (FLAC__uint8 *)rawData;
+				const FLAC__uint8 *rawDataUnsigned = (const FLAC__uint8 *)rawData;
 				flacData[i] = (FLAC__int32)rawDataUnsigned[i] - 0x80;
 			}
 		} else if (rawAudioType.bitsPerSample == 16) {
 			/* The rawData pointer is an 8-bit char so we must create a new pointer to access 16-bit samples */
-			FLAC__int16 *rawData16;
-			rawData16 = (FLAC__int16 *)rawData;
+			const FLAC__int16 *rawData16 = (const FLAC__int16 *)rawData;
 			for (i = 0; i < samplesPerChannel * numChannels; i++) {
 				flacData[i] = (FLAC__int32)rawData16[i];
 			}
