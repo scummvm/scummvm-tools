@@ -450,7 +450,7 @@ bool TrueTypeFont::renderGlyph(uint32 unicode, Glyph &glyph) {
 		if (glyph.pitch < 0)
 			dst += (glyph.height - 1) * (-glyph.pitch);
 
-		for (int i = 0; i < bitmap.rows; ++i) {
+		for (int i = 0; i < (int)bitmap.rows; ++i) {
 			memcpy(dst, src, abs(glyph.pitch));
 			src += bitmap.pitch;
 			dst += glyph.pitch;
