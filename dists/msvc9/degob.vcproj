@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="degob"
 	ProjectGUID="{C151022B-EAC8-4680-9018-C0A897F7F9C6}"
 	RootNamespace="degob"
@@ -253,6 +253,14 @@
 		</File>
 		<File
 			RelativePath="..\..\engines\gob\degob_script_fascin.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\engines\gob\degob_script_geisha.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\engines\gob\degob_script_littlered.cpp"
 			>
 		</File>
 		<File

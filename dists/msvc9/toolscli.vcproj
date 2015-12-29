@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="toolscli"
 	ProjectGUID="{5204B306-8D89-4A66-8656-8E8F3F759250}"
 	RootNamespace="toolscli"
@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlib.lib libpng.lib libogg_static.lib libvorbis_static.lib libvorbisenc_static.lib libFLAC_static.lib"
+				AdditionalDependencies="zlib.lib libpng.lib libogg_static.lib libvorbis_static.lib libFLAC_static.lib"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBCMT;MSVCRT"
 				GenerateDebugInformation="true"
@@ -135,7 +135,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlib.lib libogg_static.lib libvorbis_static.lib libvorbisenc_static.lib libFLAC_static.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="zlib.lib libogg_static.lib libvorbis_static.lib libFLAC_static.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"
@@ -303,22 +303,14 @@
 				RelativePath="..\..\engines\agos\extract_agos.h"
 				>
 			</File>
-                        <File
-                                RelativePath="..\..\engines\cge\extract_cge.cpp"
-                                >
-                        </File>
-                        <File
-                                RelativePath="..\..\engines\cge\extract_cge.h"
-                                >
-                        </File>
-                        <File
-                                RelativePath="..\..\engines\cge\pack_cge.cpp"
-                                >
-                        </File>
-                        <File
-                                RelativePath="..\..\engines\cge\pack_cge.h"
-                                >
-                        </File>
+			<File
+				RelativePath="..\..\engines\cge\extract_cge.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\cge\extract_cge.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\engines\cine\extract_cine.cpp"
 				>
@@ -333,6 +325,10 @@
 			</File>
 			<File
 				RelativePath="..\..\engines\cruise\extract_cruise_pc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\gob\extract_fascination_cd.cpp"
 				>
 			</File>
 			<File
@@ -392,6 +388,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engines\prince\extract_prince.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engines\scumm\extract_scumm_mac.cpp"
 				>
 			</File>
@@ -405,6 +405,18 @@
 			</File>
 			<File
 				RelativePath="..\..\engines\scumm\extract_zak_c64.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\cge\pack_cge.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\cge\pack_cge.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\prince\pack_prince.cpp"
 				>
 			</File>
 		</Filter>
@@ -454,19 +466,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\version.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\version.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\common\util.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\common\util.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\version.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\version.h"
 				>
 			</File>
 			<Filter
