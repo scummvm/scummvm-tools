@@ -5,7 +5,7 @@
 # This script will search for all SMK files in all subtree directories,
 # and encode them as DXA files next to the original files.
 #
-# (c) 2006-2012 ScummVM Team
+# (c) 2006-2016 ScummVM Team
 # (c) 2006 crowley
 #
 

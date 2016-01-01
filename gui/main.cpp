@@ -125,7 +125,7 @@ void ScummVMToolsApp::OnAbout() {
 	wxHyperlinkCtrl *websitetext = new wxHyperlinkCtrl(dialog, wxID_ANY, wxT("http://www.scummvm.org"), wxT("http://www.scummvm.org"));
 	sizer->Add(websitetext, wxSizerFlags().Border(wxTOP, 5));
 
-	wxStaticText *copyrighttext = new wxStaticText(dialog, wxID_ANY, wxT("Copyright ScummVM Team 2009-2012"));
+	wxStaticText *copyrighttext = new wxStaticText(dialog, wxID_ANY, wxT("Copyright ScummVM Team 2009-2016"));
 	copyrighttext->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
 	sizer->Add(copyrighttext, wxSizerFlags());
 

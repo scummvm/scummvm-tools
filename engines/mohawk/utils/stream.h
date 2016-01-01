@@ -1,5 +1,8 @@
 /* Scumm Tools
- * Copyright (C) 2004-2006  The ScummVM Team
+ *
+ * ScummVM Tools is the legal property of its developers, whose
+ * names are too numerous to list here. Please refer to the
+ * COPYRIGHT file distributed with this source distribution.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -14,10 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL: https://scummvm.svn.sourceforge.net/svnroot/scummvm/tools/branches/gsoc2009-gui/utils/stream.h $
- * $Id: stream.h 40868 2009-05-24 15:19:28Z lordhoto $
- *
  */
 
 #ifndef COMMON_STREAM_H
