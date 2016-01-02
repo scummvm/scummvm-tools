@@ -272,6 +272,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engines\tony\compress_tony.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\tony\compress_tony.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engines\touche\compress_touche.cpp"
 				>
 			</File>

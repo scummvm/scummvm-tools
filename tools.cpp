@@ -37,6 +37,7 @@
 #include "engines/sword2/compress_sword2.h"
 #include "engines/touche/compress_touche.h"
 #include "engines/tinsel/compress_tinsel.h"
+#include "engines/tony/compress_tony.h"
 #include "engines/touche/compress_touche.h"
 #include "engines/tucker/compress_tucker.h"
 
@@ -76,6 +77,7 @@ Tools::Tools() {
 	_tools.push_back(new CompressSword1());
 	_tools.push_back(new CompressSword2());
 	_tools.push_back(new CompressTinsel());
+	_tools.push_back(new CompressTony());
 	_tools.push_back(new CompressTouche());
 	_tools.push_back(new CompressTucker());
 
