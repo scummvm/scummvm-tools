@@ -220,7 +220,7 @@ void CompressTony::execute() {
 
 #ifdef STANDALONE_MAIN
 int main(int argc, char *argv[]) {
-	CompressTony tinsel(argv[0]);
-	return tinsel.run(argc, argv);
+	CompressTony tony(argv[0]);
+	return tony.run(argc, argv);
 }
 #endif
