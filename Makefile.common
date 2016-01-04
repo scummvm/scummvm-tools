@@ -189,6 +189,7 @@ tools_OBJS := \
 	engines/sword2/compress_sword2.o \
 	engines/tinsel/compress_tinsel.o \
 	engines/tony/compress_tony.o \
+	engines/tony/compress_tony_vdb.o \
 	engines/touche/compress_touche.o \
 	engines/tucker/compress_tucker.o \
 	engines/agos/extract_agos.o \

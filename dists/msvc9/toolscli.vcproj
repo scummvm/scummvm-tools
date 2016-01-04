@@ -280,6 +280,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engines\tony\compress_tony_vdb.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\tony\compress_tony_vdb.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engines\touche\compress_touche.cpp"
 				>
 			</File>
