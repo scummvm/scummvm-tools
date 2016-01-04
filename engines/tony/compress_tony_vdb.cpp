@@ -87,7 +87,6 @@ int16 CompressTonyVDB::decodeIMA(byte code, int channel) {
 /* Converts ADPCM-data sample in input_adp to requested dataformat and writes to output_smp */
 /* Quick hack together from adpcm.cpp */
 bool CompressTonyVDB::convertTonyADPCMSample() {
-	uint32 doneRead = 0;
 	Common::File curFileHandle;
 
 	int decodedSampleCount = 0;
