@@ -38,7 +38,7 @@ template<typename T> inline T CLIP (T v, T amin, T amax) {
 }
 
 CompressTony::CompressTony(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
-	_supportsProgressBar = true;
+	_supportsProgressBar = false;
 
 	ToolInput input1;
 	input1.format = "*.adp";
