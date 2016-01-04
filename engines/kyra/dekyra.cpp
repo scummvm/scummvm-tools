@@ -98,8 +98,8 @@ int main(int argc, char** argv) {
 	ScriptData scriptData;
 	memset(&scriptData, 0, sizeof(ScriptData));
 
-	OpcodeEntry *opcodes;
-	int opcodesSize;
+	OpcodeEntry *opcodes = 0;
+	int opcodesSize = 0;
 
 	if (engine == 1) {
 		getOpcodesV1(opcodes, opcodesSize);
