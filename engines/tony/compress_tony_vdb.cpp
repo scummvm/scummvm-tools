@@ -174,6 +174,9 @@ void CompressTonyVDB::execute() {
 	_output_enc.open(outpath_enc, "wb");
 
 	for (int i = 0; i < numFiles; i++) {
+		// Update progress
+		updateProgress(i, numFiles);
+
 		_input_vdb.seek(vh[i]._offset, SEEK_SET);
 
 		for (int j = 0; j < vh[i]._parts; j++) {
