@@ -41,7 +41,6 @@
 #else // defined(NONSTANDARD_PORT)
 
 	#if defined(WIN32)
-		#ifdef _MSC_VER
 		// vsnprintf is already defined in Visual Studio 2008
 		#if defined(_MSC_VER) && _MSC_VER <= 1800
 		// FIXME: The placement of the workaround functions for MSVC below
@@ -80,7 +79,6 @@
 			va_end(args);
 			return len;
 		}
-		#endif
 		#endif
 
 		#if !defined(_WIN32_WCE)
