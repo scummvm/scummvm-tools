@@ -477,7 +477,18 @@ void Script_LittleRed::setupOpcodes() {
 		{OPCODET(oLittleRed_DOSInterrupt1), {PARAM_NONE}},
 		{OPCODET(oLittleRed_DOSInterrupt2), {PARAM_NONE}},
 		{OPCODET(oLittleRed_playProtracker), {PARAM_NONE}},
-		{OPCODET(o2_stopProtracker), {PARAM_NONE}}
+		{OPCODET(o2_stopProtracker), {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{TYPE_NONE, 0, 0, {PARAM_NONE}}
 	};
 
 	_opcodesDrawLittleRed = opcodesDraw;
