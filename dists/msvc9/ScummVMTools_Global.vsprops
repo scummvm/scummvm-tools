@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="ScummVMTools_Global"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="..\.."
+		PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE"
+		DisableSpecificWarnings="4068;4100;4103;4127;4244;4250;4310;4345;4351;4512;4702;4706;4800;4996;6204;6211;6385;6386"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="zlib.lib libogg_static.lib libvorbis_static.lib libvorbisenc_static.lib libFLAC_static.lib libpng.lib comctl32.lib Rpcrt4.lib"
+		IgnoreDefaultLibraryNames="MSVCRT;LIBCMT"
+	/>
+</VisualStudioPropertySheet>
