@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="toolsgui"
 	ProjectGUID="{54BB26F4-16F1-4522-B6F8-E189D6921497}"
 	RootNamespace="toolsgui"
@@ -40,6 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\.."
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -111,6 +113,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="..\.."
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
@@ -204,19 +208,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\kyra_ins.cpp"
+				RelativePath="..\..\engines\kyra\kyra_ins.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\kyra_ins.h"
+				RelativePath="..\..\engines\kyra\kyra_ins.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\kyra_pak.cpp"
+				RelativePath="..\..\engines\kyra\kyra_pak.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\kyra_pak.h"
+				RelativePath="..\..\engines\kyra\kyra_pak.h"
 				>
 			</File>
 			<File
@@ -236,11 +240,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\util.cpp"
+				RelativePath="..\..\common\util.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\util.h"
+				RelativePath="..\..\common\util.h"
 				>
 			</File>
 			<File
@@ -255,67 +259,59 @@
 				Name="utils"
 				>
 				<File
-					RelativePath="..\..\utils\adpcm.cpp"
+					RelativePath="..\..\sound\adpcm.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\adpcm.h"
+					RelativePath="..\..\sound\adpcm.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\audiostream.cpp"
+					RelativePath="..\..\sound\audiostream.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\audiostream.h"
+					RelativePath="..\..\sound\audiostream.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\file.cpp"
+					RelativePath="..\..\common\file.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\file.h"
+					RelativePath="..\..\common\file.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\md5.cpp"
+					RelativePath="..\..\common\md5.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\md5.h"
+					RelativePath="..\..\common\md5.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\pack-end.h"
+					RelativePath="..\..\common\pack-end.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\pack-start.h"
+					RelativePath="..\..\common\pack-start.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\stream.h"
+					RelativePath="..\..\sound\voc.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\util.h"
+					RelativePath="..\..\sound\voc.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\voc.cpp"
+					RelativePath="..\..\sound\wave.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\utils\voc.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\utils\wave.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\utils\wave.h"
+					RelativePath="..\..\sound\wave.h"
 					>
 				</File>
 			</Filter>
@@ -324,223 +320,223 @@
 			Name="tools"
 			>
 			<File
-				RelativePath="..\..\compress_agos.cpp"
+				RelativePath="..\..\engines\agos\compress_agos.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_agos.h"
+				RelativePath="..\..\engines\agos\compress_agos.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_gob.cpp"
+				RelativePath="..\..\engines\gob\compress_gob.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_gob.h"
+				RelativePath="..\..\engines\gob\compress_gob.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_kyra.cpp"
+				RelativePath="..\..\engines\kyra\compress_kyra.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_kyra.h"
+				RelativePath="..\..\engines\kyra\compress_kyra.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_queen.cpp"
+				RelativePath="..\..\engines\queen\compress_queen.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_queen.h"
+				RelativePath="..\..\engines\queen\compress_queen.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_saga.cpp"
+				RelativePath="..\..\engines\saga\compress_saga.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_saga.h"
+				RelativePath="..\..\engines\saga\compress_saga.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_sci.cpp"
+				RelativePath="..\..\engines\sci\compress_sci.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_sci.h"
+				RelativePath="..\..\engines\sci\compress_sci.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_scumm_bun.cpp"
+				RelativePath="..\..\engines\scumm\compress_scumm_bun.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_scumm_bun.h"
+				RelativePath="..\..\engines\scumm\compress_scumm_bun.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_scumm_san.cpp"
+				RelativePath="..\..\engines\scumm\compress_scumm_san.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_scumm_san.h"
+				RelativePath="..\..\engines\scumm\compress_scumm_san.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_scumm_sou.cpp"
+				RelativePath="..\..\engines\scumm\compress_scumm_sou.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_scumm_sou.h"
+				RelativePath="..\..\engines\scumm\compress_scumm_sou.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_sword1.cpp"
+				RelativePath="..\..\engines\sword1\compress_sword1.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_sword1.h"
+				RelativePath="..\..\engines\sword1\compress_sword1.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_sword2.cpp"
+				RelativePath="..\..\engines\sword2\compress_sword2.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_sword2.h"
+				RelativePath="..\..\engines\sword2\compress_sword2.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_tinsel.cpp"
+				RelativePath="..\..\engines\tinsel\compress_tinsel.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_tinsel.h"
+				RelativePath="..\..\engines\tinsel\compress_tinsel.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_touche.cpp"
+				RelativePath="..\..\engines\tony\compress_tony.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_touche.h"
+				RelativePath="..\..\engines\tony\compress_tony.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_tucker.cpp"
+				RelativePath="..\..\engines\tony\compress_tony_vdb.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\compress_tucker.h"
+				RelativePath="..\..\engines\tony\compress_tony_vdb.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\encode_dxa.cpp"
+				RelativePath="..\..\engines\touche\compress_touche.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\encode_dxa.h"
+				RelativePath="..\..\engines\touche\compress_touche.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\example_tool.cpp"
+				RelativePath="..\..\engines\tucker\compress_tucker.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_agos.cpp"
+				RelativePath="..\..\engines\tucker\compress_tucker.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_agos.h"
-				>
-			</File>
-                        <File
-                                RelativePath="..\..\extract_cge.cpp"
-                                >
-                        </File>
-                        <File
-                                RelativePath="..\..\extract_cge.h"
-                                >
-                        </File>
-			<File
-				RelativePath="..\..\extract_cine.cpp"
+				RelativePath="..\..\engines\agos\extract_agos.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_cine.h"
+				RelativePath="..\..\engines\agos\extract_agos.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_gob_stk.cpp"
+				RelativePath="..\..\engines\cge\extract_cge.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_gob_stk.h"
+				RelativePath="..\..\engines\cge\extract_cge.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_kyra.cpp"
+				RelativePath="..\..\engines\cine\extract_cine.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_kyra.h"
+				RelativePath="..\..\engines\cine\extract_cine.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_loom_tg16.cpp"
+				RelativePath="..\..\engines\scumm\extract_loom_tg16.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_loom_tg16.h"
+				RelativePath="..\..\engines\scumm\extract_loom_tg16.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_mm_apple.cpp"
+				RelativePath="..\..\engines\scumm\extract_mm_apple.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_mm_apple.h"
+				RelativePath="..\..\engines\scumm\extract_mm_apple.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_mm_c64.cpp"
+				RelativePath="..\..\engines\scumm\extract_mm_c64.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_mm_c64.h"
+				RelativePath="..\..\engines\scumm\extract_mm_c64.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_mm_nes.cpp"
+				RelativePath="..\..\engines\scumm\extract_mm_nes.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_mm_nes.h"
+				RelativePath="..\..\engines\scumm\extract_mm_nes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_parallaction.cpp"
+				RelativePath="..\..\engines\mohawk\extract_mohawk.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_parallaction.h"
+				RelativePath="..\..\engines\parallaction\extract_parallaction.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_scumm_mac.cpp"
+				RelativePath="..\..\engines\parallaction\extract_parallaction.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_scumm_mac.h"
+				RelativePath="..\..\engines\prince\extract_prince.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_zak_c64.cpp"
+				RelativePath="..\..\engines\prince\extract_prince.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\extract_zak_c64.h"
+				RelativePath="..\..\engines\scumm\extract_scumm_mac.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\scumm\extract_scumm_mac.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\scumm\extract_zak_c64.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engines\scumm\extract_zak_c64.h"
 				>
 			</File>
 		</Filter>
