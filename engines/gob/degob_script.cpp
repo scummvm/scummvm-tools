@@ -30,10 +30,6 @@
 #include "common/endian.h"
 #include "common/util.h"
 
-#ifdef _MSC_VER
-	#define	vsnprintf _vsnprintf
-#endif
-
 ExtTable::ExtTable(byte *data, uint32 size, byte *dataCom, uint32 sizeCom) :
 	_data(data), _size(size), _dataCom(dataCom), _sizeCom(sizeCom) {
 
