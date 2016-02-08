@@ -34,7 +34,7 @@ public:
 	virtual ~Stream() {}
 
 	/**
-	 * Returns true if any I/O failure occured.
+	 * Returns true if any I/O failure occurred.
 	 * This flag is never cleared automatically. In order to clear it,
 	 * client code has to call clearIOFailed() explicitly.
 	 *
