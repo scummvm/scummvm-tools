@@ -62,7 +62,7 @@ public:
 	/**
 	 * Fill the given buffer with up to numSamples samples.
 	 * Returns the actual number of samples read, or -1 if
-	 * a critical error occured (note: you *must* check if
+	 * a critical error occurred (note: you *must* check if
 	 * this value is less than what you requested, this can
 	 * happen when the stream is fully used up).
 	 *

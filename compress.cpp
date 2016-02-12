@@ -1161,7 +1161,7 @@ std::string CompressionTool::getHelp() const {
 
 	if (_supportedFormats & AUDIO_MP3) {
 		os << "\nMP3 mode params:\n";
-		os << " --lame-path <path> Path to the lame excutable to use (default:lame)\n";
+		os << " --lame-path <path> Path to the lame executable to use (default:lame)\n";
 		os << " -b <rate>    <rate> is the minimal bitrate (default:unset)\n";
 		os << " -B <rate>    <rate> is the maximum bitrate (default:unset)\n";
 		os << " --vbr        LAME uses the VBR mode (default)\n";
