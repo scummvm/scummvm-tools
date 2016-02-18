@@ -1373,7 +1373,7 @@ echo "$_zlib"
 #
 # Check for FreeType
 #
-echocheck "freetype"
+echocheck "FreeType"
 if test "$_freetype" = auto ; then
 	_freetype=no
 	if type freetype-config > /dev/null 2>&1 ; then
@@ -1382,10 +1382,35 @@ if test "$_freetype" = auto ; then
 fi
 
 if test "$_freetype" = yes ; then
-	freetype_version=`freetype-config --ftversion 2>/dev/null`
+	_freetype=no
+
+	cat > $TMPC << EOF
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+int main(int argc, char *argv[]) {
+	FT_Library library;
+	FT_Error error = FT_Init_FreeType(&library);
+	FT_Done_FreeType(library);
+}
+EOF
 
 	_freetypelibs=`freetype-config --libs`
 	_freetypeincludes=`freetype-config --cflags`
+
+	cc_check_no_clean $_freetypelibs $_freetypeincludes && _freetype=yes
+	# Modern freetype-config scripts accept --static to get all
+	# required flags for static linking. We abuse this to detect
+	# FreeType2 builds which are static themselves.
+	if test "$_freetype" != "yes"; then
+		_freetypelibs=`freetype-config --static --libs 2>/dev/null`
+		cc_check_no_clean $_freetypeincludes $_freetypelibs && _freetype=yes
+	fi
+	cc_check_clean
+fi
+
+if test "$_freetype" = yes ; then
+	freetype_version=`freetype-config --ftversion 2>/dev/null`
 else
 	freetype_version="no"
 fi
