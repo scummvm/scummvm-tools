@@ -1,7 +1,7 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
-1.8.0 (XXXX-XX-XX)
+1.8.0 (2016-03-04)
  - Add a tool to compress Tony Tough's ADP files.
  - Add extraction and packing tools for The Prince and the Coward.
  - Fix detection and decoding of BS1 big endian speech data in compress_sword1.
