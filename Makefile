@@ -77,17 +77,6 @@ else
 	$(error You need to run $(srcdir)/configure before you can run make. Check $(srcdir)/configure --help for a list of parameters)
 endif
 
-# Special target to create a application wrapper for Mac OS X
-bundle_name = ScummVM\ Tools.app
-bundle: scummvm-tools$(EXEEXT)
-	mkdir -p $(bundle_name)
-	mkdir -p $(bundle_name)/Contents
-	mkdir -p $(bundle_name)/Contents/MacOS
-	mkdir -p $(bundle_name)/Contents/Resources
-	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
-	cp $(srcdir)/dists/macosx/Info.plist $(bundle_name)/Contents/
-	cp $(srcdir)/gui/media/*.* $(bundle_name)/Contents/Resources
-	cp scummvm-tools$(EXEEXT) $(bundle_name)/Contents/MacOS/
 
 #
 # Windows specific
@@ -166,6 +155,72 @@ ifeq "$(USE_WXWIDGETS)" "1"
 endif
 	$(STRIP) scummvm-tools-cli$(EXEEXT)  -o $(srcdir)/$(WIN32BUILD)/scummvm-tools-cli$(EXEEXT)
 	makensis -V2 -Dtop_srcdir="../.." -Dtext_dir="../../$(WIN32BUILD)" -Dbuild_dir="../../$(WIN32BUILD)" $(srcdir)/dists/win32/scummvm-tools.nsi
+
+
+#
+# OS X specific
+#
+
+ifdef USE_VORBIS
+OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libvorbisfile.a $(STATICLIBPATH)/lib/libvorbis.a $(STATICLIBPATH)/lib/libvorbisenc.a $(STATICLIBPATH)/lib/libogg.a
+endif
+
+ifdef USE_FLAC
+OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libFLAC.a
+endif
+
+ifdef USE_MAD
+OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libmad.a
+endif
+
+ifdef USE_PNG
+OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libpng.a
+endif
+
+ifdef USE_ZLIB
+OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libz.a
+endif
+
+
+# Special target to create a static linked binaries for Mac OS X.
+scummvm-tools-static: $(scummvm-tools_OBJS)
+	$(CXX) $(LDFLAGS) -o scummvm-tools-static $(scummvm-tools_OBJS) \
+		-framework AudioUnit -framework AudioToolbox -framework Carbon -framework CoreMIDI \
+		$(WXSTATICLIBS) $(OSX_STATIC_LIBS)
+
+scummvm-tools-cli-static: $(scummvm-tools-cli_OBJS)
+	$(CXX) $(LDFLAGS) -o scummvm-tools-cli-static $(scummvm-tools-cli_OBJS) \
+		-framework AudioUnit -framework AudioToolbox -framework Carbon -framework CoreMIDI \
+		$(OSX_STATIC_LIBS)
+
+bundle_name = ScummVM\ Tools.app
+bundle: scummvm-tools-static
+	mkdir -p $(bundle_name)
+	mkdir -p $(bundle_name)/Contents
+	mkdir -p $(bundle_name)/Contents/MacOS
+	mkdir -p $(bundle_name)/Contents/Resources
+	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
+	cp $(srcdir)/dists/macosx/Info.plist $(bundle_name)/Contents/
+	cp $(srcdir)/gui/media/*.* $(bundle_name)/Contents/Resources
+	cp scummvm-tools-static $(bundle_name)/Contents/MacOS/scummvm-tools
+
+# Special target to create a snapshot disk image for Mac OS X
+osxsnap: bundle scummvm-tools-cli-static
+	mkdir ScummVM-Tools-snapshot
+	cp $(srcdir)/COPYING ./ScummVM-Tools-snapshot/License\ \(GPL\)
+	cp $(srcdir)/NEWS ./ScummVM-Tools-snapshot/News
+	cp $(srcdir)/README ./ScummVM-Tools-snapshot/ScummVM\ ReadMe
+	$(XCODETOOLSPATH)/SetFile -t ttro -c ttxt ./ScummVM-Tools-snapshot/*
+	$(XCODETOOLSPATH)/CpMac -r $(bundle_name) ./ScummVM-Tools-snapshot/
+	cp scummvm-tools-cli-static ./ScummVM-Tools-snapshot/scummvm-tools-cli
+	cp $(srcdir)/dists/macosx/DS_Store ./ScummVM-Tools-snapshot/.DS_Store
+	$(XCODETOOLSPATH)/SetFile -a V ./ScummVM-Tools-snapshot/.DS_Store
+	hdiutil create -ov -format UDZO -imagekey zlib-level=9 -fs HFS+ \
+					-srcfolder ScummVM-Tools-snapshot \
+					-volname "ScummVM Tools" \
+					ScummVM-Tools-snapshot.dmg
+	rm -rf ScummVM-snapshot
+
 
 #
 # AmigaOS specific
