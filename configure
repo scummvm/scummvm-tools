@@ -846,7 +846,7 @@ else
 		solaris*)
 			cxx_version=`( $CXX -V ) 2>&1`
 			cxx_version="`echo "${cxx_version}" | sed 's/.*\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/'`"
-			
+
 			case $cxx_version in
 				5.1[0-2])
 					cxx_verc_fail=no
@@ -1075,8 +1075,8 @@ case $_host_os in
 	darwin*)
 		DEFINES="$DEFINES -DMACOSX"
 		LIBS="$LIBS -framework AudioUnit -framework AudioToolbox -framework Carbon -framework CoreMIDI"
-		add_line_to_config_mk 'MACOSX = 1'	
-		
+		add_line_to_config_mk 'MACOSX = 1'
+
 		# Now we may have MacPorts or Fink installed
 		# Which put libraries and headers in non-standard places
 		# Checking them here
@@ -1159,7 +1159,7 @@ case $_host_os in
 				echo "Could not determine prefix for static libraries"
 			fi
 		fi
-		
+
 		# If _xcodetoolspath is not set yet use xcode-select to get the path
 		if test -z "$_xcodetoolspath"; then
 			_xcodetoolspath=`xcode-select -print-path`/Tools
@@ -1626,7 +1626,7 @@ if test "$_wxwidgets" = yes ; then
 	_wxstaticlibs=`echo $_wxstaticlibs | sed 's|-lpng||' | sed 's|-lz||'`
 	# _wxstaticlibs may contain non-static libraries that we also have in _wxstaticlibs.
 	# remove those to avoid dependency on non-static libraries
-	
+
 	# Use the compiler specified by wx-config. This is needed on some systems to get a working executable.
 	CXX="`$_wxconfig --cxx`"
 	LD=$CXX
@@ -1736,7 +1736,6 @@ WIN32PATH=$_win32path
 AMIGAOS4PATH=$_amigaos4path
 STATICLIBPATH=$_staticlibpath
 XCODETOOLSPATH=$_xcodetoolspath
-
 
 EXEEXT := $HOSTEXEEXT
 
