@@ -306,7 +306,7 @@ Compression Tools:
         compress_tinsel
                 Used to compress tinsel .smp files.
                 
-                The corresponding .idx file msut be part of the command.
+                The corresponding .idx file must be part of the command.
                 
                 Example of usage:
                 ./scummvm-tools-cli --tool compress_tinsel [mode_params] [-o outputfile] <infile.smp> <infile.idx>
