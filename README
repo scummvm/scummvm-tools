@@ -234,7 +234,8 @@ Compression Tools:
                 uncompressed file with the compressed one. So, if for example
                 your original audio resource file is resource.aud, you can use
                 a temporary name like resource.tmp. Then, move the original
-                resource.aud file elsewhere and rename resource.tmp to resource.aud.
+                resource.aud file elsewhere and rename resource.tmp to
+                resource.aud.
 
         compress_scumm_bun
                 Used to compress '.bun' music/voice files with MP3, Vorbis
