@@ -311,14 +311,15 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "RM3D", false }
 };
 
-int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cSize, uint32 *returnSize) {
+int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cSize, uint32 *returnSize, bool* ok) {
 	if (_speechEndianness == UnknownEndian) {
 		uint32 leSize, beSize;
+		bool leOk = false, beOk = false;
 		_speechEndianness = LittleEndian;
-		int16* leData = uncompressSpeech(clu, idx, cSize, &leSize);
+		int16* leData = uncompressSpeech(clu, idx, cSize, &leSize, &leOk);
 		_speechEndianness = BigEndian;
-		int16* beData = uncompressSpeech(clu, idx, cSize, &beSize);
-		_speechEndianness = guessEndianness(leData, leSize / 2, beData, beSize / 2);
+		int16* beData = uncompressSpeech(clu, idx, cSize, &beSize, &beOk);
+		_speechEndianness = guessEndianness(leData, leSize / 2, leOk, beData, beSize / 2, beOk);
 		switch (_speechEndianness) {
 		case LittleEndian:
 			free(beData);
@@ -350,6 +351,8 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 	while ((READ_BE_UINT32(fBuf + headerPos) != 'data') && (headerPos < 100))
 		headerPos++;
 	if (headerPos < 100) {
+		if (ok != 0)
+			*ok = true;
 		resSize = READ_LE_UINT32(fBuf + headerPos + 4) >> 1;
 		srcData = (int16 *)(fBuf + headerPos + 8);
 		dstData = (int16 *)malloc(resSize * 2);
@@ -367,18 +370,29 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 				for (cnt = 0; cnt < (uint16)length && dstPos < resSize; cnt++)
 					dstData[dstPos++] = srcData[srcPos];
 				srcPos++;
+				if (ok != 0 && cnt < (uint16)length)
+					*ok = false;
 			} else {
-				if (dstPos + length > resSize)
+				if (dstPos + length > resSize) {
 					length = resSize - dstPos;
+					if (ok != 0)
+						*ok = false;
+				}
 				memcpy(dstData + dstPos, srcData + srcPos, length * 2);
 				dstPos += length;
 				srcPos += length;
 			}
 		}
+		// The ok flag is used when detecting endianness. If the correct endianness was used then decoding cSize samples
+		// should result in the expected resSize. But when using the wrong endianness this is likely not to be the case.
+		if (ok != 0 && (srcPos < cSize || dstPos < resSize))
+			*ok = false;
 		free(fBuf);
 		*returnSize = resSize * 2;
 		return dstData;
 	} else {
+		if (ok != 0)
+			*ok = false;
 		free(fBuf);
 		error("Sound::uncompressSpeech(): DATA tag not found in wave header");
 		*returnSize = 0;
@@ -386,13 +400,21 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 	}
 }
 
-CompressSword1::Endianness CompressSword1::guessEndianness(int16 *leData, uint32 leSize, int16 *beData, uint32 beSize) {
+CompressSword1::Endianness CompressSword1::guessEndianness(int16 *leData, uint32 leSize, bool leOk, int16 *beData, uint32 beSize, bool beOk) {
 	if (leData == NULL && beData == NULL)
 		return UnknownEndian;
 	else if (leData == NULL)
 		return BigEndian;
 	else if (beData == NULL)
 		return LittleEndian;
+	
+	// Also decomding with the wrong endianness leads to wrong sizes when decrompressing the data. So if one of the two is wrong assume
+	// this indicates this was the wrong endianess. In the case when the two are wrong this indicate corrupetd data but try to recover
+	// from it anyway.
+	if (leOk && !beOk)
+		return LittleEndian;
+	else if (!leOk && beOk)
+		return BigEndian;
 	
 	// Compute average of difference between two consecutive samples for both the given
 	// data array and the byte swapped array.

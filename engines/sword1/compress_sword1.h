@@ -42,7 +42,7 @@ protected:
 
 	std::string _audioOuputFilename;
 
-	int16 *uncompressSpeech(Common::File &clu, uint32 idx, uint32 cSize, uint32 *returnSize);
+	int16 *uncompressSpeech(Common::File &clu, uint32 idx, uint32 cSize, uint32 *returnSize, bool* ok = 0);
 	uint8 *convertData(uint8 *rawData, uint32 rawSize, uint32 *resSize);
 	void convertClu(Common::File &clu, Common::File &cl3);
 	void compressSpeech(const Common::Filename *inpath, const Common::Filename *outpath);
@@ -50,7 +50,7 @@ protected:
 	void checkFilesExist(bool checkSpeech, bool checkMusic, const Common::Filename *inpath);
 
 	enum Endianness { BigEndian , LittleEndian , UnknownEndian } ;
-	Endianness guessEndianness(int16 *leData, uint32 leSize, int16 *beData, uint32 beSize);
+	Endianness guessEndianness(int16 *leData, uint32 leSize, bool leOk, int16 *beData, uint32 beSize, bool beOk);
 	double endiannessHeuristicValue(int16* data, uint32 dataSize, uint32 maxSamples, Endianness dataEndianness);
 
 private:
