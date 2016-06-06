@@ -339,8 +339,8 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 		}
 	}
 	
-	uint32 resSize, srcPos;
-	int16 *srcData, *dstData, *dstPos;
+	uint32 resSize, srcPos, dstPos;
+	int16 *srcData, *dstData;
 	uint32 headerPos = 0;
 	int16 length, cnt;
 	uint8 *fBuf = (uint8 *)malloc(cSize);
@@ -354,9 +354,9 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 		srcData = (int16 *)(fBuf + headerPos + 8);
 		dstData = (int16 *)malloc(resSize * 2);
 		srcPos = 0;
-		dstPos = dstData;
+		dstPos = 0;
 		cSize = (cSize - (headerPos + 8)) / 2;
-		while (srcPos < cSize) {
+		while (srcPos < cSize && dstPos < resSize) {
 			if (_speechEndianness == LittleEndian)
 				length = (int16)READ_LE_UINT16(srcData + srcPos);
 			else
@@ -364,11 +364,13 @@ int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cS
 			srcPos++;
 			if (length < 0) {
 				length = -length;
-				for (cnt = 0; cnt < (uint16)length; cnt++)
-					*dstPos++ = srcData[srcPos];
+				for (cnt = 0; cnt < (uint16)length && dstPos < resSize; cnt++)
+					dstData[dstPos++] = srcData[srcPos];
 				srcPos++;
 			} else {
-				memcpy(dstPos, srcData + srcPos, length * 2);
+				if (dstPos + length > resSize)
+					length = resSize - dstPos;
+				memcpy(dstData + dstPos, srcData + srcPos, length * 2);
 				dstPos += length;
 				srcPos += length;
 			}

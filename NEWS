@@ -1,6 +1,9 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
+1.9.0 (YYYY-MM-DD)
+ - Fix random crashes in the tool to convert Broken Sword 1 speech files.
+
 1.8.0 (2016-03-04)
  - Add a tool to compress Tony Tough's ADP files.
  - Add extraction and packing tools for The Prince and the Coward.
