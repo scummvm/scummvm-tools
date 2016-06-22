@@ -2091,21 +2091,21 @@ void next_line_HE_V100(char *output) {
 		ext(output, "p|delaySeconds");
 		break;
 	case 0x77:
-		ext(output, "x" "startSound\0"
-				"\x6p|setSoundFlag16,"
+		ext(output, "x" "soundOps\0"
+				"\x6p|setOffset,"
 				"\x2Fhp|loadSoundFromFile,"
-				"\x37|setQuickStartFlag,"
+				"\x37|setQuickStart,"
 				"\x53ppp|setSoundVar,"
 				"\x5C|start,"
-				"\x80|setForceQueueFlag,"
+				"\x80|setAppend,"
 				"\x81p|setChannel,"
-				"\x82p|setSoundFlag64,"
-				"\x83|setSoundFlag1,"
+				"\x82p|setFrequency,"
+				"\x83|setLoop,"
 				"\x84p|setMusicId,"
-				"\x85p|setSoundFlag128,"
+				"\x85p|setPan,"
 				"\x86p|setSoundId,"
-				"\x87|setSoundFlag4,"
-				"\x88p|setSoundFlag32");
+				"\x87|setSoftSound,"
+				"\x88p|setVolume");
 		break;
 	case 0x79:
 		ext(output, "x" "setSpriteInfo\0"
@@ -3276,17 +3276,17 @@ void next_line_HE_V72(char *output) {
 		jump(output);
 		break;
 	case 0x74:
-		ext(output, "x" "startSound\0"
-				"\x9|setSoundFlag4,"
+		ext(output, "x" "soundOps\0"
+				"\x9|setSoftSound,"
 				"\x17ppp|setSoundVar,"
-				"\x19pp|startWithFlag8,"
-				"\x38|setQuickStartFlag,"
-				"\xA4|setForceQueueFlag,"
+				"\x19pp|setVolume,"
+				"\x38|setQuickStart,"
+				"\xA4|setAppend,"
 				"\xDE|dummy,"
 				"\xE0p|setFrequency,"
 				"\xE6p|setChannel,"
 				"\xE7p|setOffset,"
-				"\xE8p|setId,"
+				"\xE8p|setSoundId,"
 				"\xF5|setLoop,"
 				"\xFF|start");
 		break;
