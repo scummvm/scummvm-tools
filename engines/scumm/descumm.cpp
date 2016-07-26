@@ -1561,9 +1561,68 @@ void do_if_active_object(char *buf, byte opcode) {
 	char tmp[256];
 
 	int obj = get_byte();
+	if (opcode & 0x80)
+		obj |= 0x100;
+
 	sprintf(tmp, "activeObject2 == %d", obj);
 
 	emit_if(buf, tmp);
+}
+
+void do_walk_actor_to_object(char *buf, byte opcode) {
+	
+	buf += sprintf(buf, "walkActorToObject(");
+	buf = add_a_tok(buf, (opcode & 0x80) ? A1V : A1B);
+
+	int obj = get_byte();
+	if (opcode & 0x40)
+		obj |= 0x100;
+
+	sprintf(buf, ",%d);", obj);
+}
+
+void do_put_actor_at_object(char *buf, byte opcode) {
+
+	buf += sprintf(buf, "putActorAtObject(");
+	buf = add_a_tok(buf, (opcode & 0x80) ? A1V : A1B);
+
+	int obj = get_byte();
+	if (opcode & 0x40)
+		obj |= 0x100;
+
+	sprintf(buf, ",%d);", obj);
+}
+
+void do_sentence(char *buf, byte opcode) {
+	int verb = get_byte();
+	int obj1 = get_byte();
+	int obj2 = get_byte();
+
+	// Not _cmdObject / _cmdObject2
+	if (obj1 != 0xFF && obj1 != 0xFE) {
+		if(opcode & 0x80)
+			obj1 |= 0x100;
+	}
+	// Not _cmdObject / _cmdObject2
+	if (obj2 != 0xFF && obj2 != 0xFE) {
+		if (opcode & 0x40)
+			obj2 |= 0x100;
+	}
+
+	sprintf(buf, "doSentence(%d,%d,%d);", verb, obj1, obj2);
+}
+
+
+void do_set_object_name(char *buf, byte opcode) {
+	int obj = get_byte();
+
+	if (opcode & 0x40)
+		obj |= 0x100;
+
+	buf += sprintf(buf, "setObjectName(%d,", obj);
+	buf = add_a_tok(buf, A1B | A1ASCII);
+
+	sprintf(buf, ");", obj);
 }
 
 void do_if_state_code(char *buf, byte opcode) {
@@ -2616,7 +2675,7 @@ void next_line_V0(char *buf) {
 	case 0x43:
 	case 0x83:
 	case 0xC3:
-		do_tok(buf, "doSentence", A1B | A2B | A3B);
+		do_sentence(buf, opcode);
 		break;
 	case 0x07:
 	case 0x87:
@@ -2791,7 +2850,7 @@ void next_line_V0(char *buf) {
 	case 0xCE:
 	case 0x0E:
 	case 0x8E:
-		do_tok(buf, "putActorAtObject", ((opcode & 0x80) ? A1V : A1B) | A2B);
+		do_put_actor_at_object(buf, opcode);
 		break;
 	case 0x0C:
 	case 0x8C:
@@ -2824,7 +2883,7 @@ void next_line_V0(char *buf) {
 
 	case 0x54:
 	case 0xD4:
-		do_tok(buf, "setObjectName", A1B | A2ASCII);
+		do_set_object_name(buf, opcode);
 		break;
 
 	case 0x29:
@@ -2891,7 +2950,7 @@ void next_line_V0(char *buf) {
 	case 0xB6:
 	case 0x76:
 	case 0xF6:
-		do_tok(buf, "walkActorToObject", ((opcode & 0x80) ? A1V : A1B) | A2B);
+		do_walk_actor_to_object(buf, opcode);
 		break;
 
 	default:
