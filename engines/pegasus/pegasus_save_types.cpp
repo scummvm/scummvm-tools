@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 	FSCatalogInfo catInfo;
 	FSRef ref;
 
-	if (!FSPathMakeRef((const UInt8 *)argv[1], &ref, false)) {
+	if (!FSPathMakeRef((const UInt8 *)argv[1], &ref, 0)) {
 		FSGetCatalogInfo(&ref, kFSCatInfoFinderInfo, &catInfo, 0, 0, 0);
 		FileInfo *info = (FileInfo *)catInfo.finderInfo;
 		info->fileCreator = creator;
