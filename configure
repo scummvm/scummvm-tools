@@ -929,7 +929,16 @@ fi
 
 echo_n "Building as C++11... "
 if test "$_use_cxx11" = "yes" ; then
-	CXXFLAGS="$CXXFLAGS -std=c++11"
+	case $_host_os in
+	# newlib-based system include files suppress non-C89 function
+	# declarations under __STRICT_ANSI__
+	amigaos* | android | dreamcast | ds | gamecube | mingw* | n64 | psp | ps2 | wii | wince )
+		_use_cxx11=no
+		;;
+	*)
+		CXXFLAGS="$CXXFLAGS -std=c++11"
+		;;
+	esac
 fi
 echo $_use_cxx11
 
