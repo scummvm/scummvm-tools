@@ -1,7 +1,7 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
-1.9.0 (YYYY-MM-DD)
+1.9.0 (2016-10-27)
  - Fix random crashes in the tool to convert Broken Sword 1 speech files.
 
 1.8.0 (2016-03-04)
