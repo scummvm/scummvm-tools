@@ -140,11 +140,7 @@ void ExtractPrince::execute() {
 }
 
 InspectionMatch ExtractPrince::inspectInput(const Common::Filename &filename) {
-	std::string file = filename.getFullName();
-	if (scumm_stricmp(file.c_str(), "databank.ptc") == 0) {
-		return IMATCH_PERFECT;
-	}
-	return IMATCH_AWFUL;
+	return IMATCH_PERFECT;
 }
 
 byte *ExtractPrince::openDatabank() {
