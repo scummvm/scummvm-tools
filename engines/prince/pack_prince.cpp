@@ -150,11 +150,11 @@ void PackPrince::packVariaTxt() {
 	if (name.compare("variatxt.dat")) {
 		error("Wrong header in variatxt.txt");
 	}
-	
+
 	// Skip comment until first number
 	while ((c = _databank.readByte()) != '\r');
 	_databank.readByte(); // skip '\n'
-	
+
 	// Loading to array:
 	const int kVariaTxtSize = 6000;
 	Common::Array<VariaTxt> variaTxtList; // list of all txt
@@ -187,12 +187,12 @@ void PackPrince::packVariaTxt() {
 		variaTxtList[id]._txt = newVariaTxt._txt;
 
 		// Skip '\n' and test eof
-		_databank.readByte(); 
+		_databank.readByte();
 		if ((uint)_databank.pos() == fileSize) {
 			break;
 		}
 	}
-	
+
 	int textOffset = kVariaTxtSize * 4;
 	// Offset counting and packing:
 	for (int i = 0; i < kVariaTxtSize; i++) {
@@ -228,10 +228,10 @@ void PackPrince::packInvTxt() {
 	if (name.compare("invtxt.dat")) {
 		error("Wrong header in invtxt.txt");
 	}
-	
+
 	// Skip comments until first inventory item nr
 	while ((c = _databank.readByte()) != '0');
-	
+
 	// Skip first dot and space
 	_databank.readByte();
 	_databank.readByte();
@@ -269,7 +269,7 @@ void PackPrince::packInvTxt() {
 		invTxtList[id] = newInvTxt;
 
 		// Skip '\n' and test eof
-		_databank.readByte(); 
+		_databank.readByte();
 		if ((uint)_databank.pos() == fileSize) {
 			break;
 		} else {
@@ -277,7 +277,7 @@ void PackPrince::packInvTxt() {
 		}
 		id++;
 	}
-	
+
 	// Offset counting and packing:
 	int nameOffset = kItems * 4 * 2;
 	for (int i = 0; i < kItems; i++) {
@@ -391,7 +391,7 @@ void PackPrince::packTalkTxt() {
 
 	// Start pos of talkTxt file for later offset setting
 	int startTalkTxtPos = _fFiles.pos();
-	
+
 	// Making space for main offsets
 	for (int i = 0; i < kSetStringValues; i++) {
 		_fFiles.writeUint32LE(0);
@@ -508,7 +508,7 @@ void PackPrince::talkTxtWithDialog() {
 
 		tempDialogBoxArray.clear();
 		allDialogBoxesArray.push_back(tempDialogBoxArray);
-	
+
 		// Lines of dialog box
 		while (1) {
 			// Skip $, check if #END
@@ -554,7 +554,7 @@ void PackPrince::talkTxtWithDialog() {
 	while (1) {
 		tempDialogOptionsArray.clear();
 		allDialogOptionsArray.push_back(tempDialogOptionsArray);
-	
+
 		// Lines of dialog opt
 		while (1) {
 			// Special dialog data
@@ -638,15 +638,15 @@ void PackPrince::talkTxtWithDialog() {
 
 	// Offset counting and packing:
 	_fFiles.writeByte(255); // show that this is dialog box
-	
+
 	// Offset of init dialog texts
 	int offset = 3 + allDialogBoxesArray.size() * 2 + 2 + allDialogOptionsArray.size() * 2 + 2;
-	_fFiles.writeUint16LE(offset); 
+	_fFiles.writeUint16LE(offset);
 	for (uint i = 0; i < beforeDialogBoxArray.size(); i++) {
 		offset += beforeDialogBoxArray[i]._txt.size() + 1; // data and text
 	}
 	offset += 3; // always BOX 0 and 255 at the end
-	
+
 	// Dialog boxes texts offsets:
 	for (uint i = 0; i < allDialogBoxesArray.size(); i++) {
 		_fFiles.writeUint16LE(offset);
@@ -871,7 +871,7 @@ void PackPrince::packMobs() {
 			_fFiles.writeByte(0);
 			_fFiles.writeByte(1);
 			for (uint k = 0; k < allLocations[i][j]._examTxt.size(); k++) {
-				_fFiles.writeByte(allLocations[i][j]._examTxt[k]);			
+				_fFiles.writeByte(allLocations[i][j]._examTxt[k]);
 			}
 			_fFiles.writeByte(0);
 			_fFiles.writeByte(255);
@@ -899,7 +899,7 @@ char PackPrince::correctPolishLetter(char c) {
 		return '\x91';
 	case '\xF3':
 		return '\xA2';
-	case '\xBF':	
+	case '\xBF':
 		return '\xA7';
 	case '\xA5':
 		return '\x8F';
@@ -909,15 +909,15 @@ char PackPrince::correctPolishLetter(char c) {
 		return '\x98';
 	case '\xC6':
 		return '\x95';
-	case '\xD1':	
+	case '\xD1':
 		return '\xA5';
 	case '\x8F':
 		return '\xA0';
-	case '\xCA':	
+	case '\xCA':
 		return '\x90';
 	case '\xD3':
 		return '\xA3';
-	case '\xAF':	
+	case '\xAF':
 		return '\xA1';
 	default:
 		return c;
