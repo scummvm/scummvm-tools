@@ -324,7 +324,7 @@ Compression Tools:
                 Example of usage:
                 ./scummvm-tools-cli --tool compress_touche [mode params] [-o outputfile] <inputdir>
 
-                NOTE: Default outpufile is TOUCHE.* (depending on the compression method).
+                NOTE: Default outputfile is TOUCHE.* (depending on the compression method).
                 Files in the input folder should be uppercase.
 
         compress_tucker
@@ -338,7 +338,7 @@ Compression Tools:
                 Example of usage:
                 ./scummvm-tools-cli --tool compress_tucker [mode params] [-o outputfile] <inputdir>
 
-                NOTE: Default outpufile is TUCKER.SOx (depending on the compression method).
+                NOTE: Default outputfile is TUCKER.SOx (depending on the compression method).
                 Files in the input folder should be uppercase.
 
 Script Tools:
