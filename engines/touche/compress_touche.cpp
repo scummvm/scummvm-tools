@@ -44,13 +44,14 @@ static uint32 input_Vxx_size[Vxx_HDR_LEN];
 
 CompressTouche::CompressTouche(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
 	_supportsProgressBar = true;
+	_outputToDirectory = false;
 
 	ToolInput input;
 	input.format = "/";
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress Touche speech files (Vxxx and OBJ).";
-	_helptext = "\nUsage: " + getName() + " [params] [-o outputfile TOUCHE.*] <inputdir>\n* differs with compression type.\n" + _shorthelp + "\n";
+	_helptext = "\nUsage: " + getName() + " [params] [-o outputfile] <inputdir>\n* differs with compression type.\n" + _shorthelp + "\n";
 }
 
 InspectionMatch CompressTouche::inspectInput(const Common::Filename &filename) {
@@ -184,7 +185,7 @@ void CompressTouche::execute() {
 	Common::Filename inpath(_inputPaths[0].path);
 	Common::Filename &outpath = _outputPath;
 
-	if (outpath.empty()) {
+	if (outpath.getFullName().empty()) {
 		switch(_format) {
 		case AUDIO_MP3:
 			outpath.setFullName(OUTPUT_MP3);
