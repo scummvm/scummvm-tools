@@ -284,8 +284,10 @@ void ExtractCine::unpackAllResourceFiles(const Common::Filename &filename) {
 	for (unsigned int i = 0; i < resourceFilesCount; ++i) {
 		memcpy(resourceFileName, &buf[4 + i * entrySize], 8);
 		resourceFileName[8] = 0;
+		Common::Filename resourcePath(filename);
+		resourcePath.setFullName(resourceFileName);
 
-		Common::File fpResFile(resourceFileName, "rb");
+		Common::File fpResFile(resourcePath, "rb");
 		print("--- Unpacking resource file %s:", resourceFileName);
 		unpackFile(fpResFile);
 	}
@@ -294,6 +296,11 @@ void ExtractCine::unpackAllResourceFiles(const Common::Filename &filename) {
 }
 
 void ExtractCine::execute() {
+	// We always need to setup default output path, since there is no obligation to specify it
+	if (_outputPath.empty()) {
+		_outputPath.setFullPath("./");
+	}
+
 	Common::Filename infilename(_inputPaths[0].path);
 
 	std::string fname = infilename.getFullName();
