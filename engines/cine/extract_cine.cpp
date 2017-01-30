@@ -260,7 +260,7 @@ void ExtractCine::unpackAllResourceFiles(const Common::Filename &filename) {
 			unpackedSize = f.readUint32BE();
 			packedSize = f.readUint32BE();
 		} else {
-			unpackedSize = packedSize = f.pos(); /* Get file size */
+			unpackedSize = packedSize = f.size(); /* Get file size */
 			f.seek(0, SEEK_SET);
 		}
 	}

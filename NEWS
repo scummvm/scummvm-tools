@@ -5,6 +5,8 @@ For a more comprehensive changelog of the latest experimental code, see:
  - Fix handling of output path for the compress_touche tool.
  - Fix handling of input path for the extract_cine tool. It was only working
    when run from the directory that contains the game data.
+ - Fix memory corruption that could cause random errors during extraction when
+   using the extract_cine tool.
 
 1.9.0 (2016-10-27)
  - Fix random crashes in the tool to convert Broken Sword 1 speech files.
