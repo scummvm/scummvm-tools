@@ -68,12 +68,22 @@ Extraction Tools:
                 Unpacks Delphine's Cinematique engine's archive files.
                 
                 Should work at least with Future Wars and Operation Stealth.
-                Supports using Operation Stealth's 'vol.cnf' file as input
-                in which case it will try to unpack all the archive files
-                listed in 'vol.cnf'. Accepts only one input file.
+                It seems to work also with Cruise for a Corpse. It accepts only
+                one input file. This may be either one of the archive file, in
+                which case only this file is unpacked, or the 'vol.cnf' file,
+                in which case all archive files listed in the 'vol.cnf' file are
+                unpacked.
 
                 Example of usage:
-                ./scummvm-tools-cli --tool extract_cine <infile>
+                ./scummvm-tools-cli --tool extract_cine [-o outputdir] <infile>
+
+        extract_cruise_pc
+                Unpack the E1, E4 and E5 files found in some versions of
+                Cruise for a Corpse. To extract the D1 to D5 files, use the
+                extract_cine tool instead.
+
+                Example of usage:
+                ./scummvm-tools-cli --tool extract_cruise_pc [-o outputdir] <infile>
 
         extract_gob_stk
                 Extracts data files from STK/ITK files from Coktel Vision
