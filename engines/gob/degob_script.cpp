@@ -220,7 +220,7 @@ void Script::printIndent() const {
 void Script::printLine(const char *str) const {
 	printIndent(); putString(str); putString("\n");
 }
-std::string Script::printStr(const char *s, ...) const {
+Common::String Script::printStr(const char *s, ...) const {
 	char buf[1024];
 	va_list va;
 
@@ -354,8 +354,8 @@ void Script::skipExpr(char stopToken) {
 	}
 }
 
-std::string Script::readExpr(char stopToken) {
-	std::string expr;
+Common::String Script::readExpr(char stopToken) {
+	Common::String expr;
 	int16 dimCount;
 	byte operation;
 	int16 num;
@@ -605,8 +605,8 @@ std::string Script::readExpr(char stopToken) {
 	}
 }
 
-std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
-	std::string expr, pref;
+Common::String Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
+	Common::String expr, pref;
 	byte *arrDesc;
 	int16 dim;
 	int16 dimCount;
@@ -881,7 +881,7 @@ void Script::addStartingOffsets() {
 }
 
 void Script::addFuncOffset(uint32 offset) {
-	for (std::list<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it)
+	for (Common::List<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it)
 		if (*it == offset)
 			return;
 
@@ -896,7 +896,7 @@ void Script::deGob(int32 offset) {
 	else
 	_funcOffsets.push_back(offset);
 
-	for (std::list<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it) {
+	for (Common::List<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it) {
 		seek(*it);
 		deGobFunction();
 		print("\n");

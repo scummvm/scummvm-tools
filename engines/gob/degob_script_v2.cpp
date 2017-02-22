@@ -728,19 +728,19 @@ void Script_v2::o2_totSub(FuncParams &params) {
 
 void Script_v2::o2_assign(FuncParams &params) {
 	uint8 type = peekUint8();
-	std::string varIndex = readVarIndex();
+	Common::String varIndex = readVarIndex();
 
 	if (peekUint8() == 99) {
 		skip(1);
 		uint8 loopCount = readUint8();
 
 		for (uint16 i = 0; i < loopCount; i++) {
-			std::string expr = readExpr();
+			Common::String expr = readExpr();
 			printIndent();
 			print("%s[%d] = %s;\n", varIndex.c_str(), (type == 24) ? (i * 2) : i, expr.c_str());
 		}
 	} else {
-		std::string expr = readExpr();
+		Common::String expr = readExpr();
 
 		printIndent();
 		print("%s = %s;\n", varIndex.c_str(), expr.c_str());
