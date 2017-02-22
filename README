@@ -85,6 +85,13 @@ Extraction Tools:
                 Example of usage:
                 ./scummvm-tools-cli --tool extract_cruise_pc [-o outputdir] <infile>
 
+        extract_ddpg
+                Extracts resource files from the bootable floppy version of
+                Donald Duck's Playground (AGI v2.001).
+
+                Example of usage:
+                ./scummvm-tools-cli --tool extract_ddpg <disk image>
+
         extract_gob_stk
                 Extracts data files from STK/ITK files from Coktel Vision
                 games.

@@ -175,6 +175,7 @@ engines/sword2/sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
 
 
 tools_OBJS := \
+	engines/agi/extract_ddpg.o \
 	engines/agos/compress_agos.o \
 	engines/gob/compress_gob.o \
 	engines/gob/extract_fascination_cd.o \
