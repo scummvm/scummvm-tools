@@ -34,6 +34,7 @@ PROGRAMS = \
 	extract_mohawk \
 	extract_ngi \
 	construct_mohawk \
+	msn_convert_mod \
 	scummvm-tools-cli \
 	extract_hadesch \
 	extract_lokalizator
@@ -167,6 +168,11 @@ construct_mohawk_OBJS := \
 	engines/mohawk/construct_mohawk.o \
 	engines/mohawk/utils.o \
 	$(UTILS)
+
+msn_convert_mod_OBJS := \
+	common/file.o \
+	common/util.o \
+	engines/supernova/convert_mod.o
 
 pegasus_save_types_OBJS := \
 	engines/pegasus/pegasus_save_types.o \
