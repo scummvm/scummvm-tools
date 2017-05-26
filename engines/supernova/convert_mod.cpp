@@ -28,7 +28,6 @@ ModReader::ModReader(const Common::Filename &fileName) {
 	char mark_str[0];
 	strncpy(mark_str, mark, 4);
 	mark_str[4] = 0;
-	notice("Mark: '%s'", mark_str);
 
 	uint32 l = modFile.size() - 1084;
 	int nb_instr = 0;
@@ -47,7 +46,7 @@ ModReader::ModReader(const Common::Filename &fileName) {
 		}
 	}
 
-	notice("\nName: %s\nInstruments: %d\nPatterns: %d\n", songName, nb_instr, (int)patternNumber);
+	notice("\nName: %s\nSong length: %d\nInstruments: %d\nPatterns: %d\n", songName, (int)songLength, nb_instr, (int)patternNumber);
 }
 
 ModReader::~ModReader() {
@@ -106,7 +105,6 @@ bool ModReader::convertToMsn(const Common::Filename &fileName, int version) {
 			instr2[i_new].loopStart = (pos & 0x0F) + (instr[i].loopStart << 1);
 			instr2[i_new].loopEnd = instr2[i_new].loopStart + (instr[i].loopLength << 1);
 			instr2[i_new].volume = instr[i].volume;
-			notice("Nr: %d  Start: %d", i_new, pos);
 			pos += instr[i].length << 1;
 		}
 	}
@@ -210,7 +208,8 @@ bool ModReader::convertToMsn(const Common::Filename &fileName, int version) {
 		msnFile.writeChar(instr2[i].volume);
 		msnFile.write(instr2[i].dummy, 5);
 	}
-	msnFile.writeUint16LE(*((uint16*)&songLength)); // writeSint16LE(songLength)
+	int16 songLength2 = songLength;
+	msnFile.writeUint16LE(*((uint16*)&songLength2)); // writeSint16LE(songLength)
 	msnFile.write(arrangement, 128);
 	msnFile.writeUint16LE(*((uint16*)&patternNumber)); // writeSint16LE(patternNumber)
 	for (int p = 0 ; p < patternNumber ; ++p) {
