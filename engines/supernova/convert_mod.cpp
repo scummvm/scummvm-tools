@@ -101,7 +101,60 @@ bool ModReader::convertToMsn(const Common::Filename &fileName, int version) {
 		}
 	}
 
+	// Table to convert MOD effect
+	// Mod effect values:
+	//   0: Arpeggio
+	//   1: Slide up
+	//   2: Slide down
+	//   3: Slide to note
+	//   4: Vibrato
+	//   5: Continue 'Slide to note', but also do Volume slide
+	//   6: Continue 'Vibrato', but also do Volume slide
+	//   7: Tremolo
+	//   8: (Set panning position) - often unused
+	//   9: Set sample offset
+	//  10: Volume slide
+	//  11: Position Jump
+	//  12: Set volume
+	//  13: Pattern Break
+	//  14: Misc (depends on the next 4 bits)
+	//  15: Set speed
+	//
+	// MSN mapped values:
+	//   1: Slide up
+	//   2: Slide down
+	//   3: Slide to note
+	//   4: Volume slide
+	//   5: Set volume
+	//   6: Pattern Break
+	//   7: Set speed
+	//   0: Everything else
 	const char convEff[16] = {0,1,2,3, 0,0,0,0, 0,0,4,0, 5,6,0,7};
+
+	// For each note, the 4 bytes are:
+	// 31 30 29 28 27 26 25 24 - 23 22 21 20 19 18 17 16 - 15 14 13 12 11 10 09 08 - 07 06 05 04 03 02 01 00
+	//  h  h  h  h  g  g  g  g    f  f  f  f  e  e  e  e    d  d  d  d  c  c  c  c    b  b  b  b  a  a  a  a
+	//
+	// MOD:
+	//  hhhh dddd        (8 bits) Sample index
+	//  cccc             (4 bits) Effect type for this channel/division
+	//  bbbb aaaa        (8 bits) Effect value
+	//  gggg ffff eeee  (12 bits) Sample period
+	//
+	// MSN:
+	//  hhhh             (4 bits) Cleared to 0
+	//  dddd c           (5 bits) Sample index   | after mapping through convInstr
+	//        ccc        (3 bits) Effect type    | after mapping through convEff
+	//  bbbb aaaa        (8 bits) Effect value   | unmodified
+	//  gggg ffff eeee  (12 bits) Sample period  | unmodified
+	//
+	// MS2:
+	//  hhhh             (4 bits) Cleared to 0
+	//  dddd             (4 bits) Sample index   | after mapping through convInstr
+	//  cccc             (4 bits) Effect type    | unmodified
+	//  bbbb aaaa        (8 bits) Effect value   | unmodified
+	//  gggg ffff eeee  (12 bits) Sample period  | transformed (0xE000 / p) - 256
+
 
 	for (int p = 0; p < patternNumber; ++p) {
 		for (int n = 0; n < 64; ++n) {
@@ -116,21 +169,20 @@ bool ModReader::convertToMsn(const Common::Filename &fileName, int version) {
 					int32 e1 = (*l >> 8) & 0x0F;
 					//int32 op = (*l & 255);
 					int32 e = convEff[e1];
-					*l &= 0x0fff00ff;
+					*l &= 0x0FFF00FF;
 					*l |= (i_new << 11) | (e << 8);
 				} else {
 					if (i_new == 31)
 						i_new = 15;
 					int32 h = (*l >> 16) & 0x0fff;
 					if (h)
-						h = (0xe000 / h) - 256;
-					*l &= 0x00000fff;
+						h = (0xE000 / h) - 256;
+					*l &= 0x00000FFF;
 					*l |= (i_new << 12) | (h << 16);
 				}
 			}
 		}
 	}
-
 
 	// Write file
 	Common::File msnFile(fileName, "wb");
@@ -154,7 +206,7 @@ bool ModReader::convertToMsn(const Common::Filename &fileName, int version) {
 	for (int p = 0 ; p < patternNumber ; ++p) {
 		for (int n = 0 ; n < 64 ; ++n) {
 			for (int k = 0 ; k < 4 ; ++k) {
-				msnFile.writeUint32LE(*((uint32*)(note2[p][n]+k))); // writeSInt32LE(note[p][n][k])
+				msnFile.writeUint32LE(*((uint32*)(note2[p][n]+k))); // writeSint32LE(note[p][n][k])
 			}
 		}
 	}
@@ -220,48 +272,66 @@ bool MsnReader::convertToMod(const Common::Filename &fileName) {
 	} instr[31];
 	int32 note[28][64][4];
 
-	char convInstr[31];
-	for (int i = 0 ; i < 31 ; ++i)
-		convInstr[i] = 31;
-
-	// We can't recover the position of 0 since it appears several times. So just assume it is the first one.
+	// We can't recover some MOD effects since several of them are mapped to 0.
+	// Assume the MSN effect of value 0 is Arpeggio (MOD effect of value 0).
 	const char invConvEff[8] = {0, 1, 2, 3, 10, 12, 13 ,15};
 
+	// Reminder from convertToMsn
+	// 31 30 29 28 27 26 25 24 - 23 22 21 20 19 18 17 16 - 15 14 13 12 11 10 09 08 - 07 06 05 04 03 02 01 00
+	//  h  h  h  h  g  g  g  g    f  f  f  f  e  e  e  e    d  d  d  d  c  c  c  c    b  b  b  b  a  a  a  a
+	//
+	// MSN:
+	//  hhhh             (4 bits) Cleared to 0
+	//  dddd c           (5 bits) Sample index   | after mapping through convInstr
+	//        ccc        (3 bits) Effect type    | after mapping through convEff
+	//  bbbb aaaa        (8 bits) Effect value   | unmodified
+	//  gggg ffff eeee  (12 bits) Sample period  | unmodified
+	//
+	// MS2:
+	//  hhhh             (4 bits) Cleared to 0
+	//  dddd             (4 bits) Sample index   | after mapping through convInstr
+	//  cccc             (4 bits) Effect type    | unmodified
+	//  bbbb aaaa        (8 bits) Effect value   | unmodified
+	//  gggg ffff eeee  (12 bits) Sample period  | transformed (0xE000 / p) - 256
+	//
+	// MOD:
+	//  hhhh dddd        (8 bits) Sample index
+	//  cccc             (4 bits) Effect type for this channel/division
+	//  bbbb aaaa        (8 bits) Effect value
+	//  gggg ffff eeee  (12 bits) Sample period
+
 	// Can we recover the instruments mapping? I don't think so as part of the original instrument index is cleared.
-	// Assume the mapping is 1<-> 1.
+	// And it doesn't really matter as long as we are consistent.
+	// However we need to make sure 31 (or 15 in MS2) is mapped to 0 in MOD.
+	// We just add 1 to all other values, and this means a 1 <-> 1 mapping for the instruments
 	for (int p = 0; p < patternNumber; ++p) {
 		for (int n = 0; n < 64; ++n) {
 			for (int k = 0; k < 4; ++k) {
 				int32* l = &(note[p][n][k]);
 				*l = note2[p][n][k];
-				int32 i_new = 0;
+				int32 i = 0;
 				if (nbInstr2 == 22) { // version 1
-					i_new = ((*l & 0xFF00) >> 11);
+					i = ((*l & 0xF800) >> 11);
 					int32 e = ((*l & 0x0700) >> 8);
 					int32 e1 = invConvEff[e];
-					*l &= 0x0fff00ff;
+					*l &= 0x0FFF00FF;
 					*l |= (e1 << 8);
 				} else { // version 2
 					int32 h = (*l >> 16);
-					i_new = ((*l & 0xFFFF) >> 12);
-					*l &= 0x00000fff;
+					i = ((*l & 0xF000) >> 12);
+					*l &= 0x00000FFF;
 					if (h)
-						h = 0xe000 / (h + 256);
+						h = 0xE000 / (h + 256);
 					*l |= (h << 16);
-					if (i_new == 15)
-						i_new = 31;
+					if (i == 15)
+						i = 31;
 				}
 
-				if (i_new != 31) {
-					// Get the part of the instrument that is present in the MSN file.
-					int32 i = ((*l >> 24) & 0xF0) - 1;
-					if (i < i_new) {
-						// Write the missing par of the MOD instrument index
-						*l |= ((i_new - i) << 12);
-						i = i_new;
-					}
-					notice("MOD instrument: %d, MSN instrument: %d", (int)i, (int)i_new);
-					convInstr[i] = i_new;
+				// Add back index in note
+				if (i != 31) {
+					++i;
+					*l |= ((i & 0x0F) << 12);
+					*l |= ((i & 0xF0) << 24);
 				}
 			}
 		}
@@ -279,22 +349,22 @@ bool MsnReader::convertToMod(const Common::Filename &fileName) {
 		instr[i].loopStart = 0;
 		instr[i].loopLength = 0;
 
-		int i_new = convInstr[i];
-		if (i_new != 31) {
-			instr[i].length = ((instr2[i_new].end - (pos & 0x0F)) >> 1);
-			instr[i].loopStart = ((instr2[i_new].loopStart - (pos & 0x0F)) >> 1);
-			instr[i].loopLength = (( instr2[i_new].loopEnd - instr2[i_new].loopStart) >> 1);
+		if (i < nbInstr2) {
+			instr[i].length = ((instr2[i].end - (pos & 0x0F)) >> 1);
+			instr[i].loopStart = ((instr2[i].loopStart - (pos & 0x0F)) >> 1);
+			instr[i].loopLength = (( instr2[i].loopEnd - instr2[i].loopStart) >> 1);
 			instr[i].volume = instr2[i].volume;
 			pos += instr[i].length << 1;
 		}
 	}
 
-	// The Restart byte for song looping cannot be recovered from MSN file.
-	// Assume a value of 0.
-	char ciaaSpeed = 0;
+	// The ciaaSpeed is kind of useless and not present in the MSN file.
+	// Traditionally 0x78 in SoundTracker. Was used in NoiseTracker as a restart point.
+	// ProTracker uses 0x7F. FastTracker uses it as a restart point, whereas ScreamTracker 3 uses 0x7F like ProTracker.
+	// You can use this to roughly detect which tracker made a MOD, and detection gets more accurate for more obscure MOD types.
+	char ciaaSpeed = 0x7F;
 
-	// The mark cannot be recovered either.
-	// It can be one of ID='M.K.', ID='4CHN',ID='6CHN',ID='8CHN', ID='4FLT',ID='8FLT'
+	// The mark cannot be recovered either. Since we have 4 channels and 31 instrument it can be either ID='M.K.' or ID='4CHN'.
 	// Assume 'M.K.'
 	const char mark[4] = { 'M', '.', 'K', '.' };
 
@@ -326,7 +396,7 @@ bool MsnReader::convertToMod(const Common::Filename &fileName) {
 	for (int p = 0 ; p < patternNumber ; ++p) {
 		for (int n = 0 ; n < 64 ; ++n) {
 			for (int k = 0 ; k < 4 ; ++k) {
-				modFile.writeUint32BE(*((uint32*)(note[p][n]+k))); // writeSInt32BE(note[p][n][k])
+				modFile.writeUint32BE(*((uint32*)(note[p][n]+k))); // writeSint32BE(note[p][n][k])
 			}
 		}
 	}

@@ -30,6 +30,7 @@ private:
 
 	int16 patternNumber;        // patternzahl
 	int32 note[28][64][4];
+		// Each pattern is subdivided in 64 divisions, each one with 4 channels
 };
 
 class MsnReader {
