@@ -38,7 +38,6 @@ ModReader::ModReader(const Common::Filename &fileName) {
 			++nb_instr;
 	}
 
-	modFile.seek(1084, SEEK_SET);
 	patternNumber = l / 1024;
 	for (int p = 0 ; p < patternNumber ; ++p) {
 		for (int n = 0 ; n < 64 ; ++n) {
@@ -83,6 +82,17 @@ bool ModReader::convertToMsn(const Common::Filename &fileName, int version) {
 			convInstr[i] = 31;
 	}
 
+	// Initialize all instruments to 0. This is not really important but that way we get 0 instead
+	// of garbage for the last 5 bytes (dummy) of each instruments and for the unused instruments.
+	for (int i = 0 ; i < nbInstr2 ; ++i) {
+		instr2[i].seg = 0;
+		instr2[i].start = 0;
+		instr2[i].end = 0;
+		instr2[i].loopStart = 0;
+		instr2[i].loopEnd = 0;
+		instr2[i].volume = 0;
+		memset(instr2[i].dummy, 0, 5);
+	}
 
 	int pos = (version == 1 ? 484 : 372) + patternNumber * 1024;
 	for (int i = 0; i < 31; ++i) {
@@ -337,7 +347,6 @@ bool MsnReader::convertToMod(const Common::Filename &fileName) {
 		}
 	}
 
-	int pos = (nbInstr2 == 22 ? 484 : 372) + patternNumber * 1024;
 	for (int i = 0; i < 31; ++i) {
 		// iname is not stored in the mod file. Just set it to 'instrument#'
 		// finetune is not stored either. Assume 0.
@@ -350,11 +359,10 @@ bool MsnReader::convertToMod(const Common::Filename &fileName) {
 		instr[i].loopLength = 0;
 
 		if (i < nbInstr2) {
-			instr[i].length = ((instr2[i].end - (pos & 0x0F)) >> 1);
-			instr[i].loopStart = ((instr2[i].loopStart - (pos & 0x0F)) >> 1);
+			instr[i].length = ((instr2[i].end - instr2[i].start) >> 1);
+			instr[i].loopStart = ((instr2[i].loopStart - instr2[i].start) >> 1);
 			instr[i].loopLength = (( instr2[i].loopEnd - instr2[i].loopStart) >> 1);
 			instr[i].volume = instr2[i].volume;
-			pos += instr[i].length << 1;
 		}
 	}
 
