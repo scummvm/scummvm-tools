@@ -25,10 +25,6 @@ ModReader::ModReader(const Common::Filename &fileName) {
 	modFile.read_throwsOnError(arrangement, 128);
 	modFile.read_throwsOnError(mark, 4);
 
-	char mark_str[0];
-	strncpy(mark_str, mark, 4);
-	mark_str[4] = 0;
-
 	uint32 l = modFile.size() - 1084;
 	int nb_instr = 0;
 	for (int i = 0 ; i < 31 ; ++i) {
