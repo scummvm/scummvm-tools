@@ -98,6 +98,7 @@ _prefix=/usr/local
 _wxincludes=""
 _wxlibs=""
 _wxstaticlibs=""
+_freetypeconfig=freetype-config
 _freetypeincludes=""
 _freetypelibs=""
 _staticlibpath=""
@@ -1246,6 +1247,7 @@ case $_host_os in
 		LDFLAGS="$LDFLAGS -L$GCCSDK_INSTALL_ENV/lib"
 		CXXFLAGS="$CXXFLAGS -I$GCCSDK_INSTALL_ENV/include"
 		_wxconfig=$GCCSDK_INSTALL_ENV/bin/wx-config
+		_freetypeconfig=$GCCSDK_INSTALL_ENV/bin/freetype-config
 		LDFLAGS="$LDFLAGS -static"
 		;;
 	solaris*)
@@ -1506,7 +1508,7 @@ echo "$_zlib"
 echocheck "FreeType"
 if test "$_freetype" = auto ; then
 	_freetype=no
-	if type freetype-config > /dev/null 2>&1 ; then
+	if type $_freetypeconfig > /dev/null 2>&1 ; then
 		_freetype=yes
 	fi
 fi
@@ -1525,22 +1527,22 @@ int main(int argc, char *argv[]) {
 }
 EOF
 
-	_freetypelibs=`freetype-config --libs`
-	_freetypeincludes=`freetype-config --cflags`
+	_freetypelibs=`$_freetypeconfig --libs`
+	_freetypeincludes=`$_freetypeconfig --cflags`
 
 	cc_check_no_clean $_freetypelibs $_freetypeincludes && _freetype=yes
 	# Modern freetype-config scripts accept --static to get all
 	# required flags for static linking. We abuse this to detect
 	# FreeType2 builds which are static themselves.
 	if test "$_freetype" != "yes"; then
-		_freetypelibs=`freetype-config --static --libs 2>/dev/null`
+		_freetypelibs=`$_freetypeconfig --static --libs 2>/dev/null`
 		cc_check_no_clean $_freetypeincludes $_freetypelibs && _freetype=yes
 	fi
 	cc_check_clean
 fi
 
 if test "$_freetype" = yes ; then
-	freetype_version=`freetype-config --ftversion 2>/dev/null`
+	freetype_version=`$_freetypeconfig --ftversion 2>/dev/null`
 else
 	freetype_version="no"
 fi
