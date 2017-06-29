@@ -269,8 +269,8 @@ find_wxconfig() {
 #
 get_system_exe_extension() {
 	case $1 in
-	arm-riscos)
-		_exeext=",ff8"
+	riscos)
+		_exeext=",e1f"
 		;;
 	dreamcast | ds | gamecube | n64 | ps2 | psp | wii)
 		_exeext=".elf"
@@ -516,10 +516,6 @@ android | android-v7a)
 	_host_os=android
 	_host_cpu=arm
 	_host_alias=arm-linux-androideabi
-	;;
-arm-riscos)
-	_host_os=riscos
-	_host_cpu=arm
 	;;
 bada)
 	_host_os=bada
@@ -1244,6 +1240,14 @@ case $_host_os in
 	mint*)
 		DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
 		;;
+	riscos)
+		DEFINES="$DEFINES -DRISCOS"
+		add_line_to_config_mk 'RISCOS = 1'
+		LDFLAGS="$LDFLAGS -L$GCCSDK_INSTALL_ENV/lib"
+		CXXFLAGS="$CXXFLAGS -I$GCCSDK_INSTALL_ENV/include"
+		_wxconfig=$GCCSDK_INSTALL_ENV/bin/wx-config
+		LDFLAGS="$LDFLAGS -static"
+		;;
 	solaris*)
 		DEFINES="$DEFINES -DSOLARIS"
 		DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
@@ -1258,12 +1262,19 @@ if test -n "$_host"; then
 	case "$_host" in
 		arm-linux|arm*-linux-gnueabi|arm-*-linux)
 			;;
-		arm-riscos|linupy)
-			DEFINES="$DEFINES -DLINUPY"
+		arm-*riscos)
+			# toolchain binaries prefixed by host
+			_ranlib=$_host-ranlib
+			_strip=$_host-strip
+			_ar="$_host-ar cru"
+			_as="$_host-as"
 			;;
 		*darwin*)
 			_ranlib=$_host-ranlib
 			_strip=$_host-strip
+			;;
+		linupy)
+			DEFINES="$DEFINES -DLINUPY"
 			;;
 		m68k-atari-mint)
 			DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
@@ -1310,7 +1321,7 @@ case $_host_os in
 	amigaos* | cygwin* | dreamcast | ds | gamecube | mingw* | n64 | ps2 | psp | wii | wince)
 		_posix=no
 		;;
-	android | beos* | bsd* | darwin* | freebsd* | gph-linux | haiku* | hpux* | iphone | irix* | linux* | mint* | netbsd* | openbsd* | solaris* | sunos* | uclinux* | webos)
+	android | beos* | bsd* | darwin* | freebsd* | gph-linux | haiku* | hpux* | iphone | irix* | linux* | mint* | netbsd* | openbsd* | riscos | solaris* | sunos* | uclinux* | webos)
 		_posix=yes
 		;;
 	os2-emx*)
