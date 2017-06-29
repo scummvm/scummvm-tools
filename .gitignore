@@ -21,6 +21,8 @@
 /ScummVM Tools.app
 /scummvm-tools
 /scummvm-tools-cli
+/\!ScummTool
+/*,e1f
 /config.mk
 /config.h
 /config.log
