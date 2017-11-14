@@ -48,85 +48,89 @@ void ExtractPrince::execute() {
 	char *pathBuffer = (char *)malloc(17 * sizeof(char));
 	printf("Unpacking The Prince and the Coward text data... \n");
 
-	std::string fullName = mainDir.getFullPath();
+	std::string databankFullName = mainDir.getFullPath();
 	sprintf(pathBuffer, "all/databank.ptc");
-	fullName += pathBuffer;
-	Common::Filename filename(fullName);
-	_databank.open(filename, "rb");
-	if (!_databank.isOpen()) {
-		_fFiles.close();
-		error("Unable to open all/databank.ptc");
-	}
-	byte *fileTable = openDatabank();
-	bool mobsDE = false;
-	for (size_t i = 0; i < _items.size(); i++) {
-		if (!scumm_stricmp(_items[i]._name.c_str(), "variatxt.dat")) {
-			exportVariaTxt(loadFile(i));
+	databankFullName += pathBuffer;
+	Common::Filename filename(databankFullName);
+	// Trying to access the DATABANK files
+	// Here we check if the File all/databank.ptc exists.
+	// If so, we load it and extract the data from the databanks.
+	//
+	// If the databank.ptc file is not found, we try to access the
+	// uncompressed files directly.
+	if (Common::Filename(databankFullName).exists()) {
+		_databank.open(filename, "rb");
+		printf("DATABANK.PTC loaded, processing... \n");
+		byte *fileTable = openDatabank();
+		bool mobsDE = false;
+		for (size_t i = 0; i < _items.size(); i++) {
+			if (!scumm_stricmp(_items[i]._name.c_str(), "variatxt.dat")) {
+				exportVariaTxt(loadFile(i));
+			}
+			if (!scumm_stricmp(_items[i]._name.c_str(), "invtxt.dat")) {
+				exportInvTxt(loadFile(i));
+			}
+			if (!scumm_stricmp(_items[i]._name.c_str(), "talktxt.dat")) {
+				exportTalkTxt(loadFile(i));
+			}
+			if (!scumm_stricmp(_items[i]._name.c_str(), "credits.dat")) {
+				exportCredits(loadFile(i));
+			}
+			if (!scumm_stricmp(_items[i]._name.c_str(), "mob01.lst")) {
+				// For DE game data
+				mobsDE = true;
+				_outputPath.setFullName("mob.txt");
+				_fFiles.open(_outputPath, "w");
+				if (!_fFiles.isOpen()) {
+					error("Unable to create mob.txt");
+				}
+				_fFiles.print("mob.lst\nmob_name - exam text\n");
+				int loc = 0;
+				for (int j = 1; j <= kNumberOfLocations; j++) {
+					_fFiles.print("%d.\n", j);
+					// no databanks for loc 44 and 45
+					if (j != 44 && j != 45) {
+						exportMobs(loadFile(i + loc));
+						loc++;
+					}
+				}
+				printf("mob.txt - done\n");
+				printf("All done!\n");
+				free(pathBuffer);
+				_fFiles.close();
+			}
 		}
-		if (!scumm_stricmp(_items[i]._name.c_str(), "invtxt.dat")) {
-			exportInvTxt(loadFile(i));
-		}
-		if (!scumm_stricmp(_items[i]._name.c_str(), "talktxt.dat")) {
-			exportTalkTxt(loadFile(i));
-		}
-		if (!scumm_stricmp(_items[i]._name.c_str(), "credits.dat")) {
-			exportCredits(loadFile(i));
-		}
-		if (!scumm_stricmp(_items[i]._name.c_str(), "mob01.lst")) {
-			// For DE game data
-			mobsDE = true;
+		free(fileTable);
+		_databank.close();
+		_items.clear();
+
+		// For PL game data
+		if (!mobsDE) {
 			_outputPath.setFullName("mob.txt");
 			_fFiles.open(_outputPath, "w");
 			if (!_fFiles.isOpen()) {
 				error("Unable to create mob.txt");
 			}
 			_fFiles.print("mob.lst\nmob_name - exam text\n");
-			int loc = 0;
-			for (int j = 1; j <= kNumberOfLocations; j++) {
-				_fFiles.print("%d.\n", j);
+			for (int loc = 1; loc <= kNumberOfLocations; loc++) {
+				_fFiles.print("%d.\n", loc);
 				// no databanks for loc 44 and 45
-				if (j != 44 && j != 45) {
-					exportMobs(loadFile(i + loc));
-					loc++;
-				}
-			}
-			printf("mob.txt - done\n");
-			printf("All done!\n");
-			free(pathBuffer);
-			_fFiles.close();
-		}
-	}
-	free(fileTable);
-	_databank.close();
-	_items.clear();
-
-	// For PL game data
-	if (!mobsDE) {
-		_outputPath.setFullName("mob.txt");
-		_fFiles.open(_outputPath, "w");
-		if (!_fFiles.isOpen()) {
-			error("Unable to create mob.txt");
-		}
-		_fFiles.print("mob.lst\nmob_name - exam text\n");
-		for (int loc = 1; loc <= kNumberOfLocations; loc++) {
-			_fFiles.print("%d.\n", loc);
-			// no databanks for loc 44 and 45
-			if (loc != 44 && loc != 45) {
-				fullName = mainDir.getFullPath();
-				sprintf(pathBuffer, "%02d/databank.ptc", loc);
-				fullName += pathBuffer;
-				filename = Common::Filename(fullName);
-				_databank.open(filename, "rb");
-				if (!_databank.isOpen()) {
-					_fFiles.close();
-					error("Unable to open %02d/databank.ptc", loc);
-				}
-				fileTable = openDatabank();
-				for (size_t i = 0; i < _items.size(); i++) {
-					if (!scumm_stricmp(_items[i]._name.c_str(), "mob.lst")) {
-						exportMobs(loadFile(i));
+				if (loc != 44 && loc != 45) {
+					databankFullName = mainDir.getFullPath();
+					sprintf(pathBuffer, "%02d/databank.ptc", loc);
+					databankFullName += pathBuffer;
+					filename = Common::Filename(databankFullName);
+					_databank.open(filename, "rb");
+					if (!_databank.isOpen()) {
+						_fFiles.close();
+						error("Unable to open %02d/databank.ptc", loc);
 					}
-				}
+					fileTable = openDatabank();
+					for (size_t i = 0; i < _items.size(); i++) {
+						if (!scumm_stricmp(_items[i]._name.c_str(), "mob.lst")) {
+							exportMobs(loadFile(i));
+						}
+					}
 				free(fileTable);
 				_databank.close();
 				_items.clear();
@@ -136,9 +140,47 @@ void ExtractPrince::execute() {
 		printf("All done!\n");
 		free(pathBuffer);
 		_fFiles.close();
+		}
+	}
+	if (Common::Filename(databankFullName).exists() == false) {
+		printf("Unable to load DATABANK.PTC. Trying to access the uncompressed data files... \n");
+
+		// Since we found out that there's no databank.ptc file, we now
+		// try to extract the data from the uncompressed datafiles.
+		printf("Processing variatxt.dat...\n");
+		exportVariaTxt(loadFile(mainDir.getFullPath() + "variatxt.dat"));
+		printf("Processing invtxt.dat...\n");
+		exportInvTxt(loadFile(mainDir.getFullPath() + "invtxt.dat"));
+		printf("Processing talktxt.dat...\n");
+		exportTalkTxt(loadFile(mainDir.getFullPath() + "talktxt.dat"));
+		printf("Processing credits.dat...\n");
+		exportCredits(loadFile(mainDir.getFullPath() + "credits.dat"));
+
+		// Process the mob*.lst files. We have up to 61 files, so we process them recursively.
+		_outputPath.setFullName("mob.txt");
+		_fFiles.open(_outputPath, "w");
+		_fFiles.print("mob.lst\nmob_name - exam text\n");
+
+		int mobFileNumber;
+		for (mobFileNumber = 1; mobFileNumber <= 9; ++mobFileNumber) {
+			if (Common::Filename(mainDir.getFullPath() + "mob0" + std::to_string(mobFileNumber) + ".lst").exists() == true) {
+				_fFiles.print("%d.\n", mobFileNumber);
+				exportMobs(loadFile(mainDir.getFullPath() + "mob0" + std::to_string(mobFileNumber) + ".lst"));
+				print("Processing mob0%d.lst", mobFileNumber);
+			}
+		}
+		for (mobFileNumber = 10; mobFileNumber <= 61; ++mobFileNumber) {
+			if (Common::Filename(mainDir.getFullPath() + "mob" + std::to_string(mobFileNumber) + ".lst").exists() == true) {
+				_fFiles.print("%d.\n", mobFileNumber);
+				exportMobs(loadFile(mainDir.getFullPath() + "mob" + std::to_string(mobFileNumber) + ".lst"));
+				print("Processing mob%d.lst...", mobFileNumber);
+			}
+		}
+		_fFiles.close();
+		printf("mob.txt - done\n");
+		printf("All done!\n");
 	}
 }
-
 InspectionMatch ExtractPrince::inspectInput(const Common::Filename &filename) {
 	return IMATCH_PERFECT;
 }
@@ -176,6 +218,7 @@ void ExtractPrince::decrypt(byte *buffer, uint32 size) {
 	}
 }
 
+// DATABANK loader
 ExtractPrince::FileData ExtractPrince::loadFile(int itemIndex) {
 	FileData fileData;
 	fileData._fileTable = 0;
@@ -203,6 +246,22 @@ ExtractPrince::FileData ExtractPrince::loadFile(int itemIndex) {
 		fileData._size = decompLen;
 		fileData._fileTable = decompData;
 	}
+
+	return fileData;
+}
+// Uncompressed datafile loader
+ExtractPrince::FileData ExtractPrince::loadFile(std::string fileName) {
+	Common::File file;
+	file.open(fileName, "rb");
+	if (!file.isOpen()) {
+		error("Unable to open datafile %s", fileName);
+	}
+	FileData fileData;
+	fileData._size = file.size();
+	fileData._fileTable = 0;
+
+	fileData._fileTable = (byte *)malloc(fileData._size);
+	file.read_throwsOnError(fileData._fileTable, fileData._size);
 
 	return fileData;
 }
