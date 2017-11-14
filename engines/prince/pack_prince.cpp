@@ -707,7 +707,10 @@ void PackPrince::talkTxtNoDialog() {
 	std::string line;
 	Common::Array<TalkTxt> normalLinesArray;
 	TalkTxt tempNormalLine;
+	bool havePragma;
 	while (1) {
+		havePragma = true;
+
 		// Special dialog data
 		line.clear();
 		while ((c = _databank.readByte()) != '\r') {
@@ -728,20 +731,32 @@ void PackPrince::talkTxtNoDialog() {
 			continue;
 		} else if (!line.compare("#END")) {
 			break;
+		} else {
+			if (line.front() == '#') {
+				printf("UNKNOWN pragma: %s", line.c_str());
+				break;
+			} else {
+				tempNormalLine._txt = line;
+				havePragma = false;
+
+				tempNormalLine._txt += '\0';
+			}
 		}
 
-		// Line of text
-		tempNormalLine._txt.clear();
-		while ((c = _databank.readByte()) != '\r') {
-			c = correctPolishLetter(c); // temporary
-			if (c == '|') {
-				c = 10;
+		if (havePragma) {
+			// Line of text
+			tempNormalLine._txt.clear();
+			while ((c = _databank.readByte()) != '\r') {
+				c = correctPolishLetter(c); // temporary
+				if (c == '|') {
+					c = 10;
+				}
+				tempNormalLine._txt += c;
 			}
+			c = 0;
 			tempNormalLine._txt += c;
+			_databank.readByte(); // skip '\n'
 		}
-		c = 0;
-		tempNormalLine._txt += c;
-		_databank.readByte(); // skip '\n'
 
 		normalLinesArray.push_back(tempNormalLine);
 	}
@@ -788,6 +803,10 @@ void PackPrince::packMobs() {
 	while (1) {
 		newMob._name.clear();
 		newMob._examTxt.clear();
+
+		if ((uint)_databank.pos() == fileSize) {
+			break;
+		}
 
 		// Test if end of location - next number
 		if ((c = _databank.readByte()) > 47 && c < 58) {
