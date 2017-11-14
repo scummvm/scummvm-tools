@@ -254,7 +254,7 @@ ExtractPrince::FileData ExtractPrince::loadFile(std::string fileName) {
 	Common::File file;
 	file.open(fileName, "rb");
 	if (!file.isOpen()) {
-		error("Unable to open datafile %s", fileName);
+		error("Unable to open datafile %s", fileName.c_str());
 	}
 	FileData fileData;
 	fileData._size = file.size();
