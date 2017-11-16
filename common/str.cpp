@@ -101,6 +101,10 @@ String::String(const String &str)
 	assert(_str != 0);
 }
 
+String::String(const std::string &str) {
+	initWithCStr(str.c_str(), str.size());
+}
+
 String::String(char c)
 : _size(0), _str(_storage) {
 

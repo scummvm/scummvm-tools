@@ -25,6 +25,7 @@
  */
 
 #include "file.h"
+#include "common/str.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
@@ -56,11 +57,17 @@ namespace Common {
 Filename::Filename() {
 }
 Filename::Filename(const char *path) : _path(path) {
-	// If this is a directory append '/' at the end if needed.
-	if (!_path.empty() && _path[_path.size() - 1] != '/' && _path[_path.size() - 1] != '\\' && isDirectory(_path.c_str()))
-		_path += '/';
+	postInitWithString();
 }
-Filename::Filename(std::string path) : _path(path) {
+Filename::Filename(const std::string &path) : _path(path) {
+	postInitWithString();
+}
+
+Filename::Filename(const Common::String &path) : _path(path.c_str()) {
+	postInitWithString();
+}
+
+void Filename::postInitWithString() {
 	// If this is a directory append '/' at the end if needed.
 	if (!_path.empty() && _path[_path.size() - 1] != '/' && _path[_path.size() - 1] != '\\' && isDirectory(_path.c_str()))
 		_path += '/';

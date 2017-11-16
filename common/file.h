@@ -35,6 +35,8 @@
 
 namespace Common {
 
+class String;
+
 /**
  * Something unexpected happened while reading / writing to a file.
  * Usually premature end, or that it could not be opened (write / read protected).
@@ -53,7 +55,8 @@ public:
 	std::string _path;
 
 	Filename();
-	Filename(std::string path);
+	Filename(const std::string &path);
+	Filename(const Common::String &path);
 	Filename(const char *path);
 	Filename(const Filename &path);
 	Filename& operator=(const Filename &fn);
@@ -149,6 +152,9 @@ public:
 	 * Returns the path of the filename, the name and extension of the file is stripped.
 	 */
 	std::string getPath() const;
+
+private:
+	void postInitWithString();
 };
 
 /**

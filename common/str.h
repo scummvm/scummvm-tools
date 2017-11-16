@@ -29,6 +29,7 @@
 
 #include "common/scummsys.h"
 #include "common/array.h"
+#include <string>
 
 namespace Common {
 
@@ -106,6 +107,9 @@ public:
 
 	/** Construct a copy of the given string. */
 	String(const String &str);
+
+	/** Construct a copy of the given string. */
+	String(const std::string &str);
 
 	/** Construct a string consisting of the given character. */
 	explicit String(char c);
