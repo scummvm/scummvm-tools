@@ -19,9 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <string.h>
 #include "extract_prince.h"
 #include "common/endian.h"
+#include "common/str.h"
 
 struct FileData;
 
@@ -163,16 +163,16 @@ void ExtractPrince::execute() {
 
 		int mobFileNumber;
 		for (mobFileNumber = 1; mobFileNumber <= 9; ++mobFileNumber) {
-			if (Common::Filename(mainDir.getFullPath() + "mob0" + std::to_string(mobFileNumber) + ".lst").exists() == true) {
+			if (Common::Filename(mainDir.getFullPath() + Common::String::format("mob0%d.lst", mobFileNumber)).exists() == true) {
 				_fFiles.print("%d.\n", mobFileNumber);
-				exportMobs(loadFile(mainDir.getFullPath() + "mob0" + std::to_string(mobFileNumber) + ".lst"));
+				exportMobs(loadFile(mainDir.getFullPath() + Common::String::format("mob0%d.lst", mobFileNumber)));
 				print("Processing mob0%d.lst", mobFileNumber);
 			}
 		}
 		for (mobFileNumber = 10; mobFileNumber <= 61; ++mobFileNumber) {
-			if (Common::Filename(mainDir.getFullPath() + "mob" + std::to_string(mobFileNumber) + ".lst").exists() == true) {
+			if (Common::Filename(mainDir.getFullPath() + Common::String::format("mob%d.lst", mobFileNumber)).exists() == true) {
 				_fFiles.print("%d.\n", mobFileNumber);
-				exportMobs(loadFile(mainDir.getFullPath() + "mob" + std::to_string(mobFileNumber) + ".lst"));
+				exportMobs(loadFile(mainDir.getFullPath() + Common::String::format("mob%d.lst", mobFileNumber)));
 				print("Processing mob%d.lst...", mobFileNumber);
 			}
 		}
@@ -250,7 +250,7 @@ ExtractPrince::FileData ExtractPrince::loadFile(int itemIndex) {
 	return fileData;
 }
 // Uncompressed datafile loader
-ExtractPrince::FileData ExtractPrince::loadFile(std::string fileName) {
+ExtractPrince::FileData ExtractPrince::loadFile(const Common::String &fileName) {
 	Common::File file;
 	file.open(fileName, "rb");
 	if (!file.isOpen()) {

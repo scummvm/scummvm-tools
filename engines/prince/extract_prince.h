@@ -49,7 +49,7 @@ protected:
 	static void decrypt(byte *buffer, uint32 size);
 
 	FileData loadFile(int itemIndex);
-	FileData loadFile(std::string fileName);
+	FileData loadFile(const Common::String &fileName);
 	char correctPolishLetter(char c);
 
 	void exportMobs(FileData fileData);
