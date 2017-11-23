@@ -1,7 +1,7 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
-1.10.0 (YYYY-MM-DD)
+2.0.0 (YYYY-MM-DD)
  - Fix handling of output path for the compress_touche tool.
  - Fix handling of input path for the extract_cine tool. It was only working
    when run from the directory that contains the game data.
