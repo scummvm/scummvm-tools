@@ -732,7 +732,7 @@ void PackPrince::talkTxtNoDialog() {
 		} else if (!line.compare("#END")) {
 			break;
 		} else {
-			if (line.front() == '#') {
+			if (line[0] == '#') {
 				printf("UNKNOWN pragma: %s", line.c_str());
 				break;
 			} else {
