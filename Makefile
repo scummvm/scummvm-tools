@@ -88,9 +88,7 @@ scummvmtoolswinres.o: $(srcdir)/gui/media/scummvmtools.ico $(srcdir)/dists/scumm
 # Special target to create a win32 tools snapshot binary
 WIN32PATH ?= build
 win32dist:   all
-	mkdir -p $(WIN32PATH)
 	mkdir -p $(WIN32PATH)/graphics
-	mkdir -p $(WIN32PATH)/tools
 	mkdir -p $(WIN32PATH)/tools/media
 	cp $(srcdir)/gui/media/detaillogo.jpg $(WIN32PATH)/tools/media/
 	cp $(srcdir)/gui/media/logo.jpg $(WIN32PATH)/tools/media/
