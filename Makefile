@@ -86,15 +86,15 @@ scummvmtoolswinres.o: $(srcdir)/gui/media/scummvmtools.ico $(srcdir)/dists/scumm
 	$(QUIET_WINDRES)$(WINDRES) -DHAVE_CONFIG_H $(WINDRESFLAGS) $(DEFINES) -I. -I$(srcdir) $(srcdir)/dists/scummvmtools.rc scummvmtoolswinres.o
 
 # Special target to create a win32 tools snapshot binary
-WIN32PATH=c:/scummvm
+WIN32PATH ?= build
 win32dist:   all
 	mkdir -p $(WIN32PATH)
 	mkdir -p $(WIN32PATH)/graphics
 	mkdir -p $(WIN32PATH)/tools
 	mkdir -p $(WIN32PATH)/tools/media
-	cp gui/media/detaillogo.jpg $(WIN32PATH)/tools/media/
-	cp gui/media/logo.jpg $(WIN32PATH)/tools/media/
-	cp gui/media/tile.gif $(WIN32PATH)/tools/media/
+	cp $(srcdir)/gui/media/detaillogo.jpg $(WIN32PATH)/tools/media/
+	cp $(srcdir)/gui/media/logo.jpg $(WIN32PATH)/tools/media/
+	cp $(srcdir)/gui/media/tile.gif $(WIN32PATH)/tools/media/
 	$(STRIP) construct_mohawk$(EXEEXT) -o $(WIN32PATH)/tools/construct_mohawk$(EXEEXT)
 ifeq "$(USE_FREETYPE)" "1"
 ifeq "$(USE_ICONV)" "1"
@@ -116,13 +116,13 @@ ifeq "$(USE_WXWIDGETS)" "1"
 	$(STRIP) scummvm-tools$(EXEEXT) -o $(WIN32PATH)/tools/scummvm-tools$(EXEEXT)
 endif
 	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(WIN32PATH)/tools/scummvm-tools-cli$(EXEEXT)
-	cp *.bat $(WIN32PATH)/tools
-	cp COPYING $(WIN32PATH)/tools/COPYING.txt
-	cp README $(WIN32PATH)/tools/README.txt
-	cp NEWS $(WIN32PATH)/tools/NEWS.txt
-	cp dists/win32/graphics/left.bmp $(WIN32PATH)/graphics
-	cp dists/win32/graphics/scummvm-install.ico $(WIN32PATH)/graphics
-	cp dists/win32/ScummVM?Tools.iss $(WIN32PATH)
+	cp $(srcdir)/*.bat $(WIN32PATH)/tools
+	cp $(srcdir)/COPYING $(WIN32PATH)/tools/COPYING.txt
+	cp $(srcdir)/README $(WIN32PATH)/tools/README.txt
+	cp $(srcdir)/NEWS $(WIN32PATH)/tools/NEWS.txt
+	cp $(srcdir)/dists/win32/graphics/left.bmp $(WIN32PATH)/graphics
+	cp $(srcdir)/dists/win32/graphics/scummvm-install.ico $(WIN32PATH)/graphics
+	cp $(srcdir)/dists/win32/ScummVM?Tools.iss $(WIN32PATH)
 	unix2dos $(WIN32PATH)/tools/*.txt
 
 # Special target to create a win32 NSIS installer
