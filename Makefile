@@ -94,7 +94,7 @@ win32dist:   all
 	cp $(srcdir)/gui/media/logo.jpg $(WIN32PATH)/tools/media/
 	cp $(srcdir)/gui/media/tile.gif $(WIN32PATH)/tools/media/
 	$(STRIP) construct_mohawk$(EXEEXT) -o $(WIN32PATH)/tools/construct_mohawk$(EXEEXT)
-ifeq "$(USE_FREETYPE)" "1"
+ifeq "$(USE_FREETYPE2)" "1"
 ifeq "$(USE_ICONV)" "1"
 	$(STRIP) create_sjisfnt$(EXEEXT) -o $(WIN32PATH)/tools/create_sjisfnt$(EXEEXT)
 endif
@@ -132,7 +132,7 @@ win32setup: all
 	cp $(srcdir)/README           $(srcdir)/$(WIN32BUILD)
 	unix2dos $(srcdir)/$(WIN32BUILD)/*.*
 	$(STRIP) construct_mohawk$(EXEEXT)   -o $(srcdir)/$(WIN32BUILD)/construct_mohawk$(EXEEXT)
-ifeq "$(USE_FREETYPE)" "1"
+ifeq "$(USE_FREETYPE2)" "1"
 ifeq "$(USE_ICONV)" "1"
 	$(STRIP) create_sjisfnt$(EXEEXT)     -o $(srcdir)/$(WIN32BUILD)/create_sjisfnt$(EXEEXT)
 endif
@@ -226,38 +226,38 @@ osxsnap: bundle scummvm-tools-cli-static
 
 # Special target to create an AmigaOS snapshot installation
 amigaos4dist: all
-	mkdir -p $(AMIGAOS4PATH)
-	mkdir -p $(AMIGAOS4PATH)/graphics
-	mkdir -p $(AMIGAOS4PATH)/tools
-	mkdir -p $(AMIGAOS4PATH)/tools/media
-	cp $(srcdir)/gui/media/detaillogo.jpg $(AMIGAOS4PATH)/tools/media/
-	cp $(srcdir)/gui/media/logo.jpg $(AMIGAOS4PATH)/tools/media/
-	cp $(srcdir)/gui/media/tile.gif $(AMIGAOS4PATH)/tools/media/
-	$(STRIP) construct_mohawk$(EXEEXT) -o $(AMIGAOS4PATH)/tools/construct_mohawk$(EXEEXT)
-ifeq "$(USE_FREETYPE)" "1"
+	mkdir -p $(AMIGAOSPATH)
+	mkdir -p $(AMIGAOSPATH)/graphics
+	mkdir -p $(AMIGAOSPATH)/tools
+	mkdir -p $(AMIGAOSPATH)/tools/media
+	cp $(srcdir)/gui/media/detaillogo.jpg $(AMIGAOSPATH)/tools/media/
+	cp $(srcdir)/gui/media/logo.jpg $(AMIGAOSPATH)/tools/media/
+	cp $(srcdir)/gui/media/tile.gif $(AMIGAOSPATH)/tools/media/
+	$(STRIP) construct_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/tools/construct_mohawk$(EXEEXT)
+ifeq "$(USE_FREETYPE2)" "1"
 ifeq "$(USE_ICONV)" "1"
-	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AMIGAOS4PATH)/tools/create_sjisfnt$(EXEEXT)
+	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AMIGAOSPATH)/tools/create_sjisfnt$(EXEEXT)
 endif
 endif
-	$(STRIP) decine$(EXEEXT) -o $(AMIGAOS4PATH)/tools/decine$(EXEEXT)
+	$(STRIP) decine$(EXEEXT) -o $(AMIGAOSPATH)/tools/decine$(EXEEXT)
 ifeq "$(USE_BOOST)" "1"
-	$(STRIP) decompile$(EXEEXT) -o $(AMIGAOS4PATH)/tools/decompile$(EXEEXT)
+	$(STRIP) decompile$(EXEEXT) -o $(AMIGAOSPATH)/tools/decompile$(EXEEXT)
 endif
-	$(STRIP) degob$(EXEEXT) -o $(AMIGAOS4PATH)/tools/degob$(EXEEXT)
-	$(STRIP) dekyra$(EXEEXT) -o $(AMIGAOS4PATH)/tools/dekyra$(EXEEXT)
-	$(STRIP) deprince$(EXEEXT) -o $(AMIGAOS4PATH)/tools/deprince$(EXEEXT)
-	$(STRIP) descumm$(EXEEXT) -o $(AMIGAOS4PATH)/tools/descumm$(EXEEXT)
-	$(STRIP) desword2$(EXEEXT) -o $(AMIGAOS4PATH)/tools/desword2$(EXEEXT)
-	$(STRIP) extract_mohawk$(EXEEXT) -o $(AMIGAOS4PATH)/tools/extract_mohawk$(EXEEXT)
-	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AMIGAOS4PATH)/tools/gob_loadcalc$(EXEEXT)
+	$(STRIP) degob$(EXEEXT) -o $(AMIGAOSPATH)/tools/degob$(EXEEXT)
+	$(STRIP) dekyra$(EXEEXT) -o $(AMIGAOSPATH)/tools/dekyra$(EXEEXT)
+	$(STRIP) deprince$(EXEEXT) -o $(AMIGAOSPATH)/tools/deprince$(EXEEXT)
+	$(STRIP) descumm$(EXEEXT) -o $(AMIGAOSPATH)/tools/descumm$(EXEEXT)
+	$(STRIP) desword2$(EXEEXT) -o $(AMIGAOSPATH)/tools/desword2$(EXEEXT)
+	$(STRIP) extract_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/tools/extract_mohawk$(EXEEXT)
+	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AMIGAOSPATH)/tools/gob_loadcalc$(EXEEXT)
 ifeq "$(USE_WXWIDGETS)" "1"
-	$(STRIP) scummvm-tools$(EXEEXT) -o $(AMIGAOS4PATH)/tools/scummvm-tools$(EXEEXT)
+	$(STRIP) scummvm-tools$(EXEEXT) -o $(AMIGAOSPATH)/tools/scummvm-tools$(EXEEXT)
 endif
-	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AMIGAOS4PATH)/tools/scummvm-tools-cli$(EXEEXT)
-	#cp ${srcdir}/icons/scummvm-tools.info $(AMIGAOS4PATH)/scummvm-tools.info
-	cp $(srcdir)/COPYING $(AMIGAOS4PATH)/tools/COPYING.txt
-	cp $(srcdir)/README $(AMIGAOS4PATH)/tools/README.txt
-	cp $(srcdir)/NEWS $(AMIGAOS4PATH)/tools/NEWS.txt
+	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AMIGAOSPATH)/tools/scummvm-tools-cli$(EXEEXT)
+	#cp ${srcdir}/icons/scummvm-tools.info $(AMIGAOSPATH)/scummvm-tools.info
+	cp $(srcdir)/COPYING $(AMIGAOSPATH)/tools/COPYING.txt
+	cp $(srcdir)/README $(AMIGAOSPATH)/tools/README.txt
+	cp $(srcdir)/NEWS $(AMIGAOSPATH)/tools/NEWS.txt
 
 #
 # RISC OS specific

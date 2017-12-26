@@ -39,7 +39,7 @@ PROGRAMS += \
 	decompile
 endif
 
-ifdef USE_FREETYPE
+ifdef USE_FREETYPE2
 ifdef USE_ICONV
 PROGRAMS += \
 	create_sjisfnt
@@ -156,9 +156,9 @@ pegasus_save_types_OBJS := \
 pegasus_save_types_LIBS := -framework CoreServices
 
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
-create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)
+create_sjisfnt_LIBS := $(FREETYPE2_LIBS) $(ICONV_LIBS)
 # Set custom build flags
-create_sjisfnt.o: CPPFLAGS+=$(FREETYPEINCLUDES) $(ICONVCFLAGS)
+create_sjisfnt.o: CPPFLAGS+=$(FREETYPE2_CFLAGS) $(ICONV_CFLAGS)
 
 
 sword2_clue_OBJS := engines/sword2/sword2_clue.o common/file.o
@@ -309,11 +309,11 @@ TARGETS := $(addsuffix $(EXEEXT),$(PROGRAMS))
 all: $(TARGETS)
 
 install: $(TARGETS)
-	$(INSTALL) -p -m 0755 -d $(DESTDIR)$(BINDIR)
-	$(INSTALL) -p -m 0755 -d $(DESTDIR)$(DATADIR)/scummvm-tools
-	for i in $^ ; do $(INSTALL) -p -m 0755 $$i $(DESTDIR)$(BINDIR) ; done
-	$(INSTALL) -m 0755 -d $(DESTDIR)$(DATADIR)/scummvm-tools
-	$(INSTALL) -p -m 0644 $(srcdir)/gui/media/*.* $(DESTDIR)$(DATADIR)/scummvm-tools
+	$(INSTALL) -p -m 0755 -d $(DESTDIR)$(bindir)
+	$(INSTALL) -p -m 0755 -d $(DESTDIR)$(datadir)/scummvm-tools
+	for i in $^ ; do $(INSTALL) -p -m 0755 $$i $(DESTDIR)$(bindir) ; done
+	$(INSTALL) -m 0755 -d $(DESTDIR)$(datadir)/scummvm-tools
+	$(INSTALL) -p -m 0644 $(srcdir)/gui/media/*.* $(DESTDIR)$(datadir)/scummvm-tools
 
 # Template for all executable targets.
 # This also automatically hooks up a "clean" rule.
