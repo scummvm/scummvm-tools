@@ -314,19 +314,19 @@ char *get_string(char *buf) {
 				// positions 10, 11, 14, 15 are the VCTL block size (LE).
 				{
 					// show the voice's position in the MONSTER.SOU
-				    int p = 0;
-				    p += get_word();
+				    unsigned int p = 0;
+				    p += get_word() & 0xFFFF;
 				    g_scriptCurPos += 2; // skip the next "0xFF 0x0A"
-				    p += get_word() << 2;
+				    p += (get_word() & 0xFFFF) << 16;
 				    e += sprintf(e, "0x%X, ", p);
 
 				    g_scriptCurPos += 2; // skip the next "0xFF 0x0A"
 
 				    // show the size of the VCTL chunk/lip-synch tags
 				    p = 0;
-				    p += get_word();
+				    p += get_word() & 0xFFFF;
 				    g_scriptCurPos += 2; // skip the next "0xFF 0x0A"
-				    p += get_word() << 2;
+				    p += (get_word() & 0xFFFF) << 16;
 				    e += sprintf(e, "0x%X)", p);
 				}
 				break;
