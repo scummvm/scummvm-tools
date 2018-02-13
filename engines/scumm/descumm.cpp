@@ -2503,7 +2503,7 @@ void next_line_V0(char *buf) {
 	case 0xBD:
 	case 0xDD:
 	case 0xFD:
-		do_tok(buf, "setBitVar", A1B | ((opcode & 0x80) ? A2V : A2B) | ((opcode & 0x40) ? A3V : A3B));
+		do_tok(buf, "setBitVar", ((opcode & 0x80) ? A1V : A1B) | ((opcode & 0x40) ? A2V : A2B) | ((opcode & 0x20) ? A3V : A3B));
 		break;
 
 	case 0x1B:
