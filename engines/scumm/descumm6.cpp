@@ -2300,6 +2300,7 @@ void next_line_HE_V100(char *output) {
 		break;
 	case 0x9C:
 		ext(output, "rpp|getAnimateVariable");
+		break;
 	case 0x9D:
 		ext(output, "rp|getActorWidth");
 		break;

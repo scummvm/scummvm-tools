@@ -1570,7 +1570,7 @@ void do_if_active_object(char *buf, byte opcode) {
 }
 
 void do_walk_actor_to_object(char *buf, byte opcode) {
-	
+
 	buf += sprintf(buf, "walkActorToObject(");
 	buf = add_a_tok(buf, (opcode & 0x80) ? A1V : A1B);
 
@@ -1622,7 +1622,7 @@ void do_set_object_name(char *buf, byte opcode) {
 	buf += sprintf(buf, "setObjectName(%d,", obj);
 	buf = add_a_tok(buf, A1B | A1ASCII);
 
-	sprintf(buf, ");", obj);
+	sprintf(buf, ");");
 }
 
 void do_if_state_code(char *buf, byte opcode) {
@@ -3117,6 +3117,7 @@ void next_line_V345(char *buf) {
 			do_tok(buf, "getObjectState", AVARSTORE | ((opcode & 0x80) ? A1V : A1W));
 			break;
 		}
+		// fall through
 	case 0x2F:
 	case 0x4F:
 	case 0x6F:
