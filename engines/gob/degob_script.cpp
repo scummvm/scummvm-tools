@@ -240,6 +240,7 @@ void Script::seek(uint32 off, int whence) {
 	switch (whence) {
 	case SEEK_END:
 		off = _totSize - off;
+		// fall through
 	case SEEK_SET:
 		_ptr = _totData + off;
 	break;
@@ -307,7 +308,7 @@ void Script::skipExpr(char stopToken) {
 
 			case 15:
 				skip(2);
-
+				// fall through
 			case 16:
 			case 26:
 			case 27:
