@@ -32,7 +32,7 @@
 
 class Engine;
 
-class Function;
+struct Function;
 
 const int kIndentAmount = 2; ///< How many spaces to use for each indent.
 
