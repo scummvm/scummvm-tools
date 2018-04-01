@@ -47,6 +47,7 @@
 #endif
 
 #include "engines/agos/extract_agos.h"
+#include "engines/bladerunner/pack_bladerunner.h"
 #include "engines/cge/extract_cge.h"
 #include "engines/cge/pack_cge.h"
 #include "engines/cine/extract_cine.h"
@@ -88,6 +89,7 @@ Tools::Tools() {
 #endif
 
 	_tools.push_back(new ExtractAgos());
+	_tools.push_back(new PackBladeRunner());
 	_tools.push_back(new ExtractCge());
 	_tools.push_back(new PackCge());
 	_tools.push_back(new ExtractCine());
@@ -115,7 +117,7 @@ Tools::ToolList Tools::inspectInput(const Common::Filename &filename, ToolType t
 	ToolList perfect_choices;
 	ToolList good_choices;
 	ToolList awful_choices;
-	
+
 	Common::Filename dirname;
 	if (check_directory && !filename.directory())
 		dirname = filename.getPath();
