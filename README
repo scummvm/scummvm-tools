@@ -449,6 +449,6 @@ Other Tools:
                 but name them CDFRAMES2.DAT - CDFRAMES4.DAT respectively.
 
                 3. Run the tool:
-                  ./scummvm-tools-cli --tool pack_bladerunner [-o outputfile] <inputdir>
+                  ./scummvm-tools-cli --tool pack_bladerunner [-o outputfile] <inputdir>/CDFRAMES.DAT
 
                 4. Copy the resulting HDFRAMES.DAT file to the game directory.

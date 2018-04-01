@@ -25,8 +25,10 @@
 
 PackBladeRunner::PackBladeRunner(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	ToolInput input;
-	input.format = "/";
+	input.format = "*.DAT";
 	_inputPaths.push_back(input);
+
+	_supportsProgressBar = true;
 
 	_outputToDirectory = true;
 
@@ -88,7 +90,7 @@ void PackBladeRunner::execute() {
 
 	while (true) {
 		uint32 cdPageCount = in.readUint32LE();
-		printf("Reading %d pages from %s...\n", cdPageCount, mainDir.getFullName().c_str());
+		print("Reading %d pages from %s...", cdPageCount, mainDir.getFullName().c_str());
 
 		for (uint32 i = 0; i < cdPageCount; i++) {
 			cdPageOffsets[i] = in.readUint32LE();
@@ -115,11 +117,11 @@ void PackBladeRunner::execute() {
 			out.write(buf, kPageSize);
 
 			hdPageOffsets[hdCurrentPage++] = cdPageOffsets[cdCurrentPage++];
+
+			updateProgress(hdCurrentPage, kHDPageCount);
 		}
 
 		in.close();
-
-		updateProgress(curCD, 4);
 
 		curCD++;
 
@@ -144,20 +146,7 @@ void PackBladeRunner::execute() {
 		out.write(buf, kPageSize);
 	}
 
-#if 0
-	out.close();
-	_outputPath.setFullName("HDFRAMES.DAT");
-
-	out.open("HDFRAMES.DAT.HEADER");
-
-	out.write(timestamp, 4);
-
-	WRITE_LE_UINT32(buf, kHDPageCount);
-	out.write(buf, 4);
-#else
-
 	out.seek(8, SEEK_SET);
-#endif
 
 	for (int i = 0; i < kHDPageCount; i++) {
 		WRITE_LE_UINT32(&buf[i * 4], hdPageOffsets[i]);
@@ -172,8 +161,8 @@ void PackBladeRunner::execute() {
 	free(hdPageOffsets);
 
 
-	printf("All done!\n");
-	printf("File is created in %s\n", _outputPath.getFullPath().c_str());
+	print("All done!");
+	print("File is created in %s", _outputPath.getFullPath().c_str());
 }
 
 #ifdef STANDALONE_MAIN
