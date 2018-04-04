@@ -28,11 +28,11 @@
 class ExtractPrince : public Tool {
 public:
 	ExtractPrince(const std::string &name = "extract_prince");
-	
+
 	virtual void execute();
-	
+
 	virtual InspectionMatch inspectInput(const Common::Filename &filename);
-	
+
 protected:
 	struct FileEntry {
 		std::string _name;
@@ -49,7 +49,7 @@ protected:
 	static void decrypt(byte *buffer, uint32 size);
 
 	FileData loadFile(int itemIndex);
-	FileData loadFile(const Common::String &fileName);
+	FileData loadFile(const std::string &fileName);
 	char correctPolishLetter(char c);
 
 	void exportMobs(FileData fileData);

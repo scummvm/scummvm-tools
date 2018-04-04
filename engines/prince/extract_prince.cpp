@@ -45,7 +45,7 @@ void ExtractPrince::execute() {
 		_outputPath.setFullPath("./");
 	}
 
-	char *pathBuffer = (char *)malloc(17 * sizeof(char));
+	char *pathBuffer = (char *)malloc(100 * sizeof(char));
 	print("Unpacking The Prince and the Coward text data... ");
 
 	std::string databankFullName = mainDir.getFullPath();
@@ -162,18 +162,12 @@ void ExtractPrince::execute() {
 		_fFiles.print("mob.lst\nmob_name - exam text\n");
 
 		int mobFileNumber;
-		for (mobFileNumber = 1; mobFileNumber <= 9; ++mobFileNumber) {
-			if (Common::Filename(mainDir.getFullPath() + Common::String::format("mob0%d.lst", mobFileNumber)).exists() == true) {
+		for (mobFileNumber = 1; mobFileNumber <= 61; ++mobFileNumber) {
+			snprintf(pathBuffer, 100, "mob%02d.lst", mobFileNumber);
+			if (Common::Filename(mainDir.getFullPath() + pathBuffer).exists() == true) {
 				_fFiles.print("%d.\n", mobFileNumber);
-				exportMobs(loadFile(mainDir.getFullPath() + Common::String::format("mob0%d.lst", mobFileNumber)));
-				print("Processing mob0%d.lst", mobFileNumber);
-			}
-		}
-		for (mobFileNumber = 10; mobFileNumber <= 61; ++mobFileNumber) {
-			if (Common::Filename(mainDir.getFullPath() + Common::String::format("mob%d.lst", mobFileNumber)).exists() == true) {
-				_fFiles.print("%d.\n", mobFileNumber);
-				exportMobs(loadFile(mainDir.getFullPath() + Common::String::format("mob%d.lst", mobFileNumber)));
-				print("Processing mob%d.lst...", mobFileNumber);
+				exportMobs(loadFile(mainDir.getFullPath() + pathBuffer));
+				print("Processing mob%02d.lst", mobFileNumber);
 			}
 		}
 		_fFiles.close();
@@ -250,7 +244,7 @@ ExtractPrince::FileData ExtractPrince::loadFile(int itemIndex) {
 	return fileData;
 }
 // Uncompressed datafile loader
-ExtractPrince::FileData ExtractPrince::loadFile(const Common::String &fileName) {
+ExtractPrince::FileData ExtractPrince::loadFile(const std::string &fileName) {
 	Common::File file;
 	file.open(fileName, "rb");
 	if (!file.isOpen()) {
