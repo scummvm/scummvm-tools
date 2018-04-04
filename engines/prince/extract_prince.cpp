@@ -45,7 +45,7 @@ void ExtractPrince::execute() {
 		_outputPath.setFullPath("./");
 	}
 
-	char *pathBuffer = (char *)malloc(100 * sizeof(char));
+	char pathBuffer[100];
 	print("Unpacking The Prince and the Coward text data... ");
 
 	std::string databankFullName = mainDir.getFullPath();
