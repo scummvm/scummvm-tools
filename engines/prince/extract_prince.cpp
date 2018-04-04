@@ -96,7 +96,6 @@ void ExtractPrince::execute() {
 				}
 				print("mob.txt - done");
 				print("All done!");
-				free(pathBuffer);
 				_fFiles.close();
 			}
 		}
@@ -138,7 +137,6 @@ void ExtractPrince::execute() {
 			}
 			print("mob.txt - done");
 			print("All done!");
-			free(pathBuffer);
 			_fFiles.close();
 		}
 	}
