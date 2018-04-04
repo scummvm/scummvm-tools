@@ -46,7 +46,7 @@ void ExtractPrince::execute() {
 	}
 
 	char *pathBuffer = (char *)malloc(17 * sizeof(char));
-	printf("Unpacking The Prince and the Coward text data... \n");
+	print("Unpacking The Prince and the Coward text data... ");
 
 	std::string databankFullName = mainDir.getFullPath();
 	sprintf(pathBuffer, "all/databank.ptc");
@@ -60,7 +60,7 @@ void ExtractPrince::execute() {
 	// uncompressed files directly.
 	if (Common::Filename(databankFullName).exists()) {
 		_databank.open(filename, "rb");
-		printf("DATABANK.PTC loaded, processing... \n");
+		print("DATABANK.PTC loaded, processing... ");
 		byte *fileTable = openDatabank();
 		bool mobsDE = false;
 		for (size_t i = 0; i < _items.size(); i++) {
@@ -94,8 +94,8 @@ void ExtractPrince::execute() {
 						loc++;
 					}
 				}
-				printf("mob.txt - done\n");
-				printf("All done!\n");
+				print("mob.txt - done");
+				print("All done!");
 				free(pathBuffer);
 				_fFiles.close();
 			}
@@ -136,24 +136,24 @@ void ExtractPrince::execute() {
 					_items.clear();
 				}
 			}
-			printf("mob.txt - done\n");
-			printf("All done!\n");
+			print("mob.txt - done");
+			print("All done!");
 			free(pathBuffer);
 			_fFiles.close();
 		}
 	}
 	if (Common::Filename(databankFullName).exists() == false) {
-		printf("Unable to load DATABANK.PTC. Trying to access the uncompressed data files... \n");
+		print("Unable to load DATABANK.PTC. Trying to access the uncompressed data files...");
 
 		// Since we found out that there's no databank.ptc file, we now
 		// try to extract the data from the uncompressed datafiles.
-		printf("Processing variatxt.dat...\n");
+		print("Processing variatxt.dat...");
 		exportVariaTxt(loadFile(mainDir.getFullPath() + "variatxt.dat"));
-		printf("Processing invtxt.dat...\n");
+		print("Processing invtxt.dat...");
 		exportInvTxt(loadFile(mainDir.getFullPath() + "invtxt.dat"));
-		printf("Processing talktxt.dat...\n");
+		print("Processing talktxt.dat...");
 		exportTalkTxt(loadFile(mainDir.getFullPath() + "talktxt.dat"));
-		printf("Processing credits.dat...\n");
+		print("Processing credits.dat...");
 		exportCredits(loadFile(mainDir.getFullPath() + "credits.dat"));
 
 		// Process the mob*.lst files. We have up to 61 files, so we process them recursively.
@@ -177,8 +177,8 @@ void ExtractPrince::execute() {
 			}
 		}
 		_fFiles.close();
-		printf("mob.txt - done\n");
-		printf("All done!\n");
+		print("mob.txt - done");
+		print("All done!");
 	}
 }
 InspectionMatch ExtractPrince::inspectInput(const Common::Filename &filename) {
@@ -362,7 +362,7 @@ void ExtractPrince::exportVariaTxt(FileData fileData) {
 		}
 		free(fileData._fileTable);
 		_fFiles.close();
-		printf("variatxt.txt - done\n");
+		print("variatxt.txt - done");
 	}
 }
 
@@ -406,7 +406,7 @@ void ExtractPrince::exportInvTxt(FileData fileData) {
 		}
 		free(fileData._fileTable);
 		_fFiles.close();
-		printf("invtxt.txt - done\n");
+		print("invtxt.txt - done");
 	}
 }
 
@@ -439,7 +439,7 @@ void ExtractPrince::exportCredits(FileData fileData) {
 		}
 		free(fileData._fileTable);
 		_fFiles.close();
-		printf("credits.txt - done\n");
+		print("credits.txt - done");
 	}
 }
 
@@ -483,7 +483,7 @@ void ExtractPrince::exportTalkTxt(FileData fileData) {
 		}
 		free(fileData._fileTable);
 		_fFiles.close();
-		printf("talktxt.txt - done\n");
+		print("talktxt.txt - done");
 
 		// Additional id data for texts
 		_outputPath.setFullName("talktxt_ids.txt");
@@ -496,7 +496,7 @@ void ExtractPrince::exportTalkTxt(FileData fileData) {
 			_fFiles.print("%d\n", setStringIdArray[i]);
 		}
 		_fFiles.close();
-		printf("talktxt_ids.txt - done\n");
+		print("talktxt_ids.txt - done");
 	}
 }
 
