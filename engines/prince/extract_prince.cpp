@@ -131,15 +131,15 @@ void ExtractPrince::execute() {
 							exportMobs(loadFile(i));
 						}
 					}
-				free(fileTable);
-				_databank.close();
-				_items.clear();
+					free(fileTable);
+					_databank.close();
+					_items.clear();
+				}
 			}
-		}
-		printf("mob.txt - done\n");
-		printf("All done!\n");
-		free(pathBuffer);
-		_fFiles.close();
+			printf("mob.txt - done\n");
+			printf("All done!\n");
+			free(pathBuffer);
+			_fFiles.close();
 		}
 	}
 	if (Common::Filename(databankFullName).exists() == false) {
