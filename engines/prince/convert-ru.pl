@@ -25,7 +25,7 @@ while (<STDIN>) {
 		next;
 	}
 
-	if ($line > 4 and not defined $lang) {
+	if ($line >= 4 and not defined $lang) {
 		if (/Bpdbyz/) {
 			$lang = 'ru';
 		} elsif (/Excuse/) {
@@ -73,6 +73,12 @@ while (<STDIN>) {
 
 		tr /qwertyuiopasdfghjklzxcvbnm\x85\xb3\xca\xa5\xea\xe6/йцукенгшщзфывапролдячсмитьхюэжбъ/;
 		tr /QWERTYUIOPASDFGHJKLZXCVBNM\x82\x7f\x83\x81\x84/ЙЦУКЕНГШЩЗФЫВАПРОЛДЯЧСМИТЬЭХБЖЮ/;
+		print;
+	}
+
+	if ($lang eq 'pl') {
+		tr /\x9c\xea\xbf\xb3\x9f\xe6\xf1\xf3\xb9\xaf\x8c\xa3\xd1\xc6\xca/śężłźćńóąŻŚŁŃĆĘ/;
+
 		print;
 	}
 }
