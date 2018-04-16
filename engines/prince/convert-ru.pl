@@ -13,9 +13,9 @@ my $lang;
 
 my @english = (' a ', ' is ', ' i ', ' and ', ' be ', 'can', ' me', 'you', 'ack', 'that', 'then', 'yes', 'um', 'chi', 'year', 'mm', 'no', 'da', 'on',
 				'bla', 'lik', 'ha', 'but', 'ma', 'wa', 'yeah', 'taste', 'str', 'grr', 'pff', 'air', 'lord', ' he, ', 'get', 'yuck', 'oo', 'blur', 'see',
-				'puah', 'lo', 'go', 'cur', 'hop', 'super', 'doing', 'well', 'real', 'sure', 'final', 'all', 'illeg');
+				'puah', 'lo', 'go', 'cur', 'hop', 'super', 'doing', 'well', 'real', 'sure', 'final', 'all', 'illeg', 'done', 'empt');
 
-while (<>) {
+while (<STDIN>) {
 	$line++;
 	my $str = $_;
 	my $lstr = lc $str;
@@ -25,7 +25,7 @@ while (<>) {
 		next;
 	}
 
-	if ($line == 4) {
+	if ($line > 4 and not defined $lang) {
 		if (/Bpdbyz/) {
 			$lang = 'ru';
 		} elsif (/Excuse/) {
@@ -35,13 +35,19 @@ while (<>) {
 		} elsif (/Przeppp/) {
 			$lang = 'pl';
 		} else {
-			die "Unknown lanugage";
+			if ($#ARGV == 0) {
+				$lang = $ARGV[0];
+			} else {
+				die "Unknown lanugage";
+			}
 		}
 	}
 
 	if ($lang eq 'en') {
 		# Heuristics to detect Russian
 		my $eng = 0;
+
+		s/\x0d\|/\|/;	# There is one instance of a stray ^M
 
 		for my $k (@english) {
 			if (index($lstr, $k) != -1) {
