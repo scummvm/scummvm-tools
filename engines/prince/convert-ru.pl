@@ -62,7 +62,7 @@ while (<STDIN>) {
 
 	if ($lang eq 'ru' or $lang eq 'en') { # We have English mixed with Russian
 		if ($skip) {
-			tr /\x9f\xa3/ÿś/;  # Pseude-hungarian speech symbol
+			tr /\x9f\xa3/źá/;  # Pseude-hungarian speech symbol
 			print;
 			next;
 		}
@@ -78,6 +78,14 @@ while (<STDIN>) {
 
 	if ($lang eq 'pl') {
 		tr /\x9c\xea\xbf\xb3\x9f\xe6\xf1\xf3\xb9\xaf\x8c\xa3\xd1\xc6\xca/śężłźćńóąŻŚŁŃĆĘ/;
+
+		print;
+	}
+
+	if ($lang eq 'de') {
+		tr /\xc4\xdf\xfc\xf6/Äßüö/;
+
+		tr /\x9f\xa3/źá/;  # Pseude-hungarian speech symbol
 
 		print;
 	}
