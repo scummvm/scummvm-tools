@@ -5,6 +5,8 @@
 use utf8;
 
 sub process_inv($);
+sub process_varia($);
+sub process_mob($);
 
 use open qw/:std :utf8/;
 
@@ -37,6 +39,8 @@ msgstr ""
 EOF
 
 process_inv "invtxt.txt.out";
+process_varia "variatxt.txt.out";
+process_mob "mob.txt.out";
 
 exit;
 
@@ -59,4 +63,63 @@ msgid "$2"
 msgstr ""
 EOF
 	}
+
+	close IN;
+}
+
+sub process_varia {
+	my $file = shift;
+
+	open(*IN, $file) or die "Cannot open file $file: $!";
+
+	while (<IN>) {
+		chomp;
+
+		next if $_ eq 'variatxt.dat';
+
+		/^([\d]+)\.\s+(.*)$/;
+
+		print <<EOF;
+
+#: variatxt.txt:$1
+msgid "$2"
+msgstr ""
+EOF
+	}
+
+	close IN;
+}
+
+sub process_mob {
+	my $file = shift;
+
+	open(*IN, $file) or die "Cannot open file $file: $!";
+
+	my $num = 1;
+	my $line = 1;
+
+	while (<IN>) {
+		chomp;
+
+		next if $_ eq 'mob.lst';
+
+		if (/^([\d]+)\.$/) {
+			$num = $1;
+			$line = 1;
+			next;
+		}
+
+		my $n = sprintf("%d%03d", $num, $line);
+
+		$line++;
+
+		print <<EOF;
+
+#: mob.lst:$n
+msgid "$_"
+msgstr ""
+EOF
+	}
+
+	close IN;
 }
