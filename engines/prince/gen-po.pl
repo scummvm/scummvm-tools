@@ -7,12 +7,15 @@ use utf8;
 sub process_inv($);
 sub process_varia($);
 sub process_mob($);
+sub process_credits($);
 
 use open qw/:std :utf8/;
 
 if ($#ARGV != 0) {
 	die "Usage: $0 <language-code>";
 }
+
+my %data;
 
 my $lang = $ARGV[0];
 
@@ -41,6 +44,7 @@ EOF
 process_inv "invtxt.txt.out";
 process_varia "variatxt.txt.out";
 process_mob "mob.txt.out";
+process_credits "credits.txt.out";
 
 exit;
 
@@ -55,6 +59,8 @@ sub process_inv {
 		next if $_ eq 'invtxt.dat';
 
 		/^([\d]+)\.\s+(.*)$/;
+
+		$data{'invtxt.dat'}{$1} = $2;
 
 		print <<EOF;
 
@@ -78,6 +84,8 @@ sub process_varia {
 		next if $_ eq 'variatxt.dat';
 
 		/^([\d]+)\.\s+(.*)$/;
+
+		$data{'variatxt.dat'}{$1} = $2;
 
 		print <<EOF;
 
@@ -113,6 +121,8 @@ sub process_mob {
 
 		$line++;
 
+		$data{'mob.lst'}{$n} = $_;
+
 		print <<EOF;
 
 #: mob.lst:$n
@@ -120,6 +130,53 @@ msgid "$_"
 msgstr ""
 EOF
 	}
+
+	close IN;
+}
+
+sub process_credits {
+	my $file = shift;
+
+	open(*IN, $file) or die "Cannot open file $file: $!";
+
+	my $n = 0;
+	my $line = 0;
+	my $str = "";
+
+	while (<IN>) {
+		chomp;
+
+		next if $_ eq 'credits.txt';
+
+		$line++;
+		$str .= "\"$_\\n\"\n";
+
+		if ($line == 10) {
+			$data{'credits.txt'}{$n} = $str;
+
+			$n++;
+			$line = 0;
+
+			print <<EOF;
+
+#: credits.txt:$n
+msgid ""
+$str
+msgstr ""
+EOF
+
+			$str = "";
+		}
+	}
+
+	$data{'credits.txt'}{$n} = $str;
+
+	print <<EOF;
+
+#: credits.txt:$n
+msgid ""
+${str}msgstr ""
+EOF
 
 	close IN;
 }
