@@ -697,7 +697,7 @@ wxString ChooseOutPage::getHelp() {
 	return wxT("Select the output path.\t\nIn most cases it's enough to select an output ")
 		wxT("directory, and the tool will fill it with files.\nIf you must supply a file, ")
 		wxT("the filename is not important.\nOther files in the directory will be overwritten ")
-		wxT("without warnings the user.");
+		wxT("without warnings.");
 }
 
 void ChooseOutPage::onNext(wxWindow *panel) {
@@ -849,7 +849,7 @@ void ChooseAudioFormatPage::onNext(wxWindow *panel) {
 	} else {
 
 		// For MP3 we check if the lame path is valid otherwise we let the choice
-		// tp the user to either change the audio format or to go to the MP3
+		// to the user to either change the audio format or to go to the MP3
 		// options page (to set the lame path).
 		if (
 			format->GetStringSelection() == wxT("MP3") &&
