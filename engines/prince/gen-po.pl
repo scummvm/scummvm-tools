@@ -205,6 +205,8 @@ sub process_talk($) {
 		} elsif ($_ eq "\@NORMAL_LINES:") {
 			process_talkNoDialog($dialog, IN);
 		}
+
+		$dialog++;
 	}
 
 	close IN;
@@ -258,9 +260,6 @@ EOF
 			next;
 		} elsif (/^\@DIALOG_OPT (\d+)$/) {
 			$box = $1;
-
-			die "Overflow in DIALOG_OPT: $box" if $box > 9;
-
 			$line = 0;
 			last;
 		} elsif (/^#END$/) {
@@ -316,9 +315,6 @@ EOF
 			}
 		} elsif (/^\@DIALOG_OPT (\d+)$/) {
 			$box = $1;
-
-			die "Overflow in DIALOG_OPT: $box" if $box > 9;
-
 			$line = 0;
 		} elsif (/^#ENDEND$/) {
 			last;
@@ -341,6 +337,40 @@ EOF
 
 			$s = $snew;
 			$needPrint = 0;
+		}
+	}
+}
+
+sub process_talkNoDialog($$) {
+	my $dialog = shift;
+	my $in = shift;
+
+	my $s;
+	my $line = 0;
+
+	while (<$in>) {
+		chomp;
+
+		if (/^#HERO$/) {
+			$s .= "HERO: ";
+		} elsif (/^#OTHER$/) {
+			$s .= "OTHER: ";
+		} elsif (/^#OTHER2$/) {
+			$s .= "OTHER2: ";
+		} elsif (/^#PAUSE$/) {
+			$s .= "P#";
+		} elsif (/^#END$/) {
+			last; # Break
+		} else {
+			$line++;
+			print <<EOF;
+
+#: dialog$dialog.txt:$line
+msgid "$s$_"
+msgstr ""
+EOF
+
+			$s = "";
 		}
 	}
 }
