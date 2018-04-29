@@ -151,7 +151,7 @@ sub process_credits($) {
 	while (<IN>) {
 		chomp;
 
-		next if $_ eq 'credits.txt';
+		next if $_ eq 'credits.dat';
 
 		$line++;
 		$str .= "\"$_\\n\"\n";
