@@ -53,7 +53,7 @@ process_talk "talktxt.txt.out";
 
 exit;
 
-sub process_inv {
+sub process_inv($) {
 	my $file = shift;
 
 	open(*IN, $file) or die "Cannot open file $file: $!";
@@ -78,7 +78,7 @@ EOF
 	close IN;
 }
 
-sub process_varia {
+sub process_varia($) {
 	my $file = shift;
 
 	open(*IN, $file) or die "Cannot open file $file: $!";
@@ -103,7 +103,7 @@ EOF
 	close IN;
 }
 
-sub process_mob {
+sub process_mob($) {
 	my $file = shift;
 
 	open(*IN, $file) or die "Cannot open file $file: $!";
@@ -139,7 +139,7 @@ EOF
 	close IN;
 }
 
-sub process_credits {
+sub process_credits($) {
 	my $file = shift;
 
 	open(*IN, $file) or die "Cannot open file $file: $!";
