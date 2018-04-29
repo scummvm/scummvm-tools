@@ -8,6 +8,10 @@ sub process_inv($);
 sub process_varia($);
 sub process_mob($);
 sub process_credits($);
+sub process_talk($);
+
+sub process_talkWithDialog($$);
+sub process_talkNoDialog($$);
 
 use open qw/:std :utf8/;
 
@@ -41,10 +45,11 @@ msgstr ""
 "X-Generator: Weblate 2.9\\n"
 EOF
 
-process_inv "invtxt.txt.out";
-process_varia "variatxt.txt.out";
-process_mob "mob.txt.out";
-process_credits "credits.txt.out";
+#process_inv "invtxt.txt.out";
+#process_varia "variatxt.txt.out";
+#process_mob "mob.txt.out";
+#process_credits "credits.txt.out";
+process_talk "talktxt.txt.out";
 
 exit;
 
@@ -179,4 +184,97 @@ ${str}msgstr ""
 EOF
 
 	close IN;
+}
+
+sub process_talk($) {
+	my $file = shift;
+
+	open(*IN, $file) or die "Cannot open file $file: $!";
+
+	my $n = 0;
+	my $dialog = 1;
+	my $str = "";
+
+	while (<IN>) {
+		chomp;
+
+		next if $_ eq 'talktxt.dat';
+
+		if ($_ eq "\@DIALOGBOX_LINES:") {
+			process_talkWithDialog($dialog, IN);
+		} elsif ($_ eq "\@NORMAL_LINES:") {
+			process_talkNoDialog($dialog, IN);
+		}
+	}
+
+	close IN;
+}
+
+
+sub process_talkWithDialog($$) {
+	my $dialog = shift;
+	my $in = shift;
+
+	my $s;
+	my $line = 0;
+
+	while (<$in>) {
+		chomp;
+
+		if (/^#HERO$/) {
+			$s .= "HERO: ";
+		} elsif (/^#OTHER$/) {
+			$s .= "OTHER: ";
+		} elsif (/^#OTHER2$/) {
+			$s .= "OTHER2: ";
+		} elsif (/^#PAUSE$/) {
+			$s .= "P#";
+		} elsif (/^#BOX 0$/) {
+			$_ = <$in>; # skip #END
+			last; # Break
+		} else {
+			$line++;
+			print <<EOF;
+
+#: dialog$dialog.txt:$line
+msgid "$s$_"
+msgstr ""
+EOF
+
+			$s = "";
+		}
+	}
+
+	my $box;
+
+	while (<$in>) {
+		chomp;
+
+		if (/^\@DIALOG_BOX (\d+)$/) {
+			$box = $1 + 1;
+			if ($box > 9) {
+				die "Too big DIALOG_BOX: $box";
+			}
+			next;
+		} elsif (/^\@DIALOG_OPT (\d+)$/) {
+			$box = $1 + 1;
+			last;
+		} elsif (/^#END$/) {
+			next;
+		} elsif (/^\$(\d+)$/) {
+			$s = "$_: ";
+			$line = $1;
+		} else {
+			my $n = sprintf("%d%02d", $box, $line);
+			print <<EOF;
+
+#: dialog$dialog.txt:$n
+msgid "$s$_"
+msgstr ""
+EOF
+
+		}
+	}
+
+	exit;
 }
