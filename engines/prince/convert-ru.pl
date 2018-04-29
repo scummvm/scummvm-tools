@@ -43,6 +43,8 @@ while (<STDIN>) {
 		}
 	}
 
+	s/"/\\"/g; # Escape quotes
+
 	if ($lang eq 'en') {
 		# Heuristics to detect Russian
 		my $eng = 0;
