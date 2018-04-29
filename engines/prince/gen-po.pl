@@ -257,7 +257,11 @@ EOF
 			}
 			next;
 		} elsif (/^\@DIALOG_OPT (\d+)$/) {
-			$box = $1 + 1;
+			$box = $1;
+
+			die "Overflow in DIALOG_OPT: $box" if $box > 9;
+
+			$line = 0;
 			last;
 		} elsif (/^#END$/) {
 			next;
@@ -276,5 +280,67 @@ EOF
 		}
 	}
 
-	exit;
+	my $needPrint = 0;
+	my $snew;
+
+	while (<$in>) {
+		chomp;
+
+		if (/^#HERO$/) {
+			$snew = "HERO: ";
+			$needPrint = 1;
+		} elsif (/^#OTHER$/) {
+			$snew = "OTHER: ";
+			$needPrint = 1;
+		} elsif (/^#OTHER2$/) {
+			$snew = "OTHER2: ";
+			$needPrint = 1;
+		} elsif (/^#PAUSE$/) {
+			$s .= "#P";
+		} elsif (/^#ENABLE (\d+)$/) {
+			$s .= "#E$1"
+		} elsif (/^#DISABLE (\d+)$/) {
+			$s .= "#D$1"
+		} elsif (/^#BOX (\d+)$/) {
+			$s .= "#B$1"
+		} elsif (/^#EXIT (\d+)$/) {
+			$s .= "#X$1"
+		} elsif (/^#FLAG (\d+)$/) {
+			$s .= "#F$1"
+		} elsif (/^#END$/) {
+			$needPrint = 1;
+			$snew = "";
+
+			if ($line == 0) {
+				$line = 1;   # Force print empty lines
+			}
+		} elsif (/^\@DIALOG_OPT (\d+)$/) {
+			$box = $1;
+
+			die "Overflow in DIALOG_OPT: $box" if $box > 9;
+
+			$line = 0;
+		} elsif (/^#ENDEND$/) {
+			last;
+		} else {
+			$line++;
+			$s .= $_;
+		}
+
+		if ($needPrint) {
+			my $n = sprintf("%d%02d", 1000 + $box, $line);
+
+			if ($line) {
+				print <<EOF;
+
+#: dialog$dialog.txt:$n
+msgid "$s"
+msgstr ""
+EOF
+			}
+
+			$s = $snew;
+			$needPrint = 0;
+		}
+	}
 }
