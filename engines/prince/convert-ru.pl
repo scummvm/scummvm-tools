@@ -13,7 +13,7 @@ my $lang;
 
 my @english = (' a ', ' is ', ' i ', ' and ', ' be ', 'can', ' me', 'you', 'ack', 'that', 'then', 'yes', 'um', 'chi', 'year', 'mm', 'no', 'da', 'on',
 				'bla', 'lik', 'ha', 'but', 'ma', 'wa', 'yeah', 'taste', 'str', 'grr', 'pff', 'air', 'lord', ' he, ', 'get', 'yuck', 'oo', 'blur', 'see',
-				'puah', 'lo', 'go', 'cur', 'hop', 'super', 'doing', 'well', 'real', 'sure', 'final', 'all', 'illeg', 'done', 'empt');
+				'puah', 'lo', 'go', 'cur', 'hop', 'super', 'doing', 'well', 'real', 'sure', 'final', 'all', 'illeg', 'done', 'empt', 'galador');
 
 while (<STDIN>) {
 	$line++;
@@ -62,12 +62,12 @@ while (<STDIN>) {
 
 	if ($lang eq 'ru' or $lang eq 'en') { # We have English mixed with Russian
 		if ($skip) {
-			tr /\x9f\xa3/źá/;  # Pseude-hungarian speech symbol
+			tr /\x9f\xa3/źá/;  # Pseudo-hungarian speech symbol
 			print;
 			next;
 		}
 
-		if (/^nj b dsqltn.$/) {  # After this phrase we have German
+		if (/^nj b dsqltn.$/ && $lang eq 'ru') {  # After this phrase we have German
 			$skip = 1;
 		}
 
@@ -85,7 +85,7 @@ while (<STDIN>) {
 	if ($lang eq 'de') {
 		tr /\xc4\xdf\xfc\xf6/Äßüö/;
 
-		tr /\x9f\xa3/źá/;  # Pseude-hungarian speech symbol
+		tr /\x9f\xa3/źá/;  # Pseudo-hungarian speech symbol
 
 		print;
 	}
