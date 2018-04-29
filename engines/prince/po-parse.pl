@@ -82,7 +82,7 @@ sub process_inv($) {
 
 	print OUT "invtxt.dat\n";
 
-	for $n (sort {$a<=>$b} keys $data{'invtxt.txt'}) {
+	for my $n (sort {$a<=>$b} keys $data{'invtxt.txt'}) {
 		print OUT "$n. $data{'invtxt.txt'}{$n}\n";
 	}
 
@@ -96,7 +96,7 @@ sub process_varia($) {
 
 	print OUT "variatxt.dat\n";
 
-	for $n (sort {$a<=>$b} keys $data{'variatxt.txt'}) {
+	for my $n (sort {$a<=>$b} keys $data{'variatxt.txt'}) {
 		print OUT "$n. $data{'variatxt.txt'}{$n}\n";
 	}
 
@@ -112,7 +112,7 @@ sub process_mob($) {
 
 	my $pn = 0;
 
-	for $n (sort {$a<=>$b} keys $data{'mob.lst'}) {
+	for my $n (sort {$a<=>$b} keys $data{'mob.lst'}) {
 		my $p1 = int($n / 1000);
 
 		if ($p1 != $pn) {
@@ -140,7 +140,7 @@ sub process_credits($) {
 
 	print OUT "credits.dat\n";
 
-	for $n (sort {$a<=>$b} keys $data{'credits.txt'}) {
+	for my $n (sort {$a<=>$b} keys $data{'credits.txt'}) {
 		$data{'credits.txt'}{$n} =~ s/\\n/\n/g;
 
 		print OUT "$data{'credits.txt'}{$n}";
@@ -153,6 +153,46 @@ sub process_talk($) {
 	my $file = shift;
 
 	open(*OUT, ">$file") or die "Cannot open file $file: $!";
+
+	for my $f (sort grep /^dialog/, keys %data) {
+		$f =~ /dialog(\d+)/;
+		my $dialog = $1;
+		my $hasDialog = !!grep { $_ > 100 } keys $data{$f};
+
+		if ($hasDialog) {
+			print OUT "\@DIALOGBOX_LINES:\n";
+		} else {
+			print OUT "\@NORMAL_LINES:\n";
+		}
+
+		my $seenDialogBox = 0;
+		my $prevBox = -1;
+
+		for my $n (sort {$a<=>$b} keys $data{$f}) {
+			my $s = $data{$f}{$n};
+			if ($n < 100) {
+				while ($s =~ /^P#/) {
+					print OUT "#PAUSE\n";
+					$s = substr $s, 2;
+				}
+				$s =~ /^([^:]+): (.*)$/;
+
+				print OUT "#$1\n$2\n";
+			} elsif ($n < 100000) {
+				if (!$seenDialogBox) {
+					print OUT "#BOX 0\n";
+					$seenDialogBox = 1;
+				}
+				my $box = int($n/100) - 1;
+				if ($box != $prevBox) {
+					print OUT "#END\n\@DIALOG_BOX $box\n";
+					$prevBox = $box;
+				}
+				$s =~ /^(\$\d+): (.*)$/;
+				print OUT "$1\n$2\n";
+			}
+		}
+	}
 
 	close OUT;
 }

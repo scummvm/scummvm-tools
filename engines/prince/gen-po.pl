@@ -200,10 +200,12 @@ sub process_talk($) {
 
 		next if $_ eq 'talktxt.dat';
 
+		my $d = sprintf("%03d", $dialog);
+
 		if ($_ eq "\@DIALOGBOX_LINES:") {
-			process_talkWithDialog($dialog, IN);
+			process_talkWithDialog($d, IN);
 		} elsif ($_ eq "\@NORMAL_LINES:") {
-			process_talkNoDialog($dialog, IN);
+			process_talkNoDialog($d, IN);
 		}
 
 		$dialog++;
