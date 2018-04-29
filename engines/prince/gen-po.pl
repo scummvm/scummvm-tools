@@ -45,10 +45,10 @@ msgstr ""
 "X-Generator: Weblate 2.9\\n"
 EOF
 
-#process_inv "invtxt.txt.out";
-#process_varia "variatxt.txt.out";
-#process_mob "mob.txt.out";
-#process_credits "credits.txt.out";
+process_inv "invtxt.txt.out";
+process_varia "variatxt.txt.out";
+process_mob "mob.txt.out";
+process_credits "credits.txt.out";
 process_talk "talktxt.txt.out";
 
 exit;
@@ -236,6 +236,7 @@ sub process_talkWithDialog($$) {
 			last; # Break
 		} else {
 			$line++;
+			$data{'talktxt.txt'}{$dialog}{$line} = "$s$_";
 			print <<EOF;
 
 #: dialog$dialog.txt:$line
@@ -269,6 +270,7 @@ EOF
 			$line = $1;
 		} else {
 			my $n = sprintf("%d%02d", $box, $line);
+			$data{'talktxt.txt'}{$dialog}{$n} = "$s$_";
 			print <<EOF;
 
 #: dialog$dialog.txt:$n
@@ -327,6 +329,7 @@ EOF
 			my $n = sprintf("%d%02d", 1000 + $box, $line);
 
 			if ($line) {
+				$data{'talktxt.txt'}{$dialog}{$n} = "$s";
 				print <<EOF;
 
 #: dialog$dialog.txt:$n
@@ -363,6 +366,7 @@ sub process_talkNoDialog($$) {
 			last; # Break
 		} else {
 			$line++;
+			$data{'talktxt.txt'}{$dialog}{$line} = "$s$_";
 			print <<EOF;
 
 #: dialog$dialog.txt:$line
