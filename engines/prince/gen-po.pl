@@ -283,6 +283,8 @@ EOF
 		}
 	}
 
+	$s = "";
+
 	my $needPrint = 0;
 	my $snew;
 
@@ -290,16 +292,16 @@ EOF
 		chomp;
 
 		if (/^#HERO$/) {
-			$snew = "HERO: ";
+			$snew .= "HERO: ";
 			$needPrint = 1;
 		} elsif (/^#OTHER$/) {
-			$snew = "OTHER: ";
+			$snew .= "OTHER: ";
 			$needPrint = 1;
 		} elsif (/^#OTHER2$/) {
-			$snew = "OTHER2: ";
+			$snew .= "OTHER2: ";
 			$needPrint = 1;
 		} elsif (/^#PAUSE$/) {
-			$s .= "#P";
+			$snew .= "P#";
 		} elsif (/^#ENABLE (\d+)$/) {
 			$s .= "#E$1"
 		} elsif (/^#DISABLE (\d+)$/) {
@@ -341,6 +343,7 @@ EOF
 			}
 
 			$s = $snew;
+			$snew = "";
 			$needPrint = 0;
 		}
 	}

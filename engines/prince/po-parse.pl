@@ -154,6 +154,8 @@ sub process_talk($) {
 
 	open(*OUT, ">$file") or die "Cannot open file $file: $!";
 
+	print OUT "talktxt.dat\n";
+
 	for my $f (sort grep /^dialog/, keys %data) {
 		$f =~ /dialog(\d+)/;
 		my $dialog = $1;
@@ -190,7 +192,43 @@ sub process_talk($) {
 				}
 				$s =~ /^(\$\d+): (.*)$/;
 				print OUT "$1\n$2\n";
+			} else {
+				if ($seenDialogBox < 2) {
+					$prevBox = -1;
+					$seenDialogBox = 2;
+				}
+				my $box = int($n/100) - 1000;
+				if ($box != $prevBox) {
+					print OUT "#END\n\@DIALOG_OPT $box\n";
+					$prevBox = $box;
+				}
+
+				while ($s =~ /^P#/) {
+					print OUT "#PAUSE\n";
+					$s = substr $s, 2;
+				}
+
+				if ($s =~ /^([^:]+): (.*)$/) {
+					print OUT "#$1\n";
+					$s = $2;
+				}
+				my @l = split /#/, $s;
+				print OUT "$l[0]\n" if $l[0] ne "";
+				shift @l;
+
+				for my $d (@l) {
+					$d =~ s/^E/#ENABLE /;
+					$d =~ s/^D/#DISABLE /;
+					$d =~ s/^B/#BOX /;
+					$d =~ s/^X/#EXIT /;
+					$d =~ s/^F/#FLAG /;
+					print OUT "$d\n";
+				}
 			}
+		}
+		print OUT "#END\n";
+		if ($hasDialog) {
+			print OUT "#ENDEND\n";
 		}
 	}
 
