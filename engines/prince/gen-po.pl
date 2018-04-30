@@ -46,11 +46,32 @@ msgstr ""
 "X-Generator: Weblate 2.9\\n"
 EOF
 
-process_inv $lang, "invtxt.txt.out";
-process_varia $lang, "variatxt.txt.out";
-process_mob $lang, "mob.txt.out";
 process_credits $lang, "credits.txt.out";
 process_talk $lang, "talktxt.txt.out";
+process_inv $lang, "invtxt.txt.out";
+process_mob $lang, "mob.txt.out";
+process_varia $lang, "variatxt.txt.out";
+
+for my $f (sort keys $data{$lang}) {
+	for my $n (sort {$a<=>$b} keys $data{$lang}{$f}) {
+		if (index($data{$lang}{$f}{$n}, "\\n") != -1) {  # Multiline
+		print <<EOF;
+
+#: $f:$n
+msgid ""
+$data{$lang}{$f}{$n}
+msgstr ""
+EOF
+		} else {
+			print <<EOF;
+
+#: $f:$n
+msgid "$data{$lang}{$f}{$n}"
+msgstr ""
+EOF
+		}
+	}
+}
 
 exit;
 
@@ -67,14 +88,7 @@ sub process_inv($$) {
 
 		/^([\d]+)\.\s+(.*)$/;
 
-		$data{$lang}{'invtxt.dat'}{$1} = $2;
-
-		print <<EOF;
-
-#: invtxt.txt:$1
-msgid "$2"
-msgstr ""
-EOF
+		$data{$lang}{'invtxt.txt'}{$1} = $2;
 	}
 
 	close IN;
@@ -93,14 +107,7 @@ sub process_varia($$) {
 
 		/^([\d]+)\.\s+(.*)$/;
 
-		$data{$lang}{'variatxt.dat'}{$1} = $2;
-
-		print <<EOF;
-
-#: variatxt.txt:$1
-msgid "$2"
-msgstr ""
-EOF
+		$data{$lang}{'variatxt.txt'}{$1} = $2;
 	}
 
 	close IN;
@@ -131,13 +138,6 @@ sub process_mob($$) {
 		$line++;
 
 		$data{$lang}{'mob.lst'}{$n} = $_;
-
-		print <<EOF;
-
-#: mob.lst:$n
-msgid "$_"
-msgstr ""
-EOF
 	}
 
 	close IN;
@@ -162,32 +162,15 @@ sub process_credits($$) {
 		$str .= "\"$_\\n\"\n";
 
 		if ($line == 10) {
-			$data{$lang}{'credits.txt'}{$n} = $str;
-
 			$n++;
+			$data{$lang}{'credits.txt'}{$n} = $str;
 			$line = 0;
-
-			print <<EOF;
-
-#: credits.txt:$n
-msgid ""
-$str
-msgstr ""
-EOF
-
 			$str = "";
 		}
 	}
+	$n++;
 
 	$data{$lang}{'credits.txt'}{$n} = $str;
-
-	print <<EOF;
-
-#: credits.txt:$n
-msgid ""
-${str}msgstr ""
-EOF
-
 	close IN;
 }
 
@@ -248,13 +231,6 @@ sub process_talkWithDialog($$$) {
 		} else {
 			$line++;
 			$data{$lang}{$fname}{$line} = "$s$_";
-			print <<EOF;
-
-#: $fname:$line
-msgid "$s$_"
-msgstr ""
-EOF
-
 			$s = "";
 		}
 	}
@@ -282,13 +258,6 @@ EOF
 		} else {
 			my $n = sprintf("%d%02d", $box, $line);
 			$data{$lang}{$fname}{$n} = "$s$_";
-			print <<EOF;
-
-#: $fname:$n
-msgid "$s$_"
-msgstr ""
-EOF
-
 		}
 	}
 
@@ -343,12 +312,6 @@ EOF
 
 			if ($line) {
 				$data{$lang}{$fname}{$n} = "$s";
-				print <<EOF;
-
-#: $fname:$n
-msgid "$s"
-msgstr ""
-EOF
 			}
 
 			$s = $snew;
@@ -384,13 +347,6 @@ sub process_talkNoDialog($$$) {
 		} else {
 			$line++;
 			$data{$lang}{$fname}{$line} = "$s$_";
-			print <<EOF;
-
-#: $fname:$line
-msgid "$s$_"
-msgstr ""
-EOF
-
 			$s = "";
 		}
 	}
