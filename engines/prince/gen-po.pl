@@ -52,23 +52,48 @@ process_inv $lang, "invtxt.txt.out";
 process_mob $lang, "mob.txt.out";
 process_varia $lang, "variatxt.txt.out";
 
-for my $f (sort keys $data{$lang}) {
-	for my $n (sort {$a<=>$b} keys $data{$lang}{$f}) {
-		if (index($data{$lang}{$f}{$n}, "\\n") != -1) {  # Multiline
-		print <<EOF;
+process_credits 'pl', "$poldir/credits.txt.out";
+process_talk 'pl', "$poldir/talktxt.txt.out";
+process_inv 'pl', "$poldir/invtxt.txt.out";
+process_mob 'pl', "$poldir/mob.txt.out";
+process_varia 'pl', "$poldir/variatxt.txt.out";
+
+for my $f (sort keys $data{'pl'}) {
+	for my $n (sort {$a<=>$b} keys $data{'pl'}{$f}) {
+		if (not exists $data{$lang}{$f}{$n}) {
+			warn "$lang:$f:$n does not exist";
+			$data{$lang}{$f}{$n} = "";
+		}
+
+		if (index($data{'pl'}{$f}{$n}, "\\n") != -1) {  # Multiline
+			chomp $data{'pl'}{$f}{$n};
+			chomp $data{$lang}{$f}{$n};
+
+			print <<EOF;
 
 #: $f:$n
 msgid ""
-$data{$lang}{$f}{$n}
+$data{'pl'}{$f}{$n}
 msgstr ""
+$data{$lang}{$f}{$n}
 EOF
 		} else {
 			print <<EOF;
 
 #: $f:$n
-msgid "$data{$lang}{$f}{$n}"
-msgstr ""
+msgid "$data{'pl'}{$f}{$n}"
+msgstr "$data{$lang}{$f}{$n}"
 EOF
+		}
+
+		delete $data{$lang}{$f}{$n};
+	}
+}
+
+for my $f (sort keys $data{$lang}) {
+	for my $n (sort {$a<=>$b} keys $data{$lang}{$f}) {
+		if (not exists $data{$lang}{$f}{$n}) {
+			warn "$lang:$f:$n extra";
 		}
 	}
 }
