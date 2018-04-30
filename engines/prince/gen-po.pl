@@ -269,7 +269,7 @@ EOF
 			next;
 		} elsif (/^\$(\d+)$/) {
 			$s = "$_: ";
-			$line = $1;
+			$line++;
 		} else {
 			my $n = sprintf("%d%02d", $box, $line);
 			$data{'talktxt.txt'}{$dialog}{$n} = "$s$_";
