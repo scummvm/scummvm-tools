@@ -177,9 +177,12 @@ sub process_talk($) {
 					print OUT "#PAUSE\n";
 					$s = substr $s, 2;
 				}
-				$s =~ /^([^:]+): (.*)$/;
 
-				print OUT "#$1\n$2\n";
+				if ($s =~ /^([^:]+): (.*)$/) {
+					print OUT "#$1\n$2\n";
+				} else {
+					print OUT "$s\n";
+				}
 			} elsif ($n < 100000) {
 				if (!$seenDialogBox) {
 					print OUT "#BOX 0\n";
