@@ -27,15 +27,15 @@ print <<EOF;
 # The Prince and the Coward lanugage file
 # Copyright (C) 2018 ScummVM Team
 # This file is distributed under the same license as the ScummVM package.
-# Eugene Sandulenko <sev@scummvm.org>, 2018.
+# Eugene Sandulenko <sev\@scummvm.org>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Prince\\n"
-"Report-Msgid-Bugs-To: scummvm-devel@lists.scummvm.org\\n"
+"Report-Msgid-Bugs-To: scummvm-devel\@lists.scummvm.org\\n"
 "POT-Creation-Date: 2018-04-17 19:53+0100\\n"
 "PO-Revision-Date: 2018-04-17 18:01+0000\\n"
-"Last-Translator: Eugene Sandulenko <sev@scummvm.org>\\n"
+"Last-Translator: Eugene Sandulenko <sev\@scummvm.org>\\n"
 "Language-Team: none\\n"
 "Language: $lang\\n"
 "MIME-Version: 1.0\\n"
