@@ -91,4 +91,10 @@ while (<STDIN>) {
 
 		print;
 	}
+
+	# Russian version has leftovers from German translation
+	if ($skip) {
+		print "#END\n";
+		last;
+	}
 }
