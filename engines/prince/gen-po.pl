@@ -27,7 +27,7 @@ print <<EOF;
 # The Prince and the Coward lanugage file
 # Copyright (C) 2018 ScummVM Team
 # This file is distributed under the same license as the ScummVM package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Eugene Sandulenko <sev@scummvm.org>, 2018.
 #
 msgid ""
 msgstr ""
@@ -222,6 +222,8 @@ sub process_talkWithDialog($$) {
 	my $s;
 	my $line = 0;
 
+	my $fname = "dialog$dialog.txt";
+
 	while (<$in>) {
 		chomp;
 
@@ -238,10 +240,10 @@ sub process_talkWithDialog($$) {
 			last; # Break
 		} else {
 			$line++;
-			$data{'talktxt.txt'}{$dialog}{$line} = "$s$_";
+			$data{$fname}{$line} = "$s$_";
 			print <<EOF;
 
-#: dialog$dialog.txt:$line
+#: $fname:$line
 msgid "$s$_"
 msgstr ""
 EOF
@@ -272,10 +274,10 @@ EOF
 			$line++;
 		} else {
 			my $n = sprintf("%d%02d", $box, $line);
-			$data{'talktxt.txt'}{$dialog}{$n} = "$s$_";
+			$data{$fname}{$n} = "$s$_";
 			print <<EOF;
 
-#: dialog$dialog.txt:$n
+#: $fname:$n
 msgid "$s$_"
 msgstr ""
 EOF
@@ -333,10 +335,10 @@ EOF
 			my $n = sprintf("%d%02d", 1000 + $box, $line);
 
 			if ($line) {
-				$data{'talktxt.txt'}{$dialog}{$n} = "$s";
+				$data{$fname}{$n} = "$s";
 				print <<EOF;
 
-#: dialog$dialog.txt:$n
+#: $fname:$n
 msgid "$s"
 msgstr ""
 EOF
@@ -356,6 +358,8 @@ sub process_talkNoDialog($$) {
 	my $s;
 	my $line = 0;
 
+	my $fname = "dialog$dialog.txt";
+
 	while (<$in>) {
 		chomp;
 
@@ -371,10 +375,10 @@ sub process_talkNoDialog($$) {
 			last; # Break
 		} else {
 			$line++;
-			$data{'talktxt.txt'}{$dialog}{$line} = "$s$_";
+			$data{$fname}{$line} = "$s$_";
 			print <<EOF;
 
-#: dialog$dialog.txt:$line
+#: $fname:$line
 msgid "$s$_"
 msgstr ""
 EOF
