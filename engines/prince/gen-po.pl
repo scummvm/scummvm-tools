@@ -4,24 +4,25 @@
 
 use utf8;
 
-sub process_inv($);
-sub process_varia($);
-sub process_mob($);
-sub process_credits($);
-sub process_talk($);
+sub process_inv($$);
+sub process_varia($$);
+sub process_mob($$);
+sub process_credits($$);
+sub process_talk($$);
 
-sub process_talkWithDialog($$);
-sub process_talkNoDialog($$);
+sub process_talkWithDialog($$$);
+sub process_talkNoDialog($$$);
 
 use open qw/:std :utf8/;
 
-if ($#ARGV != 0) {
-	die "Usage: $0 <language-code>";
+if ($#ARGV != 1) {
+	die "Usage: $0 <language-code> <directory-to-polish>";
 }
 
-my %data;
+our %data;
 
-my $lang = $ARGV[0];
+our $lang = $ARGV[0];
+my $poldir = $ARGV[1];
 
 print <<EOF;
 # The Prince and the Coward lanugage file
@@ -45,15 +46,16 @@ msgstr ""
 "X-Generator: Weblate 2.9\\n"
 EOF
 
-process_inv "invtxt.txt.out";
-process_varia "variatxt.txt.out";
-process_mob "mob.txt.out";
-process_credits "credits.txt.out";
-process_talk "talktxt.txt.out";
+process_inv $lang, "invtxt.txt.out";
+process_varia $lang, "variatxt.txt.out";
+process_mob $lang, "mob.txt.out";
+process_credits $lang, "credits.txt.out";
+process_talk $lang, "talktxt.txt.out";
 
 exit;
 
-sub process_inv($) {
+sub process_inv($$) {
+	my $lang = shift;
 	my $file = shift;
 
 	open(*IN, $file) or die "Cannot open file $file: $!";
@@ -65,7 +67,7 @@ sub process_inv($) {
 
 		/^([\d]+)\.\s+(.*)$/;
 
-		$data{'invtxt.dat'}{$1} = $2;
+		$data{$lang}{'invtxt.dat'}{$1} = $2;
 
 		print <<EOF;
 
@@ -78,7 +80,8 @@ EOF
 	close IN;
 }
 
-sub process_varia($) {
+sub process_varia($$) {
+	my $lang = shift;
 	my $file = shift;
 
 	open(*IN, $file) or die "Cannot open file $file: $!";
@@ -90,7 +93,7 @@ sub process_varia($) {
 
 		/^([\d]+)\.\s+(.*)$/;
 
-		$data{'variatxt.dat'}{$1} = $2;
+		$data{$lang}{'variatxt.dat'}{$1} = $2;
 
 		print <<EOF;
 
@@ -103,7 +106,8 @@ EOF
 	close IN;
 }
 
-sub process_mob($) {
+sub process_mob($$) {
+	my $lang = shift;
 	my $file = shift;
 
 	open(*IN, $file) or die "Cannot open file $file: $!";
@@ -126,7 +130,7 @@ sub process_mob($) {
 
 		$line++;
 
-		$data{'mob.lst'}{$n} = $_;
+		$data{$lang}{'mob.lst'}{$n} = $_;
 
 		print <<EOF;
 
@@ -139,7 +143,8 @@ EOF
 	close IN;
 }
 
-sub process_credits($) {
+sub process_credits($$) {
+	my $lang = shift;
 	my $file = shift;
 
 	open(*IN, $file) or die "Cannot open file $file: $!";
@@ -157,7 +162,7 @@ sub process_credits($) {
 		$str .= "\"$_\\n\"\n";
 
 		if ($line == 10) {
-			$data{'credits.txt'}{$n} = $str;
+			$data{$lang}{'credits.txt'}{$n} = $str;
 
 			$n++;
 			$line = 0;
@@ -174,7 +179,7 @@ EOF
 		}
 	}
 
-	$data{'credits.txt'}{$n} = $str;
+	$data{$lang}{'credits.txt'}{$n} = $str;
 
 	print <<EOF;
 
@@ -186,7 +191,8 @@ EOF
 	close IN;
 }
 
-sub process_talk($) {
+sub process_talk($$) {
+	my $lang = shift;
 	my $file = shift;
 
 	open(*IN, $file) or die "Cannot open file $file: $!";
@@ -203,9 +209,9 @@ sub process_talk($) {
 		my $d = sprintf("%03d", $dialog);
 
 		if ($_ eq "\@DIALOGBOX_LINES:") {
-			process_talkWithDialog($d, IN);
+			process_talkWithDialog($lang, $d, IN);
 		} elsif ($_ eq "\@NORMAL_LINES:") {
-			process_talkNoDialog($d, IN);
+			process_talkNoDialog($lang, $d, IN);
 		}
 
 		$dialog++;
@@ -215,7 +221,8 @@ sub process_talk($) {
 }
 
 
-sub process_talkWithDialog($$) {
+sub process_talkWithDialog($$$) {
+	my $lang = shift;
 	my $dialog = shift;
 	my $in = shift;
 
@@ -240,7 +247,7 @@ sub process_talkWithDialog($$) {
 			last; # Break
 		} else {
 			$line++;
-			$data{$fname}{$line} = "$s$_";
+			$data{$lang}{$fname}{$line} = "$s$_";
 			print <<EOF;
 
 #: $fname:$line
@@ -274,7 +281,7 @@ EOF
 			$line++;
 		} else {
 			my $n = sprintf("%d%02d", $box, $line);
-			$data{$fname}{$n} = "$s$_";
+			$data{$lang}{$fname}{$n} = "$s$_";
 			print <<EOF;
 
 #: $fname:$n
@@ -335,7 +342,7 @@ EOF
 			my $n = sprintf("%d%02d", 1000 + $box, $line);
 
 			if ($line) {
-				$data{$fname}{$n} = "$s";
+				$data{$lang}{$fname}{$n} = "$s";
 				print <<EOF;
 
 #: $fname:$n
@@ -351,7 +358,8 @@ EOF
 	}
 }
 
-sub process_talkNoDialog($$) {
+sub process_talkNoDialog($$$) {
+	my $lang = shift;
 	my $dialog = shift;
 	my $in = shift;
 
@@ -375,7 +383,7 @@ sub process_talkNoDialog($$) {
 			last; # Break
 		} else {
 			$line++;
-			$data{$fname}{$line} = "$s$_";
+			$data{$lang}{$fname}{$line} = "$s$_";
 			print <<EOF;
 
 #: $fname:$line
