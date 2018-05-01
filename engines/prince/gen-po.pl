@@ -48,19 +48,19 @@ msgstr ""
 "X-Generator: Weblate 2.9\\n"
 EOF
 
+process_talk_ids $lang, "talktxt_ids.txt";
 process_credits $lang, "credits.txt.out";
 process_talk $lang, "talktxt.txt.out";
 process_inv $lang, "invtxt.txt.out";
 process_mob $lang, "mob.txt.out";
 process_varia $lang, "variatxt.txt.out";
-process_talk_ids $lang, "talktxt_ids.txt";
 
+process_talk_ids 'pl', "talktxt_ids.txt";
 process_credits 'pl', "$poldir/credits.txt.out";
 process_talk 'pl', "$poldir/talktxt.txt.out";
 process_inv 'pl', "$poldir/invtxt.txt.out";
 process_mob 'pl', "$poldir/mob.txt.out";
 process_varia 'pl', "$poldir/variatxt.txt.out";
-process_talk_ids 'pl', "talktxt_ids.txt";
 
 my $miss_tr = 0;
 my $extra_tr = 0;
@@ -68,7 +68,7 @@ my $extra_tr = 0;
 for my $f (sort keys $data{'pl'}) {
 	for my $n (sort {$a<=>$b} keys $data{'pl'}{$f}) {
 		if (not exists $data{$lang}{$f}{$n}) {
-			warn "$lang:$f:$n does not exist";
+			warn "$lang:$f:$n missing";
 			$data{$lang}{$f}{$n} = "";
 
 			$miss_tr++;
@@ -227,7 +227,7 @@ sub process_talk($$) {
 
 		next if $_ eq 'talktxt.dat';
 
-		my $d = sprintf("%03d", $dialog);
+		my $d = sprintf("%03d", $data_ids{$lang}[$dialog]);
 
 		if ($_ eq "\@DIALOGBOX_LINES:") {
 			process_talkWithDialog($lang, $d, IN);
@@ -404,6 +404,7 @@ sub process_talk_ids($$) {
 		next if $_ eq 'talktxt_ids';
 
 		$data_ids{$lang}[$n] = $_;
+		#$data_ids{$lang}[$_] = $n if $_ > 0;
 
 		$n++;
 	}
