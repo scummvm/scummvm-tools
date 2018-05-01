@@ -58,11 +58,16 @@ process_inv 'pl', "$poldir/invtxt.txt.out";
 process_mob 'pl', "$poldir/mob.txt.out";
 process_varia 'pl', "$poldir/variatxt.txt.out";
 
+my $miss_tr = 0;
+my $extra_tr = 0;
+
 for my $f (sort keys $data{'pl'}) {
 	for my $n (sort {$a<=>$b} keys $data{'pl'}{$f}) {
 		if (not exists $data{$lang}{$f}{$n}) {
 			warn "$lang:$f:$n does not exist";
 			$data{$lang}{$f}{$n} = "";
+
+			$miss_tr++;
 		}
 
 		if (index($data{'pl'}{$f}{$n}, "\\n") != -1) {  # Multiline
@@ -92,11 +97,15 @@ EOF
 
 for my $f (sort keys $data{$lang}) {
 	for my $n (sort {$a<=>$b} keys $data{$lang}{$f}) {
-		if (not exists $data{$lang}{$f}{$n}) {
+		if (exists $data{$lang}{$f}{$n}) {
 			warn "$lang:$f:$n extra";
+
+			$extra_tr++;
 		}
 	}
 }
+
+warn "Missing: $miss_tr  Extra: $extra_tr" if ($miss_tr || $extra_tr);
 
 exit;
 
