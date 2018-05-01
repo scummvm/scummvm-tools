@@ -22,9 +22,14 @@
 /* Prince script decompiler */
 
 #include "common/file.h"
+#include "common/endian.h"
 #include "common/util.h"
 
+#include "utils.h"
+
 #include <assert.h>
+
+static const int16 kMaxRooms = 60;
 
 enum OpCode {
 	O_WAITFOREVER,
@@ -343,8 +348,29 @@ struct ScriptInfo {
 	int goTester;
 };
 
+struct Room {
+	int mobs; // mob flag offset
+	int backAnim; // offset to array of animation numbers
+	int obj; // offset to array of object numbers
+	int nak; // offset to array of masks
+	int itemUse;
+	int itemGive;
+	int walkTo; // offset to array of WALKTO events or 0
+	int examine; // offset to array of EXAMINE events or 0
+	int pickup;
+	int use;
+	int pushOpen;
+	int pullClose;
+	int talk;
+	int give;
+};
+
 void printUsage(const char *appName) {
 	printf("Usage: %s skrypt.dat\n", appName);
+}
+
+void decompile(const char *sname, int pos) {
+	printf("Script %s\n", sname);
 }
 
 int main(int argc, char *argv[]) {
@@ -368,35 +394,64 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	scriptFile.seek(0, SEEK_SET);
+	scriptFile.close();
+
+	Decompressor dec;
+	uint32 decompLen = READ_BE_UINT32(data + 14);
+	byte *decompData = (byte *)malloc(decompLen);
+	dec.decompress(data + 18, decompData, decompLen);
+	delete [] data;
+
+	byte *pos = decompData;
 
 	ScriptInfo scriptInfo;
 
-	scriptInfo.rooms = scriptFile.readSint32LE();
-	scriptInfo.startGame = scriptFile.readSint32LE();
-	scriptInfo.restoreGame = scriptFile.readSint32LE();
-	scriptInfo.stdExamine = scriptFile.readSint32LE();
-	scriptInfo.stdPickup = scriptFile.readSint32LE();
-	scriptInfo.stdUse = scriptFile.readSint32LE();
-	scriptInfo.stdOpen = scriptFile.readSint32LE();
-	scriptInfo.stdClose = scriptFile.readSint32LE();
-	scriptInfo.stdTalk = scriptFile.readSint32LE();
-	scriptInfo.stdGive = scriptFile.readSint32LE();
-	scriptInfo.usdCode = scriptFile.readSint32LE();
-	scriptInfo.invObjExam = scriptFile.readSint32LE();
-	scriptInfo.invObjUse = scriptFile.readSint32LE();
-	scriptInfo.invObjUU = scriptFile.readSint32LE();
-	scriptInfo.stdUseItem = scriptFile.readSint32LE();
-	scriptInfo.lightSources = scriptFile.readSint32LE();
-	scriptInfo.specRout = scriptFile.readSint32LE();
-	scriptInfo.invObjGive = scriptFile.readSint32LE();
-	scriptInfo.stdGiveItem = scriptFile.readSint32LE();
-	scriptInfo.goTester = scriptFile.readSint32LE();
+	scriptInfo.rooms = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.startGame = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.restoreGame = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.stdExamine = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.stdPickup = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.stdUse = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.stdOpen = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.stdClose = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.stdTalk = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.stdGive = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.usdCode = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.invObjExam = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.invObjUse = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.invObjUU = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.stdUseItem = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.lightSources = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.specRout = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.invObjGive = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.stdGiveItem = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.goTester = READ_LE_UINT32(pos); pos += 4;
 
 	printf("Rooms: %d\n", scriptInfo.rooms);
 	printf("StartGame: %d\n", scriptInfo.startGame);
 
-	scriptFile.close();
+	Room rooms[kMaxRooms];
+
+	for (int i = 0; i < kMaxRooms; i++) {
+		pos = &decompData[scriptInfo.rooms + i * 64];
+
+		rooms[i].mobs = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].backAnim = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].obj = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].nak = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].itemUse = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].itemGive = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].walkTo = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].examine = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].pickup = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].use = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].pushOpen = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].pullClose = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].talk = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].give = READ_LE_UINT32(pos); pos += 4;
+	}
+
+	decompile("StartGame", scriptInfo.startGame);
 
 	return 0;
 }
