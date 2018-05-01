@@ -105,6 +105,7 @@ ifeq "$(USE_BOOST)" "1"
 endif
 	$(STRIP) degob$(EXEEXT) -o $(WIN32PATH)/tools/degob$(EXEEXT)
 	$(STRIP) dekyra$(EXEEXT) -o $(WIN32PATH)/tools/dekyra$(EXEEXT)
+	$(STRIP) deprince$(EXEEXT) -o $(WIN32PATH)/tools/deprince$(EXEEXT)
 	$(STRIP) deriven$(EXEEXT) -o $(WIN32PATH)/tools/deriven$(EXEEXT)
 	$(STRIP) descumm$(EXEEXT) -o $(WIN32PATH)/tools/descumm$(EXEEXT)
 	$(STRIP) desword2$(EXEEXT) -o $(WIN32PATH)/tools/desword2$(EXEEXT)
@@ -143,6 +144,7 @@ ifeq "$(USE_BOOST)" "1"
 endif
 	$(STRIP) degob$(EXEEXT)              -o $(srcdir)/$(WIN32BUILD)/degob$(EXEEXT)
 	$(STRIP) dekyra$(EXEEXT)             -o $(srcdir)/$(WIN32BUILD)/dekyra$(EXEEXT)
+	$(STRIP) deprince$(EXEEXT)           -o $(srcdir)/$(WIN32BUILD)/deprince$(EXEEXT)
 	$(STRIP) deriven$(EXEEXT)            -o $(srcdir)/$(WIN32BUILD)/deriven$(EXEEXT)
 	$(STRIP) descumm$(EXEEXT)            -o $(srcdir)/$(WIN32BUILD)/descumm$(EXEEXT)
 	$(STRIP) desword2$(EXEEXT)           -o $(srcdir)/$(WIN32BUILD)/desword2$(EXEEXT)
@@ -245,6 +247,7 @@ ifeq "$(USE_BOOST)" "1"
 endif
 	$(STRIP) degob$(EXEEXT) -o $(AMIGAOS4PATH)/tools/degob$(EXEEXT)
 	$(STRIP) dekyra$(EXEEXT) -o $(AMIGAOS4PATH)/tools/dekyra$(EXEEXT)
+	$(STRIP) deprince$(EXEEXT) -o $(AMIGAOS4PATH)/tools/deprince$(EXEEXT)
 	$(STRIP) deriven$(EXEEXT) -o $(AMIGAOS4PATH)/tools/deriven$(EXEEXT)
 	$(STRIP) descumm$(EXEEXT) -o $(AMIGAOS4PATH)/tools/descumm$(EXEEXT)
 	$(STRIP) desword2$(EXEEXT) -o $(AMIGAOS4PATH)/tools/desword2$(EXEEXT)
@@ -278,6 +281,7 @@ riscosdist: all
 	elf2aif decine$(EXEEXT) !ScummTool/bin/decine,ff8
 	elf2aif degob$(EXEEXT) !ScummTool/bin/degob,ff8
 	elf2aif dekyra$(EXEEXT) !ScummTool/bin/dekyra,ff8
+	elf2aif deprince$(EXEEXT) !ScummTool/bin/deprince,ff8
 	elf2aif deriven$(EXEEXT) !ScummTool/bin/deriven,ff8
 	elf2aif descumm$(EXEEXT) !ScummTool/bin/descumm,ff8
 	elf2aif desword2$(EXEEXT) !ScummTool/bin/desword2,ff8

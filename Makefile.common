@@ -26,6 +26,7 @@ PROGRAMS = \
 	decine \
 	degob \
 	dekyra \
+	deprince \
 	deriven \
 	descumm \
 	desword2 \
@@ -96,6 +97,10 @@ degob_OBJS := \
 dekyra_OBJS := \
 	engines/kyra/dekyra.o \
 	engines/kyra/dekyra_v1.o \
+	$(UTILS)
+
+deprince_OBJS := \
+	engines/prince/deprince.o \
 	$(UTILS)
 
 deriven_OBJS := \
