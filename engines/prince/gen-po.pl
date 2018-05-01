@@ -9,6 +9,7 @@ sub process_varia($$);
 sub process_mob($$);
 sub process_credits($$);
 sub process_talk($$);
+sub process_talk_ids($$);
 
 sub process_talkWithDialog($$$);
 sub process_talkNoDialog($$$);
@@ -20,6 +21,7 @@ if ($#ARGV != 1) {
 }
 
 our %data;
+our %data_ids;
 
 our $lang = $ARGV[0];
 my $poldir = $ARGV[1];
@@ -51,12 +53,14 @@ process_talk $lang, "talktxt.txt.out";
 process_inv $lang, "invtxt.txt.out";
 process_mob $lang, "mob.txt.out";
 process_varia $lang, "variatxt.txt.out";
+process_talk_ids $lang, "talktxt_ids.txt";
 
 process_credits 'pl', "$poldir/credits.txt.out";
 process_talk 'pl', "$poldir/talktxt.txt.out";
 process_inv 'pl', "$poldir/invtxt.txt.out";
 process_mob 'pl', "$poldir/mob.txt.out";
 process_varia 'pl', "$poldir/variatxt.txt.out";
+process_talk_ids 'pl', "talktxt_ids.txt";
 
 my $miss_tr = 0;
 my $extra_tr = 0;
@@ -384,4 +388,25 @@ sub process_talkNoDialog($$$) {
 			$s = "";
 		}
 	}
+}
+
+sub process_talk_ids($$) {
+	my $lang = shift;
+	my $file = shift;
+
+	open(*IN, $file) or die "Cannot open file $file: $!";
+
+	my $n = 0;
+
+	while (<IN>) {
+		chomp;
+
+		next if $_ eq 'talktxt_ids';
+
+		$data_ids{$lang}[$n] = $_;
+
+		$n++;
+	}
+
+	close IN;
 }
