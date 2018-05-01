@@ -65,14 +65,4 @@ protected:
 	Common::File _databank, _fFiles;
 };
 
-class Decompressor {
-public:
-	void decompress(byte *source, byte *dest, uint32 destSize);
-protected:
-	byte *_src, *_dst;
-	byte _bitBuffer;
-	int _bitsLeft;
-	int getBit();
-};
-
 #endif
