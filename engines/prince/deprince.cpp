@@ -31,6 +31,9 @@
 #include <assert.h>
 
 static const int16 kMaxRooms = 60;
+static const int kMaxBackAnims = 64;
+static const int kMaxMobs = 64;
+static const int kMaxObjects = 64;
 
 struct OpCodes {
 	const char *name;
@@ -225,6 +228,19 @@ struct Room {
 	int unk2;
 };
 
+struct Mask {
+	uint16 _state; // visible / invisible
+	int16 _flags; // turning on / turning off of an mask
+	int16 _x1;
+	int16 _y1;
+	int16 _x2;
+	int16 _y2;
+	int16 _z;
+	int16 _number; // number of mask for background recreating
+	int16 _width;
+	int16 _height;
+};
+
 void printUsage(const char *appName) {
 	printf("Usage: %s skrypt.dat\n", appName);
 }
@@ -233,8 +249,35 @@ byte *data;
 uint32 dataLen;
 bool *dataMark;
 
-#define ADVANCE2() dataMark[pos] = true; pos++; dataMark[pos] = true; pos++
+#define ADVANCE() dataMark[pos] = true; pos++
+#define ADVANCE2() ADVANCE(); ADVANCE()
 #define ADVANCE4() ADVANCE2(); ADVANCE2()
+
+void printArray(int offset, int type, int size, bool split = true) {
+	printf("[");
+
+	int pos = offset;
+
+	for (int i = 0; i < size; i++) {
+		if (split && i && !(i % 10))
+			printf("\n ");
+
+		if (type == 1) {
+			printf("%d", data[pos]); ADVANCE();
+		} else if (type == 2) {
+			printf("%d", (uint16)READ_LE_UINT16(&data[pos])); ADVANCE2();
+		} else if (type == 4) {
+			printf("%d", (uint32)READ_LE_UINT32(&data[pos])); ADVANCE4();
+		} else {
+			error("printArray: unknown type %d", type);
+		}
+
+		if (i != size - 1)
+			printf(", ");
+	}
+
+	printf("]\n");
+}
 
 void decompile(const char *sname, int pos) {
 	printf("Script %s\n", sname);
@@ -309,22 +352,63 @@ void decompile(const char *sname, int pos) {
 	}
 
 	if (tableOffset != -1) {
-		printf("tableOffset: %d\n[", tableOffset);
+		printf("tableOffset: %d\n", tableOffset);
 
-		pos = tableOffset;
-
-		for (int i = 0; i < kMaxRooms; i++) {
-			if (i && !(i % 10))
-				printf("\n ");
-
-			printf("%d", (uint32)READ_LE_UINT32(&data[pos])); ADVANCE4();
-			if (i != kMaxRooms - 1)
-				printf(", ");
-		}
-		printf("]\n");
+		printArray(tableOffset, 4, kMaxRooms);
 	}
 
 	printf("End Script\n\n");
+}
+
+void loadMask(int offset) {
+	Mask tempMask;
+
+	int pos = offset;
+	int n = 0;
+
+	while (1) {
+		tempMask._state = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		if (tempMask._state == 0xffff) {
+			break;
+		}
+		tempMask._flags = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		tempMask._x1 = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		tempMask._y1 = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		tempMask._x2 = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		tempMask._y2 = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		tempMask._z = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		tempMask._number = READ_LE_UINT16(&data[pos]); ADVANCE2();
+
+		printf("  mask%d state=%d fl=%d x1=%d y1=%d x2=%d y2=%d z=%d number=%d\n", n, tempMask._state,
+					tempMask._flags, tempMask._x1, tempMask._y1, tempMask._x2, tempMask._y2,
+					tempMask._z, tempMask._number);
+
+		n++;
+	}
+}
+
+void loadMobEvents(int offset) {
+	if (!offset)
+		return;
+
+	int pos = offset;
+	int i = 0;
+	int16 mob;
+	int16 item;
+	int32 code;
+	while(1) {
+		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
+
+		if (mob == -1)
+			break;
+
+		item = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
+
+		printf("  mob%02d: mob=%d item=%d code=%d\n", i, mob, item, code);
+
+		i++;
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -409,13 +493,13 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < kMaxRooms; i++) {
 		pos = scriptInfo.rooms + i * 64;
 
-		rooms[i].mobs = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].backAnim = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].obj = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].nak = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].mobs = READ_LE_UINT32(&data[pos]); ADVANCE4();			// byte[kMaxMobs]
+		rooms[i].backAnim = READ_LE_UINT32(&data[pos]); ADVANCE4();		// int32[kMaxBackAnims]
+		rooms[i].obj = READ_LE_UINT32(&data[pos]); ADVANCE4();			// byte [kMaxObjects]
+		rooms[i].nak = READ_LE_UINT32(&data[pos]); ADVANCE4();			// offset pointing to Mask structure
 		rooms[i].itemUse = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].itemGive = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].walkTo = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].walkTo = READ_LE_UINT32(&data[pos]); ADVANCE4();		// scripts
 		rooms[i].examine = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].pickup = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].use = READ_LE_UINT32(&data[pos]); ADVANCE4();
@@ -426,12 +510,21 @@ int main(int argc, char *argv[]) {
 		rooms[i].unk1 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].unk2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
-		printf("r%02d mobs: %d\n", i, rooms[i].mobs);
-		printf("r%02d backAnim: %d\n", i, rooms[i].backAnim);
-		printf("r%02d obj: %d\n", i, rooms[i].obj);
-		printf("r%02d nak: %d\n", i, rooms[i].nak);
-		printf("r%02d itemUse: %d\n", i, rooms[i].itemUse);
-		printf("r%02d itemGive: %d\n", i, rooms[i].itemGive);
+		printf("r%02d mobs: [%d]: ", i, rooms[i].mobs);
+		printArray(rooms[i].mobs, 1, kMaxMobs, false);
+		printf("r%02d backAnim: [%d]: ", i, rooms[i].backAnim);
+		printArray(rooms[i].backAnim, 4, kMaxBackAnims, false);
+		printf("r%02d obj: [%d]: ", i, rooms[i].obj);
+		printArray(rooms[i].obj, 1, kMaxObjects, false);
+		printf("r%02d masks [%d]\n", i, rooms[i].nak);
+		loadMask(rooms[i].nak);
+		printf("end masks\n");
+		printf("r%02d itemUse: [%d]\n", i, rooms[i].itemUse);
+		loadMobEvents(rooms[i].itemUse);
+		printf("end itemUse\n");
+		printf("r%02d itemGive: [%d]\n", i, rooms[i].itemGive);
+		loadMobEvents(rooms[i].itemGive);
+		printf("end itemGive\n");
 		printf("r%02d walkTo: %d\n", i, rooms[i].walkTo);
 		printf("r%02d examine: %d\n", i, rooms[i].examine);
 		printf("r%02d pickup: %d\n", i, rooms[i].pickup);
