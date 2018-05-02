@@ -394,6 +394,28 @@ void loadMobEvents(int offset) {
 	int pos = offset;
 	int i = 0;
 	int16 mob;
+	int32 code;
+	while(1) {
+		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
+
+		if (mob == -1)
+			break;
+
+		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
+
+		printf("  mob%02d: mob=%d code=%d\n", i, mob, code);
+
+		i++;
+	}
+}
+
+void loadMobEventsWithItem(int offset) {
+	if (!offset)
+		return;
+
+	int pos = offset;
+	int i = 0;
+	int16 mob;
 	int16 item;
 	int32 code;
 	while(1) {
@@ -405,9 +427,22 @@ void loadMobEvents(int offset) {
 		item = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
-		printf("  mob%02d: mob=%d item=%d code=%d\n", i, mob, item, code);
+		printf("  mobitem%02d: mob=%d item=%d code=%d\n", i, mob, item, code);
 
 		i++;
+	}
+}
+
+void loadLightSources(int offset) {
+	int pos = offset;
+
+	for (int i = 0; i < kMaxRooms; i++) {
+		int x = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		int y = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		int scale = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		int unk = READ_LE_UINT16(&data[pos]); ADVANCE2();
+
+		printf("  light%02d: x=%d y=%d scale=%d unk=%d\n", i, x, y, scale, unk);
 	}
 }
 
@@ -478,11 +513,19 @@ int main(int argc, char *argv[]) {
 	printf("stdTalk: %d\n", scriptInfo.stdTalk);
 	printf("stdGive: %d\n", scriptInfo.stdGive);
 	printf("usdCode: %d\n", scriptInfo.usdCode);
-	printf("invObjExam: %d\n", scriptInfo.invObjExam);
-	printf("invObjUse: %d\n", scriptInfo.invObjUse);
+	printf("invObjExam: [%d]\n", scriptInfo.invObjExam);
+	loadMobEvents(scriptInfo.invObjExam);
+	printf("end invObjExam\n");
+	printf("invObjUse: [%d]\n", scriptInfo.invObjUse);
+	loadMobEvents(scriptInfo.invObjUse);
+	printf("end invObjUse\n");
 	printf("invObjUU: %d\n", scriptInfo.invObjUU);
+	loadMobEventsWithItem(scriptInfo.invObjUU);
+	printf("end invObjUU\n");
 	printf("stdUseItem: %d\n", scriptInfo.stdUseItem);
-	printf("lightSources: %d\n", scriptInfo.lightSources);
+	printf("lightSources: [%d]\n", scriptInfo.lightSources);
+	loadLightSources(scriptInfo.lightSources);
+	printf("end lightSources\n");
 	printf("specRout: %d\n", scriptInfo.specRout);
 	printf("invObjGive: %d\n", scriptInfo.invObjGive);
 	printf("stdGiveItem: %d\n", scriptInfo.stdGiveItem);
@@ -499,14 +542,14 @@ int main(int argc, char *argv[]) {
 		rooms[i].nak = READ_LE_UINT32(&data[pos]); ADVANCE4();			// offset pointing to Mask structure
 		rooms[i].itemUse = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].itemGive = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].walkTo = READ_LE_UINT32(&data[pos]); ADVANCE4();		// scripts
-		rooms[i].examine = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].pickup = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].use = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].pushOpen = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].pullClose = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].talk = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].give = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].walkTo = READ_LE_UINT32(&data[pos]); ADVANCE4();		// script
+		rooms[i].examine = READ_LE_UINT32(&data[pos]); ADVANCE4();		// script
+		rooms[i].pickup = READ_LE_UINT32(&data[pos]); ADVANCE4();		// script
+		rooms[i].use = READ_LE_UINT32(&data[pos]); ADVANCE4();			// script
+		rooms[i].pushOpen = READ_LE_UINT32(&data[pos]); ADVANCE4();		// script
+		rooms[i].pullClose = READ_LE_UINT32(&data[pos]); ADVANCE4();	// script
+		rooms[i].talk = READ_LE_UINT32(&data[pos]); ADVANCE4();			// script
+		rooms[i].give = READ_LE_UINT32(&data[pos]); ADVANCE4();			// script
 		rooms[i].unk1 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].unk2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
@@ -520,10 +563,10 @@ int main(int argc, char *argv[]) {
 		loadMask(rooms[i].nak);
 		printf("end masks\n");
 		printf("r%02d itemUse: [%d]\n", i, rooms[i].itemUse);
-		loadMobEvents(rooms[i].itemUse);
+		loadMobEventsWithItem(rooms[i].itemUse);
 		printf("end itemUse\n");
 		printf("r%02d itemGive: [%d]\n", i, rooms[i].itemGive);
-		loadMobEvents(rooms[i].itemGive);
+		loadMobEventsWithItem(rooms[i].itemGive);
 		printf("end itemGive\n");
 		printf("r%02d walkTo: %d\n", i, rooms[i].walkTo);
 		printf("r%02d examine: %d\n", i, rooms[i].examine);
@@ -539,6 +582,16 @@ int main(int argc, char *argv[]) {
 
 	decompile("StartGame", scriptInfo.startGame);
 	decompile("RestoreGame", scriptInfo.restoreGame);
+	decompile("stdExamine", scriptInfo.stdExamine);
+	decompile("stdPickup", scriptInfo.stdPickup);
+	decompile("stdUse", scriptInfo.stdUse);
+	decompile("stdOpen", scriptInfo.stdOpen);
+	decompile("stdClose", scriptInfo.stdClose);
+	decompile("stdTalk", scriptInfo.stdTalk);
+	decompile("stdGive", scriptInfo.stdGive);
+	decompile("usdCode", scriptInfo.usdCode);
+	decompile("stdUseItem", scriptInfo.stdUseItem);
+	decompile("stdGiveItem", scriptInfo.stdGiveItem);
 
 #if 0
 	for (uint i = 0; i < dataLen; i++)
