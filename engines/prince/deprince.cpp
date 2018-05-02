@@ -127,7 +127,7 @@ struct OpCodes {
 	{ "O_SETBACKFRAME", "ff", false },	// 80
 	{ "O_GETRND", "dh", false },
 	{ "O_TALKBACKANIM", "ff", false },
-	{ "O_LOADPATH", "i", false },
+	{ "O_LOADPATH", "s", false },
 	{ "O_GETCHAR", "d", false },
 	{ "O_SETDFLAG", "do", false },		// 85
 	{ "O_CALLDFLAG", "d", false },
