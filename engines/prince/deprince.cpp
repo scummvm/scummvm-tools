@@ -45,7 +45,7 @@ struct OpCodes {
 	{ "O_WAITFOREVER", "", true },
 	{ "O_BLACKPALETTE", "", false },
 	{ "O_SETUPPALETTE", "", false },
-	{ "O_INITROOM", "f", true },
+	{ "O_INITROOM", "f", false /* true */},
 	{ "O_SETSAMPLE", "fs", false },
 	{ "O_FREESAMPLE", "f", false }, 	// 5
 	{ "O_PLAYSAMPLE", "fh", false },
@@ -89,7 +89,7 @@ struct OpCodes {
 	{ "O_XORFLAG", "df", false },
 	{ "O_GETMOBTEXT", "f", false },		// 45
 	{ "O_MOVEHERO", "ffff", false },
-	{ "O_WALKHERO", "f", true },
+	{ "O_WALKHERO", "f", false /* true */ },
 	{ "O_SETHERO", "ffff", false },
 	{ "O_HEROOFF", "f", false },
 	{ "O_HEROON", "f", false },			// 50
@@ -103,7 +103,7 @@ struct OpCodes {
 	{ "O_ADDWALKAREA", "r", false },
 	{ "O_REMWALKAREA", "r", false },
 	{ "O_RESTOREWALKAREA", "r", false },// 60
-	{ "O_WAITFRAME", "", true },
+	{ "O_WAITFRAME", "", false /* true */ },
 	{ "O_SETFRAME", "ff", false },
 	{ "O_RUNACTION", "r", false },
 	{ "O_COMPAREHI", "df", false },
@@ -114,7 +114,7 @@ struct OpCodes {
 	{ "O_TALKHERO", "f", false },
 	{ "O_WAITTEXT", "f", false },		// 70
 	{ "O_SETHEROANIM", "fi", false },
-	{ "O_WAITHEROANIM", "f", true },
+	{ "O_WAITHEROANIM", "f", false /* true */ },
 	{ "O_GETHERODATA", "dff", false },
 	{ "O_GETMOUSEBUTTON", "", false },
 	{ "O_CHANGEFRAMES", "ffff", false },// 75
@@ -179,11 +179,11 @@ struct OpCodes {
 	{ "O_SETVOICEC", "f", false },
 	{ "O_VIEWFLCLOOP", "f", false },	// 135
 	{ "O_FLCSPEED", "f", false },
-	{ "O_OPENINVENTORY", "", true },
+	{ "O_OPENINVENTORY", "", false /* true */ },
 	{ "O_KRZYWA", "", false },
 	{ "O_GETKRZYWA", "", false },
 	{ "O_GETMOB", "dff", false },		// 140
-	{ "O_INPUTLINE", "r", false },
+	{ "O_INPUTLINE", "", false },
 	{ "O_SETVOICED", "f", false },
 	{ "O_BREAK_POINT", "r", false }
 };
@@ -401,7 +401,7 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 					printf("<tableOffset>");
 				break;
 			case 'r':
-				error("Unsupported op %s", opcodes[op].name);
+				error("Unsupported op %s at %d (%x)", opcodes[op].name, pos - 2, pos - 2);
 				return;
 			default:
 				error("Unhandled param '%c' for %s", *param, opcodes[op].name);
