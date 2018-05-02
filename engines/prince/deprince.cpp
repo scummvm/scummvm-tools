@@ -606,27 +606,27 @@ int main(int argc, char *argv[]) {
 	scriptInfo.stdGiveItem = READ_LE_UINT32(&data[pos]); ADVANCE4();
 	scriptInfo.goTester = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
-	printf("Rooms: %d\n", scriptInfo.rooms);
-	printf("StartGame: %d\n", scriptInfo.startGame);
-	printf("restoreGame: %d\n", scriptInfo.restoreGame);
-	printf("stdExamine: %d\n", scriptInfo.stdExamine);
-	printf("stdPickup: %d\n", scriptInfo.stdPickup);
-	printf("stdUse: %d\n", scriptInfo.stdUse);
-	printf("stdOpen: %d\n", scriptInfo.stdOpen);
-	printf("stdClose: %d\n", scriptInfo.stdClose);
-	printf("stdTalk: %d\n", scriptInfo.stdTalk);
-	printf("stdGive: %d\n", scriptInfo.stdGive);
-	printf("usdCode: %d\n", scriptInfo.usdCode);
+	printf("rooms: [%d]\n", scriptInfo.rooms);
+	printf("startGame: [%d]\n", scriptInfo.startGame);
+	printf("restoreGame: [%d]\n", scriptInfo.restoreGame);
+	printf("stdExamine: [%d]\n", scriptInfo.stdExamine);
+	printf("stdPickup: [%d]\n", scriptInfo.stdPickup);
+	printf("stdUse: [%d]\n", scriptInfo.stdUse);
+	printf("stdOpen: [%d]\n", scriptInfo.stdOpen);
+	printf("stdClose: [%d]\n", scriptInfo.stdClose);
+	printf("stdTalk: [%d]\n", scriptInfo.stdTalk);
+	printf("stdGive: [%d]\n", scriptInfo.stdGive);
+	printf("usdCode: [%d]\n", scriptInfo.usdCode);
 	printf("invObjExam: [%d]\n", scriptInfo.invObjExam);
 	loadMobEvents(scriptInfo.invObjExam, "invObjExam");
 	printf("end invObjExam\n");
 	printf("invObjUse: [%d]\n", scriptInfo.invObjUse);
 	loadMobEvents(scriptInfo.invObjUse, "invObjUse");
 	printf("end invObjUse\n");
-	printf("invObjUU: %d\n", scriptInfo.invObjUU);
+	printf("invObjUU: [%d]\n", scriptInfo.invObjUU);
 	loadMobEventsWithItem(scriptInfo.invObjUU, "invObjUU");
 	printf("end invObjUU\n");
-	printf("stdUseItem: %d\n", scriptInfo.stdUseItem);
+	printf("stdUseItem: [%d]\n", scriptInfo.stdUseItem);
 	printf("lightSources: [%d]\n", scriptInfo.lightSources);
 	loadLightSources(scriptInfo.lightSources);
 	printf("end lightSources\n");
@@ -712,8 +712,8 @@ int main(int argc, char *argv[]) {
 		printf("r%02d unk2: %d\n", i, rooms[i].unk2);
 	}
 
-	decompile("StartGame", scriptInfo.startGame);
-	decompile("RestoreGame", scriptInfo.restoreGame);
+	decompile("startGame", scriptInfo.startGame);
+	decompile("restoreGame", scriptInfo.restoreGame);
 	decompile("stdExamine", scriptInfo.stdExamine);
 	decompile("stdPickup", scriptInfo.stdPickup);
 	decompile("stdUse", scriptInfo.stdUse);
@@ -733,6 +733,9 @@ int main(int argc, char *argv[]) {
 			printf("%s", shades[n]);
 			n = 0;
 		}
+
+		if (i % 800 == 0 && i)
+			printf("\n");
 
 		if (dataMark[i])
 			n++;
@@ -754,10 +757,15 @@ int main(int argc, char *argv[]) {
 			decompile(labels[i].c_str(), i, true);
 		} else if (!dataMark[i]) {
 			if (!inDB) {
-				printf("db %d", data[i]);
+				printf("label%d: ; 0x%x\n  db %d", i, i, data[i]);
 				inDB = true;
 			} else {
 				printf(", %d", data[i]);
+			}
+		} else {
+			if (inDB) {
+				printf("\n\n");
+				inDB = false;
 			}
 		}
 
