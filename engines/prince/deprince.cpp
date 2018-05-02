@@ -36,6 +36,8 @@ static const int16 kMaxRooms = 60;
 static const int kMaxBackAnims = 64;
 static const int kMaxMobs = 64;
 static const int kMaxObjects = 64;
+static const int kStructSizeBAS = 28;
+static const int kStructSizeBASA = 8;
 
 struct OpCodes {
 	const char *name;
@@ -264,6 +266,9 @@ Common::String *labels;
 #define ADVANCES4() ADVANCES2(); ADVANCES2()
 
 void printArray(int offset, int type, int size, bool split = true, bool offsets = false) {
+	if (!offset)
+		return;
+
 	printf("[");
 
 	int pos = offset;
@@ -536,6 +541,41 @@ void loadLightSources(int offset) {
 	}
 }
 
+void loadBackAnim(int anum, int offset) {
+	int pos = offset;
+
+	printf("loadBackAnim: %d 0x%x\n", offset, offset);
+
+	if (offset != 0) {
+		// Anim BAS data
+		int type = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		int bdata = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		int anims = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		int unk1 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		int unk2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		int unk3 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		int data2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+
+		printf("backanim%02d: type=%x data=%x anims=%x unk1=%x unk2=%x unk3=%x data2=%x\n", anum,
+				type, bdata, anims, unk1, unk2, unk3, data2);
+
+		if (anims == 0) {
+			anims = 1; // anims with 0 as amount in game data has just 1 animation
+		}
+
+		for (int i = 0; i < anims; i++) {
+			pos = offset + kStructSizeBAS + kStructSizeBASA * i;
+			// Anim BASA data
+			int num = READ_LE_UINT16(&data[pos]); ADVANCE2();
+			int start = READ_LE_UINT16(&data[pos]); ADVANCE2();
+			int end = READ_LE_UINT16(&data[pos]); ADVANCE2();
+			int unk = READ_LE_UINT16(&data[pos]); ADVANCE2();
+
+			printf("  backanim%02d.%d: num=%d start=%d end=%d unk=%d\n", anum, i, num, start, end, unk);
+		}
+	}
+}
+
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
 		printUsage(argv[0]);
@@ -708,6 +748,11 @@ int main(int argc, char *argv[]) {
 		printf("end give\n");
 		printf("r%02d unk1: %d\n", i, rooms[i].unk1);
 		printf("r%02d unk2: %d\n", i, rooms[i].unk2);
+
+		if (rooms[i].backAnim)
+			for (int b = 0; b < kMaxBackAnims; b++) {
+				loadBackAnim(b, READ_LE_UINT32(&data[rooms[i].backAnim + b * 4]));
+			}
 	}
 
 	decompile("startGame", scriptInfo.startGame);
