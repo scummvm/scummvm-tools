@@ -227,14 +227,21 @@ void printUsage(const char *appName) {
 	printf("Usage: %s skrypt.dat\n", appName);
 }
 
-void decompile(const char *sname, byte *data, int pos) {
+byte *data;
+uint32 dataLen;
+bool *dataMark;
+
+#define ADVANCE2() dataMark[pos] = true; pos++; dataMark[pos] = true; pos++
+#define ADVANCE4() ADVANCE2(); ADVANCE2()
+
+void decompile(const char *sname, int pos) {
 	printf("Script %s\n", sname);
 
 	bool nf = false;
 	int tableOffset = -1;
 
 	while (!nf) {
-		uint16 op = READ_LE_UINT16(&data[pos]); pos += 2;
+		uint16 op = READ_LE_UINT16(&data[pos]); ADVANCE2();
 
 		nf = opcodes[op].nf;
 
@@ -250,7 +257,7 @@ void decompile(const char *sname, byte *data, int pos) {
 		while (*param) {
 			switch (*param) {
 			case 'f':
-				v = READ_LE_UINT16(&data[pos]); pos += 2;
+				v = READ_LE_UINT16(&data[pos]); ADVANCE2();
 
 				if (v & 0x8000) {
 					printf("%s", Flags::getFlagName(v));
@@ -259,23 +266,23 @@ void decompile(const char *sname, byte *data, int pos) {
 				}
 				break;
 			case 'h':
-				v = READ_LE_UINT16(&data[pos]); pos += 2;
+				v = READ_LE_UINT16(&data[pos]); ADVANCE2();
 				printf("%d", v);
 				break;
 			case 'i':
-				v = READ_LE_UINT32(&data[pos]); pos += 4;
+				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
 				printf("%d", v);
 				break;
 			case 'd':
-				v = READ_LE_UINT16(&data[pos]); pos += 2;
+				v = READ_LE_UINT16(&data[pos]); ADVANCE2();
 				printf("%s", Flags::getFlagName(v));
 				break;
 			case 'o':
-				v = READ_LE_UINT32(&data[pos]); pos += 4;
+				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
 				printf("[%d]", v);
 				break;
 			case 't':
-				v = READ_LE_UINT32(&data[pos]); pos += 4;
+				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
 				if (tableOffset != -1 && tableOffset != v) {
 					error("Duplicate tableOffset: %d vs %d", tableOffset, v);
 				}
@@ -301,11 +308,14 @@ void decompile(const char *sname, byte *data, int pos) {
 
 	if (tableOffset != -1) {
 		printf("tableOffset: %d\n[", tableOffset);
+
+		pos = tableOffset;
+
 		for (int i = 0; i < kMaxRooms; i++) {
 			if (i && !(i % 10))
 				printf("\n ");
 
-			printf("%d", (uint32)READ_LE_UINT32(&data[tableOffset + i * 4]));
+			printf("%d", (uint32)READ_LE_UINT32(&data[pos])); ADVANCE4();
 			if (i != kMaxRooms - 1)
 				printf(", ");
 		}
@@ -328,10 +338,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	uint32 size = scriptFile.size();
-	uint8 *data = new uint8[size];
-	assert(data);
-	if (size != scriptFile.read_noThrow(data, size)) {
-		delete [] data;
+	uint8 *fdata = new uint8[size];
+	assert(fdata);
+	if (size != scriptFile.read_noThrow(fdata, size)) {
+		delete [] fdata;
 		error("couldn't read all bytes from file '%s'", argv[1]);
 		return 1;
 	}
@@ -339,35 +349,37 @@ int main(int argc, char *argv[]) {
 	scriptFile.close();
 
 	Decompressor dec;
-	uint32 decompLen = READ_BE_UINT32(data + 14);
-	byte *decompData = (byte *)malloc(decompLen);
-	dec.decompress(data + 18, decompData, decompLen);
-	delete [] data;
+	dataLen = READ_BE_UINT32(fdata + 14);
+	data = (byte *)malloc(dataLen);
+	dec.decompress(fdata + 18, data, dataLen);
+	delete [] fdata;
 
-	byte *pos = decompData;
+	dataMark = (bool *)calloc(dataLen, sizeof(bool));
+
+	int pos = 0;
 
 	ScriptInfo scriptInfo;
 
-	scriptInfo.rooms = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.startGame = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.restoreGame = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.stdExamine = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.stdPickup = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.stdUse = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.stdOpen = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.stdClose = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.stdTalk = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.stdGive = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.usdCode = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.invObjExam = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.invObjUse = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.invObjUU = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.stdUseItem = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.lightSources = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.specRout = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.invObjGive = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.stdGiveItem = READ_LE_UINT32(pos); pos += 4;
-	scriptInfo.goTester = READ_LE_UINT32(pos); pos += 4;
+	scriptInfo.rooms = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.startGame = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.restoreGame = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.stdExamine = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.stdPickup = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.stdUse = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.stdOpen = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.stdClose = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.stdTalk = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.stdGive = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.usdCode = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.invObjExam = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.invObjUse = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.invObjUU = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.stdUseItem = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.lightSources = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.specRout = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.invObjGive = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.stdGiveItem = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	scriptInfo.goTester = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
 	printf("Rooms: %d\n", scriptInfo.rooms);
 	printf("StartGame: %d\n", scriptInfo.startGame);
@@ -393,22 +405,22 @@ int main(int argc, char *argv[]) {
 	Room rooms[kMaxRooms];
 
 	for (int i = 0; i < kMaxRooms; i++) {
-		pos = &decompData[scriptInfo.rooms + i * 64];
+		pos = scriptInfo.rooms + i * 64;
 
-		rooms[i].mobs = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].backAnim = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].obj = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].nak = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].itemUse = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].itemGive = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].walkTo = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].examine = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].pickup = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].use = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].pushOpen = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].pullClose = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].talk = READ_LE_UINT32(pos); pos += 4;
-		rooms[i].give = READ_LE_UINT32(pos); pos += 4;
+		rooms[i].mobs = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].backAnim = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].obj = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].nak = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].itemUse = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].itemGive = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].walkTo = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].examine = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].pickup = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].use = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].pushOpen = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].pullClose = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].talk = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].give = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
 		printf("r%02d mobs: %d\n", i, rooms[i].mobs);
 		printf("r%02d backAnim: %d\n", i, rooms[i].backAnim);
@@ -426,8 +438,13 @@ int main(int argc, char *argv[]) {
 		printf("r%02d give: %d\n", i, rooms[i].give);
 	}
 
-	decompile("StartGame", decompData, scriptInfo.startGame);
-	decompile("RestoreGame", decompData, scriptInfo.restoreGame);
+	decompile("StartGame", scriptInfo.startGame);
+	decompile("RestoreGame", scriptInfo.restoreGame);
+
+	for (uint i = 0; i < dataLen & 0; i++)
+		printf("%c", dataMark[i] ? '*' : '.');
+
+	printf("\n");
 
 	return 0;
 }
