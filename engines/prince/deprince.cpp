@@ -480,11 +480,10 @@ void loadMobEvents(int offset, const char *name) {
 
 	while(1) {
 		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
+		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
 		if (mob == -1)
 			break;
-
-		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
 		printf("  mob%02d: mob=%d code=%d\n", i, mob, code);
 
@@ -509,12 +508,10 @@ void loadMobEventsWithItem(int offset, const char *name) {
 
 	while(1) {
 		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
-
-		if (mob == -1)
-			break;
-
 		item = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		if (mob == -1)
+			break;
 
 		printf("  mobitem%02d: mob=%d item=%d code=%d\n", i, mob, item, code);
 
