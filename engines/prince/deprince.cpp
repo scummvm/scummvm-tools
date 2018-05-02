@@ -57,7 +57,7 @@ struct OpCodes {
 	{ "O_CHECKANIMEND", "f", false },	// 10
 	{ "O_FREEANIM", "f", false },
 	{ "O_CHECKANIMFRAME", "ff", false },
-	{ "O_PUTBACKANIM", "ffi", false },
+	{ "O_PUTBACKANIM", "ffB", false },
 	{ "O_REMBACKANIM", "ff", false },
 	{ "O_CHECKBACKANIMFRAME", "ff", false }, // 15
 	{ "O_FREEALLSAMPLES", "r", false },
@@ -257,6 +257,8 @@ int numscripts = 0;
 
 Common::String *labels;
 
+void loadBackAnim(int anum, int offset, bool printOut = true);
+
 #define ADVANCE() dataMark[pos] = true; pos++
 #define ADVANCE2() ADVANCE(); ADVANCE()
 #define ADVANCE4() ADVANCE2(); ADVANCE2()
@@ -318,6 +320,8 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 	int tableOffset = -1;
 
 	char buf[100];
+	uint32 backAnims[20];
+	int numBackAnims = 0;
 
 	while (!nf) {
 		if (!printOut && dataDecompile[pos])
@@ -423,6 +427,21 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 				if (printOut)
 					printf("<tableOffset>");
 				break;
+			case 'B':
+				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
+
+				if (printOut)
+					printf("backanim%d", v);
+
+				if (labels[v].empty() || !printOut) {
+					backAnims[numBackAnims++] = v;
+
+					if (printOut) {
+						sprintf(buf, "backanim%d", v);
+						labels[v] = buf;
+					}
+				}
+				break;
 			case 'r':
 				error("Unsupported op %s at %d (%x)", opcodes[op].name, pos - 2, pos - 2);
 				return;
@@ -445,6 +464,14 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 		printf("tableOffset: %d\n", tableOffset);
 
 		printArray(tableOffset, 4, kMaxRooms, true, true);
+	}
+
+	if (numBackAnims > 0) {
+		for (int i = 0; i < numBackAnims; i++) {
+			if (printOut)
+				printf("\n");
+			loadBackAnim(backAnims[i], backAnims[i], printOut);
+		}
 	}
 
 	if (printOut)
@@ -562,7 +589,7 @@ void loadLightSources(int offset) {
 	}
 }
 
-void loadBackAnim(int anum, int offset) {
+void loadBackAnim(int anum, int offset, bool printOut) {
 	if (!offset)
 		return;
 
@@ -577,7 +604,8 @@ void loadBackAnim(int anum, int offset) {
 	int unk3 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 	int data2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
-	printf("backanim%02d: type=%x data=%x anims=%x unk1=%x unk2=%x unk3=%x data2=%x\n", anum,
+	if (printOut)
+		printf("backanim%02d: type=%x data=%x anims=%x unk1=%x unk2=%x unk3=%x data2=%x\n", anum,
 			type, bdata, anims, unk1, unk2, unk3, data2);
 
 	if (anims == 0) {
@@ -592,7 +620,8 @@ void loadBackAnim(int anum, int offset) {
 		int end = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		int unk = READ_LE_UINT16(&data[pos]); ADVANCE2();
 
-		printf("  backanim%02d.%d: num=%d start=%d end=%d unk=%d\n", anum, i, num, start, end, unk);
+		if (printOut)
+			printf("  backanim%02d.%d: num=%d start=%d end=%d unk=%d\n", anum, i, num, start, end, unk);
 	}
 }
 
@@ -811,7 +840,7 @@ int main(int argc, char *argv[]) {
 	int nunmapped = 0;
 
 	for (int i = 0; i < dataLen; i++) {
-		if (!labels[i].empty()) {
+		if (!labels[i].empty() && !labels[i].hasPrefix("backanim")) {
 			if (inDB) {
 				printf("\n\n");
 				inDB = false;
