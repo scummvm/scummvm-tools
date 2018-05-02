@@ -47,142 +47,142 @@ struct OpCodes {
 	{ "O_SETUPPALETTE", "", false },
 	{ "O_INITROOM", "f", true },
 	{ "O_SETSAMPLE", "fs", false },
-	{ "O_FREESAMPLE", "f", false },
+	{ "O_FREESAMPLE", "f", false }, 	// 5
 	{ "O_PLAYSAMPLE", "fh", false },
 	{ "O_PUTOBJECT", "fff", false },
 	{ "O_REMOBJECT", "ff", false },
 	{ "O_SHOWANIM", "ff", false },
-	{ "O_CHECKANIMEND", "f", false },
+	{ "O_CHECKANIMEND", "f", false },	// 10
 	{ "O_FREEANIM", "f", false },
 	{ "O_CHECKANIMFRAME", "ff", false },
 	{ "O_PUTBACKANIM", "ffi", false },
 	{ "O_REMBACKANIM", "ff", false },
-	{ "O_CHECKBACKANIMFRAME", "ff", false },
+	{ "O_CHECKBACKANIMFRAME", "ff", false }, // 15
 	{ "O_FREEALLSAMPLES", "r", false },
 	{ "O_SETMUSIC", "h", false },
 	{ "O_STOPMUSIC", "", false },
 	{ "O__WAIT", "f", false },
-	{ "O_UPDATEOFF", "r", false },
+	{ "O_UPDATEOFF", "r", false },		// 20
 	{ "O_UPDATEON", "r", false },
 	{ "O_UPDATE", "r", false },
 	{ "O_CLS", "r", false },
 	{ "O__CALL", "o", false },
-	{ "O_RETURN", "", true },
+	{ "O_RETURN", "", true },			// 25
 	{ "O_GO", "o", false },
 	{ "O_BACKANIMUPDATEOFF", "f", false },
 	{ "O_BACKANIMUPDATEON", "f", false },
 	{ "O_CHANGECURSOR", "f", false },
-	{ "O_CHANGEANIMTYPE", "r", false },
+	{ "O_CHANGEANIMTYPE", "r", false },	// 30
 	{ "O__SETFLAG", "df", false },
 	{ "O_COMPARE", "df", false },
 	{ "O_JUMPZ", "o", false },
 	{ "O_JUMPNZ", "o", false },
-	{ "O_EXIT", "", true },
+	{ "O_EXIT", "", true },				// 35
 	{ "O_ADDFLAG", "df", false },
 	{ "O_TALKANIM", "ff", false },
 	{ "O_SUBFLAG", "df", false },
 	{ "O_SETSTRING", "i", false },
-	{ "O_ANDFLAG", "df", false },
+	{ "O_ANDFLAG", "df", false },		// 40
 	{ "O_GETMOBDATA", "dff", false },
 	{ "O_ORFLAG", "df", false },
 	{ "O_SETMOBDATA", "fff", false },
 	{ "O_XORFLAG", "df", false },
-	{ "O_GETMOBTEXT", "f", false },
+	{ "O_GETMOBTEXT", "f", false },		// 45
 	{ "O_MOVEHERO", "ffff", false },
 	{ "O_WALKHERO", "f", true },
 	{ "O_SETHERO", "ffff", false },
 	{ "O_HEROOFF", "f", false },
-	{ "O_HEROON", "f", false },
+	{ "O_HEROON", "f", false },			// 50
 	{ "O_CLSTEXT", "f", false },
 	{ "O_CALLTABLE", "dt", false },
 	{ "O_CHANGEMOB", "ff", false },
 	{ "O_ADDINV", "ff", false },
-	{ "O_REMINV", "ff", false },
+	{ "O_REMINV", "ff", false },		// 55
 	{ "O_REPINV", "r", false },
 	{ "O_OBSOLETE_GETACTION", "r", false },
 	{ "O_ADDWALKAREA", "r", false },
 	{ "O_REMWALKAREA", "r", false },
-	{ "O_RESTOREWALKAREA", "r", false },
+	{ "O_RESTOREWALKAREA", "r", false },// 60
 	{ "O_WAITFRAME", "", true },
 	{ "O_SETFRAME", "ff", false },
 	{ "O_RUNACTION", "r", false },
 	{ "O_COMPAREHI", "df", false },
-	{ "O_COMPARELO", "df", false },
+	{ "O_COMPARELO", "df", false },		// 65
 	{ "O_PRELOADSET", "r", false },
 	{ "O_FREEPRELOAD", "r", false },
 	{ "O_CHECKINV", "r", false },
 	{ "O_TALKHERO", "f", false },
-	{ "O_WAITTEXT", "f", false },
+	{ "O_WAITTEXT", "f", false },		// 70
 	{ "O_SETHEROANIM", "fi", false },
 	{ "O_WAITHEROANIM", "f", true },
 	{ "O_GETHERODATA", "dff", false },
 	{ "O_GETMOUSEBUTTON", "", false },
-	{ "O_CHANGEFRAMES", "ffff", false },
+	{ "O_CHANGEFRAMES", "ffff", false },// 75
 	{ "O_CHANGEBACKFRAMES", "ffff", false },
 	{ "O_GETBACKANIMDATA", "dff", false },
 	{ "O_GETANIMDATA", "dff", false },
 	{ "O_SETBGCODE", "o", false },
-	{ "O_SETBACKFRAME", "ff", false },
+	{ "O_SETBACKFRAME", "ff", false },	// 80
 	{ "O_GETRND", "dh", false },
 	{ "O_TALKBACKANIM", "ff", false },
 	{ "O_LOADPATH", "i", false },
 	{ "O_GETCHAR", "d", false },
-	{ "O_SETDFLAG", "do", false },
+	{ "O_SETDFLAG", "do", false },		// 85
 	{ "O_CALLDFLAG", "d", false },
 	{ "O_PRINTAT", "fff", false },
 	{ "O_ZOOMIN", "f", false },
 	{ "O_ZOOMOUT", "f", false },
-	{ "O_SETSTRINGOFFSET", "r", false },
+	{ "O_SETSTRINGOFFSET", "r", false },// 90
 	{ "O_GETOBJDATA", "dff", false },
 	{ "O_SETOBJDATA", "fff", false },
 	{ "O_SWAPOBJECTS", "r", false },
 	{ "O_CHANGEHEROSET", "ff", false },
-	{ "O_ADDSTRING", "r", false },
+	{ "O_ADDSTRING", "r", false },		// 95
 	{ "O_SUBSTRING", "f", false },
 	{ "O_INITDIALOG", "", false },
 	{ "O_ENABLEDIALOGOPT", "f", false },
 	{ "O_DISABLEDIALOGOPT", "f", false },
-	{ "O_SHOWDIALOGBOX", "f", false },
+	{ "O_SHOWDIALOGBOX", "f", false },	// 100
 	{ "O_STOPSAMPLE", "f", false },
 	{ "O_BACKANIMRANGE", "fhff", false },
 	{ "O_CLEARPATH", "", false },
 	{ "O_SETPATH", "", false },
-	{ "O_GETHEROX", "fd", false },
+	{ "O_GETHEROX", "fd", false },		// 105
 	{ "O_GETHEROY", "fd", false },
 	{ "O_GETHEROD", "fd", false },
 	{ "O_PUSHSTRING", "", false },
 	{ "O_POPSTRING", "", false },
-	{ "O_SETFGCODE", "o", false },
+	{ "O_SETFGCODE", "o", false },		// 110
 	{ "O_STOPHERO", "f", false },
 	{ "O_ANIMUPDATEOFF", "f", false },
 	{ "O_ANIMUPDATEON", "f", false },
 	{ "O_FREECURSOR", "", false },
-	{ "O_ADDINVQUIET", "ff", false },
+	{ "O_ADDINVQUIET", "ff", false },	// 115
 	{ "O_RUNHERO", "ffff", false },
 	{ "O_SETBACKANIMDATA", "hhd", false },
 	{ "O_VIEWFLC", "f", false },
 	{ "O_CHECKFLCFRAME", "f", false },
-	{ "O_CHECKFLCEND", "", false },
+	{ "O_CHECKFLCEND", "", false },		// 120
 	{ "O_FREEFLC", "", false },
 	{ "O_TALKHEROSTOP", "f", false },
 	{ "O_HEROCOLOR", "ff", false },
 	{ "O_GRABMAPA", "", false },
-	{ "O_ENABLENAK", "f", false },
+	{ "O_ENABLENAK", "f", false },		// 125
 	{ "O_DISABLENAK", "f", false },
 	{ "O_GETMOBNAME", "f", false },
 	{ "O_SWAPINVENTORY", "f", false },
 	{ "O_CLEARINVENTORY", "f", false },
-	{ "O_SKIPTEXT", "", false },
+	{ "O_SKIPTEXT", "", false },		// 130
 	{ "O_SETVOICEH", "f", false },
 	{ "O_SETVOICEA", "f", false },
 	{ "O_SETVOICEB", "f", false },
 	{ "O_SETVOICEC", "f", false },
-	{ "O_VIEWFLCLOOP", "f", false },
+	{ "O_VIEWFLCLOOP", "f", false },	// 135
 	{ "O_FLCSPEED", "f", false },
 	{ "O_OPENINVENTORY", "", true },
 	{ "O_KRZYWA", "", false },
 	{ "O_GETKRZYWA", "", false },
-	{ "O_GETMOB", "dff", false },
+	{ "O_GETMOB", "dff", false },		// 140
 	{ "O_INPUTLINE", "r", false },
 	{ "O_SETVOICED", "f", false },
 	{ "O_BREAK_POINT", "r", false }
@@ -263,7 +263,7 @@ Common::String *labels;
 #define ADVANCES2() ADVANCES(); ADVANCES()
 #define ADVANCES4() ADVANCES2(); ADVANCES2()
 
-void printArray(int offset, int type, int size, bool split = true) {
+void printArray(int offset, int type, int size, bool split = true, bool offsets = false) {
 	printf("[");
 
 	int pos = offset;
@@ -277,7 +277,11 @@ void printArray(int offset, int type, int size, bool split = true) {
 		} else if (type == 2) {
 			printf("%d", (uint16)READ_LE_UINT16(&data[pos])); ADVANCE2();
 		} else if (type == 4) {
-			printf("%d", (uint32)READ_LE_UINT32(&data[pos])); ADVANCE4();
+			uint32 v = (uint32)READ_LE_UINT32(&data[pos]); ADVANCE4();
+			if (offsets && v && !labels[v].empty())
+				printf("%s[%d]", labels[v].c_str(), v);
+			else
+				printf("%d", v);
 		} else {
 			error("printArray: unknown type %d", type);
 		}
@@ -417,7 +421,7 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 	if (tableOffset != -1 && printOut) {
 		printf("tableOffset: %d\n", tableOffset);
 
-		printArray(tableOffset, 4, kMaxRooms);
+		printArray(tableOffset, 4, kMaxRooms, true, true);
 	}
 
 	if (printOut)
@@ -429,7 +433,7 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 		for (int i = 0; i < kMaxRooms; i++) {
 			sprintf(buf, "tableOffset%02d", i);
 
-			uint off = READ_LE_UINT32(&data[tableOffset]); ADVANCE4();
+			uint off = READ_LE_UINT32(&data[pos]); ADVANCES4();
 
 			decompile(buf, off);
 		}
@@ -739,9 +743,23 @@ int main(int argc, char *argv[]) {
 
 	printf("Total scripts: %d\n", numscripts);
 
+	bool inDB = false;
+
 	for (int i = 0; i < dataLen; i++)
-		if (!labels[i].empty())
+		if (!labels[i].empty()) {
+			if (inDB) {
+				printf("\n\n");
+				inDB = false;
+			}
 			decompile(labels[i].c_str(), i, true);
+		} else if (!dataMark[i]) {
+			if (!inDB) {
+				printf("db %d", data[i]);
+				inDB = true;
+			} else {
+				printf(", %d", data[i]);
+			}
+		}
 
 	return 0;
 }
