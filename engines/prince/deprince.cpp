@@ -31,298 +31,155 @@
 
 static const int16 kMaxRooms = 60;
 
-enum OpCode {
-	O_WAITFOREVER,
-	O_BLACKPALETTE,
-	O_SETUPPALETTE,
-	O_INITROOM,
-	O_SETSAMPLE,
-	O_FREESAMPLE,
-	O_PLAYSAMPLE,
-	O_PUTOBJECT,
-	O_REMOBJECT,
-	O_SHOWANIM,
-	O_CHECKANIMEND,
-	O_FREEANIM,
-	O_CHECKANIMFRAME,
-	O_PUTBACKANIM,
-	O_REMBACKANIM,
-	O_CHECKBACKANIMFRAME,
-	O_FREEALLSAMPLES,
-	O_SETMUSIC,
-	O_STOPMUSIC,
-	O__WAIT,
-	O_UPDATEOFF,
-	O_UPDATEON,
-	O_UPDATE,
-	O_CLS,
-	O__CALL,
-	O_RETURN,
-	O_GO,
-	O_BACKANIMUPDATEOFF,
-	O_BACKANIMUPDATEON,
-	O_CHANGECURSOR,
-	O_CHANGEANIMTYPE,
-	O__SETFLAG,
-	O_COMPARE,
-	O_JUMPZ,
-	O_JUMPNZ,
-	O_EXIT,
-	O_ADDFLAG,
-	O_TALKANIM,
-	O_SUBFLAG,
-	O_SETSTRING,
-	O_ANDFLAG,
-	O_GETMOBDATA,
-	O_ORFLAG,
-	O_SETMOBDATA,
-	O_XORFLAG,
-	O_GETMOBTEXT,
-	O_MOVEHERO,
-	O_WALKHERO,
-	O_SETHERO,
-	O_HEROOFF,
-	O_HEROON,
-	O_CLSTEXT,
-	O_CALLTABLE,
-	O_CHANGEMOB,
-	O_ADDINV,
-	O_REMINV,
-	O_REPINV,
-	O_OBSOLETE_GETACTION,
-	O_ADDWALKAREA,
-	O_REMWALKAREA,
-	O_RESTOREWALKAREA,
-	O_WAITFRAME,
-	O_SETFRAME,
-	O_RUNACTION,
-	O_COMPAREHI,
-	O_COMPARELO,
-	O_PRELOADSET,
-	O_FREEPRELOAD,
-	O_CHECKINV,
-	O_TALKHERO,
-	O_WAITTEXT,
-	O_SETHEROANIM,
-	O_WAITHEROANIM,
-	O_GETHERODATA,
-	O_GETMOUSEBUTTON,
-	O_CHANGEFRAMES,
-	O_CHANGEBACKFRAMES,
-	O_GETBACKANIMDATA,
-	O_GETANIMDATA,
-	O_SETBGCODE,
-	O_SETBACKFRAME,
-	O_GETRND,
-	O_TALKBACKANIM,
-	O_LOADPATH,
-	O_GETCHAR,
-	O_SETDFLAG,
-	O_CALLDFLAG,
-	O_PRINTAT,
-	O_ZOOMIN,
-	O_ZOOMOUT,
-	O_SETSTRINGOFFSET,
-	O_GETOBJDATA,
-	O_SETOBJDATA,
-	O_SWAPOBJECTS,
-	O_CHANGEHEROSET,
-	O_ADDSTRING,
-	O_SUBSTRING,
-	O_INITDIALOG,
-	O_ENABLEDIALOGOPT,
-	O_DISABLEDIALOGOPT,
-	O_SHOWDIALOGBOX,
-	O_STOPSAMPLE,
-	O_BACKANIMRANGE,
-	O_CLEARPATH,
-	O_SETPATH,
-	O_GETHEROX,
-	O_GETHEROY,
-	O_GETHEROD,
-	O_PUSHSTRING,
-	O_POPSTRING,
-	O_SETFGCODE,
-	O_STOPHERO,
-	O_ANIMUPDATEOFF,
-	O_ANIMUPDATEON,
-	O_FREECURSOR,
-	O_ADDINVQUIET,
-	O_RUNHERO,
-	O_SETBACKANIMDATA,
-	O_VIEWFLC,
-	O_CHECKFLCFRAME,
-	O_CHECKFLCEND,
-	O_FREEFLC,
-	O_TALKHEROSTOP,
-	O_HEROCOLOR,
-	O_GRABMAPA,
-	O_ENABLENAK,
-	O_DISABLENAK,
-	O_GETMOBNAME,
-	O_SWAPINVENTORY,
-	O_CLEARINVENTORY,
-	O_SKIPTEXT,
-	O_SETVOICEH,
-	O_SETVOICEA,
-	O_SETVOICEB,
-	O_SETVOICEC,
-	O_VIEWFLCLOOP,
-	O_FLCSPEED,
-	O_OPENINVENTORY,
-	O_KRZYWA,
-	O_GETKRZYWA,
-	O_GETMOB,
-	O_INPUTLINE,
-	O_SETVOICED,
-	O_BREAK_POINT
-};
-
-static const char *opcode_names[] = {
-	"O_WAITFOREVER",
-	"O_BLACKPALETTE",
-	"O_SETUPPALETTE",
-	"O_INITROOM",
-	"O_SETSAMPLE",
-	"O_FREESAMPLE",
-	"O_PLAYSAMPLE",
-	"O_PUTOBJECT",
-	"O_REMOBJECT",
-	"O_SHOWANIM",
-	"O_CHECKANIMEND",
-	"O_FREEANIM",
-	"O_CHECKANIMFRAME",
-	"O_PUTBACKANIM",
-	"O_REMBACKANIM",
-	"O_CHECKBACKANIMFRAME",
-	"O_FREEALLSAMPLES",
-	"O_SETMUSIC",
-	"O_STOPMUSIC",
-	"O__WAIT",
-	"O_UPDATEOFF",
-	"O_UPDATEON",
-	"O_UPDATE",
-	"O_CLS",
-	"O__CALL",
-	"O_RETURN",
-	"O_GO",
-	"O_BACKANIMUPDATEOFF",
-	"O_BACKANIMUPDATEON",
-	"O_CHANGECURSOR",
-	"O_CHANGEANIMTYPE",
-	"O__SETFLAG",
-	"O_COMPARE",
-	"O_JUMPZ",
-	"O_JUMPNZ",
-	"O_EXIT",
-	"O_ADDFLAG",
-	"O_TALKANIM",
-	"O_SUBFLAG",
-	"O_SETSTRING",
-	"O_ANDFLAG",
-	"O_GETMOBDATA",
-	"O_ORFLAG",
-	"O_SETMOBDATA",
-	"O_XORFLAG",
-	"O_GETMOBTEXT",
-	"O_MOVEHERO",
-	"O_WALKHERO",
-	"O_SETHERO",
-	"O_HEROOFF",
-	"O_HEROON",
-	"O_CLSTEXT",
-	"O_CALLTABLE",
-	"O_CHANGEMOB",
-	"O_ADDINV",
-	"O_REMINV",
-	"O_REPINV",
-	"O_OBSOLETE_GETACTION",
-	"O_ADDWALKAREA",
-	"O_REMWALKAREA",
-	"O_RESTOREWALKAREA",
-	"O_WAITFRAME",
-	"O_SETFRAME",
-	"O_RUNACTION",
-	"O_COMPAREHI",
-	"O_COMPARELO",
-	"O_PRELOADSET",
-	"O_FREEPRELOAD",
-	"O_CHECKINV",
-	"O_TALKHERO",
-	"O_WAITTEXT",
-	"O_SETHEROANIM",
-	"O_WAITHEROANIM",
-	"O_GETHERODATA",
-	"O_GETMOUSEBUTTON",
-	"O_CHANGEFRAMES",
-	"O_CHANGEBACKFRAMES",
-	"O_GETBACKANIMDATA",
-	"O_GETANIMDATA",
-	"O_SETBGCODE",
-	"O_SETBACKFRAME",
-	"O_GETRND",
-	"O_TALKBACKANIM",
-	"O_LOADPATH",
-	"O_GETCHAR",
-	"O_SETDFLAG",
-	"O_CALLDFLAG",
-	"O_PRINTAT",
-	"O_ZOOMIN",
-	"O_ZOOMOUT",
-	"O_SETSTRINGOFFSET",
-	"O_GETOBJDATA",
-	"O_SETOBJDATA",
-	"O_SWAPOBJECTS",
-	"O_CHANGEHEROSET",
-	"O_ADDSTRING",
-	"O_SUBSTRING",
-	"O_INITDIALOG",
-	"O_ENABLEDIALOGOPT",
-	"O_DISABLEDIALOGOPT",
-	"O_SHOWDIALOGBOX",
-	"O_STOPSAMPLE",
-	"O_BACKANIMRANGE",
-	"O_CLEARPATH",
-	"O_SETPATH",
-	"O_GETHEROX",
-	"O_GETHEROY",
-	"O_GETHEROD",
-	"O_PUSHSTRING",
-	"O_POPSTRING",
-	"O_SETFGCODE",
-	"O_STOPHERO",
-	"O_ANIMUPDATEOFF",
-	"O_ANIMUPDATEON",
-	"O_FREECURSOR",
-	"O_ADDINVQUIET",
-	"O_RUNHERO",
-	"O_SETBACKANIMDATA",
-	"O_VIEWFLC",
-	"O_CHECKFLCFRAME",
-	"O_CHECKFLCEND",
-	"O_FREEFLC",
-	"O_TALKHEROSTOP",
-	"O_HEROCOLOR",
-	"O_GRABMAPA",
-	"O_ENABLENAK",
-	"O_DISABLENAK",
-	"O_GETMOBNAME",
-	"O_SWAPINVENTORY",
-	"O_CLEARINVENTORY",
-	"O_SKIPTEXT",
-	"O_SETVOICEH",
-	"O_SETVOICEA",
-	"O_SETVOICEB",
-	"O_SETVOICEC",
-	"O_VIEWFLCLOOP",
-	"O_FLCSPEED",
-	"O_OPENINVENTORY",
-	"O_KRZYWA",
-	"O_GETKRZYWA",
-	"O_GETMOB",
-	"O_INPUTLINE",
-	"O_SETVOICED",
-	"O_BREAK_POINT"
+struct OpCodes {
+	const char *name;
+	const char *params;
+	bool nf;
+} static opcodes[] = {
+	{ "O_WAITFOREVER", "", true },
+	{ "O_BLACKPALETTE", "", false },
+	{ "O_SETUPPALETTE", "", false },
+	{ "O_INITROOM", "f", true },
+	{ "O_SETSAMPLE", "fs", false },
+	{ "O_FREESAMPLE", "f", false },
+	{ "O_PLAYSAMPLE", "fh", false },
+	{ "O_PUTOBJECT", "fff", false },
+	{ "O_REMOBJECT", "ff", false },
+	{ "O_SHOWANIM", "ff", false },
+	{ "O_CHECKANIMEND", "f", false },
+	{ "O_FREEANIM", "f", false },
+	{ "O_CHECKANIMFRAME", "ff", false },
+	{ "O_PUTBACKANIM", "ffi", false },
+	{ "O_REMBACKANIM", "ff", false },
+	{ "O_CHECKBACKANIMFRAME", "ff", false },
+	{ "O_FREEALLSAMPLES", "r", false },
+	{ "O_SETMUSIC", "h", false },
+	{ "O_STOPMUSIC", "", false },
+	{ "O__WAIT", "f", false },
+	{ "O_UPDATEOFF", "r", false },
+	{ "O_UPDATEON", "r", false },
+	{ "O_UPDATE", "r", false },
+	{ "O_CLS", "r", false },
+	{ "O__CALL", "o", false },
+	{ "O_RETURN", "", false },
+	{ "O_GO", "o", false },
+	{ "O_BACKANIMUPDATEOFF", "f", false },
+	{ "O_BACKANIMUPDATEON", "f", false },
+	{ "O_CHANGECURSOR", "f", false },
+	{ "O_CHANGEANIMTYPE", "r", false },
+	{ "O__SETFLAG", "df", false },
+	{ "O_COMPARE", "df", false },
+	{ "O_JUMPZ", "o", false },
+	{ "O_JUMPNZ", "o", false },
+	{ "O_EXIT", "", true },
+	{ "O_ADDFLAG", "df", false },
+	{ "O_TALKANIM", "ff", false },
+	{ "O_SUBFLAG", "df", false },
+	{ "O_SETSTRING", "i", false },
+	{ "O_ANDFLAG", "df", false },
+	{ "O_GETMOBDATA", "dff", false },
+	{ "O_ORFLAG", "df", false },
+	{ "O_SETMOBDATA", "fff", false },
+	{ "O_XORFLAG", "df", false },
+	{ "O_GETMOBTEXT", "f", false },
+	{ "O_MOVEHERO", "ffff", false },
+	{ "O_WALKHERO", "f", true },
+	{ "O_SETHERO", "ffff", false },
+	{ "O_HEROOFF", "f", false },
+	{ "O_HEROON", "f", false },
+	{ "O_CLSTEXT", "f", false },
+	{ "O_CALLTABLE", "dt", false },
+	{ "O_CHANGEMOB", "ff", false },
+	{ "O_ADDINV", "ff", false },
+	{ "O_REMINV", "ff", false },
+	{ "O_REPINV", "r", false },
+	{ "O_OBSOLETE_GETACTION", "r", false },
+	{ "O_ADDWALKAREA", "r", false },
+	{ "O_REMWALKAREA", "r", false },
+	{ "O_RESTOREWALKAREA", "r", false },
+	{ "O_WAITFRAME", "", true },
+	{ "O_SETFRAME", "ff", false },
+	{ "O_RUNACTION", "r", false },
+	{ "O_COMPAREHI", "df", false },
+	{ "O_COMPARELO", "df", false },
+	{ "O_PRELOADSET", "r", false },
+	{ "O_FREEPRELOAD", "r", false },
+	{ "O_CHECKINV", "r", false },
+	{ "O_TALKHERO", "f", false },
+	{ "O_WAITTEXT", "f", false },
+	{ "O_SETHEROANIM", "fi", false },
+	{ "O_WAITHEROANIM", "f", true },
+	{ "O_GETHERODATA", "dff", false },
+	{ "O_GETMOUSEBUTTON", "", false },
+	{ "O_CHANGEFRAMES", "ffff", false },
+	{ "O_CHANGEBACKFRAMES", "ffff", false },
+	{ "O_GETBACKANIMDATA", "dff", false },
+	{ "O_GETANIMDATA", "dff", false },
+	{ "O_SETBGCODE", "o", false },
+	{ "O_SETBACKFRAME", "ff", false },
+	{ "O_GETRND", "dh", false },
+	{ "O_TALKBACKANIM", "ff", false },
+	{ "O_LOADPATH", "i", false },
+	{ "O_GETCHAR", "d", false },
+	{ "O_SETDFLAG", "do", false },
+	{ "O_CALLDFLAG", "d", false },
+	{ "O_PRINTAT", "fff", false },
+	{ "O_ZOOMIN", "f", false },
+	{ "O_ZOOMOUT", "f", false },
+	{ "O_SETSTRINGOFFSET", "r", false },
+	{ "O_GETOBJDATA", "dff", false },
+	{ "O_SETOBJDATA", "fff", false },
+	{ "O_SWAPOBJECTS", "r", false },
+	{ "O_CHANGEHEROSET", "ff", false },
+	{ "O_ADDSTRING", "r", false },
+	{ "O_SUBSTRING", "f", false },
+	{ "O_INITDIALOG", "", false },
+	{ "O_ENABLEDIALOGOPT", "f", false },
+	{ "O_DISABLEDIALOGOPT", "f", false },
+	{ "O_SHOWDIALOGBOX", "f", false },
+	{ "O_STOPSAMPLE", "f", false },
+	{ "O_BACKANIMRANGE", "fhff", false },
+	{ "O_CLEARPATH", "", false },
+	{ "O_SETPATH", "", false },
+	{ "O_GETHEROX", "fd", false },
+	{ "O_GETHEROY", "fd", false },
+	{ "O_GETHEROD", "fd", false },
+	{ "O_PUSHSTRING", "", false },
+	{ "O_POPSTRING", "", false },
+	{ "O_SETFGCODE", "o", false },
+	{ "O_STOPHERO", "f", false },
+	{ "O_ANIMUPDATEOFF", "f", false },
+	{ "O_ANIMUPDATEON", "f", false },
+	{ "O_FREECURSOR", "", false },
+	{ "O_ADDINVQUIET", "ff", false },
+	{ "O_RUNHERO", "ffff", false },
+	{ "O_SETBACKANIMDATA", "hhd", false },
+	{ "O_VIEWFLC", "f", false },
+	{ "O_CHECKFLCFRAME", "f", false },
+	{ "O_CHECKFLCEND", "", false },
+	{ "O_FREEFLC", "", false },
+	{ "O_TALKHEROSTOP", "f", false },
+	{ "O_HEROCOLOR", "ff", false },
+	{ "O_GRABMAPA", "", false },
+	{ "O_ENABLENAK", "f", false },
+	{ "O_DISABLENAK", "f", false },
+	{ "O_GETMOBNAME", "f", false },
+	{ "O_SWAPINVENTORY", "f", false },
+	{ "O_CLEARINVENTORY", "f", false },
+	{ "O_SKIPTEXT", "", false },
+	{ "O_SETVOICEH", "f", false },
+	{ "O_SETVOICEA", "f", false },
+	{ "O_SETVOICEB", "f", false },
+	{ "O_SETVOICEC", "f", false },
+	{ "O_VIEWFLCLOOP", "f", false },
+	{ "O_FLCSPEED", "f", false },
+	{ "O_OPENINVENTORY", "", true },
+	{ "O_KRZYWA", "", false },
+	{ "O_GETKRZYWA", "", false },
+	{ "O_GETMOB", "dff", false },
+	{ "O_INPUTLINE", "r", false },
+	{ "O_SETVOICED", "f", false },
+	{ "O_BREAK_POINT", "r", false }
 };
 
 struct ScriptInfo {
@@ -369,8 +226,66 @@ void printUsage(const char *appName) {
 	printf("Usage: %s skrypt.dat\n", appName);
 }
 
-void decompile(const char *sname, int pos) {
+void decompile(const char *sname, byte *data, int pos) {
 	printf("Script %s\n", sname);
+
+	bool nf = false;
+
+	while (!nf) {
+		uint16 op = READ_LE_UINT16(&data[pos]); pos += 2;
+
+		nf = opcodes[op].nf;
+
+		const char *param = opcodes[op].params;
+
+		printf("%s", opcodes[op].name);
+
+		if (*param)
+			printf(" ");
+
+		int v;
+
+		while (*param) {
+			switch (*param) {
+			case 'f':
+				v = READ_LE_UINT16(&data[pos]); pos += 2;
+
+				if (v & 0x8000) {
+					//printf("%s", getFlagName(v));
+				} else {
+					printf("%d", v);
+				}
+				break;
+			case 'h':
+				v = READ_LE_UINT16(&data[pos]); pos += 2;
+				printf("%d", v);
+				break;
+			case 'i':
+				v = READ_LE_UINT32(&data[pos]); pos += 4;
+				printf("%d", v);
+				break;
+			case 'd':
+				v = READ_LE_UINT16(&data[pos]); pos += 2;
+				//printf("%s", getFlagName(v));
+				break;
+			case 'o':
+				v = READ_LE_UINT32(&data[pos]); pos += 4;
+				printf("[%d]", v);
+				break;
+			case 'r':
+				error("Unsupported op %s", opcodes[op].name);
+			default:
+				error("Unhandled param '%c' for %s", opcodes[op].name);
+			}
+
+			param++;
+
+			if (*param)
+				printf(", ");
+		}
+
+		printf("\n");
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -429,6 +344,24 @@ int main(int argc, char *argv[]) {
 
 	printf("Rooms: %d\n", scriptInfo.rooms);
 	printf("StartGame: %d\n", scriptInfo.startGame);
+	printf("restoreGame: %d\n", scriptInfo.restoreGame);
+	printf("stdExamine: %d\n", scriptInfo.stdExamine);
+	printf("stdPickup: %d\n", scriptInfo.stdPickup);
+	printf("stdUse: %d\n", scriptInfo.stdUse);
+	printf("stdOpen: %d\n", scriptInfo.stdOpen);
+	printf("stdClose: %d\n", scriptInfo.stdClose);
+	printf("stdTalk: %d\n", scriptInfo.stdTalk);
+	printf("stdGive: %d\n", scriptInfo.stdGive);
+	printf("usdCode: %d\n", scriptInfo.usdCode);
+	printf("invObjExam: %d\n", scriptInfo.invObjExam);
+	printf("invObjUse: %d\n", scriptInfo.invObjUse);
+	printf("invObjUU: %d\n", scriptInfo.invObjUU);
+	printf("stdUseItem: %d\n", scriptInfo.stdUseItem);
+	printf("lightSources: %d\n", scriptInfo.lightSources);
+	printf("specRout: %d\n", scriptInfo.specRout);
+	printf("invObjGive: %d\n", scriptInfo.invObjGive);
+	printf("stdGiveItem: %d\n", scriptInfo.stdGiveItem);
+	printf("goTester: %d\n", scriptInfo.goTester);
 
 	Room rooms[kMaxRooms];
 
@@ -449,9 +382,24 @@ int main(int argc, char *argv[]) {
 		rooms[i].pullClose = READ_LE_UINT32(pos); pos += 4;
 		rooms[i].talk = READ_LE_UINT32(pos); pos += 4;
 		rooms[i].give = READ_LE_UINT32(pos); pos += 4;
+
+		printf("r%02d mobs: %d\n", i, rooms[i].mobs);
+		printf("r%02d backAnim: %d\n", i, rooms[i].backAnim);
+		printf("r%02d obj: %d\n", i, rooms[i].obj);
+		printf("r%02d nak: %d\n", i, rooms[i].nak);
+		printf("r%02d itemUse: %d\n", i, rooms[i].itemUse);
+		printf("r%02d itemGive: %d\n", i, rooms[i].itemGive);
+		printf("r%02d walkTo: %d\n", i, rooms[i].walkTo);
+		printf("r%02d examine: %d\n", i, rooms[i].examine);
+		printf("r%02d pickup: %d\n", i, rooms[i].pickup);
+		printf("r%02d use: %d\n", i, rooms[i].use);
+		printf("r%02d pushOpen: %d\n", i, rooms[i].pushOpen);
+		printf("r%02d pullClose: %d\n", i, rooms[i].pullClose);
+		printf("r%02d talk: %d\n", i, rooms[i].talk);
+		printf("r%02d give: %d\n", i, rooms[i].give);
 	}
 
-	decompile("StartGame", scriptInfo.startGame);
+	decompile("StartGame", decompData, scriptInfo.startGame);
 
 	return 0;
 }
