@@ -221,6 +221,8 @@ struct Room {
 	int pullClose;
 	int talk;
 	int give;
+	int unk1;
+	int unk2;
 };
 
 void printUsage(const char *appName) {
@@ -421,6 +423,8 @@ int main(int argc, char *argv[]) {
 		rooms[i].pullClose = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].talk = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].give = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].unk1 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].unk2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
 		printf("r%02d mobs: %d\n", i, rooms[i].mobs);
 		printf("r%02d backAnim: %d\n", i, rooms[i].backAnim);
@@ -436,15 +440,19 @@ int main(int argc, char *argv[]) {
 		printf("r%02d pullClose: %d\n", i, rooms[i].pullClose);
 		printf("r%02d talk: %d\n", i, rooms[i].talk);
 		printf("r%02d give: %d\n", i, rooms[i].give);
+		printf("r%02d unk1: %d\n", i, rooms[i].unk1);
+		printf("r%02d unk2: %d\n", i, rooms[i].unk2);
 	}
 
 	decompile("StartGame", scriptInfo.startGame);
 	decompile("RestoreGame", scriptInfo.restoreGame);
 
-	for (uint i = 0; i < dataLen & 0; i++)
+#if 0
+	for (uint i = 0; i < dataLen; i++)
 		printf("%c", dataMark[i] ? '*' : '.');
 
 	printf("\n");
+#endif
 
 	return 0;
 }
