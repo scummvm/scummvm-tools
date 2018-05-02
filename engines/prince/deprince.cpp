@@ -248,6 +248,7 @@ void printUsage(const char *appName) {
 byte *data;
 uint32 dataLen;
 bool *dataMark;
+int numscripts = 0;
 
 #define ADVANCE() dataMark[pos] = true; pos++
 #define ADVANCE2() ADVANCE(); ADVANCE()
@@ -280,6 +281,11 @@ void printArray(int offset, int type, int size, bool split = true) {
 }
 
 void decompile(const char *sname, int pos) {
+	if (pos == 0)
+		return;
+
+	numscripts++;
+
 	printf("Script %s\n", sname);
 
 	bool nf = false;
@@ -326,6 +332,10 @@ void decompile(const char *sname, int pos) {
 				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
 				printf("[%d]", v);
 				break;
+			case 's':
+				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
+				printf("\"%s\"", &data[pos + v - 4]);
+				break;
 			case 't':
 				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
 				if (tableOffset != -1 && tableOffset != v) {
@@ -358,6 +368,19 @@ void decompile(const char *sname, int pos) {
 	}
 
 	printf("End Script\n\n");
+
+	if (tableOffset != -1) {
+		char buf[100];
+
+		for (int i = 0; i < kMaxRooms; i++) {
+			sprintf(buf, "tableOffset%02d", i);
+
+			uint off = READ_LE_UINT32(&data[tableOffset]);
+			tableOffset += 4;
+
+			decompile(buf, off);
+		}
+	}
 }
 
 void loadMask(int offset) {
@@ -387,7 +410,7 @@ void loadMask(int offset) {
 	}
 }
 
-void loadMobEvents(int offset) {
+void loadMobEvents(int offset, const char *name) {
 	if (!offset)
 		return;
 
@@ -395,6 +418,9 @@ void loadMobEvents(int offset) {
 	int i = 0;
 	int16 mob;
 	int32 code;
+
+	char buf[100];
+
 	while(1) {
 		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
 
@@ -405,11 +431,14 @@ void loadMobEvents(int offset) {
 
 		printf("  mob%02d: mob=%d code=%d\n", i, mob, code);
 
+		sprintf(buf, "%s.mob%d", name, mob);
+		decompile(buf, code);
+
 		i++;
 	}
 }
 
-void loadMobEventsWithItem(int offset) {
+void loadMobEventsWithItem(int offset, const char *name) {
 	if (!offset)
 		return;
 
@@ -418,6 +447,9 @@ void loadMobEventsWithItem(int offset) {
 	int16 mob;
 	int16 item;
 	int32 code;
+
+	char buf[100];
+
 	while(1) {
 		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
 
@@ -428,6 +460,9 @@ void loadMobEventsWithItem(int offset) {
 		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
 		printf("  mobitem%02d: mob=%d item=%d code=%d\n", i, mob, item, code);
+
+		sprintf(buf, "%s.mobitem%d", name, mob);
+		decompile(buf, code);
 
 		i++;
 	}
@@ -514,13 +549,13 @@ int main(int argc, char *argv[]) {
 	printf("stdGive: %d\n", scriptInfo.stdGive);
 	printf("usdCode: %d\n", scriptInfo.usdCode);
 	printf("invObjExam: [%d]\n", scriptInfo.invObjExam);
-	loadMobEvents(scriptInfo.invObjExam);
+	loadMobEvents(scriptInfo.invObjExam, "invObjExam");
 	printf("end invObjExam\n");
 	printf("invObjUse: [%d]\n", scriptInfo.invObjUse);
-	loadMobEvents(scriptInfo.invObjUse);
+	loadMobEvents(scriptInfo.invObjUse, "invObjUse");
 	printf("end invObjUse\n");
 	printf("invObjUU: %d\n", scriptInfo.invObjUU);
-	loadMobEventsWithItem(scriptInfo.invObjUU);
+	loadMobEventsWithItem(scriptInfo.invObjUU, "invObjUU");
 	printf("end invObjUU\n");
 	printf("stdUseItem: %d\n", scriptInfo.stdUseItem);
 	printf("lightSources: [%d]\n", scriptInfo.lightSources);
@@ -542,16 +577,18 @@ int main(int argc, char *argv[]) {
 		rooms[i].nak = READ_LE_UINT32(&data[pos]); ADVANCE4();			// offset pointing to Mask structure
 		rooms[i].itemUse = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].itemGive = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		rooms[i].walkTo = READ_LE_UINT32(&data[pos]); ADVANCE4();		// script
-		rooms[i].examine = READ_LE_UINT32(&data[pos]); ADVANCE4();		// script
-		rooms[i].pickup = READ_LE_UINT32(&data[pos]); ADVANCE4();		// script
-		rooms[i].use = READ_LE_UINT32(&data[pos]); ADVANCE4();			// script
-		rooms[i].pushOpen = READ_LE_UINT32(&data[pos]); ADVANCE4();		// script
-		rooms[i].pullClose = READ_LE_UINT32(&data[pos]); ADVANCE4();	// script
-		rooms[i].talk = READ_LE_UINT32(&data[pos]); ADVANCE4();			// script
-		rooms[i].give = READ_LE_UINT32(&data[pos]); ADVANCE4();			// script
+		rooms[i].walkTo = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].examine = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].pickup = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].use = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].pushOpen = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].pullClose = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].talk = READ_LE_UINT32(&data[pos]); ADVANCE4();
+		rooms[i].give = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].unk1 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 		rooms[i].unk2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+
+		char buf[100];
 
 		printf("r%02d mobs: [%d]: ", i, rooms[i].mobs);
 		printArray(rooms[i].mobs, 1, kMaxMobs, false);
@@ -563,19 +600,45 @@ int main(int argc, char *argv[]) {
 		loadMask(rooms[i].nak);
 		printf("end masks\n");
 		printf("r%02d itemUse: [%d]\n", i, rooms[i].itemUse);
-		loadMobEventsWithItem(rooms[i].itemUse);
+		sprintf(buf, "rooms%02d.itemUse", i);
+		loadMobEventsWithItem(rooms[i].itemUse, buf);
 		printf("end itemUse\n");
 		printf("r%02d itemGive: [%d]\n", i, rooms[i].itemGive);
-		loadMobEventsWithItem(rooms[i].itemGive);
+		sprintf(buf, "rooms%02d.itemGive", i);
+		loadMobEventsWithItem(rooms[i].itemGive, buf);
 		printf("end itemGive\n");
-		printf("r%02d walkTo: %d\n", i, rooms[i].walkTo);
-		printf("r%02d examine: %d\n", i, rooms[i].examine);
-		printf("r%02d pickup: %d\n", i, rooms[i].pickup);
-		printf("r%02d use: %d\n", i, rooms[i].use);
-		printf("r%02d pushOpen: %d\n", i, rooms[i].pushOpen);
-		printf("r%02d pullClose: %d\n", i, rooms[i].pullClose);
-		printf("r%02d talk: %d\n", i, rooms[i].talk);
-		printf("r%02d give: %d\n", i, rooms[i].give);
+		printf("r%02d walkTo: [%d]\n", i, rooms[i].walkTo);
+		sprintf(buf, "rooms%02d.walkTo", i);
+		loadMobEvents(rooms[i].walkTo, buf);
+		printf("end walkTo\n");
+		printf("r%02d examine: [%d]\n", i, rooms[i].examine);
+		sprintf(buf, "rooms%02d.examine", i);
+		loadMobEvents(rooms[i].examine, buf);
+		printf("end examine\n");
+		printf("r%02d pickup: [%d]\n", i, rooms[i].pickup);
+		sprintf(buf, "rooms%02d.pickup", i);
+		loadMobEvents(rooms[i].pickup, buf);
+		printf("end pickup\n");
+		printf("r%02d use: [%d]\n", i, rooms[i].use);
+		sprintf(buf, "rooms%02d.use", i);
+		loadMobEvents(rooms[i].use, buf);
+		printf("end use\n");
+		printf("r%02d pushOpen: [%d]\n", i, rooms[i].pushOpen);
+		sprintf(buf, "rooms%02d.pushOpen", i);
+		loadMobEvents(rooms[i].pushOpen, buf);
+		printf("end pushOpen\n");
+		printf("r%02d pullClose: [%d]\n", i, rooms[i].pullClose);
+		sprintf(buf, "rooms%02d.pullClose", i);
+		loadMobEvents(rooms[i].pullClose, buf);
+		printf("end pullClose\n");
+		printf("r%02d talk: [%d]\n", i, rooms[i].talk);
+		sprintf(buf, "rooms%02d.talk", i);
+		loadMobEvents(rooms[i].talk, buf);
+		printf("end talk\n");
+		printf("r%02d give: [%d]\n", i, rooms[i].give);
+		sprintf(buf, "rooms%02d.give", i);
+		loadMobEvents(rooms[i].give, buf);
+		printf("end give\n");
 		printf("r%02d unk1: %d\n", i, rooms[i].unk1);
 		printf("r%02d unk2: %d\n", i, rooms[i].unk2);
 	}
@@ -594,11 +657,22 @@ int main(int argc, char *argv[]) {
 	decompile("stdGiveItem", scriptInfo.stdGiveItem);
 
 #if 0
-	for (uint i = 0; i < dataLen; i++)
-		printf("%c", dataMark[i] ? '*' : '.');
+	int n = 0;
+	const char *shades[] = {" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"};
+	for (uint i = 0; i < dataLen; i++) {
+		if (i % 8 == 0 && i) {
+			printf("%s", shades[n]);
+			n = 0;
+		}
+
+		if (dataMark[i])
+			n++;
+	}
 
 	printf("\n");
 #endif
+
+	printf("Total scripts: %d\n", numscripts);
 
 	return 0;
 }
