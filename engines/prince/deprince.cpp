@@ -243,16 +243,6 @@ struct Mask {
 	int16 _height;
 };
 
-struct ScriptEntry {
-	Common::String name;
-	uint32 offset;
-
-	ScriptEntry(const char *name_, uint32 offset_) {
-		name = name_;
-		offset = offset_;
-	}
-};
-
 void printUsage(const char *appName) {
 	printf("Usage: %s skrypt.dat\n", appName);
 }
@@ -263,7 +253,7 @@ bool *dataMark;
 bool *dataDecompile;
 int numscripts = 0;
 
-Common::Array<ScriptEntry *> scripts;
+Common::String *labels;
 
 #define ADVANCE() dataMark[pos] = true; pos++
 #define ADVANCE2() ADVANCE(); ADVANCE()
@@ -303,14 +293,15 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 	if (pos == 0)
 		return;
 
-	ScriptEntry *entry = new ScriptEntry(sname, pos);
-	scripts.push_back(entry);
+	if (labels[pos].empty() || labels[pos].hasPrefix("script")) {
+		labels[pos] = sname;
+	}
 
 	if (!printOut)
 		numscripts++;
 
 	if (printOut)
-		printf("Script %s\n", sname);
+		printf("%s:\n", sname);
 
 	bool nf = false;
 	int tableOffset = -1;
@@ -318,7 +309,7 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 	char buf[100];
 
 	while (!nf) {
-		if (dataDecompile[pos])
+		if (!printOut && dataDecompile[pos])
 			break;
 
 		uint16 op = READ_LE_UINT16(&data[pos]); ADVANCES2();
@@ -373,11 +364,12 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 			case 'o':
 				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
 
-				if (printOut)
-					printf("[%d]", v);
-
-				sprintf(buf, "script%06d", pos + v - 4);
-				decompile(buf, pos + v - 4);
+				if (printOut) {
+					printf("%s[%d]", labels[pos + v - 4].c_str(), v);
+				} else {
+					sprintf(buf, "script%06d", pos + v - 4);
+					decompile(buf, pos + v - 4);
+				}
 
 				break;
 			case 's':
@@ -429,7 +421,7 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 	}
 
 	if (printOut)
-		printf("End Script\n\n");
+		printf("\n");
 
 	if (tableOffset != -1) {
 		pos = tableOffset;
@@ -571,8 +563,19 @@ int main(int argc, char *argv[]) {
 	dec.decompress(fdata + 18, data, dataLen);
 	delete [] fdata;
 
+#if 0
+	Common::File dumpFile("skrypt.dump", "wb");
+	if (!dumpFile.isOpen()) {
+		error("couldn't load file '%s'", argv[1]);
+		return 1;
+	}
+	dumpFile.write(data, dataLen);
+	dumpFile.close();
+#endif
+
 	dataMark = (bool *)calloc(dataLen, sizeof(bool));
 	dataDecompile = (bool *)calloc(dataLen, sizeof(bool));
+	labels = new Common::String[dataLen];
 
 	int pos = 0;
 
@@ -718,7 +721,7 @@ int main(int argc, char *argv[]) {
 	decompile("stdUseItem", scriptInfo.stdUseItem);
 	decompile("stdGiveItem", scriptInfo.stdGiveItem);
 
-#if 0
+#if 1
 	int n = 0;
 	const char *shades[] = {" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"};
 	for (uint i = 0; i < dataLen; i++) {
@@ -735,6 +738,10 @@ int main(int argc, char *argv[]) {
 #endif
 
 	printf("Total scripts: %d\n", numscripts);
+
+	for (int i = 0; i < dataLen; i++)
+		if (!labels[i].empty())
+			decompile(labels[i].c_str(), i, true);
 
 	return 0;
 }
