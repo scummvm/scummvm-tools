@@ -448,9 +448,6 @@ void loadMask(int offset) {
 
 	while (1) {
 		tempMask._state = READ_LE_UINT16(&data[pos]); ADVANCE2();
-		if (tempMask._state == 0xffff) {
-			break;
-		}
 		tempMask._flags = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		tempMask._x1 = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		tempMask._y1 = READ_LE_UINT16(&data[pos]); ADVANCE2();
@@ -458,6 +455,10 @@ void loadMask(int offset) {
 		tempMask._y2 = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		tempMask._z = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		tempMask._number = READ_LE_UINT16(&data[pos]); ADVANCE2();
+
+		if (tempMask._state == 0xffff) {
+			break;
+		}
 
 		printf("  mask%d state=%d fl=%d x1=%d y1=%d x2=%d y2=%d z=%d number=%d\n", n, tempMask._state,
 					tempMask._flags, tempMask._x1, tempMask._y1, tempMask._x2, tempMask._y2,
@@ -478,7 +479,7 @@ void loadMobEvents(int offset, const char *name) {
 
 	char buf[100];
 
-	while(1) {
+	while (1) {
 		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
 		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
@@ -506,7 +507,7 @@ void loadMobEventsWithItem(int offset, const char *name) {
 
 	char buf[100];
 
-	while(1) {
+	while (1) {
 		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
 		item = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
@@ -741,11 +742,10 @@ int main(int argc, char *argv[]) {
 	printf("\n");
 #endif
 
-	printf("Total scripts: %d\n", numscripts);
-
 	bool inDB = false;
+	int nunmapped = 0;
 
-	for (int i = 0; i < dataLen; i++)
+	for (int i = 0; i < dataLen; i++) {
 		if (!labels[i].empty()) {
 			if (inDB) {
 				printf("\n\n");
@@ -753,6 +753,8 @@ int main(int argc, char *argv[]) {
 			}
 			decompile(labels[i].c_str(), i, true);
 		} else if (!dataMark[i]) {
+			nunmapped++;
+
 			if (!inDB) {
 				printf("label%d: ; 0x%x\n  db %d", i, i, data[i]);
 				inDB = true;
@@ -765,6 +767,9 @@ int main(int argc, char *argv[]) {
 				inDB = false;
 			}
 		}
+	}
+
+	printf("\nTotal scripts: %d  Unmapped bytes: %d\n", numscripts, nunmapped);
 
 	return 0;
 }
