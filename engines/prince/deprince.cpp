@@ -395,7 +395,11 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 						printf("%d", v);
 				} else {
 					if (printOut)
-						printf("\"%s\"[%d]", &data[v], v);
+						printf("\"%s\"[string%d]", &data[v], v);
+
+					sprintf(buf, "string%d", v);
+					labels[v] = buf;
+
 					while (data[v]) {
 						dataMark[v] = dataDecompile[v] = true;
 						v++;
@@ -407,9 +411,12 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
 
 				if (printOut)
-					printf("\"%s\"[%d]", &data[pos + v - 4], pos + v - 4);
+					printf("\"%s\"[string%d]", &data[pos + v - 4], pos + v - 4);
 
 				v = pos + v - 4;
+				sprintf(buf, "string%d", v);
+				labels[v] = buf;
+
 				while (data[v]) {
 					dataMark[v] = dataDecompile[v] = true;
 					v++;
@@ -845,7 +852,12 @@ int main(int argc, char *argv[]) {
 				printf("\n\n");
 				inDB = false;
 			}
-			decompile(labels[i].c_str(), i, true);
+
+			if (labels[i].hasPrefix("string")) {
+				printf("%s:\n  db \"%s\", 0\n", labels[i].c_str(), &data[i]);
+			} else {
+				decompile(labels[i].c_str(), i, true);
+			}
 		} else if (!dataMark[i]) {
 			nunmapped++;
 
