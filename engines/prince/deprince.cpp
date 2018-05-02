@@ -21,8 +21,10 @@
 
 /* Prince script decompiler */
 
+#include "common/array.h"
 #include "common/file.h"
 #include "common/endian.h"
+#include "common/str.h"
 #include "common/util.h"
 
 #include "utils.h"
@@ -65,7 +67,7 @@ struct OpCodes {
 	{ "O_UPDATE", "r", false },
 	{ "O_CLS", "r", false },
 	{ "O__CALL", "o", false },
-	{ "O_RETURN", "", false },
+	{ "O_RETURN", "", true },
 	{ "O_GO", "o", false },
 	{ "O_BACKANIMUPDATEOFF", "f", false },
 	{ "O_BACKANIMUPDATEON", "f", false },
@@ -241,6 +243,16 @@ struct Mask {
 	int16 _height;
 };
 
+struct ScriptEntry {
+	Common::String name;
+	uint32 offset;
+
+	ScriptEntry(const char *name_, uint32 offset_) {
+		name = name_;
+		offset = offset_;
+	}
+};
+
 void printUsage(const char *appName) {
 	printf("Usage: %s skrypt.dat\n", appName);
 }
@@ -248,11 +260,18 @@ void printUsage(const char *appName) {
 byte *data;
 uint32 dataLen;
 bool *dataMark;
+bool *dataDecompile;
 int numscripts = 0;
+
+Common::Array<ScriptEntry *> scripts;
 
 #define ADVANCE() dataMark[pos] = true; pos++
 #define ADVANCE2() ADVANCE(); ADVANCE()
 #define ADVANCE4() ADVANCE2(); ADVANCE2()
+
+#define ADVANCES() dataMark[pos] = dataDecompile[pos] = true; pos++
+#define ADVANCES2() ADVANCES(); ADVANCES()
+#define ADVANCES4() ADVANCES2(); ADVANCES2()
 
 void printArray(int offset, int type, int size, bool split = true) {
 	printf("[");
@@ -280,27 +299,41 @@ void printArray(int offset, int type, int size, bool split = true) {
 	printf("]\n");
 }
 
-void decompile(const char *sname, int pos) {
+void decompile(const char *sname, int pos, bool printOut = false) {
 	if (pos == 0)
 		return;
 
-	numscripts++;
+	ScriptEntry *entry = new ScriptEntry(sname, pos);
+	scripts.push_back(entry);
 
-	printf("Script %s\n", sname);
+	if (!printOut)
+		numscripts++;
+
+	if (printOut)
+		printf("Script %s\n", sname);
 
 	bool nf = false;
 	int tableOffset = -1;
 
+	char buf[100];
+
 	while (!nf) {
-		uint16 op = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		if (dataDecompile[pos])
+			break;
+
+		uint16 op = READ_LE_UINT16(&data[pos]); ADVANCES2();
+
+		if (op >= ARRAYSIZE(opcodes))
+			error("Invalid op: %d at %d", op, pos - 2);
 
 		nf = opcodes[op].nf;
 
 		const char *param = opcodes[op].params;
 
-		printf("  %s", opcodes[op].name);
+		if (printOut)
+			printf("  %s", opcodes[op].name);
 
-		if (*param)
+		if (*param && printOut)
 			printf(" ");
 
 		int v;
@@ -308,7 +341,10 @@ void decompile(const char *sname, int pos) {
 		while (*param) {
 			switch (*param) {
 			case 'f':
-				v = READ_LE_UINT16(&data[pos]); ADVANCE2();
+				v = READ_LE_UINT16(&data[pos]); ADVANCES2();
+
+				if (!printOut)
+					break;
 
 				if (v & 0x8000) {
 					printf("%s", Flags::getFlagName(v));
@@ -317,32 +353,56 @@ void decompile(const char *sname, int pos) {
 				}
 				break;
 			case 'h':
-				v = READ_LE_UINT16(&data[pos]); ADVANCE2();
-				printf("%d", v);
+				v = READ_LE_UINT16(&data[pos]); ADVANCES2();
+
+				if (printOut)
+					printf("%d", v);
 				break;
 			case 'i':
-				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
-				printf("%d", v);
+				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
+
+				if (printOut)
+					printf("%d", v);
 				break;
 			case 'd':
-				v = READ_LE_UINT16(&data[pos]); ADVANCE2();
-				printf("%s", Flags::getFlagName(v));
+				v = READ_LE_UINT16(&data[pos]); ADVANCES2();
+
+				if (printOut)
+					printf("%s", Flags::getFlagName(v));
 				break;
 			case 'o':
-				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
-				printf("[%d]", v);
+				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
+
+				if (printOut)
+					printf("[%d]", v);
+
+				sprintf(buf, "script%06d", pos + v - 4);
+				decompile(buf, pos + v - 4);
+
 				break;
 			case 's':
-				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
-				printf("\"%s\"", &data[pos + v - 4]);
+				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
+
+				if (printOut)
+					printf("\"%s\"", &data[pos + v - 4]);
+
+				v = pos + v - 4;
+				while (data[v]) {
+					dataMark[v] = dataDecompile[v] = true;
+					v++;
+				}
+				dataMark[v] = dataDecompile[v] = true;
+
 				break;
 			case 't':
-				v = READ_LE_UINT32(&data[pos]); ADVANCE4();
+				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
 				if (tableOffset != -1 && tableOffset != v) {
 					error("Duplicate tableOffset: %d vs %d", tableOffset, v);
 				}
 				tableOffset = v;
-				printf("<tableOffset>");
+
+				if (printOut)
+					printf("<tableOffset>");
 				break;
 			case 'r':
 				error("Unsupported op %s", opcodes[op].name);
@@ -354,29 +414,30 @@ void decompile(const char *sname, int pos) {
 
 			param++;
 
-			if (*param)
+			if (*param && printOut)
 				printf(", ");
 		}
 
-		printf("\n");
+		if (printOut)
+			printf("\n");
 	}
 
-	if (tableOffset != -1) {
+	if (tableOffset != -1 && printOut) {
 		printf("tableOffset: %d\n", tableOffset);
 
 		printArray(tableOffset, 4, kMaxRooms);
 	}
 
-	printf("End Script\n\n");
+	if (printOut)
+		printf("End Script\n\n");
 
 	if (tableOffset != -1) {
-		char buf[100];
+		pos = tableOffset;
 
 		for (int i = 0; i < kMaxRooms; i++) {
 			sprintf(buf, "tableOffset%02d", i);
 
-			uint off = READ_LE_UINT32(&data[tableOffset]);
-			tableOffset += 4;
+			uint off = READ_LE_UINT32(&data[tableOffset]); ADVANCE4();
 
 			decompile(buf, off);
 		}
@@ -511,6 +572,7 @@ int main(int argc, char *argv[]) {
 	delete [] fdata;
 
 	dataMark = (bool *)calloc(dataLen, sizeof(bool));
+	dataDecompile = (bool *)calloc(dataLen, sizeof(bool));
 
 	int pos = 0;
 
