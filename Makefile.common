@@ -101,6 +101,7 @@ dekyra_OBJS := \
 
 deprince_OBJS := \
 	engines/prince/deprince.o \
+	engines/prince/flags.o \
 	engines/prince/utils.o \
 	$(UTILS)
 

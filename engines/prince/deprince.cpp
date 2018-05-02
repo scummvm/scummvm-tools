@@ -26,6 +26,7 @@
 #include "common/util.h"
 
 #include "utils.h"
+#include "flags.h"
 
 #include <assert.h>
 
@@ -251,7 +252,7 @@ void decompile(const char *sname, byte *data, int pos) {
 				v = READ_LE_UINT16(&data[pos]); pos += 2;
 
 				if (v & 0x8000) {
-					//printf("%s", getFlagName(v));
+					printf("%s", Flags::getFlagName(v));
 				} else {
 					printf("%d", v);
 				}
@@ -266,7 +267,7 @@ void decompile(const char *sname, byte *data, int pos) {
 				break;
 			case 'd':
 				v = READ_LE_UINT16(&data[pos]); pos += 2;
-				//printf("%s", getFlagName(v));
+				printf("%s", Flags::getFlagName(v));
 				break;
 			case 'o':
 				v = READ_LE_UINT32(&data[pos]); pos += 4;
