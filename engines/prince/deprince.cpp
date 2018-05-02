@@ -115,7 +115,7 @@ struct OpCodes {
 	{ "O_CHECKINV", "r", false },
 	{ "O_TALKHERO", "f", false },
 	{ "O_WAITTEXT", "f", false },		// 70
-	{ "O_SETHEROANIM", "fi", false },
+	{ "O_SETHEROANIM", "fS", false },
 	{ "O_WAITHEROANIM", "f", false /* true */ },
 	{ "O_GETHERODATA", "dff", false },
 	{ "O_GETMOUSEBUTTON", "", false },
@@ -266,8 +266,10 @@ Common::String *labels;
 #define ADVANCES4() ADVANCES2(); ADVANCES2()
 
 void printArray(int offset, int type, int size, bool split = true, bool offsets = false) {
-	if (!offset)
+	if (!offset) {
+		printf("\n");
 		return;
+	}
 
 	printf("[");
 
@@ -310,7 +312,7 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 		numscripts++;
 
 	if (printOut)
-		printf("%s:\n", sname);
+		printf("%s: ; %d 0x%x\n", sname, pos, pos);
 
 	bool nf = false;
 	int tableOffset = -1;
@@ -381,11 +383,27 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 				}
 
 				break;
+			case 'S':
+				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
+
+				if (v < 100) {
+					if (printOut)
+						printf("%d", v);
+				} else {
+					if (printOut)
+						printf("\"%s\"[%d]", &data[v], v);
+					while (data[v]) {
+						dataMark[v] = dataDecompile[v] = true;
+						v++;
+					}
+					dataMark[v] = dataDecompile[v] = true;
+				}
+				break;
 			case 's':
 				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
 
 				if (printOut)
-					printf("\"%s\"", &data[pos + v - 4]);
+					printf("\"%s\"[%d]", &data[pos + v - 4], pos + v - 4);
 
 				v = pos + v - 4;
 				while (data[v]) {
@@ -446,6 +464,9 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 }
 
 void loadMask(int offset) {
+	if (!offset)
+		return;
+
 	Mask tempMask;
 
 	int pos = offset;
@@ -542,37 +563,36 @@ void loadLightSources(int offset) {
 }
 
 void loadBackAnim(int anum, int offset) {
+	if (!offset)
+		return;
+
 	int pos = offset;
 
-	printf("loadBackAnim: %d 0x%x\n", offset, offset);
+	// Anim BAS data
+	int type = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	int bdata = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	int anims = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	int unk1 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	int unk2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	int unk3 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	int data2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
-	if (offset != 0) {
-		// Anim BAS data
-		int type = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		int bdata = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		int anims = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		int unk1 = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		int unk2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		int unk3 = READ_LE_UINT32(&data[pos]); ADVANCE4();
-		int data2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
+	printf("backanim%02d: type=%x data=%x anims=%x unk1=%x unk2=%x unk3=%x data2=%x\n", anum,
+			type, bdata, anims, unk1, unk2, unk3, data2);
 
-		printf("backanim%02d: type=%x data=%x anims=%x unk1=%x unk2=%x unk3=%x data2=%x\n", anum,
-				type, bdata, anims, unk1, unk2, unk3, data2);
+	if (anims == 0) {
+		anims = 1; // anims with 0 as amount in game data has just 1 animation
+	}
 
-		if (anims == 0) {
-			anims = 1; // anims with 0 as amount in game data has just 1 animation
-		}
+	for (int i = 0; i < anims; i++) {
+		pos = offset + kStructSizeBAS + kStructSizeBASA * i;
+		// Anim BASA data
+		int num = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		int start = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		int end = READ_LE_UINT16(&data[pos]); ADVANCE2();
+		int unk = READ_LE_UINT16(&data[pos]); ADVANCE2();
 
-		for (int i = 0; i < anims; i++) {
-			pos = offset + kStructSizeBAS + kStructSizeBASA * i;
-			// Anim BASA data
-			int num = READ_LE_UINT16(&data[pos]); ADVANCE2();
-			int start = READ_LE_UINT16(&data[pos]); ADVANCE2();
-			int end = READ_LE_UINT16(&data[pos]); ADVANCE2();
-			int unk = READ_LE_UINT16(&data[pos]); ADVANCE2();
-
-			printf("  backanim%02d.%d: num=%d start=%d end=%d unk=%d\n", anum, i, num, start, end, unk);
-		}
+		printf("  backanim%02d.%d: num=%d start=%d end=%d unk=%d\n", anum, i, num, start, end, unk);
 	}
 }
 
