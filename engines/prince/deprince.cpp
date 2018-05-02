@@ -231,6 +231,7 @@ void decompile(const char *sname, byte *data, int pos) {
 	printf("Script %s\n", sname);
 
 	bool nf = false;
+	int tableOffset = -1;
 
 	while (!nf) {
 		uint16 op = READ_LE_UINT16(&data[pos]); pos += 2;
@@ -239,7 +240,7 @@ void decompile(const char *sname, byte *data, int pos) {
 
 		const char *param = opcodes[op].params;
 
-		printf("%s", opcodes[op].name);
+		printf("  %s", opcodes[op].name);
 
 		if (*param)
 			printf(" ");
@@ -273,10 +274,20 @@ void decompile(const char *sname, byte *data, int pos) {
 				v = READ_LE_UINT32(&data[pos]); pos += 4;
 				printf("[%d]", v);
 				break;
+			case 't':
+				v = READ_LE_UINT32(&data[pos]); pos += 4;
+				if (tableOffset != -1 && tableOffset != v) {
+					error("Duplicate tableOffset: %d vs %d", tableOffset, v);
+				}
+				tableOffset = v;
+				printf("<tableOffset>");
+				break;
 			case 'r':
 				error("Unsupported op %s", opcodes[op].name);
+				return;
 			default:
-				error("Unhandled param '%c' for %s", opcodes[op].name);
+				error("Unhandled param '%c' for %s", *param, opcodes[op].name);
+				return;
 			}
 
 			param++;
@@ -287,6 +298,21 @@ void decompile(const char *sname, byte *data, int pos) {
 
 		printf("\n");
 	}
+
+	if (tableOffset != -1) {
+		printf("tableOffset: %d\n[", tableOffset);
+		for (int i = 0; i < kMaxRooms; i++) {
+			if (i && !(i % 10))
+				printf("\n ");
+
+			printf("%d", (uint32)READ_LE_UINT32(&data[tableOffset + i * 4]));
+			if (i != kMaxRooms - 1)
+				printf(", ");
+		}
+		printf("]\n");
+	}
+
+	printf("End Script\n\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -401,6 +427,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	decompile("StartGame", decompData, scriptInfo.startGame);
+	decompile("RestoreGame", decompData, scriptInfo.restoreGame);
 
 	return 0;
 }
