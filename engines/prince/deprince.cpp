@@ -726,12 +726,12 @@ int main(int argc, char *argv[]) {
 	printf("lightSources: [%d]\n", scriptInfo.lightSources);
 	loadLightSources(scriptInfo.lightSources);
 	printf("end lightSources\n");
-	printf("specRout: %d\n", scriptInfo.specRout);
+	printf("specRout: [%d]\n", scriptInfo.specRout);
 	printf("invObjGive: [%d]\n", scriptInfo.invObjGive);
 	loadMobEvents(scriptInfo.invObjGive, "invObjGive");
 	printf("end invObjGive\n");
 	printf("stdGiveItem: [%d]\n", scriptInfo.stdGiveItem);
-	printf("goTester: %d\n", scriptInfo.goTester);
+	printf("goTester: [%d]\n", scriptInfo.goTester);
 
 	Room rooms[kMaxRooms + 1];
 
@@ -828,6 +828,8 @@ int main(int argc, char *argv[]) {
 	decompile("usdCode", scriptInfo.usdCode);
 	decompile("stdUseItem", scriptInfo.stdUseItem);
 	decompile("stdGiveItem", scriptInfo.stdGiveItem);
+	decompile("specRout", scriptInfo.specRout);
+	decompile("goTester", scriptInfo.goTester);
 
 #if 1
 	int n = 0;
