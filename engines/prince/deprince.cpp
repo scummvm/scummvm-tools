@@ -246,7 +246,7 @@ struct Mask {
 };
 
 void printUsage(const char *appName) {
-	printf("Usage: %s skrypt.dat|databank.ptc [dump]\n", appName);
+	printf("Usage: %s skrypt.dat|databank.ptc [dump|renum]\n", appName);
 }
 
 byte *data;
@@ -254,6 +254,8 @@ uint32 dataLen;
 bool *dataMark;
 bool *dataDecompile;
 int numscripts = 0;
+
+bool modeRenum = false;
 
 Common::String *labels;
 
@@ -330,7 +332,10 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 
 		if (printOut) {
 			if (!labels[pos].empty()) {
-				printf("\n%s: ; %d 0x%x\n", labels[pos].c_str(), pos, pos);
+				if (modeRenum)
+					printf("\n%s:\n", labels[pos].c_str());
+				else
+					printf("\n%s: ; %d 0x%x\n", labels[pos].c_str(), pos, pos);
 				labels[pos].clear();
 			}
 		}
@@ -390,7 +395,10 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 				v = pos + v - 4;
 
 				if (printOut) {
-					printf("%s<%d>", labels[v].c_str(), v - pos + 4);
+					printf("%s", labels[v].c_str());
+
+					if (!modeRenum)
+						printf("<%d>", v);
 				} else {
 					sprintf(buf, "%s%06d", (*param == 'o' ? "script" : "loc"), v);
 					decompile(buf, v);
@@ -404,11 +412,13 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 					if (printOut)
 						printf("%d", v);
 				} else {
-					if (printOut)
-						printf("\"%s\"[string%d]", &data[v], v);
+					if (!printOut) {
+						sprintf(buf, "string%d", v);
+						labels[v] = buf;
+					}
 
-					sprintf(buf, "string%d", v);
-					labels[v] = buf;
+					if (printOut)
+						printf("\"%s\"[%s]", &data[v], labels[v].c_str());
 
 					while (data[v]) {
 						dataMark[v] = dataDecompile[v] = true;
@@ -421,11 +431,13 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
 				v = pos + v - 4;
 
-				if (printOut)
-					printf("\"%s\"[string%d]", &data[v], v);
+				if (!modeRenum) {
+					sprintf(buf, "string%d", v);
+					labels[v] = buf;
+				}
 
-				sprintf(buf, "string%d", v);
-				labels[v] = buf;
+				if (printOut)
+					printf("\"%s\"[%s]", &data[v], labels[v].c_str());
 
 				while (data[v]) {
 					dataMark[v] = dataDecompile[v] = true;
@@ -651,6 +663,8 @@ int main(int argc, char *argv[]) {
 	if (argc == 3) {
 		if (!scumm_stricmp(argv[2], "dump"))
 			modeDump = true;
+		if (!scumm_stricmp(argv[2], "renum"))
+			modeRenum = true;
 	}
 
 	Common::String fname = argv[1];
@@ -880,8 +894,26 @@ int main(int argc, char *argv[]) {
 	printf("\n");
 #endif
 
+	if (modeRenum) {
+		const char *pref[] = { "loc", "script", "string", 0 };
+
+		for (const char **p = pref; *p; p++) {
+			int nn = 1;
+			char buf[50];
+
+			for (int i = 0; i < dataLen; i++) {
+				if (!labels[i].empty() && labels[i].hasPrefix(*p)) {
+					sprintf(buf, "%s%d", *p, nn);
+					labels[i] = buf;
+					nn++;
+				}
+			}
+		}
+	}
+
 	bool inDB = false;
 	int nunmapped = 0;
+	int nlabel = 1;
 
 	for (int i = 0; i < dataLen; i++) {
 		if (!labels[i].empty() && !labels[i].hasPrefix("backanim")) {
@@ -899,7 +931,12 @@ int main(int argc, char *argv[]) {
 			nunmapped++;
 
 			if (!inDB) {
-				printf("label%d: ; 0x%x\n  db %d", i, i, data[i]);
+				if (modeRenum) {
+					printf("label%d:\n  db %d", nlabel, data[i]);
+					nlabel++;
+				} else {
+					printf("label%d: ; 0x%x\n  db %d", i, i, data[i]);
+				}
 				inDB = true;
 			} else {
 				printf(", %d", data[i]);
