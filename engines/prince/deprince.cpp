@@ -246,7 +246,7 @@ struct Mask {
 };
 
 void printUsage(const char *appName) {
-	printf("Usage: %s skrypt.dat\n", appName);
+	printf("Usage: %s skrypt.dat|databank.ptc\n", appName);
 }
 
 byte *data;
@@ -646,28 +646,45 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	Common::File scriptFile(argv[1], "rb");
-	if (!scriptFile.isOpen()) {
-		error("couldn't load file '%s'", argv[1]);
-		return 1;
-	}
+	Common::String fname = argv[1];
+	fname.toLowercase();
 
-	uint32 size = scriptFile.size();
-	uint8 *fdata = new uint8[size];
-	assert(fdata);
-	if (size != scriptFile.read_noThrow(fdata, size)) {
+	if (fname.contains("databank.ptc")) {
+		Databank databank(argv[1]);
+		FileData fdata;
+
+		fdata = databank.loadFile("skrypt.dat");
+
+		if (fdata._size == 0)
+			error("databank.ptc does not contain skrypt.dat");
+
+		data = fdata._fileTable;
+		dataLen = fdata._size;
+	} else {
+		// Plain file
+		Common::File scriptFile(argv[1], "rb");
+		if (!scriptFile.isOpen()) {
+			error("couldn't load file '%s'", argv[1]);
+			return 1;
+		}
+
+		uint32 size = scriptFile.size();
+		uint8 *fdata = new uint8[size];
+		assert(fdata);
+		if (size != scriptFile.read_noThrow(fdata, size)) {
+			delete [] fdata;
+			error("couldn't read all bytes from file '%s'", argv[1]);
+			return 1;
+		}
+
+		scriptFile.close();
+
+		Decompressor dec;
+		dataLen = READ_BE_UINT32(fdata + 14);
+		data = (byte *)malloc(dataLen);
+		dec.decompress(fdata + 18, data, dataLen);
 		delete [] fdata;
-		error("couldn't read all bytes from file '%s'", argv[1]);
-		return 1;
 	}
-
-	scriptFile.close();
-
-	Decompressor dec;
-	dataLen = READ_BE_UINT32(fdata + 14);
-	data = (byte *)malloc(dataLen);
-	dec.decompress(fdata + 18, data, dataLen);
-	delete [] fdata;
 
 #if 0
 	Common::File dumpFile("skrypt.dump", "wb");
