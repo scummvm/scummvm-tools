@@ -304,16 +304,14 @@ void printArray(int offset, int type, int size, bool split = true, bool offsets 
 	printf("]\n");
 }
 
-void decompile(const char *sname, int pos, bool printOut = false) {
+int decompile(const char *sname, int pos, bool printOut = false) {
 	if (pos == 0)
-		return;
+		return 0;
 
-	if (labels[pos].empty() || labels[pos].hasPrefix("script") || labels[pos].hasPrefix("loc")) {
-		if (labels[pos].hasPrefix("script") && !strncmp(sname, "loc", 3)) {
-			// do not override
-		} else {
-			labels[pos] = sname;
-		}
+	if (labels[pos].empty()) {
+		labels[pos] = sname;
+	} else if ((labels[pos].hasPrefix("script") || labels[pos].hasPrefix("loc")) && strncmp(sname, "loc", 3)) {
+		labels[pos] = sname;
 	}
 
 	if (!printOut)
@@ -336,7 +334,6 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 					printf("\n%s:\n", labels[pos].c_str());
 				else
 					printf("\n%s: ; %d 0x%x\n", labels[pos].c_str(), pos, pos);
-				labels[pos].clear();
 			}
 		}
 
@@ -473,10 +470,10 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 				break;
 			case 'r':
 				error("Unsupported op %s at %d (%x)", opcodes[op].name, pos - 2, pos - 2);
-				return;
+				return pos;
 			default:
 				error("Unhandled param '%c' for %s", *param, opcodes[op].name);
-				return;
+				return pos;
 			}
 
 			param++;
@@ -488,6 +485,8 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 		if (printOut)
 			printf("\n");
 	}
+
+	int retpos = pos;
 
 	if (tableOffset != -1 && printOut) {
 		printf("\ntableOffset: %d\n", tableOffset);
@@ -514,6 +513,8 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 			decompile(buf, off);
 		}
 	}
+
+	return retpos;
 }
 
 void loadMask(int offset) {
@@ -951,7 +952,7 @@ int main(int argc, char *argv[]) {
 			if (labels[i].hasPrefix("string") || labels[i].hasPrefix("unusedstring") ) {
 				printf("%s:\n  db \"%s\", 0\n", labels[i].c_str(), &data[i]);
 			} else {
-				decompile(labels[i].c_str(), i, true);
+				i = decompile(labels[i].c_str(), i, true) - 1; // -1 to compensate the for() loop increment
 			}
 		} else if (!dataMark[i]) {
 			nunmapped++;
