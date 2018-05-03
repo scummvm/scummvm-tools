@@ -32,7 +32,7 @@
 
 #include <assert.h>
 
-static const int16 kMaxRooms = 60;
+static const int16 kMaxRooms = 63;
 static const int kMaxBackAnims = 64;
 static const int kMaxMobs = 64;
 static const int kMaxObjects = 64;
@@ -730,9 +730,9 @@ int main(int argc, char *argv[]) {
 	printf("stdGiveItem: %d\n", scriptInfo.stdGiveItem);
 	printf("goTester: %d\n", scriptInfo.goTester);
 
-	Room rooms[kMaxRooms];
+	Room rooms[kMaxRooms + 1];
 
-	for (int i = 0; i < kMaxRooms; i++) {
+	for (int i = 0; i < kMaxRooms + 1; i++) {
 		pos = scriptInfo.rooms + i * 64;
 
 		rooms[i].mobs = READ_LE_UINT32(&data[pos]); ADVANCE4();			// byte[kMaxMobs]
