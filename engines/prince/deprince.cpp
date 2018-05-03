@@ -875,31 +875,56 @@ int main(int argc, char *argv[]) {
 	decompile("specRout", scriptInfo.specRout);
 	decompile("goTester", scriptInfo.goTester);
 
-#if 1
-	int n = 0;
-	const char *shades[] = {" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"};
-	for (uint i = 0; i < dataLen; i++) {
-		if (i % 8 == 0 && i) {
-			printf("%s", shades[n]);
-			n = 0;
+	char buf[100];
+
+	int nlabel = 1;
+
+	// Heuristics to decompile the rest
+	for (int i = 0; i < dataLen; i++) {
+		if (!dataMark[i]) {
+			if (i > 53000 && i < 124348 && READ_LE_UINT16(&data[i]) < 244) {
+				sprintf(buf, "unused%d", (modeRenum ? nlabel : i));
+				nlabel++;
+				decompile(buf, i);
+			} else if (i > 124348) {
+				if (data[i] && data[i] < 127) {
+					sprintf(buf, "unusedstring%d", i);
+					labels[i] = buf;
+
+					while (data[i] != 0) {
+						dataMark[i] = true;
+						i++;
+					}
+					dataMark[i] = true;
+				}
+			}
 		}
-
-		if (i % 800 == 0 && i)
-			printf("\n");
-
-		if (dataMark[i])
-			n++;
 	}
 
-	printf("\n");
-#endif
+	#if 1
+		int n = 0;
+		const char *shades[] = {" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"};
+		for (uint i = 0; i < dataLen; i++) {
+			if (i % 8 == 0 && i) {
+				printf("%s", shades[n]);
+				n = 0;
+			}
+
+			if (i % 800 == 0 && i)
+				printf("\n");
+
+			if (dataMark[i])
+				n++;
+		}
+
+		printf("\n");
+	#endif
 
 	if (modeRenum) {
-		const char *pref[] = { "loc", "script", "string", 0 };
+		const char *pref[] = { "loc", "script", "string", "unusedstring", 0 };
 
 		for (const char **p = pref; *p; p++) {
 			int nn = 1;
-			char buf[50];
 
 			for (int i = 0; i < dataLen; i++) {
 				if (!labels[i].empty() && labels[i].hasPrefix(*p)) {
@@ -911,9 +936,10 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	bool inDB = false;
 	int nunmapped = 0;
-	int nlabel = 1;
+	bool inDB = false;
+
+	nlabel = 1;
 
 	for (int i = 0; i < dataLen; i++) {
 		if (!labels[i].empty() && !labels[i].hasPrefix("backanim")) {
@@ -922,7 +948,7 @@ int main(int argc, char *argv[]) {
 				inDB = false;
 			}
 
-			if (labels[i].hasPrefix("string")) {
+			if (labels[i].hasPrefix("string") || labels[i].hasPrefix("unusedstring") ) {
 				printf("%s:\n  db \"%s\", 0\n", labels[i].c_str(), &data[i]);
 			} else {
 				decompile(labels[i].c_str(), i, true);
