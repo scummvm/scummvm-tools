@@ -630,7 +630,7 @@ void loadBackAnim(int anum, int offset, bool printOut) {
 		int unk = READ_LE_UINT16(&data[pos]); ADVANCE2();
 
 		if (printOut)
-			printf("  backanim%02d.%d[%d]: num=%d start=%d end=%d unk=%d\n", anum, pos-8, i, num, start, end, unk);
+			printf("  backanim%02d.%d[%d]: num=%d start=%d end=%d unk=%d\n", anum, i, pos-8, num, start, end, unk);
 	}
 }
 
@@ -727,7 +727,9 @@ int main(int argc, char *argv[]) {
 	loadLightSources(scriptInfo.lightSources);
 	printf("end lightSources\n");
 	printf("specRout: %d\n", scriptInfo.specRout);
-	printf("invObjGive: %d\n", scriptInfo.invObjGive);
+	printf("invObjGive: [%d]\n", scriptInfo.invObjGive);
+	loadMobEvents(scriptInfo.invObjGive, "invObjGive");
+	printf("end invObjGive\n");
 	printf("stdGiveItem: [%d]\n", scriptInfo.stdGiveItem);
 	printf("goTester: %d\n", scriptInfo.goTester);
 
@@ -735,7 +737,7 @@ int main(int argc, char *argv[]) {
 
 	for (int i = 0; i < kMaxRooms + 1; i++) {
 		pos = scriptInfo.rooms + i * 64;
-		printf("room%02d: [%d]", i, pos);
+		printf("room%02d: [%d]\n", i, pos);
 
 		rooms[i].mobs = READ_LE_UINT32(&data[pos]); ADVANCE4();			// byte[kMaxMobs]
 		rooms[i].backAnim = READ_LE_UINT32(&data[pos]); ADVANCE4();		// int32[kMaxBackAnims]
