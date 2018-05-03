@@ -314,9 +314,6 @@ int decompile(const char *sname, int pos, bool printOut = false) {
 		labels[pos] = sname;
 	}
 
-	if (!printOut)
-		numscripts++;
-
 	bool nf = false;
 	int tableOffset = -1;
 
@@ -991,6 +988,7 @@ int main(int argc, char *argv[]) {
 				printf("%s:\n  db \"%s\", 0\n", labels[i].c_str(), &data[i]);
 			} else {
 				i = decompile(labels[i].c_str(), i, true) - 1; // -1 to compensate the for() loop increment
+				numscripts++;
 			}
 		} else if (!dataMark[i]) {
 			nunmapped++;
