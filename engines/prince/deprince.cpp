@@ -517,13 +517,13 @@ void loadMask(int offset) {
 		tempMask._z = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		tempMask._number = READ_LE_UINT16(&data[pos]); ADVANCE2();
 
+		printf("  mask%d[%d] state=%d fl=%d x1=%d y1=%d x2=%d y2=%d z=%d number=%d\n", n, pos-16, tempMask._state,
+					tempMask._flags, tempMask._x1, tempMask._y1, tempMask._x2, tempMask._y2,
+					tempMask._z, tempMask._number);
+
 		if (tempMask._state == 0xffff) {
 			break;
 		}
-
-		printf("  mask%d state=%d fl=%d x1=%d y1=%d x2=%d y2=%d z=%d number=%d\n", n, tempMask._state,
-					tempMask._flags, tempMask._x1, tempMask._y1, tempMask._x2, tempMask._y2,
-					tempMask._z, tempMask._number);
 
 		n++;
 	}
@@ -544,10 +544,10 @@ void loadMobEvents(int offset, const char *name) {
 		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
 		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
+		printf("  mob%02d[%d]: mob=%d code=%d\n", i, pos-6, mob, code);
+
 		if (mob == -1)
 			break;
-
-		printf("  mob%02d: mob=%d code=%d\n", i, mob, code);
 
 		sprintf(buf, "%s.mob%d", name, mob);
 		decompile(buf, code);
@@ -572,10 +572,11 @@ void loadMobEventsWithItem(int offset, const char *name) {
 		mob = (int16)READ_LE_UINT16(&data[pos]); ADVANCE2();
 		item = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		code = READ_LE_UINT32(&data[pos]); ADVANCE4();
+
+		printf("  mobitem%02d[%d]: mob=%d item=%d code=%d\n", i, pos-8, mob, item, code);
+
 		if (mob == -1)
 			break;
-
-		printf("  mobitem%02d: mob=%d item=%d code=%d\n", i, mob, item, code);
 
 		sprintf(buf, "%s.mobitem%d", name, mob);
 		decompile(buf, code);
@@ -593,7 +594,7 @@ void loadLightSources(int offset) {
 		int scale = READ_LE_UINT16(&data[pos]); ADVANCE2();
 		int unk = READ_LE_UINT16(&data[pos]); ADVANCE2();
 
-		printf("  light%02d: x=%d y=%d scale=%d unk=%d\n", i, x, y, scale, unk);
+		printf("  light%02d[%d]: x=%d y=%d scale=%d unk=%d\n", i, pos-8, x, y, scale, unk);
 	}
 }
 
@@ -629,7 +630,7 @@ void loadBackAnim(int anum, int offset, bool printOut) {
 		int unk = READ_LE_UINT16(&data[pos]); ADVANCE2();
 
 		if (printOut)
-			printf("  backanim%02d.%d: num=%d start=%d end=%d unk=%d\n", anum, i, num, start, end, unk);
+			printf("  backanim%02d.%d[%d]: num=%d start=%d end=%d unk=%d\n", anum, pos-8, i, num, start, end, unk);
 	}
 }
 
@@ -727,13 +728,14 @@ int main(int argc, char *argv[]) {
 	printf("end lightSources\n");
 	printf("specRout: %d\n", scriptInfo.specRout);
 	printf("invObjGive: %d\n", scriptInfo.invObjGive);
-	printf("stdGiveItem: %d\n", scriptInfo.stdGiveItem);
+	printf("stdGiveItem: [%d]\n", scriptInfo.stdGiveItem);
 	printf("goTester: %d\n", scriptInfo.goTester);
 
 	Room rooms[kMaxRooms + 1];
 
 	for (int i = 0; i < kMaxRooms + 1; i++) {
 		pos = scriptInfo.rooms + i * 64;
+		printf("room%02d: [%d]", i, pos);
 
 		rooms[i].mobs = READ_LE_UINT32(&data[pos]); ADVANCE4();			// byte[kMaxMobs]
 		rooms[i].backAnim = READ_LE_UINT32(&data[pos]); ADVANCE4();		// int32[kMaxBackAnims]
