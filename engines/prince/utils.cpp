@@ -20,6 +20,7 @@
  */
 
 #include "common/scummsys.h"
+#include "common/endian.h"
 #include "utils.h"
 
 // John_Doe's implementation
@@ -163,4 +164,93 @@ int Decompressor::getBit() {
 		_bitBuffer |= 1;
 	}
 	return bit;
+}
+
+Databank::Databank(Common::String name) {
+	_databank.open(name, "rb");
+
+	if (!_databank.isOpen())
+		return;
+
+	_databank.readUint32LE(); // magic
+	uint32 fileTableOffset = _databank.readUint32LE() ^ 0x4D4F4B2D; // MOK-
+	uint32 fileTableSize = _databank.readUint32LE() ^ 0x534F4654; // SOFT
+
+	_databank.seek(fileTableOffset, SEEK_SET);
+
+	byte *fileTable = (byte *)malloc(fileTableSize);
+	byte *fileTableEnd = fileTable + fileTableSize;
+	_databank.read_throwsOnError(fileTable, fileTableSize);
+
+	decrypt(fileTable, fileTableSize);
+
+	for (byte *fileItem = fileTable; fileItem < fileTableEnd; fileItem += 32) {
+		FileEntry item;
+		item._name = (const char *)fileItem;
+		item._offset = READ_LE_UINT32(fileItem + 24);
+		item._size = READ_LE_UINT32(fileItem + 28);
+		_items.push_back(item);
+	}
+
+	free(fileTable);
+}
+
+Databank::~Databank() {
+	_databank.close();
+}
+
+void Databank::decrypt(byte *buffer, uint32 size) {
+	uint32 key = 0xDEADF00D;
+	while (size--) {
+		*buffer++ += key & 0xFF;
+		key ^= 0x2E84299A;
+		key += 0x424C4148;
+		key = ((key & 1) << 31) | (key >> 1);
+	}
+}
+
+FileData Databank::loadFile(Common::String name) {
+	FileData fileData;
+	fileData._fileTable = 0;
+	fileData._size = 0;
+
+	int itemIndex = -1;
+
+	if (!_databank.isOpen())
+		return fileData;
+
+	for (size_t i = 0; i < _items.size(); i++) {
+		if (!scumm_stricmp(_items[i]._name.c_str(), name.c_str())) {
+			itemIndex = i;
+			break;
+		}
+	}
+
+	if (itemIndex == -1)
+		return fileData;
+
+	const FileEntry &entryHeader = _items[itemIndex];
+
+	if (entryHeader._size < 4) {
+		return fileData;
+	}
+
+	fileData._size = entryHeader._size;
+
+	_databank.seek(entryHeader._offset, SEEK_SET);
+
+	fileData._fileTable = (byte *)malloc(fileData._size);
+	_databank.read_throwsOnError(fileData._fileTable, fileData._size);
+
+	if (READ_BE_UINT32(fileData._fileTable) == 0x4D41534D) {
+		Decompressor dec;
+		uint32 decompLen = READ_BE_UINT32(fileData._fileTable + 14);
+		byte *decompData = (byte *)malloc(decompLen);
+		dec.decompress(fileData._fileTable + 18, decompData, decompLen);
+		free(fileData._fileTable);
+		fileData._size = decompLen;
+		fileData._fileTable = decompData;
+	}
+
+	return fileData;
 }

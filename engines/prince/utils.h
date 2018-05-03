@@ -22,6 +22,14 @@
 #ifndef PRINCE_UTILS_H
 #define PRINCE_UTILS_H
 
+#include "common/file.h"
+#include "common/str.h"
+
+struct FileData {
+	byte *_fileTable;
+	uint32 _size;
+};
+
 class Decompressor {
 public:
 	void decompress(byte *source, byte *dest, uint32 destSize);
@@ -30,6 +38,27 @@ protected:
 	byte _bitBuffer;
 	int _bitsLeft;
 	int getBit();
+};
+
+class Databank {
+	struct FileEntry {
+		Common::String _name;
+		uint32 _offset;
+		uint32 _size;
+	};
+
+public:
+	Databank(Common::String name);
+	~Databank();
+
+	byte *openDatabank();
+	static void decrypt(byte *buffer, uint32 size);
+
+	FileData loadFile(Common::String name);
+
+private:
+	Common::Array<FileEntry> _items;
+	Common::File _databank;
 };
 
 #endif
