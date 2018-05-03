@@ -313,9 +313,6 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 	if (!printOut)
 		numscripts++;
 
-	if (printOut)
-		printf("%s: ; %d 0x%x\n", sname, pos, pos);
-
 	bool nf = false;
 	int tableOffset = -1;
 
@@ -326,6 +323,13 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 	while (!nf) {
 		if (!printOut && dataDecompile[pos])
 			break;
+
+		if (printOut) {
+			if (!labels[pos].empty()) {
+				printf("\n%s: ; %d 0x%x\n", labels[pos].c_str(), pos, pos);
+				labels[pos].clear();
+			}
+		}
 
 		uint16 op = READ_LE_UINT16(&data[pos]); ADVANCES2();
 
@@ -469,7 +473,7 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 	}
 
 	if (tableOffset != -1 && printOut) {
-		printf("tableOffset: %d\n", tableOffset);
+		printf("\ntableOffset: %d\n", tableOffset);
 
 		printArray(tableOffset, 4, kMaxRooms, true, true);
 	}
@@ -481,9 +485,6 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 			loadBackAnim(backAnims[i], backAnims[i], printOut);
 		}
 	}
-
-	if (printOut)
-		printf("\n");
 
 	if (tableOffset != -1) {
 		pos = tableOffset;
