@@ -246,7 +246,7 @@ struct Mask {
 };
 
 void printUsage(const char *appName) {
-	printf("Usage: %s skrypt.dat|databank.ptc\n", appName);
+	printf("Usage: %s skrypt.dat|databank.ptc [dump]\n", appName);
 }
 
 byte *data;
@@ -641,9 +641,16 @@ void loadBackAnim(int anum, int offset, bool printOut) {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc != 2) {
+	if (argc < 2) {
 		printUsage(argv[0]);
 		return 1;
+	}
+
+	bool modeDump = false;
+
+	if (argc == 3) {
+		if (!scumm_stricmp(argv[2], "dump"))
+			modeDump = true;
 	}
 
 	Common::String fname = argv[1];
@@ -686,15 +693,15 @@ int main(int argc, char *argv[]) {
 		delete [] fdata;
 	}
 
-#if 0
-	Common::File dumpFile("skrypt.dump", "wb");
-	if (!dumpFile.isOpen()) {
-		error("couldn't load file '%s'", argv[1]);
-		return 1;
+	if (modeDump) {
+		Common::File dumpFile("skrypt.dump", "wb");
+		if (!dumpFile.isOpen()) {
+			error("couldn't load file '%s'", argv[1]);
+			return 1;
+		}
+		dumpFile.write(data, dataLen);
+		dumpFile.close();
 	}
-	dumpFile.write(data, dataLen);
-	dumpFile.close();
-#endif
 
 	dataMark = (bool *)calloc(dataLen, sizeof(bool));
 	dataDecompile = (bool *)calloc(dataLen, sizeof(bool));
