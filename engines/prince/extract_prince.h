@@ -23,7 +23,10 @@
 #define EXTRACT_PRINCE_H
 
 #include "tool.h"
+#include "utils.h"
 #include "common/array.h"
+
+class Databank;
 
 class ExtractPrince : public Tool {
 public:
@@ -34,21 +37,6 @@ public:
 	virtual InspectionMatch inspectInput(const Common::Filename &filename);
 
 protected:
-	struct FileEntry {
-		std::string _name;
-		uint32 _offset;
-		uint32 _size;
-	};
-
-	struct FileData {
-		byte *_fileTable;
-		uint32 _size;
-	};
-
-	byte *openDatabank();
-	static void decrypt(byte *buffer, uint32 size);
-
-	FileData loadFile(int itemIndex);
 	FileData loadFile(const std::string &fileName);
 	char correctPolishLetter(char c);
 
@@ -61,8 +49,9 @@ protected:
 	byte *talkTxtNoDialog(byte *talkTxt);
 	bool printSpecialDialogData(byte c);
 
-	Common::Array<FileEntry> _items;
-	Common::File _databank, _fFiles;
+	Common::File _fFiles;
+
+	Databank *_databank;
 };
 
 #endif

@@ -60,49 +60,41 @@ void ExtractPrince::execute() {
 	// If the databank.ptc file is not found, we try to access the
 	// uncompressed files directly.
 	if (Common::Filename(databankFullName).exists()) {
-		_databank.open(filename, "rb");
+		_databank = new Databank(databankFullName);
 		print("DATABANK.PTC loaded, processing... ");
-		byte *fileTable = openDatabank();
 		bool mobsDE = false;
-		for (size_t i = 0; i < _items.size(); i++) {
-			if (!scumm_stricmp(_items[i]._name.c_str(), "variatxt.dat")) {
-				exportVariaTxt(loadFile(i));
+
+		exportVariaTxt(_databank->loadFile("variatxt.dat"));
+		exportInvTxt(_databank->loadFile("invtxt.dat"));
+		exportTalkTxt(_databank->loadFile("talktxt.dat"));
+		exportCredits(_databank->loadFile("credits.dat"));
+
+		int index = _databank->getFileIndex("mob01.lst");
+
+		if (index != -1) {
+			// For DE game data
+			mobsDE = true;
+			_outputPath.setFullName("mob.txt");
+			_fFiles.open(_outputPath, "w");
+			if (!_fFiles.isOpen()) {
+				error("Unable to create mob.txt");
 			}
-			if (!scumm_stricmp(_items[i]._name.c_str(), "invtxt.dat")) {
-				exportInvTxt(loadFile(i));
-			}
-			if (!scumm_stricmp(_items[i]._name.c_str(), "talktxt.dat")) {
-				exportTalkTxt(loadFile(i));
-			}
-			if (!scumm_stricmp(_items[i]._name.c_str(), "credits.dat")) {
-				exportCredits(loadFile(i));
-			}
-			if (!scumm_stricmp(_items[i]._name.c_str(), "mob01.lst")) {
-				// For DE game data
-				mobsDE = true;
-				_outputPath.setFullName("mob.txt");
-				_fFiles.open(_outputPath, "w");
-				if (!_fFiles.isOpen()) {
-					error("Unable to create mob.txt");
+			_fFiles.print("mob.lst\nmob_name - exam text\n");
+			int loc = 0;
+			for (int j = 1; j <= kNumberOfLocations; j++) {
+				_fFiles.print("%d.\n", j);
+				// no databanks for loc 44 and 45
+				if (j != 44 && j != 45) {
+					exportMobs(_databank->loadFile(index + loc));
+					loc++;
 				}
-				_fFiles.print("mob.lst\nmob_name - exam text\n");
-				int loc = 0;
-				for (int j = 1; j <= kNumberOfLocations; j++) {
-					_fFiles.print("%d.\n", j);
-					// no databanks for loc 44 and 45
-					if (j != 44 && j != 45) {
-						exportMobs(loadFile(i + loc));
-						loc++;
-					}
-				}
-				print("mob.txt - done");
-				print("All done!");
-				_fFiles.close();
 			}
+			print("mob.txt - done");
+			print("All done!");
+			_fFiles.close();
 		}
-		free(fileTable);
-		_databank.close();
-		_items.clear();
+
+		delete _databank;
 
 		// For PL game data
 		if (!mobsDE) {
@@ -120,20 +112,14 @@ void ExtractPrince::execute() {
 					sprintf(pathBuffer, "%02d/databank.ptc", loc);
 					databankFullName += pathBuffer;
 					filename = Common::Filename(databankFullName);
-					_databank.open(filename, "rb");
-					if (!_databank.isOpen()) {
+					_databank = new Databank(databankFullName);
+					if (!_databank->isOpen()) {
 						_fFiles.close();
 						error("Unable to open %02d/databank.ptc", loc);
 					}
-					fileTable = openDatabank();
-					for (size_t i = 0; i < _items.size(); i++) {
-						if (!scumm_stricmp(_items[i]._name.c_str(), "mob.lst")) {
-							exportMobs(loadFile(i));
-						}
-					}
-					free(fileTable);
-					_databank.close();
-					_items.clear();
+					exportMobs(_databank->loadFile("mob.lst"));
+
+					delete _databank;
 				}
 			}
 			print("mob.txt - done");
@@ -178,72 +164,8 @@ InspectionMatch ExtractPrince::inspectInput(const Common::Filename &filename) {
 	return IMATCH_PERFECT;
 }
 
-byte *ExtractPrince::openDatabank() {
-	_databank.readUint32LE(); // magic
-	uint32 fileTableOffset = _databank.readUint32LE() ^ 0x4D4F4B2D; // MOK-
-	uint32 fileTableSize = _databank.readUint32LE() ^ 0x534F4654; // SOFT
-
-	_databank.seek(fileTableOffset, SEEK_SET);
-
-	byte *fileTable = (byte *)malloc(fileTableSize);
-	byte *fileTableEnd = fileTable + fileTableSize;
-	_databank.read_throwsOnError(fileTable, fileTableSize);
-
-	decrypt(fileTable, fileTableSize);
-
-	for (byte *fileItem = fileTable; fileItem < fileTableEnd; fileItem += 32) {
-		FileEntry item;
-		item._name = (const char *)fileItem;
-		item._offset = READ_LE_UINT32(fileItem + 24);
-		item._size = READ_LE_UINT32(fileItem + 28);
-		_items.push_back(item);
-	}
-	return fileTable;
-}
-
-void ExtractPrince::decrypt(byte *buffer, uint32 size) {
-	uint32 key = 0xDEADF00D;
-	while (size--) {
-		*buffer++ += key & 0xFF;
-		key ^= 0x2E84299A;
-		key += 0x424C4148;
-		key = ((key & 1) << 31) | (key >> 1);
-	}
-}
-
-// DATABANK loader
-ExtractPrince::FileData ExtractPrince::loadFile(int itemIndex) {
-	FileData fileData;
-	fileData._fileTable = 0;
-	fileData._size = 0;
-
-	const FileEntry &entryHeader = _items[itemIndex];
-
-	if (entryHeader._size < 4) {
-		return fileData;
-	}
-
-	fileData._size = entryHeader._size;
-
-	_databank.seek(entryHeader._offset, SEEK_SET);
-
-	fileData._fileTable = (byte *)malloc(fileData._size);
-	_databank.read_throwsOnError(fileData._fileTable, fileData._size);
-
-	if (READ_BE_UINT32(fileData._fileTable) == 0x4D41534D) {
-		Decompressor dec;
-		uint32 decompLen = READ_BE_UINT32(fileData._fileTable + 14);
-		byte *decompData = (byte *)malloc(decompLen);
-		dec.decompress(fileData._fileTable + 18, decompData, decompLen);
-		free(fileData._fileTable);
-		fileData._size = decompLen;
-		fileData._fileTable = decompData;
-	}
-
-	return fileData;
-}
 // Uncompressed datafile loader
-ExtractPrince::FileData ExtractPrince::loadFile(const std::string &fileName) {
+FileData ExtractPrince::loadFile(const std::string &fileName) {
 	Common::File file;
 	file.open(fileName, "rb");
 	if (!file.isOpen()) {

@@ -51,9 +51,13 @@ public:
 	Databank(Common::String name);
 	~Databank();
 
+	bool isOpen() { return _databank.isOpen(); }
+
 	byte *openDatabank();
 	static void decrypt(byte *buffer, uint32 size);
 
+	int getFileIndex(Common::String name);
+	FileData loadFile(int fileIndex);
 	FileData loadFile(Common::String name);
 
 private:

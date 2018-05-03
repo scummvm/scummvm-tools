@@ -209,15 +209,11 @@ void Databank::decrypt(byte *buffer, uint32 size) {
 	}
 }
 
-FileData Databank::loadFile(Common::String name) {
-	FileData fileData;
-	fileData._fileTable = 0;
-	fileData._size = 0;
-
+int Databank::getFileIndex(Common::String name) {
 	int itemIndex = -1;
 
 	if (!_databank.isOpen())
-		return fileData;
+		return itemIndex;
 
 	for (size_t i = 0; i < _items.size(); i++) {
 		if (!scumm_stricmp(_items[i]._name.c_str(), name.c_str())) {
@@ -225,6 +221,27 @@ FileData Databank::loadFile(Common::String name) {
 			break;
 		}
 	}
+
+	return itemIndex;
+}
+
+FileData Databank::loadFile(Common::String name) {
+	FileData fileData;
+	fileData._fileTable = 0;
+	fileData._size = 0;
+
+	int index = getFileIndex(name);
+
+	if (index == -1)
+		return fileData;
+
+	return loadFile(index);
+}
+
+FileData Databank::loadFile(int itemIndex) {
+	FileData fileData;
+	fileData._fileTable = 0;
+	fileData._size = 0;
 
 	if (itemIndex == -1)
 		return fileData;
