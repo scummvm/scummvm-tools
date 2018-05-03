@@ -431,7 +431,7 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
 				v = pos + v - 4;
 
-				if (!modeRenum) {
+				if (!printOut) {
 					sprintf(buf, "string%d", v);
 					labels[v] = buf;
 				}
