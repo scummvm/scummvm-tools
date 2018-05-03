@@ -378,12 +378,13 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 				break;
 			case 'o':
 				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
+				v = pos + v - 4;
 
 				if (printOut) {
-					printf("%s[%d]", labels[pos + v - 4].c_str(), v);
+					printf("%s<%d>", labels[v].c_str(), v - pos + 4);
 				} else {
-					sprintf(buf, "script%06d", pos + v - 4);
-					decompile(buf, pos + v - 4);
+					sprintf(buf, "script%06d", v);
+					decompile(buf, v);
 				}
 
 				break;
@@ -409,11 +410,11 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 				break;
 			case 's':
 				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
+				v = pos + v - 4;
 
 				if (printOut)
-					printf("\"%s\"[string%d]", &data[pos + v - 4], pos + v - 4);
+					printf("\"%s\"[string%d]", &data[v], v);
 
-				v = pos + v - 4;
 				sprintf(buf, "string%d", v);
 				labels[v] = buf;
 
@@ -612,7 +613,7 @@ void loadBackAnim(int anum, int offset, bool printOut) {
 	int data2 = READ_LE_UINT32(&data[pos]); ADVANCE4();
 
 	if (printOut)
-		printf("backanim%02d: type=%x data=%x anims=%x unk1=%x unk2=%x unk3=%x data2=%x\n", anum,
+		printf("backanim%02d[%d]: type=%x data=%x anims=%x unk1=%x unk2=%x unk3=%x data2=%x\n", anum, offset,
 			type, bdata, anims, unk1, unk2, unk3, data2);
 
 	if (anims == 0) {
