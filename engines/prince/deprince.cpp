@@ -70,15 +70,15 @@ struct OpCodes {
 	{ "O_CLS", "r", false },
 	{ "O__CALL", "o", false },
 	{ "O_RETURN", "", true },			// 25
-	{ "O_GO", "o", false },
+	{ "O_GO", "O", false },
 	{ "O_BACKANIMUPDATEOFF", "f", false },
 	{ "O_BACKANIMUPDATEON", "f", false },
 	{ "O_CHANGECURSOR", "f", false },
 	{ "O_CHANGEANIMTYPE", "r", false },	// 30
 	{ "O__SETFLAG", "df", false },
 	{ "O_COMPARE", "df", false },
-	{ "O_JUMPZ", "o", false },
-	{ "O_JUMPNZ", "o", false },
+	{ "O_JUMPZ", "O", false },
+	{ "O_JUMPNZ", "O", false },
 	{ "O_EXIT", "", true },				// 35
 	{ "O_ADDFLAG", "df", false },
 	{ "O_TALKANIM", "ff", false },
@@ -306,8 +306,12 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 	if (pos == 0)
 		return;
 
-	if (labels[pos].empty() || labels[pos].hasPrefix("script")) {
-		labels[pos] = sname;
+	if (labels[pos].empty() || labels[pos].hasPrefix("script") || labels[pos].hasPrefix("loc")) {
+		if (labels[pos].hasPrefix("script") && !strncmp(sname, "loc", 3)) {
+			// do not override
+		} else {
+			labels[pos] = sname;
+		}
 	}
 
 	if (!printOut)
@@ -381,13 +385,14 @@ void decompile(const char *sname, int pos, bool printOut = false) {
 					printf("%s", Flags::getFlagName(v));
 				break;
 			case 'o':
+			case 'O':
 				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
 				v = pos + v - 4;
 
 				if (printOut) {
 					printf("%s<%d>", labels[v].c_str(), v - pos + 4);
 				} else {
-					sprintf(buf, "script%06d", v);
+					sprintf(buf, "%s%06d", (*param == 'o' ? "script" : "loc"), v);
 					decompile(buf, v);
 				}
 
