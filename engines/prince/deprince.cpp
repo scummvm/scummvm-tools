@@ -570,7 +570,7 @@ void loadMobEvents(int offset, const char *name, bool printOut) {
 			break;
 
 		if (!printOut) {
-			sprintf(buf, "%s.mob%d", name, mob);
+			sprintf(buf, "%s.mob%d", name, i);
 			decompile(buf, code, printOut);
 		}
 
@@ -602,7 +602,7 @@ void loadMobEventsWithItem(int offset, const char *name, bool printOut) {
 			break;
 
 		if (!printOut) {
-			sprintf(buf, "%s.mobitem%d", name, mob);
+			sprintf(buf, "%s.mobitem%d", name, i);
 			decompile(buf, code, printOut);
 		}
 
