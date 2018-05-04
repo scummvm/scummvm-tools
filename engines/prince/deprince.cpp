@@ -83,7 +83,7 @@ struct OpCodes {
 	{ "O_ADDFLAG", "df", false },
 	{ "O_TALKANIM", "ff", false },
 	{ "O_SUBFLAG", "df", false },
-	{ "O_SETSTRING", "i", false },
+	{ "O_SETSTRING", "v", false },
 	{ "O_ANDFLAG", "df", false },		// 40
 	{ "O_GETMOBDATA", "dff", false },
 	{ "O_ORFLAG", "df", false },
@@ -371,11 +371,15 @@ int decompile(const char *sname, int pos, bool printOut = false) {
 				if (printOut)
 					printf("%d", v);
 				break;
-			case 'i':
+			case 'v':
 				v = READ_LE_UINT32(&data[pos]); ADVANCES4();
 
-				if (printOut)
-					printf("%d", v);
+				if (printOut) {
+					if (v > 80000)
+						printf("variatxt[%d]", v - 80000);
+					else
+						printf("%d", v);
+				}
 				break;
 			case 'd':
 				v = READ_LE_UINT16(&data[pos]); ADVANCES2();
