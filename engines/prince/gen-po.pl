@@ -55,7 +55,7 @@ process_inv $lang, "invtxt.txt.out";
 process_mob $lang, "mob.txt.out";
 process_varia $lang, "variatxt.txt.out";
 
-process_talk_ids 'pl', "talktxt_ids.txt";
+process_talk_ids 'pl', "$poldir/talktxt_ids.txt";
 process_credits 'pl', "$poldir/credits.txt.out";
 process_talk 'pl', "$poldir/talktxt.txt.out";
 process_inv 'pl', "$poldir/invtxt.txt.out";
@@ -227,7 +227,7 @@ sub process_talk($$) {
 
 		next if $_ eq 'talktxt.dat';
 
-		my $d = sprintf("%03d", $data_ids{$lang}[$dialog]);
+		my $d = sprintf("%04d", ($data_ids{$lang}[$dialog] || 1000 + $dialog));
 
 		if ($_ eq "\@DIALOGBOX_LINES:") {
 			process_talkWithDialog($lang, $d, IN);
@@ -403,8 +403,8 @@ sub process_talk_ids($$) {
 
 		next if $_ eq 'talktxt_ids';
 
-		$data_ids{$lang}[$n] = $_;
-		#$data_ids{$lang}[$_] = $n if $_ > 0;
+		#$data_ids{$lang}[$n] = $_;
+		$data_ids{$lang}[$_] = $n if $_ > 0;
 
 		$n++;
 	}
