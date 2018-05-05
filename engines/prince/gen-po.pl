@@ -104,6 +104,26 @@ for my $f (sort keys $data{$lang}) {
 		if (exists $data{$lang}{$f}{$n}) {
 			warn "$lang:$f:$n extra";
 
+			if (index($data{$lang}{$f}{$n}, "\\n") != -1) {  # Multiline
+				chomp $data{$lang}{$f}{$n};
+
+				print <<EOF;
+
+#: $f:$n
+msgid ""
+"extra$extra_tr"
+msgstr ""
+$data{$lang}{$f}{$n}
+EOF
+			} else {
+				print <<EOF;
+
+#: $f:$n
+msgid "extra$extra_tr"
+msgstr "$data{$lang}{$f}{$n}"
+EOF
+			}
+
 			$extra_tr++;
 		}
 	}
