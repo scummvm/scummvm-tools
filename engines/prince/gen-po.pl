@@ -181,6 +181,8 @@ sub process_mob($$) {
 			next;
 		}
 
+		s/\x1//g; # Remove ^A symbol
+
 		my $n = sprintf("%d%03d", $num, $line);
 
 		$line++;
