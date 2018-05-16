@@ -209,7 +209,7 @@ sub process_credits($$) {
 		$line++;
 		$str .= "\"$_\\n\"\n";
 
-		if ($line == 10) {
+		if ($line == 20) {
 			$n++;
 			$data{$lang}{'credits.txt'}{$n} = $str;
 			$line = 0;
