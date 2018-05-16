@@ -65,6 +65,22 @@ process_varia 'pl', "$poldir/variatxt.txt.out";
 my $miss_tr = 0;
 my $extra_tr = 0;
 
+for my $f (sort keys $data{$lang}) {
+	for my $n (sort {$a<=>$b} keys $data{$lang}{$f}) {
+		if (exists $data{$lang}{$f}{$n} and not exists $data{'pl'}{$f}{$n}) {
+			warn "$lang:$f:$n extra";
+
+			if (index($data{$lang}{$f}{$n}, "\\n") != -1) {  # Multiline
+				$data{'pl'}{$f}{$n} = "\"extra$extra_tr\\n\"";
+			} else {
+				$data{'pl'}{$f}{$n} = "extra$extra_tr";
+			}
+
+			$extra_tr++;
+		}
+	}
+}
+
 for my $f (sort keys $data{'pl'}) {
 	for my $n (sort {$a<=>$b} keys $data{'pl'}{$f}) {
 		if (not exists $data{$lang}{$f}{$n}) {
@@ -96,36 +112,6 @@ EOF
 		}
 
 		delete $data{$lang}{$f}{$n};
-	}
-}
-
-for my $f (sort keys $data{$lang}) {
-	for my $n (sort {$a<=>$b} keys $data{$lang}{$f}) {
-		if (exists $data{$lang}{$f}{$n}) {
-			warn "$lang:$f:$n extra";
-
-			if (index($data{$lang}{$f}{$n}, "\\n") != -1) {  # Multiline
-				chomp $data{$lang}{$f}{$n};
-
-				print <<EOF;
-
-#: $f:$n
-msgid ""
-"extra$extra_tr"
-msgstr ""
-$data{$lang}{$f}{$n}
-EOF
-			} else {
-				print <<EOF;
-
-#: $f:$n
-msgid "extra$extra_tr"
-msgstr "$data{$lang}{$f}{$n}"
-EOF
-			}
-
-			$extra_tr++;
-		}
 	}
 }
 
