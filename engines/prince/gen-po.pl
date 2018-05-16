@@ -85,7 +85,11 @@ for my $f (sort keys $data{'pl'}) {
 	for my $n (sort {$a<=>$b} keys $data{'pl'}{$f}) {
 		if (not exists $data{$lang}{$f}{$n}) {
 			warn "$lang:$f:$n missing";
-			$data{$lang}{$f}{$n} = "";
+			if (index($data{'pl'}{$f}{$n}, "\\n") != -1) {  # Multiline
+				$data{$lang}{$f}{$n} = "\"\\n\"";
+			} else {
+				$data{$lang}{$f}{$n} = "";
+			}
 
 			$miss_tr++;
 		}
