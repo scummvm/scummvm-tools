@@ -266,43 +266,32 @@ endif
 # RISC OS specific
 #
 
+ifdef QUIET
+QUIET_ELF2AIF = @echo '   ' ELF2AIF '' $@;
+endif
+
+, := ,
+
 # Special target to create an RISC OS snapshot installation
-riscosdist: all
-	mkdir -p !ScummTool
-	cp ${srcdir}/dists/riscos/!Boot,feb !ScummTool/!Boot,feb
+riscosdist: all riscosboot $(addprefix !ScummTool/bin/,$(addsuffix $(,)ff8,$(PROGRAMS)))
 	cp ${srcdir}/dists/riscos/!Run,feb !ScummTool/!Run,feb
 	cp ${srcdir}/dists/riscos/!Sprites,ff9 !ScummTool/!Sprites,ff9
 	cp ${srcdir}/dists/riscos/!Sprites11,ff9 !ScummTool/!Sprites11,ff9
 	cp $(srcdir)/README !ScummTool/!Help,fff
 	cp $(srcdir)/COPYING !ScummTool/COPYING,fff
 	cp $(srcdir)/NEWS !ScummTool/NEWS,fff
-	mkdir -p !ScummTool/bin
-	elf2aif construct_mohawk$(EXEEXT) !ScummTool/bin/construct_mohawk,ff8
-	elf2aif decine$(EXEEXT) !ScummTool/bin/decine,ff8
-	elf2aif degob$(EXEEXT) !ScummTool/bin/degob,ff8
-	elf2aif dekyra$(EXEEXT) !ScummTool/bin/dekyra,ff8
-	elf2aif deprince$(EXEEXT) !ScummTool/bin/deprince,ff8
-	elf2aif deriven$(EXEEXT) !ScummTool/bin/deriven,ff8
-	elf2aif descumm$(EXEEXT) !ScummTool/bin/descumm,ff8
-	elf2aif desword2$(EXEEXT) !ScummTool/bin/desword2,ff8
-	elf2aif extract_mohawk$(EXEEXT) !ScummTool/bin/extract_mohawk,ff8
-	elf2aif gob_loadcalc$(EXEEXT) !ScummTool/bin/gob_loadcalc,ff8
-	elf2aif scummvm-tools-cli$(EXEEXT) !ScummTool/bin/scummvm-tools-cli,ff8
-ifeq "$(USE_FREETYPE)" "1"
-ifeq "$(USE_ICONV)" "1"
-	elf2aif create_sjisfnt$(EXEEXT) !ScummTool/bin/create_sjisfnt,ff8
-	echo "Set Alias\$$create_sjisfnt <ScummTool\$$Dir>.bin.create_sjisfnt %%*0" >> !ScummTool/!Boot,feb
-endif
-endif
-ifeq "$(USE_BOOST)" "1"
-	elf2aif decompile$(EXEEXT) !ScummTool/bin/decompile,ff8
-	echo "Set Alias\$$decompile <ScummTool\$$Dir>.bin.decompile %%*0" >> !ScummTool/!Boot,feb
-endif
 ifeq "$(USE_WXWIDGETS)" "1"
-	elf2aif scummvm-tools$(EXEEXT) !ScummTool/bin/scummvm-tools,ff8
-	echo "Set Alias\$$scummvm-tools <ScummTool\$$Dir>.bin.scummvm-tools %%*0" >> !ScummTool/!Boot,feb
 	mkdir -p !ScummTool/bin/media
 	cp $(srcdir)/gui/media/detaillogo.jpg !ScummTool/bin/media/detaillogo.jpg,c85
 	cp $(srcdir)/gui/media/logo.jpg !ScummTool/bin/media/logo.jpg,c85
 	cp $(srcdir)/gui/media/tile.gif !ScummTool/bin/media/tile.gif,695
 endif
+
+riscosboot:
+	mkdir -p !ScummTool/bin
+	cp ${srcdir}/dists/riscos/!Boot,feb !ScummTool/!Boot,feb
+	rm -rf !ScummTool/bin/*,ff8
+
+!ScummTool/bin/%,ff8: %$(EXEEXT)
+	$(QUIET_ELF2AIF)elf2aif $(<) !ScummTool/bin/$*,ff8
+	$(QUIET)echo "Set Alias\$$$* <ScummTool\$$Dir>.bin.$* %%*0" >> !ScummTool/!Boot,feb
