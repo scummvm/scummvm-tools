@@ -1,13 +1,3 @@
 Set ScummTool$Dir <Obey$Dir>
 IconSprites <ScummTool$Dir>.!Sprites
 
-Set Alias$scummvm-tools-cli <ScummTool$Dir>.bin.scummvm-tools-cli %%*0
-Set Alias$construct_mohawk <ScummTool$Dir>.bin.construct_mohawk %%*0
-Set Alias$extract_mohawk <ScummTool$Dir>.bin.extract_mohawk %%*0
-Set Alias$gob_loadcalc <ScummTool$Dir>.bin.gob_loadcalc %%*0
-Set Alias$decine <ScummTool$Dir>.bin.decine %%*0
-Set Alias$degob <ScummTool$Dir>.bin.degob %%*0
-Set Alias$dekyra <ScummTool$Dir>.bin.dekyra %%*0
-Set Alias$deriven <ScummTool$Dir>.bin.deriven %%*0
-Set Alias$descumm <ScummTool$Dir>.bin.descumm %%*0
-Set Alias$desword2 <ScummTool$Dir>.bin.desword2 %%*0
