@@ -26,6 +26,17 @@ our %data_ids;
 our $lang = $ARGV[0];
 my $poldir = $ARGV[1];
 
+my $git = "<unknown>";
+
+open GIT, "git describe --tags |" or warn "Can't run git";
+
+$git = <GIT>;
+
+close GIT;
+
+chomp $git;
+
+
 print <<EOF;
 # The Prince and the Coward lanugage file
 # Copyright (C) 2018 ScummVM Team
@@ -45,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF8\\n"
 "Content-Transfer-Encoding: 8bit\\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\\n"
-"X-Generator: Weblate 2.9\\n"
+"X-Generator: gen-po.pl $git\\n"
 EOF
 
 process_talk_ids $lang, "talktxt_ids.txt";
@@ -119,6 +130,7 @@ EOF
 	}
 }
 
+print "\n\n# Missing: $miss_tr  Extra: $extra_tr" if ($miss_tr || $extra_tr);
 warn "Missing: $miss_tr  Extra: $extra_tr" if ($miss_tr || $extra_tr);
 
 exit;
