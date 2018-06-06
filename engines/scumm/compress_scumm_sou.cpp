@@ -89,6 +89,7 @@ bool CompressScummSou::get_part() {
 	char buf[2048];
 	int pos = _input.pos();
 	uint32 tags;
+	bool sampleIsPCMS16BE44100 = false;
 
 	try {
 		/* Scan for the VCTL header */
@@ -101,6 +102,23 @@ bool CompressScummSou::get_part() {
 	} catch (Common::FileException &) {
 		// EOF reached
 		return false;
+	}
+
+	// WORKAROUND: Original Indy4 MONSTER.SOU bug
+	// The speech sample at VCTL offset 0x76ccbca ("Hey you!") which is used
+	// when Indy gets caught on the German submarine seems to not be a VOC
+	// but raw PCM s16be at (this is a guess) 44.1 kHz with a bogus VOC header.
+	// To work around this we skip the VOC header and encode the raw PCM data.
+	// Fixes Trac#10559
+	if (_input.pos() - 4 == 0x76ccbca) {
+		// Make sure we are dealing with an Indy4 MONSTER.SOU and
+		// check if the next VCTL starts at the expected offset
+		int oldPos = _input.pos();
+		_input.seek(-4 + 42 + 86016 + 1, SEEK_CUR); // skip VCTL + VOC headers + trailing 0x00
+		if (_input.read_noThrow(buf, 4) == 4 && memcmp(buf, "VCTL", 4) == 0) {
+			sampleIsPCMS16BE44100 = true;
+		}
+		_input.seek(oldPos, SEEK_SET);
 	}
 
 	tags = _input.readUint32BE();
@@ -133,8 +151,21 @@ bool CompressScummSou::get_part() {
 		error("Unexpected data encountered");
 	print("Voice file found (pos = %d) :", pos);
 
-	/* Convert the VOC data */
-	extractAndEncodeVOC(TEMP_RAW, _input, _format);
+	/* Convert the audio data */
+	if (sampleIsPCMS16BE44100) {
+		_input.seek(6, SEEK_CUR);
+		char fbuf[86016];
+		Common::File f(TEMP_RAW, "wb");
+		if ((size = _input.read_noThrow(fbuf, sizeof(fbuf))) != sizeof(fbuf)) {
+			return false;
+		}
+		f.write(fbuf, sizeof(fbuf));
+		f.close();
+		setRawAudioType(false, false, 16);
+		encodeAudio(TEMP_RAW, true, 44100, tempEncoded, _format);
+	} else {
+		extractAndEncodeVOC(TEMP_RAW, _input, _format);
+	}
 
 	/* Append the converted data to the master output file */
 	Common::File f(tempEncoded, "rb");
