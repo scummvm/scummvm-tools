@@ -178,7 +178,6 @@ bool CompressScummSou::get_part() {
 	_output_idx.writeUint32BE(tot_size);
 
 	updateProgress(_input.pos(), _file_size);
-
 	return true;
 }
 

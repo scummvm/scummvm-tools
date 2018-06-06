@@ -310,7 +310,6 @@ void CompressionTool::encodeAudio(const char *inname, bool rawInput, int rawSamp
 }
 
 void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate, const char *outname, AudioFormat compmode) {
-
 	print(" - len=%ld, ch=%d, rate=%d, %dbits", length, (rawAudioType.isStereo ? 2 : 1), samplerate, rawAudioType.bitsPerSample);
 
 #ifdef USE_VORBIS
@@ -529,14 +528,19 @@ void CompressionTool::encodeRaw(const char *rawData, int length, int samplerate,
 
 		if (rawAudioType.bitsPerSample == 8) {
 			for (i = 0; i < samplesPerChannel * numChannels; i++) {
-				const FLAC__uint8 *rawDataUnsigned = (const FLAC__uint8 *)rawData;
-				flacData[i] = (FLAC__int32)rawDataUnsigned[i] - 0x80;
+				flacData[i] = (FLAC__int32)(FLAC__uint8)rawData[i] - 0x80;
 			}
 		} else if (rawAudioType.bitsPerSample == 16) {
-			/* The rawData pointer is an 8-bit char so we must create a new pointer to access 16-bit samples */
-			const FLAC__int16 *rawData16 = (const FLAC__int16 *)rawData;
-			for (i = 0; i < samplesPerChannel * numChannels; i++) {
-				flacData[i] = (FLAC__int32)rawData16[i];
+			if (rawAudioType.isLittleEndian) {
+				for (i = 0; i < samplesPerChannel * numChannels; i++) {
+					flacData[i] = (FLAC__int32)((FLAC__int16)(FLAC__int8)(FLAC__byte)rawData[2 * i + 1] << 8 |
+								                (FLAC__int16)(FLAC__byte)rawData[2 * i    ]);
+				}
+			} else {
+				for (i = 0; i < samplesPerChannel * numChannels; i++) {
+					flacData[i] = (FLAC__int32)((FLAC__int16)(FLAC__int8)(FLAC__byte)rawData[2 * i    ] << 8 |
+								                (FLAC__int16)(FLAC__byte)rawData[2 * i + 1]);
+				}
 			}
 		}
 
