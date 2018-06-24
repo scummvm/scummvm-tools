@@ -21,52 +21,32 @@
 
 /* Mohawk file extractor */
 
-#include "engines/mohawk/archive.h"
+#include "common/file.h"
 #include "common/util.h"
-#include "engines/mohawk/utils/file.h"
+
+#include "engines/mohawk/archive.h"
+#include "engines/mohawk/utils.h"
 
 #include <assert.h>
 
-// Have a maximum buffer size
-#define MAX_BUF_SIZE 16384
-
-static byte *outputBuffer = NULL;
-
-bool fileExists(const char *filename) {
-	FILE *outputFile = fopen(filename, "rb");
-	if (outputFile != NULL) {
-		fclose(outputFile);
-		return true;
-	}
-	return false;
-}
-
 void dumpRawResource(MohawkOutputStream output) {
 	// Change the extension to bin
-	output.name += ".bin";
+	Common::Filename filename(output.name + ".bin");
 
-	const char* outputCStr = output.name.c_str();
+	printf("Extracting \'%s\'...\n", filename.getName().c_str());
 
-	printf ("Extracting \'%s\'...\n", outputCStr);
-
-	if(fileExists(outputCStr)) {
-		printf ("File \'%s\' already exists!\n", outputCStr);
+	if (filename.exists()) {
+		printf ("File \'%s\' already exists!\n", filename.getName().c_str());
 		return;
 	}
-	FILE *outputFile = fopen(outputCStr, "wb");
-	if (!outputFile) {
+
+	Common::File outputFile(filename, "wb");
+	if (!outputFile.isOpen()) {
 		printf ("Could not open file for output!\n");
 		return;
 	}
 
-	assert(outputBuffer);
-
-	while (output.stream->pos() < output.stream->size()) {
-		uint32 size = output.stream->read(outputBuffer, MAX_BUF_SIZE);
-		fwrite(outputBuffer, 1, size, outputFile);
-	}
-
-	fclose(outputFile);
+	copyBytes(output.stream, &outputFile, output.size);
 }
 
 void convertSoundResource(MohawkOutputStream output) {
@@ -75,25 +55,38 @@ void convertSoundResource(MohawkOutputStream output) {
 }
 
 void convertMovieResource(MohawkOutputStream output) {
-	printf ("Converting movies not yet supported. Dumping instead...\n");
-	dumpRawResource(output);
+	Common::Filename filename(output.name + ".bin");
+
+	printf("Extracting '%s'...\n", filename.getName().c_str());
+
+	if (filename.exists()) {
+		printf ("File '%s' already exists!\n", filename.getName().c_str());
+		return;
+	}
+
+	Common::File outputFile(filename, "wb");
+	if (!outputFile.isOpen()) {
+		printf ("Could not open file '%s' for output!\n", filename.getName().c_str());
+		return;
+	}
+
+	adjustQuickTimeAtomOffsets(output.stream, output.size, -output.offset, &outputFile);
 }
 
 void convertMIDIResource(MohawkOutputStream output) {
 	// Change the extension to midi
-	output.name += ".mid";
+	Common::Filename filename(output.name + ".mid");
 
-	const char* outputCStr = output.name.c_str();
+	printf("Extracting '%s'...\n", filename.getName().c_str());
 
-	printf ("Extracting \'%s\'...\n", outputCStr);
-
-	if(fileExists(outputCStr)) {
-		printf ("File \'%s\' already exists!\n", outputCStr);
+	if (filename.exists()) {
+		printf ("File '%s' already exists!\n", filename.getName().c_str());
 		return;
 	}
-	FILE *outputFile = fopen(outputCStr, "wb");
-	if (!outputFile) {
-		printf ("Could not open file for output!\n");
+
+	Common::File outputFile(filename, "wb");
+	if (!outputFile.isOpen()) {
+		printf ("Could not open file '%s' for output!\n", filename.getName().c_str());
 		return;
 	}
 
@@ -107,21 +100,19 @@ void convertMIDIResource(MohawkOutputStream output) {
 	byte *midiData = (byte *)malloc(size);
 
 	// Read the MThd Data
-	output.stream->read(midiData, 14);
+	output.stream->read_noThrow(midiData, 14);
 
 	// Skip the unknown Prg# section
 	assert(output.stream->readUint32BE() == ID_PRG);
-	output.stream->skip(output.stream->readUint32BE());
+	output.stream->seek(output.stream->readUint32BE(), SEEK_CUR);
 
 	// Read the MTrk Data
 	uint32 mtrkSize = output.stream->size() - output.stream->pos();
-	output.stream->read(midiData + 14, mtrkSize);
+	output.stream->read_noThrow(midiData + 14, mtrkSize);
 
 	// Output the data to the file.
-	fwrite(midiData, 1, 14 + mtrkSize, outputFile);
+	outputFile.write(midiData, 14 + mtrkSize);
 	free(midiData);
-
-	fclose(outputFile);
 }
 
 void outputMohawkStream(MohawkOutputStream output, bool doConversion, bool fileTableIndex, bool fileTableFlags) {
@@ -228,23 +219,19 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	FILE *file = fopen(argv[archiveArg], "rb");
-	if (!file) {
+	Common::File file(argv[archiveArg], "rb");
+	if (!file.isOpen()) {
 		printf ("Could not open \'%s\'\n", argv[archiveArg]);
 		return 1;
 	}
 
 	// Open the file as a Mohawk archive
-	MohawkArchive *mohawkArchive = MohawkArchive::createMohawkArchive(new Common::File(file));
+	MohawkArchive *mohawkArchive = MohawkArchive::createMohawkArchive(&file);
 
 	if (!mohawkArchive) {
 		printf("\'%s\' is not a valid Mohawk archive\n", argv[archiveArg]);
-		fclose(file);
 		return 1;
 	}
-
-	// Allocate a buffer for the output
-	outputBuffer = (byte *)malloc(MAX_BUF_SIZE);
 
 	if (argc == archiveArg - 2 - 1) {
 		uint32 tag = READ_BE_UINT32(argv[archiveArg + 1]);
@@ -254,7 +241,6 @@ int main(int argc, char *argv[]) {
 
 		if (output.stream) {
 			outputMohawkStream(output, doConversion, fileTableIndex, fileTableFlags);
-			delete output.stream;
 		} else {
 			printf ("Could not find specified data!\n");
 		}
@@ -262,15 +248,12 @@ int main(int argc, char *argv[]) {
 		MohawkOutputStream output = mohawkArchive->getNextFile();
 		while (output.stream) {
 			outputMohawkStream(output, doConversion, fileTableIndex, fileTableFlags);
-			delete output.stream;
 			output = mohawkArchive->getNextFile();
 		}
 	}
 
 	printf("Done!\n");
-	free(outputBuffer);
 	mohawkArchive->close();
-	fclose(file);
 	delete mohawkArchive;
 	return 0;
 }

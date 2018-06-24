@@ -27,7 +27,7 @@
 #include "common/str.h"
 #include "common/endian.h"
 #include "common/util.h"
-#include "engines/mohawk/utils/stream.h"
+#include "common/file.h"
 
 // Main FourCC's
 #define ID_MHWK MKID_BE('MHWK') // Main FourCC
@@ -122,10 +122,12 @@
 #define tag2str(x)	MohawkArchive::tag2string(x).c_str()
 
 struct MohawkOutputStream {
-	Common::SeekableSubReadStream *stream;
+	Common::File *stream;
 	uint32 tag;
 	uint32 id;
 	uint32 index;
+	uint32 offset;
+	uint32 size;
 	byte flags;
 	Common::String name;
 };
@@ -185,19 +187,18 @@ public:
 	virtual ~MohawkArchive() { close(); }
 
 	// Detect new/old Mohawk archive format. Return NULL if the file is neither.
-	static MohawkArchive *createMohawkArchive(Common::SeekableReadStream *stream);
+	static MohawkArchive *createMohawkArchive(Common::File *stream);
 
-	virtual void open(Common::SeekableReadStream *stream);
+	virtual void open(Common::File *stream);
 	void close();
 
-	bool hasResource(uint32 tag, uint16 id);
 	virtual MohawkOutputStream getRawData(uint32 tag, uint16 id);
 	virtual MohawkOutputStream getNextFile();
 
 	static Common::String tag2string(uint32 tag);
 
 protected:
-	Common::SeekableReadStream *_mhk;
+	Common::File *_mhk;
 	TypeTable _typeTable;
 	Common::String _curFile;
 
@@ -236,7 +237,7 @@ public:
 	LivingBooksArchive_v1() : MohawkArchive() {}
 	~LivingBooksArchive_v1() {}
 
-	virtual void open(Common::SeekableReadStream *stream);
+	virtual void open(Common::File *stream);
 	MohawkOutputStream getRawData(uint32 tag, uint16 id);
 	MohawkOutputStream getNextFile();
 
@@ -273,7 +274,7 @@ class CSWorldDeluxeArchive : public LivingBooksArchive_v1 {
 public:
 	CSWorldDeluxeArchive() : LivingBooksArchive_v1() {}
 	~CSWorldDeluxeArchive() {}
-	void open(Common::SeekableReadStream *stream);
+	void open(Common::File *stream);
 };
 
 #endif

@@ -27,7 +27,6 @@ PROGRAMS = \
 	degob \
 	dekyra \
 	deprince \
-	deriven \
 	descumm \
 	desword2 \
 	gob_loadcalc \
@@ -105,16 +104,6 @@ deprince_OBJS := \
 	engines/prince/utils.o \
 	$(UTILS)
 
-deriven_OBJS := \
-	engines/mohawk/archive.o \
-	engines/mohawk/deriven.o \
-	engines/mohawk/utils/file.o \
-	common/hashmap.o \
-	common/md5.o \
-	common/memorypool.o \
-	common/str.o \
-	common/util.o
-
 descumm_OBJS := \
 	engines/scumm/descumm.o \
 	engines/scumm/descumm6.o \
@@ -153,15 +142,12 @@ gob_loadcalc_OBJS := \
 extract_mohawk_OBJS := \
 	engines/mohawk/archive.o \
 	engines/mohawk/extract_mohawk.o \
-	engines/mohawk/utils/file.o \
-	common/hashmap.o \
-	common/md5.o \
-	common/memorypool.o \
-	common/str.o \
-	common/util.o
+	engines/mohawk/utils.o \
+	$(UTILS)
 
 construct_mohawk_OBJS := \
 	engines/mohawk/construct_mohawk.o \
+	engines/mohawk/utils.o \
 	$(UTILS)
 
 pegasus_save_types_OBJS := \

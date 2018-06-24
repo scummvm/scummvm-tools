@@ -26,7 +26,9 @@
 #include "common/file.h"
 #include "common/str.h"
 #include "common/util.h"
-#include "archive.h"
+
+#include "engines/mohawk/archive.h"
+#include "engines/mohawk/utils.h"
 
 uint32 _fileSize;
 
@@ -71,10 +73,19 @@ struct TypeConstruct {
 	} nameTable;
 };
 
+struct ResourceFile {
+	Common::Filename filename;
+
+	uint32 index;
+	int flags;
+	Common::String typeTagStr;
+	uint32 typeTag;
+	uint16 id;
+	Common::String name;
+	uint32 size;
+};
+
 Common::Array<TypeConstruct> _types;
-uint16 _nameTableAmount;
-uint16 _resourceTableAmount;
-uint16 _fileTableAmount;
 Common::Array<FileTable> _fileTable;
 
 int16 getTypeIndex(uint32 tag) {
@@ -115,12 +126,7 @@ uint32 string2tag(const char *str) {
 	return ret;
 }
 
-// Have a maximum buffer size
-#define MAX_BUF_SIZE 16384
-
-static byte *outputBuffer = NULL;
-
-void initMohawkArchive(void) {
+void initMohawkArchive() {
 	// Initialize Mohawk Archive Parameters with parameters for empty archive
 	_fileSize = 28;
 
@@ -134,13 +140,9 @@ void initMohawkArchive(void) {
 
 	_typeTable.name_offset = 4;
 	_typeTable.resource_types = 0;
-
-	_nameTableAmount = 0;
-	_resourceTableAmount = 0;
-	_fileTableAmount = 0;
 }
 
-void updateTypeTableOffsets(void) {
+void updateTypeTableOffsets() {
 	for (uint16 i = 0; i < _typeTable.resource_types; i++) {
 		_types[i].resource_table_offset = 4 + (_typeTable.resource_types * 8);
 
@@ -172,23 +174,23 @@ void addTypeToMohawkArchive(const char *resourceTag) {
 	updateTypeTableOffsets();
 }
 
-void addFileToMohawkArchive(int fileId, byte fileFlags, const char *resourceTag, int resourceId, const char *resourceName, uint32 fileSize) {
-	int16 typeIndex = getTypeIndex(string2tag(resourceTag));
+void addFileToMohawkArchive(const ResourceFile &file) {
+	int16 typeIndex = getTypeIndex(file.typeTag);
 	if (typeIndex == -1) {
 		// Add New Type to typeTable
-		addTypeToMohawkArchive(resourceTag);
-		typeIndex = getTypeIndex(string2tag(resourceTag));
+		addTypeToMohawkArchive(file.typeTagStr.c_str());
+		typeIndex = getTypeIndex(file.typeTag);
 	} else {
-		if (getIdIndex(typeIndex, resourceId) != -1) {
-			printf("Error : Duplicate Resource Type \'%s\' Id %d\n", resourceTag, resourceId);
+		if (getIdIndex(typeIndex, file.id) != -1) {
+			printf("Error : Duplicate Resource Type \'%s\' Id %d\n", file.typeTagStr.c_str(), file.id);
 			return;
 		}
 	}
 
 	// Update Resource Table
 	TypeConstructResourceEntries newTypeResource;
-	newTypeResource.id = resourceId;
-	newTypeResource.index = fileId + 1;
+	newTypeResource.id = file.id;
+	newTypeResource.index = file.index + 1;
 
 	_fileSize += 4;
 	_rsrc.filesize += 4;
@@ -208,8 +210,7 @@ void addFileToMohawkArchive(int fileId, byte fileFlags, const char *resourceTag,
 	updateTypeTableOffsets();
 
 	// Update Name Table if name is present
-	int nameSize = strlen(resourceName);
-	if (nameSize != 0) {
+	if (!file.name.empty()) {
 		TypeConstructNameEntries newTypeName;
 
 		if (_types[typeIndex].nameTable.entries.empty())
@@ -217,12 +218,12 @@ void addFileToMohawkArchive(int fileId, byte fileFlags, const char *resourceTag,
 		else
 			newTypeName.offset = _types[typeIndex].nameTable.entries.back().offset + _types[typeIndex].nameTable.entries.back().name.size() + 1;
 
-		newTypeName.index = fileId + 1;
-		newTypeName.name += resourceName;
+		newTypeName.index = file.index + 1;
+		newTypeName.name = file.name;
 
-		_fileSize += 4 + nameSize + 1;
-		_rsrc.filesize += 4 + nameSize + 1;
-		_rsrc.file_table_offset += 4 + nameSize + 1;
+		_fileSize += 4 + file.name.size() + 1;
+		_rsrc.filesize += 4 + file.name.size() + 1;
+		_rsrc.file_table_offset += 4 + file.name.size() + 1;
 		_typeTable.name_offset += 4;
 
 		_types[typeIndex].nameTable.num++;
@@ -236,25 +237,24 @@ void addFileToMohawkArchive(int fileId, byte fileFlags, const char *resourceTag,
 
 	// Add file data parameters to fileTable
 	uint32 fileItemOffset = 36;
-	for (uint16 i = 0; i < _fileTableAmount; i++)
+	for (uint16 i = 0; i < _fileTable.size(); i++)
 		fileItemOffset += _fileTable[i].dataSize;
 
 	FileTable fileTableItem;
 	fileTableItem.offset = fileItemOffset;
-	fileTableItem.dataSize = fileSize;
-	fileTableItem.flags = fileFlags;
+	fileTableItem.dataSize = file.size;
+	fileTableItem.flags = file.flags;
 	fileTableItem.unk = 0;
 
 	_fileSize += 10;
 	_rsrc.filesize += 10;
 	_rsrc.file_table_size += 10;
 
-	_fileTableAmount++;
 	_fileTable.push_back(fileTableItem);
 
-	_fileSize += fileSize;
-	_rsrc.filesize += fileSize;
-	_rsrc.abs_offset += fileSize;
+	_fileSize += file.size;
+	_rsrc.filesize += file.size;
+	_rsrc.abs_offset += file.size;
 }
 
 void sortTypeTable(Common::Array<TypeConstruct> *tempTypeTable) {
@@ -306,7 +306,11 @@ void sortNameTable(Common::Array<TypeConstructNameEntries> *tempNameTable, uint1
 	assert(tempNameTable->size() == _types[i].nameTable.num);
 }
 
-void writeMohawkArchive(int argc, char **argv, int archiveArg, Common::File *mohawkFile) {
+void rewriteMovieOffsets(Common::File *resourceIn, Common::File *mohawkFile) {
+	adjustQuickTimeAtomOffsets(resourceIn, resourceIn->size(), mohawkFile->pos(), mohawkFile);
+}
+
+void writeMohawkArchive(const Common::Array<ResourceFile> &files, Common::File *mohawkFile) {
 	// Gap between RSRC and File Data..
 	_fileSize += 8;
 	_rsrc.filesize += 8;
@@ -329,19 +333,19 @@ void writeMohawkArchive(int argc, char **argv, int archiveArg, Common::File *moh
 	mohawkFile->writeUint16BE(0);
 	mohawkFile->writeUint16BE(0);
 
-	for (int i = archiveArg + 1; i < argc; i++) {
-		Common::Filename resourceFile = Common::Filename(argv[i]);
-
-		Common::File *resourceIn = new Common::File(resourceFile, "rb");
+	for (uint i = 0; i < files.size(); i++) {
+		const ResourceFile &file = files[i];
+		Common::File *resourceIn = new Common::File(file.filename, "rb");
 		if (!resourceIn->isOpen()) {
-			printf("Could not open file \"%s\"\n", resourceFile.getName().c_str());
+			printf("Could not open file \"%s\"\n", file.filename.getName().c_str());
 			delete resourceIn;
 			return;
 		}
 
-		while (resourceIn->pos() < (int)resourceIn->size()) {
-			uint32 size = resourceIn->read_noThrow(outputBuffer, MAX_BUF_SIZE);
-			mohawkFile->write(outputBuffer, size);
+		if (file.typeTag == ID_TMOV) {
+			rewriteMovieOffsets(resourceIn, mohawkFile);
+		} else {
+			copyBytes(resourceIn, mohawkFile, resourceIn->size());
 		}
 
 		resourceIn->close();
@@ -389,8 +393,8 @@ void writeMohawkArchive(int argc, char **argv, int archiveArg, Common::File *moh
 	}
 
 	// _rsrc.file_table_offset is added to _rsrc.abs_offset to get here...
-	mohawkFile->writeUint32BE(_fileTableAmount);
-	for (uint32 i = 0; i < _fileTableAmount; i++) {
+	mohawkFile->writeUint32BE(_fileTable.size());
+	for (uint32 i = 0; i < _fileTable.size(); i++) {
 		mohawkFile->writeUint32BE(_fileTable[i].offset);
 		mohawkFile->writeUint16BE(_fileTable[i].dataSize & 0xFFFF);
 		mohawkFile->writeByte((_fileTable[i].dataSize >> 16) & 0xFF);
@@ -439,46 +443,44 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	initMohawkArchive();
-
-	// Allocate a buffer for the output
-	outputBuffer = (byte *)malloc(MAX_BUF_SIZE);
+	Common::Array<ResourceFile> inputFiles;
 
 	// Loop over remaining parameters, treating them as resource filenames
 	for (int i = archiveArg + 1; i < argc; i++) {
 		printf("Resource %d : \"%s\"\n", i - archiveArg - 1, argv[i]);
 
-		Common::Filename resourceFile = Common::Filename(argv[i]);
+		ResourceFile file;
+		file.filename = Common::Filename(argv[i]);
 
-		if (!resourceFile.exists()) {
+		if (!file.filename.exists()) {
 			printf("Can not open resource file \"%s\"\n", argv[i]);
 			return 1;
 		}
 
-		if (!resourceFile.hasExtension("bin")) {
+		if (!file.filename.hasExtension("bin")) {
 			printf("Resource file \"%s\" not in raw binary format\n", argv[i]);
 			return 1;
 		}
 
 		char resourceFilename[100];
-		strncpy(resourceFilename, resourceFile.getName().c_str(), sizeof(resourceFilename));
+		strncpy(resourceFilename, file.filename.getName().c_str(), sizeof(resourceFilename));
 
 		// Parse for file index, Resource Type, Resource Id and Name
-		int fileIndex = atoi(Common::String(resourceFilename, 4).c_str());
-		printf("fileIndex : %d\n", fileIndex);
+		file.index = atoi(Common::String(resourceFilename, 4).c_str());
+		printf("fileIndex : %d\n", file.index);
 
 		if (resourceFilename[4] != '_')
 			printf("Filename format mismatch\n");
 
-		unsigned int fileFlags;
-		sscanf(resourceFilename+5, "%02x", &fileFlags);
-		printf("fileFlags : 0x%02x\n", fileFlags);
+		sscanf(resourceFilename+5, "%02x", &file.flags);
+		printf("fileFlags : 0x%02x\n", file.flags);
 
 		if (resourceFilename[7] != '_')
 			printf("Filename format mismatch\n");
 
-		Common::String resourceTag = Common::String(resourceFilename+8, 4);
-		printf("resourceTag : \"%s\"\n", resourceTag.c_str());
+		file.typeTagStr = Common::String(resourceFilename+8, 4);
+		file.typeTag = string2tag(file.typeTagStr.c_str());
+		printf("resourceTag : \"%s\"\n", file.typeTagStr.c_str());
 
 		if (resourceFilename[12] != '_')
 			printf("Filename format mismatch\n");
@@ -487,45 +489,47 @@ int main(int argc, char *argv[]) {
 		while (resourceFilename[nameStart] != '\0' && resourceFilename[nameStart] != '_')
 			nameStart++;
 
-		int resourceId = atoi(Common::String(resourceFilename+13, nameStart-12).c_str());
-		printf("resourceId : %d\n", resourceId);
+		file.id = atoi(Common::String(resourceFilename+13, nameStart-12).c_str());
+		printf("resourceId : %d\n", file.id);
 
-		Common::String resourceName;
 		if (resourceFilename[nameStart] == '_') {
-			resourceName = Common::String(resourceFilename+nameStart+1, resourceFilename+strlen(resourceFilename));
+			file.name = Common::String(resourceFilename+nameStart+1, resourceFilename+strlen(resourceFilename));
 
-			for (uint j = 0; j < resourceName.size(); j++) {
+			for (uint j = 0; j < file.name.size(); j++) {
 				//printf("DEBUG: j: %d resourceName[j]: %c\n", j, resourceName[j]);
-				if (resourceName[j] == '\\') {
-					if (j+1 < resourceName.size() && resourceName[j+1] == '\\') {
+				if (file.name[j] == '\\') {
+					if (j+1 < file.name.size() && file.name[j+1] == '\\') {
 						//printf("\tUnpadded \ at %d\n", j);
-						resourceName.deleteChar(j);
+						file.name.deleteChar(j);
 					} else {
 						//printf("\tReplaced \ at %d with %c\n", j, '/');
-						resourceName.setChar('/', j);
+						file.name.setChar('/', j);
 					}
 				}
 			}
 		}
-		printf("resourceName : \"%s\"\n", resourceName.c_str());
+		printf("resourceName : \"%s\"\n", file.name.c_str());
 
-		Common::File *resourceIn = new Common::File(resourceFile, "rb");
-		if (!resourceIn->isOpen()) {
-			printf("Could not open file \"%s\"\n", resourceFile.getName().c_str());
-			delete resourceIn;
+		Common::File resourceIn(file.filename, "rb");
+		if (!resourceIn.isOpen()) {
+			printf("Could not open file \"%s\"\n", file.filename.getName().c_str());
 			return 1;
 		}
+		file.size = resourceIn.size();
+		resourceIn.close();
 
-		addFileToMohawkArchive(fileIndex, (byte) fileFlags, resourceTag.c_str(), resourceId, resourceName.c_str(), resourceIn->size());
-
-		resourceIn->close();
-		delete resourceIn;
+		inputFiles.push_back(file);
 	}
 
-	writeMohawkArchive(argc, argv, archiveArg, mohawkFile);
+	initMohawkArchive();
+
+	for (uint i = 0; i < inputFiles.size(); i++) {
+		addFileToMohawkArchive(inputFiles[i]);
+	}
+
+	writeMohawkArchive(inputFiles, mohawkFile);
 
 	printf("Done!\n");
-	free(outputBuffer);
 	mohawkFile->close();
 	delete mohawkFile;
 	return 0;
