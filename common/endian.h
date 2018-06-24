@@ -41,8 +41,11 @@
 #endif
 
 static inline uint32 SWAP_32(uint32 a) {
-	return uint16(((a >> 24) & 0xFF) | ((a >> 8) & 0xFF00) | ((a << 8) & 0xFF0000) |
-		((a << 24) & 0xFF000000));
+	return (uint32)
+		(((a >> 24) & 0x000000FF) |
+		 ((a >>  8) & 0x0000FF00) |
+		 ((a <<  8) & 0x00FF0000) |
+		 ((a << 24) & 0xFF000000));
 }
 
 static inline uint16 SWAP_16(uint16 a) {
