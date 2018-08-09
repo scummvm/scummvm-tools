@@ -23,9 +23,9 @@
 #include "flags.h"
 
 const char *Flags::getFlagName(uint16 flagId) {
-	FlagDebug *flagd = nullptr;
+	FlagDebug *flagd = NULL;
 	flagd = (FlagDebug *)bsearch(&flagId, _flagNames, kFlagDebugAmount, sizeof(FlagDebug), Flags::compareFlagDebug);
-	if (flagd != nullptr) {
+	if (flagd) {
 		return flagd->flagName;
 	} else {
 		return "unknown_flag";
