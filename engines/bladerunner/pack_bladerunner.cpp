@@ -64,9 +64,16 @@ void PackBladeRunner::execute() {
 		hdPageOffsets[i] = -1;
 
 	Common::File in;
+	char fname[20];
 	int curCD = 1;
 
 	mainDir.setFullName("CDFRAMES.DAT");
+	if (!mainDir.exists()) {
+		warning("Could not find file %s", mainDir.getName().c_str());
+		snprintf(fname, 20, "CDFRAMES%d.DAT", curCD);		
+		mainDir.setFullName(fname);
+		warning("Retrying for file %s", mainDir.getName().c_str());
+	}
 	in.open(mainDir, "rb");
 
 	if (!in.isOpen()) {
@@ -96,7 +103,7 @@ void PackBladeRunner::execute() {
 			cdPageOffsets[i] = in.readUint32LE();
 		}
 
-		int cdCurrentPage = 0;
+		uint32 cdCurrentPage = 0;
 
 		while (cdCurrentPage < cdPageCount) {
 			while (cdCurrentPage < cdPageCount) {
@@ -128,7 +135,6 @@ void PackBladeRunner::execute() {
 		if (curCD == 5)
 			break;
 
-		char fname[20];
 		snprintf(fname, 20, "CDFRAMES%d.DAT", curCD);
 
 		mainDir.setFullName(fname);
