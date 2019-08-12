@@ -54,6 +54,7 @@
 #include "engines/cruise/extract_cruise_pc.h"
 #include "engines/gob/extract_gob_stk.h"
 #include "engines/gob/extract_fascination_cd.h"
+#include "engines/hdb/extract_hdb.h"
 #include "engines/kyra/extract_kyra.h"
 #include "engines/prince/extract_prince.h"
 #include "engines/prince/pack_prince.h"
@@ -96,6 +97,7 @@ Tools::Tools() {
 	_tools.push_back(new ExtractCruisePC());
 	_tools.push_back(new ExtractGobStk());
 	_tools.push_back(new ExtractFascinationCD());
+	_tools.push_back(new ExtractHDB());
 	_tools.push_back(new ExtractKyra());
 	_tools.push_back(new ExtractPrince());
 	_tools.push_back(new PackPrince());

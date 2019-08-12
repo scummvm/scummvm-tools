@@ -172,6 +172,7 @@ tools_OBJS := \
 	engines/bladerunner/pack_bladerunner.o \
 	engines/gob/compress_gob.o \
 	engines/gob/extract_fascination_cd.o \
+	engines/hdb/extract_hdb.o \
 	engines/kyra/compress_kyra.o \
 	engines/queen/compress_queen.o \
 	engines/saga/compress_saga.o \
