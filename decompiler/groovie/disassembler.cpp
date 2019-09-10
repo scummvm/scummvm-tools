@@ -68,7 +68,7 @@ uint32 GroovieJumpInstruction::getDestAddress() const {
 	while (i != _params.end()) {
 		if ((*i)->isAddress())
 			return (*i)->getUnsigned();
-		i++;
+		++i;
 	}
 	return 0;
 }

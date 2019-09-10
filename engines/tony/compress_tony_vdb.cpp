@@ -114,7 +114,7 @@ bool CompressTonyVDB::convertTonyADPCMSample() {
 	for (uint32 i = 0; i < _uncompressedSize; i++)
 		curFileHandle.writeUint16LE(_outBuffer[i]);
 	curFileHandle.close();
-	
+
 	// Encode this raw data...
 	setRawAudioType(true, false, 16); // LE, stereo, 16-bit
 	encodeAudio(TEMP_RAW, true, _rate, TEMP_ENC, _format);
@@ -165,6 +165,7 @@ void CompressTonyVDB::execute() {
 		outpath_enc.setExtension(".FDB");
 		break;
 	default:
+		delete[] vh;
 		throw ToolException("Unknown audio format");
 		break;
 	}
@@ -240,6 +241,8 @@ void CompressTonyVDB::execute() {
 	/* And some clean-up :-) */
 	Common::removeFile(TEMP_RAW);
 	Common::removeFile(TEMP_ENC);
+
+	delete[] vh;
 }
 
 

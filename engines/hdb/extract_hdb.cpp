@@ -46,7 +46,7 @@ void ExtractHDB::execute() {
 		error("Unable to open %s", filename.getFullName().c_str());
 
 	Common::File fOut;
-	for (Common::Array<MPCEntry *>::iterator it = _dir.begin(); it != _dir.end(); it++) {
+	for (Common::Array<MPCEntry *>::iterator it = _dir.begin(); it != _dir.end(); ++it) {
 		byte *buffer = (byte *)malloc((*it)->length);
 
 		_mpcFile.seek((*it)->offset, SEEK_SET);

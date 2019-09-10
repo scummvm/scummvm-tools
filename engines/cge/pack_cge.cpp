@@ -31,11 +31,14 @@ PackCge::PackCge(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION/*TOOL
 	input.format = "/";
 	input.file = false;
 	_inputPaths.push_back(input);
-	
+
 	_outputToDirectory = true;
 
 	_shorthelp = "Used to repackage Soltys and Sfinx data files.";
 	_helptext = "\nUsage: " + getName() + " [-o /path/to/output/dir/] /path/to/one_game_file\n";
+
+	for (uint i = 0; i < MAX_FILES; i++)
+		memset(_files[i], 0, kBtKeySize);
 }
 
 void PackCge::execute() {
@@ -63,7 +66,7 @@ void PackCge::execute() {
 
 		// Handle the old CGE1 format:
 		verHeader = std::string("CGE1");
-		if (sversion.compare(verHeader) != 0) 
+		if (sversion.compare(verHeader) != 0)
 			_fIn.seek(0, SEEK_SET); // So we have to rewind the file, since there's no header.
 	}
 
@@ -129,7 +132,7 @@ void PackCge::writeData(Common::File &f, byte *buff, int size) {
 void PackCge::pack() {
 	BtPage btPage;
 	print("Packing as CGE1...");
-	
+
 	/* Build the index page */
 	// Header
 	memset(&btPage, 0, sizeof(BtPage));
@@ -200,7 +203,7 @@ void PackCge::pack() {
 void PackCge::pack2() {
 	BtPage2 btPage2;
 	print("Packing as CGE2...");
-	
+
 	/* Build the index page */
 	// Header
 	memset(&btPage2, 0, sizeof(BtPage2));
@@ -274,5 +277,3 @@ int main(int argc, char *argv[]) {
 	return cge.run(argc, argv);
 }
 #endif
-
-

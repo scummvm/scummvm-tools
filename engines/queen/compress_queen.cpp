@@ -101,6 +101,8 @@ CompressQueen::CompressQueen(const std::string &name) : CompressionTool(name, TO
 
 	_shorthelp = "Used to compress Flight of the Amazon Queen data files.";
 	_helptext = "\nUsage: " + getName() + " [mode] [mode params] [-o outputdir] <inputfile (queen.1)>\n\t" + _shorthelp + "\n";
+
+	_version = NULL;
 }
 
 const CompressQueen::GameVersion *CompressQueen::detectGameVersion(uint32 size) {
@@ -328,4 +330,3 @@ int main(int argc, char *argv[]) {
 	return queen.run(argc, argv);
 }
 #endif
-

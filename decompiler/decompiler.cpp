@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
 			std::cout << "Available engines:" << "\n";
 
 			std::map<std::string, std::string>::iterator it;
-			for (it = engines.begin(); it != engines.end(); it++)
+			for (it = engines.begin(); it != engines.end(); ++it)
 				std::cout << (*it).first << " " << (*it).second << "\n";
 
 			return 0;

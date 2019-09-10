@@ -260,7 +260,7 @@ void ControlFlow::createGroups() {
 		setStackLevel(fn->second._v, 0);
 	ConstInstIterator curInst, nextInst;
 	nextInst = _insts.begin();
-	nextInst++;
+	++nextInst;
 	int stackLevel = 0;
 	int expectedStackLevel = 0;
 	for (curInst = _insts.begin(); nextInst != _insts.end(); ++curInst, ++nextInst) {

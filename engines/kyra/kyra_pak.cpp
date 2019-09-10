@@ -464,6 +464,7 @@ bool Extractor::outputAllFiles(Common::Filename *outputPath) {
 			printf("OK\n");
 		} else {
 			printf("FAILED\n");
+			fclose(file);
 			return false;
 		}
 		fclose(file);
@@ -496,4 +497,3 @@ bool Extractor::outputFileAs(const char *f, const char *fn) {
 	fclose(file);
 	return true;
 }
-
