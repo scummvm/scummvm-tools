@@ -26,6 +26,10 @@ our %data_ids;
 our $lang = $ARGV[0];
 my $poldir = $ARGV[1];
 
+if ($lang eq 'pot') {
+	$lang = "";
+}
+
 my $git = "<unknown>";
 
 open GIT, "git describe --tags |" or warn "Can't run git";
@@ -94,8 +98,8 @@ for my $f (sort keys $data{$lang}) {
 
 for my $f (sort keys $data{'pl'}) {
 	for my $n (sort {$a<=>$b} keys $data{'pl'}{$f}) {
-		if (not exists $data{$lang}{$f}{$n}) {
-			warn "$lang:$f:$n missing";
+		if (($lang eq "") || (not exists $data{$lang}{$f}{$n})) {
+			warn "$lang:$f:$n missing" unless $lang eq "";
 			if (index($data{'pl'}{$f}{$n}, "\\n") != -1) {  # Multiline
 				$data{$lang}{$f}{$n} = "\"\\n\"";
 			} else {
@@ -130,7 +134,7 @@ EOF
 	}
 }
 
-print "\n\n# Missing: $miss_tr  Extra: $extra_tr" if ($miss_tr || $extra_tr);
+print "\n\n# Missing: $miss_tr  Extra: $extra_tr\n" if ($miss_tr || $extra_tr);
 warn "Missing: $miss_tr  Extra: $extra_tr" if ($miss_tr || $extra_tr);
 
 exit;
