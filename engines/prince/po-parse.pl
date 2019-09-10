@@ -1,6 +1,6 @@
 #!perl
 
-# Generate .po file for The Prince and the Coward game
+# Parse .po file for The Prince and the Coward game
 
 use utf8;
 
@@ -13,7 +13,7 @@ sub process_talk($);
 use open qw/:std :utf8/;
 
 if ($#ARGV != 1) {
-	die "Usage: $0 <language-code> <file>";
+	die "Usage: $0 <language-code> <file.po>";
 }
 
 my $lang = $ARGV[0];
