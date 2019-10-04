@@ -61,11 +61,11 @@ Name "ScummVM Tools"
 # General Symbol Definitions
 #########################################################################################
 !define REGKEY      "Software\ScummVM\$(^Name)"
-!define VERSION     "2.1.0git"
+!define VERSION     "2.2.0git"
 !define COMPANY     "ScummVM Team"
 !define URL         "http://scummvm.org/"
 !define DESCRIPTION "ScummVM Tools Installer. Look! A three headed monkey (TM)!"
-!define COPYRIGHT   "Copyright © 2001-2019 The ScummVM Team"
+!define COPYRIGHT   "Copyright © 2001-2018 The ScummVM Team"
 
 #########################################################################################
 # Installer configuration
@@ -81,7 +81,7 @@ XPStyle  on
 #TargetMinimalOS 5.0    ; Minimal version of windows for installer: Windows 2000 or more recent
                         ; (will build unicode installer with NSIS 2.50+)
 
-VIProductVersion 2.1.0.0
+VIProductVersion 2.2.0.0
 VIAddVersionKey  ProductName      $(^Name)
 VIAddVersionKey  ProductVersion  "${VERSION}"
 VIAddVersionKey  CompanyName     "${COMPANY}"
