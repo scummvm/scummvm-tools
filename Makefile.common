@@ -39,7 +39,7 @@ PROGRAMS += \
 	decompile
 endif
 
-ifdef USE_FREETYPE
+ifdef USE_FREETYPE2
 ifdef USE_ICONV
 PROGRAMS += \
 	create_sjisfnt
@@ -156,9 +156,9 @@ pegasus_save_types_OBJS := \
 pegasus_save_types_LIBS := -framework CoreServices
 
 create_sjisfnt_OBJS := create_sjisfnt.o $(UTILS)
-create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)
+create_sjisfnt_LIBS := $(FREETYPE2_LIBS) $(ICONVLIBS)
 # Set custom build flags
-create_sjisfnt.o: CPPFLAGS+=$(FREETYPEINCLUDES) $(ICONVCFLAGS)
+create_sjisfnt.o: CPPFLAGS+=$(FREETYPE2_CFLAGS) $(ICONVCFLAGS)
 
 
 sword2_clue_OBJS := engines/sword2/sword2_clue.o common/file.o

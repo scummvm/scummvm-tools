@@ -94,7 +94,7 @@ win32dist:   all
 	cp $(srcdir)/gui/media/logo.jpg $(WIN32PATH)/tools/media/
 	cp $(srcdir)/gui/media/tile.gif $(WIN32PATH)/tools/media/
 	$(STRIP) construct_mohawk$(EXEEXT) -o $(WIN32PATH)/tools/construct_mohawk$(EXEEXT)
-ifeq "$(USE_FREETYPE)" "1"
+ifeq "$(USE_FREETYPE2)" "1"
 ifeq "$(USE_ICONV)" "1"
 	$(STRIP) create_sjisfnt$(EXEEXT) -o $(WIN32PATH)/tools/create_sjisfnt$(EXEEXT)
 endif
@@ -132,7 +132,7 @@ win32setup: all
 	cp $(srcdir)/README           $(srcdir)/$(WIN32BUILD)
 	unix2dos $(srcdir)/$(WIN32BUILD)/*.*
 	$(STRIP) construct_mohawk$(EXEEXT)   -o $(srcdir)/$(WIN32BUILD)/construct_mohawk$(EXEEXT)
-ifeq "$(USE_FREETYPE)" "1"
+ifeq "$(USE_FREETYPE2)" "1"
 ifeq "$(USE_ICONV)" "1"
 	$(STRIP) create_sjisfnt$(EXEEXT)     -o $(srcdir)/$(WIN32BUILD)/create_sjisfnt$(EXEEXT)
 endif
@@ -234,7 +234,7 @@ amigaos4dist: all
 	cp $(srcdir)/gui/media/logo.jpg $(AMIGAOS4PATH)/tools/media/
 	cp $(srcdir)/gui/media/tile.gif $(AMIGAOS4PATH)/tools/media/
 	$(STRIP) construct_mohawk$(EXEEXT) -o $(AMIGAOS4PATH)/tools/construct_mohawk$(EXEEXT)
-ifeq "$(USE_FREETYPE)" "1"
+ifeq "$(USE_FREETYPE2)" "1"
 ifeq "$(USE_ICONV)" "1"
 	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AMIGAOS4PATH)/tools/create_sjisfnt$(EXEEXT)
 endif

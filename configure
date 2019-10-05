@@ -24,6 +24,7 @@
 # Save the current environment variables for next runs
 SAVED_CONFIGFLAGS=$@
 SAVED_LDFLAGS=$LDFLAGS
+SAVED_PKG_CONFIG_LIBDIR=${PKG_CONFIG_LIBDIR:-unset}
 SAVED_CXX=$CXX
 SAVED_CXXFLAGS=$CXXFLAGS
 SAVED_CPPFLAGS=$CPPFLAGS
@@ -74,8 +75,8 @@ _flac=auto
 _mad=auto
 _zlib=auto
 _png=auto
+_freetype2=auto
 _wxwidgets=auto
-_freetype=auto
 _iconv=auto
 _boost=auto
 _endian=unknown
@@ -92,6 +93,7 @@ _strip=strip
 _ar="ar cru"
 _as="as"
 _windres=windres
+_pkgconfig=pkg-config
 _wxconfig=wx-config
 _wxpath="$PATH"
 _prefix=/usr/local
@@ -99,8 +101,8 @@ _wxincludes=""
 _wxlibs=""
 _wxstaticlibs=""
 _freetypeconfig=freetype-config
-_freetypeincludes=""
-_freetypelibs=""
+_freetype_found="false"
+_freetypepath="$PATH"
 _staticlibpath=""
 _xcodetoolspath=""
 _amigaos4path="Games:ScummVM-Tools"
@@ -266,6 +268,40 @@ find_wxconfig() {
 }
 
 #
+# Determine freetype-config
+#
+find_freetypeconfig() {
+	echo_n "Looking for freetype-config... "
+	freetypeconfigs="$_freetypeconfig"
+	_freetypeconfig=
+
+	IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="$SEPARATOR"
+	for path_dir in $_freetypepath; do
+		#reset separator to parse freetypeconfigs
+		IFS=":"
+		for freetypeconfig in $freetypeconfigs; do
+			if test -f "$path_dir/$freetypeconfig" ; then
+				_freetypeconfig="$path_dir/$freetypeconfig"
+				echo $_freetypeconfig
+				# Save the prefix
+				_freetypepath=$path_dir
+				if test `basename $path_dir` = bin ; then
+					_freetypepath=`dirname $path_dir`
+				fi
+				# break at first freetype-config found in path
+				break 2
+			fi
+		done
+	done
+
+	IFS="$ac_save_ifs"
+
+	if test -z "$_freetypeconfig"; then
+		echo "none found!"
+	fi
+}
+
+#
 # Determine extension used for executables
 #
 get_system_exe_extension() {
@@ -364,23 +400,27 @@ Optional Libraries:
   --with-png-prefix=DIR    Prefix where libpng is installed (optional)
   --disable-png            disable libpng (compression) support [autodetect]
 
+  --with-freetype2-prefix=DIR  prefix where the freetype-config script is
+                               installed (optional)
+  --disable-freetype2      disable freetype2 TTF library usage [autodetect]
+
   --with-wx-prefix=DIR     Prefix where wxwidgets is installed (optional)
   --disable-wxwidgets      disable wxwidgets (GUI) support [autodetect]
 
   --disable-iconv          disable iconv (Japanese font) support [autodetect]
 
-  --disable-freetype       disable freetype (Japanese font) support [autodetect]
-
   --with-boost-prefix=DIR  Prefix where Boost is installed (optional)
   --disable-boost          disable Boost support [autodetect]
 
 Some influential environment variables:
-  LDFLAGS        linker flags, e.g. -L<lib dir> if you have libraries in a
-                 nonstandard directory <lib dir>
-  CXX            C++ compiler command
-  CXXFLAGS       C++ compiler flags
-  CPPFLAGS       C++ preprocessor flags, e.g. -I<include dir> if you have
-                 headers in a nonstandard directory <include dir>
+  LDFLAGS            linker flags, e.g. -L<lib dir> if you have libraries in a
+                     nonstandard directory <lib dir>
+  CXX                C++ compiler command
+  CXXFLAGS           C++ compiler flags
+  CPPFLAGS           C++ preprocessor flags, e.g. -I<include dir> if you have
+                     headers in a nonstandard directory <include dir>
+  PKG_CONFIG_LIBDIR  list of directories where pkg-config ‘.pc’ files are
+                     looked up
 
 EOF
 		exit 0
@@ -401,10 +441,10 @@ for ac_option in $@; do
 	--disable-zlib)           _zlib=no        ;;
 	--enable-png)             _png=yes        ;;
 	--disable-png)            _png=no         ;;
+	--enable-freetype2)       _freetype2=yes  ;;
+	--disable-freetype2)      _freetype2=no   ;;
 	--enable-wxwidgets)       _wxwidgets=yes  ;;
 	--disable-wxwidgets)      _wxwidgets=no   ;;
-	--enable-freetype)        _freetype=yes   ;;
-	--disable-freetype)       _freetype=no    ;;
 	--enable-iconv)           _iconv=yes      ;;
 	--disable-iconv)          _iconv=no       ;;
 	--enable-boost)           _boost=yes      ;;
@@ -444,6 +484,10 @@ for ac_option in $@; do
 		arg=`echo $ac_option | cut -d '=' -f 2`
 		PNG_CFLAGS="-I$arg/include"
 		PNG_LIBS="-L$arg/lib"
+		;;
+	--with-freetype2-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		_freetypepath="$arg:$arg/bin"
 		;;
 	--with-wx-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
@@ -1246,8 +1290,9 @@ case $_host_os in
 		add_line_to_config_mk 'RISCOS = 1'
 		LDFLAGS="$LDFLAGS -L$GCCSDK_INSTALL_ENV/lib"
 		CXXFLAGS="$CXXFLAGS -I$GCCSDK_INSTALL_ENV/include"
+		_pkgconfig=$GCCSDK_INSTALL_ENV/ro-pkg-config
 		_wxconfig=$GCCSDK_INSTALL_ENV/bin/wx-config
-		_freetypeconfig=$GCCSDK_INSTALL_ENV/bin/freetype-config
+		_freetypepath=$GCCSDK_INSTALL_ENV/bin
 		LDFLAGS="$LDFLAGS -static"
 		;;
 	solaris*)
@@ -1361,6 +1406,18 @@ EOF
 cc_check -lm && LDFLAGS="$LDFLAGS -lm"
 
 #
+# Check for pkg-config
+#
+echocheck "pkg-config"
+_pkg_config=no
+command -v $_pkgconfig >/dev/null 2>&1 && _pkg_config=yes
+echo "$_pkg_config"
+
+if test "$_pkg_config" = yes && test -n "$_host" && test -z "$PKG_CONFIG_LIBDIR"; then
+	echo "WARNING: When cross-compiling PKG_CONFIG_LIBDIR must be set to the location of the .pc files for the target"
+fi
+
+#
 # Check for Ogg Vorbis
 #
 echocheck "Ogg Vorbis"
@@ -1461,6 +1518,12 @@ echo "$_mad"
 # Check for PNG
 #
 echocheck "PNG >= 1.2.8"
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists libpng; then
+	PNG_LIBS="$PNG_LIBS `$_pkgconfig --libs libpng`"
+	PNG_CFLAGS="$PNG_CFLAGS `$_pkgconfig --cflags libpng`"
+else
+	PNG_LIBS="$PNG_LIBS -lpng -lz"
+fi
 if test "$_png" = auto ; then
 	_png=no
 	cat > $TMPC << EOF
@@ -1473,10 +1536,10 @@ int main(void) {
   return 0;
 }
 EOF
-	cc_check $PNG_CFLAGS $PNG_LIBS -lpng && _png=yes
+	cc_check $PNG_CFLAGS $PNG_LIBS && _png=yes
 fi
 if test "$_png" = yes ; then
-	LIBS="$LIBS $PNG_LIBS -lpng"
+	LIBS="$LIBS $PNG_LIBS"
 	INCLUDES="$INCLUDES $PNG_CFLAGS"
 fi
 define_in_config_if_yes "$_png" 'USE_PNG'
@@ -1503,20 +1566,50 @@ define_in_config_if_yes "$_zlib" 'USE_ZLIB'
 echo "$_zlib"
 
 #
-# Check for FreeType
+# Check for FreeType2 to be present
 #
-echocheck "FreeType"
-if test "$_freetype" = auto ; then
-	_freetype=no
-	if type $_freetypeconfig > /dev/null 2>&1 ; then
-		_freetype=yes
+find_freetype() {
+        # Wrapper function which tries to find freetype
+        # either by calling freetype-config or by using
+        # pkg-config.
+        # As of freetype-2.9.1 the freetype-config file
+        # no longer gets installed by default.
+	if test "$_pkg_config" = "yes" && $_pkgconfig --exists freetype2; then
+		FREETYPE2_LIBS=`$_pkgconfig --libs freetype2`
+		FREETYPE2_CFLAGS=`$_pkgconfig --cflags freetype2`
+		FREETYPE2_STATIC_LIBS=`$_pkgconfig --static --libs freetype2`
+		_freetype_found="true"
+	else
+		# Look for the freetype-config script
+		find_freetypeconfig
+		if test -n "$_freetypeconfig"; then
+			# Since 2.3.12, freetype-config prepends $SYSROOT to everything.
+			# This means we can't pass it a --prefix that includes $SYSROOT.
+			freetypeprefix="$_freetypepath"
+			if test -n "$SYSROOT" -a "$SYSROOT" != "/"; then
+				teststring=VeryImplausibleSysrootX1Y2Z3
+				if ( env SYSROOT=/$teststring "$_freetypeconfig" --cflags | grep $teststring 2> /dev/null > /dev/null ); then
+					echo "Adapting FreeType prefix to SYSROOT" >> "$TMPLOG"
+					freetypeprefix="${freetypeprefix##$SYSROOT}"
+				fi
+			fi
+			FREETYPE2_LIBS=`$_freetypeconfig --prefix="$freetypeprefix" --libs`
+			FREETYPE2_CFLAGS=`$_freetypeconfig --prefix="$freetypeprefix" --cflags`
+			FREETYPE2_STATIC_LIBS=`$_freetypeconfig --prefix="$freetypeprefix" --static --libs 2>/dev/null`
+			_freetype_found="true"
+		fi
 	fi
-fi
+}
 
-if test "$_freetype" = yes ; then
-	_freetype=no
+if test "$_freetype2" != "no"; then
+	find_freetype
+	if test $_freetype_found != true; then
+		_freetype2=no
+	else
+		if test "$_freetype2" = "auto"; then
+			_freetype2=no
 
-	cat > $TMPC << EOF
+			cat > $TMPC << EOF
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -1527,27 +1620,29 @@ int main(int argc, char *argv[]) {
 }
 EOF
 
-	_freetypelibs=`$_freetypeconfig --libs`
-	_freetypeincludes=`$_freetypeconfig --cflags`
+			cc_check_no_clean $FREETYPE2_CFLAGS $FREETYPE2_LIBS && _freetype2=yes
+			# Modern freetype-config scripts accept --static to get all
+			# required flags for static linking. We abuse this to detect
+			# FreeType2 builds which are static themselves.
+			if test "$_freetype2" != "yes"; then
+				FREETYPE2_LIBS="$FREETYPE2_STATIC_LIBS"
+				cc_check_no_clean $FREETYPE2_CFLAGS $FREETYPE2_LIBS && _freetype2=yes
+			fi
+			cc_check_clean
+		fi
 
-	cc_check_no_clean $_freetypelibs $_freetypeincludes && _freetype=yes
-	# Modern freetype-config scripts accept --static to get all
-	# required flags for static linking. We abuse this to detect
-	# FreeType2 builds which are static themselves.
-	if test "$_freetype" != "yes"; then
-		_freetypelibs=`$_freetypeconfig --static --libs 2>/dev/null`
-		cc_check_no_clean $_freetypeincludes $_freetypelibs && _freetype=yes
+		if test "$_freetype2" = "yes"; then
+			LIBS="$LIBS $FREETYPE2_LIBS"
+			CXXFLAGS="$CXXFLAGS $FREETYPE2_CFLAGS"
+		fi
 	fi
-	cc_check_clean
+
 fi
 
-if test "$_freetype" = yes ; then
-	freetype_version=`$_freetypeconfig --ftversion 2>/dev/null`
-else
-	freetype_version="no"
-fi
-define_in_config_if_yes "$_freetype" 'USE_FREETYPE'
-echo "$freetype_version"
+echocheck "FreeType2"
+echo "$_freetype2"
+
+define_in_config_if_yes "$_freetype2" "USE_FREETYPE2"
 
 #
 # Check for Boost
@@ -1808,19 +1903,20 @@ WXINCLUDES := $_wxincludes
 WXLIBS := $_wxlibs
 WXSTATICLIBS := $_wxstaticlibs
 
-FREETYPEINCLUDES := $_freetypeincludes
-FREETYPELIBS := $_freetypelibs
+FREETYPE2_CFLAGS := $FREETYPE2_CFLAGS
+FREETYPE2_LIBS := $FREETYPE2_LIBS
 
 ICONVLIBS := $_iconvlibs
 ICONVCFLAGS := $_iconvcflags
 
-SAVED_CONFIGFLAGS  := $SAVED_CONFIGFLAGS
-SAVED_LDFLAGS      := $SAVED_LDFLAGS
-SAVED_CXX          := $SAVED_CXX
-SAVED_CXXFLAGS     := $SAVED_CXXFLAGS
-SAVED_CPPFLAGS     := $SAVED_CPPFLAGS
-SAVED_ASFLAGS      := $SAVED_ASFLAGS
-SAVED_WINDRESFLAGS := $SAVED_WINDRESFLAGS
+SAVED_CONFIGFLAGS       := $SAVED_CONFIGFLAGS
+SAVED_LDFLAGS           := $SAVED_LDFLAGS
+SAVED_PKG_CONFIG_LIBDIR := $SAVED_PKG_CONFIG_LIBDIR
+SAVED_CXX               := $SAVED_CXX
+SAVED_CXXFLAGS          := $SAVED_CXXFLAGS
+SAVED_CPPFLAGS          := $SAVED_CPPFLAGS
+SAVED_ASFLAGS           := $SAVED_ASFLAGS
+SAVED_WINDRESFLAGS      := $SAVED_WINDRESFLAGS
 EOF
 
 #
