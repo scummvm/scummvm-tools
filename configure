@@ -1276,7 +1276,7 @@ case $_host_os in
 		;;
 	mingw*)
 		DEFINES="$DEFINES -DWIN32"
-		DEFINES="$DEFINES -D__USE_MINGW_ANSI_STDIO=0"
+		# append_var DEFINES "-D__USE_MINGW_ANSI_STDIO=0"  # Modern MinGW does not need it
 		LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++"
 		LIBS="$LIBS -lmingw32 -lwinmm"
 		OBJS="$OBJS scummvmtoolswinres.o"
