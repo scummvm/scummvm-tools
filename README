@@ -85,6 +85,12 @@ Extraction Tools:
                 Example of usage:
                 ./scummvm-tools-cli --tool extract_cruise_pc [-o outputdir] <infile>
 
+        extract_cryo
+               Extracts Lost Eden archives.
+
+               Example of usage:
+                ./scummvm-tools-cli --tool extract_cryo [-o outputdir] <infile>
+
         extract_gob_stk
                 Extracts data files from STK/ITK files from Coktel Vision
                 games.

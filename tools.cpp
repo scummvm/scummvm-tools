@@ -52,6 +52,7 @@
 #include "engines/cge/pack_cge.h"
 #include "engines/cine/extract_cine.h"
 #include "engines/cruise/extract_cruise_pc.h"
+#include "engines/cryo/extract_cryo.h"
 #include "engines/gob/extract_gob_stk.h"
 #include "engines/gob/extract_fascination_cd.h"
 #include "engines/hdb/extract_hdb.h"
@@ -95,6 +96,7 @@ Tools::Tools() {
 	_tools.push_back(new PackCge());
 	_tools.push_back(new ExtractCine());
 	_tools.push_back(new ExtractCruisePC());
+	_tools.push_back(new ExtractCryo());
 	_tools.push_back(new ExtractGobStk());
 	_tools.push_back(new ExtractFascinationCD());
 	_tools.push_back(new ExtractHDB());
