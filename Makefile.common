@@ -192,6 +192,7 @@ tools_OBJS := \
 	engines/cge/pack_cge.o \
 	engines/cine/extract_cine.o \
 	engines/cruise/extract_cruise_pc.o \
+	engines/cryo/extract_cryo.o \
 	engines/gob/extract_gob_stk.o \
 	engines/kyra/extract_kyra.o \
 	engines/prince/extract_prince.o \
