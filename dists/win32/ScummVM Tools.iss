@@ -1,5 +1,5 @@
 [Setup]
-AppCopyright=2019
+AppCopyright=2020
 AppName=ScummVM Tools
 AppVerName=ScummVM Tools Git
 AppPublisher=The ScummVM Team
