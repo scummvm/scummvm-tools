@@ -133,22 +133,6 @@ sub process_mob($) {
 	close OUT;
 }
 
-sub process_credits($) {
-	my $file = shift;
-
-	open(*OUT, ">$file") or die "Cannot open file $file: $!";
-
-	print OUT "credits.dat\n";
-
-	for my $n (sort {$a<=>$b} keys $data{'credits.txt'}) {
-		$data{'credits.txt'}{$n} =~ s/\\n/\n/g;
-
-		print OUT "$data{'credits.txt'}{$n}";
-	}
-
-	close OUT;
-}
-
 sub process_talk($) {
 	my $file = shift;
 
@@ -234,6 +218,84 @@ sub process_talk($) {
 			print OUT "#ENDEND\n";
 		}
 	}
+
+	close OUT;
+}
+
+sub process_credits($) {
+	my $file = shift;
+
+	open(*OUT, ">$file") or die "Cannot open file $file: $!";
+
+	print OUT <<EOF;
+credits.dat
+
+
+
+
+GALADOR - THE PRINCE AND THE COWARD
+v1.3 - ENGLISH
+
+
+
+
+#
+
+
+
+SCENARIO
+
+Adrian Chmielarz
+Jacek Piekara
+
+
+
+#
+GRAPHICS AND ANIMATION
+
+Andrzej Kukuta
+Grzegorz Miechowski
+Juliusz Gruber
+Pawet Piotrowski
+Andrzej Mitula
+Ireneusz Konior
+Pawet Miechowski
+
+#
+
+
+
+PROGRAMMING
+
+Maciej Marzec
+
+
+
+
+#
+
+MUSIC
+
+Karim Martusewicz
+
+SOUND EFFECTS
+
+Adam "Scorpik" Skorupa
+
+
+#
+
+
+
+ENGLISH LOCALIZATION
+
+ShinjiGR
+
+
+
+
+##
+EOF
 
 	close OUT;
 }
