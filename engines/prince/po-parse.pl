@@ -92,6 +92,15 @@ for my $f (keys %data) {
 	for my $k (keys %{$data{$f}}) {
 		if (not exists $data1{$f}{$k}) {
 			warn "Missing msgstr $f:$k";
+		} else {
+			my $pref1;
+			my $pref2;
+			($pref1) = ($data{$f}{$k} =~ /^([P#HEROT1234567890\$]+:)/);
+			($pref2) = ($data1{$f}{$k} =~ /^([P#HEROT1234567890\$]+:)/);
+
+			if ($pref1 cmp $pref2) {
+				warn "Incorrect prefix in $f:$k: $pref1 != $pref2";
+			}
 		}
 	}
 }
