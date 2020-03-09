@@ -146,7 +146,7 @@ sub process_mob($) {
 
 	open(*OUT, ">$file") or die "Cannot open file $file: $!";
 
-	print OUT "mob.lst\n";
+	print OUT "mob.lst\n1.\n";
 
 	my $pn = 0;
 
