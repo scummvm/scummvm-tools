@@ -144,16 +144,16 @@ void PackPrince::packVariaTxt() {
 	// Header test
 	byte c;
 	std::string name, examTxt;
-	while ((c = _databank.readByte()) != '\r') {
-		name += c;
+	while ((c = _databank.readByte()) != '\n') {
+		if (c != '\r')
+			name += c;
 	}
 	if (name.compare("variatxt.dat")) {
 		error("Wrong header in variatxt.txt");
 	}
 
 	// Skip comment until first number
-	while ((c = _databank.readByte()) != '\r');
-	_databank.readByte(); // skip '\n'
+	while ((c = _databank.readByte()) != '\n');
 
 	// Loading to array:
 	const int kVariaTxtSize = 6000;
@@ -175,7 +175,10 @@ void PackPrince::packVariaTxt() {
 
 		// Text:
 		newVariaTxt._txt.clear();
-		while ((c = _databank.readByte()) != '\r') {
+		while ((c = _databank.readByte()) != '\n') {
+			if (c == '\r')
+				continue;
+
 			c = correctPolishLetter(c); // temporary
 			if (c == '|') {
 				c = 10;
@@ -186,8 +189,6 @@ void PackPrince::packVariaTxt() {
 		// Set VariaTxt in array
 		variaTxtList[id]._txt = newVariaTxt._txt;
 
-		// Skip '\n' and test eof
-		_databank.readByte();
 		if ((uint)_databank.pos() == fileSize) {
 			break;
 		}
@@ -222,8 +223,9 @@ void PackPrince::packInvTxt() {
 	// Header test
 	byte c;
 	std::string name, examTxt;
-	while ((c = _databank.readByte()) != '\r') {
-		name += c;
+	while ((c = _databank.readByte()) != '\n') {
+		if (c != '\r')
+			name += c;
 	}
 	if (name.compare("invtxt.dat")) {
 		error("Wrong header in invtxt.txt");
@@ -257,7 +259,10 @@ void PackPrince::packInvTxt() {
 		_databank.readByte(); // skip second space
 
 		// Exam text:
-		while ((c = _databank.readByte()) != '\r') {
+		while ((c = _databank.readByte()) != '\n') {
+			if (c == '\r')
+				continue;
+
 			c = correctPolishLetter(c); // temporary
 			if (c == '|') {
 				c = 10;
@@ -268,8 +273,6 @@ void PackPrince::packInvTxt() {
 		// Add new item to list
 		invTxtList[id] = newInvTxt;
 
-		// Skip '\n' and test eof
-		_databank.readByte();
 		if ((uint)_databank.pos() == fileSize) {
 			break;
 		} else {
@@ -314,13 +317,13 @@ void PackPrince::packCredits() {
 	// Header test
 	byte c;
 	std::string line;
-	while ((c = _databank.readByte()) != '\r') {
-		line += c;
+	while ((c = _databank.readByte()) != '\n') {
+		if (c != '\r')
+			line += c;
 	}
 	if (line.compare("credits.dat")) {
 		error("Wrong header in credits.txt");
 	}
-	_databank.readByte(); // skip '\n'
 
 	// Packing:
 	while (1) {
@@ -355,22 +358,24 @@ void PackPrince::packTalkTxt() {
 	// Header test
 	byte c;
 	std::string line;
-	while ((c = idsFile.readByte()) != '\r') {
-		line += c;
+	while ((c = idsFile.readByte()) != '\n') {
+		if (c != '\r')
+			line += c;
 	}
 	if (line.compare("talktxt_ids")) {
 		error("Wrong header in talktxt_ids.txt");
 	}
-	idsFile.readByte(); // skip '\n'
 
 	// IDs loading
 	for (int i = 0; i < kSetStringValues; i++) {
 		int value = 0;
-		while ((c = idsFile.readByte()) != '\r') {
+		while ((c = idsFile.readByte()) != '\n') {
+			if (c == '\r')
+				continue;
+
 			value *= 10;
 			value += c - 48;
 		}
-		idsFile.readByte(); // skip '\n'
 		setStringIdArray[i] = value;
 	}
 	idsFile.close();
@@ -381,13 +386,13 @@ void PackPrince::packTalkTxt() {
 
 	// Header test
 	line.clear();
-	while ((c = _databank.readByte()) != '\r') {
-		line += c;
+	while ((c = _databank.readByte()) != '\n') {
+		if (c != '\r')
+			line += c;
 	}
 	if (line.compare("talktxt.dat")) {
 		error("Wrong header in talktxt.txt");
 	}
-	_databank.readByte(); // skip '\n'
 
 	// Start pos of talkTxt file for later offset setting
 	int startTalkTxtPos = _fFiles.pos();
@@ -405,10 +410,10 @@ void PackPrince::packTalkTxt() {
 
 	while (1) {
 		line.clear();
-		while ((c = _databank.readByte()) != '\r') {
-			line += c;
+		while ((c = _databank.readByte()) != '\n') {
+			if (c != '\r')
+				line += c;
 		}
-		_databank.readByte(); // skip '\n'
 
 		for (int i = 0; i < kSetStringValues; i++) {
 			if (id == setStringIdArray[i]) {
@@ -453,10 +458,10 @@ void PackPrince::talkTxtWithDialog() {
 	while (1) {
 		// Special dialog data
 		line.clear();
-		while ((c = _databank.readByte()) != '\r') {
-			line += c;
+		while ((c = _databank.readByte()) != '\n') {
+			if (c != '\r')
+				line += c;
 		}
-		_databank.readByte(); // skip '\n'
 
 		if (!line.compare("#HERO")) {
 			tempTalkBeforeBox._dialogData = 1;
@@ -476,7 +481,10 @@ void PackPrince::talkTxtWithDialog() {
 
 		// Line of text
 		tempTalkBeforeBox._txt.clear();
-		while ((c = _databank.readByte()) != '\r') {
+		while ((c = _databank.readByte()) != '\n') {
+			if (c == '\r')
+				continue;
+
 			c = correctPolishLetter(c); // temporary
 			if (c == '|') {
 				c = 10;
@@ -485,7 +493,6 @@ void PackPrince::talkTxtWithDialog() {
 		}
 		c = 0;
 		tempTalkBeforeBox._txt += c;
-		_databank.readByte(); // skip '\n'
 
 		beforeDialogBoxArray.push_back(tempTalkBeforeBox);
 	}
@@ -520,16 +527,21 @@ void PackPrince::talkTxtWithDialog() {
 
 			// Text number
 			int textNr = 0;
-			while ((c = _databank.readByte()) != '\r') {
+			while ((c = _databank.readByte()) != '\n') {
+				if (c == '\r')
+					continue;
+
 				textNr *= 10;
 				textNr += c - 48;
 			}
 			tempDialogBoxLine._dialogData = textNr;
-			_databank.readByte(); // skip '\n'
 
 			// Line of text
 			tempDialogBoxLine._txt.clear();
-			while ((c = _databank.readByte()) != '\r') {
+			while ((c = _databank.readByte()) != '\n') {
+				if (c == '\r')
+					continue;
+
 				c = correctPolishLetter(c); // temporary
 				if (c == '|') {
 					c = 10;
@@ -538,7 +550,6 @@ void PackPrince::talkTxtWithDialog() {
 			}
 			c = 0;
 			tempDialogBoxLine._txt += c;
-			_databank.readByte(); // skip '\n'
 
 			allDialogBoxesArray[dbNr].push_back(tempDialogBoxLine);
 		}
@@ -559,12 +570,12 @@ void PackPrince::talkTxtWithDialog() {
 		while (1) {
 			// Special dialog data
 			line.clear();
-			while ((c = _databank.readByte()) != '\r' && c != ' ') {
-				line += c;
+			while ((c = _databank.readByte()) != '\n' && c != ' ') {
+				if (c != '\r')
+					line += c;
 			}
 			// Check if #END
 			if (!line.compare("#END")) {
-				_databank.readByte(); // skip '\n'
 				break;
 			}
 			if (!line.compare("#HERO")) {
@@ -576,14 +587,16 @@ void PackPrince::talkTxtWithDialog() {
 			} else if (!line.compare("#PAUSE")) {
 				tempDialogOptionsLine._dialogData = 254;
 				tempDialogOptionsLine._txt.clear();
-				_databank.readByte(); // skip '\n'
 				allDialogOptionsArray[dbOptNr].push_back(tempDialogOptionsLine);
 				continue;
 			} else {
 				if (!line.compare("#ENABLE")) { // 0 - 15
 					tempDialogOptionsLine._dialogData = 240;
 					uint8 value = 0;
-					while ((c = _databank.readByte()) != '\r') {
+					while ((c = _databank.readByte()) != '\n') {
+						if (c == '\r')
+							continue;
+
 						value *= 10;
 						value += c - 48;
 					}
@@ -603,16 +616,16 @@ void PackPrince::talkTxtWithDialog() {
 					tempDialogOptionsLine._txt += _databank.readByte() - 48;
 					_databank.readByte(); // skip '\r'
 				}
-				_databank.readByte(); // skip '\n'
 				allDialogOptionsArray[dbOptNr].push_back(tempDialogOptionsLine);
 				continue;
 			}
 
-			_databank.readByte(); // skip '\n'
-
 			// Line of text
 			tempDialogOptionsLine._txt.clear();
-			while ((c = _databank.readByte()) != '\r') {
+			while ((c = _databank.readByte()) != '\n') {
+				if (c == '\r')
+					continue;
+
 				c = correctPolishLetter(c); // temporary
 				if (c == '|') {
 					c = 10;
@@ -621,16 +634,15 @@ void PackPrince::talkTxtWithDialog() {
 			}
 			c = 0;
 			tempDialogOptionsLine._txt += c;
-			_databank.readByte(); // skip '\n'
 			allDialogOptionsArray[dbOptNr].push_back(tempDialogOptionsLine);
 		}
 		dbOptNr++;
 		// Check if #ENDEND, skip @DIALOG_OPT %d
 		line.clear();
-		while ((c = _databank.readByte()) != '\r') {
-			line += c;
+		while ((c = _databank.readByte()) != '\n') {
+			if (c != '\r')
+				line += c;
 		}
-		_databank.readByte(); // skip '\n'
 		if (!line.compare("#ENDEND")) {
 			break;
 		}
@@ -713,10 +725,10 @@ void PackPrince::talkTxtNoDialog() {
 
 		// Special dialog data
 		line.clear();
-		while ((c = _databank.readByte()) != '\r') {
-			line += c;
+		while ((c = _databank.readByte()) != '\n') {
+			if (c != '\r')
+				line += c;
 		}
-		_databank.readByte(); // skip '\n'
 
 		if (!line.compare("#HERO")) {
 			tempNormalLine._dialogData = 1;
@@ -733,7 +745,7 @@ void PackPrince::talkTxtNoDialog() {
 			break;
 		} else {
 			if (line[0] == '#') {
-				printf("UNKNOWN pragma: %s", line.c_str());
+				printf("UNKNOWN pragma: %s\n", line.c_str());
 				break;
 			} else {
 				tempNormalLine._txt = line;
@@ -746,7 +758,10 @@ void PackPrince::talkTxtNoDialog() {
 		if (havePragma) {
 			// Line of text
 			tempNormalLine._txt.clear();
-			while ((c = _databank.readByte()) != '\r') {
+			while ((c = _databank.readByte()) != '\n') {
+				if (c == '\r')
+					continue;
+
 				c = correctPolishLetter(c); // temporary
 				if (c == '|') {
 					c = 10;
@@ -755,7 +770,6 @@ void PackPrince::talkTxtNoDialog() {
 			}
 			c = 0;
 			tempNormalLine._txt += c;
-			_databank.readByte(); // skip '\n'
 		}
 
 		normalLinesArray.push_back(tempNormalLine);
@@ -778,13 +792,13 @@ void PackPrince::packMobs() {
 	// Header test
 	byte c;
 	std::string name, examTxt;
-	while ((c = _databank.readByte()) != '\r') {
-		name += c;
+	while ((c = _databank.readByte()) != '\n') {
+		if (c != '\r')
+			name += c;
 	}
 	if (name.compare("mob.lst")) {
 		error("Wrong header in mob.txt");
 	}
-	_databank.readByte(); // skip '\n'
 
 	// Skip comment until first location nr
 	while ((c = _databank.readByte()) != '\n');
@@ -817,8 +831,8 @@ void PackPrince::packMobs() {
 				nr += c - 48;
 			}
 			nr--;
-			_databank.readByte(); // skip '\r'
-			_databank.readByte(); // skip '\n'
+			if (_databank.readByte() == '\r') // skip '\r'
+				_databank.readByte(); // skip '\n'
 		} else {
 			c = correctPolishLetter(c); // temporary
 			newMob._name += c; // first letter of name
@@ -847,7 +861,10 @@ void PackPrince::packMobs() {
 		_databank.readByte(); // skip second space
 
 		// Exam text:
-		while ((c = _databank.readByte()) != '\r') {
+		while ((c = _databank.readByte()) != '\n') {
+			if (c == '\r')
+				continue;
+
 			c = correctPolishLetter(c); // temporary
 			if (c == '|') {
 				c = 10;
@@ -862,9 +879,6 @@ void PackPrince::packMobs() {
 			}
 			newMob._examTxt += c;
 		}
-
-		// Skip '\n'
-		_databank.readByte();
 
 		// Add new item to list
 		allLocations[nr].push_back(newMob);
