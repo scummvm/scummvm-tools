@@ -24,7 +24,9 @@ my $idx2 = "";
 my $seenheader = 0;
 
 my $inmsgid = 0;
+my $inmsgstr = 0;
 our %data;
+our %data1;
 
 open IN, $ARGV[1];
 
@@ -37,11 +39,19 @@ while (<IN>) {
 
 		$seenheader = 1;
 
+		$inmsgid = $inmsgstr = 0;
+
 		next;
 	}
 
 	if (/^msgid ""$/) {
 		$inmsgid = 1;
+		next;
+	}
+
+	if (/^msgstr ""$/) {
+		$inmsgid = 0;
+		$inmsgstr = 1;
 		next;
 	}
 
@@ -55,14 +65,30 @@ while (<IN>) {
 		$inmsgid = 0;
 	}
 
+	if (/^msgstr (.*)$/) {
+		my $s = $1;
+
+		$s =~ s/(^")|("$)//g;
+
+		$data1{$fname}{$idx1} = $s;
+
+		$inmsgstr = 0;
+	}
+
 	if (/^"(.*)"$/) {
 		if ($inmsgid) {
 			$data{$fname}{$idx1} .= $1;
+		} elsif ($inmsgstr) {
+			$data1{$fname}{$idx1} .= $1;
 		}
 	}
+}
 
-	if (/^msgstr/) {
-		$inmsgid = 0;
+for my $f (keys %data) {
+	for my $k (keys %{$data{$f}}) {
+		if (not exists $data1{$f}{$k}) {
+			warn "Missing msgstr $f:$k";
+		}
 	}
 }
 
@@ -82,8 +108,8 @@ sub process_inv($) {
 
 	print OUT "invtxt.dat\n";
 
-	for my $n (sort {$a<=>$b} keys $data{'invtxt.txt'}) {
-		print OUT "$n. $data{'invtxt.txt'}{$n}\n";
+	for my $n (sort {$a<=>$b} keys $data1{'invtxt.txt'}) {
+		print OUT "$n. $data1{'invtxt.txt'}{$n}\n";
 	}
 
 	close OUT;
@@ -96,8 +122,8 @@ sub process_varia($) {
 
 	print OUT "variatxt.dat\n";
 
-	for my $n (sort {$a<=>$b} keys $data{'variatxt.txt'}) {
-		print OUT "$n. $data{'variatxt.txt'}{$n}\n";
+	for my $n (sort {$a<=>$b} keys $data1{'variatxt.txt'}) {
+		print OUT "$n. $data1{'variatxt.txt'}{$n}\n";
 	}
 
 	close OUT;
@@ -112,7 +138,7 @@ sub process_mob($) {
 
 	my $pn = 0;
 
-	for my $n (sort {$a<=>$b} keys $data{'mob.lst'}) {
+	for my $n (sort {$a<=>$b} keys $data1{'mob.lst'}) {
 		my $p1 = int($n / 1000);
 
 		if ($p1 != $pn) {
@@ -123,7 +149,7 @@ sub process_mob($) {
 			}
 			$pn = $p1;
 		}
-		print OUT "$data{'mob.lst'}{$n}\n";
+		print OUT "$data1{'mob.lst'}{$n}\n";
 	}
 
 	for my $i (($pn+1)..61) {
@@ -140,10 +166,10 @@ sub process_talk($) {
 
 	print OUT "talktxt.dat\n";
 
-	for my $f (sort grep /^dialog/, keys %data) {
+	for my $f (sort grep /^dialog/, keys %data1) {
 		$f =~ /dialog(\d+)/;
 		my $dialog = $1;
-		my $hasDialog = !!grep { $_ > 100 } keys $data{$f};
+		my $hasDialog = !!grep { $_ > 100 } keys $data1{$f};
 
 		if ($hasDialog) {
 			print OUT "\@DIALOGBOX_LINES:\n";
@@ -154,8 +180,8 @@ sub process_talk($) {
 		my $seenDialogBox = 0;
 		my $prevBox = -1;
 
-		for my $n (sort {$a<=>$b} keys $data{$f}) {
-			my $s = $data{$f}{$n};
+		for my $n (sort {$a<=>$b} keys $data1{$f}) {
+			my $s = $data1{$f}{$n};
 			if ($n < 100) {
 				while ($s =~ /^P#/) {
 					print OUT "#PAUSE\n";
