@@ -9,6 +9,7 @@ sub process_varia($);
 sub process_mob($);
 sub process_credits($);
 sub process_talk($);
+sub convert_utf($$);
 
 use open qw/:std :utf8/;
 
@@ -55,6 +56,8 @@ while (<IN>) {
 		next;
 	}
 
+	$_ = convert_utf $lang, $_;
+
 	if (/^msgid (.*)$/) {
 		my $s = $1;
 
@@ -93,13 +96,20 @@ for my $f (keys %data) {
 }
 
 
-process_inv "invtxt.txt.out1";
-process_varia "variatxt.txt.out1";
-process_mob "mob.txt.out1";
-process_credits "credits.txt.out1";
-process_talk "talktxt.txt.out1";
+process_inv "invtxt.txt";
+process_varia "variatxt.txt";
+process_mob "mob.txt";
+process_credits "credits.txt";
+process_talk "talktxt.txt";
 
 exit;
+
+sub convert_utf($$) {
+	my $lang = shift;
+	my $s = shift;
+
+	return $s;
+}
 
 sub process_inv($) {
 	my $file = shift;
@@ -253,6 +263,8 @@ sub process_credits($) {
 
 	open(*OUT, ">$file") or die "Cannot open file $file: $!";
 
+	$now_string = gmtime;
+
 	print OUT <<EOF;
 credits.dat
 
@@ -260,7 +272,8 @@ credits.dat
 
 
 GALADOR - THE PRINCE AND THE COWARD
-v1.3 - ENGLISH
+v2.0 - ENGLISH
+Built on: $now_string
 
 
 
@@ -316,6 +329,7 @@ Adam "Scorpik" Skorupa
 ENGLISH LOCALIZATION
 
 ShinjiGR
+ScummVM Team
 
 
 
