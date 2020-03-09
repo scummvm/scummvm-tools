@@ -95,11 +95,18 @@ for my $f (keys %data) {
 		} else {
 			my $pref1;
 			my $pref2;
-			($pref1) = ($data{$f}{$k} =~ /^([P#HEROT1234567890\$]+:)/);
-			($pref2) = ($data1{$f}{$k} =~ /^([P#HEROT1234567890\$]+:)/);
+			($pref1) = ($data{$f}{$k} =~ /^([P#HEROT0-9\$]+:)/);
+			($pref2) = ($data1{$f}{$k} =~ /^([P#HEROT0-9\$]+:)/);
 
 			if ($pref1 cmp $pref2) {
 				warn "Incorrect prefix in $f:$k: $pref1 != $pref2";
+			}
+
+			($pref1) = ($data{$f}{$k} =~ /([#EDBXF0-9]+)$/);
+			($pref2) = ($data1{$f}{$k} =~ /([#EDBXF0-9]+)$/);
+
+			if ($pref1 cmp $pref2) {
+				warn "Incorrect postfix in $f:$k: $pref1 != $pref2";
 			}
 		}
 	}
