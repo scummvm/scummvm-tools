@@ -441,9 +441,9 @@ byte *ExtractPrince::talkTxtWithDialog(byte *talkTxt) {
 		stringCurrOff += 2;
 		if (off) {
 			line = talkTxt + off;
-			dialogBoxAddr[dialogBox] = line;
-			dialogBox++;
 		}
+		dialogBoxAddr[dialogBox] = line;
+		dialogBox++;
 	}
 	stringCurrOff += 2;
 
@@ -452,9 +452,9 @@ byte *ExtractPrince::talkTxtWithDialog(byte *talkTxt) {
 		stringCurrOff += 2;
 		if (off) {
 			line = talkTxt + off;
-			dialogOptAddr[dialogOpt] = line;
-			dialogOpt++;
 		}
+		dialogOptAddr[dialogOpt] = line;
+		dialogOpt++;
 	}
 
 	_fFiles.print("@DIALOGBOX_LINES:\n");
