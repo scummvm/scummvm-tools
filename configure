@@ -431,7 +431,6 @@ for ac_option in $@; do
 	case "$ac_option" in
 	# Silently ignore options valid for Autotools configure.
 	--build=*)                                ;;
-	--host=*)                                 ;;
 	--exec-prefix=*)                          ;;
 	--program-prefix=*)                       ;;
 	--sbindir=*)                              ;;
