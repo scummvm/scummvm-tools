@@ -232,7 +232,7 @@ void PackPrince::packInvTxt() {
 	}
 
 	// Skip comments until first inventory item nr
-	while ((c = _databank.readByte()) != '0');
+	while ((c = _databank.readByte()) != '1');
 
 	// Skip first dot and space
 	_databank.readByte();
