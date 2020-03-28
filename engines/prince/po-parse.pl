@@ -134,7 +134,7 @@ sub process_inv($) {
 
 	open(*OUT, ">$file") or die "Cannot open file $file: $!";
 
-	print OUT "invtxt.dat\n";
+	print OUT "invtxt.dat\nitemNr. name - exam text\n";
 
 	for my $n (sort {$a<=>$b} keys $data1{'invtxt.txt'}) {
 		print OUT "$n. $data1{'invtxt.txt'}{$n}\n";
@@ -148,7 +148,7 @@ sub process_varia($) {
 
 	open(*OUT, ">$file") or die "Cannot open file $file: $!";
 
-	print OUT "variatxt.dat\n";
+	print OUT "variatxt.dat\nstringId. string\n";
 
 	for my $n (sort {$a<=>$b} keys $data1{'variatxt.txt'}) {
 		print OUT "$n. $data1{'variatxt.txt'}{$n}\n";
@@ -162,7 +162,7 @@ sub process_mob($) {
 
 	open(*OUT, ">$file") or die "Cannot open file $file: $!";
 
-	print OUT "mob.lst\n1.\n";
+	print OUT "mob.lst\nmob_name - exam text\n1.\n";
 
 	my $pn = 0;
 
