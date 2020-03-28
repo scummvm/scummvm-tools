@@ -204,9 +204,8 @@ void ExtractPrince::exportMobs(FileData fileData) {
 				mobName += c;
 				namePointer++;
 			}
-			if (mobName.size()) {
-				_fFiles.print("%s - ", mobName.c_str());
-			}
+
+			_fFiles.print("%s - ", mobName.c_str());
 
 			byte *examPointer = fileData._fileTable + examTextOffset;
 			mobExamText.clear();
@@ -235,9 +234,8 @@ void ExtractPrince::exportMobs(FileData fileData) {
 					}
 				};
 			}
-			if (mobName.size()) {
-				_fFiles.print("\n");
-			}
+			_fFiles.print("\n");
+
 			streamPos += kMobsStructSize;
 		}
 		free(fileData._fileTable);

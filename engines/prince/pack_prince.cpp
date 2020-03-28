@@ -823,12 +823,12 @@ void PackPrince::packMobs() {
 		}
 
 		// Test if end of location - next number
-		if ((c = _databank.readByte()) > 47 && c < 58) {
+		if ((c = _databank.readByte()) >= '0' && c <= '9') {
 			// Set location nr:
-			nr = c - 48;
+			nr = c - '0';
 			while ((c = _databank.readByte()) != '.') {
 				nr *= 10;
-				nr += c - 48;
+				nr += c - '0';
 			}
 			nr--;
 			if (_databank.readByte() == '\r') // skip '\r'
@@ -844,12 +844,16 @@ void PackPrince::packMobs() {
 		}
 
 		// No mobs in this location
-		if ((c = _databank.readByte()) > 47 && c < 58) {
+		if ((c = _databank.readByte()) >= '0' && c <= '9') {
 			_databank.seek(-1, SEEK_CUR);
 			continue;
 		} else {
-			c = correctPolishLetter(c); // temporary
-			newMob._name += c;
+			if (c == '-') {
+				_databank.seek(-1, SEEK_CUR);
+			} else {
+				c = correctPolishLetter(c); // temporary
+				newMob._name += c;
+			}
 		}
 
 		// Name:
@@ -858,7 +862,8 @@ void PackPrince::packMobs() {
 			newMob._name += c;
 		}
 		newMob._name.erase(newMob._name.size() - 1);  // remove first space
-		_databank.readByte(); // skip second space
+		if (_databank.readByte() != ' ') // skip second space
+			_databank.seek(-1, SEEK_CUR);
 
 		// Exam text:
 		while ((c = _databank.readByte()) != '\n') {
