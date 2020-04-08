@@ -140,7 +140,7 @@ Extraction Tools:
                 Mansion.
 
                 Example of usage:
-                ./scummvm-tools-cli --tool extract_mm_apple [-o outputdir] <disk1.d64> <disk2.d64>
+                ./scummvm-tools-cli --tool extract_mm_c64 [-o outputdir] <disk1.d64> <disk2.d64>
 
         extract_mm_nes
                 Extracts data files from the NES version of Maniac Mansion.
