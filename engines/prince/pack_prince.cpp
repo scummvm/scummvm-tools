@@ -20,6 +20,7 @@
  */
 
 #include <string.h>
+#include <time.h>
 #include "pack_prince.h"
 #include "common/endian.h"
 
@@ -63,6 +64,13 @@ void PackPrince::execute() {
 		_fFiles.writeUint32LE(0); // place for files offsets
 		_fFiles.writeUint32LE(0); // and size of files
 	}
+
+	time_t theTime;
+
+	time(&theTime);
+	char *generationDate = asctime(gmtime(&theTime));
+
+	_fFiles.print("\nv1.0\n%s\n", generationDate);
 
 	printf("Packing The Prince and the Coward text data...\n");
 
