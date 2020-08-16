@@ -49,7 +49,7 @@ void copyBytes(Common::File *src, Common::File *outputFile, uint32 bytesToCopy) 
 }
 
 void adjustQuickTimeAtomOffsets(Common::File *src, uint32 parentSize, int32 offset, Common::File *outputFile) {
-	static const int kAtomHeaderSize = sizeof(uint32) + sizeof(uint32); // size, type
+	static const uint32 kAtomHeaderSize = sizeof(uint32) + sizeof(uint32); // size, type
 	uint32 totalSize = 0;
 
 	while (totalSize + kAtomHeaderSize < parentSize) {

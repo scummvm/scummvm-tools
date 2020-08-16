@@ -40,7 +40,7 @@ struct MPCEntry {
 	char	filename[64];	// filename
 	int32	offset;			// offset in MSD file of data
 	int32	length;			// compressed length of data
-	int32	ulength;		// uncompressed length
+	uint32	ulength;		// uncompressed length
 	DataType	type;		// type of data
 };
 

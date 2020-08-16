@@ -825,7 +825,7 @@ int main(int argc, char *argv[]) {
 	int nlabel = 1;
 
 	// Heuristics to decompile the rest
-	for (int i = 0; i < dataLen; i++) {
+	for (uint32 i = 0; i < dataLen; i++) {
 		if (!dataMark[i]) {
 			if (i > 53000 && i < 124348 && READ_LE_UINT16(&data[i]) < 244) {
 				sprintf(buf, "unused%d", (modeRenum ? nlabel : i));
@@ -966,7 +966,7 @@ int main(int argc, char *argv[]) {
 		for (const char **p = pref; *p; p++) {
 			int nn = 1;
 
-			for (int i = 0; i < dataLen; i++) {
+			for (uint32 i = 0; i < dataLen; i++) {
 				if (!labels[i].empty() && labels[i].hasPrefix(*p)) {
 					sprintf(buf, "%s%d", *p, nn);
 					labels[i] = buf;
@@ -981,7 +981,7 @@ int main(int argc, char *argv[]) {
 
 	nlabel = 1;
 
-	for (int i = 0; i < dataLen; i++) {
+	for (uint32 i = 0; i < dataLen; i++) {
 		if (!labels[i].empty() && !labels[i].hasPrefix("backanim")) {
 			if (inDB) {
 				printf("\n\n");
