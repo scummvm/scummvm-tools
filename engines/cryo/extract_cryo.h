@@ -32,7 +32,7 @@ struct DATEntry {
 	char	flag;
 };
 
-#define MPCIterator Common::Array<DATEntry *>::iterator
+#define DATIterator Common::Array<DATEntry *>::iterator
 
 class ExtractCryo : public Tool {
 public:

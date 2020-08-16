@@ -43,7 +43,7 @@ void ExtractCryo::execute() {
 		error("Unable to open %s", filename.getFullName().c_str());
 
 	Common::File fOut;
-	for (Common::Array<DATEntry *>::iterator it = _dir.begin(); it != _dir.end(); ++it) {
+	for (DATIterator it = _dir.begin(); it != _dir.end(); ++it) {
 		byte *buffer = (byte *)malloc((*it)->size);
 		_datFile.seek((*it)->offset, SEEK_SET);
 		_datFile.read_noThrow(buffer, (*it)->size);
