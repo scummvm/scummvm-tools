@@ -34,7 +34,7 @@ private:
 	char _baseFilename[1024];
 
 	struct Archive {
-		Archive() : next(0) {}
+		Archive() : next(0), firstFile(0), startOffset(0), lastFile(0), endOffset(0), totalSize(0) { memset(filename, 0, sizeof(filename)); }
 		~Archive() { delete next; next = 0; }
 
 		char filename[1024];

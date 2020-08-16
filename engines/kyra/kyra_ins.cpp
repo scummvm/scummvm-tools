@@ -460,7 +460,6 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 	bool startFile = true;
 
 	_list = new Archive;
-	memset(_list, 0, sizeof(Archive));
 	Archive *newArchive = _list;
 
 	for (int8 currentFile = 1; currentFile; currentFile++) {
@@ -505,7 +504,6 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 
 				newArchive->next = new Archive;
 				newArchive = newArchive->next;
-				memset(newArchive, 0, sizeof(Archive));
 				currentFile = -1;
 			} else {
 				pos = 0;
@@ -518,7 +516,6 @@ HoFInstaller::HoFInstaller(const char *baseFilename) : _list(0), _files(0) {
 
 			newArchive->next = new Archive;
 			newArchive = newArchive->next;
-			memset(newArchive, 0, sizeof(Archive));
 		}
 	}
 
