@@ -368,7 +368,7 @@
 	#define	SCUMM_LITTLE_ENDIAN
 	#define	SCUMM_NEED_ALIGNMENT
 
-#elif defined(__amigaos4__)
+#elif defined(__amigaos4__) || defined(__MORPHOS__)
 
 	#define	scumm_stricmp strcasecmp
 	#define	scumm_strnicmp strncasecmp

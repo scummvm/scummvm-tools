@@ -106,7 +106,7 @@ _freetypepath="$PATH"
 _staticlibpath=""
 _xcodetoolspath=""
 _amigaos4path="Games:ScummVM-Tools"
-
+_morphospath="PROGDIR:"
 # For cross compiling
 _host=""
 _host_cpu=""
@@ -680,6 +680,10 @@ ppc-amigaos)
 	_host_os=amigaos
 	_host_cpu=ppc
 	;;
+ppc-morphos)
+	_host_os=morphos
+	_host_cpu=ppc
+	;;
 ps2)
 	_host_os=ps2
 	_host_cpu=mips64r5900el
@@ -962,7 +966,7 @@ if test "$have_gcc" = yes ; then
 			case $_host_os in
 			# newlib-based system include files suppress non-C89 function
 			# declarations under __STRICT_ANSI__
-			amigaos* | android | dreamcast | ds | gamecube | mingw* | n64 | psp | ps2 | wii | wince )
+			amigaos* | android | dreamcast | ds | gamecube | mingw* | morphos* |n64 | psp | ps2 | wii | wince )
 				;;
 			*)
 				CXXFLAGS="$CXXFLAGS -ansi"
@@ -987,7 +991,7 @@ if test "$_use_cxx11" = "yes" ; then
 	case $_host_os in
 	# newlib-based system include files suppress non-C89 function
 	# declarations under __STRICT_ANSI__
-	amigaos* | android | dreamcast | ds | gamecube | mingw* | n64 | psp | ps2 | wii | wince )
+	amigaos* | android | dreamcast | ds | gamecube | mingw* | morphos* | n64 | psp | ps2 | wii | wince )
 		_use_cxx11=no
 		;;
 	*)
@@ -1299,6 +1303,14 @@ case $_host_os in
 	mint*)
 		DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
 		;;
+	morphos*)
+		LDFLAGS="$LDFLAGS -L/usr/local/lib -noixemul"
+		CXXFLAGS="$CXXFLAGS -D__MORPHOS_SHAREDLIBS"
+		# We have to use 'long' for our 4 byte typedef because MorphOS already typedefs (u)int32
+		# as (unsigned) long, and consequently we'd get a compiler error otherwise.
+		type_4_byte='long'
+		add_line_to_config_mk 'MORPHOS = 1'
+		;;
 	riscos)
 		DEFINES="$DEFINES -DRISCOS"
 		add_line_to_config_mk 'RISCOS = 1'
@@ -1351,7 +1363,7 @@ if test -n "$_host"; then
 			LDFLAGS="$LDFLAGS -static-libgcc"
 			LIBS="$LIBS -laudio"
 			;;
-		ppc-amigaos)
+		ppc-amigaos|ppc-morphos)
 			# Only static builds link successfully on buildbot
 			LDFLAGS=`echo $LDFLAGS | sed 's/-use-dynld//'`
 			LDFLAGS="$LDFLAGS -static"
@@ -1379,7 +1391,7 @@ fi
 #
 echo_n "Checking if host is POSIX compliant... "
 case $_host_os in
-	amigaos* | cygwin* | dreamcast | ds | gamecube | mingw* | n64 | ps2 | psp | wii | wince)
+	amigaos* | cygwin* | dreamcast | ds | gamecube | mingw* | morphos* | n64 | ps2 | psp | wii | wince)
 		_posix=no
 		;;
 	android | beos* | bsd* | darwin* | freebsd* | gph-linux | haiku* | hpux* | iphone | irix* | linux* | mint* | netbsd* | openbsd* | riscos | solaris* | sunos* | uclinux* | webos)
@@ -1895,6 +1907,7 @@ WINDRES := $_windres
 WINDRESFLAGS := $WINDRESFLAGS
 WIN32PATH=$_win32path
 AMIGAOS4PATH=$_amigaos4path
+MORPHOSPATH=$_morphospath
 STATICLIBPATH=$_staticlibpath
 XCODETOOLSPATH=$_xcodetoolspath
 
