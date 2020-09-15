@@ -224,40 +224,51 @@ osxsnap: bundle scummvm-tools-cli-static
 # AmigaOS specific
 #
 
-# Special target to create an AmigaOS snapshot installation
-amigaos4dist: all
-	mkdir -p $(AMIGAOS4PATH)
-	mkdir -p $(AMIGAOS4PATH)/graphics
-	mkdir -p $(AMIGAOS4PATH)/tools
-	mkdir -p $(AMIGAOS4PATH)/tools/media
-	cp $(srcdir)/gui/media/detaillogo.jpg $(AMIGAOS4PATH)/tools/media/
-	cp $(srcdir)/gui/media/logo.jpg $(AMIGAOS4PATH)/tools/media/
-	cp $(srcdir)/gui/media/tile.gif $(AMIGAOS4PATH)/tools/media/
-	$(STRIP) construct_mohawk$(EXEEXT) -o $(AMIGAOS4PATH)/tools/construct_mohawk$(EXEEXT)
+# Special target to create an AmigaOS snapshot installation.
+amigaosdist: all
+	mkdir -p $(AMIGAOSPATH)
+	mkdir -p $(AMIGAOSPATH)/doc
+	mkdir -p $(AMIGAOSPATH)/media
+	mkdir -p $(AMIGAOSPATH)/tools
+	# Install documents
+	cp $(srcdir)/COPYING $(AMIGAOSPATH)/doc/
+	cp $(srcdir)/NEWS $(AMIGAOSPATH)/doc/
+	cp $(srcdir)/README $(AMIGAOSPATH)/doc/
+	# Install media files
+	cp $(srcdir)/gui/media/detaillogo.jpg $(AMIGAOSPATH)/media/
+	cp $(srcdir)/gui/media/logo.jpg $(AMIGAOSPATH)/media/
+	cp $(srcdir)/gui/media/scummvmtools_128.png $(AMIGAOSPATH)/media/
+	cp $(srcdir)/gui/media/ScummVM-Tools.info $(AMIGAOSPATH)/media/
+	cp $(srcdir)/gui/media/tile.gif $(AMIGAOSPATH)/media/
+	# Install icons
+	cp ${srcdir}/gui/media/scummvm-tools_drawer.info $(AMIGAOSPATH).info
+	cp ${srcdir}/gui/media/ScummVM-Tools.info $(AMIGAOSPATH)/media/
+	# Install encoder batch files
+	cp $(srcdir)/convert_dxa.bat $(AMIGAOSPATH)/tools/
+	cp $(srcdir)/convert_dxa.sh $(AMIGAOSPATH)/tools/
+	# Install tools
+	$(STRIP) construct_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/tools/construct_mohawk$(EXEEXT)
 ifeq "$(USE_FREETYPE2)" "1"
 ifeq "$(USE_ICONV)" "1"
-	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AMIGAOS4PATH)/tools/create_sjisfnt$(EXEEXT)
+	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AMIGAOSPATH)/tools/create_sjisfnt$(EXEEXT)
 endif
 endif
-	$(STRIP) decine$(EXEEXT) -o $(AMIGAOS4PATH)/tools/decine$(EXEEXT)
+	$(STRIP) decine$(EXEEXT) -o $(AMIGAOSPATH)/tools/decine$(EXEEXT)	
 ifeq "$(USE_BOOST)" "1"
-	$(STRIP) decompile$(EXEEXT) -o $(AMIGAOS4PATH)/tools/decompile$(EXEEXT)
+	$(STRIP) decompile$(EXEEXT) -o $(AMIGAOSPATH)/tools/decompile$(EXEEXT)
 endif
-	$(STRIP) degob$(EXEEXT) -o $(AMIGAOS4PATH)/tools/degob$(EXEEXT)
-	$(STRIP) dekyra$(EXEEXT) -o $(AMIGAOS4PATH)/tools/dekyra$(EXEEXT)
-	$(STRIP) deprince$(EXEEXT) -o $(AMIGAOS4PATH)/tools/deprince$(EXEEXT)
-	$(STRIP) descumm$(EXEEXT) -o $(AMIGAOS4PATH)/tools/descumm$(EXEEXT)
-	$(STRIP) desword2$(EXEEXT) -o $(AMIGAOS4PATH)/tools/desword2$(EXEEXT)
-	$(STRIP) extract_mohawk$(EXEEXT) -o $(AMIGAOS4PATH)/tools/extract_mohawk$(EXEEXT)
-	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AMIGAOS4PATH)/tools/gob_loadcalc$(EXEEXT)
+	$(STRIP) degob$(EXEEXT) -o $(AMIGAOSPATH)/tools/degob$(EXEEXT)
+	$(STRIP) dekyra$(EXEEXT) -o $(AMIGAOSPATH)/tools/dekyra$(EXEEXT)
+	$(STRIP) deprince$(EXEEXT) -o $(AMIGAOSPATH)/tools/deprince$(EXEEXT)
+	$(STRIP) descumm$(EXEEXT) -o $(AMIGAOSPATH)/tools/descumm$(EXEEXT)
+	$(STRIP) desword2$(EXEEXT) -o $(AMIGAOSPATH)/tools/desword2$(EXEEXT)
+	$(STRIP) extract_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/tools/extract_mohawk$(EXEEXT)
+	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AMIGAOSPATH)/tools/gob_loadcalc$(EXEEXT)
 ifeq "$(USE_WXWIDGETS)" "1"
-	$(STRIP) scummvm-tools$(EXEEXT) -o $(AMIGAOS4PATH)/tools/scummvm-tools$(EXEEXT)
+	$(STRIP) scummvm-tools$(EXEEXT) -o $(AMIGAOSPATH)/tools/scummvm-tools$(EXEEXT)
 endif
-	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AMIGAOS4PATH)/tools/scummvm-tools-cli$(EXEEXT)
-	#cp ${srcdir}/icons/scummvm-tools.info $(AMIGAOS4PATH)/scummvm-tools.info
-	cp $(srcdir)/COPYING $(AMIGAOS4PATH)/tools/COPYING.txt
-	cp $(srcdir)/README $(AMIGAOS4PATH)/tools/README.txt
-	cp $(srcdir)/NEWS $(AMIGAOS4PATH)/tools/NEWS.txt
+	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AMIGAOSPATH)/tools/scummvm-tools-cli$(EXEEXT)
+
 
 #
 # RISC OS specific
