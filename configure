@@ -105,7 +105,7 @@ _freetype_found="false"
 _freetypepath="$PATH"
 _staticlibpath=""
 _xcodetoolspath=""
-_amigaos4path="Games:ScummVM-Tools"
+_amigaospath="Games:ScummVM-Tools"
 
 # For cross compiling
 _host=""
@@ -1894,7 +1894,7 @@ ASFLAGS := $ASFLAGS
 WINDRES := $_windres
 WINDRESFLAGS := $WINDRESFLAGS
 WIN32PATH=$_win32path
-AMIGAOS4PATH=$_amigaos4path
+AMIGAOSPATH=$_amigaospath
 STATICLIBPATH=$_staticlibpath
 XCODETOOLSPATH=$_xcodetoolspath
 
