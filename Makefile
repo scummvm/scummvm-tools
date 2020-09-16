@@ -238,7 +238,6 @@ amigaosdist: all
 	cp $(srcdir)/gui/media/detaillogo.jpg $(AMIGAOSPATH)/media/
 	cp $(srcdir)/gui/media/logo.jpg $(AMIGAOSPATH)/media/
 	cp $(srcdir)/gui/media/scummvmtools_128.png $(AMIGAOSPATH)/media/
-	cp $(srcdir)/gui/media/ScummVM-Tools.info $(AMIGAOSPATH)/media/
 	cp $(srcdir)/gui/media/tile.gif $(AMIGAOSPATH)/media/
 	# Install icons
 	cp ${srcdir}/gui/media/scummvm-tools_drawer.info $(AMIGAOSPATH).info
