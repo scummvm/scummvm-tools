@@ -231,8 +231,10 @@ amigaosdist: all
 	mkdir -p $(AMIGAOSPATH)/media
 	# Install documents
 	cp $(srcdir)/COPYING $(AMIGAOSPATH)/doc/
+	cp $(srcdir)/COPYRIGHT $(AMIGAOSPATH)/doc/
 	cp $(srcdir)/NEWS $(AMIGAOSPATH)/doc/
 	cp $(srcdir)/README $(AMIGAOSPATH)/doc/
+	cp $(srcdir)/TODO $(AMIGAOSPATH)/doc/
 	# Install media files
 	cp $(srcdir)/gui/media/detaillogo.jpg $(AMIGAOSPATH)/media/
 	cp $(srcdir)/gui/media/logo.jpg $(AMIGAOSPATH)/media/
