@@ -240,8 +240,8 @@ amigaosdist: all
 	cp $(srcdir)/gui/media/scummvmtools_128.png $(AMIGAOSPATH)/media/
 	cp $(srcdir)/gui/media/tile.gif $(AMIGAOSPATH)/media/
 	# Install icons
-	cp ${srcdir}/gui/media/scummvm-tools_drawer.info $(AMIGAOSPATH).info
 	cp ${srcdir}/gui/media/ScummVM-Tools.info $(AMIGAOSPATH)/media/
+	cp ${srcdir}/gui/media/scummvm-tools_drawer.info $(AMIGAOSPATH).info
 	# Install encoder batch files
 	cp $(srcdir)/convert_dxa.bat $(AMIGAOSPATH)/tools/
 	cp $(srcdir)/convert_dxa.sh $(AMIGAOSPATH)/tools/
