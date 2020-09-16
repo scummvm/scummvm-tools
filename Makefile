@@ -252,7 +252,7 @@ ifeq "$(USE_ICONV)" "1"
 	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AMIGAOSPATH)/tools/create_sjisfnt$(EXEEXT)
 endif
 endif
-	$(STRIP) decine$(EXEEXT) -o $(AMIGAOSPATH)/tools/decine$(EXEEXT)	
+	$(STRIP) decine$(EXEEXT) -o $(AMIGAOSPATH)/tools/decine$(EXEEXT)
 ifeq "$(USE_BOOST)" "1"
 	$(STRIP) decompile$(EXEEXT) -o $(AMIGAOSPATH)/tools/decompile$(EXEEXT)
 endif
