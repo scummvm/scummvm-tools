@@ -229,7 +229,6 @@ amigaosdist: all
 	mkdir -p $(AMIGAOSPATH)
 	mkdir -p $(AMIGAOSPATH)/doc
 	mkdir -p $(AMIGAOSPATH)/media
-	mkdir -p $(AMIGAOSPATH)/tools
 	# Install documents
 	cp $(srcdir)/COPYING $(AMIGAOSPATH)/doc/
 	cp $(srcdir)/NEWS $(AMIGAOSPATH)/doc/
@@ -243,30 +242,30 @@ amigaosdist: all
 	cp ${srcdir}/gui/media/ScummVM-Tools.info $(AMIGAOSPATH)/media/
 	cp ${srcdir}/gui/media/scummvm-tools_drawer.info $(AMIGAOSPATH).info
 	# Install encoder batch files
-	cp $(srcdir)/convert_dxa.bat $(AMIGAOSPATH)/tools/
-	cp $(srcdir)/convert_dxa.sh $(AMIGAOSPATH)/tools/
+	cp $(srcdir)/convert_dxa.bat $(AMIGAOSPATH)/convert_dxa.bat
+	cp $(srcdir)/convert_dxa.sh $(AMIGAOSPATH)/convert_dxa.sh
 	# Install tools
-	$(STRIP) construct_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/tools/construct_mohawk$(EXEEXT)
+	$(STRIP) construct_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/construct_mohawk$(EXEEXT)
 ifeq "$(USE_FREETYPE2)" "1"
 ifeq "$(USE_ICONV)" "1"
-	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AMIGAOSPATH)/tools/create_sjisfnt$(EXEEXT)
+	$(STRIP) create_sjisfnt$(EXEEXT) -o $(AMIGAOSPATH)/create_sjisfnt$(EXEEXT)
 endif
 endif
-	$(STRIP) decine$(EXEEXT) -o $(AMIGAOSPATH)/tools/decine$(EXEEXT)
+	$(STRIP) decine$(EXEEXT) -o $(AMIGAOSPATH)/decine$(EXEEXT)
 ifeq "$(USE_BOOST)" "1"
-	$(STRIP) decompile$(EXEEXT) -o $(AMIGAOSPATH)/tools/decompile$(EXEEXT)
+	$(STRIP) decompile$(EXEEXT) -o $(AMIGAOSPATH)/decompile$(EXEEXT)
 endif
-	$(STRIP) degob$(EXEEXT) -o $(AMIGAOSPATH)/tools/degob$(EXEEXT)
-	$(STRIP) dekyra$(EXEEXT) -o $(AMIGAOSPATH)/tools/dekyra$(EXEEXT)
-	$(STRIP) deprince$(EXEEXT) -o $(AMIGAOSPATH)/tools/deprince$(EXEEXT)
-	$(STRIP) descumm$(EXEEXT) -o $(AMIGAOSPATH)/tools/descumm$(EXEEXT)
-	$(STRIP) desword2$(EXEEXT) -o $(AMIGAOSPATH)/tools/desword2$(EXEEXT)
-	$(STRIP) extract_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/tools/extract_mohawk$(EXEEXT)
-	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AMIGAOSPATH)/tools/gob_loadcalc$(EXEEXT)
+	$(STRIP) degob$(EXEEXT) -o $(AMIGAOSPATH)/degob$(EXEEXT)
+	$(STRIP) dekyra$(EXEEXT) -o $(AMIGAOSPATH)/dekyra$(EXEEXT)
+	$(STRIP) deprince$(EXEEXT) -o $(AMIGAOSPATH)/deprince$(EXEEXT)
+	$(STRIP) descumm$(EXEEXT) -o $(AMIGAOSPATH)/descumm$(EXEEXT)
+	$(STRIP) desword2$(EXEEXT) -o $(AMIGAOSPATH)/desword2$(EXEEXT)
+	$(STRIP) extract_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/extract_mohawk$(EXEEXT)
+	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AMIGAOSPATH)/gob_loadcalc$(EXEEXT)
 ifeq "$(USE_WXWIDGETS)" "1"
-	$(STRIP) scummvm-tools$(EXEEXT) -o $(AMIGAOSPATH)/tools/scummvm-tools$(EXEEXT)
+	$(STRIP) scummvm-tools$(EXEEXT) -o $(AMIGAOSPATH)/scummvm-tools$(EXEEXT)
 endif
-	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AMIGAOSPATH)/tools/scummvm-tools-cli$(EXEEXT)
+	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(AMIGAOSPATH)/scummvm-tools-cli$(EXEEXT)
 
 
 #
