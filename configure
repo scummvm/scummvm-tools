@@ -417,6 +417,7 @@ Some influential environment variables:
                      nonstandard directory <lib dir>
   CXX                C++ compiler command
   CXXFLAGS           C++ compiler flags
+  CONFIGURE_NO_HOST  Ignore the cross-compile target set by the --host= option
   CPPFLAGS           C++ preprocessor flags, e.g. -I<include dir> if you have
                      headers in a nonstandard directory <include dir>
   PKG_CONFIG_LIBDIR  list of directories where pkg-config ‘.pc’ files are
@@ -543,7 +544,11 @@ for ac_option in $@; do
 		_enable_prof=yes
 		;;
 	--host=*)
-		_host=`echo $ac_option | cut -d '=' -f 2`
+               if test -z "$CONFIGURE_NO_HOST"; then
+                       _host=`echo $ac_option | cut -d '=' -f 2`
+               else
+                       echo "Ignoring --host option!" >&2
+               fi
 		;;
 	--prefix=*)
 		_prefix=`echo $ac_option | cut -d '=' -f 2`
