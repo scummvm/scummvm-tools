@@ -241,10 +241,7 @@ amigaosdist: all
 	cp $(srcdir)/gui/media/tile.gif $(AMIGAOSPATH)/media/
 	# Install icons
 	cp ${srcdir}/gui/media/scummvm-tools.info $(AMIGAOSPATH)/scummvm-tools-cli.info
-	cp ${srcdir}/gui/media/scummvm-tools_drawer.info $(AMIGAOSPATH).info
-	# Install encoder batch files
-	cp $(srcdir)/convert_dxa.bat $(AMIGAOSPATH)/convert_dxa.bat
-	cp $(srcdir)/convert_dxa.sh $(AMIGAOSPATH)/convert_dxa.sh
+	cp ${srcdir}/gui/media/scummvm-tools_drawer.info $(AMIGAOSPATH)/media/
 	# Install tools
 	$(STRIP) construct_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/construct_mohawk$(EXEEXT)
 ifeq "$(USE_FREETYPE2)" "1"
