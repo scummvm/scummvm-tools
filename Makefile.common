@@ -31,6 +31,7 @@ PROGRAMS = \
 	desword2 \
 	gob_loadcalc \
 	extract_mohawk \
+	extract_ngi \
 	construct_mohawk \
 	scummvm-tools-cli
 
@@ -143,6 +144,10 @@ extract_mohawk_OBJS := \
 	engines/mohawk/archive.o \
 	engines/mohawk/extract_mohawk.o \
 	engines/mohawk/utils.o \
+	$(UTILS)
+
+extract_ngi_OBJS := \
+	engines/ngi/extract_ngi.o \
 	$(UTILS)
 
 construct_mohawk_OBJS := \

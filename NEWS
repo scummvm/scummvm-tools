@@ -1,6 +1,9 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
+2.3.0 (XXXX-XX-XX)
+ - Added tool for exctracting NGI's .nl archives
+
 2.2.0 (2020-09-27)
  - Add a tool to extract Lost Eden archives
  - Fix number of issues with prince translation generation.

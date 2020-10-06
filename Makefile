@@ -147,6 +147,7 @@ endif
 	$(STRIP) descumm$(EXEEXT)            -o $(srcdir)/$(WIN32BUILD)/descumm$(EXEEXT)
 	$(STRIP) desword2$(EXEEXT)           -o $(srcdir)/$(WIN32BUILD)/desword2$(EXEEXT)
 	$(STRIP) extract_mohawk$(EXEEXT)     -o $(srcdir)/$(WIN32BUILD)/extract_mohawk$(EXEEXT)
+	$(STRIP) extract_ngi$(EXEEXT)        -o $(srcdir)/$(WIN32BUILD)/extract_ngi$(EXEEXT)
 	$(STRIP) gob_loadcalc$(EXEEXT)       -o $(srcdir)/$(WIN32BUILD)/gob_loadcalc$(EXEEXT)
 ifeq "$(USE_WXWIDGETS)" "1"
 	$(STRIP) scummvm-tools$(EXEEXT)      -o $(srcdir)/$(WIN32BUILD)/scummvm-tools$(EXEEXT)
@@ -259,6 +260,7 @@ endif
 	$(STRIP) descumm$(EXEEXT) -o $(AMIGAOSPATH)/descumm$(EXEEXT)
 	$(STRIP) desword2$(EXEEXT) -o $(AMIGAOSPATH)/desword2$(EXEEXT)
 	$(STRIP) extract_mohawk$(EXEEXT) -o $(AMIGAOSPATH)/extract_mohawk$(EXEEXT)
+	$(STRIP) extract_ngi$(EXEEXT) -o $(AMIGAOSPATH)/extract_ngi$(EXEEXT)
 	$(STRIP) gob_loadcalc$(EXEEXT) -o $(AMIGAOSPATH)/gob_loadcalc$(EXEEXT)
 ifeq "$(USE_WXWIDGETS)" "1"
 	$(STRIP) scummvm-tools$(EXEEXT) -o $(AMIGAOSPATH)/scummvm-tools$(EXEEXT)
