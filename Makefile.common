@@ -30,6 +30,7 @@ PROGRAMS = \
 	descumm \
 	desword2 \
 	gob_loadcalc \
+	extract_gob_cdi \
 	extract_mohawk \
 	extract_ngi \
 	construct_mohawk \
@@ -149,6 +150,9 @@ extract_mohawk_OBJS := \
 extract_ngi_OBJS := \
 	engines/ngi/extract_ngi.o \
 	$(UTILS)
+
+extract_gob_cdi_OBJS := \
+	engines/gob/extract_gob_cdi.o
 
 construct_mohawk_OBJS := \
 	engines/mohawk/construct_mohawk.o \
