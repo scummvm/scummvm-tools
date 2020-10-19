@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "common/scummsys.h"
+#include "common/util.h"
 
 #define RAW_SECTOR_SIZE	2352
 #define MIN(x, y)	((x) < (y) ? (x) : (y));
@@ -66,7 +67,7 @@ typedef struct {
 } rtf_entry;
 #include "common/pack-end.h"
 
-void fix_entry_endianess(rtf_entry* entry) {
+void fix_entry_endianess(rtf_entry *entry) {
 	Uint32 data;
 #ifdef SCUMM_LITTLE_ENDIAN
 	data = entry->offset;
@@ -88,7 +89,7 @@ void fix_entry_endianess(rtf_entry* entry) {
 #endif
 }
 
-int isSectorMode2(sect_xa_f1* sect) {
+int isSectorMode2(sect_xa_f1 *sect) {
 #ifdef SCUMM_LITTLE_ENDIAN
 	return (sect->subheader.datatype) & 0x0060 ? 1 : 0;
 #else
@@ -97,29 +98,49 @@ int isSectorMode2(sect_xa_f1* sect) {
 }
 
 int main(int argc, char** argv) {
-	FILE* src_raw;
-	FILE* dst_file;
+	FILE *src_raw;
+	FILE *dst_file;
+	bool raw = false;
+	char *fname;
+	bool listOnly = false;
+	int sectorSize = 2048;
 
-	Uint8	index[4096];
+	byte	index[4096];
 	sect_xa_f1 sector;
-	sect_xa_f2* sector_f2;
+	sect_xa_f2 *sector_f2;
 
-	if (argc != 2) {
-		fprintf(stdout, "Usage: %s <real-time-file>\n", argv[0]);
+	if (argc < 2) {
+		fprintf(stdout, "Usage: %s [-raw] [-list] <real-time-file>\n", argv[0]);
 		return -1;
 	}
 
-	src_raw = fopen(argv[1], "rb");
+	for (int i = 1; i < argc; i++) {
+		if (!strcmp(argv[i], "-raw")) {
+			raw = true;
+			sectorSize = RAW_SECTOR_SIZE;
+		} else if (!strcmp(argv[i], "-list")) {
+			listOnly = true;
+		} else {
+			fname = argv[i];
+		}
+	}
+
+	src_raw = fopen(fname, "rb");
 	if (src_raw == NULL) {
 		perror(argv[1]);
 		return -1;
 	}
 
-	// Read the index!
-	fread(&sector, sizeof(sect_xa_f1), 1, src_raw);
-	memcpy((index + 0), &(sector.data), 2048);
-	fread(&sector, sizeof(sect_xa_f1), 1, src_raw);
-	memcpy((index + 2048), &(sector.data), 2048);
+	if (raw) {
+		// Read the index!
+		fread(&sector, sizeof(sect_xa_f1), 1, src_raw);
+		memcpy((index + 0), &(sector.data), 2048);
+		hexdump(index, 2048);
+		fread(&sector, sizeof(sect_xa_f1), 1, src_raw);
+		memcpy((index + 2048), &(sector.data), 2048);
+	} else {
+		fread(index, 2048 * 2, 1, src_raw);
+	}
 
 	// Read entries
 	int entryNum = 0;
@@ -133,8 +154,11 @@ int main(int argc, char** argv) {
 		if (strcmp(idx_entry->filename, "DIRINFO") == 0) continue; // We are not interested in this
 
 		fprintf(stdout, "Entry:     %s\n", idx_entry->filename);
-		fprintf(stdout, "Begins at: %u RAW blocks.\n", idx_entry->offset);
-		fprintf(stdout, "Size:      ~%uKb\n\n", (idx_entry->size / 1024) + (idx_entry->size % 1024 ? 1 : 0));
+		fprintf(stdout, "Begins at: %u RAW blocks (0x%d -> 0x%d).\n", idx_entry->offset, idx_entry->offset * sectorSize, idx_entry->offset * RAW_SECTOR_SIZE);
+		fprintf(stdout, "Size:      ~%uKb (%u bytes)\n\n", (idx_entry->size / 1024) + (idx_entry->size % 1024 ? 1 : 0), idx_entry->size);
+
+		if (listOnly)
+			continue;
 
 		Uint32 remaining_size = idx_entry->size;
 
@@ -145,21 +169,29 @@ int main(int argc, char** argv) {
 		}
 
 		// Get to the interesting sector.
-		fseek(src_raw, idx_entry->offset * RAW_SECTOR_SIZE, SEEK_SET);
+		fseek(src_raw, idx_entry->offset * sectorSize, SEEK_SET);
 		while (remaining_size) {
-			fread(&sector, sizeof(sect_xa_f1), 1, src_raw);
+			if (raw) {
+				fread(&sector, sizeof(sect_xa_f1), 1, src_raw);
 
-			if (isSectorMode2(&sector)) { // Mode 2 (2324b)
-				Uint32 toRead = MIN(2324, remaining_size);
+				if (isSectorMode2(&sector)) { // Mode 2 (2324b)
+					Uint32 toRead = MIN(2324, remaining_size);
 
-				sector_f2 = (sect_xa_f2*)&sector;
-				fwrite(&(sector_f2->data), toRead, 1, dst_file);
+					sector_f2 = (sect_xa_f2*)&sector;
+					fwrite(&(sector_f2->data), toRead, 1, dst_file);
 
-				remaining_size -= toRead;
-			}
-			else { // Mode 1 (2048b)
+					remaining_size -= toRead;
+				} else { // Mode 1 (2048b)
+					Uint32 toRead = MIN(2048, remaining_size);
+
+					fwrite(&(sector.data), toRead, 1, dst_file);
+
+					remaining_size -= toRead;
+				}
+			} else {
 				Uint32 toRead = MIN(2048, remaining_size);
 
+				fread(&(sector.data), toRead, 1, src_raw);
 				fwrite(&(sector.data), toRead, 1, dst_file);
 
 				remaining_size -= toRead;

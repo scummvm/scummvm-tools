@@ -141,6 +141,10 @@ degob_OBJS := \
 gob_loadcalc_OBJS := \
 	engines/gob/gob_loadcalc.o
 
+extract_gob_cdi_OBJS := \
+	engines/gob/extract_gob_cdi.o \
+	$(UTILS)
+
 extract_mohawk_OBJS := \
 	engines/mohawk/archive.o \
 	engines/mohawk/extract_mohawk.o \
@@ -150,9 +154,6 @@ extract_mohawk_OBJS := \
 extract_ngi_OBJS := \
 	engines/ngi/extract_ngi.o \
 	$(UTILS)
-
-extract_gob_cdi_OBJS := \
-	engines/gob/extract_gob_cdi.o
 
 construct_mohawk_OBJS := \
 	engines/mohawk/construct_mohawk.o \
