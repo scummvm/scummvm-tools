@@ -75,3 +75,55 @@ void notice(const char *s, ...) {
 
 	fprintf(stdout, "%s\n", buf);
 }
+
+//
+// Print hexdump of the data passed in
+//
+void hexdump(const byte *data, int len, int bytesPerLine, int startOffset) {
+	assert(1 <= bytesPerLine && bytesPerLine <= 32);
+	int i;
+	byte c;
+	int offset = startOffset;
+	while (len >= bytesPerLine) {
+		printf("%06x: ", offset);
+		for (i = 0; i < bytesPerLine; i++) {
+			printf("%02x ", data[i]);
+			if (i % 4 == 3)
+				printf(" ");
+		}
+		printf(" |");
+		for (i = 0; i < bytesPerLine; i++) {
+			c = data[i];
+			if (c < 32 || c >= 127)
+				c = '.';
+			printf("%c", c);
+		}
+		printf("|\n");
+		data += bytesPerLine;
+		len -= bytesPerLine;
+		offset += bytesPerLine;
+	}
+
+	if (len <= 0)
+		return;
+
+	printf("%06x: ", offset);
+	for (i = 0; i < bytesPerLine; i++) {
+		if (i < len)
+			printf("%02x ", data[i]);
+		else
+			printf("   ");
+		if (i % 4 == 3)
+			printf(" ");
+	}
+	printf(" |");
+	for (i = 0; i < len; i++) {
+		c = data[i];
+		if (c < 32 || c >= 127)
+			c = '.';
+		printf("%c", c);
+	}
+	for (; i < bytesPerLine; i++)
+		printf(" ");
+	printf("|\n");
+}

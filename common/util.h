@@ -116,4 +116,6 @@ void warning(const char *s, ...);
 void debug(int level, const char *s, ...);
 void notice(const char *s, ...);
 
+void hexdump(const byte * data, int len, int bytesPerLine = 16, int startOffset = 0);
+
 #endif
