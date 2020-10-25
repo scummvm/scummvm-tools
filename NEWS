@@ -3,6 +3,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 
 2.3.0 (XXXX-XX-XX)
  - Added tool for exctracting NGI's .nl archives
+ - Improve handling of input for tools that expect a directory as input.
 
 2.2.0 (2020-09-27)
  - Add a tool to extract Lost Eden archives
