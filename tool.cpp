@@ -145,15 +145,24 @@ bool Tool::addInputPath(const std::string& in) {
 	// Check the input is acceptable. Usually this is done when calling inspectInput(filename, format),
 	// but inspectInput(filename) might be reimplemented to be more restrictive (especially when the
 	// format is "*.*").
-	if (inspectInput(in) == IMATCH_AWFUL)
-		return false;
+	Common::Filename input(in);
+	if (inspectInput(input) == IMATCH_AWFUL) {
+		// The tool may expect a directory as input, but we may be given a file. So if the given path
+		// is not a directory, and is an awful match, try the directory as well.
+		if (input.directory())
+			return false;
+		input = input.getPath();
+		if (inspectInput(input) == IMATCH_AWFUL)
+			return false;
+	}
+
 	// Now we know it matches. Look for the best match.
 	int bestMatchIndex = -1;
 	InspectionMatch bestMatch = IMATCH_AWFUL;
 	for (ToolInputs::iterator iter = _inputPaths.begin(); iter != _inputPaths.end(); ++iter) {
 		if (!iter->path.empty())
 			continue;
-		InspectionMatch match = inspectInput(in, iter->file ? iter->format : std::string("/"));
+		InspectionMatch match = inspectInput(input, iter->file ? iter->format : std::string("/"));
 		if (match == IMATCH_PERFECT) {
 			bestMatch = IMATCH_PERFECT;
 			bestMatchIndex = (iter - _inputPaths.begin());
@@ -166,11 +175,11 @@ bool Tool::addInputPath(const std::string& in) {
 	if (bestMatch == IMATCH_AWFUL) {
 		return false;
 	}
-	_inputPaths[bestMatchIndex].path = in;
+	_inputPaths[bestMatchIndex].path = input.getFullPath();
 	if (!_inputPaths[bestMatchIndex].file) {
 		// Append '/' to input if it's not already done
-		size_t s = in.size();
-		if (in[s-1] != '/' && in[s-1] != '\\') {
+		size_t s = _inputPaths[bestMatchIndex].path.size();
+		if (_inputPaths[bestMatchIndex].path[s-1] != '/' && _inputPaths[bestMatchIndex].path[s-1] != '\\') {
 			_inputPaths[bestMatchIndex].path += '/';
 		}
 	}
