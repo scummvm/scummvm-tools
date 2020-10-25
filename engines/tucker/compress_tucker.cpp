@@ -53,7 +53,7 @@ CompressTucker::CompressTucker(const std::string &name) : CompressionTool(name, 
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress the Bud Tucker data files.";
-	_helptext = "\nUsage: " + getName() + " [mode params] [-o outputdir] inputdir\n";
+	_helptext = "\nUsage: " + getName() + " [mode params] [-o outputdir] <inputdir>\n";
 }
 
 int CompressTucker::append_compress_file(Common::File &output) {
