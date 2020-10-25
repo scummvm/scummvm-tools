@@ -31,6 +31,8 @@ public:
 
 	virtual void execute();
 
+	virtual InspectionMatch inspectInput(const Common::Filename &filename);
+
 protected:
 	struct FileEntry {
 		uint32 _offset;

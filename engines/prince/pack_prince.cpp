@@ -27,12 +27,13 @@
 PackPrince::PackPrince(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	ToolInput input;
 	input.format = "/";
+	input.file = false;
 	_inputPaths.push_back(input);
 
 	_outputToDirectory = true;
 
 	_shorthelp = "Used to repackage The Prince and the Coward text data for translation.";
-	_helptext = "\nUsage: " + getName() + " [-o /path/to/output/dir/] /path/to/inputfiles\n";
+	_helptext = "\nUsage: " + getName() + " [-o /path/to/output/dir/] <inputdir>\n";
 }
 
 void PackPrince::execute() {
@@ -143,6 +144,19 @@ void PackPrince::execute() {
 	_fFiles.close();
 	printf("All done!\n");
 	printf("File is created in %s\n", _outputPath.getFullPath().c_str());
+}
+
+InspectionMatch PackPrince::inspectInput(const Common::Filename &filename) {
+	if (!filename.directory())
+		return IMATCH_AWFUL;
+
+	// We expect either a "all/databank.ptc" file or a "variatxt.dat" file
+	Common::Filename probe(filename);
+	probe.setFullName("variatxt.txt");
+	if (probe.exists())
+		return IMATCH_PERFECT;
+
+	return IMATCH_AWFUL;
 }
 
 void PackPrince::packVariaTxt() {

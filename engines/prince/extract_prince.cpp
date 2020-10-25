@@ -29,12 +29,13 @@ struct FileData;
 ExtractPrince::ExtractPrince(const std::string &name) : Tool(name, TOOLTYPE_EXTRACTION) {
 	ToolInput input;
 	input.format = "/";
+	input.file = false;
 	_inputPaths.push_back(input);
 
 	_outputToDirectory = true;
 
 	_shorthelp = "Used to extract The Prince and the Coward text data for translation.";
-	_helptext = "\nUsage: " + getName() + " [-o /path/to/output/dir/] <inputfile>\n";
+	_helptext = "\nUsage: " + getName() + " [-o /path/to/output/dir/] <inputdir>\n";
 }
 
 void ExtractPrince::execute() {
@@ -160,8 +161,21 @@ void ExtractPrince::execute() {
 		print("All done!");
 	}
 }
+
 InspectionMatch ExtractPrince::inspectInput(const Common::Filename &filename) {
-	return IMATCH_PERFECT;
+	if (!filename.directory())
+		return IMATCH_AWFUL;
+
+	// We expect either a "all/databank.ptc" file or a "variatxt.dat" file
+	Common::Filename probe(filename.getPath() + "all/databank.ptc");
+	if (probe.exists())
+		return IMATCH_PERFECT;
+	probe = filename;
+	probe.setFullName("variatxt.dat");
+	if (probe.exists())
+		return IMATCH_PERFECT;
+
+	return IMATCH_AWFUL;
 }
 
 // Uncompressed datafile loader
