@@ -31,7 +31,7 @@
 
 #include "common/endian.h"
 
-#define TOTAL_TUNES 269
+#define TOTAL_TUNES 270
 
 typedef struct {
 	char fileName[8];
@@ -308,7 +308,8 @@ MusicFile musicNames[TOTAL_TUNES] = {
 	{ "RM7", false },
 	{ "RM8", false },
 	{ "RM3C", false },
-	{ "RM3D", false }
+	{ "RM3D", false },
+	{ "6M13", true }
 };
 
 int16 *CompressSword1::uncompressSpeech(Common::File &clu, uint32 idx, uint32 cSize, uint32 *returnSize, bool* ok) {
