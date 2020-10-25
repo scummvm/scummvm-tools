@@ -48,6 +48,7 @@ CompressTouche::CompressTouche(const std::string &name) : CompressionTool(name, 
 
 	ToolInput input;
 	input.format = "/";
+	input.file = false;
 	_inputPaths.push_back(input);
 
 	_shorthelp = "Used to compress Touche speech files (Vxxx and OBJ).";
@@ -55,9 +56,10 @@ CompressTouche::CompressTouche(const std::string &name) : CompressionTool(name, 
 }
 
 InspectionMatch CompressTouche::inspectInput(const Common::Filename &filename) {
-	// We don't care for the actual file, just what's in this directory
-	Common::Filename probe(filename);
+	if (!filename.directory())
+		return IMATCH_AWFUL;
 
+	Common::Filename probe(filename);
 	probe.setFullName("TOUCHE.DAT");
 	if (probe.exists())
 		return IMATCH_PERFECT;
