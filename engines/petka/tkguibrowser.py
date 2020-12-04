@@ -9,7 +9,7 @@ from html.parser import HTMLParser
 
 import tkinter
 from tkinter import ttk, font, filedialog, messagebox
-from idlelib.WidgetRedirector import WidgetRedirector
+from idlelib.redirector import WidgetRedirector
 
 # Image processing
 try:
