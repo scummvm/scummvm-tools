@@ -12,11 +12,11 @@ from . import EngineError
 class FileManager:
     def __init__(self, root):
         self.root = os.path.abspath(root)
-    
+
         self.strfd = []
         self.strtable = {}
         self.strtableord = []
-   
+
     def find_path(self, path):
         # search case insensive from root
         dpath = []
@@ -32,7 +32,7 @@ class FileManager:
                 break
             if not ok: return None
         return npath
-    
+
     def load_store(self, name, tag = 0):
         path = self.find_path(name)
         if path is None:
@@ -54,7 +54,7 @@ class FileManager:
         index_len = struct.unpack_from("<I", temp)[0]
         index_table = []
         for iref in range(index_len):
-            temp = f.read(12) 
+            temp = f.read(12)
             data = struct.unpack_from("<III", temp)
             index_table.append((data[1], data[2]))
         strlst = []
@@ -93,21 +93,21 @@ class FileManager:
             finally:
                 f.close()
             return data
-            
+
     def read_file_stream(self, fname):
         data = self.read_file(fname)
         mems = io.BytesIO()
         mems.write(data)
         mems.seek(0)
-        return mems        
-            
+        return mems
+
     def exists(self, fname):
         sf = fname.lower().replace("\\", "/")
         if sf in self.strtable:
             return True
         else:
-            return self.find_path(fname) is not None       
-        
+            return self.find_path(fname) is not None
+
     def unload_stores(self, flt = None):
         strfd = []
         strtable = {}
@@ -129,5 +129,3 @@ class FileManager:
         self.strfd = strfd
         self.strtable = strtable
         self.strtableord = strtableord
-        
-        

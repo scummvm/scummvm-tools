@@ -29,7 +29,7 @@ def find_in_folder(folder, name, ifnot = True):
 class P12Compiler:
     def __init__(self):
         pass
-        
+
     # =======================================================================
     # compiler utils
     # =======================================================================
@@ -62,7 +62,7 @@ class P12Compiler:
                             nitemesc = False
                             continue
                         nitem += ch
-                else:    
+                else:
                     if ch == "\"":
                         nmode = 1
                     elif ch == "#":
@@ -76,9 +76,9 @@ class P12Compiler:
 
             if len(nitem) > 0:
                 nline.append(nitem)
-                
+
             yield lineno, nline
-        
+
 
     def check8(self, value, name, lineno):
         if value == -1:
@@ -90,7 +90,7 @@ class P12Compiler:
             raise ScriptSyntaxError("Error at {}: value for \"{}\" too "\
                 "big - {} > 0xff".format(lineno, name, value))
         return value
-    
+
     def check16(self, value, name, lineno):
         if value == -1:
             return 0xffff
@@ -112,7 +112,7 @@ class P12Compiler:
             raise ScriptSyntaxError("Error at {}: value for \"{}\" too "\
                 "big - {} > 0xffffffff".format(lineno, name, value))
         return value
-    
+
     def convertnum(self, value):
         num = None
         if value[:2].upper() == "0X":
@@ -120,7 +120,7 @@ class P12Compiler:
                 num = int(value[2:], 16)
             except:
                 pass
-        else:                            
+        else:
             try:
                 num = int(value, 10)
             except:
@@ -133,7 +133,7 @@ class P12Compiler:
                 "already used at line {}".format(lineno, ident, \
                 self.usedid[ident][0]))
         self.usedid[ident] = [lineno, None]
-    
+
     def setidentvalue(self, ident, value):
         if self.usedid[ident][1] is None:
             self.usedid[ident][1] = value
@@ -141,10 +141,10 @@ class P12Compiler:
             raise ScriptSyntaxError("Redefine value for \"{}\" ({}) from "\
                 "\"{}\" to \"{}\"".format(ident, self.usedid[ident][0], \
                 self.usedid[ident][0], value))
-    
+
     def getidentvalue(self, ident):
         return self.usedid[ident][1]
-    
+
     def checkident(self, ident, name, lineno):
         if ident.upper() in self.reservedid:
             raise ScriptSyntaxError("Error at {}: identificator \"{}\" "\
@@ -190,7 +190,7 @@ class P12Compiler:
 
         pe = petka.Engine()
         pe.init_empty("cp1251")
-        
+
         mode = 0 # 0 - common, 1 - object/scene, 2 - on
         mode1tp = None
 
@@ -208,7 +208,7 @@ class P12Compiler:
         compitemused = {}
         # current action
         compact = None
-                   
+
         revOPS = {}
         for ok, ov in petka.OPCODES.items():
             revOPS[ov[0]] = ok
@@ -259,7 +259,7 @@ class P12Compiler:
                 else:
                     raise ScriptSyntaxError("Error at {}: unknown syntax "\
                         "\"{}\"".format(lineno, cmd))
-            elif mode == 1:                            
+            elif mode == 1:
                 # accept: REF, ON, ENDOBJ, ENDSCENE
                 cmd = tokens[0].upper()
                 if cmd == "REF" and mode1tp == "SCENE":
@@ -307,9 +307,9 @@ class P12Compiler:
                     mode = 2
                 elif cmd == "END" + mode1tp and len(tokens) == 1:
                     if mode1tp == "OBJ":
-                        compobj.append(compitem)                        
+                        compobj.append(compitem)
                     else:
-                        compscene.append(compitem)                        
+                        compscene.append(compitem)
                     compitem = None
                     # return
                     mode = 0
@@ -322,7 +322,7 @@ class P12Compiler:
                 cmd = tokens[0].upper()
                 if cmd == "ENDON" and len(tokens) == 1:
                     compitem["acts"].append(compact)
-                    compact = None                
+                    compact = None
                     mode = 1
                 else:
                     # check format
@@ -352,7 +352,7 @@ class P12Compiler:
         if mode != 0:
             raise ScriptSyntaxError("Error at {}: unfinished structure".\
                 format(lineno))
-    
+
         # second stage - RES
         # 1. capture res with numbers
         resused = {}
@@ -384,7 +384,7 @@ class P12Compiler:
         #            else:
         #                self.setidentvalue(ident, num)
         #                resused[num] = lineno
-        #                break                    
+        #                break
         #        if autoresnum <= 0:
         #            raise ScriptSyntaxError("Error at {}: out of resources "\
         #                "number".format(lineno))
@@ -404,7 +404,7 @@ class P12Compiler:
             if destfolder is not None:
                 f.close()
         print("RESOURCE.QRC saved: {} items".format(len(resused)))
-            
+
         # second stage - OBJ
         def makerec(citem):
             item = petka.engine.ScrObject(citem["num"], citem["name"])
@@ -416,14 +416,14 @@ class P12Compiler:
                     sonref = self.convertnum(act["sonref"])
                 if sonref is not None:
                     # direct number
-                    sonref = self.check16(sonref, "ON object ref", 
+                    sonref = self.check16(sonref, "ON object ref",
                         act["lineno"])
                 else:
                     # get by ident
                     self.checkident(act["sonref"], "ON object ref",
                         act["lineno"])
                     sonref = self.getidentvalue(act["sonref"])
-                onrec = petka.engine.ScrActObject(act["son"], 
+                onrec = petka.engine.ScrActObject(act["son"],
                     act["status"], sonref)
                 onrec.ops = []
                 for op in act["ops"]:
@@ -446,17 +446,17 @@ class P12Compiler:
                         fmt.append(("OP argument {}".format(i + 1),
                             self.check16, True))
                     argnum = self.convertargs(fmt, op["args"], op["lineno"])
-                    oprec =  petka.engine.ScrOpObject(opref, op["opcode"], 
+                    oprec =  petka.engine.ScrOpObject(opref, op["opcode"],
                         argnum[0], argnum[1], argnum[2])
                     onrec.ops.append(oprec)
                 item.acts.append(onrec)
             return item
-            
+
         for citem in compobj:
             objrec = makerec(citem)
             pe.objects.append(objrec)
             pe.obj_idx[objrec.idx] = objrec
-                  
+
         # second stage - SCENE
         backgrnd = []
         num_bkg = 0
@@ -518,10 +518,10 @@ class P12Compiler:
 
         mode = 0 # 0 - common, 1 - grp, 2 - act, 3 - dlg
                  # 10 - msg (autoreset to 0)
-                 
+
         # used identificators
         self.usedid = {}
-                   
+
         revOPS = {}
         for ok, ov in petka.OPCODES.items():
             revOPS[ov[0]] = ok
@@ -559,8 +559,8 @@ class P12Compiler:
                     while len(tokens) < 6:
                         tokens.append("0")
                     # check ident
-                    self.checkusedid(tokens[1], lineno)    
-                    self.setidentvalue(tokens[1], len(compmsg))                
+                    self.checkusedid(tokens[1], lineno)
+                    self.setidentvalue(tokens[1], len(compmsg))
                     # check wavfile name (1..12)
                     if len(tokens[2]) < 1 or len(tokens[2]) > 12:
                         raise ScriptSyntaxError("Error at {}: bad filename "\
@@ -613,7 +613,7 @@ class P12Compiler:
                                 "OPREF ""\"{}\" in ON".\
                                 format(lineno, tokens[1]))
                         don = self.check16(don, "ON opref", lineno)
-                    compactitem = {"don": don, "donref": tokens[2], 
+                    compactitem = {"don": don, "donref": tokens[2],
                         "args": tokens[3:], "dlgs": [], "lineno": lineno}
                 elif cmd == "ENDDLGGRP" and len(tokens) == 1:
                     mode = 0
@@ -680,7 +680,7 @@ class P12Compiler:
             else:
                 raise ScriptSyntaxError("Error at {}: unknown parser mode {}".\
                     format(lineno, mode))
-            
+
         # check unclosed objects
         if mode != 0:
             raise ScriptSyntaxError("Error at {}: unfinished structure".\
@@ -728,7 +728,7 @@ class P12Compiler:
                     donref = self.convertnum(act["donref"])
                 if donref is not None:
                     # direct number
-                    donref = self.check16(donref, "ON object ref", 
+                    donref = self.check16(donref, "ON object ref",
                         act["lineno"])
                 else:
                     # get by ident
@@ -753,7 +753,7 @@ class P12Compiler:
                             self.check32, True))
                     argnum = self.convertargs(fmt, dlg["args"], dlg["lineno"])
                     # build DLG
-                    dlgrec = petka.engine.DlgObject(len(pe.dlgops), 
+                    dlgrec = petka.engine.DlgObject(len(pe.dlgops),
                         argnum[0], argnum[1])
                     for op in dlg["dlgops"]:
                         fmt = [("DLGOP argument", self.check8, False),
@@ -840,7 +840,7 @@ class P12Compiler:
             if num in pe.scn_idx:
                 return "scene_{}".format(num)
             return self.fmtnum16(num)
-        
+
         def printres(resid):
             pprint("RES res_{} 0x{:x} \"{}\"".format(resid, resid,
                 self.escstr(pe.res[resid])))
@@ -857,7 +857,7 @@ class P12Compiler:
         def printitem(item, itemtype):
             pprint("{} {}_{} 0x{:x} \"{}\"".format(itemtype.upper(), itemtype,
                 item.idx, item.idx, self.escstr(item.name)))
-                
+
             # sub objects
             if itemtype == "scene":
                 if len(item.refs) == 0:
@@ -871,11 +871,11 @@ class P12Compiler:
                         pprint("  # unknown reference to 0x{:x}".format(
                            obj.idx))
                         ref = "0x{:x}".format(obj.idx)
-                    pprint("  REF {} {} {} {} {} {}".format(ref, 
-                        self.fmtnum32(a1), self.fmtnum32(a2), 
-                        self.fmtnum32(a3), self.fmtnum32(a4), 
+                    pprint("  REF {} {} {} {} {} {}".format(ref,
+                        self.fmtnum32(a1), self.fmtnum32(a2),
+                        self.fmtnum32(a3), self.fmtnum32(a4),
                         self.fmtnum32(a5)))
-            
+
             for act in item.acts:
                 actif = ""
                 if act.act_status != 0xff or act.act_ref != 0xffff:
@@ -897,14 +897,14 @@ class P12Compiler:
                         self.fmtnum16(op.op_arg2),
                         self.fmtnum16(op.op_arg3)))
                 pprint("  ENDON")
-        
+
             pprint("END{} # {}_{}".format(itemtype.upper(), itemtype, item.idx))
             pprint("")
-            
+
         pprint("# Decompile SCRIPT \"{}\"".format(scrname))
         pprint("# Version: {}".format(VERSION))
         pprint("# Encoding: {}".format(enc))
-        
+
         if decsort:
             for idx, scene in enumerate(pe.scenes):
                 pprint("# Scene {} / {}".format(idx + 1, len(pe.scenes)))
@@ -912,7 +912,7 @@ class P12Compiler:
                 if len(scene.idx.refs) > 0:
                     pprint("# referenced objects {}:".format(len(scene.refs)))
                     for ref in scene.refs:
-                        if ref[0].idx in used_obj: 
+                        if ref[0].idx in used_obj:
                             pprint("# object 0x{:x} already defined".\
                                 format(ref[0].idx))
                             continue
@@ -920,14 +920,14 @@ class P12Compiler:
                         if ref[0].idx in pe.obj_idx:
                             for act in ref[0].acts_array:
                                 for op in act.ops_array:
-                                    printrescheck(op.op_arg1, op.op_code)                
-                            printitem(obj, "obj")                
-                else:        
+                                    printrescheck(op.op_arg1, op.op_code)
+                            printitem(obj, "obj")
+                else:
                     pprint("# No referenced objects")
                 # display res
                 for act in scene.acts:
                     for op in act.ops:
-                        printrescheck(op.op_arg1, op.op_code)                
+                        printrescheck(op.op_arg1, op.op_code)
                 printitem(scene, "scene")
             # list unused
             msg = False
@@ -977,14 +977,14 @@ class P12Compiler:
                 msg.idx, msg.msg_wav, msg.msg_arg1, msg.msg_arg2, msg.msg_arg3))
             pprint(" \"{}\"".format(self.escstr(msg.name)))
             pprint("")
-    
+
         for gidx, grp in enumerate(pe.dlgs, 1):
             pprint("# {} = 0x{:x}".format(gidx, gidx))
             pprint("DLGGRP 0x{:x} {}".format(grp.idx, \
                 self.fmtnum32(grp.grp_arg1)))
             for sidx, act in enumerate(grp.acts, 1):
                 pprint("  ON {} 0x{:x} 0x{:x} 0x{:x} # {}".format(\
-                    self.fmtop(act.opcode), act.ref, act.arg1, 
+                    self.fmtop(act.opcode), act.ref, act.arg1,
                         act.arg2, sidx))
                 # print code
                 for didx, dlg in enumerate(act.dlgs, 1):
@@ -1094,27 +1094,27 @@ def checksame(f1, n1, f2, n2):
             format(f1))
         return True
     return False
-       
-       
+
+
 def action_dec(args):
     print("Decompile SCRIPT.DAT file")
     destpath = args.destpath
     encoding = args.encoding
-    
+
     if destpath:
         if ckeckoverwrite(destpath, args): return -1
-        if checksame(args.sourcepath, "source", destpath, "destination"): 
+        if checksame(args.sourcepath, "source", destpath, "destination"):
             return -2
         if not encoding:
             encoding = "UTF-8"
-        
+
     print("Input:\t{}".format(args.sourcepath))
     print("Output:\t{}".format(destpath or "-"))
     if destpath:
         print("Enc:\t{}".format(encoding))
     if args.decompile_sorted:
         print("Flag decompile_sorted enabled")
-    
+
     dcs = P12Compiler()
     if destpath:
         f = open(destpath, "wb")
@@ -1158,21 +1158,21 @@ def action_decd(args):
     print("Decompile DIALOGUE.FIX file")
     destpath = args.destpath
     encoding = args.encoding
-    
+
     if destpath:
         if ckeckoverwrite(destpath, args): return -1
         if checksame(args.sourcepath, "source", destpath, "destination"):
             return -2
         if not encoding:
             encoding = "UTF-8"
-        
+
     print("Input:\t{}".format(args.sourcepath))
     print("Output:\t{}".format(destpath or "-"))
     if destpath:
         print("Enc:\t{}".format(encoding))
     if args.verbose:
         print("Flag verbose enabled")
-    
+
     dcs = P12Compiler()
     if destpath:
         f = open(destpath, "wb")
@@ -1230,13 +1230,13 @@ def internaltest(folder):
         hm = hashlib.md5()
         hm.update(mem.read())
         return hm.hexdigest() == hf.hexdigest()
-            
+
     for test in test_arr:
         print("=== Test: " + test + " ===")
         testbase = os.path.join(folder, test)
         path = find_in_folder(testbase, "script.dat")
         dcs = P12Compiler()
-        mems = io.BytesIO()        
+        mems = io.BytesIO()
         dcs.pretty_print_scr(path, mems)
         print("Decompiled script:", mems.tell())
         # compile back
@@ -1261,8 +1261,8 @@ def internaltest(folder):
         if not os.path.exists(path):
             print("All ok - no dialogue")
             continue
-            
-        mems = io.BytesIO()        
+
+        mems = io.BytesIO()
         dcs.pretty_print_dlg(path, mems)
         print("Decompiled dialogue:", mems.tell())
         # compile back
@@ -1284,23 +1284,23 @@ def internaltest(folder):
 
 def action_version(args):
     print("Version: " + VERSION)
-    
+
 def main():
     print(APPNAME + ", " + VERSION)
     print("\tRoman Kharin (romiq.kh@gmail.com)")
     if len(sys.argv) < 2:
         print("Use -h for help.")
         return
-        
+
     if len(sys.argv) >= 3:
         if sys.argv[1] == "test":
             internaltest(sys.argv[2])
             return
-    
+
     parser = argparse.ArgumentParser(epilog = \
         "For actions help try: <action> -h")
     subparsers = parser.add_subparsers(title = 'actions')
-    
+
     # decompile - <script.dat> [[--enc <encoding>] -o <decompiled.txt>]
     parser_dec = subparsers.add_parser("decompile", aliases = ['d'], \
         help = "decompile script.dat")

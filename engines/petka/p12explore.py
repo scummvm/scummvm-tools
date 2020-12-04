@@ -23,9 +23,9 @@ import petka
 
 APPNAME = "Petka Explorer"
 VERSION = "v0.4 2015-06-20"
-HOME_URLS = ["http://petka-vich.com/petkaexplorer/", 
+HOME_URLS = ["http://petka-vich.com/petkaexplorer/",
             "https://bitbucket.org/romiq/p12simtran"]
-    
+
 def translit(text):
     ru = "абвгдеёзийклмнопрстуфхъыьэАБВГДЕЁЗИЙКЛМНОПРСТУФХЪЫЬЭ"
     en = "abvgdeezijklmnoprstufh'y'eABVGDEEZIJKLMNOPRSTUFH'Y'E"
@@ -64,7 +64,7 @@ class App(TkBrowser):
 
     def __init__(self, master):
         super().__init__(master)
-                
+
     def init_gui(self):
         self.master.title(APPNAME)
         self.clear_data()
@@ -74,7 +74,7 @@ class App(TkBrowser):
         else:
             self.app_path = __file__
         self.app_path = os.path.abspath(os.path.dirname(self.app_path))
-                
+
     def clear_data(self):
         self.sim = None
         self.last_fn = ""
@@ -85,13 +85,13 @@ class App(TkBrowser):
         self.last_savefn = ""
         # translation
         self.tran = None
-           
+
     def create_widgets(self):
         super().create_widgets()
         def desc_def(aname, name, lst = {}):
             def desc(path):
                 if len(path) > 1:
-                    return "{} {}".format(name, lst.get(path[1], 
+                    return "{} {}".format(name, lst.get(path[1],
                         "#{}".format(path[1])))
                 else:
                     return aname
@@ -114,7 +114,7 @@ class App(TkBrowser):
         self.path_handler["casts"] = [self.path_casts,
             desc_def("Casts", "Cast")]
         self.path_handler["opcodes"] = [self.path_opcodes,
-            desc_def("Opcodes", "Opcode", 
+            desc_def("Opcodes", "Opcode",
             {k:v[0] for k, v in petka.engine.OPCODES.items()})]
         self.path_handler["dlgops"] = [self.path_dlgops,
             desc_def("Dialog opcodes", "Dialog opcode",
@@ -160,11 +160,11 @@ class App(TkBrowser):
             elif cmd == "dump":
                 self.dump_pages(arg)
         if repath:
-            self.open_path(repath)       
+            self.open_path(repath)
 
     def create_menu(self):
         super().create_menu()
-        def mkmenupaths(parent, items):                
+        def mkmenupaths(parent, items):
             for n in items:
                 if n is None:
                     parent.add_separator()
@@ -190,17 +190,17 @@ class App(TkBrowser):
         self.menufile.add_separator()
         self.menufile.add_command(
                 command = self.on_exit,
-                label = "Quit")    
+                label = "Quit")
 
         self.menuedit = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menuedit,
                 label = "Edit")
-                
-        editnav = ["/parts", None, "/res", "/objs", "/scenes", "/names", 
-            "/invntr", "/casts", "/msgs", "/dlgs", "/opcodes", "/dlgops", 
+
+        editnav = ["/parts", None, "/res", "/objs", "/scenes", "/names",
+            "/invntr", "/casts", "/msgs", "/dlgs", "/opcodes", "/dlgops",
             "/strs", "/files", "/save"]
         mkmenupaths(self.menuedit, editnav)
-        
+
         self.menunav = tkinter.Menu(self.master, tearoff = 0)
         self.menubar.add_cascade(menu = self.menunav,
                 label = "Navigation")
@@ -247,8 +247,8 @@ class App(TkBrowser):
 
     def open_http(self, path):
         if path not in HOME_URLS:
-            if not messagebox.askokcancel(parent = self, title = "Visit URL?", 
-                message = "Would you like to open external URL:\n" + path + 
+            if not messagebox.askokcancel(parent = self, title = "Visit URL?",
+                message = "Would you like to open external URL:\n" + path +
                 " ?"): return
         webbrowser.open(path)
 
@@ -265,7 +265,7 @@ class App(TkBrowser):
             pass
         self.master.title(capt)
         return res
-        
+
     def on_help(self):
         self.open_path(["help", self.curr_help])
 
@@ -299,13 +299,13 @@ class App(TkBrowser):
             fmt = fmt_hl("/{}/{}".format(pref, rec_id), str(rec_id))
             if full:
                 try:
-                    fmt += " (0x{:X}) - {}".format(rec_id, 
+                    fmt += " (0x{:X}) - {}".format(rec_id,
                         hlesc(self._t(lst_idx[rec_id].name, tt)))
                 except:
                     fmt += " (0x{:X})".format(rec_id)
             return fmt
         return "{} (0x{:X})".format(rec_id, rec_id)
-        
+
     def fmt_hl_res(self, resid, full = True):
         if resid in self.sim.res:
             lnk = fmt_hl("/res/all/{}".format(resid), resid)
@@ -313,10 +313,10 @@ class App(TkBrowser):
                 lnk += " (0x{:X}) - {}".format(resid,
                     hlesc(self.sim.res[resid]))
             return lnk
-        
+
     def fmt_hl_obj(self, obj_id, full = False):
         return self.fmt_hl_rec(self.sim.obj_idx, "objs", obj_id, full, "obj")
-        
+
     def fmt_hl_scene(self, scn_id, full = False):
         return self.fmt_hl_rec(self.sim.scn_idx, "scenes", scn_id, full, "scn")
 
@@ -325,7 +325,7 @@ class App(TkBrowser):
             return self.fmt_hl_rec(self.sim.obj_idx, "objs", rec_id,
                 full, "obj")
         return self.fmt_hl_rec(self.sim.scn_idx, "scenes", rec_id, full, "scn")
-        
+
     def find_path_name(self, key):
         for name_id, name in enumerate(self.sim.namesord):
             if name == key:
@@ -358,7 +358,7 @@ class App(TkBrowser):
         capt = capt or fn
         fid = urllib.parse.quote_plus(fnl)
         return fmt_hl("/files/{}".format(fid), capt)
-        
+
     def path_info_outline(self):
         if self.sim is None and self.strfm is None:
             self.add_info("No data loaded. Open PARTS.INI or SCRIPT.DAT first.")
@@ -366,25 +366,25 @@ class App(TkBrowser):
         if self.sim:
             self.add_info("Current part {} chapter {}\n\n".\
                     format(self.sim.curr_part, self.sim.curr_chap))
-            self.add_info("  Resources:     " + fmt_hl("/res", 
+            self.add_info("  Resources:     " + fmt_hl("/res",
                 len(self.sim.res)) + "\n")
-            self.add_info("  Objects:       " + fmt_hl("/objs", 
+            self.add_info("  Objects:       " + fmt_hl("/objs",
                 len(self.sim.objects)) + "\n")
-            self.add_info("  Scenes:        " + fmt_hl("/scenes", 
+            self.add_info("  Scenes:        " + fmt_hl("/scenes",
                 len(self.sim.scenes)) + "\n")
-            self.add_info("  Names:         " + fmt_hl("/names", 
+            self.add_info("  Names:         " + fmt_hl("/names",
                 len(self.sim.names)) + "\n")
-            self.add_info("  Invntr:        " + fmt_hl("/invntr", 
+            self.add_info("  Invntr:        " + fmt_hl("/invntr",
                 len(self.sim.invntr)) + "\n")
-            self.add_info("  Casts:         " + fmt_hl("/casts", 
+            self.add_info("  Casts:         " + fmt_hl("/casts",
                 len(self.sim.casts)) + "\n")
-            self.add_info("  Messages       " + fmt_hl("/msgs", 
+            self.add_info("  Messages       " + fmt_hl("/msgs",
                 len(self.sim.msgs)) + "\n")
-            self.add_info("  Dialog groups: " + fmt_hl("/dlgs", 
+            self.add_info("  Dialog groups: " + fmt_hl("/dlgs",
                 len(self.sim.dlgs)) + "\n")
-            self.add_info("  Opened stores: " + fmt_hl("strs", 
+            self.add_info("  Opened stores: " + fmt_hl("strs",
                 len(self.strfm.strfd)) + "\n")
-            self.add_info("  Files:         " + fmt_hl("/files", 
+            self.add_info("  Files:         " + fmt_hl("/files",
                 len(self.strfm.strtable)) + "\n")
             scn = hlesc(self.sim.start_scene)
             for scene in self.sim.scenes:
@@ -397,9 +397,9 @@ class App(TkBrowser):
             self.add_info("  " + fmt_hl("/dlgops", "Dialog opcodes") + "\n")
         elif self.strfm:
             self.add_info("Single store mode\n\n")
-            self.add_info("  Opened stores: " + fmt_hl("/strs", 
+            self.add_info("  Opened stores: " + fmt_hl("/strs",
                 len(self.strfm.strfd)) + "\n")
-            self.add_info("  Files:         " + fmt_hl("/files", 
+            self.add_info("  Files:         " + fmt_hl("/files",
                 len(self.strfm.strtable)) + "\n")
         if self.save:
             self.add_info("  " + fmt_hl("/save", "Save") + "\n")
@@ -412,13 +412,13 @@ class App(TkBrowser):
         fmt = fmt_dec(sz, 1)
         fmt = "  " + fmt + ") {}\n"
         for idx, h in enumerate(self.hist[:-1]):
-            self.add_info(fmt.format(idx - len(self.hist) + 1, 
+            self.add_info(fmt.format(idx - len(self.hist) + 1,
                 self.desc_path(h[0])))
-        self.add_info(" {} {}\n".format("=" * fmt_dec_len(sz, 2) + ">", 
+        self.add_info(" {} {}\n".format("=" * fmt_dec_len(sz, 2) + ">",
             self.desc_path(self.curr_path)))
         for idx, h in enumerate(self.histf):
             self.add_info(fmt.format(idx + 1, self.desc_path(h[0])))
-            
+
     def desc_default(self, path):
         desc = ""
         for item in path:
@@ -426,7 +426,7 @@ class App(TkBrowser):
         if not desc:
             desc = "Outline"
         return desc
-        
+
     def path_default(self, path):
         self.switch_view(0)
         self.update_gui("Outline")
@@ -550,7 +550,7 @@ class App(TkBrowser):
                     format(part[0], part[1], hlesc(traceback.format_exc())))
                 return False
         return True
-        
+
     def desc_res(self, path):
         if path == ("res",):
             path = ("res", "all")
@@ -580,8 +580,8 @@ class App(TkBrowser):
             return self.path_default(path)
 
     def path_res_open(self, pref, res_id, mode):
-        self.curr_help = "res_view" # help override 
-        if res_id not in self.sim.res:        
+        self.curr_help = "res_view" # help override
+        if res_id not in self.sim.res:
             self.switch_view(0)
             self.clear_info()
             self.add_info("<b>Resource</b> \"{}\" not found\n".format(res_id))
@@ -608,7 +608,7 @@ class App(TkBrowser):
                         self.add_info("  Mode: {}\n  Size: {}x{}".\
                             format(bmp.image.mode, \
                                 bmp.image.size[0], bmp.image.size[1]))
-                    else:    
+                    else:
                         self.add_info("internal BMP loader\n"\
                             "  Mode: 16-bit\n  Size: {}x{}".\
                             format(bmp.width, bmp.height))
@@ -625,7 +625,7 @@ class App(TkBrowser):
                             format(flc.image.mode, \
                                 flc.image.size[0], flc.image.size[1],
                                 flc.frame_num, flc.image.info["duration"]))
-                    else:    
+                    else:
                         self.add_info("internal FLC loader\n  "\
                             "  Mode:   P\n  Size:   {}x{}\n"\
                             "  Frames: {}\nDelay: {}".\
@@ -644,7 +644,7 @@ class App(TkBrowser):
                         if ru: break
                         for op in act.ops:
                             if res_id == op.op_arg1:
-                                self.add_info("  " + 
+                                self.add_info("  " +
                                     self.fmt_hl_obj_scene(rec.idx, True) + "\n")
                                 ru = True
                                 break
@@ -654,12 +654,12 @@ class App(TkBrowser):
             self.add_info("\n<b>Used by scenes</b>:\n")
             usedby(self.sim.scenes)
             self.add_info("\nFile: {}\n".format(self.fmt_hl_file(fn)))
-            
-                    
+
+
         elif mode[0] == "view":
             self.path_res_view(res_id)
         return True
-                
+
     def path_res_view(self, res_id):
         fn = self.sim.res[res_id]
         try:
@@ -698,7 +698,7 @@ class App(TkBrowser):
     def path_res_status(self):
         self.switch_view(0)
         self.clear_info()
-        self.add_info("<b>Resources</b>: " + fmt_hl("/res", len(self.sim.res)) 
+        self.add_info("<b>Resources</b>: " + fmt_hl("/res", len(self.sim.res))
             + "\nFiletypes:\n")
         fts = {}
         for res in self.sim.res.values():
@@ -713,10 +713,10 @@ class App(TkBrowser):
                 ft, ft, fts[ft]))
         self.select_lb_item(None)
         return True
-    
+
     def on_path_res_info(self):
         self.switch_view(0)
-        
+
     def on_path_res_view(self):
         self.switch_view(1)
 
@@ -728,7 +728,7 @@ class App(TkBrowser):
             for res_id in self.sim.resord:
                     self.insert_lb_act("{} - {}".format(\
                 res_id, self.sim.res[res_id]), ["res", "all", res_id], res_id)
-        # change                
+        # change
         if len(path) > 2:
             return self.path_res_open(path[:3], path[2], path[3:])
         else:
@@ -745,9 +745,9 @@ class App(TkBrowser):
             self.insert_lb_act("-", None)
             for res_id in lst:
                     self.insert_lb_act("{} - {}".format(\
-                res_id, self.sim.res[res_id]), ["res", "flt", path[2], res_id], 
+                res_id, self.sim.res[res_id]), ["res", "flt", path[2], res_id],
                     res_id)
-        # change                
+        # change
         if len(path) > 3:
             return self.path_res_open(path[:4], path[3], path[4:])
         else:
@@ -770,10 +770,10 @@ class App(TkBrowser):
             else:
                 self.update_gui("Scenes ({})".format(len(lst)))
             for rec in lst:
-                self.insert_lb_act("{} - {}".format(rec.idx, 
+                self.insert_lb_act("{} - {}".format(rec.idx,
                     self._t(rec.name, "obj" if isobj else "scn")),\
                     [self.curr_path[0], rec.idx], rec.idx)
-        # change                
+        # change
         rec = None
         if len(path) > 1:
             # index
@@ -805,49 +805,49 @@ class App(TkBrowser):
                 self.add_info("  Name(t):   {}\n".\
                     format(hlesc(self._t(rec.name, "obj" if isobj else "scn"))))
                 if rec.name in self.sim.names:
-                    self.add_info("  " + fmt_hl(self.find_path_name(rec.name), 
+                    self.add_info("  " + fmt_hl(self.find_path_name(rec.name),
                         "Alias") + "(t):  {}\n".format(
                             hlesc(self._t(self.sim.names[rec.name], "obj"))))
                 if rec.name in self.sim.invntr:
-                    self.add_info("  " + fmt_hl(self.find_path_invntr(rec.name), 
+                    self.add_info("  " + fmt_hl(self.find_path_invntr(rec.name),
                         "Invntr") + "(t): {}\n".format(
                             hlesc(self._t(self.sim.invntr[rec.name], "inv"))))
             else:
                 if rec.name in self.sim.names:
-                    self.add_info("  " + fmt_hl(self.find_path_name(rec.name), 
+                    self.add_info("  " + fmt_hl(self.find_path_name(rec.name),
                         "Alias") + ":     {}\n".format(
                             hlesc(self.sim.names[rec.name])))
                 if rec.name in self.sim.invntr:
-                    self.add_info("  " + fmt_hl(self.find_path_invntr(rec.name), 
+                    self.add_info("  " + fmt_hl(self.find_path_invntr(rec.name),
                         "Invntr") + ":    {}\n".format(
                             hlesc(self.sim.invntr[rec.name])))
             if rec.cast:
                 bg = 0
-                r = rec.cast[0] 
+                r = rec.cast[0]
                 g = rec.cast[1]
                 b = rec.cast[2]
-                if (r + g * 2 + b) // 3 < 160: 
+                if (r + g * 2 + b) // 3 < 160:
                     bg = 255
-                self.add_info("  " + fmt_hl(self.find_path_cast(rec.name), 
+                self.add_info("  " + fmt_hl(self.find_path_cast(rec.name),
                     "Cast") + ":      <font bg=\"#{bg:02x}{bg:02x}{bg:02x}\">"
                     "<font color=\"#{r:02x}{g:02x}{b:02x}\">"\
                     "<b> #{r:02x}{g:02x}{b:02x} </b></font></font>\n".\
                     format(bg = bg, r = r, g = g, b = b))
-            
-            # references / backreferences                    
+
+            # references / backreferences
             if isobj:
                 # search where object used
                 self.add_info("\n<b>Refered by scenes</b>:\n")
                 for scn in self.sim.scenes:
                     for ref in scn.refs:
                         if ref[0].idx == rec.idx:
-                            self.add_info("  " + 
+                            self.add_info("  " +
                                 self.fmt_hl_scene(scn.idx, True) + "\n")
                             break
             else:
                 if rec.refs is None:
                     self.add_info("\nNo references\n")
-                else: 
+                else:
                     if len(rec.refs) == 0:
                         self.add_info("\nEmpty references\n")
                     else:
@@ -855,7 +855,7 @@ class App(TkBrowser):
                             format(len(rec.refs)))
                     fmtd = "  " + fmt_dec(len(rec.refs)) + ") "
                     for idx, ref in enumerate(rec.refs):
-                        self.add_info(fmtd.format(idx) + 
+                        self.add_info(fmtd.format(idx) +
                             self.fmt_hl_obj(ref[0].idx))
                         msg = ""
                         for arg in ref[1:]:
@@ -866,7 +866,7 @@ class App(TkBrowser):
                                 msg += "-1"
                             else:
                                 msg += "0x{:X}".format(arg)
-                        self.add_info(msg + self.fmt_cmt(" // " + 
+                        self.add_info(msg + self.fmt_cmt(" // " +
                             self.fmt_hl_obj(ref[0].idx, True)) + "\n")
 
             resused = []
@@ -916,7 +916,7 @@ class App(TkBrowser):
                     if op.op_code == 0x11: # DIALOG
                         if op.op_ref not in dlgused:
                             dlgused.append(op.op_ref)
-                    
+
             if len(resused) > 0:
                 self.add_info("\n<b>Used resources</b>: {}\n".\
                     format(len(resused)))
@@ -928,7 +928,7 @@ class App(TkBrowser):
                 for grp_id in dlgused:
                     self.add_info("  " + self.fmt_hl_dlg(grp_id, True)+ "\n")
 
-            # messages used by this object            
+            # messages used by this object
             if isobj:
                 wasmsg = False
                 for msg in self.sim.msgs:
@@ -958,16 +958,16 @@ class App(TkBrowser):
                 if k not in oplst: continue
                 self.add_info("\n<b>Used in " + self.fmt_opcode(k) + "</b>:\n")
                 for oid, htp, hid in oplst[k]:
-                    self.add_info("  " + self.fmt_hl_obj_scene(oid) + 
-                      " on " + self.fmt_opcode(htp) + 
-                      " #{}".format(hid) + self.fmt_cmt(" // " + 
+                    self.add_info("  " + self.fmt_hl_obj_scene(oid) +
+                      " on " + self.fmt_opcode(htp) +
+                      " #{}".format(hid) + self.fmt_cmt(" // " +
                       self.fmt_hl_obj_scene(oid, True)) + "\n")
 
             # perspective
             if not isobj and rec.persp:
                 self.add_info("\n<b>Perspective</b>:\n  {}, {}, {}, {}, {}\n".
                     format(*rec.persp))
-                
+
             # enter areas
             if not isobj and rec.entareas:
                 self.add_info("\n<b>Enter areas</b>: {}\n".format(
@@ -978,8 +978,8 @@ class App(TkBrowser):
                     self.add_info("    <i>on</i>: {}\n".format(
                         self.fmt_hl_obj(oo.idx, True)))
         return True
-                
-    def path_std_items(self, path, level, guiname, guiitem, tt, lst, lst_idx, 
+
+    def path_std_items(self, path, level, guiname, guiitem, tt, lst, lst_idx,
             lbmode, cb):
         self.switch_view(0)
         if self.last_path[:level] != path[:level]:
@@ -1008,7 +1008,7 @@ class App(TkBrowser):
             # info
             cb(name)
         return True
-        
+
     def path_names(self, path):
         if self.sim is None:
             return self.path_default([])
@@ -1026,9 +1026,9 @@ class App(TkBrowser):
             for obj in self.sim.objects:
                 if obj.name == name:
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
-        return self.path_std_items(path, 1, "Names", "name", "obj", 
+        return self.path_std_items(path, 1, "Names", "name", "obj",
             self.sim.names, self.sim.namesord, 0, info)
-                            
+
     def path_invntr(self, path):
         if self.sim is None:
             return self.path_default([])
@@ -1046,7 +1046,7 @@ class App(TkBrowser):
             for obj in self.sim.objects:
                 if obj.name == name:
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
-        return self.path_std_items(path, 1, "Invntr", "invntr", "obj", 
+        return self.path_std_items(path, 1, "Invntr", "invntr", "obj",
             self.sim.invntr, self.sim.invntrord, 0, info)
 
     def path_casts(self, path):
@@ -1075,7 +1075,7 @@ class App(TkBrowser):
             for idx, obj in enumerate(self.sim.objects):
                 if obj.name == name:
                     self.add_info("  " + self.fmt_hl_obj(obj.idx, True) + "\n")
-        return self.path_std_items(path, 1, "Cast", "cast", "obj", 
+        return self.path_std_items(path, 1, "Cast", "cast", "obj",
             self.sim.casts, self.sim.castsord, 0, info)
 
     def path_msgs(self, path):
@@ -1118,7 +1118,7 @@ class App(TkBrowser):
                 lst.sort()
                 fmtlen = fmt_dec_len(len(lst))
                 for _, wav, idx, capt in lst:
-                    self.add_info("  " + fmt_hl_len("/msgs/{}".format(idx), 
+                    self.add_info("  " + fmt_hl_len("/msgs/{}".format(idx),
                         "{}".format(idx), fmtlen))
                     self.add_info(" - {} - {}\n".format(
                         self.fmt_hl_file("speech{}/{}".format(
@@ -1129,7 +1129,7 @@ class App(TkBrowser):
                 self.add_info("  wav:    {}\n".
                         format(self.fmt_hl_file("speech{}/{}".format(
                             self.sim.curr_part, msg.msg_wav), msg.msg_wav)))
-                self.add_info("  object: " + self.fmt_hl_obj(msg.obj.idx, 
+                self.add_info("  object: " + self.fmt_hl_obj(msg.obj.idx,
                     True) + "\n")
                 self.add_info("  arg2:   {a} (0x{a:X})\n".format(
                     a = msg.msg_arg2))
@@ -1146,9 +1146,9 @@ class App(TkBrowser):
                             for op in dlg.ops:
                                 if not op.msg: continue
                                 if op.msg.idx == msg.idx and op.opcode == 7:
-                                    self.add_info("  " + 
+                                    self.add_info("  " +
                                         self.fmt_hl_dlg(grp.idx, True) + "\n")
-        
+
         if self.last_path[:1] != ("msgs",):
             self.update_gui("Messages ({})".format(len(self.sim.msgs)))
             for idx, msg in enumerate(self.sim.msgs):
@@ -1159,7 +1159,7 @@ class App(TkBrowser):
                     capt = capt[:40] + "|"
                 self.insert_lb_act("{} - {}".format(msg.idx, capt),
                     ["msgs", idx], idx)
-            self.curr_state["btnsort"] = self.add_toolgrp("Sort by", 
+            self.curr_state["btnsort"] = self.add_toolgrp("Sort by",
                 "msgs.sort", {0: "wav", 1: "order", 2: "text"}, upd_msgs)
         # change
         upd_msgs()
@@ -1205,14 +1205,14 @@ class App(TkBrowser):
             fmtga = "  " + fmt_dec(len(grp.acts)) + \
                 ") <u>on {} {} 0x{:X} 0x{:X}</u>, dlgs: {}{}\n"
             for idx, act in enumerate(grp.acts):
-                self.add_info(fmtga.format(idx, self.fmt_opcode(act.opcode), 
+                self.add_info(fmtga.format(idx, self.fmt_opcode(act.opcode),
                         self.fmt_hl_obj(act.ref), act.arg1, act.arg2, \
-                        len(act.dlgs), self.fmt_cmt(" // " + 
+                        len(act.dlgs), self.fmt_cmt(" // " +
                             self.fmt_hl_obj(act.ref, True))))
                 fmtad = "    " + fmt_dec(len(act.dlgs)) + \
                     ") <i>0x{:X} 0x{:X}</i>, ops: {}\n"
                 for didx, dlg in enumerate(act.dlgs):
-                    self.add_info(fmtad.format(didx, dlg.arg1, dlg.arg2, 
+                    self.add_info(fmtad.format(didx, dlg.arg1, dlg.arg2,
                         len(dlg.ops)))
                     # scan for used adreses
                     usedadr = []
@@ -1287,9 +1287,9 @@ class App(TkBrowser):
                                 opref = self.fmt_hl_msg(op.ref)
                                 objref = self.fmt_hl_obj(op.msg.obj.idx)
                                 cmt = self.fmt_cmt(" // obj={}, msg={}".\
-                                    format(objref, 
+                                    format(objref,
                                         self.fmt_hl_msg(op.ref, True)))
-                        
+
                         oparg = " 0x{:X} ".format(op.arg)
                         if (op.opcode == 0x1 or op.opcode == 0x6) and \
                                 op.arg == 0 and op.ref == 0:
@@ -1306,7 +1306,7 @@ class App(TkBrowser):
                         if not hdr:
                             self.add_info(hl)
                             hdr = True
-                        self.add_info("  linked " + 
+                        self.add_info("  linked " +
                             self.fmt_hl_obj_scene(rec.idx, True) + "\n")
                         continue
                     ru = False
@@ -1314,11 +1314,11 @@ class App(TkBrowser):
                         if ru: break
                         for op in act.ops:
                             if op.op_code == 0x11 and \
-                                    op.op_ref == grp.idx: # DIALOG 
+                                    op.op_ref == grp.idx: # DIALOG
                                 if not hdr:
                                     self.add_info(hl)
                                     hdr = True
-                                self.add_info("  " + 
+                                self.add_info("  " +
                                     self.fmt_hl_obj_scene(rec.idx, True) + "\n")
                                 ru = True
                                 break
@@ -1327,7 +1327,7 @@ class App(TkBrowser):
             usedby(self.sim.objects, "\n<b>Used by objects</b>:\n")
             usedby(self.sim.scenes, "\n<b>Used by scenes</b>:\n")
         return True
-        
+
     def path_opcodes(self, path):
         if self.sim is None:
             return self.path_default([])
@@ -1344,7 +1344,7 @@ class App(TkBrowser):
                     if act.act_op not in keys:
                         keys.append(act.act_op)
                     for op in act.ops:
-                        opstat[op.op_code] = opstat.get(op.op_code, 
+                        opstat[op.op_code] = opstat.get(op.op_code,
                             0) + 1
                         if op.op_code not in keys:
                             keys.append(op.op_code)
@@ -1360,7 +1360,7 @@ class App(TkBrowser):
             keys, opstat, acstat, dastat = keyslist()
             self.update_gui("Opcodes ({})".format(len(keys)))
             for key in keys:
-                self.insert_lb_act("{} - {}".format(key, self.fmt_opcode(key, 
+                self.insert_lb_act("{} - {}".format(key, self.fmt_opcode(key,
                     True)), ["opcodes", key], key)
         # change
         opcode = None
@@ -1390,7 +1390,7 @@ class App(TkBrowser):
                 mcnt = len(msg)
                 msg += " - {}".format(fmt_hl("/opcodes/{}".format(
                     key), opname))
-                mcnt += len(self.fmt_opcode(key, True))    
+                mcnt += len(self.fmt_opcode(key, True))
                 while mcnt < 23:
                     msg += " "
                     mcnt += 1
@@ -1420,43 +1420,43 @@ class App(TkBrowser):
             # display
             if len(ops) == 0:
                 self.add_info("<i>Not used in scripts</i>\n\n")
-            else:            
+            else:
                 self.add_info("<i>Used in scripts</i>: {}\n".format(len(ops)))
                 fmtops = "  " + fmt_dec(len(ops)) + \
                     ") obj={}, act={}, op={} {}\n"
                 for idx, (obj_idx, aidx, oidx) in enumerate(ops):
                     self.add_info(fmtops.format(
                         idx, self.fmt_hl_obj_scene(obj_idx, False), aidx, oidx,
-                        self.fmt_cmt("// " + self.fmt_hl_obj_scene(obj_idx, 
+                        self.fmt_cmt("// " + self.fmt_hl_obj_scene(obj_idx,
                         True))))
-                self.add_info("\n")  
+                self.add_info("\n")
 
             if len(acts) == 0:
                 self.add_info("<i>Not used in handlers</i>\n\n")
-            else:            
+            else:
                 self.add_info("<i>Used in handlers</i>: {}\n".format(len(acts)))
                 fmtacts = "  " + fmt_dec(len(acts)) + \
                     ") obj={}, act={} {}\n"
                 for idx, (obj_idx, aidx) in enumerate(acts):
                     self.add_info(fmtacts.format(
-                        idx, self.fmt_hl_obj_scene(obj_idx, False), aidx, 
-                        self.fmt_cmt("// " + self.fmt_hl_obj_scene(obj_idx, 
+                        idx, self.fmt_hl_obj_scene(obj_idx, False), aidx,
+                        self.fmt_cmt("// " + self.fmt_hl_obj_scene(obj_idx,
                         True))))
-                self.add_info("\n")  
+                self.add_info("\n")
 
             if len(dacts) == 0:
                 self.add_info("<i>Not used in dialog handlers</i>\n\n")
-            else:            
+            else:
                 self.add_info("<i>Used in dialog handlers</i>: {}\n".format(
                     len(dacts)))
                 fmtdacts = "  " + fmt_dec(len(dacts)) + \
                     ") obj={}, group=<a href=\"/dlgs/{}\">{}</a>, act={} {}\n"
                 for idx, (obj_idx, gidx, aidx) in enumerate(dacts):
                     self.add_info(fmtdacts.format(
-                        idx, self.fmt_hl_obj_scene(obj_idx, False), gidx, gidx, 
+                        idx, self.fmt_hl_obj_scene(obj_idx, False), gidx, gidx,
                         aidx, self.fmt_cmt("// " + self.fmt_hl_obj_scene(
                         obj_idx, True))))
-                self.add_info("\n")  
+                self.add_info("\n")
         return True
 
     def path_dlgops(self, path):
@@ -1481,7 +1481,7 @@ class App(TkBrowser):
             keys, dlstat = keyslist()
             self.update_gui("Dialog opcodes ({})".format(len(keys)))
             for key in keys:
-                self.insert_lb_act("{} - {}".format(key, self.fmt_dlgop(key, 
+                self.insert_lb_act("{} - {}".format(key, self.fmt_dlgop(key,
                     True)), ["dlgops", key], key)
         # change
         opcode = None
@@ -1510,7 +1510,7 @@ class App(TkBrowser):
                 mcnt = len(msg)
                 msg += " - {}".format(fmt_hl("/dlgops/{}".format(
                     key), opname))
-                mcnt += len(self.fmt_dlgop(key, True))    
+                mcnt += len(self.fmt_dlgop(key, True))
                 while mcnt < 20:
                     msg += " "
                     mcnt += 1
@@ -1530,19 +1530,19 @@ class App(TkBrowser):
             # display
             if len(dls) == 0:
                 self.add_info("<i>Not used in dialogs</i>\n\n")
-            else:            
+            else:
                 self.add_info("<i>Used in dialogs</i>: {}\n".format(len(dls)))
                 fmtdls = "  " + fmt_dec(len(dls)) + \
                     ") obj={}, group=<a href=\"/dlgs/{}\">{}" + \
                         "</a>, act={}, dlg={}, op={} {}\n"
                 for idx, (obj_idx, gidx, aidx, didx, oidx) in enumerate(dls):
                     self.add_info(fmtdls.format(
-                        idx, self.fmt_hl_obj_scene(obj_idx, False), gidx, gidx, 
-                        aidx, didx, oidx, self.fmt_cmt("// " + 
+                        idx, self.fmt_hl_obj_scene(obj_idx, False), gidx, gidx,
+                        aidx, didx, oidx, self.fmt_cmt("// " +
                         self.fmt_hl_obj_scene(obj_idx, True))))
-                self.add_info("\n")  
+                self.add_info("\n")
         return True
-       
+
     def path_stores(self, path):
         if self.strfm is None:
             return self.path_default([])
@@ -1585,7 +1585,7 @@ class App(TkBrowser):
                 if len(strlst):
                     flnk = self.fmt_hl_file(strlst[0][0], flnk)
                 self.add_info("  Files: {}, Tag: {}\n\n".format(flnk, tag))
-                
+
                 lst = []
                 for idx, (fname, _, _, _) in enumerate(strlst):
                     if sm == 0:
@@ -1596,9 +1596,9 @@ class App(TkBrowser):
                 lst.sort()
                 fmt = "  " + fmt_dec(len(lst)) + ") {}\n"
                 for _, idx, fname in lst:
-                    self.add_info(fmt.format(idx + 1, 
+                    self.add_info(fmt.format(idx + 1,
                         self.fmt_hl_file(fname)))
-            
+
         self.switch_view(0)
         keys = None
         if self.last_path[:1] != ("strs",):
@@ -1618,7 +1618,7 @@ class App(TkBrowser):
                     return
                 # extract to folder
                 sdir = filedialog.askdirectory(parent = self,
-                    title = "Select folder for extract", 
+                    title = "Select folder for extract",
                     initialdir = self.strfm.root, mustexist = True)
                 if not sdir: return
                 # extract store to sdir
@@ -1644,7 +1644,7 @@ class App(TkBrowser):
                             format(hlesc(fname), hlesc(traceback.format_exc())))
                         return
             self.curr_state["btnext"] = self.add_toolbtn("Extract STR", ext_str)
-            self.curr_state["btnsort"] = self.add_toolgrp("Sort by", 
+            self.curr_state["btnsort"] = self.add_toolgrp("Sort by",
                 "strs.sortfiles", {0: "order", 1: "filename"}, upd_strs)
         upd_strs()
         return True
@@ -1698,7 +1698,7 @@ class App(TkBrowser):
                         format(hlesc(fnl)))
                     return
                 self.add_info("<b>File</b>: {}\n\n".format(fnl))
-                    
+
                 # search in loaded stores
                 if fnl in self.strfm.strtable:
                     # in store
@@ -1720,7 +1720,7 @@ class App(TkBrowser):
                                 self.add_info("\n<b>Used in resources</b>:\n")
                                 wascapt = True
                             self.add_info("  {} - <a href=\"/res/all/{}\">"\
-                                "{}</a>\n".format(resid, resid, 
+                                "{}</a>\n".format(resid, resid,
                                 hlesc(self.sim.res[resid])))
                     wavpref = "speech{}/".format(self.sim.curr_part)
                     if fnl[-4:] == ".wav" and fnl.startswith(wavpref):
@@ -1780,9 +1780,9 @@ class App(TkBrowser):
                 if sa:
                     self.add_info("\n<b>See also</b>:\n")
                     for p in sa:
-                        self.add_info("  " + fmt_hl(p, self.desc_path(p)) 
+                        self.add_info("  " + fmt_hl(p, self.desc_path(p))
                             + "\n")
-                        
+
                 if fnl[-4:] in [".leg", ".off"]:
                     legf = petka.LEGLoader()
                     legf.load_data(self.strfm.read_file_stream(fnl))
@@ -1791,7 +1791,7 @@ class App(TkBrowser):
                     fmt = "  " + fmt_dec(len(legf.coords)) + ") {}, {}\n"
                     for idx, (x, y) in enumerate(legf.coords):
                         self.add_info(fmt.format(idx + 1, x, y))
-                        
+
                 if fnl[-4:] == ".msk":
                     mskf = petka.MSKLoader()
                     mskf.load_data(self.strfm.read_file_stream(fnl))
@@ -1806,7 +1806,7 @@ class App(TkBrowser):
                         fmtr = "    " + fmt_dec(len(rs)) + ") {}, {} - {}, {}\n"
                         for idxr, r in enumerate(rs):
                             self.add_info(fmtr.format(idxr + 1, *r))
-                        
+
                 if fnl[-4:] == ".flc":
                     flcf = petka.FLCLoader()
                     flcf.load_info(self.strfm.read_file_stream(fnl))
@@ -1818,13 +1818,13 @@ class App(TkBrowser):
                             format(flcf.image.mode, \
                                 flcf.image.size[0], flcf.image.size[1],
                                 flcf.frame_num, flcf.image.info["duration"]))
-                    else:    
+                    else:
                         self.add_info("\n<b>FLC data</b> (internal)\n")
                         self.add_info("  Mode:   P\n  Size:   {}x{}\n"\
                             "  Frames: {}\nDelay: {}".\
                             format(flcf.width, flcf.height, \
                                 flcf.frame_num, flcf.delay))
-                        
+
         self.switch_view(0)
         keys = None
         if self.last_path[:1] != ("files",):
@@ -1834,7 +1834,7 @@ class App(TkBrowser):
                 fnl = fn.lower().replace("\\", "/")
                 fnl = urllib.parse.quote_plus(fnl)
                 self.insert_lb_act(fn, ["files", fnl], fnl)
-            self.curr_state["btnsort"] = self.add_toolgrp("Sort by", 
+            self.curr_state["btnsort"] = self.add_toolgrp("Sort by",
                 "files.sort", {0: "order", 1: "filename"}, upd_files)
         upd_files()
         return True
@@ -1842,7 +1842,7 @@ class App(TkBrowser):
     def path_save(self, path):
         if self.sim is None:
             return self.path_default([])
-            
+
         def upd_save():
             path = self.curr_path
             fid = None
@@ -1850,7 +1850,7 @@ class App(TkBrowser):
             if self.save is None:
                 self.add_info("<b>Saved state</b>: not loaded\n\n")
                 return
-                
+
             if path == ("save",):
                 path = ("save", "info")
             if path[1] == "shot":
@@ -1870,24 +1870,24 @@ class App(TkBrowser):
                 self.add_info("  cursor: {} - {}\n".format(self.save.cursor,
                     petka.ACTIONS.get(self.save.cursor, ["ACT{:2X}".format(
                         self.save.cursor), 0])[0]))
-                self.add_info("    " + self.fmt_hl_res(self.save.cursor_res, 
+                self.add_info("    " + self.fmt_hl_res(self.save.cursor_res,
                     True) + "\n")
                 if self.save.cursor_obj == 0xffffffff:
                     self.add_info("  object: <i>none</i>\n")
                 else:
                     self.add_info("  object: " + self.fmt_hl_obj(
                         self.save.cursor_obj, True) + "\n")
-                self.add_info("  char 1: {}, {} ".format(self.save.char1[0], 
+                self.add_info("  char 1: {}, {} ".format(self.save.char1[0],
                     self.save.char1[1]) + self.fmt_hl_res(
                     self.save.char1[2], True) + "\n")
-                self.add_info("  char 2: {}, {} ".format(self.save.char2[0], 
+                self.add_info("  char 2: {}, {} ".format(self.save.char2[0],
                     self.save.char2[1]) + self.fmt_hl_res(
                     self.save.char2[2], True) + "\n")
-                
+
                 self.add_info("  invntr: {}\n".format(len(self.save.invntr)))
                 fmt = "    " + fmt_dec(len(self.save.invntr)) + ") "
                 for idx, inv in enumerate(self.save.invntr):
-                        self.add_info(fmt.format(idx + 1) + 
+                        self.add_info(fmt.format(idx + 1) +
                             self.fmt_hl_obj_scene(inv, True) + "\n")
 
                 self.add_info("\n  objects: {}\n".format(len(
@@ -1895,7 +1895,7 @@ class App(TkBrowser):
                 fmt = "  " + fmt_dec(len(self.save.objects)) + ") \"{}\" {}\n"
 
                 for idx, obj in enumerate(self.save.objects):
-                    self.add_info(fmt.format(idx + 1, obj["name"], 
+                    self.add_info(fmt.format(idx + 1, obj["name"],
                         obj["alias"]))
                     fndobj = None
                     for sobj in self.sim.objects + self.sim.scenes:
@@ -1903,12 +1903,12 @@ class App(TkBrowser):
                             fndobj = sobj
                             break
                     if fndobj:
-                        self.add_info("    " + 
+                        self.add_info("    " +
                             self.fmt_hl_obj_scene(fndobj.idx, True) + "\n")
                     self.add_info("    {}, {}, {}, {}, {}, {}, {}, {}, {}\n".
                         format(*obj["recs"]))
                     if obj["res"] in self.sim.res:
-                        self.add_info("    " + self.fmt_hl_res(obj["res"], 
+                        self.add_info("    " + self.fmt_hl_res(obj["res"],
                             True) + "\n")
             elif path[1] == "dlgops":
                 self.clear_info()
@@ -1920,7 +1920,7 @@ class App(TkBrowser):
                     self.add_info(fmt.format(idx + 1, self.fmt_dlgop(code), arg, ref))
             else:
                 self.select_lb_item("info")
-                        
+
         if self.last_path[:1] != ("save",):
             # calc statistics
             self.update_gui("Save")
@@ -1964,7 +1964,7 @@ class App(TkBrowser):
                 self.add_info("<i>no tranlation file</i>\n")
             else:
                 self.add_info(hlesc(self.tran_fn) + "\n")
-                
+
         self.add_info("<b>Engine</b>:       ")
         if not self.sim:
             self.add_info("<i>not initialized</i>\n")
@@ -1997,14 +1997,14 @@ class App(TkBrowser):
             self.path_info_outline()
 
         return True
-            
+
     def desc_help(self, path):
         if path == ("help",):
             path = ("help", "index")
         if path == ("help", "index"):
             return "Index"
         return "Help for " + self.desc_path(path[1])
-            
+
     def path_help(self, path):
         self.switch_view(0)
         if path == ("help",):
@@ -2019,16 +2019,16 @@ class App(TkBrowser):
                     item = item.decode("UTF-8").strip()
                     if not item: continue
                     try:
-                        hf = open(os.path.join(self.app_path, 
+                        hf = open(os.path.join(self.app_path,
                             "help", item + ".txt"), "rb")
                         try:
                             for line in hf.readlines():
-                                line = line.decode("UTF-8").strip()                    
+                                line = line.decode("UTF-8").strip()
                                 break
                         finally:
                             hf.close()
                     except:
-                        line = item                    
+                        line = item
                     self.insert_lb_act(line, ["help", item], item)
             finally:
                 f.close()
@@ -2046,10 +2046,10 @@ class App(TkBrowser):
                 hf = open(hfn, "rb")
                 try:
                     for idx, line in enumerate(hf.readlines()):
-                        line = line.decode("UTF-8").rstrip()                    
+                        line = line.decode("UTF-8").rstrip()
                         if idx == 0:
                             self.add_info("<b>" + line + "</b>\n")
-                        else:                                        
+                        else:
                             self.add_info(line + "\n")
                 finally:
                     hf.close()
@@ -2060,7 +2060,7 @@ class App(TkBrowser):
             self.select_lb_item(None)
 
         return True
-        
+
     def path_info(self, path):
         self.switch_view(0)
         if self.last_path[:1] != ("info",):
@@ -2088,7 +2088,7 @@ class App(TkBrowser):
                 k.sort()
                 for key in k:
                     self.add_info("  {} (0x{:X}) - {}\n".format(key, key,
-                        petka.OPCODES[key][0])) 
+                        petka.OPCODES[key][0]))
             elif name == "dlgops":
                 self.add_info("<b>Dialog opcodes<b>\n\n")
                 k = list(petka.DLGOPS.keys())
@@ -2103,9 +2103,9 @@ class App(TkBrowser):
                 for key in k:
                     self.add_info("  {} (0x{:X}) - {}\n".format(key, key,
                         petka.ACTIONS[key][0]))
-                    self.add_info("    " + 
+                    self.add_info("    " +
                         self.fmt_hl_res(petka.ACTIONS[key][1]) + "\n")
-            else: 
+            else:
                 self.add_info("Unknown data type \"{}\"\n".format(hlesc(name)))
 
         return True
@@ -2113,7 +2113,7 @@ class App(TkBrowser):
     def on_open_data(self):
         ft = [\
             ('all files', '.*')]
-        fn = filedialog.askopenfilename(parent = self, 
+        fn = filedialog.askopenfilename(parent = self,
             title = "Open PARTS.INI or SCRIPT.DAT",
             filetypes = ft,
             initialdir = os.path.abspath(os.curdir))
@@ -2123,7 +2123,7 @@ class App(TkBrowser):
         if self.open_data_from(os.path.dirname(fn)):
             self.open_path("")
             self.clear_hist()
-        
+
     def open_data_from(self, folder):
         self.last_fn = folder
         self.clear_data()
@@ -2146,7 +2146,7 @@ class App(TkBrowser):
         ft = [\
             ('STR files', '.STR'),
             ('all files', '.*')]
-        fn = filedialog.askopenfilename(parent = self, 
+        fn = filedialog.askopenfilename(parent = self,
             title = "Open STR file",
             filetypes = ft,
             initialdir = os.path.abspath(os.curdir))
@@ -2176,7 +2176,7 @@ class App(TkBrowser):
         ft = [\
             ('Save files (*.dat)', '.DAT'),
             ('all files', '.*')]
-        fn = filedialog.askopenfilename(parent = self, 
+        fn = filedialog.askopenfilename(parent = self,
             title = "Open SAVEx.DAT file",
             filetypes = ft,
             initialdir = os.path.abspath(os.curdir))
@@ -2190,21 +2190,21 @@ class App(TkBrowser):
             self.switch_view(0)
             self.update_gui("")
             self.clear_info()
-            self.add_info("Open data before loading saves")  
+            self.add_info("Open data before loading saves")
             return
         self.save = None
         try:
             self.last_savefn = fn
             self.save = petka.SaveLoader("cp1251")
             with open(fn, "rb") as f:
-                self.save.load_data(f, self.sim.curr_part, 
+                self.save.load_data(f, self.sim.curr_part,
                     len(self.sim.objects) + len(self.sim.scenes))
                 if self.save.part != self.sim.curr_part:
                     # load
                     print("DEBUG: change part {}".format(self.save.part))
                     self.sim.open_part(self.save.part, 0)
                     f.seek(0)
-                    self.save.load_data(f, self.sim.curr_part, 
+                    self.save.load_data(f, self.sim.curr_part,
                         len(self.sim.objects) + len(self.sim.scenes))
             return True
         except:
@@ -2215,18 +2215,18 @@ class App(TkBrowser):
             self.clear_info()
             self.add_info("Error opening \"{}\" \n\n{}".\
                 format(hlesc(fn), hlesc(traceback.format_exc())))
-            
+
 
     def on_tran_save(self):
         self.on_tran_save_real()
 
     def on_tran_save_tlt(self):
         self.on_tran_save_real(True)
-        
+
     def on_tran_save_real(self, tlt = False):
         # save dialog
         fn = filedialog.asksaveasfilename(parent = self,
-            title = "Save translate template (.pot)" + 
+            title = "Save translate template (.pot)" +
                 " (transliterate)" if tlt else "",
             filetypes = [('PO Template', ".pot"), ('all files', '.*')],
             initialdir = os.path.abspath(os.curdir))
@@ -2248,19 +2248,19 @@ class App(TkBrowser):
                     ts = translit(text)
                 entry = polib.POEntry(
                     msgid = text, msgstr = ts, comment = cmt)
-                po.append(entry)                
+                po.append(entry)
             for rec in self.sim.objects:
                 saveitem(rec.name, "obj_{}".format(rec.idx))
             for rec in self.sim.scenes:
                 saveitem(rec.name, "scn_{}".format(rec.idx))
             for idx, name in enumerate(self.sim.namesord):
-                saveitem(self.sim.names[name], 
+                saveitem(self.sim.names[name],
                     "name_{}, {}".format(idx, name))
             for idx, name in enumerate(self.sim.invntrord):
                 saveitem(self.sim.invntr[name],
                     "inv_{}, {}".format(idx, name))
             for idx, msg in enumerate(self.sim.msgs):
-                saveitem(msg.name, 
+                saveitem(msg.name,
                     "msg_{}, {} - {}".format(idx, msg.obj.idx, msg.obj.name))
             po.save(fn)
         except:
@@ -2273,14 +2273,14 @@ class App(TkBrowser):
         ft = [\
             ('PO files', '.po'),
             ('all files', '.*')]
-        fn = filedialog.askopenfilename(parent = self, 
+        fn = filedialog.askopenfilename(parent = self,
             title = "Open translation for current part",
             filetypes = ft,
             initialdir = os.path.abspath(os.curdir))
         if not fn: return
         os.chdir(os.path.dirname(fn))
         self.open_tran_from(fn)
-            
+
     def open_tran_from(self, fn):
         self.tran_fn = fn
         try:
@@ -2307,7 +2307,7 @@ class App(TkBrowser):
             self.switch_view(0)
             self.clear_info()
             self.add_info("No messages or translations loaded")
-            return        
+            return
         fn = filedialog.asksaveasfilename(parent = self,
             title = "Save DIALOGUE.LOD",
             filetypes = [('DIALOGUE.LOD', ".lod"), ('all files', '.*')],
@@ -2318,7 +2318,7 @@ class App(TkBrowser):
             sim2 = petka.Engine()
             sim2.init_empty("cp1251")
             for msg in self.sim.msgs:
-                nmsg = petka.engine.MsgObject(msg.idx, msg.msg_wav, 
+                nmsg = petka.engine.MsgObject(msg.idx, msg.msg_wav,
                     msg.msg_arg1, msg.msg_arg2, msg.msg_arg3)
                 nmsg.name = self._t(msg.name, "msg")
                 sim2.msgs.append(nmsg)
@@ -2340,7 +2340,7 @@ class App(TkBrowser):
             self.switch_view(0)
             self.clear_info()
             self.add_info("No messages or translations loaded")
-            return        
+            return
         fn = filedialog.asksaveasfilename(parent = self,
             title = "Save NAMES.INI",
             filetypes = [('NAMES.INI', ".ini"), ('all files', '.*')],
@@ -2367,7 +2367,7 @@ class App(TkBrowser):
         print("Dumping pages")
         import json
         import urllib
-        
+
         def normalize_link(dest):
             self.dumpaddr = None
             def open_path(path):
@@ -2387,8 +2387,8 @@ class App(TkBrowser):
                     self.open_path = orig
             elif isinstance(dest, (list, tuple)):
                 dest = "/" + "/".join([str(x) for x in dest])
-            return dest            
-        
+            return dest
+
         def normalize_link_html(dest, curr):
             lnk = normalize_link(dest)
             if lnk[:1] == "/":
@@ -2397,7 +2397,7 @@ class App(TkBrowser):
             if rel == ".":
                 return rel
             return rel + ".html"
-        
+
         def save_data(fn, data, outline):
             print("  save " + fn)
             if not os.path.exists(path):
@@ -2453,28 +2453,28 @@ class App(TkBrowser):
                 f.write("</pre>\n")
 
                 f.write("</td></tr><table>\n")
-                f.write("</body></html>\n")                
-                
+                f.write("</body></html>\n")
+
         def save_curr():
             fn = "/".join([str(x) for x in self.curr_path])
             fn = os.path.join(path, fn)
             if not os.path.exists(os.path.dirname(fn)):
                 os.makedirs(os.path.dirname(fn))
-            save_data(fn, self.text_view.dump("0.0", "end-1c"), 
+            save_data(fn, self.text_view.dump("0.0", "end-1c"),
                 self.curr_lb_acts)
-            
+
         parsed = []
         queue = []
         def addaddr(dest):
             lnk = normalize_link(dest)
             if lnk not in parsed + queue:
                 queue.append(lnk)
-                
+
         def scan_page(dest):
             print("  scan " + str(dest))
             if dest.startswith("/parts/"): return # avoid changing part
             if dest.startswith("/files/"): return # avoid too big files data
-            #if dest.startswith("/res/"): return 
+            #if dest.startswith("/res/"): return
             if dest in parsed:
                 return
             parsed.append(dest)
@@ -2500,7 +2500,7 @@ class App(TkBrowser):
             addr = queue[0]
             queue = queue[1:]
             scan_page(addr)
-            
+
 
 def main():
     root = tkinter.Tk()
@@ -2527,6 +2527,6 @@ def main():
             argv = argv[1:]
     app.mainloop()
 
-    
+
 if __name__ == "__main__":
     main()

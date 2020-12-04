@@ -15,8 +15,8 @@ VERSION = "v0.1 2015-06-20"
 
 class App(TkBrowser):
     def __init__(self, master):
-        super().__init__(master)            
-                
+        super().__init__(master)
+
     def init_gui(self):
         self.master.title(APPNAME)
         # path
@@ -25,7 +25,7 @@ class App(TkBrowser):
         else:
             self.app_path = __file__
         self.app_path = os.path.abspath(os.path.dirname(self.app_path))
-                
+
     def create_widgets(self):
         super().create_widgets()
 
@@ -40,7 +40,7 @@ class App(TkBrowser):
                     repath = ""
                     break
         if repath:
-            self.open_path(repath)       
+            self.open_path(repath)
 
 
     def create_menu(self):
@@ -51,7 +51,7 @@ class App(TkBrowser):
         self.menufile.add_separator()
         self.menufile.add_command(
                 command = self.on_exit,
-                label = "Quit")    
+                label = "Quit")
 
     def path_default(self, path):
         self.switch_view(0)
@@ -64,14 +64,14 @@ class App(TkBrowser):
         self.add_info("\n\n<b>This is multi-")
         self.add_info("line\nbold</b> text\n")
         self.add_info("\n\n<u>This is multi-")
-        self.add_info("line\nunderline</u> text\n")       
+        self.add_info("line\nunderline</u> text\n")
         self.add_info("\n\n<font color=\"#ff00FF\">This is multi-")
         self.add_info("line\ncolor</font> text\n")
 
         self.add_info("\n<font bg=\"red\" color=\"white\"> <b>White</b> on <i>red</i> </font>\n")
 
-        self.insert_lb_act("Testing", "/test")        
-        return True        
+        self.insert_lb_act("Testing", "/test")
+        return True
 
     def path_test(self, path):
         if len(path) > 1:
@@ -84,7 +84,7 @@ class App(TkBrowser):
             self.insert_lb_act("Image", "/test/image")
             self.switch_view(0)
             self.clear_info()
-            self.add_info("Select test from outline")            
+            self.add_info("Select test from outline")
         return True
 
     def path_test_item(self, path):
@@ -114,13 +114,13 @@ class App(TkBrowser):
                         self.gl_state.get("test.info.mode", None)))
                     for i in range(100):
                         self.add_info("  Item {}\n".format(i))
-            
+
         if self.last_path[:2] != ("test", path[1]):
             self.update_gui("Test %s" % path[1])
             self.insert_lb_act("Testing", "/test")
             self.insert_lb_act("-", None)
             for i in range(15):
-                self.insert_lb_act("{} #{}".format(path[1], i), 
+                self.insert_lb_act("{} #{}".format(path[1], i),
                     path[:2] + (i,), i)
             # create mode buttons
             def sw_mode1():
@@ -165,6 +165,6 @@ def main():
             app.start_act.append(["open", argv[0]])
             argv = argv[1:]
     app.mainloop()
-    
+
 if __name__ == "__main__":
     main()

@@ -44,10 +44,10 @@ def fmt_arg(value):
         return "-1"
     else:
         return "0x{:X}".format(value)
-    
+
 def fmt_dec(value, add = 0):
     return "{{:{}}}".format(fmt_dec_len(value, add))
-        
+
 def fmt_dec_len(value, add = 0):
     if value == 0:
         d = 1
@@ -55,7 +55,7 @@ def fmt_dec_len(value, add = 0):
         d = int(math.log10(value)) + 1
     d += add
     return d
-        
+
 # thanx to http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager(HTMLParser):
 
@@ -151,7 +151,7 @@ class HyperlinkManager(HTMLParser):
                 self.parser_tags.append(self.bg(bg))
             else:
                 self.parser_tags.append(self.color(color))
-    
+
     def handle_endtag(self, tag):
         self.parser_tags = self.parser_tags[:-1]
 
@@ -184,7 +184,7 @@ class TkBrowser(tkinter.Frame):
 
     def __init__(self, master):
         tkinter.Frame.__init__(self, master)
-        self.pack(fill = tkinter.BOTH, expand = 1)        
+        self.pack(fill = tkinter.BOTH, expand = 1)
         self.pad = None
 
         # gui
@@ -210,9 +210,9 @@ class TkBrowser(tkinter.Frame):
         self.main_image = tkinter.PhotoImage(width = 1, height = 1)
         # add on_load handler
         self.after_idle(self.on_first_display)
-    
+
     def init_gui(self):
-        pass    
+        pass
 
     def update_after(self):
         if not self.need_update:
@@ -267,20 +267,20 @@ class TkBrowser(tkinter.Frame):
         ]
         for text, cmd in btns:
             if text is None:
-                frm = ttk.Frame(self.toolbar, width = self.pad, 
+                frm = ttk.Frame(self.toolbar, width = self.pad,
                     height = self.pad)
                 frm.pack(side = tkinter.LEFT)
-                continue            
+                continue
             btn = ttk.Button(self.toolbar, text = text, \
                 style = "Tool.TButton", command = cmd)
             btn.pack(side = tkinter.LEFT)
         frm = ttk.Frame(self.toolbar, width = self.pad, height = self.pad)
         frm.pack(side = tkinter.LEFT)
-        
+
         # main panel
         self.pan_main = ttk.PanedWindow(self, orient = tkinter.HORIZONTAL)
         self.pan_main.pack(fill = tkinter.BOTH, expand = 1)
-        
+
         # leftpanel
         self.frm_left = ttk.Frame(self.pan_main)
         self.pan_main.add(self.frm_left)
@@ -289,7 +289,7 @@ class TkBrowser(tkinter.Frame):
         self.pan_main.add(self.frm_view)
         self.frm_view.grid_rowconfigure(0, weight = 1)
         self.frm_view.grid_columnconfigure(0, weight = 1)
-        self.scr_view_x = ttk.Scrollbar(self.frm_view, 
+        self.scr_view_x = ttk.Scrollbar(self.frm_view,
             orient = tkinter.HORIZONTAL)
         self.scr_view_x.grid(row = 1, column = 0, \
             sticky = tkinter.E + tkinter.W)
@@ -297,22 +297,22 @@ class TkBrowser(tkinter.Frame):
         self.scr_view_y.grid(row = 0, column = 1, sticky = \
             tkinter.N + tkinter.S)
         # canvas
-        self.canv_view = tkinter.Canvas(self.frm_view, height = 150, 
-            bd = 0, highlightthickness = 0, 
+        self.canv_view = tkinter.Canvas(self.frm_view, height = 150,
+            bd = 0, highlightthickness = 0,
             scrollregion = (0, 0, 50, 50),
             )
         # don't forget
         #   canvas.config(scrollregion=(left, top, right, bottom))
         self.canv_view.bind('<Configure>', self.on_resize_view)
         self.canv_view.bind('<ButtonPress-1>', self.on_mouse_view)
-        
+
         # text
         self.text_view = ReadOnlyText(self.frm_view,
             highlightthickness = 0,
             )
         self.text_hl = HyperlinkManager(self.text_view)
         self.text_view.bind('<Configure>', self.on_resize_view)
-        
+
     def create_menu(self):
         self.menubar = tkinter.Menu(self.master)
         self.master.configure(menu = self.menubar)
@@ -322,10 +322,10 @@ class TkBrowser(tkinter.Frame):
 
     def on_mouse_view(self, event):
         self.update_after()
-        
+
     def on_resize_view(self, event):
         self.update_after()
- 
+
     def parse_path(self, loc):
         if isinstance(loc, str):
             path = []
@@ -342,8 +342,8 @@ class TkBrowser(tkinter.Frame):
         path = tuple(path)
         while path[-1:] == ("",):
             path = path[:-1]
-        return path    
- 
+        return path
+
     def desc_path(self, loc):
         path = self.parse_path(loc)
         if len(path) > 0:
@@ -362,11 +362,11 @@ class TkBrowser(tkinter.Frame):
         c = self.canv_view
         c.delete(tkinter.ALL)
 
-        w = self.canv_view.winfo_width() 
+        w = self.canv_view.winfo_width()
         h = self.canv_view.winfo_height()
-        if (w == 0) or (h == 0): 
+        if (w == 0) or (h == 0):
             return
-        
+
         scale = 0
 
         # Preview image
@@ -429,7 +429,7 @@ class TkBrowser(tkinter.Frame):
         c.config(scrollregion = (0, 0, cw - 2, ch - 2))
         #print("Place c %d %d, p %d %d" % (cw, ch, w, h))
         c.create_image(cw // 2, ch // 2, image = self.canv_image)
-       
+
     def make_image(self, imgobj):
         if imgobj.image is not None:
             return imgobj.image
@@ -456,13 +456,13 @@ class TkBrowser(tkinter.Frame):
             if ch > 0x7f:
                 p += bytes((0b11000000 |\
                     ch >> 6, 0b10000000 |\
-                    (ch & 0b00111111)))               
+                    (ch & 0b00111111)))
             else:
                 p += bytes((ch,))
         image = tkinter.PhotoImage(width = width, height = height, \
             data = bytes(p))
-        return image                
-   
+        return image
+
     def update_gui(self, text = "<Undefined>"):
         self.last_path = self.curr_path
         # cleanup
@@ -518,7 +518,7 @@ class TkBrowser(tkinter.Frame):
             )
             self.scr_view_x.config(command = self.text_view.xview)
             self.scr_view_y.config(command = self.text_view.yview)
-        else:        
+        else:
             if last == 0:
                 rw = self.text_view.winfo_width()
                 rh = self.text_view.winfo_height()
@@ -546,7 +546,7 @@ class TkBrowser(tkinter.Frame):
 
     def add_info(self, text):
         self.curr_markup += text
-        
+
     def end_markup(self):
         if not self.curr_markup: return
         def make_cb(path):
@@ -557,7 +557,7 @@ class TkBrowser(tkinter.Frame):
             return cb
         self.text_hl.add_markup(self.curr_markup, self.text_view, make_cb)
         self.curr_markup = ""
-        
+
     def insert_lb_act(self, name, act, key = None):
         if key is not None:
             self.curr_lb_idx[key] = len(self.curr_lb_acts)
@@ -580,7 +580,7 @@ class TkBrowser(tkinter.Frame):
             self.curr_lb.selection_set(idxs)
         if idx is not None:
             self.curr_lb.see(idxs)
-            
+
     def on_left_listbox(self, event):
         def currsel():
             try:
@@ -599,14 +599,14 @@ class TkBrowser(tkinter.Frame):
         if text is None:
             frm = ttk.Frame(self.toolbar, width = self.pad, height = self.pad)
             frm.pack(side = tkinter.LEFT)
-            self.curr_gui.append(lambda:frm.pack_forget())    
+            self.curr_gui.append(lambda:frm.pack_forget())
             return
         btn = ttk.Button(self.toolbar, text = text, \
             style = "Tool.TButton", command = cmd)
         btn.pack(side = tkinter.LEFT)
         self.curr_gui.append(lambda:btn.pack_forget())
         return btn
-        
+
     def add_toollabel(self, text):
         lab = ttk.Label(self.toolbar, text = text)
         lab.pack(side = tkinter.LEFT)
@@ -635,16 +635,16 @@ class TkBrowser(tkinter.Frame):
                 btn.config(state = tkinter.NORMAL)
             else:
                 btn.config(state = tkinter.DISABLED)
-    
+
     def clear_hist(self):
         self.hist = self.hist[-1:]
         self.histf = []
 
     def open_http(self, path):
         messagebox.showinfo(parent = self, title = "URL", message = path)
- 
+
     def open_path(self, loc, withhist = True):
-        path = self.parse_path(loc)        
+        path = self.parse_path(loc)
         if withhist:
             self.hist.append([path])
             self.histf = []
@@ -671,5 +671,3 @@ class TkBrowser(tkinter.Frame):
         self.clear_info()
         self.add_info("Open path\n\n" + str(path))
         return True
-        
-

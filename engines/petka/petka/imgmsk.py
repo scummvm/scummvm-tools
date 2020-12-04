@@ -10,10 +10,10 @@ class MSKLoader:
     def __init__(self):
         self.bound = [0, 0, 0, 0]
         self.rects = []
-        
+
     def load_info(self, f):
         return self.load_data(f)
-        
+
     def load_data(self, f):
         rest = f.read()
         f.seek(0)
@@ -31,10 +31,10 @@ class MSKLoader:
                 rec.append([l, t, r, b])
             rects.append(rec)
             delta -= 4
-            
+
         if delta != 0:
            raise EngineError("Bad MSK file")
-            
+
         temp = f.read(len(rects) * 4)
         frms = struct.unpack_from("<{}I".format(len(rects)), temp)
 
@@ -45,4 +45,3 @@ class MSKLoader:
         self.bound = struct.unpack_from("<4i", temp)
 
         self.rects = list(zip(reversed(frms), rects))
-

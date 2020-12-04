@@ -88,7 +88,7 @@ ACTIONS = {
     4: ("TALK",    5006),
     5: ("CHAPAY",  5007),
     6: ("INVNTR",    -1),
-    
+
 }
 
 class ScrObject:
@@ -157,7 +157,7 @@ class DlgOpObject:
         self.ref = ref          # message idx
         self.msg = None         # message
         self.pos = None
-        
+
 class Engine:
     def __init__(self):
         self.fman = None
@@ -168,11 +168,11 @@ class Engine:
 
         self.curr_part = None
         self.curr_chap = None
-        
+
         self.curr_path = None
         self.curr_speech = None
         self.curr_diskid = None
-        
+
     def init_empty(self, enc):
         self.enc = enc
         self.objects = []
@@ -183,7 +183,7 @@ class Engine:
         self.dlgs = []
         self.dlg_idx = {}
         self.dlgops = []
-                
+
     def parse_ini(self, f):
         # parse ini settings
         curr_sect = None
@@ -210,7 +210,7 @@ class Engine:
         ini["__ordersect__"] = order_sect
         ini["__order__"] = orders
         return ini
-        
+
     def parse_res(self, f):
         res  = {}
         resord = []
@@ -228,7 +228,7 @@ class Engine:
             res[res_id] = value
             resord.append(res_id)
         return res, resord
-        
+
     def load_data(self, folder, enc):
         self.init_empty(enc)
         self.fman = FileManager(folder)
@@ -252,7 +252,7 @@ class Engine:
         else:
             # load BGS.INI only (e.g. DEMO)
             self.parts_ini = None
-            
+
         # std stores
         self.fman.load_store("patch.str")
         self.fman.load_store("main.str")
@@ -278,7 +278,7 @@ class Engine:
             self.curr_path = ""
             self.curr_speech = ""
             self.curr_diskid = None
-        
+
         # load .STR
         strs = ["Flics", "Background", "Wav", "Music", "SFX", "Speech"]
         for strf in strs:
@@ -292,7 +292,7 @@ class Engine:
         self.load_names()
         # load dialogs
         self.load_dialogs()
-        
+
         # current state
         self.curr_scene = None
         self.curr_obj = None
@@ -301,13 +301,13 @@ class Engine:
         self.curr_char1 = None
         self.curr_char2 = None
         self.curr_invntr = None
-        
+
     def load_script(self, scrname = None, bkgname = None, resname = None):
         self.objects = []
         self.scenes = []
         self.obj_idx = {}
         self.scn_idx = {}
-        
+
         if scrname is None:
             try:
                 data = self.fman.read_file(self.curr_path + "script.dat")
@@ -347,7 +347,7 @@ class Engine:
             rec = ScrObject(obj_id, name)
             rec.acts = acts
             return off, rec
-        
+
         for i in range(num_obj):
             off, obj = read_rec(off)
             self.objects.append(obj)
@@ -358,9 +358,9 @@ class Engine:
             scn.refs = None
             self.scenes.append(scn)
             self.scn_idx[scn.idx] = scn
-            
+
         if bkgname is None:
-            try:    
+            try:
                 data = self.fman.read_file(self.curr_path + "backgrnd.bg")
             except:
                 data = None
@@ -374,7 +374,7 @@ class Engine:
             finally:
                 f.close()
 
-        if data:        
+        if data:
             num_rec = struct.unpack_from("<I", data[:4])[0]
         else:
             num_rec = 0
@@ -383,7 +383,7 @@ class Engine:
             scn_ref, num_ref = struct.unpack_from("<HI", data[off:off + 6])
             off += 6
             if scn_ref in self.scn_idx:
-                scn = self.scn_idx[scn_ref]    
+                scn = self.scn_idx[scn_ref]
                 scn.refs = []
             else:
                 raise EngineError("DEBUG: Scene ID = 0x{:x} not found".\
@@ -398,7 +398,7 @@ class Engine:
                 else:
                     raise EngineError("DEBUG: Scene ref 0x{:x} not found".\
                         format(obj[0]))
-                        
+
         if resname is None:
             try:
                 f = self.fman.read_file_stream(self.curr_path + "resource.qrc")
@@ -409,8 +409,8 @@ class Engine:
                 f = open(resname, "rb")
             except:
                 f = None
-        try:            
-            if f:            
+        try:
+            if f:
                 self.res, self.resord = self.parse_res(f)
             else:
                 self.res = {}
@@ -418,7 +418,7 @@ class Engine:
         finally:
             if f:
                 f.close()
-        
+
     def load_names(self):
         self.names = {}
         self.namesord = []
@@ -463,7 +463,7 @@ class Engine:
                 except:
                     r, g, b = 255, 255, 255
                 obj.cast = (r, g, b)
-            
+
     def load_bgs(self):
         # load BGS.INI
         self.bgs_ini = {}
@@ -475,7 +475,7 @@ class Engine:
                 self.bgs_ini = self.parse_ini(f)
             finally:
                 f.close()
-        
+
         settings = self.bgs_ini.get("Settings", {})
         self.start_scene = settings.get("StartRoom", None)
 
@@ -511,14 +511,14 @@ class Engine:
             except:
                 persp = None
             scene.persp = persp
-    
-            
+
+
     def load_dialogs(self, fixname = None, lodname = None, noobjref = False):
         self.msgs = []
         # DIALOGUES.LOD
-        
+
         if lodname is None:
-            try:    
+            try:
                 f = self.fman.read_file_stream(self.curr_path + "dialogue.lod")
             except:
                 f = None
@@ -556,7 +556,7 @@ class Engine:
         self.dlg_idx = {}
         self.dlgops = []
         if fixname is None:
-            try:    
+            try:
                 f = self.fman.read_file_stream(self.curr_path + "dialogue.fix")
             except:
                 f = None
@@ -624,13 +624,13 @@ class Engine:
                             dlg.ops = oparr
                             oparr = []
                         dlg = opref[idx]
-                    oparr.append(oprec)    
+                    oparr.append(oprec)
                 if len(oparr) > 0:
                     dlg.ops = oparr
             finally:
                 if f:
                     f.close()
-                
+
     def write_script(self, f):
         f.write(struct.pack("<II", len(self.objects), len(self.scenes)))
 
@@ -640,24 +640,24 @@ class Engine:
             f.write(ename)
             f.write(struct.pack("<I", len(rec.acts)))
             for act in rec.acts:
-                f.write(struct.pack("<HBHI", act.act_op, act.act_status, 
+                f.write(struct.pack("<HBHI", act.act_op, act.act_status,
                     act.act_ref, len(act.ops)))
                 for op in act.ops:
                     f.write(struct.pack("<5H", op.op_ref, op.op_code,
                         op.op_arg1, op.op_arg2, op.op_arg3))
-        
+
         for rec in self.objects + self.scenes:
             write_rec(rec)
-        
+
     def write_backgrnd(self, f):
         lst = [scn for scn in self.scenes if scn.refs is not None]
         f.write(struct.pack("<I", len(lst)))
         for scn in lst:
             f.write(struct.pack("<HI", scn.idx, len(scn.refs)))
             for ref in scn.refs:
-                f.write(struct.pack("<H5I", ref[0].idx, ref[1], ref[2], 
+                f.write(struct.pack("<H5I", ref[0].idx, ref[1], ref[2],
                     ref[3], ref[4], ref[5]))
-                
+
 
     def write_lod(self, f):
         f.write(struct.pack("<I", len(self.msgs)))
@@ -665,7 +665,7 @@ class Engine:
             wav = msg.msg_wav.encode(self.enc)
             while len(wav) < 12:
                 wav += b"\0"
-            f.write(struct.pack("<I12sII", msg.msg_arg1, wav, msg.msg_arg2, 
+            f.write(struct.pack("<I12sII", msg.msg_arg1, wav, msg.msg_arg2,
                 msg.msg_arg3))
         for msg in self.msgs:
             txt = msg.name.encode(self.enc)
@@ -677,11 +677,11 @@ class Engine:
             f.write(struct.pack("<3I", grp.idx, len(grp.acts), grp.grp_arg1))
         for grp in self.dlgs:
             for act in grp.acts:
-                f.write(struct.pack("<2H3I", act.opcode, act.ref, 
+                f.write(struct.pack("<2H3I", act.opcode, act.ref,
                     len(act.dlgs), act.arg1, act.arg2))
             for act in grp.acts:
                 for dlg in act.dlgs:
-                    f.write(struct.pack("<3I", dlg.op_start, dlg.arg1, 
+                    f.write(struct.pack("<3I", dlg.op_start, dlg.arg1,
                         dlg.arg2))
         f.write(struct.pack("<I", len(self.dlgops)))
         for op in self.dlgops:
@@ -693,23 +693,23 @@ class Engine:
     # create current state from initial state
     def init_game(self):
         self.curr_scene = self.scene_to_id(self.start_scene)
-        
+
         self.curr_obj = []
         for obj in self.objects + self.scenes:
             state = ScrObjectState(obj)
             self.curr_obj.append(state)
             state.prop
-            
+
         self.curr_dlg = []
         for dlgop in self.dlgops:
             dlgstate = DlgOpObject(dlgop.code, dlgop.arg, dlgop.ref)
             dlgstate.pos = dlgop.pos
             self.curr_dlg.append(dlgstate)
-        
+
         self.curr_cursor = None
         self.curr_char1 = None
         self.curr_char2 = None
-        self.curr_invntr = []        
+        self.curr_invntr = []
 
     def load_save(self, ls):
         self.curr_scene = self.scene_to_id(ls.scene)
@@ -720,4 +720,3 @@ class Engine:
         self.curr_char1 = None
         self.curr_char2 = None
         self.curr_invntr = None
-

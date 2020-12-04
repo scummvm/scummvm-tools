@@ -17,18 +17,18 @@ class BMPLoader:
         self.image = None
         self.width = 0
         self.height = 0
-        
+
     def load_data_int16(self, f):
         # check magic string "BM"
         temp = f.read(2)
         if temp != b"BM":
             raise EngineError("Bad magic string")
         off = 2
-        
+
         temp = f.read(12)
         f_sz, res1, res2, data_offset = struct.unpack_from("<IHHI", temp)
         off += 12
-        
+
         # read next 40 bytes, BITMAPINFOHEADER
         temp = f.read(40)
         pict = struct.unpack_from("<IiiHHIIiiII", temp)
@@ -37,7 +37,7 @@ class BMPLoader:
             raise EngineError("Unsupported InfoHeader")
         pictw = pict[1]
         picth = pict[2]
-        
+
         # read data_offset - 40 - 6 bytes
         delta = data_offset - 40 - 6
         if delta < 0:
@@ -50,7 +50,7 @@ class BMPLoader:
 
         bsz = pictw * picth * 2
         picture_data = f.read(bsz)
- 
+
         off += bsz
         if len(picture_data) != bsz:
             raise EngineError("Bitmap truncated, need {}, got {}".format(bsz, \
@@ -66,9 +66,9 @@ class BMPLoader:
         if len(temp) > 0:
             if temp != b"\x00\x00":
                 raise EngineError("BMP read error, some data unparsed")
-                
+
         return pictw, picth, picture_data
-        
+
     def pixelswap16ud(self, pw, ph, pd):
         # convert 16 bit to 24 + vertical reverse
         b16arr = array.array("H") # unsigned short
@@ -107,22 +107,22 @@ class BMPLoader:
         except:
             f.seek(0)
             self.image = Image.open(f)
-        
+
     def load_raw(self, pw, ph, pd):
         if Image:
             pd = self.pixelswap16(pw, ph, pd).tobytes()
-            self.image = Image.frombytes("RGB", (pw, ph), pd) 
+            self.image = Image.frombytes("RGB", (pw, ph), pd)
         else:
             self.width = pw
             self.height = ph
             self.rgb = self.pixelswap16(pw, ph, pd)
-        
+
     def load_data(self, f):
         try:
             pw, ph, pd = self.load_data_int16(f)
             if Image:
                 pd = self.pixelswap16ud(pw, ph, pd).tobytes()
-                self.image = Image.frombytes("RGB", (pw, ph), pd) 
+                self.image = Image.frombytes("RGB", (pw, ph), pd)
             else:
                 self.width = pw
                 self.height = ph
@@ -130,4 +130,3 @@ class BMPLoader:
         except:
             f.seek(0)
             self.image = Image.open(f)
-
