@@ -27,6 +27,7 @@
 /config.mk
 /config.h
 /config.log
+/extract_hadesch
 
 /decompiler/doc/doc.pdf
 

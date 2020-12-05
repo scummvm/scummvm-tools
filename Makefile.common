@@ -34,7 +34,8 @@ PROGRAMS = \
 	extract_mohawk \
 	extract_ngi \
 	construct_mohawk \
-	scummvm-tools-cli
+	scummvm-tools-cli \
+	extract_hadesch
 
 ifdef USE_BOOST
 PROGRAMS += \
@@ -99,6 +100,9 @@ dekyra_OBJS := \
 	engines/kyra/dekyra.o \
 	engines/kyra/dekyra_v1.o \
 	$(UTILS)
+
+extract_hadesch_OBJS := \
+	engines/hadesch/extract_hadesch.o
 
 deprince_OBJS := \
 	engines/prince/deprince.o \
