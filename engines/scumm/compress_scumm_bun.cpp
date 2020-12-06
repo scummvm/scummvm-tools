@@ -732,6 +732,9 @@ byte *CompressScummBun::decompressBundleSound(int index, Common::File  &input, i
 		rawMuse = true;
 		return compFinal;
 	}
+
+	if (tag != 'COMP')
+		return nullptr;
 	rawMuse = false;
 	assert(tag == 'COMP');
 	int numCompItems = input.readUint32BE();
@@ -1156,6 +1159,10 @@ void CompressScummBun::execute() {
 		int32 size = 0;
 		bool rawMuse = false;
 		byte *compFinal = decompressBundleSound(i, input, size, rawMuse);
+		if (!compFinal) {
+			printf("%s is garbage. Skipping\n", _bundleTable[i].filename);
+			continue;
+		}
 		writeToRMAPFile(compFinal, output, _bundleTable[i].filename, offsetData, bits, freq, channels);
 		writeRegions(compFinal + offsetData, bits, freq, channels, outpath.getPath().c_str(), _bundleTable[i].filename, output, rawMuse && bits == 16);
 		free(compFinal);
