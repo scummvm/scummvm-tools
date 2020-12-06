@@ -52,11 +52,12 @@ protected:
 	void encodeWaveWithOgg(char *filename);
 	void encodeWaveWithLame(char *filename);
 	void writeWaveHeader(int s_size, int rate, int chan);
-	void writeToTempWave(char *fileName, byte *output_data, unsigned int size);
-	byte *decompressBundleSound(int index, Common::File  &input, int32 &finalSize);
+	void writeToTempWave(char *fileName, byte *output_data, unsigned int size, bool littleEndian);
+	byte *decompressBundleSound(int index, Common::File  &input, int32 &finalSize, bool &rawBundle);
 	byte *convertTo16bit(byte *ptr, int inputSize, int &outputSize, int bits, int freq, int channels);
 	void countMapElements(byte *ptr, int &numRegions, int &numJumps, int &numSyncs, int &numMarkers);
-	void writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, Common::File &output);
+	void writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, Common::File &output,
+			  bool littleEndian);
 	void recalcRegions(int32 &value, int bits, int freq, int channels);
 	void writeToRMAPFile(byte *ptr, Common::File &output, char *filename, int &offsetData, int &bits, int &freq, int &channels);
 };

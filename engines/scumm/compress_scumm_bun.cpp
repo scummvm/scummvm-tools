@@ -696,7 +696,7 @@ void CompressScummBun::writeWaveHeader(int s_size, int rate, int chan) {
 	_waveTmpFile.close();
 }
 
-void CompressScummBun::writeToTempWave(char *fileName, byte *output_data, unsigned int size) {
+void CompressScummBun::writeToTempWave(char *fileName, byte *output_data, unsigned int size, bool littleEndian) {
 	if (!_waveTmpFile.isOpen()) {
 		_waveTmpFile.open(fileName, "wb");
 		byte wav[44];
@@ -704,10 +704,12 @@ void CompressScummBun::writeToTempWave(char *fileName, byte *output_data, unsign
 		_waveTmpFile.write(output_data, 44);
 		_waveDataSize = 0;
 	}
-	for (unsigned int j = 0; j < size - 1; j += 2) {
-		byte tmp = output_data[j + 0];
-		output_data[j + 0] = output_data[j + 1];
-		output_data[j + 1] = tmp;
+	if (!littleEndian) {
+		for (unsigned int j = 0; j < size - 1; j += 2) {
+			byte tmp = output_data[j + 0];
+			output_data[j + 0] = output_data[j + 1];
+			output_data[j + 1] = tmp;
+		}
 	}
 	_waveTmpFile.write(output_data, size);
 	_waveDataSize += size;
@@ -715,13 +717,22 @@ void CompressScummBun::writeToTempWave(char *fileName, byte *output_data, unsign
 
 typedef struct { int offset, size, codec; } CompTable;
 
-byte *CompressScummBun::decompressBundleSound(int index, Common::File  &input, int32 &finalSize) {
+byte *CompressScummBun::decompressBundleSound(int index, Common::File  &input, int32 &finalSize, bool &rawMuse) {
 	byte compOutput[0x2000];
 	int i;
 
 	input.seek(_bundleTable[index].offset, SEEK_SET);
 
 	uint32 tag = input.readUint32BE();
+	if (tag == 'iMUS') {
+		input.seek(_bundleTable[index].offset, SEEK_SET);
+		finalSize = _bundleTable[index].size;
+		byte *compFinal = (byte *)malloc(finalSize);
+		input.read_throwsOnError(compFinal, finalSize);
+		rawMuse = true;
+		return compFinal;
+	}
+	rawMuse = false;
 	assert(tag == 'COMP');
 	int numCompItems = input.readUint32BE();
 	input.seek(8, SEEK_CUR);
@@ -867,7 +878,7 @@ struct Marker {
 static Region *_region;
 static int _numRegions;
 
-void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, Common::File &output) {
+void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels, const char *dir, char *filename, Common::File &output, bool littleEndian) {
 	char tmpPath[200];
 
 	for (int l = 0; l < _numRegions; l++) {
@@ -876,7 +887,7 @@ void CompressScummBun::writeRegions(byte *ptr, int bits, int freq, int channels,
 		int offset = _region[l].offset;
 		byte *outputData = convertTo16bit(ptr + offset, size, outputSize, bits, freq, channels);
 		sprintf(tmpPath, "%s%s_reg%03d.wav", dir, filename, l);
-		writeToTempWave(tmpPath, outputData, outputSize);
+		writeToTempWave(tmpPath, outputData, outputSize, littleEndian);
 		writeWaveHeader(_waveDataSize, freq, channels);
 		free(outputData);
 		sprintf(tmpPath, "%s%s_reg%03d", dir, filename, l);
@@ -1143,9 +1154,10 @@ void CompressScummBun::execute() {
 
 		int offsetData = 0, bits = 0, freq = 0, channels = 0;
 		int32 size = 0;
-		byte *compFinal = decompressBundleSound(i, input, size);
+		bool rawMuse = false;
+		byte *compFinal = decompressBundleSound(i, input, size, rawMuse);
 		writeToRMAPFile(compFinal, output, _bundleTable[i].filename, offsetData, bits, freq, channels);
-		writeRegions(compFinal + offsetData, bits, freq, channels, outpath.getPath().c_str(), _bundleTable[i].filename, output);
+		writeRegions(compFinal + offsetData, bits, freq, channels, outpath.getPath().c_str(), _bundleTable[i].filename, output, rawMuse && bits == 16);
 		free(compFinal);
 	}
 
