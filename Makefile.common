@@ -35,7 +35,8 @@ PROGRAMS = \
 	extract_ngi \
 	construct_mohawk \
 	scummvm-tools-cli \
-	extract_hadesch
+	extract_hadesch \
+	extract_lokalizator
 
 ifdef USE_BOOST
 PROGRAMS += \
@@ -103,6 +104,9 @@ dekyra_OBJS := \
 
 extract_hadesch_OBJS := \
 	engines/hadesch/extract_hadesch.o
+
+extract_lokalizator_OBJS := \
+	engines/scumm/extract_lokalizator.o
 
 deprince_OBJS := \
 	engines/prince/deprince.o \
