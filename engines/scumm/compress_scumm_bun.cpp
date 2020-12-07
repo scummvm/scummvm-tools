@@ -734,7 +734,7 @@ byte *CompressScummBun::decompressBundleSound(int index, Common::File  &input, i
 	}
 
 	if (tag != 'COMP')
-		return nullptr;
+		return NULL;
 	rawMuse = false;
 	assert(tag == 'COMP');
 	int numCompItems = input.readUint32BE();
@@ -1190,4 +1190,3 @@ int main(int argc, char *argv[]) {
 	return scummbun.run(argc, argv);
 }
 #endif
-
