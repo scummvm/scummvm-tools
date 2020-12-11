@@ -2250,18 +2250,18 @@ class App(TkBrowser):
                     msgid = text, msgstr = ts, comment = cmt)
                 po.append(entry)
             for rec in self.sim.objects:
-                saveitem(rec.name, "obj_{}".format(rec.idx))
+                saveitem(rec.name, "p_{}_{} obj_{}".format(self.sim.curr_part, self.sim.curr_chap, rec.idx))
             for rec in self.sim.scenes:
-                saveitem(rec.name, "scn_{}".format(rec.idx))
+                saveitem(rec.name, "p_{}_{} scn_{}".format(self.sim.curr_part, self.sim.curr_chap, rec.idx))
             for idx, name in enumerate(self.sim.namesord):
                 saveitem(self.sim.names[name],
-                    "name_{}, {}".format(idx, name))
+                    "p_{}_{} name_{}, {}".format(self.sim.curr_part, self.sim.curr_chap, idx, name))
             for idx, name in enumerate(self.sim.invntrord):
                 saveitem(self.sim.invntr[name],
-                    "inv_{}, {}".format(idx, name))
+                    "p_{}_{} inv_{}, {}".format(self.sim.curr_part, self.sim.curr_chap, idx, name))
             for idx, msg in enumerate(self.sim.msgs):
                 saveitem(msg.name,
-                    "msg_{}, {} - {}".format(idx, msg.obj.idx, msg.obj.name))
+                    "p_{}_{} msg_{}, {} - {}".format(self.sim.curr_part, self.sim.curr_chap, idx, msg.obj.idx, msg.obj.name))
             po.save(fn)
         except:
             self.switch_view(0)
