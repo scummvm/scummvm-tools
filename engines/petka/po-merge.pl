@@ -7,7 +7,7 @@ use utf8;
 use open qw/:std :utf8/;
 
 if ($#ARGV < 0) {
-	die "Usage: $0 <file.po>...";
+	die "Usage: $0 [-pot] <file.po>...";
 }
 
 my $idx1 = "";
@@ -24,8 +24,14 @@ my $prevvalue;
 
 my @poOrder;
 
+my $potmode = 0;
 
 foreach my $file (@ARGV) {
+	if ($file eq '-pot') {
+		$potmode = 1;
+		next;
+	}
+
     unless (-e $file) {
 		next;
 	}
@@ -187,7 +193,7 @@ for my $k (@poOrder) {
 		}
 	}
 
-	if (exists $dict{$data{$k}}) {
+	if (exists $dict{$data{$k}} && !$potmode) {
 		print "msgstr \"$dict{$data{$k}}\"\n";
 		$matches++;
 	} else {
