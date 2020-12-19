@@ -1021,6 +1021,20 @@ android | gamecube | psp | wii)
 	fi
 	;;
 esac
+
+if test -n "$STRINGS"; then
+	_strings=$STRINGS
+else
+	echo_n "Checking for $_host_alias-strings... " >> "$TMPLOG"
+	if `which $_host_alias-strings >/dev/null 2>&1`; then
+		_strings=$_host_alias-strings
+		echo yes >> "$TMPLOG"
+	else
+		_strings=strings
+		echo no >> "$TMPLOG"
+	fi
+fi
+
 #
 # Check for endianness
 #
@@ -1035,9 +1049,9 @@ void _ebcdic() { char* s = (char*) ebcdic_mm; s = (char*) ebcdic_ii; }
 int main() { _ascii (); _ebcdic (); return 0; }
 EOF
 $CXX $CXXFLAGS -c -o $TMPO.o tmp_endianness_check.cpp
-if strings $TMPO.o | grep BIGenDianSyS >/dev/null; then
+if $_strings $TMPO.o | grep BIGenDianSyS >/dev/null; then
 	_endian=big
-elif strings $TMPO.o | grep LiTTleEnDian >/dev/null; then
+elif $_strings $TMPO.o | grep LiTTleEnDian >/dev/null; then
 	_endian=little
 fi
 echo $_endian;
