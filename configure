@@ -715,6 +715,13 @@ psp)
 	_host_cpu=mipsallegrexel
 	_host_alias=psp
 	;;
+raspberrypi)
+	_host_os=linux
+	_host_cpu=arm
+	# This tuple is the one used by the official Rpi toolchain.
+	# It may change in the future.
+	_host_alias=arm-linux-gnueabihf
+	;;
 samsungtv)
 	_host_os=linux
 	_host_cpu=arm
@@ -1393,6 +1400,23 @@ if test -n "$_host"; then
 			_ar="$_host-ar cru"
 			_as="$_host-as"
 			_windres=$_host-windres
+			;;
+		raspberrypi)
+			# This is needed because the official cross compiler doesn't have multiarch enabled
+			# but Raspbian does.
+			# Be careful as it's the linker (LDFLAGS) which must know about sysroot.
+			# These are needed to build against Raspbian's libSDL.
+			LDFLAGS="$LDFLAGS --sysroot=$RPI_ROOT"
+			LDFLAGS="$LDFLAGS -B$RPI_ROOT/usr/lib/arm-linux-gnueabihf"
+			LDFLAGS="$LDFAGS -Xlinker --rpath-link=$RPI_ROOT/usr/lib/arm-linux-gnueabihf/pulseaudio"
+			LDFLAGS="$LDFLAGS -Xlinker --rpath-link=$RPI_ROOT/usr/lib/arm-linux-gnueabihf"
+			LDFLAGS="$LDFLAGS -Xlinker --rpath-link=$RPI_ROOT/lib/arm-linux-gnueabihf"
+			LDFLAGS="$LDFLAGS -Xlinker --rpath-link=$RPI_ROOT/opt/vc/lib"
+			LDFLAGS="$LDFLAGS -L$RPI_ROOT/opt/vc/lib"
+			CXXFLAGS="$CXXFLAGS -isystem $RPI_ROOT/usr/include/arm-linux-gnueabihf"
+			CXXFLAGS="$CXXFLAGS -I$RPI_ROOT/usr/include"
+			# This is so optional OpenGL ES includes are found.
+			CXXFLAGS="$CXXFLAGS -I$RPI_ROOT/opt/vc/include"
 			;;
 		*)
 			echo "WARNING: Unknown target, continuing with auto-detected values"
