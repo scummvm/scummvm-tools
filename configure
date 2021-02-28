@@ -1408,7 +1408,7 @@ if test -n "$_host"; then
 			# These are needed to build against Raspbian's libSDL.
 			LDFLAGS="$LDFLAGS --sysroot=$RPI_ROOT"
 			LDFLAGS="$LDFLAGS -B$RPI_ROOT/usr/lib/arm-linux-gnueabihf"
-			LDFLAGS="$LDFAGS -Xlinker --rpath-link=$RPI_ROOT/usr/lib/arm-linux-gnueabihf/pulseaudio"
+			LDFLAGS="$LDFLAGS -Xlinker --rpath-link=$RPI_ROOT/usr/lib/arm-linux-gnueabihf/pulseaudio"
 			LDFLAGS="$LDFLAGS -Xlinker --rpath-link=$RPI_ROOT/usr/lib/arm-linux-gnueabihf"
 			LDFLAGS="$LDFLAGS -Xlinker --rpath-link=$RPI_ROOT/lib/arm-linux-gnueabihf"
 			LDFLAGS="$LDFLAGS -Xlinker --rpath-link=$RPI_ROOT/opt/vc/lib"
