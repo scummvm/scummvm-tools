@@ -432,7 +432,6 @@ Encoder Tools:
                 and conversion options work the same.
 
         convert_dxa.bat
-        convert_dxa_one.bat
 
                 To ease your life we also provide batch files to autoconvert
                 all files. It should work with any game version.
@@ -449,7 +448,7 @@ Encoder Tools:
         convert_dxa.sh
 
                 Same as the above convert_dxa.bat, just for *nix-based systems.
-                It uses Wine to run RAD Game Tools.
+                It uses FFmpeg to extract Smacker videos.
 
 Other Tools:
         pack_bladerunner
