@@ -418,31 +418,51 @@ bool MsnReader::convertToMod(const Common::Filename &fileName) {
 
 int main(int argc, char *argv[]) {
 	printf("What do you want to do?\n");
-	printf("   1: convert HUMMEL1.MOD to MSN_DATA.052\n");
-	printf("   2: convert SNTHEME2.MOD to MS2_DATA.056\n");
-	printf("   3: convert MSN_DATA.052 to HUMMEL1.MOD\n");
-	printf("   4: convert MS2_DATA.056 to SNTHEME2.MOD\n");
+	printf("   1: convert MSN_INTRO.MOD to MSN_DATA.052\n");
+	printf("   2: convert MSN_OUTRO.MOD to MSN_DATA.049\n");
+	printf("   3: convert MS2_INTRO.MOD to MS2_DATA.052\n");
+	printf("   4: convert MS2_OUTRO.MOD to MS2_DATA.056\n");
+	printf("   5: convert MSN_DATA.052 to MSN_INTRO.MOD\n");
+	printf("   6: convert MSN_DATA.049 to MSN_OUTRO.MOD\n");
+	printf("   7: convert MS2_DATA.052 to MS2_INTRO.MOD\n");
+	printf("   8: convert MS2_DATA.056 to MS2_OUTRO.MOD\n");
 
 	int mode = -1;
 	scanf("%d", &mode);
-	if (mode < 1 || mode > 4)
+	if (mode < 1 || mode > 8)
 		return -1;
 
 	if (mode == 1) {
-		ModReader reader("HUMMEL1.MOD");
+		ModReader reader("MSN_INTRO.MOD");
 		if (!reader.convertToMsn("MSN_DATA.052", 1))
 			return 1;
 	} else if (mode == 2) {
-		ModReader reader("SNTHEME2.MOD");
-		if (!reader.convertToMsn("MS2_DATA.056", 2))
+		ModReader reader("MSN_OUTRO.MOD");
+		if (!reader.convertToMsn("MSN_DATA.049", 1))
 			return 1;
 	} else if (mode == 3) {
-		MsnReader reader("MSN_DATA.052", 1);
-		if (!reader.convertToMod("HUMMEL1.MOD"))
+		ModReader reader("MS2_INTRO.MOD");
+		if (!reader.convertToMsn("MS2_DATA.052", 2))
 			return 1;
 	} else if (mode == 4) {
+		ModReader reader("MS2_OUTRO.MOD");
+		if (!reader.convertToMsn("MS2_DATA.056", 2))
+			return 1;
+	} else if (mode == 5) {
+		MsnReader reader("MSN_DATA.052", 1);
+		if (!reader.convertToMod("MSN_INTRO.MOD"))
+			return 1;
+	} else if (mode == 6) {
+		MsnReader reader("MSN_DATA.049", 1);
+		if (!reader.convertToMod("MSN_OUTRO.MOD"))
+			return 1;
+	} else if (mode == 7) {
+		MsnReader reader("MS2_DATA.052", 2);
+		if (!reader.convertToMod("MS2_INTRO.MOD"))
+			return 1;
+	} else if (mode == 8) {
 		MsnReader reader("MS2_DATA.056", 2);
-		if (!reader.convertToMod("SNTHEME2.MOD"))
+		if (!reader.convertToMod("MS2_OUTRO.MOD"))
 			return 1;
 	}
 
