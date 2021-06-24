@@ -348,6 +348,11 @@ void CompressTinsel::execute() {
 		indexNo++;
 	}
 
+	/* Close file handles */
+	_output_smp.close();
+	_output_idx.close();
+	_input_smp.close();
+	_input_idx.close();
 	/* And some clean-up :-) */
 	Common::removeFile(TEMP_RAW);
 	Common::removeFile(TEMP_ENC);
