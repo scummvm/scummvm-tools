@@ -287,7 +287,7 @@ void CompressTinsel::execute() {
 		_output_smp.writeUint32BE(MKID_BE('OGG '));
 		break;
 	case AUDIO_FLAC:
-		_output_idx.writeUint32BE(MKID_BE('FLAC'));
+		_output_smp.writeUint32BE(MKID_BE('FLAC'));
 		break;
 	default:
 		throw ToolException("Unknown audio format!");
