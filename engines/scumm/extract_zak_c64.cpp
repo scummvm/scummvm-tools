@@ -139,6 +139,7 @@ void ExtractZakC64::execute() {
 		sprintf(fname, "%02i.LFL", i);
 		outpath.setFullName(fname);
 		output.open(outpath, "wb");
+		output.setXorMode(0xFF);
 
 		print("Creating %s...", fname);
 		input->seek((SectorOffset[room_tracks_c64[i]] + room_sectors_c64[i]) * 256, SEEK_SET);
