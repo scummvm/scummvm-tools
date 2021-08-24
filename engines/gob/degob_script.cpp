@@ -251,13 +251,13 @@ void Script::seek(uint32 off, int whence) {
 	}
 }
 
-uint8  Script::peekUint8()  const { return *_ptr; }
-uint16 Script::peekUint16() const { return READ_LE_UINT16(_ptr); }
-uint32 Script::peekUint32() const { return READ_LE_UINT32(_ptr); }
+uint8  Script::peekUint8(int32 offset)  const { return *(_ptr + offset); }
+uint16 Script::peekUint16(int32 offset) const { return READ_LE_UINT16(_ptr + offset); }
+uint32 Script::peekUint32(int32 offset) const { return READ_LE_UINT32(_ptr + offset); }
 uint8  Script::readUint8()        { uint8  i = peekUint8();  _ptr += 1; return i; }
 uint16 Script::readUint16()       { uint16 i = peekUint16(); _ptr += 2; return i; }
 uint32 Script::readUint32()       { uint32 i = peekUint32(); _ptr += 4; return i; }
-const char *Script::peekString() const { return (char *) _ptr; }
+const char *Script::peekString(int32 offset) const { return (char *) _ptr + offset; }
 const char *Script::readString()  { const char *i = peekString(); _ptr += strlen(i) + 1; return i; }
 
 void Script::skipExpr(char stopToken) {
