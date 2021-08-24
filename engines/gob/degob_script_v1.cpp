@@ -1128,10 +1128,16 @@ void Script_v1::o1_loadMultObject(FuncParams &params) {
 	print("%s, ", readExpr().c_str());
 	print("%s, ", readExpr().c_str());
 	print("%s", readExpr().c_str());
-	endFunc();
 
 	for (int i = 0; i < 11; i++)
-		readExpr();
+	{
+		if (peekUint8() != 99)
+			readExpr();
+		else
+			skip(1);
+	}
+
+	endFunc();
 }
 
 void Script_v1::o1_dummy(FuncParams &params) {
