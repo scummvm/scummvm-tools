@@ -1145,3 +1145,26 @@ void Script_v1::o1_dummy(FuncParams &params) {
 	uint16 size = readUint16();
 	skip(size * 2);
 }
+
+void  Script_v1::o1_copySprite(FuncParams &params) {
+	startFunc(params);
+	if (peekUint8(1) == 0)
+		print("%d, ", readUint16());
+	else
+		print("%s, ", readExpr().c_str());
+
+	if (peekUint8(1) == 0)
+		print("%d, ", readUint16());
+	else
+		print("%s, ", readExpr().c_str());
+
+	print("%s, ", readExpr().c_str());
+	print("%s, ", readExpr().c_str());
+	print("%s, ", readExpr().c_str());
+	print("%s, ", readExpr().c_str());
+	print("%s, ", readExpr().c_str());
+	print("%s, ", readExpr().c_str());
+
+	print("%d", readUint16());
+	endFunc();
+}

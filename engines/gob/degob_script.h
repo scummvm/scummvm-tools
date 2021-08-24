@@ -136,10 +136,10 @@ protected:
 	uint32 readUint32();
 	const char *readString();
 
-	uint8 peekUint8() const;
-	uint16 peekUint16() const;
-	uint32 peekUint32() const;
-	const char *peekString() const;
+	uint8 peekUint8(int32 offset = 0) const;
+	uint16 peekUint16(int32 offset = 0) const;
+	uint32 peekUint32(int32 offset = 0) const;
+	const char *peekString(int32 offset = 0) const;
 
 	void skipExpr(char stopToken = 99);
 	std::string readExpr(char stopToken = 99);
@@ -248,6 +248,7 @@ protected:
 	void o1_loadMultObject(FuncParams &params);
 
 	void o1_dummy(FuncParams &params);
+	void o1_copySprite(FuncParams &params);
 };
 
 class Script_v2 : public Script_v1 {
