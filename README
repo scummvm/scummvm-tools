@@ -52,6 +52,14 @@ Extraction Tools:
                 Example of usage:
                 ./scummvm-tools-cli --tool extract_agos <infile 1> ... <infile n>
 
+        extract_asylum
+                Extracts Sanitarium resource packs.
+
+                If resourceindex is provided, only that resource is extracted.
+
+                Example of usage:
+                ./scummvm-tools-cli --tool extract_asylum [-o outputdir] [-R resourceindex] <inputfile>
+
         extract_cge
                 Unpacks Soltys and Sfinx game data files.
 

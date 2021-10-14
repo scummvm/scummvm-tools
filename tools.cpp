@@ -25,6 +25,7 @@
 #include "tool.h"
 
 #include "engines/agos/compress_agos.h"
+#include "engines/asylum/extract_asylum.h"
 #include "engines/gob/compress_gob.h"
 #include "engines/kyra/compress_kyra.h"
 #include "engines/queen/compress_queen.h"
@@ -91,6 +92,7 @@ Tools::Tools() {
 #endif
 
 	_tools.push_back(new ExtractAgos());
+	_tools.push_back(new ExtractAsylum());
 	_tools.push_back(new PackBladeRunner());
 	_tools.push_back(new ExtractCge());
 	_tools.push_back(new PackCge());
