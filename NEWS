@@ -3,6 +3,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 
 2.6.0 (XXXX-XX-XX)
  - Added a tool to extract Sanitarium resource packs.
+ - Removed support for compressing BUN files.
 
 2.5.0 (2021-10-09)
  - Added tool for exctracting NGI's .nl archives

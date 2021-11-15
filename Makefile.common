@@ -201,7 +201,6 @@ tools_OBJS := \
 	engines/queen/compress_queen.o \
 	engines/saga/compress_saga.o \
 	engines/sci/compress_sci.o \
-	engines/scumm/compress_scumm_bun.o \
 	engines/scumm/compress_scumm_san.o \
 	engines/scumm/compress_scumm_sou.o \
 	engines/sword1/compress_sword1.o \

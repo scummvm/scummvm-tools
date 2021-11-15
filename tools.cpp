@@ -30,7 +30,6 @@
 #include "engines/kyra/compress_kyra.h"
 #include "engines/queen/compress_queen.h"
 #include "engines/saga/compress_saga.h"
-#include "engines/scumm/compress_scumm_bun.h"
 #include "engines/scumm/compress_scumm_san.h"
 #include "engines/scumm/compress_scumm_sou.h"
 #include "engines/sci/compress_sci.h"
@@ -76,7 +75,6 @@ Tools::Tools() {
 	_tools.push_back(new CompressQueen());
 	_tools.push_back(new CompressSaga());
 	_tools.push_back(new CompressSci());
-	_tools.push_back(new CompressScummBun());
 	_tools.push_back(new CompressScummSan());
 	_tools.push_back(new CompressScummSou());
 	_tools.push_back(new CompressSword1());
