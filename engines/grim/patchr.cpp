@@ -49,6 +49,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <deque>
 #include <cstdlib>
 #include "common/endian.h"
 #include "common/zlib.h"

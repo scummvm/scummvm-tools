@@ -50,6 +50,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <deque>
 #include "common/endian.h"
 #include "common/zlib.h"
 #include "common/md5.h"
