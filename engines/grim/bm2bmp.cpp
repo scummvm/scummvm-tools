@@ -237,7 +237,7 @@ Bitmap *Bitmap::load(const char *data, int len) {
 
 #ifdef SCUMM_BIG_ENDIAN
 		for (int j = 0; j < b->_width * b->_height; ++j) {
-			((uint16 *)b->_data[i])[j] = SWAP_BYTES_16(((uint16 *)b->_data[i])[j]);
+			((uint16 *)b->_data[i])[j] = SWAP_16(((uint16 *)b->_data[i])[j]);
 		}
 #endif
 	}
