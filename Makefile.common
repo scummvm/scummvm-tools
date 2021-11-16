@@ -37,7 +37,25 @@ PROGRAMS = \
 	msn_convert_mod \
 	scummvm-tools-cli \
 	extract_hadesch \
-	extract_lokalizator
+	extract_lokalizator \
+	grim_animb2txt \
+	grim_bm2bmp \
+	grim_cosb2cos \
+	grim_delua \
+	grim_diffr \
+	grim_imc2wav \
+	grim_int2flt \
+	grim_luac \
+	grim_meshb2obj \
+	grim_mklab \
+	grim_patchex \
+	grim_patchr \
+	grim_set2fig \
+	grim_setb2set \
+	grim_sklb2txt \
+	grim_til2bmp \
+	grim_unlab \
+	grim_vima
 
 ifdef USE_BOOST
 PROGRAMS += \
@@ -79,6 +97,30 @@ UTILS := \
 	sound/audiostream.o \
 	sound/voc.o \
 	sound/wave.o
+
+GRIM_LUA := \
+	engines/grim/lua/lapi.o \
+	engines/grim/lua/lauxlib.o \
+	engines/grim/lua/lbuffer.o \
+	engines/grim/lua/lbuiltin.o \
+	engines/grim/lua/ldo.o \
+	engines/grim/lua/lfunc.o \
+	engines/grim/lua/lgc.o \
+	engines/grim/lua/liolib.o \
+	engines/grim/lua/llex.o \
+	engines/grim/lua/lmathlib.o \
+	engines/grim/lua/lmem.o \
+	engines/grim/lua/lobject.o \
+	engines/grim/lua/lparser.o \
+	engines/grim/lua/lstate.o \
+	engines/grim/lua/lstring.o \
+	engines/grim/lua/lstrlib.o \
+	engines/grim/lua/ltable.o \
+	engines/grim/lua/ltask.o \
+	engines/grim/lua/ltm.o \
+	engines/grim/lua/lundump.o \
+	engines/grim/lua/lvm.o \
+	engines/grim/lua/lzio.o
 
 decine_OBJS := engines/cine/decine.o
 
@@ -173,6 +215,89 @@ msn_convert_mod_OBJS := \
 	common/file.o \
 	common/util.o \
 	engines/supernova/convert_mod.o
+
+grim_animb2txt_OBJS := \
+	engines/grim/emi/animb2txt.o \
+	engines/grim/lab.o
+
+grim_bm2bmp_OBJS := \
+	engines/grim/bm2bmp.o \
+	engines/grim/lab.o
+
+grim_cosb2cos_OBJS := \
+	engines/grim/emi/cosb2cos.o
+
+grim_delua_OBJS := \
+	engines/grim/delua.o \
+	$(GRIM_LUA)
+
+ifdef USE_ZLIB
+grim_diffr_OBJS := \
+	engines/grim/diffr.o \
+	$(UTILS) \
+	common/zlib.o
+grim_diffr_LIBS := $(LIBS)
+endif
+
+grim_imc2wav_OBJS := \
+	engines/grim/imc2wav.o
+
+grim_int2flt_OBJS := \
+	engines/grim/int2flt.o
+
+grim_luac_OBJS := \
+	engines/grim/luac/dump.o \
+	engines/grim/luac/luac.o \
+	engines/grim/luac/opcode.o \
+	engines/grim/luac/opt.o \
+	engines/grim/luac/print.o \
+	engines/grim/luac/rebase.o \
+	$(GRIM_LUA)
+
+grim_meshb2obj_OBJS := \
+	engines/grim/emi/meshb2obj.o \
+	engines/grim/lab.o
+
+grim_mklab_OBJS := \
+	engines/grim/mklab.o
+
+grim_patchex_OBJS := \
+	engines/grim/patchex/patchex.o \
+	engines/grim/patchex/mszipd.o \
+	engines/grim/patchex/cabd.o
+
+ifdef USE_ZLIB
+grim_patchr_OBJS := \
+	engines/grim/patchr.o \
+	$(UTILS) \
+	common/zlib.o
+grim_patchr_LIBS := $(LIBS)
+endif
+
+grim_set2fig_OBJS := \
+	engines/grim/set2fig.o
+
+grim_setb2set_OBJS := \
+	engines/grim/emi/setb2set.o \
+	engines/grim/lab.o
+
+grim_sklb2txt_OBJS := \
+	engines/grim/emi/sklb2txt.o \
+	engines/grim/lab.o
+
+ifdef USE_ZLIB
+grim_til2bmp_OBJS := \
+	engines/grim/emi/til2bmp.o \
+	engines/grim/lab.o
+grim_til2bmp_LIBS := $(LIBS)
+endif
+
+grim_unlab_OBJS := \
+	engines/grim/unlab.o \
+	engines/grim/lab.o
+
+grim_vima_OBJS := \
+	engines/grim/vima.o
 
 pegasus_save_types_OBJS := \
 	engines/pegasus/pegasus_save_types.o \

@@ -26,7 +26,7 @@
 #include <string>
 #include <iostream>
 #include "filetools.h"
-#include "tools/lab.h"
+#include "engines/grim/lab.h"
 
 using namespace std;
 

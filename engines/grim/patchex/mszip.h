@@ -37,7 +37,7 @@
 #ifndef MSPACK_MSZIP_H
 #define MSPACK_MSZIP_H 1
 
-#include "tools/patchex/mspack.h"
+#include "engines/grim/patchex/mspack.h"
 
 #define MSZIP_FRAME_SIZE          (32768)
 #define MSZIP_MAX_HUFFBITS        (16)

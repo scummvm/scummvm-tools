@@ -24,7 +24,7 @@
 #include <string>
 #include <iostream>
 #include "filetools.h"
-#include "tools/lab.h"
+#include "engines/grim/lab.h"
 
 int main(int argc, char **argv) {
 	if (argc < 2) {

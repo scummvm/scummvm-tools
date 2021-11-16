@@ -8,9 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "luac.h"
-#include "tools/lua/lparser.h"
-#include "tools/lua/lzio.h"
-#include "tools/lua/luadebug.h"
+#include "engines/grim/lua/lparser.h"
+#include "engines/grim/lua/lzio.h"
+#include "engines/grim/lua/luadebug.h"
 
 #define	OUTPUT	"luac.out"		/* default output file */
 

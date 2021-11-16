@@ -31,7 +31,7 @@
 #include <GL/glfw.h>
 #include "filetools.h"
 #include "model.h"
-#include "lab.h"
+#include "engines/grim/lab.h"
 
 using namespace std;
 

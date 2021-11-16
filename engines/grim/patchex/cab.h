@@ -34,7 +34,7 @@
 #ifndef MSPACK_CAB_H
 #define MSPACK_CAB_H
 
-#include "tools/patchex/mszip.h"
+#include "engines/grim/patchex/mszip.h"
 
 #define cfhead_Signature         (0x00)
 #define cfhead_CabinetSize       (0x08)

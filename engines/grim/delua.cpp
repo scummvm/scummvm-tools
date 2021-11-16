@@ -20,10 +20,10 @@
  *
  */
 
-#include <tools/lua/lua.h>
-#include <tools/lua/lundump.h>
-#include <tools/lua/lopcodes.h>
-#include <tools/lua/lzio.h>
+#include <engines/grim/lua/lua.h>
+#include <engines/grim/lua/lundump.h>
+#include <engines/grim/lua/lopcodes.h>
+#include <engines/grim/lua/lzio.h>
 
 #include <stdio.h>
 #include <stdlib.h>

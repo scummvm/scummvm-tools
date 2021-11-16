@@ -28,7 +28,7 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include "tools/lab.h"
+#include "engines/grim/lab.h"
 
 using namespace std;
 
@@ -470,6 +470,6 @@ int main(int argc, char **argv) {
 	Data *data = new Data(buf);
 	Set *ourSet = new Set(data);
 	delete data;
-	delete buf;
+	delete[] buf;
 	cout << ourSet->ToString();
 }

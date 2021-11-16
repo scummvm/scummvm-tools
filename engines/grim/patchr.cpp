@@ -53,7 +53,6 @@
 #include "common/endian.h"
 #include "common/zlib.h"
 #include "common/md5.h"
-#include "common/getopt.h"
 
 uint8 *old_block, *new_block;
 GZipReadStream *ctrlDec, *diffDec, *extraDec;
@@ -95,44 +94,14 @@ void show_header_info(uint8 *header) {
 }
 
 typedef struct {
-	char *oldfile;
-	char *newfile;
-	char *patchfile;
+	const char *oldfile;
+	const char *newfile;
+	const char *patchfile;
 	bool show_info;
 } arguments;
 
 void show_usage(char *name) {
 	printf("usage: %s [-a] oldfile newfile patchfile\n", name);
-}
-
-arguments parse_args(int argc, char *argv[]) {
-	arguments arg;
-	arg.show_info = false;
-
-	int c;
-	while ((c = getopt(argc, argv, "a")) != -1)
-		switch (c) {
-		case 'a':
-			arg.show_info = true;
-			break;
-		case '?':
-			show_usage(argv[0]);
-			exit(0);
-		default:
-			fprintf(stderr, "Internal error\n");
-			exit(1);
-		}
-
-	if (argc - optind < 3) {
-		show_usage(argv[0]);
-		exit(0);
-	}
-
-	arg.oldfile = argv[optind++];
-	arg.newfile = argv[optind++];
-	arg.patchfile = argv[optind++];
-
-	return arg;
 }
 
 int main(int argc, char *argv[]) {
@@ -148,12 +117,33 @@ int main(int argc, char *argv[]) {
 	std::ofstream newfile;
 	bool comp_ctrl, mix;
 	arguments args;
+	args.show_info = false;
 
 	old_block = 0;
 	new_block = 0;
 	atexit(free_memory);
 
-	args = parse_args(argc, argv);
+	std::deque<std::string> arg;
+	for (int a = 1; a < argc; a++)
+		arg.push_back(argv[a]);
+	if (argc < 2) {
+		show_usage(argv[0]);
+		return 1;
+	}
+
+	std::string option = arg.front();
+	if (option == "-a") {
+		arg.pop_front();
+		args.show_info = true;
+	}
+	if (arg.size() < 3) {
+		show_usage(argv[0]);
+		return 1;
+	}
+
+	args.oldfile = arg[0].c_str();
+	args.newfile = arg[1].c_str();
+	args.patchfile = arg[2].c_str();
 
 	/* Opens the old file */
 	oldfile.open(args.oldfile, std::ios::in | std::ios::binary);

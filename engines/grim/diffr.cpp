@@ -49,10 +49,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include "common/endian.h"
 #include "common/zlib.h"
 #include "common/md5.h"
-#include "common/getopt.h"
 
 #define MIN(x,y) (((x)<(y)) ? (x) : (y))
 
@@ -239,49 +239,15 @@ static int32 search(int32 *I, byte *old, int32 oldsize,
 }
 
 typedef struct {
-	char *oldfile;
-	char *newfile;
-	char *patchfile;
+	const char *oldfile;
+	const char *newfile;
+	const char *patchfile;
 	bool mix;
 	bool comp_ctrl;
 } arguments;
 
 void show_usage(char *name) {
-	printf("usage: %s [-m][-n] oldfile newfile patchfile\n", name);
-}
-
-arguments parse_args(int argc, char *argv[]) {
-	arguments arg;
-	arg.comp_ctrl = true;
-	arg.mix = false;
-
-	int c;
-	while ((c = getopt(argc, argv, "nm")) != -1)
-		switch (c) {
-		case 'n':
-			arg.comp_ctrl = false;
-			break;
-		case 'm':
-			arg.mix = true;
-			break;
-		case '?':
-			show_usage(argv[0]);
-			exit(0);
-		default:
-			fprintf(stderr, "Internal error\n");
-			exit(1);
-		}
-
-	if (argc - optind < 3) {
-		show_usage(argv[0]);
-		exit(0);
-	}
-
-	arg.oldfile = argv[optind++];
-	arg.newfile = argv[optind++];
-	arg.patchfile = argv[optind++];
-
-	return arg;
+	printf("usage: %s [-m] [-n] oldfile newfile patchfile\n", name);
 }
 
 int main(int argc, char *argv[]) {
@@ -302,8 +268,35 @@ int main(int argc, char *argv[]) {
 	std::ofstream patch;
 	std::ifstream in;
 	arguments args;
+	args.comp_ctrl = true;
+	args.mix = false;
 
-	args = parse_args(argc, argv);
+	std::deque<std::string> arg;
+	for (int a = 1; a < argc; a++)
+		arg.push_back(argv[a]);
+	if (argc < 2) {
+		show_usage(argv[0]);
+		return 1;
+	}
+
+	std::string option = arg.front();
+	if (option == "-n") {
+		arg.pop_front();
+		args.comp_ctrl = false;
+	}
+	option = arg.front();
+	if (option == "-n") {
+		arg.pop_front();
+		args.mix = true;
+	}
+	if (arg.size() < 3) {
+		show_usage(argv[0]);
+		return 1;
+	}
+
+	args.oldfile = arg[0].c_str();
+	args.newfile = arg[1].c_str();
+	args.patchfile = arg[2].c_str();
 
 	//Set flags
 	if (args.mix) {

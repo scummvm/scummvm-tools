@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "luac.h"
-#include "tools/lua/lmem.h"
+#include "engines/grim/lua/lmem.h"
 
 static void FixConstants(TProtoFunc* tf, int* C)
 {

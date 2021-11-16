@@ -31,8 +31,8 @@
 #include <cstdio>
 #include <cstring>
 #include "common/endian.h"
-#include "tools/lab.h"
-#include "tools/emi/filetools.h"
+#include "engines/grim/lab.h"
+#include "engines/grim/emi/filetools.h"
 #include <GLFW/glfw3.h>
 
 /*

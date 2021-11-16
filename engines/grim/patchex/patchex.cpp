@@ -40,7 +40,7 @@
 #include <stdarg.h>
 #include <sys/types.h>
 
-#include "tools/patchex/mspack.h"
+#include "engines/grim/patchex/mspack.h"
 #include "common/endian.h"
 
 // Languages codes

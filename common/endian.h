@@ -29,6 +29,8 @@
 
 #include "common/scummsys.h"
 
+#define MKTAG(a0,a1,a2,a3) ((uint32)((a3) | ((a2) << 8) | ((a1) << 16) | ((a0) << 24)))
+
 #if defined(INVERSE_MKID)
 #define MKID_BE(a) ((uint32) \
 		(((a) >> 24) & 0x000000FF) | \
@@ -52,6 +54,17 @@ static inline uint16 SWAP_16(uint16 a) {
 	return uint16(((a >> 8) & 0xFF) | ((a << 8) & 0xFF00));
 }
 
+#if defined(SCUMM_BIG_ENDIAN)
+	#define FROM_LE_32(a) SWAP_32(a)
+	#define FROM_LE_16(a) SWAP_16(a)
+	#define TO_LE_32(a) SWAP_32(a)
+	#define TO_LE_16(a) SWAP_16(a)
+#else
+	#define FROM_LE_32(a) ((uint32)(a))
+	#define FROM_LE_16(a) ((uint16)(a))
+	#define TO_LE_32(a) ((uint32)(a))
+	#define TO_LE_16(a) ((uint16)(a))
+#endif
 
 FORCEINLINE uint16 READ_LE_UINT16(const void *ptr) {
 	const byte *b = (const byte *)ptr;
