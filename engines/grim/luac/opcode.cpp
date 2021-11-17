@@ -16,7 +16,7 @@ static const Opcode Info[]=			/* ORDER lopcodes.h */
 int OpcodeInfo(TProtoFunc* tf, Byte* p, Opcode* I, const char* xFILE, int xLINE) {
  Opcode OP;
  Byte* code=tf->code;
- int op=*p;
+ uint op=*p;
  if (p==code)
  {
   OP.name="STACK";

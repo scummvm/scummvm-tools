@@ -60,7 +60,7 @@ static void unpackFile(Common::File &fp, const char *outDir) {
 
 	char fname[13];
 	int flags, extVal, offset, size;
-	for (int i = 0; i < count; i++) {
+	for (uint i = 0; i < count; i++) {
 		memcpy(fname, &o[i * 32], 12);
 		fname[12] = 0;
 		flags = READ_LE_UINT32(&o[i * 32 + 16]);

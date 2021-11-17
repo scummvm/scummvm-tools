@@ -110,13 +110,12 @@ void stop_script (void) {
 }
 
 void next_script (void) {
-	struct lua_Task *t = NULL, *prev;
+	struct lua_Task *t = NULL;
 	TObject *f = L->stack.stack + L->Cstack.lua2C;
 
 	if (f == LUA_NOOBJECT)
 		lua_error("Bad argument to next_script: no obeject");
 
-	prev = L->root_task;
 	if (ttype(f) == LUA_T_NIL) {
 		t = L->root_task;
 	} else if (ttype(f) == LUA_T_TASK) {

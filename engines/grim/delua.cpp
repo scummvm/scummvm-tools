@@ -417,6 +417,7 @@ void Decompiler::do_multi_assign(Byte *&start) {
       num_tables++;
       // this needs stuff from farther up the stack, wait until
       // it's available
+      // fall-through
 
     case SETTABLE0:
       results.push(new IndexExpr(start, NULL, NULL));
@@ -909,6 +910,7 @@ void Decompiler::decompileRange(Byte *start, Byte *end) {
 
     case SETLISTW:
       start += 2;
+      goto setlist;
 
     case SETLIST0:
     setlist:

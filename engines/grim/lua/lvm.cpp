@@ -715,7 +715,7 @@ StkId luaV_execute (struct CallInfo *ci)
 
       case ENDCODE:
         S->top = S->stack + base;
-        /* goes through */
+        /* fall through */
       case RETCODE: {
 	StkId firstResult = (base + ((aux==RETCODE) ? *pc : 0));
         if (lua_callhook)

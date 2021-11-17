@@ -27,7 +27,7 @@
 #include <fstream>
 #include "lab.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
@@ -38,15 +38,15 @@
 #define GT_EMI 2
 
 static void createDirectoryStructure(std::string name) {
-#ifdef WIN32
-	int pos = name.find_last_of("\\");
+#ifdef _WIN32
+	size_t pos = name.find_last_of("\\");
 	if (pos != name.npos) {
 		name.erase(pos);
 		createDirectoryStructure(name);
 		CreateDirectory(name.c_str(), NULL);
 	}
 #else
-	int pos = name.find_last_of("/");
+	size_t pos = name.find_last_of("/");
 	if (pos != name.npos) {
 		name.erase(pos);
 		createDirectoryStructure(name);

@@ -67,19 +67,19 @@ Data::Data(const char *data) {
 }
 
 float Data::GetFloat() {
-	float retVal = *(float *) buf;
+	float retVal = *(const float *) buf;
 	buf += 4;
 	return retVal;
 }
 
 int Data::GetInt() {
-	int retVal = *(int *) buf;
+	int retVal = *(const int *) buf;
 	buf += 4;
 	return retVal;
 }
 
 bool Data::GetBool() {
-	bool retVal = *(bool *) buf;
+	bool retVal = *(const bool *) buf;
 	buf += 1;
 	return retVal;
 }

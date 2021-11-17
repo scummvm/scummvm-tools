@@ -44,7 +44,7 @@ typedef byte Byte;  /* unsigned 8 bits */
 #define MAX_INT   (2147483647-2)  /* maximum value of an int (-2 for safety) */
 #define MAX_WORD        65534
 
-typedef unsigned long IntPoint; /* unsigned with same size as a pointer (for hashing) */
+typedef size_t IntPoint; /* unsigned with same size as a pointer (for hashing) */
 
 
 /*

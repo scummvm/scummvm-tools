@@ -128,6 +128,7 @@ bool GZipReadStream::seek(int32 offset, std::ios::seekdir whence) {
 		break;
 	case std::ios::cur:
 		newPos = _pos + offset;
+		break;
 	default:
 		assert(false);
 	}

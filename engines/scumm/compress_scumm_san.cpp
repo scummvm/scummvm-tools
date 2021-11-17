@@ -263,7 +263,7 @@ void CompressScummSan::prepareForMixing(const std::string &outputDir, const std:
 #define ST_SAMPLE_MIN (-ST_SAMPLE_MAX - 1L)
 
 static inline void clampedAdd(int16& a, int b) {
-	register int val;
+	int val;
 	val = a + b;
 
 	if (val > ST_SAMPLE_MAX)

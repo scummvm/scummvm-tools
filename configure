@@ -1843,6 +1843,12 @@ if test "$_wxwidgets" = yes ; then
 	# _wxstaticlibs may contain non-static libraries that we also have in _wxstaticlibs.
 	# remove those to avoid dependency on non-static libraries
 
+	if test "$have_gcc" = yes ; then
+		if test "$_cxx_major" -ge "8" ; then
+			# These warnings appear a lot in wx headers
+			_wxincludes="$_wxincludes -Wno-deprecated-copy -Wno-cast-function-type -Wno-cast-qual"
+		fi
+	fi
 	# Use the compiler specified by wx-config when not cross-compiling. This is needed on some systems to get a working executable.
 	if test -z "$_host"; then
 		CXX="`$_wxconfig --cxx`"

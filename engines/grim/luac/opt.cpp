@@ -57,8 +57,8 @@ static TProtoFunc* TF;
 
 static int compare(const void* a, const void *b)
 {
- int ia=*(int*)a;
- int ib=*(int*)b;
+ int ia=*(const int*)a;
+ int ib=*(const int*)b;
  int t;
  TObject* oa=TF->consts+ia;
  TObject* ob=TF->consts+ib;

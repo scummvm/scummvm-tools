@@ -135,7 +135,7 @@ void ExtractGobStk::readChunkList(Common::File &stk, Common::File &gobConf) {
 		// Geisha TOTs are compressed without having the flag set
 		fakeTotPtr = strstr(curChunk->name, "0OT");
 		if (fakeTotPtr != 0) {
-			strncpy(fakeTotPtr, "TOT", 3);
+			memcpy(fakeTotPtr, "TOT", 3);
 			curChunk->packed = true;
 			curChunk->preGob = true;
 		}

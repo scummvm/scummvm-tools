@@ -126,7 +126,7 @@ void Bitmap::toBMP(const std::string &fname) {
 		} \
 	} while (0)
 
-static bool decompress_codec3(const char *compressed, char *result, int maxBytes) {
+static bool decompress_codec3(const byte *compressed, char *result, int maxBytes) {
 	int bitstr_value = READ_LE_UINT16(compressed);
 	int bitstr_len = 16;
 	compressed += 2;
@@ -151,13 +151,13 @@ static bool decompress_codec3(const char *compressed, char *result, int maxBytes
 				copy_len = 2 * bit;
 				GET_BIT;
 				copy_len += bit + 3;
-				copy_offset = *(uint8 *)(compressed++) - 0x100;
+				copy_offset = *(compressed++) - 0x100;
 			} else {
-				copy_offset = (*(uint8 *)(compressed) | (*(uint8 *)(compressed + 1) & 0xf0) << 4) - 0x1000;
-				copy_len = (*(uint8 *)(compressed + 1) & 0xf) + 3;
+				copy_offset = (*compressed | (*(compressed + 1) & 0xf0) << 4) - 0x1000;
+				copy_len = (*(compressed + 1) & 0xf) + 3;
 				compressed += 2;
 				if (copy_len == 3) {
-					copy_len = *(uint8 *)(compressed++) + 1;
+					copy_len = *(compressed++) + 1;
 					if (copy_len == 1) {
 						return true;
 					}
@@ -221,7 +221,7 @@ Bitmap *Bitmap::load(const char *data, int len) {
 			pos += b->_bpp / 8 * b->_width * b->_height + 8;
 		} else if (codec == 3) {
 			int compressed_len = READ_LE_UINT32(data + pos);
-			bool success = decompress_codec3(data + pos + 4, b->_data[i], b->_bpp / 8 * b->_width * b->_height);
+			bool success = decompress_codec3((const byte *)data + pos + 4, b->_data[i], b->_bpp / 8 * b->_width * b->_height);
 			if (!success) {
 				printf(".. when loading image\n");
 			}
