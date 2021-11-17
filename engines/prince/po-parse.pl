@@ -379,8 +379,8 @@ ENGLISH LOCALIZATION
 
 ShinjiGR
 ScummVM Team
-
-
+Eugene Sandulenko
+Anna Baldur / Balduranne
 
 
 ##
