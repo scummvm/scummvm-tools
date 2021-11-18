@@ -142,7 +142,7 @@ static TaggedString *insert_s (const char *str, int32 l, stringtable *tb)
 static TaggedString *insert_u (void *buff, int32 tag, stringtable *tb)
 {
   TaggedString *ts;
-  unsigned long h = (unsigned long)buff;
+  size_t h = (size_t)buff;
   int32 size = tb->size;
   int32 i;
   int32 j = -1;
@@ -170,7 +170,7 @@ static TaggedString *insert_u (void *buff, int32 tag, stringtable *tb)
 
 TaggedString *luaS_createudata (void *udata, int32 tag)
 {
-  return insert_u(udata, tag, &L->string_root[(unsigned long)udata%NUM_HASHS]);
+  return insert_u(udata, tag, &L->string_root[(size_t)udata%NUM_HASHS]);
 }
 
 TaggedString *luaS_newlstr (const char *str, int32 l)

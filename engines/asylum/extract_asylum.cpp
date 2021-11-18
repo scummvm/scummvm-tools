@@ -68,7 +68,7 @@ void ExtractAsylum::execute() {
 	if (_resInd >= 0) {
 		dumpResource(_resInd);
 	} else {
-		for (int i = 0; i < _resources.size(); i++) {
+		for (uint i = 0; i < _resources.size(); i++) {
 			dumpResource(i);
 			updateProgress(i, _resources.size());
 		}

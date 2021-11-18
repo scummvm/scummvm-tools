@@ -555,9 +555,7 @@ int mszipd_decompress(struct mszipd_stream *zip, off_t out_bytes) {
 }
 
 void mszipd_free(struct mszipd_stream *zip) {
-  struct mspack_system *sys;
   if (zip) {
-    sys = zip->sys;
     free(zip->inbuf);
     free(zip);
   }

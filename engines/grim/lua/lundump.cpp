@@ -120,12 +120,14 @@ static void LoadConstants(TProtoFunc* tf, ZIO* Z)
   switch ((uint32)ttype(o))
   {
    case (uint32)-'N':
-        ttype(o)=LUA_T_NUMBER;
+	ttype(o)=LUA_T_NUMBER;
+	// fall-through
    case (uint32)LUA_T_NUMBER:
 	doLoadNumber(nvalue(o),Z);
 	break;
    case (uint32)-'S':
 	ttype(o)=LUA_T_STRING;
+	// fall-through
    case (uint32)LUA_T_STRING:
 	tsvalue(o)=LoadTString(Z);
 	break;

@@ -178,12 +178,12 @@ static void do_undump(ZIO* z)
 static void doit(int undump, const char* filename) {
 	FILE* f;
 	ZIO z;
-	char *fn;
+	const char *fn;
 	if (filename==NULL) {
-		fn = (char *)"(stdin)";
+		fn = "(stdin)";
 		f = stdin;
 	} else {
-		fn = (char *)filename;
+		fn = filename;
 		f = efopen(fn, undump ? "rb" : "r");
 	}
 	zFopen(&z,f,fn);

@@ -290,7 +290,7 @@ static const char *match (const char *s, const char *p, struct Capture *cap)
     case '\0': case '$':  /* (possibly) end of pattern */
       if (*p == 0 || (*(p+1) == 0 && s == cap->src_end))
         return s;
-      /* else go through */
+      /* else fall through */
     default: {  /* it is a pattern item */
       const char *ep;  /* get what is next */
       const char *s1 = matchitem(s, p, cap, &ep);

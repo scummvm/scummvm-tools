@@ -21,7 +21,8 @@
 #define FINPUT		"_INPUT"
 #define FOUTPUT		"_OUTPUT"
 
-
+#undef popen
+#undef pclose
 #define popen(x,y) NULL  /* that is, popen always fails */
 #define pclose(x)  (-1)
 

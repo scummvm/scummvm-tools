@@ -99,6 +99,7 @@ static void PrintCode(TProtoFunc* tf)
 
 	case CLOSURE:
 		printf(" %d",OP.arg2);
+		// fall-through
 	case PUSHCONSTANT:
 	case GETDOTTED:
 	case PUSHSELF:
@@ -132,6 +133,7 @@ static void PrintCode(TProtoFunc* tf)
 	case IFTUPJMP:
 	case IFFUPJMP:
 		i=-i;
+		// fall-through
 	case ONTJMP:
 	case ONFJMP:
 	case JMP:
