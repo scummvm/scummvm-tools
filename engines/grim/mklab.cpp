@@ -79,12 +79,16 @@ void help() {
 
 static void countFiles(std::vector<std::string> &files, lab_header *head, DIR *dir, const std::string &d, std::string subdirn = "") {
 	struct dirent *dirfile;
+	struct stat st;
 	while ((dirfile = readdir(dir))) {
 		if (!strcmp(dirfile->d_name, ".") || !strcmp(dirfile->d_name, "..")) {
 			continue;
 		}
-
-		if (dirfile->d_type == DT_DIR) {
+		std::string dirname = d + "/" + dirfile->d_name;
+		if (stat(dirname.c_str(), &st) != 0) {
+			continue;
+		}
+		if (S_ISDIR(st.st_mode)) {
 			std::string nextsub = subdirn;
 			nextsub += dirfile->d_name;
 			nextsub += "/";
