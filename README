@@ -133,8 +133,8 @@ Extraction Tools:
                 Example of usage:
                 ./scummvm-tools-cli --tool extract_loom_tg16 [-o outputdir] <infile>
 
-                NOTE: Use the dumpcd utility at http://www.zeograd.com/misc_download.php
-                to dump the code tracks on the CD.
+                NOTE: See https://wiki.scummvm.org/index.php?title=HOWTO-LoomTG16
+                for instructions on how to dump the code tracks on the CD.
 
         extract_mm_apple
                 Extracts data files from the Apple II version of Maniac
@@ -459,6 +459,14 @@ Encoder Tools:
                 It uses FFmpeg to extract Smacker videos.
 
 Other Tools:
+        extract_loom_tg16.sh
+                UNIX shell script used to extract the game data and audio from
+                the PC-Engine Loom CD.
+
+                It uses cdrdao, bchunk and - optionally - flac to extract the
+                data needed for the final extraction by scumm-tools-cli. Use
+                The --help parameter for a list of options.
+
         pack_bladerunner
                 Used to combine Blade Runner CDFRAMES.DAT files into HDFRAMES.DAT.
 
