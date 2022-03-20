@@ -1,17 +1,19 @@
 #! /bin/sh -e
+#
+# extract_loom_tg16 -- script for extracting the necessary data and
+# audio files files to play the game in ScummVM.
 
 dest=loom-pce
 cleanup=1
 compress=0
 ext=wav
 
-# This is a proof-of-concept script. I'm at best a bumbling amateur
-# when it comes to shell scripting. # Use this script from an empty
-# directory. Required packages (Debian):
+# In addition to scummvm-tools-cli, this script uses the following tools
+# to do the extraction.
 #
-# - cdrdao
-# - bchunk
-# - flac (optional)
+# - cdrdao            http://cdrdao.sourceforge.net/
+# - bchunk            http://he.fi/bchunk/
+# - flac (optional)   https://xiph.org/flac/
 
 while [ $# -gt 0 ] ; do
     case $1 in
