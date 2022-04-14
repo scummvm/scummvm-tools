@@ -2019,7 +2019,7 @@ void next_line_HE_V100(char *output) {
 		ext(output, "hh|renameFile");
 		break;
 	case 0x66:
-		ext(output, "|stopObjectCode");
+		ext(output, "p|return");
 		break;
 	case 0x67:
 		ext(output, "p|localizeArrayToRoom");
@@ -2609,7 +2609,7 @@ void next_line_HE_V100(char *output) {
 		ext(output, "lpp|startObjectQuick");
 		break;
 	case 0xDE:
-		ext(output, "lp|startScriptQuick2");
+		ext(output, "rlp|startScriptQuick2");
 		break;
 	case 0xDF:
 		ext(output, "rp|getState");
@@ -3708,7 +3708,7 @@ void next_line_HE_V72(char *output) {
 				"\xCCv|nukeArray");
 		break;
 	case 0xBD:
-		ext(output, "|stopObjectCode");
+		ext(output, "p|return");
 		break;
 	case 0xBE:
 		// TODO: this loads another script which does something like
@@ -3720,7 +3720,7 @@ void next_line_HE_V72(char *output) {
 		ext(output, "lpp|startObjectQuick");
 		break;
 	case 0xBF:
-		ext(output, "lp|startScriptQuick2");
+		ext(output, "rlp|startScriptQuick2");
 		break;
 	case 0xC0:
 		ext(output, "x" "dim2dimArray\0"
@@ -5340,7 +5340,7 @@ void next_line_V67(char *output) {
 		break;
 	case 0xBD:
 		if (g_options.heVersion)
-			ext(output, "|stopObjectCode");
+			ext(output, "p|return");
 		else
 			invalidop(NULL, code);
 		break;
@@ -5354,7 +5354,7 @@ void next_line_V67(char *output) {
 		ext(output, "lpp|startObjectQuick");
 		break;
 	case 0xBF:
-		ext(output, "lp|startScriptQuick2");
+		ext(output, "rlp|startScriptQuick2");
 		break;
 	case 0xC0:
 		ext(output, "x" "dim2dimArray\0"
