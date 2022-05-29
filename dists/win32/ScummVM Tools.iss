@@ -33,6 +33,24 @@ Source: "tools\descumm.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "tools\desword2.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\extract_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "tools\gob_loadcalc.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "tools\grim_animb2txt.exe"
+Source: "tools\grim_cosb2cos.exe"
+Source: "tools\grim_diffr.exe"
+Source: "tools\grim_int2flt.exe"
+Source: "tools\grim_meshb2obj.exe"
+Source: "tools\grim_patchex.exe"
+Source: "tools\grim_set2fig.exe"
+Source: "tools\grim_sklb2txt.exe"
+Source: "tools\grim_unlab.exe"
+Source: "tools\grim_bm2bmp.exe"
+Source: "tools\grim_delua.exe"
+Source: "tools\grim_imc2wav.exe"
+Source: "tools\grim_luac.exe"
+Source: "tools\grim_mklab.exe"
+Source: "tools\grim_patchr.exe"
+Source: "tools\grim_setb2set.exe"
+Source: "tools\grim_til2bmp.exe"
+Source: "tools\grim_vima.exe"
 Source: "tools\NEWS.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "tools\README.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
 Source: "tools\scummvm-tools.exe"; DestDir: "{app}"; Flags: ignoreversion 
