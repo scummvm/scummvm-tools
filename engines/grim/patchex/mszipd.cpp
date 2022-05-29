@@ -129,9 +129,9 @@ static int zipd_read_input(struct mszipd_stream *zip) {
 static int make_decode_table(unsigned int nsyms, unsigned int nbits,
 			     unsigned char *length, unsigned short *table)
 {
-  register unsigned int leaf, reverse, fill;
-  register unsigned short sym, next_sym;
-  register unsigned char bit_num;
+  unsigned int leaf, reverse, fill;
+  unsigned short sym, next_sym;
+  unsigned char bit_num;
   unsigned int pos         = 0;
   unsigned int table_mask  = 1 << nbits;
   unsigned int bmask    = table_mask >> 1;
@@ -208,8 +208,8 @@ static int make_decode_table(unsigned int nsyms, unsigned int nbits,
 } while (0)
 
 static int zip_read_lens(struct mszipd_stream *zip) {
-  register unsigned int bit_buffer;
-  register int bits_left;
+  unsigned int bit_buffer;
+  int bits_left;
   unsigned char *i_ptr, *i_end;
 
   unsigned short bl_table[(1 << 7)];
@@ -267,9 +267,9 @@ static int zip_read_lens(struct mszipd_stream *zip) {
 static int inflate(struct mszipd_stream *zip) {
   unsigned int last_block, block_type, distance, length, this_run, i;
 
-  register unsigned int bit_buffer;
-  register int bits_left;
-  register unsigned short sym;
+  unsigned int bit_buffer;
+  int bits_left;
+  unsigned short sym;
   unsigned char *i_ptr, *i_end;
 
   RESTORE_BITS;
@@ -483,8 +483,8 @@ struct mszipd_stream *mszipd_init(struct mspack_system *system,
 }
 
 int mszipd_decompress(struct mszipd_stream *zip, off_t out_bytes) {
-  register unsigned int bit_buffer;
-  register int bits_left;
+  unsigned int bit_buffer;
+  int bits_left;
   unsigned char *i_ptr, *i_end;
 
   int i, state, error;

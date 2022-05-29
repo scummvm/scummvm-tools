@@ -241,11 +241,11 @@ LucasBitMap *MakeFullPicture(LucasBitMap **bits) {
 void ProcessFile(const char *_data, uint32_t size, std::string name) {
 	std::stringstream til;
 	uint32_t outsize = 0, bpp = 4;
-	Bytef *data = decompress((Bytef *)_data, size, outsize);
+	const char *data = (const char *)decompress((Bytef *)const_cast<char *>(_data), size, outsize);
 	if (!data) {
 		return;
 	}
-	til.write((const char *)data, outsize);
+	til.write(data, outsize);
 	delete[] data;
 	uint32_t id, bmoffset, rects, b, c, numImages;
 
@@ -260,7 +260,7 @@ void ProcessFile(const char *_data, uint32_t size, std::string name) {
 	til.read((char *)&c, 4);
 	c = FROM_LE_32(c);
 
-// We want to actually read numImages and bpp
+	// We want to actually read numImages and bpp
 	til.seekg(bmoffset + 16, std::ios::beg);
 	til.read((char *)&numImages, 4);
 	numImages = FROM_LE_32(numImages);
@@ -270,7 +270,7 @@ void ProcessFile(const char *_data, uint32_t size, std::string name) {
 	}
 
 	til.seekg(16, std::ios::cur);
-	til.read((char *) &bpp, 4);
+	til.read((char *)&bpp, 4);
 	bpp = FROM_LE_32(bpp);
 	bpp = bpp / 8;
 

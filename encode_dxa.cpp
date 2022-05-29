@@ -29,7 +29,7 @@
 
 const uint32 typeDEXA = 0x41584544;
 const uint32 typeFRAM = 0x4d415246;
-const uint32 typeWAVE = 0x45564157;
+//const uint32 typeWAVE = 0x45564157;
 const uint32 typeCMAP = 0x50414D43;
 const uint32 typeNULL = 0x4C4C554E;
 

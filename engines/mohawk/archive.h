@@ -209,12 +209,12 @@ protected:
 	FileTable *_fileTable;
 
 private:
-	bool _hasData;
+	//bool _hasData;
 	uint32 _fileSize;
 	RSRC_Header _rsrc;
 	Type *_types;
-	uint16 _nameTableAmount;
-	uint16 _resourceTableAmount;
+	//uint16 _nameTableAmount;
+	//uint16 _resourceTableAmount;
 	uint16 _fileTableAmount;
 
 	virtual int16 getTypeIndex(uint32 tag) {
