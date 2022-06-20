@@ -122,7 +122,7 @@ void ScummVMToolsApp::OnAbout() {
 	versiontext->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Arial")));
 	sizer->Add(versiontext, wxSizerFlags());
 
-	wxHyperlinkCtrl *websitetext = new wxHyperlinkCtrl(dialog, wxID_ANY, wxT("http://www.scummvm.org"), wxT("http://www.scummvm.org"));
+	wxHyperlinkCtrl *websitetext = new wxHyperlinkCtrl(dialog, wxID_ANY, wxT("https://www.scummvm.org"), wxT("https://www.scummvm.org"));
 	sizer->Add(websitetext, wxSizerFlags().Border(wxTOP, 5));
 
 	wxStaticText *copyrighttext = new wxStaticText(dialog, wxID_ANY, wxT("Copyright ScummVM Team 2009-2020"));
@@ -357,11 +357,11 @@ void ScummToolsFrame::onMenuAdvanced(wxCommandEvent &evt) {
 
 void ScummToolsFrame::onMenuManual(wxCommandEvent &evt) {
 	// Wiki page
-	::wxLaunchDefaultBrowser(wxT("http://wiki.scummvm.org/index.php/User_Manual/Appendix:_Tools"));
+	::wxLaunchDefaultBrowser(wxT("https://wiki.scummvm.org/index.php?title=ScummVM_Tools"));
 }
 
 void ScummToolsFrame::onMenuWebsite(wxCommandEvent &evt) {
-	::wxLaunchDefaultBrowser(wxT("http://scummvm.org"));
+	::wxLaunchDefaultBrowser(wxT("https://www.scummvm.org"));
 }
 
 void ScummToolsFrame::onMenuAbout(wxCommandEvent &evt) {

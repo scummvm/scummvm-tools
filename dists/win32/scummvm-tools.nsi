@@ -63,7 +63,7 @@ Name "ScummVM Tools"
 !define REGKEY      "Software\ScummVM\$(^Name)"
 !define VERSION     "2.6.0git"
 !define COMPANY     "ScummVM Team"
-!define URL         "http://scummvm.org/"
+!define URL         "https://www.scummvm.org/"
 !define DESCRIPTION "ScummVM Tools Installer. Look! A three headed monkey (TM)!"
 !define COPYRIGHT   "Copyright © 2001-2022 The ScummVM Team"
 
