@@ -69,10 +69,8 @@ void PackBladeRunner::execute() {
 
 	mainDir.setFullName("CDFRAMES.DAT");
 	if (!mainDir.exists()) {
-		warning("Could not find file %s", mainDir.getName().c_str());
 		snprintf(fname, 20, "CDFRAMES%d.DAT", curCD);
 		mainDir.setFullName(fname);
-		warning("Retrying for file %s", mainDir.getName().c_str());
 	}
 	in.open(mainDir, "rb");
 

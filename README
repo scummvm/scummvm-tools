@@ -470,12 +470,10 @@ Other Tools:
         pack_bladerunner
                 Used to combine Blade Runner CDFRAMES.DAT files into HDFRAMES.DAT.
 
-                1. Copy CDFRAMES.DAT file from CD1 to some directory.
+                1. Copy CDFRAMES.DAT files from CDs 1-4 to the same directory
+                but name them CDFRAMES1.DAT - CDFRAMES4.DAT respectively.
 
-                2. Copy CDFRAMES.DAT files from CDs 2-4 to the same directory
-                but name them CDFRAMES2.DAT - CDFRAMES4.DAT respectively.
+                2. Run the tool:
+                  ./scummvm-tools-cli --tool pack_bladerunner [-o outputfile] <inputdir>/CDFRAMES1.DAT
 
-                3. Run the tool:
-                  ./scummvm-tools-cli --tool pack_bladerunner [-o outputfile] <inputdir>/CDFRAMES.DAT
-
-                4. Copy the resulting HDFRAMES.DAT file to the game directory.
+                3. Copy the resulting HDFRAMES.DAT file to the game directory.
