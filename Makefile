@@ -134,7 +134,6 @@ endif
 	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(WIN32PATH)/tools/scummvm-tools-cli$(EXEEXT)
 	cp $(srcdir)/*.bat $(WIN32PATH)/tools
 	cp $(srcdir)/COPYING $(WIN32PATH)/tools/COPYING.txt
-	cp $(srcdir)/COPYING.LGPL $(WIN32PATH)/tools/COPYING_LGPL.txt
 	cp $(srcdir)/COPYING.LUA $(WIN32PATH)/tools/COPYING_LUA.txt
 	cp $(srcdir)/README $(WIN32PATH)/tools/README.txt
 	cp $(srcdir)/NEWS $(WIN32PATH)/tools/NEWS.txt
@@ -148,7 +147,6 @@ WIN32BUILD=build
 win32setup: all
 	mkdir -p $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/COPYING          $(srcdir)/$(WIN32BUILD)
-	cp $(srcdir)/COPYING.LGPL     $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/COPYING.LUA      $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/NEWS             $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/README           $(srcdir)/$(WIN32BUILD)
@@ -249,7 +247,6 @@ bundle: scummvm-tools-static
 osxsnap: bundle scummvm-tools-cli-static
 	mkdir ScummVM-Tools-snapshot
 	cp $(srcdir)/COPYING ./ScummVM-Tools-snapshot/License\ \(GPL\)
-	cp $(srcdir)/COPYING.LGPL ./ScummVM-Tools-snapshot/License\ \(LGPL\)
 	cp $(srcdir)/COPYING.LUA ./ScummVM-Tools-snapshot/License\ \(LUA\)
 	cp $(srcdir)/NEWS ./ScummVM-Tools-snapshot/News
 	cp $(srcdir)/README ./ScummVM-Tools-snapshot/ScummVM\ ReadMe
@@ -331,7 +328,6 @@ riscosdist: all riscosboot $(addprefix !ScummTool/bin/,$(addsuffix $(,)ff8,$(PRO
 	cp ${srcdir}/dists/riscos/!Sprites11,ff9 !ScummTool/!Sprites11,ff9
 	cp $(srcdir)/README !ScummTool/!Help,fff
 	cp $(srcdir)/COPYING !ScummTool/COPYING,fff
-	cp $(srcdir)/COPYING.LGPL !ScummTool/COPYING.LGPL,fff
 	cp $(srcdir)/COPYING.LUA !ScummTool/COPYING.LUA,fff
 	cp $(srcdir)/NEWS !ScummTool/NEWS,fff
 ifeq "$(USE_WXWIDGETS)" "1"

@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>scummvm-tools</string>
 	<key>CFBundleGetInfoString</key>
-	<string>2.6.0git, Copyright 2001-2020 The ScummVM team</string>
+	<string>2.6.0git, Copyright 2001-2022 The ScummVM team</string>
 	<key>CFBundleIconFile</key>
 	<string>scummvmtools.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -27,6 +27,6 @@
 	<key>NSAppleScriptEnabled</key>
 	<false/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 2001-2020 The ScummVM team</string>
+	<string>Copyright 2001-2022 The ScummVM team</string>
 </dict>
 </plist>

@@ -2,6 +2,7 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
 2.6.0 (XXXX-XX-XX)
+ - The project license has been upgraded to GPLv3+.
  - Added a tool to extract Sanitarium resource packs.
  - Removed support for compressing BUN files.
  - Added Grim engine tools.
