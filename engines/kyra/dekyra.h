@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-2
 /* Basic Kyrandia script disassembler */
 
 #ifndef DEKYRA_H
