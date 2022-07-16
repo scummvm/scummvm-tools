@@ -222,6 +222,7 @@ Section "ScummVM" SecMain
 
 	# Text files
 	File /oname=COPYING.txt      "${text_dir}\COPYING"
+	File /oname=COPYING_BSD2.txt "${text_dir}\COPYING.BSD2"
 	File /oname=COPYING_LUA.txt  "${text_dir}\COPYING.LUA"
 	File /oname=NEWS.txt         "${text_dir}\NEWS"
 	File /oname=README.txt       "${text_dir}\README"
@@ -300,7 +301,7 @@ FunctionEnd
 #########################################################################################
 Section -un.Main SecUninstall
 	Delete /REBOOTOK $INSTDIR\COPYING.txt
-	Delete /REBOOTOK $INSTDIR\COPYING_LGPL.txt
+	Delete /REBOOTOK $INSTDIR\COPYING_BSD2.txt
 	Delete /REBOOTOK $INSTDIR\COPYING_LUA.txt
 	Delete /REBOOTOK $INSTDIR\NEWS.txt
 	Delete /REBOOTOK $INSTDIR\README.txt

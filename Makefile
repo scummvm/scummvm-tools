@@ -134,6 +134,7 @@ endif
 	$(STRIP) scummvm-tools-cli$(EXEEXT) -o $(WIN32PATH)/tools/scummvm-tools-cli$(EXEEXT)
 	cp $(srcdir)/*.bat $(WIN32PATH)/tools
 	cp $(srcdir)/COPYING $(WIN32PATH)/tools/COPYING.txt
+	cp $(srcdir)/COPYING.BSD2 $(WIN32PATH)/tools/COPYING_BSD2.txt
 	cp $(srcdir)/COPYING.LUA $(WIN32PATH)/tools/COPYING_LUA.txt
 	cp $(srcdir)/README $(WIN32PATH)/tools/README.txt
 	cp $(srcdir)/NEWS $(WIN32PATH)/tools/NEWS.txt
@@ -147,6 +148,7 @@ WIN32BUILD=build
 win32setup: all
 	mkdir -p $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/COPYING          $(srcdir)/$(WIN32BUILD)
+	cp $(srcdir)/COPYING.BSD2     $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/COPYING.LUA      $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/NEWS             $(srcdir)/$(WIN32BUILD)
 	cp $(srcdir)/README           $(srcdir)/$(WIN32BUILD)
@@ -247,6 +249,7 @@ bundle: scummvm-tools-static
 osxsnap: bundle scummvm-tools-cli-static
 	mkdir ScummVM-Tools-snapshot
 	cp $(srcdir)/COPYING ./ScummVM-Tools-snapshot/License\ \(GPL\)
+	cp $(srcdir)/COPYING.BSD2 ./ScummVM-Tools-snapshot/License\ \(BSD2\)
 	cp $(srcdir)/COPYING.LUA ./ScummVM-Tools-snapshot/License\ \(LUA\)
 	cp $(srcdir)/NEWS ./ScummVM-Tools-snapshot/News
 	cp $(srcdir)/README ./ScummVM-Tools-snapshot/ScummVM\ ReadMe
@@ -272,6 +275,8 @@ amigaosdist: all
 	mkdir -p $(AMIGAOSPATH)/media
 	# Install documents
 	cp $(srcdir)/COPYING $(AMIGAOSPATH)/doc/
+	cp $(srcdir)/COPYING.BSD2 $(AMIGAOSPATH)/doc/
+	cp $(srcdir)/COPYING.LUA $(AMIGAOSPATH)/doc/
 	cp $(srcdir)/COPYRIGHT $(AMIGAOSPATH)/doc/
 	cp $(srcdir)/NEWS $(AMIGAOSPATH)/doc/
 	cp $(srcdir)/README $(AMIGAOSPATH)/doc/
@@ -328,6 +333,7 @@ riscosdist: all riscosboot $(addprefix !ScummTool/bin/,$(addsuffix $(,)ff8,$(PRO
 	cp ${srcdir}/dists/riscos/!Sprites11,ff9 !ScummTool/!Sprites11,ff9
 	cp $(srcdir)/README !ScummTool/!Help,fff
 	cp $(srcdir)/COPYING !ScummTool/COPYING,fff
+	cp $(srcdir)/COPYING.BSD2 !ScummTool/COPYING.BSD2,fff
 	cp $(srcdir)/COPYING.LUA !ScummTool/COPYING.LUA,fff
 	cp $(srcdir)/NEWS !ScummTool/NEWS,fff
 ifeq "$(USE_WXWIDGETS)" "1"
