@@ -1,7 +1,7 @@
 [Setup]
 AppCopyright=2022
 AppName=ScummVM Tools
-AppVerName=ScummVM Tools Git
+AppVerName=ScummVM Tools 2.6.0
 AppPublisher=The ScummVM Team
 AppPublisherURL=https://www.scummvm.org/
 AppSupportURL=https://www.scummvm.org/
