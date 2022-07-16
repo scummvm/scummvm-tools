@@ -22,44 +22,44 @@ SetupIconFile=graphics\scummvm-install.ico
 WizardImageFile=graphics\left.bmp
 
 [Files]
-Source: "tools\construct_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\convert_dxa.bat"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\COPYING.txt"; DestDir: "{app}"; Flags: ignoreversion  
-Source: "tools\COPYING_BSD2.txt"; DestDir: "{app}"; Flags: ignoreversion  
-Source: "tools\COPYING_LUA.txt"; DestDir: "{app}"; Flags: ignoreversion  
-Source: "tools\create_sjisfnt.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\decine.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\degob.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\dekyra.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\descumm.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\desword2.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\extract_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\gob_loadcalc.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\grim_animb2txt.exe"
-Source: "tools\grim_cosb2cos.exe"
-Source: "tools\grim_diffr.exe"
-Source: "tools\grim_int2flt.exe"
-Source: "tools\grim_meshb2obj.exe"
-Source: "tools\grim_patchex.exe"
-Source: "tools\grim_set2fig.exe"
-Source: "tools\grim_sklb2txt.exe"
-Source: "tools\grim_unlab.exe"
-Source: "tools\grim_bm2bmp.exe"
-Source: "tools\grim_delua.exe"
-Source: "tools\grim_imc2wav.exe"
-Source: "tools\grim_luac.exe"
-Source: "tools\grim_mklab.exe"
-Source: "tools\grim_patchr.exe"
-Source: "tools\grim_setb2set.exe"
-Source: "tools\grim_til2bmp.exe"
-Source: "tools\grim_vima.exe"
-Source: "tools\NEWS.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "tools\README.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
-Source: "tools\scummvm-tools.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\scummvm-tools-cli.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "tools\media\detaillogo.jpg"; DestDir: "{app}\media"; Flags: ignoreversion 
-Source: "tools\media\logo.jpg"; DestDir: "{app}\media"; Flags: ignoreversion 
-Source: "tools\media\tile.gif"; DestDir: "{app}\media"; Flags: ignoreversion 
+Source: "construct_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "convert_dxa.bat"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "COPYING.txt"; DestDir: "{app}"; Flags: ignoreversion  
+Source: "COPYING_BSD2.txt"; DestDir: "{app}"; Flags: ignoreversion  
+Source: "COPYING_LUA.txt"; DestDir: "{app}"; Flags: ignoreversion  
+Source: "create_sjisfnt.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "decine.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "degob.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "dekyra.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "descumm.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "desword2.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "extract_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "gob_loadcalc.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "grim_animb2txt.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_cosb2cos.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_diffr.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_int2flt.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_meshb2obj.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_patchex.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_set2fig.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_sklb2txt.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_unlab.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_bm2bmp.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_delua.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_imc2wav.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_luac.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_mklab.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_patchr.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_setb2set.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_til2bmp.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "grim_vima.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "NEWS.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "README.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
+Source: "scummvm-tools.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "scummvm-tools-cli.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "media\detaillogo.jpg"; DestDir: "{app}\media"; Flags: ignoreversion 
+Source: "media\logo.jpg"; DestDir: "{app}\media"; Flags: ignoreversion 
+Source: "media\tile.gif"; DestDir: "{app}\media"; Flags: ignoreversion 
 
 [Run]
 Filename: "{app}\scummvm-tools.exe";  Flags: nowait skipifdoesntexist postinstall skipifsilent; Description: "Launch ScummVM Tools"; 
