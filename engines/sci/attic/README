@@ -1,0 +1,7 @@
+Tools here are coming from the original FreeSCI project and are
+not plugged in into our makefile and most probably don't even compile.
+
+Kept here for historical purpose.
+
+If you would like to convert them to the scummvm-tools framework, you
+are more than welcome.
