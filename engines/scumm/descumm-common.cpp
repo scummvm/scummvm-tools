@@ -264,17 +264,21 @@ extern char *get_var6(char *buf);
 char *get_string(char *buf) {
 	byte cmd;
 	char *e = buf;
+	bool first = true;
 	bool in = false;
-	bool in_function = false;
 	int i;
 
 	while ((cmd = get_byte()) != 0) {
 		if (cmd == 0xFF || cmd == 0xFE) {
 			if (in) {
-				e += sprintf(e, "\" + ");
+				e += sprintf(e, "\"");
 				in = false;
 			}
-			in_function = true;
+			if (first) {
+				first = false;
+			} else {
+				e += sprintf(e, " + ");
+			}
 			i = get_byte();
 			switch (i) {
 			case 1: // newline
@@ -350,11 +354,12 @@ char *get_string(char *buf) {
 				e += sprintf(e, "unknown%d(%d)", i, get_word());
 			}
 		} else {
-			if (in_function) {
-				e += sprintf(e, " + ");
-				in_function = false;
-			}
 			if (!in) {
+				if (first) {
+					first = false;
+				} else {
+					e += sprintf(e, " + ");
+				}
 				*e++ = '"';
 				in = true;
 			}
