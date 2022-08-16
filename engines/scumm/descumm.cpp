@@ -910,7 +910,7 @@ void do_load_code_to_string(char *buf, byte opcode) {
 
 	buf = strchr(strcpy(buf, "PutCodeInString("), 0);
 	buf = get_var_or_byte(buf, opcode & 0x80);
-	buf = strchr(strcpy(buf, ", "), 0);
+	buf = strchr(strcpy(buf, ","), 0);
 	buf = get_string(buf);
 	strcpy(buf, ");");
 }
