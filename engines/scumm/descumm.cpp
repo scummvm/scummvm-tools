@@ -1328,16 +1328,16 @@ void do_verbops(char *buf, byte opcode) {
 		first = 0;
 		switch (opcode & 0x1F) {
 		case 0x1:
-			buf = do_tok(buf, "Image", (opcode & 0x80) ? A1V : A1W | ANOENDSEMICOLON);
+			buf = do_tok(buf, "Image", ((opcode & 0x80) ? A1V : A1W) | ANOENDSEMICOLON);
 			break;
 		case 0x2:
 			buf = do_tok(buf, "Text", A1ASCII | ANOENDSEMICOLON);
 			break;
 		case 0x3:
-			buf = do_tok(buf, "Color", (opcode & 0x80) ? A1V : A1B | ANOENDSEMICOLON);
+			buf = do_tok(buf, "Color", ((opcode & 0x80) ? A1V : A1B) | ANOENDSEMICOLON);
 			break;
 		case 0x4:
-			buf = do_tok(buf, "HiColor", (opcode & 0x80) ? A1V : A1B | ANOENDSEMICOLON);
+			buf = do_tok(buf, "HiColor", ((opcode & 0x80) ? A1V : A1B) | ANOENDSEMICOLON);
 			break;
 		case 0x5:
 			buf = do_tok(buf, "SetXY", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2W) | ANOENDSEMICOLON);
@@ -1355,26 +1355,26 @@ void do_verbops(char *buf, byte opcode) {
 			buf = do_tok(buf, "New", ANOENDSEMICOLON);
 			break;
 		case 0x10:
-			buf = do_tok(buf, "DimColor", (opcode & 0x80) ? A1V : A1B | ANOENDSEMICOLON);
+			buf = do_tok(buf, "DimColor", ((opcode & 0x80) ? A1V : A1B) | ANOENDSEMICOLON);
 			break;
 		case 0x11:
 			buf = do_tok(buf, "Dim", ANOENDSEMICOLON);
 			break;
 		case 0x12:
-			buf = do_tok(buf, "Key", (opcode & 0x80) ? A1V : A1B | ANOENDSEMICOLON);
+			buf = do_tok(buf, "Key", ((opcode & 0x80) ? A1V : A1B) | ANOENDSEMICOLON);
 			break;
 		case 0x13:
 			buf = do_tok(buf, "Center", ANOENDSEMICOLON);
 			break;
 		case 0x14:
-			buf = do_tok(buf, "SetToString", (opcode & 0x80) ? A1V : A1W | ANOENDSEMICOLON);
+			buf = do_tok(buf, "SetToString", ((opcode & 0x80) ? A1V : A1W) | ANOENDSEMICOLON);
 			break;
 		case 0x16:
 			buf =
 				do_tok(buf, "SetToObject", ((opcode & 0x80) ? A1V : A1W) | ((opcode & 0x40) ? A2V : A2B) | ANOENDSEMICOLON);
 			break;
 		case 0x17:
-			buf = do_tok(buf, "BackColor", (opcode & 0x80) ? A1V : A1B | ANOENDSEMICOLON);
+			buf = do_tok(buf, "BackColor", ((opcode & 0x80) ? A1V : A1B) | ANOENDSEMICOLON);
 			break;
 		default:
 			buf += sprintf(buf, "Invalid%.2X()", opcode);
