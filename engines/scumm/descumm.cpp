@@ -1194,7 +1194,7 @@ void do_room_ops_old(char *buf, byte opcode) {
 		buf = strecpy(buf, a);
 		buf = strecpy(buf, ",");
 		buf = strecpy(buf, b);
-		buf = strecpy(buf, ")");
+		buf = strecpy(buf, ");");
 		break;
 	case 0x02:
 		if (g_options.scriptVersion > 3) {
@@ -1205,7 +1205,7 @@ void do_room_ops_old(char *buf, byte opcode) {
 		buf = strecpy(buf, a);
 		buf = strecpy(buf, ",");
 		buf = strecpy(buf, b);
-		buf = strecpy(buf, ")");
+		buf = strecpy(buf, ");");
 		break;
 	case 0x03:
 		if (g_options.scriptVersion > 3) {
@@ -1216,7 +1216,7 @@ void do_room_ops_old(char *buf, byte opcode) {
 		buf = strecpy(buf, a);
 		buf = strecpy(buf, ",");
 		buf = strecpy(buf, b);
-		buf = strecpy(buf, ")");
+		buf = strecpy(buf, ");");
 		break;
 	case 0x04:
 		if (g_options.scriptVersion > 3) {
@@ -1227,7 +1227,7 @@ void do_room_ops_old(char *buf, byte opcode) {
 		buf = strecpy(buf, a);
 		buf = strecpy(buf, ",");
 		buf = strecpy(buf, b);
-		buf = strecpy(buf, ")");
+		buf = strecpy(buf, ");");
 		break;
 	case 0x05:
 		do_tok(buf, "ShakeOn", 0);
