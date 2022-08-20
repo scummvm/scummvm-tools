@@ -1197,10 +1197,12 @@ struct	t_lflindex {
 #include "common/pack-end.h"	/* END STRUCT PACKING */
 
 #else	/* !MAKE_LFLS */
-void ExtractMMNES::dump_resource (Common::File &input, const char *fn_template, int num, const struct t_resource *res, res_type type) {
+void ExtractMMNes::dump_resource (Common::File &input, const char *fn_template, int num, const struct t_resource *res, res_type type) {
 	char fname[256];
 	sprintf(fname, fn_template, num);
-	Common::File output(fname, "wb");
+	Common::Filename &outpath = _outputPath;
+	outpath.setFullName(fname);
+	Common::File output(outpath, "wb");
 	print("Extracting resource to %s", fname);
 	extract_resource(input, output, res, type);
 }
