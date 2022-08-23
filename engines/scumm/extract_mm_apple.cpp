@@ -29,8 +29,10 @@
 unsigned char room_disks_apple[NUM_ROOMS], room_tracks_apple[NUM_ROOMS], room_sectors_apple[NUM_ROOMS];
 
 static const int SectorOffset[36] = {
-	0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256,
-	272, 288, 304, 320, 336, 352, 368,
+	  0,  16,  32,  48,  64,  80,
+	 96, 112, 128, 144, 160, 176,
+	192, 208, 224, 240, 256, 272,
+	288, 304, 320, 336, 352, 368,
 	384, 400, 416, 432, 448, 464,
 	480, 496, 512, 528, 544, 560
 };
@@ -143,6 +145,7 @@ void ExtractMMApple::execute() {
 		sprintf(fname, "%02i.LFL", i);
 		outpath.setFullName(fname);
 		output.open(outpath, "wb");
+		output.setXorMode(0xFF);
 
 		print("Creating %s...", fname);
 		input->seek((SectorOffset[room_tracks_apple[i]] + room_sectors_apple[i]) * 256, SEEK_SET);
