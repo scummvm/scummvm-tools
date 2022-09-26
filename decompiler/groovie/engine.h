@@ -24,6 +24,7 @@
 
 #include "decompiler/engine.h"
 #include "opcodes.h"
+#include <vector>
 
 namespace Groovie {
 
@@ -39,10 +40,10 @@ public:
 	bool supportsCodeGen() const { return false; }
 
 private:
-	const GroovieOpcode *getOpcodes() const;
+	const std::vector<GroovieOpcode> &getOpcodes() const;
 
-	static const GroovieOpcode opcodesT7G[];
-	static const GroovieOpcode opcodesV2[];
+	static const std::vector<GroovieOpcode> opcodesT7G;
+	static const std::vector<GroovieOpcode> opcodesV2;
 };
 
 } // End of namespace Groovie

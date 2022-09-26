@@ -86,7 +86,7 @@ public:
 
 // GroovieDisassembler
 
-GroovieDisassembler::GroovieDisassembler(InstVec &insts, const GroovieOpcode *opcodes) :
+GroovieDisassembler::GroovieDisassembler(InstVec &insts, const std::vector<GroovieOpcode> &opcodes) :
 	Disassembler(insts), _opcodes(opcodes) {
 }
 
@@ -110,7 +110,7 @@ InstPtr GroovieDisassembler::createInstruction(byte opcode) {
 	opcode &= 0x7F;
 
 	// Verify it's a valid opcode
-	if (opcode > 0x59) // TODO: make it depend on the real number of opcodes
+	if (opcode > _opcodes.size())
 		throw UnknownOpcodeException(_address, opcode);
 
 	// Create the new instruction

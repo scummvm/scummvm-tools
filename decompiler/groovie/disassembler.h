@@ -33,7 +33,7 @@ struct GroovieOpcode;
  */
 class GroovieDisassembler : public Disassembler {
 public:
-	GroovieDisassembler(InstVec &insts, const GroovieOpcode *opcodes);
+	GroovieDisassembler(InstVec &insts, const std::vector<GroovieOpcode> &opcodes);
 
 protected:
 	void doDisassemble() throw(UnknownOpcodeException);
@@ -49,7 +49,7 @@ protected:
 	ValuePtr readParameterScriptName();
 	ValuePtr readParameterVideoName();
 
-	const GroovieOpcode *_opcodes;
+	const std::vector<GroovieOpcode> _opcodes;
 	uint32 _address;
 	uint32 _maxTargetAddress;
 	bool _firstBit;
