@@ -110,7 +110,7 @@ InstPtr GroovieDisassembler::createInstruction(byte opcode) {
 	opcode &= 0x7F;
 
 	// Verify it's a valid opcode
-	if (opcode > _opcodes.size())
+	if (opcode >= _opcodes.size())
 		throw UnknownOpcodeException(_address, opcode);
 
 	// Create the new instruction
