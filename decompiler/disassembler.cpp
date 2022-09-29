@@ -47,3 +47,32 @@ void Disassembler::dumpDisassembly(std::ostream &output) {
 	disassemble();
 	doDumpDisassembly(output);
 }
+
+Reassembler::Reassembler(InstVec &insts) : Disassembler(insts) { }
+
+void Reassembler::assemble() {
+	// Prepare to read the input script
+	_f.seek(0, SEEK_SET);
+	_binary.clear();
+
+	while(!_f.eos()) {
+		try {
+			//doAssembly();
+			byte data = _f.readByte();
+			_binary.push_back(data);
+		} catch(Common::FileException e) {
+			break;
+		}
+	}
+}
+
+void Reassembler::doDumpBinary(std::ostream &output) {
+	for (auto &i : _binary) {
+		output << i;
+	}
+}
+
+void Reassembler::dumpBinary(std::ostream &output) {
+	assemble();
+	doDumpBinary(output);
+}

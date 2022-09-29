@@ -83,4 +83,15 @@ public:
 	 */
 	void dumpDisassembly(std::ostream &output);
 };
+
+class Reassembler : public Disassembler {
+protected:
+	std::vector<byte> _binary;
+	//virtual void doAssembly() throw(std::exception) = 0; // push_back to _binary
+	virtual void doDumpBinary(std::ostream &output);
+public:
+	Reassembler(InstVec &insts);
+	void assemble();
+	void dumpBinary(std::ostream &output);
+};
 #endif

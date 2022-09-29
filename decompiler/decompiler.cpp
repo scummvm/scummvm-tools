@@ -63,7 +63,8 @@ int main(int argc, char** argv) {
 			("only-graph,G", "Stops after control flow graph has been generated. Implies -g.")
 			("show-unreachable,u", "Show the address and contents of unreachable groups in the script.")
 			("variant,v", po::value<std::string>()->default_value(""), "Tell the engine that the script is from a specific variant. To see a list of variants supported by a specific engine, use the -h option and the -e option together.")
-			("no-stack-effect,s", "Leave out the stack effect when printing raw instructions.");
+			("no-stack-effect,s", "Leave out the stack effect when printing raw instructions.")
+			("dump-binary,b", po::value<std::string>(), "Compile the assembly to a binary file.");
 
 		po::options_description args("");
 		args.add(visible).add_options()
@@ -135,6 +136,20 @@ int main(int argc, char** argv) {
 		disassembler->open(inputFile.c_str());
 
 		disassembler->disassemble();
+		if (vm.count("dump-binary")) {
+			std::ofstream of;
+
+			of.open(vm["dump-binary"].as<std::string>().c_str(), of.binary);
+			std::streambuf *buf = of.rdbuf();
+
+			std::ostream out(buf);
+			((Reassembler*)disassembler)->dumpBinary(out);
+
+			delete disassembler;
+			delete engine;
+			return 0;
+		}
+
 		if (vm.count("dump-disassembly")) {
 			std::streambuf *buf;
 			std::ofstream of;

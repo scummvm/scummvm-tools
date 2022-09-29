@@ -31,7 +31,7 @@ struct GroovieOpcode;
 /**
  * Disassembler for Groovie scripts.
  */
-class GroovieDisassembler : public Disassembler {
+class GroovieDisassembler : public Reassembler {
 public:
 	GroovieDisassembler(InstVec &insts, const std::vector<GroovieOpcode> &opcodes);
 
