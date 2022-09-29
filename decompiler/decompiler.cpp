@@ -140,10 +140,7 @@ int main(int argc, char** argv) {
 			std::ofstream of;
 
 			of.open(vm["dump-binary"].as<std::string>().c_str(), of.binary);
-			std::streambuf *buf = of.rdbuf();
-
-			std::ostream out(buf);
-			((Reassembler*)disassembler)->dumpBinary(out);
+			((Reassembler*)disassembler)->dumpBinary(of);
 
 			delete disassembler;
 			delete engine;
