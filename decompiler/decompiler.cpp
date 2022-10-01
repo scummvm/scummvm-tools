@@ -135,7 +135,6 @@ int main(int argc, char** argv) {
 		Disassembler *disassembler = engine->getDisassembler(insts);
 		disassembler->open(inputFile.c_str());
 
-		disassembler->disassemble();
 		if (vm.count("dump-binary")) {
 			std::ofstream of;
 
@@ -146,6 +145,8 @@ int main(int argc, char** argv) {
 			delete engine;
 			return 0;
 		}
+
+		disassembler->disassemble();
 
 		if (vm.count("dump-disassembly")) {
 			std::streambuf *buf;

@@ -37,7 +37,7 @@ public:
 
 protected:
 	void doDisassemble() throw(UnknownOpcodeException);
-
+	void doAssembly() throw(std::exception);
 
 	InstPtr readInstruction();
 	InstPtr createInstruction(byte opcode);

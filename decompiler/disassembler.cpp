@@ -57,22 +57,53 @@ void Reassembler::assemble() {
 
 	while(!_f.eos()) {
 		try {
-			//doAssembly();
-			byte data = _f.readByte();
-			_binary.push_back(data);
+			doAssembly();
 		} catch(Common::FileException e) {
 			break;
 		}
 	}
+
+	// TODO: 2nd pass in order to set jump addresses after reading all labels
+	// maybe doAssembly() should build a vector labels, and a vector of _binary indecies to label IDs
+	// then the 2nd pass could be generically handled here without implementation in the engine code
 }
 
 void Reassembler::doDumpBinary(std::ostream &output) {
-	for (auto &i : _binary) {
-		output << i;
-	}
+	output.write((char*)_binary.data(), _binary.size());
 }
 
 void Reassembler::dumpBinary(std::ostream &output) {
 	assemble();
 	doDumpBinary(output);
+}
+
+std::string Reassembler::readLine() {
+	std::string line;
+	char c;
+	while(!_f.eos()) {
+		c = 0;
+		try {
+			c = _f.readByte();
+			if(c == '\n')
+				break;
+			line += c;
+		} catch(Common::FileException e) {
+			break;
+		}
+	}
+	return line;
+}
+
+std::string Reassembler::splitString(std::string &from, size_t pos, size_t separator_len, bool reverse) {
+	if(pos == std::string::npos)
+		return std::string();
+	
+	if(reverse) {
+		std::string ret = from.substr(pos + separator_len);
+		from = from.substr(0, pos);
+		return ret;
+	}
+	std::string ret = from.substr(0, pos);
+	from = from.substr(pos + separator_len);
+	return ret;
 }

@@ -354,4 +354,34 @@ void GroovieDisassembler::doDisassemble() throw (UnknownOpcodeException) {
 		_insts.push_back(createInstruction(0));
 }
 
+void GroovieDisassembler::doAssembly() throw(std::exception) {
+	std::string line = readLine();
+	if(line.empty())
+		return;
+	std::cout << "\n\n" << line << "\n";
+
+	auto comment = splitString(line, line.find(";"), 1, true);// remove comments
+	auto label = splitString(line, line.find(": "), 2);
+
+	// find the longest matching instruction name, since we don't have a separator beteen the instruction name and the first argument
+	GroovieOpcode inst;
+	size_t inst_len = 0;
+	for(auto &i : _opcodes) {
+		size_t len = strlen(i.name);
+		if(len > inst_len) {
+			if(line.substr(0, len) == i.name) {
+				inst = i;
+				inst_len = len;
+			}
+		}
+	}
+
+	std::string arguments;
+	if(line.length() > inst_len)
+		arguments = line.substr(inst_len + 1);
+	std::cout << "==  " << label << ": " << inst.name << " " << arguments << ";" << comment << "\n";
+
+	// TODO: build list of labels, parse arguments, and write bytes to _binary
+}
+
 } // End of namespace Groovie

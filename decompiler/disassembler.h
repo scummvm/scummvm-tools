@@ -87,8 +87,10 @@ public:
 class Reassembler : public Disassembler {
 protected:
 	std::vector<byte> _binary;
-	//virtual void doAssembly() throw(std::exception) = 0; // push_back to _binary
+	virtual void doAssembly() throw(std::exception) = 0; // push_back to _binary
 	virtual void doDumpBinary(std::ostream &output);
+	std::string readLine();
+	std::string splitString(std::string &from, size_t pos, size_t separator_len=0, bool reverse=false);
 public:
 	Reassembler(InstVec &insts);
 	void assemble();
