@@ -167,12 +167,12 @@ InstPtr GroovieDisassembler::createInstruction(byte opcode) {
 
 void GroovieDisassembler::readParams(InstPtr inst, const char *typeString) {
 	while (*typeString) {
-		inst->_params.push_back(readParameter(inst, *typeString));
+		inst->_params.push_back(readParameter(*typeString));
 		typeString++;
 	}
 }
 
-ValuePtr GroovieDisassembler::readParameter(InstPtr inst, char type) {
+ValuePtr GroovieDisassembler::readParameter(char type) {
 	ValuePtr retval = NULL;
 	switch (type) {
 	case '1': // 8 bits
@@ -185,9 +185,9 @@ ValuePtr GroovieDisassembler::readParameter(InstPtr inst, char type) {
 		break;
 	case '3': // 8 or 16 bits
 		if (_firstBit)
-			retval = readParameter(inst, '1');
+			retval = readParameter('1');
 		else
-			retval = readParameter(inst, '2');
+			retval = readParameter('2');
 		break;
 	case '4': // 32 bits
 		retval = new IntValue(_f.readUint32LE(), false);
@@ -358,30 +358,122 @@ void GroovieDisassembler::doAssembly() throw(std::exception) {
 	std::string line = readLine();
 	if(line.empty())
 		return;
-	std::cout << "\n\n" << line << "\n";
+	std::cout << "\n" << line << "\n";
 
 	auto comment = splitString(line, line.find(";"), 1, true);// remove comments
 	auto label = splitString(line, line.find(": "), 2);
 
 	// find the longest matching instruction name, since we don't have a separator beteen the instruction name and the first argument
 	GroovieOpcode inst;
-	size_t inst_len = 0;
+	size_t instLen = 0;
 	for(auto &i : _opcodes) {
 		size_t len = strlen(i.name);
-		if(len > inst_len) {
+		if(len > instLen) {
 			if(line.substr(0, len) == i.name) {
 				inst = i;
-				inst_len = len;
+				instLen = len;
 			}
 		}
 	}
 
 	std::string arguments;
-	if(line.length() > inst_len)
-		arguments = line.substr(inst_len + 1);
-	std::cout << "==  " << label << ": " << inst.name << " " << arguments << ";" << comment << "\n";
+	if(line.length() > instLen)
+		arguments = line.substr(instLen + 1);
+	std::cout << "==  " << label << ": " << inst.name << " " << arguments << "; " << comment << "\n";
 
 	// TODO: build list of labels, parse arguments, and write bytes to _binary
+	std::vector<byte> bytes;
+	size_t jumpAddrStart;// where the address is stored so it can be overwritten when we have the full list of labels
+	std::string jumpToLabel;
+	_firstBit = 0;
+	jumpAddrStart = writeParams(bytes, inst.params, arguments, jumpToLabel);// will need to find first of ",["?
+	// use writeParams to guess _firstBit, then we write the opcode at the end?
+	bytes.insert(bytes.begin(), inst.opcode | _firstBit);
+	jumpAddrStart++; // increment since we pushed a byte to the front
+
+	addInstruction(bytes, inst.type, jumpAddrStart, 2, label, jumpToLabel);
+}
+
+size_t GroovieDisassembler::writeParams(std::vector<byte> &bytes, const char *typeString, const std::string &arguments, std::string &jumpToLabel) {
+	size_t jumpAddrStart = 0;
+	size_t argStart = 0;
+	while (*typeString) {
+		argStart = writeParameter(*typeString, bytes, arguments, argStart, jumpAddrStart, jumpToLabel);
+		typeString++;
+	}
+	return jumpAddrStart;
+}
+
+size_t getEndArgument(const std::string &s, size_t start) {
+	int brackets = 0;
+	for(size_t i = start; i < s.length(); i++) {
+		switch(s[i]) {
+		case '[':
+			brackets++;
+			break;
+		case ']':
+			brackets--;
+			break;
+		
+		case ',':
+			if(brackets == 0)
+				return i;
+			break;
+		}
+	}
+	return s.length();
+}
+
+size_t GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, const std::string &arguments, size_t argStart, size_t &jumpAddrStart, std::string &jumpToLabel) {
+	const size_t argEnd = getEndArgument(arguments, argStart);
+	const size_t argLen = argEnd - argStart;
+	std::string arg = arguments.substr(argStart, argLen);
+	std::cout << "----  " << arg << "\n";
+
+	switch (type) {
+	case '1': // 8 bits
+		//retval = new IntValue(_f.readByte(), false);
+		//_address++;
+		break;
+	case '2': // 16 bits
+		//retval = new IntValue(_f.readUint16LE(), false);
+		//_address += 2;
+		break;
+	case '3': // 8 or 16 bits
+		//if (_firstBit)
+		//	retval = readParameter('1');
+		//else
+		//	retval = readParameter('2');
+		break;
+	case '4': // 32 bits
+		//retval = new IntValue(_f.readUint32LE(), false);
+		//_address += 4;
+		break;
+	case '@': // Address
+		jumpAddrStart = bytes.size();
+		// TODO: if arg is in 0xF3DE format, it needs to be converted to 0000f3de
+		jumpToLabel = arg;
+		//retval = new AddressValue(_f.readUint16LE());
+		//_address += 2;
+		//if (retval->getUnsigned() > _maxTargetAddress)
+		//	_maxTargetAddress = retval->getUnsigned();
+		break;
+	case 'A': // Array
+		//retval = readParameterArray();
+		break;
+	case 'S': // Script name
+		//retval = readParameterScriptName();
+		break;
+	case 'V': // Video name
+		//retval = readParameterVideoName();
+		break;
+	case 'C': // Indexed value
+		//retval = readParameterIndexed(false, true, true);
+		break;
+	default:
+		std::cout << "  UNKNOWN param type: " << type << std::endl;
+	}
+	return argEnd + 2;
 }
 
 } // End of namespace Groovie

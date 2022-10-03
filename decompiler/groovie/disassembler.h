@@ -42,7 +42,10 @@ protected:
 	InstPtr readInstruction();
 	InstPtr createInstruction(byte opcode);
 	void readParams(InstPtr inst, const char *typeString);
-	ValuePtr readParameter(InstPtr inst, char type);
+	ValuePtr readParameter(char type);
+
+	size_t writeParams(std::vector<byte> &bytes, const char *typeString, const std::string &arguments, std::string &jumpToLabel);
+	size_t writeParameter(char type, std::vector<byte> &bytes, const std::string &arguments, size_t argStart, size_t &jumpAddrStart, std::string &jumpToLabel);
 
 	ValuePtr readParameterIndexed(bool allow7C, bool limitVal, bool limitVar);
 	ValuePtr readParameterArray();

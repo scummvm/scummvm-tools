@@ -107,3 +107,20 @@ std::string Reassembler::splitString(std::string &from, size_t pos, size_t separ
 	from = from.substr(pos + separator_len);
 	return ret;
 }
+
+void Reassembler::addInstruction(const std::vector<byte> &bytes, int type, size_t jumpAddrStart, size_t jumpAddrLen, const std::string &label, const std::string &jumpToLabel) {
+	if(!label.empty()) {
+		_labels.emplace(label, _binary.size());
+	}
+
+	if(type == kCallInst || type == kCondJumpInst || type == kJumpInst) {
+		Jump j;
+		j._label = jumpToLabel;
+		j.start = jumpAddrStart + _binary.size();
+		j.len = jumpAddrLen;
+		_jumps.push_back(j);
+	}
+
+	// write the address of our label to the _labels map
+	_binary.insert(_binary.end(), bytes.begin(), bytes.end());
+}

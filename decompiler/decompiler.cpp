@@ -65,6 +65,7 @@ int main(int argc, char** argv) {
 			("variant,v", po::value<std::string>()->default_value(""), "Tell the engine that the script is from a specific variant. To see a list of variants supported by a specific engine, use the -h option and the -e option together.")
 			("no-stack-effect,s", "Leave out the stack effect when printing raw instructions.")
 			("dump-binary,b", po::value<std::string>(), "Compile the assembly to a binary file.");
+			// TODO: option for only outputting labels for lines that receive jumps
 
 		po::options_description args("");
 		args.add(visible).add_options()
