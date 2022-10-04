@@ -24,7 +24,6 @@
 
 #include <iostream>
 #include <vector>
-#include <unordered_map>
 
 #include "instruction.h"
 #include "common/file.h"
@@ -85,25 +84,4 @@ public:
 	void dumpDisassembly(std::ostream &output);
 };
 
-class Reassembler : public Disassembler {
-	struct Jump {
-		std::string _label;
-		size_t start, len;
-	};
-private:
-	std::vector<byte> _binary;
-	std::unordered_map<std::string, size_t> _labels;
-	std::vector<Jump> _jumps;
-
-protected:
-	virtual void doAssembly() throw(std::exception) = 0; // push_back to _binary
-	virtual void doDumpBinary(std::ostream &output);
-	std::string readLine();
-	std::string splitString(std::string &from, size_t pos, size_t separator_len=0, bool reverse=false);
-	void addInstruction(const std::vector<byte> &bytes, int type, size_t jumpAddrStart=0, size_t jumpAddrLen=0, const std::string &label="", const std::string &jumpToLabel="");// automatically pair the label with the instruction address
-public:
-	Reassembler(InstVec &insts);
-	void assemble();
-	void dumpBinary(std::ostream &output);
-};
 #endif

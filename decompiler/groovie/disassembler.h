@@ -22,7 +22,7 @@
 #ifndef GROOVIE_DISASSEMBLER_H
 #define GROOVIE_DISASSEMBLER_H
 
-#include "decompiler/disassembler.h"
+#include "decompiler/reassembler.h"
 
 namespace Groovie {
 

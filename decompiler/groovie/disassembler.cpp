@@ -23,6 +23,7 @@
 #include "opcodes.h"
 
 #include "common/util.h"
+#include "common/endian.h"
 
 namespace Groovie {
 
@@ -358,7 +359,7 @@ void GroovieDisassembler::doAssembly() throw(std::exception) {
 	std::string line = readLine();
 	if(line.empty())
 		return;
-	std::cout << "\n" << line << "\n";
+	//std::cout << "\n" << line << "\n";
 
 	auto comment = splitString(line, line.find(";"), 1, true);// remove comments
 	auto label = splitString(line, line.find(": "), 2);
@@ -379,7 +380,7 @@ void GroovieDisassembler::doAssembly() throw(std::exception) {
 	std::string arguments;
 	if(line.length() > instLen)
 		arguments = line.substr(instLen + 1);
-	std::cout << "==  " << label << ": " << inst.name << " " << arguments << "; " << comment << "\n";
+	//std::cout << "==  " << label << ": " << inst.name << " " << arguments << "; " << comment << "\n";
 
 	// TODO: build list of labels, parse arguments, and write bytes to _binary
 	std::vector<byte> bytes;
@@ -428,46 +429,63 @@ size_t GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, 
 	const size_t argEnd = getEndArgument(arguments, argStart);
 	const size_t argLen = argEnd - argStart;
 	std::string arg = arguments.substr(argStart, argLen);
-	std::cout << "----  " << arg << "\n";
+	//std::cout << "----  " << arg << "\n";
+	int i;
+	uint16 i16;
+	uint32 u32;
 
 	switch (type) {
 	case '1': // 8 bits
-		//retval = new IntValue(_f.readByte(), false);
-		//_address++;
+		i = std::stoi(arg);
+		bytes.push_back(i);
 		break;
 	case '2': // 16 bits
-		//retval = new IntValue(_f.readUint16LE(), false);
-		//_address += 2;
+		i16 = std::stoi(arg);
+		i16 = TO_LE_16(i16);
+		bytes.push_back(i16 >> 8);
+		bytes.push_back(i16);
 		break;
 	case '3': // 8 or 16 bits
-		//if (_firstBit)
-		//	retval = readParameter('1');
-		//else
-		//	retval = readParameter('2');
+		i = std::stoi(arg);
+		if(i <= 0xFF || _firstBit) {
+			_firstBit = true;
+			bytes.push_back(i);
+		} else {
+			_firstBit = false;
+			i16 = TO_LE_16(i);
+			bytes.push_back(i16 >> 8);
+			bytes.push_back(i16);
+		}
 		break;
 	case '4': // 32 bits
-		//retval = new IntValue(_f.readUint32LE(), false);
-		//_address += 4;
+		u32 = std::stoul(arg);
+		u32 = TO_LE_32(u32);
+		bytes.push_back(u32 >> 24);
+		bytes.push_back(u32 >> 16);
+		bytes.push_back(u32 >> 8);
+		bytes.push_back(u32);
 		break;
 	case '@': // Address
 		jumpAddrStart = bytes.size();
-		// TODO: if arg is in 0xF3DE format, it needs to be converted to 0000f3de
-		jumpToLabel = arg;
-		//retval = new AddressValue(_f.readUint16LE());
-		//_address += 2;
-		//if (retval->getUnsigned() > _maxTargetAddress)
-		//	_maxTargetAddress = retval->getUnsigned();
+		// if arg is in 0xF3DE format, it needs to be converted to 0000f3de
+		jumpToLabel = (boost::format("%08x") % std::stoul(arg, 0, 16)).str();
+		bytes.push_back(0);
+		bytes.push_back(0);
 		break;
 	case 'A': // Array
 		//retval = readParameterArray();
+		//std::cout << "----  " << arg << "\n";
 		break;
 	case 'S': // Script name
-		//retval = readParameterScriptName();
+		// need to ignore the quotes around it
+		for(size_t j=1; j<arg.length()-1; j++)
+			bytes.push_back(arg[j]);
 		break;
 	case 'V': // Video name
 		//retval = readParameterVideoName();
 		break;
 	case 'C': // Indexed value
+		//std::cout << "----  " << arg << "\n";
 		//retval = readParameterIndexed(false, true, true);
 		break;
 	default:

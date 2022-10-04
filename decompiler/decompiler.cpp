@@ -22,6 +22,7 @@
 #include "objectFactory.h"
 
 #include "disassembler.h"
+#include "reassembler.h"
 #include "engine.h"
 #include "instruction.h"
 
