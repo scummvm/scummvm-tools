@@ -52,6 +52,7 @@ public:
 	Reassembler(InstVec &insts);
 	void assemble();
 	void dumpBinary(std::ostream &output);
+	size_t getEndArgument(const std::string &s, size_t start);
 };
 
 #endif

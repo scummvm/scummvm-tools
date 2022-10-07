@@ -231,7 +231,7 @@ const std::vector<GroovieOpcode> GroovieEngine::opcodesV2 = {
 	{0x52, kKernelCallInst, "Copy FG to BG",         "1"},
 	{0x53, kCondJumpInst,   "Hotspot OutRect",       "2222@"},
 	{0x54, kKernelCallInst, "Invalid",               ""},
-	{0x55, kKernelCallInst, "Set Script End",        "2"},
+	{0x55, kKernelCallInst, "Set Script End",        "2"},// should this be an @?
 	{0x56, kKernelCallInst, "Play Sound",            "411"},
 	{0x57, kKernelCallInst, "Invalid",               "4"},
 	{0x58, kKernelCallInst, "Wipe Mask From String", "V"},

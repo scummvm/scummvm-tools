@@ -54,15 +54,15 @@ void Reassembler::assemble() {
 			break;
 		case 2:
 			u16 = TO_LE_16(addr);
-			_binary[j.start] = u16 >> 8;
-			_binary[j.start + 1] = u16;
+			_binary[j.start] = u16;
+			_binary[j.start + 1] = u16 >> 8;
 			break;
 		case 4:
 			u32 = TO_LE_32(addr);
-			_binary[j.start] = u32 >> 24;
-			_binary[j.start + 1] = u32 >> 16;
-			_binary[j.start + 2] = u32 >> 8;
-			_binary[j.start + 3] = u32;
+			_binary[j.start] = u32;
+			_binary[j.start + 1] = u32 >> 8;
+			_binary[j.start + 2] = u32 >> 16;
+			_binary[j.start + 3] = u32 >> 24;
 			break;
 		}
 	}
@@ -121,6 +121,25 @@ void Reassembler::addInstruction(const std::vector<byte> &bytes, int type, size_
 		_jumps.push_back(j);
 	}
 
-	// write the address of our label to the _labels map
 	_binary.insert(_binary.end(), bytes.begin(), bytes.end());
+}
+
+size_t Reassembler::getEndArgument(const std::string &s, size_t start) {
+	int brackets = 0;
+	for(size_t i = start; i < s.length(); i++) {
+		switch(s[i]) {
+		case '[':
+			brackets++;
+			break;
+		case ']':
+			brackets--;
+			break;
+		
+		case ',':
+			if(brackets == 0)
+				return i;
+			break;
+		}
+	}
+	return s.length();
 }
