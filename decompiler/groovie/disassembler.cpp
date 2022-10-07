@@ -362,7 +362,7 @@ void GroovieDisassembler::doAssembly(const std::string &label, std::string &line
 	GroovieOpcode inst;
 	size_t instLen = 0;
 	for(auto &i : _opcodes) {
-		size_t len = strlen(i.name);
+		size_t len = strnlen(i.name, 1024);
 		if(len > instLen) {
 			if(line.substr(0, len) == i.name) {
 				inst = i;

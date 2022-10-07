@@ -84,13 +84,12 @@ void Reassembler::dumpBinary(std::ostream &output) {
 std::string Reassembler::readLine() {
 	std::string line;
 	while(!_f.eos()) {
-		char c = 0;
 		try {
-			c = _f.readByte();
+			char c = _f.readByte();
 			if(c == '\n')
 				break;
 			line += c;
-		} catch(Common::FileException e) {
+		} catch(Common::FileException &e) {
 			break;
 		}
 	}
