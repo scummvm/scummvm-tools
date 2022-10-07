@@ -227,7 +227,7 @@ const std::vector<GroovieOpcode> GroovieEngine::opcodesV2 = {
 	{0x4E, kKernelCallInst, "Invalid",               "2"},
 	{0x4F, kKernelCallInst, "Save Screen",           "2"},
 	{0x50, kKernelCallInst, "Restore Screen",        "2"},
-	{0x51, kCondJumpInst,   "Set Video Skip",        "2"},
+	{0x51, kCondJumpInst,   "Set Video Skip",        "@"},
 	{0x52, kKernelCallInst, "Copy FG to BG",         "1"},
 	{0x53, kCondJumpInst,   "Hotspot OutRect",       "2222@"},
 	{0x54, kKernelCallInst, "Invalid",               ""},
