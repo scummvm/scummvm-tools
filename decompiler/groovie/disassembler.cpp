@@ -407,6 +407,8 @@ size_t GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, 
 	uint16 i16;
 	uint32 u32;
 
+	std::cout << "    writeParameter "<<type<<" - "<<arg<<"\n";
+
 	switch (type) {
 	case '1': // 8 bits
 		i = std::stoi(arg);
@@ -473,6 +475,7 @@ void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, cons
 	while(e < arg.length()) {
 		e = getEndArgument(arg, s);
 		std::string a = arg.substr(s, e - s);
+		std::cout << "writeParameterVideoName "<<a<<"\n";
 		switch(a[0]) {
 		case '"':
 			for(size_t i=1; i < a.length()-1; i++) {
@@ -487,9 +490,11 @@ void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, cons
 			break;
 		case 'M':
 			bytes.push_back(0x7C);
-			writeParameterIndexed(false, false, false, bytes, arg);
-			writeParameterIndexed(false, false, false, bytes, arg);
-			throw std::runtime_error("writeParameterVideoName M: " + a + " not implemented yet");
+			std::string first = a.substr(2, a.find("]") - 2);
+			std::string second = a.substr(a.find("][") + 2);
+			second.pop_back();
+			writeParameterIndexed(false, false, false, bytes, first);
+			writeParameterIndexed(false, false, false, bytes, second);
 			break;
 		}
 		s = e + 2;
@@ -514,6 +519,7 @@ void GroovieDisassembler::writeParameterIndexed(bool allow7C, bool limitVal, boo
 		bytes.push_back(data + 0x61);
 	} else {
 		// Immediate value
+		std::cout << "stoul "<<arg<<"\n";
 		uint8 data = std::stoul(arg);
 		bytes.push_back(data + 0x30);
 	}
