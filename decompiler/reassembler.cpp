@@ -31,7 +31,13 @@ void Reassembler::assemble() {
 
 	while(!_f.eos()) {
 		try {
-			doAssembly();
+			std::string line = readLine();
+			auto comment = splitString(line, line.find(";"), 1, true);// remove comments
+			if(line.empty())
+				continue;
+			auto label = splitString(line, line.find(": "), 2);
+			std::cout << label << ": " << line << "; " << comment << "\n";
+			doAssembly(label, line, comment);
 		} catch(Common::FileException e) {
 			break;
 		}

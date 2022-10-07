@@ -83,5 +83,4 @@ public:
 	 */
 	void dumpDisassembly(std::ostream &output);
 };
-
 #endif

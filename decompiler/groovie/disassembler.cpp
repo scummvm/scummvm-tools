@@ -357,15 +357,7 @@ void GroovieDisassembler::doDisassemble() throw (UnknownOpcodeException) {
 		_insts.push_back(createInstruction(0));
 }
 
-void GroovieDisassembler::doAssembly() throw(std::exception) {
-	std::string line = readLine();
-	if(line.empty())
-		return;
-	//std::cout << "\n" << line << "\n";
-
-	auto comment = splitString(line, line.find(";"), 1, true);// remove comments
-	auto label = splitString(line, line.find(": "), 2);
-
+void GroovieDisassembler::doAssembly(const std::string &label, std::string &line, const std::string &comment) throw(std::exception) {
 	// find the longest matching instruction name, since we don't have a separator beteen the instruction name and the first argument
 	GroovieOpcode inst;
 	size_t instLen = 0;
@@ -382,13 +374,13 @@ void GroovieDisassembler::doAssembly() throw(std::exception) {
 	std::string arguments;
 	if(line.length() > instLen)
 		arguments = line.substr(instLen + 1);
-	std::cout << "==  " << label << ": " << inst.name << " " << arguments << "; " << comment << "\n";
 
-	// TODO: build list of labels, parse arguments, and write bytes to _binary
+	// build list of labels, parse arguments, and write bytes to _binary
 	std::vector<byte> bytes;
 	size_t jumpAddrStart;// where the address is stored so it can be overwritten when we have the full list of labels
 	std::string jumpToLabel;
-	_firstBit = 0;
+
+	_firstBit = false;
 	jumpAddrStart = writeParams(bytes, inst.params, arguments, jumpToLabel);// will need to find first of ",["?
 	// use writeParams to guess _firstBit, then we write the opcode at the end?
 	bytes.insert(bytes.begin(), inst.opcode | (_firstBit<<7));
@@ -411,7 +403,6 @@ size_t GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, 
 	const size_t argEnd = getEndArgument(arguments, argStart);
 	const size_t argLen = argEnd - argStart;
 	std::string arg = arguments.substr(argStart, argLen);
-	std::cout << "----  " << type << ": " << arg << "\n";
 	int i;
 	uint16 i16;
 	uint32 u32;
@@ -472,14 +463,12 @@ size_t GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, 
 		writeParameterIndexed(false, true, true, bytes, arg);
 		break;
 	default:
-		std::cout << "  UNKNOWN param type: " << type << std::endl;
-		throw std::exception();
+		throw std::runtime_error(std::string() + "writeParameter UNKNOWN param type: " + type);
 	}
 	return argEnd + 2;
 }
 
 void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, const std::string &arg) {
-	//std::cout << "----  " << arg << "\n";
 	size_t s = 0, e = 0;
 	while(e < arg.length()) {
 		e = getEndArgument(arg, s);
@@ -491,18 +480,16 @@ void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, cons
 			}
 			break;
 		case 'm':
-			std::cout << "--------  array: " << a << "\n";
 			a = a.substr(2);
 			a.pop_back();
 			bytes.push_back(0x23);
 			bytes.push_back(std::stoul(a) + 0x61);
 			break;
 		case 'M':
-			std::cout << "--------  ARRAY: " << a << " not implemented yet\n";
 			bytes.push_back(0x7C);
 			writeParameterIndexed(false, false, false, bytes, arg);
 			writeParameterIndexed(false, false, false, bytes, arg);
-			throw std::exception();
+			throw std::runtime_error("writeParameterVideoName M: " + a + " not implemented yet");
 			break;
 		}
 		s = e + 2;
@@ -512,46 +499,35 @@ void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, cons
 }
 
 void GroovieDisassembler::writeParameterIndexed(bool allow7C, bool limitVal, bool limitVar, std::vector<byte> &bytes, const std::string &arg) {
-	std::cout << "========== writeParameterIndexed " << arg << "\n";
-
 	if (allow7C && arg[0] == 'M') {
-		std::cout << "------------- 0x7C " << arg << "\n";
 		bytes.push_back(0x7C);
 		std::string first = arg.substr(2, arg.find("]") - 2);
 		std::string second = arg.substr(arg.find("][") + 2);
 		second.pop_back();
-		std::cout << "------------- 0x7C " << arg << ", " << first << ", " << second << "\n";
 		writeParameterIndexed(false, false, false, bytes, first);
 		writeParameterIndexed(false, true, true, bytes, second);
 	} else if (arg[0] == 'm') {
-		std::cout << "------------- 0x23 " << arg << "\n";
 		bytes.push_back(0x23);
 		std::string a = arg.substr(2);
 		a.pop_back();
 		uint8 data = std::stoul(a);
-		std::cout << "------------- 0x23 " << arg << ", " << a << "\n";
 		bytes.push_back(data + 0x61);
 	} else {
 		// Immediate value
 		uint8 data = std::stoul(arg);
 		bytes.push_back(data + 0x30);
 	}
-	//return result;
 }
 
 void GroovieDisassembler::writeParameterArray(std::vector<byte> &bytes, const std::string &arg) {
-	std::cout << "----  writeParameterArray " << arg << "\n";
 	size_t s = 0, e = 0;
-	//size_t last = bytes.size();
 	while(e < arg.length()) {
 		e = getEndArgument(arg, s);
 		std::string a = arg.substr(s, e - s);
-		//last = bytes.size();
 		writeParameterIndexed(true, true, true, bytes, a);
 		s = e + 2;
 	}
 	// terminate the array by using the first bit
 	bytes[bytes.size() - 1] |= 0x80;
 }
-
 } // End of namespace Groovie

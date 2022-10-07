@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
 			std::ofstream of;
 
 			of.open(vm["dump-binary"].as<std::string>().c_str(), of.binary);
-			((Reassembler*)disassembler)->dumpBinary(of);
+			dynamic_cast<Reassembler*>(disassembler)->dumpBinary(of);
 
 			delete disassembler;
 			delete engine;
@@ -149,7 +149,6 @@ int main(int argc, char** argv) {
 		}
 
 		disassembler->disassemble();
-
 		if (vm.count("dump-disassembly")) {
 			std::streambuf *buf;
 			std::ofstream of;
