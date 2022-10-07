@@ -43,9 +43,7 @@ void Reassembler::assemble() {
 		}
 	}
 
-	// TODO: 2nd pass in order to set jump addresses after reading all labels
-	// maybe doAssembly() should build a vector labels, and a vector of _binary indecies to label IDs
-	// then the 2nd pass could be generically handled here without implementation in the engine code
+	// 2nd pass in order to set jump addresses after reading all labels
 	for(const auto &j : _jumps) {
 		if(j._label.empty())
 			continue;
@@ -105,10 +103,12 @@ std::string Reassembler::splitString(std::string &from, size_t pos, size_t separ
 		return std::string();
 	
 	if(reverse) {
+		// return the right side, from is set to the left side
 		std::string ret = from.substr(pos + separator_len);
 		from = from.substr(0, pos);
 		return ret;
 	}
+	// else we return the left side, and from is set to the right side
 	std::string ret = from.substr(0, pos);
 	from = from.substr(pos + separator_len);
 	return ret;

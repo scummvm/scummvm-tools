@@ -381,8 +381,8 @@ void GroovieDisassembler::doAssembly(const std::string &label, std::string &line
 	std::string jumpToLabel;
 
 	_firstBit = false;
-	jumpAddrStart = writeParams(bytes, inst.params, arguments, jumpToLabel);// will need to find first of ",["?
-	// use writeParams to guess _firstBit, then we write the opcode at the end?
+	jumpAddrStart = writeParams(bytes, inst.params, arguments, jumpToLabel);
+	// use writeParams to guess _firstBit, then we write the opcode at the end
 	bytes.insert(bytes.begin(), inst.opcode | (_firstBit<<7));
 	jumpAddrStart++; // increment since we pushed a byte to the front
 
