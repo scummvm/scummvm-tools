@@ -38,7 +38,7 @@ void Reassembler::assemble() {
 			auto label = splitString(line, line.find(": "), 2);
 			std::cout << label << ": " << line << "; " << comment << "\n";
 			doAssembly(label, line, comment);
-		} catch(Common::FileException e) {
+		} catch(Common::FileException &e) {
 			break;
 		}
 	}
@@ -83,9 +83,8 @@ void Reassembler::dumpBinary(std::ostream &output) {
 
 std::string Reassembler::readLine() {
 	std::string line;
-	char c;
 	while(!_f.eos()) {
-		c = 0;
+		char c = 0;
 		try {
 			c = _f.readByte();
 			if(c == '\n')

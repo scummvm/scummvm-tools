@@ -88,7 +88,7 @@ public:
 // GroovieDisassembler
 
 GroovieDisassembler::GroovieDisassembler(InstVec &insts, const std::vector<GroovieOpcode> &opcodes) :
-	Reassembler(insts), _opcodes(opcodes) {
+	Reassembler(insts), _opcodes(opcodes), _firstBit(false) {
 }
 
 InstPtr GroovieDisassembler::readInstruction() {
