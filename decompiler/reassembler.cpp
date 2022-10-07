@@ -137,6 +137,8 @@ size_t Reassembler::getEndArgument(const std::string &s, size_t start) {
 			break;
 		case ']':
 			brackets--;
+			if(brackets < 0)
+				return i;
 			break;
 		
 		case ',':

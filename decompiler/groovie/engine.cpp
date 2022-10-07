@@ -175,7 +175,7 @@ const std::vector<GroovieOpcode> GroovieEngine::opcodesV2 = {
 	{0x1A, kCondJumpInst,   "JmpStrCmp-NE",          "3A@"},
 	{0x1B, kKernelCallInst, "XOR Obfuscate",         "3A"},
 	{0x1C, kKernelCallInst, "VDX Transition",        "4"},
-	{0x1D, kKernelCallInst, "Swap",                  "22"},
+	{0x1D, kKernelCallInst, "Swap",                  "32"},
 	{0x1E, kKernelCallInst, "Invalid",               "1"},
 	{0x1F, kUnaryOpPreInst, "Inc",                   "3"},
 	{0x20, kUnaryOpPreInst, "Dec",                   "3"},

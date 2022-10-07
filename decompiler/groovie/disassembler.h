@@ -49,6 +49,7 @@ protected:
 	void writeParameterVideoName(std::vector<byte> &bytes, const std::string &arg);
 	void writeParameterIndexed(bool allow7C, bool limitVal, bool limitVar, std::vector<byte> &bytes, const std::string &arg);
 	void writeParameterArray(std::vector<byte> &bytes, const std::string &arg);
+	void splitArrayString(const std::string &arg, std::string &first, std::string &second);
 
 	ValuePtr readParameterIndexed(bool allow7C, bool limitVal, bool limitVar);
 	ValuePtr readParameterArray();

@@ -407,8 +407,6 @@ size_t GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, 
 	uint16 i16;
 	uint32 u32;
 
-	std::cout << "    writeParameter "<<type<<" - "<<arg<<"\n";
-
 	switch (type) {
 	case '1': // 8 bits
 		i = std::stoi(arg);
@@ -465,9 +463,17 @@ size_t GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, 
 		writeParameterIndexed(false, true, true, bytes, arg);
 		break;
 	default:
+		std::cout << "writeParameter UNKNOWN param type: " << type << "\n";
 		throw std::runtime_error(std::string() + "writeParameter UNKNOWN param type: " + type);
 	}
 	return argEnd + 2;
+}
+
+void GroovieDisassembler::splitArrayString(const std::string &arg, std::string &first, std::string &second) {
+	size_t e = getEndArgument(arg, 2);
+	first = arg.substr(2, e - 2);
+	second = arg.substr(e + 2);
+	second.pop_back();
 }
 
 void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, const std::string &arg) {
@@ -475,7 +481,6 @@ void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, cons
 	while(e < arg.length()) {
 		e = getEndArgument(arg, s);
 		std::string a = arg.substr(s, e - s);
-		std::cout << "writeParameterVideoName "<<a<<"\n";
 		switch(a[0]) {
 		case '"':
 			for(size_t i=1; i < a.length()-1; i++) {
@@ -490,9 +495,9 @@ void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, cons
 			break;
 		case 'M':
 			bytes.push_back(0x7C);
-			std::string first = a.substr(2, a.find("]") - 2);
-			std::string second = a.substr(a.find("][") + 2);
-			second.pop_back();
+			std::string first;
+			std::string second;
+			splitArrayString(a, first, second);
 			writeParameterIndexed(false, false, false, bytes, first);
 			writeParameterIndexed(false, false, false, bytes, second);
 			break;
@@ -506,9 +511,9 @@ void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, cons
 void GroovieDisassembler::writeParameterIndexed(bool allow7C, bool limitVal, bool limitVar, std::vector<byte> &bytes, const std::string &arg) {
 	if (allow7C && arg[0] == 'M') {
 		bytes.push_back(0x7C);
-		std::string first = arg.substr(2, arg.find("]") - 2);
-		std::string second = arg.substr(arg.find("][") + 2);
-		second.pop_back();
+		std::string first;
+		std::string second;
+		splitArrayString(arg, first, second);
 		writeParameterIndexed(false, false, false, bytes, first);
 		writeParameterIndexed(false, true, true, bytes, second);
 	} else if (arg[0] == 'm') {
@@ -519,7 +524,6 @@ void GroovieDisassembler::writeParameterIndexed(bool allow7C, bool limitVal, boo
 		bytes.push_back(data + 0x61);
 	} else {
 		// Immediate value
-		std::cout << "stoul "<<arg<<"\n";
 		uint8 data = std::stoul(arg);
 		bytes.push_back(data + 0x30);
 	}
