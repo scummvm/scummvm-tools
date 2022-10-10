@@ -37,15 +37,15 @@ public:
 
 protected:
 	void doDisassemble() throw(UnknownOpcodeException);
-	void doAssembly(const std::string &label, std::string &line, const std::string &comment) throw(std::exception);
+	void doAssembly(const std::string &label, std::string &instruction, const std::vector<std::string> &args, const std::string &comment) throw(std::exception);
 
 	InstPtr readInstruction();
 	InstPtr createInstruction(byte opcode);
 	void readParams(InstPtr inst, const char *typeString);
 	ValuePtr readParameter(char type);
 
-	size_t writeParams(std::vector<byte> &bytes, const char *typeString, const std::string &arguments, std::string &jumpToLabel);
-	size_t writeParameter(char type, std::vector<byte> &bytes, const std::string &arguments, size_t argStart, size_t &jumpAddrStart, std::string &jumpToLabel);
+	size_t writeParams(std::vector<byte> &bytes, const char *typeString, const std::vector<std::string> &args, std::string &jumpToLabel);
+	void writeParameter(char type, std::vector<byte> &bytes, const std::string &arg, size_t &jumpAddrStart, std::string &jumpToLabel);
 	void writeParameterVideoName(std::vector<byte> &bytes, const std::string &arg);
 	void writeParameterIndexed(bool allow7C, bool limitVal, bool limitVar, std::vector<byte> &bytes, const std::string &arg);
 	void writeParameterArray(std::vector<byte> &bytes, const std::string &arg);

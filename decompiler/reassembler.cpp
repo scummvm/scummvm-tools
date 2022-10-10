@@ -35,9 +35,31 @@ void Reassembler::assemble() {
 			auto comment = splitString(line, line.find(";"), 1, true);// remove comments
 			if(line.empty())
 				continue;
+			
 			auto label = splitString(line, line.find(": "), 2);
-			std::cout << label << ": " << line << "; " << comment << "\n";
-			doAssembly(label, line, comment);
+			auto instruction = splitString(line, line.find(" "), 1);
+			if(instruction.empty()) {
+				// if it didn't find a space, that means there are no arguments
+				instruction = line;
+				line = "";
+			}
+			std::cout << label << ": " << instruction;
+
+			// parse arguments
+			std::vector<std::string> args;
+			size_t s = 0, e = 0;
+			for(s = 0; s < line.length(); s = e + 2) {
+				if(s > 0) std::cout << ", ";
+				else std::cout << " ";
+				e = getEndArgument(line, s);
+				size_t len = e - s;
+				args.push_back(line.substr(s, len));
+				std::cout << args.back();
+			}
+			std::cout << "; " << comment << "\n";
+			// TODO: maybe parse the arguments into a ValueList of the Value subclasses
+
+			doAssembly(label, instruction, args, comment);
 		} catch(Common::FileException &e) {
 			break;
 		}

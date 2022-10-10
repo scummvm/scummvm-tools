@@ -357,23 +357,15 @@ void GroovieDisassembler::doDisassemble() throw (UnknownOpcodeException) {
 		_insts.push_back(createInstruction(0));
 }
 
-void GroovieDisassembler::doAssembly(const std::string &label, std::string &line, const std::string &comment) throw(std::exception) {
-	// find the longest matching instruction name, since we don't have a separator beteen the instruction name and the first argument
+void GroovieDisassembler::doAssembly(const std::string &label, std::string &instruction, const std::vector<std::string> &args, const std::string &comment) throw(std::exception) {
+	// find the matching instruction name
 	GroovieOpcode inst;
-	size_t instLen = 0;
 	for(auto &i : _opcodes) {
-		size_t len = strnlen(i.name, 1024);
-		if(len > instLen) {
-			if(line.substr(0, len) == i.name) {
-				inst = i;
-				instLen = len;
-			}
+		if(instruction == i.name) {
+			inst = i;
+			break;
 		}
 	}
-
-	std::string arguments;
-	if(line.length() > instLen)
-		arguments = line.substr(instLen + 1);
 
 	// build list of labels, parse arguments, and write bytes to _binary
 	std::vector<byte> bytes;
@@ -381,7 +373,7 @@ void GroovieDisassembler::doAssembly(const std::string &label, std::string &line
 	std::string jumpToLabel;
 
 	_firstBit = false;
-	jumpAddrStart = writeParams(bytes, inst.params, arguments, jumpToLabel);
+	jumpAddrStart = writeParams(bytes, inst.params, args, jumpToLabel);
 	// use writeParams to guess _firstBit, then we write the opcode at the end
 	bytes.insert(bytes.begin(), inst.opcode | (_firstBit<<7));
 	jumpAddrStart++; // increment since we pushed a byte to the front
@@ -389,20 +381,15 @@ void GroovieDisassembler::doAssembly(const std::string &label, std::string &line
 	addInstruction(bytes, inst.type, jumpAddrStart, 2, label, jumpToLabel);
 }
 
-size_t GroovieDisassembler::writeParams(std::vector<byte> &bytes, const char *typeString, const std::string &arguments, std::string &jumpToLabel) {
+size_t GroovieDisassembler::writeParams(std::vector<byte> &bytes, const char *typeString, const std::vector<std::string> &args, std::string &jumpToLabel) {
 	size_t jumpAddrStart = 0;
-	size_t argStart = 0;
-	while (*typeString) {
-		argStart = writeParameter(*typeString, bytes, arguments, argStart, jumpAddrStart, jumpToLabel);
-		typeString++;
+	for(int i=0; typeString[i]; i++) {
+		writeParameter(typeString[i], bytes, args[i], jumpAddrStart, jumpToLabel);
 	}
 	return jumpAddrStart;
 }
 
-size_t GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, const std::string &arguments, size_t argStart, size_t &jumpAddrStart, std::string &jumpToLabel) {
-	const size_t argEnd = getEndArgument(arguments, argStart);
-	const size_t argLen = argEnd - argStart;
-	std::string arg = arguments.substr(argStart, argLen);
+void GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, const std::string &arg, size_t &jumpAddrStart, std::string &jumpToLabel) {
 	int i;
 	uint16 i16;
 	uint32 u32;
@@ -466,7 +453,6 @@ size_t GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, 
 		std::cout << "writeParameter UNKNOWN param type: " << type << "\n";
 		throw std::runtime_error(std::string() + "writeParameter UNKNOWN param type: " + type);
 	}
-	return argEnd + 2;
 }
 
 void GroovieDisassembler::splitArrayString(const std::string &arg, std::string &first, std::string &second) {

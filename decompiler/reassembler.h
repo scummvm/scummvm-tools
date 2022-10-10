@@ -43,7 +43,7 @@ private:
 	std::vector<Jump> _jumps;
 
 protected:
-	virtual void doAssembly(const std::string &label, std::string &line, const std::string &comment) throw(std::exception) = 0; // push_back to _binary
+	virtual void doAssembly(const std::string &label, std::string &instruction, const std::vector<std::string> &args, const std::string &comment) throw(std::exception) = 0; // push_back to _binary
 	virtual void doDumpBinary(std::ostream &output);
 	std::string readLine();
 	std::string splitString(std::string &from, size_t pos, size_t separator_len=0, bool reverse=false);
