@@ -357,16 +357,19 @@ void GroovieDisassembler::doDisassemble() throw (UnknownOpcodeException) {
 		_insts.push_back(createInstruction(0));
 }
 
-void GroovieDisassembler::doAssembly(const std::string &label, std::string &instruction, const std::vector<std::string> &args, const std::string &comment) throw(std::exception) {
-	// find the matching instruction name
-	GroovieOpcode inst;
+GroovieOpcode GroovieDisassembler::getInstruction(const std::string &name) throw(std::exception) {
 	for(auto &i : _opcodes) {
-		if(instruction == i.name) {
-			inst = i;
-			break;
+		if(name == i.name) {
+			return i;
 		}
 	}
+	throw std::runtime_error("Unable to find instruction: " + name);
+}
 
+void GroovieDisassembler::doAssembly(const std::string &label, std::string &instruction, const std::vector<std::string> &args, const std::string &comment) throw(std::exception) {
+	// find the matching instruction name
+	GroovieOpcode inst = getInstruction(instruction);
+	
 	// build list of labels, parse arguments, and write bytes to _binary
 	std::vector<byte> bytes;
 	size_t jumpAddrStart;// where the address is stored so it can be overwritten when we have the full list of labels

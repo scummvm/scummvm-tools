@@ -37,6 +37,7 @@ public:
 
 protected:
 	void doDisassemble() throw(UnknownOpcodeException);
+	GroovieOpcode getInstruction(const std::string &name) throw(std::exception);
 	void doAssembly(const std::string &label, std::string &instruction, const std::vector<std::string> &args, const std::string &comment) throw(std::exception);
 
 	InstPtr readInstruction();
