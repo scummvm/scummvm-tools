@@ -221,11 +221,11 @@ ScummToolsFrame::ScummToolsFrame(const wxString &title, const wxPoint &pos, cons
 	linepanel->SetSizer(linesizer);
 
 	// Add the line to the main panel
-	sizer->Add(linepanel, wxSizerFlags().Expand().Center().Border());
+	sizer->Add(linepanel, wxSizerFlags().Expand().Border());
 
 	// Buttons on the bottom
 	_buttons = new WizardButtons(main, linetext, _configuration);
-	sizer->Add(_buttons, wxSizerFlags().Border().Center().Expand());
+	sizer->Add(_buttons, wxSizerFlags().Border().Expand());
 
 	main->SetSizer(sizer);
 }
@@ -435,19 +435,19 @@ WizardButtons::WizardButtons(wxWindow *parent, wxStaticText *linetext, Configura
 
 	_prev = new wxButton(this, ID_PREV, wxT("< Back"));
 	_prev->SetSize(80, -1);
-	sizer->Add(_prev, wxSizerFlags().Right().ReserveSpaceEvenIfHidden());
+	sizer->Add(_prev, wxSizerFlags().ReserveSpaceEvenIfHidden());
 
 	_next = new wxButton(this, ID_NEXT, wxT("Next >"));
 	_next->SetSize(80, -1);
-	sizer->Add(_next, wxSizerFlags().Right().ReserveSpaceEvenIfHidden());
+	sizer->Add(_next, wxSizerFlags().ReserveSpaceEvenIfHidden());
 
 	sizer->AddSpacer(10);
 
 	_cancel = new wxButton(this, ID_CANCEL, wxT("Cancel"));
 	_cancel->SetSize(80, -1);
-	sizer->Add(_cancel, wxSizerFlags().Right().ReserveSpaceEvenIfHidden());
+	sizer->Add(_cancel, wxSizerFlags().ReserveSpaceEvenIfHidden());
 
-	topsizer->Add(sizer, wxSizerFlags().Right().Border());
+	topsizer->Add(sizer, wxSizerFlags().Border());
 
 	SetSizerAndFit(topsizer);
 
