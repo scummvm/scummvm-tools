@@ -22,7 +22,7 @@
 #ifndef GROOVIE_DISASSEMBLER_H
 #define GROOVIE_DISASSEMBLER_H
 
-#include "decompiler/disassembler.h"
+#include "decompiler/reassembler.h"
 
 namespace Groovie {
 
@@ -31,25 +31,33 @@ struct GroovieOpcode;
 /**
  * Disassembler for Groovie scripts.
  */
-class GroovieDisassembler : public Disassembler {
+class GroovieDisassembler : public Reassembler {
 public:
-	GroovieDisassembler(InstVec &insts, const GroovieOpcode *opcodes);
+	GroovieDisassembler(InstVec &insts, const std::vector<GroovieOpcode> &opcodes);
 
 protected:
 	void doDisassemble() throw(UnknownOpcodeException);
-
+	GroovieOpcode getInstruction(const std::string &name) throw(std::exception);
+	void doAssembly(const std::string &label, std::string &instruction, const std::vector<std::string> &args, const std::string &comment) throw(std::exception);
 
 	InstPtr readInstruction();
 	InstPtr createInstruction(byte opcode);
 	void readParams(InstPtr inst, const char *typeString);
-	ValuePtr readParameter(InstPtr inst, char type);
+	ValuePtr readParameter(char type);
+
+	size_t writeParams(std::vector<byte> &bytes, const char *typeString, const std::vector<std::string> &args, std::string &jumpToLabel);
+	void writeParameter(char type, std::vector<byte> &bytes, const std::string &arg, size_t &jumpAddrStart, std::string &jumpToLabel);
+	void writeParameterVideoName(std::vector<byte> &bytes, const std::string &arg);
+	void writeParameterIndexed(bool allow7C, bool limitVal, bool limitVar, std::vector<byte> &bytes, const std::string &arg);
+	void writeParameterArray(std::vector<byte> &bytes, const std::string &arg);
+	void splitArrayString(const std::string &arg, std::string &first, std::string &second);
 
 	ValuePtr readParameterIndexed(bool allow7C, bool limitVal, bool limitVar);
 	ValuePtr readParameterArray();
 	ValuePtr readParameterScriptName();
 	ValuePtr readParameterVideoName();
 
-	const GroovieOpcode *_opcodes;
+	const std::vector<GroovieOpcode> _opcodes;
 	uint32 _address;
 	uint32 _maxTargetAddress;
 	bool _firstBit;

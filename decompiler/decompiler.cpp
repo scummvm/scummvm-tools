@@ -22,6 +22,7 @@
 #include "objectFactory.h"
 
 #include "disassembler.h"
+#include "reassembler.h"
 #include "engine.h"
 #include "instruction.h"
 
@@ -63,7 +64,9 @@ int main(int argc, char** argv) {
 			("only-graph,G", "Stops after control flow graph has been generated. Implies -g.")
 			("show-unreachable,u", "Show the address and contents of unreachable groups in the script.")
 			("variant,v", po::value<std::string>()->default_value(""), "Tell the engine that the script is from a specific variant. To see a list of variants supported by a specific engine, use the -h option and the -e option together.")
-			("no-stack-effect,s", "Leave out the stack effect when printing raw instructions.");
+			("no-stack-effect,s", "Leave out the stack effect when printing raw instructions.")
+			("dump-binary,b", po::value<std::string>(), "Compile the assembly to a binary file.");
+			// TODO: option for only outputting labels for lines that receive jumps
 
 		po::options_description args("");
 		args.add(visible).add_options()
@@ -133,6 +136,17 @@ int main(int argc, char** argv) {
 		InstVec insts;
 		Disassembler *disassembler = engine->getDisassembler(insts);
 		disassembler->open(inputFile.c_str());
+
+		if (vm.count("dump-binary")) {
+			std::ofstream of;
+
+			of.open(vm["dump-binary"].as<std::string>().c_str(), of.binary);
+			dynamic_cast<Reassembler*>(disassembler)->dumpBinary(of);
+
+			delete disassembler;
+			delete engine;
+			return 0;
+		}
 
 		disassembler->disassemble();
 		if (vm.count("dump-disassembly")) {

@@ -395,6 +395,7 @@ decompile_OBJS := \
 	decompiler/control_flow.o \
 	decompiler/decompiler.o \
 	decompiler/disassembler.o \
+	decompiler/reassembler.o \
 	decompiler/graph.o \
 	decompiler/instruction.o \
 	decompiler/simple_disassembler.o \
