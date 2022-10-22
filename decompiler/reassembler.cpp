@@ -70,7 +70,7 @@ void Reassembler::assemble() {
 		if(j._label.empty())
 			continue;
 		
-		size_t addr = _labels[j._label];
+		size_t addr = _labels.at(j._label);
 		uint16 u16;
 		uint32 u32;
 
