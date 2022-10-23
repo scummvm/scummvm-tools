@@ -53,7 +53,7 @@ enum InspectionMatch {
 };
 
 /**
- * Describes a possible input to the tool (since some take two seperate files,
+ * Describes a possible input to the tool (since some take two separate files,
  * some a dir and some a single file.
  */
 struct ToolInput {
