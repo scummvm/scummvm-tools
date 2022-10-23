@@ -149,7 +149,7 @@ void CompressionExample::execute() {
 		if (_outputFiles) {
 			File out(_outputPath.getPath() + outname.str() + ".exo", "w");
 
-			// What we actually do, output some text alot
+			// What we actually do, output some text a lot
 			for (size_t j = 0; j < 100; ++j) {
 				if (i < in1.size())
 					out.write(text1.c_str(), 1, text1.size());
