@@ -19,7 +19,7 @@
  *
  */
 
-/* Split one-big-file Macintosh game data into seperate .00x files for ScummVM */
+/* Split one-big-file Macintosh game data into separate .00x files for ScummVM */
 
 #include "extract_scumm_mac.h"
 

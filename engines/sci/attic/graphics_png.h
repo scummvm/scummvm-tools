@@ -19,7 +19,7 @@
  *
  */
 
-/* Provides facilities for writing pictures and seperate views to .png files */
+/* Provides facilities for writing pictures and separate views to .png files */
 
 
 #ifndef _SCI_GRAPHICS_PNG_H_
