@@ -20,6 +20,7 @@
  */
 
 #include "common/endian.h"
+#include "common/str.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +30,6 @@ int main (int argc, char **argv) {
 	unsigned char * buf;
 	size_t sz;
 	FILE *fin;
-	char fn[1024];
 
 	if (argc < 3) {
 		fprintf (stderr, "USAGE: %s INFILE OUTDIR\n", argv[0]);
@@ -70,12 +70,12 @@ int main (int argc, char **argv) {
 		unsigned char * headptr = buf + 16 + 16 * ctr;
 		char c = headptr[12];
 		headptr[12] = 0;
-		sprintf (fn, "%s/%s", argv[2], headptr);
+		Common::String fn = Common::String::format("%s/%s", argv[2], headptr);
 		headptr[12] = c;
 		int csz = READ_LE_UINT32(headptr+12);
-		fout = fopen(fn, "wb");
+		fout = fopen(fn.c_str(), "wb");
 		if (fout == NULL) {
-			fprintf (stderr, "Unable to open %s: %s\n", fn, strerror(errno));
+			fprintf (stderr, "Unable to open %s: %s\n", fn.c_str(), strerror(errno));
 			return -3;
 		}
 		fwrite(buf + cur, csz, 1, fout);
@@ -84,10 +84,10 @@ int main (int argc, char **argv) {
 	}
 
 	if (cur < (int)sz) {
-		sprintf (fn, "%s/tail.bin", argv[2]);
-		fout = fopen(fn, "wb");
+		Common::String fn = Common::String::format("%s/tail.bin", argv[2]);
+		fout = fopen(fn.c_str(), "wb");
 		if (fout == NULL) {
-			fprintf (stderr, "Unable to open %s: %s\n", fn, strerror(errno));
+			fprintf (stderr, "Unable to open %s: %s\n", fn.c_str(), strerror(errno));
 			return -3;
 		}
 		fwrite(buf + cur, sz - cur, 1, fout);
