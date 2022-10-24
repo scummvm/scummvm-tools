@@ -146,7 +146,8 @@ dekyra_OBJS := \
 	$(UTILS)
 
 extract_hadesch_OBJS := \
-	engines/hadesch/extract_hadesch.o
+	engines/hadesch/extract_hadesch.o \
+	$(UTILS)
 
 extract_lokalizator_OBJS := \
 	engines/scumm/extract_lokalizator.o
