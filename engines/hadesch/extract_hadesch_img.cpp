@@ -29,6 +29,10 @@
 #include <string.h>
 #include <errno.h>
 
+#ifdef USE_PNG
+#include <png.h>
+#endif
+
 struct palette_element {
 	int idx;
 	int r, g, b;
@@ -87,6 +91,11 @@ int decode_image (const unsigned char *buf, int sz, image* iout) {
 		fprintf (stderr, "Unknown section: %s\n", ptr);
 	}
 
+	if (iout->w <= 0 || iout->h <= 0) {
+		iout->alignw = 0;
+		iout->buf = NULL;
+		return 0;
+	}
 
 	iout->alignw = iout->w;
 	if (iout->w % 4)
@@ -128,19 +137,25 @@ int decode_image (const unsigned char *buf, int sz, image* iout) {
 	return 0;
 }
 
-void write_bmp(const Common::Array<palette_element>& palette, const image& img, FILE *fout) {
+int write_bmp(const Common::Array<palette_element>& palette, const image& img, FILE *fout) {
 	fwrite("BM", 2, 1, fout);
 	unsigned char outbuf[256];
 	unsigned char bmppal[256][4];
 	const int numcols = 256;
 	const int infohdrsize = 40;
+	int w = img.w, h = img.h;
+
+	if (w <= 0 || h <= 0) {
+		w = 0;
+		h = 0;
+	}
 
 	memset(outbuf, 0, sizeof(outbuf));
-	WRITE_LE_UINT32(outbuf, 14 + infohdrsize + numcols * 4 + img.alignw * img.h);
+	WRITE_LE_UINT32(outbuf, 14 + infohdrsize + numcols * 4 + img.alignw * h);
 	WRITE_LE_UINT32(outbuf + 8, 14 + infohdrsize + numcols * 4);
 	WRITE_LE_UINT32(outbuf + 12, infohdrsize);
-	WRITE_LE_UINT32(outbuf + 16, img.w);
-	WRITE_LE_UINT32(outbuf + 20, img.h);
+	WRITE_LE_UINT32(outbuf + 16, w);
+	WRITE_LE_UINT32(outbuf + 20, h);
 	WRITE_LE_UINT16(outbuf + 24, 1); // planes
 	WRITE_LE_UINT16(outbuf + 26, 8); // bpp
 	WRITE_LE_UINT32(outbuf + 44, numcols);
@@ -157,22 +172,110 @@ void write_bmp(const Common::Array<palette_element>& palette, const image& img, 
 
 	fwrite(bmppal, 4 * numcols, 1, fout);
 
-	fwrite(img.buf, img.alignw * img.h, 1, fout);
+	fwrite(img.buf, img.alignw * h, 1, fout);
+
+	return 0;
 }
+
+#ifdef USE_PNG
+int write_png(const Common::Array<palette_element>& palette, const image& img, FILE *fout) {
+	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	int w = img.w, h = img.h;
+	unsigned char replace_img[1] = {0};
+	bool replace = false;
+
+	if (img.w <= 0 || img.h <= 0) {
+		w = 1;
+		h = 1;
+		replace = true;
+	}
+
+	if (!png) return 1;
+
+	png_infop info = png_create_info_struct(png);
+	if (!info) return 1;
+
+	if (setjmp(png_jmpbuf(png))) return 1;
+
+	png_init_io(png, fout);
+
+	png_set_IHDR(
+		png,
+		info,
+		w, h,
+		8,
+		PNG_COLOR_TYPE_PALETTE,
+		PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_DEFAULT,
+		PNG_FILTER_TYPE_DEFAULT
+		);
+	png_color png_palette[256];
+
+	memset(png_palette, 0, sizeof(png_palette));
+	for (Common::Array<palette_element>::const_iterator it = palette.begin(); it != palette.end(); it++)
+	{
+		png_palette[it->idx].blue = it->b;
+		png_palette[it->idx].green = it->g;
+		png_palette[it->idx].red = it->r;
+	}
+
+	png_set_PLTE(png, info, png_palette, 256);
+
+	png_byte trans[] = {0};
+	png_set_tRNS(png, info, trans, 1, NULL);
+
+	png_write_info(png, info);
+
+	png_bytep *row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * h);
+	if (replace)
+		row_pointers[0] = replace_img;
+	else
+		for (int i = 0; i < img.h; i++) {
+			row_pointers[i] = img.buf + img.alignw * (img.h - 1 - i);
+		}
+
+	png_write_image(png, row_pointers);
+	png_write_end(png, NULL);
+
+	free(row_pointers);
+
+	png_destroy_write_struct(&png, &info);
+
+	return 0;
+}
+#endif
 
 int main (int argc, char **argv) {
 	unsigned char * buf;
 	size_t sz;
 	FILE *fin;
+	int argp = 1;
+	bool use_png = false;
+	const char *infile, *outdir;
 
-	if (argc < 3) {
-		fprintf (stderr, "USAGE: %s INFILE OUTDIR\n", argv[0]);
+	if (argp < argc && strcmp(argv[argp], "--png") == 0) {
+		argp++;
+		use_png = true;
+	}
+
+#ifndef USE_PNG
+	if (use_png) {
+		fprintf (stderr, "PNG is not supported\n");
+		return -1;
+	}
+#endif
+
+	if (argc < 2 + argp) {
+		fprintf (stderr, "USAGE: %s [--png] INFILE OUTDIR\n", argv[0]);
 		return -1;
 	}
 
-	fin = fopen (argv[1], "rb");
+	infile = argv[argp];
+	outdir = argv[argp + 1];
+
+	fin = fopen (infile, "rb");
 	if (fin == NULL) {
-		fprintf (stderr, "Unable to open %s: %s\n", argv[1], strerror(errno));
+		fprintf (stderr, "Unable to open %s: %s\n", infile, strerror(errno));
 		return -2;
 	}
 	fseek (fin, 0, SEEK_END);
@@ -286,7 +389,7 @@ int main (int argc, char **argv) {
 	     it != images.end(); it++) {
 		image img;
 		printf ("Frame %s\n", it->name.c_str());
-		Common::String fn = Common::String::format("%s/%s.bmp", argv[2], it->name.c_str());
+		Common::String fn = Common::String::format("%s/%s.%s", outdir, it->name.c_str(), use_png ? "png" : "bmp");
 		fout = fopen(fn.c_str(), "wb");
 		if (fout == NULL) {
 			fprintf (stderr, "Unable to open %s: %s\n", fn.c_str(), strerror(errno));
@@ -296,7 +399,18 @@ int main (int argc, char **argv) {
 			fclose(fout);
 			return 1;
 		}
-		write_bmp(parsed_palette, img, fout);
+
+		int err;
+#ifdef USE_PNG
+		if (use_png)
+			err = write_png(parsed_palette, img, fout);
+		else
+#endif
+			err = write_bmp(parsed_palette, img, fout);
+		if (err) {
+			fclose(fout);
+			return 1;
+		}
 		fclose(fout);		
 	}
 

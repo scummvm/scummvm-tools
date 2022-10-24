@@ -153,6 +153,7 @@ extract_hadesch_OBJS := \
 extract_hadesch_img_OBJS := \
 	engines/hadesch/extract_hadesch_img.o \
 	$(UTILS)
+extract_hadesch_img_LIBS := $(LIBS)
 
 extract_lokalizator_OBJS := \
 	engines/scumm/extract_lokalizator.o
