@@ -37,6 +37,7 @@ PROGRAMS = \
 	msn_convert_mod \
 	scummvm-tools-cli \
 	extract_hadesch \
+	extract_hadesch_img \
 	extract_lokalizator \
 	grim_animb2txt \
 	grim_bm2bmp \
@@ -147,6 +148,10 @@ dekyra_OBJS := \
 
 extract_hadesch_OBJS := \
 	engines/hadesch/extract_hadesch.o \
+	$(UTILS)
+
+extract_hadesch_img_OBJS := \
+	engines/hadesch/extract_hadesch_img.o \
 	$(UTILS)
 
 extract_lokalizator_OBJS := \
