@@ -75,7 +75,7 @@ int main (int argc, char **argv) {
 		int csz = READ_LE_UINT32(headptr+12);
 		fout = fopen(fn, "wb");
 		if (fout == NULL) {
-			fprintf (stderr, "Unable to open %s: %s\n", argv[1], strerror(errno));
+			fprintf (stderr, "Unable to open %s: %s\n", fn, strerror(errno));
 			return -3;
 		}
 		fwrite(buf + cur, csz, 1, fout);
@@ -87,7 +87,7 @@ int main (int argc, char **argv) {
 		sprintf (fn, "%s/tail.bin", argv[2]);
 		fout = fopen(fn, "wb");
 		if (fout == NULL) {
-			fprintf (stderr, "Unable to open %s: %s\n", argv[1], strerror(errno));
+			fprintf (stderr, "Unable to open %s: %s\n", fn, strerror(errno));
 			return -3;
 		}
 		fwrite(buf + cur, sz - cur, 1, fout);
