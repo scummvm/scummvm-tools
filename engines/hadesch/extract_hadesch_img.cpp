@@ -23,6 +23,7 @@
 #include "common/array.h"
 #include "common/str.h"
 #include "common/util.h"
+#include "common/noncopyable.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +36,7 @@ struct palette_element {
 	palette_element(int idx_in, int r_in, int g_in, int b_in) : idx(idx_in), r(r_in), g(g_in), b(b_in) {}
 };
 
-struct image {
+struct image : Common::NonCopyable {
 	int w;
 	int h;
 	int alignw;
