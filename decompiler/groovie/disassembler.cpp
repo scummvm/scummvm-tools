@@ -212,6 +212,9 @@ ValuePtr GroovieDisassembler::readParameter(char type) {
 	case 'C': // Indexed value
 		retval = readParameterIndexed(false, true, true);
 		break;
+	case 'B': // First Bit
+		retval = new IntValue(_firstBit, false);
+		break;
 	default:
 		std::cout << "  UNKNOWN param type: " << type << std::endl;
 	}
@@ -386,6 +389,7 @@ void GroovieDisassembler::doAssembly(const std::string &label, std::string &inst
 
 size_t GroovieDisassembler::writeParams(std::vector<byte> &bytes, const char *typeString, const std::vector<std::string> &args, std::string &jumpToLabel) {
 	size_t jumpAddrStart = 0;
+	assert(args.size() >= strlen(typeString));
 	for(int i=0; typeString[i]; i++) {
 		writeParameter(typeString[i], bytes, args[i], jumpAddrStart, jumpToLabel);
 	}
@@ -455,17 +459,14 @@ void GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, co
 	case 'C': // Indexed value
 		writeParameterIndexed(false, true, true, bytes, arg);
 		break;
+	case 'B': // First Bit
+		i = std::stoi(arg);
+		_firstBit = bool(i);
+		break;
 	default:
 		std::cout << "writeParameter UNKNOWN param type: " << type << "\n";
 		throw std::runtime_error(std::string() + "writeParameter UNKNOWN param type: " + type);
 	}
-}
-
-void GroovieDisassembler::splitArrayString(const std::string &arg, std::string &first, std::string &second) {
-	size_t e = getEndArgument(arg, 2);
-	first = arg.substr(2, e - 2);
-	second = arg.substr(e + 2);
-	second.pop_back();
 }
 
 void GroovieDisassembler::writeParameterVideoName(std::vector<byte> &bytes, const std::string &arg) {

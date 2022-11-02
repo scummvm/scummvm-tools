@@ -30,39 +30,35 @@ void Reassembler::assemble() {
 	_binary.clear();
 
 	while(!_f.eos()) {
-		try {
-			std::string line = readLine();
-			auto comment = splitString(line, line.find(";"), 1, true);// remove comments
-			if(line.empty())
-				continue;
-			
-			auto label = splitString(line, line.find(": "), 2);
-			auto instruction = splitString(line, line.find(" "), 1);
-			if(instruction.empty()) {
-				// if it didn't find a space, that means there are no arguments
-				instruction = line;
-				line = "";
-			}
-			std::cout << label << ": " << instruction;
-
-			// parse arguments
-			std::vector<std::string> args;
-			size_t s = 0, e = 0;
-			for(s = 0; s < line.length(); s = e + 2) {
-				if(s > 0) std::cout << ", ";
-				else std::cout << " ";
-				e = getEndArgument(line, s);
-				size_t len = e - s;
-				args.push_back(line.substr(s, len));
-				std::cout << args.back();
-			}
-			std::cout << "; " << comment << "\n";
-			// TODO: maybe parse the arguments into a ValueList of the Value subclasses
-
-			doAssembly(label, instruction, args, comment);
-		} catch(Common::FileException &e) {
-			break;
+		std::string line = readLine();
+		auto comment = splitString(line, line.find(";"), 1, true);// remove comments
+		if(line.empty())
+			continue;
+		
+		auto label = splitString(line, line.find(": "), 2);
+		auto instruction = splitString(line, line.find(" "), 1);
+		if(instruction.empty()) {
+			// if it didn't find a space, that means there are no arguments
+			instruction = line;
+			line = "";
 		}
+		std::cout << label << ": " << instruction;
+
+		// parse arguments
+		std::vector<std::string> args;
+		size_t s = 0, e = 0;
+		for(s = 0; s < line.length(); s = e + 2) {
+			if(s > 0) std::cout << ", ";
+			else std::cout << " ";
+			e = getEndArgument(line, s);
+			size_t len = e - s;
+			args.push_back(line.substr(s, len));
+			std::cout << args.back();
+		}
+		std::cout << "; " << comment << "\n";
+		// TODO: maybe parse the arguments into a ValueList of the Value subclasses
+
+		doAssembly(label, instruction, args, comment);
 	}
 
 	// 2nd pass in order to set jump addresses after reading all labels
@@ -105,15 +101,15 @@ void Reassembler::dumpBinary(std::ostream &output) {
 
 std::string Reassembler::readLine() {
 	std::string line;
-	while(!_f.eos()) {
-		try {
-			char c = _f.readByte();
-			if(c == '\n')
-				break;
-			line += c;
-		} catch(Common::FileException &e) {
-			break;
+	try {
+		while(!_f.eos()) {
+			
+				char c = _f.readByte();
+				if(c == '\n')
+					break;
+				line += c;
 		}
+	} catch(Common::FileException &e) {
 	}
 	return line;
 }
@@ -136,6 +132,9 @@ std::string Reassembler::splitString(std::string &from, size_t pos, size_t separ
 
 void Reassembler::addInstruction(const std::vector<byte> &bytes, int type, size_t jumpAddrStart, size_t jumpAddrLen, const std::string &label, const std::string &jumpToLabel) {
 	if(!label.empty()) {
+		if(_labels.count(label)) {
+			throw std::runtime_error("label: " + label + " already exists");
+		}
 		_labels.emplace(label, _binary.size());
 	}
 
@@ -170,4 +169,11 @@ size_t Reassembler::getEndArgument(const std::string &s, size_t start) {
 		}
 	}
 	return s.length();
+}
+
+void Reassembler::splitArrayString(const std::string &arg, std::string &first, std::string &second) {
+	size_t e = getEndArgument(arg, 2);
+	first = arg.substr(2, e - 2);
+	second = arg.substr(e + 2);
+	second.pop_back();
 }

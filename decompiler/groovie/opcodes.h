@@ -35,6 +35,7 @@ struct GroovieOpcode {
 		// S = Script name
 		// V = Video name
 		// C = Indexed value
+		// B = first bit
 };
 
 } // End of namespace Groovie
