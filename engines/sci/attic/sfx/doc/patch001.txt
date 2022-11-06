@@ -34,7 +34,7 @@ Offset Size Type Description
 
   Offset Description
   --------------------------------------------------------------------
-   0x00  Timbre Group (0 = Bank A, 1 = Bank B, 2 = Memory, 3 = Rythm)
+   0x00  Timbre Group (0 = Bank A, 1 = Bank B, 2 = Memory, 3 = Rhythm)
    0x01  Timbre Number (0 - 63)
    0x02  Key Shift (0-48) [-24 - +24]
    0x03  Fine Tune (0-100) [-50 - +50]
@@ -82,20 +82,20 @@ Offset Size Description
 ---------------------------------------------------
 
 
-4. Block for setting up Patch Temporary Area (rythm part) and
+4. Block for setting up Patch Temporary Area (rhythm part) and
    System Area - Partial Reserve, offset relative to 0x370 + n * 246
 
 Offset Size Description
 ---------------------------------------------------
  0x000   2  0xdc 0xba (if this this is not present
                        this block is non existent)
- 0x002   4  Rythm Setup for Key #24 (see below)
+ 0x002   4  Rhythm Setup for Key #24 (see below)
    :     :  :
- 0x0fe   4  Rythm Setup for Key #87
+ 0x0fe   4  Rhythm Setup for Key #87
  0x102   9  System Area - Partial Reserve
 ---------------------------------------------------
 
-  Rythm Setup description
+  Rhythm Setup description
   See http://members.xoom.com/_XMCM/TomLewandowski/lapc1.txt
 
 
