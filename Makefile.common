@@ -39,6 +39,7 @@ PROGRAMS = \
 	extract_hadesch \
 	extract_hadesch_img \
 	extract_lokalizator \
+	extract_mps \
 	grim_animb2txt \
 	grim_bm2bmp \
 	grim_cosb2cos \
@@ -157,6 +158,11 @@ extract_hadesch_img_LIBS := $(LIBS)
 
 extract_lokalizator_OBJS := \
 	engines/scumm/extract_lokalizator.o
+
+extract_mps_OBJS := \
+	engines/mads/extract_mps.o \
+	engines/mads/libblast/blast.o \
+	$(UTILS)
 
 deprince_OBJS := \
 	engines/prince/deprince.o \
