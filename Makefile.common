@@ -57,7 +57,8 @@ PROGRAMS = \
 	grim_sklb2txt \
 	grim_til2bmp \
 	grim_unlab \
-	grim_vima
+	grim_vima \
+	saga_unpack_amiga
 
 ifdef USE_BOOST
 PROGRAMS += \
@@ -149,6 +150,10 @@ dekyra_OBJS := \
 
 extract_hadesch_OBJS := \
 	engines/hadesch/extract_hadesch.o \
+	$(UTILS)
+
+saga_unpack_amiga_OBJS := \
+	engines/saga/unpack_amiga.o \
 	$(UTILS)
 
 extract_hadesch_img_OBJS := \
