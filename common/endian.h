@@ -42,6 +42,17 @@
 #  define MKID_BE(a) ((uint32)(a))
 #endif
 
+static inline uint64 SWAP_64(uint64 a) {
+	return ((uint64)((((a) >> 56) & 0x000000FF) |
+			 (((a) >> 40) & 0x0000FF00) |
+			 (((a) >> 24) & 0x00FF0000) |
+			 (((a) >>  8) & 0xFF000000) |
+			 (((a) & 0xFF000000) <<  8) |
+			 (((a) & 0x00FF0000) << 24) |
+			 (((a) & 0x0000FF00) << 40) |
+			 (((a) & 0x000000FF) << 56) ));
+}
+
 static inline uint32 SWAP_32(uint32 a) {
 	return (uint32)
 		(((a >> 24) & 0x000000FF) |
@@ -55,13 +66,17 @@ static inline uint16 SWAP_16(uint16 a) {
 }
 
 #if defined(SCUMM_BIG_ENDIAN)
+	#define FROM_LE_64(a) SWAP_64(a)
 	#define FROM_LE_32(a) SWAP_32(a)
 	#define FROM_LE_16(a) SWAP_16(a)
+	#define TO_LE_64(a) SWAP_64(a)
 	#define TO_LE_32(a) SWAP_32(a)
 	#define TO_LE_16(a) SWAP_16(a)
 #else
+	#define FROM_LE_64(a) ((uint64)(a))
 	#define FROM_LE_32(a) ((uint32)(a))
 	#define FROM_LE_16(a) ((uint16)(a))
+	#define TO_LE_64(a) ((uint64)(a))
 	#define TO_LE_32(a) ((uint32)(a))
 	#define TO_LE_16(a) ((uint16)(a))
 #endif
