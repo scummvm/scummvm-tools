@@ -162,7 +162,7 @@ extract_lokalizator_OBJS := \
 
 extract_mps_OBJS := \
 	engines/mads/extract_mps.o \
-	engines/mads/libblast/blast.o \
+	common/dcl.o \
 	$(UTILS)
 
 deprince_OBJS := \

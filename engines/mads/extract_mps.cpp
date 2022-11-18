@@ -20,9 +20,10 @@
  */
 
 #include "common/endian.h"
+#include "common/memstream.h"
 #include "common/str.h"
 #include "common/util.h"
-#include "libblast/blast.h"
+#include "common/dcl.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,37 +37,6 @@ struct FileDescriptorBin {
 	uint32 compressedSize;
 	uint32 uncompressedSize;
 } __attribute__ ((packed));
-
-struct blastMemInputWrapperStruct {
-	uint32 _offset, _len;
-	byte *_data;
-	blastMemInputWrapperStruct() : _len(0), _offset(0), _data(nullptr) {}
-	blastMemInputWrapperStruct(byte *data, uint32 len) : _len(len), _offset(0), _data(data) {}
-};
-
-uint blastMemInputWrapper(void *how, byte **buf) {
-	struct blastMemInputWrapperStruct *ctx = (struct blastMemInputWrapperStruct *) how;
-	*buf = ctx->_data + ctx->_offset;
-	uint avail = ctx->_len - ctx->_offset;
-	ctx->_offset += avail;
-	return avail;
-}
-
-struct blastMemOutputWrapperStruct {
-	uint32 _written, _bufLen;
-	byte *_data;
-	blastMemOutputWrapperStruct() : _bufLen(0), _written(0), _data(nullptr) {}
-	blastMemOutputWrapperStruct(byte *data, uint32 len) : _bufLen(len), _written(0), _data(data) {}
-};
-
-int blastMemOutputWrapper(void *how, byte *buf, uint len) {
-	struct blastMemOutputWrapperStruct *ctx = (struct blastMemOutputWrapperStruct *) how;
-	if (len + ctx->_written > ctx->_bufLen)
-		return 1;
-	memcpy(ctx->_data + ctx->_written, buf, len);
-	ctx->_written += len;
-	return 0;
-}
 
 int main (int argc, char **argv) {
 	unsigned char * buf;
@@ -141,12 +111,10 @@ int main (int argc, char **argv) {
 			uncompressedSize = compressedSize;
 			break;
 		case 1:
-			blastMemInputWrapperStruct blastInput(compressedBuf, compressedSize);
+			Common::MemoryReadStream compressedReadStream(compressedBuf, compressedSize);
 			uncompressedBuf = new byte[uncompressedSize];
-			blastMemOutputWrapperStruct blastOutput(uncompressedBuf, uncompressedSize);
-			BlastError blastErr = blast(blastMemInputWrapper, &blastInput, blastMemOutputWrapper, &blastOutput, nullptr, nullptr);
-			if (blastErr) {
-				fprintf (stderr, "Unable to decompress %s: %d\n", descBin->name, blastErr);
+			if (!Common::decompressDCL(&compressedReadStream, uncompressedBuf, compressedSize, uncompressedSize)) {
+				fprintf (stderr, "Unable to decompress %s\n", descBin->name);
 				continue;
 			}
 				
