@@ -96,6 +96,7 @@ UTILS := \
 	common/md5.o \
 	common/memorypool.o \
 	common/str.o \
+	common/stream.o \
 	common/util.o \
 	sound/adpcm.o \
 	sound/audiostream.o \
