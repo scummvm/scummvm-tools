@@ -72,6 +72,12 @@ static inline uint16 SWAP_16(uint16 a) {
 	#define TO_LE_64(a) SWAP_64(a)
 	#define TO_LE_32(a) SWAP_32(a)
 	#define TO_LE_16(a) SWAP_16(a)
+	#define FROM_BE_64(a) ((uint64)(a))
+	#define FROM_BE_32(a) ((uint32)(a))
+	#define FROM_BE_16(a) ((uint16)(a))
+	#define TO_BE_64(a) ((uint64)(a))
+	#define TO_BE_32(a) ((uint32)(a))
+	#define TO_BE_16(a) ((uint16)(a))
 #else
 	#define FROM_LE_64(a) ((uint64)(a))
 	#define FROM_LE_32(a) ((uint32)(a))
@@ -79,6 +85,12 @@ static inline uint16 SWAP_16(uint16 a) {
 	#define TO_LE_64(a) ((uint64)(a))
 	#define TO_LE_32(a) ((uint32)(a))
 	#define TO_LE_16(a) ((uint16)(a))
+	#define FROM_BE_64(a) SWAP_64(a)
+	#define FROM_BE_32(a) SWAP_32(a)
+	#define FROM_BE_16(a) SWAP_16(a)
+	#define TO_BE_64(a) SWAP_64(a)
+	#define TO_BE_32(a) SWAP_32(a)
+	#define TO_BE_16(a) SWAP_16(a)
 #endif
 
 FORCEINLINE uint16 READ_LE_UINT16(const void *ptr) {
