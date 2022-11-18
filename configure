@@ -1081,7 +1081,7 @@ esac
 # Determine a data type with the given length
 #
 find_type_with_size() {
-	for datatype in int short char long unknown; do
+	for datatype in int short char long "long long" unknown; do
 		cat > tmp_find_type_with_size.cpp << EOF
 typedef $datatype ac__type_sizeof_;
 int main() {
@@ -1101,7 +1101,7 @@ EOF
 		fi
 	done
 	cc_check_clean tmp_find_type_with_size.cpp
-	echo $datatype
+	echo "$datatype"
 }
 
 #
@@ -1123,6 +1123,12 @@ echo_n "Type with 4 bytes... "
 type_4_byte=`find_type_with_size 4`
 TMPR="$?"
 echo "$type_4_byte"
+test $TMPR -eq 0 || exit 1	# check exit code of subshell
+
+echo_n "Type with 8 bytes... "
+type_8_byte=`find_type_with_size 8`
+TMPR="$?"
+echo "$type_8_byte"
 test $TMPR -eq 0 || exit 1	# check exit code of subshell
 
 #
@@ -1933,9 +1939,11 @@ typedef unsigned int uint;
 typedef unsigned $type_1_byte uint8;
 typedef unsigned $type_2_byte uint16;
 typedef unsigned $type_4_byte uint32;
+typedef unsigned $type_8_byte uint64;
 typedef signed $type_1_byte int8;
 typedef signed $type_2_byte int16;
 typedef signed $type_4_byte int32;
+typedef signed $type_8_byte int64;
 
 #endif /* CONFIG_H */
 EOF
