@@ -67,8 +67,8 @@ typedef struct {
 #include "common/pack-end.h"
 
 void fix_entry_endianess(rtf_entry *entry) {
-	Uint32 data;
 #ifdef SCUMM_LITTLE_ENDIAN
+	Uint32 data;
 	data = entry->offset;
 	data = ((data >> 24) & 0x000000FF) |
 		((data >> 8) & 0x0000FF00) |
