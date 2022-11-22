@@ -1190,7 +1190,6 @@ case $_host_os in
 		type_4_byte='long'
 		# Also certain dependancies are locally compiled with
 		# -fstack-protector, cover those too
-
 		CXXFLAGS="$CXXFLAGS -Wno-format -fstack-protector"
 		;;
 	beos*)
