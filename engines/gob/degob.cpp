@@ -47,11 +47,22 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	byte *totData = 0, *extData = 0, *extComData = 0;
-	uint32 totSize = 0, extSize = 0, extComSize = 0;
+	byte *totData = 0, *extData = 0, *extComData = 0, *ideData = 0;
+	uint32 totSize = 0, extSize = 0, extComSize = 0, ideSize = 0;
 	int32 offset = -1;
 
 	totData = readFile(argv[2], totSize);
+	std::string ideFilename = argv[2];
+
+	size_t extPos = ideFilename.find_last_of('.');
+	if (extPos == std::string::npos)
+		ideFilename += ".IDE";
+	else {
+		ideFilename.replace(extPos, ideFilename.length() - extPos, ".IDE");
+	}
+
+	if (Common::Filename(ideFilename).exists())
+		ideData = readFile(ideFilename.c_str(), ideSize);
 
 	ExtTable *extTable = 0;
 	if (argc > 3) {
@@ -97,6 +108,10 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
+	if (ideData) {
+		script->loadIDE(ideData);
+		delete[] ideData;
+	}
 	printInfo(*script);
 	printf("-----\n");
 
@@ -237,6 +252,7 @@ void printInfo(Script &script) {
 		printf("None\n");
 
 	printf("# of variables: %d (%d bytes)\n", script.getVarsCount(), script.getVarsCount() * 4);
+	printf("# of named functions: %d\n", script.getFuncNamesCount());
 	printf("AnimDataSize: %d bytes\n", script.getAnimDataSize());
 	printf("Text center code starts at: 0x%04X\n", script.getTextCenter());
 	printf("Script code starts at: 0x%04X\n", script.getStart());
