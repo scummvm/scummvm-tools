@@ -198,6 +198,7 @@ uint8 Script::getVerScript() const { return _verScript; }
 uint8 Script::getVerIMEX() const { return _verIMEX; }
 uint8 Script::getSuffixIM() const { return _suffixIM; }
 uint8 Script::getSuffixEX() const { return _suffixEX; }
+uint32 Script::getFuncNamesCount() const { return _funcOffsetsNames.size(); }
 
 void Script::putString(const char *s) const {
 	printf("%s", s);
@@ -840,6 +841,39 @@ void Script::loadProperties(byte *data) {
 	_textCenter = READ_LE_UINT16(data + 0x7E);
 }
 
+void Script::loadIDE(const byte *ideData) {
+	const byte *ptr = ideData;
+	char buffer[17];
+
+	uint16 count = *(const uint16 *)ptr;
+	ptr += 2;
+	for (uint32 i = 0; i < count; i++) {
+
+		// skip function type
+		byte functionType = *ptr;
+		++ptr;
+
+		memcpy(buffer, ptr, 17);
+		buffer[16] = '\0';
+		ptr += 17;
+
+		// skip unknown word
+		ptr += 2;
+
+		// Read offset
+		uint16 offset = *(const uint16 *)ptr;
+		ptr += 2;
+
+		// skip unknown word
+		ptr += 2;
+
+		if ((functionType != 0x47) && (functionType != 0x67))
+			continue;
+
+		_funcOffsetsNames[offset] = buffer;
+	}
+}
+
 void Script::funcBlock(int16 retFlag) {
 	FuncParams params;
 	byte cmd;
@@ -905,6 +939,12 @@ void Script::deGob(int32 offset) {
 }
 
 void Script::deGobFunction() {
+	if (!_funcOffsetsNames.empty()) {
+		auto it = _funcOffsetsNames.find(getPos());
+		if (it != _funcOffsetsNames.end()) {
+			print("--- %s ---\n", it->second.c_str());
+		}
+	}
 	printIndent();
 	print("sub_%d {\n", getPos());
 	incIndent();

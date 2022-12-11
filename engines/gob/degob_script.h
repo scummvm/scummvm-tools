@@ -26,6 +26,7 @@
 
 #include <string>
 #include <list>
+#include <map>
 
 #include "common/scummsys.h"
 
@@ -82,8 +83,9 @@ public:
 	uint8 getVerIMEX() const;
 	uint8 getSuffixIM() const;
 	uint8 getSuffixEX() const;
+	uint32 getFuncNamesCount() const;
 
-	void deGob(int32 offset = -1);
+	void loadIDE(const byte *ideData);
 
 protected:
 	enum FuncType {
@@ -171,6 +173,7 @@ protected:
 	ExtTable *_extTable;
 
 	std::list<uint32> _funcOffsets;
+	std::map<uint32, std::string> _funcOffsetsNames;
 
 	// Script properties
 	uint16 _start, _textCenter;
