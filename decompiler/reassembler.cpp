@@ -55,7 +55,7 @@ void Reassembler::assemble() {
 			args.push_back(line.substr(s, len));
 			std::cout << args.back();
 		}
-		std::cout << "; " << comment << "\n";
+		std::cout << "; " << comment << " (" << (boost::format("0x%X") % _binary.size()) << ")\n";
 		// TODO: maybe parse the arguments into a ValueList of the Value subclasses
 
 		doAssembly(label, instruction, args, comment);
@@ -66,7 +66,13 @@ void Reassembler::assemble() {
 		if(j._label.empty())
 			continue;
 		
-		size_t addr = _labels.at(j._label);
+		size_t addr = 0;
+		try {
+			addr = _labels.at(j._label);
+		} catch(...) {
+			std::cout << "\nfailed rewriting jump to " << j._label << ", from (" << j.start << ", " << j.len << ")\n";
+			throw;
+		}
 		uint16 u16;
 		uint32 u32;
 
@@ -103,11 +109,10 @@ std::string Reassembler::readLine() {
 	std::string line;
 	try {
 		while(!_f.eos()) {
-			
-				char c = _f.readByte();
-				if(c == '\n')
-					break;
-				line += c;
+			char c = _f.readByte();
+			if(c == '\n')
+				break;
+			line += c;
 		}
 	} catch(Common::FileException &e) {
 	}
