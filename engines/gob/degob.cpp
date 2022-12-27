@@ -126,6 +126,7 @@ void printHelp(const char *bin) {
 	printf("	Urban     - Urban Runner\n");
 	printf("	Geisha    - Geisha\n");
 	printf("	LittleRed - Once Upon A Time: Little Red Riding Hood\n");
+	printf("	Adibou2   - Adibou 2\n");
 }
 
 int getVersion(const char *verStr) {
@@ -153,6 +154,8 @@ int getVersion(const char *verStr) {
 		return 10;
 	else if (!scumm_stricmp(verStr, "LittleRed"))
 		return 11;
+	else if (!scumm_stricmp(verStr, "Adibou2"))
+		return 12;
 
 	return -1;
 }
@@ -199,12 +202,15 @@ Script *initScript(byte *totData, uint32 totSize, ExtTable *extTable, int versio
 			break;
 		case 9:
 			return new Script_v6(totData, totSize, extTable);
-			break;
+		break;
 		case 10:
 			return new Script_Geisha(totData, totSize, extTable);
 			break;
 		case 11:
 			return new Script_LittleRed(totData, totSize, extTable);
+			break;
+		case 12:
+			return new Script_v7(totData, totSize, extTable);
 			break;
 	}
 	return 0;

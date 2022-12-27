@@ -138,6 +138,7 @@ degob_OBJS := \
 	engines/gob/degob_script_v4.o \
 	engines/gob/degob_script_v5.o \
 	engines/gob/degob_script_v6.o \
+	engines/gob/degob_script_v7.o \
 	engines/gob/degob_script_bargon.o \
 	engines/gob/degob_script_fascin.o \
 	engines/gob/degob_script_littlered.o \
@@ -205,6 +206,7 @@ degob_OBJS := \
 	engines/gob/degob_script_v4.o \
 	engines/gob/degob_script_v5.o \
 	engines/gob/degob_script_v6.o \
+	engines/gob/degob_script_v7.o \
 	engines/gob/degob_script_bargon.o \
 	engines/gob/degob_script_fascin.o \
 	engines/gob/degob_script_geisha.o \
