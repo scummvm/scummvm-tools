@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
 		ideData = readFile(ideFilename.c_str(), ideSize);
 
 	ExtTable *extTable = 0;
+	bool libMode = false;
 	if (argc > 3) {
 		int n = 3;
 
@@ -85,6 +86,11 @@ int main(int argc, char **argv) {
 
 			offset = (int32) tempOffset;
 
+			n++;
+		}
+
+		if (!strncmp(argv[n], "--lib", 5)) {
+			libMode = true;
 			n++;
 		}
 
@@ -115,7 +121,7 @@ int main(int argc, char **argv) {
 	printInfo(*script);
 	printf("-----\n");
 
-	script->deGob(offset);
+	script->deGob(offset, libMode);
 
 	delete[] totData;
 	delete[] extData;
@@ -126,7 +132,7 @@ int main(int argc, char **argv) {
 }
 
 void printHelp(const char *bin) {
-	printf("Usage: %s <version> <file.tot> [-o <offset>] [<file.ext>] [<commun.ext>]\n\n", bin);
+	printf("Usage: %s <version> <file.tot> [-o <offset>] [--lib] [<file.ext>] [<commun.ext>]\n\n", bin);
 	printf("The disassembled script will be written to stdout.\n\n");
 	printf("Supported versions:\n");
 	printf("	Gob1      - Gobliiins 1\n");

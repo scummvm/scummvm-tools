@@ -827,7 +827,7 @@ void Script::endFunc() const {
 
 void Script::loadProperties(byte *data) {
 	_start = READ_LE_UINT16(data + 0x64);
-	assert(_start >= 128);
+	//assert(_start >= 128) -> pure "library" files may have no defined entry point (_start = 0)
 
 	_varsCount = READ_LE_UINT16(data + 0x2C);
 	_totTextCount = READ_LE_UINT32(data + 0x30);
@@ -923,13 +923,20 @@ void Script::addFuncOffset(uint32 offset) {
 	_funcOffsets.push_back(offset);
 }
 
-void Script::deGob(int32 offset) {
+void Script::deGob(int32 offset, bool isLib) {
 	_funcOffsets.clear();
 
-	if (offset < 0)
-		addStartingOffsets();
-	else
-	_funcOffsets.push_back(offset);
+	if (isLib) {
+		// Use functions from IDE file as entry points
+		for (auto it = _funcOffsetsNames.begin(); it != _funcOffsetsNames.end(); ++it)
+			addFuncOffset(it->first);
+	} else {
+		if (offset < 0)
+			addStartingOffsets();
+		else
+			_funcOffsets.push_back(offset);
+	}
+
 
 	for (std::list<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it) {
 		seek(*it);
