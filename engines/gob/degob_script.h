@@ -622,4 +622,47 @@ protected:
 	void o6_createSprite(FuncParams &params);
 };
 
+class Script_v7 : public Script_v6 {
+public:
+	Script_v7(byte *totData, uint32 totSize, ExtTable *extTable = 0);
+	virtual ~Script_v7();
+
+protected:
+	typedef void (Script_v7::*OpcodeDrawProcV7)(FuncParams &);
+	typedef void (Script_v7::*OpcodeFuncProcV7)(FuncParams &);
+	typedef void (Script_v7::*OpcodeGoblinProcV7)(FuncParams &);
+	struct OpcodeDrawEntryV7 {
+		FuncType type;
+		OpcodeDrawProcV7 proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeFuncEntryV7 {
+		FuncType type;
+		OpcodeFuncProcV7 proc;
+		const char *desc;
+		const Param params[16];
+	};
+	struct OpcodeGoblinEntryV7 {
+		FuncType type;
+		OpcodeGoblinProcV7 proc;
+		const char *desc;
+		const Param params[16];
+	};
+	const OpcodeDrawEntryV7 *_opcodesDrawV7;
+	const OpcodeFuncEntryV7 *_opcodesFuncV7;
+	const OpcodeGoblinEntryV7 *_opcodesGoblinV7;
+	static const int _goblinFuncLookUp[][2];
+
+	virtual void setupOpcodes();
+	virtual void drawOpcode(byte i, FuncParams &params);
+	virtual void funcOpcode(byte i, byte j, FuncParams &params);
+	virtual void goblinOpcode(int i, FuncParams &params);
+
+	void o7_loadCursor(FuncParams &params);
+	void oPlaytoons_printText(FuncParams &params);
+	void o7_oemToANSI(FuncParams &params);
+	void oPlaytoons_freeSprite(FuncParams &params);
+};
+
 #endif // DEGOB_SCRIPT_H
