@@ -87,6 +87,8 @@ public:
 
 	void loadIDE(const byte *ideData);
 
+	void deGob(int32 offset = -1, bool isLib = false);
+
 protected:
 	enum FuncType {
 		TYPE_NONE = 0,   // No description
