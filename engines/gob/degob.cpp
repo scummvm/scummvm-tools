@@ -148,6 +148,13 @@ void printHelp(const char *bin) {
 	printf("	Geisha    - Geisha\n");
 	printf("	LittleRed - Once Upon A Time: Little Red Riding Hood\n");
 	printf("	Adibou2   - Adibou 2\n");
+	printf("\n");
+	printf("<file.tot>\n\tthe .tot file to decompile\n\n");
+	printf("-o <offset>\n\tscript entry point in the .tot file, defaults to the value read in script header\n\n");
+	printf("--lib\n\tlibrary mode: all offsets from .IDE named functions file are used as entry points\n\n");
+	printf("<file.ext>\n\texternal script resource file (<script name>.EXT)\n\n");
+	printf("<commun.ext>\n\texternal common script resource file (commun.EXn)\n\n");
+
 }
 
 int getVersion(const char *verStr) {
