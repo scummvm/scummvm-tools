@@ -927,70 +927,11 @@ void Script_v1::o1_palLoad(FuncParams &params) {
 
 	case 53:
 		skip(2);
-		return;
-
-	case 55:
-		skip(2);
-		break;
-
-	case 56:
-		skip(2);
 		break;
 
 	case 61:
 		skip(4);
 		break;
-	}
-
-	if ((cmd & 0x7F) == 0x30) {
-		skip(48);
-		return;
-	}
-
-	cmd &= 0x7F;
-
-	if (cmd == 49) {
-		bool allZero = true;
-
-		for (int i = 2; i < 18; i++) {
-			if (peekUint8() != 0) {
-				allZero = false;
-				break;
-			}
-		}
-		if (!allZero) {
-			skip(48);
-			return;
-		}
-
-		for (int i = 0; i < 18; i++) {
-			skip(1);
-		}
-
-		return;
-	}
-
-	switch (cmd) {
-	case 50:
-		for (int i = 0; i < 16; i++)
-			readUint8();
-		break;
-
-		case 52:
-			for (int i = 0; i < 16; i++) {
-				readUint8();
-				readUint8();
-				readUint8();
-			}
-			break;
-
-		case 53:
-			readUint16();
-			break;
-
-		default:
-			break;
-
 	}
 }
 
