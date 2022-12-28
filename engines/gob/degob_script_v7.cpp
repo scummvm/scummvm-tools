@@ -770,6 +770,8 @@ void  Script_v7::oPlaytoons_printText(FuncParams &params)
 
 void Script_v7::o7_oemToANSI(FuncParams &params)
 {
+	startFunc(params);
+	endFunc();
 	skip(2);
 }
 
