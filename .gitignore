@@ -79,3 +79,6 @@ ipch/
 
 #Ignore Mac DS_Store files
 .DS_Store
+
+#Ignore Jetbrains CLion IDE files
+.idea
