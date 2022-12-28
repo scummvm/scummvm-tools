@@ -230,7 +230,7 @@ Script *initScript(byte *totData, uint32 totSize, ExtTable *extTable, int versio
 			break;
 		case 9:
 			return new Script_v6(totData, totSize, extTable);
-		break;
+			break;
 		case 10:
 			return new Script_Geisha(totData, totSize, extTable);
 			break;
