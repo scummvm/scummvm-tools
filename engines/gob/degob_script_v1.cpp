@@ -926,6 +926,8 @@ void Script_v1::o1_palLoad(FuncParams &params) {
 		break;
 
 	case 53:
+	case 55:
+	case 56:
 		skip(2);
 		break;
 
