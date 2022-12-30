@@ -1183,12 +1183,13 @@ echo $_host_os
 case $_host_os in
 	amigaos*)
 		add_line_to_config_mk 'AMIGAOS = 1'
-		LDFLAGS="$LDFLAGS -L/sdk/local/newlib/lib"
 		# Use 'long' for ScummVM's 4 byte typedef, because AmigaOS
 		# already typedefs (u)int32 as (unsigned) long and suppress
 		# those noisy format warnings caused by the 'long' 4 byte
 		type_4_byte='long'
 		CXXFLAGS="$CXXFLAGS -Wno-format"
+		# Dependencies might also be compiled with stack protection
+		LDFLAGS="$LDFLAGS -L/sdk/local/newlib/lib -fstack-protector"
 		;;
 	beos*)
 		DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
