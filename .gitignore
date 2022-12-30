@@ -17,12 +17,15 @@
 /desword2
 /extract_hadesch_img
 /extract_mohawk
+/extract_mps
 /extract_gob_cdi
 /extract_ngi
 /gob_loadcalc
 /grim_*
 /msn_convert_mod
 /pegasus_save_types
+/saga_unpack
+/saga_unpack_amiga
 /ScummVM Tools.app
 /scummvm-tools
 /scummvm-tools-cli
@@ -79,3 +82,6 @@ ipch/
 
 #Ignore Mac DS_Store files
 .DS_Store
+
+#Ignore Jetbrains CLion IDE files
+.idea

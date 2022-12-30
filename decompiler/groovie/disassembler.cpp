@@ -435,8 +435,11 @@ void GroovieDisassembler::writeParameter(char type, std::vector<byte> &bytes, co
 	case '@': // Address
 		jumpAddrStart = bytes.size();
 		// if arg is in 0xF3DE format, convert to 0000f3de
-		if(arg.find("0x") == 0)
-			jumpToLabel = (boost::format("%08x") % std::stoul(arg, 0, 16)).str();
+		if(arg.find("0x") == 0) {
+			u32 = std::stoul(arg, 0, 16);
+			assert((boost::format("0x%X") % u32).str() == arg);
+			jumpToLabel = (boost::format("%08x") % u32).str();
+		}
 		else
 			jumpToLabel = arg;
 		bytes.push_back(0);

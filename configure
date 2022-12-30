@@ -1188,7 +1188,7 @@ case $_host_os in
 		# already typedefs (u)int32 as (unsigned) long and suppress
 		# those noisy format warnings caused by the 'long' 4 byte
 		type_4_byte='long'
-		append_var CXXFLAGS "-Wno-format"
+		CXXFLAGS="$CXXFLAGS -Wno-format"
 		;;
 	beos*)
 		DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
