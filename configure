@@ -1572,18 +1572,6 @@ fi
 define_in_config_if_yes "$_flac" 'USE_FLAC'
 echo "$_flac"
 
-# AmigaOS has it's latest FLAC port (1.4.2) compiled with -fstack-protector
-# This leads to linker errors in "scummvm-tools-cli" due to
-# undefined references to '__stack_check_fail'
-# Using -lssp to fix that
-case $_host_os in
-	amigaos*)
-		if test "$_flac" = yes ; then
-			LIBS="$LIBS -lssp"
-		fi
-	;;
-esac
-
 #
 # Check for MAD (MP3 library)
 #
