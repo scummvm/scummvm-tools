@@ -506,5 +506,13 @@
 #endif
 #endif
 
+//
+// std::nullptr_t when this type is not available
+//
+#if defined(NO_CXX11_NULLPTR_T)
+namespace std {
+	typedef decltype(nullptr) nullptr_t;
+}
+#endif
 
 #endif
