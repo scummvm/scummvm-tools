@@ -9,6 +9,7 @@ For a more comprehensive changelog of the latest experimental code, see:
  - Improved groovie scripts disassemler.
  - MADS: A new tool to extract Rex nebular installer.
  - Added tool for extracting SAGA resources.
+ - GOB: Adibou 2 scripts support in degob.
 
 2.6.0 (2022-08-01)
  - The project license has been upgraded to GPLv3+.
