@@ -85,7 +85,6 @@ _debug_build=auto
 _release_build=auto
 _verbose_build=no
 _enable_prof=no
-_use_cxx11=yes
 # Default commands
 _ranlib=ranlib
 _strip=strip
@@ -524,12 +523,6 @@ for ac_option in $@; do
 	--disable-debug)
 		_debug_build=no
 		;;
-	--enable-c++11)
-		_use_cxx11=yes
-		;;
-	--disable-c++11)
-		_use_cxx11=no
-		;;
 	--enable-Werror)
 		CXXFLAGS="$CXXFLAGS -Werror"
 		;;
@@ -865,12 +858,54 @@ fi
 LD=$CXX
 
 #
+# Check whether the compiler supports C++11
+#
+echo_n "Checking if compiler supports C++11... "
+have_cxx11=no
+cat > $TMPC << EOF
+int main(int argc, char *argv[]) { if (argv == nullptr) return -1; else return 0; }
+EOF
+cc_check -std=c++11 && have_cxx11=yes
+echo $have_cxx11
+
+if test "$have_cxx11" = "no" ; then
+	echo
+	echo "ScummVM requires C++11 compiler support. Please ensure your compiler supports it"
+	exit 1
+fi
+
+#
 # Determine the compiler version
 #
 echocheck "compiler version"
 
+# Some compilers pretend to be gcc to ease compatibility with
+# common Linux etc. programs. We first check for some of these here.
 have_gcc=no
 cc_check_define __GNUC__ && have_gcc=yes
+have_icc=no
+cc_check_define __INTEL_COMPILER && have_icc=yes
+have_clang=no
+cc_check_define __clang__ && have_clang=yes
+
+if test "$have_icc" = yes; then
+	add_line_to_config_mk 'HAVE_ICC = 1'
+
+	# Make ICC error out on unknown command line options instead of printing
+	# a warning. This is for example required to make the -Wglobal-constructors
+	# detection work correctly.
+	CXXFLAGS="$CXXFLAGS -diag-error 10006,10148"
+
+	# ICC doesn't accept all gcc options, so we disable have_gcc, even if
+	# ICC does have the gcc-compatibility defines.
+	have_gcc=no
+fi
+
+if test "$have_clang" = yes; then
+	add_line_to_config_mk 'HAVE_CLANG = 1'
+
+	# clang does accept all gcc options we use, so we keep have_gcc
+fi
 
 if test "$have_gcc" = yes; then
 	add_line_to_config_mk 'HAVE_GCC = 1'
@@ -878,18 +913,24 @@ if test "$have_gcc" = yes; then
 	_cxx_minor=`gcc_get_define __GNUC_MINOR__`
 	cxx_version="`( $CXX -dumpversion ) 2>&1`"
 
-	if test -n "`gcc_get_define __clang__`"; then
-		add_line_to_config_mk 'HAVE_CLANG = 1'
-	fi
+	if test "$have_clang" = yes; then
+		# Clang sets a gcc version number for compatibility.
+		# We keep that as _cxx_minor/_cxx_major for later
+		# compiler version checks.
 
-	if test "$_cxx_major" -eq 2 && test "$_cxx_minor" -ge 95 || \
-	   test "$_cxx_major" -gt 2 ; then
-		cxx_version="$cxx_version, ok"
-		cxx_verc_fail=no
+		# For the version reported in the configure log (cxx_version),
+		# we get the actual clang version.
+		cxx_version=`gcc_get_define __clang_version__`
+		cxx_version="`echo "${cxx_version}" | sed -e 's/"\([^ ]*\) .*/\1/'`"
+		cxx_version="clang $cxx_version, ok"
 	else
-		cxx_version="$cxx_version, bad"
-		cxx_verc_fail=yes
+		cxx_version="GCC $cxx_version, ok"
 	fi
+elif test "$have_icc" = yes; then
+	cxx_version="`( $CXX -dumpversion ) 2>/dev/null`"
+	_cxx_major="`echo "${cxx_version}" | sed -ne 's/\([0-9][0-9]*\)\..*/\1/gp'`"
+	_cxx_minor="`echo "${cxx_version}" | sed -ne 's/[0-9][0-9]*\.\([0-9][0-9]*\)/\1/gp'`"
+	cxx_version="ICC $cxx_version, ok"
 else
 	# TODO: Big scary warning about unsupported compilers
 	cxx_version=`( $CXX -version ) 2>&1`
@@ -897,136 +938,76 @@ else
 		cxx_version="`echo "${cxx_version}" | sed -ne 's/^.*[^0-9]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*$/\1/gp'`"
 		if test -z "${cxx_version}"; then
 			cxx_version="not found"
-			cxx_verc_fail=yes
 		fi
+		echo non-gcc compiler version ${cxx_version}
 	else
 		cxx_version="not found"
-		cxx_verc_fail=yes
+		echo non-gcc compiler version ${cxx_version}
 	fi
-
-	case $_host_os in
-		irix*)
-			case $cxx_version in
-				7.4.4*)
-					# We just assume this is SGI MIPSpro
-					_cxx_major=7
-					_cxx_minor=4
-					cxx_verc_fail=no
-					add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MDupdate "$(*D)/$(DEPDIR)/$(*F).d"'
-					add_line_to_config_mk '-include Makedepend'
-					;;
-				*)
-					cxx_version="$cxx_version, bad"
-					cxx_verc_fail=yes
-					;;
-			esac
-			;;
-		solaris*)
-			cxx_version=`( $CXX -V ) 2>&1`
-			cxx_version="`echo "${cxx_version}" | sed 's/.*\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/'`"
-
-			case $cxx_version in
-				5.1[0-2])
-					cxx_verc_fail=no
-					;;
-				*)
-					cxx_version="$cxx_version, bad"
-					cxx_verc_fail=yes
-					;;
-			esac
-			;;
-		*)
-			cxx_version="$cxx_version, bad"
-			cxx_verc_fail=yes
-			;;
-	esac
+	cxx_verc_fail=yes
+	cxx_version="$cxx_version, bad"
 fi
 
 echo "$cxx_version"
 
+#
+# Bail out now if no useable compiler was found.
+#
 if test "$cxx_verc_fail" = yes ; then
 	echo
 	echo "The version of your compiler is not supported at this time"
-	echo "Please ensure you are using GCC >= 2.95"
 	exit 1
-else
-	echo found non-gcc compiler version ${cxx_version}
-fi
-
-#
-# Check whether the compiler supports C++11
-#
-have_cxx11=no
-cat > $TMPC << EOF
-int main(int argc, char *argv[]) { if (argv == nullptr) return -1; else return 0; }
-EOF
-cc_check -std=c++11 && have_cxx11=yes
-if test "$_use_cxx11" = "yes" ; then
-	_use_cxx11=$have_cxx11
 fi
 
 #
 # Setup compiler specific CXXFLAGS now that we know the compiler version.
 # Foremost, this means enabling various warnings.
-# In addition, we set CXX_UPDATE_DEP_FLAG for GCC >= 3.0 and for ICC.
+# In addition, we set CXX_UPDATE_DEP_FLAG for GCC and ICC.
 #
+# By default compile with strict C++
+std_variant=c++
+pedantic=no
 if test "$have_gcc" = yes ; then
-	if test "$_cxx_major" -ge "3" ; then
-		# Try to use ANSI mode when C++11 is disabled.
-		if test "$_use_cxx11" = "no" ; then
-			case $_host_os in
-			# newlib-based system include files suppress non-C89 function
-			# declarations under __STRICT_ANSI__
-			amigaos* | android | dreamcast | ds | gamecube | mingw* | morphos* |n64 | psp | ps2 | wii | wince )
-				;;
-			*)
-				CXXFLAGS="$CXXFLAGS -ansi"
-				;;
-			esac
-		fi
-		CXXFLAGS="$CXXFLAGS -W -Wno-unused-parameter"
-		add_line_to_config_mk 'HAVE_GCC3 = 1'
-		add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MMD -MF "$(*D)/$(DEPDIR)/$(*F).d" -MQ "$@" -MP'
-	fi
+	# By default, we add -pedantic to the CXXFLAGS to catch some potentially
+	# non-portable constructs, like use of GNU extensions.
+	# However, some platforms use GNU extensions in system header files, so
+	# for these we must not use -pedantic.
+	pedantic=yes
 
-	if test "$_cxx_major" -eq 4 && test "$_cxx_minor" -ge 3 || \
-	   test "$_cxx_major" -gt 4 ; then
-		CXXFLAGS="$CXXFLAGS -Wno-empty-body"
-	else
-		CXXFLAGS="$CXXFLAGS -Wconversion"
-	fi
-fi
-
-echo_n "Building as C++11... "
-if test "$_use_cxx11" = "yes" ; then
 	case $_host_os in
 	# newlib-based system include files suppress non-C89 function
-	# declarations under __STRICT_ANSI__
-	amigaos* | android | dreamcast | ds | gamecube | mingw* | morphos* | n64 | psp | ps2 | wii | wince )
-		_use_cxx11=no
+	# declarations under __STRICT_ANSI__, undefine it
+	3ds | android | gamecube | psp | switch | wii)
+		std_variant=gnu++
+		pedantic=no
+		;;
+	amigaos* | dreamcast | ds | mingw* | mint* | morphos | n64 | ps3 | psp2)
+		std_variant=gnu++
+		;;
+	openbsd*)
+		pedantic=no
 		;;
 	*)
-		CXXFLAGS="$CXXFLAGS -std=c++11"
 		;;
 	esac
-fi
-echo $_use_cxx11
+	CXXFLAGS="$CXXFLAGS -W -Wno-unused-parameter"
+	add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MMD -MF "$(*D)/$(DEPDIR)/$(*F).d" -MQ "$@" -MP'
 
-
-# By default, we add -pedantic to the CXXFLAGS to catch some potentially
-# non-portable constructs, like use of GNU extensions.
-# However, some platforms use GNU extensions in system header files, so
-# for these we must not use -pedantic.
-case $_host_os in
-android | gamecube | psp | wii)
-	;;
-*)
+	CXXFLAGS="$CXXFLAGS -Wno-empty-body"
+	CXXFLAGS="$CXXFLAGS -fno-operator-names"
+elif test "$have_icc" = yes ; then
 	# ICC does not support pedantic, while GCC and clang do.
-	if test "$have_icc" = no ; then
-		CXXFLAGS="$CXXFLAGS -pedantic"
-	fi
-	;;
-esac
+	add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MMD -MF "$(*D)/$(DEPDIR)/$(*F).d" -MQ "$@" -MP'
+fi
+
+#
+# Set status about C++11 mode
+#
+CXXFLAGS="$CXXFLAGS -std=${std_variant}11"
+
+if test "$pedantic" = yes ; then
+	CXXFLAGS="$CXXFLAGS -pedantic"
+fi
 
 # Check if std::nullptr_t is available
 echo_n "Checking if C++11 std::nullptr_t is available..."
