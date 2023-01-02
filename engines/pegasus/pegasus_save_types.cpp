@@ -20,6 +20,7 @@
  */
 
 /* add creator and file type attributes to pegasus save files */
+#include "common/scummsys.h"
 
 #include <stdio.h>
 #include <CoreServices/CoreServices.h>
