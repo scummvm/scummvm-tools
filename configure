@@ -1948,6 +1948,12 @@ typedef signed $type_2_byte int16;
 typedef signed $type_4_byte int32;
 typedef signed $type_8_byte int64;
 
+#if defined(__APPLE__) && !defined(__ppc__)
+#ifndef _UINT64
+#define _UINT64
+#endif
+#endif
+
 #endif /* CONFIG_H */
 EOF
 
