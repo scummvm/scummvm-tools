@@ -209,6 +209,9 @@
 	typedef unsigned long int uint32;
 	typedef signed long int int32;
 
+	typedef signed long long int64;
+	typedef unsigned long long uint64;
+
 #elif defined(_WIN32_WCE)
 
 	#define scumm_stricmp stricmp
@@ -267,6 +270,19 @@
 		#endif
 	#endif
 
+#ifndef HAVE_CONFIG_H
+	typedef unsigned char byte;
+	typedef unsigned char uint8;
+	typedef signed char int8;
+	typedef unsigned short uint16;
+	typedef signed short int16;
+	typedef unsigned int uint32;
+	typedef signed int int32;
+	typedef unsigned int uint;
+	typedef signed long long int64;
+	typedef unsigned long long uint64;
+#endif
+
 	// You need to set this manually if necessary
 //	#define SCUMM_NEED_ALIGNMENT
 
@@ -324,6 +340,9 @@
 
 	typedef unsigned long int uint32;
 	typedef signed long int int32;
+
+	typedef signed long long int64;
+	typedef unsigned long long uint64;
 
 #elif defined(__PLAYSTATION2__)
 
@@ -464,6 +483,8 @@
 	typedef unsigned int uint32;
 	typedef signed int int32;
 	typedef unsigned int uint;
+	typedef signed long long int64;
+	typedef unsigned long long uint64;
 #endif
 
 

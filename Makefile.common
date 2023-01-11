@@ -29,6 +29,7 @@ PROGRAMS = \
 	deprince \
 	descumm \
 	desword2 \
+	detwine \
 	gob_loadcalc \
 	extract_gob_cdi \
 	extract_mohawk \
@@ -129,23 +130,6 @@ GRIM_LUA := \
 
 decine_OBJS := engines/cine/decine.o
 
-degob_OBJS := \
-	engines/gob/degob.o \
-	engines/gob/degob_script.o \
-	engines/gob/degob_script_v1.o \
-	engines/gob/degob_script_v2.o \
-	engines/gob/degob_script_v3.o \
-	engines/gob/degob_script_v4.o \
-	engines/gob/degob_script_v5.o \
-	engines/gob/degob_script_v6.o \
-	engines/gob/degob_script_v7.o \
-	engines/gob/degob_script_bargon.o \
-	engines/gob/degob_script_fascin.o \
-	engines/gob/degob_script_littlered.o \
-	tool.o \
-	version.o \
-	$(UTILS)
-
 dekyra_OBJS := \
 	engines/kyra/dekyra.o \
 	engines/kyra/dekyra_v1.o \
@@ -211,6 +195,15 @@ degob_OBJS := \
 	engines/gob/degob_script_fascin.o \
 	engines/gob/degob_script_geisha.o \
 	engines/gob/degob_script_littlered.o \
+	tool.o \
+	version.o \
+	$(UTILS)
+
+detwine_OBJS := \
+	engines/twine/detwine.o \
+	engines/twine/hqr.o \
+	engines/twine/lba1.o \
+	engines/twine/lba2.o \
 	tool.o \
 	version.o \
 	$(UTILS)
@@ -457,6 +450,7 @@ version.o: $(filter-out version.o,$(scummvm-tools-cli_OBJS))
 ifdef USE_WXWIDGETS
 version.o: $(filter-out version.o,$(scummvm-tools_OBJS))
 endif
+version.o: $(filter-out version.o,$(detwine_OBJS))
 
 
 ######################################################################
