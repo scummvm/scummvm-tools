@@ -27,12 +27,16 @@
 #include "common/util.h"
 #include "common/memstream.h"
 
+static const int initialLevel = 3;
+static const int indentWidth = 2;
+
 struct ScriptContext {
+	ScriptContext(const uint8* data, int size) : stream(data, size) {}
 	Common::MemoryReadStream stream;
 	Common::Array<int> offsets;
-	int level;
-	int comportmentId;
-	bool comportement;
+	int level = initialLevel;
+	int comportmentId = 0;
+	bool comportment = false;
 };
 
 typedef void ScriptFunc(ScriptContext &ctx);
@@ -44,9 +48,6 @@ struct ScriptFunction {
 
 #define MAPFUNC(name, func) \
 	{ name, func }
-
-static const int initialLevel = 2;
-static const int indentWidth = 2;
 
 static void mEND(ScriptContext &ctx) {
 	printf("%*sEND\n", ctx.level, " ");
@@ -295,126 +296,125 @@ static int32 processLifeConditions(ScriptContext &ctx) {
 	int32 conditionOpcode = ctx.stream.readByte();
 	switch (conditionOpcode) {
 	case kcCOL:
-		printf("collision");
+		printf("COLLISION");
 		break;
 	case kcCOL_OBJ: {
 		int32 actorIdx = ctx.stream.readByte();
-		printf("col_obj %i", actorIdx);
+		printf("COL_OBJ %i", actorIdx);
 		break;
 	}
 	case kcDISTANCE: {
 		int32 actorIdx = ctx.stream.readByte();
-		printf("distance %i", actorIdx);
+		printf("DISTANCE %i", actorIdx);
 		conditionValueSize = 2;
 		break;
 	}
 	case kcZONE:
-		printf("zone");
+		printf("ZONE");
 		break;
 	case kcZONE_OBJ: {
 		int32 actorIdx = ctx.stream.readByte();
-		printf("zone_obj %i", actorIdx);
+		printf("ZONE_OBJ %i", actorIdx);
 		break;
 	}
 	case kcBODY:
-		printf("body");
+		printf("BODY");
 		break;
 	case kcBODY_OBJ: {
 		int32 actorIdx = ctx.stream.readByte();
-		printf("body_obj %i", actorIdx);
+		printf("BODY_OBJ %i", actorIdx);
 		break;
 	}
 	case kcANIM:
-		printf("anim");
+		printf("ANIM");
 		break;
 	case kcANIM_OBJ: {
 		int32 actorIdx = ctx.stream.readByte();
-		printf("anim_obj %i", actorIdx);
+		printf("ANIM_OBJ %i", actorIdx);
 		break;
 	}
 	case kcL_TRACK:
-		printf("track");
+		printf("TRACK");
 		break;
 	case kcL_TRACK_OBJ: {
 		int32 actorIdx = ctx.stream.readByte();
-		printf("track_obj %i", actorIdx);
+		printf("TRACK_OBJ %i", actorIdx);
 		break;
 	}
 	case kcFLAG_CUBE: {
 		int32 flagIdx = ctx.stream.readByte();
-		printf("flag_cube %i", flagIdx);
+		printf("FLAG_CUBE %i", flagIdx);
 		break;
 	}
 	case kcCONE_VIEW: {
 		int32 targetActorIdx = ctx.stream.readByte();
-		printf("cone_view %i", targetActorIdx);
+		printf("CONE_VIEW %i", targetActorIdx);
 		break;
 	}
 	case kcHIT_BY:
-		printf("hit_by");
+		printf("HIT_BY");
 		break;
 	case kcACTION:
-		printf("action");
+		printf("ACTION");
 		break;
 	case kcFLAG_GAME: {
 		int32 flagIdx = ctx.stream.readByte();
-		printf("flag_game %i", flagIdx);
+		printf("FLAG_GAME %i", flagIdx);
 		break;
 	}
 	case kcLIFE_POINT:
-		printf("life_point");
+		printf("LIFE_POINT");
 		break;
 	case kcLIFE_POINT_OBJ: {
 		int32 actorIdx = ctx.stream.readByte();
-		printf("life_point_obj %i", actorIdx);
+		printf("LIFE_POINT_OBJ %i", actorIdx);
 		break;
 	}
 	case kcNUM_LITTLE_KEYS:
-		printf("num_little_keys");
+		printf("NUM_LITTLE_KEYS");
 		break;
 	case kcNUM_GOLD_PIECES:
-		printf("num_gold_pieces");
+		printf("NUM_GOLD_PIECES");
 		conditionValueSize = 2;
 		break;
 	case kcBEHAVIOUR:
-		printf("behaviour");
+		printf("BEHAVIOUR");
 		break;
 	case kcCHAPTER:
-		printf("chapter");
+		printf("CHAPTER");
 		break;
 	case kcDISTANCE_3D: {
 		int32 targetActorIdx = ctx.stream.readByte();
-		printf("distance_3d %i ", targetActorIdx);
+		printf("DISTANCE_3D %i ", targetActorIdx);
 		conditionValueSize = 2;
 		break;
 	}
 	case kcMAGIC_LEVEL:
-		printf("magic_level");
+		printf("MAGIC_LEVEL");
 		break;
 	case kcMAGIC_POINTS:
-		printf("magic_points");
+		printf("MAGIC_POINTS");
 		break;
 	case kcUSE_INVENTORY: {
 		int32 item = ctx.stream.readByte();
-		printf("use_inventory %i", item);
+		printf("USE_INVENTORY %i", item);
 		break;
 	}
 	case kcCHOICE:
-		printf("choice");
+		printf("CHOICE");
 		conditionValueSize = 2;
 		break;
 	case kcFUEL:
-		printf("fuel");
+		printf("FUEL");
 		break;
 	case kcCARRIED_BY:
-		printf("carried_by");
+		printf("CARRIED_BY");
 		break;
 	case kcCDROM:
-		printf("cdrom");
+		printf("CDROM");
 		break;
 	default:
 		error("Actor condition opcode %d", conditionOpcode);
-		break;
 	}
 
 	return conditionValueSize;
@@ -455,32 +455,29 @@ static void lOFFSET(ScriptContext &ctx) {
 	printf("%*sOFFSET %i\n", ctx.level, " ", (int)offset);
 }
 
-static void lSNIF(ScriptContext &ctx) {
-	printf("%*sSWITCH_NO_IF ", ctx.level, " ");
+static void lJUMPGeneric(const char *name, ScriptContext &ctx) {
+	printf("%*s%s ", ctx.level, " ", name);
 	const int32 valueSize = processLifeConditions(ctx);
 	processLifeOperators(ctx, valueSize);
-	printf("\n");
 	const int16 offset = ctx.stream.readSint16LE();
 	ctx.offsets.push_back(offset);
+	printf("\n");
+}
+
+static void lSNIF(ScriptContext &ctx) {
+	lJUMPGeneric("SWITCH_NO_IF", ctx);
 	ctx.level += indentWidth;
 }
 
 static void lNEVERIF(ScriptContext &ctx) {
-	printf("%*sNEVER_IF ", ctx.level, " ");
-	const int32 valueSize = processLifeConditions(ctx);
-	processLifeOperators(ctx, valueSize);
-	const int16 offset = ctx.stream.readSint16LE();
-	ctx.offsets.push_back(offset);
-	printf("\n");
+	lJUMPGeneric("NEVER_IF", ctx);
 	ctx.level += indentWidth;
 }
 
 static void lOR_IF(ScriptContext &ctx) {
-	printf("%*sOR_IF ", ctx.level, " ");
-	const int32 valueSize = processLifeConditions(ctx);
-	processLifeOperators(ctx, valueSize);
-	const int16 offset = ctx.stream.readSint16LE();
-	printf("\n");
+	lJUMPGeneric("OR_IF", ctx);
+	// OR_IF belongs to IF and shares the same jump offset
+	ctx.offsets.pop_back();
 }
 
 static void lNO_IF(ScriptContext &ctx) {
@@ -489,40 +486,25 @@ static void lNO_IF(ScriptContext &ctx) {
 }
 
 static void lIF(ScriptContext &ctx) {
-	printf("%*sIF ", ctx.level, " ");
-	const int32 valueSize = processLifeConditions(ctx);
-	processLifeOperators(ctx, valueSize);
-	const int16 offset = ctx.stream.readSint16LE();
-	ctx.offsets.push_back(offset);
-	printf("\n");
+	lJUMPGeneric("IF", ctx);
 	ctx.level += indentWidth;
 }
 
 static void lSWIF(ScriptContext &ctx) {
-	printf("%*sSWITCH_IF ", ctx.level, " ");
-	const int32 valueSize = processLifeConditions(ctx);
-	processLifeOperators(ctx, valueSize);
-	const int16 offset = ctx.stream.readSint16LE();
-	ctx.offsets.push_back(offset);
-	printf("\n");
+	lJUMPGeneric("SWITCH_IF", ctx);
 	ctx.level += indentWidth;
 }
 
 static void lONEIF(ScriptContext &ctx) {
-	printf("%*sONEIF ", ctx.level, " ");
-	const int32 valueSize = processLifeConditions(ctx);
-	processLifeOperators(ctx, valueSize);
-	const int16 offset = ctx.stream.readSint16LE();
-	ctx.offsets.push_back(offset);
-	printf("\n");
+	lJUMPGeneric("ONEIF", ctx);
 	ctx.level += indentWidth;
 }
 
 static void lELSE(ScriptContext &ctx) {
-	const int16 offset = ctx.stream.readSint16LE();
+	/*const int16 offset =*/ ctx.stream.readSint16LE();
 	ctx.offsets.push_back(ctx.stream.pos());
 	ctx.level -= indentWidth;
-	printf("%*sELSE (offset %i)\n", ctx.level, " ", offset);
+	printf("%*sELSE\n", ctx.level, " ");
 	ctx.level += indentWidth;
 }
 
@@ -623,24 +605,24 @@ static void lSET_FLAG_CUBE(ScriptContext &ctx) {
 	printf("%*sSET_FLAG_CUBE %i %i\n", ctx.level, " ", (int)flagIdx, (int)flagValue);
 }
 
-static void lCOMPORTEMENT(ScriptContext &ctx) {
-	printf("%*sCOMPORTEMENT %i\n", ctx.level, " ", (int)ctx.stream.readByte());
+static void lCOMPORTMENT(ScriptContext &ctx) {
+	printf("%*sCOMPORTMENT %i\n", ctx.level, " ", (int)ctx.stream.readByte());
 }
 
-static void lSET_COMPORTEMENT(ScriptContext &ctx) {
-	printf("%*sSET_COMPORTEMENT %i\n", ctx.level, " ", (int)ctx.stream.readSint16LE());
+static void lSET_COMPORTMENT(ScriptContext &ctx) {
+	printf("%*sSET_COMPORTMENT %i\n", ctx.level, " ", (int)ctx.stream.readSint16LE());
 }
 
-static void lSET_COMPORTEMENT_OBJ(ScriptContext &ctx) {
+static void lSET_COMPORTMENT_OBJ(ScriptContext &ctx) {
 	const int32 otherActorIdx = ctx.stream.readByte();
 	const int16 pos = ctx.stream.readSint16LE();
-	printf("%*sSET_COMPORTEMENT_OBJ %i %i\n", ctx.level, " ", (int)otherActorIdx, (int)pos);
+	printf("%*sSET_COMPORTMENT_OBJ %i %i\n", ctx.level, " ", (int)otherActorIdx, (int)pos);
 }
 
-static void lEND_COMPORTEMENT(ScriptContext &ctx) {
+static void lEND_COMPORTMENT(ScriptContext &ctx) {
 	ctx.level -= indentWidth;
-	printf("%*sEND_COMPORTEMENT\n", ctx.level, " ");
-	ctx.comportement = false;
+	printf("%*sEND_COMPORTMENT\n", ctx.level, " ");
+	ctx.comportment = false;
 }
 
 static void lSET_FLAG_GAME(ScriptContext &ctx) {
@@ -1004,10 +986,10 @@ static const ScriptFunction lifeScriptFunctions[] = {
 	/*0x1D*/ MAPFUNC("CAM_FOLLOW", lCAM_FOLLOW),
 	/*0x1E*/ MAPFUNC("SET_BEHAVIOUR", lSET_BEHAVIOUR),
 	/*0x1F*/ MAPFUNC("SET_FLAG_CUBE", lSET_FLAG_CUBE),
-	/*0x20*/ MAPFUNC("COMPORTEMENT", lCOMPORTEMENT),
-	/*0x21*/ MAPFUNC("SET_COMPORTEMENT", lSET_COMPORTEMENT),
-	/*0x22*/ MAPFUNC("SET_COMPORTEMENT_OBJ", lSET_COMPORTEMENT_OBJ),
-	/*0x23*/ MAPFUNC("END_COMPORTEMENT", lEND_COMPORTEMENT),
+	/*0x20*/ MAPFUNC("COMPORTMENT", lCOMPORTMENT),
+	/*0x21*/ MAPFUNC("SET_COMPORTMENT", lSET_COMPORTMENT),
+	/*0x22*/ MAPFUNC("SET_COMPORTMENT_OBJ", lSET_COMPORTMENT_OBJ),
+	/*0x23*/ MAPFUNC("END_COMPORTMENT", lEND_COMPORTMENT),
 	/*0x24*/ MAPFUNC("SET_FLAG_GAME", lSET_FLAG_GAME),
 	/*0x25*/ MAPFUNC("KILL_OBJ", lKILL_OBJ),
 	/*0x26*/ MAPFUNC("SUICIDE", lSUICIDE),
@@ -1081,10 +1063,7 @@ static const ScriptFunction lifeScriptFunctions[] = {
 };
 
 static int decompileLBA1MoveScript(int actorIdx, const uint8 *data, int16 size) {
-	Common::MemoryReadStream stream(data, size);
-	ScriptContext ctx{stream, {}, initialLevel, 0};
-
-	printf("Actor %i\n", actorIdx);
+	ScriptContext ctx(data, size);
 
 	while (ctx.stream.pos() < ctx.stream.size()) {
 		const byte scriptOpcode = ctx.stream.readByte();
@@ -1100,21 +1079,20 @@ static int decompileLBA1MoveScript(int actorIdx, const uint8 *data, int16 size) 
 }
 
 static int decompileLBA1LifeScript(int actorIdx, const uint8 *data, int16 size) {
-	Common::MemoryReadStream stream(data, size);
-	ScriptContext ctx{stream, {}, initialLevel, 0, true};
-
-	printf("Actor %i\n", actorIdx);
+	ScriptContext ctx(data, size);
 
 	printf("%*sCOMPORTMENT main\n", ctx.level, " ");
 	ctx.level += indentWidth;
+	ctx.comportment = true;
+
 	while (ctx.stream.pos() < ctx.stream.size()) {
 		const byte scriptOpcode = ctx.stream.readByte();
 		if (scriptOpcode < ARRAYSIZE(lifeScriptFunctions)) {
-			if (scriptOpcode && !ctx.comportement) {
+			if (scriptOpcode && !ctx.comportment) {
 				++ctx.comportmentId;
-				printf("%*sCOMPORTEMENT %i\n", ctx.level, " ", ctx.comportmentId);
+				printf("%*sCOMPORTMENT %i\n", ctx.level, " ", ctx.comportmentId);
 				ctx.level += indentWidth;
-				ctx.comportement = true;
+				ctx.comportment = true;
 			}
 			lifeScriptFunctions[scriptOpcode].function(ctx);
 			while (!ctx.offsets.empty()) {
@@ -1137,11 +1115,11 @@ static int decompileLBA1LifeScript(int actorIdx, const uint8 *data, int16 size) 
 
 int decompileLBA1(const uint8 *data, int size) {
 	Common::MemoryReadStream stream(data, size);
-	uint8_t sceneTextBank = stream.readByte();
-	uint8_t currentGameOverScene = stream.readByte();
+	uint8 sceneTextBank = stream.readByte();
+	uint8 currentGameOverScene = stream.readByte();
 	stream.skip(4);
-	int16 _alphaLight = (int16)stream.readUint16LE();
-	int16 _betaLight = (int16)stream.readUint16LE();
+	int16 alphaLight = (int16)stream.readUint16LE();
+	int16 betaLight = (int16)stream.readUint16LE();
 
 	uint16 sampleAmbiance[4];
 	uint16 sampleRepeat[4];
@@ -1162,19 +1140,22 @@ int decompileLBA1(const uint8 *data, int size) {
 	int16 sceneHeroPosy = (int16)stream.readUint16LE();
 	int16 sceneHeroPosz = (int16)stream.readUint16LE();
 
+	printf("Actor 0\n");
 	int16 moveScriptSize = (int16)stream.readUint16LE();
+	printf(" - move script: %i\n", (int)moveScriptSize);
 	const uint8 *moveScript = data + stream.pos();
 	stream.skip(moveScriptSize);
 	decompileLBA1MoveScript(0, moveScript, moveScriptSize);
 
 	int16 lifeScriptSize = (int16)stream.readUint16LE();
+	printf(" - life script: %i\n", (int)lifeScriptSize);
 	const uint8 *lifeScript = data + stream.pos();
 	stream.skip(lifeScriptSize);
 	decompileLBA1LifeScript(0, lifeScript, lifeScriptSize);
 
 	int16 sceneNumActors = (int16)stream.readUint16LE();
-	int cnt = 1;
-	for (int32 a = 1; a < sceneNumActors; a++, cnt++) {
+	for (int32 a = 1; a < sceneNumActors; a++) {
+		printf("\n");
 		uint16 staticflags = stream.readUint16LE();
 		uint16 body = stream.readUint16LE();
 		uint8 genBody = stream.readByte();
@@ -1197,12 +1178,37 @@ int decompileLBA1(const uint8 *data, int size) {
 		uint8 armor = stream.readByte();
 		uint8 lifePoints = stream.readByte();
 
+		printf("Actor %i\n", a);
+		printf(" - staticflags: %i\n", (int)staticflags);
+		printf(" - body: %i\n", (int)body);
+		printf(" - genBody: %i\n", (int)genBody);
+		printf(" - genAnim: %i\n", (int)genAnim);
+		printf(" - sprite: %i\n", (int)sprite);
+		printf(" - posx: %i\n", (int)posx);
+		printf(" - posy: %i\n", (int)posy);
+		printf(" - posz: %i\n", (int)posz);
+		printf(" - strengthOfHit: %i\n", (int)strengthOfHit);
+		printf(" - bonusflags: %i\n", (int)bonusflags);
+		printf(" - beta: %i\n", (int)beta);
+		printf(" - speed: %i\n", (int)speed);
+		printf(" - controlMode: %i\n", (int)controlMode);
+		printf(" - cropLeft: %i\n", (int)cropLeft);
+		printf(" - cropTop: %i\n", (int)cropTop);
+		printf(" - cropRight: %i\n", (int)cropRight);
+		printf(" - cropBottom: %i\n", (int)cropBottom);
+		printf(" - bonusAmount: %i\n", (int)bonusAmount);
+		printf(" - talkColor: %i\n", (int)talkColor);
+		printf(" - armor: %i\n", (int)armor);
+		printf(" - lifePoints: %i\n", (int)lifePoints);
+
 		moveScriptSize = (int16)stream.readUint16LE();
+		printf(" - move script: %i\n", (int)moveScriptSize);
 		moveScript = data + stream.pos();
 		stream.skip(moveScriptSize);
 		decompileLBA1MoveScript(a, moveScript, moveScriptSize);
 
 		lifeScriptSize = (int16)stream.readUint16LE();
+		printf(" - life script: %i\n", (int)lifeScriptSize);
 		lifeScript = data + stream.pos();
 		stream.skip(lifeScriptSize);
 		decompileLBA1LifeScript(a, lifeScript, lifeScriptSize);
@@ -1213,26 +1219,55 @@ int decompileLBA1(const uint8 *data, int size) {
 		int16 zoneminsx = stream.readSint16LE();
 		int16 zoneminsy = stream.readSint16LE();
 		int16 zoneminsz = stream.readSint16LE();
-
 		int16 zonemaxsx = stream.readSint16LE();
 		int16 zonemaxsy = stream.readSint16LE();
 		int16 zonemaxsz = stream.readSint16LE();
-
 		uint16 zonetype = stream.readUint16LE();
 		int16 zonenum = stream.readSint16LE();
-
 		int16 info0 = stream.readSint16LE();
 		int16 info1 = stream.readSint16LE();
 		int16 info2 = stream.readSint16LE();
 		int16 info3 = stream.readSint16LE();
+		printf("Zone: %i\n", i);
+		printf(" - zoneminsx: %i\n", zoneminsx);
+		printf(" - zoneminsy: %i\n", zoneminsy);
+		printf(" - zoneminsz: %i\n", zoneminsz);
+		printf(" - zonemaxsx: %i\n", zonemaxsx);
+		printf(" - zonemaxsy: %i\n", zonemaxsy);
+		printf(" - zonemaxsz: %i\n", zonemaxsz);
+		printf(" - zonetype: %i\n", zonetype);
+		printf(" - zonenum: %i\n", zonenum);
+		printf(" - info0: %i\n", info0);
+		printf(" - info1: %i\n", info1);
+		printf(" - info2: %i\n", info2);
+		printf(" - info3: %i\n", info3);
 	}
 
 	uint16 sceneNumTracks = stream.readUint16LE();
 	for (uint16 i = 0; i < sceneNumTracks; i++) {
+		printf("Track: %i\n", i);
 		int16 pointx = stream.readSint16LE();
 		int16 pointy = stream.readSint16LE();
 		int16 pointz = stream.readSint16LE();
+		printf(" - pointx: %i\n", pointx);
+		printf(" - pointy: %i\n", pointy);
+		printf(" - pointz: %i\n", pointz);
 	}
+
+	printf("Scene\n");
+	printf(" - sceneTextBank: %i\n", sceneTextBank);
+	printf(" - currentGameOverScene: %i\n", currentGameOverScene);
+	printf(" - alphaLight: %i\n", alphaLight);
+	printf(" - betaLight: %i\n", betaLight);
+	printf(" - sampleAmbiance: %i %i %i %i\n", sampleAmbiance[0], sampleAmbiance[1], sampleAmbiance[2], sampleAmbiance[3]);
+	printf(" - sampleRepeat: %i %i %i %i\n", sampleRepeat[0], sampleRepeat[1], sampleRepeat[2], sampleRepeat[3]);
+	printf(" - sampleRound: %i %i %i %i\n", sampleRound[0], sampleRound[1], sampleRound[2], sampleRound[3]);
+	printf(" - sampleMinDelay: %i\n", sampleMinDelay);
+	printf(" - sampleMinDelayRnd: %i\n", sampleMinDelayRnd);
+	printf(" - sceneMusic: %i\n", sceneMusic);
+	printf(" - sceneHeroPosx: %i\n", sceneHeroPosx);
+	printf(" - sceneHeroPosy: %i\n", sceneHeroPosy);
+	printf(" - sceneHeroPosz: %i\n", sceneHeroPosz);
 
 	if (stream.err()) {
 		return 1;

@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
 		return 127;
 	}
 
+	printf("Scene %i\n", index);
 	if (variant == 1) {
 		return decompileLBA1(data, size);
 	}
