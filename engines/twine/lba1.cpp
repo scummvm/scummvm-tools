@@ -20,34 +20,7 @@
  */
 
 #include "engines/twine/lba1.h"
-#include <stdio.h>
-#include <string.h>
-
-#include "common/array.h"
-#include "common/util.h"
-#include "common/memstream.h"
-
-static const int initialLevel = 3;
-static const int indentWidth = 2;
-
-struct ScriptContext {
-	ScriptContext(const uint8* data, int size) : stream(data, size) {}
-	Common::MemoryReadStream stream;
-	Common::Array<int> offsets;
-	int level = initialLevel;
-	int comportmentId = 0;
-	bool comportment = false;
-};
-
-typedef void ScriptFunc(ScriptContext &ctx);
-
-struct ScriptFunction {
-	const char *name;
-	ScriptFunc *function;
-};
-
-#define MAPFUNC(name, func) \
-	{ name, func }
+#include "engines/twine/shared.h"
 
 static void mEND(ScriptContext &ctx) {
 	printf("%*sEND\n", ctx.level, " ");
@@ -1245,10 +1218,10 @@ int decompileLBA1(const uint8 *data, int size) {
 
 	uint16 sceneNumTracks = stream.readUint16LE();
 	for (uint16 i = 0; i < sceneNumTracks; i++) {
-		printf("Track: %i\n", i);
 		int16 pointx = stream.readSint16LE();
 		int16 pointy = stream.readSint16LE();
 		int16 pointz = stream.readSint16LE();
+		printf("Track: %i\n", i);
 		printf(" - pointx: %i\n", pointx);
 		printf(" - pointy: %i\n", pointy);
 		printf(" - pointz: %i\n", pointz);
