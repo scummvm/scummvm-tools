@@ -459,9 +459,9 @@ static void lSNIF(ScriptContext &ctx) {
 	printf("%*sSWITCH_NO_IF ", ctx.level, " ");
 	const int32 valueSize = processLifeConditions(ctx);
 	processLifeOperators(ctx, valueSize);
+	printf("\n");
 	const int16 offset = ctx.stream.readSint16LE();
 	ctx.offsets.push_back(offset);
-	printf(" (offset %i)\n", offset);
 	ctx.level += indentWidth;
 }
 
@@ -471,7 +471,7 @@ static void lNEVERIF(ScriptContext &ctx) {
 	processLifeOperators(ctx, valueSize);
 	const int16 offset = ctx.stream.readSint16LE();
 	ctx.offsets.push_back(offset);
-	printf(" (offset %i)\n", offset);
+	printf("\n");
 	ctx.level += indentWidth;
 }
 
@@ -480,7 +480,7 @@ static void lOR_IF(ScriptContext &ctx) {
 	const int32 valueSize = processLifeConditions(ctx);
 	processLifeOperators(ctx, valueSize);
 	const int16 offset = ctx.stream.readSint16LE();
-	printf(" (offset %i)\n", offset);
+	printf("\n");
 }
 
 static void lNO_IF(ScriptContext &ctx) {
@@ -494,7 +494,7 @@ static void lIF(ScriptContext &ctx) {
 	processLifeOperators(ctx, valueSize);
 	const int16 offset = ctx.stream.readSint16LE();
 	ctx.offsets.push_back(offset);
-	printf(" (offset %i)\n", offset);
+	printf("\n");
 	ctx.level += indentWidth;
 }
 
@@ -504,7 +504,7 @@ static void lSWIF(ScriptContext &ctx) {
 	processLifeOperators(ctx, valueSize);
 	const int16 offset = ctx.stream.readSint16LE();
 	ctx.offsets.push_back(offset);
-	printf(" (offset %i)\n", offset);
+	printf("\n");
 	ctx.level += indentWidth;
 }
 
@@ -514,7 +514,7 @@ static void lONEIF(ScriptContext &ctx) {
 	processLifeOperators(ctx, valueSize);
 	const int16 offset = ctx.stream.readSint16LE();
 	ctx.offsets.push_back(offset);
-	printf(" (offset %i)\n", offset);
+	printf("\n");
 	ctx.level += indentWidth;
 }
 
