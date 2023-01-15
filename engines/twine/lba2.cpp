@@ -33,14 +33,18 @@ static int decompileLBA2LifeScript(int actor, const uint8 *moveScript, int16 mov
 int decompileLBA2(const uint8 *data, int size) {
 	Common::MemoryReadStream stream(data, size);
 
-	uint8 sceneTextBank = stream.readByte();
-	uint8 currentGameOverScene = stream.readByte();
-	stream.skip(4);
+	int8 island = stream.readByte();
+	int8 currentCubeX = stream.readByte();
+	int8 currentCubeY = stream.readByte();
+
+	int8 shadowLevel = stream.readByte();
+	int8 modeLabyrinthe = stream.readByte();
+	uint8 isOutsideScene = stream.readByte();
+
+	uint8 n = stream.readByte();
 
 	int16 alphaLight = stream.readSint16LE();
 	int16 betaLight = stream.readSint16LE();
-
-	uint8 isOutsideScene = stream.readByte();
 
 	uint16 sampleAmbiance[4];
 	uint16 sampleRepeat[4];
@@ -147,6 +151,8 @@ int decompileLBA2(const uint8 *data, int size) {
 		decompileLBA2LifeScript(0, lifeScript, lifeScriptSize);
 	}
 
+	uint32 checksum = stream.readUint32LE();
+
 	int16 sceneNumZones = stream.readSint16LE();
 	for (int32 i = 0; i < sceneNumZones; i++) {
 		int32 zoneminsx = stream.readSint32LE();
@@ -207,9 +213,8 @@ int decompileLBA2(const uint8 *data, int size) {
 	}
 
 	printf("Scene\n");
-	printf(" - sceneTextBank: %i\n", sceneTextBank);
+	printf(" - checksum: %u\n", checksum);
 	printf(" - isOutsideScene: %i\n", isOutsideScene);
-	printf(" - currentGameOverScene: %i\n", currentGameOverScene);
 	printf(" - alphaLight: %i\n", alphaLight);
 	printf(" - betaLight: %i\n", betaLight);
 	printf(" - sampleFrequency: %i %i %i %i\n", sampleFrequency[0], sampleFrequency[1], sampleFrequency[2], sampleFrequency[3]);
