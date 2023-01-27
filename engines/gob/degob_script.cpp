@@ -214,7 +214,7 @@ void Script::print(const char *s, ...) const {
 	putString(buf);
 }
 void Script::printIndent() const {
-	print("%08d:", getPos());
+	print("%08d:", lastOffsetPos());
 	for (uint32 i = 0; i < _indent; i++)
 		putString("	");
 }
@@ -236,6 +236,8 @@ void Script::incIndent() { _indent++; }
 void Script::decIndent() { _indent--; }
 
 uint32 Script::getPos() const { return _ptr - _totData; }
+uint32 Script::lastOffsetPos() const { return _lastOffsetPos - _totData; }
+void Script::updateOffsetPos(uint32 pos) { _lastOffsetPos = _totData + pos; }
 void Script::skip(uint32 off) { seek(off, SEEK_CUR); }
 void Script::seek(uint32 off, int whence) {
 	switch (whence) {
@@ -902,7 +904,9 @@ void Script::funcBlock(int16 retFlag) {
 		if (cmd2 == 0)
 			cmd >>= 4;
 
+		updateOffsetPos(getPos());
 		funcOpcode(cmd2, cmd, params);
+		updateOffsetPos(getPos());
 
 	} while (params.counter != params.cmdCount);
 }
@@ -952,6 +956,7 @@ void Script::deGobFunction() {
 			print("--- %s ---\n", it->second.c_str());
 		}
 	}
+	updateOffsetPos(getPos());
 	printIndent();
 	print("sub_%d {\n", getPos());
 	incIndent();
