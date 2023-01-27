@@ -68,6 +68,8 @@ public:
 	virtual ~Script();
 
 	uint32 getPos() const;
+	uint32 lastOffsetPos() const;
+	void updateOffsetPos(uint32 pos);
 	void skip(uint32 off);
 	void seek(uint32 off, int whence = SEEK_SET);
 
@@ -168,7 +170,7 @@ protected:
 	void deGobFunction();
 
 private:
-	byte *_totData, *_ptr;
+	byte *_totData, *_ptr, *_lastOffsetPos;
 	uint32 _totSize;
 
 protected:
