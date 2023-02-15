@@ -1,5 +1,5 @@
-[Setup]
-AppCopyright=2022
+﻿[Setup]
+AppCopyright=2023
 AppName=ScummVM Tools
 AppVerName=ScummVM Tools Git
 AppPublisher=The ScummVM Team
@@ -30,10 +30,18 @@ Source: "COPYING_LUA.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "create_sjisfnt.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "decine.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "degob.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "dekyra.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "dekyra.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "deprince.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "descumm.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "desword2.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "detwine.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "extract_gob_cdi.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "extract_hadesch.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "extract_hadesch_img.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "extract_lokalizator.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "extract_mohawk.exe"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "extract_mps.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "extract_ngi.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "gob_loadcalc.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "grim_animb2txt.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "grim_cosb2cos.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -53,6 +61,9 @@ Source: "grim_patchr.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "grim_setb2set.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "grim_til2bmp.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "grim_vima.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msn_convert_mod.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "saga_unpack.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "saga_unpack_amiga.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "NEWS.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
 Source: "scummvm-tools.exe"; DestDir: "{app}"; Flags: ignoreversion 
