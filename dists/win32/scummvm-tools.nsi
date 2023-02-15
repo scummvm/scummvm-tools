@@ -60,7 +60,7 @@ Name "ScummVM Tools"
 # General Symbol Definitions
 #########################################################################################
 !define REGKEY      "Software\ScummVM\$(^Name)"
-!define VERSION     "2.7.0git"
+!define VERSION     "2.7.0"
 !define COMPANY     "ScummVM Team"
 !define URL         "https://www.scummvm.org/"
 !define DESCRIPTION "ScummVM Tools Installer. Look! A three headed monkey (TM)!"
