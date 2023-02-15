@@ -1,7 +1,7 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
-2.7.0 (2023-XX-XX)
+2.7.0 (2023-02-26)
  - Fixed MM Apple2 extraction.
  - Fixed decompilation for SCUMM scripts with nested functions.
  - Added tool for decoding hadesch image files.
