@@ -371,20 +371,22 @@ std::string Script::readExpr(char stopToken) {
 
 		while ((operation == 14) || (operation == 15)) {
 			if (operation == 14) {
+				// Add a direct offset
 				expr += printStr("#%d#", readUint16() * 4);
 
 				skip(2);
 				if (peekUint8() == 97)
 					skip(1);
 			} else if (operation == 15) {
+				// Add an offset from an array
 				expr += printStr("#%d->", readUint16() * 4);
 
 				skip(2);
-				uint8 var_A = readUint8();
+				dimCount = readUint8();
 
-				skip(var_A);
+				skip(dimCount);
 
-				for (int i = 0; i < var_A; i++)
+				for (int i = 0; i < dimCount; i++)
 					expr += readExpr(12) + "->";
 
 				expr += "#";
