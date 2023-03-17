@@ -705,9 +705,9 @@ void Script_v5::goblinOpcode(int i, FuncParams &params) {
 }
 
 void Script_v5::o5_spaceShooter(FuncParams &params) {
+	startFunc(params);
 	int16 paramCount = readUint16();
 
-	startFunc(params);
 	print("%d, ", params.extraData);
 	for (int i = 0; i < paramCount; i++) {
 		uint16 n = readUint16();
@@ -724,10 +724,10 @@ void Script_v5::o5_spaceShooter(FuncParams &params) {
 }
 
 void Script_v5::o5_istrlen(FuncParams &params) {
+	startFunc(params);
 	if (peekUint8() == 0x80)
 		skip(1);
 
-	startFunc(params);
 	print("%s, ", readVarIndex().c_str());
 	print("%s", readVarIndex().c_str());
 	endFunc();

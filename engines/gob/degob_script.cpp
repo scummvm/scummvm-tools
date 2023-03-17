@@ -218,6 +218,11 @@ void Script::printIndent() const {
 	for (uint32 i = 0; i < _indent; i++)
 		putString("	");
 }
+void Script::printIndent(uint32 pos) const {
+	print("%08d:", pos);
+	for (uint32 i = 0; i < _indent; i++)
+		putString("	");
+}
 void Script::printLine(const char *str) const {
 	printIndent(); putString(str); putString("\n");
 }

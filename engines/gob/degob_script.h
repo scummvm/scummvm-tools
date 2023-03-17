@@ -129,6 +129,7 @@ protected:
 	void putString(const char *s) const;
 	void print(const char *s, ...) const;
 	void printIndent() const;
+	void printIndent(uint32 pos) const;
 	void printLine(const char *s) const;
 	std::string printStr(const char *s, ...) const;
 
