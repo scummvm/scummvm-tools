@@ -741,8 +741,9 @@ void Script_v1::o1_goblinFunc(FuncParams &params) {
 }
 
 void Script_v1::o1_callSub(FuncParams &params) {
-	printIndent();
 	uint16 offset = readUint16();
+
+	printIndent();
 
 	uint32 pos = getPos();
 
@@ -897,9 +898,9 @@ void Script_v1::o1_assign(FuncParams &params) {
 }
 
 void Script_v1::o1_palLoad(FuncParams &params) {
-	startFunc(params);
 	byte cmd = readUint8();
 
+	startFunc(params);
 	print("%d, %d", (cmd & 0x80) != 0, cmd & 0x7F);
 	endFunc();
 
@@ -1018,9 +1019,9 @@ void Script_v1::o1_loadSound(FuncParams &params) {
 }
 
 void Script_v1::o1_loadMult(FuncParams &params) {
-	startFunc(params);
 	uint16 id = readUint16();
 
+	startFunc(params);
 	print("%d", id);
 	endFunc();
 

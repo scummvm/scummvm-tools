@@ -706,9 +706,9 @@ void Script_v7::goblinOpcode(int i, FuncParams &params) {
 }
 
 void Script_v7::o7_loadCursor(FuncParams &params) {
-	startFunc(params);
-	int16 id = (int16) readUint16();
+    int16 id = (int16) readUint16();
 
+    startFunc(params);
     print("%d, ", id);
     if (id == -1) {
 	print("%s, ", peekString());

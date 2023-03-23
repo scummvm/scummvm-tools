@@ -705,9 +705,9 @@ void Script_v6::o6_createSprite(FuncParams &params) {
 	uint32 pos;
 
 	pos = getPos();
-	startFunc(params);
 	skip(1);
 
+	startFunc(params);
 	if (peekUint8() == 0) {
 		seek(pos);
 		print("%d, ", readUint16());
@@ -724,9 +724,9 @@ void Script_v6::o6_createSprite(FuncParams &params) {
 }
 
 void Script_v6::o6_loadCursor(FuncParams &params) {
-	startFunc(params);
 	int16 id = (int16) readUint16();
 
+	startFunc(params);
 	print("%d, ", id);
 	if (id == -1) {
 		print("%s, ", peekString());
@@ -744,7 +744,6 @@ void Script_v6::o6_loadCursor(FuncParams &params) {
 }
 
 void Script_v6::o6_assign(FuncParams &params) {
-	uint32 pos = getPos();
 	uint8 type = peekUint8();
 	uint16 var_0, var_4;
 	std::string varIndex = readVarIndex(&var_0, &var_4);
@@ -757,7 +756,7 @@ void Script_v6::o6_assign(FuncParams &params) {
 
 		varIndex2 = readVarIndex(&var_6, 0);
 
-		printIndent(pos);
+		printIndent();
 		print("memcpy(%s, %s, %d);\n", varIndex.c_str(), varIndex2.c_str(), var_6 * 4);
 
 		seek(savedPos);
@@ -775,10 +774,7 @@ void Script_v6::o6_assign(FuncParams &params) {
 			uint8 c = readUint8();
 			uint16 n = readUint16();
 
-			if (i == 0)
-				printIndent(pos);
-			else
-				printIndent();
+			printIndent();
 			print("memset(%s + %d, %d, %d);\n", varIndex.c_str(), off, c, n);
 
 			off += n;
@@ -789,16 +785,13 @@ void Script_v6::o6_assign(FuncParams &params) {
 
 		for (uint16 i = 0; i < loopCount; i++) {
 			std::string expr = readExpr();
-			if (i == 0)
-				printIndent(pos);
-			else
-				printIndent();
+			printIndent();
 			print("%s[%d] = %s;\n", varIndex.c_str(), (type == 24) ? (i * 2) : i, expr.c_str());
 		}
 	} else {
 		std::string expr = readExpr();
 
-		printIndent(pos);
+		printIndent();
 		print("%s = %s;\n", varIndex.c_str(), expr.c_str());
 	}
 }

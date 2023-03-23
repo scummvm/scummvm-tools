@@ -727,7 +727,6 @@ void Script_v2::o2_totSub(FuncParams &params) {
 }
 
 void Script_v2::o2_assign(FuncParams &params) {
-	uint32 pos = getPos();
 	uint8 type = peekUint8();
 	std::string varIndex = readVarIndex();
 
@@ -737,29 +736,22 @@ void Script_v2::o2_assign(FuncParams &params) {
 
 		for (uint16 i = 0; i < loopCount; i++) {
 			std::string expr = readExpr();
-			if (i == 0)
-				printIndent(pos);
-			else
-				printIndent();
+			printIndent();
 			print("%s[%d] = %s;\n", varIndex.c_str(), (type == 24) ? (i * 2) : i, expr.c_str());
 		}
 	} else {
 		std::string expr = readExpr();
 
-		printIndent(pos);
+		printIndent();
 		print("%s = %s;\n", varIndex.c_str(), expr.c_str());
 	}
 }
 
 void Script_v2::o2_pushVars(FuncParams &params) {
-	uint32 pos = getPos();
 	uint8 count = readUint8();
 
 	for (uint16 i = 0; i < count; i++) {
-		if (i == 0)
-			printIndent(pos);
-		else
-			printIndent();
+		printIndent();
 		if ((peekUint8() == 25) || (peekUint8() == 28)) {
 			print("push(%s, animDataSize);\n", readVarIndex().c_str());
 			skip(1);
@@ -769,14 +761,10 @@ void Script_v2::o2_pushVars(FuncParams &params) {
 }
 
 void Script_v2::o2_popVars(FuncParams &params) {
-	uint32 pos = getPos();
 	uint8 count = readUint8();
 
 	for (uint16 i = 0; i < count; i++) {
-		if (i == 0)
-			printIndent(pos);
-		else
-			printIndent();
+		printIndent();
 		print("pop(%s);\n", readVarIndex().c_str());
 	}
 }
@@ -788,7 +776,6 @@ void Script_v2::o2_loadSound(FuncParams &params) {
 void Script_v2::o2_loadMult(FuncParams &params) {
 	uint16 id;
 	bool hasImds;
-	startFunc(params);
 
 	id = readUint16();
 	if (id & 0x8000) {
@@ -796,6 +783,7 @@ void Script_v2::o2_loadMult(FuncParams &params) {
 		skip(1);
 	}
 
+	startFunc(params);
 	print("%d", id);
 	endFunc();
 
@@ -909,9 +897,9 @@ void Script_v2::o2_loadMapObjects(FuncParams &params) {
 }
 
 void Script_v2::o2_playMult(FuncParams &params) {
-	startFunc(params);
 	uint16 multData = readUint16();
 
+	startFunc(params);
 	print("%d, %d", multData >> 1, multData & 0x01);
 	endFunc();
 }
