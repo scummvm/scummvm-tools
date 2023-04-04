@@ -162,7 +162,42 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 				delete[] outbuf;
 				break;
 			}
+		case 3:
+			{
+				uLong outsize;
+				uLong outsize1 = _width * _workheight;
+				uLong outsize2 = outsize1;
+				byte *outbuf;
+				byte *outbuf1 = new byte[outsize1];
+				byte *outbuf2 = new byte[outsize2];
+				byte *xorbuf = new byte[_width * _workheight];
 
+				for (int i = 0; i < _width * _workheight; i++)
+					xorbuf[i] = _prevframe[i] ^ frame[i];
+
+				compress2(outbuf1, &outsize1, xorbuf, _width * _workheight, 9);
+				compress2(outbuf2, &outsize2, frame, _width * _workheight, 9);
+
+				if (outsize1 < outsize2) {
+					compType = 3;
+					outsize = outsize1;
+					outbuf = outbuf1;
+				} else {
+					compType = 2;
+					outsize = outsize2;
+					outbuf = outbuf2;
+				}
+
+				_dxa.writeByte(compType);
+				_dxa.writeUint32BE(outsize);
+				_dxa.write(outbuf, outsize);
+
+				delete[] outbuf1;
+				delete[] outbuf2;
+				delete[] xorbuf;
+
+				break;
+			}
 		case 13:
 			{
 				int r;
