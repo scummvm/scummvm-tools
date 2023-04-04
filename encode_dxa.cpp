@@ -51,6 +51,7 @@ private:
 	int _width, _height, _framerate, _framecount, _workheight;
 	uint8 *_prevframe, *_prevpalette;
 	ScaleMode _scaleMode;
+	byte _compType;
 
 	byte *_codeBuf, *_dataBuf, *_motBuf, *_maskBuf;
 	void grabBlock(byte *frame, int x, int y, int blockw, int blockh, byte *block);
@@ -62,14 +63,14 @@ private:
 	uLong m13encode(byte *frame, byte *outbuf);
 
 public:
-	DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode);
+	DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode, byte compType);
 	~DxaEncoder();
 	void writeHeader();
 	void writeNULL();
 	void writeFrame(uint8 *frame, uint8 *palette);
 };
 
-DxaEncoder::DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode) {
+DxaEncoder::DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode, byte compType) {
 	_dxa.open(filename, "wb");
 	_width = width;
 	_height = height;
@@ -79,6 +80,7 @@ DxaEncoder::DxaEncoder(Tool &tool, Common::Filename filename, int width, int hei
 	_prevpalette = new uint8[768];
 	_scaleMode = scaleMode;
 	_workheight = _scaleMode == S_NONE ? _height : _height / 2;
+	_compType = compType;
 
 	_codeBuf = new byte[_width * _height / 16];
 	_dataBuf = new byte[_width * _height];
@@ -145,7 +147,7 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 		if (_framecount == 0)
 			compType = 2;
 		else
-			compType = 13;
+			compType = _compType;
 
 		switch (compType) {
 
@@ -536,7 +538,7 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 	return outb - outbuf;
 }
 
-EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
+EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION), _compType(13) {
 
 	ToolInput input;
 	input.format = "*.*";
@@ -546,6 +548,16 @@ EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_C
 	_helptext =
 		"Usage: " + getName() + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" +
 		"Output will be two files, one with .dxa extension and the other depending on the used audio codec.";
+}
+
+void EncodeDXA::parseExtraArguments() {
+	if (!_arguments.empty()) {
+		if (_arguments.front() == "-c") {
+			_arguments.pop_front();
+			_compType = atoi(_arguments.front().c_str());
+			_arguments.pop_front();
+		}
+	}
 }
 
 void EncodeDXA::execute() {
@@ -570,12 +582,12 @@ void EncodeDXA::execute() {
 	// read some data from the Bink or Smacker file.
 	readVideoInfo(&inpath, width, height, framerate, frames, scaleMode);
 
-	print("Width = %d, Height = %d, Framerate = %d, Frames = %d",
-		   width, height, framerate, frames);
+	print("Width = %d, Height = %d, Framerate = %d, Frames = %d, Compression type = %d",
+		   width, height, framerate, frames, _compType);
 
 	// create the encoder object
 	outpath.setExtension(".dxa");
-	DxaEncoder dxe(*this, outpath, width, height, framerate, scaleMode);
+	DxaEncoder dxe(*this, outpath, width, height, framerate, scaleMode, _compType);
 
 	// No sound block
 	dxe.writeNULL();

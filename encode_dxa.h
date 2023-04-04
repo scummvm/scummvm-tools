@@ -35,10 +35,12 @@ class EncodeDXA : public CompressionTool {
 public:
 	EncodeDXA(const std::string &name = "encode_dxa");
 
+	virtual void parseExtraArguments();
 	virtual void execute();
 
 
 protected:
+	byte _compType;
 
 	void convertWAV(const Common::Filename *inpath, const Common::Filename* outpath);
 	void readVideoInfo(Common::Filename *filename, int &width, int &height, int &framerate, int &frames, ScaleMode &scaleMode);
