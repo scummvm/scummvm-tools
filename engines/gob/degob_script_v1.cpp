@@ -740,6 +740,137 @@ void Script_v1::o1_goblinFunc(FuncParams &params) {
 	goblinOpcode(cmd, gobParams);
 }
 
+enum Type {
+	kTypeNone              =  0,
+	kTypeMove              =  1,
+	kTypeClick             =  2,
+	kTypeInput1NoLeave     =  3,
+	kTypeInput1Leave       =  4,
+	kTypeInput2NoLeave     =  5,
+	kTypeInput2Leave       =  6,
+	kTypeInput3NoLeave     =  7,
+	kTypeInput3Leave       =  8,
+	kTypeInputFloatNoLeave =  9,
+	kTypeInputFloatLeave   = 10,
+	kTypeEnable2           = 11,
+	kTypeEnable1           = 12,
+	kTypeClickEnter        = 21
+};
+
+void Script_v1::hotspotsEvaluate()
+{
+	skip(1);
+	byte count = readUint8();
+	printIndent();
+	print("set_hotspot_count(%d);\n", count);
+
+	printIndent();
+	print("set_hotspot_properties(handleMouse=%d, duration=%d, leaveWinIndex=%d, hotspotIndex1=%d, hotspotIndex2=%d, needRecalc=%d)\n",
+		  peekUint8(0),
+		  peekUint8(1),
+		  peekUint8(2),
+		  peekUint8(3),
+		  peekUint8(4),
+		  peekUint8(5) != 0);
+
+	skip(6);
+
+	for (uint16 i = 0; i < count; i++) {
+		printIndent();
+		print("add_hotspot(%d, ", i);
+		byte type = readUint8();
+		print("%d", type);
+		if ((type & 0x40) != 0) {
+			type -= 0x40;
+			print(", %d", readUint8());
+		}
+		if ((type & 0x80) != 0) {
+			// Complex coordinate expressions
+			print(", %d", getPos());
+			print(", %s", readExpr().c_str());
+			print(", %s", readExpr().c_str());
+			print(", %s", readExpr().c_str());
+			print(", %s", readExpr().c_str());
+		} else {
+			// Immediate values
+			print(", %d", readUint16());
+			print(", %d", readUint16());
+			print(", %d", readUint16());
+			print(", %d", readUint16());
+		}
+
+		type &= 0x7F;
+
+		// Evaluate parameters for the new hotspot
+		switch (type) {
+		// TODO: handle kTypeEnable1 and kTypeEnable2 types
+		case kTypeNone:
+			skip(6);
+			print(", %d", getPos());
+			addFuncOffset(getPos());
+			skipBlock();
+			print(", %d", getPos());
+			addFuncOffset(getPos());
+			skipBlock();
+			break;
+
+		case kTypeMove:
+			print(", %d", readUint16());
+			print(", %d", readUint16());
+			print(", %d", readUint16());
+			print(", %d", getPos());
+			addFuncOffset(getPos());
+			skipBlock();
+			print(", %d", getPos());
+			addFuncOffset(getPos());
+			skipBlock();
+			break;
+
+		case kTypeInput1NoLeave:
+		case kTypeInput1Leave:
+		case kTypeInput2NoLeave:
+		case kTypeInput2Leave:
+		case kTypeInput3NoLeave:
+		case kTypeInput3Leave:
+		case kTypeInputFloatNoLeave:
+		case kTypeInputFloatLeave:
+			print(", %d", readUint16());
+			print(", %d", readUint16());
+			print(", %d", readUint8());
+			print(", %d", readUint8());
+			if ((type >= kTypeInput2NoLeave) && (type <= kTypeInput3Leave)) {
+				print(", %d", readUint16());
+				print(", %s", readString());
+			}
+			skipBlock();
+			break;
+
+		case 20:
+		case kTypeClick:
+			print(", %d", readUint16());
+			print(", %d", readUint16());
+			print(", %d", readUint16());
+			print(", 0");
+			print(", %d", getPos());
+			addFuncOffset(getPos());
+			skipBlock();
+			break;
+
+		case kTypeClickEnter:
+			print(", %d", readUint16());
+			print(", %d", readUint16());
+			print(", %d", readUint16() & 3);
+			print(", %d", getPos());
+			addFuncOffset(getPos());
+			skipBlock();
+			print(", 0");
+			break;
+		}
+
+		print(");\n");
+	}
+}
+
 void Script_v1::o1_callSub(FuncParams &params) {
 	uint16 offset = readUint16();
 
@@ -753,8 +884,14 @@ void Script_v1::o1_callSub(FuncParams &params) {
 		print("sub_%d();\n", offset);
 		if (offset >= 128)
 			addFuncOffset(offset);
-	} else if (peekUint8() == 2)
-		print("_hotspots->evaluate()(%d);\n", offset);
+	} else if (peekUint8() == 2) {
+		print("_hotspots->evaluate()(%d) {\n", offset);
+		incIndent();
+		hotspotsEvaluate();
+		decIndent();
+		printIndent();
+		print("}\n");
+	}
 	else
 		print("<Unknown block type %d (%d)>\n", peekUint8(), offset);
 

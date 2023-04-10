@@ -71,6 +71,7 @@ public:
 	uint32 lastOffsetPos() const;
 	void updateOffsetPos(uint32 pos);
 	void skip(uint32 off);
+	void skipBlock();
 	void seek(uint32 off, int whence = SEEK_SET);
 
 	// Properties getter
@@ -234,6 +235,7 @@ protected:
 
 	// Control functions
 	void o1_callSub(FuncParams &params);
+	void hotspotsEvaluate();
 	void o1_switch(FuncParams &params);
 	void o1_repeatUntil(FuncParams &params);
 	void o1_whileDo(FuncParams &params);

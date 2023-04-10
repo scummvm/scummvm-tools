@@ -239,6 +239,7 @@ uint32 Script::getPos() const { return _ptr - _totData; }
 uint32 Script::lastOffsetPos() const { return _lastOffsetPos - _totData; }
 void Script::updateOffsetPos(uint32 pos) { _lastOffsetPos = _totData + pos; }
 void Script::skip(uint32 off) { seek(off, SEEK_CUR); }
+void Script::skipBlock() {seek(peekUint16(2) + 2, SEEK_CUR);}
 void Script::seek(uint32 off, int whence) {
 	switch (whence) {
 	case SEEK_END:
