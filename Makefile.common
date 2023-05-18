@@ -41,6 +41,7 @@ PROGRAMS = \
 	extract_hadesch_img \
 	extract_lokalizator \
 	extract_mps \
+	extract_obb \
 	grim_animb2txt \
 	grim_bm2bmp \
 	grim_cosb2cos \
@@ -158,6 +159,10 @@ extract_lokalizator_OBJS := \
 extract_mps_OBJS := \
 	engines/mads/extract_mps.o \
 	common/dcl.o \
+	$(UTILS)
+
+extract_obb_OBJS := \
+	engines/tetraedge/extract_obb.o \
 	$(UTILS)
 
 deprince_OBJS := \
