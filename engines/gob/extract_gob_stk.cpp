@@ -49,7 +49,7 @@ ExtractGobStk::ExtractGobStk(const std::string &name) : Tool(name, TOOLTYPE_EXTR
 	input.format = "*.*";
 	_inputPaths.push_back(input);
 
-	_shorthelp = "Extract the files from a Stick file used by 'gob' engine (.STK/.ITK/.LTK).";
+	_shorthelp = "Extract the files from a Stick file used by 'gob' engine (.STK/.ITK/.LTK/.JTK).";
 	_helptext  = "Usage: " + getName() + " [-o outputname] stickname\nwhere\n  ouputname is used to force the gob config filename (used by compress_gob)\n  stickname is the name of the file to extract/decompress";
 }
 
@@ -58,12 +58,13 @@ ExtractGobStk::~ExtractGobStk() {
 }
 
 InspectionMatch ExtractGobStk::inspectInput(const Common::Filename &filename) {
-	// Accept either any file with stk, itk or ltk extension
+	// Accept either any file with stk, itk, ltk or jtk extension
 	std::string ext = filename.getExtension();
 	if (
 		scumm_stricmp(ext.c_str(), "stk") == 0 ||
 		scumm_stricmp(ext.c_str(), "itk") == 0 ||
-		scumm_stricmp(ext.c_str(), "ltk") == 0
+		scumm_stricmp(ext.c_str(), "ltk") == 0 ||
+		scumm_stricmp(ext.c_str(), "jtk") == 0
 		)
 		return IMATCH_PERFECT;
 	return IMATCH_AWFUL;
