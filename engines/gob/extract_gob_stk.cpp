@@ -319,18 +319,33 @@ void ExtractGobStk::extractChunks(Common::Filename &outpath, Common::File &stk) 
 byte *ExtractGobStk::unpackData(byte *src, uint32 &size) {
 	uint32 counter;
 	uint16 cmd;
-	byte tmpBuf[4114];
+	byte tmpBuf[4370]; // 4096 + (256 + 18) = 4096 + (max string length)
 	int16 off;
-	byte len;
+	int16 len;
 	uint16 tmpIndex;
 
 	counter = size = READ_LE_UINT32(src);
-
-	for (int i = 0; i < 4078; i++)
-		tmpBuf[i] = 0x20;
-	tmpIndex = 4078;
-
 	src += 4;
+	uint16 magic1 = READ_LE_UINT16(src);
+	src += 2;
+	uint16 magic2 = READ_LE_UINT16(src);
+	src += 2;
+
+	int16 extendedLenCmd;
+	if ((magic1 == 0x1234) && (magic2 == 0x5678)) {
+		// Extended format allowing to copy larger strings
+		// from the window (up to 256 + 18 = 274 bytes).
+		extendedLenCmd = 18;
+		tmpIndex = 273;
+	} else {
+		// Standard format allowing to copy short strings
+		// (up to 18 bytes) from the window.
+		extendedLenCmd = 100; // Cannot be matched
+		tmpIndex = 4078;
+		src -= 4;
+	}
+
+	memset(tmpBuf, 0x20, tmpIndex); // Fill initial window with spaces
 
 	byte *unpacked = new byte[size];
 	byte *dest = unpacked;
@@ -357,6 +372,11 @@ byte *ExtractGobStk::unpackData(byte *src, uint32 &size) {
 			off |= (*src & 0xF0) << 4;
 			len = (*src & 0x0F) + 3;
 			src++;
+
+			if (len == extendedLenCmd) {
+				len = *src + 18;
+				src++;
+			}
 
 			for (int i = 0; i < len; i++) {
 				*dest++ = tmpBuf[(off + i) % 4096];
