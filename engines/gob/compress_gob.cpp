@@ -51,7 +51,7 @@ CompressGob::CompressGob(const std::string &name) : CompressionTool(name, TOOLTY
 		"\nUsage: " + getName() + " [-o <output path>] [-f] <conf file>\n"
 		"<conf file> is a .gob file generated extract_gob_stk\n"
 		"<-f> forces compression for all files\n\n"
-		"The stick archive (STK/ITK/LTK) will be created in the directory specified by the '-o' parameter.\n";
+		"The stick archive (STK/ITK/LTK/JTK) will be created in the directory specified by the '-o' parameter.\n";
 }
 
 CompressGob::~CompressGob() {
