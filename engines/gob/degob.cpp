@@ -89,9 +89,11 @@ int main(int argc, char **argv) {
 			n++;
 		}
 
-		if (!strncmp(argv[n], "--lib", 5)) {
-			libMode = true;
-			n++;
+		if (argc > n) {
+			if (!strncmp(argv[n], "--lib", 5)) {
+				libMode = true;
+				n++;
+			}
 		}
 
 		if (argc > n) {
