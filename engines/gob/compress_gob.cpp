@@ -125,7 +125,7 @@ CompressGob::Chunk *CompressGob::readChunkConf(Common::File &gobConf, Common::Fi
 	gobConf.scanString(buffer);
 	std::string signature(buffer);
 	if (signature == confSTK21)
-		error("STK21 not yet handled");
+		error("STK21 is not implemented yet");
 	else if (signature != confSTK10)
 		error("Unknown format signature %s", signature.c_str());
 
