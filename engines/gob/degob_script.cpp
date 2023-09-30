@@ -618,7 +618,7 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 	int16 dim;
 	int16 dimCount;
 	int16 operation;
-	int16 temp;
+	uint16 temp;
 
 	operation = readUint8();
 
