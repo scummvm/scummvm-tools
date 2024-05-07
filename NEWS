@@ -1,6 +1,10 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
+2.8.0 (202X-XX-XX)
+- GOB: improved degob.
+- GOB: Added support in extract_gob_stk to extract JTK files.
+
 2.7.0 (2023-02-26)
  - Fixed MM Apple2 extraction.
  - Fixed decompilation for SCUMM scripts with nested functions.
