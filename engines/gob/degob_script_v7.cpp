@@ -334,7 +334,7 @@ void Script_v7::setupOpcodes() {
 		/* AC */
 		{OPCODET(o7_draw0xAC), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o7_draw0xAD), {PARAM_EXPR, PARAM_EXPR}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xAE), {PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o7_draw0xAF), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		/* B0 */
 		{OPCODET(o7_draw0xB0), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
@@ -403,9 +403,9 @@ void Script_v7::setupOpcodes() {
 		{OPCODET(o7_draw0xE3), {PARAM_NONE}},
 		/* E4 */
 		{OPCODET(o7_draw0xE4), {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xE5), {PARAM_NONE}},
+		{OPCODET(o7_draw0xE6), {PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX}},
+		{OPCODET(o7_draw0xE7), {PARAM_VARINDEX}},
 		/* E8 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -429,8 +429,8 @@ void Script_v7::setupOpcodes() {
 		/* F8 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_vmdGetSoundBuffer), {PARAM_VARINDEX}},
+		{OPCODET(o7_vmdReleaseSoundBuffer), {PARAM_EXPR, PARAM_VARINDEX}},
 		/* FC */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
