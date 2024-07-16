@@ -633,7 +633,7 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 
 			skip(2);
 			if (peekUint8() != 97)
-				return expr;
+				return pref;
 
 			skip(1);
 		} else if (operation == 15) {
@@ -655,7 +655,7 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 			pref += "#";
 
 			if (peekUint8() != 97)
-				return expr;
+				return pref;
 
 			skip(1);
 		}
