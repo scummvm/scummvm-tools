@@ -364,7 +364,7 @@ void Script_v7::setupOpcodes() {
 		/* C4 */
 		{OPCODET(o7_opendBase), {PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o7_closedBase), {PARAM_EXPR}},
-		{OPCODET(o7_getDBString), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_getDBString), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* C8 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
