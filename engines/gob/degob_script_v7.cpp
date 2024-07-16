@@ -608,7 +608,7 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 34 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_getFreeDiskSpace), {PARAM_UINT16}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
