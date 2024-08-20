@@ -51,6 +51,7 @@ private:
 	int _width, _height, _framerate, _framecount, _workheight;
 	uint8 *_prevframe, *_prevpalette;
 	ScaleMode _scaleMode;
+	byte _compType;
 
 	byte *_codeBuf, *_dataBuf, *_motBuf, *_maskBuf;
 	void grabBlock(byte *frame, int x, int y, int blockw, int blockh, byte *block);
@@ -59,17 +60,18 @@ private:
 	void m13blockDelta(byte *frame, int x, int y, int x2, int y2, DiffStruct &diff);
 	bool m13motionVector(byte *frame, int x, int y, int w, int h, int &mx, int &my);
 	int m13countColors(byte *block, byte *pixels, unsigned long &code, int &codeSize);
+	uLong m12encode(byte *frame, byte *outbuf);
 	uLong m13encode(byte *frame, byte *outbuf);
 
 public:
-	DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode);
+	DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode, byte compType);
 	~DxaEncoder();
 	void writeHeader();
 	void writeNULL();
 	void writeFrame(uint8 *frame, uint8 *palette);
 };
 
-DxaEncoder::DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode) {
+DxaEncoder::DxaEncoder(Tool &tool, Common::Filename filename, int width, int height, int framerate, ScaleMode scaleMode, byte compType) {
 	_dxa.open(filename, "wb");
 	_width = width;
 	_height = height;
@@ -79,6 +81,7 @@ DxaEncoder::DxaEncoder(Tool &tool, Common::Filename filename, int width, int hei
 	_prevpalette = new uint8[768];
 	_scaleMode = scaleMode;
 	_workheight = _scaleMode == S_NONE ? _height : _height / 2;
+	_compType = compType;
 
 	_codeBuf = new byte[_width * _height / 16];
 	_dataBuf = new byte[_width * _height];
@@ -145,7 +148,7 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 		if (_framecount == 0)
 			compType = 2;
 		else
-			compType = 13;
+			compType = _compType;
 
 		switch (compType) {
 
@@ -160,7 +163,93 @@ void DxaEncoder::writeFrame(byte *frame, byte *palette) {
 				delete[] outbuf;
 				break;
 			}
+		case 3:
+			{
+				uLong outsize;
+				uLong outsize1 = _width * _workheight;
+				uLong outsize2 = outsize1;
+				byte *outbuf;
+				byte *outbuf1 = new byte[outsize1];
+				byte *outbuf2 = new byte[outsize2];
+				byte *xorbuf = new byte[_width * _workheight];
 
+				for (int i = 0; i < _width * _workheight; i++)
+					xorbuf[i] = _prevframe[i] ^ frame[i];
+
+				compress2(outbuf1, &outsize1, xorbuf, _width * _workheight, 9);
+				compress2(outbuf2, &outsize2, frame, _width * _workheight, 9);
+
+				if (outsize1 < outsize2) {
+					compType = 3;
+					outsize = outsize1;
+					outbuf = outbuf1;
+				} else {
+					compType = 2;
+					outsize = outsize2;
+					outbuf = outbuf2;
+				}
+
+				_dxa.writeByte(compType);
+				_dxa.writeUint32BE(outsize);
+				_dxa.write(outbuf, outsize);
+
+				delete[] outbuf1;
+				delete[] outbuf2;
+				delete[] xorbuf;
+
+				break;
+			}
+                case 12:
+                        {
+				uLong outsize1 = _width * _workheight;
+				uLong outsize2 = outsize1;
+				uLong outsize3 = outsize1*2;
+				uLong outsize4 = outsize1;
+				uLong outsize;
+				uint8 *outbuf;
+				uint8 *outbuf1 = new uint8[outsize1];
+				uint8 *outbuf2 = new uint8[outsize2];
+				uint8 *outbuf3 = new uint8[outsize3];
+				uint8 *outbuf4 = new uint8[outsize4];
+				uint8 *xorbuf = new uint8[_width * _workheight];
+
+				for (int i = 0; i < _width * _workheight; i++)
+					xorbuf[i] = _prevframe[i] ^ frame[i];
+
+				compress2(outbuf1, &outsize1, xorbuf, _width * _workheight, 9);
+				compress2(outbuf2, &outsize2, frame, _width * _workheight, 9);
+				if (outsize1 < outsize2) {
+					compType = 3;
+					outsize = outsize1;
+					outbuf = outbuf1;
+				} else {
+					compType = 2;
+					outsize = outsize2;
+					outbuf = outbuf2;
+				}
+
+				outsize3 = m12encode(frame, outbuf3);
+
+				compress2(outbuf4, &outsize4, outbuf3, outsize3, 9);
+
+				if (outsize4 < outsize) {
+					compType = 12;
+					outsize = outsize4;
+					outbuf = outbuf4;
+				}
+
+				_dxa.writeByte(compType);
+				_dxa.writeUint32BE(outsize);
+				_dxa.write(outbuf, outsize);
+
+				delete[] outbuf1;
+				delete[] outbuf2;
+				delete[] outbuf3;
+				delete[] outbuf4;
+				delete[] xorbuf;
+
+				break;
+			}
 		case 13:
 			{
 				int r;
@@ -343,6 +432,86 @@ void DxaEncoder::grabBlock(byte *frame, int x, int y, int blockw, int blockh, by
 		memcpy(&block[yc*blockw], b2, blockw);
 		b2 += _width;
 	}
+}
+
+uLong DxaEncoder::m12encode(byte *frame, byte *outbuf) {
+	byte *outb = outbuf;
+	byte color;
+	int mx, my;
+	DiffStruct diff;
+
+	for (int by = 0; by < _workheight; by += BLOCKH) {
+		for (int bx = 0; bx < _width; bx += BLOCKW) {
+			if (m13blocksAreEqual(frame, bx, by, bx, by, BLOCKW, BLOCKH)) {
+				*outb++ = 0;
+				continue;
+			}
+
+			if (m13blockIsSolidColor(frame, bx, by, BLOCKW, BLOCKH, color)) {
+				*outb++ = 2;
+				*outb++ = color;
+				continue;
+			}
+
+			if (m13motionVector(frame, bx, by, BLOCKW, BLOCKH, mx, my)) {
+				byte mbyte = 0;
+				if (mx < 0) mbyte |= 0x80;
+				mbyte |= (abs(mx) & 7) << 4;
+				if (my < 0) mbyte |= 0x08;
+				mbyte |= abs(my) & 7;
+				*outb++ = 4;
+				*outb++ = mbyte;
+				continue;
+			}
+
+			m13blockDelta(frame, bx, by, bx, by, diff);
+
+			if (diff.count >= 14) {
+				// in this case we store all 16 pixels
+				*outb++ = 3;
+				byte *b2 = (byte*)frame + bx + by * _width;
+				for (int yc = 0; yc < BLOCKH; yc++) {
+					memcpy(outb, b2, BLOCKW);
+					b2 += _width;
+					outb += BLOCKW;
+				}
+				continue;
+			} else {
+				static const struct { uint16 mask; uint8 sh1, sh2; } maskTbl[6] = {
+					{0xFF00, 0, 0},
+					{0x0FF0, 8, 0},
+					{0x00FF, 8, 8},
+					{0x0F0F, 8, 4},
+					{0xF0F0, 4, 0},
+					{0xF00F, 4, 4}
+				};
+
+				bool smallMask = false;
+
+				// here we check if the difference bitmap can be stored in only one byte
+				for (int m = 0; m < 6; m++) {
+					if ((diff.map & maskTbl[m].mask) == 0) {
+						smallMask = true;
+						*outb++ = 10 + m;
+						*outb++ = ((diff.map >> maskTbl[m].sh1) & 0xF0) | ((diff.map >> maskTbl[m].sh2) & 0x0F);
+						break;
+					}
+				}
+
+				if (!smallMask) {
+					*outb++ = 1;
+					WRITE_BE_UINT16(outb, diff.map);
+					outb += 2;
+				}
+
+				memcpy(outb, diff.pixels, diff.count);
+				outb += diff.count;
+				continue;
+			}
+		}
+	}
+
+	return outb - outbuf;
 }
 
 uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
@@ -536,7 +705,7 @@ uLong DxaEncoder::m13encode(byte *frame, byte *outbuf) {
 	return outb - outbuf;
 }
 
-EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION) {
+EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_COMPRESSION), _compType(13) {
 
 	ToolInput input;
 	input.format = "*.*";
@@ -546,6 +715,16 @@ EncodeDXA::EncodeDXA(const std::string &name) : CompressionTool(name, TOOLTYPE_C
 	_helptext =
 		"Usage: " + getName() + " [mode] [mode-params] [-o outpufile = inputfile.san] <inputfile>\n" +
 		"Output will be two files, one with .dxa extension and the other depending on the used audio codec.";
+}
+
+void EncodeDXA::parseExtraArguments() {
+	if (!_arguments.empty()) {
+		if (_arguments.front() == "-c") {
+			_arguments.pop_front();
+			_compType = atoi(_arguments.front().c_str());
+			_arguments.pop_front();
+		}
+	}
 }
 
 void EncodeDXA::execute() {
@@ -570,12 +749,12 @@ void EncodeDXA::execute() {
 	// read some data from the Bink or Smacker file.
 	readVideoInfo(&inpath, width, height, framerate, frames, scaleMode);
 
-	print("Width = %d, Height = %d, Framerate = %d, Frames = %d",
-		   width, height, framerate, frames);
+	print("Width = %d, Height = %d, Framerate = %d, Frames = %d, Compression type = %d",
+		   width, height, framerate, frames, _compType);
 
 	// create the encoder object
 	outpath.setExtension(".dxa");
-	DxaEncoder dxe(*this, outpath, width, height, framerate, scaleMode);
+	DxaEncoder dxe(*this, outpath, width, height, framerate, scaleMode, _compType);
 
 	// No sound block
 	dxe.writeNULL();
