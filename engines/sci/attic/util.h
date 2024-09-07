@@ -24,7 +24,7 @@
 
 #include "common/scummsys.h"
 
-/* An excercise in bloated macro writing ;-)*/
+/* An exercise in bloated macro writing ;-)*/
 
 /*Declare a flexarray type*/
 #define FLEXARRAY(type, extra) struct{\

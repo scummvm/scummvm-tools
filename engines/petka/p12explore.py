@@ -632,7 +632,7 @@ class App(TkBrowser):
                             format(flc.width, flc.height, \
                                 flc.frame_num, flc.delay))
                 else:
-                    self.add_info("No information availiable")
+                    self.add_info("No information available")
             except:
                 self.add_info("Error loading {} - \"{}\" \n\n{}".\
                     format(res_id, hlesc(fn), hlesc(traceback.format_exc())))

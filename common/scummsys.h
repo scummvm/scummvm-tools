@@ -196,7 +196,7 @@
 	// This is done for two reasons
 	// a) uint is already defined by Symbians libc component
 	// b) Symbian is using its "own" datatyping, and the Scummvm port
-	//    should follow this to ensure the best compability possible.
+	//    should follow this to ensure the best compatibility possible.
 	#define SCUMMVM_DONT_DEFINE_TYPES
 	typedef unsigned char byte;
 

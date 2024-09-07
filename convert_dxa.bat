@@ -35,7 +35,7 @@ goto :eof
 :check_bink
 if exist "%BINK_PATH%\binkconv.exe" goto :preencode
 echo.
-echo Bink convertion tool cannot be found!
+echo Bink conversion tool cannot be found!
 goto :eof
 
 :preencode
