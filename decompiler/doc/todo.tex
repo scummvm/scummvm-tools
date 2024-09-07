@@ -10,7 +10,7 @@ Currently, only unconditional jumps are allowed for break/continue. However, whe
 
 Support for this should be added to the analysis. Should be doable by also checking destinations of unmarked conditional jumps, since ifs are marked after breaks and continues - so simply add that to the initial filter and make sure we process the right (non-sequential) target vertex.
 
-Classifying as an enhancement since it appears this optimization is not used in SCUMMv6 (there is an if (...) break in tentacle/room-13-206, but the break is a separate jump). Not sure if KYRA uses it - a cursory scan of the KYRA2 demo suggests that it could use an optimization, as I found only 1 occurence of a c1\_ifNotJmp immediately followed by a c1\_jump (skull\textbackslash skull.emc, 0x0578) - but it did not look like a loop. That, however, does not prove that KYRA actually uses the optimization - it could simply be that such a piece of code was never used.
+Classifying as an enhancement since it appears this optimization is not used in SCUMMv6 (there is an if (...) break in tentacle/room-13-206, but the break is a separate jump). Not sure if KYRA uses it - a cursory scan of the KYRA2 demo suggests that it could use an optimization, as I found only 1 occurrence of a c1\_ifNotJmp immediately followed by a c1\_jump (skull\textbackslash skull.emc, 0x0578) - but it did not look like a loop. That, however, does not prove that KYRA actually uses the optimization - it could simply be that such a piece of code was never used.
 
 As far as I have been able to tell, this optimization really is not used in Kyra, so this will have to be deferred until we have an engine which needs it.
 
