@@ -72,7 +72,7 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 	}
 	byte buffer[20];
 	memcpy(&buffer, header, 6);
-	// Fixup for pharkas resource.sfx, several WAVE files contain a size thats not right (-1 byte)
+	// Fixup for pharkas resource.sfx, several WAVE files contain a size that's not right (-1 byte)
 	int offset = 0;
 	if (memcmp(buffer + 1, "RIFF", 4) == 0) {
 		offset = 5;
