@@ -221,7 +221,7 @@ protected:
 	wxButton *_prefs;
 	/** 'Cancel' button. */
 	wxButton *_cancel;
-	/** The static text on the line seperating the page area and the buttons. */
+	/** The static text on the line separating the page area and the buttons. */
 	wxStaticText *_linetext;
 	/** Current page, required for dumping events to it. */
 	WizardPage *_currentPage;
