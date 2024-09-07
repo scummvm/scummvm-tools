@@ -212,7 +212,7 @@ static struct mspack_system res_system = {
 	&res_tell, NULL
 };
 
-void extract_cabinet(char *filename, unsigned int lenght) {
+void extract_cabinet(char *filename, unsigned int length) {
 	struct mspack_file *original_executable, *destination_cabinet;
 	void *buffer;
 	unsigned int copied_bytes, remBytes;
@@ -224,8 +224,8 @@ void extract_cabinet(char *filename, unsigned int lenght) {
 	buffer = malloc(BUFFER_SIZE);
 	copied_bytes = 0;
 
-	while (copied_bytes < lenght) {
-		remBytes = lenght - copied_bytes;
+	while (copied_bytes < length) {
+		remBytes = length - copied_bytes;
 		count = res_read(original_executable, buffer, (remBytes < BUFFER_SIZE) ? remBytes : BUFFER_SIZE);
 		writeResult = res_write(destination_cabinet, buffer, count);
 		copied_bytes  += count;
