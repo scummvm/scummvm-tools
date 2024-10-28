@@ -953,15 +953,26 @@ void Script::deGob(int32 offset, bool isLib) {
 }
 
 void Script::deGobFunction() {
+	uint32 pos = getPos();
+	updateOffsetPos(pos);
+	printIndent();
+
+	const char* func_name = nullptr;
 	if (!_funcOffsetsNames.empty()) {
-		auto it = _funcOffsetsNames.find(getPos());
+		auto it = _funcOffsetsNames.find(pos);
 		if (it != _funcOffsetsNames.end()) {
-			print("--- %s ---\n", it->second.c_str());
+			func_name = it->second.c_str();
+			// Skip lib name
+			if (const char* p = strchr(func_name, ' ')) {
+				func_name = p + 1;
+			}
 		}
 	}
-	updateOffsetPos(getPos());
-	printIndent();
-	print("sub_%d {\n", getPos());
+
+	print("sub_%d%s%s {\n",
+		  pos,
+		  func_name ? "_" : "",
+		  func_name ? func_name : "");
 	incIndent();
 
 	funcBlock(2);

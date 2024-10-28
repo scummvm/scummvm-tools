@@ -880,8 +880,23 @@ void Script_v1::o1_callSub(FuncParams &params) {
 
 	seek(offset);
 
+	const char* func_name = nullptr;
+	if (!_funcOffsetsNames.empty()) {
+		auto it = _funcOffsetsNames.find(offset);
+		if (it != _funcOffsetsNames.end()) {
+			func_name = it->second.c_str();
+			// Skip lib name
+			if (const char* p = strchr(func_name, ' ')) {
+				func_name = p + 1;
+			}
+		}
+	}
+
 	if (peekUint8() == 1) {
-		print("sub_%d();\n", offset);
+		print("sub_%d%s%s();\n",
+			  offset,
+			  func_name ? "_" : "",
+			  func_name ? func_name : "");
 		if (offset >= 128)
 			addFuncOffset(offset);
 	} else if (peekUint8() == 2) {
