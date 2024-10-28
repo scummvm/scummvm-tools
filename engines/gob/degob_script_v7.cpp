@@ -329,22 +329,22 @@ void Script_v7::setupOpcodes() {
 		/* A8 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{OPCODET(o7_draw0xAA), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_openDatabase), {PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* AC */
-		{OPCODET(o7_draw0xAC), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o7_draw0xAD), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_openDatabaseTable), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_closeDatabaseTable), {PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o7_draw0xAE), {PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o7_draw0xAF), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_openDatabaseIndex), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		/* B0 */
-		{OPCODET(o7_draw0xB0), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o7_draw0xB1), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_findDatabaseRecord), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_findNextDabaseRecord), {PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* B4 */
-		{OPCODET(o7_draw0xB4), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
+		{OPCODET(o7_getDatabaseRecordValue), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{OPCODET(o7_draw0xB6), {PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
+		{OPCODET(o7_checkAnyDatabaseRecordFound), {PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* B8 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -362,8 +362,8 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* C4 */
-		{OPCODET(o7_opendBase), {PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o7_closedBase), {PARAM_EXPR}},
+		{OPCODET(o7_openTranlsationDB), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_closeTranslationDB), {PARAM_EXPR}},
 		{OPCODET(o7_getDBString), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* C8 */
