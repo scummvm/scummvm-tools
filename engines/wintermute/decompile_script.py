@@ -138,10 +138,10 @@ class WinterMuteDecompiler:
 
     def __init__(self, data):
         self.data = data
-        self.offsets = unpack("LLLLLLLL",data[:32])
+        self.offsets = unpack("IIIIIIII",data[:32])
 
     def read_int(self):
-        result = unpack("L",self.data[self.ptr:self.ptr+4])[0]
+        result = unpack("I",self.data[self.ptr:self.ptr+4])[0]
         self.ptr += 4
         return result
 
