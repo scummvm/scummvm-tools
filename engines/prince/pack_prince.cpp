@@ -57,7 +57,7 @@ void PackPrince::execute() {
 	_fFiles.print("credits_translate.dat\n");
 
 
-	// Export files infomation
+	// Export files information
 	int posOfFilesInformation = _fFiles.pos();
 	FileEntry filesInfo[5];
 	int fileNr = 0;

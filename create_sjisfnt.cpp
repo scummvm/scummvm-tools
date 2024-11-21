@@ -557,7 +557,7 @@ void Glyph::convertChar16x16(uint8 *dst) const {
 }
 
 void fixYOffset(GlyphList &glyphs) {
-	// We try to find the minimum y offset here so we can substract it to make it 0 in the end.
+	// We try to find the minimum y offset here so we can subtract it to make it 0 in the end.
 	// We need to do this, since otherwise the characters will take up too much vertical space.
 	int minYOffset = 0xFFFF;
 
