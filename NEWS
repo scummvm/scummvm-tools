@@ -1,6 +1,13 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm-tools/commits/
 
+2.9.0 (2024-12-22)
+ - Multiple improvements to gob scripts disassembler.
+ - Allow .JTK files to be decompressed in gob engine.
+ - Added utility for extracting 3DO disk images in Director engine.
+ - Added utility for extracting Wintermute engine DCP archives.
+ - Added script decompiler for Wintermute.
+
 2.7.0 (2023-02-26)
  - Fixed MM Apple2 extraction.
  - Fixed decompilation for SCUMM scripts with nested functions.
