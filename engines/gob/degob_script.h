@@ -672,6 +672,7 @@ protected:
 	void o7_loadCursor(FuncParams &params);
 	void oPlaytoons_printText(FuncParams &params);
 	void o7_oemToANSI(FuncParams &params);
+	void o7_ansiToOEM(FuncParams &params);
 	void oPlaytoons_freeSprite(FuncParams &params);
 };
 

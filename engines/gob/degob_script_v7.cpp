@@ -102,7 +102,8 @@ const int Script_v7::_goblinFuncLookUp[][2] = {
 	{2005, 70},
 	{3, 71},
 	{420, 72},
-	{513, 73}
+	{421, 73},
+	{513, 74}
 };
 
 Script_v7::Script_v7(byte *totData, uint32 totSize, ExtTable *extTable) :
@@ -541,7 +542,7 @@ void Script_v7::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryV7 opcodesGoblin[74] = {
+	static const OpcodeGoblinEntryV7 opcodesGoblin[75] = {
 		/* 00 */
 		{OPCODEF(o1_dummy), {PARAM_NONE}},
 		{OPCODET(o2_startInfogrames), {PARAM_UINT16}},
@@ -632,6 +633,7 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{OPCODEF(o1_dummy), {PARAM_NONE}},
+		{OPCODEF(o7_ansiToOEM), {PARAM_NONE}},
 		{OPCODEF(o7_oemToANSI), {PARAM_NONE}},
 		{OPCODET(o7_gob0x201), {PARAM_UINT16}}
 	};
@@ -768,11 +770,18 @@ void  Script_v7::oPlaytoons_printText(FuncParams &params)
 	skip(1);
 }
 
+void Script_v7::o7_ansiToOEM(FuncParams &params)
+{
+	startFunc(params);
+	print("&var8_%d", 4 * readUint16());
+	endFunc();
+}
+
 void Script_v7::o7_oemToANSI(FuncParams &params)
 {
 	startFunc(params);
+	print("&var8_%d", 4 * readUint16());
 	endFunc();
-	skip(2);
 }
 
 void Script_v7::oPlaytoons_freeSprite(FuncParams &params)
