@@ -1,3 +1,5 @@
+// inspired by: https://gist.github.com/Zaggy1024/a030cf23069ed62d452161f579ed272f
+
 #pragma endian big
 
 
@@ -94,14 +96,36 @@ struct CTYPAtom : Atom {
     char id[4];
 };
 
+struct NAVGAtom: Atom {
+    u16 version;
+    u16 columns;
+    u16 rows;
+    padding[2];
+    u16 loop_size;
+    u16 frame_duration;
+
+    u16 movie_type;
+    u16 ticks;
+    fixed_s32 field_of_view;
+    fixed_s32 startHPan;
+    fixed_s32 endHPan;
+    fixed_s32 endVPan;
+    fixed_s32 startVPan;
+    fixed_s32 initialHPan;
+    fixed_s32 initialVPan;
+    padding[4];
+
+};
+
 // moov -> udta
 struct UserDataChildAtomSelector {
     Atom atom_header [[hidden]];
-    
+
     $ = addressof(this);
 
-    match(atom_header.box_type) { 
+    match(atom_header.box_type) {
         ("ctyp"): CTYPAtom ctyp;
+        ("NAVG"): NAVGAtom navg;
         (_): UnknownAtom unknown [[name(atom_header.box_type)]];
     }
 } [[inline]];
@@ -188,7 +212,18 @@ struct MovieHeaderAtom : FullAtom {
     u32 next_track_id;
 }[[format("format_mvhd")]];
 
-struct TrackHeaderAtom : FullAtom {
+bitfield TrackHeaderFlags {
+    padding : 4;
+    bool track_in_poster: 1;
+    bool track_in_preview: 1;
+    bool track_in_movie: 1;
+    bool track_enabled : 1;
+};
+
+struct TrackHeaderAtom : Atom {
+    u8 version;
+    padding[2];
+    TrackHeaderFlags;
     u32 creation_time;
     u32 modification_time;
     u32 track_id;
@@ -200,8 +235,8 @@ struct TrackHeaderAtom : FullAtom {
     fixed_s16 volume;
     padding[sizeof(u16)];
     Matrix matrix;
-    fixed_u32 track_width;
-    fixed_u32 track_height;
+    fixed_s32 track_width;
+    fixed_s32 track_height;
 };
 
 using EditListAtom;
@@ -246,7 +281,7 @@ struct ChunkOffsetAtom : FullAtom {
 
 struct UnknownSampleEntryChildSelector {
     Atom box_header [[hidden]];
-    
+
     $ = addressof(this);
     match(atom_header.box_type) {
         (_): UnknownAtom unknown [[name(box_header.box_type)]];
@@ -277,8 +312,8 @@ struct VisualSampleEntry : SampleEntry {
     u32 spatial_quality;
     u16 width;
     u16 height;
-    fixed_u32 horizresolution;
-    fixed_u32 vertresolution;
+    fixed_s32 horizresolution; // in pixels per inch
+    fixed_s32 vertresolution; // in pixels per inch
     padding[sizeof(u32)];
     u16 frame_count_per_sample;
     u8 compressorname_size [[hidden]];
@@ -296,9 +331,9 @@ struct PanoSampleDescription: Atom {
     // https://developer.apple.com/library/archive/technotes/tn/tn1035.html
     std::print("pano located at: 0x{:X}", addressof(this));
     padding[sizeof(u32)];
-    padding[sizeof(u32)];
+    padding[sizeof(u32)]; // must be zero, sometimes it contains a 1
 
-    s16 majorVersion;
+    s16 majorVersion; // must be zero, sometimes it contains a 1
     s16 minorVersion;
     s32 sceneTrackID;
     s32 loResSceneTrackID;
@@ -311,7 +346,7 @@ struct PanoSampleDescription: Atom {
     fixed_s32 vPanBottom; // TODO: number is off...
     fixed_s32 minimumZoom;
     fixed_s32 maximumZoom;
-    
+
     // Info for highest res version of scene track
 
     s32 sceneSizeX;
@@ -321,26 +356,29 @@ struct PanoSampleDescription: Atom {
     s16 sceneNumFramesX;
     s16 sceneNumFramesY;
     s16 sceneColorDepth;
-    
+
     // Info for highest res version of hotSpot track
     s32 hotSpotSizeX;
     s32 hotSpotSizeY;
     padding[sizeof(u16)];
-    s16 hotSponNumFramesX;
+    s16 hotSpotNumFramesX;
     s16 hotSpotNumFrameY;
-    s16 hotsportColorDepth;
+    s16 hotspotColorDepth;
 
     $ += contents_size(addressof(this), box_size);
 };
 
 struct SampleEntrySelector {
     Atom atom_header [[hidden]];
-    
+
     $ = addressof(this);
     match(atom_header.box_type) {
         ("cvid"): VisualSampleEntry cvid;
         ("smc "): VisualSampleEntry smc;
-        ("pano"): PanoSampleDescription  pano;
+        ("rle "): VisualSampleEntry rle;
+        ("pano"): PanoSampleDescription pano;
+        ("SVQ1"): VisualSampleEntry svq;
+        //("qtvr"): QTVRSampleDescription qtvr;
         (_):  UnknownSampleEntry unknown [[name(atom_header.box_type)]];
     }
 
@@ -357,11 +395,11 @@ struct SampleDescriptionAtom : FullAtom {
 // moov -> trak -> mdia -> minf -> stbl -> stts
 struct TimeToSampleEntry {
     u32 sample_count;
-    u32 sample_delta;
+    u32 sample_duration;
 } [[format("format_stts_entry")]];
 
 fn format_stts_entry(auto stts_entry) {
-    return std::format("count = {}, delta = {}", stts_entry.sample_count, stts_entry.sample_delta);
+    return std::format("count = {}, duration = {}", stts_entry.sample_count, stts_entry.sample_duration);
 };
 
 struct TimeToSampleAtom : FullAtom {
@@ -434,7 +472,7 @@ using DataReferenceAtom;
 
 struct DataEntryAtomSelector {
     Atom atom_header [[hidden]];
-    
+
     $ = addressof(this);
     match(atom_header.box_type) {
         ("alis"): FullAtom alis;
@@ -451,7 +489,7 @@ struct DataReferenceAtom : FullAtom {
 
 struct DataInformationChildAtomSelector {
     Atom atom_header [[hidden]];
-    
+
     $ = addressof(this);
     match(atom_header.box_type) {
         ("dref"): DataReferenceAtom dref;
@@ -508,7 +546,7 @@ struct STPanoMediaInfoAtom: Atom {
     STPanoMediaInfoChildAtomSelector children[while (contents_size(addressof(this), box_size) > MIN_BOX_SIZE)];
 };
 
-struct GMHDChildAtomSelector { 
+struct GMHDChildAtomSelector {
     Atom atom_header [[hidden]];
 
     $ = addressof(this);
@@ -530,7 +568,7 @@ struct MediaInformationChildAtomSelector {
     Atom atom_header [[hidden]];
 
     $ = addressof(this);
-    
+
     match(atom_header.box_type) {
         ("stbl"): SampleTableAtom stbl;
         ("hdlr"): HandlerAtom hdlr;
@@ -691,3 +729,117 @@ struct RootAtom {
 } [[inline]];
 
 RootAtom atoms[while(std::mem::size() - $ > MIN_BOX_SIZE)] @ 0x00 [[format("format_box_array")]];
+
+struct HotSpotEntry {
+    u16 hotSpotId;
+    padding[2];
+    char type[4];
+    u32 typeData;
+    fixed_s32 viewHPan;
+    fixed_s32 viewVPan;
+    fixed_s32 viewZoom;
+    u16 rect1;
+    u16 rect2;
+    u16 rect3;
+    u16 rect4;
+    s32 mouseOVerCursorID;
+    s32 mouseDownCursorID;
+    s32 mouseUpCursorID;
+    padding[sizeof(s32)];
+    s32 nameStrOffset;
+    s32 commentStrOffset;
+};
+
+struct pHot: Atom {
+    padding[2];
+    u16 numHotSpots;
+    HotSpotEntry entries[numHotSpots];
+};
+
+struct pHdr: Atom {
+    u32 nodeID;
+    fixed_s32 defHPan;
+    fixed_s32 defVPan;
+    fixed_s32 defZoom;
+    fixed_s32 minHPan;
+    fixed_s32 minVPan;
+    fixed_s32 minZoom;
+    fixed_s32 maxHPan;
+    fixed_s32 maxVPan;
+    fixed_s32 maxZoom;
+    padding[sizeof(u32)];
+    padding[sizeof(u32)];
+    u32 nameStrOffset;
+    u32 commentStrOffset;
+};
+
+struct PanoLink {
+    u16 linkID;
+    padding[sizeof(u16)];
+    padding[sizeof(u32)];
+    padding[sizeof(u32)];
+    u32 toNodeID;
+    padding[sizeof(u32) * 3];
+    fixed_s32 toHPan;
+    fixed_s32 toVPan;
+    fixed_s32 toZoom;
+    padding[sizeof(u32)];
+    padding[sizeof(u32)];
+    u32 nameStrOffset;
+    u32 commentStrOffset;
+};
+
+struct LinkTableAtom : Atom {
+    padding[sizeof(u16)];
+    u16 numLinks;
+    PanoLink entries[numLinks];
+};
+
+struct NavgObject {
+    u16 objID;
+    padding[sizeof(u16)]; // reserved1
+    padding[sizeof(u32)]; // reserved2
+    fixed_s32 navgHPan;
+    fixed_s32 navgVPan;
+    fixed_s32 navgZoom;
+    u16 rect1;
+    u16 rect2;
+    u16 rect3;
+    u16 rect4;
+    padding[sizeof(u32)]; // reserved3
+    u32 nameStrOffset;
+    u32 commentStrOffset;
+};
+
+struct NavgTableAtom : Atom {
+    padding[sizeof(u16)];
+    u16 numObjects;
+    NavgObject entries[numObjects];
+};
+
+struct PascalString {
+    std::string::SizedString<u8> name;
+};
+
+struct StringTableAtom : Atom {
+    PascalString children[while (contents_size(addressof(this), box_size) > MIN_BOX_SIZE)];
+};
+
+struct PanoramaMDAT {
+    Atom atom_header [[hidden]];
+    $ = addressof(this);
+    if ($ + contents_size(addressof(this), atom_header.box_size) <= std::mem::size()) {
+
+        match(atom_header.box_type) {
+            ("pHot"): pHot phot;
+            ("pHdr"): pHdr phdr;
+            ("pLnk"): LinkTableAtom plnk;
+            ("strT"): StringTableAtom strt;
+            ("pNav"): NavgTableAtom pnav;
+            (_): UnknownAtomSelector unknown [[name(atom_header.box_type)]];
+        }
+    } else {
+        $ = std::mem::size();
+    }
+
+} [[inline]];
