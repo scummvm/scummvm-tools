@@ -52,7 +52,7 @@ jump if false
 AFTER:
 
 
-Unfortunatly, in reality it is somewhat more complicated. E.g. in script 55,
+Unfortunately, in reality it is somewhat more complicated. E.g. in script 55,
 in some cases the "jump AFTER" instead jumps into the middle of some other case.
 Maybe they did have some sort of code optimized after all?
 
