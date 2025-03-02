@@ -98,7 +98,7 @@ SciResourceDataType CompressSci::detectData(byte *header, bool compressMode) {
 	if (memcmp(buffer, "\x8d\x0bSOL\x00", 6) == 0) {
 		// SOL files begin with
 		// 0x8D 0x0B/0x0C "SOL" 0x00 [samplerate:WORD] [flags:BYTE] [size of following data after header:DWORD]
-		//  0x0C variant have an additional byte inbetween data and [size of]
+		//  0x0C variant have an additional byte in between data and [size of]
 		_input.read_throwsOnError(&buffer[6], 7);
 		dataSize = READ_LE_UINT32(buffer + 9);
 		_inputEndOffset = _inputOffset + 13 + dataSize;
