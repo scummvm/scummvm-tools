@@ -588,7 +588,7 @@ class Engine:
                         act.num_dlgs = num_dlgs
                         if not noobjref:
                             if ref not in self.obj_idx:
-                                raise EngineError("Dialog group 0x{:x} refered "\
+                                raise EngineError("Dialog group 0x{:x} referred "\
                                     "to unexisted object 0x{:x}".format(
                                     grp.idx, ref))
                             act.obj = self.obj_idx[act.ref]
