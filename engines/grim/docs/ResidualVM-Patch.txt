@@ -59,8 +59,8 @@ Offset	Size	Var
 6		2		VersionMinor <= 0
 8		4		flags
 12		16		md5sum of old file
-28		4		lenght of old file
-32		4		lenght of new file
+28		4		length of old file
+32		4		length of new file
 36		4		length of gzipped ctrl block (x)
 40		4		length of gzipped diff block (y)
 44		4		length of gzipped extra block (z) (if zero the extra block is missing or mixed with diff block)
