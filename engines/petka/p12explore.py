@@ -837,7 +837,7 @@ class App(TkBrowser):
             # references / backreferences
             if isobj:
                 # search where object used
-                self.add_info("\n<b>Refered by scenes</b>:\n")
+                self.add_info("\n<b>Referred by scenes</b>:\n")
                 for scn in self.sim.scenes:
                     for ref in scn.refs:
                         if ref[0].idx == rec.idx:
