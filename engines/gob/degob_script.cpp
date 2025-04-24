@@ -390,7 +390,7 @@ std::string Script::readExpr(char stopToken) {
 				skip(dimCount);
 
 				for (int i = 0; i < dimCount; i++)
-					expr += readExpr(12) + "->";
+					expr += "{" + readExpr(12) + "->";
 
 				expr += "#";
 
@@ -461,7 +461,7 @@ std::string Script::readExpr(char stopToken) {
 				arrDesc = _ptr;
 				skip(dimCount);
         for (dim = 0; dim < dimCount; dim++) {
-          expr += readExpr(12) + printStr(" of %d", (int16) arrDesc[dim]);
+          expr += "{" + readExpr(12) + printStr(" of %d", (int16) arrDesc[dim]);
 					if (dim != dimCount - 1)
 						expr += "][";
         }
@@ -650,7 +650,7 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 			skip(var_A);
 
 			for (int i = 0; i < var_A; i++)
-				pref += readExpr(12) + "->";
+				pref += "{" + readExpr(12) + "->";
 
 			pref += "#";
 
@@ -715,7 +715,7 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 		arrDesc = _ptr;
 		skip(dimCount);
 		for (dim = 0; dim < dimCount; dim++) {
-			expr += readExpr(12);
+			expr += "{" + readExpr(12);
 			expr += printStr(" of %d", (int16) arrDesc[dim]);
 			if (dim != dimCount - 1)
 				expr += "][";
