@@ -64,7 +64,7 @@ Name "ScummVM Tools"
 !define COMPANY     "ScummVM Team"
 !define URL         "https://www.scummvm.org/"
 !define DESCRIPTION "ScummVM Tools Installer. Look! A three headed monkey (TM)!"
-!define COPYRIGHT   "Copyright © 2001-2023 The ScummVM Team"
+!define COPYRIGHT   "Copyright Â© 2001-2023 The ScummVM Team"
 
 #########################################################################################
 # Installer configuration
@@ -72,7 +72,7 @@ Name "ScummVM Tools"
 OutFile          ${build_dir}\scummvm-tools-${VERSION}-${ARCH}.exe
 InstallDir       $PROGRAMFILES\ScummVM\tools                             ; Default installation folder
 InstallDirRegKey HKCU "Software\ScummVM\ScummVM Tools" "InstallPath"    ; Get installation folder from registry if available
-                                                                        ; The application name needs to be refered directly instead of through ${REGKEY}
+                                                                        ; The application name needs to be referred directly instead of through ${REGKEY}
                                                                         ; because lang strings aren't initialized at the point InstallDirRegKey is called
 
 CRCCheck on

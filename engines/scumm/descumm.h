@@ -31,7 +31,7 @@
 typedef unsigned int uint;
 
 /**
- * Extremly simple fixed size stack class.
+ * Extremely simple fixed size stack class.
  */
 template <class T, int MAX_SIZE = 10>
 class FixedStack {

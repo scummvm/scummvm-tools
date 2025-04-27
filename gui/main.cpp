@@ -378,7 +378,7 @@ void ScummToolsFrame::onIdle(wxIdleEvent &evt) {
 	if (_pages.back()->onIdle(dynamic_cast<wxPanel *>(_wizardpane->FindWindow(wxT("Wizard Page"))))) {
 		// We want more!
 		evt.RequestMore(true);
-		// This way we don't freeze the OS with continous events
+		// This way we don't freeze the OS with continuous events
 		wxMilliSleep(10);
 	}
 }

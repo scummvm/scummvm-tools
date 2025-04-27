@@ -161,7 +161,7 @@ struct UnknownAtomSelector {
     Atom atom_header [[hidden]];
     $ = addressof(this);
     UnknownAtom unknown [[name(atom_header.box_type)]];
-    std::print("unkown: " + atom_header.box_type);
+    std::print("unknown: " + atom_header.box_type);
 } [[inline]];
 
 struct UnknownAtom : Atom {
@@ -184,7 +184,7 @@ struct UnknownAtom : Atom {
     } else {
         $ = next_offset;
     }
-    std::print("unkown atom: {}: {}", box_type, $);
+    std::print("unknown atom: {}: {}", box_type, $);
 } [[format("format_box_type")]];
 
 fn format_box_type(auto box) {
