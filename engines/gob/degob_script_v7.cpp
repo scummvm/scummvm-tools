@@ -289,7 +289,7 @@ void Script_v7::setupOpcodes() {
 		{OPCODET(o2_setImdFrontSurf), {PARAM_NONE}},
 		/* 88 */
 		{OPCODET(o2_resetImdFrontSurf), {PARAM_NONE}},
-		{OPCODET(o7_draw0x89), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_setActiveCD), {PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{OPCODET(o7_findFile), {PARAM_EXPR, PARAM_VARINDEX, PARAM_VARINDEX}},
 		{OPCODET(o7_findCDFile),{PARAM_VARINDEX, PARAM_VARINDEX}},
 		/* 8C */
