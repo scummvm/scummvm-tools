@@ -90,7 +90,7 @@ public:
 
 	void loadIDE(const byte *ideData);
 
-	void deGob(int32 offset = -1, bool isLib = false);
+	void deGob(int32 offset = -1);
 
 protected:
 	enum FuncType {

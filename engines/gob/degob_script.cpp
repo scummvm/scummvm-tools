@@ -930,20 +930,17 @@ void Script::addFuncOffset(uint32 offset) {
 	_funcOffsets.push_back(offset);
 }
 
-void Script::deGob(int32 offset, bool isLib) {
+void Script::deGob(int32 offset) {
 	_funcOffsets.clear();
 
-	if (isLib) {
-		// Use functions from IDE file as entry points
+	if (offset >= 0)
+		_funcOffsets.push_back(offset);
+	else {
+		addStartingOffsets();
+		// Use functions from IDE file as entry points if any
 		for (auto it = _funcOffsetsNames.begin(); it != _funcOffsetsNames.end(); ++it)
 			addFuncOffset(it->first);
-	} else {
-		if (offset < 0)
-			addStartingOffsets();
-		else
-			_funcOffsets.push_back(offset);
 	}
-
 
 	for (std::list<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it) {
 		seek(*it);
