@@ -674,6 +674,10 @@ protected:
 	void o7_oemToANSI(FuncParams &params);
 	void o7_ansiToOEM(FuncParams &params);
 	void oPlaytoons_freeSprite(FuncParams &params);
+
+	void o7_startAdi4Application(FuncParams &params);
+	void o7_xorDeobfuscate(FuncParams &params);
+	void o7_xorObfuscate(FuncParams &params);
 };
 
 #endif // DEGOB_SCRIPT_H

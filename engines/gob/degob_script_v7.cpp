@@ -103,7 +103,10 @@ const int Script_v7::_goblinFuncLookUp[][2] = {
 	{3, 71},
 	{420, 72},
 	{421, 73},
-	{513, 74}
+	{513, 74},
+	{406, 75},
+	{407, 76},
+	{408, 77},
 };
 
 Script_v7::Script_v7(byte *totData, uint32 totSize, ExtTable *extTable) :
@@ -542,7 +545,7 @@ void Script_v7::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryV7 opcodesGoblin[75] = {
+	static const OpcodeGoblinEntryV7 opcodesGoblin[78] = {
 		/* 00 */
 		{OPCODEF(o1_dummy), {PARAM_NONE}},
 		{OPCODET(o2_startInfogrames), {PARAM_UINT16}},
@@ -635,7 +638,10 @@ void Script_v7::setupOpcodes() {
 		{OPCODEF(o1_dummy), {PARAM_NONE}},
 		{OPCODEF(o7_ansiToOEM), {PARAM_NONE}},
 		{OPCODEF(o7_oemToANSI), {PARAM_NONE}},
-		{OPCODET(o7_gob0x201), {PARAM_UINT16}}
+		{OPCODET(o7_gob0x201), {PARAM_UINT16}},
+		{OPCODEF(o7_startAdi4Application), {PARAM_NONE}},
+		{OPCODEF(o7_xorDeobfuscate), {PARAM_NONE}},
+		{OPCODEF(o7_xorObfuscate), {PARAM_NONE}},
 	};
 
 	_opcodesDrawV7 = opcodesDraw;
@@ -791,5 +797,29 @@ void Script_v7::oPlaytoons_freeSprite(FuncParams &params)
 		print("%d", readUint16());
 	else
 		print("%s", readExpr().c_str());
+	endFunc();
+}
+
+void Script_v7::o7_startAdi4Application(FuncParams &params)
+{
+	startFunc(params);
+	print("var32_%d, ", 4 * readUint16());
+	print("var32_%d", 4 * readUint16());
+	endFunc();
+}
+
+void Script_v7::o7_xorDeobfuscate(FuncParams &params)
+{
+	startFunc(params);
+	print("&var8_%d, ", 4 * readUint16());
+	print("%d", readUint16());
+	endFunc();
+}
+
+void Script_v7::o7_xorObfuscate(FuncParams &params)
+{
+	startFunc(params);
+	print("&var8_%d, ", 4 * readUint16());
+	print("%d", readUint16());
 	endFunc();
 }
