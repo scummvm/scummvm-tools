@@ -39,6 +39,14 @@ import os
 import sys
 import traceback
 
+def safe_decode(b):
+    for enc in ("cp1252", "latin-1", "utf-8"):
+        try:
+            return b.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return b.decode("latin-1", errors="replace")
+
 if  len(sys.argv) == 1 or len(sys.argv) > 3:
     print("Usage: %s <path-to-compiled-script> [<path-to-inc-folder>]")
     sys.exit(-1)
@@ -157,7 +165,7 @@ class WinterMuteDecompiler:
         return result
 
     def read_header(self):
-        self.fname = self.data[32:self.offsets[2]].strip().decode("utf-8")
+        self.fname = safe_decode(self.data[32:self.offsets[2]].strip())
         self.tables = {}
         self.externals = []
         for i,title in enumerate(self.table_names):
