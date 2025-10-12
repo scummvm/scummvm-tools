@@ -1584,6 +1584,11 @@ if test "$_flac" = yes ; then
 	else
 		LIBS="$LIBS $FLAC_LIBS -lFLAC"
 	fi
+	case $_host_os in
+		amigaos*)
+			LIBS="$LIBS -lpthread"
+			;;
+	esac
 	INCLUDES="$INCLUDES $FLAC_CFLAGS"
 fi
 define_in_config_if_yes "$_flac" 'USE_FLAC'
