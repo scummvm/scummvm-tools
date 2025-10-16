@@ -137,17 +137,12 @@ def main():
         prog='dcp_extractor.py',
         description='Wintermute DCP archive extractor')
 
-    parser.add_argument('--sfx',
-        action='store_true')
-
-    action_parsers = parser.add_subparsers(required=True)
-    list_parser =  action_parsers.add_parser('list', help='list archive contents')
-    list_parser.add_argument('input', type=argparse.FileType('rb'), metavar='dcp file')
-    list_parser.set_defaults(action=dcp_list)
-    extract_parser =  action_parsers.add_parser('extract', help='extract archive contents')
-    extract_parser.add_argument('input', type=argparse.FileType('rb'), metavar='dcp file')
-    extract_parser.add_argument('output_dir', type=pathlib.Path, metavar='output directory')
-    extract_parser.set_defaults(action=dcp_extract)
+    parser.add_argument('--sfx', action='store_true')
+    parser.add_argument('input', type=argparse.FileType('rb'), metavar='dcp file')
+    parser.add_argument('output_dir', nargs='?', type=pathlib.Path,
+                        default=pathlib.Path('output'), metavar='output directory',
+                        help='Output directory (default: ./output)')
+    parser.set_defaults(action=dcp_extract)
 
     options = parser.parse_args()
 
