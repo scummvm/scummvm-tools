@@ -36,7 +36,8 @@ def read_struct(f, fmt, constructor):
 def read_str(f):
     sz = f.read(1)
     if len(sz) != 1:
-        raise Exception("File too small")
+        print("End of file!")
+        return ""
     sz, = struct.unpack('<B', sz)
     s = f.read(sz)
     if len(s) != sz:
@@ -69,6 +70,8 @@ def read_headers(f, abs_offset = 0):
 
         for i in range(dirent.num_entries):
             fname = read_str(f)
+            if (fname == ""):
+                break
             fname = bytes(b ^ 0x44 for b in fname)
             fname = fname.rstrip(b'\x00')
 
