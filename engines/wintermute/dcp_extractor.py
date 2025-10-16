@@ -15,6 +15,14 @@ Header = collections.namedtuple('Header', ['magic1', 'magic2', 'pkg_version', 'g
 DirEntry = collections.namedtuple('DirEntry', ['name', 'cd', 'num_entries', 'files'])
 FileEntry = collections.namedtuple('FileEntry', ['name', 'offset', 'length', 'comp_length', 'flags', 'timedate1', 'timedate2'], defaults=(0, 0))
 
+def safe_decode(b):
+    for enc in ("cp1252", "latin-1", "utf-8"):
+        try:
+            return b.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return b.decode("latin-1", errors="replace")
+
 def read_struct(f, fmt, constructor):
     if type(fmt) is str:
         fmt = struct.Struct(fmt)
@@ -101,7 +109,7 @@ def dcp_list(options, offset=0):
         for fl in dirent.files:
             print("{0:<8}\t@{1:<8}\t{2:<8}\t{3}\t{4}".format(
                 fl.length, fl.offset, fl.length if fl.comp_length == 0 else fl.comp_length,
-                datetime.fromtimestamp(fl.timedate1 | (fl.timedate2 << 64)).isoformat(), fl.name.decode('utf-8')))
+                datetime.fromtimestamp(fl.timedate1 | (fl.timedate2 << 64)).isoformat(), safe_decode(fl.name)))
 
 def dcp_extract(options, offset=0):
     header, dirs = read_headers(options.input, offset)
@@ -114,8 +122,8 @@ def dcp_extract(options, offset=0):
         for fl in dirent.files:
             print("{0:<8}\t@{1:<8}\t{2:<8}\t{3}\t{4}".format(
                 fl.length, fl.offset, fl.length if fl.comp_length == 0 else fl.comp_length,
-                datetime.fromtimestamp(fl.timedate1 | (fl.timedate2 << 64)).isoformat(), fl.name.decode('utf-8')))
-            output_file = output_int / pathlib.Path(fl.name.decode('utf-8').replace('\\', '/'))
+                datetime.fromtimestamp(fl.timedate1 | (fl.timedate2 << 64)).isoformat(), safe_decode(fl.name)))
+            output_file = output_int / pathlib.Path(safe_decode(fl.name).replace('\\', '/'))
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
             with output_file.open('wb') as output_f:
