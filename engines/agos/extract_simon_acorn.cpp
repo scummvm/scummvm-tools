@@ -975,7 +975,7 @@ static bool readFileAnyDisk(const Common::HashMap<int, AdfsVolume *> &vols, cons
 }
 
 static Common::String expectedDiskFilename(int n) {
-	return "Simon the Sorcerer- Acorn Archimedes - (Disk " + Common::String::format("%d", n) + ").adf";
+	return "Simon the Sorcerer - Acorn Archimedes - (Disk " + Common::String::format("%d", n) + ").adf";
 }
 
 static DiskSet loadDisks(const Common::String &inputDir) {
@@ -1499,9 +1499,9 @@ ExtractSimonAcorn::ExtractSimonAcorn(const std::string &name) : Tool(name, TOOLT
 		"having to run the original installer inside an emulator.\n"
 		"\n"
 		"Expected disk images (Disk 10 is the optional update disk):\n"
-		"	Simon the Sorcerer- Acorn Archimedes - (Disk 1).adf\n"
+		"	Simon the Sorcerer - Acorn Archimedes - (Disk 1).adf\n"
 		"	...\n"
-		"	Simon the Sorcerer- Acorn Archimedes - (Disk 10).adf\n"
+		"	Simon the Sorcerer - Acorn Archimedes - (Disk 10).adf\n"
 		"\n"
 		"Usage:\n"
 		"  scummvm-tools-cli --tool extract_simon_acorn --input-dir <inputdir> --output-dir <outputdir>\n";
