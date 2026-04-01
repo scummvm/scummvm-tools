@@ -678,6 +678,7 @@ protected:
 	void o7_startAdi4Application(FuncParams &params);
 	void o7_xorDeobfuscate(FuncParams &params);
 	void o7_xorObfuscate(FuncParams &params);
+	void o7_resolvePath(FuncParams &params);
 };
 
 #endif // DEGOB_SCRIPT_H

@@ -87,6 +87,7 @@ const int Script_v7::_goblinFuncLookUp[][2] = {
 	{603, 55},
 	{604, 56},
 	{605, 57},
+	{782, 0},
 	{1000, 58},
 	{1001, 59},
 	{1002, 60},
@@ -107,6 +108,7 @@ const int Script_v7::_goblinFuncLookUp[][2] = {
 	{406, 75},
 	{407, 76},
 	{408, 77},
+	{410, 78},
 };
 
 Script_v7::Script_v7(byte *totData, uint32 totSize, ExtTable *extTable) :
@@ -302,7 +304,7 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 90 */
 		{OPCODET(o7_loadImage), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_copyDataToClipboard), {PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{OPCODET(o7_setVolume), {PARAM_EXPR}},
 		/* 94 */
@@ -545,7 +547,7 @@ void Script_v7::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryV7 opcodesGoblin[78] = {
+	static const OpcodeGoblinEntryV7 opcodesGoblin[79] = {
 		/* 00 */
 		{OPCODEF(o1_dummy), {PARAM_NONE}},
 		{OPCODET(o2_startInfogrames), {PARAM_UINT16}},
@@ -642,6 +644,7 @@ void Script_v7::setupOpcodes() {
 		{OPCODEF(o7_startAdi4Application), {PARAM_NONE}},
 		{OPCODEF(o7_xorDeobfuscate), {PARAM_NONE}},
 		{OPCODEF(o7_xorObfuscate), {PARAM_NONE}},
+		{OPCODEF(o7_resolvePath), {PARAM_NONE}},
 	};
 
 	_opcodesDrawV7 = opcodesDraw;
@@ -821,5 +824,13 @@ void Script_v7::o7_xorObfuscate(FuncParams &params)
 	startFunc(params);
 	print("&var8_%d, ", 4 * readUint16());
 	print("%d", readUint16());
+	endFunc();
+}
+
+void Script_v7::o7_resolvePath(FuncParams &params)
+{
+	startFunc(params);
+	print("&var8_%d, ", 4 * readUint16());
+	print("&var8_%d", 4 * readUint16());
 	endFunc();
 }
