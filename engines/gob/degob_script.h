@@ -679,6 +679,7 @@ protected:
 	void o7_xorDeobfuscate(FuncParams &params);
 	void o7_xorObfuscate(FuncParams &params);
 	void o7_resolvePath(FuncParams &params);
+	void o7_calculator(FuncParams &params);
 };
 
 #endif // DEGOB_SCRIPT_H
