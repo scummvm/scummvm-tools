@@ -47,6 +47,7 @@
 #endif
 
 #include "engines/agos/extract_agos.h"
+#include "engines/agos/extract_simon_acorn.h"
 #include "engines/bladerunner/pack_bladerunner.h"
 #include "engines/cge/extract_cge.h"
 #include "engines/cge/pack_cge.h"
@@ -90,6 +91,7 @@ Tools::Tools() {
 #endif
 
 	_tools.push_back(new ExtractAgos());
+	_tools.push_back(new ExtractSimonAcorn());
 	_tools.push_back(new ExtractAsylum());
 	_tools.push_back(new PackBladeRunner());
 	_tools.push_back(new ExtractCge());

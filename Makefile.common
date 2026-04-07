@@ -355,6 +355,7 @@ tools_OBJS := \
 	engines/touche/compress_touche.o \
 	engines/tucker/compress_tucker.o \
 	engines/agos/extract_agos.o \
+	engines/agos/extract_simon_acorn.o \
 	engines/asylum/extract_asylum.o \
 	engines/cge/extract_cge.o \
 	engines/cge/pack_cge.o \
