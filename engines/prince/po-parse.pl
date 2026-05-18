@@ -136,7 +136,7 @@ sub process_inv($) {
 
 	print OUT "invtxt.dat\nitemNr. name - exam text\n";
 
-	for my $n (sort {$a<=>$b} keys $data1{'invtxt.txt'}) {
+	for my $n (sort {$a<=>$b} keys %{$data1{'invtxt.txt'}}) {
 		print OUT "$n. $data1{'invtxt.txt'}{$n}\n";
 	}
 
@@ -150,7 +150,7 @@ sub process_varia($) {
 
 	print OUT "variatxt.dat\nstringId. string\n";
 
-	for my $n (sort {$a<=>$b} keys $data1{'variatxt.txt'}) {
+	for my $n (sort {$a<=>$b} keys %{$data1{'variatxt.txt'}}) {
 		print OUT "$n. $data1{'variatxt.txt'}{$n}\n";
 	}
 
@@ -166,7 +166,7 @@ sub process_mob($) {
 
 	my $pn = 0;
 
-	for my $n (sort {$a<=>$b} keys $data1{'mob.lst'}) {
+	for my $n (sort {$a<=>$b} keys %{$data1{'mob.lst'}}) {
 		my $p1 = int($n / 1000);
 
 		if ($p1 != $pn) {
@@ -197,7 +197,7 @@ sub process_talk($) {
 	for my $f (sort grep /^dialog/, keys %data1) {
 		$f =~ /dialog(\d+)/;
 		my $dialog = $1;
-		my $hasDialog = !!grep { $_ > 100 } keys $data1{$f};
+		my $hasDialog = !!grep { $_ > 100 } keys %{$data1{$f}};
 
 		if ($hasDialog) {
 			print OUT "\@DIALOGBOX_LINES:\n";
@@ -208,7 +208,7 @@ sub process_talk($) {
 		my $seenDialogBox = 0;
 		my $prevBox = -1;
 
-		for my $n (sort {$a<=>$b} keys $data1{$f}) {
+		for my $n (sort {$a<=>$b} keys %{$data1{$f}}) {
 			my $s = $data1{$f}{$n};
 			if ($n < 100) {
 				while ($s =~ /^P#/) {

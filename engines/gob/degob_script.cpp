@@ -214,12 +214,7 @@ void Script::print(const char *s, ...) const {
 	putString(buf);
 }
 void Script::printIndent() const {
-	print("%08d:", getPos());
-	for (uint32 i = 0; i < _indent; i++)
-		putString("	");
-}
-void Script::printIndent(uint32 pos) const {
-	print("%08d:", pos);
+	print("%08d:", lastOffsetPos());
 	for (uint32 i = 0; i < _indent; i++)
 		putString("	");
 }
@@ -241,7 +236,10 @@ void Script::incIndent() { _indent++; }
 void Script::decIndent() { _indent--; }
 
 uint32 Script::getPos() const { return _ptr - _totData; }
+uint32 Script::lastOffsetPos() const { return _lastOffsetPos - _totData; }
+void Script::updateOffsetPos(uint32 pos) { _lastOffsetPos = _totData + pos; }
 void Script::skip(uint32 off) { seek(off, SEEK_CUR); }
+void Script::skipBlock() {seek(peekUint16(2) + 2, SEEK_CUR);}
 void Script::seek(uint32 off, int whence) {
 	switch (whence) {
 	case SEEK_END:
@@ -392,7 +390,7 @@ std::string Script::readExpr(char stopToken) {
 				skip(dimCount);
 
 				for (int i = 0; i < dimCount; i++)
-					expr += readExpr(12) + "->";
+					expr += "{" + readExpr(12) + "->";
 
 				expr += "#";
 
@@ -463,7 +461,7 @@ std::string Script::readExpr(char stopToken) {
 				arrDesc = _ptr;
 				skip(dimCount);
         for (dim = 0; dim < dimCount; dim++) {
-          expr += readExpr(12) + printStr(" of %d", (int16) arrDesc[dim]);
+          expr += "{" + readExpr(12) + printStr(" of %d", (int16) arrDesc[dim]);
 					if (dim != dimCount - 1)
 						expr += "][";
         }
@@ -620,7 +618,7 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 	int16 dim;
 	int16 dimCount;
 	int16 operation;
-	int16 temp;
+	uint16 temp;
 
 	operation = readUint8();
 
@@ -635,7 +633,7 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 
 			skip(2);
 			if (peekUint8() != 97)
-				return expr;
+				return pref;
 
 			skip(1);
 		} else if (operation == 15) {
@@ -652,12 +650,12 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 			skip(var_A);
 
 			for (int i = 0; i < var_A; i++)
-				pref += readExpr(12) + "->";
+				pref += "{" + readExpr(12) + "->";
 
 			pref += "#";
 
 			if (peekUint8() != 97)
-				return expr;
+				return pref;
 
 			skip(1);
 		}
@@ -717,7 +715,7 @@ std::string Script::readVarIndex(uint16 *arg_0, uint16 *arg_4) {
 		arrDesc = _ptr;
 		skip(dimCount);
 		for (dim = 0; dim < dimCount; dim++) {
-			expr += readExpr(12);
+			expr += "{" + readExpr(12);
 			expr += printStr(" of %d", (int16) arrDesc[dim]);
 			if (dim != dimCount - 1)
 				expr += "][";
@@ -909,7 +907,9 @@ void Script::funcBlock(int16 retFlag) {
 		if (cmd2 == 0)
 			cmd >>= 4;
 
+		updateOffsetPos(getPos());
 		funcOpcode(cmd2, cmd, params);
+		updateOffsetPos(getPos());
 
 	} while (params.counter != params.cmdCount);
 }
@@ -930,20 +930,17 @@ void Script::addFuncOffset(uint32 offset) {
 	_funcOffsets.push_back(offset);
 }
 
-void Script::deGob(int32 offset, bool isLib) {
+void Script::deGob(int32 offset) {
 	_funcOffsets.clear();
 
-	if (isLib) {
-		// Use functions from IDE file as entry points
+	if (offset >= 0)
+		_funcOffsets.push_back(offset);
+	else {
+		addStartingOffsets();
+		// Use functions from IDE file as entry points if any
 		for (auto it = _funcOffsetsNames.begin(); it != _funcOffsetsNames.end(); ++it)
 			addFuncOffset(it->first);
-	} else {
-		if (offset < 0)
-			addStartingOffsets();
-		else
-			_funcOffsets.push_back(offset);
 	}
-
 
 	for (std::list<uint32>::iterator it = _funcOffsets.begin(); it != _funcOffsets.end(); ++it) {
 		seek(*it);
@@ -953,14 +950,26 @@ void Script::deGob(int32 offset, bool isLib) {
 }
 
 void Script::deGobFunction() {
+	uint32 pos = getPos();
+	updateOffsetPos(pos);
+	printIndent();
+
+	const char* func_name = nullptr;
 	if (!_funcOffsetsNames.empty()) {
-		auto it = _funcOffsetsNames.find(getPos());
+		auto it = _funcOffsetsNames.find(pos);
 		if (it != _funcOffsetsNames.end()) {
-			print("--- %s ---\n", it->second.c_str());
+			func_name = it->second.c_str();
+			// Skip lib name
+			if (const char* p = strchr(func_name, ' ')) {
+				func_name = p + 1;
+			}
 		}
 	}
-	printIndent();
-	print("sub_%d {\n", getPos());
+
+	print("sub_%d%s%s {\n",
+		  pos,
+		  func_name ? "_" : "",
+		  func_name ? func_name : "");
 	incIndent();
 
 	funcBlock(2);

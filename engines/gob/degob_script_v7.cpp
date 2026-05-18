@@ -87,6 +87,7 @@ const int Script_v7::_goblinFuncLookUp[][2] = {
 	{603, 55},
 	{604, 56},
 	{605, 57},
+	{782, 0},
 	{1000, 58},
 	{1001, 59},
 	{1002, 60},
@@ -102,7 +103,13 @@ const int Script_v7::_goblinFuncLookUp[][2] = {
 	{2005, 70},
 	{3, 71},
 	{420, 72},
-	{513, 73}
+	{421, 73},
+	{513, 74},
+	{406, 75},
+	{407, 76},
+	{408, 77},
+	{410, 78},
+	{457, 79},
 };
 
 Script_v7::Script_v7(byte *totData, uint32 totSize, ExtTable *extTable) :
@@ -207,7 +214,7 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 48 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0x48), {PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -288,17 +295,17 @@ void Script_v7::setupOpcodes() {
 		{OPCODET(o2_setImdFrontSurf), {PARAM_NONE}},
 		/* 88 */
 		{OPCODET(o2_resetImdFrontSurf), {PARAM_NONE}},
-		{OPCODET(o7_draw0x89), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_setActiveCD), {PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{OPCODET(o7_findFile), {PARAM_EXPR, PARAM_VARINDEX, PARAM_VARINDEX}},
 		{OPCODET(o7_findCDFile),{PARAM_VARINDEX, PARAM_VARINDEX}},
 		/* 8C */
 		{OPCODET(o7_getSystemProperty), {PARAM_EXPR, PARAM_VARINDEX}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_getVmdCurrentFrameRect), {PARAM_EXPR, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX}},
+		{OPCODET(o7_getImageFileInfo), {PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 90 */
 		{OPCODET(o7_loadImage), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_copyDataToClipboard), {PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{OPCODET(o7_setVolume), {PARAM_EXPR}},
 		/* 94 */
@@ -317,54 +324,54 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* A0 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xA0), {PARAM_EXPR, PARAM_VARINDEX, PARAM_EXPR}},
 		{OPCODET(o7_getINIValue), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{OPCODET(o7_setINIValue), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* A4 */
 		{OPCODET(o7_loadIFFPalette), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xA5), {PARAM_VARINDEX, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
+		{OPCODET(o7_draw0xA6), {PARAM_VARINDEX, PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* A8 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_openDatabase), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_draw0xAB), {PARAM_EXPR}},
 		/* AC */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_openDatabaseTable), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_closeDatabaseTable), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_draw0xAE), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_openDatabaseIndex), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		/* B0 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_findDatabaseRecord), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_findNextDabaseRecord), {PARAM_EXPR, PARAM_EXPR}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* B4 */
+		{OPCODET(o7_getDatabaseRecordValue), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_checkAnyDatabaseRecordFound), {PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* B8 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xBA), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* BC */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_openHtmlFile), {PARAM_EXPR}},
+		{OPCODET(o7_closeHtmlFile), {PARAM_EXPR}},
 		/* C0 */
+		{OPCODET(o7_seekHtmlFile), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
+		{OPCODET(o7_nextKeywordHtmlFile), {PARAM_EXPR, PARAM_VARINDEX, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xC3), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX, PARAM_VARINDEX}},
 		/* C4 */
-		{OPCODET(o7_opendBase), {PARAM_EXPR, PARAM_EXPR}},
-		{OPCODET(o7_closedBase), {PARAM_EXPR}},
-		{OPCODET(o7_getDBString), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_openTranlsationDB), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_closeTranslationDB), {PARAM_EXPR}},
+		{OPCODET(o7_getDBString), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* C8 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -372,9 +379,9 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* CC */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xCC), {PARAM_VARINDEX}},
+		{OPCODET(o7_draw0xCD), {PARAM_EXPR, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX}},
+		{OPCODET(o7_draw0xCE), {PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* D0 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -392,23 +399,23 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* DC */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xDC), {PARAM_EXPR, PARAM_VARINDEX}},
+		{OPCODET(o7_draw0xDD), {PARAM_EXPR}},
+		{OPCODET(o7_draw0xDE), {PARAM_EXPR, PARAM_EXPR}},
+		{OPCODET(o7_draw0xDF), {PARAM_EXPR}},
 		/* E0 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xE0), {PARAM_NONE}},
+		{OPCODET(o7_draw0xE1), {PARAM_NONE}},
+		{OPCODET(o7_draw0xE2), {PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX}},
+		{OPCODET(o7_draw0xE3), {PARAM_NONE}},
 		/* E4 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xE4), {PARAM_NONE}},
+		{OPCODET(o7_draw0xE5), {PARAM_NONE}},
+		{OPCODET(o7_draw0xE6), {PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX}},
+		{OPCODET(o7_draw0xE7), {PARAM_VARINDEX}},
 		/* E8 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xE8), {PARAM_VARINDEX}},
+		{OPCODET(o7_draw0xE9), {PARAM_VARINDEX, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* EC */
@@ -417,20 +424,20 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* F0 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_draw0xF0), {PARAM_VARINDEX}},
+		{OPCODET(o7_draw0xF1), {PARAM_NONE}},
+		{OPCODET(o7_executeModAddEvent), {PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* F4 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_executeModSetLength), {PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX, PARAM_VARINDEX}},
+		{OPCODET(o7_executeModStart), {PARAM_VARINDEX}},
+		{OPCODET(o7_setTrackVolume), {PARAM_VARINDEX, PARAM_VARINDEX}},
+		{OPCODET(o7_executeModGetPosition), {PARAM_VARINDEX}},
 		/* F8 */
+		{OPCODET(o7_executeModGetPosition), {PARAM_VARINDEX}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_vmdGetSoundBuffer), {PARAM_VARINDEX}},
+		{OPCODET(o7_vmdReleaseSoundBuffer), {PARAM_EXPR, PARAM_VARINDEX}},
 		/* FC */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -473,7 +480,7 @@ void Script_v7::setupOpcodes() {
 		{OPCODET(o2_addHotspot), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_UINT16}},
 		{OPCODET(o2_removeHotspot), {PARAM_EXPR}},
 		{OPCODET(o3_getTotTextItemPart), {PARAM_UINT16, PARAM_VARINDEX, PARAM_EXPR}},
-		{OPCODET(oPlaytoons_F_1B), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_UINT16}},
+		{OPCODET(oPlaytoons_createButton), {PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR, PARAM_EXPR}},
 		/* 1C */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -522,7 +529,7 @@ void Script_v7::setupOpcodes() {
 		/* 40 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{OPCODET(o1_cleanupStr), {PARAM_VARINDEX}},
-		{OPCODET(o1_insertStr), {PARAM_VARINDEX, PARAM_EXPR}},
+		{OPCODET(o1_insertStr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o1_cutStr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_EXPR}},
 		/* 44 */
 		{OPCODET(o1_strstr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_VARINDEX}},
@@ -541,7 +548,7 @@ void Script_v7::setupOpcodes() {
 		{OPCODET(o1_manageDataFile), {PARAM_EXPR}},
 	};
 
-	static const OpcodeGoblinEntryV7 opcodesGoblin[74] = {
+	static const OpcodeGoblinEntryV7 opcodesGoblin[80] = {
 		/* 00 */
 		{OPCODEF(o1_dummy), {PARAM_NONE}},
 		{OPCODET(o2_startInfogrames), {PARAM_UINT16}},
@@ -608,7 +615,7 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		/* 34 */
-		{TYPE_NONE, 0, 0, {PARAM_NONE}},
+		{OPCODET(o7_getFreeDiskSpace), {PARAM_UINT16}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
@@ -632,8 +639,14 @@ void Script_v7::setupOpcodes() {
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{OPCODEF(o1_dummy), {PARAM_NONE}},
+		{OPCODEF(o7_ansiToOEM), {PARAM_NONE}},
 		{OPCODEF(o7_oemToANSI), {PARAM_NONE}},
-		{OPCODET(o7_gob0x201), {PARAM_UINT16}}
+		{OPCODET(o7_gob0x201), {PARAM_UINT16}},
+		{OPCODEF(o7_startAdi4Application), {PARAM_NONE}},
+		{OPCODEF(o7_xorDeobfuscate), {PARAM_NONE}},
+		{OPCODEF(o7_xorObfuscate), {PARAM_NONE}},
+		{OPCODEF(o7_resolvePath), {PARAM_NONE}},
+		{OPCODEF(o7_calculator), {PARAM_NONE}},
 	};
 
 	_opcodesDrawV7 = opcodesDraw;
@@ -706,9 +719,9 @@ void Script_v7::goblinOpcode(int i, FuncParams &params) {
 }
 
 void Script_v7::o7_loadCursor(FuncParams &params) {
-	startFunc(params);
-	int16 id = (int16) readUint16();
+    int16 id = (int16) readUint16();
 
+    startFunc(params);
     print("%d, ", id);
     if (id == -1) {
 	print("%s, ", peekString());
@@ -768,11 +781,18 @@ void  Script_v7::oPlaytoons_printText(FuncParams &params)
 	skip(1);
 }
 
+void Script_v7::o7_ansiToOEM(FuncParams &params)
+{
+	startFunc(params);
+	print("&var8_%d", 4 * readUint16());
+	endFunc();
+}
+
 void Script_v7::o7_oemToANSI(FuncParams &params)
 {
 	startFunc(params);
+	print("&var8_%d", 4 * readUint16());
 	endFunc();
-	skip(2);
 }
 
 void Script_v7::oPlaytoons_freeSprite(FuncParams &params)
@@ -782,5 +802,46 @@ void Script_v7::oPlaytoons_freeSprite(FuncParams &params)
 		print("%d", readUint16());
 	else
 		print("%s", readExpr().c_str());
+	endFunc();
+}
+
+void Script_v7::o7_startAdi4Application(FuncParams &params)
+{
+	startFunc(params);
+	print("var32_%d, ", 4 * readUint16());
+	print("var32_%d", 4 * readUint16());
+	endFunc();
+}
+
+void Script_v7::o7_xorDeobfuscate(FuncParams &params)
+{
+	startFunc(params);
+	print("&var8_%d, ", 4 * readUint16());
+	print("%d", readUint16());
+	endFunc();
+}
+
+void Script_v7::o7_xorObfuscate(FuncParams &params)
+{
+	startFunc(params);
+	print("&var8_%d, ", 4 * readUint16());
+	print("%d", readUint16());
+	endFunc();
+}
+
+void Script_v7::o7_resolvePath(FuncParams &params)
+{
+	startFunc(params);
+	print("&var8_%d, ", 4 * readUint16());
+	print("&var8_%d", 4 * readUint16());
+	endFunc();
+}
+
+void Script_v7::o7_calculator(FuncParams &params)
+{
+	startFunc(params);
+	print("&var8_%d, ", 4 * readUint16());
+	print("&var8_%d, ", 4 * readUint16());
+	print("var32_%d", 4 * readUint16());
 	endFunc();
 }

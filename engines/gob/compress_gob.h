@@ -24,8 +24,8 @@
 
 #include "compress.h"
 
-#define confSTK21 "STK21"
 #define confSTK10 "STK10"
+#define confSTK21 "STK21"
 
 enum {
 	MODE_NORMAL = 0,

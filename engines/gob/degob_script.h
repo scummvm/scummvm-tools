@@ -68,7 +68,10 @@ public:
 	virtual ~Script();
 
 	uint32 getPos() const;
+	uint32 lastOffsetPos() const;
+	void updateOffsetPos(uint32 pos);
 	void skip(uint32 off);
+	void skipBlock();
 	void seek(uint32 off, int whence = SEEK_SET);
 
 	// Properties getter
@@ -87,7 +90,7 @@ public:
 
 	void loadIDE(const byte *ideData);
 
-	void deGob(int32 offset = -1, bool isLib = false);
+	void deGob(int32 offset = -1);
 
 protected:
 	enum FuncType {
@@ -129,7 +132,6 @@ protected:
 	void putString(const char *s) const;
 	void print(const char *s, ...) const;
 	void printIndent() const;
-	void printIndent(uint32 pos) const;
 	void printLine(const char *s) const;
 	std::string printStr(const char *s, ...) const;
 
@@ -169,7 +171,7 @@ protected:
 	void deGobFunction();
 
 private:
-	byte *_totData, *_ptr;
+	byte *_totData, *_ptr, *_lastOffsetPos;
 	uint32 _totSize;
 
 protected:
@@ -233,6 +235,7 @@ protected:
 
 	// Control functions
 	void o1_callSub(FuncParams &params);
+	void hotspotsEvaluate();
 	void o1_switch(FuncParams &params);
 	void o1_repeatUntil(FuncParams &params);
 	void o1_whileDo(FuncParams &params);
@@ -669,7 +672,14 @@ protected:
 	void o7_loadCursor(FuncParams &params);
 	void oPlaytoons_printText(FuncParams &params);
 	void o7_oemToANSI(FuncParams &params);
+	void o7_ansiToOEM(FuncParams &params);
 	void oPlaytoons_freeSprite(FuncParams &params);
+
+	void o7_startAdi4Application(FuncParams &params);
+	void o7_xorDeobfuscate(FuncParams &params);
+	void o7_xorObfuscate(FuncParams &params);
+	void o7_resolvePath(FuncParams &params);
+	void o7_calculator(FuncParams &params);
 };
 
 #endif // DEGOB_SCRIPT_H

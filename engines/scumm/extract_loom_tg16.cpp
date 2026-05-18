@@ -1177,7 +1177,7 @@ struct _index {
 	uint32 sound_addr[NUM_SOUNDS];
 }	lfl_index;
 #else // !MAKE_LFLS
-void dump_resource (Common::File &input, const char *fn_template, int num, p_resource res) {
+void ExtractLoomTG16::dump_resource (Common::File &input, const char *fn_template, int num, p_resource res) {
 	char fname[256];
 	sprintf(fname, fn_template, num);
 	Common::File output(fname, "wb");

@@ -457,7 +457,7 @@ void Script_Geisha::setupOpcodes() {
 		/* 40 */
 		{TYPE_NONE, 0, 0, {PARAM_NONE}},
 		{OPCODET(o1_cleanupStr), {PARAM_VARINDEX}},
-		{OPCODET(o1_insertStr), {PARAM_VARINDEX, PARAM_EXPR}},
+		{OPCODET(o1_insertStr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_EXPR}},
 		{OPCODET(o1_cutStr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_EXPR}},
 		/* 44 */
 		{OPCODET(o1_strstr), {PARAM_VARINDEX, PARAM_EXPR, PARAM_VARINDEX}},

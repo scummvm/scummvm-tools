@@ -42,6 +42,7 @@ PROGRAMS = \
 	extract_lokalizator \
 	extract_mps \
 	extract_obb \
+	extract_lfg \
 	grim_animb2txt \
 	grim_bm2bmp \
 	grim_cosb2cos \
@@ -162,7 +163,13 @@ extract_mps_OBJS := \
 	$(UTILS)
 
 extract_obb_OBJS := \
-	engines/tetraedge/extract_obb.o \
+	engines/tetraedge/extract_obb.o
+  common/dlc.o \
+  $(UTILS)
+  
+extract_lfg_OBJS := \
+	engines/scumm/extract_lfg.o \
+	common/dcl.o \
 	$(UTILS)
 
 deprince_OBJS := \
@@ -360,6 +367,7 @@ tools_OBJS := \
 	engines/touche/compress_touche.o \
 	engines/tucker/compress_tucker.o \
 	engines/agos/extract_agos.o \
+	engines/agos/extract_simon_acorn.o \
 	engines/asylum/extract_asylum.o \
 	engines/cge/extract_cge.o \
 	engines/cge/pack_cge.o \
