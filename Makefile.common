@@ -34,6 +34,7 @@ PROGRAMS = \
 	gob_loadcalc \
 	extract_gob_cdi \
 	extract_mohawk \
+	extract_macs2 \
 	extract_ngi \
 	construct_mohawk \
 	msn_convert_mod \
@@ -140,6 +141,9 @@ dekyra_OBJS := \
 
 demacs2_OBJS := \
 	engines/macs2/demacs2.o
+
+extract_macs2_OBJS := \
+	engines/macs2/extract_macs2.o
 
 extract_hadesch_OBJS := \
 	engines/hadesch/extract_hadesch.o \
