@@ -26,6 +26,7 @@ PROGRAMS = \
 	decine \
 	degob \
 	dekyra \
+	demacs2 \
 	deprince \
 	descumm \
 	desword2 \
@@ -136,6 +137,9 @@ dekyra_OBJS := \
 	engines/kyra/dekyra.o \
 	engines/kyra/dekyra_v1.o \
 	$(UTILS)
+
+demacs2_OBJS := \
+	engines/macs2/demacs2.o
 
 extract_hadesch_OBJS := \
 	engines/hadesch/extract_hadesch.o \
