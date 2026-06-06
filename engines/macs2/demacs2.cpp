@@ -338,7 +338,8 @@ static std::string decodeParams(uint8_t opcode, uint32_t endPos, int &indent) {
 		indent++;
 		break;
 	}
-	case 0x0A: {
+	case 0x0A:
+	case 0x30: {
 		std::string x = formatValue();
 		std::string y = formatValue();
 		uint16_t strOffset = readWord();
@@ -650,7 +651,6 @@ static std::string decodeParams(uint8_t opcode, uint32_t endPos, int &indent) {
 	case 0x1C:
 	case 0x1D:
 	case 0x28:
-	case 0x30:
 	case 0x36:
 	case 0x37:
 	case 0x39:

@@ -19,7 +19,7 @@
  *
  */
 
-/*
+/**
  * MACS2 Translation File Creator
  *
  * Workflow:
@@ -36,15 +36,15 @@
  * The \n separates individual lines that the engine displays separately.
  */
 
+#include <algorithm>
+#include <map>
+#include <set>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <algorithm>
 #include <string>
 #include <vector>
-#include <map>
-#include <set>
 
 static FILE *resFile = nullptr;
 
@@ -62,7 +62,7 @@ static uint16_t readU16(FILE *f) {
 
 static void writeU32(FILE *f, uint32_t v) {
 	uint8_t buf[4] = {(uint8_t)(v & 0xFF), (uint8_t)((v >> 8) & 0xFF),
-	                  (uint8_t)((v >> 16) & 0xFF), (uint8_t)((v >> 24) & 0xFF)};
+					  (uint8_t)((v >> 16) & 0xFF), (uint8_t)((v >> 24) & 0xFF)};
 	fwrite(buf, 1, 4, f);
 }
 
@@ -74,22 +74,134 @@ static void writeU16(FILE *f, uint16_t v) {
 // CP850 to UTF-8
 static std::string cp850ToUtf8(const std::string &s) {
 	static const uint16_t cp850map[128] = {
-		0x00C7,0x00FC,0x00E9,0x00E2,0x00E4,0x00E0,0x00E5,0x00E7,
-		0x00EA,0x00EB,0x00E8,0x00EF,0x00EE,0x00EC,0x00C4,0x00C5,
-		0x00C9,0x00E6,0x00C6,0x00F4,0x00F6,0x00F2,0x00FB,0x00F9,
-		0x00FF,0x00D6,0x00DC,0x00F8,0x00A3,0x00D8,0x00D7,0x0192,
-		0x00E1,0x00ED,0x00F3,0x00FA,0x00F1,0x00D1,0x00AA,0x00BA,
-		0x00BF,0x00AE,0x00AC,0x00BD,0x00BC,0x00A1,0x00AB,0x00BB,
-		0x2591,0x2592,0x2593,0x2502,0x2524,0x00C1,0x00C2,0x00C0,
-		0x00A9,0x2563,0x2551,0x2557,0x255D,0x00A2,0x00A5,0x2510,
-		0x2514,0x2534,0x252C,0x251C,0x2500,0x253C,0x00E3,0x00C3,
-		0x255A,0x2554,0x2569,0x2566,0x2560,0x2550,0x256C,0x00A4,
-		0x00F0,0x00D0,0x00CA,0x00CB,0x00C8,0x0131,0x00CD,0x00CE,
-		0x00CF,0x2518,0x250C,0x2588,0x2584,0x00A6,0x00CC,0x2580,
-		0x00D3,0x00DF,0x00D4,0x00D2,0x00F5,0x00D5,0x00B5,0x00FE,
-		0x00DE,0x00DA,0x00DB,0x00D9,0x00FD,0x00DD,0x00AF,0x00B4,
-		0x00AD,0x00B1,0x2017,0x00BE,0x00B6,0x00A7,0x00F7,0x00B8,
-		0x00B0,0x00A8,0x00B7,0x00B9,0x00B3,0x00B2,0x25A0,0x00A0,
+		0x00C7,
+		0x00FC,
+		0x00E9,
+		0x00E2,
+		0x00E4,
+		0x00E0,
+		0x00E5,
+		0x00E7,
+		0x00EA,
+		0x00EB,
+		0x00E8,
+		0x00EF,
+		0x00EE,
+		0x00EC,
+		0x00C4,
+		0x00C5,
+		0x00C9,
+		0x00E6,
+		0x00C6,
+		0x00F4,
+		0x00F6,
+		0x00F2,
+		0x00FB,
+		0x00F9,
+		0x00FF,
+		0x00D6,
+		0x00DC,
+		0x00F8,
+		0x00A3,
+		0x00D8,
+		0x00D7,
+		0x0192,
+		0x00E1,
+		0x00ED,
+		0x00F3,
+		0x00FA,
+		0x00F1,
+		0x00D1,
+		0x00AA,
+		0x00BA,
+		0x00BF,
+		0x00AE,
+		0x00AC,
+		0x00BD,
+		0x00BC,
+		0x00A1,
+		0x00AB,
+		0x00BB,
+		0x2591,
+		0x2592,
+		0x2593,
+		0x2502,
+		0x2524,
+		0x00C1,
+		0x00C2,
+		0x00C0,
+		0x00A9,
+		0x2563,
+		0x2551,
+		0x2557,
+		0x255D,
+		0x00A2,
+		0x00A5,
+		0x2510,
+		0x2514,
+		0x2534,
+		0x252C,
+		0x251C,
+		0x2500,
+		0x253C,
+		0x00E3,
+		0x00C3,
+		0x255A,
+		0x2554,
+		0x2569,
+		0x2566,
+		0x2560,
+		0x2550,
+		0x256C,
+		0x00A4,
+		0x00F0,
+		0x00D0,
+		0x00CA,
+		0x00CB,
+		0x00C8,
+		0x0131,
+		0x00CD,
+		0x00CE,
+		0x00CF,
+		0x2518,
+		0x250C,
+		0x2588,
+		0x2584,
+		0x00A6,
+		0x00CC,
+		0x2580,
+		0x00D3,
+		0x00DF,
+		0x00D4,
+		0x00D2,
+		0x00F5,
+		0x00D5,
+		0x00B5,
+		0x00FE,
+		0x00DE,
+		0x00DA,
+		0x00DB,
+		0x00D9,
+		0x00FD,
+		0x00DD,
+		0x00AF,
+		0x00B4,
+		0x00AD,
+		0x00B1,
+		0x2017,
+		0x00BE,
+		0x00B6,
+		0x00A7,
+		0x00F7,
+		0x00B8,
+		0x00B0,
+		0x00A8,
+		0x00B7,
+		0x00B9,
+		0x00B3,
+		0x00B2,
+		0x25A0,
+		0x00A0,
 	};
 	std::string out;
 	for (unsigned char c : s) {
@@ -243,10 +355,10 @@ static std::vector<StringRef> parseScriptStringRefs(uint32_t scriptDataOffset) {
 
 // Group string indices by their dialog references
 // Returns vector of (startIndex, count) pairs, sorted by startIndex
-static std::vector<std::pair<int, int>> groupStrings(
-		const std::vector<uint32_t> &stringOffsets,
-		const std::vector<StringRef> &scriptRefs,
-		int totalStrings) {
+static std::vector<std::pair<int, int> > groupStrings(
+	const std::vector<uint32_t> &stringOffsets,
+	const std::vector<StringRef> &scriptRefs,
+	int totalStrings) {
 
 	// Map byte offset -> string index
 	std::map<uint32_t, int> offsetToIndex;
@@ -270,7 +382,7 @@ static std::vector<std::pair<int, int>> groupStrings(
 
 	// Build groups. Strings not referenced by any opcode get grouped with
 	// the nearest preceding group start, or form their own single-line group.
-	std::vector<std::pair<int, int>> groups;
+	std::vector<std::pair<int, int> > groups;
 	if (groupStarts.empty()) {
 		// No script refs found - put all strings in one group
 		if (totalStrings > 0)
@@ -301,7 +413,7 @@ static std::vector<std::pair<int, int>> groupStrings(
 	std::sort(groups.begin(), groups.end());
 
 	// Remove duplicates/overlaps
-	std::vector<std::pair<int, int>> merged;
+	std::vector<std::pair<int, int> > merged;
 	for (const auto &g : groups) {
 		if (!merged.empty() && g.first < merged.back().first + merged.back().second)
 			continue; // skip overlap
@@ -313,10 +425,14 @@ static std::vector<std::pair<int, int>> groupStrings(
 static std::string poEscape(const std::string &s) {
 	std::string out;
 	for (char c : s) {
-		if (c == '\\') out += "\\\\";
-		else if (c == '"') out += "\\\"";
-		else if (c == '\n') out += "\\n";
-		else out += c;
+		if (c == '\\')
+			out += "\\\\";
+		else if (c == '"')
+			out += "\\\"";
+		else if (c == '\n')
+			out += "\\n";
+		else
+			out += c;
 	}
 	return out;
 }
@@ -325,10 +441,17 @@ static std::string poUnescape(const std::string &s) {
 	std::string out;
 	for (size_t i = 0; i < s.size(); i++) {
 		if (s[i] == '\\' && i + 1 < s.size()) {
-			if (s[i + 1] == 'n') { out += '\n'; i++; }
-			else if (s[i + 1] == '\\') { out += '\\'; i++; }
-			else if (s[i + 1] == '"') { out += '"'; i++; }
-			else out += s[i];
+			if (s[i + 1] == 'n') {
+				out += '\n';
+				i++;
+			} else if (s[i + 1] == '\\') {
+				out += '\\';
+				i++;
+			} else if (s[i + 1] == '"') {
+				out += '"';
+				i++;
+			} else
+				out += s[i];
 		} else {
 			out += s[i];
 		}
@@ -337,7 +460,7 @@ static std::string poUnescape(const std::string &s) {
 }
 
 static void writePoEntry(FILE *out, const char *ctx, int startIdx,
-                         const std::vector<std::string> &strings, int offset, int count) {
+						 const std::vector<std::string> &strings, int offset, int count) {
 	fprintf(out, "msgctxt \"%s:%d\"\n", ctx, startIdx);
 	fprintf(out, "msgid \"\"\n");
 	for (int i = 0; i < count; i++) {
@@ -462,8 +585,8 @@ static int doPack(const char *poPath, const char *outPath) {
 
 	// Parse PO: msgctxt "scene:N:startIdx" or "object:N:startIdx"
 	// msgstr contains \n-separated translated lines
-	std::map<uint16_t, std::map<int, std::vector<std::string>>> sceneStrings;
-	std::map<uint16_t, std::map<int, std::vector<std::string>>> objectStrings;
+	std::map<uint16_t, std::map<int, std::vector<std::string> > > sceneStrings;
+	std::map<uint16_t, std::map<int, std::vector<std::string> > > objectStrings;
 
 	char line[8192];
 	bool isScene = false;
@@ -510,26 +633,47 @@ static int doPack(const char *poPath, const char *outPath) {
 			flushEntry();
 			int id = 0, idx = 0;
 			if (sscanf(line + 9, "scene:%d:%d", &id, &idx) == 2) {
-				isScene = true; currentId = (uint16_t)id; currentStartIdx = idx; hasCtx = true;
+				isScene = true;
+				currentId = (uint16_t)id;
+				currentStartIdx = idx;
+				hasCtx = true;
 			} else if (sscanf(line + 9, "object:%d:%d", &id, &idx) == 2) {
-				isScene = false; currentId = (uint16_t)id; currentStartIdx = idx; hasCtx = true;
+				isScene = false;
+				currentId = (uint16_t)id;
+				currentStartIdx = idx;
+				hasCtx = true;
 			}
 			continue;
 		}
 		if (strncmp(line, "msgstr ", 7) == 0) {
-			inMsgstr = true; inMsgid = false;
+			inMsgstr = true;
+			inMsgid = false;
 			char *s = strchr(line + 7, '"');
-			if (s) { s++; char *e = strrchr(s, '"'); if (e) currentMsgstr = std::string(s, e - s); }
+			if (s) {
+				s++;
+				char *e = strrchr(s, '"');
+				if (e)
+					currentMsgstr = std::string(s, e - s);
+			}
 			continue;
 		}
-		if (strncmp(line, "msgid ", 6) == 0) { inMsgid = true; inMsgstr = false; continue; }
+		if (strncmp(line, "msgid ", 6) == 0) {
+			inMsgid = true;
+			inMsgstr = false;
+			continue;
+		}
 		if (line[0] == '"' && inMsgstr) {
-			char *s = line + 1; char *e = strrchr(s, '"');
-			if (e) currentMsgstr += std::string(s, e - s);
+			char *s = line + 1;
+			char *e = strrchr(s, '"');
+			if (e)
+				currentMsgstr += std::string(s, e - s);
 			continue;
 		}
-		if (line[0] == '"' && inMsgid) { continue; } // skip msgid continuation
-		if (line[0] == '\0') flushEntry();
+		if (line[0] == '"' && inMsgid) {
+			continue;
+		} // skip msgid continuation
+		if (line[0] == '\0')
+			flushEntry();
 	}
 	flushEntry();
 	fclose(in);
@@ -543,7 +687,8 @@ static int doPack(const char *poPath, const char *outPath) {
 		int maxIdx = 0;
 		for (auto &gv : kv.second)
 			for (int i = 0; i < (int)gv.second.size(); i++)
-				if (gv.first + i > maxIdx) maxIdx = gv.first + i;
+				if (gv.first + i > maxIdx)
+					maxIdx = gv.first + i;
 		block.strings.resize(maxIdx + 1);
 		for (auto &gv : kv.second)
 			for (int i = 0; i < (int)gv.second.size(); i++)
@@ -558,7 +703,8 @@ static int doPack(const char *poPath, const char *outPath) {
 		int maxIdx = 0;
 		for (auto &gv : kv.second)
 			for (int i = 0; i < (int)gv.second.size(); i++)
-				if (gv.first + i > maxIdx) maxIdx = gv.first + i;
+				if (gv.first + i > maxIdx)
+					maxIdx = gv.first + i;
 		block.strings.resize(maxIdx + 1);
 		for (auto &gv : kv.second)
 			for (int i = 0; i < (int)gv.second.size(); i++)
@@ -568,7 +714,10 @@ static int doPack(const char *poPath, const char *outPath) {
 
 	// Write binary DAT
 	FILE *out = fopen(outPath, "wb");
-	if (!out) { fprintf(stderr, "Error: Cannot create '%s'\n", outPath); return 1; }
+	if (!out) {
+		fprintf(stderr, "Error: Cannot create '%s'\n", outPath);
+		return 1;
+	}
 
 	fwrite("MCS2", 1, 4, out);
 	writeU16(out, 1);
@@ -577,14 +726,16 @@ static int doPack(const char *poPath, const char *outPath) {
 
 	long indexStart = ftell(out);
 	uint32_t indexSize = ((uint32_t)sceneBlocks.size() + (uint32_t)objectBlocks.size()) * 8;
-	for (uint32_t i = 0; i < indexSize; i++) fputc(0, out);
+	for (uint32_t i = 0; i < indexSize; i++)
+		fputc(0, out);
 
 	std::vector<uint32_t> sceneOffsets;
 	for (const auto &block : sceneBlocks) {
 		sceneOffsets.push_back((uint32_t)ftell(out));
 		for (const auto &s : block.strings) {
 			writeU16(out, (uint16_t)s.size());
-			if (!s.empty()) fwrite(s.data(), 1, s.size(), out);
+			if (!s.empty())
+				fwrite(s.data(), 1, s.size(), out);
 		}
 	}
 	std::vector<uint32_t> objectOffsets;
@@ -592,7 +743,8 @@ static int doPack(const char *poPath, const char *outPath) {
 		objectOffsets.push_back((uint32_t)ftell(out));
 		for (const auto &s : block.strings) {
 			writeU16(out, (uint16_t)s.size());
-			if (!s.empty()) fwrite(s.data(), 1, s.size(), out);
+			if (!s.empty())
+				fwrite(s.data(), 1, s.size(), out);
 		}
 	}
 
@@ -610,7 +762,7 @@ static int doPack(const char *poPath, const char *outPath) {
 
 	fclose(out);
 	printf("Packed %zu scene + %zu object blocks into %s\n",
-	       sceneBlocks.size(), objectBlocks.size(), outPath);
+		   sceneBlocks.size(), objectBlocks.size(), outPath);
 	return 0;
 }
 
@@ -625,8 +777,10 @@ int main(int argc, char **argv) {
 		printHelp(argv[0]);
 		return 1;
 	}
-	if (!strcmp(argv[1], "extract")) return doExtract(argv[2], argv[3]);
-	if (!strcmp(argv[1], "pack")) return doPack(argv[2], argv[3]);
+	if (!strcmp(argv[1], "extract"))
+		return doExtract(argv[2], argv[3]);
+	if (!strcmp(argv[1], "pack"))
+		return doPack(argv[2], argv[3]);
 	printHelp(argv[0]);
 	return 1;
 }
