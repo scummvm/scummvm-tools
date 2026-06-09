@@ -140,6 +140,11 @@ static std::string formatValue() {
 	uint8_t type = readByte();
 	uint16_t val = readWord();
 	if (type == 0x00) {
+		if (val > 0x400 && val <= 0x600) {
+			char buf[32];
+			snprintf(buf, sizeof(buf), "obj_0x%x", val - 0x400);
+			return buf;
+		}
 		char buf[32];
 		snprintf(buf, sizeof(buf), "%u", val);
 		return buf;
