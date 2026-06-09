@@ -32,6 +32,63 @@ static uint8_t *scriptData = nullptr;
 static uint32_t scriptSize = 0;
 static uint32_t pos = 0;
 
+static uint8_t *stringData = nullptr;
+static uint32_t stringDataSize = 0;
+
+static void appendUtf8(std::string &out, uint8_t ch) {
+	if (ch < 0x80) {
+		out += (char)ch;
+		return;
+	}
+	// CP850 to Unicode mapping for 0x80-0xFF
+	static const uint16_t cp850[128] = {
+		0x00C7,0x00FC,0x00E9,0x00E2,0x00E4,0x00E0,0x00E5,0x00E7,
+		0x00EA,0x00EB,0x00E8,0x00EF,0x00EC,0x00ED,0x00C4,0x00C5,
+		0x00C9,0x00E6,0x00C6,0x00F4,0x00F6,0x00F2,0x00FB,0x00F9,
+		0x00FF,0x00D6,0x00DC,0x00F8,0x00A3,0x00D8,0x00D7,0x0192,
+		0x00E1,0x00ED,0x00F3,0x00FA,0x00F1,0x00D1,0x00AA,0x00BA,
+		0x00BF,0x00AE,0x00AC,0x00BD,0x00BC,0x00A1,0x00AB,0x00BB,
+		0x2591,0x2592,0x2593,0x2502,0x2524,0x00C1,0x00C2,0x00C0,
+		0x00A9,0x2563,0x2551,0x2557,0x255D,0x00A2,0x00A5,0x2510,
+		0x2514,0x2534,0x252C,0x251C,0x2500,0x253C,0x00E3,0x00C3,
+		0x255A,0x2554,0x2569,0x2566,0x2560,0x2550,0x256C,0x00A4,
+		0x00F0,0x00D0,0x00CA,0x00CB,0x00C8,0x0131,0x00CD,0x00CE,
+		0x00CF,0x2518,0x250C,0x2588,0x2584,0x00A6,0x00CC,0x2580,
+		0x00D3,0x00DF,0x00D4,0x00D2,0x00F5,0x00D5,0x00B5,0x00FE,
+		0x00DE,0x00DA,0x00DB,0x00D9,0x00FD,0x00DD,0x00AF,0x00B4,
+		0x00AD,0x00B1,0x2017,0x00BE,0x00B6,0x00A7,0x00F7,0x00B8,
+		0x00B0,0x00A8,0x00B7,0x00B9,0x00B3,0x00B2,0x25A0,0x00A0,
+	};
+	uint16_t u = cp850[ch - 0x80];
+	if (u < 0x800) {
+		out += (char)(0xC0 | (u >> 6));
+		out += (char)(0x80 | (u & 0x3F));
+	} else {
+		out += (char)(0xE0 | (u >> 12));
+		out += (char)(0x80 | ((u >> 6) & 0x3F));
+		out += (char)(0x80 | (u & 0x3F));
+	}
+}
+
+static std::string decodeString(uint32_t offset, uint16_t numLines) {
+	if (!stringData || offset >= stringDataSize)
+		return "";
+	uint32_t p = offset;
+	std::string result;
+	for (uint16_t line = 0; line < numLines && p + 2 <= stringDataSize; line++) {
+		uint16_t length = (uint16_t)stringData[p] | ((uint16_t)stringData[p + 1] << 8);
+		p += 2;
+		for (int i = 1; i <= length && p < stringDataSize; i++, p++) {
+			uint8_t x = (uint8_t)(i * i * 0x0C);
+			uint8_t y = (uint8_t)(stringData[p] ^ i);
+			appendUtf8(result, x ^ y);
+		}
+		if (line + 1 < numLines)
+			result += " / ";
+	}
+	return result;
+}
+
 static uint8_t readByte() {
 	if (pos >= scriptSize)
 		return 0;
@@ -296,7 +353,7 @@ struct DecompiledLine {
 static std::string decodeParams(uint8_t opcode, uint32_t endPos, int &indent) {
 	std::string result;
 
-	char buf[256];
+	char buf[1024];
 	switch (opcode) {
 	case 0x01:
 	case 0x02: {
@@ -344,7 +401,11 @@ static std::string decodeParams(uint8_t opcode, uint32_t endPos, int &indent) {
 		std::string y = formatValue();
 		uint16_t strOffset = readWord();
 		uint16_t numLines = readWord();
-		snprintf(buf, sizeof(buf), " pos=(%s,%s) str=%u lines=%u", x.c_str(), y.c_str(), strOffset, numLines);
+		std::string decoded = decodeString(strOffset, numLines);
+		if (!decoded.empty())
+			snprintf(buf, sizeof(buf), " pos=(%s,%s) str=%u lines=%u \"%s\"", x.c_str(), y.c_str(), strOffset, numLines, decoded.c_str());
+		else
+			snprintf(buf, sizeof(buf), " pos=(%s,%s) str=%u lines=%u", x.c_str(), y.c_str(), strOffset, numLines);
 		result = buf;
 		break;
 	}
@@ -372,8 +433,13 @@ static std::string decodeParams(uint8_t opcode, uint32_t endPos, int &indent) {
 		std::string side = formatValue();
 		uint16_t strOffset = readWord();
 		uint16_t numLines = readWord();
-		snprintf(buf, sizeof(buf), " obj=%s pos=(%s,%s) side=%s str=%u lines=%u",
-				 obj.c_str(), x.c_str(), y.c_str(), side.c_str(), strOffset, numLines);
+		std::string decoded = decodeString(strOffset, numLines);
+		if (!decoded.empty())
+			snprintf(buf, sizeof(buf), " obj=%s pos=(%s,%s) side=%s str=%u lines=%u \"%s\"",
+					 obj.c_str(), x.c_str(), y.c_str(), side.c_str(), strOffset, numLines, decoded.c_str());
+		else
+			snprintf(buf, sizeof(buf), " obj=%s pos=(%s,%s) side=%s str=%u lines=%u",
+					 obj.c_str(), x.c_str(), y.c_str(), side.c_str(), strOffset, numLines);
 		result = buf;
 		break;
 	}
@@ -417,7 +483,11 @@ static std::string decodeParams(uint8_t opcode, uint32_t endPos, int &indent) {
 		std::string idx = formatValue();
 		uint16_t strOffset = readWord();
 		uint16_t numLines = readWord();
-		snprintf(buf, sizeof(buf), " idx=%s str=%u lines=%u", idx.c_str(), strOffset, numLines);
+		std::string decoded = decodeString(strOffset, numLines);
+		if (!decoded.empty())
+			snprintf(buf, sizeof(buf), " idx=%s str=%u lines=%u \"%s\"", idx.c_str(), strOffset, numLines, decoded.c_str());
+		else
+			snprintf(buf, sizeof(buf), " idx=%s str=%u lines=%u", idx.c_str(), strOffset, numLines);
 		result = buf;
 		break;
 	}
@@ -745,9 +815,9 @@ static std::string jsonEscape(const std::string &s) {
 	return out;
 }
 
-static void disassembleJson(int sceneIndex) {
+static void disassembleJson(int index, const char *type = "scene") {
 	auto lines = decompileToLines();
-	printf("  {\"scene\": %d, \"size\": %u, \"instructions\": [\n", sceneIndex, scriptSize);
+	printf("  {\"type\": \"%s\", \"index\": %d, \"size\": %u, \"instructions\": [\n", type, index, scriptSize);
 	for (size_t i = 0; i < lines.size(); i++) {
 		const auto &l = lines[i];
 		std::string text = std::string(getOpcodeName(l.opcode)) + l.params;
@@ -761,8 +831,10 @@ static void disassembleJson(int sceneIndex) {
 
 static void printHelp(const char *bin) {
 	printf("MACS2 Script Decompiler\n\n");
-	printf("Usage: %s [--json] <game_data_file> [scene_index]\n\n", bin);
+	printf("Usage: %s [--json] [--objects] <game_data_file> [scene_index]\n\n", bin);
 	printf("  --json          - Output as JSON\n");
+	printf("  --objects       - Also decompile object scripts for the scene(s)\n");
+	printf("                    Objects with scene=0 (inventory/global) are included\n");
 	printf("  game_data_file  - The main game data file\n");
 	printf("  scene_index     - Scene number to decompile (1-based)\n");
 	printf("                    If omitted, decompiles all scenes\n\n");
@@ -801,6 +873,103 @@ static bool loadSceneScript(FILE *f, uint16_t sceneIndex) {
 
 	scriptSize = size;
 	pos = 0;
+
+	// Load scene strings
+	uint32_t strTableOffset = (uint32_t)sceneIndex * 0xC + 0xC + 0x4 - 0x4;
+	fseek(f, strTableOffset, SEEK_SET);
+	uint32_t strDataOffset;
+	if (fread(&strDataOffset, 4, 1, f) == 1 && strDataOffset != 0) {
+		fseek(f, strDataOffset, SEEK_SET);
+		uint16_t strSize;
+		if (fread(&strSize, 2, 1, f) == 1 && strSize > 0) {
+			stringData = (uint8_t *)malloc(strSize);
+			if (stringData) {
+				if (fread(stringData, 1, strSize, f) == strSize)
+					stringDataSize = strSize;
+				else {
+					free(stringData);
+					stringData = nullptr;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+// Returns the scene index for an object, or 0 if the object doesn't exist
+static uint16_t getObjectSceneIndex(FILE *f, uint16_t objectIndex) {
+	// Object data table: offset at 0x17F4 + 0xC + 0x4 + objectIndex * 0xC
+	uint32_t addressOffset = 0x17F4 + (0xC + 0x04) + (uint32_t)objectIndex * 0xC;
+	fseek(f, addressOffset, SEEK_SET);
+	uint32_t objectOffset;
+	if (fread(&objectOffset, 4, 1, f) != 1 || objectOffset == 0)
+		return 0;
+	// sceneIndex is at +4 in the object data (after x:u16, y:u16)
+	fseek(f, objectOffset + 4, SEEK_SET);
+	uint16_t sceneIndex;
+	if (fread(&sceneIndex, 2, 1, f) != 1)
+		return 0;
+	return sceneIndex;
+}
+
+static bool loadObjectScript(FILE *f, uint16_t objectIndex) {
+	// Object script table: each entry is 12 bytes, script offset is at +4
+	uint32_t addressOffset = 0x17F8 + (0xC + 0x04) + (uint32_t)objectIndex * 0xC;
+	fseek(f, addressOffset, SEEK_SET);
+
+	uint32_t objectOffset;
+	if (fread(&objectOffset, 4, 1, f) != 1)
+		return false;
+
+	if (objectOffset == 0)
+		return false;
+
+	fseek(f, objectOffset, SEEK_SET);
+
+	// Skip 32 resource offsets (128 bytes)
+	fseek(f, 128, SEEK_CUR);
+
+	uint16_t size;
+	if (fread(&size, 2, 1, f) != 1)
+		return false;
+
+	if (size == 0)
+		return false;
+
+	scriptData = (uint8_t *)malloc(size);
+	if (!scriptData)
+		return false;
+
+	if (fread(scriptData, 1, size, f) != size) {
+		free(scriptData);
+		scriptData = nullptr;
+		return false;
+	}
+
+	scriptSize = size;
+	pos = 0;
+
+	// Load object strings
+	uint32_t strTableOffset = (uint32_t)objectIndex * 0xC + 0xC + 0x4 + 0x17FC;
+	fseek(f, strTableOffset, SEEK_SET);
+	uint32_t strDataOffset;
+	if (fread(&strDataOffset, 4, 1, f) == 1 && strDataOffset != 0) {
+		fseek(f, strDataOffset, SEEK_SET);
+		uint16_t strSize;
+		if (fread(&strSize, 2, 1, f) == 1 && strSize > 0) {
+			stringData = (uint8_t *)malloc(strSize);
+			if (stringData) {
+				if (fread(stringData, 1, strSize, f) == strSize)
+					stringDataSize = strSize;
+				else {
+					free(stringData);
+					stringData = nullptr;
+				}
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -811,9 +980,17 @@ int main(int argc, char **argv) {
 	}
 
 	bool jsonMode = false;
+	bool objectsMode = false;
 	int argIdx = 1;
-	if (!strcmp(argv[argIdx], "--json")) {
-		jsonMode = true;
+	while (argIdx < argc && argv[argIdx][0] == '-') {
+		if (!strcmp(argv[argIdx], "--json")) {
+			jsonMode = true;
+		} else if (!strcmp(argv[argIdx], "--objects")) {
+			objectsMode = true;
+		} else {
+			printHelp(argv[0]);
+			return 1;
+		}
 		argIdx++;
 	}
 
@@ -829,15 +1006,12 @@ int main(int argc, char **argv) {
 	}
 	argIdx++;
 
-	int startScene = -1;
-	int endScene = -1;
+	int startScene = 1;
+	int endScene = 512;
 
 	if (argIdx < argc) {
 		startScene = atoi(argv[argIdx]);
 		endScene = startScene;
-	} else {
-		startScene = 1;
-		endScene = 512;
 	}
 
 	if (jsonMode) {
@@ -848,10 +1022,32 @@ int main(int argc, char **argv) {
 				if (!first)
 					printf(",\n");
 				first = false;
-				disassembleJson(scene);
+				disassembleJson(scene, "scene");
 				free(scriptData);
 				scriptData = nullptr;
 				scriptSize = 0;
+				free(stringData);
+				stringData = nullptr;
+				stringDataSize = 0;
+			}
+			if (objectsMode) {
+				for (int obj = 1; obj <= 0x200; obj++) {
+					uint16_t objScene = getObjectSceneIndex(f, (uint16_t)obj);
+					if (objScene != (uint16_t)scene && objScene != 0)
+						continue;
+					if (loadObjectScript(f, (uint16_t)obj)) {
+						if (!first)
+							printf(",\n");
+						first = false;
+						disassembleJson(obj, objScene == 0 ? "inventory" : "object");
+						free(scriptData);
+						scriptData = nullptr;
+						scriptSize = 0;
+						free(stringData);
+						stringData = nullptr;
+						stringDataSize = 0;
+					}
+				}
 			}
 		}
 		printf("\n]}\n");
@@ -874,6 +1070,54 @@ int main(int argc, char **argv) {
 				free(scriptData);
 				scriptData = nullptr;
 				scriptSize = 0;
+				free(stringData);
+				stringData = nullptr;
+				stringDataSize = 0;
+			}
+			if (objectsMode) {
+				bool hasSceneObjs = false;
+				bool hasInventoryObjs = false;
+				// Scene objects first
+				for (int obj = 1; obj <= 0x200; obj++) {
+					uint16_t objScene = getObjectSceneIndex(f, (uint16_t)obj);
+					if (objScene != (uint16_t)scene)
+						continue;
+					if (!hasSceneObjs) {
+						printf("  [Scene Objects]\n");
+						hasSceneObjs = true;
+					}
+					if (loadObjectScript(f, (uint16_t)obj)) {
+						printf("--- Object 0x%x (size: %u bytes) ---\n", obj, scriptSize);
+						disassemble();
+						printf("\n");
+						free(scriptData);
+						scriptData = nullptr;
+						scriptSize = 0;
+						free(stringData);
+						stringData = nullptr;
+						stringDataSize = 0;
+					}
+				}
+				// Inventory/global objects (scene == 0)
+				for (int obj = 1; obj <= 0x200; obj++) {
+					if (getObjectSceneIndex(f, (uint16_t)obj) != 0)
+						continue;
+					if (!hasInventoryObjs) {
+						printf("  [Inventory/Global Objects]\n");
+						hasInventoryObjs = true;
+					}
+					if (loadObjectScript(f, (uint16_t)obj)) {
+						printf("--- Object 0x%x [inventory] (size: %u bytes) ---\n", obj, scriptSize);
+						disassemble();
+						printf("\n");
+						free(scriptData);
+						scriptData = nullptr;
+						scriptSize = 0;
+						free(stringData);
+						stringData = nullptr;
+						stringDataSize = 0;
+					}
+				}
 			}
 		}
 	}
