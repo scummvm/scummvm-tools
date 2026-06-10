@@ -505,6 +505,138 @@ static void extractSceneData(uint16_t sceneIndex, const char *outDir) {
 	printf("  Wrote %s + 4 map files\n", path);
 }
 
+// Extract inventory icon images for all objects that have one (blob slot 0x13)
+static void extractItems(const char *outDir) {
+	// Get scene 1 palette as fallback for icon rendering
+	uint8_t palette[768] = {};
+	uint32_t bgOffset = getSceneBgOffset(1);
+	if (bgOffset != 0) {
+		fseek(resFile, bgOffset, SEEK_SET);
+		// Skip background RLE image to reach palette
+		for (int y = 0; y < 200; y++) {
+			uint16_t length = readU16(resFile);
+			fseek(resFile, length, SEEK_CUR);
+		}
+		fread(palette, 1, 768, resFile);
+	}
+
+	printf("Extracting inventory items...\n");
+	int count = 0;
+	for (int i = 1; i <= 0x200; i++) {
+		uint32_t addressOffset = 0x17F4 + 0xC + 0x04 + i * 0xC;
+		fseek(resFile, addressOffset, SEEK_SET);
+		uint32_t objectOffset = readU32(resFile);
+		if (objectOffset == 0)
+			continue;
+
+		fseek(resFile, objectOffset, SEEK_SET);
+		// Skip: x(2), y(2), sceneIndex(2), orientation(2), verticalOffsetScale(2)
+		fseek(resFile, 10, SEEK_CUR);
+
+		// Read through 21 blob slots to reach slot 0x13 (index 19, 0-based)
+		std::vector<uint8_t> iconBlob;
+		for (int j = 0; j < 0x15; j++) {
+			fseek(resFile, 2, SEEK_CUR); // animID
+			fseek(resFile, 2, SEEK_CUR); // sourceKey
+			uint32_t dataSize = readU32(resFile);
+			if (j == 0x13) {
+				if (dataSize > 0) {
+					iconBlob.resize(dataSize);
+					fread(iconBlob.data(), 1, dataSize, resFile);
+				}
+			} else {
+				fseek(resFile, dataSize, SEEK_CUR);
+			}
+			fseek(resFile, 4, SEEK_CUR); // speed(2) + mirrorFlag(1) + padding(1)
+		}
+
+		if (iconBlob.empty())
+			continue;
+
+		// Parse the animation blob to get frame 1 data
+		// Blob header: 12 bytes (6 words), then sequence table
+		// Sequence length stored as (len-1) at offset 10
+		if (iconBlob.size() < 12)
+			continue;
+		uint16_t seqLen = (uint16_t)(iconBlob[10] | (iconBlob[11] << 8)) + 1;
+		uint32_t frameTableOffset = 0xB + seqLen; // matches engine: stream.seek(0xB + bp0E)
+		if (frameTableOffset + 2 > iconBlob.size())
+			continue;
+		uint16_t frameCount = iconBlob[frameTableOffset] | (iconBlob[frameTableOffset + 1] << 8);
+		if (frameCount == 0)
+			continue;
+		uint32_t frameDataOffset = frameTableOffset + 2;
+		// Frame data: offsetX(2), offsetY(2), unknown(2), width(2), height(2), pixels(w*h)
+		if (frameDataOffset + 10 > iconBlob.size())
+			continue;
+		// Skip frame header (6 bytes: offsetX, offsetY, unknown) to get width/height/pixels
+		uint32_t p = frameDataOffset + 6;
+		if (p + 4 > iconBlob.size())
+			continue;
+		uint16_t w = iconBlob[p] | (iconBlob[p + 1] << 8);
+		uint16_t h = iconBlob[p + 2] | (iconBlob[p + 3] << 8);
+		p += 4;
+		if (w == 0 || h == 0 || p + (uint32_t)w * h > iconBlob.size())
+			continue;
+
+		// Write BMP
+		char path[512];
+		snprintf(path, sizeof(path), "%s/item_%03d.bmp", outDir, i);
+		FILE *f = fopen(path, "wb");
+		if (!f)
+			continue;
+
+		uint32_t rowStride = (w + 3) & ~3;
+		uint32_t imageSize = rowStride * h;
+		uint32_t paletteSize = 256 * 4;
+		uint32_t dataOff = 14 + 40 + paletteSize;
+		uint32_t fileSize = dataOff + imageSize;
+
+		fputc('B', f);
+		fputc('M', f);
+		uint8_t hdr[12] = {};
+		hdr[0] = fileSize & 0xFF;
+		hdr[1] = (fileSize >> 8) & 0xFF;
+		hdr[2] = (fileSize >> 16) & 0xFF;
+		hdr[3] = (fileSize >> 24) & 0xFF;
+		hdr[8] = dataOff & 0xFF;
+		hdr[9] = (dataOff >> 8) & 0xFF;
+		hdr[10] = (dataOff >> 16) & 0xFF;
+		hdr[11] = (dataOff >> 24) & 0xFF;
+		fwrite(hdr, 1, 12, f);
+
+		uint8_t dib[40] = {};
+		dib[0] = 40;
+		dib[4] = w & 0xFF;
+		dib[5] = (w >> 8) & 0xFF;
+		dib[8] = h & 0xFF;
+		dib[9] = (h >> 8) & 0xFF;
+		dib[12] = 1;
+		dib[14] = 8;
+		fwrite(dib, 1, 40, f);
+
+		for (int c = 0; c < 256; c++) {
+			uint8_t r = (palette[c * 3 + 0] * 259 + 33) >> 6;
+			uint8_t g = (palette[c * 3 + 1] * 259 + 33) >> 6;
+			uint8_t b = (palette[c * 3 + 2] * 259 + 33) >> 6;
+			uint8_t bgra[4] = {b, g, r, 0};
+			fwrite(bgra, 1, 4, f);
+		}
+
+		// BMP rows must be 4-byte aligned
+		uint8_t pad[4] = {0};
+		for (int y = h - 1; y >= 0; y--) {
+			fwrite(iconBlob.data() + p + y * w, 1, w, f);
+			if (rowStride > w)
+				fwrite(pad, 1, rowStride - w, f);
+		}
+		fclose(f);
+		printf("  item %d: %ux%u -> %s\n", i, w, h, path);
+		count++;
+	}
+	printf("Extracted %d inventory item icons.\n", count);
+}
+
 static void printHelp(const char *bin) {
 	printf("MACS2 Resource Extractor\n\n");
 	printf("Usage: %s <mode> <game_data_file> <output_dir> [scene_index]\n\n", bin);
@@ -513,6 +645,7 @@ static void printHelp(const char *bin) {
 	printf("  sounds    - Extract sound/music resource blobs\n");
 	printf("  strings   - Extract and decrypt text strings\n");
 	printf("  scenedata - Extract scene metadata as JSON (pathfinding, hotspots, walk params)\n");
+	printf("  items     - Extract inventory item icons as BMP (with object ID)\n");
 	printf("  all       - Extract everything\n");
 	printf("\n");
 	printf("If scene_index is omitted, extracts from all scenes.\n");
@@ -545,6 +678,11 @@ int main(int argc, char **argv) {
 	bool doSounds = !strcmp(mode, "sounds") || !strcmp(mode, "all");
 	bool doStrings = !strcmp(mode, "strings") || !strcmp(mode, "all");
 	bool doSceneData = !strcmp(mode, "scenedata") || !strcmp(mode, "all");
+	bool doItems = !strcmp(mode, "items") || !strcmp(mode, "all");
+
+	if (doItems) {
+		extractItems(outDir);
+	}
 
 	for (int scene = startScene; scene <= endScene; scene++) {
 		bool hasData = false;
