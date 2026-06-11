@@ -35,6 +35,7 @@ PROGRAMS = \
 	extract_gob_cdi \
 	extract_mohawk \
 	extract_macs2 \
+	create_macs2_translation \
 	extract_ngi \
 	construct_mohawk \
 	msn_convert_mod \
@@ -144,6 +145,9 @@ demacs2_OBJS := \
 
 extract_macs2_OBJS := \
 	engines/macs2/extract_macs2.o
+
+create_macs2_translation_OBJS := \
+	engines/macs2/create_macs2_translation.o
 
 extract_hadesch_OBJS := \
 	engines/hadesch/extract_hadesch.o \
