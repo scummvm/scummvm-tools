@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <set>
 #include <string>
 #include <vector>
 #ifdef WIN32
@@ -96,6 +97,61 @@ static bool decodeRLEImage(uint32_t offset, uint8_t *pixels) {
 	return true;
 }
 
+// Write a BMP file (8-bit indexed, arbitrary dimensions)
+static void writeBMPEx(const char *path, const uint8_t *pixels, uint16_t w, uint16_t h, const uint8_t *palette) {
+	FILE *f = fopen(path, "wb");
+	if (!f) {
+		fprintf(stderr, "Cannot write %s\n", path);
+		return;
+	}
+
+	uint32_t rowStride = (w + 3) & ~3;
+	uint32_t imageSize = rowStride * h;
+	uint32_t paletteSize = 256 * 4;
+	uint32_t dataOffset = 14 + 40 + paletteSize;
+	uint32_t fileSize = dataOffset + imageSize;
+
+	fputc('B', f);
+	fputc('M', f);
+	uint8_t hdr[12] = {};
+	hdr[0] = fileSize & 0xFF;
+	hdr[1] = (fileSize >> 8) & 0xFF;
+	hdr[2] = (fileSize >> 16) & 0xFF;
+	hdr[3] = (fileSize >> 24) & 0xFF;
+	hdr[8] = dataOffset & 0xFF;
+	hdr[9] = (dataOffset >> 8) & 0xFF;
+	hdr[10] = (dataOffset >> 16) & 0xFF;
+	hdr[11] = (dataOffset >> 24) & 0xFF;
+	fwrite(hdr, 1, 12, f);
+
+	uint8_t dib[40] = {};
+	dib[0] = 40;
+	dib[4] = w & 0xFF;
+	dib[5] = (w >> 8) & 0xFF;
+	dib[8] = h & 0xFF;
+	dib[9] = (h >> 8) & 0xFF;
+	dib[12] = 1;
+	dib[14] = 8;
+	fwrite(dib, 1, 40, f);
+
+	for (int i = 0; i < 256; i++) {
+		uint8_t r = (palette[i * 3 + 0] * 259 + 33) >> 6;
+		uint8_t g = (palette[i * 3 + 1] * 259 + 33) >> 6;
+		uint8_t b = (palette[i * 3 + 2] * 259 + 33) >> 6;
+		uint8_t bgra[4] = {b, g, r, 0};
+		fwrite(bgra, 1, 4, f);
+	}
+
+	uint8_t pad[4] = {0};
+	for (int y = h - 1; y >= 0; y--) {
+		fwrite(pixels + y * w, 1, w, f);
+		if (rowStride > w)
+			fwrite(pad, 1, rowStride - w, f);
+	}
+	fclose(f);
+	printf("  Wrote %s\n", path);
+}
+
 // Write a BMP file (8-bit indexed)
 static void writeBMP(const char *path, const uint8_t *pixels, const uint8_t *palette) {
 	FILE *f = fopen(path, "wb");
@@ -154,6 +210,158 @@ static void writeBMP(const char *path, const uint8_t *pixels, const uint8_t *pal
 
 // Forward declaration
 static bool decodeRLEMap(FILE *f, uint8_t *pixels);
+
+// Extract cursor/icon images (33 entries at file offset 0x3B10)
+static void extractCursors(const char *outDir) {
+	// Read global palette at 0x3010
+	uint8_t palette[768];
+	fseek(resFile, 0xC + 0x4 + 0x3000, SEEK_SET);
+	fread(palette, 1, 768, resFile);
+
+	fseek(resFile, 0xC + 0x4 + 0x3000 + 0x300 + 0x800, SEEK_SET);
+	printf("Extracting cursors...\n");
+	int count = 0;
+	for (int i = 0; i < 0x21; i++) {
+		uint32_t length = readU32(resFile);
+		if (length == 0)
+			continue;
+		long blobStart = ftell(resFile);
+		fseek(resFile, 2, SEEK_CUR); // skip 2 bytes
+		uint16_t w = readU16(resFile);
+		uint16_t h = readU16(resFile);
+		if (w == 0 || h == 0 || (uint32_t)w * h > length) {
+			fseek(resFile, blobStart + length, SEEK_SET);
+			continue;
+		}
+		std::vector<uint8_t> pixels(w * h);
+		fread(pixels.data(), 1, w * h, resFile);
+
+		char path[512];
+		snprintf(path, sizeof(path), "%s/cursor_%02d.bmp", outDir, i);
+		writeBMPEx(path, pixels.data(), w, h, palette);
+		count++;
+		fseek(resFile, blobStart + length, SEEK_SET);
+	}
+	printf("Extracted %d cursor images.\n", count);
+}
+
+// Render a font's glyphs into an atlas BMP
+static void renderFontAtlas(const char *path, FILE *f, uint16_t glyphCount, const uint8_t *palette) {
+	struct Glyph {
+		uint16_t w, h;
+		std::vector<uint8_t> data;
+	};
+	std::vector<Glyph> glyphs;
+	uint16_t maxH = 0;
+	uint32_t totalW = 0;
+	for (int i = 0; i < glyphCount; i++) {
+		Glyph g;
+		fseek(f, 1, SEEK_CUR); // ascii byte
+		g.w = readU16(f);
+		g.h = readU16(f);
+		if (g.w > 320 || g.h > 200)
+			return;
+		g.data.resize((uint32_t)g.w * g.h);
+		fread(g.data.data(), 1, g.data.size(), f);
+		if (g.h > maxH)
+			maxH = g.h;
+		totalW += g.w + 1;
+		glyphs.push_back(g);
+	}
+	if (glyphs.empty() || totalW == 0)
+		return;
+
+	uint16_t atlasW = (uint16_t)(totalW - 1);
+	std::vector<uint8_t> atlas((uint32_t)atlasW * maxH, 0);
+	uint32_t x = 0;
+	for (const auto &g : glyphs) {
+		for (uint16_t gy = 0; gy < g.h; gy++)
+			for (uint16_t gx = 0; gx < g.w; gx++)
+				atlas[gy * atlasW + x + gx] = g.data[gy * g.w + gx];
+		x += g.w + 1;
+	}
+	writeBMPEx(path, atlas.data(), atlasW, maxH, palette);
+}
+
+// Extract all fonts: global fonts (2) + overlay fonts from scene/object resources
+static void extractFonts(const char *outDir) {
+	// Read global palette
+	uint8_t palette[768];
+	fseek(resFile, 0xC + 0x4 + 0x3000, SEEK_SET);
+	fread(palette, 1, 768, resFile);
+
+	// Seek past cursor images
+	fseek(resFile, 0xC + 0x4 + 0x3000 + 0x300 + 0x800, SEEK_SET);
+	for (int i = 0; i < 0x21; i++) {
+		uint32_t length = readU32(resFile);
+		if (length > 0)
+			fseek(resFile, length, SEEK_CUR);
+	}
+
+	printf("Extracting fonts...\n");
+	int fontIdx = 0;
+
+	// Global Font 1 (dialog font)
+	readU32(resFile); // size field
+	uint16_t glyphCount = readU16(resFile);
+	if (glyphCount > 0 && glyphCount <= 256) {
+		char path[512];
+		snprintf(path, sizeof(path), "%s/font_%d_dialog.bmp", outDir, fontIdx);
+		renderFontAtlas(path, resFile, glyphCount, palette);
+		fontIdx++;
+	}
+
+	// Global Font 2 (save/load panel font)
+	readU32(resFile);
+	glyphCount = readU16(resFile);
+	if (glyphCount > 0 && glyphCount <= 256) {
+		char path[512];
+		snprintf(path, sizeof(path), "%s/font_%d_panel.bmp", outDir, fontIdx);
+		renderFontAtlas(path, resFile, glyphCount, palette);
+		fontIdx++;
+	}
+
+	// Overlay fonts from scene resources (loaded by opcode 0x38)
+	// These are at resourceOffset + 0x10: uint16 glyphCount + glyph data
+	std::set<uint32_t> extractedOffsets;
+	for (int scene = 1; scene <= 512; scene++) {
+		uint32_t dataOffset = getSceneDataOffset(scene);
+		if (dataOffset == 0)
+			continue;
+		fseek(resFile, dataOffset, SEEK_SET);
+		uint32_t resourceTable[32];
+		for (int i = 0; i < 32; i++)
+			resourceTable[i] = readU32(resFile);
+
+		for (int i = 0; i < 32; i++) {
+			if (resourceTable[i] == 0)
+				continue;
+			if (extractedOffsets.count(resourceTable[i]))
+				continue;
+
+			// Check if resource has AHFFFONT magic header (at offset+4, after size field)
+			fseek(resFile, resourceTable[i] + 4, SEEK_SET);
+			uint8_t magic[8];
+			fread(magic, 1, 8, resFile);
+			if (memcmp(magic, "AHFF", 4) != 0 || memcmp(magic + 4, "FONT", 4) != 0)
+				continue;
+
+			// Font data at offset+0x10: uint16 glyphCount + glyph data
+			fseek(resFile, resourceTable[i] + 0x10, SEEK_SET);
+			uint16_t gc = readU16(resFile);
+			if (gc == 0 || gc > 256)
+				continue;
+
+			// Extract font
+			extractedOffsets.insert(resourceTable[i]);
+			char path[512];
+			snprintf(path, sizeof(path), "%s/font_%d_scene%03d_res%02d.bmp", outDir, fontIdx, scene, i + 1);
+			renderFontAtlas(path, resFile, gc, palette);
+			fontIdx++;
+		}
+	}
+	printf("Extracted %d font atlas images.\n", fontIdx);
+}
 
 // Extract background image for a scene
 static void extractImage(uint16_t sceneIndex, const char *outDir) {
@@ -547,6 +755,111 @@ static void extractSceneData(uint16_t sceneIndex, const char *outDir) {
 	printf("  Wrote %s + 4 map files\n", path);
 }
 
+// Read the map scene offsets table (256 uint32 entries) by walking the file layout
+static bool readMapSceneOffsets(uint32_t offsets[256]) {
+	// File layout: header(0xC) + actorIdx/sceneIdx(4) + sceneTable(0x3000) + palette(0x300) + shading(0x800)
+	fseek(resFile, 0xC + 0x4 + 0x3000 + 0x300 + 0x800, SEEK_SET);
+
+	// Skip 33 image resources (each: uint32 length, then if >0: 2+w(2)+h(2)+w*h bytes)
+	for (int i = 0; i < 0x21; i++) {
+		uint32_t length = readU32(resFile);
+		if (length > 0)
+			fseek(resFile, length, SEEK_CUR);
+	}
+
+	// Skip Font 1: uint32 sizeField + uint16 glyphCount + glyphs (each: 1+2+2+w*h)
+	readU32(resFile); // size field
+	uint16_t glyphCount = readU16(resFile);
+	for (int i = 0; i < glyphCount; i++) {
+		fseek(resFile, 1, SEEK_CUR); // ascii
+		uint16_t w = readU16(resFile);
+		uint16_t h = readU16(resFile);
+		fseek(resFile, (uint32_t)w * h, SEEK_CUR);
+	}
+
+	// Skip Font 2: same structure
+	readU32(resFile);
+	glyphCount = readU16(resFile);
+	for (int i = 0; i < glyphCount; i++) {
+		fseek(resFile, 1, SEEK_CUR);
+		uint16_t w = readU16(resFile);
+		uint16_t h = readU16(resFile);
+		fseek(resFile, (uint32_t)w * h, SEEK_CUR);
+	}
+
+	// Now at map scene offsets: 256 x uint32
+	for (int i = 0; i < 256; i++)
+		offsets[i] = readU32(resFile);
+	return true;
+}
+
+// Extract help/map panel images
+static void extractHelpImages(const char *outDir) {
+	uint32_t offsets[256];
+	if (!readMapSceneOffsets(offsets))
+		return;
+
+	printf("Extracting help/map panel images...\n");
+	int count = 0;
+	for (int i = 0; i < 256; i++) {
+		if (offsets[i] == 0)
+			continue;
+
+		uint8_t pixels[320 * 200];
+		if (!decodeRLEImage(offsets[i], pixels))
+			continue;
+
+		// Palette follows immediately after the image
+		uint8_t palette[768];
+		fread(palette, 1, 768, resFile);
+
+		char path[512];
+		snprintf(path, sizeof(path), "%s/help_%03d.bmp", outDir, i);
+		writeBMP(path, pixels, palette);
+		count++;
+	}
+	printf("Extracted %d help/map panel images.\n", count);
+}
+
+// Extract music data from scene resource tables
+static void extractMusic(const char *outDir) {
+	printf("Extracting music...\n");
+	int count = 0;
+	for (int scene = 1; scene <= 512; scene++) {
+		uint32_t dataOffset = getSceneDataOffset(scene);
+		if (dataOffset == 0)
+			continue;
+
+		fseek(resFile, dataOffset, SEEK_SET);
+		uint32_t resourceTable[32];
+		for (int i = 0; i < 32; i++)
+			resourceTable[i] = readU32(resFile);
+
+		for (int i = 0; i < 32; i++) {
+			if (resourceTable[i] == 0)
+				continue;
+			fseek(resFile, resourceTable[i], SEEK_SET);
+			uint32_t size = readU32(resFile);
+			if (size == 0 || size > 0x100000)
+				continue;
+
+			std::vector<uint8_t> data(size);
+			fread(data.data(), 1, size, resFile);
+
+			char path[512];
+			snprintf(path, sizeof(path), "%s/music_scene%03d_%02d.bin", outDir, scene, i + 1);
+			FILE *out = fopen(path, "wb");
+			if (out) {
+				fwrite(data.data(), 1, size, out);
+				fclose(out);
+				printf("  Wrote %s (%u bytes)\n", path, size);
+				count++;
+			}
+		}
+	}
+	printf("Extracted %d music/sound resources.\n", count);
+}
+
 // Extract inventory icon images for all objects that have one (blob slot 0x13)
 static void extractItems(const char *outDir) {
 	// Get scene 1 palette as fallback for icon rendering
@@ -683,12 +996,14 @@ static void printHelp(const char *bin) {
 	printf("MACS2 Resource Extractor\n\n");
 	printf("Usage: %s <mode> <game_data_file> <output_dir> [scene_index]\n\n", bin);
 	printf("Modes:\n");
-	printf("  images    - Extract background images as BMP files\n");
-	printf("  sounds    - Extract sound/music resource blobs\n");
-	printf("  strings   - Extract and decrypt text strings\n");
-	printf("  scenedata - Extract scene metadata as JSON (pathfinding, hotspots, walk params)\n");
-	printf("  items     - Extract inventory item icons as BMP (with object ID)\n");
-	printf("  all       - Extract everything\n");
+	printf("  images     - Extract background images as BMP files\n");
+	printf("  sounds     - Extract sound/music resource blobs\n");
+	printf("  music      - Extract music resources from scene data\n");
+	printf("  strings    - Extract and decrypt text strings\n");
+	printf("  scenedata  - Extract scene metadata as JSON (pathfinding, hotspots, walk params)\n");
+	printf("  items      - Extract inventory item icons as BMP (with object ID)\n");
+	printf("  helpimages - Extract help/map panel images as BMP\n");
+	printf("  all        - Extract everything\n");
 	printf("\n");
 	printf("If scene_index is omitted, extracts from all scenes.\n");
 }
@@ -718,12 +1033,27 @@ int main(int argc, char **argv) {
 
 	bool doImages = !strcmp(mode, "images") || !strcmp(mode, "all");
 	bool doSounds = !strcmp(mode, "sounds") || !strcmp(mode, "all");
+	bool doMusic = !strcmp(mode, "music") || !strcmp(mode, "all");
 	bool doStrings = !strcmp(mode, "strings") || !strcmp(mode, "all");
 	bool doSceneData = !strcmp(mode, "scenedata") || !strcmp(mode, "all");
 	bool doItems = !strcmp(mode, "items") || !strcmp(mode, "all");
+	bool doHelpImages = !strcmp(mode, "helpimages") || !strcmp(mode, "all");
 
 	if (doItems) {
 		extractItems(outDir);
+	}
+
+	if (doHelpImages) {
+		extractHelpImages(outDir);
+	}
+
+	if (doMusic) {
+		extractMusic(outDir);
+	}
+
+	if (doImages) {
+		extractCursors(outDir);
+		extractFonts(outDir);
 	}
 
 	for (int scene = startScene; scene <= endScene; scene++) {
