@@ -1018,11 +1018,27 @@ int main(int argc, char **argv) {
 	const char *resPath = argv[2];
 	const char *outDir = argv[3];
 
-	resFile = fopen(resPath, "rb");
+	// If path is a directory, look for RESOURCE.MCS inside it
+	std::string resolvedPath = resPath;
+	struct stat st;
+	if (stat(resPath, &st) == 0 && S_ISDIR(st.st_mode)) {
+		resolvedPath = std::string(resPath) + "/RESOURCE.MCS";
+	}
+
+	resFile = fopen(resolvedPath.c_str(), "rb");
 	if (!resFile) {
-		fprintf(stderr, "Error: Cannot open '%s'\n", resPath);
+		fprintf(stderr, "Error: Cannot open '%s'\n", resolvedPath.c_str());
 		return 1;
 	}
+
+	// Validate the file header
+	uint8_t magic[12];
+	if (fread(magic, 1, 12, resFile) != 12 || memcmp(magic, "AHFFMACS0100", 12) != 0) {
+		fprintf(stderr, "Error: '%s' is not a valid MACS2 resource file\n", resolvedPath.c_str());
+		fclose(resFile);
+		return 1;
+	}
+	fseek(resFile, 0, SEEK_SET);
 
 	mkdirp(outDir);
 
