@@ -274,6 +274,48 @@ static void extractStrings(uint16_t sceneIndex, const char *outDir) {
 	printf("  Wrote %s (%d strings)\n", path, stringIndex);
 }
 
+// Extract strings for an object
+static void extractObjectStrings(uint16_t objectIndex, const char *outDir) {
+	uint32_t strTableOffset = (uint32_t)objectIndex * 0xC + 0xC + 0x4 + 0x17FC;
+	fseek(resFile, strTableOffset, SEEK_SET);
+	uint32_t strDataOffset = readU32(resFile);
+	if (strDataOffset == 0)
+		return;
+
+	fseek(resFile, strDataOffset, SEEK_SET);
+	uint16_t totalSize = readU16(resFile);
+	if (totalSize == 0)
+		return;
+
+	std::vector<uint8_t> strData(totalSize);
+	fread(strData.data(), 1, totalSize, resFile);
+
+	char path[512];
+	snprintf(path, sizeof(path), "%s/strings_object%03d.txt", outDir, objectIndex);
+	FILE *out = fopen(path, "w");
+	if (!out)
+		return;
+
+	fprintf(out, "; Object %d strings\n", objectIndex);
+	fprintf(out, "; Total data size: %u bytes\n\n", totalSize);
+
+	uint32_t pos = 0;
+	int stringIndex = 0;
+	while (pos + 2 <= totalSize) {
+		uint16_t len = strData[pos] | (strData[pos + 1] << 8);
+		pos += 2;
+		if (len == 0 || pos + len > totalSize)
+			break;
+		std::string decoded = decryptString(strData.data() + pos, len);
+		fprintf(out, "[%d] (offset=%u) %s\n", stringIndex, (unsigned)(pos - 2), decoded.c_str());
+		pos += len;
+		stringIndex++;
+	}
+
+	fclose(out);
+	printf("  Wrote %s (%d strings)\n", path, stringIndex);
+}
+
 static void mkdirp(const char *path) {
 #ifdef _WIN32
 	mkdir(path);
@@ -729,6 +771,12 @@ int main(int argc, char **argv) {
 				}
 				extractSceneData(scene, outDir);
 			}
+		}
+	}
+
+	if (doStrings) {
+		for (int obj = 1; obj <= 0x200; obj++) {
+			extractObjectStrings(obj, outDir);
 		}
 	}
 
