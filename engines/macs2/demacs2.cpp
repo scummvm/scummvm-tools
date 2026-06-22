@@ -240,7 +240,6 @@ static const struct {
 	{0x2B, "invAction"},
 	{0x2C, "interactedMap"},
 	{0x2D, "curScene"},
-	{0x2E, "const2"},
 	{0x2F, "prevScene"},
 	{0x30, "musicActive"},
 	{0x31, "soundActive"},
@@ -1675,6 +1674,8 @@ static std::string formatValueC() {
 			return "SIDE_RIGHT";
 		case 0x0C:
 			return "LOOP";
+		case 0x2E:
+			return "ALIGN_CENTER";
 		}
 		snprintf(buf, sizeof(buf), "_rt.special[0x%02x]", val);
 		return buf;
@@ -2029,8 +2030,11 @@ static std::string decodeCLine(uint8_t opcode, uint32_t endPos, int &indent) {
 		std::string a = formatValueC();
 		uint16_t s = readWord();
 		uint16_t t = readWord();
-		snprintf(buf, sizeof(buf), "addOverlayTextEntry(%s, %s, %s, %u, %u);", x.c_str(), y.c_str(), a.c_str(), s, t);
-		return buf;
+		std::string decoded = decodeString(s, 1);
+		std::string result2 = std::string("addOverlayTextEntry(") + x + ", " + y + ", " + a + ", " + std::to_string(s) + ", " + std::to_string(t) + ");";
+		if (!decoded.empty())
+			result2 += " // \"" + decoded + "\"";
+		return result2;
 	}
 	case 0x3B:
 		return "clearOverlayText();";
@@ -2242,6 +2246,9 @@ int main(int argc, char **argv) {
 		printf("static const Value FADE_CUT = 0;\n");
 		printf("static const Value SIDE_LEFT = 0;\n");
 		printf("static const Value SIDE_RIGHT = 1;\n");
+		printf("static const Value ALIGN_LEFT = 0;\n");
+		printf("static const Value ALIGN_RIGHT = 1;\n");
+		printf("static const Value ALIGN_CENTER = 2;\n");
 		printf("static const Value LOOP = 1;\n\n");
 		printf("/* Orientation constants (1-8=walking, 9-16=standing, 17=pickup) */\n");
 		printf("#define ORIENT_WALK_N  1\n#define ORIENT_WALK_NE 2\n#define ORIENT_WALK_E  3\n#define ORIENT_WALK_SE 4\n");
