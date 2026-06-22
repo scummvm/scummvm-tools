@@ -992,9 +992,386 @@ static void extractItems(const char *outDir) {
 	printf("Extracted %d inventory item icons.\n", count);
 }
 
+// ============================================================================
+// Amiga PP20 (PowerPacker) decompression
+// ============================================================================
+
+static bool pp20Decompress(const uint8_t *src, uint32_t srcLen, uint8_t *dst, uint32_t dstLen) {
+	if (srcLen < 12 || memcmp(src, "PP20", 4) != 0)
+		return false;
+
+	const uint8_t *eff = src + 4; // efficiency table (4 bytes)
+	const uint8_t *packed = src + 8;
+	uint32_t packedLen = srcLen - 12; // exclude magic(4) + eff(4) + trailer(4)
+
+	// Trailer: last 4 bytes = decrunch info
+	const uint8_t *trailer = src + srcLen - 4;
+	uint32_t origSize = ((uint32_t)trailer[0] << 16) | ((uint32_t)trailer[1] << 8) | trailer[2];
+	uint8_t bitrot = trailer[3];
+
+	if (origSize != dstLen || origSize == 0)
+		return false;
+
+	// Build bit-reverse table
+	uint8_t rev[256];
+	for (int a = 0; a < 256; a++) {
+		uint8_t b = (uint8_t)a;
+		b = (uint8_t)(((b & 0x0f) << 4) | ((b >> 4) & 0x0f));
+		b = (uint8_t)(((b & 0x33) << 2) | ((b >> 2) & 0x33));
+		b = (uint8_t)(((b & 0x55) << 1) | ((b >> 1) & 0x55));
+		rev[a] = b;
+	}
+
+	uint32_t outPos = dstLen;
+	int32_t inPos = (int32_t)packedLen;
+	uint32_t code = 0;
+	uint32_t shift = 32;
+
+	// Lambda-like macros for bit reading
+#define PP_PEEK(x) \
+	while (shift > 32u - (x)) { \
+		if (inPos <= 0) goto pp_done; \
+		shift -= 8; \
+		inPos--; \
+		code += (uint32_t)rev[packed[inPos]] << shift; \
+	}
+
+#define PP_SHIFT(x) do { shift += (x); code = (code << (x)) & 0xFFFFFFFF; } while(0)
+
+	PP_PEEK(bitrot);
+	PP_SHIFT(bitrot);
+
+	while (outPos > 0) {
+		PP_PEEK(1);
+		uint32_t bit = code >> 31;
+		PP_SHIFT(1);
+
+		if (bit == 0) {
+			// Literal run
+			PP_PEEK(2);
+			uint32_t length = (code >> 30) + 1;
+			PP_SHIFT(2);
+			if (length == 4) {
+				for (;;) {
+					PP_PEEK(2);
+					uint32_t b2 = code >> 30;
+					PP_SHIFT(2);
+					length += b2;
+					if (b2 != 3) break;
+				}
+			}
+			for (uint32_t i = 0; i < length && outPos > 0; i++) {
+				PP_PEEK(8);
+				outPos--;
+				dst[outPos] = (uint8_t)(code >> 24);
+				PP_SHIFT(8);
+			}
+			if (outPos == 0) break;
+		}
+
+		// LZ match
+		PP_PEEK(2);
+		uint32_t cv = code >> 30;
+		PP_SHIFT(2);
+
+		uint32_t length, nbits;
+		if (cv == 0) { length = 2; nbits = eff[0]; }
+		else if (cv == 1) { length = 3; nbits = eff[1]; }
+		else if (cv == 2) { length = 4; nbits = eff[2]; }
+		else {
+			PP_PEEK(1);
+			uint32_t extra = code >> 31;
+			PP_SHIFT(1);
+			length = 5;
+			nbits = (extra == 0) ? 7 : eff[3];
+		}
+
+		PP_PEEK(nbits);
+		uint32_t ptr = (code >> (32 - nbits)) + 1;
+		PP_SHIFT(nbits);
+
+		if (length == 5) {
+			for (;;) {
+				PP_PEEK(3);
+				uint32_t b3 = code >> 29;
+				PP_SHIFT(3);
+				length += b3;
+				if (b3 != 7) break;
+			}
+		}
+
+		for (uint32_t i = 0; i < length && outPos > 0; i++) {
+			outPos--;
+			dst[outPos] = dst[outPos + ptr];
+		}
+	}
+
+pp_done:
+#undef PP_PEEK
+#undef PP_SHIFT
+	return outPos == 0;
+}
+
+// Get decompressed size from PP20 trailer
+static uint32_t pp20GetOrigSize(const uint8_t *data, uint32_t len) {
+	if (len < 12) return 0;
+	const uint8_t *t = data + len - 4;
+	return ((uint32_t)t[0] << 16) | ((uint32_t)t[1] << 8) | t[2];
+}
+
+// ============================================================================
+// Amiga DataA (MXMF) + Mdir (MXDR) extraction
+// ============================================================================
+
+static uint32_t readU32BE(const uint8_t *p) {
+	return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) | ((uint32_t)p[2] << 8) | p[3];
+}
+
+static uint16_t readU16BE(const uint8_t *p) {
+	return ((uint16_t)p[0] << 8) | p[1];
+}
+
+static bool isAmigaDataDir(const char *path) {
+	// Check if path is a directory containing DataA and Mdir
+	std::string dataA = std::string(path) + "/DataA";
+	std::string mdir = std::string(path) + "/Mdir";
+	struct stat st;
+	return (stat(dataA.c_str(), &st) == 0 && S_ISREG(st.st_mode) &&
+	        stat(mdir.c_str(), &st) == 0 && S_ISREG(st.st_mode));
+}
+
+static int extractAmiga(const char *gameDir, const char *outDir) {
+	std::string dataAPath = std::string(gameDir) + "/DataA";
+	std::string mdirPath = std::string(gameDir) + "/Mdir";
+
+	// Read Mdir
+	FILE *mf = fopen(mdirPath.c_str(), "rb");
+	if (!mf) {
+		fprintf(stderr, "Error: Cannot open '%s'\n", mdirPath.c_str());
+		return 1;
+	}
+	fseek(mf, 0, SEEK_END);
+	uint32_t mdirSize = (uint32_t)ftell(mf);
+	fseek(mf, 0, SEEK_SET);
+	std::vector<uint8_t> mdirData(mdirSize);
+	fread(mdirData.data(), 1, mdirSize, mf);
+	fclose(mf);
+
+	if (mdirSize < 18 || memcmp(mdirData.data(), "MXDR", 4) != 0) {
+		fprintf(stderr, "Error: '%s' is not a valid MXDR file\n", mdirPath.c_str());
+		return 1;
+	}
+
+	uint16_t dirEntryCount = (uint16_t)((mdirSize - 18) / 10);
+	printf("Mdir: %u directory entries\n", dirEntryCount);
+
+	// Parse directory entries (offset 18, each 10 bytes: type(2) + id(2) + disk(2) + offset(4))
+	struct DirEntry {
+		char type[3];
+		uint16_t id;
+		uint16_t disk;
+		uint32_t offset;
+	};
+	std::vector<DirEntry> entries(dirEntryCount);
+	for (uint16_t i = 0; i < dirEntryCount; i++) {
+		const uint8_t *p = mdirData.data() + 18 + i * 10;
+		entries[i].type[0] = (char)p[0];
+		entries[i].type[1] = (char)p[1];
+		entries[i].type[2] = '\0';
+		entries[i].id = readU16BE(p + 2);
+		entries[i].disk = readU16BE(p + 4);
+		entries[i].offset = readU32BE(p + 6);
+	}
+
+	// Open DataA
+	FILE *df = fopen(dataAPath.c_str(), "rb");
+	if (!df) {
+		fprintf(stderr, "Error: Cannot open '%s'\n", dataAPath.c_str());
+		return 1;
+	}
+	fseek(df, 0, SEEK_END);
+	uint32_t dataASize = (uint32_t)ftell(df);
+	fseek(df, 0, SEEK_SET);
+
+	// Read and validate MXMF header (14 bytes)
+	uint8_t mxmfHdr[14];
+	fread(mxmfHdr, 1, 14, df);
+	if (memcmp(mxmfHdr, "MXMF", 4) != 0) {
+		fprintf(stderr, "Error: '%s' is not a valid MXMF file\n", dataAPath.c_str());
+		fclose(df);
+		return 1;
+	}
+	uint16_t totalResources = readU16BE(mxmfHdr + 8);
+	uint32_t firstBlockSize = readU32BE(mxmfHdr + 10);
+	printf("DataA: %u resources, file size=%u\n", totalResources, dataASize);
+
+	mkdirp(outDir);
+
+	// Extract first PP20 block (scene table) at offset 14
+	{
+		std::vector<uint8_t> pp(firstBlockSize);
+		fseek(df, 14, SEEK_SET);
+		fread(pp.data(), 1, firstBlockSize, df);
+
+		uint32_t origSize = pp20GetOrigSize(pp.data(), firstBlockSize);
+		if (origSize > 0 && memcmp(pp.data(), "PP20", 4) == 0) {
+			std::vector<uint8_t> dec(origSize);
+			if (pp20Decompress(pp.data(), firstBlockSize, dec.data(), origSize)) {
+				char path[512];
+				snprintf(path, sizeof(path), "%s/scene_table.bin", outDir);
+				writeRawFile(path, dec.data(), origSize);
+				printf("  scene_table.bin: %u -> %u bytes\n", firstBlockSize, origSize);
+			} else {
+				fprintf(stderr, "  WARN: scene_table PP20 decompression failed\n");
+			}
+		}
+	}
+
+	// Default 32-color Amiga palette (grayscale fallback for sprites without scene palette)
+	uint8_t defaultPalette[768];
+	for (int i = 0; i < 256; i++) {
+		uint8_t v = (uint8_t)((i < 32) ? (i * 255 / 31) : 0);
+		defaultPalette[i * 3 + 0] = v;
+		defaultPalette[i * 3 + 1] = v;
+		defaultPalette[i * 3 + 2] = v;
+	}
+
+	// Extract all resources sequentially from offset 14 + firstBlockSize
+	fseek(df, 14 + firstBlockSize, SEEK_SET);
+	int extracted = 1; // counting scene_table
+	int images = 0;
+	for (uint16_t i = 0; i < totalResources - 1; i++) {
+		long entryStart = ftell(df);
+		uint8_t ehdr[8];
+		if (fread(ehdr, 1, 8, df) != 8)
+			break;
+
+		char eType[3] = {(char)ehdr[0], (char)ehdr[1], '\0'};
+		uint16_t eId = readU16BE(ehdr + 2);
+		uint32_t eCompSize = readU32BE(ehdr + 4);
+
+		if (eCompSize == 0 || eCompSize > dataASize) {
+			fprintf(stderr, "  WARN: bad entry at offset 0x%lx, stopping\n", entryStart);
+			break;
+		}
+
+		std::vector<uint8_t> payload(eCompSize);
+		if (fread(payload.data(), 1, eCompSize, df) != eCompSize)
+			break;
+
+		char fname[64];
+		char path[512];
+
+		if (memcmp(payload.data(), "PP20", 4) == 0) {
+			// Direct PP20 block
+			uint32_t origSize = pp20GetOrigSize(payload.data(), eCompSize);
+			if (origSize > 0) {
+				std::vector<uint8_t> dec(origSize);
+				if (pp20Decompress(payload.data(), eCompSize, dec.data(), origSize)) {
+					snprintf(fname, sizeof(fname), "%s_%04d.bin", eType, eId);
+					snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+					writeRawFile(path, dec.data(), origSize);
+					printf("  %s: %u -> %u bytes\n", fname, eCompSize, origSize);
+
+					// Try to extract sprite image from MXOO
+					if (origSize >= 32 && memcmp(dec.data(), "MXOO", 4) == 0) {
+						uint32_t scriptOff = readU32BE(dec.data() + 4);
+						// Sprite body: from offset 12 to scriptOff
+						if (scriptOff > 32 && scriptOff <= origSize) {
+							const uint8_t *body = dec.data() + 12;
+							uint32_t bodyLen = scriptOff - 12;
+							// Check sprite signature: body[10:12]=0x0101, body[14:16]>0
+							if (bodyLen >= 20 && body[10] == 1 && body[11] == 1) {
+								uint16_t frames = readU16BE(body + 14);
+								uint16_t w = readU16BE(body + 16);
+								uint16_t h = readU16BE(body + 18);
+								uint32_t rowBytes = (w + 7) / 8;
+								uint32_t planeSize = rowBytes * h;
+								uint32_t pixelBytes = bodyLen - 20;
+								uint32_t numPlanes = (planeSize > 0) ? pixelBytes / planeSize : 0;
+								if (w > 0 && w <= 320 && h > 0 && h <= 200 &&
+								    frames > 0 && numPlanes >= 5 && numPlanes <= 6 &&
+								    pixelBytes == planeSize * numPlanes) {
+									// Convert planar to chunky (5 color planes)
+									std::vector<uint8_t> pixels(w * h, 0);
+									const uint8_t *pixData = body + 20;
+									for (uint32_t plane = 0; plane < 5 && plane < numPlanes; plane++) {
+										uint32_t pOff = plane * planeSize;
+										for (uint16_t y = 0; y < h; y++) {
+											for (uint32_t bx = 0; bx < rowBytes; bx++) {
+												uint8_t b = pixData[pOff + y * rowBytes + bx];
+												for (int bit = 0; bit < 8; bit++) {
+													uint16_t x = (uint16_t)(bx * 8 + bit);
+													if (x < w && (b & (0x80 >> bit)))
+														pixels[y * w + x] |= (1 << plane);
+												}
+											}
+										}
+									}
+									snprintf(fname, sizeof(fname), "%s_%04d.bmp", eType, eId);
+									snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+									writeBMPEx(path, pixels.data(), w, h, defaultPalette);
+									images++;
+								}
+							}
+						}
+					}
+				} else {
+					snprintf(fname, sizeof(fname), "%s_%04d.pp20", eType, eId);
+					snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+					writeRawFile(path, payload.data(), eCompSize);
+					printf("  %s: %u bytes (decompress failed)\n", fname, eCompSize);
+				}
+			}
+		} else if (memcmp(payload.data(), "MXMM", 4) == 0 && eCompSize > 14) {
+			// Music sub-container: PP20 size at offset 10
+			uint32_t ppSize = readU32BE(payload.data() + 10);
+			if (ppSize > 0 && ppSize <= eCompSize - 14 && memcmp(payload.data() + 14, "PP20", 4) == 0) {
+				uint32_t origSize = pp20GetOrigSize(payload.data() + 14, ppSize);
+				if (origSize > 0) {
+					std::vector<uint8_t> dec(origSize);
+					if (pp20Decompress(payload.data() + 14, ppSize, dec.data(), origSize)) {
+						snprintf(fname, sizeof(fname), "%s_%04d.bin", eType, eId);
+						snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+						writeRawFile(path, dec.data(), origSize);
+						printf("  %s (music): %u -> %u bytes\n", fname, ppSize, origSize);
+					} else {
+						snprintf(fname, sizeof(fname), "%s_%04d.mxmm", eType, eId);
+						snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+						writeRawFile(path, payload.data(), eCompSize);
+						printf("  %s: %u bytes (music decompress failed)\n", fname, eCompSize);
+					}
+				}
+			} else {
+				snprintf(fname, sizeof(fname), "%s_%04d.mxmm", eType, eId);
+				snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+				writeRawFile(path, payload.data(), eCompSize);
+				printf("  %s: %u bytes (raw music container)\n", fname, eCompSize);
+			}
+		} else if (memcmp(payload.data(), "MXOO", 4) == 0) {
+			// Uncompressed object sub-container
+			snprintf(fname, sizeof(fname), "%s_%04d.mxoo", eType, eId);
+			snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+			writeRawFile(path, payload.data(), eCompSize);
+			printf("  %s: %u bytes (uncompressed object)\n", fname, eCompSize);
+		} else {
+			// Unknown format, save raw
+			snprintf(fname, sizeof(fname), "%s_%04d.raw", eType, eId);
+			snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+			writeRawFile(path, payload.data(), eCompSize);
+			printf("  %s: %u bytes (unknown)\n", fname, eCompSize);
+		}
+		extracted++;
+	}
+
+	fclose(df);
+	printf("\nExtracted %d resources (%d sprite images) to %s/\n", extracted, images, outDir);
+	return 0;
+}
+
 static void printHelp(const char *bin) {
 	printf("MACS2 Resource Extractor\n\n");
-	printf("Usage: %s <mode> <game_data_file> <output_dir> [scene_index]\n\n", bin);
+	printf("Usage: %s <mode> <game_data_path> <output_dir> [scene_index]\n\n", bin);
 	printf("Modes:\n");
 	printf("  images     - Extract background images as BMP files\n");
 	printf("  sounds     - Extract sound/music resource blobs\n");
@@ -1005,6 +1382,12 @@ static void printHelp(const char *bin) {
 	printf("  helpimages - Extract help/map panel images as BMP\n");
 	printf("  all        - Extract everything\n");
 	printf("\n");
+	printf("The game_data_path can be:\n");
+	printf("  - RESOURCE.MCS file (DOS version)\n");
+	printf("  - Directory containing RESOURCE.MCS (DOS version)\n");
+	printf("  - Directory containing DataA + Mdir (Amiga version)\n");
+	printf("\n");
+	printf("Amiga mode auto-detects and extracts all PP20-compressed resources.\n");
 	printf("If scene_index is omitted, extracts from all scenes.\n");
 }
 
@@ -1018,9 +1401,15 @@ int main(int argc, char **argv) {
 	const char *resPath = argv[2];
 	const char *outDir = argv[3];
 
+	// Check if this is an Amiga data directory (contains DataA + Mdir)
+	struct stat st;
+	if (stat(resPath, &st) == 0 && S_ISDIR(st.st_mode) && isAmigaDataDir(resPath)) {
+		printf("Detected Amiga data directory.\n");
+		return extractAmiga(resPath, outDir);
+	}
+
 	// If path is a directory, look for RESOURCE.MCS inside it
 	std::string resolvedPath = resPath;
-	struct stat st;
 	if (stat(resPath, &st) == 0 && S_ISDIR(st.st_mode)) {
 		resolvedPath = std::string(resPath) + "/RESOURCE.MCS";
 	}
