@@ -1342,7 +1342,6 @@ static int runAmiga(const char *dir, bool jsonMode, bool objectsMode) {
 	// Iterate all resources sequentially
 	fseek(df, 14 + firstBlockSize, SEEK_SET);
 	bool first = true;
-	int resIdx = 0;
 	for (uint16_t i = 0; i < totalRes - 1; i++) {
 		uint8_t ehdr[8];
 		if (fread(ehdr, 1, 8, df) != 8)
@@ -1396,7 +1395,6 @@ static int runAmiga(const char *dir, bool jsonMode, bool objectsMode) {
 			stringData = nullptr;
 			stringDataSize = 0;
 		}
-		resIdx++;
 	}
 
 	if (jsonMode)
