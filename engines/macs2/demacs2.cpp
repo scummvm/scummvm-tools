@@ -384,9 +384,9 @@ static const char *getOpcodeName(uint8_t opcode) {
 	case 0x31:
 		return "setPaletteDarkness";
 	case 0x32:
-		return "setObjectClickable";
+		return "setObjectShading";
 	case 0x33:
-		return "setObjectVisible";
+		return "setObjectScaling";
 	case 0x34:
 		return "setHotspotOverride";
 	case 0x35:
@@ -563,6 +563,13 @@ static std::string decodeParams(uint8_t opcode, uint32_t endPos, int &indent) {
 		else
 			snprintf(buf, sizeof(buf), " obj=%s pos=(%s,%s) side=%s str=%u lines=%u",
 					 obj.c_str(), x.c_str(), y.c_str(), side.c_str(), strOffset, numLines);
+		result = buf;
+		break;
+	}
+	case 0x0E: {
+		std::string bgAnim = formatValue();
+		std::string frame = formatValue();
+		snprintf(buf, sizeof(buf), " bgAnim=%s frame=%s", bgAnim.c_str(), frame.c_str());
 		result = buf;
 		break;
 	}
@@ -837,7 +844,6 @@ static std::string decodeParams(uint8_t opcode, uint32_t endPos, int &indent) {
 	}
 	case 0x07:
 	case 0x09:
-	case 0x0E:
 	case 0x13:
 	case 0x15:
 	case 0x18:
@@ -1460,7 +1466,11 @@ static const char *getObjectName(uint16_t idx) {
 	case 2:
 		return "OBJ_CAPTAIN";
 	case 3:
-		return "OBJ_AUNT";
+		return "OBJ_SHIP";
+	case 4:
+		return "OBJ_CABIN_BOY";
+	case 5:
+		return "OBJ_NARRATOR";
 	case 6:
 		return "OBJ_CORNEL";
 	case 7:
@@ -1468,13 +1478,47 @@ static const char *getObjectName(uint16_t idx) {
 	case 9:
 		return "OBJ_WOLF";
 	case 12:
-		return "OBJ_INDIAN";
+		return "OBJ_DROLL";
 	case 13:
 		return "OBJ_PATTERSON";
 	case 15:
 		return "OBJ_ROLLINS";
+	case 18:
+		return "OBJ_SHIP_GUARD";
 	case 19:
 		return "OBJ_HILTON";
+	case 22:
+		return "OBJ_WOMAN_SHIP";
+	case 33:
+		return "OBJ_SAILOR";
+	case 39:
+		return "OBJ_WAGON_OWNER";
+	case 53:
+		return "OBJ_THIEF";
+	case 69:
+		return "OBJ_SHERIFF";
+	case 77:
+		return "OBJ_INDIAN_COMPANION";
+	case 105:
+		return "OBJ_BARKEEPER";
+	case 110:
+		return "OBJ_COLONEL";
+	case 144:
+		return "OBJ_BANDIT_1";
+	case 145:
+		return "OBJ_BANDIT_2";
+	case 146:
+		return "OBJ_BANDIT_3";
+	case 147:
+		return "OBJ_WINNETOU";
+	case 149:
+		return "OBJ_CHIEF";
+	case 167:
+		return "OBJ_WINNETOU_INDIANS";
+	case 168:
+		return "OBJ_INDIAN_ELDER";
+	case 181:
+		return "OBJ_WINNETOU_ENDING";
 	// Items (full game, indices from _objectNames)
 	case 0x08:
 		return "OBJ_BOARD";
@@ -1788,8 +1832,12 @@ static std::string decodeCLine(uint8_t opcode, uint32_t endPos, int &indent) {
 			result2 += " // \"" + decoded + "\"";
 		return result2;
 	}
-	case 0x0E:
-		return "changeAnimation();";
+	case 0x0E: {
+		std::string bgAnim = formatValueC();
+		std::string frame = formatValueC();
+		snprintf(buf, sizeof(buf), "changeAnimation(%s, %s);", bgAnim.c_str(), frame.c_str());
+		return buf;
+	}
 	case 0x0F: {
 		std::string v = formatValueC();
 		snprintf(buf, sizeof(buf), "frameWait(%s);", v.c_str());
@@ -1989,13 +2037,13 @@ static std::string decodeCLine(uint8_t opcode, uint32_t endPos, int &indent) {
 	case 0x32: {
 		std::string o = formatValueC();
 		std::string v = formatValueC();
-		snprintf(buf, sizeof(buf), "setObjectClickable(%s, %s);", o.c_str(), v.c_str());
+		snprintf(buf, sizeof(buf), "setObjectShading(%s, %s);", o.c_str(), v.c_str());
 		return buf;
 	}
 	case 0x33: {
 		std::string o = formatValueC();
 		std::string v = formatValueC();
-		snprintf(buf, sizeof(buf), "setObjectVisible(%s, %s);", o.c_str(), v.c_str());
+		snprintf(buf, sizeof(buf), "setObjectScaling(%s, %s);", o.c_str(), v.c_str());
 		return buf;
 	}
 	case 0x34: {
@@ -2240,7 +2288,7 @@ int main(int argc, char **argv) {
 		printf("#include \"engines/macs2/scriptexecutor.h\"\n\n");
 		printf("using namespace Macs2::Script;\n\n");
 		printf("static ScriptExecutor _executor;\n\n");
-		printf("typedef uint16_t Object;\ntypedef uint16_t Value;\n\n");
+		printf("typedef uint16 Object;\ntypedef uint16 Value;\n\n");
 		printf("static const Value TRUE = 1;\n");
 		printf("static const Value FALSE = 0;\n");
 		printf("static const Value FADE_CUT = 0;\n");
@@ -2279,16 +2327,16 @@ int main(int argc, char **argv) {
 		printf("static void moveObject(Object obj, Value scene, Value x, Value y) { _executor.scriptMoveObject(); }\n");
 		printf("static void removeFromScene(Object obj) { _executor.scriptMoveObject(); }\n");
 		printf("static void changeScene(Value scene, Value mode, Value speed) { _executor.scriptChangeScene(); }\n");
-		printf("static void showDialogue(Object obj, Value x, Value y, Value side, uint16_t s, uint16_t n) { _executor.scriptShowDialogue(); }\n");
-		printf("static void printStringLeft(Value x, Value y, uint16_t s, uint16_t n) { _executor.scriptPrintStringLeft(); }\n");
-		printf("static void printStringRight(Value x, Value y, uint16_t s, uint16_t n) { _executor.scriptPrintStringRight(); }\n");
+		printf("static void showDialogue(Object obj, Value x, Value y, Value side, uint16 s, uint16 n) { _executor.scriptShowDialogue(); }\n");
+		printf("static void printStringLeft(Value x, Value y, uint16 s, uint16 n) { _executor.scriptPrintStringLeft(); }\n");
+		printf("static void printStringRight(Value x, Value y, uint16 s, uint16 n) { _executor.scriptPrintStringRight(); }\n");
 		printf("static void frameWait(Value t) { _executor.scriptFrameWait(); }\n");
 		printf("static void walkToPosition(Object o, Value x, Value y) { _executor.scriptWalkToPosition(); }\n");
 		printf("static void waitForWalk(Object o) { _executor.scriptWaitForWalk(); }\n");
 		printf("static void setPathfinding(Value a, Value b, Value c) { _executor.scriptSetPathfinding(); }\n");
-		printf("static void skipWord(uint16_t w) { _executor.scriptSkipWord(); }\n");
+		printf("static void skipWord(uint16 w) { _executor.scriptSkipWord(); }\n");
 		printf("static void clearDialogueChoices() { _executor.scriptClearDialogueChoices(); }\n");
-		printf("static void addDialogueChoice(Value i, uint16_t s, uint16_t n) { _executor.scriptAddDialogueChoice(); }\n");
+		printf("static void addDialogueChoice(Value i, uint16 s, uint16 n) { _executor.scriptAddDialogueChoice(); }\n");
 		printf("static void showDialogueChoice(Object o, Value x, Value y, Value s) { _executor.scriptShowDialogueChoice(); }\n");
 		printf("static void dismissPanel() { _executor.scriptDismissPanel(); }\n");
 		printf("static void walkToAndPickup(Object a, Object o) { _executor.scriptWalkToAndPickup(); }\n");
@@ -2302,36 +2350,36 @@ int main(int argc, char **argv) {
 		printf("static void setMotion(Object o, Value t, Value d, Value di) { _executor.scriptSetMotion(); }\n");
 		printf("static void setOrientation(Object o, Value a) { _executor.scriptSetOrientation(); }\n");
 		printf("static void moveToPosition(Object o, Value x, Value y, Value v) { _executor.scriptMoveToPosition(); }\n");
-		printf("static void loadSpecialAnim(Object o, Value d, uint8_t i) { _executor.scriptLoadSpecialAnim(); }\n");
+		printf("static void loadSpecialAnim(Object o, Value d, uint8 i) { _executor.scriptLoadSpecialAnim(); }\n");
 		printf("static void setDirection(Object o, Value m) { _executor.scriptSetDirection(); }\n");
 		printf("static void stopAnimation() { _executor.scriptStopAnimation(); }\n");
-		printf("static void changeAnimation() { _executor.scriptChangeAnimation(); }\n");
+		printf("static void changeAnimation(Value bgAnimIndex, Value targetFrame) { _executor.scriptChangeAnimation(); }\n");
 		printf("static void openInventory(Object o) { _executor.scriptOpenInventory(); }\n");
-		printf("static void loadObjectAnim(Object o, Value s, Value d, uint8_t i) { _executor.scriptLoadObjectAnim(); }\n");
+		printf("static void loadObjectAnim(Object o, Value s, Value d, uint8 i) { _executor.scriptLoadObjectAnim(); }\n");
 		printf("static void checkObjectData(Object o) { _executor.scriptCheckObjectData(); }\n");
 		printf("static Value checkInventory(Object o, Value v) { _executor.scriptCheckInventory(); return 0; }\n");
 		printf("static void setSnapToTarget(Object o, Value v) { _executor.scriptSetSnapToTarget(); }\n");
 		printf("static Value testSceneAnimFrame(Value a, Value lo, Value hi) { _executor.scriptTestSceneAnimFrame(); return 0; }\n");
 		printf("static Value testObjectAnimFrame(Object o, Value s, Value lo, Value hi) { _executor.scriptTestObjectAnimFrame(); return 0; }\n");
 		printf("static void setPaletteDarkness(Value v) { _executor.scriptSetPaletteDarkness(); }\n");
-		printf("static void setObjectClickable(Object o, Value v) { _executor.scriptSetObjectClickable(); }\n");
-		printf("static void setObjectVisible(Object o, Value v) { _executor.scriptSetObjectVisible(); }\n");
+		printf("static void setObjectShading(Object o, Value v) { _executor.scriptSetObjectShading(); }\n");
+		printf("static void setObjectScaling(Object o, Value v) { _executor.scriptSetObjectScaling(); }\n");
 		printf("static void setHotspotOverride(Value a, Value b) { _executor.scriptSetHotspotOverride(); }\n");
 		printf("static void setObjectBounds(Object o, Object p, Value a, Value b, Value c) { _executor.scriptSetObjectBounds(); }\n");
 		printf("static void dismissAllPanels() { _executor.scriptDismissAllPanels(); }\n");
 		printf("static void resetToSceneScript() { _executor.scriptResetToSceneScript(); }\n");
-		printf("static void loadOverlayFont(uint8_t r) { _executor.scriptLoadOverlayFont(); }\n");
+		printf("static void loadOverlayFont(uint8 r) { _executor.scriptLoadOverlayFont(); }\n");
 		printf("static void endOverlayText() { _executor.scriptEndOverlayText(); }\n");
-		printf("static void addOverlayTextEntry(Value x, Value y, Value a, uint16_t s, uint16_t t) { _executor.scriptAddOverlayTextEntry(); }\n");
+		printf("static void addOverlayTextEntry(Value x, Value y, Value a, uint16 s, uint16 t) { _executor.scriptAddOverlayTextEntry(); }\n");
 		printf("static void clearOverlayText() { _executor.scriptClearOverlayText(); }\n");
 		printf("static void fadeToBlack(Value s) { _executor.scriptFadeToBlack(); }\n");
 		printf("static void fadeFromBlack(Value s) { _executor.scriptFadeFromBlack(); }\n");
-		printf("static void loadPcmSound(uint8_t r) { _executor.scriptLoadPcmSound(); }\n");
+		printf("static void loadPcmSound(uint8 r) { _executor.scriptLoadPcmSound(); }\n");
 		printf("static void freePcmSound() { _executor.scriptFreePcmSound(); }\n");
 		printf("static void playPcmSound() { _executor.scriptPlayPcmSound(); }\n");
 		printf("static void waitForSound() { _executor.scriptWaitForSound(); }\n");
 		printf("static void stopPcmSound() { _executor.scriptStopPcmSound(); }\n");
-		printf("static void loadMusicSlot(Value s, uint8_t r) { _executor.scriptLoadMusicSlot(); }\n");
+		printf("static void loadMusicSlot(Value s, uint8 r) { _executor.scriptLoadMusicSlot(); }\n");
 		printf("static void playMusicSlot(Value s, Value a, Value b) { _executor.scriptPlayMusicSlot(); }\n");
 		printf("static void stopMusicSlot(Value s, Value a, Value b) { _executor.scriptStopMusicSlot(); }\n");
 		printf("static void freeMusicSlot(Value s) { _executor.scriptFreeMusicSlot(); }\n");
