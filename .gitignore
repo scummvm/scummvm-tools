@@ -7,16 +7,21 @@
 
 /.gdb_history
 /construct_mohawk
+/create_macs2_translation
 /create_sjisfnt
+/create_twine_translation
 /decine
 /decompile
 /degob
 /dekyra
+/demacs2
 /deprince
 /descumm
 /desword2
 /detwine
+/extract_twine
 /extract_hadesch_img
+/extract_macs2
 /extract_mohawk
 /extract_mps
 /extract_gob_cdi

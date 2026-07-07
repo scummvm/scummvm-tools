@@ -35,6 +35,7 @@ Source: "deprince.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "descumm.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "desword2.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "detwine.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "extract_twine.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "extract_gob_cdi.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "extract_hadesch.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "extract_hadesch_img.exe"; DestDir: "{app}"; Flags: ignoreversion
