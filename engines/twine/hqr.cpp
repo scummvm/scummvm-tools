@@ -25,6 +25,8 @@
 #include "common/substream.h"
 #include "common/memstream.h"
 
+#include <string.h>
+
 namespace TwinE {
 
 namespace HQR {
@@ -127,7 +129,7 @@ int32 getEntry(uint8 *ptr, const Common::Filename &filename, int32 index) {
 	file.seek(4 + index * 4, SEEK_SET);
 	uint32 offsetToData = file.readUint32LE();
 
-	if (offsetToData == 0)
+	if (offsetToData == 0 || offsetToData >= file.size())
 		return 0;
 
 	file.seek(offsetToData, SEEK_SET);
@@ -174,7 +176,13 @@ int32 entrySize(const Common::Filename &filename, int32 index) {
 	file.seek(4 + index * 4, SEEK_SET);
 	uint32 offsetToData = file.readUint32LE();
 
+	if (offsetToData == 0 || offsetToData >= file.size())
+		return 0;
+
 	file.seek(offsetToData, SEEK_SET);
+	if ((uint32)file.pos() + 4u > file.size())
+		return 0;
+
 	uint32 realSize = file.readUint32LE();
 
 	return realSize;
@@ -293,6 +301,20 @@ bool loadHqrEntry(const Common::Filename &filename, int32 index, HqrPackEntry &o
 	out.blank = true;
 	out.data.clear();
 
+	uint8 *data = nullptr;
+	const int32 size = getAllocEntry(&data, filename, index);
+	if (size <= 0 || !data)
+		return true;
+
+	out.blank = false;
+	out.data.assign(data, data + size);
+	free(data);
+	return true;
+}
+
+static bool readRawDiskBlock(const Common::Filename &filename, int32 index, std::vector<uint8> &out) {
+	out.clear();
+
 	Common::File file;
 	file.open(filename, "r");
 	if (!file.isOpen())
@@ -304,75 +326,140 @@ bool loadHqrEntry(const Common::Filename &filename, int32 index, HqrPackEntry &o
 
 	file.seek(4 + index * 4, SEEK_SET);
 	const uint32 offsetToData = file.readUint32LE();
-	if (offsetToData == 0)
-		return true;
-
-	uint8 *data = nullptr;
-	const int32 size = getAllocEntry(&data, filename, index);
-	if (size <= 0 || !data)
+	if (offsetToData == 0 || offsetToData >= file.size())
 		return false;
 
-	out.blank = false;
-	out.data.assign(data, data + size);
-	free(data);
+	file.seek(offsetToData, SEEK_SET);
+	if ((uint32)file.pos() + 10u > file.size())
+		return false;
+
+	const uint32 realSize = file.readUint32LE();
+	const uint32 compSize = file.readUint32LE();
+	const uint16 mode = file.readUint16LE();
+	const uint32 payloadSize = (mode == 0) ? realSize : compSize;
+	if ((uint32)file.pos() + payloadSize > file.size())
+		return false;
+
+	out.resize(10 + payloadSize);
+	out[0] = (uint8)(realSize);
+	out[1] = (uint8)(realSize >> 8);
+	out[2] = (uint8)(realSize >> 16);
+	out[3] = (uint8)(realSize >> 24);
+	out[4] = (uint8)(compSize);
+	out[5] = (uint8)(compSize >> 8);
+	out[6] = (uint8)(compSize >> 16);
+	out[7] = (uint8)(compSize >> 24);
+	out[8] = (uint8)(mode);
+	out[9] = (uint8)(mode >> 8);
+	file.read_throwsOnError(out.data() + 10, payloadSize);
 	return true;
 }
 
-bool writeHqrArchive(const Common::Filename &filename, const std::vector<HqrPackEntry> &entries) {
-	if (entries.empty())
+bool copyHqrFile(const Common::Filename &src, const Common::Filename &dst) {
+	Common::File in;
+	in.open(src, "r");
+	if (!in.isOpen())
 		return false;
 
-	const size_t numEntries = entries.size();
-	const uint32 headerSize = (uint32)((numEntries + 1) * 4);
-	std::vector<uint8> file(headerSize, 0);
+	const int64 size = in.size();
+	if (size <= 0)
+		return false;
 
-	file[0] = (uint8)(headerSize);
-	file[1] = (uint8)(headerSize >> 8);
-	file[2] = (uint8)(headerSize >> 16);
-	file[3] = (uint8)(headerSize >> 24);
-
-	uint32 dataOffset = headerSize;
-	std::vector<uint32> offsets(numEntries, 0);
-
-	for (size_t i = 0; i + 1 < numEntries; i++) {
-		if (entries[i].blank || entries[i].data.empty())
-			continue;
-
-		offsets[i] = dataOffset;
-
-		const uint32 realSize = (uint32)entries[i].data.size();
-		file.push_back((uint8)(realSize));
-		file.push_back((uint8)(realSize >> 8));
-		file.push_back((uint8)(realSize >> 16));
-		file.push_back((uint8)(realSize >> 24));
-		file.push_back((uint8)(realSize));
-		file.push_back((uint8)(realSize >> 8));
-		file.push_back((uint8)(realSize >> 16));
-		file.push_back((uint8)(realSize >> 24));
-		file.push_back(0);
-		file.push_back(0);
-		file.insert(file.end(), entries[i].data.begin(), entries[i].data.end());
-
-		dataOffset += 10 + realSize;
-	}
-
-	offsets[numEntries - 1] = dataOffset;
-
-	for (size_t i = 0; i < numEntries; i++) {
-		const uint32 off = offsets[i];
-		const size_t pos = 4 + i * 4;
-		file[pos] = (uint8)(off);
-		file[pos + 1] = (uint8)(off >> 8);
-		file[pos + 2] = (uint8)(off >> 16);
-		file[pos + 3] = (uint8)(off >> 24);
-	}
+	std::vector<uint8> buf((size_t)size);
+	in.read_throwsOnError(buf.data(), (uint32)size);
+	in.close();
 
 	Common::File out;
-	out.open(filename, "wb");
+	out.open(dst, "wb");
 	if (!out.isOpen())
 		return false;
 
-	out.write(file.data(), file.size());
+	out.write(buf.data(), (uint32)size);
+	return true;
+}
+
+std::vector<uint8> makeUncompressedDiskBlock(const std::vector<uint8> &data) {
+	std::vector<uint8> out(10 + data.size());
+	const uint32 realSize = (uint32)data.size();
+	out[0] = (uint8)(realSize);
+	out[1] = (uint8)(realSize >> 8);
+	out[2] = (uint8)(realSize >> 16);
+	out[3] = (uint8)(realSize >> 24);
+	out[4] = out[0];
+	out[5] = out[1];
+	out[6] = out[2];
+	out[7] = out[3];
+	out[8] = 0;
+	out[9] = 0;
+	if (!data.empty())
+		memcpy(out.data() + 10, data.data(), data.size());
+	return out;
+}
+
+bool patchHqrArchive(const Common::Filename &templateFile, const Common::Filename &outFile,
+		const std::map<int32_t, std::vector<uint8>> &patches) {
+	if (patches.empty())
+		return copyHqrFile(templateFile, outFile);
+
+	Common::File in;
+	in.open(templateFile, "r");
+	if (!in.isOpen())
+		return false;
+
+	const uint32 headerSize = in.readUint32LE();
+	const int32 numEntries = (int32)(headerSize / 4) - 1;
+	if (numEntries <= 0)
+		return false;
+
+	std::vector<uint32> oldOffsets((size_t)numEntries + 1, 0);
+	for (int32 i = 0; i <= numEntries; i++) {
+		in.seek(4 + (uint32)i * 4, SEEK_SET);
+		oldOffsets[(size_t)i] = in.readUint32LE();
+	}
+
+	std::vector<uint32> newOffsets((size_t)numEntries + 1, 0);
+	std::vector<uint8> fileData;
+	fileData.reserve(in.size());
+	fileData.resize(headerSize, 0);
+	fileData[0] = (uint8)(headerSize);
+	fileData[1] = (uint8)(headerSize >> 8);
+	fileData[2] = (uint8)(headerSize >> 16);
+	fileData[3] = (uint8)(headerSize >> 24);
+
+	uint32 dataOffset = headerSize;
+	std::vector<uint8> block;
+
+	for (int32 i = 0; i < numEntries; i++) {
+		const auto patchIt = patches.find(i);
+		if (patchIt != patches.end()) {
+			block = patchIt->second;
+		} else if (!readRawDiskBlock(templateFile, i, block)) {
+			block.clear();
+		}
+
+		if (!block.empty()) {
+			newOffsets[(size_t)i] = dataOffset;
+			fileData.insert(fileData.end(), block.begin(), block.end());
+			dataOffset += (uint32)block.size();
+		}
+	}
+	newOffsets[(size_t)numEntries] = dataOffset;
+
+	for (int32 i = 0; i <= numEntries; i++) {
+		const uint32 off = newOffsets[(size_t)i];
+		const size_t pos = 4 + (size_t)i * 4;
+		fileData[pos] = (uint8)(off);
+		fileData[pos + 1] = (uint8)(off >> 8);
+		fileData[pos + 2] = (uint8)(off >> 16);
+		fileData[pos + 3] = (uint8)(off >> 24);
+	}
+
+	Common::File out;
+	out.open(outFile, "wb");
+	if (!out.isOpen())
+		return false;
+
+	out.write(fileData.data(), fileData.size());
 	return true;
 }
 

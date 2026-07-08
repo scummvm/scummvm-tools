@@ -25,6 +25,7 @@
 #include "common/stream.h"
 #include "common/file.h"
 
+#include <map>
 #include <vector>
 
 namespace TwinE {
@@ -99,7 +100,10 @@ struct HqrPackEntry {
 };
 
 bool loadHqrEntry(const Common::Filename &filename, int32 index, HqrPackEntry &out);
-bool writeHqrArchive(const Common::Filename &filename, const std::vector<HqrPackEntry> &entries);
+bool copyHqrFile(const Common::Filename &src, const Common::Filename &dst);
+std::vector<uint8> makeUncompressedDiskBlock(const std::vector<uint8> &data);
+bool patchHqrArchive(const Common::Filename &templateFile, const Common::Filename &outFile,
+		const std::map<int32_t, std::vector<uint8>> &patches);
 
 } // namespace HQR
 

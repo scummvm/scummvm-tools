@@ -27,10 +27,13 @@
  *   2. Translate the .po file (Poedit, Weblate, etc.)
  *   3. Pack:    create_twine_translation pack <translated.po> <template TEXT.HQR> <output TEXT.HQR> [--lang N]
  *
- * PO format:
- *   msgctxt "bank:2:slot:0:textId:123"
- *   msgid "Original dialog line"
- *   msgstr "Translated dialog line"
+ * PO format (Weblate / game-translations compatible):
+ *   # 1:Options and Menus dialogs
+ *   #: 1:0
+ *   msgid "Normal"
+ *   msgstr "..."
+ *
+ * The first number in the comments is (bank * 2 + 1); the second is the slot index.
  */
 
 #include "common/file.h"
@@ -66,6 +69,43 @@ static const char *const kBankNames[] = {
 	nullptr
 };
 
+static const char *const kBankDisplayNames[] = {
+	"Options and Menus",
+	"Credits",
+	"Inventory, Intro and Holomap",
+	"Citadel Island",
+	"Principal Island",
+	"White Leaf Desert",
+	"Proxima Island",
+	"Rebellion Island",
+	"Hamalayi Mountains - Southern Range",
+	"Hamalayi Mountains - Northern Range",
+	"Tippet Island",
+	"Brundle Island",
+	"Fortress Island",
+	"Polar Island",
+	nullptr
+};
+
+static const char *const kBankDisplayNamesLba2[] = {
+	"Options and Menus",
+	"Credits",
+	"Inventory and Holomap",
+	"Citadel Island",
+	"Unused",
+	"Desert Island",
+	"Emerald Moon",
+	"Otringal",
+	"Celebration Island",
+	"Wannies Island",
+	"Mosquibees Island",
+	"Francos Island",
+	"Island CX",
+	"Undergas elevator",
+	"Volcano Island",
+	nullptr
+};
+
 struct GameTextInfo {
 	bool lba1;
 	int entryCount;
@@ -76,8 +116,25 @@ struct GameTextInfo {
 struct TextLine {
 	int slot;
 	int16_t textId;
+	uint8_t flag;
 	std::string text;
 };
+
+struct TextBankIndices {
+	int ordIndex;
+	int lbtIndex;
+};
+
+static TextBankIndices getTextBankIndices(const GameTextInfo &info, int bank, int language) {
+	const int base = bank * 2 + info.entryCount * language;
+	TextBankIndices indices;
+	indices.lbtIndex = base;
+	if (!info.lba1 && bank == 0)
+		indices.ordIndex = base + 3;
+	else
+		indices.ordIndex = base + 1;
+	return indices;
+}
 
 static void printUsage(const char *bin) {
 	printf("LBA TEXT.HQR translation tool\n\n");
@@ -276,13 +333,18 @@ static bool parseTextBank(const uint8 *ordData, int32 ordSize, const uint8 *lbtD
 		if (end >= (uint16)lbtSize)
 			break;
 
-		if (!lba1)
-			++start;
+		uint8 flag = 0;
+		uint16 textStart = start;
+		if (!lba1) {
+			if (textStart < lbtSize)
+				flag = lbtData[textStart];
+			++textStart;
+		}
 
 		std::string result;
-		if (start < lbtSize && end > start) {
-			lbtStream.seek(start);
-			for (int32 i = start; i < (int32)end - 1 && i < lbtSize; ++i) {
+		if (textStart < lbtSize && end > textStart) {
+			lbtStream.seek(textStart);
+			for (int32 i = textStart; i < (int32)end - 1 && i < lbtSize; ++i) {
 				const char c = (char)lbtStream.readByte();
 				if (c == '\0')
 					break;
@@ -293,6 +355,7 @@ static bool parseTextBank(const uint8 *ordData, int32 ordSize, const uint8 *lbtD
 		TextLine line;
 		line.slot = entry;
 		line.textId = textId;
+		line.flag = flag;
 		line.text = result;
 		lines.push_back(line);
 
@@ -302,17 +365,19 @@ static bool parseTextBank(const uint8 *ordData, int32 ordSize, const uint8 *lbtD
 	return !lines.empty();
 }
 
-static std::vector<uint8> buildLbtBlob(const std::vector<std::string> &strings, bool lba1) {
+static std::vector<uint8> buildLbtBlob(const std::vector<TextLine> &lines, bool lba1) {
 	std::vector<uint16_t> offsets;
 	std::vector<uint8> stringData;
 
-	const uint16_t tableSize = (uint16_t)((strings.size() + 1) * 2);
+	const uint16_t tableSize = (uint16_t)((lines.size() + 1) * 2);
 	uint16_t pos = tableSize;
 
-	for (size_t i = 0; i < strings.size(); i++) {
+	for (const TextLine &line : lines) {
 		const uint16_t stored = lba1 ? pos : (uint16_t)(pos - 1);
 		offsets.push_back(stored);
-		for (unsigned char c : strings[i])
+		if (!lba1)
+			stringData.push_back(line.flag);
+		for (unsigned char c : line.text)
 			stringData.push_back(c);
 		stringData.push_back(0);
 		pos = (uint16_t)(tableSize + stringData.size());
@@ -329,14 +394,41 @@ static std::vector<uint8> buildLbtBlob(const std::vector<std::string> &strings, 
 	return out;
 }
 
-static int langBaseIndex(int bank, int language, int entryCount) {
-	return bank * 2 + entryCount * language;
-}
 
 static const char *bankName(int bank) {
 	if (bank >= 0 && kBankNames[bank])
 		return kBankNames[bank];
 	return "unknown";
+}
+
+static const char *bankDisplayName(int bank, bool lba1) {
+	const char *const *names = lba1 ? kBankDisplayNames : kBankDisplayNamesLba2;
+	if (bank >= 0 && names[bank])
+		return names[bank];
+	return bankName(bank);
+}
+
+static int bankFromDisplaySection(const char *section, bool lba1) {
+	if (!section)
+		return -1;
+
+	const char *const *names = lba1 ? kBankDisplayNames : kBankDisplayNamesLba2;
+	for (int bank = 0; names[bank]; bank++) {
+		const char *name = names[bank];
+		const size_t nameLen = strlen(name);
+		if (strncmp(section, name, nameLen) == 0)
+			return bank;
+	}
+	// Accept LBA1 section names when packing LBA2 PO files from mixed sources.
+	if (!lba1) {
+		for (int bank = 0; kBankDisplayNames[bank]; bank++) {
+			const char *name = kBankDisplayNames[bank];
+			const size_t nameLen = strlen(name);
+			if (strncmp(section, name, nameLen) == 0)
+				return bank;
+		}
+	}
+	return -1;
 }
 
 static int doExtract(const Common::Filename &textFile, const char *outPath, const GameTextInfo &info, int language) {
@@ -351,8 +443,9 @@ static int doExtract(const Common::Filename &textFile, const char *outPath, cons
 		return 1;
 	}
 
-	fprintf(out, "# Little Big Adventure TEXT.HQR translation file\n");
+	fprintf(out, "# Little Big Adventure %d language file\n", info.lba1 ? 1 : 2);
 	fprintf(out, "# Copyright (C) ScummVM Team\n");
+	fprintf(out, "# This file is distributed under the same license as the ScummVM package.\n");
 	fprintf(out, "#\n");
 	fprintf(out, "msgid \"\"\n");
 	fprintf(out, "msgstr \"\"\n");
@@ -364,9 +457,9 @@ static int doExtract(const Common::Filename &textFile, const char *outPath, cons
 
 	int totalEntries = 0;
 	for (int bank = 0; bank < info.numBanks; bank++) {
-		const int baseIndex = langBaseIndex(bank, language, info.entryCount);
-		const int lbtIndex = baseIndex;
-		const int ordIndex = baseIndex + 1;
+		const TextBankIndices indices = getTextBankIndices(info, bank, language);
+		const int lbtIndex = indices.lbtIndex;
+		const int ordIndex = indices.ordIndex;
 
 		TwinE::HQR::HqrPackEntry ordEntry;
 		TwinE::HQR::HqrPackEntry lbtEntry;
@@ -386,11 +479,10 @@ static int doExtract(const Common::Filename &textFile, const char *outPath, cons
 			continue;
 		}
 
-		fprintf(out, "#. bank: %d (%s)\n", bank, bankName(bank));
+		const int bankRef = bank * 2 + 1;
 		for (const TextLine &line : lines) {
-			if (line.text.empty())
-				continue;
-			fprintf(out, "msgctxt \"bank:%d:slot:%d:textId:%d\"\n", bank, line.slot, (int)line.textId);
+			fprintf(out, "# %d:%s dialogs\n", bankRef, bankDisplayName(bank, info.lba1));
+			fprintf(out, "#: %d:%d\n", bankRef, line.slot);
 			fprintf(out, "msgid \"%s\"\n", poEscape(cp850ToUtf8(line.text)).c_str());
 			fprintf(out, "msgstr \"\"\n\n");
 			totalEntries++;
@@ -425,15 +517,16 @@ static int doPack(const char *poPath, const Common::Filename &templateFile, cons
 	char buf[8192];
 	int currentBank = -1;
 	int currentSlot = -1;
+	bool hasEntry = false;
 	bool inMsgstr = false;
 	std::string currentMsgstr;
 
 	auto flushEntry = [&]() {
-		if (currentBank >= 0 && currentSlot >= 0 && !currentMsgstr.empty()) {
+		if (hasEntry && currentBank >= 0 && currentSlot >= 0 && !currentMsgstr.empty()) {
 			translations[std::make_pair(currentBank, currentSlot)] = poUnescape(currentMsgstr);
 		}
-		currentBank = -1;
 		currentSlot = -1;
+		hasEntry = false;
 		currentMsgstr.clear();
 		inMsgstr = false;
 	};
@@ -443,12 +536,35 @@ static int doPack(const char *poPath, const Common::Filename &templateFile, cons
 		while (len > 0 && (buf[len - 1] == '\n' || buf[len - 1] == '\r'))
 			buf[--len] = '\0';
 
+		if (buf[0] == '#' && buf[1] == ' ') {
+			const char *section = strchr(buf + 2, ':');
+			if (section) {
+				flushEntry();
+				section++;
+				const int bank = bankFromDisplaySection(section, info.lba1);
+				if (bank >= 0)
+					currentBank = bank;
+			}
+			continue;
+		}
+		if (strncmp(buf, "#: ", 3) == 0) {
+			flushEntry();
+			int refId = 0, slot = 0;
+			if (sscanf(buf + 3, "%d:%d", &refId, &slot) == 2) {
+				currentSlot = slot;
+				if (currentBank < 0 && refId > 0)
+					currentBank = (refId - 1) / 2;
+				hasEntry = true;
+			}
+			continue;
+		}
 		if (strncmp(buf, "msgctxt \"", 9) == 0) {
 			flushEntry();
 			int bank = 0, slot = 0, textId = 0;
 			if (sscanf(buf + 9, "bank:%d:slot:%d:textId:%d", &bank, &slot, &textId) == 3) {
 				currentBank = bank;
 				currentSlot = slot;
+				hasEntry = true;
 				(void)textId;
 			}
 			continue;
@@ -478,66 +594,81 @@ static int doPack(const char *poPath, const Common::Filename &templateFile, cons
 	flushEntry();
 	fclose(in);
 
-	const int32 numEntries = TwinE::HQR::numEntries(templateFile);
-	std::vector<TwinE::HQR::HqrPackEntry> entries((size_t)numEntries);
-
-	for (int32 i = 0; i < numEntries; i++) {
-		if (!TwinE::HQR::loadHqrEntry(templateFile, i, entries[(size_t)i])) {
-			fprintf(stderr, "Failed to load template entry %d\n", (int)i);
-			return 1;
+	if (translations.empty()) {
+		const Common::Filename outFile(outPath);
+		const Common::Filename inFile(templateFile);
+		if (inFile.getFullPath() != outFile.getFullPath()) {
+			if (!TwinE::HQR::copyHqrFile(templateFile, outFile)) {
+				fprintf(stderr, "Failed to copy %s to %s\n", templateFile.getFullPath().c_str(), outPath);
+				return 1;
+			}
 		}
+		printf("Packed 0 text banks for language %d into %s (unchanged)\n", language, outPath);
+		return 0;
 	}
 
+	std::map<int32_t, std::vector<uint8>> patches;
 	int replacedBanks = 0;
-	for (int bank = 0; bank < info.numBanks; bank++) {
-		const int baseIndex = langBaseIndex(bank, language, info.entryCount);
-		const int lbtIndex = baseIndex;
-		const int ordIndex = baseIndex + 1;
-		if (ordIndex < 0 || lbtIndex >= numEntries)
-			continue;
 
-		TwinE::HQR::HqrPackEntry &ordEntry = entries[(size_t)ordIndex];
-		TwinE::HQR::HqrPackEntry &lbtEntry = entries[(size_t)lbtIndex];
-		if (ordEntry.blank || ordEntry.data.empty())
+	for (int bank = 0; bank < info.numBanks; bank++) {
+		const TextBankIndices indices = getTextBankIndices(info, bank, language);
+		const int lbtIndex = indices.lbtIndex;
+		const int ordIndex = indices.ordIndex;
+
+		TwinE::HQR::HqrPackEntry ordEntry;
+		TwinE::HQR::HqrPackEntry lbtEntry;
+		if (!TwinE::HQR::loadHqrEntry(templateFile, ordIndex, ordEntry) || ordEntry.blank)
+			continue;
+		if (!TwinE::HQR::loadHqrEntry(templateFile, lbtIndex, lbtEntry) || lbtEntry.blank)
 			continue;
 
 		std::vector<TextLine> lines;
-		if (lbtEntry.blank) {
-			// Create a new LBT from ORD only.
-			const int numIdxEntries = (int)(ordEntry.data.size() / 2);
-			lines.reserve(numIdxEntries);
-			for (int slot = 0; slot < numIdxEntries; slot++) {
-				TextLine line;
-				line.slot = slot;
-				line.textId = (int16_t)(ordEntry.data[slot * 2] | (ordEntry.data[slot * 2 + 1] << 8));
-				line.text.clear();
-				lines.push_back(line);
-			}
-		} else if (!parseTextBank(ordEntry.data.data(), (int32)ordEntry.data.size(), lbtEntry.data.data(),
+		if (!parseTextBank(ordEntry.data.data(), (int32)ordEntry.data.size(), lbtEntry.data.data(),
 					(int32)lbtEntry.data.size(), info.lba1, lines)) {
 			fprintf(stderr, "Warning: failed to parse bank %d (%s), skipping\n", bank, bankName(bank));
 			continue;
 		}
 
-		std::vector<std::string> packedStrings;
-		packedStrings.reserve(lines.size());
-		for (const TextLine &line : lines) {
-			std::string translated = line.text;
+		bool changed = false;
+		for (TextLine &line : lines) {
 			auto it = translations.find(std::make_pair(bank, line.slot));
-			if (it != translations.end() && !it->second.empty())
-				translated = it->second;
-			packedStrings.push_back(utf8ToCp850(translated));
+			if (it != translations.end()) {
+				const std::string packed = utf8ToCp850(it->second);
+				if (packed != line.text) {
+					line.text = packed;
+					changed = true;
+				}
+			}
 		}
 
-		lbtEntry.blank = false;
-		lbtEntry.data = buildLbtBlob(packedStrings, info.lba1);
+		if (!changed)
+			continue;
+
+		patches[lbtIndex] = TwinE::HQR::makeUncompressedDiskBlock(buildLbtBlob(lines, info.lba1));
 		replacedBanks++;
 	}
 
 	const Common::Filename outFile(outPath);
-	if (!TwinE::HQR::writeHqrArchive(outFile, entries)) {
+	const Common::Filename inFile(templateFile);
+	Common::Filename writeTarget(outPath);
+	std::string tempPath;
+	const bool inPlace = (inFile.getFullPath() == outFile.getFullPath());
+
+	if (inPlace && !patches.empty()) {
+		tempPath = std::string(outPath) + ".tmp";
+		writeTarget = Common::Filename(tempPath.c_str());
+	}
+
+	if (!TwinE::HQR::patchHqrArchive(templateFile, writeTarget, patches)) {
 		fprintf(stderr, "Failed to write %s\n", outPath);
 		return 1;
+	}
+
+	if (inPlace && !patches.empty()) {
+		if (rename(tempPath.c_str(), outPath) != 0) {
+			fprintf(stderr, "Failed to replace %s\n", outPath);
+			return 1;
+		}
 	}
 
 	printf("Packed %d text banks for language %d into %s\n", replacedBanks, language, outPath);
