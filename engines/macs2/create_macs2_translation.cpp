@@ -719,7 +719,7 @@ static const char *const kHotspotLabels[] = {
 	"Zeug",
 };
 
-static const uint kHotspotLabelsCount = sizeof(kHotspotLabels) / sizeof(kHotspotLabels[0]);
+static const uint32_t kHotspotLabelsCount = sizeof(kHotspotLabels) / sizeof(kHotspotLabels[0]);
 
 static const char *const kObjectLabels[] = {
 	"Axt",
@@ -843,11 +843,11 @@ static const char *const kObjectLabels[] = {
 	"Wolle",
 };
 
-static const uint kObjectLabelsCount = sizeof(kObjectLabels) / sizeof(kObjectLabels[0]);
+static const uint32_t kObjectLabelsCount = sizeof(kObjectLabels) / sizeof(kObjectLabels[0]);
 
 static void extractObjectLabels(FILE *out, int &totalEntries) {
 	fprintf(out, "# Object/NPC overlay labels (unique names, full game, CP850/latin-1 source)\n\n");
-	for (uint i = 0; i < kObjectLabelsCount; ++i) {
+	for (uint32_t i = 0; i < kObjectLabelsCount; ++i) {
 		writePoLabelEntry(out, "objectlabel", kObjectLabels[i]);
 		totalEntries++;
 	}
@@ -855,7 +855,7 @@ static void extractObjectLabels(FILE *out, int &totalEntries) {
 
 static void extractHotspotLabels(FILE *out, int &totalEntries) {
 	fprintf(out, "# Hotspot overlay labels (unique nouns, CP850 source in engine)\n\n");
-	for (uint i = 0; i < kHotspotLabelsCount; ++i) {
+	for (uint32_t i = 0; i < kHotspotLabelsCount; ++i) {
 		writePoLabelEntry(out, "hotspotlabel", kHotspotLabels[i]);
 		totalEntries++;
 	}
@@ -1149,23 +1149,24 @@ static int doPack(const char *poPath, const char *outPath) {
 	for (uint32_t i = 0; i < indexSize; i++)
 		fputc(0, out);
 
+	auto writeCp850String = [&](const std::string &s) {
+		const std::string cp850 = utf8ToCp850(s);
+		writeU16(out, (uint16_t)cp850.size());
+		if (!cp850.empty())
+			fwrite(cp850.data(), 1, cp850.size(), out);
+	};
+
 	std::vector<uint32_t> sceneOffsets;
 	for (const auto &block : sceneBlocks) {
 		sceneOffsets.push_back((uint32_t)ftell(out));
-		for (const auto &s : block.strings) {
-			writeU16(out, (uint16_t)s.size());
-			if (!s.empty())
-				fwrite(s.data(), 1, s.size(), out);
-		}
+		for (const auto &s : block.strings)
+			writeCp850String(s);
 	}
 	std::vector<uint32_t> objectOffsets;
 	for (const auto &block : objectBlocks) {
 		objectOffsets.push_back((uint32_t)ftell(out));
-		for (const auto &s : block.strings) {
-			writeU16(out, (uint16_t)s.size());
-			if (!s.empty())
-				fwrite(s.data(), 1, s.size(), out);
-		}
+		for (const auto &s : block.strings)
+			writeCp850String(s);
 	}
 
 	fseek(out, indexStart, SEEK_SET);
@@ -1179,6 +1180,10 @@ static int doPack(const char *poPath, const char *outPath) {
 		writeU16(out, (uint16_t)objectBlocks[i].strings.size());
 		writeU32(out, objectOffsets[i]);
 	}
+
+	// Index rewrite leaves the file pointer at the end of the index table;
+	// overlay labels must be appended after all scene/object string data.
+	fseek(out, 0, SEEK_END);
 
 	for (const auto &kv : overlayLabelStrings) {
 		const std::string source = utf8ToCp850(kv.first);
