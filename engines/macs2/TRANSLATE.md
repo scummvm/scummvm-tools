@@ -14,6 +14,10 @@ create_macs2_translation extract RESOURCE.MCS macs2.pot
 
 This produces a `.pot` file with all game strings grouped by dialog context. The format uses `msgctxt` to identify the source (scene or object) and `\n` to separate lines within a dialog unit.
 
+Hotspot overlay labels are appended as one entry per unique German noun (`msgctxt "hotspotlabel"`). Object and NPC overlay names use `msgctxt "objectlabel"`. Both lists are embedded in `create_macs2_translation.cpp` and cover the **full game** only (`kSceneHotspotNames[]` and the non-demo branch of `gameobjects.cpp`); the demo reuses the same hotspot label strings for its subset of scene/hotspot indices, but object indices can differ between demo and full game.
+
+When packing, hotspot and object labels share one CP850 lookup table in the DAT file (duplicate German strings need only one translation).
+
 The `\n` separators correspond to individual display lines in the game. Keep the same number of lines as the original.
 
 ### 3. Pack into binary

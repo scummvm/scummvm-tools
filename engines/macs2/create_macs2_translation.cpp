@@ -28,12 +28,22 @@
  *   3. Pack:    create_macs2_translation pack <translated.po> <macs2_translation.dat>
  *
  * PO format:
- *   msgctxt "scene:2"  (or "object:42")
+ *   msgctxt "scene:2:0"  (or "object:42:0")
  *   msgid "line1\nline2\nline3"
  *   msgstr "translated1\ntranslated2\ntranslated3"
  *
+ *   msgctxt "hotspotlabel"
+ *   msgid "Tür"
+ *   msgstr "Door"
+ *
+ *   msgctxt "objectlabel"
+ *   msgid "Bowiemesser"
+ *   msgstr "Bowie knife"
+ *
  * Each msgid groups consecutive strings that form one dialog/description unit.
  * The \n separates individual lines that the engine displays separately.
+ * Hotspot and object overlay labels are embedded below (full game only).
+ * Keep in sync with engines/macs2/hotspot_names.cpp and gameobjects.cpp.
  */
 
 #include <algorithm>
@@ -220,6 +230,52 @@ static std::string cp850ToUtf8(const std::string &s) {
 				out += (char)(0x80 | (u & 0x3F));
 			}
 		}
+	}
+	return out;
+}
+
+// UTF-8 to CP850 (subset used by MACS2 German strings)
+static std::string utf8ToCp850(const std::string &s) {
+	std::string out;
+	for (size_t i = 0; i < s.size();) {
+		unsigned char c = (unsigned char)s[i];
+		if (c < 0x80) {
+			out += (char)c;
+			i++;
+			continue;
+		}
+		uint32_t codepoint = 0;
+		if ((c & 0xE0) == 0xC0 && i + 1 < s.size()) {
+			codepoint = ((c & 0x1F) << 6) | (s[i + 1] & 0x3F);
+			i += 2;
+		} else if ((c & 0xF0) == 0xE0 && i + 2 < s.size()) {
+			codepoint = ((c & 0x0F) << 12) | ((s[i + 1] & 0x3F) << 6) | (s[i + 2] & 0x3F);
+			i += 3;
+		} else {
+			out += '?';
+			i++;
+			continue;
+		}
+		bool mapped = false;
+		static const uint16_t cp850map[128] = {
+			0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7, 0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x00C4, 0x00C5,
+			0x00C9, 0x00E6, 0x00C6, 0x00F4, 0x00F6, 0x00F2, 0x00FB, 0x00F9, 0x00FF, 0x00D6, 0x00DC, 0x00F8, 0x00A3, 0x00D8, 0x00D7, 0x0192,
+			0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x00AA, 0x00BA, 0x00BF, 0x00AE, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
+			0x2591, 0x2592, 0x2593, 0x2502, 0x2524, 0x00C1, 0x00C2, 0x00C0, 0x00A9, 0x2563, 0x2551, 0x2557, 0x255D, 0x00A2, 0x00A5, 0x2510,
+			0x2514, 0x2534, 0x252C, 0x251C, 0x2500, 0x253C, 0x00E3, 0x00C3, 0x255A, 0x2554, 0x2569, 0x2566, 0x2560, 0x2550, 0x256C, 0x00A4,
+			0x00F0, 0x00D0, 0x00CA, 0x00CB, 0x00C8, 0x0131, 0x00CD, 0x00CE, 0x00CF, 0x2518, 0x250C, 0x2588, 0x2584, 0x00A6, 0x00CC, 0x2580,
+			0x00D3, 0x00DF, 0x00D4, 0x00D2, 0x00F5, 0x00D5, 0x00B5, 0x00FE, 0x00DE, 0x00DA, 0x00DB, 0x00D9, 0x00FD, 0x00DD, 0x00AF, 0x00B4,
+			0x00AD, 0x00B1, 0x2017, 0x00BE, 0x00B6, 0x00A7, 0x00F7, 0x00B8, 0x00B0, 0x00A8, 0x00B7, 0x00B9, 0x00B3, 0x00B2, 0x25A0, 0x00A0,
+		};
+		for (int j = 0; j < 128; ++j) {
+			if (cp850map[j] == codepoint) {
+				out += (char)(0x80 + j);
+				mapped = true;
+				break;
+			}
+		}
+		if (!mapped)
+			out += '?';
 	}
 	return out;
 }
@@ -473,6 +529,338 @@ static void writePoEntry(FILE *out, const char *ctx, int startIdx,
 	fprintf(out, "msgstr \"\"\n\n");
 }
 
+static void writePoLabelEntry(FILE *out, const char *ctx, const std::string &cp850) {
+	fprintf(out, "msgctxt \"%s\"\n", ctx);
+	fprintf(out, "msgid \"%s\"\n", poEscape(cp850ToUtf8(cp850)).c_str());
+	fprintf(out, "msgstr \"\"\n\n");
+}
+
+// Unique hotspot overlay nouns (CP850), full game only (kSceneHotspotNames[]).
+// Demo uses the same labels for its subset of scene/hotspot indices.
+// Sync with ScummVM engines/macs2/hotspot_names.cpp when labels change.
+static const char *const kHotspotLabels[] = {
+	"Abgrund",
+	"Angreifer",
+	"Asche",
+	"Aufbauten",
+	"Ausgang",
+	"Balken",
+	"Bar",
+	"Barmann",
+	"Baum",
+	"Berge",
+	"Bett",
+	"Beutel",
+	"Bild",
+	"Bildrahmen",
+	"Bildrand",
+	"Bl" "\x84" "tterdach",
+	"Boden",
+	"Bohlen",
+	"Brecheisen",
+	"Brett",
+	"Br" "\x81" "cke",
+	"Busch",
+	"B" "\x84" "renfell",
+	"Dach",
+	"Damm",
+	"Decke",
+	"Deckel",
+	"Deckung",
+	"Dickicht",
+	"Dynamit",
+	"Eichenfass",
+	"Eimer",
+	"Eingang",
+	"Emblem",
+	"Fackel",
+	"Farm",
+	"Fass",
+	"Felsbl" "\x94" "cke",
+	"Felsen",
+	"Felswand",
+	"Fenster",
+	"Flasche",
+	"Fluss",
+	"Fracht",
+	"Fr" "\x81" "chte",
+	"Gang",
+	"Gangsystem",
+	"Gebirge",
+	"Gef" "\x84" "hrt",
+	"Gegenstand",
+	"Gel" "\x84" "nder",
+	"Ger" "\x94" "ll",
+	"Gew" "\x94" "lbe",
+	"Gras",
+	"Gussofen",
+	"Gusspfannen",
+	"Hackenspitze",
+	"Hanfseil",
+	"Haus",
+	"Heizkessel",
+	"Heuwagen",
+	"Himmel",
+	"Holz",
+	"Holzbank",
+	"Holzdach",
+	"Holzeier",
+	"Holzfass",
+	"Holzpferd",
+	"Holzscheite",
+	"Holztisch",
+	"Holzt" "\x81" "r",
+	"Hund",
+	"H" "\x81" "tte",
+	"Insel",
+	"Kabine",
+	"Kachel",
+	"Kahn",
+	"Kaj" "\x81" "te",
+	"Kamin",
+	"Kammer",
+	"Kanone",
+	"Kerze",
+	"Kiselsteine",
+	"Kiste",
+	"Koffer",
+	"Kohlen",
+	"Konstruktion",
+	"Kopf",
+	"Ladung",
+	"Lagerfeuer",
+	"Lampe",
+	"Landschaft",
+	"Leiter",
+	"Leuchter",
+	"Loch",
+	"Lore",
+	"Luke",
+	"Mauer",
+	"Mine",
+	"Mist",
+	"Musketen",
+	"M" "\x94" "glichkeit",
+	"Ofen",
+	"Pfad",
+	"Pfahl",
+	"Pferd",
+	"Pferdekoppel",
+	"Pf" "\x81" "tze",
+	"Planken",
+	"Plateau",
+	"Plattform",
+	"Pumpe",
+	"Rasen",
+	"Raum",
+	"Ruhig",
+	"Schaufel",
+	"Schienen",
+	"Schilf",
+	"Schlange",
+	"Schleier",
+	"Schleifspuren",
+	"Schrank",
+	"Schublade",
+	"Sch" "\x81" "ssel",
+	"Sch" "\x84" "del",
+	"Sch" "\x84" "tze",
+	"See",
+	"Seekoffer",
+	"Seil",
+	"Speer",
+	"Spiegel",
+	"Spielkl" "\x94" "tze",
+	"Stahlkugeln",
+	"Stamm",
+	"Steg",
+	"Stein",
+	"Steine",
+	"Steinpyramide",
+	"Steins" "\x84" "ule",
+	"Steint" "\x81" "r",
+	"Stelle",
+	"Stofftasche",
+	"Stuhl",
+	"St" "\x81" "ck",
+	"St" "\x81" "tze",
+	"S" "\x84" "ulen",
+	"Tapete",
+	"Tasse",
+	"Teddyb" "\x84" "r",
+	"Teppich",
+	"Tier",
+	"Tintenfass",
+	"Tisch",
+	"Tonvase",
+	"Totempfahl",
+	"Treppe",
+	"Truhe",
+	"T" "\x81" "r",
+	"Ufer",
+	"Unkraut",
+	"Verkleidung",
+	"Vertiefungen",
+	"Vogelk" "\x84" "fig",
+	"Vorplatz",
+	"Wald",
+	"Wand",
+	"Wasser",
+	"Wasserkrug",
+	"Weg",
+	"Whiskyglas",
+	"Winde",
+	"Windlicht",
+	"Witterung",
+	"Wolken",
+	"W" "\x84" "nde",
+	"W" "\x84" "sche",
+	"Zelt",
+	"Zeug",
+};
+
+static const uint kHotspotLabelsCount = sizeof(kHotspotLabels) / sizeof(kHotspotLabels[0]);
+
+static const char *const kObjectLabels[] = {
+	"Axt",
+	"Axtklinge",
+	"Bandit",
+	"Blasebalg",
+	"Blechdose",
+	"Blecheimer",
+	"Bohlen",
+	"Bootsjunge",
+	"Bowiemesser",
+	"Branshky",
+	"Brecheisen",
+	"Brennholz",
+	"Brett",
+	"Brief",
+	"Brot",
+	"Brotmesser",
+	"B" "\x81" "cher",
+	"Clownpuppe",
+	"Cornel",
+	"Damenhut",
+	"Dieb",
+	"Droll",
+	"Dynamit",
+	"Eimer",
+	"Eisen",
+	"Eisenstange",
+	"Fackel",
+	"Feuerhaken",
+	"Figur",
+	"Flaschenzug",
+	"Griff",
+	"Grosser B" "\xe4" "r",
+	"Hackenspitze",
+	"Haken",
+	"Haken und Seil",
+	"Hanfschnur",
+	"Hanfseil",
+	"Hanfseile",
+	"Holzente",
+	"Holzfass",
+	"Holzfigur",
+	"Holzkohle",
+	"Holzpfahl",
+	"Holzw" "\x81" "rfel",
+	"Hutschachtel",
+	"Kacheln",
+	"Kakerlake",
+	"Kapit" "\xe4" "n",
+	"Kartoffeln",
+	"Kartonschachtel",
+	"Kerze",
+	"Kerzen",
+	"Kieselsteine",
+	"Kleider",
+	"Kleiner B" "\xe4" "r",
+	"Knallfr" "\x94" "sche",
+	"Koffer",
+	"Kohlenschaufel",
+	"Korkenzieher",
+	"Kuvert",
+	"Laib Brot",
+	"Lampe",
+	"Lampenschirm",
+	"Lampenschirme",
+	"Landkarte",
+	"Lederbeutel",
+	"Lederg" "\x81" "rtel",
+	"Lore",
+	"Matrose",
+	"Messer",
+	"Messingschl" "\x81" "ssel",
+	"Metalleimer",
+	"Mrs. Butler",
+	"Murmeln",
+	"Musketen",
+	"M" "\xe4" "dchen",
+	"Nase",
+	"Old Firehand",
+	"Panther",
+	"Papier",
+	"Papierdrachen",
+	"Passagierin",
+	"Patterson",
+	"Quarzsand",
+	"Rafter",
+	"Reservestiel",
+	"Salpeterpulver",
+	"Sand",
+	"Schal",
+	"Schaufel",
+	"Schaufelspitze",
+	"Schilfrohr",
+	"Schnapsflasche",
+	"Schraubenzieher",
+	"Schwarzpulver",
+	"Schwefel",
+	"Sch" "\x81" "rhaken",
+	"Sch" "\x81" "ssel",
+	"Sicheln",
+	"Socken",
+	"Spachtel",
+	"Spitzhacke",
+	"Stoffbeutel",
+	"Streichholz",
+	"Tasse",
+	"Teig",
+	"Tomahawk",
+	"Topflappen",
+	"Tramp",
+	"Vogelk" "\x84" "fig",
+	"Wachhund",
+	"Wachposten",
+	"Wagenrad",
+	"Waschb" "\x84" "rm" "\x81" "tze",
+	"Whiskyglas",
+	"Windlicht",
+	"Winnetou",
+	"Wirt",
+	"Wolle",
+};
+
+static const uint kObjectLabelsCount = sizeof(kObjectLabels) / sizeof(kObjectLabels[0]);
+
+static void extractObjectLabels(FILE *out, int &totalEntries) {
+	fprintf(out, "# Object/NPC overlay labels (unique names, full game, CP850/latin-1 source)\n\n");
+	for (uint i = 0; i < kObjectLabelsCount; ++i) {
+		writePoLabelEntry(out, "objectlabel", kObjectLabels[i]);
+		totalEntries++;
+	}
+}
+
+static void extractHotspotLabels(FILE *out, int &totalEntries) {
+	fprintf(out, "# Hotspot overlay labels (unique nouns, CP850 source in engine)\n\n");
+	for (uint i = 0; i < kHotspotLabelsCount; ++i) {
+		writePoLabelEntry(out, "hotspotlabel", kHotspotLabels[i]);
+		totalEntries++;
+	}
+}
+
 static int doExtract(const char *resPath, const char *outPath) {
 	resFile = fopen(resPath, "rb");
 	if (!resFile) {
@@ -565,9 +953,12 @@ static int doExtract(const char *resPath, const char *outPath) {
 		}
 	}
 
+	extractHotspotLabels(out, totalEntries);
+	extractObjectLabels(out, totalEntries);
+
 	fclose(out);
 	fclose(resFile);
-	printf("Extracted %d dialog entries to %s\n", totalEntries, outPath);
+	printf("Extracted %d entries (%u hotspot + %u object labels) to %s\n", totalEntries, kHotspotLabelsCount, kObjectLabelsCount, outPath);
 	return 0;
 }
 
@@ -583,13 +974,15 @@ static int doPack(const char *poPath, const char *outPath) {
 		return 1;
 	}
 
-	// Parse PO: msgctxt "scene:N:startIdx" or "object:N:startIdx"
+	// Parse PO: msgctxt "scene:N:startIdx", "object:N:startIdx", "hotspotlabel", or "objectlabel"
 	// msgstr contains \n-separated translated lines
 	std::map<uint16_t, std::map<int, std::vector<std::string> > > sceneStrings;
 	std::map<uint16_t, std::map<int, std::vector<std::string> > > objectStrings;
+	std::map<std::string, std::string> overlayLabelStrings;
+	std::string currentMsgid;
+	enum PoCtxKind { kPoCtxNone, kPoCtxScene, kPoCtxObjectDialog, kPoCtxHotspotLabel, kPoCtxObjectLabel } ctxKind = kPoCtxNone;
 
 	char line[8192];
-	bool isScene = false;
 	uint16_t currentId = 0;
 	int currentStartIdx = 0;
 	bool hasCtx = false;
@@ -600,28 +993,36 @@ static int doPack(const char *poPath, const char *outPath) {
 	auto flushEntry = [&]() {
 		if (hasCtx && !currentMsgstr.empty()) {
 			std::string text = poUnescape(currentMsgstr);
-			std::vector<std::string> lines;
-			size_t start = 0;
-			while (start < text.size()) {
-				size_t nl = text.find('\n', start);
-				if (nl == std::string::npos) {
-					lines.push_back(text.substr(start));
-					break;
+			if (ctxKind == kPoCtxHotspotLabel || ctxKind == kPoCtxObjectLabel) {
+				std::string source = poUnescape(currentMsgid);
+				if (!source.empty())
+					overlayLabelStrings[source] = text;
+			} else {
+				std::vector<std::string> lines;
+				size_t start = 0;
+				while (start < text.size()) {
+					size_t nl = text.find('\n', start);
+					if (nl == std::string::npos) {
+						lines.push_back(text.substr(start));
+						break;
+					}
+					lines.push_back(text.substr(start, nl - start));
+					start = nl + 1;
 				}
-				lines.push_back(text.substr(start, nl - start));
-				start = nl + 1;
-			}
-			if (!lines.empty()) {
-				if (isScene)
-					sceneStrings[currentId][currentStartIdx] = lines;
-				else
-					objectStrings[currentId][currentStartIdx] = lines;
+				if (!lines.empty()) {
+					if (ctxKind == kPoCtxScene)
+						sceneStrings[currentId][currentStartIdx] = lines;
+					else if (ctxKind == kPoCtxObjectDialog)
+						objectStrings[currentId][currentStartIdx] = lines;
+				}
 			}
 		}
 		hasCtx = false;
 		currentMsgstr.clear();
+		currentMsgid.clear();
 		inMsgstr = false;
 		inMsgid = false;
+		ctxKind = kPoCtxNone;
 	};
 
 	while (fgets(line, sizeof(line), in)) {
@@ -633,14 +1034,20 @@ static int doPack(const char *poPath, const char *outPath) {
 			flushEntry();
 			int id = 0, idx = 0;
 			if (sscanf(line + 9, "scene:%d:%d", &id, &idx) == 2) {
-				isScene = true;
+				ctxKind = kPoCtxScene;
 				currentId = (uint16_t)id;
 				currentStartIdx = idx;
 				hasCtx = true;
 			} else if (sscanf(line + 9, "object:%d:%d", &id, &idx) == 2) {
-				isScene = false;
+				ctxKind = kPoCtxObjectDialog;
 				currentId = (uint16_t)id;
 				currentStartIdx = idx;
+				hasCtx = true;
+			} else if (!strncmp(line + 9, "hotspotlabel\"", 13)) {
+				ctxKind = kPoCtxHotspotLabel;
+				hasCtx = true;
+			} else if (!strncmp(line + 9, "objectlabel\"", 13)) {
+				ctxKind = kPoCtxObjectLabel;
 				hasCtx = true;
 			}
 			continue;
@@ -660,6 +1067,14 @@ static int doPack(const char *poPath, const char *outPath) {
 		if (strncmp(line, "msgid ", 6) == 0) {
 			inMsgid = true;
 			inMsgstr = false;
+			currentMsgid.clear();
+			char *s = strchr(line + 6, '"');
+			if (s) {
+				s++;
+				char *e = strrchr(s, '"');
+				if (e)
+					currentMsgid = std::string(s, e - s);
+			}
 			continue;
 		}
 		if (line[0] == '"' && inMsgstr) {
@@ -670,8 +1085,12 @@ static int doPack(const char *poPath, const char *outPath) {
 			continue;
 		}
 		if (line[0] == '"' && inMsgid) {
+			char *s = line + 1;
+			char *e = strrchr(s, '"');
+			if (e)
+				currentMsgid += std::string(s, e - s);
 			continue;
-		} // skip msgid continuation
+		}
 		if (line[0] == '\0')
 			flushEntry();
 	}
@@ -720,9 +1139,10 @@ static int doPack(const char *poPath, const char *outPath) {
 	}
 
 	fwrite("MCS2", 1, 4, out);
-	writeU16(out, 1);
+	writeU16(out, 2);
 	writeU16(out, (uint16_t)sceneBlocks.size());
 	writeU16(out, (uint16_t)objectBlocks.size());
+	writeU16(out, (uint16_t)overlayLabelStrings.size());
 
 	long indexStart = ftell(out);
 	uint32_t indexSize = ((uint32_t)sceneBlocks.size() + (uint32_t)objectBlocks.size()) * 8;
@@ -760,9 +1180,20 @@ static int doPack(const char *poPath, const char *outPath) {
 		writeU32(out, objectOffsets[i]);
 	}
 
+	for (const auto &kv : overlayLabelStrings) {
+		const std::string source = utf8ToCp850(kv.first);
+		const std::string translated = utf8ToCp850(kv.second);
+		writeU16(out, (uint16_t)source.size());
+		if (!source.empty())
+			fwrite(source.data(), 1, source.size(), out);
+		writeU16(out, (uint16_t)translated.size());
+		if (!translated.empty())
+			fwrite(translated.data(), 1, translated.size(), out);
+	}
+
 	fclose(out);
-	printf("Packed %zu scene + %zu object blocks into %s\n",
-		   sceneBlocks.size(), objectBlocks.size(), outPath);
+	printf("Packed %zu scene + %zu object blocks + %zu overlay labels into %s\n",
+		   sceneBlocks.size(), objectBlocks.size(), overlayLabelStrings.size(), outPath);
 	return 0;
 }
 
