@@ -1462,11 +1462,10 @@ static std::string formatVarAccess(uint16_t idx) {
 }
 
 static const char *getObjectName(uint16_t idx) {
-	// Full game object names from Macs2::GameObjects::init()
-	// Characters/NPCs
+	// Full-game character/NPC indices (validated against strings_object*.txt and scene dialogue)
 	switch (idx) {
 	case 1:
-		return "OBJ_PLAYER";
+		return "OBJ_PLAYER";        // Old Firehand
 	case 2:
 		return "OBJ_CAPTAIN";
 	case 3:
@@ -1476,37 +1475,37 @@ static const char *getObjectName(uint16_t idx) {
 	case 5:
 		return "OBJ_NARRATOR";
 	case 6:
-		return "OBJ_CORNEL";
+		return "OBJ_TRAMP";         // tramp henchman
 	case 7:
-		return "OBJ_BEAR";
+		return "OBJ_GIRL";          // girl threatened by panther
 	case 9:
-		return "OBJ_WOLF";
+		return "OBJ_PANTHER";
 	case 12:
 		return "OBJ_DROLL";
 	case 13:
 		return "OBJ_PATTERSON";
 	case 15:
-		return "OBJ_ROLLINS";
+		return "OBJ_CORNEL";        // Cornel Brinkley, tramp leader
 	case 18:
 		return "OBJ_SHIP_GUARD";
 	case 19:
-		return "OBJ_HILTON";
+		return "OBJ_TRAMP2";        // tramp henchman
 	case 22:
 		return "OBJ_WOMAN_SHIP";
 	case 33:
 		return "OBJ_SAILOR";
 	case 39:
-		return "OBJ_WAGON_OWNER";
+		return "OBJ_WAGON_OWNER";   // Branshky
 	case 53:
 		return "OBJ_THIEF";
 	case 69:
-		return "OBJ_SHERIFF";
+		return "OBJ_RAFTERS";       // rafter lumberjack
 	case 77:
-		return "OBJ_INDIAN_COMPANION";
+		return "OBJ_TRAMP3";        // tramp henchman
 	case 105:
 		return "OBJ_BARKEEPER";
 	case 110:
-		return "OBJ_COLONEL";
+		return "OBJ_MRS_BUTLER";
 	case 144:
 		return "OBJ_BANDIT_1";
 	case 145:
@@ -1514,15 +1513,15 @@ static const char *getObjectName(uint16_t idx) {
 	case 146:
 		return "OBJ_BANDIT_3";
 	case 147:
-		return "OBJ_WINNETOU";
+		return "OBJ_WINNETOU";      // farm assault scene
 	case 149:
-		return "OBJ_CHIEF";
+		return "OBJ_GROSSER_BAER";  // scene 45
 	case 167:
-		return "OBJ_WINNETOU_INDIANS";
+		return "OBJ_WINNETOU";      // scene 45 (second sprite)
 	case 168:
-		return "OBJ_INDIAN_ELDER";
+		return "OBJ_KLEINER_BAER";  // scene 45
 	case 181:
-		return "OBJ_WINNETOU_ENDING";
+		return "OBJ_WINNETOU";      // ending / silver lake scenes
 	// Items (full game, indices from _objectNames)
 	case 0x08:
 		return "OBJ_BOARD";
@@ -1573,13 +1572,15 @@ static const char *getObjectName(uint16_t idx) {
 	case 0x2C:
 		return "OBJ_ENVELOPE_SEALED";
 	case 0x2D:
-		return "OBJ_RACCOON_FUR";
+		return "OBJ_RACCOON_CAP";
 	case 0x2E:
 		return "OBJ_WHISKY_GLASS";
 	case 0x2F:
 		return "OBJ_LEATHER_BELT";
 	case 0x30:
 		return "OBJ_POKER";
+	case 0x31:
+		return "OBJ_WATCHDOG";
 	case 0x34:
 		return "OBJ_BOARD_SOLID";
 	case 0x36:
@@ -1595,13 +1596,13 @@ static const char *getObjectName(uint16_t idx) {
 	case 0x3C:
 		return "OBJ_PEBBLES";
 	case 0x3D:
-		return "OBJ_SUITCASE_DYNAMITE";
+		return "OBJ_SUITCASE_LAUNDRY";
 	case 0x3E:
-		return "OBJ_BANKNOTES";
+		return "OBJ_LAUNDRY";
 	case 0x3F:
 		return "OBJ_LEATHER_POUCH";
 	case 0x40:
-		return "OBJ_SLINGSHOT";
+		return "OBJ_FIRECRACKER_POUCH";
 	case 0x41:
 		return "OBJ_FIRECRACKERS";
 	case 0x42:
@@ -1612,6 +1613,8 @@ static const char *getObjectName(uint16_t idx) {
 		return "OBJ_PAPER";
 	case 0x47:
 		return "OBJ_KNIFE_RUSTY";
+	case 0x4A:
+		return "OBJ_SCARF";
 	case 0x4B:
 		return "OBJ_REEDS_DRY";
 	case 0x4C:
