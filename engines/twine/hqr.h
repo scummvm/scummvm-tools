@@ -25,6 +25,9 @@
 #include "common/stream.h"
 #include "common/file.h"
 
+#include <map>
+#include <vector>
+
 namespace TwinE {
 
 class TwinEEngine;
@@ -90,6 +93,17 @@ int32 getVoxEntry(uint8 *ptr, const Common::Filename &filename, int32 index, int
 int32 getAllocVoxEntry(uint8 **ptr, const Common::Filename &filename, int32 index, int32 hiddenIndex);
 
 Common::SeekableReadStream *makeReadStream(const Common::Filename &filename, int index);
+
+struct HqrPackEntry {
+	bool blank = true;
+	std::vector<uint8> data;
+};
+
+bool loadHqrEntry(const Common::Filename &filename, int32 index, HqrPackEntry &out);
+bool copyHqrFile(const Common::Filename &src, const Common::Filename &dst);
+std::vector<uint8> makeUncompressedDiskBlock(const std::vector<uint8> &data);
+bool patchHqrArchive(const Common::Filename &templateFile, const Common::Filename &outFile,
+		const std::map<int32_t, std::vector<uint8>> &patches);
 
 } // namespace HQR
 
