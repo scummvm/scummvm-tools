@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -875,6 +876,86 @@ static void extractMusic(const char *outDir) {
 	printf("Extracted %d music/sound resources.\n", count);
 }
 
+// Parse one animation blob frame table and write frame 0 as BMP.
+// Returns true if a frame was written. Shared by items + dialogue portraits.
+static bool writeAnimBlobFrameBmp(const char *path, const std::vector<uint8_t> &blob,
+								  const uint8_t *palette, uint16_t frameIndex = 0) {
+	if (blob.size() < 12)
+		return false;
+	uint16_t seqLen = (uint16_t)(blob[10] | (blob[11] << 8)) + 1;
+	uint32_t frameTableOffset = 0xB + seqLen; // matches engine: stream.seek(0xB + bp0E)
+	if (frameTableOffset + 2 > blob.size())
+		return false;
+	uint16_t frameCount = blob[frameTableOffset] | (blob[frameTableOffset + 1] << 8);
+	if (frameCount == 0 || frameIndex >= frameCount)
+		return false;
+	uint32_t p = frameTableOffset + 2;
+	for (uint16_t f = 0; f <= frameIndex; f++) {
+		if (p + 10 > blob.size())
+			return false;
+		uint16_t w = blob[p + 6] | (blob[p + 7] << 8);
+		uint16_t h = blob[p + 8] | (blob[p + 9] << 8);
+		p += 10;
+		if (w == 0 || h == 0 || p + (uint32_t)w * h > blob.size())
+			return false;
+		if (f == frameIndex) {
+			writeBMPEx(path, blob.data() + p, w, h, palette);
+			return true;
+		}
+		p += (uint32_t)w * h;
+	}
+	return false;
+}
+
+// Extract dialogue portrait images (blob slots 0x11 / 0x12) for DOS validation.
+static void extractPortraits(const char *outDir) {
+	uint8_t palette[768] = {};
+	fseek(resFile, 0x3010, SEEK_SET);
+	fread(palette, 1, 768, resFile);
+
+	printf("Extracting dialogue portraits (DOS blob slots 0x11/0x12)...\n");
+	int count = 0;
+	for (int i = 1; i <= 0x200; i++) {
+		uint32_t addressOffset = 0x17F4 + 0xC + 0x04 + i * 0xC;
+		fseek(resFile, addressOffset, SEEK_SET);
+		uint32_t objectOffset = readU32(resFile);
+		if (objectOffset == 0)
+			continue;
+
+		fseek(resFile, objectOffset, SEEK_SET);
+		fseek(resFile, 10, SEEK_CUR); // x,y,scene,orient,vscale
+
+		std::vector<uint8_t> portraitBlobs[2];
+		for (int j = 0; j < 0x15; j++) {
+			fseek(resFile, 2, SEEK_CUR); // animID
+			fseek(resFile, 2, SEEK_CUR); // sourceKey
+			uint32_t dataSize = readU32(resFile);
+			if ((j == 0x11 || j == 0x12) && dataSize > 0) {
+				std::vector<uint8_t> blob(dataSize);
+				fread(blob.data(), 1, dataSize, resFile);
+				portraitBlobs[j - 0x11] = std::move(blob);
+			} else {
+				fseek(resFile, dataSize, SEEK_CUR);
+			}
+			fseek(resFile, 4, SEEK_CUR); // speed + mirror + pad
+		}
+
+		for (int slot = 0; slot < 2; slot++) {
+			if (portraitBlobs[slot].empty())
+				continue;
+			char path[512];
+			snprintf(path, sizeof(path), "%s/portrait_%03d_slot%02d_f0.bmp", outDir, i, 0x11 + slot);
+			if (writeAnimBlobFrameBmp(path, portraitBlobs[slot], palette, 0)) {
+				count++;
+				// Also dump frame 1 when present (mouth variant).
+				snprintf(path, sizeof(path), "%s/portrait_%03d_slot%02d_f1.bmp", outDir, i, 0x11 + slot);
+				writeAnimBlobFrameBmp(path, portraitBlobs[slot], palette, 1);
+			}
+		}
+	}
+	printf("Extracted %d dialogue portrait BMPs.\n", count);
+}
+
 // Extract inventory icon images for all objects that have one (blob slot 0x13)
 static void extractItems(const char *outDir) {
 	// Get scene 1 palette as fallback for icon rendering
@@ -1155,6 +1236,241 @@ static bool isAmigaDataDir(const char *path) {
 	        stat(mdir.c_str(), &st) == 0 && S_ISREG(st.st_mode));
 }
 
+static bool decodeAmigaPlanarFrame(const uint8_t *planar, uint16_t width, uint16_t height,
+                                   uint16_t frameIndex, uint16_t frameCount,
+                                   std::vector<uint8_t> &outPixels) {
+	const uint32_t rowBytes = (width + 7) / 8;
+	const uint32_t planeBytes = rowBytes * height;
+	const uint32_t frameBytes = planeBytes * 6;
+	if (frameIndex >= frameCount)
+		return false;
+	const uint8_t *frameBase = planar + (uint32_t)frameIndex * frameBytes;
+	outPixels.assign((size_t)width * height, 0);
+	for (uint16_t y = 0; y < height; y++) {
+		for (uint16_t x = 0; x < width; x++) {
+			uint8_t color = 0;
+			const uint32_t bitIndex = x & 7;
+			const uint32_t byteInRow = x >> 3;
+			for (int plane = 0; plane < 5; plane++) {
+				const uint8_t *planeRow = frameBase + plane * planeBytes + y * rowBytes;
+				if (planeRow[byteInRow] & (0x80 >> bitIndex))
+					color |= (uint8_t)(1 << plane);
+			}
+			// Anim slots: planes 0..4 are color. Do not use plane 5 as a mask
+			// (clears nearly all pixels on character anims in the Amiga demo).
+			outPixels[y * width + x] = color;
+		}
+	}
+	return true;
+}
+
+// Complex MXOO: body+0x0C = 0x0101, then 21 x u32BE slot offsets, extra at +0x62.
+static int extractAmigaComplexMxoo(const uint8_t *mxoo, uint32_t mxooSize, const char *type,
+                                   uint16_t id, const char *outDir, const uint8_t *palette,
+                                   int &imagesOut) {
+	if (mxooSize < 24 || memcmp(mxoo, "MXOO", 4) != 0)
+		return 0;
+	uint32_t scriptOff = readU32BE(mxoo + 4);
+	uint32_t stringOff = readU32BE(mxoo + 8);
+	if (scriptOff <= 12 + 0x66 || scriptOff > mxooSize)
+		return 0;
+	const uint8_t *body = mxoo + 12;
+	if (readU16BE(body + 0x0C) != 0x0101)
+		return 0;
+
+	uint32_t slots[21];
+	for (int i = 0; i < 21; i++)
+		slots[i] = readU32BE(body + 0x0E + i * 4);
+	uint32_t extraOff = readU32BE(body + 0x62);
+
+	char path[512];
+	char fname[96];
+	int animFrames = 0;
+
+	// Object metadata JSON
+	snprintf(fname, sizeof(fname), "%s_%04u_object.json", type, id);
+	snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+	FILE *jf = fopen(path, "wb");
+	if (jf) {
+		fprintf(jf, "{\n  \"resourceType\": \"%s\",\n  \"resourceId\": %u,\n  \"objectIndex\": %u,\n",
+		        type, id, id + 1);
+		fprintf(jf, "  \"scriptOffset\": %u,\n  \"stringOffset\": %u,\n  \"extraOffset\": %u,\n",
+		        scriptOff, stringOff, extraOff);
+		fprintf(jf, "  \"slots\": [\n");
+		for (int i = 0; i < 21; i++) {
+			fprintf(jf, "    {\"index\": %d, \"offset\": ", i);
+			if (slots[i] == 0 || slots[i] == 0xFFFFFFFFu)
+				fprintf(jf, "null");
+			else
+				fprintf(jf, "%u", slots[i]);
+			fprintf(jf, "}%s\n", i + 1 < 21 ? "," : "");
+		}
+		fprintf(jf, "  ],\n  \"animations\": [\n");
+	}
+
+	bool firstAnim = true;
+	for (int slot = 0; slot < 21; slot++) {
+		if (slots[slot] == 0 || slots[slot] == 0xFFFFFFFFu)
+			continue;
+		uint32_t absOff = 12 + slots[slot];
+		if (absOff + 16 > mxooSize)
+			continue;
+		const uint8_t *p = mxoo + absOff;
+		uint16_t hint = readU16BE(p + 0);
+		uint16_t seqPos = readU16BE(p + 2);
+		uint16_t repeatCounter = readU16BE(p + 4);
+		uint16_t loopStart = readU16BE(p + 6);
+		uint16_t seqBytes = (hint >= 2) ? (uint16_t)(hint - 2) : 0;
+		uint16_t seqPadded = (uint16_t)((seqBytes + 1) & ~1);
+		uint32_t metaOff = absOff + 8 + seqPadded;
+		if (metaOff + 6 > mxooSize)
+			continue;
+		uint16_t fc = readU16BE(mxoo + metaOff + 0);
+		uint16_t w = readU16BE(mxoo + metaOff + 2);
+		uint16_t h = readU16BE(mxoo + metaOff + 4);
+		uint32_t pixelOff = metaOff + 6;
+		if (fc == 0 || w == 0 || w > 320 || h == 0 || h > 200 || fc > 256)
+			continue;
+		uint32_t rowBytes = (w + 7) / 8;
+		uint32_t planeBytes = rowBytes * h;
+		uint32_t pixelsNeeded = (uint32_t)fc * planeBytes * 6;
+		if (pixelOff + pixelsNeeded > mxooSize)
+			continue;
+
+		if (jf) {
+			if (!firstAnim)
+				fprintf(jf, ",\n");
+			firstAnim = false;
+			fprintf(jf,
+			        "    {\"slot\": %d, \"hint\": %u, \"seqPos\": %u, \"repeat\": %u, \"loopStart\": %u, "
+			        "\"frameCount\": %u, \"width\": %u, \"height\": %u}",
+			        slot, hint, seqPos, repeatCounter, loopStart, fc, w, h);
+		}
+
+		const uint8_t *planar = mxoo + pixelOff;
+		for (uint16_t f = 0; f < fc; f++) {
+			std::vector<uint8_t> pixels;
+			if (!decodeAmigaPlanarFrame(planar, w, h, f, fc, pixels))
+				continue;
+			snprintf(fname, sizeof(fname), "%s_%04u_slot%02d_f%02u.bmp", type, id, slot, f);
+			snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+			writeBMPEx(path, pixels.data(), w, h, palette);
+			imagesOut++;
+			animFrames++;
+		}
+	}
+
+	// Dialogue portrait (body+0x62 / slot 0x15): animateDialoguePortrait @ 0022f79c
+	// copies 14400 bytes and blits with D3=D4=D6=0x50 (80), D5=0xF0 (240).
+	// Full drawSprite plane loop: 6 separated planes, src width 240, height 80
+	// -> 30*80*6 = 14400. Color from planes 0..4 (plane 5 = cookie mask on HW).
+	// Atlas is 3× 80×80 frames side-by-side (not 320×72×5).
+	bool dumpedPortrait = false;
+	if (extraOff != 0 && extraOff != 0xFFFFFFFFu) {
+		const uint32_t absExtra = 12 + extraOff;
+		const uint16_t atlasW = 240;
+		const uint16_t atlasH = 80;
+		const uint16_t frameW = 80;
+		const uint16_t frameCount = 3;
+		const uint32_t rowBytes = (atlasW + 7) / 8; // 30
+		const uint32_t planeBytes = rowBytes * atlasH; // 2400
+		const uint32_t portraitBytes = planeBytes * 6; // 14400
+		if (absExtra + portraitBytes <= mxooSize &&
+			(scriptOff == 0 || absExtra + portraitBytes <= scriptOff)) {
+			const uint8_t *src = mxoo + absExtra;
+			std::vector<uint8_t> atlas((size_t)atlasW * atlasH, 0);
+			for (uint16_t y = 0; y < atlasH; y++) {
+				for (uint16_t x = 0; x < atlasW; x++) {
+					uint8_t color = 0;
+					const uint32_t bitIndex = x & 7;
+					const uint32_t byteInRow = x >> 3;
+					for (int plane = 0; plane < 5; plane++) {
+						const uint8_t *planeRow = src + plane * planeBytes + y * rowBytes;
+						if (planeRow[byteInRow] & (0x80 >> bitIndex))
+							color |= (uint8_t)(1 << plane);
+					}
+					atlas[y * atlasW + x] = color;
+				}
+			}
+			snprintf(fname, sizeof(fname), "%s_%04u_portrait.bmp", type, id);
+			snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+			writeBMPEx(path, atlas.data(), atlasW, atlasH, palette);
+			imagesOut++;
+			for (uint16_t f = 0; f < frameCount; f++) {
+				std::vector<uint8_t> frame((size_t)frameW * atlasH, 0);
+				for (uint16_t y = 0; y < atlasH; y++) {
+					memcpy(frame.data() + y * frameW,
+						   atlas.data() + y * atlasW + f * frameW,
+						   frameW);
+				}
+				snprintf(fname, sizeof(fname), "%s_%04u_portrait_f%02u.bmp", type, id, f);
+				snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+				writeBMPEx(path, frame.data(), frameW, atlasH, palette);
+				imagesOut++;
+			}
+			dumpedPortrait = true;
+		}
+	}
+
+	if (jf) {
+		fprintf(jf, "\n  ],\n");
+		fprintf(jf, "  \"portraitDumped\": %s,\n", dumpedPortrait ? "true" : "false");
+
+		// Script size
+		uint16_t scriptSize = 0;
+		if (scriptOff + 4 <= mxooSize)
+			scriptSize = readU16BE(mxoo + scriptOff + 2);
+		fprintf(jf, "  \"scriptSize\": %u,\n", scriptSize);
+
+		// Strings
+		fprintf(jf, "  \"strings\": [\n");
+		if (stringOff + 4 <= mxooSize) {
+			uint16_t strSize = readU16BE(mxoo + stringOff + 2);
+			uint32_t pos = stringOff + 4;
+			uint32_t end = pos + strSize;
+			bool first = true;
+			int idx = 0;
+			while (pos + 2 <= end && pos + 2 <= mxooSize) {
+				uint32_t entryOff = pos - (stringOff + 4);
+				uint16_t len = readU16BE(mxoo + pos);
+				pos += 2;
+				if (pos + len > end || pos + len > mxooSize)
+					break;
+				if (!first)
+					fprintf(jf, ",\n");
+				first = false;
+				fprintf(jf, "    {\"index\": %d, \"offset\": %u, \"text\": \"", idx, (unsigned)entryOff);
+				for (uint16_t i = 0; i < len; i++) {
+					uint8_t c = mxoo[pos + i];
+					if (c == '"' || c == '\\')
+						fputc('\\', jf);
+					if (c >= 32 && c < 127)
+						fputc(c, jf);
+					else
+						fprintf(jf, "\\u%04x", c);
+				}
+				fprintf(jf, "\"}");
+				pos += len;
+				idx++;
+			}
+		}
+		fprintf(jf, "\n  ]\n}\n");
+		fclose(jf);
+	}
+
+	// Also dump raw script bytecode
+	if (scriptOff + 4 <= mxooSize) {
+		uint16_t scriptSize = readU16BE(mxoo + scriptOff + 2);
+		if (scriptSize > 0 && scriptOff + 4 + scriptSize <= mxooSize) {
+			snprintf(fname, sizeof(fname), "%s_%04u_script.bin", type, id);
+			snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+			writeRawFile(path, mxoo + scriptOff + 4, scriptSize);
+		}
+	}
+
+	return (animFrames > 0 || dumpedPortrait) ? 1 : 0;
+}
+
 static int extractAmiga(const char *gameDir, const char *outDir) {
 	std::string dataAPath = std::string(gameDir) + "/DataA";
 	std::string mdirPath = std::string(gameDir) + "/Mdir";
@@ -1242,13 +1558,127 @@ static int extractAmiga(const char *gameDir, const char *outDir) {
 		}
 	}
 
-	// Default 32-color Amiga palette (grayscale fallback for sprites without scene palette)
+	// Seed COLOR0..31 from Info MXIN UI colors + synthetic face banks (same
+	// 12-bit values as engines/macs2 installAmigaPortraitPalette). writeBMPEx
+	// expects 6-bit VGA components.
 	uint8_t defaultPalette[768];
-	for (int i = 0; i < 256; i++) {
-		uint8_t v = (uint8_t)((i < 32) ? (i * 255 / 31) : 0);
-		defaultPalette[i * 3 + 0] = v;
-		defaultPalette[i * 3 + 1] = v;
-		defaultPalette[i * 3 + 2] = v;
+	memset(defaultPalette, 0, sizeof(defaultPalette));
+	auto amiga12ToVga6 = [](uint16_t rgb, uint8_t &r6, uint8_t &g6, uint8_t &b6) {
+		uint8_t r4 = (rgb >> 8) & 0xF;
+		uint8_t g4 = (rgb >> 4) & 0xF;
+		uint8_t b4 = rgb & 0xF;
+		r6 = (uint8_t)((r4 * 63) / 15);
+		g6 = (uint8_t)((g4 * 63) / 15);
+		b6 = (uint8_t)((b4 * 63) / 15);
+	};
+	static const uint16_t kLowBank[16] = {
+		0x0320, 0x0530, 0x0741, 0x0852, 0x0A64, 0x0B75, 0x0C86, 0x0D97,
+		0x0EA8, 0x0EB8, 0x0DDC, 0x0EEE, 0x0C96, 0x0A74, 0x0887, 0x0776
+	};
+	static const uint16_t kHighBank[15] = {
+		0x049E, 0x06BF, 0x08DF, 0x0C00, 0x0A00, 0x0800, 0x0600, 0x0EB8,
+		0x0C96, 0x0A74, 0x0963, 0x0741, 0x0887, 0x0DDC, 0x0000
+	};
+	for (int i = 0; i < 16; i++) {
+		uint8_t r6, g6, b6;
+		amiga12ToVga6(kLowBank[i], r6, g6, b6);
+		defaultPalette[(1 + i) * 3 + 0] = r6;
+		defaultPalette[(1 + i) * 3 + 1] = g6;
+		defaultPalette[(1 + i) * 3 + 2] = b6;
+	}
+	for (int i = 0; i < 15; i++) {
+		uint8_t r6, g6, b6;
+		amiga12ToVga6(kHighBank[i], r6, g6, b6);
+		defaultPalette[(17 + i) * 3 + 0] = r6;
+		defaultPalette[(17 + i) * 3 + 1] = g6;
+		defaultPalette[(17 + i) * 3 + 2] = b6;
+	}
+	// Optional: log Info presence; keep synthetic COLOR1..31 for face tones
+	// (Info UI RGB is chrome, not portrait skin — see installAmigaPortraitPalette).
+	{
+		std::string infoPath = std::string(gameDir) + "/Info";
+		FILE *inf = fopen(infoPath.c_str(), "rb");
+		if (inf) {
+			uint8_t hdr[8];
+			if (fread(hdr, 1, sizeof(hdr), inf) == sizeof(hdr) &&
+				memcmp(hdr, "MXIN", 4) == 0 && readU16BE(hdr + 4) == 1) {
+				printf("  Using synthetic Amiga COLOR1..31 portrait palette (Info MXIN present)\n");
+			}
+			fclose(inf);
+		}
+	}
+
+	// Prefer a real scene copper palette for OO sprites/portraits (COLOR0..31).
+	// OO entries often appear before MM in DataA, so scan ahead once.
+	{
+		long savedPos = ftell(df);
+		fseek(df, 14 + firstBlockSize, SEEK_SET);
+		bool gotCopper = false;
+		for (uint16_t i = 0; i < totalResources - 1 && !gotCopper; i++) {
+			uint8_t ehdr[8];
+			if (fread(ehdr, 1, 8, df) != 8)
+				break;
+			char eType[3] = {(char)ehdr[0], (char)ehdr[1], '\0'};
+			uint32_t eCompSize = readU32BE(ehdr + 4);
+			if (eCompSize == 0 || eCompSize > dataASize)
+				break;
+			std::vector<uint8_t> payload(eCompSize);
+			if (fread(payload.data(), 1, eCompSize, df) != eCompSize)
+				break;
+			if (eType[0] != 'M' || eType[1] != 'M' || eCompSize < 16)
+				continue;
+			if (memcmp(payload.data(), "MXMM", 4) != 0)
+				continue;
+			// MXMM: size-prefixed chunks from offset 10; chunk0 = PP20 screen+copper
+			uint32_t pos = 10;
+			while (pos + 4 <= eCompSize) {
+				uint32_t chunkSize = readU32BE(payload.data() + pos);
+				pos += 4;
+				if (chunkSize == 0 || pos + chunkSize > eCompSize)
+					break;
+				const uint8_t *chunk = payload.data() + pos;
+				pos += chunkSize;
+				if (memcmp(chunk, "PP20", 4) != 0)
+					continue;
+				uint32_t origSize = pp20GetOrigSize(chunk, chunkSize);
+				if (origSize < 0xBB80 + 64)
+					continue;
+				std::vector<uint8_t> dec(origSize);
+				if (!pp20Decompress(chunk, chunkSize, dec.data(), origSize))
+					continue;
+				const uint32_t kCopper = 0xBB80;
+				auto amiga12ToRgb8 = [](uint16_t rgb, uint8_t &r, uint8_t &g, uint8_t &b) {
+					uint8_t r4 = (rgb >> 8) & 0xF;
+					uint8_t g4 = (rgb >> 4) & 0xF;
+					uint8_t b4 = rgb & 0xF;
+					r = (uint8_t)(r4 * 17);
+					g = (uint8_t)(g4 * 17);
+					b = (uint8_t)(b4 * 17);
+				};
+				uint16_t base16[16];
+				for (int bi = 0; bi < 16; bi++)
+					base16[bi] = readU16BE(dec.data() + kCopper + bi * 2);
+				const uint8_t *lineColors = dec.data() + kCopper + 0x20;
+				uint8_t pal32[32][3];
+				amiga12ToRgb8(base16[0], pal32[0][0], pal32[0][1], pal32[0][2]);
+				for (int ci = 0; ci < 16; ci++) {
+					uint16_t c = readU16BE(lineColors + ci * 2);
+					amiga12ToRgb8(c, pal32[1 + ci][0], pal32[1 + ci][1], pal32[1 + ci][2]);
+				}
+				for (int ci = 1; ci < 16; ci++)
+					amiga12ToRgb8(base16[ci], pal32[16 + ci][0], pal32[16 + ci][1], pal32[16 + ci][2]);
+				for (int si = 0; si < 32; si++) {
+					defaultPalette[si * 3 + 0] = (uint8_t)((pal32[si][0] * 63) / 255);
+					defaultPalette[si * 3 + 1] = (uint8_t)((pal32[si][1] * 63) / 255);
+					defaultPalette[si * 3 + 2] = (uint8_t)((pal32[si][2] * 63) / 255);
+				}
+				printf("  Seeded OO/portrait palette from MM_%04u copper (COLOR0..31)\n",
+				       readU16BE(ehdr + 2));
+				gotCopper = true;
+				break;
+			}
+		}
+		fseek(df, savedPos, SEEK_SET);
 	}
 
 	// Extract all resources sequentially from offset 14 + firstBlockSize
@@ -1283,13 +1713,26 @@ static int extractAmiga(const char *gameDir, const char *outDir) {
 			if (origSize > 0) {
 				std::vector<uint8_t> dec(origSize);
 				if (pp20Decompress(payload.data(), eCompSize, dec.data(), origSize)) {
-					snprintf(fname, sizeof(fname), "%s_%04d.bin", eType, eId);
-					snprintf(path, sizeof(path), "%s/%s", outDir, fname);
-					writeRawFile(path, dec.data(), origSize);
-					printf("  %s: %u -> %u bytes\n", fname, eCompSize, origSize);
+					if (origSize >= 4 && memcmp(dec.data(), "MXOS", 4) == 0) {
+						snprintf(fname, sizeof(fname), "%s_%04d.mxos", eType, eId);
+						snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+						writeRawFile(path, dec.data(), origSize);
+						printf("  %s: PP20 %u -> %u bytes (PCM sound container)\n",
+						       fname, eCompSize, origSize);
+					} else {
+						snprintf(fname, sizeof(fname), "%s_%04d.bin", eType, eId);
+						snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+						writeRawFile(path, dec.data(), origSize);
+						printf("  %s: %u -> %u bytes\n", fname, eCompSize, origSize);
+					}
 
 					// Try to extract sprite image from MXOO
 					if (origSize >= 32 && memcmp(dec.data(), "MXOO", 4) == 0) {
+						int beforeImages = images;
+						if (extractAmigaComplexMxoo(dec.data(), origSize, eType, eId, outDir, defaultPalette, images))
+							printf("  %s_%04d: complex object (+%d anim BMPs, JSON, script)\n",
+							       eType, eId, images - beforeImages);
+
 						uint32_t scriptOff = readU32BE(dec.data() + 4);
 						// Sprite body: from offset 12 to scriptOff
 						if (scriptOff > 32 && scriptOff <= origSize) {
@@ -1339,36 +1782,174 @@ static int extractAmiga(const char *gameDir, const char *outDir) {
 				}
 			}
 		} else if (memcmp(payload.data(), "MXMM", 4) == 0 && eCompSize > 14) {
-			// Music sub-container: PP20 size at offset 10
-			uint32_t ppSize = readU32BE(payload.data() + 10);
-			if (ppSize > 0 && ppSize <= eCompSize - 14 && memcmp(payload.data() + 14, "PP20", 4) == 0) {
-				uint32_t origSize = pp20GetOrigSize(payload.data() + 14, ppSize);
-				if (origSize > 0) {
-					std::vector<uint8_t> dec(origSize);
-					if (pp20Decompress(payload.data() + 14, ppSize, dec.data(), origSize)) {
-						snprintf(fname, sizeof(fname), "%s_%04d.bin", eType, eId);
-						snprintf(path, sizeof(path), "%s/%s", outDir, fname);
-						writeRawFile(path, dec.data(), origSize);
-						printf("  %s (music): %u -> %u bytes\n", fname, ppSize, origSize);
-					} else {
-						snprintf(fname, sizeof(fname), "%s_%04d.mxmm", eType, eId);
-						snprintf(path, sizeof(path), "%s/%s", outDir, fname);
-						writeRawFile(path, payload.data(), eCompSize);
-						printf("  %s: %u bytes (music decompress failed)\n", fname, eCompSize);
+			// Scene package: size-prefixed chunks; chunk0 = 6×8000 EHB planes + copper.
+			snprintf(fname, sizeof(fname), "%s_%04d.mxmm", eType, eId);
+			snprintf(path, sizeof(path), "%s/%s", outDir, fname);
+			writeRawFile(path, payload.data(), eCompSize);
+
+			uint32_t pos = 10;
+			int chunkIndex = 0;
+			bool wroteBg = false;
+			while (pos + 4 <= eCompSize) {
+				uint32_t chunkSize = readU32BE(payload.data() + pos);
+				pos += 4;
+				if (chunkSize == 0 || pos + chunkSize > eCompSize)
+					break;
+				const uint8_t *chunk = payload.data() + pos;
+				pos += chunkSize;
+
+				char chunkName[80];
+				snprintf(chunkName, sizeof(chunkName), "%s_%04d_chunk%02d", eType, eId, chunkIndex);
+
+				if (memcmp(chunk, "PP20", 4) == 0) {
+					uint32_t origSize = pp20GetOrigSize(chunk, chunkSize);
+					if (origSize > 0) {
+						std::vector<uint8_t> dec(origSize);
+						if (pp20Decompress(chunk, chunkSize, dec.data(), origSize)) {
+							snprintf(path, sizeof(path), "%s/%s.bin", outDir, chunkName);
+							writeRawFile(path, dec.data(), origSize);
+							printf("  %s: PP20 %u -> %u bytes\n", chunkName, chunkSize, origSize);
+
+							// BPLCON0=0x6200 -> 6 planes EHB; copper at 0xBB80 (FUN_00221f72 / FUN_0021f980).
+							if (chunkIndex == 0 && origSize >= 54432) {
+								const uint32_t kW = 320, kH = 200, kPlane = 8000, kCopper = 0xBB80;
+								std::vector<uint8_t> planar(kW * kH, 0);
+								for (uint32_t plane = 0; plane < 6; plane++) {
+									const uint8_t *planeBase = dec.data() + plane * kPlane;
+									for (uint32_t y = 0; y < kH; y++) {
+										for (uint32_t bx = 0; bx < 40; bx++) {
+											uint8_t b = planeBase[y * 40 + bx];
+											for (int bit = 0; bit < 8; bit++) {
+												uint32_t x = bx * 8 + bit;
+												if (b & (0x80 >> bit))
+													planar[y * kW + x] |= (uint8_t)(1 << plane);
+											}
+										}
+									}
+								}
+
+								auto amiga12ToRgb8 = [](uint16_t rgb, uint8_t &r, uint8_t &g, uint8_t &b) {
+									uint8_t r4 = (rgb >> 8) & 0xF;
+									uint8_t g4 = (rgb >> 4) & 0xF;
+									uint8_t b4 = rgb & 0xF;
+									r = (uint8_t)(r4 * 17);
+									g = (uint8_t)(g4 * 17);
+									b = (uint8_t)(b4 * 17);
+								};
+
+								uint16_t base16[16];
+								for (int bi = 0; bi < 16; bi++)
+									base16[bi] = readU16BE(dec.data() + kCopper + bi * 2);
+								const uint8_t *lineColors = dec.data() + kCopper + 0x20;
+
+								auto buildPal32 = [&](uint32_t y, uint8_t pal32[32][3]) {
+									amiga12ToRgb8(base16[0], pal32[0][0], pal32[0][1], pal32[0][2]);
+									for (int ci = 0; ci < 16; ci++) {
+										uint16_t c = readU16BE(lineColors + y * 32 + ci * 2);
+										amiga12ToRgb8(c, pal32[1 + ci][0], pal32[1 + ci][1], pal32[1 + ci][2]);
+									}
+									for (int ci = 1; ci < 16; ci++)
+										amiga12ToRgb8(base16[ci], pal32[16 + ci][0], pal32[16 + ci][1], pal32[16 + ci][2]);
+								};
+
+								// Reserve 0..31 COLOR + 32..63 EHB for OO sprite compatibility.
+								uint8_t staticPal[32][3];
+								buildPal32(0, staticPal);
+								uint8_t pal[768];
+								memset(pal, 0, sizeof(pal));
+								std::map<uint32_t, uint8_t> colorToIndex;
+								int colorCount = 64;
+								for (int si = 0; si < 32; si++) {
+									pal[si * 3 + 0] = (uint8_t)((staticPal[si][0] * 63) / 255);
+									pal[si * 3 + 1] = (uint8_t)((staticPal[si][1] * 63) / 255);
+									pal[si * 3 + 2] = (uint8_t)((staticPal[si][2] * 63) / 255);
+									uint32_t key = ((uint32_t)staticPal[si][0] << 16) |
+									               ((uint32_t)staticPal[si][1] << 8) | staticPal[si][2];
+									colorToIndex[key] = (uint8_t)si;
+								}
+								for (int si = 0; si < 32; si++) {
+									uint8_t r = (uint8_t)(staticPal[si][0] / 2);
+									uint8_t g = (uint8_t)(staticPal[si][1] / 2);
+									uint8_t b = (uint8_t)(staticPal[si][2] / 2);
+									pal[(32 + si) * 3 + 0] = (uint8_t)((r * 63) / 255);
+									pal[(32 + si) * 3 + 1] = (uint8_t)((g * 63) / 255);
+									pal[(32 + si) * 3 + 2] = (uint8_t)((b * 63) / 255);
+									uint32_t key = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+									if (!colorToIndex.count(key))
+										colorToIndex[key] = (uint8_t)(32 + si);
+								}
+
+								std::vector<uint8_t> pixels(kW * kH, 0);
+								for (uint32_t y = 0; y < kH; y++) {
+									uint8_t pal32[32][3];
+									buildPal32(y, pal32);
+									for (uint32_t x = 0; x < kW; x++) {
+										uint8_t idx = planar[y * kW + x];
+										uint8_t r, g, b;
+										if (idx >= 32) {
+											uint8_t base = (uint8_t)(idx - 32);
+											r = (uint8_t)(pal32[base][0] / 2);
+											g = (uint8_t)(pal32[base][1] / 2);
+											b = (uint8_t)(pal32[base][2] / 2);
+										} else {
+											r = pal32[idx][0];
+											g = pal32[idx][1];
+											b = pal32[idx][2];
+										}
+										uint32_t key = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+										uint8_t outIdx;
+										auto it = colorToIndex.find(key);
+										if (it != colorToIndex.end()) {
+											outIdx = it->second;
+										} else if (colorCount < 256) {
+											outIdx = (uint8_t)colorCount;
+											colorToIndex[key] = outIdx;
+											pal[outIdx * 3 + 0] = (uint8_t)((r * 63) / 255);
+											pal[outIdx * 3 + 1] = (uint8_t)((g * 63) / 255);
+											pal[outIdx * 3 + 2] = (uint8_t)((b * 63) / 255);
+											colorCount++;
+										} else {
+											outIdx = (uint8_t)(idx & 31);
+										}
+										pixels[y * kW + x] = outIdx;
+									}
+								}
+
+								snprintf(path, sizeof(path), "%s/%s_%04d.bmp", outDir, eType, eId);
+								writeBMPEx(path, pixels.data(), (uint16_t)kW, (uint16_t)kH, pal);
+								images++;
+								wroteBg = true;
+								printf("  %s_%04d.bmp: scene background 320x200 EHB+copper (%d colors)\n",
+								       eType, eId, colorCount);
+							}
+						} else {
+							snprintf(path, sizeof(path), "%s/%s.pp20", outDir, chunkName);
+							writeRawFile(path, chunk, chunkSize);
+							printf("  %s: %u bytes (PP20 decompress failed)\n", chunkName, chunkSize);
+						}
 					}
+				} else {
+					snprintf(path, sizeof(path), "%s/%s.bin", outDir, chunkName);
+					writeRawFile(path, chunk, chunkSize);
+					printf("  %s: %u bytes magic=%.4s\n", chunkName, chunkSize,
+					       chunkSize >= 4 ? (const char *)chunk : "????");
 				}
-			} else {
-				snprintf(fname, sizeof(fname), "%s_%04d.mxmm", eType, eId);
-				snprintf(path, sizeof(path), "%s/%s", outDir, fname);
-				writeRawFile(path, payload.data(), eCompSize);
-				printf("  %s: %u bytes (raw music container)\n", fname, eCompSize);
+				chunkIndex++;
 			}
+			if (!wroteBg)
+				printf("  %s: %u bytes (scene package, %d chunks)\n", fname, eCompSize, chunkIndex);
+			else
+				printf("  %s: %u bytes (%d chunks)\n", fname, eCompSize, chunkIndex);
 		} else if (memcmp(payload.data(), "MXOO", 4) == 0) {
 			// Uncompressed object sub-container
 			snprintf(fname, sizeof(fname), "%s_%04d.mxoo", eType, eId);
 			snprintf(path, sizeof(path), "%s/%s", outDir, fname);
 			writeRawFile(path, payload.data(), eCompSize);
 			printf("  %s: %u bytes (uncompressed object)\n", fname, eCompSize);
+			int beforeImages = images;
+			if (extractAmigaComplexMxoo(payload.data(), eCompSize, eType, eId, outDir, defaultPalette, images))
+				printf("  %s_%04d: complex object (+%d anim BMPs, JSON, script)\n",
+				       eType, eId, images - beforeImages);
 		} else {
 			// Unknown format, save raw
 			snprintf(fname, sizeof(fname), "%s_%04d.raw", eType, eId);
@@ -1394,6 +1975,7 @@ static void printHelp(const char *bin) {
 	printf("  strings    - Extract and decrypt text strings\n");
 	printf("  scenedata  - Extract scene metadata as JSON (pathfinding, hotspots, walk params)\n");
 	printf("  items      - Extract inventory item icons as BMP (with object ID)\n");
+	printf("  portraits  - Extract DOS dialogue portraits (blob slots 0x11/0x12) as BMP\n");
 	printf("  helpimages - Extract help/map panel images as BMP\n");
 	printf("  all        - Extract everything\n");
 	printf("\n");
@@ -1402,7 +1984,11 @@ static void printHelp(const char *bin) {
 	printf("  - Directory containing RESOURCE.MCS (DOS version)\n");
 	printf("  - Directory containing DataA + Mdir (Amiga version)\n");
 	printf("\n");
-	printf("Amiga mode auto-detects and extracts all PP20-compressed resources.\n");
+	printf("Amiga mode auto-detects DataA/Mdir and extracts PP20 resources,\n");
+	printf("complex OO anim frames (BMP), object JSON, scripts,\n");
+	printf("dialogue portraits (OO_*_portrait.bmp as 240x80x6 planar / 3x80 frames),\n");
+	printf("backgrounds (6-plane EHB + copper; palette 0..31 for sprites),\n");
+	printf("and OS_*.mxos PCM sound containers. No Protracker/AdLib music in demo.\n");
 	printf("If scene_index is omitted, extracts from all scenes.\n");
 }
 
@@ -1457,10 +2043,15 @@ int main(int argc, char **argv) {
 	bool doStrings = !strcmp(mode, "strings") || !strcmp(mode, "all");
 	bool doSceneData = !strcmp(mode, "scenedata") || !strcmp(mode, "all");
 	bool doItems = !strcmp(mode, "items") || !strcmp(mode, "all");
+	bool doPortraits = !strcmp(mode, "portraits") || !strcmp(mode, "all");
 	bool doHelpImages = !strcmp(mode, "helpimages") || !strcmp(mode, "all");
 
 	if (doItems) {
 		extractItems(outDir);
+	}
+
+	if (doPortraits) {
+		extractPortraits(outDir);
 	}
 
 	if (doHelpImages) {
