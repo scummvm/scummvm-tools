@@ -41,7 +41,7 @@
  *   msgstr "Bowie knife"
  *
  *   msgctxt "uilabel"
- *   msgid "Benutzen %s mit %s"
+ *   msgid "Benutze %s mit %s"
  *   msgstr "Use %s with %s"
  *
  * Each msgid groups consecutive strings that form one dialog/description unit.
@@ -854,15 +854,15 @@ static const uint32_t kObjectLabelsCount = sizeof(kObjectLabels) / sizeof(kObjec
 // German source keys for the action-bar / HUD chrome (msgctxt "uilabel").
 // Sync with ScummVM engines/macs2/actionbar.cpp.
 static const char *const kUiLabels[] = {
-	"Gehen",
-	"Schauen",
-	"Benutzen",
-	"Reden",
-	"Gehen %s",
-	"Schauen %s",
-	"Reden %s",
-	"Benutzen %s",
-	"Benutzen %s mit %s",
+	"Gehe",
+	"Schaue",
+	"Benutze",
+	"Rede",
+	"Gehe zu %s",
+	"Schaue an %s",
+	"Rede mit %s",
+	"Benutze %s",
+	"Benutze %s mit %s",
 	"--- Platz %d ---",
 	"Spielstand %d",
 };

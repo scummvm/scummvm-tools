@@ -18,7 +18,7 @@ Hotspot overlay labels are appended as one entry per unique German noun (`msgctx
 
 When packing, hotspot and object labels share one CP850 lookup table in the DAT file (duplicate German strings need only one translation).
 
-Action-bar / HUD chrome uses a separate DAT section (`msgctxt "uilabel"`). Keys are the German source strings from `engines/macs2/actionbar.cpp` (for example `Benutzen %s mit %s`). Translators may reorder words and `%s` / `%d` placeholders. Rebuild the DAT after changing these strings.
+Action-bar / HUD chrome uses a separate DAT section (`msgctxt "uilabel"`). Keys are the German source strings from `engines/macs2/actionbar.cpp` (for example `Benutze %s mit %s`). Translators may reorder words and `%s` / `%d` placeholders. Rebuild the DAT after changing these strings.
 
 The `\n` separators correspond to individual display lines in the game. Keep the same number of lines as the original.
 
