@@ -447,6 +447,69 @@ static const char *getOpcodeName(uint8_t opcode) {
 		return "setPathfindingRemap";
 	case 0x4E:
 		return "waitForAdlib";
+	// Extended opcodes
+	case 0x4F:
+		return "setMainActor";
+	case 0x50:
+		return "loadDeltaAnim";
+	case 0x51:
+		return "playDeltaAnim";
+	case 0x52:
+		return "removeDeltaAnim";
+	case 0x53:
+		return "setButtonStep";
+	case 0x54:
+		return "testButtonAnimFrame";
+	case 0x55:
+		return "screenShot";
+	case 0x56:
+		return "waitObjectAnimStep";
+	case 0x57:
+		return "waitSpecialAnimStep";
+	case 0x58:
+		return "setObjectAdjust";
+	case 0x59:
+		return "reloadSpecialAnim";
+	case 0x5A:
+		return "playDiskDelta";
+	case 0x5B:
+		return "setDiskCache";
+	case 0x5C:
+		return "setMidiVolume";
+	case 0x5D:
+		return "setWaveVolume";
+	case 0x5E:
+		return "loadSpecAnimAnim";
+	case 0x5F:
+		return "setSpecAnimAnim";
+	case 0x60:
+		return "clearSpecAnimAnim";
+	case 0x61:
+		return "setDeltaRange";
+	case 0x62:
+		return "clearDeltaRange";
+	case 0x63:
+		return "addDeltaSfx";
+	case 0x64:
+		return "clearDeltaSfxList";
+	case 0x65:
+		return "showActionBar";
+	case 0x66:
+		return "hideActionBar";
+	case 0x67:
+		return "setCursorType";
+	case 0x68:
+		return "checkDeltaSpeed";
+	case 0x69:
+		return "loadDistanceMask";
+	case 0x6A:
+		return "loadAreaMask";
+	case 0x6B:
+		return "loadWalkMask";
+	case 0x6C:
+		return "loadShadowMask";
+	case 0x6D:
+		return "talkTo";
 	default:
 		return "???";
 	}

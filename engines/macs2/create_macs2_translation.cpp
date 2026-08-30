@@ -40,10 +40,16 @@
  *   msgid "Bowiemesser"
  *   msgstr "Bowie knife"
  *
+ *   msgctxt "uilabel"
+ *   msgid "Benutzen %s mit %s"
+ *   msgstr "Use %s with %s"
+ *
  * Each msgid groups consecutive strings that form one dialog/description unit.
  * The \n separates individual lines that the engine displays separately.
  * Hotspot and object overlay labels are embedded below (full game only).
  * Keep in sync with engines/macs2/hotspot_names.cpp and gameobjects.cpp.
+ * UI labels (action bar / HUD chrome) are German source keys; keep in sync
+ * with engines/macs2/actionbar.cpp.
  */
 
 #include <algorithm>
@@ -845,6 +851,24 @@ static const char *const kObjectLabels[] = {
 
 static const uint32_t kObjectLabelsCount = sizeof(kObjectLabels) / sizeof(kObjectLabels[0]);
 
+// German source keys for the action-bar / HUD chrome (DAT version 3, msgctxt "uilabel").
+// Sync with ScummVM engines/macs2/actionbar.cpp.
+static const char *const kUiLabels[] = {
+	"Gehen",
+	"Schauen",
+	"Benutzen",
+	"Reden",
+	"Gehen %s",
+	"Schauen %s",
+	"Reden %s",
+	"Benutzen %s",
+	"Benutzen %s mit %s",
+	"--- Platz %d ---",
+	"Spielstand %d",
+};
+
+static const uint32_t kUiLabelsCount = sizeof(kUiLabels) / sizeof(kUiLabels[0]);
+
 static void extractObjectLabels(FILE *out, int &totalEntries) {
 	fprintf(out, "# Object/NPC overlay labels (unique names, full game, CP850/latin-1 source)\n\n");
 	for (uint32_t i = 0; i < kObjectLabelsCount; ++i) {
@@ -857,6 +881,14 @@ static void extractHotspotLabels(FILE *out, int &totalEntries) {
 	fprintf(out, "# Hotspot overlay labels (unique nouns, CP850 source in engine)\n\n");
 	for (uint32_t i = 0; i < kHotspotLabelsCount; ++i) {
 		writePoLabelEntry(out, "hotspotlabel", kHotspotLabels[i]);
+		totalEntries++;
+	}
+}
+
+static void extractUiLabels(FILE *out, int &totalEntries) {
+	fprintf(out, "# Action-bar / HUD UI labels (German source; DAT version 3)\n\n");
+	for (uint32_t i = 0; i < kUiLabelsCount; ++i) {
+		writePoLabelEntry(out, "uilabel", kUiLabels[i]);
 		totalEntries++;
 	}
 }
@@ -955,10 +987,12 @@ static int doExtract(const char *resPath, const char *outPath) {
 
 	extractHotspotLabels(out, totalEntries);
 	extractObjectLabels(out, totalEntries);
+	extractUiLabels(out, totalEntries);
 
 	fclose(out);
 	fclose(resFile);
-	printf("Extracted %d entries (%u hotspot + %u object labels) to %s\n", totalEntries, kHotspotLabelsCount, kObjectLabelsCount, outPath);
+	printf("Extracted %d entries (%u hotspot + %u object + %u UI labels) to %s\n",
+		   totalEntries, kHotspotLabelsCount, kObjectLabelsCount, kUiLabelsCount, outPath);
 	return 0;
 }
 
@@ -974,13 +1008,14 @@ static int doPack(const char *poPath, const char *outPath) {
 		return 1;
 	}
 
-	// Parse PO: msgctxt "scene:N:startIdx", "object:N:startIdx", "hotspotlabel", or "objectlabel"
+	// Parse PO: msgctxt "scene:N:startIdx", "object:N:startIdx", "hotspotlabel", "objectlabel", or "uilabel"
 	// msgstr contains \n-separated translated lines
 	std::map<uint16_t, std::map<int, std::vector<std::string> > > sceneStrings;
 	std::map<uint16_t, std::map<int, std::vector<std::string> > > objectStrings;
 	std::map<std::string, std::string> overlayLabelStrings;
+	std::map<std::string, std::string> uiLabelStrings;
 	std::string currentMsgid;
-	enum PoCtxKind { kPoCtxNone, kPoCtxScene, kPoCtxObjectDialog, kPoCtxHotspotLabel, kPoCtxObjectLabel } ctxKind = kPoCtxNone;
+	enum PoCtxKind { kPoCtxNone, kPoCtxScene, kPoCtxObjectDialog, kPoCtxHotspotLabel, kPoCtxObjectLabel, kPoCtxUiLabel } ctxKind = kPoCtxNone;
 
 	char line[8192];
 	uint16_t currentId = 0;
@@ -993,7 +1028,11 @@ static int doPack(const char *poPath, const char *outPath) {
 	auto flushEntry = [&]() {
 		if (hasCtx && !currentMsgstr.empty()) {
 			std::string text = poUnescape(currentMsgstr);
-			if (ctxKind == kPoCtxHotspotLabel || ctxKind == kPoCtxObjectLabel) {
+			if (ctxKind == kPoCtxUiLabel) {
+				std::string source = poUnescape(currentMsgid);
+				if (!source.empty())
+					uiLabelStrings[source] = text;
+			} else if (ctxKind == kPoCtxHotspotLabel || ctxKind == kPoCtxObjectLabel) {
 				std::string source = poUnescape(currentMsgid);
 				if (!source.empty())
 					overlayLabelStrings[source] = text;
@@ -1048,6 +1087,9 @@ static int doPack(const char *poPath, const char *outPath) {
 				hasCtx = true;
 			} else if (!strncmp(line + 9, "objectlabel\"", 13)) {
 				ctxKind = kPoCtxObjectLabel;
+				hasCtx = true;
+			} else if (!strncmp(line + 9, "uilabel\"", 8)) {
+				ctxKind = kPoCtxUiLabel;
 				hasCtx = true;
 			}
 			continue;
@@ -1139,10 +1181,11 @@ static int doPack(const char *poPath, const char *outPath) {
 	}
 
 	fwrite("MCS2", 1, 4, out);
-	writeU16(out, 2);
+	writeU16(out, 3);
 	writeU16(out, (uint16_t)sceneBlocks.size());
 	writeU16(out, (uint16_t)objectBlocks.size());
 	writeU16(out, (uint16_t)overlayLabelStrings.size());
+	writeU16(out, (uint16_t)uiLabelStrings.size());
 
 	long indexStart = ftell(out);
 	uint32_t indexSize = ((uint32_t)sceneBlocks.size() + (uint32_t)objectBlocks.size()) * 8;
@@ -1185,20 +1228,25 @@ static int doPack(const char *poPath, const char *outPath) {
 	// overlay labels must be appended after all scene/object string data.
 	fseek(out, 0, SEEK_END);
 
-	for (const auto &kv : overlayLabelStrings) {
-		const std::string source = utf8ToCp850(kv.first);
-		const std::string translated = utf8ToCp850(kv.second);
-		writeU16(out, (uint16_t)source.size());
-		if (!source.empty())
-			fwrite(source.data(), 1, source.size(), out);
-		writeU16(out, (uint16_t)translated.size());
-		if (!translated.empty())
-			fwrite(translated.data(), 1, translated.size(), out);
-	}
+	auto writeLabelMap = [&](const std::map<std::string, std::string> &labels) {
+		for (const auto &kv : labels) {
+			const std::string source = utf8ToCp850(kv.first);
+			const std::string translated = utf8ToCp850(kv.second);
+			writeU16(out, (uint16_t)source.size());
+			if (!source.empty())
+				fwrite(source.data(), 1, source.size(), out);
+			writeU16(out, (uint16_t)translated.size());
+			if (!translated.empty())
+				fwrite(translated.data(), 1, translated.size(), out);
+		}
+	};
+
+	writeLabelMap(overlayLabelStrings);
+	writeLabelMap(uiLabelStrings);
 
 	fclose(out);
-	printf("Packed %zu scene + %zu object blocks + %zu overlay labels into %s\n",
-		   sceneBlocks.size(), objectBlocks.size(), overlayLabelStrings.size(), outPath);
+	printf("Packed %zu scene + %zu object blocks + %zu overlay + %zu UI labels into %s\n",
+		   sceneBlocks.size(), objectBlocks.size(), overlayLabelStrings.size(), uiLabelStrings.size(), outPath);
 	return 0;
 }
 
