@@ -47,7 +47,7 @@
  * Each msgid groups consecutive strings that form one dialog/description unit.
  * The \n separates individual lines that the engine displays separately.
  * Hotspot and object overlay labels are embedded below (full game only).
- * Keep in sync with engines/macs2/hotspot_names.cpp and gameobjects.cpp.
+ * Keep in sync with engines/macs2/hotspot_names.cpp.
  * UI labels (action bar / HUD chrome) are German source keys; keep in sync
  * with engines/macs2/actionbar.cpp.
  */
@@ -727,6 +727,9 @@ static const char *const kHotspotLabels[] = {
 
 static const uint32_t kHotspotLabelsCount = sizeof(kHotspotLabels) / sizeof(kHotspotLabels[0]);
 
+// Unique object/NPC overlay names (CP850), full game only (kObjectNames[]).
+// Demo object indices can differ; unique label strings are a subset of this list.
+// Sync with ScummVM engines/macs2/hotspot_names.cpp when labels change.
 static const char *const kObjectLabels[] = {
 	"Axt",
 	"Axtklinge",
@@ -759,7 +762,7 @@ static const char *const kObjectLabels[] = {
 	"Figur",
 	"Flaschenzug",
 	"Griff",
-	"Grosser B" "\xe4" "r",
+	"Grosser B" "\x84" "r",
 	"Hackenspitze",
 	"Haken",
 	"Haken und Seil",
@@ -775,14 +778,14 @@ static const char *const kObjectLabels[] = {
 	"Hutschachtel",
 	"Kacheln",
 	"Kakerlake",
-	"Kapit" "\xe4" "n",
+	"Kapit" "\x84" "n",
 	"Kartoffeln",
 	"Kartonschachtel",
 	"Kerze",
 	"Kerzen",
 	"Kieselsteine",
 	"Kleider",
-	"Kleiner B" "\xe4" "r",
+	"Kleiner B" "\x84" "r",
 	"Knallfr" "\x94" "sche",
 	"Koffer",
 	"Kohlenschaufel",
@@ -803,7 +806,7 @@ static const char *const kObjectLabels[] = {
 	"Mrs. Butler",
 	"Murmeln",
 	"Musketen",
-	"M" "\xe4" "dchen",
+	"M" "\x84" "dchen",
 	"Nase",
 	"Old Firehand",
 	"Panther",
@@ -870,7 +873,7 @@ static const char *const kUiLabels[] = {
 static const uint32_t kUiLabelsCount = sizeof(kUiLabels) / sizeof(kUiLabels[0]);
 
 static void extractObjectLabels(FILE *out, int &totalEntries) {
-	fprintf(out, "# Object/NPC overlay labels (unique names, full game, CP850/latin-1 source)\n\n");
+	fprintf(out, "# Object/NPC overlay labels (unique names, full game, CP850 source)\n\n");
 	for (uint32_t i = 0; i < kObjectLabelsCount; ++i) {
 		writePoLabelEntry(out, "objectlabel", kObjectLabels[i]);
 		totalEntries++;
