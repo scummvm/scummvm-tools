@@ -851,7 +851,7 @@ static const char *const kObjectLabels[] = {
 
 static const uint32_t kObjectLabelsCount = sizeof(kObjectLabels) / sizeof(kObjectLabels[0]);
 
-// German source keys for the action-bar / HUD chrome (DAT version 3, msgctxt "uilabel").
+// German source keys for the action-bar / HUD chrome (msgctxt "uilabel").
 // Sync with ScummVM engines/macs2/actionbar.cpp.
 static const char *const kUiLabels[] = {
 	"Gehen",
@@ -886,7 +886,7 @@ static void extractHotspotLabels(FILE *out, int &totalEntries) {
 }
 
 static void extractUiLabels(FILE *out, int &totalEntries) {
-	fprintf(out, "# Action-bar / HUD UI labels (German source; DAT version 3)\n\n");
+	fprintf(out, "# Action-bar / HUD UI labels (German source)\n\n");
 	for (uint32_t i = 0; i < kUiLabelsCount; ++i) {
 		writePoLabelEntry(out, "uilabel", kUiLabels[i]);
 		totalEntries++;
@@ -1181,7 +1181,7 @@ static int doPack(const char *poPath, const char *outPath) {
 	}
 
 	fwrite("MCS2", 1, 4, out);
-	writeU16(out, 3);
+	writeU16(out, 1);
 	writeU16(out, (uint16_t)sceneBlocks.size());
 	writeU16(out, (uint16_t)objectBlocks.size());
 	writeU16(out, (uint16_t)overlayLabelStrings.size());
