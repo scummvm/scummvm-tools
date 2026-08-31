@@ -933,7 +933,7 @@ static void extractPortraits(const char *outDir) {
 			if ((j == 0x11 || j == 0x12) && dataSize > 0) {
 				std::vector<uint8_t> blob(dataSize);
 				fread(blob.data(), 1, dataSize, resFile);
-				portraitBlobs[j - 0x11] = std::move(blob);
+				portraitBlobs[j - 0x11] = blob;
 			} else {
 				fseek(resFile, dataSize, SEEK_CUR);
 			}
