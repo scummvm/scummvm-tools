@@ -25,7 +25,7 @@
  * Workflow:
  *   1. Extract: create_macs2_translation extract <RESOURCE.MCS> <output.pot>
  *   2. Translate the .po file (Poedit, Weblate, etc.)
- *   3. Pack:    create_macs2_translation pack <translated.po> <macs2_translation.dat>
+ *   3. Pack:    create_macs2_translation pack <translated.po> <sis-translation-LANG.dat>
  *
  * PO format:
  *   msgctxt "scene:2:0"  (or "object:42:0")
@@ -1256,7 +1256,7 @@ static int doPack(const char *poPath, const char *outPath) {
 static void printHelp(const char *bin) {
 	printf("MACS2 Translation File Creator\n\n");
 	printf("  %s extract <RESOURCE.MCS> <macs2.pot>\n", bin);
-	printf("  %s pack <translated.po> <macs2_translation.dat>\n", bin);
+	printf("  %s pack <translated.po> <sis-translation-LANG.dat>\n", bin);
 }
 
 int main(int argc, char **argv) {
