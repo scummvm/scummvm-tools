@@ -31,11 +31,13 @@ PROGRAMS = \
 	descumm \
 	desword2 \
 	detwine \
+	extract_twine \
 	gob_loadcalc \
 	extract_gob_cdi \
 	extract_mohawk \
 	extract_macs2 \
 	create_macs2_translation \
+	create_twine_translation \
 	extract_ngi \
 	construct_mohawk \
 	msn_convert_mod \
@@ -149,6 +151,11 @@ extract_macs2_OBJS := \
 create_macs2_translation_OBJS := \
 	engines/macs2/create_macs2_translation.o
 
+create_twine_translation_OBJS := \
+	engines/twine/create_twine_translation.o \
+	engines/twine/hqr.o \
+	$(UTILS)
+
 extract_hadesch_OBJS := \
 	engines/hadesch/extract_hadesch.o \
 	$(UTILS)
@@ -231,6 +238,17 @@ detwine_OBJS := \
 	tool.o \
 	version.o \
 	$(UTILS)
+
+extract_twine_OBJS := \
+	engines/twine/extract_twine.o \
+	engines/twine/extract_twine_convert.o \
+	engines/twine/extract_twine_font.o \
+	engines/twine/extract_twine_island.o \
+	engines/twine/extract_twine_obj.o \
+	engines/twine/parser/body.o \
+	engines/twine/hqr.o \
+	$(UTILS)
+extract_twine_LIBS := $(LIBS)
 
 gob_loadcalc_OBJS := \
 	engines/gob/gob_loadcalc.o
