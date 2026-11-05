@@ -1983,13 +1983,19 @@ void next_line_V12(char *buf) {
 	case 0x5C:
 	case 0x6B:
 	case 0x6E:
-	case 0xAB:
 	case 0xDC:
 	case 0xEB:
 	case 0xEE:
 		//dummy
 		sprintf(buf, "dummy(%.2X);", opcode);
 
+		break;
+
+	case 0xAB:
+		// Takes one byte, as ScummVM's o2_switchCostumeSet reads it: the NES
+		// Maniac Mansion picks a set of costumes with it, and the C64 Zak
+		// McKracken loads (1) or frees (2) the memory for its music player.
+		do_tok(buf, "switchCostumeSet", A1B);
 		break;
 
 	case 0x09:
