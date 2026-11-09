@@ -803,7 +803,18 @@ void Script_v1::hotspotsEvaluate()
 
 		// Evaluate parameters for the new hotspot
 		switch (type) {
-		// TODO: handle kTypeEnable1 and kTypeEnable2 types
+		case kTypeEnable2:
+		case kTypeEnable1:
+			// Like the engine (Hotspots::evaluateNew): 6 bytes, then one
+			// block that becomes both funcEnter and funcLeave of every
+			// hotspot it re-enables. Without this, the rest of the hotspot
+			// block was read out of step.
+			skip(6);
+			print(", %d", getPos());
+			addFuncOffset(getPos());
+			skipBlock();
+			break;
+
 		case kTypeNone:
 			skip(6);
 			print(", %d", getPos());
