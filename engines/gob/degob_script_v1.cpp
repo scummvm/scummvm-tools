@@ -914,7 +914,12 @@ void Script_v1::o1_callSub(FuncParams &params) {
 		}
 	}
 
-	if (peekUint8() == 1) {
+	if (offset < 128) {
+		// Like the engine (Inter_v1::o1_callSub), never follow a call into
+		// the header. If the header's first byte happens to be 1 or 2, it
+		// would otherwise be decoded as a function or a hotspot block.
+		print("<Unknown block type %d (%d)>\n", peekUint8(), offset);
+	} else if (peekUint8() == 1) {
 		print("sub_%d%s%s();\n",
 			  offset,
 			  func_name ? "_" : "",
