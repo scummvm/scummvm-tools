@@ -803,7 +803,18 @@ void Script_v1::hotspotsEvaluate()
 
 		// Evaluate parameters for the new hotspot
 		switch (type) {
-		// TODO: handle kTypeEnable1 and kTypeEnable2 types
+		case kTypeEnable2:
+		case kTypeEnable1:
+			// Like the engine (Hotspots::evaluateNew): 6 bytes, then one
+			// block that becomes both funcEnter and funcLeave of every
+			// hotspot it re-enables. Without this, the rest of the hotspot
+			// block was read out of step.
+			skip(6);
+			print(", %d", getPos());
+			addFuncOffset(getPos());
+			skipBlock();
+			break;
+
 		case kTypeNone:
 			skip(6);
 			print(", %d", getPos());
@@ -834,15 +845,26 @@ void Script_v1::hotspotsEvaluate()
 		case kTypeInput3Leave:
 		case kTypeInputFloatNoLeave:
 		case kTypeInputFloatLeave:
-			print(", %d", readUint16());
+			// Like the engine: a variable index (variable length), font,
+			// back and front colour, the length-prefixed string for types
+			// 5-8, and a leave block only for the "Leave" (even) types.
+			print(", %s", readVarIndex().c_str());
 			print(", %d", readUint16());
 			print(", %d", readUint8());
 			print(", %d", readUint8());
 			if ((type >= kTypeInput2NoLeave) && (type <= kTypeInput3Leave)) {
-				print(", %d", readUint16());
-				print(", %s", readString());
+				uint16 len = readUint16();
+				print(", %d", len);
+				std::string text;
+				for (uint16 j = 0; j < len; j++)
+					text += (char) readUint8();
+				print(", \"%s\"", text.c_str());
 			}
-			skipBlock();
+			if (!(type & 1)) {
+				print(", %d", getPos());
+				addFuncOffset(getPos());
+				skipBlock();
+			}
 			break;
 
 		case 20:
@@ -892,7 +914,12 @@ void Script_v1::o1_callSub(FuncParams &params) {
 		}
 	}
 
-	if (peekUint8() == 1) {
+	if (offset < 128) {
+		// Like the engine (Inter_v1::o1_callSub), never follow a call into
+		// the header. If the header's first byte happens to be 1 or 2, it
+		// would otherwise be decoded as a function or a hotspot block.
+		print("<Unknown block type %d (%d)>\n", peekUint8(), offset);
+	} else if (peekUint8() == 1) {
 		print("sub_%d%s%s();\n",
 			  offset,
 			  func_name ? "_" : "",
