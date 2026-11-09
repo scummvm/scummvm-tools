@@ -845,15 +845,26 @@ void Script_v1::hotspotsEvaluate()
 		case kTypeInput3Leave:
 		case kTypeInputFloatNoLeave:
 		case kTypeInputFloatLeave:
-			print(", %d", readUint16());
+			// Like the engine: a variable index (variable length), font,
+			// back and front colour, the length-prefixed string for types
+			// 5-8, and a leave block only for the "Leave" (even) types.
+			print(", %s", readVarIndex().c_str());
 			print(", %d", readUint16());
 			print(", %d", readUint8());
 			print(", %d", readUint8());
 			if ((type >= kTypeInput2NoLeave) && (type <= kTypeInput3Leave)) {
-				print(", %d", readUint16());
-				print(", %s", readString());
+				uint16 len = readUint16();
+				print(", %d", len);
+				std::string text;
+				for (uint16 j = 0; j < len; j++)
+					text += (char) readUint8();
+				print(", \"%s\"", text.c_str());
 			}
-			skipBlock();
+			if (!(type & 1)) {
+				print(", %d", getPos());
+				addFuncOffset(getPos());
+				skipBlock();
+			}
 			break;
 
 		case 20:
